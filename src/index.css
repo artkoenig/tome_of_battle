@@ -1107,6 +1107,17 @@ input[type="radio"]:checked::after {
     font-weight: bold;
     line-height: 1.2;
   }
+
+  /* Stack modal footer buttons on mobile */
+  .modal-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .modal-footer button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
 }
 
 /* Tab bar default hide on desktop */

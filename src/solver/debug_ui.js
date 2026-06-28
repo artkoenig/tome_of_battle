@@ -136,6 +136,13 @@ async function run() {
     await clickButtonWithText('Heerlager');
     await takeScreenshot('04_heerlager');
 
+    console.log('Switching to mobile viewport for dashboard...');
+    await page.setViewport({ width: 375, height: 812 });
+    await new Promise(r => setTimeout(r, 500));
+    await takeScreenshot('04_mobile_heerlager');
+    await page.setViewport({ width: 1440, height: 900 });
+    await new Promise(r => setTimeout(r, 500));
+
     // 5. Open create roster modal
     console.log('Opening Roster Creation Modal...');
     try {
