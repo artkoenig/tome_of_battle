@@ -74,19 +74,29 @@ export default function RosterSidebar({
                 style={{ 
                   fontSize: '0.85rem', 
                   padding: '6px 0', 
-                  color: isInvalid ? 'var(--color-danger)' : 'var(--text-parchment)'
+                  color: 'var(--text-parchment)'
                 }}
               >
                 <span>{catName}:</span>
-                <span className="font-sans" style={{ fontWeight: 700 }}>
+                <span 
+                  className={isInvalid ? "badge badge-danger font-sans" : "badge font-sans"} 
+                  style={{ 
+                    fontSize: '0.8rem', 
+                    padding: '2px 8px',
+                    ...(isInvalid ? {} : {
+                      backgroundColor: 'rgba(226, 183, 66, 0.05)',
+                      border: '1px solid rgba(226, 183, 66, 0.2)',
+                      color: 'var(--text-gold)'
+                    })
+                  }}
+                >
                   {(() => {
                     const limitParts = [];
                     if (minCon > 0) limitParts.push(`Min: ${minCon}`);
                     if (maxCon !== Infinity) limitParts.push(`Max: ${maxCon}`);
-                    const limitText = limitParts.length > 0 ? ` (${limitParts.join(' / ')})` : '';
-                    return `${count}${limitText}`;
+                    const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
+                    return `${count} ${limitText}`.trim();
                   })()}
-                  {isInvalid ? ' ❌' : '  '}
                 </span>
               </div>
             );
