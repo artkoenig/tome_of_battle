@@ -384,8 +384,11 @@ export default function Importer({ onSystemImported }) {
           ) : (
             /* Editing Form */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div className="flex-between">
-                <h3 className="font-serif text-gold" style={{ margin: 0 }}>Eintrag bearbeiten</h3>
+              <div className="flex-between" style={{ alignItems: 'flex-start' }}>
+                <div>
+                  <h3 className="font-serif text-gold" style={{ margin: 0 }}>Eintrag bearbeiten: {selectedEntry.name}</h3>
+                  <div className="text-dim" style={{ fontSize: '0.8rem', fontStyle: 'italic', marginTop: '4px', fontFamily: 'var(--font-body)' }}>{selectedEntry.path}</div>
+                </div>
                 <button 
                   className="btn-gold btn-sm"
                   onClick={() => setSelectedEntry(null)}
