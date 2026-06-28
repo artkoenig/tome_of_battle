@@ -306,7 +306,7 @@ export default function SelectionConfigurator({
             const descText = getOptionDescription(res);
 
             return (
-              <div key={res.id} className="sub-selection-row" style={{ padding: '8px 12px' }}>
+              <div key={res.id} className="sub-selection-row">
                 <div>
                   <div>
                     <span style={{ fontWeight: 600 }}>{res.name}</span>
@@ -527,7 +527,7 @@ function OptionGroupComponent({
       </div>
 
       {isExpanded && (
-        <div style={{ paddingLeft: '12px', borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px' }}>
+        <div style={{ borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px', paddingLeft: '4px' }}>
           {group.items.map(({ option, groupConstraints }) => {
             const res = resolveEntry(system, option);
             if (!res) return null;
@@ -598,7 +598,7 @@ function OptionGroupComponent({
 
             return (
               <div key={res.id} className="sub-selection-row" style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}>
-                <div>
+                <div style={{ paddingLeft: '12px' }}>
                   <div>
                     <span style={{ fontWeight: 600, color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit' }}>
                       {res.name}

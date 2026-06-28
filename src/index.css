@@ -535,7 +535,7 @@ select option {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
+  padding: 8px 12px;
   font-size: 0.9rem;
 }
 
