@@ -267,12 +267,13 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
         if (child.type === 'selectionEntryGroup' || resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0) {
           // It links to a group (shared or direct). We collect its items under the group name.
+          const combinedConstraints = [...(resolvedChild.constraints || []), ...(def.constraints || []), ...(parentConstraints || [])];
           resolvedChild.selectionEntries?.forEach(subChild => {
             optionsList.push({ 
               option: subChild, 
               parentDefId: def.id, 
               groupName: resolvedChild.name || child.name, 
-              groupConstraints: resolvedChild.constraints 
+              groupConstraints: combinedConstraints 
             });
           });
           resolvedChild.entryLinks?.forEach(subChild => {
@@ -280,7 +281,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               option: subChild, 
               parentDefId: def.id, 
               groupName: resolvedChild.name || child.name, 
-              groupConstraints: resolvedChild.constraints 
+              groupConstraints: combinedConstraints 
             });
           });
         } else if (resolvedChild.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
@@ -296,26 +297,28 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         }
       });
 
-      // 3. Process selection entry groups
+       // 3. Process selection entry groups
       def.selectionEntryGroups?.forEach(group => {
+        const combinedGroupConstraints = [...(group.constraints || []), ...(def.constraints || []), ...(parentConstraints || [])];
         group.selectionEntries?.forEach(child => {
           optionsList.push({ 
             option: child, 
             parentDefId: def.id, 
             groupName: group.name, 
-            groupConstraints: group.constraints 
+            groupConstraints: combinedGroupConstraints 
           });
         });
         group.entryLinks?.forEach(child => {
           const resolvedChild = resolveEntry(system, child);
           if (resolvedChild && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0)) {
             // Recurse into nested groups
+            const combinedChildConstraints = [...(resolvedChild.constraints || []), ...combinedGroupConstraints];
             resolvedChild.selectionEntries?.forEach(sub => {
               optionsList.push({ 
                 option: sub, 
                 parentDefId: def.id, 
                 groupName: resolvedChild.name || child.name || group.name, 
-                groupConstraints: resolvedChild.constraints || group.constraints 
+                groupConstraints: combinedChildConstraints 
               });
             });
             resolvedChild.entryLinks?.forEach(sub => {
@@ -323,7 +326,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 option: sub, 
                 parentDefId: def.id, 
                 groupName: resolvedChild.name || child.name || group.name, 
-                groupConstraints: resolvedChild.constraints || group.constraints 
+                groupConstraints: combinedChildConstraints 
               });
             });
           } else {
@@ -331,7 +334,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               option: child, 
               parentDefId: def.id, 
               groupName: group.name, 
-              groupConstraints: group.constraints 
+              groupConstraints: combinedGroupConstraints 
             });
           }
         });

@@ -341,8 +341,11 @@ export function validateRoster(roster, system) {
 
       groups.forEach(group => {
         const groupItemIds = new Set();
+        const visitedDefs = new Set();
         const collectGroupItemIds = (gDef) => {
-          if (!gDef) return;
+          if (!gDef || visitedDefs.has(gDef.id)) return;
+          if (gDef.id) visitedDefs.add(gDef.id);
+
           gDef.selectionEntries?.forEach(item => {
             groupItemIds.add(item.id);
             const res = resolveEntry(system, item);
@@ -352,7 +355,10 @@ export function validateRoster(roster, system) {
             groupItemIds.add(link.id);
             groupItemIds.add(link.targetId);
             const res = resolveEntry(system, link);
-            if (res) groupItemIds.add(res.id);
+            if (res) {
+              groupItemIds.add(res.id);
+              collectGroupItemIds(res);
+            }
           });
           gDef.selectionEntryGroups?.forEach(subG => {
             collectGroupItemIds(subG);
