@@ -213,7 +213,35 @@ async function run() {
     await new Promise(r => setTimeout(r, 1000));
     await takeScreenshot('09_units_added');
 
-    // 10. Dump the right-hand requirements sidebar to see if the validation errors are visible
+    // 10. Switch to mobile viewports and capture mobile tabs
+    console.log('Switching viewport to mobile (375x812)...');
+    await page.setViewport({ width: 375, height: 812 });
+    await new Promise(r => setTimeout(r, 1000));
+    await takeScreenshot('10_mobile_roster');
+
+    console.log('Switching to mobile library tab...');
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('.mobile-tab-button'));
+      const libBtn = buttons.find(b => b.textContent.includes('Bibliothek'));
+      if (libBtn) libBtn.click();
+    });
+    await new Promise(r => setTimeout(r, 1000));
+    await takeScreenshot('11_mobile_library');
+
+    console.log('Switching to mobile status tab...');
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('.mobile-tab-button'));
+      const statusBtn = buttons.find(b => b.textContent.includes('Status'));
+      if (statusBtn) statusBtn.click();
+    });
+    await new Promise(r => setTimeout(r, 1000));
+    await takeScreenshot('12_mobile_status');
+
+    // Restore viewport
+    await page.setViewport({ width: 1440, height: 900 });
+    await new Promise(r => setTimeout(r, 500));
+
+    // 11. Dump the right-hand requirements sidebar
     console.log('Dumping validation sidebar HTML...');
     await dumpHTML('.builder-right-bar', 'validation_sidebar');
 
