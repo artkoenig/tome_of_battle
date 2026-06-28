@@ -241,7 +241,18 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             if (maxVal < Infinity) limitParts.push(`Max: ${maxVal}`);
                             const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
                             return (
-                              <span className="badge font-sans" style={{ backgroundColor: categoryErrors.length > 0 ? 'var(--color-danger)' : 'rgba(226, 183, 66, 0.1)', color: categoryErrors.length > 0 ? 'white' : 'var(--text-gold)', fontSize: '0.8rem', padding: '2px 8px' }}>
+                              <span 
+                                className={categoryErrors.length > 0 ? "badge badge-danger font-sans" : "badge font-sans"} 
+                                style={{ 
+                                  fontSize: '0.8rem', 
+                                  padding: '2px 8px',
+                                  ...(categoryErrors.length > 0 ? {} : {
+                                    backgroundColor: 'rgba(226, 183, 66, 0.05)',
+                                    border: '1px solid rgba(226, 183, 66, 0.2)',
+                                    color: 'var(--text-gold)'
+                                  })
+                                }}
+                              >
                                 {count} {limitText}
                               </span>
                             );
