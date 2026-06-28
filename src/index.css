@@ -359,97 +359,7 @@ select option {
   }
 }
 
-@media (max-width: 900px) {
-  .builder-layout {
-    grid-template-columns: 1fr;
-    height: calc(100vh - 120px) !important;
-    overflow: hidden;
-  }
 
-  .builder-sidebar {
-    display: none;
-    border-right: none;
-  }
-  .builder-sidebar.active-mobile-tab {
-    display: flex !important;
-    height: 100%;
-  }
-
-  .builder-main {
-    display: none;
-    padding: 16px !important;
-  }
-  .builder-main.active-mobile-tab {
-    display: flex !important;
-    height: 100%;
-  }
-
-  .builder-right-bar {
-    display: none;
-    border-left: none;
-  }
-  .builder-right-bar.active-mobile-tab {
-    display: flex !important;
-    height: 100%;
-  }
-
-  /* Mobile Tab Bar */
-  .mobile-tab-bar {
-    display: flex !important;
-    justify-content: space-around;
-    align-items: center;
-    background-color: var(--bg-panel);
-    border-top: 1px solid var(--border-dark);
-    height: 60px;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-  }
-
-  .mobile-tab-button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 0.75rem;
-    font-family: var(--font-body);
-    font-weight: 600;
-    cursor: pointer;
-    flex: 1;
-    height: 100%;
-    gap: 4px;
-    transition: all 0.2s;
-    position: relative;
-  }
-
-  .mobile-tab-button.active {
-    color: var(--text-gold);
-    background-color: rgba(226, 183, 66, 0.03);
-  }
-
-  .mobile-tab-badge {
-    position: absolute;
-    top: 6px;
-    right: 25%;
-    background-color: var(--color-danger);
-    color: white;
-    border-radius: 50%;
-    font-size: 0.65rem;
-    padding: 1px 5px;
-    font-weight: bold;
-    line-height: 1.2;
-  }
-}
-
-/* Tab bar default hide on desktop */
-.mobile-tab-bar {
-  display: none;
-}
 
 .builder-sidebar {
   border-right: 1px solid var(--border-dark);
@@ -1024,4 +934,122 @@ input[type="radio"]:checked::after {
   width: 10px;
   height: 10px;
   display: block;
+}
+
+/* Relocated and improved mobile layout media query to override desktop rules */
+@media (max-width: 900px) {
+  .builder-layout {
+    grid-template-columns: 1fr !important;
+    height: calc(100vh - 60px) !important; /* adjust for bottom tab bar */
+    overflow: hidden !important;
+  }
+
+  .builder-sidebar {
+    display: none !important;
+    border-right: none !important;
+  }
+  .builder-sidebar.active-mobile-tab {
+    display: flex !important;
+    height: 100% !important;
+  }
+
+  .builder-main {
+    display: none !important;
+    padding: 16px !important;
+  }
+  .builder-main.active-mobile-tab {
+    display: flex !important;
+    height: 100% !important;
+  }
+
+  .builder-right-bar {
+    display: none !important;
+    border-left: none !important;
+  }
+  .builder-right-bar.active-mobile-tab {
+    display: flex !important;
+    height: 100% !important;
+  }
+
+  /* Hide main premium header inside the builder/play screens to maximize vertical space */
+  .in-builder-mode .app-header {
+    display: none !important;
+  }
+
+  /* Stack roster header editors vertically on mobile */
+  .roster-header-editor {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .roster-header-editor > div:first-child {
+    width: 100% !important;
+  }
+  .roster-header-editor > div:last-child {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+  .roster-header-editor button {
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+
+  /* Mobile Tab Bar */
+  .mobile-tab-bar {
+    display: flex !important;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--bg-panel);
+    border-top: 1px solid var(--border-dark);
+    height: 60px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .mobile-tab-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    height: 100%;
+    gap: 4px;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .mobile-tab-button.active {
+    color: var(--text-gold);
+    background-color: rgba(226, 183, 66, 0.03);
+  }
+
+  .mobile-tab-badge {
+    position: absolute;
+    top: 6px;
+    right: 25%;
+    background-color: var(--color-danger);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+}
+
+/* Tab bar default hide on desktop */
+.mobile-tab-bar {
+  display: none;
 }

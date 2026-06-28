@@ -131,7 +131,7 @@ export default function App() {
   const activeModalSystem = systems.find(s => s.id === newRosterSystemId);
 
   return (
-    <div id="root">
+    <div id="root" className={view !== 'rosters' && view !== 'importer' ? 'in-builder-mode' : ''}>
       {/* Premium Header */}
       <header className="app-header">
         <div className="logo-container">
