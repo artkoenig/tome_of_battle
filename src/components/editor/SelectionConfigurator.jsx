@@ -213,8 +213,21 @@ export default function SelectionConfigurator({
       });
     };
     collectFromActiveSelections(unitSelection);
+ 
+    const seenOptionIds = new Set();
+    const uniqueOptionsList = [];
+    optionsList.forEach(item => {
+      const res = resolveEntry(system, item.option);
+      if (res) {
+        if (seenOptionIds.has(res.id)) {
+          return;
+        }
+        seenOptionIds.add(res.id);
+      }
+      uniqueOptionsList.push(item);
+    });
 
-    return optionsList;
+    return uniqueOptionsList;
   };
 
   const options = getUnitOptions(selection);
