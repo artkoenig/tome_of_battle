@@ -386,6 +386,22 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
       }
     });
 
+    // Recursively collect options from all active sub-selections (like selected bloodlines, mounts etc.)
+    const collectFromActiveSelections = (currentSel) => {
+      currentSel.selections?.forEach(subSel => {
+        const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
+        const subRawEntry = findEntryInSystem(system, subEntryId);
+        const subResolved = resolveEntry(system, subRawEntry);
+        if (subResolved) {
+          if (subResolved.selectionEntries?.length > 0 || subResolved.entryLinks?.length > 0 || subResolved.selectionEntryGroups?.length > 0) {
+            collectOptions(subResolved);
+          }
+          collectFromActiveSelections(subSel);
+        }
+      });
+    };
+    collectFromActiveSelections(unitSelection);
+
     return optionsList;
   };
 
