@@ -692,7 +692,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                               <BookOpen size={14} /> Ausrüstung &amp; Upgrades
                             </span>
                             <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
-                              {isEquipExpanded ? 'Ausblenden ▲' : `Anzeigen (${selectedUpgrades.length}) ▼`}
+                              {isEquipExpanded ? '▲' : '▼'}
                             </span>
                           </h4>
                           
@@ -722,7 +722,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                                       </span>
                                       {desc && (
                                         <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                                          {isExpanded ? 'Ausblenden ▲' : 'Anzeigen ▼'}
+                                          {isExpanded ? '▲' : '▼'}
                                         </span>
                                       )}
                                     </div>
