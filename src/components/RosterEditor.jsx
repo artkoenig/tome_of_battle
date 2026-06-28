@@ -627,13 +627,23 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                   if (!res) return null;
                                   const count = getSubSelectionCount(selection, res.id);
                                   const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
-                                   const minConstraint = res.constraints?.find(c => c.type === 'min');
-                                   const maxConstraint = res.constraints?.find(c => c.type === 'max');
-                                   const minLimit = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
-                                   const maxLimit = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
-                                   const isMandatory = minLimit > 0 && minLimit === maxLimit;
-                                   const isBinary = maxLimit === 1;
-                                   const descText = getOptionDescription(res);
+                                  const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
+                                  const unitRawEntry = findEntryInSystem(system, unitEntryId);
+                                  const unitResolved = resolveEntry(system, unitRawEntry);
+                                  const filteredOptionConstraints = res.constraints?.filter(con => {
+                                    if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+                                      return true;
+                                    }
+                                    return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
+                                           (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
+                                  }) || [];
+                                  const minConstraint = filteredOptionConstraints.find(c => c.type === 'min');
+                                  const maxConstraint = filteredOptionConstraints.find(c => c.type === 'max');
+                                  const minLimit = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
+                                  const maxLimit = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
+                                  const isMandatory = minLimit > 0 && minLimit === maxLimit;
+                                  const isBinary = maxLimit === 1;
+                                  const descText = getOptionDescription(res);
 
                                   return (
                                     <div key={res.id} className="sub-selection-row" style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-dark)' }}>
@@ -684,10 +694,21 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                     </div>
                                   );
                                 } else {
+                                   const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
+                                   const unitRawEntry = findEntryInSystem(system, unitEntryId);
+                                   const unitResolved = resolveEntry(system, unitRawEntry);
+                                   const filteredGroupConstraints = group.constraints?.filter(con => {
+                                     if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+                                       return true;
+                                     }
+                                     return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
+                                            (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
+                                   }) || [];
+
                                    const isExpanded = isOptionGroupExpanded(selection.id, group.name);
-                                   const minLimitRaw = group.constraints?.find(c => c.type === 'min')?.value;
+                                   const minLimitRaw = filteredGroupConstraints.find(c => c.type === 'min')?.value;
                                    const minLimit = (minLimitRaw === undefined || minLimitRaw < 0) ? 0 : minLimitRaw;
-                                   const maxLimitRaw = group.constraints?.find(c => c.type === 'max')?.value;
+                                   const maxLimitRaw = filteredGroupConstraints.find(c => c.type === 'max')?.value;
                                    const maxLimit = (maxLimitRaw === undefined || maxLimitRaw < 0) ? Infinity : maxLimitRaw;
                                    
                                    const currentCount = group.items.reduce((sum, item) => {
@@ -705,8 +726,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                    let hasGroupError = false;
                                    let groupErrorMessage = '';
                                    
-                                   group.constraints?.forEach(con => {
-                                      if (con.value < 0) return;
+                                   filteredGroupConstraints.forEach(con => {
+                                     if (con.value < 0) return;
                                      if (con.field === 'pts') {
                                        if (con.type === 'max' && currentPoints > con.value) {
                                          hasGroupError = true;
@@ -757,8 +778,18 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                             if (!res) return null;
                                             const count = getSubSelectionCount(selection, res.id);
                                             const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
-                                            const minConstraint = res.constraints?.find(c => c.type === 'min');
-                                            const maxConstraint = res.constraints?.find(c => c.type === 'max');
+                                            const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
+                                            const unitRawEntry = findEntryInSystem(system, unitEntryId);
+                                            const unitResolved = resolveEntry(system, unitRawEntry);
+                                            const filteredOptionConstraints = res.constraints?.filter(con => {
+                                              if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+                                                return true;
+                                              }
+                                              return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
+                                                     (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
+                                            }) || [];
+                                            const minConstraint = filteredOptionConstraints.find(c => c.type === 'min');
+                                            const maxConstraint = filteredOptionConstraints.find(c => c.type === 'max');
                                             const minLimit = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
                                             const maxLimit = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
                                             const isMandatory = minLimit > 0 && minLimit === maxLimit;

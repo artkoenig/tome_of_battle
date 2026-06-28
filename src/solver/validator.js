@@ -267,10 +267,19 @@ export function validateRoster(roster, system) {
 
       if (!entry) return;
 
-      // 1. Validate individual constraints of this entry
+       // 1. Validate individual constraints of this entry
       if (entry.constraints) {
         entry.constraints.forEach(con => {
           if (con.value < 0) return;
+          
+          // Check scope applicability for specific category/entry scoped constraints
+          if (con.scope !== 'parent' && con.scope !== 'force' && con.scope !== 'roster') {
+            const belongsToScope = (selection.selectionEntryId === con.scope || selection.entryLinkId === con.scope) ||
+                                  (entry.categoryLinks?.some(cl => cl.targetId === con.scope)) ||
+                                  (parentSelection && (parentSelection.selectionEntryId === con.scope || parentSelection.entryLinkId === con.scope));
+            if (!belongsToScope) return;
+          }
+
           // Determine current count in scope
           let count = selection.number || 1;
           
@@ -365,6 +374,13 @@ export function validateRoster(roster, system) {
 
         group.constraints?.forEach(con => {
           if (con.value < 0) return;
+          
+          // Check scope applicability for specific category/entry scoped constraints
+          if (con.scope !== 'parent' && con.scope !== 'force' && con.scope !== 'roster') {
+            const belongsToScope = (selection.selectionEntryId === con.scope || selection.entryLinkId === con.scope) ||
+                                  (entry.categoryLinks?.some(cl => cl.targetId === con.scope));
+            if (!belongsToScope) return;
+          }
           if (con.field === 'pts') {
             if (con.type === 'max' && totalPoints > con.value) {
               errors.push({
