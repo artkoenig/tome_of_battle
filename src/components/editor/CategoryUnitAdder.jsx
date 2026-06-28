@@ -85,7 +85,7 @@ export default function CategoryUnitAdder({
                   key={res.id} 
                   className="popover-item"
                   onClick={() => {
-                    addUnit(entry);
+                    addUnit(entry, categoryId);
                     setIsOpen(false);
                     if (onUnitAdded) onUnitAdded(res.name);
                   }}
