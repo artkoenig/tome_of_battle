@@ -277,8 +277,10 @@ export function computeRosterCounts(roster, system) {
         selectionCounts[resolved.targetId] = (selectionCounts[resolved.targetId] || 0) + (selection.number || 1);
       }
       
+      const seenCategories = new Set();
       resolved?.categoryLinks?.forEach(cl => {
-        if (cl.targetId) {
+        if (cl.targetId && !seenCategories.has(cl.targetId)) {
+          seenCategories.add(cl.targetId);
           categoryCounts[forceId][cl.targetId] = (categoryCounts[forceId][cl.targetId] || 0) + 1;
         }
       });

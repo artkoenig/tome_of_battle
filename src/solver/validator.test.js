@@ -1,4 +1,4 @@
-import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry } from './validator.js';
+import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts } from './validator.js';
 
 // 1. Mock Game System Definition
 const mockSystem = {
@@ -896,6 +896,57 @@ console.log('Test 12 - Category Constraint Modifier Evaluation (Limit 3 at 1500p
   charactersWithinLimitNoError ? 'PASSED' : `FAILED (Constraint set modifier did not apply: ${JSON.stringify(errorsCharactersModified)})`
 );
 
+// Test 13: Category Link De-duplication Check (avoiding duplicate category counts for identical targetIds)
+const mockSystemDeDuplication = {
+  ...mockSystem,
+  catalogues: [
+    {
+      id: 'cat-marines',
+      name: 'Space Marines',
+      selectionEntries: [
+        {
+          id: 'unit-captain',
+          name: 'Space Marine Captain',
+          costs: [{ typeId: 'pts', value: 100 }],
+          categoryLinks: [
+            { targetId: 'cat-hq', primary: true },
+            { targetId: 'cat-hq', primary: false } // duplicate link to same category
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const mockRosterDeDuplication = {
+  name: 'De-dup Captain',
+  costLimit: 2000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-cap',
+          selectionEntryId: 'unit-captain',
+          name: 'Space Marine Captain',
+          number: 1,
+          costs: [{ typeId: 'pts', value: 100 }]
+        }
+      ]
+    }
+  ]
+};
+
+const { categoryCounts: deDupCounts } = computeRosterCounts(mockRosterDeDuplication, mockSystemDeDuplication);
+const hqCount = deDupCounts['f1']?.['cat-hq'] || 0;
+const deDuplicationSuccess = hqCount === 1;
+console.log('Test 13 - Category Link De-duplication Check (avoid double count): ',
+  deDuplicationSuccess ? 'PASSED' : `FAILED (Expected count 1, got ${hqCount})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -904,7 +955,8 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     (takenForCap2 === true && takenForCap1 === false) &&
     tacOverLimitError &&
     charactersOverLimitError &&
-    charactersWithinLimitNoError) {
+    charactersWithinLimitNoError &&
+    deDuplicationSuccess) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {
