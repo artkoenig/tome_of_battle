@@ -130,6 +130,123 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     return descriptions.join(' | ');
   };
 
+  // Helper to calculate the combined armour save for a unit selection in WFB 6th
+  const getArmourSave = (selection) => {
+    const entryId = selection.entryLinkId || selection.selectionEntryId;
+    const entry = findEntryInSystem(system, entryId);
+    const resolved = resolveEntry(system, entry);
+    
+    let hasShield = false;
+    let armourValue = 7; // 7 means no armour
+    let isMounted = false;
+    let isBarded = false;
+
+    // Helper to check text for keywords
+    const scanText = (text) => {
+      if (!text) return;
+      const t = text.toLowerCase();
+      
+      // Shields
+      if (t.includes('shield') || t.includes('schild')) {
+        hasShield = true;
+      }
+      
+      // Armours
+      if (t.includes('full plate') || t.includes('plattenrüstung') || t.includes('gromril') || t.includes('chaos armour') || t.includes('chaos-rüstung')) {
+        armourValue = Math.min(armourValue, 4);
+      } else if (t.includes('heavy armour') || t.includes('schwere rüstung')) {
+        armourValue = Math.min(armourValue, 5);
+      } else if (t.includes('light armour') || t.includes('leichte rüstung')) {
+        armourValue = Math.min(armourValue, 6);
+      }
+
+      // Mounts (cavalry mount types in 6th edition)
+      if (t.includes('horse') || t.includes('steed') || t.includes('ross') || t.includes('pony') || t.includes('pegasus') || t.includes('cold one') || t.includes('wolf') || t.includes('boar') || t.includes('mount') || t.includes('reittier') || t.includes('streitross') || t.includes('schlachtross')) {
+        // Exclude monster mounts
+        if (!t.includes('hippogryph') && !t.includes('griffon') && !t.includes('dragon') && !t.includes('drache') && !t.includes('manticore') && !t.includes('wyvern')) {
+          isMounted = true;
+        }
+      }
+
+      // Barding
+      if (t.includes('barded') || t.includes('barding') || t.includes('harnisch') || t.includes('rosharnisch')) {
+        isBarded = true;
+      }
+    };
+
+    // 1. Scan resolved main entry details
+    if (resolved) {
+      scanText(resolved.name);
+      resolved.rules?.forEach(r => scanText(r.name + ' ' + r.description));
+      resolved.profiles?.forEach(p => {
+        scanText(p.name);
+        p.characteristics?.forEach(c => scanText(c.name + ' ' + c.value));
+        if (p.profileTypeName?.toLowerCase().includes('cavalry') || p.profileTypeName?.toLowerCase().includes('kavallerie')) {
+          isMounted = true;
+        }
+      });
+    }
+
+    // 2. Scan selected sub-selections/upgrades
+    if (selection.selections) {
+      selection.selections.forEach(subSel => {
+        scanText(subSel.name);
+        const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
+        const subEntry = findEntryInSystem(system, subEntryId);
+        const subResolved = resolveEntry(system, subEntry);
+        if (subResolved) {
+          scanText(subResolved.name);
+          subResolved.rules?.forEach(r => scanText(r.name + ' ' + r.description));
+          subResolved.profiles?.forEach(p => {
+            scanText(p.name);
+            p.characteristics?.forEach(c => scanText(c.name + ' ' + c.value));
+            if (p.profileTypeName?.toLowerCase().includes('cavalry') || p.profileTypeName?.toLowerCase().includes('kavallerie')) {
+              isMounted = true;
+            }
+          });
+        }
+      });
+    }
+
+    // 3. Calculate Armour Save according to 6th Edition rules:
+    // None = none (7)
+    // Shield or Light armour = 6+
+    // Shield & Light armour or Heavy armour = 5+
+    // Shield & Heavy armour = 4+
+    // Cavalry Mount = +1 save, minimum base save of 6+
+    // Barded Mount = +1 save
+    let save = 7;
+
+    if (armourValue < 7) {
+      save = armourValue;
+    }
+
+    if (isMounted) {
+      if (save === 7) {
+        save = 6;
+      } else {
+        save = save - 1;
+      }
+    }
+
+    if (hasShield) {
+      if (save === 7) {
+        save = 6;
+      } else {
+        save = save - 1;
+      }
+    }
+
+    if (isBarded && save < 7) {
+      save = save - 1;
+    }
+
+    if (save === 7) {
+      return 'Kein';
+    }
+    return `${save}+`;
+  };
+
   // Helper to calculate total model count in a unit selection
   const getUnitModelCount = (selection) => {
     const entryId = selection.entryLinkId || selection.selectionEntryId;
@@ -378,6 +495,27 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                     ) : (
                       <p className="text-dim" style={{ fontSize: '0.85rem' }}>Keine Profilwerte gefunden.</p>
                     )}
+
+                    {/* Rüstungswurf */}
+                    <div style={{ 
+                      marginTop: '12px', 
+                      marginBottom: '16px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px',
+                      padding: '8px 12px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid var(--border-dark)',
+                      borderRadius: '4px',
+                      width: 'fit-content'
+                    }}>
+                      <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                        Rüstungswurf (berechnet):
+                      </span>
+                      <span className="font-sans badge badge-success" style={{ fontSize: '0.9rem', fontWeight: 700 }}>
+                        {getArmourSave(selection)}
+                      </span>
+                    </div>
 
                     {/* Sonderregeln */}
                     {rules.length > 0 && (
