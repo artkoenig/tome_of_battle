@@ -8,6 +8,7 @@ export default function CategoryUnitAdder({
   system,
   activeCatalogue,
   costTypeLabel,
+  costLimitType,
   addUnit,
   onUnitAdded
 }) {
@@ -81,7 +82,7 @@ export default function CategoryUnitAdder({
           <div className="popover-list">
             {availableUnits.map(entry => {
               const res = resolveEntry(system, entry);
-              const points = res.costs?.find(c => c.typeId === activeCatalogue.costLimitType || c.typeId === 'pts')?.value || 0;
+              const points = res.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
               return (
                 <div 
                   key={res.id} 

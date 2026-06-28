@@ -194,6 +194,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           system={system}
                           activeCatalogue={activeCatalogue}
                           costTypeLabel={costTypeLabel}
+                          costLimitType={roster.costLimitType}
                           addUnit={addUnit}
                           onUnitAdded={handleUnitAddedToast}
                         />
