@@ -285,29 +285,31 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                               >
                                 <div 
                                   className="selection-node-header"
-                                  style={{ cursor: 'pointer', padding: '12px 14px' }}
+                                  style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}
                                   onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
                                 >
-                                  <div className="selection-node-title" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>{selection.name}</span>
-                                    {renderMiniProfile(selection)}
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                    <div className="selection-node-title">
+                                      <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>{selection.name}</span>
+                                    </div>
+                                    <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                      <span className="selection-node-cost font-sans">
+                                        {displayPoints} {costTypeLabel}
+                                      </span>
+                                      <button 
+                                        type="button"
+                                        className="btn-danger btn-sm" 
+                                        style={{ padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          removeUnit(selection.id);
+                                        }}
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div className="selection-node-right">
-                                    <span className="selection-node-cost font-sans">
-                                      {displayPoints} {costTypeLabel}
-                                    </span>
-                                    <button 
-                                      type="button"
-                                      className="btn-danger btn-sm" 
-                                      style={{ padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeUnit(selection.id);
-                                      }}
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
-                                  </div>
+                                  {renderMiniProfile(selection)}
                                 </div>
 
                                 {selectionErrors.map((err, idx) => (
@@ -350,29 +352,31 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                         <div key={selection.id} className="selection-node">
                           <div 
                             className="selection-node-header"
-                            style={{ cursor: 'pointer', padding: '12px 14px' }}
+                            style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}
                             onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
                           >
-                            <div className="selection-node-title" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                              <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>{selection.name}</span>
-                              {renderMiniProfile(selection)}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                              <div className="selection-node-title">
+                                <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>{selection.name}</span>
+                              </div>
+                              <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <span className="selection-node-cost font-sans">
+                                  {displayPoints} {costTypeLabel}
+                                </span>
+                                <button 
+                                  type="button"
+                                  className="btn-danger btn-sm" 
+                                  style={{ padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeUnit(selection.id);
+                                  }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
                             </div>
-                            <div className="selection-node-right">
-                              <span className="selection-node-cost font-sans">
-                                {displayPoints} {costTypeLabel}
-                              </span>
-                              <button 
-                                type="button"
-                                className="btn-danger btn-sm" 
-                                style={{ padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeUnit(selection.id);
-                                }}
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
+                            {renderMiniProfile(selection)}
                           </div>
 
                           {isUnitEditing && (
