@@ -525,7 +525,7 @@ function OptionGroupComponent({
         onClick={() => setIsExpanded(!isExpanded)}
         style={{
           backgroundColor: hasGroupError ? 'rgba(239, 68, 68, 0.05)' : 'rgba(226, 183, 66, 0.04)',
-          border: hasGroupError ? '1px solid var(--text-danger)' : '1px solid var(--border-dark)',
+          border: hasGroupError ? '1px solid var(--color-danger)' : '1px solid var(--border-dark)',
           borderRadius: '4px',
           padding: '8px 12px',
           cursor: 'pointer',

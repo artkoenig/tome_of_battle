@@ -409,14 +409,14 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {generalErrors.map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-danger" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem' }}>
+                      <div key={idx} className="validation-error-item text-danger font-sans" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem' }}>
                         <AlertTriangle size={18} style={{ flexShrink: 0 }} />
                         <span>{err.message}</span>
                       </div>
                     ))}
                     {/* Secondary list of category & selection errors for full context */}
                     {validationErrors.filter(e => e.categoryId || e.selectionId).map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-danger" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', opacity: 0.8 }}>
+                      <div key={idx} className="validation-error-item text-danger font-sans" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', opacity: 0.8 }}>
                         <AlertTriangle size={18} style={{ flexShrink: 0 }} />
                         <span>{err.message}</span>
                       </div>
