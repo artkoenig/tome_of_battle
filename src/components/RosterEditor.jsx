@@ -803,11 +803,37 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                             const isCheckbox = isBinary && !isRadio;
                                             const descText = getOptionDescription(res);
 
+                                            // Calculate points constraint for the group to disable options that exceed it
+                                            const ptsConstraint = filteredGroupConstraints.find(c => 
+                                              c.type === 'max' && 
+                                              (c.field === 'pts' || c.field === 'ecfa-8486-4f6c-c249' || c.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === c.field))
+                                            );
+                                            const maxPointsLimit = ptsConstraint ? ptsConstraint.value : Infinity;
+
+                                            let wouldExceedPointsLimit = false;
+                                            if (maxPointsLimit !== Infinity) {
+                                              let pointsDiff = points;
+                                              if (isRadio && count === 0) {
+                                                const selectedOther = group.items.find(otherItem => {
+                                                  const otherRes = resolveEntry(system, otherItem.option);
+                                                  return otherRes && otherRes.id !== res.id && getSubSelectionCount(selection, otherRes.id) > 0;
+                                                });
+                                                if (selectedOther) {
+                                                  const otherRes = resolveEntry(system, selectedOther.option);
+                                                  const otherPoints = otherRes?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+                                                  pointsDiff = points - otherPoints;
+                                                }
+                                              }
+                                              if (currentPoints + pointsDiff > maxPointsLimit) {
+                                                wouldExceedPointsLimit = true;
+                                              }
+                                            }
+
                                             return (
-                                              <div key={res.id} className="sub-selection-row">
+                                              <div key={res.id} className="sub-selection-row" style={{ opacity: (count === 0 && wouldExceedPointsLimit) ? 0.5 : 1 }}>
                                                 <div>
                                                   <div>
-                                                    <span style={{ fontWeight: 600 }}>{res.name}</span>
+                                                    <span style={{ fontWeight: 600, color: (count === 0 && wouldExceedPointsLimit) ? 'var(--text-dim)' : 'inherit' }}>{res.name}</span>
                                                     {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginLeft: '8px' }}>+{points} Pkt.</span>}
                                                   </div>
                                                    {descText && (
@@ -822,10 +848,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                                       type="radio" 
                                                       name={`${selection.id}-${group.name}`}
                                                       checked={count > 0}
+                                                      disabled={count === 0 && wouldExceedPointsLimit}
                                                       onClick={() => {
                                                         if (count > 0) {
                                                           updateSubSelection(selection.id, option, 'decrement');
-                                                        } else {
+                                                        } else if (!wouldExceedPointsLimit) {
                                                           group.items.forEach(otherItem => {
                                                             const otherRes = resolveEntry(system, otherItem.option);
                                                             if (otherRes && otherRes.id !== res.id) {
@@ -844,9 +871,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                                      <input 
                                                        type="checkbox" 
                                                        checked={count > 0 || isMandatory}
-                                                       disabled={isMandatory}
+                                                       disabled={isMandatory || (count === 0 && wouldExceedPointsLimit)}
                                                        onChange={(e) => {
-                                                         if (!isMandatory) {
+                                                         if (!isMandatory && !(e.target.checked && wouldExceedPointsLimit)) {
                                                            updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
                                                          }
                                                        }}
@@ -866,6 +893,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                                         className="btn-sm" 
                                                         style={{ padding: '2px 6px' }}
                                                         onClick={() => updateSubSelection(selection.id, option, 'increment')}
+                                                        disabled={wouldExceedPointsLimit}
                                                       >
                                                         <Plus size={12} />
                                                       </button>
