@@ -482,7 +482,6 @@ select option {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-dark);
 }
 
 .selection-node-title {
@@ -522,6 +521,7 @@ select option {
 .selection-node-body {
   padding: 16px;
   background-color: rgba(0,0,0,0.15);
+  border-top: 1px solid var(--border-dark);
 }
 
 /* Selection Configuration (nested sub-options) */
