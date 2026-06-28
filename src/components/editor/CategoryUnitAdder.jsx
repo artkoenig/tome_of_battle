@@ -75,7 +75,7 @@ export default function CategoryUnitAdder({
       </button>
 
       {isOpen && (
-        <div className="category-unit-adder-popover gothic-panel">
+        <div className="category-unit-adder-popover">
           <div className="popover-list">
             {availableUnits.map(entry => {
               const res = resolveEntry(system, entry);
