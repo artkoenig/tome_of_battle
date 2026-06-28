@@ -589,50 +589,18 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                       <p className="text-dim" style={{ fontSize: '0.85rem' }}>Keine Profilwerte gefunden.</p>
                     )}
 
-                    {/* Schutzwürfe (Rüstungswurf & Rettungswurf) */}
+                    {/* Schutzwürfe (AS & WS Badges) */}
                     <div style={{ 
-                      marginTop: '12px', 
+                      marginTop: '8px', 
                       marginBottom: '16px', 
                       display: 'flex', 
-                      gap: '12px',
-                      flexWrap: 'wrap'
+                      gap: '8px'
                     }}>
-                      {/* Rüstungswurf */}
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px',
-                        padding: '8px 12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid var(--border-dark)',
-                        borderRadius: '4px',
-                        width: 'fit-content'
-                      }}>
-                        <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                          Rüstungswurf (berechnet):
-                        </span>
-                        <span className="font-sans badge badge-success" style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-                          {getArmourSave(selection)}
-                        </span>
+                      <div className="badge badge-success font-sans" style={{ fontSize: '0.85rem', padding: '6px 12px', fontWeight: 700 }}>
+                        AS: {getArmourSave(selection)}
                       </div>
-
-                      {/* Rettungswurf */}
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px',
-                        padding: '8px 12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid var(--border-dark)',
-                        borderRadius: '4px',
-                        width: 'fit-content'
-                      }}>
-                        <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                          Rettungswurf (berechnet):
-                        </span>
-                        <span className="font-sans badge badge-warning" style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-                          {getWardSave(selection)}
-                        </span>
+                      <div className="badge badge-warning font-sans" style={{ fontSize: '0.85rem', padding: '6px 12px', fontWeight: 700 }}>
+                        WS: {getWardSave(selection)}
                       </div>
                     </div>
 
