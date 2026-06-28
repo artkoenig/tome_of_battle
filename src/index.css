@@ -1123,13 +1123,6 @@ input[type="radio"]:checked::after {
   animation: fadeIn 0.15s ease-out;
   padding: 0 !important;
   background-color: var(--bg-panel);
-  border: 1px solid var(--border-gold);
-}
-
-.popover-header {
-  border-bottom: 1px solid var(--border-gold-dim);
-  padding: 8px 12px;
-  background-color: rgba(226, 183, 66, 0.05);
 }
 
 .popover-list {
@@ -1143,13 +1136,9 @@ input[type="radio"]:checked::after {
   align-items: center;
   padding: 10px 14px;
   cursor: pointer;
-  border-bottom: 1px solid var(--border-dark);
   transition: background-color 0.2s;
 }
 
-.popover-item:last-child {
-  border-bottom: none;
-}
 
 .popover-item:hover {
   background-color: rgba(226, 183, 66, 0.08);
