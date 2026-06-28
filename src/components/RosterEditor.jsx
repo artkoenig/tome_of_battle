@@ -25,20 +25,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   const [selectedCatalogEntry, setSelectedCatalogEntry] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
   const [costs, setCosts] = useState({});
-  const [expandedOptionGroups, setExpandedOptionGroups] = useState({});
 
-  const toggleOptionGroup = (unitId, groupName) => {
-    const key = `${unitId}-${groupName}`;
-    setExpandedOptionGroups(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
-
-  const isOptionGroupExpanded = (unitId, groupName) => {
-    const key = `${unitId}-${groupName}`;
-    return expandedOptionGroups[key] !== false; // true by default
-  };
 
   // Resolve active catalogue definition
   useEffect(() => {
@@ -748,257 +735,18 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                     </div>
                                   );
                                 } else {
-                                   const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
-                                   const unitRawEntry = findEntryInSystem(system, unitEntryId);
-                                   const unitResolved = resolveEntry(system, unitRawEntry);
-                                   const filteredGroupConstraints = group.constraints?.filter(con => {
-                                     if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
-                                       return true;
-                                     }
-                                     return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
-                                            (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
-                                   }) || [];
-
-                                   const isExpanded = isOptionGroupExpanded(selection.id, group.name);
-                                   const minLimitRaw = filteredGroupConstraints.find(c => c.type === 'min')?.value;
-                                   const minLimit = (minLimitRaw === undefined || minLimitRaw < 0) ? 0 : minLimitRaw;
-                                   const maxLimitRaw = filteredGroupConstraints.find(c => c.type === 'max')?.value;
-                                   const maxLimit = (maxLimitRaw === undefined || maxLimitRaw < 0) ? Infinity : maxLimitRaw;
-                                   
-                                   const currentCount = group.items.reduce((sum, item) => {
-                                     const res = resolveEntry(system, item.option);
-                                     return sum + (res ? getSubSelectionCount(selection, res.id) : 0);
-                                   }, 0);
-
-                                   const currentPoints = group.items.reduce((sum, item) => {
-                                     const res = resolveEntry(system, item.option);
-                                     const count = res ? getSubSelectionCount(selection, res.id) : 0;
-                                     const points = res?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
-                                     return sum + (points * count);
-                                   }, 0);
-
-                                   let hasGroupError = false;
-                                   let groupLimitInfo = '';
-                                   
-                                   filteredGroupConstraints.forEach(con => {
-                                     if (con.value < 0) return;
-                                     
-                                     let activeCount = currentCount;
-                                     let activePoints = currentPoints;
-
-                                     if (con.groupItemIds) {
-                                       let sumCount = 0;
-                                       let sumPoints = 0;
-                                       selection.selections?.forEach(sub => {
-                                         const subId = sub.entryLinkId || sub.selectionEntryId;
-                                         if (con.groupItemIds.has(subId)) {
-                                           const count = sub.number || 1;
-                                           const pts = sub.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
-                                           sumCount += count;
-                                           sumPoints += (pts * count);
-                                         }
-                                       });
-                                       activeCount = sumCount;
-                                       activePoints = sumPoints;
-                                     }
-
-                                     const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
-                                     if (isCostField) {
-                                       if (con.type === 'max') {
-                                         if (activePoints > con.value) {
-                                           hasGroupError = true;
-                                           groupLimitInfo = `(Max: ${con.value} Pkt. | Aktuell: ${activePoints} Pkt.)`;
-                                         } else {
-                                           groupLimitInfo = `(Max: ${con.value} Pkt. | Rest: ${con.value - activePoints} Pkt.)`;
-                                         }
-                                       }
-                                     } else {
-                                       if (con.type === 'max') {
-                                         if (activeCount > con.value) {
-                                           hasGroupError = true;
-                                           groupLimitInfo = `(Max: ${con.value} | Aktuell: ${activeCount})`;
-                                         } else {
-                                           groupLimitInfo = `(Max: ${con.value} | Rest: ${con.value - activeCount})`;
-                                         }
-                                       }
-                                     }
-                                   });
-
-                                   const limitText = groupLimitInfo || (maxLimit !== Infinity ? `(Max: ${maxLimit})` : '');
-
-                                   return (
-                                     <div key={group.name} style={{ marginBottom: '12px' }}>
-                                       {/* Collapsible Group Header */}
-                                       <div 
-                                         onClick={() => toggleOptionGroup(selection.id, group.name)}
-                                         style={{
-                                           backgroundColor: hasGroupError ? 'rgba(239, 68, 68, 0.05)' : 'rgba(226, 183, 66, 0.04)',
-                                           border: hasGroupError ? '1px solid var(--text-danger)' : '1px solid var(--border-dark)',
-                                           borderRadius: '4px',
-                                           padding: '8px 12px',
-                                           cursor: 'pointer',
-                                           display: 'flex',
-                                           justifyContent: 'space-between',
-                                           alignItems: 'center',
-                                           userSelect: 'none'
-                                         }}
-                                       >
-                                         <span className={hasGroupError ? "font-serif text-danger" : "font-serif text-gold"} style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-                                           {group.name} <span style={{ fontSize: '0.8rem', marginLeft: '6px', fontWeight: 400 }}>{limitText}</span>
-                                         </span>
-                                         {isExpanded ? (
-                                           <ChevronDown size={16} className={hasGroupError ? "text-danger" : "text-gold"} />
-                                         ) : (
-                                           <ChevronRight size={16} className={hasGroupError ? "text-danger" : "text-gold"} />
-                                         )}
-                                       </div>
-
-                                      {/* Group Content */}
-                                      {isExpanded && (
-                                        <div style={{ paddingLeft: '12px', borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px' }}>
-                                          {group.items.map(({ option, groupConstraints }) => {
-                                            const res = resolveEntry(system, option);
-                                            if (!res) return null;
-                                            const count = getSubSelectionCount(selection, res.id);
-                                            const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
-                                            const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
-                                            const unitRawEntry = findEntryInSystem(system, unitEntryId);
-                                            const unitResolved = resolveEntry(system, unitRawEntry);
-                                            const filteredOptionConstraints = res.constraints?.filter(con => {
-                                              if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
-                                                return true;
-                                              }
-                                              return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
-                                                     (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
-                                            }) || [];
-                                            const minConstraint = filteredOptionConstraints.find(c => c.type === 'min');
-                                            const maxConstraint = filteredOptionConstraints.find(c => c.type === 'max');
-                                            const minLimit = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
-                                            const maxLimit = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
-                                            const isMandatory = minLimit > 0 && minLimit === maxLimit;
-                                            
-                                            const isRadio = groupConstraints?.some(c => c.type === 'max' && c.value === 1);
-                                            const isBinary = (maxConstraint && maxConstraint.value === 1) || isRadio;
-                                            const isCheckbox = isBinary && !isRadio;
-                                            const descText = getOptionDescription(res);
-
-                                            // Calculate points constraint for the group to disable options that exceed it
-                                            const ptsConstraint = filteredGroupConstraints.find(c => 
-                                              c.type === 'max' && 
-                                              (c.field === 'pts' || c.field === 'ecfa-8486-4f6c-c249' || c.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === c.field))
-                                            );
-                                            const maxPointsLimit = ptsConstraint ? ptsConstraint.value : Infinity;
-
-                                            let wouldExceedPointsLimit = false;
-                                            if (maxPointsLimit !== Infinity) {
-                                              let activePoints = currentPoints;
-                                              if (ptsConstraint.groupItemIds) {
-                                                let sumPoints = 0;
-                                                selection.selections?.forEach(sub => {
-                                                  const subId = sub.entryLinkId || sub.selectionEntryId;
-                                                  if (ptsConstraint.groupItemIds.has(subId)) {
-                                                    const count = sub.number || 1;
-                                                    const pts = sub.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
-                                                    sumPoints += (pts * count);
-                                                  }
-                                                });
-                                                activePoints = sumPoints;
-                                              }
-
-                                              let pointsDiff = points;
-                                              if (isRadio && count === 0) {
-                                                const selectedOther = group.items.find(otherItem => {
-                                                  const otherRes = resolveEntry(system, otherItem.option);
-                                                  return otherRes && otherRes.id !== res.id && getSubSelectionCount(selection, otherRes.id) > 0;
-                                                });
-                                                if (selectedOther) {
-                                                  const otherRes = resolveEntry(system, selectedOther.option);
-                                                  const otherPoints = otherRes?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
-                                                  pointsDiff = points - otherPoints;
-                                                }
-                                              }
-                                              if (activePoints + pointsDiff > maxPointsLimit) {
-                                                wouldExceedPointsLimit = true;
-                                              }
-                                            }
-
-                                            return (
-                                              <div key={res.id} className="sub-selection-row" style={{ opacity: (count === 0 && wouldExceedPointsLimit) ? 0.5 : 1 }}>
-                                                <div>
-                                                  <div>
-                                                    <span style={{ fontWeight: 600, color: (count === 0 && wouldExceedPointsLimit) ? 'var(--text-dim)' : 'inherit' }}>{res.name}</span>
-                                                    {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginLeft: '8px' }}>+{points} Pkt.</span>}
-                                                  </div>
-                                                   {descText && (
-                                                     <div className="text-dim" style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', marginTop: '4px', fontStyle: 'italic', maxWidth: '420px', lineHeight: '1.3' }}>
-                                                       {descText}
-                                                     </div>
-                                                   )}
-                                                </div>
-                                                <div className="sub-selection-controls">
-                                                  {isRadio ? (
-                                                    <input 
-                                                      type="radio" 
-                                                      name={`${selection.id}-${group.name}`}
-                                                      checked={count > 0}
-                                                      disabled={count === 0 && wouldExceedPointsLimit}
-                                                      onClick={() => {
-                                                        if (count > 0) {
-                                                          updateSubSelection(selection.id, option, 'decrement');
-                                                        } else if (!wouldExceedPointsLimit) {
-                                                          group.items.forEach(otherItem => {
-                                                            const otherRes = resolveEntry(system, otherItem.option);
-                                                            if (otherRes && otherRes.id !== res.id) {
-                                                              const otherCount = getSubSelectionCount(selection, otherRes.id);
-                                                              if (otherCount > 0) {
-                                                                updateSubSelection(selection.id, otherItem.option, 'decrement');
-                                                              }
-                                                            }
-                                                          });
-                                                          updateSubSelection(selection.id, option, 'increment');
-                                                        }
-                                                      }}
-                                                      onChange={() => {}}
-                                                    />
-                                                  ) : isCheckbox ? (
-                                                     <input 
-                                                       type="checkbox" 
-                                                       checked={count > 0 || isMandatory}
-                                                       disabled={isMandatory || (count === 0 && wouldExceedPointsLimit)}
-                                                       onChange={(e) => {
-                                                         if (!isMandatory && !(e.target.checked && wouldExceedPointsLimit)) {
-                                                           updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
-                                                         }
-                                                       }}
-                                                     />
-                                                  ) : (
-                                                    <div className="quantity-control">
-                                                      <button 
-                                                        className="btn-sm" 
-                                                        style={{ padding: '2px 6px' }}
-                                                        onClick={() => updateSubSelection(selection.id, option, 'decrement')}
-                                                        disabled={count === 0}
-                                                      >
-                                                        <Minus size={12} />
-                                                      </button>
-                                                      <span className="quantity-value font-sans">{count}</span>
-                                                      <button 
-                                                        className="btn-sm" 
-                                                        style={{ padding: '2px 6px' }}
-                                                        onClick={() => updateSubSelection(selection.id, option, 'increment')}
-                                                        disabled={wouldExceedPointsLimit}
-                                                      >
-                                                        <Plus size={12} />
-                                                      </button>
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                      )}
-                                    </div>
+                                  return (
+                                    <OptionGroupComponent 
+                                      key={group.name}
+                                      group={group}
+                                      selection={selection}
+                                      system={system}
+                                      roster={roster}
+                                      getSubSelectionCount={getSubSelectionCount}
+                                      updateSubSelection={updateSubSelection}
+                                      costTypeLabel={costTypeLabel}
+                                      getOptionDescription={getOptionDescription}
+                                    />
                                   );
                                 }
                               });
@@ -1089,6 +837,268 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function OptionGroupComponent({ 
+  group, 
+  selection, 
+  system, 
+  roster, 
+  getSubSelectionCount, 
+  updateSubSelection, 
+  costTypeLabel,
+  getOptionDescription
+}) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
+  const unitRawEntry = findEntryInSystem(system, unitEntryId);
+  const unitResolved = resolveEntry(system, unitRawEntry);
+  
+  const filteredGroupConstraints = group.constraints?.filter(con => {
+    if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+      return true;
+    }
+    return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
+           (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
+  }) || [];
+
+  const minLimitRaw = filteredGroupConstraints.find(c => c.type === 'min')?.value;
+  const minLimit = (minLimitRaw === undefined || minLimitRaw < 0) ? 0 : minLimitRaw;
+  const maxLimitRaw = filteredGroupConstraints.find(c => c.type === 'max')?.value;
+  const maxLimit = (maxLimitRaw === undefined || maxLimitRaw < 0) ? Infinity : maxLimitRaw;
+  
+  const currentCount = group.items.reduce((sum, item) => {
+    const res = resolveEntry(system, item.option);
+    return sum + (res ? getSubSelectionCount(selection, res.id) : 0);
+  }, 0);
+
+  const currentPoints = group.items.reduce((sum, item) => {
+    const res = resolveEntry(system, item.option);
+    const count = res ? getSubSelectionCount(selection, res.id) : 0;
+    const points = res?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+    return sum + (points * count);
+  }, 0);
+
+  let hasGroupError = false;
+  let groupLimitInfo = '';
+  
+  filteredGroupConstraints.forEach(con => {
+    if (con.value < 0) return;
+    
+    let activeCount = currentCount;
+    let activePoints = currentPoints;
+
+    if (con.groupItemIds) {
+      let sumCount = 0;
+      let sumPoints = 0;
+      selection.selections?.forEach(sub => {
+        const subId = sub.entryLinkId || sub.selectionEntryId;
+        if (con.groupItemIds.has(subId)) {
+          const count = sub.number || 1;
+          const pts = sub.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+          sumCount += count;
+          sumPoints += (pts * count);
+        }
+      });
+      activeCount = sumCount;
+      activePoints = sumPoints;
+    }
+
+    const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
+    if (isCostField) {
+      if (con.type === 'max') {
+        if (activePoints > con.value) {
+          hasGroupError = true;
+          groupLimitInfo = `(Max: ${con.value} Pkt. | Aktuell: ${activePoints} Pkt.)`;
+        } else {
+          groupLimitInfo = `(Max: ${con.value} Pkt. | Rest: ${con.value - activePoints} Pkt.)`;
+        }
+      }
+    } else {
+      if (con.type === 'max') {
+        if (activeCount > con.value) {
+          hasGroupError = true;
+          groupLimitInfo = `(Max: ${con.value} | Aktuell: ${activeCount})`;
+        } else {
+          groupLimitInfo = `(Max: ${con.value} | Rest: ${con.value - activeCount})`;
+        }
+      }
+    }
+  });
+
+  const limitText = groupLimitInfo || (maxLimit !== Infinity ? `(Max: ${maxLimit})` : '');
+
+  return (
+    <div style={{ marginBottom: '12px' }}>
+      {/* Collapsible Group Header */}
+      <div 
+        onClick={() => setIsExpanded(!isExpanded)}
+        style={{
+          backgroundColor: hasGroupError ? 'rgba(239, 68, 68, 0.05)' : 'rgba(226, 183, 66, 0.04)',
+          border: hasGroupError ? '1px solid var(--text-danger)' : '1px solid var(--border-dark)',
+          borderRadius: '4px',
+          padding: '8px 12px',
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          userSelect: 'none'
+        }}
+      >
+        <span className={hasGroupError ? "font-serif text-danger" : "font-serif text-gold"} style={{ fontSize: '0.9rem', fontWeight: 700 }}>
+          {group.name} <span style={{ fontSize: '0.8rem', marginLeft: '6px', fontWeight: 400 }}>{limitText}</span>
+        </span>
+        {isExpanded ? (
+          <ChevronDown size={16} className={hasGroupError ? "text-danger" : "text-gold"} />
+        ) : (
+          <ChevronRight size={16} className={hasGroupError ? "text-danger" : "text-gold"} />
+        )}
+      </div>
+
+      {/* Group Content */}
+      {isExpanded && (
+        <div style={{ paddingLeft: '12px', borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px' }}>
+          {group.items.map(({ option, groupConstraints }) => {
+            const res = resolveEntry(system, option);
+            if (!res) return null;
+            const count = getSubSelectionCount(selection, res.id);
+            const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
+            const filteredOptionConstraints = res.constraints?.filter(con => {
+              if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+                return true;
+              }
+              return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
+                     (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
+            }) || [];
+            const minConstraint = filteredOptionConstraints.find(c => c.type === 'min');
+            const maxConstraint = filteredOptionConstraints.find(c => c.type === 'max');
+            const minLimitOption = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
+            const maxLimitOption = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
+            const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
+            
+            const isRadio = groupConstraints?.some(c => c.type === 'max' && c.value === 1);
+            const isBinary = (maxConstraint && maxConstraint.value === 1) || isRadio;
+            const isCheckbox = isBinary && !isRadio;
+            const descText = getOptionDescription(res);
+
+            const ptsConstraint = filteredGroupConstraints.find(c => 
+              c.type === 'max' && 
+              (c.field === 'pts' || c.field === 'ecfa-8486-4f6c-c249' || c.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === c.field))
+            );
+            const maxPointsLimit = ptsConstraint ? ptsConstraint.value : Infinity;
+
+            let wouldExceedPointsLimit = false;
+            if (maxPointsLimit !== Infinity) {
+              let activePoints = currentPoints;
+              if (ptsConstraint.groupItemIds) {
+                let sumPoints = 0;
+                selection.selections?.forEach(sub => {
+                  const subId = sub.entryLinkId || sub.selectionEntryId;
+                  if (ptsConstraint.groupItemIds.has(subId)) {
+                    const count = sub.number || 1;
+                    const pts = sub.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+                    sumPoints += (pts * count);
+                  }
+                });
+                activePoints = sumPoints;
+              }
+
+              let pointsDiff = points;
+              if (isRadio && count === 0) {
+                const selectedOther = group.items.find(otherItem => {
+                  const otherRes = resolveEntry(system, otherItem.option);
+                  return otherRes && otherRes.id !== res.id && getSubSelectionCount(selection, otherRes.id) > 0;
+                });
+                if (selectedOther) {
+                  const otherRes = resolveEntry(system, selectedOther.option);
+                  const otherPoints = otherRes?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+                  pointsDiff = points - otherPoints;
+                }
+              }
+              if (activePoints + pointsDiff > maxPointsLimit) {
+                wouldExceedPointsLimit = true;
+              }
+            }
+
+            return (
+              <div key={res.id} className="sub-selection-row" style={{ opacity: (count === 0 && wouldExceedPointsLimit) ? 0.5 : 1 }}>
+                <div>
+                  <div>
+                    <span style={{ fontWeight: 600, color: (count === 0 && wouldExceedPointsLimit) ? 'var(--text-dim)' : 'inherit' }}>{res.name}</span>
+                    {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginLeft: '8px' }}>+{points} Pkt.</span>}
+                  </div>
+                  {descText && (
+                    <div className="text-dim" style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', marginTop: '4px', fontStyle: 'italic', maxWidth: '420px', lineHeight: '1.3' }}>
+                      {descText}
+                    </div>
+                  )}
+                </div>
+                <div className="sub-selection-controls">
+                  {isRadio ? (
+                    <input 
+                      type="radio" 
+                      name={`${selection.id}-${group.name}`}
+                      checked={count > 0}
+                      disabled={count === 0 && wouldExceedPointsLimit}
+                      onClick={() => {
+                        if (count > 0) {
+                          updateSubSelection(selection.id, option, 'decrement');
+                        } else if (!wouldExceedPointsLimit) {
+                          group.items.forEach(otherItem => {
+                            const otherRes = resolveEntry(system, otherItem.option);
+                            if (otherRes && otherRes.id !== res.id) {
+                              const otherCount = getSubSelectionCount(selection, otherRes.id);
+                              if (otherCount > 0) {
+                                updateSubSelection(selection.id, otherItem.option, 'decrement');
+                              }
+                            }
+                          });
+                          updateSubSelection(selection.id, option, 'increment');
+                        }
+                      }}
+                      onChange={() => {}}
+                    />
+                  ) : isCheckbox ? (
+                    <input 
+                      type="checkbox" 
+                      checked={count > 0 || isMandatory}
+                      disabled={isMandatory || (count === 0 && wouldExceedPointsLimit)}
+                      onChange={(e) => {
+                        if (!isMandatory && !(e.target.checked && wouldExceedPointsLimit)) {
+                          updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="quantity-control">
+                      <button 
+                        className="btn-sm" 
+                        style={{ padding: '2px 6px' }}
+                        onClick={() => updateSubSelection(selection.id, option, 'decrement')}
+                        disabled={count === 0}
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="quantity-value font-sans">{count}</span>
+                      <button 
+                        className="btn-sm" 
+                        style={{ padding: '2px 6px' }}
+                        onClick={() => updateSubSelection(selection.id, option, 'increment')}
+                        disabled={wouldExceedPointsLimit}
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
