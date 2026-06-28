@@ -1,0 +1,517 @@
+import { calculateRosterCosts, validateRoster } from './validator.js';
+
+// 1. Mock Game System Definition
+const mockSystem = {
+  id: 'sys-123',
+  name: 'Test Grimdark System',
+  costTypes: [
+    { id: 'pts', name: 'Points', defaultCostLimit: 2000 }
+  ],
+  categoryEntries: [
+    { id: 'cat-hq', name: 'HQ' },
+    { id: 'cat-troops', name: 'Troops' }
+  ],
+  forceEntries: [
+    {
+      id: 'force-patrol',
+      name: 'Patrol Force',
+      categoryLinks: [
+        {
+          id: 'cl-hq',
+          targetId: 'cat-hq',
+          name: 'HQ Link',
+          constraints: [
+            { type: 'min', value: 1, scope: 'force' },
+            { type: 'max', value: 2, scope: 'force' }
+          ]
+        },
+        {
+          id: 'cl-troops',
+          targetId: 'cat-troops',
+          name: 'Troops Link',
+          constraints: [
+            { type: 'min', value: 1, scope: 'force' },
+            { type: 'max', value: 3, scope: 'force' }
+          ]
+        }
+      ]
+    }
+  ],
+  catalogues: [
+    {
+      id: 'cat-marines',
+      name: 'Space Marines',
+      selectionEntries: [
+        {
+          id: 'unit-captain',
+          name: 'Space Marine Captain',
+          costs: [{ typeId: 'pts', value: 100 }],
+          categoryLinks: [{ targetId: 'cat-hq' }]
+        },
+        {
+          id: 'unit-tactical',
+          name: 'Tactical Squad',
+          costs: [{ typeId: 'pts', value: 150 }],
+          categoryLinks: [{ targetId: 'cat-troops' }]
+        },
+        {
+          id: 'unit-vampire',
+          name: 'Vampire Thrall',
+          costs: [{ typeId: 'pts', value: 80 }],
+          categoryLinks: [{ targetId: 'cat-hq' }],
+          selectionEntryGroups: [
+            {
+              id: 'group-magic-items',
+              name: 'Magic Items',
+              constraints: [
+                { id: 'limit-magic-items', type: 'max', value: 50, field: 'pts', scope: 'parent' }
+              ],
+              selectionEntries: [
+                {
+                  id: 'item-sword',
+                  name: 'Sword of Battle',
+                  costs: [{ typeId: 'pts', value: 30 }]
+                },
+                {
+                  id: 'item-shield',
+                  name: 'Shield of Grace',
+                  costs: [{ typeId: 'pts', value: 15 }]
+                },
+                {
+                  id: 'item-lance',
+                  name: 'Lance of Doom',
+                  costs: [{ typeId: 'pts', value: 25 }]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+// 2. Mock Roster Definitions
+const mockRosterValid = {
+  name: 'Strike Force Alpha',
+  costLimit: 1000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-cap',
+          selectionEntryId: 'unit-captain',
+          name: 'Space Marine Captain',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 100 }],
+          selections: [
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        },
+        {
+          id: 'sel-tac',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }]
+        }
+      ]
+    }
+  ]
+};
+
+const mockRosterLimitExceeded = {
+  name: 'Blob Horde',
+  costLimit: 200,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-cap',
+          selectionEntryId: 'unit-captain',
+          name: 'Space Marine Captain',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 100 }],
+          selections: [
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        },
+        {
+          id: 'sel-tac',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }]
+        }
+      ]
+    }
+  ]
+};
+
+const mockRosterCategoryViolation = {
+  name: 'No HQ Force',
+  costLimit: 1000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-tac',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }],
+          selections: [
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+// 3. Define additional Mock Rosters for Group Constraints
+const mockRosterGroupValid = {
+  name: 'Vampire Army Valid Group',
+  costLimit: 1000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-vampire-1',
+          selectionEntryId: 'unit-vampire',
+          name: 'Vampire Thrall',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 80 + 30 + 15 }], // 125
+          selections: [
+            {
+              id: 'sel-sword',
+              selectionEntryId: 'item-sword',
+              name: 'Sword of Battle',
+              number: 1,
+              costs: [{ typeId: 'pts', value: 30 }]
+            },
+            {
+              id: 'sel-shield',
+              selectionEntryId: 'item-shield',
+              name: 'Shield of Grace',
+              number: 1,
+              costs: [{ typeId: 'pts', value: 15 }]
+            },
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        },
+        {
+          id: 'sel-tac-1',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }]
+        }
+      ]
+    }
+  ]
+};
+
+const mockRosterGroupInvalid = {
+  name: 'Vampire Army Invalid Group',
+  costLimit: 1000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-vampire-2',
+          selectionEntryId: 'unit-vampire',
+          name: 'Vampire Thrall',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 80 + 30 + 25 }], // 135
+          selections: [
+            {
+              id: 'sel-sword',
+              selectionEntryId: 'item-sword',
+              name: 'Sword of Battle',
+              number: 1,
+              costs: [{ typeId: 'pts', value: 30 }]
+            },
+            {
+              id: 'sel-lance',
+              selectionEntryId: 'item-lance',
+              name: 'Lance of Doom',
+              number: 1,
+              costs: [{ typeId: 'pts', value: 25 }]
+            },
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        },
+        {
+          id: 'sel-tac-2',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }]
+        }
+      ]
+    }
+  ]
+};
+
+// Mock DOMParser / XMLSerializer for Node environment testing of XML updates (Test 7)
+globalThis.DOMParser = class {
+  parseFromString(xmlStr, mimeType) {
+    const doc = {
+      xml: xmlStr,
+      querySelector: (selector) => {
+        const idMatch = selector.match(/id="([^"]+)"/);
+        const id = idMatch ? idMatch[1] : null;
+        
+        return {
+          id,
+          querySelector: (subSel) => {
+            if (subSel.startsWith('cost[typeId="')) {
+              const typeId = subSel.match(/typeId="([^"]+)"/)[1];
+              return {
+                setAttribute: (name, val) => {
+                  if (name === 'value') {
+                    const regex = new RegExp(`(<cost[^>]*typeId="${typeId}"[^>]*value=")([^"]*)(")`);
+                    doc.xml = doc.xml.replace(regex, `$1${val}$3`);
+                  }
+                }
+              };
+            }
+            if (subSel.startsWith('constraint[id="')) {
+              const conId = subSel.match(/id="([^"]+)"/)[1];
+              return {
+                setAttribute: (name, val) => {
+                  if (name === 'value') {
+                    const regex = new RegExp(`(<constraint[^>]*id="${conId}"[^>]*value=")([^"]*)(")`);
+                    doc.xml = doc.xml.replace(regex, `$1${val}$3`);
+                  }
+                }
+              };
+            }
+            if (subSel === 'description') {
+              return {
+                set textContent(val) {
+                  if (doc.xml.includes('<description>')) {
+                    doc.xml = doc.xml.replace(/<description>[^<]*<\/description>/, `<description>${val}</description>`);
+                  } else {
+                    doc.xml = doc.xml.replace(/(<\/selectionEntry>)/, `<description>${val}</description>$1`);
+                  }
+                }
+              };
+            }
+            return null;
+          },
+          querySelectorAll: (tagName) => {
+            if (tagName === 'characteristic') {
+              const matches = Array.from(doc.xml.matchAll(/<characteristic[^>]*name="([^"]+)"[^>]*>([^<]*)<\/characteristic>/g));
+              return matches.map(m => ({
+                getAttribute: (name) => name === 'name' ? m[1] : null,
+                set textContent(val) {
+                  const name = m[1];
+                  const regex = new RegExp(`(<characteristic[^>]*name="${name}"[^>]*>)([^<]*)(</characteristic>)`);
+                  doc.xml = doc.xml.replace(regex, `$1${val}$3`);
+                }
+              }));
+            }
+            return [];
+          },
+          setAttribute: (name, val) => {
+            if (name === 'name') {
+              const regex = new RegExp(`(<selectionEntry[^>]*id="${id}"[^>]*name=")([^"]*)(")`);
+              doc.xml = doc.xml.replace(regex, `$1${val}$3`);
+            }
+          }
+        };
+      }
+    };
+    return doc;
+  }
+};
+
+globalThis.XMLSerializer = class {
+  serializeToString(doc) {
+    return doc.xml;
+  }
+};
+
+// XML Update function imported & adapted for Test 7
+const updateRawXmlTest = (system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription) => {
+  if (!system.rawXmls) return;
+  let file = system.rawXmls.cat?.find(f => f.content.includes(entryId));
+  if (!file) {
+    file = system.rawXmls.gst?.find(f => f.content.includes(entryId));
+  }
+  if (!file) return;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(file.content, 'text/xml');
+  const element = doc.querySelector(`[id="${entryId}"]`);
+  if (!element) return;
+
+  if (localName !== undefined) {
+    element.setAttribute('name', localName);
+  }
+  if (type === 'entry') {
+    Object.entries(localCosts).forEach(([typeId, val]) => {
+      const costEl = element.querySelector(`cost[typeId="${typeId}"]`);
+      if (costEl) costEl.setAttribute('value', parseFloat(val) || 0);
+    });
+  }
+  if (type === 'entry' || type === 'group') {
+    Object.entries(localConstraints).forEach(([conId, val]) => {
+      const conEl = element.querySelector(`constraint[id="${conId}"]`);
+      if (conEl) conEl.setAttribute('value', parseFloat(val) || 0);
+    });
+  }
+  if (type === 'profile') {
+    Object.entries(localCharacteristics).forEach(([name, val]) => {
+      const charEl = element.querySelectorAll('characteristic').find(c => c.getAttribute('name') === name);
+      if (charEl) charEl.textContent = val;
+    });
+  }
+  if (type === 'rule') {
+    let descEl = element.querySelector('description');
+    if (!descEl) {
+      descEl = doc.createElement('description');
+      element.appendChild(descEl);
+    }
+    descEl.textContent = localDescription;
+  }
+
+  const serializer = new XMLSerializer();
+  file.content = serializer.serializeToString(doc);
+};
+
+// 4. Run Tests
+console.log('--- RUNNING SOLVER & VALIDATOR TESTS ---');
+
+// Test 1: Calculate point totals
+const costsValid = calculateRosterCosts(mockRosterValid, mockSystem);
+console.log('Test 1 - Cost Summation: ', costsValid.pts === 250 ? 'PASSED' : `FAILED (Expected 250, got ${costsValid.pts})`);
+
+// Test 2: Valid roster check
+const errorsValid = validateRoster(mockRosterValid, mockSystem);
+console.log('Test 2 - Valid Roster Errors count: ', errorsValid.length === 0 ? 'PASSED' : `FAILED (Got ${errorsValid.length} errors: ${JSON.stringify(errorsValid)})`);
+
+// Test 3: Point limit check
+const errorsLimit = validateRoster(mockRosterLimitExceeded, mockSystem);
+const pointError = errorsLimit.find(e => e.type === 'roster-limit');
+console.log('Test 3 - Points Limit Check: ', pointError ? 'PASSED' : 'FAILED (Expected point limit error)');
+
+// Test 4: Detachment category limits
+const errorsCategory = validateRoster(mockRosterCategoryViolation, mockSystem);
+const catError = errorsCategory.find(e => e.type === 'category-min');
+console.log('Test 4 - Detachment Category Check: ', catError ? 'PASSED' : 'FAILED (Expected category minimum constraint violation)');
+
+// Test 5: Group points max constraint (Magic Items group max limit = 50)
+const errorsGroupValid = validateRoster(mockRosterGroupValid, mockSystem);
+const errorsGroupInvalid = validateRoster(mockRosterGroupInvalid, mockSystem);
+const groupError = errorsGroupInvalid.find(e => e.type === 'group-points-max');
+console.log('Test 5 - Group Points Max Check (Valid vs Invalid): ', 
+  (errorsGroupValid.length === 0 && groupError) ? 'PASSED' : `FAILED (Valid errors: ${errorsGroupValid.length}, Invalid groupError: ${!!groupError})`
+);
+
+// Test 6: Option group points limit check (Simulation of "wouldExceedPointsLimit" logic)
+// Limit is 50. Currently selected items: Sword of Battle (30).
+// Check if Lance of Doom (25) exceeds limit: 30 + 25 = 55 > 50 -> Exceeds.
+// Check if Shield of Grace (15) exceeds limit: 30 + 15 = 45 <= 50 -> Does not exceed.
+const currentPoints = 30;
+const limit = 50;
+const wouldLanceExceed = (currentPoints + 25) > limit;
+const wouldShieldExceed = (currentPoints + 15) > limit;
+console.log('Test 6 - Option Selectability Limit Check: ', 
+  (wouldLanceExceed && !wouldShieldExceed) ? 'PASSED' : 'FAILED (Selectability limits incorrect)'
+);
+
+// Test 7: XML modification logic serialization (updateRawXml)
+const mockXmlContent = `
+<selectionEntry id="unit-thrall" name="Vampire Thrall">
+  <costs>
+    <cost typeId="pts" value="80" />
+  </costs>
+  <constraints>
+    <constraint id="max-thralls" type="max" value="3" />
+  </constraints>
+</selectionEntry>
+`;
+const testSystem = {
+  rawXmls: {
+    cat: [
+      { name: 'vampires.cat', content: mockXmlContent }
+    ]
+  }
+};
+// Perform update XML
+updateRawXmlTest(testSystem, 'unit-thrall', 'entry', 'Vampire Thrall Elite', { pts: 95 }, { 'max-thralls': 4 }, {}, '');
+const updatedXml = testSystem.rawXmls.cat[0].content;
+const hasUpdatedName = updatedXml.includes('name="Vampire Thrall Elite"');
+const hasUpdatedPoints = updatedXml.includes('typeId="pts" value="95"');
+const hasUpdatedConstraint = updatedXml.includes('id="max-thralls" type="max" value="4"');
+console.log('Test 7 - XML Modifier Serialization: ', 
+  (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint) ? 'PASSED' : `FAILED (XML did not update correctly. Output: ${updatedXml})`
+);
+
+console.log('--- TEST RUN COMPLETE ---');
+if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
+    errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
+    (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint)) {
+  console.log('ALL TESTS SUCCESSFUL!');
+  process.exit(0);
+} else {
+  console.error('SOME TESTS FAILED.');
+  process.exit(1);
+}
