@@ -822,6 +822,33 @@ function OptionGroupComponent({
   const unitRawEntry = findEntryInSystem(system, unitEntryId);
   const unitResolved = resolveEntry(system, unitRawEntry);
   
+  const isUniqueOptionTakenElsewhere = (targetResId) => {
+    let taken = false;
+    
+    const checkSelection = (sel, isUnderCurrent) => {
+      const underCurrent = isUnderCurrent || (sel.id === selection.id);
+      
+      if (!underCurrent) {
+        const selRaw = findEntryInSystem(system, sel.selectionEntryId || sel.entryLinkId);
+        const selRes = resolveEntry(system, selRaw);
+        const selUnderlyingId = selRes ? selRes.id : (sel.selectionEntryId || sel.entryLinkId);
+        
+        if (selUnderlyingId === targetResId) {
+          taken = true;
+          return;
+        }
+      }
+      
+      sel.selections?.forEach(sub => checkSelection(sub, underCurrent));
+    };
+
+    roster.forces?.forEach(force => {
+      force.selections?.forEach(sel => checkSelection(sel, false));
+    });
+
+    return taken;
+  };
+  
   const filteredGroupConstraints = group.constraints?.filter(con => {
     if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
       return true;
@@ -997,12 +1024,22 @@ function OptionGroupComponent({
                 wouldExceedPointsLimit = true;
               }
             }
+            const isRosterUnique = res.constraints?.some(c => 
+              c.type === 'max' && 
+              c.value === 1 && 
+              (c.scope === 'roster' || c.scope === 'force')
+            );
+            const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res.id);
+            const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere;
 
             return (
-              <div key={res.id} className="sub-selection-row" style={{ opacity: (count === 0 && wouldExceedPointsLimit) ? 0.5 : 1 }}>
+              <div key={res.id} className="sub-selection-row" style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}>
                 <div>
                   <div>
-                    <span style={{ fontWeight: 600, color: (count === 0 && wouldExceedPointsLimit) ? 'var(--text-dim)' : 'inherit' }}>{res.name}</span>
+                    <span style={{ fontWeight: 600, color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit' }}>
+                      {res.name}
+                      {isTakenElsewhere && <span className="text-danger" style={{ fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                    </span>
                     {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginLeft: '8px' }}>+{points} Pkt.</span>}
                   </div>
                   {descText && (
@@ -1017,11 +1054,11 @@ function OptionGroupComponent({
                       type="radio" 
                       name={`${selection.id}-${group.name}`}
                       checked={count > 0}
-                      disabled={count === 0 && wouldExceedPointsLimit}
+                      disabled={count === 0 && isSelectDisabled}
                       onClick={() => {
                         if (count > 0) {
                           updateSubSelection(selection.id, option, 'decrement');
-                        } else if (!wouldExceedPointsLimit) {
+                        } else if (!isSelectDisabled) {
                           group.items.forEach(otherItem => {
                             const otherRes = resolveEntry(system, otherItem.option);
                             if (otherRes && otherRes.id !== res.id) {
@@ -1040,9 +1077,9 @@ function OptionGroupComponent({
                     <input 
                       type="checkbox" 
                       checked={count > 0 || isMandatory}
-                      disabled={isMandatory || (count === 0 && wouldExceedPointsLimit)}
+                      disabled={isMandatory || (count === 0 && isSelectDisabled)}
                       onChange={(e) => {
-                        if (!isMandatory && !(e.target.checked && wouldExceedPointsLimit)) {
+                        if (!isMandatory && !(e.target.checked && isSelectDisabled)) {
                           updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
                         }
                       }}
@@ -1062,7 +1099,7 @@ function OptionGroupComponent({
                         className="btn-sm" 
                         style={{ padding: '2px 6px' }}
                         onClick={() => updateSubSelection(selection.id, option, 'increment')}
-                        disabled={wouldExceedPointsLimit}
+                        disabled={isSelectDisabled}
                       >
                         <Plus size={12} />
                       </button>

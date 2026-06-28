@@ -686,11 +686,72 @@ console.log('Test 8 - Selection Group Constraint Isolation (Waaagh Spells Bug): 
   (gazeSpellOption && !hasParentConstraintLeak) ? 'PASSED' : `FAILED (Spell option inherits parent limit: ${hasParentConstraintLeak})`
 );
 
+// Test 9: Unique Magic Items check (prevent selecting unique items already selected elsewhere in the roster)
+const isUniqueOptionTakenElsewhereTest = (roster, currentSelectionId, targetResId, system) => {
+  let taken = false;
+  
+  const checkSelection = (sel, isUnderCurrent) => {
+    const underCurrent = isUnderCurrent || (sel.id === currentSelectionId);
+    
+    if (!underCurrent) {
+      const selRaw = findEntryInSystem(system, sel.selectionEntryId || sel.entryLinkId);
+      const selRes = resolveEntry(system, selRaw);
+      const selUnderlyingId = selRes ? selRes.id : (sel.selectionEntryId || sel.entryLinkId);
+      
+      if (selUnderlyingId === targetResId) {
+        taken = true;
+        return;
+      }
+    }
+    
+    sel.selections?.forEach(sub => checkSelection(sub, underCurrent));
+  };
+
+  roster.forces?.forEach(force => {
+    force.selections?.forEach(sel => checkSelection(sel, false));
+  });
+
+  return taken;
+};
+
+const mockRosterUniqueItems = {
+  forces: [
+    {
+      id: 'f1',
+      selections: [
+        {
+          id: 'sel-cap-1',
+          selectionEntryId: 'unit-captain',
+          selections: [
+            {
+              id: 'sel-sword-unique',
+              selectionEntryId: 'item-sword'
+            }
+          ]
+        },
+        {
+          id: 'sel-cap-2',
+          selectionEntryId: 'unit-captain',
+          selections: []
+        }
+      ]
+    }
+  ]
+};
+
+const takenForCap2 = isUniqueOptionTakenElsewhereTest(mockRosterUniqueItems, 'sel-cap-2', 'item-sword', mockSystem);
+const takenForCap1 = isUniqueOptionTakenElsewhereTest(mockRosterUniqueItems, 'sel-cap-1', 'item-sword', mockSystem);
+
+console.log('Test 9 - Roster-wide Uniqueness Check: ',
+  (takenForCap2 === true && takenForCap1 === false) ? 'PASSED' : `FAILED (Cap2: ${takenForCap2}, Cap1: ${takenForCap1})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
     (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint) &&
-    (gazeSpellOption && !hasParentConstraintLeak)) {
+    (gazeSpellOption && !hasParentConstraintLeak) &&
+    (takenForCap2 === true && takenForCap1 === false)) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {
