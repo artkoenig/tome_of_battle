@@ -259,6 +259,7 @@ select option {
 }
 
 .app-header {
+  width: 100%;
   border-bottom: 3px double var(--border-gold);
   background-color: var(--bg-panel);
   padding: 16px 24px;
