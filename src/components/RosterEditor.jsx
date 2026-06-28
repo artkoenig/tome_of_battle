@@ -762,7 +762,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                    }, 0);
 
                                    let hasGroupError = false;
-                                   let groupErrorMessage = '';
+                                   let groupLimitInfo = '';
                                    
                                    filteredGroupConstraints.forEach(con => {
                                      if (con.value < 0) return;
@@ -788,19 +788,27 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
                                      const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
                                      if (isCostField) {
-                                       if (con.type === 'max' && activePoints > con.value) {
-                                         hasGroupError = true;
-                                         groupErrorMessage = `Max: ${con.value} Pkt. (Aktuell: ${activePoints} Pkt.)`;
+                                       if (con.type === 'max') {
+                                         if (activePoints > con.value) {
+                                           hasGroupError = true;
+                                           groupLimitInfo = `(Max: ${con.value} Pkt. | Aktuell: ${activePoints} Pkt.)`;
+                                         } else {
+                                           groupLimitInfo = `(Max: ${con.value} Pkt. | Rest: ${con.value - activePoints} Pkt.)`;
+                                         }
                                        }
                                      } else {
-                                       if (con.type === 'max' && activeCount > con.value) {
-                                         hasGroupError = true;
-                                         groupErrorMessage = `Max: ${con.value} (Aktuell: ${activeCount})`;
+                                       if (con.type === 'max') {
+                                         if (activeCount > con.value) {
+                                           hasGroupError = true;
+                                           groupLimitInfo = `(Max: ${con.value} | Aktuell: ${activeCount})`;
+                                         } else {
+                                           groupLimitInfo = `(Max: ${con.value} | Rest: ${con.value - activeCount})`;
+                                         }
                                        }
                                      }
                                    });
 
-                                   const limitText = groupErrorMessage || (maxLimit !== Infinity ? `(Max: ${maxLimit})` : '');
+                                   const limitText = groupLimitInfo || (maxLimit !== Infinity ? `(Max: ${maxLimit})` : '');
 
                                    return (
                                      <div key={group.name} style={{ marginBottom: '12px' }}>
