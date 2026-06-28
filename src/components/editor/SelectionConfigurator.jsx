@@ -429,6 +429,19 @@ function OptionGroupComponent({
   const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
   const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
   
+  const selectedItemsSummary = group.items
+    .map(({ option }) => {
+      const res = resolveEntry(system, option, activeCatalogue.id);
+      if (!res) return null;
+      const count = getSubSelectionCount(selection, res.id);
+      if (count > 0) {
+        return count > 1 ? `${count}x ${res.name}` : res.name;
+      }
+      return null;
+    })
+    .filter(Boolean)
+    .join(', ');
+
   const isUniqueOptionTakenElsewhere = (targetResId) => {
     let taken = false;
     
@@ -555,9 +568,16 @@ function OptionGroupComponent({
           userSelect: 'none'
         }}
       >
-        <span className={hasGroupError ? "font-serif text-danger" : "font-serif text-gold"} style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-          {group.name} <span style={{ fontSize: '0.8rem', marginLeft: '6px', fontWeight: 400 }}>{limitText}</span>
-        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
+          <span className={hasGroupError ? "font-serif text-danger" : "font-serif text-gold"} style={{ fontSize: '0.9rem', fontWeight: 700 }}>
+            {group.name} <span style={{ fontSize: '0.8rem', marginLeft: '6px', fontWeight: 400, color: 'var(--text-dim)' }}>{limitText}</span>
+          </span>
+          {selectedItemsSummary && (
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-parchment)', opacity: 0.75, fontWeight: 400 }}>
+              Auswahl: {selectedItemsSummary}
+            </span>
+          )}
+        </div>
         {isExpanded ? (
           <ChevronDown size={16} className={hasGroupError ? "text-danger" : "text-gold"} />
         ) : (
