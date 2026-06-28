@@ -76,9 +76,6 @@ export default function CategoryUnitAdder({
 
       {isOpen && (
         <div className="category-unit-adder-popover gothic-panel">
-          <div className="popover-header">
-            <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-gold)' }}>{categoryName}</h4>
-          </div>
           <div className="popover-list">
             {availableUnits.map(entry => {
               const res = resolveEntry(system, entry);
