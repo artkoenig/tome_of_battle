@@ -12,13 +12,28 @@ export default function BottomSheet({
   const [renderedChildren, setRenderedChildren] = useState(isOpen ? children : null);
   const [renderedTitle, setRenderedTitle] = useState(isOpen ? title : '');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [activeClass, setActiveClass] = useState(false);
+  const innerRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       setIsTransitioning(true);
       setRenderedChildren(children);
       setRenderedTitle(title);
+      
+      // Force layout reflow by accessing offsetHeight to guarantee the browser
+      // registers the closed state (translateY(100%)) in the DOM first.
+      if (innerRef.current) {
+        const _ = innerRef.current.offsetHeight;
+      }
+
+      // Small paint delay to ensure the entry transition runs reliably
+      const delayTimer = setTimeout(() => {
+        setActiveClass(true);
+      }, 40);
+      return () => clearTimeout(delayTimer);
     } else {
+      setActiveClass(false);
       setIsTransitioning(true);
       const timer = setTimeout(() => {
         setRenderedChildren(null);
@@ -66,11 +81,12 @@ export default function BottomSheet({
   return (
     <>
       <div 
-        className={`bottomsheet-backdrop ${desktopMode === 'modal' ? 'desktop-modal-backdrop' : ''} ${isOpen ? 'open' : ''}`} 
+        className={`bottomsheet-backdrop ${desktopMode === 'modal' ? 'desktop-modal-backdrop' : ''} ${activeClass ? 'open' : ''}`} 
         onClick={onClose} 
       />
       <div 
-        className={`gothic-bottomsheet desktop-${desktopMode} ${isOpen ? 'open' : ''}`}
+        ref={innerRef}
+        className={`gothic-bottomsheet desktop-${desktopMode} ${activeClass ? 'open' : ''}`}
       >
         <div className="bottomsheet-handle" />
         <div className="bottomsheet-header">
