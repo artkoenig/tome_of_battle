@@ -289,7 +289,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
         if (child.type === 'selectionEntryGroup' || resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0) {
           // It links to a group (shared or direct). We collect its items under the group name.
-          const combinedConstraints = [...prepareConstraints(resolvedChild), ...prepareConstraints(def), ...(parentConstraints || [])];
+          const combinedConstraints = prepareConstraints(resolvedChild);
           resolvedChild.selectionEntries?.forEach(subChild => {
             optionsList.push({ 
               option: subChild, 
@@ -321,7 +321,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
        // 3. Process selection entry groups
       def.selectionEntryGroups?.forEach(group => {
-        const combinedGroupConstraints = [...prepareConstraints(group), ...prepareConstraints(def), ...(parentConstraints || [])];
+        const combinedGroupConstraints = prepareConstraints(group);
         group.selectionEntries?.forEach(child => {
           optionsList.push({ 
             option: child, 
