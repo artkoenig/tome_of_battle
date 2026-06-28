@@ -79,7 +79,13 @@ export default function RosterSidebar({
               >
                 <span>{catName}:</span>
                 <span className="font-sans" style={{ fontWeight: 700 }}>
-                  {count} (Min: {minCon} / Max: {maxCon === Infinity ? '∞' : maxCon})
+                  {(() => {
+                    const limitParts = [];
+                    if (minCon > 0) limitParts.push(`Min: ${minCon}`);
+                    if (maxCon !== Infinity) limitParts.push(`Max: ${maxCon}`);
+                    const limitText = limitParts.length > 0 ? ` (${limitParts.join(' / ')})` : '';
+                    return `${count}${limitText}`;
+                  })()}
                   {isInvalid ? ' ❌' : '  '}
                 </span>
               </div>

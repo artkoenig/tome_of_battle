@@ -184,9 +184,17 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <h3 className="font-serif text-gold" style={{ margin: 0, border: 'none', padding: 0, fontSize: '1.15rem' }}>{catName}</h3>
-                          <span className="badge font-sans" style={{ backgroundColor: categoryErrors.length > 0 ? 'var(--color-danger)' : 'rgba(226, 183, 66, 0.1)', color: categoryErrors.length > 0 ? 'white' : 'var(--text-gold)', fontSize: '0.8rem', padding: '2px 8px' }}>
-                            {count} {minVal > 0 || maxVal < Infinity ? `/ Min: ${minVal}${maxVal < Infinity ? `, Max: ${maxVal}` : ''}` : ''}
-                          </span>
+                          {(() => {
+                            const limitParts = [];
+                            if (minVal > 0) limitParts.push(`Min: ${minVal}`);
+                            if (maxVal < Infinity) limitParts.push(`Max: ${maxVal}`);
+                            const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
+                            return (
+                              <span className="badge font-sans" style={{ backgroundColor: categoryErrors.length > 0 ? 'var(--color-danger)' : 'rgba(226, 183, 66, 0.1)', color: categoryErrors.length > 0 ? 'white' : 'var(--text-gold)', fontSize: '0.8rem', padding: '2px 8px' }}>
+                                {count} {limitText}
+                              </span>
+                            );
+                          })()}
                         </div>
                         <CategoryUnitAdder
                           categoryId={link.targetId}
