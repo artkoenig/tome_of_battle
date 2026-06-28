@@ -20,7 +20,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     : 'Pkt.';
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
-  const [expandedCategories, setExpandedCategories] = useState({});
   const [selectedRosterSelection, setSelectedRosterSelection] = useState(null);
   const [selectedCatalogEntry, setSelectedCatalogEntry] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
@@ -44,13 +43,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
       setValidationErrors(errors);
     }
   }, [roster, system]);
-
-  const toggleCategory = (catId) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [catId]: !prev[catId]
-    }));
-  };
 
   // Helper to generate a new unique selection node
   const createSelectionFromDef = (entry, categoryId = null) => {
@@ -476,46 +468,19 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
             const catItems = getCatalogItemsByCategory(cat.id);
             if (catItems.length === 0) return null;
 
-            const isExpanded = expandedCategories[cat.id];
-
             return (
-              <div key={cat.id} className="catalog-category">
-                <div 
-                  className="catalog-category-header" 
-                  onClick={() => toggleCategory(cat.id)}
-                >
-                  <span className="catalog-category-title">{cat.name}</span>
-                  {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                </div>
-
-                {isExpanded && (
-                  <div className="catalog-items">
-                    {catItems.map(item => {
-                      const res = resolveEntry(system, item);
-                      if (!res) return null;
-                      const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
-                      return (
-                        <div key={item.id} className="catalog-item" onClick={() => setSelectedCatalogEntry(res)}>
-                          <span style={{ fontWeight: 600 }}>{res.name}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span className="font-sans text-gold" style={{ fontSize: '0.85rem' }}>{points} {costTypeLabel}</span>
-                            <button 
-                              className="btn-primary btn-sm" 
-                              style={{ padding: '2px 6px' }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddUnit(item, cat.id);
-                              }}
-                            >
-                              <Plus size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              <SidebarCategoryComponent
+                key={cat.id}
+                cat={cat}
+                catItems={catItems}
+                system={system}
+                roster={roster}
+                costLimitType={roster.costLimitType}
+                costTypeLabel={costTypeLabel}
+                setSelectedCatalogEntry={setSelectedCatalogEntry}
+                handleAddUnit={handleAddUnit}
+                resolveEntry={resolveEntry}
+              />
             );
           })}
         </div>
@@ -1112,3 +1077,47 @@ function OptionGroupComponent({
     </div>
   );
 }
+
+const SidebarCategoryComponent = ({ cat, catItems, system, roster, costLimitType, costTypeLabel, setSelectedCatalogEntry, handleAddUnit, resolveEntry }) => {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
+  return (
+    <div className="catalog-category">
+      <div 
+        className="catalog-category-header" 
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <span className="catalog-category-title">{cat.name}</span>
+        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+      </div>
+
+      {isExpanded && (
+        <div className="catalog-items">
+          {catItems.map(item => {
+            const res = resolveEntry(system, item);
+            if (!res) return null;
+            const points = res.costs?.find(c => c.typeId === costLimitType)?.value || 0;
+            return (
+              <div key={item.id} className="catalog-item" onClick={() => setSelectedCatalogEntry(res)}>
+                <span style={{ fontWeight: 600 }}>{res.name}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="font-sans text-gold" style={{ fontSize: '0.85rem' }}>{points} {costTypeLabel}</span>
+                  <button 
+                    className="btn-primary btn-sm" 
+                    style={{ padding: '2px 6px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddUnit(item, cat.id);
+                    }}
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
