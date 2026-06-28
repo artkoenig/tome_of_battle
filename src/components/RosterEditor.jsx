@@ -88,7 +88,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       border: '1px solid var(--border-dark)', 
                       borderRadius: '3px',
                       minWidth: '28px',
-                      padding: '2px 4px'
+                      padding: '2px 4px',
+                      flex: 1
                     }}
                   >
                     <span className="text-gold font-sans" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>
