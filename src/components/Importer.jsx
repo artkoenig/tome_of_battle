@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Edit, ArrowLeft } from 'lucide-react';
+import { Upload, Trash2, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Edit, ArrowLeft, Download } from 'lucide-react';
+import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
 import { saveSystem, getAllSystems, deleteSystem } from '../db/database';
@@ -97,6 +98,56 @@ const searchEditableEntries = (system, query) => {
   return results.slice(0, 50);
 };
 
+const updateRawXml = (system, entryId, type, localName, localCosts, localConstraints, localCharacteristics) => {
+  if (!system.rawXmls) return;
+
+  let file = system.rawXmls.cat?.find(f => f.content.includes(entryId));
+  if (!file) {
+    file = system.rawXmls.gst?.find(f => f.content.includes(entryId));
+  }
+  if (!file) return;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(file.content, 'text/xml');
+
+  const element = doc.querySelector(`[id="${entryId}"]`);
+  if (!element) return;
+
+  if (localName !== undefined) {
+    element.setAttribute('name', localName);
+  }
+
+  if (type === 'entry') {
+    Object.entries(localCosts).forEach(([typeId, val]) => {
+      const costEl = element.querySelector(`cost[typeId="${typeId}"]`);
+      if (costEl) {
+        costEl.setAttribute('value', parseFloat(val) || 0);
+      }
+    });
+  }
+
+  if (type === 'entry' || type === 'group') {
+    Object.entries(localConstraints).forEach(([conId, val]) => {
+      const conEl = element.querySelector(`constraint[id="${conId}"]`);
+      if (conEl) {
+        conEl.setAttribute('value', parseFloat(val) || 0);
+      }
+    });
+  }
+
+  if (type === 'profile') {
+    Object.entries(localCharacteristics).forEach(([name, val]) => {
+      const charEl = Array.from(element.querySelectorAll('characteristic')).find(c => c.getAttribute('name') === name);
+      if (charEl) {
+        charEl.textContent = val;
+      }
+    });
+  }
+
+  const serializer = new XMLSerializer();
+  file.content = serializer.serializeToString(doc);
+};
+
 export default function Importer({ onSystemImported }) {
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -188,6 +239,8 @@ export default function Importer({ onSystemImported }) {
         }
       }
 
+      updateRawXml(editingSystem, selectedEntry.id, selectedEntry.type, localName, localCosts, localConstraints, localCharacteristics);
+
       await saveSystem(editingSystem);
       setSuccessMsg(`"${localName}" erfolgreich gespeichert!`);
       setSelectedEntry(null);
@@ -199,22 +252,47 @@ export default function Importer({ onSystemImported }) {
     }
   };
 
-  const handleExport = (sys) => {
+  const handleExport = async (sys) => {
     try {
-      const jsonString = JSON.stringify(sys, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
+      if (!sys.rawXmls) {
+        const jsonString = JSON.stringify(sys, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${sys.name}_modified.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        setSuccessMsg(`Spielsystem "${sys.name}" erfolgreich als JSON exportiert (keine XML-Originaldateien vorhanden).`);
+        return;
+      }
+
+      const zip = new JSZip();
+
+      sys.rawXmls.gst?.forEach(f => {
+        zip.file(f.name, f.content);
+      });
+
+      sys.rawXmls.cat?.forEach(f => {
+        zip.file(f.name, f.content);
+      });
+
+      const blob = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${sys.name}_modified.json`;
+      link.download = `${sys.name}_modified.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      setSuccessMsg(`Spielsystem "${sys.name}" erfolgreich exportiert!`);
+      
+      setSuccessMsg(`Spielsystem "${sys.name}" erfolgreich als .zip (Originalformat) exportiert!`);
     } catch (e) {
       console.error(e);
-      setError('Fehler beim Exportieren des Spielsystems.');
+      setError(`Fehler beim Exportieren des Spielsystems: ${e.message}`);
     }
   };
 
@@ -282,6 +360,10 @@ export default function Importer({ onSystemImported }) {
       } else {
         const { gstFiles, catFiles } = await extractZipFiles(file);
         const systemData = processImportedData(gstFiles, catFiles);
+        systemData.rawXmls = {
+          gst: gstFiles,
+          cat: catFiles
+        };
         await saveSystem(systemData);
         setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
       }
