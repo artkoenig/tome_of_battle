@@ -252,6 +252,87 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     return `${save}+`;
   };
 
+  // Helper to calculate the ward save for a unit selection in WFB 6th
+  const getWardSave = (selection) => {
+    const entryId = selection.entryLinkId || selection.selectionEntryId;
+    const entry = findEntryInSystem(system, entryId);
+    const resolved = resolveEntry(system, entry);
+    
+    let bestWard = null;
+    let hasBlessing = false;
+
+    // Helper to parse numeric ward saves from text
+    const scanTextForWardSave = (text) => {
+      if (!text) return;
+      const t = text.toLowerCase();
+      
+      // Look for patterns like "5+ ward save", "5+ rettungswurf"
+      const m1 = t.match(/(\d)\+\s*(?:ward save|rettungswurf|rettung)/);
+      if (m1) {
+        const val = parseInt(m1[1]);
+        if (val >= 1 && val <= 6) {
+          bestWard = bestWard ? Math.min(bestWard, val) : val;
+        }
+      }
+      
+      // Look for patterns like "ward save of 5+", "rettungswurf von 5+"
+      const m2 = t.match(/(?:ward save|rettungswurf|rettung)\s*(?:of|von)?\s*(\d)\+/);
+      if (m2) {
+        const val = parseInt(m2[1]);
+        if (val >= 1 && val <= 6) {
+          bestWard = bestWard ? Math.min(bestWard, val) : val;
+        }
+      }
+
+      // Check for Blessing of the Lady (Segen der Herrin)
+      if (t.includes('blessing of the lady') || t.includes('segen der herrin') || t.includes('grail vow') || t.includes('gralsgelübde') || t.includes('segen')) {
+        hasBlessing = true;
+      }
+    };
+
+    // 1. Scan resolved main entry details
+    if (resolved) {
+      scanTextForWardSave(resolved.name);
+      resolved.rules?.forEach(r => scanTextForWardSave(r.name + ' ' + r.description));
+      resolved.profiles?.forEach(p => {
+        scanTextForWardSave(p.name);
+        p.characteristics?.forEach(c => scanTextForWardSave(c.name + ' ' + c.value));
+      });
+    }
+
+    // 2. Scan selected sub-selections/upgrades
+    if (selection.selections) {
+      selection.selections.forEach(subSel => {
+        scanTextForWardSave(subSel.name);
+        const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
+        const subEntry = findEntryInSystem(system, subEntryId);
+        const subResolved = resolveEntry(system, subEntry);
+        if (subResolved) {
+          scanTextForWardSave(subResolved.name);
+          subResolved.rules?.forEach(r => scanTextForWardSave(r.name + ' ' + r.description));
+          subResolved.profiles?.forEach(p => {
+            scanTextForWardSave(p.name);
+            p.characteristics?.forEach(c => scanTextForWardSave(c.name + ' ' + c.value));
+          });
+        }
+      });
+    }
+
+    // 3. Format result
+    if (bestWard !== null) {
+      if (hasBlessing && bestWard > 5) {
+        return `${bestWard}+ / 5+ (Segen)`;
+      }
+      return `${bestWard}+`;
+    }
+
+    if (hasBlessing) {
+      return '5+ / 6+ (Segen)';
+    }
+
+    return 'Kein';
+  };
+
   // Helper to calculate total model count in a unit selection
   const getUnitModelCount = (selection) => {
     const entryId = selection.entryLinkId || selection.selectionEntryId;
@@ -501,25 +582,51 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                       <p className="text-dim" style={{ fontSize: '0.85rem' }}>Keine Profilwerte gefunden.</p>
                     )}
 
-                    {/* Rüstungswurf */}
+                    {/* Schutzwürfe (Rüstungswurf & Rettungswurf) */}
                     <div style={{ 
                       marginTop: '12px', 
                       marginBottom: '16px', 
                       display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '8px',
-                      padding: '8px 12px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                      border: '1px solid var(--border-dark)',
-                      borderRadius: '4px',
-                      width: 'fit-content'
+                      gap: '12px',
+                      flexWrap: 'wrap'
                     }}>
-                      <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                        Rüstungswurf (berechnet):
-                      </span>
-                      <span className="font-sans badge badge-success" style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-                        {getArmourSave(selection)}
-                      </span>
+                      {/* Rüstungswurf */}
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px',
+                        padding: '8px 12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid var(--border-dark)',
+                        borderRadius: '4px',
+                        width: 'fit-content'
+                      }}>
+                        <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                          Rüstungswurf (berechnet):
+                        </span>
+                        <span className="font-sans badge badge-success" style={{ fontSize: '0.9rem', fontWeight: 700 }}>
+                          {getArmourSave(selection)}
+                        </span>
+                      </div>
+
+                      {/* Rettungswurf */}
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px',
+                        padding: '8px 12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid var(--border-dark)',
+                        borderRadius: '4px',
+                        width: 'fit-content'
+                      }}>
+                        <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                          Rettungswurf (berechnet):
+                        </span>
+                        <span className="font-sans badge badge-warning" style={{ fontSize: '0.9rem', fontWeight: 700 }}>
+                          {getWardSave(selection)}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Sonderregeln */}
