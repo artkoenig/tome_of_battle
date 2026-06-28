@@ -180,7 +180,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   }
 
                   return (
-                    <div key={link.targetId} className="roster-category-group gothic-panel" style={{ padding: '16px' }}>
+                    <div key={link.targetId} className="roster-category-group" style={{ marginBottom: '24px' }}>
                       <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <h3 className="font-serif text-gold" style={{ margin: 0, border: 'none', padding: 0, fontSize: '1.15rem' }}>{catName}</h3>
@@ -279,7 +279,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
               {/* Uncategorized Selections (Fallback) */}
               {uncategorizedSelections.length > 0 && (
-                <div className="roster-category-group gothic-panel" style={{ padding: '16px' }}>
+                <div className="roster-category-group" style={{ marginBottom: '24px' }}>
                   <h3 className="font-serif text-gold" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', fontSize: '1.15rem' }}>Sonstiges</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {uncategorizedSelections.map(selection => {
