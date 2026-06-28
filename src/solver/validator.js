@@ -165,7 +165,7 @@ export function calculateRosterCosts(roster, system) {
   return totals;
 }
 
-const evaluateCondition = (cond, roster, selectionCounts, forceCategoryCounts) => {
+export const evaluateCondition = (cond, roster, selectionCounts, forceCategoryCounts) => {
   if (!cond) return false;
   let currentValue = 0;
   if (cond.field && cond.field.startsWith('limit::')) {
@@ -194,7 +194,7 @@ const evaluateCondition = (cond, roster, selectionCounts, forceCategoryCounts) =
   }
 };
 
-const evaluateConditionGroup = (group, roster, selectionCounts, forceCategoryCounts) => {
+export const evaluateConditionGroup = (group, roster, selectionCounts, forceCategoryCounts) => {
   if (!group) return true;
   const condResults = group.conditions?.map(c => evaluateCondition(c, roster, selectionCounts, forceCategoryCounts)) || [];
   const groupResults = group.conditionGroups?.map(g => evaluateConditionGroup(g, roster, selectionCounts, forceCategoryCounts)) || [];
@@ -211,7 +211,7 @@ const evaluateConditionGroup = (group, roster, selectionCounts, forceCategoryCou
   }
 };
 
-const getModifiedConstraintValue = (con, modifiers, roster, selectionCounts, forceCategoryCounts) => {
+export const getModifiedConstraintValue = (con, modifiers, roster, selectionCounts, forceCategoryCounts) => {
   let finalValue = con.value;
 
   const sortedModifiers = [...(modifiers || [])].sort((a, b) => {
@@ -254,28 +254,7 @@ const getModifiedConstraintValue = (con, modifiers, roster, selectionCounts, for
   return finalValue;
 };
 
-/**
- * Full constraint validator
- */
-export function validateRoster(roster, system) {
-  const errors = [];
-  if (!roster || !system) return errors;
-
-  // 1. Calculate points vs limit
-  const costs = calculateRosterCosts(roster, system);
-  if (roster.costLimit && roster.costLimitType) {
-    const limit = roster.costLimit;
-    const current = costs[roster.costLimitType] || 0;
-    if (current > limit) {
-      errors.push({
-        type: 'roster-limit',
-        message: `Punkteüberschreitung: Du hast ${current} von maximal ${limit} Punkten verwendet.`,
-        severity: 'error'
-      });
-    }
-  }
-
-  // Helper: map of entry id/category id -> total counts in roster
+export function computeRosterCounts(roster, system) {
   const selectionCounts = {};
   const categoryCounts = {}; // forceId -> { categoryId -> count }
 
@@ -317,12 +296,39 @@ export function validateRoster(roster, system) {
     }
   };
 
-  // Run counts
-  roster.forces.forEach(force => {
-    if (force.selections) {
-      force.selections.forEach(sel => countSelection(sel, force.id, force.catalogueId));
+  if (roster && roster.forces) {
+    roster.forces.forEach(force => {
+      if (force.selections) {
+        force.selections.forEach(sel => countSelection(sel, force.id, force.catalogueId));
+      }
+    });
+  }
+
+  return { selectionCounts, categoryCounts };
+}
+
+/**
+ * Full constraint validator
+ */
+export function validateRoster(roster, system) {
+  const errors = [];
+  if (!roster || !system) return errors;
+
+  // 1. Calculate points vs limit
+  const costs = calculateRosterCosts(roster, system);
+  if (roster.costLimit && roster.costLimitType) {
+    const limit = roster.costLimit;
+    const current = costs[roster.costLimitType] || 0;
+    if (current > limit) {
+      errors.push({
+        type: 'roster-limit',
+        message: `Punkteüberschreitung: Du hast ${current} von maximal ${limit} Punkten verwendet.`,
+        severity: 'error'
+      });
     }
-  });
+  }
+
+  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
 
   // 2. Validate Detachment / Force category limits
   roster.forces.forEach(force => {

@@ -9,7 +9,9 @@ import {
   validateRoster, 
   findEntryInCatalogue, 
   findEntryInSystem,
-  resolveEntry 
+  resolveEntry,
+  computeRosterCounts,
+  getModifiedConstraintValue 
 } from '../solver/validator';
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay }) {
@@ -751,34 +753,49 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         {/* Category breakdown */}
         <div style={{ marginBottom: '24px' }}>
           <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Detachement Anforderungen</h4>
-          {system.forceEntries?.[0]?.categoryLinks?.map(catLink => {
-            const catName = system.categoryEntries?.find(c => c.id === catLink.targetId)?.name || catLink.name;
-            const count = roster.forces[0]?.selections?.filter(s => s.category === catLink.targetId).length || 0;
-            const minConRaw = catLink.constraints?.find(c => c.type === 'min')?.value;
-            const minCon = (minConRaw === undefined || minConRaw < 0) ? 0 : minConRaw;
-            const maxConRaw = catLink.constraints?.find(c => c.type === 'max')?.value;
-            const maxCon = (maxConRaw === undefined || maxConRaw < 0) ? Infinity : maxConRaw;
-            
-            const isInvalid = count < minCon || count > maxCon;
+          {(() => {
+            const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
+            const forceId = roster.forces[0]?.id;
+            const forceCategoryCounts = forceId ? (categoryCounts[forceId] || {}) : {};
 
-            return (
-              <div 
-                key={catLink.id} 
-                className="flex-between" 
-                style={{ 
-                  fontSize: '0.85rem', 
-                  padding: '6px 0', 
-                  color: isInvalid ? 'var(--color-danger)' : 'var(--text-parchment)'
-                }}
-              >
-                <span>{catName}:</span>
-                <span className="font-sans" style={{ fontWeight: 700 }}>
-                  {count} (Min: {minCon} / Max: {maxCon === Infinity ? '∞' : maxCon})
-                  {isInvalid ? ' ❌' : '  '}
-                </span>
-              </div>
-            );
-          })}
+            return system.forceEntries?.[0]?.categoryLinks?.map(catLink => {
+              const catName = system.categoryEntries?.find(c => c.id === catLink.targetId)?.name || catLink.name;
+              const count = forceCategoryCounts[catLink.targetId] || 0;
+
+              const minConRef = catLink.constraints?.find(c => c.type === 'min');
+              const minCon = minConRef 
+                ? Math.max(0, getModifiedConstraintValue(minConRef, catLink.modifiers, roster, selectionCounts, forceCategoryCounts))
+                : 0;
+
+              const maxConRef = catLink.constraints?.find(c => c.type === 'max');
+              const maxCon = maxConRef 
+                ? (() => {
+                    const val = getModifiedConstraintValue(maxConRef, catLink.modifiers, roster, selectionCounts, forceCategoryCounts);
+                    return val < 0 ? Infinity : val;
+                  })()
+                : Infinity;
+              
+              const isInvalid = count < minCon || count > maxCon;
+
+              return (
+                <div 
+                  key={catLink.id} 
+                  className="flex-between" 
+                  style={{ 
+                    fontSize: '0.85rem', 
+                    padding: '6px 0', 
+                    color: isInvalid ? 'var(--color-danger)' : 'var(--text-parchment)'
+                  }}
+                >
+                  <span>{catName}:</span>
+                  <span className="font-sans" style={{ fontWeight: 700 }}>
+                    {count} (Min: {minCon} / Max: {maxCon === Infinity ? '∞' : maxCon})
+                    {isInvalid ? ' ❌' : '  '}
+                  </span>
+                </div>
+              );
+            });
+          })()}
         </div>
 
         {/* Validation Errors Detailed List */}
