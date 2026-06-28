@@ -199,6 +199,25 @@ export default function Importer({ onSystemImported }) {
     }
   };
 
+  const handleExport = (sys) => {
+    try {
+      const jsonString = JSON.stringify(sys, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${sys.name}_modified.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setSuccessMsg(`Spielsystem "${sys.name}" erfolgreich exportiert!`);
+    } catch (e) {
+      console.error(e);
+      setError('Fehler beim Exportieren des Spielsystems.');
+    }
+  };
+
   useEffect(() => {
     loadSystems();
   }, []);
@@ -243,28 +262,34 @@ export default function Importer({ onSystemImported }) {
   };
 
   const processFile = async (file) => {
-    if (!file.name.endsWith('.zip')) {
-      setError('Bitte lade eine gültige .zip-Datei hoch, die BSData-Kataloge enthält.');
+    if (!file.name.endsWith('.zip') && !file.name.endsWith('.json')) {
+      setError('Bitte lade eine gültige .zip-Datei oder eine exportierte .json-Datei hoch.');
       return;
     }
 
     setLoading(true);
     try {
-      // 1. Extract ZIP files
-      const { gstFiles, catFiles } = await extractZipFiles(file);
-      
-      // 2. Parse XML into JSON
-      const systemData = processImportedData(gstFiles, catFiles);
+      if (file.name.endsWith('.json')) {
+        const text = await file.text();
+        const systemData = JSON.parse(text);
+        
+        if (!systemData.id || !systemData.name || !systemData.catalogues) {
+          throw new Error('Ungültiges Format: Die JSON-Datei enthält kein gültiges Spielsystem.');
+        }
 
-      // 3. Save to database
-      await saveSystem(systemData);
-
-      setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
+        await saveSystem(systemData);
+        setSuccessMsg(`Das modifizierte System "${systemData.name}" wurde erfolgreich importiert!`);
+      } else {
+        const { gstFiles, catFiles } = await extractZipFiles(file);
+        const systemData = processImportedData(gstFiles, catFiles);
+        await saveSystem(systemData);
+        setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
+      }
       loadSystems();
       if (onSystemImported) onSystemImported();
     } catch (e) {
       console.error(e);
-      setError(`Fehler beim Verarbeiten der ZIP-Datei: ${e.message}`);
+      setError(`Fehler beim Verarbeiten der Datei: ${e.message}`);
     } finally {
       setLoading(false);
     }
@@ -600,11 +625,11 @@ export default function Importer({ onSystemImported }) {
             type="file" 
             id="file-upload" 
             style={{ display: 'none' }} 
-            accept=".zip"
+            accept=".zip,.json"
             onChange={handleFileInput}
           />
           <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
-          <h3>Ziehe die BSData .zip hierher</h3>
+          <h3>Ziehe BSData .zip oder exportierte .json hierher</h3>
           <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
           {loading && (
             <div style={{ marginTop: '16px', color: 'var(--text-gold)' }}>
@@ -650,6 +675,14 @@ export default function Importer({ onSystemImported }) {
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                   >
                     <Edit size={16} />
+                  </button>
+                  <button 
+                    className="btn-gold btn-sm" 
+                    onClick={() => handleExport(sys)}
+                    title="System exportieren (.json)"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                  >
+                    <Download size={16} />
                   </button>
                   <button 
                     className="btn-danger btn-sm" 
