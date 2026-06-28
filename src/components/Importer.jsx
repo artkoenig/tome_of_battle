@@ -178,6 +178,179 @@ const updateRawXml = (system, entryId, type, localName, localCosts, localConstra
   file.content = serializer.serializeToString(doc);
 };
 
+const getCatalogueContext = (system, catalogueId) => {
+  const catalogue = system.catalogues?.find(c => c.id === catalogueId);
+  if (!catalogue) return [];
+
+  const list = [];
+  const addEntry = (se, path) => {
+    const profiles = [];
+    if (se.profiles) {
+      se.profiles.forEach(p => {
+        profiles.push({
+          id: p.id,
+          name: p.name,
+          stats: p.characteristics?.map(c => `${c.name}:${c.value}`).join(', ')
+        });
+      });
+    }
+
+    const rules = [];
+    if (se.rules) {
+      se.rules.forEach(r => {
+        rules.push({
+          id: r.id,
+          name: r.name,
+          description: r.description
+        });
+      });
+    }
+
+    list.push({
+      id: se.id,
+      type: 'entry',
+      name: se.name,
+      path,
+      points: se.costs?.find(c => c.typeId === 'pts' || c.name === 'pts' || c.typeId === 'ecfa-8486-4f6c-c249')?.value,
+      profiles,
+      rules,
+      constraints: se.constraints?.map(con => ({
+        id: con.id,
+        type: con.type,
+        value: con.value,
+        field: con.field,
+        scope: con.scope
+      }))
+    });
+  };
+
+  const addGroup = (seg, path) => {
+    list.push({
+      id: seg.id,
+      type: 'group',
+      name: seg.name,
+      path,
+      constraints: seg.constraints?.map(con => ({
+        id: con.id,
+        type: con.type,
+        value: con.value,
+        field: con.field,
+        scope: con.scope
+      }))
+    });
+  };
+
+  const traverse = (item, path) => {
+    if (!item) return;
+    if (item.selectionEntries) {
+      item.selectionEntries.forEach(se => {
+        addEntry(se, path + " -> " + se.name);
+        traverse(se, path + " -> " + se.name);
+      });
+    }
+    if (item.selectionEntryGroups) {
+      item.selectionEntryGroups.forEach(seg => {
+        addGroup(seg, path + " -> Group: " + seg.name);
+        traverse(seg, path + " -> Group: " + seg.name);
+      });
+    }
+  };
+
+  traverse(catalogue, catalogue.name);
+
+  catalogue.sharedSelectionEntries?.forEach(se => {
+    addEntry(se, catalogue.name + " (Shared) -> " + se.name);
+    traverse(se, catalogue.name + " (Shared) -> " + se.name);
+  });
+  catalogue.sharedSelectionEntryGroups?.forEach(seg => {
+    addGroup(seg, catalogue.name + " (Shared Group) -> " + seg.name);
+    traverse(seg, catalogue.name + " (Shared Group) -> " + seg.name);
+  });
+
+  return list;
+};
+
+const findAndMutateJsonPatch = (system, patch) => {
+  let foundRef = null;
+
+  const traverse = (item) => {
+    if (foundRef) return;
+    if (item.id === patch.id) {
+      foundRef = item;
+      return;
+    }
+    if (item.selectionEntries) {
+      item.selectionEntries.forEach(traverse);
+    }
+    if (item.entryLinks) {
+      item.entryLinks.forEach(traverse);
+    }
+    if (item.selectionEntryGroups) {
+      item.selectionEntryGroups.forEach(traverse);
+    }
+    if (item.profiles) {
+      item.profiles.forEach(traverse);
+    }
+    if (item.rules) {
+      item.rules.forEach(traverse);
+    }
+  };
+
+  system.catalogues?.forEach(cat => {
+    traverse(cat);
+    cat.sharedSelectionEntries?.forEach(traverse);
+    cat.sharedSelectionEntryGroups?.forEach(traverse);
+    cat.sharedProfiles?.forEach(traverse);
+    cat.sharedRules?.forEach(traverse);
+  });
+
+  if (!foundRef) return false;
+
+  const localCosts = {};
+  const localConstraints = {};
+  const localCharacteristics = {};
+  let localName = foundRef.name;
+  let localDescription = foundRef.description;
+
+  if (patch.field === 'name') {
+    foundRef.name = patch.newValue;
+    localName = patch.newValue;
+  } else if (patch.field.startsWith('cost-')) {
+    const typeId = patch.field.replace('cost-', '');
+    if (foundRef.costs) {
+      const cost = foundRef.costs.find(c => c.typeId === typeId);
+      if (cost) {
+        cost.value = parseFloat(patch.newValue) || 0;
+        localCosts[typeId] = patch.newValue;
+      }
+    }
+  } else if (patch.field.startsWith('constraint-')) {
+    const conId = patch.field.replace('constraint-', '');
+    if (foundRef.constraints) {
+      const con = foundRef.constraints.find(c => c.id === conId);
+      if (con) {
+        con.value = parseFloat(patch.newValue) || 0;
+        localConstraints[conId] = patch.newValue;
+      }
+    }
+  } else if (patch.field.startsWith('characteristic-')) {
+    const charName = patch.field.replace('characteristic-', '');
+    if (foundRef.characteristics) {
+      const char = foundRef.characteristics.find(c => c.name === charName);
+      if (char) {
+        char.value = patch.newValue;
+        localCharacteristics[charName] = patch.newValue;
+      }
+    }
+  } else if (patch.field === 'description') {
+    foundRef.description = patch.newValue;
+    localDescription = patch.newValue;
+  }
+
+  updateRawXml(system, patch.id, patch.type, localName, localCosts, localConstraints, localCharacteristics, localDescription);
+  return true;
+};
+
 export default function Importer({ onSystemImported }) {
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -195,6 +368,16 @@ export default function Importer({ onSystemImported }) {
   const [localConstraints, setLocalConstraints] = useState({});
   const [localCharacteristics, setLocalCharacteristics] = useState({});
   const [localDescription, setLocalDescription] = useState('');
+
+  const [activeTab, setActiveTab] = useState('manual');
+  const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+  const [selectedCatalogId, setSelectedCatalogId] = useState('');
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pageRange, setPageRange] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState('');
+  const [analysisLogs, setAnalysisLogs] = useState([]);
+  const [detectedPatches, setDetectedPatches] = useState([]);
 
   useEffect(() => {
     if (editingSystem) {
@@ -331,6 +514,246 @@ export default function Importer({ onSystemImported }) {
     }
   };
 
+  const loadPdfJs = () => {
+    return new Promise((resolve, reject) => {
+      if (window.pdfjsLib) {
+        resolve(window.pdfjsLib);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.onload = () => {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        resolve(window.pdfjsLib);
+      };
+      script.onerror = () => reject(new Error('PDF.js konnte nicht geladen werden.'));
+      document.head.appendChild(script);
+    });
+  };
+
+  const parsePageNumbers = (rangeStr) => {
+    const pages = new Set();
+    const parts = rangeStr.split(',');
+    for (const part of parts) {
+      const trimmed = part.trim();
+      if (trimmed.includes('-')) {
+        const [start, end] = trimmed.split('-').map(s => parseInt(s.trim(), 10));
+        if (!isNaN(start) && !isNaN(end)) {
+          for (let i = start; i <= end; i++) {
+            pages.add(i);
+          }
+        }
+      } else {
+        const pageNum = parseInt(trimmed, 10);
+        if (!isNaN(pageNum)) {
+          pages.add(pageNum);
+        }
+      }
+    }
+    return Array.from(pages).sort((a, b) => a - b);
+  };
+
+  const handleStartAnalysis = async () => {
+    if (!apiKey) {
+      setError('Bitte trage einen Gemini API-Schlüssel ein.');
+      return;
+    }
+    if (!selectedCatalogId) {
+      setError('Bitte wähle zuerst eine Fraktion (Katalog) aus.');
+      return;
+    }
+    if (!pdfFile) {
+      setError('Bitte lade ein Armeebuch-PDF hoch.');
+      return;
+    }
+    if (!pageRange) {
+      setError('Bitte gib einen Seitenbereich an.');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setAnalysisLogs([{ type: 'info', message: 'Lese Armeebuch-PDF ein...' }]);
+    setDetectedPatches([]);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      const pagesToProcess = parsePageNumbers(pageRange);
+      if (pagesToProcess.length === 0) {
+        throw new Error('Ungültiger Seitenbereich. Bitte verwende Zahlen (z. B. "55-70" oder "60").');
+      }
+
+      setAnalysisProgress('Lade PDF.js Renderer...');
+      const pdfjsLib = await loadPdfJs();
+
+      const arrayBuffer = await pdfFile.arrayBuffer();
+      const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+      const catalogueEntries = getCatalogueContext(editingSystem, selectedCatalogId);
+      if (catalogueEntries.length === 0) {
+        throw new Error('Es wurden keine Einträge für den ausgewählten Katalog gefunden.');
+      }
+
+      setAnalysisLogs(prev => [...prev, {
+        type: 'info',
+        message: `${catalogueEntries.length} Fraktions-Einträge für den Abgleich geladen.`
+      }]);
+
+      for (let i = 0; i < pagesToProcess.length; i++) {
+        const pageNum = pagesToProcess[i];
+        if (pageNum < 1 || pageNum > pdfDoc.numPages) {
+          setAnalysisLogs(prev => [...prev, {
+            type: 'error',
+            message: `Seite ${pageNum} existiert nicht im PDF (max: ${pdfDoc.numPages}). Überspringe.`
+          }]);
+          continue;
+        }
+
+        setAnalysisProgress(`Rendere Seite ${pageNum} (${i + 1} von ${pagesToProcess.length})...`);
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const base64Data = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+
+        setAnalysisProgress(`Analysiere Seite ${pageNum} via Gemini Vision KI...`);
+        setAnalysisLogs(prev => [...prev, {
+          type: 'info',
+          message: `Sende Seite ${pageNum} an Gemini Vision API...`
+        }]);
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `Du bist ein präziser Tabletop-Regelprüfer.
+Hier ist das offizielle Armeebuch-Layout (Bild) und eine JSON-Liste aller Datenbankeinträge unserer Fraktion:
+${JSON.stringify(catalogueEntries, null, 2)}
+
+Deine Aufgabe ist es, die Werte im Bild (Soll-Werte) mit den Werten in der JSON-Liste (Ist-Werte) abzugleichen.
+Finde Abweichungen bei:
+1. Profilwerten (M, WS, BS, S, T, W, I, A, Ld)
+2. Punktekosten (z.B. Ausrüstung, Einheiten, Mounts)
+3. Limits/Regeln (z.B. maximale Punkte für magische Ausrüstung in Kategorien, oft in 'Magic and Traits' oder 'Magic Items')
+
+Für jede Abweichung, gib ein JSON-Objekt in einer Liste zurück. Verwende folgende Struktur:
+- "id": Die ID des Eintrags aus unserer Liste.
+- "type": "entry" | "profile" | "group" | "rule"
+- "field":
+  * "cost-[typeId]" (z.B. "cost-pts" oder "cost-ecfa-8486-4f6c-c249" für Punkte)
+  * "constraint-[id]" (z.B. "constraint-6462-adf4-4373-7820")
+  * "characteristic-[name]" (z.B. "characteristic-MW" oder "characteristic-A")
+  * "description" (für Regelbeschreibungen)
+- "originalValue": Der aktuelle Wert aus unserer Liste.
+- "newValue": Der korrekte Wert laut Armeebuch-Seite.
+- "reason": Kurze deutsche Begründung (z.B. "Laut Armeebuch Seite 55 beträgt das Limit 50 Punkte").
+
+Gibt NUR das rohe JSON-Array zurück (beginnend mit [ und endend mit ]). Verwende KEIN Markdown-Fencing (wie \`\`\`json). Wenn keine Abweichungen gefunden wurden, gib ein leeres Array [] zurück.`
+                  },
+                  {
+                    inlineData: {
+                      mimeType: 'image/jpeg',
+                      data: base64Data
+                    }
+                  }
+                ]
+              }
+            ]
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Gemini API Error (HTTP ${response.status}): ${errText}`);
+        }
+
+        const resData = await response.json();
+        const textResponse = resData.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+        const cleanJson = textResponse.trim().replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+        
+        let patches = [];
+        try {
+          patches = JSON.parse(cleanJson);
+        } catch (pe) {
+          console.warn("Failed parsing JSON response from model:", textResponse);
+          setAnalysisLogs(prev => [...prev, {
+            type: 'error',
+            message: `[Seite ${pageNum}] Fehler beim Verarbeiten der Antwort der Vision KI. Überspringe.`
+          }]);
+          continue;
+        }
+
+        if (!Array.isArray(patches) || patches.length === 0) {
+          setAnalysisLogs(prev => [...prev, {
+            type: 'info',
+            message: `[Seite ${pageNum}] Keine Abweichungen festgestellt.`
+          }]);
+        } else {
+          setAnalysisLogs(prev => [...prev, {
+            type: 'info',
+            message: `[Seite ${pageNum}] ${patches.length} Abweichung(en) gefunden!`
+          }]);
+          
+          patches.forEach(p => {
+            setAnalysisLogs(prev => [...prev, {
+              type: 'patch',
+              message: `-> Korrektur für "${p.id}" (${p.field}): ${p.originalValue} -> ${p.newValue} (${p.reason})`
+            }]);
+            setDetectedPatches(prev => [...prev, p]);
+          });
+        }
+      }
+
+      setAnalysisProgress('Abgleich abgeschlossen!');
+      setAnalysisLogs(prev => [...prev, {
+        type: 'info',
+        message: 'KI-Abgleich erfolgreich beendet. Überprüfe die Abweichungen und wende sie an.'
+      }]);
+    } catch (err) {
+      console.error(err);
+      setAnalysisLogs(prev => [...prev, {
+        type: 'error',
+        message: `Kritischer Fehler: ${err.message}`
+      }]);
+      setError(`Fehler beim Massen-Abgleich: ${err.message}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleApplyPatches = async () => {
+    try {
+      const sys = { ...editingSystem };
+      let count = 0;
+
+      detectedPatches.forEach(patch => {
+        const result = findAndMutateJsonPatch(sys, patch);
+        if (result) {
+          count++;
+        }
+      });
+
+      await saveSystem(sys);
+      setEditingSystem(sys);
+      setSuccessMsg(`${count} Korrekturen erfolgreich in die Spieldaten und XMLs eingespielt!`);
+      setDetectedPatches([]);
+      loadSystems();
+      if (onSystemImported) onSystemImported();
+    } catch (e) {
+      console.error(e);
+      setError(`Fehler beim Übernehmen der Korrekturen: ${e.message}`);
+    }
+  };
+
   useEffect(() => {
     loadSystems();
   }, []);
@@ -456,7 +879,51 @@ export default function Importer({ onSystemImported }) {
             </div>
           )}
 
-          {!selectedEntry ? (
+          {/* Tab Navigation */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--border-dark)' }}>
+            <button 
+              className={`btn-sm`}
+              onClick={() => setActiveTab('manual')}
+              style={{
+                padding: '10px 16px',
+                backgroundColor: activeTab === 'manual' ? 'rgba(226,183,66,0.1)' : 'transparent',
+                color: activeTab === 'manual' ? 'var(--text-gold)' : 'var(--text-dim)',
+                border: '1px solid var(--border-dark)',
+                borderBottom: activeTab === 'manual' ? '1px solid transparent' : '1px solid var(--border-dark)',
+                borderTopLeftRadius: '4px',
+                borderTopRightRadius: '4px',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-body)',
+                fontWeight: 600,
+                transition: 'all 0.2s'
+              }}
+            >
+              Manuelle Suche &amp; Editor
+            </button>
+            <button 
+              className={`btn-sm`}
+              onClick={() => setActiveTab('auto')}
+              style={{
+                padding: '10px 16px',
+                backgroundColor: activeTab === 'auto' ? 'rgba(226,183,66,0.1)' : 'transparent',
+                color: activeTab === 'auto' ? 'var(--text-gold)' : 'var(--text-dim)',
+                border: '1px solid var(--border-dark)',
+                borderBottom: activeTab === 'auto' ? '1px solid transparent' : '1px solid var(--border-dark)',
+                borderTopLeftRadius: '4px',
+                borderTopRightRadius: '4px',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-body)',
+                fontWeight: 600,
+                transition: 'all 0.2s'
+              }}
+            >
+              Automatischer Massen-Abgleich (PDF)
+            </button>
+          </div>
+
+          {activeTab === 'manual' && (
+            <div>
+              {!selectedEntry ? (
             <div>
               <p className="text-dim" style={{ marginBottom: '16px', fontFamily: 'var(--font-body)' }}>
                 Suche nach Einheiten, Upgrades, Ausrüstungs-Kategorien oder Profilen, um deren Werte (Punkte, Profile, Limits) direkt anzupassen.
@@ -721,6 +1188,191 @@ export default function Importer({ onSystemImported }) {
                   Abbrechen
                 </button>
               </div>
+            </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'auto' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <p className="text-dim" style={{ fontFamily: 'var(--font-body)' }}>
+                Nutze Gemini Vision KI, um ein gescanntes PDF-Armeebuch einzulesen, Abweichungen (Punkte, Profile, Limits) automatisch zu erkennen und zu korrigieren.
+              </p>
+
+              {/* Gemini API Key Input */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 600, color: 'var(--text-gold)', fontFamily: 'var(--font-body)' }}>Gemini API-Schlüssel</label>
+                <input 
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => { setApiKey(e.target.value); localStorage.setItem('gemini_api_key', e.target.value); }}
+                  placeholder="AIzaSy..."
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--bg-dark)',
+                    color: 'var(--text-parchment)',
+                    border: '1px solid var(--border-gold-dim)',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace'
+                  }}
+                />
+              </div>
+
+              {/* Catalogue Dropdown */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 600, color: 'var(--text-gold)', fontFamily: 'var(--font-body)' }}>1. Fraktion (Katalog) auswählen</label>
+                <select 
+                  value={selectedCatalogId}
+                  onChange={(e) => setSelectedCatalogId(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--bg-dark)',
+                    color: 'var(--text-parchment)',
+                    border: '1px solid var(--border-gold-dim)',
+                    borderRadius: '4px',
+                    fontFamily: 'var(--font-body)'
+                  }}
+                >
+                  <option value="">-- Fraktion wählen --</option>
+                  {editingSystem.catalogues?.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* PDF Uploader Zone (locked until Catalogue selected) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 600, color: 'var(--text-gold)', fontFamily: 'var(--font-body)' }}>2. Armeebuch-PDF hochladen</label>
+                {!selectedCatalogId ? (
+                  <div style={{ 
+                    padding: '24px', 
+                    border: '1px dashed var(--border-dark)', 
+                    borderRadius: '4px', 
+                    backgroundColor: 'rgba(0,0,0,0.1)', 
+                    textAlign: 'center',
+                    color: 'var(--text-dim)',
+                    fontStyle: 'italic',
+                    fontFamily: 'var(--font-body)'
+                  }}>
+                    Wähle zuerst eine Fraktion aus, um den PDF-Upload freizuschalten.
+                  </div>
+                ) : (
+                  <div 
+                    style={{ 
+                      padding: '24px', 
+                      border: '2px dashed var(--border-gold-dim)', 
+                      borderRadius: '4px', 
+                      backgroundColor: 'rgba(255,255,255,0.01)', 
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onClick={() => document.getElementById('pdf-upload-input').click()}
+                  >
+                    <input 
+                      type="file" 
+                      id="pdf-upload-input" 
+                      style={{ display: 'none' }} 
+                      accept=".pdf"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setPdfFile(e.target.files[0]);
+                        }
+                      }}
+                    />
+                    {pdfFile ? (
+                      <div style={{ color: 'var(--text-gold)' }}>
+                        <strong>{pdfFile.name}</strong> ({(pdfFile.size / 1024 / 1024).toFixed(2)} MB) geladen
+                      </div>
+                    ) : (
+                      <div className="text-dim" style={{ fontFamily: 'var(--font-body)' }}>
+                        Klicke hier, um das Armeebuch-PDF auszuwählen (nur gescanntes PDF)
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Page Range Input (locked until PDF uploaded) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 600, color: 'var(--text-gold)', fontFamily: 'var(--font-body)' }}>3. Seitenbereich angeben (z.B. "55-70" oder "60")</label>
+                <input 
+                  type="text"
+                  value={pageRange}
+                  onChange={(e) => setPageRange(e.target.value)}
+                  disabled={!pdfFile}
+                  placeholder="z.B. 55-70"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--bg-dark)',
+                    color: 'var(--text-parchment)',
+                    border: '1px solid var(--border-gold-dim)',
+                    borderRadius: '4px',
+                    fontFamily: 'var(--font-body)'
+                  }}
+                />
+              </div>
+
+              {/* Start Control */}
+              <div style={{ marginTop: '10px' }}>
+                <button 
+                  className="btn-primary" 
+                  onClick={handleStartAnalysis}
+                  disabled={isAnalyzing || !apiKey || !selectedCatalogId || !pdfFile || !pageRange}
+                  style={{ width: '100%', padding: '12px', fontSize: '1rem' }}
+                >
+                  {isAnalyzing ? 'Abgleich läuft...' : 'Automatischer KI-Abgleich starten'}
+                </button>
+                {isAnalyzing && (
+                  <div style={{ marginTop: '12px', color: 'var(--text-gold)', fontStyle: 'italic', textAlign: 'center', fontSize: '0.9rem', fontFamily: 'var(--font-body)' }}>
+                    {analysisProgress}
+                  </div>
+                )}
+              </div>
+
+              {/* Log Console & Proposed Patches */}
+              {analysisLogs.length > 0 && (
+                <div style={{ marginTop: '16px' }}>
+                  <h3 className="font-serif text-gold" style={{ marginBottom: '10px' }}>KI-Protokoll &amp; gefundene Abweichungen</h3>
+                  <div style={{ 
+                    padding: '12px 16px', 
+                    border: '1px solid var(--border-gold-dim)', 
+                    borderRadius: '4px', 
+                    backgroundColor: 'rgba(0,0,0,0.3)', 
+                    maxHeight: '250px', 
+                    overflowY: 'auto',
+                    fontFamily: 'monospace',
+                    fontSize: '0.85rem',
+                    lineHeight: '1.4',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px'
+                  }}>
+                    {analysisLogs.map((log, idx) => (
+                      <div key={idx} style={{ 
+                        color: log.type === 'error' ? 'var(--color-danger)' : log.type === 'patch' ? '#34d399' : 'var(--text-dim)' 
+                      }}>
+                        {log.message}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {detectedPatches.length > 0 && (
+                <div style={{ marginTop: '16px' }}>
+                  <button 
+                    className="btn-primary" 
+                    onClick={handleApplyPatches}
+                    style={{ width: '100%', padding: '12px', backgroundColor: '#1b7340', borderColor: '#1b7340', fontSize: '1.05rem', fontWeight: 'bold' }}
+                  >
+                    Alle {detectedPatches.length} Korrekturen anwenden &amp; XMLs patchen
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
