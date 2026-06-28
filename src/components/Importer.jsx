@@ -59,33 +59,21 @@ export default function Importer({ onSystemImported }) {
     setError(null);
     setSuccessMsg(null);
     
-    if (!file.name.endsWith('.zip') && !file.name.endsWith('.json')) {
-      setError('Bitte lade eine gültige .zip-Datei oder eine exportierte .json-Datei hoch.');
+    if (!file.name.endsWith('.zip')) {
+      setError('Bitte lade eine gültige .zip-Datei hoch.');
       return;
     }
 
     setLoading(true);
     try {
-      if (file.name.endsWith('.json')) {
-        const text = await file.text();
-        const systemData = JSON.parse(text);
-        
-        if (!systemData.id || !systemData.name || !systemData.catalogues) {
-          throw new Error('Ungültiges Format: Die JSON-Datei enthält kein gültiges Spielsystem.');
-        }
-
-        await saveSystem(systemData);
-        setSuccessMsg(`Das modifizierte System "${systemData.name}" wurde erfolgreich importiert!`);
-      } else {
-        const { gstFiles, catFiles } = await extractZipFiles(file);
-        const systemData = processImportedData(gstFiles, catFiles);
-        systemData.rawXmls = {
-          gst: gstFiles,
-          cat: catFiles
-        };
-        await saveSystem(systemData);
-        setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
-      }
+      const { gstFiles, catFiles } = await extractZipFiles(file);
+      const systemData = processImportedData(gstFiles, catFiles);
+      systemData.rawXmls = {
+        gst: gstFiles,
+        cat: catFiles
+      };
+      await saveSystem(systemData);
+      setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
       loadSystems();
       if (onSystemImported) onSystemImported();
     } catch (e) {
@@ -187,11 +175,11 @@ export default function Importer({ onSystemImported }) {
             type="file" 
             id="file-upload" 
             style={{ display: 'none' }} 
-            accept=".zip,.json"
+            accept=".zip"
             onChange={handleFileInput}
           />
           <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
-          <h3>Ziehe BSData .zip oder exportierte .json hierher</h3>
+          <h3>Ziehe ein BSData .zip-Archiv hierher</h3>
           <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
           {loading && (
             <div style={{ marginTop: '16px', color: 'var(--text-gold)' }}>
