@@ -1203,6 +1203,8 @@ input[type="radio"]:checked::after {
     right: 0;
     top: auto !important;
     width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
     max-height: 70vh !important;
     border-radius: 16px 16px 0 0 !important;
     border: none !important;
@@ -1442,6 +1444,8 @@ input[type="radio"]:checked::after {
     bottom: 0 !important;
     transform: none !important;
     width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
     max-height: 50vh !important;
     border-radius: 16px 16px 0 0 !important;
     border: none !important;
