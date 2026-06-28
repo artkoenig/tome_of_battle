@@ -161,7 +161,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       }
 
       // Mounts (cavalry mount types in 6th edition)
-      if (t.includes('horse') || t.includes('steed') || t.includes('ross') || t.includes('pony') || t.includes('pegasus') || t.includes('cold one') || t.includes('wolf') || t.includes('boar') || t.includes('mount') || t.includes('reittier') || t.includes('streitross') || t.includes('schlachtross')) {
+      if (t.includes('horse') || t.includes('steed') || t.includes('ross') || t.includes('pony') || t.includes('pegasus') || t.includes('cold one') || t.includes('wolf') || t.includes('boar') || t.includes('mount') || t.includes('reittier') || t.includes('streitross') || t.includes('schlachtross') || t.includes('nightmare') || t.includes('nachtmahr') || t.includes('kampfechse') || t.includes('einhorn') || t.includes('unicorn') || t.includes('hirsch') || t.includes('stag') || t.includes('wildschwein') || t.includes('chaosross') || t.includes('skelettpferd') || t.includes('skelettroß')) {
         // Exclude monster mounts
         if (!t.includes('hippogryph') && !t.includes('griffon') && !t.includes('dragon') && !t.includes('drache') && !t.includes('manticore') && !t.includes('wyvern')) {
           isMounted = true;
@@ -169,7 +169,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       }
 
       // Barding
-      if (t.includes('barded') || t.includes('barding') || t.includes('harnisch') || t.includes('rosharnisch')) {
+      if (t.includes('barded') || t.includes('barding') || t.includes('harnisch') || t.includes('rosharnisch') || t.includes('gepanzert') || t.includes('gepanzertes')) {
         isBarded = true;
       }
     };
