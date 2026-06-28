@@ -175,29 +175,43 @@ async function run() {
     await new Promise(r => setTimeout(r, 500));
     await takeScreenshot('08_heroes_category_expanded');
 
-    // 9. Add 5 Goblin Shamans to trigger limit validation
-    console.log('Adding 5 Goblin Shamans to the army roster...');
-    // Find the Goblin Shaman catalog item, which has a plus button
-    for (let i = 0; i < 5; i++) {
-      const shamanAdded = await page.evaluate(() => {
-        const items = Array.from(document.querySelectorAll('.catalog-item'));
-        const shaman = items.find(item => item.textContent.toLowerCase().includes('goblin shaman'));
-        if (shaman) {
-          const plusBtn = shaman.querySelector('button');
-          if (plusBtn) {
-            plusBtn.click();
-            return true;
-          }
+    // 9. Add 1 Black Orc Bigboss and 1 Goblin Shaman
+    console.log('Adding 1 Black Orc Bigboss to the army roster...');
+    const addBlackOrc = await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll('.catalog-item'));
+      const bigboss = items.find(item => item.textContent.toLowerCase().includes('black orc bigboss'));
+      if (bigboss) {
+        const plusBtn = bigboss.querySelector('button');
+        if (plusBtn) {
+          plusBtn.click();
+          return true;
         }
-        return false;
-      });
-      if (!shamanAdded) {
-        throw new Error('Failed to find and click plus button for Goblin Shaman');
       }
-      console.log(`Added Goblin Shaman #${i + 1}`);
-      await new Promise(r => setTimeout(r, 400));
+      return false;
+    });
+    if (!addBlackOrc) {
+      throw new Error('Failed to find and click plus button for Black Orc Bigboss');
     }
-    await takeScreenshot('09_shamans_added');
+    await new Promise(r => setTimeout(r, 1000)); // wait for it to load
+
+    console.log('Adding 1 Goblin Shaman to the army roster...');
+    const addShaman = await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll('.catalog-item'));
+      const shaman = items.find(item => item.textContent.toLowerCase().includes('goblin shaman'));
+      if (shaman) {
+        const plusBtn = shaman.querySelector('button');
+        if (plusBtn) {
+          plusBtn.click();
+          return true;
+        }
+      }
+      return false;
+    });
+    if (!addShaman) {
+      throw new Error('Failed to find and click plus button for Goblin Shaman');
+    }
+    await new Promise(r => setTimeout(r, 1000));
+    await takeScreenshot('09_units_added');
 
     // 10. Dump the right-hand requirements sidebar to see if the validation errors are visible
     console.log('Dumping validation sidebar HTML...');

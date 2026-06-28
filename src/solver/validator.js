@@ -282,6 +282,25 @@ export function computeRosterCounts(roster, system) {
         if (cl.targetId && !seenCategories.has(cl.targetId)) {
           seenCategories.add(cl.targetId);
           categoryCounts[forceId][cl.targetId] = (categoryCounts[forceId][cl.targetId] || 0) + 1;
+
+          // Auto-fix catalog typos for extra slot selections (e.g. "hero extra cost" with duplicate Characters links)
+          if (cl.targetId === '7a1c-d611-c2dc-def1') { // Characters
+            const entryName = resolved.name?.toLowerCase() || '';
+            if (entryName.includes('hero extra cost') || entryName.includes('heldenauswahl')) {
+              const heroCatId = 'c16b-f319-2c62-2c12';
+              if (!seenCategories.has(heroCatId)) {
+                seenCategories.add(heroCatId);
+                categoryCounts[forceId][heroCatId] = (categoryCounts[forceId][heroCatId] || 0) + 1;
+              }
+            }
+            if (entryName.includes('lord extra cost') || entryName.includes('kommandantenauswahl')) {
+              const lordCatId = 'd024-d25b-a9b4-73b6';
+              if (!seenCategories.has(lordCatId)) {
+                seenCategories.add(lordCatId);
+                categoryCounts[forceId][lordCatId] = (categoryCounts[forceId][lordCatId] || 0) + 1;
+              }
+            }
+          }
         }
       });
     }
@@ -349,8 +368,23 @@ export function validateRoster(roster, system) {
       const count = forceCategoryCounts[targetCatId] || 0;
 
       // Check min/max constraints on the category link
-      catLink.constraints?.forEach(con => {
-        const finalValue = getModifiedConstraintValue(con, catLink.modifiers, roster, selectionCounts, forceCategoryCounts);
+      let constraintsToValidate = [...(catLink.constraints || [])];
+      if (targetCatId === 'c16b-f319-2c62-2c12' && !constraintsToValidate.some(c => c.type === 'max')) {
+        const charCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === '7a1c-d611-c2dc-def1');
+        const charMaxCon = charCatLink?.constraints?.find(c => c.type === 'max');
+        if (charMaxCon) {
+          constraintsToValidate.push({
+            ...charMaxCon,
+            id: 'fallback-heroes-max',
+            type: 'max',
+            isFallback: true,
+            modifiers: charCatLink.modifiers
+          });
+        }
+      }
+
+      constraintsToValidate.forEach(con => {
+        const finalValue = getModifiedConstraintValue(con, con.isFallback ? con.modifiers : catLink.modifiers, roster, selectionCounts, forceCategoryCounts);
         if (finalValue < 0) return;
         
         if (con.type === 'min' && count < finalValue) {

@@ -908,6 +908,123 @@ console.log('Test 14 - XML CategoryLink Constraints and Modifiers Parsing Check:
   xmlCategoryLinksSuccess ? 'PASSED' : `FAILED (Constraints parsed: ${!!hasParsedConstraints}, Modifiers parsed: ${!!hasParsedModifiers})`
 );
 
+// Test 15: Black Orc hero extra cost mapping in computeRosterCounts
+const mockSystemForMapping = {
+  catalogues: [
+    {
+      id: 'cat-og',
+      selectionEntries: [
+        {
+          id: 'bigboss-id',
+          name: 'Black Orc Bigboss',
+          categoryLinks: [
+            { targetId: '7a1c-d611-c2dc-def1' }, // Characters
+            { targetId: 'c16b-f319-2c62-2c12' }  // Heroes
+          ]
+        },
+        {
+          id: 'extra-cost-id',
+          name: 'Black Orc hero extra cost',
+          categoryLinks: [
+            { targetId: '7a1c-d611-c2dc-def1' }, // Characters
+            { targetId: '7a1c-d611-c2dc-def1' }  // Characters duplicate
+          ]
+        }
+      ]
+    }
+  ]
+};
+const mockRosterForMapping = {
+  forces: [
+    {
+      id: 'force-1',
+      catalogueId: 'cat-og',
+      selections: [
+        {
+          selectionEntryId: 'bigboss-id',
+          number: 1,
+          selections: [
+            {
+              selectionEntryId: 'extra-cost-id',
+              number: 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+const { categoryCounts } = computeRosterCounts(mockRosterForMapping, mockSystemForMapping);
+const charactersCount = categoryCounts['force-1']['7a1c-d611-c2dc-def1'];
+const heroesCount = categoryCounts['force-1']['c16b-f319-2c62-2c12'];
+const mappingSuccess = charactersCount === 2 && heroesCount === 2;
+console.log('Test 15 - Double Choice Category Mapping (Black Orc Bigboss = 2 Chars + 2 Heroes): ',
+  mappingSuccess ? 'PASSED' : `FAILED (Characters: ${charactersCount}/2, Heroes: ${heroesCount}/2)`
+);
+
+// Test 16: Fallback Heroes Max Constraint injection
+const mockSystemForFallback = {
+  categoryEntries: [
+    { id: '7a1c-d611-c2dc-def1', name: 'Characters' },
+    { id: 'c16b-f319-2c62-2c12', name: 'Heroes' }
+  ],
+  forceEntries: [
+    {
+      id: 'force-entry-1',
+      name: 'Standard',
+      categoryLinks: [
+        {
+          targetId: '7a1c-d611-c2dc-def1',
+          name: 'Characters',
+          constraints: [
+            { id: 'char-max', type: 'max', value: 3, field: 'selections', scope: 'parent' }
+          ]
+        },
+        {
+          targetId: 'c16b-f319-2c62-2c12',
+          name: 'Heroes' // No max constraint defined
+        }
+      ]
+    }
+  ],
+  catalogues: [
+    {
+      id: 'cat-og',
+      selectionEntries: [
+        {
+          id: 'hero-id',
+          name: 'Goblin Shaman',
+          categoryLinks: [
+            { targetId: '7a1c-d611-c2dc-def1' }, // Characters
+            { targetId: 'c16b-f319-2c62-2c12' }  // Heroes
+          ]
+        }
+      ]
+    }
+  ]
+};
+const mockRosterForFallback = {
+  forces: [
+    {
+      id: 'force-1',
+      forceEntryId: 'force-entry-1',
+      catalogueId: 'cat-og',
+      selections: [
+        { selectionEntryId: 'hero-id', number: 1 },
+        { selectionEntryId: 'hero-id', number: 1 },
+        { selectionEntryId: 'hero-id', number: 1 },
+        { selectionEntryId: 'hero-id', number: 1 } // 4 heroes total (exceeds limit 3)
+      ]
+    }
+  ]
+};
+const fallbackErrors = validateRoster(mockRosterForFallback, mockSystemForFallback);
+const hasHeroesMaxError = fallbackErrors.some(e => e.type === 'category-max' && e.categoryId === 'c16b-f319-2c62-2c12');
+const fallbackSuccess = hasHeroesMaxError;
+console.log('Test 16 - Fallback Heroes Max Constraint Validation Check: ',
+  fallbackSuccess ? 'PASSED' : 'FAILED (No Heroes max constraint error was generated)'
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -918,7 +1035,9 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     charactersOverLimitError &&
     charactersWithinLimitNoError &&
     deDuplicationSuccess &&
-    xmlCategoryLinksSuccess) {
+    xmlCategoryLinksSuccess &&
+    mappingSuccess &&
+    fallbackSuccess) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {

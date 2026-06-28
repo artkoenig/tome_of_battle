@@ -768,12 +768,22 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 : 0;
 
               const maxConRef = catLink.constraints?.find(c => c.type === 'max');
-              const maxCon = maxConRef 
+              let maxCon = maxConRef 
                 ? (() => {
                     const val = getModifiedConstraintValue(maxConRef, catLink.modifiers, roster, selectionCounts, forceCategoryCounts);
                     return val < 0 ? Infinity : val;
                   })()
                 : Infinity;
+
+              // Fallback for Heroes category limit to match Characters limit
+              if (catLink.targetId === 'c16b-f319-2c62-2c12' && maxCon === Infinity) {
+                const charCatLink = system.forceEntries?.[0]?.categoryLinks?.find(cl => cl.targetId === '7a1c-d611-c2dc-def1');
+                const charMaxConRef = charCatLink?.constraints?.find(c => c.type === 'max');
+                if (charMaxConRef) {
+                  const val = getModifiedConstraintValue(charMaxConRef, charCatLink.modifiers, roster, selectionCounts, forceCategoryCounts);
+                  if (val >= 0) maxCon = val;
+                }
+              }
               
               const isInvalid = count < minCon || count > maxCon;
 
