@@ -164,93 +164,100 @@ async function run() {
     await clickButtonWithText('Heerschau starten');
     await takeScreenshot('07_roster_created');
 
-    // 8. Let's expand the Heroes category in the sidebar to view catalog items
-    console.log('Expanding Heroes category in catalog sidebar...');
-    // The sidebar categories have headers containing the category names (like Lord, Heroes, Core, etc.)
-    const categoryExpanded = await page.evaluate(() => {
-      const headers = Array.from(document.querySelectorAll('.catalog-category-header'));
-      const heroesHeader = headers.find(h => h.textContent.toLowerCase().includes('heroes'));
-      if (heroesHeader) {
-        heroesHeader.click();
+    // 8. Add units using the inline CategoryUnitAdder popover
+    console.log('Opening CategoryUnitAdder popover for Heroes...');
+    const clickAdder1 = await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('button[title*="Heroes"], button[title*="Helden"]'));
+      if (buttons.length > 0) {
+        buttons[0].click();
         return true;
       }
       return false;
     });
-    if (!categoryExpanded) {
-      throw new Error('Heroes category header not found in catalog sidebar');
+    if (!clickAdder1) {
+      throw new Error('Failed to find and click CategoryUnitAdder button for Heroes');
     }
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 600));
     await takeScreenshot('08_heroes_category_expanded');
 
-    // 9. Add 1 Black Orc Bigboss and 1 Goblin Shaman
-    console.log('Adding 1 Black Orc Bigboss to the army roster...');
+    console.log('Adding Black Orc Bigboss from popover...');
     const addBlackOrc = await page.evaluate(() => {
-      const items = Array.from(document.querySelectorAll('.catalog-item'));
-      const bigboss = items.find(item => item.textContent.toLowerCase().includes('black orc bigboss'));
-      if (bigboss) {
-        const plusBtn = bigboss.querySelector('button');
-        if (plusBtn) {
-          plusBtn.click();
-          return true;
-        }
+      const items = Array.from(document.querySelectorAll('.popover-item'));
+      const target = items.find(item => item.textContent.toLowerCase().includes('black orc bigboss'));
+      if (target) {
+        target.click();
+        return true;
       }
       return false;
     });
     if (!addBlackOrc) {
-      throw new Error('Failed to find and click plus button for Black Orc Bigboss');
+      throw new Error('Failed to find and click Black Orc Bigboss in popover');
     }
-    await new Promise(r => setTimeout(r, 1000)); // wait for it to load
+    await new Promise(r => setTimeout(r, 1000));
 
-    console.log('Adding 1 Goblin Shaman to the army roster...');
+    console.log('Opening CategoryUnitAdder popover again to add Goblin Shaman...');
+    const clickAdder2 = await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('button[title*="Heroes"], button[title*="Helden"]'));
+      if (buttons.length > 0) {
+        buttons[0].click();
+        return true;
+      }
+      return false;
+    });
+    if (!clickAdder2) {
+      throw new Error('Failed to open popover for second unit');
+    }
+    await new Promise(r => setTimeout(r, 600));
+
+    console.log('Adding Goblin Shaman from popover...');
     const addShaman = await page.evaluate(() => {
-      const items = Array.from(document.querySelectorAll('.catalog-item'));
-      const shaman = items.find(item => item.textContent.toLowerCase().includes('goblin shaman'));
-      if (shaman) {
-        const plusBtn = shaman.querySelector('button');
-        if (plusBtn) {
-          plusBtn.click();
-          return true;
-        }
+      const items = Array.from(document.querySelectorAll('.popover-item'));
+      const target = items.find(item => item.textContent.toLowerCase().includes('goblin shaman'));
+      if (target) {
+        target.click();
+        return true;
       }
       return false;
     });
     if (!addShaman) {
-      throw new Error('Failed to find and click plus button for Goblin Shaman');
+      throw new Error('Failed to click Goblin Shaman in popover');
     }
     await new Promise(r => setTimeout(r, 1000));
     await takeScreenshot('09_units_added');
 
-    // 10. Switch to mobile viewports and capture mobile tabs
+    // 9. Switch to mobile viewports
     console.log('Switching viewport to mobile (375x812)...');
     await page.setViewport({ width: 375, height: 812 });
     await new Promise(r => setTimeout(r, 1000));
     await takeScreenshot('10_mobile_roster');
 
-    console.log('Switching to mobile library tab...');
+    // Open a CategoryUnitAdder popover on mobile to capture it
+    console.log('Opening popover on mobile for screenshot...');
     await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll('.mobile-tab-button'));
-      const libBtn = buttons.find(b => b.textContent.includes('Bibliothek'));
-      if (libBtn) libBtn.click();
+      const buttons = Array.from(document.querySelectorAll('button[title*="Heroes"], button[title*="Helden"]'));
+      if (buttons.length > 0) buttons[0].click();
     });
-    await new Promise(r => setTimeout(r, 1000));
-    await takeScreenshot('11_mobile_library');
+    await new Promise(r => setTimeout(r, 600));
+    await takeScreenshot('11_mobile_library'); // Capture mobile popover dropdown
 
-    console.log('Switching to mobile status tab...');
-    await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll('.mobile-tab-button'));
-      const statusBtn = buttons.find(b => b.textContent.includes('Status'));
-      if (statusBtn) statusBtn.click();
-    });
+    // Close the popover by clicking on the background/bar
+    console.log('Closing popover on mobile...');
+    await page.click('.mobile-sticky-status-bar');
+    await new Promise(r => setTimeout(r, 500));
+
+    // Scroll to the bottom errors panel by clicking the mobile sticky bar
+    console.log('Scrolling to general errors section on mobile...');
+    await page.click('.mobile-sticky-status-bar');
     await new Promise(r => setTimeout(r, 1000));
-    await takeScreenshot('12_mobile_status');
+    await takeScreenshot('12_mobile_status'); // Capture mobile status panel at the bottom
 
     // Restore viewport
     await page.setViewport({ width: 1440, height: 900 });
     await new Promise(r => setTimeout(r, 500));
 
-    // 11. Dump the right-hand requirements sidebar
+    // 10. Dump validation sidebar HTML
     console.log('Dumping validation sidebar HTML...');
-    await dumpHTML('.builder-right-bar', 'validation_sidebar');
+    await dumpHTML('.desktop-only-sidebar', 'validation_sidebar');
 
     console.log('UI automation complete successfully!');
   } catch (error) {

@@ -354,15 +354,9 @@ select option {
 /* Builder Mode Layout */
 .builder-layout {
   display: grid;
-  grid-template-columns: 320px 1fr 340px;
+  grid-template-columns: 1fr 340px;
   height: calc(100vh - 84px);
   overflow: hidden;
-}
-
-@media (max-width: 1200px) {
-  .builder-layout {
-    grid-template-columns: 280px 1fr 0px; /* Hide rules panel on smaller screens, toggleable */
-  }
 }
 
 
@@ -945,36 +939,20 @@ input[type="radio"]:checked::after {
 /* Relocated and improved mobile layout media query to override desktop rules */
 @media (max-width: 900px) {
   .builder-layout {
-    grid-template-columns: 1fr !important;
-    height: calc(100vh - 60px) !important; /* adjust for bottom tab bar */
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
     overflow: hidden !important;
   }
 
-  .builder-sidebar {
-    display: none !important;
-    border-right: none !important;
-  }
-  .builder-sidebar.active-mobile-tab {
-    display: flex !important;
-    height: 100% !important;
-  }
-
   .builder-main {
-    display: none !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
     padding: 16px !important;
   }
-  .builder-main.active-mobile-tab {
-    display: flex !important;
-    height: 100% !important;
-  }
 
-  .builder-right-bar {
+  .desktop-only-sidebar {
     display: none !important;
-    border-left: none !important;
-  }
-  .builder-right-bar.active-mobile-tab {
-    display: flex !important;
-    height: 100% !important;
   }
 
   /* Hide main premium header inside the builder/play screens to maximize vertical space */
@@ -1062,58 +1040,6 @@ input[type="radio"]:checked::after {
     grid-template-columns: 1fr !important;
   }
 
-  /* Mobile Tab Bar */
-  .mobile-tab-bar {
-    display: flex !important;
-    justify-content: space-around;
-    align-items: center;
-    background-color: var(--bg-panel);
-    border-top: 1px solid var(--border-dark);
-    height: 60px;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-  }
-
-  .mobile-tab-button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 0.75rem;
-    font-family: var(--font-body);
-    font-weight: 600;
-    cursor: pointer;
-    flex: 1;
-    height: 100%;
-    gap: 4px;
-    transition: all 0.2s;
-    position: relative;
-  }
-
-  .mobile-tab-button.active {
-    color: var(--text-gold);
-    background-color: rgba(226, 183, 66, 0.03);
-  }
-
-  .mobile-tab-badge {
-    position: absolute;
-    top: 6px;
-    right: 25%;
-    background-color: var(--color-danger);
-    color: white;
-    border-radius: 50%;
-    font-size: 0.65rem;
-    padding: 1px 5px;
-    font-weight: bold;
-    line-height: 1.2;
-  }
-
   /* Stack modal footer buttons on mobile */
   .modal-footer {
     flex-direction: column !important;
@@ -1126,7 +1052,159 @@ input[type="radio"]:checked::after {
   }
 }
 
-/* Tab bar default hide on desktop */
-.mobile-tab-bar {
+/* 6. Sticky mobile status bar (hidden on desktop) */
+.mobile-sticky-status-bar {
   display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-sticky-status-bar {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-panel);
+    border-bottom: 2px solid var(--border-gold);
+    padding: 10px 16px;
+    z-index: 200;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  
+  .mobile-status-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-points-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    width: 130px;
+  }
+
+  .points-progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .points-progress-fill {
+    height: 100%;
+    background-color: var(--text-gold);
+    transition: width 0.3s ease;
+  }
+
+  .points-progress-fill.overflow {
+    background-color: var(--color-danger);
+  }
+}
+
+/* 7. Category Unit Adder Popover styling */
+.category-unit-adder-container {
+  position: relative;
+  display: inline-block;
+}
+
+.category-unit-adder-popover {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  width: 280px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 300;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), var(--shadow-gold) !important;
+  animation: fadeIn 0.15s ease-out;
+  padding: 0 !important;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-gold);
+}
+
+.popover-header {
+  border-bottom: 1px solid var(--border-gold-dim);
+  padding: 8px 12px;
+  background-color: rgba(226, 183, 66, 0.05);
+}
+
+.popover-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.popover-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-dark);
+  transition: background-color 0.2s;
+}
+
+.popover-item:last-child {
+  border-bottom: none;
+}
+
+.popover-item:hover {
+  background-color: rgba(226, 183, 66, 0.08);
+}
+
+.popover-item-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-parchment);
+}
+
+.popover-item-cost {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* 8. Gothic Toast Notifications */
+.gothic-toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-gold);
+  color: var(--text-gold);
+  font-family: var(--font-serif);
+  padding: 12px 24px;
+  border-radius: 4px;
+  z-index: 999;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), var(--shadow-glow);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: slideUpFade 0.2s ease-out;
+}
+
+@keyframes slideUpFade {
+  from {
+    bottom: 15px;
+    opacity: 0;
+  }
+  to {
+    bottom: 30px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
