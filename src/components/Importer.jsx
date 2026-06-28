@@ -6,7 +6,6 @@ import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 
 import SystemEditorView from './importer/SystemEditorView';
-import DiagnosticPanel from './importer/DiagnosticPanel';
 
 export default function Importer({ onSystemImported }) {
   const [systems, setSystems] = useState([]);
@@ -254,9 +253,6 @@ export default function Importer({ onSystemImported }) {
           </div>
         )}
       </div>
-
-      {/* 3. Diagnostic Panel */}
-      <DiagnosticPanel />
     </div>
   );
 }
