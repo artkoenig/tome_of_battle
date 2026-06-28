@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Edit, ArrowLeft, Download, Archive } from 'lucide-react';
+import { Upload, Trash2, FileText, CheckCircle2, AlertTriangle, ShieldAlert, Edit, ArrowLeft, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
@@ -470,29 +470,10 @@ export default function Importer({ onSystemImported }) {
     }
   };
 
-  const handleExportJson = (sys) => {
-    try {
-      const jsonString = JSON.stringify(sys, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${sys.name}_corrected.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      setSuccessMsg(`Spielsystem "${sys.name}" erfolgreich als JSON (mit allen Korrekturen) exportiert!`);
-    } catch (e) {
-      console.error(e);
-      setError(`Fehler beim Exportieren des Spielsystems als JSON: ${e.message}`);
-    }
-  };
-
-  const handleExportZip = async (sys) => {
+  const handleExport = async (sys) => {
     try {
       if (!sys.rawXmls) {
-        setError('Keine originalen XML-Dateien für den ZIP-Export vorhanden.');
+        setError('Dieses Spielsystem wurde vor dem Update importiert und besitzt keine XML-Originaldateien in der Datenbank. Bitte importiere das Spielsystem (.zip) erneut, um den Export nutzen zu können.');
         return;
       }
 
@@ -1475,22 +1456,12 @@ Gibt NUR das rohe JSON-Array zurück (beginnend mit [ und endend mit ]). Verwend
                   </button>
                   <button 
                     className="btn-gold btn-sm" 
-                    onClick={() => handleExportJson(sys)}
-                    title="Korrigierte Spieldaten exportieren (.json)"
+                    onClick={() => handleExport(sys)}
+                    title="Spielsystem exportieren (.zip)"
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                   >
                     <Download size={16} />
                   </button>
-                  {sys.rawXmls && (
-                    <button 
-                      className="btn-gold btn-sm" 
-                      onClick={() => handleExportZip(sys)}
-                      title="Original-XMLs als .zip exportieren"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
-                    >
-                      <Archive size={16} />
-                    </button>
-                  )}
                   <button 
                     className="btn-danger btn-sm" 
                     onClick={() => handleDelete(sys.id)}
