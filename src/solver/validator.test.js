@@ -1,4 +1,4 @@
-import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts } from './validator.js';
+import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue } from './validator.js';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML } from '../parser/xmlParser.js';
 
@@ -1069,6 +1069,116 @@ console.log('Test 17 - Catalogue ID Collision Resolution Check: ',
   collisionSuccess ? 'PASSED' : 'FAILED'
 );
 
+// Test 18: Condition Group Logical Operators (AND, OR, NOT)
+const conditionGroupRoster = {
+  costLimit: 1000,
+  costLimitType: 'pts',
+  forces: []
+};
+const selectionCounts = { 'unit-a': 2, 'unit-b': 0 };
+
+// OR condition group: True if any condition is true
+const groupOr = {
+  type: 'or',
+  conditions: [
+    { field: 'unit-a', type: 'greaterThan', value: 0 }, // True (2 > 0)
+    { field: 'unit-b', type: 'greaterThan', value: 0 }  // False (0 > 0)
+  ]
+};
+const groupOrResultTrue = evaluateConditionGroup(groupOr, conditionGroupRoster, selectionCounts, {});
+
+const groupOrAllFalse = {
+  type: 'or',
+  conditions: [
+    { field: 'unit-a', type: 'greaterThan', value: 5 }, // False (2 > 5)
+    { field: 'unit-b', type: 'greaterThan', value: 0 }  // False (0 > 0)
+  ]
+};
+const groupOrResultFalse = evaluateConditionGroup(groupOrAllFalse, conditionGroupRoster, selectionCounts, {});
+
+// NOT condition group: True if NOT all conditions are true
+const groupNot = {
+  type: 'not',
+  conditions: [
+    { field: 'unit-a', type: 'greaterThan', value: 0 }, // True (2 > 0)
+    { field: 'unit-b', type: 'greaterThan', value: 0 }  // False (0 > 0)
+  ]
+};
+const groupNotResultTrue = evaluateConditionGroup(groupNot, conditionGroupRoster, selectionCounts, {});
+
+const groupNotAllTrue = {
+  type: 'not',
+  conditions: [
+    { field: 'unit-a', type: 'greaterThan', value: 0 }, // True (2 > 0)
+    { field: 'unit-a', type: 'equalTo', value: 2 }      // True (2 == 2)
+  ]
+};
+const groupNotResultFalse = evaluateConditionGroup(groupNotAllTrue, conditionGroupRoster, selectionCounts, {});
+
+// AND condition group (default/other): True only if all conditions are true
+const groupAnd = {
+  type: 'and',
+  conditions: [
+    { field: 'unit-a', type: 'greaterThan', value: 0 }, // True
+    { field: 'unit-b', type: 'equalTo', value: 0 }      // True
+  ]
+};
+const groupAndResultTrue = evaluateConditionGroup(groupAnd, conditionGroupRoster, selectionCounts, {});
+
+const condGroupSuccess = 
+  groupOrResultTrue === true && 
+  groupOrResultFalse === false && 
+  groupNotResultTrue === true && 
+  groupNotResultFalse === false && 
+  groupAndResultTrue === true;
+
+console.log('Test 18 - Condition Group Logical Operators (AND, OR, NOT): ',
+  condGroupSuccess ? 'PASSED' : `FAILED (OR: ${groupOrResultTrue}/${groupOrResultFalse}, NOT: ${groupNotResultTrue}/${groupNotResultFalse}, AND: ${groupAndResultTrue})`
+);
+
+// Test 19: Repeating Modifiers (repeat field and limit)
+const repeatRoster = {
+  costLimit: 2500, // For limit::pts checks
+  costLimitType: 'pts',
+  forces: []
+};
+const repeatSelectionCounts = { 'unit-x': 6 };
+
+const mockConstraint = { id: 'con-max', value: 0 };
+
+// Mod 1: repeats every 1000 pts limit, increment by 2
+const modLimitRepeat = {
+  field: 'con-max',
+  type: 'increment',
+  valueObject: 2,
+  repeat: {
+    field: 'limit::pts',
+    value: 1000,
+    repeats: 1
+  }
+};
+// 2500 / 1000 = 2 repeats. Final value = 0 + (2 * 2 * 1) = 4.
+const valLimitRepeat = getModifiedConstraintValue(mockConstraint, [modLimitRepeat], repeatRoster, {}, {});
+
+// Mod 2: repeats every 2 selections of unit-x, decrement by 1
+const modFieldRepeat = {
+  field: 'con-max',
+  type: 'decrement',
+  valueObject: 1,
+  repeat: {
+    field: 'unit-x',
+    value: 2,
+    repeats: 3 // multiplier
+  }
+};
+// 10 - (1 * 3 * 3) = 1.
+const valFieldRepeat = getModifiedConstraintValue({ id: 'con-max', value: 10 }, [modFieldRepeat], repeatRoster, repeatSelectionCounts, {});
+
+const repeatSuccess = valLimitRepeat === 4 && valFieldRepeat === 1;
+console.log('Test 19 - Repeating Modifiers (repeat field and limit): ',
+  repeatSuccess ? 'PASSED' : `FAILED (limit-repeat: ${valLimitRepeat}/4, field-repeat: ${valFieldRepeat}/1)`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -1082,7 +1192,9 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     xmlCategoryLinksSuccess &&
     mappingSuccess &&
     fallbackSuccess &&
-    collisionSuccess) {
+    collisionSuccess &&
+    condGroupSuccess &&
+    repeatSuccess) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {
