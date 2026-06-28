@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
 import { resolveEntry } from '../../solver/validator';
+import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
   categoryId,
@@ -14,30 +15,6 @@ export default function CategoryUnitAdder({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [wrapperRef]);
-
-
-  useEffect(() => {
-    // Only lock body scroll if we are on a mobile viewport (width <= 900px)
-    if (isOpen && window.innerWidth <= 900) {
-      const originalStyle = window.getComputedStyle(document.body).overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalStyle;
-      };
-    }
-  }, [isOpen]);
 
   if (!activeCatalogue) return null;
 
@@ -86,47 +63,36 @@ export default function CategoryUnitAdder({
         {isOpen ? <X size={14} /> : <Plus size={14} />}
       </button>
 
-      {isOpen && (
-        <>
-          <div className="bottomsheet-backdrop" onClick={() => setIsOpen(false)} />
-          <div className="category-unit-adder-popover">
-            <div className="bottomsheet-handle" />
-            <div className="bottomsheet-header">
-              <span className="bottomsheet-title">{categoryName} ausheben</span>
-              <button 
-                type="button" 
-                className="bottomsheet-close-btn"
-                onClick={() => setIsOpen(false)}
-                title="Schließen"
+      <BottomSheet
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={`${categoryName} ausheben`}
+        desktopMode="popover"
+        containerRef={wrapperRef}
+      >
+        <div className="popover-list">
+          {availableUnits.map(entry => {
+            const res = resolveEntry(system, entry);
+            const points = res.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
+            return (
+              <div 
+                key={res.id} 
+                className="popover-item"
+                onClick={() => {
+                  addUnit(entry, categoryId);
+                  setIsOpen(false);
+                  if (onUnitAdded) onUnitAdded(res.name);
+                }}
               >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="popover-list">
-              {availableUnits.map(entry => {
-                const res = resolveEntry(system, entry);
-                const points = res.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
-                return (
-                  <div 
-                    key={res.id} 
-                    className="popover-item"
-                    onClick={() => {
-                      addUnit(entry, categoryId);
-                      setIsOpen(false);
-                      if (onUnitAdded) onUnitAdded(res.name);
-                    }}
-                  >
-                    <span className="popover-item-name">{res.name}</span>
-                    <span className="popover-item-cost font-sans text-gold">
-                      {points > 0 ? `+${points} ${costTypeLabel}` : `0 ${costTypeLabel}`}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
+                <span className="popover-item-name">{res.name}</span>
+                <span className="popover-item-cost font-sans text-gold">
+                  {points > 0 ? `+${points} ${costTypeLabel}` : `0 ${costTypeLabel}`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </BottomSheet>
     </div>
   );
 }

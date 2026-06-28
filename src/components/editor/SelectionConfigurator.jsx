@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus, HelpCircle, X } from 'lucide-react';
 import { resolveEntry, findEntryInSystem } from '../../solver/validator';
+import BottomSheet from './BottomSheet';
 
 export default function SelectionConfigurator({
   selection,
@@ -11,16 +12,6 @@ export default function SelectionConfigurator({
   activeCatalogue
 }) {
   const [activeInfo, setActiveInfo] = useState(null);
-
-  useEffect(() => {
-    if (activeInfo && window.innerWidth <= 900) {
-      const originalStyle = window.getComputedStyle(document.body).overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalStyle;
-      };
-    }
-  }, [activeInfo]);
 
   // Helper to compile a clean description string for an upgrade/magic item
   const getOptionDescription = (res) => {
@@ -406,28 +397,16 @@ export default function SelectionConfigurator({
         })}
       </div>
 
-      {activeInfo && (
-        <>
-          <div className="info-popup-backdrop" onClick={() => setActiveInfo(null)} />
-          <div className="info-popup-content">
-            <div className="info-popup-handle" />
-            <div className="info-popup-header">
-              <span className="info-popup-title">{activeInfo.title}</span>
-              <button 
-                type="button" 
-                className="info-popup-close-btn"
-                onClick={() => setActiveInfo(null)}
-                title="Schließen"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="info-popup-body">
-              {activeInfo.text}
-            </div>
-          </div>
-        </>
-      )}
+      <BottomSheet
+        isOpen={!!activeInfo}
+        onClose={() => setActiveInfo(null)}
+        title={activeInfo?.title || ''}
+        desktopMode="modal"
+      >
+        <div className="info-popup-body">
+          {activeInfo?.text}
+        </div>
+      </BottomSheet>
     </div>
   );
 }
