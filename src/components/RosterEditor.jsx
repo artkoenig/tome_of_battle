@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Save, Play, Trash2, Shield, AlertTriangle, Check, BookOpen } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
-import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -55,6 +55,27 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const renderMiniProfile = (selection) => {
+    const entryId = selection.entryLinkId || selection.selectionEntryId;
+    const rawEntry = findEntryInSystem(system, entryId);
+    const resolved = resolveEntry(system, rawEntry);
+    if (!resolved || !resolved.profiles || resolved.profiles.length === 0) return null;
+
+    return (
+      <div className="mini-profiles-container" style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        {resolved.profiles.map(prof => {
+          const statsString = prof.characteristics.map(c => `${c.name}:${c.value}`).join('  ');
+          return (
+            <div key={prof.id} className="mini-profile-row text-dim font-sans" style={{ fontSize: '0.8rem', lineHeight: '1.2' }}>
+              <span className="text-gold" style={{ marginRight: '6px', fontWeight: 600 }}>{prof.name}:</span>
+              <span>{statsString}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -238,8 +259,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                   style={{ cursor: 'pointer', padding: '12px 14px' }}
                                   onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
                                 >
-                                  <div className="selection-node-title">
+                                  <div className="selection-node-title" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>{selection.name}</span>
+                                    {renderMiniProfile(selection)}
                                   </div>
                                   <div className="selection-node-right">
                                     <span className="selection-node-cost font-sans">
@@ -302,8 +324,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             style={{ cursor: 'pointer', padding: '12px 14px' }}
                             onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
                           >
-                            <div className="selection-node-title">
+                            <div className="selection-node-title" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                               <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>{selection.name}</span>
+                              {renderMiniProfile(selection)}
                             </div>
                             <div className="selection-node-right">
                               <span className="selection-node-cost font-sans">
