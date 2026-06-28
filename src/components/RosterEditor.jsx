@@ -912,24 +912,34 @@ function OptionGroupComponent({
       if (con.type === 'max') {
         if (activePoints > con.value) {
           hasGroupError = true;
-          groupLimitInfo = `(Max: ${con.value} Pkt. | Aktuell: ${activePoints} Pkt.)`;
-        } else {
-          groupLimitInfo = `(Max: ${con.value} Pkt. | Rest: ${con.value - activePoints} Pkt.)`;
         }
       }
     } else {
       if (con.type === 'max') {
         if (activeCount > con.value) {
           hasGroupError = true;
-          groupLimitInfo = `(Max: ${con.value} | Aktuell: ${activeCount})`;
-        } else {
-          groupLimitInfo = `(Max: ${con.value} | Rest: ${con.value - activeCount})`;
         }
       }
     }
   });
 
-  const limitText = groupLimitInfo || (maxLimit !== Infinity ? `(Max: ${maxLimit})` : '');
+  let limitParts = [];
+  const ptsConstraint = filteredGroupConstraints.find(c => 
+    c.type === 'max' && 
+    (c.field === 'pts' || c.field === 'ecfa-8486-4f6c-c249' || c.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === c.field))
+  );
+  
+  if (ptsConstraint) {
+    limitParts.push(`${currentPoints} / ${ptsConstraint.value} Pkt.`);
+  } else if (currentPoints > 0) {
+    limitParts.push(`${currentPoints} Pkt.`);
+  }
+
+  if (maxLimit !== Infinity) {
+    limitParts.push(`Max: ${maxLimit}`);
+  }
+
+  const limitText = limitParts.length > 0 ? `(${limitParts.join(' | ')})` : '';
 
   return (
     <div style={{ marginBottom: '12px' }}>
