@@ -90,7 +90,14 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       }
     });
 
-    return { profiles, rules };
+    // Filter profiles to only keep model/unit stats profiles
+    const modelProfiles = profiles.filter(p => {
+      const typeLower = p.profileTypeName?.toLowerCase() || '';
+      return ['profile', 'profil', 'unit', 'einheit', 'creature', 'kreatur', 'monster', 'charakteristik', 'charakterwerte', 'mount', 'reittier'].some(t => typeLower.includes(t)) && 
+             !['magic item', 'equipment', 'ausrüstung', 'magic weapon', 'armour', 'rüstung', 'weapon', 'waffe', 'virtue', 'talisman', 'item', 'special rule', 'banner', 'standarte', 'runes', 'runen'].some(t => typeLower.includes(t));
+    });
+
+    return { profiles: modelProfiles, rules };
   };
 
   // Helper to compile chosen upgrades / items from a selection instance
