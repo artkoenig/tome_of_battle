@@ -539,10 +539,17 @@ select option {
   font-size: 0.9rem;
 }
 
+.sub-selection-row > div:first-child {
+  flex: 1;
+  min-width: 0;
+  padding-right: 12px;
+}
+
 .sub-selection-controls {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .quantity-control {
