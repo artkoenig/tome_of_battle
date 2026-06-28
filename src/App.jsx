@@ -138,7 +138,7 @@ export default function App() {
           <Shield className="text-gold" size={28} />
           <span className="logo-text">TOME OF BATTLE</span>
         </div>
-        <div style={{ display: 'flex', gap: '16px' }}>
+        <div className="app-header-actions">
           <button 
             className={view === 'rosters' ? 'btn-primary' : ''}
             onClick={() => { setView('rosters'); loadAllData(); }}
@@ -158,7 +158,7 @@ export default function App() {
       <main className="app-content">
         {view === 'rosters' && (
           <div className="container">
-            <div className="gothic-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="gothic-panel dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2>Heerlager</h2>
                 <p className="text-dim" style={{ margin: 0 }}>Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>

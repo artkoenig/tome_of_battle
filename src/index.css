@@ -976,6 +976,53 @@ input[type="radio"]:checked::after {
     display: none !important;
   }
 
+  /* Make global app header responsive on mobile dashboard view */
+  .app-header {
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    text-align: center !important;
+  }
+  .app-header .logo-container {
+    justify-content: center !important;
+  }
+  .app-header-actions {
+    display: flex !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+  .app-header-actions button {
+    flex: 1 !important;
+    font-size: 0.8rem !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Make dashboard header responsive */
+  .dashboard-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+    text-align: center !important;
+  }
+  .dashboard-header button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Make roster card actions responsive */
+  .roster-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .roster-actions button:not(.btn-danger) {
+    flex: 1 !important;
+    font-size: 0.8rem !important;
+    padding: 8px 10px !important;
+  }
+  .roster-actions button.btn-danger {
+    margin-left: 0 !important;
+  }
+
   /* Stack roster header editors vertically on mobile */
   .roster-header-editor {
     flex-direction: column !important;
@@ -994,6 +1041,19 @@ input[type="radio"]:checked::after {
   .roster-header-editor button {
     flex: 1 !important;
     justify-content: center !important;
+    padding: 8px 8px !important;
+    font-size: 0.78rem !important;
+    gap: 4px !important;
+  }
+
+  /* Responsive PlayMode structures */
+  .play-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .tracker-hub {
+    grid-template-columns: 1fr !important;
   }
 
   /* Mobile Tab Bar */
