@@ -222,7 +222,13 @@ export default function SelectionConfigurator({
   const groupMap = {};
 
   options.forEach(item => {
-    if (item.groupName) {
+    const groupNameLower = item.groupName?.toLowerCase() || '';
+    const isRoleGroup = groupNameLower === 'rolle' || 
+                        groupNameLower === 'role' || 
+                        groupNameLower === 'rollen' || 
+                        groupNameLower === 'roles';
+
+    if (item.groupName && !isRoleGroup) {
       if (!groupMap[item.groupName]) {
         groupMap[item.groupName] = {
           name: item.groupName,
