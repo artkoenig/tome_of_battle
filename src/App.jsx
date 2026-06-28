@@ -182,6 +182,8 @@ export default function App() {
                 {rosters.map(roster => {
                   const sys = systems.find(s => s.id === roster.systemId);
                   const cat = sys?.catalogues?.find(c => c.id === roster.catalogueId);
+                  const costTypeObj = sys?.costTypes?.find(ct => ct.id === roster.costLimitType);
+                  const costTypeLabel = costTypeObj?.name || 'Punkte';
                   
                   return (
                     <div key={roster.id} className="roster-card">
@@ -198,7 +200,7 @@ export default function App() {
                       </div>
                       <div className="roster-info">
                         <span className="font-sans" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
-                          Punktegrenze: {roster.costLimit} {roster.costLimitType.toUpperCase()}
+                          Punktegrenze: {roster.costLimit} {costTypeLabel}
                         </span>
                       </div>
                       <div className="roster-actions">
