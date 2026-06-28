@@ -1,0 +1,320 @@
+/**
+ * Compiles a flat list of entry paths and rule fields from a catalogue
+ * to provide a context object for the Vision AI matching.
+ */
+export function getCatalogueContext(system, catalogueId) {
+  const catalogue = system.catalogues?.find(c => c.id === catalogueId);
+  if (!catalogue) return [];
+
+  const list = [];
+  const addEntry = (se, path) => {
+    const profiles = [];
+    if (se.profiles) {
+      se.profiles.forEach(p => {
+        profiles.push({
+          id: p.id,
+          name: p.name,
+          stats: p.characteristics?.map(c => `${c.name}:${c.value}`).join(', ')
+        });
+      });
+    }
+
+    const rules = [];
+    if (se.rules) {
+      se.rules.forEach(r => {
+        rules.push({
+          id: r.id,
+          name: r.name,
+          description: r.description
+        });
+      });
+    }
+
+    list.push({
+      id: se.id,
+      type: 'entry',
+      name: se.name,
+      path,
+      points: se.costs?.find(c => c.typeId === 'pts' || c.name === 'pts' || c.typeId === 'ecfa-8486-4f6c-c249')?.value,
+      profiles,
+      rules,
+      constraints: se.constraints?.map(con => ({
+        id: con.id,
+        type: con.type,
+        value: con.value,
+        field: con.field,
+        scope: con.scope
+      }))
+    });
+  };
+
+  const addGroup = (seg, path) => {
+    list.push({
+      id: seg.id,
+      type: 'group',
+      name: seg.name,
+      path,
+      constraints: seg.constraints?.map(con => ({
+        id: con.id,
+        type: con.type,
+        value: con.value,
+        field: con.field,
+        scope: con.scope
+      }))
+    });
+  };
+
+  const traverse = (item, path) => {
+    if (!item) return;
+    if (item.selectionEntries) {
+      item.selectionEntries.forEach(se => {
+        addEntry(se, path + " -> " + se.name);
+        traverse(se, path + " -> " + se.name);
+      });
+    }
+    if (item.selectionEntryGroups) {
+      item.selectionEntryGroups.forEach(seg => {
+        addGroup(seg, path + " -> Group: " + seg.name);
+        traverse(seg, path + " -> Group: " + seg.name);
+      });
+    }
+  };
+
+  traverse(catalogue, catalogue.name);
+
+  catalogue.sharedSelectionEntries?.forEach(se => {
+    addEntry(se, catalogue.name + " (Shared) -> " + se.name);
+    traverse(se, catalogue.name + " (Shared) -> " + se.name);
+  });
+  catalogue.sharedSelectionEntryGroups?.forEach(seg => {
+    addGroup(seg, catalogue.name + " (Shared Group) -> " + seg.name);
+    traverse(seg, catalogue.name + " (Shared Group) -> " + seg.name);
+  });
+
+  return list;
+}
+
+/**
+ * Parses page number strings (e.g. "1,2,5-8,10") into an array of page numbers.
+ */
+export function parsePageNumbers(rangeStr) {
+  const pages = new Set();
+  const parts = rangeStr.split(',');
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (trimmed.includes('-')) {
+      const [start, end] = trimmed.split('-').map(s => parseInt(s.trim(), 10));
+      if (!isNaN(start) && !isNaN(end)) {
+        for (let i = start; i <= end; i++) {
+          pages.add(i);
+        }
+      }
+    } else {
+      const pageNum = parseInt(trimmed, 10);
+      if (!isNaN(pageNum)) {
+        pages.add(pageNum);
+      }
+    }
+  }
+  return Array.from(pages).sort((a, b) => a - b);
+}
+
+/**
+ * Executes a Gemini Vision AI content generation request to find discrepancies.
+ */
+export async function runVisionAnalysis(apiKey, base64Image, catalogueEntries) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: `Du bist ein präziser Tabletop-Regelprüfer.
+Hier ist das offizielle Armeebuch-Layout (Bild) und eine JSON-Liste aller Datenbankeinträge unserer Fraktion:
+${JSON.stringify(catalogueEntries, null, 2)}
+
+Deine Aufgabe ist es, die Werte im Bild (Soll-Werte) mit den Werten in der JSON-Liste (Ist-Werte) abzugleichen.
+Finde Abweichungen bei:
+1. Profilwerten (M, WS, BS, S, T, W, I, A, Ld)
+2. Punktekosten (z.B. Ausrüstung, Einheiten, Mounts)
+3. Limits/Regeln (z.B. maximale Punkte für magische Ausrüstung in Kategorien, oft in 'Magic and Traits' oder 'Magic Items')
+
+Für jede Abweichung, gib ein JSON-Objekt in einer Liste zurück. Verwende folgende Struktur:
+- "id": Die ID des Eintrags aus unserer Liste.
+- "type": "entry" | "profile" | "group" | "rule"
+- "field":
+  * "cost-[typeId]" (z.B. "cost-pts" oder "cost-ecfa-8486-4f6c-c249" für Punkte)
+  * "constraint-[id]" (z.B. "constraint-6462-adf4-4373-7820")
+  * "characteristic-[name]" (z.B. "characteristic-MW" oder "characteristic-A")
+  * "description" (für Regelbeschreibungen)
+- "originalValue": Der aktuelle Wert aus unserer Liste.
+- "newValue": Der korrekte Wert laut Armeebuch-Seite.
+- "reason": Kurze deutsche Begründung (z.B. "Laut Armeebuch Seite 55 beträgt das Limit 50 Punkte").
+
+Gibt NUR das rohe JSON-Array zurück (beginnend mit [ und endend mit ]). Verwende KEIN Markdown-Fencing (wie \`\`\`json). Wenn keine Abweichungen gefunden wurden, gib ein leeres Array [] zurück.`
+            },
+            {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: base64Image
+              }
+            }
+          ]
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API Error (HTTP ${response.status}): ${errText}`);
+  }
+
+  const resData = await response.json();
+  const textResponse = resData.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+  const cleanJson = textResponse.trim().replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+  return JSON.parse(cleanJson);
+}
+
+export function updateRawXml(system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription) {
+  if (!system.rawXmls) return;
+
+  let file = system.rawXmls.cat?.find(f => f.content.includes(entryId));
+  if (!file) {
+    file = system.rawXmls.gst?.find(f => f.content.includes(entryId));
+  }
+  if (!file) return;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(file.content, 'text/xml');
+
+  const element = doc.querySelector(`[id="${entryId}"]`);
+  if (!element) return;
+
+  if (localName !== undefined) {
+    element.setAttribute('name', localName);
+  }
+
+  if (type === 'entry') {
+    Object.entries(localCosts).forEach(([typeId, val]) => {
+      const costEl = element.querySelector(`cost[typeId="${typeId}"]`);
+      if (costEl) {
+        costEl.setAttribute('value', parseFloat(val) || 0);
+      }
+    });
+  }
+
+  if (type === 'entry' || type === 'group') {
+    Object.entries(localConstraints).forEach(([conId, val]) => {
+      const conEl = element.querySelector(`constraint[id="${conId}"]`);
+      if (conEl) {
+        conEl.setAttribute('value', parseFloat(val) || 0);
+      }
+    });
+  }
+
+  if (type === 'profile') {
+    Object.entries(localCharacteristics).forEach(([name, val]) => {
+      const charEl = Array.from(element.querySelectorAll('characteristic')).find(c => c.getAttribute('name') === name);
+      if (charEl) {
+        charEl.textContent = val;
+      }
+    });
+  }
+
+  if (type === 'rule') {
+    let descEl = element.querySelector('description');
+    if (!descEl) {
+      descEl = doc.createElement('description');
+      element.appendChild(descEl);
+    }
+    descEl.textContent = localDescription;
+  }
+
+  const serializer = new XMLSerializer();
+  file.content = serializer.serializeToString(doc);
+}
+
+export function findAndMutateJsonPatch(system, patch) {
+  let foundRef = null;
+
+  const traverse = (item) => {
+    if (foundRef) return;
+    if (item.id === patch.id) {
+      foundRef = item;
+      return;
+    }
+    if (item.selectionEntries) {
+      item.selectionEntries.forEach(traverse);
+    }
+    if (item.entryLinks) {
+      item.entryLinks.forEach(traverse);
+    }
+    if (item.selectionEntryGroups) {
+      item.selectionEntryGroups.forEach(traverse);
+    }
+    if (item.profiles) {
+      item.profiles.forEach(traverse);
+    }
+    if (item.rules) {
+      item.rules.forEach(traverse);
+    }
+  };
+
+  system.catalogues?.forEach(cat => {
+    traverse(cat);
+    cat.sharedSelectionEntries?.forEach(traverse);
+    cat.sharedSelectionEntryGroups?.forEach(traverse);
+    cat.sharedProfiles?.forEach(traverse);
+    cat.sharedRules?.forEach(traverse);
+  });
+
+  if (!foundRef) return false;
+
+  const localCosts = {};
+  const localConstraints = {};
+  const localCharacteristics = {};
+  let localName = foundRef.name;
+  let localDescription = foundRef.description;
+
+  if (patch.field === 'name') {
+    foundRef.name = patch.newValue;
+    localName = patch.newValue;
+  } else if (patch.field.startsWith('cost-')) {
+    const typeId = patch.field.replace('cost-', '');
+    if (foundRef.costs) {
+      const cost = foundRef.costs.find(c => c.typeId === typeId);
+      if (cost) {
+        cost.value = parseFloat(patch.newValue) || 0;
+        localCosts[typeId] = patch.newValue;
+      }
+    }
+  } else if (patch.field.startsWith('constraint-')) {
+    const conId = patch.field.replace('constraint-', '');
+    if (foundRef.constraints) {
+      const con = foundRef.constraints.find(c => c.id === conId);
+      if (con) {
+        con.value = parseFloat(patch.newValue) || 0;
+        localConstraints[conId] = patch.newValue;
+      }
+    }
+  } else if (patch.field.startsWith('characteristic-')) {
+    const charName = patch.field.replace('characteristic-', '');
+    if (foundRef.characteristics) {
+      const char = foundRef.characteristics.find(c => c.name === charName);
+      if (char) {
+        char.value = patch.newValue;
+        localCharacteristics[charName] = patch.newValue;
+      }
+    }
+  } else if (patch.field === 'description') {
+    foundRef.description = patch.newValue;
+    localDescription = patch.newValue;
+  }
+
+  updateRawXml(system, patch.id, patch.type, localName, localCosts, localConstraints, localCharacteristics, localDescription);
+  return true;
+}
