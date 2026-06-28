@@ -1,73 +1,63 @@
-/**
- * Helper to find a selection entry or entry link by ID within a catalogue,
- * searching in direct selections, shared entries, or recursively.
- */
 export function findEntryInCatalogue(catalogue, entryId) {
   if (!catalogue) return null;
   
-  // Helper to search a list of entries recursively
-  const searchList = (list) => {
-    if (!list) return null;
-    for (const entry of list) {
-      if (entry.id === entryId) return entry;
-      const subSearch = searchList(entry.selectionEntries) || 
-                        searchList(entry.entryLinks) ||
-                        searchList(entry.selectionEntryGroups);
-      if (subSearch) return subSearch;
-    }
-    return null;
-  };
+  if (!catalogue._entryCache) {
+    catalogue._entryCache = new Map();
+    
+    const indexObject = (obj) => {
+      if (!obj || typeof obj !== 'object') return;
+      if (obj.id) {
+        catalogue._entryCache.set(obj.id, obj);
+      }
+      for (const key in obj) {
+        const val = obj[key];
+        if (Array.isArray(val)) {
+          for (let i = 0; i < val.length; i++) {
+            indexObject(val[i]);
+          }
+        } else if (val && typeof val === 'object') {
+          if (key !== '_entryCache') {
+            indexObject(val);
+          }
+        }
+      }
+    };
 
-  // 1. Search catalogue's primary selection entries
-  let found = searchList(catalogue.selectionEntries) || searchList(catalogue.entryLinks);
-  if (found) return found;
+    indexObject(catalogue);
+  }
 
-  // 2. Search shared selection entries
-  found = searchList(catalogue.sharedSelectionEntries) || searchList(catalogue.sharedSelectionEntryGroups);
-  return found;
+  return catalogue._entryCache.get(entryId) || null;
 }
 
-/**
- * Searches for an entry across all catalogues inside a game system
- */
 export function findEntryInSystem(system, entryId) {
   if (!system) return null;
   
-  // Search gst shared items
-  if (system.sharedSelectionEntries) {
-    for (const se of system.sharedSelectionEntries) {
-      if (se.id === entryId) return se;
-    }
-  }
-  if (system.sharedRules) {
-    for (const r of system.sharedRules) {
-      if (r.id === entryId) return r;
-    }
-  }
-  if (system.sharedProfiles) {
-    for (const p of system.sharedProfiles) {
-      if (p.id === entryId) return p;
-    }
-  }
-
-  // Search each catalogue
-  for (const cat of system.catalogues || []) {
-    const entry = findEntryInCatalogue(cat, entryId);
-    if (entry) return entry;
+  if (!system._entryCache) {
+    system._entryCache = new Map();
     
-    if (cat.sharedRules) {
-      for (const r of cat.sharedRules) {
-        if (r.id === entryId) return r;
+    const indexObject = (obj) => {
+      if (!obj || typeof obj !== 'object') return;
+      if (obj.id) {
+        system._entryCache.set(obj.id, obj);
       }
-    }
-    if (cat.sharedProfiles) {
-      for (const p of cat.sharedProfiles) {
-        if (p.id === entryId) return p;
+      for (const key in obj) {
+        const val = obj[key];
+        if (Array.isArray(val)) {
+          for (let i = 0; i < val.length; i++) {
+            indexObject(val[i]);
+          }
+        } else if (val && typeof val === 'object') {
+          if (key !== '_entryCache') {
+            indexObject(val);
+          }
+        }
       }
-    }
+    };
+
+    indexObject(system);
   }
 
-  return null;
+  return system._entryCache.get(entryId) || null;
 }
 
 /**
