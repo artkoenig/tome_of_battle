@@ -63,13 +63,15 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     const resolved = resolveEntry(system, rawEntry);
     if (!resolved || !resolved.profiles || resolved.profiles.length === 0) return null;
 
+    const showPrefix = resolved.profiles.length > 1;
+
     return (
       <div className="mini-profiles-container" style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {resolved.profiles.map(prof => {
           const statsString = prof.characteristics.map(c => `${c.name}:${c.value}`).join('  ');
           return (
             <div key={prof.id} className="mini-profile-row text-dim font-sans" style={{ fontSize: '0.8rem', lineHeight: '1.2' }}>
-              <span className="text-gold" style={{ marginRight: '6px', fontWeight: 600 }}>{prof.name}:</span>
+              {showPrefix && <span className="text-gold" style={{ marginRight: '6px', fontWeight: 600 }}>{prof.name}:</span>}
               <span>{statsString}</span>
             </div>
           );
