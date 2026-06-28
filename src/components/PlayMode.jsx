@@ -10,6 +10,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const [roster, setRoster] = useState(initialRoster);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedUpgrades, setExpandedUpgrades] = useState({});
+  const [expandedEquipBlocks, setExpandedEquipBlocks] = useState({});
   const [gameState, setGameState] = useState(() => {
     return initialRoster.gameState || {
       round: 1,
@@ -671,64 +672,86 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                     </div>
 
                     {/* Ausrüstung & Upgrades */}
-                    {selectedUpgrades.length > 0 && (
-                      <div className="play-unit-wound-tracker">
-                        <h4 style={{ fontSize: '0.9rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <BookOpen size={14} /> Ausrüstung &amp; Upgrades
-                        </h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {selectedUpgrades.map(upgrade => {
-                            const desc = getUpgradeDescription(upgrade.resolved);
-                            const isExpanded = expandedUpgrades[upgrade.id];
-                            
-                            return (
-                              <div key={upgrade.id} style={{ fontSize: '0.85rem' }}>
-                                <div 
-                                  style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'space-between',
-                                    cursor: desc ? 'pointer' : 'default',
-                                    padding: '4px 8px',
-                                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                                    border: '1px solid var(--border-dark)',
-                                    borderRadius: '4px'
-                                  }}
-                                  onClick={() => desc && setExpandedUpgrades(prev => ({ ...prev, [upgrade.id]: !prev[upgrade.id] }))}
-                                >
-                                  <span className="text-gold" style={{ fontWeight: 600 }}>
-                                    {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
-                                  </span>
-                                  {desc && (
-                                    <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                                      {isExpanded ? 'Ausblenden ▲' : 'Anzeigen ▼'}
-                                    </span>
-                                  )}
-                                </div>
+                    {selectedUpgrades.length > 0 && (() => {
+                      const isEquipExpanded = expandedEquipBlocks[selection.id];
+                      return (
+                        <div className="play-unit-wound-tracker">
+                          <h4 
+                            style={{ 
+                              fontSize: '0.9rem', 
+                              marginBottom: isEquipExpanded ? '12px' : '0px', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'space-between',
+                              cursor: 'pointer',
+                              userSelect: 'none'
+                            }}
+                            onClick={() => setExpandedEquipBlocks(prev => ({ ...prev, [selection.id]: !prev[selection.id] }))}
+                          >
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <BookOpen size={14} /> Ausrüstung &amp; Upgrades
+                            </span>
+                            <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
+                              {isEquipExpanded ? 'Ausblenden ▲' : `Anzeigen (${selectedUpgrades.length}) ▼`}
+                            </span>
+                          </h4>
+                          
+                          {isEquipExpanded && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              {selectedUpgrades.map(upgrade => {
+                                const desc = getUpgradeDescription(upgrade.resolved);
+                                const isExpanded = expandedUpgrades[upgrade.id];
                                 
-                                {desc && isExpanded && (
-                                  <div 
-                                    className="text-dim" 
-                                    style={{ 
-                                      fontFamily: 'var(--font-body)', 
-                                      fontSize: '0.85rem', 
-                                      padding: '8px', 
-                                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                                      borderLeft: '2px solid var(--border-gold-dim)',
-                                      marginTop: '2px',
-                                      fontStyle: 'italic',
-                                      lineHeight: '1.3'
-                                    }}
-                                  >
-                                    {desc}
+                                return (
+                                  <div key={upgrade.id} style={{ fontSize: '0.85rem' }}>
+                                    <div 
+                                      style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between',
+                                        cursor: desc ? 'pointer' : 'default',
+                                        padding: '4px 8px',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                                        border: '1px solid var(--border-dark)',
+                                        borderRadius: '4px'
+                                      }}
+                                      onClick={() => desc && setExpandedUpgrades(prev => ({ ...prev, [upgrade.id]: !prev[upgrade.id] }))}
+                                    >
+                                      <span className="text-gold" style={{ fontWeight: 600 }}>
+                                        {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
+                                      </span>
+                                      {desc && (
+                                        <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                                          {isExpanded ? 'Ausblenden ▲' : 'Anzeigen ▼'}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    {desc && isExpanded && (
+                                      <div 
+                                        className="text-dim" 
+                                        style={{ 
+                                          fontFamily: 'var(--font-body)', 
+                                          fontSize: '0.85rem', 
+                                          padding: '8px', 
+                                          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                                          borderLeft: '2px solid var(--border-gold-dim)',
+                                          marginTop: '2px',
+                                          fontStyle: 'italic',
+                                          lineHeight: '1.3'
+                                        }}
+                                      >
+                                        {desc}
+                                      </div>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                            );
-                          })}
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
 
                 </div>
