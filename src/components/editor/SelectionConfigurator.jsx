@@ -219,10 +219,11 @@ export default function SelectionConfigurator({
     optionsList.forEach(item => {
       const res = resolveEntry(system, item.option);
       if (res) {
-        if (seenOptionIds.has(res.id)) {
+        const canonicalId = res.targetId || res.id;
+        if (seenOptionIds.has(canonicalId)) {
           return;
         }
-        seenOptionIds.add(res.id);
+        seenOptionIds.add(canonicalId);
       }
       uniqueOptionsList.push(item);
     });
