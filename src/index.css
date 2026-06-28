@@ -936,6 +936,12 @@ input[type="radio"]:checked::after {
   display: block;
 }
 
+@media (min-width: 901px) {
+  .general-errors-panel {
+    display: none !important;
+  }
+}
+
 /* Relocated and improved mobile layout media query to override desktop rules */
 @media (max-width: 900px) {
   .builder-layout {
