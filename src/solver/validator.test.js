@@ -1,4 +1,4 @@
-import { calculateRosterCosts, validateRoster } from './validator.js';
+import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry } from './validator.js';
 
 // 1. Mock Game System Definition
 const mockSystem = {
@@ -81,6 +81,39 @@ const mockSystem = {
                   id: 'item-lance',
                   name: 'Lance of Doom',
                   costs: [{ typeId: 'pts', value: 25 }]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'unit-shaman',
+          name: 'Orc Shaman',
+          costs: [{ typeId: 'pts', value: 80 }],
+          categoryLinks: [{ targetId: 'cat-hq' }],
+          selectionEntries: [
+            {
+              id: 'upgrade-show-spells',
+              name: 'Show Spells',
+              constraints: [
+                { id: 'limit-show-spells', type: 'max', value: 1, field: 'selections', scope: 'parent' }
+              ],
+              selectionEntryGroups: [
+                {
+                  id: 'group-little-waaagh',
+                  name: 'LittleWaaagh',
+                  selectionEntries: [
+                    {
+                      id: 'spell-gaze',
+                      name: '1. Gaze of Mork',
+                      costs: [{ typeId: 'pts', value: 0 }]
+                    },
+                    {
+                      id: 'spell-fist',
+                      name: '2. Fist of Gork',
+                      costs: [{ typeId: 'pts', value: 0 }]
+                    }
+                  ]
                 }
               ]
             }
@@ -436,6 +469,141 @@ const updateRawXmlTest = (system, entryId, type, localName, localCosts, localCon
   file.content = serializer.serializeToString(doc);
 };
 
+// Optimized getUnitOptions test version
+const getUnitOptionsTest = (unitSelection, system, activeCatalogue) => {
+  if (!activeCatalogue) return [];
+  const entryId = unitSelection.entryLinkId || unitSelection.selectionEntryId;
+  const rawEntry = findEntryInSystem(system, entryId);
+  const resolved = resolveEntry(system, rawEntry);
+  if (!resolved) return [];
+
+  const collectGroupItemIds = (gDef, groupItemIds = new Set(), visited = new Set()) => {
+    if (!gDef || visited.has(gDef.id)) return groupItemIds;
+    if (gDef.id) visited.add(gDef.id);
+
+    gDef.selectionEntries?.forEach(item => {
+      groupItemIds.add(item.id);
+      const res = resolveEntry(system, item);
+      if (res) groupItemIds.add(res.id);
+    });
+    gDef.entryLinks?.forEach(link => {
+      groupItemIds.add(link.id);
+      groupItemIds.add(link.targetId);
+      const res = resolveEntry(system, link);
+      if (res) {
+        groupItemIds.add(res.id);
+        collectGroupItemIds(res, groupItemIds, visited);
+      }
+    });
+    gDef.selectionEntryGroups?.forEach(subG => {
+      collectGroupItemIds(subG, groupItemIds, visited);
+    });
+    return groupItemIds;
+  };
+
+  const prepareConstraints = (gDef) => {
+    if (!gDef || !gDef.constraints) return [];
+    const itemIds = collectGroupItemIds(gDef);
+    return gDef.constraints.map(con => ({
+      ...con,
+      groupItemIds: itemIds
+    }));
+  };
+
+  const optionsList = [];
+
+  const collectOptions = (def, currentGroupName = null, parentConstraints = null) => {
+    def.selectionEntries?.forEach(child => {
+      const resolvedChild = resolveEntry(system, child);
+      if (!resolvedChild) return;
+
+      if (child.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
+        collectOptions(resolvedChild, currentGroupName || resolvedChild.name, prepareConstraints(resolvedChild).concat(parentConstraints || []));
+      } else {
+        optionsList.push({ 
+          option: child, 
+          parentDefId: def.id, 
+          groupName: currentGroupName, 
+          groupConstraints: parentConstraints 
+        });
+      }
+    });
+
+    def.entryLinks?.forEach(child => {
+      const resolvedChild = resolveEntry(system, child);
+      if (!resolvedChild) return;
+
+      if (child.type === 'selectionEntryGroup' || resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0) {
+        // FIXED: Only use resolvedChild constraints
+        const combinedConstraints = prepareConstraints(resolvedChild);
+        resolvedChild.selectionEntries?.forEach(subChild => {
+          optionsList.push({ 
+            option: subChild, 
+            parentDefId: def.id, 
+            groupName: resolvedChild.name || child.name, 
+            groupConstraints: combinedConstraints 
+          });
+        });
+        resolvedChild.entryLinks?.forEach(subChild => {
+          optionsList.push({ 
+            option: subChild, 
+            parentDefId: def.id, 
+            groupName: resolvedChild.name || child.name, 
+            groupConstraints: combinedConstraints 
+          });
+        });
+      } else if (resolvedChild.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
+        collectOptions(resolvedChild, currentGroupName || resolvedChild.name, prepareConstraints(resolvedChild).concat(parentConstraints || []));
+      } else {
+        optionsList.push({ 
+          option: child, 
+          parentDefId: def.id, 
+          groupName: currentGroupName, 
+          groupConstraints: parentConstraints 
+        });
+      }
+    });
+
+    def.selectionEntryGroups?.forEach(group => {
+      // FIXED: Only use group constraints
+      const combinedGroupConstraints = prepareConstraints(group);
+      group.selectionEntries?.forEach(child => {
+        optionsList.push({ 
+          option: child, 
+          parentDefId: def.id, 
+          groupName: group.name, 
+          groupConstraints: combinedGroupConstraints 
+        });
+      });
+      group.entryLinks?.forEach(child => {
+        const resolvedChild = resolveEntry(system, child);
+        if (resolvedChild && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0)) {
+          const combinedChildConstraints = [...prepareConstraints(resolvedChild), ...combinedGroupConstraints];
+          resolvedChild.selectionEntries?.forEach(sub => {
+            optionsList.push({ 
+              option: sub, 
+              parentDefId: def.id, 
+              groupName: resolvedChild.name || child.name || group.name, 
+              groupConstraints: combinedChildConstraints 
+            });
+          });
+          resolvedChild.entryLinks?.forEach(sub => {
+            optionsList.push({ 
+              option: sub, 
+              parentDefId: def.id, 
+              groupName: resolvedChild.name || child.name || group.name, 
+              groupConstraints: combinedChildConstraints 
+            });
+          });
+        }
+      });
+    });
+  };
+
+  collectOptions(resolved);
+  return optionsList;
+};
+
 // 4. Run Tests
 console.log('--- RUNNING SOLVER & VALIDATOR TESTS ---');
 
@@ -505,10 +673,24 @@ console.log('Test 7 - XML Modifier Serialization: ',
   (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint) ? 'PASSED' : `FAILED (XML did not update correctly. Output: ${updatedXml})`
 );
 
+// Test 8: Selection Entry Group Constraint Isolation (Waaagh Spells Bug)
+const mockShamanSelection = {
+  selectionEntryId: 'unit-shaman',
+  name: 'Orc Shaman'
+};
+const activeCatalogue = mockSystem.catalogues[0];
+const shamanOptions = getUnitOptionsTest(mockShamanSelection, mockSystem, activeCatalogue);
+const gazeSpellOption = shamanOptions.find(o => o.option.id === 'spell-gaze');
+const hasParentConstraintLeak = gazeSpellOption?.groupConstraints?.some(c => c.id === 'limit-show-spells');
+console.log('Test 8 - Selection Group Constraint Isolation (Waaagh Spells Bug): ',
+  (gazeSpellOption && !hasParentConstraintLeak) ? 'PASSED' : `FAILED (Spell option inherits parent limit: ${hasParentConstraintLeak})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
-    (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint)) {
+    (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint) &&
+    (gazeSpellOption && !hasParentConstraintLeak)) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {
