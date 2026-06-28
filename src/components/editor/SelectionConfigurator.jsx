@@ -32,6 +32,41 @@ export default function SelectionConfigurator({
 }) {
   const { showDebugIds } = useDebugMode();
   const [activeInfo, setActiveInfo] = useState(null);
+  const [hoveredInfo, setHoveredInfo] = useState(null);
+
+  const updateTooltipPosition = (e) => {
+    const tooltipWidth = 320;
+    const estimatedHeight = 150;
+    let x = e.clientX + 15;
+    let y = e.clientY + 15;
+
+    if (x + tooltipWidth > window.innerWidth) {
+      x = e.clientX - tooltipWidth - 15;
+      if (x < 10) x = 10;
+    }
+
+    if (y + estimatedHeight > window.innerHeight) {
+      y = e.clientY - estimatedHeight - 15;
+      if (y < 10) y = 10;
+    }
+    return { x, y };
+  };
+
+  const handleMouseEnter = (title, text, e) => {
+    if (window.innerWidth <= 900) return;
+    const pos = updateTooltipPosition(e);
+    setHoveredInfo({ title, text, x: pos.x, y: pos.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (window.innerWidth <= 900) return;
+    const pos = updateTooltipPosition(e);
+    setHoveredInfo(prev => prev ? { ...prev, x: pos.x, y: pos.y } : null);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredInfo(null);
+  };
 
   // Helper to compile a clean description string for an upgrade/magic item
   const getOptionDescription = (res) => {
@@ -377,7 +412,14 @@ export default function SelectionConfigurator({
                     <button
                       type="button"
                       className="info-help-btn"
-                      onClick={() => setActiveInfo({ title: res.name, text: descText })}
+                      onClick={() => {
+                        if (window.innerWidth <= 900) {
+                          setActiveInfo({ title: res.name, text: descText });
+                        }
+                      }}
+                      onMouseEnter={(e) => handleMouseEnter(res.name, descText, e)}
+                      onMouseMove={handleMouseMove}
+                      onMouseLeave={handleMouseLeave}
                       title="Beschreibung anzeigen"
                       style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: 'var(--text-gold)', opacity: 0.7, transition: 'opacity 0.2s' }}
                     >
@@ -435,6 +477,9 @@ export default function SelectionConfigurator({
                 getOptionDescription={getOptionDescription}
                 activeCatalogue={activeCatalogue}
                 setActiveInfo={setActiveInfo}
+                onHoverEnter={handleMouseEnter}
+                onHoverMove={handleMouseMove}
+                onHoverLeave={handleMouseLeave}
               />
             );
           }
@@ -451,6 +496,19 @@ export default function SelectionConfigurator({
           {activeInfo?.text}
         </div>
       </BottomSheet>
+
+      {hoveredInfo && (
+        <div 
+          className="gothic-tooltip"
+          style={{
+            left: hoveredInfo.x,
+            top: hoveredInfo.y
+          }}
+        >
+          <div className="tooltip-title">{hoveredInfo.title}</div>
+          <div className="tooltip-body">{hoveredInfo.text}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -465,7 +523,10 @@ function OptionGroupComponent({
   costTypeLabel,
   getOptionDescription,
   activeCatalogue,
-  setActiveInfo
+  setActiveInfo,
+  onHoverEnter,
+  onHoverMove,
+  onHoverLeave
 }) {
   const { showDebugIds } = useDebugMode();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -720,7 +781,14 @@ function OptionGroupComponent({
                     <button
                       type="button"
                       className="info-help-btn"
-                      onClick={() => setActiveInfo({ title: res.name, text: descText })}
+                      onClick={() => {
+                        if (window.innerWidth <= 900) {
+                          setActiveInfo({ title: res.name, text: descText });
+                        }
+                      }}
+                      onMouseEnter={(e) => onHoverEnter(res.name, descText, e)}
+                      onMouseMove={onHoverMove}
+                      onMouseLeave={onHoverLeave}
                       title="Beschreibung anzeigen"
                       style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: 'var(--text-gold)', opacity: 0.7, transition: 'opacity 0.2s' }}
                     >
