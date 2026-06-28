@@ -50,6 +50,19 @@ const searchEditableEntries = (system, query) => {
     }
   };
 
+  const addRule = (rule, catalogueName, path) => {
+    if (rule.name && rule.name.toLowerCase().includes(q)) {
+      results.push({
+        type: 'rule',
+        id: rule.id,
+        name: rule.name,
+        catalogueName,
+        path,
+        ref: rule
+      });
+    }
+  };
+
   const traverse = (item, catalogueName, path) => {
     if (!item) return;
 
@@ -77,6 +90,11 @@ const searchEditableEntries = (system, query) => {
         addProfile(p, catalogueName, path + " -> Profile: " + p.name);
       });
     }
+    if (item.rules) {
+      item.rules.forEach(r => {
+        addRule(r, catalogueName, path + " -> Rule: " + r.name);
+      });
+    }
   };
 
   system.catalogues?.forEach(cat => {
@@ -93,12 +111,15 @@ const searchEditableEntries = (system, query) => {
     cat.sharedProfiles?.forEach(p => {
       addProfile(p, cat.name, cat.name + " (Shared) -> " + p.name);
     });
+    cat.sharedRules?.forEach(r => {
+      addRule(r, cat.name, cat.name + " (Shared Rule) -> " + r.name);
+    });
   });
 
   return results.slice(0, 50);
 };
 
-const updateRawXml = (system, entryId, type, localName, localCosts, localConstraints, localCharacteristics) => {
+const updateRawXml = (system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription) => {
   if (!system.rawXmls) return;
 
   let file = system.rawXmls.cat?.find(f => f.content.includes(entryId));
@@ -144,6 +165,15 @@ const updateRawXml = (system, entryId, type, localName, localCosts, localConstra
     });
   }
 
+  if (type === 'rule') {
+    let descEl = element.querySelector('description');
+    if (!descEl) {
+      descEl = doc.createElement('description');
+      element.appendChild(descEl);
+    }
+    descEl.textContent = localDescription;
+  }
+
   const serializer = new XMLSerializer();
   file.content = serializer.serializeToString(doc);
 };
@@ -164,6 +194,7 @@ export default function Importer({ onSystemImported }) {
   const [localCosts, setLocalCosts] = useState({});
   const [localConstraints, setLocalConstraints] = useState({});
   const [localCharacteristics, setLocalCharacteristics] = useState({});
+  const [localDescription, setLocalDescription] = useState('');
 
   useEffect(() => {
     if (editingSystem) {
@@ -201,6 +232,8 @@ export default function Importer({ onSystemImported }) {
       });
     }
     setLocalCharacteristics(characteristicsMap);
+
+    setLocalDescription(res.ref.description || '');
   };
 
   const handleSave = async () => {
@@ -237,9 +270,11 @@ export default function Importer({ onSystemImported }) {
             }
           });
         }
+      } else if (selectedEntry.type === 'rule') {
+        selectedEntry.ref.description = localDescription;
       }
 
-      updateRawXml(editingSystem, selectedEntry.id, selectedEntry.type, localName, localCosts, localConstraints, localCharacteristics);
+      updateRawXml(editingSystem, selectedEntry.id, selectedEntry.type, localName, localCosts, localConstraints, localCharacteristics, localDescription);
 
       await saveSystem(editingSystem);
       setSuccessMsg(`"${localName}" erfolgreich gespeichert!`);
@@ -467,11 +502,11 @@ export default function Importer({ onSystemImported }) {
                           fontSize: '0.7rem', 
                           padding: '2px 6px', 
                           borderRadius: '3px',
-                          backgroundColor: res.type === 'entry' ? 'rgba(226,183,66,0.1)' : res.type === 'group' ? 'rgba(59,130,246,0.1)' : 'rgba(16,185,129,0.1)',
-                          color: res.type === 'entry' ? 'var(--text-gold)' : res.type === 'group' ? '#60a5fa' : '#34d399',
-                          border: `1px solid ${res.type === 'entry' ? 'var(--border-gold-dim)' : res.type === 'group' ? 'rgba(59,130,246,0.3)' : 'rgba(16,185,129,0.3)'}`
+                          backgroundColor: res.type === 'entry' ? 'rgba(226,183,66,0.1)' : res.type === 'group' ? 'rgba(59,130,246,0.1)' : res.type === 'profile' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                          color: res.type === 'entry' ? 'var(--text-gold)' : res.type === 'group' ? '#60a5fa' : res.type === 'profile' ? '#34d399' : '#f87171',
+                          border: `1px solid ${res.type === 'entry' ? 'var(--border-gold-dim)' : res.type === 'group' ? 'rgba(59,130,246,0.3)' : res.type === 'profile' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`
                         }}>
-                          {res.type === 'entry' ? 'Einheit/Option' : res.type === 'group' ? 'Kategorie/Gruppe' : 'Profil'}
+                          {res.type === 'entry' ? 'Einheit/Option' : res.type === 'group' ? 'Kategorie/Gruppe' : res.type === 'profile' ? 'Profil' : 'Regel/Beschreibung'}
                         </span>
                         <strong style={{ fontSize: '0.95rem' }} className="font-serif">{res.name}</strong>
                       </div>
@@ -644,6 +679,27 @@ export default function Importer({ onSystemImported }) {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+                {/* Rule Description Editor */}
+                {selectedEntry.type === 'rule' && (
+                  <div style={{ marginBottom: '16px', borderTop: '1px solid var(--border-dark)', paddingTop: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: 'var(--text-gold)', fontFamily: 'var(--font-body)' }}>Beschreibung (Regeltext)</label>
+                    <textarea 
+                      value={localDescription}
+                      onChange={(e) => setLocalDescription(e.target.value)}
+                      rows={6}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        backgroundColor: 'var(--bg-dark)',
+                        color: 'var(--text-parchment)',
+                        border: '1px solid var(--border-dark)',
+                        borderRadius: '4px',
+                        fontFamily: 'var(--font-body)',
+                        lineHeight: '1.4'
+                      }}
+                    />
                   </div>
                 )}
               </div>
