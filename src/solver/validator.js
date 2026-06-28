@@ -590,7 +590,15 @@ export function validateRoster(roster, system) {
   let generalCount = 0;
   const countGenerals = (selection) => {
     const entryId = selection.entryLinkId || selection.selectionEntryId;
-    if (entryId === '1b7c-2c90-6d96-28c9' || selection.name === 'General') {
+    const nameLower = selection.name?.toLowerCase() || '';
+    if (
+      entryId === '1b7c-2c90-6d96-28c9' ||
+      nameLower === 'general' ||
+      nameLower === 'armeegeneral' ||
+      nameLower === 'army general' ||
+      nameLower === 'warlord' ||
+      nameLower === 'general der armee'
+    ) {
       generalCount += (selection.number || 1);
     }
     if (selection.selections) {
