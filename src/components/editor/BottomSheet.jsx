@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
 export default function BottomSheet({
@@ -9,18 +9,33 @@ export default function BottomSheet({
   desktopMode = 'popover', // 'popover' or 'modal'
   containerRef // optional, to handle click outside
 }) {
-  const innerRef = useRef(null);
+  const [renderedChildren, setRenderedChildren] = useState(isOpen ? children : null);
+  const [renderedTitle, setRenderedTitle] = useState(isOpen ? title : '');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsTransitioning(true);
+      setRenderedChildren(children);
+      setRenderedTitle(title);
+    } else {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => {
+        setRenderedChildren(null);
+        setRenderedTitle('');
+        setIsTransitioning(false);
+      }, 300); // 300ms matches CSS transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, children, title]);
 
   // Close on click outside for desktop popover or modal
   useEffect(() => {
     function handleClickOutside(event) {
       if (!isOpen) return;
       
-      // On mobile, backdrop covers screen, so handled by backdrop onClick.
-      // On desktop:
       if (window.innerWidth > 900) {
         if (desktopMode === 'popover') {
-          // Check if click was outside popover and outside the container
           if (containerRef?.current && !containerRef.current.contains(event.target)) {
             onClose();
           }
@@ -45,18 +60,21 @@ export default function BottomSheet({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  // Do not render anything if closed and not transitioning
+  if (!isOpen && !isTransitioning) return null;
 
   return (
     <>
-      <div className="bottomsheet-backdrop" onClick={onClose} />
       <div 
-        ref={innerRef} 
-        className={`gothic-bottomsheet desktop-${desktopMode}`}
+        className={`bottomsheet-backdrop ${desktopMode === 'modal' ? 'desktop-modal-backdrop' : ''} ${isOpen ? 'open' : ''}`} 
+        onClick={onClose} 
+      />
+      <div 
+        className={`gothic-bottomsheet desktop-${desktopMode} ${isOpen ? 'open' : ''}`}
       >
         <div className="bottomsheet-handle" />
         <div className="bottomsheet-header">
-          <span className="bottomsheet-title">{title}</span>
+          <span className="bottomsheet-title">{renderedTitle}</span>
           <button 
             type="button" 
             className="bottomsheet-close-btn"
@@ -66,7 +84,7 @@ export default function BottomSheet({
             <X size={18} />
           </button>
         </div>
-        {children}
+        {renderedChildren}
       </div>
     </>
   );

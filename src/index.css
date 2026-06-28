@@ -1122,7 +1122,9 @@ input[type="radio"]:checked::after {
 .category-unit-adder-container {
   position: relative;
   display: inline-block;
-}/* Reusable Gothic Bottomsheet Styles */
+}
+
+/* Reusable Gothic Bottomsheet Styles */
 .bottomsheet-backdrop {
   position: fixed;
   top: 0;
@@ -1132,8 +1134,16 @@ input[type="radio"]:checked::after {
   background-color: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
   z-index: 1050;
-  display: none;
-  animation: fadeInSimple 0.2s ease-out;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out, visibility 0.25s;
+}
+
+.bottomsheet-backdrop.desktop-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .gothic-bottomsheet {
@@ -1153,19 +1163,44 @@ input[type="radio"]:checked::after {
   width: 280px;
   max-height: 250px;
   overflow-y: auto;
-  animation: fadeIn 0.15s ease-out;
   padding: 0 !important;
+
+  /* Transition animation */
+  opacity: 0;
+  transform: translateY(-5px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out, visibility 0.15s;
+}
+
+.gothic-bottomsheet.desktop-popover.open {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .gothic-bottomsheet.desktop-modal {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   width: 90%;
   max-width: 450px;
   padding: 24px;
-  animation: scaleUpIn 0.2s ease-out;
+
+  /* Transition animation */
+  transform: translate(-50%, -50%) scale(0.95);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s;
+}
+
+.gothic-bottomsheet.desktop-modal.open {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .gothic-bottomsheet .bottomsheet-handle {
@@ -1226,7 +1261,6 @@ input[type="radio"]:checked::after {
   transition: background-color 0.2s;
 }
 
-
 .popover-item:hover {
   background-color: rgba(226, 183, 66, 0.08);
 }
@@ -1269,15 +1303,13 @@ input[type="radio"]:checked::after {
   /* Backdrop is always displayed on mobile when open */
   .bottomsheet-backdrop {
     display: block !important;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(4px);
-    z-index: 1050;
-    animation: fadeInSimple 0.2s ease-out;
+    z-index: 1050 !important;
+  }
+  
+  .bottomsheet-backdrop.open {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 
   /* Bottomsheet always slides up from bottom on mobile */
@@ -1288,7 +1320,6 @@ input[type="radio"]:checked::after {
     left: 0 !important;
     right: 0 !important;
     top: auto !important;
-    transform: none !important;
     width: 100% !important;
     max-width: none !important;
     margin: 0 !important;
@@ -1296,13 +1327,24 @@ input[type="radio"]:checked::after {
     border-top: 3px double var(--border-gold) !important;
     border-radius: 16px 16px 0 0 !important;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.9) !important;
-    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    
+    /* Sliding transitions */
+    transform: translateY(100%) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s !important;
     will-change: transform;
     backface-visibility: hidden;
+    visibility: hidden;
+    
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
     z-index: 1060 !important;
+  }
+
+  .gothic-bottomsheet.desktop-popover.open,
+  .gothic-bottomsheet.desktop-modal.open {
+    transform: translateY(0) !important;
+    visibility: visible !important;
   }
 
   /* Specific padding/layout overrides on mobile */
