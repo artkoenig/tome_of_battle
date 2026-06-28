@@ -32,6 +32,12 @@ async function run() {
     console.log(`[Browser] ${text.trim()}`);
   });
 
+  page.on('pageerror', err => {
+    const text = `[PAGE ERROR] ${err.stack || err.message || err}\n`;
+    fs.appendFileSync(consoleLogPath, text);
+    console.error(`[Browser Error] ${text.trim()}`);
+  });
+
   // Helper functions
   const takeScreenshot = async (name) => {
     const filepath = path.join(ARTIFACT_DIR, `debug_${name}.png`);

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, ChevronRight, Plus, Minus, HelpCircle, X } from 'lucide-react';
 import { resolveEntry, findEntryInSystem } from '../../solver/validator';
 
 export default function SelectionConfigurator({
@@ -10,6 +10,18 @@ export default function SelectionConfigurator({
   costTypeLabel,
   activeCatalogue
 }) {
+  const [activeInfo, setActiveInfo] = useState(null);
+
+  useEffect(() => {
+    if (activeInfo && window.innerWidth <= 900) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [activeInfo]);
+
   // Helper to compile a clean description string for an upgrade/magic item
   const getOptionDescription = (res) => {
     if (!res) return '';
@@ -324,14 +336,18 @@ export default function SelectionConfigurator({
 
             return (
               <div key={res.id} className="sub-selection-row">
-                <div>
-                  <div>
-                    <span style={{ fontWeight: 600 }}>{res.name}</span>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontWeight: 600 }}>{res.name}</span>
                   {descText && (
-                    <div className="text-dim" style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', marginTop: '4px', fontStyle: 'italic', maxWidth: '420px', lineHeight: '1.3' }}>
-                      {descText}
-                    </div>
+                    <button
+                      type="button"
+                      className="info-help-btn"
+                      onClick={() => setActiveInfo({ title: res.name, text: descText })}
+                      title="Beschreibung anzeigen"
+                      style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: 'var(--text-gold)', opacity: 0.7, transition: 'opacity 0.2s' }}
+                    >
+                      <HelpCircle size={14} />
+                    </button>
                   )}
                 </div>
                 <div className="sub-selection-controls">
@@ -383,11 +399,35 @@ export default function SelectionConfigurator({
                 costTypeLabel={costTypeLabel}
                 getOptionDescription={getOptionDescription}
                 activeCatalogue={activeCatalogue}
+                setActiveInfo={setActiveInfo}
               />
             );
           }
         })}
       </div>
+
+      {activeInfo && (
+        <>
+          <div className="info-popup-backdrop" onClick={() => setActiveInfo(null)} />
+          <div className="info-popup-content">
+            <div className="info-popup-handle" />
+            <div className="info-popup-header">
+              <span className="info-popup-title">{activeInfo.title}</span>
+              <button 
+                type="button" 
+                className="info-popup-close-btn"
+                onClick={() => setActiveInfo(null)}
+                title="Schließen"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="info-popup-body">
+              {activeInfo.text}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -401,7 +441,8 @@ function OptionGroupComponent({
   updateSubSelection, 
   costTypeLabel,
   getOptionDescription,
-  activeCatalogue
+  activeCatalogue,
+  setActiveInfo
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -617,17 +658,21 @@ function OptionGroupComponent({
 
             return (
               <div key={res.id} className="sub-selection-row" style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}>
-                <div style={{ paddingLeft: '12px' }}>
-                  <div>
-                    <span style={{ fontWeight: 600, color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit' }}>
-                      {res.name}
-                      {isTakenElsewhere && <span className="text-danger" style={{ fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
-                    </span>
-                  </div>
+                <div style={{ paddingLeft: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontWeight: 600, color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit' }}>
+                    {res.name}
+                    {isTakenElsewhere && <span className="text-danger" style={{ fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                  </span>
                   {descText && (
-                    <div className="text-dim" style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', marginTop: '4px', fontStyle: 'italic', maxWidth: '420px', lineHeight: '1.3' }}>
-                      {descText}
-                    </div>
+                    <button
+                      type="button"
+                      className="info-help-btn"
+                      onClick={() => setActiveInfo({ title: res.name, text: descText })}
+                      title="Beschreibung anzeigen"
+                      style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: 'var(--text-gold)', opacity: 0.7, transition: 'opacity 0.2s' }}
+                    >
+                      <HelpCircle size={14} />
+                    </button>
                   )}
                 </div>
                 <div className="sub-selection-controls">
