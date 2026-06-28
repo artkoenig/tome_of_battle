@@ -40,7 +40,18 @@ const mockSystem = {
           targetId: 'cat-characters',
           name: 'Characters Link',
           constraints: [
-            { type: 'max', value: 1, scope: 'force' }
+            { id: 'limit-char-max', type: 'max', value: 1, scope: 'force' }
+          ],
+          modifiers: [
+            {
+              type: 'set',
+              field: 'limit-char-max',
+              value: '3',
+              valueObject: 3,
+              conditions: [
+                { field: 'limit::pts', type: 'lessThan', value: 2000 }
+              ]
+            }
           ]
         }
       ]
@@ -823,7 +834,7 @@ console.log('Test 10 - Unit Type Army Max Limit Check: ',
 // Test 11: Multi-category counts validation (Characters constraint max 1 limit)
 const mockRosterCharactersOverLimit = {
   name: 'Characters Over Limit',
-  costLimit: 1000,
+  costLimit: 2500,
   costLimitType: 'pts',
   forces: [
     {
@@ -874,6 +885,17 @@ console.log('Test 11 - Multi-category Force Limit Check (Characters): ',
   charactersOverLimitError ? 'PASSED' : `FAILED (No category-max error found: ${JSON.stringify(errorsCharacters)})`
 );
 
+// Test 12: Modifier evaluation on category constraints (Characters set to 3 at 1500pts)
+const mockRosterCharactersWithinModifiedLimit = {
+  ...mockRosterCharactersOverLimit,
+  costLimit: 1500
+};
+const errorsCharactersModified = validateRoster(mockRosterCharactersWithinModifiedLimit, mockSystem);
+const charactersWithinLimitNoError = !errorsCharactersModified.some(e => e.type === 'category-max' && e.categoryId === 'cat-characters');
+console.log('Test 12 - Category Constraint Modifier Evaluation (Limit 3 at 1500pts): ',
+  charactersWithinLimitNoError ? 'PASSED' : `FAILED (Constraint set modifier did not apply: ${JSON.stringify(errorsCharactersModified)})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -881,7 +903,8 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     (gazeSpellOption && !hasParentConstraintLeak) &&
     (takenForCap2 === true && takenForCap1 === false) &&
     tacOverLimitError &&
-    charactersOverLimitError) {
+    charactersOverLimitError &&
+    charactersWithinLimitNoError) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {

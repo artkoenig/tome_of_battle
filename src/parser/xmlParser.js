@@ -130,23 +130,49 @@ function parseConditionGroup(groupEl) {
 /**
  * Parses modifiers and modifierGroups
  */
+function parseSingleModifier(modEl) {
+  const conditions = getWrappedChildren(modEl, 'conditions', 'condition').map(parseCondition);
+  const conditionGroups = getWrappedChildren(modEl, 'conditionGroups', 'conditionGroup').map(parseConditionGroup);
+  
+  const repeatsEl = getWrappedChildren(modEl, 'repeats', 'repeat')[0];
+  const repeat = repeatsEl ? {
+    field: repeatsEl.getAttribute('field'),
+    value: parseFloat(repeatsEl.getAttribute('value')) || 0,
+    repeats: parseFloat(repeatsEl.getAttribute('repeats')) || 1,
+    roundUp: repeatsEl.getAttribute('roundUp') === 'true'
+  } : null;
+
+  return {
+    type: modEl.getAttribute('type'), // set, increment, decrement
+    field: modEl.getAttribute('field'), // cost, hidden, constraint
+    value: modEl.getAttribute('value'),
+    valueObject: parseFloat(modEl.getAttribute('value')) || 0,
+    conditions,
+    conditionGroups,
+    repeat
+  };
+}
+
 function parseModifiers(el) {
+  const list = [];
   const wrapper = getChildren(el, 'modifiers')[0];
-  if (!wrapper) return [];
-  return getChildren(wrapper, 'modifier').map(modEl => {
-    // A modifier can have direct conditions or conditionGroups
-    const conditions = getWrappedChildren(modEl, 'conditions', 'condition').map(parseCondition);
-    const conditionGroups = getWrappedChildren(modEl, 'conditionGroups', 'conditionGroup').map(parseConditionGroup);
-    
-    return {
-      type: modEl.getAttribute('type'), // set, increment, decrement
-      field: modEl.getAttribute('field'), // cost, hidden, constraint
-      value: modEl.getAttribute('value'),
-      valueObject: parseFloat(modEl.getAttribute('value')) || 0,
-      conditions,
-      conditionGroups
-    };
-  });
+  if (wrapper) {
+    getChildren(wrapper, 'modifier').forEach(modEl => {
+      list.push(parseSingleModifier(modEl));
+    });
+  }
+  const groupsWrapper = getChildren(el, 'modifierGroups')[0];
+  if (groupsWrapper) {
+    getChildren(groupsWrapper, 'modifierGroup').forEach(groupEl => {
+      const groupModsWrapper = getChildren(groupEl, 'modifiers')[0];
+      if (groupModsWrapper) {
+        getChildren(groupModsWrapper, 'modifier').forEach(modEl => {
+          list.push(parseSingleModifier(modEl));
+        });
+      }
+    });
+  }
+  return list;
 }
 
 /**
@@ -282,7 +308,8 @@ export function parseGameSystemXML(xmlText) {
       id: link.getAttribute('id'),
       name: link.getAttribute('name'),
       targetId: link.getAttribute('targetId'),
-      constraints: parseConstraints(link)
+      constraints: parseConstraints(link),
+      modifiers: parseModifiers(link)
     }));
 
     const subForces = getWrappedChildren(el, 'forceEntries', 'forceEntry').map(parseForceEntry);

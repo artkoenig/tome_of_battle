@@ -165,6 +165,95 @@ export function calculateRosterCosts(roster, system) {
   return totals;
 }
 
+const evaluateCondition = (cond, roster, selectionCounts, forceCategoryCounts) => {
+  if (!cond) return false;
+  let currentValue = 0;
+  if (cond.field && cond.field.startsWith('limit::')) {
+    currentValue = roster.costLimit || 0;
+  } else if (cond.field) {
+    currentValue = selectionCounts[cond.field] || forceCategoryCounts[cond.field] || 0;
+  }
+
+  const targetValue = cond.value;
+
+  switch (cond.type) {
+    case 'equalTo':
+      return currentValue === targetValue;
+    case 'lessThan':
+      return currentValue < targetValue;
+    case 'greaterThan':
+      return currentValue > targetValue;
+    case 'notEqualTo':
+      return currentValue !== targetValue;
+    case 'lessThanOrEqualTo':
+      return currentValue <= targetValue;
+    case 'greaterThanOrEqualTo':
+      return currentValue >= targetValue;
+    default:
+      return false;
+  }
+};
+
+const evaluateConditionGroup = (group, roster, selectionCounts, forceCategoryCounts) => {
+  if (!group) return true;
+  const condResults = group.conditions?.map(c => evaluateCondition(c, roster, selectionCounts, forceCategoryCounts)) || [];
+  const groupResults = group.conditionGroups?.map(g => evaluateConditionGroup(g, roster, selectionCounts, forceCategoryCounts)) || [];
+  
+  const allResults = [...condResults, ...groupResults];
+  if (allResults.length === 0) return true;
+
+  if (group.type === 'or') {
+    return allResults.some(r => r);
+  } else if (group.type === 'not') {
+    return !allResults.every(r => r);
+  } else {
+    return allResults.every(r => r);
+  }
+};
+
+const getModifiedConstraintValue = (con, modifiers, roster, selectionCounts, forceCategoryCounts) => {
+  let finalValue = con.value;
+
+  const sortedModifiers = [...(modifiers || [])].sort((a, b) => {
+    if (a.type === 'set' && b.type !== 'set') return -1;
+    if (a.type !== 'set' && b.type === 'set') return 1;
+    return 0;
+  });
+
+  sortedModifiers.forEach(mod => {
+    if (mod.field !== con.id) return;
+
+    const condsPass = mod.conditions?.every(c => evaluateCondition(c, roster, selectionCounts, forceCategoryCounts)) !== false;
+    const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, roster, selectionCounts, forceCategoryCounts)) !== false;
+
+    if (condsPass && groupsPass) {
+      let modAmount = mod.valueObject;
+
+      if (mod.repeat) {
+        let currentValue = 0;
+        if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
+          currentValue = roster.costLimit || 0;
+        } else if (mod.repeat.field) {
+          currentValue = selectionCounts[mod.repeat.field] || forceCategoryCounts[mod.repeat.field] || 0;
+        }
+
+        const repVal = mod.repeat.value ? Math.floor(currentValue / mod.repeat.value) : 0;
+        modAmount = mod.valueObject * repVal * (mod.repeat.repeats || 1);
+      }
+
+      if (mod.type === 'set') {
+        finalValue = modAmount;
+      } else if (mod.type === 'increment') {
+        finalValue += modAmount;
+      } else if (mod.type === 'decrement') {
+        finalValue -= modAmount;
+      }
+    }
+  });
+
+  return finalValue;
+};
+
 /**
  * Full constraint validator
  */
@@ -253,22 +342,24 @@ export function validateRoster(roster, system) {
 
       // Check min/max constraints on the category link
       catLink.constraints?.forEach(con => {
-        if (con.value < 0) return;
-        if (con.type === 'min' && count < con.value) {
+        const finalValue = getModifiedConstraintValue(con, catLink.modifiers, roster, selectionCounts, forceCategoryCounts);
+        if (finalValue < 0) return;
+        
+        if (con.type === 'min' && count < finalValue) {
           errors.push({
             type: 'category-min',
             forceId: force.id,
             categoryId: targetCatId,
-            message: `Mindestens ${con.value} Auswahlen für "${catName}" in ${forceDef.name} benötigt (aktuell: ${count}).`,
+            message: `Mindestens ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} benötigt (aktuell: ${count}).`,
             severity: 'error'
           });
         }
-        if (con.type === 'max' && count > con.value) {
+        if (con.type === 'max' && count > finalValue) {
           errors.push({
             type: 'category-max',
             forceId: force.id,
             categoryId: targetCatId,
-            message: `Maximal ${con.value} Auswahlen für "${catName}" in ${forceDef.name} erlaubt (aktuell: ${count}).`,
+            message: `Maximal ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} erlaubt (aktuell: ${count}).`,
             severity: 'error'
           });
         }
@@ -282,10 +373,13 @@ export function validateRoster(roster, system) {
 
       if (!entry) return;
 
+      const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
+
        // 1. Validate individual constraints of this entry
       if (entry.constraints) {
         entry.constraints.forEach(con => {
-          if (con.value < 0) return;
+          const finalValue = getModifiedConstraintValue(con, entry.modifiers, roster, selectionCounts, forceCategoryCounts);
+          if (finalValue < 0) return;
           
           // Check scope applicability for specific category/entry scoped constraints
           if (con.scope !== 'parent' && con.scope !== 'force' && con.scope !== 'roster') {
@@ -316,19 +410,19 @@ export function validateRoster(roster, system) {
             count = Math.max(selectionCounts[entryId] || 0, (entry.targetId ? selectionCounts[entry.targetId] || 0 : 0));
           }
 
-          if (con.type === 'min' && count < con.value) {
+          if (con.type === 'min' && count < finalValue) {
             errors.push({
               type: 'entry-min',
               selectionId: selection.id,
-              message: `Option "${selection.name}" erfordert mindestens ${con.value} Auswahlen (aktuell: ${count}).`,
+              message: `Option "${selection.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${count}).`,
               severity: 'error'
             });
           }
-          if (con.type === 'max' && count > con.value) {
+          if (con.type === 'max' && count > finalValue) {
             errors.push({
               type: 'entry-max',
               selectionId: selection.id,
-              message: `Option "${selection.name}" erlaubt maximal ${con.value} Auswahlen (aktuell: ${count}).`,
+              message: `Option "${selection.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${count}).`,
               severity: 'error'
             });
           }
