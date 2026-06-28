@@ -6,8 +6,10 @@ import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 
 import SystemEditorView from './importer/SystemEditorView';
+import { useDebugMode } from '../hooks/DebugContext';
 
 export default function Importer({ onSystemImported }) {
+  const { showDebugIds } = useDebugMode();
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -204,7 +206,10 @@ export default function Importer({ onSystemImported }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <FileText className="text-gold" size={24} />
                   <div>
-                    <h4 style={{ margin: 0 }}>{sys.name}</h4>
+                    <h4 style={{ margin: 0 }}>
+                      {sys.name}
+                      {showDebugIds && <span className="debug-id-badge">{sys.id}</span>}
+                    </h4>
                     <span className="text-dim" style={{ fontSize: '0.85rem' }}>
                       {sys.catalogues?.length || 0} Fraktionskataloge geladen
                     </span>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, ShieldAlert } from 'lucide-react';
 import { computeRosterCounts, getModifiedConstraintValue } from '../../solver/validator';
+import { useDebugMode } from '../../hooks/DebugContext';
 
 export default function RosterSidebar({
   roster,
@@ -10,6 +11,7 @@ export default function RosterSidebar({
   costTypeLabel,
   className
 }) {
+  const { showDebugIds } = useDebugMode();
   return (
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
@@ -77,7 +79,11 @@ export default function RosterSidebar({
                   color: 'var(--text-parchment)'
                 }}
               >
-                <span>{catName}:</span>
+                <span>
+                  {catName}
+                  {showDebugIds && <span className="debug-id-badge">{catLink.targetId}</span>}
+                  :
+                </span>
                 <span 
                   className={isInvalid ? "badge badge-danger font-sans" : "badge font-sans"} 
                   style={{ 

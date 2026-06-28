@@ -1532,3 +1532,20 @@ input[type="radio"]:checked::after {
     opacity: 1;
   }
 }
+
+/* Debugging ID display */
+.debug-id-badge {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.7rem;
+  background-color: rgba(226, 183, 66, 0.08);
+  border: 1px dashed rgba(226, 183, 66, 0.4);
+  color: var(--text-gold);
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+  user-select: all;
+}
+

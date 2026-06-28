@@ -10,9 +10,11 @@ import {
   searchEditableEntries
 } from '../../parser/pdfRulesExtractor';
 import { processImportedData } from '../../parser/xmlParser';
+import { useDebugMode } from '../../hooks/DebugContext';
 
 
 export default function SystemEditorView({ system, onClose, onSystemSaved }) {
+  const { showDebugIds } = useDebugMode();
   const [editingSystem, setEditingSystem] = useState(system);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
@@ -368,7 +370,10 @@ export default function SystemEditorView({ system, onClose, onSystemSaved }) {
                         }}
                       >
                         <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontWeight: 600 }}>{entry.name}</span>
+                          <span style={{ fontWeight: 600 }}>
+                            {entry.name}
+                            {showDebugIds && <span className="debug-id-badge">{entry.id}</span>}
+                          </span>
                           <span className="badge font-sans" style={{ fontSize: '0.7rem' }}>{entry.type}</span>
                         </div>
                         <span className="text-dim" style={{ fontSize: '0.75rem', marginTop: '4px' }}>{entry.path}</span>

@@ -5,8 +5,10 @@ import {
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
 import { findEntryInCatalogue, findEntryInSystem, resolveEntry } from '../solver/validator';
+import { useDebugMode } from '../hooks/DebugContext';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
+  const { showDebugIds } = useDebugMode();
   const [roster, setRoster] = useState(initialRoster);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedUpgrades, setExpandedUpgrades] = useState({});
@@ -540,7 +542,15 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
               {/* Unit Header */}
               <div className="play-unit-header">
                 <div className="play-unit-header-left">
-                  <span className="play-unit-title">{selection.name}</span>
+                  <span className="play-unit-title">
+                    {selection.name}
+                    {showDebugIds && (
+                      <>
+                        <span className="debug-id-badge" title="Instanz-ID">inst:{selection.id}</span>
+                        <span className="debug-id-badge" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
+                      </>
+                    )}
+                  </span>
                   <span className="text-dim" style={{ fontSize: '0.85rem' }}>
                     {modelCount} Modell(e) | Max LP: {maxWounds}
                   </span>
@@ -564,7 +574,9 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                       profiles.map((prof, pIdx) => (
                         <div key={pIdx} style={{ marginBottom: '12px' }}>
                           <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                            {prof.name} ({prof.profileTypeName})
+                            {prof.name}
+                            {showDebugIds && <span className="debug-id-badge">{prof.id}</span>}
+                            {' '}({prof.profileTypeName})
                           </span>
                           <div className="profile-table-container">
                             <table className="profile-table">
@@ -614,7 +626,11 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {rules.map((rule, rIdx) => (
                             <div key={rIdx} style={{ fontSize: '0.85rem' }}>
-                              <strong className="text-gold">{rule.name}:</strong>{' '}
+                              <strong className="text-gold">
+                                {rule.name}
+                                {showDebugIds && <span className="debug-id-badge">{rule.id}</span>}
+                                :
+                              </strong>{' '}
                               <span style={{ color: 'var(--text-parchment)' }}>{rule.description}</span>
                             </div>
                           ))}
@@ -719,6 +735,12 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                                     >
                                       <span className="text-gold" style={{ fontWeight: 600 }}>
                                         {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
+                                        {showDebugIds && (
+                                          <>
+                                            <span className="debug-id-badge" title="Instanz-ID">inst:{upgrade.id}</span>
+                                            <span className="debug-id-badge" title="Definition-ID">def:{upgrade.resolved?.id}</span>
+                                          </>
+                                        )}
                                       </span>
                                       {desc && (
                                         <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>

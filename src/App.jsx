@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, FolderOpen, Plus, Trash2, Shield, Play, Edit3 } from 'lucide-react';
+import { BookOpen, FolderOpen, Plus, Trash2, Shield, Play, Edit3, Bug } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
+import { useDebugMode } from './hooks/DebugContext';
 
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
 import PlayMode from './components/PlayMode';
 
 export default function App() {
+  const { showDebugIds, toggleShowDebugIds } = useDebugMode();
   const [view, setView] = useState('rosters'); // rosters, importer, builder, play
   const [systems, setSystems] = useState([]);
   const [rosters, setRosters] = useState([]);
@@ -139,6 +141,22 @@ export default function App() {
           <span className="logo-text">TOME OF BATTLE</span>
         </div>
         <div className="app-header-actions">
+          <button
+            className={showDebugIds ? 'btn-gold btn-active' : 'btn-sm'}
+            onClick={toggleShowDebugIds}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderColor: showDebugIds ? 'var(--text-gold)' : 'var(--border-dark)',
+              background: showDebugIds ? 'rgba(226, 183, 66, 0.15)' : 'transparent',
+              color: showDebugIds ? 'var(--text-gold)' : 'var(--text-dim)'
+            }}
+            title="Debugging: IDs ein-/ausblenden"
+          >
+            <Bug size={18} className={showDebugIds ? 'text-gold' : 'text-dim'} />
+            <span style={{ fontSize: '0.85rem' }}>IDs</span>
+          </button>
           <button 
             className={view === 'rosters' ? 'btn-primary' : ''}
             onClick={() => { setView('rosters'); loadAllData(); }}
@@ -189,12 +207,17 @@ export default function App() {
                     <div key={roster.id} className="roster-card">
                       <div className="roster-card-header">
                         <div>
-                          <h3 className="roster-title">{roster.name}</h3>
+                          <h3 className="roster-title">
+                            {roster.name}
+                            {showDebugIds && <span className="debug-id-badge">{roster.id}</span>}
+                          </h3>
                           <div className="roster-meta">
                             {sys ? sys.name : 'Unbekanntes System'}
+                            {showDebugIds && sys && <span className="debug-id-badge">{sys.id}</span>}
                           </div>
                           <div className="roster-meta" style={{ color: 'var(--text-gold)', marginTop: '2px' }}>
                             Fraktion: {cat ? cat.name : 'Keine'}
+                            {showDebugIds && cat && <span className="debug-id-badge">{cat.id}</span>}
                           </div>
                         </div>
                       </div>
@@ -278,7 +301,9 @@ export default function App() {
                   >
                     <option value="" disabled>System auswählen...</option>
                     {systems.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
+                      <option key={s.id} value={s.id}>
+                        {s.name}{showDebugIds ? ` [ID: ${s.id}]` : ''}
+                      </option>
                     ))}
                   </select>
                   {systems.length === 0 && (
@@ -298,7 +323,9 @@ export default function App() {
                   >
                     <option value="" disabled>Fraktion auswählen...</option>
                     {activeModalSystem?.catalogues?.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}{showDebugIds ? ` [ID: ${cat.id}]` : ''}
+                      </option>
                     ))}
                   </select>
                 </div>

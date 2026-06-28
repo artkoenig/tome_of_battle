@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus, HelpCircle, X } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
+import { useDebugMode } from '../../hooks/DebugContext';
 
 const findForceOfSelection = (selId, forces) => {
   if (!forces) return null;
@@ -29,6 +30,7 @@ export default function SelectionConfigurator({
   costTypeLabel,
   activeCatalogue
 }) {
+  const { showDebugIds } = useDebugMode();
   const [activeInfo, setActiveInfo] = useState(null);
 
   // Helper to compile a clean description string for an upgrade/magic item
@@ -367,7 +369,10 @@ export default function SelectionConfigurator({
             return (
               <div key={res.id} className="sub-selection-row">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: 600 }}>{res.name}</span>
+                  <span style={{ fontWeight: 600 }}>
+                    {res.name}
+                    {showDebugIds && <span className="debug-id-badge">{res.id}</span>}
+                  </span>
                   {descText && (
                     <button
                       type="button"
@@ -462,6 +467,7 @@ function OptionGroupComponent({
   activeCatalogue,
   setActiveInfo
 }) {
+  const { showDebugIds } = useDebugMode();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
@@ -707,6 +713,7 @@ function OptionGroupComponent({
                 <div style={{ paddingLeft: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontWeight: 600, color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit' }}>
                     {res.name}
+                    {showDebugIds && <span className="debug-id-badge">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger" style={{ fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>
                   {descText && (

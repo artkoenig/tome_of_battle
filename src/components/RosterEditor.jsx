@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Save, Play, Trash2, Shield, AlertTriangle, Check, BookOpen } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
+import { useDebugMode } from '../hooks/DebugContext';
 import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
@@ -8,6 +9,7 @@ import RosterSidebar from './editor/RosterSidebar';
 import SelectionConfigurator from './editor/SelectionConfigurator';
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay }) {
+  const { showDebugIds } = useDebugMode();
   const {
     roster,
     costs,
@@ -162,14 +164,20 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         {selectedCatalogEntry && (
           <div className="gothic-panel" style={{ borderStyle: 'solid', borderWidth: '1px', padding: '16px', marginBottom: '24px' }}>
             <div className="flex-between">
-              <h3>{selectedCatalogEntry.name} - Statblock</h3>
+              <h3>
+                {selectedCatalogEntry.name}
+                {showDebugIds && <span className="debug-id-badge">{selectedCatalogEntry.id}</span>}
+                {' '} - Statblock
+              </h3>
               <button className="btn-sm" onClick={() => setSelectedCatalogEntry(null)}>Schließen</button>
             </div>
             
             {selectedCatalogEntry.profiles?.map(prof => (
               <div key={prof.id} style={{ marginTop: '12px' }}>
                 <span className="font-serif text-gold" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                  {prof.name} ({prof.profileTypeName})
+                  {prof.name}
+                  {showDebugIds && <span className="debug-id-badge">{prof.id}</span>}
+                  {' '}({prof.profileTypeName})
                 </span>
                 <div className="profile-table-container">
                   <table className="profile-table">
@@ -194,7 +202,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
             {selectedCatalogEntry.rules?.map(rule => (
               <div key={rule.id} style={{ marginTop: '8px' }}>
-                <strong className="text-gold">{rule.name}:</strong> <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)' }}>{rule.description}</span>
+                <strong className="text-gold">
+                  {rule.name}
+                  {showDebugIds && <span className="debug-id-badge">{rule.id}</span>}
+                  :
+                </strong> <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)' }}>{rule.description}</span>
               </div>
             ))}
           </div>
@@ -234,7 +246,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     <div key={link.targetId} className="roster-category-group" style={{ marginBottom: '24px' }}>
                       <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <h3 className="font-serif text-gold" style={{ margin: 0, border: 'none', padding: 0, fontSize: '1.15rem' }}>{catName}</h3>
+                          <h3 className="font-serif text-gold" style={{ margin: 0, border: 'none', padding: 0, fontSize: '1.15rem' }}>
+                            {catName}
+                            {showDebugIds && <span className="debug-id-badge">{link.targetId}</span>}
+                          </h3>
                           {(() => {
                             const limitParts = [];
                             if (minVal > 0) limitParts.push(`Min: ${minVal}`);
@@ -302,7 +317,15 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 >
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                                     <div className="selection-node-title">
-                                      <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>{selection.name}</span>
+                                      <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>
+                                        {selection.name}
+                                        {showDebugIds && (
+                                          <>
+                                            <span className="debug-id-badge" title="Instanz-ID">inst:{selection.id}</span>
+                                            <span className="debug-id-badge" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
+                                          </>
+                                        )}
+                                      </span>
                                     </div>
                                     <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                       <span className="selection-node-cost font-sans">
@@ -369,7 +392,15 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                               <div className="selection-node-title">
-                                <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>{selection.name}</span>
+                                <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>
+                                  {selection.name}
+                                  {showDebugIds && (
+                                    <>
+                                      <span className="debug-id-badge" title="Instanz-ID">inst:{selection.id}</span>
+                                      <span className="debug-id-badge" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
+                                    </>
+                                  )}
+                                </span>
                               </div>
                               <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <span className="selection-node-cost font-sans">
