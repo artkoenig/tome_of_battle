@@ -144,6 +144,75 @@ export function resolveEntry(system, entry, catalogueId = null) {
 }
 
 /**
+ * Recursively computes the display cost of an option definition, including its base cost
+ * and the costs of any mandatory sub-selections (min > 0).
+ */
+export function getOptionDisplayCost(system, entry, costLimitType) {
+  let resolved = resolveEntry(system, entry);
+  if (!resolved) return 0;
+
+  // If resolved is a skeleton or reference, look up the full entry in the system
+  if (resolved.id && (!resolved.costs || resolved.costs.length === 0) && (!resolved.selectionEntries || resolved.selectionEntries.length === 0) && (!resolved.entryLinks || resolved.entryLinks.length === 0) && (!resolved.selectionEntryGroups || resolved.selectionEntryGroups.length === 0)) {
+    const fullEntry = findEntryInSystem(system, resolved.id);
+    if (fullEntry) {
+      resolved = resolveEntry(system, fullEntry);
+    }
+  }
+
+  let total = 0;
+  
+  // 1. Direct cost of this entry
+  const directCost = resolved.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
+  total += directCost;
+
+  // 2. Direct costs of mandatory child selection entries
+  resolved.selectionEntries?.forEach(child => {
+    const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
+    if (minCon > 0) {
+      total += getOptionDisplayCost(system, child, costLimitType) * minCon;
+    }
+  });
+
+  // 3. Direct costs of mandatory child entry links
+  resolved.entryLinks?.forEach(child => {
+    const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
+    if (minCon > 0) {
+      total += getOptionDisplayCost(system, child, costLimitType) * minCon;
+    }
+  });
+
+  // 4. Direct costs of mandatory groups
+  resolved.selectionEntryGroups?.forEach(group => {
+    const minCon = group.constraints?.find(c => c.type === 'min')?.value || 0;
+    if (minCon > 0 && (group.selectionEntries?.length > 0 || group.entryLinks?.length > 0)) {
+      const firstOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
+      total += getOptionDisplayCost(system, firstOption, costLimitType) * minCon;
+    }
+  });
+
+  return total;
+}
+
+/**
+ * Recursively calculates the total cost of a selection node and all its child selections.
+ */
+export function getSelectionTotalCost(selection, costLimitType) {
+  let total = 0;
+  if (selection.costs) {
+    const cost = selection.costs.find(c => c.typeId === costLimitType || c.typeId === 'pts');
+    if (cost) {
+      total += (cost.value || 0) * (selection.number || 1);
+    }
+  }
+  if (selection.selections) {
+    selection.selections.forEach(child => {
+      total += getSelectionTotalCost(child, costLimitType);
+    });
+  }
+  return total;
+}
+
+/**
  * Traverses a roster's nested selections and computes total costs,
  * returning flat stats and a resolved points total.
  */
@@ -556,8 +625,8 @@ export function validateRoster(roster, system) {
 
         const totalCount = matchingSelections.reduce((sum, s) => sum + (s.number || 1), 0);
         const totalPoints = matchingSelections.reduce((sum, s) => {
-          const pts = s.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
-          return sum + (pts * (s.number || 1));
+          const pts = getSelectionTotalCost(s, roster.costLimitType);
+          return sum + pts;
         }, 0);
 
         group.constraints?.forEach(con => {

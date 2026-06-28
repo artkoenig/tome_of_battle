@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus, HelpCircle, X } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 
 const findForceOfSelection = (selId, forces) => {
@@ -344,7 +344,7 @@ export default function SelectionConfigurator({
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
-            const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
+            const points = getOptionDisplayCost(system, option, roster.costLimitType);
             const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
             const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
             const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
@@ -533,7 +533,7 @@ function OptionGroupComponent({
   const currentPoints = group.items.reduce((sum, item) => {
     const res = resolveEntry(system, item.option, activeCatalogue.id);
     const count = res ? getSubSelectionCount(selection, res.id) : 0;
-    const points = res?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+    const points = getOptionDisplayCost(system, item.option, roster.costLimitType);
     return sum + (points * count);
   }, 0);
 
@@ -553,9 +553,9 @@ function OptionGroupComponent({
         const subId = sub.entryLinkId || sub.selectionEntryId;
         if (con.groupItemIds.has(subId)) {
           const count = sub.number || 1;
-          const pts = sub.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+          const pts = getSelectionTotalCost(sub, roster.costLimitType);
           sumCount += count;
-          sumPoints += (pts * count);
+          sumPoints += pts;
         }
       });
       activeCount = sumCount;
@@ -636,7 +636,7 @@ function OptionGroupComponent({
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
-            const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
+            const points = getOptionDisplayCost(system, option, roster.costLimitType);
             const filteredOptionConstraints = res.constraints?.filter(con => {
               if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
                 return true;
@@ -672,8 +672,8 @@ function OptionGroupComponent({
                   const subId = sub.entryLinkId || sub.selectionEntryId;
                   if (ptsConstraintGroup.groupItemIds.has(subId)) {
                     const count = sub.number || 1;
-                    const pts = sub.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
-                    sumPoints += (pts * count);
+                    const pts = getSelectionTotalCost(sub, roster.costLimitType);
+                    sumPoints += pts;
                   }
                 });
                 activePoints = sumPoints;
@@ -686,8 +686,7 @@ function OptionGroupComponent({
                   return otherRes && otherRes.id !== res.id && getSubSelectionCount(selection, otherRes.id) > 0;
                 });
                 if (selectedOther) {
-                  const otherRes = resolveEntry(system, selectedOther.option, activeCatalogue.id);
-                  const otherPoints = otherRes?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+                  const otherPoints = getOptionDisplayCost(system, selectedOther.option, roster.costLimitType);
                   pointsDiff = points - otherPoints;
                 }
               }

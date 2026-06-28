@@ -1,4 +1,4 @@
-import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue } from './validator.js';
+import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost } from './validator.js';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML } from '../parser/xmlParser.js';
 import { searchEditableEntries, findAndMutateJsonPatch } from '../parser/pdfRulesExtractor.js';
@@ -1384,6 +1384,130 @@ console.log('Test 21 - Repeatable Magic Items Group limit increment: ',
   test21Success ? 'PASSED' : `FAILED (Errors: ${JSON.stringify(errorsRepeatableValid)})`
 );
 
+// Test 22: Nested Selection display costs and group constraint points validation
+const mockSystemNested = {
+  id: 'sys-nested',
+  name: 'Nested System',
+  costTypes: [{ id: 'pts', name: 'Points', defaultCostLimit: 2000 }],
+  categoryEntries: [{ id: 'cat-hq', name: 'HQ' }],
+  forceEntries: [{ id: 'force-patrol', name: 'Patrol Force', categoryLinks: [{ id: 'cl-hq', targetId: 'cat-hq' }] }],
+  catalogues: [
+    {
+      id: 'cat-nested',
+      name: 'Nested Catalogue',
+      selectionEntries: [
+        {
+          id: 'unit-nested',
+          name: 'Wizard',
+          costs: [{ typeId: 'pts', value: 100 }],
+          categoryLinks: [{ targetId: 'cat-hq' }],
+          selectionEntryGroups: [
+            {
+              id: 'group-magic',
+              name: 'Magic Items',
+              constraints: [
+                { id: 'limit-magic-pts', type: 'max', value: 30, field: 'pts', scope: 'parent' }
+              ],
+              selectionEntries: [
+                {
+                  id: 'item-parent',
+                  name: 'Power Stone Wrapper',
+                  costs: [{ typeId: 'pts', value: 0 }],
+                  selectionEntries: [
+                    {
+                      id: 'item-child',
+                      name: 'Power Stone Item',
+                      constraints: [{ id: 'con-child-min', type: 'min', value: 1, field: 'selections' }],
+                      costs: [{ typeId: 'pts', value: 25 }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+// 1. Verify getOptionDisplayCost on item-parent
+const displayCost = getOptionDisplayCost(mockSystemNested, { id: 'item-parent' }, 'pts');
+
+// 2. Verify getSelectionTotalCost on selected parent containing the child
+const mockSelectionParent = {
+  id: 'sel-parent',
+  selectionEntryId: 'item-parent',
+  name: 'Power Stone Wrapper',
+  number: 1,
+  costs: [{ typeId: 'pts', value: 0 }],
+  selections: [
+    {
+      id: 'sel-child',
+      selectionEntryId: 'item-child',
+      name: 'Power Stone Item',
+      number: 1,
+      costs: [{ typeId: 'pts', value: 25 }]
+    }
+  ]
+};
+const selectionTotalCost = getSelectionTotalCost(mockSelectionParent, 'pts');
+
+// 3. Verify validateRoster correctly flags group points limit when we exceed 30 pts (e.g. if we have 2 Power Stones)
+const mockRosterNestedInvalid = {
+  name: 'Nested Army',
+  costLimit: 2000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-nested',
+      selections: [
+        {
+          id: 'sel-wizard',
+          selectionEntryId: 'unit-nested',
+          name: 'Wizard',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 100 }],
+          selections: [
+            {
+              id: 'sel-parent-1',
+              selectionEntryId: 'item-parent',
+              name: 'Power Stone Wrapper',
+              number: 2, // taking 2 wraps
+              costs: [{ typeId: 'pts', value: 0 }],
+              selections: [
+                {
+                  id: 'sel-child-1',
+                  selectionEntryId: 'item-child',
+                  name: 'Power Stone Item',
+                  number: 2, // 2 items = 50 pts, exceeds 30 pts limit
+                  costs: [{ typeId: 'pts', value: 25 }]
+                }
+              ]
+            },
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const errorsNestedInvalid = validateRoster(mockRosterNestedInvalid, mockSystemNested);
+const test22Success = (displayCost === 25) && (selectionTotalCost === 25) && (errorsNestedInvalid.some(e => e.type === 'group-points-max'));
+
+console.log('Test 22 - Nested Selection display costs and group constraint points validation: ',
+  test22Success ? 'PASSED' : `FAILED (displayCost: ${displayCost}, selectionTotalCost: ${selectionTotalCost}, errors: ${JSON.stringify(errorsNestedInvalid)})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -1398,10 +1522,12 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     mappingSuccess &&
     fallbackSuccess &&
     collisionSuccess &&
+    collisionSuccess &&
     condGroupSuccess &&
     repeatSuccess &&
     test20Success &&
-    test21Success) {
+    test21Success &&
+    test22Success) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {
