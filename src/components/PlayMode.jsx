@@ -208,6 +208,11 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       });
     }
 
+    // If we have barding, the model must be mounted!
+    if (isBarded) {
+      isMounted = true;
+    }
+
     // 3. Calculate Armour Save according to 6th Edition rules:
     // None = none (7)
     // Shield or Light armour = 6+
