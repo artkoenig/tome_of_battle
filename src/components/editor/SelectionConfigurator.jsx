@@ -310,7 +310,6 @@ export default function SelectionConfigurator({
                 <div>
                   <div>
                     <span style={{ fontWeight: 600 }}>{res.name}</span>
-                    {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginLeft: '8px' }}>+{points} Pkt.</span>}
                   </div>
                   {descText && (
                     <div className="text-dim" style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', marginTop: '4px', fontStyle: 'italic', maxWidth: '420px', lineHeight: '1.3' }}>
@@ -319,6 +318,7 @@ export default function SelectionConfigurator({
                   )}
                 </div>
                 <div className="sub-selection-controls">
+                  {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
                   {isBinary ? (
                     <input 
                       type="checkbox" 
@@ -604,7 +604,6 @@ function OptionGroupComponent({
                       {res.name}
                       {isTakenElsewhere && <span className="text-danger" style={{ fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                     </span>
-                    {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginLeft: '8px' }}>+{points} Pkt.</span>}
                   </div>
                   {descText && (
                     <div className="text-dim" style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', marginTop: '4px', fontStyle: 'italic', maxWidth: '420px', lineHeight: '1.3' }}>
@@ -613,6 +612,7 @@ function OptionGroupComponent({
                   )}
                 </div>
                 <div className="sub-selection-controls">
+                  {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
                   {isRadio ? (
                     <input 
                       type="radio" 
