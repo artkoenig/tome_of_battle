@@ -155,12 +155,33 @@ export default function SelectionConfigurator({
       def.selectionEntryGroups?.forEach(group => {
         const combinedGroupConstraints = prepareConstraints(group);
         group.selectionEntries?.forEach(child => {
-          optionsList.push({ 
-            option: child, 
-            parentDefId: def.id, 
-            groupName: group.name, 
-            groupConstraints: combinedGroupConstraints 
-          });
+          const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
+          if (resolvedChild && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0)) {
+            const combinedChildConstraints = [...prepareConstraints(resolvedChild), ...combinedGroupConstraints];
+            resolvedChild.selectionEntries?.forEach(sub => {
+              optionsList.push({ 
+                option: sub, 
+                parentDefId: def.id, 
+                groupName: resolvedChild.name || child.name || group.name, 
+                groupConstraints: combinedChildConstraints 
+              });
+            });
+            resolvedChild.entryLinks?.forEach(sub => {
+              optionsList.push({ 
+                option: sub, 
+                parentDefId: def.id, 
+                groupName: resolvedChild.name || child.name || group.name, 
+                groupConstraints: combinedChildConstraints 
+              });
+            });
+          } else {
+            optionsList.push({ 
+              option: child, 
+              parentDefId: def.id, 
+              groupName: group.name, 
+              groupConstraints: combinedGroupConstraints 
+            });
+          }
         });
         group.entryLinks?.forEach(child => {
           const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
