@@ -271,7 +271,7 @@ export default function SelectionConfigurator({
             const descText = getOptionDescription(res);
 
             return (
-              <div key={res.id} className="sub-selection-row" style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-dark)' }}>
+              <div key={res.id} className="sub-selection-row" style={{ padding: '8px 12px' }}>
                 <div>
                   <div>
                     <span style={{ fontWeight: 600 }}>{res.name}</span>
