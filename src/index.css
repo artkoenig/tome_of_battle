@@ -1211,7 +1211,9 @@ input[type="radio"]:checked::after {
     border-top: 3px double var(--border-gold) !important;
     z-index: 1000 !important;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.9) !important;
-    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    will-change: transform;
+    backface-visibility: hidden;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
@@ -1452,7 +1454,9 @@ input[type="radio"]:checked::after {
     border-top: 3px double var(--border-gold) !important;
     padding: 0 20px 24px 20px !important;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.9) !important;
-    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    will-change: transform;
+    backface-visibility: hidden;
     display: flex;
     flex-direction: column;
     overflow: hidden;
