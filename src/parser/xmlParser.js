@@ -185,7 +185,9 @@ function parseCategoryLinks(el) {
     id: linkEl.getAttribute('id'),
     name: linkEl.getAttribute('name'),
     targetId: linkEl.getAttribute('targetId'),
-    primary: linkEl.getAttribute('primary') === 'true'
+    primary: linkEl.getAttribute('primary') === 'true',
+    constraints: parseConstraints(linkEl),
+    modifiers: parseModifiers(linkEl)
   }));
 }
 

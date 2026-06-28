@@ -1,4 +1,6 @@
 import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts } from './validator.js';
+import { JSDOM } from 'jsdom';
+import { parseGameSystemXML } from '../parser/xmlParser.js';
 
 // 1. Mock Game System Definition
 const mockSystem = {
@@ -364,85 +366,10 @@ const mockRosterGroupInvalid = {
   ]
 };
 
-// Mock DOMParser / XMLSerializer for Node environment testing of XML updates (Test 7)
-globalThis.DOMParser = class {
-  parseFromString(xmlStr, mimeType) {
-    const doc = {
-      xml: xmlStr,
-      querySelector: (selector) => {
-        const idMatch = selector.match(/id="([^"]+)"/);
-        const id = idMatch ? idMatch[1] : null;
-        
-        return {
-          id,
-          querySelector: (subSel) => {
-            if (subSel.startsWith('cost[typeId="')) {
-              const typeId = subSel.match(/typeId="([^"]+)"/)[1];
-              return {
-                setAttribute: (name, val) => {
-                  if (name === 'value') {
-                    const regex = new RegExp(`(<cost[^>]*typeId="${typeId}"[^>]*value=")([^"]*)(")`);
-                    doc.xml = doc.xml.replace(regex, `$1${val}$3`);
-                  }
-                }
-              };
-            }
-            if (subSel.startsWith('constraint[id="')) {
-              const conId = subSel.match(/id="([^"]+)"/)[1];
-              return {
-                setAttribute: (name, val) => {
-                  if (name === 'value') {
-                    const regex = new RegExp(`(<constraint[^>]*id="${conId}"[^>]*value=")([^"]*)(")`);
-                    doc.xml = doc.xml.replace(regex, `$1${val}$3`);
-                  }
-                }
-              };
-            }
-            if (subSel === 'description') {
-              return {
-                set textContent(val) {
-                  if (doc.xml.includes('<description>')) {
-                    doc.xml = doc.xml.replace(/<description>[^<]*<\/description>/, `<description>${val}</description>`);
-                  } else {
-                    doc.xml = doc.xml.replace(/(<\/selectionEntry>)/, `<description>${val}</description>$1`);
-                  }
-                }
-              };
-            }
-            return null;
-          },
-          querySelectorAll: (tagName) => {
-            if (tagName === 'characteristic') {
-              const matches = Array.from(doc.xml.matchAll(/<characteristic[^>]*name="([^"]+)"[^>]*>([^<]*)<\/characteristic>/g));
-              return matches.map(m => ({
-                getAttribute: (name) => name === 'name' ? m[1] : null,
-                set textContent(val) {
-                  const name = m[1];
-                  const regex = new RegExp(`(<characteristic[^>]*name="${name}"[^>]*>)([^<]*)(</characteristic>)`);
-                  doc.xml = doc.xml.replace(regex, `$1${val}$3`);
-                }
-              }));
-            }
-            return [];
-          },
-          setAttribute: (name, val) => {
-            if (name === 'name') {
-              const regex = new RegExp(`(<selectionEntry[^>]*id="${id}"[^>]*name=")([^"]*)(")`);
-              doc.xml = doc.xml.replace(regex, `$1${val}$3`);
-            }
-          }
-        };
-      }
-    };
-    return doc;
-  }
-};
-
-globalThis.XMLSerializer = class {
-  serializeToString(doc) {
-    return doc.xml;
-  }
-};
+// Mock DOMParser / XMLSerializer for Node environment testing using JSDOM
+const jsdomObj = new JSDOM();
+globalThis.DOMParser = jsdomObj.window.DOMParser;
+globalThis.XMLSerializer = jsdomObj.window.XMLSerializer;
 
 // XML Update function imported & adapted for Test 7
 const updateRawXmlTest = (system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription) => {
@@ -475,7 +402,7 @@ const updateRawXmlTest = (system, entryId, type, localName, localCosts, localCon
   }
   if (type === 'profile') {
     Object.entries(localCharacteristics).forEach(([name, val]) => {
-      const charEl = element.querySelectorAll('characteristic').find(c => c.getAttribute('name') === name);
+      const charEl = Array.from(element.querySelectorAll('characteristic')).find(c => c.getAttribute('name') === name);
       if (charEl) charEl.textContent = val;
     });
   }
@@ -947,6 +874,40 @@ console.log('Test 13 - Category Link De-duplication Check (avoid double count): 
   deDuplicationSuccess ? 'PASSED' : `FAILED (Expected count 1, got ${hqCount})`
 );
 
+// Test 14: Category Link Constraints and Modifiers XML Parsing Check
+const mockGstXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gameSystem id="sys-123" name="Test System" xmlns="http://www.battlescribe.net/schema/gameSystemSchema">
+  <forceEntries>
+    <forceEntry id="force-patrol" name="Patrol">
+      <categoryLinks>
+        <categoryLink id="cl-hq" name="HQ" targetId="cat-hq" primary="false">
+          <constraints>
+            <constraint id="max-hq" type="max" value="2" field="selections" scope="parent" shared="true"/>
+          </constraints>
+          <modifiers>
+            <modifier type="set" field="max-hq" value="3">
+              <conditions>
+                <condition field="limit::pts" value="2000" type="greaterThan"/>
+              </conditions>
+            </modifier>
+          </modifiers>
+        </categoryLink>
+      </categoryLinks>
+    </forceEntry>
+  </forceEntries>
+</gameSystem>
+`;
+
+const parsedGst = parseGameSystemXML(mockGstXml);
+const parsedForce = parsedGst.forceEntries?.[0];
+const parsedCatLink = parsedForce?.categoryLinks?.[0];
+const hasParsedConstraints = parsedCatLink?.constraints?.length > 0 && parsedCatLink.constraints[0].id === 'max-hq';
+const hasParsedModifiers = parsedCatLink?.modifiers?.length > 0 && parsedCatLink.modifiers[0].field === 'max-hq';
+const xmlCategoryLinksSuccess = hasParsedConstraints && hasParsedModifiers;
+console.log('Test 14 - XML CategoryLink Constraints and Modifiers Parsing Check: ',
+  xmlCategoryLinksSuccess ? 'PASSED' : `FAILED (Constraints parsed: ${!!hasParsedConstraints}, Modifiers parsed: ${!!hasParsedModifiers})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -956,7 +917,8 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     tacOverLimitError &&
     charactersOverLimitError &&
     charactersWithinLimitNoError &&
-    deDuplicationSuccess) {
+    deDuplicationSuccess &&
+    xmlCategoryLinksSuccess) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {
