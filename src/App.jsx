@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, FolderOpen, Plus, Trash2, Shield, Play, Edit3 } from 'lucide-react';
-import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
+import { getAllSystems, getAllRosters, saveRoster, deleteRoster, saveSystem } from './db/database';
+import { processImportedData } from './parser/xmlParser';
 
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
@@ -26,7 +27,35 @@ export default function App() {
 
   const loadAllData = async () => {
     try {
-      const allSystems = await getAllSystems();
+      let allSystems = await getAllSystems();
+      
+      // Auto-migrate: Re-parse systems from raw XMLs if they exist to apply parser updates
+      let updatedAny = false;
+      const parsedSystems = [];
+      for (const sys of allSystems) {
+        if (sys.rawXmls && sys.rawXmls.gst && sys.rawXmls.gst.length > 0) {
+          try {
+            const reParsed = processImportedData(sys.rawXmls.gst, sys.rawXmls.cat || []);
+            // Preserve rawXmls
+            reParsed.rawXmls = sys.rawXmls;
+            // Save to DB
+            await saveSystem(reParsed);
+            parsedSystems.push(reParsed);
+            updatedAny = true;
+            console.log(`Auto-migrated and re-parsed system: ${sys.name}`);
+          } catch (e) {
+            console.error(`Failed to auto-migrate system ${sys.name}:`, e);
+            parsedSystems.push(sys);
+          }
+        } else {
+          parsedSystems.push(sys);
+        }
+      }
+      
+      if (updatedAny) {
+        allSystems = parsedSystems;
+      }
+
       const allRosters = await getAllRosters();
       setSystems(allSystems);
       setRosters(allRosters);
