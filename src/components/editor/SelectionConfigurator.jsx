@@ -47,14 +47,15 @@ export default function SelectionConfigurator({
     return findCount(unitSelection.selections || []);
   };
 
-  // Find all possible upgrade / sub-selection options for a unit definition
   const getUnitOptions = (unitSelection) => {
     if (!activeCatalogue) return [];
     const entryId = unitSelection.entryLinkId || unitSelection.selectionEntryId;
-    const rawEntry = findEntryInSystem(system, entryId);
-    const resolved = resolveEntry(system, rawEntry);
+    const rawEntry = findEntryInSystem(system, entryId, activeCatalogue.id);
+    const resolved = resolveEntry(system, rawEntry, activeCatalogue.id);
     
     if (!resolved) return [];
+
+
 
     // Recursive helper to find all nested entry IDs for a group
     const collectGroupItemIds = (gDef, groupItemIds = new Set(), visited = new Set()) => {
@@ -63,13 +64,13 @@ export default function SelectionConfigurator({
 
       gDef.selectionEntries?.forEach(item => {
         groupItemIds.add(item.id);
-        const res = resolveEntry(system, item);
+        const res = resolveEntry(system, item, activeCatalogue.id);
         if (res) groupItemIds.add(res.id);
       });
       gDef.entryLinks?.forEach(link => {
         groupItemIds.add(link.id);
         groupItemIds.add(link.targetId);
-        const res = resolveEntry(system, link);
+        const res = resolveEntry(system, link, activeCatalogue.id);
         if (res) {
           groupItemIds.add(res.id);
           collectGroupItemIds(res, groupItemIds, visited);
@@ -97,7 +98,7 @@ export default function SelectionConfigurator({
     const collectOptions = (def, currentGroupName = null, parentConstraints = null) => {
       // 1. Process selection entries
       def.selectionEntries?.forEach(child => {
-        const resolvedChild = resolveEntry(system, child);
+        const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
         if (!resolvedChild) return;
 
         if (child.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
@@ -114,7 +115,7 @@ export default function SelectionConfigurator({
 
       // 2. Process entry links
       def.entryLinks?.forEach(child => {
-        const resolvedChild = resolveEntry(system, child);
+        const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
         if (!resolvedChild) return;
 
         if (child.type === 'selectionEntryGroup' || resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0) {
@@ -159,7 +160,7 @@ export default function SelectionConfigurator({
           });
         });
         group.entryLinks?.forEach(child => {
-          const resolvedChild = resolveEntry(system, child);
+          const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
           if (resolvedChild && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0)) {
             const combinedChildConstraints = [...prepareConstraints(resolvedChild), ...combinedGroupConstraints];
             resolvedChild.selectionEntries?.forEach(sub => {
@@ -193,7 +194,7 @@ export default function SelectionConfigurator({
     collectOptions(resolved);
     
     resolved.selectionEntries?.forEach(sub => {
-      const subResolved = resolveEntry(system, sub);
+      const subResolved = resolveEntry(system, sub, activeCatalogue.id);
       if (subResolved && subResolved.type === 'model') {
         collectOptions(subResolved);
       }
@@ -202,8 +203,8 @@ export default function SelectionConfigurator({
     const collectFromActiveSelections = (currentSel) => {
       currentSel.selections?.forEach(subSel => {
         const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
-        const subRawEntry = findEntryInSystem(system, subEntryId);
-        const subResolved = resolveEntry(system, subRawEntry);
+        const subRawEntry = findEntryInSystem(system, subEntryId, activeCatalogue.id);
+        const subResolved = resolveEntry(system, subRawEntry, activeCatalogue.id);
         if (subResolved) {
           if (subResolved.selectionEntries?.length > 0 || subResolved.entryLinks?.length > 0 || subResolved.selectionEntryGroups?.length > 0) {
             collectOptions(subResolved);
@@ -217,7 +218,7 @@ export default function SelectionConfigurator({
     const seenOptionIds = new Set();
     const uniqueOptionsList = [];
     optionsList.forEach(item => {
-      const res = resolveEntry(system, item.option);
+      const res = resolveEntry(system, item.option, activeCatalogue.id);
       if (res) {
         const canonicalId = res.targetId || res.id;
         if (seenOptionIds.has(canonicalId)) {
@@ -227,6 +228,8 @@ export default function SelectionConfigurator({
       }
       uniqueOptionsList.push(item);
     });
+
+
 
     return uniqueOptionsList;
   };
@@ -262,7 +265,7 @@ export default function SelectionConfigurator({
 
   const isGeneralItem = (item) => {
     if (!item) return false;
-    const res = resolveEntry(system, item.option);
+    const res = resolveEntry(system, item.option, activeCatalogue.id);
     if (!res) return false;
     const nameLower = res.name?.toLowerCase() || '';
     return nameLower === 'general' || 
@@ -296,13 +299,13 @@ export default function SelectionConfigurator({
         {groupedList.map((group, gIdx) => {
           if (group.standalone) {
             const { option } = group.item;
-            const res = resolveEntry(system, option);
+            const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
             const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
             const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
-            const unitRawEntry = findEntryInSystem(system, unitEntryId);
-            const unitResolved = resolveEntry(system, unitRawEntry);
+            const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
+            const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
 
             const filteredOptionConstraints = res.constraints?.filter(con => {
               if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
@@ -379,6 +382,7 @@ export default function SelectionConfigurator({
                 updateSubSelection={updateSubSelection}
                 costTypeLabel={costTypeLabel}
                 getOptionDescription={getOptionDescription}
+                activeCatalogue={activeCatalogue}
               />
             );
           }
@@ -396,13 +400,14 @@ function OptionGroupComponent({
   getSubSelectionCount, 
   updateSubSelection, 
   costTypeLabel,
-  getOptionDescription
+  getOptionDescription,
+  activeCatalogue
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
-  const unitRawEntry = findEntryInSystem(system, unitEntryId);
-  const unitResolved = resolveEntry(system, unitRawEntry);
+  const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
+  const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
   
   const isUniqueOptionTakenElsewhere = (targetResId) => {
     let taken = false;
@@ -411,8 +416,8 @@ function OptionGroupComponent({
       const underCurrent = isUnderCurrent || (sel.id === selection.id);
       
       if (!underCurrent) {
-        const selRaw = findEntryInSystem(system, sel.selectionEntryId || sel.entryLinkId);
-        const selRes = resolveEntry(system, selRaw);
+        const selRaw = findEntryInSystem(system, sel.selectionEntryId || sel.entryLinkId, activeCatalogue.id);
+        const selRes = resolveEntry(system, selRaw, activeCatalogue.id);
         const selUnderlyingId = selRes ? selRes.id : (sel.selectionEntryId || sel.entryLinkId);
         
         if (selUnderlyingId === targetResId) {
@@ -445,12 +450,12 @@ function OptionGroupComponent({
   const maxLimit = (maxLimitRaw === undefined || maxLimitRaw < 0) ? Infinity : maxLimitRaw;
   
   const currentCount = group.items.reduce((sum, item) => {
-    const res = resolveEntry(system, item.option);
+    const res = resolveEntry(system, item.option, activeCatalogue.id);
     return sum + (res ? getSubSelectionCount(selection, res.id) : 0);
   }, 0);
 
   const currentPoints = group.items.reduce((sum, item) => {
-    const res = resolveEntry(system, item.option);
+    const res = resolveEntry(system, item.option, activeCatalogue.id);
     const count = res ? getSubSelectionCount(selection, res.id) : 0;
     const points = res?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
     return sum + (points * count);
@@ -543,7 +548,7 @@ function OptionGroupComponent({
       {isExpanded && (
         <div style={{ borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px', paddingLeft: '4px' }}>
           {group.items.map(({ option, groupConstraints }) => {
-            const res = resolveEntry(system, option);
+            const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
             const points = res.costs?.find(c => c.typeId === roster.costLimitType)?.value || 0;
@@ -589,11 +594,11 @@ function OptionGroupComponent({
               let pointsDiff = points;
               if (isRadio && count === 0) {
                 const selectedOther = group.items.find(otherItem => {
-                  const otherRes = resolveEntry(system, otherItem.option);
+                  const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                   return otherRes && otherRes.id !== res.id && getSubSelectionCount(selection, otherRes.id) > 0;
                 });
                 if (selectedOther) {
-                  const otherRes = resolveEntry(system, selectedOther.option);
+                  const otherRes = resolveEntry(system, selectedOther.option, activeCatalogue.id);
                   const otherPoints = otherRes?.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
                   pointsDiff = points - otherPoints;
                 }
@@ -638,7 +643,7 @@ function OptionGroupComponent({
                           updateSubSelection(selection.id, option, 'decrement');
                         } else if (!isSelectDisabled) {
                           group.items.forEach(otherItem => {
-                            const otherRes = resolveEntry(system, otherItem.option);
+                            const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                             if (otherRes && otherRes.id !== res.id) {
                               const otherCount = getSubSelectionCount(selection, otherRes.id);
                               if (otherCount > 0) {

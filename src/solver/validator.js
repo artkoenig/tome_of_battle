@@ -29,46 +29,78 @@ export function findEntryInCatalogue(catalogue, entryId) {
   return catalogue._entryCache.get(entryId) || null;
 }
 
-export function findEntryInSystem(system, entryId) {
+export function findEntryInSystem(system, entryId, catalogueId = null) {
   if (!system) return null;
   
-  if (!system._entryCache) {
+  if (!system._entryCache || system._entryCacheSource !== system.catalogues) {
     system._entryCache = new Map();
+    system._entryCacheSource = system.catalogues;
     
-    const indexObject = (obj) => {
-      if (!obj || typeof obj !== 'object') return;
-      if (obj.id) {
-        system._entryCache.set(obj.id, obj);
+    const indexCatalogue = (cat, catId) => {
+      if (!cat) return;
+      if (!system._entryCache.has(catId)) {
+        system._entryCache.set(catId, new Map());
       }
-      for (const key in obj) {
-        const val = obj[key];
-        if (Array.isArray(val)) {
-          for (let i = 0; i < val.length; i++) {
-            indexObject(val[i]);
-          }
-        } else if (val && typeof val === 'object') {
-          if (key !== '_entryCache') {
-            indexObject(val);
+      const cacheMap = system._entryCache.get(catId);
+      
+      const indexObject = (obj) => {
+        if (!obj || typeof obj !== 'object') return;
+        if (obj.id) {
+          cacheMap.set(obj.id, obj);
+        }
+        for (const key in obj) {
+          const val = obj[key];
+          if (Array.isArray(val)) {
+            for (let i = 0; i < val.length; i++) {
+              indexObject(val[i]);
+            }
+          } else if (val && typeof val === 'object') {
+            if (key !== '_entryCache' && key !== 'catalogues') {
+              indexObject(val);
+            }
           }
         }
-      }
+      };
+      
+      indexObject(cat);
     };
 
-    indexObject(system);
+    // Index the game system itself (using system.id)
+    indexCatalogue(system, system.id);
+    
+    // Index all catalogues
+    system.catalogues?.forEach(cat => {
+      indexCatalogue(cat, cat.id);
+    });
   }
 
-  return system._entryCache.get(entryId) || null;
+  // Lookup logic
+  if (catalogueId) {
+    const catMap = system._entryCache.get(catalogueId);
+    if (catMap && catMap.has(entryId)) {
+      return catMap.get(entryId);
+    }
+  }
+
+  // Fallback: search all maps if catalogueId is not provided or entry not found in preferred catalogue
+  for (const [catId, catMap] of system._entryCache.entries()) {
+    if (catMap.has(entryId)) {
+      return catMap.get(entryId);
+    }
+  }
+
+  return null;
 }
 
 /**
  * Resolves an entryLink or returns the selectionEntry directly, resolving linked profiles/rules
  */
-export function resolveEntry(system, entry) {
+export function resolveEntry(system, entry, catalogueId = null) {
   if (!entry) return null;
   
   let resolved = { ...entry };
   if (entry.targetId) {
-    const target = findEntryInSystem(system, entry.targetId);
+    const target = findEntryInSystem(system, entry.targetId, catalogueId);
     if (target) {
       resolved = {
         ...target,
@@ -91,7 +123,7 @@ export function resolveEntry(system, entry) {
   // Resolve infoLinks of the resolved entry
   if (resolved.infoLinks && resolved.infoLinks.length > 0) {
     resolved.infoLinks.forEach(link => {
-      const target = findEntryInSystem(system, link.targetId);
+      const target = findEntryInSystem(system, link.targetId, catalogueId);
       if (!target) return;
 
       if (link.type === 'rule') {
@@ -262,7 +294,7 @@ export function computeRosterCounts(roster, system) {
     const entryDef = findEntryInCatalogue(catalogue, entryId);
     
     if (entryDef) {
-      const resolved = resolveEntry(system, entryDef);
+      const resolved = resolveEntry(system, entryDef, forceCatalogueId);
       if (resolved && resolved.targetId && resolved.targetId !== entryId) {
         selectionCounts[resolved.targetId] = (selectionCounts[resolved.targetId] || 0) + (selection.number || 1);
       }
@@ -400,8 +432,9 @@ export function validateRoster(roster, system) {
 
     const validateSelectionConstraints = (selection, parentSelection = null, force = null) => {
       const entryId = selection.entryLinkId || selection.selectionEntryId;
-      const rawEntry = findEntryInSystem(system, entryId);
-      const entry = resolveEntry(system, rawEntry);
+      const forceCatalogueId = force?.catalogueId || roster.catalogueId;
+      const rawEntry = findEntryInSystem(system, entryId, forceCatalogueId);
+      const entry = resolveEntry(system, rawEntry, forceCatalogueId);
 
       if (!entry) return;
 
@@ -471,7 +504,7 @@ export function validateRoster(roster, system) {
         });
         def.entryLinks?.forEach(el => {
           if (el.type === 'selectionEntryGroup') {
-            const resolvedGroup = resolveEntry(system, el);
+            const resolvedGroup = resolveEntry(system, el, forceCatalogueId);
             if (resolvedGroup) {
               groups.push(resolvedGroup);
               collectGroups(resolvedGroup);
@@ -479,7 +512,7 @@ export function validateRoster(roster, system) {
           }
         });
         def.selectionEntries?.forEach(se => {
-          const resolvedSE = resolveEntry(system, se);
+          const resolvedSE = resolveEntry(system, se, forceCatalogueId);
           if (resolvedSE && resolvedSE.type !== 'model') {
             collectGroups(resolvedSE);
           }
@@ -497,13 +530,13 @@ export function validateRoster(roster, system) {
 
           gDef.selectionEntries?.forEach(item => {
             groupItemIds.add(item.id);
-            const res = resolveEntry(system, item);
+            const res = resolveEntry(system, item, forceCatalogueId);
             if (res) groupItemIds.add(res.id);
           });
           gDef.entryLinks?.forEach(link => {
             groupItemIds.add(link.id);
             groupItemIds.add(link.targetId);
-            const res = resolveEntry(system, link);
+            const res = resolveEntry(system, link, forceCatalogueId);
             if (res) {
               groupItemIds.add(res.id);
               collectGroupItemIds(res);

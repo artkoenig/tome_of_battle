@@ -1025,6 +1025,50 @@ console.log('Test 16 - Fallback Heroes Max Constraint Validation Check: ',
   fallbackSuccess ? 'PASSED' : 'FAILED (No Heroes max constraint error was generated)'
 );
 
+// Test 17 - Catalogue ID Collision Namespace Resolution Check
+const collisionSystem = {
+  id: 'sys-collision',
+  catalogues: [
+    {
+      id: 'cat-og',
+      name: 'Orcs and Goblins',
+      selectionEntries: [
+        {
+          id: 'colliding-id',
+          name: 'Black Orc Warboss',
+          selectionEntryGroups: [
+            { id: 'group-mounts', name: 'Mounts' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'cat-cd',
+      name: 'Chaos Dwarfs',
+      selectionEntries: [
+        {
+          id: 'colliding-id',
+          name: 'Chaos Dwarf Hero',
+          selectionEntryGroups: []
+        }
+      ]
+    }
+  ]
+};
+
+const resolvedWarboss = findEntryInSystem(collisionSystem, 'colliding-id', 'cat-og');
+const resolvedHero = findEntryInSystem(collisionSystem, 'colliding-id', 'cat-cd');
+const resolvedFallback = findEntryInSystem(collisionSystem, 'colliding-id'); // fallback should find one of them
+
+const collisionSuccess = 
+  resolvedWarboss && resolvedWarboss.name === 'Black Orc Warboss' && resolvedWarboss.selectionEntryGroups?.length === 1 &&
+  resolvedHero && resolvedHero.name === 'Chaos Dwarf Hero' && resolvedHero.selectionEntryGroups?.length === 0 &&
+  resolvedFallback && (resolvedFallback.name === 'Black Orc Warboss' || resolvedFallback.name === 'Chaos Dwarf Hero');
+
+console.log('Test 17 - Catalogue ID Collision Resolution Check: ',
+  collisionSuccess ? 'PASSED' : 'FAILED'
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -1037,7 +1081,8 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     deDuplicationSuccess &&
     xmlCategoryLinksSuccess &&
     mappingSuccess &&
-    fallbackSuccess) {
+    fallbackSuccess &&
+    collisionSuccess) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {
