@@ -66,13 +66,40 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     const showPrefix = resolved.profiles.length > 1;
 
     return (
-      <div className="mini-profiles-container" style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      <div className="mini-profiles-container" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
         {resolved.profiles.map(prof => {
-          const statsString = prof.characteristics.map(c => `${c.name}:${c.value}`).join('  ');
           return (
-            <div key={prof.id} className="mini-profile-row text-dim font-sans" style={{ fontSize: '0.8rem', lineHeight: '1.2' }}>
-              {showPrefix && <span className="text-gold" style={{ marginRight: '6px', fontWeight: 600 }}>{prof.name}:</span>}
-              <span>{statsString}</span>
+            <div key={prof.id} className="mini-profile-row" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {showPrefix && (
+                <span className="text-gold font-serif" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                  {prof.name}
+                </span>
+              )}
+              <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', paddingBottom: '2px', width: '100%' }}>
+                {prof.characteristics.map(c => (
+                  <div 
+                    key={c.name} 
+                    style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      background: 'rgba(226, 183, 66, 0.04)', 
+                      border: '1px solid var(--border-dark)', 
+                      borderRadius: '3px',
+                      minWidth: '28px',
+                      padding: '2px 4px'
+                    }}
+                  >
+                    <span className="text-gold font-sans" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>
+                      {c.name}
+                    </span>
+                    <span className="font-sans" style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-parchment)', marginTop: '1px' }}>
+                      {c.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           );
         })}
