@@ -240,6 +240,35 @@ export default function SelectionConfigurator({
     }
   });
 
+  const isGeneralItem = (item) => {
+    if (!item) return false;
+    const res = resolveEntry(system, item.option);
+    if (!res) return false;
+    const nameLower = res.name?.toLowerCase() || '';
+    return nameLower === 'general' || 
+           nameLower === 'armeegeneral' || 
+           nameLower === 'army general' || 
+           nameLower.includes('warlord') || 
+           nameLower === 'general der armee' ||
+           item.option.id === '1b7c-2c90-6d96-28c9' ||
+           res.id === '1b7c-2c90-6d96-28c9';
+  };
+
+  const isGeneralGroupOrStandalone = (group) => {
+    if (group.standalone) {
+      return isGeneralItem(group.item);
+    }
+    return group.items?.some(isGeneralItem);
+  };
+
+  groupedList.sort((a, b) => {
+    const aGen = isGeneralGroupOrStandalone(a);
+    const bGen = isGeneralGroupOrStandalone(b);
+    if (aGen && !bGen) return -1;
+    if (!aGen && bGen) return 1;
+    return 0;
+  });
+
   return (
     <div className="selection-node-body">
       <h4>Optionen &amp; Ausrüstung konfigurieren</h4>
