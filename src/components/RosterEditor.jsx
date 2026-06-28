@@ -236,6 +236,41 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     
     if (!resolved) return [];
 
+    // Recursive helper to find all nested entry IDs for a group
+    const collectGroupItemIds = (gDef, groupItemIds = new Set(), visited = new Set()) => {
+      if (!gDef || visited.has(gDef.id)) return groupItemIds;
+      if (gDef.id) visited.add(gDef.id);
+
+      gDef.selectionEntries?.forEach(item => {
+        groupItemIds.add(item.id);
+        const res = resolveEntry(system, item);
+        if (res) groupItemIds.add(res.id);
+      });
+      gDef.entryLinks?.forEach(link => {
+        groupItemIds.add(link.id);
+        groupItemIds.add(link.targetId);
+        const res = resolveEntry(system, link);
+        if (res) {
+          groupItemIds.add(res.id);
+          collectGroupItemIds(res, groupItemIds, visited);
+        }
+      });
+      gDef.selectionEntryGroups?.forEach(subG => {
+        collectGroupItemIds(subG, groupItemIds, visited);
+      });
+      return groupItemIds;
+    };
+
+    // Helper to prepare constraints with groupItemIds attached
+    const prepareConstraints = (gDef) => {
+      if (!gDef || !gDef.constraints) return [];
+      const itemIds = collectGroupItemIds(gDef);
+      return gDef.constraints.map(con => ({
+        ...con,
+        groupItemIds: itemIds
+      }));
+    };
+
     const optionsList = [];
 
     // Recursive options collector
@@ -248,7 +283,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         // If it's a nested container/upgrade folder (not a model, and has children)
         if (child.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
           // Recurse into it to flatten it!
-          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, resolvedChild.constraints || parentConstraints);
+          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, prepareConstraints(resolvedChild).concat(parentConstraints || []));
         } else {
           // Standard upgrade option
           optionsList.push({ 
@@ -267,7 +302,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
         if (child.type === 'selectionEntryGroup' || resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0) {
           // It links to a group (shared or direct). We collect its items under the group name.
-          const combinedConstraints = [...(resolvedChild.constraints || []), ...(def.constraints || []), ...(parentConstraints || [])];
+          const combinedConstraints = [...prepareConstraints(resolvedChild), ...prepareConstraints(def), ...(parentConstraints || [])];
           resolvedChild.selectionEntries?.forEach(subChild => {
             optionsList.push({ 
               option: subChild, 
@@ -286,7 +321,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           });
         } else if (resolvedChild.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
           // Recurse into this linked folder as well!
-          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, resolvedChild.constraints || parentConstraints);
+          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, prepareConstraints(resolvedChild).concat(parentConstraints || []));
         } else {
           optionsList.push({ 
             option: child, 
@@ -299,7 +334,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
        // 3. Process selection entry groups
       def.selectionEntryGroups?.forEach(group => {
-        const combinedGroupConstraints = [...(group.constraints || []), ...(def.constraints || []), ...(parentConstraints || [])];
+        const combinedGroupConstraints = [...prepareConstraints(group), ...prepareConstraints(def), ...(parentConstraints || [])];
         group.selectionEntries?.forEach(child => {
           optionsList.push({ 
             option: child, 
@@ -312,7 +347,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           const resolvedChild = resolveEntry(system, child);
           if (resolvedChild && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0)) {
             // Recurse into nested groups
-            const combinedChildConstraints = [...(resolvedChild.constraints || []), ...combinedGroupConstraints];
+            const combinedChildConstraints = [...prepareConstraints(resolvedChild), ...combinedGroupConstraints];
             resolvedChild.selectionEntries?.forEach(sub => {
               optionsList.push({ 
                 option: sub, 
@@ -731,16 +766,36 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                    
                                    filteredGroupConstraints.forEach(con => {
                                      if (con.value < 0) return;
+                                     
+                                     let activeCount = currentCount;
+                                     let activePoints = currentPoints;
+
+                                     if (con.groupItemIds) {
+                                       let sumCount = 0;
+                                       let sumPoints = 0;
+                                       selection.selections?.forEach(sub => {
+                                         const subId = sub.entryLinkId || sub.selectionEntryId;
+                                         if (con.groupItemIds.has(subId)) {
+                                           const count = sub.number || 1;
+                                           const pts = sub.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+                                           sumCount += count;
+                                           sumPoints += (pts * count);
+                                         }
+                                       });
+                                       activeCount = sumCount;
+                                       activePoints = sumPoints;
+                                     }
+
                                      const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
                                      if (isCostField) {
-                                       if (con.type === 'max' && currentPoints > con.value) {
+                                       if (con.type === 'max' && activePoints > con.value) {
                                          hasGroupError = true;
-                                         groupErrorMessage = `Max: ${con.value} Pkt. (Aktuell: ${currentPoints} Pkt.)`;
+                                         groupErrorMessage = `Max: ${con.value} Pkt. (Aktuell: ${activePoints} Pkt.)`;
                                        }
                                      } else {
-                                       if (con.type === 'max' && currentCount > con.value) {
+                                       if (con.type === 'max' && activeCount > con.value) {
                                          hasGroupError = true;
-                                         groupErrorMessage = `Max: ${con.value} (Aktuell: ${currentCount})`;
+                                         groupErrorMessage = `Max: ${con.value} (Aktuell: ${activeCount})`;
                                        }
                                      }
                                    });
@@ -812,6 +867,20 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
                                             let wouldExceedPointsLimit = false;
                                             if (maxPointsLimit !== Infinity) {
+                                              let activePoints = currentPoints;
+                                              if (ptsConstraint.groupItemIds) {
+                                                let sumPoints = 0;
+                                                selection.selections?.forEach(sub => {
+                                                  const subId = sub.entryLinkId || sub.selectionEntryId;
+                                                  if (ptsConstraint.groupItemIds.has(subId)) {
+                                                    const count = sub.number || 1;
+                                                    const pts = sub.costs?.find(c => c.typeId === roster.costLimitType || c.typeId === 'pts')?.value || 0;
+                                                    sumPoints += (pts * count);
+                                                  }
+                                                });
+                                                activePoints = sumPoints;
+                                              }
+
                                               let pointsDiff = points;
                                               if (isRadio && count === 0) {
                                                 const selectedOther = group.items.find(otherItem => {
@@ -824,7 +893,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                                   pointsDiff = points - otherPoints;
                                                 }
                                               }
-                                              if (currentPoints + pointsDiff > maxPointsLimit) {
+                                              if (activePoints + pointsDiff > maxPointsLimit) {
                                                 wouldExceedPointsLimit = true;
                                               }
                                             }
