@@ -260,12 +260,14 @@ export function validateRoster(roster, system) {
     });
 
     // 3. Validate individual unit selections and upgrades constraints
-    const validateSelectionConstraints = (selection, parentSelection = null) => {
+    const validateSelectionConstraints = (selection, parentSelection = null, unitName = null) => {
       const entryId = selection.entryLinkId || selection.selectionEntryId;
       const rawEntry = findEntryInSystem(system, entryId);
       const entry = resolveEntry(system, rawEntry);
 
       if (!entry) return;
+
+      const currentUnitName = (selection.name === 'Vampire Thrall' || selection.name === 'Vampire Count') ? selection.name : unitName;
 
        // 1. Validate individual constraints of this entry
       if (entry.constraints) {
@@ -388,20 +390,25 @@ export function validateRoster(roster, system) {
             if (!belongsToScope) return;
           }
           const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
+          let conValue = con.value;
+          if (currentUnitName === 'Vampire Thrall' && isCostField && con.type === 'max') {
+            conValue = 50.0;
+          }
+
           if (isCostField) {
-            if (con.type === 'max' && totalPoints > con.value) {
+            if (con.type === 'max' && totalPoints > conValue) {
               errors.push({
                 type: 'group-points-max',
                 selectionId: selection.id,
-                message: `Kategorie "${group.name}" erlaubt maximal ${con.value} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
+                message: `Kategorie "${group.name}" erlaubt maximal ${conValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
                 severity: 'error'
               });
             }
-            if (con.type === 'min' && totalPoints < con.value && totalPoints > 0) {
+            if (con.type === 'min' && totalPoints < conValue && totalPoints > 0) {
               errors.push({
                 type: 'group-points-min',
                 selectionId: selection.id,
-                message: `Kategorie "${group.name}" erfordert mindestens ${con.value} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
+                message: `Kategorie "${group.name}" erfordert mindestens ${conValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
                 severity: 'error'
               });
             }
@@ -428,12 +435,12 @@ export function validateRoster(roster, system) {
 
       // Check children
       if (selection.selections) {
-        selection.selections.forEach(child => validateSelectionConstraints(child, selection));
+        selection.selections.forEach(child => validateSelectionConstraints(child, selection, currentUnitName));
       }
     };
 
     if (force.selections) {
-      force.selections.forEach(sel => validateSelectionConstraints(sel, null));
+      force.selections.forEach(sel => validateSelectionConstraints(sel, null, null));
     }
   });
 

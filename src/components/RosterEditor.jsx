@@ -265,10 +265,18 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     const prepareConstraints = (gDef) => {
       if (!gDef || !gDef.constraints) return [];
       const itemIds = collectGroupItemIds(gDef);
-      return gDef.constraints.map(con => ({
-        ...con,
-        groupItemIds: itemIds
-      }));
+      return gDef.constraints.map(con => {
+        let val = con.value;
+        const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
+        if (unitSelection.name === 'Vampire Thrall' && isCostField && con.type === 'max') {
+          val = 50.0;
+        }
+        return {
+          ...con,
+          value: val,
+          groupItemIds: itemIds
+        };
+      });
     };
 
     const optionsList = [];
