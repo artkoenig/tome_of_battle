@@ -27,6 +27,18 @@ export default function CategoryUnitAdder({
     };
   }, [wrapperRef]);
 
+
+  useEffect(() => {
+    // Only lock body scroll if we are on a mobile viewport (width <= 900px)
+    if (isOpen && window.innerWidth <= 900) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
+
   if (!activeCatalogue) return null;
 
   // Filter items in the catalogue by category ID
@@ -75,30 +87,45 @@ export default function CategoryUnitAdder({
       </button>
 
       {isOpen && (
-        <div className="category-unit-adder-popover">
-          <div className="popover-list">
-            {availableUnits.map(entry => {
-              const res = resolveEntry(system, entry);
-              const points = res.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
-              return (
-                <div 
-                  key={res.id} 
-                  className="popover-item"
-                  onClick={() => {
-                    addUnit(entry, categoryId);
-                    setIsOpen(false);
-                    if (onUnitAdded) onUnitAdded(res.name);
-                  }}
-                >
-                  <span className="popover-item-name">{res.name}</span>
-                  <span className="popover-item-cost font-sans text-gold">
-                    {points > 0 ? `+${points} ${costTypeLabel}` : `0 ${costTypeLabel}`}
-                  </span>
-                </div>
-              );
-            })}
+        <>
+          <div className="bottomsheet-backdrop" onClick={() => setIsOpen(false)} />
+          <div className="category-unit-adder-popover">
+            <div className="bottomsheet-handle" />
+            <div className="bottomsheet-header">
+              <span className="bottomsheet-title">{categoryName} ausheben</span>
+              <button 
+                type="button" 
+                className="bottomsheet-close-btn"
+                onClick={() => setIsOpen(false)}
+                title="Schließen"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="popover-list">
+              {availableUnits.map(entry => {
+                const res = resolveEntry(system, entry);
+                const points = res.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
+                return (
+                  <div 
+                    key={res.id} 
+                    className="popover-item"
+                    onClick={() => {
+                      addUnit(entry, categoryId);
+                      setIsOpen(false);
+                      if (onUnitAdded) onUnitAdded(res.name);
+                    }}
+                  >
+                    <span className="popover-item-name">{res.name}</span>
+                    <span className="popover-item-cost font-sans text-gold">
+                      {points > 0 ? `+${points} ${costTypeLabel}` : `0 ${costTypeLabel}`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

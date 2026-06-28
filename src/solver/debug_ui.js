@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Artifact directory configuration for saving debug logs and screenshots
-const ARTIFACT_DIR = '/Users/artkoenig/.gemini/antigravity/brain/4ceed881-e54c-42cb-a67b-6525918aecbb';
+const ARTIFACT_DIR = process.env.ARTIFACT_DIR || '/Users/artkoenig/.gemini/antigravity/brain/3eb78b9b-9921-4ccf-b9e8-8448f4bf5ed4';
 const PORT = 5175; // The Vite dev server port as running locally
 
 // Parse arguments
@@ -111,30 +111,62 @@ async function run() {
     await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle0' });
     await takeScreenshot('01_loaded');
 
-    // 2. Click "BSData Bibliothekar" to open importer
-    console.log('Navigating to importer...');
-    await clickButtonWithText('BSData Bibliothekar');
-    await takeScreenshot('02_importer_open');
-
-    // 3. Upload game system zip
-    console.log('Uploading game system ZIP file...');
+    // 2. Load game system into IndexedDB (either via ZIP upload or direct JSON injection)
     const zipPath = path.join(ARTIFACT_DIR, 'scratch', 'wfb_6e.zip');
-    if (!fs.existsSync(zipPath)) {
-      throw new Error(`ZIP file not found at path: ${zipPath}`);
-    }
-    const fileInput = await page.$('input#file-upload');
-    if (!fileInput) {
-      throw new Error('File input #file-upload not found');
-    }
-    await fileInput.uploadFile(zipPath);
-    console.log('Waiting for import and parsing to complete...');
-    await new Promise(r => setTimeout(r, 4000)); // wait 4s for zip parsing
-    await takeScreenshot('03_imported');
+    const jsonPath = '/Users/artkoenig/Downloads/Warhammer Fantasy Battle 6th edition_corrected.json';
 
-    // 4. Return to Heerlager
-    console.log('Returning to Heerlager dashboard...');
-    await clickButtonWithText('Heerlager');
-    await takeScreenshot('04_heerlager');
+    if (fs.existsSync(zipPath)) {
+      console.log('Navigating to importer and uploading ZIP file...');
+      await clickButtonWithText('BSData Bibliothekar');
+      await takeScreenshot('02_importer_open');
+      const fileInput = await page.$('input#file-upload');
+      if (!fileInput) {
+        throw new Error('File input #file-upload not found');
+      }
+      await fileInput.uploadFile(zipPath);
+      console.log('Waiting for import and parsing to complete...');
+      await new Promise(r => setTimeout(r, 4000)); // wait 4s for zip parsing
+      await takeScreenshot('03_imported');
+      console.log('Returning to Heerlager dashboard...');
+      await clickButtonWithText('Heerlager');
+      await takeScreenshot('04_heerlager');
+    } else if (fs.existsSync(jsonPath)) {
+      console.log('Bypassing ZIP upload. Injecting JSON system data directly into IndexedDB...');
+      const systemJson = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+      await page.evaluate(async (sys) => {
+        const DB_NAME = 'TomeOfBattleDB';
+        const DB_VERSION = 1;
+        const openRequest = indexedDB.open(DB_NAME, DB_VERSION);
+        await new Promise((resolve, reject) => {
+          openRequest.onupgradeneeded = (e) => {
+            const db = openRequest.result;
+            if (!db.objectStoreNames.contains('systems')) {
+              db.createObjectStore('systems', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('rosters')) {
+              db.createObjectStore('rosters', { keyPath: 'id' });
+            }
+          };
+          openRequest.onsuccess = () => resolve();
+          openRequest.onerror = () => reject(openRequest.error);
+        });
+        const db = openRequest.result;
+        const transaction = db.transaction('systems', 'readwrite');
+        const store = transaction.objectStore('systems');
+        await new Promise((resolve, reject) => {
+          const putReq = store.put(sys);
+          putReq.onsuccess = () => resolve();
+          putReq.onerror = () => reject(putReq.error);
+        });
+        db.close();
+      }, systemJson);
+      console.log('JSON system injected successfully.');
+      // Refresh page to load database changes
+      await page.reload({ waitUntil: 'networkidle0' });
+      await takeScreenshot('04_heerlager');
+    } else {
+      throw new Error(`Neither game system ZIP at "${zipPath}" nor JSON file at "${jsonPath}" was found.`);
+    }
 
     console.log('Switching to mobile viewport for dashboard...');
     await page.setViewport({ width: 375, height: 812 });

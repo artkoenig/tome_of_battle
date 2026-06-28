@@ -1170,6 +1170,135 @@ input[type="radio"]:checked::after {
   font-weight: 700;
 }
 
+/* 7a. Bottomsheet components (hidden on desktop) */
+.bottomsheet-backdrop {
+  display: none;
+}
+.bottomsheet-handle {
+  display: none;
+}
+.bottomsheet-header {
+  display: none;
+}
+
+/* 7b. Mobile Bottomsheet Media Queries */
+@media (max-width: 900px) {
+  .bottomsheet-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 990;
+    animation: fadeInSimple 0.2s ease-out;
+  }
+
+  .category-unit-adder-popover {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto !important;
+    width: 100% !important;
+    max-height: 70vh !important;
+    border-radius: 16px 16px 0 0 !important;
+    border: none !important;
+    border-top: 3px double var(--border-gold) !important;
+    z-index: 1000 !important;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.9) !important;
+    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    background-color: var(--bg-panel) !important;
+    padding: 0 !important;
+  }
+
+  .bottomsheet-handle {
+    display: block;
+    width: 48px;
+    height: 4px;
+    background-color: var(--border-gold);
+    opacity: 0.4;
+    border-radius: 2px;
+    margin: 8px auto 0 auto;
+    flex-shrink: 0;
+  }
+
+  .bottomsheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px 12px 20px;
+    border-bottom: 1px solid var(--border-dark);
+    flex-shrink: 0;
+  }
+
+  .bottomsheet-title {
+    display: block;
+    font-family: var(--font-serif);
+    color: var(--text-gold);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .bottomsheet-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .bottomsheet-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-gold);
+  }
+
+  .popover-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0 calc(20px + env(safe-area-inset-bottom, 0px)) 0;
+  }
+
+  .popover-item {
+    padding: 14px 20px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02) !important;
+  }
+
+  .popover-item:last-child {
+    border-bottom: none !important;
+  }
+}
+
+@keyframes fadeInSimple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 /* 8. Gothic Toast Notifications */
 .gothic-toast {
   position: fixed;
