@@ -9,7 +9,8 @@ export default function CatalogBrowser({
   costTypeLabel,
   setSelectedCatalogEntry,
   addUnit,
-  onBack
+  onBack,
+  className
 }) {
   // Extract all unit entries grouped by category links
   const getCatalogItemsByCategory = (catId) => {
@@ -36,7 +37,7 @@ export default function CatalogBrowser({
   };
 
   return (
-    <div className="builder-sidebar">
+    <div className={`builder-sidebar ${className || ''}`}>
       <div style={{ padding: '16px', borderBottom: '1px solid var(--border-dark)' }}>
         <button className="btn-sm w-full" onClick={onBack}>
           <ArrowLeft size={16} /> Zurück

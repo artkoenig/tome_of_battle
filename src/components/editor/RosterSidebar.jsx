@@ -7,10 +7,11 @@ export default function RosterSidebar({
   system,
   costs,
   validationErrors,
-  costTypeLabel
+  costTypeLabel,
+  className
 }) {
   return (
-    <div className="builder-right-bar">
+    <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
       <div style={{ margin: '16px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '12px' }}>
         <div className="flex-between font-serif text-gold" style={{ fontSize: '1.25rem', marginBottom: '8px' }}>

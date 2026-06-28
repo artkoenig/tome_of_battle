@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Play, Trash2, BookOpen } from 'lucide-react';
+import { Save, Play, Trash2, BookOpen, Shield, AlertTriangle } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { calculateRosterCosts } from '../solver/validator';
 
@@ -23,6 +23,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   } = useRoster(initialRoster, system);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
+  const [mobileTab, setMobileTab] = useState('roster'); // 'library' | 'roster' | 'status'
 
   const costType = system?.costTypes?.find(ct => ct.id === roster?.costLimitType);
   const costTypeLabel = costType 
@@ -48,10 +49,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         setSelectedCatalogEntry={setSelectedCatalogEntry}
         addUnit={addUnit}
         onBack={onBack}
+        className={mobileTab === 'library' ? 'active-mobile-tab' : ''}
       />
 
       {/* 2. Main Editing Roster Pane (Center Column) */}
-      <div className="builder-main">
+      <div className={`builder-main ${mobileTab === 'roster' ? 'active-mobile-tab' : ''}`}>
         <div className="roster-header-editor">
           <div>
             <h2 style={{ margin: 0, border: 'none', padding: 0 }}>{roster.name}</h2>
@@ -188,7 +190,36 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         costs={costs}
         validationErrors={validationErrors}
         costTypeLabel={costTypeLabel}
+        className={mobileTab === 'status' ? 'active-mobile-tab' : ''}
       />
+
+      {/* Mobile Sticky Tab Navigation Bar */}
+      <div className="mobile-tab-bar">
+        <button 
+          className={`mobile-tab-button ${mobileTab === 'library' ? 'active' : ''}`}
+          onClick={() => setMobileTab('library')}
+        >
+          <BookOpen size={20} />
+          <span>Bibliothek</span>
+        </button>
+        <button 
+          className={`mobile-tab-button ${mobileTab === 'roster' ? 'active' : ''}`}
+          onClick={() => setMobileTab('roster')}
+        >
+          <Shield size={20} />
+          <span>Streitmacht</span>
+        </button>
+        <button 
+          className={`mobile-tab-button ${mobileTab === 'status' ? 'active' : ''}`}
+          onClick={() => setMobileTab('status')}
+        >
+          <AlertTriangle size={20} />
+          <span>Status</span>
+          {validationErrors.length > 0 && (
+            <span className="mobile-tab-badge">{validationErrors.length}</span>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
