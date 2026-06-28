@@ -1327,6 +1327,7 @@ input[type="radio"]:checked::after {
     border-top: 3px double var(--border-gold) !important;
     border-radius: 16px 16px 0 0 !important;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.9) !important;
+    opacity: 1 !important; /* Force opacity to 1 on mobile to prevent instant fade out */
     
     /* Sliding transitions */
     transform: translateY(100%) !important;
@@ -1345,6 +1346,7 @@ input[type="radio"]:checked::after {
   .gothic-bottomsheet.desktop-modal.open {
     transform: translateY(0) !important;
     visibility: visible !important;
+    opacity: 1 !important;
   }
 
   /* Specific padding/layout overrides on mobile */
