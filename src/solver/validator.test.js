@@ -52,7 +52,10 @@ const mockSystem = {
           id: 'unit-tactical',
           name: 'Tactical Squad',
           costs: [{ typeId: 'pts', value: 150 }],
-          categoryLinks: [{ targetId: 'cat-troops' }]
+          categoryLinks: [{ targetId: 'cat-troops' }],
+          constraints: [
+            { id: 'limit-tactical', type: 'max', value: 2, field: 'selections', scope: 'parent' }
+          ]
         },
         {
           id: 'unit-vampire',
@@ -746,12 +749,75 @@ console.log('Test 9 - Roster-wide Uniqueness Check: ',
   (takenForCap2 === true && takenForCap1 === false) ? 'PASSED' : `FAILED (Cap2: ${takenForCap2}, Cap1: ${takenForCap1})`
 );
 
+// Test 10: Maximum Unit Types per Army / parent force-level constraint checking (Tactical Squad max 2 limit)
+const mockRosterTacticalOverLimit = {
+  name: 'Tactical Horde Over Limit',
+  costLimit: 1000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-cap',
+          selectionEntryId: 'unit-captain',
+          name: 'Space Marine Captain',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 100 }],
+          selections: [
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        },
+        {
+          id: 'sel-tac-1',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad 1',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }]
+        },
+        {
+          id: 'sel-tac-2',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad 2',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }]
+        },
+        {
+          id: 'sel-tac-3',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad 3',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }]
+        }
+      ]
+    }
+  ]
+};
+
+const errorsTacOverLimit = validateRoster(mockRosterTacticalOverLimit, mockSystem);
+const tacOverLimitError = errorsTacOverLimit.find(e => e.type === 'entry-max' && e.selectionId === 'sel-tac-1');
+console.log('Test 10 - Unit Type Army Max Limit Check: ',
+  tacOverLimitError ? 'PASSED' : `FAILED (No entry-max error found: ${JSON.stringify(errorsTacOverLimit)})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
     (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint) &&
     (gazeSpellOption && !hasParentConstraintLeak) &&
-    (takenForCap2 === true && takenForCap1 === false)) {
+    (takenForCap2 === true && takenForCap1 === false) &&
+    tacOverLimitError) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {

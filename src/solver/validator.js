@@ -200,9 +200,14 @@ export function validateRoster(roster, system) {
     const catalogue = system.catalogues.find(c => c.id === forceCatalogueId);
     const entryDef = findEntryInCatalogue(catalogue, entryId);
     
+    if (entryDef) {
+      const resolved = resolveEntry(system, entryDef);
+      if (resolved && resolved.targetId && resolved.targetId !== entryId) {
+        selectionCounts[resolved.targetId] = (selectionCounts[resolved.targetId] || 0) + (selection.number || 1);
+      }
+    }
+
     // Check categories (in BattleScribe, entries can have categoryLinks or categories directly)
-    // To keep it simple, we check category links or direct indicators.
-    // Also, units are usually mapped to a category in builder by category link.
     if (selection.category) {
       categoryCounts[selection.category] = (categoryCounts[selection.category] || 0) + 1;
     }
@@ -259,8 +264,7 @@ export function validateRoster(roster, system) {
       });
     });
 
-    // 3. Validate individual unit selections and upgrades constraints
-    const validateSelectionConstraints = (selection, parentSelection = null) => {
+    const validateSelectionConstraints = (selection, parentSelection = null, force = null) => {
       const entryId = selection.entryLinkId || selection.selectionEntryId;
       const rawEntry = findEntryInSystem(system, entryId);
       const entry = resolveEntry(system, rawEntry);
@@ -283,14 +287,22 @@ export function validateRoster(roster, system) {
           // Determine current count in scope
           let count = selection.number || 1;
           
-          if (con.scope === 'parent' && parentSelection) {
-            // How many times is this sub-entry selected in this parent instance?
-            const childMatch = parentSelection.selections?.filter(s => 
-              (s.entryLinkId || s.selectionEntryId) === entryId
-            ) || [];
-            count = childMatch.reduce((sum, s) => sum + (s.number || 1), 0);
+          if (con.scope === 'parent') {
+            if (parentSelection) {
+              const childMatch = parentSelection.selections?.filter(s => {
+                const subId = s.entryLinkId || s.selectionEntryId;
+                return subId === entryId || (entry.targetId && subId === entry.targetId);
+              }) || [];
+              count = childMatch.reduce((sum, s) => sum + (s.number || 1), 0);
+            } else if (force) {
+              const forceMatch = force.selections?.filter(s => {
+                const subId = s.entryLinkId || s.selectionEntryId;
+                return subId === entryId || (entry.targetId && subId === entry.targetId);
+              }) || [];
+              count = forceMatch.reduce((sum, s) => sum + (s.number || 1), 0);
+            }
           } else if (con.scope === 'roster' || con.scope === 'force') {
-            count = selectionCounts[entryId] || 0;
+            count = Math.max(selectionCounts[entryId] || 0, (entry.targetId ? selectionCounts[entry.targetId] || 0 : 0));
           }
 
           if (con.type === 'min' && count < con.value) {
@@ -428,12 +440,12 @@ export function validateRoster(roster, system) {
 
       // Check children
       if (selection.selections) {
-        selection.selections.forEach(child => validateSelectionConstraints(child, selection));
+        selection.selections.forEach(child => validateSelectionConstraints(child, selection, force));
       }
     };
 
     if (force.selections) {
-      force.selections.forEach(sel => validateSelectionConstraints(sel, null));
+      force.selections.forEach(sel => validateSelectionConstraints(sel, null, force));
     }
   });
 
