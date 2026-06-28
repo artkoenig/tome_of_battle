@@ -26,6 +26,61 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hoveredInfo, setHoveredInfo] = useState(null);
+
+  const updateTooltipPosition = (e) => {
+    const tooltipWidth = 320;
+    const estimatedHeight = 150;
+    let x = e.clientX + 15;
+    let y = e.clientY + 15;
+
+    if (x + tooltipWidth > window.innerWidth) {
+      x = e.clientX - tooltipWidth - 15;
+      if (x < 10) x = 10;
+    }
+
+    if (y + estimatedHeight > window.innerHeight) {
+      y = e.clientY - estimatedHeight - 15;
+      if (y < 10) y = 10;
+    }
+    return { x, y };
+  };
+
+  const handleMouseEnter = (title, text, e) => {
+    if (window.innerWidth <= 900) return;
+    const pos = updateTooltipPosition(e);
+    setHoveredInfo({ title, text, x: pos.x, y: pos.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (window.innerWidth <= 900) return;
+    const pos = updateTooltipPosition(e);
+    setHoveredInfo(prev => prev ? { ...prev, x: pos.x, y: pos.y } : null);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredInfo(null);
+  };
+
+  const getUpgradeDescription = (res) => {
+    if (!res) return '';
+    const descriptions = [];
+    if (res.rules && res.rules.length > 0) {
+      res.rules.forEach(r => {
+        if (r.description) descriptions.push(r.description);
+      });
+    }
+    if (res.profiles && res.profiles.length > 0) {
+      res.profiles.forEach(p => {
+        const typeLower = p.profileTypeName?.toLowerCase() || '';
+        if (typeLower.includes('weapon') || typeLower.includes('magic') || typeLower.includes('items') || typeLower.includes('rüstung') || typeLower.includes('waffe')) {
+          const stats = p.characteristics.map(c => `${c.name}: ${c.value}`).join(', ');
+          descriptions.push(`${p.name} (${stats})`);
+        }
+      });
+    }
+    return descriptions.join(' | ');
+  };
 
   const costType = system?.costTypes?.find(ct => ct.id === roster?.costLimitType);
   const costTypeLabel = costType 
@@ -104,6 +159,85 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 ))}
               </div>
             </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const getSelectedUpgrades = (selection) => {
+    const list = [];
+    const collect = (sel) => {
+      if (!sel.selections) return;
+      sel.selections.forEach(subSel => {
+        const entryId = subSel.entryLinkId || subSel.selectionEntryId;
+        const entry = findEntryInSystem(system, entryId, activeCatalogue?.id);
+        const resolved = resolveEntry(system, entry, activeCatalogue?.id);
+        if (resolved) {
+          list.push({
+            id: subSel.id,
+            name: subSel.name,
+            number: subSel.number || 1,
+            resolved: resolved
+          });
+        }
+        collect(subSel);
+      });
+    };
+    collect(selection);
+    return list;
+  };
+
+  const renderUnitUpgrades = (selection) => {
+    const selectedUpgrades = getSelectedUpgrades(selection);
+    if (selectedUpgrades.length === 0) return null;
+
+    return (
+      <div 
+        className="unit-header-upgrades" 
+        style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: '6px', 
+          marginTop: '4px',
+          marginBottom: '2px',
+          width: '100%'
+        }}
+      >
+        {selectedUpgrades.map(upgrade => {
+          const descText = getUpgradeDescription(upgrade.resolved);
+          return (
+            <span 
+              key={upgrade.id}
+              style={{
+                fontSize: '0.72rem',
+                backgroundColor: 'rgba(226, 183, 66, 0.06)',
+                border: '1px solid rgba(226, 183, 66, 0.22)',
+                color: 'var(--text-parchment)',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontFamily: 'var(--font-sans)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                cursor: descText ? 'help' : 'default'
+              }}
+              onMouseEnter={(e) => descText && handleMouseEnter(upgrade.name, descText, e)}
+              onMouseMove={descText ? handleMouseMove : null}
+              onMouseLeave={descText ? handleMouseLeave : null}
+            >
+              {upgrade.number > 1 && (
+                <span style={{ color: 'var(--text-gold)', fontWeight: 700 }}>
+                  {upgrade.number}x
+                </span>
+              )}
+              <span style={{ opacity: 0.9 }}>{upgrade.name}</span>
+              {showDebugIds && (
+                <span className="debug-id-badge" style={{ margin: 0, padding: '0 2px', fontSize: '0.6rem' }}>
+                  def:{upgrade.resolved?.id}
+                </span>
+              )}
+            </span>
           );
         })}
       </div>
@@ -345,6 +479,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                     </div>
                                   </div>
                                   {renderMiniProfile(selection)}
+                                  {renderUnitUpgrades(selection)}
                                 </div>
 
                                 {selectionErrors.map((err, idx) => (
@@ -420,6 +555,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                               </div>
                             </div>
                             {renderMiniProfile(selection)}
+                            {renderUnitUpgrades(selection)}
                           </div>
 
                           {isUnitEditing && (
@@ -485,6 +621,19 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
       {toast && (
         <div className="gothic-toast">
           <span>{toast}</span>
+        </div>
+      )}
+
+      {hoveredInfo && (
+        <div 
+          className="gothic-tooltip"
+          style={{
+            left: hoveredInfo.x,
+            top: hoveredInfo.y
+          }}
+        >
+          <div className="tooltip-title">{hoveredInfo.title}</div>
+          <div className="tooltip-body">{hoveredInfo.text}</div>
         </div>
       )}
     </div>

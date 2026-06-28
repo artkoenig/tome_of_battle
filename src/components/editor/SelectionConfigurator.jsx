@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Minus, HelpCircle, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Minus, Info, X } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 import { useDebugMode } from '../../hooks/DebugContext';
@@ -401,10 +401,33 @@ export default function SelectionConfigurator({
             const isBinary = maxLimit === 1;
             const descText = getOptionDescription(res);
 
+            const isClickable = !isMandatory;
+            const handleRowClick = (e) => {
+              if (e.target.closest('button') || e.target.closest('input')) {
+                return;
+              }
+              if (isClickable) {
+                if (isBinary) {
+                  updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment');
+                } else {
+                  updateSubSelection(selection.id, option, 'increment');
+                }
+              }
+            };
+
             return (
-              <div key={res.id} className="sub-selection-row">
+              <div 
+                key={res.id} 
+                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}`}
+                onClick={handleRowClick}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: 600 }}>
+                  <span 
+                    style={{ fontWeight: 600, cursor: descText ? 'help' : 'default' }}
+                    onMouseEnter={(e) => descText && handleMouseEnter(res.name, descText, e)}
+                    onMouseMove={descText ? handleMouseMove : null}
+                    onMouseLeave={descText ? handleMouseLeave : null}
+                  >
                     {res.name}
                     {showDebugIds && <span className="debug-id-badge">{res.id}</span>}
                   </span>
@@ -423,7 +446,7 @@ export default function SelectionConfigurator({
                       title="Beschreibung anzeigen"
                       style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: 'var(--text-gold)', opacity: 0.7, transition: 'opacity 0.2s' }}
                     >
-                      <HelpCircle size={14} />
+                      <Info size={14} />
                     </button>
                   )}
                 </div>
@@ -769,10 +792,55 @@ function OptionGroupComponent({
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res.id);
             const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere;
 
+            const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
+            const handleRowClick = (e) => {
+              if (e.target.closest('button') || e.target.closest('input')) {
+                return;
+              }
+              if (isClickable) {
+                if (isBinary) {
+                  if (isRadio) {
+                    if (count > 0) {
+                      updateSubSelection(selection.id, option, 'decrement');
+                    } else {
+                      group.items.forEach(otherItem => {
+                        const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
+                        if (otherRes && otherRes.id !== res.id) {
+                          const otherCount = getSubSelectionCount(selection, otherRes.id);
+                          if (otherCount > 0) {
+                            updateSubSelection(selection.id, otherItem.option, 'decrement');
+                          }
+                        }
+                      });
+                      updateSubSelection(selection.id, option, 'increment');
+                    }
+                  } else {
+                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment');
+                  }
+                } else {
+                  updateSubSelection(selection.id, option, 'increment');
+                }
+              }
+            };
+
             return (
-              <div key={res.id} className="sub-selection-row" style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}>
+              <div 
+                key={res.id} 
+                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}`}
+                style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}
+                onClick={handleRowClick}
+              >
                 <div style={{ paddingLeft: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: 600, color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit' }}>
+                  <span 
+                    style={{ 
+                      fontWeight: 600, 
+                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit',
+                      cursor: descText ? 'help' : 'default'
+                    }}
+                    onMouseEnter={(e) => descText && onHoverEnter(res.name, descText, e)}
+                    onMouseMove={descText ? onHoverMove : null}
+                    onMouseLeave={descText ? onHoverLeave : null}
+                  >
                     {res.name}
                     {showDebugIds && <span className="debug-id-badge">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger" style={{ fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
@@ -792,7 +860,7 @@ function OptionGroupComponent({
                       title="Beschreibung anzeigen"
                       style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: 'var(--text-gold)', opacity: 0.7, transition: 'opacity 0.2s' }}
                     >
-                      <HelpCircle size={14} />
+                      <Info size={14} />
                     </button>
                   )}
                 </div>

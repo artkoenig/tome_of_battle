@@ -558,7 +558,16 @@ select option {
   align-items: center;
   padding: 8px 12px;
   font-size: 0.9rem;
+  transition: background-color 0.2s ease, cursor 0.2s ease;
 }
+
+@media (hover: hover) {
+  .sub-selection-row.clickable:hover {
+    background-color: rgba(226, 183, 66, 0.08);
+    cursor: pointer;
+  }
+}
+
 
 .sub-selection-row > div:first-child {
   flex: 1;
