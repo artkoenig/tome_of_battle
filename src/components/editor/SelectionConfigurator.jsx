@@ -627,7 +627,8 @@ function OptionGroupComponent({
             const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
             
             const isRadio = groupConstraints?.some(c => c.type === 'max' && c.value === 1);
-            const isBinary = (maxConstraint && maxConstraint.value === 1) || isRadio;
+            const isExplicitlyMulti = maxConstraint && maxConstraint.value > 1;
+            const isBinary = !isExplicitlyMulti && ((maxConstraint && maxConstraint.value === 1) || isRadio);
             const descText = getOptionDescription(res);
 
             const ptsConstraintGroup = filteredGroupConstraints.find(c => 
