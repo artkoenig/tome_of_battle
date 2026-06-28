@@ -1,126 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ShieldAlert, CheckCircle2, Search, Upload, RefreshCw, Edit } from 'lucide-react';
+import { ArrowLeft, ShieldAlert, CheckCircle2, Search, RefreshCw } from 'lucide-react';
 import { saveSystem } from '../../db/database';
 import { 
   updateRawXml, 
   findAndMutateJsonPatch, 
   getCatalogueContext, 
   parsePageNumbers, 
-  runVisionAnalysis 
+  runVisionAnalysis,
+  searchEditableEntries
 } from '../../parser/pdfRulesExtractor';
+import { processImportedData } from '../../parser/xmlParser';
 
-const searchEditableEntries = (system, query) => {
-  if (!query || query.length < 2) return [];
-  const results = [];
-  const q = query.toLowerCase();
-
-  const addEntry = (entry, catalogueName, path) => {
-    if (entry.name && entry.name.toLowerCase().includes(q)) {
-      results.push({
-        type: 'entry',
-        id: entry.id,
-        name: entry.name,
-        catalogueName,
-        path,
-        ref: entry
-      });
-    }
-  };
-
-  const addGroup = (group, catalogueName, path) => {
-    if (group.name && group.name.toLowerCase().includes(q)) {
-      results.push({
-        type: 'group',
-        id: group.id,
-        name: group.name,
-        catalogueName,
-        path,
-        ref: group
-      });
-    }
-  };
-
-  const addProfile = (profile, catalogueName, path) => {
-    if (profile.name && profile.name.toLowerCase().includes(q)) {
-      results.push({
-        type: 'profile',
-        id: profile.id,
-        name: profile.name,
-        catalogueName,
-        path,
-        ref: profile
-      });
-    }
-  };
-
-  const addRule = (rule, catalogueName, path) => {
-    if (rule.name && rule.name.toLowerCase().includes(q)) {
-      results.push({
-        type: 'rule',
-        id: rule.id,
-        name: rule.name,
-        catalogueName,
-        path,
-        ref: rule
-      });
-    }
-  };
-
-  const traverse = (item, catalogueName, path) => {
-    if (!item) return;
-
-    if (item.selectionEntries) {
-      item.selectionEntries.forEach(se => {
-        addEntry(se, catalogueName, path + " -> " + se.name);
-        traverse(se, catalogueName, path + " -> " + se.name);
-      });
-    }
-    if (item.entryLinks) {
-      item.entryLinks.forEach(el => {
-        if (el.constraints?.length > 0) {
-          addEntry(el, catalogueName, path + " -> Link: " + el.name);
-        }
-      });
-    }
-    if (item.selectionEntryGroups) {
-      item.selectionEntryGroups.forEach(seg => {
-        addGroup(seg, catalogueName, path + " -> Group: " + seg.name);
-        traverse(seg, catalogueName, path + " -> Group: " + seg.name);
-      });
-    }
-    if (item.profiles) {
-      item.profiles.forEach(p => {
-        addProfile(p, catalogueName, path + " -> Profile: " + p.name);
-      });
-    }
-    if (item.rules) {
-      item.rules.forEach(r => {
-        addRule(r, catalogueName, path + " -> Rule: " + r.name);
-      });
-    }
-  };
-
-  system.catalogues?.forEach(cat => {
-    traverse(cat, cat.name, cat.name);
-
-    cat.sharedSelectionEntries?.forEach(se => {
-      addEntry(se, cat.name, cat.name + " (Shared) -> " + se.name);
-      traverse(se, cat.name, cat.name + " (Shared) -> " + se.name);
-    });
-    cat.sharedSelectionEntryGroups?.forEach(seg => {
-      addGroup(seg, cat.name, cat.name + " (Shared) -> " + seg.name);
-      traverse(seg, cat.name, cat.name + " (Shared) -> " + seg.name);
-    });
-    cat.sharedProfiles?.forEach(p => {
-      addProfile(p, cat.name, cat.name + " (Shared) -> " + p.name);
-    });
-    cat.sharedRules?.forEach(r => {
-      addRule(r, cat.name, cat.name + " (Shared Rule) -> " + r.name);
-    });
-  });
-
-  return results.slice(0, 50);
-};
 
 export default function SystemEditorView({ system, onClose, onSystemSaved }) {
   const [editingSystem, setEditingSystem] = useState(system);
@@ -202,10 +92,19 @@ export default function SystemEditorView({ system, onClose, onSystemSaved }) {
   const handleSaveEntryModifications = async () => {
     try {
       updateRawXml(editingSystem, selectedEntry.id, selectedEntry.type, localName, localCosts, localConstraints, localCharacteristics, localDescription);
-      await saveSystem(editingSystem);
+      
+      let nextSystem = editingSystem;
+      if (editingSystem.rawXmls && editingSystem.rawXmls.gst && editingSystem.rawXmls.gst.length > 0) {
+        const reParsed = processImportedData(editingSystem.rawXmls.gst, editingSystem.rawXmls.cat || []);
+        reParsed.rawXmls = editingSystem.rawXmls;
+        nextSystem = reParsed;
+      }
+      
+      await saveSystem(nextSystem);
+      setEditingSystem(nextSystem);
       setSuccessMsg(`Änderungen an "${localName}" erfolgreich gespeichert und XML modifiziert!`);
       
-      const updatedResults = searchEditableEntries(editingSystem, searchQuery);
+      const updatedResults = searchEditableEntries(nextSystem, searchQuery);
       setSearchResults(updatedResults);
       
       // Update local edit reference
@@ -505,17 +404,21 @@ export default function SystemEditorView({ system, onClose, onSystemSaved }) {
                     {selectedEntry.type === 'entry' && (
                       <div style={{ marginBottom: '12px' }}>
                         <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>Punktekosten</label>
-                        {Object.entries(localCosts).map(([typeId, val]) => (
-                          <div key={typeId} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                            <span className="font-sans" style={{ fontSize: '0.85rem', minWidth: '40px' }}>{typeId === 'pts' || typeId === 'ecfa-8486-4f6c-c249' ? 'Points' : typeId}:</span>
-                            <input 
-                              type="number"
-                              value={val}
-                              onChange={(e) => setLocalCosts(prev => ({ ...prev, [typeId]: e.target.value }))}
-                              style={{ width: '100px', padding: '6px' }}
-                            />
-                          </div>
-                        ))}
+                        {Object.entries(localCosts).map(([typeId, val]) => {
+                          const costType = editingSystem.costTypes?.find(ct => ct.id === typeId);
+                          const displayName = costType ? costType.name.trim() : (typeId === 'pts' || typeId === 'ecfa-8486-4f6c-c249' ? 'Points' : typeId);
+                          return (
+                            <div key={typeId} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                              <span className="font-sans" style={{ fontSize: '0.85rem', minWidth: '40px' }}>{displayName}:</span>
+                              <input 
+                                type="number"
+                                value={val}
+                                onChange={(e) => setLocalCosts(prev => ({ ...prev, [typeId]: e.target.value }))}
+                                style={{ width: '100px', padding: '6px' }}
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 

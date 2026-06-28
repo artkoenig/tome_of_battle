@@ -263,6 +263,13 @@ export function findAndMutateJsonPatch(system, patch) {
       item.rules.forEach(traverse);
     }
   };
+  
+  // Traverse root game system too
+  traverse(system);
+  system.sharedSelectionEntries?.forEach(traverse);
+  system.sharedSelectionEntryGroups?.forEach(traverse);
+  system.sharedProfiles?.forEach(traverse);
+  system.sharedRules?.forEach(traverse);
 
   system.catalogues?.forEach(cat => {
     traverse(cat);
@@ -317,4 +324,143 @@ export function findAndMutateJsonPatch(system, patch) {
 
   updateRawXml(system, patch.id, patch.type, localName, localCosts, localConstraints, localCharacteristics, localDescription);
   return true;
+}
+
+export function searchEditableEntries(system, query) {
+  if (!query || query.length < 2) return [];
+  const results = [];
+  const q = query.toLowerCase();
+
+  const addEntry = (entry, catalogueName, path) => {
+    const matchesName = entry.name && entry.name.toLowerCase().includes(q);
+    const matchesId = entry.id && entry.id.toLowerCase().includes(q);
+    if (matchesName || matchesId) {
+      results.push({
+        type: 'entry',
+        id: entry.id,
+        name: entry.name,
+        catalogueName,
+        path,
+        ref: entry
+      });
+    }
+  };
+
+  const addGroup = (group, catalogueName, path) => {
+    const matchesName = group.name && group.name.toLowerCase().includes(q);
+    const matchesId = group.id && group.id.toLowerCase().includes(q);
+    if (matchesName || matchesId) {
+      results.push({
+        type: 'group',
+        id: group.id,
+        name: group.name,
+        catalogueName,
+        path,
+        ref: group
+      });
+    }
+  };
+
+  const addProfile = (profile, catalogueName, path) => {
+    const matchesName = profile.name && profile.name.toLowerCase().includes(q);
+    const matchesId = profile.id && profile.id.toLowerCase().includes(q);
+    if (matchesName || matchesId) {
+      results.push({
+        type: 'profile',
+        id: profile.id,
+        name: profile.name,
+        catalogueName,
+        path,
+        ref: profile
+      });
+    }
+  };
+
+  const addRule = (rule, catalogueName, path) => {
+    const matchesName = rule.name && rule.name.toLowerCase().includes(q);
+    const matchesId = rule.id && rule.id.toLowerCase().includes(q);
+    if (matchesName || matchesId) {
+      results.push({
+        type: 'rule',
+        id: rule.id,
+        name: rule.name,
+        catalogueName,
+        path,
+        ref: rule
+      });
+    }
+  };
+
+  const traverse = (item, catalogueName, path) => {
+    if (!item) return;
+
+    if (item.selectionEntries) {
+      item.selectionEntries.forEach(se => {
+        addEntry(se, catalogueName, path + " -> " + se.name);
+        traverse(se, catalogueName, path + " -> " + se.name);
+      });
+    }
+    if (item.entryLinks) {
+      item.entryLinks.forEach(el => {
+        if (el.constraints?.length > 0) {
+          addEntry(el, catalogueName, path + " -> Link: " + el.name);
+        }
+      });
+    }
+    if (item.selectionEntryGroups) {
+      item.selectionEntryGroups.forEach(seg => {
+        addGroup(seg, catalogueName, path + " -> Group: " + seg.name);
+        traverse(seg, catalogueName, path + " -> Group: " + seg.name);
+      });
+    }
+    if (item.profiles) {
+      item.profiles.forEach(p => {
+        addProfile(p, catalogueName, path + " -> Profile: " + p.name);
+      });
+    }
+    if (item.rules) {
+      item.rules.forEach(r => {
+        addRule(r, catalogueName, path + " -> Rule: " + r.name);
+      });
+    }
+  };
+
+  // Search within the Game System (.gst) data itself
+  const gstName = system.name || "Game System";
+  
+  system.sharedSelectionEntries?.forEach(se => {
+    addEntry(se, gstName, gstName + " (Shared) -> " + se.name);
+    traverse(se, gstName, gstName + " (Shared) -> " + se.name);
+  });
+  system.sharedSelectionEntryGroups?.forEach(seg => {
+    addGroup(seg, gstName, gstName + " (Shared) -> " + seg.name);
+    traverse(seg, gstName, gstName + " (Shared) -> " + seg.name);
+  });
+  system.sharedProfiles?.forEach(p => {
+    addProfile(p, gstName, gstName + " (Shared) -> " + p.name);
+  });
+  system.sharedRules?.forEach(r => {
+    addRule(r, gstName, gstName + " (Shared Rule) -> " + r.name);
+  });
+
+  system.catalogues?.forEach(cat => {
+    traverse(cat, cat.name, cat.name);
+
+    cat.sharedSelectionEntries?.forEach(se => {
+      addEntry(se, cat.name, cat.name + " (Shared) -> " + se.name);
+      traverse(se, cat.name, cat.name + " (Shared) -> " + se.name);
+    });
+    cat.sharedSelectionEntryGroups?.forEach(seg => {
+      addGroup(seg, cat.name, cat.name + " (Shared) -> " + seg.name);
+      traverse(seg, cat.name, cat.name + " (Shared) -> " + seg.name);
+    });
+    cat.sharedProfiles?.forEach(p => {
+      addProfile(p, cat.name, cat.name + " (Shared) -> " + p.name);
+    });
+    cat.sharedRules?.forEach(r => {
+      addRule(r, cat.name, cat.name + " (Shared Rule) -> " + r.name);
+    });
+  });
+
+  return results.slice(0, 50);
 }

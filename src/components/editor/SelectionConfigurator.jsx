@@ -1,7 +1,25 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus, HelpCircle, X } from 'lucide-react';
-import { resolveEntry, findEntryInSystem } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
+
+const findForceOfSelection = (selId, forces) => {
+  if (!forces) return null;
+  for (const force of forces) {
+    const containsSel = (list) => {
+      if (!list) return false;
+      for (const s of list) {
+        if (s.id === selId) return true;
+        if (containsSel(s.selections)) return true;
+      }
+      return false;
+    };
+    if (containsSel(force.selections)) {
+      return force.id;
+    }
+  }
+  return null;
+};
 
 export default function SelectionConfigurator({
   selection,
@@ -450,6 +468,10 @@ function OptionGroupComponent({
   const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
   const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
   
+  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
+  const activeForceId = findForceOfSelection(selection.id, roster.forces);
+  const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
+
   const selectedItemsSummary = group.items
     .map(({ option }) => {
       const res = resolveEntry(system, option, activeCatalogue.id);
@@ -498,10 +520,10 @@ function OptionGroupComponent({
            (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
   }) || [];
 
-  const minLimitRaw = filteredGroupConstraints.find(c => c.type === 'min')?.value;
-  const minLimit = (minLimitRaw === undefined || minLimitRaw < 0) ? 0 : minLimitRaw;
-  const maxLimitRaw = filteredGroupConstraints.find(c => c.type === 'max')?.value;
-  const maxLimit = (maxLimitRaw === undefined || maxLimitRaw < 0) ? Infinity : maxLimitRaw;
+  const minLimitRaw = filteredGroupConstraints.find(c => c.type === 'min');
+  const minLimit = minLimitRaw ? getModifiedConstraintValue(minLimitRaw, group.modifiers, roster, selectionCounts, forceCategoryCounts) : 0;
+  const maxLimitRaw = filteredGroupConstraints.find(c => c.type === 'max');
+  const maxLimit = maxLimitRaw ? getModifiedConstraintValue(maxLimitRaw, group.modifiers, roster, selectionCounts, forceCategoryCounts) : Infinity;
   
   const currentCount = group.items.reduce((sum, item) => {
     const res = resolveEntry(system, item.option, activeCatalogue.id);
@@ -518,7 +540,8 @@ function OptionGroupComponent({
   let hasGroupError = false;
   
   filteredGroupConstraints.forEach(con => {
-    if (con.value < 0) return;
+    const finalValue = getModifiedConstraintValue(con, group.modifiers, roster, selectionCounts, forceCategoryCounts);
+    if (finalValue < 0) return;
     
     let activeCount = currentCount;
     let activePoints = currentPoints;
@@ -542,13 +565,13 @@ function OptionGroupComponent({
     const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
     if (isCostField) {
       if (con.type === 'max') {
-        if (activePoints > con.value) {
+        if (activePoints > finalValue) {
           hasGroupError = true;
         }
       }
     } else {
       if (con.type === 'max') {
-        if (activeCount > con.value) {
+        if (activeCount > finalValue) {
           hasGroupError = true;
         }
       }
@@ -562,7 +585,8 @@ function OptionGroupComponent({
   );
   
   if (ptsConstraint) {
-    limitParts.push(`${currentPoints} / ${ptsConstraint.value} Pkt.`);
+    const ptsConstraintVal = getModifiedConstraintValue(ptsConstraint, group.modifiers, roster, selectionCounts, forceCategoryCounts);
+    limitParts.push(`${currentPoints} / ${ptsConstraintVal} Pkt.`);
   } else if (currentPoints > 0) {
     limitParts.push(`${currentPoints} Pkt.`);
   }
@@ -627,7 +651,7 @@ function OptionGroupComponent({
             const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
             
             const isRadio = groupConstraints?.some(c => c.type === 'max' && c.value === 1);
-            const isExplicitlyMulti = maxConstraint && maxConstraint.value > 1;
+            const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || (!maxConstraint && !isMandatory);
             const isBinary = !isExplicitlyMulti && ((maxConstraint && maxConstraint.value === 1) || isRadio);
             const descText = getOptionDescription(res);
 
@@ -635,7 +659,9 @@ function OptionGroupComponent({
               c.type === 'max' && 
               (c.field === 'pts' || c.field === 'ecfa-8486-4f6c-c249' || c.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === c.field))
             );
-            const maxPointsLimit = ptsConstraintGroup ? ptsConstraintGroup.value : Infinity;
+            const maxPointsLimit = ptsConstraintGroup 
+              ? getModifiedConstraintValue(ptsConstraintGroup, group.modifiers, roster, selectionCounts, forceCategoryCounts)
+              : Infinity;
 
             let wouldExceedPointsLimit = false;
             if (maxPointsLimit !== Infinity) {
@@ -698,41 +724,63 @@ function OptionGroupComponent({
                 </div>
                 <div className="sub-selection-controls">
                   {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
-                  {isRadio ? (
-                    <input 
-                      type="radio" 
-                      name={`${selection.id}-${group.name}`}
-                      checked={count > 0}
-                      disabled={count === 0 && isSelectDisabled}
-                      onClick={() => {
-                        if (count > 0) {
-                          updateSubSelection(selection.id, option, 'decrement');
-                        } else if (!isSelectDisabled) {
-                          group.items.forEach(otherItem => {
-                            const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
-                            if (otherRes && otherRes.id !== res.id) {
-                              const otherCount = getSubSelectionCount(selection, otherRes.id);
-                              if (otherCount > 0) {
-                                updateSubSelection(selection.id, otherItem.option, 'decrement');
+                  {isBinary ? (
+                    isRadio ? (
+                      <input 
+                        type="radio" 
+                        name={`${selection.id}-${group.name}`}
+                        checked={count > 0}
+                        disabled={count === 0 && isSelectDisabled}
+                        onClick={() => {
+                          if (count > 0) {
+                            updateSubSelection(selection.id, option, 'decrement');
+                          } else if (!isSelectDisabled) {
+                            group.items.forEach(otherItem => {
+                              const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
+                              if (otherRes && otherRes.id !== res.id) {
+                                const otherCount = getSubSelectionCount(selection, otherRes.id);
+                                if (otherCount > 0) {
+                                  updateSubSelection(selection.id, otherItem.option, 'decrement');
+                                }
                               }
-                            }
-                          });
-                          updateSubSelection(selection.id, option, 'increment');
-                        }
-                      }}
-                      onChange={() => {}}
-                    />
+                            });
+                            updateSubSelection(selection.id, option, 'increment');
+                          }
+                        }}
+                        onChange={() => {}}
+                      />
+                    ) : (
+                      <input 
+                        type="checkbox" 
+                        checked={count > 0 || isMandatory}
+                        disabled={isMandatory || (count === 0 && isSelectDisabled)}
+                        onChange={(e) => {
+                          if (!isMandatory) {
+                            updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
+                          }
+                        }}
+                      />
+                    )
                   ) : (
-                    <input 
-                      type="checkbox" 
-                      checked={count > 0 || isMandatory}
-                      disabled={isMandatory || (count === 0 && isSelectDisabled)}
-                      onChange={(e) => {
-                        if (!isMandatory) {
-                          updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
-                        }
-                      }}
-                    />
+                    <div className="quantity-control">
+                      <button 
+                        className="btn-sm" 
+                        style={{ padding: '2px 6px' }}
+                        onClick={() => updateSubSelection(selection.id, option, 'decrement')}
+                        disabled={count === 0}
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="quantity-value font-sans">{count}</span>
+                      <button 
+                        className="btn-sm" 
+                        style={{ padding: '2px 6px' }}
+                        onClick={() => updateSubSelection(selection.id, option, 'increment')}
+                        disabled={isSelectDisabled}
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

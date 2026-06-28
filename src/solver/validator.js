@@ -561,7 +561,8 @@ export function validateRoster(roster, system) {
         }, 0);
 
         group.constraints?.forEach(con => {
-          if (con.value < 0) return;
+          const finalValue = getModifiedConstraintValue(con, group.modifiers, roster, selectionCounts, forceCategoryCounts);
+          if (finalValue < 0) return;
           
           // Check scope applicability for specific category/entry scoped constraints
           if (con.scope !== 'parent' && con.scope !== 'force' && con.scope !== 'roster') {
@@ -571,36 +572,36 @@ export function validateRoster(roster, system) {
           }
           const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
           if (isCostField) {
-            if (con.type === 'max' && totalPoints > con.value) {
+            if (con.type === 'max' && totalPoints > finalValue) {
               errors.push({
                 type: 'group-points-max',
                 selectionId: selection.id,
-                message: `Kategorie "${group.name}" erlaubt maximal ${con.value} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
+                message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
                 severity: 'error'
               });
             }
-            if (con.type === 'min' && totalPoints < con.value && totalPoints > 0) {
+            if (con.type === 'min' && totalPoints < finalValue && totalPoints > 0) {
               errors.push({
                 type: 'group-points-min',
                 selectionId: selection.id,
-                message: `Kategorie "${group.name}" erfordert mindestens ${con.value} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
+                message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
                 severity: 'error'
               });
             }
           } else {
-            if (con.type === 'max' && totalCount > con.value) {
+            if (con.type === 'max' && totalCount > finalValue) {
               errors.push({
                 type: 'group-count-max',
                 selectionId: selection.id,
-                message: `Kategorie "${group.name}" erlaubt maximal ${con.value} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
+                message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
                 severity: 'error'
               });
             }
-            if (con.type === 'min' && totalCount < con.value && totalCount > 0) {
+            if (con.type === 'min' && totalCount < finalValue && totalCount > 0) {
               errors.push({
                 type: 'group-count-min',
                 selectionId: selection.id,
-                message: `Kategorie "${group.name}" erfordert mindestens ${con.value} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
+                message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
                 severity: 'error'
               });
             }

@@ -1,6 +1,8 @@
 import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue } from './validator.js';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML } from '../parser/xmlParser.js';
+import { searchEditableEntries, findAndMutateJsonPatch } from '../parser/pdfRulesExtractor.js';
+
 
 // 1. Mock Game System Definition
 const mockSystem = {
@@ -1179,6 +1181,209 @@ console.log('Test 19 - Repeating Modifiers (repeat field and limit): ',
   repeatSuccess ? 'PASSED' : `FAILED (limit-repeat: ${valLimitRepeat}/4, field-repeat: ${valFieldRepeat}/1)`
 );
 
+// Test 20: GST Editing and Searching
+const mockGstXmlContent = `
+<gameSystem id="sys-gst" name="Grimdark Battles" xmlns="http://www.battlescribe.net/schema/gameSystemSchema">
+  <sharedRules>
+    <rule id="gst-rule-1" name="Bolter Discipline">
+      <description>Rapid fire shots are enhanced.</description>
+    </rule>
+  </sharedRules>
+  <sharedProfiles>
+    <profile id="gst-prof-1" name="Power Armor" profileTypeId="armor">
+      <characteristics>
+        <characteristic name="Save">3+</characteristic>
+      </characteristics>
+    </profile>
+  </sharedProfiles>
+</gameSystem>
+`;
+
+const mockCatXmlContent = `
+<catalogue id="cat-sub" name="Space Knights" gameSystemId="sys-gst">
+  <sharedRules>
+    <rule id="cat-rule-1" name="Knighthood">
+      <description>Oath of loyalty.</description>
+    </rule>
+  </sharedRules>
+</catalogue>
+`;
+
+const testGstSystem = {
+  id: 'sys-gst',
+  name: 'Grimdark Battles',
+  sharedRules: [
+    { id: 'gst-rule-1', name: 'Bolter Discipline', description: 'Rapid fire shots are enhanced.' }
+  ],
+  sharedProfiles: [
+    { id: 'gst-prof-1', name: 'Power Armor', profileTypeId: 'armor', characteristics: [{ name: 'Save', value: '3+' }] }
+  ],
+  catalogues: [
+    {
+      id: 'cat-sub',
+      name: 'Space Knights',
+      sharedRules: [
+        { id: 'cat-rule-1', name: 'Knighthood', description: 'Oath of loyalty.' }
+      ]
+    }
+  ],
+  rawXmls: {
+    gst: [
+      { name: 'grimdark.gst', content: mockGstXmlContent }
+    ],
+    cat: [
+      { name: 'knights.cat', content: mockCatXmlContent }
+    ]
+  }
+};
+
+// 1. Search tests (by name and by ID)
+const searchResultsGst = searchEditableEntries(testGstSystem, 'Bolter');
+const searchResultsCat = searchEditableEntries(testGstSystem, 'Knighthood');
+const searchResultsById = searchEditableEntries(testGstSystem, 'gst-prof-1');
+
+const searchGstSuccess = searchResultsGst.length === 1 && searchResultsGst[0].id === 'gst-rule-1';
+const searchCatSuccess = searchResultsCat.length === 1 && searchResultsCat[0].id === 'cat-rule-1';
+const searchByIdSuccess = searchResultsById.length === 1 && searchResultsById[0].id === 'gst-prof-1';
+
+// 2. Patch mutation test
+const patch = {
+  id: 'gst-rule-1',
+  type: 'rule',
+  field: 'description',
+  newValue: 'New rules for bolters.'
+};
+
+const patchSuccess = findAndMutateJsonPatch(testGstSystem, patch);
+const updatedRuleDesc = testGstSystem.sharedRules[0].description === 'New rules for bolters.';
+const updatedXmlGst = testGstSystem.rawXmls.gst[0].content.includes('New rules for bolters.');
+
+const test20Success = searchGstSuccess && searchCatSuccess && searchByIdSuccess && patchSuccess && updatedRuleDesc && updatedXmlGst;
+
+console.log('Test 20 - GST Editing and Searching: ',
+  test20Success ? 'PASSED' : `FAILED (searchGst: ${searchGstSuccess}, searchCat: ${searchCatSuccess}, patch: ${patchSuccess}, descUpdated: ${updatedRuleDesc}, xmlUpdated: ${updatedXmlGst})`
+);
+
+// Test 21: Repeatable magic items validation via group modifiers
+const mockSystemRepeatable = {
+  id: 'sys-repeatable',
+  name: 'Test System Repeatable',
+  costTypes: [{ id: 'pts', name: 'Points', defaultCostLimit: 2000 }],
+  categoryEntries: [{ id: 'cat-hq', name: 'HQ' }],
+  forceEntries: [
+    {
+      id: 'force-patrol',
+      name: 'Patrol Force',
+      categoryLinks: [{ id: 'cl-hq', targetId: 'cat-hq', name: 'HQ Link' }]
+    }
+  ],
+  catalogues: [
+    {
+      id: 'cat-wizard',
+      name: 'Wizards',
+      selectionEntries: [
+        {
+          id: 'unit-wizard',
+          name: 'Wizard Shaman',
+          costs: [{ typeId: 'pts', value: 100 }],
+          categoryLinks: [{ targetId: 'cat-hq' }],
+          selectionEntryGroups: [
+            {
+              id: 'group-arcane',
+              name: 'Arcane Items',
+              modifiers: [
+                {
+                  type: 'increment',
+                  field: 'con-arcane-max',
+                  valueObject: 1,
+                  conditions: [
+                    { field: 'item-scroll', type: 'greaterThan', value: 0 }
+                  ],
+                  repeat: {
+                    field: 'item-scroll',
+                    value: 1,
+                    repeats: 1
+                  }
+                }
+              ],
+              constraints: [
+                { id: 'con-arcane-max', type: 'max', value: 1, field: 'selections', scope: 'parent' }
+              ],
+              selectionEntries: [
+                {
+                  id: 'item-scroll',
+                  name: 'Dispel Scroll',
+                  costs: [{ typeId: 'pts', value: 25 }]
+                },
+                {
+                  id: 'item-staff',
+                  name: 'Staff of Sorcery',
+                  costs: [{ typeId: 'pts', value: 50 }],
+                  constraints: [
+                    { id: 'con-staff-max', type: 'max', value: 1, field: 'selections', scope: 'parent' }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const mockRosterRepeatableValid = {
+  name: 'Wizard Army',
+  costLimit: 2000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-wizard',
+      selections: [
+        {
+          id: 'sel-wizard',
+          selectionEntryId: 'unit-wizard',
+          name: 'Wizard Shaman',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 100 + 25 + 25 + 50 }], // 200 pts
+          selections: [
+            {
+              id: 'sel-scroll-1',
+              selectionEntryId: 'item-scroll',
+              name: 'Dispel Scroll',
+              number: 2,
+              costs: [{ typeId: 'pts', value: 25 }]
+            },
+            {
+              id: 'sel-staff',
+              selectionEntryId: 'item-staff',
+              name: 'Staff of Sorcery',
+              number: 1,
+              costs: [{ typeId: 'pts', value: 50 }]
+            },
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const errorsRepeatableValid = validateRoster(mockRosterRepeatableValid, mockSystemRepeatable);
+const test21Success = errorsRepeatableValid.length === 0;
+
+console.log('Test 21 - Repeatable Magic Items Group limit increment: ',
+  test21Success ? 'PASSED' : `FAILED (Errors: ${JSON.stringify(errorsRepeatableValid)})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -1194,7 +1399,9 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     fallbackSuccess &&
     collisionSuccess &&
     condGroupSuccess &&
-    repeatSuccess) {
+    repeatSuccess &&
+    test20Success &&
+    test21Success) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {
