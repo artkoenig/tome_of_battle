@@ -75,7 +75,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   {prof.name}
                 </span>
               )}
-              <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', paddingBottom: '2px', width: '100%' }}>
+              <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', paddingBottom: '2px', width: '100%', maxWidth: '360px' }}>
                 {prof.characteristics.map(c => (
                   <div 
                     key={c.name} 
