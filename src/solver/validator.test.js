@@ -9,7 +9,8 @@ const mockSystem = {
   ],
   categoryEntries: [
     { id: 'cat-hq', name: 'HQ' },
-    { id: 'cat-troops', name: 'Troops' }
+    { id: 'cat-troops', name: 'Troops' },
+    { id: 'cat-characters', name: 'Characters' }
   ],
   forceEntries: [
     {
@@ -33,6 +34,14 @@ const mockSystem = {
             { type: 'min', value: 1, scope: 'force' },
             { type: 'max', value: 3, scope: 'force' }
           ]
+        },
+        {
+          id: 'cl-characters',
+          targetId: 'cat-characters',
+          name: 'Characters Link',
+          constraints: [
+            { type: 'max', value: 1, scope: 'force' }
+          ]
         }
       ]
     }
@@ -46,7 +55,7 @@ const mockSystem = {
           id: 'unit-captain',
           name: 'Space Marine Captain',
           costs: [{ typeId: 'pts', value: 100 }],
-          categoryLinks: [{ targetId: 'cat-hq' }]
+          categoryLinks: [{ targetId: 'cat-hq' }, { targetId: 'cat-characters' }]
         },
         {
           id: 'unit-tactical',
@@ -61,7 +70,7 @@ const mockSystem = {
           id: 'unit-vampire',
           name: 'Vampire Thrall',
           costs: [{ typeId: 'pts', value: 80 }],
-          categoryLinks: [{ targetId: 'cat-hq' }],
+          categoryLinks: [{ targetId: 'cat-hq' }, { targetId: 'cat-characters' }],
           selectionEntryGroups: [
             {
               id: 'group-magic-items',
@@ -811,13 +820,68 @@ console.log('Test 10 - Unit Type Army Max Limit Check: ',
   tacOverLimitError ? 'PASSED' : `FAILED (No entry-max error found: ${JSON.stringify(errorsTacOverLimit)})`
 );
 
+// Test 11: Multi-category counts validation (Characters constraint max 1 limit)
+const mockRosterCharactersOverLimit = {
+  name: 'Characters Over Limit',
+  costLimit: 1000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-cap',
+          selectionEntryId: 'unit-captain',
+          name: 'Space Marine Captain',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 100 }],
+          selections: [
+            {
+              id: 'sel-general',
+              selectionEntryId: '1b7c-2c90-6d96-28c9',
+              name: 'General',
+              number: 1
+            }
+          ]
+        },
+        {
+          id: 'sel-vampire',
+          selectionEntryId: 'unit-vampire',
+          name: 'Vampire Thrall',
+          number: 1,
+          category: 'cat-hq',
+          costs: [{ typeId: 'pts', value: 80 }]
+        },
+        {
+          id: 'sel-tac',
+          selectionEntryId: 'unit-tactical',
+          name: 'Tactical Squad',
+          number: 1,
+          category: 'cat-troops',
+          costs: [{ typeId: 'pts', value: 150 }]
+        }
+      ]
+    }
+  ]
+};
+
+const errorsCharacters = validateRoster(mockRosterCharactersOverLimit, mockSystem);
+const charactersOverLimitError = errorsCharacters.find(e => e.type === 'category-max' && e.categoryId === 'cat-characters');
+console.log('Test 11 - Multi-category Force Limit Check (Characters): ',
+  charactersOverLimitError ? 'PASSED' : `FAILED (No category-max error found: ${JSON.stringify(errorsCharacters)})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
     (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint) &&
     (gazeSpellOption && !hasParentConstraintLeak) &&
     (takenForCap2 === true && takenForCap1 === false) &&
-    tacOverLimitError) {
+    tacOverLimitError &&
+    charactersOverLimitError) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {

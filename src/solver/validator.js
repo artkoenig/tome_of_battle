@@ -188,15 +188,18 @@ export function validateRoster(roster, system) {
 
   // Helper: map of entry id/category id -> total counts in roster
   const selectionCounts = {};
-  const categoryCounts = {}; // categoryId -> count
+  const categoryCounts = {}; // forceId -> { categoryId -> count }
 
-  const countSelection = (selection, forceCatalogueId) => {
+  const countSelection = (selection, forceId, forceCatalogueId) => {
     const entryId = selection.entryLinkId || selection.selectionEntryId;
     if (entryId) {
       selectionCounts[entryId] = (selectionCounts[entryId] || 0) + (selection.number || 1);
     }
 
-    // Find the definition of this selection to determine its categories
+    if (!categoryCounts[forceId]) {
+      categoryCounts[forceId] = {};
+    }
+
     const catalogue = system.catalogues.find(c => c.id === forceCatalogueId);
     const entryDef = findEntryInCatalogue(catalogue, entryId);
     
@@ -205,23 +208,30 @@ export function validateRoster(roster, system) {
       if (resolved && resolved.targetId && resolved.targetId !== entryId) {
         selectionCounts[resolved.targetId] = (selectionCounts[resolved.targetId] || 0) + (selection.number || 1);
       }
+      
+      resolved?.categoryLinks?.forEach(cl => {
+        if (cl.targetId) {
+          categoryCounts[forceId][cl.targetId] = (categoryCounts[forceId][cl.targetId] || 0) + 1;
+        }
+      });
     }
 
-    // Check categories (in BattleScribe, entries can have categoryLinks or categories directly)
     if (selection.category) {
-      categoryCounts[selection.category] = (categoryCounts[selection.category] || 0) + 1;
+      const hasCat = entryDef?.categoryLinks?.some(cl => cl.targetId === selection.category);
+      if (!hasCat) {
+        categoryCounts[forceId][selection.category] = (categoryCounts[forceId][selection.category] || 0) + 1;
+      }
     }
 
-    // Count children
     if (selection.selections) {
-      selection.selections.forEach(child => countSelection(child, forceCatalogueId));
+      selection.selections.forEach(child => countSelection(child, forceId, forceCatalogueId));
     }
   };
 
   // Run counts
   roster.forces.forEach(force => {
     if (force.selections) {
-      force.selections.forEach(sel => countSelection(sel, force.catalogueId));
+      force.selections.forEach(sel => countSelection(sel, force.id, force.catalogueId));
     }
   });
 
@@ -238,7 +248,8 @@ export function validateRoster(roster, system) {
       const catName = catDef ? catDef.name : catLink.name;
 
       // Count selections in this force that fall under this category
-      const count = force.selections?.filter(sel => sel.category === targetCatId).length || 0;
+      const forceCategoryCounts = categoryCounts[force.id] || {};
+      const count = forceCategoryCounts[targetCatId] || 0;
 
       // Check min/max constraints on the category link
       catLink.constraints?.forEach(con => {
