@@ -1304,6 +1304,7 @@ input[type="radio"]:checked::after {
   .bottomsheet-backdrop {
     display: block !important;
     z-index: 1050 !important;
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out !important;
   }
   
   .bottomsheet-backdrop.open {
@@ -1331,7 +1332,7 @@ input[type="radio"]:checked::after {
     
     /* Sliding transitions */
     transform: translateY(100%) !important;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s !important;
+    transition: transform 0.3s ease-out, visibility 0.3s ease-out !important;
     will-change: transform;
     backface-visibility: hidden;
     visibility: hidden;
