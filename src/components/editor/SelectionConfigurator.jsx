@@ -349,7 +349,7 @@ function OptionGroupComponent({
   costTypeLabel,
   getOptionDescription
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
   const unitRawEntry = findEntryInSystem(system, unitEntryId);
