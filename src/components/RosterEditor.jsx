@@ -728,7 +728,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                    
                                    filteredGroupConstraints.forEach(con => {
                                      if (con.value < 0) return;
-                                     if (con.field === 'pts') {
+                                     const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
+                                     if (isCostField) {
                                        if (con.type === 'max' && currentPoints > con.value) {
                                          hasGroupError = true;
                                          groupErrorMessage = `Max: ${con.value} Pkt. (Aktuell: ${currentPoints} Pkt.)`;

@@ -381,7 +381,8 @@ export function validateRoster(roster, system) {
                                   (entry.categoryLinks?.some(cl => cl.targetId === con.scope));
             if (!belongsToScope) return;
           }
-          if (con.field === 'pts') {
+          const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
+          if (isCostField) {
             if (con.type === 'max' && totalPoints > con.value) {
               errors.push({
                 type: 'group-points-max',
