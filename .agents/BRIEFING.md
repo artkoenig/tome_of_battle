@@ -1,28 +1,25 @@
-# BRIEFING — 2026-06-29T06:54:35Z
+# BRIEFING — 2026-06-29T11:54:00Z
 
 ## Mission
-Analyze app architecture, refactor monoliths, decouple components, increase test coverage, and clean dead code/dependencies.
+Create a comprehensive test plan for all components (business logic & UI) and implement missing tests (using Puppeteer for UI on macOS), ensuring npm test executes all tests successfully.
 
 ## 🔒 My Identity
 - Archetype: sentinel
 - Working directory: /Users/artkoenig/Workspace/army_builder/.agents/
-- Orchestrator: 66403152-2ff1-426a-a9c5-4b71be2c56a3
-- Victory Auditor: 51ca083d-3613-41bb-8772-8801223110dc
+- Orchestrator: f57c9d03-7f06-447c-b530-90e979138d8d
+- Victory Auditor: d725c46a-65de-43b3-96d4-cd6b62ed14db
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
 - Victory Audit is MANDATORY before reporting completion
 - No (sub)strings in English or German as keys for parsing or validating in business logic.
 - No auto git push.
+- macOS Puppeteer usage for browser tests.
 
 ## User Context
-- **Last user request**: Refactor, decouple, increase test coverage, clean dead code/dependencies.
+- **Last user request**: Create test plan, implement missing business logic and UI tests (using Puppeteer on macOS), ensure npm test passes.
 - **Pending clarifications**: none
-- **Delivered results**:
-  - Codebase successfully refactored and decoupled.
-  - Test coverage expanded (with full validator and rulesEvaluator test suite passing).
-  - Dead code/dependencies cleaned up.
-  - Rules R4 strictly enforced (no localized string keys).
+- **Delivered results**: none
 
 ## Project Status
 - **Phase**: complete

@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node src/solver/validator.test.js && node src/solver/rulesEvaluator.test.js && node src/solver/optionsCollector.test.js",
+    "test": "node src/solver/validator.test.js && node src/solver/rulesEvaluator.test.js && node src/solver/optionsCollector.test.js && npx vitest run src/solver/collective.test.js && node src/solver/parser.test.js && node src/solver/ui.test.js",
     "debug-ui": "node src/solver/debug_ui.js",
     "ux-correct": "python scripts/ux_self_correction.py"
   },
@@ -25,6 +25,7 @@
     "jsdom": "^29.1.1",
     "oxlint": "^1.69.0",
     "puppeteer": "^25.2.1",
-    "vite": "^8.1.0"
+    "vite": "^8.1.0",
+    "vitest": "^3.0.0"
   }
 }
