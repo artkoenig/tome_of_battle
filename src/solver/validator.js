@@ -264,9 +264,14 @@ export const evaluateCondition = (cond, roster, selectionCounts, forceCategoryCo
   if (cond.field && cond.field.startsWith('limit::')) {
     currentValue = roster.costLimit || 0;
   } else if (cond.field) {
-    currentValue = selectionCounts[cond.field] || forceCategoryCounts[cond.field] || 0;
+    let categoryTotal = 0;
+    if (forceCategoryCounts) {
+      Object.values(forceCategoryCounts).forEach(forceCounts => {
+        if (forceCounts[cond.field]) categoryTotal += forceCounts[cond.field];
+      });
+    }
+    currentValue = selectionCounts[cond.field] || categoryTotal || 0;
   }
-
   const targetValue = cond.value;
 
   switch (cond.type) {
@@ -347,28 +352,35 @@ export const getModifiedConstraintValue = (con, modifiers, roster, selectionCoun
   return finalValue;
 };
 
-export function computeRosterCounts(roster, system) {
+export const computeRosterCounts = (roster, system) => {
   const selectionCounts = {};
-  const categoryCounts = {}; // forceId -> { categoryId -> count }
+  const forceSelectionCounts = {};
+  const categoryCounts = {};
 
   const countSelection = (selection, forceId, forceCatalogueId, parentCount = 1) => {
     const effectiveCount = (selection.number || 1) * (selection.collective ? parentCount : 1);
     const entryId = selection.entryLinkId || selection.selectionEntryId;
+    
+    if (!forceSelectionCounts[forceId]) {
+      forceSelectionCounts[forceId] = {};
+    }
+
     if (entryId) {
       selectionCounts[entryId] = (selectionCounts[entryId] || 0) + effectiveCount;
+      forceSelectionCounts[forceId][entryId] = (forceSelectionCounts[forceId][entryId] || 0) + effectiveCount;
     }
 
     if (!categoryCounts[forceId]) {
       categoryCounts[forceId] = {};
     }
 
-    const catalogue = system.catalogues.find(c => c.id === forceCatalogueId);
-    const entryDef = findEntryInCatalogue(catalogue, entryId);
+    const entryDef = findEntryInSystem(system, entryId, forceCatalogueId);
     
     if (entryDef) {
       const resolved = resolveEntry(system, entryDef, forceCatalogueId);
       if (resolved && resolved.targetId && resolved.targetId !== entryId) {
         selectionCounts[resolved.targetId] = (selectionCounts[resolved.targetId] || 0) + effectiveCount;
+        forceSelectionCounts[forceId][resolved.targetId] = (forceSelectionCounts[forceId][resolved.targetId] || 0) + effectiveCount;
       }
       
       const seenCategories = new Set();
@@ -402,8 +414,8 @@ export function computeRosterCounts(roster, system) {
     });
   }
 
-  return { selectionCounts, categoryCounts };
-}
+  return { selectionCounts, forceSelectionCounts, categoryCounts };
+};
 
 /**
  * Full constraint validator
@@ -412,6 +424,8 @@ export function validateRoster(roster, system) {
   const errors = [];
   if (!roster || !system) return errors;
 
+
+  const { selectionCounts, forceSelectionCounts, categoryCounts } = computeRosterCounts(roster, system);
   // 1. Calculate points vs limit
   const costs = calculateRosterCosts(roster, system);
   if (roster.costLimit && roster.costLimitType) {
@@ -426,7 +440,6 @@ export function validateRoster(roster, system) {
     }
   }
 
-  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
 
   // 2. Validate Detachment / Force category limits
   roster.forces.forEach(force => {
@@ -491,6 +504,8 @@ export function validateRoster(roster, system) {
       const rawEntry = findEntryInSystem(system, entryId, forceCatalogueId);
       const entry = resolveEntry(system, rawEntry, forceCatalogueId);
 
+      console.log(`Validating selection ${selection.name}, entryId ${entryId}, found: ${!!entry}`);
+
       if (!entry) return;
 
       const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
@@ -516,18 +531,33 @@ export function validateRoster(roster, system) {
             if (parentSelection) {
               const childMatch = parentSelection.selections?.filter(s => {
                 const subId = s.entryLinkId || s.selectionEntryId;
-                return subId === entryId || (entry.targetId && subId === entry.targetId);
+                if (subId === entryId) return true;
+                if (entry.targetId) {
+                  const sDef = findEntryInSystem(system, subId, force ? force.catalogueId : null);
+                  const sRes = resolveEntry(system, sDef, force ? force.catalogueId : null);
+                  return subId === entry.targetId || (sRes && sRes.targetId === entry.targetId);
+                }
+                return false;
               }) || [];
               count = childMatch.reduce((sum, s) => sum + (s.number || 1), 0);
             } else if (force) {
               const forceMatch = force.selections?.filter(s => {
                 const subId = s.entryLinkId || s.selectionEntryId;
-                return subId === entryId || (entry.targetId && subId === entry.targetId);
+                if (subId === entryId) return true;
+                if (entry.targetId) {
+                  const sDef = findEntryInSystem(system, subId, force.catalogueId);
+                  const sRes = resolveEntry(system, sDef, force.catalogueId);
+                  return subId === entry.targetId || (sRes && sRes.targetId === entry.targetId);
+                }
+                return false;
               }) || [];
               count = forceMatch.reduce((sum, s) => sum + (s.number || 1), 0);
             }
-          } else if (con.scope === 'roster' || con.scope === 'force') {
+          } else if (con.scope === 'roster') {
             count = Math.max(selectionCounts[entryId] || 0, (entry.targetId ? selectionCounts[entry.targetId] || 0 : 0));
+          } else if (con.scope === 'force') {
+            const fCounts = force ? forceSelectionCounts[force.id] || {} : {};
+            count = Math.max(fCounts[entryId] || 0, (entry.targetId ? fCounts[entry.targetId] || 0 : 0));
           }
 
           if (con.type === 'min' && count < finalValue) {
@@ -546,6 +576,7 @@ export function validateRoster(roster, system) {
               severity: 'error'
             });
           }
+          console.log(`Validating constraint ${con.type} ${con.value} for ${selection.name}, scope ${con.scope}, count ${count}, finalValue ${finalValue}`);
         });
       }
 

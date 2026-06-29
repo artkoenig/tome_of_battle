@@ -10,7 +10,7 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 * Nutze für die Analyse des Battlescribe-Formats die Informationen von https://github.com/BSData/catalogue-development/wiki und dazugehörige Unterseiten
 * Es sollen keine (Sub)Strings auf Englisch oder Deutsch als Schlüssel für das Parsen oder Validieren genommen werden. Ausnahme: Berechnung von Armour Save und Ward Save (AS bzw. WS)
 * Es sollen keine Armeespezifischen Logiken implementiert werden, die implementierung soll immer allgemeingültig sein
-* Erstelle bei jeder Änderung der Validierungslogik oder Importlogik einen Unit-Test für das geänderte Verhalten
+* Erstelle bei jeder Änderung der UI-Logik, Validierungslogik oder Importlogik einen Test für das geänderte Verhalten
 
 ## Git 
 * **Local (macOS):** Push zu Remote-Repositories nur bei Aufforderung.

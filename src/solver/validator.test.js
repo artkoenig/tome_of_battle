@@ -1564,12 +1564,84 @@ const test24Success =
 
 console.log('Test 24 - Profile and Rule extraction from nested user selections: ', test24Success ? 'PASSED' : 'FAILED');
 
+console.log('--- BSB Logic Gap Fix Test ---');
+const bsbRoster = {
+  catalogueId: 'cat-marines',
+  costLimit: 2000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'force-1',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-marines',
+      selections: [
+        {
+          id: 'sel-1',
+          name: 'Hero 1',
+          selectionEntryId: 'unit-captain',
+          selections: [
+            {
+              id: 'bsb-1',
+              name: 'Battle Standard Bearer Target',
+              entryLinkId: 'link-1',
+              number: 1
+            }
+          ]
+        },
+        {
+          id: 'sel-2',
+          name: 'Hero 2',
+          selectionEntryId: 'unit-captain',
+          selections: [
+            {
+              id: 'bsb-2',
+              name: 'Battle Standard Bearer Target',
+              entryLinkId: 'link-2',
+              number: 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const bsbSystem = {
+  ...mockSystem,
+  catalogues: [
+    {
+      id: 'cat-marines',
+      name: 'Space Marines',
+      selectionEntries: mockSystem.catalogues[0].selectionEntries,
+      sharedSelectionEntries: [
+        {
+          id: 'bsb-target',
+          name: 'Battle Standard Bearer Target',
+          type: 'upgrade',
+          constraints: [
+            { type: 'max', value: 1, scope: 'roster' }
+          ]
+        }
+      ],
+      entryLinks: [
+        { id: 'link-1', targetId: 'bsb-target', type: 'selectionEntry' },
+        { id: 'link-2', targetId: 'bsb-target', type: 'selectionEntry' }
+      ]
+    }
+  ]
+};
+
+const bsbErrors = validateRoster(bsbRoster, bsbSystem);
+const bsbLogicGapFixSuccess = bsbErrors.filter(e => e.type === 'entry-max' && e.message.includes('maximal 1 Auswahlen')).length === 2;
+console.log('Test 25 - BSB Logic Gap Fix Test: ', bsbLogicGapFixSuccess ? 'PASSED' : 'FAILED');
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
     (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint) &&
     (gazeSpellOption && !hasParentConstraintLeak) &&
     (takenForCap2 === true && takenForCap1 === false) &&
+    bsbLogicGapFixSuccess &&
     tacOverLimitError &&
     charactersOverLimitError &&
     charactersWithinLimitNoError &&
