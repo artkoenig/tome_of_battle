@@ -4,7 +4,7 @@ import {
   Heart, Swords, Sparkles, BookOpen 
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules } from '../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost } from '../solver/validator';
 import { useDebugMode } from '../hooks/DebugContext';
 import { MODEL_COUNT_PROFILE_TYPES } from '../solver/constants';
 import {
@@ -296,26 +296,79 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     }));
   };
 
-  // Filter roster selections based on search query
-  const getFilteredSelections = () => {
-    const list = [];
+  // Filter and group roster selections based on search query and categories
+  const getGroupedAndSortedSelections = () => {
+    const groups = [];
+    const costType = roster.costLimitType || 'pts';
+    
     roster.forces.forEach(force => {
-      force.selections?.forEach(sel => {
-        const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const forceDef = system.forceEntries?.find(fe => fe.id === force.forceEntryId);
+      const categoryLinks = forceDef?.categoryLinks || [];
+
+      // Process defined categories
+      categoryLinks.forEach(link => {
+        let selections = force.selections?.filter(s => s.category === link.targetId) || [];
         
-        // Also check if rules matches search
+        // Apply search filter
+        selections = selections.filter(sel => {
+          const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
+          const { rules } = getUnitProfilesAndRules(sel);
+          const matchesRules = rules.some(r => 
+            r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            r.description.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          return matchesName || matchesRules || searchTerm === '';
+        });
+
+        if (selections.length > 0) {
+          // Sort descending by points
+          selections.sort((a, b) => {
+            const aPoints = getSelectionTotalCost(a, costType);
+            const bPoints = getSelectionTotalCost(b, costType);
+            return bPoints - aPoints;
+          });
+
+          const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
+          const catName = catDef ? catDef.name : link.name || 'Unbekannte Kategorie';
+
+          groups.push({
+            id: `${force.id}-${link.targetId}`,
+            name: catName,
+            selections: selections
+          });
+        }
+      });
+
+      // Process uncategorized selections
+      const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
+      let uncategorizedSelections = force.selections?.filter(s => !matchedCategoryIds.has(s.category)) || [];
+      
+      uncategorizedSelections = uncategorizedSelections.filter(sel => {
+        const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
         const { rules } = getUnitProfilesAndRules(sel);
         const matchesRules = rules.some(r => 
           r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
           r.description.toLowerCase().includes(searchTerm.toLowerCase())
         );
-
-        if (matchesName || matchesRules || searchTerm === '') {
-          list.push(sel);
-        }
+        return matchesName || matchesRules || searchTerm === '';
       });
+
+      if (uncategorizedSelections.length > 0) {
+        uncategorizedSelections.sort((a, b) => {
+          const aPoints = getSelectionTotalCost(a, costType);
+          const bPoints = getSelectionTotalCost(b, costType);
+          return bPoints - aPoints;
+        });
+        
+        groups.push({
+          id: `${force.id}-uncategorized`,
+          name: 'Sonstige Auswahlen',
+          selections: uncategorizedSelections
+        });
+      }
     });
-    return list;
+
+    return groups;
   };
 
   return (
@@ -330,8 +383,14 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
 
       {/* Active Units Roster Sheets */}
-      <div className="play-units-grid">
-        {getFilteredSelections().map(selection => {
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        {getGroupedAndSortedSelections().map(group => (
+          <div key={group.id} className="play-category-group">
+            <h3 className="font-serif text-gold" style={{ borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '16px', fontSize: '1.2rem' }}>
+              {group.name}
+            </h3>
+            <div className="play-units-grid">
+              {group.selections.map(selection => {
           const maxWounds = getMaxWounds(selection);
           const modelCount = getUnitModelCount(selection);
           const totalMaxWounds = modelCount * maxWounds;
@@ -349,11 +408,16 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
             <div key={selection.id} className="play-unit-card">
               {/* Unit Header */}
               <div className="play-unit-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
-                <div className="play-unit-title">
-                  {selection.name}
-                  {showDebugIds && (
-                    <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-                  )}
+                <div className="play-unit-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    {selection.name}
+                    {showDebugIds && (
+                      <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '1rem', color: 'var(--text-gold)', fontWeight: 600 }}>
+                    {getSelectionTotalCost(selection, roster.costLimitType || 'pts')} Pkt.
+                  </div>
                 </div>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -582,6 +646,9 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
             </div>
           );
         })}
+            </div>
+          </div>
+        ))}
       </div>
 
       <BottomSheet

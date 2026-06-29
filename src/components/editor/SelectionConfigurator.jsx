@@ -384,7 +384,8 @@ function OptionGroupComponent({
     .filter(Boolean)
     .join(', ');
 
-  const isUniqueOptionTakenElsewhere = (targetResId) => {
+  const isUniqueOptionTakenElsewhere = (targetRes) => {
+    const targetIdToCheck = targetRes.targetId || targetRes.id;
     let taken = false;
     
     const checkSelection = (sel, isUnderCurrent) => {
@@ -393,9 +394,9 @@ function OptionGroupComponent({
       if (!underCurrent) {
         const selRaw = findEntryInSystem(system, sel.selectionEntryId || sel.entryLinkId, activeCatalogue.id);
         const selRes = resolveEntry(system, selRaw, activeCatalogue.id);
-        const selUnderlyingId = selRes ? selRes.id : (sel.selectionEntryId || sel.entryLinkId);
+        const selUnderlyingId = selRes ? (selRes.targetId || selRes.id) : (sel.selectionEntryId || sel.entryLinkId);
         
-        if (selUnderlyingId === targetResId) {
+        if (selUnderlyingId === targetIdToCheck) {
           taken = true;
           return;
         }
@@ -620,7 +621,7 @@ function OptionGroupComponent({
               c.value === 1 && 
               (c.scope === 'roster' || c.scope === 'force')
             );
-            const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res.id);
+            const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res);
             const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere;
 
             const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
