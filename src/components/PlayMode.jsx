@@ -14,6 +14,7 @@ import {
   extractUpgradeProfiles,
   hasBlessing
 } from '../solver/rulesEvaluator';
+import BottomSheet from './editor/BottomSheet';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const { showDebugIds } = useDebugMode();
@@ -30,6 +31,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       wounds: {} // selectionId -> array of current wounds per model
     };
   });
+  const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
+  const [saveSummaryData, setSaveSummaryData] = useState({ title: '', breakdown: [] });
 
   // Save game state to DB whenever it changes
   useEffect(() => {
@@ -157,30 +160,34 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     return items;
   };
 
-  const getArmourSave = (selection) => {
+  const getArmourSaveInfo = (selection) => {
     const data = collectSavesData(selection);
-    const save = getArmourSaveLogic(data, selection.name, roster?.catalogueName);
-    if (save === 7 || !save) return 'Kein';
-    return `${save}+`;
+    const result = getArmourSaveLogic(data, selection.name, roster?.catalogueName, true);
+    const display = result.save === 7 || !result.save ? 'Kein' : `${result.save}+`;
+    return { display, breakdown: result.breakdown };
   };
 
-  const getWardSave = (selection) => {
+  const getWardSaveInfo = (selection) => {
     const data = collectSavesData(selection);
-    const save = getWardSaveLogic(data, selection.name, roster?.catalogueName);
+    const result = getWardSaveLogic(data, selection.name, roster?.catalogueName, true);
     const blessing = hasBlessing(data, selection.name, roster?.catalogueName);
 
-    if (save !== null) {
-      if (blessing && save > 5) {
-        return `${save}+ / 5+ (Segen)`;
+    let display = 'Kein';
+    const breakdown = [...result.breakdown];
+
+    if (result.save !== null) {
+      if (blessing && result.save > 5) {
+        display = `${result.save}+ / 5+ (Segen)`;
+        if (!breakdown.includes('Segen der Herrin (5+ Rettungswurf)')) breakdown.push('Segen der Herrin (5+ Rettungswurf)');
+      } else {
+        display = `${result.save}+`;
       }
-      return `${save}+`;
+    } else if (blessing) {
+      display = '5+ / 6+ (Segen)';
+      if (!breakdown.includes('Segen der Herrin (5+ / 6+ Rettungswurf)')) breakdown.push('Segen der Herrin (5+ / 6+ Rettungswurf)');
     }
 
-    if (blessing) {
-      return '5+ / 6+ (Segen)';
-    }
-
-    return 'Kein';
+    return { display, breakdown };
   };
 
   // Helper to calculate total model count in a unit selection
@@ -314,6 +321,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           const currentWounds = getUnitCurrentWounds(selection, maxWounds, totalMaxWounds);
           const { profiles, rules } = getUnitProfilesAndRules(selection);
           const selectedUpgrades = getSelectedUpgrades(selection);
+          const asInfo = getArmourSaveInfo(selection);
+          const wsInfo = getWardSaveInfo(selection);
           
           const isUnitWounded = currentWounds < totalMaxWounds;
           const isDead = currentWounds === 0;
@@ -332,11 +341,31 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div className="play-unit-badges">
-                    <div className="badge badge-success font-sans" style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700 }}>
-                      AS: {getArmourSave(selection)}
+                    <div 
+                      className="badge badge-success font-sans" 
+                      style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: asInfo.breakdown.length > 0 ? 'help' : 'default' }}
+                      title={asInfo.breakdown.length > 0 ? asInfo.breakdown.join('\n') : undefined}
+                      onClick={() => {
+                        if (asInfo.breakdown.length > 0) {
+                          setSaveSummaryData({ title: 'Rüstungswurf (AS)', breakdown: asInfo.breakdown });
+                          setSaveSummaryOpen(true);
+                        }
+                      }}
+                    >
+                      AS: {asInfo.display}
                     </div>
-                    <div className="badge badge-warning font-sans" style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700 }}>
-                      WS: {getWardSave(selection)}
+                    <div 
+                      className="badge badge-warning font-sans" 
+                      style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: wsInfo.breakdown.length > 0 ? 'help' : 'default' }}
+                      title={wsInfo.breakdown.length > 0 ? wsInfo.breakdown.join('\n') : undefined}
+                      onClick={() => {
+                        if (wsInfo.breakdown.length > 0) {
+                          setSaveSummaryData({ title: 'Rettungswurf (WS)', breakdown: wsInfo.breakdown });
+                          setSaveSummaryOpen(true);
+                        }
+                      }}
+                    >
+                      WS: {wsInfo.display}
                     </div>
                   </div>
                   
@@ -535,6 +564,24 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           );
         })}
       </div>
+
+      <BottomSheet
+        isOpen={saveSummaryOpen}
+        onClose={() => setSaveSummaryOpen(false)}
+        title={saveSummaryData.title}
+      >
+        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {saveSummaryData.breakdown.length > 0 ? (
+            <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-parchment)', fontSize: '0.9rem' }}>
+              {saveSummaryData.breakdown.map((item, i) => (
+                <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-dim" style={{ fontSize: '0.9rem' }}>Keine Modifikatoren gefunden.</p>
+          )}
+        </div>
+      </BottomSheet>
     </div>
   );
 }
