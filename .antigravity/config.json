@@ -1,0 +1,13 @@
+{
+  "teamwork": {
+    "orchestrator_model": "gemini-3-pro",
+    "subagents": {
+      "routing_strategy": "cost_optimized", 
+      "preferences": {
+        "coding_subagent": "gemini-3-pro",
+        "testing_subagent": "gemini-3.5-flash-low",
+        "browser_subagent": "gemini-3.5-flash"
+      }
+    }
+  }
+}

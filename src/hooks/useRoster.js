@@ -114,7 +114,7 @@ export function useRoster(initialRoster, system) {
     }
   };
 
-  const updateSubSelection = (unitSelectionId, option, action) => {
+  const updateSubSelection = (unitSelectionId, option, action, parentCount = 1) => {
     const optionId = option.id;
 
     setRoster(prev => {
@@ -127,20 +127,23 @@ export function useRoster(initialRoster, system) {
           const modifySelectionNode = (parentSel) => {
             const list = parentSel.selections || [];
             const idx = list.findIndex(s => (s.entryLinkId || s.selectionEntryId) === optionId);
+            
+            const amount = option.collective ? parentCount : 1;
 
             if (action === 'increment') {
               if (idx > -1) {
-                list[idx] = { ...list[idx], number: (list[idx].number || 1) + 1 };
+                list[idx] = { ...list[idx], number: (list[idx].number || 1) + amount };
               } else {
                 const childSel = createSelectionFromDef(option);
                 if (childSel) {
+                  childSel.number = amount;
                   list.push(childSel);
                 }
               }
             } else if (action === 'decrement') {
               if (idx > -1) {
-                if ((list[idx].number || 1) > 1) {
-                  list[idx] = { ...list[idx], number: list[idx].number - 1 };
+                if ((list[idx].number || 1) > amount) {
+                  list[idx] = { ...list[idx], number: list[idx].number - amount };
                 } else {
                   list.splice(idx, 1);
                 }

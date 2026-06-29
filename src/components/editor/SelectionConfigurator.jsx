@@ -401,6 +401,14 @@ export default function SelectionConfigurator({
             const isBinary = maxLimit === 1;
             const descText = getOptionDescription(res);
 
+            let parentCount = 1;
+            if (parentDefId === unitResolved?.id || parentDefId === unitResolved?.targetId || parentDefId === unitEntryId) {
+              parentCount = selection.number || 1;
+            } else {
+              const pSel = selection.selections?.find(s => (s.entryLinkId || s.selectionEntryId) === parentDefId);
+              if (pSel) parentCount = pSel.number || 1;
+            }
+
             const isClickable = !isMandatory;
             const handleRowClick = (e) => {
               if (e.target.closest('button') || e.target.closest('input')) {
@@ -408,9 +416,9 @@ export default function SelectionConfigurator({
               }
               if (isClickable) {
                 if (isBinary) {
-                  updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment');
+                  updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment', parentCount);
                 } else {
-                  updateSubSelection(selection.id, option, 'increment');
+                  updateSubSelection(selection.id, option, 'increment', parentCount);
                 }
               }
             };
@@ -459,7 +467,7 @@ export default function SelectionConfigurator({
                       disabled={isMandatory}
                       onChange={(e) => {
                         if (!isMandatory) {
-                          updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
+                          updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement', parentCount);
                         }
                       }}
                     />
@@ -468,7 +476,7 @@ export default function SelectionConfigurator({
                       <button 
                         className="btn-sm" 
                         style={{ padding: '2px 6px' }}
-                        onClick={() => updateSubSelection(selection.id, option, 'decrement')}
+                        onClick={() => updateSubSelection(selection.id, option, 'decrement', parentCount)}
                         disabled={count === 0}
                       >
                         <Minus size={12} />
@@ -477,7 +485,7 @@ export default function SelectionConfigurator({
                       <button 
                         className="btn-sm" 
                         style={{ padding: '2px 6px' }}
-                        onClick={() => updateSubSelection(selection.id, option, 'increment')}
+                        onClick={() => updateSubSelection(selection.id, option, 'increment', parentCount)}
                       >
                         <Plus size={12} />
                       </button>
@@ -722,7 +730,7 @@ function OptionGroupComponent({
 
       {isExpanded && (
         <div style={{ borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px', paddingLeft: '4px' }}>
-          {group.items.map(({ option, groupConstraints }) => {
+          {group.items.map(({ option, groupConstraints, parentDefId }) => {
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
@@ -744,6 +752,15 @@ function OptionGroupComponent({
             const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || (!maxConstraint && !isMandatory);
             const isBinary = !isExplicitlyMulti && ((maxConstraint && maxConstraint.value === 1) || isRadio);
             const descText = getOptionDescription(res);
+
+            let parentCount = 1;
+            const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
+            if (parentDefId === unitResolved?.id || parentDefId === unitResolved?.targetId || parentDefId === unitEntryId) {
+              parentCount = selection.number || 1;
+            } else {
+              const pSel = selection.selections?.find(s => (s.entryLinkId || s.selectionEntryId) === parentDefId);
+              if (pSel) parentCount = pSel.number || 1;
+            }
 
             const ptsConstraintGroup = filteredGroupConstraints.find(c => 
               c.type === 'max' && 
@@ -801,24 +818,24 @@ function OptionGroupComponent({
                 if (isBinary) {
                   if (isRadio) {
                     if (count > 0) {
-                      updateSubSelection(selection.id, option, 'decrement');
+                      updateSubSelection(selection.id, option, 'decrement', parentCount);
                     } else {
                       group.items.forEach(otherItem => {
                         const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                         if (otherRes && otherRes.id !== res.id) {
                           const otherCount = getSubSelectionCount(selection, otherRes.id);
                           if (otherCount > 0) {
-                            updateSubSelection(selection.id, otherItem.option, 'decrement');
+                            updateSubSelection(selection.id, otherItem.option, 'decrement', parentCount);
                           }
                         }
                       });
-                      updateSubSelection(selection.id, option, 'increment');
+                      updateSubSelection(selection.id, option, 'increment', parentCount);
                     }
                   } else {
-                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment');
+                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment', parentCount);
                   }
                 } else {
-                  updateSubSelection(selection.id, option, 'increment');
+                  updateSubSelection(selection.id, option, 'increment', parentCount);
                 }
               }
             };
@@ -875,18 +892,18 @@ function OptionGroupComponent({
                         disabled={count === 0 && isSelectDisabled}
                         onClick={() => {
                           if (count > 0) {
-                            updateSubSelection(selection.id, option, 'decrement');
+                            updateSubSelection(selection.id, option, 'decrement', parentCount);
                           } else if (!isSelectDisabled) {
                             group.items.forEach(otherItem => {
                               const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                               if (otherRes && otherRes.id !== res.id) {
                                 const otherCount = getSubSelectionCount(selection, otherRes.id);
                                 if (otherCount > 0) {
-                                  updateSubSelection(selection.id, otherItem.option, 'decrement');
+                                  updateSubSelection(selection.id, otherItem.option, 'decrement', parentCount);
                                 }
                               }
                             });
-                            updateSubSelection(selection.id, option, 'increment');
+                            updateSubSelection(selection.id, option, 'increment', parentCount);
                           }
                         }}
                         onChange={() => {}}
@@ -898,7 +915,7 @@ function OptionGroupComponent({
                         disabled={isMandatory || (count === 0 && isSelectDisabled)}
                         onChange={(e) => {
                           if (!isMandatory) {
-                            updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
+                            updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement', parentCount);
                           }
                         }}
                       />
@@ -908,7 +925,7 @@ function OptionGroupComponent({
                       <button 
                         className="btn-sm" 
                         style={{ padding: '2px 6px' }}
-                        onClick={() => updateSubSelection(selection.id, option, 'decrement')}
+                        onClick={() => updateSubSelection(selection.id, option, 'decrement', parentCount)}
                         disabled={count === 0}
                       >
                         <Minus size={12} />
@@ -917,7 +934,7 @@ function OptionGroupComponent({
                       <button 
                         className="btn-sm" 
                         style={{ padding: '2px 6px' }}
-                        onClick={() => updateSubSelection(selection.id, option, 'increment')}
+                        onClick={() => updateSubSelection(selection.id, option, 'increment', parentCount)}
                         disabled={isSelectDisabled}
                       >
                         <Plus size={12} />

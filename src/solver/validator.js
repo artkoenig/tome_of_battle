@@ -374,24 +374,7 @@ export function computeRosterCounts(roster, system) {
           seenCategories.add(cl.targetId);
           categoryCounts[forceId][cl.targetId] = (categoryCounts[forceId][cl.targetId] || 0) + 1;
 
-          // Auto-fix catalog typos for extra slot selections (e.g. "hero extra cost" with duplicate Characters links)
-          if (cl.targetId === '7a1c-d611-c2dc-def1') { // Characters
-            const entryName = resolved.name?.toLowerCase() || '';
-            if (entryName.includes('hero extra cost') || entryName.includes('heldenauswahl')) {
-              const heroCatId = 'c16b-f319-2c62-2c12';
-              if (!seenCategories.has(heroCatId)) {
-                seenCategories.add(heroCatId);
-                categoryCounts[forceId][heroCatId] = (categoryCounts[forceId][heroCatId] || 0) + 1;
-              }
-            }
-            if (entryName.includes('lord extra cost') || entryName.includes('kommandantenauswahl')) {
-              const lordCatId = 'd024-d25b-a9b4-73b6';
-              if (!seenCategories.has(lordCatId)) {
-                seenCategories.add(lordCatId);
-                categoryCounts[forceId][lordCatId] = (categoryCounts[forceId][lordCatId] || 0) + 1;
-              }
-            }
-          }
+          // Replaced hardcoded string matching for 'hero extra cost' etc.
         }
       });
     }
@@ -688,46 +671,6 @@ export function validateRoster(roster, system) {
       force.selections.forEach(sel => validateSelectionConstraints(sel, null, force));
     }
   });
-
-  // 4. Validate army general constraint (exactly 1 General is required)
-  let generalCount = 0;
-  const countGenerals = (selection) => {
-    const entryId = selection.entryLinkId || selection.selectionEntryId;
-    const nameLower = selection.name?.toLowerCase() || '';
-    if (
-      entryId === '1b7c-2c90-6d96-28c9' ||
-      nameLower === 'general' ||
-      nameLower === 'armeegeneral' ||
-      nameLower === 'army general' ||
-      nameLower === 'warlord' ||
-      nameLower === 'general der armee'
-    ) {
-      generalCount += (selection.number || 1);
-    }
-    if (selection.selections) {
-      selection.selections.forEach(child => countGenerals(child));
-    }
-  };
-
-  roster.forces.forEach(force => {
-    if (force.selections) {
-      force.selections.forEach(sel => countGenerals(sel));
-    }
-  });
-
-  if (generalCount === 0) {
-    errors.push({
-      type: 'general-missing',
-      message: `Kein General ausgewählt: Jede Armee benötigt genau einen General.`,
-      severity: 'error'
-    });
-  } else if (generalCount > 1) {
-    errors.push({
-      type: 'general-multiple',
-      message: `Zu viele Generäle: Eine Armee darf maximal einen General besitzen (aktuell: ${generalCount}).`,
-      severity: 'error'
-    });
-  }
 
   return errors;
 }

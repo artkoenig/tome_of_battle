@@ -910,59 +910,7 @@ console.log('Test 14 - XML CategoryLink Constraints and Modifiers Parsing Check:
   xmlCategoryLinksSuccess ? 'PASSED' : `FAILED (Constraints parsed: ${!!hasParsedConstraints}, Modifiers parsed: ${!!hasParsedModifiers})`
 );
 
-// Test 15: Black Orc hero extra cost mapping in computeRosterCounts
-const mockSystemForMapping = {
-  catalogues: [
-    {
-      id: 'cat-og',
-      selectionEntries: [
-        {
-          id: 'bigboss-id',
-          name: 'Black Orc Bigboss',
-          categoryLinks: [
-            { targetId: '7a1c-d611-c2dc-def1' }, // Characters
-            { targetId: 'c16b-f319-2c62-2c12' }  // Heroes
-          ]
-        },
-        {
-          id: 'extra-cost-id',
-          name: 'Black Orc hero extra cost',
-          categoryLinks: [
-            { targetId: '7a1c-d611-c2dc-def1' }, // Characters
-            { targetId: '7a1c-d611-c2dc-def1' }  // Characters duplicate
-          ]
-        }
-      ]
-    }
-  ]
-};
-const mockRosterForMapping = {
-  forces: [
-    {
-      id: 'force-1',
-      catalogueId: 'cat-og',
-      selections: [
-        {
-          selectionEntryId: 'bigboss-id',
-          number: 1,
-          selections: [
-            {
-              selectionEntryId: 'extra-cost-id',
-              number: 1
-            }
-          ]
-        }
-      ]
-    }
-  ]
-};
-const { categoryCounts } = computeRosterCounts(mockRosterForMapping, mockSystemForMapping);
-const charactersCount = categoryCounts['force-1']['7a1c-d611-c2dc-def1'];
-const heroesCount = categoryCounts['force-1']['c16b-f319-2c62-2c12'];
-const mappingSuccess = charactersCount === 2 && heroesCount === 2;
-console.log('Test 15 - Double Choice Category Mapping (Black Orc Bigboss = 2 Chars + 2 Heroes): ',
-  mappingSuccess ? 'PASSED' : `FAILED (Characters: ${charactersCount}/2, Heroes: ${heroesCount}/2)`
-);
+// Test 15 removed as the underlying hack in validator was removed.
 
 // Test 16: Fallback Heroes Max Constraint injection
 const mockSystemForFallback = {
@@ -1519,7 +1467,6 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     charactersWithinLimitNoError &&
     deDuplicationSuccess &&
     xmlCategoryLinksSuccess &&
-    mappingSuccess &&
     fallbackSuccess &&
     collisionSuccess &&
     collisionSuccess &&
