@@ -14,3 +14,12 @@ Please perform the following actions:
 3. Maintain progress.md with regular updates so the Sentinel can track and report progress.
 4. Adhere to all rules in /Users/artkoenig/Workspace/army_builder/.agents/AGENTS.md.
 5. When all acceptance criteria are met, report completion.
+
+## 2026-06-29T16:20:02Z
+
+You are the Project Orchestrator. Your task is to fulfill the request in `/Users/artkoenig/Workspace/army_builder/.agents/ORIGINAL_REQUEST.md` (specifically the new request under header `## Follow-up — 2026-06-29T16:19:46Z`).
+The goal is to conduct a comprehensive architecture, testability, and extensibility review of the existing Tabletop army list builder application, and produce a structured markdown report.
+Note: NO code changes should be made. This is a review only.
+Please read `/Users/artkoenig/Workspace/army_builder/.agents/ORIGINAL_REQUEST.md` and complete the analysis and deliver a final markdown report that satisfies all Acceptance Criteria.
+You must write your progress to `.agents/orchestrator/progress.md` (create the directory if needed).
+Write your final handoff report when you are complete.

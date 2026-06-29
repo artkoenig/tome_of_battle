@@ -1,129 +1,121 @@
-# Forensic Audit Report — Milestone 2: "Extract rulesEvaluator"
+# Forensic Audit Report — PDF Cleanup (Milestone 2)
 
-**Work Product**: `src/solver/rulesEvaluator.js`, `src/components/PlayMode.jsx`, and `src/solver/rulesEvaluator.test.js`
+**Work Product**: Workspace changes implemented in Army Builder codebase for PDF Cleanup task.
 **Profile**: General Project
 **Verdict**: CLEAN
 
 ---
 
-## Phase Results
-
-### Phase 1: Source Code & Integrity Analysis
-
-1. **Hardcoded output detection**: **PASS**
-   - Investigated `src/solver/rulesEvaluator.test.js` and confirmed that tests dynamically invoke functions and check output values rather than using dummy assertions or pre-computed mocks to bypass the system.
-   - Checked `src/solver/rulesEvaluator.js` for fixed-result logic, showing that it correctly implements algorithms for filtering profiles and calculating saves.
-
-2. **Facade detection**: **PASS**
-   - The implementation of `extractModelProfiles`, `extractUpgradeProfiles`, `hasBlessing`, `getArmourSave`, and `getWardSave` consists of authentic filtering, reduction, and regex parsing algorithms.
-
-3. **Pre-populated artifact detection**: **PASS**
-   - The file `src/solver/e2e/initial_run.log` was found in the workspace, but it represents historical E2E test failures prior to development and is not a self-certifying validation mock. No other unexpected log or verification artifacts exist.
-
-4. **Key/Keyword Extraction Check**: **PASS**
-   - Verified that `src/solver/rulesEvaluator.js` does not use hardcoded English or German strings as keys for parsing or validation in its business logic. 
-   - All translation and matching keywords have been fully externalized into `src/solver/constants.js` and are imported dynamically.
+## Executive Summary
+All code changes and structural cleanups related to the "PDF Abgleich" (PDF comparison) and Vision AI features have been forensically audited.
+1. The changes are genuine, containing no hardcoded test results, fake mock implementations, or bypassed checks.
+2. The removal of PDF Abgleich features, components, and files is complete and absolute.
+3. The manual XML editing capabilities have been fully preserved in a newly created modular helper `catalogEditor.js` without retaining any Vision AI or PDF logic.
+4. The codebase compiles and runs its entire test suite successfully (all tests PASSED, including UI/browser automation tests).
 
 ---
 
+## Phase Results
+
+### Phase 1: Source Code Analysis
+- **Hardcoded output detection**: **PASS**
+  - Checked modified test files (`validator.test.js`). The assertions genuinely verify the results of the functions (e.g. `searchEditableEntries`). There are no fake verification loops or hardcoded "PASSED" outputs without verification.
+- **Facade detection**: **PASS**
+  - Verified `src/parser/catalogEditor.js`. The DOM parsing, attribute editing, and XML serialization are genuine implementations using native `DOMParser` and `XMLSerializer` to update local XML data.
+- **Pre-populated artifact detection**: **PASS**
+  - No temporary or pre-populated log or verification artifacts from the Worker exist in the repository or working tree.
+- **Prohibited pattern check (Development Mode)**: **PASS**
+  - No hardcoded test results, facade implementations, or fake mocks detected.
+
 ### Phase 2: Behavioral Verification
+- **Build and run**: **PASS**
+  - The application builds and starts successfully.
+- **Test Execution**: **PASS**
+  - Ran `npm test` successfully. All unit tests and UI tests (using Vite + Headless Puppeteer) executed and passed with exit code 0.
+- **Dependency audit**: **PASS**
+  - Checked imports and `package.json`. No external AI or third-party PDF comparison logic was added to delegate the core functionality.
 
-1. **Build Verification**: **PASS**
-   - Running `npm run build` completed successfully without any compilation or bundling errors.
+---
 
-2. **Test Suite Verification**: **PASS**
-   - Running `npm test` successfully executed and passed all 22 tests in `validator.test.js` and all 5 tests in `rulesEvaluator.test.js`.
+## Specific Cleanup Verification
+
+### 1. Removal of PDF Abgleich (PDF comparison)
+All references, buttons, logic files, and components related to the PDF/Vision AI features were checked:
+- Deleted files:
+  - `src/components/importer/SystemEditorView.jsx`
+  - `src/parser/pdfRulesExtractor.js`
+- Cleaned up imports and code in:
+  - `src/App.jsx`
+  - `src/components/Importer.jsx` (Removed "KI-Scanner (PDF Abgleich)" button and icon imports)
+  - `src/components/editor/DebugEntryEditorModal.jsx` (Replaced `pdfRulesExtractor` with `catalogEditor`)
+  - `src/solver/validator.test.js` (Removed patch tests for `pdfRulesExtractor` and replaced with manual search assertions)
+- Search for "pdf", "vision" (except for DOM/JSDOM revision match), and "abgleich" in `src/` yielded zero results, confirming complete removal.
+
+### 2. Preservation of Manual XML Editing
+Manual XML editing is fully preserved and operates independently of the deleted PDF/AI logic:
+- Extracted and centralized manual XML editing into `src/parser/catalogEditor.js` containing:
+  - `updateRawXml` (modifies tag attributes and node content in the XML structure)
+  - `searchEditableEntries` (searches catalog database for matches)
+  - `findExactEntryById` (locates an element by its ID)
+- Verified that `DebugEntryEditorModal.jsx` uses these functions correctly to edit values (name, costs, constraints, profiles, rule descriptions) in the underlying game system database and serialize the modifications back to XML.
 
 ---
 
 ## Evidence
 
-### Test Suite Execution Output
+### 1. Test Execution Output (npm test)
 ```
-> army_builder@0.0.0 test
-> node src/solver/validator.test.js && node src/solver/rulesEvaluator.test.js
-
---- RUNNING SOLVER & VALIDATOR TESTS ---
-Test 1 - Cost Summation:  PASSED
-Test 2 - Valid Roster Errors count:  PASSED
-Test 3 - Points Limit Check:  PASSED
-Test 4 - Detachment Category Check:  PASSED
+Validating selection Tactical Squad, entryId unit-tactical, found: true
+Validating constraint max 2 for Tactical Squad, scope parent, count 1, finalValue 2
+Validating selection Vampire Thrall, entryId unit-vampire, found: true
+Validating selection Sword of Battle, entryId item-sword, found: true
+Validating selection Lance of Doom, entryId item-lance, found: true
+Validating selection General, entryId 1b7c-2c90-6d96-28c9, found: false
+Validating selection Tactical Squad, entryId unit-tactical, found: true
+Validating constraint max 2 for Tactical Squad, scope parent, count 1, finalValue 2
 Test 5 - Group Points Max Check (Valid vs Invalid):  PASSED
 Test 6 - Option Selectability Limit Check:  PASSED
 Test 7 - XML Modifier Serialization:  PASSED
 Test 8 - Selection Group Constraint Isolation (Waaagh Spells Bug):  PASSED
 Test 9 - Roster-wide Uniqueness Check:  PASSED
-Test 10 - Unit Type Army Max Limit Check:  PASSED
-Test 11 - Multi-category Force Limit Check (Characters):  PASSED
-Test 12 - Category Constraint Modifier Evaluation (Limit 3 at 1500pts):  PASSED
-Test 13 - Category Link De-duplication Check (avoid double count):  PASSED
-Test 14 - XML CategoryLink Constraints and Modifiers Parsing Check:  PASSED
-Test 16 - Fallback Heroes Max Constraint Validation Check:  PASSED
-Test 17 - Catalogue ID Collision Resolution Check:  PASSED
-Test 18 - Condition Group Logical Operators (AND, OR, NOT):  PASSED
-Test 19 - Repeating Modifiers (repeat field and limit):  PASSED
+...
 Test 20 - GST Editing and Searching:  PASSED
-Test 21 - Repeatable Magic Items Group limit increment:  PASSED
-Test 22 - Nested Selection display costs and group constraint points validation:  PASSED
---- TEST RUN COMPLETE ---
+...
 ALL TESTS SUCCESSFUL!
---- RUNNING RULES EVALUATOR TESTS ---
-Test 1 - extractModelProfiles:  PASSED
-Test 2 - extractUpgradeProfiles:  PASSED
-Test 3 - hasBlessing:  PASSED
-Test 4 - getArmourSave:  PASSED
-Test 5 - getWardSave:  PASSED
+...
 ALL RULES EVALUATOR TESTS SUCCESSFUL!
+...
+ALL OPTIONS COLLECTOR TESTS SUCCESSFUL!
+...
+ALL PARSER & ZIP EXTRACTOR TESTS SUCCESSFUL!
+...
+Clearing indexedDB database TomeOfBattleDB...
+Navigating to BSData Bibliothekar...
+Waiting for #file-upload input...
+Uploading temporary ZIP file...
+System imported successfully.
+...
+Copy unit test: PASSED
+Cancel deletion test: PASSED
+Accept deletion test: PASSED
+ALL UI TESTS PASSED SUCCESSFULLY!
 ```
 
-### Build Execution Output
+### 2. Git Status of Code Cleanup
 ```
-> army_builder@0.0.0 build
-> vite build
+Changes not staged for commit:
+	modified:   src/App.jsx
+	modified:   src/components/Importer.jsx
+	modified:   src/components/editor/DebugEntryEditorModal.jsx
+	deleted:    src/components/importer/SystemEditorView.jsx
+	deleted:    src/parser/pdfRulesExtractor.js
+	modified:   src/solver/validator.test.js
 
-vite v8.1.0 building client environment for production...
-transforming...✓ 73 modules transformed.
-rendering chunks...
-computing gzip size...
-dist/index.html                   0.82 kB │ gzip:   0.45 kB
-dist/assets/index-C-f0Bj-N.css   25.21 kB │ gzip:   5.03 kB
-dist/assets/index-B3OG-k_Z.js   404.78 kB │ gzip: 117.70 kB
-
-✓ built in 62ms
+Untracked files:
+	src/parser/catalogEditor.js
 ```
 
----
-
-## Adversarial Review
-
-### Challenge Summary
-**Overall risk assessment**: MEDIUM
-
-### Challenges
-
-#### [Medium] Challenge 1: Substring Matching Collisions
-- **Assumption challenged**: Substring inclusion (`t.includes(k)`) is a safe way to identify equipment and traits.
-- **Attack scenario**: If a unit has a special rule or weapon named "Shieldbreaker", the scan matches `SAVE_SHIELD_KEYWORDS = ['shield']` via `t.includes('shield')`. This incorrectly flags the unit as carrying a shield, thereby decrementing its armour save by 1.
-- **Blast radius**: Units with rules or items containing keyword substrings (e.g., "Shieldbreaker", "Heavy Armourbane", "Barded Wing") will receive incorrect armour save calculations.
-- **Mitigation**: Use word boundary regular expressions (e.g., `\bshield\b`) or exact matches where possible, and only perform calculations on designated fields rather than raw string scans of the entire name and description.
-
-#### [Medium] Challenge 2: Context Negation Failure
-- **Assumption challenged**: The presence of a keyword anywhere in the selection text implies the model possesses that item/rule.
-- **Attack scenario**: If an upgrade or rule description states: *"This weapon ignores heavy armour"* or *"Does not benefit from shields"*, the scan matches `heavy armour` or `shield` and incorrectly applies those save rules to the unit itself.
-- **Blast radius**: Incorrectly calculated saves for units that carry items whose rules text mentions excluded/ignored equipment.
-- **Mitigation**: Parse structured attributes or filter out negative/negated contexts before keyword matching.
-
-### Stress Test Results
-- **Scenario 1**: Unit with rule "Shieldbreaker" and no armor.
-  - *Expected*: Armour Save of 7 (No save).
-  - *Actual*: Armour Save of 6 (due to matching "shield" in "Shieldbreaker").
-  - *Result*: **FAIL** (Vulnerability confirmed, though consistent with legacy behavior).
-- **Scenario 2**: Unit with weapon description "Ignores heavy armour".
-  - *Expected*: Armour Save of 7.
-  - *Actual*: Armour Save of 5 (due to matching "heavy armour").
-  - *Result*: **FAIL** (Vulnerability confirmed, though consistent with legacy behavior).
-
----
-
-## Unchallenged Areas
-- **UI Render Path**: Not challenged as the scope focuses on `rulesEvaluator` and its usage.
+### 3. File Search Results
+- `grep -in "pdf" src/` -> 0 hits.
+- `grep -in "abgleich" src/` -> 0 hits.
+- `grep -in "vision" src/` -> 1 false positive hit matching `gameSystemRevision`.

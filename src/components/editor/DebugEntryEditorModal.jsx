@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { saveSystem } from '../../db/database';
-import { updateRawXml } from '../../parser/pdfRulesExtractor';
+import { updateRawXml } from '../../parser/catalogEditor';
 import { processImportedData } from '../../parser/xmlParser';
 
 export default function DebugEntryEditorModal({ entry, system, onClose, onSave }) {

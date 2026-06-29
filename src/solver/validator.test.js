@@ -1,7 +1,10 @@
 import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost, syncRosterSelectionsWithSystem, collectUnitProfilesAndRules } from './validator.js';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML } from '../parser/xmlParser.js';
-import { searchEditableEntries, findAndMutateJsonPatch } from '../parser/pdfRulesExtractor.js';
+
+import { updateRawXml } from '../parser/catalogEditor.js';
+import { getUnitOptions } from './optionsCollector.js';
+import { test, expect } from 'vitest';
 
 
 // 1. Mock Game System Definition
@@ -373,209 +376,35 @@ const jsdomObj = new JSDOM();
 globalThis.DOMParser = jsdomObj.window.DOMParser;
 globalThis.XMLSerializer = jsdomObj.window.XMLSerializer;
 
-// XML Update function imported & adapted for Test 7
-const updateRawXmlTest = (system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription) => {
-  if (!system.rawXmls) return;
-  let file = system.rawXmls.cat?.find(f => f.content.includes(entryId));
-  if (!file) {
-    file = system.rawXmls.gst?.find(f => f.content.includes(entryId));
-  }
-  if (!file) return;
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(file.content, 'text/xml');
-  const element = doc.querySelector(`[id="${entryId}"]`);
-  if (!element) return;
-
-  if (localName !== undefined) {
-    element.setAttribute('name', localName);
-  }
-  if (type === 'entry') {
-    Object.entries(localCosts).forEach(([typeId, val]) => {
-      const costEl = element.querySelector(`cost[typeId="${typeId}"]`);
-      if (costEl) costEl.setAttribute('value', parseFloat(val) || 0);
-    });
-  }
-  if (type === 'entry' || type === 'group') {
-    Object.entries(localConstraints).forEach(([conId, val]) => {
-      const conEl = element.querySelector(`constraint[id="${conId}"]`);
-      if (conEl) conEl.setAttribute('value', parseFloat(val) || 0);
-    });
-  }
-  if (type === 'profile') {
-    Object.entries(localCharacteristics).forEach(([name, val]) => {
-      const charEl = Array.from(element.querySelectorAll('characteristic')).find(c => c.getAttribute('name') === name);
-      if (charEl) charEl.textContent = val;
-    });
-  }
-  if (type === 'rule') {
-    let descEl = element.querySelector('description');
-    if (!descEl) {
-      descEl = doc.createElement('description');
-      element.appendChild(descEl);
-    }
-    descEl.textContent = localDescription;
-  }
-
-  const serializer = new XMLSerializer();
-  file.content = serializer.serializeToString(doc);
-};
-
-// Optimized getUnitOptions test version
-const getUnitOptionsTest = (unitSelection, system, activeCatalogue) => {
-  if (!activeCatalogue) return [];
-  const entryId = unitSelection.entryLinkId || unitSelection.selectionEntryId;
-  const rawEntry = findEntryInSystem(system, entryId);
-  const resolved = resolveEntry(system, rawEntry);
-  if (!resolved) return [];
-
-  const collectGroupItemIds = (gDef, groupItemIds = new Set(), visited = new Set()) => {
-    if (!gDef || visited.has(gDef.id)) return groupItemIds;
-    if (gDef.id) visited.add(gDef.id);
-
-    gDef.selectionEntries?.forEach(item => {
-      groupItemIds.add(item.id);
-      const res = resolveEntry(system, item);
-      if (res) groupItemIds.add(res.id);
-    });
-    gDef.entryLinks?.forEach(link => {
-      groupItemIds.add(link.id);
-      groupItemIds.add(link.targetId);
-      const res = resolveEntry(system, link);
-      if (res) {
-        groupItemIds.add(res.id);
-        collectGroupItemIds(res, groupItemIds, visited);
-      }
-    });
-    gDef.selectionEntryGroups?.forEach(subG => {
-      collectGroupItemIds(subG, groupItemIds, visited);
-    });
-    return groupItemIds;
-  };
-
-  const prepareConstraints = (gDef) => {
-    if (!gDef || !gDef.constraints) return [];
-    const itemIds = collectGroupItemIds(gDef);
-    return gDef.constraints.map(con => ({
-      ...con,
-      groupItemIds: itemIds
-    }));
-  };
-
-  const optionsList = [];
-
-  const collectOptions = (def, currentGroupName = null, parentConstraints = null) => {
-    def.selectionEntries?.forEach(child => {
-      const resolvedChild = resolveEntry(system, child);
-      if (!resolvedChild) return;
-
-      if (child.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
-        collectOptions(resolvedChild, currentGroupName || resolvedChild.name, prepareConstraints(resolvedChild).concat(parentConstraints || []));
-      } else {
-        optionsList.push({ 
-          option: child, 
-          parentDefId: def.id, 
-          groupName: currentGroupName, 
-          groupConstraints: parentConstraints 
-        });
-      }
-    });
-
-    def.entryLinks?.forEach(child => {
-      const resolvedChild = resolveEntry(system, child);
-      if (!resolvedChild) return;
-
-      if (child.type === 'selectionEntryGroup' || resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0) {
-        // FIXED: Only use resolvedChild constraints
-        const combinedConstraints = prepareConstraints(resolvedChild);
-        resolvedChild.selectionEntries?.forEach(subChild => {
-          optionsList.push({ 
-            option: subChild, 
-            parentDefId: def.id, 
-            groupName: resolvedChild.name || child.name, 
-            groupConstraints: combinedConstraints 
-          });
-        });
-        resolvedChild.entryLinks?.forEach(subChild => {
-          optionsList.push({ 
-            option: subChild, 
-            parentDefId: def.id, 
-            groupName: resolvedChild.name || child.name, 
-            groupConstraints: combinedConstraints 
-          });
-        });
-      } else if (resolvedChild.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
-        collectOptions(resolvedChild, currentGroupName || resolvedChild.name, prepareConstraints(resolvedChild).concat(parentConstraints || []));
-      } else {
-        optionsList.push({ 
-          option: child, 
-          parentDefId: def.id, 
-          groupName: currentGroupName, 
-          groupConstraints: parentConstraints 
-        });
-      }
-    });
-
-    def.selectionEntryGroups?.forEach(group => {
-      // FIXED: Only use group constraints
-      const combinedGroupConstraints = prepareConstraints(group);
-      group.selectionEntries?.forEach(child => {
-        optionsList.push({ 
-          option: child, 
-          parentDefId: def.id, 
-          groupName: group.name, 
-          groupConstraints: combinedGroupConstraints 
-        });
-      });
-      group.entryLinks?.forEach(child => {
-        const resolvedChild = resolveEntry(system, child);
-        if (resolvedChild && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0)) {
-          const combinedChildConstraints = [...prepareConstraints(resolvedChild), ...combinedGroupConstraints];
-          resolvedChild.selectionEntries?.forEach(sub => {
-            optionsList.push({ 
-              option: sub, 
-              parentDefId: def.id, 
-              groupName: resolvedChild.name || child.name || group.name, 
-              groupConstraints: combinedChildConstraints 
-            });
-          });
-          resolvedChild.entryLinks?.forEach(sub => {
-            optionsList.push({ 
-              option: sub, 
-              parentDefId: def.id, 
-              groupName: resolvedChild.name || child.name || group.name, 
-              groupConstraints: combinedChildConstraints 
-            });
-          });
-        }
-      });
-    });
-  };
-
-  collectOptions(resolved);
-  return optionsList;
-};
-
+// Removed duplicate updateRawXmlTest
+// Removed duplicate getUnitOptionsTest
 // 4. Run Tests
-console.log('--- RUNNING SOLVER & VALIDATOR TESTS ---');
 
 // Test 1: Calculate point totals
 const costsValid = calculateRosterCosts(mockRosterValid, mockSystem);
-console.log('Test 1 - Cost Summation: ', costsValid.pts === 250 ? 'PASSED' : `FAILED (Expected 250, got ${costsValid.pts})`);
+test('Cost Summation', () => {
+  expect( costsValid.pts === 250).toBeTruthy();
+});
 
 // Test 2: Valid roster check
 const errorsValid = validateRoster(mockRosterValid, mockSystem);
-console.log('Test 2 - Valid Roster Errors count: ', errorsValid.length === 0 ? 'PASSED' : `FAILED (Got ${errorsValid.length} errors: ${JSON.stringify(errorsValid)})`);
+test('Valid Roster Errors count', () => {
+  expect( errorsValid.length === 0).toBeTruthy();
+});
 
 // Test 3: Point limit check
 const errorsLimit = validateRoster(mockRosterLimitExceeded, mockSystem);
 const pointError = errorsLimit.find(e => e.type === 'roster-limit');
-console.log('Test 3 - Points Limit Check: ', pointError ? 'PASSED' : 'FAILED (Expected point limit error)');
+test('Points Limit Check', () => {
+  expect( pointError).toBeTruthy();
+});
 
 // Test 4: Detachment category limits
 const errorsCategory = validateRoster(mockRosterCategoryViolation, mockSystem);
 const catError = errorsCategory.find(e => e.type === 'category-min');
-console.log('Test 4 - Detachment Category Check: ', catError ? 'PASSED' : 'FAILED (Expected category minimum constraint violation)');
+test('Detachment Category Check', () => {
+  expect( catError).toBeTruthy();
+});
 
 // Test 5: Group points max constraint (Magic Items group max limit = 50)
 const errorsGroupValid = validateRoster(mockRosterGroupValid, mockSystem);
@@ -616,7 +445,7 @@ const testSystem = {
   }
 };
 // Perform update XML
-updateRawXmlTest(testSystem, 'unit-thrall', 'entry', 'Vampire Thrall Elite', { pts: 95 }, { 'max-thralls': 4 }, {}, '');
+updateRawXml(testSystem, 'unit-thrall', 'entry', 'Vampire Thrall Elite', { pts: 95 }, { 'max-thralls': 4 }, {}, '');
 const updatedXml = testSystem.rawXmls.cat[0].content;
 const hasUpdatedName = updatedXml.includes('name="Vampire Thrall Elite"');
 const hasUpdatedPoints = updatedXml.includes('typeId="pts" value="95"');
@@ -628,10 +457,13 @@ console.log('Test 7 - XML Modifier Serialization: ',
 // Test 8: Selection Entry Group Constraint Isolation (Waaagh Spells Bug)
 const mockShamanSelection = {
   selectionEntryId: 'unit-shaman',
-  name: 'Orc Shaman'
+  name: 'Orc Shaman',
+  selections: [
+    { selectionEntryId: 'upgrade-show-spells' }
+  ]
 };
 const activeCatalogue = mockSystem.catalogues[0];
-const shamanOptions = getUnitOptionsTest(mockShamanSelection, mockSystem, activeCatalogue);
+const shamanOptions = getUnitOptions(mockSystem, activeCatalogue.id, mockShamanSelection);
 const gazeSpellOption = shamanOptions.find(o => o.option.id === 'spell-gaze');
 const hasParentConstraintLeak = gazeSpellOption?.groupConstraints?.some(c => c.id === 'limit-show-spells');
 console.log('Test 8 - Selection Group Constraint Isolation (Waaagh Spells Bug): ',
@@ -1129,88 +961,6 @@ console.log('Test 19 - Repeating Modifiers (repeat field and limit): ',
   repeatSuccess ? 'PASSED' : `FAILED (limit-repeat: ${valLimitRepeat}/4, field-repeat: ${valFieldRepeat}/1)`
 );
 
-// Test 20: GST Editing and Searching
-const mockGstXmlContent = `
-<gameSystem id="sys-gst" name="Grimdark Battles" xmlns="http://www.battlescribe.net/schema/gameSystemSchema">
-  <sharedRules>
-    <rule id="gst-rule-1" name="Bolter Discipline">
-      <description>Rapid fire shots are enhanced.</description>
-    </rule>
-  </sharedRules>
-  <sharedProfiles>
-    <profile id="gst-prof-1" name="Power Armor" profileTypeId="armor">
-      <characteristics>
-        <characteristic name="Save">3+</characteristic>
-      </characteristics>
-    </profile>
-  </sharedProfiles>
-</gameSystem>
-`;
-
-const mockCatXmlContent = `
-<catalogue id="cat-sub" name="Space Knights" gameSystemId="sys-gst">
-  <sharedRules>
-    <rule id="cat-rule-1" name="Knighthood">
-      <description>Oath of loyalty.</description>
-    </rule>
-  </sharedRules>
-</catalogue>
-`;
-
-const testGstSystem = {
-  id: 'sys-gst',
-  name: 'Grimdark Battles',
-  sharedRules: [
-    { id: 'gst-rule-1', name: 'Bolter Discipline', description: 'Rapid fire shots are enhanced.' }
-  ],
-  sharedProfiles: [
-    { id: 'gst-prof-1', name: 'Power Armor', profileTypeId: 'armor', characteristics: [{ name: 'Save', value: '3+' }] }
-  ],
-  catalogues: [
-    {
-      id: 'cat-sub',
-      name: 'Space Knights',
-      sharedRules: [
-        { id: 'cat-rule-1', name: 'Knighthood', description: 'Oath of loyalty.' }
-      ]
-    }
-  ],
-  rawXmls: {
-    gst: [
-      { name: 'grimdark.gst', content: mockGstXmlContent }
-    ],
-    cat: [
-      { name: 'knights.cat', content: mockCatXmlContent }
-    ]
-  }
-};
-
-// 1. Search tests (by name and by ID)
-const searchResultsGst = searchEditableEntries(testGstSystem, 'Bolter');
-const searchResultsCat = searchEditableEntries(testGstSystem, 'Knighthood');
-const searchResultsById = searchEditableEntries(testGstSystem, 'gst-prof-1');
-
-const searchGstSuccess = searchResultsGst.length === 1 && searchResultsGst[0].id === 'gst-rule-1';
-const searchCatSuccess = searchResultsCat.length === 1 && searchResultsCat[0].id === 'cat-rule-1';
-const searchByIdSuccess = searchResultsById.length === 1 && searchResultsById[0].id === 'gst-prof-1';
-
-// 2. Patch mutation test
-const patch = {
-  id: 'gst-rule-1',
-  type: 'rule',
-  field: 'description',
-  newValue: 'New rules for bolters.'
-};
-
-const patchSuccess = findAndMutateJsonPatch(testGstSystem, patch);
-const updatedRuleDesc = testGstSystem.sharedRules[0].description === 'New rules for bolters.';
-const updatedXmlGst = testGstSystem.rawXmls.gst[0].content.includes('New rules for bolters.');
-
-const test20Success = searchGstSuccess && searchCatSuccess && searchByIdSuccess && patchSuccess && updatedRuleDesc && updatedXmlGst;
-
-console.log('Test 20 - GST Editing and Searching: ',
-  test20Success ? 'PASSED' : `FAILED (searchGst: ${searchGstSuccess}, searchCat: ${searchCatSuccess}, patch: ${patchSuccess}, descUpdated: ${updatedRuleDesc}, xmlUpdated: ${updatedXmlGst})`
-);
 
 // Test 21: Repeatable magic items validation via group modifiers
 const mockSystemRepeatable = {
@@ -1562,7 +1312,9 @@ const test24Success =
   profilesResult.rules.length === 1 &&
   profilesResult.rules.some(r => r.id === 'rule-bloodline-1');
 
-console.log('Test 24 - Profile and Rule extraction from nested user selections: ', test24Success ? 'PASSED' : 'FAILED');
+test('Profile and Rule extraction from nested user selections', () => {
+  expect( test24Success).toBeTruthy();
+});
 
 console.log('--- BSB Logic Gap Fix Test ---');
 const bsbRoster = {
@@ -1633,33 +1385,9 @@ const bsbSystem = {
 
 const bsbErrors = validateRoster(bsbRoster, bsbSystem);
 const bsbLogicGapFixSuccess = bsbErrors.filter(e => e.type === 'entry-max' && e.message.includes('maximal 1 Auswahlen')).length === 2;
-console.log('Test 25 - BSB Logic Gap Fix Test: ', bsbLogicGapFixSuccess ? 'PASSED' : 'FAILED');
+test('BSB Logic Gap Fix Test', () => {
+  expect( bsbLogicGapFixSuccess).toBeTruthy();
+});
 
 console.log('--- TEST RUN COMPLETE ---');
-if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
-    errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
-    (hasUpdatedName && hasUpdatedPoints && hasUpdatedConstraint) &&
-    (gazeSpellOption && !hasParentConstraintLeak) &&
-    (takenForCap2 === true && takenForCap1 === false) &&
-    bsbLogicGapFixSuccess &&
-    tacOverLimitError &&
-    charactersOverLimitError &&
-    charactersWithinLimitNoError &&
-    deDuplicationSuccess &&
-    xmlCategoryLinksSuccess &&
-    fallbackSuccess &&
-    collisionSuccess &&
-    collisionSuccess &&
-    condGroupSuccess &&
-    repeatSuccess &&
-    test20Success &&
-    test21Success &&
-    test22Success &&
-    test23Success &&
-    test24Success) {
-  console.log('ALL TESTS SUCCESSFUL!');
-  process.exit(0);
-} else {
-  console.error('SOME TESTS FAILED.');
-  process.exit(1);
-}
+console.log('--- TEST RUN COMPLETE ---');

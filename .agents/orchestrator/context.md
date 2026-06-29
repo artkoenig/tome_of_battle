@@ -1,15 +1,16 @@
-# Context — Army Builder Refactoring
+# Context — Army Builder Architecture & Testability Review
 
 ## Active Goals
-- Analyze the codebase structure and dependencies.
-- Plan the refactoring, decoupling, test coverage, and cleanup milestones.
+- Review the codebase structure, dependency graph, layering, and data flows.
+- Map and evaluate the test suite, coverage, testability, and test data strategy.
+- Evaluate extensibility, Battlescribe coupling, and state management scalability.
+- Compile 8+ prioritized improvement recommendations.
+- Ensure the existing test suite passes without modifications.
 
 ## Workspace Information
 - Workspace Root: `/Users/artkoenig/Workspace/army_builder`
 - Coordination Directory: `/Users/artkoenig/Workspace/army_builder/.agents/orchestrator`
 - AGENTS.md Rules:
-  - Local macOS environment: puppeteer for browser debugging if needed, no browser subagent.
-  - Fachlogik: No English or German strings as keys for parsing or validating.
+  - macOS Local: Puppeteer via CLI if browser-testing, but NO code changes are allowed for this review.
   - No auto git push.
   - All unit tests must pass.
-  - Business logic changes must be covered by unit tests.

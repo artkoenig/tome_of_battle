@@ -1,56 +1,61 @@
-# BRIEFING — 2026-06-29T08:46:10+02:00
+# BRIEFING — 2026-06-29T18:59:00+02:00
 
 ## Mission
-Forensic audit of Milestone 2: "Extract rulesEvaluator" to detect integrity violations and verify functionality.
+Verify integrity of the PDF Cleanup task by worker agent, ensuring removal of 'PDF Abgleich' (PDF comparison) while preserving manual XML editing and adhering to project constraints.
 
 ## 🔒 My Identity
-- Archetype: teamwork_preview_auditor / forensic_auditor
+- Archetype: forensic_auditor
 - Roles: critic, specialist, auditor
-- Working directory: /Users/artkoenig/Workspace/army_builder/.agents/auditor_m2
-- Original parent: 66403152-2ff1-426a-a9c5-4b71be2c56a3
-- Target: Milestone 2: "Extract rulesEvaluator"
+- Working directory: /Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/
+- Original parent: c3e2814c-87a4-4f7f-a0be-1ee254daa829
+- Target: PDF Cleanup (Milestone 2)
 
 ## 🔒 Key Constraints
 - Audit-only — do NOT modify implementation code
 - Trust NOTHING — verify everything independently
-- Do not use hardcoded English/German strings as keys for parsing or validation (custom rule from AGENTS.md)
-- CODE_ONLY network mode: no external web access
+- CODE_ONLY network mode: no external HTTP/curl/wget requests
+- Apply strict integrity check based on ORIGINAL_REQUEST.md mode (Development, Demo, or Benchmark)
 
 ## Current Parent
-- Conversation ID: 66403152-2ff1-426a-a9c5-4b71be2c56a3
-- Updated: 2026-06-29T08:46:10+02:00
+- Conversation ID: c3e2814c-87a4-4f7f-a0be-1ee254daa829
+- Updated: 2026-06-29T18:59:00+02:00
 
 ## Audit Scope
-- **Work product**: src/solver/rulesEvaluator.js, src/components/PlayMode.jsx, src/solver/rulesEvaluator.test.js
+- **Work product**: Workspace code changes relating to PDF Cleanup
 - **Profile loaded**: General Project
-- **Audit type**: forensic integrity check
+- **Audit type**: Forensic integrity check
 
 ## Audit Progress
 - **Phase**: reporting
 - **Checks completed**:
-  - Verify rulesEvaluator.js contains extracted saves and profile matching logic (PASS)
-  - Verify PlayMode.jsx imports and calls these methods correctly (PASS)
-  - Verify rulesEvaluator.js has no hardcoded English/German strings and uses constants.js (PASS)
-  - Review unit tests rulesEvaluator.test.js for genuineness and coverage (PASS)
-  - Execute build (npm run build) and tests (npm test) (PASS)
+  - Check for hardcoded test results, facade implementations, bypassed checks (PASS)
+  - Verify complete removal of PDF Abgleich features/components (PASS)
+  - Verify preservation of manual XML editing capabilities without Vision AI or PDF logic (PASS)
+  - Run project build and test commands (PASS)
+  - Run adversarial review/stress testing (PASS)
 - **Checks remaining**: None
 - **Findings so far**: CLEAN
 
 ## Key Decisions Made
-- Concluded audit. Verified everything builds and tests pass.
-- Discovered keyword substring collision vulnerability in saves calculation logic, documented in Adversarial Review.
+- Confirmed that the mode is "development".
+- Audited the files and verified manual XML editing functionality in `catalogEditor.js` is fully decoupled and functional.
+- Verified test suite passes successfully.
 
 ## Artifact Index
-- /Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/ORIGINAL_REQUEST.md — Original request history
-- /Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/BRIEFING.md — Persistent briefing document
-- /Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/progress.md — Progress and heartbeat log
-- /Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/audit_report.md — Detailed forensic audit report
-- /Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/handoff.md — Handoff report
+- `/Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/BRIEFING.md` — Active briefing index
+- `/Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/ORIGINAL_REQUEST.md` — Original audit request
+- `/Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/progress.md` — Progress tracker and heartbeat
+- `/Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/audit_report.md` — Final forensic audit report
+- `/Users/artkoenig/Workspace/army_builder/.agents/auditor_m2/handoff.md` — Self-contained handoff report
 
 ## Attack Surface
-- **Hypotheses tested**: Checked if keyword collisions (e.g. "Shieldbreaker" matching "shield") could occur.
-- **Vulnerabilities found**: Confirmed that substring matching can cause incorrect armour/ward save calculations.
-- **Untested angles**: UI-specific React rendering is not tested in rulesEvaluator unit tests.
+- **Hypotheses tested**:
+  - Checked if manual XML editing logic is just a facade wrapper → Disproved: DOMParser and XMLSerializer are genuinely used.
+  - Checked if tests were bypassed or mocked to hide failure → Disproved: Checked test code in `validator.test.js` and confirmed genuine assertions exist.
+- **Vulnerabilities found**: None
+- **Untested angles**: None
 
 ## Loaded Skills
-- None loaded.
+- **Source**: /Users/artkoenig/.gemini/antigravity/builtin/skills/antigravity_guide/SKILL.md
+- **Local copy**: None
+- **Core methodology**: Guide for Antigravity tools (not directly applicable to codebase audit, but available)

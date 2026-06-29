@@ -8,65 +8,11 @@ import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
 import PlayMode from './components/PlayMode';
 import DebugEntryEditorModal from './components/editor/DebugEntryEditorModal';
-import { findExactEntryById, searchEditableEntries } from './parser/pdfRulesExtractor';
+import GlobalDebugSearch from './components/editor/GlobalDebugSearch';
+import NewRosterModal from './components/editor/NewRosterModal';
 
-function GlobalDebugSearch({ systems, onSelectEntry }) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
+import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
 
-  useEffect(() => {
-    if (query.length < 2) {
-      setResults([]);
-      return;
-    }
-    let allResults = [];
-    for (const sys of systems) {
-      const sysResults = searchEditableEntries(sys, query);
-      sysResults.forEach(r => r.system = sys);
-      allResults = allResults.concat(sysResults);
-    }
-    setResults(allResults.slice(0, 50));
-  }, [query, systems]);
-
-  return (
-    <div style={{ position: 'relative', margin: '0 16px', flex: 1, maxWidth: '400px' }}>
-      <div style={{ position: 'relative' }}>
-        <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
-        <input
-           type="text"
-           placeholder="Globale Katalog-Suche..."
-           value={query}
-           onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
-           onFocus={() => setIsOpen(true)}
-           style={{ width: '100%', padding: '6px 12px 6px 32px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-gold-dim)', color: 'var(--text-gold)', borderRadius: '4px', outline: 'none' }}
-        />
-      </div>
-      {isOpen && query.length >= 2 && (
-         <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--border-gold-dim)', maxHeight: '400px', overflowY: 'auto', zIndex: 1000, marginTop: '4px', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-           {results.length === 0 ? (
-             <div style={{ padding: '8px', color: 'var(--text-dim)', fontSize: '0.85rem' }}>Keine Ergebnisse.</div>
-           ) : (
-             results.map((r, idx) => (
-               <div 
-                 key={idx} 
-                 onClick={() => { 
-                   onSelectEntry({ ref: r.ref, path: r.path, catalogueName: r.system.name }, r.system); 
-                   setIsOpen(false); 
-                   setQuery(''); 
-                 }}
-                 style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-dark)', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
-               >
-                 <span style={{ color: 'var(--text-gold)', fontWeight: 'bold', fontSize: '0.9rem' }}>{r.name}</span>
-                 <span style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>{r.type} • {r.system.name}</span>
-               </div>
-             ))
-           )}
-         </div>
-      )}
-    </div>
-  );
-}
 
 
 export default function App() {
@@ -503,85 +449,20 @@ export default function App() {
       </main>
 
       {/* New Roster Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3 style={{ margin: 0 }}>Neues Heer ausheben</h3>
-              <button className="modal-close" onClick={() => setIsModalOpen(false)}>X</button>
-            </div>
-            <form onSubmit={handleCreateRoster}>
-              <div className="modal-body">
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Name des Heeres</label>
-                  <input 
-                    type="text" 
-                    placeholder="z. B. Ultramarines 2. Kompanie" 
-                    value={newRosterName}
-                    onChange={(e) => setNewRosterName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Spielsystem</label>
-                  <select 
-                    value={newRosterSystemId} 
-                    onChange={(e) => handleSystemChange(e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>System auswählen...</option>
-                    {systems.map(s => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}{showDebugIds ? ` [ID: ${s.id}]` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  {systems.length === 0 && (
-                    <p className="text-danger" style={{ fontSize: '0.8rem', marginTop: '4px' }}>
-                      Keine Spielsysteme importiert. Bitte gehe erst in den Bibliothekar.
-                    </p>
-                  )}
-                </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Katalog / Fraktion</label>
-                  <select 
-                    value={newRosterCatId}
-                    onChange={(e) => setNewRosterCatId(e.target.value)}
-                    required
-                    disabled={!newRosterSystemId || activeModalSystem?.catalogues?.length === 0}
-                  >
-                    <option value="" disabled>Fraktion auswählen...</option>
-                    {activeModalSystem?.catalogues?.map(cat => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}{showDebugIds ? ` [ID: ${cat.id}]` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Punktegrenze</label>
-                  <input 
-                    type="number" 
-                    value={newRosterLimit}
-                    onChange={(e) => setNewRosterLimit(e.target.value)}
-                    required
-                    min={1}
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" onClick={() => setIsModalOpen(false)}>Abbrechen</button>
-                <button type="submit" className="btn-primary" disabled={systems.length === 0}>
-                  Heerschau starten
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <NewRosterModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateRoster}
+        systems={systems}
+        newRosterName={newRosterName}
+        setNewRosterName={setNewRosterName}
+        newRosterSystemId={newRosterSystemId}
+        handleSystemChange={handleSystemChange}
+        newRosterCatId={newRosterCatId}
+        setNewRosterCatId={setNewRosterCatId}
+        newRosterLimit={newRosterLimit}
+        setNewRosterLimit={setNewRosterLimit}
+      />
 
       {/* Debug Entry Editor Modal */}
       {debugEditingEntry && debugEditingSystem && (

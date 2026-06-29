@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download, Bot } from 'lucide-react';
+import { Upload, Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
-
-import SystemEditorView from './importer/SystemEditorView';
 import { useDebugMode } from '../hooks/DebugContext';
 
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
@@ -15,8 +13,6 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-
-  const [editingSystem, setEditingSystem] = useState(null);
 
   useEffect(() => {
     loadSystems();
@@ -131,16 +127,6 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     }
   };
 
-      if (editingSystem) {
-        return (
-          <SystemEditorView 
-            system={editingSystem} 
-            onClose={() => { setEditingSystem(null); loadSystems(); }} 
-            onSystemSaved={loadSystems}
-          />
-        );
-      }
-
       return (
         <div className={`container ${showAsEmptyState ? 'empty-state-wrapper' : ''}`}>
           <div className={showAsEmptyState ? 'empty-state-container' : ''}>
@@ -245,14 +231,6 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                    <button 
-                      className="btn-gold btn-sm" 
-                      onClick={() => { setEditingSystem(sys); setError(null); setSuccessMsg(null); }}
-                      title="KI-Scanner (PDF Abgleich)"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
-                    >
-                      <Bot size={16} />
-                    </button>
                     <button 
                       className="btn-gold btn-sm" 
                       onClick={() => handleExport(sys)}

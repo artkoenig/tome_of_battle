@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest';
 import {
   extractModelProfiles,
   extractUpgradeProfiles,
@@ -6,7 +7,7 @@ import {
   getWardSave
 } from './rulesEvaluator.js';
 
-console.log('--- RUNNING RULES EVALUATOR TESTS ---');
+
 
 // Test 1: extractModelProfiles
 const test1Profiles = [
@@ -16,17 +17,19 @@ const test1Profiles = [
   { name: 'Shield', profileTypeName: 'Armour' }
 ];
 const modelProfiles = extractModelProfiles(test1Profiles);
-const test1Passed = modelProfiles.length === 2 &&
+test('extractModelProfiles', () => {
+  expect(modelProfiles.length === 2 &&
                     modelProfiles.some(p => p.name === 'Warrior') &&
-                    modelProfiles.some(p => p.name === 'Dragon');
-console.log('Test 1 - extractModelProfiles: ', test1Passed ? 'PASSED' : 'FAILED');
+                    modelProfiles.some(p => p.name === 'Dragon')).toBe(true);
+});
 
 // Test 2: extractUpgradeProfiles
 const upgradeProfiles = extractUpgradeProfiles(test1Profiles);
-const test2Passed = upgradeProfiles.length === 2 &&
+test('extractUpgradeProfiles', () => {
+  expect(upgradeProfiles.length === 2 &&
                     upgradeProfiles.some(p => p.name === 'Sword') &&
-                    upgradeProfiles.some(p => p.name === 'Shield');
-console.log('Test 2 - extractUpgradeProfiles: ', test2Passed ? 'PASSED' : 'FAILED');
+                    upgradeProfiles.some(p => p.name === 'Shield')).toBe(true);
+});
 
 // Test 3: hasBlessing
 const blessingProfiles = [
@@ -37,8 +40,9 @@ const hasBlessingTrue1 = hasBlessing(blessingProfiles, 'Grail Knights', 'Bretonn
 const hasBlessingTrue2 = hasBlessing([], 'Segen der Herrin', 'Bretonnia');
 const hasBlessingFalse = hasBlessing([], 'Empire Knights', 'The Empire');
 
-const test3Passed = hasBlessingTrue1 && hasBlessingTrue2 && !hasBlessingFalse;
-console.log('Test 3 - hasBlessing: ', test3Passed ? 'PASSED' : 'FAILED');
+test('hasBlessing', () => {
+  expect(hasBlessingTrue1 && hasBlessingTrue2 && !hasBlessingFalse).toBe(true);
+});
 
 // Test 4: getArmourSave
 const noArmour = getArmourSave([], 'Peasant', 'Bretonnia'); // 7 (no armour)
@@ -80,7 +84,8 @@ const shieldOfGhrond = getArmourSave([
   { name: 'Shield of Ghrond', characteristics: [{ name: 'Saving Throw Modifier', value: '-1 Sv' }] }
 ], 'Master', 'Dark Elves'); // 6 (-1 shield, characteristic mod ignored because it's a shield)
 
-const test4Passed = noArmour === 7 &&
+test('getArmourSave', () => {
+  expect(noArmour === 7 &&
                     lightArmourOnly === 6 &&
                     heavyArmourShield === 4 &&
                     empireKnight === 1 &&
@@ -89,8 +94,8 @@ const test4Passed = noArmour === 7 &&
                     explicitASChar === 3 &&
                     flayedHauberk === 1 &&
                     stegadonHelm === 5 &&
-                    shieldOfGhrond === 6;
-console.log('Test 4 - getArmourSave: ', test4Passed ? 'PASSED' : `FAILED (noArmour: ${noArmour}, lightArmourOnly: ${lightArmourOnly}, heavyArmourShield: ${heavyArmourShield}, empireKnight: ${empireKnight}, explicitSave: ${explicitSave}, scalySkinSave: ${scalySkinSave}, explicitASChar: ${explicitASChar}, flayedHauberk: ${flayedHauberk}, stegadonHelm: ${stegadonHelm}, shieldOfGhrond: ${shieldOfGhrond})`);
+                    shieldOfGhrond === 6).toBe(true);
+});
 
 // Test 5: getWardSave
 const wardSave5Plus = getWardSave([
@@ -113,20 +118,13 @@ const talismanOfProtection = getWardSave([
 ], 'Lord', 'Custom System'); // 6
 const noWardSave = getWardSave([], 'Peasant', 'Bretonnia'); // null
 
-const test5Passed = wardSave5Plus === 5 &&
+test('getWardSave', () => {
+  expect(wardSave5Plus === 5 &&
                     wardSave4PlusGerman === 4 &&
                     wardSaveInParens === 5 &&
                     wardSavePlusFirst === 6 &&
                     explicitWSChar === 4 &&
                     talismanOfProtection === 6 &&
-                    noWardSave === null;
-console.log('Test 5 - getWardSave: ', test5Passed ? 'PASSED' : `FAILED (wardSave5Plus: ${wardSave5Plus}, wardSave4PlusGerman: ${wardSave4PlusGerman}, wardSaveInParens: ${wardSaveInParens}, wardSavePlusFirst: ${wardSavePlusFirst}, explicitWSChar: ${explicitWSChar}, talismanOfProtection: ${talismanOfProtection}, noWardSave: ${noWardSave})`);
+                    noWardSave === null).toBe(true);
+});
 
-const allEvaluatorTestsPassed = test1Passed && test2Passed && test3Passed && test4Passed && test5Passed;
-if (allEvaluatorTestsPassed) {
-  console.log('ALL RULES EVALUATOR TESTS SUCCESSFUL!');
-  process.exit(0);
-} else {
-  console.error('SOME RULES EVALUATOR TESTS FAILED.');
-  process.exit(1);
-}

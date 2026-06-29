@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest';
 import { getUnitOptions } from './optionsCollector.js';
 import { resolveEntry } from './validator.js';
 
@@ -44,22 +45,8 @@ const mockSystem = {
   }
 };
 
-let testsPassed = 0;
-let testsFailed = 0;
 
-function assert(condition, message) {
-  if (condition) {
-    testsPassed++;
-  } else {
-    testsFailed++;
-    console.error('❌ AssertionError:', message);
-  }
-}
-
-console.log('--- RUNNING OPTIONS COLLECTOR TESTS ---');
-
-// Test 1: should return top-level options but not recurse into unselected upgrades
-(function testUnselectedUpgrade() {
+test('should return top-level options but not recurse into unselected upgrades', () => {
   const unitSelection = {
     selectionEntryId: 'unit-1',
     selections: [] // No active selections inside the unit
@@ -68,15 +55,14 @@ console.log('--- RUNNING OPTIONS COLLECTOR TESTS ---');
   const options = getUnitOptions(mockSystem, 'cat-1', unitSelection);
   
   const necrachOption = options.find(o => o.option.name === 'Necrach');
-  assert(necrachOption !== undefined, 'Necrach should be collected as an option');
-  assert(necrachOption?.groupName === 'Bloodline', 'Necrach should inherit the name of the selectionEntryGroup');
+  expect(necrachOption).toBeDefined();
+  expect(necrachOption?.groupName).toBe('Bloodline');
 
   const generalOption = options.find(o => o.option.name === 'General' || o.option.targetId === 'entry-general');
-  assert(generalOption === undefined, 'General should NOT be an option because Necrach is not selected');
-})();
+  expect(generalOption).toBeUndefined();
+});
 
-// Test 2: should return nested options if their parent is selected
-(function testSelectedUpgrade() {
+test('should return nested options if their parent is selected', () => {
   const unitSelection = {
     selectionEntryId: 'unit-1',
     selections: [
@@ -90,14 +76,13 @@ console.log('--- RUNNING OPTIONS COLLECTOR TESTS ---');
   const options = getUnitOptions(mockSystem, 'cat-1', unitSelection);
   
   const necrachOption = options.find(o => o.option.name === 'Necrach');
-  assert(necrachOption !== undefined, 'Necrach is still collected as a top-level option');
+  expect(necrachOption).toBeDefined();
 
   const generalOption = options.find(o => o.option.name === 'General' || o.option.targetId === 'entry-general');
-  assert(generalOption !== undefined, 'General SHOULD be an option now because Necrach is selected');
-})();
+  expect(generalOption).toBeDefined();
+});
 
-// Test 3: should recurse into entryLinks of type selectionEntryGroup
-(function testSelectionEntryGroup() {
+test('should recurse into entryLinks of type selectionEntryGroup', () => {
   const systemWithGroupLink = {
     catalogs: {
       'cat-1': {
@@ -148,13 +133,7 @@ console.log('--- RUNNING OPTIONS COLLECTOR TESTS ---');
   const options = getUnitOptions(systemWithGroupLink, 'cat-1', unitSelection);
   
   const traitOption = options.find(o => o.option.targetId === 'shared-trait1');
-  assert(traitOption !== undefined, 'Trait 1 should be collected directly as an option');
-  assert(traitOption?.groupName === 'Lahmia traits', 'Trait 1 should be under Lahmia traits group');
-})();
+  expect(traitOption).toBeDefined();
+  expect(traitOption?.groupName).toBe('Lahmia traits');
+});
 
-console.log(`\nResults: ${testsPassed} passed, ${testsFailed} failed`);
-if (testsFailed > 0) {
-  process.exit(1);
-} else {
-  console.log('ALL OPTIONS COLLECTOR TESTS SUCCESSFUL!');
-}

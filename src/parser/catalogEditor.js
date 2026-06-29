@@ -1,176 +1,28 @@
-/**
- * Compiles a flat list of entry paths and rule fields from a catalogue
- * to provide a context object for the Vision AI matching.
- */
-export function getCatalogueContext(system, catalogueId) {
-  const catalogue = system.catalogues?.find(c => c.id === catalogueId);
-  if (!catalogue) return [];
-
-  const list = [];
-  const addEntry = (se, path) => {
-    const profiles = [];
-    if (se.profiles) {
-      se.profiles.forEach(p => {
-        profiles.push({
-          id: p.id,
-          name: p.name,
-          stats: p.characteristics?.map(c => `${c.name}:${c.value}`).join(', ')
-        });
-      });
-    }
-
-    const rules = [];
-    if (se.rules) {
-      se.rules.forEach(r => {
-        rules.push({
-          id: r.id,
-          name: r.name,
-          description: r.description
-        });
-      });
-    }
-
-    list.push({
-      id: se.id,
-      type: 'entry',
-      name: se.name,
-      path,
-      points: se.costs?.find(c => c.typeId === 'pts' || c.name === 'pts' || c.typeId === 'ecfa-8486-4f6c-c249')?.value,
-      profiles,
-      rules,
-      constraints: se.constraints?.map(con => ({
-        id: con.id,
-        type: con.type,
-        value: con.value,
-        field: con.field,
-        scope: con.scope
-      }))
-    });
-  };
-
-  const addGroup = (seg, path) => {
-    list.push({
-      id: seg.id,
-      type: 'group',
-      name: seg.name,
-      path,
-      constraints: seg.constraints?.map(con => ({
-        id: con.id,
-        type: con.type,
-        value: con.value,
-        field: con.field,
-        scope: con.scope
-      }))
-    });
-  };
-
-  const traverse = (item, path) => {
-    if (!item) return;
-    if (item.selectionEntries) {
-      item.selectionEntries.forEach(se => {
-        addEntry(se, path + " -> " + se.name);
-        traverse(se, path + " -> " + se.name);
-      });
-    }
-    if (item.selectionEntryGroups) {
-      item.selectionEntryGroups.forEach(seg => {
-        addGroup(seg, path + " -> Group: " + seg.name);
-        traverse(seg, path + " -> Group: " + seg.name);
-      });
-    }
-  };
-
-  traverse(catalogue, catalogue.name);
-
-  catalogue.sharedSelectionEntries?.forEach(se => {
-    addEntry(se, catalogue.name + " (Shared) -> " + se.name);
-    traverse(se, catalogue.name + " (Shared) -> " + se.name);
-  });
-  catalogue.sharedSelectionEntryGroups?.forEach(seg => {
-    addGroup(seg, catalogue.name + " (Shared Group) -> " + seg.name);
-    traverse(seg, catalogue.name + " (Shared Group) -> " + seg.name);
-  });
-
-  return list;
-}
-
-/**
- * Parses page number strings (e.g. "1,2,5-8,10") into an array of page numbers.
- */
-export function parsePageNumbers(rangeStr) {
-  const pages = new Set();
-  const parts = rangeStr.split(',');
-  for (const part of parts) {
-    const trimmed = part.trim();
-    if (trimmed.includes('-')) {
-      const [start, end] = trimmed.split('-').map(s => parseInt(s.trim(), 10));
-      if (!isNaN(start) && !isNaN(end)) {
-        for (let i = start; i <= end; i++) {
-          pages.add(i);
-        }
-      }
-    } else {
-      const pageNum = parseInt(trimmed, 10);
-      if (!isNaN(pageNum)) {
-        pages.add(pageNum);
-      }
-    }
+const getDOMParser = () => {
+  if (typeof DOMParser !== 'undefined') {
+    return DOMParser;
   }
-  return Array.from(pages).sort((a, b) => a - b);
-}
-
-/**
- * Executes a Gemini Vision AI content generation request to find discrepancies.
- */
-export async function runVisionAnalysis(apiKey, base64Image, catalogueEntries) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: `Du bist ein präziser Tabletop-Datenassistent.
-Hier ist das offizielle Armeebuch-Layout (Bild) und eine JSON-Liste aller Datenbankeinträge unserer Fraktion:
-${JSON.stringify(catalogueEntries, null, 2)}
-
-Deine Aufgabe ist es, FEHLENDE Beschreibungstexte (wie Regel-Sonderregeln oder Profil-Beschreibungen) aus dem Bild in die JSON-Liste zu übertragen.
-Ignoriere Profilwerte (wie M, WS, BS), Punktekosten und Limits. Konzentriere dich AUSSCHLIESSLICH auf Einträge, bei denen das Feld "description" aktuell leer (""), fehlend oder offensichtlich unvollständig ist, und extrahiere den passenden Text aus dem Bild.
-
-Für jeden fehlenden oder zu ergänzenden Beschreibungstext, den du im Bild findest, gib ein JSON-Objekt in einer Liste zurück. Verwende folgende Struktur:
-- "id": Die ID des Eintrags aus unserer Liste (z.B. die ID der Regel).
-- "type": "rule" | "profile" | "entry" (je nach Typ des Eintrags, zu dem die Beschreibung gehört)
-- "field": "description"
-- "originalValue": Der aktuelle (meist leere) Text.
-- "newValue": Der vollständige und korrekte Beschreibungstext laut Armeebuch-Seite.
-- "reason": Kurze deutsche Begründung (z.B. "Regeltext aus Armeebuch übernommen, da er im XML fehlte").
-
-Gibt NUR das rohe JSON-Array zurück (beginnend mit [ und endend mit ]). Verwende KEIN Markdown-Fencing (wie \`\`\`json). Wenn keine fehlenden Beschreibungen ergänzt werden können, gib ein leeres Array [] zurück.`
-            },
-            {
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: base64Image
-              }
-            }
-          ]
-        }
-      ]
-    })
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini API Error (HTTP ${response.status}): ${errText}`);
+  if (typeof globalThis !== 'undefined' && globalThis.DOMParser) {
+    return globalThis.DOMParser;
   }
+  if (typeof window !== 'undefined' && window.DOMParser) {
+    return window.DOMParser;
+  }
+  throw new Error('DOMParser is not available. Ensure you are in a jsdom or browser environment.');
+};
 
-  const resData = await response.json();
-  const textResponse = resData.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-  const cleanJson = textResponse.trim().replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
-  return JSON.parse(cleanJson);
-}
+const getXMLSerializer = () => {
+  if (typeof XMLSerializer !== 'undefined') {
+    return XMLSerializer;
+  }
+  if (typeof globalThis !== 'undefined' && globalThis.XMLSerializer) {
+    return globalThis.XMLSerializer;
+  }
+  if (typeof window !== 'undefined' && window.XMLSerializer) {
+    return window.XMLSerializer;
+  }
+  throw new Error('XMLSerializer is not available. Ensure you are in a jsdom or browser environment.');
+};
 
 export function updateRawXml(system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription) {
   if (!system.rawXmls) return;
@@ -181,7 +33,8 @@ export function updateRawXml(system, entryId, type, localName, localCosts, local
   }
   if (!file) return;
 
-  const parser = new DOMParser();
+  const DOMParserClass = getDOMParser();
+  const parser = new DOMParserClass();
   const doc = parser.parseFromString(file.content, 'text/xml');
 
   const element = doc.querySelector(`[id="${entryId}"]`);
@@ -227,96 +80,9 @@ export function updateRawXml(system, entryId, type, localName, localCosts, local
     descEl.textContent = localDescription;
   }
 
-  const serializer = new XMLSerializer();
+  const XMLSerializerClass = getXMLSerializer();
+  const serializer = new XMLSerializerClass();
   file.content = serializer.serializeToString(doc);
-}
-
-export function findAndMutateJsonPatch(system, patch) {
-  let foundRef = null;
-
-  const traverse = (item) => {
-    if (foundRef) return;
-    if (item.id === patch.id) {
-      foundRef = item;
-      return;
-    }
-    if (item.selectionEntries) {
-      item.selectionEntries.forEach(traverse);
-    }
-    if (item.entryLinks) {
-      item.entryLinks.forEach(traverse);
-    }
-    if (item.selectionEntryGroups) {
-      item.selectionEntryGroups.forEach(traverse);
-    }
-    if (item.profiles) {
-      item.profiles.forEach(traverse);
-    }
-    if (item.rules) {
-      item.rules.forEach(traverse);
-    }
-  };
-  
-  // Traverse root game system too
-  traverse(system);
-  system.sharedSelectionEntries?.forEach(traverse);
-  system.sharedSelectionEntryGroups?.forEach(traverse);
-  system.sharedProfiles?.forEach(traverse);
-  system.sharedRules?.forEach(traverse);
-
-  system.catalogues?.forEach(cat => {
-    traverse(cat);
-    cat.sharedSelectionEntries?.forEach(traverse);
-    cat.sharedSelectionEntryGroups?.forEach(traverse);
-    cat.sharedProfiles?.forEach(traverse);
-    cat.sharedRules?.forEach(traverse);
-  });
-
-  if (!foundRef) return false;
-
-  const localCosts = {};
-  const localConstraints = {};
-  const localCharacteristics = {};
-  let localName = foundRef.name;
-  let localDescription = foundRef.description;
-
-  if (patch.field === 'name') {
-    foundRef.name = patch.newValue;
-    localName = patch.newValue;
-  } else if (patch.field.startsWith('cost-')) {
-    const typeId = patch.field.replace('cost-', '');
-    if (foundRef.costs) {
-      const cost = foundRef.costs.find(c => c.typeId === typeId);
-      if (cost) {
-        cost.value = parseFloat(patch.newValue) || 0;
-        localCosts[typeId] = patch.newValue;
-      }
-    }
-  } else if (patch.field.startsWith('constraint-')) {
-    const conId = patch.field.replace('constraint-', '');
-    if (foundRef.constraints) {
-      const con = foundRef.constraints.find(c => c.id === conId);
-      if (con) {
-        con.value = parseFloat(patch.newValue) || 0;
-        localConstraints[conId] = patch.newValue;
-      }
-    }
-  } else if (patch.field.startsWith('characteristic-')) {
-    const charName = patch.field.replace('characteristic-', '');
-    if (foundRef.characteristics) {
-      const char = foundRef.characteristics.find(c => c.name === charName);
-      if (char) {
-        char.value = patch.newValue;
-        localCharacteristics[charName] = patch.newValue;
-      }
-    }
-  } else if (patch.field === 'description') {
-    foundRef.description = patch.newValue;
-    localDescription = patch.newValue;
-  }
-
-  updateRawXml(system, patch.id, patch.type, localName, localCosts, localConstraints, localCharacteristics, localDescription);
-  return true;
 }
 
 export function searchEditableEntries(system, query) {

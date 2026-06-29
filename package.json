@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node src/solver/validator.test.js && node src/solver/rulesEvaluator.test.js && node src/solver/optionsCollector.test.js && npx vitest run src/solver/collective.test.js && node src/solver/parser.test.js && node src/solver/ui.test.js",
+    "test": "vitest run && node src/solver/ui.test.js",
     "debug-ui": "node src/solver/debug_ui.js",
     "ux-correct": "python scripts/ux_self_correction.py"
   },
@@ -19,6 +19,7 @@
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",

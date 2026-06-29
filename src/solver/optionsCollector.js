@@ -67,7 +67,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
 
       // If the entry link points to a group, we recurse into it to extract its items
       if (child.type === 'selectionEntryGroup') {
-        const combinedConstraints = prepareConstraints(resolvedChild).concat(parentConstraints || []);
+        const combinedConstraints = prepareConstraints(resolvedChild);
         collectOptions(resolvedChild, resolvedChild.name || child.name, resolvedChild.id || child.id, combinedConstraints);
       } else {
         // Otherwise it points to an option (upgrade, profile, etc.), so it's a selectable item
@@ -83,7 +83,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
 
     // 3. Process selection entry groups
     def.selectionEntryGroups?.forEach(group => {
-      const combinedGroupConstraints = prepareConstraints(group).concat(parentConstraints || []);
+      const combinedGroupConstraints = prepareConstraints(group);
       collectOptions(group, group.name || currentGroupName, group.id || currentGroupId, combinedGroupConstraints);
     });
   };
@@ -127,4 +127,32 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
   });
 
   return uniqueOptionsList;
+};
+
+export const isUniqueOptionTakenElsewhere = (targetRes, system, activeCatalogueId, selection, roster) => {
+  const targetIdToCheck = targetRes.targetId || targetRes.id;
+  let taken = false;
+  
+  const checkSelection = (sel, isUnderCurrent) => {
+    const underCurrent = isUnderCurrent || (sel.id === selection.id);
+    
+    if (!underCurrent) {
+      const selRaw = findEntryInSystem(system, sel.selectionEntryId || sel.entryLinkId, activeCatalogueId);
+      const selRes = resolveEntry(system, selRaw, activeCatalogueId);
+      const selUnderlyingId = selRes ? (selRes.targetId || selRes.id) : (sel.selectionEntryId || sel.entryLinkId);
+      
+      if (selUnderlyingId === targetIdToCheck) {
+        taken = true;
+        return;
+      }
+    }
+    
+    sel.selections?.forEach(sub => checkSelection(sub, underCurrent));
+  };
+
+  roster.forces?.forEach(force => {
+    force.selections?.forEach(sel => checkSelection(sel, false));
+  });
+
+  return taken;
 };

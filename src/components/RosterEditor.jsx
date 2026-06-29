@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Save, Play, Trash2, AlertTriangle, Check, Copy } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
+import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
 import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem, collectUnitProfilesAndRules, getSelectionTotalCost } from '../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from '../solver/constants';
@@ -8,6 +9,9 @@ import { UPGRADE_DETAILS_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from '../solver/c
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
 import SelectionConfigurator from './editor/SelectionConfigurator';
+import UnitSelectionCard from './editor/UnitSelectionCard';
+import CatalogStatBlock from './editor/CatalogStatBlock';
+
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay }) {
   const { showDebugIds } = useDebugMode();
@@ -24,7 +28,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     copyUnit,
     updateSubSelection,
     save
-  } = useRoster(initialRoster, system);
+  } = useRoster(initialRoster, system, saveRoster);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, setToast] = useState(null);
@@ -127,62 +131,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
            activeCatalogue.sharedSelectionEntries?.some(checkEntry);
   };
 
-  const renderMiniProfile = (selection) => {
-    const { profiles } = collectUnitProfilesAndRules(system, selection, activeCatalogue?.id);
-    
-    // Filter profiles to keep only the actual model/unit profiles (ignore weapons/magic items here)
-    const unitProfiles = profiles.filter(p => {
-      const typeLower = p.profileTypeName?.toLowerCase() || '';
-      return MODEL_COUNT_PROFILE_TYPES.some(t => typeLower.includes(t)) || typeLower === 'profile';
-    });
-
-    if (!unitProfiles || unitProfiles.length === 0) return null;
-
-    const showPrefix = unitProfiles.length > 1;
-
-    return (
-      <div className="mini-profiles-container" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', paddingRight: '24px' }}>
-        {unitProfiles.map(prof => {
-          return (
-            <div key={prof.id} className="mini-profile-row" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {showPrefix && (
-                <span className="text-gold font-serif" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                  {prof.name}
-                </span>
-              )}
-              <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', paddingBottom: '2px', width: '100%', maxWidth: '360px' }}>
-                {prof.characteristics.map(c => (
-                  <div 
-                    key={c.name} 
-                    style={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      background: 'rgba(226, 183, 66, 0.04)', 
-                      border: '1px solid var(--border-dark)', 
-                      borderRadius: '3px',
-                      minWidth: '28px',
-                      padding: '2px 4px',
-                      flex: 1
-                    }}
-                  >
-                    <span className="text-gold font-body" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>
-                      {c.name}
-                    </span>
-                    <span className="font-body" style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-parchment)', marginTop: '1px' }}>
-                      {c.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
+  
   const getSelectedUpgrades = (selection) => {
     const list = [];
     const collect = (sel) => {
@@ -206,63 +155,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     return list;
   };
 
-  const renderUnitUpgrades = (selection) => {
-    const selectedUpgrades = getSelectedUpgrades(selection);
-    if (selectedUpgrades.length === 0) return null;
-
-    return (
-      <div 
-        className="unit-header-upgrades" 
-        style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          gap: '6px', 
-          marginTop: '4px',
-          marginBottom: '2px',
-          width: '100%',
-          paddingRight: '24px'
-        }}
-      >
-        {selectedUpgrades.map(upgrade => {
-          const descText = getUpgradeDescription(upgrade.resolved);
-          return (
-            <span 
-              key={upgrade.id}
-              style={{
-                fontSize: '0.72rem',
-                backgroundColor: 'rgba(226, 183, 66, 0.06)',
-                border: '1px solid rgba(226, 183, 66, 0.22)',
-                color: 'var(--text-parchment)',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                fontFamily: 'var(--font-body)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                cursor: descText ? 'help' : 'default'
-              }}
-              onMouseEnter={(e) => descText && handleMouseEnter(upgrade.name, descText, e)}
-              onMouseMove={descText ? handleMouseMove : null}
-              onMouseLeave={descText ? handleMouseLeave : null}
-            >
-              {upgrade.number > 1 && (
-                <span style={{ color: 'var(--text-gold)', fontWeight: 700 }}>
-                  {upgrade.number}x
-                </span>
-              )}
-              <span style={{ opacity: 0.9 }}>{upgrade.name}</span>
-              {showDebugIds && (
-                <span className="debug-id-badge clickable" style={{ margin: 0, padding: '0 2px', fontSize: '0.6rem' }}>
-                  def:{upgrade.resolved?.id}
-                </span>
-              )}
-            </span>
-          );
-        })}
-      </div>
-    );
-  };
-
+  
   return (
     <div className="builder-layout">
       {/* 1. Mobile Sticky Status & Validation Header */}
@@ -310,57 +203,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           </div>
         </div>
 
-        {/* Selected Catalog Entry Stat Details */}
-        {selectedCatalogEntry && (
-          <div className="gothic-panel" style={{ borderStyle: 'solid', borderWidth: '1px', padding: '16px', marginBottom: '24px' }}>
-            <div className="flex-between">
-              <h3>
-                {selectedCatalogEntry.name}
-                {showDebugIds && <span className="debug-id-badge clickable">{selectedCatalogEntry.id}</span>}
-                {' '} - Statblock
-              </h3>
-              <button className="btn-sm" onClick={() => setSelectedCatalogEntry(null)}>Schließen</button>
-            </div>
-            
-            {selectedCatalogEntry.profiles?.map(prof => (
-              <div key={prof.id} style={{ marginTop: '12px' }}>
-                <span className="font-serif text-gold" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                  {prof.name}
-                  {showDebugIds && <span className="debug-id-badge clickable">{prof.id}</span>}
-                  {' '}({prof.profileTypeName})
-                </span>
-                <div className="profile-table-container">
-                  <table className="profile-table">
-                    <thead>
-                      <tr>
-                        {prof.characteristics.map(c => (
-                          <th key={c.name}>{c.name}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        {prof.characteristics.map(c => (
-                          <td key={c.name} className="font-body">{c.value}</td>
-                        ))}
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-
-            {selectedCatalogEntry.rules?.map(rule => (
-              <div key={rule.id} style={{ marginTop: '8px' }}>
-                <strong className="text-gold">
-                  {rule.name}
-                  {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
-                  :
-                </strong> <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)', fontStyle: 'italic' }}>{rule.description}</span>
-              </div>
-            ))}
-          </div>
-        )}
+                {/* Selected Catalog Entry Stat Details */}
+        <CatalogStatBlock 
+          selectedCatalogEntry={selectedCatalogEntry} 
+          setSelectedCatalogEntry={setSelectedCatalogEntry} 
+        />
 
         {/* Selected Selections on Roster grouped by category links */}
         {roster.forces.map(force => {
@@ -476,87 +323,21 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             const selectionErrors = validationErrors.filter(e => e.selectionId === selection.id);
 
                             return (
-                              <div 
-                                key={selection.id} 
-                                className={`selection-node ${hasSelectionError ? 'has-error' : ''}`}
-                              >
-                                <div 
-                                  className="selection-node-header"
-                                  style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative' }}
-                                  onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
-                                >
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                    <div className="selection-node-title">
-                                      <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>
-                                        {selection.name}
-                                        {showDebugIds && (
-                                          <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-                                        )}
-                                      </span>
-                                    </div>
-                                    <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                      <span className="selection-node-cost font-body">
-                                        {displayPoints} {costTypeLabel}
-                                      </span>
-                                      <button 
-                                        type="button"
-                                        className="btn-danger btn-sm" 
-                                        style={{ padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (window.confirm('Möchten Sie diese Einheit wirklich löschen?')) {
-                                            removeUnit(selection.id);
-                                          }
-                                        }}
-                                        title="Löschen"
-                                      >
-                                        <Trash2 size={14} />
-                                      </button>
-                                    </div>
-                                  </div>
-                                  {renderMiniProfile(selection)}
-                                  {renderUnitUpgrades(selection)}
-                                  <button 
-                                    type="button"
-                                    className="btn-primary btn-sm" 
-                                    style={{
-                                      position: 'absolute',
-                                      bottom: '12px',
-                                      right: '14px',
-                                      padding: '4px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      zIndex: 10
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      copyUnit(selection.id);
-                                    }}
-                                    title="Kopieren"
-                                  >
-                                    <Copy size={14} />
-                                  </button>
-                                </div>
-
-                                {selectionErrors.map((err, idx) => (
-                                  <div key={idx} className="unit-error-alert text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '6px 12px', background: 'rgba(166,28,28,0.04)', borderBottom: '1px solid rgba(166,28,28,0.2)' }}>
-                                    <AlertTriangle size={14} />
-                                    <span>{err.message}</span>
-                                  </div>
-                                ))}
-
-                                {isUnitEditing && (
-                                  <SelectionConfigurator
-                                    selection={selection}
-                                    system={system}
-                                    roster={roster}
-                                    updateSubSelection={updateSubSelection}
-                                    costTypeLabel={costTypeLabel}
-                                    activeCatalogue={activeCatalogue}
-                                  />
-                                )}
-                              </div>
+                              <UnitSelectionCard
+                                key={selection.id}
+                                selection={selection}
+                                selectedRosterSelection={selectedRosterSelection}
+                                setSelectedRosterSelection={setSelectedRosterSelection}
+                                roster={roster}
+                                system={system}
+                                validationErrors={validationErrors}
+                                costTypeLabel={costTypeLabel}
+                                removeUnit={removeUnit}
+                                copyUnit={copyUnit}
+                                updateSubSelection={updateSubSelection}
+                                activeCatalogue={activeCatalogue}
+                                setSelectedCatalogEntry={setSelectedCatalogEntry}
+                              />
                             );
                           })}
                         </div>
@@ -576,76 +357,22 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       const displayPoints = unitCosts[roster.costLimitType] || 0;
 
                       return (
-                        <div key={selection.id} className="selection-node">
-                          <div 
-                            className="selection-node-header"
-                            style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative' }}
-                            onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                              <div className="selection-node-title">
-                                <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>
-                                  {selection.name}
-                                  {showDebugIds && (
-                                    <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-                                  )}
-                                </span>
-                              </div>
-                              <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span className="selection-node-cost font-body">
-                                  {displayPoints} {costTypeLabel}
-                                </span>
-                                <button 
-                                  type="button"
-                                  className="btn-danger btn-sm" 
-                                  style={{ padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeUnit(selection.id);
-                                  }}
-                                  title="Löschen"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            </div>
-                            {renderMiniProfile(selection)}
-                            {renderUnitUpgrades(selection)}
-                            <button 
-                              type="button"
-                              className="btn-primary btn-sm" 
-                              style={{
-                                position: 'absolute',
-                                bottom: '12px',
-                                right: '14px',
-                                padding: '4px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                zIndex: 10
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                copyUnit(selection.id);
-                              }}
-                              title="Kopieren"
-                            >
-                              <Copy size={14} />
-                            </button>
-                          </div>
-
-                          {isUnitEditing && (
-                            <SelectionConfigurator
-                              selection={selection}
-                              system={system}
-                              roster={roster}
-                              updateSubSelection={updateSubSelection}
-                              costTypeLabel={costTypeLabel}
-                              activeCatalogue={activeCatalogue}
-                            />
-                          )}
-                        </div>
-                      );
+                              <UnitSelectionCard
+                                key={selection.id}
+                                selection={selection}
+                                selectedRosterSelection={selectedRosterSelection}
+                                setSelectedRosterSelection={setSelectedRosterSelection}
+                                roster={roster}
+                                system={system}
+                                validationErrors={validationErrors}
+                                costTypeLabel={costTypeLabel}
+                                removeUnit={removeUnit}
+                                copyUnit={copyUnit}
+                                updateSubSelection={updateSubSelection}
+                                activeCatalogue={activeCatalogue}
+                                setSelectedCatalogEntry={setSelectedCatalogEntry}
+                              />
+                        );
                     })}
                   </div>
                 </div>

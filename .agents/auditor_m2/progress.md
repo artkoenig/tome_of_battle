@@ -1,13 +1,11 @@
-# Progress Log - Milestone 2 Audit
+# Progress — 2026-06-29T18:59:00+02:00
 
-Last visited: 2026-06-29T08:46:12+02:00
+Last visited: 2026-06-29T18:59:00+02:00
 
-## Current Status
-Milestone 2 audit completed successfully. Audit report and handoff files created.
-
-## Steps
-- [x] Investigate `src/solver/rulesEvaluator.js` for saves and profile matching logic, constants import, and no hardcoded English/German strings (Custom Rules).
-- [x] Investigate `src/components/PlayMode.jsx` for correct import and invocation.
-- [x] Investigate `src/solver/rulesEvaluator.test.js` for test genuineness.
-- [x] Build and test the project using npm.
-- [x] Conduct adversarial review and write the audit report.
+- [x] Initialized BRIEFING.md and ORIGINAL_REQUEST.md
+- [x] Investigate git diff / git log to see recent changes by Worker
+- [x] Analyze codebase for remaining PDF/Vision AI references (None found)
+- [x] Analyze codebase for manual XML editing preservation (Verified catalogEditor.js replaces pdfRulesExtractor.js and keeps manual editing)
+- [x] Perform build and test checks (All tests run and passed)
+- [x] Adversarial review & stress testing (Checked for facade implementation / mocked tests)
+- [x] Generate final reports (handoff.md and audit_report.md)

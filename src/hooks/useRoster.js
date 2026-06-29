@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { saveRoster } from '../db/database';
+
 import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
 
-export function useRoster(initialRoster, system) {
+export function useRoster(initialRoster, system, saveRosterCallback) {
   const [roster, setRoster] = useState(initialRoster);
   const [costs, setCosts] = useState({});
   const [validationErrors, setValidationErrors] = useState([]);
   const [selectedRosterSelection, setSelectedRosterSelection] = useState(null);
   const [selectedCatalogEntry, setSelectedCatalogEntry] = useState(null);
 
-  // Recalculate costs and run validation whenever roster changes
+  // Recalculate costs and run validation whenever roster changes (debounced for performance)
   useEffect(() => {
     if (roster && system) {
       const rosterModified = syncRosterSelectionsWithSystem(roster, system);
@@ -19,10 +19,14 @@ export function useRoster(initialRoster, system) {
         return;
       }
 
-      const calcCosts = calculateRosterCosts(roster, system);
-      setCosts(calcCosts);
-      const errors = validateRoster(roster, system);
-      setValidationErrors(errors);
+      const handler = setTimeout(() => {
+        const calcCosts = calculateRosterCosts(roster, system);
+        setCosts(calcCosts);
+        const errors = validateRoster(roster, system);
+        setValidationErrors(errors);
+      }, 150);
+
+      return () => clearTimeout(handler);
     }
   }, [roster, system]);
 
@@ -217,7 +221,7 @@ export function useRoster(initialRoster, system) {
 
   const save = async () => {
     try {
-      await saveRoster(roster);
+      if (saveRosterCallback) await saveRosterCallback(roster);
       alert('Armeeliste erfolgreich gespeichert!');
     } catch (e) {
       console.error(e);
