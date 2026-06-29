@@ -76,6 +76,7 @@ export default function App() {
   const [rosters, setRosters] = useState([]);
   const [selectedRoster, setSelectedRoster] = useState(null);
   const [selectedSystem, setSelectedSystem] = useState(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   // Modal State for new Roster
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -181,8 +182,10 @@ export default function App() {
           setNewRosterCatId(allSystems[0].catalogues[0].id);
         }
       }
+      setIsDataLoaded(true);
     } catch (e) {
       console.error("Error loading index data:", e);
+      setIsDataLoaded(true);
     }
   };
 
@@ -291,8 +294,8 @@ export default function App() {
         )}
 
         <div className="app-header-actions">
-          <button
-            className={showDebugIds ? 'btn-gold btn-active' : 'btn-sm'}
+          <button 
+            className="debug-id-btn mobile-only"
             onClick={toggleShowDebugIds}
             style={{
               display: 'flex',
@@ -307,42 +310,66 @@ export default function App() {
             <Bug size={18} className={showDebugIds ? 'text-gold' : 'text-dim'} />
             <span style={{ fontSize: '0.85rem' }}>Debug</span>
           </button>
-          <button 
-            className={view === 'rosters' ? 'btn-primary' : ''}
-            onClick={() => { setView('rosters'); loadAllData(); }}
-          >
-            <FolderOpen size={18} /> Heerlager
-          </button>
-          <button 
-            className={view === 'importer' ? 'btn-primary' : ''}
-            onClick={() => { setView('importer'); loadAllData(); }}
-          >
-            <BookOpen size={18} /> BSData Bibliothekar
-          </button>
+          
+          {systems.length > 0 && (
+            <div className="desktop-nav-actions">
+              <button 
+                className={view === 'rosters' ? 'btn-primary' : ''}
+                onClick={() => { setView('rosters'); loadAllData(); }}
+              >
+                <FolderOpen size={18} /> Heerlager
+              </button>
+              <button 
+                className={view === 'importer' ? 'btn-primary' : ''}
+                onClick={() => { setView('importer'); loadAllData(); }}
+              >
+                <BookOpen size={18} /> Bibliothekar
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main Content Area */}
       <main className="app-content">
-        {view === 'rosters' && (
+        {!isDataLoaded ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+            <p className="text-dim" style={{ animation: 'pulse 2s infinite' }}>Öffne das Buch des Wissens...</p>
+          </div>
+        ) : systems.length === 0 ? (
+          <Importer onSystemImported={loadAllData} showAsEmptyState={true} />
+        ) : view === 'rosters' && (
           <div className="container">
-            <div className="gothic-panel dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h2>Heerlager</h2>
-                <p className="text-dim" style={{ margin: 0 }}>Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>
+            {rosters.length > 0 && (
+              <div className="gothic-panel dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2>Heerlager</h2>
+                  <p className="text-dim" style={{ margin: 0 }}>Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>
+                </div>
+                <button className="btn-primary desktop-btn" onClick={() => setIsModalOpen(true)}>
+                  <Plus size={18} /> Neue Armeeliste
+                </button>
               </div>
-              <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-                <Plus size={18} /> Neue Armeeliste
-              </button>
-            </div>
+            )}
 
             {rosters.length === 0 ? (
-              <div className="gothic-panel" style={{ textAlign: 'center', padding: '60px 0' }}>
-                <Shield className="text-dim" size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
-                <h3>Keine Heere ausgehoben</h3>
-                <p className="text-dim">Erstelle eine neue Armeeliste, um deine Streitkräfte zusammenzustellen.</p>
-                <button className="btn-primary" onClick={() => setIsModalOpen(true)} style={{ marginTop: '12px' }}>
-                  Jetzt Armeeliste erstellen
+              <div style={{ textAlign: 'center', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{
+                  width: '100%',
+                  maxWidth: '300px',
+                  height: '300px',
+                  backgroundImage: 'url(/skull_shield.png)',
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center',
+                  marginBottom: '20px',
+                }} />
+                <h3 style={{ fontSize: '1.8rem', marginBottom: '12px' }}>Die Waffenkammern sind leer</h3>
+                <p className="text-dim" style={{ maxWidth: '450px', margin: '0 auto 32px', fontSize: '1.1rem', lineHeight: '1.6' }}>
+                  Noch wehen keine Banner in deinem Heerlager. Versammle deine Truppen, wähle deine Anführer und bereite dich auf kommende Schlachten vor.
+                </p>
+                <button className="btn-primary" onClick={() => setIsModalOpen(true)} style={{ padding: '14px 28px', fontSize: '1.1rem' }}>
+                  <Plus size={20} /> Erste Armeeliste ausheben
                 </button>
               </div>
             ) : (() => {
@@ -445,6 +472,14 @@ export default function App() {
                 </div>
               );
             })()}
+
+            <button 
+              className="fab-mobile mobile-only"
+              onClick={() => setIsModalOpen(true)}
+              title="Neue Armeeliste"
+            >
+              <Plus size={24} />
+            </button>
           </div>
         )}
 
@@ -562,6 +597,20 @@ export default function App() {
           }}
           onSave={handleDebugSave}
         />
+      )}
+
+      {/* Mobile Bottom Navigation */}
+      {systems.length > 0 && (
+        <nav className="mobile-bottom-nav mobile-only">
+          <button className={`mobile-nav-btn ${view === 'rosters' ? 'active' : ''}`} onClick={() => { setView('rosters'); loadAllData(); }}>
+            <FolderOpen size={20} />
+            <span>Heerlager</span>
+          </button>
+          <button className={`mobile-nav-btn ${view === 'importer' ? 'active' : ''}`} onClick={() => { setView('importer'); loadAllData(); }}>
+            <BookOpen size={20} />
+            <span>Bibliothekar</span>
+          </button>
+        </nav>
       )}
     </div>
   );

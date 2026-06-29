@@ -8,7 +8,7 @@ import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import SystemEditorView from './importer/SystemEditorView';
 import { useDebugMode } from '../hooks/DebugContext';
 
-export default function Importer({ onSystemImported }) {
+export default function Importer({ onSystemImported, showAsEmptyState = false }) {
   const { showDebugIds } = useDebugMode();
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -143,13 +143,34 @@ export default function Importer({ onSystemImported }) {
   }
 
   return (
-    <div className="container">
-      <div className="gothic-panel">
-        <h1>BSData Bibliothekar</h1>
-        <p className="text-dim" style={{ textAlign: 'center', marginBottom: '20px' }}>
-          Lade BSData Repository ZIP-Archive hoch (z.B. von BSData/wh40k-10th-edition). 
-          Die Dateien werden komplett lokal auf deinem Gerät verarbeitet und in einer Browser-Datenbank gespeichert.
-        </p>
+    <div className="container" style={showAsEmptyState ? { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 40px)' } : {}}>
+      <div className={showAsEmptyState ? "" : "gothic-panel"} style={showAsEmptyState ? { textAlign: 'center', maxWidth: '600px', width: '100%' } : {}}>
+        {showAsEmptyState ? (
+          <>
+            <div style={{
+              width: '100%',
+              maxWidth: '400px',
+              height: '350px',
+              backgroundImage: 'url(/empty_systems.png)',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              margin: '0 auto 24px auto',
+            }} />
+            <h2 style={{ fontSize: '2.2rem', marginBottom: '16px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Willkommen bei Tome of Battle</h2>
+            <p className="text-dim" style={{ maxWidth: '500px', margin: '0 auto 24px', fontSize: '1.2rem', lineHeight: '1.6' }}>
+              Dein Buch des Wissens ist noch leer. Importiere zuerst Spieldaten (BattleScribe .bsr), um Armeen ausheben zu können.
+            </p>
+          </>
+        ) : (
+          <>
+            <h1>Bibliothekar</h1>
+            <p className="text-dim" style={{ textAlign: 'center', marginBottom: '20px' }}>
+              Lade BSData Repository ZIP-Archive hoch (z.B. von BSData/wh40k-10th-edition). 
+              Die Dateien werden komplett lokal auf deinem Gerät verarbeitet und in einer Browser-Datenbank gespeichert.
+            </p>
+          </>
+        )}
 
         {error && (
           <div className="validation-error-item" style={{ borderColor: 'var(--color-danger)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -165,87 +186,99 @@ export default function Importer({ onSystemImported }) {
           </div>
         )}
 
+        {loading && (
+          <div style={{ marginTop: '16px', color: 'var(--text-gold)', textAlign: 'center' }}>
+            <span className="font-serif">Beschwöre Spieldaten... (Verarbeite XML)</span>
+          </div>
+        )}
+
         <div 
-          className={`drop-zone ${dragActive ? 'active' : ''}`}
+          className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''}`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
           onClick={() => document.getElementById('file-upload').click()}
         >
-          <input 
-            type="file" 
-            id="file-upload" 
-            style={{ display: 'none' }} 
-            accept=".zip"
-            onChange={handleFileInput}
-          />
           <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
-          <h3>Ziehe ein BSData .zip-Archiv hierher</h3>
+          <h3>Ziehe ein .zip-Archiv hierher</h3>
           <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
-          {loading && (
-            <div style={{ marginTop: '16px', color: 'var(--text-gold)' }}>
-              <span className="font-serif">Beschwöre Spieldaten... (Verarbeite XML)</span>
+        </div>
+
+        <input 
+          type="file" 
+          id="file-upload" 
+          style={{ display: 'none' }} 
+          accept=".zip"
+          onChange={handleFileInput}
+        />
+
+        <button 
+          className="fab-mobile mobile-only"
+          onClick={() => document.getElementById('file-upload').click()}
+          title="Datei hochladen"
+        >
+          <Upload size={24} />
+        </button>
+      </div>
+
+      {!showAsEmptyState && (
+        <div className="gothic-panel" style={{ marginTop: '24px' }}>
+          <h2>Importierte Spielsysteme</h2>
+          {systems.length === 0 ? (
+            <p className="text-dim" style={{ textAlign: 'center', padding: '20px 0' }}>Keine Spielsysteme in der Datenbank vorhanden.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {systems.map((sys) => (
+                <div 
+                  key={sys.id} 
+                  className="catalog-item"
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <FileText className="text-gold" size={24} />
+                    <div>
+                      <h4 style={{ margin: 0 }}>
+                        {sys.name}
+                        {showDebugIds && <span className="debug-id-badge">{sys.id}</span>}
+                      </h4>
+                      <span className="text-dim" style={{ fontSize: '0.85rem' }}>
+                        {sys.catalogues?.length || 0} Fraktionskataloge geladen
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      className="btn-gold btn-sm" 
+                      onClick={() => { setEditingSystem(sys); setError(null); setSuccessMsg(null); }}
+                      title="KI-Scanner (PDF Abgleich)"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                    >
+                      <Bot size={16} />
+                    </button>
+                    <button 
+                      className="btn-gold btn-sm" 
+                      onClick={() => handleExport(sys)}
+                      title="Spielsystem exportieren (.zip)"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                    >
+                      <Download size={16} />
+                    </button>
+                    <button 
+                      className="btn-danger btn-sm" 
+                      onClick={() => handleDelete(sys.id)}
+                      title="System löschen"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
-      </div>
-
-      <div className="gothic-panel" style={{ marginTop: '24px' }}>
-        <h2>Importierte Spielsysteme</h2>
-        {systems.length === 0 ? (
-          <p className="text-dim" style={{ textAlign: 'center', padding: '20px 0' }}>Keine Spielsysteme in der Datenbank vorhanden.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {systems.map((sys) => (
-              <div 
-                key={sys.id} 
-                className="catalog-item"
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <FileText className="text-gold" size={24} />
-                  <div>
-                    <h4 style={{ margin: 0 }}>
-                      {sys.name}
-                      {showDebugIds && <span className="debug-id-badge">{sys.id}</span>}
-                    </h4>
-                    <span className="text-dim" style={{ fontSize: '0.85rem' }}>
-                      {sys.catalogues?.length || 0} Fraktionskataloge geladen
-                    </span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button 
-                    className="btn-gold btn-sm" 
-                    onClick={() => { setEditingSystem(sys); setError(null); setSuccessMsg(null); }}
-                    title="KI-Scanner (PDF Abgleich)"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
-                  >
-                    <Bot size={16} />
-                  </button>
-                  <button 
-                    className="btn-gold btn-sm" 
-                    onClick={() => handleExport(sys)}
-                    title="Spielsystem exportieren (.zip)"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
-                  >
-                    <Download size={16} />
-                  </button>
-                  <button 
-                    className="btn-danger btn-sm" 
-                    onClick={() => handleDelete(sys.id)}
-                    title="System löschen"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
