@@ -313,6 +313,13 @@
       </costs>
     </selectionEntry>
     <selectionEntry id="c7cc-76a3-c413-ddb8" name="Talisman of Protection" publicationId="315e-e3c4-08af-fd51" page="154" hidden="false" collective="false" import="true" type="upgrade">
+      <profiles>
+        <profile id="da16-17e9-e381-80a5" name="Talisman of Protection" hidden="false" typeId="a89b-d5a3-7805-c44e" typeName="Magic Items">
+          <characteristics>
+            <characteristic name="Magic stuff" typeId="c7b5-c239-d6c1-0627">6+ ward save</characteristic>
+          </characteristics>
+        </profile>
+      </profiles>
       <constraints>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="false" id="abf4-8083-375a-96fb" type="max"/>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="false" id="82b4-9259-cadd-77c8" type="max"/>

@@ -540,13 +540,13 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                         {isRulesExpanded && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             {rules.map((rule, rIdx) => (
-                              <div key={rIdx} style={{ fontSize: '0.85rem' }}>
+                              <div key={rIdx} style={{ marginTop: '8px' }}>
                                 <strong className="text-gold">
                                   {rule.name}
                                   {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
                                   :
                                 </strong>{' '}
-                                <span style={{ color: 'var(--text-parchment)' }}>{rule.description}</span>
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)', fontFamily: 'var(--font-body)', fontStyle: 'italic' }}>{rule.description}</span>
                               </div>
                             ))}
                           </div>
@@ -616,10 +616,10 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                                     
                                     {desc && isExpanded && (
                                       <div 
-                                        className="text-dim" 
                                         style={{ 
                                           fontFamily: 'var(--font-body)', 
-                                          fontSize: '0.85rem', 
+                                          fontSize: '0.9rem', 
+                                          color: 'var(--text-parchment)',
                                           padding: '6px', 
                                           backgroundColor: 'rgba(0, 0, 0, 0.2)',
                                           borderLeft: '2px solid var(--border-gold-dim)',

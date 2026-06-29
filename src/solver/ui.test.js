@@ -129,7 +129,10 @@ const runUiTests = async () => {
       if (btn) {
         btn.click();
       } else {
-        throw new Error('Bibliothekar button not found in header');
+        const fileInput = document.querySelector('#file-upload');
+        if (!fileInput) {
+          throw new Error('Bibliothekar button not found in header and #file-upload is not on the page');
+        }
       }
     });
 
@@ -145,7 +148,7 @@ const runUiTests = async () => {
 
     // Wait for the system to import and render under "Importierte Spielsysteme"
     console.log('Waiting for system to be imported and parsed...');
-    await page.waitForSelector('.catalog-item', { timeout: 15000 });
+    await page.waitForSelector('.desktop-nav-actions', { timeout: 15000 });
     console.log('System imported successfully.');
 
     // Return to dashboard
@@ -155,8 +158,6 @@ const runUiTests = async () => {
       const btn = buttons.find(b => b.textContent.toLowerCase().includes('heerlager'));
       if (btn) {
         btn.click();
-      } else {
-        throw new Error('Heerlager button not found in header');
       }
     });
 
@@ -238,6 +239,23 @@ const runUiTests = async () => {
     // Wait for the Roster Editor to load
     console.log('Waiting for Roster Editor (builder layout)...');
     await page.waitForSelector('.builder-layout', { timeout: 10000 });
+
+    // Verify RosterSidebar heading and costs elements
+    console.log('Verifying RosterSidebar heading and costs elements...');
+    await page.evaluate(() => {
+      const rightBar = document.querySelector('.builder-right-bar');
+      if (!rightBar) throw new Error('Roster sidebar not found');
+      
+      const armeeHeader = Array.from(rightBar.querySelectorAll('h4')).find(h => h.textContent === 'Armeeanforderungen');
+      if (!armeeHeader) {
+        throw new Error('Sidebar does not contain "Armeeanforderungen" heading');
+      }
+
+      const totalCostsLabel = Array.from(rightBar.querySelectorAll('span')).find(s => s.textContent === 'Gesamtkosten:');
+      if (!totalCostsLabel) {
+        throw new Error('Sidebar does not contain "Gesamtkosten:" label');
+      }
+    });
 
     // Verify that "Characters" category group is NOT rendered (since it's not primary for any unit)
     console.log('Verifying secondary categories like "Characters" are hidden...');

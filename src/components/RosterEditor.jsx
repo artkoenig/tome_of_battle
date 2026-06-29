@@ -356,7 +356,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   {rule.name}
                   {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
                   :
-                </strong> <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)' }}>{rule.description}</span>
+                </strong> <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)', fontStyle: 'italic' }}>{rule.description}</span>
               </div>
             ))}
           </div>

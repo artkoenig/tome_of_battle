@@ -108,6 +108,9 @@ const wardSavePlusFirst = getWardSave([
 const explicitWSChar = getWardSave([
   { name: 'Some Item', characteristics: [{ name: 'WS', value: '4+' }] }
 ], 'Lord', 'Custom System'); // 4
+const talismanOfProtection = getWardSave([
+  { name: 'Talisman of Protection', characteristics: [{ name: 'Magic stuff', value: '6+ ward save' }] }
+], 'Lord', 'Custom System'); // 6
 const noWardSave = getWardSave([], 'Peasant', 'Bretonnia'); // null
 
 const test5Passed = wardSave5Plus === 5 &&
@@ -115,8 +118,9 @@ const test5Passed = wardSave5Plus === 5 &&
                     wardSaveInParens === 5 &&
                     wardSavePlusFirst === 6 &&
                     explicitWSChar === 4 &&
+                    talismanOfProtection === 6 &&
                     noWardSave === null;
-console.log('Test 5 - getWardSave: ', test5Passed ? 'PASSED' : `FAILED (wardSave5Plus: ${wardSave5Plus}, wardSave4PlusGerman: ${wardSave4PlusGerman}, wardSaveInParens: ${wardSaveInParens}, wardSavePlusFirst: ${wardSavePlusFirst}, explicitWSChar: ${explicitWSChar}, noWardSave: ${noWardSave})`);
+console.log('Test 5 - getWardSave: ', test5Passed ? 'PASSED' : `FAILED (wardSave5Plus: ${wardSave5Plus}, wardSave4PlusGerman: ${wardSave4PlusGerman}, wardSaveInParens: ${wardSaveInParens}, wardSavePlusFirst: ${wardSavePlusFirst}, explicitWSChar: ${explicitWSChar}, talismanOfProtection: ${talismanOfProtection}, noWardSave: ${noWardSave})`);
 
 const allEvaluatorTestsPassed = test1Passed && test2Passed && test3Passed && test4Passed && test5Passed;
 if (allEvaluatorTestsPassed) {

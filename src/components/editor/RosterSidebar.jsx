@@ -16,9 +16,9 @@ export default function RosterSidebar({
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
       <div style={{ margin: '16px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '12px' }}>
-        <div className="flex-between font-serif text-gold" style={{ fontSize: '1.25rem', marginBottom: '8px' }}>
+        <div className="flex-between font-body text-gold" style={{ fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '8px' }}>
           <span>Gesamtkosten:</span>
-          <span className="font-body">
+          <span>
             {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
           </span>
         </div>
@@ -34,7 +34,7 @@ export default function RosterSidebar({
 
       {/* Category breakdown */}
       <div style={{ marginBottom: '24px' }}>
-        <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Detachement Anforderungen</h4>
+        <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Armeeanforderungen</h4>
         {(() => {
           const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
           const forceId = roster.forces[0]?.id;
