@@ -29,7 +29,7 @@ export default function SystemEditorView({ system, onClose, onSystemSaved }) {
   const [localCharacteristics, setLocalCharacteristics] = useState({});
   const [localDescription, setLocalDescription] = useState('');
 
-  const [activeTab, setActiveTab] = useState('manual');
+  const [activeTab, setActiveTab] = useState('auto');
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
   const [selectedCatalogId, setSelectedCatalogId] = useState('');
   const [pdfFile, setPdfFile] = useState(null);
@@ -288,210 +288,8 @@ export default function SystemEditorView({ system, onClose, onSystemSaved }) {
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--border-dark)' }}>
-          <button 
-            className={`btn-sm`}
-            onClick={() => setActiveTab('manual')}
-            style={{
-              padding: '10px 16px',
-              backgroundColor: activeTab === 'manual' ? 'rgba(226,183,66,0.1)' : 'transparent',
-              color: activeTab === 'manual' ? 'var(--text-gold)' : 'var(--text-dim)',
-              border: '1px solid var(--border-dark)',
-              borderBottom: activeTab === 'manual' ? '1px solid transparent' : '1px solid var(--border-dark)',
-              borderTopLeftRadius: '4px',
-              borderTopRightRadius: '4px',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-body)',
-              fontWeight: 600,
-              transition: 'all 0.2s'
-            }}
-          >
-            Manuelle Suche &amp; Editor
-          </button>
-          <button 
-            className={`btn-sm`}
-            onClick={() => setActiveTab('auto')}
-            style={{
-              padding: '10px 16px',
-              backgroundColor: activeTab === 'auto' ? 'rgba(226,183,66,0.1)' : 'transparent',
-              color: activeTab === 'auto' ? 'var(--text-gold)' : 'var(--text-dim)',
-              border: '1px solid var(--border-dark)',
-              borderBottom: activeTab === 'auto' ? '1px solid transparent' : '1px solid var(--border-dark)',
-              borderTopLeftRadius: '4px',
-              borderTopRightRadius: '4px',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-body)',
-              fontWeight: 600,
-              transition: 'all 0.2s'
-            }}
-          >
-            Automatische PDF-Analyse (Gemini Vision)
-          </button>
-        </div>
-
-        {activeTab === 'manual' ? (
-          <div>
-            <div className="search-container" style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-              <div style={{ position: 'relative', flex: 1 }}>
-                <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-dim)' }} />
-                <input 
-                  type="text"
-                  placeholder="Suche nach Einheiten, Upgrades, Regeln oder Profilen..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px 10px 40px' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div>
-                <h3 className="font-serif text-gold" style={{ fontSize: '1rem', marginBottom: '10px' }}>Suchergebnisse ({searchResults.length})</h3>
-                {searchQuery.length < 2 ? (
-                  <p className="text-dim" style={{ fontSize: '0.85rem' }}>Gib mindestens 2 Zeichen ein, um die Datenbank zu durchsuchen.</p>
-                ) : searchResults.length === 0 ? (
-                  <p className="text-danger" style={{ fontSize: '0.85rem' }}>Keine übereinstimmenden Einträge in der Spieldatenbank gefunden.</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '450px', overflowY: 'auto', paddingRight: '4px' }}>
-                    {searchResults.map(entry => (
-                      <div 
-                        key={entry.id} 
-                        onClick={() => handleSelectEntryForEdit(entry)}
-                        className={`catalog-item ${selectedEntry?.id === entry.id ? 'active' : ''}`}
-                        style={{ 
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-start',
-                          padding: '10px 12px',
-                          border: selectedEntry?.id === entry.id ? '1px solid var(--text-gold)' : '1px solid var(--border-dark)',
-                          background: selectedEntry?.id === entry.id ? 'rgba(226,183,66,0.05)' : 'transparent'
-                        }}
-                      >
-                        <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontWeight: 600 }}>
-                            {entry.name}
-                            {showDebugIds && <span className="debug-id-badge">{entry.id}</span>}
-                          </span>
-                          <span className="badge font-sans" style={{ fontSize: '0.7rem' }}>{entry.type}</span>
-                        </div>
-                        <span className="text-dim" style={{ fontSize: '0.75rem', marginTop: '4px' }}>{entry.path}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-serif text-gold" style={{ fontSize: '1rem', marginBottom: '10px' }}>Werte anpassen</h3>
-                {!selectedEntry ? (
-                  <div style={{ border: '1px dashed var(--border-dark)', padding: '40px 16px', textAlign: 'center', borderRadius: '4px' }}>
-                    <p className="text-dim">Wähle einen Eintrag aus der Ergebnisliste aus, um die Punktekosten oder Regeln manuell im XML anzupassen.</p>
-                  </div>
-                ) : (
-                  <div className="gothic-panel" style={{ background: 'rgba(226,183,66,0.02)', padding: '16px', borderStyle: 'solid', borderWidth: '1px' }}>
-                    <div className="flex-between" style={{ marginBottom: '12px' }}>
-                      <span className="font-sans text-dim" style={{ fontSize: '0.8rem' }}>ID: {selectedEntry.id}</span>
-                      <span className="badge">{selectedEntry.type}</span>
-                    </div>
-
-                    <div style={{ marginBottom: '12px' }}>
-                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>Name / Bezeichnung</label>
-                      <input 
-                        type="text"
-                        value={localName}
-                        onChange={(e) => setLocalName(e.target.value)}
-                        style={{ width: '100%', padding: '8px' }}
-                      />
-                    </div>
-
-                    {selectedEntry.type === 'entry' && (
-                      <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>Punktekosten</label>
-                        {Object.entries(localCosts).map(([typeId, val]) => {
-                          const costType = editingSystem.costTypes?.find(ct => ct.id === typeId);
-                          const displayName = costType ? costType.name.trim() : (typeId === 'pts' || typeId === 'ecfa-8486-4f6c-c249' ? 'Points' : typeId);
-                          return (
-                            <div key={typeId} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                              <span className="font-sans" style={{ fontSize: '0.85rem', minWidth: '40px' }}>{displayName}:</span>
-                              <input 
-                                type="number"
-                                value={val}
-                                onChange={(e) => setLocalCosts(prev => ({ ...prev, [typeId]: e.target.value }))}
-                                style={{ width: '100px', padding: '6px' }}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {(selectedEntry.type === 'entry' || selectedEntry.type === 'group') && Object.keys(localConstraints).length > 0 && (
-                      <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>Restriktionen / Constraints</label>
-                        {Object.entries(localConstraints).map(([conId, val]) => {
-                          const conDef = selectedEntry.ref.constraints?.find(c => c.id === conId);
-                          return (
-                            <div key={conId} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                              <span className="font-sans" style={{ fontSize: '0.8rem', minWidth: '100px' }}>{conDef?.type || 'Constraint'} ({conDef?.field || 'selections'}):</span>
-                              <input 
-                                type="number"
-                                value={val}
-                                onChange={(e) => setLocalConstraints(prev => ({ ...prev, [conId]: e.target.value }))}
-                                style={{ width: '80px', padding: '6px' }}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {selectedEntry.type === 'profile' && (
-                      <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>Charakteristik / Profilwerte</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
-                          {Object.entries(localCharacteristics).map(([name, val]) => (
-                            <div key={name} style={{ textAlign: 'center' }}>
-                              <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{name}</span>
-                              <input 
-                                type="text"
-                                value={val}
-                                onChange={(e) => setLocalCharacteristics(prev => ({ ...prev, [name]: e.target.value }))}
-                                style={{ width: '100%', padding: '4px', textAlign: 'center', fontSize: '0.85rem', marginTop: '2px' }}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedEntry.type === 'rule' && (
-                      <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>Regelbeschreibung</label>
-                        <textarea 
-                          value={localDescription}
-                          onChange={(e) => setLocalDescription(e.target.value)}
-                          rows={6}
-                          style={{ width: '100%', padding: '8px', background: 'var(--bg-card)', color: 'var(--text-parchment)', border: '1px solid var(--border-dark)', fontFamily: 'var(--font-body)', fontSize: '0.85rem' }}
-                        />
-                      </div>
-                    )}
-
-                    <button 
-                      className="btn-primary" 
-                      onClick={handleSaveEntryModifications}
-                      style={{ width: '100%', marginTop: '8px', padding: '10px' }}
-                    >
-                      Speichern &amp; XML anpassen
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div>
+        {/* Automatische PDF-Analyse (Gemini Vision) */}
+        <div>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '20px' }}>
               <div className="gothic-panel" style={{ padding: '16px', borderStyle: 'solid', borderWidth: '1px' }}>
                 <h3 className="font-serif text-gold" style={{ fontSize: '1rem', marginTop: 0 }}>Vision-Scanner Konfiguration</h3>
@@ -620,7 +418,6 @@ export default function SystemEditorView({ system, onClose, onSystemSaved }) {
               )}
             </div>
           </div>
-        )}
       </div>
     </div>
   );

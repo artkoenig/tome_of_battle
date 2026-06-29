@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, FolderOpen, Plus, Trash2, Shield, Play, Edit3, Bug } from 'lucide-react';
+import { BookOpen, FolderOpen, Plus, Trash2, Shield, Play, Edit3, Bug, Search } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 import { useDebugMode } from './hooks/DebugContext';
@@ -7,6 +7,67 @@ import { useDebugMode } from './hooks/DebugContext';
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
 import PlayMode from './components/PlayMode';
+import DebugEntryEditorModal from './components/editor/DebugEntryEditorModal';
+import { findExactEntryById, searchEditableEntries } from './parser/pdfRulesExtractor';
+
+function GlobalDebugSearch({ systems, onSelectEntry }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (query.length < 2) {
+      setResults([]);
+      return;
+    }
+    let allResults = [];
+    for (const sys of systems) {
+      const sysResults = searchEditableEntries(sys, query);
+      sysResults.forEach(r => r.system = sys);
+      allResults = allResults.concat(sysResults);
+    }
+    setResults(allResults.slice(0, 50));
+  }, [query, systems]);
+
+  return (
+    <div style={{ position: 'relative', margin: '0 16px', flex: 1, maxWidth: '400px' }}>
+      <div style={{ position: 'relative' }}>
+        <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
+        <input
+           type="text"
+           placeholder="Globale Katalog-Suche..."
+           value={query}
+           onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
+           onFocus={() => setIsOpen(true)}
+           style={{ width: '100%', padding: '6px 12px 6px 32px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-gold-dim)', color: 'var(--text-gold)', borderRadius: '4px', outline: 'none' }}
+        />
+      </div>
+      {isOpen && query.length >= 2 && (
+         <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--border-gold-dim)', maxHeight: '400px', overflowY: 'auto', zIndex: 1000, marginTop: '4px', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+           {results.length === 0 ? (
+             <div style={{ padding: '8px', color: 'var(--text-dim)', fontSize: '0.85rem' }}>Keine Ergebnisse.</div>
+           ) : (
+             results.map((r, idx) => (
+               <div 
+                 key={idx} 
+                 onClick={() => { 
+                   onSelectEntry({ ref: r.ref, path: r.path, catalogueName: r.system.name }, r.system); 
+                   setIsOpen(false); 
+                   setQuery(''); 
+                 }}
+                 style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-dark)', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+               >
+                 <span style={{ color: 'var(--text-gold)', fontWeight: 'bold', fontSize: '0.9rem' }}>{r.name}</span>
+                 <span style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>{r.type} • {r.system.name}</span>
+               </div>
+             ))
+           )}
+         </div>
+      )}
+    </div>
+  );
+}
+
 
 export default function App() {
   const { showDebugIds, toggleShowDebugIds } = useDebugMode();
@@ -23,9 +84,87 @@ export default function App() {
   const [newRosterCatId, setNewRosterCatId] = useState('');
   const [newRosterLimit, setNewRosterLimit] = useState(2000);
 
+  // Debug Edit Modal State
+  const [debugEditingEntry, setDebugEditingEntry] = useState(null);
+  const [debugEditingSystem, setDebugEditingSystem] = useState(null);
+
   useEffect(() => {
     loadAllData();
   }, []);
+
+  // Handle global click on debug IDs
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+      if (!showDebugIds) return;
+      const badge = e.target.closest('.debug-id-badge.clickable');
+      if (!badge) return;
+
+      let rawIdText = badge.textContent.trim();
+      if (!rawIdText) return;
+
+      // Clean prefix if it contains ":"
+      let clickedId = rawIdText;
+      if (clickedId.includes(':')) {
+        clickedId = clickedId.split(':').pop().trim();
+      }
+
+      // Clean brackets if it contains them
+      clickedId = clickedId.replace(/[[\]]/g, '').trim();
+
+      if (!clickedId) return;
+
+      e.stopPropagation();
+      e.preventDefault();
+
+      let foundEntry = null;
+      let foundSystem = null;
+
+      // Search selected system first, then others
+      const searchSystems = [...systems];
+      if (selectedSystem) {
+        const idx = searchSystems.findIndex(s => s.id === selectedSystem.id);
+        if (idx > -1) {
+          searchSystems.splice(idx, 1);
+          searchSystems.unshift(selectedSystem);
+        }
+      }
+
+      for (const sys of searchSystems) {
+        const exactMatch = findExactEntryById(sys, clickedId);
+        if (exactMatch) {
+          foundEntry = exactMatch;
+          foundSystem = sys;
+          break;
+        }
+      }
+
+      if (foundEntry && foundSystem) {
+        setDebugEditingEntry(foundEntry);
+        setDebugEditingSystem(foundSystem);
+      }
+    };
+
+    const handleMouseDown = (e) => {
+      if (!showDebugIds) return;
+      if (e.target.closest('.debug-id-badge.clickable')) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick, true);
+    document.addEventListener('mousedown', handleMouseDown, true);
+    return () => {
+      document.removeEventListener('click', handleGlobalClick, true);
+      document.removeEventListener('mousedown', handleMouseDown, true);
+    };
+  }, [showDebugIds, systems, selectedSystem]);
+
+  const handleDebugSave = (updatedSystem) => {
+    setSystems(prev => prev.map(s => s.id === updatedSystem.id ? updatedSystem : s));
+    if (selectedSystem && selectedSystem.id === updatedSystem.id) {
+      setSelectedSystem(updatedSystem);
+    }
+  };
 
   const loadAllData = async () => {
     try {
@@ -140,6 +279,17 @@ export default function App() {
           <Shield className="text-gold" size={28} />
           <span className="logo-text">TOME OF BATTLE</span>
         </div>
+        
+        {showDebugIds && (
+          <GlobalDebugSearch 
+            systems={systems} 
+            onSelectEntry={(entryObj, systemObj) => {
+              setDebugEditingEntry(entryObj);
+              setDebugEditingSystem(systemObj);
+            }} 
+          />
+        )}
+
         <div className="app-header-actions">
           <button
             className={showDebugIds ? 'btn-gold btn-active' : 'btn-sm'}
@@ -155,7 +305,7 @@ export default function App() {
             title="Debugging: IDs ein-/ausblenden"
           >
             <Bug size={18} className={showDebugIds ? 'text-gold' : 'text-dim'} />
-            <span style={{ fontSize: '0.85rem' }}>IDs</span>
+            <span style={{ fontSize: '0.85rem' }}>Debug</span>
           </button>
           <button 
             className={view === 'rosters' ? 'btn-primary' : ''}
@@ -350,6 +500,19 @@ export default function App() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Debug Entry Editor Modal */}
+      {debugEditingEntry && debugEditingSystem && (
+        <DebugEntryEditorModal
+          entry={debugEditingEntry}
+          system={debugEditingSystem}
+          onClose={() => {
+            setDebugEditingEntry(null);
+            setDebugEditingSystem(null);
+          }}
+          onSave={handleDebugSave}
+        />
       )}
     </div>
   );

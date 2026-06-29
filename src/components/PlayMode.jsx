@@ -400,10 +400,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                   <span className="play-unit-title">
                     {selection.name}
                     {showDebugIds && (
-                      <>
-                        <span className="debug-id-badge" title="Instanz-ID">inst:{selection.id}</span>
-                        <span className="debug-id-badge" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-                      </>
+                      <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
                     )}
                   </span>
                   <span className="text-dim" style={{ fontSize: '0.85rem' }}>
@@ -430,7 +427,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                         <div key={pIdx} style={{ marginBottom: '12px' }}>
                           <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
                             {prof.name}
-                            {showDebugIds && <span className="debug-id-badge">{prof.id}</span>}
+                            {showDebugIds && <span className="debug-id-badge clickable">{prof.id}</span>}
                             {' '}({prof.profileTypeName})
                           </span>
                           <div className="profile-table-container">
@@ -483,7 +480,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                             <div key={rIdx} style={{ fontSize: '0.85rem' }}>
                               <strong className="text-gold">
                                 {rule.name}
-                                {showDebugIds && <span className="debug-id-badge">{rule.id}</span>}
+                                {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
                                 :
                               </strong>{' '}
                               <span style={{ color: 'var(--text-parchment)' }}>{rule.description}</span>
@@ -591,10 +588,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                                       <span className="text-gold" style={{ fontWeight: 600 }}>
                                         {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
                                         {showDebugIds && (
-                                          <>
-                                            <span className="debug-id-badge" title="Instanz-ID">inst:{upgrade.id}</span>
-                                            <span className="debug-id-badge" title="Definition-ID">def:{upgrade.resolved?.id}</span>
-                                          </>
+                                          <span className="debug-id-badge clickable" title="Definition-ID">def:{upgrade.resolved?.id}</span>
                                         )}
                                       </span>
                                       {desc && (

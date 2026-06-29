@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { saveRoster } from '../db/database';
-import { calculateRosterCosts, validateRoster, resolveEntry } from '../solver/validator';
+import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
 
 export function useRoster(initialRoster, system) {
   const [roster, setRoster] = useState(initialRoster);
@@ -12,6 +12,13 @@ export function useRoster(initialRoster, system) {
   // Recalculate costs and run validation whenever roster changes
   useEffect(() => {
     if (roster && system) {
+      const rosterModified = syncRosterSelectionsWithSystem(roster, system);
+
+      if (rosterModified) {
+        setRoster({ ...roster });
+        return;
+      }
+
       const calcCosts = calculateRosterCosts(roster, system);
       setCosts(calcCosts);
       const errors = validateRoster(roster, system);

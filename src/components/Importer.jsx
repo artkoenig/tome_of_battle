@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
+import { Upload, Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download, Bot } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
@@ -219,10 +219,10 @@ export default function Importer({ onSystemImported }) {
                   <button 
                     className="btn-gold btn-sm" 
                     onClick={() => { setEditingSystem(sys); setError(null); setSuccessMsg(null); }}
-                    title="Daten anpassen"
+                    title="KI-Scanner (PDF Abgleich)"
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                   >
-                    <Edit size={16} />
+                    <Bot size={16} />
                   </button>
                   <button 
                     className="btn-gold btn-sm" 

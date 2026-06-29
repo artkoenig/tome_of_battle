@@ -1555,7 +1555,18 @@ input[type="radio"]:checked::after {
   margin-left: 6px;
   vertical-align: middle;
   letter-spacing: 0.05em;
-  user-select: all;
+  user-select: none;
+}
+
+.debug-id-badge.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.debug-id-badge.clickable:hover {
+  background-color: rgba(226, 183, 66, 0.2);
+  border-color: rgba(226, 183, 66, 0.8);
+  box-shadow: 0 0 8px rgba(226, 183, 66, 0.3);
 }
 
 /* Gothic Tooltip styles */

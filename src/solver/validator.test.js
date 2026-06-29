@@ -1,4 +1,4 @@
-import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost } from './validator.js';
+import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost, syncRosterSelectionsWithSystem } from './validator.js';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML } from '../parser/xmlParser.js';
 import { searchEditableEntries, findAndMutateJsonPatch } from '../parser/pdfRulesExtractor.js';
@@ -1456,6 +1456,57 @@ console.log('Test 22 - Nested Selection display costs and group constraint point
   test22Success ? 'PASSED' : `FAILED (displayCost: ${displayCost}, selectionTotalCost: ${selectionTotalCost}, errors: ${JSON.stringify(errorsNestedInvalid)})`
 );
 
+// Test 23: syncRosterSelectionsWithSystem syncing selection name and costs
+const mockSystemSyncTest = {
+  id: 'sys-sync',
+  name: 'Sync System',
+  costTypes: [{ id: 'pts', name: 'Points' }],
+  catalogues: [
+    {
+      id: 'cat-sync',
+      name: 'Sync Catalogue',
+      selectionEntries: [
+        {
+          id: 'item-sync-1',
+          name: 'Updated Weapon Name',
+          costs: [{ typeId: 'pts', value: 15 }]
+        }
+      ]
+    }
+  ]
+};
+
+const mockRosterSyncTest = {
+  name: 'Sync Roster',
+  catalogueId: 'cat-sync',
+  forces: [
+    {
+      id: 'force-sync-1',
+      catalogueId: 'cat-sync',
+      selections: [
+        {
+          id: 'sel-sync-1',
+          selectionEntryId: 'item-sync-1',
+          name: 'Old Weapon Name',
+          costs: [{ typeId: 'pts', value: 5 }],
+          selections: []
+        }
+      ]
+    }
+  ]
+};
+
+const syncResult1 = syncRosterSelectionsWithSystem(mockRosterSyncTest, mockSystemSyncTest);
+const nameUpdated = mockRosterSyncTest.forces[0].selections[0].name === 'Updated Weapon Name';
+const costUpdated = mockRosterSyncTest.forces[0].selections[0].costs?.[0]?.value === 15;
+const syncResult2 = syncRosterSelectionsWithSystem(mockRosterSyncTest, mockSystemSyncTest);
+
+const test23Success = syncResult1 === true && nameUpdated && costUpdated && syncResult2 === false;
+
+console.log('Test 23 - Selection name and costs syncing with system catalog: ',
+  test23Success ? 'PASSED' : `FAILED (sync1: ${syncResult1}, nameUpdated: ${nameUpdated}, costUpdated: ${costUpdated}, sync2: ${syncResult2})`
+);
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -1474,7 +1525,8 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     repeatSuccess &&
     test20Success &&
     test21Success &&
-    test22Success) {
+    test22Success &&
+    test23Success) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {

@@ -234,7 +234,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               )}
               <span style={{ opacity: 0.9 }}>{upgrade.name}</span>
               {showDebugIds && (
-                <span className="debug-id-badge" style={{ margin: 0, padding: '0 2px', fontSize: '0.6rem' }}>
+                <span className="debug-id-badge clickable" style={{ margin: 0, padding: '0 2px', fontSize: '0.6rem' }}>
                   def:{upgrade.resolved?.id}
                 </span>
               )}
@@ -301,7 +301,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
             <div className="flex-between">
               <h3>
                 {selectedCatalogEntry.name}
-                {showDebugIds && <span className="debug-id-badge">{selectedCatalogEntry.id}</span>}
+                {showDebugIds && <span className="debug-id-badge clickable">{selectedCatalogEntry.id}</span>}
                 {' '} - Statblock
               </h3>
               <button className="btn-sm" onClick={() => setSelectedCatalogEntry(null)}>Schließen</button>
@@ -311,7 +311,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               <div key={prof.id} style={{ marginTop: '12px' }}>
                 <span className="font-serif text-gold" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
                   {prof.name}
-                  {showDebugIds && <span className="debug-id-badge">{prof.id}</span>}
+                  {showDebugIds && <span className="debug-id-badge clickable">{prof.id}</span>}
                   {' '}({prof.profileTypeName})
                 </span>
                 <div className="profile-table-container">
@@ -339,7 +339,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               <div key={rule.id} style={{ marginTop: '8px' }}>
                 <strong className="text-gold">
                   {rule.name}
-                  {showDebugIds && <span className="debug-id-badge">{rule.id}</span>}
+                  {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
                   :
                 </strong> <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)' }}>{rule.description}</span>
               </div>
@@ -383,7 +383,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <h3 className="font-serif text-gold" style={{ margin: 0, border: 'none', padding: 0, fontSize: '1.15rem' }}>
                             {catName}
-                            {showDebugIds && <span className="debug-id-badge">{link.targetId}</span>}
+                            {showDebugIds && (
+                              <>
+                                <span className="debug-id-badge clickable" title="Definition-ID (Kategorie)">def:{link.targetId}</span>
+                                {link.id && <span className="debug-id-badge clickable" title="Link-ID (Limits)">link:{link.id}</span>}
+                              </>
+                            )}
                           </h3>
                           {(() => {
                             const limitParts = [];
@@ -455,10 +460,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                       <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>
                                         {selection.name}
                                         {showDebugIds && (
-                                          <>
-                                            <span className="debug-id-badge" title="Instanz-ID">inst:{selection.id}</span>
-                                            <span className="debug-id-badge" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-                                          </>
+                                          <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
                                         )}
                                       </span>
                                     </div>
@@ -531,10 +533,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>
                                   {selection.name}
                                   {showDebugIds && (
-                                    <>
-                                      <span className="debug-id-badge" title="Instanz-ID">inst:{selection.id}</span>
-                                      <span className="debug-id-badge" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-                                    </>
+                                    <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
                                   )}
                                 </span>
                               </div>

@@ -207,7 +207,7 @@ export function updateRawXml(system, entryId, type, localName, localCosts, local
     });
   }
 
-  if (type === 'entry' || type === 'group') {
+  if (['entry', 'group', 'categoryLink', 'forceEntry'].includes(type)) {
     Object.entries(localConstraints).forEach(([conId, val]) => {
       const conEl = element.querySelector(`constraint[id="${conId}"]`);
       if (conEl) {
@@ -463,4 +463,139 @@ export function searchEditableEntries(system, query) {
   });
 
   return results.slice(0, 50);
+}
+
+export function findExactEntryById(system, id) {
+  if (!id) return null;
+  const q = id.toLowerCase();
+  let found = null;
+
+  const check = (item, type, catalogueName, path) => {
+    if (found) return;
+    if (item && item.id && item.id.toLowerCase() === q) {
+      found = {
+        type,
+        id: item.id,
+        name: item.name || item.id,
+        catalogueName,
+        path,
+        ref: item
+      };
+    }
+  };
+
+  const traverse = (item, catalogueName, path) => {
+    if (found || !item) return;
+
+    if (item.selectionEntries) {
+      item.selectionEntries.forEach(se => {
+        check(se, 'entry', catalogueName, path + " -> " + se.name);
+        traverse(se, catalogueName, path + " -> " + se.name);
+      });
+    }
+    if (item.entryLinks) {
+      item.entryLinks.forEach(el => {
+        check(el, 'entryLink', catalogueName, path + " -> Link: " + el.name);
+        traverse(el, catalogueName, path + " -> Link: " + el.name);
+      });
+    }
+    if (item.selectionEntryGroups) {
+      item.selectionEntryGroups.forEach(seg => {
+        check(seg, 'group', catalogueName, path + " -> Group: " + seg.name);
+        traverse(seg, catalogueName, path + " -> Group: " + seg.name);
+      });
+    }
+    if (item.profiles) {
+      item.profiles.forEach(p => {
+        check(p, 'profile', catalogueName, path + " -> Profile: " + p.name);
+        traverse(p, catalogueName, path + " -> Profile: " + p.name);
+      });
+    }
+    if (item.rules) {
+      item.rules.forEach(r => {
+        check(r, 'rule', catalogueName, path + " -> Rule: " + r.name);
+        traverse(r, catalogueName, path + " -> Rule: " + r.name);
+      });
+    }
+    if (item.categoryEntries) {
+      item.categoryEntries.forEach(ce => {
+        check(ce, 'category', catalogueName, path + " -> Category: " + ce.name);
+        traverse(ce, catalogueName, path + " -> Category: " + ce.name);
+      });
+    }
+    if (item.infoLinks) {
+      item.infoLinks.forEach(il => {
+        check(il, 'infoLink', catalogueName, path + " -> InfoLink: " + (il.name || il.targetId));
+        traverse(il, catalogueName, path + " -> InfoLink: " + (il.name || il.targetId));
+      });
+    }
+    if (item.forceEntries) {
+      item.forceEntries.forEach(fe => {
+        check(fe, 'forceEntry', catalogueName, path + " -> Force: " + fe.name);
+        traverse(fe, catalogueName, path + " -> Force: " + fe.name);
+      });
+    }
+    if (item.categoryLinks) {
+      item.categoryLinks.forEach(cl => {
+        check(cl, 'categoryLink', catalogueName, path + " -> CatLink: " + (cl.name || cl.targetId));
+        traverse(cl, catalogueName, path + " -> CatLink: " + (cl.name || cl.targetId));
+      });
+    }
+  };
+
+  const gstName = system.name || "Game System";
+  check(system, 'system', gstName, gstName);
+  traverse(system, gstName, gstName);
+
+  system.sharedSelectionEntries?.forEach(se => {
+    check(se, 'entry', gstName, gstName + " (Shared) -> " + se.name);
+    traverse(se, gstName, gstName + " (Shared) -> " + se.name);
+  });
+  system.sharedSelectionEntryGroups?.forEach(seg => {
+    check(seg, 'group', gstName, gstName + " (Shared Group) -> " + seg.name);
+    traverse(seg, gstName, gstName + " (Shared Group) -> " + seg.name);
+  });
+  system.sharedProfiles?.forEach(p => {
+    check(p, 'profile', gstName, gstName + " (Shared Profile) -> " + p.name);
+    traverse(p, gstName, gstName + " (Shared Profile) -> " + p.name);
+  });
+  system.sharedRules?.forEach(r => {
+    check(r, 'rule', gstName, gstName + " (Shared Rule) -> " + r.name);
+    traverse(r, gstName, gstName + " (Shared Rule) -> " + r.name);
+  });
+  system.categoryEntries?.forEach(ce => {
+    check(ce, 'category', gstName, gstName + " (Category) -> " + ce.name);
+    traverse(ce, gstName, gstName + " (Category) -> " + ce.name);
+  });
+
+  if (system.catalogues) {
+    for (const cat of system.catalogues) {
+      if (found) break;
+      check(cat, 'catalogue', cat.name, cat.name);
+      traverse(cat, cat.name, cat.name);
+
+      cat.sharedSelectionEntries?.forEach(se => {
+        check(se, 'entry', cat.name, cat.name + " (Shared) -> " + se.name);
+        traverse(se, cat.name, cat.name + " (Shared) -> " + se.name);
+      });
+      cat.sharedSelectionEntryGroups?.forEach(seg => {
+        check(seg, 'group', cat.name, cat.name + " (Shared Group) -> " + seg.name);
+        traverse(seg, cat.name, cat.name + " (Shared Group) -> " + seg.name);
+      });
+      cat.sharedProfiles?.forEach(p => {
+        check(p, 'profile', cat.name, cat.name + " (Shared Profile) -> " + p.name);
+        traverse(p, cat.name, cat.name + " (Shared Profile) -> " + p.name);
+      });
+      cat.sharedRules?.forEach(r => {
+        check(r, 'rule', cat.name, cat.name + " (Shared Rule) -> " + r.name);
+        traverse(r, cat.name, cat.name + " (Shared Rule) -> " + r.name);
+      });
+      cat.categoryEntries?.forEach(ce => {
+        check(ce, 'category', cat.name, cat.name + " (Category) -> " + ce.name);
+        traverse(ce, cat.name, cat.name + " (Category) -> " + ce.name);
+      });
+    }
+  }
+
+  return found;
 }

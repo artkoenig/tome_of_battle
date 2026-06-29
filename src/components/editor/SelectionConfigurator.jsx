@@ -159,19 +159,20 @@ export default function SelectionConfigurator({
     const optionsList = [];
 
     // Recursive options collector
-    const collectOptions = (def, currentGroupName = null, parentConstraints = null) => {
+    const collectOptions = (def, currentGroupName = null, currentGroupId = null, parentConstraints = null) => {
       // 1. Process selection entries
       def.selectionEntries?.forEach(child => {
         const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
         if (!resolvedChild) return;
 
         if (child.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
-          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, prepareConstraints(resolvedChild).concat(parentConstraints || []));
+          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, currentGroupId || resolvedChild.id, prepareConstraints(resolvedChild).concat(parentConstraints || []));
         } else {
           optionsList.push({ 
             option: child, 
             parentDefId: def.id, 
             groupName: currentGroupName, 
+            groupId: currentGroupId,
             groupConstraints: parentConstraints 
           });
         }
@@ -189,6 +190,7 @@ export default function SelectionConfigurator({
               option: subChild, 
               parentDefId: def.id, 
               groupName: resolvedChild.name || child.name, 
+              groupId: resolvedChild.id || child.id,
               groupConstraints: combinedConstraints 
             });
           });
@@ -197,16 +199,18 @@ export default function SelectionConfigurator({
               option: subChild, 
               parentDefId: def.id, 
               groupName: resolvedChild.name || child.name, 
+              groupId: resolvedChild.id || child.id,
               groupConstraints: combinedConstraints 
             });
           });
         } else if (resolvedChild.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
-          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, prepareConstraints(resolvedChild).concat(parentConstraints || []));
+          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, currentGroupId || resolvedChild.id, prepareConstraints(resolvedChild).concat(parentConstraints || []));
         } else {
           optionsList.push({ 
             option: child, 
             parentDefId: def.id, 
             groupName: currentGroupName, 
+            groupId: currentGroupId,
             groupConstraints: parentConstraints 
           });
         }
@@ -224,6 +228,7 @@ export default function SelectionConfigurator({
                 option: sub, 
                 parentDefId: def.id, 
                 groupName: resolvedChild.name || child.name || group.name, 
+                groupId: resolvedChild.id || child.id || group.id,
                 groupConstraints: combinedChildConstraints 
               });
             });
@@ -232,6 +237,7 @@ export default function SelectionConfigurator({
                 option: sub, 
                 parentDefId: def.id, 
                 groupName: resolvedChild.name || child.name || group.name, 
+                groupId: resolvedChild.id || child.id || group.id,
                 groupConstraints: combinedChildConstraints 
               });
             });
@@ -240,6 +246,7 @@ export default function SelectionConfigurator({
               option: child, 
               parentDefId: def.id, 
               groupName: group.name, 
+              groupId: group.id,
               groupConstraints: combinedGroupConstraints 
             });
           }
@@ -253,6 +260,7 @@ export default function SelectionConfigurator({
                 option: sub, 
                 parentDefId: def.id, 
                 groupName: resolvedChild.name || child.name || group.name, 
+                groupId: resolvedChild.id || child.id || group.id,
                 groupConstraints: combinedChildConstraints 
               });
             });
@@ -261,6 +269,7 @@ export default function SelectionConfigurator({
                 option: sub, 
                 parentDefId: def.id, 
                 groupName: resolvedChild.name || child.name || group.name, 
+                groupId: resolvedChild.id || child.id || group.id,
                 groupConstraints: combinedChildConstraints 
               });
             });
@@ -269,6 +278,7 @@ export default function SelectionConfigurator({
               option: child, 
               parentDefId: def.id, 
               groupName: group.name, 
+              groupId: group.id,
               groupConstraints: combinedGroupConstraints 
             });
           }
@@ -334,6 +344,7 @@ export default function SelectionConfigurator({
       if (!groupMap[item.groupName]) {
         groupMap[item.groupName] = {
           name: item.groupName,
+          id: item.groupId,
           constraints: item.groupConstraints,
           items: []
         };
@@ -443,7 +454,7 @@ export default function SelectionConfigurator({
                     onMouseLeave={descText ? handleMouseLeave : null}
                   >
                     {res.name}
-                    {showDebugIds && <span className="debug-id-badge">{res.id}</span>}
+                    {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                   </span>
                   {descText && (
                     <button
@@ -719,7 +730,9 @@ function OptionGroupComponent({
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
           <span className={hasGroupError ? "font-serif text-danger" : "font-serif text-gold"} style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-            {group.name} <span style={{ fontSize: '0.8rem', marginLeft: '6px', fontWeight: 400, color: 'var(--text-dim)' }}>{limitText}</span>
+            {group.name} 
+            {showDebugIds && group.id && <span className="debug-id-badge clickable" style={{ marginLeft: '6px' }}>def:{group.id}</span>}
+            <span style={{ fontSize: '0.8rem', marginLeft: '6px', fontWeight: 400, color: 'var(--text-dim)' }}>{limitText}</span>
           </span>
           {selectedItemsSummary && (
             <span style={{ fontSize: '0.8rem', color: 'var(--text-parchment)', opacity: 0.75, fontWeight: 400 }}>
@@ -868,7 +881,7 @@ function OptionGroupComponent({
                     onMouseLeave={descText ? onHoverLeave : null}
                   >
                     {res.name}
-                    {showDebugIds && <span className="debug-id-badge">{res.id}</span>}
+                    {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger" style={{ fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>
                   {descText && (
