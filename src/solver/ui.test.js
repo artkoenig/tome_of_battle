@@ -239,6 +239,25 @@ const runUiTests = async () => {
     console.log('Waiting for Roster Editor (builder layout)...');
     await page.waitForSelector('.builder-layout', { timeout: 10000 });
 
+    // Verify that "Characters" category group is NOT rendered (since it's not primary for any unit)
+    console.log('Verifying secondary categories like "Characters" are hidden...');
+    const hasCharactersGroup = await page.evaluate(() => {
+      const headers = Array.from(document.querySelectorAll('.roster-category-header h3'));
+      return headers.some(h => h.textContent.trim() === 'Characters');
+    });
+    if (hasCharactersGroup) {
+      throw new Error('Secondary category "Characters" should not be rendered as a UI group.');
+    }
+
+    const hasHeroesGroup = await page.evaluate(() => {
+      const headers = Array.from(document.querySelectorAll('.roster-category-header h3'));
+      return headers.some(h => h.textContent.trim() === 'Heroes');
+    });
+    if (!hasHeroesGroup) {
+      throw new Error('Primary category "Heroes" should be rendered as a UI group.');
+    }
+    console.log('Category groups rendered correctly.');
+
     // Verify initial validation errors are shown (since empty roster violates min units etc.)
     console.log('Verifying initial validation errors are shown...');
     const errorsCountBefore = await page.evaluate(() => {

@@ -25,8 +25,8 @@ export default function CategoryUnitAdder({
       const resolved = resolveEntry(system, entry);
       if (!resolved) return;
 
-      const hasCategory = resolved.categoryLinks?.some(link => link.targetId === catId) ||
-                          entry.categoryLinks?.some(link => link.targetId === catId);
+      const hasCategory = resolved.categoryLinks?.some(link => link.targetId === catId && link.primary) ||
+                          entry.categoryLinks?.some(link => link.targetId === catId && link.primary);
 
       if (hasCategory) {
         items.push(entry);

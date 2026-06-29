@@ -115,6 +115,22 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     }
   };
 
+  const hasPrimaryCatalogItems = (catId, force) => {
+    const activeCatalogue = system.catalogues?.find(c => c.id === force.catalogueId);
+    if (!activeCatalogue) return false;
+
+    const checkEntry = (entry) => {
+      const resolved = resolveEntry(system, entry);
+      if (!resolved) return false;
+      return (resolved.categoryLinks?.some(link => link.targetId === catId && link.primary) ||
+             entry.categoryLinks?.some(link => link.targetId === catId && link.primary));
+    };
+
+    return activeCatalogue.selectionEntries?.some(checkEntry) ||
+           activeCatalogue.entryLinks?.some(checkEntry) ||
+           activeCatalogue.sharedSelectionEntries?.some(checkEntry);
+  };
+
   const renderMiniProfile = (selection) => {
     const { profiles } = collectUnitProfilesAndRules(system, selection, activeCatalogue?.id);
     
@@ -375,6 +391,14 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   const maxConstraint = link.constraints?.find(c => c.type === 'max');
                   const minVal = minConstraint ? getModifiedConstraintValue(minConstraint, link.modifiers, roster, selectionCounts, forceCategoryCounts) : 0;
                   const maxVal = maxConstraint ? getModifiedConstraintValue(maxConstraint, link.modifiers, roster, selectionCounts, forceCategoryCounts) : Infinity;
+
+                  const isPrimaryForAny = hasPrimaryCatalogItems(link.targetId, force);
+
+                  // Completely hide category groups that are not primary for any unit and have no current selections,
+                  // as these are secondary rule tags (like "Characters") rather than functional UI slots.
+                  if (selections.length === 0 && !isPrimaryForAny) {
+                    return null;
+                  }
 
                   // Skip rendering empty categories on desktop if they have no selections (cleaner look), but always render on mobile so users can add them inline!
                   if (selections.length === 0 && count === 0 && minVal === 0 && maxVal === Infinity && categoryErrors.length === 0) {
