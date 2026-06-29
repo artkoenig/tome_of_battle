@@ -46,7 +46,15 @@ export const SAVE_BARDING_KEYWORDS = [
 export const SAVE_CAVALRY_KEYWORDS = ['cavalry', 'kavallerie'];
 
 // Ward save and Blessing rules keywords
-export const WARD_SAVE_KEYWORDS = ['ward save', 'rettungswurf', 'rettung'];
+export const WARD_SAVE_KEYWORDS = ['ward save', 'rettungswurf', 'rettung', 'ws'];
+
+export const ARMOUR_SAVE_EXPLICIT_KEYWORDS = [
+  'armour save', 'rüstungswurf', 'rüster', 'as'
+];
+
+export const SCALY_SKIN_KEYWORDS = [
+  'scaly skin', 'schuppenhaut'
+];
 
 export const BLESSING_KEYWORDS = [
   'blessing of the lady', 'segen der herrin', 'grail vow', 'gralsgelübde', 'segen'

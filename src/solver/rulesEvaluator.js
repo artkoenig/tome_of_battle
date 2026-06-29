@@ -11,6 +11,8 @@ import {
   SAVE_BARDING_KEYWORDS,
   SAVE_CAVALRY_KEYWORDS,
   WARD_SAVE_KEYWORDS,
+  ARMOUR_SAVE_EXPLICIT_KEYWORDS,
+  SCALY_SKIN_KEYWORDS,
   BLESSING_KEYWORDS
 } from './constants.js';
 
@@ -80,10 +82,47 @@ export function getArmourSave(profiles, selectionName, catalogueName) {
   let armourValue = 7; // 7 means no armour
   let isMounted = false;
   let isBarded = false;
+  let explicitSave = null;
+  let scalySkinMod = 0;
+
+  const extractSaveValue = (matchStr) => {
+    const val = parseInt(matchStr.replace('+', '').trim());
+    return val >= 1 && val <= 6 ? val : null;
+  };
 
   const scanText = (text) => {
     if (!text) return;
     const t = text.toLowerCase();
+
+    // Explicit Armour Save
+    const asPattern = ARMOUR_SAVE_EXPLICIT_KEYWORDS.join('|');
+    const asRe1 = new RegExp(`((?:\\+\\d)|(?:\\d\\+))\\s*(?:${asPattern})\\b`);
+    const asM1 = t.match(asRe1);
+    if (asM1) {
+      const val = extractSaveValue(asM1[1]);
+      if (val) explicitSave = Math.min(explicitSave || 7, val);
+    }
+    const asRe2 = new RegExp(`\\b(?:${asPattern})\\s*(?:of|von)?\\s*\\(?((?:\\+\\d)|(?:\\d\\+))\\)?`);
+    const asM2 = t.match(asRe2);
+    if (asM2) {
+      const val = extractSaveValue(asM2[1]);
+      if (val) explicitSave = Math.min(explicitSave || 7, val);
+    }
+
+    // Scaly Skin
+    const ssPattern = SCALY_SKIN_KEYWORDS.join('|');
+    const ssRe1 = new RegExp(`((?:\\+\\d)|(?:\\d\\+))\\s*(?:${ssPattern})\\b`);
+    const ssM1 = t.match(ssRe1);
+    if (ssM1) {
+      const val = extractSaveValue(ssM1[1]);
+      if (val) scalySkinMod = Math.max(scalySkinMod, 7 - val);
+    }
+    const ssRe2 = new RegExp(`\\b(?:${ssPattern})\\s*(?:of|von)?\\s*\\(?((?:\\+\\d)|(?:\\d\\+))\\)?`);
+    const ssM2 = t.match(ssRe2);
+    if (ssM2) {
+      const val = extractSaveValue(ssM2[1]);
+      if (val) scalySkinMod = Math.max(scalySkinMod, 7 - val);
+    }
 
     // Shields
     if (SAVE_SHIELD_KEYWORDS.some(k => t.includes(k))) {
@@ -144,7 +183,10 @@ export function getArmourSave(profiles, selectionName, catalogueName) {
   }
 
   let save = 7;
-  if (armourValue < 7) {
+  
+  if (explicitSave !== null) {
+    save = explicitSave;
+  } else if (armourValue < 7) {
     save = armourValue;
   }
 
@@ -168,6 +210,14 @@ export function getArmourSave(profiles, selectionName, catalogueName) {
     save = save - 1;
   }
 
+  if (scalySkinMod > 0) {
+    if (save === 7) {
+      save = 7 - scalySkinMod;
+    } else {
+      save = save - scalySkinMod;
+    }
+  }
+
   return save;
 }
 
@@ -182,23 +232,24 @@ export function getWardSave(profiles, selectionName, catalogueName) {
     if (!text) return;
     const t = text.toLowerCase();
 
+    const extractSaveValue = (matchStr) => {
+      const val = parseInt(matchStr.replace('+', '').trim());
+      return val >= 1 && val <= 6 ? val : null;
+    };
+
     const wardPattern = WARD_SAVE_KEYWORDS.join('|');
     // Look for patterns like "5+ ward save", "5+ rettungswurf"
-    const m1 = t.match(new RegExp(`(\\d)\\+\\s*(?:${wardPattern})`));
+    const m1 = t.match(new RegExp(`((?:\\+\\d)|(?:\\d\\+))\\s*(?:${wardPattern})\\b`));
     if (m1) {
-      const val = parseInt(m1[1]);
-      if (val >= 1 && val <= 6) {
-        bestWard = bestWard ? Math.min(bestWard, val) : val;
-      }
+      const val = extractSaveValue(m1[1]);
+      if (val) bestWard = bestWard ? Math.min(bestWard, val) : val;
     }
 
     // Look for patterns like "ward save of 5+", "rettungswurf von 5+"
-    const m2 = t.match(new RegExp(`(?:${wardPattern})\\s*(?:of|von)?\\s*(\\d)\\+`));
+    const m2 = t.match(new RegExp(`\\b(?:${wardPattern})\\s*(?:of|von)?\\s*\\(?((?:\\+\\d)|(?:\\d\\+))\\)?`));
     if (m2) {
-      const val = parseInt(m2[1]);
-      if (val >= 1 && val <= 6) {
-        bestWard = bestWard ? Math.min(bestWard, val) : val;
-      }
+      const val = extractSaveValue(m2[1]);
+      if (val) bestWard = bestWard ? Math.min(bestWard, val) : val;
     }
   };
 

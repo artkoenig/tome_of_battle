@@ -53,11 +53,28 @@ const empireKnight = getArmourSave([
   { name: 'Warhorse', characteristics: [{ name: 'Type', value: 'Barded Horse' }] }
 ], 'Empire Knight', 'Empire'); // 1 (4 base, -1 mounted, -1 shield, -1 barded)
 
+const explicitSave = getArmourSave([
+  { name: 'Dragon Armour', description: 'Gives a 5+ Armour Save' },
+  { name: 'Shield', characteristics: [{ name: 'Rules', value: 'Shield' }] }
+], 'Prince', 'High Elves'); // 4 (5 base, -1 shield)
+
+const scalySkinSave = getArmourSave([
+  { name: 'Scaly Skin', description: 'Has Scaly Skin 5+' },
+  { name: 'Light Armour', characteristics: [{ name: 'Rules', value: 'Light Armour' }] }
+], 'Saurus', 'Lizardmen'); // 4 (6 base, -2 from scaly skin 5+)
+
+const explicitASChar = getArmourSave([
+  { name: 'Some Item', characteristics: [{ name: 'AS', value: '3+' }] }
+], 'Lord', 'Custom System'); // 3
+
 const test4Passed = noArmour === 7 &&
                     lightArmourOnly === 6 &&
                     heavyArmourShield === 4 &&
-                    empireKnight === 1;
-console.log('Test 4 - getArmourSave: ', test4Passed ? 'PASSED' : `FAILED (noArmour: ${noArmour}, lightArmourOnly: ${lightArmourOnly}, heavyArmourShield: ${heavyArmourShield}, empireKnight: ${empireKnight})`);
+                    empireKnight === 1 &&
+                    explicitSave === 4 &&
+                    scalySkinSave === 4 &&
+                    explicitASChar === 3;
+console.log('Test 4 - getArmourSave: ', test4Passed ? 'PASSED' : `FAILED (noArmour: ${noArmour}, lightArmourOnly: ${lightArmourOnly}, heavyArmourShield: ${heavyArmourShield}, empireKnight: ${empireKnight}, explicitSave: ${explicitSave}, scalySkinSave: ${scalySkinSave}, explicitASChar: ${explicitASChar})`);
 
 // Test 5: getWardSave
 const wardSave5Plus = getWardSave([
@@ -66,12 +83,24 @@ const wardSave5Plus = getWardSave([
 const wardSave4PlusGerman = getWardSave([
   { name: 'Talisman', description: 'Rettungswurf von 4+' }
 ], 'Lord', 'Chaos'); // 4
+const wardSaveInParens = getWardSave([
+  { name: 'Amulet', description: 'Provides a Ward Save (5+)' }
+], 'Mage', 'High Elves'); // 5
+const wardSavePlusFirst = getWardSave([
+  { name: 'Mark', description: 'Gives +6 Ward Save' }
+], 'Warrior', 'Chaos'); // 6
+const explicitWSChar = getWardSave([
+  { name: 'Some Item', characteristics: [{ name: 'WS', value: '4+' }] }
+], 'Lord', 'Custom System'); // 4
 const noWardSave = getWardSave([], 'Peasant', 'Bretonnia'); // null
 
 const test5Passed = wardSave5Plus === 5 &&
                     wardSave4PlusGerman === 4 &&
+                    wardSaveInParens === 5 &&
+                    wardSavePlusFirst === 6 &&
+                    explicitWSChar === 4 &&
                     noWardSave === null;
-console.log('Test 5 - getWardSave: ', test5Passed ? 'PASSED' : `FAILED (wardSave5Plus: ${wardSave5Plus}, wardSave4PlusGerman: ${wardSave4PlusGerman}, noWardSave: ${noWardSave})`);
+console.log('Test 5 - getWardSave: ', test5Passed ? 'PASSED' : `FAILED (wardSave5Plus: ${wardSave5Plus}, wardSave4PlusGerman: ${wardSave4PlusGerman}, wardSaveInParens: ${wardSaveInParens}, wardSavePlusFirst: ${wardSavePlusFirst}, explicitWSChar: ${explicitWSChar}, noWardSave: ${noWardSave})`);
 
 const allEvaluatorTestsPassed = test1Passed && test2Passed && test3Passed && test4Passed && test5Passed;
 if (allEvaluatorTestsPassed) {
