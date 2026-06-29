@@ -286,6 +286,22 @@ const runUiTests = async () => {
     // Wait for popover-item list to open
     await page.waitForSelector('.popover-item', { visible: true, timeout: 5000 });
 
+    console.log('Verifying sorting of items in CategoryUnitAdder popover...');
+    const popoverPoints = await page.evaluate(() => {
+       const items = Array.from(document.querySelectorAll('.popover-item'));
+       return items.map(item => {
+          const text = item.querySelector('.popover-item-cost')?.textContent || '';
+          const match = text.match(/\+?(\d+)/);
+          return match ? parseInt(match[1], 10) : 0;
+       });
+    });
+    console.log(`Popover items points: ${popoverPoints.join(', ')}`);
+    for (let i = 0; i < popoverPoints.length - 1; i++) {
+       if (popoverPoints[i] < popoverPoints[i+1]) {
+          throw new Error(`Popover items are not sorted descending: ${popoverPoints[i]} < ${popoverPoints[i+1]}`);
+       }
+    }
+
     // Click the first popover item to add the unit to the roster
     console.log('Clicking popover item to add unit...');
     await page.click('.popover-item');
@@ -296,6 +312,46 @@ const runUiTests = async () => {
       return document.querySelectorAll('.validation-error-item').length;
     });
     console.log(`Validation errors count after unit added: ${errorsCountAfter}`);
+
+    // Test SelectionConfigurator sorting by opening the unit options
+    console.log('Opening unit to verify SelectionConfigurator sorting...');
+    await page.click('.selection-node');
+    await page.waitForSelector('.selection-node-body', { visible: true, timeout: 5000 });
+    
+    // Find a group and expand it to see options
+    const expandedGroup = await page.evaluate(() => {
+       const groups = Array.from(document.querySelectorAll('.selection-node-body > .sub-selection-group > div'));
+       // find one that has a ChevronRight (expandable) and click it
+       for (const group of groups) {
+          const titleDiv = group.firstElementChild;
+          if (titleDiv && titleDiv.innerHTML.includes('lucide-chevron-right')) {
+             titleDiv.click();
+             return true;
+          }
+       }
+       return false;
+    });
+
+    if (expandedGroup) {
+       await new Promise(r => setTimeout(r, 500)); // wait for expansion
+       console.log('Verifying sorting of items in SelectionConfigurator group...');
+       const optionPoints = await page.evaluate(() => {
+          // get the expanded list items
+          const items = Array.from(document.querySelectorAll('.sub-selection-row'));
+          return items.map(item => {
+             const pointsEl = Array.from(item.querySelectorAll('span')).find(s => s.textContent.includes('Pkt.'));
+             if (!pointsEl) return 0;
+             const match = pointsEl.textContent.match(/\+?(\d+)/);
+             return match ? parseInt(match[1], 10) : 0;
+          });
+       });
+       console.log(`SelectionConfigurator option points: ${optionPoints.join(', ')}`);
+       for (let i = 0; i < optionPoints.length - 1; i++) {
+          if (optionPoints[i] < optionPoints[i+1]) {
+             throw new Error(`SelectionConfigurator items are not sorted descending: ${optionPoints[i]} < ${optionPoints[i+1]}`);
+          }
+       }
+    }
 
     // Change viewport to mobile (375x812)
     console.log('Changing viewport to mobile (375x812)...');

@@ -533,7 +533,15 @@ function OptionGroupComponent({
 
       {isExpanded && (
         <div style={{ borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px', paddingLeft: '4px' }}>
-          {group.items.map(({ option, groupConstraints, parentDefId }) => {
+          {group.items
+            .slice()
+            .sort((a, b) => {
+               const costType = roster?.costLimitType || 'pts';
+               const aPoints = getOptionDisplayCost(system, a.option, costType) || 0;
+               const bPoints = getOptionDisplayCost(system, b.option, costType) || 0;
+               return bPoints - aPoints; // Descending
+            })
+            .map(({ option, groupConstraints, parentDefId }) => {
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);

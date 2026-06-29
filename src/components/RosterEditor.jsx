@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Save, Play, Trash2, AlertTriangle, Check } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { useDebugMode } from '../hooks/DebugContext';
-import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem, collectUnitProfilesAndRules } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem, collectUnitProfilesAndRules, getSelectionTotalCost } from '../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from '../solver/constants';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
@@ -302,9 +302,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         <div className="roster-header-editor">
           <div>
             <h2 style={{ margin: 0, border: 'none', padding: 0 }}>{roster.name}</h2>
-            <span className="text-dim" style={{ fontSize: '0.9rem' }}>
-              Punktegrenze: {roster.costLimit} {costTypeLabel === 'Pkt.' ? 'Punkte' : costTypeLabel}
-            </span>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button onClick={save}>
@@ -467,7 +464,15 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                         </div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          {selections.map(selection => {
+                          {selections
+                            .slice()
+                            .sort((a, b) => {
+                              const costType = roster.costLimitType || 'pts';
+                              const aPoints = getSelectionTotalCost(a, costType);
+                              const bPoints = getSelectionTotalCost(b, costType);
+                              return bPoints - aPoints; // Descending
+                            })
+                            .map(selection => {
                             const isUnitEditing = selectedRosterSelection?.id === selection.id;
                             const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
                             const displayPoints = unitCosts[roster.costLimitType] || 0;

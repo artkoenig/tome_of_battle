@@ -47,7 +47,12 @@ export default function CategoryUnitAdder({
     });
   };
 
-  const availableUnits = getCatalogItemsByCategory(categoryId);
+  const availableUnits = getCatalogItemsByCategory(categoryId)
+    .sort((a, b) => {
+      const aPoints = getOptionDisplayCost(system, a, costLimitType) || 0;
+      const bPoints = getOptionDisplayCost(system, b, costLimitType) || 0;
+      return bPoints - aPoints; // Descending
+    });
 
   if (availableUnits.length === 0) return null;
 
