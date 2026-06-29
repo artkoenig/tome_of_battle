@@ -336,8 +336,13 @@ const runUiTests = async () => {
        await new Promise(r => setTimeout(r, 500)); // wait for expansion
        console.log('Verifying sorting of items in SelectionConfigurator group...');
        const optionPoints = await page.evaluate(() => {
-          // get the expanded list items
-          const items = Array.from(document.querySelectorAll('.sub-selection-row'));
+          const groups = Array.from(document.querySelectorAll('.selection-node-body > .sub-selection-group > div'));
+          const expandedGroup = groups.find(group => {
+             const titleDiv = group.firstElementChild;
+             return titleDiv && titleDiv.innerHTML.includes('lucide-chevron-down');
+          });
+          if (!expandedGroup) return [];
+          const items = Array.from(expandedGroup.querySelectorAll('.sub-selection-row'));
           return items.map(item => {
              const pointsEl = Array.from(item.querySelectorAll('span')).find(s => s.textContent.includes('Pkt.'));
              if (!pointsEl) return 0;
@@ -353,7 +358,39 @@ const runUiTests = async () => {
        }
     }
 
-    // Change viewport to mobile (375x812)
+     // Test Copy Unit functionality
+     console.log('Verifying copy unit functionality...');
+     const selectionNodesCountBefore = await page.evaluate(() => {
+        return document.querySelectorAll('.selection-node').length;
+     });
+     console.log(`Units count before copy: ${selectionNodesCountBefore}`);
+
+     // Click the copy button (which has title="Kopieren") on the first selection node
+     const copyButtonExists = await page.evaluate(() => {
+        const copyBtn = document.querySelector('.selection-node .btn-primary[title="Kopieren"]');
+        if (copyBtn) {
+           copyBtn.click();
+           return true;
+        }
+        return false;
+     });
+     if (!copyButtonExists) {
+        throw new Error('Copy button not found on selection node');
+     }
+
+     await new Promise(r => setTimeout(r, 800)); // wait for state update
+
+     const selectionNodesCountAfter = await page.evaluate(() => {
+        return document.querySelectorAll('.selection-node').length;
+     });
+     console.log(`Units count after copy: ${selectionNodesCountAfter}`);
+
+     if (selectionNodesCountAfter !== selectionNodesCountBefore + 1) {
+        throw new Error(`Failed to copy unit. Expected ${selectionNodesCountBefore + 1} units, but found ${selectionNodesCountAfter}`);
+     }
+     console.log('Copy unit test: PASSED');
+
+     // Change viewport to mobile (375x812)
     console.log('Changing viewport to mobile (375x812)...');
     await page.setViewport({ width: 375, height: 812 });
     await new Promise(r => setTimeout(r, 1000));

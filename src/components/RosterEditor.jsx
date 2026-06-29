@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Play, Trash2, AlertTriangle, Check } from 'lucide-react';
+import { Save, Play, Trash2, AlertTriangle, Check, Copy } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { useDebugMode } from '../hooks/DebugContext';
 import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem, collectUnitProfilesAndRules, getSelectionTotalCost } from '../solver/validator';
@@ -21,6 +21,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     setSelectedCatalogEntry,
     addUnit,
     removeUnit,
+    copyUnit,
     updateSubSelection,
     save
   } = useRoster(initialRoster, system);
@@ -145,7 +146,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     const showPrefix = unitProfiles.length > 1;
 
     return (
-      <div className="mini-profiles-container" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+      <div className="mini-profiles-container" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', paddingRight: '24px' }}>
         {unitProfiles.map(prof => {
           return (
             <div key={prof.id} className="mini-profile-row" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -223,7 +224,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           gap: '6px', 
           marginTop: '4px',
           marginBottom: '2px',
-          width: '100%'
+          width: '100%',
+          paddingRight: '24px'
         }}
       >
         {selectedUpgrades.map(upgrade => {
@@ -486,7 +488,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                               >
                                 <div 
                                   className="selection-node-header"
-                                  style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}
+                                  style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative' }}
                                   onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
                                 >
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -510,6 +512,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                           e.stopPropagation();
                                           removeUnit(selection.id);
                                         }}
+                                        title="Löschen"
                                       >
                                         <Trash2 size={14} />
                                       </button>
@@ -517,6 +520,27 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                   </div>
                                   {renderMiniProfile(selection)}
                                   {renderUnitUpgrades(selection)}
+                                  <button 
+                                    type="button"
+                                    className="btn-primary btn-sm" 
+                                    style={{
+                                      position: 'absolute',
+                                      bottom: '12px',
+                                      right: '14px',
+                                      padding: '4px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      zIndex: 10
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      copyUnit(selection.id);
+                                    }}
+                                    title="Kopieren"
+                                  >
+                                    <Copy size={14} />
+                                  </button>
                                 </div>
 
                                 {selectionErrors.map((err, idx) => (
@@ -559,7 +583,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                         <div key={selection.id} className="selection-node">
                           <div 
                             className="selection-node-header"
-                            style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}
+                            style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative' }}
                             onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -583,6 +607,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                     e.stopPropagation();
                                     removeUnit(selection.id);
                                   }}
+                                  title="Löschen"
                                 >
                                   <Trash2 size={14} />
                                 </button>
@@ -590,6 +615,27 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             </div>
                             {renderMiniProfile(selection)}
                             {renderUnitUpgrades(selection)}
+                            <button 
+                              type="button"
+                              className="btn-primary btn-sm" 
+                              style={{
+                                position: 'absolute',
+                                bottom: '12px',
+                                right: '14px',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 10
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyUnit(selection.id);
+                              }}
+                              title="Kopieren"
+                            >
+                              <Copy size={14} />
+                            </button>
                           </div>
 
                           {isUnitEditing && (

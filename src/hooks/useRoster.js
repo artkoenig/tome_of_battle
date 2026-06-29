@@ -122,6 +122,47 @@ export function useRoster(initialRoster, system) {
     }
   };
 
+  const copyUnit = (selectionId) => {
+    const cloneSelection = (sel) => {
+      const newId = Math.random().toString(36).substr(2, 9);
+      const clonedSelections = (sel.selections || []).map(s => cloneSelection(s));
+      return {
+        ...sel,
+        id: newId,
+        selections: clonedSelections
+      };
+    };
+
+    setRoster(prev => {
+      let unitToCopy = null;
+      for (const force of prev.forces) {
+        unitToCopy = force.selections?.find(s => s.id === selectionId);
+        if (unitToCopy) break;
+      }
+      if (!unitToCopy) return prev;
+
+      const clonedUnit = cloneSelection(unitToCopy);
+
+      const updatedForces = prev.forces.map(force => {
+        if (force.selections?.some(s => s.id === selectionId)) {
+          const idx = force.selections.findIndex(s => s.id === selectionId);
+          const newSelections = [...force.selections];
+          newSelections.splice(idx + 1, 0, clonedUnit);
+          return {
+            ...force,
+            selections: newSelections
+          };
+        }
+        return force;
+      });
+
+      return {
+        ...prev,
+        forces: updatedForces
+      };
+    });
+  };
+
   const updateSubSelection = (unitSelectionId, option, action, parentCount = 1) => {
     const optionId = option.id;
 
@@ -194,6 +235,7 @@ export function useRoster(initialRoster, system) {
     setSelectedCatalogEntry,
     addUnit,
     removeUnit,
+    copyUnit,
     updateSubSelection,
     save
   };
