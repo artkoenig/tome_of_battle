@@ -39,3 +39,11 @@ Hier sind die zentralen architektonischen und fachlichen Lektionen für den Umga
   Sogenannte "Collective Entries" teilen sich ihre Menge mit der ihres Parents (z. B. Ausrüstung, die jedes Modell einer Einheit erhält). Die Kosten- und Constraint-Evaluierung muss hier dynamisch als Produkt aus der Menge der übergeordneten Einheit und der Option berechnet werden, da sich die Gesamtzahl ändert, wenn die Größe der Grundeinheit angepasst wird.
 * **Exklusive Gruppen (`max="1"`):**
   Wenn Auswahl-Gruppen in Battlescribe das Limit `max="1"` besitzen (z. B. die Wahl der Blutlinie), handelt es sich nicht um limitierte, zählbare Objekte, sondern um *sich gegenseitig ausschließende Optionen*. Diese müssen bei der Erfassung strikt exklusiv (z. B. als Radio-Buttons/Checkboxes) behandelt werden.
+
+## 6. Besonderheiten bei Rüstungs- und Rettungswürfen (AS/WS)
+
+* **Die Eigenschaft "Saving Throw Modifier":** Anstatt sich ausschließlich auf Schlüsselwörter (wie "shield" oder "armour") im Namen von Gegenständen zu verlassen, definieren viele Battlescribe-Kataloge den Bonus über die spezifische Characteristic `Saving Throw Modifier`.
+* **Unterscheidung zwischen Basis-Werten und Modifikatoren:** Die Eigenschaft `Saving Throw Modifier` kann zwei unterschiedliche Bedeutungen haben, die beim Auslesen per Regex (`(\d)\+` vs. `[+-]\d`) zwingend getrennt werden müssen:
+  1. **Fester Basis-Rüstungswurf** (z. B. `1+`, `4+` wie beim *Flayed Hauberk*): Diese definieren den Grundrüster (sofern besser als andere Rüstungen).
+  2. **Additiver Modifikator** (z. B. `-1 Sv`, `+1 to armour save` wie beim *Sacred Stegadon Helm* oder *Shield of Ghrond*): Diese addieren sich auf den endgültigen Wurf.
+* **Vermeidung von Doppelzählungen:** Manche Gegenstände triggern über ihren Namen (z. B. "Shield of Ghrond") bereits einen pauschalen Keyword-Bonus für Rüstung (z. B. Schild = -1) *und* besitzen gleichzeitig einen `Saving Throw Modifier`. In solchen Fällen darf der Modifikator aus der Eigenschaft nicht einfach obendrauf gerechnet werden (Double-Dipping), sondern muss mit den bereits durch das Keyword erhaltenen Boni verrechnet werden.
