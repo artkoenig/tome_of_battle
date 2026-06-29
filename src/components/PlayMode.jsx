@@ -33,6 +33,23 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   });
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
   const [saveSummaryData, setSaveSummaryData] = useState({ title: '', breakdown: [] });
+  const [tooltipState, setTooltipState] = useState({ visible: false, x: 0, y: 0, title: '', content: [] });
+
+  const handleMouseEnter = (e, title, content) => {
+    if (window.innerWidth <= 900 || content.length === 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipState({
+      visible: true,
+      x: rect.left,
+      y: rect.bottom + 8,
+      title,
+      content
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltipState(s => ({ ...s, visible: false }));
+  };
 
   // Save game state to DB whenever it changes
   useEffect(() => {
@@ -344,7 +361,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                     <div 
                       className="badge badge-success font-sans" 
                       style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: asInfo.breakdown.length > 0 ? 'help' : 'default' }}
-                      title={asInfo.breakdown.length > 0 ? asInfo.breakdown.join('\n') : undefined}
+                      onMouseEnter={(e) => handleMouseEnter(e, 'Rüstungswurf (AS)', asInfo.breakdown)}
+                      onMouseLeave={handleMouseLeave}
                       onClick={() => {
                         if (asInfo.breakdown.length > 0) {
                           setSaveSummaryData({ title: 'Rüstungswurf (AS)', breakdown: asInfo.breakdown });
@@ -357,7 +375,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                     <div 
                       className="badge badge-warning font-sans" 
                       style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: wsInfo.breakdown.length > 0 ? 'help' : 'default' }}
-                      title={wsInfo.breakdown.length > 0 ? wsInfo.breakdown.join('\n') : undefined}
+                      onMouseEnter={(e) => handleMouseEnter(e, 'Rettungswurf (WS)', wsInfo.breakdown)}
+                      onMouseLeave={handleMouseLeave}
                       onClick={() => {
                         if (wsInfo.breakdown.length > 0) {
                           setSaveSummaryData({ title: 'Rettungswurf (WS)', breakdown: wsInfo.breakdown });
@@ -582,6 +601,23 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           )}
         </div>
       </BottomSheet>
+
+      {/* Hover Tooltip for Desktop */}
+      {tooltipState.visible && (
+        <div 
+          className="gothic-tooltip"
+          style={{ left: `${tooltipState.x}px`, top: `${tooltipState.y}px` }}
+        >
+          <div className="tooltip-title">{tooltipState.title}</div>
+          <div className="tooltip-body">
+            <ul style={{ paddingLeft: '20px', margin: 0 }}>
+              {tooltipState.content.map((item, i) => (
+                <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
