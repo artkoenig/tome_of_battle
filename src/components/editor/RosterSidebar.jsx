@@ -18,7 +18,7 @@ export default function RosterSidebar({
       <div style={{ margin: '16px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '12px' }}>
         <div className="flex-between font-serif text-gold" style={{ fontSize: '1.25rem', marginBottom: '8px' }}>
           <span>Gesamtkosten:</span>
-          <span className="font-sans">
+          <span className="font-body">
             {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
           </span>
         </div>
@@ -85,7 +85,7 @@ export default function RosterSidebar({
                   :
                 </span>
                 <span 
-                  className={isInvalid ? "badge badge-danger font-sans" : "badge font-sans"} 
+                  className={isInvalid ? "badge badge-danger font-body" : "badge font-body"} 
                   style={{ 
                     fontSize: '0.8rem', 
                     padding: '2px 8px',

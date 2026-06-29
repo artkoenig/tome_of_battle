@@ -90,7 +90,7 @@ export default function CategoryUnitAdder({
                 }}
               >
                 <span className="popover-item-name">{res.name}</span>
-                <span className="popover-item-cost font-sans text-gold">
+                <span className="popover-item-cost font-body text-gold">
                   {points > 0 ? `+${points} ${costTypeLabel}` : `0 ${costTypeLabel}`}
                 </span>
               </div>

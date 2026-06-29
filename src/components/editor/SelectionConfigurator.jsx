@@ -260,7 +260,7 @@ export default function SelectionConfigurator({
                   )}
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold font-body" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
                   {isBinary ? (
                     <input 
                       type="checkbox" 
@@ -282,7 +282,7 @@ export default function SelectionConfigurator({
                       >
                         <Minus size={12} />
                       </button>
-                      <span className="quantity-value font-sans">{count}</span>
+                      <span className="quantity-value font-body">{count}</span>
                       <button 
                         className="btn-sm" 
                         style={{ padding: '2px 6px' }}
@@ -697,7 +697,7 @@ function OptionGroupComponent({
                   )}
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold font-sans" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold font-body" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
                   {isBinary ? (
                     isRadio ? (
                       <input 
@@ -745,7 +745,7 @@ function OptionGroupComponent({
                       >
                         <Minus size={12} />
                       </button>
-                      <span className="quantity-value font-sans">{count}</span>
+                      <span className="quantity-value font-body">{count}</span>
                       <button 
                         className="btn-sm" 
                         style={{ padding: '2px 6px' }}

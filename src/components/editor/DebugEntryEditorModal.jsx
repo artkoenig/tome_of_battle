@@ -109,7 +109,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
           <div style={{ marginBottom: '12px' }}>
             <div className="flex-between" style={{ marginBottom: '6px' }}>
-              <span className="font-sans text-dim" style={{ fontSize: '0.8rem' }}>ID: {entry.id}</span>
+              <span className="font-body text-dim" style={{ fontSize: '0.8rem' }}>ID: {entry.id}</span>
               <span className="badge">{entry.type}</span>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
                 const displayName = costType ? costType.name.trim() : (typeId === 'pts' || typeId === 'ecfa-8486-4f6c-c249' ? 'Points' : typeId);
                 return (
                   <div key={typeId} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <span className="font-sans" style={{ fontSize: '0.85rem', minWidth: '80px' }}>{displayName}:</span>
+                    <span className="font-body" style={{ fontSize: '0.85rem', minWidth: '80px' }}>{displayName}:</span>
                     <input
                       type="number"
                       value={val}
@@ -158,7 +158,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
                 const conDef = entry.ref.constraints?.find(c => c.id === conId);
                 return (
                   <div key={conId} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <span className="font-sans" style={{ fontSize: '0.8rem', minWidth: '120px' }}>
+                    <span className="font-body" style={{ fontSize: '0.8rem', minWidth: '120px' }}>
                       {conDef?.type || 'Constraint'} ({conDef?.field || 'selections'}):
                     </span>
                     <input
@@ -225,7 +225,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {entry.ref.selectionEntries?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-sans text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Entry:</span>
+                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Entry:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannt'}: {child.id}
                     </span>
@@ -234,7 +234,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
                 
                 {entry.ref.selectionEntryGroups?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-sans text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Group:</span>
+                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Group:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannt'}: {child.id}
                     </span>
@@ -243,7 +243,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
                 {entry.ref.entryLinks?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-sans text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Link:</span>
+                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Link:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannter Link'}: {child.id}
                     </span>
@@ -252,7 +252,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
                 {entry.ref.profiles?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-sans text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Profile:</span>
+                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Profile:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannt'}: {child.id}
                     </span>
@@ -261,7 +261,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
                 {entry.ref.rules?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-sans text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Rule:</span>
+                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Rule:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannt'}: {child.id}
                     </span>

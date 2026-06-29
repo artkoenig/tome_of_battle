@@ -409,7 +409,7 @@ export default function App() {
                                             fontSize: '1.25rem', 
                                             fontWeight: 'bold', 
                                             color: 'var(--text-gold)', 
-                                            fontFamily: 'var(--font-sans)',
+                                            fontFamily: 'var(--font-body)',
                                             whiteSpace: 'nowrap',
                                             textAlign: 'right'
                                           }}>

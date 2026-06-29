@@ -172,10 +172,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       flex: 1
                     }}
                   >
-                    <span className="text-gold font-sans" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>
+                    <span className="text-gold font-body" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>
                       {c.name}
                     </span>
-                    <span className="font-sans" style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-parchment)', marginTop: '1px' }}>
+                    <span className="font-body" style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-parchment)', marginTop: '1px' }}>
                       {c.value}
                     </span>
                   </div>
@@ -240,7 +240,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 color: 'var(--text-parchment)',
                 padding: '2px 6px',
                 borderRadius: '3px',
-                fontFamily: 'var(--font-sans)',
+                fontFamily: 'var(--font-body)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
@@ -277,17 +277,17 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
             STATUS:
           </span>
           {isRosterValid ? (
-            <span className="badge badge-success font-sans" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <span className="badge badge-success font-body" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
               <Check size={12} /> BEREIT
             </span>
           ) : (
-            <span className="badge badge-danger font-sans" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <span className="badge badge-danger font-body" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
               <AlertTriangle size={12} /> {validationErrors.length} FEHLER
             </span>
           )}
         </div>
         <div className="mobile-points-indicator">
-          <span className="font-sans font-bold" style={{ fontSize: '0.85rem' }}>
+          <span className="font-body font-bold" style={{ fontSize: '0.85rem' }}>
             {currentPoints} / {limitPoints} {costTypeLabel}
           </span>
           <div className="points-progress-bar">
@@ -346,7 +346,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     <tbody>
                       <tr>
                         {prof.characteristics.map(c => (
-                          <td key={c.name} className="font-sans">{c.value}</td>
+                          <td key={c.name} className="font-body">{c.value}</td>
                         ))}
                       </tr>
                     </tbody>
@@ -425,7 +425,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
                             return (
                               <span 
-                                className={categoryErrors.length > 0 ? "badge badge-danger font-sans" : "badge font-sans"} 
+                                className={categoryErrors.length > 0 ? "badge badge-danger font-body" : "badge font-body"} 
                                 style={{ 
                                   fontSize: '0.8rem', 
                                   padding: '2px 8px',
@@ -454,7 +454,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       </div>
 
                       {categoryErrors.map((err, idx) => (
-                        <div key={idx} className="category-error-alert text-danger font-sans" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', marginBottom: '8px', padding: '6px 10px', background: 'rgba(166,28,28,0.06)', borderRadius: '3px', border: '1px solid var(--color-danger)' }}>
+                        <div key={idx} className="category-error-alert text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', marginBottom: '8px', padding: '6px 10px', background: 'rgba(166,28,28,0.06)', borderRadius: '3px', border: '1px solid var(--color-danger)' }}>
                           <AlertTriangle size={14} />
                           <span>{err.message}</span>
                         </div>
@@ -501,7 +501,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                       </span>
                                     </div>
                                     <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                      <span className="selection-node-cost font-sans">
+                                      <span className="selection-node-cost font-body">
                                         {displayPoints} {costTypeLabel}
                                       </span>
                                       <button 
@@ -546,7 +546,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 </div>
 
                                 {selectionErrors.map((err, idx) => (
-                                  <div key={idx} className="unit-error-alert text-danger font-sans" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '6px 12px', background: 'rgba(166,28,28,0.04)', borderBottom: '1px solid rgba(166,28,28,0.2)' }}>
+                                  <div key={idx} className="unit-error-alert text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '6px 12px', background: 'rgba(166,28,28,0.04)', borderBottom: '1px solid rgba(166,28,28,0.2)' }}>
                                     <AlertTriangle size={14} />
                                     <span>{err.message}</span>
                                   </div>
@@ -598,7 +598,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 </span>
                               </div>
                               <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span className="selection-node-cost font-sans">
+                                <span className="selection-node-cost font-body">
                                   {displayPoints} {costTypeLabel}
                                 </span>
                                 <button 
@@ -669,14 +669,14 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {generalErrors.map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-danger font-sans" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem' }}>
+                      <div key={idx} className="validation-error-item text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem' }}>
                         <AlertTriangle size={18} style={{ flexShrink: 0 }} />
                         <span>{err.message}</span>
                       </div>
                     ))}
                     {/* Secondary list of category & selection errors for full context */}
                     {validationErrors.filter(e => e.categoryId || e.selectionId).map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-danger font-sans" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', opacity: 0.8 }}>
+                      <div key={idx} className="validation-error-item text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', opacity: 0.8 }}>
                         <AlertTriangle size={18} style={{ flexShrink: 0 }} />
                         <span>{err.message}</span>
                       </div>

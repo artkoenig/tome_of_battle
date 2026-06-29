@@ -22,7 +22,7 @@
 
   --font-serif: 'Cinzel', Georgia, serif;
   --font-body: 'Lora', 'EB Garamond', Garamond, serif;
-  --font-sans: 'Inter', system-ui, sans-serif; /* For clean stats / numbers */
+
   
   --shadow-gold: 0 4px 20px rgba(197, 155, 39, 0.15);
   --shadow-glow: 0 0 15px rgba(226, 183, 66, 0.4);
@@ -363,7 +363,7 @@ select option {
 .roster-meta {
   font-size: 0.85rem;
   color: var(--text-dim);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
 }
 
 .roster-faction-label {
@@ -485,7 +485,7 @@ select option {
 }
 
 .roster-editor-points {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-size: 1.3rem;
   color: var(--text-gold);
   font-weight: 700;
@@ -545,7 +545,7 @@ select option {
 }
 
 .selection-node-cost {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-weight: 700;
   color: var(--text-gold);
 }
@@ -600,7 +600,7 @@ select option {
 }
 
 .quantity-value {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-weight: 700;
   min-width: 24px;
   text-align: center;
@@ -688,7 +688,7 @@ select option {
 }
 
 .tracker-value {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-size: 2.2rem;
   font-weight: 700;
   color: #fff;
@@ -936,7 +936,7 @@ select option {
   align-items: center;
   justify-content: center;
   padding: 2px 8px;
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 700;
   border-radius: 3px;
@@ -997,7 +997,7 @@ select option {
 .text-danger { color: #ff8a80; }
 .text-success { color: #a5d6a7; }
 .font-serif { font-family: var(--font-serif); }
-.font-sans { font-family: var(--font-sans); }
+.font-body { font-family: var(--font-body); }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .gap-8 { gap: 8px; }
 .gap-16 { gap: 16px; }

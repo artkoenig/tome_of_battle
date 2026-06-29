@@ -423,7 +423,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div className="play-unit-badges">
                     <div 
-                      className="badge badge-success font-sans" 
+                      className="badge badge-success font-body" 
                       style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: asInfo.breakdown.length > 0 ? 'help' : 'default' }}
                       onMouseEnter={(e) => handleMouseEnter(e, 'Rüstungswurf (AS)', asInfo.breakdown)}
                       onMouseLeave={handleMouseLeave}
@@ -437,7 +437,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                       AS: {asInfo.display}
                     </div>
                     <div 
-                      className="badge badge-warning font-sans" 
+                      className="badge badge-warning font-body" 
                       style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: wsInfo.breakdown.length > 0 ? 'help' : 'default' }}
                       onMouseEnter={(e) => handleMouseEnter(e, 'Rettungswurf (WS)', wsInfo.breakdown)}
                       onMouseLeave={handleMouseLeave}
@@ -462,7 +462,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                     >
                       <Minus size={12} />
                     </button>
-                    <span className="font-sans" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
+                    <span className="font-body" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
                       {currentWounds} / {totalMaxWounds}
                     </span>
                     <button 
@@ -498,7 +498,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                               <tbody>
                                 <tr>
                                   {prof.characteristics.map(c => (
-                                    <td key={c.name} className="font-sans">{c.value}</td>
+                                    <td key={c.name} className="font-body">{c.value}</td>
                                   ))}
                                 </tr>
                               </tbody>
@@ -533,7 +533,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Sparkles size={14} /> Sonderregeln &amp; Fähigkeiten
                           </span>
-                          <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
+                          <span className="font-body hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
                             {isRulesExpanded ? '▲' : '▼'}
                           </span>
                         </h4>
@@ -575,7 +575,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <BookOpen size={14} /> Ausrüstung &amp; Upgrades
                             </span>
-                            <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
+                            <span className="font-body hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
                               {isEquipExpanded ? '▲' : '▼'}
                             </span>
                           </h4>
@@ -608,7 +608,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                                         )}
                                       </span>
                                       {desc && (
-                                        <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                                        <span className="font-body hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
                                           {isExpanded ? '▲' : '▼'}
                                         </span>
                                       )}
