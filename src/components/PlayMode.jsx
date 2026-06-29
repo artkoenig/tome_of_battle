@@ -21,6 +21,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedUpgrades, setExpandedUpgrades] = useState({});
   const [expandedEquipBlocks, setExpandedEquipBlocks] = useState({});
+  const [expandedRuleBlocks, setExpandedRuleBlocks] = useState({});
   const [gameState, setGameState] = useState(() => {
     return initialRoster.gameState || {
       round: 1,
@@ -366,9 +367,9 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
               {/* Unit Body */}
               <div className="play-unit-body">
-                <div className="play-unit-details">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   
-                  {/* Left Column: Stat Profiles Table & rules */}
+                  {/* Stat Profiles Table */}
                   <div>
                     {profiles.length > 0 ? (
                       profiles.map((prof, pIdx) => (
@@ -396,33 +397,52 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                     ) : (
                       <p className="text-dim" style={{ fontSize: '0.85rem' }}>Keine Profilwerte gefunden.</p>
                     )}
-
-
-                    {/* Sonderregeln */}
-                    {rules.length > 0 && (
-                      <div style={{ marginTop: '8px', borderTop: '1px solid var(--border-dark)', paddingTop: '8px' }}>
-                        <h4 style={{ fontSize: '0.9rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Sparkles size={14} /> Sonderregeln &amp; Fähigkeiten
-                        </h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          {rules.map((rule, rIdx) => (
-                            <div key={rIdx} style={{ fontSize: '0.85rem' }}>
-                              <strong className="text-gold">
-                                {rule.name}
-                                {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
-                                :
-                              </strong>{' '}
-                              <span style={{ color: 'var(--text-parchment)' }}>{rule.description}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                   </div>
 
-                  {/* Right Column: Equipment */}
-                  <div>
+                  {/* Extras: Sonderregeln & Ausrüstung */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Sonderregeln */}
+                    {rules.length > 0 && (() => {
+                      const isRulesExpanded = expandedRuleBlocks[selection.id];
+                      return (
+                      <div className="play-unit-wound-tracker">
+                        <h4 
+                          style={{ 
+                            fontSize: '0.9rem', 
+                            marginBottom: isRulesExpanded ? '8px' : '0px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            cursor: 'pointer',
+                            userSelect: 'none'
+                          }}
+                          onClick={() => setExpandedRuleBlocks(prev => ({ ...prev, [selection.id]: !prev[selection.id] }))}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Sparkles size={14} /> Sonderregeln &amp; Fähigkeiten
+                          </span>
+                          <span className="font-sans hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
+                            {isRulesExpanded ? '▲' : '▼'}
+                          </span>
+                        </h4>
+                        {isRulesExpanded && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            {rules.map((rule, rIdx) => (
+                              <div key={rIdx} style={{ fontSize: '0.85rem' }}>
+                                <strong className="text-gold">
+                                  {rule.name}
+                                  {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
+                                  :
+                                </strong>{' '}
+                                <span style={{ color: 'var(--text-parchment)' }}>{rule.description}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      );
+                    })()}
+
                     {/* Ausrüstung & Upgrades */}
                     {selectedUpgrades.length > 0 && (() => {
                       const isEquipExpanded = expandedEquipBlocks[selection.id];

@@ -641,6 +641,7 @@ select option {
 
 /* Play Mode Dashboard */
 .play-layout {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 8px;
@@ -702,6 +703,7 @@ select option {
 }
 
 .play-unit-card {
+  width: 100%;
   background-color: var(--bg-panel);
   border: 1px solid var(--border-dark);
   border-radius: 4px;
