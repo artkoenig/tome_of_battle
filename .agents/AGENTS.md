@@ -12,8 +12,8 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 * Es sollen keine Armeespezifischen Logiken implementiert werden, die implementierung soll immer allgemeingültig sein
 * Erstelle bei jeder Änderung der Validierungslogik oder Importlogik einen Unit-Test für das geänderte Verhalten
 
-## Git Push
-* **Local (macOS):** Kein automatischer Push zu Remote-Repositories.
+## Git 
+* **Local (macOS):** Push zu Remote-Repositories nur bei Aufforderung.
 
 ## Testing
 * Alle Unit-Tests **müssen** vor dem Task-Abschluss erfolgreich durchlaufen.
