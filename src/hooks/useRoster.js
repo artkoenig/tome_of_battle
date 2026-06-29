@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { saveRoster } from '../db/database';
-import { calculateRosterCosts, validateRoster, resolveEntry, findEntryInSystem } from '../solver/validator';
+import { calculateRosterCosts, validateRoster, resolveEntry } from '../solver/validator';
 
 export function useRoster(initialRoster, system) {
   const [roster, setRoster] = useState(initialRoster);
@@ -32,6 +32,7 @@ export function useRoster(initialRoster, system) {
       number: 1,
       category: categoryId,
       costs: resolved.costs || [],
+      collective: resolved.collective || entry.collective || false,
       selections: []
     };
 
@@ -128,7 +129,7 @@ export function useRoster(initialRoster, system) {
             const list = parentSel.selections || [];
             const idx = list.findIndex(s => (s.entryLinkId || s.selectionEntryId) === optionId);
             
-            const amount = option.collective ? parentCount : 1;
+            const amount = 1;
 
             if (action === 'increment') {
               if (idx > -1) {

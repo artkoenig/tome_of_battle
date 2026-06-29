@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Minus, Info, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Minus, Info } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 import { useDebugMode } from '../../hooks/DebugContext';
+import {
+  UPGRADE_DETAILS_KEYWORDS,
+  GENERAL_EXACT_KEYWORDS,
+  GENERAL_SUBSTRING_KEYWORDS,
+  GENERAL_IDS
+} from '../../solver/constants';
 
 const findForceOfSelection = (selId, forces) => {
   if (!forces) return null;
@@ -80,7 +86,7 @@ export default function SelectionConfigurator({
     if (res.profiles && res.profiles.length > 0) {
       res.profiles.forEach(p => {
         const typeLower = p.profileTypeName?.toLowerCase() || '';
-        if (typeLower.includes('weapon') || typeLower.includes('magic') || typeLower.includes('items') || typeLower.includes('rüstung') || typeLower.includes('waffe')) {
+        if (UPGRADE_DETAILS_KEYWORDS.some(k => typeLower.includes(k))) {
           const stats = p.characteristics.map(c => `${c.name}: ${c.value}`).join(', ');
           descriptions.push(`${p.name} (${stats})`);
         }
@@ -347,13 +353,10 @@ export default function SelectionConfigurator({
     const res = resolveEntry(system, item.option, activeCatalogue.id);
     if (!res) return false;
     const nameLower = res.name?.toLowerCase() || '';
-    return nameLower === 'general' || 
-           nameLower === 'armeegeneral' || 
-           nameLower === 'army general' || 
-           nameLower.includes('warlord') || 
-           nameLower === 'general der armee' ||
-           item.option.id === '1b7c-2c90-6d96-28c9' ||
-           res.id === '1b7c-2c90-6d96-28c9';
+    return GENERAL_EXACT_KEYWORDS.includes(nameLower) || 
+           GENERAL_SUBSTRING_KEYWORDS.some(k => nameLower.includes(k)) ||
+           GENERAL_IDS.includes(item.option.id) ||
+           GENERAL_IDS.includes(res.id);
   };
 
   const isGeneralGroupOrStandalone = (group) => {
@@ -377,11 +380,11 @@ export default function SelectionConfigurator({
       <div className="sub-selection-group" style={{ borderLeft: 'none', paddingLeft: 0 }}>
         {groupedList.map((group, gIdx) => {
           if (group.standalone) {
-            const { option } = group.item;
+            const { option, parentDefId } = group.item;
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
-            const points = getOptionDisplayCost(system, option, roster.costLimitType);
+            const basePoints = getOptionDisplayCost(system, option, roster.costLimitType);
             const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
             const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
             const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
@@ -408,6 +411,9 @@ export default function SelectionConfigurator({
               const pSel = selection.selections?.find(s => (s.entryLinkId || s.selectionEntryId) === parentDefId);
               if (pSel) parentCount = pSel.number || 1;
             }
+
+            const isCollective = res.collective || option.collective || false;
+            const points = isCollective ? basePoints * parentCount : basePoints;
 
             const isClickable = !isMandatory;
             const handleRowClick = (e) => {
@@ -734,7 +740,7 @@ function OptionGroupComponent({
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
-            const points = getOptionDisplayCost(system, option, roster.costLimitType);
+            const basePoints = getOptionDisplayCost(system, option, roster.costLimitType);
             const filteredOptionConstraints = res.constraints?.filter(con => {
               if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
                 return true;
@@ -761,6 +767,9 @@ function OptionGroupComponent({
               const pSel = selection.selections?.find(s => (s.entryLinkId || s.selectionEntryId) === parentDefId);
               if (pSel) parentCount = pSel.number || 1;
             }
+
+            const isCollective = res.collective || option.collective || false;
+            const points = isCollective ? basePoints * parentCount : basePoints;
 
             const ptsConstraintGroup = filteredGroupConstraints.find(c => 
               c.type === 'max' && 

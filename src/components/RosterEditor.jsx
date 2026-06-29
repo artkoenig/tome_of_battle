@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Play, Trash2, Shield, AlertTriangle, Check, BookOpen } from 'lucide-react';
+import { Save, Play, Trash2, AlertTriangle, Check } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { useDebugMode } from '../hooks/DebugContext';
 import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem } from '../solver/validator';
+import { UPGRADE_DETAILS_KEYWORDS } from '../solver/constants';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -73,7 +74,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     if (res.profiles && res.profiles.length > 0) {
       res.profiles.forEach(p => {
         const typeLower = p.profileTypeName?.toLowerCase() || '';
-        if (typeLower.includes('weapon') || typeLower.includes('magic') || typeLower.includes('items') || typeLower.includes('rüstung') || typeLower.includes('waffe')) {
+        if (UPGRADE_DETAILS_KEYWORDS.some(k => typeLower.includes(k))) {
           const stats = p.characteristics.map(c => `${c.name}: ${c.value}`).join(', ');
           descriptions.push(`${p.name} (${stats})`);
         }

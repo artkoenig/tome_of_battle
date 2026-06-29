@@ -196,17 +196,18 @@ export function getOptionDisplayCost(system, entry, costLimitType) {
 /**
  * Recursively calculates the total cost of a selection node and all its child selections.
  */
-export function getSelectionTotalCost(selection, costLimitType) {
+export function getSelectionTotalCost(selection, costLimitType, parentCount = 1) {
   let total = 0;
+  const effectiveCount = (selection.number || 1) * (selection.collective ? parentCount : 1);
   if (selection.costs) {
     const cost = selection.costs.find(c => c.typeId === costLimitType || c.typeId === 'pts');
     if (cost) {
-      total += (cost.value || 0) * (selection.number || 1);
+      total += (cost.value || 0) * effectiveCount;
     }
   }
   if (selection.selections) {
     selection.selections.forEach(child => {
-      total += getSelectionTotalCost(child, costLimitType);
+      total += getSelectionTotalCost(child, costLimitType, effectiveCount);
     });
   }
   return total;
@@ -226,11 +227,12 @@ export function calculateRosterCosts(roster, system) {
     });
   }
 
-  const addSelectionCosts = (selection) => {
+  const addSelectionCosts = (selection, parentCount = 1) => {
+    const effectiveCount = (selection.number || 1) * (selection.collective ? parentCount : 1);
     // A selection has a list of costs (usually parsed from its template)
     if (selection.costs) {
       selection.costs.forEach(cost => {
-        const val = (cost.value || 0) * (selection.number || 1);
+        const val = (cost.value || 0) * effectiveCount;
         totals[cost.typeId] = (totals[cost.typeId] || 0) + val;
       });
     }
@@ -240,7 +242,7 @@ export function calculateRosterCosts(roster, system) {
       selection.selections.forEach(child => {
         // Multiply child costs by parent's count if collective is false,
         // but typically in BS child selection count stands on its own.
-        addSelectionCosts(child);
+        addSelectionCosts(child, effectiveCount);
       });
     }
   };
@@ -349,10 +351,11 @@ export function computeRosterCounts(roster, system) {
   const selectionCounts = {};
   const categoryCounts = {}; // forceId -> { categoryId -> count }
 
-  const countSelection = (selection, forceId, forceCatalogueId) => {
+  const countSelection = (selection, forceId, forceCatalogueId, parentCount = 1) => {
+    const effectiveCount = (selection.number || 1) * (selection.collective ? parentCount : 1);
     const entryId = selection.entryLinkId || selection.selectionEntryId;
     if (entryId) {
-      selectionCounts[entryId] = (selectionCounts[entryId] || 0) + (selection.number || 1);
+      selectionCounts[entryId] = (selectionCounts[entryId] || 0) + effectiveCount;
     }
 
     if (!categoryCounts[forceId]) {
@@ -365,14 +368,14 @@ export function computeRosterCounts(roster, system) {
     if (entryDef) {
       const resolved = resolveEntry(system, entryDef, forceCatalogueId);
       if (resolved && resolved.targetId && resolved.targetId !== entryId) {
-        selectionCounts[resolved.targetId] = (selectionCounts[resolved.targetId] || 0) + (selection.number || 1);
+        selectionCounts[resolved.targetId] = (selectionCounts[resolved.targetId] || 0) + effectiveCount;
       }
       
       const seenCategories = new Set();
       resolved?.categoryLinks?.forEach(cl => {
         if (cl.targetId && !seenCategories.has(cl.targetId)) {
           seenCategories.add(cl.targetId);
-          categoryCounts[forceId][cl.targetId] = (categoryCounts[forceId][cl.targetId] || 0) + 1;
+          categoryCounts[forceId][cl.targetId] = (categoryCounts[forceId][cl.targetId] || 0) + effectiveCount;
 
           // Replaced hardcoded string matching for 'hero extra cost' etc.
         }
@@ -382,12 +385,12 @@ export function computeRosterCounts(roster, system) {
     if (selection.category) {
       const hasCat = entryDef?.categoryLinks?.some(cl => cl.targetId === selection.category);
       if (!hasCat) {
-        categoryCounts[forceId][selection.category] = (categoryCounts[forceId][selection.category] || 0) + 1;
+        categoryCounts[forceId][selection.category] = (categoryCounts[forceId][selection.category] || 0) + effectiveCount;
       }
     }
 
     if (selection.selections) {
-      selection.selections.forEach(child => countSelection(child, forceId, forceCatalogueId));
+      selection.selections.forEach(child => countSelection(child, forceId, forceCatalogueId, effectiveCount));
     }
   };
 

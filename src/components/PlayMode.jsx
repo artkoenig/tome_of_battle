@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowLeft, Search, Plus, Minus, Shield, 
+  ArrowLeft, Search, Plus, Minus, 
   Heart, Swords, Sparkles, BookOpen 
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInCatalogue, findEntryInSystem, resolveEntry } from '../solver/validator';
+import { findEntryInSystem, resolveEntry } from '../solver/validator';
 import { useDebugMode } from '../hooks/DebugContext';
+import { MODEL_COUNT_PROFILE_TYPES } from '../solver/constants';
+import {
+  getArmourSave as getArmourSaveLogic,
+  getWardSave as getWardSaveLogic,
+  extractModelProfiles,
+  extractUpgradeProfiles,
+  hasBlessing
+} from '../solver/rulesEvaluator';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const { showDebugIds } = useDebugMode();
@@ -94,11 +102,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     });
 
     // Filter profiles to only keep model/unit stats profiles
-    const modelProfiles = profiles.filter(p => {
-      const typeLower = p.profileTypeName?.toLowerCase() || '';
-      return ['profile', 'profil', 'unit', 'einheit', 'creature', 'kreatur', 'monster', 'charakteristik', 'charakterwerte', 'mount', 'reittier'].some(t => typeLower.includes(t)) && 
-             !['magic item', 'equipment', 'ausrüstung', 'magic weapon', 'armour', 'rüstung', 'weapon', 'waffe', 'virtue', 'talisman', 'item', 'special rule', 'banner', 'standarte', 'runes', 'runen'].some(t => typeLower.includes(t));
-    });
+    const modelProfiles = extractModelProfiles(profiles);
 
     return { profiles: modelProfiles, rules };
   };
@@ -128,215 +132,66 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       });
     }
     if (res.profiles && res.profiles.length > 0) {
-      res.profiles.forEach(p => {
-        const typeLower = p.profileTypeName?.toLowerCase() || '';
-        if (['magic item', 'weapon', 'armour', 'enchanted item', 'arcane item', 'talisman', 'magic weapon', 'magic armour', 'virtue', 'runes', 'special rule', 'gegenstand', 'virtues', 'tugend'].some(t => typeLower.includes(t))) {
-          p.characteristics?.forEach(c => {
-            if (c.value) descriptions.push(`${c.name}: ${c.value}`);
-          });
-        }
+      const upgradeProfiles = extractUpgradeProfiles(res.profiles);
+      upgradeProfiles.forEach(p => {
+        p.characteristics?.forEach(c => {
+          if (c.value) descriptions.push(`${c.name}: ${c.value}`);
+        });
       });
     }
     return descriptions.join(' | ');
   };
 
   // Helper to calculate the combined armour save for a unit selection in WFB 6th
-  const getArmourSave = (selection) => {
+  // Helper to compile all names, rules, and profiles of a selection and its sub-selections
+  const collectSavesData = (selection) => {
     const entryId = selection.entryLinkId || selection.selectionEntryId;
     const entry = findEntryInSystem(system, entryId);
     const resolved = resolveEntry(system, entry);
     
-    let hasShield = false;
-    let armourValue = 7; // 7 means no armour
-    let isMounted = false;
-    let isBarded = false;
-
-    // Helper to check text for keywords
-    const scanText = (text) => {
-      if (!text) return;
-      const t = text.toLowerCase();
-      
-      // Shields
-      if (t.includes('shield') || t.includes('schild')) {
-        hasShield = true;
-      }
-      
-      // Armours
-      if (t.includes('full plate') || t.includes('plattenrüstung') || t.includes('gromril') || t.includes('chaos armour') || t.includes('chaos-rüstung')) {
-        armourValue = Math.min(armourValue, 4);
-      } else if (t.includes('heavy armour') || t.includes('schwere rüstung')) {
-        armourValue = Math.min(armourValue, 5);
-      } else if (t.includes('light armour') || t.includes('leichte rüstung')) {
-        armourValue = Math.min(armourValue, 6);
-      }
-
-      // Mounts (cavalry mount types in 6th edition)
-      if (t.includes('horse') || t.includes('steed') || t.includes('ross') || t.includes('pony') || t.includes('pegasus') || t.includes('cold one') || t.includes('wolf') || t.includes('boar') || t.includes('mount') || t.includes('reittier') || t.includes('streitross') || t.includes('schlachtross') || t.includes('nightmare') || t.includes('nachtmahr') || t.includes('kampfechse') || t.includes('einhorn') || t.includes('unicorn') || t.includes('hirsch') || t.includes('stag') || t.includes('wildschwein') || t.includes('chaosross') || t.includes('skelettpferd') || t.includes('skelettroß')) {
-        // Exclude monster mounts
-        if (!t.includes('hippogryph') && !t.includes('griffon') && !t.includes('dragon') && !t.includes('drache') && !t.includes('manticore') && !t.includes('wyvern')) {
-          isMounted = true;
-        }
-      }
-
-      // Barding
-      if (t.includes('barded') || t.includes('barding') || t.includes('harnisch') || t.includes('rosharnisch') || t.includes('gepanzert') || t.includes('gepanzertes')) {
-        isBarded = true;
-      }
-    };
-
-    // 1. Scan resolved main entry details
+    const items = [];
     if (resolved) {
-      scanText(resolved.name);
-      resolved.rules?.forEach(r => scanText(r.name + ' ' + r.description));
-      resolved.profiles?.forEach(p => {
-        scanText(p.name);
-        p.characteristics?.forEach(c => scanText(c.name + ' ' + c.value));
-        if (p.profileTypeName?.toLowerCase().includes('cavalry') || p.profileTypeName?.toLowerCase().includes('kavallerie')) {
-          isMounted = true;
-        }
-      });
+      if (resolved.name) items.push({ name: resolved.name });
+      resolved.rules?.forEach(r => items.push({ name: r.name, description: r.description }));
+      resolved.profiles?.forEach(p => items.push(p));
     }
-
-    // 2. Scan selected sub-selections/upgrades
+    
     if (selection.selections) {
       selection.selections.forEach(subSel => {
-        scanText(subSel.name);
+        if (subSel.name) items.push({ name: subSel.name });
         const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
         const subEntry = findEntryInSystem(system, subEntryId);
         const subResolved = resolveEntry(system, subEntry);
         if (subResolved) {
-          scanText(subResolved.name);
-          subResolved.rules?.forEach(r => scanText(r.name + ' ' + r.description));
-          subResolved.profiles?.forEach(p => {
-            scanText(p.name);
-            p.characteristics?.forEach(c => scanText(c.name + ' ' + c.value));
-            if (p.profileTypeName?.toLowerCase().includes('cavalry') || p.profileTypeName?.toLowerCase().includes('kavallerie')) {
-              isMounted = true;
-            }
-          });
+          if (subResolved.name) items.push({ name: subResolved.name });
+          subResolved.rules?.forEach(r => items.push({ name: r.name, description: r.description }));
+          subResolved.profiles?.forEach(p => items.push(p));
         }
       });
     }
+    return items;
+  };
 
-    // If we have barding, the model must be mounted!
-    if (isBarded) {
-      isMounted = true;
-    }
-
-    // 3. Calculate Armour Save according to 6th Edition rules:
-    // None = none (7)
-    // Shield or Light armour = 6+
-    // Shield & Light armour or Heavy armour = 5+
-    // Shield & Heavy armour = 4+
-    // Cavalry Mount = +1 save, minimum base save of 6+
-    // Barded Mount = +1 save
-    let save = 7;
-
-    if (armourValue < 7) {
-      save = armourValue;
-    }
-
-    if (isMounted) {
-      if (save === 7) {
-        save = 6;
-      } else {
-        save = save - 1;
-      }
-    }
-
-    if (hasShield) {
-      if (save === 7) {
-        save = 6;
-      } else {
-        save = save - 1;
-      }
-    }
-
-    if (isBarded && save < 7) {
-      save = save - 1;
-    }
-
-    if (save === 7) {
-      return 'Kein';
-    }
+  const getArmourSave = (selection) => {
+    const data = collectSavesData(selection);
+    const save = getArmourSaveLogic(data, selection.name, roster?.catalogueName);
+    if (save === 7 || !save) return 'Kein';
     return `${save}+`;
   };
 
-  // Helper to calculate the ward save for a unit selection in WFB 6th
   const getWardSave = (selection) => {
-    const entryId = selection.entryLinkId || selection.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId);
-    const resolved = resolveEntry(system, entry);
-    
-    let bestWard = null;
-    let hasBlessing = false;
+    const data = collectSavesData(selection);
+    const save = getWardSaveLogic(data, selection.name, roster?.catalogueName);
+    const blessing = hasBlessing(data, selection.name, roster?.catalogueName);
 
-    // Helper to parse numeric ward saves from text
-    const scanTextForWardSave = (text) => {
-      if (!text) return;
-      const t = text.toLowerCase();
-      
-      // Look for patterns like "5+ ward save", "5+ rettungswurf"
-      const m1 = t.match(/(\d)\+\s*(?:ward save|rettungswurf|rettung)/);
-      if (m1) {
-        const val = parseInt(m1[1]);
-        if (val >= 1 && val <= 6) {
-          bestWard = bestWard ? Math.min(bestWard, val) : val;
-        }
+    if (save !== null) {
+      if (blessing && save > 5) {
+        return `${save}+ / 5+ (Segen)`;
       }
-      
-      // Look for patterns like "ward save of 5+", "rettungswurf von 5+"
-      const m2 = t.match(/(?:ward save|rettungswurf|rettung)\s*(?:of|von)?\s*(\d)\+/);
-      if (m2) {
-        const val = parseInt(m2[1]);
-        if (val >= 1 && val <= 6) {
-          bestWard = bestWard ? Math.min(bestWard, val) : val;
-        }
-      }
-
-      // Check for Blessing of the Lady (Segen der Herrin)
-      if (t.includes('blessing of the lady') || t.includes('segen der herrin') || t.includes('grail vow') || t.includes('gralsgelübde') || t.includes('segen')) {
-        hasBlessing = true;
-      }
-    };
-
-    // 1. Scan resolved main entry details
-    if (resolved) {
-      scanTextForWardSave(resolved.name);
-      resolved.rules?.forEach(r => scanTextForWardSave(r.name + ' ' + r.description));
-      resolved.profiles?.forEach(p => {
-        scanTextForWardSave(p.name);
-        p.characteristics?.forEach(c => scanTextForWardSave(c.name + ' ' + c.value));
-      });
+      return `${save}+`;
     }
 
-    // 2. Scan selected sub-selections/upgrades
-    if (selection.selections) {
-      selection.selections.forEach(subSel => {
-        scanTextForWardSave(subSel.name);
-        const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
-        const subEntry = findEntryInSystem(system, subEntryId);
-        const subResolved = resolveEntry(system, subEntry);
-        if (subResolved) {
-          scanTextForWardSave(subResolved.name);
-          subResolved.rules?.forEach(r => scanTextForWardSave(r.name + ' ' + r.description));
-          subResolved.profiles?.forEach(p => {
-            scanTextForWardSave(p.name);
-            p.characteristics?.forEach(c => scanTextForWardSave(c.name + ' ' + c.value));
-          });
-        }
-      });
-    }
-
-    // 3. Format result
-    if (bestWard !== null) {
-      if (hasBlessing && bestWard > 5) {
-        return `${bestWard}+ / 5+ (Segen)`;
-      }
-      return `${bestWard}+`;
-    }
-
-    if (hasBlessing) {
+    if (blessing) {
       return '5+ / 6+ (Segen)';
     }
 
@@ -369,7 +224,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           const isModel = childResolved.type === 'model' || 
                           child.type === 'model' ||
                           childResolved.profiles?.some(p => 
-                            ['unit', 'model', 'monster', 'creature', 'war machine', 'character', 'rider', 'mount'].includes(p.profileTypeName?.toLowerCase())
+                            MODEL_COUNT_PROFILE_TYPES.includes(p.profileTypeName?.toLowerCase())
                           );
           
           if (isModel) {
