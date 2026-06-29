@@ -1118,6 +1118,10 @@ input[type="radio"]:checked::after {
     display: none !important;
   }
 
+  .hide-on-mobile {
+    display: none !important;
+  }
+
   /* Hide main premium header inside the builder/play screens to maximize vertical space */
   .in-builder-mode .app-header {
     display: none !important;

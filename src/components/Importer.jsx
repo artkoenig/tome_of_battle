@@ -144,8 +144,8 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
 
   return (
     <div className="container" style={showAsEmptyState ? { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 40px)' } : {}}>
-      <div className={showAsEmptyState ? "" : "gothic-panel"} style={showAsEmptyState ? { textAlign: 'center', maxWidth: '600px', width: '100%' } : {}}>
-        {showAsEmptyState ? (
+      <div style={showAsEmptyState ? { textAlign: 'center', maxWidth: '600px', width: '100%' } : {}}>
+        {showAsEmptyState && (
           <>
             <div style={{
               width: '100%',
@@ -159,15 +159,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
             }} />
             <h2 style={{ fontSize: '2.2rem', marginBottom: '16px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Willkommen bei Tome of Battle</h2>
             <p className="text-dim" style={{ maxWidth: '500px', margin: '0 auto 24px', fontSize: '1.2rem', lineHeight: '1.6' }}>
-              Dein Buch des Wissens ist noch leer. Importiere zuerst Spieldaten (BattleScribe .bsr), um Armeen ausheben zu können.
-            </p>
-          </>
-        ) : (
-          <>
-            <h1>Bibliothekar</h1>
-            <p className="text-dim" style={{ textAlign: 'center', marginBottom: '20px' }}>
-              Lade BSData Repository ZIP-Archive hoch (z.B. von BSData/wh40k-10th-edition). 
-              Die Dateien werden komplett lokal auf deinem Gerät verarbeitet und in einer Browser-Datenbank gespeichert.
+              Dein Buch des Wissens ist noch leer. Importiere zuerst Spieldaten im BattleScribe-Format, um Armeen ausheben zu können.
             </p>
           </>
         )}
@@ -223,7 +215,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       </div>
 
       {!showAsEmptyState && (
-        <div className="gothic-panel" style={{ marginTop: '24px' }}>
+        <div style={{ marginTop: '24px' }}>
           <h2>Importierte Spielsysteme</h2>
           {systems.length === 0 ? (
             <p className="text-dim" style={{ textAlign: 'center', padding: '20px 0' }}>Keine Spielsysteme in der Datenbank vorhanden.</p>
@@ -235,10 +227,10 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                   className="catalog-item"
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <FileText className="text-gold" size={24} />
-                    <div>
-                      <h4 style={{ margin: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0, paddingRight: '16px' }}>
+                    <FileText className="text-gold" size={24} style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                         {sys.name}
                         {showDebugIds && <span className="debug-id-badge">{sys.id}</span>}
                       </h4>
@@ -247,7 +239,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                       </span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                     <button 
                       className="btn-gold btn-sm" 
                       onClick={() => { setEditingSystem(sys); setError(null); setSuccessMsg(null); }}

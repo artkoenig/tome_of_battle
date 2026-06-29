@@ -341,7 +341,7 @@ export default function App() {
         ) : view === 'rosters' && (
           <div className="container">
             {rosters.length > 0 && (
-              <div className="gothic-panel dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="gothic-panel dashboard-header hide-on-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h2>Heerlager</h2>
                   <p className="text-dim" style={{ margin: 0 }}>Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>
@@ -473,13 +473,15 @@ export default function App() {
               );
             })()}
 
-            <button 
-              className="fab-mobile mobile-only"
-              onClick={() => setIsModalOpen(true)}
-              title="Neue Armeeliste"
-            >
-              <Plus size={24} />
-            </button>
+            {rosters.length > 0 && (
+              <button 
+                className="fab-mobile mobile-only"
+                onClick={() => setIsModalOpen(true)}
+                title="Neue Armeeliste"
+              >
+                <Plus size={24} />
+              </button>
+            )}
           </div>
         )}
 
