@@ -4,7 +4,7 @@ import {
   Heart, Swords, Sparkles, BookOpen 
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry } from '../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules } from '../solver/validator';
 import { useDebugMode } from '../hooks/DebugContext';
 import { MODEL_COUNT_PROFILE_TYPES } from '../solver/constants';
 import {
@@ -83,24 +83,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
   // Helper to get unit profiles
   const getUnitProfilesAndRules = (selection) => {
-    const entryId = selection.entryLinkId || selection.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId);
-    const resolved = resolveEntry(system, entry);
-
-    if (!resolved) return { profiles: [], rules: [] };
-
-    // Accumulate profiles/rules from the main entry and its immediate models
-    const profiles = [...(selection.profiles || []), ...(resolved.profiles || [])];
-    const rules = [...(selection.rules || []), ...(resolved.rules || [])];
-
-    resolved.selectionEntries?.forEach(child => {
-      const childResolved = resolveEntry(system, child);
-      if (childResolved) {
-        if (childResolved.profiles) profiles.push(...childResolved.profiles);
-        if (childResolved.rules) rules.push(...childResolved.rules);
-      }
-    });
-
+    const { profiles, rules } = collectUnitProfilesAndRules(system, selection, initialRoster.catalogueId);
+    
     // Filter profiles to only keep model/unit stats profiles
     const modelProfiles = extractModelProfiles(profiles);
 
@@ -313,70 +297,12 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     <div className="play-layout">
       {/* Play Mode Header */}
       <div className="play-header">
-        <button className="btn-sm" onClick={onBack}>
-          <ArrowLeft size={16} /> Kriegsplanung (Editieren)
+        <button className="btn-sm play-header-back" onClick={onBack} title="Kriegsplanung (Editieren)">
+          <ArrowLeft size={16} />
         </button>
-        <h2 style={{ margin: 0, border: 'none', padding: 0 }}>Schlachttagebuch</h2>
-        <div className="badge badge-success" style={{ padding: '6px 12px' }}>
-          Spielmodus aktiv (Locked)
-        </div>
+        <h2 className="play-header-title">Spielmodus</h2>
       </div>
 
-      {/* Tracker Hub */}
-      <div className="tracker-hub">
-        <div className="tracker-card">
-          <div className="tracker-title">Runde</div>
-          <div className="tracker-controls">
-            <button className="btn-sm" onClick={() => adjustTracker('round', -1)}>
-              <Minus size={16} />
-            </button>
-            <span className="tracker-value">{gameState.round}</span>
-            <button className="btn-sm" onClick={() => adjustTracker('round', 1)}>
-              <Plus size={16} />
-            </button>
-          </div>
-        </div>
-
-        <div className="tracker-card">
-          <div className="tracker-title">Siegpunkte (VP)</div>
-          <div className="tracker-controls">
-            <button className="btn-sm" onClick={() => adjustTracker('vp', -1)}>
-              <Minus size={16} />
-            </button>
-            <span className="tracker-value">{gameState.vp}</span>
-            <button className="btn-sm" onClick={() => adjustTracker('vp', 1)}>
-              <Plus size={16} />
-            </button>
-          </div>
-        </div>
-
-        <div className="tracker-card">
-          <div className="tracker-title">Befehlspunkte (CP)</div>
-          <div className="tracker-controls">
-            <button className="btn-sm" onClick={() => adjustTracker('cp', -1)}>
-              <Minus size={16} />
-            </button>
-            <span className="tracker-value">{gameState.cp}</span>
-            <button className="btn-sm" onClick={() => adjustTracker('cp', 1)}>
-              <Plus size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Search & Rules Lookup */}
-      <div className="gothic-panel" style={{ padding: '16px', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <Search className="text-gold" size={20} />
-          <input 
-            type="text" 
-            placeholder="Einheit oder Sonderregel im Deckblatt suchen..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '100%', border: '1px solid var(--border-gold-dim)' }}
-          />
-        </div>
-      </div>
 
       {/* Active Units Roster Sheets */}
       <div className="play-units-grid">
@@ -395,24 +321,46 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           return (
             <div key={selection.id} className="play-unit-card">
               {/* Unit Header */}
-              <div className="play-unit-header">
-                <div className="play-unit-header-left">
-                  <span className="play-unit-title">
-                    {selection.name}
-                    {showDebugIds && (
-                      <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-                    )}
-                  </span>
-                  <span className="text-dim" style={{ fontSize: '0.85rem' }}>
-                    {modelCount} Modell(e) | Max LP: {maxWounds}
-                  </span>
+              <div className="play-unit-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
+                <div className="play-unit-title">
+                  {selection.name}
+                  {showDebugIds && (
+                    <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
+                  )}
                 </div>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Heart className={isUnitWounded ? "text-danger" : "text-success"} size={18} />
-                  <span className="font-sans" style={{ fontWeight: 700 }}>
-                    {currentWounds} / {totalMaxWounds} LP
-                  </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="play-unit-badges">
+                    <div className="badge badge-success font-sans" style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700 }}>
+                      AS: {getArmourSave(selection)}
+                    </div>
+                    <div className="badge badge-warning font-sans" style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700 }}>
+                      WS: {getWardSave(selection)}
+                    </div>
+                  </div>
+                  
+                  <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
+                    {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
+                    <button 
+                      className="btn-sm" 
+                      style={{ padding: '2px 6px' }}
+                      onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
+                      disabled={isDead}
+                    >
+                      <Minus size={12} />
+                    </button>
+                    <span className="font-sans" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
+                      {currentWounds} / {totalMaxWounds}
+                    </span>
+                    <button 
+                      className="btn-sm" 
+                      style={{ padding: '2px 6px' }}
+                      onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
+                      disabled={currentWounds === totalMaxWounds}
+                    >
+                      <Plus size={12} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -424,12 +372,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                   <div>
                     {profiles.length > 0 ? (
                       profiles.map((prof, pIdx) => (
-                        <div key={pIdx} style={{ marginBottom: '12px' }}>
-                          <span className="text-gold font-serif" style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                            {prof.name}
-                            {showDebugIds && <span className="debug-id-badge clickable">{prof.id}</span>}
-                            {' '}({prof.profileTypeName})
-                          </span>
+                        <div key={pIdx} style={{ marginBottom: '6px' }}>
                           <div className="profile-table-container">
                             <table className="profile-table">
                               <thead>
@@ -454,28 +397,14 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                       <p className="text-dim" style={{ fontSize: '0.85rem' }}>Keine Profilwerte gefunden.</p>
                     )}
 
-                    {/* Schutzwürfe (AS & WS Badges) */}
-                    <div style={{ 
-                      marginTop: '8px', 
-                      marginBottom: '16px', 
-                      display: 'flex', 
-                      gap: '8px'
-                    }}>
-                      <div className="badge badge-success font-sans" style={{ fontSize: '0.85rem', padding: '6px 12px', fontWeight: 700 }}>
-                        AS: {getArmourSave(selection)}
-                      </div>
-                      <div className="badge badge-warning font-sans" style={{ fontSize: '0.85rem', padding: '6px 12px', fontWeight: 700 }}>
-                        WS: {getWardSave(selection)}
-                      </div>
-                    </div>
 
                     {/* Sonderregeln */}
                     {rules.length > 0 && (
-                      <div style={{ marginTop: '16px', borderTop: '1px solid var(--border-dark)', paddingTop: '12px' }}>
-                        <h4 style={{ fontSize: '0.9rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ marginTop: '8px', borderTop: '1px solid var(--border-dark)', paddingTop: '8px' }}>
+                        <h4 style={{ fontSize: '0.9rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <Sparkles size={14} /> Sonderregeln &amp; Fähigkeiten
                         </h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           {rules.map((rule, rIdx) => (
                             <div key={rIdx} style={{ fontSize: '0.85rem' }}>
                               <strong className="text-gold">
@@ -492,53 +421,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
                   </div>
 
-                  {/* Right Column: Single Wound Tracker for Unit & Equipment */}
+                  {/* Right Column: Equipment */}
                   <div>
-                    <div className="play-unit-wound-tracker" style={{ marginBottom: '16px' }}>
-                      <h4 style={{ fontSize: '0.9rem', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Swords size={14} /> Lebenspunkte-Zähler
-                      </h4>
-                      
-                      <div style={{ opacity: isDead ? 0.4 : 1, transition: 'opacity 0.2s' }}>
-                        <div className="wound-tracker-row">
-                          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                            Gesamt-LP {isDead && <span className="text-danger">(VERNICHTET)</span>}
-                          </span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button 
-                              className="btn-sm" 
-                              style={{ padding: '2px 6px' }}
-                              onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
-                              disabled={isDead}
-                            >
-                              <Minus size={12} />
-                            </button>
-                            <span className="font-sans" style={{ minWidth: '36px', textAlign: 'center', fontWeight: 700 }}>
-                              {currentWounds} / {totalMaxWounds}
-                            </span>
-                            <button 
-                              className="btn-sm" 
-                              style={{ padding: '2px 6px' }}
-                              onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
-                              disabled={currentWounds === totalMaxWounds}
-                            >
-                              <Plus size={12} />
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div className="wound-bar-container">
-                          <div 
-                            className="wound-bar-fill" 
-                            style={{ 
-                              width: `${healthPct}%`,
-                              backgroundColor: healthPct < 30 ? 'var(--color-danger)' : healthPct < 70 ? 'var(--color-warning)' : 'var(--color-success)'
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Ausrüstung & Upgrades */}
                     {selectedUpgrades.length > 0 && (() => {
                       const isEquipExpanded = expandedEquipBlocks[selection.id];
@@ -547,7 +431,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                           <h4 
                             style={{ 
                               fontSize: '0.9rem', 
-                              marginBottom: isEquipExpanded ? '12px' : '0px', 
+                              marginBottom: isEquipExpanded ? '8px' : '0px', 
                               display: 'flex', 
                               alignItems: 'center', 
                               justifyContent: 'space-between',
@@ -565,7 +449,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                           </h4>
                           
                           {isEquipExpanded && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               {selectedUpgrades.map(upgrade => {
                                 const desc = getUpgradeDescription(upgrade.resolved);
                                 const isExpanded = expandedUpgrades[upgrade.id];
@@ -578,7 +462,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                                         alignItems: 'center', 
                                         justifyContent: 'space-between',
                                         cursor: desc ? 'pointer' : 'default',
-                                        padding: '4px 8px',
+                                        padding: '3px 6px',
                                         backgroundColor: 'rgba(255, 255, 255, 0.02)',
                                         border: '1px solid var(--border-dark)',
                                         borderRadius: '4px'
@@ -604,7 +488,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                                         style={{ 
                                           fontFamily: 'var(--font-body)', 
                                           fontSize: '0.85rem', 
-                                          padding: '8px', 
+                                          padding: '6px', 
                                           backgroundColor: 'rgba(0, 0, 0, 0.2)',
                                           borderLeft: '2px solid var(--border-gold-dim)',
                                           marginTop: '2px',

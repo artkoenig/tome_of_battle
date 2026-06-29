@@ -345,57 +345,106 @@ export default function App() {
                   Jetzt Armeeliste erstellen
                 </button>
               </div>
-            ) : (
-              <div className="dashboard-grid">
-                {rosters.map(roster => {
-                  const sys = systems.find(s => s.id === roster.systemId);
-                  const cat = sys?.catalogues?.find(c => c.id === roster.catalogueId);
-                  const costTypeObj = sys?.costTypes?.find(ct => ct.id === roster.costLimitType);
-                  const costTypeLabel = costTypeObj?.name || 'Punkte';
-                  
-                  return (
-                    <div key={roster.id} className="roster-card">
-                      <div className="roster-card-header">
-                        <div>
-                          <h3 className="roster-title">
-                            {roster.name}
-                            {showDebugIds && <span className="debug-id-badge">{roster.id}</span>}
-                          </h3>
-                          <div className="roster-meta">
-                            {sys ? sys.name : 'Unbekanntes System'}
-                            {showDebugIds && sys && <span className="debug-id-badge">{sys.id}</span>}
-                          </div>
-                          <div className="roster-meta" style={{ color: 'var(--text-gold)', marginTop: '2px' }}>
-                            Fraktion: {cat ? cat.name : 'Keine'}
-                            {showDebugIds && cat && <span className="debug-id-badge">{cat.id}</span>}
-                          </div>
+            ) : (() => {
+              const rostersBySystemAndFaction = rosters.reduce((acc, roster) => {
+                const sys = systems.find(s => s.id === roster.systemId);
+                const systemName = sys ? sys.name : 'Unbekanntes System';
+                
+                const cat = sys?.catalogues?.find(c => c.id === roster.catalogueId);
+                const factionName = cat ? cat.name : 'Keine Fraktion';
+                
+                if (!acc[systemName]) {
+                  acc[systemName] = {};
+                }
+                if (!acc[systemName][factionName]) {
+                  acc[systemName][factionName] = [];
+                }
+                acc[systemName][factionName].push({ roster, sys, cat });
+                return acc;
+              }, {});
+
+              const sortedSystems = Object.keys(rostersBySystemAndFaction).sort((a, b) => {
+                if (a === 'Unbekanntes System') return 1;
+                if (b === 'Unbekanntes System') return -1;
+                return a.localeCompare(b);
+              });
+
+              return (
+                <div className="system-groups-container" style={{ marginTop: '24px' }}>
+                  {sortedSystems.map(systemName => {
+                    const factionsObj = rostersBySystemAndFaction[systemName];
+                    const sortedFactions = Object.keys(factionsObj).sort((a, b) => {
+                      if (a === 'Keine Fraktion') return 1;
+                      if (b === 'Keine Fraktion') return -1;
+                      return a.localeCompare(b);
+                    });
+
+                    return (
+                      <div key={systemName} className="system-group" style={{ marginBottom: '40px' }}>
+                        <h2 className="system-group-title" style={{ fontSize: '1.4rem', borderBottom: '2px solid var(--border-gold)', paddingBottom: '6px', marginBottom: '20px' }}>
+                          {systemName}
+                        </h2>
+                        
+                        <div className="system-factions" style={{ paddingLeft: '16px' }}>
+                          {sortedFactions.map(factionName => {
+                            const factionRosters = factionsObj[factionName];
+                            return (
+                              <div key={factionName} className="faction-group" style={{ marginBottom: '28px' }}>
+                                <h3 className="faction-group-title" style={{ borderBottom: '1px solid var(--border-gold-dim)', paddingBottom: '4px', marginBottom: '14px', fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                  {factionName}
+                                </h3>
+                                <div className="dashboard-grid" style={{ marginTop: '12px' }}>
+                                  {factionRosters.map(({ roster, sys, cat }) => {
+                                    const costTypeObj = sys?.costTypes?.find(ct => ct.id === roster.costLimitType);
+                                    const costTypeLabel = costTypeObj?.name || 'Punkte';
+                                    
+                                    return (
+                                      <div key={roster.id} className="roster-card" style={{ minHeight: 'auto', padding: '12px 16px' }}>
+                                        <div className="roster-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                          <h4 className="roster-title" style={{ margin: 0, fontSize: '1.15rem', fontFamily: 'var(--font-serif)', flex: 1, paddingRight: '12px' }}>
+                                            {roster.name}
+                                            {showDebugIds && <span className="debug-id-badge" style={{ display: 'block', marginTop: '4px', width: 'fit-content' }}>{roster.id}</span>}
+                                          </h4>
+                                          <div className="roster-points" style={{ 
+                                            fontSize: '1.25rem', 
+                                            fontWeight: 'bold', 
+                                            color: 'var(--text-gold)', 
+                                            fontFamily: 'var(--font-sans)',
+                                            whiteSpace: 'nowrap',
+                                            textAlign: 'right'
+                                          }}>
+                                            {roster.costLimit} <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
+                                          </div>
+                                        </div>
+                                        <div className="roster-actions" style={{ marginTop: '8px' }}>
+                                          <button className="btn-sm" onClick={() => handleOpenRoster(roster, 'builder')}>
+                                            <Edit3 size={14} /> Ausrüsten
+                                          </button>
+                                          <button className="btn-primary btn-sm" onClick={() => handleOpenRoster(roster, 'play')}>
+                                            <Play size={14} /> In die Schlacht
+                                          </button>
+                                          <button 
+                                            className="btn-danger btn-sm" 
+                                            style={{ padding: '4px 6px', marginLeft: 'auto' }}
+                                            onClick={(e) => handleDeleteRoster(roster.id, e)}
+                                          >
+                                            <Trash2 size={12} />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
-                      <div className="roster-info">
-                        <span className="font-sans" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
-                          Punktegrenze: {roster.costLimit} {costTypeLabel}
-                        </span>
-                      </div>
-                      <div className="roster-actions">
-                        <button className="btn-sm" onClick={() => handleOpenRoster(roster, 'builder')}>
-                          <Edit3 size={14} /> Ausrüsten
-                        </button>
-                        <button className="btn-primary btn-sm" onClick={() => handleOpenRoster(roster, 'play')}>
-                          <Play size={14} /> In die Schlacht
-                        </button>
-                        <button 
-                          className="btn-danger btn-sm" 
-                          style={{ padding: '6px 8px', marginLeft: 'auto' }}
-                          onClick={(e) => handleDeleteRoster(roster.id, e)}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 

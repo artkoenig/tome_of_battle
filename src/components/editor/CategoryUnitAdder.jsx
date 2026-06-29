@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { resolveEntry } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
@@ -73,7 +73,7 @@ export default function CategoryUnitAdder({
         <div className="popover-list">
           {availableUnits.map(entry => {
             const res = resolveEntry(system, entry);
-            const points = res.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
+            const points = getOptionDisplayCost(system, entry, costLimitType);
             return (
               <div 
                 key={res.id} 

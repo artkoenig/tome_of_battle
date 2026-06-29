@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node src/solver/validator.test.js && node src/solver/rulesEvaluator.test.js",
+    "test": "node src/solver/validator.test.js && node src/solver/rulesEvaluator.test.js && node src/solver/optionsCollector.test.js",
     "debug-ui": "node src/solver/debug_ui.js",
     "ux-correct": "python scripts/ux_self_correction.py"
   },

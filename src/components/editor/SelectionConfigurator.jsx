@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus, Info } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
+import { getUnitOptions } from '../../solver/optionsCollector';
 import BottomSheet from './BottomSheet';
 import { useDebugMode } from '../../hooks/DebugContext';
 import {
@@ -111,225 +112,8 @@ export default function SelectionConfigurator({
     return findCount(unitSelection.selections || []);
   };
 
-  const getUnitOptions = (unitSelection) => {
-    if (!activeCatalogue) return [];
-    const entryId = unitSelection.entryLinkId || unitSelection.selectionEntryId;
-    const rawEntry = findEntryInSystem(system, entryId, activeCatalogue.id);
-    const resolved = resolveEntry(system, rawEntry, activeCatalogue.id);
-    
-    if (!resolved) return [];
-
-
-
-    // Recursive helper to find all nested entry IDs for a group
-    const collectGroupItemIds = (gDef, groupItemIds = new Set(), visited = new Set()) => {
-      if (!gDef || visited.has(gDef.id)) return groupItemIds;
-      if (gDef.id) visited.add(gDef.id);
-
-      gDef.selectionEntries?.forEach(item => {
-        groupItemIds.add(item.id);
-        const res = resolveEntry(system, item, activeCatalogue.id);
-        if (res) groupItemIds.add(res.id);
-      });
-      gDef.entryLinks?.forEach(link => {
-        groupItemIds.add(link.id);
-        groupItemIds.add(link.targetId);
-        const res = resolveEntry(system, link, activeCatalogue.id);
-        if (res) {
-          groupItemIds.add(res.id);
-          collectGroupItemIds(res, groupItemIds, visited);
-        }
-      });
-      gDef.selectionEntryGroups?.forEach(subG => {
-        collectGroupItemIds(subG, groupItemIds, visited);
-      });
-      return groupItemIds;
-    };
-
-    // Helper to prepare constraints with groupItemIds attached
-    const prepareConstraints = (gDef) => {
-      if (!gDef || !gDef.constraints) return [];
-      const itemIds = collectGroupItemIds(gDef);
-      return gDef.constraints.map(con => ({
-        ...con,
-        groupItemIds: itemIds
-      }));
-    };
-
-    const optionsList = [];
-
-    // Recursive options collector
-    const collectOptions = (def, currentGroupName = null, currentGroupId = null, parentConstraints = null) => {
-      // 1. Process selection entries
-      def.selectionEntries?.forEach(child => {
-        const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
-        if (!resolvedChild) return;
-
-        if (child.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
-          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, currentGroupId || resolvedChild.id, prepareConstraints(resolvedChild).concat(parentConstraints || []));
-        } else {
-          optionsList.push({ 
-            option: child, 
-            parentDefId: def.id, 
-            groupName: currentGroupName, 
-            groupId: currentGroupId,
-            groupConstraints: parentConstraints 
-          });
-        }
-      });
-
-      // 2. Process entry links
-      def.entryLinks?.forEach(child => {
-        const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
-        if (!resolvedChild) return;
-
-        if (child.type === 'selectionEntryGroup' || resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0) {
-          const combinedConstraints = prepareConstraints(resolvedChild);
-          resolvedChild.selectionEntries?.forEach(subChild => {
-            optionsList.push({ 
-              option: subChild, 
-              parentDefId: def.id, 
-              groupName: resolvedChild.name || child.name, 
-              groupId: resolvedChild.id || child.id,
-              groupConstraints: combinedConstraints 
-            });
-          });
-          resolvedChild.entryLinks?.forEach(subChild => {
-            optionsList.push({ 
-              option: subChild, 
-              parentDefId: def.id, 
-              groupName: resolvedChild.name || child.name, 
-              groupId: resolvedChild.id || child.id,
-              groupConstraints: combinedConstraints 
-            });
-          });
-        } else if (resolvedChild.type !== 'model' && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0 || resolvedChild.selectionEntryGroups?.length > 0)) {
-          collectOptions(resolvedChild, currentGroupName || resolvedChild.name, currentGroupId || resolvedChild.id, prepareConstraints(resolvedChild).concat(parentConstraints || []));
-        } else {
-          optionsList.push({ 
-            option: child, 
-            parentDefId: def.id, 
-            groupName: currentGroupName, 
-            groupId: currentGroupId,
-            groupConstraints: parentConstraints 
-          });
-        }
-      });
-
-      // 3. Process selection entry groups
-      def.selectionEntryGroups?.forEach(group => {
-        const combinedGroupConstraints = prepareConstraints(group);
-        group.selectionEntries?.forEach(child => {
-          const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
-          if (resolvedChild && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0)) {
-            const combinedChildConstraints = [...prepareConstraints(resolvedChild), ...combinedGroupConstraints];
-            resolvedChild.selectionEntries?.forEach(sub => {
-              optionsList.push({ 
-                option: sub, 
-                parentDefId: def.id, 
-                groupName: resolvedChild.name || child.name || group.name, 
-                groupId: resolvedChild.id || child.id || group.id,
-                groupConstraints: combinedChildConstraints 
-              });
-            });
-            resolvedChild.entryLinks?.forEach(sub => {
-              optionsList.push({ 
-                option: sub, 
-                parentDefId: def.id, 
-                groupName: resolvedChild.name || child.name || group.name, 
-                groupId: resolvedChild.id || child.id || group.id,
-                groupConstraints: combinedChildConstraints 
-              });
-            });
-          } else {
-            optionsList.push({ 
-              option: child, 
-              parentDefId: def.id, 
-              groupName: group.name, 
-              groupId: group.id,
-              groupConstraints: combinedGroupConstraints 
-            });
-          }
-        });
-        group.entryLinks?.forEach(child => {
-          const resolvedChild = resolveEntry(system, child, activeCatalogue.id);
-          if (resolvedChild && (resolvedChild.selectionEntries?.length > 0 || resolvedChild.entryLinks?.length > 0)) {
-            const combinedChildConstraints = [...prepareConstraints(resolvedChild), ...combinedGroupConstraints];
-            resolvedChild.selectionEntries?.forEach(sub => {
-              optionsList.push({ 
-                option: sub, 
-                parentDefId: def.id, 
-                groupName: resolvedChild.name || child.name || group.name, 
-                groupId: resolvedChild.id || child.id || group.id,
-                groupConstraints: combinedChildConstraints 
-              });
-            });
-            resolvedChild.entryLinks?.forEach(sub => {
-              optionsList.push({ 
-                option: sub, 
-                parentDefId: def.id, 
-                groupName: resolvedChild.name || child.name || group.name, 
-                groupId: resolvedChild.id || child.id || group.id,
-                groupConstraints: combinedChildConstraints 
-              });
-            });
-          } else {
-            optionsList.push({ 
-              option: child, 
-              parentDefId: def.id, 
-              groupName: group.name, 
-              groupId: group.id,
-              groupConstraints: combinedGroupConstraints 
-            });
-          }
-        });
-      });
-    };
-
-    collectOptions(resolved);
-    
-    resolved.selectionEntries?.forEach(sub => {
-      const subResolved = resolveEntry(system, sub, activeCatalogue.id);
-      if (subResolved && subResolved.type === 'model') {
-        collectOptions(subResolved);
-      }
-    });
-
-    const collectFromActiveSelections = (currentSel) => {
-      currentSel.selections?.forEach(subSel => {
-        const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
-        const subRawEntry = findEntryInSystem(system, subEntryId, activeCatalogue.id);
-        const subResolved = resolveEntry(system, subRawEntry, activeCatalogue.id);
-        if (subResolved) {
-          if (subResolved.selectionEntries?.length > 0 || subResolved.entryLinks?.length > 0 || subResolved.selectionEntryGroups?.length > 0) {
-            collectOptions(subResolved);
-          }
-          collectFromActiveSelections(subSel);
-        }
-      });
-    };
-    collectFromActiveSelections(unitSelection);
- 
-    const seenOptionIds = new Set();
-    const uniqueOptionsList = [];
-    optionsList.forEach(item => {
-      const res = resolveEntry(system, item.option, activeCatalogue.id);
-      if (res) {
-        const canonicalId = res.targetId || res.id;
-        if (seenOptionIds.has(canonicalId)) {
-          return;
-        }
-        seenOptionIds.add(canonicalId);
-      }
-      uniqueOptionsList.push(item);
-    });
-
-
-
-    return uniqueOptionsList;
-  };
-
-  const options = getUnitOptions(selection);
+  // The `getUnitOptions` logic has been extracted to `optionsCollector.js` for testability.
+  const options = getUnitOptions(system, activeCatalogue?.id, selection);
   const groupedList = [];
   const groupMap = {};
 
@@ -768,7 +552,7 @@ function OptionGroupComponent({
             const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
             
             const isRadio = groupConstraints?.some(c => c.type === 'max' && c.value === 1);
-            const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || (!maxConstraint && !isMandatory);
+            const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || (!maxConstraint && !isMandatory && !isRadio);
             const isBinary = !isExplicitlyMulti && ((maxConstraint && maxConstraint.value === 1) || isRadio);
             const descText = getOptionDescription(res);
 

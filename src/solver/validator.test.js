@@ -1,4 +1,4 @@
-import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost, syncRosterSelectionsWithSystem } from './validator.js';
+import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost, syncRosterSelectionsWithSystem, collectUnitProfilesAndRules } from './validator.js';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML } from '../parser/xmlParser.js';
 import { searchEditableEntries, findAndMutateJsonPatch } from '../parser/pdfRulesExtractor.js';
@@ -1507,6 +1507,63 @@ console.log('Test 23 - Selection name and costs syncing with system catalog: ',
   test23Success ? 'PASSED' : `FAILED (sync1: ${syncResult1}, nameUpdated: ${nameUpdated}, costUpdated: ${costUpdated}, sync2: ${syncResult2})`
 );
 
+// Test 24 - collectUnitProfilesAndRules extraction from nested user selections
+const mockSystemProfilesTest = {
+  id: 'sys-profiles',
+  name: 'Test Profiles System',
+  catalogues: [
+    {
+      id: 'cat-profiles',
+      sharedSelectionEntries: [
+        {
+          id: 'base-unit',
+          name: 'Base Unit',
+          profiles: [
+            { id: 'prof-base', name: 'Base Profile', profileTypeName: 'Unit' }
+          ],
+          selectionEntryGroups: [
+            {
+              id: 'group-bloodline',
+              selectionEntries: [
+                {
+                  id: 'upgrade-bloodline-1',
+                  name: 'Bloodline 1',
+                  profiles: [
+                    { id: 'prof-bloodline-1', name: 'Bloodline 1 Profile', profileTypeName: 'Profile' }
+                  ],
+                  rules: [
+                    { id: 'rule-bloodline-1', name: 'Bloodline Rule' }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const mockSelectionProfilesTest = {
+  selectionEntryId: 'base-unit',
+  selections: [
+    {
+      selectionEntryId: 'upgrade-bloodline-1'
+    }
+  ]
+};
+
+const profilesResult = collectUnitProfilesAndRules(mockSystemProfilesTest, mockSelectionProfilesTest, 'cat-profiles');
+
+const test24Success = 
+  profilesResult.profiles.length === 2 && 
+  profilesResult.profiles.some(p => p.id === 'prof-base') &&
+  profilesResult.profiles.some(p => p.id === 'prof-bloodline-1') &&
+  profilesResult.rules.length === 1 &&
+  profilesResult.rules.some(r => r.id === 'rule-bloodline-1');
+
+console.log('Test 24 - Profile and Rule extraction from nested user selections: ', test24Success ? 'PASSED' : 'FAILED');
+
 console.log('--- TEST RUN COMPLETE ---');
 if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError && 
     errorsGroupValid.length === 0 && groupError && (wouldLanceExceed && !wouldShieldExceed) && 
@@ -1526,7 +1583,8 @@ if (costsValid.pts === 250 && errorsValid.length === 0 && pointError && catError
     test20Success &&
     test21Success &&
     test22Success &&
-    test23Success) {
+    test23Success &&
+    test24Success) {
   console.log('ALL TESTS SUCCESSFUL!');
   process.exit(0);
 } else {

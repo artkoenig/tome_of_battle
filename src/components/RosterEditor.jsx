@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Save, Play, Trash2, AlertTriangle, Check } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { useDebugMode } from '../hooks/DebugContext';
-import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem } from '../solver/validator';
-import { UPGRADE_DETAILS_KEYWORDS } from '../solver/constants';
+import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem, collectUnitProfilesAndRules } from '../solver/validator';
+import { UPGRADE_DETAILS_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from '../solver/constants';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -116,16 +116,21 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   };
 
   const renderMiniProfile = (selection) => {
-    const entryId = selection.entryLinkId || selection.selectionEntryId;
-    const rawEntry = findEntryInSystem(system, entryId);
-    const resolved = resolveEntry(system, rawEntry);
-    if (!resolved || !resolved.profiles || resolved.profiles.length === 0) return null;
+    const { profiles } = collectUnitProfilesAndRules(system, selection, activeCatalogue?.id);
+    
+    // Filter profiles to keep only the actual model/unit profiles (ignore weapons/magic items here)
+    const unitProfiles = profiles.filter(p => {
+      const typeLower = p.profileTypeName?.toLowerCase() || '';
+      return MODEL_COUNT_PROFILE_TYPES.some(t => typeLower.includes(t)) || typeLower === 'profile';
+    });
 
-    const showPrefix = resolved.profiles.length > 1;
+    if (!unitProfiles || unitProfiles.length === 0) return null;
+
+    const showPrefix = unitProfiles.length > 1;
 
     return (
       <div className="mini-profiles-container" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-        {resolved.profiles.map(prof => {
+        {unitProfiles.map(prof => {
           return (
             <div key={prof.id} className="mini-profile-row" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {showPrefix && (
@@ -290,7 +295,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               <Save size={18} /> Speichern
             </button>
             <button className="btn-primary" onClick={() => onPlay(roster)}>
-              <Play size={18} /> In Spielmodus
+              <Play size={18} /> Spielmodus
             </button>
           </div>
         </div>

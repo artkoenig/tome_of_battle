@@ -9,9 +9,11 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 * Nutze die Daten unter ./catalogs für den Zugriff auf die Spielsysteme und Kataloge
 * Nutze für die Analyse des Battlescribe-Formats die Informationen von https://github.com/BSData/catalogue-development/wiki und dazugehörige Unterseiten
 * Es sollen keine (Sub)Strings auf Englisch oder Deutsch als Schlüssel für das Parsen oder Validieren genommen werden
+* Es sollen keine Armeespezifischen Logiken implementiert werden, die implementierung soll immer allgemeingültig sein
+* Erstelle bei jeder Änderung der Validierungslogik oder Importlogik einen Unit-Test für das geänderte Verhalten
+
 ## Git Push
 * **Local (macOS):** Kein automatischer Push zu Remote-Repositories.
 
 ## Testing
-* Bei jeder Änderung der Geschäftslogik prüfe ob sie durch Unit-Tests abgedeckt ist. Schreibe einen neuen, wenn nicht.
 * Alle Unit-Tests **müssen** vor dem Task-Abschluss erfolgreich durchlaufen.

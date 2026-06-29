@@ -713,3 +713,60 @@ export function syncRosterSelectionsWithSystem(roster, system) {
 
   return rosterModified;
 }
+
+/**
+ * Recursively collects all unique profiles and rules for a given selection.
+ * Including from its sub-selections and their resolved catalog entries.
+ */
+export function collectUnitProfilesAndRules(system, selection, activeCatalogueId = null) {
+  const profiles = [];
+  const rules = [];
+  const seenProfileIds = new Set();
+  const seenRuleIds = new Set();
+
+  const addProfile = (p) => {
+    if (p && p.id && !seenProfileIds.has(p.id)) {
+      seenProfileIds.add(p.id);
+      profiles.push(p);
+    }
+  };
+
+  const addRule = (r) => {
+    if (r && r.id && !seenRuleIds.has(r.id)) {
+      seenRuleIds.add(r.id);
+      rules.push(r);
+    }
+  };
+
+  const traverse = (sel) => {
+    if (sel.profiles) sel.profiles.forEach(addProfile);
+    if (sel.rules) sel.rules.forEach(addRule);
+
+    const entryId = sel.entryLinkId || sel.selectionEntryId;
+    const rawEntry = findEntryInSystem(system, entryId, activeCatalogueId);
+    if (rawEntry) {
+      const resolved = resolveEntry(system, rawEntry, activeCatalogueId);
+      if (resolved) {
+        if (resolved.profiles) resolved.profiles.forEach(addProfile);
+        if (resolved.rules) resolved.rules.forEach(addRule);
+
+        // Accumulate from catalog child elements (default profiles)
+        resolved.selectionEntries?.forEach(child => {
+          const childResolved = resolveEntry(system, child, activeCatalogueId);
+          if (childResolved) {
+            if (childResolved.profiles) childResolved.profiles.forEach(addProfile);
+            if (childResolved.rules) childResolved.rules.forEach(addRule);
+          }
+        });
+      }
+    }
+
+    if (sel.selections) {
+      sel.selections.forEach(traverse);
+    }
+  };
+
+  traverse(selection);
+
+  return { profiles, rules };
+}
