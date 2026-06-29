@@ -90,7 +90,6 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     if (confirm('Bist du sicher, dass du dieses Spielsystem und alle zugehörigen Kataloge löschen möchtest?')) {
       try {
         await deleteSystem(id);
-        setSuccessMsg('Spielsystem erfolgreich gelöscht.');
         loadSystems();
         if (onSystemImported) onSystemImported();
       } catch (e) {
@@ -143,22 +142,13 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       }
 
       return (
-        <div className="container" style={showAsEmptyState ? { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 40px)' } : {}}>
-          <div style={showAsEmptyState ? { textAlign: 'center', maxWidth: '600px', width: '100%' } : {}}>
+        <div className={`container ${showAsEmptyState ? 'empty-state-wrapper' : ''}`}>
+          <div className={showAsEmptyState ? 'empty-state-container' : ''}>
             {showAsEmptyState && (
               <>
-                <div style={{
-                  width: '100%',
-                  maxWidth: '400px',
-                  height: '350px',
-                  backgroundImage: 'url(/empty_systems.png)',
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'center',
-                  margin: '0 auto 24px auto',
-                }} />
-                <h2 style={{ fontSize: '2.2rem', marginBottom: '16px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Willkommen bei Tome of Battle</h2>
-                <p className="text-dim" style={{ maxWidth: '500px', margin: '0 auto 24px', fontSize: '1.2rem', lineHeight: '1.6' }}>
+                <div className="empty-state-image empty-importer-image" />
+                <h2 className="empty-state-title empty-state-title-large">Willkommen bei Tome of Battle</h2>
+                <p className="empty-state-text text-dim">
                   Dein Buch des Wissens ist noch leer. Um Armeen ausheben zu können, benötigst du zunächst Spieldaten im BattleScribe-Format. 
                 </p>
                 <div style={{ marginBottom: '32px' }}>
@@ -166,13 +156,13 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                     href="https://github.com/Ergofarg/Warhammer-Fantasy-6th-edition/archive/refs/heads/master.zip"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-primary" 
-                    style={{ padding: '14px 28px', fontSize: '1.1rem', display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+                    className="btn-primary empty-state-btn" 
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
                   >
                     <Download size={20} />
                     Spieldaten herunterladen (Warhammer Fantasy 6. Edition)
                   </a>
-                  <p className="text-dim" style={{ fontSize: '0.85rem', marginTop: '12px' }}>
+                  <p className="text-dim empty-state-subtext">
                     Lade die ZIP-Datei herunter und lade sie anschließend in die Bibliothek hoch.
                   </p>
                 </div>

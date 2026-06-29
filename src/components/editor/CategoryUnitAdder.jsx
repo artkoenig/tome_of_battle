@@ -10,8 +10,7 @@ export default function CategoryUnitAdder({
   activeCatalogue,
   costTypeLabel,
   costLimitType,
-  addUnit,
-  onUnitAdded
+  addUnit
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
@@ -86,7 +85,6 @@ export default function CategoryUnitAdder({
                 onClick={() => {
                   addUnit(entry, categoryId);
                   setIsOpen(false);
-                  if (onUnitAdded) onUnitAdded(res.name);
                 }}
               >
                 <span className="popover-item-name">{res.name}</span>

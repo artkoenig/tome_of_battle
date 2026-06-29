@@ -102,12 +102,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     }
   }, [system, roster]);
 
-  const handleUnitAddedToast = (unitName) => {
-    setToast(`${unitName} zur Streitmacht hinzugefügt!`);
-    setTimeout(() => {
-      setToast(null);
-    }, 1800);
-  };
+
 
   const scrollToErrors = () => {
     const el = document.getElementById('general-errors-section');
@@ -449,7 +444,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           costTypeLabel={costTypeLabel}
                           costLimitType={roster.costLimitType}
                           addUnit={addUnit}
-                          onUnitAdded={handleUnitAddedToast}
                         />
                       </div>
 
