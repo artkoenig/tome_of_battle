@@ -67,14 +67,30 @@ const explicitASChar = getArmourSave([
   { name: 'Some Item', characteristics: [{ name: 'AS', value: '3+' }] }
 ], 'Lord', 'Custom System'); // 3
 
+const flayedHauberk = getArmourSave([
+  { name: 'The Flayed Hauberk', characteristics: [{ name: 'Saving Throw Modifier', value: '1+' }] }
+], 'Vampire', 'Vampire Counts'); // 1
+
+const stegadonHelm = getArmourSave([
+  { name: 'Sacred Stegadon Helm', characteristics: [{ name: 'Saving Throw Modifier', value: '+1 to armour save' }] },
+  { name: 'Light Armour', characteristics: [{ name: 'Rules', value: 'Light Armour' }] }
+], 'Skink', 'Lizardmen'); // 5 (6 base, -1 mod)
+
+const shieldOfGhrond = getArmourSave([
+  { name: 'Shield of Ghrond', characteristics: [{ name: 'Saving Throw Modifier', value: '-1 Sv' }] }
+], 'Master', 'Dark Elves'); // 6 (-1 shield, characteristic mod ignored because it's a shield)
+
 const test4Passed = noArmour === 7 &&
                     lightArmourOnly === 6 &&
                     heavyArmourShield === 4 &&
                     empireKnight === 1 &&
                     explicitSave === 4 &&
                     scalySkinSave === 4 &&
-                    explicitASChar === 3;
-console.log('Test 4 - getArmourSave: ', test4Passed ? 'PASSED' : `FAILED (noArmour: ${noArmour}, lightArmourOnly: ${lightArmourOnly}, heavyArmourShield: ${heavyArmourShield}, empireKnight: ${empireKnight}, explicitSave: ${explicitSave}, scalySkinSave: ${scalySkinSave}, explicitASChar: ${explicitASChar})`);
+                    explicitASChar === 3 &&
+                    flayedHauberk === 1 &&
+                    stegadonHelm === 5 &&
+                    shieldOfGhrond === 6;
+console.log('Test 4 - getArmourSave: ', test4Passed ? 'PASSED' : `FAILED (noArmour: ${noArmour}, lightArmourOnly: ${lightArmourOnly}, heavyArmourShield: ${heavyArmourShield}, empireKnight: ${empireKnight}, explicitSave: ${explicitSave}, scalySkinSave: ${scalySkinSave}, explicitASChar: ${explicitASChar}, flayedHauberk: ${flayedHauberk}, stegadonHelm: ${stegadonHelm}, shieldOfGhrond: ${shieldOfGhrond})`);
 
 // Test 5: getWardSave
 const wardSave5Plus = getWardSave([

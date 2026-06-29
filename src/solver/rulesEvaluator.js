@@ -84,6 +84,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
   let isBarded = false;
   let explicitSave = null;
   let scalySkinMod = 0;
+  let genericArmourMod = 0;
   const breakdown = [];
 
   const extractSaveValue = (matchStr) => {
@@ -181,6 +182,37 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
 
       if (item.characteristics) {
         item.characteristics.forEach(c => {
+          const cName = c.name.toLowerCase();
+          const cVal = c.value.toLowerCase();
+          
+          if (cName === 'saving throw modifier' || cName === 'as' || cName === 'armour save') {
+            const baseMatch = cVal.match(/(^|\s)(\d)\+/);
+            if (baseMatch) {
+              const val = parseInt(baseMatch[2]);
+              if (val >= 1 && val <= 6) {
+                if (explicitSave === null || val < explicitSave) {
+                  explicitSave = val;
+                  if (!breakdown.includes(`Explizit (${val}+) [${item.name}]`)) breakdown.push(`Explizit (${val}+) [${item.name}]`);
+                }
+              }
+            } else {
+              const modMatch = cVal.match(/([+-]\d)/);
+              if (modMatch) {
+                let mod = Math.abs(parseInt(modMatch[1]));
+                let skipModAmount = 0;
+                const itemName = item.name.toLowerCase();
+                if (SAVE_SHIELD_KEYWORDS.some(k => itemName.includes(k))) skipModAmount += 1;
+                if (SAVE_BARDING_KEYWORDS.some(k => itemName.includes(k))) skipModAmount += 1;
+                
+                if (mod > skipModAmount) {
+                  const netMod = mod - skipModAmount;
+                  genericArmourMod += netMod;
+                  if (!breakdown.includes(`Modifikator (${modMatch[1]}) [${item.name}]`)) breakdown.push(`Modifikator (${modMatch[1]}) [${item.name}]`);
+                }
+              }
+            }
+          }
+
           scanText(c.name + ' ' + c.value);
         });
       }
@@ -233,6 +265,14 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
       save = 7 - scalySkinMod;
     } else {
       save = save - scalySkinMod;
+    }
+  }
+
+  if (genericArmourMod > 0) {
+    if (save === 7) {
+      save = 7 - genericArmourMod;
+    } else {
+      save = save - genericArmourMod;
     }
   }
 
