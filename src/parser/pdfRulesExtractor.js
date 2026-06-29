@@ -132,29 +132,22 @@ export async function runVisionAnalysis(apiKey, base64Image, catalogueEntries) {
         {
           parts: [
             {
-              text: `Du bist ein präziser Tabletop-Regelprüfer.
+              text: `Du bist ein präziser Tabletop-Datenassistent.
 Hier ist das offizielle Armeebuch-Layout (Bild) und eine JSON-Liste aller Datenbankeinträge unserer Fraktion:
 ${JSON.stringify(catalogueEntries, null, 2)}
 
-Deine Aufgabe ist es, die Werte im Bild (Soll-Werte) mit den Werten in der JSON-Liste (Ist-Werte) abzugleichen.
-Finde Abweichungen bei:
-1. Profilwerten (M, WS, BS, S, T, W, I, A, Ld)
-2. Punktekosten (z.B. Ausrüstung, Einheiten, Mounts)
-3. Limits/Regeln (z.B. maximale Punkte für magische Ausrüstung in Kategorien, oft in 'Magic and Traits' oder 'Magic Items')
+Deine Aufgabe ist es, FEHLENDE Beschreibungstexte (wie Regel-Sonderregeln oder Profil-Beschreibungen) aus dem Bild in die JSON-Liste zu übertragen.
+Ignoriere Profilwerte (wie M, WS, BS), Punktekosten und Limits. Konzentriere dich AUSSCHLIESSLICH auf Einträge, bei denen das Feld "description" aktuell leer (""), fehlend oder offensichtlich unvollständig ist, und extrahiere den passenden Text aus dem Bild.
 
-Für jede Abweichung, gib ein JSON-Objekt in einer Liste zurück. Verwende folgende Struktur:
-- "id": Die ID des Eintrags aus unserer Liste.
-- "type": "entry" | "profile" | "group" | "rule"
-- "field":
-  * "cost-[typeId]" (z.B. "cost-pts" oder "cost-ecfa-8486-4f6c-c249" für Punkte)
-  * "constraint-[id]" (z.B. "constraint-6462-adf4-4373-7820")
-  * "characteristic-[name]" (z.B. "characteristic-MW" oder "characteristic-A")
-  * "description" (für Regelbeschreibungen)
-- "originalValue": Der aktuelle Wert aus unserer Liste.
-- "newValue": Der korrekte Wert laut Armeebuch-Seite.
-- "reason": Kurze deutsche Begründung (z.B. "Laut Armeebuch Seite 55 beträgt das Limit 50 Punkte").
+Für jeden fehlenden oder zu ergänzenden Beschreibungstext, den du im Bild findest, gib ein JSON-Objekt in einer Liste zurück. Verwende folgende Struktur:
+- "id": Die ID des Eintrags aus unserer Liste (z.B. die ID der Regel).
+- "type": "rule" | "profile" | "entry" (je nach Typ des Eintrags, zu dem die Beschreibung gehört)
+- "field": "description"
+- "originalValue": Der aktuelle (meist leere) Text.
+- "newValue": Der vollständige und korrekte Beschreibungstext laut Armeebuch-Seite.
+- "reason": Kurze deutsche Begründung (z.B. "Regeltext aus Armeebuch übernommen, da er im XML fehlte").
 
-Gibt NUR das rohe JSON-Array zurück (beginnend mit [ und endend mit ]). Verwende KEIN Markdown-Fencing (wie \`\`\`json). Wenn keine Abweichungen gefunden wurden, gib ein leeres Array [] zurück.`
+Gibt NUR das rohe JSON-Array zurück (beginnend mit [ und endend mit ]). Verwende KEIN Markdown-Fencing (wie \`\`\`json). Wenn keine fehlenden Beschreibungen ergänzt werden können, gib ein leeres Array [] zurück.`
             },
             {
               inlineData: {
