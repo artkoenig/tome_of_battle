@@ -510,7 +510,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                         style={{ padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          removeUnit(selection.id);
+                                          if (window.confirm('Möchten Sie diese Einheit wirklich löschen?')) {
+                                            removeUnit(selection.id);
+                                          }
                                         }}
                                         title="Löschen"
                                       >

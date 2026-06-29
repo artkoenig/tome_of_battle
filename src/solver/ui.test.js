@@ -390,7 +390,59 @@ const runUiTests = async () => {
      }
      console.log('Copy unit test: PASSED');
 
-     // Change viewport to mobile (375x812)
+      console.log('Verifying unit deletion confirmation - cancel scenario...');
+      const countBeforeCancel = await page.evaluate(() => document.querySelectorAll('.selection-node').length);
+      
+      let dialogDismissed = false;
+      const dismissHandler = async dialog => {
+        console.log(`[Browser Dialog] Dismissing dialog: ${dialog.message()}`);
+        dialogDismissed = true;
+        await dialog.dismiss();
+      };
+      page.on('dialog', dismissHandler);
+
+      // Click the delete button of the first unit
+      await page.click('.selection-node .btn-danger[title="Löschen"]');
+      await new Promise(r => setTimeout(r, 800));
+
+      page.off('dialog', dismissHandler);
+
+      const countAfterCancel = await page.evaluate(() => document.querySelectorAll('.selection-node').length);
+      console.log(`Units count after cancel deletion: ${countAfterCancel}`);
+      if (!dialogDismissed) {
+        throw new Error('Confirm dialog was not triggered during cancel test');
+      }
+      if (countAfterCancel !== countBeforeCancel) {
+        throw new Error(`Unit was deleted even though deletion was cancelled. Expected ${countBeforeCancel}, got ${countAfterCancel}`);
+      }
+      console.log('Cancel deletion test: PASSED');
+
+      console.log('Verifying unit deletion confirmation - accept scenario...');
+      let dialogAccepted = false;
+      const acceptHandler = async dialog => {
+        console.log(`[Browser Dialog] Accepting dialog: ${dialog.message()}`);
+        dialogAccepted = true;
+        await dialog.accept();
+      };
+      page.on('dialog', acceptHandler);
+
+      // Click the delete button of the first unit again
+      await page.click('.selection-node .btn-danger[title="Löschen"]');
+      await new Promise(r => setTimeout(r, 800));
+
+      page.off('dialog', acceptHandler);
+
+      const countAfterAccept = await page.evaluate(() => document.querySelectorAll('.selection-node').length);
+      console.log(`Units count after accept deletion: ${countAfterAccept}`);
+      if (!dialogAccepted) {
+        throw new Error('Confirm dialog was not triggered during accept test');
+      }
+      if (countAfterAccept !== countBeforeCancel - 1) {
+        throw new Error(`Unit was not deleted. Expected ${countBeforeCancel - 1}, got ${countAfterAccept}`);
+      }
+      console.log('Accept deletion test: PASSED');
+
+      // Change viewport to mobile (375x812)
     console.log('Changing viewport to mobile (375x812)...');
     await page.setViewport({ width: 375, height: 812 });
     await new Promise(r => setTimeout(r, 1000));
