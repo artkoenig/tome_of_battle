@@ -19,45 +19,13 @@ export default function SelectionConfigurator({
   roster,
   updateSubSelection,
   costTypeLabel,
-  activeCatalogue
+  activeCatalogue,
+  handleMouseEnter,
+  handleMouseMove,
+  handleMouseLeave,
+  setActiveInfo
 }) {
   const { showDebugIds } = useDebugMode();
-  const [activeInfo, setActiveInfo] = useState(null);
-  const [hoveredInfo, setHoveredInfo] = useState(null);
-
-  const updateTooltipPosition = (e) => {
-    const tooltipWidth = 320;
-    const estimatedHeight = 150;
-    let x = e.clientX + 15;
-    let y = e.clientY + 15;
-
-    if (x + tooltipWidth > window.innerWidth) {
-      x = e.clientX - tooltipWidth - 15;
-      if (x < 10) x = 10;
-    }
-
-    if (y + estimatedHeight > window.innerHeight) {
-      y = e.clientY - estimatedHeight - 15;
-      if (y < 10) y = 10;
-    }
-    return { x, y };
-  };
-
-  const handleMouseEnter = (title, text, e) => {
-    if (window.innerWidth <= 900) return;
-    const pos = updateTooltipPosition(e);
-    setHoveredInfo({ title, text, x: pos.x, y: pos.y });
-  };
-
-  const handleMouseMove = (e) => {
-    if (window.innerWidth <= 900) return;
-    const pos = updateTooltipPosition(e);
-    setHoveredInfo(prev => prev ? { ...prev, x: pos.x, y: pos.y } : null);
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredInfo(null);
-  };
 
   // Helper to compile a clean description string for an upgrade/magic item
   const getOptionDescription = (res) => {
@@ -301,30 +269,6 @@ export default function SelectionConfigurator({
           }
         })}
       </div>
-
-      <BottomSheet
-        isOpen={!!activeInfo}
-        onClose={() => setActiveInfo(null)}
-        title={activeInfo?.title || ''}
-        desktopMode="modal"
-      >
-        <div className="info-popup-body">
-          {activeInfo?.text}
-        </div>
-      </BottomSheet>
-
-      {hoveredInfo && (
-        <div 
-          className="gothic-tooltip"
-          style={{
-            left: hoveredInfo.x,
-            top: hoveredInfo.y
-          }}
-        >
-          <div className="tooltip-title">{hoveredInfo.title}</div>
-          <div className="tooltip-body">{hoveredInfo.text}</div>
-        </div>
-      )}
     </div>
   );
 }

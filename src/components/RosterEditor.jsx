@@ -68,25 +68,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     setHoveredInfo(null);
   };
 
-  const getUpgradeDescription = (res) => {
-    if (!res) return '';
-    const descriptions = [];
-    if (res.rules && res.rules.length > 0) {
-      res.rules.forEach(r => {
-        if (r.description) descriptions.push(r.description);
-      });
-    }
-    if (res.profiles && res.profiles.length > 0) {
-      res.profiles.forEach(p => {
-        const typeLower = p.profileTypeName?.toLowerCase() || '';
-        if (UPGRADE_DETAILS_KEYWORDS.some(k => typeLower.includes(k))) {
-          const stats = p.characteristics.map(c => `${c.name}: ${c.value}`).join(', ');
-          descriptions.push(`${p.name} (${stats})`);
-        }
-      });
-    }
-    return descriptions.join(' | ');
-  };
+
 
   const costType = system?.costTypes?.find(ct => ct.id === roster?.costLimitType);
   const costTypeLabel = costType 
@@ -132,28 +114,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   };
 
   
-  const getSelectedUpgrades = (selection) => {
-    const list = [];
-    const collect = (sel) => {
-      if (!sel.selections) return;
-      sel.selections.forEach(subSel => {
-        const entryId = subSel.entryLinkId || subSel.selectionEntryId;
-        const entry = findEntryInSystem(system, entryId, activeCatalogue?.id);
-        const resolved = resolveEntry(system, entry, activeCatalogue?.id);
-        if (resolved) {
-          list.push({
-            id: subSel.id,
-            name: subSel.name,
-            number: subSel.number || 1,
-            resolved: resolved
-          });
-        }
-        collect(subSel);
-      });
-    };
-    collect(selection);
-    return list;
-  };
+
 
   
   return (

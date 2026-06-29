@@ -137,6 +137,8 @@ function parseSingleModifier(modEl) {
   const repeatsEl = getWrappedChildren(modEl, 'repeats', 'repeat')[0];
   const repeat = repeatsEl ? {
     field: repeatsEl.getAttribute('field'),
+    childId: repeatsEl.getAttribute('childId'),
+    scope: repeatsEl.getAttribute('scope'),
     value: parseFloat(repeatsEl.getAttribute('value')) || 0,
     repeats: parseFloat(repeatsEl.getAttribute('repeats')) || 1,
     roundUp: repeatsEl.getAttribute('roundUp') === 'true'

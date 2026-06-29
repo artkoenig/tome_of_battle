@@ -961,6 +961,24 @@ console.log('Test 19 - Repeating Modifiers (repeat field and limit): ',
   repeatSuccess ? 'PASSED' : `FAILED (limit-repeat: ${valLimitRepeat}/4, field-repeat: ${valFieldRepeat}/1)`
 );
 
+// Test 19b: Repeating Modifiers (repeat childId and category counts)
+const modChildIdRepeat = {
+  field: 'con-max',
+  type: 'increment',
+  valueObject: 1,
+  repeat: {
+    field: 'selections',
+    childId: 'cat-gnoblar',
+    value: 1,
+    repeats: 1
+  }
+};
+const repeatForceCategoryCounts = { 'cat-gnoblar': 2 };
+const valChildIdRepeat = getModifiedConstraintValue({ id: 'con-max', value: 0 }, [modChildIdRepeat], repeatRoster, {}, repeatForceCategoryCounts);
+console.log('Test 19b - Repeating Modifiers (repeat childId and category counts): ',
+  valChildIdRepeat === 2 ? 'PASSED' : `FAILED (expected: 2, got: ${valChildIdRepeat})`
+);
+
 
 // Test 21: Repeatable magic items validation via group modifiers
 const mockSystemRepeatable = {

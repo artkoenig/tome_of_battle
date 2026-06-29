@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Trash2, Copy, AlertTriangle } from 'lucide-react';
 import { useDebugMode } from '../../hooks/DebugContext';
 import SelectionConfigurator from './SelectionConfigurator';
+import BottomSheet from './BottomSheet';
 import { 
   resolveEntry, 
   findEntryInSystem, 
@@ -26,6 +27,43 @@ export default function UnitSelectionCard({
   setSelectedCatalogEntry
 }) {
   const { showDebugIds } = useDebugMode();
+
+  const [activeInfo, setActiveInfo] = useState(null);
+  const [hoveredInfo, setHoveredInfo] = useState(null);
+
+  const updateTooltipPosition = (e) => {
+    const tooltipWidth = 320;
+    const estimatedHeight = 150;
+    let x = e.clientX + 15;
+    let y = e.clientY + 15;
+
+    if (x + tooltipWidth > window.innerWidth) {
+      x = e.clientX - tooltipWidth - 15;
+      if (x < 10) x = 10;
+    }
+
+    if (y + estimatedHeight > window.innerHeight) {
+      y = e.clientY - estimatedHeight - 15;
+      if (y < 10) y = 10;
+    }
+    return { x, y };
+  };
+
+  const handleMouseEnter = (title, text, e) => {
+    if (window.innerWidth <= 900) return;
+    const pos = updateTooltipPosition(e);
+    setHoveredInfo({ title, text, x: pos.x, y: pos.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (window.innerWidth <= 900) return;
+    const pos = updateTooltipPosition(e);
+    setHoveredInfo(prev => prev ? { ...prev, x: pos.x, y: pos.y } : null);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredInfo(null);
+  };
 
   const renderMiniProfile = (sel) => {
     const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id);
@@ -67,53 +105,98 @@ export default function UnitSelectionCard({
     );
   };
 
-  const renderUnitUpgrades = (sel) => {
-    const collectUpgrades = (node) => {
-      let upgrades = [];
-      if (node.selections && node.selections.length > 0) {
-        node.selections.forEach(sub => {
-          const raw = findEntryInSystem(system, sub.entryLinkId || sub.selectionEntryId, activeCatalogue?.id);
-          const res = resolveEntry(system, raw, activeCatalogue?.id);
-          
-          if (res) {
-            const hasModelProfile = res.profiles?.some(p => p.profileTypeName === 'Model' || p.profileTypeName === 'Unit');
-            if (!hasModelProfile) {
-              const upgradePts = getSelectionTotalCost(sub, roster.costLimitType);
-              const isDetailUpgrade = res.profiles?.some(p => 
-                p.profileTypeName && UPGRADE_DETAILS_KEYWORDS.some(k => p.profileTypeName.toLowerCase().includes(k))
-              );
-              
-              let ptsText = '';
-              if (upgradePts > 0) {
-                ptsText = ` (+${upgradePts} Pkt.)`;
-              }
-
-              let detailsText = '';
-              if (isDetailUpgrade) {
-                res.profiles.forEach(p => {
-                  if (UPGRADE_DETAILS_KEYWORDS.some(k => p.profileTypeName.toLowerCase().includes(k))) {
-                    const stats = p.characteristics.map(c => `${c.name}: ${c.value}`).join(', ');
-                    detailsText = ` [${stats}]`;
-                  }
-                });
-              }
-
-              upgrades.push(`${sub.number > 1 ? sub.number + 'x ' : ''}${res.name}${detailsText}${ptsText}`);
-            }
-          }
-          upgrades = upgrades.concat(collectUpgrades(sub));
-        });
-      }
-      return upgrades;
+  const getSelectedUpgrades = (sel) => {
+    const list = [];
+    const collect = (node) => {
+      if (!node.selections) return;
+      node.selections.forEach(subSel => {
+        const entryId = subSel.entryLinkId || subSel.selectionEntryId;
+        const entry = findEntryInSystem(system, entryId, activeCatalogue?.id);
+        const resolved = resolveEntry(system, entry, activeCatalogue?.id);
+        if (resolved) {
+          list.push({
+            id: subSel.id,
+            name: subSel.name,
+            number: subSel.number || 1,
+            resolved: resolved
+          });
+        }
+        collect(subSel);
+      });
     };
+    collect(sel);
+    return list;
+  };
 
-    const upgList = collectUpgrades(sel);
-    if (upgList.length === 0) return null;
+  const getUpgradeDescription = (res) => {
+    if (!res) return '';
+    const descriptions = [];
+    if (res.rules && res.rules.length > 0) {
+      res.rules.forEach(r => {
+        if (r.description) descriptions.push(r.description);
+      });
+    }
+    if (res.profiles && res.profiles.length > 0) {
+      res.profiles.forEach(p => {
+        const typeLower = p.profileTypeName?.toLowerCase() || '';
+        if (UPGRADE_DETAILS_KEYWORDS.some(k => typeLower.includes(k))) {
+          const stats = p.characteristics.map(c => `${c.name}: ${c.value}`).join(', ');
+          descriptions.push(`${p.name} (${stats})`);
+        }
+      });
+    }
+    return descriptions.join(' | ');
+  };
+
+  const renderUnitUpgrades = (sel) => {
+    const selectedUpgrades = getSelectedUpgrades(sel);
+    if (selectedUpgrades.length === 0) return null;
 
     return (
-      <div className="unit-upgrades-summary font-body">
-        <span style={{ fontWeight: 600, color: 'var(--text-gold)', marginRight: '4px' }}>Optionen:</span>
-        {upgList.join(', ')}
+      <div 
+        className="unit-header-upgrades" 
+        style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: '6px', 
+          marginTop: '4px',
+          marginBottom: '2px',
+          width: '100%',
+          paddingRight: '24px'
+        }}
+      >
+        {selectedUpgrades.map(upgrade => {
+          const descText = getUpgradeDescription(upgrade.resolved);
+          return (
+            <span 
+              key={upgrade.id}
+              style={{
+                fontSize: '0.72rem',
+                backgroundColor: 'rgba(226, 183, 66, 0.06)',
+                border: '1px solid rgba(226, 183, 66, 0.22)',
+                color: 'var(--text-parchment)',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontFamily: 'var(--font-body)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                cursor: descText ? 'help' : 'default'
+              }}
+              onMouseEnter={(e) => descText && handleMouseEnter(upgrade.resolved?.name || upgrade.name, descText, e)}
+              onMouseMove={descText ? handleMouseMove : null}
+              onMouseLeave={descText ? handleMouseLeave : null}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.innerWidth <= 900 && descText) {
+                  setActiveInfo({ title: upgrade.resolved?.name || upgrade.name, text: descText });
+                }
+              }}
+            >
+              {upgrade.number > 1 ? `${upgrade.number}x ` : ''}
+              {upgrade.name || upgrade.resolved.name}
+            </span>
+          );
+        })}
       </div>
     );
   };
@@ -200,8 +283,36 @@ export default function UnitSelectionCard({
           updateSubSelection={updateSubSelection}
           costTypeLabel={costTypeLabel}
           activeCatalogue={activeCatalogue}
+          handleMouseEnter={handleMouseEnter}
+          handleMouseMove={handleMouseMove}
+          handleMouseLeave={handleMouseLeave}
+          setActiveInfo={setActiveInfo}
         />
       )}
+
+      {hoveredInfo && (
+        <div 
+          className="gothic-tooltip"
+          style={{
+            left: hoveredInfo.x,
+            top: hoveredInfo.y
+          }}
+        >
+          <div className="tooltip-title">{hoveredInfo.title}</div>
+          <div className="tooltip-body">{hoveredInfo.text}</div>
+        </div>
+      )}
+
+      <BottomSheet
+        isOpen={!!activeInfo}
+        onClose={() => setActiveInfo(null)}
+        title={activeInfo?.title || ''}
+        desktopMode="modal"
+      >
+        <div className="info-popup-body">
+          {activeInfo?.text}
+        </div>
+      </BottomSheet>
     </div>
   );
 }

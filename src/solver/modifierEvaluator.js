@@ -5,10 +5,8 @@ export const evaluateCondition = (cond, roster, selectionCounts, forceCategoryCo
     currentValue = roster.costLimit || 0;
   } else if (cond.field) {
     let categoryTotal = 0;
-    if (forceCategoryCounts) {
-      Object.values(forceCategoryCounts).forEach(forceCounts => {
-        if (forceCounts[cond.field]) categoryTotal += forceCounts[cond.field];
-      });
+    if (forceCategoryCounts && forceCategoryCounts[cond.field]) {
+      categoryTotal = forceCategoryCounts[cond.field];
     }
     currentValue = selectionCounts[cond.field] || categoryTotal || 0;
   }
@@ -71,8 +69,10 @@ export const getModifiedConstraintValue = (con, modifiers, roster, selectionCoun
         let currentValue = 0;
         if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
           currentValue = roster.costLimit || 0;
+        } else if (mod.repeat.childId) {
+          currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;
         } else if (mod.repeat.field) {
-          currentValue = selectionCounts[mod.repeat.field] || forceCategoryCounts[mod.repeat.field] || 0;
+          currentValue = selectionCounts[mod.repeat.field] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.field]) || 0;
         }
 
         const repVal = mod.repeat.value ? Math.floor(currentValue / mod.repeat.value) : 0;

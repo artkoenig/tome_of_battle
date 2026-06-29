@@ -18,3 +18,8 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 
 ## Testing
 * Alle Unit-Tests **müssen** vor dem Task-Abschluss erfolgreich durchlaufen.
+
+## Architektur & UI Guidelines
+* **Komponenten-Kapselung:** Hilfsfunktionen (wie z. B. `getSelectedUpgrades` oder `getUpgradeDescription`) sind so lokal wie möglich in der Komponente zu halten, die sie verwendet (z. B. `UnitSelectionCard.jsx` statt zentral in `RosterEditor.jsx`), um Monolithen zu vermeiden.
+* **Tooltips & Mobile:** Detail-Informationen (wie Profilwerte von Ausrüstung) sind auf dem Desktop (Breite > 900px) per Hover-Tooltip (`gothic-tooltip`) darzustellen. Auf mobilen Endgeräten (Breite <= 900px) muss zwingend ein `BottomSheet`-Modal beim Klick genutzt werden, um Platz zu sparen.
+* **Context Awareness:** Beim Sammeln von Profilen und Regeln (z. B. `collectUnitProfilesAndRules`) muss immer der `catalogueId`-Kontext übergeben werden, um Konflikte zwischen Hauptsystem und Detachments zu verhindern.
