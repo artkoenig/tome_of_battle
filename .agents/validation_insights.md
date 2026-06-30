@@ -30,6 +30,8 @@ Hier sind die zentralen architektonischen und fachlichen Lektionen für den Umga
 
 * **Profile und Regeln in Unterauswahlen:**
   Profilwerte und Sonderregeln sind oft nicht an der Grundeinheit (z. B. *Vampire Thrall*) definiert, sondern verschachtelt an Upgrades (z. B. einer *Bloodline*). Die Validierung muss Profile rekursiv aus den Katalogdefinitionen *und* den tatsächlich getroffenen Spielerauswahlen einsammeln.
+* **Ausschluss von optionalen Upgrades bei Default-Profilen:**
+  Beim automatischen Einsammeln von Standard-Profilen und -Regeln aus den Katalog-Kindelementen einer Einheit dürfen Profile und Regeln von optionalen Upgrades (`type="upgrade"` ohne `min > 0` Constraint) nicht blind akkumuliert werden. Diese dürfen erst dann ausgewertet werden, wenn sie tatsächlich in der Spielerauswahl vorhanden sind, da sonst z. B. unberittene Modelle (wie der *Savage Orc Great Shaman*) fälschlicherweise als beritten eingestuft werden (weil der optionale *Boar*-Mount im Katalog unter der Einheit definiert ist).
 * **Verschachtelte Optionen (z. B. General-Status):**
   Spezifische Unter-Optionen (wie die Option, General zu sein) sind oft tief in anderen Upgrades versteckt (z. B. in der Necrarch-Blutlinie). Die Datenverarbeitung darf solche Kind-Elemente erst dann zur Auswahl freigeben und validieren, wenn die direkte Eltern-Option (das Upgrade) vom Spieler *aktiv ausgewählt* wurde.
 

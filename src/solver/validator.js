@@ -379,8 +379,13 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
         resolved.selectionEntries?.forEach(child => {
           const childResolved = resolveEntry(system, child, activeCatalogueId);
           if (childResolved) {
-            if (childResolved.profiles) childResolved.profiles.forEach(addProfile);
-            if (childResolved.rules) childResolved.rules.forEach(addRule);
+            const minCon = childResolved.constraints?.find(c => c.type === 'min')?.value || 0;
+            const isMandatory = minCon > 0;
+            const isUpgrade = (childResolved.type || 'upgrade') === 'upgrade';
+            if (!isUpgrade || isMandatory) {
+              if (childResolved.profiles) childResolved.profiles.forEach(addProfile);
+              if (childResolved.rules) childResolved.rules.forEach(addRule);
+            }
           }
         });
       }

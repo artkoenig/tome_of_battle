@@ -1407,5 +1407,75 @@ test('BSB Logic Gap Fix Test', () => {
   expect( bsbLogicGapFixSuccess).toBeTruthy();
 });
 
+console.log('--- collectUnitProfilesAndRules Optional vs Mandatory test ---');
+const optionalMandatorySystem = {
+  id: 'sys-opt-mand',
+  catalogues: [
+    {
+      id: 'cat-opt-mand',
+      sharedSelectionEntries: [
+        {
+          id: 'unit-shaman',
+          name: 'Savage Orc Great Shaman',
+          profiles: [
+            { id: 'prof-shaman', name: 'Shaman Profile', profileTypeName: 'Profile' }
+          ],
+          selectionEntries: [
+            {
+              id: 'upgrade-boar',
+              name: 'Boar',
+              type: 'upgrade',
+              constraints: [{ type: 'max', value: 1 }],
+              profiles: [
+                { id: 'prof-boar', name: 'Boar Profile', profileTypeName: 'Profile' }
+              ]
+            },
+            {
+              id: 'model-bodyguard',
+              name: 'Bodyguard',
+              type: 'model',
+              constraints: [{ type: 'min', value: 1 }],
+              profiles: [
+                { id: 'prof-bodyguard', name: 'Bodyguard Profile', profileTypeName: 'Profile' }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+// Case A: Shaman selected, Boar NOT selected
+const selectionWithoutBoar = {
+  selectionEntryId: 'unit-shaman',
+  selections: []
+};
+
+const resultWithoutBoar = collectUnitProfilesAndRules(optionalMandatorySystem, selectionWithoutBoar, 'cat-opt-mand');
+const hasShamanProfile = resultWithoutBoar.profiles.some(p => p.id === 'prof-shaman');
+const hasBoarProfile = resultWithoutBoar.profiles.some(p => p.id === 'prof-boar');
+const hasBodyguardProfile = resultWithoutBoar.profiles.some(p => p.id === 'prof-bodyguard'); // Should be included as it is type: model / mandatory (min: 1)
+
+// Case B: Shaman selected, Boar IS selected
+const selectionWithBoar = {
+  selectionEntryId: 'unit-shaman',
+  selections: [
+    {
+      selectionEntryId: 'upgrade-boar'
+    }
+  ]
+};
+
+const resultWithBoar = collectUnitProfilesAndRules(optionalMandatorySystem, selectionWithBoar, 'cat-opt-mand');
+const hasBoarProfileWhenSelected = resultWithBoar.profiles.some(p => p.id === 'prof-boar');
+
+test('collectUnitProfilesAndRules handles optional upgrades and mandatory models correctly', () => {
+  expect(hasShamanProfile).toBe(true);
+  expect(hasBoarProfile).toBe(false);
+  expect(hasBodyguardProfile).toBe(true);
+  expect(hasBoarProfileWhenSelected).toBe(true);
+});
+
 console.log('--- TEST RUN COMPLETE ---');
 console.log('--- TEST RUN COMPLETE ---');
