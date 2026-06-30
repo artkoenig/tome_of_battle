@@ -1,7 +1,8 @@
 # Custom Agent Rules - Tome of Battle
 Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grundlage von Battlescribe-Dateien.
 
-## Browser Debugging & Automation
+## Debugging & Automation
+* **Bug-Analyse & Vorgehen:** Bei gemeldeten Bugs, die die Fachlogik betreffen, muss **zuerst in den vorhandenen Daten** (Kataloge, Spieldaten) nach einer bereits erfassten, aber eventuell unvollständig implementierten Logik gesucht werden, bevor neuer Code geschrieben wird. Nutze für die Analyse ein Reasoning Modell, für die Umsetzung ein Flash Modell
 * **Local (macOS):** `browser_subagent` / `open_browser_url` funktionieren nicht. **Nutze Puppeteer** in `src/solver/` via `run_command` (z. B. `node src/solver/my_test.js`).
 * **Cloud (Linux):** Nutze `/browser` und `browser_subagent` (voll unterstützt).
 
