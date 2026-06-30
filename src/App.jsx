@@ -18,6 +18,14 @@ import { findExactEntryById, searchEditableEntries } from './parser/catalogEdito
 
 export default function App() {
   const { showDebugIds, toggleShowDebugIds } = useDebugMode();
+  const isLocal = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname.startsWith('192.168.') ||
+    window.location.hostname.startsWith('10.') ||
+    window.location.hostname.startsWith('172.16.') ||
+    window.location.hostname.startsWith('127.')
+  );
   const [view, setView] = useState('rosters'); // rosters, importer, builder, play
   const [systems, setSystems] = useState([]);
   const [rosters, setRosters] = useState([]);
@@ -338,22 +346,24 @@ export default function App() {
             </button>
           )}
 
-          <button 
-            className="debug-id-btn mobile-only"
-            onClick={toggleShowDebugIds}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              borderColor: showDebugIds ? 'var(--text-gold)' : 'var(--border-dark)',
-              background: showDebugIds ? 'rgba(226, 183, 66, 0.15)' : 'transparent',
-              color: showDebugIds ? 'var(--text-gold)' : 'var(--text-dim)'
-            }}
-            title="Debugging: IDs ein-/ausblenden"
-          >
-            <Bug size={18} className={showDebugIds ? 'text-gold' : 'text-dim'} />
-            <span style={{ fontSize: '0.85rem' }}>Debug</span>
-          </button>
+          {isLocal && (
+            <button 
+              className="debug-id-btn mobile-only"
+              onClick={toggleShowDebugIds}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderColor: showDebugIds ? 'var(--text-gold)' : 'var(--border-dark)',
+                background: showDebugIds ? 'rgba(226, 183, 66, 0.15)' : 'transparent',
+                color: showDebugIds ? 'var(--text-gold)' : 'var(--text-dim)'
+              }}
+              title="Debugging: IDs ein-/ausblenden"
+            >
+              <Bug size={18} className={showDebugIds ? 'text-gold' : 'text-dim'} />
+              <span style={{ fontSize: '0.85rem' }}>Debug</span>
+            </button>
+          )}
           
           {systems.length > 0 && (
             <div className="desktop-nav-actions">

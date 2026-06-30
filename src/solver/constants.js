@@ -39,6 +39,10 @@ export const SAVE_MOUNTS_EXCLUDED_KEYWORDS = [
   'hippogryph', 'griffon', 'dragon', 'drache', 'manticore', 'wyvern'
 ];
 
+export const SAVE_MOUNTS_THICK_SKINNED_KEYWORDS = [
+  'boar', 'wildschwein', 'cold one', 'kampfechse'
+];
+
 export const SAVE_BARDING_KEYWORDS = [
   'barded', 'barding', 'harnisch', 'rosharnisch', 'gepanzert', 'gepanzertes'
 ];

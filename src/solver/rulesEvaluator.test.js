@@ -128,3 +128,27 @@ test('getWardSave', () => {
                     noWardSave === null).toBe(true);
 });
 
+// Test 6: getArmourSave with thick-skinned mounts
+test('getArmourSave with thick-skinned mounts', () => {
+  const saveWithBoar = getArmourSave([
+    { name: 'Light Armour', description: 'Leichte Rüstung' },
+    { name: 'Shield', description: 'Schild' }
+  ], 'Orc Boar Boyz', 'Orcs and Goblins'); // Base (6) + Shield (-1) + Boar in selectionName (-2) = 3
+  
+  const saveWithHorse = getArmourSave([
+    { name: 'Light Armour', description: 'Leichte Rüstung' },
+    { name: 'Shield', description: 'Schild' },
+    { name: 'horse' }
+  ], 'Knight', 'Empire'); // Base (6) + Shield (-1) + Horse (-1) = 4
+
+  const resBoarDetails = getArmourSave([
+    { name: 'Light Armour', description: 'Leichte Rüstung' },
+    { name: 'Shield', description: 'Schild' },
+    { name: 'Boar' }
+  ], 'Orc Boss', 'Orcs and Goblins', true);
+
+  expect(saveWithBoar).toBe(3);
+  expect(saveWithHorse).toBe(4);
+  expect(resBoarDetails.save).toBe(3);
+  expect(resBoarDetails.breakdown).toContain('Beritten (Dickhäutig) (-2)');
+});

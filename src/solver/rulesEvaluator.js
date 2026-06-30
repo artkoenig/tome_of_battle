@@ -8,6 +8,7 @@ import {
   SAVE_LIGHT_ARMOUR_KEYWORDS,
   SAVE_MOUNTS_KEYWORDS,
   SAVE_MOUNTS_EXCLUDED_KEYWORDS,
+  SAVE_MOUNTS_THICK_SKINNED_KEYWORDS,
   SAVE_BARDING_KEYWORDS,
   SAVE_CAVALRY_KEYWORDS,
   WARD_SAVE_KEYWORDS,
@@ -81,6 +82,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
   let hasShield = false;
   let armourValue = 7; // 7 means no armour
   let isMounted = false;
+  let isThickSkinnedMount = false;
   let isBarded = false;
   let explicitSave = null;
   let scalySkinMod = 0;
@@ -156,8 +158,15 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
     // Mounts
     if (SAVE_MOUNTS_KEYWORDS.some(k => t.includes(k))) {
       if (!SAVE_MOUNTS_EXCLUDED_KEYWORDS.some(k => t.includes(k))) {
-        if (!isMounted) breakdown.push('Beritten (-1)');
-        isMounted = true;
+        if (!isMounted) {
+          if (SAVE_MOUNTS_THICK_SKINNED_KEYWORDS.some(k => t.includes(k))) {
+            breakdown.push('Beritten (Dickhäutig) (-2)');
+            isThickSkinnedMount = true;
+          } else {
+            breakdown.push('Beritten (-1)');
+          }
+          isMounted = true;
+        }
       }
     }
 
@@ -241,10 +250,11 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
   }
 
   if (isMounted) {
+    let mountBonus = isThickSkinnedMount ? 2 : 1;
     if (save === 7) {
-      save = 6;
+      save = 7 - mountBonus;
     } else {
-      save = save - 1;
+      save = save - mountBonus;
     }
   }
 
