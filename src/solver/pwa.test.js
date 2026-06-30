@@ -59,6 +59,16 @@ describe('PWA Configuration and Assets', () => {
     expect(swContent).toContain('self.addEventListener(\'message\'');
     expect(swContent).toContain('SKIP_WAITING');
     expect(swContent).toContain('caches.open');
+
+    // Verify install block does NOT call skipWaiting (to let the update prompt toast display first)
+    const installBlockMatch = swContent.match(/self\.addEventListener\('install'[\s\S]*?\}\);/);
+    expect(installBlockMatch).not.toBeNull();
+    expect(installBlockMatch[0]).not.toContain('skipWaiting');
+
+    // Verify message block DOES call skipWaiting
+    const messageBlockMatch = swContent.match(/self\.addEventListener\('message'[\s\S]*?\}\);/);
+    expect(messageBlockMatch).not.toBeNull();
+    expect(messageBlockMatch[0]).toContain('skipWaiting');
   });
 
   it('should have generated PNG icons in the public folder', () => {

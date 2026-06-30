@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import App from './App';
 
 // Mock Lucide Icons
@@ -84,5 +84,37 @@ describe('App Component Debug Button local filtering', () => {
       const debugButton = screen.queryByTitle('Debugging: IDs ein-/ausblenden');
       expect(debugButton).toBeNull();
     });
+  });
+});
+
+describe('App Component PWA Update Toast Notification', () => {
+  it('displays the toast notification when pwa-update-available is dispatched', async () => {
+    render(<App />);
+
+    // Create a mock service worker
+    const mockWorker = {
+      postMessage: vi.fn()
+    };
+
+    // Dispatch the custom event
+    const event = new CustomEvent('pwa-update-available', { detail: mockWorker });
+    await act(async () => {
+      window.dispatchEvent(event);
+    });
+
+    // Verify the toast is visible
+    await waitFor(() => {
+      expect(screen.queryByText('Update verfügbar!')).not.toBeNull();
+      expect(screen.queryByText('Eine neue Version wurde im Hintergrund geladen.')).not.toBeNull();
+    });
+
+    // Find and click the reload button
+    const reloadButton = screen.getByRole('button', { name: 'Neu laden' });
+    await act(async () => {
+      fireEvent.click(reloadButton);
+    });
+
+    // Verify it sent the SKIP_WAITING message to the service worker
+    expect(mockWorker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
   });
 });
