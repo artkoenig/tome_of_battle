@@ -106,9 +106,23 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         <div className="builder-top-bar-right">
           {/* Points limit indicator */}
           <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginRight: '8px' }}>
-            <span className="points-display text-subheading">
-              {currentPoints} / {limitPoints} {costTypeLabel}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {isRosterValid ? (
+                <span className="text-success" style={{ fontWeight: 'bold', fontSize: '1.1rem' }} title="Regelkonform">✓</span>
+              ) : (
+                <span 
+                  className="text-danger clickable" 
+                  style={{ fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }} 
+                  title="Regelverstöße (Klicken zum Anzeigen)"
+                  onClick={scrollToErrors}
+                >
+                  ⚠
+                </span>
+              )}
+              <span className="points-display text-subheading">
+                {currentPoints} / {limitPoints} {costTypeLabel}
+              </span>
+            </div>
           </div>
 
           <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
@@ -183,10 +197,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
                             return (
                               <span 
-                                className={categoryErrors.length > 0 ? "badge badge-danger" : "badge"} 
+                                className={categoryErrors.length > 0 ? "badge badge-danger" : (count > 0 ? "badge badge-success" : "badge")} 
                                 style={{ 
                                   padding: '2px 8px',
-                                  ...(categoryErrors.length > 0 ? {} : {
+                                  ...(categoryErrors.length > 0 || count > 0 ? {} : {
                                     backgroundColor: 'rgba(226, 183, 66, 0.05)',
                                     border: '1px solid rgba(226, 183, 66, 0.2)',
                                     color: 'var(--text-gold)'

@@ -228,7 +228,7 @@ export default function PlayUnitDetails({
   const isDead = currentWounds === 0;
 
   return (
-    <div className="play-unit-card">
+    <div className={`play-unit-card ${isDead ? 'unit-destroyed' : ''}`}>
       <div className="play-unit-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
         <div className="play-unit-title text-ui-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>

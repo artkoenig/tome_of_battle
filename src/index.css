@@ -2255,3 +2255,20 @@ input[type="radio"]:checked::after {
     }
   }
 }
+
+/* UI/UX Optimierungen */
+.play-unit-card.unit-destroyed {
+  opacity: 0.55;
+  filter: grayscale(0.7);
+  border-color: var(--color-danger) !important;
+  box-shadow: 0 0 10px rgba(166, 28, 28, 0.2);
+  transition: all 0.3s ease;
+}
+
+.preset-btn:hover {
+  background: rgba(226, 183, 66, 0.08) !important;
+}
+
+.clickable {
+  cursor: pointer;
+}

@@ -81,13 +81,36 @@ export default function NewRosterModal({
 
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Punktegrenze</label>
-              <input 
-                type="number" 
-                value={newRosterLimit}
-                onChange={(e) => setNewRosterLimit(e.target.value)}
-                required
-                min={1}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input 
+                  type="number" 
+                  value={newRosterLimit}
+                  onChange={(e) => setNewRosterLimit(e.target.value)}
+                  required
+                  min={1}
+                  style={{ flex: 1 }}
+                />
+                <span className="text-subheading text-gold" style={{ fontWeight: 'bold' }}>Pkt.</span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
+                {[1000, 1500, 2000, 2500].map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    className="btn-sm preset-btn"
+                    style={{ 
+                      padding: '4px 10px', 
+                      fontSize: 'var(--fs-micro)', 
+                      borderColor: Number(newRosterLimit) === val ? 'var(--text-gold)' : 'var(--border-dark)',
+                      background: Number(newRosterLimit) === val ? 'rgba(226, 183, 66, 0.15)' : 'transparent',
+                      color: Number(newRosterLimit) === val ? 'var(--text-gold)' : 'var(--text-dim)'
+                    }}
+                    onClick={() => setNewRosterLimit(val)}
+                  >
+                    {val}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <div className="modal-footer">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download } from 'lucide-react';
+import { calculateRosterCosts, validateRoster } from '../solver/validator';
 
 export default function RosterDashboard({
   rosters = [],
@@ -115,6 +116,11 @@ export default function RosterDashboard({
                               const rawLabel = costTypeObj?.name || 'Pkt.';
                               const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? 'Pkt.' : rawLabel;
                               
+                              const calcCosts = (sys && roster.forces) ? calculateRosterCosts(roster, sys) : {};
+                              const currentPoints = calcCosts[roster.costLimitType] || 0;
+                              const errors = (sys && roster.forces) ? validateRoster(roster, sys) : [];
+                              const isValid = errors.length === 0;
+
                               return (
                                 <div key={roster.id} className="roster-card" style={{ minHeight: 'auto', padding: '12px 16px' }}>
                                   <div className="roster-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
@@ -125,9 +131,19 @@ export default function RosterDashboard({
                                     <div className="roster-points text-subheading text-gold" style={{ 
                                       fontWeight: 'bold', 
                                       whiteSpace: 'nowrap',
-                                      textAlign: 'right'
+                                      textAlign: 'right',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px'
                                     }}>
-                                      {roster.costLimit} <span className="text-micro text-gold" style={{ textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
+                                      {isValid ? (
+                                        <span className="text-success" title="Regelkonform" style={{ fontSize: '1rem' }}>✓</span>
+                                      ) : (
+                                        <span className="text-danger" title="Regelverstöße vorhanden" style={{ fontSize: '0.9rem' }}>⚠</span>
+                                      )}
+                                      <span>
+                                        <span>{currentPoints}</span> / <span>{roster.costLimit}</span> <span className="text-micro text-gold" style={{ textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
+                                      </span>
                                     </div>
                                   </div>
                                   <div className="roster-actions" style={{ marginTop: '8px' }}>
