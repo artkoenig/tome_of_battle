@@ -277,8 +277,7 @@ export default function PlayUnitDetails({
           <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
             {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
             <button 
-              className="btn-sm" 
-              style={{ padding: '2px 6px' }}
+              className="qty-btn" 
               onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
               disabled={isDead}
             >
@@ -288,8 +287,7 @@ export default function PlayUnitDetails({
               {currentWounds} / {totalMaxWounds}
             </span>
             <button 
-              className="btn-sm" 
-              style={{ padding: '2px 6px' }}
+              className="qty-btn" 
               onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
               disabled={currentWounds === totalMaxWounds}
             >

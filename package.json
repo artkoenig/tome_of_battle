@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run && node src/solver/ui.test.js",
     "debug-ui": "node src/solver/debug_ui.js",
-    "ux-correct": "python scripts/ux_self_correction.py"
+    "ux-correct": "python scripts/ux_self_correction.py",
+    "generate-icons": "node scripts/generate_pwa_icons.js"
   },
   "dependencies": {
     "jszip": "^3.10.1",

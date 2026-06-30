@@ -382,6 +382,13 @@ select option {
   gap: 12px;
 }
 
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 .logo-text {
   font-family: var(--font-serif);
   font-size: var(--fs-heading);
@@ -2174,8 +2181,8 @@ input[type="radio"]:checked::after {
 }
 
 .qty-btn {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50% !important;
   padding: 0 !important;
   display: inline-flex;

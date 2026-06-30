@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, FolderOpen, Plus, Trash2, Shield, Play, Edit3, Bug, Search, WifiOff, Download } from 'lucide-react';
+import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Bug, Search, WifiOff, Download } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 import { useDebugMode } from './hooks/DebugContext';
@@ -288,7 +288,7 @@ export default function App() {
       {/* Premium Header */}
       <header className="app-header">
         <div className="logo-container">
-          <Shield className="text-gold" size={28} />
+          <img src="/favicon.png" className="logo-icon" alt="Tome of Battle Logo" />
           <span className="logo-text">TOME OF BATTLE</span>
         </div>
         
