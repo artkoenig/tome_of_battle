@@ -7,20 +7,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function generate() {
-  console.log('Launching headless browser to render PWA icons...');
+  console.log('Launching headless browser to render PWA icons from golden skull template...');
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   
-  const svgPath = path.join(__dirname, '../public/favicon.svg');
-  if (!fs.existsSync(svgPath)) {
-    throw new Error(`Favicon not found at ${svgPath}`);
+  const iconPath = path.join(__dirname, '../public/pwa-icon.png');
+  if (!fs.existsSync(iconPath)) {
+    throw new Error(`PWA base icon not found at ${iconPath}`);
   }
-  const svgContent = fs.readFileSync(svgPath, 'utf8');
+  const imgBuffer = fs.readFileSync(iconPath);
+  const base64Img = imgBuffer.toString('base64');
+  const imgSrc = `data:image/png;base64,${base64Img}`;
 
-  // Helper to build dynamic HTML document containing the SVG centered in a dark rounded square
+  // Helper to build dynamic HTML document containing the image centered
   const getHTML = (size, isMaskable) => {
-    // For maskable icon, we need more padding (safe area is 80% of the size)
-    const padding = isMaskable ? '20%' : '12%';
+    // For maskable icon, add a 15% padding (safe area) so corners are not clipped
+    const paddingVal = isMaskable ? '15%' : '0%';
     return `
       <!DOCTYPE html>
       <html>
@@ -38,21 +40,22 @@ async function generate() {
             box-sizing: border-box;
           }
           .icon-container {
-            width: calc(100% - (${padding} * 2));
-            height: calc(100% - (${padding} * 2));
+            width: calc(100% - (${paddingVal} * 2));
+            height: calc(100% - (${paddingVal} * 2));
             display: flex;
             justify-content: center;
             align-items: center;
           }
-          svg {
+          img {
             width: 100%;
             height: 100%;
+            object-fit: contain;
           }
         </style>
       </head>
       <body>
         <div class="icon-container">
-          ${svgContent}
+          <img src="${imgSrc}" />
         </div>
       </body>
       </html>
