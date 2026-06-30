@@ -88,4 +88,22 @@ describe('useRoster Hook', () => {
 
     expect(mockSave).toHaveBeenCalledWith(result.current.roster);
   });
+
+  it('saves immediately when unit is added', () => {
+    const mockSave = vi.fn();
+    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+    // Clear initial render calls
+    mockSave.mockClear();
+
+    const testEntry = { id: 'entry-1', name: 'Space Marine' };
+
+    act(() => {
+      result.current.addUnit(testEntry, 'cat-1');
+    });
+
+    // Check that it was called immediately (without advancing timers)
+    expect(mockSave).toHaveBeenCalledTimes(1);
+    expect(mockSave.mock.calls[0][0].forces[0].selections[0].name).toBe('Space Marine');
+  });
 });

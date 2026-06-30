@@ -17,6 +17,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   const [selectedCatalogEntry, setSelectedCatalogEntry] = useState(null);
 
   // Recalculate costs and run validation whenever roster changes (debounced for performance)
+  // Save changes to database immediately on change
   useEffect(() => {
     if (roster && system) {
       const rosterModified = syncRosterSelectionsWithSystem(roster, system);
@@ -26,20 +27,25 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
         return;
       }
 
-      const handler = setTimeout(async () => {
+      // Auto-save roster immediately on change
+      if (saveRosterCallback) {
+        try {
+          const promise = saveRosterCallback(roster);
+          if (promise && typeof promise.catch === 'function') {
+            promise.catch(e => {
+              console.error('Failed to auto-save roster:', e);
+            });
+          }
+        } catch (e) {
+          console.error('Failed to auto-save roster:', e);
+        }
+      }
+
+      const handler = setTimeout(() => {
         const calcCosts = calculateRosterCosts(roster, system);
         setCosts(calcCosts);
         const errors = validateRoster(roster, system);
         setValidationErrors(errors);
-
-        // Auto-save roster on change
-        if (saveRosterCallback) {
-          try {
-            await saveRosterCallback(roster);
-          } catch (e) {
-            console.error('Failed to auto-save roster:', e);
-          }
-        }
       }, 150);
 
       return () => clearTimeout(handler);
