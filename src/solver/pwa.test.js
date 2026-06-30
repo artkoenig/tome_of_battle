@@ -56,6 +56,8 @@ describe('PWA Configuration and Assets', () => {
     expect(swContent).toContain('self.addEventListener(\'install\'');
     expect(swContent).toContain('self.addEventListener(\'activate\'');
     expect(swContent).toContain('self.addEventListener(\'fetch\'');
+    expect(swContent).toContain('self.addEventListener(\'message\'');
+    expect(swContent).toContain('SKIP_WAITING');
     expect(swContent).toContain('caches.open');
   });
 

@@ -1944,3 +1944,63 @@ input[type="radio"]:checked::after {
   font-size: 0.85rem;
   margin-top: 12px;
 }
+
+/* PWA Update Toast Notification */
+.update-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-panel);
+  border: 2px solid var(--border-gold);
+  border-radius: 4px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), var(--shadow-glow);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  z-index: 1000;
+  max-width: 500px;
+  width: calc(100% - 32px);
+  box-sizing: border-box;
+  animation: slide-up-glow 0.4s ease-out forwards;
+}
+
+.update-toast-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.update-toast-title {
+  font-weight: bold;
+  font-size: 1.05rem;
+  margin-bottom: 2px;
+}
+
+.update-toast-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.update-toast-btn {
+  white-space: nowrap;
+  padding: 8px 16px !important;
+}
+
+@keyframes slide-up-glow {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 900px) {
+  .update-toast {
+    bottom: 80px; /* Positioned above mobile bottom navigation bar */
+  }
+}

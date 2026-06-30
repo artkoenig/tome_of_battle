@@ -29,6 +29,8 @@ export default function App() {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [waitingWorker, setWaitingWorker] = useState(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -42,17 +44,23 @@ export default function App() {
       setIsInstallable(false);
       setDeferredPrompt(null);
     };
+    const handleUpdateAvailable = (e) => {
+      setWaitingWorker(e.detail);
+      setUpdateAvailable(true);
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('pwa-update-available', handleUpdateAvailable);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('pwa-update-available', handleUpdateAvailable);
     };
   }, []);
 
@@ -63,6 +71,12 @@ export default function App() {
     console.log(`User response to install prompt: ${outcome}`);
     setDeferredPrompt(null);
     setIsInstallable(false);
+  };
+
+  const handleReloadApp = () => {
+    if (waitingWorker) {
+      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+    }
   };
 
   // Modal State for new Roster
@@ -449,6 +463,18 @@ export default function App() {
             <span>Bibliothekar</span>
           </button>
         </nav>
+      )}
+      {/* Update Available Toast Notification */}
+      {updateAvailable && (
+        <div className="update-toast">
+          <div className="update-toast-content">
+            <span className="font-serif text-gold update-toast-title">Update verfügbar!</span>
+            <span className="update-toast-desc">Eine neue Version wurde im Hintergrund geladen.</span>
+          </div>
+          <button className="btn-primary btn-sm update-toast-btn" onClick={handleReloadApp}>
+            Neu laden
+          </button>
+        </div>
       )}
     </div>
   );
