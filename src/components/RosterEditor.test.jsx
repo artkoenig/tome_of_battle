@@ -256,23 +256,54 @@ describe('RosterEditor Component', () => {
   });
 
   describe('Lagerbericht Play Button and Flavor Text', () => {
-    it('does not render "In die Schlacht (Spielmodus)" button when validation errors exist', () => {
+    it('does not render "Spielen" button when validation errors exist', () => {
       // default mockValidationErrors contains errors, so roster is invalid
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
-      const mobilePlayBtn = screen.queryByText(/In die Schlacht/i);
+      const mobilePlayBtn = screen.queryByText(/Spielen/i);
       expect(mobilePlayBtn).toBeNull();
     });
 
-    it('renders "In die Schlacht (Spielmodus)" button and the cool flavor text when roster is valid', () => {
+    it('renders "Spielen" button and the cool flavor text when roster is valid', () => {
       mockValidationErrors = []; // Valid roster!
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       
-      const mobilePlayBtn = screen.getByText(/In die Schlacht \(Spielmodus\)/i);
+      const mobilePlayBtn = screen.getByText(/Spielen/i);
       expect(mobilePlayBtn).toBeDefined();
       
       const flavorText = screen.getByText(/Die Schlachtreihen stehen fest/i);
       expect(flavorText).toBeDefined();
     });
   });
+
+  describe('Milestone 1 UI/UX Optimizations', () => {
+    it('does not render "Keine Auswahlen vorhanden" when categories are empty', () => {
+      mockRoster.forces[0].selections = [];
+      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      expect(screen.queryByText(/Keine Auswahlen vorhanden/i)).toBeNull();
+    });
+
+    it('applies correct badge classes (badge-danger when invalid, badge-muted when valid)', () => {
+      const { container } = render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      
+      const headers = container.querySelectorAll('.roster-category-header');
+      expect(headers.length).toBe(2);
+      
+      headers.forEach(header => {
+        const title = header.querySelector('h3').textContent;
+        const badge = header.querySelector('span.badge');
+        
+        if (title.includes('Heroes')) {
+          expect(badge.className).toContain('badge-muted');
+          expect(badge.className).not.toContain('badge-danger');
+          expect(badge.style.backgroundColor).toBe('');
+        } else if (title.includes('Core')) {
+          expect(badge.className).toContain('badge-danger');
+          expect(badge.className).not.toContain('badge-muted');
+          expect(badge.style.backgroundColor).toBe('');
+        }
+      });
+    });
+  });
 });
+
 

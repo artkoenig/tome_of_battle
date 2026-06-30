@@ -136,10 +136,8 @@ export default function RosterDashboard({
                                       alignItems: 'center',
                                       gap: '8px'
                                     }}>
-                                      {isValid ? (
+                                      {isValid && (
                                         <span className="text-success" title="Regelkonform" style={{ fontSize: '1rem' }}>✓</span>
-                                      ) : (
-                                        <span className="text-danger" title="Regelverstöße vorhanden" style={{ fontSize: '0.9rem' }}>⚠</span>
                                       )}
                                       <span>
                                         <span>{currentPoints}</span> / <span>{roster.costLimit}</span> <span className="text-micro text-gold" style={{ textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
@@ -151,7 +149,7 @@ export default function RosterDashboard({
                                       <Edit3 size={14} /> Ausrüsten
                                     </button>
                                     <button className="btn-primary btn-sm" onClick={() => onOpenRoster(roster, 'play')}>
-                                      <Play size={14} /> In die Schlacht
+                                      <Play size={14} /> Spielen
                                     </button>
                                     <button 
                                       className="btn-danger square-btn" 

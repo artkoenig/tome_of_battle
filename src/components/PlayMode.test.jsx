@@ -295,4 +295,32 @@ describe('PlayMode Component', () => {
       expect(screen.queryByText('Direct test description')).toBeNull();
     });
   });
+
+  it('9. Render Destroyed Overlay when wounds are 0', () => {
+    const mockSelection = { id: 'sel-dead', name: 'Dead Unit', category: 'cat-core', entryLinkId: 'el-dead' };
+    const mockRosterProps = { catalogueId: 'cat-1', costLimitType: 'pts' };
+
+    render(
+      <PlayUnitDetails
+        selection={mockSelection}
+        system={mockSystem}
+        roster={mockRosterProps}
+        showDebugIds={false}
+        gameState={{ wounds: { 'sel-dead': 0 } }}
+        handleAdjustWound={vi.fn()}
+        handleMouseEnter={vi.fn()}
+        handleMouseLeave={vi.fn()}
+        setSaveSummaryData={vi.fn()}
+        setSaveSummaryOpen={vi.fn()}
+      />
+    );
+
+    const overlay = screen.getByText('Vernichtet');
+    expect(overlay).toBeDefined();
+    expect(overlay.className).toContain('destroyed-text');
+    expect(overlay.closest('.destroyed-overlay')).toBeDefined();
+
+    const card = screen.getByText('Dead Unit').closest('.play-unit-card');
+    expect(card.className).toContain('unit-destroyed');
+  });
 });

@@ -51,12 +51,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
 
 
-  const scrollToErrors = () => {
-    const el = document.getElementById('general-errors-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+
 
   const hasPrimaryCatalogItems = (catId, force) => {
     const activeCatalogue = system.catalogues?.find(c => c.id === force.catalogueId);
@@ -107,17 +102,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           {/* Points limit indicator */}
           <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginRight: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              {isRosterValid ? (
+              {isRosterValid && (
                 <span className="text-success" style={{ fontWeight: 'bold', fontSize: '1.1rem' }} title="Regelkonform">✓</span>
-              ) : (
-                <span 
-                  className="text-danger clickable" 
-                  style={{ fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }} 
-                  title="Regelverstöße (Klicken zum Anzeigen)"
-                  onClick={scrollToErrors}
-                >
-                  ⚠
-                </span>
               )}
               <span className="points-display text-subheading">
                 {currentPoints} / {limitPoints} {costTypeLabel}
@@ -197,15 +183,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
                             return (
                               <span 
-                                className={categoryErrors.length > 0 ? "badge badge-danger" : (count > 0 ? "badge badge-success" : "badge")} 
-                                style={{ 
-                                  padding: '2px 8px',
-                                  ...(categoryErrors.length > 0 || count > 0 ? {} : {
-                                    backgroundColor: 'rgba(226, 183, 66, 0.05)',
-                                    border: '1px solid rgba(226, 183, 66, 0.2)',
-                                    color: 'var(--text-gold)'
-                                  })
-                                }}
+                                className={categoryErrors.length > 0 ? "badge badge-danger" : "badge badge-muted"}
                               >
                                 {count} {limitText}
                               </span>
@@ -224,11 +202,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       </div>
 
 
-                      {selections.length === 0 ? (
-                        <div className="text-label text-dim" style={{ textAlign: 'center', padding: '12px 0', fontStyle: 'italic' }}>
-                          Keine Auswahlen vorhanden
-                        </div>
-                      ) : (
+                      {selections.length > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {selections
                             .slice()
@@ -320,7 +294,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           fontSize: 'var(--fs-body)'
                         }}
                       >
-                        <Play size={18} /> In die Schlacht (Spielmodus)
+                        <Play size={18} /> Spielen
                       </button>
                     </div>
                   </div>

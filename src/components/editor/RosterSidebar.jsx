@@ -84,15 +84,7 @@ export default function RosterSidebar({
                   :
                 </span>
                 <span 
-                  className={isInvalid ? "badge badge-danger" : "badge"} 
-                  style={{ 
-                    padding: '2px 8px',
-                    ...(isInvalid ? {} : {
-                      backgroundColor: 'rgba(226, 183, 66, 0.05)',
-                      border: '1px solid rgba(226, 183, 66, 0.2)',
-                      color: 'var(--text-gold)'
-                    })
-                  }}
+                  className={isInvalid ? "badge badge-danger" : "badge badge-muted"} 
                 >
                   {(() => {
                     const limitParts = [];

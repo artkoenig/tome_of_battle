@@ -89,8 +89,8 @@ describe('RosterDashboard Component', () => {
     fireEvent.click(editBtn);
     expect(mockOpenRoster).toHaveBeenCalledWith(mockRosters[0], 'builder');
 
-    // Klick auf "In die Schlacht"
-    const playBtn = screen.getByText('In die Schlacht');
+    // Klick auf "Spielen"
+    const playBtn = screen.getByText('Spielen');
     fireEvent.click(playBtn);
     expect(mockOpenRoster).toHaveBeenCalledWith(mockRosters[0], 'play');
 

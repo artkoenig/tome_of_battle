@@ -123,8 +123,16 @@ async function run() {
 
     if (fs.existsSync(zipPath)) {
       console.log('Navigating to importer and uploading ZIP file...');
-      await clickButtonWithText('BSData Bibliothekar');
-      await takeScreenshot('02_importer_open');
+      try {
+        await clickButtonWithText('Bibliothekar');
+        await takeScreenshot('02_importer_open');
+      } catch (e) {
+        const fileInputExists = await page.evaluate(() => !!document.querySelector('input#file-upload'));
+        if (!fileInputExists) {
+          throw new Error('Neither "Bibliothekar" button nor "#file-upload" input found.');
+        }
+        console.log('Importer already shown as empty state.');
+      }
       const fileInput = await page.$('input#file-upload');
       if (!fileInput) {
         throw new Error('File input #file-upload not found');
@@ -186,7 +194,11 @@ async function run() {
     try {
       await clickButtonWithText('Armeeliste erstellen');
     } catch (e) {
-      await clickButtonWithText('Neue Armeeliste');
+      try {
+        await clickButtonWithText('Neue Armeeliste');
+      } catch (e2) {
+        await clickButtonWithText('ausheben');
+      }
     }
     await takeScreenshot('05_modal_open');
 

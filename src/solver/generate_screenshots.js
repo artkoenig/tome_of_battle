@@ -247,7 +247,7 @@ const runSessionForMode = async (mode) => {
       const card = document.querySelector('.roster-card');
       if (card) {
         const playBtn = Array.from(card.querySelectorAll('button'))
-          .find(b => b.textContent.toLowerCase().includes('schlacht') || b.textContent.toLowerCase().includes('play'));
+          .find(b => b.textContent.toLowerCase().includes('schlacht') || b.textContent.toLowerCase().includes('play') || b.textContent.toLowerCase().includes('spielen'));
         if (playBtn) playBtn.click();
       }
     });

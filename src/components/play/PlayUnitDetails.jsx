@@ -229,6 +229,11 @@ export default function PlayUnitDetails({
 
   return (
     <div className={`play-unit-card ${isDead ? 'unit-destroyed' : ''}`}>
+      {isDead && (
+        <div className="destroyed-overlay">
+          <span className="destroyed-text">Vernichtet</span>
+        </div>
+      )}
       <div className="play-unit-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
         <div className="play-unit-title text-ui-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
