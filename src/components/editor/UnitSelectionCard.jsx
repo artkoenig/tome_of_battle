@@ -6,7 +6,6 @@ import BottomSheet from './BottomSheet';
 import { 
   resolveEntry, 
   findEntryInSystem, 
-  getSelectionTotalCost, 
   calculateRosterCosts,
   collectUnitProfilesAndRules
 } from '../../solver/validator';

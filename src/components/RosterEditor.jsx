@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Play, Trash2, AlertTriangle, Check, Copy } from 'lucide-react';
+import { Save, Play, AlertTriangle, Check } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
-import { computeRosterCounts, getModifiedConstraintValue, calculateRosterCosts, resolveEntry, findEntryInSystem, collectUnitProfilesAndRules, getSelectionTotalCost } from '../solver/validator';
-import { UPGRADE_DETAILS_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from '../solver/constants';
+import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, getSelectionTotalCost } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
-import SelectionConfigurator from './editor/SelectionConfigurator';
 import UnitSelectionCard from './editor/UnitSelectionCard';
 import CatalogStatBlock from './editor/CatalogStatBlock';
 
 
-export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay }) {
+export default function RosterEditor({ system, roster: initialRoster, _onBack, onPlay }) {
   const { showDebugIds } = useDebugMode();
   const {
     roster,
@@ -31,42 +29,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   } = useRoster(initialRoster, system, saveRoster);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
-  const [toast, setToast] = useState(null);
-  const [hoveredInfo, setHoveredInfo] = useState(null);
-
-  const updateTooltipPosition = (e) => {
-    const tooltipWidth = 320;
-    const estimatedHeight = 150;
-    let x = e.clientX + 15;
-    let y = e.clientY + 15;
-
-    if (x + tooltipWidth > window.innerWidth) {
-      x = e.clientX - tooltipWidth - 15;
-      if (x < 10) x = 10;
-    }
-
-    if (y + estimatedHeight > window.innerHeight) {
-      y = e.clientY - estimatedHeight - 15;
-      if (y < 10) y = 10;
-    }
-    return { x, y };
-  };
-
-  const handleMouseEnter = (title, text, e) => {
-    if (window.innerWidth <= 900) return;
-    const pos = updateTooltipPosition(e);
-    setHoveredInfo({ title, text, x: pos.x, y: pos.y });
-  };
-
-  const handleMouseMove = (e) => {
-    if (window.innerWidth <= 900) return;
-    const pos = updateTooltipPosition(e);
-    setHoveredInfo(prev => prev ? { ...prev, x: pos.x, y: pos.y } : null);
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredInfo(null);
-  };
+  const [toast, _setToast] = useState(null);
 
 
 
@@ -102,7 +65,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     if (!activeCatalogue) return false;
 
     const checkEntry = (entry) => {
-      const resolved = resolveEntry(system, entry);
+      const resolved = resolveEntry(system, entry, activeCatalogue?.id);
       if (!resolved) return false;
       return (resolved.categoryLinks?.some(link => link.targetId === catId && link.primary) ||
              entry.categoryLinks?.some(link => link.targetId === catId && link.primary));
@@ -277,12 +240,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                               return bPoints - aPoints; // Descending
                             })
                             .map(selection => {
-                            const isUnitEditing = selectedRosterSelection?.id === selection.id;
-                            const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
-                            const displayPoints = unitCosts[roster.costLimitType] || 0;
-                            const hasSelectionError = validationErrors.some(e => e.selectionId === selection.id);
-                            const selectionErrors = validationErrors.filter(e => e.selectionId === selection.id);
-
                             return (
                               <UnitSelectionCard
                                 key={selection.id}
@@ -313,10 +270,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   <h3 className="font-serif text-gold" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', fontSize: '1.15rem' }}>Sonstiges</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {uncategorizedSelections.map(selection => {
-                      const isUnitEditing = selectedRosterSelection?.id === selection.id;
-                      const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
-                      const displayPoints = unitCosts[roster.costLimitType] || 0;
-
                       return (
                               <UnitSelectionCard
                                 key={selection.id}
@@ -388,18 +341,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         </div>
       )}
 
-      {hoveredInfo && (
-        <div 
-          className="gothic-tooltip"
-          style={{
-            left: hoveredInfo.x,
-            top: hoveredInfo.y
-          }}
-        >
-          <div className="tooltip-title">{hoveredInfo.title}</div>
-          <div className="tooltip-body">{hoveredInfo.text}</div>
-        </div>
-      )}
     </div>
   );
 }

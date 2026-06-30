@@ -1,0 +1,268 @@
+import React from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import RosterEditor from './RosterEditor';
+
+// Mock Lucide Icons
+vi.mock('lucide-react', () => ({
+  Save: () => <span data-testid="icon-save" />,
+  Play: () => <span data-testid="icon-play" />,
+  Trash2: () => <span data-testid="icon-trash" />,
+  AlertTriangle: () => <span data-testid="icon-alert" />,
+  Check: () => <span data-testid="icon-check" />,
+  Copy: () => <span data-testid="icon-copy" />,
+}));
+
+// Mock useRoster custom hook
+const mockAddUnit = vi.fn();
+const mockRemoveUnit = vi.fn();
+const mockCopyUnit = vi.fn();
+const mockUpdateSubSelection = vi.fn();
+const mockSave = vi.fn();
+const mockSetSelectedRosterSelection = vi.fn();
+const mockSetSelectedCatalogEntry = vi.fn();
+
+// Mock validator spy functions
+const mockResolveEntry = vi.fn().mockReturnValue({ id: 'entry-resolved', name: 'Resolved Entry' });
+const mockFindEntryInSystem = vi.fn().mockReturnValue({ id: 'entry-raw', name: 'Raw Entry' });
+const mockCollectUnitProfilesAndRules = vi.fn().mockReturnValue({ profiles: [], rules: [] });
+
+let mockRoster = {};
+let mockCosts = {};
+let mockValidationErrors = [];
+
+const defaultMockRoster = {
+  id: 'roster-1',
+  name: 'Bretonnian Crusaders',
+  costLimitType: 'pts',
+  costLimit: 1000,
+  catalogueId: 'bret-cat',
+  forces: [
+    {
+      id: 'force-1',
+      forceEntryId: 'fe-1',
+      catalogueId: 'bret-cat',
+      selections: [
+        { id: 'sel-1', name: 'Paladin', category: 'cat-heroes', cost: 100 },
+        { id: 'sel-2', name: 'Knights Errant', category: 'cat-core', cost: 120 },
+        { id: 'sel-3', name: 'Knights of the Realm', category: 'cat-core', cost: 200 }
+      ]
+    }
+  ]
+};
+
+const defaultMockCosts = { pts: 420 };
+
+const defaultMockValidationErrors = [
+  { id: 'err-1', message: 'Minimale Anzahl Kern-Auswahlen nicht erreicht', categoryId: 'cat-core' },
+  { id: 'err-2', message: 'Roster exceeds cost limit', selectionId: null }
+];
+
+vi.mock('../hooks/useRoster', () => ({
+  useRoster: () => ({
+    roster: mockRoster,
+    costs: mockCosts,
+    validationErrors: mockValidationErrors,
+    selectedRosterSelection: null,
+    setSelectedRosterSelection: mockSetSelectedRosterSelection,
+    selectedCatalogEntry: null,
+    setSelectedCatalogEntry: mockSetSelectedCatalogEntry,
+    addUnit: mockAddUnit,
+    removeUnit: mockRemoveUnit,
+    copyUnit: mockCopyUnit,
+    updateSubSelection: mockUpdateSubSelection,
+    save: mockSave
+  })
+}));
+
+// Mock useDebugMode Context
+vi.mock('../hooks/DebugContext', () => ({
+  useDebugMode: () => ({ showDebugIds: false })
+}));
+
+// Mock database saveRoster
+vi.mock('../db/database', () => ({
+  saveRoster: vi.fn()
+}));
+
+// Mock Validators
+vi.mock('../solver/validator', () => ({
+  computeRosterCounts: () => ({
+    selectionCounts: {},
+    categoryCounts: { 'force-1': { 'cat-heroes': 1, 'cat-core': 2 } }
+  }),
+  getModifiedConstraintValue: (constraint) => (constraint.type === 'min' ? 2 : 5),
+  calculateRosterCosts: () => ({ pts: 420 }),
+  resolveEntry: (...args) => mockResolveEntry(...args),
+  findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
+  collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
+  getSelectionTotalCost: (sel) => sel.cost
+}));
+
+// Dummy child components to speed up execution
+vi.mock('./editor/CategoryUnitAdder', () => ({
+  default: ({ categoryId, addUnit }) => (
+    <button data-testid={`adder-${categoryId}`} onClick={() => addUnit('mock-added-unit')}>
+      Add to {categoryId}
+    </button>
+  )
+}));
+vi.mock('./editor/RosterSidebar', () => ({
+  default: () => <div data-testid="roster-sidebar" />
+}));
+vi.mock('./editor/CatalogStatBlock', () => ({
+  default: () => <div data-testid="catalog-stat-block" />
+}));
+vi.mock('./editor/UnitSelectionCard', () => ({
+  default: ({ selection }) => <div data-testid={`unit-card-${selection.id}`}>{selection.name}</div>
+}));
+
+describe('RosterEditor Component', () => {
+  const mockSystem = {
+    id: 'sys-1',
+    costTypes: [{ id: 'pts', name: 'Pts' }],
+    catalogues: [{ id: 'bret-cat', name: 'Bretonnia', selectionEntries: [{ id: 'dummy-entry' }] }],
+    forceEntries: [
+      {
+        id: 'fe-1',
+        categoryLinks: [
+          { targetId: 'cat-heroes', name: 'Heroes', constraints: [{ type: 'min', value: 1 }] },
+          { targetId: 'cat-core', name: 'Core', constraints: [{ type: 'min', value: 2 }] }
+        ]
+      }
+    ],
+    categoryEntries: [
+      { id: 'cat-heroes', name: 'Heroes' },
+      { id: 'cat-core', name: 'Core' }
+    ]
+  };
+
+  const mockOnBack = vi.fn();
+  const mockOnPlay = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRoster = JSON.parse(JSON.stringify(defaultMockRoster));
+    mockCosts = JSON.parse(JSON.stringify(defaultMockCosts));
+    mockValidationErrors = JSON.parse(JSON.stringify(defaultMockValidationErrors));
+  });
+
+  it('renders the roster header details and cost indicators', () => {
+    render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+    expect(screen.getByText('Bretonnian Crusaders')).toBeDefined();
+    expect(screen.getByText('420 / 1000 Pkt.')).toBeDefined();
+  });
+
+  it('sorts units in categories descending by cost', () => {
+    render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+    const unitCards = screen.getAllByTestId(/unit-card-sel-/);
+    
+    // Core has sel-2 (120 pts) and sel-3 (200 pts). Due to descending sorting:
+    // sel-3 should appear first in DOM before sel-2
+    expect(unitCards[1].textContent).toContain('Knights of the Realm');
+    expect(unitCards[2].textContent).toContain('Knights Errant');
+  });
+
+  it('triggers save action on header button click', () => {
+    render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+    const saveButton = screen.getByRole('button', { name: /speichern/i });
+    fireEvent.click(saveButton);
+    expect(mockSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('triggers scroll to error panel when mobile sticky bar is clicked', () => {
+    const scrollSpy = vi.fn();
+    window.HTMLElement.prototype.scrollIntoView = scrollSpy;
+    
+    render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+    const mobileStatusBar = screen.getByText(/FEHLER/i).closest('.mobile-sticky-status-bar');
+    
+    fireEvent.click(mobileStatusBar);
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
+  });
+
+  it('verifies that validator methods are called with the expected game system and catalog context', () => {
+    render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+    
+    // RosterEditor.jsx resolves entries when verifying primary catalog items.
+    // Ensure resolveEntry is called with our system configuration and catalogueId context 'bret-cat'
+    expect(mockResolveEntry).toHaveBeenCalled();
+    expect(mockResolveEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'sys-1' }),
+      expect.any(Object),
+      'bret-cat'
+    );
+  });
+
+  it('verifies that triggering the CategoryUnitAdder calls the addUnit function from useRoster', () => {
+    render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+    const adderButton = screen.getByTestId('adder-cat-heroes');
+    fireEvent.click(adderButton);
+    expect(mockAddUnit).toHaveBeenCalledTimes(1);
+    expect(mockAddUnit).toHaveBeenCalledWith('mock-added-unit');
+  });
+
+  describe('Adversarial & Stress Tests', () => {
+    it('throws TypeError when validationErrors is null or undefined', () => {
+      // Simulate validationErrors being null/undefined (e.g. from a hook failure)
+      mockValidationErrors = null;
+      expect(() => render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />)).toThrow();
+    });
+
+    it('throws TypeError when validationErrors contains null elements', () => {
+      // Simulate a null element in validationErrors list
+      mockValidationErrors = [null];
+      expect(() => render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />)).toThrow();
+    });
+
+    it('survives validationErrors containing errors without message key', () => {
+      mockValidationErrors = [{ id: 'err-1', categoryId: 'cat-core' }]; // missing message
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      expect(screen.getByText('Bretonnian Crusaders')).toBeDefined();
+    });
+
+    it('handles zero costLimit without crashing and using division fallback', () => {
+      mockRoster.costLimit = 0;
+      mockCosts = { pts: 100 };
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      // 100 / (0 || 1) * 100 = 10000 -> Math.min(100, 10000) = 100
+      expect(screen.getByText('100 / 0 Pkt.')).toBeDefined();
+    });
+
+    it('handles negative costLimit values', () => {
+      mockRoster.costLimit = -100;
+      mockCosts = { pts: 50 };
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      // 50 / -100 * 100 = -50 -> Math.min(100, -50) = -50.
+      // Expect component to render without throwing, even if CSS width becomes -50%
+      expect(screen.getByText('50 / -100 Pkt.')).toBeDefined();
+    });
+
+    it('handles NaN costLimit values', () => {
+      mockRoster.costLimit = NaN;
+      mockCosts = { pts: 100 };
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      // NaN || 1 evaluates to 1. 100 / 1 * 100 = 10000 -> Math.min(100, 10000) = 100
+      // NaN is falsy, so roster.costLimit || 0 evaluates to 0
+      expect(screen.getByText('100 / 0 Pkt.')).toBeDefined();
+    });
+
+    it('handles Infinity costLimit values', () => {
+      mockRoster.costLimit = Infinity;
+      mockCosts = { pts: 100 };
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      // 100 / Infinity * 100 = 0 -> Math.min(100, 0) = 0
+      expect(screen.getByText('100 / Infinity Pkt.')).toBeDefined();
+    });
+
+    it('handles non-numeric costLimit string gracefully or identifies NaN representation', () => {
+      mockRoster.costLimit = "unlimited";
+      mockCosts = { pts: 100 };
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      // "unlimited" || 1 evaluates to "unlimited". 100 / "unlimited" evaluates to NaN.
+      // Style width will be NaN%, but it should not crash.
+      expect(screen.getByText('100 / unlimited Pkt.')).toBeDefined();
+    });
+  });
+});
+

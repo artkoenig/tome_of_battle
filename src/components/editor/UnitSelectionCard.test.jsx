@@ -1,0 +1,299 @@
+import React from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import UnitSelectionCard from './UnitSelectionCard';
+
+// Mock Lucide Icons
+vi.mock('lucide-react', () => ({
+  Trash2: () => <span data-testid="icon-trash" />,
+  Copy: () => <span data-testid="icon-copy" />,
+  AlertTriangle: () => <span data-testid="icon-alert" />,
+}));
+
+// Mock Debug Context
+vi.mock('../../hooks/DebugContext', () => ({
+  useDebugMode: () => ({ showDebugIds: false })
+}));
+
+// Mock child components
+vi.mock('./SelectionConfigurator', () => ({
+  default: () => <div data-testid="selection-configurator" />
+}));
+vi.mock('./BottomSheet', () => ({
+  default: ({ isOpen, children, title, onClose }) => isOpen ? (
+    <div data-testid="bottom-sheet">
+      <h4>{title}</h4>
+      {children}
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null
+}));
+
+// Mock Validators
+const mockCollectUnitProfilesAndRules = vi.fn();
+const mockFindEntryInSystem = vi.fn();
+const mockResolveEntry = vi.fn();
+
+vi.mock('../../solver/validator', () => ({
+  collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
+  findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
+  resolveEntry: (...args) => mockResolveEntry(...args),
+  getSelectionTotalCost: () => 120,
+  calculateRosterCosts: () => ({ pts: 120 })
+}));
+
+describe('UnitSelectionCard Component', () => {
+  const defaultProps = {
+    selection: {
+      id: 'sel-1',
+      name: 'Knights of Bretonnia',
+      entryLinkId: 'el-1',
+      number: 1,
+      selections: [
+        { id: 'sub-1', name: 'Barded Warhorse', entryLinkId: 'el-horse', number: 1, selections: [] }
+      ]
+    },
+    selectedRosterSelection: null,
+    setSelectedRosterSelection: vi.fn(),
+    roster: { costLimitType: 'pts' },
+    system: {},
+    validationErrors: [
+      { id: 'err-1', selectionId: 'sel-1', message: 'Ausrüstung unzulässig' }
+    ],
+    costTypeLabel: 'Pkt.',
+    removeUnit: vi.fn(),
+    copyUnit: vi.fn(),
+    updateSubSelection: vi.fn(),
+    activeCatalogue: { id: 'bret-cat' },
+    setSelectedCatalogEntry: vi.fn()
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    
+    // Set default mockup profiles
+    mockCollectUnitProfilesAndRules.mockReturnValue({
+      profiles: [
+        {
+          profileTypeName: 'Model',
+          name: 'Knight',
+          characteristics: [
+            { name: 'M', value: '4' },
+            { name: 'WS', value: '4' }
+          ]
+        }
+      ],
+      rules: []
+    });
+
+    mockFindEntryInSystem.mockReturnValue({ id: 'raw-horse' });
+    mockResolveEntry.mockReturnValue({
+      id: 'resolved-horse',
+      name: 'Barded Warhorse',
+      rules: [{ description: 'Adds +1 to Armour Save' }],
+      profiles: []
+    });
+
+    // Default to desktop view
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+  });
+
+  it('renders unit header details, costs, and selection error messages', () => {
+    render(<UnitSelectionCard {...defaultProps} />);
+    
+    expect(screen.getByText('Knights of Bretonnia')).toBeDefined();
+    expect(screen.getByText('120 Pkt.')).toBeDefined();
+    expect(screen.getByText('Ausrüstung unzulässig')).toBeDefined();
+  });
+
+  it('renders characteristic table (mini profile) correctly', () => {
+    render(<UnitSelectionCard {...defaultProps} />);
+    
+    expect(screen.getByText('M')).toBeDefined();
+    expect(screen.getByText('WS')).toBeDefined();
+    expect(screen.getAllByText('4')).toBeDefined();
+    expect(screen.getAllByText('4').length).toBe(2);
+  });
+
+  it('confirms and triggers removeUnit upon delete click', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<UnitSelectionCard {...defaultProps} />);
+    
+    const deleteButton = screen.getByTitle('Löschen');
+    fireEvent.click(deleteButton);
+    
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(defaultProps.removeUnit).toHaveBeenCalledWith('sel-1');
+  });
+
+  it('does not delete when confirmation is cancelled', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<UnitSelectionCard {...defaultProps} />);
+    
+    const deleteButton = screen.getByTitle('Löschen');
+    fireEvent.click(deleteButton);
+    
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(defaultProps.removeUnit).not.toHaveBeenCalled();
+  });
+
+  it('triggers copyUnit when copy button is clicked', () => {
+    render(<UnitSelectionCard {...defaultProps} />);
+    
+    const copyButton = screen.getByTitle('Kopieren');
+    fireEvent.click(copyButton);
+    
+    expect(defaultProps.copyUnit).toHaveBeenCalledWith('sel-1');
+  });
+
+  it('responsive: triggers BottomSheet onClick of upgrade badge on mobile layout', () => {
+    // Set window width to mobile
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 500 });
+    
+    render(<UnitSelectionCard {...defaultProps} />);
+    
+    const upgradeBadge = screen.getByText('Barded Warhorse');
+    fireEvent.click(upgradeBadge);
+    
+    // BottomSheet should render with details
+    expect(screen.getByTestId('bottom-sheet')).toBeDefined();
+    expect(screen.getByText('Adds +1 to Armour Save')).toBeDefined();
+  });
+
+  it('responsive: does not show BottomSheet onClick on desktop layout', () => {
+    // Set window width to desktop
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    
+    render(<UnitSelectionCard {...defaultProps} />);
+    
+    const upgradeBadge = screen.getByText('Barded Warhorse');
+    fireEvent.click(upgradeBadge);
+    
+    // BottomSheet should not open on desktop click
+    expect(screen.queryByTestId('bottom-sheet')).toBeNull();
+  });
+
+  it('responsive: shows and hides tooltip on hover in desktop layout', () => {
+    // Set window width to desktop
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    
+    render(<UnitSelectionCard {...defaultProps} />);
+    
+    const upgradeBadge = screen.getByText('Barded Warhorse');
+    
+    // Hover over the badge
+    fireEvent.mouseEnter(upgradeBadge, { clientX: 100, clientY: 200 });
+    
+    // Tooltip should be visible
+    expect(screen.getByText('Adds +1 to Armour Save')).toBeDefined();
+    
+    // Move mouse out
+    fireEvent.mouseLeave(upgradeBadge);
+    
+    // Tooltip should be gone
+    expect(screen.queryByText('Adds +1 to Armour Save')).toBeNull();
+  });
+
+  it('verifies that validator methods are called with the expected catalogue context', () => {
+    render(<UnitSelectionCard {...defaultProps} />);
+
+    // Verify collectUnitProfilesAndRules is called with 'bret-cat' context
+    expect(mockCollectUnitProfilesAndRules).toHaveBeenCalledWith(
+      defaultProps.system,
+      defaultProps.selection,
+      'bret-cat'
+    );
+
+    // Verify findEntryInSystem is called with 'bret-cat' context for the upgrade selection
+    expect(mockFindEntryInSystem).toHaveBeenCalledWith(
+      defaultProps.system,
+      'el-horse',
+      'bret-cat'
+    );
+
+    // Verify resolveEntry is called with 'bret-cat' context
+    expect(mockResolveEntry).toHaveBeenCalledWith(
+      defaultProps.system,
+      expect.objectContaining({ id: 'raw-horse' }),
+      'bret-cat'
+    );
+  });
+
+  it('renders the SelectionConfigurator component when selectedRosterSelection matches the selection', () => {
+    const props = {
+      ...defaultProps,
+      selectedRosterSelection: defaultProps.selection
+    };
+    render(<UnitSelectionCard {...props} />);
+
+    expect(screen.getByTestId('selection-configurator')).toBeDefined();
+  });
+
+  it('triggers setSelectedRosterSelection with correct arguments when card header is clicked', () => {
+    render(<UnitSelectionCard {...defaultProps} />);
+
+    const header = screen.getByText('Knights of Bretonnia').closest('.selection-node-header');
+    fireEvent.click(header);
+
+    expect(defaultProps.setSelectedRosterSelection).toHaveBeenCalledWith(defaultProps.selection);
+  });
+
+  it('triggers setSelectedCatalogEntry with the resolved catalog entry when mini-profile table is clicked', () => {
+    render(<UnitSelectionCard {...defaultProps} />);
+
+    const miniProfile = screen.getByTitle('Statblock anzeigen');
+    fireEvent.click(miniProfile);
+
+    expect(defaultProps.setSelectedCatalogEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'resolved-horse' })
+    );
+  });
+
+  describe('Adversarial & Stress Tests', () => {
+    it('handles window resize dynamically around 900px and fires mouse events', () => {
+      // Start as desktop
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+      const { unmount } = render(<UnitSelectionCard {...defaultProps} />);
+      const upgradeBadge = screen.getByText('Barded Warhorse');
+
+      // Mouse enter on desktop
+      fireEvent.mouseEnter(upgradeBadge, { clientX: 100, clientY: 200 });
+      expect(screen.getByText('Adds +1 to Armour Save')).toBeDefined();
+
+      // Resize to mobile
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 850 });
+      
+      // Moving mouse on mobile should return early and not throw
+      fireEvent.mouseMove(upgradeBadge, { clientX: 120, clientY: 220 });
+
+      // Click on mobile should trigger bottom sheet
+      fireEvent.click(upgradeBadge);
+      expect(screen.getByTestId('bottom-sheet')).toBeDefined();
+
+      // Leave mouse
+      fireEvent.mouseLeave(upgradeBadge);
+      
+      unmount();
+    });
+
+    it('survives malformed validationErrors gracefully (or identifies vulnerabilities)', () => {
+      const propsWithNullError = {
+        ...defaultProps,
+        validationErrors: [null, { id: 'err-2', selectionId: 'sel-1', message: 'Legit error' }]
+      };
+      
+      // This should fail/throw under the current implementation because it tries to read selectionId from null.
+      expect(() => render(<UnitSelectionCard {...propsWithNullError} />)).toThrow();
+    });
+
+    it('survives errors with missing or empty message keys', () => {
+      const propsWithEmptyMessage = {
+        ...defaultProps,
+        validationErrors: [{ id: 'err-1', selectionId: 'sel-1', message: undefined }]
+      };
+      render(<UnitSelectionCard {...propsWithEmptyMessage} />);
+      expect(screen.getByText('Knights of Bretonnia')).toBeDefined();
+    });
+  });
+});
+
