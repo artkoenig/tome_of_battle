@@ -185,7 +185,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
       if (!item) return;
       scanText(item.name);
       
-      if (item.description) {
+      if (item.description && !item.isRule) {
         scanText(item.description);
       }
 

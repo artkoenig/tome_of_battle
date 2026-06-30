@@ -152,3 +152,13 @@ test('getArmourSave with thick-skinned mounts', () => {
   expect(resBoarDetails.save).toBe(3);
   expect(resBoarDetails.breakdown).toContain('Beritten (Dickhäutig) (-2)');
 });
+
+// Test 7: getArmourSave skips rule descriptions to avoid false positives
+test('getArmourSave ignores rule descriptions containing mount/shield keywords', () => {
+  const save = getArmourSave([
+    { name: 'Choppa', description: 'Does not apply to Boar riders', isRule: true },
+    { name: 'Warpaint', description: 'May carry a shield', isRule: true }
+  ], 'Savage Orc Great Shaman', 'Orcs and Goblins');
+
+  expect(save).toBe(7); // 7 means no armour save (it shouldn't match boar or shield)
+});

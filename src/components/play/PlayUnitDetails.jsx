@@ -112,7 +112,7 @@ export default function PlayUnitDetails({
     const items = [];
     if (resolved) {
       if (resolved.name) items.push({ name: resolved.name });
-      resolved.rules?.forEach(r => items.push({ name: r.name, description: r.description }));
+      resolved.rules?.forEach(r => items.push({ name: r.name, description: r.description, isRule: true }));
       resolved.profiles?.forEach(p => items.push(p));
     }
     
@@ -124,7 +124,7 @@ export default function PlayUnitDetails({
         const subResolved = resolveEntry(system, subEntry);
         if (subResolved) {
           if (subResolved.name) items.push({ name: subResolved.name });
-          subResolved.rules?.forEach(r => items.push({ name: r.name, description: r.description }));
+          subResolved.rules?.forEach(r => items.push({ name: r.name, description: r.description, isRule: true }));
           subResolved.profiles?.forEach(p => items.push(p));
         }
       });
