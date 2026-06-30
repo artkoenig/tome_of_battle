@@ -88,7 +88,7 @@ Here are the files you have inspected so far:
         prompt += "\nBased on the issue description, plan, and files tree, do you need to inspect the contents of any other files to write the correct solution? If yes, list their paths. If no (you have all information to write the changes), return an empty list."
 
         response = client.models.generate_content(
-            model='gemini-2.5-pro',
+            model='gemini-2.5-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -136,7 +136,7 @@ Provide the modifications in a JSON structure containing a list of files with th
 """
 
     response = client.models.generate_content(
-        model='gemini-2.5-pro',
+        model='gemini-2.5-flash',
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -188,7 +188,7 @@ Please analyze the errors, fix the code, and output the corrected file contents.
 Return a JSON list of the complete files that need modifications.
 """
         response = client.models.generate_content(
-            model='gemini-2.5-pro',
+            model='gemini-2.5-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
