@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test coverage
+coverage/
+
+# Agent session configurations and logs
+.agents/
