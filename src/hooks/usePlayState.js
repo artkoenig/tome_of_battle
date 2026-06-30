@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import '../types.js';
 
+/**
+ * Hook to manage game play state, wound trackers, CP and VP.
+ * @param {import('../types.js').Roster} initialRoster
+ * @param {Function} setRoster
+ * @param {Function} saveRosterCallback
+ */
 export default function usePlayState(initialRoster, setRoster, saveRosterCallback) {
   const [gameState, setGameState] = useState(() => {
     return initialRoster.gameState || {

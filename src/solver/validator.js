@@ -2,11 +2,18 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { getOptionDisplayCost, getSelectionTotalCost, calculateRosterCosts, computeRosterCounts } from './rosterCounter.js';
 import { WFB6_HEROES_CATEGORY_ID, WFB6_CHARACTERS_CATEGORY_ID } from './constants.js';
+import '../types.js';
 
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue } from './modifierEvaluator.js';
 export { getOptionDisplayCost, getSelectionTotalCost, calculateRosterCosts, computeRosterCounts } from './rosterCounter.js';
 
+/**
+ * Validates a roster against a game system's rules and constraints.
+ * @param {import('../types.js').Roster} roster
+ * @param {Object} system
+ * @returns {import('../types.js').ValidationError[]}
+ */
 export function validateRoster(roster, system) {
   const errors = [];
   if (!roster || !system) return errors;

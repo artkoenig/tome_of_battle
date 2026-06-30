@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 
 import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
+import '../types.js';
 
+/**
+ * Hook to manage a roster state, cost calculations, validations and updates.
+ * @param {import('../types.js').Roster} initialRoster
+ * @param {Object} system
+ * @param {Function} saveRosterCallback
+ */
 export function useRoster(initialRoster, system, saveRosterCallback) {
   const [roster, setRoster] = useState(initialRoster);
   const [costs, setCosts] = useState({});
