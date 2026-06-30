@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, FolderOpen, Plus, Trash2, Shield, Play, Edit3, Bug, Search } from 'lucide-react';
+import { BookOpen, FolderOpen, Plus, Trash2, Shield, Play, Edit3, Bug, Search, WifiOff, Download } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 import { useDebugMode } from './hooks/DebugContext';
@@ -24,6 +24,46 @@ export default function App() {
   const [selectedRoster, setSelectedRoster] = useState(null);
   const [selectedSystem, setSelectedSystem] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  // PWA & Network states
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+    const handleAppInstalled = () => {
+      setIsInstallable(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+  };
 
   // Modal State for new Roster
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -241,6 +281,49 @@ export default function App() {
         )}
 
         <div className="app-header-actions">
+          {isOffline && (
+            <div 
+              className="offline-badge"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(166, 28, 28, 0.15)',
+                borderColor: 'var(--color-danger)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                color: 'var(--color-danger)',
+                padding: '6px 12px',
+                borderRadius: '4px',
+                fontSize: '0.85rem'
+              }}
+              title="Offline-Modus aktiv"
+            >
+              <WifiOff size={18} className="text-danger" />
+              <span className="hide-on-mobile">Offline</span>
+            </div>
+          )}
+
+          {isInstallable && (
+            <button 
+              className="install-app-btn"
+              onClick={handleInstallClick}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderColor: 'var(--border-gold)',
+                background: 'rgba(226, 183, 66, 0.15)',
+                color: 'var(--text-gold)',
+                cursor: 'pointer'
+              }}
+              title="App auf dem Gerät installieren"
+            >
+              <Download size={18} className="text-gold" />
+              <span className="hide-on-mobile" style={{ fontSize: '0.85rem' }}>Installieren</span>
+            </button>
+          )}
+
           <button 
             className="debug-id-btn mobile-only"
             onClick={toggleShowDebugIds}
@@ -295,6 +378,9 @@ export default function App() {
                 onOpenRoster={handleOpenRoster}
                 onDeleteRoster={handleDeleteRoster}
                 onNewRoster={() => setIsModalOpen(true)}
+                isOffline={isOffline}
+                isInstallable={isInstallable}
+                onInstallClick={handleInstallClick}
               />
             )}
 

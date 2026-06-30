@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2, Play, Edit3 } from 'lucide-react';
+import { Plus, Trash2, Play, Edit3, WifiOff, Download } from 'lucide-react';
 
 export default function RosterDashboard({
   rosters = [],
@@ -8,9 +8,66 @@ export default function RosterDashboard({
   onOpenRoster,
   onDeleteRoster,
   onNewRoster,
+  isOffline = false,
+  isInstallable = false,
+  onInstallClick,
 }) {
   return (
     <div className="container">
+      {/* PWA & Network Offline/Install Status Banners */}
+      {isOffline && (
+        <div 
+          className="gothic-panel offline-banner"
+          style={{
+            marginBottom: '20px',
+            borderColor: 'var(--color-danger)',
+            background: 'rgba(166, 28, 28, 0.05)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px 16px'
+          }}
+        >
+          <WifiOff className="text-danger" size={24} style={{ flexShrink: 0 }} />
+          <div>
+            <h4 style={{ margin: 0, color: 'var(--color-danger)', fontSize: '1rem', fontFamily: 'var(--font-serif)' }}>Offline-Modus aktiv</h4>
+            <p style={{ margin: '2px 0 0', fontSize: '0.85rem' }} className="text-dim">
+              Du hast keine Internetverbindung. Du kannst deine Armeelisten und Kataloge dennoch uneingeschränkt verwalten und bearbeiten.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isInstallable && (
+        <div 
+          className="gothic-panel install-banner"
+          style={{
+            marginBottom: '20px',
+            borderColor: 'var(--border-gold)',
+            background: 'rgba(226, 183, 66, 0.05)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+            padding: '16px'
+          }}
+        >
+          <div style={{ flex: '1 1 300px' }}>
+            <h4 style={{ margin: 0, color: 'var(--text-gold)', fontSize: '1.05rem', fontFamily: 'var(--font-serif)' }}>Tome of Battle auf dem Homescreen nutzen</h4>
+            <p style={{ margin: '4px 0 0', fontSize: '0.85rem' }} className="text-dim">
+              Installiere diese Anwendung, um sie als eigenständige App direkt auf deinem Mobilgerät und komplett offline zu verwenden.
+            </p>
+          </div>
+          <button 
+            className="btn-primary" 
+            onClick={onInstallClick}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '0.9rem' }}
+          >
+            <Download size={16} /> App installieren
+          </button>
+        </div>
+      )}
       {rosters.length > 0 && (
         <div className="gothic-panel dashboard-header hide-on-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
