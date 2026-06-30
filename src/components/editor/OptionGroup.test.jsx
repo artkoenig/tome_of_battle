@@ -247,9 +247,13 @@ describe('OptionGroup Component', () => {
     const plusBtn = screen.getByTestId('icon-plus').closest('button');
 
     fireEvent.click(plusBtn);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledTimes(1);
     expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'increment', 1);
 
+    defaultProps.updateSubSelection.mockClear();
+
     fireEvent.click(minusBtn);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledTimes(1);
     expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement', 1);
   });
 

@@ -355,7 +355,8 @@ export default function OptionGroupComponent({
                         name={`${selection.id}-${group.name}`}
                         checked={count > 0}
                         disabled={count === 0 && isSelectDisabled}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           if (count > 0) {
                             updateSubSelection(selection.id, option, 'decrement', parentCount);
                           } else if (!isSelectDisabled) {
@@ -378,6 +379,7 @@ export default function OptionGroupComponent({
                         type="checkbox" 
                         checked={count > 0 || isMandatory}
                         disabled={isMandatory || (count === 0 && isSelectDisabled)}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={(e) => {
                           if (!isMandatory) {
                             updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement', parentCount);
@@ -389,7 +391,10 @@ export default function OptionGroupComponent({
                     <div className="quantity-control">
                       <button 
                         className="qty-btn" 
-                        onClick={() => updateSubSelection(selection.id, option, 'decrement', parentCount)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateSubSelection(selection.id, option, 'decrement', parentCount);
+                        }}
                         disabled={count === 0}
                       >
                         <Minus size={12} />
@@ -397,7 +402,10 @@ export default function OptionGroupComponent({
                       <span className="quantity-value font-body">{count}</span>
                       <button 
                         className="qty-btn" 
-                        onClick={() => updateSubSelection(selection.id, option, 'increment', parentCount)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateSubSelection(selection.id, option, 'increment', parentCount);
+                        }}
                         disabled={isSelectDisabled}
                       >
                         <Plus size={12} />

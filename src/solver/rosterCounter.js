@@ -120,7 +120,7 @@ export const computeRosterCounts = (roster, system) => {
   const forceSelectionCounts = {};
   const categoryCounts = {};
 
-  const countSelection = (selection, forceId, forceCatalogueId, parentCount = 1) => {
+  const countSelection = (selection, forceId, forceCatalogueId, parentCount = 1, isRoot = false) => {
     const effectiveCount = (selection.number || 1) * (selection.collective ? parentCount : 1);
     const entryId = selection.entryLinkId || selection.selectionEntryId;
     
@@ -148,6 +148,10 @@ export const computeRosterCounts = (roster, system) => {
       
       const seenCategories = new Set();
       resolved?.categoryLinks?.forEach(cl => {
+        // Skip primary category links for nested (non-root) selections
+        if (cl.primary && !isRoot) {
+          return;
+        }
         if (cl.targetId && !seenCategories.has(cl.targetId)) {
           seenCategories.add(cl.targetId);
           categoryCounts[forceId][cl.targetId] = (categoryCounts[forceId][cl.targetId] || 0) + effectiveCount;
@@ -157,7 +161,7 @@ export const computeRosterCounts = (roster, system) => {
       });
     }
 
-    if (selection.category) {
+    if (selection.category && isRoot) {
       const hasCat = entryDef?.categoryLinks?.some(cl => cl.targetId === selection.category);
       if (!hasCat) {
         categoryCounts[forceId][selection.category] = (categoryCounts[forceId][selection.category] || 0) + effectiveCount;
@@ -165,14 +169,14 @@ export const computeRosterCounts = (roster, system) => {
     }
 
     if (selection.selections) {
-      selection.selections.forEach(child => countSelection(child, forceId, forceCatalogueId, effectiveCount));
+      selection.selections.forEach(child => countSelection(child, forceId, forceCatalogueId, effectiveCount, false));
     }
   };
 
   if (roster && roster.forces) {
     roster.forces.forEach(force => {
       if (force.selections) {
-        force.selections.forEach(sel => countSelection(sel, force.id, force.catalogueId));
+        force.selections.forEach(sel => countSelection(sel, force.id, force.catalogueId, 1, true));
       }
     });
   }

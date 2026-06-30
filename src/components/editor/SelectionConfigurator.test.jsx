@@ -147,11 +147,15 @@ describe('SelectionConfigurator Component', () => {
     // Click increment
     const plusBtn = screen.getByTestId('icon-plus').closest('button');
     fireEvent.click(plusBtn);
+    expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
     expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'increment', 1);
+
+    mockUpdateSubSelection.mockClear();
 
     // Click decrement
     const minusBtn = screen.getByTestId('icon-minus').closest('button');
     fireEvent.click(minusBtn);
+    expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
     expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'decrement', 1);
   });
 });

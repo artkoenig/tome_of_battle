@@ -218,6 +218,7 @@ export default function SelectionConfigurator({
                       type="checkbox" 
                       checked={count > 0 || isMandatory}
                       disabled={isMandatory}
+                      onClick={(e) => e.stopPropagation()}
                       onChange={(e) => {
                         if (!isMandatory) {
                           updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement', parentCount);
@@ -228,7 +229,10 @@ export default function SelectionConfigurator({
                     <div className="quantity-control">
                       <button 
                         className="qty-btn" 
-                        onClick={() => updateSubSelection(selection.id, option, 'decrement', parentCount)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateSubSelection(selection.id, option, 'decrement', parentCount);
+                        }}
                         disabled={count === 0}
                       >
                         <Minus size={12} />
@@ -236,7 +240,10 @@ export default function SelectionConfigurator({
                       <span className="quantity-value font-body">{count}</span>
                       <button 
                         className="qty-btn" 
-                        onClick={() => updateSubSelection(selection.id, option, 'increment', parentCount)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateSubSelection(selection.id, option, 'increment', parentCount);
+                        }}
                       >
                         <Plus size={12} />
                       </button>

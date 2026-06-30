@@ -708,6 +708,71 @@ console.log('Test 13 - Category Link De-duplication Check (avoid double count): 
   deDuplicationSuccess ? 'PASSED' : `FAILED (Expected count 1, got ${hqCount})`
 );
 
+// Test 13b: Nested Primary Category Link Ignoring Check (avoid double counting child selections in force categories)
+const mockSystemNestedCategory = {
+  ...mockSystem,
+  catalogues: [
+    {
+      id: 'cat-nested',
+      name: 'Nested Category Test',
+      selectionEntries: [
+        {
+          id: 'parent-unit',
+          name: 'Parent Unit',
+          categoryLinks: [
+            { targetId: 'cat-special', primary: true }
+          ],
+          selectionEntries: [
+            {
+              id: 'child-model',
+              name: 'Child Model',
+              categoryLinks: [
+                { targetId: 'cat-special', primary: true }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const mockRosterNestedCategory = {
+  name: 'Nested Category',
+  costLimit: 2000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'f-nested',
+      forceEntryId: 'force-patrol',
+      catalogueId: 'cat-nested',
+      selections: [
+        {
+          id: 'sel-parent',
+          selectionEntryId: 'parent-unit',
+          name: 'Parent Unit',
+          number: 1,
+          selections: [
+            {
+              id: 'sel-child',
+              selectionEntryId: 'child-model',
+              name: 'Child Model',
+              number: 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const { categoryCounts: nestedCounts } = computeRosterCounts(mockRosterNestedCategory, mockSystemNestedCategory);
+const specialCount = nestedCounts['f-nested']?.['cat-special'] || 0;
+const nestedCategorySuccess = specialCount === 1;
+console.log('Test 13b - Nested Primary Category Link Ignoring Check (avoid double count): ',
+  nestedCategorySuccess ? 'PASSED' : `FAILED (Expected count 1, got ${specialCount})`
+);
+
 // Test 14: Category Link Constraints and Modifiers XML Parsing Check
 const mockGstXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gameSystem id="sys-123" name="Test System" xmlns="http://www.battlescribe.net/schema/gameSystemSchema">
