@@ -237,7 +237,7 @@ export default function PlayUnitDetails({
               <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
             )}
           </div>
-          <div style={{ fontSize: '1rem', color: 'var(--text-gold)', fontWeight: 600 }}>
+          <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
             {getSelectionTotalCost(selection, roster.costLimitType || 'pts')} Pkt.
           </div>
         </div>

@@ -33,9 +33,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
 
   const costType = system?.costTypes?.find(ct => ct.id === roster?.costLimitType);
-  const costTypeLabel = costType 
-    ? (costType.name.toLowerCase() === 'pts' ? 'Pkt.' : costType.name)
-    : 'Pkt.';
+  const rawLabel = costType?.name || 'Pkt.';
+  const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? 'Pkt.' : rawLabel;
 
   const currentPoints = costs[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;

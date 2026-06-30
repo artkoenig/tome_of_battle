@@ -16,7 +16,7 @@ export default function RosterSidebar({
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
       <div style={{ margin: '16px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '12px' }}>
-        <div className="flex-between text-ui-title" style={{ fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-gold)' }}>
+        <div className="flex-between text-ui-title text-gold" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
           <span>Gesamtkosten:</span>
           <span>
             {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}

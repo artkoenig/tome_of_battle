@@ -112,7 +112,8 @@ export default function RosterDashboard({
                           <div className="dashboard-grid" style={{ marginTop: '12px' }}>
                             {factionRosters.map(({ roster, sys, cat }) => {
                               const costTypeObj = sys?.costTypes?.find(ct => ct.id === roster.costLimitType);
-                              const costTypeLabel = costTypeObj?.name || 'Punkte';
+                              const rawLabel = costTypeObj?.name || 'Pkt.';
+                              const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? 'Pkt.' : rawLabel;
                               
                               return (
                                 <div key={roster.id} className="roster-card" style={{ minHeight: 'auto', padding: '12px 16px' }}>
@@ -121,14 +122,12 @@ export default function RosterDashboard({
                                       {roster.name}
                                       {showDebugIds && <span className="debug-id-badge" style={{ display: 'block', marginTop: '4px', width: 'fit-content' }}>{roster.id}</span>}
                                     </h4>
-                                    <div className="roster-points text-subheading" style={{ 
+                                    <div className="roster-points text-subheading text-gold" style={{ 
                                       fontWeight: 'bold', 
-                                      color: 'var(--text-gold)', 
-                                      fontFamily: 'var(--font-body)',
                                       whiteSpace: 'nowrap',
                                       textAlign: 'right'
                                     }}>
-                                      {roster.costLimit} <span className="text-micro" style={{ color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
+                                      {roster.costLimit} <span className="text-micro text-gold" style={{ textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
                                     </div>
                                   </div>
                                   <div className="roster-actions" style={{ marginTop: '8px' }}>
@@ -139,11 +138,11 @@ export default function RosterDashboard({
                                       <Play size={14} /> In die Schlacht
                                     </button>
                                     <button 
-                                      className="btn-danger btn-sm" 
-                                      style={{ padding: '4px 6px', marginLeft: 'auto' }}
+                                      className="btn-danger square-btn" 
+                                      style={{ marginLeft: 'auto' }}
                                       onClick={(e) => onDeleteRoster(roster.id, e)}
                                     >
-                                      <Trash2 size={12} />
+                                      <Trash2 size={14} />
                                     </button>
                                   </div>
                                 </div>
