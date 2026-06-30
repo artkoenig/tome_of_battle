@@ -316,8 +316,7 @@ export default function App() {
                 borderStyle: 'solid',
                 color: 'var(--color-danger)',
                 padding: '6px 12px',
-                borderRadius: '4px',
-                fontSize: '0.85rem'
+                borderRadius: '4px'
               }}
               title="Offline-Modus aktiv"
             >
@@ -342,7 +341,7 @@ export default function App() {
               title="App auf dem Gerät installieren"
             >
               <Download size={18} className="text-gold" />
-              <span className="hide-on-mobile" style={{ fontSize: '0.85rem' }}>Installieren</span>
+              <span className="hide-on-mobile text-label">Installieren</span>
             </button>
           )}
 
@@ -361,7 +360,7 @@ export default function App() {
               title="Debugging: IDs ein-/ausblenden"
             >
               <Bug size={18} className={showDebugIds ? 'text-gold' : 'text-dim'} />
-              <span style={{ fontSize: '0.85rem' }}>Debug</span>
+              <span className="text-label">Debug</span>
             </button>
           )}
           

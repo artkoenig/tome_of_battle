@@ -26,16 +26,25 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
         return;
       }
 
-      const handler = setTimeout(() => {
+      const handler = setTimeout(async () => {
         const calcCosts = calculateRosterCosts(roster, system);
         setCosts(calcCosts);
         const errors = validateRoster(roster, system);
         setValidationErrors(errors);
+
+        // Auto-save roster on change
+        if (saveRosterCallback) {
+          try {
+            await saveRosterCallback(roster);
+          } catch (e) {
+            console.error('Failed to auto-save roster:', e);
+          }
+        }
       }, 150);
 
       return () => clearTimeout(handler);
     }
-  }, [roster, system]);
+  }, [roster, system, saveRosterCallback]);
 
   // Helper to generate a new unique selection node
   const createSelectionFromDef = (entry, categoryId = null) => {

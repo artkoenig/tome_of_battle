@@ -59,12 +59,11 @@ export default function CategoryUnitAdder({
     <div ref={wrapperRef} className="category-unit-adder-container">
       <button 
         type="button"
-        className="btn-circle-gold btn-sm" 
+        className="qty-btn" 
         onClick={() => setIsOpen(!isOpen)}
         title={`${categoryName} ausheben`}
-        style={{ width: '28px', height: '28px', borderRadius: '50%', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
       >
-        {isOpen ? <X size={14} /> : <Plus size={14} />}
+        {isOpen ? <X size={12} /> : <Plus size={12} />}
       </button>
 
       <BottomSheet

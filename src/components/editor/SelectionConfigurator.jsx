@@ -212,7 +212,7 @@ export default function SelectionConfigurator({
                   )}
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold font-body" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
                   {isBinary ? (
                     <input 
                       type="checkbox" 
@@ -227,8 +227,7 @@ export default function SelectionConfigurator({
                   ) : (
                     <div className="quantity-control">
                       <button 
-                        className="btn-sm" 
-                        style={{ padding: '2px 6px' }}
+                        className="qty-btn" 
                         onClick={() => updateSubSelection(selection.id, option, 'decrement', parentCount)}
                         disabled={count === 0}
                       >
@@ -236,8 +235,7 @@ export default function SelectionConfigurator({
                       </button>
                       <span className="quantity-value font-body">{count}</span>
                       <button 
-                        className="btn-sm" 
-                        style={{ padding: '2px 6px' }}
+                        className="qty-btn" 
                         onClick={() => updateSubSelection(selection.id, option, 'increment', parentCount)}
                       >
                         <Plus size={12} />

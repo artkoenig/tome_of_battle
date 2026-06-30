@@ -22,8 +22,8 @@ export default function NewRosterModal({
   const activeModalSystem = systems.find(s => s.id === newRosterSystemId);
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content modal-new-roster-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 style={{ margin: 0 }}>Neues Heer ausheben</h3>
           <button type="button" className="modal-close" onClick={onClose}>X</button>
@@ -56,7 +56,7 @@ export default function NewRosterModal({
                 ))}
               </select>
               {systems.length === 0 && (
-                <p className="text-danger" style={{ fontSize: '0.8rem', marginTop: '4px' }}>
+                <p className="text-danger text-micro" style={{ marginTop: '4px' }}>
                   Keine Spielsysteme importiert. Bitte gehe erst in den Bibliothekar.
                 </p>
               )}

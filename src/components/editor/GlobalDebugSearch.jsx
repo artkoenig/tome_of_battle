@@ -37,7 +37,7 @@ export default function GlobalDebugSearch({ systems, onSelectEntry }) {
       {isOpen && query.length >= 2 && (
          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--border-gold-dim)', maxHeight: '400px', overflowY: 'auto', zIndex: 1000, marginTop: '4px', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
            {results.length === 0 ? (
-             <div style={{ padding: '8px', color: 'var(--text-dim)', fontSize: '0.85rem' }}>Keine Ergebnisse.</div>
+             <div className="text-label text-dim" style={{ padding: '8px' }}>Keine Ergebnisse.</div>
            ) : (
              results.map((r, idx) => (
                <div 
@@ -49,8 +49,8 @@ export default function GlobalDebugSearch({ systems, onSelectEntry }) {
                  }}
                  style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-dark)', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                >
-                 <span style={{ color: 'var(--text-gold)', fontWeight: 'bold', fontSize: '0.9rem' }}>{r.name}</span>
-                 <span style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>{r.type} • {r.system.name}</span>
+                 <span className="text-body text-gold" style={{ fontWeight: 'bold' }}>{r.name}</span>
+                 <span className="text-micro text-dim">{r.type} • {r.system.name}</span>
                </div>
              ))
            )}

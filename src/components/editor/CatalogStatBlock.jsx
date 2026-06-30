@@ -19,7 +19,7 @@ export default function CatalogStatBlock({ selectedCatalogEntry, setSelectedCata
       
       {selectedCatalogEntry.profiles?.map(prof => (
         <div key={prof.id} style={{ marginTop: '12px' }}>
-          <span className="font-serif text-gold" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+          <span className="text-ui-title">
             {prof.name}
             {showDebugIds && <span className="debug-id-badge clickable">{prof.id}</span>}
             {' '}({prof.profileTypeName})
@@ -51,7 +51,7 @@ export default function CatalogStatBlock({ selectedCatalogEntry, setSelectedCata
             {rule.name}
             {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
             :
-          </strong> <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)', fontStyle: 'italic' }}>{rule.description}</span>
+          </strong> <span className="text-body" style={{ color: 'var(--text-parchment)', fontStyle: 'italic' }}>{rule.description}</span>
         </div>
       ))}
     </div>

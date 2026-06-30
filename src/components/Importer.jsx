@@ -171,7 +171,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
 
         {loading && (
           <div style={{ marginTop: '16px', color: 'var(--text-gold)', textAlign: 'center' }}>
-            <span className="font-serif">Beschwöre Spieldaten... (Verarbeite XML)</span>
+            <span className="font-body">Beschwöre Spieldaten... (Verarbeite XML)</span>
           </div>
         )}
 

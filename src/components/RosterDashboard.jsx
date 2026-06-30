@@ -30,44 +30,14 @@ export default function RosterDashboard({
         >
           <WifiOff className="text-danger" size={24} style={{ flexShrink: 0 }} />
           <div>
-            <h4 style={{ margin: 0, color: 'var(--color-danger)', fontSize: '1rem', fontFamily: 'var(--font-serif)' }}>Offline-Modus aktiv</h4>
-            <p style={{ margin: '2px 0 0', fontSize: '0.85rem' }} className="text-dim">
+            <h4 style={{ margin: 0, color: 'var(--color-danger)' }} className="text-ui-title">Offline-Modus aktiv</h4>
+            <p style={{ margin: '2px 0 0' }} className="text-label text-dim">
               Du hast keine Internetverbindung. Du kannst deine Armeelisten und Kataloge dennoch uneingeschränkt verwalten und bearbeiten.
             </p>
           </div>
         </div>
       )}
 
-      {isInstallable && (
-        <div 
-          className="gothic-panel install-banner"
-          style={{
-            marginBottom: '20px',
-            borderColor: 'var(--border-gold)',
-            background: 'rgba(226, 183, 66, 0.05)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '12px',
-            padding: '16px'
-          }}
-        >
-          <div style={{ flex: '1 1 300px' }}>
-            <h4 style={{ margin: 0, color: 'var(--text-gold)', fontSize: '1.05rem', fontFamily: 'var(--font-serif)' }}>Tome of Battle auf dem Homescreen nutzen</h4>
-            <p style={{ margin: '4px 0 0', fontSize: '0.85rem' }} className="text-dim">
-              Installiere diese Anwendung, um sie als eigenständige App direkt auf deinem Mobilgerät und komplett offline zu verwenden.
-            </p>
-          </div>
-          <button 
-            className="btn-primary" 
-            onClick={onInstallClick}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '0.9rem' }}
-          >
-            <Download size={16} /> App installieren
-          </button>
-        </div>
-      )}
       {rosters.length > 0 && (
         <div className="gothic-panel dashboard-header hide-on-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -127,7 +97,7 @@ export default function RosterDashboard({
 
               return (
                 <div key={systemName} className="system-group" style={{ marginBottom: '40px' }}>
-                  <h2 className="system-group-title" style={{ fontSize: '1.4rem', borderBottom: '2px solid var(--border-gold)', paddingBottom: '6px', marginBottom: '20px' }}>
+                  <h2 className="system-group-title text-heading" style={{ borderBottom: '2px solid var(--border-gold)', paddingBottom: '6px', marginBottom: '20px' }}>
                     {systemName}
                   </h2>
                   
@@ -136,7 +106,7 @@ export default function RosterDashboard({
                       const factionRosters = factionsObj[factionName];
                       return (
                         <div key={factionName} className="faction-group" style={{ marginBottom: '28px' }}>
-                          <h3 className="faction-group-title" style={{ borderBottom: '1px solid var(--border-gold-dim)', paddingBottom: '4px', marginBottom: '14px', fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          <h3 className="faction-group-title text-subheading" style={{ borderBottom: '1px solid var(--border-gold-dim)', paddingBottom: '4px', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             {factionName}
                           </h3>
                           <div className="dashboard-grid" style={{ marginTop: '12px' }}>
@@ -147,19 +117,18 @@ export default function RosterDashboard({
                               return (
                                 <div key={roster.id} className="roster-card" style={{ minHeight: 'auto', padding: '12px 16px' }}>
                                   <div className="roster-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                                    <h4 className="roster-title" style={{ margin: 0, fontSize: '1.15rem', fontFamily: 'var(--font-serif)', flex: 1, paddingRight: '12px' }}>
+                                     <h4 className="roster-title text-ui-title" style={{ margin: 0, flex: 1, paddingRight: '12px' }}>
                                       {roster.name}
                                       {showDebugIds && <span className="debug-id-badge" style={{ display: 'block', marginTop: '4px', width: 'fit-content' }}>{roster.id}</span>}
                                     </h4>
-                                    <div className="roster-points" style={{ 
-                                      fontSize: '1.25rem', 
+                                    <div className="roster-points text-subheading" style={{ 
                                       fontWeight: 'bold', 
                                       color: 'var(--text-gold)', 
                                       fontFamily: 'var(--font-body)',
                                       whiteSpace: 'nowrap',
                                       textAlign: 'right'
                                     }}>
-                                      {roster.costLimit} <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
+                                      {roster.costLimit} <span className="text-micro" style={{ color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
                                     </div>
                                   </div>
                                   <div className="roster-actions" style={{ marginTop: '8px' }}>

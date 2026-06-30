@@ -16,13 +16,13 @@ export default function RosterSidebar({
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
       <div style={{ margin: '16px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '12px' }}>
-        <div className="flex-between font-body text-gold" style={{ fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '8px' }}>
+        <div className="flex-between text-ui-title" style={{ fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-gold)' }}>
           <span>Gesamtkosten:</span>
           <span>
             {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
           </span>
         </div>
-        <div className="flex-between text-dim" style={{ fontSize: '0.85rem' }}>
+        <div className="flex-between text-label text-dim">
           <span>Status:</span>
           {validationErrors.length === 0 ? (
             <span className="badge badge-success">Gültig</span>
@@ -34,7 +34,7 @@ export default function RosterSidebar({
 
       {/* Category breakdown */}
       <div style={{ marginBottom: '24px' }}>
-        <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Armeeanforderungen</h4>
+        <h4 style={{ marginBottom: '10px' }}>Armeeanforderungen</h4>
         {(() => {
           const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
           const forceId = roster.forces[0]?.id;
@@ -72,9 +72,8 @@ export default function RosterSidebar({
             return (
               <div 
                 key={catLink.id} 
-                className="flex-between" 
+                className="flex-between text-label" 
                 style={{ 
-                  fontSize: '0.85rem', 
                   padding: '6px 0', 
                   color: 'var(--text-parchment)'
                 }}
@@ -85,9 +84,8 @@ export default function RosterSidebar({
                   :
                 </span>
                 <span 
-                  className={isInvalid ? "badge badge-danger font-body" : "badge font-body"} 
+                  className={isInvalid ? "badge badge-danger" : "badge"} 
                   style={{ 
-                    fontSize: '0.8rem', 
                     padding: '2px 8px',
                     ...(isInvalid ? {} : {
                       backgroundColor: 'rgba(226, 183, 66, 0.05)',
@@ -112,9 +110,9 @@ export default function RosterSidebar({
 
       {/* Validation Errors Detailed List */}
       <div>
-        <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Regelverstöße</h4>
+        <h4 style={{ marginBottom: '10px' }}>Regelverstöße</h4>
         {validationErrors.length === 0 ? (
-          <p className="text-success" style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <p className="text-label text-success" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Check size={16} /> Alle Riten eingehalten. Roster ist bereit für die Schlacht.
           </p>
         ) : (

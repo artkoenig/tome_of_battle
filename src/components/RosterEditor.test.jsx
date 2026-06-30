@@ -11,6 +11,7 @@ vi.mock('lucide-react', () => ({
   AlertTriangle: () => <span data-testid="icon-alert" />,
   Check: () => <span data-testid="icon-check" />,
   Copy: () => <span data-testid="icon-copy" />,
+  ArrowLeft: () => <span data-testid="icon-arrow-left" />,
 }));
 
 // Mock useRoster custom hook
@@ -163,23 +164,12 @@ describe('RosterEditor Component', () => {
     expect(unitCards[2].textContent).toContain('Knights Errant');
   });
 
-  it('triggers save action on header button click', () => {
+  it('does not render a manual save button (uses auto-save)', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
-    const saveButton = screen.getByRole('button', { name: /speichern/i });
-    fireEvent.click(saveButton);
-    expect(mockSave).toHaveBeenCalledTimes(1);
+    const saveButton = screen.queryByRole('button', { name: /speichern/i });
+    expect(saveButton).toBeNull();
   });
 
-  it('triggers scroll to error panel when mobile sticky bar is clicked', () => {
-    const scrollSpy = vi.fn();
-    window.HTMLElement.prototype.scrollIntoView = scrollSpy;
-    
-    render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
-    const mobileStatusBar = screen.getByText(/FEHLER/i).closest('.mobile-sticky-status-bar');
-    
-    fireEvent.click(mobileStatusBar);
-    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
-  });
 
   it('verifies that validator methods are called with the expected game system and catalog context', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
@@ -262,6 +252,26 @@ describe('RosterEditor Component', () => {
       // "unlimited" || 1 evaluates to "unlimited". 100 / "unlimited" evaluates to NaN.
       // Style width will be NaN%, but it should not crash.
       expect(screen.getByText('100 / unlimited Pkt.')).toBeDefined();
+    });
+  });
+
+  describe('Lagerbericht Play Button and Flavor Text', () => {
+    it('does not render "In die Schlacht (Spielmodus)" button when validation errors exist', () => {
+      // default mockValidationErrors contains errors, so roster is invalid
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      const mobilePlayBtn = screen.queryByText(/In die Schlacht/i);
+      expect(mobilePlayBtn).toBeNull();
+    });
+
+    it('renders "In die Schlacht (Spielmodus)" button and the cool flavor text when roster is valid', () => {
+      mockValidationErrors = []; // Valid roster!
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      
+      const mobilePlayBtn = screen.getByText(/In die Schlacht \(Spielmodus\)/i);
+      expect(mobilePlayBtn).toBeDefined();
+      
+      const flavorText = screen.getByText(/Die Schlachtreihen stehen fest/i);
+      expect(flavorText).toBeDefined();
     });
   });
 });

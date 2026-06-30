@@ -230,7 +230,7 @@ export default function PlayUnitDetails({
   return (
     <div className="play-unit-card">
       <div className="play-unit-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
-        <div className="play-unit-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="play-unit-title text-ui-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             {selection.name}
             {showDebugIds && (
@@ -326,7 +326,7 @@ export default function PlayUnitDetails({
                 </div>
               ))
             ) : (
-              <p className="text-dim" style={{ fontSize: '0.85rem' }}>Keine Profilwerte gefunden.</p>
+              <p className="text-dim text-label">Keine Profilwerte gefunden.</p>
             )}
           </div>
 
@@ -336,8 +336,8 @@ export default function PlayUnitDetails({
               return (
               <div className="play-unit-wound-tracker">
                 <h4 
+                  className="text-body"
                   style={{ 
-                    fontSize: '0.9rem', 
                     marginBottom: isRulesExpanded ? '8px' : '0px', 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -350,7 +350,7 @@ export default function PlayUnitDetails({
                   <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Sparkles size={14} /> Sonderregeln &amp; Fähigkeiten
                   </span>
-                  <span className="font-body hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
+                  <span className="hover-gold text-micro" style={{ color: 'var(--text-gold)', fontWeight: 600 }}>
                     {isRulesExpanded ? '▲' : '▼'}
                   </span>
                 </h4>
@@ -363,7 +363,7 @@ export default function PlayUnitDetails({
                           {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
                           :
                         </strong>{' '}
-                        <span style={{ fontSize: '0.9rem', color: 'var(--text-parchment)', fontFamily: 'var(--font-body)', fontStyle: 'italic' }}>{rule.description}</span>
+                        <span className="text-body" style={{ color: 'var(--text-parchment)', fontStyle: 'italic' }}>{rule.description}</span>
                       </div>
                     ))}
                   </div>
@@ -377,8 +377,8 @@ export default function PlayUnitDetails({
               return (
                 <div className="play-unit-wound-tracker">
                   <h4 
+                    className="text-body"
                     style={{ 
-                      fontSize: '0.9rem', 
                       marginBottom: isEquipExpanded ? '8px' : '0px', 
                       display: 'flex', 
                       alignItems: 'center', 
@@ -391,7 +391,7 @@ export default function PlayUnitDetails({
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <BookOpen size={14} /> Ausrüstung &amp; Upgrades
                     </span>
-                    <span className="font-body hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', fontWeight: 600 }}>
+                    <span className="hover-gold text-micro" style={{ color: 'var(--text-gold)', fontWeight: 600 }}>
                       {isEquipExpanded ? '▲' : '▼'}
                     </span>
                   </h4>
@@ -403,7 +403,7 @@ export default function PlayUnitDetails({
                         const isExpanded = expandedUpgrades[upgrade.id];
                         
                         return (
-                          <div key={upgrade.id} style={{ fontSize: '0.85rem' }}>
+                          <div key={upgrade.id} className="text-label">
                             <div 
                               style={{ 
                                 display: 'flex', 
@@ -424,29 +424,28 @@ export default function PlayUnitDetails({
                                 )}
                               </span>
                               {desc && (
-                                <span className="font-body hover-gold" style={{ fontSize: '0.75rem', color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                                <span className="hover-gold text-micro" style={{ color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
                                   {isExpanded ? '▲' : '▼'}
                                 </span>
                               )}
                             </div>
                             
                             {desc && isExpanded && (
-                              <div 
-                                style={{ 
-                                  fontFamily: 'var(--font-body)', 
-                                  fontSize: '0.9rem', 
-                                  color: 'var(--text-parchment)',
-                                  padding: '6px', 
-                                  backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                                  borderLeft: '2px solid var(--border-gold-dim)',
-                                  marginTop: '2px',
-                                  fontStyle: 'italic',
-                                  lineHeight: '1.3'
-                                }}
-                              >
-                                {desc}
-                              </div>
-                            )}
+                               <div 
+                                 className="text-body"
+                                 style={{ 
+                                   color: 'var(--text-parchment)',
+                                   padding: '6px', 
+                                   backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                                   borderLeft: '2px solid var(--border-gold-dim)',
+                                   marginTop: '2px',
+                                   fontStyle: 'italic',
+                                   lineHeight: '1.3'
+                                 }}
+                               >
+                                 {desc}
+                               </div>
+                             )}
                           </div>
                         );
                       })}

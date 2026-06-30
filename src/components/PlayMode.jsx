@@ -18,6 +18,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const [saveSummaryData, setSaveSummaryData] = useState({ title: '', breakdown: [] });
   const [tooltipState, setTooltipState] = useState({ visible: false, x: 0, y: 0, title: '', content: [] });
 
+  const activeCatalogue = system?.catalogues?.find(c => c.id === roster?.catalogueId);
+
   const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster);
 
   const handleMouseEnter = (e, title, content) => {
@@ -111,78 +113,102 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   };
 
   return (
-    <div className="play-layout">
-      {/* Play Mode Header */}
-      <div className="play-header">
-        <button className="btn-sm play-header-back" onClick={onBack} title="Kriegsplanung (Editieren)">
-          <ArrowLeft size={16} />
-        </button>
-        <h2 className="play-header-title">Spielmodus</h2>
+    <>
+      {/* Desktop Header in Play Mode (same style as editor) */}
+      <div className="builder-top-bar hide-on-mobile" style={{ marginBottom: '24px' }}>
+        <div className="builder-top-bar-left">
+          <div className="builder-top-bar-title-section">
+            <h2 className="builder-top-bar-title">{roster.name}</h2>
+            <span className="builder-top-bar-subtitle">
+              <span>{system.name} {activeCatalogue ? '· ' : ''}</span>
+              {activeCatalogue ? activeCatalogue.name : ''}
+            </span>
+          </div>
+        </div>
+        
+        <div className="builder-top-bar-right">
+          <button className="btn-primary" onClick={onBack} style={{ padding: '6px 12px' }}>
+            <Swords size={16} /> <span>Ausrüsten</span>
+          </button>
+        </div>
       </div>
 
+      <div className="play-layout">
+        {/* Mobile Play Mode Header */}
+        <div className="play-header">
+          <button 
+            className="btn-sm play-header-back square-btn" 
+            onClick={onBack} 
+            title="Kriegsplanung (Editieren)"
+          >
+            <ArrowLeft size={16} />
+          </button>
+          <h2 className="play-header-title">Spielmodus</h2>
+        </div>
 
-      {/* Active Units Roster Sheets */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-        {getGroupedAndSortedSelections().map(group => (
-          <div key={group.id} className="play-category-group">
-            <h3 className="font-serif text-gold" style={{ borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '16px', fontSize: '1.2rem' }}>
-              {group.name}
-            </h3>
-            <div className="play-units-grid">
-              {group.selections.map(selection => (
-                <PlayUnitDetails
-                  key={selection.id}
-                  selection={selection}
-                  system={system}
-                  roster={roster}
-                  showDebugIds={showDebugIds}
-                  gameState={gameState}
-                  handleAdjustWound={handleAdjustWound}
-                  handleMouseEnter={handleMouseEnter}
-                  handleMouseLeave={handleMouseLeave}
-                  setSaveSummaryData={setSaveSummaryData}
-                  setSaveSummaryOpen={setSaveSummaryOpen}
-                />
-              ))}
+        {/* Active Units Roster Sheets */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          {getGroupedAndSortedSelections().map(group => (
+            <div key={group.id} className="play-category-group">
+              <h3 className="font-serif text-gold" style={{ borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '16px', fontSize: '1.2rem' }}>
+                {group.name}
+              </h3>
+              <div className="play-units-grid">
+                {group.selections.map(selection => (
+                  <PlayUnitDetails
+                    key={selection.id}
+                    selection={selection}
+                    system={system}
+                    roster={roster}
+                    showDebugIds={showDebugIds}
+                    gameState={gameState}
+                    handleAdjustWound={handleAdjustWound}
+                    handleMouseEnter={handleMouseEnter}
+                    handleMouseLeave={handleMouseLeave}
+                    setSaveSummaryData={setSaveSummaryData}
+                    setSaveSummaryOpen={setSaveSummaryOpen}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <BottomSheet
+          isOpen={saveSummaryOpen}
+          onClose={() => setSaveSummaryOpen(false)}
+          title={saveSummaryData.title}
+        >
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {saveSummaryData.breakdown.length > 0 ? (
+              <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-parchment)', fontSize: '0.9rem' }}>
+                {saveSummaryData.breakdown.map((item, i) => (
+                  <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-dim" style={{ fontSize: '0.9rem' }}>Keine Modifikatoren gefunden.</p>
+            )}
+          </div>
+        </BottomSheet>
+
+        {/* Hover Tooltip for Desktop */}
+        {tooltipState.visible && (
+          <div 
+            className="gothic-tooltip"
+            style={{ left: `${tooltipState.x}px`, top: `${tooltipState.y}px` }}
+          >
+            <div className="tooltip-title">{tooltipState.title}</div>
+            <div className="tooltip-body">
+              <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                {tooltipState.content.map((item, i) => (
+                  <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+                ))}
+              </ul>
             </div>
           </div>
-        ))}
+        )}
       </div>
-
-      <BottomSheet
-        isOpen={saveSummaryOpen}
-        onClose={() => setSaveSummaryOpen(false)}
-        title={saveSummaryData.title}
-      >
-        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {saveSummaryData.breakdown.length > 0 ? (
-            <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-parchment)', fontSize: '0.9rem' }}>
-              {saveSummaryData.breakdown.map((item, i) => (
-                <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-dim" style={{ fontSize: '0.9rem' }}>Keine Modifikatoren gefunden.</p>
-          )}
-        </div>
-      </BottomSheet>
-
-      {/* Hover Tooltip for Desktop */}
-      {tooltipState.visible && (
-        <div 
-          className="gothic-tooltip"
-          style={{ left: `${tooltipState.x}px`, top: `${tooltipState.y}px` }}
-        >
-          <div className="tooltip-title">{tooltipState.title}</div>
-          <div className="tooltip-body">
-            <ul style={{ paddingLeft: '20px', margin: 0 }}>
-              {tooltipState.content.map((item, i) => (
-                <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

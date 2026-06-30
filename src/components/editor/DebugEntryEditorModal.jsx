@@ -83,7 +83,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
         <div className="modal-header">
           <div>
             <h3 style={{ margin: 0 }} className="font-serif text-gold">Daten anpassen</h3>
-            <div className="text-dim" style={{ fontSize: '0.8rem', marginTop: '4px' }}>
+            <div className="text-dim text-micro" style={{ marginTop: '4px' }}>
               {entry.path || entry.id}
             </div>
           </div>
@@ -109,13 +109,13 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
           <div style={{ marginBottom: '12px' }}>
             <div className="flex-between" style={{ marginBottom: '6px' }}>
-              <span className="font-body text-dim" style={{ fontSize: '0.8rem' }}>ID: {entry.id}</span>
+              <span className="text-dim text-micro">ID: {entry.id}</span>
               <span className="badge">{entry.type}</span>
             </div>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+            <label className="text-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
               Name / Bezeichnung
             </label>
             <input
@@ -128,7 +128,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
           {entry.type === 'entry' && Object.keys(localCosts).length > 0 && (
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+              <label className="text-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
                 Punktekosten
               </label>
               {Object.entries(localCosts).map(([typeId, val]) => {
@@ -136,7 +136,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
                 const displayName = costType ? costType.name.trim() : (typeId === 'pts' || typeId === 'ecfa-8486-4f6c-c249' ? 'Points' : typeId);
                 return (
                   <div key={typeId} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <span className="font-body" style={{ fontSize: '0.85rem', minWidth: '80px' }}>{displayName}:</span>
+                    <span className="text-label" style={{ minWidth: '80px' }}>{displayName}:</span>
                     <input
                       type="number"
                       value={val}
@@ -151,14 +151,14 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
           {['entry', 'group', 'categoryLink', 'forceEntry'].includes(entry.type) && Object.keys(localConstraints).length > 0 && (
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+              <label className="text-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
                 Restriktionen / Constraints
               </label>
               {Object.entries(localConstraints).map(([conId, val]) => {
                 const conDef = entry.ref.constraints?.find(c => c.id === conId);
                 return (
                   <div key={conId} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <span className="font-body" style={{ fontSize: '0.8rem', minWidth: '120px' }}>
+                    <span className="text-micro" style={{ minWidth: '120px' }}>
                       {conDef?.type || 'Constraint'} ({conDef?.field || 'selections'}):
                     </span>
                     <input
@@ -175,18 +175,18 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
           {entry.type === 'profile' && Object.keys(localCharacteristics).length > 0 && (
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+              <label className="text-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
                 Charakteristik / Profilwerte
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
                 {Object.entries(localCharacteristics).map(([name, val]) => (
                   <div key={name} style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{name}</span>
+                    <span className="text-micro" style={{ fontWeight: 'bold' }}>{name}</span>
                     <input
                       type="text"
                       value={val}
                       onChange={(e) => setLocalCharacteristics(prev => ({ ...prev, [name]: e.target.value }))}
-                      style={{ width: '100%', padding: '4px', textAlign: 'center', fontSize: '0.85rem', marginTop: '2px' }}
+                      style={{ width: '100%', padding: '4px', textAlign: 'center', marginTop: '2px' }}
                     />
                   </div>
                 ))}
@@ -196,7 +196,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
           {entry.type === 'rule' && (
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', fontWeight: 600 }}>
+              <label className="text-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
                 Regelbeschreibung
               </label>
               <textarea
@@ -208,24 +208,23 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
                   padding: '8px',
                   background: 'var(--bg-card)',
                   color: 'var(--text-parchment)',
-                  border: '1px solid var(--border-dark)',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '0.85rem'
+                  border: '1px solid var(--border-dark)'
                 }}
+                className="text-label"
               />
             </div>
           )}
 
           {entry.ref && (entry.ref.selectionEntries?.length > 0 || entry.ref.selectionEntryGroups?.length > 0 || entry.ref.entryLinks?.length > 0) && (
             <div style={{ marginTop: '24px', borderTop: '1px solid var(--border-dark)', paddingTop: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '12px', fontWeight: 600, color: 'var(--text-gold)' }}>
+              <label className="text-body" style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: 'var(--text-gold)' }}>
                 Kind-Elemente
               </label>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {entry.ref.selectionEntries?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Entry:</span>
+                    <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Entry:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannt'}: {child.id}
                     </span>
@@ -234,7 +233,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
                 
                 {entry.ref.selectionEntryGroups?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Group:</span>
+                    <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Group:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannt'}: {child.id}
                     </span>
@@ -243,7 +242,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
                 {entry.ref.entryLinks?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Link:</span>
+                    <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Link:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannter Link'}: {child.id}
                     </span>
@@ -252,7 +251,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
                 {entry.ref.profiles?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Profile:</span>
+                    <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Profile:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannt'}: {child.id}
                     </span>
@@ -261,7 +260,7 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
 
                 {entry.ref.rules?.map(child => (
                   <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="font-body text-dim" style={{ fontSize: '0.8rem', minWidth: '80px' }}>Rule:</span>
+                    <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Rule:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannt'}: {child.id}
                     </span>

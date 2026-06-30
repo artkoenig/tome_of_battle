@@ -167,16 +167,15 @@ export default function UnitSelectionCard({
         {selectedUpgrades.map(upgrade => {
           const descText = getUpgradeDescription(upgrade.resolved);
           return (
-            <span 
+          <span 
               key={upgrade.id}
+              className="text-micro"
               style={{
-                fontSize: '0.72rem',
                 backgroundColor: 'rgba(226, 183, 66, 0.06)',
                 border: '1px solid rgba(226, 183, 66, 0.22)',
                 color: 'var(--text-parchment)',
                 padding: '2px 6px',
                 borderRadius: '3px',
-                fontFamily: 'var(--font-body)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 cursor: descText ? 'help' : 'default'
@@ -215,7 +214,7 @@ export default function UnitSelectionCard({
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className="selection-node-title">
-            <span className="selection-node-name" style={{ fontSize: '1.05rem', fontWeight: 600 }}>
+            <span className="selection-node-name text-ui-title">
               {selection.name}
               {showDebugIds && (
                 <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
@@ -228,8 +227,18 @@ export default function UnitSelectionCard({
             </span>
             <button 
               type="button"
-              className="btn-danger btn-sm" 
-              style={{ padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              className="btn-primary square-btn" 
+              onClick={(e) => {
+                e.stopPropagation();
+                copyUnit(selection.id);
+              }}
+              title="Kopieren"
+            >
+              <Copy size={14} />
+            </button>
+            <button 
+              type="button"
+              className="btn-danger square-btn" 
               onClick={(e) => {
                 e.stopPropagation();
                 if (window.confirm('Möchten Sie diese Einheit wirklich löschen?')) {
@@ -244,31 +253,10 @@ export default function UnitSelectionCard({
         </div>
         {renderMiniProfile(selection)}
         {renderUnitUpgrades(selection)}
-        <button 
-          type="button"
-          className="btn-primary btn-sm" 
-          style={{
-            position: 'absolute',
-            bottom: '12px',
-            right: '14px',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            copyUnit(selection.id);
-          }}
-          title="Kopieren"
-        >
-          <Copy size={14} />
-        </button>
       </div>
 
       {selectionErrors.map((err, idx) => (
-        <div key={idx} className="unit-error-alert text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '6px 12px', background: 'rgba(166,28,28,0.04)', borderBottom: '1px solid rgba(166,28,28,0.2)' }}>
+        <div key={idx} className="unit-error-alert text-danger text-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(166,28,28,0.04)', borderBottom: '1px solid rgba(166,28,28,0.2)' }}>
           <AlertTriangle size={14} />
           <span>{err.message}</span>
         </div>

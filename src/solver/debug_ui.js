@@ -278,14 +278,17 @@ async function run() {
     await new Promise(r => setTimeout(r, 600));
     await takeScreenshot('11_mobile_library'); // Capture mobile popover dropdown
 
-    // Close the popover by clicking on the background/bar
+    // Close the popover by clicking on the title
     console.log('Closing popover on mobile...');
-    await page.click('.mobile-sticky-status-bar');
+    await page.click('.builder-top-bar-title');
     await new Promise(r => setTimeout(r, 500));
-
-    // Scroll to the bottom errors panel by clicking the mobile sticky bar
+ 
+    // Scroll to the bottom errors panel
     console.log('Scrolling to general errors section on mobile...');
-    await page.click('.mobile-sticky-status-bar');
+    await page.evaluate(() => {
+      const el = document.getElementById('general-errors-section');
+      if (el) el.scrollIntoView();
+    });
     await new Promise(r => setTimeout(r, 1000));
     await takeScreenshot('12_mobile_status'); // Capture mobile status panel at the bottom
 

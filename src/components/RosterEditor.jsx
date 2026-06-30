@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Play, AlertTriangle, Check } from 'lucide-react';
+import { Play, AlertTriangle, Check, ArrowLeft } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
@@ -11,7 +11,7 @@ import UnitSelectionCard from './editor/UnitSelectionCard';
 import CatalogStatBlock from './editor/CatalogStatBlock';
 
 
-export default function RosterEditor({ system, roster: initialRoster, _onBack, onPlay }) {
+export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay }) {
   const { showDebugIds } = useDebugMode();
   const {
     roster,
@@ -24,8 +24,7 @@ export default function RosterEditor({ system, roster: initialRoster, _onBack, o
     addUnit,
     removeUnit,
     copyUnit,
-    updateSubSelection,
-    save
+    updateSubSelection
   } = useRoster(initialRoster, system, saveRoster);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
@@ -80,58 +79,52 @@ export default function RosterEditor({ system, roster: initialRoster, _onBack, o
 
 
   
+
+
   return (
-    <div className="builder-layout">
-      {/* 1. Mobile Sticky Status & Validation Header */}
-      <div className="mobile-sticky-status-bar" onClick={scrollToErrors}>
-        <div className="mobile-status-summary">
-          <span className="font-serif text-gold" style={{ fontWeight: 700, fontSize: '0.9rem' }}>
-            STATUS:
-          </span>
-          {isRosterValid ? (
-            <span className="badge badge-success font-body" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Check size={12} /> BEREIT
+    <div className="builder-layout-container">
+      {/* 1. Builder Top Bar */}
+      <div className="builder-top-bar">
+        <div className="builder-top-bar-left">
+          <button 
+            type="button" 
+            className="btn-primary square-btn mobile-only" 
+            onClick={onBack}
+            title="Heerlager"
+          >
+            <ArrowLeft size={16} /> <span className="hide-on-mobile">Heerlager</span>
+          </button>
+          
+          <div className="builder-top-bar-title-section">
+            <h2 className="builder-top-bar-title">{roster.name}</h2>
+            <span className="builder-top-bar-subtitle">
+              <span className="hide-on-mobile">{system.name} {activeCatalogue ? '· ' : ''}</span>
+              {activeCatalogue ? activeCatalogue.name : ''}
             </span>
-          ) : (
-            <span className="badge badge-danger font-body" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <AlertTriangle size={12} /> {validationErrors.length} FEHLER
-            </span>
-          )}
-        </div>
-        <div className="mobile-points-indicator">
-          <span className="font-body font-bold" style={{ fontSize: '0.85rem' }}>
-            {currentPoints} / {limitPoints} {costTypeLabel}
-          </span>
-          <div className="points-progress-bar">
-            <div 
-              className={`points-progress-fill ${currentPoints > limitPoints ? 'overflow' : ''}`}
-              style={{ width: `${Math.min(100, (currentPoints / (limitPoints || 1)) * 100)}%` }}
-            />
           </div>
+        </div>
+        
+        <div className="builder-top-bar-right">
+          {/* Points limit indicator */}
+          <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginRight: '8px' }}>
+            <span className="points-display text-subheading">
+              {currentPoints} / {limitPoints} {costTypeLabel}
+            </span>
+          </div>
+
+          <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
+            <Play size={16} /> <span>Spielmodus</span>
+          </button>
         </div>
       </div>
 
-      {/* 2. Main Editing Roster Pane */}
-      <div className="builder-main active-mobile-tab">
-        <div className="roster-header-editor">
-          <div>
-            <h2 style={{ margin: 0, border: 'none', padding: 0 }}>{roster.name}</h2>
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={save}>
-              <Save size={18} /> Speichern
-            </button>
-            <button className="btn-primary" onClick={() => onPlay(roster)}>
-              <Play size={18} /> Spielmodus
-            </button>
-          </div>
-        </div>
-
-                {/* Selected Catalog Entry Stat Details */}
-        <CatalogStatBlock 
-          selectedCatalogEntry={selectedCatalogEntry} 
-          setSelectedCatalogEntry={setSelectedCatalogEntry} 
-        />
+      <div className="builder-layout">
+        <div className="builder-main active-mobile-tab">
+          {/* Selected Catalog Entry Stat Details */}
+          <CatalogStatBlock 
+            selectedCatalogEntry={selectedCatalogEntry} 
+            setSelectedCatalogEntry={setSelectedCatalogEntry} 
+          />
 
         {/* Selected Selections on Roster grouped by category links */}
         {roster.forces.map(force => {
@@ -175,7 +168,7 @@ export default function RosterEditor({ system, roster: initialRoster, _onBack, o
                     <div key={link.targetId} className="roster-category-group" style={{ marginBottom: '24px' }}>
                       <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <h3 className="font-serif text-gold" style={{ margin: 0, border: 'none', padding: 0, fontSize: '1.15rem' }}>
+                          <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>
                             {catName}
                             {showDebugIds && (
                               <>
@@ -191,9 +184,8 @@ export default function RosterEditor({ system, roster: initialRoster, _onBack, o
                             const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
                             return (
                               <span 
-                                className={categoryErrors.length > 0 ? "badge badge-danger font-body" : "badge font-body"} 
+                                className={categoryErrors.length > 0 ? "badge badge-danger" : "badge"} 
                                 style={{ 
-                                  fontSize: '0.8rem', 
                                   padding: '2px 8px',
                                   ...(categoryErrors.length > 0 ? {} : {
                                     backgroundColor: 'rgba(226, 183, 66, 0.05)',
@@ -218,15 +210,9 @@ export default function RosterEditor({ system, roster: initialRoster, _onBack, o
                         />
                       </div>
 
-                      {categoryErrors.map((err, idx) => (
-                        <div key={idx} className="category-error-alert text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', marginBottom: '8px', padding: '6px 10px', background: 'rgba(166,28,28,0.06)', borderRadius: '3px', border: '1px solid var(--color-danger)' }}>
-                          <AlertTriangle size={14} />
-                          <span>{err.message}</span>
-                        </div>
-                      ))}
 
                       {selections.length === 0 ? (
-                        <div className="text-dim font-serif" style={{ fontSize: '0.85rem', textAlign: 'center', padding: '12px 0', fontStyle: 'italic' }}>
+                        <div className="text-label text-dim" style={{ textAlign: 'center', padding: '12px 0', fontStyle: 'italic' }}>
                           Keine Auswahlen vorhanden
                         </div>
                       ) : (
@@ -267,7 +253,7 @@ export default function RosterEditor({ system, roster: initialRoster, _onBack, o
               {/* Uncategorized Selections (Fallback) */}
               {uncategorizedSelections.length > 0 && (
                 <div className="roster-category-group" style={{ marginBottom: '24px' }}>
-                  <h3 className="font-serif text-gold" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', fontSize: '1.15rem' }}>Sonstiges</h3>
+                  <h3 className="text-subheading" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>Sonstiges</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {uncategorizedSelections.map(selection => {
                       return (
@@ -297,21 +283,45 @@ export default function RosterEditor({ system, roster: initialRoster, _onBack, o
                 <h3 className="font-serif text-gold" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>Lagerbericht (Gesamtstatus)</h3>
                 
                 {isRosterValid ? (
-                  <div className="text-success font-serif" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.05rem', fontWeight: 600 }}>
-                    <Check size={20} />
-                    <span>Streitmacht ist regelkonform und bereit für die Schlacht!</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="text-success text-ui-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                      <Check size={20} />
+                      <span>Streitmacht ist regelkonform und bereit für die Schlacht!</span>
+                    </div>
+                    <p className="text-body text-dim animate-fade-in" style={{ fontStyle: 'italic', margin: '4px 0 8px 0', lineHeight: '1.4', opacity: 0.85 }}>
+                      „Die Schlachtreihen stehen fest, die Kriegstrommeln rufen nach den Tapferen. Führt Eure Streitmacht zum glorreichen Sieg!“
+                    </p>
+                    {/* Mobile-only Play button */}
+                    <div className="mobile-only" style={{ width: '100%' }}>
+                      <button 
+                        type="button" 
+                        className="btn-primary" 
+                        onClick={() => onPlay(roster)}
+                        style={{ 
+                          width: '100%', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          gap: '8px', 
+                          padding: '10px 16px',
+                          fontSize: 'var(--fs-body)'
+                        }}
+                      >
+                        <Play size={18} /> In die Schlacht (Spielmodus)
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {generalErrors.map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem' }}>
+                      <div key={idx} className="validation-error-item text-danger text-body" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <AlertTriangle size={18} style={{ flexShrink: 0 }} />
                         <span>{err.message}</span>
                       </div>
                     ))}
                     {/* Secondary list of category & selection errors for full context */}
                     {validationErrors.filter(e => e.categoryId || e.selectionId).map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-danger font-body" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', opacity: 0.8 }}>
+                      <div key={idx} className="validation-error-item text-danger text-body" style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.8 }}>
                         <AlertTriangle size={18} style={{ flexShrink: 0 }} />
                         <span>{err.message}</span>
                       </div>
@@ -340,6 +350,7 @@ export default function RosterEditor({ system, roster: initialRoster, _onBack, o
           <span>{toast}</span>
         </div>
       )}
+      </div>
 
     </div>
   );

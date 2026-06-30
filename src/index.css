@@ -20,10 +20,25 @@
   --color-success: #1b7340;  /* Forest green for active/valid states */
   --color-warning: #c27d13;  /* Amber/Orange for warnings */
 
+  --text-danger-readable: #ff6b6b; /* Brighter readable red for text/badges */
+  --text-success-readable: #81c784; /* Brighter readable green for text/badges */
+  --text-warning-readable: #ffd54f; /* Brighter readable amber/yellow for text/badges */
+
   --font-serif: 'Cinzel', Georgia, serif;
   --font-body: 'Lora', 'EB Garamond', Garamond, serif;
 
-  
+  /* ── Typography Scale ─────────────────────────────────────────────────────
+     7 semantic size steps, each mapped to a clear purpose.
+     Mobile overrides are applied via @media at the bottom of this section.
+  ── */
+  --fs-display:   2.2rem;  /* App-Titel, Hero-States groß        */
+  --fs-heading:   1.6rem;  /* Sektions-Überschrift (h2-Niveau)   */
+  --fs-subheading:1.2rem;  /* Kategorie-Titel (h3-Niveau)        */
+  --fs-ui-title:  1.05rem; /* Karten-Titel, Einheitenname        */
+  --fs-body:      0.95rem; /* Fließtext, Optionen, Inputs        */
+  --fs-label:     0.85rem; /* Meta-Info, Beschriftungen          */
+  --fs-micro:     0.75rem; /* Tags, Badges, Tabellen             */
+
   --shadow-gold: 0 4px 20px rgba(197, 155, 39, 0.15);
   --shadow-glow: 0 0 15px rgba(226, 183, 66, 0.4);
   --shadow-inset: inset 0 2px 10px rgba(0, 0, 0, 0.8);
@@ -65,7 +80,91 @@ body {
   background: var(--border-gold-dim);
 }
 
-/* Typography */
+/* ── Semantic Text Utility Classes ───────────────────────────────────────
+   Use these classes instead of ad-hoc font-size / font-family inline styles.
+   Each class defines font-family + font-size + line-height for its purpose.
+
+   .text-display    – App-Titel, großer Hero-Text (Cinzel)
+   .text-heading    – Sektions-Überschrift / h2-Niveau (Cinzel)
+   .text-subheading – Kategorie-Titel / h3-Niveau (Cinzel)
+   .text-ui-title   – Karten-Titel, Einheitsname (Cinzel)
+   .text-body       – Fließtext, Optionen, Inputs (Lora)
+   .text-label      – Meta-Info, Beschriftungen (Lora)
+   .text-micro      – Tags, Badges, Tabellenwerte (Lora)
+──────────────────────────────────────────────────────────────────────── */
+
+.text-display {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  color: var(--text-gold);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.text-heading {
+  font-family: var(--font-serif);
+  font-size: var(--fs-heading);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.05em;
+  color: var(--text-gold);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.text-subheading {
+  font-family: var(--font-serif);
+  font-size: var(--fs-subheading);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  color: var(--text-gold);
+}
+
+.text-ui-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-ui-title);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+}
+
+.text-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.text-label {
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.text-micro {
+  font-family: var(--font-body);
+  font-size: var(--fs-micro);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* Mobile responsive overrides for typography scale */
+@media (max-width: 900px) {
+  :root {
+    --fs-display:    1.6rem;
+    --fs-heading:    1.3rem;
+    --fs-subheading: 1.05rem;
+    --fs-ui-title:   1rem;
+    --fs-body:       0.95rem;
+    --fs-label:      0.85rem;
+    --fs-micro:      0.75rem;
+  }
+}
+
+/* ── Base HTML Heading styles (map to typography scale) ─────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
   color: var(--text-gold);
@@ -75,7 +174,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: var(--fs-display);
   text-align: center;
   border-bottom: 2px double var(--border-gold);
   padding-bottom: 12px;
@@ -84,15 +183,19 @@ h1 {
 }
 
 h2 {
-  font-size: 1.8rem;
+  font-size: var(--fs-heading);
   border-bottom: 1px solid var(--border-gold-dim);
   padding-bottom: 8px;
   margin-bottom: 16px;
 }
 
 h3 {
-  font-size: 1.3rem;
+  font-size: var(--fs-subheading);
   margin-bottom: 8px;
+}
+
+h4 {
+  font-size: var(--fs-ui-title);
 }
 
 p {
@@ -159,7 +262,7 @@ button, .btn {
   color: var(--text-parchment);
   border: 1px solid var(--border-gold-dim);
   font-family: var(--font-serif);
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   font-weight: 600;
   text-transform: uppercase;
   padding: 10px 20px;
@@ -213,7 +316,7 @@ button:disabled {
 
 .btn-sm {
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: var(--fs-micro);
 }
 
 /* Inputs and Forms */
@@ -227,7 +330,7 @@ textarea {
   border-radius: 4px;
   padding: 10px 14px;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--fs-body);
   transition: all 0.3s ease;
   width: 100%;
 }
@@ -281,7 +384,7 @@ select option {
 
 .logo-text {
   font-family: var(--font-serif);
-  font-size: 1.8rem;
+  font-size: var(--fs-heading);
   color: var(--text-gold);
   text-shadow: 0 0 10px rgba(197, 155, 39, 0.3);
 }
@@ -297,6 +400,10 @@ select option {
 
 .fab-mobile {
   display: none;
+}
+
+.mobile-only {
+  display: none !important;
 }
 
 .app-header-actions {
@@ -369,12 +476,12 @@ select option {
 }
 
 .roster-title {
-  font-size: 1.2rem;
+  font-size: var(--fs-subheading);
   margin-bottom: 4px;
 }
 
 .roster-meta {
-  font-size: 0.85rem;
+  font-size: var(--fs-label);
   color: var(--text-dim);
   font-family: var(--font-body);
 }
@@ -382,7 +489,7 @@ select option {
 .roster-faction-label {
   font-family: var(--font-serif);
   color: var(--text-gold);
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -397,10 +504,18 @@ select option {
 }
 
 /* Builder Mode Layout */
+.builder-layout-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 84px);
+  overflow: hidden;
+}
+
 .builder-layout {
   display: grid;
   grid-template-columns: 1fr 340px;
-  height: calc(100vh - 84px);
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -457,7 +572,7 @@ select option {
 
 .catalog-category-title {
   font-family: var(--font-serif);
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   font-weight: 600;
 }
 
@@ -473,7 +588,7 @@ select option {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -499,7 +614,7 @@ select option {
 
 .roster-editor-points {
   font-family: var(--font-body);
-  font-size: 1.3rem;
+  font-size: var(--fs-subheading);
   color: var(--text-gold);
   font-weight: 700;
 }
@@ -536,7 +651,7 @@ select option {
 }
 
 .selection-node-category {
-  font-size: 0.75rem;
+  font-size: var(--fs-micro);
   background-color: var(--border-gold-dim);
   color: var(--bg-dark);
   padding: 2px 6px;
@@ -546,9 +661,6 @@ select option {
 }
 
 .selection-node-name {
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: 1.1rem;
 }
 
 .selection-node-right {
@@ -581,7 +693,7 @@ select option {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   transition: background-color 0.2s ease, cursor 0.2s ease;
 }
 
@@ -629,7 +741,7 @@ select option {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 12px;
-  font-size: 0.85rem;
+  font-size: var(--fs-label);
 }
 
 .profile-table th, 
@@ -644,7 +756,7 @@ select option {
   font-family: var(--font-serif);
   color: var(--text-gold);
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: var(--fs-micro);
   text-transform: uppercase;
 }
 
@@ -668,6 +780,12 @@ select option {
   margin-bottom: 24px;
 }
 
+@media (min-width: 901px) {
+  .play-header {
+    display: none !important;
+  }
+}
+
 .tracker-hub {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -687,7 +805,7 @@ select option {
 
 .tracker-title {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: var(--fs-body);
   margin-bottom: 8px;
   color: var(--text-gold);
   text-transform: uppercase;
@@ -702,7 +820,7 @@ select option {
 
 .tracker-value {
   font-family: var(--font-body);
-  font-size: 2.2rem;
+  font-size: var(--fs-display);
   font-weight: 700;
   color: #fff;
   min-width: 60px;
@@ -764,8 +882,6 @@ select option {
 }
 
 .play-unit-title {
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
 }
 
 .play-unit-body {
@@ -798,11 +914,11 @@ select option {
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   }
   .play-header-title {
-    font-size: 1.2rem;
+    font-size: var(--fs-subheading);
   }
-  .play-header .btn-sm {
+  .play-header .btn-sm:not(.square-btn) {
     padding: 4px 8px;
-    font-size: 0.8rem;
+    font-size: var(--fs-micro);
   }
   .show-mobile {
     display: inline;
@@ -831,7 +947,7 @@ select option {
     gap: 6px;
   }
   .play-unit-title {
-    font-size: 1.1rem;
+    font-size: var(--fs-ui-title);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -849,7 +965,7 @@ select option {
   .profile-table th, 
   .profile-table td {
     padding: 3px 2px;
-    font-size: 0.75rem;
+    font-size: var(--fs-micro);
   }
   .play-unit-wound-tracker {
     padding: 6px 8px;
@@ -953,7 +1069,7 @@ select option {
   justify-content: center;
   padding: 2px 8px;
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 3px;
   text-transform: uppercase;
@@ -962,27 +1078,28 @@ select option {
 .badge-danger {
   background-color: rgba(166, 28, 28, 0.2);
   border: 1px solid var(--color-danger);
-  color: #ff8a80;
+  color: var(--text-danger-readable);
 }
 
 .badge-success {
   background-color: rgba(27, 115, 64, 0.2);
   border: 1px solid var(--color-success);
-  color: #a5d6a7;
+  color: var(--text-success-readable);
 }
 
 .badge-warning {
   background-color: rgba(194, 125, 19, 0.2);
   border: 1px solid var(--color-warning);
-  color: #ffe082;
+  color: var(--text-warning-readable);
 }
 
 .validation-error-item {
   padding: 10px;
   border-left: 3px solid var(--color-danger);
   background-color: rgba(166, 28, 28, 0.05);
+  color: var(--text-danger-readable);
   margin-bottom: 8px;
-  font-size: 0.85rem;
+  font-size: var(--fs-label);
   border-radius: 0 4px 4px 0;
 }
 
@@ -1010,8 +1127,8 @@ select option {
 
 /* Helpers */
 .text-gold { color: var(--text-gold); }
-.text-danger { color: #ff8a80; }
-.text-success { color: #a5d6a7; }
+.text-danger { color: var(--text-danger-readable); }
+.text-success { color: var(--text-success-readable); }
 .font-serif { font-family: var(--font-serif); }
 .font-body { font-family: var(--font-body); }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
@@ -1117,10 +1234,23 @@ input[type="radio"]:checked::after {
     overflow: hidden;
   }
 
+  .builder-layout-container {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .mobile-only {
+    display: inline-flex !important;
+  }
+
   .builder-layout {
     display: flex !important;
     flex-direction: column !important;
-    height: 100% !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: auto !important;
     overflow: hidden !important;
   }
 
@@ -1153,7 +1283,7 @@ input[type="radio"]:checked::after {
     justify-content: flex-start !important;
   }
   .app-header .logo-text {
-    font-size: 1.2rem !important;
+    font-size: var(--fs-subheading) !important;
   }
   .app-header-actions {
     display: flex !important;
@@ -1165,7 +1295,7 @@ input[type="radio"]:checked::after {
     display: none !important;
   }
   .app-header-actions button {
-    font-size: 0.85rem !important;
+    font-size: var(--fs-label) !important;
     padding: 8px 16px !important;
   }
 
@@ -1192,7 +1322,7 @@ input[type="radio"]:checked::after {
     color: var(--text-dim);
     box-shadow: none;
     font-family: var(--font-serif);
-    font-size: 0.8rem;
+    font-size: var(--fs-micro);
     text-transform: uppercase;
   }
   .mobile-bottom-nav .mobile-nav-btn.active {
@@ -1280,24 +1410,24 @@ input[type="radio"]:checked::after {
     margin-bottom: 16px !important;
   }
   .empty-state-title {
-    font-size: 1.4rem !important;
+    font-size: var(--fs-heading) !important;
     margin-bottom: 8px !important;
   }
   .empty-state-title-large {
-    font-size: 1.6rem !important;
+    font-size: var(--fs-display) !important;
     margin-bottom: 12px !important;
   }
   .empty-state-text {
-    font-size: 0.95rem !important;
+    font-size: var(--fs-body) !important;
     margin-bottom: 20px !important;
     line-height: 1.4 !important;
   }
   .empty-state-btn {
     padding: 10px 20px !important;
-    font-size: 0.95rem !important;
+    font-size: var(--fs-body) !important;
   }
   .empty-state-subtext {
-    font-size: 0.75rem !important;
+    font-size: var(--fs-micro) !important;
   }
 
   /* Make roster card actions responsive */
@@ -1307,7 +1437,7 @@ input[type="radio"]:checked::after {
   }
   .roster-actions button:not(.btn-danger) {
     flex: 1 !important;
-    font-size: 0.8rem !important;
+    font-size: var(--fs-micro) !important;
     padding: 8px 10px !important;
   }
   .roster-actions button.btn-danger {
@@ -1333,7 +1463,7 @@ input[type="radio"]:checked::after {
     flex: 1 !important;
     justify-content: center !important;
     padding: 8px 8px !important;
-    font-size: 0.78rem !important;
+    font-size: var(--fs-micro) !important;
     gap: 4px !important;
   }
 
@@ -1392,24 +1522,7 @@ input[type="radio"]:checked::after {
     width: 130px;
   }
 
-  .points-progress-bar {
-    width: 100%;
-    height: 6px;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--border-dark);
-    border-radius: 3px;
-    overflow: hidden;
-  }
 
-  .points-progress-fill {
-    height: 100%;
-    background-color: var(--text-gold);
-    transition: width 0.3s ease;
-  }
-
-  .points-progress-fill.overflow {
-    background-color: var(--color-danger);
-  }
 }
 
 /* 7. Category Unit Adder Popover styling */
@@ -1518,7 +1631,7 @@ input[type="radio"]:checked::after {
   display: block;
   font-family: var(--font-serif);
   color: var(--text-gold);
-  font-size: 1.15rem;
+  font-size: var(--fs-ui-title);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1561,12 +1674,12 @@ input[type="radio"]:checked::after {
 
 .popover-item-name {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   color: var(--text-parchment);
 }
 
 .popover-item-cost {
-  font-size: 0.85rem;
+  font-size: var(--fs-label);
   font-weight: 700;
 }
 
@@ -1584,7 +1697,7 @@ input[type="radio"]:checked::after {
 
 .info-popup-body {
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   color: var(--text-parchment);
   line-height: 1.5;
   font-style: italic;
@@ -1687,7 +1800,7 @@ input[type="radio"]:checked::after {
     display: block !important;
     font-family: var(--font-serif);
     color: var(--text-gold);
-    font-size: 1.1rem;
+    font-size: var(--fs-ui-title);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1749,7 +1862,7 @@ input[type="radio"]:checked::after {
   z-index: 999;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), var(--shadow-glow);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--fs-body);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   animation: slideUpFade 0.2s ease-out;
@@ -1810,7 +1923,7 @@ input[type="radio"]:checked::after {
 .debug-id-badge {
   display: inline-block;
   font-family: monospace;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   background-color: rgba(226, 183, 66, 0.08);
   border: 1px dashed rgba(226, 183, 66, 0.4);
   color: var(--text-gold);
@@ -1860,7 +1973,7 @@ input[type="radio"]:checked::after {
 .gothic-tooltip .tooltip-title {
   font-family: var(--font-serif);
   color: var(--text-gold);
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   font-weight: bold;
   margin-bottom: 6px;
   border-bottom: 1px solid var(--border-gold-dim);
@@ -1869,7 +1982,7 @@ input[type="radio"]:checked::after {
 
 .gothic-tooltip .tooltip-body {
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: var(--fs-label);
   color: var(--text-parchment);
   line-height: 1.4;
   font-style: italic;
@@ -1922,26 +2035,26 @@ input[type="radio"]:checked::after {
   margin-bottom: 24px;
 }
 .empty-state-title {
-  font-size: 1.8rem;
+  font-size: var(--fs-heading);
   margin-bottom: 12px;
 }
 .empty-state-title-large {
-  font-size: 2.2rem;
+  font-size: var(--fs-display);
   margin-bottom: 16px;
   text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 .empty-state-text {
   max-width: 450px;
   margin: 0 auto 32px;
-  font-size: 1.1rem;
+  font-size: var(--fs-body);
   line-height: 1.6;
 }
 .empty-state-btn {
   padding: 14px 28px;
-  font-size: 1.1rem;
+  font-size: var(--fs-body);
 }
 .empty-state-subtext {
-  font-size: 0.85rem;
+  font-size: var(--fs-label);
   margin-top: 12px;
 }
 
@@ -1974,12 +2087,12 @@ input[type="radio"]:checked::after {
 
 .update-toast-title {
   font-weight: bold;
-  font-size: 1.05rem;
+  font-size: var(--fs-body);
   margin-bottom: 2px;
 }
 
 .update-toast-desc {
-  font-size: 0.85rem;
+  font-size: var(--fs-label);
   color: var(--text-dim);
 }
 
@@ -2002,5 +2115,136 @@ input[type="radio"]:checked::after {
 @media (max-width: 900px) {
   .update-toast {
     bottom: 80px; /* Positioned above mobile bottom navigation bar */
+  }
+}
+
+/* Design Refinement - Builder-Top-Bar, Icon buttons, qty-buttons & bottom-sheet modals */
+.builder-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background-color: var(--bg-panel);
+  border-bottom: 2px solid var(--border-gold-dim);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+.builder-top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.builder-top-bar-title-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.builder-top-bar-title {
+  margin: 0;
+  border: none;
+  padding: 0;
+  font-size: var(--fs-subheading);
+}
+
+.builder-top-bar-subtitle {
+  font-size: var(--fs-micro);
+  color: var(--text-dim);
+  font-family: var(--font-body);
+}
+
+
+.builder-top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.square-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qty-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-gold-dim);
+}
+
+@media (max-width: 900px) {
+  .builder-top-bar {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .builder-top-bar-title {
+    font-size: var(--fs-ui-title);
+  }
+  .square-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .qty-btn {
+    width: 40px;
+    height: 40px;
+    font-size: var(--fs-subheading) !important;
+  }
+  .builder-top-bar .badge {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: var(--fs-body);
+    box-sizing: border-box;
+  }
+  .mobile-points-indicator {
+    width: auto;
+    justify-content: center;
+    height: 48px;
+  }
+
+  .modal-new-roster-sheet {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 12px 12px 0 0 !important;
+    border-bottom: none !important;
+    max-height: 85vh !important;
+    transform: none !important;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 16px)) !important;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.8), var(--shadow-gold) !important;
+    animation: slide-up-sheet 0.3s ease-out forwards;
+  }
+  .modal-new-roster-sheet input,
+  .modal-new-roster-sheet select {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+  @keyframes slide-up-sheet {
+    0% {
+      transform: translateY(100%);
+    }
+    100% {
+      transform: translateY(0);
+    }
   }
 }

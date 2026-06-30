@@ -465,24 +465,13 @@ const runUiTests = async () => {
     await page.setViewport({ width: 375, height: 812 });
     await new Promise(r => setTimeout(r, 1000));
 
-    // Verify mobile status bar works correctly and is visible
-    console.log('Verifying mobile status bar is visible...');
-    const mobileBarVisible = await page.evaluate(() => {
-      const el = document.querySelector('.mobile-sticky-status-bar');
-      if (!el) return false;
-      const style = window.getComputedStyle(el);
-      return style.display !== 'none' && style.visibility !== 'hidden';
-    });
-
-    if (!mobileBarVisible) {
-      throw new Error('Mobile sticky status bar is not visible in mobile viewport');
-    }
-    console.log('Mobile sticky status bar is visible.');
-
-    // Click mobile status bar, which should trigger scroll to errors panel
-    console.log('Clicking mobile status bar to scroll to general errors...');
-    await page.click('.mobile-sticky-status-bar');
-    await new Promise(r => setTimeout(r, 1000));
+     // Scroll to the bottom errors panel
+     console.log('Scrolling to general errors section...');
+     await page.evaluate(() => {
+       const el = document.getElementById('general-errors-section');
+       if (el) el.scrollIntoView();
+     });
+     await new Promise(r => setTimeout(r, 1000));
 
     // Verify validation error panel is visible in viewport/document
     console.log('Verifying validation error panel exists and is visible...');

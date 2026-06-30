@@ -164,13 +164,13 @@ export default function OptionGroupComponent({
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
-          <span className={hasGroupError ? "font-serif text-danger" : "font-serif text-gold"} style={{ fontSize: '0.9rem', fontWeight: 700 }}>
+          <span className={hasGroupError ? "text-ui-title text-danger" : "text-ui-title text-gold"}>
             {group.name} 
             {showDebugIds && group.id && <span className="debug-id-badge clickable" style={{ marginLeft: '6px' }}>def:{group.id}</span>}
-            <span style={{ fontSize: '0.8rem', marginLeft: '6px', fontWeight: 400, color: 'var(--text-dim)' }}>{limitText}</span>
+            <span className="text-micro" style={{ marginLeft: '6px', fontWeight: 400, color: 'var(--text-dim)' }}>{limitText}</span>
           </span>
           {selectedItemsSummary && (
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-parchment)', opacity: 0.75, fontWeight: 400 }}>
+            <span className="text-micro" style={{ color: 'var(--text-parchment)', opacity: 0.75, fontWeight: 400 }}>
               Auswahl: {selectedItemsSummary}
             </span>
           )}
@@ -325,7 +325,7 @@ export default function OptionGroupComponent({
                   >
                     {res.name}
                     {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
-                    {isTakenElsewhere && <span className="text-danger" style={{ fontSize: '0.75rem', marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>
                   {descText && (
                     <button
@@ -347,7 +347,7 @@ export default function OptionGroupComponent({
                   )}
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold font-body" style={{ fontSize: '0.85rem', marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
                   {isBinary ? (
                     isRadio ? (
                       <input 
@@ -388,8 +388,7 @@ export default function OptionGroupComponent({
                   ) : (
                     <div className="quantity-control">
                       <button 
-                        className="btn-sm" 
-                        style={{ padding: '2px 6px' }}
+                        className="qty-btn" 
                         onClick={() => updateSubSelection(selection.id, option, 'decrement', parentCount)}
                         disabled={count === 0}
                       >
@@ -397,8 +396,7 @@ export default function OptionGroupComponent({
                       </button>
                       <span className="quantity-value font-body">{count}</span>
                       <button 
-                        className="btn-sm" 
-                        style={{ padding: '2px 6px' }}
+                        className="qty-btn" 
                         onClick={() => updateSubSelection(selection.id, option, 'increment', parentCount)}
                         disabled={isSelectDisabled}
                       >
