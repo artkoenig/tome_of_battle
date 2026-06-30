@@ -7,22 +7,34 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function generate() {
-  console.log('Launching headless browser to render PWA icons from golden skull template...');
+  console.log('Launching headless browser to render PWA icons and browser favicon...');
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   
-  const iconPath = path.join(__dirname, '../public/pwa-icon.png');
-  if (!fs.existsSync(iconPath)) {
-    throw new Error(`PWA base icon not found at ${iconPath}`);
+  // Load source images
+  const pwaIconPath = path.join(__dirname, '../public/pwa-icon.png');
+  const faviconSourcePath = path.join(__dirname, '../public/favicon-source.png');
+  
+  if (!fs.existsSync(pwaIconPath)) {
+    throw new Error(`PWA base icon not found at ${pwaIconPath}`);
   }
-  const imgBuffer = fs.readFileSync(iconPath);
-  const base64Img = imgBuffer.toString('base64');
-  const imgSrc = `data:image/png;base64,${base64Img}`;
+  if (!fs.existsSync(faviconSourcePath)) {
+    throw new Error(`Favicon base icon not found at ${faviconSourcePath}`);
+  }
 
-  // Helper to build dynamic HTML document containing the image centered
-  const getHTML = (size, isMaskable) => {
+  const pwaImgBuffer = fs.readFileSync(pwaIconPath);
+  const pwaBase64 = pwaImgBuffer.toString('base64');
+  const pwaImgSrc = `data:image/png;base64,${pwaBase64}`;
+
+  const favImgBuffer = fs.readFileSync(faviconSourcePath);
+  const favBase64 = favImgBuffer.toString('base64');
+  const favImgSrc = `data:image/png;base64,${favBase64}`;
+
+  // Helper to build HTML document containing the image
+  const getHTML = (size, isMaskable, imgSrc, isFavicon) => {
     // For maskable icon, add a 15% padding (safe area) so corners are not clipped
     const paddingVal = isMaskable ? '15%' : '0%';
+    const background = isFavicon ? 'transparent' : '#0e0e11';
     return `
       <!DOCTYPE html>
       <html>
@@ -31,7 +43,7 @@ async function generate() {
           body {
             margin: 0;
             padding: 0;
-            background: #0e0e11;
+            background: ${background};
             width: ${size}px;
             height: ${size}px;
             display: flex;
@@ -63,22 +75,22 @@ async function generate() {
   };
 
   const targets = [
-    { size: 48, name: 'favicon.png', maskable: false },
-    { size: 192, name: 'icon-192.png', maskable: false },
-    { size: 512, name: 'icon-512.png', maskable: false },
-    { size: 512, name: 'icon-maskable.png', maskable: true }
+    { size: 48, name: 'favicon.png', maskable: false, imgSrc: favImgSrc, isFavicon: true, omitBg: true },
+    { size: 192, name: 'icon-192.png', maskable: false, imgSrc: pwaImgSrc, isFavicon: false, omitBg: false },
+    { size: 512, name: 'icon-512.png', maskable: false, imgSrc: pwaImgSrc, isFavicon: false, omitBg: false },
+    { size: 512, name: 'icon-maskable.png', maskable: true, imgSrc: pwaImgSrc, isFavicon: false, omitBg: false }
   ];
 
   for (const target of targets) {
     await page.setViewport({ width: target.size, height: target.size, deviceScaleFactor: 1 });
-    await page.setContent(getHTML(target.size, target.maskable));
+    await page.setContent(getHTML(target.size, target.maskable, target.imgSrc, target.isFavicon));
     const outputPath = path.join(__dirname, '../public', target.name);
-    await page.screenshot({ path: outputPath, type: 'png', omitBackground: false });
+    await page.screenshot({ path: outputPath, type: 'png', omitBackground: target.omitBg });
     console.log(`Generated public/${target.name} (${target.size}x${target.size})`);
   }
 
   await browser.close();
-  console.log('All PWA icons successfully generated.');
+  console.log('All PWA icons and favicons successfully generated.');
 }
 
 generate().catch(err => {
