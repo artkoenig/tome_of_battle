@@ -63,6 +63,7 @@ async function generate() {
   };
 
   const targets = [
+    { size: 48, name: 'favicon.png', maskable: false },
     { size: 192, name: 'icon-192.png', maskable: false },
     { size: 512, name: 'icon-512.png', maskable: false },
     { size: 512, name: 'icon-maskable.png', maskable: true }

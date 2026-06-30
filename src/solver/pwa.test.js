@@ -60,12 +60,20 @@ describe('PWA Configuration and Assets', () => {
   });
 
   it('should have generated PNG icons in the public folder', () => {
+    const faviconPath = path.join(rootDir, 'public/favicon.png');
     const icon192Path = path.join(rootDir, 'public/icon-192.png');
     const icon512Path = path.join(rootDir, 'public/icon-512.png');
     const iconMaskablePath = path.join(rootDir, 'public/icon-maskable.png');
     
+    expect(fs.existsSync(faviconPath)).toBe(true);
     expect(fs.existsSync(icon192Path)).toBe(true);
     expect(fs.existsSync(icon512Path)).toBe(true);
     expect(fs.existsSync(iconMaskablePath)).toBe(true);
+  });
+
+  it('should link the favicon.png in index.html', () => {
+    const htmlPath = path.join(rootDir, 'index.html');
+    const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+    expect(htmlContent).toContain('<link rel="icon" type="image/png" href="/favicon.png" />');
   });
 });

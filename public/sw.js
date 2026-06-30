@@ -3,7 +3,7 @@ const CACHE_NAME = 'tome-of-battle-cache-v1';
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/favicon.svg',
+  '/favicon.png',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
