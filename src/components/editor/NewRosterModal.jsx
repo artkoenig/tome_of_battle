@@ -91,10 +91,10 @@ export default function NewRosterModal({
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" onClick={onClose}>Abbrechen</button>
             <button type="submit" className="btn-primary" disabled={systems.length === 0}>
               Heerschau starten
             </button>
+            <button type="button" onClick={onClose}>Abbrechen</button>
           </div>
         </form>
       </div>
