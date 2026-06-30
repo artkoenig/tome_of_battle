@@ -36,7 +36,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     if (!resolved) return null;
 
     const selection = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       entryLinkId: entry.targetId ? entry.id : null,
       selectionEntryId: entry.targetId ? null : entry.id,
       name: resolved.name,
@@ -128,7 +128,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
 
   const copyUnit = (selectionId) => {
     const cloneSelection = (sel) => {
-      const newId = Math.random().toString(36).substr(2, 9);
+      const newId = crypto.randomUUID();
       const clonedSelections = (sel.selections || []).map(s => cloneSelection(s));
       return {
         ...sel,

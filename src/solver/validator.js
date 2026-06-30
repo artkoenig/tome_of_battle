@@ -1,6 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { getOptionDisplayCost, getSelectionTotalCost, calculateRosterCosts, computeRosterCounts } from './rosterCounter.js';
+import { WFB6_HEROES_CATEGORY_ID, WFB6_CHARACTERS_CATEGORY_ID } from './constants.js';
 
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue } from './modifierEvaluator.js';
@@ -45,8 +46,8 @@ export function validateRoster(roster, system) {
 
       // Check min/max constraints on the category link
       let constraintsToValidate = [...(catLink.constraints || [])];
-      if (targetCatId === 'c16b-f319-2c62-2c12' && !constraintsToValidate.some(c => c.type === 'max')) {
-        const charCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === '7a1c-d611-c2dc-def1');
+      if (targetCatId === WFB6_HEROES_CATEGORY_ID && !constraintsToValidate.some(c => c.type === 'max')) {
+        const charCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === WFB6_CHARACTERS_CATEGORY_ID);
         const charMaxCon = charCatLink?.constraints?.find(c => c.type === 'max');
         if (charMaxCon) {
           constraintsToValidate.push({
@@ -90,7 +91,7 @@ export function validateRoster(roster, system) {
       const rawEntry = findEntryInSystem(system, entryId, forceCatalogueId);
       const entry = resolveEntry(system, rawEntry, forceCatalogueId);
 
-      console.log(`Validating selection ${selection.name}, entryId ${entryId}, found: ${!!entry}`);
+
 
       if (!entry) return;
 
@@ -162,7 +163,7 @@ export function validateRoster(roster, system) {
               severity: 'error'
             });
           }
-          console.log(`Validating constraint ${con.type} ${con.value} for ${selection.name}, scope ${con.scope}, count ${count}, finalValue ${finalValue}`);
+
         });
       }
 

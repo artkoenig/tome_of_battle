@@ -1,4 +1,4 @@
-import { findEntryInSystem, resolveEntry } from './validator.js';
+import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 
 export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
   if (!activeCatalogueId) return [];

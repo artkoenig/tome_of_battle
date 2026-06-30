@@ -22,7 +22,7 @@ export async function runSystemMigrations(systems) {
         await saveSystem(reParsed);
         migratedSystems.push(reParsed);
         updatedAny = true;
-        console.log(`Auto-migrated and re-parsed system: ${sys.name}`);
+
       } catch (e) {
         console.error(`Failed to auto-migrate system ${sys.name}:`, e);
         migratedSystems.push(sys);

@@ -157,14 +157,14 @@ export default function App() {
     const costType = systemDef?.costTypes?.[0]?.id || 'pts';
 
     const roster = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       name: newRosterName,
       systemId: newRosterSystemId,
       catalogueId: newRosterCatId,
       costLimit: parseInt(newRosterLimit) || 2000,
       costLimitType: costType,
       forces: [{
-        id: Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         // Reference the first force organisation parsed from GST if exists
         forceEntryId: systemDef?.forceEntries?.[0]?.id || null,
         catalogueId: newRosterCatId,
