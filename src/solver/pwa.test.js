@@ -88,4 +88,22 @@ describe('PWA Configuration and Assets', () => {
     const htmlContent = fs.readFileSync(htmlPath, 'utf8');
     expect(htmlContent).toContain('<link rel="icon" type="image/png" href="/favicon.png" />');
   });
+
+  it('should have the exact CACHE_NAME placeholder that the build plugin expects', () => {
+    const swPath = path.join(rootDir, 'public/sw.js');
+    const swContent = fs.readFileSync(swPath, 'utf8');
+    // The sw-version Vite plugin replaces this exact string at build time.
+    // If this placeholder changes, the plugin silently fails and updates break.
+    expect(swContent).toContain("const CACHE_NAME = 'tome-of-battle-cache-v1'");
+  });
+
+  it('should have the sw-version plugin configured in vite.config.js', () => {
+    const viteConfigPath = path.join(rootDir, 'vite.config.js');
+    expect(fs.existsSync(viteConfigPath)).toBe(true);
+
+    const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
+    // The plugin must be defined and registered in the plugins array
+    expect(viteContent).toContain("name: 'sw-version'");
+    expect(viteContent).toContain('swVersionPlugin()');
+  });
 });
