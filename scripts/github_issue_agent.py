@@ -21,19 +21,76 @@ def generate_content_with_retry(client, model, contents, config, max_retries=5):
         except Exception as e:
             err_msg = str(e)
             if "429" in err_msg or "Please retry in" in err_msg or "ResourceExhausted" in err_msg:
+                # Exponential backoff base: 5s, 10s, 20s, 40s, 80s
+                wait_time = 2.0 ** attempt * 5.0
                 match = re.search(r"Please retry in (\d+(?:\.\d+)?)\s*s?", err_msg)
-                wait_time = 5.0
                 if match:
                     try:
-                        wait_time = float(match.group(1))
+                        wait_time = float(match.group(1)) + 2.0
                     except ValueError:
                         pass
-                print(f"Gemini API 429 rate limit hit. Waiting {wait_time} seconds before retrying (Attempt {attempt + 1}/{max_retries})...")
-                time.sleep(wait_time + 1.0)
+                print(f"Gemini API 429 rate limit hit. Waiting {wait_time:.2f} seconds before retrying (Attempt {attempt + 1}/{max_retries})...")
+                time.sleep(wait_time)
                 continue
             else:
                 raise e
     raise Exception(f"Failed to generate content after {max_retries} retries due to rate limits.")
+
+import xml.etree.ElementTree as ET
+
+def extract_relevant_xml_nodes(xml_content, keywords):
+    if not keywords:
+        return ""
+    try:
+        # Battlescribe XML files have namespaces, so we might need to handle them
+        ET.register_namespace("", "http://www.battlescribe.net/schema/catalogueSchema")
+        ET.register_namespace("", "http://www.battlescribe.net/schema/gameSystemSchema")
+        root = ET.fromstring(xml_content)
+    except Exception as e:
+        print(f"Error parsing XML: {e}")
+        return xml_content[:5000]
+
+    matched_nodes = []
+    
+    # We want to find nodes that have a 'name' attribute matching one of our keywords
+    def traverse(node):
+        name = node.get("name", "").lower()
+        matched = False
+        if name:
+            for kw in keywords:
+                if kw in name:
+                    matched = True
+                    break
+                    
+        if matched:
+            new_node = ET.Element(node.tag, node.attrib)
+            
+            # Copy important direct children but strip namespaces from tags when checking
+            for child in node:
+                tag_name = child.tag
+                if '}' in tag_name:
+                    tag_name = tag_name.split('}', 1)[1]
+                if tag_name in ["constraints", "costs", "profiles", "modifiers", "rules", "conditions", "conditionGroups", "characteristics", "characteristic", "categoryLinks", "selectionEntries", "entryLinks"]:
+                    new_node.append(child)
+            matched_nodes.append(new_node)
+            
+        for child in node:
+            traverse(child)
+
+    traverse(root)
+    
+    if not matched_nodes:
+        return "No matching nodes found in catalog."
+        
+    res = []
+    for node in matched_nodes[:50]: # Limit to top 50 nodes to avoid blowing up token limit
+        try:
+            node_str = ET.tostring(node, encoding="utf-8").decode("utf-8")
+            res.append(node_str)
+        except Exception as e:
+            res.append(f"<!-- Error serializing node: {e} -->")
+            
+    return "\n".join(res)
 
 def get_core_file_contents():
     contents = {}
@@ -68,8 +125,11 @@ def find_relevant_catalogs(issue_title: str, issue_body: str):
             if f.endswith('.gst'):
                 try:
                     with open(path, 'r', encoding='utf-8') as file_obj:
-                        contents[path] = file_obj.read()
-                    print(f"GST file always included: {path}")
+                        raw_content = file_obj.read()
+                    pruned = extract_relevant_xml_nodes(raw_content, words)
+                    if pruned.strip() and "No matching nodes found" not in pruned:
+                        contents[path] = pruned
+                        print(f"GST file included (pruned): {path}")
                 except Exception as e:
                     print(f"Error reading GST {path}: {e}")
             elif f.endswith('.cat'):
@@ -79,8 +139,8 @@ def find_relevant_catalogs(issue_title: str, issue_body: str):
     for path in cat_files:
         try:
             with open(path, 'r', encoding='utf-8') as file_obj:
-                content = file_obj.read().lower()
-                matches = sum(1 for w in words if w in content)
+                content = file_obj.read()
+                matches = sum(1 for w in words if w in content.lower())
                 if matches > 0:
                     matched_cats.append((path, matches))
         except Exception as e:
@@ -93,7 +153,11 @@ def find_relevant_catalogs(issue_title: str, issue_body: str):
     for path in top_cats:
         try:
             with open(path, 'r', encoding='utf-8') as file_obj:
-                contents[path] = file_obj.read()
+                raw_content = file_obj.read()
+            pruned = extract_relevant_xml_nodes(raw_content, words)
+            if pruned.strip():
+                contents[path] = pruned
+                print(f"CAT file included (pruned): {path}")
         except Exception as e:
             print(f"Error reading matched CAT {path}: {e}")
             

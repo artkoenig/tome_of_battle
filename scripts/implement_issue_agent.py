@@ -21,19 +21,76 @@ def generate_content_with_retry(client, model, contents, config, max_retries=5):
         except Exception as e:
             err_msg = str(e)
             if "429" in err_msg or "Please retry in" in err_msg or "ResourceExhausted" in err_msg:
+                # Exponential backoff base: 5s, 10s, 20s, 40s, 80s
+                wait_time = 2.0 ** attempt * 5.0
                 match = re.search(r"Please retry in (\d+(?:\.\d+)?)\s*s?", err_msg)
-                wait_time = 5.0
                 if match:
                     try:
-                        wait_time = float(match.group(1))
+                        wait_time = float(match.group(1)) + 2.0
                     except ValueError:
                         pass
-                print(f"Gemini API 429 rate limit hit. Waiting {wait_time} seconds before retrying (Attempt {attempt + 1}/{max_retries})...")
-                time.sleep(wait_time + 1.0)
+                print(f"Gemini API 429 rate limit hit. Waiting {wait_time:.2f} seconds before retrying (Attempt {attempt + 1}/{max_retries})...")
+                time.sleep(wait_time)
                 continue
             else:
                 raise e
     raise Exception(f"Failed to generate content after {max_retries} retries due to rate limits.")
+
+import xml.etree.ElementTree as ET
+
+def extract_relevant_xml_nodes(xml_content, keywords):
+    if not keywords:
+        return ""
+    try:
+        # Battlescribe XML files have namespaces, so we might need to handle them
+        ET.register_namespace("", "http://www.battlescribe.net/schema/catalogueSchema")
+        ET.register_namespace("", "http://www.battlescribe.net/schema/gameSystemSchema")
+        root = ET.fromstring(xml_content)
+    except Exception as e:
+        print(f"Error parsing XML: {e}")
+        return xml_content[:5000]
+
+    matched_nodes = []
+    
+    # We want to find nodes that have a 'name' attribute matching one of our keywords
+    def traverse(node):
+        name = node.get("name", "").lower()
+        matched = False
+        if name:
+            for kw in keywords:
+                if kw in name:
+                    matched = True
+                    break
+                    
+        if matched:
+            new_node = ET.Element(node.tag, node.attrib)
+            
+            # Copy important direct children but strip namespaces from tags when checking
+            for child in node:
+                tag_name = child.tag
+                if '}' in tag_name:
+                    tag_name = tag_name.split('}', 1)[1]
+                if tag_name in ["constraints", "costs", "profiles", "modifiers", "rules", "conditions", "conditionGroups", "characteristics", "characteristic", "categoryLinks", "selectionEntries", "entryLinks"]:
+                    new_node.append(child)
+            matched_nodes.append(new_node)
+            
+        for child in node:
+            traverse(child)
+
+    traverse(root)
+    
+    if not matched_nodes:
+        return "No matching nodes found in catalog."
+        
+    res = []
+    for node in matched_nodes[:50]: # Limit to top 50 nodes to avoid blowing up token limit
+        try:
+            node_str = ET.tostring(node, encoding="utf-8").decode("utf-8")
+            res.append(node_str)
+        except Exception as e:
+            res.append(f"<!-- Error serializing node: {e} -->")
+            
+    return "\n".join(res)
 
 # Define structured schemas
 class FilesToInspect(BaseModel):
@@ -120,12 +177,22 @@ def main():
     print(f"Final files to read: {files_to_read}")
     
     inspected_files = {}
+    issue_text = f"{issue.title} {issue.body}".lower()
+    keywords = set(re.findall(r"\b[a-z]{4,}\b", issue_text))
+    
     for path in files_to_read:
         if os.path.exists(path):
             try:
-                with open(path, 'r') as f:
-                    inspected_files[path] = f.read()
-                print(f"Loaded context file: {path}")
+                with open(path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                if path.endswith('.cat') or path.endswith('.gst'):
+                    pruned_content = extract_relevant_xml_nodes(content, keywords)
+                    inspected_files[path] = pruned_content
+                    print(f"Loaded and pruned context file: {path} (size: {len(pruned_content)})")
+                else:
+                    inspected_files[path] = content
+                    print(f"Loaded context file: {path}")
             except Exception as e:
                 print(f"Error reading file {path}: {e}")
 

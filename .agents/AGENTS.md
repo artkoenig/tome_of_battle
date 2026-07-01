@@ -7,8 +7,8 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 * **Cloud (Linux):** Nutze `/browser` und `browser_subagent` (voll unterstützt).
 
 ## Fachlogik
-* Nutze `validation_insights.md` für gesammeltes Wissen zum Battlescribe-Format. Neues Wissen trägst du selbständig in die Datei ein.
-* Nutze die Daten unter `./catalogs` für den Zugriff auf die Spielsysteme und Kataloge.
+* **Local:** Nutze `validation_insights.md` für gesammeltes Wissen zum Battlescribe-Format. Neues Wissen trägst du selbständig in die Datei ein.
+* **Local:** Nutze die Daten unter `./catalogs` für den Zugriff auf die Spielsysteme und Kataloge.
 * Nutze für fehlendes Wissen für die Analyse des Battlescribe-Formats die Informationen von https://github.com/BSData/catalogue-development/wiki und dazugehörige Unterseiten.
 * Es sollen keine (Sub)Strings auf Englisch oder Deutsch als Schlüssel für das Parsen oder Validieren genommen werden. Ausnahme: Berechnung von Armour Save und Ward Save (AS bzw. WS).
 * Es sollen keine Armeespezifischen Logiken implementiert werden, die Implementierung soll immer allgemeingültig sein.
