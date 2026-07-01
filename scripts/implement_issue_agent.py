@@ -64,58 +64,49 @@ def main():
     repo_files = get_file_list()
     files_tree = "\n".join(repo_files)
 
-    inspected_files = {}
+    import re
+    import time
     
-    for iteration in range(4):
-        prompt = f"""
-You are an expert React and Node.js developer. You are implementing the approved plan for issue #{issue_number}.
-
-Issue Title: {issue.title}
-Issue Description:
-{issue.body}
-
-Approved Implementation Plan:
-{plan}
-
-Here is the list of files in the repository:
-{files_tree}
-
-Here are the files you have inspected so far:
-"""
-        for path, content in inspected_files.items():
-            prompt += f"\n--- FILE: {path} ---\n{content}\n"
-
-        prompt += "\nBased on the issue description, plan, and files tree, do you need to inspect the contents of any other files to write the correct solution? If yes, list their paths. If no (you have all information to write the changes), return an empty list."
-
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=FilesToInspect,
-                temperature=0.1,
-            ),
-        )
-        
-        req = FilesToInspect.model_validate_json(response.text)
-        print(f"Iteration {iteration + 1}: Files requested: {req.paths}")
-        
-        if not req.paths:
-            break
+    # Extract metadata containing files to inspect
+    files_to_read = []
+    metadata_match = re.search(r"<!-- METADATA: (.*?) -->", plan, re.DOTALL)
+    if metadata_match:
+        try:
+            metadata = json.loads(metadata_match.group(1))
+            files_to_read = metadata.get("files_to_read", [])
+            print(f"Metadata found. Files to read: {files_to_read}")
+        except Exception as e:
+            print(f"Error parsing metadata: {e}")
             
-        for path in req.paths:
-            if path in repo_files and os.path.exists(path):
-                try:
-                    with open(path, 'r') as f:
-                        inspected_files[path] = f.read()
-                except Exception as e:
-                    print(f"Error reading file {path}: {e}")
-            else:
-                print(f"Requested file does not exist or is excluded: {path}")
+    # Fallback to parsing markdown links in the plan
+    if not files_to_read:
+        print("No metadata found, fallback to parsing markdown links...")
+        for match in re.finditer(r"\[.*?\]\(file:///(.*?)\)", plan):
+            path = match.group(1)
+            if "/Workspace/army_builder/" in path:
+                rel_path = path.split("/Workspace/army_builder/")[-1]
+                if os.path.exists(rel_path) and rel_path not in files_to_read:
+                    files_to_read.append(rel_path)
+            elif os.path.exists(path) and path not in files_to_read:
+                files_to_read.append(path)
+                
+    print(f"Final files to read: {files_to_read}")
+    
+    inspected_files = {}
+    for path in files_to_read:
+        if os.path.exists(path):
+            try:
+                with open(path, 'r') as f:
+                    inspected_files[path] = f.read()
+                print(f"Loaded context file: {path}")
+            except Exception as e:
+                print(f"Error reading file {path}: {e}")
 
     print("Generating code edits...")
     prompt = f"""
-You are an expert React and Node.js developer. Implement the solution for the issue #{issue_number}.
+You are an expert React and Node.js developer.
+Your task is to implement the changes specified in the APPROVED implementation plan for issue #{issue_number}.
+DO NOT perform any independent analysis of the problem or make decisions outside of the plan. Statically and strictly follow the plan steps.
 
 Issue Title: {issue.title}
 Issue Description:
@@ -124,7 +115,7 @@ Issue Description:
 Approved Implementation Plan:
 {plan}
 
-Here are the files you have inspected:
+Here are the contents of the relevant files in the repository:
 """
     for path, content in inspected_files.items():
         prompt += f"\n--- FILE: {path} ---\n{content}\n"
@@ -156,7 +147,7 @@ Provide the modifications in a JSON structure containing a list of files with th
 
     print("Running tests...")
     
-    for test_iteration in range(3):
+    for test_iteration in range(4):
         test_res = subprocess.run(["npm", "test"], capture_output=True, text=True)
         if test_res.returncode == 0:
             print("All tests passed successfully!")
@@ -165,6 +156,9 @@ Provide the modifications in a JSON structure containing a list of files with th
         print(f"Test failure in iteration {test_iteration + 1}:")
         print(test_res.stdout)
         print(test_res.stderr)
+        
+        print("Waiting 2 seconds before requesting fix from Gemini API...")
+        time.sleep(2.0)
         
         current_modifications = ""
         for file_mod in edits.files:

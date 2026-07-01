@@ -8,20 +8,33 @@ from google.genai import types
 from pydantic import BaseModel, Field
 from typing import List
 
+def get_file_list():
+    files = []
+    for root, dirs, filenames in os.walk("."):
+        dirs_to_exclude = ['node_modules', 'dist', '.git', '.agents', '.gemini', 'coverage']
+        dirs[:] = [d for d in dirs if d not in dirs_to_exclude]
+        for f in filenames:
+            if f.endswith('.js') or f.endswith('.jsx') or f.endswith('.css') or f.endswith('.html') or f == 'package.json':
+                files.append(os.path.relpath(os.path.join(root, f), "."))
+    return files
+
 # Define structured output schemas
 class IssueAnalysis(BaseModel):
     labels: List[str] = Field(description="List of labels to apply, e.g. ['bug', 'feature', 'chore']")
     is_clear: bool = Field(description="True if the requirements are clear and complete. False otherwise.")
     questions: List[str] = Field(description="Clarification questions if requirements are not clear. Empty if is_clear is true.")
     implementation_plan: str = Field(description="Markdown implementation plan describing what to change and in which files. Empty if is_clear is false.")
+    files_to_read: List[str] = Field(default=[], description="List of relative file paths in the repo that the implementation agent needs to read.")
+    files_to_modify: List[str] = Field(default=[], description="List of relative file paths in the repo that will be modified or created.")
 
 class CommentAnalysis(BaseModel):
     intent: str = Field(description="The intent of the comment. One of: 'approve' (user wants to approve the plan), 'close' (user wants to close the issue because it is resolved/done/no longer needed), or 'none' (general discussion or question).")
     reply: str = Field(description="A brief response in English to post on the issue if closing or approving. Empty if intent is 'none'.")
 
-def analyze_issue(issue_title: str, issue_body: str, current_comments: List[str]):
+def analyze_issue(issue_title: str, issue_body: str, current_comments: List[str], repo_files: List[str]):
     client = genai.Client()
     comments_str = "\n---\n".join(current_comments)
+    files_tree = "\n".join(repo_files)
     prompt = f"""
 You are an expert project manager and developer assistant.
 Analyze this GitHub issue and its conversation comments to determine if the requirements are clear enough to implement, and what the implementation plan should be.
@@ -34,9 +47,12 @@ Issue Description:
 Recent comments/discussion:
 {comments_str}
 
+Here is the list of files in the repository:
+{files_tree}
+
 Please categorize the issue (e.g. bug, feature, chore) and generate either:
 1. A list of clarification questions in English if the request is ambiguous, lacks context, or is incomplete.
-2. A detailed implementation plan in English if the requirements are completely clear.
+2. A detailed implementation plan in English if the requirements are completely clear. In this case, also specify which files from the repository list above the implementation agent should read to implement the plan, and which files will be modified or created.
 """
 
     response = client.models.generate_content(
@@ -184,7 +200,8 @@ def main():
         print(f"Analyzing issue #{issue_number}: {issue.title}")
         
         comments = [c.body for c in issue.get_comments()]
-        analysis = analyze_issue(issue.title, issue.body, comments)
+        repo_files = get_file_list()
+        analysis = analyze_issue(issue.title, issue.body, comments, repo_files)
         print(f"Analysis result: {analysis}")
         
         for label in analysis.labels:
@@ -213,7 +230,15 @@ def main():
                 if label.name == "needs-clarification":
                     issue.remove_from_labels("needs-clarification")
                     
-            comment_body = f"📋 **Implementation Plan:**\n\n{analysis.implementation_plan}\n\n---\nPlease reply with **'Approved'** (or `/approve`) to start the implementation."
+            metadata = {
+                "files_to_read": analysis.files_to_read if analysis.files_to_read else [],
+                "files_to_modify": analysis.files_to_modify if analysis.files_to_modify else []
+            }
+            comment_body = (
+                f"📋 **Implementation Plan:**\n\n{analysis.implementation_plan}\n\n"
+                f"<!-- METADATA: {json.dumps(metadata)} -->\n\n"
+                f"---\nPlease reply with **'Approved'** (or `/approve`) to start the implementation."
+            )
             issue.create_comment(comment_body)
 
 if __name__ == "__main__":
