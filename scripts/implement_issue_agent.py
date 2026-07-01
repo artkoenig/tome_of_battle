@@ -4,7 +4,7 @@ import json
 import subprocess
 import re
 import asyncio
-from github import Github
+from github import Github, Auth
 from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig
 
 async def main():
@@ -24,11 +24,11 @@ async def main():
         print("Missing required environment variables.")
         sys.exit(1)
 
-    g = Github(github_token)
+    auth = Auth.Token(github_token)
+    g = Github(auth=auth)
     repo = g.get_repo(f"{repo_owner}/{repo_name}")
     issue = repo.get_issue(issue_number)
 
-    # Performance-Optimierung: Alle Kommentare einmal holen
     comments = list(issue.get_comments())
     plan = ""
     for c in reversed(comments):
@@ -42,7 +42,6 @@ async def main():
 
     print(f"Starting implementation for Issue #{issue_number}: {issue.title}")
 
-    # KORREKTUR: Capabilities explizit für Datei-Schreibrechte und Terminal-Ausführung konfigurieren
     config = LocalAgentConfig(
         system_instructions=(
             "You are an expert developer assistant. Your task is to implement the approved changes in the codebase. "
@@ -51,8 +50,8 @@ async def main():
             "and fix any compiler or test errors until they pass."
         ),
         capabilities=CapabilitiesConfig(
-            allow_writes=True,        # Ermöglicht dem Agenten das Editieren/Erstellen von Dateien
-            allow_command_exec=True   # Ermöglicht das Ausführen von 'npm test' im Workspace
+            allow_writes=True,        # Ermöglicht aktives Ändern von Dateien
+            allow_command_exec=True   # Ermöglicht das Testen via npm test
         )
     )
 
@@ -71,17 +70,26 @@ Please check and adhere to the project rules in '.agents/AGENTS.md' and '.agents
 Please implement the changes in the codebase, and verify that the tests pass successfully by running 'npm test'. Do not stop until all tests pass successfully.
 """
 
-    try:
-        async with Agent(config) as agent:
-            response = await agent.chat(prompt)
-            async for token in response:
-                sys.stdout.write(token)
-                sys.stdout.flush()
-            print()
+    max_retries = 3
+    delay = 10
 
-    except Exception as e:
-        print(f"Agent execution encountered an error: {e}", file=sys.stderr)
-        sys.exit(1)
+    for attempt in range(max_retries):
+        try:
+            async with Agent(config) as agent:
+                response = await agent.chat(prompt)
+                async for token in response:
+                    sys.stdout.write(token)
+                    sys.stdout.flush()
+                print()
+            break  # Schleife bei Erfolg verlassen
+        except Exception as e:
+            if "503" in str(e) and attempt < max_retries - 1:
+                print(f"⚠️ Gemini API busy (503) during implementation. Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})", file=sys.stderr)
+                await asyncio.sleep(delay)
+                delay *= 2
+            else:
+                print(f"Agent execution encountered an error: {e}", file=sys.stderr)
+                sys.exit(1)
 
     print("Implementation agent completed successfully.")
     sys.exit(0)

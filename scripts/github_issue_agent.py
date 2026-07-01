@@ -4,7 +4,7 @@ import json
 import subprocess
 import re
 import asyncio
-from github import Github
+from github import Github, Auth
 from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig
 from typing import List
 
@@ -52,7 +52,6 @@ def is_agent_requested(comment_body: str) -> bool:
     return False
 
 def create_or_edit_agent_comment(issue, comment_body: str, existing_comments: List):
-    # Nutze die bereits geladene Liste an Kommentaren statt eines erneuten API-Abrufs
     for c in existing_comments:
         c_author = c.user.login.lower() if c.user else ""
         if "bot" in c_author or "github-actions" in c_author:
@@ -101,12 +100,24 @@ Do not include any explanation or extra text outside the JSON. Return only the J
         ),
         capabilities=CapabilitiesConfig(allow_writes=True)
     )
-    async with Agent(config) as agent:
-        response = await agent.chat(prompt)
-        text = ""
-        async for token in response:
-            text += token
-        return parse_json_response(text)
+
+    max_retries = 3
+    delay = 5
+    for attempt in range(max_retries):
+        try:
+            async with Agent(config) as agent:
+                response = await agent.chat(prompt)
+                text = ""
+                async for token in response:
+                    text += token
+                return parse_json_response(text)
+        except Exception as e:
+            if "503" in str(e) and attempt < max_retries - 1:
+                print(f"⚠️ Gemini API busy (503). Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
+                await asyncio.sleep(delay)
+                delay *= 2
+            else:
+                raise e
 
 async def analyze_comment(issue_title: str, issue_body: str, comment_body: str, comment_author: str, comments: List[str]) -> dict:
     comments_history = "\n---\n".join(comments[-10:]) if comments else "No previous comments."
@@ -142,12 +153,24 @@ Do not include any explanation or extra text outside the JSON. Return only the J
             "Do not include any conversation or explanation outside the JSON."
         )
     )
-    async with Agent(config) as agent:
-        response = await agent.chat(prompt)
-        text = ""
-        async for token in response:
-            text += token
-        return parse_json_response(text)
+
+    max_retries = 3
+    delay = 5
+    for attempt in range(max_retries):
+        try:
+            async with Agent(config) as agent:
+                response = await agent.chat(prompt)
+                text = ""
+                async for token in response:
+                    text += token
+                return parse_json_response(text)
+        except Exception as e:
+            if "503" in str(e) and attempt < max_retries - 1:
+                print(f"⚠️ Gemini API busy (503). Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
+                await asyncio.sleep(delay)
+                delay *= 2
+            else:
+                raise e
 
 async def main():
     api_key = os.getenv("GEMINI_API_KEY")
@@ -165,11 +188,12 @@ async def main():
 
     issue_number = int(issue_number_str)
 
-    g = Github(github_token)
+    # Bereinigte PyGithub Authentifizierung ohne Deprecation Warning
+    auth = Auth.Token(github_token)
+    g = Github(auth=auth)
     repo = g.get_repo(f"{repo_owner}/{repo_name}")
     issue = repo.get_issue(issue_number)
 
-    # Einmalig abrufen und als Liste cachen, um API-Limits zu sparen
     issue_comments = list(issue.get_comments())
     comments_bodies = [c.body for c in issue_comments]
 
@@ -192,7 +216,6 @@ async def main():
         comment_reply = comment_res.get("reply", "")
         print(f"Comment analysis: {comment_intent}")
 
-        # Sicherer Berechtigungs-Check für externe User
         try:
             permission = repo.get_collaborator_permission(comment_author)
             has_write_access = permission in ["admin", "write"]
@@ -228,7 +251,6 @@ async def main():
             issue_comment = issue.create_comment(comment_reply if comment_reply else "🚀 **Approval granted.** The implementation agent is starting the changes...")
 
             try:
-                # Git User-Konfiguration für CI/CD Umgebungen setzen
                 subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
                 subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
 
