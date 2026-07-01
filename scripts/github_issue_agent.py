@@ -198,6 +198,8 @@ You are an expert developer assistant.
 Analyze this GitHub issue and its conversation comments against the codebase to find the concrete root cause of the problem and describe the exact code changes needed.
 Both the clarification questions and the implementation plan MUST be written in English.
 
+CRITICAL DIRECTIVE: The original Issue Title and Issue Description define the primary goal. You must never lose sight of this original goal. The comments and discussion should only be used to clarify requirements, resolve ambiguity, or adjust implementation details, but they must never derail the core goal of the issue.
+
 Issue Title: {issue_title}
 Issue Description:
 {issue_body}
@@ -228,14 +230,18 @@ Please categorize the issue (e.g. bug, feature, chore) and generate either:
     )
     return IssueAnalysis.model_validate_json(response.text)
 
-def analyze_comment(issue_title: str, issue_body: str, comment_body: str, comment_author: str):
+def analyze_comment(issue_title: str, issue_body: str, comment_body: str, comment_author: str, comments: List[str]):
     client = genai.Client()
+    comments_history = "\n---\n".join(comments[-10:]) if comments else "No previous comments."
     prompt = f"""
-You are an expert developer assistant. Analyze the latest comment on this GitHub issue.
+You are an expert developer assistant. Analyze the latest comment on this GitHub issue in the context of the entire conversation.
 
 Issue Title: {issue_title}
 Issue Description:
 {issue_body}
+
+Recent conversation history (oldest to newest):
+{comments_history}
 
 Latest Comment by {comment_author}:
 {comment_body}
@@ -261,6 +267,21 @@ Otherwise, leave 'reply' empty.
         ),
     )
     return CommentAnalysis.model_validate_json(response.text)
+
+def create_or_edit_agent_comment(issue, comment_body: str):
+    # Search for an existing agent comment containing plan or clarification questions
+    for c in issue.get_comments():
+        c_author = c.user.login.lower() if c.user else ""
+        if "bot" in c_author or "github-actions" in c_author:
+            # Check if it's the plan or questions comment
+            if "Implementation Plan:" in c.body or "needs clarification on the following questions:" in c.body:
+                print(f"Editing existing agent comment #{c.id}")
+                c.edit(comment_body)
+                return
+    
+    # If not found, create a new one
+    print("Creating new agent comment")
+    issue.create_comment(comment_body)
 
 def is_agent_requested(comment_body: str) -> bool:
     if not comment_body:
@@ -317,7 +338,8 @@ def main():
             print("Comment does not address/request the agent. Exiting early.")
             sys.exit(0)
             
-        comment_analysis = analyze_comment(issue.title, issue.body, comment_body, comment_author)
+        comments = [c.body for c in issue.get_comments()]
+        comment_analysis = analyze_comment(issue.title, issue.body, comment_body, comment_author, comments)
         print(f"Comment analysis: {comment_analysis.intent}")
         
         permission = repo.get_collaborator_permission(comment_author)
@@ -424,7 +446,7 @@ def main():
                 f"Please reply directly to this ticket.\n\n"
                 f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
             )
-            issue.create_comment(comment_body)
+            create_or_edit_agent_comment(issue, comment_body)
         else:
             for label in issue.labels:
                 if label.name == "needs-clarification":
@@ -441,7 +463,7 @@ def main():
                 f"Please reply with **'Approved'** (or `/approve`) to start the implementation.\n\n"
                 f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
             )
-            issue.create_comment(comment_body)
+            create_or_edit_agent_comment(issue, comment_body)
 
 if __name__ == "__main__":
     main()

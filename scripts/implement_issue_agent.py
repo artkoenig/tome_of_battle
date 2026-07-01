@@ -136,7 +136,7 @@ def main():
 
     comments = [c.body for c in issue.get_comments()]
     plan = ""
-    for c in comments:
+    for c in reversed(comments):
         if "Implementation Plan:" in c:
             plan = c
             break
@@ -201,6 +201,8 @@ def main():
 You are an expert React and Node.js developer.
 Your task is to implement the changes specified in the APPROVED implementation plan for issue #{issue_number}.
 DO NOT perform any independent analysis of the problem or make decisions outside of the plan. Statically and strictly follow the plan steps.
+
+CRITICAL DIRECTIVE: The core objective is defined by the Issue Title and Issue Description. The Approved Implementation Plan provides the steps to achieve this objective. Ensure the implementation directly resolves the original goal without getting distracted by unrelated details.
 
 Issue Title: {issue.title}
 Issue Description:
