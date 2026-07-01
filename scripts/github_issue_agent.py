@@ -168,7 +168,7 @@ class IssueAnalysis(BaseModel):
     labels: List[str] = Field(description="List of labels to apply, e.g. ['bug', 'feature', 'chore']")
     is_clear: bool = Field(description="True if the requirements are clear and complete. False otherwise.")
     questions: List[str] = Field(description="Clarification questions if requirements are not clear. Empty if is_clear is true.")
-    implementation_plan: str = Field(description="Markdown implementation plan describing what to change and in which files. Empty if is_clear is false.")
+    implementation_plan: str = Field(description="Markdown implementation plan describing what to change and in which files. Keep it very concise and brief, avoiding long explanations or complete code listings. Empty if is_clear is false.")
     files_to_read: List[str] = Field(default=[], description="List of relative file paths in the repo that the implementation agent needs to read.")
     files_to_modify: List[str] = Field(default=[], description="List of relative file paths in the repo that will be modified or created.")
 
@@ -199,9 +199,10 @@ Here are the relevant source code files and catalog data from the repository:
 {files_context}
 
 Please categorize the issue (e.g. bug, feature, chore) and generate either:
-1. A list of clarification questions in English if the request is ambiguous, lacks context, or is incomplete.
-2. A detailed implementation plan in English if the requirements are completely clear.
-   Crucially, this plan must identify the exact files, lines, and describe the precise code modifications needed to resolve the issue, rather than generic debugging instructions.
+1. A list of clarification questions in English if the request is ambiguous, lacks context, or is incomplete. Keep questions brief.
+2. A concise implementation plan in English if the requirements are completely clear.
+   Crucially, this plan must identify the exact files, lines, and describe the precise code modifications needed to resolve the issue in a few sentences/bullet points.
+   Do NOT include long explanations, commentary, or full code blocks in the plan, as the implementation agent will generate the actual code. Keep the plan as short as possible while remaining precise.
    Also specify which files the implementation agent needs to read (files_to_read) and which files will be modified or created (files_to_modify).
 """
 
