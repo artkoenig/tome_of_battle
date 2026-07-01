@@ -28,11 +28,12 @@ async def main():
     repo = g.get_repo(f"{repo_owner}/{repo_name}")
     issue = repo.get_issue(issue_number)
 
-    comments = [c.body for c in issue.get_comments()]
+    # Performance-Optimierung: Alle Kommentare einmal holen
+    comments = list(issue.get_comments())
     plan = ""
     for c in reversed(comments):
-        if "Implementation Plan:" in c:
-            plan = c
+        if "Implementation Plan:" in c.body:
+            plan = c.body
             break
 
     if not plan:
@@ -40,8 +41,8 @@ async def main():
         sys.exit(1)
 
     print(f"Starting implementation for Issue #{issue_number}: {issue.title}")
-    
-    # Spawn a write-enabled Antigravity Agent to perform the changes and verify
+
+    # KORREKTUR: Capabilities explizit für Datei-Schreibrechte und Terminal-Ausführung konfigurieren
     config = LocalAgentConfig(
         system_instructions=(
             "You are an expert developer assistant. Your task is to implement the approved changes in the codebase. "
@@ -49,7 +50,10 @@ async def main():
             "You have full write access and command execution capabilities. Verify all changes by running 'npm test' "
             "and fix any compiler or test errors until they pass."
         ),
-        capabilities=CapabilitiesConfig() # Enables file editing and shell execution
+        capabilities=CapabilitiesConfig(
+            allow_writes=True,        # Ermöglicht dem Agenten das Editieren/Erstellen von Dateien
+            allow_command_exec=True   # Ermöglicht das Ausführen von 'npm test' im Workspace
+        )
     )
 
     prompt = f"""
@@ -67,12 +71,17 @@ Please check and adhere to the project rules in '.agents/AGENTS.md' and '.agents
 Please implement the changes in the codebase, and verify that the tests pass successfully by running 'npm test'. Do not stop until all tests pass successfully.
 """
 
-    async with Agent(config) as agent:
-        response = await agent.chat(prompt)
-        async for token in response:
-            sys.stdout.write(token)
-            sys.stdout.flush()
-        print()
+    try:
+        async with Agent(config) as agent:
+            response = await agent.chat(prompt)
+            async for token in response:
+                sys.stdout.write(token)
+                sys.stdout.flush()
+            print()
+
+    except Exception as e:
+        print(f"Agent execution encountered an error: {e}", file=sys.stderr)
+        sys.exit(1)
 
     print("Implementation agent completed successfully.")
     sys.exit(0)

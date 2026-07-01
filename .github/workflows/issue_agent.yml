@@ -18,34 +18,30 @@ jobs:
       (github.event_name == 'issue_comment' && github.event.comment.user.login != 'github-actions[bot]')
     runs-on: ubuntu-latest
     steps:
-      # AKTUALISIERT: von @v4 auf @v5
+      # Korrigiert auf die reale, stabile Version v4
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # AKTUALISIERT: von @v5 auf @v6
+      # Korrigiert auf die reale, stabile Version v5
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      # AKTUALISIERT: von @v4 auf @v5
+      # Korrigiert auf die reale, stabile Version v4
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
+      # JETZT KORREKT: google-antigravity wird installiert
       - name: Install dependencies
         run: |
-          pip install google-genai PyGithub
+          pip install google-antigravity PyGithub
           npm ci
-
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Run Issue Agent
         env:
