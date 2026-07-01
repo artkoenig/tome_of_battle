@@ -37,8 +37,10 @@ Hier sind die zentralen architektonischen und fachlichen Lektionen für den Umga
 
 ## 5. Umgang mit speziellen Options-Typen
 
-* **Collective Entries (`collective="true"`):**
-  Sogenannte "Collective Entries" teilen sich ihre Menge mit der ihres Parents (z. B. Ausrüstung, die jedes Modell einer Einheit erhält). Die Kosten- und Constraint-Evaluierung muss hier dynamisch als Produkt aus der Menge der übergeordneten Einheit und der Option berechnet werden, da sich die Gesamtzahl ändert, wenn die Größe der Grundeinheit angepasst wird.
+* **Multiplikator durch Eltern-Einheiten (`collective="true"` vs. `"false"`):**
+  In Battlescribe werden die Kosten und Mengen **aller** untergeordneten Auswahlen (z. B. Waffen, Besatzung) *immer* mit der Anzahl der übergeordneten Einheit (dem Parent) multipliziert. Dies gilt **unabhängig** davon, ob eine Auswahl als `collective="true"` oder `collective="false"` markiert ist.
+  * `collective` steuert in Battlescribe **nur die Darstellung im UI**: `true` bedeutet, dass alle Instanzen als eine einzige kumulierte Zeile (z. B. "10x Speer") angezeigt werden. `false` erlaubt es theoretisch, dem Parent mehrere separate, individualisierbare Instanzen (z. B. "1x Speer", "1x Schwert") hinzuzufügen.
+  * **Wichtig:** Bei der Berechnung von Kosten (Punkte) oder dem Evaluieren von Mengen-Limits (Constraints) muss der interne Zähler einer Kind-Auswahl (`number`) *zwingend* immer mit dem Zähler der Eltern-Auswahl multipliziert werden (`effectiveCount = child.number * parent.number`), andernfalls fehlen die Punkte und Mengen für alle weiteren Modelle der Einheit.
 * **Exklusive Gruppen (`max="1"`):**
   Wenn Auswahl-Gruppen in Battlescribe das Limit `max="1"` besitzen (z. B. die Wahl der Blutlinie), handelt es sich nicht um limitierte, zählbare Objekte, sondern um *sich gegenseitig ausschließende Optionen*. Diese müssen bei der Erfassung strikt exklusiv (z. B. als Radio-Buttons/Checkboxes) behandelt werden.
 
