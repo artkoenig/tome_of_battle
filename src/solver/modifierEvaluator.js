@@ -118,12 +118,37 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
     const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
 
     if (condsPass && groupsPass) {
-      let modAmount = mod.valueObject;
+      let modAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
 
       if (mod.repeat) {
         let currentValue = 0;
         const { roster, selectionCounts = {}, forceCategoryCounts = {} } = ctx;
-        if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
+        if (mod.repeat.scope === 'parent' && ctx.parentSelection && ctx.parentSelection.selections) {
+          const { parentSelection, parentCatalogueId, system } = ctx;
+          const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
+          const targetId = mod.repeat.childId || mod.repeat.field;
+          
+          const countMatches = (list) => (list || []).reduce((sum, s) => {
+            let isMatch = false;
+            const sId = s.entryLinkId || s.selectionEntryId;
+            if (sId === targetId) {
+              isMatch = true;
+            } else if (system) {
+              const raw = findEntryInSystem(system, sId, catId);
+              const res = raw && resolveEntry(system, raw, catId);
+              if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
+              if (targetId === 'model' && res && res.type === 'model') isMatch = true;
+            }
+            
+            let acc = sum + (isMatch ? (s.number || 1) : 0);
+            if (mod.repeat.includeChildSelections && s.selections) {
+              acc += countMatches(s.selections);
+            }
+            return acc;
+          }, 0);
+          
+          currentValue = countMatches(parentSelection.selections);
+        } else if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
           currentValue = roster?.costLimit || 0;
         } else if (mod.repeat.childId) {
           currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;
@@ -131,8 +156,8 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
           currentValue = selectionCounts[mod.repeat.field] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.field]) || 0;
         }
 
-        const repVal = mod.repeat.value ? Math.floor(currentValue / mod.repeat.value) : 0;
-        modAmount = mod.valueObject * repVal * (mod.repeat.repeats || 1);
+        const repVal = mod.repeat.value ? (mod.repeat.roundUp ? Math.ceil(currentValue / mod.repeat.value) : Math.floor(currentValue / mod.repeat.value)) : 0;
+        modAmount = modAmount * repVal * (mod.repeat.repeats || 1);
       }
 
       if (mod.type === 'set') {

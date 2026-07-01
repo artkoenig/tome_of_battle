@@ -1538,5 +1538,99 @@ test('collectUnitProfilesAndRules handles optional upgrades and mandatory models
   expect(hasBoarProfileWhenSelected).toBe(true);
 });
 
+console.log('--- Cost Modifier Evaluation Test ---');
+const costModifierSystem = {
+  id: 'sys-cost-mod',
+  catalogues: [
+    {
+      id: 'cat-cost-mod',
+      sharedSelectionEntries: [
+        {
+          id: 'unit-boyz',
+          name: 'Orc Boyz',
+          selectionEntries: [
+            {
+              id: 'model-orc',
+              name: 'Orc Boy',
+              type: 'model',
+              constraints: [{ type: 'min', value: 10 }]
+            },
+            {
+              id: 'upgrade-spears',
+              name: 'Spears',
+              type: 'upgrade',
+              modifiers: [
+                {
+                  type: 'increment',
+                  field: 'pts',
+                  value: '1.0',
+                  repeat: {
+                    field: 'selections',
+                    scope: 'parent',
+                    childId: 'model-orc',
+                    value: 1,
+                    repeats: 1
+                  }
+                }
+              ],
+              costs: [{ typeId: 'pts', value: 0 }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const costModifierRoster = {
+  catalogueId: 'cat-cost-mod',
+  costLimit: 2000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'force-1',
+      catalogueId: 'cat-cost-mod',
+      selections: [
+        {
+          id: 'sel-boyz',
+          selectionEntryId: 'unit-boyz',
+          number: 1,
+          selections: [
+            {
+              id: 'sel-orc',
+              selectionEntryId: 'model-orc',
+              number: 10
+            },
+            {
+              id: 'sel-spears',
+              selectionEntryId: 'upgrade-spears',
+              number: 1,
+              costs: [{ typeId: 'pts', value: 0 }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+test('cost modifier evaluation on selection with parent scope repeat', () => {
+  const ctx = {
+    roster: costModifierRoster,
+    system: costModifierSystem,
+    selectionCounts: { 'model-orc': 10 },
+    forceCategoryCounts: {},
+    selection: null,
+    parentSelection: costModifierRoster.forces[0].selections[0],
+    parentCatalogueId: 'cat-cost-mod'
+  };
+  const option = costModifierSystem.catalogues[0].sharedSelectionEntries[0].selectionEntries[1];
+  const displayCost = getOptionDisplayCost(costModifierSystem, option, 'pts', ctx);
+  expect(displayCost).toBe(10);
+
+  const rosterCosts = calculateRosterCosts(costModifierRoster, costModifierSystem);
+  expect(rosterCosts['pts']).toBe(10);
+});
+
 console.log('--- TEST RUN COMPLETE ---');
 console.log('--- TEST RUN COMPLETE ---');

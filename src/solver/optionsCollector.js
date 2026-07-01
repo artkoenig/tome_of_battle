@@ -97,7 +97,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
   };
 
   const isIndependentSubUnit = (res) => {
-    return res && res.type === 'unit' && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
+    return res && (res.type === 'unit' || res.type === 'model') && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
   };
 
   collectOptions(resolved);

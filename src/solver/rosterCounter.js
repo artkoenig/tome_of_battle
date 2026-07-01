@@ -1,10 +1,11 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+import { getModifiedConstraintValue } from './modifierEvaluator.js';
 
 /**
  * Recursively computes the display cost of an option definition, including its base cost
  * and the costs of any mandatory sub-selections (min > 0).
  */
-export function getOptionDisplayCost(system, entry, costLimitType) {
+export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
   let resolved = resolveEntry(system, entry);
   if (!resolved) return 0;
 
@@ -19,14 +20,26 @@ export function getOptionDisplayCost(system, entry, costLimitType) {
   let total = 0;
   
   // 1. Direct cost of this entry
-  const directCost = resolved.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
+  let directCost = resolved.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
+
+  // Apply cost modifiers if any
+  const costType = resolved.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts');
+  let modifiers = resolved.modifiers || [];
+  if (entry.modifiers && entry.modifiers !== resolved.modifiers) {
+    modifiers = modifiers.concat(entry.modifiers);
+  }
+  if (costType && modifiers.length > 0 && ctx && Object.keys(ctx).length > 0) {
+    const tempCon = { id: costType.typeId, value: directCost };
+    directCost = getModifiedConstraintValue(tempCon, modifiers, ctx);
+  }
+
   total += directCost;
 
   // 2. Direct costs of mandatory child selection entries
   resolved.selectionEntries?.forEach(child => {
     const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
     if (minCon > 0) {
-      total += getOptionDisplayCost(system, child, costLimitType) * minCon;
+      total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
     }
   });
 
@@ -34,7 +47,7 @@ export function getOptionDisplayCost(system, entry, costLimitType) {
   resolved.entryLinks?.forEach(child => {
     const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
     if (minCon > 0) {
-      total += getOptionDisplayCost(system, child, costLimitType) * minCon;
+      total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
     }
   });
 
@@ -43,7 +56,7 @@ export function getOptionDisplayCost(system, entry, costLimitType) {
     const minCon = group.constraints?.find(c => c.type === 'min')?.value || 0;
     if (minCon > 0 && (group.selectionEntries?.length > 0 || group.entryLinks?.length > 0)) {
       const firstOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
-      total += getOptionDisplayCost(system, firstOption, costLimitType) * minCon;
+      total += getOptionDisplayCost(system, firstOption, costLimitType, ctx) * minCon;
     }
   });
 
@@ -53,18 +66,57 @@ export function getOptionDisplayCost(system, entry, costLimitType) {
 /**
  * Recursively calculates the total cost of a selection node and all its child selections.
  */
-export function getSelectionTotalCost(selection, costLimitType, parentCount = 1) {
+export function getSelectionTotalCost(selection, costLimitType, parentCount = 1, system = null, roster = null, currentCatalogueId = null, parentSelection = null, counts = null) {
   let total = 0;
   const effectiveCount = (selection.number || 1) * parentCount;
   if (selection.costs) {
     const cost = selection.costs.find(c => c.typeId === costLimitType || c.typeId === 'pts');
     if (cost) {
-      total += (cost.value || 0) * effectiveCount;
+      let costValue = cost.value || 0;
+      if (system && roster) {
+        const entryId = selection.selectionEntryId || selection.entryLinkId;
+        const entryDef = entryId ? findEntryInSystem(system, entryId, currentCatalogueId) : null;
+        const resolved = entryDef ? resolveEntry(system, entryDef, currentCatalogueId) : null;
+        let modifiers = resolved?.modifiers || [];
+        if (selection.modifiers && selection.modifiers !== resolved?.modifiers) {
+          modifiers = modifiers.concat(selection.modifiers);
+        }
+        
+        if (modifiers.length > 0) {
+          const { selectionCounts, categoryCounts } = counts || computeRosterCounts(roster, system);
+          const activeForceId = roster.forces ? roster.forces.find(force => {
+            const containsSel = (list) => {
+              if (!list) return false;
+              for (const s of list) {
+                if (s.id === selection.id) return true;
+                if (containsSel(s.selections)) return true;
+              }
+              return false;
+            };
+            return containsSel(force.selections);
+          })?.id : null;
+          const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
+
+          const ctx = {
+            roster,
+            system,
+            selectionCounts,
+            forceCategoryCounts,
+            selection,
+            parentSelection,
+            parentCatalogueId: currentCatalogueId
+          };
+
+          const tempCon = { id: cost.typeId, value: costValue };
+          costValue = getModifiedConstraintValue(tempCon, modifiers, ctx);
+        }
+      }
+      total += costValue * effectiveCount;
     }
   }
   if (selection.selections) {
     selection.selections.forEach(child => {
-      total += getSelectionTotalCost(child, costLimitType, effectiveCount);
+      total += getSelectionTotalCost(child, costLimitType, effectiveCount, system, roster, currentCatalogueId, selection, counts);
     });
   }
   return total;
@@ -84,12 +136,53 @@ export function calculateRosterCosts(roster, system) {
     });
   }
 
-  const addSelectionCosts = (selection, parentCount = 1) => {
+  const counts = (roster && system) ? computeRosterCounts(roster, system) : null;
+
+  const addSelectionCosts = (selection, parentCount = 1, currentCatalogueId = null, parentSelection = null) => {
     const effectiveCount = (selection.number || 1) * parentCount;
     // A selection has a list of costs (usually parsed from its template)
     if (selection.costs) {
       selection.costs.forEach(cost => {
-        const val = (cost.value || 0) * effectiveCount;
+        let costValue = cost.value || 0;
+
+        if (system && roster && counts) {
+          const entryId = selection.selectionEntryId || selection.entryLinkId;
+          const entryDef = entryId ? findEntryInSystem(system, entryId, currentCatalogueId) : null;
+          const resolved = entryDef ? resolveEntry(system, entryDef, currentCatalogueId) : null;
+          let modifiers = resolved?.modifiers || [];
+          if (selection.modifiers && selection.modifiers !== resolved?.modifiers) {
+            modifiers = modifiers.concat(selection.modifiers);
+          }
+          if (modifiers.length > 0) {
+            const activeForceId = roster.forces ? roster.forces.find(force => {
+              const containsSel = (list) => {
+                if (!list) return false;
+                for (const s of list) {
+                  if (s.id === selection.id) return true;
+                  if (containsSel(s.selections)) return true;
+                }
+                return false;
+              };
+              return containsSel(force.selections);
+            })?.id : null;
+            const forceCategoryCounts = activeForceId ? (counts.categoryCounts[activeForceId] || {}) : {};
+
+            const ctx = {
+              roster,
+              system,
+              selectionCounts: counts.selectionCounts,
+              forceCategoryCounts,
+              selection,
+              parentSelection,
+              parentCatalogueId: currentCatalogueId
+            };
+
+            const tempCon = { id: cost.typeId, value: costValue };
+            costValue = getModifiedConstraintValue(tempCon, modifiers, ctx);
+          }
+        }
+
+        const val = costValue * effectiveCount;
         totals[cost.typeId] = (totals[cost.typeId] || 0) + val;
       });
     }
@@ -99,15 +192,16 @@ export function calculateRosterCosts(roster, system) {
       selection.selections.forEach(child => {
         // Multiply child costs by parent's count if collective is false,
         // but typically in BS child selection count stands on its own.
-        addSelectionCosts(child, effectiveCount);
+        addSelectionCosts(child, effectiveCount, currentCatalogueId, selection);
       });
     }
   };
 
   if (roster && roster.forces) {
     roster.forces.forEach(force => {
+      const currentCatalogueId = force.catalogueId || roster.catalogueId;
       if (force.selections) {
-        force.selections.forEach(sel => addSelectionCosts(sel));
+        force.selections.forEach(sel => addSelectionCosts(sel, 1, currentCatalogueId, null));
       }
     });
   }

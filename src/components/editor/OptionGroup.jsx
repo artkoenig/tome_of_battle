@@ -80,10 +80,20 @@ export default function OptionGroupComponent({
     return sum + (res ? getSubSelectionCount(selection, res.id) : 0);
   }, 0);
 
+  const displayCtx = {
+    roster,
+    system,
+    selectionCounts,
+    forceCategoryCounts,
+    selection: null,
+    parentSelection: selection,
+    parentCatalogueId: activeCatalogue.id
+  };
+
   const currentPoints = group.items.reduce((sum, item) => {
     const res = resolveEntry(system, item.option, activeCatalogue.id);
     const count = res ? getSubSelectionCount(selection, res.id) : 0;
-    const points = getOptionDisplayCost(system, item.option, roster.costLimitType);
+    const points = getOptionDisplayCost(system, item.option, roster.costLimitType, displayCtx);
     return sum + (points * count);
   }, 0);
 
@@ -103,7 +113,7 @@ export default function OptionGroupComponent({
         const subId = sub.entryLinkId || sub.selectionEntryId;
         if (con.groupItemIds.has(subId)) {
           const count = sub.number || 1;
-          const pts = getSelectionTotalCost(sub, roster.costLimitType);
+          const pts = getSelectionTotalCost(sub, roster.costLimitType, 1, system, roster, activeCatalogue.id, selection, { selectionCounts, categoryCounts });
           sumCount += count;
           sumPoints += pts;
         }
@@ -188,15 +198,15 @@ export default function OptionGroupComponent({
             .slice()
             .sort((a, b) => {
                const costType = roster?.costLimitType || 'pts';
-               const aPoints = getOptionDisplayCost(system, a.option, costType) || 0;
-               const bPoints = getOptionDisplayCost(system, b.option, costType) || 0;
+               const aPoints = getOptionDisplayCost(system, a.option, costType, displayCtx) || 0;
+               const bPoints = getOptionDisplayCost(system, b.option, costType, displayCtx) || 0;
                return bPoints - aPoints; // Descending
             })
             .map(({ option, groupConstraints, parentDefId }) => {
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
-            const basePoints = getOptionDisplayCost(system, option, roster.costLimitType);
+            const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
             const filteredOptionConstraints = res.constraints?.filter(con => {
               if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
                 return true;

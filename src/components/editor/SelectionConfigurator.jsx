@@ -27,6 +27,30 @@ export default function SelectionConfigurator({
 }) {
   const { showDebugIds } = useDebugMode();
 
+  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
+  const activeForceId = roster.forces ? roster.forces.find(force => {
+    const containsSel = (list) => {
+      if (!list) return false;
+      for (const s of list) {
+        if (s.id === selection.id) return true;
+        if (containsSel(s.selections)) return true;
+      }
+      return false;
+    };
+    return containsSel(force.selections);
+  })?.id : null;
+  const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
+
+  const displayCtx = {
+    roster,
+    system,
+    selectionCounts,
+    forceCategoryCounts,
+    selection: null,
+    parentSelection: selection,
+    parentCatalogueId: activeCatalogue?.id
+  };
+
   // Helper to compile a clean description string for an upgrade/magic item
   const getOptionDescription = (res) => {
     if (!res) return '';
@@ -131,7 +155,7 @@ export default function SelectionConfigurator({
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
-            const basePoints = getOptionDisplayCost(system, option, roster.costLimitType);
+            const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
             const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
             const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
             const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
@@ -173,7 +197,7 @@ export default function SelectionConfigurator({
                      (entry.selectionEntryGroups && entry.selectionEntryGroups.length > 0);
             };
 
-            const isIndependentSubUnit = res && res.type === 'unit' && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
+            const isIndependentSubUnit = res && (res.type === 'unit' || res.type === 'model') && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
 
             const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
             const handleRowClick = (e) => {

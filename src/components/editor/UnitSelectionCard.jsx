@@ -119,7 +119,7 @@ export default function UnitSelectionCard({
                  (entryNode.entryLinks && entryNode.entryLinks.length > 0) ||
                  (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
         };
-        const isIndependent = resolved && resolved.type === 'unit' && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+        const isIndependent = resolved && (resolved.type === 'unit' || resolved.type === 'model') && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
         
         if (resolved && !isIndependent) {
           list.push({
@@ -226,7 +226,7 @@ export default function UnitSelectionCard({
              (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
     };
     
-    return resolved && resolved.type === 'unit' && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+    return resolved && (resolved.type === 'unit' || resolved.type === 'model') && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
   });
 
   return (
