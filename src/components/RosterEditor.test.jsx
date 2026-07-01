@@ -154,14 +154,14 @@ describe('RosterEditor Component', () => {
     expect(screen.getByText('420 / 1000 Pkt.')).toBeDefined();
   });
 
-  it('sorts units in categories descending by cost', () => {
+  it('keeps units within a category in their original (insertion) order', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
     const unitCards = screen.getAllByTestId(/unit-card-sel-/);
-    
-    // Core has sel-2 (120 pts) and sel-3 (200 pts). Due to descending sorting:
-    // sel-3 should appear first in DOM before sel-2
-    expect(unitCards[1].textContent).toContain('Knights of the Realm');
-    expect(unitCards[2].textContent).toContain('Knights Errant');
+
+    // Core has sel-2 (Knights Errant) added before sel-3 (Knights of the Realm).
+    // Units must not be re-sorted by cost, so insertion order is preserved.
+    expect(unitCards[1].textContent).toContain('Knights Errant');
+    expect(unitCards[2].textContent).toContain('Knights of the Realm');
   });
 
   it('does not render a manual save button (uses auto-save)', () => {

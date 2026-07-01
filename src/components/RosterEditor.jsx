@@ -3,7 +3,7 @@ import { Play, AlertTriangle, Check, ArrowLeft } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
-import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, getSelectionTotalCost } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, resolveEntry } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -205,13 +205,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       {selections.length > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {selections
-                            .slice()
-                            .sort((a, b) => {
-                              const costType = roster.costLimitType || 'pts';
-                              const aPoints = getSelectionTotalCost(a, costType);
-                              const bPoints = getSelectionTotalCost(b, costType);
-                              return bPoints - aPoints; // Descending
-                            })
                             .map(selection => {
                             return (
                               <UnitSelectionCard
