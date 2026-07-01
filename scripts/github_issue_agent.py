@@ -35,15 +35,69 @@ def generate_content_with_retry(client, model, contents, config, max_retries=5):
                 raise e
     raise Exception(f"Failed to generate content after {max_retries} retries due to rate limits.")
 
-def get_file_list():
-    files = []
+def get_core_file_contents():
+    contents = {}
     for root, dirs, filenames in os.walk("."):
         dirs_to_exclude = ['node_modules', 'dist', '.git', '.agents', '.gemini', 'coverage']
         dirs[:] = [d for d in dirs if d not in dirs_to_exclude]
         for f in filenames:
-            if f.endswith('.js') or f.endswith('.jsx') or f.endswith('.css') or f.endswith('.html') or f == 'package.json':
-                files.append(os.path.relpath(os.path.join(root, f), "."))
-    return files
+            path = os.path.relpath(os.path.join(root, f), ".")
+            if (f.endswith('.js') or f.endswith('.jsx') or f == 'package.json') and not '.test.' in f:
+                if any(x in f for x in ['stress', 'walkthrough', 'generate_screenshots', 'verify_revert']):
+                    continue
+                try:
+                    with open(path, 'r', encoding='utf-8') as file_obj:
+                        contents[path] = file_obj.read()
+                except Exception as e:
+                    print(f"Error reading {path}: {e}")
+    return contents
+
+def find_relevant_catalogs(issue_title: str, issue_body: str):
+    text = f"{issue_title} {issue_body}".lower()
+    words = set(re.findall(r"\b[a-z]{4,}\b", text))
+    
+    contents = {}
+    catalog_dir = "catalogs"
+    if not os.path.exists(catalog_dir):
+        return contents
+        
+    cat_files = []
+    for root, dirs, filenames in os.walk(catalog_dir):
+        for f in filenames:
+            path = os.path.relpath(os.path.join(root, f), ".")
+            if f.endswith('.gst'):
+                try:
+                    with open(path, 'r', encoding='utf-8') as file_obj:
+                        contents[path] = file_obj.read()
+                    print(f"GST file always included: {path}")
+                except Exception as e:
+                    print(f"Error reading GST {path}: {e}")
+            elif f.endswith('.cat'):
+                cat_files.append(path)
+                
+    matched_cats = []
+    for path in cat_files:
+        try:
+            with open(path, 'r', encoding='utf-8') as file_obj:
+                content = file_obj.read().lower()
+                matches = sum(1 for w in words if w in content)
+                if matches > 0:
+                    matched_cats.append((path, matches))
+        except Exception as e:
+            print(f"Error reading CAT {path}: {e}")
+            
+    matched_cats.sort(key=lambda x: x[1], reverse=True)
+    top_cats = [path for path, _ in matched_cats[:2]]
+    print(f"Top relevant CAT files matched: {top_cats}")
+    
+    for path in top_cats:
+        try:
+            with open(path, 'r', encoding='utf-8') as file_obj:
+                contents[path] = file_obj.read()
+        except Exception as e:
+            print(f"Error reading matched CAT {path}: {e}")
+            
+    return contents
 
 # Define structured output schemas
 class IssueAnalysis(BaseModel):
@@ -58,13 +112,16 @@ class CommentAnalysis(BaseModel):
     intent: str = Field(description="The intent of the comment. One of: 'approve' (user wants to approve the plan), 'close' (user wants to close the issue because it is resolved/done/no longer needed), or 'none' (general discussion or question).")
     reply: str = Field(description="A brief response in English to post on the issue if closing or approving. Empty if intent is 'none'.")
 
-def analyze_issue(issue_title: str, issue_body: str, current_comments: List[str], repo_files: List[str]):
+def analyze_issue(issue_title: str, issue_body: str, current_comments: List[str], core_files: dict):
     client = genai.Client()
     comments_str = "\n---\n".join(current_comments)
-    files_tree = "\n".join(repo_files)
+    files_context = ""
+    for path, content in core_files.items():
+        files_context += f"\n--- FILE: {path} ---\n{content}\n"
+        
     prompt = f"""
-You are an expert project manager and developer assistant.
-Analyze this GitHub issue and its conversation comments to determine if the requirements are clear enough to implement, and what the implementation plan should be.
+You are an expert developer assistant.
+Analyze this GitHub issue and its conversation comments against the codebase to find the concrete root cause of the problem and describe the exact code changes needed.
 Both the clarification questions and the implementation plan MUST be written in English.
 
 Issue Title: {issue_title}
@@ -74,12 +131,14 @@ Issue Description:
 Recent comments/discussion:
 {comments_str}
 
-Here is the list of files in the repository:
-{files_tree}
+Here are the relevant source code files and catalog data from the repository:
+{files_context}
 
 Please categorize the issue (e.g. bug, feature, chore) and generate either:
 1. A list of clarification questions in English if the request is ambiguous, lacks context, or is incomplete.
-2. A detailed implementation plan in English if the requirements are completely clear. In this case, also specify which files from the repository list above the implementation agent should read to implement the plan, and which files will be modified or created.
+2. A detailed implementation plan in English if the requirements are completely clear.
+   Crucially, this plan must identify the exact files, lines, and describe the precise code modifications needed to resolve the issue, rather than generic debugging instructions.
+   Also specify which files the implementation agent needs to read (files_to_read) and which files will be modified or created (files_to_modify).
 """
 
     response = generate_content_with_retry(
@@ -229,8 +288,11 @@ def main():
         print(f"Analyzing issue #{issue_number}: {issue.title}")
         
         comments = [c.body for c in issue.get_comments()]
-        repo_files = get_file_list()
-        analysis = analyze_issue(issue.title, issue.body, comments, repo_files)
+        context_files = get_core_file_contents()
+        catalog_files = find_relevant_catalogs(issue.title, issue.body)
+        context_files.update(catalog_files)
+        
+        analysis = analyze_issue(issue.title, issue.body, comments, context_files)
         print(f"Analysis result: {analysis}")
         
         for label in analysis.labels:
