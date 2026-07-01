@@ -297,6 +297,12 @@ def main():
     if event_name == "issue_comment":
         print(f"Processing comment from {comment_author}: {comment_body}")
         
+        # Prevent bots and github-actions from triggering the agent
+        comment_author_lower = comment_author.lower()
+        if "bot" in comment_author_lower or "github-actions" in comment_author_lower:
+            print(f"Comment is from a bot/agent ({comment_author}). Exiting early.")
+            sys.exit(0)
+            
         if not is_agent_requested(comment_body):
             print("Comment does not address/request the agent. Exiting early.")
             sys.exit(0)
