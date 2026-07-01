@@ -182,11 +182,17 @@ export default function SelectionConfigurator({
               }
               if (isClickable) {
                 if (isIndependentSubUnit) {
-                  updateSubSelection(selection.id, option, 'add_instance', parentCount);
+                  if (count < maxLimit && !isSelectDisabled) {
+                    updateSubSelection(selection.id, option, 'add_instance', parentCount);
+                  }
                 } else if (isBinary) {
-                  updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment', parentCount);
+                  if (count > 0 || !isSelectDisabled) {
+                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment', parentCount);
+                  }
                 } else {
-                  updateSubSelection(selection.id, option, 'increment', parentCount);
+                  if (count < maxLimit && !isSelectDisabled) {
+                    updateSubSelection(selection.id, option, 'increment', parentCount);
+                  }
                 }
               }
             };
@@ -243,7 +249,7 @@ export default function SelectionConfigurator({
                         e.stopPropagation();
                         updateSubSelection(selection.id, option, 'add_instance', parentCount);
                       }}
-                      disabled={isSelectDisabled}
+                      disabled={isSelectDisabled || count >= maxLimit}
                     >
                       <Plus size={12} style={{ marginRight: '4px' }} />
                       Hinzufügen
@@ -279,7 +285,7 @@ export default function SelectionConfigurator({
                           e.stopPropagation();
                           updateSubSelection(selection.id, option, 'increment', parentCount);
                         }}
-                        disabled={isSelectDisabled}
+                        disabled={isSelectDisabled || count >= maxLimit}
                       >
                         <Plus size={12} />
                       </button>
