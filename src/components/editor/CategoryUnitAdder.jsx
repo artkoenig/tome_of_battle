@@ -10,7 +10,9 @@ export default function CategoryUnitAdder({
   activeCatalogue,
   costTypeLabel,
   costLimitType,
-  addUnit
+  addUnit,
+  roster,
+  selectionCounts
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
@@ -77,17 +79,34 @@ export default function CategoryUnitAdder({
           {availableUnits.map(entry => {
             const res = resolveEntry(system, entry);
             const points = getOptionDisplayCost(system, entry, costLimitType);
+            
+            let isMaxedOut = false;
+            if (selectionCounts) {
+              const count = Math.max(selectionCounts[res.id] || 0, (res.targetId ? selectionCounts[res.targetId] || 0 : 0));
+              if (res.constraints) {
+                const maxCon = res.constraints.find(c => c.type === 'max' && (c.scope === 'roster' || c.scope === 'force' || !c.scope));
+                if (maxCon && count >= maxCon.value) {
+                  isMaxedOut = true;
+                }
+              }
+            }
+
             return (
               <div 
                 key={res.id} 
-                className="popover-item"
+                className={`popover-item ${isMaxedOut ? 'disabled' : ''}`}
+                style={{ opacity: isMaxedOut ? 0.5 : 1, cursor: isMaxedOut ? 'not-allowed' : 'pointer' }}
                 onClick={() => {
+                  if (isMaxedOut) return;
                   addUnit(entry, categoryId);
                   setIsOpen(false);
                 }}
               >
-                <span className="popover-item-name">{res.name}</span>
-                <span className="popover-item-cost font-body text-gold">
+                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ color: isMaxedOut ? 'var(--text-dim)' : 'inherit' }}>{res.name}</span>
+                  {isMaxedOut && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Nicht verfügbar)</span>}
+                </span>
+                <span className="popover-item-cost font-body text-gold" style={{ color: isMaxedOut ? 'var(--text-dim)' : 'var(--text-gold)' }}>
                   {points > 0 ? `+${points} ${costTypeLabel}` : `0 ${costTypeLabel}`}
                 </span>
               </div>

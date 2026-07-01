@@ -303,7 +303,9 @@ export function parseGameSystemXML(xmlText) {
   const categoryEntries = getWrappedChildren(root, 'categoryEntries', 'categoryEntry').map(el => ({
     id: el.getAttribute('id'),
     name: el.getAttribute('name'),
-    hidden: el.getAttribute('hidden') === 'true'
+    hidden: el.getAttribute('hidden') === 'true',
+    constraints: parseConstraints(el),
+    modifiers: parseModifiers(el)
   }));
 
   // Force Entries (Detachments etc.)
@@ -362,6 +364,14 @@ export function parseCatalogueXML(xmlText) {
   const sharedSelectionEntries = getWrappedChildren(root, 'sharedSelectionEntries', 'selectionEntry').map(parseSelectionEntry);
   const sharedSelectionEntryGroups = getWrappedChildren(root, 'sharedSelectionEntryGroups', 'selectionEntryGroup').map(parseSelectionEntryGroup);
   
+  const categoryEntries = getWrappedChildren(root, 'categoryEntries', 'categoryEntry').map(el => ({
+    id: el.getAttribute('id'),
+    name: el.getAttribute('name'),
+    hidden: el.getAttribute('hidden') === 'true',
+    constraints: parseConstraints(el),
+    modifiers: parseModifiers(el)
+  }));
+  
   // Catalogs can also declare catalogLinks to other catalogues
   const catalogueLinks = getWrappedChildren(root, 'catalogueLinks', 'catalogueLink').map(el => ({
     id: el.getAttribute('id'),
@@ -379,6 +389,7 @@ export function parseCatalogueXML(xmlText) {
     entryLinks,
     sharedSelectionEntries,
     sharedSelectionEntryGroups,
+    categoryEntries,
     sharedProfiles: parseProfiles(root),
     sharedRules: parseRules(root),
     catalogueLinks

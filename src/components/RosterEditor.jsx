@@ -198,6 +198,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           costTypeLabel={costTypeLabel}
                           costLimitType={roster.costLimitType}
                           addUnit={addUnit}
+                          roster={roster}
+                          selectionCounts={selectionCounts}
                         />
                       </div>
 

@@ -156,3 +156,28 @@ export const isUniqueOptionTakenElsewhere = (targetRes, system, activeCatalogueI
 
   return taken;
 };
+
+export const isOptionRosterUnique = (res, system) => {
+  if (!res) return false;
+  
+  // 1. Check constraints on the entry itself
+  const hasDirectConstraint = res.constraints?.some(c => 
+    c.type === 'max' && 
+    c.value === 1 && 
+    (c.scope === 'roster' || c.scope === 'force')
+  );
+  if (hasDirectConstraint) return true;
+
+  // 2. Check constraints on the categories it links to
+  const hasCategoryConstraint = res.categoryLinks?.some(cl => {
+    const catDef = system.categoryEntries?.find(ce => ce.id === cl.targetId);
+    return catDef?.constraints?.some(c => 
+      c.type === 'max' && 
+      c.value === 1 && 
+      (c.scope === 'roster' || c.scope === 'force' || !c.scope)
+    );
+  });
+  
+  return !!hasCategoryConstraint;
+};
+

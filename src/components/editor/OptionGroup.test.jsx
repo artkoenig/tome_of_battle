@@ -39,8 +39,10 @@ vi.mock('../../solver/validator', () => ({
 
 // Mock Options Collector
 const mockIsUniqueOptionTakenElsewhere = vi.fn();
+const mockIsOptionRosterUnique = vi.fn();
 vi.mock('../../solver/optionsCollector', () => ({
-  isUniqueOptionTakenElsewhere: (...args) => mockIsUniqueOptionTakenElsewhere(...args)
+  isUniqueOptionTakenElsewhere: (...args) => mockIsUniqueOptionTakenElsewhere(...args),
+  isOptionRosterUnique: (...args) => mockIsOptionRosterUnique(...args)
 }));
 
 describe('OptionGroup Component', () => {
@@ -292,6 +294,10 @@ describe('OptionGroup Component', () => {
 
   it('8. Roster-Wide Uniqueness (Bereits vergeben)', () => {
     mockIsUniqueOptionTakenElsewhere.mockImplementation((res) => {
+      if (res.id === 'res-axe') return true;
+      return false;
+    });
+    mockIsOptionRosterUnique.mockImplementation((res) => {
       if (res.id === 'res-axe') return true;
       return false;
     });

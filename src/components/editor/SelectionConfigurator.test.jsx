@@ -49,6 +49,7 @@ const mockGetUnitOptions = vi.fn();
 vi.mock('../../solver/optionsCollector', () => ({
   getUnitOptions: (...args) => mockGetUnitOptions(...args),
   isUniqueOptionTakenElsewhere: () => false,
+  isOptionRosterUnique: () => false
 }));
 
 describe('SelectionConfigurator Component', () => {

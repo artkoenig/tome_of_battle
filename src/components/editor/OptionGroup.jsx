@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus, Info } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
-import { isUniqueOptionTakenElsewhere } from '../../solver/optionsCollector';
+import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import { useDebugMode } from '../../hooks/DebugContext';
 
 const findForceOfSelection = (selId, forces) => {
@@ -266,11 +266,7 @@ export default function OptionGroupComponent({
                 wouldExceedPointsLimit = true;
               }
             }
-            const isRosterUnique = res.constraints?.some(c => 
-              c.type === 'max' && 
-              c.value === 1 && 
-              (c.scope === 'roster' || c.scope === 'force')
-            );
+            const isRosterUnique = isOptionRosterUnique(res, system);
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
             const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere;
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus, Info } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
-import { getUnitOptions } from '../../solver/optionsCollector';
+import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import BottomSheet from './BottomSheet';
 import OptionGroupComponent from './OptionGroup';
 import { useDebugMode } from '../../hooks/DebugContext';
@@ -162,7 +162,11 @@ export default function SelectionConfigurator({
             const isCollective = res.collective || option.collective || false;
             const points = isCollective ? basePoints * parentCount : basePoints;
 
-            const isClickable = !isMandatory;
+            const isRosterUnique = isOptionRosterUnique(res, system);
+            const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
+            const isSelectDisabled = isTakenElsewhere;
+
+            const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
             const handleRowClick = (e) => {
               if (e.target.closest('button') || e.target.closest('input')) {
                 return;
@@ -180,17 +184,23 @@ export default function SelectionConfigurator({
               <div 
                 key={res.id} 
                 className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}`}
+                style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}
                 onClick={handleRowClick}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span 
-                    style={{ fontWeight: 600, cursor: descText ? 'help' : 'default' }}
+                    style={{ 
+                      fontWeight: 600, 
+                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit',
+                      cursor: descText ? 'help' : 'default' 
+                    }}
                     onMouseEnter={(e) => descText && handleMouseEnter(res.name, descText, e)}
                     onMouseMove={descText ? handleMouseMove : null}
                     onMouseLeave={descText ? handleMouseLeave : null}
                   >
                     {res.name}
                     {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>
                   {descText && (
                     <button
@@ -217,7 +227,7 @@ export default function SelectionConfigurator({
                     <input 
                       type="checkbox" 
                       checked={count > 0 || isMandatory}
-                      disabled={isMandatory}
+                      disabled={isMandatory || (count === 0 && isSelectDisabled)}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => {
                         if (!isMandatory) {
@@ -244,6 +254,7 @@ export default function SelectionConfigurator({
                           e.stopPropagation();
                           updateSubSelection(selection.id, option, 'increment', parentCount);
                         }}
+                        disabled={isSelectDisabled}
                       >
                         <Plus size={12} />
                       </button>
