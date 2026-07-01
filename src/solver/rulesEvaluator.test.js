@@ -113,6 +113,9 @@ const wardSavePlusFirst = getWardSave([
 const explicitWSChar = getWardSave([
   { name: 'Some Item', characteristics: [{ name: 'WS', value: '4+' }] }
 ], 'Lord', 'Custom System'); // 4
+const weaponSkillPlusWS = getWardSave([
+  { name: 'Cathayan Longsword', description: 'One handed +1 WS, +1 I' }
+], 'Maneater', 'Ogre Kingdoms'); // null (Weapon Skill, not Ward Save)
 const talismanOfProtection = getWardSave([
   { name: 'Talisman of Protection', characteristics: [{ name: 'Magic stuff', value: '6+ ward save' }] }
 ], 'Lord', 'Custom System'); // 6
@@ -124,6 +127,7 @@ test('getWardSave', () => {
                     wardSaveInParens === 5 &&
                     wardSavePlusFirst === 6 &&
                     explicitWSChar === 4 &&
+                    weaponSkillPlusWS === null &&
                     talismanOfProtection === 6 &&
                     noWardSave === null).toBe(true);
 });

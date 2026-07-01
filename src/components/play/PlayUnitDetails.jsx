@@ -308,6 +308,9 @@ export default function PlayUnitDetails({
             {profiles.length > 0 ? (
               profiles.map((prof, pIdx) => (
                 <div key={pIdx} style={{ marginBottom: '6px' }}>
+                  <div className="profile-title text-gold font-serif">
+                    {prof.name}
+                  </div>
                   <div className="profile-table-container">
                     <table className="profile-table">
                       <thead>

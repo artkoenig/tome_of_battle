@@ -740,12 +740,14 @@ select option {
 /* Mini-profiles inside UnitSelectionCard editor view */
 .mini-profile {
   margin-top: 8px;
+  align-self: flex-start;
+  width: 100%;
 }
 
 .mini-profile-title {
   font-family: var(--font-serif);
   color: var(--text-gold-dim);
-  font-size: var(--fs-micro);
+  font-size: var(--fs-label);
   font-weight: 600;
   margin-bottom: 2px;
   margin-top: 6px;
@@ -756,8 +758,8 @@ select option {
 .mini-profile-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 4px;
-  font-size: var(--fs-micro);
+  margin-bottom: 8px;
+  font-size: var(--fs-label);
 }
 
 .mini-profile-table th,
@@ -783,6 +785,20 @@ select option {
 .profile-table-container {
   margin-top: 10px;
   overflow-x: auto;
+}
+
+.profile-title {
+  font-family: var(--font-serif);
+  color: var(--text-gold);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profile-title:not(:first-child) {
+  margin-top: 10px;
 }
 
 .profile-table {

@@ -312,21 +312,44 @@ export function getWardSave(profiles, selectionName, catalogueName, returnDetail
       return val >= 1 && val <= 6 ? val : null;
     };
 
-    const wardPattern = WARD_SAVE_KEYWORDS.join('|');
-    // Look for patterns like "5+ ward save", "5+ rettungswurf"
-    const m1 = t.match(new RegExp(`((?:\\+\\d)|(?:\\d\\+))\\s*(?:${wardPattern})\\b`));
-    if (m1) {
-      const val = extractSaveValue(m1[1]);
+    // Full keywords (ward save, rettungswurf, rettung) can match with leading or trailing plus
+    const fullKeywords = ['ward save', 'rettungswurf', 'rettung'];
+    const fullPattern = fullKeywords.join('|');
+
+    // Look for patterns like "5+ ward save" or "+5 ward save"
+    const m1_full = t.match(new RegExp(`((?:\\+\\d)|(?:\\d\\+))\\s*(?:${fullPattern})\\b`));
+    if (m1_full) {
+      const val = extractSaveValue(m1_full[1]);
       if (val && (!bestWard || val < bestWard)) {
         bestWard = val;
         if (text && !breakdown.includes(`Rettungswurf (${val}+)`)) breakdown.push(`Rettungswurf (${val}+)`);
       }
     }
 
-    // Look for patterns like "ward save of 5+", "rettungswurf von 5+"
-    const m2 = t.match(new RegExp(`\\b(?:${wardPattern})\\s*(?:of|von)?\\s*\\(?((?:\\+\\d)|(?:\\d\\+))\\)?`));
-    if (m2) {
-      const val = extractSaveValue(m2[1]);
+    // Look for patterns like "ward save of 5+" or "ward save of +5"
+    const m2_full = t.match(new RegExp(`\\b(?:${fullPattern})\\s*(?:of|von)?\\s*\\(?((?:\\+\\d)|(?:\\d\\+))\\)?`));
+    if (m2_full) {
+      const val = extractSaveValue(m2_full[1]);
+      if (val && (!bestWard || val < bestWard)) {
+        bestWard = val;
+        if (text && !breakdown.includes(`Rettungswurf (${val}+)`)) breakdown.push(`Rettungswurf (${val}+)`);
+      }
+    }
+
+    // Abbreviated keyword "ws" (Ward Save) must only match trailing plus (e.g. "5+ WS")
+    // to prevent collision with weapon skill modifiers like "+1 WS"
+    const m1_abbr = t.match(/(\d\+)\s*ws\b/);
+    if (m1_abbr) {
+      const val = extractSaveValue(m1_abbr[1]);
+      if (val && (!bestWard || val < bestWard)) {
+        bestWard = val;
+        if (text && !breakdown.includes(`Rettungswurf (${val}+)`)) breakdown.push(`Rettungswurf (${val}+)`);
+      }
+    }
+
+    const m2_abbr = t.match(/\bws\s*(?:of|von)?\s*\(?(\d\+)\)?/);
+    if (m2_abbr) {
+      const val = extractSaveValue(m2_abbr[1]);
       if (val && (!bestWard || val < bestWard)) {
         bestWard = val;
         if (text && !breakdown.includes(`Rettungswurf (${val}+)`)) breakdown.push(`Rettungswurf (${val}+)`);
