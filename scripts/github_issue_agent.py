@@ -2,11 +2,38 @@ import os
 import sys
 import json
 import subprocess
+import re
+import time
 from github import Github
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 from typing import List
+
+def generate_content_with_retry(client, model, contents, config, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config
+            )
+        except Exception as e:
+            err_msg = str(e)
+            if "429" in err_msg or "Please retry in" in err_msg or "ResourceExhausted" in err_msg:
+                match = re.search(r"Please retry in (\d+(?:\.\d+)?)\s*s?", err_msg)
+                wait_time = 5.0
+                if match:
+                    try:
+                        wait_time = float(match.group(1))
+                    except ValueError:
+                        pass
+                print(f"Gemini API 429 rate limit hit. Waiting {wait_time} seconds before retrying (Attempt {attempt + 1}/{max_retries})...")
+                time.sleep(wait_time + 1.0)
+                continue
+            else:
+                raise e
+    raise Exception(f"Failed to generate content after {max_retries} retries due to rate limits.")
 
 def get_file_list():
     files = []
@@ -55,7 +82,8 @@ Please categorize the issue (e.g. bug, feature, chore) and generate either:
 2. A detailed implementation plan in English if the requirements are completely clear. In this case, also specify which files from the repository list above the implementation agent should read to implement the plan, and which files will be modified or created.
 """
 
-    response = client.models.generate_content(
+    response = generate_content_with_retry(
+        client,
         model='gemini-2.5-flash',
         contents=prompt,
         config=types.GenerateContentConfig(
@@ -88,7 +116,8 @@ If the intent is 'approve', generate a brief confirmation in English.
 Otherwise, leave 'reply' empty.
 """
 
-    response = client.models.generate_content(
+    response = generate_content_with_retry(
+        client,
         model='gemini-2.5-flash',
         contents=prompt,
         config=types.GenerateContentConfig(
