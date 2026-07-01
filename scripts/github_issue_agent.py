@@ -258,7 +258,7 @@ def is_agent_requested(comment_body: str) -> bool:
     body_lower = comment_body.lower()
     
     # Direct triggers/mentions/commands
-    direct_triggers = ["@agent", "/agent", "@github-actions", "/approve", "/close", "/cancel", "/resolve"]
+    direct_triggers = ["/agent", "@github-actions", "/approve", "/close", "/cancel", "/resolve"]
     for trigger in direct_triggers:
         if trigger in body_lower:
             return True
@@ -412,7 +412,7 @@ def main():
             comment_body = (
                 f"👋 Hello! To start the implementation, the agent needs clarification on the following questions:\n\n{questions_md}\n\n"
                 f"Please reply directly to this ticket.\n\n"
-                f"💬 *Note: To trigger the agent in subsequent comments, please mention `@agent` or use `/agent`.*"
+                f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
             )
             issue.create_comment(comment_body)
         else:
@@ -429,7 +429,7 @@ def main():
                 f"<!-- METADATA: {json.dumps(metadata)} -->\n\n"
                 f"---\n"
                 f"Please reply with **'Approved'** (or `/approve`) to start the implementation.\n\n"
-                f"💬 *Note: To trigger the agent in subsequent comments, please mention `@agent` or use `/agent`.*"
+                f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
             )
             issue.create_comment(comment_body)
 
