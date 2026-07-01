@@ -27,4 +27,6 @@ dist-ssr
 coverage/
 
 # Agent session configurations and logs
-.agents/
+.agents/*
+!.agents/AGENTS.md
+!.agents/validation_insights.md
