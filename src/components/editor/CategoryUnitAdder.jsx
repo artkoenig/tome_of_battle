@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
 import { resolveEntry, getOptionDisplayCost } from '../../solver/validator';
+import { getModifiedConstraintValue } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
@@ -57,6 +58,13 @@ export default function CategoryUnitAdder({
 
   if (availableUnits.length === 0) return null;
 
+  const displayCtx = {
+    roster,
+    system,
+    selectionCounts,
+    parentCatalogueId: activeCatalogue?.id
+  };
+
   return (
     <div ref={wrapperRef} className="category-unit-adder-container">
       <button 
@@ -85,8 +93,11 @@ export default function CategoryUnitAdder({
               const count = Math.max(selectionCounts[res.id] || 0, (res.targetId ? selectionCounts[res.targetId] || 0 : 0));
               if (res.constraints) {
                 const maxCon = res.constraints.find(c => c.type === 'max' && (c.scope === 'roster' || c.scope === 'force' || !c.scope));
-                if (maxCon && count >= maxCon.value) {
-                  isMaxedOut = true;
+                if (maxCon) {
+                  const effectiveMax = getModifiedConstraintValue(maxCon, res.modifiers, displayCtx);
+                  if (count >= effectiveMax) {
+                    isMaxedOut = true;
+                  }
                 }
               }
             }
