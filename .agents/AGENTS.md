@@ -7,8 +7,8 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 * **Cloud (Linux):** Nutze `/browser` und `browser_subagent` (voll unterstützt).
 
 ## Fachlogik
-* **Local:** Nutze `validation_insights.md` für gesammeltes Wissen zum Battlescribe-Format. Neues Wissen trägst du selbständig in die Datei ein.
-* **Local:** Nutze die Daten unter `./catalogs` für den Zugriff auf die Spielsysteme und Kataloge.
+* Nutze `validation_insights.md` für gesammeltes Wissen zum Battlescribe-Format. Neues Wissen trägst du selbständig in die Datei ein.
+Nutze die Daten unter `./catalogs` für den Zugriff auf die Spielsysteme und Kataloge.
 * Nutze für fehlendes Wissen für die Analyse des Battlescribe-Formats die Informationen von https://github.com/BSData/catalogue-development/wiki und dazugehörige Unterseiten.
 * Es sollen keine (Sub)Strings auf Englisch oder Deutsch als Schlüssel für das Parsen oder Validieren genommen werden. Ausnahme: Berechnung von Armour Save und Ward Save (AS bzw. WS).
 * Es sollen keine Armeespezifischen Logiken implementiert werden, die Implementierung soll immer allgemeingültig sein.
@@ -27,9 +27,7 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 * **Fokus auf Benutzererlebnis & Innovation:**
     * **Redundanzen & UI-Ballast:** Suche nach redundanten Elementen. Gibt es Informationen, Icons oder Buttons, die doppelt auf dem Bildschirm angezeigt werden oder keinen echten Mehrwert bieten? Das Interface soll so schlank und fokussiert wie möglich sein.
     * **Visuelle Harmonie & Konsistenz:** Achte penibel darauf, ob Schriften (z. B. unpassende Schriftarten oder -größen) und Buttons unregelmäßig oder inkonsistent wirken (z. B. unterschiedliche Höhen, Abstände oder Stile bei eigentlich gleichwertigen Aktionen).
-    * **Kreative UX-Ideen:** Welche Workflows beim Erstellen der Armeeliste fühlen sich noch umständlich an? Generiere Vorschläge, wie man die Bedienung flüssiger, intuitiver oder spaßiger gestalten kann
-    * **Neue Feature-Konzepte:** Welche Funktionen fehlen dem Tool noch, um das Leben eines Tabletop-Spielers massiv zu erleichtern (sowohl bei dem Armeeaufbau als auch beim Spielen)? 
-    * **Atmosphäre & Immersion:** Wie kann das Gothic-/Tabletop-Thema durch das Design noch besser spürbar gemacht werden, ohne die Übersicht zu verlieren?
+    * **Neue Feature-Konzepte:** Welche Funktionen fehlen dem Tool noch, um das Leben eines Tabletop-Spielers massiv zu erleichtern (sowohl bei dem Armeeaufbau als auch beim Spielen)?
 * **Ergebnis-Lieferung:** Präsentiere deine Erkenntnisse als inspirierende Ideenliste für zukünftige Features und UX-Verbesserungen. Jede Idee sollte kurz beschreiben, welchen konkreten Mehrwert sie dem Spieler bringt.
 
 ## Architektur & UI Guidelines
