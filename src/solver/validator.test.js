@@ -932,53 +932,45 @@ const groupOr = {
     { field: 'unit-b', type: 'greaterThan', value: 0 }  // False (0 > 0)
   ]
 };
-const groupOrResultTrue = evaluateConditionGroup(groupOr, conditionGroupRoster, selectionCounts, {});
+const groupOrResultTrue = evaluateConditionGroup(groupOr, { roster: conditionGroupRoster, selectionCounts, forceCategoryCounts: {} });
 
 const groupOrAllFalse = {
   type: 'or',
   conditions: [
-    { field: 'unit-a', type: 'greaterThan', value: 5 }, // False (2 > 5)
-    { field: 'unit-b', type: 'greaterThan', value: 0 }  // False (0 > 0)
+    { field: 'unit-b', type: 'greaterThan', value: 0 },
+    { field: 'unit-c', type: 'greaterThan', value: 0 }
   ]
 };
-const groupOrResultFalse = evaluateConditionGroup(groupOrAllFalse, conditionGroupRoster, selectionCounts, {});
+const groupOrResultFalse = evaluateConditionGroup(groupOrAllFalse, { roster: conditionGroupRoster, selectionCounts, forceCategoryCounts: {} });
 
-// NOT condition group: True if NOT all conditions are true
-const groupNot = {
+// NOT condition group: True if all conditions inside are false
+const groupNotTrue = {
   type: 'not',
   conditions: [
-    { field: 'unit-a', type: 'greaterThan', value: 0 }, // True (2 > 0)
-    { field: 'unit-b', type: 'greaterThan', value: 0 }  // False (0 > 0)
+    { field: 'unit-b', type: 'greaterThan', value: 0 } // False
   ]
 };
-const groupNotResultTrue = evaluateConditionGroup(groupNot, conditionGroupRoster, selectionCounts, {});
+const groupNotResultTrue = evaluateConditionGroup(groupNotTrue, { roster: conditionGroupRoster, selectionCounts, forceCategoryCounts: {} });
 
-const groupNotAllTrue = {
+const groupNotFalse = {
   type: 'not',
   conditions: [
-    { field: 'unit-a', type: 'greaterThan', value: 0 }, // True (2 > 0)
-    { field: 'unit-a', type: 'equalTo', value: 2 }      // True (2 == 2)
+    { field: 'unit-a', type: 'greaterThan', value: 0 } // True
   ]
 };
-const groupNotResultFalse = evaluateConditionGroup(groupNotAllTrue, conditionGroupRoster, selectionCounts, {});
+const groupNotResultFalse = evaluateConditionGroup(groupNotFalse, { roster: conditionGroupRoster, selectionCounts, forceCategoryCounts: {} });
 
-// AND condition group (default/other): True only if all conditions are true
-const groupAnd = {
+// AND condition group
+const groupAndTrue = {
   type: 'and',
   conditions: [
-    { field: 'unit-a', type: 'greaterThan', value: 0 }, // True
-    { field: 'unit-b', type: 'equalTo', value: 0 }      // True
+    { field: 'unit-a', type: 'greaterThan', value: 0 },
+    { type: 'notEqualTo', field: 'unit-b', value: 1 }
   ]
 };
-const groupAndResultTrue = evaluateConditionGroup(groupAnd, conditionGroupRoster, selectionCounts, {});
+const groupAndResultTrue = evaluateConditionGroup(groupAndTrue, { roster: conditionGroupRoster, selectionCounts, forceCategoryCounts: {} });
 
-const condGroupSuccess = 
-  groupOrResultTrue === true && 
-  groupOrResultFalse === false && 
-  groupNotResultTrue === true && 
-  groupNotResultFalse === false && 
-  groupAndResultTrue === true;
-
+const condGroupSuccess = groupOrResultTrue && !groupOrResultFalse && groupNotResultTrue && !groupNotResultFalse && groupAndResultTrue;
 console.log('Test 18 - Condition Group Logical Operators (AND, OR, NOT): ',
   condGroupSuccess ? 'PASSED' : `FAILED (OR: ${groupOrResultTrue}/${groupOrResultFalse}, NOT: ${groupNotResultTrue}/${groupNotResultFalse}, AND: ${groupAndResultTrue})`
 );
@@ -1004,42 +996,46 @@ const modLimitRepeat = {
     repeats: 1
   }
 };
-// 2500 / 1000 = 2 repeats. Final value = 0 + (2 * 2 * 1) = 4.
-const valLimitRepeat = getModifiedConstraintValue(mockConstraint, [modLimitRepeat], repeatRoster, {}, {});
+// finalValue should be 0 + (floor(2500/1000) * 2 * 1) = 0 + (2 * 2) = 4
+const valLimitRepeat = getModifiedConstraintValue(mockConstraint, [modLimitRepeat], { roster: repeatRoster, selectionCounts: repeatSelectionCounts, forceCategoryCounts: {} });
 
-// Mod 2: repeats every 2 selections of unit-x, decrement by 1
+// Mod 2: repeats for every 3 unit-x, increment by 5
 const modFieldRepeat = {
   field: 'con-max',
-  type: 'decrement',
-  valueObject: 1,
+  type: 'increment',
+  valueObject: 5,
   repeat: {
     field: 'unit-x',
-    value: 2,
-    repeats: 3 // multiplier
+    value: 3,
+    repeats: 1
   }
 };
-// 10 - (1 * 3 * 3) = 1.
-const valFieldRepeat = getModifiedConstraintValue({ id: 'con-max', value: 10 }, [modFieldRepeat], repeatRoster, repeatSelectionCounts, {});
+// finalValue should be 0 + (floor(6/3) * 5 * 1) = 0 + (2 * 5) = 10
+const valFieldRepeat = getModifiedConstraintValue(mockConstraint, [modFieldRepeat], { roster: repeatRoster, selectionCounts: repeatSelectionCounts, forceCategoryCounts: {} });
 
-const repeatSuccess = valLimitRepeat === 4 && valFieldRepeat === 1;
+const repeatSuccess = valLimitRepeat === 4 && valFieldRepeat === 10;
 console.log('Test 19 - Repeating Modifiers (repeat field and limit): ',
-  repeatSuccess ? 'PASSED' : `FAILED (limit-repeat: ${valLimitRepeat}/4, field-repeat: ${valFieldRepeat}/1)`
+  repeatSuccess ? 'PASSED' : `FAILED (limit-repeat: ${valLimitRepeat}/4, field-repeat: ${valFieldRepeat}/10)`
 );
 
 // Test 19b: Repeating Modifiers (repeat childId and category counts)
+const repeatRoster19b = {
+  costLimit: 2500,
+  costLimitType: 'pts',
+  forces: [{ id: 'f1' }]
+};
+const forceCategoryCounts19b = { 'cat-core': 4 };
 const modChildIdRepeat = {
   field: 'con-max',
   type: 'increment',
   valueObject: 1,
   repeat: {
-    field: 'selections',
-    childId: 'cat-gnoblar',
-    value: 1,
+    childId: 'cat-core', // Repeats for every 2 core units
+    value: 2,
     repeats: 1
   }
 };
-const repeatForceCategoryCounts = { 'cat-gnoblar': 2 };
-const valChildIdRepeat = getModifiedConstraintValue({ id: 'con-max', value: 0 }, [modChildIdRepeat], repeatRoster, {}, repeatForceCategoryCounts);
+const valChildIdRepeat = getModifiedConstraintValue(mockConstraint, [modChildIdRepeat], { roster: repeatRoster19b, selectionCounts: {}, forceCategoryCounts: forceCategoryCounts19b });
 console.log('Test 19b - Repeating Modifiers (repeat childId and category counts): ',
   valChildIdRepeat === 2 ? 'PASSED' : `FAILED (expected: 2, got: ${valChildIdRepeat})`
 );

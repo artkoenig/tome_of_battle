@@ -68,7 +68,8 @@ export function validateRoster(roster, system) {
       }
 
       constraintsToValidate.forEach(con => {
-        const finalValue = getModifiedConstraintValue(con, con.isFallback ? con.modifiers : catLink.modifiers, roster, selectionCounts, forceCategoryCounts);
+        const ctx = { roster, selectionCounts, forceCategoryCounts, force, system };
+        const finalValue = getModifiedConstraintValue(con, con.isFallback ? con.modifiers : catLink.modifiers, ctx);
         if (finalValue < 0) return;
         
         if (con.type === 'min' && count < finalValue) {
@@ -107,7 +108,8 @@ export function validateRoster(roster, system) {
        // 1. Validate individual constraints of this entry
       if (entry.constraints) {
         entry.constraints.forEach(con => {
-          const finalValue = getModifiedConstraintValue(con, entry.modifiers, roster, selectionCounts, forceCategoryCounts);
+          const ctx = { roster, selectionCounts, forceCategoryCounts: Object.values(categoryCounts).reduce((acc, counts) => ({ ...acc, ...counts }), {}), selection, parentSelection, force, system, parentCatalogueId: forceCatalogueId };
+          const finalValue = getModifiedConstraintValue(con, entry.modifiers, ctx);
           if (finalValue < 0) return;
           
           // Check scope applicability for specific category/entry scoped constraints
@@ -121,7 +123,9 @@ export function validateRoster(roster, system) {
           // Determine current count in scope
           let count = selection.number || 1;
           
-          if (con.scope === 'parent') {
+          if (con.scope !== 'parent' && con.scope !== 'force' && con.scope !== 'roster') {
+            count = selectionCounts[con.scope] || (forceCategoryCounts ? forceCategoryCounts[con.scope] : 0) || count;
+          } else if (con.scope === 'parent') {
             if (parentSelection) {
               const childMatch = parentSelection.selections?.filter(s => {
                 const subId = s.entryLinkId || s.selectionEntryId;
@@ -169,6 +173,18 @@ export function validateRoster(roster, system) {
               message: `Option "${selection.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${count}).`,
               severity: 'error'
             });
+          }
+          if (con.type === 'percent' && roster.costLimit) {
+            const finalValuePoints = (finalValue / 100) * roster.costLimit;
+            const pts = getSelectionTotalCost(selection, roster.costLimitType);
+            if (pts > finalValuePoints) {
+              errors.push({
+                type: 'entry-percent-max',
+                selectionId: selection.id,
+                message: `Option "${selection.name}" darf maximal ${finalValue}% der Punkte kosten (${finalValuePoints} Pkt.), kostet aber ${pts} Pkt.`,
+                severity: 'error'
+              });
+            }
           }
 
         });
@@ -241,7 +257,8 @@ export function validateRoster(roster, system) {
         }, 0);
 
         group.constraints?.forEach(con => {
-          const finalValue = getModifiedConstraintValue(con, group.modifiers, roster, selectionCounts, forceCategoryCounts);
+          const ctx = { roster, selectionCounts, forceCategoryCounts, selection, parentSelection, force, system, parentCatalogueId: forceCatalogueId };
+          const finalValue = getModifiedConstraintValue(con, group.modifiers, ctx);
           if (finalValue < 0) return;
           
           // Check scope applicability for specific category/entry scoped constraints
@@ -282,6 +299,18 @@ export function validateRoster(roster, system) {
                 type: 'group-count-min',
                 selectionId: selection.id,
                 message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
+                severity: 'error'
+              });
+            }
+          }
+          if (con.type === 'percent' && roster.costLimit) {
+            const finalValuePoints = (finalValue / 100) * roster.costLimit;
+            const pts = isCostField ? totalPoints : totalPoints; // actually we use totalPoints
+            if (pts > finalValuePoints) {
+              errors.push({
+                type: 'group-percent-max',
+                selectionId: selection.id,
+                message: `Kategorie "${group.name}" darf maximal ${finalValue}% der Punkte kosten (${finalValuePoints} Pkt.), kostet aber ${pts} Pkt.`,
                 severity: 'error'
               });
             }
@@ -388,6 +417,26 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
             }
           }
         });
+
+        // Apply characteristic modifiers to profiles
+        if (profiles.length > 0) {
+          const charMods = (sel.modifiers || []).concat(resolved.modifiers || []);
+          charMods.forEach(mod => {
+            if (mod.type === 'increment' || mod.type === 'decrement' || mod.type === 'set') {
+              profiles.forEach(p => {
+                const char = p.characteristics?.find(c => c.id === mod.field || c.name === mod.field);
+                if (char) {
+                  const modAmount = parseFloat(mod.valueObject || mod.value) || 0;
+                  let currentVal = parseFloat(char.value) || 0;
+                  if (mod.type === 'set') currentVal = mod.value;
+                  else if (mod.type === 'increment') currentVal += modAmount;
+                  else if (mod.type === 'decrement') currentVal -= modAmount;
+                  char.value = currentVal.toString();
+                }
+              });
+            }
+          });
+        }
       }
     }
 
