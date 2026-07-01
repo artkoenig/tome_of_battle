@@ -1,37 +1,47 @@
 import os
 import sys
 import json
-import subprocess
 import re
-import asyncio
-from github import Github, Auth
-from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig
+from pathlib import Path
 from typing import List
 
-def parse_json_response(text: str) -> dict:
-    # Erste Bereinigung von Markdown-Codeblöcken
-    match = re.search(r"```json\s*(.*?)\s*```", text, re.DOTALL | re.IGNORECASE)
-    if match:
-        text = match.group(1)
-    else:
-        match = re.search(r"```\s*(.*?)\s*```", text, re.DOTALL)
-        if match:
-            text = match.group(1)
+import anthropic
+from github import Github, Auth
 
-    text = text.strip()
+MODEL = "claude-opus-4-8"
+GUIDELINE_FILES = [".agents/AGENTS.md", ".agents/validation_insights.md"]
 
-    # Fallback: Falls Text außerhalb der Klammern steht, extrahiere nur das JSON-Objekt
-    if not (text.startswith("{") and text.endswith("}")):
-        start_idx = text.find("{")
-        end_idx = text.rfind("}")
-        if start_idx != -1 and end_idx != -1:
-            text = text[start_idx:end_idx + 1]
+ISSUE_ANALYSIS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "labels": {"type": "array", "items": {"type": "string"}},
+        "is_clear": {"type": "boolean"},
+        "questions": {"type": "array", "items": {"type": "string"}},
+        "implementation_plan": {"type": "string"},
+    },
+    "required": ["labels", "is_clear", "questions", "implementation_plan"],
+    "additionalProperties": False,
+}
 
-    try:
-        return json.loads(text)
-    except Exception as e:
-        print(f"Error parsing JSON response: {e}\nRaw response:\n{text}")
-        raise e
+COMMENT_ANALYSIS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "intent": {"type": "string", "enum": ["approve", "close", "none"]},
+        "reply": {"type": "string"},
+    },
+    "required": ["intent", "reply"],
+    "additionalProperties": False,
+}
+
+
+def read_guidelines() -> str:
+    parts = []
+    for path in GUIDELINE_FILES:
+        p = Path(path)
+        if p.exists():
+            parts.append(f"### {path}\n{p.read_text()}")
+    return "\n\n".join(parts) if parts else "No project guidelines found."
+
 
 def is_agent_requested(comment_body: str) -> bool:
     if not comment_body:
@@ -51,6 +61,7 @@ def is_agent_requested(comment_body: str) -> bool:
 
     return False
 
+
 def create_or_edit_agent_comment(issue, comment_body: str, existing_comments: List):
     for c in existing_comments:
         c_author = c.user.login.lower() if c.user else ""
@@ -63,7 +74,15 @@ def create_or_edit_agent_comment(issue, comment_body: str, existing_comments: Li
     print("Creating new agent comment")
     issue.create_comment(comment_body)
 
-async def analyze_issue(issue_title: str, issue_body: str, comments: List[str]) -> dict:
+
+def find_implementation_plan(comments: List) -> str:
+    for c in reversed(comments):
+        if "Implementation Plan:" in c.body:
+            return c.body
+    return ""
+
+
+def analyze_issue(client: anthropic.Anthropic, issue_title: str, issue_body: str, comments: List[str]) -> dict:
     comments_str = "\n---\n".join(comments) if comments else "No discussion comments."
     prompt = f"""
 You are an expert developer assistant.
@@ -72,7 +91,8 @@ Both the clarification questions and the implementation plan MUST be written in 
 
 CRITICAL DIRECTIVE: The original Issue Title and Issue Description define the primary goal. You must never lose sight of this original goal. The comments and discussion should only be used to clarify requirements, resolve ambiguity, or adjust implementation details, but they must never derail the core goal of the issue.
 
-Please consult the project guidelines in '.agents/AGENTS.md' and '.agents/validation_insights.md' to ensure your analysis complies with all architectural, design, and coding rules (such as styling, component structure, React/Vite best practices, and DB synchronization guidelines).
+Project guidelines (comply with all architectural, design, and coding rules described here):
+{read_guidelines()}
 
 Issue Title: {issue_title}
 Issue Description:
@@ -80,46 +100,30 @@ Issue Description:
 
 Recent comments/discussion:
 {comments_str}
-
-You must output your analysis strictly in JSON format matching this schema:
-{{
-  "labels": ["list of labels to apply, e.g., 'bug', 'feature', 'chore'"],
-  "is_clear": true or false,
-  "questions": ["list of clarification questions in English if is_clear is false, otherwise empty"],
-  "implementation_plan": "markdown implementation plan describing what to change and in which files. Keep it concise.",
-  "files_to_read": ["list of relative file paths in the repo that need to be read to implement"],
-  "files_to_modify": ["list of relative file paths in the repo that will be modified or created"]
-}}
-
-Do not include any explanation or extra text outside the JSON. Return only the JSON block (it can be wrapped in a markdown ```json ``` code block).
 """
-    config = LocalAgentConfig(
-        system_instructions=(
-            "You are an expert developer assistant. Analyze the issue and return a structured JSON response. "
-            "Do not include any conversation or explanation outside the JSON."
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=8000,
+        thinking={"type": "adaptive"},
+        system=(
+            "You are an expert developer assistant. Analyze the issue and return a structured JSON response "
+            "matching the given schema."
         ),
-        capabilities=CapabilitiesConfig(allow_writes=True)
+        output_config={"format": {"type": "json_schema", "schema": ISSUE_ANALYSIS_SCHEMA}},
+        messages=[{"role": "user", "content": prompt}],
     )
+    text = next(b.text for b in response.content if b.type == "text")
+    return json.loads(text)
 
-    max_retries = 3
-    delay = 5
-    for attempt in range(max_retries):
-        try:
-            async with Agent(config) as agent:
-                response = await agent.chat(prompt)
-                text = ""
-                async for token in response:
-                    text += token
-                return parse_json_response(text)
-        except Exception as e:
-            if "503" in str(e) and attempt < max_retries - 1:
-                print(f"⚠️ Gemini API busy (503). Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
-                await asyncio.sleep(delay)
-                delay *= 2
-            else:
-                raise e
 
-async def analyze_comment(issue_title: str, issue_body: str, comment_body: str, comment_author: str, comments: List[str]) -> dict:
+def analyze_comment(
+    client: anthropic.Anthropic,
+    issue_title: str,
+    issue_body: str,
+    comment_body: str,
+    comment_author: str,
+    comments: List[str],
+) -> dict:
     comments_history = "\n---\n".join(comments[-10:]) if comments else "No previous comments."
     prompt = f"""
 You are an expert developer assistant. Analyze the latest comment on this GitHub issue in the context of the entire conversation.
@@ -138,42 +142,52 @@ Determine the user's intent. The intent can be:
 - "approve": The user explicitly approves the implementation plan (e.g. "/approve", "Approved", "Genehmigt", "Go ahead", "Start implementation").
 - "close": The user wants to close, cancel, or resolve the issue (e.g. "Das hat sich erledigt", "resolved", "close", "cancel", "erledigt", "fertig", "solved", "no longer needed").
 - "none": A question, feedback, clarification, or general discussion.
-
-You must output your analysis strictly in JSON format matching this schema:
-{{
-  "intent": "approve" or "close" or "none",
-  "reply": "a brief response in English to post on the issue if closing or approving, otherwise empty"
-}}
-
-Do not include any explanation or extra text outside the JSON. Return only the JSON block (it can be wrapped in a markdown ```json ``` code block).
 """
-    config = LocalAgentConfig(
-        system_instructions=(
-            "You are an expert developer assistant. Analyze the latest comment and return a structured JSON response. "
-            "Do not include any conversation or explanation outside the JSON."
-        )
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=2000,
+        thinking={"type": "adaptive"},
+        system=(
+            "You are an expert developer assistant. Analyze the latest comment and return a structured JSON "
+            "response matching the given schema."
+        ),
+        output_config={"format": {"type": "json_schema", "schema": COMMENT_ANALYSIS_SCHEMA}},
+        messages=[{"role": "user", "content": prompt}],
     )
+    text = next(b.text for b in response.content if b.type == "text")
+    return json.loads(text)
 
-    max_retries = 3
-    delay = 5
-    for attempt in range(max_retries):
-        try:
-            async with Agent(config) as agent:
-                response = await agent.chat(prompt)
-                text = ""
-                async for token in response:
-                    text += token
-                return parse_json_response(text)
-        except Exception as e:
-            if "503" in str(e) and attempt < max_retries - 1:
-                print(f"⚠️ Gemini API busy (503). Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
-                await asyncio.sleep(delay)
-                delay *= 2
-            else:
-                raise e
 
-async def main():
-    api_key = os.getenv("GEMINI_API_KEY")
+def build_implementation_prompt(issue_number: int, issue_title: str, issue_body: str, plan_comment: str) -> str:
+    return f"""Implement the approved changes for GitHub issue #{issue_number}: {issue_title}
+
+Issue Description:
+{issue_body}
+
+Approved Implementation Plan:
+{plan_comment}
+
+CRITICAL DIRECTIVE: The core objective is defined by the Issue Title and Issue Description. The Approved Implementation Plan provides the steps to achieve this objective. Ensure the implementation directly resolves the original goal without getting distracted by unrelated details.
+
+Consult and strictly follow the project rules in '.agents/AGENTS.md' and '.agents/validation_insights.md'.
+
+Implement the changes in the codebase and verify they work by running `npm test`. Do not stop until all tests pass. When finished, open a pull request that closes #{issue_number}.
+"""
+
+
+def write_github_output(should_implement: bool, implementation_prompt: str = "") -> None:
+    github_output = os.getenv("GITHUB_OUTPUT")
+    if not github_output:
+        return
+    with open(github_output, "a") as f:
+        f.write(f"should_implement={'true' if should_implement else 'false'}\n")
+        if should_implement:
+            delimiter = "GHACTION_IMPLEMENTATION_PROMPT_EOF"
+            f.write(f"implementation_prompt<<{delimiter}\n{implementation_prompt}\n{delimiter}\n")
+
+
+def main():
+    api_key = os.getenv("ANTHROPIC_API_KEY")
     github_token = os.getenv("GITHUB_TOKEN")
     event_name = os.getenv("ISSUE_EVENT")
     issue_number_str = os.getenv("ISSUE_NUMBER")
@@ -187,8 +201,8 @@ async def main():
         sys.exit(1)
 
     issue_number = int(issue_number_str)
+    client = anthropic.Anthropic(api_key=api_key)
 
-    # Bereinigte PyGithub Authentifizierung ohne Deprecation Warning
     auth = Auth.Token(github_token)
     g = Github(auth=auth)
     repo = g.get_repo(f"{repo_owner}/{repo_name}")
@@ -205,13 +219,15 @@ async def main():
         comment_author_lower = comment_author.lower()
         if "bot" in comment_author_lower or "github-actions" in comment_author_lower:
             print(f"Comment is from a bot/agent ({comment_author}). Exiting early.")
+            write_github_output(False)
             sys.exit(0)
 
         if not is_agent_requested(comment_body):
             print("Comment does not address/request the agent. Exiting early.")
+            write_github_output(False)
             sys.exit(0)
 
-        comment_res = await analyze_comment(issue.title, issue.body, comment_body, comment_author, comments_bodies)
+        comment_res = analyze_comment(client, issue.title, issue.body, comment_body, comment_author, comments_bodies)
         comment_intent = comment_res.get("intent", "none")
         comment_reply = comment_res.get("reply", "")
         print(f"Comment analysis: {comment_intent}")
@@ -228,68 +244,42 @@ async def main():
         if comment_intent == "close":
             if not is_authorized:
                 print(f"User {comment_author} is not authorized to close the issue.")
+                write_github_output(False)
                 sys.exit(0)
 
             issue.create_comment(comment_reply if comment_reply else "🔒 Issue closed by agent as resolved.")
             issue.edit(state="closed")
             print("Issue closed successfully.")
+            write_github_output(False)
             sys.exit(0)
 
         elif comment_intent == "approve":
             if not is_authorized:
                 print(f"User {comment_author} is not authorized to approve implementations.")
+                write_github_output(False)
                 sys.exit(0)
 
-            print("Implementation approved. Starting code generation workflow...")
+            print("Implementation approved. Handing off to the implementation agent...")
 
-            labels_to_add = ["approved"]
             for label in issue.labels:
                 if label.name == "needs-clarification":
                     issue.remove_from_labels("needs-clarification")
-            issue.add_to_labels(*labels_to_add)
+            issue.add_to_labels("approved")
 
-            issue_comment = issue.create_comment(comment_reply if comment_reply else "🚀 **Approval granted.** The implementation agent is starting the changes...")
+            issue.create_comment(
+                comment_reply if comment_reply else "🚀 **Approval granted.** The implementation agent is starting the changes..."
+            )
 
-            try:
-                subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
-                subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
-
-                branch_name = f"issue-{issue_number}"
-                subprocess.run(["git", "checkout", "-b", branch_name], check=True)
-
-                print("Running implement_issue_agent.py...")
-                result = subprocess.run(
-                    ["python", "scripts/implement_issue_agent.py", str(issue_number)],
-                    capture_output=True,
-                    text=True
+            plan_comment = find_implementation_plan(issue_comments)
+            if not plan_comment:
+                issue.create_comment(
+                    "⚠️ No implementation plan found in the comments. Please ask the agent to analyze the issue again."
                 )
-                print(result.stdout)
-                if result.returncode != 0:
-                    print(result.stderr)
-                    raise Exception(f"Implementation agent failed: {result.stderr}")
+                write_github_output(False)
+                sys.exit(0)
 
-                status_res = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-                if not status_res.stdout.strip():
-                    issue_comment.edit("⚠️ The agent did not make any changes to the code.")
-                    sys.exit(0)
-
-                subprocess.run(["git", "add", "."], check=True)
-                subprocess.run(["git", "commit", "-m", f"Implement changes for Issue #{issue_number}"], check=True)
-
-                subprocess.run(["git", "push", "origin", branch_name, "--force"], check=True)
-
-                pr = repo.create_pull(
-                    title=f"Resolve #{issue_number}: {issue.title}",
-                    body=f"This PR automatically implements the approved plan for #{issue_number}.\n\nCloses #{issue_number}",
-                    head=branch_name,
-                    base="main"
-                )
-
-                issue_comment.edit(f"✅ **Implementation successfully completed!**\nThe Pull Request was created: {pr.html_url}\n\nPlease review the changes and merge the PR on GitHub.")
-
-            except Exception as e:
-                issue_comment.edit(f"❌ **Implementation failed:**\n```\n{str(e)}\n```\nPlease contact a developer.")
-                sys.exit(1)
+            implementation_prompt = build_implementation_prompt(issue_number, issue.title, issue.body, plan_comment)
+            write_github_output(True, implementation_prompt)
             return
 
         comment_analysis = comment_intent
@@ -297,14 +287,14 @@ async def main():
     if event_name == "issues" or comment_analysis == "none":
         print(f"Analyzing issue #{issue_number}: {issue.title}")
 
-        analysis = await analyze_issue(issue.title, issue.body, comments_bodies)
+        analysis = analyze_issue(client, issue.title, issue.body, comments_bodies)
         print(f"Analysis result: {analysis}")
 
         labels = analysis.get("labels", [])
         for label in labels:
             try:
                 repo.get_label(label)
-            except:
+            except Exception:
                 repo.create_label(label, "f29513")
             issue.add_to_labels(label)
 
@@ -312,7 +302,7 @@ async def main():
         if not is_clear:
             try:
                 repo.get_label("needs-clarification")
-            except:
+            except Exception:
                 repo.create_label("needs-clarification", "e61919")
             issue.add_to_labels("needs-clarification")
 
@@ -333,20 +323,16 @@ async def main():
                 if label.name == "needs-clarification":
                     issue.remove_from_labels("needs-clarification")
 
-            files_to_read = analysis.get("files_to_read", [])
-            files_to_modify = analysis.get("files_to_modify", [])
-            metadata = {
-                "files_to_read": files_to_read if files_to_read else [],
-                "files_to_modify": files_to_modify if files_to_modify else []
-            }
             comment_body = (
                 f"📋 **Implementation Plan:**\n\n{analysis.get('implementation_plan', '')}\n\n"
-                f"\n\n"
                 f"---\n"
                 f"Please reply with **'Approved'** (or `/approve`) to start the implementation.\n\n"
                 f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
             )
             create_or_edit_agent_comment(issue, comment_body, issue_comments)
 
+    write_github_output(False)
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

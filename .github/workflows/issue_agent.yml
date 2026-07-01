@@ -14,38 +14,35 @@ permissions:
 jobs:
   handle_issue:
     if: |
-      (github.event_name == 'issues') || 
+      (github.event_name == 'issues') ||
       (github.event_name == 'issue_comment' && github.event.comment.user.login != 'github-actions[bot]')
     runs-on: ubuntu-latest
     steps:
-      # Korrigiert auf die reale, stabile Version v4
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Korrigiert auf die reale, stabile Version v5
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # Korrigiert auf die reale, stabile Version v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
-      # JETZT KORREKT: google-antigravity wird installiert
       - name: Install dependencies
         run: |
-          pip install google-antigravity PyGithub
+          pip install anthropic PyGithub
           npm ci
 
       - name: Run Issue Agent
+        id: analyze
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_EVENT: ${{ github.event_name }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -55,3 +52,12 @@ jobs:
           REPO_NAME: ${{ github.event.repository.name }}
         run: |
           python scripts/github_issue_agent.py
+
+      - name: Implement approved issue
+        if: steps.analyze.outputs.should_implement == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: ${{ steps.analyze.outputs.implementation_prompt }}
+          claude_args: "--model claude-opus-4-8 --max-turns 40"
