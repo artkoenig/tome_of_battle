@@ -249,8 +249,7 @@ export const computeRosterCounts = (roster, system) => {
         if (cl.targetId && !seenCategories.has(cl.targetId)) {
           seenCategories.add(cl.targetId);
           categoryCounts[forceId][cl.targetId] = (categoryCounts[forceId][cl.targetId] || 0) + effectiveCount;
-
-          // Replaced hardcoded string matching for 'hero extra cost' etc.
+          selectionCounts[cl.targetId] = (selectionCounts[cl.targetId] || 0) + effectiveCount;
         }
       });
     }
@@ -259,6 +258,7 @@ export const computeRosterCounts = (roster, system) => {
       const hasCat = entryDef?.categoryLinks?.some(cl => cl.targetId === selection.category);
       if (!hasCat) {
         categoryCounts[forceId][selection.category] = (categoryCounts[forceId][selection.category] || 0) + effectiveCount;
+        selectionCounts[selection.category] = (selectionCounts[selection.category] || 0) + effectiveCount;
       }
     }
 
