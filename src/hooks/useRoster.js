@@ -189,27 +189,50 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     });
   };
 
-  const updateSubSelection = (unitSelectionId, option, action, parentCount = 1) => {
-    const optionId = option.id;
-
+  const updateSubSelection = (unitSelectionId, optionOrId, action, parentCount = 1) => {
     setRoster(prev => {
-      const updatedForces = prev.forces.map(force => {
-        const updatedSelections = force.selections.map(unit => {
-          if (unit.id !== unitSelectionId) return unit;
+      let foundAndUpdated = false;
 
-          const newUnit = { ...unit, selections: [...(unit.selections || [])] };
+      const updateDeep = (node) => {
+        if (node.id === unitSelectionId) {
+          foundAndUpdated = true;
+          const list = [...(node.selections || [])];
+          const amount = 1;
 
-          const modifySelectionNode = (parentSel) => {
-            const list = parentSel.selections || [];
+          if (action === 'add_instance') {
+            const childSel = createSelectionFromDef(optionOrId);
+            if (childSel) {
+              childSel.number = amount;
+              list.push(childSel);
+            }
+          } else if (action === 'remove_instance') {
+            const removeIdx = list.findIndex(s => s.id === optionOrId);
+            if (removeIdx > -1) {
+              list.splice(removeIdx, 1);
+            }
+          } else if (action === 'increment_instance' || action === 'decrement_instance') {
+            const instIdx = list.findIndex(s => s.id === optionOrId);
+            if (instIdx > -1) {
+              if (action === 'increment_instance') {
+                list[instIdx] = { ...list[instIdx], number: (list[instIdx].number || 1) + amount };
+              } else {
+                if ((list[instIdx].number || 1) > amount) {
+                  list[instIdx] = { ...list[instIdx], number: list[instIdx].number - amount };
+                } else {
+                  list.splice(instIdx, 1);
+                }
+              }
+            }
+          } else {
+            // Original increment/decrement logic (optionOrId is an option def)
+            const optionId = optionOrId.id;
             const idx = list.findIndex(s => (s.entryLinkId || s.selectionEntryId) === optionId);
             
-            const amount = 1;
-
             if (action === 'increment') {
               if (idx > -1) {
                 list[idx] = { ...list[idx], number: (list[idx].number || 1) + amount };
               } else {
-                const childSel = createSelectionFromDef(option);
+                const childSel = createSelectionFromDef(optionOrId);
                 if (childSel) {
                   childSel.number = amount;
                   list.push(childSel);
@@ -224,18 +247,44 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
                 }
               }
             }
+          }
+          return { ...node, selections: list };
+        }
 
-            return { ...parentSel, selections: list };
-          };
+        if (node.selections && node.selections.length > 0) {
+          let updatedChildren = false;
+          const newSelections = node.selections.map(child => {
+            if (foundAndUpdated) return child;
+            const updatedChild = updateDeep(child);
+            if (updatedChild !== child) updatedChildren = true;
+            return updatedChild;
+          });
+          if (updatedChildren) return { ...node, selections: newSelections };
+        }
+        return node;
+      };
 
-          const result = modifySelectionNode(newUnit);
-          // Set selection in active editor preview too
-          setTimeout(() => setSelectedRosterSelection(result), 0);
-          return result;
+      let updatedRootSelection = null;
+
+      const updatedForces = prev.forces.map(force => {
+        let updatedForceSelections = false;
+        const newSelections = force.selections.map(unit => {
+          const updatedUnit = updateDeep(unit);
+          if (updatedUnit !== unit) {
+            updatedForceSelections = true;
+            if (unit.id === selectedRosterSelection?.id || updatedUnit.id === selectedRosterSelection?.id) {
+              updatedRootSelection = updatedUnit;
+            }
+          }
+          return updatedUnit;
         });
-
-        return { ...force, selections: updatedSelections };
+        if (updatedForceSelections) return { ...force, selections: newSelections };
+        return force;
       });
+
+      if (updatedRootSelection) {
+        setTimeout(() => setSelectedRosterSelection(updatedRootSelection), 0);
+      }
 
       return { ...prev, forces: updatedForces };
     });

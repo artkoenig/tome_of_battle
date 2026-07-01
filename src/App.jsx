@@ -347,7 +347,7 @@ export default function App() {
 
           {isLocal && (
             <button 
-              className="debug-id-btn mobile-only"
+              className="debug-id-btn"
               onClick={toggleShowDebugIds}
               style={{
                 display: 'flex',

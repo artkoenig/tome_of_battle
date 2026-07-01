@@ -88,12 +88,26 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
     });
   };
 
+  const hasEntryChildren = (res) => {
+    if (!res) return false;
+    const hasSE = res.selectionEntries && res.selectionEntries.length > 0;
+    const hasEL = res.entryLinks && res.entryLinks.length > 0;
+    const hasSEG = res.selectionEntryGroups && res.selectionEntryGroups.length > 0;
+    return hasSE || hasEL || hasSEG;
+  };
+
+  const isIndependentSubUnit = (res) => {
+    return res && res.type === 'unit' && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
+  };
+
   collectOptions(resolved);
   
   resolved.selectionEntries?.forEach(sub => {
     const subResolved = resolveEntry(system, sub, activeCatalogueId);
     if (subResolved && subResolved.type === 'model') {
-      collectOptions(subResolved);
+      if (!isIndependentSubUnit(subResolved)) {
+        collectOptions(subResolved, subResolved.name, subResolved.id);
+      }
     }
   });
 
@@ -103,10 +117,12 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
       const subRawEntry = findEntryInSystem(system, subEntryId, activeCatalogueId);
       const subResolved = resolveEntry(system, subRawEntry, activeCatalogueId);
       if (subResolved) {
-        if (subResolved.selectionEntries?.length > 0 || subResolved.entryLinks?.length > 0 || subResolved.selectionEntryGroups?.length > 0) {
-          collectOptions(subResolved);
+        if (!isIndependentSubUnit(subResolved)) {
+          if (subResolved.selectionEntries?.length > 0 || subResolved.entryLinks?.length > 0 || subResolved.selectionEntryGroups?.length > 0) {
+            collectOptions(subResolved, subResolved.name, subResolved.id);
+          }
+          collectFromActiveSelections(subSel);
         }
-        collectFromActiveSelections(subSel);
       }
     });
   };

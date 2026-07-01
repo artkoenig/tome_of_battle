@@ -166,13 +166,24 @@ export default function SelectionConfigurator({
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
             const isSelectDisabled = isTakenElsewhere;
 
+            const hasEntryChildren = (entry) => {
+              if (!entry) return false;
+              return (entry.selectionEntries && entry.selectionEntries.length > 0) ||
+                     (entry.entryLinks && entry.entryLinks.length > 0) ||
+                     (entry.selectionEntryGroups && entry.selectionEntryGroups.length > 0);
+            };
+
+            const isIndependentSubUnit = res && res.type === 'unit' && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
+
             const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
             const handleRowClick = (e) => {
               if (e.target.closest('button') || e.target.closest('input')) {
                 return;
               }
               if (isClickable) {
-                if (isBinary) {
+                if (isIndependentSubUnit) {
+                  updateSubSelection(selection.id, option, 'add_instance', parentCount);
+                } else if (isBinary) {
                   updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment', parentCount);
                 } else {
                   updateSubSelection(selection.id, option, 'increment', parentCount);
@@ -223,7 +234,21 @@ export default function SelectionConfigurator({
                 </div>
                 <div className="sub-selection-controls">
                   {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
-                  {isBinary ? (
+                  {isIndependentSubUnit ? (
+                    <button 
+                      type="button"
+                      className="btn-primary text-label"
+                      style={{ padding: '4px 8px', height: 'auto', display: 'flex', alignItems: 'center' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateSubSelection(selection.id, option, 'add_instance', parentCount);
+                      }}
+                      disabled={isSelectDisabled}
+                    >
+                      <Plus size={12} style={{ marginRight: '4px' }} />
+                      Hinzufügen
+                    </button>
+                  ) : isBinary ? (
                     <input 
                       type="checkbox" 
                       checked={count > 0 || isMandatory}

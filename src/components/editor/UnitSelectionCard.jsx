@@ -112,15 +112,24 @@ export default function UnitSelectionCard({
         const entryId = subSel.entryLinkId || subSel.selectionEntryId;
         const entry = findEntryInSystem(system, entryId, activeCatalogue?.id);
         const resolved = resolveEntry(system, entry, activeCatalogue?.id);
-        if (resolved) {
+        
+        const hasEntryChildren = (entryNode) => {
+          if (!entryNode) return false;
+          return (entryNode.selectionEntries && entryNode.selectionEntries.length > 0) ||
+                 (entryNode.entryLinks && entryNode.entryLinks.length > 0) ||
+                 (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
+        };
+        const isIndependent = resolved && resolved.type === 'unit' && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+        
+        if (resolved && !isIndependent) {
           list.push({
             id: subSel.id,
             name: subSel.name,
             number: subSel.number || 1,
             resolved: resolved
           });
+          collect(subSel);
         }
-        collect(subSel);
       });
     };
     collect(sel);
@@ -205,8 +214,23 @@ export default function UnitSelectionCard({
   const hasSelectionError = validationErrors.some(e => e.selectionId === selection.id);
   const selectionErrors = validationErrors.filter(e => e.selectionId === selection.id);
 
+  const independentSubUnits = (selection.selections || []).filter(subSel => {
+    const entryId = subSel.entryLinkId || subSel.selectionEntryId;
+    const entry = findEntryInSystem(system, entryId, activeCatalogue?.id);
+    const resolved = resolveEntry(system, entry, activeCatalogue?.id);
+    
+    const hasEntryChildren = (entryNode) => {
+      if (!entryNode) return false;
+      return (entryNode.selectionEntries && entryNode.selectionEntries.length > 0) ||
+             (entryNode.entryLinks && entryNode.entryLinks.length > 0) ||
+             (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
+    };
+    
+    return resolved && resolved.type === 'unit' && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+  });
+
   return (
-    <div className={`selection-node ${hasSelectionError ? 'has-error' : ''}`}>
+    <div className={`selection-node ${hasSelectionError ? 'has-error' : ''}`} style={copyUnit ? {} : { marginTop: '8px', border: '1px solid rgba(226, 183, 66, 0.2)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
       <div 
         className="selection-node-header"
         style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative' }}
@@ -215,7 +239,7 @@ export default function UnitSelectionCard({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className="selection-node-title">
             <span className="selection-node-name text-ui-title">
-              {selection.name}
+              {selection.number > 1 ? `${selection.number}x ` : ''}{selection.name}
               {showDebugIds && (
                 <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
               )}
@@ -225,17 +249,19 @@ export default function UnitSelectionCard({
             <span className="selection-node-cost font-body">
               {displayPoints} {costTypeLabel}
             </span>
-            <button 
-              type="button"
-              className="btn-primary square-btn" 
-              onClick={(e) => {
-                e.stopPropagation();
-                copyUnit(selection.id);
-              }}
-              title="Kopieren"
-            >
-              <Copy size={14} />
-            </button>
+            {copyUnit && (
+              <button 
+                type="button"
+                className="btn-primary square-btn" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  copyUnit(selection.id);
+                }}
+                title="Kopieren"
+              >
+                <Copy size={14} />
+              </button>
+            )}
             <button 
               type="button"
               className="btn-danger square-btn" 
@@ -275,6 +301,28 @@ export default function UnitSelectionCard({
           handleMouseLeave={handleMouseLeave}
           setActiveInfo={setActiveInfo}
         />
+      )}
+
+      {independentSubUnits.length > 0 && (
+        <div className="sub-units-container" style={{ paddingLeft: '16px', borderLeft: '2px solid rgba(226, 183, 66, 0.2)', marginTop: '8px' }}>
+          {independentSubUnits.map(subSel => (
+            <UnitSelectionCard 
+              key={subSel.id}
+              selection={subSel}
+              selectedRosterSelection={selectedRosterSelection}
+              setSelectedRosterSelection={setSelectedRosterSelection}
+              roster={roster}
+              system={system}
+              validationErrors={validationErrors}
+              costTypeLabel={costTypeLabel}
+              removeUnit={(id) => updateSubSelection(selection.id, id, 'remove_instance')}
+              copyUnit={null}
+              updateSubSelection={updateSubSelection}
+              activeCatalogue={activeCatalogue}
+              setSelectedCatalogEntry={setSelectedCatalogEntry}
+            />
+          ))}
+        </div>
       )}
 
       {hoveredInfo && (
