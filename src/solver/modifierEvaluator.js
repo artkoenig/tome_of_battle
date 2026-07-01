@@ -123,11 +123,12 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
       if (mod.repeat) {
         let currentValue = 0;
         const { roster, selectionCounts = {}, forceCategoryCounts = {} } = ctx;
-        if (mod.repeat.scope === 'parent' && ctx.parentSelection && ctx.parentSelection.selections) {
-          const { parentSelection, parentCatalogueId, system } = ctx;
+        const targetParent = ctx.parentSelection || ctx.selection;
+        if (mod.repeat.scope === 'parent' && targetParent && targetParent.selections) {
+          const { parentCatalogueId, system } = ctx;
           const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
           const targetId = mod.repeat.childId || mod.repeat.field;
-          
+
           const countMatches = (list) => (list || []).reduce((sum, s) => {
             let isMatch = false;
             const sId = s.entryLinkId || s.selectionEntryId;
@@ -147,7 +148,7 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
             return acc;
           }, 0);
           
-          currentValue = countMatches(parentSelection.selections);
+          currentValue = countMatches(targetParent.selections);
         } else if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
           currentValue = roster?.costLimit || 0;
         } else if (mod.repeat.childId) {

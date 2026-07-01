@@ -10,6 +10,7 @@ import {
   collectUnitProfilesAndRules
 } from '../../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
+import { extractModelProfiles } from '../../solver/rulesEvaluator';
 
 export default function UnitSelectionCard({
   selection,
@@ -66,10 +67,8 @@ export default function UnitSelectionCard({
 
   const renderMiniProfile = (sel) => {
     const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id);
-    if (!profiles || profiles.length === 0) return null;
-
-    const unitProf = profiles.find(p => p.profileTypeName === 'Unit' || p.profileTypeName === 'Model');
-    if (!unitProf) return null;
+    const modelProfiles = extractModelProfiles(profiles);
+    if (!modelProfiles || modelProfiles.length === 0) return null;
 
     return (
       <div 
@@ -84,22 +83,31 @@ export default function UnitSelectionCard({
         }}
         title="Statblock anzeigen"
       >
-        <table className="mini-profile-table">
-          <thead>
-            <tr>
-              {unitProf.characteristics.map(c => (
-                <th key={c.name}>{c.name}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              {unitProf.characteristics.map(c => (
-                <td key={c.name} className="font-body">{c.value}</td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
+        {modelProfiles.map((prof, idx) => (
+          <div key={prof.id || idx}>
+            {modelProfiles.length > 1 && (
+              <div className="mini-profile-title">
+                {prof.name}
+              </div>
+            )}
+            <table className="mini-profile-table">
+              <thead>
+                <tr>
+                  {prof.characteristics.map(c => (
+                    <th key={c.name}>{c.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {prof.characteristics.map(c => (
+                    <td key={c.name} className="font-body">{c.value}</td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ))}
       </div>
     );
   };

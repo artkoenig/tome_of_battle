@@ -144,10 +144,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   const categoryErrors = validationErrors.filter(e => e.categoryId === link.targetId);
                   const count = forceCategoryCounts[link.targetId] || 0;
 
+                  const displayCtx = { roster, system, selectionCounts, forceCategoryCounts };
                   const minConstraint = link.constraints?.find(c => c.type === 'min');
                   const maxConstraint = link.constraints?.find(c => c.type === 'max');
-                  const minVal = minConstraint ? getModifiedConstraintValue(minConstraint, link.modifiers, roster, selectionCounts, forceCategoryCounts) : 0;
-                  const maxVal = maxConstraint ? getModifiedConstraintValue(maxConstraint, link.modifiers, roster, selectionCounts, forceCategoryCounts) : Infinity;
+                  const minVal = minConstraint ? getModifiedConstraintValue(minConstraint, link.modifiers, displayCtx) : 0;
+                  const maxVal = maxConstraint ? getModifiedConstraintValue(maxConstraint, link.modifiers, displayCtx) : Infinity;
 
                   const isPrimaryForAny = hasPrimaryCatalogItems(link.targetId, force);
 

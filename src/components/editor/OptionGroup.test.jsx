@@ -442,4 +442,20 @@ describe('OptionGroup Component', () => {
     
     expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement', 1);
   });
+
+  it('14. Passes consolidated context to getModifiedConstraintValue', () => {
+    mockGetModifiedConstraintValue.mockClear();
+    render(<OptionGroupComponent {...defaultProps} />);
+    
+    expect(mockGetModifiedConstraintValue).toHaveBeenCalled();
+    const calls = mockGetModifiedConstraintValue.mock.calls;
+    calls.forEach(call => {
+      const ctx = call[2];
+      expect(ctx).toBeTypeOf('object');
+      expect(ctx).not.toBeNull();
+      expect(ctx.roster).toBeDefined();
+      expect(ctx.system).toBeDefined();
+      expect(ctx.selectionCounts).toBeDefined();
+    });
+  });
 });

@@ -43,16 +43,17 @@ export default function RosterSidebar({
           return system.forceEntries?.[0]?.categoryLinks?.map(catLink => {
             const catName = system.categoryEntries?.find(c => c.id === catLink.targetId)?.name || catLink.name;
             const count = forceCategoryCounts[catLink.targetId] || 0;
+            const displayCtx = { roster, system, selectionCounts, forceCategoryCounts };
 
             const minConRef = catLink.constraints?.find(c => c.type === 'min');
             const minCon = minConRef 
-              ? Math.max(0, getModifiedConstraintValue(minConRef, catLink.modifiers, roster, selectionCounts, forceCategoryCounts))
+              ? Math.max(0, getModifiedConstraintValue(minConRef, catLink.modifiers, displayCtx))
               : 0;
 
             const maxConRef = catLink.constraints?.find(c => c.type === 'max');
             let maxCon = maxConRef 
               ? (() => {
-                  const val = getModifiedConstraintValue(maxConRef, catLink.modifiers, roster, selectionCounts, forceCategoryCounts);
+                  const val = getModifiedConstraintValue(maxConRef, catLink.modifiers, displayCtx);
                   return val < 0 ? Infinity : val;
                 })()
               : Infinity;
@@ -62,7 +63,7 @@ export default function RosterSidebar({
               const charCatLink = system.forceEntries?.[0]?.categoryLinks?.find(cl => cl.targetId === '7a1c-d611-c2dc-def1');
               const charMaxConRef = charCatLink?.constraints?.find(c => c.type === 'max');
               if (charMaxConRef) {
-                const val = getModifiedConstraintValue(charMaxConRef, charCatLink.modifiers, roster, selectionCounts, forceCategoryCounts);
+                const val = getModifiedConstraintValue(charMaxConRef, charCatLink.modifiers, displayCtx);
                 if (val >= 0) maxCon = val;
               }
             }

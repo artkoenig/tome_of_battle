@@ -1,7 +1,7 @@
 // Model profile type matching
 export const MODEL_PROFILE_INCLUDED_KEYWORDS = [
   'profile', 'profil', 'unit', 'einheit', 'creature', 'kreatur',
-  'monster', 'charakteristik', 'charakterwerte', 'mount', 'reittier'
+  'monster', 'charakteristik', 'charakterwerte', 'mount', 'reittier', 'model'
 ];
 
 export const MODEL_PROFILE_EXCLUDED_KEYWORDS = [

@@ -116,6 +116,39 @@ describe('UnitSelectionCard Component', () => {
     expect(screen.getAllByText('4').length).toBe(2);
   });
 
+  it('renders multiple model profiles with their names when multiple exist', () => {
+    mockCollectUnitProfilesAndRules.mockReturnValue({
+      profiles: [
+        {
+          id: 'p1',
+          profileTypeName: 'Model',
+          name: 'Knight',
+          characteristics: [
+            { name: 'M', value: '4' },
+            { name: 'WS', value: '4' }
+          ]
+        },
+        {
+          id: 'p2',
+          profileTypeName: 'Model',
+          name: 'Barded Warhorse',
+          characteristics: [
+            { name: 'M', value: '8' },
+            { name: 'WS', value: '3' }
+          ]
+        }
+      ],
+      rules: []
+    });
+
+    render(<UnitSelectionCard {...defaultProps} />);
+
+    expect(screen.getByText('Knight')).toBeDefined();
+    expect(screen.getAllByText('Barded Warhorse').length).toBe(2);
+    expect(screen.getByText('8')).toBeDefined();
+    expect(screen.getByText('3')).toBeDefined();
+  });
+
   it('confirms and triggers removeUnit upon delete click', () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<UnitSelectionCard {...defaultProps} />);

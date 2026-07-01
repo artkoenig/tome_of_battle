@@ -106,6 +106,7 @@ export default function SelectionConfigurator({
           name: item.groupName,
           id: item.groupId,
           constraints: item.groupConstraints,
+          modifiers: item.groupModifiers,
           items: []
         };
         groupedList.push(groupMap[item.groupName]);

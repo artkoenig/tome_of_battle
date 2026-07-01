@@ -46,7 +46,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
   const optionsList = [];
 
   // Recursive options collector
-  const collectOptions = (def, currentGroupName = null, currentGroupId = null, parentConstraints = null) => {
+  const collectOptions = (def, currentGroupName = null, currentGroupId = null, parentConstraints = null, parentModifiers = null) => {
     // 1. Process selection entries
     def.selectionEntries?.forEach(child => {
       // A selectionEntry is always an option itself. We don't recurse into its children
@@ -56,7 +56,8 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
         parentDefId: def.id, 
         groupName: currentGroupName, 
         groupId: currentGroupId,
-        groupConstraints: parentConstraints 
+        groupConstraints: parentConstraints,
+        groupModifiers: parentModifiers
       });
     });
 
@@ -68,7 +69,8 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
       // If the entry link points to a group, we recurse into it to extract its items
       if (child.type === 'selectionEntryGroup') {
         const combinedConstraints = prepareConstraints(resolvedChild);
-        collectOptions(resolvedChild, resolvedChild.name || child.name, resolvedChild.id || child.id, combinedConstraints);
+        const combinedModifiers = (resolvedChild.modifiers || []).concat(child.modifiers || []);
+        collectOptions(resolvedChild, resolvedChild.name || child.name, resolvedChild.id || child.id, combinedConstraints, combinedModifiers);
       } else {
         // Otherwise it points to an option (upgrade, profile, etc.), so it's a selectable item
         optionsList.push({ 
@@ -76,7 +78,8 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
           parentDefId: def.id, 
           groupName: currentGroupName, 
           groupId: currentGroupId,
-          groupConstraints: parentConstraints 
+          groupConstraints: parentConstraints,
+          groupModifiers: parentModifiers
         });
       }
     });
@@ -84,7 +87,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
     // 3. Process selection entry groups
     def.selectionEntryGroups?.forEach(group => {
       const combinedGroupConstraints = prepareConstraints(group);
-      collectOptions(group, group.name || currentGroupName, group.id || currentGroupId, combinedGroupConstraints);
+      collectOptions(group, group.name || currentGroupName, group.id || currentGroupId, combinedGroupConstraints, group.modifiers);
     });
   };
 
