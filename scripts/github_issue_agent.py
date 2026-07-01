@@ -252,6 +252,26 @@ Otherwise, leave 'reply' empty.
     )
     return CommentAnalysis.model_validate_json(response.text)
 
+def is_agent_requested(comment_body: str) -> bool:
+    if not comment_body:
+        return False
+    body_lower = comment_body.lower()
+    
+    # Direct triggers/mentions/commands
+    direct_triggers = ["@agent", "/agent", "@github-actions", "/approve", "/close", "/cancel", "/resolve"]
+    for trigger in direct_triggers:
+        if trigger in body_lower:
+            return True
+            
+    # Standalone keywords (not preceded or followed by word chars or hyphens)
+    keywords = ["approved", "genehmigt", "resolved", "erledigt", "solved"]
+    for kw in keywords:
+        pattern = rf"(?<![\w-]){re.escape(kw)}(?![\w-])"
+        if re.search(pattern, body_lower):
+            return True
+            
+    return False
+
 def main():
     api_key = os.getenv("GEMINI_API_KEY")
     github_token = os.getenv("GITHUB_TOKEN")
@@ -277,6 +297,10 @@ def main():
     if event_name == "issue_comment":
         print(f"Processing comment from {comment_author}: {comment_body}")
         
+        if not is_agent_requested(comment_body):
+            print("Comment does not address/request the agent. Exiting early.")
+            sys.exit(0)
+            
         comment_analysis = analyze_comment(issue.title, issue.body, comment_body, comment_author)
         print(f"Comment analysis: {comment_analysis.intent}")
         
@@ -379,7 +403,11 @@ def main():
                     issue.remove_from_labels("approved")
             
             questions_md = "\n".join([f"- {q}" for q in analysis.questions])
-            comment_body = f"👋 Hello! To start the implementation, the agent needs clarification on the following questions:\n\n{questions_md}\n\nPlease reply directly to this ticket."
+            comment_body = (
+                f"👋 Hello! To start the implementation, the agent needs clarification on the following questions:\n\n{questions_md}\n\n"
+                f"Please reply directly to this ticket.\n\n"
+                f"💬 *Note: To trigger the agent in subsequent comments, please mention `@agent` or use `/agent`.*"
+            )
             issue.create_comment(comment_body)
         else:
             for label in issue.labels:
@@ -393,7 +421,9 @@ def main():
             comment_body = (
                 f"📋 **Implementation Plan:**\n\n{analysis.implementation_plan}\n\n"
                 f"<!-- METADATA: {json.dumps(metadata)} -->\n\n"
-                f"---\nPlease reply with **'Approved'** (or `/approve`) to start the implementation."
+                f"---\n"
+                f"Please reply with **'Approved'** (or `/approve`) to start the implementation.\n\n"
+                f"💬 *Note: To trigger the agent in subsequent comments, please mention `@agent` or use `/agent`.*"
             )
             issue.create_comment(comment_body)
 

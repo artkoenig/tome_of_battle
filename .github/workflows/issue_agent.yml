@@ -2,7 +2,7 @@ name: GitHub Issue Agent
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened]
   issue_comment:
     types: [created]
 
