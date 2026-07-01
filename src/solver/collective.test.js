@@ -52,7 +52,7 @@ describe('Collective Entries', () => {
     expect(costs.pts).toBe(70);
   });
 
-  it('does not multiply non-collective option costs by parent count', () => {
+  it('multiplies non-collective option costs by parent count', () => {
     // 10 Archers with 1 non-collective Banner upgrade
     const roster = {
       forces: [
@@ -82,9 +82,9 @@ describe('Collective Entries', () => {
 
     const costs = calculateRosterCosts(roster, mockSystem);
     // 10 archers * 5 = 50
-    // 1 non-collective banner * 10 pts = 10
-    // Total = 60
-    expect(costs.pts).toBe(60);
+    // 1 non-collective banner * 10 pts * 10 archers = 100
+    // Total = 150
+    expect(costs.pts).toBe(150);
   });
 
   it('getSelectionTotalCost works correctly for collective children', () => {

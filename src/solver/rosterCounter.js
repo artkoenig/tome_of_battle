@@ -55,7 +55,7 @@ export function getOptionDisplayCost(system, entry, costLimitType) {
  */
 export function getSelectionTotalCost(selection, costLimitType, parentCount = 1) {
   let total = 0;
-  const effectiveCount = (selection.number || 1) * (selection.collective ? parentCount : 1);
+  const effectiveCount = (selection.number || 1) * parentCount;
   if (selection.costs) {
     const cost = selection.costs.find(c => c.typeId === costLimitType || c.typeId === 'pts');
     if (cost) {
@@ -85,7 +85,7 @@ export function calculateRosterCosts(roster, system) {
   }
 
   const addSelectionCosts = (selection, parentCount = 1) => {
-    const effectiveCount = (selection.number || 1) * (selection.collective ? parentCount : 1);
+    const effectiveCount = (selection.number || 1) * parentCount;
     // A selection has a list of costs (usually parsed from its template)
     if (selection.costs) {
       selection.costs.forEach(cost => {
@@ -121,7 +121,7 @@ export const computeRosterCounts = (roster, system) => {
   const categoryCounts = {};
 
   const countSelection = (selection, forceId, forceCatalogueId, parentCount = 1, isRoot = false) => {
-    const effectiveCount = (selection.number || 1) * (selection.collective ? parentCount : 1);
+    const effectiveCount = (selection.number || 1) * parentCount;
     const entryId = selection.entryLinkId || selection.selectionEntryId;
     
     if (!forceSelectionCounts[forceId]) {
