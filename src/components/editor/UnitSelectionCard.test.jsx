@@ -8,6 +8,7 @@ vi.mock('lucide-react', () => ({
   Trash2: () => <span data-testid="icon-trash" />,
   Copy: () => <span data-testid="icon-copy" />,
   AlertTriangle: () => <span data-testid="icon-alert" />,
+  Info: () => <span data-testid="icon-info" />,
 }));
 
 // Mock Debug Context
@@ -192,6 +193,11 @@ describe('UnitSelectionCard Component', () => {
     
     // Tooltip should be gone
     expect(screen.queryByText('Adds +1 to Armour Save')).toBeNull();
+  });
+
+  it('renders an info icon next to upgrades that have a description', () => {
+    render(<UnitSelectionCard {...defaultProps} />);
+    expect(screen.getByTestId('icon-info')).toBeDefined();
   });
 
   it('verifies that validator methods are called with the expected catalogue context', () => {

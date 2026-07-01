@@ -2307,3 +2307,38 @@ input[type="radio"]:checked::after {
 .clickable {
   cursor: pointer;
 }
+
+/* Upgrades styling in Unit Header */
+.unit-header-upgrades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  width: 100%;
+  padding-right: 24px;
+}
+
+.upgrade-badge {
+  background-color: rgba(226, 183, 66, 0.06);
+  border: 1px solid rgba(226, 183, 66, 0.22);
+  color: var(--text-parchment);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.upgrade-badge.has-desc {
+  cursor: help;
+}
+
+.upgrade-badge.no-desc {
+  cursor: default;
+}
+
+.upgrade-info-icon {
+  margin-left: 4px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Copy, AlertTriangle } from 'lucide-react';
+import { Trash2, Copy, AlertTriangle, Info } from 'lucide-react';
 import { useDebugMode } from '../../hooks/DebugContext';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
@@ -161,34 +161,13 @@ export default function UnitSelectionCard({
     if (selectedUpgrades.length === 0) return null;
 
     return (
-      <div 
-        className="unit-header-upgrades" 
-        style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          gap: '6px', 
-          marginTop: '4px',
-          marginBottom: '2px',
-          width: '100%',
-          paddingRight: '24px'
-        }}
-      >
+      <div className="unit-header-upgrades">
         {selectedUpgrades.map(upgrade => {
           const descText = getUpgradeDescription(upgrade.resolved);
           return (
-          <span 
+            <span 
               key={upgrade.id}
-              className="text-micro"
-              style={{
-                backgroundColor: 'rgba(226, 183, 66, 0.06)',
-                border: '1px solid rgba(226, 183, 66, 0.22)',
-                color: 'var(--text-parchment)',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                cursor: descText ? 'help' : 'default'
-              }}
+              className={`text-micro upgrade-badge ${descText ? 'has-desc' : 'no-desc'}`}
               onMouseEnter={(e) => descText && handleMouseEnter(upgrade.resolved?.name || upgrade.name, descText, e)}
               onMouseMove={descText ? handleMouseMove : null}
               onMouseLeave={descText ? handleMouseLeave : null}
@@ -201,6 +180,9 @@ export default function UnitSelectionCard({
             >
               {upgrade.number > 1 ? `${upgrade.number}x ` : ''}
               {upgrade.name || upgrade.resolved.name}
+              {descText && (
+                <Info size={10} className="upgrade-info-icon" />
+              )}
             </span>
           );
         })}
