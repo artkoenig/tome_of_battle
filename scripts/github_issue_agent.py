@@ -107,6 +107,16 @@ def get_core_file_contents():
                         contents[path] = file_obj.read()
                 except Exception as e:
                     print(f"Error reading {path}: {e}")
+    
+    # Explicitly include AGENTS.md and validation_insights.md from .agents/
+    for extra_file in [os.path.join(".agents", "AGENTS.md"), os.path.join(".agents", "validation_insights.md")]:
+        if os.path.exists(extra_file):
+            try:
+                with open(extra_file, 'r', encoding='utf-8') as file_obj:
+                    contents[extra_file] = file_obj.read()
+            except Exception as e:
+                print(f"Error reading {extra_file}: {e}")
+                
     return contents
 
 def find_relevant_catalogs(issue_title: str, issue_body: str):

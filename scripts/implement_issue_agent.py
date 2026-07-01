@@ -214,6 +214,18 @@ Here are the contents of the relevant files in the repository:
     for path, content in inspected_files.items():
         prompt += f"\n--- FILE: {path} ---\n{content}\n"
 
+    # Load and inject project guidelines (AGENTS.md and validation_insights.md)
+    guidelines = ""
+    for path in [".agents/AGENTS.md", ".agents/validation_insights.md"]:
+        if os.path.exists(path):
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    guidelines += f"\n--- GUIDELINES ({path}) ---\n{f.read()}\n"
+            except Exception as e:
+                print(f"Error reading guidelines {path}: {e}")
+    if guidelines:
+        prompt += f"\nHere are the project guidelines and validation insights you must adhere to:\n{guidelines}\n"
+
     prompt += """
 Please generate all necessary file modifications or new files to implement the changes.
 Make sure the code matches the design guidelines of the project, compiles, and includes tests if necessary.
