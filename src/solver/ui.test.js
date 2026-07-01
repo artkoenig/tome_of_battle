@@ -278,6 +278,7 @@ const runUiTests = async () => {
 
     // Verify initial validation errors are shown (since empty roster violates min units etc.)
     console.log('Verifying initial validation errors are shown...');
+    await new Promise(r => setTimeout(r, 1000)); // Wait for the 150ms validation debounce to run and render
     const errorsCountBefore = await page.evaluate(() => {
       return document.querySelectorAll('.validation-error-item').length;
     });
