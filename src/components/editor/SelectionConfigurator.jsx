@@ -186,10 +186,19 @@ export default function SelectionConfigurator({
                     updateSubSelection(selection.id, option, 'add_instance', parentCount);
                   }
                 } else if (isBinary) {
-                  if (count > 0 || !isSelectDisabled) {
-                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment', parentCount);
+                  const isDecrementing = count > 0;
+                  if (isDecrementing) {
+                    if (count > minLimit) {
+                      updateSubSelection(selection.id, option, 'decrement', parentCount);
+                    }
+                  } else {
+                    if (!isSelectDisabled) {
+                      updateSubSelection(selection.id, option, 'increment', parentCount);
+                    }
                   }
                 } else {
+                  // For standard options, clicking row increments. 
+                  // If we wanted right-click to decrement we could, but click is increment.
                   if (count < maxLimit && !isSelectDisabled) {
                     updateSubSelection(selection.id, option, 'increment', parentCount);
                   }
@@ -258,10 +267,10 @@ export default function SelectionConfigurator({
                     <input 
                       type="checkbox" 
                       checked={count > 0 || isMandatory}
-                      disabled={isMandatory || (count === 0 && isSelectDisabled)}
+                      disabled={isMandatory || (count === 0 && isSelectDisabled) || (count > 0 && count <= minLimit)}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => {
-                        if (!isMandatory) {
+                        if (!isMandatory && !(count > 0 && count <= minLimit)) {
                           updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement', parentCount);
                         }
                       }}
@@ -274,7 +283,7 @@ export default function SelectionConfigurator({
                           e.stopPropagation();
                           updateSubSelection(selection.id, option, 'decrement', parentCount);
                         }}
-                        disabled={count === 0}
+                        disabled={count <= minLimit}
                       >
                         <Minus size={12} />
                       </button>
