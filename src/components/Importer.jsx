@@ -347,45 +347,49 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
 
           {renderBundleImporter()}
 
-          <div className="gothic-panel full-width">
-            <h3 className="text-subheading">Eigene Spieldaten hochladen</h3>
-            <p className="text-dim text-body">
-              Hast du eigene Battlescribe-Dateien? Lade sie als ZIP-Archiv hoch, um sie in deiner lokalen Bibliothek zu speichern.
-            </p>
-            <div 
-              className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''} margin-top-md`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById('file-upload').click()}
-            >
-              <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
-              <h3>Ziehe ein .zip-Archiv hierher</h3>
-              <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
+          {false && (
+            <div className="gothic-panel full-width">
+              <h3 className="text-subheading">Eigene Spieldaten hochladen</h3>
+              <p className="text-dim text-body">
+                Hast du eigene Battlescribe-Dateien? Lade sie als ZIP-Archiv hoch, um sie in deiner lokalen Bibliothek zu speichern.
+              </p>
+              <div 
+                className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''} margin-top-md`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById('file-upload').click()}
+              >
+                <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
+                <h3>Ziehe ein .zip-Archiv hierher</h3>
+                <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       ) : (
         <div className="importer-layout">
-          <div className="gothic-panel bundle-importer-panel">
-            <h3 className="text-subheading">Eigene Spieldaten hochladen</h3>
-            <p className="text-dim text-body">
-              Ziehe ein .zip-Archiv hierher oder klicke, um deine Dateien zu durchsuchen.
-            </p>
-            <div 
-              className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''} margin-top-md`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById('file-upload').click()}
-            >
-              <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
-              <h3>Ziehe ein .zip-Archiv hierher</h3>
-              <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
+          {false && (
+            <div className="gothic-panel bundle-importer-panel">
+              <h3 className="text-subheading">Eigene Spieldaten hochladen</h3>
+              <p className="text-dim text-body">
+                Ziehe ein .zip-Archiv hierher oder klicke, um deine Dateien zu durchsuchen.
+              </p>
+              <div 
+                className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''} margin-top-md`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById('file-upload').click()}
+              >
+                <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
+                <h3>Ziehe ein .zip-Archiv hierher</h3>
+                <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
+              </div>
             </div>
-          </div>
+          )}
 
           {renderBundleImporter()}
         </div>
@@ -399,13 +403,15 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         onChange={handleFileInput}
       />
 
-      <button 
-        className="fab-mobile mobile-only"
-        onClick={() => document.getElementById('file-upload').click()}
-        title="Datei hochladen"
-      >
-        <Upload size={24} />
-      </button>
+      {false && (
+        <button 
+          className="fab-mobile mobile-only"
+          onClick={() => document.getElementById('file-upload').click()}
+          title="Datei hochladen"
+        >
+          <Upload size={24} />
+        </button>
+      )}
 
       {!showAsEmptyState && (
         <div className="margin-top-md">

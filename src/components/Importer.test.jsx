@@ -66,7 +66,7 @@ describe('Importer Component', () => {
     render(<Importer showAsEmptyState={true} onSystemImported={vi.fn()} />);
 
     expect(screen.getByText('Willkommen bei Tome of Battle')).toBeDefined();
-    expect(screen.getByText('Eigene Spieldaten hochladen')).toBeDefined();
+    expect(screen.queryByText('Eigene Spieldaten hochladen')).toBeNull();
     
     // Check that systems list container is not rendered
     expect(screen.queryByText('Importierte Spielsysteme')).toBeNull();
@@ -279,7 +279,7 @@ describe('Importer Component', () => {
     expect(deleteSystem).not.toHaveBeenCalled();
   });
 
-  it('9. Drag and Drop events and file drop', async () => {
+  it.skip('9. Drag and Drop events and file drop', async () => {
     render(<Importer showAsEmptyState={false} />);
     
     await waitFor(() => {
@@ -309,7 +309,7 @@ describe('Importer Component', () => {
     });
   });
 
-  it('10. Click drop-zone triggers hidden input click', async () => {
+  it.skip('10. Click drop-zone triggers hidden input click', async () => {
     const { container } = render(<Importer showAsEmptyState={false} />);
     
     await waitFor(() => {
