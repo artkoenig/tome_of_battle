@@ -118,3 +118,60 @@ describe('App Component PWA Update Toast Notification', () => {
     expect(mockWorker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
   });
 });
+
+vi.mock('./parser/catalogEditor', () => ({
+  findExactEntryById: vi.fn(),
+  searchEditableEntries: vi.fn(),
+}));
+
+describe('App Component Debug Entry Click Redirection', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockShowDebugIds = true;
+  });
+
+  it('redirects entryLink to target selectionEntry on global click', async () => {
+    const mockLinkEntry = {
+      type: 'entryLink',
+      id: 'link-123',
+      name: 'Linked Weapon',
+      ref: { targetId: 'target-456' }
+    };
+    const mockTargetEntry = {
+      type: 'entry',
+      id: 'target-456',
+      name: 'Real Weapon',
+      ref: { name: 'Real Weapon' }
+    };
+
+    const { getAllSystems } = await import('./db/database');
+    const mockGst = { id: 'sys-1', name: 'Test System', catalogues: [] };
+    getAllSystems.mockResolvedValue([mockGst]);
+
+    const { findExactEntryById } = await import('./parser/catalogEditor');
+    findExactEntryById.mockImplementation((sys, id) => {
+      if (id === 'link-123') return mockLinkEntry;
+      if (id === 'target-456') return mockTargetEntry;
+      return null;
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('dashboard-mock')).not.toBeNull();
+    });
+
+    const badge = document.createElement('span');
+    badge.className = 'debug-id-badge clickable';
+    badge.textContent = 'link-123';
+    document.body.appendChild(badge);
+
+    await act(async () => {
+      fireEvent.click(badge);
+    });
+
+    document.body.removeChild(badge);
+
+    expect(findExactEntryById).toHaveBeenCalledWith(mockGst, 'target-456');
+  });
+});

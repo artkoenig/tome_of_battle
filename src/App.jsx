@@ -142,8 +142,14 @@ export default function App() {
       }
 
       for (const sys of searchSystems) {
-        const exactMatch = findExactEntryById(sys, clickedId);
+        let exactMatch = findExactEntryById(sys, clickedId);
         if (exactMatch) {
+          if (exactMatch.type === 'entryLink' && exactMatch.ref?.targetId) {
+            const targetMatch = findExactEntryById(sys, exactMatch.ref.targetId);
+            if (targetMatch) {
+              exactMatch = targetMatch;
+            }
+          }
           foundEntry = exactMatch;
           foundSystem = sys;
           break;
@@ -476,7 +482,7 @@ export default function App() {
               <PlayMode 
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => handleOpenRoster(selectedRoster, 'builder')}
+                onBack={() => setView('rosters')}
               />
             )}
           </>

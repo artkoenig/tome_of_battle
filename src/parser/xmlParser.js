@@ -30,6 +30,8 @@ function parseRules(el) {
   return getChildren(wrapper, 'rule').map(ruleEl => ({
     id: ruleEl.getAttribute('id'),
     name: ruleEl.getAttribute('name'),
+    publicationId: ruleEl.getAttribute('publicationId'),
+    page: ruleEl.getAttribute('page'),
     hidden: ruleEl.getAttribute('hidden') === 'true',
     modifiers: parseModifiers(ruleEl),
     description: getChildren(ruleEl, 'description')[0]?.textContent || ''
@@ -60,6 +62,8 @@ function parseProfiles(el) {
       name: profEl.getAttribute('name'),
       profileTypeId: profEl.getAttribute('profileTypeId'),
       profileTypeName: profEl.getAttribute('profileTypeName') || profEl.getAttribute('typeName'),
+      publicationId: profEl.getAttribute('publicationId'),
+      page: profEl.getAttribute('page'),
       hidden: profEl.getAttribute('hidden') === 'true',
       modifiers: parseModifiers(profEl),
       characteristics
@@ -78,6 +82,8 @@ function parseInfoLinks(el) {
     name: linkEl.getAttribute('name'),
     targetId: linkEl.getAttribute('targetId'),
     type: linkEl.getAttribute('type'), // profile, rule
+    publicationId: linkEl.getAttribute('publicationId'),
+    page: linkEl.getAttribute('page'),
     hidden: linkEl.getAttribute('hidden') === 'true',
     modifiers: parseModifiers(linkEl)
   }));
@@ -211,6 +217,8 @@ function parseEntryLinks(el) {
     name: linkEl.getAttribute('name'),
     targetId: linkEl.getAttribute('targetId'),
     type: linkEl.getAttribute('type'), // selectionEntry, selectionEntryGroup
+    publicationId: linkEl.getAttribute('publicationId'),
+    page: linkEl.getAttribute('page'),
     collective: linkEl.getAttribute('collective') === 'true',
     hidden: linkEl.getAttribute('hidden') === 'true',
     constraints: parseConstraints(linkEl),
@@ -235,6 +243,8 @@ function parseSelectionEntry(el) {
     id: el.getAttribute('id'),
     name: el.getAttribute('name'),
     type: el.getAttribute('type') || 'upgrade', // unit, model, upgrade
+    publicationId: el.getAttribute('publicationId'),
+    page: el.getAttribute('page'),
     collective: el.getAttribute('collective') === 'true',
     hidden: el.getAttribute('hidden') === 'true',
     constraints: parseConstraints(el),
@@ -262,6 +272,8 @@ function parseSelectionEntryGroup(el) {
     id: el.getAttribute('id'),
     name: el.getAttribute('name'),
     defaultSelectionEntryId: el.getAttribute('defaultSelectionEntryId'),
+    publicationId: el.getAttribute('publicationId'),
+    page: el.getAttribute('page'),
     collective: el.getAttribute('collective') === 'true',
     hidden: el.getAttribute('hidden') === 'true',
     constraints: parseConstraints(el),
@@ -342,6 +354,14 @@ export function parseGameSystemXML(xmlText) {
   const forceEntries = getWrappedChildren(root, 'forceEntries', 'forceEntry').map(parseForceEntry);
   const sharedSelectionEntries = getWrappedChildren(root, 'sharedSelectionEntries', 'selectionEntry').map(parseSelectionEntry);
   const sharedSelectionEntryGroups = getWrappedChildren(root, 'sharedSelectionEntryGroups', 'selectionEntryGroup').map(parseSelectionEntryGroup);
+  const publications = getWrappedChildren(root, 'publications', 'publication').map(el => ({
+    id: el.getAttribute('id'),
+    name: el.getAttribute('name'),
+    shortName: el.getAttribute('shortName'),
+    publisher: el.getAttribute('publisher'),
+    publicationDate: el.getAttribute('publicationDate'),
+    website: el.getAttribute('website')
+  }));
 
   return {
     id: root.getAttribute('id'),
@@ -353,7 +373,8 @@ export function parseGameSystemXML(xmlText) {
     sharedSelectionEntries,
     sharedSelectionEntryGroups,
     sharedProfiles: parseProfiles(root),
-    sharedRules: parseRules(root)
+    sharedRules: parseRules(root),
+    publications
   };
 }
 
@@ -391,6 +412,14 @@ export function parseCatalogueXML(xmlText) {
   }));
 
   const forceEntries = getWrappedChildren(root, 'forceEntries', 'forceEntry').map(parseForceEntry);
+  const publications = getWrappedChildren(root, 'publications', 'publication').map(el => ({
+    id: el.getAttribute('id'),
+    name: el.getAttribute('name'),
+    shortName: el.getAttribute('shortName'),
+    publisher: el.getAttribute('publisher'),
+    publicationDate: el.getAttribute('publicationDate'),
+    website: el.getAttribute('website')
+  }));
 
   return {
     id: root.getAttribute('id'),
@@ -405,7 +434,8 @@ export function parseCatalogueXML(xmlText) {
     forceEntries,
     sharedProfiles: parseProfiles(root),
     sharedRules: parseRules(root),
-    catalogueLinks
+    catalogueLinks,
+    publications
   };
 }
 
@@ -442,6 +472,7 @@ export function processImportedData(gstFiles, catFiles) {
     sharedSelectionEntryGroups: parsedGst.sharedSelectionEntryGroups,
     sharedProfiles: parsedGst.sharedProfiles,
     sharedRules: parsedGst.sharedRules,
+    publications: parsedGst.publications || [],
     catalogues: parsedCats
   };
 

@@ -2399,3 +2399,24 @@ input[type="radio"]:checked::after {
   opacity: 0.7;
   flex-shrink: 0;
 }
+
+.publication-ref {
+  color: var(--text-dim);
+  font-size: var(--fs-micro);
+  font-style: normal;
+  font-family: var(--font-body);
+  margin-left: 8px;
+}
+
+.tooltip-section-title {
+  color: var(--text-gold);
+  font-family: var(--font-serif);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-dark);
+  margin-top: 6px;
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

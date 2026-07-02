@@ -186,4 +186,46 @@ describe('catalogResolver - resolveEntry', () => {
     const resolved = resolveEntry({ id: 'sys-1' }, null);
     expect(resolved).toBeNull();
   });
+
+  it('resolves publicationId and page to publicationRef on resolved entry, rules, and profiles', () => {
+    const mockSystem = {
+      id: 'sys-1',
+      publications: [
+        { id: 'pub-brb', name: 'Rulebook' }
+      ],
+      catalogues: [
+        {
+          id: 'cat-1',
+          publications: [
+            { id: 'pub-codex', name: 'Codex' }
+          ],
+          selectionEntries: [
+            {
+              id: 'target-1',
+              name: 'Space Marine',
+              publicationId: 'pub-codex',
+              page: '44',
+              rules: [
+                { id: 'rule-1', name: 'Rite', publicationId: 'pub-codex', page: '45' }
+              ],
+              profiles: [
+                { id: 'prof-1', name: 'Stats', publicationId: 'pub-brb', page: '200' }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    const linkEntry = {
+      id: 'link-1',
+      targetId: 'target-1',
+      name: 'Linked Space Marine'
+    };
+
+    const resolved = resolveEntry(mockSystem, linkEntry, 'cat-1');
+    expect(resolved.publicationRef).toBe('[Codex, S. 44]');
+    expect(resolved.rules[0].publicationRef).toBe('[Codex, S. 45]');
+    expect(resolved.profiles[0].publicationRef).toBe('[Rulebook, S. 200]');
+  });
 });

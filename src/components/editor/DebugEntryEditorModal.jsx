@@ -10,6 +10,8 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
   const [localConstraints, setLocalConstraints] = useState({});
   const [localCharacteristics, setLocalCharacteristics] = useState({});
   const [localDescription, setLocalDescription] = useState('');
+  const [localPublicationId, setLocalPublicationId] = useState('');
+  const [localPage, setLocalPage] = useState('');
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
@@ -36,10 +38,31 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
       setLocalCharacteristics(charMap);
 
       setLocalDescription(entry.ref.description || '');
+      setLocalPublicationId(entry.ref.publicationId || '');
+      setLocalPage(entry.ref.page || '');
       setError(null);
       setSuccessMsg(null);
     }
   }, [entry]);
+
+  const getSystemPublications = () => {
+    const list = [];
+    if (system.publications) {
+      list.push(...system.publications);
+    }
+    system.catalogues?.forEach(cat => {
+      if (cat.publications) {
+        list.push(...cat.publications);
+      }
+    });
+    const seen = new Set();
+    return list.filter(p => {
+      if (!p || !p.id) return false;
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+  };
 
   const handleSave = async () => {
     try {
@@ -51,7 +74,9 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
         localCosts,
         localConstraints,
         localCharacteristics,
-        localDescription
+        localDescription,
+        localPublicationId,
+        localPage
       );
 
       let nextSystem = system;
@@ -124,6 +149,39 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
               onChange={(e) => setLocalName(e.target.value)}
               style={{ width: '100%', padding: '8px' }}
             />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div>
+              <label className="text-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
+                Publikationsreferenz
+              </label>
+              <select
+                value={localPublicationId}
+                onChange={(e) => setLocalPublicationId(e.target.value)}
+                style={{ width: '100%', padding: '8px', background: 'var(--bg-card)', color: 'var(--text-parchment)', border: '1px solid var(--border-dark)' }}
+                className="text-label"
+              >
+                <option value="">-- Keine --</option>
+                {getSystemPublications().map(pub => (
+                  <option key={pub.id} value={pub.id}>
+                    {pub.name} {pub.shortName ? `(${pub.shortName})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-label" style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
+                Seite (Page)
+              </label>
+              <input
+                type="text"
+                value={localPage}
+                onChange={(e) => setLocalPage(e.target.value)}
+                style={{ width: '100%', padding: '8px', background: 'var(--bg-card)', color: 'var(--text-parchment)', border: '1px solid var(--border-dark)' }}
+                className="text-label"
+              />
+            </div>
           </div>
 
           {entry.type === 'entry' && Object.keys(localCosts).length > 0 && (
@@ -215,7 +273,14 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
             </div>
           )}
 
-          {entry.ref && (entry.ref.selectionEntries?.length > 0 || entry.ref.selectionEntryGroups?.length > 0 || entry.ref.entryLinks?.length > 0) && (
+          {entry.ref && (
+            (entry.ref.selectionEntries && entry.ref.selectionEntries.length > 0) ||
+            (entry.ref.selectionEntryGroups && entry.ref.selectionEntryGroups.length > 0) ||
+            (entry.ref.entryLinks && entry.ref.entryLinks.length > 0) ||
+            (entry.ref.infoLinks && entry.ref.infoLinks.length > 0) ||
+            (entry.ref.profiles && entry.ref.profiles.length > 0) ||
+            (entry.ref.rules && entry.ref.rules.length > 0)
+          ) && (
             <div style={{ marginTop: '24px', borderTop: '1px solid var(--border-dark)', paddingTop: '16px' }}>
               <label className="text-body" style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: 'var(--text-gold)' }}>
                 Kind-Elemente
@@ -245,6 +310,15 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
                     <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Link:</span>
                     <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
                       {child.name || 'Unbenannter Link'}: {child.id}
+                    </span>
+                  </div>
+                ))}
+
+                {entry.ref.infoLinks?.map(child => (
+                  <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Link ({child.type}):</span>
+                    <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
+                      {child.name || 'InfoLink'}: {child.targetId}
                     </span>
                   </div>
                 ))}

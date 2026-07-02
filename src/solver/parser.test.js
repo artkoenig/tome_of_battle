@@ -16,6 +16,9 @@ globalThis.XMLSerializer = jsdomObj.window.XMLSerializer;
 // Mock data
 const mockGstXml = `<?xml version="1.0" encoding="UTF-8"?>
 <gameSystem id="sys-123" name="Test Grimdark System">
+  <publications>
+    <publication id="pub-brb" name="Big Rule Book" shortName="BRB" />
+  </publications>
   <costTypes>
     <costType id="pts" name="Points" defaultCostLimit="2000" />
   </costTypes>
@@ -42,8 +45,11 @@ const mockGstXml = `<?xml version="1.0" encoding="UTF-8"?>
 
 const mockCatXml = `<?xml version="1.0" encoding="UTF-8"?>
 <catalogue id="cat-marines" name="Space Marines" gameSystemId="sys-123">
+  <publications>
+    <publication id="pub-codex" name="Space Marines Codex" />
+  </publications>
   <selectionEntries>
-    <selectionEntry id="unit-captain" name="Space Marine Captain" type="unit">
+    <selectionEntry id="unit-captain" name="Space Marine Captain" type="unit" publicationId="pub-codex" page="55">
       <costs>
         <cost name="Points" typeId="pts" value="100" />
       </costs>
@@ -58,6 +64,18 @@ const mockCatXml = `<?xml version="1.0" encoding="UTF-8"?>
           </entryLinks>
         </selectionEntryGroup>
       </selectionEntryGroups>
+      <rules>
+        <rule id="rule-rite" name="Rites of Battle" publicationId="pub-codex" page="12">
+          <description>Re-roll 1s</description>
+        </rule>
+      </rules>
+      <profiles>
+        <profile id="prof-captain" name="Captain Stats" profileTypeId="prof-unit" publicationId="pub-codex" page="99">
+          <characteristics>
+            <characteristic typeId="char-m" name="M">6"</characteristic>
+          </characteristics>
+        </profile>
+      </profiles>
     </selectionEntry>
   </selectionEntries>
 </catalogue>
@@ -75,6 +93,9 @@ test('parseGameSystemXML', () => {
     expect(sys.profileTypes[0].characteristics.length).toBe(2);
     expect(sys.categoryEntries.length).toBe(1);
     expect(sys.forceEntries.length).toBe(1);
+    expect(sys.publications.length).toBe(1);
+    expect(sys.publications[0].id).toBe('pub-brb');
+    expect(sys.publications[0].name).toBe('Big Rule Book');
   } catch (e) {
     expect.fail(`testParseGameSystem threw: ${e.message}`);
   }
@@ -95,6 +116,17 @@ test('parseCatalogueXML', () => {
     expect(groups.length).toBe(1);
     expect(groups[0].id).toBe('group-weapons');
     expect(groups[0].defaultSelectionEntryId).toBe('weapon-sword');
+
+    // Assert publications and attributes parsing
+    expect(cat.publications.length).toBe(1);
+    expect(cat.publications[0].id).toBe('pub-codex');
+    expect(cat.publications[0].name).toBe('Space Marines Codex');
+    expect(cat.selectionEntries[0].publicationId).toBe('pub-codex');
+    expect(cat.selectionEntries[0].page).toBe('55');
+    expect(cat.selectionEntries[0].rules[0].publicationId).toBe('pub-codex');
+    expect(cat.selectionEntries[0].rules[0].page).toBe('12');
+    expect(cat.selectionEntries[0].profiles[0].publicationId).toBe('pub-codex');
+    expect(cat.selectionEntries[0].profiles[0].page).toBe('99');
   } catch (e) {
     expect.fail(`testParseCatalogue threw: ${e.message}`);
   }

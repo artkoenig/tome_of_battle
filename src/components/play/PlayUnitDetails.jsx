@@ -112,18 +112,142 @@ export default function PlayUnitDetails({
     const descriptions = [];
     if (res.rules && res.rules.length > 0) {
       res.rules.forEach(r => {
-        if (r.description) descriptions.push(r.description);
+        if (r.description) {
+          const ref = r.publicationRef ? ` ${r.publicationRef}` : '';
+          descriptions.push(r.description + ref);
+        }
       });
     }
     if (res.profiles && res.profiles.length > 0) {
       const upgradeProfiles = extractUpgradeProfiles(res.profiles);
       upgradeProfiles.forEach(p => {
         p.characteristics?.forEach(c => {
-          if (c.value) descriptions.push(`${c.name}: ${c.value}`);
+          if (c.value) {
+            const ref = p.publicationRef ? ` ${p.publicationRef}` : '';
+            descriptions.push(`${c.name}: ${c.value}${ref}`);
+          }
         });
       });
     }
+    if (descriptions.length === 0 && res.publicationRef) {
+      descriptions.push(res.publicationRef);
+    }
     return descriptions.join(' | ');
+  };
+
+  const renderUpgradeDetails = (res) => {
+    if (!res) return null;
+    const elements = [];
+
+    const isNameSimilar = (nameA, nameB) => {
+      if (!nameA || !nameB) return false;
+      const cleanA = nameA.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanB = nameB.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return cleanA === cleanB || 
+             cleanA.includes(cleanB) || 
+             cleanB.includes(cleanA) ||
+             (cleanA.includes('waaagh') && cleanB.includes('waaagh')) ||
+             cleanA.slice(-10) === cleanB.slice(-10);
+    };
+
+    // 1. Beschreibung (Rules / Lore)
+    if (res.rules && res.rules.length > 0) {
+      res.rules.forEach((r, idx) => {
+        if (r.description) {
+          const label = isNameSimilar(r.name, res.name)
+            ? 'Beschreibung'
+            : `Beschreibung (${r.name})`;
+
+          elements.push(
+            <div key={`rule-${idx}`} style={{ marginTop: '4px' }}>
+              <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
+              {r.description}
+              {r.publicationRef && (
+                <span className="publication-ref">
+                  {r.publicationRef}
+                </span>
+              )}
+            </div>
+          );
+        }
+      });
+    }
+
+    // 2. Sonderregeln & Profilwerte (from Profiles)
+    if (res.profiles && res.profiles.length > 0) {
+      const upgradeProfiles = extractUpgradeProfiles(res.profiles);
+      const profileElements = [];
+      upgradeProfiles.forEach((p, idx) => {
+        // Find "Special Rules" or "Sonderregeln" characteristic
+        const specialRulesChar = p.characteristics?.find(c => {
+          const nameLower = (c.name || '').toLowerCase().trim();
+          return nameLower === 'special rules' || nameLower === 'special-rules' || nameLower === 'sonderregeln';
+        });
+
+        const otherChars = p.characteristics?.filter(c => {
+          const nameLower = (c.name || '').toLowerCase().trim();
+          return nameLower !== 'special rules' && nameLower !== 'special-rules' && nameLower !== 'sonderregeln';
+        }) || [];
+
+        // If there is special rules text, show it under "Sonderregeln:" label
+        if (specialRulesChar && specialRulesChar.value && specialRulesChar.value.trim()) {
+          profileElements.push(
+            <div key={`special-rules-${idx}`} style={{ marginTop: '4px' }}>
+              <span className="text-gold" style={{ fontWeight: 600 }}>Sonderregeln: </span>
+              {specialRulesChar.value.trim()}
+              {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
+                <span className="publication-ref">
+                  {p.publicationRef}
+                </span>
+              )}
+            </div>
+          );
+        }
+
+        // If there are other non-empty characteristics, show them under "Profil:" label
+        const nonBigEmptyChars = otherChars.filter(c => c.value && c.value.trim() && c.value.trim() !== '-');
+        if (nonBigEmptyChars.length > 0) {
+          const stats = nonBigEmptyChars.map(c => `${c.name}: ${c.value}`).join(', ');
+          const label = isNameSimilar(p.name, res.name)
+            ? 'Profil'
+            : `Profil (${p.name})`;
+
+          profileElements.push(
+            <div key={`profile-${idx}`} style={{ marginTop: '4px' }}>
+              <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
+              {stats}
+              {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
+                <span className="publication-ref">
+                  {p.publicationRef}
+                </span>
+              )}
+            </div>
+          );
+        }
+      });
+      elements.push(...profileElements);
+    }
+
+    // 3. Quelle
+    if (res.publicationRef) {
+      const hasRuleOrProfileRefs = (res.rules && res.rules.some(r => r.publicationRef)) || (res.profiles && res.profiles.some(p => p.publicationRef));
+      if (!hasRuleOrProfileRefs) {
+        elements.push(
+          <div key="source" style={{ marginTop: '6px' }}>
+            <span className="text-gold" style={{ fontWeight: 600 }}>Quelle: </span>
+            <span className="publication-ref">
+              {res.publicationRef}
+            </span>
+          </div>
+        );
+      }
+    }
+
+    return (
+      <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
+        {elements.length > 0 ? elements : <span className="text-dim">Keine Beschreibung vorhanden.</span>}
+      </div>
+    );
   };
 
   const collectSavesData = (sel) => {
@@ -332,6 +456,11 @@ export default function PlayUnitDetails({
                 <div key={pIdx} style={{ marginBottom: '6px' }}>
                   <div className="profile-title text-gold font-serif">
                     {prof.name}
+                    {prof.publicationRef && (
+                      <span className="publication-ref">
+                        {prof.publicationRef}
+                      </span>
+                    )}
                   </div>
                   <div className="profile-table-container">
                     <table className="profile-table">
@@ -431,7 +560,14 @@ export default function PlayUnitDetails({
                           {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
                           :
                         </strong>{' '}
-                        <span className="text-body" style={{ color: 'var(--text-parchment)', fontStyle: 'italic' }}>{rule.description}</span>
+                        <span className="text-body" style={{ color: 'var(--text-parchment)', fontStyle: 'italic' }}>
+                          {rule.description}
+                          {rule.publicationRef && (
+                            <span className="publication-ref">
+                              {rule.publicationRef}
+                            </span>
+                          )}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -507,11 +643,10 @@ export default function PlayUnitDetails({
                                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
                                    borderLeft: '2px solid var(--border-gold-dim)',
                                    marginTop: '2px',
-                                   fontStyle: 'italic',
                                    lineHeight: '1.3'
                                  }}
                                >
-                                 {desc}
+                                 {renderUpgradeDetails(upgrade.resolved)}
                                </div>
                              )}
                           </div>

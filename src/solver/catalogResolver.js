@@ -157,5 +157,83 @@ export function resolveEntry(system, entry, catalogueId = null) {
     });
   }
 
+  // Resolve publicationRef for the entry and all its rules/profiles
+  const finalPubId = entry.publicationId || resolved.publicationId;
+  const finalPage = entry.page || resolved.page;
+  const entryPubRef = getPublicationRef(system, finalPubId, finalPage, catalogueId);
+  if (entryPubRef) {
+    resolved.publicationRef = entryPubRef;
+  }
+
+  if (resolved.rules) {
+    resolved.rules.forEach(r => {
+      const rulePubRef = getPublicationRef(system, r.publicationId, r.page, catalogueId);
+      if (rulePubRef) {
+        r.publicationRef = rulePubRef;
+      }
+    });
+  }
+
+  if (resolved.profiles) {
+    resolved.profiles.forEach(p => {
+      const profPubRef = getPublicationRef(system, p.publicationId, p.page, catalogueId);
+      if (profPubRef) {
+        p.publicationRef = profPubRef;
+      }
+    });
+  }
+
   return resolved;
+}
+
+export function findPublicationById(system, publicationId, catalogueId = null) {
+  if (!system || !publicationId) return null;
+  
+  // 1. Search in the gameSystem publications
+  if (system.publications) {
+    const pub = system.publications.find(p => p.id === publicationId);
+    if (pub) return pub;
+  }
+  
+  // 2. Search in the specified catalogue
+  if (catalogueId && system.catalogues) {
+    const cat = system.catalogues.find(c => c.id === catalogueId);
+    if (cat && cat.publications) {
+      const pub = cat.publications.find(p => p.id === publicationId);
+      if (pub) return pub;
+    }
+  }
+  
+  // 3. Fallback: Search all catalogues
+  if (system.catalogues) {
+    for (const cat of system.catalogues) {
+      if (cat.publications) {
+        const pub = cat.publications.find(p => p.id === publicationId);
+        if (pub) return pub;
+      }
+    }
+  }
+  
+  return null;
+}
+
+export function getPublicationRef(system, publicationId, page, catalogueId = null) {
+  if (!publicationId && !page) return '';
+  
+  let pubName = '';
+  if (publicationId) {
+    const pub = findPublicationById(system, publicationId, catalogueId);
+    if (pub) {
+      pubName = pub.name || pub.shortName || '';
+    }
+  }
+  
+  if (pubName && page) {
+    return `[${pubName}, S. ${page}]`;
+  } else if (pubName) {
+    return `[${pubName}]`;
+  } else if (page) {
+    return `[S. ${page}]`;
+  }
+  return '';
 }

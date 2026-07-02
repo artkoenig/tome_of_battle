@@ -24,7 +24,7 @@ const getXMLSerializer = () => {
   throw new Error('XMLSerializer is not available. Ensure you are in a jsdom or browser environment.');
 };
 
-export function updateRawXml(system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription) {
+export function updateRawXml(system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription, localPublicationId, localPage) {
   if (!system.rawXmls) return;
 
   let file = system.rawXmls.cat?.find(f => f.content.includes(entryId));
@@ -42,6 +42,22 @@ export function updateRawXml(system, entryId, type, localName, localCosts, local
 
   if (localName !== undefined) {
     element.setAttribute('name', localName);
+  }
+
+  if (localPublicationId !== undefined) {
+    if (localPublicationId) {
+      element.setAttribute('publicationId', localPublicationId);
+    } else {
+      element.removeAttribute('publicationId');
+    }
+  }
+
+  if (localPage !== undefined) {
+    if (localPage) {
+      element.setAttribute('page', localPage);
+    } else {
+      element.removeAttribute('page');
+    }
   }
 
   if (type === 'entry') {
