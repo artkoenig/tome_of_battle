@@ -1632,5 +1632,190 @@ test('cost modifier evaluation on selection with parent scope repeat', () => {
   expect(rosterCosts['pts']).toBe(10);
 });
 
-console.log('--- TEST RUN COMPLETE ---');
+console.log('--- Dynamic Profile & Rule Modifiers Tests ---');
+const dynamicModSystem = {
+  id: 'sys-dynamic-mod',
+  categoryEntries: [
+    { id: 'cat-bloodline-dragon', name: 'Blood Dragon' }
+  ],
+  catalogues: [
+    {
+      id: 'cat-dynamic-mod',
+      sharedSelectionEntries: [
+        {
+          id: 'unit-vampire',
+          name: 'Vampire Lord',
+          type: 'model',
+          categoryLinks: [
+            { id: 'link-dragon', targetId: 'cat-bloodline-dragon' }
+          ],
+          infoLinks: [
+            {
+              id: 'link-lord-profile',
+              name: 'Vampire Lord Profile',
+              targetId: 'prof-vampire',
+              type: 'profile',
+              modifiers: [
+                {
+                  type: 'increment',
+                  field: 'f95b-da01-0578-3bdc', // WS
+                  value: '2',
+                  conditions: [
+                    {
+                      field: 'selections',
+                      scope: 'cat-bloodline-dragon',
+                      value: '0.0',
+                      childId: 'model',
+                      type: 'instanceOf'
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      sharedProfiles: [
+        {
+          id: 'prof-vampire',
+          name: 'Vampire Lord Base',
+          profileTypeId: 'char-profile',
+          typeName: 'Profile',
+          characteristics: [
+            { id: 'f95b-da01-0578-3bdc', name: 'WS', value: '7' },
+            { id: '6b9f-c8fe-8998-27e3', name: 'A', value: '4' }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const dynamicModRoster = {
+  catalogueId: 'cat-dynamic-mod',
+  costLimit: 2000,
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'force-1',
+      catalogueId: 'cat-dynamic-mod',
+      selections: [
+        {
+          id: 'sel-vampire',
+          selectionEntryId: 'unit-vampire',
+          number: 1,
+          selections: []
+        }
+      ]
+    }
+  ]
+};
+
+test('dynamic profile modifier evaluated correctly with condition scope name resolution', () => {
+  const result = collectUnitProfilesAndRules(
+    dynamicModSystem,
+    dynamicModRoster.forces[0].selections[0],
+    'cat-dynamic-mod',
+    dynamicModRoster
+  );
+
+  expect(result.profiles.length).toBe(1);
+  const p = result.profiles[0];
+  expect(p.name).toBe('Vampire Lord Base');
+  
+  const ws = p.characteristics.find(c => c.name === 'WS');
+  expect(ws).toBeDefined();
+  expect(ws.value).toBe('9');
+  expect(ws.originalValue).toBe('7');
+  expect(ws.modificationBreakdown.length).toBe(1);
+  expect(ws.modificationBreakdown[0]).toContain('+2 von Vampire Lord Base (Blood Dragon)');
+});
+
+test('repeating characteristic modifier applied correctly', () => {
+  const repeatModSystem = {
+    id: 'sys-repeat-mod',
+    catalogues: [
+      {
+        id: 'cat-repeat-mod',
+        sharedSelectionEntries: [
+          {
+            id: 'unit-boyz',
+            name: 'Boyz',
+            selectionEntries: [
+              {
+                id: 'model-boy',
+                name: 'Boy',
+                type: 'model',
+                profiles: [
+                  {
+                    id: 'prof-boy',
+                    name: 'Boy',
+                    typeName: 'Profile',
+                    characteristics: [
+                      { id: 'char-a', name: 'A', value: '1' }
+                    ]
+                  }
+                ]
+              },
+              {
+                id: 'upgrade-boss',
+                name: 'Boss',
+                type: 'upgrade',
+                modifiers: [
+                  {
+                    type: 'increment',
+                    field: 'char-a',
+                    value: '1',
+                    repeat: {
+                      scope: 'parent',
+                      childId: 'model-boy',
+                      value: 5,
+                      repeats: 1
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+
+  const repeatModRoster = {
+    catalogueId: 'cat-repeat-mod',
+    forces: [
+      {
+        id: 'force-1',
+        catalogueId: 'cat-repeat-mod',
+        selections: [
+          {
+            id: 'sel-boyz',
+            selectionEntryId: 'unit-boyz',
+            number: 1,
+            selections: [
+              { id: 'sel-boy', selectionEntryId: 'model-boy', number: 12 },
+              { id: 'sel-boss', selectionEntryId: 'upgrade-boss', number: 1 }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+
+  const result = collectUnitProfilesAndRules(
+    repeatModSystem,
+    repeatModRoster.forces[0].selections[0],
+    'cat-repeat-mod',
+    repeatModRoster
+  );
+
+  const p = result.profiles.find(prof => prof.name === 'Boy');
+  expect(p).toBeDefined();
+  
+  const a = p.characteristics.find(c => c.name === 'A');
+  expect(a).toBeDefined();
+  expect(a.value).toBe('3');
+});
+
 console.log('--- TEST RUN COMPLETE ---');

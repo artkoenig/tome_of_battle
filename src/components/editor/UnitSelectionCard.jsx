@@ -12,6 +12,28 @@ import {
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
 import { extractModelProfiles } from '../../solver/rulesEvaluator';
 
+const getModificationState = (characteristic) => {
+  if (!characteristic || characteristic.originalValue === undefined) return null;
+  
+  const valStr = characteristic.value;
+  const origStr = characteristic.originalValue;
+  if (valStr === origStr) return null;
+
+  const getNumericValue = (str) => {
+    const match = str.match(/-?\d+/);
+    return match ? parseInt(match[0], 10) : null;
+  };
+
+  const valNum = getNumericValue(valStr);
+  const origNum = getNumericValue(origStr);
+
+  if (valNum !== null && origNum !== null) {
+    if (valNum > origNum) return 'positive';
+    if (valNum < origNum) return 'negative';
+  }
+  return 'modified';
+};
+
 export default function UnitSelectionCard({
   selection,
   selectedRosterSelection,
@@ -66,7 +88,7 @@ export default function UnitSelectionCard({
   };
 
   const renderMiniProfile = (sel) => {
-    const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id);
+    const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
     const modelProfiles = extractModelProfiles(profiles);
     if (!modelProfiles || modelProfiles.length === 0) return null;
 
@@ -100,9 +122,65 @@ export default function UnitSelectionCard({
               </thead>
               <tbody>
                 <tr>
-                  {prof.characteristics.map(c => (
-                    <td key={c.name} className="font-body">{c.value}</td>
-                  ))}
+                  {prof.characteristics.map(c => {
+                    const modState = getModificationState(c);
+                    const cellStyle = {};
+                    let className = "font-body";
+                    if (modState === 'positive') {
+                      className += " text-success";
+                      cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
+                      cellStyle.fontWeight = 'bold';
+                      cellStyle.cursor = 'help';
+                    } else if (modState === 'negative') {
+                      className += " text-danger";
+                      cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
+                      cellStyle.fontWeight = 'bold';
+                      cellStyle.cursor = 'help';
+                    } else if (modState === 'modified') {
+                      className += " text-gold";
+                      cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
+                      cellStyle.fontWeight = 'bold';
+                      cellStyle.cursor = 'help';
+                    }
+                    
+                    return (
+                      <td 
+                        key={c.name} 
+                        className={className}
+                        style={cellStyle}
+                        onMouseEnter={(e) => {
+                          if (modState && c.modificationBreakdown?.length > 0) {
+                            handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
+                          }
+                        }}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
+                            setActiveInfo({
+                              title: `Modifikationen: ${c.name}`,
+                              text: (
+                                <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
+                                  {c.modificationBreakdown.map((b, bIdx) => (
+                                    <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
+                                  ))}
+                                </ul>
+                              )
+                            });
+                          } else {
+                            const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
+                            const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
+                            if (resolved) {
+                              setSelectedCatalogEntry(resolved);
+                            }
+                          }
+                        }}
+                      >
+                        {c.value}
+                      </td>
+                    );
+                  })}
                 </tr>
               </tbody>
             </table>

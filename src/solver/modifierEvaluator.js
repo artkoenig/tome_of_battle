@@ -1,5 +1,28 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 
+const selectionHasCategory = (sel, categoryId, system, catalogueId) => {
+  if (!sel) return false;
+  const sId = sel.selectionEntryId || sel.entryLinkId;
+  if (sId === categoryId) return true;
+  
+  const raw = findEntryInSystem(system, sId, catalogueId);
+  const res = raw && resolveEntry(system, raw, catalogueId);
+  if (res) {
+    if (res.id === categoryId || res.targetId === categoryId) return true;
+    const directCat = res.categoryLinks?.some(cl => cl.targetId === categoryId || cl.id === categoryId);
+    if (directCat) return true;
+  }
+  
+  if (sel.selections && sel.selections.length > 0) {
+    for (const sub of sel.selections) {
+      if (selectionHasCategory(sub, categoryId, system, catalogueId)) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
 export const evaluateCondition = (cond, ctx = {}) => {
   if (!cond) return false;
   const { roster, selectionCounts = {}, forceCategoryCounts = {}, selection, parentSelection, system, parentCatalogueId } = ctx;
@@ -21,7 +44,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
           const raw = findEntryInSystem(system, sId, catId);
           const res = raw && resolveEntry(system, raw, catId);
           if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
-          if (targetId === 'model' && res && res.type === 'model') isMatch = true;
+          if (targetId === 'model' && res && (res.type === 'model' || res.type === 'unit')) isMatch = true;
         }
         
         let acc = sum + (isMatch ? (s.number || 1) : 0);
@@ -68,8 +91,12 @@ export const evaluateCondition = (cond, ctx = {}) => {
         const res = raw && resolveEntry(system, raw, catId);
         
         if (res) {
+          if (cond.scope && cond.scope !== 'parent' && cond.scope !== 'force' && cond.scope !== 'roster') {
+            const hasCat = selectionHasCategory(sel, cond.scope, system, catId);
+            if (!hasCat) return false;
+          }
           if (res.targetId === targetChildId || res.id === targetChildId) return true;
-          if (targetChildId === 'model' && res.type === 'model') return true;
+          if (targetChildId === 'model' && (res.type === 'model' || res.type === 'unit')) return true;
           if (targetChildId === 'unit' && res.type === 'unit') return true;
           if (targetChildId === 'upgrade' && res.type === 'upgrade') return true;
         }

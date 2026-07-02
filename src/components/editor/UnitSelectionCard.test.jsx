@@ -240,7 +240,8 @@ describe('UnitSelectionCard Component', () => {
     expect(mockCollectUnitProfilesAndRules).toHaveBeenCalledWith(
       defaultProps.system,
       defaultProps.selection,
-      'bret-cat'
+      'bret-cat',
+      defaultProps.roster
     );
 
     // Verify findEntryInSystem is called with 'bret-cat' context for the upgrade selection

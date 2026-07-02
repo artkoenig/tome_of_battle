@@ -30,6 +30,8 @@ function parseRules(el) {
   return getChildren(wrapper, 'rule').map(ruleEl => ({
     id: ruleEl.getAttribute('id'),
     name: ruleEl.getAttribute('name'),
+    hidden: ruleEl.getAttribute('hidden') === 'true',
+    modifiers: parseModifiers(ruleEl),
     description: getChildren(ruleEl, 'description')[0]?.textContent || ''
   }));
 }
@@ -47,6 +49,8 @@ function parseProfiles(el) {
       getChildren(charWrapper, 'characteristic').forEach(cEl => {
         characteristics.push({
           name: cEl.getAttribute('name'),
+          id: cEl.getAttribute('typeId'),
+          typeId: cEl.getAttribute('typeId'),
           value: cEl.textContent || ''
         });
       });
@@ -56,6 +60,8 @@ function parseProfiles(el) {
       name: profEl.getAttribute('name'),
       profileTypeId: profEl.getAttribute('profileTypeId'),
       profileTypeName: profEl.getAttribute('profileTypeName') || profEl.getAttribute('typeName'),
+      hidden: profEl.getAttribute('hidden') === 'true',
+      modifiers: parseModifiers(profEl),
       characteristics
     };
   });
@@ -72,7 +78,8 @@ function parseInfoLinks(el) {
     name: linkEl.getAttribute('name'),
     targetId: linkEl.getAttribute('targetId'),
     type: linkEl.getAttribute('type'), // profile, rule
-    hidden: linkEl.getAttribute('hidden') === 'true'
+    hidden: linkEl.getAttribute('hidden') === 'true',
+    modifiers: parseModifiers(linkEl)
   }));
 }
 

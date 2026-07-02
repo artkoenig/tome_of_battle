@@ -108,6 +108,7 @@ export function resolveEntry(system, entry, catalogueId = null) {
         targetId: entry.targetId,
         name: entry.name || target.name,
         constraints: [...(entry.constraints || []), ...(target.constraints || [])],
+        modifiers: [...(entry.modifiers || []), ...(target.modifiers || [])],
         costs: (entry.costs && entry.costs.length > 0) ? entry.costs : (target.costs || []),
         categoryLinks: [...(entry.categoryLinks || []), ...(target.categoryLinks || [])],
         profiles: [...(entry.profiles || []), ...(target.profiles || [])],
@@ -129,12 +130,28 @@ export function resolveEntry(system, entry, catalogueId = null) {
       if (link.type === 'rule') {
         if (!resolved.rules) resolved.rules = [];
         if (!resolved.rules.some(r => r.id === target.id)) {
-          resolved.rules = [...resolved.rules, target];
+          const linkedRule = { ...target };
+          if (link.hidden === true || target.hidden === true) {
+            linkedRule.hidden = true;
+          }
+          const mergedMods = [...(link.modifiers || []), ...(target.modifiers || [])];
+          if (mergedMods.length > 0) {
+            linkedRule.modifiers = mergedMods;
+          }
+          resolved.rules = [...resolved.rules, linkedRule];
         }
       } else if (link.type === 'profile') {
         if (!resolved.profiles) resolved.profiles = [];
         if (!resolved.profiles.some(p => p.id === target.id)) {
-          resolved.profiles = [...resolved.profiles, target];
+          const linkedProfile = { ...target };
+          if (link.hidden === true || target.hidden === true) {
+            linkedProfile.hidden = true;
+          }
+          const mergedMods = [...(link.modifiers || []), ...(target.modifiers || [])];
+          if (mergedMods.length > 0) {
+            linkedProfile.modifiers = mergedMods;
+          }
+          resolved.profiles = [...resolved.profiles, linkedProfile];
         }
       }
     });

@@ -372,37 +372,139 @@ export function syncRosterSelectionsWithSystem(roster, system) {
  * Recursively collects all unique profiles and rules for a given selection.
  * Including from its sub-selections and their resolved catalog entries.
  */
-export function collectUnitProfilesAndRules(system, selection, activeCatalogueId = null) {
+export function collectUnitProfilesAndRules(system, selection, activeCatalogueId = null, roster = null) {
   const profiles = [];
   const rules = [];
   const seenProfileIds = new Set();
   const seenRuleIds = new Set();
 
-  const addProfile = (p) => {
+  let selectionCounts = {};
+  let forceCategoryCounts = {};
+  if (roster) {
+    const counts = computeRosterCounts(roster, system);
+    selectionCounts = counts.selectionCounts;
+    let activeForceId = null;
+    if (roster.forces) {
+      const containsSel = (list) => {
+        if (!list) return false;
+        for (const s of list) {
+          if (s.id === selection.id) return true;
+          if (containsSel(s.selections)) return true;
+        }
+        return false;
+      };
+      const activeForce = roster.forces.find(f => containsSel(f.selections));
+      if (activeForce) {
+        activeForceId = activeForce.id;
+        forceCategoryCounts = counts.categoryCounts[activeForceId] || {};
+      } else {
+        forceCategoryCounts = Object.values(counts.categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {});
+      }
+    }
+  }
+
+  const getConditionName = (cond) => {
+    if (!cond) return '';
+    const targetId = cond.scope && cond.scope !== 'parent' && cond.scope !== 'force' && cond.scope !== 'roster' ? cond.scope : (cond.childId || cond.field);
+    if (!targetId) return '';
+    const entry = findEntryInSystem(system, targetId, activeCatalogueId);
+    if (entry) return entry.name;
+    const cat = system.categoryEntries?.find(c => c.id === targetId);
+    if (cat) return cat.name;
+    return '';
+  };
+
+  const cloneProfile = (p) => {
+    return {
+      ...p,
+      characteristics: p.characteristics ? p.characteristics.map(c => ({ ...c })) : []
+    };
+  };
+
+  const addProfile = (p, sourceSel, parentSel) => {
     if (p && p.id && !seenProfileIds.has(p.id)) {
-      seenProfileIds.add(p.id);
-      profiles.push(p);
+      const ctx = {
+        roster,
+        selectionCounts,
+        forceCategoryCounts,
+        selection: sourceSel,
+        parentSelection: parentSel,
+        system,
+        parentCatalogueId: activeCatalogueId
+      };
+      
+      let isHidden = p.hidden === true;
+      if (p.modifiers && p.modifiers.length > 0) {
+        p.modifiers.forEach(mod => {
+          if (mod.field === 'hidden') {
+            const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
+            const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
+            if (condsPass && groupsPass) {
+              const val = mod.value === 'true' || mod.value === true || mod.valueObject === true;
+              if (mod.type === 'set') {
+                isHidden = val;
+              }
+            }
+          }
+        });
+      }
+      
+      if (!isHidden) {
+        seenProfileIds.add(p.id);
+        const cloned = cloneProfile(p);
+        cloned._sourceSelection = sourceSel;
+        cloned._parentSelection = parentSel;
+        profiles.push(cloned);
+      }
     }
   };
 
-  const addRule = (r) => {
+  const addRule = (r, sourceSel, parentSel) => {
     if (r && r.id && !seenRuleIds.has(r.id)) {
-      seenRuleIds.add(r.id);
-      rules.push(r);
+      const ctx = {
+        roster,
+        selectionCounts,
+        forceCategoryCounts,
+        selection: sourceSel,
+        parentSelection: parentSel,
+        system,
+        parentCatalogueId: activeCatalogueId
+      };
+      
+      let isHidden = r.hidden === true;
+      if (r.modifiers && r.modifiers.length > 0) {
+        r.modifiers.forEach(mod => {
+          if (mod.field === 'hidden') {
+            const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
+            const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
+            if (condsPass && groupsPass) {
+              const val = mod.value === 'true' || mod.value === true || mod.valueObject === true;
+              if (mod.type === 'set') {
+                isHidden = val;
+              }
+            }
+          }
+        });
+      }
+      
+      if (!isHidden) {
+        seenRuleIds.add(r.id);
+        rules.push(r);
+      }
     }
   };
 
-  const traverse = (sel) => {
-    if (sel.profiles) sel.profiles.forEach(addProfile);
-    if (sel.rules) sel.rules.forEach(addRule);
+  const traverse = (sel, parentSel = null) => {
+    if (sel.profiles) sel.profiles.forEach(p => addProfile(p, sel, parentSel));
+    if (sel.rules) sel.rules.forEach(r => addRule(r, sel, parentSel));
 
     const entryId = sel.entryLinkId || sel.selectionEntryId;
     const rawEntry = findEntryInSystem(system, entryId, activeCatalogueId);
     if (rawEntry) {
       const resolved = resolveEntry(system, rawEntry, activeCatalogueId);
       if (resolved) {
-        if (resolved.profiles) resolved.profiles.forEach(addProfile);
-        if (resolved.rules) resolved.rules.forEach(addRule);
+        if (resolved.profiles) resolved.profiles.forEach(p => addProfile(p, sel, parentSel));
+        if (resolved.rules) resolved.rules.forEach(r => addRule(r, sel, parentSel));
 
         // Accumulate from catalog child elements (default profiles)
         resolved.selectionEntries?.forEach(child => {
@@ -412,40 +514,235 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
             const isMandatory = minCon > 0;
             const isUpgrade = (childResolved.type || 'upgrade') === 'upgrade';
             if (!isUpgrade || isMandatory) {
-              if (childResolved.profiles) childResolved.profiles.forEach(addProfile);
-              if (childResolved.rules) childResolved.rules.forEach(addRule);
+              if (childResolved.profiles) childResolved.profiles.forEach(p => addProfile(p, sel, parentSel));
+              if (childResolved.rules) childResolved.rules.forEach(r => addRule(r, sel, parentSel));
             }
           }
         });
 
-        // Apply characteristic modifiers to profiles
+        // Apply selection-level characteristic modifiers to profiles
         if (profiles.length > 0) {
-          const charMods = (sel.modifiers || []).concat(resolved.modifiers || []);
-          charMods.forEach(mod => {
-            if (mod.type === 'increment' || mod.type === 'decrement' || mod.type === 'set') {
-              profiles.forEach(p => {
+          profiles.forEach(p => {
+            const charMods = (sel.modifiers || []).concat(resolved.modifiers || []);
+              
+            charMods.forEach(mod => {
+              if (mod.type === 'increment' || mod.type === 'decrement' || mod.type === 'set') {
                 const char = p.characteristics?.find(c => c.id === mod.field || c.name === mod.field);
                 if (char) {
-                  const modAmount = parseFloat(mod.valueObject || mod.value) || 0;
-                  let currentVal = parseFloat(char.value) || 0;
-                  if (mod.type === 'set') currentVal = mod.value;
-                  else if (mod.type === 'increment') currentVal += modAmount;
-                  else if (mod.type === 'decrement') currentVal -= modAmount;
-                  char.value = currentVal.toString();
+                  const ctx = {
+                    roster,
+                    selectionCounts,
+                    forceCategoryCounts,
+                    selection: sel,
+                    parentSelection: parentSel,
+                    system,
+                    parentCatalogueId: activeCatalogueId
+                  };
+                  
+                  const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
+                  const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
+                  
+                  if (condsPass && groupsPass) {
+                    let modAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
+                    
+                    if (mod.repeat) {
+                      let currentValue = 0;
+                      const targetParent = ctx.parentSelection || ctx.selection;
+                      if (mod.repeat.scope === 'parent' && targetParent && targetParent.selections) {
+                        const catId = activeCatalogueId || (roster ? roster.catalogueId : null);
+                        const targetId = mod.repeat.childId || mod.repeat.field;
+
+                        const countMatches = (list) => (list || []).reduce((sum, s) => {
+                          let isMatch = false;
+                          const sId = s.entryLinkId || s.selectionEntryId;
+                          if (sId === targetId) {
+                            isMatch = true;
+                          } else if (system) {
+                            const raw = findEntryInSystem(system, sId, catId);
+                            const res = raw && resolveEntry(system, raw, catId);
+                            if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
+                            if (targetId === 'model' && res && (res.type === 'model' || res.type === 'unit')) isMatch = true;
+                          }
+                          
+                          let acc = sum + (isMatch ? (s.number || 1) : 0);
+                          if (mod.repeat.includeChildSelections && s.selections) {
+                            acc += countMatches(s.selections);
+                          }
+                          return acc;
+                        }, 0);
+                        
+                        currentValue = countMatches(targetParent.selections);
+                      } else if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
+                        currentValue = roster?.costLimit || 0;
+                      } else if (mod.repeat.childId) {
+                        currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;
+                      } else if (mod.repeat.field) {
+                        currentValue = selectionCounts[mod.repeat.field] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.field]) || 0;
+                      }
+
+                      const repVal = mod.repeat.value ? (mod.repeat.roundUp ? Math.ceil(currentValue / mod.repeat.value) : Math.floor(currentValue / mod.repeat.value)) : 0;
+                      modAmount = modAmount * repVal * (mod.repeat.repeats || 1);
+                    }
+
+                    if (char.originalValue === undefined) {
+                      char.originalValue = char.value;
+                      char.modificationBreakdown = [];
+                    }
+
+                    const condNames = [];
+                    if (mod.conditions) {
+                      mod.conditions.forEach(c => {
+                        const name = getConditionName(c);
+                        if (name) condNames.push(name);
+                      });
+                    }
+                    if (mod.conditionGroups) {
+                      const collectNames = (g) => {
+                        g.conditions?.forEach(c => {
+                          const name = getConditionName(c);
+                          if (name) condNames.push(name);
+                        });
+                        g.conditionGroups?.forEach(collectNames);
+                      };
+                      mod.conditionGroups.forEach(collectNames);
+                    }
+                    
+                    const condSuffix = condNames.length > 0 ? ` (${condNames.join(', ')})` : '';
+                    const displayModVal = (mod.type === 'increment' ? '+' : mod.type === 'decrement' ? '-' : '') + Math.abs(modAmount);
+                    char.modificationBreakdown.push(`${displayModVal} von ${sel.name || resolved.name || 'Upgrade'}${condSuffix}`);
+
+                    let currentVal = parseFloat(char.value) || 0;
+                    if (mod.type === 'set') {
+                      char.value = mod.value;
+                    } else if (mod.type === 'increment') {
+                      char.value = (currentVal + modAmount).toString();
+                    } else if (mod.type === 'decrement') {
+                      char.value = (currentVal - modAmount).toString();
+                    }
+                  }
                 }
-              });
-            }
+              }
+            });
           });
         }
       }
     }
 
     if (sel.selections) {
-      sel.selections.forEach(traverse);
+      sel.selections.forEach(child => traverse(child, sel));
     }
   };
 
   traverse(selection);
+
+  // Apply profile-level modifiers exactly once per profile at the end of collection
+  profiles.forEach(p => {
+    if (p.modifiers && p.modifiers.length > 0) {
+      p.modifiers.forEach(mod => {
+        if (mod.type === 'increment' || mod.type === 'decrement' || mod.type === 'set') {
+          const char = p.characteristics?.find(c => c.id === mod.field || c.name === mod.field);
+          if (char) {
+            const ctx = {
+              roster,
+              selectionCounts,
+              forceCategoryCounts,
+              selection: p._sourceSelection || selection,
+              parentSelection: p._parentSelection,
+              system,
+              parentCatalogueId: activeCatalogueId
+            };
+            
+            const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
+            const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
+            
+            if (condsPass && groupsPass) {
+              let modAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
+              
+              if (mod.repeat) {
+                let currentValue = 0;
+                const targetParent = ctx.parentSelection || ctx.selection;
+                if (mod.repeat.scope === 'parent' && targetParent && targetParent.selections) {
+                  const catId = activeCatalogueId || (roster ? roster.catalogueId : null);
+                  const targetId = mod.repeat.childId || mod.repeat.field;
+
+                  const countMatches = (list) => (list || []).reduce((sum, s) => {
+                    let isMatch = false;
+                    const sId = s.entryLinkId || s.selectionEntryId;
+                    if (sId === targetId) {
+                      isMatch = true;
+                    } else if (system) {
+                      const raw = findEntryInSystem(system, sId, catId);
+                      const res = raw && resolveEntry(system, raw, catId);
+                      if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
+                      if (targetId === 'model' && res && (res.type === 'model' || res.type === 'unit')) isMatch = true;
+                    }
+                    
+                    let acc = sum + (isMatch ? (s.number || 1) : 0);
+                    if (mod.repeat.includeChildSelections && s.selections) {
+                      acc += countMatches(s.selections);
+                    }
+                    return acc;
+                  }, 0);
+                  
+                  currentValue = countMatches(targetParent.selections);
+                } else if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
+                  currentValue = roster?.costLimit || 0;
+                } else if (mod.repeat.childId) {
+                  currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;
+                } else if (mod.repeat.field) {
+                  currentValue = selectionCounts[mod.repeat.field] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.field]) || 0;
+                }
+
+                const repVal = mod.repeat.value ? (mod.repeat.roundUp ? Math.ceil(currentValue / mod.repeat.value) : Math.floor(currentValue / mod.repeat.value)) : 0;
+                modAmount = modAmount * repVal * (mod.repeat.repeats || 1);
+              }
+
+              if (char.originalValue === undefined) {
+                char.originalValue = char.value;
+                char.modificationBreakdown = [];
+              }
+
+              const condNames = [];
+              if (mod.conditions) {
+                mod.conditions.forEach(c => {
+                  const name = getConditionName(c);
+                  if (name) condNames.push(name);
+                });
+              }
+              if (mod.conditionGroups) {
+                const collectNames = (g) => {
+                  g.conditions?.forEach(c => {
+                    const name = getConditionName(c);
+                    if (name) condNames.push(name);
+                  });
+                  g.conditionGroups?.forEach(collectNames);
+                };
+                mod.conditionGroups.forEach(collectNames);
+              }
+              
+              const condSuffix = condNames.length > 0 ? ` (${condNames.join(', ')})` : '';
+              const displayModVal = (mod.type === 'increment' ? '+' : mod.type === 'decrement' ? '-' : '') + Math.abs(modAmount);
+              // Use profile name as the source since this is defined on the profile itself
+              char.modificationBreakdown.push(`${displayModVal} von ${p.name}${condSuffix}`);
+
+              let currentVal = parseFloat(char.value) || 0;
+              if (mod.type === 'set') {
+                char.value = mod.value;
+              } else if (mod.type === 'increment') {
+                char.value = (currentVal + modAmount).toString();
+              } else if (mod.type === 'decrement') {
+                char.value = (currentVal - modAmount).toString();
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Clean up temporary variables
+    delete p._sourceSelection;
+    delete p._parentSelection;
+  });
 
   return { profiles, rules };
 }

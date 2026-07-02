@@ -10,6 +10,28 @@ import {
   hasBlessing
 } from '../../solver/rulesEvaluator';
 
+const getModificationState = (characteristic) => {
+  if (!characteristic || characteristic.originalValue === undefined) return null;
+  
+  const valStr = characteristic.value;
+  const origStr = characteristic.originalValue;
+  if (valStr === origStr) return null;
+
+  const getNumericValue = (str) => {
+    const match = str.match(/-?\d+/);
+    return match ? parseInt(match[0], 10) : null;
+  };
+
+  const valNum = getNumericValue(valStr);
+  const origNum = getNumericValue(origStr);
+
+  if (valNum !== null && origNum !== null) {
+    if (valNum > origNum) return 'positive';
+    if (valNum < origNum) return 'negative';
+  }
+  return 'modified';
+};
+
 export default function PlayUnitDetails({
   selection,
   system,
@@ -64,7 +86,7 @@ export default function PlayUnitDetails({
 
   // Helper to get unit profiles
   const getUnitProfilesAndRules = (sel) => {
-    const { profiles, rules } = collectUnitProfilesAndRules(system, sel, roster.catalogueId);
+    const { profiles, rules } = collectUnitProfilesAndRules(system, sel, roster.catalogueId, roster);
     const modelProfiles = extractModelProfiles(profiles);
     return { profiles: modelProfiles, rules };
   };
@@ -322,9 +344,49 @@ export default function PlayUnitDetails({
                       </thead>
                       <tbody>
                         <tr>
-                          {prof.characteristics.map(c => (
-                            <td key={c.name} className="font-body">{c.value}</td>
-                          ))}
+                          {prof.characteristics.map(c => {
+                            const modState = getModificationState(c);
+                            const cellStyle = {};
+                            let className = "font-body";
+                            if (modState === 'positive') {
+                              className += " text-success";
+                              cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
+                              cellStyle.fontWeight = 'bold';
+                              cellStyle.cursor = 'help';
+                            } else if (modState === 'negative') {
+                              className += " text-danger";
+                              cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
+                              cellStyle.fontWeight = 'bold';
+                              cellStyle.cursor = 'help';
+                            } else if (modState === 'modified') {
+                              className += " text-gold";
+                              cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
+                              cellStyle.fontWeight = 'bold';
+                              cellStyle.cursor = 'help';
+                            }
+                            
+                            return (
+                              <td 
+                                key={c.name} 
+                                className={className}
+                                style={cellStyle}
+                                onMouseEnter={(e) => {
+                                  if (modState && c.modificationBreakdown?.length > 0) {
+                                    handleMouseEnter(e, `Modifikationen: ${c.name}`, c.modificationBreakdown);
+                                  }
+                                }}
+                                onMouseLeave={handleMouseLeave}
+                                onClick={() => {
+                                  if (modState && c.modificationBreakdown?.length > 0) {
+                                    setSaveSummaryData({ title: `Modifikationen: ${c.name}`, breakdown: c.modificationBreakdown });
+                                    setSaveSummaryOpen(true);
+                                  }
+                                }}
+                              >
+                                {c.value}
+                              </td>
+                            );
+                          })}
                         </tr>
                       </tbody>
                     </table>

@@ -53,7 +53,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         // Apply search filter
         selections = selections.filter(sel => {
           const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
-          const { rules } = collectUnitProfilesAndRules(system, sel, force.catalogueId || roster.catalogueId);
+          const { rules } = collectUnitProfilesAndRules(system, sel, force.catalogueId || roster.catalogueId, roster);
           const matchesRules = rules.some(r => 
             r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
             r.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -86,7 +86,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       
       uncategorizedSelections = uncategorizedSelections.filter(sel => {
         const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const { rules } = collectUnitProfilesAndRules(system, sel, force.catalogueId || roster.catalogueId);
+        const { rules } = collectUnitProfilesAndRules(system, sel, force.catalogueId || roster.catalogueId, roster);
         const matchesRules = rules.some(r => 
           r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
           r.description.toLowerCase().includes(searchTerm.toLowerCase())
