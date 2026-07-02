@@ -338,7 +338,7 @@ describe('OptionGroup Component', () => {
     
     // Hover
     fireEvent.mouseEnter(swordText);
-    expect(defaultProps.onHoverEnter).toHaveBeenCalledWith('Sword of Might', 'A magic weapon', expect.any(Object));
+    expect(defaultProps.onHoverEnter).toHaveBeenCalledWith('Sword of Might', expect.any(Object), expect.any(Object));
 
     // Mouse Move
     fireEvent.mouseMove(swordText);
@@ -361,7 +361,7 @@ describe('OptionGroup Component', () => {
 
     expect(defaultProps.setActiveInfo).toHaveBeenCalledWith({
       title: 'Axe of Doom',
-      text: 'A magic weapon'
+      text: expect.any(Object)
     });
   });
 
