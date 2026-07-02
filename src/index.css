@@ -2455,3 +2455,95 @@ input[type="radio"]:checked::after {
   flex-shrink: 0;
 }
 
+/* Librarian Pre-bundled Importer */
+.importer-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 900px) {
+  .importer-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.bundle-importer-panel {
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bundle-importer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.bundle-catalog-list-container {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--border-dark);
+  padding: 12px;
+  background-color: var(--bg-dark);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bundle-catalog-item-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bundle-importer-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.bundle-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty-importer-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.empty-importer-text-center {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.empty-importer-image-centered {
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 24px;
+}
+
+.margin-top-md {
+  margin-top: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+
+

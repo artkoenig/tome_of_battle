@@ -64,7 +64,7 @@ describe('Importer Component', () => {
     render(<Importer showAsEmptyState={true} onSystemImported={vi.fn()} />);
 
     expect(screen.getByText('Willkommen bei Tome of Battle')).toBeDefined();
-    expect(screen.getByText('Spieldaten herunterladen (Warhammer Fantasy 6. Edition)')).toBeDefined();
+    expect(screen.getByText('Eigene Spieldaten hochladen')).toBeDefined();
     
     // Check that systems list container is not rendered
     expect(screen.queryByText('Importierte Spielsysteme')).toBeNull();
@@ -367,4 +367,139 @@ describe('Importer Component', () => {
 
     consoleErrorSpy.mockRestore();
   });
+
+  describe('Pre-bundled catalogs import', () => {
+    let fetchSpy;
+
+    beforeEach(() => {
+      const mockManifest = [
+        {
+          id: 'sys-bundle-1',
+          name: 'Warhammer Fantasy Bundle',
+          dir: 'whfb6',
+          gst: { id: 'sys-bundle-1', name: 'Warhammer Fantasy Bundle', fileName: 'rules.gst' },
+          catalogues: [
+            { id: 'cat-bundle-1', name: 'Bretonnia', fileName: 'Bretonnia.cat' },
+            { id: 'cat-bundle-2', name: 'Empire', fileName: 'Empire.cat' }
+          ]
+        }
+      ];
+
+      fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
+        if (url.endsWith('/catalogs/manifest.json')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockManifest)
+          });
+        }
+        if (url.endsWith('/catalogs/whfb6/rules.gst')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve('<gameSystem id="sys-bundle-1" name="Warhammer Fantasy Bundle"></gameSystem>')
+          });
+        }
+        if (url.endsWith('/catalogs/whfb6/Bretonnia.cat')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve('<catalogue id="cat-bundle-1" name="Bretonnia"></catalogue>')
+          });
+        }
+        if (url.endsWith('/catalogs/whfb6/Empire.cat')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve('<catalogue id="cat-bundle-2" name="Empire"></catalogue>')
+          });
+        }
+        return Promise.reject(new Error(`Unknown fetch URL: ${url}`));
+      });
+    });
+
+    afterEach(() => {
+      fetchSpy.mockRestore();
+    });
+
+    it('should fetch manifest and render pre-bundled importer', async () => {
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/catalogs/manifest.json'));
+        expect(screen.getByText('Vordefinierte Spieldaten importieren')).toBeDefined();
+        expect(screen.getByText('Warhammer Fantasy Bundle')).toBeDefined();
+        expect(screen.getByLabelText('Bretonnia')).toBeDefined();
+        expect(screen.getByLabelText('Empire')).toBeDefined();
+      });
+    });
+
+    it('should allow toggling individual catalogs and using select all/none button', async () => {
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Bretonnia')).toBeDefined();
+      });
+
+      const bretonniaCheckbox = screen.getByLabelText('Bretonnia');
+      const empireCheckbox = screen.getByLabelText('Empire');
+
+      expect(bretonniaCheckbox.checked).toBe(true);
+      expect(empireCheckbox.checked).toBe(true);
+
+      fireEvent.click(bretonniaCheckbox);
+      expect(bretonniaCheckbox.checked).toBe(false);
+      expect(empireCheckbox.checked).toBe(true);
+
+      const toggleAllBtn = screen.getByText('Alle auswählen');
+      fireEvent.click(toggleAllBtn);
+
+      expect(bretonniaCheckbox.checked).toBe(true);
+      expect(empireCheckbox.checked).toBe(true);
+
+      const toggleNoneBtn = screen.getByText('Alle abwählen');
+      fireEvent.click(toggleNoneBtn);
+
+      expect(bretonniaCheckbox.checked).toBe(false);
+      expect(empireCheckbox.checked).toBe(false);
+
+      expect(screen.getByText('Alle auswählen')).toBeDefined();
+    });
+
+    it('should trigger fetches and import process on clicking import button', async () => {
+      const onSystemImportedMock = vi.fn();
+      const systemData = { id: 'sys-bundle-1', name: 'Warhammer Fantasy Bundle', catalogues: [{ id: 'cat-bundle-1' }, { id: 'cat-bundle-2' }] };
+      processImportedData.mockReturnValue(systemData);
+      saveSystem.mockResolvedValue({});
+
+      render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Importieren')).toBeDefined();
+      });
+
+      const importBtn = screen.getByText('Importieren');
+      fireEvent.click(importBtn);
+
+      await waitFor(() => {
+        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/catalogs/whfb6/rules.gst'));
+        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/catalogs/whfb6/Bretonnia.cat'));
+        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/catalogs/whfb6/Empire.cat'));
+
+        expect(processImportedData).toHaveBeenCalledWith(
+          [{ name: 'rules.gst', content: '<gameSystem id="sys-bundle-1" name="Warhammer Fantasy Bundle"></gameSystem>' }],
+          [
+            { name: 'Bretonnia.cat', content: '<catalogue id="cat-bundle-1" name="Bretonnia"></catalogue>' },
+            { name: 'Empire.cat', content: '<catalogue id="cat-bundle-2" name="Empire"></catalogue>' }
+          ]
+        );
+
+        expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({
+          id: 'sys-bundle-1',
+          name: 'Warhammer Fantasy Bundle'
+        }));
+
+        expect(onSystemImportedMock).toHaveBeenCalled();
+      });
+
+      expect(screen.getByText(/Das System "Warhammer Fantasy Bundle" mit 2 Katalogen wurde erfolgreich importiert/)).toBeDefined();
+    });
+  });
 });
+

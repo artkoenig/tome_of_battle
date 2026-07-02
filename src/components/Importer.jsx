@@ -6,6 +6,14 @@ import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
 
+const getAbsoluteUrl = (path) => {
+  const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : '';
+  if (origin && path.startsWith('/')) {
+    return `${origin}${path}`;
+  }
+  return path;
+};
+
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
   const { showDebugIds } = useDebugMode();
   const [systems, setSystems] = useState([]);
@@ -14,8 +22,14 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
+  // States for pre-bundled catalog import
+  const [availableSystems, setAvailableSystems] = useState([]);
+  const [selectedBundleSysId, setSelectedBundleSysId] = useState('');
+  const [selectedCats, setSelectedCats] = useState({});
+
   useEffect(() => {
     loadSystems();
+    fetchAvailableSystems();
   }, []);
 
   const loadSystems = async () => {
@@ -24,6 +38,101 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       setSystems(data);
     } catch (e) {
       console.error("Error loading systems", e);
+    }
+  };
+
+  const fetchAvailableSystems = async () => {
+    try {
+      const response = await fetch(getAbsoluteUrl('/catalogs/manifest.json'));
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableSystems(data);
+        if (data.length > 0) {
+          setSelectedBundleSysId(data[0].id);
+          const initialCats = {};
+          data[0].catalogues.forEach(cat => {
+            initialCats[cat.id] = true;
+          });
+          setSelectedCats(initialCats);
+        }
+      }
+    } catch (e) {
+      if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'test') {
+        console.warn("Could not load pre-bundled catalogs manifest", e);
+      }
+    }
+  };
+
+  const handleSystemChange = (sysId) => {
+    setSelectedBundleSysId(sysId);
+    const system = availableSystems.find(s => s.id === sysId);
+    const initialCats = {};
+    if (system) {
+      system.catalogues.forEach(cat => {
+        initialCats[cat.id] = true;
+      });
+    }
+    setSelectedCats(initialCats);
+  };
+
+  const handleToggleCat = (catId) => {
+    setSelectedCats(prev => ({
+      ...prev,
+      [catId]: !prev[catId]
+    }));
+  };
+
+  const handleToggleAllCats = (checked) => {
+    const system = availableSystems.find(s => s.id === selectedBundleSysId);
+    if (!system) return;
+    const nextCats = {};
+    system.catalogues.forEach(cat => {
+      nextCats[cat.id] = checked;
+    });
+    setSelectedCats(nextCats);
+  };
+
+  const handleImportBundle = async () => {
+    const system = availableSystems.find(s => s.id === selectedBundleSysId);
+    if (!system) return;
+
+    const selectedCatList = system.catalogues.filter(cat => selectedCats[cat.id]);
+    
+    setError(null);
+    setSuccessMsg(null);
+    setLoading(true);
+
+    try {
+      const gstUrl = `/catalogs/${system.dir}/${system.gst.fileName}`;
+      const gstRes = await fetch(getAbsoluteUrl(gstUrl));
+      if (!gstRes.ok) throw new Error(`Fehler beim Laden des Spielsystems: ${gstRes.statusText}`);
+      const gstText = await gstRes.text();
+      const gstFiles = [{ name: system.gst.fileName, content: gstText }];
+
+      const catFiles = await Promise.all(selectedCatList.map(async (cat) => {
+        const catUrl = `/catalogs/${system.dir}/${cat.fileName}`;
+        const catRes = await fetch(getAbsoluteUrl(catUrl));
+        if (!catRes.ok) throw new Error(`Fehler beim Laden des Katalogs ${cat.name}: ${catRes.statusText}`);
+        const catText = await catRes.text();
+        return { name: cat.fileName, content: catText };
+      }));
+
+      const systemData = processImportedData(gstFiles, catFiles);
+      systemData.rawXmls = {
+        gst: gstFiles,
+        cat: catFiles
+      };
+
+      await saveSystem(systemData);
+
+      setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
+      loadSystems();
+      if (onSystemImported) onSystemImported();
+    } catch (e) {
+      console.error(e);
+      setError(`Fehler beim Importieren der Spieldaten: ${e.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,86 +236,173 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     }
   };
 
-      return (
-        <div className={`container ${showAsEmptyState ? 'empty-state-wrapper' : ''}`}>
-          <div className={showAsEmptyState ? 'empty-state-container' : ''}>
-            {showAsEmptyState && (
-              <>
-                <div className="empty-state-image empty-importer-image" />
-                <h2 className="empty-state-title empty-state-title-large">Willkommen bei Tome of Battle</h2>
-                <p className="empty-state-text text-dim">
-                  Dein Buch des Wissens ist noch leer. Um Armeen ausheben zu können, benötigst du zunächst Spieldaten im BattleScribe-Format. 
-                </p>
-                <div style={{ marginBottom: '32px' }}>
-                  <a 
-                    href="https://github.com/Ergofarg/Warhammer-Fantasy-6th-edition/archive/refs/heads/master.zip"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary empty-state-btn" 
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
-                  >
-                    <Download size={20} />
-                    Spieldaten herunterladen (Warhammer Fantasy 6. Edition)
-                  </a>
-                  <p className="text-dim empty-state-subtext">
-                    Lade die ZIP-Datei herunter und lade sie anschließend in die Bibliothek hoch.
-                  </p>
-                </div>
-              </>
-            )}
+  const renderBundleImporter = () => {
+    if (availableSystems.length === 0) return null;
 
-        {error && (
-          <div className="validation-error-item" style={{ borderColor: 'var(--color-danger)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ShieldAlert className="text-danger" size={20} />
-            <span className="text-danger">{error}</span>
-          </div>
-        )}
+    const selectedSystem = availableSystems.find(s => s.id === selectedBundleSysId);
+    const selectedCount = selectedSystem ? selectedSystem.catalogues.filter(cat => selectedCats[cat.id]).length : 0;
+    const allChecked = selectedSystem ? selectedSystem.catalogues.every(cat => selectedCats[cat.id]) : false;
 
-        {successMsg && (
-          <div className="validation-error-item" style={{ borderColor: 'var(--color-success)', background: 'rgba(27,115,64,0.05)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CheckCircle2 className="text-success" size={20} />
-            <span className="text-success">{successMsg}</span>
-          </div>
-        )}
+    return (
+      <div className="gothic-panel bundle-importer-panel">
+        <h3 className="text-subheading">Vordefinierte Spieldaten importieren</h3>
+        <p className="text-dim text-body">
+          Importiere ein komplettes Spielsystem inklusive ausgewählter Fraktionen direkt aus den mitgelieferten Dateien.
+        </p>
 
-        {loading && (
-          <div style={{ marginTop: '16px', color: 'var(--text-gold)', textAlign: 'center' }}>
-            <span className="font-body">Beschwöre Spieldaten... (Verarbeite XML)</span>
-          </div>
-        )}
-
-        <div 
-          className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''}`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={() => document.getElementById('file-upload').click()}
-        >
-          <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
-          <h3>Ziehe ein .zip-Archiv hierher</h3>
-          <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
+        <div className="bundle-form-group">
+          <label className="text-label text-gold">Spielsystem:</label>
+          <select 
+            value={selectedBundleSysId} 
+            onChange={(e) => handleSystemChange(e.target.value)}
+            disabled={loading}
+          >
+            {availableSystems.map(sys => (
+              <option key={sys.id} value={sys.id}>{sys.name}</option>
+            ))}
+          </select>
         </div>
 
-        <input 
-          type="file" 
-          id="file-upload" 
-          style={{ display: 'none' }} 
-          accept=".zip"
-          onChange={handleFileInput}
-        />
+        {selectedSystem && (
+          <div className="bundle-form-group">
+            <div className="bundle-importer-header">
+              <label className="text-label text-gold">Kataloge ({selectedCount} ausgewählt):</label>
+              <button 
+                type="button" 
+                className="btn-gold btn-sm"
+                onClick={() => handleToggleAllCats(!allChecked)}
+                disabled={loading}
+              >
+                {allChecked ? 'Alle abwählen' : 'Alle auswählen'}
+              </button>
+            </div>
+            <div className="bundle-catalog-list-container">
+              {selectedSystem.catalogues.map(cat => (
+                <label key={cat.id} className="bundle-catalog-item-label">
+                  <input 
+                    type="checkbox" 
+                    checked={!!selectedCats[cat.id]} 
+                    onChange={() => handleToggleCat(cat.id)}
+                    disabled={loading}
+                    aria-label={cat.name}
+                  />
+                  <span className="text-body">{cat.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <button 
-          className="fab-mobile mobile-only"
-          onClick={() => document.getElementById('file-upload').click()}
-          title="Datei hochladen"
-        >
-          <Upload size={24} />
-        </button>
+        <div className="bundle-importer-actions">
+          <button 
+            type="button" 
+            className="btn-primary" 
+            onClick={handleImportBundle}
+            disabled={loading || selectedCount === 0}
+          >
+            Importieren
+          </button>
+        </div>
       </div>
+    );
+  };
+
+  return (
+    <div className={`container ${showAsEmptyState ? 'empty-state-wrapper' : ''}`}>
+      {error && (
+        <div className="validation-error-item" style={{ borderColor: 'var(--color-danger)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ShieldAlert className="text-danger" size={20} />
+          <span className="text-danger">{error}</span>
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="validation-error-item" style={{ borderColor: 'var(--color-success)', background: 'rgba(27,115,64,0.05)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <CheckCircle2 className="text-success" size={20} />
+          <span className="text-success">{successMsg}</span>
+        </div>
+      )}
+
+      {loading && (
+        <div style={{ marginTop: '16px', color: 'var(--text-gold)', textAlign: 'center', marginBottom: '16px' }}>
+          <span className="font-body">Beschwöre Spieldaten... (Verarbeite XML)</span>
+        </div>
+      )}
+
+      {showAsEmptyState ? (
+        <div className="empty-importer-layout">
+          <div className="empty-importer-text-center">
+            <div className="empty-state-image empty-importer-image empty-importer-image-centered" />
+            <h2 className="empty-state-title empty-state-title-large">Willkommen bei Tome of Battle</h2>
+            <p className="empty-state-text text-dim">
+              Dein Buch des Wissens ist noch leer. Um Armeen ausheben zu können, benötigst du zunächst Spieldaten im BattleScribe-Format. 
+            </p>
+          </div>
+
+          {renderBundleImporter()}
+
+          <div className="gothic-panel full-width">
+            <h3 className="text-subheading">Eigene Spieldaten hochladen</h3>
+            <p className="text-dim text-body">
+              Hast du eigene Battlescribe-Dateien? Lade sie als ZIP-Archiv hoch, um sie in deiner lokalen Bibliothek zu speichern.
+            </p>
+            <div 
+              className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''} margin-top-md`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById('file-upload').click()}
+            >
+              <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
+              <h3>Ziehe ein .zip-Archiv hierher</h3>
+              <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="importer-layout">
+          <div className="gothic-panel bundle-importer-panel">
+            <h3 className="text-subheading">Eigene Spieldaten hochladen</h3>
+            <p className="text-dim text-body">
+              Ziehe ein .zip-Archiv hierher oder klicke, um deine Dateien zu durchsuchen.
+            </p>
+            <div 
+              className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''} margin-top-md`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById('file-upload').click()}
+            >
+              <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
+              <h3>Ziehe ein .zip-Archiv hierher</h3>
+              <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
+            </div>
+          </div>
+
+          {renderBundleImporter()}
+        </div>
+      )}
+
+      <input 
+        type="file" 
+        id="file-upload" 
+        style={{ display: 'none' }} 
+        accept=".zip"
+        onChange={handleFileInput}
+      />
+
+      <button 
+        className="fab-mobile mobile-only"
+        onClick={() => document.getElementById('file-upload').click()}
+        title="Datei hochladen"
+      >
+        <Upload size={24} />
+      </button>
 
       {!showAsEmptyState && (
-        <div style={{ marginTop: '24px' }}>
+        <div className="margin-top-md">
           <h2>Importierte Spielsysteme</h2>
           {systems.length === 0 ? (
             <p className="text-dim" style={{ textAlign: 'center', padding: '20px 0' }}>Keine Spielsysteme in der Datenbank vorhanden.</p>
