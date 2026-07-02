@@ -2591,6 +2591,7 @@ input[type="radio"]:checked::after {
 
 .full-width {
   width: 100%;
+  grid-column: 1 / -1;
 }
 
 /* Importer Fullscreen Overlay Content & Spinner */

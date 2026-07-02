@@ -246,7 +246,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     const allChecked = selectedSystem ? selectedSystem.catalogues.every(cat => selectedCats[cat.id]) : false;
 
     return (
-      <div className="gothic-panel bundle-importer-panel">
+      <div className="gothic-panel bundle-importer-panel full-width">
         <h3 className="text-subheading">Vordefinierte Spieldaten importieren</h3>
         <p className="text-dim text-body">
           Importiere ein komplettes Spielsystem inklusive ausgewählter Fraktionen direkt aus den mitgelieferten Dateien.
