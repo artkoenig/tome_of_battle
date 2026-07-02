@@ -65,6 +65,7 @@ vi.mock('../solver/rulesEvaluator', () => ({
   extractModelProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Model')),
   extractUpgradeProfiles: vi.fn().mockImplementation((profiles) => profiles),
   extractWeaponProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Weapon' || p.profileTypeName === 'Waffe')),
+  extractArmourProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Armour' || p.profileTypeName === 'Rüstung')),
   hasBlessing: vi.fn().mockReturnValue(false)
 }));
 
@@ -396,6 +397,74 @@ describe('PlayMode Component', () => {
     expect(screen.queryByText('Waffen')).toBeNull();
     expect(screen.queryByText('Waffenwerte')).toBeNull();
     // Since Great Sword is filtered, the upgrades list is empty, and the section heading shouldn't render
+    expect(screen.queryByText('Ausrüstung & Upgrades')).toBeNull();
+  });
+
+  it('11. Render armour profiles inside PlayUnitDetails', () => {
+    const mockSelection = { 
+      id: 'sel-armours', 
+      name: 'Armoured Unit', 
+      category: 'cat-core', 
+      entryLinkId: 'el-armours',
+      selections: [
+        { id: 'sub-shield', name: 'Shield', entryLinkId: 'el-shield', number: 1 }
+      ]
+    };
+    const mockRosterProps = { catalogueId: 'cat-1', costLimitType: 'pts' };
+
+    mockCollectUnitProfilesAndRules.mockReturnValue({
+      profiles: [
+        {
+          id: 'p1',
+          profileTypeName: 'Model',
+          name: 'Warrior',
+          characteristics: [
+            { name: 'M', value: '4' },
+            { name: 'WS', value: '4' }
+          ]
+        },
+        {
+          id: 'p2',
+          profileTypeName: 'Model',
+          name: 'Warhorse',
+          characteristics: [
+            { name: 'M', value: '8' },
+            { name: 'WS', value: '3' }
+          ]
+        },
+        {
+          id: 'a1',
+          profileTypeName: 'Armour',
+          name: 'Shield',
+          characteristics: [
+            { name: 'Saving Throw Modifier', value: '-1' }
+          ],
+          _sourceSelection: mockSelection.selections[0]
+        }
+      ],
+      rules: []
+    });
+
+    render(
+      <PlayUnitDetails
+        selection={mockSelection}
+        system={mockSystem}
+        roster={mockRosterProps}
+        showDebugIds={false}
+        gameState={{ wounds: { 'sel-armours': 5 } }}
+        handleAdjustWound={vi.fn()}
+        handleMouseEnter={vi.fn()}
+        handleMouseLeave={vi.fn()}
+        setSaveSummaryData={vi.fn()}
+        setSaveSummaryOpen={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Warrior')).toBeDefined();
+    expect(screen.getByText('Shield')).toBeDefined();
+    expect(screen.getByText('-1')).toBeDefined();
+    expect(screen.getByText('Armour')).toBeDefined();
+    // Since Shield is filtered, the upgrades list is empty, and the section heading shouldn't render
     expect(screen.queryByText('Ausrüstung & Upgrades')).toBeNull();
   });
 });

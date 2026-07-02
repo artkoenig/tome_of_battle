@@ -2420,3 +2420,38 @@ input[type="radio"]:checked::after {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+.unit-header-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  width: 100%;
+  padding-right: 24px;
+}
+
+.rule-badge {
+  background-color: rgba(226, 183, 66, 0.08);
+  border: 1px solid rgba(226, 183, 66, 0.3);
+  color: var(--text-gold);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rule-badge.has-desc {
+  cursor: help;
+}
+
+.rule-badge.no-desc {
+  cursor: default;
+}
+
+.rule-info-icon {
+  margin-left: 4px;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+

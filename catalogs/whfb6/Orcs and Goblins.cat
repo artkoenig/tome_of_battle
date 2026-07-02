@@ -3679,6 +3679,7 @@
         <infoLink id="5da2-cd9d-10dc-47f1" name="Animosity" hidden="false" targetId="23f9-c5d1-7c15-0c4c" type="rule"/>
         <infoLink id="0c7a-efc3-37b8-871e" name="Fear Elves" hidden="false" targetId="b9cb-9cdd-44c3-ba52" type="rule"/>
         <infoLink id="e564-9cf9-e4ef-e624" name="Wolf" hidden="false" targetId="82b6-8aaa-c0a3-356b" type="profile"/>
+        <infoLink id="e564-9cf9-e4ef-e625" name="Fast Cavalry" hidden="false" targetId="6a56-df83-e623-2218" type="rule"/>
       </infoLinks>
       <categoryLinks>
         <categoryLink id="6cc8-3422-4670-e786" name="Core" hidden="false" targetId="64bf-efb4-9978-26df" primary="true"/>

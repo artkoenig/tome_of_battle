@@ -3,6 +3,7 @@ import {
   extractModelProfiles,
   extractUpgradeProfiles,
   extractWeaponProfiles,
+  extractArmourProfiles,
   hasBlessing,
   getArmourSave,
   getWardSave
@@ -39,6 +40,13 @@ test('extractWeaponProfiles', () => {
   expect(weaponProfiles.length === 2 &&
                     weaponProfiles.some(p => p.name === 'Sword') &&
                     weaponProfiles.some(p => p.name === 'Great Weapon')).toBe(true);
+});
+
+// Test 2c: extractArmourProfiles
+const armourProfilesTest = extractArmourProfiles(test1Profiles);
+test('extractArmourProfiles', () => {
+  expect(armourProfilesTest.length === 1 &&
+                    armourProfilesTest[0].name === 'Shield').toBe(true);
 });
 
 // Test 3: hasBlessing

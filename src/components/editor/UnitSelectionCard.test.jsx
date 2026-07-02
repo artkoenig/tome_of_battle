@@ -442,6 +442,79 @@ describe('UnitSelectionCard Component', () => {
       expect(chipTexts.includes('Lance')).toBe(false);
     });
 
+    it('renders armour profiles correctly inside the mini profile table', () => {
+      mockCollectUnitProfilesAndRules.mockReturnValue({
+        profiles: [
+          {
+            id: 'p1',
+            profileTypeName: 'Model',
+            name: 'Knight',
+            characteristics: [
+              { name: 'M', value: '4' },
+              { name: 'WS', value: '4' }
+            ]
+          },
+          {
+            id: 'a1',
+            profileTypeName: 'Armour',
+            name: 'Shield',
+            characteristics: [
+              { name: 'Saving Throw Modifier', value: '-1' },
+              { name: 'Special rules', value: 'None' }
+            ]
+          }
+        ],
+        rules: []
+      });
+
+      render(<UnitSelectionCard {...defaultProps} />);
+
+      expect(screen.getByText('Shield')).toBeDefined();
+      expect(screen.getByText('-1')).toBeDefined();
+      expect(screen.getByText('Armour')).toBeDefined();
+    });
+
+    it('does not render armour upgrades as chips if they are displayed in the armour table', () => {
+      const mockSel = {
+        id: 'sel-unit',
+        name: 'Knights of Bretonnia',
+        entryLinkId: 'el-1',
+        number: 1,
+        selections: [
+          { id: 'sub-shield', name: 'Shield', entryLinkId: 'el-shield', number: 1, selections: [] }
+        ]
+      };
+
+      const mockProps = {
+        ...defaultProps,
+        sel: mockSel
+      };
+
+      mockCollectUnitProfilesAndRules.mockReturnValue({
+        profiles: [
+          {
+            id: 'p-shield',
+            profileTypeName: 'Armour',
+            name: 'Shield',
+            characteristics: [
+              { name: 'Saving Throw Modifier', value: '-1' }
+            ],
+            _sourceSelection: mockSel.selections[0]
+          }
+        ],
+        rules: []
+      });
+
+      const { container } = render(<UnitSelectionCard {...mockProps} />);
+
+      expect(screen.getByText('Shield')).toBeDefined();
+      expect(screen.getByText('-1')).toBeDefined();
+
+      const chips = container.querySelectorAll('.upgrade-badge');
+      const chipTexts = Array.from(chips).map(c => c.textContent);
+      expect(chipTexts.includes('Shield')).toBe(false);
+    });
+
     it('survives errors with missing or empty message keys', () => {
       const propsWithEmptyMessage = {
         ...defaultProps,

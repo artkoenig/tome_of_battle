@@ -8,6 +8,7 @@ import {
   extractModelProfiles,
   extractUpgradeProfiles,
   extractWeaponProfiles,
+  extractArmourProfiles,
   hasBlessing
 } from '../../solver/rulesEvaluator';
 
@@ -90,7 +91,8 @@ export default function PlayUnitDetails({
     const { profiles, rules } = collectUnitProfilesAndRules(system, sel, roster.catalogueId, roster);
     const modelProfiles = extractModelProfiles(profiles);
     const weaponProfiles = extractWeaponProfiles(profiles);
-    return { profiles: modelProfiles, rules, weaponProfiles };
+    const armourProfiles = extractArmourProfiles(profiles);
+    return { profiles: modelProfiles, rules, weaponProfiles, armourProfiles };
   };
 
   // Helper to compile chosen upgrades / items
@@ -368,9 +370,12 @@ export default function PlayUnitDetails({
   const modelCount = getUnitModelCount(selection);
   const totalMaxWounds = modelCount * maxWounds;
   const currentWounds = getUnitCurrentWounds(selection, totalMaxWounds);
-  const { profiles, rules, weaponProfiles } = getUnitProfilesAndRules(selection);
+  const { profiles, rules, weaponProfiles, armourProfiles } = getUnitProfilesAndRules(selection);
   const weaponSelectionIds = new Set(
     weaponProfiles.map(wp => wp._sourceSelection?.id).filter(Boolean)
+  );
+  const armourSelectionIds = new Set(
+    armourProfiles.map(ap => ap._sourceSelection?.id).filter(Boolean)
   );
 
   const isNameMatch = (selN, profN) => {
@@ -385,9 +390,12 @@ export default function PlayUnitDetails({
   };
 
   const selectedUpgrades = getSelectedUpgrades(selection).filter(upgrade => {
-    if (weaponSelectionIds.has(upgrade.id)) return false;
+    if (weaponSelectionIds.has(upgrade.id) || armourSelectionIds.has(upgrade.id)) return false;
     const name = upgrade.name || upgrade.resolved?.name;
     if (name && weaponProfiles.some(wp => isNameMatch(name, wp.name))) {
+      return false;
+    }
+    if (name && armourProfiles.some(ap => isNameMatch(name, ap.name))) {
       return false;
     }
     return true;
@@ -585,6 +593,89 @@ export default function PlayUnitDetails({
                       </thead>
                       <tbody>
                         {weaponProfiles.map((prof, pIdx) => (
+                          <tr key={prof.id || pIdx}>
+                            <td className="font-body">
+                              {prof.name}
+                            </td>
+                            {headers.map(h => {
+                              const c = prof.characteristics?.find(char => char.name === h);
+                              if (!c) return <td key={h} className="font-body">-</td>;
+
+                              const modState = getModificationState(c);
+                              const cellStyle = {};
+                              let className = "font-body";
+                              if (modState === 'positive') {
+                                className += " text-success";
+                                cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
+                                cellStyle.fontWeight = 'bold';
+                                cellStyle.cursor = 'help';
+                              } else if (modState === 'negative') {
+                                className += " text-danger";
+                                cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
+                                cellStyle.fontWeight = 'bold';
+                                cellStyle.cursor = 'help';
+                              } else if (modState === 'modified') {
+                                className += " text-gold";
+                                cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
+                                cellStyle.fontWeight = 'bold';
+                                cellStyle.cursor = 'help';
+                              }
+
+                              return (
+                                <td
+                                  key={h}
+                                  className={className}
+                                  style={cellStyle}
+                                  onMouseEnter={(e) => {
+                                    if (modState && c.modificationBreakdown?.length > 0) {
+                                      handleMouseEnter(e, `Modifikationen: ${c.name}`, c.modificationBreakdown);
+                                    }
+                                  }}
+                                  onMouseLeave={handleMouseLeave}
+                                  onClick={() => {
+                                    if (modState && c.modificationBreakdown?.length > 0) {
+                                      setSaveSummaryData({ title: `Modifikationen: ${c.name}`, breakdown: c.modificationBreakdown });
+                                      setSaveSummaryOpen(true);
+                                    }
+                                  }}
+                                >
+                                  {c.value}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {armourProfiles && armourProfiles.length > 0 && (() => {
+              const headers = [];
+              armourProfiles.forEach(prof => {
+                prof.characteristics?.forEach(c => {
+                  if (c.name && !headers.includes(c.name)) {
+                    headers.push(c.name);
+                  }
+                });
+              });
+
+              return (
+                <div style={{ marginTop: '10px' }}>
+                  <div className="profile-table-container">
+                    <table className="profile-table">
+                      <thead>
+                        <tr>
+                          <th>Armour</th>
+                          {headers.map(h => (
+                            <th key={h}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {armourProfiles.map((prof, pIdx) => (
                           <tr key={prof.id || pIdx}>
                             <td className="font-body">
                               {prof.name}

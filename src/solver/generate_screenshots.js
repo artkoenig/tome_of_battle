@@ -6,7 +6,7 @@ import puppeteer from 'puppeteer';
 
 const PORT = 5176;
 const tempZipPath = path.resolve('./temp_whfb6.zip');
-const SCREENSHOT_DIR = '/Users/artkoenig/.gemini/antigravity/brain/c4237a0b-b94a-4234-ba03-fdcf6116ba3e/screenshots';
+const SCREENSHOT_DIR = '/Users/artkoenig/.gemini/antigravity/brain/ee049ca8-01ea-466e-ba42-668ed380efff/screenshots';
 
 // Ensure screenshot directory exists
 if (!fs.existsSync(SCREENSHOT_DIR)) {

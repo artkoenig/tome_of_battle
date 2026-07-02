@@ -51,6 +51,18 @@ export function extractWeaponProfiles(profiles) {
   });
 }
 
+/**
+ * Filters a list of profiles to include only armours.
+ */
+export function extractArmourProfiles(profiles) {
+  if (!Array.isArray(profiles)) return [];
+  return profiles.filter(p => {
+    const typeLower = p.profileTypeName?.toLowerCase() || '';
+    return typeLower.includes('armour') || typeLower.includes('rüstung');
+  });
+}
+
+
 
 /**
  * Helper to check if blessing is present in the profiles, rules or names.
