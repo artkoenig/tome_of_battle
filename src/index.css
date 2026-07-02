@@ -418,6 +418,59 @@ select option {
   gap: 16px;
 }
 
+/* Header-Statusbadges & Debug-Umschalter */
+.offline-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(166, 28, 28, 0.15);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.install-app-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-color: var(--border-gold);
+  background: rgba(226, 183, 66, 0.15);
+  color: var(--text-gold);
+  cursor: pointer;
+}
+
+.debug-id-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-color: var(--border-dark);
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.debug-id-btn.active {
+  border-color: var(--text-gold);
+  background: rgba(226, 183, 66, 0.15);
+  color: var(--text-gold);
+}
+
+.app-loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+}
+
+.app-loading-screen p {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
 .app-content {
   flex: 1;
   display: flex;
@@ -1179,6 +1232,60 @@ select option {
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border-gold-dim);
   padding-bottom: 10px;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+/* Formularfelder in Modals */
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-field > label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-field-hint {
+  margin-top: 4px;
+}
+
+.input-with-suffix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-with-suffix input {
+  flex: 1;
+}
+
+.input-with-suffix .input-suffix-label {
+  font-weight: bold;
+}
+
+.preset-btn-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  padding: 4px 10px;
+  font-size: var(--fs-micro);
+  border-color: var(--border-dark);
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.preset-btn.active {
+  border-color: var(--text-gold);
+  background: rgba(226, 183, 66, 0.15);
+  color: var(--text-gold);
 }
 
 .modal-close {

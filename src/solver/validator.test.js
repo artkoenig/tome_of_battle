@@ -809,8 +809,9 @@ console.log('Test 14 - XML CategoryLink Constraints and Modifiers Parsing Check:
 
 // Test 15 removed as the underlying hack in validator was removed.
 
-// Test 16: Fallback Heroes Max Constraint injection
+// Test 16: Fallback Heroes Max Constraint injection (System-Quirk, greift nur für die WFB6-System-ID)
 const mockSystemForFallback = {
+  id: '6d8e-38d9-3c69-febf',
   categoryEntries: [
     { id: '7a1c-d611-c2dc-def1', name: 'Characters' },
     { id: 'c16b-f319-2c62-2c12', name: 'Heroes' }

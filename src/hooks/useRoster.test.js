@@ -77,9 +77,6 @@ describe('useRoster Hook', () => {
 
   it('calls saveRosterCallback when save is called', async () => {
     const mockSave = vi.fn();
-    // mock alert to prevent jsdom errors
-    window.alert = vi.fn();
-    
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
     await act(async () => {
@@ -89,11 +86,15 @@ describe('useRoster Hook', () => {
     expect(mockSave).toHaveBeenCalledWith(result.current.roster);
   });
 
-  it('saves immediately when unit is added', () => {
+  it('saves after the debounce delay when unit is added', () => {
+    vi.useFakeTimers();
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
-    // Clear initial render calls
+    // Initialen Autosave abwarten und zurücksetzen
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     mockSave.mockClear();
 
     const testEntry = { id: 'entry-1', name: 'Space Marine' };
@@ -102,9 +103,40 @@ describe('useRoster Hook', () => {
       result.current.addUnit(testEntry, 'cat-1');
     });
 
-    // Check that it was called immediately (without advancing timers)
+    // Vor Ablauf der Debounce noch kein Save
+    expect(mockSave).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+
     expect(mockSave).toHaveBeenCalledTimes(1);
     expect(mockSave.mock.calls[0][0].forces[0].selections[0].name).toBe('Space Marine');
+
+    vi.useRealTimers();
+  });
+
+  it('flushes a pending save on unmount', () => {
+    vi.useFakeTimers();
+    const mockSave = vi.fn();
+    const { result, unmount } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    mockSave.mockClear();
+
+    act(() => {
+      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+    });
+
+    // Unmount vor Ablauf der Debounce — die Änderung darf nicht verloren gehen
+    unmount();
+
+    expect(mockSave).toHaveBeenCalledTimes(1);
+    expect(mockSave.mock.calls[0][0].forces[0].selections[0].name).toBe('Space Marine');
+
+    vi.useRealTimers();
   });
 
   it('selects the default selection entry by ID when adding unit with selectionEntryGroups', () => {
@@ -178,6 +210,7 @@ describe('useRoster Hook', () => {
   });
 
   it('updateRosterName updates the roster name', () => {
+    vi.useFakeTimers();
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
@@ -186,6 +219,38 @@ describe('useRoster Hook', () => {
     });
 
     expect(result.current.roster.name).toBe('New Roster Name');
+
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     expect(mockSave).toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it('keeps selectedRosterSelection in sync with the roster tree (ID-based)', () => {
+    const mockSave = vi.fn();
+    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+    act(() => {
+      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+    });
+
+    const unit = result.current.roster.forces[0].selections[0];
+    expect(result.current.selectedRosterSelection?.id).toBe(unit.id);
+
+    // Nach einer Mutation zeigt die Auswahl auf den aktualisierten Knoten aus dem Roster
+    act(() => {
+      result.current.updateSubSelection(unit.id, { id: 'opt-1', name: 'Bolter' }, 'increment');
+    });
+
+    expect(result.current.selectedRosterSelection).toBe(result.current.roster.forces[0].selections[0]);
+    expect(result.current.selectedRosterSelection.selections.length).toBe(1);
+
+    // Entfernen der Einheit setzt die Auswahl zurück
+    act(() => {
+      result.current.removeUnit(unit.id);
+    });
+    expect(result.current.selectedRosterSelection).toBe(null);
   });
 });

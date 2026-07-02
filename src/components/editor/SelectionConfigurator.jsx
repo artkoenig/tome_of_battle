@@ -8,9 +8,9 @@ import { useDebugMode } from '../../hooks/DebugContext';
 import {
   UPGRADE_DETAILS_KEYWORDS,
   GENERAL_EXACT_KEYWORDS,
-  GENERAL_SUBSTRING_KEYWORDS,
-  GENERAL_IDS
+  GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/constants';
+import { isQuirkGeneralEntryId } from '../../solver/systemQuirks';
 
 
 export default function SelectionConfigurator({
@@ -280,10 +280,10 @@ export default function SelectionConfigurator({
     const res = resolveEntry(system, item.option, activeCatalogue.id);
     if (!res) return false;
     const nameLower = res.name?.toLowerCase() || '';
-    return GENERAL_EXACT_KEYWORDS.includes(nameLower) || 
+    return GENERAL_EXACT_KEYWORDS.includes(nameLower) ||
            GENERAL_SUBSTRING_KEYWORDS.some(k => nameLower.includes(k)) ||
-           GENERAL_IDS.includes(item.option.id) ||
-           GENERAL_IDS.includes(res.id);
+           isQuirkGeneralEntryId(system, item.option.id) ||
+           isQuirkGeneralEntryId(system, res.id);
   };
 
   const isGeneralGroupOrStandalone = (group) => {

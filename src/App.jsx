@@ -3,7 +3,6 @@ import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Bug, Search, WifiOff, 
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 import { useDebugMode } from './hooks/DebugContext';
-import { getAvailableForceEntries } from './solver/validator';
 
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
@@ -88,13 +87,8 @@ export default function App() {
     }
   };
 
-  // Modal State for new Roster
+  // Modal State for new Roster (Formular-State lebt im NewRosterModal selbst)
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newRosterName, setNewRosterName] = useState('');
-  const [newRosterSystemId, setNewRosterSystemId] = useState('');
-  const [newRosterCatId, setNewRosterCatId] = useState('');
-  const [newRosterForceEntryId, setNewRosterForceEntryId] = useState('');
-  const [newRosterLimit, setNewRosterLimit] = useState(2000);
 
   // Debug Edit Modal State
   const [debugEditingEntry, setDebugEditingEntry] = useState(null);
@@ -192,20 +186,6 @@ export default function App() {
       const allRosters = await getAllRosters();
       setSystems(allSystems);
       setRosters(allRosters);
-
-      if (allSystems.length > 0 && !newRosterSystemId) {
-        const defaultSys = allSystems[0];
-        setNewRosterSystemId(defaultSys.id);
-        const defaultCatId = defaultSys.catalogues?.length > 0 ? defaultSys.catalogues[0].id : '';
-        setNewRosterCatId(defaultCatId);
-        
-        const avail = getAvailableForceEntries(defaultSys, defaultCatId);
-        if (avail.length > 0) {
-          setNewRosterForceEntryId(avail[0].id);
-        } else {
-          setNewRosterForceEntryId('');
-        }
-      }
       setIsDataLoaded(true);
     } catch (e) {
       console.error("Error loading index data:", e);
@@ -219,82 +199,26 @@ export default function App() {
   };
 
 
-  // Handle game system selection change in new roster modal
-  const handleSystemChange = (systemId) => {
-    setNewRosterSystemId(systemId);
-    const selectedSys = systems.find(s => s.id === systemId);
-    let defaultCatId = '';
-    if (selectedSys && selectedSys.catalogues?.length > 0) {
-      defaultCatId = selectedSys.catalogues[0].id;
-    }
-    setNewRosterCatId(defaultCatId);
-    
-    if (selectedSys) {
-      const avail = getAvailableForceEntries(selectedSys, defaultCatId);
-      if (avail.length > 0) {
-        setNewRosterForceEntryId(avail[0].id);
-      } else {
-        setNewRosterForceEntryId('');
-      }
-    } else {
-      setNewRosterForceEntryId('');
-    }
-  };
-
-  const handleCatalogueChange = (catId) => {
-    setNewRosterCatId(catId);
-    const selectedSys = systems.find(s => s.id === newRosterSystemId);
-    if (selectedSys) {
-      const avail = getAvailableForceEntries(selectedSys, catId);
-      if (avail.length > 0) {
-        setNewRosterForceEntryId(avail[0].id);
-      } else {
-        setNewRosterForceEntryId('');
-      }
-    } else {
-      setNewRosterForceEntryId('');
-    }
-  };
-
-  const handleOpenNewRosterModal = () => {
-    setIsModalOpen(true);
-    setNewRosterName('');
-    if (systems.length > 0) {
-      const defaultSys = systems[0];
-      setNewRosterSystemId(defaultSys.id);
-      const defaultCatId = defaultSys.catalogues?.length > 0 ? defaultSys.catalogues[0].id : '';
-      setNewRosterCatId(defaultCatId);
-      
-      const avail = getAvailableForceEntries(defaultSys, defaultCatId);
-      if (avail.length > 0) {
-        setNewRosterForceEntryId(avail[0].id);
-      } else {
-        setNewRosterForceEntryId('');
-      }
-    }
-  };
-
-  const handleCreateRoster = async (e) => {
-    e.preventDefault();
-    if (!newRosterName || !newRosterSystemId || !newRosterCatId) {
+  const handleCreateRoster = async ({ name, systemId, catId, forceEntryId, limit }) => {
+    if (!name || !systemId || !catId) {
       alert("Bitte fülle alle Felder aus.");
       return;
     }
 
-    const systemDef = systems.find(s => s.id === newRosterSystemId);
+    const systemDef = systems.find(s => s.id === systemId);
     const costType = systemDef?.costTypes?.[0]?.id || 'pts';
 
     const roster = {
       id: crypto.randomUUID(),
-      name: newRosterName,
-      systemId: newRosterSystemId,
-      catalogueId: newRosterCatId,
-      costLimit: parseInt(newRosterLimit) || 2000,
+      name,
+      systemId,
+      catalogueId: catId,
+      costLimit: parseInt(limit) || 2000,
       costLimitType: costType,
       forces: [{
         id: crypto.randomUUID(),
-        forceEntryId: newRosterForceEntryId || systemDef?.forceEntries?.[0]?.id || null,
-        catalogueId: newRosterCatId,
+        forceEntryId: forceEntryId || systemDef?.forceEntries?.[0]?.id || null,
+        catalogueId: catId,
         selections: []
       }],
       gameState: {
@@ -308,9 +232,8 @@ export default function App() {
     try {
       await saveRoster(roster);
       setIsModalOpen(false);
-      setNewRosterName('');
       loadAllData();
-      
+
       // Open editor
       setSelectedSystem(systemDef);
       setSelectedRoster(roster);
@@ -355,9 +278,6 @@ export default function App() {
     }
   };
 
-  // Selected system for new roster helper
-  const activeModalSystem = systems.find(s => s.id === newRosterSystemId);
-
   return (
     <div id="root" className={view !== 'rosters' && view !== 'importer' ? 'in-builder-mode' : ''}>
       {/* Premium Header */}
@@ -379,40 +299,16 @@ export default function App() {
 
         <div className="app-header-actions">
           {isOffline && (
-            <div 
-              className="offline-badge"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'rgba(166, 28, 28, 0.15)',
-                borderColor: 'var(--color-danger)',
-                borderWidth: '1px',
-                borderStyle: 'solid',
-                color: 'var(--color-danger)',
-                padding: '6px 12px',
-                borderRadius: '4px'
-              }}
-              title="Offline-Modus aktiv"
-            >
+            <div className="offline-badge" title="Offline-Modus aktiv">
               <WifiOff size={18} className="text-danger" />
               <span className="hide-on-mobile">Offline</span>
             </div>
           )}
 
           {isInstallable && (
-            <button 
+            <button
               className="install-app-btn"
               onClick={handleInstallClick}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                borderColor: 'var(--border-gold)',
-                background: 'rgba(226, 183, 66, 0.15)',
-                color: 'var(--text-gold)',
-                cursor: 'pointer'
-              }}
               title="App auf dem Gerät installieren"
             >
               <Download size={18} className="text-gold" />
@@ -421,17 +317,9 @@ export default function App() {
           )}
 
           {isLocal && (
-            <button 
-              className="debug-id-btn"
+            <button
+              className={`debug-id-btn ${showDebugIds ? 'active' : ''}`}
               onClick={toggleShowDebugIds}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                borderColor: showDebugIds ? 'var(--text-gold)' : 'var(--border-dark)',
-                background: showDebugIds ? 'rgba(226, 183, 66, 0.15)' : 'transparent',
-                color: showDebugIds ? 'var(--text-gold)' : 'var(--text-dim)'
-              }}
               title="Debugging: IDs ein-/ausblenden"
             >
               <Bug size={18} className={showDebugIds ? 'text-gold' : 'text-dim'} />
@@ -461,8 +349,8 @@ export default function App() {
       {/* Main Content Area */}
       <main className="app-content">
         {!isDataLoaded ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-            <p className="text-dim" style={{ animation: 'pulse 2s infinite' }}>Öffne das Buch des Wissens...</p>
+          <div className="app-loading-screen">
+            <p className="text-dim">Öffne das Buch des Wissens...</p>
           </div>
         ) : systems.length === 0 ? (
           <Importer onSystemImported={handleSystemImported} showAsEmptyState={true} />
@@ -476,7 +364,7 @@ export default function App() {
                 onOpenRoster={handleOpenRoster}
                 onDeleteRoster={handleDeleteRoster}
                 onRenameRoster={handleRenameRoster}
-                onNewRoster={handleOpenNewRosterModal}
+                onNewRoster={() => setIsModalOpen(true)}
                 isOffline={isOffline}
                 isInstallable={isInstallable}
                 onInstallClick={handleInstallClick}
@@ -508,21 +396,11 @@ export default function App() {
       </main>
 
       {/* New Roster Modal */}
-      <NewRosterModal 
+      <NewRosterModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateRoster}
+        onCreate={handleCreateRoster}
         systems={systems}
-        newRosterName={newRosterName}
-        setNewRosterName={setNewRosterName}
-        newRosterSystemId={newRosterSystemId}
-        handleSystemChange={handleSystemChange}
-        newRosterCatId={newRosterCatId}
-        handleCatalogueChange={handleCatalogueChange}
-        newRosterForceEntryId={newRosterForceEntryId}
-        setNewRosterForceEntryId={setNewRosterForceEntryId}
-        newRosterLimit={newRosterLimit}
-        setNewRosterLimit={setNewRosterLimit}
       />
 
       {/* Debug Entry Editor Modal */}

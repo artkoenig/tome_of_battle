@@ -1,7 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 
 import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
 import '../types.js';
+
+const AUTOSAVE_DEBOUNCE_MS = 150;
+
+/** Sucht eine Selection (beliebig tief verschachtelt) im Roster per ID. */
+const findSelectionInRoster = (roster, selectionId) => {
+  if (!roster || !selectionId) return null;
+  const findIn = (list) => {
+    for (const s of list || []) {
+      if (s.id === selectionId) return s;
+      const sub = findIn(s.selections);
+      if (sub) return sub;
+    }
+    return null;
+  };
+  for (const force of roster.forces || []) {
+    const found = findIn(force.selections);
+    if (found) return found;
+  }
+  return null;
+};
 
 /**
  * Hook to manage a roster state, cost calculations, validations and updates.
@@ -13,44 +33,74 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   const [roster, setRoster] = useState(initialRoster);
   const [costs, setCosts] = useState({});
   const [validationErrors, setValidationErrors] = useState([]);
-  const [selectedRosterSelection, setSelectedRosterSelection] = useState(null);
+  const [selectedSelectionId, setSelectedSelectionId] = useState(null);
   const [selectedCatalogEntry, setSelectedCatalogEntry] = useState(null);
 
-  // Recalculate costs and run validation whenever roster changes (debounced for performance)
-  // Save changes to database immediately on change
-  useEffect(() => {
-    if (roster && system) {
-      const rosterModified = syncRosterSelectionsWithSystem(roster, system);
+  // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt
+  // eine (schnell veraltende) Objektreferenz zu halten.
+  const selectedRosterSelection = useMemo(
+    () => findSelectionInRoster(roster, selectedSelectionId),
+    [roster, selectedSelectionId]
+  );
 
-      if (rosterModified) {
-        setRoster({ ...roster });
-        return;
-      }
-
-      // Auto-save roster immediately on change
-      if (saveRosterCallback) {
-        try {
-          const promise = saveRosterCallback(roster);
-          if (promise && typeof promise.catch === 'function') {
-            promise.catch(e => {
-              console.error('Failed to auto-save roster:', e);
-            });
-          }
-        } catch (e) {
-          console.error('Failed to auto-save roster:', e);
-        }
-      }
-
-      const handler = setTimeout(() => {
-        const calcCosts = calculateRosterCosts(roster, system);
-        setCosts(calcCosts);
-        const errors = validateRoster(roster, system);
-        setValidationErrors(errors);
-      }, 150);
-
-      return () => clearTimeout(handler);
+  const setSelectedRosterSelection = (selectionOrId) => {
+    if (!selectionOrId) {
+      setSelectedSelectionId(null);
+    } else {
+      setSelectedSelectionId(typeof selectionOrId === 'string' ? selectionOrId : selectionOrId.id);
     }
-  }, [roster, system, saveRosterCallback]);
+  };
+
+  const saveCallbackRef = useRef(saveRosterCallback);
+  saveCallbackRef.current = saveRosterCallback;
+  const pendingSaveRef = useRef(null);
+
+  const persistRoster = (rosterToSave) => {
+    const cb = saveCallbackRef.current;
+    if (!cb) return;
+    try {
+      const promise = cb(rosterToSave);
+      if (promise && typeof promise.catch === 'function') {
+        promise.catch(e => {
+          console.error('Failed to auto-save roster:', e);
+        });
+      }
+    } catch (e) {
+      console.error('Failed to auto-save roster:', e);
+    }
+  };
+
+  // Debounced: Autosave, Kostenberechnung und Validierung bei jeder Roster-Änderung
+  useEffect(() => {
+    if (!roster || !system) return;
+
+    const rosterModified = syncRosterSelectionsWithSystem(roster, system);
+    if (rosterModified) {
+      setRoster({ ...roster });
+      return;
+    }
+
+    pendingSaveRef.current = roster;
+    const handler = setTimeout(() => {
+      persistRoster(roster);
+      pendingSaveRef.current = null;
+
+      setCosts(calculateRosterCosts(roster, system));
+      setValidationErrors(validateRoster(roster, system));
+    }, AUTOSAVE_DEBOUNCE_MS);
+
+    return () => clearTimeout(handler);
+  }, [roster, system]);
+
+  // Noch ausstehende Änderungen beim Unmount wegschreiben (z. B. bei schneller Navigation)
+  useEffect(() => {
+    return () => {
+      if (pendingSaveRef.current) {
+        persistRoster(pendingSaveRef.current);
+        pendingSaveRef.current = null;
+      }
+    };
+  }, []);
 
   // Helper to generate a new unique selection node
   const createSelectionFromDef = (entry, categoryId = null) => {
@@ -69,31 +119,26 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
       selections: []
     };
 
-    const populateChildren = (def, parentSel) => {
-      def.selectionEntries?.forEach(child => {
-        const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
-        if (minCon > 0) {
-          const childSel = createSelectionFromDef(child);
-          if (childSel) {
-            childSel.number = minCon;
-            parentSel.selections.push(childSel);
-          }
-        }
-      });
+    const getMinConstraintValue = (def) => def.constraints?.find(c => c.type === 'min')?.value || 0;
 
-      def.entryLinks?.forEach(child => {
-        const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
+    const addMandatoryChild = (parentSel, childDef, count) => {
+      const childSel = createSelectionFromDef(childDef);
+      if (childSel) {
+        childSel.number = count;
+        parentSel.selections.push(childSel);
+      }
+    };
+
+    const populateChildren = (def, parentSel) => {
+      [...(def.selectionEntries || []), ...(def.entryLinks || [])].forEach(child => {
+        const minCon = getMinConstraintValue(child);
         if (minCon > 0) {
-          const childSel = createSelectionFromDef(child);
-          if (childSel) {
-            childSel.number = minCon;
-            parentSel.selections.push(childSel);
-          }
+          addMandatoryChild(parentSel, child, minCon);
         }
       });
 
       def.selectionEntryGroups?.forEach(group => {
-        const minCon = group.constraints?.find(c => c.type === 'min')?.value || 0;
+        const minCon = getMinConstraintValue(group);
         if (minCon > 0 && (group.selectionEntries?.length > 0 || group.entryLinks?.length > 0)) {
           let chosenOption = null;
           if (group.defaultSelectionEntryId) {
@@ -103,11 +148,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
           if (!chosenOption) {
             chosenOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
           }
-          const childSel = createSelectionFromDef(chosenOption);
-          if (childSel) {
-            childSel.number = minCon;
-            parentSel.selections.push(childSel);
-          }
+          addMandatoryChild(parentSel, chosenOption, minCon);
         }
       });
     };
@@ -133,7 +174,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
       };
     });
 
-    setSelectedRosterSelection(newUnit);
+    setSelectedSelectionId(newUnit.id);
   };
 
   const removeUnit = (selectionId) => {
@@ -150,8 +191,8 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
       };
     });
 
-    if (selectedRosterSelection?.id === selectionId) {
-      setSelectedRosterSelection(null);
+    if (selectedSelectionId === selectionId) {
+      setSelectedSelectionId(null);
     }
   };
 
@@ -234,7 +275,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
             // Original increment/decrement logic (optionOrId is an option def)
             const optionId = optionOrId.id;
             const idx = list.findIndex(s => (s.entryLinkId || s.selectionEntryId) === optionId);
-            
+
             if (action === 'increment') {
               if (idx > -1) {
                 list[idx] = { ...list[idx], number: (list[idx].number || 1) + amount };
@@ -271,27 +312,16 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
         return node;
       };
 
-      let updatedRootSelection = null;
-
       const updatedForces = prev.forces.map(force => {
         let updatedForceSelections = false;
         const newSelections = force.selections.map(unit => {
           const updatedUnit = updateDeep(unit);
-          if (updatedUnit !== unit) {
-            updatedForceSelections = true;
-            if (unit.id === selectedRosterSelection?.id || updatedUnit.id === selectedRosterSelection?.id) {
-              updatedRootSelection = updatedUnit;
-            }
-          }
+          if (updatedUnit !== unit) updatedForceSelections = true;
           return updatedUnit;
         });
         if (updatedForceSelections) return { ...force, selections: newSelections };
         return force;
       });
-
-      if (updatedRootSelection) {
-        setTimeout(() => setSelectedRosterSelection(updatedRootSelection), 0);
-      }
 
       return { ...prev, forces: updatedForces };
     });
@@ -305,12 +335,8 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   };
 
   const save = async () => {
-    try {
-      if (saveRosterCallback) await saveRosterCallback(roster);
-      alert('Armeeliste erfolgreich gespeichert!');
-    } catch (e) {
-      console.error(e);
-      alert('Fehler beim Speichern der Liste.');
+    if (saveCallbackRef.current) {
+      await saveCallbackRef.current(roster);
     }
   };
 

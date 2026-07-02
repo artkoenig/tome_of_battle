@@ -3,7 +3,7 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 
 ## Debugging & Automation
 * **Bug-Analyse & Vorgehen:** Bei gemeldeten Bugs, die die Fachlogik betreffen, muss **zuerst in den vorhandenen Daten** (Kataloge, Spieldaten) nach einer bereits erfassten, aber eventuell unvollständig implementierten Logik gesucht werden, bevor neuer Code geschrieben wird. Nutze für die Analyse ein Reasoning Modell, für die Umsetzung ein Flash Modell
-* **Local (macOS):** `browser_subagent` / `open_browser_url` funktionieren nicht. **Nutze Puppeteer** in `src/solver/` via `run_command` (z. B. `node src/solver/my_test.js`).
+* **Local (macOS):** `browser_subagent` / `open_browser_url` funktionieren nicht. **Nutze Puppeteer** in `scripts/` via `run_command` (z. B. `node scripts/debug_ui.js`).
 * **Cloud (Linux):** Nutze `/browser` und `browser_subagent` (voll unterstützt).
 
 ## Fachlogik
@@ -22,7 +22,7 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 
 ## UI/UX Reviews & Feature-Inspiration
 * **Ablauf bei UI/UX Review-Anfragen:**
-  1. Führe das Skript `node src/solver/generate_screenshots.js` (oder den entsprechenden Pfad) aus, um das aktuelle Interface visuell zu erfassen.
+  1. Führe das Skript `node scripts/generate_screenshots.js` (oder den entsprechenden Pfad) aus, um das aktuelle Interface visuell zu erfassen.
   2. Nutze die Screenshots nicht nur zur Fehleranalyse, sondern als kreatives Sprungbrett.
 * **Fokus auf Benutzererlebnis & Innovation:**
     * **Redundanzen & UI-Ballast:** Suche nach redundanten Elementen. Gibt es Informationen, Icons oder Buttons, die doppelt auf dem Bildschirm angezeigt werden oder keinen echten Mehrwert bieten? Das Interface soll so schlank und fokussiert wie möglich sein.

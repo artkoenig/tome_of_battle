@@ -15,13 +15,12 @@ npm run lint               # oxlint
 npm test                     # vitest run (unit/component tests) + node src/solver/ui.test.js (puppeteer E2E)
 npx vitest run <path>          # run a single test file
 npx vitest run -t "<name>"       # run tests matching a name
-npm run debug-ui             # node src/solver/debug_ui.js — scripted puppeteer debugging session
-npm run ux-correct            # python scripts/ux_self_correction.py
+npm run debug-ui             # node scripts/debug_ui.js — scripted puppeteer debugging session
 ```
 
 - `src/solver/ui.test.js` is excluded from the vitest run (see `vitest.config.js`) and executed separately by `npm test`. It packs `catalogs/whfb6/*.cat|*.gst` into a zip with JSZip, boots a Vite server on port 5175, and drives it with Puppeteer — a full import→build→play E2E smoke test.
 - All unit tests must pass before a task is considered done.
-- On macOS, `browser_subagent`/`open_browser_url` don't work for manual UI checks — use the Puppeteer scripts in `src/solver/` (e.g. `node src/solver/generate_screenshots.js`) instead. On Linux/cloud, `/browser` and `browser_subagent` work normally.
+- On macOS, `browser_subagent`/`open_browser_url` don't work for manual UI checks — use the Puppeteer scripts in `scripts/` (e.g. `node scripts/generate_screenshots.js`) instead. On Linux/cloud, `/browser` and `browser_subagent` work normally.
 
 ## Architecture
 
@@ -30,7 +29,7 @@ npm run ux-correct            # python scripts/ux_self_correction.py
 1. **Import**: `Importer.jsx` → `src/parser/zipExtractor.js` unzips a `.bsz`/zip of catalogs, `src/parser/xmlParser.js` parses the raw `.cat`/`.gst` XML into a "system" object (catalogues, category/force entries, cost types, profiles, rules, constraints, modifiers, entry links, etc.).
 2. **Storage**: `src/db/database.js` wraps IndexedDB with two object stores: `systems` (parsed game systems) and `rosters` (user army lists). No ORM — plain promise-wrapped `IDBRequest` calls. Treat this file as the only place that touches IndexedDB directly (repository pattern); components/hooks should go through it or through hooks built on top of it.
 3. **Migrations**: `src/db/migrations.js` runs `runSystemMigrations` on every system loaded at app start (in `App.jsx`) to backfill/upgrade older stored system objects.
-4. **Roster state**: `src/hooks/useRoster.js` is the central state manager for one roster being edited. It builds the `Selection` tree from catalog entries, mutates it immutably, and on every change: debounces (150ms) a recompute of costs/validation via `src/solver/validator.js`, and **autosaves to IndexedDB immediately** (no explicit save step required, though a manual `save()` exists too).
+4. **Roster state**: `src/hooks/useRoster.js` is the central state manager for one roster being edited. It builds the `Selection` tree from catalog entries, mutates it immutably, and on every change **debounces (150ms) autosave to IndexedDB plus a recompute of costs/validation** via `src/solver/validator.js`; pending saves are flushed on unmount, so no explicit save step is required (a manual `save()` exists too). The selected selection is tracked by ID and derived from the roster tree via `useMemo` — never hold direct node object references in state.
 5. **Play state**: `src/hooks/usePlayState.js` manages transient game-mode state (round, VP, CP, per-model wounds) layered on top of a roster.
 
 ### Data model (`src/types.js`, JSDoc typedefs only — no TS)
@@ -44,8 +43,14 @@ npm run ux-correct            # python scripts/ux_self_correction.py
 - `optionsCollector.js` — recursively collects available profiles/rules/options for a unit, respecting nesting (e.g. an upgrade's own sub-options only become selectable once the parent upgrade is actually chosen).
 - `rosterCounter.js` — computes selection/category/force counts and point costs across a roster.
 - `rulesEvaluator.js` — special rule text/keyword evaluation.
-- `validator.js` — top-level orchestrator; re-exports the above and exposes `validateRoster`, `calculateRosterCosts`, `resolveEntry`, `syncRosterSelectionsWithSystem`. This is the module the rest of the app imports from.
-- Scripts here that aren't `*.test.js` (`generate_screenshots.js`, `debug_ui.js`, `stress_m3.js`, `ux_desktop_walkthrough.js`, etc.) are standalone Puppeteer/Node tools, not part of the app bundle.
+- `rosterValidator.js` — constraint validation of a whole roster (`validateRoster`), split into named check steps (cost limit, per-force category limits, entry constraints, group constraints).
+- `profileCollector.js` — `collectUnitProfilesAndRules`: recursively collects the effective profiles/rules of a unit and applies characteristic modifiers.
+- `rosterSync.js` — re-syncs stored roster selections (names/costs) with a re-imported system.
+- `forceEntries.js` — force entry (detachment) lookup helpers.
+- `entryVisibility.js` — evaluates the effective `hidden` state of entries/category links (incl. `field="hidden"` modifiers).
+- `systemQuirks.js` — declarative per-game-system special cases (keyed by `.gst` system ID), e.g. category max inheritance or general-entry IDs. New catalog quirks belong here as data, never as `if` branches in solver logic.
+- `validator.js` — pure facade; re-exports everything above. This is the module the rest of the app imports from.
+- The standalone Puppeteer/Node tools (`generate_screenshots.js`, `debug_ui.js`, `stress_m3.js`, `ux_*_walkthrough.js`, etc.) live in `scripts/`; only `ui.test.js` (the E2E) remains in `src/solver/`.
 
 ### Battlescribe domain rules (non-obvious, see `.agents/validation_insights.md` for the full living log — add new discoveries there)
 

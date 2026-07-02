@@ -74,16 +74,11 @@ export const GENERAL_EXACT_KEYWORDS = [
 
 export const GENERAL_SUBSTRING_KEYWORDS = ['warlord'];
 
-export const GENERAL_IDS = ['1b7c-2c90-6d96-28c9'];
-
 // Profile types for model count calculations
 export const MODEL_COUNT_PROFILE_TYPES = [
   'unit', 'model', 'monster', 'creature', 'war machine', 'character', 'rider', 'mount'
 ];
 
-// WFB6-spezifische Kategorie-IDs für Heroes/Characters-Fallback-Logik
-// Hintergrund: Im WFB6-System teilen sich Heroes und Characters eine Maximal-Beschränkung,
-// die nur auf der Characters-Kategorie definiert ist. Dieser Fallback propagiert den Constraint.
-export const WFB6_HEROES_CATEGORY_ID = 'c16b-f319-2c62-2c12';
-export const WFB6_CHARACTERS_CATEGORY_ID = '7a1c-d611-c2dc-def1';
+// Systemspezifische IDs (General-Einträge, Kategorie-Vererbung etc.)
+// liegen als Daten in systemQuirks.js — nicht hier als Konstanten.
 
