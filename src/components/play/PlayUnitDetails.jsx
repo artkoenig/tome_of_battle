@@ -7,6 +7,7 @@ import {
   getWardSave as getWardSaveLogic,
   extractModelProfiles,
   extractUpgradeProfiles,
+  extractWeaponProfiles,
   hasBlessing
 } from '../../solver/rulesEvaluator';
 
@@ -88,7 +89,8 @@ export default function PlayUnitDetails({
   const getUnitProfilesAndRules = (sel) => {
     const { profiles, rules } = collectUnitProfilesAndRules(system, sel, roster.catalogueId, roster);
     const modelProfiles = extractModelProfiles(profiles);
-    return { profiles: modelProfiles, rules };
+    const weaponProfiles = extractWeaponProfiles(profiles);
+    return { profiles: modelProfiles, rules, weaponProfiles };
   };
 
   // Helper to compile chosen upgrades / items
@@ -366,7 +368,7 @@ export default function PlayUnitDetails({
   const modelCount = getUnitModelCount(selection);
   const totalMaxWounds = modelCount * maxWounds;
   const currentWounds = getUnitCurrentWounds(selection, totalMaxWounds);
-  const { profiles, rules } = getUnitProfilesAndRules(selection);
+  const { profiles, rules, weaponProfiles } = getUnitProfilesAndRules(selection);
   const selectedUpgrades = getSelectedUpgrades(selection);
   const asInfo = getArmourSaveInfo(selection);
   const wsInfo = getWardSaveInfo(selection);
@@ -451,29 +453,40 @@ export default function PlayUnitDetails({
       <div className="play-unit-body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div>
-            {profiles.length > 0 ? (
-              profiles.map((prof, pIdx) => (
-                <div key={pIdx} style={{ marginBottom: '6px' }}>
-                  <div className="profile-title text-gold font-serif">
-                    {prof.name}
-                    {prof.publicationRef && (
-                      <span className="publication-ref">
-                        {prof.publicationRef}
-                      </span>
-                    )}
-                  </div>
-                  <div className="profile-table-container">
-                    <table className="profile-table">
-                      <thead>
-                        <tr>
-                          {prof.characteristics.map(c => (
-                            <th key={c.name}>{c.name}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          {prof.characteristics.map(c => {
+            {profiles.length > 0 ? (() => {
+              const headers = [];
+              profiles.forEach(prof => {
+                prof.characteristics?.forEach(c => {
+                  if (c.name && !headers.includes(c.name)) {
+                    headers.push(c.name);
+                  }
+                });
+              });
+              const showModelNameCol = profiles.length > 1;
+
+              return (
+                <div className="profile-table-container">
+                  <table className="profile-table">
+                    <thead>
+                      <tr>
+                        {showModelNameCol && <th>Modell</th>}
+                        {headers.map(h => (
+                          <th key={h}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {profiles.map((prof, pIdx) => (
+                        <tr key={prof.id || pIdx}>
+                          {showModelNameCol && (
+                            <td className="font-body">
+                              {prof.name}
+                            </td>
+                          )}
+                          {headers.map(h => {
+                            const c = prof.characteristics?.find(char => char.name === h);
+                            if (!c) return <td key={h} className="font-body">-</td>;
+
                             const modState = getModificationState(c);
                             const cellStyle = {};
                             let className = "font-body";
@@ -493,10 +506,10 @@ export default function PlayUnitDetails({
                               cellStyle.fontWeight = 'bold';
                               cellStyle.cursor = 'help';
                             }
-                            
+
                             return (
                               <td 
-                                key={c.name} 
+                                key={h} 
                                 className={className}
                                 style={cellStyle}
                                 onMouseEnter={(e) => {
@@ -517,14 +530,97 @@ export default function PlayUnitDetails({
                             );
                           })}
                         </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })() : (
+              <p className="text-dim text-label">Keine Profilwerte gefunden.</p>
+            )}
+
+            {weaponProfiles && weaponProfiles.length > 0 && (() => {
+              const headers = [];
+              weaponProfiles.forEach(prof => {
+                prof.characteristics?.forEach(c => {
+                  if (c.name && !headers.includes(c.name)) {
+                    headers.push(c.name);
+                  }
+                });
+              });
+
+              return (
+                <div style={{ marginTop: '10px' }}>
+                  <div className="profile-table-container">
+                    <table className="profile-table">
+                      <thead>
+                        <tr>
+                          <th>Weapon</th>
+                          {headers.map(h => (
+                            <th key={h}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {weaponProfiles.map((prof, pIdx) => (
+                          <tr key={prof.id || pIdx}>
+                            <td className="font-body">
+                              {prof.name}
+                            </td>
+                            {headers.map(h => {
+                              const c = prof.characteristics?.find(char => char.name === h);
+                              if (!c) return <td key={h} className="font-body">-</td>;
+
+                              const modState = getModificationState(c);
+                              const cellStyle = {};
+                              let className = "font-body";
+                              if (modState === 'positive') {
+                                className += " text-success";
+                                cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
+                                cellStyle.fontWeight = 'bold';
+                                cellStyle.cursor = 'help';
+                              } else if (modState === 'negative') {
+                                className += " text-danger";
+                                cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
+                                cellStyle.fontWeight = 'bold';
+                                cellStyle.cursor = 'help';
+                              } else if (modState === 'modified') {
+                                className += " text-gold";
+                                cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
+                                cellStyle.fontWeight = 'bold';
+                                cellStyle.cursor = 'help';
+                              }
+
+                              return (
+                                <td
+                                  key={h}
+                                  className={className}
+                                  style={cellStyle}
+                                  onMouseEnter={(e) => {
+                                    if (modState && c.modificationBreakdown?.length > 0) {
+                                      handleMouseEnter(e, `Modifikationen: ${c.name}`, c.modificationBreakdown);
+                                    }
+                                  }}
+                                  onMouseLeave={handleMouseLeave}
+                                  onClick={() => {
+                                    if (modState && c.modificationBreakdown?.length > 0) {
+                                      setSaveSummaryData({ title: `Modifikationen: ${c.name}`, breakdown: c.modificationBreakdown });
+                                      setSaveSummaryOpen(true);
+                                    }
+                                  }}
+                                >
+                                  {c.value}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-dim text-label">Keine Profilwerte gefunden.</p>
-            )}
+              );
+            })()}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

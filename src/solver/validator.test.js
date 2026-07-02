@@ -1968,4 +1968,34 @@ it('25. isSelectionEntryHidden correctly evaluates basic and modifier hidden val
   expect(isSelectionEntryHidden(condUnit, system, rosterHorde, {}, {}, rosterHorde.forces[0])).toBe(true);
 });
 
+test('collectUnitProfilesAndRules resolves profiles by name fallback (e.g. Short Bows -> Short Bow)', () => {
+  const system = {
+    id: 'sys-test',
+    sharedProfiles: [
+      {
+        id: 'p-shortbow',
+        name: 'Short Bow',
+        profileTypeName: 'Weapon',
+        characteristics: [
+          { name: 'Range', value: '24"' },
+          { name: 'Strength', value: '3' }
+        ]
+      }
+    ],
+    catalogues: []
+  };
+
+  const selection = {
+    id: 'sel-bows',
+    selectionEntryId: 'entry-bows',
+    name: 'Short Bows',
+    selections: []
+  };
+
+  const result = collectUnitProfilesAndRules(system, selection, 'cat-test');
+  const shortBowProfile = result.profiles.find(p => p.name === 'Short Bow');
+  expect(shortBowProfile).toBeDefined();
+  expect(shortBowProfile.characteristics.find(c => c.name === 'Range').value).toBe('24"');
+});
+
 console.log('--- TEST RUN COMPLETE ---');

@@ -2,6 +2,7 @@ import { test, expect } from 'vitest';
 import {
   extractModelProfiles,
   extractUpgradeProfiles,
+  extractWeaponProfiles,
   hasBlessing,
   getArmourSave,
   getWardSave
@@ -14,7 +15,8 @@ const test1Profiles = [
   { name: 'Warrior', profileTypeName: 'Unit' },
   { name: 'Sword', profileTypeName: 'Weapon' },
   { name: 'Dragon', profileTypeName: 'Creature' },
-  { name: 'Shield', profileTypeName: 'Armour' }
+  { name: 'Shield', profileTypeName: 'Armour' },
+  { name: 'Great Weapon', profileTypeName: 'Waffe' }
 ];
 const modelProfiles = extractModelProfiles(test1Profiles);
 test('extractModelProfiles', () => {
@@ -29,6 +31,14 @@ test('extractUpgradeProfiles', () => {
   expect(upgradeProfiles.length === 2 &&
                     upgradeProfiles.some(p => p.name === 'Sword') &&
                     upgradeProfiles.some(p => p.name === 'Shield')).toBe(true);
+});
+
+// Test 2b: extractWeaponProfiles
+const weaponProfiles = extractWeaponProfiles(test1Profiles);
+test('extractWeaponProfiles', () => {
+  expect(weaponProfiles.length === 2 &&
+                    weaponProfiles.some(p => p.name === 'Sword') &&
+                    weaponProfiles.some(p => p.name === 'Great Weapon')).toBe(true);
 });
 
 // Test 3: hasBlessing

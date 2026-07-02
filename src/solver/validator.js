@@ -501,6 +501,8 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
   };
 
   const traverse = (sel, parentSel = null) => {
+    const initialProfilesCount = profiles.length;
+
     if (sel.profiles) sel.profiles.forEach(p => addProfile(p, sel, parentSel));
     if (sel.rules) sel.rules.forEach(r => addRule(r, sel, parentSel));
 
@@ -632,6 +634,30 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
           });
         }
       }
+    }
+
+    // Name-based fallback for profiles (e.g. "Short Bows" -> "Short Bow")
+    const profilesAdded = profiles.length - initialProfilesCount;
+    if (profilesAdded === 0 && sel.name) {
+      const isNameMatch = (selN, profN) => {
+        if (!selN || !profN) return false;
+        const s = selN.toLowerCase().trim();
+        const p = profN.toLowerCase().trim();
+        return s === p || 
+               (s.endsWith('s') && s.slice(0, -1) === p) ||
+               (p.endsWith('s') && p.slice(0, -1) === s) ||
+               s.includes(p) ||
+               p.includes(s);
+      };
+
+      let foundProfiles = system.sharedProfiles?.filter(p => isNameMatch(sel.name, p.name)) || [];
+      if (foundProfiles.length === 0 && system.catalogues) {
+        for (const cat of system.catalogues) {
+          foundProfiles = cat.sharedProfiles?.filter(p => isNameMatch(sel.name, p.name)) || [];
+          if (foundProfiles.length > 0) break;
+        }
+      }
+      foundProfiles.forEach(p => addProfile(p, sel, parentSel));
     }
 
     if (sel.selections) {

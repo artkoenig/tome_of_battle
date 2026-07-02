@@ -10,7 +10,7 @@ import {
   collectUnitProfilesAndRules
 } from '../../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
-import { extractModelProfiles } from '../../solver/rulesEvaluator';
+import { extractModelProfiles, extractWeaponProfiles } from '../../solver/rulesEvaluator';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -90,7 +90,8 @@ export default function UnitSelectionCard({
   const renderMiniProfile = (sel) => {
     const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
     const modelProfiles = extractModelProfiles(profiles);
-    if (!modelProfiles || modelProfiles.length === 0) return null;
+    const weaponProfiles = extractWeaponProfiles(profiles);
+    if ((!modelProfiles || modelProfiles.length === 0) && (!weaponProfiles || weaponProfiles.length === 0)) return null;
 
     return (
       <div 
@@ -105,87 +106,202 @@ export default function UnitSelectionCard({
         }}
         title="Statblock anzeigen"
       >
-        {modelProfiles.map((prof, idx) => (
-          <div key={prof.id || idx}>
-            {modelProfiles.length > 1 && (
-              <div className="mini-profile-title">
-                {prof.name}
-              </div>
-            )}
+        {(() => {
+          if (modelProfiles.length === 0) return null;
+          const headers = [];
+          modelProfiles.forEach(prof => {
+            prof.characteristics?.forEach(c => {
+              if (c.name && !headers.includes(c.name)) {
+                headers.push(c.name);
+              }
+            });
+          });
+          const showModelNameCol = modelProfiles.length > 1;
+
+          return (
             <table className="mini-profile-table">
               <thead>
                 <tr>
-                  {prof.characteristics.map(c => (
-                    <th key={c.name}>{c.name}</th>
+                  {showModelNameCol && <th>Modell</th>}
+                  {headers.map(h => (
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  {prof.characteristics.map(c => {
-                    const modState = getModificationState(c);
-                    const cellStyle = {};
-                    let className = "font-body";
-                    if (modState === 'positive') {
-                      className += " text-success";
-                      cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
-                      cellStyle.fontWeight = 'bold';
-                      cellStyle.cursor = 'help';
-                    } else if (modState === 'negative') {
-                      className += " text-danger";
-                      cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
-                      cellStyle.fontWeight = 'bold';
-                      cellStyle.cursor = 'help';
-                    } else if (modState === 'modified') {
-                      className += " text-gold";
-                      cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
-                      cellStyle.fontWeight = 'bold';
-                      cellStyle.cursor = 'help';
-                    }
-                    
-                    return (
-                      <td 
-                        key={c.name} 
-                        className={className}
-                        style={cellStyle}
-                        onMouseEnter={(e) => {
-                          if (modState && c.modificationBreakdown?.length > 0) {
-                            handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
-                          }
-                        }}
-                        onMouseMove={handleMouseMove}
-                        onMouseLeave={handleMouseLeave}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
-                            setActiveInfo({
-                              title: `Modifikationen: ${c.name}`,
-                              text: (
-                                <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
-                                  {c.modificationBreakdown.map((b, bIdx) => (
-                                    <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
-                                  ))}
-                                </ul>
-                              )
-                            });
-                          } else {
-                            const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
-                            const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
-                            if (resolved) {
-                              setSelectedCatalogEntry(resolved);
-                            }
-                          }
-                        }}
-                      >
-                        {c.value}
+                {modelProfiles.map((prof, pIdx) => (
+                  <tr key={prof.id || pIdx}>
+                    {showModelNameCol && (
+                      <td className="font-body">
+                        {prof.name}
                       </td>
-                    );
-                  })}
-                </tr>
+                    )}
+                    {headers.map(h => {
+                      const c = prof.characteristics?.find(char => char.name === h);
+                      if (!c) return <td key={h} className="font-body">-</td>;
+
+                      const modState = getModificationState(c);
+                      const cellStyle = {};
+                      let className = "font-body";
+                      if (modState === 'positive') {
+                        className += " text-success";
+                        cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
+                        cellStyle.fontWeight = 'bold';
+                        cellStyle.cursor = 'help';
+                      } else if (modState === 'negative') {
+                        className += " text-danger";
+                        cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
+                        cellStyle.fontWeight = 'bold';
+                        cellStyle.cursor = 'help';
+                      } else if (modState === 'modified') {
+                        className += " text-gold";
+                        cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
+                        cellStyle.fontWeight = 'bold';
+                        cellStyle.cursor = 'help';
+                      }
+
+                      return (
+                        <td
+                          key={h}
+                          className={className}
+                          style={cellStyle}
+                          onMouseEnter={(e) => {
+                            if (modState && c.modificationBreakdown?.length > 0) {
+                              handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
+                            }
+                          }}
+                          onMouseMove={handleMouseMove}
+                          onMouseLeave={handleMouseLeave}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
+                              setActiveInfo({
+                                title: `Modifikationen: ${c.name}`,
+                                text: (
+                                  <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
+                                    {c.modificationBreakdown.map((b, bIdx) => (
+                                      <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
+                                    ))}
+                                  </ul>
+                                )
+                              });
+                            } else {
+                              const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
+                              const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
+                              if (resolved) {
+                                setSelectedCatalogEntry(resolved);
+                              }
+                            }
+                          }}
+                        >
+                          {c.value}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
               </tbody>
             </table>
-          </div>
-        ))}
+          );
+        })()}
+
+        {(() => {
+          if (weaponProfiles.length === 0) return null;
+          const headers = [];
+          weaponProfiles.forEach(prof => {
+            prof.characteristics?.forEach(c => {
+              if (c.name && !headers.includes(c.name)) {
+                headers.push(c.name);
+              }
+            });
+          });
+
+          return (
+            <div>
+              <table className="mini-profile-table">
+                <thead>
+                  <tr>
+                    <th>Weapon</th>
+                    {headers.map(h => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {weaponProfiles.map((prof, pIdx) => (
+                    <tr key={prof.id || pIdx}>
+                      <td className="font-body">
+                        {prof.name}
+                      </td>
+                      {headers.map(h => {
+                        const c = prof.characteristics?.find(char => char.name === h);
+                        if (!c) return <td key={h} className="font-body">-</td>;
+
+                        const modState = getModificationState(c);
+                        const cellStyle = {};
+                        let className = "font-body";
+                        if (modState === 'positive') {
+                          className += " text-success";
+                          cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
+                          cellStyle.fontWeight = 'bold';
+                          cellStyle.cursor = 'help';
+                        } else if (modState === 'negative') {
+                          className += " text-danger";
+                          cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
+                          cellStyle.fontWeight = 'bold';
+                          cellStyle.cursor = 'help';
+                        } else if (modState === 'modified') {
+                          className += " text-gold";
+                          cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
+                          cellStyle.fontWeight = 'bold';
+                          cellStyle.cursor = 'help';
+                        }
+
+                        return (
+                          <td
+                            key={h}
+                            className={className}
+                            style={cellStyle}
+                            onMouseEnter={(e) => {
+                              if (modState && c.modificationBreakdown?.length > 0) {
+                                handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
+                              }
+                            }}
+                            onMouseMove={handleMouseMove}
+                            onMouseLeave={handleMouseLeave}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
+                                setActiveInfo({
+                                  title: `Modifikationen: ${c.name}`,
+                                  text: (
+                                    <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
+                                      {c.modificationBreakdown.map((b, bIdx) => (
+                                        <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
+                                      ))}
+                                    </ul>
+                                  )
+                                });
+                              } else {
+                                const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
+                                const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
+                                if (resolved) {
+                                  setSelectedCatalogEntry(resolved);
+                                }
+                              }
+                            }}
+                          >
+                            {c.value}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </div>
     );
   };

@@ -59,12 +59,12 @@ vi.mock('../solver/validator', () => ({
   isCategoryLinkHidden: (link) => link.hidden === true,
 }));
 
-// Mock Rules Evaluator
 vi.mock('../solver/rulesEvaluator', () => ({
   getArmourSave: vi.fn().mockReturnValue({ save: 5, breakdown: ['Base: 5+'] }),
   getWardSave: vi.fn().mockReturnValue({ save: 6, breakdown: ['Blessing: 6+'] }),
-  extractModelProfiles: vi.fn().mockImplementation((profiles) => profiles),
+  extractModelProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Model')),
   extractUpgradeProfiles: vi.fn().mockImplementation((profiles) => profiles),
+  extractWeaponProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Weapon' || p.profileTypeName === 'Waffe')),
   hasBlessing: vi.fn().mockReturnValue(false)
 }));
 
@@ -324,5 +324,67 @@ describe('PlayMode Component', () => {
 
     const card = screen.getByText('Dead Unit').closest('.play-unit-card');
     expect(card.className).toContain('unit-destroyed');
+  });
+
+  it('10. Render weapon profiles inside PlayUnitDetails', () => {
+    const mockSelection = { id: 'sel-weapons', name: 'Weaponized Unit', category: 'cat-core', entryLinkId: 'el-weapons' };
+    const mockRosterProps = { catalogueId: 'cat-1', costLimitType: 'pts' };
+
+    mockCollectUnitProfilesAndRules.mockReturnValue({
+      profiles: [
+        {
+          id: 'p1',
+          profileTypeName: 'Model',
+          name: 'Warrior',
+          characteristics: [
+            { name: 'M', value: '4' },
+            { name: 'WS', value: '4' }
+          ]
+        },
+        {
+          id: 'p2',
+          profileTypeName: 'Model',
+          name: 'Warhorse',
+          characteristics: [
+            { name: 'M', value: '8' },
+            { name: 'WS', value: '3' }
+          ]
+        },
+        {
+          id: 'w1',
+          profileTypeName: 'Weapon',
+          name: 'Great Sword',
+          characteristics: [
+            { name: 'Range', value: 'Combat' },
+            { name: 'Strength', value: '+2' }
+          ]
+        }
+      ],
+      rules: []
+    });
+
+    render(
+      <PlayUnitDetails
+        selection={mockSelection}
+        system={mockSystem}
+        roster={mockRosterProps}
+        showDebugIds={false}
+        gameState={{ wounds: { 'sel-weapons': 5 } }}
+        handleAdjustWound={vi.fn()}
+        handleMouseEnter={vi.fn()}
+        handleMouseLeave={vi.fn()}
+        setSaveSummaryData={vi.fn()}
+        setSaveSummaryOpen={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Warrior')).toBeDefined();
+    expect(screen.getByText('Great Sword')).toBeDefined();
+    expect(screen.getByText('Combat')).toBeDefined();
+    expect(screen.getByText('+2')).toBeDefined();
+    expect(screen.getByText('Weapon')).toBeDefined();
+    expect(screen.queryByText('Waffe')).toBeNull();
+    expect(screen.queryByText('Waffen')).toBeNull();
+    expect(screen.queryByText('Waffenwerte')).toBeNull();
   });
 });

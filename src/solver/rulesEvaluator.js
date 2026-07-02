@@ -41,6 +41,18 @@ export function extractUpgradeProfiles(profiles) {
 }
 
 /**
+ * Filters a list of profiles to include only weapons.
+ */
+export function extractWeaponProfiles(profiles) {
+  if (!Array.isArray(profiles)) return [];
+  return profiles.filter(p => {
+    const typeLower = p.profileTypeName?.toLowerCase() || '';
+    return typeLower.includes('weapon') || typeLower.includes('waffe');
+  });
+}
+
+
+/**
  * Helper to check if blessing is present in the profiles, rules or names.
  */
 export function hasBlessing(profiles, selectionName, catalogueName) {

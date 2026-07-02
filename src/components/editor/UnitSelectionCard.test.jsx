@@ -326,6 +326,41 @@ describe('UnitSelectionCard Component', () => {
       expect(() => render(<UnitSelectionCard {...propsWithNullError} />)).toThrow();
     });
 
+    it('renders weapon profiles correctly inside the mini profile table', () => {
+      mockCollectUnitProfilesAndRules.mockReturnValue({
+        profiles: [
+          {
+            id: 'p1',
+            profileTypeName: 'Model',
+            name: 'Knight',
+            characteristics: [
+              { name: 'M', value: '4' },
+              { name: 'WS', value: '4' }
+            ]
+          },
+          {
+            id: 'w1',
+            profileTypeName: 'Weapon',
+            name: 'Lance',
+            characteristics: [
+              { name: 'Range', value: 'Combat' },
+              { name: 'Strength', value: '+2' }
+            ]
+          }
+        ],
+        rules: []
+      });
+
+      render(<UnitSelectionCard {...defaultProps} />);
+
+      expect(screen.getByText('Lance')).toBeDefined();
+      expect(screen.getByText('Combat')).toBeDefined();
+      expect(screen.getByText('+2')).toBeDefined();
+      expect(screen.getByText('Weapon')).toBeDefined();
+      expect(screen.queryByText('Waffe')).toBeNull();
+      expect(screen.queryByText('Waffen')).toBeNull();
+    });
+
     it('survives errors with missing or empty message keys', () => {
       const propsWithEmptyMessage = {
         ...defaultProps,
