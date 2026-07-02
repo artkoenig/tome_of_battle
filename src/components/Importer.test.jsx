@@ -118,6 +118,34 @@ describe('Importer Component', () => {
     });
   });
 
+  it('should render loading overlay during import', async () => {
+    let resolveZip;
+    const zipPromise = new Promise((resolve) => {
+      resolveZip = resolve;
+    });
+    extractZipFiles.mockReturnValue(zipPromise);
+    processImportedData.mockReturnValue({ id: 'dummy', catalogues: [] });
+    saveSystem.mockResolvedValue({});
+
+    const { container } = render(<Importer showAsEmptyState={false} />);
+    const file = new File(['zipcontent'], 'game_system.zip', { type: 'application/zip' });
+    const fileInput = container.querySelector('#file-upload');
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    // Verify loading overlay is visible
+    expect(screen.getByText('Beschwöre Spieldaten...')).toBeDefined();
+    expect(container.querySelector('.modal-overlay')).not.toBeNull();
+    expect(container.querySelector('.gothic-spinner')).not.toBeNull();
+
+    // Resolve the promise to finish the lifecycle
+    resolveZip({ gstFiles: [], catFiles: [] });
+    
+    await waitFor(() => {
+      expect(container.querySelector('.modal-overlay')).toBeNull();
+    });
+  });
+
   it('5. Success Import Flow', async () => {
     const onSystemImportedMock = vi.fn();
     const systemData = { id: 'sys-new', name: 'New Imported System', catalogues: [{ id: 'cat-new' }] };

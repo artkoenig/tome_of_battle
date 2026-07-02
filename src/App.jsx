@@ -213,6 +213,12 @@ export default function App() {
     }
   };
 
+  const handleSystemImported = () => {
+    loadAllData();
+    setView('rosters');
+  };
+
+
   // Handle game system selection change in new roster modal
   const handleSystemChange = (systemId) => {
     setNewRosterSystemId(systemId);
@@ -448,7 +454,7 @@ export default function App() {
             <p className="text-dim" style={{ animation: 'pulse 2s infinite' }}>Öffne das Buch des Wissens...</p>
           </div>
         ) : systems.length === 0 ? (
-          <Importer onSystemImported={loadAllData} showAsEmptyState={true} />
+          <Importer onSystemImported={handleSystemImported} showAsEmptyState={true} />
         ) : (
           <>
             {view === 'rosters' && (
@@ -466,7 +472,7 @@ export default function App() {
             )}
 
             {view === 'importer' && (
-              <Importer onSystemImported={loadAllData} />
+              <Importer onSystemImported={handleSystemImported} />
             )}
 
             {view === 'builder' && selectedRoster && selectedSystem && (

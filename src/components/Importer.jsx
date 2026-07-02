@@ -324,8 +324,12 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       )}
 
       {loading && (
-        <div style={{ marginTop: '16px', color: 'var(--text-gold)', textAlign: 'center', marginBottom: '16px' }}>
-          <span className="font-body">Beschwöre Spieldaten... (Verarbeite XML)</span>
+        <div className="modal-overlay">
+          <div className="loader-overlay-content">
+            <div className="gothic-spinner" />
+            <h3 className="text-subheading text-gold">Beschwöre Spieldaten...</h3>
+            <span className="text-body text-dim">Verarbeite XML-Dateien, bitte warten...</span>
+          </div>
         </div>
       )}
 
