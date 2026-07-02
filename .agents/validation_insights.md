@@ -58,3 +58,10 @@ Hier sind die zentralen architektonischen und fachlichen Lektionen für den Umga
 * **Versteckte Kontingente (`hidden="true"`):** Kontingente, die initial auf `hidden="true"` stehen, dürfen dem Benutzer beim Erstellen einer Liste nicht als Option angeboten werden.
 * **Versteckte Einheitentypen (`categoryLinks`):** Einheitentypen (z. B. "Core", "Lord") innerhalb eines Kontingents können über das `hidden`-Attribut oder dynamisch über Modifikatoren (`field="hidden"`) versteckt bzw. eingeblendet werden. Versteckte Einheitentypen dürfen im Editor und in der Seitenleiste (Anforderungen) nicht angezeigt und deren Mindestgrenzen (Constraints) nicht validiert werden.
 
+## 8. Standardauswahlen in Gruppen (defaultSelectionEntryId)
+
+* **Vorausgewählte Optionen in Gruppen (`defaultSelectionEntryId`):**
+  * `<selectionEntryGroup>`-Elemente können ein Attribut `defaultSelectionEntryId` definieren. Dieses gibt die ID derjenigen Option (`selectionEntry` oder `entryLink` unterhalb der Gruppe) an, die standardmäßig vorausgewählt sein soll, wenn die Gruppe eine Mindestauswahlbeschränkung (`min > 0`) besitzt.
+  * Wenn dieses Attribut definiert ist und mit einer Option in der Gruppe übereinstimmt, muss diese Option anstelle der standardmäßigen ersten Option in der Liste erzeugt werden.
+  * Fehlt das Attribut oder ist es ungültig, fällt das System auf die erste verfügbare Option der Gruppe zurück.
+

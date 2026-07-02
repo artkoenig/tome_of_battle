@@ -261,6 +261,7 @@ function parseSelectionEntryGroup(el) {
   return {
     id: el.getAttribute('id'),
     name: el.getAttribute('name'),
+    defaultSelectionEntryId: el.getAttribute('defaultSelectionEntryId'),
     collective: el.getAttribute('collective') === 'true',
     hidden: el.getAttribute('hidden') === 'true',
     constraints: parseConstraints(el),

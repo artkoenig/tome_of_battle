@@ -50,6 +50,14 @@ const mockCatXml = `<?xml version="1.0" encoding="UTF-8"?>
       <categoryLinks>
         <categoryLink id="cl-1" targetId="cat-hq" />
       </categoryLinks>
+      <selectionEntryGroups>
+        <selectionEntryGroup id="group-weapons" name="Weapons Selection" defaultSelectionEntryId="weapon-sword">
+          <entryLinks>
+            <entryLink id="weapon-sword" name="Power Sword" targetId="item-sword" type="selectionEntry" />
+            <entryLink id="weapon-axe" name="Power Axe" targetId="item-axe" type="selectionEntry" />
+          </entryLinks>
+        </selectionEntryGroup>
+      </selectionEntryGroups>
     </selectionEntry>
   </selectionEntries>
 </catalogue>
@@ -81,6 +89,12 @@ test('parseCatalogueXML', () => {
     expect(cat.selectionEntries.length).toBe(1);
     expect(cat.selectionEntries[0].name).toBe('Space Marine Captain');
     expect(cat.selectionEntries[0].costs.length).toBe(1);
+    
+    // Assert defaultSelectionEntryId parsing
+    const groups = cat.selectionEntries[0].selectionEntryGroups;
+    expect(groups.length).toBe(1);
+    expect(groups[0].id).toBe('group-weapons');
+    expect(groups[0].defaultSelectionEntryId).toBe('weapon-sword');
   } catch (e) {
     expect.fail(`testParseCatalogue threw: ${e.message}`);
   }

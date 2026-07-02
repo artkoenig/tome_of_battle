@@ -95,8 +95,15 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
       def.selectionEntryGroups?.forEach(group => {
         const minCon = group.constraints?.find(c => c.type === 'min')?.value || 0;
         if (minCon > 0 && (group.selectionEntries?.length > 0 || group.entryLinks?.length > 0)) {
-          const firstOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
-          const childSel = createSelectionFromDef(firstOption);
+          let chosenOption = null;
+          if (group.defaultSelectionEntryId) {
+            chosenOption = group.selectionEntries?.find(e => e.id === group.defaultSelectionEntryId) ||
+                           group.entryLinks?.find(l => l.id === group.defaultSelectionEntryId);
+          }
+          if (!chosenOption) {
+            chosenOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
+          }
+          const childSel = createSelectionFromDef(chosenOption);
           if (childSel) {
             childSel.number = minCon;
             parentSel.selections.push(childSel);

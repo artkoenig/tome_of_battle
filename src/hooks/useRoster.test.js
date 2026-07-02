@@ -6,7 +6,7 @@ import { useRoster } from './useRoster';
 vi.mock('../solver/validator', () => ({
   calculateRosterCosts: vi.fn(() => ({ points: 100 })),
   validateRoster: vi.fn(() => []),
-  resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model' })),
+  resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
   syncRosterSelectionsWithSystem: vi.fn(() => false),
 }));
 
@@ -105,5 +105,75 @@ describe('useRoster Hook', () => {
     // Check that it was called immediately (without advancing timers)
     expect(mockSave).toHaveBeenCalledTimes(1);
     expect(mockSave.mock.calls[0][0].forces[0].selections[0].name).toBe('Space Marine');
+  });
+
+  it('selects the default selection entry by ID when adding unit with selectionEntryGroups', () => {
+    const mockSave = vi.fn();
+    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+    const testEntry = {
+      id: 'unit-lord',
+      name: 'Bretonnian Lord',
+      type: 'unit',
+      selectionEntryGroups: [
+        {
+          id: 'group-mounts',
+          name: 'Mounts',
+          defaultSelectionEntryId: 'mount-horse',
+          constraints: [{ type: 'min', value: 1 }],
+          selectionEntries: [
+            { id: 'mount-foot', name: 'On Foot' }
+          ],
+          entryLinks: [
+            { id: 'mount-horse', name: 'Bretonnian Warhorse' }
+          ]
+        }
+      ]
+    };
+
+    act(() => {
+      result.current.addUnit(testEntry, 'cat-1');
+    });
+
+    expect(result.current.roster.forces[0].selections.length).toBe(1);
+    const unitSel = result.current.roster.forces[0].selections[0];
+    expect(unitSel.name).toBe('Bretonnian Lord');
+    expect(unitSel.selections.length).toBe(1);
+    expect(unitSel.selections[0].name).toBe('Bretonnian Warhorse');
+    expect(unitSel.selections[0].selectionEntryId || unitSel.selections[0].entryLinkId).toBe('mount-horse');
+  });
+
+  it('falls back to the first option when defaultSelectionEntryId does not match or is absent', () => {
+    const mockSave = vi.fn();
+    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+    const testEntry = {
+      id: 'unit-lord-no-default',
+      name: 'Bretonnian Lord No Default',
+      type: 'unit',
+      selectionEntryGroups: [
+        {
+          id: 'group-mounts',
+          name: 'Mounts',
+          constraints: [{ type: 'min', value: 1 }],
+          selectionEntries: [
+            { id: 'mount-foot', name: 'On Foot' }
+          ],
+          entryLinks: [
+            { id: 'mount-horse', name: 'Bretonnian Warhorse' }
+          ]
+        }
+      ]
+    };
+
+    act(() => {
+      result.current.addUnit(testEntry, 'cat-1');
+    });
+
+    expect(result.current.roster.forces[0].selections.length).toBe(1);
+    const unitSel = result.current.roster.forces[0].selections[0];
+    expect(unitSel.selections.length).toBe(1);
+    expect(unitSel.selections[0].name).toBe('On Foot');
+    expect(unitSel.selections[0].selectionEntryId || unitSel.selections[0].entryLinkId).toBe('mount-foot');
   });
 });
