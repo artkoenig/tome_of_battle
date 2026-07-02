@@ -4398,6 +4398,17 @@
         <categoryLink id="4a4a-b77c-e895-0f6c" name="New CategoryLink" hidden="false" targetId="43cc-fc3f-35a7-8d03" primary="true"/>
       </categoryLinks>
       <selectionEntries>
+        <selectionEntry id="custom-orc-chariot-save" name="Armour Save +4Sv" hidden="false" collective="false" import="true" type="upgrade">
+          <constraints>
+            <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="custom-orc-chariot-save-min" type="min"/>
+            <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="custom-orc-chariot-save-max" type="max"/>
+          </constraints>
+          <costs>
+            <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
+            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+          </costs>
+        </selectionEntry>
         <selectionEntry id="29ae-542a-a624-a552" name="Orc Chariot" hidden="false" collective="false" import="true" type="model">
           <constraints>
             <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="4372-6596-3754-771c" type="max"/>
@@ -5052,6 +5063,17 @@
             <constraint field="selections" scope="parent" value="2.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="e1d6-abe2-4e2d-7804" type="max"/>
           </constraints>
           <selectionEntries>
+            <selectionEntry id="custom-goblin-chariot-save" name="Armour Save +5Sv" hidden="false" collective="false" import="true" type="upgrade">
+              <constraints>
+                <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="custom-goblin-chariot-save-min" type="min"/>
+                <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="custom-goblin-chariot-save-max" type="max"/>
+              </constraints>
+              <costs>
+                <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
+                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+              </costs>
+            </selectionEntry>
             <selectionEntry id="4a2a-3589-fa6f-b477" name="Extra Wolf" hidden="false" collective="false" import="true" type="upgrade">
               <constraints>
                 <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="dac0-ec57-0856-b8e7" type="max"/>
