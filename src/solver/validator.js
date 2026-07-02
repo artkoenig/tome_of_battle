@@ -645,9 +645,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
         const p = profN.toLowerCase().trim();
         return s === p || 
                (s.endsWith('s') && s.slice(0, -1) === p) ||
-               (p.endsWith('s') && p.slice(0, -1) === s) ||
-               s.includes(p) ||
-               p.includes(s);
+               (p.endsWith('s') && p.slice(0, -1) === s);
       };
 
       let foundProfiles = system.sharedProfiles?.filter(p => isNameMatch(sel.name, p.name)) || [];
