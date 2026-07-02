@@ -473,7 +473,7 @@ export default function App() {
               <RosterEditor 
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => setView('rosters')}
+                onBack={() => { setView('rosters'); loadAllData(); }}
                 onPlay={(updatedRoster) => handleOpenRoster(updatedRoster, 'play')}
               />
             )}
@@ -482,7 +482,7 @@ export default function App() {
               <PlayMode 
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => setView('rosters')}
+                onBack={() => { setView('rosters'); loadAllData(); }}
               />
             )}
           </>
