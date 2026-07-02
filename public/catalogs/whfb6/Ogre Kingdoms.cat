@@ -566,6 +566,9 @@ Select the Dogs of War category if you are using Ogres as Dogs of War. Otherwise
           <constraints>
             <constraint field="selections" scope="parent" value="2.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="aaaf-e84d-db9f-9e08" type="max"/>
           </constraints>
+          <costs>
+            <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
+          </costs>
         </entryLink>
       </entryLinks>
       <costs>
