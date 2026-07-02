@@ -524,7 +524,25 @@ export default function UnitSelectionCard({
       weaponProfiles.map(wp => wp._sourceSelection?.id).filter(Boolean)
     );
 
-    const selectedUpgrades = getSelectedUpgrades(sel).filter(upgrade => !weaponSelectionIds.has(upgrade.id));
+    const isNameMatch = (selN, profN) => {
+      if (!selN || !profN) return false;
+      const s = selN.toLowerCase().trim();
+      const p = profN.toLowerCase().trim();
+      return s === p || 
+             (s.endsWith('s') && s.slice(0, -1) === p) ||
+             (p.endsWith('s') && p.slice(0, -1) === s) ||
+             s.includes(p) ||
+             p.includes(s);
+    };
+
+    const selectedUpgrades = getSelectedUpgrades(sel).filter(upgrade => {
+      if (weaponSelectionIds.has(upgrade.id)) return false;
+      const name = upgrade.name || upgrade.resolved?.name;
+      if (name && weaponProfiles.some(wp => isNameMatch(name, wp.name))) {
+        return false;
+      }
+      return true;
+    });
     if (selectedUpgrades.length === 0) return null;
 
     return (
