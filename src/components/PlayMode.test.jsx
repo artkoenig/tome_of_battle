@@ -327,7 +327,15 @@ describe('PlayMode Component', () => {
   });
 
   it('10. Render weapon profiles inside PlayUnitDetails', () => {
-    const mockSelection = { id: 'sel-weapons', name: 'Weaponized Unit', category: 'cat-core', entryLinkId: 'el-weapons' };
+    const mockSelection = { 
+      id: 'sel-weapons', 
+      name: 'Weaponized Unit', 
+      category: 'cat-core', 
+      entryLinkId: 'el-weapons',
+      selections: [
+        { id: 'sub-sword', name: 'Great Sword', entryLinkId: 'el-sword', number: 1 }
+      ]
+    };
     const mockRosterProps = { catalogueId: 'cat-1', costLimitType: 'pts' };
 
     mockCollectUnitProfilesAndRules.mockReturnValue({
@@ -357,7 +365,8 @@ describe('PlayMode Component', () => {
           characteristics: [
             { name: 'Range', value: 'Combat' },
             { name: 'Strength', value: '+2' }
-          ]
+          ],
+          _sourceSelection: mockSelection.selections[0]
         }
       ],
       rules: []
@@ -386,5 +395,7 @@ describe('PlayMode Component', () => {
     expect(screen.queryByText('Waffe')).toBeNull();
     expect(screen.queryByText('Waffen')).toBeNull();
     expect(screen.queryByText('Waffenwerte')).toBeNull();
+    // Since Great Sword is filtered, the upgrades list is empty, and the section heading shouldn't render
+    expect(screen.queryByText('Ausrüstung & Upgrades')).toBeNull();
   });
 });

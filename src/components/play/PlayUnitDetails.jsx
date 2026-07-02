@@ -369,7 +369,10 @@ export default function PlayUnitDetails({
   const totalMaxWounds = modelCount * maxWounds;
   const currentWounds = getUnitCurrentWounds(selection, totalMaxWounds);
   const { profiles, rules, weaponProfiles } = getUnitProfilesAndRules(selection);
-  const selectedUpgrades = getSelectedUpgrades(selection);
+  const weaponSelectionIds = new Set(
+    weaponProfiles.map(wp => wp._sourceSelection?.id).filter(Boolean)
+  );
+  const selectedUpgrades = getSelectedUpgrades(selection).filter(upgrade => !weaponSelectionIds.has(upgrade.id));
   const asInfo = getArmourSaveInfo(selection);
   const wsInfo = getWardSaveInfo(selection);
   

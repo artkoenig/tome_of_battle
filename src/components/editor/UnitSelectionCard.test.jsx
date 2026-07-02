@@ -9,6 +9,7 @@ vi.mock('lucide-react', () => ({
   Copy: () => <span data-testid="icon-copy" />,
   AlertTriangle: () => <span data-testid="icon-alert" />,
   Info: () => <span data-testid="icon-info" />,
+  Sparkles: () => <span data-testid="icon-sparkles" />,
 }));
 
 // Mock Debug Context
@@ -289,6 +290,44 @@ describe('UnitSelectionCard Component', () => {
     );
   });
 
+  it('renders unit rules as badges and displays description on hover/click', () => {
+    mockCollectUnitProfilesAndRules.mockReturnValue({
+      profiles: [],
+      rules: [
+        {
+          id: 'rule-test-1',
+          name: 'Segen der Herrin',
+          description: 'Rettet den Ritter vor Schaden',
+          publicationRef: '[Bretonia, S. 45]'
+        }
+      ]
+    });
+
+    render(<UnitSelectionCard {...defaultProps} />);
+
+    // Rule badge should be displayed
+    const ruleBadge = screen.getByText('Segen der Herrin');
+    expect(ruleBadge).toBeDefined();
+    
+    // Sparkles icon should be present
+    expect(screen.getByTestId('icon-sparkles')).toBeDefined();
+
+    // Hover over the rule badge (Desktop)
+    fireEvent.mouseEnter(ruleBadge, { clientX: 100, clientY: 200 });
+    expect(screen.getByText('Rettet den Ritter vor Schaden')).toBeDefined();
+    expect(screen.getByText('[Bretonia, S. 45]')).toBeDefined();
+
+    // Mouse leave hides tooltip
+    fireEvent.mouseLeave(ruleBadge);
+    expect(screen.queryByText('Rettet den Ritter vor Schaden')).toBeNull();
+
+    // Click on mobile triggers BottomSheet
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 500 });
+    fireEvent.click(ruleBadge);
+    expect(screen.getByTestId('bottom-sheet')).toBeDefined();
+    expect(screen.getByText('Rettet den Ritter vor Schaden')).toBeDefined();
+  });
+
   describe('Adversarial & Stress Tests', () => {
     it('handles window resize dynamically around 900px and fires mouse events', () => {
       // Start as desktop
@@ -359,6 +398,48 @@ describe('UnitSelectionCard Component', () => {
       expect(screen.getByText('Weapon')).toBeDefined();
       expect(screen.queryByText('Waffe')).toBeNull();
       expect(screen.queryByText('Waffen')).toBeNull();
+    });
+
+    it('does not render weapon upgrades as chips if they are displayed in the weapon table', () => {
+      const mockSel = {
+        id: 'sel-unit',
+        name: 'Knights of Bretonnia',
+        entryLinkId: 'el-1',
+        number: 1,
+        selections: [
+          { id: 'sub-lance', name: 'Lance', entryLinkId: 'el-lance', number: 1, selections: [] }
+        ]
+      };
+
+      const mockProps = {
+        ...defaultProps,
+        sel: mockSel
+      };
+
+      mockCollectUnitProfilesAndRules.mockReturnValue({
+        profiles: [
+          {
+            id: 'p-lance',
+            profileTypeName: 'Weapon',
+            name: 'Lance',
+            characteristics: [
+              { name: 'Range', value: 'Combat' },
+              { name: 'Strength', value: '+2' }
+            ],
+            _sourceSelection: mockSel.selections[0]
+          }
+        ],
+        rules: []
+      });
+
+      const { container } = render(<UnitSelectionCard {...mockProps} />);
+
+      expect(screen.getByText('Lance')).toBeDefined();
+      expect(screen.getByText('Combat')).toBeDefined();
+
+      const chips = container.querySelectorAll('.upgrade-badge');
+      const chipTexts = Array.from(chips).map(c => c.textContent);
+      expect(chipTexts.includes('Lance')).toBe(false);
     });
 
     it('survives errors with missing or empty message keys', () => {

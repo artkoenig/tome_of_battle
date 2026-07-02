@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Copy, AlertTriangle, Info } from 'lucide-react';
+import { Trash2, Copy, AlertTriangle, Info, Sparkles } from 'lucide-react';
 import { useDebugMode } from '../../hooks/DebugContext';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
@@ -518,7 +518,13 @@ export default function UnitSelectionCard({
   };
 
   const renderUnitUpgrades = (sel) => {
-    const selectedUpgrades = getSelectedUpgrades(sel);
+    const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
+    const weaponProfiles = extractWeaponProfiles(profiles);
+    const weaponSelectionIds = new Set(
+      weaponProfiles.map(wp => wp._sourceSelection?.id).filter(Boolean)
+    );
+
+    const selectedUpgrades = getSelectedUpgrades(sel).filter(upgrade => !weaponSelectionIds.has(upgrade.id));
     if (selectedUpgrades.length === 0) return null;
 
     return (
@@ -543,6 +549,60 @@ export default function UnitSelectionCard({
               {upgrade.name || upgrade.resolved.name}
               {descText && (
                 <Info size={10} className="upgrade-info-icon" />
+              )}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderUnitRules = (sel) => {
+    const { rules } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
+    if (!rules || rules.length === 0) return null;
+
+    return (
+      <div className="unit-header-rules">
+        {rules.map((rule, rIdx) => {
+          const descText = rule.description || '';
+          return (
+            <span 
+              key={rule.id || rIdx}
+              className={`text-micro rule-badge ${descText ? 'has-desc' : 'no-desc'}`}
+              onMouseEnter={(e) => descText && handleMouseEnter(rule.name, (
+                <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
+                  <div>{rule.description}</div>
+                  {rule.publicationRef && (
+                    <div className="publication-ref" style={{ marginTop: '4px' }}>
+                      {rule.publicationRef}
+                    </div>
+                  )}
+                </div>
+              ), e)}
+              onMouseMove={descText ? handleMouseMove : null}
+              onMouseLeave={descText ? handleMouseLeave : null}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.innerWidth <= 900 && descText) {
+                  setActiveInfo({ 
+                    title: rule.name, 
+                    text: (
+                      <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
+                        <div>{rule.description}</div>
+                        {rule.publicationRef && (
+                          <div className="publication-ref" style={{ marginTop: '4px' }}>
+                            {rule.publicationRef}
+                          </div>
+                        )}
+                      </div>
+                    ) 
+                  });
+                }
+              }}
+            >
+              {rule.name}
+              {descText && (
+                <Sparkles size={10} className="rule-info-icon" />
               )}
             </span>
           );
@@ -622,6 +682,7 @@ export default function UnitSelectionCard({
         </div>
         {renderMiniProfile(selection)}
         {renderUnitUpgrades(selection)}
+        {renderUnitRules(selection)}
       </div>
 
       {selectionErrors.map((err, idx) => (
