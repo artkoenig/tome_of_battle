@@ -1,4 +1,4 @@
-import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost, syncRosterSelectionsWithSystem, collectUnitProfilesAndRules } from './validator.js';
+import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost, syncRosterSelectionsWithSystem, collectUnitProfilesAndRules, findForceEntryById, isCategoryLinkHidden, isSelectionEntryHidden } from './validator.js';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML } from '../parser/xmlParser.js';
 
@@ -1816,6 +1816,156 @@ test('repeating characteristic modifier applied correctly', () => {
   const a = p.characteristics.find(c => c.name === 'A');
   expect(a).toBeDefined();
   expect(a.value).toBe('3');
+});
+
+it('24. Resolves force entries and evaluates hidden category links', () => {
+  const system = {
+    id: 'sys-test',
+    name: 'Test System',
+    categoryEntries: [
+      { id: 'cat-hq', name: 'HQ' },
+      { id: 'cat-troops', name: 'Troops' }
+    ],
+    forceEntries: [
+      { id: 'fe-sys-standard', name: 'Standard GST Detachment', categoryLinks: [
+        { id: 'cl-hq', targetId: 'cat-hq', hidden: false },
+        { id: 'cl-troops', targetId: 'cat-troops', hidden: true }
+      ]}
+    ],
+    catalogues: [
+      {
+        id: 'cat-orcs',
+        name: 'Orcs & Goblins',
+        forceEntries: [
+          { id: 'fe-cat-themed', name: 'Themed Cat Detachment', categoryLinks: [
+            { id: 'cl-themed-hq', targetId: 'cat-hq', hidden: false }
+          ]}
+        ]
+      }
+    ]
+  };
+
+  // Test findForceEntryById
+  const feStandard = findForceEntryById(system, 'fe-sys-standard');
+  expect(feStandard).toBeDefined();
+  expect(feStandard.name).toBe('Standard GST Detachment');
+
+  const feThemed = findForceEntryById(system, 'fe-cat-themed');
+  expect(feThemed).toBeDefined();
+  expect(feThemed.name).toBe('Themed Cat Detachment');
+
+  const feNonExistent = findForceEntryById(system, 'non-existent');
+  expect(feNonExistent).toBeNull();
+
+  // Test isCategoryLinkHidden
+  const clHq = feStandard.categoryLinks.find(cl => cl.id === 'cl-hq');
+  const clTroops = feStandard.categoryLinks.find(cl => cl.id === 'cl-troops');
+
+  const roster = { catalogueId: 'cat-orcs' };
+
+  expect(isCategoryLinkHidden(clHq, system, roster, {}, {})).toBe(false);
+  expect(isCategoryLinkHidden(clTroops, system, roster, {}, {})).toBe(true);
+
+  // Test isCategoryLinkHidden with modifier
+  const clWithMod = {
+    id: 'cl-mod',
+    targetId: 'cat-hq',
+    hidden: true,
+    modifiers: [
+      {
+        type: 'set',
+        field: 'hidden',
+        value: 'false',
+        conditions: [
+          {
+            field: 'cat-hq',
+            type: 'greaterThan',
+            value: 0
+          }
+        ]
+      }
+    ]
+  };
+
+  // Condition fails (count is 0)
+  expect(isCategoryLinkHidden(clWithMod, system, roster, { 'cat-hq': 0 }, {})).toBe(true);
+
+  // Condition passes (count is 1)
+  expect(isCategoryLinkHidden(clWithMod, system, roster, { 'cat-hq': 1 }, {})).toBe(false);
+});
+
+it('25. isSelectionEntryHidden correctly evaluates basic and modifier hidden values', () => {
+  const system = {
+    id: 'sys-test',
+    name: 'Test System',
+    catalogues: [
+      {
+        id: 'cat-test',
+        sharedSelectionEntries: [
+          {
+            id: 'unit-visible',
+            name: 'Visible Unit',
+            hidden: false
+          },
+          {
+            id: 'unit-hidden',
+            name: 'Hidden Unit',
+            hidden: true
+          },
+          {
+            id: 'unit-conditional',
+            name: 'Conditional Unit',
+            hidden: false,
+            modifiers: [
+              {
+                type: 'set',
+                field: 'hidden',
+                value: 'true',
+                conditions: [
+                  {
+                    field: 'selections',
+                    scope: 'fe-horde',
+                    value: 1.0,
+                    childId: 'any',
+                    type: 'instanceOf'
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        forceEntries: [
+          { id: 'fe-horde', name: 'Troll Horde' }
+        ]
+      }
+    ]
+  };
+
+  const rosterStandard = {
+    catalogueId: 'cat-test',
+    forces: [{ forceEntryId: 'fe-standard' }]
+  };
+
+  const rosterHorde = {
+    catalogueId: 'cat-test',
+    forces: [{ forceEntryId: 'fe-horde' }]
+  };
+
+  const visibleUnit = system.catalogues[0].sharedSelectionEntries.find(e => e.id === 'unit-visible');
+  const hiddenUnit = system.catalogues[0].sharedSelectionEntries.find(e => e.id === 'unit-hidden');
+  const condUnit = system.catalogues[0].sharedSelectionEntries.find(e => e.id === 'unit-conditional');
+
+  // Verify visible unit is not hidden
+  expect(isSelectionEntryHidden(visibleUnit, system, rosterStandard, {}, {})).toBe(false);
+
+  // Verify hidden unit is hidden
+  expect(isSelectionEntryHidden(hiddenUnit, system, rosterStandard, {}, {})).toBe(true);
+
+  // Verify conditional unit is not hidden in Standard roster
+  expect(isSelectionEntryHidden(condUnit, system, rosterStandard, {}, {}, rosterStandard.forces[0])).toBe(false);
+
+  // Verify conditional unit is hidden in Horde roster
+  expect(isSelectionEntryHidden(condUnit, system, rosterHorde, {}, {}, rosterHorde.forces[0])).toBe(true);
 });
 
 console.log('--- TEST RUN COMPLETE ---');

@@ -3,7 +3,7 @@ import { Play, AlertTriangle, Check, ArrowLeft } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
-import { computeRosterCounts, getModifiedConstraintValue, resolveEntry } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, findForceEntryById, isCategoryLinkHidden } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -93,7 +93,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
             <h2 className="builder-top-bar-title">{roster.name}</h2>
             <span className="builder-top-bar-subtitle">
               <span className="hide-on-mobile">{system.name} {activeCatalogue ? '· ' : ''}</span>
-              {activeCatalogue ? activeCatalogue.name : ''}
+              {(() => {
+                const forceEntryId = roster.forces?.[0]?.forceEntryId;
+                const forceDef = findForceEntryById(system, forceEntryId);
+                const suffix = forceDef ? ` (${forceDef.name})` : '';
+                return activeCatalogue ? `${activeCatalogue.name}${suffix}` : '';
+              })()}
             </span>
           </div>
         </div>
@@ -127,7 +132,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
         {/* Selected Selections on Roster grouped by category links */}
         {roster.forces.map(force => {
-          const forceDef = system.forceEntries?.find(fe => fe.id === force.forceEntryId);
+          const forceDef = findForceEntryById(system, force.forceEntryId);
           const categoryLinks = forceDef?.categoryLinks || [];
           const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
           const forceCategoryCounts = categoryCounts[force.id] || {};
@@ -138,9 +143,16 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           return (
             <div key={force.id} className="force-editor-section" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {categoryLinks.map(link => {
+                  const isHidden = isCategoryLinkHidden(link, system, roster, selectionCounts, forceCategoryCounts);
+                  const selections = force.selections?.filter(s => s.category === link.targetId) || [];
+
+                  // If category link is hidden and has no selections, do not render it
+                  if (isHidden && selections.length === 0) {
+                    return null;
+                  }
+
                   const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
                   const catName = catDef ? catDef.name : link.name;
-                  const selections = force.selections?.filter(s => s.category === link.targetId) || [];
                   const categoryErrors = validationErrors.filter(e => e.categoryId === link.targetId);
                   const count = forceCategoryCounts[link.targetId] || 0;
 

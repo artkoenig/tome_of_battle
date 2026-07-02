@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download } from 'lucide-react';
-import { calculateRosterCosts, validateRoster } from '../solver/validator';
+import { calculateRosterCosts, validateRoster, findForceEntryById } from '../solver/validator';
 
 export default function RosterDashboard({
   rosters = [],
@@ -126,6 +126,15 @@ export default function RosterDashboard({
                                   <div className="roster-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                                      <h4 className="roster-title text-ui-title" style={{ margin: 0, flex: 1, paddingRight: '12px' }}>
                                       {roster.name}
+                                      {(() => {
+                                        const forceEntryId = roster.forces?.[0]?.forceEntryId;
+                                        const forceDef = sys ? findForceEntryById(sys, forceEntryId) : null;
+                                        return forceDef ? (
+                                          <span className="text-micro text-dim" style={{ display: 'block', marginTop: '2px', fontStyle: 'italic' }}>
+                                            {forceDef.name}
+                                          </span>
+                                        ) : null;
+                                      })()}
                                       {showDebugIds && <span className="debug-id-badge" style={{ display: 'block', marginTop: '4px', width: 'fit-content' }}>{roster.id}</span>}
                                     </h4>
                                     <div className="roster-points text-subheading text-gold" style={{ 

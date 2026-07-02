@@ -55,6 +55,8 @@ vi.mock('../solver/validator', () => ({
   resolveEntry: (...args) => mockResolveEntry(...args),
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
+  findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
+  isCategoryLinkHidden: (link) => link.hidden === true,
 }));
 
 // Mock Rules Evaluator

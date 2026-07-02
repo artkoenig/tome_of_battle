@@ -4,7 +4,7 @@ import {
   Heart, Swords, Sparkles, BookOpen 
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost } from '../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById } from '../solver/validator';
 import { useDebugMode } from '../hooks/DebugContext';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
@@ -43,7 +43,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     const costType = roster.costLimitType || 'pts';
     
     roster.forces.forEach(force => {
-      const forceDef = system.forceEntries?.find(fe => fe.id === force.forceEntryId);
+      const forceDef = findForceEntryById(system, force.forceEntryId);
       const categoryLinks = forceDef?.categoryLinks || [];
 
       // Process defined categories
@@ -121,7 +121,12 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
             <h2 className="builder-top-bar-title">{roster.name}</h2>
             <span className="builder-top-bar-subtitle">
               <span>{system.name} {activeCatalogue ? '· ' : ''}</span>
-              {activeCatalogue ? activeCatalogue.name : ''}
+              {(() => {
+                const forceEntryId = roster.forces?.[0]?.forceEntryId;
+                const forceDef = findForceEntryById(system, forceEntryId);
+                const suffix = forceDef ? ` (${forceDef.name})` : '';
+                return activeCatalogue ? `${activeCatalogue.name}${suffix}` : '';
+              })()}
             </span>
           </div>
         </div>

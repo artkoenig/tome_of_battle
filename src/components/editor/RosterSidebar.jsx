@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, ShieldAlert } from 'lucide-react';
-import { computeRosterCounts, getModifiedConstraintValue } from '../../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, findForceEntryById, isCategoryLinkHidden } from '../../solver/validator';
 import { useDebugMode } from '../../hooks/DebugContext';
 
 export default function RosterSidebar({
@@ -38,9 +38,16 @@ export default function RosterSidebar({
         {(() => {
           const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
           const forceId = roster.forces[0]?.id;
+          const forceEntryId = roster.forces[0]?.forceEntryId;
+          const forceDef = findForceEntryById(system, forceEntryId);
+          const categoryLinks = forceDef?.categoryLinks || [];
           const forceCategoryCounts = forceId ? (categoryCounts[forceId] || {}) : {};
 
-          return system.forceEntries?.[0]?.categoryLinks?.map(catLink => {
+          return categoryLinks.map(catLink => {
+            if (isCategoryLinkHidden(catLink, system, roster, selectionCounts, forceCategoryCounts)) {
+              return null;
+            }
+
             const catName = system.categoryEntries?.find(c => c.id === catLink.targetId)?.name || catLink.name;
             const count = forceCategoryCounts[catLink.targetId] || 0;
             const displayCtx = { roster, system, selectionCounts, forceCategoryCounts };
@@ -60,7 +67,7 @@ export default function RosterSidebar({
 
             // Fallback for Heroes category limit to match Characters limit
             if (catLink.targetId === 'c16b-f319-2c62-2c12' && maxCon === Infinity) {
-              const charCatLink = system.forceEntries?.[0]?.categoryLinks?.find(cl => cl.targetId === '7a1c-d611-c2dc-def1');
+              const charCatLink = forceDef?.categoryLinks?.find(cl => cl.targetId === '7a1c-d611-c2dc-def1');
               const charMaxConRef = charCatLink?.constraints?.find(c => c.type === 'max');
               if (charMaxConRef) {
                 const val = getModifiedConstraintValue(charMaxConRef, charCatLink.modifiers, displayCtx);

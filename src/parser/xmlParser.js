@@ -273,6 +273,29 @@ function parseSelectionEntryGroup(el) {
   };
 }
 
+// Force Entries (Detachments etc.)
+const parseForceEntry = (el) => {
+  const catLinks = getWrappedChildren(el, 'categoryLinks', 'categoryLink').map(link => ({
+    id: link.getAttribute('id'),
+    name: link.getAttribute('name'),
+    hidden: link.getAttribute('hidden') === 'true',
+    targetId: link.getAttribute('targetId'),
+    constraints: parseConstraints(link),
+    modifiers: parseModifiers(link)
+  }));
+
+  const subForces = getWrappedChildren(el, 'forceEntries', 'forceEntry').map(parseForceEntry);
+
+  return {
+    id: el.getAttribute('id'),
+    name: el.getAttribute('name'),
+    hidden: el.getAttribute('hidden') === 'true',
+    categoryLinks: catLinks,
+    forceEntries: subForces,
+    constraints: parseConstraints(el)
+  };
+};
+
 /**
  * Parses a game system XML content
  */
@@ -314,27 +337,6 @@ export function parseGameSystemXML(xmlText) {
     constraints: parseConstraints(el),
     modifiers: parseModifiers(el)
   }));
-
-  // Force Entries (Detachments etc.)
-  const parseForceEntry = (el) => {
-    const catLinks = getWrappedChildren(el, 'categoryLinks', 'categoryLink').map(link => ({
-      id: link.getAttribute('id'),
-      name: link.getAttribute('name'),
-      targetId: link.getAttribute('targetId'),
-      constraints: parseConstraints(link),
-      modifiers: parseModifiers(link)
-    }));
-
-    const subForces = getWrappedChildren(el, 'forceEntries', 'forceEntry').map(parseForceEntry);
-
-    return {
-      id: el.getAttribute('id'),
-      name: el.getAttribute('name'),
-      categoryLinks: catLinks,
-      forceEntries: subForces,
-      constraints: parseConstraints(el)
-    };
-  };
   
   const forceEntries = getWrappedChildren(root, 'forceEntries', 'forceEntry').map(parseForceEntry);
   const sharedSelectionEntries = getWrappedChildren(root, 'sharedSelectionEntries', 'selectionEntry').map(parseSelectionEntry);
@@ -387,6 +389,8 @@ export function parseCatalogueXML(xmlText) {
     type: el.getAttribute('type') // subRange, etc.
   }));
 
+  const forceEntries = getWrappedChildren(root, 'forceEntries', 'forceEntry').map(parseForceEntry);
+
   return {
     id: root.getAttribute('id'),
     name: root.getAttribute('name'),
@@ -397,6 +401,7 @@ export function parseCatalogueXML(xmlText) {
     sharedSelectionEntries,
     sharedSelectionEntryGroups,
     categoryEntries,
+    forceEntries,
     sharedProfiles: parseProfiles(root),
     sharedRules: parseRules(root),
     catalogueLinks

@@ -51,3 +51,10 @@ Hier sind die zentralen architektonischen und fachlichen Lektionen für den Umga
   1. **Fester Basis-Rüstungswurf** (z. B. `1+`, `4+` wie beim *Flayed Hauberk*): Diese definieren den Grundrüster (sofern besser als andere Rüstungen).
   2. **Additiver Modifikator** (z. B. `-1 Sv`, `+1 to armour save` wie beim *Sacred Stegadon Helm* oder *Shield of Ghrond*): Diese addieren sich auf den endgültigen Wurf.
 * **Vermeidung von Doppelzählungen:** Manche Gegenstände triggern über ihren Namen (z. B. "Shield of Ghrond") bereits einen pauschalen Keyword-Bonus für Rüstung (z. B. Schild = -1) *und* besitzen gleichzeitig einen `Saving Throw Modifier`. In solchen Fällen darf der Modifikator aus der Eigenschaft nicht einfach obendrauf gerechnet werden (Double-Dipping), sondern muss mit den bereits durch das Keyword erhaltenen Boni verrechnet werden.
+
+## 7. Force Entries und versteckte Kontingente/Einheitentypen (forceEntries & hidden)
+
+* **Herkunft von Kontingenten (forceEntries):** Kontingente (Heeresstrukturen / Detachments) können sowohl global in der Spieldatei (.gst) als auch spezifisch in einzelnen Katalogen (.cat) deklariert sein. Bei der Erstellung einer Liste müssen beide Quellen berücksichtigt werden.
+* **Versteckte Kontingente (`hidden="true"`):** Kontingente, die initial auf `hidden="true"` stehen, dürfen dem Benutzer beim Erstellen einer Liste nicht als Option angeboten werden.
+* **Versteckte Einheitentypen (`categoryLinks`):** Einheitentypen (z. B. "Core", "Lord") innerhalb eines Kontingents können über das `hidden`-Attribut oder dynamisch über Modifikatoren (`field="hidden"`) versteckt bzw. eingeblendet werden. Versteckte Einheitentypen dürfen im Editor und in der Seitenleiste (Anforderungen) nicht angezeigt und deren Mindestgrenzen (Constraints) nicht validiert werden.
+

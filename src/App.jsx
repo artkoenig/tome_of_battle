@@ -3,6 +3,7 @@ import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Bug, Search, WifiOff, 
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 import { useDebugMode } from './hooks/DebugContext';
+import { getAvailableForceEntries } from './solver/validator';
 
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
@@ -92,6 +93,7 @@ export default function App() {
   const [newRosterName, setNewRosterName] = useState('');
   const [newRosterSystemId, setNewRosterSystemId] = useState('');
   const [newRosterCatId, setNewRosterCatId] = useState('');
+  const [newRosterForceEntryId, setNewRosterForceEntryId] = useState('');
   const [newRosterLimit, setNewRosterLimit] = useState(2000);
 
   // Debug Edit Modal State
@@ -186,9 +188,16 @@ export default function App() {
       setRosters(allRosters);
 
       if (allSystems.length > 0 && !newRosterSystemId) {
-        setNewRosterSystemId(allSystems[0].id);
-        if (allSystems[0].catalogues?.length > 0) {
-          setNewRosterCatId(allSystems[0].catalogues[0].id);
+        const defaultSys = allSystems[0];
+        setNewRosterSystemId(defaultSys.id);
+        const defaultCatId = defaultSys.catalogues?.length > 0 ? defaultSys.catalogues[0].id : '';
+        setNewRosterCatId(defaultCatId);
+        
+        const avail = getAvailableForceEntries(defaultSys, defaultCatId);
+        if (avail.length > 0) {
+          setNewRosterForceEntryId(avail[0].id);
+        } else {
+          setNewRosterForceEntryId('');
         }
       }
       setIsDataLoaded(true);
@@ -202,10 +211,54 @@ export default function App() {
   const handleSystemChange = (systemId) => {
     setNewRosterSystemId(systemId);
     const selectedSys = systems.find(s => s.id === systemId);
+    let defaultCatId = '';
     if (selectedSys && selectedSys.catalogues?.length > 0) {
-      setNewRosterCatId(selectedSys.catalogues[0].id);
+      defaultCatId = selectedSys.catalogues[0].id;
+    }
+    setNewRosterCatId(defaultCatId);
+    
+    if (selectedSys) {
+      const avail = getAvailableForceEntries(selectedSys, defaultCatId);
+      if (avail.length > 0) {
+        setNewRosterForceEntryId(avail[0].id);
+      } else {
+        setNewRosterForceEntryId('');
+      }
     } else {
-      setNewRosterCatId('');
+      setNewRosterForceEntryId('');
+    }
+  };
+
+  const handleCatalogueChange = (catId) => {
+    setNewRosterCatId(catId);
+    const selectedSys = systems.find(s => s.id === newRosterSystemId);
+    if (selectedSys) {
+      const avail = getAvailableForceEntries(selectedSys, catId);
+      if (avail.length > 0) {
+        setNewRosterForceEntryId(avail[0].id);
+      } else {
+        setNewRosterForceEntryId('');
+      }
+    } else {
+      setNewRosterForceEntryId('');
+    }
+  };
+
+  const handleOpenNewRosterModal = () => {
+    setIsModalOpen(true);
+    setNewRosterName('');
+    if (systems.length > 0) {
+      const defaultSys = systems[0];
+      setNewRosterSystemId(defaultSys.id);
+      const defaultCatId = defaultSys.catalogues?.length > 0 ? defaultSys.catalogues[0].id : '';
+      setNewRosterCatId(defaultCatId);
+      
+      const avail = getAvailableForceEntries(defaultSys, defaultCatId);
+      if (avail.length > 0) {
+        setNewRosterForceEntryId(avail[0].id);
+      } else {
+        setNewRosterForceEntryId('');
+      }
     }
   };
 
@@ -228,8 +281,7 @@ export default function App() {
       costLimitType: costType,
       forces: [{
         id: crypto.randomUUID(),
-        // Reference the first force organisation parsed from GST if exists
-        forceEntryId: systemDef?.forceEntries?.[0]?.id || null,
+        forceEntryId: newRosterForceEntryId || systemDef?.forceEntries?.[0]?.id || null,
         catalogueId: newRosterCatId,
         selections: []
       }],
@@ -400,7 +452,7 @@ export default function App() {
                 showDebugIds={showDebugIds}
                 onOpenRoster={handleOpenRoster}
                 onDeleteRoster={handleDeleteRoster}
-                onNewRoster={() => setIsModalOpen(true)}
+                onNewRoster={handleOpenNewRosterModal}
                 isOffline={isOffline}
                 isInstallable={isInstallable}
                 onInstallClick={handleInstallClick}
@@ -432,7 +484,7 @@ export default function App() {
       </main>
 
       {/* New Roster Modal */}
-            <NewRosterModal 
+      <NewRosterModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateRoster}
@@ -442,7 +494,9 @@ export default function App() {
         newRosterSystemId={newRosterSystemId}
         handleSystemChange={handleSystemChange}
         newRosterCatId={newRosterCatId}
-        setNewRosterCatId={setNewRosterCatId}
+        handleCatalogueChange={handleCatalogueChange}
+        newRosterForceEntryId={newRosterForceEntryId}
+        setNewRosterForceEntryId={setNewRosterForceEntryId}
         newRosterLimit={newRosterLimit}
         setNewRosterLimit={setNewRosterLimit}
       />

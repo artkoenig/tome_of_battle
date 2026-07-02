@@ -79,6 +79,44 @@ export const evaluateCondition = (cond, ctx = {}) => {
     case 'greaterThanOrEqualTo':
       return currentValue >= targetValue;
     case 'instanceOf': {
+      const forceEntryId = cond.scope || cond.childId;
+      if (system && forceEntryId) {
+        // Simple local recursive search for force entry to avoid circular dependency
+        const findForceEntryInSystemLocal = (sys, id) => {
+          if (!sys || !id) return null;
+          const findInList = (list, targetId) => {
+            for (const fe of list) {
+              if (fe.id === targetId) return fe;
+              if (fe.forceEntries) {
+                const sub = findInList(fe.forceEntries, targetId);
+                if (sub) return sub;
+              }
+            }
+            return null;
+          };
+          if (sys.forceEntries) {
+            const found = findInList(sys.forceEntries, id);
+            if (found) return found;
+          }
+          if (sys.catalogues) {
+            for (const cat of sys.catalogues) {
+              if (cat.forceEntries) {
+                const found = findInList(cat.forceEntries, id);
+                if (found) return found;
+              }
+            }
+          }
+          return null;
+        };
+
+        const isForce = findForceEntryInSystemLocal(system, forceEntryId);
+        if (isForce) {
+          const isInstance = (ctx.force?.forceEntryId === forceEntryId) || 
+                             (roster?.forces?.some(f => f.forceEntryId === forceEntryId));
+          return cond.value === 0 ? !isInstance : isInstance;
+        }
+      }
+
       if (!selection || !system) return false;
       const targetChildId = cond.childId;
       const checkInstance = (sel) => {

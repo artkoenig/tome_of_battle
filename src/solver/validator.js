@@ -38,17 +38,23 @@ export function validateRoster(roster, system) {
   // 2. Validate Detachment / Force category limits
   roster.forces.forEach(force => {
     // Find force definition in system
-    const forceDef = system.forceEntries?.find(fe => fe.id === force.forceEntryId);
+    const forceDef = findForceEntryById(system, force.forceEntryId);
     if (!forceDef) return;
 
     // A force entry has categoryLinks specifying constraints
     forceDef.categoryLinks?.forEach(catLink => {
       const targetCatId = catLink.targetId;
+      const forceCategoryCounts = categoryCounts[force.id] || {};
+
+      // Check if this category link is hidden
+      if (isCategoryLinkHidden(catLink, system, roster, selectionCounts, forceCategoryCounts)) {
+        return;
+      }
+
       const catDef = system.categoryEntries?.find(ce => ce.id === targetCatId);
       const catName = catDef ? catDef.name : catLink.name;
 
       // Count selections in this force that fall under this category
-      const forceCategoryCounts = categoryCounts[force.id] || {};
       const count = forceCategoryCounts[targetCatId] || 0;
 
       // Check min/max constraints on the category link
@@ -746,3 +752,134 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
 
   return { profiles, rules };
 }
+
+export function findForceEntryById(system, forceEntryId) {
+  if (!system || !forceEntryId) return null;
+  // Search in game system force entries
+  if (system.forceEntries) {
+    const found = findForceEntryInList(system.forceEntries, forceEntryId);
+    if (found) return found;
+  }
+  // Search in catalogues' force entries
+  if (system.catalogues) {
+    for (const cat of system.catalogues) {
+      if (cat.forceEntries) {
+        const found = findForceEntryInList(cat.forceEntries, forceEntryId);
+        if (found) return found;
+      }
+    }
+  }
+  return null;
+}
+
+function findForceEntryInList(list, id) {
+  for (const fe of list) {
+    if (fe.id === id) return fe;
+    if (fe.forceEntries) {
+      const sub = findForceEntryInList(fe.forceEntries, id);
+      if (sub) return sub;
+    }
+  }
+  return null;
+}
+
+export function isCategoryLinkHidden(link, system, roster, selectionCounts, forceCategoryCounts) {
+  let isHidden = link.hidden === true;
+  if (!link.modifiers || link.modifiers.length === 0) {
+    return isHidden;
+  }
+  
+  const ctx = {
+    roster,
+    system,
+    selectionCounts,
+    forceCategoryCounts,
+    parentCatalogueId: roster?.catalogueId
+  };
+
+  link.modifiers.forEach(mod => {
+    if (mod.field === 'hidden') {
+      const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
+      const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
+      if (condsPass && groupsPass) {
+        const val = mod.value === 'true' || mod.value === true || mod.valueObject === true;
+        if (mod.type === 'set') {
+          isHidden = val;
+        }
+      }
+    }
+  });
+
+  return isHidden;
+}
+
+export function getAvailableForceEntries(systemDef, catId) {
+  if (!systemDef) return [];
+  const entries = [];
+  
+  // Get from system definition
+  if (systemDef.forceEntries) {
+    systemDef.forceEntries.forEach(fe => {
+      if (fe.hidden !== true) {
+        entries.push(fe);
+      }
+    });
+  }
+
+  // Get from selected catalogue
+  if (systemDef.catalogues && catId) {
+    const selectedCat = systemDef.catalogues.find(c => c.id === catId);
+    if (selectedCat && selectedCat.forceEntries) {
+      selectedCat.forceEntries.forEach(fe => {
+        if (fe.hidden !== true) {
+          entries.push(fe);
+        }
+      });
+    }
+  }
+
+  return entries;
+}
+
+export function isSelectionEntryHidden(entry, system, roster, selectionCounts, forceCategoryCounts, force) {
+  const res = resolveEntry(system, entry);
+  if (!res) return false;
+  
+  let isHidden = entry.hidden === true || res.hidden === true;
+  
+  const allModifiers = [
+    ...(entry.modifiers || []),
+    ...(entry.modifierGroups?.flatMap(g => g.modifiers || []) || []),
+    ...(res.modifiers || []),
+    ...(res.modifierGroups?.flatMap(g => g.modifiers || []) || [])
+  ];
+
+  if (allModifiers.length === 0) {
+    return isHidden;
+  }
+
+  const ctx = {
+    roster,
+    system,
+    selectionCounts,
+    forceCategoryCounts,
+    force: force || roster?.forces?.[0],
+    parentCatalogueId: roster?.catalogueId
+  };
+
+  allModifiers.forEach(mod => {
+    if (mod.field === 'hidden') {
+      const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
+      const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
+      if (condsPass && groupsPass) {
+        const val = mod.value === 'true' || mod.value === true || mod.valueObject === true;
+        if (mod.type === 'set') {
+          isHidden = val;
+        }
+      }
+    }
+  });
+
+  return isHidden;
+}
+

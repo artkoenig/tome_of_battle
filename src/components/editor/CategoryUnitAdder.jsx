@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost } from '../../solver/validator';
-import { getModifiedConstraintValue } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, isSelectionEntryHidden } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
@@ -31,7 +30,11 @@ export default function CategoryUnitAdder({
                           entry.categoryLinks?.some(link => link.targetId === catId && link.primary);
 
       if (hasCategory) {
-        items.push(entry);
+        const force = roster.forces?.[0];
+        const isHidden = isSelectionEntryHidden(entry, system, roster, selectionCounts, null, force);
+        if (!isHidden) {
+          items.push(entry);
+        }
       }
     };
 

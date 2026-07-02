@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDebugMode } from '../../hooks/DebugContext';
+import { getAvailableForceEntries } from '../../solver/validator';
 
 export default function NewRosterModal({
   isOpen,
@@ -11,7 +12,9 @@ export default function NewRosterModal({
   newRosterSystemId,
   handleSystemChange,
   newRosterCatId,
-  setNewRosterCatId,
+  handleCatalogueChange,
+  newRosterForceEntryId,
+  setNewRosterForceEntryId,
   newRosterLimit,
   setNewRosterLimit
 }) {
@@ -20,6 +23,7 @@ export default function NewRosterModal({
   if (!isOpen) return null;
 
   const activeModalSystem = systems.find(s => s.id === newRosterSystemId);
+  const availableForceEntries = getAvailableForceEntries(activeModalSystem, newRosterCatId);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -66,7 +70,7 @@ export default function NewRosterModal({
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Katalog / Fraktion</label>
               <select 
                 value={newRosterCatId}
-                onChange={(e) => setNewRosterCatId(e.target.value)}
+                onChange={(e) => handleCatalogueChange(e.target.value)}
                 required
                 disabled={!newRosterSystemId || activeModalSystem?.catalogues?.length === 0}
               >
@@ -74,6 +78,23 @@ export default function NewRosterModal({
                 {activeModalSystem?.catalogues?.map(cat => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}{showDebugIds ? ` [ID: ${cat.id}]` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Armeestruktur / Kontingent</label>
+              <select 
+                value={newRosterForceEntryId}
+                onChange={(e) => setNewRosterForceEntryId(e.target.value)}
+                required
+                disabled={!newRosterCatId || availableForceEntries.length === 0}
+              >
+                <option value="" disabled>Struktur auswählen...</option>
+                {availableForceEntries.map(fe => (
+                  <option key={fe.id} value={fe.id}>
+                    {fe.name}{showDebugIds ? ` [ID: ${fe.id}]` : ''}
                   </option>
                 ))}
               </select>
