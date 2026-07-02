@@ -99,4 +99,75 @@ describe('RosterDashboard Component', () => {
     fireEvent.click(deleteBtn);
     expect(mockDeleteRoster).toHaveBeenCalledWith('roster-1', expect.any(Object));
   });
+
+  describe('Roster Title Editing', () => {
+    it('shows input field when clicking the title and renames on blur', () => {
+      const mockRename = vi.fn();
+      render(
+        <RosterDashboard
+          rosters={mockRosters}
+          systems={mockSystems}
+          onOpenRoster={mockOpenRoster}
+          onDeleteRoster={mockDeleteRoster}
+          onRenameRoster={mockRename}
+          onNewRoster={mockNewRoster}
+        />
+      );
+
+      const titleContainer = screen.getByTitle('Titel bearbeiten');
+      fireEvent.click(titleContainer);
+
+      const nameInput = screen.getByRole('textbox');
+      expect(nameInput.value).toBe('Empire Army');
+
+      fireEvent.change(nameInput, { target: { value: 'New Name' } });
+      fireEvent.blur(nameInput);
+
+      expect(mockRename).toHaveBeenCalledWith(mockRosters[0], 'New Name');
+    });
+
+    it('renames on Enter key', () => {
+      const mockRename = vi.fn();
+      render(
+        <RosterDashboard
+          rosters={mockRosters}
+          systems={mockSystems}
+          onOpenRoster={mockOpenRoster}
+          onDeleteRoster={mockDeleteRoster}
+          onRenameRoster={mockRename}
+          onNewRoster={mockNewRoster}
+        />
+      );
+
+      fireEvent.click(screen.getByTitle('Titel bearbeiten'));
+      const nameInput = screen.getByRole('textbox');
+      fireEvent.change(nameInput, { target: { value: 'Another Name' } });
+      fireEvent.keyDown(nameInput, { key: 'Enter', code: 'Enter' });
+
+      expect(mockRename).toHaveBeenCalledWith(mockRosters[0], 'Another Name');
+    });
+
+    it('cancels editing on Escape without renaming', () => {
+      const mockRename = vi.fn();
+      render(
+        <RosterDashboard
+          rosters={mockRosters}
+          systems={mockSystems}
+          onOpenRoster={mockOpenRoster}
+          onDeleteRoster={mockDeleteRoster}
+          onRenameRoster={mockRename}
+          onNewRoster={mockNewRoster}
+        />
+      );
+
+      fireEvent.click(screen.getByTitle('Titel bearbeiten'));
+      const nameInput = screen.getByRole('textbox');
+      fireEvent.change(nameInput, { target: { value: 'Ignored Name' } });
+      fireEvent.keyDown(nameInput, { key: 'Escape', code: 'Escape' });
+
+      expect(screen.queryByRole('textbox')).toBeNull();
+      expect(screen.getByText('Empire Army')).toBeDefined();
+      expect(mockRename).not.toHaveBeenCalled();
+    });
+  });
 });

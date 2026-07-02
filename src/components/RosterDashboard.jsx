@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download } from 'lucide-react';
 import { calculateRosterCosts, validateRoster, findForceEntryById } from '../solver/validator';
 
@@ -8,11 +8,34 @@ export default function RosterDashboard({
   showDebugIds = false,
   onOpenRoster,
   onDeleteRoster,
+  onRenameRoster,
   onNewRoster,
   isOffline = false,
   isInstallable = false,
   onInstallClick,
 }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState('');
+
+  const startEditing = (roster, e) => {
+    e.stopPropagation();
+    setEditName(roster.name);
+    setEditingId(roster.id);
+  };
+
+  const finishEditing = (roster) => {
+    onRenameRoster?.(roster, editName);
+    setEditingId(null);
+  };
+
+  const handleTitleKeyDown = (e, roster) => {
+    if (e.key === 'Enter') {
+      finishEditing(roster);
+    } else if (e.key === 'Escape') {
+      setEditingId(null);
+    }
+  };
+
   return (
     <div className="container">
       {/* PWA & Network Offline/Install Status Banners */}
@@ -98,7 +121,7 @@ export default function RosterDashboard({
 
               return (
                 <div key={systemName} className="system-group" style={{ marginBottom: '40px' }}>
-                  <h2 className="system-group-title text-heading" style={{ borderBottom: '2px solid var(--border-gold)', paddingBottom: '6px', marginBottom: '20px' }}>
+                  <h2 className="system-group-title text-heading">
                     {systemName}
                   </h2>
                   
@@ -107,7 +130,7 @@ export default function RosterDashboard({
                       const factionRosters = factionsObj[factionName];
                       return (
                         <div key={factionName} className="faction-group" style={{ marginBottom: '28px' }}>
-                          <h3 className="faction-group-title text-subheading" style={{ borderBottom: '1px solid var(--border-gold-dim)', paddingBottom: '4px', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          <h3 className="faction-group-title text-subheading">
                             {factionName}
                           </h3>
                           <div className="dashboard-grid" style={{ marginTop: '12px' }}>
@@ -124,8 +147,27 @@ export default function RosterDashboard({
                               return (
                                 <div key={roster.id} className="roster-card" style={{ minHeight: 'auto', padding: '12px 16px' }}>
                                   <div className="roster-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                                     <h4 className="roster-title text-ui-title" style={{ margin: 0, flex: 1, paddingRight: '12px' }}>
-                                      {roster.name}
+                                    <div className="roster-title-block">
+                                      {editingId === roster.id ? (
+                                        <input
+                                          type="text"
+                                          className="roster-title-input"
+                                          value={editName}
+                                          onChange={(e) => setEditName(e.target.value)}
+                                          onBlur={() => finishEditing(roster)}
+                                          onKeyDown={(e) => handleTitleKeyDown(e, roster)}
+                                          autoFocus
+                                        />
+                                      ) : (
+                                        <div
+                                          className="roster-title-container"
+                                          onClick={(e) => startEditing(roster, e)}
+                                          title="Titel bearbeiten"
+                                        >
+                                          <h4 className="roster-title">{roster.name}</h4>
+                                          <Edit3 className="edit-icon" size={14} />
+                                        </div>
+                                      )}
                                       {(() => {
                                         const forceEntryId = roster.forces?.[0]?.forceEntryId;
                                         const forceDef = sys ? findForceEntryById(sys, forceEntryId) : null;
@@ -136,7 +178,7 @@ export default function RosterDashboard({
                                         ) : null;
                                       })()}
                                       {showDebugIds && <span className="debug-id-badge" style={{ display: 'block', marginTop: '4px', width: 'fit-content' }}>{roster.id}</span>}
-                                    </h4>
+                                    </div>
                                     <div className="roster-points text-subheading text-gold" style={{ 
                                       fontWeight: 'bold', 
                                       whiteSpace: 'nowrap',

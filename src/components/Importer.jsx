@@ -439,19 +439,17 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                    <button 
-                      className="btn-gold btn-sm" 
+                    <button
+                      className="btn-gold square-btn"
                       onClick={() => handleExport(sys)}
                       title="Spielsystem exportieren (.zip)"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                     >
                       <Download size={16} />
                     </button>
-                    <button 
-                      className="btn-danger btn-sm" 
+                    <button
+                      className="btn-danger square-btn"
                       onClick={() => handleDelete(sys.id)}
                       title="System löschen"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                     >
                       <Trash2 size={16} />
                     </button>

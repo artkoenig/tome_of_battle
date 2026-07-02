@@ -344,6 +344,17 @@ export default function App() {
     }
   };
 
+  const handleRenameRoster = async (roster, newName) => {
+    const trimmed = (newName || '').trim();
+    if (!trimmed || trimmed === roster.name) return;
+    try {
+      await saveRoster({ ...roster, name: trimmed });
+      loadAllData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Selected system for new roster helper
   const activeModalSystem = systems.find(s => s.id === newRosterSystemId);
 
@@ -464,6 +475,7 @@ export default function App() {
                 showDebugIds={showDebugIds}
                 onOpenRoster={handleOpenRoster}
                 onDeleteRoster={handleDeleteRoster}
+                onRenameRoster={handleRenameRoster}
                 onNewRoster={handleOpenNewRosterModal}
                 isOffline={isOffline}
                 isInstallable={isInstallable}

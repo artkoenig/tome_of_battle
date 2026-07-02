@@ -452,6 +452,20 @@ select option {
   margin-top: 24px;
 }
 
+.system-group-title {
+  border-bottom: 2px solid var(--border-gold);
+  padding-bottom: 6px;
+  margin-bottom: 20px;
+}
+
+.faction-group-title {
+  border-bottom: 1px solid var(--border-gold-dim);
+  padding-bottom: 4px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .roster-card {
   background-color: var(--bg-panel);
   border: 1px solid var(--border-dark);
@@ -482,9 +496,71 @@ select option {
   margin-bottom: 16px;
 }
 
+.roster-title-block {
+  flex: 1;
+  min-width: 0;
+  padding-right: 12px;
+}
+
 .roster-title {
+  font-family: var(--font-serif);
   font-size: var(--fs-subheading);
-  margin-bottom: 4px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+  color: var(--text-gold);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  margin: 0;
+}
+
+.roster-title-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+.roster-title-container .roster-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roster-title-container:hover .roster-title {
+  color: var(--text-gold-bright, var(--text-gold));
+}
+
+.roster-title-container .edit-icon {
+  flex-shrink: 0;
+  color: var(--text-dim);
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.roster-title-container:hover .edit-icon {
+  opacity: 1;
+  color: var(--text-gold);
+}
+
+.roster-title-input {
+  background-color: var(--bg-dark);
+  color: var(--text-parchment);
+  border: 1px solid var(--border-gold-dim);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: var(--font-serif);
+  font-size: var(--fs-subheading);
+  font-weight: 700;
+  margin: 0;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+}
+
+.roster-title-input:focus {
+  outline: none;
+  border-color: var(--border-gold);
+  box-shadow: 0 0 8px rgba(197, 155, 39, 0.3);
 }
 
 .roster-meta {
@@ -961,7 +1037,9 @@ select option {
 
 @media (max-width: 900px) {
   .play-layout {
-    padding: 12px !important;
+    /* No top padding: a sticky child sticks to the scroll container's padding box,
+       so any padding-top would leave a gap above the header that content scrolls through. */
+    padding: 0 12px 12px !important;
     width: 100%;
     max-width: 100%;
     height: 100% !important;
@@ -969,7 +1047,8 @@ select option {
     -webkit-overflow-scrolling: touch;
   }
   .play-header {
-    margin: 0 0 12px 0;
+    /* Break out of .play-layout's side padding so the sticky header spans the full width and sits flush at the top */
+    margin: 0 -12px 12px -12px;
     padding: 10px 12px;
     position: sticky;
     top: 0;
@@ -1337,6 +1416,46 @@ input[type="radio"]:checked::after {
 
   .hide-on-mobile {
     display: none !important;
+  }
+
+  /* Align Heerlager/Bibliothekar content with the flat, edge-to-edge Play/Editor card language */
+  .container {
+    padding: 12px !important;
+  }
+  .bundle-importer-panel {
+    border: 1px solid var(--border-dark) !important;
+    box-shadow: none !important;
+    border-radius: 2px;
+    padding: 16px;
+  }
+  .bundle-importer-panel::before {
+    display: none;
+  }
+  .system-factions {
+    padding-left: 0 !important;
+  }
+  .roster-card {
+    border-radius: 2px;
+    border-left: none;
+    border-right: none;
+  }
+  .roster-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border-dark);
+  }
+  /* No hover on touch — keep the title's edit affordance visible */
+  .roster-title-container .edit-icon {
+    opacity: 0.7;
+  }
+  /* System = primary section with a slim gold rule; faction = subordinate label with no rule */
+  .system-group-title {
+    border-bottom-width: 1px;
+  }
+  .faction-group-title {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 10px;
   }
 
   /* Hide main premium header inside the builder/play screens to maximize vertical space */
@@ -2222,47 +2341,6 @@ input[type="radio"]:checked::after {
   font-size: var(--fs-subheading);
 }
 
-.builder-top-bar-title-container {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.builder-top-bar-title-container:hover .builder-top-bar-title {
-  color: var(--text-gold);
-}
-
-.builder-top-bar-title-container .edit-icon {
-  color: var(--text-dim);
-  opacity: 0;
-  transition: opacity 0.2s ease, color 0.2s ease;
-}
-
-.builder-top-bar-title-container:hover .edit-icon {
-  opacity: 1;
-  color: var(--text-gold);
-}
-
-.builder-top-bar-title-input {
-  background-color: var(--bg-dark);
-  color: var(--text-parchment);
-  border: 1px solid var(--border-gold-dim);
-  border-radius: 4px;
-  padding: 2px 8px;
-  font-family: var(--font-display);
-  font-size: var(--fs-subheading);
-  margin: 0;
-  max-width: 300px;
-  box-sizing: border-box;
-}
-
-.builder-top-bar-title-input:focus {
-  outline: none;
-  border-color: var(--border-gold);
-  box-shadow: 0 0 8px rgba(197, 155, 39, 0.3);
-}
-
 .builder-top-bar-subtitle {
   font-size: var(--fs-micro);
   color: var(--text-dim);
@@ -2303,13 +2381,6 @@ input[type="radio"]:checked::after {
   }
   .builder-top-bar-title {
     font-size: var(--fs-ui-title);
-  }
-  .builder-top-bar-title-container .edit-icon {
-    opacity: 0.7;
-  }
-  .builder-top-bar-title-input {
-    font-size: var(--fs-ui-title);
-    max-width: 200px;
   }
   .square-btn {
     width: 40px;

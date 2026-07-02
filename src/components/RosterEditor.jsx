@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Play, AlertTriangle, Check, ArrowLeft, Edit3 } from 'lucide-react';
+import { Play, AlertTriangle, Check, ArrowLeft } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
@@ -24,14 +24,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     addUnit,
     removeUnit,
     copyUnit,
-    updateSubSelection,
-    updateRosterName
+    updateSubSelection
   } = useRoster(initialRoster, system, saveRoster);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, _setToast] = useState(null);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editName, setEditName] = useState(roster?.name || '');
 
 
 
@@ -51,35 +48,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
       setActiveCatalogue(cat);
     }
   }, [system, roster]);
-
-  // Sync editName state with roster name changes
-  useEffect(() => {
-    if (roster?.name) {
-      setEditName(roster.name);
-    }
-  }, [roster?.name]);
-
-  const handleFinishEditing = () => {
-    const trimmed = editName.trim();
-    if (trimmed && trimmed !== roster.name) {
-      updateRosterName(trimmed);
-    } else {
-      setEditName(roster.name);
-    }
-    setIsEditingName(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleFinishEditing();
-    } else if (e.key === 'Escape') {
-      setEditName(roster.name);
-      setIsEditingName(false);
-    }
-  };
-
-
-
 
 
   const hasPrimaryCatalogItems = (catId, force) => {
@@ -119,26 +87,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           </button>
           
           <div className="builder-top-bar-title-section">
-            {isEditingName ? (
-              <input
-                type="text"
-                className="builder-top-bar-title-input"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                onBlur={handleFinishEditing}
-                onKeyDown={handleKeyDown}
-                autoFocus
-              />
-            ) : (
-              <div 
-                className="builder-top-bar-title-container" 
-                onClick={() => setIsEditingName(true)}
-                title="Titel bearbeiten"
-              >
-                <h2 className="builder-top-bar-title">{roster.name}</h2>
-                <Edit3 className="edit-icon" size={14} />
-              </div>
-            )}
+            <h2 className="builder-top-bar-title">{roster.name}</h2>
             <span className="builder-top-bar-subtitle">
               <span className="hide-on-mobile">{system.name} {activeCatalogue ? '· ' : ''}</span>
               {(() => {

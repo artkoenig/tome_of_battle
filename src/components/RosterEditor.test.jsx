@@ -310,53 +310,13 @@ describe('RosterEditor Component', () => {
     });
   });
 
-  describe('Roster Title Editing', () => {
-    it('shows input field when clicking on title and finishes editing on blur', () => {
+  describe('Roster Title', () => {
+    it('renders the title as read-only (editing moved to the dashboard)', () => {
       render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
-      
-      // Click title container to start editing
-      const titleContainer = screen.getByTitle('Titel bearbeiten');
-      expect(titleContainer).toBeDefined();
-      fireEvent.click(titleContainer);
 
-      // Verify input exists with correct initial value
-      const nameInput = screen.getByRole('textbox');
-      expect(nameInput.value).toBe('Bretonnian Crusaders');
-
-      // Change input value and blur
-      fireEvent.change(nameInput, { target: { value: 'New Name' } });
-      fireEvent.blur(nameInput);
-
-      expect(mockUpdateRosterName).toHaveBeenCalledWith('New Name');
-    });
-
-    it('finishes editing on Enter key', () => {
-      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
-      
-      const titleContainer = screen.getByTitle('Titel bearbeiten');
-      fireEvent.click(titleContainer);
-
-      const nameInput = screen.getByRole('textbox');
-      fireEvent.change(nameInput, { target: { value: 'Another Name' } });
-      fireEvent.keyDown(nameInput, { key: 'Enter', code: 'Enter' });
-
-      expect(mockUpdateRosterName).toHaveBeenCalledWith('Another Name');
-    });
-
-    it('cancels editing and reverts on Escape key', () => {
-      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
-      
-      const titleContainer = screen.getByTitle('Titel bearbeiten');
-      fireEvent.click(titleContainer);
-
-      const nameInput = screen.getByRole('textbox');
-      fireEvent.change(nameInput, { target: { value: 'Ignored Name' } });
-      fireEvent.keyDown(nameInput, { key: 'Escape', code: 'Escape' });
-
-      // Verify edit input disappears and title container is displayed again
-      expect(screen.queryByRole('textbox')).toBeNull();
+      // Title is shown but no longer editable in the editor
       expect(screen.getByText('Bretonnian Crusaders')).toBeDefined();
-      expect(mockUpdateRosterName).not.toHaveBeenCalled();
+      expect(screen.queryByTitle('Titel bearbeiten')).toBeNull();
     });
   });
 });
