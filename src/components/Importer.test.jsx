@@ -58,6 +58,8 @@ describe('Importer Component', () => {
     vi.clearAllMocks();
     mockDebugIds = false;
     getAllSystems.mockResolvedValue([]);
+    deleteSystem.mockResolvedValue({});
+    saveSystem.mockResolvedValue({});
   });
 
   it('1. Render Empty State', async () => {
@@ -165,6 +167,7 @@ describe('Importer Component', () => {
     await waitFor(() => {
       expect(extractZipFiles).toHaveBeenCalledWith(file);
       expect(processImportedData).toHaveBeenCalledWith([{ name: 'rules.gst' }], [{ name: 'faction.cat' }]);
+      expect(deleteSystem).toHaveBeenCalledWith('sys-new');
       expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({ name: 'New Imported System' }));
       expect(onSystemImportedMock).toHaveBeenCalled();
     });
@@ -518,6 +521,7 @@ describe('Importer Component', () => {
           ]
         );
 
+        expect(deleteSystem).toHaveBeenCalledWith('sys-bundle-1');
         expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({
           id: 'sys-bundle-1',
           name: 'Warhammer Fantasy Bundle'

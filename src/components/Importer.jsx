@@ -123,6 +123,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         cat: catFiles
       };
 
+      await deleteSystem(systemData.id);
       await saveSystem(systemData);
 
       setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
@@ -179,6 +180,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         gst: gstFiles,
         cat: catFiles
       };
+      await deleteSystem(systemData.id);
       await saveSystem(systemData);
       setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
       loadSystems();
