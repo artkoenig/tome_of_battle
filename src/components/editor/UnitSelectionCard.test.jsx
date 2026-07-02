@@ -328,6 +328,138 @@ describe('UnitSelectionCard Component', () => {
     expect(screen.getByText('Rettet den Ritter vor Schaden')).toBeDefined();
   });
 
+  it('does not render a rule chip when a visible equipment chip already carries the same name', () => {
+    const mockSel = {
+      id: 'sel-lord',
+      name: 'Bretonnian Lord',
+      entryLinkId: 'el-1',
+      number: 1,
+      selections: [
+        { id: 'sub-virtue', name: 'Virtue of Audacity', entryLinkId: 'el-virtue', number: 1, selections: [] }
+      ]
+    };
+
+    // The item grants a special rule that shares its name (magic item / virtue).
+    mockResolveEntry.mockReturnValue({
+      id: 'resolved-virtue',
+      name: 'Virtue of Audacity',
+      rules: [{ description: 'Ritter darf eine Herausforderung nicht ablehnen.' }],
+      profiles: []
+    });
+
+    mockCollectUnitProfilesAndRules.mockReturnValue({
+      profiles: [],
+      rules: [
+        { id: 'r-virtue', name: 'Virtue of Audacity', description: 'Ritter darf eine Herausforderung nicht ablehnen.' }
+      ]
+    });
+
+    const { container } = render(<UnitSelectionCard {...defaultProps} selection={mockSel} />);
+
+    // Shown once, as the equipment chip...
+    const upgradeChips = Array.from(container.querySelectorAll('.upgrade-badge')).map(c => c.textContent);
+    expect(upgradeChips.some(t => t.includes('Virtue of Audacity'))).toBe(true);
+    // ...and the duplicate rule chip is suppressed.
+    const ruleChips = Array.from(container.querySelectorAll('.rule-badge')).map(c => c.textContent);
+    expect(ruleChips.some(t => t.includes('Virtue of Audacity'))).toBe(false);
+  });
+
+  it('still renders innate rule chips that do not match any equipment chip', () => {
+    const mockSel = {
+      id: 'sel-lord',
+      name: 'Bretonnian Lord',
+      entryLinkId: 'el-1',
+      number: 1,
+      selections: [
+        { id: 'sub-virtue', name: 'Virtue of Audacity', entryLinkId: 'el-virtue', number: 1, selections: [] }
+      ]
+    };
+
+    mockResolveEntry.mockReturnValue({
+      id: 'resolved-virtue',
+      name: 'Virtue of Audacity',
+      rules: [{ description: 'Herausforderung.' }],
+      profiles: []
+    });
+
+    mockCollectUnitProfilesAndRules.mockReturnValue({
+      profiles: [],
+      rules: [
+        { id: 'r-virtue', name: 'Virtue of Audacity', description: 'Herausforderung.' },
+        { id: 'r-blessed', name: 'Segen der Herrin', description: 'Rettungswurf.' }
+      ]
+    });
+
+    const { container } = render(<UnitSelectionCard {...defaultProps} selection={mockSel} />);
+
+    const ruleChips = Array.from(container.querySelectorAll('.rule-badge')).map(c => c.textContent);
+    expect(ruleChips.some(t => t.includes('Segen der Herrin'))).toBe(true);
+    expect(ruleChips.some(t => t.includes('Virtue of Audacity'))).toBe(false);
+  });
+
+  it('hides a wrapper upgrade chip that only groups child options and carries no own value', () => {
+    const mockSel = {
+      id: 'sel-wiz',
+      name: 'Orc Great Shaman',
+      entryLinkId: 'el-1',
+      number: 1,
+      selections: [
+        { id: 'sub-magic', name: 'Magic Items', entryLinkId: 'el-magic', number: 1, selections: [] }
+      ]
+    };
+
+    mockCollectUnitProfilesAndRules.mockReturnValue({ profiles: [], rules: [] });
+    mockFindEntryInSystem.mockImplementation((_sys, id) => ({ id }));
+    mockResolveEntry.mockImplementation((_sys, entry) => {
+      if (entry?.id === 'el-magic') {
+        // Container: has children but no cost / profile / rule of its own.
+        return {
+          id: 'magic', name: 'Magic Items',
+          costs: [{ name: 'pts', value: '0.0' }],
+          profiles: [], rules: [],
+          selectionEntries: [{ id: 'mw', name: 'Some Magic Weapon' }]
+        };
+      }
+      return { id: 'resolved', name: 'Orc Great Shaman', profiles: [], rules: [] };
+    });
+
+    const { container } = render(<UnitSelectionCard {...defaultProps} selection={mockSel} />);
+
+    const chips = Array.from(container.querySelectorAll('.upgrade-badge')).map(c => c.textContent);
+    expect(chips.some(t => t.includes('Magic Items'))).toBe(false);
+  });
+
+  it('keeps an upgrade chip that is priced only in a non-points cost (e.g. casting dice)', () => {
+    const mockSel = {
+      id: 'sel-wiz',
+      name: 'Orc Great Shaman',
+      entryLinkId: 'el-1',
+      number: 1,
+      selections: [
+        { id: 'sub-shaman', name: 'Level 3 Shaman', entryLinkId: 'el-lvl', number: 1, selections: [] }
+      ]
+    };
+
+    mockCollectUnitProfilesAndRules.mockReturnValue({ profiles: [], rules: [] });
+    mockFindEntryInSystem.mockImplementation((_sys, id) => ({ id }));
+    mockResolveEntry.mockImplementation((_sys, entry) => {
+      if (entry?.id === 'el-lvl') {
+        // Leaf with 0 pts but a non-zero casting/dispel dice cost -> informative.
+        return {
+          id: 'lvl', name: 'Level 3 Shaman',
+          costs: [{ name: 'pts', value: '0.0' }, { name: 'Casting Dice', value: '3.0' }],
+          profiles: [], rules: []
+        };
+      }
+      return { id: 'resolved', name: 'Orc Great Shaman', profiles: [], rules: [] };
+    });
+
+    const { container } = render(<UnitSelectionCard {...defaultProps} selection={mockSel} />);
+
+    const chips = Array.from(container.querySelectorAll('.upgrade-badge')).map(c => c.textContent);
+    expect(chips.some(t => t.includes('Level 3 Shaman'))).toBe(true);
+  });
+
   describe('Adversarial & Stress Tests', () => {
     it('handles window resize dynamically around 900px and fires mouse events', () => {
       // Start as desktop
@@ -440,6 +572,83 @@ describe('UnitSelectionCard Component', () => {
       const chips = container.querySelectorAll('.upgrade-badge');
       const chipTexts = Array.from(chips).map(c => c.textContent);
       expect(chipTexts.includes('Lance')).toBe(false);
+    });
+
+    it('renders any profile type generically as its own table (e.g. Magic Item)', () => {
+      mockCollectUnitProfilesAndRules.mockReturnValue({
+        profiles: [
+          {
+            id: 'p1',
+            profileTypeName: 'Model',
+            name: 'Lord',
+            characteristics: [
+              { name: 'M', value: '4' },
+              { name: 'WS', value: '6' }
+            ]
+          },
+          {
+            id: 'mi1',
+            profileTypeName: 'Magic Item',
+            name: 'Ruby Ring of Ruin',
+            characteristics: [
+              { name: 'Type', value: 'Arcane' },
+              { name: 'Effect', value: 'Bound Spell' }
+            ]
+          }
+        ],
+        rules: []
+      });
+
+      render(<UnitSelectionCard {...defaultProps} />);
+
+      // The profile type name becomes the table's leading column header.
+      expect(screen.getByText('Magic Item')).toBeDefined();
+      expect(screen.getByText('Ruby Ring of Ruin')).toBeDefined();
+      expect(screen.getByText('Arcane')).toBeDefined();
+      expect(screen.getByText('Bound Spell')).toBeDefined();
+    });
+
+    it('keeps the lore chip for an item whose profile is also shown in a table', () => {
+      const mockSel = {
+        id: 'sel-unit',
+        name: 'Bretonnian Lord',
+        entryLinkId: 'el-1',
+        number: 1,
+        selections: [
+          { id: 'sub-sword', name: 'Sword of the Lady', entryLinkId: 'el-sword', number: 1, selections: [] }
+        ]
+      };
+
+      mockCollectUnitProfilesAndRules.mockReturnValue({
+        profiles: [
+          {
+            id: 'w1',
+            profileTypeName: 'Weapon',
+            name: 'Sword of the Lady',
+            characteristics: [
+              { name: 'Range', value: 'Combat' }
+            ],
+            _sourceSelection: mockSel.selections[0]
+          }
+        ],
+        rules: []
+      });
+
+      // Resolved upgrade carries a rule description (lore).
+      mockResolveEntry.mockReturnValue({
+        id: 'resolved-sword',
+        name: 'Sword of the Lady',
+        rules: [{ description: 'Grants magical attacks' }],
+        profiles: []
+      });
+
+      const { container } = render(<UnitSelectionCard {...defaultProps} selection={mockSel} />);
+
+      // Value shows in the weapon table...
+      expect(screen.getByText('Combat')).toBeDefined();
+      // ...and the chip is retained because the item has lore.
+      const chipTexts = Array.from(container.querySelectorAll('.upgrade-badge')).map(c => c.textContent);
+      expect(chipTexts.some(t => t.includes('Sword of the Lady'))).toBe(true);
     });
 
     it('renders armour profiles correctly inside the mini profile table', () => {

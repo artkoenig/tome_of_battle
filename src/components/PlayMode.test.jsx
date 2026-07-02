@@ -66,6 +66,24 @@ vi.mock('../solver/rulesEvaluator', () => ({
   extractUpgradeProfiles: vi.fn().mockImplementation((profiles) => profiles),
   extractWeaponProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Weapon' || p.profileTypeName === 'Waffe')),
   extractArmourProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Armour' || p.profileTypeName === 'Rüstung')),
+  groupProfilesByType: vi.fn().mockImplementation((profiles) => {
+    if (!Array.isArray(profiles)) return [];
+    const modelProfiles = profiles.filter(p => p.profileTypeName === 'Model');
+    const modelSet = new Set(modelProfiles);
+    const groups = [];
+    if (modelProfiles.length > 0) {
+      groups.push({ typeName: modelProfiles[0].profileTypeName || '', profiles: modelProfiles, isModel: true });
+    }
+    const map = new Map();
+    profiles.forEach(p => {
+      if (modelSet.has(p)) return;
+      const key = p.profileTypeName || '';
+      let g = map.get(key);
+      if (!g) { g = { typeName: key, profiles: [], isModel: false }; map.set(key, g); groups.push(g); }
+      g.profiles.push(p);
+    });
+    return groups;
+  }),
   hasBlessing: vi.fn().mockReturnValue(false)
 }));
 
@@ -466,5 +484,89 @@ describe('PlayMode Component', () => {
     expect(screen.getByText('Armour')).toBeDefined();
     // Since Shield is filtered, the upgrades list is empty, and the section heading shouldn't render
     expect(screen.queryByText('Ausrüstung & Upgrades')).toBeNull();
+  });
+
+  it('12. Suppresses the rule entry when an equipment entry already carries the same name', () => {
+    mockCollectUnitProfilesAndRules.mockReturnValue({
+      profiles: [],
+      rules: [{ id: 'r-virtue', name: 'Virtue of Audacity', description: 'Herausforderung.' }]
+    });
+    mockFindEntryInSystem.mockImplementation((_s, id) => ({ id }));
+    mockResolveEntry.mockImplementation((_s, entry) => {
+      if (entry?.id === 'el-virtue') {
+        return {
+          id: 'virtue', name: 'Virtue of Audacity',
+          costs: [{ name: 'pts', value: '5.0' }],
+          rules: [{ description: 'Herausforderung.' }], profiles: []
+        };
+      }
+      return { id: 'resolved-unit', name: 'Bretonnian Lord', profiles: [] };
+    });
+
+    const mockSelection = {
+      id: 'sel-lord', name: 'Bretonnian Lord', category: 'cat-core', entryLinkId: 'el-unit',
+      selections: [{ id: 'sub-virtue', name: 'Virtue of Audacity', entryLinkId: 'el-virtue', number: 1 }]
+    };
+
+    render(
+      <PlayUnitDetails
+        selection={mockSelection}
+        system={mockSystem}
+        roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
+        showDebugIds={false}
+        gameState={{ wounds: {} }}
+        handleAdjustWound={vi.fn()}
+        handleMouseEnter={vi.fn()}
+        handleMouseLeave={vi.fn()}
+        setSaveSummaryData={vi.fn()}
+        setSaveSummaryOpen={vi.fn()}
+      />
+    );
+
+    // The item is listed under equipment...
+    expect(screen.getByText('Ausrüstung & Upgrades')).toBeDefined();
+    // ...and the duplicate rule section is suppressed (its only rule matched the item).
+    expect(screen.queryByText(/Sonderregeln/)).toBeNull();
+  });
+
+  it('13. Hides a wrapper equipment entry that only groups child options', () => {
+    mockCollectUnitProfilesAndRules.mockReturnValue({ profiles: [], rules: [] });
+    mockFindEntryInSystem.mockImplementation((_s, id) => ({ id }));
+    mockResolveEntry.mockImplementation((_s, entry) => {
+      if (entry?.id === 'el-magic') {
+        // Container: has children but no cost / profile / rule of its own.
+        return {
+          id: 'magic', name: 'Magic Items',
+          costs: [{ name: 'pts', value: '0.0' }],
+          rules: [], profiles: [],
+          selectionEntries: [{ id: 'mw', name: 'Some Magic Weapon' }]
+        };
+      }
+      return { id: 'resolved-unit', name: 'Orc Great Shaman', profiles: [] };
+    });
+
+    const mockSelection = {
+      id: 'sel-wiz', name: 'Orc Great Shaman', category: 'cat-core', entryLinkId: 'el-unit',
+      selections: [{ id: 'sub-magic', name: 'Magic Items', entryLinkId: 'el-magic', number: 1 }]
+    };
+
+    render(
+      <PlayUnitDetails
+        selection={mockSelection}
+        system={mockSystem}
+        roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
+        showDebugIds={false}
+        gameState={{ wounds: {} }}
+        handleAdjustWound={vi.fn()}
+        handleMouseEnter={vi.fn()}
+        handleMouseLeave={vi.fn()}
+        setSaveSummaryData={vi.fn()}
+        setSaveSummaryOpen={vi.fn()}
+      />
+    );
+
+    // The empty wrapper is dropped, so the equipment section does not render.
+    expect(screen.queryByText('Ausrüstung & Upgrades')).toBeNull();
+    expect(screen.queryByText('Magic Items')).toBeNull();
   });
 });

@@ -8,11 +8,11 @@ const PORT = 5175;
 const tempZipPath = path.resolve('./temp_whfb6.zip');
 let serverProcess = null;
 
-// 1. Pack `./catalogs/whfb6/` files into a temporary ZIP file using JSZip.
+// 1. Pack `./public/catalogs/whfb6/` files into a temporary ZIP file using JSZip.
 const packCatalogs = async () => {
-  console.log('Packing ./catalogs/whfb6/ into a temporary ZIP file...');
+  console.log('Packing ./public/catalogs/whfb6/ into a temporary ZIP file...');
   const zip = new JSZip();
-  const dirPath = path.resolve('./catalogs/whfb6');
+  const dirPath = path.resolve('./public/catalogs/whfb6');
   
   if (!fs.existsSync(dirPath)) {
     throw new Error(`Catalog directory not found at: ${dirPath}`);

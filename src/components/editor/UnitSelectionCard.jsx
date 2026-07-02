@@ -10,7 +10,7 @@ import {
   collectUnitProfilesAndRules
 } from '../../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
-import { extractModelProfiles, extractWeaponProfiles, extractArmourProfiles } from '../../solver/rulesEvaluator';
+import { groupProfilesByType } from '../../solver/rulesEvaluator';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -87,320 +87,132 @@ export default function UnitSelectionCard({
     setHoveredInfo(null);
   };
 
-  const renderMiniProfile = (sel) => {
-    const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
-    const modelProfiles = extractModelProfiles(profiles);
-    const weaponProfiles = extractWeaponProfiles(profiles);
-    const armourProfiles = extractArmourProfiles(profiles);
-    if ((!modelProfiles || modelProfiles.length === 0) && (!weaponProfiles || weaponProfiles.length === 0) && (!armourProfiles || armourProfiles.length === 0)) return null;
+  const openStatblock = (sel) => {
+    const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
+    const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
+    if (resolved) {
+      setSelectedCatalogEntry(resolved);
+    }
+  };
+
+  const renderProfileCell = (c, headerKey, sel) => {
+    if (!c) return <td key={headerKey} className="font-body">-</td>;
+
+    const modState = getModificationState(c);
+    const cellStyle = {};
+    let className = "font-body";
+    if (modState === 'positive') {
+      className += " text-success";
+      cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
+      cellStyle.fontWeight = 'bold';
+      cellStyle.cursor = 'help';
+    } else if (modState === 'negative') {
+      className += " text-danger";
+      cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
+      cellStyle.fontWeight = 'bold';
+      cellStyle.cursor = 'help';
+    } else if (modState === 'modified') {
+      className += " text-gold";
+      cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
+      cellStyle.fontWeight = 'bold';
+      cellStyle.cursor = 'help';
+    }
 
     return (
-      <div 
+      <td
+        key={headerKey}
+        className={className}
+        style={cellStyle}
+        onMouseEnter={(e) => {
+          if (modState && c.modificationBreakdown?.length > 0) {
+            handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
+          }
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
+            setActiveInfo({
+              title: `Modifikationen: ${c.name}`,
+              text: (
+                <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
+                  {c.modificationBreakdown.map((b, bIdx) => (
+                    <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
+                  ))}
+                </ul>
+              )
+            });
+          } else {
+            openStatblock(sel);
+          }
+        }}
+      >
+        {c.value}
+      </td>
+    );
+  };
+
+  const renderProfileTable = (group, sel, key) => {
+    const { typeName, profiles, isModel } = group;
+    if (!profiles || profiles.length === 0) return null;
+
+    const headers = [];
+    profiles.forEach(prof => {
+      prof.characteristics?.forEach(c => {
+        if (c.name && !headers.includes(c.name)) {
+          headers.push(c.name);
+        }
+      });
+    });
+
+    // The model stat block keeps its historical look: no leading name column
+    // unless several models share the table. Every other profile type gets a
+    // leading column labelled with its own profileTypeName.
+    const showNameCol = isModel ? profiles.length > 1 : true;
+    const nameHeader = isModel ? 'Modell' : (typeName || 'Profil');
+
+    return (
+      <table key={key} className="mini-profile-table">
+        <thead>
+          <tr>
+            {showNameCol && <th>{nameHeader}</th>}
+            {headers.map(h => (
+              <th key={h}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {profiles.map((prof, pIdx) => (
+            <tr key={prof.id || pIdx}>
+              {showNameCol && (
+                <td className="font-body">
+                  {prof.name}
+                </td>
+              )}
+              {headers.map(h => renderProfileCell(prof.characteristics?.find(char => char.name === h), h, sel))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
+  const renderMiniProfile = (sel) => {
+    const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
+    const groups = groupProfilesByType(profiles);
+    if (groups.length === 0) return null;
+
+    return (
+      <div
         className="mini-profile clickable"
         onClick={(e) => {
           e.stopPropagation();
-          const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
-          const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
-          if (resolved) {
-            setSelectedCatalogEntry(resolved);
-          }
+          openStatblock(sel);
         }}
         title="Statblock anzeigen"
       >
-        {(() => {
-          if (modelProfiles.length === 0) return null;
-          const headers = [];
-          modelProfiles.forEach(prof => {
-            prof.characteristics?.forEach(c => {
-              if (c.name && !headers.includes(c.name)) {
-                headers.push(c.name);
-              }
-            });
-          });
-          const showModelNameCol = modelProfiles.length > 1;
-
-          return (
-            <table className="mini-profile-table">
-              <thead>
-                <tr>
-                  {showModelNameCol && <th>Modell</th>}
-                  {headers.map(h => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {modelProfiles.map((prof, pIdx) => (
-                  <tr key={prof.id || pIdx}>
-                    {showModelNameCol && (
-                      <td className="font-body">
-                        {prof.name}
-                      </td>
-                    )}
-                    {headers.map(h => {
-                      const c = prof.characteristics?.find(char => char.name === h);
-                      if (!c) return <td key={h} className="font-body">-</td>;
-
-                      const modState = getModificationState(c);
-                      const cellStyle = {};
-                      let className = "font-body";
-                      if (modState === 'positive') {
-                        className += " text-success";
-                        cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
-                        cellStyle.fontWeight = 'bold';
-                        cellStyle.cursor = 'help';
-                      } else if (modState === 'negative') {
-                        className += " text-danger";
-                        cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
-                        cellStyle.fontWeight = 'bold';
-                        cellStyle.cursor = 'help';
-                      } else if (modState === 'modified') {
-                        className += " text-gold";
-                        cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
-                        cellStyle.fontWeight = 'bold';
-                        cellStyle.cursor = 'help';
-                      }
-
-                      return (
-                        <td
-                          key={h}
-                          className={className}
-                          style={cellStyle}
-                          onMouseEnter={(e) => {
-                            if (modState && c.modificationBreakdown?.length > 0) {
-                              handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
-                            }
-                          }}
-                          onMouseMove={handleMouseMove}
-                          onMouseLeave={handleMouseLeave}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
-                              setActiveInfo({
-                                title: `Modifikationen: ${c.name}`,
-                                text: (
-                                  <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
-                                    {c.modificationBreakdown.map((b, bIdx) => (
-                                      <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
-                                    ))}
-                                  </ul>
-                                )
-                              });
-                            } else {
-                              const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
-                              const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
-                              if (resolved) {
-                                setSelectedCatalogEntry(resolved);
-                              }
-                            }
-                          }}
-                        >
-                          {c.value}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          );
-        })()}
-
-        {(() => {
-          if (weaponProfiles.length === 0) return null;
-          const headers = [];
-          weaponProfiles.forEach(prof => {
-            prof.characteristics?.forEach(c => {
-              if (c.name && !headers.includes(c.name)) {
-                headers.push(c.name);
-              }
-            });
-          });
-
-          return (
-            <div>
-              <table className="mini-profile-table">
-                <thead>
-                  <tr>
-                    <th>Weapon</th>
-                    {headers.map(h => (
-                      <th key={h}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {weaponProfiles.map((prof, pIdx) => (
-                    <tr key={prof.id || pIdx}>
-                      <td className="font-body">
-                        {prof.name}
-                      </td>
-                      {headers.map(h => {
-                        const c = prof.characteristics?.find(char => char.name === h);
-                        if (!c) return <td key={h} className="font-body">-</td>;
-
-                        const modState = getModificationState(c);
-                        const cellStyle = {};
-                        let className = "font-body";
-                        if (modState === 'positive') {
-                          className += " text-success";
-                          cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
-                          cellStyle.fontWeight = 'bold';
-                          cellStyle.cursor = 'help';
-                        } else if (modState === 'negative') {
-                          className += " text-danger";
-                          cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
-                          cellStyle.fontWeight = 'bold';
-                          cellStyle.cursor = 'help';
-                        } else if (modState === 'modified') {
-                          className += " text-gold";
-                          cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
-                          cellStyle.fontWeight = 'bold';
-                          cellStyle.cursor = 'help';
-                        }
-
-                        return (
-                          <td
-                            key={h}
-                            className={className}
-                            style={cellStyle}
-                            onMouseEnter={(e) => {
-                              if (modState && c.modificationBreakdown?.length > 0) {
-                                handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
-                              }
-                            }}
-                            onMouseMove={handleMouseMove}
-                            onMouseLeave={handleMouseLeave}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
-                                setActiveInfo({
-                                  title: `Modifikationen: ${c.name}`,
-                                  text: (
-                                    <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
-                                      {c.modificationBreakdown.map((b, bIdx) => (
-                                        <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
-                                      ))}
-                                    </ul>
-                                  )
-                                });
-                              } else {
-                                const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
-                                const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
-                                if (resolved) {
-                                  setSelectedCatalogEntry(resolved);
-                                }
-                              }
-                            }}
-                          >
-                            {c.value}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        })()}
-
-        {(() => {
-          if (armourProfiles.length === 0) return null;
-          const headers = [];
-          armourProfiles.forEach(prof => {
-            prof.characteristics?.forEach(c => {
-              if (c.name && !headers.includes(c.name)) {
-                headers.push(c.name);
-              }
-            });
-          });
-
-          return (
-            <div style={{ marginTop: '10px' }}>
-              <table className="mini-profile-table">
-                <thead>
-                  <tr>
-                    <th>Armour</th>
-                    {headers.map(h => (
-                      <th key={h}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {armourProfiles.map((prof, pIdx) => (
-                    <tr key={prof.id || pIdx}>
-                      <td className="font-body">
-                        {prof.name}
-                      </td>
-                      {headers.map(h => {
-                        const c = prof.characteristics?.find(char => char.name === h);
-                        if (!c) return <td key={h} className="font-body">-</td>;
-
-                        const modState = getModificationState(c);
-                        const cellStyle = {};
-                        let className = "font-body";
-                        if (modState === 'positive') {
-                          className += " text-success";
-                          cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
-                          cellStyle.fontWeight = 'bold';
-                          cellStyle.cursor = 'help';
-                        } else if (modState === 'negative') {
-                          className += " text-danger";
-                          cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
-                          cellStyle.fontWeight = 'bold';
-                          cellStyle.cursor = 'help';
-                        } else if (modState === 'modified') {
-                          className += " text-gold";
-                          cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
-                          cellStyle.fontWeight = 'bold';
-                          cellStyle.cursor = 'help';
-                        }
-
-                        return (
-                          <td
-                            key={h}
-                            className={className}
-                            style={cellStyle}
-                            onMouseEnter={(e) => {
-                              if (modState && c.modificationBreakdown?.length > 0) {
-                                handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
-                              }
-                            }}
-                            onMouseMove={handleMouseMove}
-                            onMouseLeave={handleMouseLeave}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
-                                setActiveInfo({
-                                  title: `Modifikationen: ${c.name}`,
-                                  text: (
-                                    <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
-                                      {c.modificationBreakdown.map((b, bIdx) => (
-                                        <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
-                                      ))}
-                                    </ul>
-                                  )
-                                });
-                              } else {
-                                const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
-                                const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
-                                if (resolved) {
-                                  setSelectedCatalogEntry(resolved);
-                                }
-                              }
-                            }}
-                          >
-                            {c.value}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        })()}
+        {groups.map((group, gIdx) => renderProfileTable(group, sel, group.typeName || gIdx))}
       </div>
     );
   };
@@ -616,39 +428,85 @@ export default function UnitSelectionCard({
     );
   };
 
-  const renderUnitUpgrades = (sel) => {
+  // Returns the upgrades that should actually be shown as chips: the selected
+  // upgrades minus anything already rendered as its own profile table (kept only
+  // when the item still carries lore). Shared by the upgrade and rule renderers
+  // so the rule list can drop chips that a visible upgrade already represents.
+  const getVisibleUpgrades = (sel) => {
     const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
-    const weaponProfiles = extractWeaponProfiles(profiles);
-    const weaponSelectionIds = new Set(
-      weaponProfiles.map(wp => wp._sourceSelection?.id).filter(Boolean)
-    );
-    const armourProfiles = extractArmourProfiles(profiles);
-    const armourSelectionIds = new Set(
-      armourProfiles.map(ap => ap._sourceSelection?.id).filter(Boolean)
+    const tableProfiles = groupProfilesByType(profiles).filter(g => !g.isModel).flatMap(g => g.profiles);
+    const tableSelectionIds = new Set(
+      tableProfiles.map(p => p._sourceSelection?.id).filter(Boolean)
     );
 
     const isNameMatch = (selN, profN) => {
       if (!selN || !profN) return false;
       const s = selN.toLowerCase().trim();
       const p = profN.toLowerCase().trim();
-      return s === p || 
+      return s === p ||
              (s.endsWith('s') && s.slice(0, -1) === p) ||
              (p.endsWith('s') && p.slice(0, -1) === s) ||
              s.includes(p) ||
              p.includes(s);
     };
 
-    const selectedUpgrades = getSelectedUpgrades(sel).filter(upgrade => {
-      if (weaponSelectionIds.has(upgrade.id) || armourSelectionIds.has(upgrade.id)) return false;
-      const name = upgrade.name || upgrade.resolved?.name;
-      if (name && weaponProfiles.some(wp => isNameMatch(name, wp.name))) {
-        return false;
+    // Keep a chip when the item carries lore (a rule description) even if its
+    // profile is shown in a table, so the descriptive text stays reachable.
+    const hasLore = (res) => {
+      if (!res) return false;
+      let rules = res.rules || [];
+      if (rules.length === 0 && res.name) {
+        const lowerName = res.name.toLowerCase().trim();
+        let foundRule = system.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
+        if (!foundRule) {
+          for (const cat of system.catalogues || []) {
+            foundRule = cat.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
+            if (foundRule) break;
+          }
+        }
+        if (foundRule) rules = [foundRule];
       }
-      if (name && armourProfiles.some(ap => isNameMatch(name, ap.name))) {
-        return false;
-      }
-      return true;
+      return rules.some(r => r.description && r.description.trim());
+    };
+
+    // An upgrade carries information of its own when it costs something, brings a
+    // profile, or has a rule description. Cost is checked across every cost type
+    // (points, casting dice, …), so e.g. a "Level 3 Shaman" priced only in dice
+    // still counts as informative.
+    const hasOwnValue = (res) => {
+      if (!res) return false;
+      const hasCost = (res.costs || []).some(c => Math.abs(parseFloat(c.value) || 0) > 0);
+      const hasProfile = (res.profiles || []).length > 0;
+      return hasCost || hasProfile || hasLore(res);
+    };
+
+    // A "wrapper" upgrade only groups child options (e.g. "Magic Items", "Show
+    // Spells"): it has selectable children but no cost/profile/rule of its own.
+    // Those children are already shown as their own chips, so the wrapper label
+    // itself is pure noise and gets dropped. Purely structural — no name match.
+    const isEmptyWrapper = (res) => {
+      if (!res || hasOwnValue(res)) return false;
+      const childCount = (res.selectionEntries?.length || 0) +
+                         (res.entryLinks?.length || 0) +
+                         (res.selectionEntryGroups?.length || 0);
+      return childCount > 0;
+    };
+
+    return getSelectedUpgrades(sel).filter(upgrade => {
+      const res = upgrade.resolved;
+      if (isEmptyWrapper(res)) return false;
+      const name = upgrade.name || res?.name;
+      const inTable = tableSelectionIds.has(upgrade.id) ||
+                      (name && tableProfiles.some(p => isNameMatch(name, p.name)));
+      if (!inTable) return true;
+      return hasLore(res);
     });
+  };
+
+  const renderUnitUpgrades = (sel) => {
+    // Non-model profiles are already rendered as their own tables, so those
+    // items are removed from the chip list to avoid duplicating the values.
+    const selectedUpgrades = getVisibleUpgrades(sel);
     if (selectedUpgrades.length === 0) return null;
 
     return (
@@ -685,9 +543,20 @@ export default function UnitSelectionCard({
     const { rules } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
     if (!rules || rules.length === 0) return null;
 
+    // Magic items, virtues and marks are shown as an equipment chip whose
+    // tooltip already carries the granted rule's text. When a collected rule
+    // shares that item's name it would render as a second, identical chip, so
+    // drop it here — the information stays reachable through the upgrade chip.
+    const normalizeChipName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const upgradeChipNames = new Set(
+      getVisibleUpgrades(sel).map(u => normalizeChipName(u.name || u.resolved?.name)).filter(Boolean)
+    );
+    const visibleRules = rules.filter(rule => !upgradeChipNames.has(normalizeChipName(rule.name)));
+    if (visibleRules.length === 0) return null;
+
     return (
       <div className="unit-header-rules">
-        {rules.map((rule, rIdx) => {
+        {visibleRules.map((rule, rIdx) => {
           const descText = rule.description || '';
           return (
             <span 

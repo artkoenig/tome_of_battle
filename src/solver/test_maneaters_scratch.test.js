@@ -5,7 +5,7 @@ import { describe, it } from 'vitest';
 
 describe('Maneaters Scratch Test', () => {
   it('prints constraints', () => {
-    const catalogPath = './catalogs/whfb6/Ogre Kingdoms.cat';
+    const catalogPath = './public/catalogs/whfb6/Ogre Kingdoms.cat';
     const xml = readFileSync(catalogPath, 'utf-8');
     const cat = parseCatalogueXML(xml);
 

@@ -324,11 +324,22 @@ export default function DebugEntryEditorModal({ entry, system, onClose, onSave }
                 ))}
 
                 {entry.ref.profiles?.map(child => (
-                  <div key={child.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Profile:</span>
-                    <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
-                      {child.name || 'Unbenannt'}: {child.id}
-                    </span>
+                  <div key={child.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="text-micro text-dim" style={{ minWidth: '80px' }}>Profile:</span>
+                      <span className="debug-id-badge clickable" style={{ cursor: 'pointer' }}>
+                        {child.name || 'Unbenannt'}: {child.id}
+                      </span>
+                    </div>
+                    {child.characteristics?.length > 0 && (
+                      <div style={{ marginLeft: '88px', display: 'flex', flexWrap: 'wrap', gap: '4px 12px' }}>
+                        {child.characteristics.map(ch => (
+                          <span key={ch.name} className="text-micro text-dim">
+                            <span style={{ fontWeight: 'bold' }}>{ch.name}:</span> {ch.value}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
 

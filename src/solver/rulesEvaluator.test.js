@@ -4,6 +4,7 @@ import {
   extractUpgradeProfiles,
   extractWeaponProfiles,
   extractArmourProfiles,
+  groupProfilesByType,
   hasBlessing,
   getArmourSave,
   getWardSave
@@ -47,6 +48,34 @@ const armourProfilesTest = extractArmourProfiles(test1Profiles);
 test('extractArmourProfiles', () => {
   expect(armourProfilesTest.length === 1 &&
                     armourProfilesTest[0].name === 'Shield').toBe(true);
+});
+
+// Test 2d: groupProfilesByType groups every profile type generically
+test('groupProfilesByType', () => {
+  const profiles = [
+    { id: 'm1', name: 'Warrior', profileTypeName: 'Unit' },
+    { id: 'w1', name: 'Sword', profileTypeName: 'Weapon' },
+    { id: 'a1', name: 'Shield', profileTypeName: 'Armour' },
+    { id: 'w2', name: 'Bow', profileTypeName: 'Weapon' },
+    { id: 'mi1', name: 'Ruby Ring', profileTypeName: 'Magic Item' },
+    { id: 'b1', name: 'War Banner', profileTypeName: 'Banner' }
+  ];
+  const groups = groupProfilesByType(profiles);
+
+  // Model group is always first and aggregates model/unit profiles.
+  expect(groups[0].isModel).toBe(true);
+  expect(groups[0].profiles.map(p => p.name)).toEqual(['Warrior']);
+
+  // Remaining groups are keyed by profileTypeName, in collection order.
+  const nonModel = groups.filter(g => !g.isModel);
+  expect(nonModel.map(g => g.typeName)).toEqual(['Weapon', 'Armour', 'Magic Item', 'Banner']);
+
+  // Same-type profiles are collapsed into one group.
+  const weapons = nonModel.find(g => g.typeName === 'Weapon');
+  expect(weapons.profiles.map(p => p.name)).toEqual(['Sword', 'Bow']);
+
+  // Non-array input is handled gracefully.
+  expect(groupProfilesByType(null)).toEqual([]);
 });
 
 // Test 3: hasBlessing
