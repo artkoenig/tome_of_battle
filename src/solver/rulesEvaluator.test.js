@@ -213,3 +213,12 @@ test('getArmourSave ignores rule descriptions containing mount/shield keywords',
 
   expect(save).toBe(7); // 7 means no armour save (it shouldn't match boar or shield)
 });
+
+// Test 8: getArmourSave ignores mount bonus for chariots
+test('getArmourSave ignores mount bonus for chariots', () => {
+  const save = getArmourSave([
+    { name: 'Armour Save +5Sv', characteristics: [{ name: 'Saving Throw Modifier', value: '5+' }] }
+  ], 'Goblin Wolf Chariot', 'Orcs and Goblins');
+
+  expect(save).toBe(5); // Should remain 5+ (no wolf mount bonus)
+});

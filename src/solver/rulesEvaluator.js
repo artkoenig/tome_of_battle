@@ -138,6 +138,7 @@ export function hasBlessing(profiles, selectionName, catalogueName) {
  * returns number (e.g. 4 for 4+ save, 7 for no save)
  */
 export function getArmourSave(profiles, selectionName, catalogueName, returnDetails = false) {
+  const isChariot = selectionName?.toLowerCase().includes('chariot') || selectionName?.toLowerCase().includes('streitwagen');
   let hasShield = false;
   let armourValue = 7; // 7 means no armour
   let isMounted = false;
@@ -215,7 +216,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
     }
 
     // Mounts
-    if (SAVE_MOUNTS_KEYWORDS.some(k => t.includes(k))) {
+    if (!isChariot && SAVE_MOUNTS_KEYWORDS.some(k => t.includes(k))) {
       if (!SAVE_MOUNTS_EXCLUDED_KEYWORDS.some(k => t.includes(k))) {
         if (!isMounted) {
           if (SAVE_MOUNTS_THICK_SKINNED_KEYWORDS.some(k => t.includes(k))) {
@@ -287,15 +288,17 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
 
       if (item.profileTypeName) {
         if (SAVE_CAVALRY_KEYWORDS.some(k => item.profileTypeName?.toLowerCase().includes(k))) {
-          if (!isMounted) breakdown.push('Kavallerie/Beritten (-1)');
-          isMounted = true;
+          if (!isMounted && !isChariot) {
+            breakdown.push('Kavallerie/Beritten (-1)');
+            isMounted = true;
+          }
         }
       }
     });
   }
 
   // If we have barding, the model must be mounted!
-  if (isBarded && !isMounted) {
+  if (isBarded && !isMounted && !isChariot) {
     breakdown.push('Beritten (-1) [impliziert durch Rossharnisch]');
     isMounted = true;
   }
