@@ -42,7 +42,8 @@ export default function PlayUnitDetails({
   handleMouseEnter,
   handleMouseLeave,
   setSaveSummaryData,
-  setSaveSummaryOpen
+  setSaveSummaryOpen,
+  isSubUnit = false
 }) {
 
 
@@ -81,6 +82,23 @@ export default function PlayUnitDetails({
 
     return w || 1;
   };
+
+  const independentSubUnits = (selection.selections || []).filter(subSel => {
+    const entryId = subSel.entryLinkId || subSel.selectionEntryId;
+    const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
+    const resolved = resolveEntry(system, entry, roster?.catalogueId);
+    
+    const hasEntryChildren = (entryNode) => {
+      if (!entryNode) return false;
+      return (entryNode.selectionEntries && entryNode.selectionEntries.length > 0) ||
+             (entryNode.entryLinks && entryNode.entryLinks.length > 0) ||
+             (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
+    };
+    
+    return resolved && (resolved.type === 'unit' || resolved.type === 'model') && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+  });
+
+  const hasSubUnits = independentSubUnits.length > 0;
 
   // Helper to get unit profiles, grouped generically by profile type name.
   const getUnitProfilesAndRules = (sel) => {
@@ -304,10 +322,13 @@ export default function PlayUnitDetails({
   const asInfo = getArmourSaveInfo(selection);
   const wsInfo = getWardSaveInfo(selection);
   
-  const isDead = currentWounds === 0;
+  const isDead = hasSubUnits ? false : (currentWounds === 0);
 
   return (
-    <div className={`play-unit-card ${isDead ? 'unit-destroyed' : ''}`}>
+    <div 
+      className={`play-unit-card ${isDead ? 'unit-destroyed' : ''}`}
+      style={isSubUnit ? { border: '1px solid rgba(226, 183, 66, 0.2)', backgroundColor: 'rgba(0,0,0,0.2)', boxShadow: 'none' } : {}}
+    >
       {isDead && (
         <div className="destroyed-overlay">
           <span className="destroyed-text">Vernichtet</span>
@@ -358,37 +379,41 @@ export default function PlayUnitDetails({
             </div>
           </div>
           
-          <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
-            {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
-            <button 
-              className="qty-btn" 
-              onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
-              disabled={isDead}
-            >
-              <Minus size={12} />
-            </button>
-            <span className="font-body" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
-              {currentWounds} / {totalMaxWounds}
-            </span>
-            <button 
-              className="qty-btn" 
-              onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
-              disabled={currentWounds === totalMaxWounds}
-            >
-              <Plus size={12} />
-            </button>
-          </div>
+          {!hasSubUnits && (
+            <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
+              {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
+              <button 
+                className="qty-btn" 
+                onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
+                disabled={isDead}
+              >
+                <Minus size={12} />
+              </button>
+              <span className="font-body" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
+                {currentWounds} / {totalMaxWounds}
+              </span>
+              <button 
+                className="qty-btn" 
+                onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
+                disabled={currentWounds === totalMaxWounds}
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="play-unit-body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div>
-            {modelGroup
-              ? renderProfileTable(modelGroup, 'model')
-              : <p className="text-dim text-label">Keine Profilwerte gefunden.</p>}
-            {itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
-          </div>
+          {!isSubUnit && (
+            <div>
+              {modelGroup
+                ? renderProfileTable(modelGroup, 'model')
+                : <p className="text-dim text-label">Keine Profilwerte gefunden.</p>}
+              {itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
             <UnitUpgradesChips
@@ -420,6 +445,26 @@ export default function PlayUnitDetails({
               showDebugIds={showDebugIds}
             />
           </div>
+          {hasSubUnits && (
+            <div className="sub-units-container" style={{ paddingLeft: '12px', borderLeft: '2px solid rgba(226, 183, 66, 0.2)', marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {independentSubUnits.map(subSel => (
+                <PlayUnitDetails 
+                  key={subSel.id}
+                  selection={subSel}
+                  system={system}
+                  roster={roster}
+                  showDebugIds={showDebugIds}
+                  gameState={gameState}
+                  handleAdjustWound={handleAdjustWound}
+                  handleMouseEnter={handleMouseEnter}
+                  handleMouseLeave={handleMouseLeave}
+                  setSaveSummaryData={setSaveSummaryData}
+                  setSaveSummaryOpen={setSaveSummaryOpen}
+                  isSubUnit={true}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

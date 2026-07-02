@@ -565,4 +565,76 @@ describe('PlayMode Component', () => {
     // The empty wrapper is dropped, so the equipment chip does not render.
     expect(screen.queryByText('Magic Items')).toBeNull();
   });
+
+  it('14. Renders independent sub-units recursively in Play Mode, hides wound controls on parent, and hides sub-unit profiles', () => {
+    mockCollectUnitProfilesAndRules.mockImplementation((_sys, sel) => {
+      if (sel.id === 'sub-unit-1') {
+        return {
+          profiles: [
+            {
+              id: 'prof-child',
+              profileTypeName: 'Model',
+              name: 'Goblin Wolf Chariot Sub Profile',
+              characteristics: [{ name: 'Wounds', value: '4' }]
+            }
+          ],
+          rules: []
+        };
+      }
+      return { profiles: [], rules: [] };
+    });
+    mockFindEntryInSystem.mockImplementation((_s, id) => ({ id }));
+    mockResolveEntry.mockImplementation((_s, entry) => {
+      if (entry?.id === 'el-unit') {
+        return { id: 'resolved-parent', name: 'Goblin Wolf Chariots', profiles: [] };
+      }
+      if (entry?.id === 'el-sub-unit') {
+        return { 
+          id: 'resolved-child', 
+          name: 'Goblin Wolf Chariot Sub', 
+          type: 'model', 
+          collective: false, 
+          selectionEntries: [{ id: 'crew-member' }] 
+        };
+      }
+      return { id: 'resolved-generic', name: 'Generic', profiles: [] };
+    });
+
+    const mockSelection = {
+      id: 'sel-parent', 
+      name: 'Goblin Wolf Chariots', 
+      category: 'cat-core', 
+      entryLinkId: 'el-unit',
+      selections: [{ id: 'sub-unit-1', name: 'Goblin Wolf Chariot Sub', entryLinkId: 'el-sub-unit', number: 1 }]
+    };
+
+    render(
+      <PlayUnitDetails
+        selection={mockSelection}
+        system={mockSystem}
+        roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
+        showDebugIds={false}
+        gameState={{ wounds: { 'sel-parent': 5, 'sub-unit-1': 3 } }}
+        handleAdjustWound={vi.fn()}
+        handleMouseEnter={vi.fn()}
+        handleMouseLeave={vi.fn()}
+        setSaveSummaryData={vi.fn()}
+        setSaveSummaryOpen={vi.fn()}
+      />
+    );
+
+    // The parent card should be rendered
+    expect(screen.getByText('Goblin Wolf Chariots')).toBeDefined();
+
+    // The sub-unit card should be rendered recursively
+    expect(screen.getByText('Goblin Wolf Chariot Sub')).toBeDefined();
+
+    // The parent card should NOT show wound controls (since it has sub-units)
+    // The child card should show its wounds: "3 / 1"
+    expect(screen.queryByText('5 / 1')).toBeNull();
+    expect(screen.getByText('3 / 1')).toBeDefined();
+
+    // Sub-unit profile should NOT be rendered
+    expect(screen.queryByText('Goblin Wolf Chariot Sub Profile')).toBeNull();
+  });
 });
