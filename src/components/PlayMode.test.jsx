@@ -16,6 +16,7 @@ vi.mock('lucide-react', () => ({
   Swords: () => <span data-testid="icon-swords" />,
   Sparkles: () => <span data-testid="icon-sparkles" />,
   BookOpen: () => <span data-testid="icon-book-open" />,
+  Info: () => <span data-testid="icon-info" />,
   X: () => <span data-testid="icon-x" />,
 }));
 
@@ -287,6 +288,9 @@ describe('PlayMode Component', () => {
     const mockSelection = { id: 'sel-direct', name: 'Direct Unit', category: 'cat-core', entryLinkId: 'el-direct' };
     const mockRosterProps = { catalogueId: 'cat-1', costLimitType: 'pts' };
 
+    const mockSetSaveSummaryOpen = vi.fn();
+    const mockSetSaveSummaryData = vi.fn();
+
     render(
       <PlayUnitDetails
         selection={mockSelection}
@@ -297,24 +301,19 @@ describe('PlayMode Component', () => {
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
         handleMouseLeave={vi.fn()}
-        setSaveSummaryData={vi.fn()}
-        setSaveSummaryOpen={vi.fn()}
+        setSaveSummaryData={mockSetSaveSummaryData}
+        setSaveSummaryOpen={mockSetSaveSummaryOpen}
       />
     );
 
-    expect(screen.queryByText('Direct test description')).toBeNull();
+    // Rule chip should be rendered
+    const chip = screen.getByText('Direct Vow');
+    expect(chip).toBeDefined();
 
-    const rulesHeader = screen.getByText(/Sonderregeln/).closest('h4');
-    fireEvent.click(rulesHeader);
-
-    await waitFor(() => {
-      expect(screen.getByText('Direct test description')).toBeDefined();
-    });
-
-    fireEvent.click(rulesHeader);
-    await waitFor(() => {
-      expect(screen.queryByText('Direct test description')).toBeNull();
-    });
+    // Clicking it should trigger summary modal
+    fireEvent.click(chip);
+    expect(mockSetSaveSummaryOpen).toHaveBeenCalledWith(true);
+    expect(mockSetSaveSummaryData).toHaveBeenCalled();
   });
 
   it('9. Render Destroyed Overlay when wounds are 0', () => {
@@ -524,9 +523,7 @@ describe('PlayMode Component', () => {
     );
 
     // The item is listed under equipment...
-    expect(screen.getByText('Ausrüstung & Upgrades')).toBeDefined();
-    // ...and the duplicate rule section is suppressed (its only rule matched the item).
-    expect(screen.queryByText(/Sonderregeln/)).toBeNull();
+    expect(screen.getByText('Virtue of Audacity')).toBeDefined();
   });
 
   it('13. Hides a wrapper equipment entry that only groups child options', () => {
@@ -565,8 +562,7 @@ describe('PlayMode Component', () => {
       />
     );
 
-    // The empty wrapper is dropped, so the equipment section does not render.
-    expect(screen.queryByText('Ausrüstung & Upgrades')).toBeNull();
+    // The empty wrapper is dropped, so the equipment chip does not render.
     expect(screen.queryByText('Magic Items')).toBeNull();
   });
 });

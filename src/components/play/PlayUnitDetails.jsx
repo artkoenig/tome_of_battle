@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Plus, Minus, Sparkles, BookOpen } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost } from '../../solver/validator';
 import { MODEL_COUNT_PROFILE_TYPES } from '../../solver/constants';
 import {
   getArmourSave as getArmourSaveLogic,
   getWardSave as getWardSaveLogic,
-  extractUpgradeProfiles,
   groupProfilesByType,
   hasBlessing
 } from '../../solver/rulesEvaluator';
+import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -44,9 +44,7 @@ export default function PlayUnitDetails({
   setSaveSummaryData,
   setSaveSummaryOpen
 }) {
-  const [expandedUpgrades, setExpandedUpgrades] = useState({});
-  const [expandedEquipBlocks, setExpandedEquipBlocks] = useState({});
-  const [expandedRuleBlocks, setExpandedRuleBlocks] = useState({});
+
 
   // Helper to extract maximum wounds of an entry
   const getMaxWounds = (sel) => {
@@ -180,164 +178,7 @@ export default function PlayUnitDetails({
     );
   };
 
-  // Helper to compile chosen upgrades / items
-  const getSelectedUpgrades = (sel) => {
-    if (!sel.selections) return [];
-    return sel.selections.map(subSel => {
-      const entryId = subSel.entryLinkId || subSel.selectionEntryId;
-      const entry = findEntryInSystem(system, entryId);
-      const resolved = resolveEntry(system, entry);
-      return {
-        id: subSel.id,
-        name: subSel.name,
-        number: subSel.number || 1,
-        resolved: resolved
-      };
-    }).filter(item => item.resolved);
-  };
 
-  const getUpgradeDescription = (res) => {
-    if (!res) return '';
-    const descriptions = [];
-    if (res.rules && res.rules.length > 0) {
-      res.rules.forEach(r => {
-        if (r.description) {
-          const ref = r.publicationRef ? ` ${r.publicationRef}` : '';
-          descriptions.push(r.description + ref);
-        }
-      });
-    }
-    if (res.profiles && res.profiles.length > 0) {
-      const upgradeProfiles = extractUpgradeProfiles(res.profiles);
-      upgradeProfiles.forEach(p => {
-        p.characteristics?.forEach(c => {
-          if (c.value) {
-            const ref = p.publicationRef ? ` ${p.publicationRef}` : '';
-            descriptions.push(`${c.name}: ${c.value}${ref}`);
-          }
-        });
-      });
-    }
-    if (descriptions.length === 0 && res.publicationRef) {
-      descriptions.push(res.publicationRef);
-    }
-    return descriptions.join(' | ');
-  };
-
-  const renderUpgradeDetails = (res) => {
-    if (!res) return null;
-    const elements = [];
-
-    const isNameSimilar = (nameA, nameB) => {
-      if (!nameA || !nameB) return false;
-      const cleanA = nameA.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const cleanB = nameB.toLowerCase().replace(/[^a-z0-9]/g, '');
-      return cleanA === cleanB || 
-             cleanA.includes(cleanB) || 
-             cleanB.includes(cleanA) ||
-             (cleanA.includes('waaagh') && cleanB.includes('waaagh')) ||
-             cleanA.slice(-10) === cleanB.slice(-10);
-    };
-
-    // 1. Beschreibung (Rules / Lore)
-    if (res.rules && res.rules.length > 0) {
-      res.rules.forEach((r, idx) => {
-        if (r.description) {
-          const label = isNameSimilar(r.name, res.name)
-            ? 'Beschreibung'
-            : `Beschreibung (${r.name})`;
-
-          elements.push(
-            <div key={`rule-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
-              {r.description}
-              {r.publicationRef && (
-                <span className="publication-ref">
-                  {r.publicationRef}
-                </span>
-              )}
-            </div>
-          );
-        }
-      });
-    }
-
-    // 2. Sonderregeln & Profilwerte (from Profiles)
-    if (res.profiles && res.profiles.length > 0) {
-      const upgradeProfiles = extractUpgradeProfiles(res.profiles);
-      const profileElements = [];
-      upgradeProfiles.forEach((p, idx) => {
-        // Find "Special Rules" or "Sonderregeln" characteristic
-        const specialRulesChar = p.characteristics?.find(c => {
-          const nameLower = (c.name || '').toLowerCase().trim();
-          return nameLower === 'special rules' || nameLower === 'special-rules' || nameLower === 'sonderregeln';
-        });
-
-        const otherChars = p.characteristics?.filter(c => {
-          const nameLower = (c.name || '').toLowerCase().trim();
-          return nameLower !== 'special rules' && nameLower !== 'special-rules' && nameLower !== 'sonderregeln';
-        }) || [];
-
-        // If there is special rules text, show it under "Sonderregeln:" label
-        if (specialRulesChar && specialRulesChar.value && specialRulesChar.value.trim()) {
-          profileElements.push(
-            <div key={`special-rules-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>Sonderregeln: </span>
-              {specialRulesChar.value.trim()}
-              {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
-                <span className="publication-ref">
-                  {p.publicationRef}
-                </span>
-              )}
-            </div>
-          );
-        }
-
-        // If there are other non-empty characteristics, show them under "Profil:" label
-        const nonBigEmptyChars = otherChars.filter(c => c.value && c.value.trim() && c.value.trim() !== '-');
-        if (nonBigEmptyChars.length > 0) {
-          const stats = nonBigEmptyChars.map(c => `${c.name}: ${c.value}`).join(', ');
-          const label = isNameSimilar(p.name, res.name)
-            ? 'Profil'
-            : `Profil (${p.name})`;
-
-          profileElements.push(
-            <div key={`profile-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
-              {stats}
-              {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
-                <span className="publication-ref">
-                  {p.publicationRef}
-                </span>
-              )}
-            </div>
-          );
-        }
-      });
-      elements.push(...profileElements);
-    }
-
-    // 3. Quelle
-    if (res.publicationRef) {
-      const hasRuleOrProfileRefs = (res.rules && res.rules.some(r => r.publicationRef)) || (res.profiles && res.profiles.some(p => p.publicationRef));
-      if (!hasRuleOrProfileRefs) {
-        elements.push(
-          <div key="source" style={{ marginTop: '6px' }}>
-            <span className="text-gold" style={{ fontWeight: 600 }}>Quelle: </span>
-            <span className="publication-ref">
-              {res.publicationRef}
-            </span>
-          </div>
-        );
-      }
-    }
-
-    return (
-      <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
-        {elements.length > 0 ? elements : <span className="text-dim">Keine Beschreibung vorhanden.</span>}
-      </div>
-    );
-  };
 
   const collectSavesData = (sel) => {
     const entryId = sel.entryLinkId || sel.selectionEntryId;
@@ -458,85 +299,7 @@ export default function PlayUnitDetails({
   const { groups, rules } = getUnitProfilesAndRules(selection);
   const modelGroup = groups.find(g => g.isModel);
   const itemGroups = groups.filter(g => !g.isModel);
-  // Every non-model profile is rendered as its own table, so those items are
-  // dropped from the chip list to avoid showing their values twice.
-  const tableProfiles = itemGroups.flatMap(g => g.profiles);
-  const tableSelectionIds = new Set(
-    tableProfiles.map(p => p._sourceSelection?.id).filter(Boolean)
-  );
 
-  const isNameMatch = (selN, profN) => {
-    if (!selN || !profN) return false;
-    const s = selN.toLowerCase().trim();
-    const p = profN.toLowerCase().trim();
-    return s === p ||
-           (s.endsWith('s') && s.slice(0, -1) === p) ||
-           (p.endsWith('s') && p.slice(0, -1) === s) ||
-           s.includes(p) ||
-           p.includes(s);
-  };
-
-  // Keep a chip when the item carries lore (a rule description), even if its
-  // profile is already shown in a table.
-  const hasLore = (res) => {
-    if (!res) return false;
-    let itemRules = res.rules || [];
-    if (itemRules.length === 0 && res.name) {
-      const lowerName = res.name.toLowerCase().trim();
-      let foundRule = system.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
-      if (!foundRule) {
-        for (const cat of system.catalogues || []) {
-          foundRule = cat.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
-          if (foundRule) break;
-        }
-      }
-      if (foundRule) itemRules = [foundRule];
-    }
-    return itemRules.some(r => r.description && r.description.trim());
-  };
-
-  // An upgrade carries information of its own when it costs something, brings a
-  // profile, or has a rule description. Cost is checked across every cost type
-  // (points, casting dice, …), so e.g. a "Level 3 Shaman" priced only in dice
-  // still counts as informative.
-  const hasOwnValue = (res) => {
-    if (!res) return false;
-    const hasCost = (res.costs || []).some(c => Math.abs(parseFloat(c.value) || 0) > 0);
-    const hasProfile = (res.profiles || []).length > 0;
-    return hasCost || hasProfile || hasLore(res);
-  };
-
-  // A "wrapper" upgrade only groups child options (e.g. "Magic Items", "Show
-  // Spells"): it has selectable children but no cost/profile/rule of its own.
-  // Its children are shown as their own entries, so the wrapper label itself is
-  // pure noise and gets dropped. Purely structural — no name matching.
-  const isEmptyWrapper = (res) => {
-    if (!res || hasOwnValue(res)) return false;
-    const childCount = (res.selectionEntries?.length || 0) +
-                       (res.entryLinks?.length || 0) +
-                       (res.selectionEntryGroups?.length || 0);
-    return childCount > 0;
-  };
-
-  const selectedUpgrades = getSelectedUpgrades(selection).filter(upgrade => {
-    const res = upgrade.resolved;
-    if (isEmptyWrapper(res)) return false;
-    const name = upgrade.name || res?.name;
-    const inTable = tableSelectionIds.has(upgrade.id) ||
-                    (name && tableProfiles.some(p => isNameMatch(name, p.name)));
-    if (!inTable) return true;
-    return hasLore(res);
-  });
-
-  // Magic items, virtues and marks are already listed under "Ausrüstung &
-  // Upgrades" together with the granted rule's text. When a collected rule
-  // shares that item's name it would render a second, identical entry under
-  // "Sonderregeln", so drop it — the information stays reachable via the upgrade.
-  const normalizeChipName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const upgradeChipNames = new Set(
-    selectedUpgrades.map(u => normalizeChipName(u.name || u.resolved?.name)).filter(Boolean)
-  );
-  const visibleRules = rules.filter(rule => !upgradeChipNames.has(normalizeChipName(rule.name)));
 
   const asInfo = getArmourSaveInfo(selection);
   const wsInfo = getWardSaveInfo(selection);
@@ -627,136 +390,35 @@ export default function PlayUnitDetails({
             {itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {visibleRules.length > 0 && (() => {
-              const isRulesExpanded = expandedRuleBlocks[selection.id];
-              return (
-              <div className="play-unit-wound-tracker">
-                <h4 
-                  className="text-body"
-                  style={{ 
-                    marginBottom: isRulesExpanded ? '8px' : '0px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    cursor: 'pointer',
-                    userSelect: 'none'
-                  }}
-                  onClick={() => setExpandedRuleBlocks(prev => ({ ...prev, [selection.id]: !prev[selection.id] }))}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Sparkles size={14} /> Sonderregeln &amp; Fähigkeiten
-                  </span>
-                  <span className="hover-gold text-micro" style={{ color: 'var(--text-gold)', fontWeight: 600 }}>
-                    {isRulesExpanded ? '▲' : '▼'}
-                  </span>
-                </h4>
-                {isRulesExpanded && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {visibleRules.map((rule, rIdx) => (
-                      <div key={rIdx} style={{ marginTop: '8px' }}>
-                        <strong className="text-gold">
-                          {rule.name}
-                          {showDebugIds && <span className="debug-id-badge clickable">{rule.id}</span>}
-                          :
-                        </strong>{' '}
-                        <span className="text-body" style={{ color: 'var(--text-parchment)', fontStyle: 'italic' }}>
-                          {rule.description}
-                          {rule.publicationRef && (
-                            <span className="publication-ref">
-                              {rule.publicationRef}
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              );
-            })()}
-
-            {selectedUpgrades.length > 0 && (() => {
-              const isEquipExpanded = expandedEquipBlocks[selection.id];
-              return (
-                <div className="play-unit-wound-tracker">
-                  <h4 
-                    className="text-body"
-                    style={{ 
-                      marginBottom: isEquipExpanded ? '8px' : '0px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'space-between',
-                      cursor: 'pointer',
-                      userSelect: 'none'
-                    }}
-                    onClick={() => setExpandedEquipBlocks(prev => ({ ...prev, [selection.id]: !prev[selection.id] }))}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <BookOpen size={14} /> Ausrüstung &amp; Upgrades
-                    </span>
-                    <span className="hover-gold text-micro" style={{ color: 'var(--text-gold)', fontWeight: 600 }}>
-                      {isEquipExpanded ? '▲' : '▼'}
-                    </span>
-                  </h4>
-                  
-                  {isEquipExpanded && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      {selectedUpgrades.map(upgrade => {
-                        const desc = getUpgradeDescription(upgrade.resolved);
-                        const isExpanded = expandedUpgrades[upgrade.id];
-                        
-                        return (
-                          <div key={upgrade.id} className="text-label">
-                            <div 
-                              style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between',
-                                cursor: desc ? 'pointer' : 'default',
-                                padding: '3px 6px',
-                                backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                                border: '1px solid var(--border-dark)',
-                                borderRadius: '4px'
-                              }}
-                              onClick={() => desc && setExpandedUpgrades(prev => ({ ...prev, [upgrade.id]: !prev[upgrade.id] }))}
-                            >
-                              <span className="text-gold" style={{ fontWeight: 600 }}>
-                                {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
-                                {showDebugIds && (
-                                  <span className="debug-id-badge clickable" title="Definition-ID">def:{upgrade.resolved?.id}</span>
-                                )}
-                              </span>
-                              {desc && (
-                                <span className="hover-gold text-micro" style={{ color: 'var(--text-gold)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                                  {isExpanded ? '▲' : '▼'}
-                                </span>
-                              )}
-                            </div>
-                            
-                            {desc && isExpanded && (
-                               <div 
-                                 className="text-body"
-                                 style={{ 
-                                   color: 'var(--text-parchment)',
-                                   padding: '6px', 
-                                   backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                                   borderLeft: '2px solid var(--border-gold-dim)',
-                                   marginTop: '2px',
-                                   lineHeight: '1.3'
-                                 }}
-                               >
-                                 {renderUpgradeDetails(upgrade.resolved)}
-                               </div>
-                             )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+            <UnitUpgradesChips
+              selection={selection}
+              system={system}
+              activeCatalogueId={roster.catalogueId}
+              roster={roster}
+              handleMouseEnter={(title, text, e) => handleMouseEnter(e, title, text)}
+              handleMouseMove={null}
+              handleMouseLeave={handleMouseLeave}
+              onClickDetails={(title, text) => {
+                setSaveSummaryData({ title, breakdown: text });
+                setSaveSummaryOpen(true);
+              }}
+              showDebugIds={showDebugIds}
+            />
+            <UnitRulesChips
+              selection={selection}
+              system={system}
+              activeCatalogueId={roster.catalogueId}
+              roster={roster}
+              handleMouseEnter={(title, text, e) => handleMouseEnter(e, title, text)}
+              handleMouseMove={null}
+              handleMouseLeave={handleMouseLeave}
+              onClickDetails={(title, text) => {
+                setSaveSummaryData({ title, breakdown: text });
+                setSaveSummaryOpen(true);
+              }}
+              showDebugIds={showDebugIds}
+            />
           </div>
         </div>
       </div>

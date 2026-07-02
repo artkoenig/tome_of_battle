@@ -185,14 +185,18 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           title={saveSummaryData.title}
         >
           <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {saveSummaryData.breakdown.length > 0 ? (
-              <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-parchment)', fontSize: '0.9rem' }}>
-                {saveSummaryData.breakdown.map((item, i) => (
-                  <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
-                ))}
-              </ul>
+            {Array.isArray(saveSummaryData.breakdown) ? (
+              saveSummaryData.breakdown.length > 0 ? (
+                <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-parchment)', fontSize: '0.9rem' }}>
+                  {saveSummaryData.breakdown.map((item, i) => (
+                    <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-dim" style={{ fontSize: '0.9rem' }}>Keine Modifikatoren gefunden.</p>
+              )
             ) : (
-              <p className="text-dim" style={{ fontSize: '0.9rem' }}>Keine Modifikatoren gefunden.</p>
+              saveSummaryData.breakdown
             )}
           </div>
         </BottomSheet>
@@ -205,11 +209,15 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           >
             <div className="tooltip-title">{tooltipState.title}</div>
             <div className="tooltip-body">
-              <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                {tooltipState.content.map((item, i) => (
-                  <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
-                ))}
-              </ul>
+              {Array.isArray(tooltipState.content) ? (
+                <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                  {tooltipState.content.map((item, i) => (
+                    <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                tooltipState.content
+              )}
             </div>
           </div>
         )}
