@@ -12,6 +12,7 @@ vi.mock('lucide-react', () => ({
   Check: () => <span data-testid="icon-check" />,
   Copy: () => <span data-testid="icon-copy" />,
   ArrowLeft: () => <span data-testid="icon-arrow-left" />,
+  Edit3: () => <span data-testid="icon-edit3" />,
 }));
 
 // Mock useRoster custom hook
@@ -22,6 +23,7 @@ const mockUpdateSubSelection = vi.fn();
 const mockSave = vi.fn();
 const mockSetSelectedRosterSelection = vi.fn();
 const mockSetSelectedCatalogEntry = vi.fn();
+const mockUpdateRosterName = vi.fn();
 
 // Mock validator spy functions
 const mockResolveEntry = vi.fn().mockReturnValue({ id: 'entry-resolved', name: 'Resolved Entry' });
@@ -72,6 +74,7 @@ vi.mock('../hooks/useRoster', () => ({
     removeUnit: mockRemoveUnit,
     copyUnit: mockCopyUnit,
     updateSubSelection: mockUpdateSubSelection,
+    updateRosterName: mockUpdateRosterName,
     save: mockSave
   })
 }));
@@ -304,6 +307,56 @@ describe('RosterEditor Component', () => {
           expect(badge.style.backgroundColor).toBe('');
         }
       });
+    });
+  });
+
+  describe('Roster Title Editing', () => {
+    it('shows input field when clicking on title and finishes editing on blur', () => {
+      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      
+      // Click title container to start editing
+      const titleContainer = screen.getByTitle('Titel bearbeiten');
+      expect(titleContainer).toBeDefined();
+      fireEvent.click(titleContainer);
+
+      // Verify input exists with correct initial value
+      const nameInput = screen.getByRole('textbox');
+      expect(nameInput.value).toBe('Bretonnian Crusaders');
+
+      // Change input value and blur
+      fireEvent.change(nameInput, { target: { value: 'New Name' } });
+      fireEvent.blur(nameInput);
+
+      expect(mockUpdateRosterName).toHaveBeenCalledWith('New Name');
+    });
+
+    it('finishes editing on Enter key', () => {
+      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      
+      const titleContainer = screen.getByTitle('Titel bearbeiten');
+      fireEvent.click(titleContainer);
+
+      const nameInput = screen.getByRole('textbox');
+      fireEvent.change(nameInput, { target: { value: 'Another Name' } });
+      fireEvent.keyDown(nameInput, { key: 'Enter', code: 'Enter' });
+
+      expect(mockUpdateRosterName).toHaveBeenCalledWith('Another Name');
+    });
+
+    it('cancels editing and reverts on Escape key', () => {
+      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      
+      const titleContainer = screen.getByTitle('Titel bearbeiten');
+      fireEvent.click(titleContainer);
+
+      const nameInput = screen.getByRole('textbox');
+      fireEvent.change(nameInput, { target: { value: 'Ignored Name' } });
+      fireEvent.keyDown(nameInput, { key: 'Escape', code: 'Escape' });
+
+      // Verify edit input disappears and title container is displayed again
+      expect(screen.queryByRole('textbox')).toBeNull();
+      expect(screen.getByText('Bretonnian Crusaders')).toBeDefined();
+      expect(mockUpdateRosterName).not.toHaveBeenCalled();
     });
   });
 });

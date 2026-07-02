@@ -297,6 +297,13 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     });
   };
 
+  const updateRosterName = (newName) => {
+    setRoster(prev => ({
+      ...prev,
+      name: newName
+    }));
+  };
+
   const save = async () => {
     try {
       if (saveRosterCallback) await saveRosterCallback(roster);
@@ -319,6 +326,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     removeUnit,
     copyUnit,
     updateSubSelection,
+    updateRosterName,
     save
   };
 }

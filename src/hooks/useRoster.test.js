@@ -176,4 +176,16 @@ describe('useRoster Hook', () => {
     expect(unitSel.selections[0].name).toBe('On Foot');
     expect(unitSel.selections[0].selectionEntryId || unitSel.selections[0].entryLinkId).toBe('mount-foot');
   });
+
+  it('updateRosterName updates the roster name', () => {
+    const mockSave = vi.fn();
+    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+    act(() => {
+      result.current.updateRosterName('New Roster Name');
+    });
+
+    expect(result.current.roster.name).toBe('New Roster Name');
+    expect(mockSave).toHaveBeenCalled();
+  });
 });

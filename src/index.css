@@ -2222,6 +2222,47 @@ input[type="radio"]:checked::after {
   font-size: var(--fs-subheading);
 }
 
+.builder-top-bar-title-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.builder-top-bar-title-container:hover .builder-top-bar-title {
+  color: var(--text-gold);
+}
+
+.builder-top-bar-title-container .edit-icon {
+  color: var(--text-dim);
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.builder-top-bar-title-container:hover .edit-icon {
+  opacity: 1;
+  color: var(--text-gold);
+}
+
+.builder-top-bar-title-input {
+  background-color: var(--bg-dark);
+  color: var(--text-parchment);
+  border: 1px solid var(--border-gold-dim);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: var(--font-display);
+  font-size: var(--fs-subheading);
+  margin: 0;
+  max-width: 300px;
+  box-sizing: border-box;
+}
+
+.builder-top-bar-title-input:focus {
+  outline: none;
+  border-color: var(--border-gold);
+  box-shadow: 0 0 8px rgba(197, 155, 39, 0.3);
+}
+
 .builder-top-bar-subtitle {
   font-size: var(--fs-micro);
   color: var(--text-dim);
@@ -2262,6 +2303,13 @@ input[type="radio"]:checked::after {
   }
   .builder-top-bar-title {
     font-size: var(--fs-ui-title);
+  }
+  .builder-top-bar-title-container .edit-icon {
+    opacity: 0.7;
+  }
+  .builder-top-bar-title-input {
+    font-size: var(--fs-ui-title);
+    max-width: 200px;
   }
   .square-btn {
     width: 40px;
