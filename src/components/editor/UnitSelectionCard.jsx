@@ -46,7 +46,8 @@ export default function UnitSelectionCard({
   copyUnit,
   updateSubSelection,
   activeCatalogue,
-  setSelectedCatalogEntry
+  setSelectedCatalogEntry,
+  isSubUnit = false
 }) {
   const { showDebugIds } = useDebugMode();
 
@@ -673,9 +674,9 @@ export default function UnitSelectionCard({
             </button>
           </div>
         </div>
-        {renderMiniProfile(selection)}
+        {!isSubUnit && renderMiniProfile(selection)}
         {renderUnitUpgrades(selection)}
-        {renderUnitRules(selection)}
+        {!isSubUnit && renderUnitRules(selection)}
       </div>
 
       {selectionErrors.map((err, idx) => (
@@ -717,6 +718,7 @@ export default function UnitSelectionCard({
               updateSubSelection={updateSubSelection}
               activeCatalogue={activeCatalogue}
               setSelectedCatalogEntry={setSelectedCatalogEntry}
+              isSubUnit={true}
             />
           ))}
         </div>
