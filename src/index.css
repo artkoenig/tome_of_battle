@@ -104,7 +104,12 @@ body {
    .text-body       – Fließtext, Optionen, Inputs (Lora)
    .text-label      – Meta-Info, Beschriftungen (Lora)
    .text-micro      – Tags, Badges, Tabellenwerte (Lora)
+   .text-dim        – Farb-Modifikator: gedämpfter Sekundärtext
 ──────────────────────────────────────────────────────────────────────── */
+
+.text-dim {
+  color: var(--text-dim);
+}
 
 .text-display {
   font-family: var(--font-serif);
@@ -560,7 +565,7 @@ select option {
 .roster-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: baseline;
   margin-bottom: 12px;
 }
 
@@ -586,7 +591,7 @@ select option {
 }
 
 .roster-title-container {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
@@ -1788,42 +1793,6 @@ input[type="radio"]:checked::after {
   }
 }
 
-/* 6. Sticky mobile status bar (hidden on desktop) */
-.mobile-sticky-status-bar {
-  display: none;
-}
-
-@media (max-width: 900px) {
-  .mobile-sticky-status-bar {
-    display: flex !important;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--bg-panel);
-    border-bottom: 2px solid var(--border-gold);
-    padding: 10px 16px;
-    z-index: 200;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  
-  .mobile-status-summary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .mobile-points-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    width: 130px;
-  }
-
-
-}
-
 /* 7. Category Unit Adder Popover styling */
 .category-unit-adder-container {
   position: relative;
@@ -2454,6 +2423,15 @@ input[type="radio"]:checked::after {
   gap: 16px;
 }
 
+.builder-top-bar-middle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+  gap: 16px;
+}
+
 .builder-top-bar-title-section {
   display: flex;
   flex-direction: column;
@@ -2463,7 +2441,13 @@ input[type="radio"]:checked::after {
   margin: 0;
   border: none;
   padding: 0;
+  font-family: var(--font-serif);
   font-size: var(--fs-subheading);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+  color: var(--text-gold);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .builder-top-bar-subtitle {
