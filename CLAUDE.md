@@ -21,7 +21,7 @@ npm run debug-ui             # node scripts/debug_ui.js — scripted puppeteer d
 - `src/solver/ui.test.js` is excluded from the vitest run (see `vitest.config.js`) and executed separately by `npm test`. It packs `public/catalogs/whfb6/*.cat|*.gst` into a zip with JSZip, boots a Vite server on port 5175, and drives it with Puppeteer — a full import→build→play E2E smoke test.
 - All unit tests must pass before a task is considered done.
 - On macOS, `browser_subagent`/`open_browser_url` don't work for manual UI checks — use the Puppeteer scripts in `scripts/` (e.g. `node scripts/generate_screenshots.js`) instead. On Linux/cloud, `/browser` and `browser_subagent` work normally.
-- After any UI-visible change, take a Puppeteer screenshot of the affected view (before/after or just the result) and send it to the user as confirmation — don't just describe the change in words.
+- After any UI-visible change, take a Puppeteer screenshot of the affected view (before/after or just the result) and send it to the user as confirmation — but only when the user is not working locally at their own machine (e.g. a remote/cloud session such as claude.ai/code web or mobile), since in that case they can't otherwise see the running app themselves. Skip this when the session runs on the user's local machine — they can check the UI themselves there.
 
 ## Architecture
 
