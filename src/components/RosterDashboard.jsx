@@ -170,7 +170,7 @@ export default function RosterDashboard({
                                         const forceEntryId = roster.forces?.[0]?.forceEntryId;
                                         const forceDef = sys ? findForceEntryById(sys, forceEntryId) : null;
                                         return forceDef ? (
-                                          <span className="text-micro text-dim" style={{ display: 'block', marginTop: '2px', fontStyle: 'italic' }}>
+                                          <span className="text-micro text-dim" style={{ display: 'block', marginTop: '2px' }}>
                                             {forceDef.name}
                                           </span>
                                         ) : null;
