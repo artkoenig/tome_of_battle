@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Trash2, Copy, AlertTriangle, Info, Sparkles } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Trash2, Copy, AlertTriangle, Info, Sparkles, MoreVertical } from 'lucide-react';
 import { useDebugMode } from '../../hooks/DebugContext';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
@@ -52,6 +52,8 @@ export default function UnitSelectionCard({
 
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const updateTooltipPosition = (e) => {
     const tooltipWidth = 320;
@@ -243,32 +245,55 @@ export default function UnitSelectionCard({
             <span className="selection-node-cost font-body">
               {displayPoints} {costTypeLabel}
             </span>
-            {copyUnit && (
-              <button 
+            <div ref={menuRef} className="unit-card-menu-container" onClick={(e) => e.stopPropagation()}>
+              <button
                 type="button"
-                className="btn-primary square-btn" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  copyUnit(selection.id);
-                }}
-                title="Kopieren"
+                className="square-btn"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                title="Aktionen"
               >
-                <Copy size={14} />
+                <MoreVertical size={16} />
               </button>
-            )}
-            <button 
-              type="button"
-              className="btn-danger square-btn" 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.confirm('Möchten Sie diese Einheit wirklich löschen?')) {
-                  removeUnit(selection.id);
-                }
-              }}
-              title="Löschen"
-            >
-              <Trash2 size={14} />
-            </button>
+
+              <BottomSheet
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                title="Aktionen"
+                desktopMode="popover"
+                containerRef={menuRef}
+              >
+                <div className="popover-list">
+                  {copyUnit && (
+                    <div
+                      className="popover-item"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        copyUnit(selection.id);
+                      }}
+                    >
+                      <span className="popover-item-name unit-card-menu-item">
+                        <Copy size={14} />
+                        Kopieren
+                      </span>
+                    </div>
+                  )}
+                  <div
+                    className="popover-item"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      if (window.confirm('Möchten Sie diese Einheit wirklich löschen?')) {
+                        removeUnit(selection.id);
+                      }
+                    }}
+                  >
+                    <span className="popover-item-name unit-card-menu-item unit-card-menu-item-danger">
+                      <Trash2 size={14} />
+                      Löschen
+                    </span>
+                  </div>
+                </div>
+              </BottomSheet>
+            </div>
           </div>
         </div>
         {!isSubUnit && renderMiniProfile(selection)}

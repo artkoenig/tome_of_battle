@@ -10,6 +10,7 @@ vi.mock('lucide-react', () => ({
   AlertTriangle: () => <span data-testid="icon-alert" />,
   Info: () => <span data-testid="icon-info" />,
   Sparkles: () => <span data-testid="icon-sparkles" />,
+  MoreVertical: () => <span data-testid="icon-more-vertical" />,
 }));
 
 // Mock Debug Context
@@ -152,10 +153,11 @@ describe('UnitSelectionCard Component', () => {
   it('confirms and triggers removeUnit upon delete click', () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<UnitSelectionCard {...defaultProps} />);
-    
-    const deleteButton = screen.getByTitle('Löschen');
+
+    fireEvent.click(screen.getByTitle('Aktionen'));
+    const deleteButton = screen.getByText('Löschen');
     fireEvent.click(deleteButton);
-    
+
     expect(confirmSpy).toHaveBeenCalled();
     expect(defaultProps.removeUnit).toHaveBeenCalledWith('sel-1');
   });
@@ -163,20 +165,22 @@ describe('UnitSelectionCard Component', () => {
   it('does not delete when confirmation is cancelled', () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     render(<UnitSelectionCard {...defaultProps} />);
-    
-    const deleteButton = screen.getByTitle('Löschen');
+
+    fireEvent.click(screen.getByTitle('Aktionen'));
+    const deleteButton = screen.getByText('Löschen');
     fireEvent.click(deleteButton);
-    
+
     expect(confirmSpy).toHaveBeenCalled();
     expect(defaultProps.removeUnit).not.toHaveBeenCalled();
   });
 
   it('triggers copyUnit when copy button is clicked', () => {
     render(<UnitSelectionCard {...defaultProps} />);
-    
-    const copyButton = screen.getByTitle('Kopieren');
+
+    fireEvent.click(screen.getByTitle('Aktionen'));
+    const copyButton = screen.getByText('Kopieren');
     fireEvent.click(copyButton);
-    
+
     expect(defaultProps.copyUnit).toHaveBeenCalledWith('sel-1');
   });
 

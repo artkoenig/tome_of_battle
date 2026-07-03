@@ -1814,6 +1814,22 @@ input[type="radio"]:checked::after {
   display: inline-block;
 }
 
+/* Unit card header actions menu (kebab menu) */
+.unit-card-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.unit-card-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unit-card-menu-item-danger {
+  color: var(--text-danger-readable);
+}
+
 /* Reusable Gothic Bottomsheet Styles */
 .bottomsheet-backdrop {
   position: fixed;
