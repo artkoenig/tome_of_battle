@@ -100,11 +100,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         
         <div className="builder-top-bar-right">
           {/* Points limit indicator */}
-          <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginRight: '8px' }}>
+          <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginLeft: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              {isRosterValid && (
-                <span className="text-success" style={{ fontWeight: 'bold', fontSize: '1.1rem' }} title="Regelkonform">✓</span>
-              )}
               <span className="points-display text-subheading">
                 {currentPoints} / {limitPoints} {costTypeLabel}
               </span>
