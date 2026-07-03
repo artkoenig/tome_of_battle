@@ -98,6 +98,50 @@ export default function App() {
     loadAllData();
   }, []);
 
+  // Seed a base history entry so the first back-navigation has a defined target.
+  useEffect(() => {
+    window.history.replaceState({ view: 'rosters', rosterId: null }, '');
+  }, []);
+
+  // Support the browser/hardware back button: restore the view (and roster/system
+  // context) that was active at that point in history, instead of leaving the app.
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const state = event.state || { view: 'rosters', rosterId: null };
+      const roster = state.rosterId ? rosters.find(r => r.id === state.rosterId) : null;
+      const sys = roster ? systems.find(s => s.id === roster.systemId) : null;
+
+      if (state.rosterId && roster && sys) {
+        setSelectedRoster(roster);
+        setSelectedSystem(sys);
+      } else {
+        setSelectedRoster(null);
+        setSelectedSystem(null);
+      }
+      setView(state.view || 'rosters');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [rosters, systems]);
+
+  // Navigates to a view and pushes a history entry, so the browser back button
+  // returns to whatever view/roster was active before this call.
+  const navigate = (nextView, { roster = null, system = null } = {}) => {
+    const isSameEntry = nextView === view && (roster?.id || null) === (selectedRoster?.id || null);
+    const historyState = { view: nextView, rosterId: roster?.id || null };
+
+    if (isSameEntry) {
+      window.history.replaceState(historyState, '');
+    } else {
+      window.history.pushState(historyState, '');
+    }
+
+    setView(nextView);
+    setSelectedRoster(roster);
+    setSelectedSystem(system);
+  };
+
   // Handle global click on debug IDs
   useEffect(() => {
     const handleGlobalClick = (e) => {
@@ -195,7 +239,7 @@ export default function App() {
 
   const handleSystemImported = () => {
     loadAllData();
-    setView('rosters');
+    navigate('rosters');
   };
 
 
@@ -235,9 +279,7 @@ export default function App() {
       loadAllData();
 
       // Open editor
-      setSelectedSystem(systemDef);
-      setSelectedRoster(roster);
-      setView('builder');
+      navigate('builder', { roster, system: systemDef });
     } catch (err) {
       console.error(err);
       alert("Fehler beim Erstellen der Liste.");
@@ -250,9 +292,7 @@ export default function App() {
       alert("Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.");
       return;
     }
-    setSelectedSystem(sys);
-    setSelectedRoster(roster);
-    setView(viewMode);
+    navigate(viewMode, { roster, system: sys });
   };
 
   const handleDeleteRoster = async (id, e) => {
@@ -331,13 +371,13 @@ export default function App() {
             <div className="desktop-nav-actions">
               <button 
                 className={view === 'rosters' ? 'btn-primary' : ''}
-                onClick={() => { setView('rosters'); loadAllData(); }}
+                onClick={() => { navigate('rosters'); loadAllData(); }}
               >
                 <FolderOpen size={18} /> Heerlager
               </button>
-              <button 
+              <button
                 className={view === 'importer' ? 'btn-primary' : ''}
-                onClick={() => { setView('importer'); loadAllData(); }}
+                onClick={() => { navigate('importer'); loadAllData(); }}
               >
                 <BookOpen size={18} /> Bibliothekar
               </button>
@@ -379,7 +419,7 @@ export default function App() {
               <RosterEditor 
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => { setView('rosters'); loadAllData(); }}
+                onBack={() => { navigate('rosters'); loadAllData(); }}
                 onPlay={(updatedRoster) => handleOpenRoster(updatedRoster, 'play')}
               />
             )}
@@ -388,7 +428,7 @@ export default function App() {
               <PlayMode 
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => { setView('rosters'); loadAllData(); }}
+                onBack={() => { navigate('rosters'); loadAllData(); }}
               />
             )}
           </>
@@ -419,11 +459,11 @@ export default function App() {
       {/* Mobile Bottom Navigation */}
       {systems.length > 0 && (
         <nav className="mobile-bottom-nav mobile-only">
-          <button className={`mobile-nav-btn ${view === 'rosters' ? 'active' : ''}`} onClick={() => { setView('rosters'); loadAllData(); }}>
+          <button className={`mobile-nav-btn ${view === 'rosters' ? 'active' : ''}`} onClick={() => { navigate('rosters'); loadAllData(); }}>
             <FolderOpen size={20} />
             <span>Heerlager</span>
           </button>
-          <button className={`mobile-nav-btn ${view === 'importer' ? 'active' : ''}`} onClick={() => { setView('importer'); loadAllData(); }}>
+          <button className={`mobile-nav-btn ${view === 'importer' ? 'active' : ''}`} onClick={() => { navigate('importer'); loadAllData(); }}>
             <BookOpen size={20} />
             <span>Bibliothekar</span>
           </button>
