@@ -80,6 +80,19 @@ body {
   background: var(--border-gold-dim);
 }
 
+/* Below the mobile breakpoint, hide scrollbars everywhere so scrollable
+   content uses the full screen width — scrolling itself stays enabled,
+   only the visual bar (and the layout space it reserves) is removed. */
+@media (max-width: 900px) {
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge */
+  }
+  *::-webkit-scrollbar {
+    display: none; /* Chromium / Safari */
+  }
+}
+
 /* ── Semantic Text Utility Classes ───────────────────────────────────────
    Use these classes instead of ad-hoc font-size / font-family inline styles.
    Each class defines font-family + font-size + line-height for its purpose.
