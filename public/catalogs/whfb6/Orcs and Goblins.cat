@@ -3732,7 +3732,7 @@
                 <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="57f9-222b-65d0-b362" type="max"/>
               </constraints>
               <infoLinks>
-                <infoLink id="ce4b-81ca-6942-eb16" name="Spears (Infantry)" hidden="false" targetId="222b-1e29-9d24-09d7" type="profile"/>
+                <infoLink id="ce4b-81ca-6942-eb16" name="Spear (Mounted)" hidden="false" targetId="ec7d-fa6d-d0f6-5589" type="profile"/>
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
