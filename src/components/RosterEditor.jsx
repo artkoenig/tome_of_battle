@@ -100,12 +100,13 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         
         <div className="builder-top-bar-right">
           {/* Points limit indicator */}
-          <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginLeft: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className="points-display text-subheading">
-                {currentPoints} / {limitPoints} {costTypeLabel}
-              </span>
-            </div>
+          <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto' }}>
+            <span className="points-display text-subheading">
+              {currentPoints} / {limitPoints}
+            </span>
+            <span className="builder-top-bar-subtitle">
+              {costTypeLabel}
+            </span>
           </div>
 
           <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
