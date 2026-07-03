@@ -11,6 +11,7 @@ vi.mock('lucide-react', () => ({
   Info: () => <span data-testid="icon-info" />,
   Sparkles: () => <span data-testid="icon-sparkles" />,
   MoreVertical: () => <span data-testid="icon-more-vertical" />,
+  ReceiptText: () => <span data-testid="icon-receipt-text" />,
 }));
 
 // Mock Debug Context

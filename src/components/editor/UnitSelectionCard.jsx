@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Trash2, Copy, AlertTriangle, Info, Sparkles, MoreVertical } from 'lucide-react';
+import { Trash2, Copy, AlertTriangle, Info, Sparkles, MoreVertical, ReceiptText } from 'lucide-react';
 import { useDebugMode } from '../../hooks/DebugContext';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
@@ -53,6 +53,7 @@ export default function UnitSelectionCard({
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const menuRef = useRef(null);
 
   const updateTooltipPosition = (e) => {
@@ -245,6 +246,18 @@ export default function UnitSelectionCard({
             <span className="selection-node-cost font-body">
               {displayPoints} {costTypeLabel}
             </span>
+            <button
+              type="button"
+              className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDetailsOpen(!isDetailsOpen);
+              }}
+              title={isDetailsOpen ? 'Details ausblenden' : 'Details anzeigen'}
+              aria-expanded={isDetailsOpen}
+            >
+              <ReceiptText size={16} />
+            </button>
             <div ref={menuRef} className="unit-card-menu-container" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
@@ -296,24 +309,9 @@ export default function UnitSelectionCard({
             </div>
           </div>
         </div>
-        {!isSubUnit && renderMiniProfile(selection)}
-        <UnitUpgradesChips
-          selection={selection}
-          system={system}
-          activeCatalogueId={activeCatalogue?.id}
-          roster={roster}
-          handleMouseEnter={handleMouseEnter}
-          handleMouseMove={handleMouseMove}
-          handleMouseLeave={handleMouseLeave}
-          onClickDetails={(title, text) => {
-            if (window.innerWidth <= 900) {
-              setActiveInfo({ title, text });
-            }
-          }}
-          showDebugIds={showDebugIds}
-        />
-        {!isSubUnit && (
-          <UnitRulesChips
+        <div className={`unit-card-details ${isDetailsOpen ? 'is-open' : ''}`}>
+          {!isSubUnit && renderMiniProfile(selection)}
+          <UnitUpgradesChips
             selection={selection}
             system={system}
             activeCatalogueId={activeCatalogue?.id}
@@ -328,7 +326,25 @@ export default function UnitSelectionCard({
             }}
             showDebugIds={showDebugIds}
           />
-        )}
+          {!isSubUnit && (
+            <UnitRulesChips
+              selection={selection}
+              system={system}
+              activeCatalogueId={activeCatalogue?.id}
+              roster={roster}
+              handleMouseEnter={handleMouseEnter}
+              handleMouseMove={handleMouseMove}
+              handleMouseLeave={handleMouseLeave}
+              onClickDetails={(title, text) => {
+                if (window.innerWidth <= 900) {
+                  setActiveInfo({ title, text });
+                }
+              }}
+              showDebugIds={showDebugIds}
+            />
+          )}
+          {!isUnitEditing && <div className="unit-card-torn-edge" aria-hidden="true" />}
+        </div>
       </div>
 
       {selectionErrors.map((err, idx) => (
