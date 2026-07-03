@@ -74,16 +74,16 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     <div className="builder-layout-container">
       {/* 1. Builder Top Bar */}
       <div className="builder-top-bar">
-        <div className="builder-top-bar-left">
-          <button 
-            type="button" 
-            className="btn-primary square-btn mobile-only" 
-            onClick={onBack}
-            title="Heerlager"
-          >
-            <ArrowLeft size={16} /> <span className="hide-on-mobile">Heerlager</span>
-          </button>
-          
+        <button
+          type="button"
+          className="btn-primary square-btn mobile-only"
+          onClick={onBack}
+          title="Heerlager"
+        >
+          <ArrowLeft size={16} /> <span className="hide-on-mobile">Heerlager</span>
+        </button>
+
+        <div className="builder-top-bar-middle">
           <div className="builder-top-bar-title-section">
             <h2 className="builder-top-bar-title">{roster.name}</h2>
             <span className="builder-top-bar-subtitle">
@@ -96,23 +96,21 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               })()}
             </span>
           </div>
-        </div>
-        
-        <div className="builder-top-bar-right">
+
           {/* Points limit indicator */}
-          <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto' }}>
-            <span className="points-display text-subheading">
+          <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <span className="points-display builder-top-bar-title">
               {currentPoints} / {limitPoints}
             </span>
             <span className="builder-top-bar-subtitle">
               {costTypeLabel}
             </span>
           </div>
-
-          <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
-            <Play size={16} /> <span>Spielmodus</span>
-          </button>
         </div>
+
+        <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
+          <Play size={16} /> <span>Spielmodus</span>
+        </button>
       </div>
 
       <div className="builder-layout">

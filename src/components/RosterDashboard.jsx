@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download } from 'lucide-react';
-import { calculateRosterCosts, validateRoster, findForceEntryById } from '../solver/validator';
+import { calculateRosterCosts, findForceEntryById } from '../solver/validator';
 
 export default function RosterDashboard({
   rosters = [],
@@ -141,12 +141,10 @@ export default function RosterDashboard({
                               
                               const calcCosts = (sys && roster.forces) ? calculateRosterCosts(roster, sys) : {};
                               const currentPoints = calcCosts[roster.costLimitType] || 0;
-                              const errors = (sys && roster.forces) ? validateRoster(roster, sys) : [];
-                              const isValid = errors.length === 0;
 
                               return (
                                 <div key={roster.id} className="roster-card" style={{ minHeight: 'auto', padding: '12px 16px' }}>
-                                  <div className="roster-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                  <div className="roster-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
                                     <div className="roster-title-block">
                                       {editingId === roster.id ? (
                                         <input
@@ -179,20 +177,15 @@ export default function RosterDashboard({
                                       })()}
                                       {showDebugIds && <span className="debug-id-badge" style={{ display: 'block', marginTop: '4px', width: 'fit-content' }}>{roster.id}</span>}
                                     </div>
-                                    <div className="roster-points text-subheading text-gold" style={{ 
-                                      fontWeight: 'bold', 
+                                    <div className="roster-points" style={{
                                       whiteSpace: 'nowrap',
                                       textAlign: 'right',
                                       display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '8px'
+                                      flexDirection: 'column',
+                                      alignItems: 'flex-end'
                                     }}>
-                                      {isValid && (
-                                        <span className="text-success" title="Regelkonform" style={{ fontSize: '1rem' }}>✓</span>
-                                      )}
-                                      <span>
-                                        <span>{currentPoints}</span> / <span>{roster.costLimit}</span> <span className="text-micro text-gold" style={{ textTransform: 'uppercase', fontWeight: 'normal' }}>{costTypeLabel}</span>
-                                      </span>
+                                      <span className="roster-title"><span>{currentPoints}</span> / <span>{roster.costLimit}</span></span>
+                                      <span className="text-micro text-dim" style={{ display: 'block', marginTop: '2px' }}>{costTypeLabel}</span>
                                     </div>
                                   </div>
                                   <div className="roster-actions" style={{ marginTop: '8px' }}>
