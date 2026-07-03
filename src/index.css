@@ -285,12 +285,14 @@ button, .btn {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-button:hover:not(:disabled), .btn:hover {
-  background-color: var(--bg-panel);
-  border-color: var(--border-gold);
-  color: var(--text-gold);
-  box-shadow: var(--shadow-glow);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  button:hover:not(:disabled), .btn:hover {
+    background-color: var(--bg-panel);
+    border-color: var(--border-gold);
+    color: var(--text-gold);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
 }
 
 button:active:not(:disabled), .btn:active {
@@ -309,10 +311,12 @@ button:disabled {
   border: 1px solid var(--border-gold);
   color: var(--text-gold);
 }
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #44330d 0%, #201804 100%);
-  color: #fff;
-  border-color: #fff;
+@media (hover: hover) {
+  .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #44330d 0%, #201804 100%);
+    color: #fff;
+    border-color: #fff;
+  }
 }
 
 .btn-danger {
@@ -320,11 +324,13 @@ button:disabled {
   border-color: var(--color-danger);
   color: #ffcdd2;
 }
-.btn-danger:hover:not(:disabled) {
-  background: linear-gradient(135deg, #611818 0%, #3a0d0d 100%);
-  color: #fff;
-  border-color: #ff8a80;
-  box-shadow: 0 0 12px rgba(166, 28, 28, 0.5);
+@media (hover: hover) {
+  .btn-danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #611818 0%, #3a0d0d 100%);
+    color: #fff;
+    border-color: #ff8a80;
+    box-shadow: 0 0 12px rgba(166, 28, 28, 0.5);
+  }
 }
 
 .btn-sm {
