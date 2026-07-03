@@ -4,7 +4,7 @@ import {
   Heart, Swords, Sparkles, BookOpen 
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById } from '../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals } from '../solver/validator';
 import { useDebugMode } from '../hooks/DebugContext';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
@@ -19,6 +19,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const [tooltipState, setTooltipState] = useState({ visible: false, x: 0, y: 0, title: '', content: [] });
 
   const activeCatalogue = system?.catalogues?.find(c => c.id === roster?.catalogueId);
+  const extraResources = getExtraResourceTotals(system, roster, calculateRosterCosts(roster, system));
 
   const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster);
 
@@ -141,15 +142,26 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       <div className="play-layout">
         {/* Mobile Play Mode Header */}
         <div className="play-header">
-          <button 
-            className="btn-sm play-header-back square-btn" 
-            onClick={onBack} 
+          <button
+            className="btn-sm play-header-back square-btn"
+            onClick={onBack}
             title="Kriegsplanung (Editieren)"
           >
             <ArrowLeft size={16} />
           </button>
           <h2 className="play-header-title">Spielmodus</h2>
         </div>
+
+        {/* Army-wide resource totals (e.g. Casting/Dispel Dice) */}
+        {extraResources.length > 0 && (
+          <div className="play-resource-bar">
+            {extraResources.map(res => (
+              <span key={res.id} className="badge badge-muted">
+                {res.total} {res.name}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Active Units Roster Sheets */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>

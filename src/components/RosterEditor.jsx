@@ -3,7 +3,7 @@ import { Play, AlertTriangle, Check, ArrowLeft } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
-import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, findForceEntryById, isCategoryLinkHidden } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -37,6 +37,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   const limitPoints = roster.costLimit || 0;
   const generalErrors = validationErrors.filter(e => !e.categoryId && !e.selectionId);
   const isRosterValid = validationErrors.length === 0;
+  const extraResources = getExtraResourceTotals(system, roster, costs);
 
   // Resolve active catalogue definition
   useEffect(() => {
@@ -108,6 +109,15 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 {currentPoints} / {limitPoints} {costTypeLabel}
               </span>
             </div>
+            {extraResources.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {extraResources.map(res => (
+                  <span key={res.id} className="badge badge-muted text-micro">
+                    {res.total} {res.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>

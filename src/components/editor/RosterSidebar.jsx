@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, ShieldAlert } from 'lucide-react';
-import { computeRosterCounts, getModifiedConstraintValue, findForceEntryById, isCategoryLinkHidden } from '../../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals } from '../../solver/validator';
 import { useDebugMode } from '../../hooks/DebugContext';
 
 export default function RosterSidebar({
@@ -30,6 +30,12 @@ export default function RosterSidebar({
             <span className="badge badge-danger">Fehlerhaft ({validationErrors.length})</span>
           )}
         </div>
+        {getExtraResourceTotals(system, roster, costs).map(res => (
+          <div key={res.id} className="flex-between text-label text-dim" style={{ marginTop: '6px' }}>
+            <span>{res.name}:</span>
+            <span className="badge badge-muted">{res.total}</span>
+          </div>
+        ))}
       </div>
 
       {/* Category breakdown */}

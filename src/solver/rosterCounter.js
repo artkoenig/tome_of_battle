@@ -209,6 +209,18 @@ export function calculateRosterCosts(roster, system) {
   return totals;
 }
 
+/**
+ * Non-primary cost types (e.g. "Casting Dice"/"Dispel Dice") that carry a nonzero
+ * total in the given roster's already-computed cost totals.
+ */
+export function getExtraResourceTotals(system, roster, costs) {
+  if (!system?.costTypes || !roster) return [];
+  return system.costTypes
+    .filter(ct => ct.id !== roster.costLimitType)
+    .map(ct => ({ id: ct.id, name: ct.name.trim(), total: costs?.[ct.id] || 0 }))
+    .filter(ct => ct.total > 0);
+}
+
 export const computeRosterCounts = (roster, system) => {
   const selectionCounts = {};
   const forceSelectionCounts = {};

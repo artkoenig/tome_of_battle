@@ -965,6 +965,14 @@ select option {
   }
 }
 
+.play-resource-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
 .tracker-hub {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

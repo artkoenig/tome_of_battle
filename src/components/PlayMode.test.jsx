@@ -58,6 +58,8 @@ vi.mock('../solver/validator', () => ({
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
   isCategoryLinkHidden: (link) => link.hidden === true,
+  calculateRosterCosts: () => ({}),
+  getExtraResourceTotals: () => [],
 }));
 
 vi.mock('../solver/rulesEvaluator', () => ({
