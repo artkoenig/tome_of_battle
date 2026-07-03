@@ -1162,6 +1162,73 @@ console.log('Test 21 - Repeatable Magic Items Group limit increment: ',
   test21Success ? 'PASSED' : `FAILED (Errors: ${JSON.stringify(errorsRepeatableValid)})`
 );
 
+// Test 21b: Repeatable magic items on a TOP-LEVEL unit, using the real Battlescribe
+// modifier shape (condition scope="parent" field="selections" childId=...). The group
+// max is 1 but is lifted per Dispel Scroll. On a top-level unit the validator passes
+// selection=unit and parentSelection=null, so the parent-scoped condition must fall
+// back to the unit itself — otherwise the modifier never fires and a wizard with two
+// Dispel Scrolls is falsely reported as exceeding "max 1 arcane item".
+test("21b. Repeatable magic item limit is lifted during validation of a top-level unit", () => {
+  const system = {
+    id: 'sys-arcane',
+    costTypes: [{ id: 'pts', name: 'Points', defaultCostLimit: 2000 }],
+    categoryEntries: [{ id: 'cat-hq', name: 'HQ' }],
+    forceEntries: [{ id: 'force-1', name: 'Force', categoryLinks: [{ id: 'cl-hq', targetId: 'cat-hq', name: 'HQ' }] }],
+    catalogues: [{
+      id: 'cat-1',
+      selectionEntries: [{
+        id: 'unit-wizard',
+        name: 'Wizard',
+        type: 'unit',
+        costs: [{ typeId: 'pts', value: 100 }],
+        categoryLinks: [{ targetId: 'cat-hq' }],
+        selectionEntryGroups: [{
+          id: 'group-arcane',
+          name: 'Arcane Items',
+          constraints: [{ id: 'con-arcane-max', type: 'max', value: 1, field: 'selections', scope: 'parent' }],
+          modifiers: [{
+            type: 'increment',
+            field: 'con-arcane-max',
+            value: 1,
+            conditions: [{ type: 'greaterThan', value: 0, field: 'selections', scope: 'parent', childId: 'item-scroll' }],
+            repeat: { field: 'selections', scope: 'parent', childId: 'item-scroll', value: 1, repeats: 1 }
+          }],
+          selectionEntries: [
+            { id: 'item-scroll', name: 'Dispel Scroll', costs: [{ typeId: 'pts', value: 25 }] },
+            { id: 'item-staff', name: 'Staff', costs: [{ typeId: 'pts', value: 50 }] }
+          ]
+        }]
+      }]
+    }]
+  };
+
+  const rosterWithTwoScrolls = {
+    name: 'r', costLimit: 2000, costLimitType: 'pts', catalogueId: 'cat-1',
+    forces: [{
+      id: 'f1', forceEntryId: 'force-1', catalogueId: 'cat-1',
+      selections: [{
+        id: 'sel-wizard', selectionEntryId: 'unit-wizard', name: 'Wizard', number: 1, category: 'cat-hq',
+        selections: [{ id: 'sel-scroll', selectionEntryId: 'item-scroll', name: 'Dispel Scroll', number: 2, costs: [{ typeId: 'pts', value: 25 }] }]
+      }]
+    }]
+  };
+
+  // Two Dispel Scrolls lift the cap to 3, so no group-count-max violation.
+  const errors = validateRoster(rosterWithTwoScrolls, system);
+  expect(errors.some(e => e.type === 'group-count-max')).toBe(false);
+
+  // The dynamic max itself, evaluated the way the validator does (selection = unit,
+  // no parentSelection), must equal 3 rather than the static base value of 1.
+  const maxCon = { id: 'con-arcane-max', type: 'max', value: 1, field: 'selections', scope: 'parent' };
+  const mods = system.catalogues[0].selectionEntries[0].selectionEntryGroups[0].modifiers;
+  const parentSelection = rosterWithTwoScrolls.forces[0].selections[0];
+  const dynamicMax = getModifiedConstraintValue(maxCon, mods, {
+    roster: rosterWithTwoScrolls, system, selectionCounts: {}, forceCategoryCounts: {},
+    selection: parentSelection, parentSelection: null, parentCatalogueId: 'cat-1'
+  });
+  expect(dynamicMax).toBe(3);
+});
+
 // Test 22: Nested Selection display costs and group constraint points validation
 const mockSystemNested = {
   id: 'sys-nested',

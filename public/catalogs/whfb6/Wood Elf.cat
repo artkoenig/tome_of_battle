@@ -2278,6 +2278,11 @@ They benefit from Talismanic Tattoos, Fury Of Kurnous and Forest Spirit Special 
             <condition field="selections" scope="parent" value="0.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" childId="8ab0-c87d-ebb8-a8d2" type="greaterThan"/>
           </conditions>
         </modifier>
+        <modifier type="increment" field="b170-138c-6e84-0950" value="1.0">
+          <repeats>
+            <repeat field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="0ed5-eacf-d55a-5e9e" repeats="1" roundUp="false"/>
+          </repeats>
+        </modifier>
       </modifiers>
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="b170-138c-6e84-0950" type="max"/>

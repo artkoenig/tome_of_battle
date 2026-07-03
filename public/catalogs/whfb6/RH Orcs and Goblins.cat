@@ -4198,6 +4198,11 @@ Nets attack before clubs. As long as there are clubbers fighting, each hit from 
             <condition field="selections" scope="parent" value="0.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="b76c-6bad-4650-dbb0" type="greaterThan"/>
           </conditions>
         </modifier>
+        <modifier type="increment" field="6370-01df-820a-12c1" value="1.0">
+          <repeats>
+            <repeat field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="0ed5-eacf-d55a-5e9e" repeats="1" roundUp="false"/>
+          </repeats>
+        </modifier>
       </modifiers>
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="6370-01df-820a-12c1" type="max"/>

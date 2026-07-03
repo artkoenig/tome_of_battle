@@ -2378,6 +2378,11 @@
         </modifier>
         <modifier type="increment" field="fbcd-fc59-4327-baa6" value="1.0">
           <repeats>
+            <repeat field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="0ed5-eacf-d55a-5e9e" repeats="1" roundUp="false"/>
+          </repeats>
+        </modifier>
+        <modifier type="increment" field="fbcd-fc59-4327-baa6" value="1.0">
+          <repeats>
             <repeat field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="b76c-6bad-4650-dbb0" repeats="1" roundUp="false"/>
           </repeats>
           <conditions>
@@ -2537,6 +2542,11 @@
           <conditions>
             <condition field="selections" scope="parent" value="0.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="3d73-cedc-a3c5-b238" type="greaterThan"/>
           </conditions>
+        </modifier>
+        <modifier type="increment" field="0cdb-837f-311c-80ca" value="1.0">
+          <repeats>
+            <repeat field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="0ed5-eacf-d55a-5e9e" repeats="1" roundUp="false"/>
+          </repeats>
         </modifier>
         <modifier type="increment" field="0cdb-837f-311c-80ca" value="1.0">
           <repeats>

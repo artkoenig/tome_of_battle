@@ -768,6 +768,55 @@ Statt Namen zu prüfen, bekommt ein Eintrag eine `primary="false"`-Kategorie (z.
 sein"), und ein Constraint/Condition auf dieser Kategorie-ID setzt die Regel um — vollständig
 sprachneutral ([§5.5](#55-category-entries-kategorien)).
 
+### 9.7 Mehrfach erlaubte Gegenstände in einer `max="1"`-Gruppe (Dispel Scroll etc.)
+
+Magische Gegenstände liegen typischerweise in Gruppen mit `max="1"` (z. B. „Arcane Items" — sonst
+Radiobutton-Semantik, siehe [§9.2](#92-ausrüstungswahl-wähle-genau-1-radiobutton)). Für Gegenstände,
+von denen man **mehr als einen** nehmen darf (klassisch *Dispel Scroll*, *Power Stone*, Skaven
+*Warpstone Token/Scroll*), hebt ein **`increment`-Modifier mit `<repeat>`** die Obergrenze der Gruppe
+**pro gewähltem Exemplar** wieder an — der Nettoeffekt ist „zählt nicht gegen das 1-Item-Limit":
+
+```xml
+<selectionEntryGroup name="Arcane Items">
+  <modifiers>
+    <modifier type="increment" field="8c44-…-max" value="1.0">
+      <repeats><repeat field="selections" scope="parent" childId="…dispel-scroll…" repeats="1"/></repeats>
+      <conditions><condition field="selections" scope="parent" childId="…dispel-scroll…" type="greaterThan" value="0"/></conditions>
+    </modifier>
+  </modifiers>
+  <constraints><constraint id="8c44-…-max" field="selections" scope="parent" type="max" value="1"/></constraints>
+  …
+</selectionEntryGroup>
+```
+
+Erkennung: ein `increment`-Modifier, dessen `field` die **`id` eines `max`-Constraints der Gruppe** ist
+und dessen `<repeat>`-`childId` (bzw. `field`) auf **genau diesen Eintrag** zeigt. Solche Einträge
+müssen als **Mengen-Stepper** (nicht Radio) gerendert und aus der Radio-Exklusivität ausgenommen
+werden (`src/components/editor/OptionGroup.jsx`).
+
+Zwei Fallstricke:
+
+- Der `childId` von `<repeat>`/`condition` kann die **Ziel-ID** (`entryLink.targetId`, hier die
+  gemeinsame `.gst`-ID von Dispel Scroll) *oder* die lokale Link-ID sein — beim Zählen beide Fälle
+  über `resolveEntry` abgleichen.
+- Die `scope="parent"`-**Condition** muss auch dann greifen, wenn kein `parentSelection` existiert
+  (Validierung einer **Top-Level-Einheit**): dort ist die Einheit selbst der Bezugs-Parent. Sowohl
+  `evaluateCondition` als auch die `repeat`-Auswertung fallen deshalb auf `ctx.selection` zurück —
+  sonst feuert der Modifier nur in der Editor-Vorschau, aber nicht im Regel-Check.
+
+**Wrapper-Eintrag:** Power Stone ist zusätzlich ein **Wrapper** (Kosten 0) mit einem einzelnen
+zählbaren Kind („Power Stones" mit `min="1"`/`max="4"`) — die Stückzahl pro Wrapper wird also im
+Unter-Bereich gesteuert, während der oben beschriebene Modifier den Wrapper aus der Radio-Exklusivität
+der Gruppe löst.
+
+**Daten-Inkonsistenz (bewusst behoben):** Im BSData-`whfb6`-Satz erhielt **nur Dispel Scroll** in
+allen Katalogen diesen Modifier; **Power Stone** hatte ihn nur in *Dogs of War* und *Vampire Counts*.
+In den übrigen 13 Katalogen blieb Power Stone dadurch fälschlich eine exklusive Radio-Wahl (obwohl die
+Regeln beliebig viele Power Stones erlauben). Der fehlende Modifier wurde deshalb in allen betroffenen
+`Arcane Items`-Gruppen ergänzt (analog zum Vampire-Counts-Muster: zweiter `<modifier>` auf derselben
+`max`-Constraint-`id`, `childId="0ed5-eacf-d55a-5e9e"`). Neu importierte Community-Kataloge können
+dieselbe Lücke mitbringen — dann ist es dieselbe Daten-Ergänzung, kein App-Bug.
+
 ---
 
 ## 10. Collective Entries

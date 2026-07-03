@@ -93,7 +93,12 @@ describe('OptionGroup Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockShowDebugIds = false;
-    
+
+    // clearAllMocks keeps implementations, so reset the selection-count mock to a
+    // clean "nothing selected" baseline each test (groups now auto-expand when a
+    // selection exists, which would otherwise leak between tests).
+    defaultProps.getSubSelectionCount.mockReset().mockReturnValue(0);
+
     mockFindEntryInSystem.mockReturnValue({ id: 'raw-entry' });
     mockResolveEntry.mockImplementation((sys, opt, catId) => {
       if (opt.id === 'opt-sword') {
@@ -240,9 +245,7 @@ describe('OptionGroup Component', () => {
     });
 
     render(<OptionGroupComponent {...defaultProps} />);
-    const header = screen.getByText('Magic Weapons').closest('div');
-    fireEvent.click(header);
-
+    // Sword is already selected, so the group auto-expands.
     expect(screen.getByText('2')).toBeDefined();
 
     const minusBtn = screen.getByTestId('icon-minus').closest('button');
@@ -281,7 +284,7 @@ describe('OptionGroup Component', () => {
     const header = screen.getByText('Magic Weapons').closest('div').parentElement;
     expect(header.style.backgroundColor).toContain('rgba(239, 68, 68, 0.05)');
 
-    fireEvent.click(header);
+    // Sword is already selected, so the group auto-expands — no header click needed.
 
     // Axe row should be disabled (disabled class/style)
     const axeRow = screen.getByText('Axe of Doom').closest('.sub-selection-row');
@@ -414,9 +417,7 @@ describe('OptionGroup Component', () => {
     });
 
     const { unmount: unmount2 } = render(<OptionGroupComponent {...defaultProps} group={checkboxGroup} />);
-    const header2 = screen.getByText('Magic Weapons').closest('div');
-    fireEvent.click(header2);
-
+    // Axe is now selected, so the group auto-expands.
     const axeRow2 = screen.getByText('Axe of Doom').closest('.sub-selection-row');
     fireEvent.click(axeRow2);
     expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'decrement', 1);
@@ -432,18 +433,75 @@ describe('OptionGroup Component', () => {
     });
 
     render(<OptionGroupComponent {...defaultProps} />);
-    const header = screen.getByText('Magic Weapons').closest('div');
-    fireEvent.click(header);
-
+    // Sword is already selected, so the group auto-expands.
     const radios = screen.getAllByRole('radio');
-    
+
     // Click already checked Sword radio
     fireEvent.click(radios[1]); // Sword of Might radio is radios[1]
     
     expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement', 1);
   });
 
-  it('14. Passes consolidated context to getModifiedConstraintValue', () => {
+  // A group modelling Battlescribe's "Arcane Items": nominally max=1, but an
+  // increment modifier with a <repeat> lifts the cap for each Dispel Scroll taken,
+  // so Dispel Scroll may be taken more than once while Grey Wand stays exclusive.
+  const arcaneGroup = {
+    id: 'grp-arcane',
+    name: 'Arcane Items',
+    constraints: [{ type: 'max', value: 1, scope: 'parent', id: 'con-arcane-max' }],
+    modifiers: [
+      { type: 'increment', field: 'con-arcane-max', value: 1, repeat: { childId: 'opt-scroll', value: 1, repeats: 1 } }
+    ],
+    items: [
+      { option: { id: 'opt-scroll' }, groupConstraints: [{ type: 'max', value: 1, id: 'con-arcane-max' }] },
+      { option: { id: 'opt-wand' }, groupConstraints: [{ type: 'max', value: 1, id: 'con-arcane-max' }] }
+    ]
+  };
+
+  const mockArcaneItems = () => {
+    mockResolveEntry.mockImplementation((sys, opt) => {
+      if (opt.id === 'opt-scroll') return { id: 'res-scroll', name: 'Dispel Scroll', constraints: [] };
+      if (opt.id === 'opt-wand') return { id: 'res-wand', name: 'Grey Wand', constraints: [] };
+      return { id: 'unit-resolved', name: 'Wizard', categoryLinks: [] };
+    });
+    mockGetOptionDisplayCost.mockImplementation((sys, opt) => {
+      if (opt.id === 'opt-scroll') return 25;
+      if (opt.id === 'opt-wand') return 35;
+      return 0;
+    });
+  };
+
+  it('14. Repeatable item (increment+repeat modifier) renders as a stepper, not a radio', () => {
+    mockArcaneItems();
+
+    render(<OptionGroupComponent {...defaultProps} group={arcaneGroup} />);
+    fireEvent.click(screen.getByText('Arcane Items').closest('div'));
+
+    // Grey Wand stays an exclusive radio; Dispel Scroll becomes a countable stepper.
+    expect(screen.getAllByRole('radio').length).toBe(1);
+
+    const scrollRow = screen.getByText('Dispel Scroll').closest('.sub-selection-row');
+    const plusBtn = scrollRow.querySelector('.quantity-control button:last-child');
+    expect(plusBtn).not.toBeNull();
+
+    fireEvent.click(plusBtn);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-scroll' }), 'increment', 1);
+  });
+
+  it('15. Selecting a radio sibling does not remove a repeatable item', () => {
+    mockArcaneItems();
+    // Two Dispel Scrolls already taken.
+    defaultProps.getSubSelectionCount.mockImplementation((sel, id) => (id === 'res-scroll' ? 2 : 0));
+
+    render(<OptionGroupComponent {...defaultProps} group={arcaneGroup} />);
+    // Dispel Scrolls are already taken, so the group auto-expands.
+    fireEvent.click(screen.getByRole('radio')); // Grey Wand
+
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-wand' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-scroll' }), 'decrement', 1);
+  });
+
+  it('16. Passes consolidated context to getModifiedConstraintValue', () => {
     mockGetModifiedConstraintValue.mockClear();
     render(<OptionGroupComponent {...defaultProps} />);
     
@@ -457,5 +515,22 @@ describe('OptionGroup Component', () => {
       expect(ctx.system).toBeDefined();
       expect(ctx.selectionCounts).toBeDefined();
     });
+  });
+
+  it('17. Starts collapsed when nothing is selected', () => {
+    defaultProps.getSubSelectionCount.mockReturnValue(0);
+    render(<OptionGroupComponent {...defaultProps} />);
+    // Items are hidden until the header is clicked.
+    expect(screen.queryByText('Sword of Might')).toBeNull();
+    expect(screen.queryByText('Axe of Doom')).toBeNull();
+  });
+
+  it('18. Starts expanded when the group already holds a selection', () => {
+    // A selection already exists in the group (e.g. a nested "Power Stones" quantity),
+    // so the group opens automatically and its controls are immediately visible.
+    defaultProps.getSubSelectionCount.mockImplementation((sel, id) => (id === 'res-sword' ? 1 : 0));
+    render(<OptionGroupComponent {...defaultProps} />);
+    expect(screen.getByText('Sword of Might')).toBeDefined();
+    expect(screen.getByText('Axe of Doom')).toBeDefined();
   });
 });

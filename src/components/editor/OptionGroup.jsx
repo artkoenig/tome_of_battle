@@ -39,7 +39,17 @@ export default function OptionGroupComponent({
   onHoverLeave
 }) {
   const { showDebugIds } = useDebugMode();
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Start expanded when the group already holds a selection, so choices made
+  // aren't hidden behind a collapsed header. This also surfaces nested quantity
+  // controls that only appear once a wrapper option is chosen — e.g. picking
+  // "Power Stone" reveals its "Power Stones" 1–4 stepper in a sub-section, which
+  // would otherwise stay collapsed and read as "can't add more".
+  const [isExpanded, setIsExpanded] = useState(() =>
+    (group.items || []).some(({ option }) => {
+      const res = resolveEntry(system, option, activeCatalogue.id);
+      return res ? getSubSelectionCount(selection, res.id) > 0 : false;
+    })
+  );
 
   const renderUpgradeDetails = (res) => {
     if (!res) return null;
@@ -213,6 +223,24 @@ export default function OptionGroupComponent({
            (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
   }) || [];
 
+  // An item is "repeatable" inside an otherwise max=1 group when the group carries
+  // an increment modifier (with a <repeat>) that raises the group's own max
+  // constraint for every selection of this very item. That is Battlescribe's
+  // encoding for the common magic items you may take more than one of — e.g.
+  // Dispel Scroll or Power Stone, which do not count against the "one item per
+  // category" limit. Such items must render as quantity steppers rather than as
+  // mutually-exclusive radios, and must be excluded from the radio group.
+  const isRepeatableWithinGroup = (option, res) => {
+    if (!res) return false;
+    return (group.modifiers || []).some(mod => {
+      if (mod.type !== 'increment' || !mod.repeat) return false;
+      const raisesGroupMax = (group.constraints || []).some(c => c.type === 'max' && c.id === mod.field);
+      if (!raisesGroupMax) return false;
+      const repeatTarget = mod.repeat.childId || mod.repeat.field;
+      return repeatTarget === option.id || repeatTarget === res.id || repeatTarget === res.targetId;
+    });
+  };
+
   const minLimitRaw = filteredGroupConstraints.find(c => c.type === 'min');
   const minLimit = minLimitRaw ? getModifiedConstraintValue(minLimitRaw, group.modifiers, displayCtx) : 0;
   const maxLimitRaw = filteredGroupConstraints.find(c => c.type === 'max');
@@ -353,8 +381,11 @@ export default function OptionGroupComponent({
             const maxLimitOption = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
             const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
             
-            const isRadio = groupConstraints?.some(c => c.type === 'max' && c.value === 1);
-            const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || (!maxConstraint && !isMandatory && !isRadio);
+            const isRepeatableByGroupModifier = isRepeatableWithinGroup(option, res);
+            // A repeatable item never behaves as an exclusive radio, even though its
+            // group is nominally capped at max=1 (the cap is lifted per copy taken).
+            const isRadio = !isRepeatableByGroupModifier && groupConstraints?.some(c => c.type === 'max' && c.value === 1);
+            const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || isRepeatableByGroupModifier || (!maxConstraint && !isMandatory && !isRadio);
             const isBinary = !isExplicitlyMulti && ((maxConstraint && maxConstraint.value === 1) || isRadio);
             const descText = getOptionDescription(res);
 
@@ -426,7 +457,7 @@ export default function OptionGroupComponent({
                     } else {
                       group.items.forEach(otherItem => {
                         const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
-                        if (otherRes && otherRes.id !== res.id) {
+                        if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                           const otherCount = getSubSelectionCount(selection, otherRes.id);
                           if (otherCount > 0) {
                             updateSubSelection(selection.id, otherItem.option, 'decrement', parentCount);
@@ -501,7 +532,7 @@ export default function OptionGroupComponent({
                           } else if (!isSelectDisabled) {
                             group.items.forEach(otherItem => {
                               const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
-                              if (otherRes && otherRes.id !== res.id) {
+                              if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                                 const otherCount = getSubSelectionCount(selection, otherRes.id);
                                 if (otherCount > 0) {
                                   updateSubSelection(selection.id, otherItem.option, 'decrement', parentCount);

@@ -31,10 +31,17 @@ export const evaluateCondition = (cond, ctx = {}) => {
   if (cond.field && cond.field.startsWith('limit::')) {
     currentValue = roster?.costLimit || 0;
   } else if (cond.field) {
-    if (cond.scope === 'parent' && parentSelection && parentSelection.selections) {
+    // For parent-scoped conditions the "parent" is the selection that holds the
+    // group items. That is `parentSelection` when we descend into a child, but on a
+    // top-level unit (validator: selection=unit, parentSelection=null) the unit
+    // itself is the container — mirror the same fallback the repeat logic uses so
+    // e.g. "you may take more than one Dispel Scroll" also resolves during
+    // roster validation, not just in the editor UI.
+    const parentScopeTarget = parentSelection || selection;
+    if (cond.scope === 'parent' && parentScopeTarget && parentScopeTarget.selections) {
       const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
       const targetId = cond.childId || cond.field;
-      
+
       const countMatches = (list) => (list || []).reduce((sum, s) => {
         let isMatch = false;
         const sId = s.entryLinkId || s.selectionEntryId;
@@ -46,15 +53,15 @@ export const evaluateCondition = (cond, ctx = {}) => {
           if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
           if (targetId === 'model' && res && (res.type === 'model' || res.type === 'unit')) isMatch = true;
         }
-        
+
         let acc = sum + (isMatch ? (s.number || 1) : 0);
         if (cond.includeChildSelections && s.selections) {
           acc += countMatches(s.selections);
         }
         return acc;
       }, 0);
-      
-      currentValue = countMatches(parentSelection.selections);
+
+      currentValue = countMatches(parentScopeTarget.selections);
     } else {
       let categoryTotal = 0;
       if (forceCategoryCounts && forceCategoryCounts[cond.field]) {
