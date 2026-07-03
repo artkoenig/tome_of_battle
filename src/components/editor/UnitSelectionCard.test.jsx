@@ -66,8 +66,7 @@ describe('UnitSelectionCard Component', () => {
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
     updateSubSelection: vi.fn(),
-    activeCatalogue: { id: 'bret-cat' },
-    setSelectedCatalogEntry: vi.fn()
+    activeCatalogue: { id: 'bret-cat' }
   };
 
   beforeEach(() => {
@@ -277,17 +276,6 @@ describe('UnitSelectionCard Component', () => {
     fireEvent.click(header);
 
     expect(defaultProps.setSelectedRosterSelection).toHaveBeenCalledWith(defaultProps.selection);
-  });
-
-  it('triggers setSelectedCatalogEntry with the resolved catalog entry when mini-profile table is clicked', () => {
-    render(<UnitSelectionCard {...defaultProps} />);
-
-    const miniProfile = screen.getByTitle('Statblock anzeigen');
-    fireEvent.click(miniProfile);
-
-    expect(defaultProps.setSelectedCatalogEntry).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'resolved-horse' })
-    );
   });
 
   it('renders unit rules as badges and displays description on hover/click', () => {

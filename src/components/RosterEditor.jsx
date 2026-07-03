@@ -8,7 +8,6 @@ import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, findForc
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
 import UnitSelectionCard from './editor/UnitSelectionCard';
-import CatalogStatBlock from './editor/CatalogStatBlock';
 
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay }) {
@@ -19,8 +18,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     validationErrors,
     selectedRosterSelection,
     setSelectedRosterSelection,
-    selectedCatalogEntry,
-    setSelectedCatalogEntry,
     addUnit,
     removeUnit,
     copyUnit,
@@ -121,12 +118,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
       <div className="builder-layout">
         <div className="builder-main active-mobile-tab">
-          {/* Selected Catalog Entry Stat Details */}
-          <CatalogStatBlock 
-            selectedCatalogEntry={selectedCatalogEntry} 
-            setSelectedCatalogEntry={setSelectedCatalogEntry} 
-          />
-
         {/* Selected Selections on Roster grouped by category links */}
         {roster.forces.map(force => {
           const forceDef = findForceEntryById(system, force.forceEntryId);
@@ -232,7 +223,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 copyUnit={copyUnit}
                                 updateSubSelection={updateSubSelection}
                                 activeCatalogue={activeCatalogue}
-                                setSelectedCatalogEntry={setSelectedCatalogEntry}
                               />
                             );
                           })}
@@ -262,7 +252,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 copyUnit={copyUnit}
                                 updateSubSelection={updateSubSelection}
                                 activeCatalogue={activeCatalogue}
-                                setSelectedCatalogEntry={setSelectedCatalogEntry}
                               />
                         );
                     })}

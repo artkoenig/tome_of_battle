@@ -868,7 +868,6 @@ select option {
 }
 /* Mini-profiles inside UnitSelectionCard editor view */
 .mini-profile {
-  margin-top: 8px;
   align-self: flex-start;
   width: 100%;
 }
@@ -882,32 +881,6 @@ select option {
   margin-top: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.mini-profile-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 8px;
-  font-size: var(--fs-label);
-}
-
-.mini-profile-table th,
-.mini-profile-table td {
-  padding: 4px 6px;
-  border: 1px solid var(--border-dark);
-  text-align: center;
-}
-
-.mini-profile-table th {
-  background-color: rgba(0, 0, 0, 0.4);
-  font-family: var(--font-serif);
-  color: var(--text-gold);
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.mini-profile-table tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.02);
 }
 
 /* Stat Tables for unit profiles */

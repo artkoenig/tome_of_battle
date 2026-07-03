@@ -22,7 +22,6 @@ const mockCopyUnit = vi.fn();
 const mockUpdateSubSelection = vi.fn();
 const mockSave = vi.fn();
 const mockSetSelectedRosterSelection = vi.fn();
-const mockSetSelectedCatalogEntry = vi.fn();
 const mockUpdateRosterName = vi.fn();
 
 // Mock validator spy functions
@@ -68,8 +67,6 @@ vi.mock('../hooks/useRoster', () => ({
     validationErrors: mockValidationErrors,
     selectedRosterSelection: null,
     setSelectedRosterSelection: mockSetSelectedRosterSelection,
-    selectedCatalogEntry: null,
-    setSelectedCatalogEntry: mockSetSelectedCatalogEntry,
     addUnit: mockAddUnit,
     removeUnit: mockRemoveUnit,
     copyUnit: mockCopyUnit,
@@ -115,9 +112,6 @@ vi.mock('./editor/CategoryUnitAdder', () => ({
 }));
 vi.mock('./editor/RosterSidebar', () => ({
   default: () => <div data-testid="roster-sidebar" />
-}));
-vi.mock('./editor/CatalogStatBlock', () => ({
-  default: () => <div data-testid="catalog-stat-block" />
 }));
 vi.mock('./editor/UnitSelectionCard', () => ({
   default: ({ selection }) => <div data-testid={`unit-card-${selection.id}`}>{selection.name}</div>

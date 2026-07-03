@@ -34,7 +34,6 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   const [costs, setCosts] = useState({});
   const [validationErrors, setValidationErrors] = useState([]);
   const [selectedSelectionId, setSelectedSelectionId] = useState(null);
-  const [selectedCatalogEntry, setSelectedCatalogEntry] = useState(null);
 
   // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt
   // eine (schnell veraltende) Objektreferenz zu halten.
@@ -346,8 +345,6 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     validationErrors,
     selectedRosterSelection,
     setSelectedRosterSelection,
-    selectedCatalogEntry,
-    setSelectedCatalogEntry,
     addUnit,
     removeUnit,
     copyUnit,

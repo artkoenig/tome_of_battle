@@ -46,7 +46,6 @@ export default function UnitSelectionCard({
   copyUnit,
   updateSubSelection,
   activeCatalogue,
-  setSelectedCatalogEntry,
   isSubUnit = false
 }) {
   const { showDebugIds } = useDebugMode();
@@ -88,15 +87,7 @@ export default function UnitSelectionCard({
     setHoveredInfo(null);
   };
 
-  const openStatblock = (sel) => {
-    const rawEntry = findEntryInSystem(system, sel.entryLinkId || sel.selectionEntryId, activeCatalogue?.id);
-    const resolved = resolveEntry(system, rawEntry, activeCatalogue?.id);
-    if (resolved) {
-      setSelectedCatalogEntry(resolved);
-    }
-  };
-
-  const renderProfileCell = (c, headerKey, sel) => {
+  const renderProfileCell = (c, headerKey) => {
     if (!c) return <td key={headerKey} className="font-body">-</td>;
 
     const modState = getModificationState(c);
@@ -132,8 +123,8 @@ export default function UnitSelectionCard({
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={(e) => {
-          e.stopPropagation();
           if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
+            e.stopPropagation();
             setActiveInfo({
               title: `Modifikationen: ${c.name}`,
               text: (
@@ -144,8 +135,6 @@ export default function UnitSelectionCard({
                 </ul>
               )
             });
-          } else {
-            openStatblock(sel);
           }
         }}
       >
@@ -154,7 +143,7 @@ export default function UnitSelectionCard({
     );
   };
 
-  const renderProfileTable = (group, sel, key) => {
+  const renderProfileTable = (group, key) => {
     const { typeName, profiles, isModel } = group;
     if (!profiles || profiles.length === 0) return null;
 
@@ -174,28 +163,30 @@ export default function UnitSelectionCard({
     const nameHeader = isModel ? 'Modell' : (typeName || 'Profil');
 
     return (
-      <table key={key} className="mini-profile-table">
-        <thead>
-          <tr>
-            {showNameCol && <th>{nameHeader}</th>}
-            {headers.map(h => (
-              <th key={h}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {profiles.map((prof, pIdx) => (
-            <tr key={prof.id || pIdx}>
-              {showNameCol && (
-                <td className="font-body">
-                  {prof.name}
-                </td>
-              )}
-              {headers.map(h => renderProfileCell(prof.characteristics?.find(char => char.name === h), h, sel))}
+      <div key={key} className="profile-table-container">
+        <table className="profile-table">
+          <thead>
+            <tr>
+              {showNameCol && <th>{nameHeader}</th>}
+              {headers.map(h => (
+                <th key={h}>{h}</th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {profiles.map((prof, pIdx) => (
+              <tr key={prof.id || pIdx}>
+                {showNameCol && (
+                  <td className="font-body">
+                    {prof.name}
+                  </td>
+                )}
+                {headers.map(h => renderProfileCell(prof.characteristics?.find(char => char.name === h), h))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     );
   };
 
@@ -205,15 +196,8 @@ export default function UnitSelectionCard({
     if (groups.length === 0) return null;
 
     return (
-      <div
-        className="mini-profile clickable"
-        onClick={(e) => {
-          e.stopPropagation();
-          openStatblock(sel);
-        }}
-        title="Statblock anzeigen"
-      >
-        {groups.map((group, gIdx) => renderProfileTable(group, sel, group.typeName || gIdx))}
+      <div className="mini-profile">
+        {groups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
       </div>
     );
   };
