@@ -52,7 +52,7 @@ npm run debug-ui             # node scripts/debug_ui.js — scripted puppeteer d
 - `validator.js` — pure facade; re-exports everything above. This is the module the rest of the app imports from.
 - The standalone Puppeteer/Node tools (`generate_screenshots.js`, `debug_ui.js`, `stress_m3.js`, `ux_*_walkthrough.js`, etc.) live in `scripts/`; only `ui.test.js` (the E2E) remains in `src/solver/`.
 
-### Battlescribe domain rules (non-obvious, see `.agents/validation_insights.md` for the full living log — add new discoveries there)
+### Battlescribe domain rules (non-obvious, see `docs/battlescribe-data-format.md` for the full data-format reference — add new discoveries there)
 
 - **No hardcoded language strings** as parsing/validation keys (no English/German substrings like `"General"`), except the literal computation of Armour Save / Ward Save (`AS`/`WS`). Battlescribe relations must be resolved via `categoryLinks`/IDs, never by name-matching.
 - **No army-specific logic** — all validation/rules logic must be generic across game systems and catalogues.
