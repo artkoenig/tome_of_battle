@@ -109,15 +109,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 {currentPoints} / {limitPoints} {costTypeLabel}
               </span>
             </div>
-            {extraResources.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {extraResources.map(res => (
-                  <span key={res.id} className="badge badge-muted text-micro">
-                    {res.total} {res.name}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
           <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
@@ -315,6 +306,16 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       <div key={idx} className="validation-error-item text-danger text-body" style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.8 }}>
                         <AlertTriangle size={18} style={{ flexShrink: 0 }} />
                         <span>{err.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {extraResources.length > 0 && (
+                  <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-dark)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {extraResources.map(res => (
+                      <div key={res.id} className="flex-between text-label text-dim">
+                        <span>{res.name}:</span>
+                        <span className="badge badge-muted">{res.total}</span>
                       </div>
                     ))}
                   </div>
