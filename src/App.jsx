@@ -39,6 +39,7 @@ export default function App() {
   const [isInstallable, setIsInstallable] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState(null);
+  const [updateChanges, setUpdateChanges] = useState([]);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -53,7 +54,11 @@ export default function App() {
       setDeferredPrompt(null);
     };
     const handleUpdateAvailable = (e) => {
-      setWaitingWorker(e.detail);
+      const detail = e.detail || {};
+      // detail may be the plain worker (legacy shape) or { worker, changes }.
+      const worker = detail.worker || detail;
+      setWaitingWorker(worker);
+      setUpdateChanges(Array.isArray(detail.changes) ? detail.changes : []);
       setUpdateAvailable(true);
     };
 
@@ -474,7 +479,26 @@ export default function App() {
         <div className="update-toast">
           <div className="update-toast-content">
             <span className="font-serif text-gold update-toast-title">Update verfügbar!</span>
-            <span className="update-toast-desc">Eine neue Version wurde im Hintergrund geladen.</span>
+            {updateChanges.length > 0 ? (
+              <div className="update-toast-changes">
+                <span className="update-toast-changes-heading">Das ist neu:</span>
+                {updateChanges.map((entry) => (
+                  <div key={entry.version} className="update-toast-version">
+                    <span className="update-toast-version-label">
+                      Version {entry.version}
+                      {entry.date ? ` · ${entry.date}` : ''}
+                    </span>
+                    <ul className="update-toast-change-list">
+                      {(entry.changes || []).map((change, i) => (
+                        <li key={i}>{change}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="update-toast-desc">Eine neue Version wurde im Hintergrund geladen.</span>
+            )}
           </div>
           <button className="btn-primary btn-sm update-toast-btn" onClick={handleReloadApp}>
             Neu laden

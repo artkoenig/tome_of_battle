@@ -31,8 +31,29 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       .then((reg) => {
         console.log('ServiceWorker registration successful with scope: ', reg.scope);
 
-        const notifyUpdate = (worker) => {
-          window.dispatchEvent(new CustomEvent('pwa-update-available', { detail: worker }));
+        // Fetch the freshly-deployed changelog (bypassing the old service
+        // worker's cache with a unique query string) and return only the
+        // entries newer than the version currently running.
+        const fetchNewChanges = async () => {
+          try {
+            const res = await fetch(`/changelog.json?t=${Date.now()}`, { cache: 'no-store' });
+            if (!res.ok) return [];
+            const entries = await res.json();
+            if (!Array.isArray(entries)) return [];
+            const idx = entries.findIndex((e) => e.version === __APP_VERSION__);
+            // Entries listed before the running version (newest-first order) are
+            // the new ones. If the running version isn't found, fall back to the
+            // single newest entry so we still show something meaningful.
+            return idx === -1 ? entries.slice(0, 1) : entries.slice(0, idx);
+          } catch (err) {
+            console.error('Could not load changelog:', err);
+            return [];
+          }
+        };
+
+        const notifyUpdate = async (worker) => {
+          const changes = await fetchNewChanges();
+          window.dispatchEvent(new CustomEvent('pwa-update-available', { detail: { worker, changes } }));
         };
 
         // If a new worker is already waiting, notify immediately

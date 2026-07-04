@@ -106,4 +106,26 @@ describe('PWA Configuration and Assets', () => {
     expect(viteContent).toContain("name: 'sw-version'");
     expect(viteContent).toContain('swVersionPlugin()');
   });
+
+  it('should have a valid public/changelog.json (newest entry first)', () => {
+    const changelogPath = path.join(rootDir, 'public/changelog.json');
+    expect(fs.existsSync(changelogPath)).toBe(true);
+
+    const entries = JSON.parse(fs.readFileSync(changelogPath, 'utf8'));
+    expect(Array.isArray(entries)).toBe(true);
+    expect(entries.length).toBeGreaterThanOrEqual(1);
+
+    for (const entry of entries) {
+      expect(typeof entry.version).toBe('string');
+      expect(Array.isArray(entry.changes)).toBe(true);
+    }
+  });
+
+  it('should bake the current app version into the bundle via __APP_VERSION__', () => {
+    const viteConfigPath = path.join(rootDir, 'vite.config.js');
+    const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
+    // main.jsx compares the running version against the freshly-fetched changelog.
+    expect(viteContent).toContain('__APP_VERSION__');
+    expect(viteContent).toContain('readAppVersion');
+  });
 });

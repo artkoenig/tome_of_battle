@@ -114,6 +114,22 @@ function generateManifest() {
   }
 }
 
+/**
+ * Reads the newest version from public/changelog.json so it can be baked into
+ * the bundle as __APP_VERSION__. The running app compares this against the
+ * freshly-fetched changelog to know which entries are new when an update lands.
+ */
+function readAppVersion() {
+  try {
+    const changelogPath = resolve('public/changelog.json');
+    const entries = JSON.parse(readFileSync(changelogPath, 'utf8'));
+    return Array.isArray(entries) && entries.length ? entries[0].version : '0.0.0';
+  } catch (err) {
+    console.error('[app-version] Could not read changelog.json:', err);
+    return '0.0.0';
+  }
+}
+
 function extractIdAndName(content, tag) {
   const slice = content.slice(0, 5000);
   const tagRegex = new RegExp(`<${tag}[^>]+>`);
@@ -130,6 +146,9 @@ function extractIdAndName(content, tag) {
 }
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(readAppVersion()),
+  },
   plugins: [react(), swVersionPlugin(), catalogManifestPlugin()],
 })
 

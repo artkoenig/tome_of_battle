@@ -2387,6 +2387,40 @@ input[type="radio"]:checked::after {
   color: var(--text-dim);
 }
 
+.update-toast-changes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.update-toast-changes-heading {
+  font-size: var(--fs-label);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.update-toast-version-label {
+  display: block;
+  font-size: var(--fs-micro);
+  color: var(--text-gold);
+  margin-bottom: 2px;
+}
+
+.update-toast-change-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: var(--fs-label);
+  color: var(--text-parchment);
+}
+
+.update-toast-change-list li {
+  margin-bottom: 2px;
+}
+
 .update-toast-btn {
   white-space: nowrap;
   padding: 8px 16px !important;

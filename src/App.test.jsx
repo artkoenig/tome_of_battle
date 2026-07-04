@@ -117,6 +117,34 @@ describe('App Component PWA Update Toast Notification', () => {
     // Verify it sent the SKIP_WAITING message to the service worker
     expect(mockWorker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
   });
+
+  it('shows the changelog entries carried by the update event', async () => {
+    render(<App />);
+
+    const mockWorker = { postMessage: vi.fn() };
+    const detail = {
+      worker: mockWorker,
+      changes: [
+        { version: '1.2.0', date: '2026-07-04', changes: ['Neues Feature A', 'Bugfix B'] },
+      ],
+    };
+
+    const event = new CustomEvent('pwa-update-available', { detail });
+    await act(async () => {
+      window.dispatchEvent(event);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Update verfügbar!')).not.toBeNull();
+      expect(screen.queryByText('Das ist neu:')).not.toBeNull();
+      expect(screen.queryByText('Neues Feature A')).not.toBeNull();
+      expect(screen.queryByText('Bugfix B')).not.toBeNull();
+      expect(screen.queryByText(/Version 1\.2\.0/)).not.toBeNull();
+    });
+
+    // The generic fallback description must not appear when changes are present.
+    expect(screen.queryByText('Eine neue Version wurde im Hintergrund geladen.')).toBeNull();
+  });
 });
 
 vi.mock('./parser/catalogEditor', () => ({
