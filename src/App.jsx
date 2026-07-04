@@ -482,7 +482,8 @@ export default function App() {
             {updateRelease && updateRelease.changes && updateRelease.changes.length > 0 ? (
               <div className="update-toast-changes">
                 <span className="update-toast-changes-heading">
-                  Das ist neu{updateRelease.date ? ` · ${updateRelease.date}` : ''}:
+                  {updateRelease.version ? `Neu in ${updateRelease.version}` : 'Das ist neu'}
+                  {updateRelease.date ? ` · ${updateRelease.date}` : ''}:
                 </span>
                 <ul className="update-toast-change-list">
                   {updateRelease.changes.map((change, i) => (

@@ -116,35 +116,37 @@ function generateManifest() {
 }
 
 /**
- * Builds the release notes for the current version straight from git history.
- * "Current version" = the commits since the most recent git tag; if the repo
- * has no tags yet, the 10 most recent commits are used. Merge commits are
- * skipped. The result is served as /changelog.json so the running app can show
- * "what's new" when a service-worker update lands.
+ * Builds the release notes for the current version from git tags.
+ * "Current version" = the most recent tag; its changes = the commit subjects
+ * between the previous tag and the current one (the whole history up to the
+ * tag if it is the first one). Merge commits are skipped. Until the repo has a
+ * tag the changelog is empty and the toast shows its generic message. The
+ * result is served as /changelog.json so the running app can show "what's new"
+ * when a service-worker update lands.
  */
 function generateChangelog() {
   const opts = { cwd: process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] };
   try {
-    let range = '';
-    try {
-      const tag = execSync('git describe --tags --abbrev=0', opts).trim();
-      if (tag) range = `${tag}..HEAD`;
-    } catch {
-      // No tags yet — fall back to the most recent commits below.
-    }
+    const tags = execSync('git tag --sort=-creatordate', opts)
+      .trim()
+      .split('\n')
+      .map((t) => t.trim())
+      .filter(Boolean);
 
-    const logCmd = range
-      ? `git log ${range} --no-merges --pretty=format:%s`
-      : 'git log -n 10 --no-merges --pretty=format:%s';
-    const out = execSync(logCmd, opts).trim();
+    if (tags.length === 0) return { version: '', date: '', changes: [] };
+
+    const latest = tags[0];
+    const previous = tags[1];
+    const range = previous ? `${previous}..${latest}` : latest;
+
+    const out = execSync(`git log ${range} --no-merges --pretty=format:%s`, opts).trim();
     const changes = out ? out.split('\n').map((s) => s.trim()).filter(Boolean) : [];
 
-    const version = execSync('git rev-parse --short HEAD', opts).trim();
-    const date = execSync('git log -1 --pretty=format:%cd --date=short', opts).trim();
+    const date = execSync(`git log -1 ${latest} --pretty=format:%cd --date=short`, opts).trim();
 
-    return { version, date, changes };
+    return { version: latest, date, changes };
   } catch (err) {
-    console.error('[changelog] Could not build changelog from git:', err.message);
+    console.error('[changelog] Could not build changelog from git tags:', err.message);
     return { version: '', date: '', changes: [] };
   }
 }

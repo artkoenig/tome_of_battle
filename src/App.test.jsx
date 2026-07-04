@@ -124,7 +124,7 @@ describe('App Component PWA Update Toast Notification', () => {
     const mockWorker = { postMessage: vi.fn() };
     const detail = {
       worker: mockWorker,
-      release: { version: 'a1b2c3d', date: '2026-07-04', changes: ['Neues Feature A', 'Bugfix B'] },
+      release: { version: 'v1.2.0', date: '2026-07-04', changes: ['Neues Feature A', 'Bugfix B'] },
     };
 
     const event = new CustomEvent('pwa-update-available', { detail });
@@ -134,7 +134,7 @@ describe('App Component PWA Update Toast Notification', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('Update verfügbar!')).not.toBeNull();
-      expect(screen.queryByText(/Das ist neu/)).not.toBeNull();
+      expect(screen.queryByText(/Neu in v1\.2\.0/)).not.toBeNull();
       expect(screen.queryByText('Neues Feature A')).not.toBeNull();
       expect(screen.queryByText('Bugfix B')).not.toBeNull();
     });

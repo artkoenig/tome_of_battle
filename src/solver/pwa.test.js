@@ -107,14 +107,14 @@ describe('PWA Configuration and Assets', () => {
     expect(viteContent).toContain('swVersionPlugin()');
   });
 
-  it('should generate the changelog from git history via the changelog plugin', () => {
+  it('should generate the changelog from git tags via the changelog plugin', () => {
     const viteConfigPath = path.join(rootDir, 'vite.config.js');
     const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
-    // The changelog is built from git at build time and written as changelog.json,
-    // and also served live in dev via the plugin's configureServer middleware.
+    // The changelog is built from git tags at build time and written as
+    // changelog.json, and also served live in dev via configureServer.
     expect(viteContent).toContain('changelogPlugin()');
     expect(viteContent).toContain('generateChangelog');
-    expect(viteContent).toContain('git log');
+    expect(viteContent).toContain('git tag --sort=-creatordate');
     expect(viteContent).toContain("writeFileSync(join(outDir, 'changelog.json')");
   });
 
