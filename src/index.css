@@ -2,20 +2,20 @@
 
 :root {
   /* Gothic & Dark Fantasy Color Palette */
-  --bg-dark: #0a0a0d;       /* Dark obsidian background */
-  --bg-panel: #16161c;      /* Iron-gray panel background */
-  --bg-card: #292930;       /* Slightly lighter iron-gray for cards */
-  --bg-parchment: #f2ebd9;  /* Creamy parchment for paper panels */
+  --bg-dark: #08080a;       /* Dark obsidian background */
+  --bg-panel: #131319;      /* Iron-gray panel background */
+  --bg-card: #31313b;       /* Slightly lighter iron-gray for cards */
+  --bg-parchment: #f5efe0;  /* Creamy parchment for paper panels */
 
-  --border-gold: #c59b27;   /* Burnished brass/gold */
+  --border-gold: #d0a52c;   /* Burnished brass/gold */
   --border-gold-dim: #7d6520; /* Dimmed gold for inner borders */
-  --border-dark: #3a3a44;   /* Dark border color */
+  --border-dark: #4a4a58;   /* Dark border color */
 
-  --text-parchment: #e0d5be;/* Parchment-colored text on dark backgrounds */
-  --text-dark: #1e1e24;     /* Dark charcoal text for light paper elements */
-  --text-gold: #e2b742;     /* Bright gold for headers and primary stats */
-  --text-gold-bright: #f2cf63; /* Brightest gold for top-tier stats/titles */
-  --text-dim: #a6a6b3;      /* Muted gray for secondary descriptions */
+  --text-parchment: #ece2cc;/* Parchment-colored text on dark backgrounds */
+  --text-dark: #191920;     /* Dark charcoal text for light paper elements */
+  --text-gold: #ecc157;     /* Bright gold for headers and primary stats */
+  --text-gold-bright: #f7d878; /* Brightest gold for top-tier stats/titles */
+  --text-dim: #b7b7c4;      /* Muted gray for secondary descriptions */
 
   --color-danger: #a61c1c;   /* Crimson blood red for errors and damage */
   --color-success: #1b7340;  /* Forest green for active/valid states */
@@ -551,7 +551,7 @@ select option {
   padding: 20px;
   transition: all 0.3s ease;
   position: relative;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1011,7 +1011,7 @@ select option {
   padding: 16px;
   text-align: center;
   position: relative;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-gold);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--shadow-gold);
 }
 
 .tracker-title {
@@ -1050,7 +1050,7 @@ select option {
   border: 1px solid var(--border-dark);
   border-radius: 4px;
   overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 10px rgba(0,0,0,0.3);
   position: relative;
 }
 
