@@ -2403,13 +2403,6 @@ input[type="radio"]:checked::after {
   letter-spacing: 0.05em;
 }
 
-.update-toast-version-label {
-  display: block;
-  font-size: var(--fs-micro);
-  color: var(--text-gold);
-  margin-bottom: 2px;
-}
-
 .update-toast-change-list {
   margin: 0;
   padding-left: 18px;

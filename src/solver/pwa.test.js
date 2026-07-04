@@ -107,25 +107,23 @@ describe('PWA Configuration and Assets', () => {
     expect(viteContent).toContain('swVersionPlugin()');
   });
 
-  it('should have a valid public/changelog.json (newest entry first)', () => {
-    const changelogPath = path.join(rootDir, 'public/changelog.json');
-    expect(fs.existsSync(changelogPath)).toBe(true);
-
-    const entries = JSON.parse(fs.readFileSync(changelogPath, 'utf8'));
-    expect(Array.isArray(entries)).toBe(true);
-    expect(entries.length).toBeGreaterThanOrEqual(1);
-
-    for (const entry of entries) {
-      expect(typeof entry.version).toBe('string');
-      expect(Array.isArray(entry.changes)).toBe(true);
-    }
-  });
-
-  it('should bake the current app version into the bundle via __APP_VERSION__', () => {
+  it('should generate the changelog from git history via the changelog plugin', () => {
     const viteConfigPath = path.join(rootDir, 'vite.config.js');
     const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
-    // main.jsx compares the running version against the freshly-fetched changelog.
-    expect(viteContent).toContain('__APP_VERSION__');
-    expect(viteContent).toContain('readAppVersion');
+    // The changelog is built from git at build time and written as changelog.json,
+    // and also served live in dev via the plugin's configureServer middleware.
+    expect(viteContent).toContain('changelogPlugin()');
+    expect(viteContent).toContain('generateChangelog');
+    expect(viteContent).toContain('git log');
+    expect(viteContent).toContain("writeFileSync(join(outDir, 'changelog.json')");
+  });
+
+  it('should fetch the changelog fresh when an update is available', () => {
+    const mainPath = path.join(rootDir, 'src/main.jsx');
+    const mainContent = fs.readFileSync(mainPath, 'utf8');
+    // A unique query string bypasses the outgoing service worker's cache so the
+    // running app sees the newly-deployed version's notes, not the stale copy.
+    expect(mainContent).toContain('/changelog.json?t=');
+    expect(mainContent).toContain("detail: { worker, release }");
   });
 });

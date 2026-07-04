@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { resolve, join } from 'path'
+import { execSync } from 'child_process'
 
 /**
  * Vite plugin that injects a unique build version into sw.js
@@ -115,19 +116,63 @@ function generateManifest() {
 }
 
 /**
- * Reads the newest version from public/changelog.json so it can be baked into
- * the bundle as __APP_VERSION__. The running app compares this against the
- * freshly-fetched changelog to know which entries are new when an update lands.
+ * Builds the release notes for the current version straight from git history.
+ * "Current version" = the commits since the most recent git tag; if the repo
+ * has no tags yet, the 10 most recent commits are used. Merge commits are
+ * skipped. The result is served as /changelog.json so the running app can show
+ * "what's new" when a service-worker update lands.
  */
-function readAppVersion() {
+function generateChangelog() {
+  const opts = { cwd: process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] };
   try {
-    const changelogPath = resolve('public/changelog.json');
-    const entries = JSON.parse(readFileSync(changelogPath, 'utf8'));
-    return Array.isArray(entries) && entries.length ? entries[0].version : '0.0.0';
+    let range = '';
+    try {
+      const tag = execSync('git describe --tags --abbrev=0', opts).trim();
+      if (tag) range = `${tag}..HEAD`;
+    } catch {
+      // No tags yet — fall back to the most recent commits below.
+    }
+
+    const logCmd = range
+      ? `git log ${range} --no-merges --pretty=format:%s`
+      : 'git log -n 10 --no-merges --pretty=format:%s';
+    const out = execSync(logCmd, opts).trim();
+    const changes = out ? out.split('\n').map((s) => s.trim()).filter(Boolean) : [];
+
+    const version = execSync('git rev-parse --short HEAD', opts).trim();
+    const date = execSync('git log -1 --pretty=format:%cd --date=short', opts).trim();
+
+    return { version, date, changes };
   } catch (err) {
-    console.error('[app-version] Could not read changelog.json:', err);
-    return '0.0.0';
+    console.error('[changelog] Could not build changelog from git:', err.message);
+    return { version: '', date: '', changes: [] };
   }
+}
+
+/**
+ * Vite plugin that writes the git-derived changelog to the build output as
+ * changelog.json, and serves it live during dev so the update toast can be
+ * tested without a production build.
+ */
+function changelogPlugin() {
+  let outDir;
+  return {
+    name: 'changelog',
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir);
+    },
+    closeBundle() {
+      const data = generateChangelog();
+      writeFileSync(join(outDir, 'changelog.json'), JSON.stringify(data, null, 2));
+      console.log(`\x1b[36m[changelog]\x1b[0m Wrote ${data.changes.length} change(s) for ${data.version || 'unknown'}`);
+    },
+    configureServer(server) {
+      server.middlewares.use('/changelog.json', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(generateChangelog(), null, 2));
+      });
+    }
+  };
 }
 
 function extractIdAndName(content, tag) {
@@ -146,9 +191,6 @@ function extractIdAndName(content, tag) {
 }
 
 export default defineConfig({
-  define: {
-    __APP_VERSION__: JSON.stringify(readAppVersion()),
-  },
-  plugins: [react(), swVersionPlugin(), catalogManifestPlugin()],
+  plugins: [react(), swVersionPlugin(), catalogManifestPlugin(), changelogPlugin()],
 })
 

@@ -118,15 +118,13 @@ describe('App Component PWA Update Toast Notification', () => {
     expect(mockWorker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
   });
 
-  it('shows the changelog entries carried by the update event', async () => {
+  it('shows the current version changes carried by the update event', async () => {
     render(<App />);
 
     const mockWorker = { postMessage: vi.fn() };
     const detail = {
       worker: mockWorker,
-      changes: [
-        { version: '1.2.0', date: '2026-07-04', changes: ['Neues Feature A', 'Bugfix B'] },
-      ],
+      release: { version: 'a1b2c3d', date: '2026-07-04', changes: ['Neues Feature A', 'Bugfix B'] },
     };
 
     const event = new CustomEvent('pwa-update-available', { detail });
@@ -136,10 +134,9 @@ describe('App Component PWA Update Toast Notification', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('Update verfügbar!')).not.toBeNull();
-      expect(screen.queryByText('Das ist neu:')).not.toBeNull();
+      expect(screen.queryByText(/Das ist neu/)).not.toBeNull();
       expect(screen.queryByText('Neues Feature A')).not.toBeNull();
       expect(screen.queryByText('Bugfix B')).not.toBeNull();
-      expect(screen.queryByText(/Version 1\.2\.0/)).not.toBeNull();
     });
 
     // The generic fallback description must not appear when changes are present.
