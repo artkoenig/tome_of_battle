@@ -81,6 +81,7 @@ npm run debug-ui             # node scripts/debug_ui.js — scripted puppeteer d
 ### PWA / service worker
 
 - `vite.config.js` has a custom `swVersionPlugin` that rewrites `CACHE_NAME` in the built `sw.js` with a fresh build ID on every `vite build`, so browsers reliably detect updates (otherwise `sw.js` never changes and `updatefound` never fires). Install-prompt and update-toast handling live in `App.jsx`.
+- **Auto-tagging + changelog**: every `vite build` auto-creates a version tag (`autoTagPlugin`, pure bump logic in `scripts/versioning.js`): building `main` bumps the **minor**, building any other branch bumps the **patch**; the **major** is only ever set manually. The tag is pushed by default (`SKIP_AUTO_TAG` disables tagging, `AUTO_TAG_NO_PUSH` keeps it local). `changelogPlugin` then writes `changelog.json` from git — the current version = newest tag, its notes = commit subjects between the previous and newest tag. The update toast fetches this fresh (cache-busted) and shows "what's new". Tagging runs at `buildStart` so the tag exists before the changelog is generated at `closeBundle`.
 
 ### Reference data
 

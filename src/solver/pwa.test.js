@@ -118,6 +118,17 @@ describe('PWA Configuration and Assets', () => {
     expect(viteContent).toContain("writeFileSync(join(outDir, 'changelog.json')");
   });
 
+  it('should auto-tag the build (minor on main, patch elsewhere) via the auto-tag plugin', () => {
+    const viteConfigPath = path.join(rootDir, 'vite.config.js');
+    const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
+    expect(viteContent).toContain('autoTagPlugin()');
+    // buildStart runs before the changelog's closeBundle, so the new tag is
+    // already present when the changelog is generated.
+    expect(viteContent).toContain('buildStart()');
+    expect(viteContent).toContain('createBuildTag');
+    expect(viteContent).toContain("import { latestVersion, nextVersion, formatVersion } from './scripts/versioning.js'");
+  });
+
   it('should fetch the changelog fresh when an update is available', () => {
     const mainPath = path.join(rootDir, 'src/main.jsx');
     const mainContent = fs.readFileSync(mainPath, 'utf8');
