@@ -790,6 +790,15 @@ select option {
   transition: border-color 0.2s ease;
 }
 
+/* While a bottom sheet rendered inside the card (action popover / info modal)
+   is open, drop the card's overflow clip so the desktop popover can extend
+   past the card box. The torn-edge clip-path is suspended by the matching
+   :not(:has(.gothic-bottomsheet.open)) guards on the clip-path rules below;
+   without lifting overflow too, overflow:hidden would still slice the popover. */
+.selection-node:has(.gothic-bottomsheet.open) {
+  overflow: visible;
+}
+
 .selection-node.has-error {
   border-color: var(--color-danger);
 }
@@ -2735,7 +2744,11 @@ input[type="radio"]:checked::after {
 }
 
 @media (min-width: 901px) {
-  .selection-node:has(.unit-card-torn-edge) {
+  /* :not(:has(.gothic-bottomsheet.open)) suspends the clip while a bottom sheet
+     (action popover / info modal) rendered inside this node is open -- clip-path
+     clips the absolutely-positioned desktop popover, so on a short collapsed card
+     the popover would otherwise be sliced to the card's torn-edge polygon. */
+  .selection-node:has(.unit-card-torn-edge):not(:has(.gothic-bottomsheet.open)) {
     border-bottom-color: transparent !important;
     clip-path: polygon(
       0% 0%, 100% 0%,
@@ -2755,7 +2768,7 @@ input[type="radio"]:checked::after {
 }
 
 @media (max-width: 900px) {
-  .selection-node:has(.unit-card-details.is-open .unit-card-torn-edge) {
+  .selection-node:has(.unit-card-details.is-open .unit-card-torn-edge):not(:has(.gothic-bottomsheet.open)) {
     border-bottom-color: transparent !important;
     clip-path: polygon(
       0% 0%, 100% 0%,
