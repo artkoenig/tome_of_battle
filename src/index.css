@@ -1146,8 +1146,6 @@ select option {
   }
   .play-unit-card {
     border-radius: 2px;
-    border-left: none;
-    border-right: none;
   }
   .play-unit-header {
     padding: 6px 8px;
@@ -1561,8 +1559,6 @@ input[type="radio"]:checked::after {
   }
   .roster-card {
     border-radius: 2px;
-    border-left: none;
-    border-right: none;
   }
   .roster-card:hover {
     transform: none;
