@@ -107,26 +107,23 @@ describe('PWA Configuration and Assets', () => {
     expect(viteContent).toContain('swVersionPlugin()');
   });
 
-  it('should generate the changelog from git tags via the changelog plugin', () => {
+  it('should version the build and write changelog.json via the version plugin', () => {
     const viteConfigPath = path.join(rootDir, 'vite.config.js');
     const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
-    // The changelog is built from git tags at build time and written as
-    // changelog.json, and also served live in dev via configureServer.
-    expect(viteContent).toContain('changelogPlugin()');
-    expect(viteContent).toContain('generateChangelog');
-    expect(viteContent).toContain('git tag --sort=-creatordate');
+    // One plugin is the single source of truth for the tag and changelog.json,
+    // and it also serves /changelog.json live in dev via configureServer.
+    expect(viteContent).toContain('versionPlugin()');
+    expect(viteContent).toContain('computeRelease');
     expect(viteContent).toContain("writeFileSync(join(outDir, 'changelog.json')");
+    expect(viteContent).toContain("import { latestVersion, buildVersionString, formatVersion, parseVersion } from './scripts/versioning.js'");
   });
 
-  it('should auto-tag the build (minor on main, patch elsewhere) via the auto-tag plugin', () => {
+  it('should tag main releases and append the commit hash on feature branches', () => {
     const viteConfigPath = path.join(rootDir, 'vite.config.js');
     const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
-    expect(viteContent).toContain('autoTagPlugin()');
-    // buildStart runs before the changelog's closeBundle, so the new tag is
-    // already present when the changelog is generated.
-    expect(viteContent).toContain('buildStart()');
-    expect(viteContent).toContain('createBuildTag');
-    expect(viteContent).toContain("import { latestVersion, nextVersion, formatVersion } from './scripts/versioning.js'");
+    // main → real release tag; feature branch → no tag (version carries the hash).
+    expect(viteContent).toContain('createReleaseTag');
+    expect(viteContent).toContain('const tag = isMain ? version : null;');
   });
 
   it('should fetch the changelog fresh when an update is available', () => {

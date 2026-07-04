@@ -1,10 +1,11 @@
 /**
- * Reine Versionslogik für das automatische Taggen beim Bauen (ohne Git-Zugriff,
- * damit sie testbar bleibt). Verwendet von der auto-tag-Logik in vite.config.js.
+ * Reine Versionslogik für das automatische Versionieren beim Bauen (ohne
+ * Git-Zugriff, damit sie testbar bleibt). Verwendet von vite.config.js.
  *
- * Schema: vMAJOR.MINOR.PATCH
- * - main-Build      → Minor +1, Patch = 0
- * - anderer Branch  → Patch +1
+ * Normales Semantic Versioning: vMAJOR.MINOR.PATCH
+ * - main-Build     → Minor +1, Patch = 0 (sauberer Release, wird getaggt)
+ * - Feature-Branch → kein Release; an die aktuelle Version wird der
+ *                    Commit-Hash als Build-Metadaten angehängt (v1.4.0+a1b2c3d)
  * - Major wird ausschließlich manuell gesetzt und hier nie verändert.
  */
 
@@ -39,13 +40,27 @@ export function latestVersion(tags) {
   return best;
 }
 
+/** Nächste Release-Version auf main: Minor +1, Patch zurück auf 0. */
+export function nextReleaseVersion(current) {
+  return { major: current.major, minor: current.minor + 1, patch: 0 };
+}
+
 /**
- * Nächste Version für einen Build.
- * @param {{major:number,minor:number,patch:number}} current
- * @param {boolean} isMain  true wenn auf main gebaut wird
+ * Berechnet die Versionsbezeichnung für einen Build.
+ * @param {object}   opts
+ * @param {{major:number,minor:number,patch:number}} opts.latest  höchste bestehende Version
+ * @param {boolean}  opts.isMain      true wenn auf main gebaut wird
+ * @param {string}   opts.commitHash  Kurz-Hash von HEAD (für Feature-Branches)
+ * @param {string[]} [opts.existingTags]  bestehende Tags (zur Kollisionsvermeidung auf main)
+ * @returns {string} z.B. "v1.5.0" (main) oder "v1.4.0+a1b2c3d" (Feature-Branch)
  */
-export function nextVersion(current, isMain) {
-  return isMain
-    ? { major: current.major, minor: current.minor + 1, patch: 0 }
-    : { major: current.major, minor: current.minor, patch: current.patch + 1 };
+export function buildVersionString({ latest, isMain, commitHash, existingTags = [] }) {
+  if (isMain) {
+    let candidate = nextReleaseVersion(latest);
+    while (existingTags.includes(formatVersion(candidate))) {
+      candidate = nextReleaseVersion(candidate);
+    }
+    return formatVersion(candidate);
+  }
+  return `${formatVersion(latest)}+${commitHash}`;
 }

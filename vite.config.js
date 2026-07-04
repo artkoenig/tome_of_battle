@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { resolve, join } from 'path'
 import { execSync } from 'child_process'
-import { latestVersion, nextVersion, formatVersion } from './scripts/versioning.js'
+import { latestVersion, buildVersionString, formatVersion, parseVersion } from './scripts/versioning.js'
 
 /**
  * Vite plugin that injects a unique build version into sw.js
@@ -142,130 +142,104 @@ function detectBranch() {
 }
 
 /**
- * Creates a version tag for this build straight from git:
- *   - building main         → bump minor (patch reset to 0)
- *   - building any other branch → bump patch
- *   - major is only ever set manually and is never touched here
- * The tag is created before the changelog is generated (buildStart), so the
- * built changelog.json reflects the new version. It is also pushed so the next
- * build sees it and versions keep climbing monotonically.
+ * Computes this build's version and release notes from git (without creating
+ * anything). Single source of truth for both the tag and changelog.json.
  *
- * Opt-outs: SKIP_AUTO_TAG disables tagging entirely; AUTO_TAG_NO_PUSH keeps the
- * tag local (useful for local test builds).
+ *   - building main         → next semver minor release (e.g. v1.5.0), tagged
+ *   - building any other branch → current version + commit hash (v1.4.0+a1b2c3d),
+ *                                 not a release, so not tagged
+ *   - major is only ever set manually and is never touched here
+ *
+ * Notes ("changes") are the commit subjects since the latest existing release
+ * tag up to HEAD — i.e. what is new in this build (merge commits skipped).
+ *
+ * @returns {{ version: string, date: string, changes: string[], tag: string|null }}
  */
-function createBuildTag() {
+function computeRelease() {
   if (!gitSafe('git rev-parse --is-inside-work-tree')) {
-    console.warn('\x1b[36m[auto-tag]\x1b[0m Kein Git-Repository – übersprungen.');
+    return { version: '', date: '', changes: [], tag: null };
+  }
+
+  const isMain = detectBranch() === 'main';
+  const commitHash = gitSafe('git rev-parse --short HEAD');
+  const tags = gitSafe("git tag -l 'v*.*.*'").split('\n').filter(Boolean);
+  const releaseTags = tags.filter((t) => parseVersion(t));
+  const latest = latestVersion(tags);
+
+  const version = buildVersionString({ latest, isMain, commitHash, existingTags: tags });
+  const tag = isMain ? version : null;
+
+  // Range for the notes: since the newest existing release tag, up to HEAD.
+  const base = releaseTags.length ? formatVersion(latest) : '';
+  const logCmd = base
+    ? `git log ${base}..HEAD --no-merges --pretty=format:%s`
+    : 'git log -n 20 --no-merges --pretty=format:%s';
+  const out = gitSafe(logCmd);
+  const changes = out ? out.split('\n').map((s) => s.trim()).filter(Boolean) : [];
+
+  const date = gitSafe('git log -1 --pretty=format:%cd --date=short');
+
+  return { version, date, changes, tag };
+}
+
+/** Creates and (unless opted out) pushes the release tag for a main build. */
+function createReleaseTag(tag) {
+  if (gitSafe(`git tag -l ${tag}`) === tag) {
+    console.warn(`\x1b[36m[version]\x1b[0m Tag ${tag} existiert bereits – Tagging übersprungen.`);
     return;
   }
-
-  const branch = detectBranch();
-  const onMain = branch === 'main';
-  const current = latestVersion(gitSafe("git tag -l 'v*.*.*'").split('\n').filter(Boolean));
-
-  const next = nextVersion(current, onMain);
-  let tag = formatVersion(next);
-  // Avoid clashing with an existing tag (e.g. two branches building the same base).
-  while (gitSafe(`git tag -l ${tag}`) === tag) {
-    if (onMain) next.minor += 1; else next.patch += 1;
-    tag = formatVersion(next);
-  }
-
   try {
-    execSync(`git tag -a ${tag} -m "Automatischer Build-Tag ${tag}"`, { stdio: 'ignore' });
+    execSync(`git tag -a ${tag} -m "Release ${tag}"`, { stdio: 'ignore' });
   } catch (err) {
-    console.warn(`\x1b[36m[auto-tag]\x1b[0m Konnte Tag ${tag} nicht erstellen: ${err.message}`);
+    console.warn(`\x1b[36m[version]\x1b[0m Konnte Tag ${tag} nicht erstellen: ${err.message}`);
     return;
   }
-  console.log(`\x1b[36m[auto-tag]\x1b[0m ${branch || 'unbekannter Branch'} → ${tag}`);
+  console.log(`\x1b[36m[version]\x1b[0m Release-Tag ${tag} erstellt.`);
 
   if (process.env.AUTO_TAG_NO_PUSH) {
-    console.log(`\x1b[36m[auto-tag]\x1b[0m Push übersprungen (AUTO_TAG_NO_PUSH).`);
+    console.log('\x1b[36m[version]\x1b[0m Push übersprungen (AUTO_TAG_NO_PUSH).');
     return;
   }
   try {
     execSync(`git push origin ${tag}`, { stdio: 'ignore' });
-    console.log(`\x1b[36m[auto-tag]\x1b[0m ${tag} gepusht.`);
+    console.log(`\x1b[36m[version]\x1b[0m ${tag} gepusht.`);
   } catch {
-    console.warn(`\x1b[36m[auto-tag]\x1b[0m ${tag} lokal erstellt, Push fehlgeschlagen (kein Remote-Zugriff?).`);
+    console.warn(`\x1b[36m[version]\x1b[0m ${tag} lokal erstellt, Push fehlgeschlagen (kein Remote-Zugriff?).`);
   }
 }
 
 /**
- * Vite plugin that auto-tags the build. Runs at buildStart so the tag exists
- * before the changelog plugin reads it at closeBundle.
+ * Vite plugin that versions the build. At buildStart it computes the version,
+ * tags main releases (opt-outs: SKIP_AUTO_TAG disables tagging, AUTO_TAG_NO_PUSH
+ * keeps it local), and at closeBundle writes changelog.json. In dev it serves
+ * /changelog.json live so the update toast can be tested without a build.
  */
-function autoTagPlugin() {
-  return {
-    name: 'auto-tag',
-    apply: 'build',
-    buildStart() {
-      if (process.env.SKIP_AUTO_TAG) {
-        console.log('\x1b[36m[auto-tag]\x1b[0m Übersprungen (SKIP_AUTO_TAG).');
-        return;
-      }
-      createBuildTag();
-    }
-  };
-}
-
-/**
- * Builds the release notes for the current version from git tags.
- * "Current version" = the most recent tag; its changes = the commit subjects
- * between the previous tag and the current one (the whole history up to the
- * tag if it is the first one). Merge commits are skipped. Until the repo has a
- * tag the changelog is empty and the toast shows its generic message. The
- * result is served as /changelog.json so the running app can show "what's new"
- * when a service-worker update lands.
- */
-function generateChangelog() {
-  const opts = { cwd: process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] };
-  try {
-    const tags = execSync('git tag --sort=-creatordate', opts)
-      .trim()
-      .split('\n')
-      .map((t) => t.trim())
-      .filter(Boolean);
-
-    if (tags.length === 0) return { version: '', date: '', changes: [] };
-
-    const latest = tags[0];
-    const previous = tags[1];
-    const range = previous ? `${previous}..${latest}` : latest;
-
-    const out = execSync(`git log ${range} --no-merges --pretty=format:%s`, opts).trim();
-    const changes = out ? out.split('\n').map((s) => s.trim()).filter(Boolean) : [];
-
-    const date = execSync(`git log -1 ${latest} --pretty=format:%cd --date=short`, opts).trim();
-
-    return { version: latest, date, changes };
-  } catch (err) {
-    console.error('[changelog] Could not build changelog from git tags:', err.message);
-    return { version: '', date: '', changes: [] };
-  }
-}
-
-/**
- * Vite plugin that writes the git-derived changelog to the build output as
- * changelog.json, and serves it live during dev so the update toast can be
- * tested without a production build.
- */
-function changelogPlugin() {
+function versionPlugin() {
   let outDir;
+  let release = null;
   return {
-    name: 'changelog',
+    name: 'version',
     configResolved(config) {
       outDir = resolve(config.root, config.build.outDir);
     },
+    buildStart() {
+      release = computeRelease();
+      if (release.tag && !process.env.SKIP_AUTO_TAG) {
+        createReleaseTag(release.tag);
+      } else if (release.tag) {
+        console.log('\x1b[36m[version]\x1b[0m Tagging übersprungen (SKIP_AUTO_TAG).');
+      }
+    },
     closeBundle() {
-      const data = generateChangelog();
-      writeFileSync(join(outDir, 'changelog.json'), JSON.stringify(data, null, 2));
-      console.log(`\x1b[36m[changelog]\x1b[0m Wrote ${data.changes.length} change(s) for ${data.version || 'unknown'}`);
+      const { version, date, changes } = release || computeRelease();
+      writeFileSync(join(outDir, 'changelog.json'), JSON.stringify({ version, date, changes }, null, 2));
+      console.log(`\x1b[36m[version]\x1b[0m ${version || 'unbekannt'} – ${changes.length} Änderung(en) in changelog.json.`);
     },
     configureServer(server) {
       server.middlewares.use('/changelog.json', (req, res) => {
+        const { version, date, changes } = computeRelease();
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(generateChangelog(), null, 2));
+        res.end(JSON.stringify({ version, date, changes }, null, 2));
       });
     }
   };
@@ -287,6 +261,6 @@ function extractIdAndName(content, tag) {
 }
 
 export default defineConfig({
-  plugins: [react(), swVersionPlugin(), catalogManifestPlugin(), autoTagPlugin(), changelogPlugin()],
+  plugins: [react(), swVersionPlugin(), catalogManifestPlugin(), versionPlugin()],
 })
 
