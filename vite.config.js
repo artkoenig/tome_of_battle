@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { resolve, join } from 'path'
 import { execSync } from 'child_process'
-import { latestVersion, buildVersionString, formatVersion, parseVersion } from './scripts/versioning.js'
+import { resolveVersion } from './scripts/versioning.js'
 
 /**
  * Vite plugin that injects a unique build version into sw.js
@@ -142,35 +142,43 @@ function detectBranch() {
 }
 
 /**
- * Computes this build's version and release notes from git (without creating
- * anything). Single source of truth for both the tag and changelog.json.
+ * On Vercel the repo is a shallow clone without tags, so best-effort fetch the
+ * history and tags the versioning needs. No-op elsewhere (local/CI checkouts
+ * already have them). Failures are swallowed — the build must never break here.
+ */
+function ensureGitHistory() {
+  if (!process.env.VERCEL) return;
+  gitSafe('git fetch --tags --unshallow'); // errors if already complete → ignored
+  gitSafe('git fetch --tags');
+}
+
+/**
+ * Computes this build's version and release notes from git — read only, never
+ * creates or pushes anything (tagging is owned by scripts/tag-release.js in CI).
  *
- *   - building main         → next semver minor release (e.g. v1.5.0), tagged
- *   - building any other branch → current version + commit hash (v1.4.0+a1b2c3d),
- *                                 not a release, so not tagged
- *   - major is only ever set manually and is never touched here
+ *   - building main         → next semver minor release (e.g. v1.5.0), or the
+ *                             tag already on HEAD if this commit was released
+ *   - building any other branch → current version + commit hash (v1.4.0+a1b2c3d)
+ *   - major is only ever set manually
  *
- * Notes ("changes") are the commit subjects since the latest existing release
- * tag up to HEAD — i.e. what is new in this build (merge commits skipped).
+ * Notes ("changes") are the commit subjects since the base release tag up to
+ * HEAD — i.e. what is new in this build (merge commits skipped).
  *
- * @returns {{ version: string, date: string, changes: string[], tag: string|null }}
+ * @returns {{ version: string, date: string, changes: string[] }}
  */
 function computeRelease() {
   if (!gitSafe('git rev-parse --is-inside-work-tree')) {
-    return { version: '', date: '', changes: [], tag: null };
+    return { version: '', date: '', changes: [] };
   }
+  ensureGitHistory();
 
   const isMain = detectBranch() === 'main';
   const commitHash = gitSafe('git rev-parse --short HEAD');
   const tags = gitSafe("git tag -l 'v*.*.*'").split('\n').filter(Boolean);
-  const releaseTags = tags.filter((t) => parseVersion(t));
-  const latest = latestVersion(tags);
+  const headTags = gitSafe("git tag --points-at HEAD -l 'v*.*.*'").split('\n').filter(Boolean);
 
-  const version = buildVersionString({ latest, isMain, commitHash, existingTags: tags });
-  const tag = isMain ? version : null;
+  const { version, base } = resolveVersion({ tags, headTags, isMain, commitHash });
 
-  // Range for the notes: since the newest existing release tag, up to HEAD.
-  const base = releaseTags.length ? formatVersion(latest) : '';
   const logCmd = base
     ? `git log ${base}..HEAD --no-merges --pretty=format:%s`
     : 'git log -n 20 --no-merges --pretty=format:%s';
@@ -179,59 +187,24 @@ function computeRelease() {
 
   const date = gitSafe('git log -1 --pretty=format:%cd --date=short');
 
-  return { version, date, changes, tag };
-}
-
-/** Creates and (unless opted out) pushes the release tag for a main build. */
-function createReleaseTag(tag) {
-  if (gitSafe(`git tag -l ${tag}`) === tag) {
-    console.warn(`\x1b[36m[version]\x1b[0m Tag ${tag} existiert bereits – Tagging übersprungen.`);
-    return;
-  }
-  try {
-    execSync(`git tag -a ${tag} -m "Release ${tag}"`, { stdio: 'ignore' });
-  } catch (err) {
-    console.warn(`\x1b[36m[version]\x1b[0m Konnte Tag ${tag} nicht erstellen: ${err.message}`);
-    return;
-  }
-  console.log(`\x1b[36m[version]\x1b[0m Release-Tag ${tag} erstellt.`);
-
-  if (process.env.AUTO_TAG_NO_PUSH) {
-    console.log('\x1b[36m[version]\x1b[0m Push übersprungen (AUTO_TAG_NO_PUSH).');
-    return;
-  }
-  try {
-    execSync(`git push origin ${tag}`, { stdio: 'ignore' });
-    console.log(`\x1b[36m[version]\x1b[0m ${tag} gepusht.`);
-  } catch {
-    console.warn(`\x1b[36m[version]\x1b[0m ${tag} lokal erstellt, Push fehlgeschlagen (kein Remote-Zugriff?).`);
-  }
+  return { version, date, changes };
 }
 
 /**
- * Vite plugin that versions the build. At buildStart it computes the version,
- * tags main releases (opt-outs: SKIP_AUTO_TAG disables tagging, AUTO_TAG_NO_PUSH
- * keeps it local), and at closeBundle writes changelog.json. In dev it serves
- * /changelog.json live so the update toast can be tested without a build.
+ * Vite plugin that versions the build (read only): at closeBundle it writes
+ * changelog.json, and in dev it serves /changelog.json live so the update toast
+ * can be tested without a build. Release tags are created separately by the
+ * tag-release GitHub Actions workflow, not here.
  */
 function versionPlugin() {
   let outDir;
-  let release = null;
   return {
     name: 'version',
     configResolved(config) {
       outDir = resolve(config.root, config.build.outDir);
     },
-    buildStart() {
-      release = computeRelease();
-      if (release.tag && !process.env.SKIP_AUTO_TAG) {
-        createReleaseTag(release.tag);
-      } else if (release.tag) {
-        console.log('\x1b[36m[version]\x1b[0m Tagging übersprungen (SKIP_AUTO_TAG).');
-      }
-    },
     closeBundle() {
-      const { version, date, changes } = release || computeRelease();
+      const { version, date, changes } = computeRelease();
       writeFileSync(join(outDir, 'changelog.json'), JSON.stringify({ version, date, changes }, null, 2));
       console.log(`\x1b[36m[version]\x1b[0m ${version || 'unbekannt'} – ${changes.length} Änderung(en) in changelog.json.`);
     },

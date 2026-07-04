@@ -107,23 +107,34 @@ describe('PWA Configuration and Assets', () => {
     expect(viteContent).toContain('swVersionPlugin()');
   });
 
-  it('should version the build and write changelog.json via the version plugin', () => {
+  it('should version the build read-only and write changelog.json via the version plugin', () => {
     const viteConfigPath = path.join(rootDir, 'vite.config.js');
     const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
-    // One plugin is the single source of truth for the tag and changelog.json,
-    // and it also serves /changelog.json live in dev via configureServer.
+    // The plugin derives version + changelog from git tags; it must NOT create
+    // or push tags itself (tagging is owned by the CI workflow / tag script).
     expect(viteContent).toContain('versionPlugin()');
-    expect(viteContent).toContain('computeRelease');
+    expect(viteContent).toContain('resolveVersion');
     expect(viteContent).toContain("writeFileSync(join(outDir, 'changelog.json')");
-    expect(viteContent).toContain("import { latestVersion, buildVersionString, formatVersion, parseVersion } from './scripts/versioning.js'");
+    expect(viteContent).not.toContain('git tag -a');
+    expect(viteContent).not.toContain('git push origin');
   });
 
-  it('should tag main releases and append the commit hash on feature branches', () => {
-    const viteConfigPath = path.join(rootDir, 'vite.config.js');
-    const viteContent = fs.readFileSync(viteConfigPath, 'utf8');
-    // main → real release tag; feature branch → no tag (version carries the hash).
-    expect(viteContent).toContain('createReleaseTag');
-    expect(viteContent).toContain('const tag = isMain ? version : null;');
+  it('should own release tagging in the tag-release script and its workflow', () => {
+    const scriptPath = path.join(rootDir, 'scripts/tag-release.js');
+    const workflowPath = path.join(rootDir, '.github/workflows/tag-release.yml');
+    expect(fs.existsSync(scriptPath)).toBe(true);
+    expect(fs.existsSync(workflowPath)).toBe(true);
+
+    const script = fs.readFileSync(scriptPath, 'utf8');
+    // The script is the single writer of tags: it resolves the version and pushes.
+    expect(script).toContain('resolveVersion');
+    expect(script).toContain('git tag -a');
+    expect(script).toContain('git push origin');
+
+    const workflow = fs.readFileSync(workflowPath, 'utf8');
+    expect(workflow).toContain('branches: [main]');
+    expect(workflow).toContain('contents: write');
+    expect(workflow).toContain('node scripts/tag-release.js');
   });
 
   it('should fetch the changelog fresh when an update is available', () => {

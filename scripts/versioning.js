@@ -64,3 +64,47 @@ export function buildVersionString({ latest, isMain, commitHash, existingTags = 
   }
   return `${formatVersion(latest)}+${commitHash}`;
 }
+
+/**
+ * Single source of truth for what a build's version is, the tag it should
+ * create (if any), and the base tag to diff the changelog from. Pure — the
+ * caller supplies git state. Used by both the read-only build plugin and the
+ * tag-release script so they always agree.
+ *
+ * @param {object}   opts
+ * @param {string[]} opts.tags       all vX.Y.Z tags in the repo
+ * @param {string[]} [opts.headTags] vX.Y.Z tags pointing at HEAD
+ * @param {boolean}  opts.isMain     building main?
+ * @param {string}   opts.commitHash short HEAD hash (for feature branches)
+ * @returns {{ version: string, base: string, tag: string|null }}
+ *   - version: the version string to display / write into changelog.json
+ *   - base:    tag to compute "what's new" from ('' → whole history)
+ *   - tag:     release tag this build should create, or null (feature branch,
+ *              or HEAD is already a released commit)
+ */
+export function resolveVersion({ tags, headTags = [], isMain, commitHash }) {
+  const releaseTags = tags.filter((t) => parseVersion(t));
+  const latest = latestVersion(tags);
+  const headReleaseTags = headTags.filter((t) => parseVersion(t));
+
+  // HEAD is already tagged as a release (e.g. Vercel rebuilds after the tag was
+  // pushed): reuse that tag, never bump again. Diff from the tag just below it.
+  if (isMain && headReleaseTags.length) {
+    const head = latestVersion(headReleaseTags);
+    const below = releaseTags
+      .map(parseVersion)
+      .filter((v) => compareVersions(v, head) < 0)
+      .sort(compareVersions)
+      .pop();
+    return { version: formatVersion(head), base: below ? formatVersion(below) : '', tag: null };
+  }
+
+  const base = releaseTags.length ? formatVersion(latest) : '';
+
+  if (isMain) {
+    const version = buildVersionString({ latest, isMain: true, existingTags: tags });
+    return { version, base, tag: version };
+  }
+
+  return { version: `${formatVersion(latest)}+${commitHash}`, base, tag: null };
+}

@@ -1,0 +1,40 @@
+name: Tag Release (main)
+
+# Vercel baut und deployt selbst bei jedem Push. Dieser Workflow ist die
+# einzige Stelle mit Push-Rechten und erzeugt bei einem Push auf main den
+# nächsten Minor-Release-Tag (vMAJOR.MINOR.0) und pusht ihn. Der von Vercel
+# gebaute Changelog leitet dieselbe Version aus den Tags ab (read-only), ist
+# also konsistent – egal ob Vercel vor oder nach diesem Tag baut.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tag-release-main
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (volle Historie + Tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Git-Identität
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Release taggen
+        run: node scripts/tag-release.js
