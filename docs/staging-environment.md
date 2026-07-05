@@ -99,6 +99,12 @@ auf `main`.
 
 `.github/workflows/ci.yml` läuft bei jedem **PR gegen `staging` oder `main`**
 (und bei Pushes auf diese Branches) und führt `npm run lint` sowie die Unit-/
-Component-Tests (`npx vitest run`) aus. Der Puppeteer-E2E (`src/solver/ui.test.js`)
-ist bewusst **nicht** Teil der CI: er braucht einen echten Browser und wird
-lokal via `npm test` ausgeführt.
+Component-Tests (`npx vitest run`) aus.
+
+Der Puppeteer-E2E (`src/solver/ui.test.js`) läuft **automatisch auf Staging**:
+in einem eigenen `e2e`-Job, aber nur bei **PRs gegen `staging`** und **Pushes auf
+`staging`**. Der Job installiert Chromium (`npx puppeteer browsers install chrome`)
+und spielt den vollen Import→Build→Play-Smoke-Test durch. So wird jede Änderung
+vor der Promotion nach `main` einmal end-to-end geprüft, ohne jeden Feature-PR
+(gegen andere Ziele) mit dem langsamen Browser-Lauf auszubremsen. Lokal läuft er
+weiterhin über `npm test`.

@@ -83,6 +83,39 @@ const startViteServer = () => {
   });
 };
 
+// Opens the actions menu (MoreVertical popover) of the first top-level unit
+// card and clicks the entry whose label matches (e.g. "Kopieren"/"Löschen").
+// The unit actions used to be inline icon buttons; they now live behind a
+// BottomSheet/popover, so the E2E drives that menu instead.
+const openUnitActionAndClick = async (page, label) => {
+  const opened = await page.evaluate(() => {
+    const node = document.querySelector('.selection-node');
+    const menuBtn = node?.querySelector('.unit-card-menu-container button[title="Aktionen"]');
+    if (!menuBtn) return false;
+    menuBtn.click();
+    return true;
+  });
+  if (!opened) {
+    throw new Error('Actions menu button not found on selection node');
+  }
+
+  await page.waitForFunction(
+    (lbl) => Array.from(document.querySelectorAll('.popover-item')).some(i => i.textContent.includes(lbl)),
+    { timeout: 5000 },
+    label
+  );
+
+  const clicked = await page.evaluate((lbl) => {
+    const item = Array.from(document.querySelectorAll('.popover-item')).find(i => i.textContent.includes(lbl));
+    if (!item) return false;
+    item.click();
+    return true;
+  }, label);
+  if (!clicked) {
+    throw new Error(`Action "${label}" not found in unit actions menu`);
+  }
+};
+
 // 3. Main UI test logic using Puppeteer
 const runUiTests = async () => {
   console.log('Launching headless Puppeteer...');
@@ -384,18 +417,8 @@ const runUiTests = async () => {
      });
      console.log(`Units count before copy: ${selectionNodesCountBefore}`);
 
-     // Click the copy button (which has title="Kopieren") on the first selection node
-     const copyButtonExists = await page.evaluate(() => {
-        const copyBtn = document.querySelector('.selection-node .btn-primary[title="Kopieren"]');
-        if (copyBtn) {
-           copyBtn.click();
-           return true;
-        }
-        return false;
-     });
-     if (!copyButtonExists) {
-        throw new Error('Copy button not found on selection node');
-     }
+     // Copy the first unit via its actions menu ("Kopieren")
+     await openUnitActionAndClick(page, 'Kopieren');
 
      await new Promise(r => setTimeout(r, 800)); // wait for state update
 
@@ -420,8 +443,8 @@ const runUiTests = async () => {
       };
       page.on('dialog', dismissHandler);
 
-      // Click the delete button of the first unit
-      await page.click('.selection-node .btn-danger[title="Löschen"]');
+      // Delete the first unit via its actions menu ("Löschen") — triggers confirm()
+      await openUnitActionAndClick(page, 'Löschen');
       await new Promise(r => setTimeout(r, 800));
 
       page.off('dialog', dismissHandler);
@@ -445,8 +468,8 @@ const runUiTests = async () => {
       };
       page.on('dialog', acceptHandler);
 
-      // Click the delete button of the first unit again
-      await page.click('.selection-node .btn-danger[title="Löschen"]');
+      // Delete the first unit again via its actions menu ("Löschen")
+      await openUnitActionAndClick(page, 'Löschen');
       await new Promise(r => setTimeout(r, 800));
 
       page.off('dialog', acceptHandler);

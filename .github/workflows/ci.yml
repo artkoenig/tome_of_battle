@@ -36,3 +36,32 @@ jobs:
 
       - name: Unit-/Component-Tests
         run: npx vitest run
+
+  # Der Puppeteer-E2E (src/solver/ui.test.js) braucht einen echten Browser und
+  # läuft daher nur im Staging-Zweig des Release-Trains: bei PRs gegen `staging`
+  # und bei Pushes auf `staging`. So wird jede Änderung vor der Promotion nach
+  # `main` einmal end-to-end durchgespielt, ohne jeden Feature-PR auszubremsen.
+  e2e:
+    name: E2E (Puppeteer, nur staging)
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'pull_request' && github.base_ref == 'staging') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/staging')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Chromium für Puppeteer installieren
+        run: npx puppeteer browsers install chrome
+
+      - name: E2E-Test
+        run: node src/solver/ui.test.js
