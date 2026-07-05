@@ -32,19 +32,16 @@ Folgende Richtlinien für Komponentenstruktur, Performance und Lifecycle-Managem
 - Der Import-Prozess muss asynchron laufen.
 - Während des Imports muss ein interaktiver Lade-Indikator angezeigt werden, damit die UI reaktionsfähig bleibt.
 
-### 4. Effizientes Querying (Data Chunking)
-- Lade aus der IndexedDB stets nur die Daten, die für die aktuelle Ansicht absolut erforderlich sind.
-- Im Roster-Auswahl-Bildschirm werden beispielsweise nur die Metadaten der Listen geladen, nicht die vollständigen Armeedetails aller gespeicherten Listen.
-
-### 5. Saubere Cleanups in `useEffect`
+### 4. Saubere Cleanups in `useEffect`
 - Jedes `useEffect`, das asynchrone Datenbankabfragen, Event-Listener (z. B. Resize-Events für die Tooltip-Berechnung) oder Timeouts/Intervalle registriert, **muss zwingend eine Cleanup-Funktion zurückgeben**.
 - Dadurch werden Race Conditions (z. B. Zuweisung von DB-Ergebnissen an bereits demontierte Komponenten) und Memory Leaks zuverlässig verhindert.
 
-### 6. UI-Struktur und View-Switching ohne Router
+### 5. UI-Struktur und View-Switching ohne Router
 - Die Anwendung verzichtet auf einen externen Router (wie React Router). Die Navigation zwischen den Hauptansichten (`rosters`, `importer`, `builder`, `play`) wird als einfacher Zustand (View-Switcher) direkt in `App.jsx` verwaltet. Dies hält die PWA leichtgewichtig.
 
-### 7. Click-to-Edit Debug-Feature
+### 6. Click-to-Edit Debug-Feature
 - Zur Entwicklung und Fehlersuche gibt es ein globales Debug-System. Durch Klicken auf ein `.debug-id-badge` (das nur auf localhost/privaten IPs aktiv ist) wird das `DebugEntryEditorModal` geöffnet, um Katalog-Einträge direkt im Kontext zu analysieren.
+
 
 
 ### Konsequenzen (Auswirkungen)
