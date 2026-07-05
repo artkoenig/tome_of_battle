@@ -22,14 +22,14 @@ The repository includes a real data package for **Warhammer Fantasy Battle 6th E
 ## Screenshots
 
 ### Desktop View
-| Roster Editor | Unit Configuration | Play Mode |
+| Bibliothekar (Library) | Roster Editor | Play Mode |
 |:---:|:---:|:---:|
-| ![Roster Editor](screenshots/desktop_05_roster_editor.png) | ![Unit Configuration](screenshots/desktop_07_selection_configurator.png) | ![Play Mode](screenshots/desktop_08_play_mode.png) |
+| ![Bibliothekar](screenshots/desktop_02_bibliothekar_loaded.png) | ![Roster Editor](screenshots/desktop_05_roster_editor.png) | ![Play Mode](screenshots/desktop_08_play_mode.png) |
 
 ### Mobile View
-| Roster Editor | Unit Configuration | Play Mode |
+| Bibliothekar (Library) | Roster Editor | Play Mode |
 |:---:|:---:|:---:|
-| ![Roster Editor](screenshots/mobile_05_roster_editor.png) | ![Unit Configuration](screenshots/mobile_07_selection_configurator.png) | ![Play Mode](screenshots/mobile_08_play_mode.png) |
+| ![Bibliothekar](screenshots/mobile_02_bibliothekar_loaded.png) | ![Roster Editor](screenshots/mobile_05_roster_editor.png) | ![Play Mode](screenshots/mobile_08_play_mode.png) |
 
 ---
 
