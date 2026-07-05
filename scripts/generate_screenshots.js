@@ -189,9 +189,6 @@ const runSessionForMode = async (mode) => {
     await page.waitForSelector('.builder-layout', { timeout: 10000 });
     await new Promise(r => setTimeout(r, 1000));
 
-    // SCREEN 5: Roster Editor / Builder view
-    await takeScreenshot('05_roster_editor');
-
     // Open Unit Selection / Category Adder bottomsheet
     console.log('Opening CategoryUnitAdder popover/bottomsheet...');
     await page.evaluate(() => {
@@ -210,6 +207,17 @@ const runSessionForMode = async (mode) => {
       if (options.length > 0) options[0].click();
     });
     await new Promise(r => setTimeout(r, 800));
+
+    // Open unit details in Roster Editor
+    console.log('Expanding unit details...');
+    await page.evaluate(() => {
+      const toggleBtn = document.querySelector('.unit-card-details-toggle');
+      if (toggleBtn) toggleBtn.click();
+    });
+    await new Promise(r => setTimeout(r, 800));
+
+    // SCREEN 5: Roster Editor / Builder view (with unit details expanded)
+    await takeScreenshot('05_roster_editor');
 
     // Open unit config (SelectionConfigurator)
     console.log('Opening unit configuration...');
