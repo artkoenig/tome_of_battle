@@ -97,9 +97,21 @@ auf `main`.
 
 ## Continuous Integration
 
+> Eine vollständige Referenz **aller** Workflows (CI, Release-Tagging,
+> PR-Automatisierung, Issue-Agent) und des Vercel-Deploys steht in
+> [`docs/ci-cd.md`](./ci-cd.md).
+
 `.github/workflows/ci.yml` läuft bei jedem **PR gegen `staging` oder `main`**
 (und bei Pushes auf diese Branches) und führt `npm run lint` sowie die Unit-/
 Component-Tests (`npx vitest run`) aus.
+
+**Auto-PRs auf `staging` umbiegen:** Claude-Code öffnet neue PRs immer gegen den
+Default-Branch (`main`). Der Workflow `.github/workflows/retarget-claude-prs.yml`
+stellt beim Öffnen eines `claude/*`-PRs die Basis automatisch von `main` auf
+`staging` um (via `pull_request_target`, damit es auch für ältere Branches greift
+und Schreibrechte hat – es wird kein PR-Code ausgeführt). Wird die Basis danach
+bewusst wieder auf `main` gesetzt, bleibt sie so. Der Workflow ist erst aktiv,
+sobald er selbst auf `main`/`staging` liegt.
 
 Der Puppeteer-E2E (`src/solver/ui.test.js`) läuft **automatisch auf Staging**:
 in einem eigenen `e2e`-Job, aber nur bei **PRs gegen `staging`** und **Pushes auf

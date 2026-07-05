@@ -16,7 +16,8 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     env:
-      # Der Puppeteer-E2E ist nicht Teil der CI, daher kein Chromium-Download.
+      # Dieser Job braucht keinen Browser (der E2E läuft im separaten `e2e`-Job),
+      # daher npm ci ohne Chromium-Download.
       PUPPETEER_SKIP_DOWNLOAD: 'true'
     steps:
       - name: Checkout
