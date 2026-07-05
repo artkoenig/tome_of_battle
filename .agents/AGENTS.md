@@ -1,6 +1,10 @@
 # Custom Agent Rules - Tome of Battle
 Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grundlage von Battlescribe-Dateien.
 
+## Architektur-Entscheidungen (ADRs)
+* **Zentrales ADR-System:** Alle grundlegenden Architekturentscheidungen werden unter `docs/adr/` dokumentiert (siehe [README.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/README.md) für einen Index). Neue Entscheidungen folgen dem Template `docs/adr/template.md`.
+* **Synchronisationsregel:** Sobald ein ADR im Status `Accepted` hinzugefügt oder modifiziert wird, müssen die entsprechenden Abschnitte in dieser Datei (`AGENTS.md`) und in `CLAUDE.md` synchronisiert werden, damit LLM-Agenten immer nach den aktuellsten Architekturvorgaben handeln (siehe [ADR 0001](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0001-record-architecture-decisions.md)).
+
 ## Debugging & Automation
 * **Bug-Analyse & Vorgehen:** Bei gemeldeten Bugs, die die Fachlogik betreffen, muss **zuerst in den vorhandenen Daten** (Kataloge, Spieldaten) nach einer bereits erfassten, aber eventuell unvollständig implementierten Logik gesucht werden, bevor neuer Code geschrieben wird. Nutze für die Analyse ein Reasoning Modell, für die Umsetzung ein Flash Modell
 * **Local (macOS):** `browser_subagent` / `open_browser_url` funktionieren nicht. **Nutze Puppeteer** in `scripts/` via `run_command` (z. B. `node scripts/debug_ui.js`).

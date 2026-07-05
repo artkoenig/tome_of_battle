@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Tome of Battle" — a React + Vite PWA for building and playing tabletop army lists from **Battlescribe** data files (`.cat`/`.gst` XML). It's a client-only app: no backend, all data (imported game systems and user rosters) lives in the browser's IndexedDB.
 
+## Architecture Decisions (ADRs)
+
+All core architecture decisions are documented in [docs/adr/](file:///Users/artkoenig/Workspace/army_builder/docs/adr/) (see [README.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/README.md) for the index). New decisions follow the [template.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/template.md).
+Whenever an ADR is added or updated (Accepted status), corresponding rules in `.agents/AGENTS.md` and `CLAUDE.md` must be synchronized.
+
+
 ## Commands
 
 ```bash
