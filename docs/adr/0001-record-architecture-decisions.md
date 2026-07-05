@@ -40,9 +40,11 @@ Gewählte Option: **Option 2 (Dezentrales ADR-System)**.
    - `Deprecated`: Die Entscheidung ist veraltet und nicht mehr aktiv anzuwenden.
    - `Superseded`: Die Entscheidung wurde durch ein neueres ADR (z. B. ADR 0010 ersetzt ADR 0002) abgelöst.
 
-### WICHTIG: Synchronisation mit Agenten-Konfigurationen
+### WICHTIG: Agenten-Integration (Single Source of Truth)
 Da KI-Assistenten (`Gemini Antigravity`, `Claude Code`) eine zentrale Rolle bei der Code-Generierung in diesem Projekt spielen, gilt folgende zwingende Regel:
-- **Synchronisationspflicht:** Sobald ein ADR den Status `Accepted` erhält oder aktualisiert wird, müssen die entsprechenden Abschnitte in den Konfigurationsdateien für Agenten (`.agents/AGENTS.md` und `CLAUDE.md`) synchronisiert bzw. aktualisiert werden. So ist garantiert, dass die LLMs stets nach den aktuellsten Architekturrichtlinien arbeiten.
+- **Keine Duplikation:** Um Redundanz und veraltete Stände zu vermeiden, werden keine konkreten Architektur-Richtlinien in `.agents/AGENTS.md` oder `CLAUDE.md` kopiert.
+- **Pointer-Prinzip:** `.agents/AGENTS.md` und `CLAUDE.md` dienen als leichtgewichtige "Pointer" (Verweise). Sie verpflichten KI-Assistenten explizit dazu, vor jeder Bearbeitung die relevanten ADR-Dateien unter `docs/adr/` einzulesen. Die ADRs sind somit die einzige Quelle der Wahrheit (Single Source of Truth) für Mensch und Maschine.
+
 
 ### Konsequenzen (Auswirkungen)
 
