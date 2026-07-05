@@ -21,27 +21,31 @@ Weil Staging unter einer **anderen URL/Origin** läuft, sind seine IndexedDB
 (importierte Systeme und Rosters) und sein Service-Worker-Cache vollständig von
 Production getrennt – Testdaten auf Staging berühren die Live-Daten nicht.
 
-## Einmalige Einrichtung
+## Einrichtung
 
-1. **`staging`-Branch anlegen** (von `main` aus):
+Es reicht, den **`staging`-Branch anzulegen** – mehr braucht es nicht:
 
-   ```bash
-   git checkout main && git pull
-   git checkout -b staging
-   git push -u origin staging
-   ```
+```bash
+git checkout main && git pull
+git checkout -b staging
+git push -u origin staging
+```
 
-2. **Im Vercel-Dashboard eine feste URL auf `staging` legen**
-   (Vercel-Config lässt sich nicht aus dem Repo setzen, das geht nur im Dashboard):
+Vercel vergibt für einen Branch automatisch einen **stabilen Branch-Alias**, der
+immer auf den letzten Deploy dieses Branches zeigt und sich nie ändert:
 
-   - Projekt → **Settings → Domains**.
-   - Eine Subdomain hinzufügen, z. B. `staging.<deine-domain>`.
-   - Bei dieser Domain als **Git Branch** `staging` auswählen (statt `main`).
-   - Speichern. Ab jetzt deployt jeder Push auf `staging` auf diese feste URL.
+```
+https://<projekt>-git-staging-<scope>.vercel.app
+```
 
-   > Ohne eigene Domain kannst du alternativ Vercels stabilen Branch-Alias nutzen
-   > (`<projekt>-git-staging-<scope>.vercel.app`), der ebenfalls immer auf den
-   > letzten `staging`-Deploy zeigt.
+Die genaue URL steht nach dem ersten `staging`-Push im Vercel-Dashboard (bzw. im
+Vercel-Kommentar an einem PR). Diese URL ist die Staging-Umgebung – bookmarken
+und für Tests verwenden.
+
+> **Optional – hübschere URL:** Wer eine eigene Adresse wie
+> `staging.<deine-domain>` will, legt sie im Vercel-Dashboard unter
+> *Settings → Domains* an und weist ihr als **Git Branch** `staging` zu. Rein
+> funktional ist das nicht nötig; der Branch-Alias oben tut dasselbe.
 
 ## Arbeitsablauf
 
