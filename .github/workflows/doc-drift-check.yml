@@ -1,0 +1,79 @@
+name: Doku-Abgleich (staging)
+
+# Bei jedem Push auf `staging` (also nach jedem Merge in den Staging-Zweig des
+# Release-Trains) prüft Claude den gerade gemergten Diff gegen die
+# Dokumentation. Wenn der Code sich gewollt geändert hat und eine Doku dadurch
+# nicht mehr zum Status quo passt, korrigiert Claude die Doku und öffnet dafür
+# einen eigenen PR gegen `staging` (kein Auto-Commit direkt auf den Branch).
+#
+# Läuft der Korrektur-PR selbst später auf `staging` ein, startet dieser
+# Workflow erneut, findet dann konsistente Docs und tut nichts – der Ablauf ist
+# also selbstbegrenzend.
+on:
+  push:
+    branches: [staging]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: doc-drift-staging
+  cancel-in-progress: false
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (volle Historie für den Diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Doku gegen Code-Diff abgleichen
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--model claude-opus-4-8 --max-turns 30"
+          prompt: |
+            Du prüfst nach einem Merge auf `staging`, ob die Dokumentation dieses
+            Repos noch zum tatsächlichen Code-Stand ("Status quo") passt, und
+            korrigierst sie bei Bedarf.
+
+            KONTEXT DES PUSHES:
+            - Vorher-Commit: ${{ github.event.before }}
+            - Nachher-Commit (HEAD): ${{ github.event.after }}
+            - Den gemergten Diff bekommst du mit:
+              `git diff ${{ github.event.before }} ${{ github.event.after }}`
+              Ist der Vorher-Commit nur Nullen (erster/erzwungener Push), nutze
+              stattdessen `git diff HEAD~1 HEAD`.
+
+            AUFTRAG:
+            1. Sieh dir den Diff dieses Pushes an und verstehe, WAS sich am
+               Verhalten/an der Struktur geändert hat.
+            2. Prüfe, ob dadurch eine Dokumentation veraltet ist. Zu prüfen sind
+               mindestens: `CLAUDE.md`, alle Dateien unter `docs/`, ein evtl.
+               vorhandenes `README*`, sowie erklärende Kommentare in
+               `.github/workflows/*` und `vite.config.js`.
+            3. Der CODE ist die Quelle der Wahrheit. War die Code-Änderung
+               offensichtlich gewollt und beschreibt eine Doku jetzt etwas
+               Falsches/Veraltetes, dann KORRIGIERE die Doku so, dass sie den
+               neuen Status quo beschreibt.
+
+            REGELN:
+            - Ändere NIEMALS Code, Tests oder Konfiguration – ausschließlich
+              Dokumentation (Markdown und erklärende Kommentare).
+            - Erfinde keine Features. Beschreibe nur, was der Diff belegt.
+            - Nur sachliche/strukturelle Korrekturen, keine Stil- oder
+              Geschmacks-Umschreibungen konsistenter Docs.
+            - Passt alles bereits zusammen (kein Drift), ändere nichts und
+              öffne keinen PR – gib nur eine kurze Zusammenfassung aus.
+
+            WENN es Korrekturen gibt:
+            - Lege einen neuen Branch `docs/sync-staging-<kurzer-SHA>` von
+              `staging` an, committe nur die Doku-Änderungen und öffne einen PR
+              gegen `staging`.
+            - Titel und Body auf Deutsch. Der Body listet knapp: welche
+              Code-Änderung welche Doku-Stelle veraltet hat und was du angepasst
+              hast.

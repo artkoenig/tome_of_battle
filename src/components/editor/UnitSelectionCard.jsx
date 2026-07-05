@@ -385,7 +385,6 @@ export default function UnitSelectionCard({
               copyUnit={null}
               updateSubSelection={updateSubSelection}
               activeCatalogue={activeCatalogue}
-              setSelectedCatalogEntry={setSelectedCatalogEntry}
               isSubUnit={true}
             />
           ))}
