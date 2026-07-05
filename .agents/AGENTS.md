@@ -1,24 +1,26 @@
-# Custom Agent Rules - Tome of Battle
-Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grundlage von Battlescribe-Dateien.
+# Custom Agent Rules
 
-## 1. Architektur-Richtlinien (ADRs)
-* **Kanonische Quelle:** Alle Architekturentscheidungen und Richtlinien für dieses Projekt sind unter `docs/adr/` dokumentiert (siehe [README.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/README.md) für den Index).
-* **Verpflichtung für Agenten:** Du **MUSST** vor jeder Code-Änderung oder -Generierung die relevanten ADRs unter `docs/adr/` einlesen (z. B. ADR 0002 für Datenbanken, ADR 0003 für Fachlogik, ADR 0004 für Styling). Sie dienen als deine primäre Arbeitsanweisung.
-* **Keine Duplikation:** Richtlinien werden ausschließlich in den ADRs gepflegt. Diese Datei (`AGENTS.md`) enthält keine Detailregeln mehr.
+## What this is
 
-## 2. Debugging & Umgebung
-* **Local (macOS):** `browser_subagent` / `open_browser_url` funktionieren nicht. **Nutze Puppeteer** in `scripts/` via `run_command` (z. B. `node scripts/debug_ui.js`). Siehe [ADR 0006](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0006-testing-and-automation.md).
-* **Cloud (Linux):** Nutze `/browser` und `browser_subagent` (voll unterstützt).
+"Tome of Battle" — a React + Vite PWA for building and playing tabletop army lists from **Battlescribe** data files (`.cat`/`.gst` XML). It's a client-only app: no backend, all data lives in IndexedDB.
 
-## 3. Git & PRs
-* PRs werden immer gegen den `staging`-Branch erstellt (siehe [ADR 0009](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0009-branching-and-release-train-strategy.md)).
-* Pushes auf Remote-Repositories erfolgen lokal (macOS) nur bei expliziter Aufforderung.
+## Architecture Guidelines (ADRs)
 
-## 4. UI/UX Reviews & Feature-Inspiration
-* **Ablauf bei UI/UX Review-Anfragen:**
-  1. Führe das Skript `node scripts/generate_screenshots.js` aus, um das aktuelle Interface visuell zu erfassen.
-  2. Nutze die Screenshots zur Analyse und als kreatives Sprungbrett.
-* **Fokus:** Suche nach Redundanzen und UI-Ballast. Achte auf visuelle Harmonie und Konsistenz.
+All core architecture, database, styling, testing, and deployment guidelines are documented in **[docs/adr/](docs/adr/)** (see the index [README.md](docs/adr/README.md)).
+- **CRITICAL:** You **MUST** read and adhere to the relevant ADR files under `docs/adr/` before starting any development or modifying code in this repository.
 
-## 5. Monitoring & Crons
-* **Monitoring Crons:** Geplante Monitoring-Crons müssen strikt in einem Intervall von **max. 3 Minuten** ausgeführt werden, um den Systemstatus und die Integrität der Hintergrundprozesse zeitnah zu überwachen.
+## Commands
+
+```bash
+npm run dev              # Vite dev server
+npm run build             # Production build (also injects a fresh SW cache version)
+npm run lint               # oxlint
+npm test                     # vitest run (unit/component tests) + node src/solver/ui.test.js (puppeteer E2E)
+npx vitest run <path>          # run a single test file
+npx vitest run -t "<name>"       # run tests matching a name
+npm run debug-ui             # node scripts/debug_ui.js — scripted puppeteer debugging session
+```
+
+- All unit tests must pass before a task is considered done.
+- On macOS, `browser_subagent`/`open_browser_url` don't work — use Puppeteer scripts in `scripts/` (e.g. `node scripts/generate_screenshots.js`). On Linux/cloud, `/browser` and `browser_subagent` work normally (see [ADR 0006](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0006-testing-and-automation.md)).
+- After any UI-visible change, take a screenshot of the affected view and send it to the user as confirmation (skip this when running on the user's local machine).

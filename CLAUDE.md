@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Guidelines (ADRs)
 
-All core architecture, database, styling, testing, and deployment guidelines are documented in **[docs/adr/](file:///Users/artkoenig/Workspace/army_builder/docs/adr/)** (see the index [README.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/README.md)).
+All core architecture, database, styling, testing, and deployment guidelines are documented in **[docs/adr/](docs/adr/)** (see the index [README.md](docs/adr/README.md)).
 - **CRITICAL:** You **MUST** read and adhere to the relevant ADR files under `docs/adr/` before starting any development or modifying code in this repository.
 
 ## Commands
