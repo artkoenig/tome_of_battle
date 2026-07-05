@@ -11,6 +11,7 @@ import DebugEntryEditorModal from './components/editor/DebugEntryEditorModal';
 import GlobalDebugSearch from './components/editor/GlobalDebugSearch';
 import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
+import EnvBadge from './components/EnvBadge';
 
 import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
 
@@ -330,6 +331,7 @@ export default function App() {
         <div className="logo-container">
           <img src="/favicon.png" className="logo-icon" alt="Tome of Battle Logo" />
           <span className="logo-text">TOME OF BATTLE</span>
+          <EnvBadge />
         </div>
         
         {showDebugIds && (
