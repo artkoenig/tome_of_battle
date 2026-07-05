@@ -17,6 +17,17 @@ describe('deployEnv', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo' })).toBe('preview');
       expect(resolveDeployEnv({ command: 'build', branch: '' })).toBe('preview');
     });
+    it('prefers VERCEL_TARGET_ENV over the branch name', () => {
+      // Custom Vercel-Umgebung "staging", auch wenn der Branch anders heißt.
+      expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo', targetEnv: 'staging' })).toBe('staging');
+      expect(resolveDeployEnv({ command: 'build', branch: 'anything', targetEnv: 'production' })).toBe('production');
+    });
+    it('treats a standard preview target env as preview', () => {
+      expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo', targetEnv: 'preview' })).toBe('preview');
+    });
+    it('treats an unknown custom target env as preview (still flagged)', () => {
+      expect(resolveDeployEnv({ command: 'build', branch: 'qa', targetEnv: 'qa' })).toBe('preview');
+    });
   });
 
   describe('isFlaggedEnv', () => {

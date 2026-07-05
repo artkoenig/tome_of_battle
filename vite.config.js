@@ -240,7 +240,13 @@ export default defineConfig(({ command }) => ({
   // Nicht-Production-Deploys (Staging/Preview) sichtbar gekennzeichnet werden.
   define: {
     'import.meta.env.VITE_DEPLOY_ENV': JSON.stringify(
-      resolveDeployEnv({ command, branch: detectBranch() })
+      resolveDeployEnv({
+        command,
+        branch: detectBranch(),
+        // VERCEL_TARGET_ENV nennt die (auch custom) Vercel-Umgebung zuverlässig
+        // (VERCEL_ENV steht bei custom Pre-Prod-Umgebungen auf 'preview').
+        targetEnv: process.env.VERCEL_TARGET_ENV || '',
+      })
     ),
   },
 }))
