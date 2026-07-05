@@ -16,6 +16,7 @@ Diese Anwendung ist zum Erstellen von Armeelisten für Tabletop-Spiele auf Grund
 
 ## Git
 * **Local (macOS):** Push zu Remote-Repositories nur bei Aufforderung.
+* **Pull Requests (PRs):** PRs werden immer gegen den `staging`-Branch erstellt.
 
 ## Testing
 * Alle Unit-Tests **müssen** vor dem Task-Abschluss erfolgreich durchlaufen.
