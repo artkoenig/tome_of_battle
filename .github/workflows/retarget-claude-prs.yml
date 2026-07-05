@@ -1,7 +1,7 @@
 name: PR-Basis auf staging umstellen
 
 # Claude-Code öffnet Auto-PRs immer gegen den Default-Branch (`main`). Im
-# Release-Train (docs/ci-cd-and-staging.md) sollen Feature-PRs aber zuerst
+# Release-Train (docs/adr/0009-branching-and-release-train-strategy.md) sollen Feature-PRs aber zuerst
 # gegen `staging` laufen. Dieser Workflow biegt frisch geöffnete
 # `claude/*`-PRs, die auf `main` zeigen, automatisch auf `staging` um.
 #
@@ -44,7 +44,7 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: pr.number,
                 body: [
-                  '🔁 Basis automatisch von `main` auf `staging` umgestellt – im Release-Train laufen Feature-PRs zuerst gegen `staging` (siehe `docs/ci-cd-and-staging.md`).',
+                  '🔁 Basis automatisch von `main` auf `staging` umgestellt – im Release-Train laufen Feature-PRs zuerst gegen `staging` (siehe `docs/adr/0009-branching-and-release-train-strategy.md`).',
                   '',
                   'Soll dieser PR bewusst direkt nach `main`, die Basis einfach wieder auf `main` ändern.',
                 ].join('\n'),

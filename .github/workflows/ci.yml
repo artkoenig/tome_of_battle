@@ -1,7 +1,7 @@
 name: CI (Lint & Tests)
 
 # Läuft bei PRs gegen staging/main (Release-Train, siehe
-# docs/ci-cd-and-staging.md) und bei Pushes auf diese Branches.
+# docs/adr/0009-branching-and-release-train-strategy.md) und bei Pushes auf diese Branches.
 on:
   pull_request:
     branches: [staging, main]

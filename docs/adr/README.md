@@ -15,3 +15,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0005 | [React Lifecycle and Performance](0005-react-lifecycle-and-performance.md) | Accepted | 2026-07-03 |
 | 0006 | [Testing and Automation](0006-testing-and-automation.md) | Accepted | 2026-07-05 |
 | 0007 | [CI/CD Workflow](0007-ci-cd-workflow.md) | Accepted | 2026-07-05 |
+| 0008 | [Vercel Deployment and Staging Environment](0008-vercel-deployment-and-staging-environment.md) | Accepted | 2026-07-05 |
+| 0009 | [Branching and Release Train Strategy](0009-branching-and-release-train-strategy.md) | Accepted | 2026-07-05 |
