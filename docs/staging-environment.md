@@ -68,11 +68,37 @@ die Umgebung über eine solche Custom Environment (statt nur über den Branch-
 Namen) definiert ist. Auf dem Hobby-Plan gibt es keine Custom Environments – dort
 ist der Branch-Alias oben der richtige Weg.
 
-## Arbeitsablauf
+## Arbeitsablauf (Release-Train)
+
+```
+feature/xyz ──PR──▶ staging ──(auf Staging-URL testen)──▶ PR ──▶ main ──▶ Production + Release-Tag
+```
 
 1. Feature-Branch von `main` abzweigen und entwickeln.
-2. Zum Testen nach `staging` mergen → auf der Staging-URL prüfen (mit Badge).
-3. Passt alles, den Feature-Branch nach `main` mergen → Production-Release.
+2. **PR gegen `staging`** öffnen. CI (Lint + Tests) läuft automatisch (siehe
+   unten). Nach dem Merge auf der stabilen Staging-URL prüfen (mit Badge,
+   isolierte IndexedDB). Feature-PRs am besten **squash-mergen** – dann ist ein
+   Feature = ein sauberer Commit, und der PR-Titel wird später die Changelog-
+   Zeile (deshalb als deutschen Endnutzer-Satz formulieren).
+3. Zum Veröffentlichen einen **PR `staging` → `main`** öffnen und als **normalen
+   Merge** mergen (**kein Squash**). Push auf `main` → Release-Tag + „Was ist
+   neu"-Toast.
 
-`staging` ist ein reiner Test-Branch und wird **nicht** getaggt; die
-Versionierung/Changelog-Logik reagiert weiterhin nur auf `main`.
+**Warum kein Squash bei `staging → main`:** Der Changelog = die Commit-Subjects
+auf `main` seit dem letzten Release-Tag. Ein Squash der Promotion würde alle
+Features zu einer einzigen Changelog-Zeile zusammenfalten.
+
+**Divergenz vermeiden:** Immer die *ganze* `staging` promoten, nichts
+cherry-picken. Einen Hotfix direkt auf `main` danach nach `staging` zurückmergen,
+sonst laufen die Branches auseinander.
+
+`staging` wird **nicht** getaggt; die Versionierung/Changelog-Logik reagiert nur
+auf `main`.
+
+## Continuous Integration
+
+`.github/workflows/ci.yml` läuft bei jedem **PR gegen `staging` oder `main`**
+(und bei Pushes auf diese Branches) und führt `npm run lint` sowie die Unit-/
+Component-Tests (`npx vitest run`) aus. Der Puppeteer-E2E (`src/solver/ui.test.js`)
+ist bewusst **nicht** Teil der CI: er braucht einen echten Browser und wird
+lokal via `npm test` ausgeführt.
