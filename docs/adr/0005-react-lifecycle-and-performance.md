@@ -1,7 +1,7 @@
 # 0005: React Lifecycle and Performance
 
 - **Status:** Accepted
-- **Datum:** 2026-07-05
+- **Datum:** 2026-07-03
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Keine
 

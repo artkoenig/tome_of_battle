@@ -1,7 +1,7 @@
 # 0002: Data Flow and IndexedDB Storage
 
 - **Status:** Accepted
-- **Datum:** 2026-07-05
+- **Datum:** 2026-06-28
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Keine
 
