@@ -443,6 +443,25 @@ select option {
   gap: 16px;
 }
 
+/* Umgebungs-Hinweis (Staging/Vorschau) neben dem Logo */
+.env-badge {
+  align-self: center;
+  font-family: var(--font-serif);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.12em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+  background: rgba(194, 125, 19, 0.15);
+}
+
+.env-badge--preview {
+  border-color: var(--text-dim);
+  color: var(--text-dim);
+  background: rgba(183, 183, 196, 0.12);
+}
+
 /* Header-Statusbadges & Debug-Umschalter */
 .offline-badge {
   display: flex;

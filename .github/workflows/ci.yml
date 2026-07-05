@@ -1,0 +1,38 @@
+name: CI (Lint & Tests)
+
+# Läuft bei PRs gegen staging/main (Release-Train, siehe
+# docs/staging-environment.md) und bei Pushes auf diese Branches.
+on:
+  pull_request:
+    branches: [staging, main]
+  push:
+    branches: [staging, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    env:
+      # Der Puppeteer-E2E ist nicht Teil der CI, daher kein Chromium-Download.
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit-/Component-Tests
+        run: npx vitest run

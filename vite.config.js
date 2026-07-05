@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from '
 import { resolve, join } from 'path'
 import { execSync } from 'child_process'
 import { resolveVersion } from './scripts/versioning.js'
+import { resolveDeployEnv } from './scripts/deployEnv.js'
 
 /**
  * Vite plugin that injects a unique build version into sw.js
@@ -233,7 +234,20 @@ function extractIdAndName(content, tag) {
   return null;
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react(), swVersionPlugin(), catalogManifestPlugin(), versionPlugin()],
-})
+  // Deploy-Umgebung zur Build-Zeit bestimmen und der App bereitstellen, damit
+  // Nicht-Production-Deploys (Staging/Preview) sichtbar gekennzeichnet werden.
+  define: {
+    'import.meta.env.VITE_DEPLOY_ENV': JSON.stringify(
+      resolveDeployEnv({
+        command,
+        branch: detectBranch(),
+        // VERCEL_TARGET_ENV nennt die (auch custom) Vercel-Umgebung zuverlässig
+        // (VERCEL_ENV steht bei custom Pre-Prod-Umgebungen auf 'preview').
+        targetEnv: process.env.VERCEL_TARGET_ENV || '',
+      })
+    ),
+  },
+}))
 
