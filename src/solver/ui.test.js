@@ -435,50 +435,51 @@ const runUiTests = async () => {
       console.log('Verifying unit deletion confirmation - cancel scenario...');
       const countBeforeCancel = await page.evaluate(() => document.querySelectorAll('.selection-node').length);
       
-      let dialogDismissed = false;
-      const dismissHandler = async dialog => {
-        console.log(`[Browser Dialog] Dismissing dialog: ${dialog.message()}`);
-        dialogDismissed = true;
-        await dialog.dismiss();
-      };
-      page.on('dialog', dismissHandler);
-
-      // Delete the first unit via its actions menu ("Löschen") — triggers confirm()
+      // Delete the first unit via its actions menu ("Löschen") — opens modal
       await openUnitActionAndClick(page, 'Löschen');
-      await new Promise(r => setTimeout(r, 800));
-
-      page.off('dialog', dismissHandler);
+      
+      // Wait for modal to open and click "Abbrechen"
+      await page.waitForFunction(() => {
+         const buttons = Array.from(document.querySelectorAll('button'));
+         return buttons.some(b => b.textContent.includes('Abbrechen') && b.closest('.gothic-bottomsheet.open'));
+      }, { timeout: 2000 });
+      
+      await page.evaluate(() => {
+         const buttons = Array.from(document.querySelectorAll('button'));
+         const cancelBtn = buttons.find(b => b.textContent.includes('Abbrechen') && b.closest('.gothic-bottomsheet.open'));
+         if (cancelBtn) cancelBtn.click();
+      });
+      
+      await new Promise(r => setTimeout(r, 800)); // wait for modal close
 
       const countAfterCancel = await page.evaluate(() => document.querySelectorAll('.selection-node').length);
       console.log(`Units count after cancel deletion: ${countAfterCancel}`);
-      if (!dialogDismissed) {
-        throw new Error('Confirm dialog was not triggered during cancel test');
-      }
       if (countAfterCancel !== countBeforeCancel) {
         throw new Error(`Unit was deleted even though deletion was cancelled. Expected ${countBeforeCancel}, got ${countAfterCancel}`);
       }
       console.log('Cancel deletion test: PASSED');
 
       console.log('Verifying unit deletion confirmation - accept scenario...');
-      let dialogAccepted = false;
-      const acceptHandler = async dialog => {
-        console.log(`[Browser Dialog] Accepting dialog: ${dialog.message()}`);
-        dialogAccepted = true;
-        await dialog.accept();
-      };
-      page.on('dialog', acceptHandler);
-
+      
       // Delete the first unit again via its actions menu ("Löschen")
       await openUnitActionAndClick(page, 'Löschen');
-      await new Promise(r => setTimeout(r, 800));
+      
+      // Wait for modal to open and click "Löschen" (btn-danger in modal)
+      await page.waitForFunction(() => {
+         const buttons = Array.from(document.querySelectorAll('.gothic-bottomsheet.open button.btn-danger'));
+         return buttons.some(b => b.textContent.includes('Löschen'));
+      }, { timeout: 2000 });
 
-      page.off('dialog', acceptHandler);
+      await page.evaluate(() => {
+         const buttons = Array.from(document.querySelectorAll('.gothic-bottomsheet.open button.btn-danger'));
+         const deleteBtn = buttons.find(b => b.textContent.includes('Löschen'));
+         if (deleteBtn) deleteBtn.click();
+      });
+
+      await new Promise(r => setTimeout(r, 800)); // wait for state update
 
       const countAfterAccept = await page.evaluate(() => document.querySelectorAll('.selection-node').length);
       console.log(`Units count after accept deletion: ${countAfterAccept}`);
-      if (!dialogAccepted) {
-        throw new Error('Confirm dialog was not triggered during accept test');
-      }
       if (countAfterAccept !== countBeforeCancel - 1) {
         throw new Error(`Unit was not deleted. Expected ${countBeforeCancel - 1}, got ${countAfterAccept}`);
       }

@@ -8,6 +8,7 @@ import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, findForc
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
 import UnitSelectionCard from './editor/UnitSelectionCard';
+import AutoFillSuggestions from './editor/AutoFillSuggestions';
 
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay }) {
@@ -35,6 +36,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const currentPoints = costs[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;
+  const remainingPoints = limitPoints - currentPoints;
   const generalErrors = validationErrors.filter(e => !e.categoryId && !e.selectionId);
   const isRosterValid = validationErrors.length === 0;
   const extraResources = getExtraResourceTotals(system, roster, costs);
@@ -254,6 +256,17 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     })}
                   </div>
                 </div>
+              )}
+
+              {remainingPoints > 0 && remainingPoints <= 50 && (
+                <AutoFillSuggestions
+                  roster={roster}
+                  system={system}
+                  activeCatalogue={activeCatalogue}
+                  remainingPoints={remainingPoints}
+                  updateSubSelection={updateSubSelection}
+                  costTypeLabel={costTypeLabel}
+                />
               )}
 
               {/* 3. Centralized General Errors & Validation Summary Panel */}

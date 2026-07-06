@@ -152,26 +152,28 @@ describe('UnitSelectionCard Component', () => {
   });
 
   it('confirms and triggers removeUnit upon delete click', () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<UnitSelectionCard {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Aktionen'));
-    const deleteButton = screen.getByText('Löschen');
-    fireEvent.click(deleteButton);
+    const menuDeleteButton = screen.getByText('Löschen');
+    fireEvent.click(menuDeleteButton);
 
-    expect(confirmSpy).toHaveBeenCalled();
+    const modalDeleteButton = screen.getAllByText('Löschen').find(b => b.tagName === 'BUTTON');
+    fireEvent.click(modalDeleteButton);
+
     expect(defaultProps.removeUnit).toHaveBeenCalledWith('sel-1');
   });
 
   it('does not delete when confirmation is cancelled', () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     render(<UnitSelectionCard {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Aktionen'));
-    const deleteButton = screen.getByText('Löschen');
-    fireEvent.click(deleteButton);
+    const menuDeleteButton = screen.getByText('Löschen');
+    fireEvent.click(menuDeleteButton);
 
-    expect(confirmSpy).toHaveBeenCalled();
+    const cancelButton = screen.getByText('Abbrechen');
+    fireEvent.click(cancelButton);
+
     expect(defaultProps.removeUnit).not.toHaveBeenCalled();
   });
 
