@@ -54,6 +54,7 @@ export default function UnitSelectionCard({
   const [hoveredInfo, setHoveredInfo] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const menuRef = useRef(null);
 
   const updateTooltipPosition = (e) => {
@@ -294,9 +295,7 @@ export default function UnitSelectionCard({
                     className="popover-item"
                     onClick={() => {
                       setIsMenuOpen(false);
-                      if (window.confirm('Möchten Sie diese Einheit wirklich löschen?')) {
-                        removeUnit(selection.id);
-                      }
+                      setShowConfirmDelete(true);
                     }}
                   >
                     <span className="popover-item-name unit-card-menu-item unit-card-menu-item-danger">
@@ -412,6 +411,34 @@ export default function UnitSelectionCard({
       >
         <div className="info-popup-body">
           {activeInfo?.text}
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        title="Einheit löschen"
+        desktopMode="modal"
+      >
+        <div className="info-popup-body" style={{ textAlign: 'center', padding: '16px 16px 24px 16px' }}>
+          <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>Möchten Sie <strong>{selection.name}</strong> wirklich löschen?</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button 
+              className="btn" 
+              onClick={() => setShowConfirmDelete(false)}
+            >
+              Abbrechen
+            </button>
+            <button 
+              className="btn btn-danger" 
+              onClick={() => {
+                setShowConfirmDelete(false);
+                removeUnit(selection.id);
+              }}
+            >
+              Löschen
+            </button>
+          </div>
         </div>
       </BottomSheet>
     </div>
