@@ -1,59 +1,51 @@
-# 0009: Branching and Release Train Strategy
+# 0009: Branching and Release Strategy (Trunk-based)
 
 - **Status:** Accepted
-- **Datum:** 2026-07-05
+- **Datum:** 2026-07-13
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** [ADR 0001: Record Architecture Decisions](0001-record-architecture-decisions.md), [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0008: Vercel Deployment and Staging Environment](0008-vercel-deployment-and-staging-environment.md)
 
 ## Kontext und Problemstellung
 
-Bei der gemeinsamen Entwicklung durch menschliche Entwickler und KI-Assistenten müssen Änderungen strukturiert integriert werden. Ein direkter Commit auf `main` birgt das Risiko von ungetesteten Fehlern im Live-Betrieb. Zudem wird eine automatisierte Release-Versionierung und Changelog-Generierung angestrebt, die eine lesbare und saubere Git-Historie voraussetzt.
+Die frühere "Release Train"-Strategie mit einem dezidierten `staging`-Branch hat sich als zu schwerfällig erwiesen. Entwickler mussten zweistufig mergen (erst auf Staging, dann auf Main), was den Workflow verlangsamte. Eine simplere Trunk-based Strategie (GitHub Flow) mit automatisiertem Deployment über Tags ist flüssiger.
 
 ## Entscheidungsfaktoren (Drivers)
 
-- **Qualitätssicherung:** Jedes Feature muss vor dem Live-Gang auf Staging getestet werden.
-- **Transparenz:** Nachvollziehbare Versions-Historie und automatisierte Generierung von Changelogs.
-- **Feature-Isolation:** Saubere Trennung von in Entwicklung befindlichen Features.
+- **Entwicklungsgeschwindigkeit:** Direkter Pfad von Feature zu Hauptzweig.
+- **Einfachheit:** Weniger Branches bedeuten weniger Konflikte und kognitive Last.
+- **Klarheit im Deployment:** `main` entspricht stets einer testbaren Vorabversion, während Releases explizit getaggt werden.
 
 ## Betrachtete Optionen
 
-- **Option 1 (GitHub Flow):** Features werden direkt in `main` gemerged. Releases erfolgen manuell oder ad-hoc.
-- **Option 2 (Release Train mit Staging-Branch):** Ein Release Train Modell mit einem stabilen Zwischenschritt (`staging`) vor der Veröffentlichung auf `main`.
+- **Option 1 (Release Train):** Mit separatem `staging`-Branch.
+- **Option 2 (GitHub Flow / Trunk-based):** Features fließen direkt in `main`. Releases werden über Git-Tags gesteuert.
 
 ## Entscheidungsergebnis
 
-Gewählte Option: **Option 2 (Release Train mit Staging-Branch)**.
+Gewählte Option: **Option 2 (GitHub Flow / Trunk-based)**.
 
-Der Integrations- und Veröffentlichungsprozess folgt diesen verbindlichen Schritten:
+Der Integrations- und Veröffentlichungsprozess folgt nun diesen verbindlichen Schritten:
 
 ```
-feature/xyz ──PR (Squash-Merge)──▶ staging ──(Testen auf Staging-URL)──▶ PR (Normaler Merge)──▶ main
+feature/xyz ──PR (Squash-Merge)──▶ main ──(Testen auf Preview-URL)──▶ git tag vX.Y.Z ──▶ Live
 ```
 
 ### 1. Branch-Struktur
 - **Feature-Branches:** Entwicklung neuer Features oder Bugfixes erfolgt auf isolierten Branches (z. B. `claude/feature-name` oder `feat/feature-name`).
-- **`staging`:** Sammelbecken für fertig entwickelte Features. Dient dem manuellen Testen und QA.
-- **`main`:** Enthält ausschließlich den produktiven, stabilen und freigegebenen Code-Stand.
+- **`main`:** Der Trunk. Alle PRs werden hierhin gemerged. Er spiegelt stets die neueste stabile Vorschauversion (Preview) wider.
+- Einen speziellen `staging`-Branch gibt es nicht mehr.
 
-### 2. Integration in `staging` (Squash-Merge)
-- Feature-PRs werden grundsätzlich gegen den Branch `staging` geöffnet (automatisch korrigiert bei `claude/*`-Branches, siehe [ADR 0007](0007-ci-cd-workflow.md)).
-- Beim Zusammenführen in `staging` wird **zwingend ein Squash-Merge** durchgeführt.
-- **Vorteil:** Die gesamte Historie eines Features wird zu einem einzigen, sauberen Commit zusammengefasst. Der PR-Titel wird dabei als Commit-Subject übernommen.
-
-### 3. Promotion nach `main` (Normaler Merge-Commit)
-- Um die gesammelten Features von Staging auf Production zu mergen, wird ein PR von **`staging` nach `main`** geöffnet.
-- **WICHTIG:** Dieser PR darf **NICHT gesquasht** werden! Es muss ein **normaler Merge-Commit** durchgeführt werden.
-- **Grund:** Die automatisierte Changelog-Generierung auf `main` liest alle einzelnen Commit-Subjects seit dem letzten Release-Tag aus. Ein Squash-Merge würde alle Features der gesamten Staging-Phase zu einer einzigen, unleserlichen Changelog-Zeile zusammenfassen.
-- Die Commit-Subjects auf `main` werden direkt in der Benutzeroberfläche unter "Was ist neu" angezeigt. Daher müssen alle Feature-Commits aussagekräftig und benutzerfreundlich auf Deutsch formuliert sein.
+### 2. Integration in `main` (Squash-Merge)
+- Feature-PRs werden grundsätzlich gegen `main` geöffnet.
+- Beim Zusammenführen in `main` wird **zwingend ein Squash-Merge** durchgeführt.
+- **Grund:** Die automatisierte Changelog-Generierung auf `main` liest alle einzelnen Commit-Subjects seit dem letzten Release-Tag aus. Ein Squash-Merge pro Feature sorgt für saubere, lesbare Release Notes unter "Was ist neu".
 
 ---
 
 ### Konsequenzen (Auswirkungen)
 
 - **Positiv:**
-  - Garantierte Stabilität, da kein Code ungeprüft auf Production landet.
-  - Saubere und lesbare Git-Historie durch selektives Squashen.
-  - Vollautomatisch befüllter "Was ist neu"-Changelog.
+  - Viel schnellerer Ablauf ohne lästige Doppel-Merges.
+  - Vercel-Previews auf `main` geben sofortiges Feedback für das nächste Release.
 - **Negativ:**
-  - Disziplin beim Mergen erforderlich (kein versehentlicher Squash bei Staging-Promotions).
-  - Mehraufwand durch zweistufiges Mergen bei schnellen Hotfixes.
+  - Code auf `main` muss immer release-fähig sein, da `main` direkt die Basis für das nächste Tag-Release bildet.

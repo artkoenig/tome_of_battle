@@ -301,9 +301,8 @@ export default defineConfig(({ command }) => {
         resolveDeployEnv({
           command,
           branch: detectBranch(),
-          // VERCEL_TARGET_ENV nennt die (auch custom) Vercel-Umgebung zuverlässig
-          // (VERCEL_ENV steht bei custom Pre-Prod-Umgebungen auf 'preview').
-          targetEnv: process.env.VERCEL_TARGET_ENV || '',
+          // Vercel CLI setzt VERCEL_ENV (z.B. bei vercel build --prod).
+          targetEnv: process.env.VERCEL_ENV || process.env.VERCEL_TARGET_ENV || '',
         })
       ),
     },

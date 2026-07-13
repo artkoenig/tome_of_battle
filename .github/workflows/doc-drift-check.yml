@@ -1,24 +1,23 @@
-name: Doku-Abgleich (staging)
+name: Doku-Abgleich (main)
 
-# Bei jedem Push auf `staging` (also nach jedem Merge in den Staging-Zweig des
-# Release-Trains) prüft Claude den gerade gemergten Diff gegen die
+# Bei jedem Push auf `main` prüft Claude den gerade gemergten Diff gegen die
 # Dokumentation. Wenn der Code sich gewollt geändert hat und eine Doku dadurch
 # nicht mehr zum Status quo passt, korrigiert Claude die Doku und öffnet dafür
-# einen eigenen PR gegen `staging` (kein Auto-Commit direkt auf den Branch).
+# einen eigenen PR gegen `main` (kein Auto-Commit direkt auf den Branch).
 #
-# Läuft der Korrektur-PR selbst später auf `staging` ein, startet dieser
+# Läuft der Korrektur-PR selbst später auf `main` ein, startet dieser
 # Workflow erneut, findet dann konsistente Docs und tut nichts – der Ablauf ist
 # also selbstbegrenzend.
 on:
   push:
-    branches: [staging]
+    branches: [main]
 
 permissions:
   contents: write
   pull-requests: write
 
 concurrency:
-  group: doc-drift-staging
+  group: doc-drift-main
   cancel-in-progress: false
 
 jobs:
@@ -37,7 +36,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_args: "--model claude-opus-4-8 --max-turns 30"
           prompt: |
-            Du prüfst nach einem Merge auf `staging`, ob die Dokumentation dieses
+            Du prüfst nach einem Merge auf `main`, ob die Dokumentation dieses
             Repos noch zum tatsächlichen Code-Stand ("Status quo") passt, und
             korrigierst sie bei Bedarf.
 
@@ -71,9 +70,9 @@ jobs:
               öffne keinen PR – gib nur eine kurze Zusammenfassung aus.
 
             WENN es Korrekturen gibt:
-            - Lege einen neuen Branch `docs/sync-staging-<kurzer-SHA>` von
-              `staging` an, committe nur die Doku-Änderungen und öffne einen PR
-              gegen `staging`.
+            - Lege einen neuen Branch `docs/sync-main-<kurzer-SHA>` von
+              `main` an, committe nur die Doku-Änderungen und öffne einen PR
+              gegen `main`.
             - Titel und Body auf Deutsch. Der Body listet knapp: welche
               Code-Änderung welche Doku-Stelle veraltet hat und was du angepasst
               hast.

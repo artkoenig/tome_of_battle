@@ -27,9 +27,8 @@ function branchToEnv(branch) {
 export function resolveDeployEnv({ command, branch = '', targetEnv = '' }) {
   if (command === 'serve') return 'development';
 
-  // Branch-Namen (main) haben Vorrang. Alles andere ist preview, es sei denn, targetEnv überschreibt es.
-  if (branch === 'main') return 'production';
-
+  // Durch die Umstellung auf Vercel CLI via GitHub Action verlassen wir uns
+  // nun ausschließlich auf das vom CLI gesetzte targetEnv (production/preview).
   const env = targetEnv || 'preview';
 
   if (env === 'production') return 'production';

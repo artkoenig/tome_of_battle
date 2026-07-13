@@ -1,52 +1,48 @@
-# 0008: Vercel Deployment and Staging Environment
+# 0008: Vercel Deployment via CLI
 
 - **Status:** Accepted
-- **Datum:** 2026-07-05
+- **Datum:** 2026-07-13
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0009: Branching and Release Train Strategy](0009-branching-and-release-train-strategy.md)
 
 ## Kontext und Problemstellung
 
-*Tome of Battle* ist eine reine Client-Side PWA, deren Daten (Kataloge, Armeelisten) lokal in der IndexedDB des Browsers persistiert werden. Um neue Features oder Fehlerbehebungen sicher und unter realen Bedingungen zu testen, bevor sie für Endbenutzer live geschaltet werden, wird eine isolierte Vorab-Umgebung (Staging) benötigt. Diese Staging-Umgebung muss eine stabile URL haben und darf die Live-Datenbanken der Benutzer (Production) nicht beeinflussen. Zudem müssen Entwickler und Benutzer auf einen Blick erkennen können, in welcher Umgebung sie sich befinden.
+Die native Vercel-GitHub-Integration deployt den Default-Branch (`main`) immer zwingend als "Production" (auf den Live-Domains). Wir möchten jedoch, dass `main` lediglich eine Vorschau (Preview) ist, während erst explizite Git-Tags (`v1.x.x`) das Production-Deployment auslösen sollen. Dies lässt sich nicht über Vercels native GitHub-Integration abbilden.
 
 ## Entscheidungsfaktoren (Drivers)
 
-- **Datensicherheit & Isolation:** Keine Beeinflussung von Produktivdaten durch Tests auf Staging.
-- **Transparenz:** Visuelle Unterscheidung der Umgebungen (Production vs. Staging vs. Preview).
-- **Automatisierung:** Automatische Bereitstellung von Versionen bei Code-Änderungen.
+- **Kontrolle:** Exakte Kontrolle, wann ein Production-Deploy stattfindet (nur bei getaggten Releases).
+- **Kosteneffizienz:** Keine Deployments für jeden winzigen Commit auf unzähligen Feature-Branches.
+- **Transparenz:** Visuelle Unterscheidung der Vorschau-Umgebung von der Live-App.
 
 ## Betrachtete Optionen
 
-- **Option 1:** Manuelles Hosten einer Staging-Instanz auf einem separaten Server.
-- **Option 2:** Verwendung von Vercel Branch Deployments mit automatischer Umgebungserkennung und Origin-Isolierung.
+- **Option 1:** Dummy-Branch als Production in Vercel konfigurieren und `main` manuell mergen.
+- **Option 2:** Vercel GitHub-Integration abschalten und stattdessen Vercel CLI über eigene GitHub Actions Workflows steuern.
 
 ## Entscheidungsergebnis
 
-Gewählte Option: **Option 2 (Vercel Branch Deployments)**.
+Gewählte Option: **Option 2 (Vercel CLI per GitHub Action)**.
 
 Folgende Richtlinien und Mechanismen wurden etabliert:
 
-### 1. Umgebungs-Mapping
-Das Deployment der Git-Branches erfolgt automatisiert über Vercel. Feature-Branches (`feature/*`, `claude/*` etc.) lösen *kein* Deployment mehr aus, um Ressourcen zu schonen:
-- **Branch `main`** → **Production** (Haupt-Domain, Live-App).
-- **Branch `staging`** → feste **Preview-URL** (Dient weiterhin als Staging, wird aber technisch wie eine Vorschau behandelt).
-- **Andere Branches** → Deployment via `vercel.json` ignoriert.
+### 1. Umgebungs-Mapping & CLI-Steuerung
+Die automatische Git-Integration in Vercel ist deaktiviert. Deployments laufen komplett über den GitHub Workflow `deploy-vercel.yml` unter Verwendung der Vercel CLI:
+- **Pushes auf Feature-Branches:** Lösen **kein** Deployment aus.
+- **Branch `main`:** Löst ein Vercel **Preview** Deployment aus.
+- **Git Tags (`v*`):** Lösen ein Vercel **Production** Deployment aus (mit Parameter `--prod`).
 
-### 2. Origin-Isolierung in IndexedDB
-Da IndexedDB an die *Same-Origin-Policy* des Browsers gebunden ist, sind die Datenbanken auf Production und der Staging-Vorschau durch die unterschiedlichen Domains vollständig voneinander getrennt. Testdaten auf Staging berühren niemals die Live-Daten der Benutzer.
-
-### 3. Visuelle Umgebungserkennung
-Der Build-Prozess (`scripts/deployEnv.js`) liest die Umgebung aus und stellt sie dem React-Client als `import.meta.env.VITE_DEPLOY_ENV` bereit.
-- Auf der Staging-Vorschau (und jeglichen potenziellen anderen Previews) zeigt die App einen Badge mit der Aufschrift `VORSCHAU`.
-- Auf Production (und im lokalen Entwicklungsmodus) bleibt der Badge unsichtbar.
+### 2. Visuelle Umgebungserkennung (Badge)
+Da Vercel CLI die Umgebungsvariablen (`VERCEL_ENV`) korrekt injiziert, kann der React-Client diese auslesen:
+- Ist die gebaute Umgebung `preview` (also `main`), blendet die App ein `VORSCHAU`-Badge ein.
+- Ist die gebaute Umgebung `production` (getaggter Release), bleibt das UI unmarkiert.
 
 ---
 
 ### Konsequenzen (Auswirkungen)
 
 - **Positiv:**
-  - Risikoloses Testen auf einer echten Online-Umgebung.
-  - Klare visuelle Trennung verhindert Verwechslungen beim Testen.
-  - Vollständig automatisiertes Deployment ohne manuelles Zutun.
+  - Absolute Kontrolle über Production-Releases über Git-Tags.
+  - Einsparung von Build-Minuten, da reine Feature-Branches nicht mehr auf Vercel gebaut werden.
 - **Negativ:**
-  - Preview-URLs verbrauchen Kontingente des Vercel-Hobby-Tarifs.
+  - Erfordert das Hinterlegen der Vercel-Tokens (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`) in den GitHub Secrets.

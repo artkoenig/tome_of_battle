@@ -7,20 +7,17 @@ describe('deployEnv', () => {
       expect(resolveDeployEnv({ command: 'serve', branch: 'main' })).toBe('development');
       expect(resolveDeployEnv({ command: 'serve', branch: 'staging' })).toBe('development');
     });
-    it('maps the main branch build to production', () => {
-      expect(resolveDeployEnv({ command: 'build', branch: 'main' })).toBe('production');
-    });
-    it('maps the staging branch build to preview', () => {
+    it('maps any branch to preview by default', () => {
+      expect(resolveDeployEnv({ command: 'build', branch: 'main' })).toBe('preview');
       expect(resolveDeployEnv({ command: 'build', branch: 'staging' })).toBe('preview');
     });
     it('maps any other branch build to preview', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo' })).toBe('preview');
       expect(resolveDeployEnv({ command: 'build', branch: '' })).toBe('preview');
     });
-    it('prefers VERCEL_TARGET_ENV over the branch name (except for main)', () => {
+    it('prefers VERCEL_TARGET_ENV over everything else', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'anything', targetEnv: 'production' })).toBe('production');
-      // Alle anderen (inklusive staging) werden auf preview abgebildet.
-      expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo', targetEnv: 'staging' })).toBe('preview');
+      expect(resolveDeployEnv({ command: 'build', branch: 'main', targetEnv: 'preview' })).toBe('preview');
     });
     it('treats a standard preview target env as preview', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo', targetEnv: 'preview' })).toBe('preview');

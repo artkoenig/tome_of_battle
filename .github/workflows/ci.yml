@@ -1,12 +1,11 @@
 name: CI (Lint & Tests)
 
-# Läuft bei PRs gegen staging/main (Release-Train, siehe
-# docs/adr/0009-branching-and-release-train-strategy.md) und bei Pushes auf diese Branches.
+# Läuft bei PRs gegen main und bei Pushes auf main.
 on:
   pull_request:
-    branches: [staging, main]
+    branches: [main]
   push:
-    branches: [staging, main]
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -39,15 +38,13 @@ jobs:
         run: npx vitest run
 
   # Der Puppeteer-E2E (src/solver/ui.test.js) braucht einen echten Browser und
-  # läuft daher nur im Staging-Zweig des Release-Trains: bei PRs gegen `staging`
-  # und bei Pushes auf `staging`. So wird jede Änderung vor der Promotion nach
-  # `main` einmal end-to-end durchgespielt, ohne jeden Feature-PR auszubremsen.
+  # läuft nun auf `main`.
   e2e:
-    name: E2E (Puppeteer, nur staging)
+    name: E2E (Puppeteer, nur main)
     runs-on: ubuntu-latest
     if: >-
-      (github.event_name == 'pull_request' && github.base_ref == 'staging') ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/staging')
+      (github.event_name == 'pull_request' && github.base_ref == 'main') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
