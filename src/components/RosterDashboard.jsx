@@ -285,7 +285,6 @@ export default function RosterDashboard({
               </div>
               <div 
                 className="popover-item"
-                style={{ borderTop: '1px solid var(--border-dark)', cursor: 'pointer' }}
                 onClick={() => {
                   setIsActionsSheetOpen(false);
                   handleImportClick();
