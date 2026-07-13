@@ -127,6 +127,35 @@ describe('Roster Serialization & Deserialization', () => {
     expect(importedKing.selections[0].costs[0].value).toBe(6);
   });
 
+  test('correctly imports rosters with path-based IDs (::) and already-multiplied costs', () => {
+    const xmlWithPaths = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="roster-path-test" name="Path Test Army" gameSystemId="system-id-123" gameSystemRevision="1" gameSystemName="Warhammer Fantasy 6th Edition" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costs>
+    <cost name="pts" typeId="pts-id-999" value="165"/>
+  </costs>
+  <forces>
+    <force id="force-path-test" name="Standard" entryId="force-entry-id-1" catalogueId="cat-tomb-kings" catalogueRevision="1" catalogueName="Tomb Kings">
+      <selections>
+        <selection id="sel-path-test-1" name="Dispel Scroll" entryId="some-parent::some-group::weapon-gw-id" number="2" type="upgrade">
+          <costs>
+            <cost name="pts" typeId="pts-id-999" value="50"/>
+          </costs>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>`;
+
+    const imported = importRosterFromXml(xmlWithPaths, mockSystems);
+    expect(imported).toBeDefined();
+    expect(imported.name).toBe('Path Test Army');
+    
+    const selection = imported.forces[0].selections[0];
+    expect(selection.selectionEntryId).toBe('weapon-gw-id');
+    expect(selection.number).toBe(2);
+    expect(selection.costs[0].value).toBe(25); // 50 / 2 = 25
+  });
+
   test('decompressing and compressing ZIP files (JSZip layer)', async () => {
     const xmlText = exportRosterToXml(mockRoster, mockSystems[0]);
     

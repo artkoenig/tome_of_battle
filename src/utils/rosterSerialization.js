@@ -244,9 +244,16 @@ export function importRosterFromXml(xmlText, systems) {
  */
 function parseSelectionNode(node) {
   const name = node.getAttribute('name') || '';
-  const entryId = node.getAttribute('entryId');
-  const entryLinkId = node.getAttribute('entryLinkId');
+  let entryId = node.getAttribute('entryId');
+  if (entryId && entryId.includes('::')) {
+    entryId = entryId.split('::').pop();
+  }
+  let entryLinkId = node.getAttribute('entryLinkId');
+  if (entryLinkId && entryLinkId.includes('::')) {
+    entryLinkId = entryLinkId.split('::').pop();
+  }
   const number = parseInt(node.getAttribute('number')) || 1;
+  const num = Math.max(1, number);
   const selType = node.getAttribute('type') || 'upgrade';
   const isCollective = node.getAttribute('collective') === 'true';
 
@@ -256,6 +263,9 @@ function parseSelectionNode(node) {
     const categoryNode = Array.from(categoriesWrapper.childNodes).find(c => c.nodeType === 1 && c.nodeName === 'category' && c.getAttribute('primary') === 'true');
     if (categoryNode) {
       category = categoryNode.getAttribute('entryId') || categoryNode.getAttribute('id');
+      if (category && category.includes('::')) {
+        category = category.split('::').pop();
+      }
     }
   }
 
@@ -267,7 +277,7 @@ function parseSelectionNode(node) {
       costs.push({
         name: costNode.getAttribute('name'),
         typeId: costNode.getAttribute('typeId'),
-        value: parseFloat(costNode.getAttribute('value')) || 0
+        value: (parseFloat(costNode.getAttribute('value')) || 0) / num
       });
     });
   }
