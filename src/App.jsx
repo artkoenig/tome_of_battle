@@ -21,6 +21,7 @@ import {
 } from './utils/rosterSerialization';
 
 import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
+import { syncRosterSelectionsWithSystem } from './solver/validator';
 
 
 
@@ -335,6 +336,11 @@ export default function App() {
     try {
       const xmlText = await decompressRoszToXml(file);
       const newRoster = importRosterFromXml(xmlText, systems);
+      
+      const system = systems.find(s => s.id === newRoster.systemId);
+      if (system) {
+        syncRosterSelectionsWithSystem(newRoster, system);
+      }
       
       await saveRoster(newRoster);
       alert(`Erfolgreich importiert: ${newRoster.name}`);
