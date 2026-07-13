@@ -27,14 +27,12 @@ function branchToEnv(branch) {
 export function resolveDeployEnv({ command, branch = '', targetEnv = '' }) {
   if (command === 'serve') return 'development';
 
-  // Vercel benennt die (auch custom) Umgebung zuverlässig über
-  // VERCEL_TARGET_ENV; VERCEL_ENV taugt dafür nicht, weil es bei custom
-  // Pre-Prod-Umgebungen auf 'preview' steht. Darum TARGET_ENV bevorzugen und
-  // nur als Fallback den Branch-Namen heranziehen.
-  const env = targetEnv || branchToEnv(branch);
+  // Branch-Namen (main) haben Vorrang. Alles andere ist preview, es sei denn, targetEnv überschreibt es.
+  if (branch === 'main') return 'production';
+
+  const env = targetEnv || 'preview';
 
   if (env === 'production') return 'production';
-  if (env === 'staging') return 'staging';
   if (env === 'development') return 'development';
   return 'preview';
 }
@@ -46,5 +44,5 @@ export function resolveDeployEnv({ command, branch = '', targetEnv = '' }) {
  * @returns {boolean}
  */
 export function isFlaggedEnv(env) {
-  return env === 'staging' || env === 'preview';
+  return env === 'preview';
 }

@@ -1,9 +1,9 @@
 name: PR-Basis auf staging umstellen
 
-# Claude-Code öffnet Auto-PRs immer gegen den Default-Branch (`main`). Im
+# PRs öffnen sich oft standardmäßig gegen den Default-Branch (`main`). Im
 # Release-Train (docs/adr/0009-branching-and-release-train-strategy.md) sollen Feature-PRs aber zuerst
 # gegen `staging` laufen. Dieser Workflow biegt frisch geöffnete
-# `claude/*`-PRs, die auf `main` zeigen, automatisch auf `staging` um.
+# PRs, die auf `main` zeigen, automatisch auf `staging` um.
 #
 # Warum `pull_request_target` (statt `pull_request`):
 #   - Er läuft mit der Workflow-Definition und dem Token des BASIS-Branches,
@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   retarget:
-    if: startsWith(github.head_ref, 'claude/')
+    if: github.head_ref != 'staging'
     runs-on: ubuntu-latest
     steps:
       - name: Basis von main auf staging umbiegen
@@ -46,7 +46,7 @@ jobs:
                 body: [
                   '🔁 Basis automatisch von `main` auf `staging` umgestellt – im Release-Train laufen Feature-PRs zuerst gegen `staging` (siehe `docs/adr/0009-branching-and-release-train-strategy.md`).',
                   '',
-                  'Soll dieser PR bewusst direkt nach `main`, die Basis einfach wieder auf `main` ändern.',
+                  'Soll dieser PR bewusst direkt nach `main` (z.B. Hotfix), die Basis einfach wieder auf `main` ändern.',
                 ].join('\n'),
               });
             } catch (e) {

@@ -27,18 +27,17 @@ Gewählte Option: **Option 2 (Vercel Branch Deployments)**.
 Folgende Richtlinien und Mechanismen wurden etabliert:
 
 ### 1. Umgebungs-Mapping
-Das Deployment der Git-Branches erfolgt automatisiert über Vercel:
+Das Deployment der Git-Branches erfolgt automatisiert über Vercel. Feature-Branches (`feature/*`, `claude/*` etc.) lösen *kein* Deployment mehr aus, um Ressourcen zu schonen:
 - **Branch `main`** → **Production** (Haupt-Domain, Live-App).
-- **Branch `staging`** → feste **Staging-URL** (stabiler Branch-Alias von Vercel: `https://<projekt>-git-staging-<scope>.vercel.app`).
-- **Jeder andere Branch/PR** → automatischer **Preview-Deploy** mit dynamischer, zufälliger URL.
+- **Branch `staging`** → feste **Preview-URL** (Dient weiterhin als Staging, wird aber technisch wie eine Vorschau behandelt).
+- **Andere Branches** → Deployment via `vercel.json` ignoriert.
 
 ### 2. Origin-Isolierung in IndexedDB
-Da IndexedDB an die *Same-Origin-Policy* des Browsers gebunden ist, sind die Datenbanken auf Production, Staging und den Preview-URLs durch die unterschiedlichen Domains vollständig voneinander getrennt. Testdaten auf Staging berühren niemals die Live-Daten der Benutzer.
+Da IndexedDB an die *Same-Origin-Policy* des Browsers gebunden ist, sind die Datenbanken auf Production und der Staging-Vorschau durch die unterschiedlichen Domains vollständig voneinander getrennt. Testdaten auf Staging berühren niemals die Live-Daten der Benutzer.
 
-### 3. Visuelle Umgebungserkennung (Staging-Badge)
-Der Build-Prozess (`scripts/deployEnv.js`) liest die Vercel-Umgebungsvariable `VERCEL_TARGET_ENV` aus und stellt sie dem React-Client als `import.meta.env.VITE_DEPLOY_ENV` bereit.
-- Auf Staging zeigt die App links neben dem Logo einen permanenten Badge mit der Aufschrift `STAGING`.
-- Auf Preview-Umgebungen zeigt die App einen Badge mit der Aufschrift `VORSCHAU`.
+### 3. Visuelle Umgebungserkennung
+Der Build-Prozess (`scripts/deployEnv.js`) liest die Umgebung aus und stellt sie dem React-Client als `import.meta.env.VITE_DEPLOY_ENV` bereit.
+- Auf der Staging-Vorschau (und jeglichen potenziellen anderen Previews) zeigt die App einen Badge mit der Aufschrift `VORSCHAU`.
 - Auf Production (und im lokalen Entwicklungsmodus) bleibt der Badge unsichtbar.
 
 ---
