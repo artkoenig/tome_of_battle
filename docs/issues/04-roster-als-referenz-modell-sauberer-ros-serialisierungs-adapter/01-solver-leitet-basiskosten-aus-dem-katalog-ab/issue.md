@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -23,3 +23,4 @@ importierte Roster stimmen weiterhin, jetzt aber unabhängig vom gespeicherten
       Katalog-Ableitung (inkl. Link-Kosten und eines Kosten-Modifikators) ab.
 
 ## Comments
+- Umgesetzt: neuer Kernel getSelectionOwnCosts in rosterCounter.js berechnet die eigenen, modifier-bewussten Kosten eines Knotens (Basis aus Katalog via resolveEntry, inkl. Link-Kosten; Fallback auf selection.costs nur ohne System). calculateRosterCosts und getSelectionTotalCost nutzen den Kernel. Neue Tests rosterCounter.test.js decken Katalog-Ableitung, Link-Kosten und Kosten-Modifier ab. Volle Suite gruen (231).

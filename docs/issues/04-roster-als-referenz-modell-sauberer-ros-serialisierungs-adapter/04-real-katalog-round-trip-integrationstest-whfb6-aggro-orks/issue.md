@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: [02, 03]
 
 ## Description
@@ -21,3 +21,4 @@ exportieren → re-importieren → Kosten/Validierung vergleichen.
       (semantischer Round-Trip, modulo Split/UUIDs).
 
 ## Comments
+- Umgesetzt: Integrationstest rosterSerialization.integration.test.js baut das echte WHFB6-System aus public/catalogs/whfb6 (gst + Orcs and Goblins.cat) und importiert die Fixture src/utils/__fixtures__/aggro-orks.ros. Verifiziert: berechneter Gesamtwert exakt 2000, Reconcile idempotent, 79 gewaehlte Optionen ueber die Editor-Matcher-Logik erkannt (>20), semantischer Round-Trip (Export->Re-Import) haelt 2000 und Validierung, flache Selektions-Kostensumme = 2000. Schliesst die Verifikationsluecke gegen echten Katalog.

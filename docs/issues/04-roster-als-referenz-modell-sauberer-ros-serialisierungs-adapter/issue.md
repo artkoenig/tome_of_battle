@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -26,3 +26,4 @@ Import-Reconcile der Options-Identität, ein interimistischer `×number`-Export-
       Widersprüchen zu ADR-0011.
 
 ## Comments
+- Alle Child-Issues resolved. Verifiziert mit echtem WHFB6-Katalog: Aggro Orks = exakt 2000 Pkt, Optionen erkannt, semantischer Round-Trip stabil. Volle Suite gruen (238), Lint/Build ok. ADR-0011 + PRD dokumentieren die bewusste Abweichung von .ros (Referenz-Modell, abgeleitete Kosten, Link-ID-Invariante, Split als Import-Transformation).

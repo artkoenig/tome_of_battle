@@ -1,13 +1,14 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import crypto from 'crypto';
-import { 
-  exportRosterToXml, 
-  importRosterFromXml, 
-  compressXmlToRosz, 
+import {
+  exportRosterToXml,
+  importRosterFromXml,
+  compressXmlToRosz,
   decompressRoszToXml,
   MissingSystemError
 } from './rosterSerialization.js';
+import { calculateRosterCosts } from '../solver/validator.js';
 
 // Setup DOMParser and Crypto for the test Node environment
 beforeAll(() => {
@@ -145,10 +146,11 @@ describe('Roster Serialization & Deserialization', () => {
     expect(importedKing.name).toBe('Tomb King');
     expect(importedKing.entryLinkId).toBe('link-tomb-king-id');
     expect(importedKing.category).toBe('cat-lord-id');
-    expect(importedKing.costs[0].value).toBe(150);
+    // Costs are derived from the catalogue (ADR-0011), not stored on imported selections.
+    expect(importedKing.costs).toBeUndefined();
     expect(importedKing.selections[0].name).toBe('Great Weapon');
     expect(importedKing.selections[0].selectionEntryId).toBe('weapon-gw-id');
-    expect(importedKing.selections[0].costs[0].value).toBe(6);
+    expect(importedKing.selections[0].costs).toBeUndefined();
   });
 
   test('exports multi-model selection costs as their quantity-multiplied total (round-trip preserves points)', () => {
@@ -183,11 +185,11 @@ describe('Roster Serialization & Deserialization', () => {
     expect(xmlText).toContain('number="10" type="upgrade"');
     expect(xmlText).toContain('<cost name="pts" typeId="pts-id-999" value="50"/>');
 
-    // Round-trip: import must recover the original per-item value 5 (50 / 10), not 0.5.
+    // Round-trip preserves the quantity; costs are derived from the catalogue, not stored.
     const reimported = importRosterFromXml(xmlText, mockSystems);
     const unit = reimported.forces[0].selections[0];
     expect(unit.number).toBe(10);
-    expect(unit.costs[0].value).toBe(5);
+    expect(unit.costs).toBeUndefined();
   });
 
   test('round-trips the point limit through the costLimits block', () => {
@@ -226,9 +228,11 @@ describe('Roster Serialization & Deserialization', () => {
     expect(imported.name).toBe('Path Test Army');
     
     const selection = imported.forces[0].selections[0];
+    // The path-based entryId is collapsed to its target leaf id.
     expect(selection.selectionEntryId).toBe('weapon-gw-id');
     expect(selection.number).toBe(2);
-    expect(selection.costs[0].value).toBe(25); // 50 / 2 = 25
+    // Costs are derived from the catalogue (ADR-0011), not parsed/stored on import.
+    expect(selection.costs).toBeUndefined();
   });
 
   test('splits war machine/chariot selections on import when quantity > 1', () => {
@@ -269,8 +273,9 @@ describe('Roster Serialization & Deserialization', () => {
     const ch1 = parent.selections[0];
     expect(ch1.name).toBe('Goblin Spear Chukka');
     expect(ch1.number).toBe(1);
-    expect(ch1.costs[0].value).toBe(35); // 70 / 2 = 35
-    
+    // Costs are derived from the catalogue (ADR-0011); the split preserves structure/quantities.
+    expect(ch1.costs).toBeUndefined();
+
     const crew1 = ch1.selections.find(s => s.name === 'Goblin Crew');
     expect(crew1.number).toBe(3);
     
@@ -328,5 +333,85 @@ describe('Roster Serialization & Deserialization', () => {
   test('throws Error for malformed XML or incorrect root elements', () => {
     const malformedXml = '<?xml version="1.0"?><wrongRoot name="Malformed Roster"></wrongRoot>';
     expect(() => importRosterFromXml(malformedXml, mockSystems)).toThrow('Ungültiges Dateiformat');
+  });
+});
+
+describe('Export derives cost and type from the catalogue', () => {
+  // Catalogue-complete system; the roster below carries NO selection.costs.
+  const catSystem = {
+    id: 'sys2', name: 'Sys2',
+    costTypes: [{ id: 'pts', name: 'pts' }],
+    forceEntries: [{ id: 'fe', name: 'Standard' }],
+    categoryEntries: [],
+    catalogues: [
+      {
+        id: 'c',
+        name: 'Cat',
+        selectionEntries: [
+          {
+            id: 'boyz',
+            name: 'Orc Boyz',
+            type: 'unit',
+            costs: [{ typeId: 'pts', value: 5 }],
+            selectionEntries: [
+              {
+                id: 'choppa',
+                name: 'Choppa',
+                type: 'upgrade',
+                costs: [{ typeId: 'pts', value: 2 }],
+                modifiers: [{ type: 'increment', field: 'pts', value: '1', conditions: [], conditionGroups: [] }]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+
+  const roster = {
+    id: 'r2', name: 'Derived', systemId: 'sys2', catalogueId: 'c', costLimit: 2000, costLimitType: 'pts',
+    forces: [
+      {
+        id: 'f', forceEntryId: 'fe', catalogueId: 'c',
+        selections: [
+          {
+            id: 'u', name: 'Orc Boyz', selectionEntryId: 'boyz', entryLinkId: null, number: 1, collective: false,
+            selections: [
+              { id: 'ch', name: 'Choppa', selectionEntryId: 'choppa', entryLinkId: null, number: 3, collective: false, selections: [] }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+
+  const flatSelectionPts = (xml) => {
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    let sum = 0;
+    for (const c of doc.getElementsByTagName('cost')) {
+      if (c.getAttribute('typeId') === 'pts' && c.parentNode.parentNode.nodeName === 'selection') {
+        sum += parseFloat(c.getAttribute('value')) || 0;
+      }
+    }
+    return sum;
+  };
+
+  test('per-selection cost flat-sum equals the computed roster total (no stored costs)', () => {
+    const xml = exportRosterToXml(roster, catSystem);
+    // 5 (unit) + (2 + 1 modifier) * 3 = 5 + 9 = 14
+    expect(calculateRosterCosts(roster, catSystem).pts).toBe(14);
+    expect(flatSelectionPts(xml)).toBe(14);
+  });
+
+  test('serializes the modifier-aware value per selection', () => {
+    const xml = exportRosterToXml(roster, catSystem);
+    // Choppa base 2 + modifier 1 = 3, times its 3 count = 9 (not 6).
+    expect(xml).toContain('<cost name="pts" typeId="pts" value="9"/>');
+  });
+
+  test('derives the type attribute from the catalogue entry', () => {
+    const xml = exportRosterToXml(roster, catSystem);
+    expect(xml).toContain('name="Orc Boyz" entryId="boyz" entryLinkId="" number="1" type="unit"');
+    expect(xml).toContain('name="Choppa" entryId="choppa" entryLinkId="" number="3" type="upgrade"');
   });
 });

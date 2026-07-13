@@ -113,7 +113,6 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
       name: resolved.name,
       number: 1,
       category: categoryId,
-      costs: resolved.costs || [],
       collective: resolved.collective || entry.collective || false,
       selections: []
     };

@@ -12,7 +12,6 @@
  * @property {string|null} selectionEntryId
  * @property {number} number
  * @property {string|null} category
- * @property {CostEntry[]} costs
  * @property {boolean} [collective]
  * @property {Selection[]} selections
  */

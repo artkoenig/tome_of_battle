@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: [01]
 
 ## Description
@@ -25,3 +25,4 @@ fehlendem System).
 - [ ] Betroffene Tests angepasst; `docs`/CLAUDE.md an ADR-0011 angeglichen.
 
 ## Comments
+- Umgesetzt: costs aus Selection (types.js) entfernt; useRoster erzeugt keine costs; Import (parseSelectionNode) parst/speichert keine costs mehr; syncRosterSelectionsWithSystem droppt legacy costs lazy (nicht-destruktiv). Alle getSelectionTotalCost-Aufrufe ohne Kontext (rosterValidator, PlayMode, PlayUnitDetails, OptionGroup) auf System/Katalog-Kontext umgestellt -> Kosten rein abgeleitet. name bleibt. Tests angepasst (Struktur statt gespeicherter Kosten). Volle Suite gruen (234).

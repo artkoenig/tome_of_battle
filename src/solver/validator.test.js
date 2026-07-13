@@ -1395,13 +1395,14 @@ const mockRosterSyncTest = {
 
 const syncResult1 = syncRosterSelectionsWithSystem(mockRosterSyncTest, mockSystemSyncTest);
 const nameUpdated = mockRosterSyncTest.forces[0].selections[0].name === 'Updated Weapon Name';
-const costUpdated = mockRosterSyncTest.forces[0].selections[0].costs?.[0]?.value === 15;
+// Costs are derived from the catalogue (ADR-0011); sync drops any legacy stored costs.
+const costRemoved = mockRosterSyncTest.forces[0].selections[0].costs === undefined;
 const syncResult2 = syncRosterSelectionsWithSystem(mockRosterSyncTest, mockSystemSyncTest);
 
-const test23Success = syncResult1 === true && nameUpdated && costUpdated && syncResult2 === false;
+const test23Success = syncResult1 === true && nameUpdated && costRemoved && syncResult2 === false;
 
-console.log('Test 23 - Selection name and costs syncing with system catalog: ',
-  test23Success ? 'PASSED' : `FAILED (sync1: ${syncResult1}, nameUpdated: ${nameUpdated}, costUpdated: ${costUpdated}, sync2: ${syncResult2})`
+console.log('Test 23 - Selection name syncing and legacy cost dropping: ',
+  test23Success ? 'PASSED' : `FAILED (sync1: ${syncResult1}, nameUpdated: ${nameUpdated}, costRemoved: ${costRemoved}, sync2: ${syncResult2})`
 );
 
 // Test 24 - collectUnitProfilesAndRules extraction from nested user selections

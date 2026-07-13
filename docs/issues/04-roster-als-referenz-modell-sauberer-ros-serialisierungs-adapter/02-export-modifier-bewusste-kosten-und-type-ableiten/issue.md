@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: [01]
 
 ## Description
@@ -23,3 +23,4 @@ Optionskosten (Rabatt/Aufpreis) werden korrekt exportiert.
       Export-Kostenverhalten beschreiben, an ADR-0011 angeglichen.
 
 ## Comments
+- Umgesetzt: serializeSelection nutzt getSelectionOwnCosts (modifier-bewusst, Basis aus Katalog) fuer die Pro-Auswahl-Kosten; flache Summe = Gesamtblock per Konstruktion. type wird via resolveEntry aus dem Katalog abgeleitet statt konstant 'upgrade'. Interimistischer toSelectionCostTotal entfernt. Neue Tests: Flat-Sum=Total, Modifier pro Zeile, type-Ableitung. Format-Doku beschreibt das .ros-Format selbst (kein Widerspruch); CLAUDE.md ist Symlink ausserhalb Repo. Volle Suite gruen (234).

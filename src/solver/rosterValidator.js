@@ -209,7 +209,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
     }
     if (con.type === 'percent' && roster.costLimit) {
       const finalValuePoints = (finalValue / 100) * roster.costLimit;
-      const pts = getSelectionTotalCost(selection, roster.costLimitType);
+      const pts = getSelectionTotalCost(selection, roster.costLimitType, 1, system, roster, forceCatalogueId, parentSelection, counts);
       if (pts > finalValuePoints) {
         errors.push({
           type: 'entry-percent-max',
@@ -288,7 +288,7 @@ function checkGroupConstraints({ selection, parentSelection, roster, system, for
 
     const totalCount = matchingSelections.reduce((sum, s) => sum + (s.number || 1), 0);
     const totalPoints = matchingSelections.reduce((sum, s) => {
-      const pts = getSelectionTotalCost(s, roster.costLimitType);
+      const pts = getSelectionTotalCost(s, roster.costLimitType, 1, system, roster, forceCatalogueId, selection, counts);
       return sum + pts;
     }, 0);
 

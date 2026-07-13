@@ -97,10 +97,10 @@ export function syncRosterSelectionsWithSystem(roster, system) {
             selection.name = resolved.name;
             rosterModified = true;
           }
-          const oldCostsJson = JSON.stringify(selection.costs || []);
-          const newCostsJson = JSON.stringify(resolved.costs || []);
-          if (oldCostsJson !== newCostsJson) {
-            selection.costs = resolved.costs || [];
+          // Costs are derived from the catalogue at read time (ADR-0011), not stored.
+          // Drop any legacy costs field lazily so old rosters converge to the new model.
+          if (selection.costs !== undefined) {
+            delete selection.costs;
             rosterModified = true;
           }
         }

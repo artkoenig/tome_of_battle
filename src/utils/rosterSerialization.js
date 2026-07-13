@@ -1,20 +1,14 @@
 import JSZip from 'jszip';
-import { calculateRosterCosts, findEntryInSystem, resolveEntry } from '../solver/validator.js';
+import { calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, findEntryInSystem, resolveEntry } from '../solver/validator.js';
 
 // Fallback point limit applied when a roster file declares none.
 const DEFAULT_COST_LIMIT = 2000;
-// Decimal places kept when reconstructing selection totals, to strip floating-point
-// artifacts introduced by the per-item division performed on import.
+// Decimal places kept when serializing costs, to strip floating-point artifacts
+// introduced by cost-modifier arithmetic.
 const COST_DECIMAL_PRECISION = 6;
 
-/**
- * Reconstructs the BattleScribe selection cost total from our internal per-item value.
- * BattleScribe stores each selection's <cost> as the total for that selection
- * (per-item value multiplied by its quantity), whereas we keep the per-item value.
- */
-function toSelectionCostTotal(perItemValue, quantity) {
-  const total = (perItemValue || 0) * (quantity || 1);
-  return Number(total.toFixed(COST_DECIMAL_PRECISION));
+function roundCost(value) {
+  return Number((value || 0).toFixed(COST_DECIMAL_PRECISION));
 }
 
 // Helper to escape special XML characters
@@ -51,6 +45,8 @@ export function exportRosterToXml(roster, system) {
   const systemId = system?.id || roster.systemId;
   
   const computedCosts = system ? calculateRosterCosts(roster, system) : {};
+  // Shared solver context so per-selection costs match the total block exactly.
+  const ctx = { system, roster, counts: (system && roster) ? computeRosterCounts(roster, system) : null };
 
   let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
   xml += `<roster id="${escapeXml(roster.id)}" name="${escapeXml(roster.name)}" battleScribeVersion="2.03" gameSystemId="${escapeXml(systemId)}" gameSystemRevision="1" gameSystemName="${escapeXml(systemName)}" xmlns="http://www.battlescribe.net/schema/rosterSchema">\n`;
@@ -94,11 +90,12 @@ export function exportRosterToXml(roster, system) {
       xml += '      <selections>\n';
       
       if (force.selections) {
+        const catalogueId = force.catalogueId || roster.catalogueId;
         force.selections.forEach(sel => {
-          xml += serializeSelection(sel, 8, system);
+          xml += serializeSelection(sel, 8, ctx, 1, catalogueId, null);
         });
       }
-      
+
       xml += '      </selections>\n';
       xml += '    </force>\n';
     });
@@ -110,16 +107,24 @@ export function exportRosterToXml(roster, system) {
 
 /**
  * Helper to recursively serialize roster selections.
+ *
+ * Costs and the `type` attribute are derived from the catalogue (SSOT): each
+ * selection's <cost> is its own modifier-aware contribution (base × effective
+ * count), so the flat sum of all selection costs equals the roster total block.
  */
-function serializeSelection(sel, indent, system) {
+function serializeSelection(sel, indent, ctx, parentCount, currentCatalogueId, parentSelection) {
+  const { system, roster, counts } = ctx;
   const ind = ' '.repeat(indent);
   const entryId = sel.selectionEntryId || '';
   const entryLinkId = sel.entryLinkId || '';
-  const selType = sel.type || 'upgrade';
+  const effectiveCount = (sel.number || 1) * parentCount;
+
+  const resolved = resolveSelectionEntry(system, sel, currentCatalogueId);
+  const selType = resolved?.type || 'upgrade';
   const isCollective = sel.collective ? 'true' : 'false';
-  
+
   let sXml = `${ind}<selection id="${escapeXml(sel.id)}" name="${escapeXml(sel.name)}" entryId="${escapeXml(entryId)}" entryLinkId="${escapeXml(entryLinkId)}" number="${sel.number || 1}" type="${escapeXml(selType)}" collective="${isCollective}">\n`;
-  
+
   // Category Link block (only for top-level selections that carry categories)
   if (sel.category) {
     const catDef = system?.categoryEntries?.find(ce => ce.id === sel.category);
@@ -129,29 +134,37 @@ function serializeSelection(sel, indent, system) {
     sXml += `${ind}  </categories>\n`;
   }
 
-  // Costs
+  // Costs: the selection's own, modifier-aware contribution (derived from the catalogue).
+  const ownCosts = getSelectionOwnCosts(sel, effectiveCount, { system, roster, currentCatalogueId, parentSelection, counts });
   sXml += `${ind}  <costs>\n`;
-  if (sel.costs) {
-    sel.costs.forEach(cost => {
-      const ct = system?.costTypes?.find(c => c.id === cost.typeId);
-      const costName = cost.name || ct?.name || 'pts';
-      const costTotal = toSelectionCostTotal(cost.value, sel.number);
-      sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(cost.typeId)}" value="${costTotal}"/>\n`;
-    });
-  }
+  Object.entries(ownCosts).forEach(([typeId, value]) => {
+    const costName = system?.costTypes?.find(c => c.id === typeId)?.name || 'pts';
+    sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(typeId)}" value="${roundCost(value)}"/>\n`;
+  });
   sXml += `${ind}  </costs>\n`;
 
   // Sub-selections
   if (sel.selections && sel.selections.length > 0) {
     sXml += `${ind}  <selections>\n`;
     sel.selections.forEach(sub => {
-      sXml += serializeSelection(sub, indent + 4, system);
+      sXml += serializeSelection(sub, indent + 4, ctx, effectiveCount, currentCatalogueId, sel);
     });
     sXml += `${ind}  </selections>\n`;
   }
 
   sXml += `${ind}</selection>\n`;
   return sXml;
+}
+
+/**
+ * Resolves the catalogue entry a selection references (link id or entry id).
+ */
+function resolveSelectionEntry(system, selection, catalogueId) {
+  if (!system) return null;
+  const entryId = selection.selectionEntryId || selection.entryLinkId;
+  if (!entryId) return null;
+  const entryDef = findEntryInSystem(system, entryId, catalogueId);
+  return entryDef ? resolveEntry(system, entryDef, catalogueId) : null;
 }
 
 /**
@@ -306,8 +319,6 @@ function parseSelectionNode(node, system) {
     entryLinkId = entryLinkId.split('::').pop();
   }
   const number = parseInt(node.getAttribute('number')) || 1;
-  const num = Math.max(1, number);
-  const selType = node.getAttribute('type') || 'upgrade';
   const isCollective = node.getAttribute('collective') === 'true';
 
   let category = null;
@@ -322,18 +333,8 @@ function parseSelectionNode(node, system) {
     }
   }
 
-  const costs = [];
-  const costsWrapper = Array.from(node.childNodes).find(c => c.nodeType === 1 && c.nodeName === 'costs');
-  if (costsWrapper) {
-    const costNodes = Array.from(costsWrapper.childNodes).filter(c => c.nodeType === 1 && c.nodeName === 'cost');
-    costNodes.forEach(costNode => {
-      costs.push({
-        name: costNode.getAttribute('name'),
-        typeId: costNode.getAttribute('typeId'),
-        value: (parseFloat(costNode.getAttribute('value')) || 0) / num
-      });
-    });
-  }
+  // Costs are not stored on the roster; they are derived from the catalogue at read
+  // time (ADR-0011). The <cost> elements in the .ros are therefore ignored on import.
 
   const subSelections = [];
   const selectionsWrapper = Array.from(node.childNodes).find(c => c.nodeType === 1 && c.nodeName === 'selections');
@@ -359,7 +360,6 @@ function parseSelectionNode(node, system) {
     selectionEntryId: entryId || null,
     number,
     category,
-    costs,
     collective: isCollective,
     selections: subSelections
   };
