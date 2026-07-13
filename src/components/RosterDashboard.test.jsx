@@ -14,6 +14,16 @@ vi.mock('lucide-react', () => ({
   WifiOff: () => <span data-testid="icon-wifioff" />,
 }));
 
+// Mock BottomSheet
+vi.mock('./editor/BottomSheet', () => ({
+  default: ({ children, isOpen, title }) => isOpen ? (
+    <div data-testid="bottom-sheet">
+      <h3>{title}</h3>
+      {children}
+    </div>
+  ) : null
+}));
+
 describe('RosterDashboard Component', () => {
   const mockOpenRoster = vi.fn();
   const mockDeleteRoster = vi.fn();
@@ -208,6 +218,55 @@ describe('RosterDashboard Component', () => {
       fireEvent.click(exportBtn);
       
       expect(mockExport).toHaveBeenCalledWith(mockRosters[0]);
+    });
+  });
+
+  describe('Mobile Action Sheet', () => {
+    it('opens BottomSheet with options when clicking mobile FAB and invokes handlers', () => {
+      const mockImport = vi.fn();
+      const mockNewRoster = vi.fn();
+
+      render(
+        <RosterDashboard
+          rosters={mockRosters}
+          systems={mockSystems}
+          onNewRoster={mockNewRoster}
+          onImportRoster={mockImport}
+        />
+      );
+
+      // BottomSheet should be closed initially
+      expect(screen.queryByTestId('bottom-sheet')).toBeNull();
+
+      // Click FAB button
+      const fabBtn = screen.getByTitle('Aktionen');
+      expect(fabBtn).not.toBeNull();
+      fireEvent.click(fabBtn);
+
+      // BottomSheet should be open
+      expect(screen.getByTestId('bottom-sheet')).not.toBeNull();
+      expect(screen.getByText('Armee-Aktionen')).toBeDefined();
+
+      // Test "Neue Armeeliste ausheben"
+      const newRosterOption = screen.getByText('Neue Armeeliste ausheben');
+      fireEvent.click(newRosterOption);
+      expect(mockNewRoster).toHaveBeenCalledTimes(1);
+
+      // BottomSheet should close
+      expect(screen.queryByTestId('bottom-sheet')).toBeNull();
+
+      // Open FAB again to test import
+      fireEvent.click(screen.getByTitle('Aktionen'));
+
+      // Test "Armeeliste importieren" - should trigger file input click
+      const fileInput = document.querySelector('input[type="file"]');
+      const clickSpy = vi.spyOn(fileInput, 'click');
+
+      const importOption = screen.getByText('Armeeliste importieren');
+      fireEvent.click(importOption);
+
+      expect(clickSpy).toHaveBeenCalled();
+      expect(screen.queryByTestId('bottom-sheet')).toBeNull();
     });
   });
 });
