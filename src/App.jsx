@@ -12,6 +12,13 @@ import GlobalDebugSearch from './components/editor/GlobalDebugSearch';
 import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
 import EnvBadge from './components/EnvBadge';
+import { 
+  exportRosterToXml, 
+  importRosterFromXml, 
+  compressXmlToRosz, 
+  decompressRoszToXml,
+  MissingSystemError 
+} from './utils/rosterSerialization';
 
 import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
 
@@ -324,6 +331,50 @@ export default function App() {
     }
   };
 
+  const handleImportRoster = async (file) => {
+    try {
+      const xmlText = await decompressRoszToXml(file);
+      const newRoster = importRosterFromXml(xmlText, systems);
+      
+      await saveRoster(newRoster);
+      alert(`Erfolgreich importiert: ${newRoster.name}`);
+      loadAllData();
+    } catch (err) {
+      console.error('Import error:', err);
+      if (err instanceof MissingSystemError) {
+        alert(err.message);
+      } else {
+        alert(`Fehler beim Importieren: ${err.message || 'Ungültiges Dateiformat.'}`);
+      }
+    }
+  };
+
+  const handleExportRoster = async (roster) => {
+    try {
+      const system = systems.find(s => s.id === roster.systemId);
+      if (!system) {
+        alert("Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.");
+        return;
+      }
+      
+      const xmlText = exportRosterToXml(roster, system);
+      const roszBlob = await compressXmlToRosz(roster.name, xmlText);
+      
+      const url = URL.createObjectURL(roszBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      const sanitizedName = roster.name.replace(/[/\\?%*:|"<>]/g, '_');
+      a.download = `${sanitizedName}.rosz`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+      alert(`Fehler beim Exportieren: ${err.message || 'Export fehlgeschlagen.'}`);
+    }
+  };
+
   return (
     <div id="root" className={view !== 'rosters' && view !== 'importer' ? 'in-builder-mode' : ''}>
       {/* Premium Header */}
@@ -415,6 +466,8 @@ export default function App() {
                 isOffline={isOffline}
                 isInstallable={isInstallable}
                 onInstallClick={handleInstallClick}
+                onImportRoster={handleImportRoster}
+                onExportRoster={handleExportRoster}
               />
             )}
 
@@ -428,6 +481,7 @@ export default function App() {
                 roster={selectedRoster}
                 onBack={() => { navigate('rosters'); loadAllData(); }}
                 onPlay={(updatedRoster) => handleOpenRoster(updatedRoster, 'play')}
+                onExportRoster={handleExportRoster}
               />
             )}
 
