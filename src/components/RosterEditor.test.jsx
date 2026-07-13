@@ -13,6 +13,7 @@ vi.mock('lucide-react', () => ({
   Copy: () => <span data-testid="icon-copy" />,
   ArrowLeft: () => <span data-testid="icon-arrow-left" />,
   Edit3: () => <span data-testid="icon-edit3" />,
+  Download: () => <span data-testid="icon-download" />,
 }));
 
 // Mock useRoster custom hook
@@ -312,6 +313,27 @@ describe('RosterEditor Component', () => {
       // Title is shown but no longer editable in the editor
       expect(screen.getByText('Bretonnian Crusaders')).toBeDefined();
       expect(screen.queryByTitle('Titel bearbeiten')).toBeNull();
+    });
+  });
+
+  describe('Roster Export UI', () => {
+    it('calls onExportRoster when clicking the Exportieren button in header', () => {
+      const mockExport = vi.fn();
+      render(
+        <RosterEditor 
+          system={mockSystem} 
+          roster={mockRoster} 
+          onBack={mockOnBack} 
+          onPlay={mockOnPlay} 
+          onExportRoster={mockExport} 
+        />
+      );
+
+      const exportBtn = screen.getByText('Exportieren');
+      expect(exportBtn).toBeDefined();
+      fireEvent.click(exportBtn);
+      
+      expect(mockExport).toHaveBeenCalledWith(mockRoster);
     });
   });
 });

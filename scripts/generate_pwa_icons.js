@@ -32,8 +32,8 @@ async function generate() {
 
   // Helper to build HTML document containing the image
   const getHTML = (size, isMaskable, imgSrc, isFavicon) => {
-    // For maskable icon, add a 15% padding (safe area) so corners are not clipped
-    const paddingVal = isMaskable ? '15%' : '0%';
+    // No padding needed as the source image already contains the required safe zones
+    const paddingVal = '0%';
     const background = isFavicon ? 'transparent' : '#0e0e11';
     return `
       <!DOCTYPE html>

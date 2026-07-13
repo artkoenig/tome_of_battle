@@ -2182,6 +2182,20 @@ input[type="radio"]:checked::after {
   animation: slideUpFade 0.2s ease-out;
 }
 
+.gothic-toast.toast-error {
+  border-color: var(--color-danger);
+  color: var(--text-danger-readable);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 10px rgba(166, 28, 28, 0.3);
+}
+
+.gothic-toast.toast-success,
+.gothic-toast.toast-info {
+  border-color: var(--border-gold);
+  color: var(--text-gold);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), var(--shadow-glow);
+}
+
+
 @keyframes slideUpFade {
   from {
     bottom: 15px;

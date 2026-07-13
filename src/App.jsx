@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Bug, Search, WifiOff, Download } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
@@ -12,8 +12,17 @@ import GlobalDebugSearch from './components/editor/GlobalDebugSearch';
 import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
 import EnvBadge from './components/EnvBadge';
+import ConfirmationDialog from './components/editor/ConfirmationDialog';
+import { 
+  exportRosterToXml, 
+  importRosterFromXml, 
+  compressXmlToRosz, 
+  decompressRoszToXml,
+  MissingSystemError 
+} from './utils/rosterSerialization';
 
 import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
+import { syncRosterSelectionsWithSystem } from './solver/validator';
 
 
 
@@ -41,6 +50,19 @@ export default function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState(null);
   const [updateRelease, setUpdateRelease] = useState(null);
+  const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  const showToast = (message, type = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToast({ message, type });
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(null);
+      toastTimeoutRef.current = null;
+    }, 3000);
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -95,6 +117,7 @@ export default function App() {
 
   // Modal State for new Roster (Formular-State lebt im NewRosterModal selbst)
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rosterToDelete, setRosterToDelete] = useState(null);
 
   // Debug Edit Modal State
   const [debugEditingEntry, setDebugEditingEntry] = useState(null);
@@ -251,7 +274,7 @@ export default function App() {
 
   const handleCreateRoster = async ({ name, systemId, catId, forceEntryId, limit }) => {
     if (!name || !systemId || !catId) {
-      alert("Bitte fülle alle Felder aus.");
+      showToast("Bitte fülle alle Felder aus.", 'error');
       return;
     }
 
@@ -288,28 +311,24 @@ export default function App() {
       navigate('builder', { roster, system: systemDef });
     } catch (err) {
       console.error(err);
-      alert("Fehler beim Erstellen der Liste.");
+      showToast("Fehler beim Erstellen der Liste.", 'error');
     }
   };
 
   const handleOpenRoster = (roster, viewMode = 'builder') => {
     const sys = systems.find(s => s.id === roster.systemId);
     if (!sys) {
-      alert("Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.");
+      showToast("Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.", 'error');
       return;
     }
     navigate(viewMode, { roster, system: sys });
   };
 
-  const handleDeleteRoster = async (id, e) => {
+  const handleDeleteRoster = (id, e) => {
     e.stopPropagation();
-    if (confirm("Möchtest du diese Armeeliste wirklich löschen?")) {
-      try {
-        await deleteRoster(id);
-        loadAllData();
-      } catch (err) {
-        console.error(err);
-      }
+    const roster = rosters.find(r => r.id === id);
+    if (roster) {
+      setRosterToDelete(roster);
     }
   };
 
@@ -321,6 +340,55 @@ export default function App() {
       loadAllData();
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleImportRoster = async (file) => {
+    try {
+      const xmlText = await decompressRoszToXml(file);
+      const newRoster = importRosterFromXml(xmlText, systems);
+      
+      const system = systems.find(s => s.id === newRoster.systemId);
+      if (system) {
+        syncRosterSelectionsWithSystem(newRoster, system);
+      }
+      
+      await saveRoster(newRoster);
+      showToast(`Erfolgreich importiert: ${newRoster.name}`);
+      loadAllData();
+    } catch (err) {
+      console.error('Import error:', err);
+      if (err instanceof MissingSystemError) {
+        showToast(err.message, 'error');
+      } else {
+        showToast(`Fehler beim Importieren: ${err.message || 'Ungültiges Dateiformat.'}`, 'error');
+      }
+    }
+  };
+
+  const handleExportRoster = async (roster) => {
+    try {
+      const system = systems.find(s => s.id === roster.systemId);
+      if (!system) {
+        showToast("Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.", 'error');
+        return;
+      }
+      
+      const xmlText = exportRosterToXml(roster, system);
+      const roszBlob = await compressXmlToRosz(roster.name, xmlText);
+      
+      const url = URL.createObjectURL(roszBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      const sanitizedName = roster.name.replace(/[/\\?%*:|"<>]/g, '_');
+      a.download = `${sanitizedName}.rosz`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+      showToast(`Fehler beim Exportieren: ${err.message || 'Export fehlgeschlagen.'}`, 'error');
     }
   };
 
@@ -415,6 +483,8 @@ export default function App() {
                 isOffline={isOffline}
                 isInstallable={isInstallable}
                 onInstallClick={handleInstallClick}
+                onImportRoster={handleImportRoster}
+                onExportRoster={handleExportRoster}
               />
             )}
 
@@ -428,6 +498,7 @@ export default function App() {
                 roster={selectedRoster}
                 onBack={() => { navigate('rosters'); loadAllData(); }}
                 onPlay={(updatedRoster) => handleOpenRoster(updatedRoster, 'play')}
+                onExportRoster={handleExportRoster}
               />
             )}
 
@@ -448,6 +519,31 @@ export default function App() {
         onClose={() => setIsModalOpen(false)}
         onCreate={handleCreateRoster}
         systems={systems}
+      />
+
+      {/* Confirmation Dialog for deleting Roster */}
+      <ConfirmationDialog
+        isOpen={!!rosterToDelete}
+        onClose={() => setRosterToDelete(null)}
+        onConfirm={async () => {
+          if (!rosterToDelete) return;
+          const id = rosterToDelete.id;
+          setRosterToDelete(null);
+          try {
+            await deleteRoster(id);
+            loadAllData();
+          } catch (err) {
+            console.error(err);
+          }
+        }}
+        title="Armeeliste löschen"
+        message={
+          <>
+            Möchtest du die Armeeliste <strong>{rosterToDelete?.name}</strong> wirklich löschen?
+          </>
+        }
+        confirmLabel="Löschen"
+        isDanger={true}
       />
 
       {/* Debug Entry Editor Modal */}
@@ -500,6 +596,12 @@ export default function App() {
           <button className="btn-primary btn-sm update-toast-btn" onClick={handleReloadApp}>
             Neu laden
           </button>
+        </div>
+      )}
+      {/* Global Toast Notification */}
+      {toast && (
+        <div className={`gothic-toast toast-${typeof toast === 'object' ? toast.type : 'success'}`} style={{ pointerEvents: 'none' }}>
+          <span>{typeof toast === 'object' ? toast.message : toast}</span>
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Play, AlertTriangle, Check, ArrowLeft } from 'lucide-react';
+import { Play, AlertTriangle, Check, ArrowLeft, Download } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
@@ -11,7 +11,7 @@ import UnitSelectionCard from './editor/UnitSelectionCard';
 import AutoFillSuggestions from './editor/AutoFillSuggestions';
 
 
-export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay }) {
+export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster }) {
   const { showDebugIds } = useDebugMode();
   const {
     roster,
@@ -110,9 +110,14 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           </div>
         </div>
 
-        <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
-          <Play size={16} /> <span>Spielmodus</span>
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn-secondary hide-on-mobile" onClick={() => onExportRoster?.(roster)} style={{ padding: '6px 12px' }}>
+            <Download size={16} /> <span>Exportieren</span>
+          </button>
+          <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
+            <Play size={16} /> <span>Spielmodus</span>
+          </button>
+        </div>
       </div>
 
       <div className="builder-layout">

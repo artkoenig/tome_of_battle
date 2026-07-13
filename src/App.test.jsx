@@ -16,7 +16,9 @@ vi.mock('lucide-react', () => ({
   Search: () => <span data-testid="icon-search" />,
   WifiOff: () => <span data-testid="icon-wifioff" />,
   Download: () => <span data-testid="icon-download" />,
+  X: () => <span data-testid="icon-x" />,
 }));
+
 
 // Mock DB and Migrations
 vi.mock('./db/database', () => ({

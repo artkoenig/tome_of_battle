@@ -5,6 +5,7 @@ import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
+import ConfirmationDialog from './editor/ConfirmationDialog';
 
 const getAbsoluteUrl = (path) => {
   const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : '';
@@ -21,6 +22,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [systemToDelete, setSystemToDelete] = useState(null);
 
   // States for pre-bundled catalog import
   const [availableSystems, setAvailableSystems] = useState([]);
@@ -193,16 +195,10 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     }
   };
 
-  const handleDelete = async (id) => {
-    if (confirm('Bist du sicher, dass du dieses Spielsystem und alle zugehörigen Kataloge löschen möchtest?')) {
-      try {
-        await deleteSystem(id);
-        loadSystems();
-        if (onSystemImported) onSystemImported();
-      } catch (e) {
-        console.error(e);
-        setError('Fehler beim Löschen des Spielsystems.');
-      }
+  const handleDelete = (id) => {
+    const sys = systems.find(s => s.id === id);
+    if (sys) {
+      setSystemToDelete(sys);
     }
   };
 
@@ -460,6 +456,32 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
           )}
         </div>
       )}
+      {/* Confirmation Dialog for deleting System */}
+      <ConfirmationDialog
+        isOpen={!!systemToDelete}
+        onClose={() => setSystemToDelete(null)}
+        onConfirm={async () => {
+          if (!systemToDelete) return;
+          const id = systemToDelete.id;
+          setSystemToDelete(null);
+          try {
+            await deleteSystem(id);
+            loadSystems();
+            if (onSystemImported) onSystemImported();
+          } catch (e) {
+            console.error(e);
+            setError('Fehler beim Löschen des Spielsystems.');
+          }
+        }}
+        title="Spielsystem löschen"
+        message={
+          <>
+            Bist du sicher, dass du das Spielsystem <strong>{systemToDelete?.name}</strong> und alle zugehörigen Kataloge löschen möchtest?
+          </>
+        }
+        confirmLabel="Löschen"
+        isDanger={true}
+      />
     </div>
   );
 }
