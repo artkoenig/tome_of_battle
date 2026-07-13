@@ -1,6 +1,22 @@
 import JSZip from 'jszip';
 import { calculateRosterCosts, findEntryInSystem, resolveEntry } from '../solver/validator.js';
 
+// Fallback point limit applied when a roster file declares none.
+const DEFAULT_COST_LIMIT = 2000;
+// Decimal places kept when reconstructing selection totals, to strip floating-point
+// artifacts introduced by the per-item division performed on import.
+const COST_DECIMAL_PRECISION = 6;
+
+/**
+ * Reconstructs the BattleScribe selection cost total from our internal per-item value.
+ * BattleScribe stores each selection's <cost> as the total for that selection
+ * (per-item value multiplied by its quantity), whereas we keep the per-item value.
+ */
+function toSelectionCostTotal(perItemValue, quantity) {
+  const total = (perItemValue || 0) * (quantity || 1);
+  return Number(total.toFixed(COST_DECIMAL_PRECISION));
+}
+
 // Helper to escape special XML characters
 function escapeXml(unsafe) {
   if (unsafe === null || unsafe === undefined) return '';
@@ -50,6 +66,15 @@ export function exportRosterToXml(roster, system) {
     xml += `    <cost name="pts" typeId="pts" value="0"/>\n`;
   }
   xml += '  </costs>\n';
+
+  // Cost limits block (BattleScribe stores the point limit here, not as a roster attribute)
+  const limitType = roster.costLimitType || system?.costTypes?.[0]?.id || 'pts';
+  const limitTypeDef = system?.costTypes?.find(ct => ct.id === limitType);
+  const limitName = limitTypeDef?.name || 'pts';
+  const limitValue = roster.costLimit ?? DEFAULT_COST_LIMIT;
+  xml += '  <costLimits>\n';
+  xml += `    <costLimit name="${escapeXml(limitName)}" typeId="${escapeXml(limitType)}" value="${limitValue}"/>\n`;
+  xml += '  </costLimits>\n';
 
   // Forces block
   xml += '  <forces>\n';
@@ -110,7 +135,8 @@ function serializeSelection(sel, indent, system) {
     sel.costs.forEach(cost => {
       const ct = system?.costTypes?.find(c => c.id === cost.typeId);
       const costName = cost.name || ct?.name || 'pts';
-      sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(cost.typeId)}" value="${cost.value || 0}"/>\n`;
+      const costTotal = toSelectionCostTotal(cost.value, sel.number);
+      sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(cost.typeId)}" value="${costTotal}"/>\n`;
     });
   }
   sXml += `${ind}  </costs>\n`;
@@ -192,8 +218,8 @@ export function importRosterFromXml(xmlText, systems) {
   }
 
   const rosterName = root.getAttribute('name') || 'Importierte Liste';
-  const costLimit = parseInt(root.getAttribute('costLimit')) || 2000;
   const costLimitType = system.costTypes?.[0]?.id || 'pts';
+  const costLimit = parseCostLimit(root, costLimitType);
   
   const forces = [];
   const forcesWrapper = Array.from(root.childNodes).find(node => node.nodeType === 1 && node.nodeName === 'forces');
@@ -245,6 +271,25 @@ export function importRosterFromXml(xmlText, systems) {
       wounds: {}
     }
   };
+}
+
+/**
+ * Reads the point limit for the given cost type from a roster's <costLimits> block,
+ * falling back to the legacy costLimit attribute and finally the default limit.
+ */
+function parseCostLimit(root, costLimitType) {
+  const costLimitsWrapper = Array.from(root.childNodes).find(node => node.nodeType === 1 && node.nodeName === 'costLimits');
+  if (costLimitsWrapper) {
+    const limitNodes = Array.from(costLimitsWrapper.childNodes).filter(node => node.nodeType === 1 && node.nodeName === 'costLimit');
+    const matchingLimit = limitNodes.find(node => node.getAttribute('typeId') === costLimitType) || limitNodes[0];
+    if (matchingLimit) {
+      const value = parseFloat(matchingLimit.getAttribute('value'));
+      if (Number.isFinite(value) && value >= 0) return value;
+    }
+  }
+
+  const attributeValue = parseInt(root.getAttribute('costLimit'), 10);
+  return Number.isFinite(attributeValue) ? attributeValue : DEFAULT_COST_LIMIT;
 }
 
 /**
