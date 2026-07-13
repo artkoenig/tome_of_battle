@@ -37,7 +37,31 @@ const mockSystems = [
       { id: 'cat-core-id', name: 'Core' }
     ],
     catalogues: [
-      { id: 'cat-tomb-kings', name: 'Tomb Kings' }
+      {
+        id: 'cat-tomb-kings',
+        name: 'Tomb Kings',
+        selectionEntries: [
+          {
+            id: 'child-id',
+            name: 'Goblin Spear Chukka',
+            type: 'model',
+            collective: false,
+            selectionEntries: [
+              { id: 'crew-id', name: 'Goblin Crew', type: 'model' },
+              { id: 'bully-id', name: 'Orc Bully', type: 'upgrade' }
+            ]
+          },
+          {
+            id: 'parent-id',
+            name: 'Goblin Spear Chukka',
+            type: 'unit',
+            collective: false,
+            entryLinks: [
+              { id: 'child-link-id', targetId: 'child-id', type: 'selectionEntry' }
+            ]
+          }
+        ]
+      }
     ]
   }
 ];
@@ -184,13 +208,14 @@ describe('Roster Serialization & Deserialization', () => {
     expect(imported).toBeDefined();
     
     const selections = imported.forces[0].selections;
-    expect(selections.length).toBe(2);
+    expect(selections.length).toBe(1);
     
-    const sel1 = selections[0];
-    expect(sel1.name).toBe('Goblin Spear Chukka');
-    expect(sel1.number).toBe(1);
+    const parent = selections[0];
+    expect(parent.name).toBe('Goblin Spear Chukka');
+    expect(parent.number).toBe(1);
+    expect(parent.selections.length).toBe(2);
     
-    const ch1 = sel1.selections[0];
+    const ch1 = parent.selections[0];
     expect(ch1.name).toBe('Goblin Spear Chukka');
     expect(ch1.number).toBe(1);
     expect(ch1.costs[0].value).toBe(35); // 70 / 2 = 35
@@ -202,11 +227,7 @@ describe('Roster Serialization & Deserialization', () => {
     expect(bully1).toBeDefined();
     expect(bully1.number).toBe(1);
 
-    const sel2 = selections[1];
-    expect(sel2.name).toBe('Goblin Spear Chukka');
-    expect(sel2.number).toBe(1);
-    
-    const ch2 = sel2.selections[0];
+    const ch2 = parent.selections[1];
     expect(ch2.name).toBe('Goblin Spear Chukka');
     expect(ch2.number).toBe(1);
     

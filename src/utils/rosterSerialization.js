@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { calculateRosterCosts } from '../solver/validator.js';
+import { calculateRosterCosts, findEntryInSystem, resolveEntry } from '../solver/validator.js';
 
 // Helper to escape special XML characters
 function escapeXml(unsafe) {
@@ -209,9 +209,9 @@ export function importRosterFromXml(xmlText, systems) {
       if (selectionsWrapper) {
         const selectionNodes = Array.from(selectionsWrapper.childNodes).filter(node => node.nodeType === 1 && node.nodeName === 'selection');
         selectionNodes.forEach(selNode => {
-          const parsed = parseSelectionNode(selNode);
-          if (checkNeedsSplit(parsed)) {
-            const splitCount = getSplitCount(parsed);
+          const parsed = parseSelectionNode(selNode, system);
+          if (checkNeedsSplit(parsed, system)) {
+            const splitCount = parsed.number;
             for (let i = 0; i < splitCount; i++) {
               selections.push(createSplitSelection(parsed, i, splitCount));
             }
@@ -250,7 +250,7 @@ export function importRosterFromXml(xmlText, systems) {
 /**
  * Helper to recursively parse selection XML nodes.
  */
-function parseSelectionNode(node) {
+function parseSelectionNode(node, system) {
   const name = node.getAttribute('name') || '';
   let entryId = node.getAttribute('entryId');
   if (entryId && entryId.includes('::')) {
@@ -295,7 +295,15 @@ function parseSelectionNode(node) {
   if (selectionsWrapper) {
     const selectionNodes = Array.from(selectionsWrapper.childNodes).filter(c => c.nodeType === 1 && c.nodeName === 'selection');
     selectionNodes.forEach(subNode => {
-      subSelections.push(parseSelectionNode(subNode));
+      const parsedChild = parseSelectionNode(subNode, system);
+      if (checkNeedsSplit(parsedChild, system)) {
+        const splitCount = parsedChild.number;
+        for (let i = 0; i < splitCount; i++) {
+          subSelections.push(createSplitSelection(parsedChild, i, splitCount));
+        }
+      } else {
+        subSelections.push(parsedChild);
+      }
     });
   }
 
@@ -316,28 +324,29 @@ function parseSelectionNode(node) {
  * Checks if a parsed selection represents a war machine or chariot unit that needs to be split
  * into separate independent units (e.g. 2 Spear Chukkas for 1 choice).
  */
-function checkNeedsSplit(selection) {
-  const nameLower = selection.name.toLowerCase();
-  const splitKeywords = [
-    'chukka', 'chariot', 'thrower', 'lobba', 'catapult', 'cannon', 
-    'helblaster', 'mortar', 'tank', 'diver', 'speerschleuder', 
-    'streitwagen', 'steinschleuder', 'kanone', 'mörser'
-  ];
-  const hasKeyword = splitKeywords.some(kw => nameLower.includes(kw));
-  if (!hasKeyword) return false;
+function checkNeedsSplit(selection, system) {
+  if (!system || !selection.number || selection.number <= 1) return false;
 
-  // Check if there is a child selection with number > 1
-  const child = selection.selections?.find(s => s.number > 1);
-  return !!child;
+  const entryId = selection.selectionEntryId || selection.entryLinkId;
+  if (!entryId) return false;
+
+  const entry = findEntryInSystem(system, entryId);
+  const resolved = resolveEntry(system, entry);
+  if (!resolved) return false;
+
+  // Split if type is unit/model, collective is false (default), and it has catalog options/children
+  const isIndependent = (resolved.type === 'unit' || resolved.type === 'model') &&
+                        (resolved.collective !== true && resolved.collective !== 'true');
+  if (!isIndependent) return false;
+
+  const hasCatalogChildren = (resolved.selectionEntries && resolved.selectionEntries.length > 0) ||
+                             (resolved.entryLinks && resolved.entryLinks.length > 0) ||
+                             (resolved.selectionEntryGroups && resolved.selectionEntryGroups.length > 0);
+  
+  return !!hasCatalogChildren;
 }
 
-/**
- * Returns the number of splits needed for a selection.
- */
-function getSplitCount(selection) {
-  const child = selection.selections?.find(s => s.number > 1);
-  return child ? child.number : 1;
-}
+
 
 /**
  * Creates a split copy of a selection for a given split index.
