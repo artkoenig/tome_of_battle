@@ -22,7 +22,7 @@ import {
 } from './utils/rosterSerialization';
 
 import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
-import { syncRosterSelectionsWithSystem } from './solver/validator';
+import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './solver/validator';
 export function getDiffChanges(installedVersion, release) {
   if (!release) return [];
   if (!release.commits || !release.tags) {
@@ -394,6 +394,9 @@ export default function App() {
       
       const system = systems.find(s => s.id === newRoster.systemId);
       if (system) {
+        // Imported files reference options by target id; realign them to the
+        // catalogue link ids the editor matches before syncing names/costs.
+        reconcileImportedSelectionIds(newRoster, system);
         syncRosterSelectionsWithSystem(newRoster, system);
       }
       
