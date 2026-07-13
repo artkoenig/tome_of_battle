@@ -1,51 +1,48 @@
-# PRD: Dynamischer Commit-Diff für Release Notes
+# PRD: Vereinfachung des Deployments und Bereinigung der Staging-Umgebung
 
 ## Problem Statement / Bug Description
-Bisher zeigt der Update-Dialog der PWA nur die Änderungen (Commits) des allerletzten einzelnen Releases an. Wenn ein Nutzer mehrere Versionen überspringt, sieht er die dazwischen liegenden Änderungen nicht. Zudem werden alle Git-Commits ungefiltert und unübersetzt angezeigt, was auch rein technische Beschreibungen (z. B. `chore:`, `refactor:`, `docs:`) für Endnutzer sichtbar macht.
+- Die Codebasis enthält veraltete Kommentare, Code-Logiken (z. B. in `scripts/deployEnv.js`) und Testfälle, die sich auf eine nicht mehr existierende `staging`-Umgebung beziehen.
+- Es existiert weiterhin ein lokaler (und eventuell entfernter) `staging`-Git-Branch, obwohl das Projekt bereits auf ein Trunk-based Deployment umgestellt wurde ([ADR 0009](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0009-branching-and-release-train-strategy.md)).
+- Der Vercel-CLI-basierte GitHub Workflow (`deploy-vercel.yml`) verkompliziert das Deployment unnötig (erfordert Vercel-Token-Secrets in GitHub und steuert das Deployment manuell über Git-Tags für Production und `main` für Previews). Dies soll auf die native Vercel-GitHub-Integration zurückgeführt werden.
+- Die Dokumentation für ADR 0008 ([0008-vercel-deployment-and-staging-environment.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0008-vercel-deployment-and-staging-environment.md)) trägt einen veralteten Dateinamen und beschreibt das CLI-basierte bzw. das staging-basierte Deployment, was aktualisiert werden muss.
 
 ## Solution
-Die `changelog.json` wird so erweitert, dass sie die Historie der letzten 100 Commits und aller bekannten Semver-Tags enthält. Diese Commits werden bereits während des Builds gefiltert (nur `feat` und `fix`) und benutzerfreundlich auf Deutsch übersetzt.
-Der PWA-Update-Dialog auf dem Client gleicht die installierte Version mit den Daten in `changelog.json` ab, ermittelt den zugehörigen Commit-Hash und zeigt dynamisch genau die Liste der übersetzten Commits an, die seit der installierten Version hinzugekommen sind.
+- Rückstandslose Bereinigung aller Erwähnungen der `staging`-Umgebung aus Kommentaren und Code-Dateien.
+- Löschung des lokalen und remote vorhandenen `staging`-Git-Branches.
+- Entfernung des GitHub Workflows `.github/workflows/deploy-vercel.yml`. Das Deployment wird wieder nativ von Vercel übernommen (Pushes auf `main` deployen direkt nach Production; Feature-Branches erzeugen Preview-Deployments).
+- Anpassung von `scripts/deployEnv.js` und `scripts/deployEnv.test.js`, sodass der `main`-Branch standardmäßig als `production` eingestuft wird.
+- Umbenennung des ADR-Dokuments `0008-vercel-deployment-and-staging-environment.md` in `0008-vercel-deployment.md` und Aktualisierung aller Querverweise im Projekt. Das ADR wird aktualisiert, um die native GitHub-Integration von Vercel zu dokumentieren.
 
 ## User Stories / Requirements
-1. Als **Nutzer der App** möchte ich beim Erscheinen eines Updates eine Auflistung aller funktionalen Änderungen sehen, die seit meiner aktuell installierten Version hinzugekommen sind, um den Nutzen des Updates zu verstehen.
-2. Als **Nutzer der App** möchte ich nur lesbare und relevante Einträge sehen (Features und Fehlerbehebungen), ohne technische Details wie Refactoring oder Dokumentations-Updates.
-3. Als **Nutzer einer sehr alten Version** möchte ich, falls meine installierte Version mehr als 50 Commits zurückliegt oder nicht in der Historie gefunden wird, die neuesten 50 Änderungen sehen sowie den Hinweis, dass weitere Änderungen vorhanden sind.
+1. **Als Entwickler** möchte ich, dass keine Code-Stellen oder Kommentare mehr auf eine `staging`-Umgebung verweisen, um Fehlinterpretationen bei der lokalen Entwicklung oder Fehlersuche zu vermeiden.
+2. **Als Release-Manager** möchte ich, dass der obsolete `staging`-Zweig im Git-Repository gelöscht ist, damit die Historie und die Branch-Übersicht übersichtlich bleiben.
+3. **Als Administrator** möchte ich keine Vercel-Secrets in GitHub Actions pflegen müssen, sondern dass Vercel das Deployment nativ und sicher über seine GitHub-App steuert.
+4. **Als Architektur-Chronist** möchte ich, dass die ADRs das native Vercel-Deployment akkurat beschreiben und richtig verlinkt sind.
 
 ## Technical Decisions
-- **Affected Modules:**
-  - `vite.config.js`: Generierung der erweiterten `changelog.json` zur Build-Time und Injektion der aktuellen App-Version via `import.meta.env.VITE_APP_VERSION`.
-  - `src/App.jsx`: Abgleich der installierten Version mit der Commit-Historie zur Runtime und Darstellung der gefilterten Änderungen im PWA-Update-Dialog.
-- **Technical Clarifications / Architectural Decisions:**
-  - **Build-Time-Filterung:** Der Build-Prozess filtert Commits, die nicht mit `feat` oder `fix` beginnen, heraus. Er übersetzt `feat:` in `Neues Feature:` und `fix:` in `Bugfix:` und kapitalisiert den ersten Buchstaben der Beschreibung.
-  - **Git-Tag-Dereferenzierung:** Annotationen bei Git-Tags werden aufgelöst (`git show-ref --tags -d`), um die tatsächlichen Commit-Hashes für den Abgleich zu erhalten.
-  - **Client-Side-Diff:** Der Client vergleicht den Hash seiner installierten Version (aus `import.meta.env.VITE_APP_VERSION` bzw. über Tag-Mapping) mit dem Commit-Verlauf in `changelog.json` und schneidet die Liste der anzuzeigenden Commits ab.
-- **API Contracts / Data Models:**
-  - `changelog.json` Format:
-    ```json
-    {
-      "version": "v1.5.0",
-      "date": "2026-07-13",
-      "changes": ["Fallback-Änderung 1", "Fallback-Änderung 2"],
-      "commits": [
-        { "hash": "c0ffee1", "subject": "Neues Feature: Gothic-Design für Dialoge" },
-        { "hash": "f8239f9", "subject": "Bugfix: Roster-Import korrigiert" }
-      ],
-      "tags": [
-        { "name": "v1.5.0", "hash": "c0ffee1" },
-        { "name": "v1.4.0", "hash": "e45e488" }
-      ]
-    }
-    ```
+- **Betroffene Module & Pfade:**
+  - [deployEnv.js](file:///Users/artkoenig/Workspace/army_builder/scripts/deployEnv.js): Zurücksetzen auf die Logik, bei der der Branch-Name `main` zu `production` führt. Entfernung von ungenutzten Branch-Mapping-Logiken.
+  - [deployEnv.test.js](file:///Users/artkoenig/Workspace/army_builder/scripts/deployEnv.test.js): Hinzufügen von Tests für `branch: 'main' -> production` und Bereinigung aller `staging`-Testfälle.
+  - [EnvBadge.jsx](file:///Users/artkoenig/Workspace/army_builder/src/components/EnvBadge.jsx): Überarbeitung des JSDoc-Kommentars.
+  - [index.css](file:///Users/artkoenig/Workspace/army_builder/src/index.css): Bereinigung des CSS-Kommentars.
+  - [vite.config.js](file:///Users/artkoenig/Workspace/army_builder/vite.config.js): Bereinigung des Kommentars zur Deploy-Umgebung.
+  - **Dokumentations-Dateien:**
+    - [0008-vercel-deployment-and-staging-environment.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0008-vercel-deployment-and-staging-environment.md) wird in `0008-vercel-deployment.md` umbenannt und inhaltlich auf die native Vercel-Integration (main -> prod) umgeschrieben.
+    - Aktualisierung der Verweise in [README.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/README.md), [0007-ci-cd-workflow.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0007-ci-cd-workflow.md) und [0009-branching-and-release-train-strategy.md](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0009-branching-and-release-train-strategy.md).
+- **Entfernte Dateien:**
+  - [deploy-vercel.yml](file:///.github/workflows/deploy-vercel.yml) [DELETE]
+  - [tag-release.yml](file:///.github/workflows/tag-release.yml) [DELETE]
+  - [tag-release.js](file:///Users/artkoenig/Workspace/army_builder/scripts/tag-release.js) [DELETE]
+- **Git-Aktionen:**
+  - Lokale Löschung: `git branch -D staging`
+  - Remote Löschung: `git push origin --delete staging`
 
 ## Testing Decisions
-- **Modules to Test:**
-  - PWA-Build-Plugin und Release-Skript (Build-Zeit-Logik).
-  - PWA-Update-Komponente in `App.jsx` (Laufzeit-Logik).
-- **Test Interfaces (Seams):**
-  - Unit-Test `src/solver/pwa.test.js` verifiziert das Format der erzeugten `changelog.json`.
-  - Unit-Test `src/App.test.jsx` simuliert das `pwa-update-available`-Event mit verschiedenen installierten Versionen (Bumps, Feature-Branches und Fallbacks) und überprüft die gerenderten Texte im Dialog.
+- **Zu testende Module:**
+  - `scripts/deployEnv.js` (Unit-Tests).
+- **Test-Schnittstellen (Seams):**
+  - `resolveDeployEnv` Funktion in [deployEnv.test.js](file:///Users/artkoenig/Workspace/army_builder/scripts/deployEnv.test.js).
+  - Ausführung des gesamten Test-Suites (`npm test`).
 
 ## Out of Scope
-- Historie von mehr als 100 Commits (wird zur Build-Zeit auf 100 begrenzt, Client zeigt maximal 50 an).
-- Automatisches Pushen von Git-Tags zur Build-Zeit (wird weiterhin durch CI-Workflows geregelt).
+- Einrichtung eines anderen automatischen Tagging-Mechanismus. Tags werden fortan manuell gesetzt, wenn neue Versionen deklariert werden sollen.

@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Datum:** 2026-07-13
 - **Beteiligte:** Entwickler, KI-Assistenten
-- **Zugehörige ADRs:** [ADR 0001: Record Architecture Decisions](0001-record-architecture-decisions.md), [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0008: Vercel Deployment and Staging Environment](0008-vercel-deployment-and-staging-environment.md)
+- **Zugehörige ADRs:** [ADR 0001: Record Architecture Decisions](0001-record-architecture-decisions.md), [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md)
 
 ## Kontext und Problemstellung
 
@@ -27,12 +27,12 @@ Gewählte Option: **Option 2 (GitHub Flow / Trunk-based)**.
 Der Integrations- und Veröffentlichungsprozess folgt nun diesen verbindlichen Schritten:
 
 ```
-feature/xyz ──PR (Squash-Merge)──▶ main ──(Testen auf Preview-URL)──▶ git tag vX.Y.Z ──▶ Live
+feature/xyz ──PR (Squash-Merge)──▶ main (Live) ──▶ git tag vX.Y.Z (Changelog)
 ```
 
 ### 1. Branch-Struktur
 - **Feature-Branches:** Entwicklung neuer Features oder Bugfixes erfolgt auf isolierten Branches (z. B. `claude/feature-name` oder `feat/feature-name`).
-- **`main`:** Der Trunk. Alle PRs werden hierhin gemerged. Er spiegelt stets die neueste stabile Vorschauversion (Preview) wider.
+- **`main`:** Der Trunk. Alle PRs werden hierhin gemerged. Er spiegelt stets die produktive Live-Version wider.
 - Einen speziellen `staging`-Branch gibt es nicht mehr.
 
 ### 2. Integration in `main` (Squash-Merge)
@@ -46,6 +46,6 @@ feature/xyz ──PR (Squash-Merge)──▶ main ──(Testen auf Preview-URL)
 
 - **Positiv:**
   - Viel schnellerer Ablauf ohne lästige Doppel-Merges.
-  - Vercel-Previews auf `main` geben sofortiges Feedback für das nächste Release.
+  - Vercel-Previews auf Feature-PRs geben sofortiges Feedback vor dem Live-Gang.
 - **Negativ:**
-  - Code auf `main` muss immer release-fähig sein, da `main` direkt die Basis für das nächste Tag-Release bildet.
+  - Code auf `main` muss immer release-fähig sein, da `main` direkt live geschaltet wird.

@@ -10,7 +10,7 @@ const LABELS = {
 
 /**
  * Kleiner Umgebungs-Hinweis im Header. Erscheint nur auf Nicht-Production-
- * Deploys (Staging/Vorschau), damit diese nicht mit der Live-App verwechselt
+ * Deploys (Vorschau), damit diese nicht mit der Live-App verwechselt
  * werden. Auf Production und im lokalen Dev-Betrieb wird nichts gerendert.
  */
 export default function EnvBadge() {

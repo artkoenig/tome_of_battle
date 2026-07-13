@@ -443,7 +443,7 @@ select option {
   gap: 16px;
 }
 
-/* Umgebungs-Hinweis (Staging/Vorschau) neben dem Logo */
+/* Umgebungs-Hinweis (Vorschau) neben dem Logo */
 .env-badge {
   align-self: center;
   font-family: var(--font-serif);

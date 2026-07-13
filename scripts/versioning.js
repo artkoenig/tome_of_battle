@@ -67,9 +67,7 @@ export function buildVersionString({ latest, isMain, commitHash, existingTags = 
 
 /**
  * Single source of truth for what a build's version is, the tag it should
- * create (if any), and the base tag to diff the changelog from. Pure — the
- * caller supplies git state. Used by both the read-only build plugin and the
- * tag-release script so they always agree.
+ * caller supplies git state.
  *
  * @param {object}   opts
  * @param {string[]} opts.tags       all vX.Y.Z tags in the repo

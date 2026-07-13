@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Datum:** 2026-07-13
 - **Beteiligte:** Entwickler, KI-Assistenten
-- **Zugehörige ADRs:** [ADR 0008: Vercel Deployment and Staging Environment](0008-vercel-deployment-and-staging-environment.md)
+- **Zugehörige ADRs:** [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md)
 
 ## Kontext und Problemstellung
 
@@ -35,19 +35,16 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 - **Trigger:** Läuft nach jedem Merge/Push auf den `main`-Branch.
 - **Ablauf:** Verwendet Claude, um den Commit-Diff mit den Markdown-Dateien zu vergleichen. Stellt der Bot fest, dass die Dokumentation veraltet ist, korrigiert er sie und öffnet einen neuen PR gegen `main`.
 
-### 3. Vercel Deployment (`.github/workflows/deploy-vercel.yml`)
-- **Trigger:** Läuft bei Pushes auf `main` sowie beim Pushen von Tags (`v*`).
-- **Ablauf:** Steuert die Vercel CLI fern. Baut auf `main` reine Previews und auf Tags die echte Production-Instanz (siehe ADR 0008).
+### 3. Vercel Deployment (Nativ via Vercel GitHub-App)
+- **Trigger:** Automatisch bei Pushes auf beliebigen Zweigen.
+- **Ablauf:** Vercel übernimmt das Bauen und Veröffentlichen nativ. Pushes auf `main` deployen direkt nach Production. Pushes auf Feature-Branches erzeugen Preview-URLs (siehe ADR 0008).
 
-### 4. Tag Release (`.github/workflows/tag-release.yml`)
-- **Trigger:** Läuft nach jedem Push/Merge auf `main`.
-- **Ablauf:** Führt `scripts/tag-release.js` aus, um basierend auf den vorhandenen Tags die nächste Minor-Version zu generieren, erzeugt den Git-Tag und pusht diesen. Dieser neue Tag wiederum triggert dann den Vercel Deployment Workflow für Production!
 
 ---
 
 ### Konsequenzen (Auswirkungen)
 
 - **Positiv:**
-  - Sehr linearer, nachvollziehbarer Ablauf (Merge -> CI -> Tag -> Vercel Prod).
+  - Sehr linearer, nachvollziehbarer Ablauf (Merge -> CI -> Native Vercel Deploy).
 - **Negativ:**
   - Alle Tests (inklusive E2E) laufen nun auf PRs gegen `main`, was Feature-PRs leicht verzögert.

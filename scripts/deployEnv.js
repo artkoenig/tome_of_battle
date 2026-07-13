@@ -6,29 +6,23 @@
  * Umgebungen:
  * - 'development' → lokaler Dev-Server (`vite`)
  * - 'production'  → Production-Deploy (Branch main) → Live-App
- * - 'staging'     → Staging-Deploy (Branch staging bzw. Vercel-Umgebung staging)
  * - 'preview'     → jeder andere Branch/PR (Vercel-Preview)
  */
-
-/** Leitet die Umgebung allein aus dem gebauten Branch ab. */
-function branchToEnv(branch) {
-  if (branch === 'main') return 'production';
-  if (branch === 'staging') return 'staging';
-  return 'preview';
-}
 
 /**
  * @param {object} opts
  * @param {'serve'|'build'} opts.command  Vite-Kommando ('serve' = Dev-Server)
  * @param {string} [opts.branch]          gebauter Branch (leer bei unbekannt)
- * @param {string} [opts.targetEnv]       Vercels VERCEL_TARGET_ENV, falls gesetzt
- * @returns {'development'|'production'|'staging'|'preview'}
+ * @param {string} [opts.targetEnv]       Vercels VERCEL_TARGET_ENV/VERCEL_ENV, falls gesetzt
+ * @returns {'development'|'production'|'preview'}
  */
 export function resolveDeployEnv({ command, branch = '', targetEnv = '' }) {
   if (command === 'serve') return 'development';
 
-  // Durch die Umstellung auf Vercel CLI via GitHub Action verlassen wir uns
-  // nun ausschließlich auf das vom CLI gesetzte targetEnv (production/preview).
+  // Branch-Namen (main) haben Vorrang für Production. Alles andere ist Preview,
+  // es sei denn, targetEnv überschreibt es.
+  if (branch === 'main') return 'production';
+
   const env = targetEnv || 'preview';
 
   if (env === 'production') return 'production';

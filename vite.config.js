@@ -155,7 +155,7 @@ function ensureGitHistory() {
 
 /**
  * Computes this build's version and release notes from git — read only, never
- * creates or pushes anything (tagging is owned by scripts/tag-release.js in CI).
+ * creates or pushes anything.
  *
  *   - building main         → next semver minor release (e.g. v1.5.0), or the
  *                             tag already on HEAD if this commit was released
@@ -249,8 +249,7 @@ function computeRelease() {
 /**
  * Vite plugin that versions the build (read only): at closeBundle it writes
  * changelog.json, and in dev it serves /changelog.json live so the update toast
- * can be tested without a build. Release tags are created separately by the
- * tag-release GitHub Actions workflow, not here.
+ * can be tested without a build. Release tags are created separately, not here.
  */
 function versionPlugin() {
   let outDir;
@@ -294,7 +293,7 @@ export default defineConfig(({ command }) => {
   return {
     plugins: [react(), swVersionPlugin(), catalogManifestPlugin(), versionPlugin()],
     // Deploy-Umgebung zur Build-Zeit bestimmen und der App bereitstellen, damit
-    // Nicht-Production-Deploys (Staging/Preview) sichtbar gekennzeichnet werden.
+    // Nicht-Production-Deploys (Preview) sichtbar gekennzeichnet werden.
     define: {
       'import.meta.env.VITE_APP_VERSION': JSON.stringify(release.version),
       'import.meta.env.VITE_DEPLOY_ENV': JSON.stringify(

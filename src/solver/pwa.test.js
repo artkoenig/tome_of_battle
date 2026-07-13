@@ -119,24 +119,6 @@ describe('PWA Configuration and Assets', () => {
     expect(viteContent).not.toContain('git push origin');
   });
 
-  it('should own release tagging in the tag-release script and its workflow', () => {
-    const scriptPath = path.join(rootDir, 'scripts/tag-release.js');
-    const workflowPath = path.join(rootDir, '.github/workflows/tag-release.yml');
-    expect(fs.existsSync(scriptPath)).toBe(true);
-    expect(fs.existsSync(workflowPath)).toBe(true);
-
-    const script = fs.readFileSync(scriptPath, 'utf8');
-    // The script is the single writer of tags: it resolves the version and pushes.
-    expect(script).toContain('resolveVersion');
-    expect(script).toContain('git tag -a');
-    expect(script).toContain('git push origin');
-
-    const workflow = fs.readFileSync(workflowPath, 'utf8');
-    expect(workflow).toContain('branches: [main]');
-    expect(workflow).toContain('contents: write');
-    expect(workflow).toContain('node scripts/tag-release.js');
-  });
-
   it('should fetch the changelog fresh when an update is available', () => {
     const mainPath = path.join(rootDir, 'src/main.jsx');
     const mainContent = fs.readFileSync(mainPath, 'utf8');
