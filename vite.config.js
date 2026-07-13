@@ -171,10 +171,10 @@ function parseAndFilterCommits(out) {
   if (!out) return [];
   const list = [];
   out.split('\n').forEach(line => {
-    const idx = line.indexOf('|');
+    const idx = line.indexOf(':::');
     if (idx === -1) return;
     const hash = line.substring(0, idx).trim();
-    const subject = line.substring(idx + 1).trim();
+    const subject = line.substring(idx + 3).trim();
     const match = /^(feat|fix)(?:\([^)]+\))?:\s*(.*)$/i.exec(subject);
     if (match) {
       const type = match[1].toLowerCase();
@@ -205,13 +205,13 @@ function computeRelease() {
 
   // 1. Changes since base (backward compatibility)
   const baseLogCmd = base
-    ? `git log ${base}..HEAD --no-merges --pretty=format:%h|%s`
-    : 'git log -n 20 --no-merges --pretty=format:%h|%s';
+    ? `git log ${base}..HEAD --no-merges --pretty=format:%h:::%s`
+    : 'git log -n 20 --no-merges --pretty=format:%h:::%s';
   const baseOut = gitSafe(baseLogCmd);
   const changes = parseAndFilterCommits(baseOut).map(c => c.subject);
 
   // 2. Recent 100 commits (for dynamic diffing)
-  const fullLogCmd = 'git log -n 100 --no-merges --pretty=format:%h|%s';
+  const fullLogCmd = 'git log -n 100 --no-merges --pretty=format:%h:::%s';
   const fullOut = gitSafe(fullLogCmd);
   const commits = parseAndFilterCommits(fullOut);
 
