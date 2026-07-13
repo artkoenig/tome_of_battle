@@ -209,7 +209,15 @@ export function importRosterFromXml(xmlText, systems) {
       if (selectionsWrapper) {
         const selectionNodes = Array.from(selectionsWrapper.childNodes).filter(node => node.nodeType === 1 && node.nodeName === 'selection');
         selectionNodes.forEach(selNode => {
-          selections.push(parseSelectionNode(selNode));
+          const parsed = parseSelectionNode(selNode);
+          if (checkNeedsSplit(parsed)) {
+            const splitCount = getSplitCount(parsed);
+            for (let i = 0; i < splitCount; i++) {
+              selections.push(createSplitSelection(parsed, i, splitCount));
+            }
+          } else {
+            selections.push(parsed);
+          }
         });
       }
       
@@ -302,4 +310,59 @@ function parseSelectionNode(node) {
     collective: isCollective,
     selections: subSelections
   };
+}
+
+/**
+ * Checks if a parsed selection represents a war machine or chariot unit that needs to be split
+ * into separate independent units (e.g. 2 Spear Chukkas for 1 choice).
+ */
+function checkNeedsSplit(selection) {
+  const nameLower = selection.name.toLowerCase();
+  const splitKeywords = [
+    'chukka', 'chariot', 'thrower', 'lobba', 'catapult', 'cannon', 
+    'helblaster', 'mortar', 'tank', 'diver', 'speerschleuder', 
+    'streitwagen', 'steinschleuder', 'kanone', 'mörser'
+  ];
+  const hasKeyword = splitKeywords.some(kw => nameLower.includes(kw));
+  if (!hasKeyword) return false;
+
+  // Check if there is a child selection with number > 1
+  const child = selection.selections?.find(s => s.number > 1);
+  return !!child;
+}
+
+/**
+ * Returns the number of splits needed for a selection.
+ */
+function getSplitCount(selection) {
+  const child = selection.selections?.find(s => s.number > 1);
+  return child ? child.number : 1;
+}
+
+/**
+ * Creates a split copy of a selection for a given split index.
+ */
+function createSplitSelection(original, index, totalSplit) {
+  const clone = (sel, isRoot = false) => {
+    const newNumber = isRoot ? 1 : (index === 0 ? Math.ceil(sel.number / totalSplit) : Math.floor(sel.number / totalSplit));
+    
+    const newSelections = [];
+    if (sel.selections) {
+      sel.selections.forEach(child => {
+        const clonedChild = clone(child);
+        if (clonedChild.number > 0) {
+          newSelections.push(clonedChild);
+        }
+      });
+    }
+    
+    return {
+      ...sel,
+      id: crypto.randomUUID(), // Generate a fresh UUID to prevent ID clashes
+      number: newNumber,
+      selections: newSelections
+    };
+  };
+
+  return clone(original, true);
 }
