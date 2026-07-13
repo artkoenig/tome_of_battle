@@ -23,8 +23,52 @@ import {
 
 import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
 import { syncRosterSelectionsWithSystem } from './solver/validator';
+export function getDiffChanges(installedVersion, release) {
+  if (!release) return [];
+  if (!release.commits || !release.tags) {
+    return release.changes || [];
+  }
 
+  let installedHash = '';
+  if (installedVersion) {
+    if (installedVersion.includes('+')) {
+      installedHash = installedVersion.split('+')[1];
+    } else {
+      const matchedTag = release.tags.find(
+        t => t.name.toLowerCase() === installedVersion.toLowerCase()
+      );
+      if (matchedTag) {
+        installedHash = matchedTag.hash;
+      }
+    }
+  }
 
+  if (installedHash) {
+    const targetHash = installedHash.toLowerCase();
+    const installedIndex = release.commits.findIndex(c => {
+      const h = c.hash.toLowerCase();
+      return h === targetHash || 
+             (h.length >= 7 && targetHash.startsWith(h)) || 
+             (targetHash.length >= 7 && h.startsWith(targetHash));
+    });
+
+    if (installedIndex !== -1) {
+      const diff = release.commits.slice(0, installedIndex).map(c => c.subject);
+      if (diff.length > 50) {
+        return [...diff.slice(0, 50), '...und weitere Einträge.'];
+      }
+      return diff;
+    }
+  }
+
+  // Fallback: If hash not found or too old (> 100 commits behind),
+  // show the latest 50 commits from the list plus the note.
+  const allCommits = release.commits.map(c => c.subject);
+  if (allCommits.length > 50) {
+    return [...allCommits.slice(0, 50), '...und weitere Einträge.'];
+  }
+  return allCommits.length > 0 ? allCommits : (release.changes || []);
+}
 
 export default function App() {
   const { showDebugIds, toggleShowDebugIds } = useDebugMode();
@@ -392,6 +436,8 @@ export default function App() {
     }
   };
 
+  const diffChanges = getDiffChanges(import.meta.env.VITE_APP_VERSION, updateRelease);
+
   return (
     <div id="root" className={view !== 'rosters' && view !== 'importer' ? 'in-builder-mode' : ''}>
       {/* Premium Header */}
@@ -576,15 +622,15 @@ export default function App() {
       {updateAvailable && (
         <div className="update-toast">
           <div className="update-toast-content">
-            <span className="font-serif text-gold update-toast-title">Update verfügbar!</span>
-            {updateRelease && updateRelease.changes && updateRelease.changes.length > 0 ? (
+            <span className="font-serif text-gold update-toast-title">Chronik der Veränderungen</span>
+            {updateRelease && diffChanges.length > 0 ? (
               <div className="update-toast-changes">
                 <span className="update-toast-changes-heading">
-                  {updateRelease.version ? `Neu in ${updateRelease.version}` : 'Das ist neu'}
+                  {updateRelease.version ? `Version ${updateRelease.version}` : 'Das ist neu'}
                   {updateRelease.date ? ` · ${updateRelease.date}` : ''}:
                 </span>
                 <ul className="update-toast-change-list">
-                  {updateRelease.changes.map((change, i) => (
+                  {diffChanges.map((change, i) => (
                     <li key={i}>{change}</li>
                   ))}
                 </ul>

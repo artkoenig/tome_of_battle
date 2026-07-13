@@ -167,9 +167,32 @@ function ensureGitHistory() {
  *
  * @returns {{ version: string, date: string, changes: string[] }}
  */
+function parseAndFilterCommits(out) {
+  if (!out) return [];
+  const list = [];
+  out.split('\n').forEach(line => {
+    const idx = line.indexOf('|');
+    if (idx === -1) return;
+    const hash = line.substring(0, idx).trim();
+    const subject = line.substring(idx + 1).trim();
+    const match = /^(feat|fix)(?:\([^)]+\))?:\s*(.*)$/i.exec(subject);
+    if (match) {
+      const type = match[1].toLowerCase();
+      const rest = match[2].trim();
+      const description = rest.charAt(0).toUpperCase() + rest.slice(1);
+      const prefix = type === 'feat' ? 'Neues Feature' : 'Bugfix';
+      list.push({
+        hash,
+        subject: `${prefix}: ${description}`
+      });
+    }
+  });
+  return list;
+}
+
 function computeRelease() {
   if (!gitSafe('git rev-parse --is-inside-work-tree')) {
-    return { version: '', date: '', changes: [] };
+    return { version: '', date: '', changes: [], commits: [], tags: [] };
   }
   ensureGitHistory();
 
@@ -180,15 +203,47 @@ function computeRelease() {
 
   const { version, base } = resolveVersion({ tags, headTags, isMain, commitHash });
 
-  const logCmd = base
-    ? `git log ${base}..HEAD --no-merges --pretty=format:%s`
-    : 'git log -n 20 --no-merges --pretty=format:%s';
-  const out = gitSafe(logCmd);
-  const changes = out ? out.split('\n').map((s) => s.trim()).filter(Boolean) : [];
+  // 1. Changes since base (backward compatibility)
+  const baseLogCmd = base
+    ? `git log ${base}..HEAD --no-merges --pretty=format:%h|%s`
+    : 'git log -n 20 --no-merges --pretty=format:%h|%s';
+  const baseOut = gitSafe(baseLogCmd);
+  const changes = parseAndFilterCommits(baseOut).map(c => c.subject);
+
+  // 2. Recent 100 commits (for dynamic diffing)
+  const fullLogCmd = 'git log -n 100 --no-merges --pretty=format:%h|%s';
+  const fullOut = gitSafe(fullLogCmd);
+  const commits = parseAndFilterCommits(fullOut);
+
+  // 3. Tag mapping with dereferenced commit hashes
+  const tagsOut = gitSafe('git show-ref --tags -d');
+  const tagsMap = {};
+  if (tagsOut) {
+    tagsOut.split('\n').forEach(line => {
+      const parts = line.trim().split(/\s+/);
+      if (parts.length < 2) return;
+      const hash = parts[0].substring(0, 7); // short hash
+      let refName = parts[1];
+      let isDereference = false;
+      if (refName.endsWith('^{}')) {
+        refName = refName.slice(0, -3);
+        isDereference = true;
+      }
+      if (refName.startsWith('refs/tags/')) {
+        const tagName = refName.substring('refs/tags/'.length);
+        if (/^v\d+\.\d+\.\d+$/.test(tagName)) {
+          if (isDereference || !tagsMap[tagName]) {
+            tagsMap[tagName] = hash;
+          }
+        }
+      }
+    });
+  }
+  const tagsList = Object.entries(tagsMap).map(([name, hash]) => ({ name, hash }));
 
   const date = gitSafe('git log -1 --pretty=format:%cd --date=short');
 
-  return { version, date, changes };
+  return { version, date, changes, commits, tags: tagsList };
 }
 
 /**
@@ -205,15 +260,15 @@ function versionPlugin() {
       outDir = resolve(config.root, config.build.outDir);
     },
     closeBundle() {
-      const { version, date, changes } = computeRelease();
-      writeFileSync(join(outDir, 'changelog.json'), JSON.stringify({ version, date, changes }, null, 2));
+      const { version, date, changes, commits, tags } = computeRelease();
+      writeFileSync(join(outDir, 'changelog.json'), JSON.stringify({ version, date, changes, commits, tags }, null, 2));
       console.log(`\x1b[36m[version]\x1b[0m ${version || 'unbekannt'} – ${changes.length} Änderung(en) in changelog.json.`);
     },
     configureServer(server) {
       server.middlewares.use('/changelog.json', (req, res) => {
-        const { version, date, changes } = computeRelease();
+        const { version, date, changes, commits, tags } = computeRelease();
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ version, date, changes }, null, 2));
+        res.end(JSON.stringify({ version, date, changes, commits, tags }, null, 2));
       });
     }
   };
@@ -234,20 +289,24 @@ function extractIdAndName(content, tag) {
   return null;
 }
 
-export default defineConfig(({ command }) => ({
-  plugins: [react(), swVersionPlugin(), catalogManifestPlugin(), versionPlugin()],
-  // Deploy-Umgebung zur Build-Zeit bestimmen und der App bereitstellen, damit
-  // Nicht-Production-Deploys (Staging/Preview) sichtbar gekennzeichnet werden.
-  define: {
-    'import.meta.env.VITE_DEPLOY_ENV': JSON.stringify(
-      resolveDeployEnv({
-        command,
-        branch: detectBranch(),
-        // VERCEL_TARGET_ENV nennt die (auch custom) Vercel-Umgebung zuverlässig
-        // (VERCEL_ENV steht bei custom Pre-Prod-Umgebungen auf 'preview').
-        targetEnv: process.env.VERCEL_TARGET_ENV || '',
-      })
-    ),
-  },
-}))
+export default defineConfig(({ command }) => {
+  const release = computeRelease();
+  return {
+    plugins: [react(), swVersionPlugin(), catalogManifestPlugin(), versionPlugin()],
+    // Deploy-Umgebung zur Build-Zeit bestimmen und der App bereitstellen, damit
+    // Nicht-Production-Deploys (Staging/Preview) sichtbar gekennzeichnet werden.
+    define: {
+      'import.meta.env.VITE_APP_VERSION': JSON.stringify(release.version),
+      'import.meta.env.VITE_DEPLOY_ENV': JSON.stringify(
+        resolveDeployEnv({
+          command,
+          branch: detectBranch(),
+          // VERCEL_TARGET_ENV nennt die (auch custom) Vercel-Umgebung zuverlässig
+          // (VERCEL_ENV steht bei custom Pre-Prod-Umgebungen auf 'preview').
+          targetEnv: process.env.VERCEL_TARGET_ENV || '',
+        })
+      ),
+    },
+  };
+});
 

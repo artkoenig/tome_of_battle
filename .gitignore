@@ -35,3 +35,4 @@ coverage/
 public/catalogs/manifest.json
 
 .scratch/
+.antigravity/
