@@ -10,17 +10,17 @@ describe('deployEnv', () => {
     it('maps the main branch build to production', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'main' })).toBe('production');
     });
-    it('maps the staging branch build to staging', () => {
-      expect(resolveDeployEnv({ command: 'build', branch: 'staging' })).toBe('staging');
+    it('maps the staging branch build to preview', () => {
+      expect(resolveDeployEnv({ command: 'build', branch: 'staging' })).toBe('preview');
     });
     it('maps any other branch build to preview', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo' })).toBe('preview');
       expect(resolveDeployEnv({ command: 'build', branch: '' })).toBe('preview');
     });
-    it('prefers VERCEL_TARGET_ENV over the branch name', () => {
-      // Custom Vercel-Umgebung "staging", auch wenn der Branch anders heißt.
-      expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo', targetEnv: 'staging' })).toBe('staging');
+    it('prefers VERCEL_TARGET_ENV over the branch name (except for main)', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'anything', targetEnv: 'production' })).toBe('production');
+      // Alle anderen (inklusive staging) werden auf preview abgebildet.
+      expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo', targetEnv: 'staging' })).toBe('preview');
     });
     it('treats a standard preview target env as preview', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'feature/foo', targetEnv: 'preview' })).toBe('preview');
@@ -31,8 +31,7 @@ describe('deployEnv', () => {
   });
 
   describe('isFlaggedEnv', () => {
-    it('flags staging and preview, but not production or development', () => {
-      expect(isFlaggedEnv('staging')).toBe(true);
+    it('flags preview, but not production or development', () => {
       expect(isFlaggedEnv('preview')).toBe(true);
       expect(isFlaggedEnv('production')).toBe(false);
       expect(isFlaggedEnv('development')).toBe(false);
