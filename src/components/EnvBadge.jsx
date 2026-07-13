@@ -5,7 +5,6 @@ import React from 'react';
 const DEPLOY_ENV = import.meta.env.VITE_DEPLOY_ENV;
 
 const LABELS = {
-  staging: 'STAGING',
   preview: 'VORSCHAU',
 };
 
