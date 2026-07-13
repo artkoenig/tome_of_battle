@@ -14,40 +14,56 @@ import {
 } from '../solver/validator.js';
 import { getUnitOptions } from '../solver/optionsCollector.js';
 
-// End-to-end round-trip against the REAL WHFB6 catalogue (public/catalogs/whfb6)
-// and the real "Aggro Orks" roster fixture (exactly 2000 points). This closes the
-// verification gap where reconcile/cost derivation could only be checked against
-// mock catalogues.
+// End-to-end round-trips against the REAL WHFB6 catalogues (public/catalogs/whfb6)
+// and real roster fixtures, each exactly 2000 points. These exercise the derived-cost
+// model, option-id reconciliation and the war-machine split across several armies
+// (Orcs & Goblins, Ogre Kingdoms, Vampire Counts), closing the gap where only mock
+// catalogues could be tested.
 
 const CATALOG_DIR = path.resolve('public/catalogs/whfb6');
+const GST_FILE = 'Warhammer Fantasy Battle 6th edition.gst';
 const EXPECTED_TOTAL = 2000;
 
-let system;
-let ptsTypeId;
+const ARMIES = [
+  { label: 'Orcs & Goblins (Aggro Orks)', cat: 'Orcs and Goblins.cat', fixture: 'aggro-orks.ros' },
+  { label: 'Ogre Kingdoms (Kineater)', cat: 'Ogre Kingdoms.cat', fixture: 'kineater.ros' },
+  { label: 'Vampire Counts (Blood Dragons)', cat: 'Vampire Counts.cat', fixture: 'blood-dragons.ros' }
+];
+
+let gstContent;
 
 beforeAll(() => {
   const jsdomObj = new JSDOM();
   globalThis.DOMParser = jsdomObj.window.DOMParser;
   if (!globalThis.crypto) globalThis.crypto = crypto;
   else if (!globalThis.crypto.randomUUID) globalThis.crypto.randomUUID = crypto.randomUUID;
-
-  const gst = { name: 'wfb6.gst', content: fs.readFileSync(path.join(CATALOG_DIR, 'Warhammer Fantasy Battle 6th edition.gst'), 'utf8') };
-  const cat = { name: 'og.cat', content: fs.readFileSync(path.join(CATALOG_DIR, 'Orcs and Goblins.cat'), 'utf8') };
-  system = processImportedData([gst], [cat]);
-  ptsTypeId = system.costTypes.find(c => c.name.trim() === 'pts').id;
+  gstContent = fs.readFileSync(path.join(CATALOG_DIR, GST_FILE), 'utf8');
 });
 
+function buildSystem(catFile) {
+  const cat = { name: catFile, content: fs.readFileSync(path.join(CATALOG_DIR, catFile), 'utf8') };
+  return processImportedData([{ name: 'gst', content: gstContent }], [cat]);
+}
+
 // Mirrors the app's import flow: parse → reconcile option ids → sync names.
-function importAggroOrks() {
-  const ros = fs.readFileSync(path.resolve('src/utils/__fixtures__/aggro-orks.ros'), 'utf8');
+function importFixture(system, fixture) {
+  const ros = fs.readFileSync(path.join('src/utils/__fixtures__', fixture), 'utf8');
   const roster = importRosterFromXml(ros, [system]);
   reconcileImportedSelectionIds(roster, system);
   syncRosterSelectionsWithSystem(roster, system);
   return roster;
 }
 
+function ptsTypeId(system) {
+  return system.costTypes.find(c => c.name.trim() === 'pts').id;
+}
+
+function errorCount(roster, system) {
+  return validateRoster(roster, system).filter(e => e.severity === 'error').length;
+}
+
 // Mirrors the editor's "is this option selected" logic (SelectionConfigurator).
-function countRecognizedSelectedOptions(roster) {
+function countRecognizedSelectedOptions(roster, system) {
   const catalogueId = roster.forces[0].catalogueId;
   const countSelected = (unit, optionId) => {
     const walk = (list) => (list || []).reduce(
@@ -57,7 +73,7 @@ function countRecognizedSelectedOptions(roster) {
     return walk(unit.selections);
   };
   let recognized = 0;
-  for (const unit of roster.forces[0].selections) {
+  for (const unit of roster.forces.flatMap(f => f.selections)) {
     for (const { option } of getUnitOptions(system, catalogueId, unit)) {
       const res = resolveEntry(system, option, catalogueId);
       if (res && countSelected(unit, res.id) > 0) recognized++;
@@ -66,43 +82,43 @@ function countRecognizedSelectedOptions(roster) {
   return recognized;
 }
 
-describe('Real-catalogue round-trip (WHFB6 / Aggro Orks)', () => {
+function flatSelectionPts(xml, pts) {
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  let sum = 0;
+  for (const cost of doc.getElementsByTagName('cost')) {
+    if (cost.getAttribute('typeId') === pts && cost.parentNode.parentNode.nodeName === 'selection') {
+      sum += parseFloat(cost.getAttribute('value')) || 0;
+    }
+  }
+  return sum;
+}
+
+describe.each(ARMIES)('Real-catalogue round-trip: $label', ({ cat, fixture }) => {
   test('imports to exactly 2000 points with derived costs', () => {
-    const roster = importAggroOrks();
-    expect(calculateRosterCosts(roster, system)[ptsTypeId]).toBe(EXPECTED_TOTAL);
+    const system = buildSystem(cat);
+    const roster = importFixture(system, fixture);
+    expect(calculateRosterCosts(roster, system)[ptsTypeId(system)]).toBe(EXPECTED_TOTAL);
   });
 
-  test('recognises the chosen options after import (option-id reconciliation)', () => {
-    const roster = importAggroOrks();
-    // Every option selection maps to a catalogue option id, so a second reconcile is a no-op.
+  test('recognises the chosen options after import and is reconcile-stable', () => {
+    const system = buildSystem(cat);
+    const roster = importFixture(system, fixture);
     expect(reconcileImportedSelectionIds(roster, system)).toBe(false);
-    // The editor's matcher finds the selected options across the army.
-    expect(countRecognizedSelectedOptions(roster)).toBeGreaterThan(20);
+    expect(countRecognizedSelectedOptions(roster, system)).toBeGreaterThan(20);
   });
 
   test('semantic round-trip: export then re-import keeps 2000 points and validation', () => {
-    const roster = importAggroOrks();
-    const initialErrors = validateRoster(roster, system).filter(e => e.severity === 'error').length;
+    const system = buildSystem(cat);
+    const roster = importFixture(system, fixture);
+    const initialErrors = errorCount(roster, system);
 
     const xml = exportRosterToXml(roster, system);
     const roundTripped = importRosterFromXml(xml, [system]);
     reconcileImportedSelectionIds(roundTripped, system);
     syncRosterSelectionsWithSystem(roundTripped, system);
 
-    expect(calculateRosterCosts(roundTripped, system)[ptsTypeId]).toBe(EXPECTED_TOTAL);
-    expect(validateRoster(roundTripped, system).filter(e => e.severity === 'error').length).toBe(initialErrors);
-  });
-
-  test('exported .ros selection costs flat-sum to the total', () => {
-    const roster = importAggroOrks();
-    const xml = exportRosterToXml(roster, system);
-    const doc = new DOMParser().parseFromString(xml, 'text/xml');
-    let flatSum = 0;
-    for (const cost of doc.getElementsByTagName('cost')) {
-      if (cost.getAttribute('typeId') === ptsTypeId && cost.parentNode.parentNode.nodeName === 'selection') {
-        flatSum += parseFloat(cost.getAttribute('value')) || 0;
-      }
-    }
-    expect(flatSum).toBe(EXPECTED_TOTAL);
+    expect(calculateRosterCosts(roundTripped, system)[ptsTypeId(system)]).toBe(EXPECTED_TOTAL);
+    expect(errorCount(roundTripped, system)).toBe(initialErrors);
+    expect(flatSelectionPts(xml, ptsTypeId(system))).toBe(EXPECTED_TOTAL);
   });
 });
