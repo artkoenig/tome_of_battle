@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Play, Edit3, WifiOff, Download } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload } from 'lucide-react';
 import { calculateRosterCosts, findForceEntryById } from '../solver/validator';
 
 export default function RosterDashboard({
@@ -13,7 +13,22 @@ export default function RosterDashboard({
   isOffline = false,
   isInstallable = false,
   onInstallClick,
+  onImportRoster,
+  onExportRoster,
 }) {
+  const fileInputRef = useRef(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file && onImportRoster) {
+      onImportRoster(file);
+    }
+    e.target.value = ''; // Reset file input
+  };
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
 
@@ -38,6 +53,13 @@ export default function RosterDashboard({
 
   return (
     <div className="container">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".ros,.rosz"
+        style={{ display: 'none' }}
+      />
       {/* PWA & Network Offline/Install Status Banners */}
       {isOffline && (
         <div 
@@ -68,9 +90,14 @@ export default function RosterDashboard({
             <h2>Heerlager</h2>
             <p className="text-dim" style={{ margin: 0 }}>Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>
           </div>
-          <button className="btn-primary desktop-btn" onClick={onNewRoster}>
-            <Plus size={18} /> Neue Armeeliste
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="btn-secondary desktop-btn" onClick={handleImportClick}>
+              <Upload size={18} /> Importieren
+            </button>
+            <button className="btn-primary desktop-btn" onClick={onNewRoster}>
+              <Plus size={18} /> Neue Armeeliste
+            </button>
+          </div>
         </div>
       )}
 
@@ -81,9 +108,14 @@ export default function RosterDashboard({
           <p className="empty-state-text text-dim">
             Noch wehen keine Banner in deinem Heerlager. Versammle deine Truppen, wähle deine Anführer und bereite dich auf kommende Schlachten vor.
           </p>
-          <button className="btn-primary empty-state-btn" onClick={onNewRoster}>
-            <Plus size={20} /> Erste Armeeliste ausheben
-          </button>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
+            <button className="btn-secondary empty-state-btn" onClick={handleImportClick} style={{ marginTop: 0 }}>
+              <Upload size={20} /> Liste importieren
+            </button>
+            <button className="btn-primary empty-state-btn" onClick={onNewRoster} style={{ marginTop: 0 }}>
+              <Plus size={20} /> Erste Armeeliste ausheben
+            </button>
+          </div>
         </div>
       ) : (() => {
         const rostersBySystemAndFaction = rosters.reduce((acc, roster) => {
@@ -194,6 +226,9 @@ export default function RosterDashboard({
                                     </button>
                                     <button className="btn-primary btn-sm" onClick={() => onOpenRoster(roster, 'play')}>
                                       <Play size={14} /> Spielen
+                                    </button>
+                                    <button className="btn-sm" onClick={() => onExportRoster?.(roster)} title="Liste exportieren">
+                                      <Download size={14} /> Exportieren
                                     </button>
                                     <button 
                                       className="btn-danger square-btn" 

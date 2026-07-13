@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Bug, Search, WifiOff, Download } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
@@ -12,8 +12,16 @@ import GlobalDebugSearch from './components/editor/GlobalDebugSearch';
 import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
 import EnvBadge from './components/EnvBadge';
+import { 
+  exportRosterToXml, 
+  importRosterFromXml, 
+  compressXmlToRosz, 
+  decompressRoszToXml,
+  MissingSystemError 
+} from './utils/rosterSerialization';
 
 import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
+import { syncRosterSelectionsWithSystem } from './solver/validator';
 
 
 
@@ -41,6 +49,19 @@ export default function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState(null);
   const [updateRelease, setUpdateRelease] = useState(null);
+  const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  const showToast = (message) => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToast(message);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(null);
+      toastTimeoutRef.current = null;
+    }, 3000);
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -324,6 +345,55 @@ export default function App() {
     }
   };
 
+  const handleImportRoster = async (file) => {
+    try {
+      const xmlText = await decompressRoszToXml(file);
+      const newRoster = importRosterFromXml(xmlText, systems);
+      
+      const system = systems.find(s => s.id === newRoster.systemId);
+      if (system) {
+        syncRosterSelectionsWithSystem(newRoster, system);
+      }
+      
+      await saveRoster(newRoster);
+      showToast(`Erfolgreich importiert: ${newRoster.name}`);
+      loadAllData();
+    } catch (err) {
+      console.error('Import error:', err);
+      if (err instanceof MissingSystemError) {
+        alert(err.message);
+      } else {
+        alert(`Fehler beim Importieren: ${err.message || 'Ungültiges Dateiformat.'}`);
+      }
+    }
+  };
+
+  const handleExportRoster = async (roster) => {
+    try {
+      const system = systems.find(s => s.id === roster.systemId);
+      if (!system) {
+        alert("Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.");
+        return;
+      }
+      
+      const xmlText = exportRosterToXml(roster, system);
+      const roszBlob = await compressXmlToRosz(roster.name, xmlText);
+      
+      const url = URL.createObjectURL(roszBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      const sanitizedName = roster.name.replace(/[/\\?%*:|"<>]/g, '_');
+      a.download = `${sanitizedName}.rosz`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+      alert(`Fehler beim Exportieren: ${err.message || 'Export fehlgeschlagen.'}`);
+    }
+  };
+
   return (
     <div id="root" className={view !== 'rosters' && view !== 'importer' ? 'in-builder-mode' : ''}>
       {/* Premium Header */}
@@ -415,6 +485,8 @@ export default function App() {
                 isOffline={isOffline}
                 isInstallable={isInstallable}
                 onInstallClick={handleInstallClick}
+                onImportRoster={handleImportRoster}
+                onExportRoster={handleExportRoster}
               />
             )}
 
@@ -428,6 +500,7 @@ export default function App() {
                 roster={selectedRoster}
                 onBack={() => { navigate('rosters'); loadAllData(); }}
                 onPlay={(updatedRoster) => handleOpenRoster(updatedRoster, 'play')}
+                onExportRoster={handleExportRoster}
               />
             )}
 
@@ -500,6 +573,12 @@ export default function App() {
           <button className="btn-primary btn-sm update-toast-btn" onClick={handleReloadApp}>
             Neu laden
           </button>
+        </div>
+      )}
+      {/* Global Toast Notification */}
+      {toast && (
+        <div className="gothic-toast" style={{ pointerEvents: 'none' }}>
+          <span>{toast}</span>
         </div>
       )}
     </div>

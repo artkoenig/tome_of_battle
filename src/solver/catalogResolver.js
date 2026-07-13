@@ -1,5 +1,6 @@
 export function findEntryInCatalogue(catalogue, entryId) {
   if (!catalogue) return null;
+  const cleanId = entryId && entryId.includes('::') ? entryId.split('::').pop() : entryId;
   
   if (!catalogue._entryCache) {
     catalogue._entryCache = new Map();
@@ -26,11 +27,12 @@ export function findEntryInCatalogue(catalogue, entryId) {
     indexObject(catalogue);
   }
 
-  return catalogue._entryCache.get(entryId) || null;
+  return catalogue._entryCache.get(cleanId) || null;
 }
 
 export function findEntryInSystem(system, entryId, catalogueId = null) {
   if (!system) return null;
+  const cleanId = entryId && entryId.includes('::') ? entryId.split('::').pop() : entryId;
   
   if (!system._entryCache || system._entryCacheSource !== system.catalogues) {
     system._entryCache = new Map();
@@ -77,15 +79,15 @@ export function findEntryInSystem(system, entryId, catalogueId = null) {
   // Lookup logic
   if (catalogueId) {
     const catMap = system._entryCache.get(catalogueId);
-    if (catMap && catMap.has(entryId)) {
-      return catMap.get(entryId);
+    if (catMap && catMap.has(cleanId)) {
+      return catMap.get(cleanId);
     }
   }
 
   // Fallback: search all maps if catalogueId is not provided or entry not found in preferred catalogue
   for (const [catId, catMap] of system._entryCache.entries()) {
-    if (catMap.has(entryId)) {
-      return catMap.get(entryId);
+    if (catMap.has(cleanId)) {
+      return catMap.get(cleanId);
     }
   }
 

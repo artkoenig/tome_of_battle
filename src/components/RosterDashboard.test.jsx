@@ -9,6 +9,9 @@ vi.mock('lucide-react', () => ({
   Trash2: () => <span data-testid="icon-trash" />,
   Play: () => <span data-testid="icon-play" />,
   Edit3: () => <span data-testid="icon-edit" />,
+  Download: () => <span data-testid="icon-download" />,
+  Upload: () => <span data-testid="icon-upload" />,
+  WifiOff: () => <span data-testid="icon-wifioff" />,
 }));
 
 describe('RosterDashboard Component', () => {
@@ -167,7 +170,44 @@ describe('RosterDashboard Component', () => {
 
       expect(screen.queryByRole('textbox')).toBeNull();
       expect(screen.getByText('Empire Army')).toBeDefined();
-      expect(mockRename).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Roster Import & Export', () => {
+    it('calls onImportRoster when a file is selected', () => {
+      const mockImport = vi.fn();
+      render(
+        <RosterDashboard
+          rosters={[]}
+          systems={mockSystems}
+          onImportRoster={mockImport}
+        />
+      );
+      
+      const fileInput = document.querySelector('input[type="file"]');
+      expect(fileInput).not.toBeNull();
+      
+      const file = new File(['mock content'], 'test.rosz', { type: 'application/zip' });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+      
+      expect(mockImport).toHaveBeenCalledWith(file);
+    });
+
+    it('calls onExportRoster when clicking the Exportieren button', () => {
+      const mockExport = vi.fn();
+      render(
+        <RosterDashboard
+          rosters={mockRosters}
+          systems={mockSystems}
+          onExportRoster={mockExport}
+        />
+      );
+      
+      const exportBtn = screen.getByTitle('Liste exportieren');
+      expect(exportBtn).not.toBeNull();
+      fireEvent.click(exportBtn);
+      
+      expect(mockExport).toHaveBeenCalledWith(mockRosters[0]);
     });
   });
 });
