@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Bug, Search, WifiOff, Download } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
@@ -49,6 +49,19 @@ export default function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState(null);
   const [updateRelease, setUpdateRelease] = useState(null);
+  const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  const showToast = (message) => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToast(message);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(null);
+      toastTimeoutRef.current = null;
+    }, 3000);
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -343,7 +356,7 @@ export default function App() {
       }
       
       await saveRoster(newRoster);
-      alert(`Erfolgreich importiert: ${newRoster.name}`);
+      showToast(`Erfolgreich importiert: ${newRoster.name}`);
       loadAllData();
     } catch (err) {
       console.error('Import error:', err);
@@ -560,6 +573,12 @@ export default function App() {
           <button className="btn-primary btn-sm update-toast-btn" onClick={handleReloadApp}>
             Neu laden
           </button>
+        </div>
+      )}
+      {/* Global Toast Notification */}
+      {toast && (
+        <div className="gothic-toast" style={{ pointerEvents: 'none' }}>
+          <span>{toast}</span>
         </div>
       )}
     </div>
