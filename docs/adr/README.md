@@ -18,4 +18,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0008 | [Vercel Deployment and Staging Environment](0008-vercel-deployment-and-staging-environment.md) | Accepted | 2026-07-05 |
 | 0009 | [Branching and Release Train Strategy](0009-branching-and-release-train-strategy.md) | Accepted | 2026-07-05 |
 | 0010 | [Einheitliches Dialog- und Toast-System](0010-einheitliches-dialog-und-toast-system.md) | Accepted | 2026-07-13 |
+| 0011 | [Roster als Referenz-Modell, abgeleitete Kosten & Serialisierungs-Adapter](0011-roster-referenzmodell-und-serialisierungs-adapter.md) | Accepted | 2026-07-13 |
 
