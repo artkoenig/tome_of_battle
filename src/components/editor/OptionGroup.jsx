@@ -418,7 +418,7 @@ export default function OptionGroupComponent({
                   const subId = sub.entryLinkId || sub.selectionEntryId;
                   if (ptsConstraintGroup.groupItemIds.has(subId)) {
                     const count = sub.number || 1;
-                    const pts = getSelectionTotalCost(sub, roster.costLimitType);
+                    const pts = getSelectionTotalCost(sub, roster.costLimitType, 1, system, roster, activeCatalogue.id, selection, { selectionCounts, categoryCounts });
                     sumPoints += pts;
                   }
                 });

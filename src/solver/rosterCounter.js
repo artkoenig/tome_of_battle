@@ -64,56 +64,76 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 }
 
 /**
+ * Locates the id of the force that contains the given selection.
+ */
+function findForceIdContaining(roster, selection) {
+  const containsSelection = (list) => {
+    if (!list) return false;
+    for (const candidate of list) {
+      if (candidate.id === selection.id) return true;
+      if (containsSelection(candidate.selections)) return true;
+    }
+    return false;
+  };
+  return roster.forces?.find(force => containsSelection(force.selections))?.id || null;
+}
+
+/**
+ * Computes a single selection node's OWN, modifier-aware costs (excluding its
+ * children), multiplied by its effective count. Base costs are sourced from the
+ * catalogue (`resolveEntry(entry).costs`, which includes link-level costs); the
+ * stored `selection.costs` is only used as a fallback when no system/catalogue
+ * entry is available. Returns a map of `{ [costTypeId]: value }`.
+ */
+export function getSelectionOwnCosts(selection, effectiveCount, { system = null, roster = null, currentCatalogueId = null, parentSelection = null, counts = null } = {}) {
+  const entryId = selection.selectionEntryId || selection.entryLinkId;
+  const entryDef = (system && entryId) ? findEntryInSystem(system, entryId, currentCatalogueId) : null;
+  const resolved = entryDef ? resolveEntry(system, entryDef, currentCatalogueId) : null;
+
+  // Catalogue is the source of truth for base costs; fall back to any stored costs.
+  const baseCosts = (resolved?.costs?.length ? resolved.costs : (selection.costs || []));
+  if (!baseCosts.length) return {};
+
+  let modifiers = resolved?.modifiers || [];
+  if (selection.modifiers && selection.modifiers !== resolved?.modifiers) {
+    modifiers = modifiers.concat(selection.modifiers);
+  }
+
+  let ctx = null;
+  if (system && roster && modifiers.length > 0) {
+    const resolvedCounts = counts || computeRosterCounts(roster, system);
+    const activeForceId = findForceIdContaining(roster, selection);
+    const forceCategoryCounts = activeForceId ? (resolvedCounts.categoryCounts[activeForceId] || {}) : {};
+    ctx = {
+      roster,
+      system,
+      selectionCounts: resolvedCounts.selectionCounts,
+      forceCategoryCounts,
+      selection,
+      parentSelection,
+      parentCatalogueId: currentCatalogueId
+    };
+  }
+
+  const ownCosts = {};
+  baseCosts.forEach(cost => {
+    let value = cost.value || 0;
+    if (ctx) {
+      value = getModifiedConstraintValue({ id: cost.typeId, value }, modifiers, ctx);
+    }
+    ownCosts[cost.typeId] = (ownCosts[cost.typeId] || 0) + value * effectiveCount;
+  });
+  return ownCosts;
+}
+
+/**
  * Recursively calculates the total cost of a selection node and all its child selections.
  */
 export function getSelectionTotalCost(selection, costLimitType, parentCount = 1, system = null, roster = null, currentCatalogueId = null, parentSelection = null, counts = null) {
-  let total = 0;
   const effectiveCount = (selection.number || 1) * parentCount;
-  if (selection.costs) {
-    const cost = selection.costs.find(c => c.typeId === costLimitType || c.typeId === 'pts');
-    if (cost) {
-      let costValue = cost.value || 0;
-      if (system && roster) {
-        const entryId = selection.selectionEntryId || selection.entryLinkId;
-        const entryDef = entryId ? findEntryInSystem(system, entryId, currentCatalogueId) : null;
-        const resolved = entryDef ? resolveEntry(system, entryDef, currentCatalogueId) : null;
-        let modifiers = resolved?.modifiers || [];
-        if (selection.modifiers && selection.modifiers !== resolved?.modifiers) {
-          modifiers = modifiers.concat(selection.modifiers);
-        }
-        
-        if (modifiers.length > 0) {
-          const { selectionCounts, categoryCounts } = counts || computeRosterCounts(roster, system);
-          const activeForceId = roster.forces ? roster.forces.find(force => {
-            const containsSel = (list) => {
-              if (!list) return false;
-              for (const s of list) {
-                if (s.id === selection.id) return true;
-                if (containsSel(s.selections)) return true;
-              }
-              return false;
-            };
-            return containsSel(force.selections);
-          })?.id : null;
-          const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
+  const ownCosts = getSelectionOwnCosts(selection, effectiveCount, { system, roster, currentCatalogueId, parentSelection, counts });
+  let total = ownCosts[costLimitType] ?? ownCosts['pts'] ?? 0;
 
-          const ctx = {
-            roster,
-            system,
-            selectionCounts,
-            forceCategoryCounts,
-            selection,
-            parentSelection,
-            parentCatalogueId: currentCatalogueId
-          };
-
-          const tempCon = { id: cost.typeId, value: costValue };
-          costValue = getModifiedConstraintValue(tempCon, modifiers, ctx);
-        }
-      }
-      total += costValue * effectiveCount;
-    }
-  }
   if (selection.selections) {
     selection.selections.forEach(child => {
       total += getSelectionTotalCost(child, costLimitType, effectiveCount, system, roster, currentCatalogueId, selection, counts);
@@ -128,7 +148,7 @@ export function getSelectionTotalCost(selection, costLimitType, parentCount = 1,
  */
 export function calculateRosterCosts(roster, system) {
   const totals = {};
-  
+
   // Initialize cost types from system
   if (system && system.costTypes) {
     system.costTypes.forEach(ct => {
@@ -140,58 +160,14 @@ export function calculateRosterCosts(roster, system) {
 
   const addSelectionCosts = (selection, parentCount = 1, currentCatalogueId = null, parentSelection = null) => {
     const effectiveCount = (selection.number || 1) * parentCount;
-    // A selection has a list of costs (usually parsed from its template)
-    if (selection.costs) {
-      selection.costs.forEach(cost => {
-        let costValue = cost.value || 0;
 
-        if (system && roster && counts) {
-          const entryId = selection.selectionEntryId || selection.entryLinkId;
-          const entryDef = entryId ? findEntryInSystem(system, entryId, currentCatalogueId) : null;
-          const resolved = entryDef ? resolveEntry(system, entryDef, currentCatalogueId) : null;
-          let modifiers = resolved?.modifiers || [];
-          if (selection.modifiers && selection.modifiers !== resolved?.modifiers) {
-            modifiers = modifiers.concat(selection.modifiers);
-          }
-          if (modifiers.length > 0) {
-            const activeForceId = roster.forces ? roster.forces.find(force => {
-              const containsSel = (list) => {
-                if (!list) return false;
-                for (const s of list) {
-                  if (s.id === selection.id) return true;
-                  if (containsSel(s.selections)) return true;
-                }
-                return false;
-              };
-              return containsSel(force.selections);
-            })?.id : null;
-            const forceCategoryCounts = activeForceId ? (counts.categoryCounts[activeForceId] || {}) : {};
+    const ownCosts = getSelectionOwnCosts(selection, effectiveCount, { system, roster, currentCatalogueId, parentSelection, counts });
+    Object.entries(ownCosts).forEach(([typeId, value]) => {
+      totals[typeId] = (totals[typeId] || 0) + value;
+    });
 
-            const ctx = {
-              roster,
-              system,
-              selectionCounts: counts.selectionCounts,
-              forceCategoryCounts,
-              selection,
-              parentSelection,
-              parentCatalogueId: currentCatalogueId
-            };
-
-            const tempCon = { id: cost.typeId, value: costValue };
-            costValue = getModifiedConstraintValue(tempCon, modifiers, ctx);
-          }
-        }
-
-        const val = costValue * effectiveCount;
-        totals[cost.typeId] = (totals[cost.typeId] || 0) + val;
-      });
-    }
-
-    // Traverse children
     if (selection.selections) {
       selection.selections.forEach(child => {
-        // Multiply child costs by parent's count if collective is false,
-        // but typically in BS child selection count stands on its own.
         addSelectionCosts(child, effectiveCount, currentCatalogueId, selection);
       });
     }

@@ -14,9 +14,9 @@
  */
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue } from './modifierEvaluator.js';
-export { getOptionDisplayCost, getSelectionTotalCost, calculateRosterCosts, computeRosterCounts, getExtraResourceTotals } from './rosterCounter.js';
+export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, getExtraResourceTotals } from './rosterCounter.js';
 export { validateRoster } from './rosterValidator.js';
 export { collectUnitProfilesAndRules } from './profileCollector.js';
-export { syncRosterSelectionsWithSystem } from './rosterSync.js';
+export { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './rosterSync.js';
 export { findForceEntryById, getAvailableForceEntries } from './forceEntries.js';
 export { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';

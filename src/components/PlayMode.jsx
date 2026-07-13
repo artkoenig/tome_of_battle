@@ -65,8 +65,9 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         if (selections.length > 0) {
           // Sort descending by points
           selections.sort((a, b) => {
-            const aPoints = getSelectionTotalCost(a, costType);
-            const bPoints = getSelectionTotalCost(b, costType);
+            const catId = force.catalogueId || roster.catalogueId;
+            const aPoints = getSelectionTotalCost(a, costType, 1, system, roster, catId);
+            const bPoints = getSelectionTotalCost(b, costType, 1, system, roster, catId);
             return bPoints - aPoints;
           });
 
@@ -97,8 +98,9 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
       if (uncategorizedSelections.length > 0) {
         uncategorizedSelections.sort((a, b) => {
-          const aPoints = getSelectionTotalCost(a, costType);
-          const bPoints = getSelectionTotalCost(b, costType);
+          const catId = force.catalogueId || roster.catalogueId;
+          const aPoints = getSelectionTotalCost(a, costType, 1, system, roster, catId);
+          const bPoints = getSelectionTotalCost(b, costType, 1, system, roster, catId);
           return bPoints - aPoints;
         });
         

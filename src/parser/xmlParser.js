@@ -227,7 +227,13 @@ function parseEntryLinks(el) {
     profiles: parseProfiles(linkEl),
     rules: parseRules(linkEl),
     infoLinks: parseInfoLinks(linkEl),
-    categoryLinks: parseCategoryLinks(linkEl)
+    categoryLinks: parseCategoryLinks(linkEl),
+    // An entryLink may inline its own child options (e.g. a "Barding" nested under a
+    // "Nightmare" mount link). These must be parsed too, otherwise they never enter
+    // the catalogue index and their (link-level) costs are lost.
+    selectionEntries: getWrappedChildren(linkEl, 'selectionEntries', 'selectionEntry').map(parseSelectionEntry),
+    selectionEntryGroups: getWrappedChildren(linkEl, 'selectionEntryGroups', 'selectionEntryGroup').map(parseSelectionEntryGroup),
+    entryLinks: parseEntryLinks(linkEl)
   }));
 }
 
