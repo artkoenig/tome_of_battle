@@ -151,6 +151,57 @@ describe('Roster Serialization & Deserialization', () => {
     expect(importedKing.selections[0].costs[0].value).toBe(6);
   });
 
+  test('exports multi-model selection costs as their quantity-multiplied total (round-trip preserves points)', () => {
+    // A unit of 10 models at 5 pts each: internally stored as per-item value 5, number 10.
+    const multiModelRoster = {
+      ...mockRoster,
+      id: 'roster-multimodel',
+      forces: [
+        {
+          id: 'force-multimodel',
+          forceEntryId: 'force-entry-id-1',
+          catalogueId: 'cat-tomb-kings',
+          selections: [
+            {
+              id: 'unit-skeletons',
+              name: 'Skeletons',
+              entryLinkId: null,
+              selectionEntryId: 'skeleton-id',
+              number: 10,
+              category: 'cat-core-id',
+              collective: false,
+              costs: [{ typeId: 'pts-id-999', value: 5 }],
+              selections: []
+            }
+          ]
+        }
+      ]
+    };
+
+    const xmlText = exportRosterToXml(multiModelRoster, mockSystems[0]);
+    // The selection's <cost> must carry the total (5 * 10 = 50), not the per-item value.
+    expect(xmlText).toContain('number="10" type="upgrade"');
+    expect(xmlText).toContain('<cost name="pts" typeId="pts-id-999" value="50"/>');
+
+    // Round-trip: import must recover the original per-item value 5 (50 / 10), not 0.5.
+    const reimported = importRosterFromXml(xmlText, mockSystems);
+    const unit = reimported.forces[0].selections[0];
+    expect(unit.number).toBe(10);
+    expect(unit.costs[0].value).toBe(5);
+  });
+
+  test('round-trips the point limit through the costLimits block', () => {
+    const limitedRoster = { ...mockRoster, id: 'roster-limit', costLimit: 3000 };
+
+    const xmlText = exportRosterToXml(limitedRoster, mockSystems[0]);
+    expect(xmlText).toContain('<costLimits>');
+    expect(xmlText).toContain('<costLimit name="pts" typeId="pts-id-999" value="3000"/>');
+
+    const reimported = importRosterFromXml(xmlText, mockSystems);
+    expect(reimported.costLimit).toBe(3000);
+    expect(reimported.costLimitType).toBe('pts-id-999');
+  });
+
   test('correctly imports rosters with path-based IDs (::) and already-multiplied costs', () => {
     const xmlWithPaths = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <roster id="roster-path-test" name="Path Test Army" gameSystemId="system-id-123" gameSystemRevision="1" gameSystemName="Warhammer Fantasy 6th Edition" xmlns="http://www.battlescribe.net/schema/rosterSchema">
