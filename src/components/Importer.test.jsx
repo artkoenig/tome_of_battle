@@ -16,7 +16,9 @@ vi.mock('lucide-react', () => ({
   ShieldAlert: () => <span data-testid="icon-shield-alert" />,
   Edit: () => <span data-testid="icon-edit" />,
   Download: () => <span data-testid="icon-download" />,
+  X: () => <span data-testid="icon-x" />,
 }));
+
 
 // Mock database
 vi.mock('../db/database', () => ({
@@ -259,23 +261,31 @@ describe('Importer Component', () => {
     expect(screen.getByText(/erfolgreich als .zip \(Originalformat\) exportiert/)).toBeDefined();
 
     // 8b. Test Delete Action (Confirm = true)
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     deleteSystem.mockResolvedValue({});
 
     const deleteBtn = screen.getByTitle('System löschen');
     fireEvent.click(deleteBtn);
 
-    expect(confirmSpy).toHaveBeenCalled();
+    // Wait for the modal and click "Löschen"
+    const confirmDeleteBtn = screen.getByRole('button', { name: 'Löschen' });
+    fireEvent.click(confirmDeleteBtn);
+
     await waitFor(() => {
       expect(deleteSystem).toHaveBeenCalledWith('sys-export');
       expect(onSystemImportedMock).toHaveBeenCalled();
     });
 
     // 8c. Test Delete Action (Confirm = false)
-    confirmSpy.mockReturnValue(false);
     deleteSystem.mockClear();
     fireEvent.click(deleteBtn);
-    expect(confirmSpy).toHaveBeenCalled();
+
+    // Wait for the modal and click "Abbrechen"
+    const cancelDeleteBtn = screen.getByRole('button', { name: 'Abbrechen' });
+    fireEvent.click(cancelDeleteBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Spielsystem löschen')).toBeNull();
+    });
     expect(deleteSystem).not.toHaveBeenCalled();
   });
 
@@ -356,11 +366,14 @@ describe('Importer Component', () => {
       expect(screen.getByText('Delete Fail System')).toBeDefined();
     });
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     deleteSystem.mockRejectedValue(new Error('Delete DB error'));
 
     const deleteBtn = screen.getByTitle('System löschen');
     fireEvent.click(deleteBtn);
+
+    // Click confirm in modal
+    const confirmDeleteBtn = screen.getByRole('button', { name: 'Löschen' });
+    fireEvent.click(confirmDeleteBtn);
 
     await waitFor(() => {
       expect(screen.getByText('Fehler beim Löschen des Spielsystems.')).toBeDefined();

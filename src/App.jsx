@@ -12,6 +12,7 @@ import GlobalDebugSearch from './components/editor/GlobalDebugSearch';
 import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
 import EnvBadge from './components/EnvBadge';
+import ConfirmationDialog from './components/editor/ConfirmationDialog';
 import { 
   exportRosterToXml, 
   importRosterFromXml, 
@@ -22,8 +23,52 @@ import {
 
 import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
 import { syncRosterSelectionsWithSystem } from './solver/validator';
+export function getDiffChanges(installedVersion, release) {
+  if (!release) return [];
+  if (!release.commits || !release.tags) {
+    return release.changes || [];
+  }
 
+  let installedHash = '';
+  if (installedVersion) {
+    if (installedVersion.includes('+')) {
+      installedHash = installedVersion.split('+')[1];
+    } else {
+      const matchedTag = release.tags.find(
+        t => t.name.toLowerCase() === installedVersion.toLowerCase()
+      );
+      if (matchedTag) {
+        installedHash = matchedTag.hash;
+      }
+    }
+  }
 
+  if (installedHash) {
+    const targetHash = installedHash.toLowerCase();
+    const installedIndex = release.commits.findIndex(c => {
+      const h = c.hash.toLowerCase();
+      return h === targetHash || 
+             (h.length >= 7 && targetHash.startsWith(h)) || 
+             (targetHash.length >= 7 && h.startsWith(targetHash));
+    });
+
+    if (installedIndex !== -1) {
+      const diff = release.commits.slice(0, installedIndex).map(c => c.subject);
+      if (diff.length > 50) {
+        return [...diff.slice(0, 50), '...und weitere Einträge.'];
+      }
+      return diff;
+    }
+  }
+
+  // Fallback: If hash not found or too old (> 100 commits behind),
+  // show the latest 50 commits from the list plus the note.
+  const allCommits = release.commits.map(c => c.subject);
+  if (allCommits.length > 50) {
+    return [...allCommits.slice(0, 50), '...und weitere Einträge.'];
+  }
+  return allCommits.length > 0 ? allCommits : (release.changes || []);
+}
 
 export default function App() {
   const { showDebugIds, toggleShowDebugIds } = useDebugMode();
@@ -52,11 +97,11 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const toastTimeoutRef = useRef(null);
 
-  const showToast = (message) => {
+  const showToast = (message, type = 'success') => {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
     }
-    setToast(message);
+    setToast({ message, type });
     toastTimeoutRef.current = setTimeout(() => {
       setToast(null);
       toastTimeoutRef.current = null;
@@ -116,6 +161,7 @@ export default function App() {
 
   // Modal State for new Roster (Formular-State lebt im NewRosterModal selbst)
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rosterToDelete, setRosterToDelete] = useState(null);
 
   // Debug Edit Modal State
   const [debugEditingEntry, setDebugEditingEntry] = useState(null);
@@ -272,7 +318,7 @@ export default function App() {
 
   const handleCreateRoster = async ({ name, systemId, catId, forceEntryId, limit }) => {
     if (!name || !systemId || !catId) {
-      alert("Bitte fülle alle Felder aus.");
+      showToast("Bitte fülle alle Felder aus.", 'error');
       return;
     }
 
@@ -309,28 +355,24 @@ export default function App() {
       navigate('builder', { roster, system: systemDef });
     } catch (err) {
       console.error(err);
-      alert("Fehler beim Erstellen der Liste.");
+      showToast("Fehler beim Erstellen der Liste.", 'error');
     }
   };
 
   const handleOpenRoster = (roster, viewMode = 'builder') => {
     const sys = systems.find(s => s.id === roster.systemId);
     if (!sys) {
-      alert("Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.");
+      showToast("Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.", 'error');
       return;
     }
     navigate(viewMode, { roster, system: sys });
   };
 
-  const handleDeleteRoster = async (id, e) => {
+  const handleDeleteRoster = (id, e) => {
     e.stopPropagation();
-    if (confirm("Möchtest du diese Armeeliste wirklich löschen?")) {
-      try {
-        await deleteRoster(id);
-        loadAllData();
-      } catch (err) {
-        console.error(err);
-      }
+    const roster = rosters.find(r => r.id === id);
+    if (roster) {
+      setRosterToDelete(roster);
     }
   };
 
@@ -361,9 +403,9 @@ export default function App() {
     } catch (err) {
       console.error('Import error:', err);
       if (err instanceof MissingSystemError) {
-        alert(err.message);
+        showToast(err.message, 'error');
       } else {
-        alert(`Fehler beim Importieren: ${err.message || 'Ungültiges Dateiformat.'}`);
+        showToast(`Fehler beim Importieren: ${err.message || 'Ungültiges Dateiformat.'}`, 'error');
       }
     }
   };
@@ -372,7 +414,7 @@ export default function App() {
     try {
       const system = systems.find(s => s.id === roster.systemId);
       if (!system) {
-        alert("Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.");
+        showToast("Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.", 'error');
         return;
       }
       
@@ -390,9 +432,11 @@ export default function App() {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export error:', err);
-      alert(`Fehler beim Exportieren: ${err.message || 'Export fehlgeschlagen.'}`);
+      showToast(`Fehler beim Exportieren: ${err.message || 'Export fehlgeschlagen.'}`, 'error');
     }
   };
+
+  const diffChanges = getDiffChanges(import.meta.env.VITE_APP_VERSION, updateRelease);
 
   return (
     <div id="root" className={view !== 'rosters' && view !== 'importer' ? 'in-builder-mode' : ''}>
@@ -523,6 +567,31 @@ export default function App() {
         systems={systems}
       />
 
+      {/* Confirmation Dialog for deleting Roster */}
+      <ConfirmationDialog
+        isOpen={!!rosterToDelete}
+        onClose={() => setRosterToDelete(null)}
+        onConfirm={async () => {
+          if (!rosterToDelete) return;
+          const id = rosterToDelete.id;
+          setRosterToDelete(null);
+          try {
+            await deleteRoster(id);
+            loadAllData();
+          } catch (err) {
+            console.error(err);
+          }
+        }}
+        title="Armeeliste löschen"
+        message={
+          <>
+            Möchtest du die Armeeliste <strong>{rosterToDelete?.name}</strong> wirklich löschen?
+          </>
+        }
+        confirmLabel="Löschen"
+        isDanger={true}
+      />
+
       {/* Debug Entry Editor Modal */}
       {debugEditingEntry && debugEditingSystem && (
         <DebugEntryEditorModal
@@ -553,15 +622,15 @@ export default function App() {
       {updateAvailable && (
         <div className="update-toast">
           <div className="update-toast-content">
-            <span className="font-serif text-gold update-toast-title">Update verfügbar!</span>
-            {updateRelease && updateRelease.changes && updateRelease.changes.length > 0 ? (
+            <span className="font-serif text-gold update-toast-title">Chronik der Veränderungen</span>
+            {updateRelease && diffChanges.length > 0 ? (
               <div className="update-toast-changes">
                 <span className="update-toast-changes-heading">
-                  {updateRelease.version ? `Neu in ${updateRelease.version}` : 'Das ist neu'}
+                  {updateRelease.version ? `Version ${updateRelease.version}` : 'Das ist neu'}
                   {updateRelease.date ? ` · ${updateRelease.date}` : ''}:
                 </span>
                 <ul className="update-toast-change-list">
-                  {updateRelease.changes.map((change, i) => (
+                  {diffChanges.map((change, i) => (
                     <li key={i}>{change}</li>
                   ))}
                 </ul>
@@ -577,8 +646,8 @@ export default function App() {
       )}
       {/* Global Toast Notification */}
       {toast && (
-        <div className="gothic-toast" style={{ pointerEvents: 'none' }}>
-          <span>{toast}</span>
+        <div className={`gothic-toast toast-${typeof toast === 'object' ? toast.type : 'success'}`} style={{ pointerEvents: 'none' }}>
+          <span>{typeof toast === 'object' ? toast.message : toast}</span>
         </div>
       )}
     </div>

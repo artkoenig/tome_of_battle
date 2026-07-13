@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
-import App from './App';
+import App, { getDiffChanges } from './App';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -16,7 +16,9 @@ vi.mock('lucide-react', () => ({
   Search: () => <span data-testid="icon-search" />,
   WifiOff: () => <span data-testid="icon-wifioff" />,
   Download: () => <span data-testid="icon-download" />,
+  X: () => <span data-testid="icon-x" />,
 }));
+
 
 // Mock DB and Migrations
 vi.mock('./db/database', () => ({
@@ -104,7 +106,7 @@ describe('App Component PWA Update Toast Notification', () => {
 
     // Verify the toast is visible
     await waitFor(() => {
-      expect(screen.queryByText('Update verfügbar!')).not.toBeNull();
+      expect(screen.queryByText('Chronik der Veränderungen')).not.toBeNull();
       expect(screen.queryByText('Eine neue Version wurde im Hintergrund geladen.')).not.toBeNull();
     });
 
@@ -133,14 +135,71 @@ describe('App Component PWA Update Toast Notification', () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByText('Update verfügbar!')).not.toBeNull();
-      expect(screen.queryByText(/Neu in v1\.2\.0/)).not.toBeNull();
+      expect(screen.queryByText('Chronik der Veränderungen')).not.toBeNull();
+      expect(screen.queryByText(/Version v1\.2\.0/)).not.toBeNull();
       expect(screen.queryByText('Neues Feature A')).not.toBeNull();
       expect(screen.queryByText('Bugfix B')).not.toBeNull();
     });
 
     // The generic fallback description must not appear when changes are present.
     expect(screen.queryByText('Eine neue Version wurde im Hintergrund geladen.')).toBeNull();
+  });
+
+  describe('getDiffChanges Utility', () => {
+    it('returns legacy changes if commits or tags are missing', () => {
+      const release = { changes: ['Commit A', 'Commit B'] };
+      expect(getDiffChanges('v1.0.0', release)).toEqual(['Commit A', 'Commit B']);
+    });
+
+    it('filters commits based on installed tag version', () => {
+      const release = {
+        commits: [
+          { hash: 'aaaaaaa', subject: 'feat: Commit 3' },
+          { hash: 'bbbbbbb', subject: 'feat: Commit 2' },
+          { hash: 'ccccccc', subject: 'feat: Commit 1' }
+        ],
+        tags: [
+          { name: 'v1.1.0', hash: 'aaaaaaa' },
+          { name: 'v1.0.0', hash: 'bbbbbbb' }
+        ]
+      };
+      expect(getDiffChanges('v1.0.0', release)).toEqual(['feat: Commit 3']);
+    });
+
+    it('filters commits based on installed hash version (+hash)', () => {
+      const release = {
+        commits: [
+          { hash: 'aaaaaaa', subject: 'feat: Commit 3' },
+          { hash: 'bbbbbbb', subject: 'feat: Commit 2' },
+          { hash: 'ccccccc', subject: 'feat: Commit 1' }
+        ],
+        tags: []
+      };
+      expect(getDiffChanges('v1.0.0+bbbbbbb', release)).toEqual(['feat: Commit 3']);
+    });
+
+    it('falls back to showing first 50 commits + message if installed version not found', () => {
+      const release = {
+        commits: Array.from({ length: 60 }, (_, i) => ({ hash: i.toString(16).padStart(7, 'a'), subject: `feat: Commit ${i}` })),
+        tags: []
+      };
+      const diff = getDiffChanges('v1.0.0', release);
+      expect(diff.length).toBe(51);
+      expect(diff[50]).toBe('...und weitere Einträge.');
+    });
+
+    it('caps diff at 50 commits + message if diff is too large', () => {
+      const commits = Array.from({ length: 60 }, (_, i) => ({ hash: i.toString(16).padStart(7, 'a'), subject: `feat: Commit ${i}` }));
+      const release = {
+        commits,
+        tags: [
+          { name: 'v1.0.0', hash: (55).toString(16).padStart(7, 'a') }
+        ]
+      };
+      const diff = getDiffChanges('v1.0.0', release);
+      expect(diff.length).toBe(51);
+      expect(diff[50]).toBe('...und weitere Einträge.');
+    });
   });
 });
 
