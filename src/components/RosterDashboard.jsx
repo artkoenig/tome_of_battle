@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload } from 'lucide-react';
 import { calculateRosterCosts, findForceEntryById } from '../solver/validator';
+import BottomSheet from './editor/BottomSheet';
 
 export default function RosterDashboard({
   rosters = [],
@@ -31,6 +32,7 @@ export default function RosterDashboard({
   };
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
+  const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
 
   const startEditing = (roster, e) => {
     e.stopPropagation();
@@ -254,13 +256,48 @@ export default function RosterDashboard({
       })()}
 
       {rosters.length > 0 && (
-        <button 
-          className="fab-mobile mobile-only"
-          onClick={onNewRoster}
-          title="Neue Armeeliste"
-        >
-          <Plus size={24} />
-        </button>
+        <>
+          <button 
+            className="fab-mobile mobile-only"
+            onClick={() => setIsActionsSheetOpen(true)}
+            title="Aktionen"
+          >
+            <Plus size={24} />
+          </button>
+
+          <BottomSheet
+            isOpen={isActionsSheetOpen}
+            onClose={() => setIsActionsSheetOpen(false)}
+            title="Armee-Aktionen"
+          >
+            <div className="popover-list">
+              <div 
+                className="popover-item"
+                onClick={() => {
+                  setIsActionsSheetOpen(false);
+                  onNewRoster();
+                }}
+              >
+                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Plus size={18} className="text-gold" />
+                  <span>Neue Armeeliste ausheben</span>
+                </span>
+              </div>
+              <div 
+                className="popover-item"
+                onClick={() => {
+                  setIsActionsSheetOpen(false);
+                  handleImportClick();
+                }}
+              >
+                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Upload size={18} className="text-gold" />
+                  <span>Armeeliste importieren</span>
+                </span>
+              </div>
+            </div>
+          </BottomSheet>
+        </>
       )}
     </div>
   );
