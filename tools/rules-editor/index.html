@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rules URL Editor</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #222; font-size: 14px; line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Header */
+.app-header { background: #1a1a2e; color: #eee; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.app-header h1 { font-size: 18px; font-weight: 600; }
+.app-header .actions { display: flex; gap: 8px; }
+.app-header button { padding: 7px 16px; border: 1px solid #555; border-radius: 4px; background: #2a2a4e; color: #eee; cursor: pointer; font-size: 13px; white-space: nowrap; transition: background .15s; }
+.app-header button:hover { background: #3a3a5e; }
+.app-header .btn-primary { background: #4a6fa5; border-color: #4a6fa5; }
+.app-header .btn-primary:hover { background: #5a7fb5; }
+.app-header .btn-crawl { background: #5a4a3a; border-color: #7a6a5a; }
+.app-header .btn-crawl:hover { background: #6a5a4a; }
+
+/* Tabs */
+.tabs { display: flex; background: #fff; border-bottom: 1px solid #ddd; padding: 0 24px; flex-shrink: 0; }
+.tab-btn { padding: 10px 20px; border: none; background: none; cursor: pointer; font-size: 14px; color: #666; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
+.tab-btn:hover { color: #333; }
+.tab-btn.active { color: #1a1a2e; border-bottom-color: #4a6fa5; font-weight: 600; }
+.tab-badge { background: #e0e0e0; border-radius: 10px; padding: 1px 8px; font-size: 11px; margin-left: 6px; color: #555; }
+.tab-btn.active .tab-badge { background: #1a1a2e; color: #fff; }
+
+/* Content */
+.content { flex: 1; padding: 16px 24px; overflow-y: auto; display: flex; flex-direction: column; }
+.tab-content { display: none; flex: 1; flex-direction: column; }
+.tab-content.active { display: flex; }
+
+/* Toolbar */
+.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; flex-shrink: 0; }
+.toolbar .spacer { flex: 1; }
+.toolbar input[type=search] { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; width: 280px; }
+.toolbar input[type=search]:focus { outline: none; border-color: #4a6fa5; box-shadow: 0 0 0 2px rgba(74,111,165,.2); }
+.toolbar button { padding: 6px 14px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 13px; transition: background .15s; }
+.toolbar button:hover { background: #f0f0f0; }
+.toolbar .btn-add { background: #4a6fa5; color: #fff; border-color: #4a6fa5; }
+.toolbar .btn-add:hover { background: #5a7fb5; }
+
+/* Table */
+.table-wrap { flex: 1; overflow: auto; border: 1px solid #ddd; border-radius: 4px; background: #fff; }
+table { width: 100%; border-collapse: collapse; }
+thead { position: sticky; top: 0; z-index: 1; }
+th { background: #f8f8f8; border-bottom: 2px solid #ddd; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #555; white-space: nowrap; }
+td { border-bottom: 1px solid #eee; padding: 4px 12px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+tr.editing td { background: #f0f5ff; }
+td .num { color: #999; font-size: 12px; }
+
+/* Cell editing */
+.cell-display { min-height: 28px; display: flex; align-items: center; justify-content: space-between; cursor: text; padding: 2px 0; }
+.cell-display .edit-icon { color: #ccc; font-size: 11px; opacity: 0; transition: opacity .15s; }
+.cell-display:hover .edit-icon { opacity: 1; }
+.cell-input { width: 100%; padding: 4px 6px; border: 1px solid #4a6fa5; border-radius: 3px; font-size: 13px; font-family: monospace; outline: none; box-sizing: border-box; margin: 0; }
+.cell-input:focus { box-shadow: 0 0 0 2px rgba(74,111,165,.3); }
+td.name-cell .cell-input { font-family: inherit; }
+td.url-cell .cell-input { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 12px; }
+
+/* Delete button */
+.btn-delete { background: none; border: none; color: #ccc; cursor: pointer; padding: 4px 6px; font-size: 16px; line-height: 1; border-radius: 3px; transition: all .15s; }
+.btn-delete:hover { color: #d32f2f; background: #fef0f0; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 40px 20px; color: #999; }
+
+/* Status bar */
+.status-bar { border-top: 1px solid #ddd; background: #f8f8f8; padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #666; flex-shrink: 0; }
+.status-bar .dirty { color: #d32f2f; font-weight: 600; }
+.status-bar .clean { color: #2e7d32; }
+.status-bar .error { color: #d32f2f; }
+.status-bar .info { color: #555; }
+
+/* Loading overlay */
+.loading { display: flex; align-items: center; justify-content: center; flex: 1; color: #999; }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #ddd; border-top-color: #4a6fa5; border-radius: 50%; animation: spin .6s linear infinite; margin-right: 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>Rules URL Editor</h1>
+  <div class="actions">
+    <button class="btn-crawl" onclick="runCrawl()" id="btnCrawl">🔄 Crawlen</button>
+    <button class="btn-primary" onclick="save()" id="btnSave">💾 Speichern</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('mapping')" id="tabMapping">URL-Mapping <span class="tab-badge" id="mappingCount">0</span></button>
+  <button class="tab-btn" onclick="switchTab('synonyms')" id="tabSynonyms">Synonyme <span class="tab-badge" id="synonymsCount">0</span></button>
+</div>
+
+<div class="content">
+  <div class="tab-content active" id="tabContentMapping">
+    <div class="toolbar">
+      <input type="search" placeholder="Nach Namen suchen..." id="searchInput" oninput="renderMapping()">
+      <span class="spacer"></span>
+      <button class="btn-add" onclick="addMappingEntry()">+ Neu</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:40px">#</th><th>Name</th><th>URL-Pfad</th><th style="width:40px"></th></tr></thead>
+        <tbody id="mappingBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tabContentSynonyms">
+    <div class="toolbar">
+      <span class="spacer"></span>
+      <button class="btn-add" onclick="addSynonymEntry()">+ Neu</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:40px">#</th><th>BSData-Name</th><th>Kanonischer Name</th><th style="width:40px"></th></tr></thead>
+        <tbody id="synonymsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span id="statusLeft"></span>
+  <span id="statusRight">Bereit</span>
+</div>
+
+<script>
+const BASE_URL = 'https://6th.whfb.app';
+let data = null;          // { rulesIndex: {}, synonyms: {} }
+let originalData = null;  // snapshot for change detection
+let editingCell = null;   // track currently editing cell
+
+async function loadData() {
+  setStatus('right', '<span class="spinner"></span> Lade Daten...');
+  const res = await fetch('/api/data');
+  data = await res.json();
+  originalData = JSON.parse(JSON.stringify(data));
+  updateCounts();
+  renderMapping();
+  renderSynonyms();
+  setStatus('right', 'Geladen');
+}
+
+function updateCounts() {
+  const mappingLen = Object.keys(data.rulesIndex).length;
+  const synLen = Object.keys(data.synonyms).length;
+  document.getElementById('mappingCount').textContent = mappingLen;
+  document.getElementById('synonymsCount').textContent = synLen;
+  document.getElementById('statusLeft').textContent = `URL-Mapping: ${mappingLen} Einträge  ·  Synonyme: ${synLen} Einträge`;
+}
+
+function setStatus(pos, html) {
+  document.getElementById(pos === 'left' ? 'statusLeft' : 'statusRight').innerHTML = html;
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+  document.getElementById('tabContent' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+}
+
+/* ── URL-Mapping ─────────────────────────────────────── */
+
+function renderMapping() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const entries = Object.entries(data.rulesIndex)
+    .filter(([name]) => !q || name.toLowerCase().includes(q));
+
+  const tbody = document.getElementById('mappingBody');
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">Keine Einträge gefunden</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = entries.map(([name, urlPath], i) => `
+    <tr data-key="${escapeHTML(name)}">
+      <td><span class="num">${i + 1}</span></td>
+      <td class="name-cell" data-field="name">${renderCell(name, 'name')}</td>
+      <td class="url-cell" data-field="urlPath">${renderCell(urlPath, 'urlPath')}</td>
+      <td><button class="btn-delete" onclick="deleteMapping('${escapeHTML(name)}')" title="Löschen">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderCell(value, field) {
+  const display = field === 'urlPath' ? value : value;
+  return `<div class="cell-display" onclick="startEdit(this, '${field}')">${escapeHTML(display)} <span class="edit-icon">✎</span></div>`;
+}
+
+function startEdit(el, field) {
+  if (editingCell) cancelEdit();
+  const td = el.closest('td');
+  const currentValue = el.textContent.replace('✎', '').trim();
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'cell-input';
+  input.value = currentValue;
+  input.setAttribute('data-field', field);
+  td.innerHTML = '';
+  td.appendChild(input);
+  input.focus();
+  input.select();
+  editingCell = input;
+  td.closest('tr').classList.add('editing');
+
+  input.addEventListener('blur', () => commitEdit(input, td));
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+  });
+}
+
+function commitEdit(input, td) {
+  const tr = td.closest('tr');
+  const field = input.getAttribute('data-field');
+  const newValue = input.value.trim();
+  const key = tr.getAttribute('data-key');
+
+  if (!key || !data.rulesIndex[key]) {
+    // This is a new unsaved row - handled differently
+    cancelEdit();
+    return;
+  }
+
+  if (field === 'name') {
+    if (newValue && newValue !== key) {
+      data.rulesIndex[newValue] = data.rulesIndex[key];
+      delete data.rulesIndex[key];
+      tr.setAttribute('data-key', escapeHTML(newValue));
+    }
+  } else if (field === 'urlPath') {
+    data.rulesIndex[key] = newValue || data.rulesIndex[key];
+  }
+
+  cancelEdit();
+  renderMapping();
+  updateCounts();
+  checkDirty();
+}
+
+function cancelEdit() {
+  if (!editingCell) return;
+  const td = editingCell.closest('td');
+  if (td) td.closest('tr')?.classList.remove('editing');
+  editingCell = null;
+  renderMapping();
+}
+
+function addMappingEntry() {
+  const tbody = document.getElementById('mappingBody');
+  const placeholder = '__NEU__' + Date.now();
+  data.rulesIndex[placeholder] = '/pfad/zur/regel?minimal=true&utm_source=6th-builder&utm_medium=referral';
+  renderMapping();
+  // Find the newly added row and start editing the name cell
+  const rows = tbody.querySelectorAll('tr');
+  const lastRow = rows[rows.length - 1];
+  if (lastRow) {
+    const nameCell = lastRow.querySelector('.name-cell .cell-display');
+    if (nameCell) startEdit(nameCell, 'name');
+  }
+  updateCounts();
+  checkDirty();
+}
+
+function deleteMapping(key) {
+  if (!confirm(`"${key}" wirklich löschen?`)) return;
+  delete data.rulesIndex[key];
+  renderMapping();
+  updateCounts();
+  checkDirty();
+}
+
+/* ── Synonyme ──────────────────────────────────────────── */
+
+function renderSynonyms() {
+  const entries = Object.entries(data.synonyms);
+  const tbody = document.getElementById('synonymsBody');
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state">Keine Synonyme</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = entries.map(([from, to], i) => `
+    <tr data-from="${escapeHTML(from)}">
+      <td><span class="num">${i + 1}</span></td>
+      <td class="name-cell">${renderCell(from, 'synFrom')}</td>
+      <td class="url-cell">${renderCell(to, 'synTo')}</td>
+      <td><button class="btn-delete" onclick="deleteSynonym('${escapeHTML(from)}')" title="Löschen">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function startSynEdit(el, field) {
+  if (editingCell) cancelEdit();
+  const td = el.closest('td');
+  const tr = td.closest('tr');
+  const currentValue = el.textContent.replace('✎', '').trim();
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'cell-input';
+  input.value = currentValue;
+  input.setAttribute('data-field', field);
+  td.innerHTML = '';
+  td.appendChild(input);
+  input.focus();
+  input.select();
+  editingCell = input;
+  tr.classList.add('editing');
+
+  input.addEventListener('blur', () => commitSynEdit(input, td));
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+  });
+}
+
+function commitSynEdit(input, td) {
+  const tr = td.closest('tr');
+  const field = input.getAttribute('data-field');
+  const newValue = input.value.trim();
+  const oldFrom = tr.getAttribute('data-from');
+
+  if (!oldFrom || !data.synonyms[oldFrom]) {
+    cancelEdit();
+    return;
+  }
+
+  if (field === 'synFrom') {
+    if (newValue && newValue !== oldFrom) {
+      data.synonyms[newValue] = data.synonyms[oldFrom];
+      delete data.synonyms[oldFrom];
+      tr.setAttribute('data-from', escapeHTML(newValue));
+    }
+  } else if (field === 'synTo') {
+    data.synonyms[oldFrom] = newValue || data.synonyms[oldFrom];
+  }
+
+  cancelEdit();
+  renderSynonyms();
+  updateCounts();
+  checkDirty();
+}
+
+function addSynonymEntry() {
+  data.synonyms['__NEU__' + Date.now()] = 'Kanonischer Name';
+  renderSynonyms();
+  const tbody = document.getElementById('synonymsBody');
+  const rows = tbody.querySelectorAll('tr');
+  const lastRow = rows[rows.length - 1];
+  if (lastRow) {
+    const nameCell = lastRow.querySelector('.name-cell .cell-display');
+    if (nameCell) startSynEdit(nameCell, 'synFrom');
+  }
+  updateCounts();
+  checkDirty();
+}
+
+function deleteSynonym(key) {
+  if (!confirm(`"${key}" wirklich löschen?`)) return;
+  delete data.synonyms[key];
+  renderSynonyms();
+  updateCounts();
+  checkDirty();
+}
+
+/* ── Helpers ────────────────────────────────────────────── */
+
+function checkDirty() {
+  const dirty = JSON.stringify(data) !== JSON.stringify(originalData);
+  const btn = document.getElementById('btnSave');
+  btn.textContent = dirty ? '💾 Speichern (ungesichert)' : '💾 Speichern';
+  btn.style.opacity = dirty ? '1' : '0.6';
+  setStatus('right', dirty ? '<span class="dirty">✗ Ungespeicherte Änderungen</span>' : '<span class="clean">✓ Gespeichert</span>');
+}
+
+async function save() {
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.textContent = '⏳ Speichern...';
+  setStatus('right', 'Speichere...');
+
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch('/api/rules-index', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data.rulesIndex),
+      }),
+      fetch('/api/synonyms', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data.synonyms),
+      }),
+    ]);
+    if (!r1.ok || !r2.ok) throw new Error('Save failed');
+    originalData = JSON.parse(JSON.stringify(data));
+    checkDirty();
+    setStatus('right', '<span class="clean">✓ Gespeichert</span>');
+  } catch (err) {
+    setStatus('right', `<span class="error">✗ Fehler: ${err.message}</span>`);
+  } finally {
+    btn.disabled = false;
+    if (!btn.textContent.includes('ungesichert')) btn.textContent = '💾 Speichern';
+  }
+}
+
+async function runCrawl() {
+  if (!confirm('Crawl-Skript ausführen? Dadurch wird rules-index.json neu generiert. Nicht gespeicherte Änderungen im URL-Mapping gehen verloren.')) return;
+  const btn = document.getElementById('btnCrawl');
+  btn.disabled = true;
+  btn.textContent = '⏳ Crawlen...';
+  setStatus('right', 'Crawle 6th.whfb.app...');
+
+  try {
+    const res = await fetch('/api/crawl', { method: 'POST' });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error);
+    data.rulesIndex = result.rulesIndex;
+    originalData = JSON.parse(JSON.stringify(data));
+    updateCounts();
+    renderMapping();
+    setStatus('right', `<span class="info">✓ Crawl abgeschlossen: ${result.entriesAdded} Einträge</span>`);
+  } catch (err) {
+    setStatus('right', `<span class="error">✗ Crawl-Fehler: ${err.message}</span>`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔄 Crawlen';
+  }
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+loadData();
+</script>
+</body>
+</html>
