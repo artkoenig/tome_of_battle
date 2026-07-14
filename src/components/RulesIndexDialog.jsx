@@ -62,7 +62,7 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
             <X size={18} />
           </button>
         </div>
-        <div className="modal-body" style={{ padding: 0, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="modal-body" style={{ overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
           {!iframeLoaded && (
             <div className="rules-index-loading">
               <Loader2 size={32} className="spinner" />
