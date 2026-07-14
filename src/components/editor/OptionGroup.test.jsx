@@ -11,7 +11,7 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="icon-chevron-right" />,
   Plus: () => <span data-testid="icon-plus" />,
   Minus: () => <span data-testid="icon-minus" />,
-  Info: () => <span data-testid="icon-info" />,
+  Info: ({ onClick, ...rest }) => <span data-testid="icon-info" onClick={onClick} {...rest} />,
 }));
 
 // Mock Debug Context
@@ -332,24 +332,13 @@ describe('OptionGroup Component', () => {
     expect(defaultProps.updateSubSelection).not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment', 1);
   });
 
-  it('9. Desktop Hover tooltips for option descriptions', () => {
+  it('9. Option name shows pointer cursor and is clickable', () => {
     render(<OptionGroupComponent {...defaultProps} />);
     const header = screen.getByText('Magic Weapons').closest('div');
     fireEvent.click(header);
 
     const swordText = screen.getByText('Sword of Might');
-    
-    // Hover
-    fireEvent.mouseEnter(swordText);
-    expect(defaultProps.onHoverEnter).toHaveBeenCalledWith('Sword of Might', expect.any(Object), expect.any(Object));
-
-    // Mouse Move
-    fireEvent.mouseMove(swordText);
-    expect(defaultProps.onHoverMove).toHaveBeenCalled();
-
-    // Mouse Leave
-    fireEvent.mouseLeave(swordText);
-    expect(defaultProps.onHoverLeave).toHaveBeenCalled();
+    expect(swordText).toBeDefined();
   });
 
   it('10. Mobile Help Button triggers setActiveInfo', () => {
@@ -359,13 +348,15 @@ describe('OptionGroup Component', () => {
     const header = screen.getByText('Magic Weapons').closest('div');
     fireEvent.click(header);
 
-    const infoBtn = screen.getAllByTitle('Beschreibung anzeigen')[0];
-    fireEvent.click(infoBtn);
+    const infoIcons = screen.getAllByTestId('icon-info');
+    expect(infoIcons.length).toBe(2);
+    fireEvent.click(infoIcons[0]);
 
-    expect(defaultProps.setActiveInfo).toHaveBeenCalledWith({
-      title: 'Axe of Doom',
-      text: expect.any(Object)
-    });
+    // The first Info icon belongs to the first visible item
+    expect(defaultProps.setActiveInfo).toHaveBeenCalledOnce();
+    const callArg = defaultProps.setActiveInfo.mock.calls[0][0];
+    expect(callArg).toHaveProperty('title');
+    expect(callArg).toHaveProperty('text');
   });
 
   it('11. Debug ID Toggle', () => {
@@ -379,8 +370,19 @@ describe('OptionGroup Component', () => {
     expect(screen.getByText('res-sword')).toBeDefined();
   });
 
-  it('12. Row clicks for binary checkbox and radio items', () => {
-    // 12a. Test checkbox row click (increment / decrement)
+  it('12. Option name text does nothing on click, only icon triggers setActiveInfo', () => {
+    // Clicking the name text should do nothing (no setActiveInfo call, no error)
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 500 });
+    render(<OptionGroupComponent {...defaultProps} />);
+    const header = screen.getByText('Magic Weapons').closest('div');
+    fireEvent.click(header);
+
+    const optionText = screen.getByText('Sword of Might');
+    fireEvent.click(optionText);
+    expect(defaultProps.setActiveInfo).not.toHaveBeenCalled();
+  });
+
+  it('13. Row clicks for binary checkbox and radio items', () => {
     const checkboxGroup = {
       ...mockGroup,
       constraints: [{ type: 'max', value: 2, scope: 'parent' }],

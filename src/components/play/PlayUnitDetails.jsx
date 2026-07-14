@@ -43,7 +43,8 @@ export default function PlayUnitDetails({
   handleMouseLeave,
   setSaveSummaryData,
   setSaveSummaryOpen,
-  isSubUnit = false
+  isSubUnit = false,
+  onShowRule
 }) {
 
 
@@ -429,6 +430,7 @@ export default function PlayUnitDetails({
                 setSaveSummaryOpen(true);
               }}
               showDebugIds={showDebugIds}
+              onShowRule={onShowRule}
             />
             <UnitRulesChips
               selection={selection}
@@ -443,6 +445,7 @@ export default function PlayUnitDetails({
                 setSaveSummaryOpen(true);
               }}
               showDebugIds={showDebugIds}
+              onShowRule={onShowRule}
             />
           </div>
           {hasSubUnits && (
@@ -461,6 +464,7 @@ export default function PlayUnitDetails({
                   setSaveSummaryData={setSaveSummaryData}
                   setSaveSummaryOpen={setSaveSummaryOpen}
                   isSubUnit={true}
+                  onShowRule={onShowRule}
                 />
               ))}
             </div>

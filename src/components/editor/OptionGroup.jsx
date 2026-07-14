@@ -491,35 +491,31 @@ export default function OptionGroupComponent({
                   <span 
                     style={{ 
                       fontWeight: 600, 
-                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit',
-                      cursor: descText ? 'help' : 'default'
+                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit'
                     }}
-                    onMouseEnter={(e) => descText && onHoverEnter(res.name, renderUpgradeDetails(res), e)}
-                    onMouseMove={descText ? onHoverMove : null}
-                    onMouseLeave={descText ? onHoverLeave : null}
                   >
                     {res.name}
+                    {descText && (
+                      <Info 
+                        size={14} 
+                        className="rule-link-icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.innerWidth <= 900) {
+                            setActiveInfo({ title: res.name, text: renderUpgradeDetails(res) });
+                          }
+                        }}
+                        onMouseEnter={(e) => {
+                          e.stopPropagation();
+                          onHoverEnter(res.name, renderUpgradeDetails(res), e);
+                        }}
+                        onMouseMove={onHoverMove}
+                        onMouseLeave={onHoverLeave}
+                      />
+                    )}
                     {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>
-                  {descText && (
-                    <button
-                      type="button"
-                      className="info-help-btn"
-                      onClick={() => {
-                        if (window.innerWidth <= 900) {
-                          setActiveInfo({ title: res.name, text: renderUpgradeDetails(res) });
-                        }
-                      }}
-                      onMouseEnter={(e) => onHoverEnter(res.name, renderUpgradeDetails(res), e)}
-                      onMouseMove={onHoverMove}
-                      onMouseLeave={onHoverLeave}
-                      title="Beschreibung anzeigen"
-                      style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: 'var(--text-gold)', opacity: 0.7, transition: 'opacity 0.2s' }}
-                    >
-                      <Info size={14} />
-                    </button>
-                  )}
                 </div>
                 <div className="sub-selection-controls">
                   {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}

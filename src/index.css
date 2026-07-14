@@ -1997,17 +1997,6 @@ input[type="radio"]:checked::after {
   font-weight: 700;
 }
 
-.info-help-btn {
-  color: var(--text-gold);
-  opacity: 0.6;
-  transition: opacity 0.2s, transform 0.2s;
-}
-
-.info-help-btn:hover {
-  opacity: 1 !important;
-  color: var(--text-gold) !important;
-  transform: scale(1.15);
-}
 
 .info-popup-body {
   font-family: var(--font-body);
@@ -2685,14 +2674,7 @@ input[type="radio"]:checked::after {
   border-radius: 3px;
   display: inline-flex;
   align-items: center;
-}
-
-.upgrade-badge.has-desc {
-  cursor: help;
-}
-
-.upgrade-badge.no-desc {
-  cursor: default;
+  cursor: pointer;
 }
 
 .upgrade-info-icon {
@@ -2740,20 +2722,23 @@ input[type="radio"]:checked::after {
   border-radius: 3px;
   display: inline-flex;
   align-items: center;
-}
-
-.rule-badge.has-desc {
-  cursor: help;
-}
-
-.rule-badge.no-desc {
-  cursor: default;
+  cursor: pointer;
 }
 
 .rule-info-icon {
   margin-left: 4px;
   opacity: 0.8;
   flex-shrink: 0;
+  cursor: pointer;
+}
+
+.rule-link-icon {
+  opacity: 0.6;
+  flex-shrink: 0;
+  vertical-align: middle;
+  color: var(--text-gold);
+  margin-left: 4px;
+  cursor: pointer;
 }
 
 /* Collapsible unit card details (mini profile + upgrade/rule chips): collapsed
@@ -2827,6 +2812,10 @@ input[type="radio"]:checked::after {
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: start;
+  }
+
+  .hide-on-desktop {
+    display: none !important;
   }
 }
 
@@ -2931,6 +2920,65 @@ input[type="radio"]:checked::after {
   100% { transform: rotate(360deg); }
 }
 
+/* ── RulesIndexDialog ────────────────────────────────────────────────── */
+.rules-index-dialog {
+  width: 95%;
+  max-width: 900px;
+  height: 85vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
+.rules-index-dialog .modal-header {
+  padding: 16px 24px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
 
+.rules-index-dialog .modal-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+  margin-bottom: 0;
+  position: relative;
+  background-color: #000;
+}
+
+.rules-index-dialog .modal-body .rules-index-iframe-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.rules-index-loading,
+.rules-index-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--text-parchment);
+  background: var(--bg-panel);
+  z-index: 1;
+}
+
+.rules-index-loading .spinner {
+  animation: gothic-spin 1s linear infinite;
+}
+
+.rules-index-error p {
+  margin: 0;
+  font-size: var(--fs-body);
+  color: var(--text-dim);
+}
+
+.rules-index-iframe {
+  filter: invert(1) hue-rotate(180deg);
+}
 

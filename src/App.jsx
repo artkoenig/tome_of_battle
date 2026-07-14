@@ -555,7 +555,7 @@ export default function App() {
               <PlayMode 
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => { navigate('rosters'); loadAllData(); }}
+                onBack={() => { navigate('builder', { roster: selectedRoster, system: selectedSystem }); }}
               />
             )}
           </>

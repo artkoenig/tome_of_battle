@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Info } from 'lucide-react';
+import { Info, BookOpen } from 'lucide-react';
 import { 
   resolveEntry, 
   findEntryInSystem, 
@@ -7,6 +7,7 @@ import {
 } from '../../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
 import { groupProfilesByType } from '../../solver/rulesEvaluator';
+import { getRuleUrl } from '../../data/rulesLookup';
 
 export const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
   const list = [];
@@ -289,6 +290,7 @@ export function UnitUpgradesChips({
   handleMouseMove,
   handleMouseLeave,
   onClickDetails,
+  onShowRule,
   showDebugIds = false
 }) {
   const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId, roster);
@@ -304,19 +306,31 @@ export function UnitUpgradesChips({
           <span 
             key={upgrade.id}
             className={`text-micro upgrade-badge ${descText ? 'has-desc' : 'no-desc'}`}
-            onMouseEnter={(e) => descText && handleMouseEnter(upgrade.resolved?.name || upgrade.name, details, e)}
-            onMouseMove={descText && handleMouseMove ? handleMouseMove : null}
-            onMouseLeave={descText ? handleMouseLeave : null}
             onClick={(e) => {
               e.stopPropagation();
-              if (descText && onClickDetails) {
-                onClickDetails(upgrade.resolved?.name || upgrade.name, details);
+              const chipName = upgrade.resolved?.name || upgrade.name;
+              if (onShowRule && getRuleUrl(chipName)) {
+                onShowRule(chipName);
+              } else if (descText && onClickDetails) {
+                onClickDetails(chipName, details);
               }
             }}
           >
             {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
-            {descText && (
-              <Info size={10} className="upgrade-info-icon" style={{ marginLeft: '4px' }} />
+            {getRuleUrl(upgrade.resolved?.name || upgrade.name) && (
+              <BookOpen size={14} className="rule-link-icon" />
+            )}
+            {descText && !getRuleUrl(upgrade.resolved?.name || upgrade.name) && (
+              <Info 
+                size={14} 
+                className="rule-link-icon"
+                onMouseEnter={(e) => {
+                  e.stopPropagation();
+                  handleMouseEnter(upgrade.resolved?.name || upgrade.name, details, e);
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              />
             )}
             {showDebugIds && upgrade.resolved?.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>def:{upgrade.resolved.id}</span>
@@ -337,6 +351,7 @@ export function UnitRulesChips({
   handleMouseMove,
   handleMouseLeave,
   onClickDetails,
+  onShowRule,
   showDebugIds = false
 }) {
   const { rules } = collectUnitProfilesAndRules(system, selection, activeCatalogueId, roster);
@@ -371,19 +386,30 @@ export function UnitRulesChips({
           <span 
             key={rule.id || rIdx}
             className={`text-micro rule-badge ${descText ? 'has-desc' : 'no-desc'}`}
-            onMouseEnter={(e) => descText && handleMouseEnter(rule.name, details, e)}
-            onMouseMove={descText && handleMouseMove ? handleMouseMove : null}
-            onMouseLeave={descText ? handleMouseLeave : null}
             onClick={(e) => {
               e.stopPropagation();
-              if (descText && onClickDetails) {
+              if (onShowRule && getRuleUrl(rule.name)) {
+                onShowRule(rule.name);
+              } else if (descText && onClickDetails) {
                 onClickDetails(rule.name, details);
               }
             }}
           >
             {rule.name}
-            {descText && (
-              <Sparkles size={10} className="rule-info-icon" />
+            {getRuleUrl(rule.name) && (
+              <BookOpen size={14} className="rule-link-icon" />
+            )}
+            {descText && !getRuleUrl(rule.name) && (
+              <Info 
+                size={14} 
+                className="rule-link-icon"
+                onMouseEnter={(e) => {
+                  e.stopPropagation();
+                  handleMouseEnter(rule.name, details, e);
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              />
             )}
             {showDebugIds && rule.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>{rule.id}</span>

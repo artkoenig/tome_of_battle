@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Minus, Info } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Minus, Info, BookOpen } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import BottomSheet from './BottomSheet';
@@ -11,6 +11,7 @@ import {
   GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/constants';
 import { isQuirkGeneralEntryId } from '../../solver/systemQuirks';
+import { getRuleUrl } from '../../data/rulesLookup';
 
 
 export default function SelectionConfigurator({
@@ -23,7 +24,8 @@ export default function SelectionConfigurator({
   handleMouseEnter,
   handleMouseMove,
   handleMouseLeave,
-  setActiveInfo
+  setActiveInfo,
+  onShowRule
 }) {
   const { showDebugIds } = useDebugMode();
 
@@ -397,35 +399,41 @@ export default function SelectionConfigurator({
                   <span 
                     style={{ 
                       fontWeight: 600, 
-                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit',
-                      cursor: descText ? 'help' : 'default' 
+                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit'
                     }}
-                    onMouseEnter={(e) => descText && handleMouseEnter(res.name, renderUpgradeDetails(res), e)}
-                    onMouseMove={descText ? handleMouseMove : null}
-                    onMouseLeave={descText ? handleMouseLeave : null}
                   >
                     {res.name}
+                    {getRuleUrl(res.name) && (
+                      <BookOpen 
+                        size={14} 
+                        className="rule-link-icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onShowRule) onShowRule(res.name);
+                        }}
+                      />
+                    )}
+                    {descText && !getRuleUrl(res.name) && (
+                      <Info 
+                        size={14} 
+                        className="rule-link-icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.innerWidth <= 900) {
+                            setActiveInfo({ title: res.name, text: renderUpgradeDetails(res) });
+                          }
+                        }}
+                        onMouseEnter={(e) => {
+                          e.stopPropagation();
+                          handleMouseEnter(res.name, renderUpgradeDetails(res), e);
+                        }}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                      />
+                    )}
                     {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>
-                  {descText && (
-                    <button
-                      type="button"
-                      className="info-help-btn"
-                      onClick={() => {
-                        if (window.innerWidth <= 900) {
-                          setActiveInfo({ title: res.name, text: renderUpgradeDetails(res) });
-                        }
-                      }}
-                      onMouseEnter={(e) => handleMouseEnter(res.name, renderUpgradeDetails(res), e)}
-                      onMouseMove={handleMouseMove}
-                      onMouseLeave={handleMouseLeave}
-                      title="Beschreibung anzeigen"
-                      style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: 'var(--text-gold)', opacity: 0.7, transition: 'opacity 0.2s' }}
-                    >
-                      <Info size={14} />
-                    </button>
-                  )}
                 </div>
                 <div className="sub-selection-controls">
                   {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}

@@ -46,7 +46,8 @@ export default function UnitSelectionCard({
   copyUnit,
   updateSubSelection,
   activeCatalogue,
-  isSubUnit = false
+  isSubUnit = false,
+  onShowRule
 }) {
   const { showDebugIds } = useDebugMode();
 
@@ -323,6 +324,7 @@ export default function UnitSelectionCard({
                 setActiveInfo({ title, text });
               }
             }}
+            onShowRule={onShowRule}
             showDebugIds={showDebugIds}
           />
           {!isSubUnit && (
@@ -339,6 +341,7 @@ export default function UnitSelectionCard({
                   setActiveInfo({ title, text });
                 }
               }}
+              onShowRule={onShowRule}
               showDebugIds={showDebugIds}
             />
           )}
@@ -365,6 +368,7 @@ export default function UnitSelectionCard({
           handleMouseMove={handleMouseMove}
           handleMouseLeave={handleMouseLeave}
           setActiveInfo={setActiveInfo}
+          onShowRule={onShowRule}
         />
       )}
 
