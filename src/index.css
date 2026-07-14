@@ -2725,8 +2725,7 @@ input[type="radio"]:checked::after {
   cursor: pointer;
 }
 
-.rule-info-icon,
-.upgrade-info-icon {
+.rule-info-icon {
   margin-left: 4px;
   opacity: 0.8;
   flex-shrink: 0;

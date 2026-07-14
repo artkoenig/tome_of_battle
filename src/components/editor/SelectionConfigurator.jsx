@@ -413,7 +413,7 @@ export default function SelectionConfigurator({
                         }}
                       />
                     )}
-                    {descText && (
+                    {descText && !getRuleUrl(res.name) && (
                       <Info 
                         size={14} 
                         className="rule-link-icon"

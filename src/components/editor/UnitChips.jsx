@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Info, BookOpen } from 'lucide-react';
+import { Info, BookOpen } from 'lucide-react';
 import { 
   resolveEntry, 
   findEntryInSystem, 
@@ -320,8 +320,17 @@ export function UnitUpgradesChips({
             {getRuleUrl(upgrade.resolved?.name || upgrade.name) && (
               <BookOpen size={14} className="rule-link-icon" />
             )}
-            {descText && (
-              <Info size={14} className="upgrade-info-icon" />
+            {descText && !getRuleUrl(upgrade.resolved?.name || upgrade.name) && (
+              <Info 
+                size={14} 
+                className="rule-link-icon"
+                onMouseEnter={(e) => {
+                  e.stopPropagation();
+                  handleMouseEnter(upgrade.resolved?.name || upgrade.name, details, e);
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              />
             )}
             {showDebugIds && upgrade.resolved?.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>def:{upgrade.resolved.id}</span>
@@ -390,8 +399,17 @@ export function UnitRulesChips({
             {getRuleUrl(rule.name) && (
               <BookOpen size={14} className="rule-link-icon" />
             )}
-            {descText && (
-              <Sparkles size={10} className="rule-info-icon" />
+            {descText && !getRuleUrl(rule.name) && (
+              <Info 
+                size={14} 
+                className="rule-link-icon"
+                onMouseEnter={(e) => {
+                  e.stopPropagation();
+                  handleMouseEnter(rule.name, details, e);
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              />
             )}
             {showDebugIds && rule.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>{rule.id}</span>

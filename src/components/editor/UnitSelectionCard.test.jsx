@@ -8,8 +8,9 @@ vi.mock('lucide-react', () => ({
   Trash2: () => <span data-testid="icon-trash" />,
   Copy: () => <span data-testid="icon-copy" />,
   AlertTriangle: () => <span data-testid="icon-alert" />,
-  Info: () => <span data-testid="icon-info" />,
+  Info: ({ onClick, ...rest }) => <span data-testid="icon-info" onClick={onClick} {...rest} />,
   Sparkles: () => <span data-testid="icon-sparkles" />,
+  BookOpen: () => <span data-testid="icon-book" />,
   MoreVertical: () => <span data-testid="icon-more-vertical" />,
   ReceiptText: () => <span data-testid="icon-receipt-text" />,
 }));
@@ -293,8 +294,10 @@ describe('UnitSelectionCard Component', () => {
     const ruleBadge = screen.getByText('Segen der Herrin');
     expect(ruleBadge).toBeDefined();
     
-    // Sparkles icon should be present
-    expect(screen.getByTestId('icon-sparkles')).toBeDefined();
+    // Info or BookOpen icon should be present
+    const infoIcons = screen.queryAllByTestId('icon-info');
+    const bookIcons = screen.queryAllByTestId('icon-book');
+    expect(infoIcons.length + bookIcons.length).toBeGreaterThan(0);
 
     // Click on mobile triggers BottomSheet
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 500 });
