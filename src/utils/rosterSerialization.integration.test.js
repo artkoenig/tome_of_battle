@@ -122,3 +122,13 @@ describe.each(ARMIES)('Real-catalogue round-trip: $label', ({ cat, fixture }) =>
     expect(flatSelectionPts(xml, ptsTypeId(system))).toBe(EXPECTED_TOTAL);
   });
 });
+
+// Regression: the Blood Dragons list takes "Shield (Blood dragons only)", whose base
+// max=0 constraint is lifted to 1 by a modifier gated on the Blood Dragon *category*.
+// Category-membership must be recognised during condition evaluation, otherwise the
+// legal shield is falsely reported as exceeding "max 0". See issue 05.
+test('Blood Dragons list validates without errors (bloodline-gated shield is legal)', () => {
+  const system = buildSystem('Vampire Counts.cat');
+  const roster = importFixture(system, 'blood-dragons.ros');
+  expect(errorCount(roster, system)).toBe(0);
+});

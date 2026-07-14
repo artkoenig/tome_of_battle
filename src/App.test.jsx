@@ -254,8 +254,13 @@ describe('App Component Debug Entry Click Redirection', () => {
       fireEvent.click(badge);
     });
 
-    document.body.removeChild(badge);
+    // The global click handler resolves the entry asynchronously after the
+    // systems load, so retry the assertion until the effect has fired rather
+    // than sampling once (which is racy under load).
+    await waitFor(() => {
+      expect(findExactEntryById).toHaveBeenCalledWith(mockGst, 'target-456');
+    });
 
-    expect(findExactEntryById).toHaveBeenCalledWith(mockGst, 'target-456');
+    document.body.removeChild(badge);
   });
 });
