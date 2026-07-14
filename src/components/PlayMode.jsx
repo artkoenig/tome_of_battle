@@ -152,7 +152,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           </button>
           <button
             className="btn"
-            onClick={() => window.open('https://6th.whfb.app/?minimal=true&utm_source=6th-builder&utm_medium=referral', '_blank')}
+            onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
             title="Regelbuch öffnen (neuer Tab)"
             style={{ padding: '6px 12px', marginLeft: '8px' }}
           >
@@ -174,7 +174,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           <h2 className="play-header-title">Spielmodus</h2>
           <button
             className="btn-sm square-btn hide-on-desktop"
-            onClick={() => window.open('https://6th.whfb.app/?minimal=true&utm_source=6th-builder&utm_medium=referral', '_blank')}
+            onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
             title="Regelbuch öffnen (neuer Tab)"
           >
             <BookOpen size={16} />
