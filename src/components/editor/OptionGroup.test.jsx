@@ -533,4 +533,61 @@ describe('OptionGroup Component', () => {
     expect(screen.getByText('Sword of Might')).toBeDefined();
     expect(screen.getByText('Axe of Doom')).toBeDefined();
   });
+
+  it('19. Optional upgrade without min or max renders as a checkbox, not a stepper', () => {
+    // Regression (issue 07): a non-collective upgrade carrying neither a min nor a max
+    // constraint (e.g. Barding on a mounted Vampire, a single mount, a magic weapon/rune)
+    // is a binary yes/no choice and must render as a checkbox — not a quantity stepper.
+    const bardingGroup = {
+      id: 'grp-barding',
+      name: 'Upgrades',
+      constraints: [],
+      items: [
+        { option: { id: 'opt-barding' }, groupConstraints: [] }
+      ]
+    };
+
+    mockResolveEntry.mockImplementation((sys, opt) => {
+      if (opt.id === 'opt-barding') return { id: 'res-barding', name: 'Barding', constraints: [] };
+      return { id: 'unit-resolved', name: 'Vampire', categoryLinks: [] };
+    });
+    mockGetOptionDisplayCost.mockReturnValue(6);
+
+    render(<OptionGroupComponent {...defaultProps} group={bardingGroup} />);
+    fireEvent.click(screen.getByText('Upgrades').closest('div'));
+
+    expect(screen.getByRole('checkbox')).toBeDefined();
+    expect(screen.queryByTestId('icon-plus')).toBeNull();
+
+    fireEvent.click(screen.getByRole('checkbox'));
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-barding' }), 'increment', 1);
+  });
+
+  it('20. Upgrade with a positive min but no max stays a quantity stepper', () => {
+    // Regression (issue 07): a real minimum-quantity upgrade (min>0 without max, e.g.
+    // Ungors min=5, Kroxigor) is a genuine quantity and must remain a stepper — the
+    // binary heuristic must not collapse it into a checkbox capped at one.
+    const quantityGroup = {
+      id: 'grp-core',
+      name: 'Reinforcements',
+      constraints: [],
+      items: [
+        { option: { id: 'opt-ungors' }, groupConstraints: [] }
+      ]
+    };
+
+    mockResolveEntry.mockImplementation((sys, opt) => {
+      if (opt.id === 'opt-ungors') return { id: 'res-ungors', name: 'Ungors', constraints: [{ type: 'min', value: 5 }] };
+      return { id: 'unit-resolved', name: 'Beastmen', categoryLinks: [] };
+    });
+    mockGetOptionDisplayCost.mockReturnValue(4);
+    defaultProps.getSubSelectionCount.mockImplementation((sel, id) => (id === 'res-ungors' ? 5 : 0));
+
+    render(<OptionGroupComponent {...defaultProps} group={quantityGroup} />);
+    // A selection exists (count 5), so the group auto-expands and shows its stepper.
+
+    expect(screen.queryByRole('checkbox')).toBeNull();
+    expect(screen.getByTestId('icon-plus')).toBeDefined();
+    expect(screen.getByText('5')).toBeDefined();
+  });
 });
