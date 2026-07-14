@@ -2762,6 +2762,7 @@ input[type="radio"]:checked::after {
   flex-shrink: 0;
   vertical-align: middle;
   color: var(--text-gold);
+  margin-left: 4px;
 }
 
 /* Collapsible unit card details (mini profile + upgrade/rule chips): collapsed
@@ -2959,6 +2960,7 @@ input[type="radio"]:checked::after {
 .rules-index-dialog .modal-body {
   flex: 1;
   overflow: hidden;
+  padding: 0 12px 12px;
   position: relative;
 }
 

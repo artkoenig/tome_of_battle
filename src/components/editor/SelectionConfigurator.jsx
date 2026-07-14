@@ -414,7 +414,7 @@ export default function SelectionConfigurator({
                   >
                     {res.name}
                     {getRuleUrl(res.name) && (
-                      <BookOpen size={10} className="rule-link-icon" style={{ marginLeft: '3px' }} />
+                      <BookOpen size={10} className="rule-link-icon" />
                     )}
                     {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
