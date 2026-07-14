@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ArrowLeft, Search, Plus, Minus, 
   Heart, Swords, Sparkles, BookOpen 
@@ -9,6 +9,8 @@ import { useDebugMode } from '../hooks/DebugContext';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
+import RulesIndexDialog from './RulesIndexDialog';
+import { getRuleUrl } from '../data/rulesLookup';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const { showDebugIds } = useDebugMode();
@@ -22,6 +24,16 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const extraResources = getExtraResourceTotals(system, roster, calculateRosterCosts(roster, system));
 
   const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster);
+
+  const [rulesDialogRule, setRulesDialogRule] = useState(null);
+
+  const onShowRule = useCallback((ruleName) => {
+    setRulesDialogRule(ruleName);
+  }, []);
+
+  const closeRulesDialog = useCallback(() => {
+    setRulesDialogRule(null);
+  }, []);
 
   const handleMouseEnter = (e, title, content) => {
     if (window.innerWidth <= 900 || content.length === 0) return;
@@ -135,8 +147,16 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         </div>
         
         <div className="builder-top-bar-right">
-          <button className="btn-primary" onClick={onBack} style={{ padding: '6px 12px' }}>
+          <button className="btn btn-primary" onClick={onBack} style={{ padding: '6px 12px' }}>
             <Swords size={16} /> <span>Ausrüsten</span>
+          </button>
+          <button
+            className="btn"
+            onClick={() => onShowRule('digital-rulebook')}
+            title="Regelbuch öffnen"
+            style={{ padding: '6px 12px', marginLeft: '8px' }}
+          >
+            <BookOpen size={16} /> <span>Regelbuch</span>
           </button>
         </div>
       </div>
@@ -186,6 +206,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                     handleMouseLeave={handleMouseLeave}
                     setSaveSummaryData={setSaveSummaryData}
                     setSaveSummaryOpen={setSaveSummaryOpen}
+                    onShowRule={onShowRule}
                   />
                 ))}
               </div>
@@ -234,6 +255,15 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
               )}
             </div>
           </div>
+        )}
+
+        {rulesDialogRule && (
+          <RulesIndexDialog
+            ruleName={rulesDialogRule === 'digital-rulebook' ? 'Digitales Regelbuch' : rulesDialogRule}
+            url={getRuleUrl(rulesDialogRule)}
+            isOpen={true}
+            onClose={closeRulesDialog}
+          />
         )}
       </div>
     </>

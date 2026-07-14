@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
@@ -9,6 +9,8 @@ import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
 import UnitSelectionCard from './editor/UnitSelectionCard';
 import AutoFillSuggestions from './editor/AutoFillSuggestions';
+import RulesIndexDialog from './RulesIndexDialog';
+import { getRuleUrl } from '../data/rulesLookup';
 
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster }) {
@@ -27,8 +29,15 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, _setToast] = useState(null);
+  const [rulesDialogRule, setRulesDialogRule] = useState(null);
 
+  const onShowRule = useCallback((ruleName) => {
+    setRulesDialogRule(ruleName);
+  }, []);
 
+  const closeRulesDialog = useCallback(() => {
+    setRulesDialogRule(null);
+  }, []);
 
   const costType = system?.costTypes?.find(ct => ct.id === roster?.costLimitType);
   const rawLabel = costType?.name || 'Pkt.';
@@ -227,6 +236,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 copyUnit={copyUnit}
                                 updateSubSelection={updateSubSelection}
                                 activeCatalogue={activeCatalogue}
+                                onShowRule={onShowRule}
                               />
                             );
                           })}
@@ -256,6 +266,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 copyUnit={copyUnit}
                                 updateSubSelection={updateSubSelection}
                                 activeCatalogue={activeCatalogue}
+                                onShowRule={onShowRule}
                               />
                         );
                     })}
@@ -355,6 +366,15 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         <div className="gothic-toast">
           <span>{toast}</span>
         </div>
+      )}
+
+      {rulesDialogRule && (
+        <RulesIndexDialog
+          ruleName={rulesDialogRule}
+          url={getRuleUrl(rulesDialogRule)}
+          isOpen={true}
+          onClose={closeRulesDialog}
+        />
       )}
       </div>
 

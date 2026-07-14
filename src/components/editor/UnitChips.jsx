@@ -7,6 +7,7 @@ import {
 } from '../../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
 import { groupProfilesByType } from '../../solver/rulesEvaluator';
+import { getRuleUrl } from '../../data/rulesLookup';
 
 export const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
   const list = [];
@@ -289,6 +290,7 @@ export function UnitUpgradesChips({
   handleMouseMove,
   handleMouseLeave,
   onClickDetails,
+  onShowRule,
   showDebugIds = false
 }) {
   const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId, roster);
@@ -309,8 +311,11 @@ export function UnitUpgradesChips({
             onMouseLeave={descText ? handleMouseLeave : null}
             onClick={(e) => {
               e.stopPropagation();
-              if (descText && onClickDetails) {
-                onClickDetails(upgrade.resolved?.name || upgrade.name, details);
+              const chipName = upgrade.resolved?.name || upgrade.name;
+              if (onShowRule && getRuleUrl(chipName)) {
+                onShowRule(chipName);
+              } else if (descText && onClickDetails) {
+                onClickDetails(chipName, details);
               }
             }}
           >
@@ -337,6 +342,7 @@ export function UnitRulesChips({
   handleMouseMove,
   handleMouseLeave,
   onClickDetails,
+  onShowRule,
   showDebugIds = false
 }) {
   const { rules } = collectUnitProfilesAndRules(system, selection, activeCatalogueId, roster);
@@ -376,7 +382,9 @@ export function UnitRulesChips({
             onMouseLeave={descText ? handleMouseLeave : null}
             onClick={(e) => {
               e.stopPropagation();
-              if (descText && onClickDetails) {
+              if (onShowRule && getRuleUrl(rule.name)) {
+                onShowRule(rule.name);
+              } else if (descText && onClickDetails) {
                 onClickDetails(rule.name, details);
               }
             }}

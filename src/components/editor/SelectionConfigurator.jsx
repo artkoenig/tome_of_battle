@@ -11,6 +11,7 @@ import {
   GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/constants';
 import { isQuirkGeneralEntryId } from '../../solver/systemQuirks';
+import { getRuleUrl } from '../../data/rulesLookup';
 
 
 export default function SelectionConfigurator({
@@ -23,7 +24,8 @@ export default function SelectionConfigurator({
   handleMouseEnter,
   handleMouseMove,
   handleMouseLeave,
-  setActiveInfo
+  setActiveInfo,
+  onShowRule
 }) {
   const { showDebugIds } = useDebugMode();
 
@@ -398,7 +400,13 @@ export default function SelectionConfigurator({
                     style={{ 
                       fontWeight: 600, 
                       color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit',
-                      cursor: descText ? 'help' : 'default' 
+                      cursor: (onShowRule && getRuleUrl(res.name)) ? 'pointer' : (descText ? 'help' : 'default')
+                    }}
+                    onClick={(e) => {
+                      if (onShowRule && getRuleUrl(res.name)) {
+                        e.stopPropagation();
+                        onShowRule(res.name);
+                      }
                     }}
                     onMouseEnter={(e) => descText && handleMouseEnter(res.name, renderUpgradeDetails(res), e)}
                     onMouseMove={descText ? handleMouseMove : null}
