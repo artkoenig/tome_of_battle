@@ -2750,10 +2750,18 @@ input[type="radio"]:checked::after {
   cursor: default;
 }
 
-.rule-info-icon {
+.rule-info-icon,
+.upgrade-info-icon {
   margin-left: 4px;
   opacity: 0.8;
   flex-shrink: 0;
+}
+
+.rule-link-icon {
+  opacity: 0.6;
+  flex-shrink: 0;
+  vertical-align: middle;
+  color: var(--text-gold);
 }
 
 /* Collapsible unit card details (mini profile + upgrade/rule chips): collapsed

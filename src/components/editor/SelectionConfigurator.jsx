@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Minus, Info } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Minus, Info, BookOpen } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import BottomSheet from './BottomSheet';
@@ -413,6 +413,9 @@ export default function SelectionConfigurator({
                     onMouseLeave={descText ? handleMouseLeave : null}
                   >
                     {res.name}
+                    {getRuleUrl(res.name) && (
+                      <BookOpen size={10} className="rule-link-icon" style={{ marginLeft: '3px' }} />
+                    )}
                     {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>

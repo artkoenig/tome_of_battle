@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Info } from 'lucide-react';
+import { Sparkles, Info, BookOpen } from 'lucide-react';
 import { 
   resolveEntry, 
   findEntryInSystem, 
@@ -320,8 +320,11 @@ export function UnitUpgradesChips({
             }}
           >
             {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
+            {getRuleUrl(upgrade.resolved?.name || upgrade.name) && (
+              <BookOpen size={10} className="rule-link-icon" style={{ marginLeft: '3px' }} />
+            )}
             {descText && (
-              <Info size={10} className="upgrade-info-icon" style={{ marginLeft: '4px' }} />
+              <Info size={10} className="upgrade-info-icon" style={{ marginLeft: '2px' }} />
             )}
             {showDebugIds && upgrade.resolved?.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>def:{upgrade.resolved.id}</span>
@@ -390,8 +393,11 @@ export function UnitRulesChips({
             }}
           >
             {rule.name}
+            {getRuleUrl(rule.name) && (
+              <BookOpen size={10} className="rule-link-icon" style={{ marginLeft: '3px' }} />
+            )}
             {descText && (
-              <Sparkles size={10} className="rule-info-icon" />
+              <Sparkles size={10} className="rule-info-icon" style={{ marginLeft: '2px' }} />
             )}
             {showDebugIds && rule.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>{rule.id}</span>
