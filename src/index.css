@@ -2964,8 +2964,16 @@ input[type="radio"]:checked::after {
 .rules-index-dialog .modal-body {
   flex: 1;
   overflow: hidden;
-  padding: 12px;
+  padding: 0;
   position: relative;
+}
+
+.rules-index-dialog .modal-body .rules-index-iframe-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  overflow: hidden;
 }
 
 .rules-index-loading,

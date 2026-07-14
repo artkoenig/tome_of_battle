@@ -69,20 +69,22 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
               <p>Lade Regeltext...</p>
             </div>
           )}
-          <iframe
-            ref={iframeRef}
-            src={url}
-            title={ruleName}
-            className="rules-index-iframe"
-            onLoad={handleIframeLoad}
-            style={{
-              flex: 1,
-              width: '100%',
-              border: 'none',
-              display: iframeLoaded ? 'block' : 'none',
-            }}
-            allow="clipboard-write"
-          />
+          <div className="rules-index-iframe-wrapper">
+            <iframe
+              ref={iframeRef}
+              src={url}
+              title={ruleName}
+              className="rules-index-iframe"
+              onLoad={handleIframeLoad}
+              style={{
+                flex: 1,
+                width: '100%',
+                border: 'none',
+                display: iframeLoaded ? 'block' : 'none',
+              }}
+              allow="clipboard-write"
+            />
+          </div>
         </div>
       </div>
     </div>
