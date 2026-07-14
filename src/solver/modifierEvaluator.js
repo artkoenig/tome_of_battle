@@ -1,16 +1,19 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 
+// A resolved entry belongs to a category when one of its categoryLinks targets it.
+const entryHasCategoryLink = (resolvedEntry, categoryId) =>
+  !!resolvedEntry?.categoryLinks?.some(cl => cl.targetId === categoryId || cl.id === categoryId);
+
 const selectionHasCategory = (sel, categoryId, system, catalogueId) => {
   if (!sel) return false;
   const sId = sel.selectionEntryId || sel.entryLinkId;
   if (sId === categoryId) return true;
-  
+
   const raw = findEntryInSystem(system, sId, catalogueId);
   const res = raw && resolveEntry(system, raw, catalogueId);
   if (res) {
     if (res.id === categoryId || res.targetId === categoryId) return true;
-    const directCat = res.categoryLinks?.some(cl => cl.targetId === categoryId || cl.id === categoryId);
-    if (directCat) return true;
+    if (entryHasCategoryLink(res, categoryId)) return true;
   }
   
   if (sel.selections && sel.selections.length > 0) {
@@ -51,6 +54,9 @@ export const evaluateCondition = (cond, ctx = {}) => {
           const raw = findEntryInSystem(system, sId, catId);
           const res = raw && resolveEntry(system, raw, catId);
           if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
+          // childId may reference a category (e.g. a bloodline): count selections
+          // that belong to that category, not only those whose entry id matches.
+          if (res && entryHasCategoryLink(res, targetId)) isMatch = true;
           if (targetId === 'model' && res && (res.type === 'model' || res.type === 'unit')) isMatch = true;
         }
 

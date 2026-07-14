@@ -1229,6 +1229,84 @@ test("21b. Repeatable magic item limit is lifted during validation of a top-leve
   expect(dynamicMax).toBe(3);
 });
 
+// Test 21c: Bloodline-gated option. A "Shield (Blood dragons only)" carries a base
+// max=0 constraint that a `set` modifier lifts to 1 when the parent contains a
+// selection of the "Blood Dragon" category. The modifier condition references the
+// category via childId (not an entry id), so the effective limit is only correct if
+// condition counting recognises category membership through categoryLinks. Without
+// that, the shield is falsely reported as "max 0" even for a legal Blood Dragon.
+test("21c. Category-gated option limit is lifted when a sibling carries that category", () => {
+  const bloodDragonCategoryId = 'cat-blood-dragon';
+  const shieldMaxConstraintId = 'con-shield-max';
+  const system = {
+    id: 'sys-bloodline',
+    costTypes: [{ id: 'pts', name: 'Points', defaultCostLimit: 2000 }],
+    categoryEntries: [{ id: 'cat-hq', name: 'HQ' }, { id: bloodDragonCategoryId, name: 'Blood Dragon' }],
+    forceEntries: [{ id: 'force-1', name: 'Force', categoryLinks: [{ id: 'cl-hq', targetId: 'cat-hq', name: 'HQ' }] }],
+    catalogues: [{
+      id: 'cat-1',
+      selectionEntries: [{
+        id: 'unit-vampire',
+        name: 'Vampire',
+        type: 'unit',
+        costs: [{ typeId: 'pts', value: 100 }],
+        categoryLinks: [{ targetId: 'cat-hq' }],
+        selectionEntries: [
+          { id: 'bloodline-blood-dragon', name: 'Blood Dragon', categoryLinks: [{ targetId: bloodDragonCategoryId }] },
+          {
+            id: 'option-shield',
+            name: 'Shield (Blood dragons only)',
+            costs: [{ typeId: 'pts', value: 6 }],
+            constraints: [{ id: shieldMaxConstraintId, type: 'max', value: 0, field: 'selections', scope: 'parent' }],
+            modifiers: [{
+              type: 'set',
+              field: shieldMaxConstraintId,
+              value: 1,
+              conditions: [{ type: 'greaterThan', value: 0, field: 'selections', scope: 'parent', childId: bloodDragonCategoryId, includeChildSelections: true }]
+            }]
+          }
+        ]
+      }]
+    }]
+  };
+
+  const makeRoster = (childSelections) => ({
+    name: 'r', costLimit: 2000, costLimitType: 'pts', catalogueId: 'cat-1',
+    forces: [{
+      id: 'f1', forceEntryId: 'force-1', catalogueId: 'cat-1',
+      selections: [{
+        id: 'sel-vampire', selectionEntryId: 'unit-vampire', name: 'Vampire', number: 1, category: 'cat-hq',
+        selections: childSelections
+      }]
+    }]
+  });
+
+  const shieldSelection = { id: 'sel-shield', selectionEntryId: 'option-shield', name: 'Shield (Blood dragons only)', number: 1, costs: [{ typeId: 'pts', value: 6 }] };
+  const bloodlineSelection = { id: 'sel-bloodline', selectionEntryId: 'bloodline-blood-dragon', name: 'Blood Dragon', number: 1 };
+
+  // A Blood Dragon vampire may take the shield: limit lifted to 1, no entry-max error.
+  const withBloodline = makeRoster([bloodlineSelection, shieldSelection]);
+  expect(validateRoster(withBloodline, system).some(e => e.type === 'entry-max')).toBe(false);
+
+  // The effective max the validator computes must be 1, not the static base value of 0.
+  const shieldConstraint = { id: shieldMaxConstraintId, type: 'max', value: 0, field: 'selections', scope: 'parent' };
+  const shieldModifiers = system.catalogues[0].selectionEntries[0].selectionEntries[1].modifiers;
+  const vampireSelection = withBloodline.forces[0].selections[0];
+  const liftedMax = getModifiedConstraintValue(shieldConstraint, shieldModifiers, {
+    roster: withBloodline, system, selectionCounts: {}, forceCategoryCounts: {},
+    selection: vampireSelection, parentSelection: null, parentCatalogueId: 'cat-1'
+  });
+  expect(liftedMax).toBe(1);
+
+  // Without the Blood Dragon category present, the gate stays closed (base max 0).
+  const withoutBloodline = makeRoster([shieldSelection]);
+  const baseMax = getModifiedConstraintValue(shieldConstraint, shieldModifiers, {
+    roster: withoutBloodline, system, selectionCounts: {}, forceCategoryCounts: {},
+    selection: withoutBloodline.forces[0].selections[0], parentSelection: null, parentCatalogueId: 'cat-1'
+  });
+  expect(baseMax).toBe(0);
+});
+
 // Test 22: Nested Selection display costs and group constraint points validation
 const mockSystemNested = {
   id: 'sys-nested',
