@@ -2978,3 +2978,7 @@ input[type="radio"]:checked::after {
   color: var(--text-dim);
 }
 
+.rules-index-iframe {
+  filter: invert(1) hue-rotate(180deg);
+}
+
