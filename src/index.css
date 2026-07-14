@@ -1997,17 +1997,6 @@ input[type="radio"]:checked::after {
   font-weight: 700;
 }
 
-.info-help-btn {
-  color: var(--text-gold);
-  opacity: 0.6;
-  transition: opacity 0.2s, transform 0.2s;
-}
-
-.info-help-btn:hover {
-  opacity: 1 !important;
-  color: var(--text-gold) !important;
-  transform: scale(1.15);
-}
 
 .info-popup-body {
   font-family: var(--font-body);
@@ -2685,14 +2674,7 @@ input[type="radio"]:checked::after {
   border-radius: 3px;
   display: inline-flex;
   align-items: center;
-}
-
-.upgrade-badge.has-desc {
-  cursor: help;
-}
-
-.upgrade-badge.no-desc {
-  cursor: default;
+  cursor: pointer;
 }
 
 .upgrade-info-icon {
@@ -2740,14 +2722,7 @@ input[type="radio"]:checked::after {
   border-radius: 3px;
   display: inline-flex;
   align-items: center;
-}
-
-.rule-badge.has-desc {
-  cursor: help;
-}
-
-.rule-badge.no-desc {
-  cursor: default;
+  cursor: pointer;
 }
 
 .rule-info-icon,
@@ -2755,6 +2730,7 @@ input[type="radio"]:checked::after {
   margin-left: 4px;
   opacity: 0.8;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .rule-link-icon {
@@ -2763,6 +2739,7 @@ input[type="radio"]:checked::after {
   vertical-align: middle;
   color: var(--text-gold);
   margin-left: 4px;
+  cursor: pointer;
 }
 
 /* Collapsible unit card details (mini profile + upgrade/rule chips): collapsed
@@ -2965,6 +2942,7 @@ input[type="radio"]:checked::after {
   flex: 1;
   overflow: hidden;
   padding: 0;
+  margin-bottom: 0;
   position: relative;
   background-color: #000;
 }
@@ -2973,7 +2951,7 @@ input[type="radio"]:checked::after {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 24px 24px 24px;
+  padding: 24px;
   overflow: hidden;
 }
 

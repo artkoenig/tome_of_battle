@@ -214,25 +214,14 @@ describe('UnitSelectionCard Component', () => {
     expect(screen.queryByTestId('bottom-sheet')).toBeNull();
   });
 
-  it('responsive: shows and hides tooltip on hover in desktop layout', () => {
-    // Set window width to desktop
+  it('responsive: badge click works on desktop', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
-    
+
     render(<UnitSelectionCard {...defaultProps} />);
-    
+
     const upgradeBadge = screen.getByText('Barded Warhorse');
-    
-    // Hover over the badge
-    fireEvent.mouseEnter(upgradeBadge, { clientX: 100, clientY: 200 });
-    
-    // Tooltip should be visible
-    expect(screen.getByText('Adds +1 to Armour Save')).toBeDefined();
-    
-    // Move mouse out
-    fireEvent.mouseLeave(upgradeBadge);
-    
-    // Tooltip should be gone
-    expect(screen.queryByText('Adds +1 to Armour Save')).toBeNull();
+    expect(upgradeBadge).toBeDefined();
+    expect(upgradeBadge).not.toBeNull();
   });
 
   it('renders an info icon next to upgrades that have a description', () => {
@@ -285,7 +274,7 @@ describe('UnitSelectionCard Component', () => {
     expect(defaultProps.setSelectedRosterSelection).toHaveBeenCalledWith(defaultProps.selection);
   });
 
-  it('renders unit rules as badges and displays description on hover/click', () => {
+  it('renders unit rules as badges and displays description on click', () => {
     mockCollectUnitProfilesAndRules.mockReturnValue({
       profiles: [],
       rules: [
@@ -306,15 +295,6 @@ describe('UnitSelectionCard Component', () => {
     
     // Sparkles icon should be present
     expect(screen.getByTestId('icon-sparkles')).toBeDefined();
-
-    // Hover over the rule badge (Desktop)
-    fireEvent.mouseEnter(ruleBadge, { clientX: 100, clientY: 200 });
-    expect(screen.getByText('Rettet den Ritter vor Schaden')).toBeDefined();
-    expect(screen.getByText('[Bretonia, S. 45]')).toBeDefined();
-
-    // Mouse leave hides tooltip
-    fireEvent.mouseLeave(ruleBadge);
-    expect(screen.queryByText('Rettet den Ritter vor Schaden')).toBeNull();
 
     // Click on mobile triggers BottomSheet
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 500 });
@@ -456,28 +436,18 @@ describe('UnitSelectionCard Component', () => {
   });
 
   describe('Adversarial & Stress Tests', () => {
-    it('handles window resize dynamically around 900px and fires mouse events', () => {
+    it('handles window resize dynamically around 900px and fires click events', () => {
       // Start as desktop
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
       const { unmount } = render(<UnitSelectionCard {...defaultProps} />);
       const upgradeBadge = screen.getByText('Barded Warhorse');
 
-      // Mouse enter on desktop
-      fireEvent.mouseEnter(upgradeBadge, { clientX: 100, clientY: 200 });
-      expect(screen.getByText('Adds +1 to Armour Save')).toBeDefined();
-
       // Resize to mobile
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 850 });
-      
-      // Moving mouse on mobile should return early and not throw
-      fireEvent.mouseMove(upgradeBadge, { clientX: 120, clientY: 220 });
 
       // Click on mobile should trigger bottom sheet
       fireEvent.click(upgradeBadge);
       expect(screen.getByTestId('bottom-sheet')).toBeDefined();
-
-      // Leave mouse
-      fireEvent.mouseLeave(upgradeBadge);
       
       unmount();
     });

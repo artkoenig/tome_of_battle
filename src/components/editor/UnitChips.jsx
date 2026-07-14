@@ -306,9 +306,6 @@ export function UnitUpgradesChips({
           <span 
             key={upgrade.id}
             className={`text-micro upgrade-badge ${descText ? 'has-desc' : 'no-desc'}`}
-            onMouseEnter={(e) => descText && handleMouseEnter(upgrade.resolved?.name || upgrade.name, details, e)}
-            onMouseMove={descText && handleMouseMove ? handleMouseMove : null}
-            onMouseLeave={descText ? handleMouseLeave : null}
             onClick={(e) => {
               e.stopPropagation();
               const chipName = upgrade.resolved?.name || upgrade.name;
@@ -321,10 +318,10 @@ export function UnitUpgradesChips({
           >
             {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
             {getRuleUrl(upgrade.resolved?.name || upgrade.name) && (
-              <BookOpen size={10} className="rule-link-icon" />
+              <BookOpen size={14} className="rule-link-icon" />
             )}
             {descText && (
-              <Info size={10} className="upgrade-info-icon" />
+              <Info size={14} className="upgrade-info-icon" />
             )}
             {showDebugIds && upgrade.resolved?.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>def:{upgrade.resolved.id}</span>
@@ -380,9 +377,6 @@ export function UnitRulesChips({
           <span 
             key={rule.id || rIdx}
             className={`text-micro rule-badge ${descText ? 'has-desc' : 'no-desc'}`}
-            onMouseEnter={(e) => descText && handleMouseEnter(rule.name, details, e)}
-            onMouseMove={descText && handleMouseMove ? handleMouseMove : null}
-            onMouseLeave={descText ? handleMouseLeave : null}
             onClick={(e) => {
               e.stopPropagation();
               if (onShowRule && getRuleUrl(rule.name)) {
@@ -394,7 +388,7 @@ export function UnitRulesChips({
           >
             {rule.name}
             {getRuleUrl(rule.name) && (
-              <BookOpen size={10} className="rule-link-icon" />
+              <BookOpen size={14} className="rule-link-icon" />
             )}
             {descText && (
               <Sparkles size={10} className="rule-info-icon" />
