@@ -2837,6 +2837,10 @@ input[type="radio"]:checked::after {
     grid-template-columns: 1fr 1fr;
     align-items: start;
   }
+
+  .hide-on-desktop {
+    display: none !important;
+  }
 }
 
 .bundle-importer-panel {

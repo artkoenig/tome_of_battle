@@ -152,8 +152,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           </button>
           <button
             className="btn"
-            onClick={() => onShowRule('digital-rulebook')}
-            title="Regelbuch öffnen"
+            onClick={() => window.open('https://6th.whfb.app/?minimal=true&utm_source=6th-builder&utm_medium=referral', '_blank')}
+            title="Regelbuch öffnen (neuer Tab)"
             style={{ padding: '6px 12px', marginLeft: '8px' }}
           >
             <BookOpen size={16} /> <span>Regelbuch</span>
@@ -172,6 +172,13 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
             <ArrowLeft size={16} />
           </button>
           <h2 className="play-header-title">Spielmodus</h2>
+          <button
+            className="btn-sm square-btn hide-on-desktop"
+            onClick={() => window.open('https://6th.whfb.app/?minimal=true&utm_source=6th-builder&utm_medium=referral', '_blank')}
+            title="Regelbuch öffnen (neuer Tab)"
+          >
+            <BookOpen size={16} />
+          </button>
         </div>
 
         {/* Army-wide resource totals (e.g. Casting/Dispel Dice) */}
@@ -259,7 +266,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
         {rulesDialogRule && (
           <RulesIndexDialog
-            ruleName={rulesDialogRule === 'digital-rulebook' ? 'Digitales Regelbuch' : rulesDialogRule}
+            ruleName={rulesDialogRule}
             url={getRuleUrl(rulesDialogRule)}
             isOpen={true}
             onClose={closeRulesDialog}
