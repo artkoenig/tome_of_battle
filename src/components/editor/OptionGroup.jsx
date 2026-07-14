@@ -381,12 +381,18 @@ export default function OptionGroupComponent({
             const maxLimitOption = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
             const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
             
+            const isCollective = res.collective || option.collective || false;
             const isRepeatableByGroupModifier = isRepeatableWithinGroup(option, res);
             // A repeatable item never behaves as an exclusive radio, even though its
             // group is nominally capped at max=1 (the cap is lifted per copy taken).
             const isRadio = !isRepeatableByGroupModifier && groupConstraints?.some(c => c.type === 'max' && c.value === 1);
-            const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || isRepeatableByGroupModifier || (!maxConstraint && !isMandatory && !isRadio);
-            const isBinary = !isExplicitlyMulti && ((maxConstraint && maxConstraint.value === 1) || isRadio);
+            // A stepper (quantity control) requires a positive quantity signal. Without an
+            // explicit max, only a real minimum (min>0, e.g. Ungors) or a collective
+            // (per-model) upgrade qualifies; a plain optional upgrade with neither min nor
+            // max is binary and renders as a checkbox (e.g. Barding, a single mount/rune).
+            const hasQuantitySignal = minLimitOption > 0 || isCollective;
+            const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || isRepeatableByGroupModifier || (!maxConstraint && !isRadio && hasQuantitySignal);
+            const isBinary = !isExplicitlyMulti && ((maxConstraint && maxConstraint.value === 1) || isRadio || !maxConstraint);
             const descText = getOptionDescription(res);
 
             let parentCount = 1;
@@ -398,7 +404,6 @@ export default function OptionGroupComponent({
               if (pSel) parentCount = pSel.number || 1;
             }
 
-            const isCollective = res.collective || option.collective || false;
             const points = isCollective ? basePoints * parentCount : basePoints;
 
             const ptsConstraintGroup = filteredGroupConstraints.find(c => 

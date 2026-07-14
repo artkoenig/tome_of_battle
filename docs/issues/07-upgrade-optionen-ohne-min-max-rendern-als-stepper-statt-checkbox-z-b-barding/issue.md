@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -63,3 +63,4 @@ bleiben ausgeschlossen.
 - [ ] Volle Suite grün; katalogweiter Sweep zeigt keine ungewollten Umstufungen.
 
 ## Comments
+- Umgesetzt in src/components/editor/OptionGroup.jsx (Render-Heuristik, Zeilen ~384-393): isCollective vor die Heuristik gezogen; neues Signal hasQuantitySignal = (min>0 || collective). Eine upgrade-Option ist nur dann Stepper, wenn ein positives Mengen-Signal vorliegt (max>1, Repeat-Modifier, oder ohne max: min>0/collective). Ohne min und ohne max (nicht-collective, nicht-radio) ist sie jetzt binär -> Checkbox. isBinary um den '!maxConstraint'-Zweig ergänzt, damit diese Optionen tatsächlich als Checkbox rendern statt in den Stepper-Else-Zweig zu fallen. Keine armeespezifische Sonderlogik (ADR-0003-konform). Regressionstests 19 (Barding: kein min/max -> Checkbox) und 20 (Ungors min=5 -> bleibt Stepper) in OptionGroup.test.jsx ergaenzt. Volle Suite gruen: 246 Tests (25 Dateien) + E2E-UI-Test bestanden; Lint ohne neue Fehler.
