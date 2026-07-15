@@ -115,6 +115,7 @@ td.url-cell .cell-input { font-family: 'SF Mono', 'Fira Code', 'Consolas', monos
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('mapping')" id="tabMapping">URL-Mapping <span class="tab-badge" id="mappingCount">0</span></button>
   <button class="tab-btn" onclick="switchTab('synonyms')" id="tabSynonyms">Synonyme <span class="tab-badge" id="synonymsCount">0</span></button>
+  <button class="tab-btn" onclick="switchTab('uncovered')" id="tabUncovered">Nicht erfasst <span class="tab-badge" id="uncoveredCount">?</span></button>
 </div>
 
 <div class="crawl-panel" id="crawlPanel" hidden>
@@ -153,6 +154,20 @@ td.url-cell .cell-input { font-family: 'SF Mono', 'Fira Code', 'Consolas', monos
       <table>
         <thead><tr><th style="width:40px">#</th><th>BSData-Name</th><th>Kanonischer Name</th><th style="width:40px"></th></tr></thead>
         <tbody id="synonymsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tabContentUncovered">
+    <div class="toolbar">
+      <input type="search" placeholder="Nach Namen suchen..." id="uncoveredSearch" oninput="renderUncovered()">
+      <span class="spacer"></span>
+      <button onclick="reloadUncovered()" id="btnReloadUncovered">🔄 Neu laden</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:40px">#</th><th>Name</th><th>Quelle(n)</th></tr></thead>
+        <tbody id="uncoveredBody"></tbody>
       </table>
     </div>
   </div>
@@ -610,7 +625,53 @@ function escapeHTML(str) {
   return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/* ── Nicht erfasste Katalog-Einträge ─────────────────── */
+
+let uncoveredData = null;
+
+async function loadUncovered() {
+  const badge = document.getElementById('uncoveredCount');
+  const tbody = document.getElementById('uncoveredBody');
+  badge.textContent = '…';
+  tbody.innerHTML = '<tr><td colspan="3"><div class="loading"><span class="spinner"></span> Lade Katalog-Einträge…</div></td></tr>';
+  try {
+    const res = await fetch('/api/uncovered');
+    const json = await res.json();
+    uncoveredData = json.entries;
+    badge.textContent = uncoveredData.length;
+    renderUncovered();
+  } catch (err) {
+    badge.textContent = '!';
+    tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state">Fehler: ${escapeHTML(err.message)}</div></td></tr>`;
+  }
+}
+
+function renderUncovered() {
+  const q = document.getElementById('uncoveredSearch').value.toLowerCase();
+  const entries = uncoveredData
+    ? uncoveredData.filter(e => !q || e.name.toLowerCase().includes(q))
+    : [];
+
+  const tbody = document.getElementById('uncoveredBody');
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state">Keine unerfassten Einträge gefunden</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = entries.map((e, i) => `
+    <tr>
+      <td><span class="num">${i + 1}</span></td>
+      <td class="name-cell">${escapeHTML(e.name)}</td>
+      <td style="font-size:12px;color:#888;">${e.sources.map(s => escapeHTML(s)).join(', ')}</td>
+    </tr>
+  `).join('');
+}
+
+function reloadUncovered() {
+  loadUncovered();
+}
+
 loadData();
+loadUncovered();
 </script>
 </body>
 </html>
