@@ -63,3 +63,10 @@ Ergebnisse:
 - Auch Cost-Namen wie " Casting Dice", " Dispel Dice" bereinigt.
 - Kein trim() in der Namensaufloesung (rulesLookup.js) – Fix rein in Katalogdaten.
 - 301 Tests gruen, Lint sauber.
+- 2026-07-15: Wird durch Issue 13 teilweise zurückgenommen. Die datenseitige Bereinigung (6049 Fixes in 17 Dateien) wird rückgängig gemacht, das Akzeptanzkriterium 'Die Namensauflösung bleibt unverändert - kein trim() als Workaround' ist überholt.
+
+Grund: Die Kataloge werden ein gepflegter Fork von Ergofarg/Warhammer-Fantasy-6th-edition (siehe ADR 0014). Der Cleanup betrifft ~11.000 Zeilen in allen 17 Dateien und wäre dort eine dauerhafte Konfliktfläche gegen jeden Upstream-Merge - also gegen den Zweck des Forks. Stattdessen normalisiert der Parser name-Attribute an der Systemgrenze.
+
+Zwei Befunde stützen das: (1) Das Kriterium war faktisch bereits durch Issue 07 überholt - normalizeName() in rulesLookup.js verwirft alles ausser [a-z0-9], ignoriert Whitespace also ohnehin; die fünf hier genannten Regeln fänden ihre Seite auch ohne den Datenfix. (2) Der reale Schaden ist winzig: Von 5543 führenden Leerzeichen im Upstream entfallen alle auf das name-Attribut von <cost>-Elementen, das der Parser gar nicht liest. Tatsächlich betroffen sind zwei costType-Definitionen (' Casting Dice', ' Dispel Dice').
+
+Die Projektlinie 'Datenfehler gehören in den Katalog' bleibt für semantische Lücken gültig - sie gilt nicht für Formatierung.
