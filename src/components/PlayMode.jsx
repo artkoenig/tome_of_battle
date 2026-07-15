@@ -11,6 +11,7 @@ import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
 import RulesIndexDialog from './RulesIndexDialog';
 import { getRuleUrl } from '../data/rulesLookup';
+import GothicTooltip from './GothicTooltip';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const { showDebugIds } = useDebugMode();
@@ -246,23 +247,17 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
         {/* Hover Tooltip for Desktop */}
         {tooltipState.visible && (
-          <div 
-            className="gothic-tooltip"
-            style={{ left: `${tooltipState.x}px`, top: `${tooltipState.y}px` }}
-          >
-            <div className="tooltip-title">{tooltipState.title}</div>
-            <div className="tooltip-body">
-              {Array.isArray(tooltipState.content) ? (
-                <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                  {tooltipState.content.map((item, i) => (
-                    <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                tooltipState.content
-              )}
-            </div>
-          </div>
+          <GothicTooltip title={tooltipState.title} x={tooltipState.x} y={tooltipState.y}>
+            {Array.isArray(tooltipState.content) ? (
+              <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                {tooltipState.content.map((item, i) => (
+                  <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+                ))}
+              </ul>
+            ) : (
+              tooltipState.content
+            )}
+          </GothicTooltip>
         )}
 
         {rulesDialogRule && (

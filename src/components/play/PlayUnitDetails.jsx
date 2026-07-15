@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, ReceiptText } from 'lucide-react';
 import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost } from '../../solver/validator';
 import { MODEL_COUNT_PROFILE_TYPES } from '../../solver/constants';
 import {
@@ -46,7 +46,7 @@ export default function PlayUnitDetails({
   isSubUnit = false,
   onShowRule
 }) {
-
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Helper to extract maximum wounds of an entry
   const getMaxWounds = (sel) => {
@@ -343,8 +343,32 @@ export default function PlayUnitDetails({
               <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
             )}
           </div>
-          <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
-            {getSelectionTotalCost(selection, roster.costLimitType || 'pts', 1, system, roster, roster.catalogueId)} Pkt.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {!hasSubUnits && (
+              <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
+                {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
+                <button 
+                  className="qty-btn" 
+                  onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
+                  disabled={isDead}
+                >
+                  <Minus size={12} />
+                </button>
+                <span className="font-body" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
+                  {currentWounds} / {totalMaxWounds}
+                </span>
+                <button 
+                  className="qty-btn" 
+                  onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
+                  disabled={currentWounds === totalMaxWounds}
+                >
+                  <Plus size={12} />
+                </button>
+              </div>
+            )}
+            <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
+              {getSelectionTotalCost(selection, roster.costLimitType || 'pts', 1, system, roster, roster.catalogueId)} Pkt.
+            </div>
           </div>
         </div>
         
@@ -379,42 +403,32 @@ export default function PlayUnitDetails({
               WS: {wsInfo.display}
             </div>
           </div>
-          
-          {!hasSubUnits && (
-            <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
-              {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
-              <button 
-                className="qty-btn" 
-                onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
-                disabled={isDead}
-              >
-                <Minus size={12} />
-              </button>
-              <span className="font-body" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
-                {currentWounds} / {totalMaxWounds}
-              </span>
-              <button 
-                className="qty-btn" 
-                onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
-                disabled={currentWounds === totalMaxWounds}
-              >
-                <Plus size={12} />
-              </button>
-            </div>
+          {!isSubUnit && (modelGroup || itemGroups.length > 0) && (
+            <button
+              type="button"
+              className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
+              onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+              title={isDetailsOpen ? 'Profile ausblenden' : 'Profile anzeigen'}
+              aria-expanded={isDetailsOpen}
+            >
+              <ReceiptText size={16} />
+            </button>
           )}
         </div>
       </div>
 
       <div className="play-unit-body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {!isSubUnit && (
-            <div>
-              {modelGroup
-                ? renderProfileTable(modelGroup, 'model')
-                : <p className="text-dim text-label">Keine Profilwerte gefunden.</p>}
-              {itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
-            </div>
-          )}
+          <div className={`play-unit-profiles ${isDetailsOpen ? 'is-open' : ''}`}>
+            {!isSubUnit && (
+              <div>
+                {modelGroup
+                  ? renderProfileTable(modelGroup, 'model')
+                  : <p className="text-dim text-label">Keine Profilwerte gefunden.</p>}
+                {itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
+              </div>
+            )}
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
             <UnitUpgradesChips
@@ -426,8 +440,10 @@ export default function PlayUnitDetails({
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}
               onClickDetails={(title, text) => {
-                setSaveSummaryData({ title, breakdown: text });
-                setSaveSummaryOpen(true);
+                if (window.innerWidth <= 900) {
+                  setSaveSummaryData({ title, breakdown: text });
+                  setSaveSummaryOpen(true);
+                }
               }}
               showDebugIds={showDebugIds}
               onShowRule={onShowRule}
@@ -441,8 +457,10 @@ export default function PlayUnitDetails({
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}
               onClickDetails={(title, text) => {
-                setSaveSummaryData({ title, breakdown: text });
-                setSaveSummaryOpen(true);
+                if (window.innerWidth <= 900) {
+                  setSaveSummaryData({ title, breakdown: text });
+                  setSaveSummaryOpen(true);
+                }
               }}
               showDebugIds={showDebugIds}
               onShowRule={onShowRule}

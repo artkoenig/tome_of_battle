@@ -11,6 +11,7 @@ import {
 } from '../../solver/validator';
 import { groupProfilesByType } from '../../solver/rulesEvaluator';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
+import GothicTooltip from '../GothicTooltip';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -395,16 +396,9 @@ export default function UnitSelectionCard({
       )}
 
       {hoveredInfo && (
-        <div 
-          className="gothic-tooltip"
-          style={{
-            left: hoveredInfo.x,
-            top: hoveredInfo.y
-          }}
-        >
-          <div className="tooltip-title">{hoveredInfo.title}</div>
-          <div className="tooltip-body">{hoveredInfo.text}</div>
-        </div>
+        <GothicTooltip title={hoveredInfo.title} x={hoveredInfo.x} y={hoveredInfo.y}>
+          {hoveredInfo.text}
+        </GothicTooltip>
       )}
 
       <BottomSheet

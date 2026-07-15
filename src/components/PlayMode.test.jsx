@@ -18,6 +18,7 @@ vi.mock('lucide-react', () => ({
   BookOpen: () => <span data-testid="icon-book-open" />,
   Info: () => <span data-testid="icon-info" />,
   X: () => <span data-testid="icon-x" />,
+  ReceiptText: () => <span data-testid="icon-receipt-text" />,
 }));
 
 // Mock usePlayState custom hook
@@ -312,7 +313,8 @@ describe('PlayMode Component', () => {
     const chip = screen.getByText('Direct Vow');
     expect(chip).toBeDefined();
 
-    // Clicking it should trigger summary modal
+    // Set mobile viewport and click – only mobile triggers the bottom sheet
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 768 });
     fireEvent.click(chip);
     expect(mockSetSaveSummaryOpen).toHaveBeenCalledWith(true);
     expect(mockSetSaveSummaryData).toHaveBeenCalled();
