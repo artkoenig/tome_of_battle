@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <catalogue id="3bc2-0f8c-cb9c-4a90" name="RH Chaos Dwarfs" revision="1" battleScribeVersion="2.03" authorName="Jakub Kurcek and Ergo Fargo" authorContact="jkurcek@gmail.com" library="false" gameSystemId="6d8e-38d9-3c69-febf" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/catalogueSchema">
   <publications>
-    <publication id="756d-4758-8a13-1d8a" name="Ravening Hordes " shortName="RH" publicationDate=""/>
+    <publication id="756d-4758-8a13-1d8a" name="Ravening Hordes" shortName="RH" publicationDate=""/>
     <publication id="d22a-b2ad-8731-c6f7" name="Orc &amp; Goblins Army Book" shortName="O+G" publicationDate="2000"/>
   </publications>
   <categoryEntries>
@@ -92,8 +92,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -109,8 +109,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="7e6b-3851-ebf8-2a6a" name="Great Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -122,8 +122,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -142,8 +142,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="49ad-7a1f-206a-0d21" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -155,8 +155,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -213,8 +213,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="60.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="e4cf-8043-5127-dd26" name="Chaos Dwarf Sorcerer" hidden="false" collective="false" import="true" type="unit">
@@ -265,8 +265,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="9d6d-45b0-8cf3-7a10" name="Level 2 Shaman" hidden="false" collective="false" import="true" type="upgrade">
@@ -275,8 +275,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="2.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="2.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -291,8 +291,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="65.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="b403-b7c6-0008-27d9" name="Goblins" hidden="false" collective="false" import="true" type="unit">
@@ -312,8 +312,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="9504-24d1-364c-1af4" name="Light Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -332,8 +332,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -353,8 +353,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="2533-3b6d-1710-a804" name="Short Bows" hidden="false" collective="false" import="true" type="upgrade">
@@ -368,8 +368,8 @@
               </modifiers>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="2795-6fe0-b243-1852" name="Spears and Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -385,8 +385,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -399,8 +399,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="6955-61f9-31c1-6bbf" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -409,8 +409,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="8.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="4d2f-6d57-256d-4a09" name="Boss" hidden="false" collective="false" import="true" type="upgrade">
@@ -422,8 +422,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="8.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -431,8 +431,8 @@
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="3e13-7d88-fc17-1ecb" name="Hobgoblins" hidden="false" collective="false" import="true" type="unit">
@@ -450,8 +450,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -478,8 +478,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -492,8 +492,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="c74a-4629-d926-2732" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -502,8 +502,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="b492-5322-3b9d-901f" name="Boss" hidden="false" collective="false" import="true" type="upgrade">
@@ -527,8 +527,8 @@
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -552,8 +552,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="5161-ba57-90b9-2364" name="Light Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -572,8 +572,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -581,8 +581,8 @@
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="5a89-d7b1-3214-b52c" name="Chaos Dwarf Warriors" hidden="false" collective="false" import="true" type="unit">
@@ -602,8 +602,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="9.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="8ec5-1217-802a-d1a6" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -616,8 +616,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -630,8 +630,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="823c-ebd3-8a7e-907d" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -647,8 +647,8 @@
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="76cf-63b6-5709-d3e1" name="Champion" hidden="false" collective="false" import="true" type="upgrade">
@@ -672,8 +672,8 @@
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -701,8 +701,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="e510-d517-2e25-c185" name="Blunderbuss" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
@@ -727,8 +727,8 @@ A single character in the front rank will not effect the unit’s fire</characte
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="512c-634c-15ad-36c2" name="Hand weapon and shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -737,8 +737,8 @@ A single character in the front rank will not effect the unit’s fire</characte
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -746,8 +746,8 @@ A single character in the front rank will not effect the unit’s fire</characte
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1d77-ded1-ed42-4858" name="Earthshaker" hidden="false" collective="false" import="true" type="unit">
@@ -788,8 +788,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="02e9-9061-824f-35a6" name="Crew" hidden="false" collective="false" import="true" type="model">
@@ -803,15 +803,15 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="110.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="a52e-7334-4779-acc4" name="Dogs of War" hidden="false" collective="false" import="true" type="unit">
@@ -820,8 +820,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
       </categoryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1beb-9007-1c33-7589" name="Hobgoblin Bolt Thrower" hidden="false" collective="false" import="true" type="unit">
@@ -863,8 +863,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="dd82-a553-523c-af31" name="Goblin Crew" hidden="false" collective="false" import="true" type="model">
@@ -877,22 +877,22 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="65db-abcb-baf1-7ba7" name="Orc Boyz" hidden="false" collective="false" import="true" type="unit">
@@ -927,8 +927,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="2ea1-6533-df71-b416" name="Choppa" hidden="false" collective="false" import="true" type="upgrade">
@@ -941,8 +941,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="f189-3afd-8286-f8bb" name="Light Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -955,8 +955,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="3e39-1412-49bd-cfc2" name="Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -976,8 +976,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -990,8 +990,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="c60b-c29b-45ca-ab7e" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1000,8 +1000,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="ac17-a16b-1923-81ff" name="Boss" hidden="false" collective="false" import="true" type="upgrade">
@@ -1025,8 +1025,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="13.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1049,8 +1049,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="1cda-51b5-d1c9-20ae" name="Spear" hidden="false" collective="false" import="true" type="upgrade">
@@ -1066,8 +1066,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1075,8 +1075,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="3517-0b15-c769-7814" name="Hobgoblin Wolfboyz" hidden="false" collective="false" import="true" type="unit">
@@ -1095,8 +1095,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="11.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1123,8 +1123,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1137,8 +1137,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="3a78-8975-a843-4567" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1147,8 +1147,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="ae3d-1981-fd28-44ff" name="Boss" hidden="false" collective="false" import="true" type="upgrade">
@@ -1172,8 +1172,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1197,8 +1197,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="c069-b191-8a87-f2af" name="Light Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -1217,8 +1217,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1226,8 +1226,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="fe23-86c6-ba7b-3a73" name="Bull Centaurs" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="unit">
@@ -1262,8 +1262,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1276,8 +1276,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="e31f-6ce9-4889-23ec" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1293,8 +1293,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="c79c-e348-4222-6165" name="Champion" hidden="false" collective="false" import="true" type="upgrade">
@@ -1318,8 +1318,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1345,8 +1345,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
                 <infoLink id="120e-c7fe-9668-d0d9" name="Heavy Armour" hidden="false" targetId="3dd5-f228-98a7-453a" type="profile"/>
               </infoLinks>
               <costs>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
               </costs>
             </selectionEntry>
@@ -1359,8 +1359,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1379,8 +1379,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
                 <infoLink id="fffc-9b30-781e-9821" name="Great Weapon" hidden="false" targetId="97d4-ed3b-5f76-5a23" type="profile"/>
               </infoLinks>
               <costs>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
               </costs>
             </selectionEntry>
@@ -1392,8 +1392,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
                 <infoLink id="265d-e770-8cba-3490" name="Additional Hand weapon" hidden="false" targetId="72aa-da68-2dae-4ab6" type="profile"/>
               </infoLinks>
               <costs>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
               </costs>
             </selectionEntry>
@@ -1402,8 +1402,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="7c4a-74bc-9951-d95e" name="Sneaky Gits" hidden="false" collective="false" import="true" type="unit">
@@ -1423,8 +1423,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1437,8 +1437,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="cacd-59f0-2dc4-cca3" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1447,8 +1447,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="2bdd-4a3c-35ff-7f83" name="Boss" hidden="false" collective="false" import="true" type="upgrade">
@@ -1472,8 +1472,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1481,8 +1481,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1e00-1858-d3a9-aac0" name="Bull Centaur Hero" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="unit">
@@ -1519,8 +1519,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1536,8 +1536,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="9bc2-c307-c8d8-3ca8" name="Great Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -1549,8 +1549,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1569,8 +1569,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="4dad-e288-e9b8-5d3b" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -1582,8 +1582,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1626,8 +1626,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="e3ad-0e9f-0aba-9822" name="Black Orcs" hidden="false" collective="false" import="true" type="unit">
@@ -1665,8 +1665,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="3fe5-93b3-1f9b-5e49" name="Choppa" hidden="false" collective="false" import="true" type="upgrade">
@@ -1679,8 +1679,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="c0b3-6c71-6bba-216e" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -1693,8 +1693,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="0047-c8fd-eb9d-ab47" name="Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -1714,8 +1714,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1728,8 +1728,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="dfbc-4acd-af1e-cbb0" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1738,8 +1738,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="0761-5263-d5f6-45be" name="Boss" hidden="false" collective="false" import="true" type="upgrade">
@@ -1763,8 +1763,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="15.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1787,8 +1787,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="827a-0aa1-cefa-fcc0" name="Great Axe" hidden="false" collective="false" import="true" type="upgrade">
@@ -1804,8 +1804,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1813,8 +1813,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="11f0-4e1e-3c3e-c2d8" name="Orc Big&apos;Uns" hidden="false" collective="false" import="true" type="unit">
@@ -1852,8 +1852,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="7.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="0ebd-796f-1307-8722" name="Choppa" hidden="false" collective="false" import="true" type="upgrade">
@@ -1866,8 +1866,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="8443-02b5-aeb2-d830" name="Light Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -1880,8 +1880,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="0f74-bda1-2967-65fb" name="Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -1901,8 +1901,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1915,8 +1915,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="2fd3-f564-a218-178f" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1925,8 +1925,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="67c9-aa56-4b26-05eb" name="Boss" hidden="false" collective="false" import="true" type="upgrade">
@@ -1950,8 +1950,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="13.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1974,8 +1974,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="3766-9bd6-b55a-dedc" name="Spear" hidden="false" collective="false" import="true" type="upgrade">
@@ -1991,8 +1991,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2000,8 +2000,8 @@ You may only guess between 12&quot; and 48&quot; for range. Use the cannon misfi
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="f654-e95c-2207-1842" name="Death Rocket" hidden="false" collective="false" import="true" type="unit">
@@ -2041,8 +2041,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="6f0d-e728-b7fb-b0a3" name="Crew" hidden="false" collective="false" import="true" type="model">
@@ -2056,15 +2056,15 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="110.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="f5b9-3ef9-7533-3d03" name="Hobgoblin Hero" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="unit">
@@ -2097,8 +2097,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="4104-1080-9488-fc99" name="Wolf" hidden="false" collective="false" import="true" type="upgrade">
@@ -2110,8 +2110,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -2127,8 +2127,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="6411-525d-e8b1-890f" name="Great Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -2140,8 +2140,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2160,8 +2160,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="651b-ff95-20a1-e587" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -2173,8 +2173,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2196,8 +2196,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="490f-c22f-fcbd-b533" name="Bull Centaur Lord" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="unit">
@@ -2237,8 +2237,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="3.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="7232-8ff6-a5fe-a7bb" name="Magic" hidden="false" collective="false" import="true" type="upgrade">
@@ -2260,8 +2260,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </selectionEntryGroups>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -2277,8 +2277,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="73f6-ecfe-7531-f501" name="Great Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -2290,8 +2290,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2310,8 +2310,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="3.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="729f-9498-3fda-6d93" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -2323,8 +2323,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2339,8 +2339,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="170.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="bd81-9080-3978-95f3" name="Chaos Dwarf Lord" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="unit">
@@ -2380,8 +2380,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="3.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="88f7-b8f4-f083-1ace" name="Magic" hidden="false" collective="false" import="true" type="upgrade">
@@ -2403,8 +2403,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </selectionEntryGroups>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="3774-21f3-7566-456a" name="Great Taurus" hidden="false" collective="false" import="true" type="upgrade">
@@ -2438,8 +2438,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="230.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -2455,8 +2455,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="0ec7-7054-9e98-3e30" name="Great Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -2468,8 +2468,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2488,8 +2488,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="3.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="a589-d832-f5a9-6277" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -2501,8 +2501,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2517,8 +2517,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="120.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="44cb-3a8e-b0a1-6180" name="Chaos Dwarf Sorcerer Lord" hidden="false" collective="false" import="true" type="unit">
@@ -2577,8 +2577,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="200.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -2606,8 +2606,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="3.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="3.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="fa5f-2c43-73d2-179d" name="Level 4 Shaman" hidden="false" collective="false" import="true" type="upgrade">
@@ -2616,8 +2616,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="4.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="4.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2632,8 +2632,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="190.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
   </selectionEntries>
@@ -2648,8 +2648,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="45.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="e161-615e-9c55-e8aa" name="Obsidian Blade" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
@@ -2662,22 +2662,22 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="9dac-e4c2-f47c-d9e1" name="Dark Mace of Death " publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="9dac-e4c2-f47c-d9e1" name="Dark Mace of Death" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="3b01-8dba-d06d-c7bc" type="max"/>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="50d2-6545-773e-43a9" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="9593-b7f5-f87f-a8e0" name="Dark Mace of Death " hidden="false" targetId="4943-a92e-05ea-a4f7" type="profile"/>
+        <infoLink id="9593-b7f5-f87f-a8e0" name="Dark Mace of Death" hidden="false" targetId="4943-a92e-05ea-a4f7" type="profile"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="70.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="9808-a93c-81e0-99dc" name="Armour of Furnace" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
@@ -2690,8 +2690,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="45.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="f6ed-0241-4f9a-35e5" name="Armour of Gazrakh" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
@@ -2704,8 +2704,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="5654-d555-5ed4-5388" name="Banner of Slavery" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
@@ -2718,11 +2718,11 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="6482-822b-21f9-458a" name="Chalice of Darkness " publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="6482-822b-21f9-458a" name="Chalice of Darkness" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="5534-38a9-aab5-1eb1" type="max"/>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="2918-d349-e56a-9ccb" type="max"/>
@@ -2732,8 +2732,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="d510-e0c0-fc89-a451" name="Black Gem of Gnar" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
@@ -2746,8 +2746,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="cb90-55ae-3c94-6efa" name="Talisman of Obsidian" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
@@ -2760,8 +2760,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="a29c-6ed4-b602-e232" name="Gauntlets of Bazhrakk the Cruel" publicationId="756d-4758-8a13-1d8a" hidden="false" collective="false" import="true" type="upgrade">
@@ -2774,8 +2774,8 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
   </sharedSelectionEntries>
@@ -2789,7 +2789,7 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
         <entryLink id="d5c5-935f-e250-818e" name="Sword of Battle" hidden="false" collective="false" import="true" targetId="6e5a-eeea-ec67-3632" type="selectionEntry"/>
         <entryLink id="c06b-fd39-882b-a3c4" name="Sword of Might" hidden="false" collective="false" import="true" targetId="8c56-9be1-c4a9-5afe" type="selectionEntry"/>
         <entryLink id="f8c2-5966-be04-d376" name="Biting Blade" hidden="false" collective="false" import="true" targetId="74fc-c90b-250e-6b87" type="selectionEntry"/>
-        <entryLink id="798a-14b0-c0aa-3c1a" name="Dark Mace of Death " page="Dark Mace of Death" hidden="false" collective="false" import="true" targetId="9dac-e4c2-f47c-d9e1" type="selectionEntry"/>
+        <entryLink id="798a-14b0-c0aa-3c1a" name="Dark Mace of Death" page="Dark Mace of Death" hidden="false" collective="false" import="true" targetId="9dac-e4c2-f47c-d9e1" type="selectionEntry"/>
         <entryLink id="9035-bb80-5a89-ad9e" name="Obsidian Blade" page="Obsidian Blade" hidden="false" collective="false" import="true" targetId="e161-615e-9c55-e8aa" type="selectionEntry"/>
         <entryLink id="2ca7-36c1-1e52-eb2c" name="Black Hammer of Hashut" hidden="false" collective="false" import="true" targetId="6a95-95ff-7763-bd6d" type="selectionEntry"/>
       </entryLinks>
@@ -2843,7 +2843,7 @@ Use the cannon misfire table if you roll a misfire and an arrow. However, if you
         <entryLink id="04ff-5fc7-7bf3-ef90" name="Dispel Scroll" hidden="false" collective="false" import="true" targetId="b76c-6bad-4650-dbb0" type="selectionEntry"/>
         <entryLink id="1bd7-dae0-aaac-a26a" name="Power Stone" hidden="false" collective="false" import="true" targetId="0ed5-eacf-d55a-5e9e" type="selectionEntry"/>
         <entryLink id="ca1f-3345-b109-b3da" name="Staff of Sorcery" hidden="false" collective="false" import="true" targetId="b22a-6be5-d4f9-7776" type="selectionEntry"/>
-        <entryLink id="8d58-0202-fb81-f1ab" name="Chalice of Darkness " hidden="false" collective="false" import="true" targetId="6482-822b-21f9-458a" type="selectionEntry"/>
+        <entryLink id="8d58-0202-fb81-f1ab" name="Chalice of Darkness" hidden="false" collective="false" import="true" targetId="6482-822b-21f9-458a" type="selectionEntry"/>
       </entryLinks>
     </selectionEntryGroup>
     <selectionEntryGroup id="4530-6ba6-8337-3954" name="Enchanted Items" hidden="false" collective="false" import="true">
@@ -3024,7 +3024,7 @@ wound. </characteristic>
         <characteristic name="Special Rules" typeId="a21a-cdc0-4b13-b236">No armour save allowed. If target takes an unsaved wound his armour and shield (including magic armour and shield) is destroyed.</characteristic>
       </characteristics>
     </profile>
-    <profile id="4943-a92e-05ea-a4f7" name="Dark Mace of Death " hidden="false" typeId="7889-42d9-70a0-3ea9" typeName="Weapon">
+    <profile id="4943-a92e-05ea-a4f7" name="Dark Mace of Death" hidden="false" typeId="7889-42d9-70a0-3ea9" typeName="Weapon">
       <characteristics>
         <characteristic name="Range" typeId="3107-4d1e-9a51-6564">-</characteristic>
         <characteristic name="Strength" typeId="6fe4-1ebb-cb04-1378">-</characteristic>

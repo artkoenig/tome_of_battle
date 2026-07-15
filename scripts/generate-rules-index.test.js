@@ -50,6 +50,19 @@ describe('generate-rules-index output', () => {
     expect(index).toHaveProperty('Leadership (Ld)');
   });
 
+  it('contains psychology rules, which are not linked from special-rules', () => {
+    for (const rule of ['Fear', 'Terror', 'Hatred', 'Frenzy', 'Stupidity', 'Stubborn']) {
+      expect(index[rule]).toMatch(/^\/psychology\//);
+    }
+  });
+
+  it('contains the remaining single-level sections', () => {
+    expect(index['Unit Strength']).toMatch(/^\/units\//);
+    expect(index['Impact Hits']).toMatch(/^\/chariots\//);
+    expect(index['Charge Reactions']).toMatch(/^\/movement\//);
+    expect(index['Break Tests']).toMatch(/^\/close-combat\//);
+  });
+
   it('has minimal=true in all URLs', () => {
     for (const path of Object.values(index)) {
       expect(path).toContain('minimal=true');

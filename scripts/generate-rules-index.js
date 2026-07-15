@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import {
   CrawlEvent,
   crawlRulesIndex,
+  DERIVATIONS,
   mergeRetainingFailedSections,
 } from './rules-crawler.js';
 
@@ -21,15 +22,23 @@ const EVENTS_FLAG = '--events';
 function formatHumanLine(event) {
   switch (event.type) {
     case CrawlEvent.RunStarted:
-      return `Crawle ${event.sectionCount} Sections ...`;
+      return `Crawle ${event.sectionCount} Schritte (${event.sections.length} Sections, ${event.derivationCount} Ableitungen) ...`;
     case CrawlEvent.SectionStarted:
       return `[${event.sectionNumber}/${event.sectionCount}] ${event.section} ...`;
     case CrawlEvent.SectionCompleted:
       return `[${event.sectionNumber}/${event.sectionCount}] ${event.section}: ${event.linkCount} Links`;
     case CrawlEvent.SectionFailed:
       return `[${event.sectionNumber}/${event.sectionCount}] ${event.section}: FEHLER – ${event.message}`;
+    case CrawlEvent.HarvestStarted:
+      return `  → Ernte aus ${event.pageCount} Seiten (${event.sourceSection} → ${event.targetSection})`;
+    case CrawlEvent.HarvestPageCompleted:
+      return `    ${event.page}: ${event.linkCount} Links (${event.totalLinkCount} gesamt)`;
+    case CrawlEvent.HarvestPageFailed:
+      return `    ${event.page}: FEHLER – ${event.message}`;
+    case CrawlEvent.HarvestCompleted:
+      return `  → Fertig: ${event.totalLinkCount} Einträge, ${event.failedPages.length} fehlgeschlagen`;
     case CrawlEvent.RunCompleted:
-      return `Fertig: ${event.entryCount} Einträge, ${event.failedSections.length} fehlgeschlagene Sections`;
+      return `Fertig: ${event.entryCount} Einträge, ${event.failedSections.length} fehlgeschlagene Schritte`;
     default:
       return null;
   }
@@ -73,6 +82,7 @@ async function main() {
     existingIndex: readExistingIndex(OUT_FILE),
     crawledIndex: index,
     failedSections,
+    derivations: DERIVATIONS,
   });
   writeIndex(OUT_FILE, merged);
 

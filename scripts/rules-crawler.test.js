@@ -2,8 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   CrawlEvent,
   EMPTY_SECTION_MESSAGE,
+  BASE_URL,
   crawlRulesIndex,
   extractLinks,
+  addEntry,
   mergeRetainingFailedSections,
 } from './rules-crawler.js';
 
@@ -15,7 +17,7 @@ function linkMarkup(section, slug, label) {
 
 function fakeFetchFrom(pagesBySection) {
   return async url => {
-    const section = url.split('/').pop();
+    const section = url === BASE_URL ? '' : url.split('/').pop();
     const page = pagesBySection[section];
     if (page instanceof Error) throw page;
     return page;
@@ -61,6 +63,7 @@ describe('crawlRulesIndex on a successful run', () => {
     const { index, failures } = await crawlRulesIndex({
       fetchHTML: fakeFetchFrom(pages),
       sections: SECTIONS,
+      derivations: [],
     });
 
     expect(failures).toEqual([]);
@@ -73,7 +76,7 @@ describe('crawlRulesIndex on a successful run', () => {
   it('reports progress per section as it advances', async () => {
     const { events, onEvent } = collectEvents();
 
-    await crawlRulesIndex({ fetchHTML: fakeFetchFrom(pages), sections: SECTIONS, onEvent });
+    await crawlRulesIndex({ fetchHTML: fakeFetchFrom(pages), sections: SECTIONS, derivations: [], onEvent });
 
     expect(events[0]).toMatchObject({ type: CrawlEvent.RunStarted, sectionCount: 2 });
     expect(eventsOfType(events, CrawlEvent.SectionStarted)).toMatchObject([
@@ -103,6 +106,7 @@ describe('crawlRulesIndex when a section fails', () => {
     const { index, failures } = await crawlRulesIndex({
       fetchHTML: fakeFetchFrom(pages),
       sections: SECTIONS,
+      derivations: [],
     });
 
     expect(Object.keys(index)).toEqual(['Halberd']);
@@ -114,7 +118,7 @@ describe('crawlRulesIndex when a section fails', () => {
   it('reports the failure cause and completes the run as not ok', async () => {
     const { events, onEvent } = collectEvents();
 
-    await crawlRulesIndex({ fetchHTML: fakeFetchFrom(pages), sections: SECTIONS, onEvent });
+    await crawlRulesIndex({ fetchHTML: fakeFetchFrom(pages), sections: SECTIONS, derivations: [], onEvent });
 
     expect(eventsOfType(events, CrawlEvent.SectionFailed)).toMatchObject([
       { section: 'special-rules', message: 'HTTP 503 Service Unavailable', sectionNumber: 1 },
@@ -139,6 +143,7 @@ describe('crawlRulesIndex when a section yields no links', () => {
     const { failures } = await crawlRulesIndex({
       fetchHTML: fakeFetchFrom(pages),
       sections: SECTIONS,
+      derivations: [],
       onEvent,
     });
 
@@ -158,6 +163,7 @@ describe('crawlRulesIndex when every section fails', () => {
     const { index, failures } = await crawlRulesIndex({
       fetchHTML: fakeFetchFrom(pages),
       sections: SECTIONS,
+      derivations: [],
       onEvent,
     });
 
@@ -198,5 +204,250 @@ describe('mergeRetainingFailedSections', () => {
     });
 
     expect(merged).toEqual({ Halberd: '/weapons/halberd?minimal=true' });
+  });
+});
+
+describe('addEntry explicit precedence', () => {
+  it('does not overwrite a special-rules entry', () => {
+    const index = { 'Red Fury': '/special-rules/red-fury?minimal=true' };
+    addEntry(index, 'Red Fury', '/magic-item/red-fury?minimal=true');
+    expect(index['Red Fury']).toBe('/special-rules/red-fury?minimal=true');
+  });
+
+  it('overwrites a non-special-rules entry', () => {
+    const index = { 'Sword': '/weapons/sword?minimal=true' };
+    addEntry(index, 'Sword', '/magic-item/sword-of-might?minimal=true');
+    expect(index['Sword']).toBe('/magic-item/sword-of-might?minimal=true');
+  });
+
+  it('adds a fresh entry', () => {
+    const index = {};
+    addEntry(index, 'Runefang', '/magic-item/runefang?minimal=true');
+    expect(index['Runefang']).toBe('/magic-item/runefang?minimal=true');
+  });
+});
+
+describe('crawlRulesIndex with a two-level derivation', () => {
+  const overviewHtml =
+    linkMarkup('magic-items', 'common-magic-items', 'Common Magic Items') +
+    linkMarkup('magic-items', 'banners', 'Banners');
+  const commonPageHtml = linkMarkup('magic-item', 'sword-of-might', 'Sword of Might');
+  const bannersPageHtml = linkMarkup('magic-item', 'war-banner', 'War Banner');
+
+  const pages = {
+    'magic-items': overviewHtml,
+    'common-magic-items': commonPageHtml,
+    banners: bannersPageHtml,
+  };
+
+  const derivations = [{ sourceSection: 'magic-items', targetSection: 'magic-item' }];
+
+  it('indexes target links from sub-pages alongside regular sections', async () => {
+    const { index, failures } = await crawlRulesIndex({
+      fetchHTML: fakeFetchFrom(pages),
+      sections: [],
+      derivations,
+    });
+
+    expect(failures).toEqual([]);
+    expect(index).toMatchObject({
+      'Sword of Might': expect.stringContaining('/magic-item/sword-of-might'),
+      'War Banner': expect.stringContaining('/magic-item/war-banner'),
+    });
+  });
+
+  it('reports harvest events for every sub-page', async () => {
+    const { events, onEvent } = collectEvents();
+
+    await crawlRulesIndex({ fetchHTML: fakeFetchFrom(pages), sections: [], derivations, onEvent });
+
+    expect(eventsOfType(events, CrawlEvent.HarvestStarted)).toMatchObject([
+      { sourceSection: 'magic-items', targetSection: 'magic-item', pageCount: 2 },
+    ]);
+    expect(eventsOfType(events, CrawlEvent.HarvestPageCompleted)).toMatchObject([
+      { page: 'common-magic-items', linkCount: 1 },
+      { page: 'banners', linkCount: 1 },
+    ]);
+    expect(eventsOfType(events, CrawlEvent.HarvestCompleted)).toMatchObject([
+      { totalLinkCount: 2, failedPages: [] },
+    ]);
+  });
+});
+
+describe('crawlRulesIndex derivation with explicit precedence', () => {
+  const pages = {
+    'special-rules': linkMarkup('special-rules', 'red-fury', 'Red Fury'),
+    'magic-items': linkMarkup('magic-items', 'common-magic-items', 'Common Magic Items'),
+    'common-magic-items': linkMarkup('magic-item', 'red-fury', 'Red Fury') +
+      linkMarkup('magic-item', 'sword-of-might', 'Sword of Might'),
+  };
+
+  const derivations = [{ sourceSection: 'magic-items', targetSection: 'magic-item' }];
+
+  it('keeps special-rules entries when the same name is harvested from a derivation', async () => {
+    const { index, failures } = await crawlRulesIndex({
+      fetchHTML: fakeFetchFrom(pages),
+      sections: ['special-rules'],
+      derivations,
+    });
+
+    expect(failures).toEqual([]);
+    expect(index['Red Fury']).toMatch(/^\/special-rules\//);
+    expect(index['Sword of Might']).toMatch(/^\/magic-item\//);
+  });
+});
+
+describe('crawlRulesIndex derivation with a failing sub-page', () => {
+  const pages = {
+    'magic-items': linkMarkup('magic-items', 'common-magic-items', 'Common Magic Items') +
+      linkMarkup('magic-items', 'banners', 'Banners'),
+    'common-magic-items': linkMarkup('magic-item', 'sword-of-might', 'Sword of Might'),
+    banners: new Error('HTTP 500'),
+  };
+
+  const derivations = [{ sourceSection: 'magic-items', targetSection: 'magic-item' }];
+
+  it('indexes the successful sub-pages and reports the failures', async () => {
+    const { index, failures } = await crawlRulesIndex({
+      fetchHTML: fakeFetchFrom(pages),
+      sections: [],
+      derivations,
+    });
+
+    expect(failures).toEqual([]);
+    expect(index['Sword of Might']).toBeDefined();
+    expect(Object.keys(index).length).toBe(1);
+  });
+
+  it('emits harvest events for both successes and failures', async () => {
+    const { events, onEvent } = collectEvents();
+
+    await crawlRulesIndex({ fetchHTML: fakeFetchFrom(pages), sections: [], derivations, onEvent });
+
+    const completed = eventsOfType(events, CrawlEvent.HarvestPageCompleted);
+    const failed = eventsOfType(events, CrawlEvent.HarvestPageFailed);
+    expect(completed).toHaveLength(1);
+    expect(failed).toHaveLength(1);
+    expect(completed[0]).toMatchObject({ page: 'common-magic-items', linkCount: 1 });
+    expect(failed[0]).toMatchObject({ page: 'banners' });
+  });
+});
+
+describe('mergeRetainingFailedSections with derivations', () => {
+  const existingIndex = {
+    'Sword of Might': '/magic-item/sword-of-might?minimal=true',
+    'War Banner': '/magic-item/war-banner?minimal=true',
+  };
+  const derivations = [{ sourceSection: 'magic-items', targetSection: 'magic-item' }];
+
+  it('retains entries under the target prefix when the derivation label is in failedSections', () => {
+    const merged = mergeRetainingFailedSections({
+      existingIndex,
+      crawledIndex: {},
+      failedSections: ['magic-items → magic-item'],
+      derivations,
+    });
+
+    expect(merged).toEqual(existingIndex);
+  });
+
+  it('drops retained entries when no derivation failed', () => {
+    const merged = mergeRetainingFailedSections({
+      existingIndex,
+      crawledIndex: { 'New Item': '/magic-item/new-item?minimal=true' },
+      failedSections: [],
+      derivations,
+    });
+
+    expect(merged).toEqual({ 'New Item': '/magic-item/new-item?minimal=true' });
+  });
+});
+
+describe('crawlRulesIndex derivation from root via army pages', () => {
+  const rootHtml = linkMarkup('army', 'vampire-counts', 'Vampire Counts') +
+    linkMarkup('army', 'bretonnia', 'Bretonnia');
+  const vcHtml = linkMarkup('unit', 'chaos-steed', 'Chaos Steed');
+  const bretonniaHtml = linkMarkup('unit', 'bretonnian-warhorse', 'Bretonnian Warhorse');
+  const pages = {
+    '': rootHtml,
+    'vampire-counts': vcHtml,
+    bretonnia: bretonniaHtml,
+  };
+  const derivations = [{ sourceSection: '', targetSection: 'unit', subPageSection: 'army' }];
+
+  it('indexes target links from army pages found on the root page', async () => {
+    const { index, failures } = await crawlRulesIndex({
+      fetchHTML: fakeFetchFrom(pages),
+      sections: [],
+      derivations,
+    });
+
+    expect(failures).toEqual([]);
+    expect(index['Chaos Steed']).toMatch(/^\/unit\//);
+    expect(index['Bretonnian Warhorse']).toMatch(/^\/unit\//);
+  });
+
+  it('keeps special-rules entries when a unit name collides', async () => {
+    const pagesWithCollision = {
+      'special-rules': linkMarkup('special-rules', 'steam-tank', 'Steam Tank'),
+      '': linkMarkup('army', 'empire', 'Empire'),
+      empire: linkMarkup('unit', 'steam-tank', 'Steam Tank'),
+    };
+
+    const { index } = await crawlRulesIndex({
+      fetchHTML: fakeFetchFrom(pagesWithCollision),
+      sections: ['special-rules'],
+      derivations,
+    });
+
+    expect(index['Steam Tank']).toMatch(/^\/special-rules\//);
+  });
+
+  it('continues when a single army page fails', async () => {
+    const pagesWithFailure = {
+      '': linkMarkup('army', 'vampire-counts', 'Vampire Counts') +
+        linkMarkup('army', 'bretonnia', 'Bretonnia'),
+      'vampire-counts': vcHtml,
+      bretonnia: new Error('HTTP 500'),
+    };
+
+    const { index, failures } = await crawlRulesIndex({
+      fetchHTML: fakeFetchFrom(pagesWithFailure),
+      sections: [],
+      derivations,
+    });
+
+    expect(failures).toEqual([]);
+    expect(index['Chaos Steed']).toBeDefined();
+    expect(index['Bretonnian Warhorse']).toBeUndefined();
+  });
+});
+
+describe('crawlRulesIndex derivation for spells', () => {
+  const spellListsHtml = linkMarkup('spell-lists', 'the-lore-of-fire', 'The Lore of Fire') +
+    linkMarkup('spell-lists', 'the-lore-of-death', 'The Lore of Death');
+  const fireHtml = linkMarkup('spell', 'fire-ball', '1. Fire Ball') +
+    linkMarkup('spell', 'flaming-sword-of-rhuin', '2. Flaming Sword of Rhuin');
+  const deathHtml = linkMarkup('spell', 'dark-hand-of-death', '1. Dark Hand of Death');
+
+  const pages = {
+    'spell-lists': spellListsHtml,
+    'the-lore-of-fire': fireHtml,
+    'the-lore-of-death': deathHtml,
+  };
+
+  const derivations = [{ sourceSection: 'spell-lists', targetSection: 'spell' }];
+
+  it('indexes spell pages with their numbered labels preserved', async () => {
+    const { index, failures } = await crawlRulesIndex({
+      fetchHTML: fakeFetchFrom(pages),
+      sections: [],
+      derivations,
+    });
+
+    expect(failures).toEqual([]);
+    expect(index['1. Fire Ball']).toMatch(/^\/spell\/fire-ball/);
+    expect(index['2. Flaming Sword of Rhuin']).toMatch(/^\/spell\/flaming-sword-of-rhuin/);
+    expect(index['1. Dark Hand of Death']).toMatch(/^\/spell\/dark-hand-of-death/);
   });
 });

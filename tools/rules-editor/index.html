@@ -450,6 +450,10 @@ const CrawlEventType = {
   SectionStarted: 'section-started',
   SectionCompleted: 'section-completed',
   SectionFailed: 'section-failed',
+  HarvestStarted: 'harvest-started',
+  HarvestPageCompleted: 'harvest-page-completed',
+  HarvestPageFailed: 'harvest-page-failed',
+  HarvestCompleted: 'harvest-completed',
   RunCompleted: 'run-completed',
   CrawlerError: 'crawler-error',
   RunFinished: 'run-finished',
@@ -534,9 +538,21 @@ function applyCrawlEvent(event) {
       setCrawlProgress(event.sectionNumber, event.sectionCount);
       appendLogLine(`[${event.sectionNumber}/${event.sectionCount}] ${event.section}: FEHLER – ${event.message}`, 'error');
       break;
+    case CrawlEventType.HarvestStarted:
+      appendLogLine(`  → Ernte aus ${event.pageCount} Seiten (${event.sourceSection} → ${event.targetSection})`);
+      break;
+    case CrawlEventType.HarvestPageCompleted:
+      appendLogLine(`    ${event.page}: ${event.linkCount} Links`, 'ok');
+      break;
+    case CrawlEventType.HarvestPageFailed:
+      appendLogLine(`    ${event.page}: FEHLER – ${event.message}`, 'error');
+      break;
+    case CrawlEventType.HarvestCompleted:
+      appendLogLine(`  → Fertig: ${event.totalLinkCount} Einträge, ${event.failedPages.length} fehlgeschlagen`, event.failedPages.length === 0 ? 'ok' : 'error');
+      break;
     case CrawlEventType.RunCompleted:
       finishCrawlProgress(event.entryCount, event.failedSections);
-      appendLogLine(`Crawl beendet: ${event.entryCount} Einträge, ${event.failedSections.length} fehlgeschlagene Sections`, event.ok ? 'ok' : 'error');
+      appendLogLine(`Crawl beendet: ${event.entryCount} Einträge, ${event.failedSections.length} fehlgeschlagene Schritte`, event.ok ? 'ok' : 'error');
       break;
     case CrawlEventType.CrawlerError:
       appendLogLine(event.message, 'error');

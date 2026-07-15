@@ -10,4 +10,5 @@ export const SYNONYMS = {
   'Additional Hand weapon': 'Fighting with a Weapon in Each Hand',
   'Spear (Mounted)': 'Spears (Cavalry)',
   'Brace Of Pistols': 'Pistol (hand-to-hand)',
+  'Battleaxe of the last Waaagh': 'Battleaxe of the Last Waaagh!',
 };
