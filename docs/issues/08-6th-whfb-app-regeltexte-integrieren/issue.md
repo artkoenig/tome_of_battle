@@ -49,9 +49,12 @@ Die Anzeige erfolgt clientseitig in **zwei Modi** (siehe ADR-0012):
 | **Neu: `src/data/rules-index.json`** | Auto-generierte Datei, wird eingecheckt (~845 Einträge). Format: `{ "Rule Name": "/section/page-slug?minimal=true&utm_source=6th-builder&utm_medium=referral", ... }`. |
 | **Neu: `src/data/synonyms.js`** | Handgepflegt. Exportiert `SYNONYMS = { "BSData Name": "Canonical Name from rules-index" }`. |
 | **Neu: `src/data/rulesLookup.js`** | Exportiert `getRuleUrl(name) → string | null`. Konsultiert zuerst die Synonyms, dann `rules-index.json` (case-insensitive) und stellt `BASE_URL` (`https://6th.whfb.app`) voran. Gibt `null` zurück, wenn kein Mapping existiert. |
-| **Neu: `src/components/RulesIndexDialog.jsx`** | Modal-Dialog (eigenständige Komponente, kein `ConfirmationDialog`-Reuse). Props: `ruleName`, `url`, `isOpen`, `onClose`. Rendert einen Iframe mit der übergebenen `url`. Zeigt einen Spinner beim Laden, sperrt `body`-Scroll und schließt bei `Escape`/Overlay-Klick. Lokaler State, kein globaler Context (ADR-0010). |
-| **Bestehend: `src/components/editor/UnitChips.jsx`** (`UnitRulesChips`, `UnitUpgradesChips`) | Chips prüfen `getRuleUrl(name)`. Bei Treffer: `BookOpen`-Icon und Klick ruft `onShowRule(name)` (öffnet Dialog). Ohne Treffer, aber mit Beschreibung: `Info`-Icon und Klick öffnet das Detail-BottomSheet (`onClickDetails`) bzw. Hover-Tooltip. Neuer Prop `onShowRule`. |
-| **Bestehend: `src/components/editor/SelectionConfigurator.jsx`** | Upgrade-Einträge erhalten denselben Mechanismus: Klick auf einen Eintragsnamen prüft zuerst `getRuleUrl`. Neuer Prop `onShowRule`. |
+| **Neu: `src/components/RulesIndexDialog.jsx`** | Modal-Dialog (eigenständige Komponente, kein `ConfirmationDialog`-Reuse). Props: `ruleName`, `url`, `isOpen`, `onClose`. Rendert einen Iframe mit der übergebenen `url`. Zeigt einen Spinner beim Laden, sperrt `body`-Scroll und schließt bei `Escape`/Overlay-Klick. Lokaler State, kein globaler Context (ADR-0010). **Fehlerzustand:** Lade-Timeout (15 s) + `onError` → Meldung „Keine Verbindung zu 6th.whfb.app" mit „Erneut versuchen" (remountet den Iframe per `key`). |
+| **Neu: `src/components/editor/RuleChipIcon.jsx`** | Gemeinsame Komponente für das End-Icon eines Chips/Eintrags. Zentralisiert die **Link-Priorität**: bei `getRuleUrl(name)` → `BookOpen` (Klick → `onShowRule`), sonst bei `hasInfo` → `Info` (Hover/Click-Handler injiziert), sonst nichts. Von allen Aufruforten genutzt → konsistentes Verhalten. |
+| **Neu: `src/components/editor/upgradeDetails.jsx`** | Gemeinsame `renderUpgradeDetails(res, system)` (zuvor identisch in UnitChips, SelectionConfigurator und OptionGroup dupliziert). Einzige Quelle für die Katalog-Detailansicht. |
+| **Bestehend: `src/components/editor/UnitChips.jsx`** (`UnitRulesChips`, `UnitUpgradesChips`) | Chips nutzen `RuleChipIcon`. Bei Treffer: `BookOpen` und Klick ruft `onShowRule(name)`. Ohne Treffer, aber mit Beschreibung: `Info` (Hover-Tooltip / BottomSheet). Neuer Prop `onShowRule`. |
+| **Bestehend: `src/components/editor/SelectionConfigurator.jsx`** | Standalone-Optionen nutzen `RuleChipIcon` (gleicher Mechanismus). Reicht `onShowRule` an `OptionGroup` durch. |
+| **Bestehend: `src/components/editor/OptionGroup.jsx`** | **Gruppierte** Optionen (Magic Items/Waffen in Gruppen) nutzen jetzt ebenfalls `RuleChipIcon` und öffnen bei Mapping den Dialog. Neuer Prop `onShowRule`. |
 | **Bestehend: `src/components/RosterEditor.jsx`** | Hält den Dialog-State (`rulesDialogRule`), reicht `onShowRule` an die Chips/Configurator durch und rendert `RulesIndexDialog` mit `url={getRuleUrl(rulesDialogRule)}`. |
 | **Bestehend: `src/components/PlayMode.jsx`** | Neuer **"Regelbuch"-Button** (`BookOpen`-Icon) in der Toolbar. Klick öffnet `https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral` **in einem neuen Tab** (`window.open(..., '_blank')`). Hält zusätzlich den `rulesDialogRule`-State für die Chip-Dialoge und rendert `RulesIndexDialog`. |
 | **Bestehend: `src/components/play/PlayUnitDetails.jsx`** | `UnitUpgradesChips` und `UnitRulesChips` erhalten den `onShowRule`-Callback von `PlayMode`. |
@@ -89,11 +92,15 @@ export const SYNONYMS = {
 // src/data/rulesLookup.js
 export function getRuleUrl(name) {
   if (!name) return null;
-  const canonical = SYNONYMS[name] || name;
-  const path = index.get(canonical.toLowerCase()); // aus rules-index.json
+  const canonical = synonymIndex.get(name.toLowerCase()) || name; // Synonyms case-insensitiv
+  const path = index.get(canonical.toLowerCase());                // aus rules-index.json
   return path ? `https://6th.whfb.app${path}` : null;
 }
 ```
+
+> Hinweis: Regelnamen mit Sonderzeichen (z. B. `Cloak & Dagger`) werden im
+> Crawl-Skript HTML-entity-dekodiert, damit die Schlüssel den literalen
+> BSData-Namen entsprechen.
 
 ## Testing Decisions
 
@@ -101,16 +108,18 @@ export function getRuleUrl(name) {
 
 | Test | Art | Beschreibung |
 |------|-----|-------------|
-| `rulesLookup.test.js` | Unit | Bekannte Regel → URL; unbekannte Regel → null; Synonym-Auflösung; Case-Insensitivity |
-| `RulesIndexDialog.test.jsx` | Komponente | Iframe mit korrekter `url`; Spinner beim Laden; Schließen (Button/Escape/Overlay) |
-| `UnitChips.test.jsx` (via `UnitSelectionCard`/`OptionGroup`) | Integration | Klick auf bekannten Regelnamen ruft `onShowRule`; unbekannter Name öffnet BottomSheet/Tooltip |
-| `generate-rules-index.test.js` | Skript-Test | Ausgabe ist gültiges JSON; enthält erwartete Mindestanzahl Einträge; URLs haben `minimal=true` |
+| `rulesLookup.test.js` | Unit | Bekannte Regel → URL; unbekannte Regel → null; Synonym-Auflösung (inkl. case-insensitiv); Case-Insensitivity |
+| `RuleChipIcon.test.jsx` | Komponente | Link-Priorität (BookOpen statt Info); `onShowRule` bei Klick; Info-Fallback; nichts ohne Link/Info |
+| `RulesIndexDialog.test.jsx` | Komponente | Iframe mit korrekter `url`; Spinner; **Fehler nach Timeout**; **Retry**; Schließen (Button/Escape/Overlay) |
+| `OptionGroup.test.jsx` | Integration | Gruppierte Option mit Mapping zeigt Rule-Link und ruft `onShowRule`; Link-Priorität in Gruppen |
+| `generate-rules-index.test.js` | Skript-Test | Gültiges JSON; Mindestanzahl Einträge; `minimal=true`; **keine undekodierten HTML-Entities in Keys** |
 
 ### Test Interfaces (Seams)
 
 1. **`getRuleUrl(ruleName)`** (aus `rulesLookup.js`) – zentrale Lookup-Funktion.
 2. **`RulesIndexDialog`** – Props: `ruleName`, `url`, `isOpen`, `onClose`.
-3. **Chip-Klick-Callback** (`onShowRule`) – neuer Prop auf `UnitRulesChips`, `UnitUpgradesChips`, `SelectionConfigurator`.
+3. **Chip-Klick-Callback** (`onShowRule`) – neuer Prop auf `UnitRulesChips`, `UnitUpgradesChips`, `SelectionConfigurator` und `OptionGroup`.
+5. **`RuleChipIcon`** – gemeinsame Icon-Komponente, die die Link-Priorität kapselt.
 4. **`generate-rules-index.js`** – CLI-Skript, dessen Output als JSON validiert wird.
 
 ## Out of Scope

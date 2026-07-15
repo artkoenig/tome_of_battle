@@ -69,6 +69,11 @@ manuell aktualisiert und als Datenstand eingecheckt.
   `?minimal=true`-Seite (ohne Seitennavigation). Nur wenn ein Mapping existiert;
   der betroffene Chip zeigt dann ein **`BookOpen`-Icon**. Ohne Mapping bleibt das
   bisherige Verhalten (Detail-Anzeige, **`Info`-Icon**) — kein Broken Link.
+  **Link-Priorität (bewusste Entscheidung):** Existiert ein Regel-Link *und*
+  Katalog-Info zum selben Eintrag, gewinnt der Link — die Katalog-Info wird dann
+  nicht zusätzlich angeboten. Diese Entscheidung ist in der gemeinsamen Komponente
+  `RuleChipIcon` zentralisiert und gilt einheitlich für Regel-Chips,
+  Standalone-Optionen **und gruppierte Optionen** (Magic Items/Waffen in Gruppen).
 - **Gesamtes Regelbuch → neuer Browser-Tab** ("Regelbuch"-Button im PlayMode),
   der `https://6th.whfb.app/` **im neuen Tab** öffnet (kein Iframe).
 
@@ -86,6 +91,11 @@ Nachschlagen vorbehalten, wo genau eine Seite gezeigt wird.
   kein globaler Context — gemäß ADR-0010.
 - **Keine PWA-Änderungen:** Externe Iframe-Inhalte werden nicht vom Service-Worker
   gecached; die Offline-Fähigkeit der App bleibt unverändert (ADR-0002).
+- **Fehlerbehandlung des Iframe-Dialogs:** Da ein Cross-Origin-Iframe `onError`
+  nicht zuverlässig auslöst, sichert ein Lade-Timeout den Ladevorgang ab. Bleibt
+  `onLoad` aus (offline, blockierte Einbettung), zeigt der Dialog eine
+  benutzerfreundliche Meldung („Keine Verbindung zu 6th.whfb.app") mit
+  „Erneut versuchen" statt eines endlosen Spinners.
 - **Umfang des Mappings:** Nur globale Regeln mit eigener Seite. Armee-spezifische
   Anker-Regeln werden nicht automatisch gecrawlt, können aber manuell über
   `synonyms.js` ergänzt werden.
@@ -100,7 +110,8 @@ Nachschlagen vorbehalten, wo genau eine Seite gezeigt wird.
     oder Urheberrechts-Last — die App kopiert keine fremden Inhalte.
   - Keine neuen npm-Abhängigkeiten; Offline-First und Service-Worker unangetastet.
   - Robuste Degradation: unbekannte Regeln → bestehendes BottomSheet; fehlendes
-    Netz → App bleibt voll nutzbar, nur der Iframe zeigt eine Fehlerseite.
+    Netz → App bleibt voll nutzbar, der Iframe-Dialog zeigt eine eigene
+    Fehlermeldung mit Retry (nicht nur die native Browser-Fehlerseite).
 - **Negativ / Trade-offs:**
   - Abhängigkeit von einer Drittseite (Verfügbarkeit und URL-Stabilität liegen
     außerhalb unserer Kontrolle).

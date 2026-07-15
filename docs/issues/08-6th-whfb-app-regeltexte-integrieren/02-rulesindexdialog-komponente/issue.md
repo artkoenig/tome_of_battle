@@ -23,12 +23,13 @@ Die Komponente verwendet die gleiche Stilistik wie das bestehende BottomSheet (O
 Tests: `RulesIndexDialog.test.jsx` testet Iframe-URL, Spinner, Error, Close.
 
 ## Acceptance Criteria
-- [ ] Dialog öffnet sich bei `isOpen=true` und schließt bei `onClose`
-- [ ] Iframe lädt die übergebene URL
-- [ ] Lade-Spinner wird gezeigt, bis der Iframe bereit ist
-- [ ] Bei Netzwerkfehler wird eine Fehlermeldung angezeigt
-- [ ] Escape-Taste schließt den Dialog
-- [ ] Tests decken alle Zustände ab (offen, geschlossen, laden, fehler)
+- [x] Dialog öffnet sich bei `isOpen=true` und schließt bei `onClose`
+- [x] Iframe lädt die übergebene URL
+- [x] Lade-Spinner wird gezeigt, bis der Iframe bereit ist
+- [x] Bei Netzwerkfehler wird eine Fehlermeldung angezeigt
+- [x] Escape-Taste schließt den Dialog
+- [x] Tests decken alle Zustände ab (offen, geschlossen, laden, fehler)
 
 ## Comments
 - Implementiert: RulesIndexDialog.jsx mit Iframe, Lade-Spinner, Escape-Schließen, Body-Scroll-Lock. CSS in index.css. 12 Komponententests grün.
+- Nachgezogen: Fehlerzustand ergänzt. Da ein Cross-Origin-Iframe `onError` nicht zuverlässig auslöst, sichert ein Lade-Timeout (15 s) den Ladevorgang ab; bei Fehler erscheint „Keine Verbindung zu 6th.whfb.app" mit „Erneut versuchen"-Button (remountet den Iframe). Zusätzliche Tests für Timeout-Fehler und Retry (15 Tests grün).

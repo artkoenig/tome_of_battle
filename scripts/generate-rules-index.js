@@ -15,12 +15,28 @@ async function fetchHTML(url) {
   return res.text();
 }
 
+// The ToC anchors carry HTML-escaped rule names (e.g. "Cloak &amp; Dagger",
+// "&quot;My Will Be Done!&quot;"). Names are the lookup keys matched against the
+// literal BSData entries, so every entity must be decoded — otherwise the entry
+// can never resolve. `&amp;` is decoded last so it does not double-decode.
+function decodeEntities(str) {
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&#x2F;/g, '/')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&');
+}
+
 function extractLinks(html, section) {
   const pattern = new RegExp(`<a\\s+href="/${section}/([^"]+)"[^>]*>([^<]+)</a>`, 'gi');
   const links = [];
   let match;
   while ((match = pattern.exec(html)) !== null) {
-    const name = match[2].replace(/&#x27;/g, "'").trim();
+    const name = decodeEntities(match[2]).trim();
     if (!links.some(l => l.name === name)) {
       links.push({ slug: match[1], name });
     }

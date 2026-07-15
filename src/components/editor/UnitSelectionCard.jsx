@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Trash2, Copy, AlertTriangle, Info, Sparkles, MoreVertical, ReceiptText } from 'lucide-react';
+import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-react';
 import { useDebugMode } from '../../hooks/DebugContext';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';

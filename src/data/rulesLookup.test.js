@@ -33,6 +33,11 @@ describe('rulesLookup', () => {
     expect(url).toBe('https://6th.whfb.app/special-rules/immune-to-psychology?minimal=true&utm_source=6th-builder&utm_medium=referral');
   });
 
+  it('resolves synonyms case-insensitively', () => {
+    const url = getRuleUrl('immune to psycology');
+    expect(url).toBe('https://6th.whfb.app/special-rules/immune-to-psychology?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
   it('is case-insensitive', () => {
     expect(getRuleUrl('killing blow')).toBe('https://6th.whfb.app/special-rules/killing-blow?minimal=true&utm_source=6th-builder&utm_medium=referral');
     expect(getRuleUrl('KILLING BLOW')).toBe('https://6th.whfb.app/special-rules/killing-blow?minimal=true&utm_source=6th-builder&utm_medium=referral');

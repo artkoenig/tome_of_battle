@@ -12,6 +12,13 @@ vi.mock('lucide-react', () => ({
   Plus: () => <span data-testid="icon-plus" />,
   Minus: () => <span data-testid="icon-minus" />,
   Info: ({ onClick, ...rest }) => <span data-testid="icon-info" onClick={onClick} {...rest} />,
+  BookOpen: ({ onClick, ...rest }) => <span data-testid="icon-book" onClick={onClick} {...rest} />,
+}));
+
+// Mock the rules lookup so grouped options can be exercised with and without a link
+const mockGetRuleUrl = vi.fn().mockReturnValue(null);
+vi.mock('../../data/rulesLookup', () => ({
+  getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 
 // Mock Debug Context
@@ -93,6 +100,7 @@ describe('OptionGroup Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockShowDebugIds = false;
+    mockGetRuleUrl.mockReturnValue(null);
 
     // clearAllMocks keeps implementations, so reset the selection-count mock to a
     // clean "nothing selected" baseline each test (groups now auto-expand when a
@@ -591,5 +599,33 @@ describe('OptionGroup Component', () => {
     expect(screen.queryByRole('checkbox')).toBeNull();
     expect(screen.getByTestId('icon-plus')).toBeDefined();
     expect(screen.getByText('5')).toBeDefined();
+  });
+
+  it('21. Grouped option with a rule mapping shows the rule link and calls onShowRule', () => {
+    // Regression (finding 1): magic items / weapons live in groups, so grouped
+    // options must offer the 6th.whfb.app rule link too — not only standalone ones.
+    mockGetRuleUrl.mockImplementation((name) => (name === 'Sword of Might' ? 'https://6th.whfb.app/magic-items/sword-of-might' : null));
+    const onShowRule = vi.fn();
+
+    render(<OptionGroupComponent {...defaultProps} onShowRule={onShowRule} />);
+
+    // Expand the group to reveal the items.
+    fireEvent.click(screen.getByText('Magic Weapons').closest('div'));
+
+    const bookIcons = screen.getAllByTestId('icon-book');
+    expect(bookIcons).toHaveLength(1); // only the mapped item ("Sword of Might")
+    fireEvent.click(bookIcons[0]);
+    expect(onShowRule).toHaveBeenCalledWith('Sword of Might');
+  });
+
+  it('22. Grouped option link takes priority over the catalogue Info', () => {
+    mockGetRuleUrl.mockImplementation((name) => (name === 'Sword of Might' ? 'https://6th.whfb.app/magic-items/sword-of-might' : null));
+
+    render(<OptionGroupComponent {...defaultProps} onShowRule={vi.fn()} />);
+    fireEvent.click(screen.getByText('Magic Weapons').closest('div'));
+
+    // "Sword of Might" -> BookOpen (no Info); "Axe of Doom" -> Info only.
+    expect(screen.getAllByTestId('icon-book')).toHaveLength(1);
+    expect(screen.getAllByTestId('icon-info')).toHaveLength(1);
   });
 });

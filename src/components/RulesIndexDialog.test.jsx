@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import RulesIndexDialog from './RulesIndexDialog';
 
 describe('RulesIndexDialog', () => {
@@ -96,6 +96,42 @@ describe('RulesIndexDialog', () => {
     expect(document.body.style.overflow).toBe('hidden');
     rerender(<RulesIndexDialog {...defaultProps} isOpen={false} />);
     expect(document.body.style.overflow).toBe('');
+  });
+
+  it('shows the friendly error after the load timeout expires', () => {
+    vi.useFakeTimers();
+    try {
+      render(<RulesIndexDialog {...defaultProps} isOpen={true} />);
+      expect(screen.getByText('Lade Regeltext...')).toBeTruthy();
+      act(() => { vi.advanceTimersByTime(15000); });
+      expect(screen.getByText('Keine Verbindung zu 6th.whfb.app')).toBeTruthy();
+      expect(screen.queryByText('Lade Regeltext...')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('clears the error and shows a fresh iframe when retry is clicked', () => {
+    vi.useFakeTimers();
+    try {
+      render(<RulesIndexDialog {...defaultProps} isOpen={true} />);
+      act(() => { vi.advanceTimersByTime(15000); });
+      expect(screen.getByText('Keine Verbindung zu 6th.whfb.app')).toBeTruthy();
+
+      fireEvent.click(screen.getByText('Erneut versuchen'));
+      expect(screen.getByText('Lade Regeltext...')).toBeTruthy();
+      expect(screen.getByTitle('Regeneration')).toBeTruthy();
+      expect(screen.queryByText('Keine Verbindung zu 6th.whfb.app')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('stops showing the spinner once the iframe load event fires (no false error)', () => {
+    render(<RulesIndexDialog {...defaultProps} isOpen={true} />);
+    fireEvent.load(screen.getByTitle('Regeneration'));
+    expect(screen.queryByText('Lade Regeltext...')).toBeNull();
+    expect(screen.queryByText('Keine Verbindung zu 6th.whfb.app')).toBeNull();
   });
 
   it('resets loading state when reopened', () => {
