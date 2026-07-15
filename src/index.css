@@ -1123,6 +1123,14 @@ select option {
   padding: 12px;
 }
 
+.play-unit-profiles {
+  display: none;
+}
+
+.play-unit-profiles.is-open {
+  display: block;
+}
+
 .play-unit-details {
   display: grid;
   grid-template-columns: 1fr 1fr;
