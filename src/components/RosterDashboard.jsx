@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload } from 'lucide-react';
+import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload, MoreVertical } from 'lucide-react';
 import { calculateRosterCosts, findForceEntryById } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
 
@@ -32,6 +32,7 @@ export default function RosterDashboard({
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
   const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
+  const [rosterActionsRosterId, setRosterActionsRosterId] = useState(null);
 
   const startEditing = (roster, e) => {
     e.stopPropagation();
@@ -224,18 +225,26 @@ export default function RosterDashboard({
                                     <button className="btn-sm" onClick={() => onOpenRoster(roster, 'builder')}>
                                       <Edit3 size={14} /> Ausrüsten
                                     </button>
-                                    <button className="btn-primary btn-sm" onClick={() => onOpenRoster(roster, 'play')}>
-                                      <Play size={14} /> Spielen
-                                    </button>
-                                    <button className="btn-sm" onClick={() => onExportRoster?.(roster)} title="Liste exportieren">
+<button className="btn-sm" onClick={() => onOpenRoster(roster, 'play')}>
+  <Play size={14} /> Spielen
+</button>
+                                    <button className="btn-sm hide-on-mobile" onClick={() => onExportRoster?.(roster)} title="Liste exportieren">
                                       <Download size={14} /> Exportieren
                                     </button>
                                     <button 
-                                      className="btn-danger square-btn" 
+                                      className="btn-danger square-btn hide-on-mobile" 
                                       style={{ marginLeft: 'auto' }}
                                       onClick={(e) => onDeleteRoster(roster.id, e)}
                                     >
                                       <Trash2 size={14} />
+                                    </button>
+                                    <button 
+                                      className="btn-sm square-btn mobile-only" 
+                                      style={{ marginLeft: 'auto' }}
+                                      onClick={() => setRosterActionsRosterId(roster.id)}
+                                      title="Weitere Aktionen"
+                                    >
+                                      <MoreVertical size={14} />
                                     </button>
                                   </div>
                                 </div>
@@ -291,6 +300,41 @@ export default function RosterDashboard({
                 <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <Upload size={18} className="text-gold" />
                   <span>Armeeliste importieren</span>
+                </span>
+              </div>
+            </div>
+          </BottomSheet>
+
+          <BottomSheet
+            isOpen={rosterActionsRosterId !== null}
+            onClose={() => setRosterActionsRosterId(null)}
+            title="Aktionen"
+          >
+            <div className="popover-list">
+              <div 
+                className="popover-item"
+                onClick={() => {
+                  const roster = rosters.find(r => r.id === rosterActionsRosterId);
+                  if (roster) onExportRoster?.(roster);
+                  setRosterActionsRosterId(null);
+                }}
+              >
+                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Download size={18} />
+                  <span>Exportieren</span>
+                </span>
+              </div>
+              <div 
+                className="popover-item"
+                onClick={() => {
+                  const id = rosterActionsRosterId;
+                  setRosterActionsRosterId(null);
+                  onDeleteRoster(id, { stopPropagation() {} });
+                }}
+              >
+                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Trash2 size={18} className="text-danger" />
+                  <span>Löschen</span>
                 </span>
               </div>
             </div>

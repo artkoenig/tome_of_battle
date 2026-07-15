@@ -1762,7 +1762,7 @@ input[type="radio"]:checked::after {
     flex-wrap: wrap !important;
     gap: 8px !important;
   }
-  .roster-actions button:not(.btn-danger) {
+  .roster-actions button:not(.btn-danger):not(.square-btn) {
     flex: 1 !important;
     font-size: var(--fs-micro) !important;
     padding: 8px 10px !important;
@@ -2476,6 +2476,13 @@ input[type="radio"]:checked::after {
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
+.builder-top-bar-title-section h2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .builder-top-bar-subtitle {
   font-size: var(--fs-micro);
   font-weight: 400;
@@ -2543,6 +2550,10 @@ input[type="radio"]:checked::after {
     width: auto;
     justify-content: center;
     height: 48px;
+  }
+  .mobile-points-indicator .points-display {
+    text-align: right;
+    width: 100%;
   }
 
   .modal-new-roster-sheet {

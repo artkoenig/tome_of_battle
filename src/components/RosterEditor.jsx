@@ -113,7 +113,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           {/* Points limit indicator */}
           <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
             <span className="points-display builder-top-bar-title">
-              {currentPoints} / {limitPoints}
+              {currentPoints}&nbsp;/ {limitPoints}
             </span>
             <span className="builder-top-bar-subtitle">
               {costTypeLabel}
@@ -142,11 +142,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           >
             <Redo2 size={16} />
           </button>
+          <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
+            <Play size={16} /> <span>Spielen</span>
+          </button>
           <button className="btn-secondary hide-on-mobile" onClick={() => onExportRoster?.(roster)} style={{ padding: '6px 12px' }}>
             <Download size={16} /> <span>Exportieren</span>
-          </button>
-          <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
-            <Play size={16} /> <span>Spielmodus</span>
           </button>
         </div>
       </div>
