@@ -176,6 +176,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
             className="btn-sm square-btn hide-on-desktop"
             onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
             title="Regelbuch öffnen (neuer Tab)"
+            style={{ marginLeft: 'auto' }}
           >
             <BookOpen size={16} />
           </button>

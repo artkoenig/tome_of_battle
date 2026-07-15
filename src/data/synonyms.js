@@ -9,4 +9,12 @@ export const SYNONYMS = {
   'Spear (Mounted)': 'Spears (Cavalry)',
   'Brace Of Pistols': 'Pistol (hand-to-hand)',
   'Staff of Baduum': 'Staff of Baduumm',
+  '6.Hand of Gork': '6. The Hand of Gork',
+  '2.Fist of Gork': '2. Fists of Gork',
+  '1.Mork Save Us': '1. Mork Save Uz!',
+  '4.Brain Busta': '4. Brain Bursta',
+  "'Eadbuttin' 'At": "'Edbuttin' 'At",
+  "Porka's Pigstikka": "Pork's Pigstikka",
+  "Wallopa's One Hit Wunda": "Wollopa's One Hit Wunda",
+  "Ozat's Club of Smakin'": "Owzat's Club of Smackin'",
 };

@@ -6343,12 +6343,12 @@
         <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="cb89-b525-88ef-79d3" name="Basha&apos;s Big Axe od Bashin&apos;" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="cb89-b525-88ef-79d3" name="Basha&apos;s Big Axe of Bashin&apos;" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="d783-9d54-6705-9f6d" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="96f6-5222-1f0d-4c66" name="Basha&apos;s Big Axe od Bashin&apos;" hidden="false" targetId="5064-87f2-2636-434c" type="profile"/>
+        <infoLink id="96f6-5222-1f0d-4c66" name="Basha&apos;s Big Axe of Bashin&apos;" hidden="false" targetId="5064-87f2-2636-434c" type="profile"/>
         <infoLink id="3bc5-45fe-0b9e-72f0" name="BASHA’S BIG AXE OF BASHIN&apos;" hidden="false" targetId="be64-5c5a-5efc-5883" type="rule"/>
       </infoLinks>
       <costs>
@@ -6592,13 +6592,13 @@
         <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="ebd1-8d11-13bb-4dfa" name="Warboss Umm&apos;s Beast Big Boss&apos;s &apos;At" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="ebd1-8d11-13bb-4dfa" name="Warboss Umm&apos;s Best Big Boss&apos;s &apos;At" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="5f22-679b-5945-0ce9" type="max"/>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="e533-5423-219b-9e40" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="b2c3-8089-bca5-fae7" name="Warboss Umm&apos;s Beast Big Boss&apos;s &apos;At" hidden="false" targetId="68e7-ec52-8e9f-ea58" type="profile"/>
+        <infoLink id="b2c3-8089-bca5-fae7" name="Warboss Umm&apos;s Best Big Boss&apos;s &apos;At" hidden="false" targetId="68e7-ec52-8e9f-ea58" type="profile"/>
         <infoLink id="0aad-fbb7-abfe-e17e" name="WARBOSS UMM&apos;S BEST BIG BOSS&apos;S &apos;AT" hidden="false" targetId="9ce9-42cf-8b08-65f1" type="rule"/>
       </infoLinks>
       <costs>
@@ -7042,7 +7042,7 @@
         <entryLink id="cc2d-39ed-a9f3-31d3" name="Battleaxe of the last Waaagh" hidden="false" collective="false" import="true" targetId="ad25-b6b2-7eb8-4181" type="selectionEntry"/>
         <entryLink id="a3a2-667d-4968-7f57" name="Krumpa&apos;s club of Crumpin&apos;" hidden="false" collective="false" import="true" targetId="3b4d-5606-4efe-5330" type="selectionEntry"/>
         <entryLink id="69df-bb43-c7c3-1bce" name="Kleevas Cleaver of Cleavage" hidden="false" collective="false" import="true" targetId="8691-2973-fe1b-0e47" type="selectionEntry"/>
-        <entryLink id="deaf-7f7e-b244-8190" name="Basha&apos;s Big Axe od Bashin&apos;" hidden="false" collective="false" import="true" targetId="cb89-b525-88ef-79d3" type="selectionEntry"/>
+        <entryLink id="deaf-7f7e-b244-8190" name="Basha&apos;s Big Axe of Bashin&apos;" hidden="false" collective="false" import="true" targetId="cb89-b525-88ef-79d3" type="selectionEntry"/>
         <entryLink id="3879-6ab1-984c-4f9a" name="Hacka&apos;s Sword of Hackin&apos;" hidden="false" collective="false" import="true" targetId="ccbd-0159-115b-109b" type="selectionEntry"/>
         <entryLink id="45d2-cba5-2ceb-2435" name="Fumpa&apos;s Club of Fumpin&apos;" hidden="false" collective="false" import="true" targetId="de09-9f09-a054-8ad5" type="selectionEntry"/>
         <entryLink id="7489-67a7-6dd8-7090" name="Kurbog&apos;s Curmudgeonly Clobbera" hidden="false" collective="false" import="true" targetId="5eb5-0daf-2256-f5c0" type="selectionEntry"/>
@@ -7081,7 +7081,7 @@
       <entryLinks>
         <entryLink id="f1ca-22f0-6542-991a" name="Talisman of Protection" hidden="false" collective="false" import="true" targetId="c7cc-76a3-c413-ddb8" type="selectionEntry"/>
         <entryLink id="0caa-8255-7aa7-46e0" name="Sizzla&apos;s Shiny Baubles" hidden="false" collective="false" import="true" targetId="0c44-eaf3-8755-3c9b" type="selectionEntry"/>
-        <entryLink id="2706-9027-0ab7-916c" name="Warboss Umm&apos;s Beast Big Boss&apos;s &apos;At" hidden="false" collective="false" import="true" targetId="ebd1-8d11-13bb-4dfa" type="selectionEntry"/>
+        <entryLink id="2706-9027-0ab7-916c" name="Warboss Umm&apos;s Best Big Boss&apos;s &apos;At" hidden="false" collective="false" import="true" targetId="ebd1-8d11-13bb-4dfa" type="selectionEntry"/>
         <entryLink id="4796-432d-3f3c-c974" name="Glowy Green Amulet" hidden="false" collective="false" import="true" targetId="adae-143f-aead-3116" type="selectionEntry"/>
         <entryLink id="e00a-3888-10e4-cde8" name="The Collar of Zorga" hidden="false" collective="false" import="true" targetId="9fc9-0e1a-d9b3-dd65" type="selectionEntry"/>
       </entryLinks>
@@ -7163,7 +7163,7 @@
       <entryLinks>
         <entryLink id="b11e-cf3a-75e4-d743" name="Talisman of Protection" hidden="false" collective="false" import="true" targetId="c7cc-76a3-c413-ddb8" type="selectionEntry"/>
         <entryLink id="0f22-57df-07d6-9a5b" name="Sizzla&apos;s Shiny Baubles" hidden="false" collective="false" import="true" targetId="0c44-eaf3-8755-3c9b" type="selectionEntry"/>
-        <entryLink id="b93d-005a-43fd-9300" name="Warboss Umm&apos;s Beast Big Boss&apos;s &apos;At" hidden="false" collective="false" import="true" targetId="ebd1-8d11-13bb-4dfa" type="selectionEntry"/>
+        <entryLink id="b93d-005a-43fd-9300" name="Warboss Umm&apos;s Best Big Boss&apos;s &apos;At" hidden="false" collective="false" import="true" targetId="ebd1-8d11-13bb-4dfa" type="selectionEntry"/>
         <entryLink id="9bbc-7beb-447e-3ef2" name="Magical Warpaint" hidden="false" collective="false" import="true" targetId="561c-1502-3615-ba62" type="selectionEntry"/>
         <entryLink id="d62b-0f49-da37-e646" name="Glowy Green Amulet" hidden="false" collective="false" import="true" targetId="adae-143f-aead-3116" type="selectionEntry"/>
         <entryLink id="d417-598b-a81b-6f81" name="The Collar of Zorga" hidden="false" collective="false" import="true" targetId="9fc9-0e1a-d9b3-dd65" type="selectionEntry"/>
@@ -7674,7 +7674,7 @@ The Gaze of Mork is a magic missile with a range of up to 24&quot;. If successfu
         <characteristic name="Special Rules" typeId="a21a-cdc0-4b13-b236">No Armour saves</characteristic>
       </characteristics>
     </profile>
-    <profile id="5064-87f2-2636-434c" name="Basha&apos;s Big Axe od Bashin&apos;" hidden="false" typeId="a89b-d5a3-7805-c44e" typeName="Magic Items">
+    <profile id="5064-87f2-2636-434c" name="Basha&apos;s Big Axe of Bashin&apos;" hidden="false" typeId="a89b-d5a3-7805-c44e" typeName="Magic Items">
       <characteristics>
         <characteristic name="Magic stuff" typeId="c7b5-c239-d6c1-0627"/>
       </characteristics>
@@ -7788,7 +7788,7 @@ The Gaze of Mork is a magic missile with a range of up to 24&quot;. If successfu
         <characteristic name="Magic stuff" typeId="c7b5-c239-d6c1-0627"/>
       </characteristics>
     </profile>
-    <profile id="68e7-ec52-8e9f-ea58" name="Warboss Umm&apos;s Beast Big Boss&apos;s &apos;At" hidden="false" typeId="a89b-d5a3-7805-c44e" typeName="Magic Items">
+    <profile id="68e7-ec52-8e9f-ea58" name="Warboss Umm&apos;s Best Big Boss&apos;s &apos;At" hidden="false" typeId="a89b-d5a3-7805-c44e" typeName="Magic Items">
       <characteristics>
         <characteristic name="Magic stuff" typeId="c7b5-c239-d6c1-0627"/>
       </characteristics>

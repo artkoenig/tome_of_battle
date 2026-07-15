@@ -13,6 +13,14 @@ vi.mock('./rules-index.json', () => ({
     'Power Familiar (Vampire Counts)': '/magic-item/power-familiar-vampire-counts?minimal=true&utm_source=6th-builder&utm_medium=referral',
     'Bullgut': '/magic-item/bullgut?minimal=true&utm_source=6th-builder&utm_medium=referral',
     'Battleaxe of the Last Waaagh!': '/magic-item/battleaxe-of-the-last-waaagh?minimal=true&utm_source=6th-builder&utm_medium=referral',
+    '6. The Hand of Gork': '/spell-lists/gork/6-the-hand-of-gork?minimal=true&utm_source=6th-builder&utm_medium=referral',
+    '2. Fists of Gork': '/spell-lists/gork/2-fists-of-gork?minimal=true&utm_source=6th-builder&utm_medium=referral',
+    '1. Mork Save Uz!': '/spell-lists/mork/1-mork-save-uz?minimal=true&utm_source=6th-builder&utm_medium=referral',
+    '4. Brain Bursta': '/spell-lists/gork/4-brain-bursta?minimal=true&utm_source=6th-builder&utm_medium=referral',
+    "'Edbuttin' 'At": '/magic-item/edbuttin-at?minimal=true&utm_source=6th-builder&utm_medium=referral',
+    "Pork's Pigstikka": '/magic-item/porks-pigstikka?minimal=true&utm_source=6th-builder&utm_medium=referral',
+    "Wollopa's One Hit Wunda": '/magic-item/wollopas-one-hit-wunda?minimal=true&utm_source=6th-builder&utm_medium=referral',
+    "Owzat's Club of Smackin'": '/magic-item/owzats-club-of-smackin?minimal=true&utm_source=6th-builder&utm_medium=referral',
   },
 }));
 
@@ -20,6 +28,14 @@ vi.mock('./synonyms.js', () => ({
   SYNONYMS: {
     'Immune to Psycology': 'Immune to Psychology',
     'Short Bow': 'Shortbow',
+    '6.Hand of Gork': '6. The Hand of Gork',
+    '2.Fist of Gork': '2. Fists of Gork',
+    '1.Mork Save Us': '1. Mork Save Uz!',
+    '4.Brain Busta': '4. Brain Bursta',
+    "'Eadbuttin' 'At": "'Edbuttin' 'At",
+    "Porka's Pigstikka": "Pork's Pigstikka",
+    "Wallopa's One Hit Wunda": "Wollopa's One Hit Wunda",
+    "Ozat's Club of Smakin'": "Owzat's Club of Smackin'",
   },
 }));
 
@@ -81,5 +97,37 @@ describe('rulesLookup', () => {
 
   it('matches despite a missing exclamation mark', () => {
     expect(getRuleUrl('Battleaxe of the last Waaagh')).toBe('https://6th.whfb.app/magic-item/battleaxe-of-the-last-waaagh?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
+  it('resolves a synonym for a catalog name missing the "The" article', () => {
+    expect(getRuleUrl('6.Hand of Gork')).toBe('https://6th.whfb.app/spell-lists/gork/6-the-hand-of-gork?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
+  it('resolves a synonym for a catalog name with a singular/plural mismatch', () => {
+    expect(getRuleUrl('2.Fist of Gork')).toBe('https://6th.whfb.app/spell-lists/gork/2-fists-of-gork?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
+  it('resolves a synonym for a catalog name with an Orky spelling mismatch ("Us" vs. "Uz")', () => {
+    expect(getRuleUrl('1.Mork Save Us')).toBe('https://6th.whfb.app/spell-lists/mork/1-mork-save-uz?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
+  it('resolves a synonym for a catalog name with a typo ("Busta" vs. "Bursta")', () => {
+    expect(getRuleUrl('4.Brain Busta')).toBe('https://6th.whfb.app/spell-lists/gork/4-brain-bursta?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
+  it('resolves a synonym for a catalog name with an Orky spelling mismatch ("Eadbuttin\'" vs. "Edbuttin\'")', () => {
+    expect(getRuleUrl("'Eadbuttin' 'At")).toBe('https://6th.whfb.app/magic-item/edbuttin-at?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
+  it('resolves a synonym for a catalog name with a missing name-syllable ("Porka\'s" vs. "Pork\'s")', () => {
+    expect(getRuleUrl("Porka's Pigstikka")).toBe('https://6th.whfb.app/magic-item/porks-pigstikka?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
+  it('resolves a synonym for a catalog name with an Orky spelling mismatch ("Wallopa" vs. "Wollopa")', () => {
+    expect(getRuleUrl("Wallopa's One Hit Wunda")).toBe('https://6th.whfb.app/magic-item/wollopas-one-hit-wunda?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
+  it('resolves a synonym for a catalog name with a missing letter in each word ("Ozat...Smakin\'" vs. "Owzat...Smackin\'")', () => {
+    expect(getRuleUrl("Ozat's Club of Smakin'")).toBe('https://6th.whfb.app/magic-item/owzats-club-of-smackin?minimal=true&utm_source=6th-builder&utm_medium=referral');
   });
 });
