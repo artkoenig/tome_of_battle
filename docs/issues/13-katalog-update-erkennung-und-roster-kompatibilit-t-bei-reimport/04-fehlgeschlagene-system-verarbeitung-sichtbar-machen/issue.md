@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -31,3 +31,10 @@ Migrations-Pipeline), [ADR 0010](../../../adr/0010-einheitliches-dialog-und-toas
 - [ ] Der Fehlerpfad ist testgedeckt
 
 ## Comments
+- Umgesetzt: src/db/migrations.js::runSystemMigrations() gibt jetzt { systems, failures } statt eines nackten Arrays zurueck. failures listet { id, name } jedes Systems, dessen Re-Parsing der gespeicherten rawXmls fehlschlug (weiterhin console.error geloggt); das alte, unmigrierte System bleibt in der Liste erhalten (wird nicht geloescht). runSystemMigrations() macht dabei nie einen Netzabruf -- es verarbeitet ausschliesslich bereits lokal gespeicherte rawXmls --, daher kann ein fehlgeschlagener Fetch (offline, Rate-Limit, GitHub-Ausfall) diesen Pfad strukturell nicht ausloesen.
+
+src/App.jsx::loadAllData() zeigt bei nichtleeren failures einen Toast ueber das bestehende showToast()-System (ADR-0010, severity 'error', roter Rand), der die betroffenen Systemnamen nennt. App.test.jsx-Mock an die neue Rueckgabeform angepasst.
+
+Tests: neue Datei src/db/migrations.test.js (4 Faelle: erfolgreiche Migration ohne failures, System ohne rawXmls unveraendert durchgereicht, ein fehlschlagendes System wird gemeldet/bleibt erhalten/wird nicht gespeichert, ein kaputtes System beeinflusst die Migration der uebrigen nicht).
+
+Verifiziert: volle Vitest-Suite (33 Dateien, 369 Tests, 2 skipped) gruen; E2E-Smoke-Test gruen; manuell im Browser mit einem in IndexedDB geseedeten kaputten System reproduziert -- Toast erscheint mit korrektem Fehlerstil und Systemnamen, App bleibt bedienbar, Testdaten danach wieder entfernt.
