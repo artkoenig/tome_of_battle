@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useDebugMode } from '../../hooks/DebugContext';
 import { getAvailableForceEntries } from '../../solver/validator';
 
 const DEFAULT_COST_LIMIT = 2000;
@@ -10,8 +9,6 @@ const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
  * selbst und meldet das Ergebnis über onCreate({ name, systemId, catId, forceEntryId, limit }).
  */
 export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
-  const { showDebugIds } = useDebugMode();
-
   const [name, setName] = useState('');
   const [systemId, setSystemId] = useState('');
   const [catId, setCatId] = useState('');
@@ -89,7 +86,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
                 <option value="" disabled>System auswählen...</option>
                 {systems.map(s => (
                   <option key={s.id} value={s.id}>
-                    {s.name}{showDebugIds ? ` [ID: ${s.id}]` : ''}
+                    {s.name}
                   </option>
                 ))}
               </select>
@@ -111,7 +108,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
                 <option value="" disabled>Fraktion auswählen...</option>
                 {activeSystem?.catalogues?.map(cat => (
                   <option key={cat.id} value={cat.id}>
-                    {cat.name}{showDebugIds ? ` [ID: ${cat.id}]` : ''}
+                    {cat.name}
                   </option>
                 ))}
               </select>
@@ -128,7 +125,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
                 <option value="" disabled>Struktur auswählen...</option>
                 {availableForceEntries.map(fe => (
                   <option key={fe.id} value={fe.id}>
-                    {fe.name}{showDebugIds ? ` [ID: ${fe.id}]` : ''}
+                    {fe.name}
                   </option>
                 ))}
               </select>

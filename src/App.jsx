@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Bug, Search, WifiOff, Download } from 'lucide-react';
+import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Search, WifiOff, Download } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
-import { useDebugMode } from './hooks/DebugContext';
 
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
 import PlayMode from './components/PlayMode';
-import DebugEntryEditorModal from './components/editor/DebugEntryEditorModal';
-import GlobalDebugSearch from './components/editor/GlobalDebugSearch';
 import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
 import EnvBadge from './components/EnvBadge';
@@ -21,7 +18,7 @@ import {
   MissingSystemError 
 } from './utils/rosterSerialization';
 
-import { findExactEntryById, searchEditableEntries } from './parser/catalogEditor';
+
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './solver/validator';
 export function getDiffChanges(installedVersion, release) {
   if (!release) return [];
@@ -71,15 +68,6 @@ export function getDiffChanges(installedVersion, release) {
 }
 
 export default function App() {
-  const { showDebugIds, toggleShowDebugIds } = useDebugMode();
-  const isLocal = typeof window !== 'undefined' && (
-    window.location.hostname === 'localhost' || 
-    window.location.hostname === '127.0.0.1' ||
-    window.location.hostname.startsWith('192.168.') ||
-    window.location.hostname.startsWith('10.') ||
-    window.location.hostname.startsWith('172.16.') ||
-    window.location.hostname.startsWith('127.')
-  );
   const [view, setView] = useState('rosters'); // rosters, importer, builder, play
   const [systems, setSystems] = useState([]);
   const [rosters, setRosters] = useState([]);
@@ -163,10 +151,6 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rosterToDelete, setRosterToDelete] = useState(null);
 
-  // Debug Edit Modal State
-  const [debugEditingEntry, setDebugEditingEntry] = useState(null);
-  const [debugEditingSystem, setDebugEditingSystem] = useState(null);
-
   useEffect(() => {
     loadAllData();
   }, []);
@@ -213,86 +197,6 @@ export default function App() {
     setView(nextView);
     setSelectedRoster(roster);
     setSelectedSystem(system);
-  };
-
-  // Handle global click on debug IDs
-  useEffect(() => {
-    const handleGlobalClick = (e) => {
-      if (!showDebugIds) return;
-      const badge = e.target.closest('.debug-id-badge.clickable');
-      if (!badge) return;
-
-      let rawIdText = badge.textContent.trim();
-      if (!rawIdText) return;
-
-      // Clean prefix if it contains ":"
-      let clickedId = rawIdText;
-      if (clickedId.includes(':')) {
-        clickedId = clickedId.split(':').pop().trim();
-      }
-
-      // Clean brackets if it contains them
-      clickedId = clickedId.replace(/[[\]]/g, '').trim();
-
-      if (!clickedId) return;
-
-      e.stopPropagation();
-      e.preventDefault();
-
-      let foundEntry = null;
-      let foundSystem = null;
-
-      // Search selected system first, then others
-      const searchSystems = [...systems];
-      if (selectedSystem) {
-        const idx = searchSystems.findIndex(s => s.id === selectedSystem.id);
-        if (idx > -1) {
-          searchSystems.splice(idx, 1);
-          searchSystems.unshift(selectedSystem);
-        }
-      }
-
-      for (const sys of searchSystems) {
-        let exactMatch = findExactEntryById(sys, clickedId);
-        if (exactMatch) {
-          if (exactMatch.type === 'entryLink' && exactMatch.ref?.targetId) {
-            const targetMatch = findExactEntryById(sys, exactMatch.ref.targetId);
-            if (targetMatch) {
-              exactMatch = targetMatch;
-            }
-          }
-          foundEntry = exactMatch;
-          foundSystem = sys;
-          break;
-        }
-      }
-
-      if (foundEntry && foundSystem) {
-        setDebugEditingEntry(foundEntry);
-        setDebugEditingSystem(foundSystem);
-      }
-    };
-
-    const handleMouseDown = (e) => {
-      if (!showDebugIds) return;
-      if (e.target.closest('.debug-id-badge.clickable')) {
-        e.preventDefault();
-      }
-    };
-
-    document.addEventListener('click', handleGlobalClick, true);
-    document.addEventListener('mousedown', handleMouseDown, true);
-    return () => {
-      document.removeEventListener('click', handleGlobalClick, true);
-      document.removeEventListener('mousedown', handleMouseDown, true);
-    };
-  }, [showDebugIds, systems, selectedSystem]);
-
-  const handleDebugSave = (updatedSystem) => {
-    setSystems(prev => prev.map(s => s.id === updatedSystem.id ? updatedSystem : s));
-    if (selectedSystem && selectedSystem.id === updatedSystem.id) {
-      setSelectedSystem(updatedSystem);
-    }
   };
 
   const loadAllData = async () => {
@@ -451,16 +355,6 @@ export default function App() {
           <EnvBadge />
         </div>
         
-        {showDebugIds && (
-          <GlobalDebugSearch 
-            systems={systems} 
-            onSelectEntry={(entryObj, systemObj) => {
-              setDebugEditingEntry(entryObj);
-              setDebugEditingSystem(systemObj);
-            }} 
-          />
-        )}
-
         <div className="app-header-actions">
           {isOffline && (
             <div className="offline-badge" title="Offline-Modus aktiv">
@@ -480,17 +374,6 @@ export default function App() {
             </button>
           )}
 
-          {isLocal && (
-            <button
-              className={`debug-id-btn ${showDebugIds ? 'active' : ''}`}
-              onClick={toggleShowDebugIds}
-              title="Debugging: IDs ein-/ausblenden"
-            >
-              <Bug size={18} className={showDebugIds ? 'text-gold' : 'text-dim'} />
-              <span className="text-label">Debug</span>
-            </button>
-          )}
-          
           {systems.length > 0 && (
             <div className="desktop-nav-actions">
               <button 
@@ -524,7 +407,6 @@ export default function App() {
               <RosterDashboard
                 rosters={rosters}
                 systems={systems}
-                showDebugIds={showDebugIds}
                 onOpenRoster={handleOpenRoster}
                 onDeleteRoster={handleDeleteRoster}
                 onRenameRoster={handleRenameRoster}
@@ -594,19 +476,6 @@ export default function App() {
         confirmLabel="Löschen"
         isDanger={true}
       />
-
-      {/* Debug Entry Editor Modal */}
-      {debugEditingEntry && debugEditingSystem && (
-        <DebugEntryEditorModal
-          entry={debugEditingEntry}
-          system={debugEditingSystem}
-          onClose={() => {
-            setDebugEditingEntry(null);
-            setDebugEditingSystem(null);
-          }}
-          onSave={handleDebugSave}
-        />
-      )}
 
       {/* Mobile Bottom Navigation */}
       {systems.length > 0 && (

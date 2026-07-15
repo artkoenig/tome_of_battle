@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
+import { syncRosterSelectionsWithSystem } from '../solver/validator';
 
 // Mock dependencies
 vi.mock('../solver/validator', () => ({
@@ -252,5 +253,232 @@ describe('useRoster Hook', () => {
       result.current.removeUnit(unit.id);
     });
     expect(result.current.selectedRosterSelection).toBe(null);
+  });
+
+  describe('Undo/Redo', () => {
+    it('reports no undo/redo history right after initialization', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      expect(result.current.canUndo).toBe(false);
+      expect(result.current.canRedo).toBe(false);
+    });
+
+    it('undo reverts addUnit and redo restores it', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      expect(result.current.roster.forces[0].selections.length).toBe(1);
+      expect(result.current.canUndo).toBe(true);
+      expect(result.current.canRedo).toBe(false);
+
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.roster.forces[0].selections.length).toBe(0);
+      expect(result.current.canUndo).toBe(false);
+      expect(result.current.canRedo).toBe(true);
+
+      act(() => {
+        result.current.redo();
+      });
+      expect(result.current.roster.forces[0].selections.length).toBe(1);
+      expect(result.current.roster.forces[0].selections[0].name).toBe('Space Marine');
+      expect(result.current.canUndo).toBe(true);
+      expect(result.current.canRedo).toBe(false);
+    });
+
+    it('undo reverts removeUnit', () => {
+      const rosterWithUnit = {
+        ...initialRoster,
+        forces: [{ selections: [{ id: 'sel-1', name: 'Space Marine' }] }]
+      };
+      const { result } = renderHook(() => useRoster(rosterWithUnit, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.removeUnit('sel-1');
+      });
+      expect(result.current.roster.forces[0].selections.length).toBe(0);
+
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.roster.forces[0].selections.length).toBe(1);
+      expect(result.current.roster.forces[0].selections[0].id).toBe('sel-1');
+    });
+
+    it('undo reverts copyUnit', () => {
+      const rosterWithUnit = {
+        ...initialRoster,
+        forces: [{ selections: [{ id: 'sel-1', name: 'Space Marine', selections: [] }] }]
+      };
+      const { result } = renderHook(() => useRoster(rosterWithUnit, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.copyUnit('sel-1');
+      });
+      expect(result.current.roster.forces[0].selections.length).toBe(2);
+
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.roster.forces[0].selections.length).toBe(1);
+    });
+
+    it('undo reverts updateSubSelection', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      const unit = result.current.roster.forces[0].selections[0];
+
+      act(() => {
+        result.current.updateSubSelection(unit.id, { id: 'opt-1', name: 'Bolter' }, 'increment');
+      });
+      expect(result.current.roster.forces[0].selections[0].selections.length).toBe(1);
+
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.roster.forces[0].selections[0].selections.length).toBe(0);
+    });
+
+    it('undo reverts updateRosterName', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.updateRosterName('New Roster Name');
+      });
+      expect(result.current.roster.name).toBe('New Roster Name');
+
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.roster.name).toBe(initialRoster.name);
+    });
+
+    it('a new change after undo discards the redo history', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.canRedo).toBe(true);
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-2', name: 'Terminator' }, 'cat-1');
+      });
+      expect(result.current.canRedo).toBe(false);
+      expect(result.current.roster.forces[0].selections[0].name).toBe('Terminator');
+    });
+
+    it('supports an unbounded number of undo steps', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      for (let i = 0; i < 20; i++) {
+        act(() => {
+          result.current.addUnit({ id: `entry-${i}`, name: `Unit ${i}` }, 'cat-1');
+        });
+      }
+      expect(result.current.roster.forces[0].selections.length).toBe(20);
+
+      for (let i = 0; i < 20; i++) {
+        act(() => {
+          result.current.undo();
+        });
+      }
+      expect(result.current.roster.forces[0].selections.length).toBe(0);
+      expect(result.current.canUndo).toBe(false);
+    });
+
+    it('persists the roster via autosave after an undo', () => {
+      vi.useFakeTimers();
+      const mockSave = vi.fn();
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      mockSave.mockClear();
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      mockSave.mockClear();
+
+      act(() => {
+        result.current.undo();
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+
+      expect(mockSave).toHaveBeenCalledTimes(1);
+      expect(mockSave.mock.calls[0][0].forces[0].selections.length).toBe(0);
+
+      vi.useRealTimers();
+    });
+
+    it('persists the roster via autosave after a redo', () => {
+      vi.useFakeTimers();
+      const mockSave = vi.fn();
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      act(() => {
+        result.current.undo();
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      mockSave.mockClear();
+
+      act(() => {
+        result.current.redo();
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+
+      expect(mockSave).toHaveBeenCalledTimes(1);
+      expect(mockSave.mock.calls[0][0].forces[0].selections.length).toBe(1);
+
+      vi.useRealTimers();
+    });
+
+    it('an automatic system correction does not create its own undo step', () => {
+      vi.useFakeTimers();
+      syncRosterSelectionsWithSystem.mockReturnValueOnce(true);
+
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      // Die Korrektur beim ersten Effekt-Durchlauf darf keinen Undo-Schritt erzeugen
+      expect(result.current.canUndo).toBe(false);
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      expect(result.current.canUndo).toBe(true);
+
+      act(() => {
+        result.current.undo();
+      });
+
+      // Zurück auf den (bereits korrigierten) Ausgangszustand, keine Korrektur rückgängig zu machen
+      expect(result.current.roster.forces[0].selections.length).toBe(0);
+      expect(result.current.canUndo).toBe(false);
+
+      vi.useRealTimers();
+    });
   });
 });

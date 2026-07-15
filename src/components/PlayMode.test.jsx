@@ -35,12 +35,6 @@ vi.mock('../hooks/usePlayState', () => ({
   })
 }));
 
-// Mock Debug Context
-let mockShowDebugIds = false;
-vi.mock('../hooks/DebugContext', () => ({
-  useDebugMode: () => ({ showDebugIds: mockShowDebugIds })
-}));
-
 // Mock Database
 vi.mock('../db/database', () => ({
   saveRoster: vi.fn()
@@ -129,7 +123,6 @@ describe('PlayMode Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockShowDebugIds = false;
     
     // Default mock validator outputs
     mockCollectUnitProfilesAndRules.mockReturnValue({
@@ -252,14 +245,6 @@ describe('PlayMode Component', () => {
     });
   });
 
-  it('7. Render Debug IDs when showDebugIds is active', () => {
-    mockShowDebugIds = true;
-    
-    render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
-
-    expect(screen.getAllByText('def:el-1').length).toBeGreaterThan(0);
-  });
-
   it('8. Renders Uncategorized Selections', () => {
     const customRoster = {
       ...mockRoster,
@@ -299,7 +284,6 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
-        showDebugIds={false}
         gameState={{ wounds: {} }}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -329,7 +313,6 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
-        showDebugIds={false}
         gameState={{ wounds: { 'sel-dead': 0 } }}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -399,7 +382,6 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
-        showDebugIds={false}
         gameState={{ wounds: { 'sel-weapons': 5 } }}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -471,7 +453,6 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
-        showDebugIds={false}
         gameState={{ wounds: { 'sel-armours': 5 } }}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -516,7 +497,6 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
-        showDebugIds={false}
         gameState={{ wounds: {} }}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -556,7 +536,6 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
-        showDebugIds={false}
         gameState={{ wounds: {} }}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -617,7 +596,6 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
-        showDebugIds={false}
         gameState={{ wounds: { 'sel-parent': 5, 'sub-unit-1': 3 } }}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}

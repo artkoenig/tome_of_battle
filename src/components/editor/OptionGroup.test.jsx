@@ -21,12 +21,6 @@ vi.mock('../../data/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 
-// Mock Debug Context
-let mockShowDebugIds = false;
-vi.mock('../../hooks/DebugContext', () => ({
-  useDebugMode: () => ({ showDebugIds: mockShowDebugIds })
-}));
-
 // Mock Validator
 const mockResolveEntry = vi.fn();
 const mockFindEntryInSystem = vi.fn();
@@ -99,7 +93,6 @@ describe('OptionGroup Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockShowDebugIds = false;
     mockGetRuleUrl.mockReturnValue(null);
 
     // clearAllMocks keeps implementations, so reset the selection-count mock to a
@@ -367,16 +360,7 @@ describe('OptionGroup Component', () => {
     expect(callArg).toHaveProperty('text');
   });
 
-  it('11. Debug ID Toggle', () => {
-    mockShowDebugIds = true;
-    render(<OptionGroupComponent {...defaultProps} />);
-    
-    const header = screen.getByText('Magic Weapons').closest('div');
-    fireEvent.click(header);
 
-    expect(screen.getByText('def:grp-1')).toBeDefined();
-    expect(screen.getByText('res-sword')).toBeDefined();
-  });
 
   it('12. Option name text does nothing on click, only icon triggers setActiveInfo', () => {
     // Clicking the name text should do nothing (no setActiveInfo call, no error)

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
+import { useUndoableState } from './useUndoableState';
 import '../types.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 150;
@@ -30,7 +31,15 @@ const findSelectionInRoster = (roster, selectionId) => {
  * @param {Function} saveRosterCallback
  */
 export function useRoster(initialRoster, system, saveRosterCallback) {
-  const [roster, setRoster] = useState(initialRoster);
+  const {
+    state: roster,
+    setState: setRoster,
+    replace: replaceRoster,
+    undo,
+    redo,
+    canUndo,
+    canRedo
+  } = useUndoableState(initialRoster);
   const [costs, setCosts] = useState({});
   const [validationErrors, setValidationErrors] = useState([]);
   const [selectedSelectionId, setSelectedSelectionId] = useState(null);
@@ -75,7 +84,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
 
     const rosterModified = syncRosterSelectionsWithSystem(roster, system);
     if (rosterModified) {
-      setRoster({ ...roster });
+      replaceRoster({ ...roster });
       return;
     }
 
@@ -89,7 +98,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     }, AUTOSAVE_DEBOUNCE_MS);
 
     return () => clearTimeout(handler);
-  }, [roster, system]);
+  }, [roster, system, replaceRoster]);
 
   // Noch ausstehende Änderungen beim Unmount wegschreiben (z. B. bei schneller Navigation)
   useEffect(() => {
@@ -349,6 +358,10 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     copyUnit,
     updateSubSelection,
     updateRosterName,
-    save
+    save,
+    undo,
+    redo,
+    canUndo,
+    canRedo
   };
 }

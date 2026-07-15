@@ -5,7 +5,6 @@ import {
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
 import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals } from '../solver/validator';
-import { useDebugMode } from '../hooks/DebugContext';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
@@ -14,7 +13,6 @@ import { getRuleUrl } from '../data/rulesLookup';
 import GothicTooltip from './GothicTooltip';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
-  const { showDebugIds } = useDebugMode();
   const [roster, setRoster] = useState(initialRoster);
   const [searchTerm, setSearchTerm] = useState('');
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
@@ -208,7 +206,6 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                     selection={selection}
                     system={system}
                     roster={roster}
-                    showDebugIds={showDebugIds}
                     gameState={gameState}
                     handleAdjustWound={handleAdjustWound}
                     handleMouseEnter={handleMouseEnter}

@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Play, AlertTriangle, Check, ArrowLeft, Download } from 'lucide-react';
+import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { useDebugMode } from '../hooks/DebugContext';
 import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
@@ -14,7 +13,6 @@ import { getRuleUrl } from '../data/rulesLookup';
 
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster }) {
-  const { showDebugIds } = useDebugMode();
   const {
     roster,
     costs,
@@ -24,7 +22,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     addUnit,
     removeUnit,
     copyUnit,
-    updateSubSelection
+    updateSubSelection,
+    undo,
+    redo,
+    canUndo,
+    canRedo
   } = useRoster(initialRoster, system, saveRoster);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
@@ -120,6 +122,26 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            className="btn-secondary square-btn"
+            onClick={undo}
+            disabled={!canUndo}
+            title="Rückgängig"
+            aria-label="Rückgängig"
+          >
+            <Undo2 size={16} />
+          </button>
+          <button
+            type="button"
+            className="btn-secondary square-btn"
+            onClick={redo}
+            disabled={!canRedo}
+            title="Wiederherstellen"
+            aria-label="Wiederherstellen"
+          >
+            <Redo2 size={16} />
+          </button>
           <button className="btn-secondary hide-on-mobile" onClick={() => onExportRoster?.(roster)} style={{ padding: '6px 12px' }}>
             <Download size={16} /> <span>Exportieren</span>
           </button>
@@ -183,12 +205,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>
                             {catName}
-                            {showDebugIds && (
-                              <>
-                                <span className="debug-id-badge clickable" title="Definition-ID (Kategorie)">def:{link.targetId}</span>
-                                {link.id && <span className="debug-id-badge clickable" title="Link-ID (Limits)">link:{link.id}</span>}
-                              </>
-                            )}
                           </h3>
                           {(() => {
                             const limitParts = [];

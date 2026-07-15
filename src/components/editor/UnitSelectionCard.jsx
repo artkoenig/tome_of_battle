@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-react';
-import { useDebugMode } from '../../hooks/DebugContext';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
 import { 
@@ -50,8 +49,6 @@ export default function UnitSelectionCard({
   isSubUnit = false,
   onShowRule
 }) {
-  const { showDebugIds } = useDebugMode();
-
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -240,9 +237,6 @@ export default function UnitSelectionCard({
           <div className="selection-node-title">
             <span className="selection-node-name text-ui-title">
               {selection.number > 1 ? `${selection.number}x ` : ''}{selection.name}
-              {showDebugIds && (
-                <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-              )}
             </span>
           </div>
           <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -326,7 +320,6 @@ export default function UnitSelectionCard({
               }
             }}
             onShowRule={onShowRule}
-            showDebugIds={showDebugIds}
           />
           {!isSubUnit && (
             <UnitRulesChips
@@ -343,7 +336,6 @@ export default function UnitSelectionCard({
                 }
               }}
               onShowRule={onShowRule}
-              showDebugIds={showDebugIds}
             />
           )}
           {!isUnitEditing && <div className="unit-card-torn-edge" aria-hidden="true" />}

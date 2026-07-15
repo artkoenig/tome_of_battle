@@ -4,7 +4,6 @@ import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRos
 import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import BottomSheet from './BottomSheet';
 import OptionGroupComponent from './OptionGroup';
-import { useDebugMode } from '../../hooks/DebugContext';
 import {
   UPGRADE_DETAILS_KEYWORDS,
   GENERAL_EXACT_KEYWORDS,
@@ -28,8 +27,6 @@ export default function SelectionConfigurator({
   setActiveInfo,
   onShowRule
 }) {
-  const { showDebugIds } = useDebugMode();
-
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
   const activeForceId = roster.forces ? roster.forces.find(force => {
     const containsSel = (list) => {
@@ -285,7 +282,6 @@ export default function SelectionConfigurator({
                       onInfoMove={handleMouseMove}
                       onInfoLeave={handleMouseLeave}
                     />
-                    {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>
                 </div>

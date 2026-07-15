@@ -484,21 +484,6 @@ select option {
   cursor: pointer;
 }
 
-.debug-id-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border-color: var(--border-dark);
-  background: transparent;
-  color: var(--text-dim);
-}
-
-.debug-id-btn.active {
-  border-color: var(--text-gold);
-  background: rgba(226, 183, 66, 0.15);
-  color: var(--text-gold);
-}
-
 .app-loading-screen {
   display: flex;
   justify-content: center;
@@ -2242,33 +2227,6 @@ input[type="radio"]:checked::after {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
-}
-
-/* Debugging ID display */
-.debug-id-badge {
-  display: inline-block;
-  font-family: monospace;
-  font-size: 0.8rem;
-  background-color: rgba(226, 183, 66, 0.08);
-  border: 1px dashed rgba(226, 183, 66, 0.4);
-  color: var(--text-gold);
-  padding: 1px 4px;
-  border-radius: 3px;
-  margin-left: 6px;
-  vertical-align: middle;
-  letter-spacing: 0.05em;
-  user-select: none;
-}
-
-.debug-id-badge.clickable {
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.debug-id-badge.clickable:hover {
-  background-color: rgba(226, 183, 66, 0.2);
-  border-color: rgba(226, 183, 66, 0.8);
-  box-shadow: 0 0 8px rgba(226, 183, 66, 0.3);
 }
 
 /* Gothic Tooltip styles */

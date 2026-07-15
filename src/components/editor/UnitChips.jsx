@@ -159,8 +159,7 @@ export function UnitUpgradesChips({
   handleMouseMove,
   handleMouseLeave,
   onClickDetails,
-  onShowRule,
-  showDebugIds = false
+  onShowRule
 }) {
   const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId, roster);
   if (selectedUpgrades.length === 0) return null;
@@ -194,9 +193,6 @@ export function UnitUpgradesChips({
               onInfoMove={handleMouseMove}
               onInfoLeave={handleMouseLeave}
             />
-            {showDebugIds && upgrade.resolved?.id && (
-              <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>def:{upgrade.resolved.id}</span>
-            )}
           </span>
         );
       })}
@@ -213,8 +209,7 @@ export function UnitRulesChips({
   handleMouseMove,
   handleMouseLeave,
   onClickDetails,
-  onShowRule,
-  showDebugIds = false
+  onShowRule
 }) {
   const { rules } = collectUnitProfilesAndRules(system, selection, activeCatalogueId, roster);
   if (!rules || rules.length === 0) return null;
@@ -266,9 +261,6 @@ export function UnitRulesChips({
               onInfoMove={handleMouseMove}
               onInfoLeave={handleMouseLeave}
             />
-            {showDebugIds && rule.id && (
-              <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>{rule.id}</span>
-            )}
           </span>
         );
       })}

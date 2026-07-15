@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
-import { useDebugMode } from '../../hooks/DebugContext';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 
@@ -40,7 +39,6 @@ export default function OptionGroupComponent({
   onHoverLeave,
   onShowRule
 }) {
-  const { showDebugIds } = useDebugMode();
   // Start expanded when the group already holds a selection, so choices made
   // aren't hidden behind a collapsed header. This also surfaces nested quantity
   // controls that only appear once a wrapper option is chosen — e.g. picking
@@ -207,7 +205,6 @@ export default function OptionGroupComponent({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
           <span className={hasGroupError ? "text-ui-title text-danger" : "text-ui-title text-gold"}>
             {group.name} 
-            {showDebugIds && group.id && <span className="debug-id-badge clickable" style={{ marginLeft: '6px' }}>def:{group.id}</span>}
             <span className="text-micro" style={{ marginLeft: '6px', fontWeight: 400, color: 'var(--text-dim)' }}>{limitText}</span>
           </span>
           {selectedItemsSummary && (
@@ -378,7 +375,6 @@ export default function OptionGroupComponent({
                       onInfoMove={onHoverMove}
                       onInfoLeave={onHoverLeave}
                     />
-                    {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>
                 </div>

@@ -14,6 +14,8 @@ vi.mock('lucide-react', () => ({
   ArrowLeft: () => <span data-testid="icon-arrow-left" />,
   Edit3: () => <span data-testid="icon-edit3" />,
   Download: () => <span data-testid="icon-download" />,
+  Undo2: () => <span data-testid="icon-undo" />,
+  Redo2: () => <span data-testid="icon-redo" />,
 }));
 
 // Mock useRoster custom hook
@@ -24,6 +26,10 @@ const mockUpdateSubSelection = vi.fn();
 const mockSave = vi.fn();
 const mockSetSelectedRosterSelection = vi.fn();
 const mockUpdateRosterName = vi.fn();
+const mockUndo = vi.fn();
+const mockRedo = vi.fn();
+let mockCanUndo = false;
+let mockCanRedo = false;
 
 // Mock validator spy functions
 const mockResolveEntry = vi.fn().mockReturnValue({ id: 'entry-resolved', name: 'Resolved Entry' });
@@ -73,13 +79,12 @@ vi.mock('../hooks/useRoster', () => ({
     copyUnit: mockCopyUnit,
     updateSubSelection: mockUpdateSubSelection,
     updateRosterName: mockUpdateRosterName,
-    save: mockSave
+    save: mockSave,
+    undo: mockUndo,
+    redo: mockRedo,
+    canUndo: mockCanUndo,
+    canRedo: mockCanRedo
   })
-}));
-
-// Mock useDebugMode Context
-vi.mock('../hooks/DebugContext', () => ({
-  useDebugMode: () => ({ showDebugIds: false })
 }));
 
 // Mock database saveRoster
@@ -147,6 +152,8 @@ describe('RosterEditor Component', () => {
     mockRoster = JSON.parse(JSON.stringify(defaultMockRoster));
     mockCosts = JSON.parse(JSON.stringify(defaultMockCosts));
     mockValidationErrors = JSON.parse(JSON.stringify(defaultMockValidationErrors));
+    mockCanUndo = false;
+    mockCanRedo = false;
   });
 
   it('renders the roster header details and cost indicators', () => {
@@ -334,6 +341,48 @@ describe('RosterEditor Component', () => {
       fireEvent.click(exportBtn);
       
       expect(mockExport).toHaveBeenCalledWith(mockRoster);
+    });
+  });
+
+  describe('Undo/Redo Buttons', () => {
+    it('renders undo and redo buttons in the toolbar', () => {
+      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+
+      expect(screen.getByTitle('Rückgängig')).toBeDefined();
+      expect(screen.getByTitle('Wiederherstellen')).toBeDefined();
+    });
+
+    it('disables both buttons when no undo/redo history is available', () => {
+      mockCanUndo = false;
+      mockCanRedo = false;
+      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+
+      expect(screen.getByTitle('Rückgängig').disabled).toBe(true);
+      expect(screen.getByTitle('Wiederherstellen').disabled).toBe(true);
+    });
+
+    it('enables the undo button when canUndo is true and calls undo on click', () => {
+      mockCanUndo = true;
+      mockCanRedo = false;
+      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+
+      const undoBtn = screen.getByTitle('Rückgängig');
+      expect(undoBtn.disabled).toBe(false);
+
+      fireEvent.click(undoBtn);
+      expect(mockUndo).toHaveBeenCalledTimes(1);
+    });
+
+    it('enables the redo button when canRedo is true and calls redo on click', () => {
+      mockCanUndo = false;
+      mockCanRedo = true;
+      render(<RosterEditor system={mockSystem} roster={mockRoster} onBack={mockOnBack} onPlay={mockOnPlay} />);
+
+      const redoBtn = screen.getByTitle('Wiederherstellen');
+      expect(redoBtn.disabled).toBe(false);
+
+      fireEvent.click(redoBtn);
+      expect(mockRedo).toHaveBeenCalledTimes(1);
     });
   });
 });
