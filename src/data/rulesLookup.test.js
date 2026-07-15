@@ -66,6 +66,16 @@ describe('rulesLookup', () => {
     expect(getRuleUrl('KILLING BLOW')).toBe('https://6th.whfb.app/special-rules/killing-blow?minimal=true&utm_source=6th-builder&utm_medium=referral');
   });
 
+  // Regression (Issue 11 / Issue 13-02): normalizeName() strips all non-alphanumeric
+  // characters, so it already resolves catalog names carrying stray whitespace
+  // (e.g. upstream's "Cavalry hammer ", "Crazed! ") without needing a trim(). The
+  // parser trims name attributes too (Issue 13-02), but this lookup must keep
+  // working even for names it never touches.
+  it('resolves names with leading/trailing whitespace, same as trimmed', () => {
+    expect(getRuleUrl(' Killing Blow ')).toBe(getRuleUrl('Killing Blow'));
+    expect(getRuleUrl('Killing Blow ')).toBe('https://6th.whfb.app/special-rules/killing-blow?minimal=true&utm_source=6th-builder&utm_medium=referral');
+  });
+
   it('returns null for null or undefined input', () => {
     expect(getRuleUrl(null)).toBeNull();
     expect(getRuleUrl(undefined)).toBeNull();

@@ -148,6 +148,39 @@ test('XML parser error handling for invalid root element', () => {
   }
 });
 
+test('parser trims leading/trailing whitespace in name attributes', () => {
+  const gstWithWhitespace = `<?xml version="1.0" encoding="UTF-8"?>
+<gameSystem id="sys-123" name="Test Grimdark System">
+  <costTypes>
+    <costType id="dice" name=" Casting Dice" defaultCostLimit="-1" />
+  </costTypes>
+  <categoryEntries>
+    <categoryEntry id="cat-hq" name=" HQ " />
+  </categoryEntries>
+</gameSystem>
+`;
+  const catWithWhitespace = `<?xml version="1.0" encoding="UTF-8"?>
+<catalogue id="cat-chaos" name="Chaos" gameSystemId="sys-123">
+  <selectionEntries>
+    <selectionEntry id="upg-armour" name="Armour of Damnation " type="upgrade">
+      <rules>
+        <rule id="rule-armour" name="Armour of Damnation ">
+          <description>Re-roll hits against the wearer.</description>
+        </rule>
+      </rules>
+    </selectionEntry>
+  </selectionEntries>
+</catalogue>
+`;
+  const sys = parseGameSystemXML(gstWithWhitespace);
+  expect(sys.costTypes[0].name).toBe('Casting Dice');
+  expect(sys.categoryEntries[0].name).toBe('HQ');
+
+  const cat = parseCatalogueXML(catWithWhitespace);
+  expect(cat.selectionEntries[0].name).toBe('Armour of Damnation');
+  expect(cat.selectionEntries[0].rules[0].name).toBe('Armour of Damnation');
+});
+
 test('ZIP Extraction via extractZipFiles and processImportedData', async () => {
   try {
     const zip = new JSZip();
