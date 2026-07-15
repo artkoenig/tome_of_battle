@@ -28,7 +28,7 @@ vi.mock('./db/database', () => ({
 }));
 
 vi.mock('./db/migrations', () => ({
-  runSystemMigrations: vi.fn((systems) => Promise.resolve(systems || [])),
+  runSystemMigrations: vi.fn((systems) => Promise.resolve({ systems: systems || [], failures: [] })),
 }));
 
 // Mock child components

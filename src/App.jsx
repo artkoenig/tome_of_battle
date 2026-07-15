@@ -202,8 +202,14 @@ export default function App() {
   const loadAllData = async () => {
     try {
       const dbSystems = await getAllSystems();
-      const allSystems = await runSystemMigrations(dbSystems);
-      
+      const { systems: allSystems, failures } = await runSystemMigrations(dbSystems);
+      if (failures.length > 0) {
+        showToast(
+          `Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: ${failures.map(f => f.name).join(', ')}`,
+          'error'
+        );
+      }
+
       const allRosters = await getAllRosters();
       setSystems(allSystems);
       setRosters(allRosters);
