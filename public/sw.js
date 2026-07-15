@@ -39,6 +39,9 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
+  // Don't cache data files that change independently of app builds
+  if (url.pathname.includes('rules-index.json')) return;
+
   // Cache static assets and fonts
   const shouldCache = 
     url.origin === self.location.origin || 

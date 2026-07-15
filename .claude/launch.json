@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "port": 5173,
       "autoPort": true
+    },
+    {
+      "name": "rules-editor",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/rules-editor/server.js"],
+      "port": 3001,
+      "autoPort": true
     }
   ]
 }

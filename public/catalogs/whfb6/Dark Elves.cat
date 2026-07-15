@@ -39,8 +39,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="a97c-f9d2-2c74-f3d5" name="Repeater Crossbow" hidden="false" collective="false" import="true" type="upgrade">
@@ -52,8 +52,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="15.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="afcd-54e0-e5d2-cb0f" name="Magic" hidden="false" collective="false" import="true" type="upgrade">
@@ -75,8 +75,8 @@
           </selectionEntryGroups>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -95,8 +95,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="09ff-e7b5-c235-3470" name="Halberd" hidden="false" collective="false" import="true" type="upgrade">
@@ -108,8 +108,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="33db-02ad-6323-1ca6" name="Great Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -121,8 +121,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="a950-001a-0817-4791" name="Lance" hidden="false" collective="false" import="true" type="upgrade">
@@ -134,8 +134,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -194,8 +194,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="9.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="0b9c-d3ff-6535-74cd" name="Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -207,8 +207,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="3.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -227,8 +227,8 @@
                   </infoLinks>
                   <costs>
                     <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="3.0"/>
-                    <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                    <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                    <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                    <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                   </costs>
                 </selectionEntry>
                 <selectionEntry id="03b3-b1ea-0aef-65f1" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -240,8 +240,8 @@
                   </infoLinks>
                   <costs>
                     <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                    <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                    <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                    <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                    <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                   </costs>
                 </selectionEntry>
               </selectionEntries>
@@ -254,8 +254,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="125.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="c733-61ea-1425-1253" name="Cold One Chariots" hidden="false" collective="false" import="true" type="unit">
@@ -291,8 +291,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="3c2a-a51a-0ba2-7bcf" name="Spears" hidden="false" collective="false" import="true" type="upgrade">
@@ -304,22 +304,22 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="95.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="5c80-089a-f5fa-c01b" name="Dark Elf Warriors" hidden="false" collective="false" import="true" type="unit">
@@ -355,8 +355,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="7.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="2564-f879-8b1b-e19a" name="Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -376,8 +376,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -398,8 +398,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="6e7c-5cc4-8156-ec81" name="Repeater Crossbow" hidden="false" collective="false" import="true" type="upgrade">
@@ -416,8 +416,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -430,8 +430,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="6e7b-410e-fa60-e2d7" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -440,8 +440,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="1bb5-47c9-5101-5700" name="Lordling" hidden="false" collective="false" import="true" type="upgrade">
@@ -465,8 +465,8 @@
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -474,8 +474,8 @@
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="ca34-2c11-1f0d-c958" name="High Soceress" hidden="false" collective="false" import="true" type="unit">
@@ -509,8 +509,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="5110-7a43-ca0d-8e2f" name="Magic" hidden="false" collective="false" import="true" type="upgrade">
@@ -532,8 +532,8 @@
           </selectionEntryGroups>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -577,8 +577,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="215.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="3.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="3.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="bd43-41c0-298e-22be" name="Dark Elf Noble" hidden="false" collective="false" import="true" type="unit">
@@ -612,8 +612,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="e41d-08ad-57c1-d049" name="Repeater Crossbow" hidden="false" collective="false" import="true" type="upgrade">
@@ -625,8 +625,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="31a8-11cf-864a-e093" name="Magic" hidden="false" collective="false" import="true" type="upgrade">
@@ -648,8 +648,8 @@
           </selectionEntryGroups>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="45dd-5586-ab52-911a" name="Battle Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -662,8 +662,8 @@
           </entryLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -679,8 +679,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="d472-d3a0-5133-b72a" name="Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -692,8 +692,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -712,8 +712,8 @@
                   </infoLinks>
                   <costs>
                     <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="2.0"/>
-                    <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                    <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                    <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                    <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                   </costs>
                 </selectionEntry>
                 <selectionEntry id="2205-f5f1-c6bc-5683" name="Heavy Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -725,8 +725,8 @@
                   </infoLinks>
                   <costs>
                     <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                    <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                    <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                    <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                    <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                   </costs>
                 </selectionEntry>
               </selectionEntries>
@@ -747,8 +747,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="e01f-fe67-3dc2-731d" name="Halberd" hidden="false" collective="false" import="true" type="upgrade">
@@ -760,8 +760,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="521b-21dc-023f-6a56" name="Great Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -773,8 +773,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="5a42-b40a-591f-ac26" name="Lance" hidden="false" collective="false" import="true" type="upgrade">
@@ -786,8 +786,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -825,8 +825,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="70.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="b6ba-f748-beec-07e8" name="Sorceress" hidden="false" collective="false" import="true" type="unit">
@@ -860,8 +860,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="2af7-2408-4a5d-38fc" name="Magic" hidden="false" collective="false" import="true" type="upgrade">
@@ -883,8 +883,8 @@
           </selectionEntryGroups>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -912,8 +912,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="90.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="c64e-5686-3531-2032" name="Beastmaster" hidden="false" collective="false" import="true" type="unit">
@@ -945,8 +945,8 @@
           </selectionEntryGroups>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="bd4a-5ce0-74fc-24de" name="Hand Weapon (Whip)" hidden="false" collective="false" import="true" type="upgrade">
@@ -959,8 +959,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="8bc0-a932-f085-4bba" name="Additional Hand Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -972,8 +972,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1036,8 +1036,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="f3c1-d9c4-9a7b-0fe9" name="Assassin" hidden="false" collective="false" import="true" type="unit">
@@ -1064,7 +1064,7 @@
         <categoryLink id="2868-57fc-da5c-a2dd" name="Characters" hidden="false" targetId="7a1c-d611-c2dc-def1" primary="false"/>
       </categoryLinks>
       <selectionEntries>
-        <selectionEntry id="88a5-9a5c-09ed-fecd" name="Hand Weapon " hidden="false" collective="false" import="true" type="upgrade">
+        <selectionEntry id="88a5-9a5c-09ed-fecd" name="Hand Weapon" hidden="false" collective="false" import="true" type="upgrade">
           <constraints>
             <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="8b9b-cc1c-048c-1e75" type="min"/>
             <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="7a53-bee4-a282-4ca0" type="max"/>
@@ -1074,8 +1074,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="2160-8428-c704-bfc7" name="Additional Hand Weapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -1087,8 +1087,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="46a1-5868-ff03-4abe" name="Magic and artifacts" hidden="false" collective="false" import="true" type="upgrade">
@@ -1112,8 +1112,8 @@
                       </constraints>
                       <costs>
                         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-                        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                       </costs>
                     </selectionEntry>
                     <selectionEntry id="a0f6-19fa-aaa6-9746" name="Black Lotus" hidden="false" collective="false" import="true" type="upgrade">
@@ -1122,8 +1122,8 @@
                       </constraints>
                       <costs>
                         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-                        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                       </costs>
                     </selectionEntry>
                     <selectionEntry id="442f-d0a9-8ad4-05a6" name="Dark Venom" hidden="false" collective="false" import="true" type="upgrade">
@@ -1132,8 +1132,8 @@
                       </constraints>
                       <costs>
                         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                       </costs>
                     </selectionEntry>
                   </selectionEntries>
@@ -1149,8 +1149,8 @@
                       </constraints>
                       <costs>
                         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-                        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                       </costs>
                     </selectionEntry>
                     <selectionEntry id="2966-f1b8-58b7-666c" name="Touch of Death" hidden="false" collective="false" import="true" type="upgrade">
@@ -1159,8 +1159,8 @@
                       </constraints>
                       <costs>
                         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-                        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                       </costs>
                     </selectionEntry>
                     <selectionEntry id="7492-55eb-423a-4977" name="Rune of Kaine" hidden="false" collective="false" import="true" type="upgrade">
@@ -1169,8 +1169,8 @@
                       </constraints>
                       <costs>
                         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-                        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                       </costs>
                     </selectionEntry>
                     <selectionEntry id="8d3d-85d6-a9c5-c396" name="Hand of Khaine" hidden="false" collective="false" import="true" type="upgrade">
@@ -1179,8 +1179,8 @@
                       </constraints>
                       <costs>
                         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-                        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                       </costs>
                     </selectionEntry>
                     <selectionEntry id="f0e3-1a1b-a743-7d05" name="Cry of War" hidden="false" collective="false" import="true" type="upgrade">
@@ -1189,8 +1189,8 @@
                       </constraints>
                       <costs>
                         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                       </costs>
                     </selectionEntry>
                   </selectionEntries>
@@ -1205,15 +1205,15 @@
           </selectionEntryGroups>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="125.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="f615-4919-4e3b-a2e8" name="Corsairs" hidden="false" collective="false" import="true" type="unit">
@@ -1246,8 +1246,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="dfe8-02ed-6773-57c2" name="Sea Dragon Coat" hidden="false" collective="false" import="true" type="upgrade">
@@ -1260,8 +1260,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1274,8 +1274,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="3dbd-2916-e87a-03ff" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1291,8 +1291,8 @@
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="eeee-72b2-2ab8-1a8b" name="Reaver" hidden="false" collective="false" import="true" type="upgrade">
@@ -1316,8 +1316,8 @@
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1334,8 +1334,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="9975-9145-65c0-7966" name="Dark Riders" hidden="false" collective="false" import="true" type="unit">
@@ -1357,8 +1357,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="6b04-7ae5-f02d-6682" name="Spears" hidden="false" collective="false" import="true" type="upgrade">
@@ -1371,8 +1371,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="af78-0e11-899a-a64d" name="Dark Riders" hidden="false" collective="false" import="true" type="model">
@@ -1400,8 +1400,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="18.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="80c8-f7ef-a6bf-34de" name="Repeater Crossbow" hidden="false" collective="false" import="true" type="upgrade">
@@ -1421,8 +1421,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1435,8 +1435,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="7.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="f649-b407-c20d-9a87" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1445,8 +1445,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="14.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="5e3e-fbbf-b969-7e7d" name="Herald" hidden="false" collective="false" import="true" type="upgrade">
@@ -1470,8 +1470,8 @@
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="14.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1479,8 +1479,8 @@
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="36cd-52eb-d902-7aa3" name="Shades" hidden="false" collective="false" import="true" type="unit">
@@ -1518,8 +1518,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="14.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="5268-3d9d-210f-99a5" name="Handweapon" hidden="false" collective="false" import="true" type="upgrade">
@@ -1532,8 +1532,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="656a-2110-d9f5-4e1a" name="Repeater Crossbow" hidden="false" collective="false" import="true" type="upgrade">
@@ -1546,8 +1546,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="b7ee-cfeb-526e-682d" name="Light Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -1567,8 +1567,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="bc4d-3455-4dd8-21ac" name="Bloodshade" hidden="false" collective="false" import="true" type="upgrade">
@@ -1584,15 +1584,15 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="59da-df39-a41e-7d08" name="Witch Elves Of Kaine" hidden="false" collective="false" import="true" type="unit">
@@ -1628,8 +1628,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="13.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="f6b1-b489-49f0-aca5" name="Two Poisoned Hand Weapons" hidden="false" collective="false" import="true" type="upgrade">
@@ -1648,8 +1648,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1662,8 +1662,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="6a32-361e-27d7-fdd2" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1679,8 +1679,8 @@
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="1bbb-7bea-8078-c65d" name="Hag" hidden="false" collective="false" import="true" type="upgrade">
@@ -1711,8 +1711,8 @@
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1720,8 +1720,8 @@
       </selectionEntryGroups>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="67b7-8c9d-1615-e19c" name="Cold One Knights" hidden="false" collective="false" import="true" type="unit">
@@ -1750,8 +1750,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="29.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1779,8 +1779,8 @@
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="18.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="5bea-1ec0-d5d4-2ad5" name="Musician" hidden="false" collective="false" import="true" type="upgrade">
@@ -1789,8 +1789,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="9.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="3f65-784b-f62d-3f00" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1806,8 +1806,8 @@
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="18.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1835,8 +1835,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="f886-cb22-921b-518e" name="Executioners" hidden="false" collective="false" import="true" type="unit">
@@ -1862,8 +1862,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="11.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1876,8 +1876,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="181c-47d1-4fe2-5cc0" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1893,8 +1893,8 @@
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="00b1-f680-2dc3-21fc" name="Draich-Master" hidden="false" collective="false" import="true" type="upgrade">
@@ -1910,8 +1910,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1922,8 +1922,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="900a-004d-c3cf-0714" name="Harpies" hidden="false" collective="false" import="true" type="unit">
@@ -1960,8 +1960,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="13.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="9042-11e7-a6fa-6d95" name="Claws (counts as two hand weapons)" hidden="false" collective="false" import="true" type="upgrade">
@@ -1971,15 +1971,15 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="424f-9a77-2a02-4cec" name="War Hydra" hidden="false" collective="false" import="true" type="unit">
@@ -2020,8 +2020,8 @@
           </infoLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="d78e-d405-73e7-d3f5" name="Beastmaster Apprentices" hidden="false" collective="true" import="true" type="upgrade">
@@ -2046,15 +2046,15 @@
           </entryLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="220.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="e83d-6513-8fad-ebff" name="Cauldron Of Blood" hidden="false" collective="false" import="true" type="unit">
@@ -2098,8 +2098,8 @@
           </rules>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="f1e0-c1f7-4389-abe8" name="Hag" hidden="false" collective="false" import="true" type="upgrade">
@@ -2131,15 +2131,15 @@
           </entryLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="205.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="7f4d-6e05-3f5c-d50a" name="Black Guard" hidden="false" collective="false" import="true" type="unit">
@@ -2174,8 +2174,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="16.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -2188,8 +2188,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="7.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="8673-25f3-3862-b638" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -2205,8 +2205,8 @@
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="14.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="18e9-a3cf-fc40-39b7" name="Master" hidden="false" collective="false" import="true" type="upgrade">
@@ -2230,8 +2230,8 @@
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="14.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -2243,8 +2243,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="a757-462a-11d5-9636" name="Reaper Bolt Thrower" hidden="false" collective="false" import="true" type="unit">
@@ -2287,8 +2287,8 @@
                 <selectionEntry id="ef5d-1234-9f7f-7f69" name="Hand Weapon" hidden="false" collective="false" import="true" type="upgrade">
                   <costs>
                     <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                    <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                    <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                    <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                    <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                   </costs>
                 </selectionEntry>
               </selectionEntries>
@@ -2297,8 +2297,8 @@
               </entryLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="0137-be86-e4e7-d374" name="Reaper" hidden="false" collective="false" import="true" type="upgrade">
@@ -2319,22 +2319,22 @@
               </profiles>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
   </selectionEntries>
@@ -2348,8 +2348,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="26.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="03e9-b763-6e56-2836" name="Dark Steed" hidden="false" collective="false" import="true" type="upgrade">
@@ -2361,8 +2361,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="68f3-4984-8c3c-e164" name="Dark Pegasus" hidden="false" collective="false" import="true" type="upgrade">
@@ -2376,8 +2376,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="55.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1ac4-decf-43eb-a6bc" name="Manticore" hidden="false" collective="false" import="true" type="upgrade">
@@ -2392,8 +2392,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="190.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="269a-cdbc-e46f-3940" name="Black Dragon" hidden="false" collective="false" import="true" type="upgrade">
@@ -2409,8 +2409,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="320.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="d003-57cb-9a43-beb0" name="Cold One Chariot" hidden="false" collective="false" import="true" type="unit">
@@ -2423,8 +2423,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="95.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="8cc4-44bf-16d6-b960" name="Sea Dragon Cloak" hidden="false" collective="false" import="true" type="upgrade">
@@ -2436,8 +2436,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="3da4-f43c-1d86-0e42" name="Dance of Doom" hidden="false" collective="false" import="true" type="upgrade">
@@ -2449,8 +2449,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="d2cf-aae1-ec91-1cd5" name="Executioner&apos;s Axe" hidden="false" collective="false" import="true" type="upgrade">
@@ -2463,8 +2463,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="80.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="ef1e-113b-9620-8204" name="Venom Sword" hidden="false" collective="false" import="true" type="upgrade">
@@ -2477,8 +2477,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="75.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="2c0f-8cbf-618b-7fd0" name="Blade of Ruin" hidden="false" collective="false" import="true" type="upgrade">
@@ -2491,8 +2491,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="635f-fa30-3fe8-3061" name="Hydra Blade" hidden="false" collective="false" import="true" type="upgrade">
@@ -2505,8 +2505,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="19e7-9c9b-40e0-ba4a" name="Crimson Death" hidden="false" collective="false" import="true" type="upgrade">
@@ -2519,8 +2519,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="defb-051d-22c7-6e5d" name="Lifetaker" hidden="false" collective="false" import="true" type="upgrade">
@@ -2533,8 +2533,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="6bb0-c21f-d5c2-a4cf" name="Web of Shadows" hidden="false" collective="false" import="true" type="upgrade">
@@ -2547,8 +2547,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="2b85-cde8-bc18-5c70" name="Heartseeker" hidden="false" collective="false" import="true" type="upgrade">
@@ -2561,8 +2561,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="ff07-ea98-0b0d-5f15" name="Chill Blade" hidden="false" collective="false" import="true" type="upgrade">
@@ -2575,8 +2575,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="287c-e7e6-00e3-c654" name="Dark Sword" hidden="false" collective="false" import="true" type="upgrade">
@@ -2589,8 +2589,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="15.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="69a3-3530-addf-2c3e" name="Ring of Darkness" hidden="false" collective="false" import="true" type="upgrade">
@@ -2603,8 +2603,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="45.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="0211-e9e1-52c7-dad3" name="Armour of Living Death" hidden="false" collective="false" import="true" type="upgrade">
@@ -2625,8 +2625,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="30cf-27f8-bdfd-38b2" name="Armour of Eternal servitude" hidden="false" collective="false" import="true" type="upgrade">
@@ -2647,8 +2647,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="60.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="b58c-871f-9207-47ff" name="Shield of Ghrond" hidden="false" collective="false" import="true" type="upgrade">
@@ -2669,8 +2669,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="d79d-f463-ff84-4d30" name="Armour of Darkness" hidden="false" collective="false" import="true" type="upgrade">
@@ -2691,8 +2691,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="39a0-3b93-1a6f-9cb8" name="Blood Armour" hidden="false" collective="false" import="true" type="upgrade">
@@ -2713,8 +2713,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="be5f-073a-71a6-e1f9" name="Seal of Ghrond" hidden="false" collective="false" import="true" type="upgrade">
@@ -2727,8 +2727,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="685c-0e0b-4970-6550" name="Darkstar Cloak" hidden="false" collective="false" import="true" type="upgrade">
@@ -2741,8 +2741,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="789f-a146-c4ef-70ed" name="Draich of Dark Power" publicationId="2c52-52ec-0e8b-2843" page="86" hidden="false" collective="false" import="true" type="upgrade">
@@ -2755,8 +2755,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="f7ec-a390-a8c3-5d77" name="Blade of Spite" publicationId="2c52-52ec-0e8b-2843" page="86" hidden="false" collective="false" import="true" type="upgrade">
@@ -2769,8 +2769,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="64da-0dbe-5d92-1bea" name="Heart-Stone of Darkness" publicationId="2c52-52ec-0e8b-2843" page="86" hidden="false" collective="false" import="true" type="upgrade">
@@ -2783,8 +2783,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="45.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="2659-0878-2576-e480" name="Wand of Kharaidon" publicationId="2c52-52ec-0e8b-2843" page="86" hidden="false" collective="false" import="true" type="upgrade">
@@ -2797,8 +2797,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="3e0c-0121-37bb-2c0b" name="The Cloak of  Dark Souls" publicationId="2c52-52ec-0e8b-2843" page="86" hidden="false" collective="false" import="true" type="upgrade">
@@ -2811,8 +2811,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="b2e8-fefa-e753-689e" name="Soul Shadows Standard" hidden="false" collective="false" import="true" type="upgrade">
@@ -2825,8 +2825,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
   </sharedSelectionEntries>
@@ -2879,8 +2879,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="08d1-0cd9-c5c8-4690" name="Deathmask" hidden="false" collective="false" import="true" type="upgrade">
@@ -2890,8 +2890,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="3621-fbc9-50ed-2c73" name="Crown of Black Iron" hidden="false" collective="false" import="true" type="upgrade">
@@ -2901,8 +2901,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="3872-6280-2367-668b" name="Ring of Hotek" hidden="false" collective="false" import="true" type="upgrade">
@@ -2912,8 +2912,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -2938,8 +2938,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="edc4-9ff1-9ab8-d74f" name="Crystal of Midnight" hidden="false" collective="false" import="true" type="upgrade">
@@ -2949,8 +2949,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -2994,8 +2994,8 @@ Spell still fails</characteristic>
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="0a7c-cad4-7575-435e" name="Black Staff" hidden="false" collective="false" import="true" type="upgrade">
@@ -3012,8 +3012,8 @@ Spell still fails</characteristic>
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="6ce1-6785-10b3-dbbe" name="Tome of Furion" hidden="false" collective="false" import="true" type="upgrade">
@@ -3030,8 +3030,8 @@ Spell still fails</characteristic>
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="15.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -3054,8 +3054,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="150.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="05dd-e1ae-055f-f8cd" name="Hydra Banner" hidden="false" collective="false" import="true" type="upgrade">
@@ -3065,8 +3065,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="80.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="c1b4-e050-41ee-3d9c" name="Dread Banner" hidden="false" collective="false" import="true" type="upgrade">
@@ -3076,8 +3076,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="75.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="c59b-dd71-16d3-22a9" name="Banner of Murder" hidden="false" collective="false" import="true" type="upgrade">
@@ -3087,8 +3087,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="45.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="5981-c428-ba00-6805" name="Standard of Slaughter" hidden="false" collective="false" import="true" type="upgrade">
@@ -3098,8 +3098,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -3119,8 +3119,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="f6c3-b21f-e211-f1f7" name="Black Lotus" hidden="false" collective="false" import="true" type="upgrade">
@@ -3129,8 +3129,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="9761-62f1-b501-09cf" name="Dark Venom" hidden="false" collective="false" import="true" type="upgrade">
@@ -3139,8 +3139,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -3156,8 +3156,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="47d2-4689-fdba-0504" name="Rune of Kaine" hidden="false" collective="false" import="true" type="upgrade">
@@ -3166,8 +3166,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="ac8a-8c6e-6fe5-6525" name="Hand of Khaine" hidden="false" collective="false" import="true" type="upgrade">
@@ -3176,8 +3176,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="b5ef-d2d2-ae50-d09f" name="Witchbrew" hidden="false" collective="false" import="true" type="upgrade">
@@ -3186,8 +3186,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="8a80-5bdc-b534-4c91" name="Cry of War" hidden="false" collective="false" import="true" type="upgrade">
@@ -3196,8 +3196,8 @@ Spell still fails</characteristic>
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>

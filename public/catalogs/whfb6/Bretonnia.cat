@@ -80,8 +80,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -126,8 +126,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="3774-8a08-ec84-13c4" name="Lance (with Knight Vow or Grail Vow)" hidden="false" collective="false" import="true" type="upgrade">
@@ -148,8 +148,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -188,8 +188,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="110.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1efc-5470-e01d-d037" name="Prophetess of the Lady" hidden="false" collective="false" import="true" type="unit">
@@ -239,8 +239,8 @@
                   </constraints>
                   <costs>
                     <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-                    <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                    <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                    <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                    <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                   </costs>
                 </selectionEntry>
               </selectionEntries>
@@ -267,8 +267,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="3.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="3.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="3de1-69ea-35be-4141" name="Magic Level 4" hidden="false" collective="false" import="true" type="upgrade">
@@ -277,8 +277,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="4.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="4.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -295,8 +295,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="190.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="2674-4f8e-d872-f448" name="Paladin" hidden="false" collective="false" import="true" type="unit">
@@ -375,8 +375,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -419,8 +419,8 @@
               </infoLinks>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="971a-296e-d5cc-45f4" name="Lance (with Knight Vow or Grail Vow)" hidden="false" collective="false" import="true" type="upgrade">
@@ -441,8 +441,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -481,8 +481,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="60.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="9f03-3ab3-72d8-3a69" name="Damsel of the Lady" hidden="false" collective="false" import="true" type="unit">
@@ -532,8 +532,8 @@
                   </constraints>
                   <costs>
                     <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="4.0"/>
-                    <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                    <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                    <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                    <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
                   </costs>
                 </selectionEntry>
               </selectionEntries>
@@ -560,8 +560,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="1.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
               </costs>
             </selectionEntry>
             <selectionEntry id="d3dd-ed3f-6c72-3ee4" name="Magic Level 2" hidden="false" collective="false" import="true" type="upgrade">
@@ -570,8 +570,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="2.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="2.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="1.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -588,8 +588,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="70.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="129d-6f70-2b8a-2cf0" name="Knight Errant" hidden="false" collective="false" import="true" type="unit">
@@ -624,8 +624,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="8254-3efd-7f24-78b2" name="Musician" hidden="false" collective="false" import="true" type="upgrade">
@@ -634,8 +634,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="7.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="8c18-dbfa-f763-33b0" name="Cavalier" hidden="false" collective="false" import="true" type="upgrade">
@@ -660,8 +660,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="a22c-930e-26f9-4cd2" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -677,8 +677,8 @@
           </entryLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="14.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -724,8 +724,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="3f3b-a058-295e-9046" name="Knights of the Realm" hidden="false" collective="false" import="true" type="unit">
@@ -761,8 +761,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="8.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="05ef-e112-6473-fde7" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -778,8 +778,8 @@
           </entryLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="16.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="2a70-0a02-d33a-df61" name="Gallant" hidden="false" collective="false" import="true" type="upgrade">
@@ -804,8 +804,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="b464-becf-ab59-782b" name="Knight of the Realm" hidden="false" collective="false" import="true" type="model">
@@ -815,8 +815,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="24.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -862,8 +862,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="fcdd-429a-3b79-7e8d" name="Men at Arms" hidden="false" collective="false" import="true" type="unit">
@@ -895,8 +895,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="956f-34c0-8c2f-d3cc" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -905,8 +905,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="a5e6-9fc5-bd49-d3c0" name="Yeoman Warden" hidden="false" collective="false" import="true" type="upgrade">
@@ -930,8 +930,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="12.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="da0d-5502-7555-866c" name="Men-at-Arms" hidden="false" collective="false" import="true" type="model">
@@ -941,8 +941,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -990,8 +990,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="9572-ac32-c59e-134c" name="Peasant Bowmen" hidden="false" collective="false" import="true" type="unit">
@@ -1024,8 +1024,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="e035-c9e4-28f1-1326" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1034,8 +1034,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="1653-7d7a-cb74-c5e7" name="Villein" hidden="false" collective="false" import="true" type="upgrade">
@@ -1059,8 +1059,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="e7c7-18f7-5fc2-8b46" name="Peasant Bowmen" hidden="false" collective="false" import="true" type="model">
@@ -1070,8 +1070,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="6.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="c99b-4aa8-27e0-d471" name="Drop defensive stakes and skirmish" hidden="false" collective="false" import="true" type="upgrade">
@@ -1087,8 +1087,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="c227-3364-4968-ebe1" name="Braziers (Arrows count as flaming atacks)" hidden="false" collective="false" import="true" type="upgrade">
@@ -1097,8 +1097,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="5.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1118,8 +1118,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="6566-bd4f-e769-2999" name="Questing Knights" hidden="false" collective="false" import="true" type="unit">
@@ -1152,8 +1152,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="9.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="9207-aa9a-1b4d-c828" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1169,8 +1169,8 @@
           </entryLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="18.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="e449-a179-ccc2-db63" name="Paragon" hidden="false" collective="false" import="true" type="upgrade">
@@ -1195,8 +1195,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="ebb7-fc5f-8e6d-6545" name="Questing Knight" hidden="false" collective="false" import="true" type="model">
@@ -1206,8 +1206,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="28.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1253,8 +1253,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="ff3a-61e9-e154-92cc" name="Pegasus Knights" hidden="false" collective="false" import="true" type="unit">
@@ -1296,8 +1296,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="8.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="46f5-63a1-9bfa-a23c" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1313,8 +1313,8 @@
           </entryLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="16.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="2995-2018-2931-43c8" name="Gallant" hidden="false" collective="false" import="true" type="upgrade">
@@ -1339,8 +1339,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="bfef-1015-d60c-1035" name="Pegasus Knights" hidden="false" collective="false" import="true" type="model">
@@ -1350,8 +1350,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="55.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="f299-077e-3d74-9e8c" name="Pegasus" hidden="false" collective="false" import="true" type="upgrade">
@@ -1376,8 +1376,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1409,8 +1409,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="0227-ea15-966b-4a20" name="Grail Reliquae with Battle Pilgrims" hidden="false" collective="false" import="true" type="unit">
@@ -1425,7 +1425,7 @@
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="d498-97a9-a30a-a187" type="max"/>
       </constraints>
       <profiles>
-        <profile id="6fa4-f723-caef-21dc" name="Grail Reliquae " hidden="false" typeId="a54a-7f00-29bf-12b1" typeName="Profile">
+        <profile id="6fa4-f723-caef-21dc" name="Grail Reliquae" hidden="false" typeId="a54a-7f00-29bf-12b1" typeName="Profile">
           <characteristics>
             <characteristic name="Mv" typeId="0e92-d038-82bf-fb41">4</characteristic>
             <characteristic name="WS" typeId="f95b-da01-0578-3bdc">2</characteristic>
@@ -1472,8 +1472,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="b579-2f76-8cfa-9e82" name="Battle Pilgrim" hidden="false" collective="false" import="true" type="model">
@@ -1483,8 +1483,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="9.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1510,8 +1510,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="64.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="c051-04d6-2b7e-7ab6" name="Mounted Yeoman" hidden="false" collective="false" import="true" type="unit">
@@ -1544,8 +1544,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="15.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="d05b-7c35-f07e-226e" name="Horse" hidden="false" collective="false" import="true" type="upgrade">
@@ -1570,8 +1570,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="390a-3cef-2005-24ca" name="Musician" hidden="false" collective="false" import="true" type="upgrade">
@@ -1580,8 +1580,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="7.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="c127-dab2-6824-d803" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1590,8 +1590,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="14.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="ef6a-3c92-787b-235d" name="Warden" hidden="false" collective="false" import="true" type="upgrade">
@@ -1615,8 +1615,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="14.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1671,8 +1671,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="7336-0d12-d395-239f" name="Grail Knights" hidden="false" collective="false" import="true" type="unit">
@@ -1710,8 +1710,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="38.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="49a3-4929-5082-77fc" name="Musician" hidden="false" collective="false" import="true" type="upgrade">
@@ -1720,8 +1720,8 @@
           </constraints>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="08bd-8626-bca1-22a1" name="Standard Bearer" hidden="false" collective="false" import="true" type="upgrade">
@@ -1737,8 +1737,8 @@
           </entryLinks>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
@@ -1784,8 +1784,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="12f8-986e-f2a2-3a03" name="Field Trebuchet" hidden="false" collective="false" import="true" type="unit">
@@ -1836,8 +1836,8 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
         <selectionEntry id="b1a4-2a10-9ac3-bffb" name="Yeoman Craftsman" hidden="false" collective="false" import="true" type="upgrade">
@@ -1861,15 +1861,15 @@
           </profiles>
           <costs>
             <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-            <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-            <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+            <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+            <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
           </costs>
         </selectionEntry>
       </selectionEntries>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="90.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="2f57-db88-56b5-180f" name="Paladin Battle Standard Bearer" hidden="false" collective="false" import="true" type="unit">
@@ -1947,8 +1947,8 @@
               </constraints>
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-                <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-                <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+                <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+                <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
               </costs>
             </selectionEntry>
           </selectionEntries>
@@ -1987,8 +1987,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="60.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="e9d1-eb9d-7c44-f777" name="The Green Knight" publicationId="143d-ca87-8001-00a0" page="75" hidden="false" collective="false" import="true" type="unit">
@@ -2066,8 +2066,8 @@
       </entryLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="275.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
   </selectionEntries>
@@ -2081,8 +2081,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="e432-4d78-0f50-1e35" name="Knights Vow" hidden="false" collective="false" import="true" type="upgrade">
@@ -2094,8 +2094,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="d082-3d50-9412-9c36" name="Questing Vow" hidden="false" collective="false" import="true" type="upgrade">
@@ -2107,8 +2107,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="adc2-53db-4a9e-b8ea" name="Bretonnian Warhorse" hidden="false" collective="false" import="true" type="upgrade">
@@ -2121,8 +2121,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="5990-c1ff-bcab-6ef7" name="Hippogryph" hidden="false" collective="false" import="true" type="upgrade">
@@ -2137,8 +2137,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="bfa3-6734-c03f-3594" name="Royal Pegasus" hidden="false" collective="false" import="true" type="upgrade">
@@ -2157,21 +2157,21 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="5659-1b83-4d3a-ffee" name="Virtue of the Penitent " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="5659-1b83-4d3a-ffee" name="Virtue of the Penitent" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="0c82-a2a0-a1ad-05fe" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="0e03-6bab-c097-674e" name="Virtue of the Penitent " hidden="false" targetId="86e7-3644-e31f-025b" type="rule"/>
+        <infoLink id="0e03-6bab-c097-674e" name="Virtue of the Penitent" hidden="false" targetId="86e7-3644-e31f-025b" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="dd07-e19c-a7f2-ebec" name="Virtue of Knightly Temper" hidden="false" collective="false" import="true" type="upgrade">
@@ -2183,34 +2183,34 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="29c0-5cad-b02c-866f" name="Virtue of Heroism " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="29c0-5cad-b02c-866f" name="Virtue of Heroism" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="0f58-e9eb-382c-7fe9" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="05b8-242e-af5b-3981" name="Virtue of Heroism " hidden="false" targetId="d70c-5e0c-36bc-387b" type="rule"/>
+        <infoLink id="05b8-242e-af5b-3981" name="Virtue of Heroism" hidden="false" targetId="d70c-5e0c-36bc-387b" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="00c2-9072-a600-c111" name="Virtue of Stoicism " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="00c2-9072-a600-c111" name="Virtue of Stoicism" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="8909-28a9-51e6-a8d1" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="8e91-3b72-6c00-07b5" name="Virtue of Stoicism " hidden="false" targetId="e4df-61c9-2612-d2a8" type="rule"/>
+        <infoLink id="8e91-3b72-6c00-07b5" name="Virtue of Stoicism" hidden="false" targetId="e4df-61c9-2612-d2a8" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="eaff-5d8c-7281-54e0" name="Virtue of the Ideal" hidden="false" collective="false" import="true" type="upgrade">
@@ -2222,34 +2222,34 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="324d-b75a-577f-15e8" name="Virtue of the Impetuous Knight " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="324d-b75a-577f-15e8" name="Virtue of the Impetuous Knight" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="47c7-1fd5-59aa-b036" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="70be-c617-41f8-0c8b" name="Virtue of the Impetuous Knight " hidden="false" targetId="3c14-0045-c9e8-27d9" type="rule"/>
+        <infoLink id="70be-c617-41f8-0c8b" name="Virtue of the Impetuous Knight" hidden="false" targetId="3c14-0045-c9e8-27d9" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="5741-37f3-a128-406f" name="Virtue of Audacity " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="5741-37f3-a128-406f" name="Virtue of Audacity" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="fdf0-17cf-b15f-5d9f" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="ef18-a33f-61c2-9283" name="Virtue of Audacity " hidden="false" targetId="99a3-0e70-32f7-0e19" type="rule"/>
+        <infoLink id="ef18-a33f-61c2-9283" name="Virtue of Audacity" hidden="false" targetId="99a3-0e70-32f7-0e19" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="e650-2a76-133b-dd93" name="Virtue of Duty" hidden="false" collective="false" import="true" type="upgrade">
@@ -2261,34 +2261,34 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="2aaa-4e48-627f-ede0" name="Virtue of the Joust " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="2aaa-4e48-627f-ede0" name="Virtue of the Joust" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="4850-b2fd-7179-fd90" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="f616-8b5a-1dfa-2b57" name="Virtue of the Joust " hidden="false" targetId="1285-e820-8420-94b7" type="rule"/>
+        <infoLink id="f616-8b5a-1dfa-2b57" name="Virtue of the Joust" hidden="false" targetId="1285-e820-8420-94b7" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="d978-9cf1-a186-81bb" name="Virtue of Confidence " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="d978-9cf1-a186-81bb" name="Virtue of Confidence" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="d0f6-35bf-ba73-54e1" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="293e-0d44-b959-b756" name="Virtue of Confidence " hidden="false" targetId="f5d3-eb31-6de1-a64b" type="rule"/>
+        <infoLink id="293e-0d44-b959-b756" name="Virtue of Confidence" hidden="false" targetId="f5d3-eb31-6de1-a64b" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="b476-0bc1-a611-48b9" name="Virtue of Noble Disdain" hidden="false" collective="false" import="true" type="upgrade">
@@ -2300,8 +2300,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="4f1a-9971-1270-6a3b" name="Virtue of Purity" hidden="false" collective="false" import="true" type="upgrade">
@@ -2313,34 +2313,34 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="95b8-f74e-dcc8-aaf3" name="Virtue of Discipline " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="95b8-f74e-dcc8-aaf3" name="Virtue of Discipline" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="6378-b3fd-aceb-918e" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="82a8-5fbf-ca9b-8cda" name="Virtue of Discipline " hidden="false" targetId="0820-ae72-16b4-d045" type="rule"/>
+        <infoLink id="82a8-5fbf-ca9b-8cda" name="Virtue of Discipline" hidden="false" targetId="0820-ae72-16b4-d045" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="15.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="7253-c4c4-e42b-fc1a" name="Virtue of Empathy " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="7253-c4c4-e42b-fc1a" name="Virtue of Empathy" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="fc2d-20a3-a602-2b3f" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="c6a4-0e9d-04cc-01ad" name="Virtue of Empathy " hidden="false" targetId="0842-2dde-c723-fb43" type="rule"/>
+        <infoLink id="c6a4-0e9d-04cc-01ad" name="Virtue of Empathy" hidden="false" targetId="0842-2dde-c723-fb43" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1424-1576-880d-6ee6" name="The Silver Lance of the Blessed" hidden="false" collective="false" import="true" type="upgrade">
@@ -2349,12 +2349,12 @@
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="ee45-9354-2dc9-3925" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="19f4-d612-ab47-ef49" name="The Silver Lance of the Blessed " hidden="false" targetId="2a3a-82af-f3f1-f196" type="rule"/>
+        <infoLink id="19f4-d612-ab47-ef49" name="The Silver Lance of the Blessed" hidden="false" targetId="2a3a-82af-f3f1-f196" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="65.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1e69-b89e-b408-4bd8" name="Sword of the Quest" hidden="false" collective="false" import="true" type="upgrade">
@@ -2367,22 +2367,22 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="4ed9-7132-c7fa-1da5" name="Sword of the Lady&apos;s Champion " publicationId="143d-ca87-8001-00a0" page="60" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="4ed9-7132-c7fa-1da5" name="Sword of the Lady&apos;s Champion" publicationId="143d-ca87-8001-00a0" page="60" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="9633-490f-c783-a7c3" type="max"/>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="1ab7-7eb9-e9a3-c3ba" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="2645-0133-bd0e-1724" name="Sword of the Lady&apos;s Champion " hidden="false" targetId="4fe5-fa63-620e-f9d7" type="rule"/>
+        <infoLink id="2645-0133-bd0e-1724" name="Sword of the Lady&apos;s Champion" hidden="false" targetId="4fe5-fa63-620e-f9d7" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="0f78-6e9a-d4b6-cfad" name="Sword of Heroes" hidden="false" collective="false" import="true" type="upgrade">
@@ -2395,8 +2395,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="8e87-79ae-84d0-86fa" name="The Heartwood Lance" hidden="false" collective="false" import="true" type="upgrade">
@@ -2409,8 +2409,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="5b2c-3249-32e0-1c87" name="Birth-sword of Carcassonne" hidden="false" collective="false" import="true" type="upgrade">
@@ -2423,8 +2423,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="a911-89a0-f993-75da" name="Morningstar of Fracasse" hidden="false" collective="false" import="true" type="upgrade">
@@ -2437,8 +2437,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1597-d746-70da-10fa" name="The Lance of Artois" hidden="false" collective="false" import="true" type="upgrade">
@@ -2451,8 +2451,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="a8df-9c69-4183-3670" name="The Wyrmlance" hidden="false" collective="false" import="true" type="upgrade">
@@ -2465,8 +2465,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="9c85-a604-b888-7232" name="Gilded Cuirass" hidden="false" collective="false" import="true" type="upgrade">
@@ -2479,22 +2479,22 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="55.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="fc08-cc9b-932c-0ebb" name="Armour of the Midsummer Sun " hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="fc08-cc9b-932c-0ebb" name="Armour of the Midsummer Sun" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="47af-678e-3e13-6204" type="max"/>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="9a79-39b3-ff03-6656" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="9006-3205-7c7d-091f" name="Armour of the Midsummer Sun " hidden="false" targetId="1b74-ea84-8a23-06ae" type="rule"/>
+        <infoLink id="9006-3205-7c7d-091f" name="Armour of the Midsummer Sun" hidden="false" targetId="1b74-ea84-8a23-06ae" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="45.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="ad02-0266-e95c-9c0a" name="The Grail Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -2507,8 +2507,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1946-c2f1-1792-3b6a" name="Armour of Agilulf" publicationId="143d-ca87-8001-00a0" page="61" hidden="false" collective="false" import="true" type="upgrade">
@@ -2521,8 +2521,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="6046-02b4-f756-bd5f" name="Gromril Great Helm" hidden="false" collective="false" import="true" type="upgrade">
@@ -2535,8 +2535,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="f9ec-4e14-388b-4456" name="Cuirass of Fortune" hidden="false" collective="false" import="true" type="upgrade">
@@ -2549,8 +2549,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="a26b-4cb5-b19d-3146" name="Orcbane Shield" hidden="false" collective="false" import="true" type="upgrade">
@@ -2563,8 +2563,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="15.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="d3a3-5142-439e-3e24" name="Sirienne&apos;s Locket" hidden="false" collective="false" import="true" type="upgrade">
@@ -2577,8 +2577,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="55.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="97ca-239f-6113-029e" name="Token of the Damsel" hidden="false" collective="false" import="true" type="upgrade">
@@ -2591,8 +2591,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="025b-572a-af10-dce4" name="Insignia of the Quest" hidden="false" collective="false" import="true" type="upgrade">
@@ -2605,8 +2605,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1cc4-799e-a272-c507" name="Braid of Bordeleaux" hidden="false" collective="false" import="true" type="upgrade">
@@ -2619,8 +2619,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="dfd3-aedc-e16f-2cc8" name="Dragon&apos;s Claw" hidden="false" collective="false" import="true" type="upgrade">
@@ -2633,8 +2633,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="a536-69a9-0367-3695" name="Mantle of Damsel Elena" hidden="false" collective="false" import="true" type="upgrade">
@@ -2647,8 +2647,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="a55f-7727-ac39-35b3" name="Falcon-horn of Fredemund" hidden="false" collective="false" import="true" type="upgrade">
@@ -2661,8 +2661,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="45.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="67bc-8844-17c2-e3ec" name="Holy Icon" hidden="false" collective="false" import="true" type="upgrade">
@@ -2675,8 +2675,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="9853-fbb6-4921-7f57" name="The Ruby Goblet" hidden="false" collective="false" import="true" type="upgrade">
@@ -2689,8 +2689,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="6247-d615-ee34-3413" name="The Mane of the Purebreed" hidden="false" collective="false" import="true" type="upgrade">
@@ -2703,8 +2703,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="1940-b956-b028-b8e8" name="Antlers of the Great Hunt" hidden="false" collective="false" import="true" type="upgrade">
@@ -2717,8 +2717,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="6dba-31c1-aa6d-2fdd" name="Tress of Isoulde" hidden="false" collective="false" import="true" type="upgrade">
@@ -2731,8 +2731,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="68b8-ffb9-b650-e56b" name="Gauntlet of the Duel" hidden="false" collective="false" import="true" type="upgrade">
@@ -2745,8 +2745,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="36ea-06e6-53d9-6b07" name="The Silver Mirror" hidden="false" collective="false" import="true" type="upgrade">
@@ -2759,8 +2759,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="c4fd-03c7-4bdd-e9e2" name="Sacrament of the Lady" hidden="false" collective="false" import="true" type="upgrade">
@@ -2773,8 +2773,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="d25d-1d90-359a-0a42" name="The Verdant Heart" hidden="false" collective="false" import="true" type="upgrade">
@@ -2787,8 +2787,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="40.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="67bd-9b76-dc48-1535" name="Prayer Icon of Quenelles" hidden="false" collective="false" import="true" type="upgrade">
@@ -2801,8 +2801,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="496a-849e-b9c1-6750" name="Chalice of Maifleur" hidden="false" collective="false" import="true" type="upgrade">
@@ -2815,8 +2815,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="7cce-9475-3f04-1534" name="Potion Sacre" hidden="false" collective="false" import="true" type="upgrade">
@@ -2829,8 +2829,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="76ee-2d01-c510-d8e9" name="Banner of the Lady" hidden="false" collective="false" import="true" type="upgrade">
@@ -2843,8 +2843,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="5abf-6594-b34e-1755" name="Valorous Standard" hidden="false" collective="false" import="true" type="upgrade">
@@ -2857,8 +2857,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="fe78-d0b7-d8d6-15a2" name="Banner of Defence" hidden="false" collective="false" import="true" type="upgrade">
@@ -2871,8 +2871,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="30.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="ee42-2ebd-4d24-7e2c" name="Twilight Banner" hidden="false" collective="false" import="true" type="upgrade">
@@ -2885,8 +2885,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="ba96-4c1c-bb0e-596b" name="Conqueror&apos;s Tapestry" hidden="false" collective="false" import="true" type="upgrade">
@@ -2899,8 +2899,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="25.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="11f2-47db-45fa-2c62" name="Errantry Banner" hidden="false" collective="false" import="true" type="upgrade">
@@ -2913,8 +2913,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="20.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="cd54-e462-6b64-cef7" name="Banner of Chalons" hidden="false" collective="false" import="true" type="upgrade">
@@ -2927,8 +2927,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="10.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
     <selectionEntry id="7507-ad3e-1c80-9fe1" name="The Dolorous Blade" hidden="false" collective="false" import="true" type="upgrade">
@@ -2941,8 +2941,8 @@
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
-        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
-        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
+        <cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="0.0"/>
+        <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
   </sharedSelectionEntries>
@@ -2952,20 +2952,20 @@
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="8ddb-635a-31cf-c34d" type="max"/>
       </constraints>
       <entryLinks>
-        <entryLink id="00bf-b92d-7407-13fd" name="Virtue of Audacity " hidden="false" collective="false" import="true" targetId="5741-37f3-a128-406f" type="selectionEntry"/>
-        <entryLink id="3202-2688-8402-03d3" name="Virtue of Confidence " hidden="false" collective="false" import="true" targetId="d978-9cf1-a186-81bb" type="selectionEntry"/>
-        <entryLink id="d50a-140f-9948-bbc6" name="Virtue of Discipline " hidden="false" collective="false" import="true" targetId="95b8-f74e-dcc8-aaf3" type="selectionEntry"/>
+        <entryLink id="00bf-b92d-7407-13fd" name="Virtue of Audacity" hidden="false" collective="false" import="true" targetId="5741-37f3-a128-406f" type="selectionEntry"/>
+        <entryLink id="3202-2688-8402-03d3" name="Virtue of Confidence" hidden="false" collective="false" import="true" targetId="d978-9cf1-a186-81bb" type="selectionEntry"/>
+        <entryLink id="d50a-140f-9948-bbc6" name="Virtue of Discipline" hidden="false" collective="false" import="true" targetId="95b8-f74e-dcc8-aaf3" type="selectionEntry"/>
         <entryLink id="8955-a28a-b86a-dd67" name="Virtue of Duty" hidden="false" collective="false" import="true" targetId="e650-2a76-133b-dd93" type="selectionEntry"/>
-        <entryLink id="ed37-f00e-b8cf-018a" name="Virtue of Empathy " hidden="false" collective="false" import="true" targetId="7253-c4c4-e42b-fc1a" type="selectionEntry"/>
-        <entryLink id="98ed-35c1-32cf-67d8" name="Virtue of Heroism " hidden="false" collective="false" import="true" targetId="29c0-5cad-b02c-866f" type="selectionEntry"/>
+        <entryLink id="ed37-f00e-b8cf-018a" name="Virtue of Empathy" hidden="false" collective="false" import="true" targetId="7253-c4c4-e42b-fc1a" type="selectionEntry"/>
+        <entryLink id="98ed-35c1-32cf-67d8" name="Virtue of Heroism" hidden="false" collective="false" import="true" targetId="29c0-5cad-b02c-866f" type="selectionEntry"/>
         <entryLink id="93e0-8d7f-18cb-acc1" name="Virtue of Knightly Temper" hidden="false" collective="false" import="true" targetId="dd07-e19c-a7f2-ebec" type="selectionEntry"/>
         <entryLink id="b3c1-20db-51ac-c9fb" name="Virtue of Noble Disdain" hidden="false" collective="false" import="true" targetId="b476-0bc1-a611-48b9" type="selectionEntry"/>
         <entryLink id="b621-d671-236c-c63c" name="Virtue of Purity" hidden="false" collective="false" import="true" targetId="4f1a-9971-1270-6a3b" type="selectionEntry"/>
-        <entryLink id="7587-1d75-bfb4-1472" name="Virtue of Stoicism " hidden="false" collective="false" import="true" targetId="00c2-9072-a600-c111" type="selectionEntry"/>
+        <entryLink id="7587-1d75-bfb4-1472" name="Virtue of Stoicism" hidden="false" collective="false" import="true" targetId="00c2-9072-a600-c111" type="selectionEntry"/>
         <entryLink id="8a8a-45d7-1cb6-d6bb" name="Virtue of the Ideal" hidden="false" collective="false" import="true" targetId="eaff-5d8c-7281-54e0" type="selectionEntry"/>
-        <entryLink id="ed40-6432-2057-b6c1" name="Virtue of the Impetuous Knight " hidden="false" collective="false" import="true" targetId="324d-b75a-577f-15e8" type="selectionEntry"/>
-        <entryLink id="ba96-4722-5517-519b" name="Virtue of the Joust " hidden="false" collective="false" import="true" targetId="2aaa-4e48-627f-ede0" type="selectionEntry"/>
-        <entryLink id="5928-a720-1d4c-e992" name="Virtue of the Penitent " hidden="false" collective="false" import="true" targetId="5659-1b83-4d3a-ffee" type="selectionEntry"/>
+        <entryLink id="ed40-6432-2057-b6c1" name="Virtue of the Impetuous Knight" hidden="false" collective="false" import="true" targetId="324d-b75a-577f-15e8" type="selectionEntry"/>
+        <entryLink id="ba96-4722-5517-519b" name="Virtue of the Joust" hidden="false" collective="false" import="true" targetId="2aaa-4e48-627f-ede0" type="selectionEntry"/>
+        <entryLink id="5928-a720-1d4c-e992" name="Virtue of the Penitent" hidden="false" collective="false" import="true" targetId="5659-1b83-4d3a-ffee" type="selectionEntry"/>
       </entryLinks>
     </selectionEntryGroup>
     <selectionEntryGroup id="f6ea-09d5-9cfb-d988" name="Magic Weapons" hidden="false" collective="false" import="true">
@@ -2973,13 +2973,13 @@
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="8d88-7362-418d-d67d" type="max"/>
       </constraints>
       <entryLinks>
-        <entryLink id="db10-d0d9-201a-5a9c" name="The Silver Lance of the " hidden="false" collective="false" import="true" targetId="1424-1576-880d-6ee6" type="selectionEntry"/>
+        <entryLink id="db10-d0d9-201a-5a9c" name="The Silver Lance of the" hidden="false" collective="false" import="true" targetId="1424-1576-880d-6ee6" type="selectionEntry"/>
         <entryLink id="c9aa-27d2-50cf-03b7" name="Sword of Battle" hidden="false" collective="false" import="true" targetId="6e5a-eeea-ec67-3632" type="selectionEntry"/>
         <entryLink id="e4c2-221a-663f-2890" name="Sword of the Quest" hidden="false" collective="false" import="true" targetId="1e69-b89e-b408-4bd8" type="selectionEntry"/>
         <entryLink id="5d52-1a77-45d2-af6e" name="Sword of Might" hidden="false" collective="false" import="true" targetId="8c56-9be1-c4a9-5afe" type="selectionEntry"/>
         <entryLink id="a586-d8ea-f002-c471" name="Sword of Striking" hidden="false" collective="false" import="true" targetId="6b55-e847-311d-d6ca" type="selectionEntry"/>
         <entryLink id="c3d3-c13d-0f6e-3b89" name="Biting Blade" hidden="false" collective="false" import="true" targetId="74fc-c90b-250e-6b87" type="selectionEntry"/>
-        <entryLink id="d935-729f-121e-aafa" name="Sword of the Lady&apos;s Champion " hidden="false" collective="false" import="true" targetId="4ed9-7132-c7fa-1da5" type="selectionEntry"/>
+        <entryLink id="d935-729f-121e-aafa" name="Sword of the Lady&apos;s Champion" hidden="false" collective="false" import="true" targetId="4ed9-7132-c7fa-1da5" type="selectionEntry"/>
         <entryLink id="baa4-eb93-d236-8f30" name="Sword of Heroes" hidden="false" collective="false" import="true" targetId="0f78-6e9a-d4b6-cfad" type="selectionEntry"/>
         <entryLink id="6c81-7ad3-9d4a-cd7c" name="The Heartwood Lance" hidden="false" collective="false" import="true" targetId="8e87-79ae-84d0-86fa" type="selectionEntry"/>
         <entryLink id="7815-aa82-df9e-eb49" name="Birth-sword of Carcassonne" hidden="false" collective="false" import="true" targetId="5b2c-3249-32e0-1c87" type="selectionEntry"/>
@@ -2999,7 +2999,7 @@
           </modifiers>
         </entryLink>
         <entryLink id="c960-bb9c-987c-cb09" name="Gilded Cuirass" hidden="false" collective="false" import="true" targetId="9c85-a604-b888-7232" type="selectionEntry"/>
-        <entryLink id="34f5-e061-9efc-2593" name="Armour of the Midsummer Sun " hidden="false" collective="false" import="true" targetId="fc08-cc9b-932c-0ebb" type="selectionEntry"/>
+        <entryLink id="34f5-e061-9efc-2593" name="Armour of the Midsummer Sun" hidden="false" collective="false" import="true" targetId="fc08-cc9b-932c-0ebb" type="selectionEntry"/>
         <entryLink id="ff53-2918-b69d-8458" name="The Grail Shield" hidden="false" collective="false" import="true" targetId="ad02-0266-e95c-9c0a" type="selectionEntry"/>
         <entryLink id="98ca-9340-ec15-b6ba" name="Gromril Great Helm" hidden="false" collective="false" import="true" targetId="6046-02b4-f756-bd5f" type="selectionEntry"/>
         <entryLink id="8404-85d1-067d-e28b" name="Armour of Agilulf" hidden="false" collective="false" import="true" targetId="1946-c2f1-1792-3b6a" type="selectionEntry"/>
@@ -3018,7 +3018,7 @@
         <entryLink id="b263-2962-2e04-0d48" name="Insignia of the Quest" hidden="false" collective="false" import="true" targetId="025b-572a-af10-dce4" type="selectionEntry"/>
         <entryLink id="a929-cc08-a63b-2d48" name="Braid of Bordeleaux" hidden="false" collective="false" import="true" targetId="1cc4-799e-a272-c507" type="selectionEntry"/>
         <entryLink id="7ee9-d9ff-27fe-fbc0" name="Dragon&apos;s Claw" hidden="false" collective="false" import="true" targetId="dfd3-aedc-e16f-2cc8" type="selectionEntry"/>
-        <entryLink id="4c81-12bd-092d-56bd" name="Mantle of Damsel " hidden="false" collective="false" import="true" targetId="a536-69a9-0367-3695" type="selectionEntry"/>
+        <entryLink id="4c81-12bd-092d-56bd" name="Mantle of Damsel Elena" hidden="false" collective="false" import="true" targetId="a536-69a9-0367-3695" type="selectionEntry"/>
       </entryLinks>
     </selectionEntryGroup>
     <selectionEntryGroup id="0b8f-c716-0330-48b4" name="Enchanted Items" hidden="false" collective="false" import="true">
@@ -3116,7 +3116,7 @@ Characters with the Questing Vow cannot use a mundane or magical lance.
     <rule id="b02d-465f-ade3-13e4" name="Peasants Duty" publicationId="143d-ca87-8001-00a0" page="42" hidden="false">
       <description>Models with the Peasant&apos;s Duty may use the Leadership of any non fleeing Knight within 6&quot; of them. Unit Standards in units with the Peasant&apos;s Duty do not confer any additional Victory Points if they are captured.</description>
     </rule>
-    <rule id="86e7-3644-e31f-025b" name="Virtue of the Penitent " publicationId="143d-ca87-8001-00a0" page="58" hidden="false">
+    <rule id="86e7-3644-e31f-025b" name="Virtue of the Penitent" publicationId="143d-ca87-8001-00a0" page="58" hidden="false">
       <description>&apos;Following the loss of his beloved to the curse of a hag, Duke Corduin of L&apos;Anguille became known as the Hermnit knight. Though when called to arms, he would always return to fight for his beloved king.&apos;
 The Knight is Stubborn, though he may never join any friendly units. He may not take any magic items, nor may he ride a Hippogryph or a Royal Pegasus.
 </description>
@@ -3126,12 +3126,12 @@ The Knight is Stubborn, though he may never join any friendly units. He may not 
 For each attack that the Knight hits and wounds with on the charge (before Saves etc,), he may make an additional attack. For example, if a Paladin hits and wounds with two attacks he can make two additional attacks immediately. Extra attacks are not generated if these additional attacks also hit and wound. A character with this Virtue may not use magic weapons.
 </description>
     </rule>
-    <rule id="d70c-5e0c-36bc-387b" name="Virtue of Heroism " publicationId="143d-ca87-8001-00a0" page="58" hidden="false">
+    <rule id="d70c-5e0c-36bc-387b" name="Virtue of Heroism" publicationId="143d-ca87-8001-00a0" page="58" hidden="false">
       <description>&apos;Known as the Slayer of Monsters, Gilles fought and killed many of the great beasts that stalked the Massif Orcal, mounting their heads on the walls of his fastness.&apos;
 Against large Targets, and if armed with a non-magical weapon, the Knight has the Killing Blow special ability. This overrides the normal limitation of Killing Blow only affecting man-sized models.
 </description>
     </rule>
-    <rule id="e4df-61c9-2612-d2a8" name="Virtue of Stoicism " publicationId="143d-ca87-8001-00a0" page="58" hidden="false">
+    <rule id="e4df-61c9-2612-d2a8" name="Virtue of Stoicism" publicationId="143d-ca87-8001-00a0" page="58" hidden="false">
       <description>&apos;Tales are still told of how Lambard stood alone against hordes of Ores and saved his dukedom of Carcassonne. Steeled by bis bravery, those around bin: fought with the courage of the Breton himself&apos;
 The Knight (and any unit he has Joined) may re-roll failed Break tests.
 </description>
@@ -3141,7 +3141,7 @@ The Knight (and any unit he has Joined) may re-roll failed Break tests.
 The Knight gains the following bonuses to his profile: +2 Weapon Skill, +1 Initiative, +1 Attack. He may not be the army&apos;s General (even if he has the highest Leadership) and any friendly unit (including other Knightly characters, or units using a Knight&apos;s Leadership) taking any form of Leadership test within 6&quot; of this model suffers a -I penalty to their Leadership.
 </description>
     </rule>
-    <rule id="3c14-0045-c9e8-27d9" name="Virtue of the Impetuous Knight " publicationId="143d-ca87-8001-00a0" page="58" hidden="false">
+    <rule id="3c14-0045-c9e8-27d9" name="Virtue of the Impetuous Knight" publicationId="143d-ca87-8001-00a0" page="58" hidden="false">
       <description>the glory of the charge was Balduffi most alive, and though others more tempered by the fires of war better controlled their ardour, be was ever in the forefront of battle.&apos;
 The Knight, and any mounted unit he is with, adds +D6&quot; for the first charge that they declare (roll after declaring the charge). If the charge is failed the unit will not add this extra D6&quot; to their failed charge movement.
 </description>
@@ -3149,7 +3149,7 @@ The Knight, and any mounted unit he is with, adds +D6&quot; for the first charge
     <rule id="178a-cce9-03bb-8c64" name="Purebreed Warhorse" hidden="false">
       <description>For generations, the Bretonnian Warhorse has been bred to bear the weight of a fully armoured knight. Bretonnian Warhorses do not suffer any movement penalties for being barded.</description>
     </rule>
-    <rule id="99a3-0e70-32f7-0e19" name="Virtue of Audacity " publicationId="143d-ca87-8001-00a0" page="59" hidden="false">
+    <rule id="99a3-0e70-32f7-0e19" name="Virtue of Audacity" publicationId="143d-ca87-8001-00a0" page="59" hidden="false">
       <description>A master of the feint and riposte, Agilgar&apos;s skill at turning an enemy&apos;s strength against him is legendary. Many a powerful foe met his demise on the end of Agilgar&apos;s lance.&apos;
 Against enemies with a higher Strength than himself (before modifications from weapons etc), the Knight may re-roll any failed rolls to hit and to wound.
 </description>
@@ -3160,12 +3160,12 @@ May not be taken by the General &apos;Most loyal of Companions, brave Duke Thier
 For as long as the General is alive, the model with this Virtue adds + 1 to the combat resolution of any fight of which he is a part.
 </description>
     </rule>
-    <rule id="1285-e820-8420-94b7" name="Virtue of the Joust " hidden="false">
+    <rule id="1285-e820-8420-94b7" name="Virtue of the Joust" hidden="false">
       <description>&apos;Great was Duke Folgar of Artois&apos; skill with a lance - none could unhorse hint, save perhaps Landuin himself&apos;
 The Knight may re-roll failed rolls to hit when charging and using a lance (including magical lances).
 </description>
     </rule>
-    <rule id="f5d3-eb31-6de1-a64b" name="Virtue of Confidence " publicationId="143d-ca87-8001-00a0" page="59" hidden="false">
+    <rule id="f5d3-eb31-6de1-a64b" name="Virtue of Confidence" publicationId="143d-ca87-8001-00a0" page="59" hidden="false">
       <description>Haughty, proud and skilful, Carleond of Couronne took never a backward step in the face of adversity.&apos;
 The Knight must always issue challenges, and will always accept them if possible. In challenges, the Knight may re-roll all failed rolls to hit and to wound.
 </description>
@@ -3180,17 +3180,17 @@ The Knight hates all enemies using missile weapons including war machine crews. 
 The Knight will always start the game with the Blessing of the lady, even if the army did not pray. In addition, the Ward save which the Knight gains from the Blessing is always 5+. regardless of the Strength of the attack.
 </description>
     </rule>
-    <rule id="0820-ae72-16b4-d045" name="Virtue of Discipline " publicationId="143d-ca87-8001-00a0" page="59" hidden="false">
+    <rule id="0820-ae72-16b4-d045" name="Virtue of Discipline" publicationId="143d-ca87-8001-00a0" page="59" hidden="false">
       <description>&apos;No matter the odds, Marcus took to the field of battle undaunted by the numberless hordes of his enemies.&apos;
 The enemy never gets a +I combat resolution bonus for outnumbering in any combat that the character is involved in. Note, however, that he and any unit he has joined will still flee automatically if beaten by a fear-causing enemy that outnumbers them, as per the normal rules.
 </description>
     </rule>
-    <rule id="0842-2dde-c723-fb43" name="Virtue of Empathy " publicationId="143d-ca87-8001-00a0" page="59" hidden="false">
+    <rule id="0842-2dde-c723-fb43" name="Virtue of Empathy" publicationId="143d-ca87-8001-00a0" page="59" hidden="false">
       <description>A champion of the common man, Martrud was beloved by those be protected. Wherever he fought, the peasants doubled their efforts and would fight to the death rather than dishonour their lord.&apos;
 The Knight may be fielded on foot. In addition, if he is not the army&apos;s General, Peasant units within 12&apos; of him may use his Leadership, rather than the normal distance of 6&quot;.
 </description>
     </rule>
-    <rule id="2a3a-82af-f3f1-f196" name="The Silver Lance of the Blessed " publicationId="143d-ca87-8001-00a0" page="60" hidden="false">
+    <rule id="2a3a-82af-f3f1-f196" name="The Silver Lance of the Blessed" publicationId="143d-ca87-8001-00a0" page="60" hidden="false">
       <description>(Mounted Character only)
 Forged by Gilles himself the Silver Lance of the Blessed can only be carried by one who is completely pure of heart. To grasp the lance is said to be the true test of courage and spiritual strength, for an aspirant who is found wanting will be consumed by searing white flame.
 The bearer has +2 Strength on the charge when mounted. If the model has the Blessing of the Lady, then all attacks with the Silver Lance of the Blessed automatically hit.
@@ -3202,7 +3202,7 @@ This large hand-and-a half sword has been passed down from knight to knight, and
 May be used as either a hand weapon or a great weapon, decided at the start of combat as normal. No Armour saves may be taken against the Sword of the Quest.
 </description>
     </rule>
-    <rule id="4fe5-fa63-620e-f9d7" name="Sword of the Lady&apos;s Champion " publicationId="143d-ca87-8001-00a0" page="60" hidden="false">
+    <rule id="4fe5-fa63-620e-f9d7" name="Sword of the Lady&apos;s Champion" publicationId="143d-ca87-8001-00a0" page="60" hidden="false">
       <description>(Character with the Grail Vow only)
 On the eve of battle, a knight that kneels to pray beside a body of still water may be rewarded with the vision of a pale, slender band emerging from the water, with a beautiful blade grasped within its delicate fingers.
 The character always counts their Strength as one higher than their target&apos;s Toughness, unless their Strength would normally he more than this. In effect this means that they will always wound opponents on at least a 3+. This modified Strength is also used to calculate Armour save modifiers.
@@ -3247,7 +3247,7 @@ This breastplate is inscribed with the words of the Grail Vow, and even in the b
 This armour replaces the Knight&apos;s heavy armour, and gives a 5+ Armour save that can be combined with other equipment as normal. In addition, the wearer has Regeneration.
 </description>
     </rule>
-    <rule id="1b74-ea84-8a23-06ae" name="Armour of the Midsummer Sun " publicationId="143d-ca87-8001-00a0" page="61" hidden="false">
+    <rule id="1b74-ea84-8a23-06ae" name="Armour of the Midsummer Sun" publicationId="143d-ca87-8001-00a0" page="61" hidden="false">
       <description>This enchanted armour reflects and magnifies the light of the sun so that beams of light shimmer and burst from every surface as the knight gallops towards his foe.
 This armour replaces the Knight&apos;s heavy armour, and gives a 5+ Armour save that may be combined with other armour as normal. Opponents suffer a -1 penalty to all rolls to hit the wearer and his mount with missile weapons and in close combat.
 </description>
