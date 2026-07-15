@@ -1,3 +1,4 @@
+import React from 'react';
 import { createPortal } from 'react-dom';
 
 // Rendered via a portal straight into <body> rather than in place. The
