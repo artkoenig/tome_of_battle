@@ -193,7 +193,7 @@ export function getExtraResourceTotals(system, roster, costs) {
   if (!system?.costTypes || !roster) return [];
   return system.costTypes
     .filter(ct => ct.id !== roster.costLimitType)
-    .map(ct => ({ id: ct.id, name: ct.name.trim(), total: costs?.[ct.id] || 0 }))
+    .map(ct => ({ id: ct.id, name: ct.name, total: costs?.[ct.id] || 0 }))
     .filter(ct => ct.total > 0);
 }
 

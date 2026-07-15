@@ -22,6 +22,16 @@ function getWrappedChildren(el, wrapperName, tagName) {
 }
 
 /**
+ * Reads an element's `name` attribute, trimmed. The catalogue XML the app imports
+ * carries occasional stray leading/trailing whitespace (upstream authoring artifacts,
+ * e.g. costType " Casting Dice" or entry names like "Armour of Damnation "); trimming
+ * once here, at the parsing boundary, means nothing downstream needs to.
+ */
+function getName(el) {
+  return el.getAttribute('name')?.trim() ?? null;
+}
+
+/**
  * Parses rules from an element, accepting 'rules' or 'sharedRules' wrappers.
  */
 function parseRules(el) {
@@ -29,7 +39,7 @@ function parseRules(el) {
   if (!wrapper) return [];
   return getChildren(wrapper, 'rule').map(ruleEl => ({
     id: ruleEl.getAttribute('id'),
-    name: ruleEl.getAttribute('name'),
+    name: getName(ruleEl),
     publicationId: ruleEl.getAttribute('publicationId'),
     page: ruleEl.getAttribute('page'),
     hidden: ruleEl.getAttribute('hidden') === 'true',
@@ -50,7 +60,7 @@ function parseProfiles(el) {
     if (charWrapper) {
       getChildren(charWrapper, 'characteristic').forEach(cEl => {
         characteristics.push({
-          name: cEl.getAttribute('name'),
+          name: getName(cEl),
           id: cEl.getAttribute('typeId'),
           typeId: cEl.getAttribute('typeId'),
           value: cEl.textContent || ''
@@ -59,7 +69,7 @@ function parseProfiles(el) {
     }
     return {
       id: profEl.getAttribute('id'),
-      name: profEl.getAttribute('name'),
+      name: getName(profEl),
       profileTypeId: profEl.getAttribute('profileTypeId'),
       profileTypeName: profEl.getAttribute('profileTypeName') || profEl.getAttribute('typeName'),
       publicationId: profEl.getAttribute('publicationId'),
@@ -79,7 +89,7 @@ function parseInfoLinks(el) {
   if (!wrapper) return [];
   return getChildren(wrapper, 'infoLink').map(linkEl => ({
     id: linkEl.getAttribute('id'),
-    name: linkEl.getAttribute('name'),
+    name: getName(linkEl),
     targetId: linkEl.getAttribute('targetId'),
     type: linkEl.getAttribute('type'), // profile, rule
     publicationId: linkEl.getAttribute('publicationId'),
@@ -96,7 +106,7 @@ function parseCosts(el) {
   const wrapper = getChildren(el, 'costs')[0];
   if (!wrapper) return [];
   return getChildren(wrapper, 'cost').map(costEl => ({
-    name: costEl.getAttribute('name'),
+    name: getName(costEl),
     typeId: costEl.getAttribute('typeId'),
     value: parseFloat(costEl.getAttribute('value')) || 0
   }));
@@ -198,7 +208,7 @@ function parseCategoryLinks(el) {
   if (!wrapper) return [];
   return getChildren(wrapper, 'categoryLink').map(linkEl => ({
     id: linkEl.getAttribute('id'),
-    name: linkEl.getAttribute('name'),
+    name: getName(linkEl),
     targetId: linkEl.getAttribute('targetId'),
     primary: linkEl.getAttribute('primary') === 'true',
     constraints: parseConstraints(linkEl),
@@ -214,7 +224,7 @@ function parseEntryLinks(el) {
   if (!wrapper) return [];
   return getChildren(wrapper, 'entryLink').map(linkEl => ({
     id: linkEl.getAttribute('id'),
-    name: linkEl.getAttribute('name'),
+    name: getName(linkEl),
     targetId: linkEl.getAttribute('targetId'),
     type: linkEl.getAttribute('type'), // selectionEntry, selectionEntryGroup
     publicationId: linkEl.getAttribute('publicationId'),
@@ -247,7 +257,7 @@ function parseSelectionEntry(el) {
 
   return {
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     type: el.getAttribute('type') || 'upgrade', // unit, model, upgrade
     publicationId: el.getAttribute('publicationId'),
     page: el.getAttribute('page'),
@@ -276,7 +286,7 @@ function parseSelectionEntryGroup(el) {
 
   return {
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     defaultSelectionEntryId: el.getAttribute('defaultSelectionEntryId'),
     publicationId: el.getAttribute('publicationId'),
     page: el.getAttribute('page'),
@@ -296,7 +306,7 @@ function parseSelectionEntryGroup(el) {
 const parseForceEntry = (el) => {
   const catLinks = getWrappedChildren(el, 'categoryLinks', 'categoryLink').map(link => ({
     id: link.getAttribute('id'),
-    name: link.getAttribute('name'),
+    name: getName(link),
     hidden: link.getAttribute('hidden') === 'true',
     targetId: link.getAttribute('targetId'),
     constraints: parseConstraints(link),
@@ -307,7 +317,7 @@ const parseForceEntry = (el) => {
 
   return {
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     hidden: el.getAttribute('hidden') === 'true',
     categoryLinks: catLinks,
     forceEntries: subForces,
@@ -330,7 +340,7 @@ export function parseGameSystemXML(xmlText) {
   // Cost Types
   const costTypes = getWrappedChildren(root, 'costTypes', 'costType').map(el => ({
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     defaultCostLimit: parseFloat(el.getAttribute('defaultCostLimit')) || 0
   }));
 
@@ -339,11 +349,11 @@ export function parseGameSystemXML(xmlText) {
     const charWrapper = getChildren(el, 'characteristicTypes')[0];
     const characteristics = getChildren(charWrapper, 'characteristicType').map(c => ({
       id: c.getAttribute('id'),
-      name: c.getAttribute('name')
+      name: getName(c)
     }));
     return {
       id: el.getAttribute('id'),
-      name: el.getAttribute('name'),
+      name: getName(el),
       characteristics
     };
   });
@@ -351,7 +361,7 @@ export function parseGameSystemXML(xmlText) {
   // Category Entries
   const categoryEntries = getWrappedChildren(root, 'categoryEntries', 'categoryEntry').map(el => ({
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     hidden: el.getAttribute('hidden') === 'true',
     constraints: parseConstraints(el),
     modifiers: parseModifiers(el)
@@ -362,7 +372,7 @@ export function parseGameSystemXML(xmlText) {
   const sharedSelectionEntryGroups = getWrappedChildren(root, 'sharedSelectionEntryGroups', 'selectionEntryGroup').map(parseSelectionEntryGroup);
   const publications = getWrappedChildren(root, 'publications', 'publication').map(el => ({
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     shortName: el.getAttribute('shortName'),
     publisher: el.getAttribute('publisher'),
     publicationDate: el.getAttribute('publicationDate'),
@@ -371,7 +381,7 @@ export function parseGameSystemXML(xmlText) {
 
   return {
     id: root.getAttribute('id'),
-    name: root.getAttribute('name'),
+    name: getName(root),
     costTypes,
     profileTypes,
     categoryEntries,
@@ -403,7 +413,7 @@ export function parseCatalogueXML(xmlText) {
   
   const categoryEntries = getWrappedChildren(root, 'categoryEntries', 'categoryEntry').map(el => ({
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     hidden: el.getAttribute('hidden') === 'true',
     constraints: parseConstraints(el),
     modifiers: parseModifiers(el)
@@ -412,7 +422,7 @@ export function parseCatalogueXML(xmlText) {
   // Catalogs can also declare catalogLinks to other catalogues
   const catalogueLinks = getWrappedChildren(root, 'catalogueLinks', 'catalogueLink').map(el => ({
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     targetId: el.getAttribute('targetId'),
     type: el.getAttribute('type') // subRange, etc.
   }));
@@ -420,7 +430,7 @@ export function parseCatalogueXML(xmlText) {
   const forceEntries = getWrappedChildren(root, 'forceEntries', 'forceEntry').map(parseForceEntry);
   const publications = getWrappedChildren(root, 'publications', 'publication').map(el => ({
     id: el.getAttribute('id'),
-    name: el.getAttribute('name'),
+    name: getName(el),
     shortName: el.getAttribute('shortName'),
     publisher: el.getAttribute('publisher'),
     publicationDate: el.getAttribute('publicationDate'),
@@ -429,7 +439,7 @@ export function parseCatalogueXML(xmlText) {
 
   return {
     id: root.getAttribute('id'),
-    name: root.getAttribute('name'),
+    name: getName(root),
     gameSystemId: root.getAttribute('gameSystemId'),
     gameSystemRevision: root.getAttribute('gameSystemRevision'),
     selectionEntries,

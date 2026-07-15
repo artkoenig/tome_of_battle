@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: [01]
 
 ## Description
@@ -45,3 +45,4 @@ Seam 5), [Issue 11](../../11-katalognamen-mit-ueberfluessigen-leerzeichen-berein
 - [ ] Keine weitergehende Normalisierung (Akzente, Anführungszeichen, Interpunktion unberührt)
 
 ## Comments
+- Zentraler getName()-Helper in xmlParser.js (trim beim Lesen jedes name-Attributs) ersetzt alle 21 Lesestellen — ein einziger Normalisierungspunkt an der Systemgrenze statt verstreuter trim()-Aufrufe. ct.name.trim() in rosterCounter.js (Kostenaufstellung) entfernt, da jetzt ueberfluessig. Neuer Parser-Test belegt Trimmen anhand der realen Faelle (costType ' Casting Dice', Entry-/Regelname 'Armour of Damnation '). Regressionstest in rulesLookup.test.js belegt, dass normalizeName() (Issue 07) Namen mit Leerzeichen ohnehin schon aufloest -- die fuenf Issue-11-Regeln bleiben verlinkt, unabhaengig vom Parser-Trim. Keine ueber den Namen-Scope hinausgehende Normalisierung (Akzente/Anfuehrungszeichen unberuehrt). Volle Suite (32 Dateien, 363 Tests) und E2E (ui.test.js, laeuft jetzt durch die Issue-01-Fixture mit echtem Whitespace) gruen.
