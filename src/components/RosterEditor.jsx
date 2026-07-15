@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Play, AlertTriangle, Check, ArrowLeft, Download } from 'lucide-react';
+import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
 import { useDebugMode } from '../hooks/DebugContext';
@@ -24,7 +24,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     addUnit,
     removeUnit,
     copyUnit,
-    updateSubSelection
+    updateSubSelection,
+    undo,
+    redo,
+    canUndo,
+    canRedo
   } = useRoster(initialRoster, system, saveRoster);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
@@ -120,6 +124,26 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            className="btn-secondary square-btn"
+            onClick={undo}
+            disabled={!canUndo}
+            title="Rückgängig"
+            aria-label="Rückgängig"
+          >
+            <Undo2 size={16} />
+          </button>
+          <button
+            type="button"
+            className="btn-secondary square-btn"
+            onClick={redo}
+            disabled={!canRedo}
+            title="Wiederherstellen"
+            aria-label="Wiederherstellen"
+          >
+            <Redo2 size={16} />
+          </button>
           <button className="btn-secondary hide-on-mobile" onClick={() => onExportRoster?.(roster)} style={{ padding: '6px 12px' }}>
             <Download size={16} /> <span>Exportieren</span>
           </button>
