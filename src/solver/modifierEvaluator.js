@@ -87,14 +87,17 @@ export const evaluateCondition = (cond, ctx = {}) => {
       return currentValue > targetValue;
     case 'notEqualTo':
       return currentValue !== targetValue;
-    case 'lessThanOrEqualTo':
-      return currentValue <= targetValue;
+    case 'atLeast':
     case 'greaterThanOrEqualTo':
       return currentValue >= targetValue;
-    case 'instanceOf': {
+    case 'atMost':
+    case 'lessThanOrEqualTo':
+      return currentValue <= targetValue;
+    case 'instanceOf':
+    case 'notInstanceOf': {
+      const isNegated = cond.type === 'notInstanceOf';
       const forceEntryId = cond.scope || cond.childId;
       if (system && forceEntryId) {
-        // Simple local recursive search for force entry to avoid circular dependency
         const findForceEntryInSystemLocal = (sys, id) => {
           if (!sys || !id) return null;
           const findInList = (list, targetId) => {
@@ -126,11 +129,12 @@ export const evaluateCondition = (cond, ctx = {}) => {
         if (isForce) {
           const isInstance = (ctx.force?.forceEntryId === forceEntryId) || 
                              (roster?.forces?.some(f => f.forceEntryId === forceEntryId));
-          return cond.value === 0 ? !isInstance : isInstance;
+          const raw = cond.value === 0 ? !isInstance : isInstance;
+          return isNegated ? !raw : raw;
         }
       }
 
-      if (!selection || !system) return false;
+      if (!selection || !system) return isNegated;
       const targetChildId = cond.childId;
       const checkInstance = (sel) => {
         if (!sel) return false;
@@ -154,9 +158,9 @@ export const evaluateCondition = (cond, ctx = {}) => {
         return false;
       };
       
-      if (checkInstance(selection)) return true;
-      if (parentSelection && checkInstance(parentSelection)) return true;
-      return false;
+      if (checkInstance(selection)) return !isNegated;
+      if (parentSelection && checkInstance(parentSelection)) return !isNegated;
+      return isNegated;
     }
     default:
       return false;
