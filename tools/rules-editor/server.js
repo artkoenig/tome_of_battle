@@ -1,6 +1,6 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
-import { createWriteStream } from 'node:fs';
+import { createWriteStream, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
 import { spawn } from 'node:child_process';
@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const DATA_DIR = path.join(PROJECT_ROOT, 'src', 'data');
 const LOG_DIR = path.join(__dirname, 'logs');
+const CATALOG_DIR = path.join(PROJECT_ROOT, 'public', 'catalogs', 'whfb6');
 const CRAWL_SCRIPT = path.join('scripts', 'generate-rules-index.js');
 const PORT = process.env.PORT || 3001;
 
@@ -30,14 +31,9 @@ function parseSynonymsText(text) {
   const trimmed = text.trimStart();
   const prefix = 'export const SYNONYMS = ';
   if (!trimmed.startsWith(prefix)) throw new Error('Unexpected synonyms.js format');
-  let jsonStr = trimmed.slice(prefix.length).trimEnd();
-  if (jsonStr.endsWith(';')) jsonStr = jsonStr.slice(0, -1);
-  // Convert single-quoted JS object literal to valid JSON
-  jsonStr = jsonStr
-    .replace(/'/g, '"')
-    .replace(/,\s*}/g, '}')
-    .replace(/,\s*]/g, ']');
-  return JSON.parse(jsonStr);
+  let body = trimmed.slice(prefix.length).trimEnd();
+  if (body.endsWith(';')) body = body.slice(0, -1);
+  return new Function(`return ${body}`)();
 }
 
 function serializeSynonyms(obj) {
@@ -91,6 +87,16 @@ async function handleAPI(req, res) {
 
     if (method === 'POST' && url.pathname === '/api/crawl') {
       return streamCrawl(res);
+    }
+
+    if (method === 'GET' && url.pathname === '/api/uncovered') {
+      try {
+        const entries = findUncoveredEntries();
+        return sendJSON(res, 200, { total: entries.length, entries });
+      } catch (err) {
+        console.error('Fehler beim Ermitteln unerfasster Einträge:', err);
+        return sendJSON(res, 500, { error: err.message });
+      }
     }
 
     sendJSON(res, 404, { error: 'Not found' });
@@ -173,6 +179,89 @@ function runCrawlIntoStream(res) {
     child.on('close', finish);
     child.on('error', () => finish(null));
   });
+}
+
+/* ── Katalog-Einträge ohne Link ───────────────────────── */
+
+function normalizeName(name) {
+  return name
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function decodeEntities(str) {
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&#x2F;/g, '/')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&');
+}
+
+function extractRuleNames(xmlText) {
+  const names = [];
+  const ruleRegex = /<rule\s[^>]*name="([^"]*)"/gi;
+  let match;
+  while ((match = ruleRegex.exec(xmlText)) !== null) {
+    names.push(decodeEntities(match[1]));
+  }
+  return names;
+}
+
+function getCoveredSet() {
+  const indexPath = path.join(DATA_DIR, 'rules-index.json');
+  const synPath = path.join(DATA_DIR, 'synonyms.js');
+  const index = JSON.parse(readFileSync(indexPath, 'utf-8'));
+  const synRaw = readFileSync(synPath, 'utf-8');
+  const synonyms = parseSynonymsText(synRaw);
+
+  const covered = new Set();
+  for (const name of Object.keys(index)) {
+    covered.add(normalizeName(name));
+  }
+  for (const [from, to] of Object.entries(synonyms)) {
+    covered.add(normalizeName(from));
+    covered.add(normalizeName(to));
+  }
+  return covered;
+}
+
+function getAllRuleNamesFromCatalogs() {
+  const files = readdirSync(CATALOG_DIR).filter(f => f.endsWith('.gst') || f.endsWith('.cat'));
+  const map = new Map(); // name → Set<source>
+
+  for (const file of files) {
+    const content = readFileSync(path.join(CATALOG_DIR, file), 'utf-8');
+    const names = extractRuleNames(content);
+    for (const name of names) {
+      if (!map.has(name)) map.set(name, new Set());
+      map.get(name).add(file);
+    }
+  }
+  return map;
+}
+
+function findUncoveredEntries() {
+  const covered = getCoveredSet();
+  const catalogNames = getAllRuleNamesFromCatalogs();
+  const uncovered = [];
+
+  for (const [name, sources] of catalogNames) {
+    if (!covered.has(normalizeName(name))) {
+      uncovered.push({
+        name,
+        sources: [...sources].sort(),
+      });
+    }
+  }
+
+  uncovered.sort((a, b) => a.name.localeCompare(b.name));
+  return uncovered;
 }
 
 function requestBody(req) {
