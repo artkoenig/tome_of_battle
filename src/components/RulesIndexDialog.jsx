@@ -1,26 +1,65 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, WifiOff, RefreshCw } from 'lucide-react';
+
+// A cross-origin iframe does not reliably fire `onError`, so we also guard the
+// load with a timeout: if 6th.whfb.app has not signalled `onLoad` within this
+// window (offline, blocked embedding, slow network), we surface a friendly error
+// instead of an endless spinner.
+const LOAD_TIMEOUT_MS = 15000;
 
 export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
   const [iframeLoaded, setIframeLoaded] = useState(false);
-  const iframeRef = useRef(null);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const timeoutRef = useRef(null);
+
+  const clearLoadTimeout = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const startLoadTimeout = useCallback(() => {
+    clearLoadTimeout();
+    timeoutRef.current = setTimeout(() => setLoadError(true), LOAD_TIMEOUT_MS);
+  }, [clearLoadTimeout]);
 
   useEffect(() => {
     if (isOpen) {
       setIframeLoaded(false);
+      setLoadError(false);
       document.body.style.overflow = 'hidden';
+      startLoadTimeout();
     } else {
       document.body.style.overflow = '';
       setIframeLoaded(false);
+      setLoadError(false);
+      clearLoadTimeout();
     }
     return () => {
       document.body.style.overflow = '';
+      clearLoadTimeout();
     };
-  }, [isOpen]);
+  }, [isOpen, startLoadTimeout, clearLoadTimeout]);
 
   const handleIframeLoad = useCallback(() => {
+    clearLoadTimeout();
+    setLoadError(false);
     setIframeLoaded(true);
-  }, []);
+  }, [clearLoadTimeout]);
+
+  const handleIframeError = useCallback(() => {
+    clearLoadTimeout();
+    setLoadError(true);
+  }, [clearLoadTimeout]);
+
+  const handleRetry = useCallback(() => {
+    setIframeLoaded(false);
+    setLoadError(false);
+    setReloadKey((key) => key + 1);
+    startLoadTimeout();
+  }, [startLoadTimeout]);
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -63,28 +102,41 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
           </button>
         </div>
         <div className="modal-body" style={{ overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          {!iframeLoaded && (
-            <div className="rules-index-loading">
-              <Loader2 size={32} className="spinner" />
-              <p>Lade Regeltext...</p>
+          {loadError ? (
+            <div className="rules-index-error">
+              <WifiOff size={32} />
+              <p>Keine Verbindung zu 6th.whfb.app</p>
+              <button type="button" className="btn" onClick={handleRetry}>
+                <RefreshCw size={16} /> <span>Erneut versuchen</span>
+              </button>
             </div>
+          ) : (
+            <>
+              {!iframeLoaded && (
+                <div className="rules-index-loading">
+                  <Loader2 size={32} className="spinner" />
+                  <p>Lade Regeltext...</p>
+                </div>
+              )}
+              <div className="rules-index-iframe-wrapper">
+                <iframe
+                  key={reloadKey}
+                  src={url}
+                  title={ruleName}
+                  className="rules-index-iframe"
+                  onLoad={handleIframeLoad}
+                  onError={handleIframeError}
+                  style={{
+                    flex: 1,
+                    width: '100%',
+                    border: 'none',
+                    display: iframeLoaded ? 'block' : 'none',
+                  }}
+                  allow="clipboard-write"
+                />
+              </div>
+            </>
           )}
-          <div className="rules-index-iframe-wrapper">
-            <iframe
-              ref={iframeRef}
-              src={url}
-              title={ruleName}
-              className="rules-index-iframe"
-              onLoad={handleIframeLoad}
-              style={{
-                flex: 1,
-                width: '100%',
-                border: 'none',
-                display: iframeLoaded ? 'block' : 'none',
-              }}
-              allow="clipboard-write"
-            />
-          </div>
         </div>
       </div>
     </div>

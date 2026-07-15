@@ -1,13 +1,14 @@
 import React from 'react';
-import { Info, BookOpen } from 'lucide-react';
-import { 
-  resolveEntry, 
-  findEntryInSystem, 
-  collectUnitProfilesAndRules 
+import {
+  resolveEntry,
+  findEntryInSystem,
+  collectUnitProfilesAndRules
 } from '../../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
 import { groupProfilesByType } from '../../solver/rulesEvaluator';
 import { getRuleUrl } from '../../data/rulesLookup';
+import { renderUpgradeDetails } from './upgradeDetails';
+import RuleChipIcon from './RuleChipIcon';
 
 export const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
   const list = [];
@@ -149,138 +150,6 @@ export const getUpgradeDescription = (res, system) => {
   return descriptions.join(' | ');
 };
 
-export const renderUpgradeDetails = (res, system) => {
-  if (!res) return null;
-  const elements = [];
-
-  const isNameSimilar = (nameA, nameB) => {
-    if (!nameA || !nameB) return false;
-    const cleanA = nameA.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const cleanB = nameB.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return cleanA === cleanB || 
-           cleanA.includes(cleanB) || 
-           cleanB.includes(cleanA) ||
-           (cleanA.includes('waaagh') && cleanB.includes('waaagh')) ||
-           cleanA.slice(-10) === cleanB.slice(-10);
-  };
-
-  let rules = res.rules || [];
-  if (rules.length === 0 && res.name) {
-    const lowerName = res.name.toLowerCase().trim();
-    let foundRule = system.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
-    if (!foundRule) {
-      for (const cat of system.catalogues || []) {
-        foundRule = cat.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
-        if (foundRule) break;
-      }
-    }
-    if (foundRule) {
-      rules = [foundRule];
-    }
-  }
-
-  // 1. Beschreibung (Rules / Lore)
-  if (rules.length > 0) {
-    rules.forEach((r, idx) => {
-      if (r.description) {
-        const label = isNameSimilar(r.name, res.name)
-          ? 'Beschreibung'
-          : `Beschreibung (${r.name})`;
-
-        elements.push(
-          <div key={`rule-${idx}`} style={{ marginTop: '4px' }}>
-            <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
-            {r.description}
-            {r.publicationRef && (
-              <span className="publication-ref">
-                {r.publicationRef}
-              </span>
-            )}
-          </div>
-        );
-      }
-    });
-  }
-
-  // 2. Sonderregeln & Profilwerte (from Profiles)
-  if (res.profiles && res.profiles.length > 0) {
-    const profileElements = [];
-    res.profiles.forEach((p, idx) => {
-      const typeLower = p.profileTypeName?.toLowerCase() || '';
-      if (UPGRADE_DETAILS_KEYWORDS.some(k => typeLower.includes(k))) {
-        // Find "Special Rules" or "Sonderregeln" characteristic
-        const specialRulesChar = p.characteristics?.find(c => {
-          const nameLower = (c.name || '').toLowerCase().trim();
-          return nameLower === 'special rules' || nameLower === 'special-rules' || nameLower === 'sonderregeln';
-        });
-
-        const otherChars = p.characteristics?.filter(c => {
-          const nameLower = (c.name || '').toLowerCase().trim();
-          return nameLower !== 'special rules' && nameLower !== 'special-rules' && nameLower !== 'sonderregeln';
-        }) || [];
-
-        // If there is special rules text, show it under "Sonderregeln:" label
-        if (specialRulesChar && specialRulesChar.value && specialRulesChar.value.trim()) {
-          profileElements.push(
-            <div key={`special-rules-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>Sonderregeln: </span>
-              {specialRulesChar.value.trim()}
-              {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
-                <span className="publication-ref">
-                  {p.publicationRef}
-                </span>
-              )}
-            </div>
-          );
-        }
-
-        // If there are other non-empty characteristics, show them under "Profil:" label
-        const nonBigEmptyChars = otherChars.filter(c => c.value && c.value.trim() && c.value.trim() !== '-');
-        if (nonBigEmptyChars.length > 0) {
-          const stats = nonBigEmptyChars.map(c => `${c.name}: ${c.value}`).join(', ');
-          const label = isNameSimilar(p.name, res.name)
-            ? 'Profil'
-            : `Profil (${p.name})`;
-
-          profileElements.push(
-            <div key={`profile-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
-              {stats}
-              {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
-                <span className="publication-ref">
-                  {p.publicationRef}
-                </span>
-              )}
-            </div>
-          );
-        }
-      }
-    });
-    elements.push(...profileElements);
-  }
-
-  // 3. Quelle
-  if (res.publicationRef) {
-    const hasRuleOrProfileRefs = (res.rules && res.rules.some(r => r.publicationRef)) || (res.profiles && res.profiles.some(p => p.publicationRef));
-    if (!hasRuleOrProfileRefs) {
-      elements.push(
-        <div key="source" style={{ marginTop: '6px' }}>
-          <span className="text-gold" style={{ fontWeight: 600 }}>Quelle: </span>
-          <span className="publication-ref">
-            {res.publicationRef}
-          </span>
-        </div>
-      );
-    }
-  }
-
-  return (
-    <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
-      {elements.length > 0 ? elements : <span className="text-dim">Keine Beschreibung vorhanden.</span>}
-    </div>
-  );
-};
-
 export function UnitUpgradesChips({
   selection,
   system,
@@ -317,21 +186,14 @@ export function UnitUpgradesChips({
             }}
           >
             {upgrade.number > 1 ? `${upgrade.number}x ` : ''}{upgrade.name}
-            {getRuleUrl(upgrade.resolved?.name || upgrade.name) && (
-              <BookOpen size={14} className="rule-link-icon" />
-            )}
-            {descText && !getRuleUrl(upgrade.resolved?.name || upgrade.name) && (
-              <Info 
-                size={14} 
-                className="rule-link-icon"
-                onMouseEnter={(e) => {
-                  e.stopPropagation();
-                  handleMouseEnter(upgrade.resolved?.name || upgrade.name, details, e);
-                }}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-              />
-            )}
+            <RuleChipIcon
+              name={upgrade.resolved?.name || upgrade.name}
+              hasInfo={!!descText}
+              onShowRule={onShowRule}
+              onInfoEnter={(e) => handleMouseEnter(upgrade.resolved?.name || upgrade.name, details, e)}
+              onInfoMove={handleMouseMove}
+              onInfoLeave={handleMouseLeave}
+            />
             {showDebugIds && upgrade.resolved?.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>def:{upgrade.resolved.id}</span>
             )}
@@ -396,21 +258,14 @@ export function UnitRulesChips({
             }}
           >
             {rule.name}
-            {getRuleUrl(rule.name) && (
-              <BookOpen size={14} className="rule-link-icon" />
-            )}
-            {descText && !getRuleUrl(rule.name) && (
-              <Info 
-                size={14} 
-                className="rule-link-icon"
-                onMouseEnter={(e) => {
-                  e.stopPropagation();
-                  handleMouseEnter(rule.name, details, e);
-                }}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-              />
-            )}
+            <RuleChipIcon
+              name={rule.name}
+              hasInfo={!!descText}
+              onShowRule={onShowRule}
+              onInfoEnter={(e) => handleMouseEnter(rule.name, details, e)}
+              onInfoMove={handleMouseMove}
+              onInfoLeave={handleMouseLeave}
+            />
             {showDebugIds && rule.id && (
               <span className="debug-id-badge clickable" style={{ marginLeft: '4px' }}>{rule.id}</span>
             )}
