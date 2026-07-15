@@ -266,17 +266,18 @@ describe('RosterEditor Component', () => {
   describe('Lagerbericht Play Button and Flavor Text', () => {
     it('does not render "Spielen" button when validation errors exist', () => {
       // default mockValidationErrors contains errors, so roster is invalid
-      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
-      const mobilePlayBtn = screen.queryByText(/Spielen/i);
+      const { container } = render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      const mobilePlayBtn = container.querySelector('.mobile-only button');
       expect(mobilePlayBtn).toBeNull();
     });
 
     it('renders "Spielen" button and the cool flavor text when roster is valid', () => {
       mockValidationErrors = []; // Valid roster!
-      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      const { container } = render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       
-      const mobilePlayBtn = screen.getByText(/Spielen/i);
-      expect(mobilePlayBtn).toBeDefined();
+      const mobilePlayBtn = container.querySelector('.mobile-only button');
+      expect(mobilePlayBtn).not.toBeNull();
+      expect(mobilePlayBtn.textContent).toMatch(/Spielen/i);
       
       const flavorText = screen.getByText(/Die Schlachtreihen stehen fest/i);
       expect(flavorText).toBeDefined();
