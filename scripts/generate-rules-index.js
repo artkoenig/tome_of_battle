@@ -1,50 +1,90 @@
-import { writeFileSync } from 'node:fs';
+/**
+ * CLI entry point for the rules crawl.
+ *
+ * Default output is human readable. With `--events` every crawl event is
+ * written to stdout as one JSON object per line (NDJSON), which the rules
+ * editor consumes to render live progress and to persist a run log.
+ */
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-const BASE_URL = 'https://6th.whfb.app';
-const UTM = 'utm_source=6th-builder&utm_medium=referral';
-const SECTIONS = ['special-rules', 'weapons', 'magic-items', 'spell-lists', 'characteristics'];
+import {
+  CrawlEvent,
+  crawlRulesIndex,
+  mergeRetainingFailedSections,
+} from './rules-crawler.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_FILE = resolve(__dirname, '..', 'src', 'data', 'rules-index.json');
+const EVENTS_FLAG = '--events';
 
-async function fetchHTML(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Fetch failed: ${res.status} for ${url}`);
-  return res.text();
+function formatHumanLine(event) {
+  switch (event.type) {
+    case CrawlEvent.RunStarted:
+      return `Crawle ${event.sectionCount} Sections ...`;
+    case CrawlEvent.SectionStarted:
+      return `[${event.sectionNumber}/${event.sectionCount}] ${event.section} ...`;
+    case CrawlEvent.SectionCompleted:
+      return `[${event.sectionNumber}/${event.sectionCount}] ${event.section}: ${event.linkCount} Links`;
+    case CrawlEvent.SectionFailed:
+      return `[${event.sectionNumber}/${event.sectionCount}] ${event.section}: FEHLER – ${event.message}`;
+    case CrawlEvent.RunCompleted:
+      return `Fertig: ${event.entryCount} Einträge, ${event.failedSections.length} fehlgeschlagene Sections`;
+    default:
+      return null;
+  }
 }
 
-function extractLinks(html, section) {
-  const pattern = new RegExp(`<a\\s+href="/${section}/([^"]+)"[^>]*>([^<]+)</a>`, 'gi');
-  const links = [];
-  let match;
-  while ((match = pattern.exec(html)) !== null) {
-    const name = match[2].replace(/&#x27;/g, "'").trim();
-    if (!links.some(l => l.name === name)) {
-      links.push({ slug: match[1], name });
-    }
+function createHumanReporter(log = console.log) {
+  return event => {
+    const line = formatHumanLine(event);
+    if (line !== null) log(line);
+  };
+}
+
+function createEventReporter(write = line => process.stdout.write(line)) {
+  return event => write(JSON.stringify({ ...event, timestamp: new Date().toISOString() }) + '\n');
+}
+
+function readExistingIndex(file) {
+  try {
+    return JSON.parse(readFileSync(file, 'utf-8'));
+  } catch {
+    return {};
   }
-  return links;
+}
+
+function writeIndex(file, index) {
+  writeFileSync(file, JSON.stringify(index, null, 2) + '\n');
 }
 
 async function main() {
-  const index = {};
+  const emitEvents = process.argv.includes(EVENTS_FLAG);
+  const onEvent = emitEvents ? createEventReporter() : createHumanReporter();
 
-  for (const section of SECTIONS) {
-    const html = await fetchHTML(`${BASE_URL}/${section}`);
-    const links = extractLinks(html, section);
+  const { index, failures } = await crawlRulesIndex({ onEvent });
+  const failedSections = failures.map(failure => failure.section);
 
-    for (const { name, slug } of links) {
-      index[name] = `/${section}/${slug}?minimal=true&${UTM}`;
-    }
+  if (Object.keys(index).length === 0) {
+    throw new Error('Alle Sections fehlgeschlagen – rules-index.json bleibt unverändert.');
   }
 
-  writeFileSync(OUT_FILE, JSON.stringify(index, null, 2) + '\n');
-  console.log(`Wrote ${Object.keys(index).length} entries to ${OUT_FILE}`);
+  const merged = mergeRetainingFailedSections({
+    existingIndex: readExistingIndex(OUT_FILE),
+    crawledIndex: index,
+    failedSections,
+  });
+  writeIndex(OUT_FILE, merged);
+
+  if (!emitEvents) {
+    console.log(`Wrote ${Object.keys(merged).length} entries to ${OUT_FILE}`);
+  }
+  return failures.length === 0;
 }
 
-main().catch(err => {
-  console.error('Failed:', err);
-  process.exit(1);
-});
+main()
+  .then(ok => process.exit(ok ? 0 : 1))
+  .catch(error => {
+    console.error('Failed:', error.message);
+    process.exit(1);
+  });

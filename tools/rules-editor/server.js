@@ -1,14 +1,24 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import readline from 'node:readline';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const DATA_DIR = path.join(PROJECT_ROOT, 'src', 'data');
-const SCRIPTS_DIR = path.join(PROJECT_ROOT, 'scripts');
+const LOG_DIR = path.join(__dirname, 'logs');
+const CRAWL_SCRIPT = path.join('scripts', 'generate-rules-index.js');
 const PORT = process.env.PORT || 3001;
+
+/** Events the server itself contributes to the crawl stream. */
+const ServerEvent = {
+  LogFile: 'log-file',
+  CrawlerError: 'crawler-error',
+  RunFinished: 'run-finished',
+};
 
 const MIME = {
   '.html': 'text/html',
@@ -80,17 +90,7 @@ async function handleAPI(req, res) {
     }
 
     if (method === 'POST' && url.pathname === '/api/crawl') {
-      const output = execSync('node scripts/generate-rules-index.js', {
-        cwd: PROJECT_ROOT,
-        encoding: 'utf-8',
-      });
-      const rulesIndexRaw = await fs.readFile(
-        path.join(DATA_DIR, 'rules-index.json'),
-        'utf-8',
-      );
-      const rulesIndex = JSON.parse(rulesIndexRaw);
-      const count = Object.keys(rulesIndex).length;
-      return sendJSON(res, 200, { rulesIndex, entriesAdded: count, output });
+      return streamCrawl(res);
     }
 
     sendJSON(res, 404, { error: 'Not found' });
@@ -98,6 +98,81 @@ async function handleAPI(req, res) {
     console.error(err);
     sendJSON(res, 500, { error: err.message });
   }
+}
+
+let crawlRunning = false;
+
+function newLogFilePath() {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  return path.join(LOG_DIR, `crawl-${stamp}.log`);
+}
+
+/**
+ * Runs the crawl script as a child process and forwards its NDJSON event
+ * stream to the client while teeing it into a per-run log file. The response
+ * stays open for the whole run so the editor can render live progress; a
+ * disconnected client never aborts the crawl itself.
+ */
+async function streamCrawl(res) {
+  if (crawlRunning) {
+    return sendJSON(res, 409, { error: 'Es läuft bereits ein Crawl.' });
+  }
+  crawlRunning = true;
+  try {
+    await runCrawlIntoStream(res);
+  } catch (error) {
+    crawlRunning = false;
+    throw error;
+  }
+}
+
+function runCrawlIntoStream(res) {
+  return fs.mkdir(LOG_DIR, { recursive: true }).then(() => {
+    const logPath = newLogFilePath();
+    const logStream = createWriteStream(logPath, { encoding: 'utf-8' });
+
+    res.writeHead(200, { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store' });
+
+    const writeLine = line => {
+      logStream.write(line);
+      if (!res.writableEnded) res.write(line);
+    };
+    const emit = event =>
+      writeLine(JSON.stringify({ timestamp: new Date().toISOString(), ...event }) + '\n');
+
+    emit({ type: ServerEvent.LogFile, path: path.relative(PROJECT_ROOT, logPath) });
+
+    const child = spawn('node', [CRAWL_SCRIPT, '--events'], { cwd: PROJECT_ROOT });
+
+    readline.createInterface({ input: child.stdout }).on('line', line => {
+      if (!line.trim()) return;
+      try {
+        JSON.parse(line);
+        writeLine(line + '\n');
+      } catch {
+        emit({ type: ServerEvent.CrawlerError, message: line });
+      }
+    });
+
+    readline.createInterface({ input: child.stderr }).on('line', line => {
+      if (line.trim()) emit({ type: ServerEvent.CrawlerError, message: line });
+    });
+
+    child.on('error', error => emit({ type: ServerEvent.CrawlerError, message: error.message }));
+
+    let finished = false;
+    const finish = exitCode => {
+      if (finished) return;
+      finished = true;
+      emit({ type: ServerEvent.RunFinished, exitCode, ok: exitCode === 0 });
+      logStream.end();
+      if (!res.writableEnded) res.end();
+      crawlRunning = false;
+    };
+
+    child.on('close', finish);
+    child.on('error', () => finish(null));
+  });
 }
 
 function requestBody(req) {

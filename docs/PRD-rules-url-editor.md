@@ -24,6 +24,8 @@ Der Editor besteht aus einer Node.js-Serverdatei (ca. 20–30 Zeilen) und einer 
 5. **Als Entwickler** möchte ich **alle Synonyme als Tabelle sehen**, um einen Überblick über die BSData-zu-kanonisch-Mappings zu haben.
 6. **Als Entwickler** möchte ich **Synonyme hinzufügen, bearbeiten und löschen**, um die Namensauflösung zu pflegen.
 7. **Als Entwickler** möchte ich **das Crawl-Skript per Knopfdruck ausführen**, um `rules-index.json` neu zu generieren, und **das Ergebnis im Editor sehen und ggf. nachbearbeiten**.
+9. **Als Entwickler** möchte ich **den Crawl live mitverfolgen (Fortschritt pro Section und laufendes Log)**, um zu sehen, wo er steht und woran er scheitert.
+10. **Als Entwickler** möchte ich **nach dem Lauf eine Logdatei zum Nachlesen haben**, um Fehler auch nachträglich untersuchen zu können.
 8. **Als Entwickler** möchte ich **Änderungen explizit speichern**, um zu kontrollieren, wann die JSON-Dateien und synonyms.js auf die Platte geschrieben werden.
 
 ## Technical Decisions
@@ -34,6 +36,7 @@ Der Editor besteht aus einer Node.js-Serverdatei (ca. 20–30 Zeilen) und einer 
 tools/rules-editor/
   server.js    – Node.js HTTP-Server (built-in http-Modul)
   index.html   – Single-Page Editor (alles inline: HTML, CSS, JS)
+  logs/        – Logdatei pro Crawl-Lauf (nicht versioniert)
 ```
 
 ### Affected Modules
@@ -42,7 +45,10 @@ tools/rules-editor/
 - `tools/rules-editor/index.html` (neu) – Editor-UI
 - `src/data/rules-index.json` (bestehend, wird vom Editor gelesen/geschrieben)
 - `src/data/synonyms.js` (bestehend, wird vom Editor gelesen/geschrieben)
-- `scripts/generate-rules-index.js` (bestehend, wird vom Server aufgerufen)
+- `scripts/rules-crawler.js` (neu) – Crawl-Logik als Modul mit injizierbarem Fetch
+  und Event-Ausgabe; enthält keine CLI-, Server- oder Dateisystem-Belange
+- `scripts/generate-rules-index.js` (bestehend, wird vom Server aufgerufen) –
+  CLI-Einstieg über dem Crawl-Modul
 
 ### API Contracts
 
@@ -53,7 +59,7 @@ Der Server stellt folgende REST-Endpoints bereit:
 | GET | `/api/data` | – | `{ rulesIndex: {…}, synonyms: {…} }` | Liefert beide Dateien |
 | PUT | `/api/rules-index` | `{ name: string, path: string }` (Array oder einzelnes Objekt) | `{ ok: true }` | Aktualisiert/speichert rules-index.json |
 | PUT | `/api/synonyms` | `{ from: string, to: string }` (Array oder einzelnes Objekt) | `{ ok: true }` | Aktualisiert/speichert synonyms.js |
-| POST | `/api/crawl` | – | `{ rulesIndex: {…}, entriesAdded: number }` | Führt `generate-rules-index.js` aus |
+| POST | `/api/crawl` | – | NDJSON-Stream (`application/x-ndjson`), eine JSON-Zeile pro Crawl-Ereignis | Startet den Crawl und streamt dessen Fortschritt; `409`, wenn bereits ein Crawl läuft |
 
 ### Dateiformat-Handling
 
@@ -63,7 +69,28 @@ Der Server stellt folgende REST-Endpoints bereit:
 
 ### Crawl-Integration
 
-Der Server führt `node scripts/generate-rules-index.js` als Child-Process aus. Nach erfolgreichem Crawl wird die aktualisierte rules-index.json geladen und im Editor angezeigt. Ein manuelles Speichern ist nicht nötig – der Crawl schreibt direkt auf die Platte.
+Der Server startet `node scripts/generate-rules-index.js --events` als Child-Process
+(nicht blockierend) und reicht dessen NDJSON-Event-Stream unverändert an den Editor
+weiter, während er ihn parallel in eine Logdatei pro Lauf schreibt
+(`tools/rules-editor/logs/crawl-<zeitstempel>.log`, per `.gitignore` ausgenommen).
+Der Editor rendert daraus einen Fortschrittsbalken über die Sections und ein
+Live-Log. Nach dem Lauf lädt der Editor die aktualisierte rules-index.json über
+`/api/data` nach. Ein manuelles Speichern ist nicht nötig – der Crawl schreibt
+direkt auf die Platte.
+
+**Event-Vokabular des Streams:** `log-file`, `run-started`, `section-started`,
+`section-completed`, `section-failed`, `run-completed`, `crawler-error`,
+`run-finished`. Die Ereignisse aus dem Crawl-Modul (`run-*`, `section-*`) tragen
+`sectionNumber`/`sectionCount` für den Fortschritt; `log-file`, `crawler-error`
+und `run-finished` steuert der Server bei. Jede Zeile trägt einen `timestamp`.
+
+**Fehlertoleranz:** Der Crawl bricht nicht mehr beim ersten Fehler ab, sondern
+verarbeitet jede Section einzeln und meldet Fehlschläge als Ereignis. Eine
+Section, die keine Links liefert, gilt als Fehler (Schutz gegen still gewordenes
+Markup der Quelle). Beim Schreiben werden die Einträge fehlgeschlagener Sections
+aus der bestehenden rules-index.json übernommen, statt sie zu verlieren;
+scheitern alle Sections, bleibt die Datei unverändert und der Prozess endet mit
+Exit-Code ≠ 0. Der direkte CLI-Aufruf ohne `--events` bleibt menschenlesbar.
 
 ### Start
 
@@ -71,7 +98,14 @@ Der Server startet über `node tools/rules-editor/server.js`, öffnet automatisc
 
 ## Testing Decisions
 
-- **Keine automatisierten Tests vorgesehen.** Das Tool ist ein reines Entwickler-Hilfsmittel, kein Teil der PWA.
+- **Keine automatisierten Tests für Server und UI.** Beides ist reines
+  Entwickler-Hilfsmittel und kein Teil der PWA.
+- **Unit-Tests für die Crawl-Logik** (`scripts/rules-crawler.test.js`): Das
+  Crawl-Modul bekommt seinen Fetch injiziert und ist damit ohne Netzwerk
+  testbar. Abgedeckt: Link-Extraktion, erfolgreicher Lauf samt Fortschritts-
+  Ereignissen, fehlgeschlagene Section, Section ohne Treffer, komplett
+  fehlgeschlagener Lauf, sowie das Beibehalten der Einträge fehlgeschlagener
+  Sections beim Schreiben.
 - **Manuelle Smoke-Tests**: Server starten, Editor im Browser öffnen, Daten lesen, Eintrag ändern, speichern, Datei prüfen, Crawl ausführen.
 - **Seam für manuelle Prüfung**: `git diff src/data/rules-index.json src/data/synonyms.js` vor/nach Editor-Operationen.
 

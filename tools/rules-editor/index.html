@@ -76,6 +76,26 @@ td.url-cell .cell-input { font-family: 'SF Mono', 'Fira Code', 'Consolas', monos
 .status-bar .error { color: #d32f2f; }
 .status-bar .info { color: #555; }
 
+/* Crawl panel */
+.crawl-panel { background: #fff; border-bottom: 1px solid #ddd; padding: 12px 24px; flex-shrink: 0; }
+.crawl-panel[hidden] { display: none; }
+.crawl-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+.crawl-head .spacer { flex: 1; }
+.crawl-head strong { font-size: 13px; }
+.crawl-head .log-file { color: #999; font-size: 11px; font-family: 'SF Mono', 'Consolas', monospace; }
+.crawl-head .btn-close { background: none; border: none; color: #999; cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 3px; }
+.crawl-head .btn-close:hover { background: #f0f0f0; color: #333; }
+.progress-track { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0; background: #4a6fa5; border-radius: 3px; transition: width .25s ease; }
+.progress-fill.done { background: #2e7d32; }
+.progress-fill.failed { background: #d32f2f; }
+.progress-fill.partial { background: #ed6c02; }
+.crawl-log { margin-top: 8px; max-height: 160px; overflow-y: auto; background: #1a1a2e; border-radius: 4px; padding: 8px 10px; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 11px; line-height: 1.6; }
+.crawl-log .line { color: #bbb; white-space: pre-wrap; word-break: break-word; }
+.crawl-log .line.ok { color: #7fd18a; }
+.crawl-log .line.error { color: #ff8a80; }
+.crawl-log .line.head { color: #8ab4f8; }
+
 /* Loading overlay */
 .loading { display: flex; align-items: center; justify-content: center; flex: 1; color: #999; }
 .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #ddd; border-top-color: #4a6fa5; border-radius: 50%; animation: spin .6s linear infinite; margin-right: 10px; }
@@ -95,6 +115,18 @@ td.url-cell .cell-input { font-family: 'SF Mono', 'Fira Code', 'Consolas', monos
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('mapping')" id="tabMapping">URL-Mapping <span class="tab-badge" id="mappingCount">0</span></button>
   <button class="tab-btn" onclick="switchTab('synonyms')" id="tabSynonyms">Synonyme <span class="tab-badge" id="synonymsCount">0</span></button>
+</div>
+
+<div class="crawl-panel" id="crawlPanel" hidden>
+  <div class="crawl-head">
+    <strong>Crawl</strong>
+    <span id="crawlPhase">—</span>
+    <span class="spacer"></span>
+    <span class="log-file" id="crawlLogFile"></span>
+    <button class="btn-close" onclick="closeCrawlPanel()" title="Schließen">✕</button>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="crawlProgress"></div></div>
+  <div class="crawl-log" id="crawlLog"></div>
 </div>
 
 <div class="content">
@@ -410,23 +442,147 @@ async function save() {
   }
 }
 
+/* ── Crawl mit Fortschritt und Live-Log ──────────────────── */
+
+const CrawlEventType = {
+  LogFile: 'log-file',
+  RunStarted: 'run-started',
+  SectionStarted: 'section-started',
+  SectionCompleted: 'section-completed',
+  SectionFailed: 'section-failed',
+  RunCompleted: 'run-completed',
+  CrawlerError: 'crawler-error',
+  RunFinished: 'run-finished',
+};
+
+async function* readEventStream(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (line.trim()) yield JSON.parse(line);
+    }
+  }
+  if (buffer.trim()) yield JSON.parse(buffer);
+}
+
+function resetCrawlPanel() {
+  document.getElementById('crawlPanel').hidden = false;
+  document.getElementById('crawlLog').innerHTML = '';
+  document.getElementById('crawlLogFile').textContent = '';
+  const fill = document.getElementById('crawlProgress');
+  fill.className = 'progress-fill';
+  fill.style.width = '0';
+}
+
+function closeCrawlPanel() {
+  document.getElementById('crawlPanel').hidden = true;
+}
+
+function appendLogLine(text, severity = '') {
+  const log = document.getElementById('crawlLog');
+  const line = document.createElement('div');
+  line.className = `line ${severity}`.trim();
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setCrawlProgress(sectionNumber, sectionCount) {
+  document.getElementById('crawlProgress').style.width = `${(sectionNumber / sectionCount) * 100}%`;
+  document.getElementById('crawlPhase').textContent = `Section ${sectionNumber} von ${sectionCount}`;
+}
+
+function finishCrawlProgress(entryCount, failedSections) {
+  const fill = document.getElementById('crawlProgress');
+  fill.style.width = '100%';
+  if (failedSections.length === 0) {
+    fill.classList.add('done');
+  } else if (entryCount > 0) {
+    fill.classList.add('partial');
+  } else {
+    fill.classList.add('failed');
+  }
+  const failureNote = failedSections.length === 0
+    ? 'keine Fehler'
+    : `${failedSections.length} fehlgeschlagen: ${failedSections.join(', ')}`;
+  document.getElementById('crawlPhase').textContent = `${entryCount} Einträge · ${failureNote}`;
+}
+
+function applyCrawlEvent(event) {
+  switch (event.type) {
+    case CrawlEventType.LogFile:
+      document.getElementById('crawlLogFile').textContent = `Log: ${event.path}`;
+      break;
+    case CrawlEventType.RunStarted:
+      appendLogLine(`Crawle ${event.sectionCount} Sections: ${event.sections.join(', ')}`, 'head');
+      break;
+    case CrawlEventType.SectionStarted:
+      appendLogLine(`[${event.sectionNumber}/${event.sectionCount}] ${event.section} …`);
+      break;
+    case CrawlEventType.SectionCompleted:
+      setCrawlProgress(event.sectionNumber, event.sectionCount);
+      appendLogLine(`[${event.sectionNumber}/${event.sectionCount}] ${event.section}: ${event.linkCount} Links`, 'ok');
+      break;
+    case CrawlEventType.SectionFailed:
+      setCrawlProgress(event.sectionNumber, event.sectionCount);
+      appendLogLine(`[${event.sectionNumber}/${event.sectionCount}] ${event.section}: FEHLER – ${event.message}`, 'error');
+      break;
+    case CrawlEventType.RunCompleted:
+      finishCrawlProgress(event.entryCount, event.failedSections);
+      appendLogLine(`Crawl beendet: ${event.entryCount} Einträge, ${event.failedSections.length} fehlgeschlagene Sections`, event.ok ? 'ok' : 'error');
+      break;
+    case CrawlEventType.CrawlerError:
+      appendLogLine(event.message, 'error');
+      break;
+    case CrawlEventType.RunFinished:
+      break;
+    default:
+      appendLogLine(JSON.stringify(event));
+  }
+}
+
+async function reloadRulesIndex() {
+  const res = await fetch('/api/data');
+  const fresh = await res.json();
+  data.rulesIndex = fresh.rulesIndex;
+  originalData.rulesIndex = JSON.parse(JSON.stringify(fresh.rulesIndex));
+  updateCounts();
+  renderMapping();
+  checkDirty();
+}
+
 async function runCrawl() {
   if (!confirm('Crawl-Skript ausführen? Dadurch wird rules-index.json neu generiert. Nicht gespeicherte Änderungen im URL-Mapping gehen verloren.')) return;
   const btn = document.getElementById('btnCrawl');
   btn.disabled = true;
   btn.textContent = '⏳ Crawlen...';
   setStatus('right', 'Crawle 6th.whfb.app...');
+  resetCrawlPanel();
 
+  let summary = null;
   try {
     const res = await fetch('/api/crawl', { method: 'POST' });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error);
-    data.rulesIndex = result.rulesIndex;
-    originalData = JSON.parse(JSON.stringify(data));
-    updateCounts();
-    renderMapping();
-    setStatus('right', `<span class="info">✓ Crawl abgeschlossen: ${result.entriesAdded} Einträge</span>`);
+    if (!res.ok) throw new Error((await res.json()).error);
+
+    for await (const event of readEventStream(res)) {
+      applyCrawlEvent(event);
+      if (event.type === CrawlEventType.RunCompleted) summary = event;
+    }
+    if (!summary) throw new Error('Crawl ohne Ergebnis beendet – siehe Log.');
+
+    if (summary.entryCount > 0) await reloadRulesIndex();
+    setStatus('right', summary.ok
+      ? `<span class="clean">✓ Crawl abgeschlossen: ${summary.entryCount} Einträge</span>`
+      : `<span class="error">⚠ Crawl mit Fehlern: ${summary.entryCount} Einträge, ${summary.failedSections.length} Sections fehlgeschlagen</span>`);
   } catch (err) {
+    appendLogLine(`Abbruch: ${err.message}`, 'error');
     setStatus('right', `<span class="error">✗ Crawl-Fehler: ${err.message}</span>`);
   } finally {
     btn.disabled = false;
