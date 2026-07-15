@@ -15,11 +15,6 @@ vi.mock('lucide-react', () => ({
   ReceiptText: () => <span data-testid="icon-receipt-text" />,
 }));
 
-// Mock Debug Context
-vi.mock('../../hooks/DebugContext', () => ({
-  useDebugMode: () => ({ showDebugIds: false })
-}));
-
 // Mock child components
 vi.mock('./SelectionConfigurator', () => ({
   default: () => <div data-testid="selection-configurator" />

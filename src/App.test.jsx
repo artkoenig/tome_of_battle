@@ -12,7 +12,6 @@ vi.mock('lucide-react', () => ({
   Shield: () => <span data-testid="icon-shield" />,
   Play: () => <span data-testid="icon-play" />,
   Edit3: () => <span data-testid="icon-edit" />,
-  Bug: () => <span data-testid="icon-bug" />,
   Search: () => <span data-testid="icon-search" />,
   WifiOff: () => <span data-testid="icon-wifioff" />,
   Download: () => <span data-testid="icon-download" />,
@@ -36,58 +35,8 @@ vi.mock('./db/migrations', () => ({
 vi.mock('./components/Importer', () => ({ default: () => <div data-testid="importer-mock">Importer Mock</div> }));
 vi.mock('./components/RosterEditor', () => ({ default: () => <div data-testid="editor-mock">RosterEditor Mock</div> }));
 vi.mock('./components/PlayMode', () => ({ default: () => <div data-testid="playmode-mock">PlayMode Mock</div> }));
-vi.mock('./components/editor/DebugEntryEditorModal', () => ({ default: () => <div data-testid="debug-modal-mock">Debug Modal Mock</div> }));
-vi.mock('./components/editor/GlobalDebugSearch', () => ({ default: () => <div data-testid="global-debug-search-mock">Global Debug Search Mock</div> }));
 vi.mock('./components/editor/NewRosterModal', () => ({ default: () => <div data-testid="new-roster-modal-mock">New Roster Modal Mock</div> }));
 vi.mock('./components/RosterDashboard', () => ({ default: () => <div data-testid="dashboard-mock">RosterDashboard Mock</div> }));
-
-// Mock useDebugMode
-let mockShowDebugIds = false;
-const mockToggleShowDebugIds = vi.fn();
-vi.mock('./hooks/DebugContext', () => ({
-  useDebugMode: () => ({
-    showDebugIds: mockShowDebugIds,
-    toggleShowDebugIds: mockToggleShowDebugIds
-  })
-}));
-
-describe('App Component Debug Button local filtering', () => {
-  const originalLocation = window.location;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockShowDebugIds = false;
-    
-    // Set up default window.location spy
-    delete window.location;
-    window.location = { ...originalLocation, hostname: 'localhost' };
-  });
-
-  afterEach(() => {
-    window.location = originalLocation;
-  });
-
-  it('renders the debug button when hostname is localhost', async () => {
-    render(<App />);
-    
-    // The button has title="Debugging: IDs ein-/ausblenden" and content "Debug"
-    await waitFor(() => {
-      const debugButton = screen.queryByTitle('Debugging: IDs ein-/ausblenden');
-      expect(debugButton).not.toBeNull();
-    });
-  });
-
-  it('does NOT render the debug button when hostname is not local (e.g. example.com)', async () => {
-    window.location = { ...originalLocation, hostname: 'tomeofbattle.com' };
-    
-    render(<App />);
-    
-    await waitFor(() => {
-      const debugButton = screen.queryByTitle('Debugging: IDs ein-/ausblenden');
-      expect(debugButton).toBeNull();
-    });
-  });
-});
 
 describe('App Component PWA Update Toast Notification', () => {
   it('displays the toast notification when pwa-update-available is dispatched', async () => {
@@ -203,64 +152,4 @@ describe('App Component PWA Update Toast Notification', () => {
   });
 });
 
-vi.mock('./parser/catalogEditor', () => ({
-  findExactEntryById: vi.fn(),
-  searchEditableEntries: vi.fn(),
-}));
 
-describe('App Component Debug Entry Click Redirection', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockShowDebugIds = true;
-  });
-
-  it('redirects entryLink to target selectionEntry on global click', async () => {
-    const mockLinkEntry = {
-      type: 'entryLink',
-      id: 'link-123',
-      name: 'Linked Weapon',
-      ref: { targetId: 'target-456' }
-    };
-    const mockTargetEntry = {
-      type: 'entry',
-      id: 'target-456',
-      name: 'Real Weapon',
-      ref: { name: 'Real Weapon' }
-    };
-
-    const { getAllSystems } = await import('./db/database');
-    const mockGst = { id: 'sys-1', name: 'Test System', catalogues: [] };
-    getAllSystems.mockResolvedValue([mockGst]);
-
-    const { findExactEntryById } = await import('./parser/catalogEditor');
-    findExactEntryById.mockImplementation((sys, id) => {
-      if (id === 'link-123') return mockLinkEntry;
-      if (id === 'target-456') return mockTargetEntry;
-      return null;
-    });
-
-    render(<App />);
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('dashboard-mock')).not.toBeNull();
-    });
-
-    const badge = document.createElement('span');
-    badge.className = 'debug-id-badge clickable';
-    badge.textContent = 'link-123';
-    document.body.appendChild(badge);
-
-    await act(async () => {
-      fireEvent.click(badge);
-    });
-
-    // The global click handler resolves the entry asynchronously after the
-    // systems load, so retry the assertion until the effect has fired rather
-    // than sampling once (which is racy under load).
-    await waitFor(() => {
-      expect(findExactEntryById).toHaveBeenCalledWith(mockGst, 'target-456');
-    });
-
-    document.body.removeChild(badge);
-  });
-});

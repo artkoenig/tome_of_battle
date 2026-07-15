@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { useDebugMode } from '../hooks/DebugContext';
 import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
@@ -14,7 +13,6 @@ import { getRuleUrl } from '../data/rulesLookup';
 
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster }) {
-  const { showDebugIds } = useDebugMode();
   const {
     roster,
     costs,
@@ -207,12 +205,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>
                             {catName}
-                            {showDebugIds && (
-                              <>
-                                <span className="debug-id-badge clickable" title="Definition-ID (Kategorie)">def:{link.targetId}</span>
-                                {link.id && <span className="debug-id-badge clickable" title="Link-ID (Limits)">link:{link.id}</span>}
-                              </>
-                            )}
                           </h3>
                           {(() => {
                             const limitParts = [];

@@ -4,7 +4,6 @@ import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
-import { useDebugMode } from '../hooks/DebugContext';
 import ConfirmationDialog from './editor/ConfirmationDialog';
 
 const getAbsoluteUrl = (path) => {
@@ -16,7 +15,6 @@ const getAbsoluteUrl = (path) => {
 };
 
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
-  const { showDebugIds } = useDebugMode();
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -427,7 +425,6 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <h4 style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                         {sys.name}
-                        {showDebugIds && <span className="debug-id-badge">{sys.id}</span>}
                       </h4>
                       <span className="text-dim" style={{ fontSize: '0.85rem' }}>
                         {sys.catalogues?.length || 0} Fraktionskataloge geladen

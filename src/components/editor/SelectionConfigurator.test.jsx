@@ -12,11 +12,6 @@ vi.mock('lucide-react', () => ({
   Info: () => <span data-testid="icon-info" />,
 }));
 
-// Mock Debug Context
-vi.mock('../../hooks/DebugContext', () => ({
-  useDebugMode: () => ({ showDebugIds: false })
-}));
-
 // Mock child components
 vi.mock('./BottomSheet', () => ({
   default: ({ isOpen, children, title, onClose }) => isOpen ? (

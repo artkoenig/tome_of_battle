@@ -37,12 +37,6 @@ vi.mock('../parser/xmlParser', () => ({
   processImportedData: vi.fn(),
 }));
 
-// Mock useDebugMode
-let mockDebugIds = false;
-vi.mock('../hooks/DebugContext', () => ({
-  useDebugMode: () => ({ showDebugIds: mockDebugIds })
-}));
-
 // Mock JSZip
 const mockZipFile = vi.fn();
 const mockZipGenerateAsync = vi.fn().mockResolvedValue(new Blob(['mock zip content'], { type: 'application/zip' }));
@@ -58,7 +52,6 @@ vi.mock('jszip', () => {
 describe('Importer Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDebugIds = false;
     getAllSystems.mockResolvedValue([]);
     deleteSystem.mockResolvedValue({});
     saveSystem.mockResolvedValue({});
@@ -106,20 +99,6 @@ describe('Importer Component', () => {
     expect(screen.getByText('1 Fraktionskataloge geladen')).toBeDefined();
     expect(screen.getAllByTestId('icon-download').length).toBeGreaterThan(0);
     expect(screen.getAllByTestId('icon-trash').length).toBeGreaterThan(0);
-  });
-
-  it('4. Debug ID Toggle', async () => {
-    mockDebugIds = true;
-    const mockSystems = [
-      { id: 'sys-12345', name: 'Warhammer Fantasy', catalogues: [] }
-    ];
-    getAllSystems.mockResolvedValue(mockSystems);
-
-    render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
-
-    await waitFor(() => {
-      expect(screen.getByText('sys-12345')).toBeDefined();
-    });
   });
 
   it('should render loading overlay during import', async () => {

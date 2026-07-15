@@ -28,10 +28,6 @@ vi.mock('../../solver/constants', () => ({
   MODEL_COUNT_PROFILE_TYPES: [],
 }));
 
-vi.mock('../../hooks/DebugContext', () => ({
-  useDebugMode: () => ({ showDebugIds: false }),
-}));
-
 vi.mock('../editor/UnitChips', () => ({
   UnitUpgradesChips: () => <div data-testid="unit-upgrades-chips">Upgrades</div>,
   UnitRulesChips: () => <div data-testid="unit-rules-chips">Rules</div>,
@@ -51,7 +47,6 @@ function createDefaultProps(overrides = {}) {
       catalogueId: 'cat-1',
       costLimitType: 'pts',
     },
-    showDebugIds: false,
     gameState: { wounds: {} },
     handleAdjustWound: vi.fn(),
     handleMouseEnter: vi.fn(),

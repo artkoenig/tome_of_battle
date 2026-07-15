@@ -87,11 +87,6 @@ vi.mock('../hooks/useRoster', () => ({
   })
 }));
 
-// Mock useDebugMode Context
-vi.mock('../hooks/DebugContext', () => ({
-  useDebugMode: () => ({ showDebugIds: false })
-}));
-
 // Mock database saveRoster
 vi.mock('../db/database', () => ({
   saveRoster: vi.fn()

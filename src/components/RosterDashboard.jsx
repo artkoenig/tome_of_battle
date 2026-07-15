@@ -6,7 +6,6 @@ import BottomSheet from './editor/BottomSheet';
 export default function RosterDashboard({
   rosters = [],
   systems = [],
-  showDebugIds = false,
   onOpenRoster,
   onDeleteRoster,
   onRenameRoster,
@@ -209,7 +208,6 @@ export default function RosterDashboard({
                                           </span>
                                         ) : null;
                                       })()}
-                                      {showDebugIds && <span className="debug-id-badge" style={{ display: 'block', marginTop: '4px', width: 'fit-content' }}>{roster.id}</span>}
                                     </div>
                                     <div className="roster-points" style={{
                                       whiteSpace: 'nowrap',

@@ -36,7 +36,6 @@ export default function PlayUnitDetails({
   selection,
   system,
   roster,
-  showDebugIds,
   gameState,
   handleAdjustWound,
   handleMouseEnter,
@@ -339,9 +338,6 @@ export default function PlayUnitDetails({
         <div className="play-unit-title text-ui-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             {selection.name}
-            {showDebugIds && (
-              <span className="debug-id-badge clickable" title="Definition-ID">def:{selection.entryLinkId || selection.selectionEntryId}</span>
-            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {!hasSubUnits && (
@@ -445,7 +441,6 @@ export default function PlayUnitDetails({
                   setSaveSummaryOpen(true);
                 }
               }}
-              showDebugIds={showDebugIds}
               onShowRule={onShowRule}
             />
             <UnitRulesChips
@@ -462,7 +457,6 @@ export default function PlayUnitDetails({
                   setSaveSummaryOpen(true);
                 }
               }}
-              showDebugIds={showDebugIds}
               onShowRule={onShowRule}
             />
           </div>
@@ -474,7 +468,6 @@ export default function PlayUnitDetails({
                   selection={subSel}
                   system={system}
                   roster={roster}
-                  showDebugIds={showDebugIds}
                   gameState={gameState}
                   handleAdjustWound={handleAdjustWound}
                   handleMouseEnter={handleMouseEnter}
