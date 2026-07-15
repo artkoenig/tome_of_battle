@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Minus, Info, BookOpen } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import { useDebugMode } from '../../hooks/DebugContext';
-import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
-import { getRuleUrl } from '../../data/rulesLookup';
+import { renderUpgradeDetails } from './upgradeDetails';
+import RuleChipIcon from './RuleChipIcon';
 
 const findForceOfSelection = (selId, forces) => {
   if (!forces) return null;
@@ -52,138 +52,6 @@ export default function OptionGroupComponent({
       return res ? getSubSelectionCount(selection, res.id) > 0 : false;
     })
   );
-
-  const renderUpgradeDetails = (res) => {
-    if (!res) return null;
-    const elements = [];
-
-    const isNameSimilar = (nameA, nameB) => {
-      if (!nameA || !nameB) return false;
-      const cleanA = nameA.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const cleanB = nameB.toLowerCase().replace(/[^a-z0-9]/g, '');
-      return cleanA === cleanB || 
-             cleanA.includes(cleanB) || 
-             cleanB.includes(cleanA) ||
-             (cleanA.includes('waaagh') && cleanB.includes('waaagh')) ||
-             cleanA.slice(-10) === cleanB.slice(-10);
-    };
-
-    let rules = res.rules || [];
-    if (rules.length === 0 && res.name) {
-      const lowerName = res.name.toLowerCase().trim();
-      let foundRule = system.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
-      if (!foundRule) {
-        for (const cat of system.catalogues || []) {
-          foundRule = cat.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
-          if (foundRule) break;
-        }
-      }
-      if (foundRule) {
-        rules = [foundRule];
-      }
-    }
-
-    // 1. Beschreibung (Rules / Lore)
-    if (rules.length > 0) {
-      rules.forEach((r, idx) => {
-        if (r.description) {
-          const label = isNameSimilar(r.name, res.name)
-            ? 'Beschreibung'
-            : `Beschreibung (${r.name})`;
-
-          elements.push(
-            <div key={`rule-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
-              {r.description}
-              {r.publicationRef && (
-                <span className="publication-ref">
-                  {r.publicationRef}
-                </span>
-              )}
-            </div>
-          );
-        }
-      });
-    }
-
-    // 2. Sonderregeln & Profilwerte (from Profiles)
-    if (res.profiles && res.profiles.length > 0) {
-      const profileElements = [];
-      res.profiles.forEach((p, idx) => {
-        const typeLower = p.profileTypeName?.toLowerCase() || '';
-        if (UPGRADE_DETAILS_KEYWORDS.some(k => typeLower.includes(k))) {
-          // Find "Special Rules" or "Sonderregeln" characteristic
-          const specialRulesChar = p.characteristics?.find(c => {
-            const nameLower = (c.name || '').toLowerCase().trim();
-            return nameLower === 'special rules' || nameLower === 'special-rules' || nameLower === 'sonderregeln';
-          });
-
-          const otherChars = p.characteristics?.filter(c => {
-            const nameLower = (c.name || '').toLowerCase().trim();
-            return nameLower !== 'special rules' && nameLower !== 'special-rules' && nameLower !== 'sonderregeln';
-          }) || [];
-
-          // If there is special rules text, show it under "Sonderregeln:" label
-          if (specialRulesChar && specialRulesChar.value && specialRulesChar.value.trim()) {
-            profileElements.push(
-              <div key={`special-rules-${idx}`} style={{ marginTop: '4px' }}>
-                <span className="text-gold" style={{ fontWeight: 600 }}>Sonderregeln: </span>
-                {specialRulesChar.value.trim()}
-                {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
-                  <span className="publication-ref">
-                    {p.publicationRef}
-                  </span>
-                )}
-              </div>
-            );
-          }
-
-          // If there are other non-empty characteristics, show them under "Profil:" label
-          const nonBigEmptyChars = otherChars.filter(c => c.value && c.value.trim() && c.value.trim() !== '-');
-          if (nonBigEmptyChars.length > 0) {
-            const stats = nonBigEmptyChars.map(c => `${c.name}: ${c.value}`).join(', ');
-            const label = isNameSimilar(p.name, res.name)
-              ? 'Profil'
-              : `Profil (${p.name})`;
-
-            profileElements.push(
-              <div key={`profile-${idx}`} style={{ marginTop: '4px' }}>
-                <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
-                {stats}
-                {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
-                  <span className="publication-ref">
-                    {p.publicationRef}
-                  </span>
-                )}
-              </div>
-            );
-          }
-        }
-      });
-      elements.push(...profileElements);
-    }
-
-    // 3. Quelle
-    if (res.publicationRef) {
-      const hasRuleOrProfileRefs = (res.rules && res.rules.some(r => r.publicationRef)) || (res.profiles && res.profiles.some(p => p.publicationRef));
-      if (!hasRuleOrProfileRefs) {
-        elements.push(
-          <div key="source" style={{ marginTop: '6px' }}>
-            <span className="text-gold" style={{ fontWeight: 600 }}>Quelle: </span>
-            <span className="publication-ref">
-              {res.publicationRef}
-            </span>
-          </div>
-        );
-      }
-    }
-
-    return (
-      <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
-        {elements.length > 0 ? elements : <span className="text-dim">Keine Beschreibung vorhanden.</span>}
-      </div>
-    );
-  };
 
   const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
   const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
@@ -497,34 +365,19 @@ export default function OptionGroupComponent({
                     }}
                   >
                     {res.name}
-                    {getRuleUrl(res.name) && (
-                      <BookOpen
-                        size={14}
-                        className="rule-link-icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (onShowRule) onShowRule(res.name);
-                        }}
-                      />
-                    )}
-                    {descText && !getRuleUrl(res.name) && (
-                      <Info
-                        size={14}
-                        className="rule-link-icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (window.innerWidth <= 900) {
-                            setActiveInfo({ title: res.name, text: renderUpgradeDetails(res) });
-                          }
-                        }}
-                        onMouseEnter={(e) => {
-                          e.stopPropagation();
-                          onHoverEnter(res.name, renderUpgradeDetails(res), e);
-                        }}
-                        onMouseMove={onHoverMove}
-                        onMouseLeave={onHoverLeave}
-                      />
-                    )}
+                    <RuleChipIcon
+                      name={res.name}
+                      hasInfo={!!descText}
+                      onShowRule={onShowRule}
+                      onInfoClick={() => {
+                        if (window.innerWidth <= 900) {
+                          setActiveInfo({ title: res.name, text: renderUpgradeDetails(res, system) });
+                        }
+                      }}
+                      onInfoEnter={(e) => onHoverEnter(res.name, renderUpgradeDetails(res, system), e)}
+                      onInfoMove={onHoverMove}
+                      onInfoLeave={onHoverLeave}
+                    />
                     {showDebugIds && <span className="debug-id-badge clickable">{res.id}</span>}
                     {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
                   </span>

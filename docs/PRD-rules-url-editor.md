@@ -1,5 +1,10 @@
 # PRD: URL-Mapping-Editor für 6th.whfb.app
 
+> **Kontext:** Begleitwerkzeug zur 6th.whfb.app-Integration
+> (Feature-PRD: `docs/issues/08-6th-whfb-app-regeltexte-integrieren/issue.md`,
+> Architektur: [ADR-0012](adr/0012-integration-externer-regeltexte-6th-whfb-app.md)).
+> Der Editor pflegt `rules-index.json` und `synonyms.js`; er ist **nicht Teil der PWA**.
+
 ## Problem Statement
 
 Die Dateien `src/data/rules-index.json` (845 Einträge) und `src/data/synonyms.js` (~12 Einträge) werden aktuell manuell editiert – entweder direkt im Code oder per Crawl-Skript (`scripts/generate-rules-index.js`). Es gibt keine GUI zum Begutachten, Suchen, Ergänzen oder Korrigieren der URL-Mappings oder Synonyme. Jeder Eingriff erfordert einen Editor, Kenntnis der Dateiformate und manuelles JSON-Hantieren.

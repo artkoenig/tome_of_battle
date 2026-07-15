@@ -40,9 +40,16 @@ for (const [name, path] of Object.entries(RULES_INDEX)) {
   }
 }
 
+// Synonyms are matched case-insensitively too, so a BSData name that differs only
+// in casing from a synonym key still resolves to its canonical rule.
+const synonymIndex = new Map();
+for (const [from, to] of Object.entries(SYNONYMS)) {
+  synonymIndex.set(normalizeName(from), to);
+}
+
 export function getRuleUrl(name) {
   if (!name) return null;
-  const canonical = SYNONYMS[name] || name;
+  const canonical = synonymIndex.get(normalizeName(name)) || name;
   const key = normalizeName(canonical);
 
   const directPath = index.get(key);

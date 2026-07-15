@@ -81,4 +81,16 @@ describe('generate-rules-index output', () => {
       expect(path.startsWith('/')).toBe(true);
     }
   });
+
+  it('has no undecoded HTML entities in the rule-name keys', () => {
+    // Keys are matched against literal BSData names, so an escaped key
+    // (e.g. "Cloak &amp; Dagger") could never resolve — guard against regressions.
+    const offenders = Object.keys(index).filter(name => /&(amp|quot|lt|gt|#\d+|#x[0-9a-fA-F]+);/.test(name));
+    expect(offenders).toEqual([]);
+  });
+
+  it('resolves entity-bearing names against the lookup', async () => {
+    const { getRuleUrl } = await import('../src/data/rulesLookup.js');
+    expect(getRuleUrl('Cloak & Dagger')).toContain('/weapons/cloak-and-dagger');
+  });
 });

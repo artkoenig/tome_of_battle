@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ArrowLeft, Search, Plus, Minus, 
-  Heart, Swords, Sparkles, BookOpen 
+  Heart, Swords, BookOpen
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
 import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals } from '../solver/validator';

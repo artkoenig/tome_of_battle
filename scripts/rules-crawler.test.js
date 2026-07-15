@@ -51,6 +51,16 @@ describe('extractLinks', () => {
 
     expect(extractLinks(html, 'weapons')).toEqual([{ slug: 'halberd', name: 'Halberd' }]);
   });
+
+  it('decodes HTML entities beyond the apostrophe, so keys match the literal BSData name', () => {
+    const html = linkMarkup('weapons', 'cloak-and-dagger', 'Cloak &amp; Dagger') +
+      linkMarkup('special-rules', 'my-will-be-done', '&quot;My Will Be Done!&quot;');
+
+    expect(extractLinks(html, 'weapons')).toEqual([{ slug: 'cloak-and-dagger', name: 'Cloak & Dagger' }]);
+    expect(extractLinks(html, 'special-rules')).toEqual([
+      { slug: 'my-will-be-done', name: '"My Will Be Done!"' },
+    ]);
+  });
 });
 
 describe('crawlRulesIndex on a successful run', () => {
