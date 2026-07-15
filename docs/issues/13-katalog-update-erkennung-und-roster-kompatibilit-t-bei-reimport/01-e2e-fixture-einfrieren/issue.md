@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -31,3 +31,4 @@ Decisions", Seam 6), [ADR 0014](../../../adr/0014-kataloge-als-externes-fork-rep
 - [ ] Die Herkunft der Fixture (Quelldatei, Stand) ist nachvollziehbar dokumentiert
 
 ## Comments
+- Fixture unter src/solver/__fixtures__/whfb6/ eingefroren (Warhammer Fantasy Battle 6th edition.gst + Ogre Kingdoms.cat, Stand Commit d13b7e5 vor der Whitespace-Bereinigung aus Issue 11 — trägt bewusst führende/nachgestellte Leerzeichen, siehe Fixture-README). ui.test.js packt jetzt diese Fixture statt public/catalogs/whfb6; Katalogauswahl im Test von Bretonnia auf Ogre Kingdoms umgestellt. ADR-0006 entsprechend aktualisiert. E2E-Lauf (node src/solver/ui.test.js) und volle Vitest-Suite (32 Dateien, 361 Tests) grün.
