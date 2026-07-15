@@ -2083,13 +2083,13 @@
         <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="c144-57dc-2f8e-1244" name="MASTER RUNEOF ALARIC THE MAD" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="c144-57dc-2f8e-1244" name="MASTER RUNE OF ALARIC THE MAD" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="85da-11f3-3470-5cab" type="max"/>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="c3c7-3eb3-022d-861c" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="2cde-0029-64d6-2bcc" name="MASTER RUNEOF ALARIC THE MAD" hidden="false" targetId="959e-b7fd-cab5-f24b" type="rule"/>
+        <infoLink id="2cde-0029-64d6-2bcc" name="MASTER RUNE OF ALARIC THE MAD" hidden="false" targetId="959e-b7fd-cab5-f24b" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="50.0"/>
@@ -2097,13 +2097,13 @@
         <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="6309-13b8-d589-77f5" name="MASTER RUNEOF SKALF BLACKHAMMER" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="6309-13b8-d589-77f5" name="MASTER RUNE OF SKALF BLACKHAMMER" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="aad3-a15f-1c9a-5b6d" type="max"/>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="ada6-6724-8733-ce74" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="3f79-f26a-615b-742f" name="MASTER RUNEOF SKALF BLACKHAMMER" hidden="false" targetId="5df1-6029-58e7-143b" type="rule"/>
+        <infoLink id="3f79-f26a-615b-742f" name="MASTER RUNE OF SKALF BLACKHAMMER" hidden="false" targetId="5df1-6029-58e7-143b" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="75.0"/>
@@ -2111,13 +2111,13 @@
         <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="f1ef-caf1-bcfa-9b27" name="MASTER RUNEOF SNORRI SPANGELHELM" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="f1ef-caf1-bcfa-9b27" name="MASTER RUNE OF SNORRI SPANGELHELM" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="25f0-64ec-0ae1-a839" type="max"/>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="2b68-7bc9-e02c-1423" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="71d6-28aa-5f3a-db66" name="MASTER RUNEOF SNORRI SPANGELHELM" hidden="false" targetId="a839-4454-9f5d-5e00" type="rule"/>
+        <infoLink id="71d6-28aa-5f3a-db66" name="MASTER RUNE OF SNORRI SPANGELHELM" hidden="false" targetId="a839-4454-9f5d-5e00" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="75.0"/>
@@ -2267,7 +2267,7 @@
         <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="3dac-6eb0-fe12-81d9" name="MASTER RUNEOF STIROMNI REDBEARD" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="3dac-6eb0-fe12-81d9" name="MASTER RUNE OF STIROMNI REDBEARD" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="c05f-5ade-685b-f8ec" type="max"/>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="3e62-231c-af08-f47f" type="max"/>
@@ -2309,13 +2309,13 @@
         <cost name="Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0.0"/>
       </costs>
     </selectionEntry>
-    <selectionEntry id="230f-d0da-026c-3ff6" name="MASTER RUNEOF GROTH ONE-EYE" hidden="false" collective="false" import="true" type="upgrade">
+    <selectionEntry id="230f-d0da-026c-3ff6" name="MASTER RUNE OF GROTH ONE-EYE" hidden="false" collective="false" import="true" type="upgrade">
       <constraints>
         <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="9194-7d30-ec58-68c8" type="max"/>
         <constraint field="selections" scope="roster" value="1.0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="c7fb-60d1-cbf7-88ba" type="max"/>
       </constraints>
       <infoLinks>
-        <infoLink id="b8fe-a02c-772b-1d33" name="MASTER RUNEOF GROTH ONE-EYE" hidden="false" targetId="054a-ce6c-9420-1e52" type="rule"/>
+        <infoLink id="b8fe-a02c-772b-1d33" name="MASTER RUNE OF GROTH ONE-EYE" hidden="false" targetId="054a-ce6c-9420-1e52" type="rule"/>
       </infoLinks>
       <costs>
         <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="60.0"/>
@@ -2763,13 +2763,13 @@
             <entryLink id="6280-b810-1b3d-c9e2" name="MASTER RUNE OF SWIFTNESS" hidden="false" collective="false" import="true" targetId="df2b-33f3-9f66-bec0" type="selectionEntry"/>
             <entryLink id="34b3-22c4-dac4-e120" name="MASTER RUNE OF BREAKING" hidden="false" collective="false" import="true" targetId="ec4d-c977-56e6-8ca2" type="selectionEntry"/>
             <entryLink id="999f-e730-4eb3-abbd" name="MASTER RUNE OF FLIGHT" hidden="false" collective="false" import="true" targetId="3bc6-de40-b028-548d" type="selectionEntry"/>
-            <entryLink id="211a-b73b-41f8-4042" name="MASTER RUNEOF ALARIC THE MAD" hidden="false" collective="false" import="true" targetId="c144-57dc-2f8e-1244" type="selectionEntry"/>
-            <entryLink id="40b9-21ae-736a-8f5c" name="MASTER RUNEOF SKALF BLACKHAMMER" hidden="false" collective="false" import="true" targetId="6309-13b8-d589-77f5" type="selectionEntry">
+            <entryLink id="211a-b73b-41f8-4042" name="MASTER RUNE OF ALARIC THE MAD" hidden="false" collective="false" import="true" targetId="c144-57dc-2f8e-1244" type="selectionEntry"/>
+            <entryLink id="40b9-21ae-736a-8f5c" name="MASTER RUNE OF SKALF BLACKHAMMER" hidden="false" collective="false" import="true" targetId="6309-13b8-d589-77f5" type="selectionEntry">
               <costs>
                 <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="75.0"/>
               </costs>
             </entryLink>
-            <entryLink id="ccea-f178-34ed-107b" name="MASTER RUNEOF SNORRI SPANGELHELM" hidden="false" collective="false" import="true" targetId="f1ef-caf1-bcfa-9b27" type="selectionEntry"/>
+            <entryLink id="ccea-f178-34ed-107b" name="MASTER RUNE OF SNORRI SPANGELHELM" hidden="false" collective="false" import="true" targetId="f1ef-caf1-bcfa-9b27" type="selectionEntry"/>
           </entryLinks>
         </selectionEntryGroup>
         <selectionEntryGroup id="6674-4947-2637-8ed5" name="Minor Runes" hidden="false" collective="false" import="true">
@@ -2824,8 +2824,8 @@
             <entryLink id="84fc-9d1d-09c3-ea00" name="MASTER RUNE OF FEAR" hidden="false" collective="false" import="true" targetId="b793-0f9f-1750-815b" type="selectionEntry"/>
             <entryLink id="f0ba-0b6f-43fd-de6b" name="MASTER RUNE OF TAUNTING" hidden="false" collective="false" import="true" targetId="681b-cd68-ec58-3ec0" type="selectionEntry"/>
             <entryLink id="2cc0-9947-e770-1ea3" name="MASTER RUNE OF VALAYA" hidden="false" collective="false" import="true" targetId="a471-e4a2-e290-78c0" type="selectionEntry"/>
-            <entryLink id="f305-b685-35cc-4ebe" name="MASTER RUNEOF STIROMNI REDBEARD" hidden="false" collective="false" import="true" targetId="3dac-6eb0-fe12-81d9" type="selectionEntry"/>
-            <entryLink id="87d4-35f3-6310-5cb4" name="MASTER RUNEOF GROTH ONE-EYE" hidden="false" collective="false" import="true" targetId="230f-d0da-026c-3ff6" type="selectionEntry"/>
+            <entryLink id="f305-b685-35cc-4ebe" name="MASTER RUNE OF STIROMNI REDBEARD" hidden="false" collective="false" import="true" targetId="3dac-6eb0-fe12-81d9" type="selectionEntry"/>
+            <entryLink id="87d4-35f3-6310-5cb4" name="MASTER RUNE OF GROTH ONE-EYE" hidden="false" collective="false" import="true" targetId="230f-d0da-026c-3ff6" type="selectionEntry"/>
           </entryLinks>
         </selectionEntryGroup>
         <selectionEntryGroup id="0088-dd9a-ba2c-799e" name="Minor Rune" hidden="false" collective="false" import="true">

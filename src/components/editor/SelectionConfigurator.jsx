@@ -508,6 +508,7 @@ export default function SelectionConfigurator({
                 onHoverEnter={handleMouseEnter}
                 onHoverMove={handleMouseMove}
                 onHoverLeave={handleMouseLeave}
+                onShowRule={onShowRule}
               />
             );
           }

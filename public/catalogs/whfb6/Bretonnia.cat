@@ -3018,7 +3018,7 @@
         <entryLink id="b263-2962-2e04-0d48" name="Insignia of the Quest" hidden="false" collective="false" import="true" targetId="025b-572a-af10-dce4" type="selectionEntry"/>
         <entryLink id="a929-cc08-a63b-2d48" name="Braid of Bordeleaux" hidden="false" collective="false" import="true" targetId="1cc4-799e-a272-c507" type="selectionEntry"/>
         <entryLink id="7ee9-d9ff-27fe-fbc0" name="Dragon&apos;s Claw" hidden="false" collective="false" import="true" targetId="dfd3-aedc-e16f-2cc8" type="selectionEntry"/>
-        <entryLink id="4c81-12bd-092d-56bd" name="Mantle of Damsel" hidden="false" collective="false" import="true" targetId="a536-69a9-0367-3695" type="selectionEntry"/>
+        <entryLink id="4c81-12bd-092d-56bd" name="Mantle of Damsel Elena" hidden="false" collective="false" import="true" targetId="a536-69a9-0367-3695" type="selectionEntry"/>
       </entryLinks>
     </selectionEntryGroup>
     <selectionEntryGroup id="0b8f-c716-0330-48b4" name="Enchanted Items" hidden="false" collective="false" import="true">

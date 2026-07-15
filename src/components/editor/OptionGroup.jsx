@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Minus, Info } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Minus, Info, BookOpen } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import { useDebugMode } from '../../hooks/DebugContext';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
+import { getRuleUrl } from '../../data/rulesLookup';
 
 const findForceOfSelection = (selId, forces) => {
   if (!forces) return null;
@@ -36,7 +37,8 @@ export default function OptionGroupComponent({
   setActiveInfo,
   onHoverEnter,
   onHoverMove,
-  onHoverLeave
+  onHoverLeave,
+  onShowRule
 }) {
   const { showDebugIds } = useDebugMode();
   // Start expanded when the group already holds a selection, so choices made
@@ -495,9 +497,19 @@ export default function OptionGroupComponent({
                     }}
                   >
                     {res.name}
-                    {descText && (
-                      <Info 
-                        size={14} 
+                    {getRuleUrl(res.name) && (
+                      <BookOpen
+                        size={14}
+                        className="rule-link-icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onShowRule) onShowRule(res.name);
+                        }}
+                      />
+                    )}
+                    {descText && !getRuleUrl(res.name) && (
+                      <Info
+                        size={14}
                         className="rule-link-icon"
                         onClick={(e) => {
                           e.stopPropagation();
