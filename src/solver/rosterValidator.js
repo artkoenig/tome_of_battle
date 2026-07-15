@@ -113,16 +113,26 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
 
 /** Eine Selection samt Kindern rekursiv gegen ihre Entry- und Gruppen-Constraints prüfen. */
 function checkSelectionTree(args) {
-  const { selection, roster, system, force } = args;
+  const { selection, roster, system, force, errors } = args;
 
   const entryId = selection.entryLinkId || selection.selectionEntryId;
   const forceCatalogueId = force?.catalogueId || roster.catalogueId;
   const rawEntry = findEntryInSystem(system, entryId, forceCatalogueId);
   const entry = resolveEntry(system, rawEntry, forceCatalogueId);
-  if (!entry) return;
 
-  checkEntryConstraints({ ...args, entry, entryId, forceCatalogueId });
-  checkGroupConstraints({ ...args, entry, forceCatalogueId });
+  if (!entry) {
+    // ADR-0011-Resilienz: die Auswahl bleibt unter ihrem gespeicherten Namen sichtbar
+    // (nicht entfernt/umgebogen) — nur als Validierungsfehler gemeldet.
+    errors.push({
+      type: 'unresolved-entry',
+      selectionId: selection.id,
+      message: `Auswahl "${selection.name}" verweist auf einen im Katalog nicht mehr vorhandenen Eintrag.`,
+      severity: 'error'
+    });
+  } else {
+    checkEntryConstraints({ ...args, entry, entryId, forceCatalogueId });
+    checkGroupConstraints({ ...args, entry, forceCatalogueId });
+  }
 
   selection.selections?.forEach(child =>
     checkSelectionTree({ ...args, selection: child, parentSelection: selection })

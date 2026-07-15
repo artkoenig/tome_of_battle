@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -36,3 +36,8 @@ Seam 3), [ADR 0011](../../../adr/0011-roster-referenzmodell-und-serialisierungs-
       entfernt und nicht umgebogen
 
 ## Comments
+- Umgesetzt: checkSelectionTree() in src/solver/rosterValidator.js erzeugt jetzt einen Fehler vom Typ 'unresolved-entry' (severity 'error'), wenn eine Auswahl auf keinen Katalogeintrag mehr auflösbar ist (findEntryInSystem/resolveEntry liefern null). Die Meldung nennt den gespeicherten Namen der Auswahl; die Auswahl selbst bleibt unverändert im Roster (ADR-0011-Resilienz). Kinder der unauflösbaren Auswahl werden weiterhin rekursiv geprüft. Die Fehler-Anzeige (RosterSidebar/UnitSelectionCard) filtert bereits generisch nach selectionId, daher keine neue UI-Naht nötig.
+
+Tests: zwei neue Fälle in src/solver/validator.test.js (genau ein Fehler bei fehlendem Eintrag; kein Fehler bei vollständigem System). Dabei eine vorbestehende Testdaten-Lücke behoben: die überall referenzierte 'General'-Auswahl (id 1b7c-2c90-6d96-28c9) existierte in keinem der Mock-Systeme, wurde bisher aber stillschweigend ignoriert -- mit der neuen Prüfung schlug das breit fehl. Als 'General'-selectionEntry in mockSystem, mockSystemRepeatable und mockSystemNested ergänzt, damit diese Fixtures tatsächlich vollständig auflösen.
+
+Verifiziert: volle Vitest-Suite (32 Dateien, 365 Tests, 2 skipped) gruen; E2E-Smoke-Test (node src/solver/ui.test.js) komplett gruen.
