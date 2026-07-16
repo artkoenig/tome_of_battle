@@ -43,10 +43,13 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.includes('rules-index.json')) return;
 
   // Cache static assets and fonts
-  const shouldCache = 
-    url.origin === self.location.origin || 
-    url.hostname.includes('fonts.googleapis.com') || 
-    url.hostname.includes('fonts.gstatic.com');
+  const shouldCache =
+    url.origin === self.location.origin ||
+    url.hostname.includes('fonts.googleapis.com') ||
+    url.hostname.includes('fonts.gstatic.com') ||
+    // Catalog data is fetched at runtime from the fork over raw.githubusercontent.com
+    // (see ADR 0014). Caching it keeps once-imported systems usable offline.
+    url.hostname.includes('raw.githubusercontent.com');
 
   if (shouldCache) {
     event.respondWith(

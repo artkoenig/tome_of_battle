@@ -32,6 +32,19 @@ function getName(el) {
 }
 
 /**
+ * Reads an element's integer `revision` attribute — BattleScribe's official update
+ * signal ("if it's higher, the file will be updated"). Returns null when the
+ * attribute is absent or non-numeric, so callers can treat pre-revision stored data
+ * (imported before revisions were tracked) as outdated.
+ */
+function getRevision(el) {
+  const raw = el.getAttribute('revision');
+  if (raw === null || raw === '') return null;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+/**
  * Parses rules from an element, accepting 'rules' or 'sharedRules' wrappers.
  */
 function parseRules(el) {
@@ -382,6 +395,7 @@ export function parseGameSystemXML(xmlText) {
   return {
     id: root.getAttribute('id'),
     name: getName(root),
+    revision: getRevision(root),
     costTypes,
     profileTypes,
     categoryEntries,
@@ -440,6 +454,7 @@ export function parseCatalogueXML(xmlText) {
   return {
     id: root.getAttribute('id'),
     name: getName(root),
+    revision: getRevision(root),
     gameSystemId: root.getAttribute('gameSystemId'),
     gameSystemRevision: root.getAttribute('gameSystemRevision'),
     selectionEntries,
@@ -480,6 +495,7 @@ export function processImportedData(gstFiles, catFiles) {
   const systemsData = {
     id: parsedGst.id,
     name: parsedGst.name,
+    revision: parsedGst.revision,
     costTypes: parsedGst.costTypes,
     profileTypes: parsedGst.profileTypes,
     categoryEntries: parsedGst.categoryEntries,

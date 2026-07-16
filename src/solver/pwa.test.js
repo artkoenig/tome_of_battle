@@ -71,6 +71,14 @@ describe('PWA Configuration and Assets', () => {
     expect(messageBlockMatch[0]).toContain('skipWaiting');
   });
 
+  it('should cache raw.githubusercontent.com so imported systems stay usable offline', () => {
+    const swPath = path.join(rootDir, 'public/sw.js');
+    const swContent = fs.readFileSync(swPath, 'utf8');
+    // Catalog data (index + .cat/.gst) is fetched at runtime from the fork over this
+    // host (ADR 0014); it must be part of the caching rule for offline resilience.
+    expect(swContent).toContain('raw.githubusercontent.com');
+  });
+
   it('should have generated PNG icons in the public folder', () => {
     const faviconPath = path.join(rootDir, 'public/favicon.png');
     const icon192Path = path.join(rootDir, 'public/icon-192.png');
