@@ -5,14 +5,37 @@ import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import ConfirmationDialog from './editor/ConfirmationDialog';
+import { CATALOG_INDEX_URL, buildRawFileUrl } from '../db/catalogUpdate';
 
-const getAbsoluteUrl = (path) => {
-  const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : '';
-  if (origin && path.startsWith('/')) {
-    return `${origin}${path}`;
-  }
-  return path;
-};
+function transformIndexToSystems(index) {
+  if (!index?.repositoryFiles) return [];
+
+  const gsType = 'gamesystem';
+  const catType = 'catalogue';
+
+  const gameSystemEntries = index.repositoryFiles.filter(
+    entry => (entry.type || '').toLowerCase() === gsType
+  );
+  const catalogueEntries = index.repositoryFiles.filter(
+    entry => (entry.type || '').toLowerCase() === catType
+  );
+
+  return gameSystemEntries.map(gs => ({
+    id: gs.id,
+    name: gs.name,
+    gst: {
+      id: gs.id,
+      name: gs.name,
+      fileName: `${gs.name}.gst`
+    },
+    catalogues: catalogueEntries.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        fileName: `${cat.name}.cat`
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }));
+}
 
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
   const [systems, setSystems] = useState([]);
@@ -43,22 +66,26 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
 
   const fetchAvailableSystems = async () => {
     try {
-      const response = await fetch(getAbsoluteUrl('/catalogs/manifest.json'));
+      const response = await fetch(CATALOG_INDEX_URL);
       if (response.ok) {
         const data = await response.json();
-        setAvailableSystems(data);
-        if (data.length > 0) {
-          setSelectedBundleSysId(data[0].id);
+        const systems = transformIndexToSystems(data);
+        setAvailableSystems(systems);
+        if (systems.length > 0) {
+          setSelectedBundleSysId(systems[0].id);
           const initialCats = {};
-          data[0].catalogues.forEach(cat => {
+          systems[0].catalogues.forEach(cat => {
             initialCats[cat.id] = true;
           });
           setSelectedCats(initialCats);
         }
+      } else {
+        setError('Der Katalog-Index ist derzeit nicht erreichbar. Bitte versuche es später erneut.');
       }
     } catch (e) {
-      if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'test') {
-        console.warn("Could not load pre-bundled catalogs manifest", e);
+      console.warn("Could not load catalog index from fork", e);
+      if (availableSystems.length === 0) {
+        setError('Keine Spieldaten zum Import verfügbar. Der Katalog-Index konnte nicht geladen werden.');
       }
     }
   };
@@ -103,15 +130,15 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     setLoading(true);
 
     try {
-      const gstUrl = `/catalogs/${system.dir}/${system.gst.fileName}`;
-      const gstRes = await fetch(getAbsoluteUrl(gstUrl));
+      const gstUrl = buildRawFileUrl(system.gst.fileName);
+      const gstRes = await fetch(gstUrl);
       if (!gstRes.ok) throw new Error(`Fehler beim Laden des Spielsystems: ${gstRes.statusText}`);
       const gstText = await gstRes.text();
       const gstFiles = [{ name: system.gst.fileName, content: gstText }];
 
       const catFiles = await Promise.all(selectedCatList.map(async (cat) => {
-        const catUrl = `/catalogs/${system.dir}/${cat.fileName}`;
-        const catRes = await fetch(getAbsoluteUrl(catUrl));
+        const catUrl = buildRawFileUrl(cat.fileName);
+        const catRes = await fetch(catUrl);
         if (!catRes.ok) throw new Error(`Fehler beim Laden des Katalogs ${cat.name}: ${catRes.statusText}`);
         const catText = await catRes.text();
         return { name: cat.fileName, content: catText };

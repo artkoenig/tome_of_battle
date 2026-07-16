@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -38,3 +38,4 @@ Fixes, die portiert und mit Revisions-Bump versehen werden müssen.
   Umzug der Kataloge in ein Fork-Repo mit Laufzeit-Abruf hinzukam — die Teile sind
   kausal verkettet. Bereit für Decompose in Kind-Issues.
 - 2026-07-15: Fork angelegt: artkoenig/Warhammer-Fantasy-6th-edition (Default-Branch master). Annahmen aus ADR 0014 gegen den realen Fork geprueft: (a) raw.githubusercontent.com liefert access-control-allow-origin: * -- Laufzeit-Abruf bestaetigt. (b) Upstream pflegt 'revision' diszipliniert (Chaos 9->11, Lizardmen 6->7, Skaven 3->4, Vampire Counts 8->10 seit dem letzten Release) -- das Update-Signal ist lebendig, nur unsere Kopie hatte es verrotten lassen. (c) NEU: Upstreams letztes Release ist v1.2.3 (09/2023), master wurde 11/2025 gepusht -- die offizielle Release-Kette liefert also zusaetzlich zum fehlenden CORS veraltete Daten; zweiter unabhaengiger Grund gegen Option 3. (d) NEU: Der Fork erbt Upstreams CI (ci.yml mit BSData/check-datafiles, publish-catpkg.yml, chatops.yml). check-datafiles validiert Schema/Integritaet, prueft aber keine Revisionen -- unser Gate bleibt noetig und ist ein Zusatz. Actions sind im Fork noch deaktiviert und muessen aktiviert werden. PRD und ADR 0014 entsprechend nachgezogen.
+- Feature completed. All 7 children resolved. Last child (07): Importer bezieht Systemliste aus catpkg.json des Forks (raw.githubusercontent.com), Vite-Plugin und public/catalogs/ entfernt. Tests: 393 passed + E2E gruen. Lint: 0 Errors.

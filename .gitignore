@@ -31,8 +31,6 @@ coverage/
 !.agents/AGENTS.md
 !.agents/validation_insights.md
 
-# Generated files
-public/catalogs/manifest.json
 
 .scratch/
 .antigravity/

@@ -49,6 +49,15 @@ vi.mock('jszip', () => {
   };
 });
 
+// Mock the catalogUpdate module so buildRawFileUrl constructs predictable URLs
+vi.mock('../db/catalogUpdate', () => {
+  const RAW_BASE = 'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/';
+  return {
+    CATALOG_INDEX_URL: `${RAW_BASE}catpkg.json`,
+    buildRawFileUrl: (fileName) => `${RAW_BASE}${encodeURIComponent(fileName)}`
+  };
+});
+
 describe('Importer Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -395,39 +404,52 @@ describe('Importer Component', () => {
     let fetchSpy;
 
     beforeEach(() => {
-      const mockManifest = [
-        {
-          id: 'sys-bundle-1',
-          name: 'Warhammer Fantasy Bundle',
-          dir: 'whfb6',
-          gst: { id: 'sys-bundle-1', name: 'Warhammer Fantasy Bundle', fileName: 'rules.gst' },
-          catalogues: [
-            { id: 'cat-bundle-1', name: 'Bretonnia', fileName: 'Bretonnia.cat' },
-            { id: 'cat-bundle-2', name: 'Empire', fileName: 'Empire.cat' }
-          ]
-        }
-      ];
+      const mockIndex = {
+        repositoryFiles: [
+          {
+            id: 'sys-bundle-1',
+            name: 'Warhammer Fantasy Bundle',
+            type: 'gamesystem',
+            revision: 9,
+            fileUrl: 'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Warhammer%20Fantasy%20Bundle.gst'
+          },
+          {
+            id: 'cat-bundle-1',
+            name: 'Bretonnia',
+            type: 'catalogue',
+            revision: 8,
+            fileUrl: 'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Bretonnia.cat'
+          },
+          {
+            id: 'cat-bundle-2',
+            name: 'Empire',
+            type: 'catalogue',
+            revision: 11,
+            fileUrl: 'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Empire.cat'
+          }
+        ]
+      };
 
       fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
-        if (url.endsWith('/catalogs/manifest.json')) {
+        if (url.includes('catpkg.json')) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve(mockManifest)
+            json: () => Promise.resolve(mockIndex)
           });
         }
-        if (url.endsWith('/catalogs/whfb6/rules.gst')) {
+        if (url.includes('Warhammer%20Fantasy%20Bundle.gst')) {
           return Promise.resolve({
             ok: true,
             text: () => Promise.resolve('<gameSystem id="sys-bundle-1" name="Warhammer Fantasy Bundle"></gameSystem>')
           });
         }
-        if (url.endsWith('/catalogs/whfb6/Bretonnia.cat')) {
+        if (url.includes('Bretonnia.cat')) {
           return Promise.resolve({
             ok: true,
             text: () => Promise.resolve('<catalogue id="cat-bundle-1" name="Bretonnia"></catalogue>')
           });
         }
-        if (url.endsWith('/catalogs/whfb6/Empire.cat')) {
+        if (url.includes('Empire.cat')) {
           return Promise.resolve({
             ok: true,
             text: () => Promise.resolve('<catalogue id="cat-bundle-2" name="Empire"></catalogue>')
@@ -441,11 +463,11 @@ describe('Importer Component', () => {
       fetchSpy.mockRestore();
     });
 
-    it('should fetch manifest and render pre-bundled importer', async () => {
+    it('should fetch catalog index and render pre-bundled importer', async () => {
       render(<Importer showAsEmptyState={false} />);
 
       await waitFor(() => {
-        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/catalogs/manifest.json'));
+        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('catpkg.json'));
         expect(screen.getByText('Vordefinierte Spieldaten importieren')).toBeDefined();
         expect(screen.getByText('Warhammer Fantasy Bundle')).toBeDefined();
         expect(screen.getByLabelText('Bretonnia')).toBeDefined();
@@ -501,12 +523,12 @@ describe('Importer Component', () => {
       fireEvent.click(importBtn);
 
       await waitFor(() => {
-        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/catalogs/whfb6/rules.gst'));
-        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/catalogs/whfb6/Bretonnia.cat'));
-        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/catalogs/whfb6/Empire.cat'));
+        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('Warhammer%20Fantasy%20Bundle.gst'));
+        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('Bretonnia.cat'));
+        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('Empire.cat'));
 
         expect(processImportedData).toHaveBeenCalledWith(
-          [{ name: 'rules.gst', content: '<gameSystem id="sys-bundle-1" name="Warhammer Fantasy Bundle"></gameSystem>' }],
+          [{ name: 'Warhammer Fantasy Bundle.gst', content: '<gameSystem id="sys-bundle-1" name="Warhammer Fantasy Bundle"></gameSystem>' }],
           [
             { name: 'Bretonnia.cat', content: '<catalogue id="cat-bundle-1" name="Bretonnia"></catalogue>' },
             { name: 'Empire.cat', content: '<catalogue id="cat-bundle-2" name="Empire"></catalogue>' }

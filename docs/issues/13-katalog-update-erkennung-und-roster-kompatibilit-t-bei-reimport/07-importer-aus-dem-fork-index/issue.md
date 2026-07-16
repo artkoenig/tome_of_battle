@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: [01, 05, 06]
 
 ## Description
@@ -43,3 +43,4 @@ Modules", „Out of Scope"),
 - [ ] Der E2E-Test läuft grün (aus der Fixture, ohne `public/catalogs/`)
 
 ## Comments
+- Umgesetzt: vite.config.js: catalogManifestPlugin() + generateManifest() + extractIdAndName() entfernt, Plugin-Array bereinigt. public/catalogs/ geloesst (Versionierte .cat/.gst-Dateien aus git-Historie in src/solver/__fixtures__/whfb6/ wiederhergestellt, da 3 Tests darauf zugreifen). .gitignore: manifest.json-Eintrag entfernt. Importer.jsx: fetchAvailableSystems ruft CATALOG_INDEX_URL aus catalogUpdate.js, transformIndexToSystems() parst das catpkg-Format, handleImportBundle verwendet buildRawFileUrl(). Bei nicht erreichbarem Index wird eine Fehlermeldung angezeigt. Der .bsz-Upload-Weg bleibt unveraendert. Tests: Importer.test.jsx auf catpkg-Mock umgestellt, 3 Scratch-Tests auf Fixture-Verzeichnis umgebogen. Verifiziert: 393 Tests + E2E gruen, Lint sauber.
