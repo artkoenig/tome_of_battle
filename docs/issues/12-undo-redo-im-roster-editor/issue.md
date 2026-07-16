@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -19,3 +19,4 @@ PlayMode.
 - [ ] Beide Kind-Issues sind resolved
 
 ## Comments
+- Beide Kinder resolved. Undo/Redo-Mechanik (useUndoableState) + Toolbar-Buttons implementiert. Tests: 361 passed, 2 skipped. Lint: 0 errors (79 pre-existing warnings).

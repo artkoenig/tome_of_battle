@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Blocked by: [01]
 
 ## Description
@@ -18,3 +18,4 @@ nicht Teil dieser Issue.
 - [ ] Ist keine weitere Undo-Historie vorhanden, ist der Undo-Button wieder deaktiviert (analog für Redo)
 
 ## Comments
+- Undo/Redo-Buttons in der Editor-Toolbar implementiert: Undo2/Redo2-Icons, deaktiviert wenn keine Historie, Tests grün.
