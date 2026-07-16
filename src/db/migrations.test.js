@@ -81,3 +81,91 @@ test('one broken system does not affect the migration of the others', async () =
   expect(failures).toEqual([{ id: 'sys-broken', name: 'Broken System' }]);
   expect(migrated.map(s => s.id)).toEqual(['sys-broken', 'sys-1']);
 });
+
+const outdatedGst = `<?xml version="1.0" encoding="UTF-8"?>
+<gameSystem id="sys-1" name="Test System" revision="8" />`;
+const currentGst = `<?xml version="1.0" encoding="UTF-8"?>
+<gameSystem id="sys-1" name="Test System" revision="9" />`;
+
+const index = {
+  repositoryFiles: [
+    { id: 'sys-1', name: 'Test System', type: 'gamesystem', revision: 9 },
+  ],
+};
+
+function makeFetchText({ indexPayload = index, gstPayload = currentGst } = {}) {
+  return async (url) => {
+    if (url.endsWith('catpkg.json')) return JSON.stringify(indexPayload);
+    if (url.includes(encodeURIComponent('Test System.gst'))) return gstPayload;
+    throw new Error(`Unexpected fetch: ${url}`);
+  };
+}
+
+test('an outdated stored system is silently updated to the higher revision', async () => {
+  const systems = [
+    {
+      id: 'sys-1',
+      name: 'Test System',
+      revision: 8,
+      catalogues: [],
+      rawXmls: { gst: [{ name: 'Test System.gst', content: outdatedGst }], cat: [] },
+    },
+  ];
+
+  const { systems: migrated, failures } = await runSystemMigrations(systems, makeFetchText());
+
+  expect(failures).toEqual([]);
+  expect(migrated[0].revision).toBe(9);
+  expect(migrated[0].rawXmls.gst[0].content).toBe(currentGst);
+  expect(saveSystem).toHaveBeenCalledTimes(1);
+});
+
+test('a failed catalog fetch keeps stored data, reports no failure, and does not toast', async () => {
+  const storedRawXmls = { gst: [{ name: 'Test System.gst', content: validGst }], cat: [] };
+  const systems = [
+    { id: 'sys-1', name: 'Test System', revision: 8, catalogues: [], rawXmls: storedRawXmls },
+  ];
+  const failingFetch = async (url) => {
+    if (url.endsWith('catpkg.json')) return JSON.stringify(index);
+    throw new Error('offline');
+  };
+
+  const { systems: migrated, failures } = await runSystemMigrations(systems, failingFetch);
+
+  // No update applied (fetch of the file failed), but the system is still re-parsed
+  // from its untouched stored XML — and no failure is reported to the user.
+  expect(failures).toEqual([]);
+  expect(migrated[0].rawXmls).toBe(storedRawXmls);
+});
+
+test('unparsable fetched catalog data falls back silently to the stored system', async () => {
+  const storedRawXmls = { gst: [{ name: 'Test System.gst', content: validGst }], cat: [] };
+  const systems = [
+    { id: 'sys-1', name: 'Test System', revision: 8, catalogues: [], rawXmls: storedRawXmls },
+  ];
+
+  const { systems: migrated, failures } = await runSystemMigrations(
+    systems,
+    makeFetchText({ gstPayload: '<notAGameSystem />' })
+  );
+
+  expect(failures).toEqual([]);
+  expect(migrated[0].rawXmls).toBe(storedRawXmls);
+});
+
+test('without an injected fetcher no network update runs (offline-safe default)', async () => {
+  const systems = [
+    {
+      id: 'sys-1',
+      name: 'Test System',
+      revision: 8,
+      catalogues: [],
+      rawXmls: { gst: [{ name: 'Test System.gst', content: validGst }], cat: [] },
+    },
+  ];
+
+  const { failures } = await runSystemMigrations(systems);
+
+  expect(failures).toEqual([]);
+  expect(saveSystem).toHaveBeenCalledTimes(1);
+});

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: [02, 03, 05]
 
 ## Description
@@ -68,3 +68,4 @@ Seams 1+2), [ADR 0014](../../../adr/0014-kataloge-als-externes-fork-repo-mit-lau
       aus Issue 03
 
 ## Comments
+- Umgesetzt: Parser liest jetzt das revision-Attribut (gst + cat), processImportedData fuehrt es pro System/Katalog mit. Neues Modul src/db/catalogUpdate.js mit reiner, netzfreier Vergleichsfunktion findOutdatedCatalogFiles ('higher wins', Gleichstand, fehlende Revision=veraltet, unbekannte System-/Katalog-IDs) und der Orchestrierung updateSystemFromCatalogIndex, die die Abruf-Funktion per DI entgegennimmt, nur veraltete Dateien laedt, neu parst und still bei jedem Fehler (Abruf/Parse) auf den gespeicherten Stand zurueckfaellt (kein Toast). Integriert in runSystemMigrations (App.jsx injiziert fetchCatalogText); Issue-04-Meldung fuer Re-Processing-Fehler bleibt erhalten. Raw-URL wird aus Repo-Basis + Dateiname konstruiert (fileUrl ungenutzt). Service Worker cacht raw.githubusercontent.com. E2E blockt den Host per Request-Interception (netzfrei/deterministisch). Verifiziert: 393 Unit-Tests gruen, E2E gruen, Live-Browser gegen den Fork: Fixture gst 8->9 und Ogre Kingdoms 1->2 still aktualisiert und persistiert.

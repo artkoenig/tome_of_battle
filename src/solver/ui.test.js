@@ -130,6 +130,19 @@ const runUiTests = async () => {
 
   const page = await browser.newPage();
 
+  // The app performs a silent catalog update from raw.githubusercontent.com at
+  // startup (see docs/issues/.../06-katalog-update-zur-laufzeit). Block that host so
+  // this E2E stays deterministic and network-free: the fetch fails silently and the
+  // app keeps the frozen fixture data unchanged.
+  await page.setRequestInterception(true);
+  page.on('request', (request) => {
+    if (request.url().includes('raw.githubusercontent.com')) {
+      request.abort();
+    } else {
+      request.continue();
+    }
+  });
+
   page.on('console', msg => {
     // Suppress verbose debug console logs unless needed
     if (msg.type() === 'error') {
