@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Blocked by: None
 
 ## Description
@@ -60,3 +60,26 @@ Forks", Requirements 4+5, Seam 4),
 - [ ] `check-datafiles` läuft grün über den portierten Stand
 
 ## Comments
+- Gelöst im Fork-Repo artkoenig/Warhammer-Fantasy-6th-edition (nicht Teil dieses
+App-Repos). Commits: 65b52d3 (14 Dateien portiert + Revisions-Bump je +1,
+Revision-Gate-Skript+Workflow, catpkg.json+Generator+Sync-Check-Workflow),
+c80245e (deprecated upload-artifact@v1 → @v4 in geerbter ci.yml gefixt,
+sonst unverändert), a46ddab+9c7203c (ConditionKind "greaterThanOrEqualTo"
+war kein gültiger Schema-Wert, wham/check-datafiles brach beim Parsen ab;
+auf den offiziellen Wert "atLeast" korrigiert, inkl. nachträglichem
+Revisions-Bump für diese zweite inhaltliche Änderung derselben Datei).
+
+Alle 3 Workflows liefen grün auf dem finalen Commit 9c7203c: der geerbte
+CI (check-datafiles/wham), der neue Revision-Gate-Workflow und der neue
+catpkg.json-Sync-Check. Whitespace-Bereinigung bewusst nicht portiert
+(Dogs of War/Dwarfs/Vampire Counts bleiben byteidentisch zu Upstream).
+
+Abweichung vom ursprünglichen Issue-Text: catpkg.json wird NICHT per
+Auto-Commit-Bot aktuell gehalten (das hätte einen dauerhaften
+Push-Mechanismus mit contents:write erfordert, den der Nutzer explizit
+abgelehnt hat), sondern per CI-Check, der bei veralteter catpkg.json rot
+schlägt — Regenerierung/Commit bleibt manuell.
+
+Der zunächst vermutete Folgefund (modifierEvaluator.js kennt atLeast/
+atMost/notInstanceOf nicht) wurde inzwischen unabhängig in Issue 14 /
+PR #47 gelöst.
