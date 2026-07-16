@@ -88,75 +88,81 @@ export const evaluateCondition = (cond, ctx = {}) => {
     case 'notEqualTo':
       return currentValue !== targetValue;
     case 'lessThanOrEqualTo':
+    case 'atMost':
       return currentValue <= targetValue;
     case 'greaterThanOrEqualTo':
+    case 'atLeast':
       return currentValue >= targetValue;
-    case 'instanceOf': {
-      const forceEntryId = cond.scope || cond.childId;
-      if (system && forceEntryId) {
-        // Simple local recursive search for force entry to avoid circular dependency
-        const findForceEntryInSystemLocal = (sys, id) => {
-          if (!sys || !id) return null;
-          const findInList = (list, targetId) => {
-            for (const fe of list) {
-              if (fe.id === targetId) return fe;
-              if (fe.forceEntries) {
-                const sub = findInList(fe.forceEntries, targetId);
-                if (sub) return sub;
+    case 'instanceOf':
+    case 'notInstanceOf': {
+      const isNegated = cond.type === 'notInstanceOf';
+      const evaluateInstanceOf = () => {
+        const forceEntryId = cond.scope || cond.childId;
+        if (system && forceEntryId) {
+          const findForceEntryInSystemLocal = (sys, id) => {
+            if (!sys || !id) return null;
+            const findInList = (list, targetId) => {
+              for (const fe of list) {
+                if (fe.id === targetId) return fe;
+                if (fe.forceEntries) {
+                  const sub = findInList(fe.forceEntries, targetId);
+                  if (sub) return sub;
+                }
+              }
+              return null;
+            };
+            if (sys.forceEntries) {
+              const found = findInList(sys.forceEntries, id);
+              if (found) return found;
+            }
+            if (sys.catalogues) {
+              for (const cat of sys.catalogues) {
+                if (cat.forceEntries) {
+                  const found = findInList(cat.forceEntries, id);
+                  if (found) return found;
+                }
               }
             }
             return null;
           };
-          if (sys.forceEntries) {
-            const found = findInList(sys.forceEntries, id);
-            if (found) return found;
+
+          const isForce = findForceEntryInSystemLocal(system, forceEntryId);
+          if (isForce) {
+            const isInstance = (ctx.force?.forceEntryId === forceEntryId) || 
+                               (roster?.forces?.some(f => f.forceEntryId === forceEntryId));
+            return cond.value === 0 ? !isInstance : isInstance;
           }
-          if (sys.catalogues) {
-            for (const cat of sys.catalogues) {
-              if (cat.forceEntries) {
-                const found = findInList(cat.forceEntries, id);
-                if (found) return found;
-              }
+        }
+
+        if (!selection || !system) return false;
+        const targetChildId = cond.childId;
+        const checkInstance = (sel) => {
+          if (!sel) return false;
+          const sId = sel.selectionEntryId || sel.entryLinkId;
+          if (sId === targetChildId) return true;
+          
+          const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
+          const raw = findEntryInSystem(system, sId, catId);
+          const res = raw && resolveEntry(system, raw, catId);
+          
+          if (res) {
+            if (cond.scope && cond.scope !== 'parent' && cond.scope !== 'force' && cond.scope !== 'roster') {
+              const hasCat = selectionHasCategory(sel, cond.scope, system, catId);
+              if (!hasCat) return false;
             }
+            if (res.targetId === targetChildId || res.id === targetChildId) return true;
+            if (targetChildId === 'model' && (res.type === 'model' || res.type === 'unit')) return true;
+            if (targetChildId === 'unit' && res.type === 'unit') return true;
+            if (targetChildId === 'upgrade' && res.type === 'upgrade') return true;
           }
-          return null;
+          return false;
         };
-
-        const isForce = findForceEntryInSystemLocal(system, forceEntryId);
-        if (isForce) {
-          const isInstance = (ctx.force?.forceEntryId === forceEntryId) || 
-                             (roster?.forces?.some(f => f.forceEntryId === forceEntryId));
-          return cond.value === 0 ? !isInstance : isInstance;
-        }
-      }
-
-      if (!selection || !system) return false;
-      const targetChildId = cond.childId;
-      const checkInstance = (sel) => {
-        if (!sel) return false;
-        const sId = sel.selectionEntryId || sel.entryLinkId;
-        if (sId === targetChildId) return true;
         
-        const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
-        const raw = findEntryInSystem(system, sId, catId);
-        const res = raw && resolveEntry(system, raw, catId);
-        
-        if (res) {
-          if (cond.scope && cond.scope !== 'parent' && cond.scope !== 'force' && cond.scope !== 'roster') {
-            const hasCat = selectionHasCategory(sel, cond.scope, system, catId);
-            if (!hasCat) return false;
-          }
-          if (res.targetId === targetChildId || res.id === targetChildId) return true;
-          if (targetChildId === 'model' && (res.type === 'model' || res.type === 'unit')) return true;
-          if (targetChildId === 'unit' && res.type === 'unit') return true;
-          if (targetChildId === 'upgrade' && res.type === 'upgrade') return true;
-        }
+        if (checkInstance(selection)) return true;
+        if (parentSelection && checkInstance(parentSelection)) return true;
         return false;
       };
-      
-      if (checkInstance(selection)) return true;
-      if (parentSelection && checkInstance(parentSelection)) return true;
-      return false;
+      return isNegated ? !evaluateInstanceOf() : evaluateInstanceOf();
     }
     default:
       return false;

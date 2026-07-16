@@ -1,4 +1,4 @@
-import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost, syncRosterSelectionsWithSystem, collectUnitProfilesAndRules, findForceEntryById, isCategoryLinkHidden, isSelectionEntryHidden } from './validator.js';
+import { calculateRosterCosts, validateRoster, findEntryInSystem, resolveEntry, computeRosterCounts, evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, getOptionDisplayCost, getSelectionTotalCost, syncRosterSelectionsWithSystem, collectUnitProfilesAndRules, findForceEntryById, isCategoryLinkHidden, isSelectionEntryHidden } from './validator.js';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML } from '../parser/xmlParser.js';
 
@@ -2143,6 +2143,52 @@ test('collectUnitProfilesAndRules resolves profiles by name fallback (e.g. Short
   const shortBowProfile = result.profiles.find(p => p.name === 'Short Bow');
   expect(shortBowProfile).toBeDefined();
   expect(shortBowProfile.characteristics.find(c => c.name === 'Range').value).toBe('24"');
+});
+
+// Condition type aliases: atLeast / atMost / notInstanceOf
+
+test('evaluateCondition atLeast (alias for >=)', () => {
+  const cond = { type: 'atLeast', field: 'selections', value: 3 };
+  expect(evaluateCondition(cond, { selectionCounts: { selections: 3 } })).toBe(true);
+  expect(evaluateCondition(cond, { selectionCounts: { selections: 4 } })).toBe(true);
+  expect(evaluateCondition(cond, { selectionCounts: { selections: 2 } })).toBe(false);
+});
+
+test('evaluateCondition atMost (alias for <=)', () => {
+  const cond = { type: 'atMost', field: 'selections', value: 3 };
+  expect(evaluateCondition(cond, { selectionCounts: { selections: 3 } })).toBe(true);
+  expect(evaluateCondition(cond, { selectionCounts: { selections: 2 } })).toBe(true);
+  expect(evaluateCondition(cond, { selectionCounts: { selections: 4 } })).toBe(false);
+});
+
+test('evaluateCondition notInstanceOf negates instanceOf', () => {
+  const system = {
+    id: 'sys-notinstance',
+    catalogues: [
+      {
+        id: 'cat-test',
+        sharedSelectionEntries: [
+          { id: 'unit-visible', name: 'Visible Unit', hidden: false }
+        ],
+        forceEntries: [
+          { id: 'fe-horde', name: 'Troll Horde' }
+        ]
+      }
+    ]
+  };
+
+  const condInstanceOf = { type: 'instanceOf', field: 'selections', scope: 'fe-horde', childId: 'any', value: 1.0 };
+  const condNotInstanceOf = { type: 'notInstanceOf', field: 'selections', scope: 'fe-horde', childId: 'any', value: 1.0 };
+
+  const selection = { id: 'sel-unit', selectionEntryId: 'unit-visible' };
+
+  // In a Horde force, instanceOf is true, notInstanceOf should be false
+  expect(evaluateCondition(condInstanceOf, { system, selection, roster: { forces: [{ forceEntryId: 'fe-horde' }] } })).toBe(true);
+  expect(evaluateCondition(condNotInstanceOf, { system, selection, roster: { forces: [{ forceEntryId: 'fe-horde' }] } })).toBe(false);
+
+  // In a non-Horde force, instanceOf is false, notInstanceOf should be true
+  expect(evaluateCondition(condInstanceOf, { system, selection, roster: { forces: [{ forceEntryId: 'fe-standard' }] } })).toBe(false);
+  expect(evaluateCondition(condNotInstanceOf, { system, selection, roster: { forces: [{ forceEntryId: 'fe-standard' }] } })).toBe(true);
 });
 
 console.log('--- TEST RUN COMPLETE ---');
