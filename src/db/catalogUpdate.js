@@ -138,19 +138,37 @@ export async function fetchCatalogText(url) {
   return response.text();
 }
 
+let catalogIndexCache = new WeakMap();
+
+/**
+ * Clear the in-memory catalog index cache. Only needed in tests between cases;
+ * in production the cache lives for the page session and is harmless.
+ */
+export function clearCatalogIndexCache() {
+  // WeakMap has no clear() — the reference is held by the module; reassign.
+  catalogIndexCache = new WeakMap();
+}
+
 /**
  * Fetches and parses the catpkg index. Returns null on any failure (offline,
  * rate-limit, GitHub outage, malformed JSON) so an unreachable index leaves the app
  * working on stored data without any user-facing error. When no fetcher is injected,
- * catalog updates are skipped entirely.
+ * catalog updates are skipped entirely. The result is cached per fetchText function
+ * (WeakMap) so that the same caller never sends redundant requests.
  */
 export async function loadCatalogIndex(fetchText, indexUrl = CATALOG_INDEX_URL) {
   if (!fetchText) return null;
+  if (catalogIndexCache.has(fetchText)) {
+    return catalogIndexCache.get(fetchText);
+  }
   try {
     const indexText = await fetchText(indexUrl);
-    return JSON.parse(indexText);
+    const index = JSON.parse(indexText);
+    catalogIndexCache.set(fetchText, index);
+    return index;
   } catch (error) {
     console.warn('Catalog index unavailable; keeping stored catalog data:', error);
+    catalogIndexCache.set(fetchText, null);
     return null;
   }
 }

@@ -5,7 +5,7 @@ import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import ConfirmationDialog from './editor/ConfirmationDialog';
-import { CATALOG_INDEX_URL, buildRawFileUrl } from '../db/catalogUpdate';
+import { loadCatalogIndex, fetchCatalogText, buildRawFileUrl } from '../db/catalogUpdate';
 
 function transformIndexToSystems(index) {
   if (!index?.repositoryFiles) return [];
@@ -66,9 +66,8 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
 
   const fetchAvailableSystems = async () => {
     try {
-      const response = await fetch(CATALOG_INDEX_URL);
-      if (response.ok) {
-        const data = await response.json();
+      const data = await loadCatalogIndex(fetchCatalogText);
+      if (data) {
         const systems = transformIndexToSystems(data);
         setAvailableSystems(systems);
         if (systems.length > 0) {

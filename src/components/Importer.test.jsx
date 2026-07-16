@@ -5,6 +5,7 @@ import Importer from './Importer';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
+import { clearCatalogIndexCache } from '../db/catalogUpdate';
 import JSZip from 'jszip';
 
 // Mock Lucide Icons
@@ -49,10 +50,12 @@ vi.mock('jszip', () => {
   };
 });
 
-// Mock the catalogUpdate module so buildRawFileUrl constructs predictable URLs
-vi.mock('../db/catalogUpdate', () => {
+// Mock the catalogUpdate module: override URL constants, keep real fetch/load logic
+vi.mock('../db/catalogUpdate', async () => {
+  const actual = await vi.importActual('../db/catalogUpdate');
   const RAW_BASE = 'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/';
   return {
+    ...actual,
     CATALOG_INDEX_URL: `${RAW_BASE}catpkg.json`,
     buildRawFileUrl: (fileName) => `${RAW_BASE}${encodeURIComponent(fileName)}`
   };
@@ -60,6 +63,7 @@ vi.mock('../db/catalogUpdate', () => {
 
 describe('Importer Component', () => {
   beforeEach(() => {
+    clearCatalogIndexCache();
     vi.clearAllMocks();
     getAllSystems.mockResolvedValue([]);
     deleteSystem.mockResolvedValue({});
@@ -434,7 +438,8 @@ describe('Importer Component', () => {
         if (url.includes('catpkg.json')) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve(mockIndex)
+            json: () => Promise.resolve(mockIndex),
+            text: () => Promise.resolve(JSON.stringify(mockIndex))
           });
         }
         if (url.includes('Warhammer%20Fantasy%20Bundle.gst')) {
