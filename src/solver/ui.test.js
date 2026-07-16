@@ -8,11 +8,14 @@ const PORT = 5175;
 const tempZipPath = path.resolve('./temp_whfb6.zip');
 let serverProcess = null;
 
-// 1. Pack `./public/catalogs/whfb6/` files into a temporary ZIP file using JSZip.
+// 1. Pack the frozen E2E fixture (./src/solver/__fixtures__/whfb6/) into a temporary
+// ZIP file using JSZip. This fixture is deliberately decoupled from public/catalogs/
+// (see docs/issues/.../01-e2e-fixture-einfrieren) so this test exercises the app, not
+// the catalog data, and stays deterministic and network-free.
 const packCatalogs = async () => {
-  console.log('Packing ./public/catalogs/whfb6/ into a temporary ZIP file...');
+  console.log('Packing ./src/solver/__fixtures__/whfb6/ into a temporary ZIP file...');
   const zip = new JSZip();
-  const dirPath = path.resolve('./public/catalogs/whfb6');
+  const dirPath = path.resolve('./src/solver/__fixtures__/whfb6');
   
   if (!fs.existsSync(dirPath)) {
     throw new Error(`Catalog directory not found at: ${dirPath}`);
@@ -127,6 +130,19 @@ const runUiTests = async () => {
 
   const page = await browser.newPage();
 
+  // The app performs a silent catalog update from raw.githubusercontent.com at
+  // startup (see docs/issues/.../06-katalog-update-zur-laufzeit). Block that host so
+  // this E2E stays deterministic and network-free: the fetch fails silently and the
+  // app keeps the frozen fixture data unchanged.
+  await page.setRequestInterception(true);
+  page.on('request', (request) => {
+    if (request.url().includes('raw.githubusercontent.com')) {
+      request.abort();
+    } else {
+      request.continue();
+    }
+  });
+
   page.on('console', msg => {
     // Suppress verbose debug console logs unless needed
     if (msg.type() === 'error') {
@@ -211,7 +227,7 @@ const runUiTests = async () => {
 
     // Fill Roster details
     console.log('Filling out Roster Details...');
-    await page.type('form input[type="text"]', 'Paladins of Bretonnia');
+    await page.type('form input[type="text"]', 'Gutbusters of the Ogre Kingdoms');
 
     // Select Spielsystem (WHFB6)
     await page.evaluate(() => {
@@ -232,12 +248,12 @@ const runUiTests = async () => {
       return catSelect && catSelect.options.length > 1;
     });
 
-    // Select Bretonnia catalog
+    // Select Ogre Kingdoms catalog
     await page.evaluate(() => {
       const selects = Array.from(document.querySelectorAll('form select'));
       const catSelect = selects[1];
       if (catSelect) {
-        const option = Array.from(catSelect.options).find(o => o.text.includes('Bretonnia'));
+        const option = Array.from(catSelect.options).find(o => o.text.includes('Ogre Kingdoms'));
         if (option) {
           catSelect.value = option.value;
           catSelect.dispatchEvent(new Event('change', { bubbles: true }));

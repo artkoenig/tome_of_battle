@@ -23,7 +23,7 @@ Die Test- und Automatisierungsstrategie des Projekts basiert auf folgenden Säul
 
 ### 1. Test-Frameworks und Ausführung
 - **Unit & Component Tests:** Werden mit **Vitest** geschrieben und ausgeführt. Sie laufen schnell und ohne Browser-Overhead.
-- **E2E-Smoke-Tests:** Der End-to-End-Test (`src/solver/ui.test.js`) verpackt Beispielkataloge (`public/catalogs/whfb6/*.cat|*.gst`) zur Laufzeit via JSZip, startet einen lokalen Vite-Entwicklungsserver und steuert die App über **Puppeteer** fern (voller Import- und Klick-Durchlauf).
+- **E2E-Smoke-Tests:** Der End-to-End-Test (`src/solver/ui.test.js`) verpackt eine eingefrorene Fixture (`src/solver/__fixtures__/whfb6/*.cat|*.gst`, Upstream-Form inkl. Whitespace, siehe deren README) zur Laufzeit via JSZip, startet einen lokalen Vite-Entwicklungsserver und steuert die App über **Puppeteer** fern (voller Import- und Klick-Durchlauf). Die Fixture entkoppelt den Test bewusst von `public/catalogs/` (Issue 13/01), damit er deterministisch und netzunabhängig bleibt.
 - **Test-Trennung:** E2E-Tests sind in `vitest.config.js` vom Standard-Testlauf ausgeschlossen und werden separat ausgeführt, um Unit-Tests nicht zu verlangsamen.
 - **Test-Pflicht:** Bei jeder Änderung an der UI-Logik, Validierungslogik oder Importlogik muss ein entsprechender Test erstellt oder angepasst werden.
 - **Zero-Tolerance bei Fehlern:** Alle Unit-Tests *müssen* vor dem Abschluss einer Aufgabe (Task/Feature) erfolgreich durchlaufen.

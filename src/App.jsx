@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Search, WifiOff, Download } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
+import { fetchCatalogText } from './db/catalogUpdate';
 
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
@@ -202,8 +203,14 @@ export default function App() {
   const loadAllData = async () => {
     try {
       const dbSystems = await getAllSystems();
-      const allSystems = await runSystemMigrations(dbSystems);
-      
+      const { systems: allSystems, failures } = await runSystemMigrations(dbSystems, fetchCatalogText);
+      if (failures.length > 0) {
+        showToast(
+          `Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: ${failures.map(f => f.name).join(', ')}`,
+          'error'
+        );
+      }
+
       const allRosters = await getAllRosters();
       setSystems(allSystems);
       setRosters(allRosters);

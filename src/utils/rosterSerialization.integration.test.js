@@ -20,7 +20,7 @@ import { getUnitOptions } from '../solver/optionsCollector.js';
 // (Orcs & Goblins, Ogre Kingdoms, Vampire Counts), closing the gap where only mock
 // catalogues could be tested.
 
-const CATALOG_DIR = path.resolve('public/catalogs/whfb6');
+const CATALOG_DIR = path.resolve('src/solver/__fixtures__/whfb6');
 const GST_FILE = 'Warhammer Fantasy Battle 6th edition.gst';
 const EXPECTED_TOTAL = 2000;
 

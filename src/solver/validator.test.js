@@ -70,6 +70,10 @@ const mockSystem = {
       name: 'Space Marines',
       selectionEntries: [
         {
+          id: '1b7c-2c90-6d96-28c9',
+          name: 'General'
+        },
+        {
           id: 'unit-captain',
           name: 'Space Marine Captain',
           costs: [{ typeId: 'pts', value: 100 }],
@@ -1061,6 +1065,10 @@ const mockSystemRepeatable = {
       name: 'Wizards',
       selectionEntries: [
         {
+          id: '1b7c-2c90-6d96-28c9',
+          name: 'General'
+        },
+        {
           id: 'unit-wizard',
           name: 'Wizard Shaman',
           costs: [{ typeId: 'pts', value: 100 }],
@@ -1319,6 +1327,10 @@ const mockSystemNested = {
       id: 'cat-nested',
       name: 'Nested Catalogue',
       selectionEntries: [
+        {
+          id: '1b7c-2c90-6d96-28c9',
+          name: 'General'
+        },
         {
           id: 'unit-nested',
           name: 'Wizard',
@@ -2182,13 +2194,50 @@ test('evaluateCondition notInstanceOf negates instanceOf', () => {
 
   const selection = { id: 'sel-unit', selectionEntryId: 'unit-visible' };
 
-  // In a Horde force, instanceOf is true, notInstanceOf should be false
   expect(evaluateCondition(condInstanceOf, { system, selection, roster: { forces: [{ forceEntryId: 'fe-horde' }] } })).toBe(true);
   expect(evaluateCondition(condNotInstanceOf, { system, selection, roster: { forces: [{ forceEntryId: 'fe-horde' }] } })).toBe(false);
 
-  // In a non-Horde force, instanceOf is false, notInstanceOf should be true
   expect(evaluateCondition(condInstanceOf, { system, selection, roster: { forces: [{ forceEntryId: 'fe-standard' }] } })).toBe(false);
   expect(evaluateCondition(condNotInstanceOf, { system, selection, roster: { forces: [{ forceEntryId: 'fe-standard' }] } })).toBe(true);
+});
+
+// Issue 13/03: a selection whose catalogue entry no longer resolves (e.g. removed by a
+// catalog update) must surface as a validation error instead of silently counting 0 pts.
+test('validateRoster flags a selection whose entry is no longer resolvable in the system', () => {
+  const rosterWithGhostSelection = {
+    name: 'Ghost Roster',
+    costLimit: 2000,
+    costLimitType: 'pts',
+    forces: [
+      {
+        id: 'f1',
+        forceEntryId: 'force-patrol',
+        catalogueId: 'cat-marines',
+        selections: [
+          {
+            id: 'sel-ghost',
+            selectionEntryId: 'unit-removed-by-catalog-update',
+            name: 'Retired Champion',
+            number: 1,
+            category: 'cat-hq'
+          }
+        ]
+      }
+    ]
+  };
+
+  const errors = validateRoster(rosterWithGhostSelection, mockSystem);
+  const ghostErrors = errors.filter(e => e.type === 'unresolved-entry');
+
+  expect(ghostErrors.length).toBe(1);
+  expect(ghostErrors[0].selectionId).toBe('sel-ghost');
+  expect(ghostErrors[0].severity).toBe('error');
+  expect(ghostErrors[0].message).toContain('Retired Champion');
+});
+
+test('validateRoster produces no unresolved-entry error when every selection still resolves', () => {
+  const errors = validateRoster(mockRosterValid, mockSystem);
+  expect(errors.some(e => e.type === 'unresolved-entry')).toBe(false);
 });
 
 console.log('--- TEST RUN COMPLETE ---');
