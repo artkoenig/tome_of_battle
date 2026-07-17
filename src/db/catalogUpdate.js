@@ -15,6 +15,19 @@ const FILE_TYPE_CATALOGUE = 'catalogue';
 const GAME_SYSTEM_FILE_EXTENSION = '.gst';
 const CATALOGUE_FILE_EXTENSION = '.cat';
 
+/**
+ * The four states a catalog file can be in when its available (remote) revision is
+ * compared to the locally stored one. Used to annotate the import selection list.
+ * Values are stable, language-neutral identifiers — display text lives separately in
+ * Importer.jsx, not here.
+ */
+export const REVISION_STATE = {
+  NEW: 'new',
+  CURRENT: 'current',
+  OUTDATED: 'outdated',
+  AHEAD: 'ahead',
+};
+
 function normalizedType(indexEntry) {
   return (indexEntry.type || '').toLowerCase();
 }
@@ -33,6 +46,31 @@ function isOutdated(remoteRevision, storedRevision) {
   if (typeof remoteRevision !== 'number') return false;
   if (storedRevision === null || storedRevision === undefined) return true;
   return remoteRevision > storedRevision;
+}
+
+/**
+ * Derives the display state of a catalog file (game system or catalogue) by comparing
+ * the available (remote) revision to the locally stored one. The "is it behind?"
+ * decision reuses `isOutdated` — the exact "higher wins" comparison the silent updater
+ * uses — so there is a single source of truth for that judgement; only the extra
+ * new/current/ahead distinction the update path does not need is added on top.
+ *
+ * @param {number} availableRevision - the revision offered by the fork index.
+ * @param {{ revision?: number } | null | undefined} localFile - the locally stored
+ *   file (a stored system or catalogue). `null`/`undefined` means it is not stored
+ *   locally at all; a stored file without a numeric `revision` is legacy data from
+ *   before revision tracking.
+ * @returns {typeof REVISION_STATE[keyof typeof REVISION_STATE]}
+ */
+export function deriveRevisionState(availableRevision, localFile) {
+  if (localFile === null || localFile === undefined) return REVISION_STATE.NEW;
+
+  const localRevision = localFile.revision;
+  if (isOutdated(availableRevision, localRevision)) return REVISION_STATE.OUTDATED;
+  if (typeof localRevision === 'number' && localRevision > availableRevision) {
+    return REVISION_STATE.AHEAD;
+  }
+  return REVISION_STATE.CURRENT;
 }
 
 function rawFileName(indexEntry) {

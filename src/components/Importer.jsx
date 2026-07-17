@@ -5,9 +5,85 @@ import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import ConfirmationDialog from './editor/ConfirmationDialog';
-import { loadCatalogIndex, fetchCatalogText, buildRawFileUrl } from '../db/catalogUpdate';
+import {
+  loadCatalogIndex,
+  fetchCatalogText,
+  buildRawFileUrl,
+  deriveRevisionState,
+  REVISION_STATE,
+} from '../db/catalogUpdate';
 
-function transformIndexToSystems(index) {
+const REVISION_LABEL_PREFIX = 'Rev';
+const REVISION_SEGMENT_SEPARATOR = ' · ';
+const NEW_STATE_TEXT = 'neu';
+const CURRENT_STATE_TEXT = 'aktuell';
+const UPDATE_AVAILABLE_TEXT = 'Update verfügbar';
+const LOCAL_REVISION_PREFIX = 'lokal';
+const UNKNOWN_LOCAL_REVISION_TEXT = 'unbekannt';
+
+// Visual tone of a revision status per ADR 0014's state matrix, mapped to the theme's
+// helper classes: a subtle secondary text, the gold accent that flags an available
+// update, and the neutral default for a self-uploaded (higher) local revision.
+const REVISION_TONE = {
+  SUBTLE: 'text-dim',
+  ACCENT: 'text-gold',
+  NEUTRAL: '',
+};
+
+/**
+ * The `revision` from a catpkg index entry is an optional integer update counter
+ * (see ADR 0014). Older or incomplete indices may omit it, so a non-numeric value
+ * yields no label rather than an error.
+ */
+function formatRevisionLabel(revision) {
+  if (typeof revision !== 'number') return null;
+  return `${REVISION_LABEL_PREFIX} ${revision}`;
+}
+
+function formatLocalRevisionSegment(localFile) {
+  const localRevision = localFile?.revision;
+  const value = typeof localRevision === 'number' ? localRevision : UNKNOWN_LOCAL_REVISION_TEXT;
+  return `${LOCAL_REVISION_PREFIX} ${value}`;
+}
+
+// Per-state presentation (suffix segments appended after the available revision, plus
+// tone). Keyed by state so a new state is added here rather than in a growing switch.
+const REVISION_STATE_PRESENTATION = {
+  [REVISION_STATE.NEW]: () => ({ segments: [NEW_STATE_TEXT], tone: REVISION_TONE.SUBTLE }),
+  [REVISION_STATE.CURRENT]: () => ({ segments: [CURRENT_STATE_TEXT], tone: REVISION_TONE.SUBTLE }),
+  [REVISION_STATE.OUTDATED]: (localFile) => ({
+    segments: [formatLocalRevisionSegment(localFile), UPDATE_AVAILABLE_TEXT],
+    tone: REVISION_TONE.ACCENT,
+  }),
+  [REVISION_STATE.AHEAD]: (localFile) => ({
+    segments: [formatLocalRevisionSegment(localFile)],
+    tone: REVISION_TONE.NEUTRAL,
+  }),
+};
+
+/**
+ * Builds the full revision display for one catalog file, comparing the available
+ * revision against the locally stored file (or `null` when it is not imported). Returns
+ * `{ text, tone }` per ADR 0014's state matrix, or `null` when no available revision is
+ * known (nothing to show).
+ */
+function buildRevisionDisplay(availableRevision, localFile) {
+  const availableLabel = formatRevisionLabel(availableRevision);
+  if (availableLabel === null) return null;
+
+  const state = deriveRevisionState(availableRevision, localFile);
+  const { segments, tone } = REVISION_STATE_PRESENTATION[state](localFile);
+  return {
+    text: [availableLabel, ...segments].join(REVISION_SEGMENT_SEPARATOR),
+    tone,
+  };
+}
+
+function revisionLabelClassName(tone) {
+  return ['bundle-revision-label', tone].filter(Boolean).join(' ');
+}
+
+export function transformIndexToSystems(index) {
   if (!index?.repositoryFiles) return [];
 
   const gsType = 'gamesystem';
@@ -26,12 +102,14 @@ function transformIndexToSystems(index) {
     gst: {
       id: gs.id,
       name: gs.name,
-      fileName: `${gs.name}.gst`
+      fileName: `${gs.name}.gst`,
+      revision: gs.revision
     },
     catalogues: catalogueEntries.map(cat => ({
         id: cat.id,
         name: cat.name,
-        fileName: `${cat.name}.cat`
+        fileName: `${cat.name}.cat`,
+        revision: cat.revision
       }))
       .sort((a, b) => a.name.localeCompare(b.name))
   }));
@@ -264,6 +342,12 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     const selectedSystem = availableSystems.find(s => s.id === selectedBundleSysId);
     const selectedCount = selectedSystem ? selectedSystem.catalogues.filter(cat => selectedCats[cat.id]).length : 0;
     const allChecked = selectedSystem ? selectedSystem.catalogues.every(cat => selectedCats[cat.id]) : false;
+    // The locally stored counterpart of the selected system (already loaded via
+    // getAllSystems — no extra DB access) drives the "new/current/outdated/ahead" state.
+    const storedSystem = selectedSystem ? systems.find(s => s.id === selectedSystem.id) ?? null : null;
+    const selectedSystemRevisionDisplay = selectedSystem
+      ? buildRevisionDisplay(selectedSystem.gst.revision, storedSystem)
+      : null;
 
     return (
       <div className="gothic-panel bundle-importer-panel full-width">
@@ -273,9 +357,19 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         </p>
 
         <div className="bundle-form-group">
-          <label className="text-label text-gold">Spielsystem:</label>
-          <select 
-            value={selectedBundleSysId} 
+          <div className="bundle-form-group-header">
+            <label className="text-label text-gold">Spielsystem:</label>
+            {selectedSystemRevisionDisplay && (
+              <span
+                className={revisionLabelClassName(selectedSystemRevisionDisplay.tone)}
+                data-testid="selected-system-revision"
+              >
+                {selectedSystemRevisionDisplay.text}
+              </span>
+            )}
+          </div>
+          <select
+            value={selectedBundleSysId}
             onChange={(e) => handleSystemChange(e.target.value)}
             disabled={loading}
           >
@@ -299,18 +393,30 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
               </button>
             </div>
             <div className="bundle-catalog-list-container">
-              {selectedSystem.catalogues.map(cat => (
-                <label key={cat.id} className="bundle-catalog-item-label">
-                  <input 
-                    type="checkbox" 
-                    checked={!!selectedCats[cat.id]} 
-                    onChange={() => handleToggleCat(cat.id)}
-                    disabled={loading}
-                    aria-label={cat.name}
-                  />
-                  <span className="text-body">{cat.name}</span>
-                </label>
-              ))}
+              {selectedSystem.catalogues.map(cat => {
+                const storedCatalogue = storedSystem?.catalogues?.find(c => c.id === cat.id) ?? null;
+                const catalogueRevisionDisplay = buildRevisionDisplay(cat.revision, storedCatalogue);
+                return (
+                  <label key={cat.id} className="bundle-catalog-item-label">
+                    <input
+                      type="checkbox"
+                      checked={!!selectedCats[cat.id]}
+                      onChange={() => handleToggleCat(cat.id)}
+                      disabled={loading}
+                      aria-label={cat.name}
+                    />
+                    <span className="text-body">{cat.name}</span>
+                    {catalogueRevisionDisplay && (
+                      <span
+                        className={revisionLabelClassName(catalogueRevisionDisplay.tone)}
+                        data-testid={`catalog-revision-${cat.id}`}
+                      >
+                        {catalogueRevisionDisplay.text}
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
             </div>
           </div>
         )}

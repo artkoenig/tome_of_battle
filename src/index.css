@@ -2836,6 +2836,21 @@ input[type="radio"]:checked::after {
   user-select: none;
 }
 
+.bundle-form-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bundle-revision-label {
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.bundle-catalog-item-label .bundle-revision-label {
+  margin-left: auto;
+}
+
 .bundle-importer-actions {
   display: flex;
   gap: 12px;

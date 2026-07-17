@@ -4,6 +4,8 @@ import {
   findOutdatedCatalogFiles,
   updateSystemFromCatalogIndex,
   buildRawFileUrl,
+  deriveRevisionState,
+  REVISION_STATE,
 } from './catalogUpdate';
 
 beforeAll(() => {
@@ -82,6 +84,32 @@ describe('findOutdatedCatalogFiles (pure revision comparison)', () => {
     expect(buildRawFileUrl('Orcs and Goblins.cat')).toBe(
       'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Orcs%20and%20Goblins.cat'
     );
+  });
+});
+
+describe('deriveRevisionState (available vs. locally stored, "higher wins")', () => {
+  const AVAILABLE_REVISION = 10;
+
+  test('not stored locally at all -> new', () => {
+    expect(deriveRevisionState(AVAILABLE_REVISION, null)).toBe(REVISION_STATE.NEW);
+    expect(deriveRevisionState(AVAILABLE_REVISION, undefined)).toBe(REVISION_STATE.NEW);
+  });
+
+  test('stored at the same revision -> current', () => {
+    expect(deriveRevisionState(AVAILABLE_REVISION, { revision: 10 })).toBe(REVISION_STATE.CURRENT);
+  });
+
+  test('stored below the available revision -> outdated', () => {
+    expect(deriveRevisionState(AVAILABLE_REVISION, { revision: 7 })).toBe(REVISION_STATE.OUTDATED);
+  });
+
+  test('stored above the available revision (self-uploaded) -> ahead', () => {
+    expect(deriveRevisionState(AVAILABLE_REVISION, { revision: 12 })).toBe(REVISION_STATE.AHEAD);
+  });
+
+  test('stored without a revision field (pre-revision legacy data) -> outdated', () => {
+    expect(deriveRevisionState(AVAILABLE_REVISION, { revision: undefined })).toBe(REVISION_STATE.OUTDATED);
+    expect(deriveRevisionState(AVAILABLE_REVISION, {})).toBe(REVISION_STATE.OUTDATED);
   });
 });
 
