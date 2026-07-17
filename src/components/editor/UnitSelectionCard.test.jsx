@@ -29,6 +29,13 @@ vi.mock('./BottomSheet', () => ({
   ) : null
 }));
 
+// The rendered UnitChips resolve rule links through the real useRuleUrl hook,
+// which reads the whfb6 linking setting. Provide it so the hook has a context.
+const mockUseSettings = vi.fn();
+vi.mock('../../contexts/SettingsContext', () => ({
+  useSettings: () => mockUseSettings(),
+}));
+
 // Mock Validators
 const mockCollectUnitProfilesAndRules = vi.fn();
 const mockFindEntryInSystem = vi.fn();
@@ -69,7 +76,8 @@ describe('UnitSelectionCard Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+    mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: true });
+
     // Set default mockup profiles
     mockCollectUnitProfilesAndRules.mockReturnValue({
       profiles: [

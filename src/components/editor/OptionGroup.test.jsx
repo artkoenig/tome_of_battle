@@ -21,6 +21,14 @@ vi.mock('../../data/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 
+// Grouped magic items / weapons resolve their link through RuleChipIcon, which
+// uses the real useRuleUrl hook. Mocking only useSettings lets the group be
+// exercised with linking on and off without stubbing the hook itself.
+const mockUseSettings = vi.fn();
+vi.mock('../../contexts/SettingsContext', () => ({
+  useSettings: () => mockUseSettings(),
+}));
+
 // Mock Validator
 const mockResolveEntry = vi.fn();
 const mockFindEntryInSystem = vi.fn();
@@ -94,6 +102,7 @@ describe('OptionGroup Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetRuleUrl.mockReturnValue(null);
+    mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: true });
 
     // clearAllMocks keeps implementations, so reset the selection-count mock to a
     // clean "nothing selected" baseline each test (groups now auto-expand when a
@@ -611,5 +620,19 @@ describe('OptionGroup Component', () => {
     // "Sword of Might" -> BookOpen (no Info); "Axe of Doom" -> Info only.
     expect(screen.getAllByTestId('icon-book')).toHaveLength(1);
     expect(screen.getAllByTestId('icon-info')).toHaveLength(1);
+  });
+
+  it('23. Grouped option shows the catalogue Info instead of the link when linking is disabled', () => {
+    // Setting off: even a mapped magic item must fall back to the catalogue Info,
+    // so no BookOpen link is offered anywhere in the group.
+    mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: false });
+    mockGetRuleUrl.mockImplementation((name) => (name === 'Sword of Might' ? 'https://6th.whfb.app/magic-items/sword-of-might' : null));
+
+    render(<OptionGroupComponent {...defaultProps} onShowRule={vi.fn()} />);
+    fireEvent.click(screen.getByText('Magic Weapons').closest('div'));
+
+    expect(screen.queryByTestId('icon-book')).toBeNull();
+    // Both items now offer the catalogue Info fallback (both carry a description).
+    expect(screen.getAllByTestId('icon-info')).toHaveLength(2);
   });
 });

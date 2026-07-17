@@ -9,7 +9,21 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="icon-chevron-right" />,
   Plus: () => <span data-testid="icon-plus" />,
   Minus: () => <span data-testid="icon-minus" />,
-  Info: () => <span data-testid="icon-info" />,
+  Info: (props) => <span data-testid="icon-info" {...props} />,
+  BookOpen: (props) => <span data-testid="icon-book" {...props} />,
+}));
+
+// Standalone options resolve their link through RuleChipIcon, which uses the real
+// useRuleUrl hook. Mocking the mapping lookup and the linking setting lets the
+// configurator be exercised with linking on and off.
+const mockGetRuleUrl = vi.fn().mockReturnValue(null);
+vi.mock('../../data/rulesLookup', () => ({
+  getRuleUrl: (name) => mockGetRuleUrl(name),
+}));
+
+const mockUseSettings = vi.fn();
+vi.mock('../../contexts/SettingsContext', () => ({
+  useSettings: () => mockUseSettings(),
 }));
 
 // Mock child components
@@ -65,6 +79,8 @@ describe('SelectionConfigurator Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetRuleUrl.mockReturnValue(null);
+    mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: true });
     mockComputeRosterCounts.mockReturnValue({
       selectionCounts: {},
       categoryCounts: { 'force-1': {} }
@@ -153,5 +169,43 @@ describe('SelectionConfigurator Component', () => {
     fireEvent.click(minusBtn);
     expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
     expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'decrement', 1);
+  });
+
+  it('honors the whfb6 linking setting for standalone mapped options', () => {
+    // A mapped standalone magic item that also carries catalogue info (publicationRef),
+    // so the link-vs-fallback switch is observable: link when enabled, Info when disabled.
+    const mappedOption = { id: 'opt-blade', name: 'Blade of Realities', publicationRef: 'p. 42' };
+    mockGetUnitOptions.mockReturnValue([
+      { option: mappedOption, parentDefId: 'sel-1', groupName: null }
+    ]);
+    mockFindEntryInSystem.mockReturnValue(mappedOption);
+    mockResolveEntry.mockReturnValue(mappedOption);
+    mockGetRuleUrl.mockImplementation((name) =>
+      name === 'Blade of Realities' ? 'https://6th.whfb.app/magic-item/blade-of-realities' : null
+    );
+
+    const renderConfigurator = () =>
+      render(
+        <SelectionConfigurator
+          selection={mockSelection}
+          system={mockSystem}
+          roster={mockRoster}
+          updateSubSelection={mockUpdateSubSelection}
+          costTypeLabel="Pkt."
+          activeCatalogue={mockCatalogue}
+        />
+      );
+
+    // Linking enabled -> the BookOpen link is shown and the Info is not offered.
+    const { unmount } = renderConfigurator();
+    expect(screen.getByTestId('icon-book')).toBeTruthy();
+    expect(screen.queryByTestId('icon-info')).toBeNull();
+    unmount();
+
+    // Linking disabled -> falls back to the catalogue Info, no link.
+    mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: false });
+    renderConfigurator();
+    expect(screen.queryByTestId('icon-book')).toBeNull();
+    expect(screen.getByTestId('icon-info')).toBeTruthy();
   });
 });

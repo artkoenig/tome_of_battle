@@ -9,7 +9,7 @@ import RosterSidebar from './editor/RosterSidebar';
 import UnitSelectionCard from './editor/UnitSelectionCard';
 import AutoFillSuggestions from './editor/AutoFillSuggestions';
 import RulesIndexDialog from './RulesIndexDialog';
-import { getRuleUrl } from '../data/rulesLookup';
+import { useRuleUrl } from '../hooks/useRuleUrl';
 
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster }) {
@@ -32,6 +32,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, _setToast] = useState(null);
   const [rulesDialogRule, setRulesDialogRule] = useState(null);
+  const resolveRuleUrl = useRuleUrl();
 
   const onShowRule = useCallback((ruleName) => {
     setRulesDialogRule(ruleName);
@@ -387,7 +388,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
       {rulesDialogRule && (
         <RulesIndexDialog
           ruleName={rulesDialogRule}
-          url={getRuleUrl(rulesDialogRule)}
+          url={resolveRuleUrl(rulesDialogRule)}
           isOpen={true}
           onClose={closeRulesDialog}
         />
