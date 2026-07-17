@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -139,3 +139,4 @@ main-issue tracker remain two fully separate systems.
 - [ ]
 
 ## Comments
+- Implemented: approval/implementation path removed, LLM provider switched to Gemini (gemini-3.1-flash-lite) with fixed {is_clear, questions, needs_attention} schema and single needs-attention label, terminal-stop behavior added so the agent never reacts to an issue again once labeled. Three-axis testing (Standards/Spec/Tests) run and passed; 6 non-blocking standards findings fixed post-review. 20 Python tests + full JS/vitest suite green.
