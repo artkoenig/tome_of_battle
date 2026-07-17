@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install google-genai PyGithub
+          pip install google-genai PyGithub pydantic
           npm ci
 
       - name: Run Issue Agent
