@@ -7,7 +7,19 @@ import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import ConfirmationDialog from './editor/ConfirmationDialog';
 import { loadCatalogIndex, fetchCatalogText, buildRawFileUrl } from '../db/catalogUpdate';
 
-function transformIndexToSystems(index) {
+const REVISION_LABEL_PREFIX = 'Rev';
+
+/**
+ * The `revision` from a catpkg index entry is an optional integer update counter
+ * (see ADR 0014). Older or incomplete indices may omit it, so a non-numeric value
+ * yields no label rather than an error.
+ */
+function formatRevisionLabel(revision) {
+  if (typeof revision !== 'number') return null;
+  return `${REVISION_LABEL_PREFIX} ${revision}`;
+}
+
+export function transformIndexToSystems(index) {
   if (!index?.repositoryFiles) return [];
 
   const gsType = 'gamesystem';
@@ -26,12 +38,14 @@ function transformIndexToSystems(index) {
     gst: {
       id: gs.id,
       name: gs.name,
-      fileName: `${gs.name}.gst`
+      fileName: `${gs.name}.gst`,
+      revision: gs.revision
     },
     catalogues: catalogueEntries.map(cat => ({
         id: cat.id,
         name: cat.name,
-        fileName: `${cat.name}.cat`
+        fileName: `${cat.name}.cat`,
+        revision: cat.revision
       }))
       .sort((a, b) => a.name.localeCompare(b.name))
   }));
@@ -264,6 +278,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     const selectedSystem = availableSystems.find(s => s.id === selectedBundleSysId);
     const selectedCount = selectedSystem ? selectedSystem.catalogues.filter(cat => selectedCats[cat.id]).length : 0;
     const allChecked = selectedSystem ? selectedSystem.catalogues.every(cat => selectedCats[cat.id]) : false;
+    const selectedSystemRevisionLabel = selectedSystem ? formatRevisionLabel(selectedSystem.gst.revision) : null;
 
     return (
       <div className="gothic-panel bundle-importer-panel full-width">
@@ -273,9 +288,16 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         </p>
 
         <div className="bundle-form-group">
-          <label className="text-label text-gold">Spielsystem:</label>
-          <select 
-            value={selectedBundleSysId} 
+          <div className="bundle-form-group-header">
+            <label className="text-label text-gold">Spielsystem:</label>
+            {selectedSystemRevisionLabel && (
+              <span className="bundle-revision-label text-dim" data-testid="selected-system-revision">
+                {selectedSystemRevisionLabel}
+              </span>
+            )}
+          </div>
+          <select
+            value={selectedBundleSysId}
             onChange={(e) => handleSystemChange(e.target.value)}
             disabled={loading}
           >
@@ -299,18 +321,24 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
               </button>
             </div>
             <div className="bundle-catalog-list-container">
-              {selectedSystem.catalogues.map(cat => (
-                <label key={cat.id} className="bundle-catalog-item-label">
-                  <input 
-                    type="checkbox" 
-                    checked={!!selectedCats[cat.id]} 
-                    onChange={() => handleToggleCat(cat.id)}
-                    disabled={loading}
-                    aria-label={cat.name}
-                  />
-                  <span className="text-body">{cat.name}</span>
-                </label>
-              ))}
+              {selectedSystem.catalogues.map(cat => {
+                const catalogueRevisionLabel = formatRevisionLabel(cat.revision);
+                return (
+                  <label key={cat.id} className="bundle-catalog-item-label">
+                    <input
+                      type="checkbox"
+                      checked={!!selectedCats[cat.id]}
+                      onChange={() => handleToggleCat(cat.id)}
+                      disabled={loading}
+                      aria-label={cat.name}
+                    />
+                    <span className="text-body">{cat.name}</span>
+                    {catalogueRevisionLabel && (
+                      <span className="bundle-revision-label text-dim">{catalogueRevisionLabel}</span>
+                    )}
+                  </label>
+                );
+              })}
             </div>
           </div>
         )}

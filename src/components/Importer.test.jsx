@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Importer from './Importer';
+import Importer, { transformIndexToSystems } from './Importer';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
@@ -59,6 +59,49 @@ vi.mock('../db/catalogUpdate', async () => {
     CATALOG_INDEX_URL: `${RAW_BASE}catpkg.json`,
     buildRawFileUrl: (fileName) => `${RAW_BASE}${encodeURIComponent(fileName)}`
   };
+});
+
+describe('transformIndexToSystems', () => {
+  const findCatalogue = (system, id) => system.catalogues.find(cat => cat.id === id);
+
+  it('returns an empty list for a missing or empty index', () => {
+    expect(transformIndexToSystems(null)).toEqual([]);
+    expect(transformIndexToSystems({})).toEqual([]);
+    expect(transformIndexToSystems({ repositoryFiles: [] })).toEqual([]);
+  });
+
+  it('passes the revision through for the game system and every catalogue', () => {
+    const index = {
+      repositoryFiles: [
+        { id: 'sys-1', name: 'System One', type: 'gamesystem', revision: 5 },
+        { id: 'cat-1', name: 'Bravo', type: 'catalogue', revision: 7 },
+        { id: 'cat-2', name: 'Alpha', type: 'catalogue', revision: 3 }
+      ]
+    };
+
+    const [system] = transformIndexToSystems(index);
+
+    expect(system.gst.revision).toBe(5);
+    expect(findCatalogue(system, 'cat-1').revision).toBe(7);
+    expect(findCatalogue(system, 'cat-2').revision).toBe(3);
+  });
+
+  it('does not throw and yields an undefined revision when the index entry omits it', () => {
+    const index = {
+      repositoryFiles: [
+        { id: 'sys-1', name: 'System One', type: 'gamesystem' },
+        { id: 'cat-1', name: 'Alpha', type: 'catalogue' }
+      ]
+    };
+
+    let systems;
+    expect(() => {
+      systems = transformIndexToSystems(index);
+    }).not.toThrow();
+
+    expect(systems[0].gst.revision).toBeUndefined();
+    expect(findCatalogue(systems[0], 'cat-1').revision).toBeUndefined();
+  });
 });
 
 describe('Importer Component', () => {
@@ -550,6 +593,84 @@ describe('Importer Component', () => {
       });
 
       expect(screen.getByText(/Das System "Warhammer Fantasy Bundle" mit 2 Katalogen wurde erfolgreich importiert/)).toBeDefined();
+    });
+  });
+
+  describe('Revision labels in the bundle importer', () => {
+    let fetchSpy;
+
+    const mockIndexFetch = (index) => {
+      fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
+        if (url.includes('catpkg.json')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve(JSON.stringify(index))
+          });
+        }
+        return Promise.reject(new Error(`Unexpected fetch URL: ${url}`));
+      });
+    };
+
+    afterEach(() => {
+      fetchSpy?.mockRestore();
+    });
+
+    it('shows the available revision per catalogue row and for the selected game system', async () => {
+      mockIndexFetch({
+        repositoryFiles: [
+          { id: 'sys-1', name: 'Warhammer Fantasy Bundle', type: 'gamesystem', revision: 9 },
+          { id: 'cat-1', name: 'Bretonnia', type: 'catalogue', revision: 8 },
+          { id: 'cat-2', name: 'Empire', type: 'catalogue', revision: 11 }
+        ]
+      });
+
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Bretonnia')).toBeDefined();
+      });
+
+      expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 9');
+      expect(screen.getByText('Rev 8')).toBeDefined();
+      expect(screen.getByText('Rev 11')).toBeDefined();
+    });
+
+    it('updates the shown game-system revision when the dropdown selection changes', async () => {
+      mockIndexFetch({
+        repositoryFiles: [
+          { id: 'sys-a', name: 'System A', type: 'gamesystem', revision: 3 },
+          { id: 'sys-b', name: 'System B', type: 'gamesystem', revision: 7 },
+          { id: 'cat-1', name: 'Alpha', type: 'catalogue', revision: 5 }
+        ]
+      });
+
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 3');
+      });
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'sys-b' } });
+
+      expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 7');
+    });
+
+    it('renders no revision label when the index entry omits the revision', async () => {
+      mockIndexFetch({
+        repositoryFiles: [
+          { id: 'sys-1', name: 'System Without Revision', type: 'gamesystem' },
+          { id: 'cat-1', name: 'Catalogue Without Revision', type: 'catalogue' }
+        ]
+      });
+
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Catalogue Without Revision')).toBeDefined();
+      });
+
+      expect(screen.queryByTestId('selected-system-revision')).toBeNull();
+      expect(screen.queryByText(/^Rev /)).toBeNull();
     });
   });
 });
