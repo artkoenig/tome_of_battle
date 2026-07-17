@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -72,3 +72,4 @@ Der „Regelbuch"-Button in `PlayMode` (öffnet das gesamte Regelbuch auf `6th.w
 - [ ]
 
 ## Comments
+- Alle drei Child-Issues (01 Settings-Infrastruktur, 02 Editor-Chips, 03 PlayMode-Chips) implementiert und gemergt. Vierachsige Verifikation (Standards/Spec/Tests/Docs) zweimal durchlaufen: 1. Durchlauf fand einen von Standards+Spec uebereinstimmend gemeldeten Bug (RosterEditor.jsx fror die Dialog-URL nicht wie PlayMode.jsx beim Oeffnen ein) sowie 3 Doku-Drifts (ADR-0002/README Object-Store-Anzahl, fehlender ADR-0015-Indexeintrag, ADR-0012 Link-Bedingung). Beides behoben (RosterEditor.jsx an PlayMode.jsx angeglichen inkl. neuem Regressionstest RosterEditor.ruleLinks.test.jsx), 2. Durchlauf bestaetigt: 0 offene Spec-Befunde, 0 offene Doku-Befunde, Tests gruen (440 passed, 2 skipped, + E2E), Lint-Gate gruen. Verbleibende 3 Standards-Befunde sind kleinere, vorbestehende/codebasisweite Smells ausserhalb des Issue-Scopes.
