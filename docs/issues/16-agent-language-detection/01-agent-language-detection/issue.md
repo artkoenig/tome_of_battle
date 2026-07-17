@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -37,3 +37,4 @@ in one pass:
       seams (see the four test seams in the main-issue's PRD).
 
 ## Comments
+- Implemented full PRD: IssueAnalysis now carries comment_body (no questions); system instruction detects conversation language with English fallback; marker is an invisible HTML comment appended by build_clarification_comment; tests updated for new schema and seams. Suite green (25 tests).

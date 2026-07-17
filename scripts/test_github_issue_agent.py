@@ -17,7 +17,11 @@ def build_gemini_client(payload: dict) -> MagicMock:
 
 class AnalyzeIssueTest(unittest.TestCase):
     def test_returns_typed_issue_analysis_from_gemini_response(self):
-        payload = {"is_clear": False, "questions": ["Which OS?"], "needs_attention": True}
+        payload = {
+            "is_clear": False,
+            "needs_attention": True,
+            "comment_body": "Welches Betriebssystem verwendest du?",
+        }
         client = build_gemini_client(payload)
 
         result = agent.analyze_issue(client, "Crash on launch", "It crashes", ["me too"])
@@ -25,11 +29,11 @@ class AnalyzeIssueTest(unittest.TestCase):
         self.assertIsInstance(result, agent.IssueAnalysis)
         self.assertEqual(result, agent.IssueAnalysis(**payload))
         self.assertFalse(result.is_clear)
-        self.assertEqual(result.questions, ["Which OS?"])
+        self.assertEqual(result.comment_body, "Welches Betriebssystem verwendest du?")
         self.assertTrue(result.needs_attention)
 
     def test_calls_gemini_with_configured_model_and_schema(self):
-        client = build_gemini_client({"is_clear": True, "questions": [], "needs_attention": False})
+        client = build_gemini_client({"is_clear": True, "needs_attention": False, "comment_body": ""})
 
         agent.analyze_issue(client, "title", "body", [])
 
@@ -43,15 +47,40 @@ class AnalyzeIssueTest(unittest.TestCase):
         self.assertEqual(agent.MODEL, "gemini-3.1-flash-lite")
 
 
+class IssueAnalysisSchemaTest(unittest.TestCase):
+    def test_has_expected_fields_and_no_questions_field(self):
+        fields = agent.IssueAnalysis.model_fields
+        self.assertEqual(set(fields), {"is_clear", "needs_attention", "comment_body"})
+        self.assertNotIn("questions", fields)
+
+
+class SystemInstructionTest(unittest.TestCase):
+    def test_does_not_hardcode_english_and_detects_conversation_language(self):
+        instruction = agent.ANALYSIS_SYSTEM_INSTRUCTION.lower()
+
+        self.assertNotIn("must be written in english", instruction)
+        self.assertIn("predominant language", instruction)
+        self.assertIn("default to english", instruction)
+
+
 class ClarificationCommentTest(unittest.TestCase):
-    def test_contains_marker_and_all_questions(self):
-        questions = ["Which version?", "Any logs?"]
+    def test_appends_invisible_marker_to_comment_body(self):
+        comment_body = "Bitte nenne die betroffene Version."
 
-        body = agent.build_clarification_comment(questions)
+        result = agent.build_clarification_comment(comment_body)
 
-        self.assertIn(agent.AGENT_COMMENT_MARKER, body)
-        for question in questions:
-            self.assertIn(question, body)
+        self.assertIn(agent.AGENT_COMMENT_MARKER, result)
+
+    def test_marker_is_an_invisible_html_comment(self):
+        self.assertTrue(agent.AGENT_COMMENT_MARKER.startswith("<!--"))
+        self.assertTrue(agent.AGENT_COMMENT_MARKER.endswith("-->"))
+
+    def test_passes_non_english_body_through_unmodified(self):
+        comment_body = "Hallo! Welche Fraktion möchtest du hinzufügen? Bitte prüfe die Größe."
+
+        result = agent.build_clarification_comment(comment_body)
+
+        self.assertIn(comment_body, result)
 
 
 class CreateOrEditAgentCommentTest(unittest.TestCase):
@@ -68,6 +97,16 @@ class CreateOrEditAgentCommentTest(unittest.TestCase):
         agent.create_or_edit_agent_comment(issue, "updated body", [existing])
 
         existing.edit.assert_called_once_with("updated body")
+        issue.create_comment.assert_not_called()
+
+    def test_edit_detection_is_independent_of_comment_language(self):
+        german_body = f"Hallo! Welche Version nutzt du?\n\n{agent.AGENT_COMMENT_MARKER}"
+        existing = self._agent_comment(german_body)
+        issue = MagicMock()
+
+        agent.create_or_edit_agent_comment(issue, "aktualisierter Text", [existing])
+
+        existing.edit.assert_called_once_with("aktualisierter Text")
         issue.create_comment.assert_not_called()
 
     def test_creates_new_comment_when_no_marker_comment_exists(self):
