@@ -2,10 +2,14 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# Loads Artjom's personal skills + global instructions by cloning the agents
-# repo directly (instead of via the Claude Code plugin marketplace) and
-# exposing each skill under ~/.claude/skills so a SessionStart `reloadSkills`
-# picks them up.
+# Loads Artjom's personal skills, subagents and global instructions by cloning
+# the agents repo directly (there is no plugin marketplace anymore) and
+# exposing each skill/subagent under ~/.claude so a SessionStart
+# `reloadSkills` picks them up.
+#
+# Installed and kept in sync by the `cloud-session-bootstrap` skill in
+# https://github.com/artkoenig/global-agents-config-and-skills. Re-run that
+# skill in this project to update this file rather than hand-editing it.
 # ---------------------------------------------------------------------------
 
 # stdout is reserved for the final hook JSON; everything else goes to the log.
@@ -21,16 +25,17 @@ failure_handler() {
 }
 trap 'failure_handler ${LINENO}' ERR
 
-# Only manage skills in the remote (Claude Code on the web) environment;
+# Only manage skills/agents in the remote (Claude Code on the web) environment;
 # locally the user owns their own ~/.claude.
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
-  echo "Executed locally. Skipping remote skill setup."
+  echo "Executed locally. Skipping remote skill/agent setup."
   exit 0
 fi
 
 repo_url="https://github.com/artkoenig/global-agents-config-and-skills.git"
 repo_dir="${CLAUDE_HOME}/artkoenig-agents"
 skills_dir="${CLAUDE_HOME}/skills"
+agents_dir="${CLAUDE_HOME}/agents"
 
 # 1. Clone or update the agents repo.
 if [ -d "${repo_dir}/.git" ]; then
@@ -59,13 +64,42 @@ for skill in "${repo_dir}/skills"/*/; do
   echo "Linked skill: $(basename "$skill")"
 done
 
-# 3. Sync global instructions (previously done by the plugin's own hook).
+# 3. Same treatment for subagents. Each subagent is a folder
+#    (agents/<name>/agent.md, with its evals/ colocated), so link the folder,
+#    mirroring the skills step above. Claude Code scans ~/.claude/agents
+#    recursively and takes a subagent's identity from its agent.md `name` field,
+#    not from the path, so the folder layout loads without any scoped-name
+#    surprises (those only apply to plugin agents/ directories).
+mkdir -p "$agents_dir"
+for link in "$agents_dir"/*; do
+  [ -L "$link" ] || continue
+  case "$(readlink "$link")" in
+    "${repo_dir}/agents/"*) rm -f "$link" ;;   # prune renamed/removed agents
+  esac
+done
+for agent in "${repo_dir}/agents"/*/; do
+  [ -f "${agent}agent.md" ] || continue
+  ln -sfn "${agent%/}" "${agents_dir}/$(basename "$agent")"
+  echo "Linked agent: $(basename "$agent")"
+done
+
+# 4. Sync global instructions (previously done by the plugin's own hook).
 if [ -f "${repo_dir}/AGENTS.md" ]; then
   cp "${repo_dir}/AGENTS.md" "${CLAUDE_HOME}/CLAUDE.md"
   echo "Synced AGENTS.md -> ~/.claude/CLAUDE.md"
 fi
 
+# 5. Activate the deterministic pre-push workflow checks for this project by
+#    pointing its git hooks at the agents repo's .githooks. The hook locates its
+#    checker script relative to itself, so nothing is copied into the project.
+project_dir="${CLAUDE_PROJECT_DIR:-.}"
+if [ -d "${repo_dir}/.githooks" ] && \
+   git -C "$project_dir" rev-parse --git-dir >/dev/null 2>&1; then
+  git -C "$project_dir" config core.hooksPath "${repo_dir}/.githooks"
+  echo "Set core.hooksPath -> ${repo_dir}/.githooks"
+fi
+
 echo "✅ Hook finished successfully."
 
-# 4. Tell Claude Code to reload skills now that they're in place.
+# 6. Tell Claude Code to reload skills now that they're in place.
 echo '{"hookSpecificOutput": {"hookEventName": "SessionStart", "reloadSkills": true}}' >&3
