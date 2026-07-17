@@ -40,6 +40,10 @@ def read_guidelines() -> str:
     return "\n\n".join(parts) if parts else "No project guidelines found."
 
 
+def has_attention_label(issue_labels: list[str]) -> bool:
+    return NEEDS_ATTENTION_LABEL in issue_labels
+
+
 def ensure_label(repo, name: str, color: str) -> None:
     try:
         repo.get_label(name)
@@ -119,12 +123,21 @@ def main():
         sys.exit(1)
 
     issue_number = int(issue_number_str)
-    client = genai.Client(api_key=api_key)
 
     auth = Auth.Token(github_token)
     g = Github(auth=auth)
     repo = g.get_repo(f"{repo_owner}/{repo_name}")
     issue = repo.get_issue(issue_number)
+
+    label_names = [label.name for label in issue.labels]
+    if has_attention_label(label_names):
+        print(
+            f"Issue #{issue_number} already carries '{NEEDS_ATTENTION_LABEL}'. "
+            "The maintainer handles it manually from here. Exiting without any action."
+        )
+        sys.exit(0)
+
+    client = genai.Client(api_key=api_key)
 
     issue_comments = list(issue.get_comments())
     comments_bodies = [c.body for c in issue_comments]

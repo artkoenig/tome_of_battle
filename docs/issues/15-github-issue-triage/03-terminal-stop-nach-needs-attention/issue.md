@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [02]
 
@@ -25,3 +25,4 @@ Gemini-Clients). Liefert sie `true`, bricht das Skript sofort ab.
       in Child-Issue 02 beschrieben ganz normal.
 
 ## Comments
+- Added pure has_attention_label() and made it the first check in main(): once an issue carries 'needs-attention' the script fetches the issue read-only, detects the label, and exits before building the Gemini client or making any comment/label change.

@@ -83,5 +83,16 @@ class NeedsAttentionLabelTest(unittest.TestCase):
         self.assertEqual(agent.NEEDS_ATTENTION_LABEL, "needs-attention")
 
 
+class HasAttentionLabelTest(unittest.TestCase):
+    def test_true_when_needs_attention_label_present(self):
+        self.assertTrue(agent.has_attention_label(["bug", agent.NEEDS_ATTENTION_LABEL]))
+
+    def test_false_when_needs_attention_label_absent(self):
+        self.assertFalse(agent.has_attention_label(["bug", "enhancement"]))
+
+    def test_false_for_freshly_opened_issue_without_labels(self):
+        self.assertFalse(agent.has_attention_label([]))
+
+
 if __name__ == "__main__":
     unittest.main()
