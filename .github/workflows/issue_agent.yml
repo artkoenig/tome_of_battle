@@ -8,8 +8,6 @@ on:
 
 permissions:
   issues: write
-  contents: write
-  pull-requests: write
 
 jobs:
   handle_issue:
@@ -36,13 +34,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install anthropic PyGithub
+          pip install google-genai PyGithub pydantic
           npm ci
 
       - name: Run Issue Agent
-        id: analyze
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_EVENT: ${{ github.event_name }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -52,12 +49,3 @@ jobs:
           REPO_NAME: ${{ github.event.repository.name }}
         run: |
           python scripts/github_issue_agent.py
-
-      - name: Implement approved issue
-        if: steps.analyze.outputs.should_implement == 'true'
-        uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: ${{ steps.analyze.outputs.implementation_prompt }}
-          claude_args: "--model claude-opus-4-8 --max-turns 40"
