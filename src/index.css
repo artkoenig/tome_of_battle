@@ -2309,6 +2309,13 @@ input[type="radio"]:checked::after {
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 40px);
+  /* As a flex item in the scrolling column .app-content, the wrapper must not
+     shrink below its own content: otherwise align-items:center would center
+     taller-than-viewport content and push its top above the scroll origin,
+     where it is clipped and unreachable. Keeping it unshrinkable makes it
+     max(content, min-height) tall, so it scrolls from the top when tall and
+     still centers short content. */
+  flex-shrink: 0;
 }
 .empty-state-container {
   text-align: center;

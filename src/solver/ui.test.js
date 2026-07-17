@@ -14,6 +14,12 @@ let serverProcess = null;
 // after that bar hides on scroll.
 const MOBILE_CHROME_VISIBLE_VIEWPORT = { width: 375, height: 600 };
 const MOBILE_CHROME_COLLAPSED_VIEWPORT = { width: 375, height: 812 };
+// Deliberately shorter than the empty-state content so that content overflows
+// the visible area. In production the empty state is tall (image + welcome +
+// the predefined catalog list) and always overflows a phone; the predefined
+// list can't be fetched offline in this test, so the content is shorter here
+// and we shrink the viewport instead to exercise the same overflow/clip path.
+const EMPTY_STATE_OVERFLOW_VIEWPORT = { width: 375, height: 400 };
 // Allow one pixel of sub-pixel rounding when comparing bounding boxes.
 const VIEWPORT_BOUNDS_TOLERANCE_PX = 1;
 
@@ -596,10 +602,41 @@ const assertElementWithinVisibleViewport = async (page, selector, label) => {
   }
 };
 
+// Asserts that, with its scroll container scrolled to the very top, a content
+// element's top edge is not above the container's own top edge. Content sitting
+// above the scroll origin is clipped and unreachable (you cannot scroll past
+// the top), which is exactly how vertically-centered content taller than the
+// viewport disappears off the top. Complements assertElementWithinVisibleViewport,
+// which only checks the visual viewport and cannot see this scroll-origin clip.
+const assertContentTopReachable = async (page, scrollSelector, contentSelector, label) => {
+  const measurement = await page.evaluate((scrollSel, contentSel) => {
+    const scroller = document.querySelector(scrollSel);
+    const content = document.querySelector(contentSel);
+    if (!scroller || !content) return { found: false };
+    scroller.scrollTop = 0;
+    return {
+      found: true,
+      scrollerTop: scroller.getBoundingClientRect().top,
+      contentTop: content.getBoundingClientRect().top,
+    };
+  }, scrollSelector, contentSelector);
+
+  if (!measurement.found) {
+    throw new Error(`Could not measure "${label}": scroll container (${scrollSelector}) or content (${contentSelector}) missing.`);
+  }
+
+  const { scrollerTop, contentTop } = measurement;
+  if (contentTop < scrollerTop - VIEWPORT_BOUNDS_TOLERANCE_PX) {
+    throw new Error(`Element "${label}" (${contentSelector}) top (${contentTop}) is above its scroll container top (${scrollerTop}); it is clipped and unreachable.`);
+  }
+};
+
 // Regression test for docs/issues/17-mobile-viewport-duckduckgo: on a short
-// mobile viewport the app header must stay fully visible on load, and after the
-// first catalog import the mobile bottom navigation must stay fully within the
-// visible viewport even after the viewport grows (address bar collapsing).
+// mobile viewport the app header must stay fully visible on load, the empty-state
+// content (book image + welcome title) must be reachable rather than clipped
+// above the scroll origin, and after the first catalog import the mobile bottom
+// navigation must stay fully within the visible viewport even after the viewport
+// grows (address bar collapsing).
 const runViewportSafeAreaTests = async () => {
   console.log('Launching Puppeteer for mobile viewport / safe-area regression test...');
   const browser = await puppeteer.launch({
@@ -642,6 +679,24 @@ const runViewportSafeAreaTests = async () => {
     await page.waitForSelector('.app-header', { timeout: 5000 });
     await assertElementWithinVisibleViewport(page, '.app-header', 'app header');
     console.log('App header is fully visible on load.');
+
+    // Shrink to a viewport shorter than the empty-state content so it overflows,
+    // then assert its top (book image and welcome title) stays reachable from the
+    // scroll top rather than being centered off the top edge.
+    console.log('Shrinking to a short viewport so the empty-state content overflows...');
+    await page.waitForSelector('.empty-importer-image', { timeout: 5000 });
+    await page.setViewport(EMPTY_STATE_OVERFLOW_VIEWPORT);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    console.log('Asserting empty-state content top is reachable, not clipped above the scroll origin...');
+    await assertContentTopReachable(page, '.app-content', '.empty-importer-image', 'empty-state book image');
+    await assertContentTopReachable(page, '.app-content', '.empty-state-title-large', 'empty-state welcome title');
+    console.log('Empty-state top content is reachable.');
+
+    // Restore the on-load viewport before importing so the rest of the flow runs
+    // under the same conditions as before.
+    await page.setViewport(MOBILE_CHROME_VISIBLE_VIEWPORT);
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     // Import a catalog so systems.length > 0 and the mobile bottom nav renders.
     console.log('Uploading catalog ZIP from the empty-state importer...');
