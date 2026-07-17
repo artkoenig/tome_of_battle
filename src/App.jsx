@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Search, WifiOff, Download } from 'lucide-react';
+import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Search, WifiOff, Download, Settings } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 import { fetchCatalogText } from './db/catalogUpdate';
@@ -10,7 +10,9 @@ import PlayMode from './components/PlayMode';
 import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
 import EnvBadge from './components/EnvBadge';
+import SettingsDialog from './components/SettingsDialog';
 import ConfirmationDialog from './components/editor/ConfirmationDialog';
+import { SettingsProvider } from './contexts/SettingsContext';
 import { 
   exportRosterToXml, 
   importRosterFromXml, 
@@ -151,6 +153,7 @@ export default function App() {
   // Modal State for new Roster (Formular-State lebt im NewRosterModal selbst)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rosterToDelete, setRosterToDelete] = useState(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     loadAllData();
@@ -353,6 +356,7 @@ export default function App() {
   const diffChanges = getDiffChanges(import.meta.env.VITE_APP_VERSION, updateRelease);
 
   return (
+    <SettingsProvider>
     <div id="root" className={view !== 'rosters' && view !== 'importer' ? 'in-builder-mode' : ''}>
       {/* Premium Header */}
       <header className="app-header">
@@ -386,7 +390,7 @@ export default function App() {
 
           {systems.length > 0 && (
             <div className="desktop-nav-actions">
-              <button 
+              <button
                 className={view === 'rosters' ? 'btn-primary' : ''}
                 onClick={() => { navigate('rosters'); loadAllData(); }}
               >
@@ -400,6 +404,15 @@ export default function App() {
               </button>
             </div>
           )}
+
+          <button
+            className="header-settings-btn"
+            onClick={() => setIsSettingsOpen(true)}
+            title="Einstellungen"
+            aria-label="Einstellungen"
+          >
+            <Settings size={18} />
+          </button>
         </div>
       </header>
 
@@ -453,6 +466,12 @@ export default function App() {
           </>
         )}
       </main>
+
+      {/* Settings Dialog */}
+      <SettingsDialog
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
 
       {/* New Roster Modal */}
       <NewRosterModal
@@ -533,5 +552,6 @@ export default function App() {
         </div>
       )}
     </div>
+    </SettingsProvider>
   );
 }
