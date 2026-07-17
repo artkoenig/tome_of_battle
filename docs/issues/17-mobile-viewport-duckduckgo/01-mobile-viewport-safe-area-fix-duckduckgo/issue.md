@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -28,3 +28,4 @@ Note: adding `viewport-fit=cover` also activates three existing, currently-inert
 - [ ] Manual verification on a real device running DuckDuckGo, performed by the user before merge, recorded as a comment on this issue.
 
 ## Comments
+- Added viewport-fit=cover, safe-area-inset-top padding on .app-header, dvh fallback and a JS-driven --app-vh (new useViewportHeight hook) as the primary height source for mobile #root and .empty-state-wrapper. Covered by a hook unit test and a Puppeteer E2E asserting header/bottom-nav stay within the visible viewport. Note: the real-device DuckDuckGo verification (last acceptance criterion) is a pre-merge manual step reserved for the user and is still open.
