@@ -8,6 +8,21 @@ const PORT = 5175;
 const tempZipPath = path.resolve('./temp_whfb6.zip');
 let serverProcess = null;
 
+// Mobile viewports for the safe-area / visible-viewport regression test.
+// "Chrome visible" mimics a mobile browser (e.g. DuckDuckGo) whose address bar
+// eats vertical space on load; "chrome collapsed" mimics the taller viewport
+// after that bar hides on scroll.
+const MOBILE_CHROME_VISIBLE_VIEWPORT = { width: 375, height: 600 };
+const MOBILE_CHROME_COLLAPSED_VIEWPORT = { width: 375, height: 812 };
+// Deliberately shorter than the empty-state content so that content overflows
+// the visible area. In production the empty state is tall (image + welcome +
+// the predefined catalog list) and always overflows a phone; the predefined
+// list can't be fetched offline in this test, so the content is shorter here
+// and we shrink the viewport instead to exercise the same overflow/clip path.
+const EMPTY_STATE_OVERFLOW_VIEWPORT = { width: 375, height: 400 };
+// Allow one pixel of sub-pixel rounding when comparing bounding boxes.
+const VIEWPORT_BOUNDS_TOLERANCE_PX = 1;
+
 // 1. Pack the frozen E2E fixture (./src/solver/__fixtures__/whfb6/) into a temporary
 // ZIP file using JSZip. This fixture is deliberately decoupled from public/catalogs/
 // (see docs/issues/.../01-e2e-fixture-einfrieren) so this test exercises the app, not
@@ -535,6 +550,183 @@ const runUiTests = async () => {
   }
 };
 
+// Asserts an element's bounding box lies fully inside the visible viewport
+// (the VisualViewport area when available, else the layout viewport). Throws a
+// descriptive error naming the offending edge, so a clipped header or off-screen
+// nav bar fails loudly.
+const assertElementWithinVisibleViewport = async (page, selector, label) => {
+  const measurement = await page.evaluate((sel) => {
+    const element = document.querySelector(sel);
+    if (!element) return { found: false };
+    const rect = element.getBoundingClientRect();
+    const visualViewport = window.visualViewport;
+    const viewport = visualViewport
+      ? {
+          left: visualViewport.offsetLeft,
+          top: visualViewport.offsetTop,
+          width: visualViewport.width,
+          height: visualViewport.height,
+        }
+      : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+    return {
+      found: true,
+      rect: { top: rect.top, left: rect.left, bottom: rect.bottom, right: rect.right, width: rect.width, height: rect.height },
+      viewport,
+    };
+  }, selector);
+
+  if (!measurement.found) {
+    throw new Error(`Element "${label}" (${selector}) was not found in the DOM.`);
+  }
+
+  const { rect, viewport } = measurement;
+  if (rect.width <= 0 || rect.height <= 0) {
+    throw new Error(`Element "${label}" (${selector}) is not rendered (zero-size bounding box).`);
+  }
+
+  const tolerance = VIEWPORT_BOUNDS_TOLERANCE_PX;
+  const viewportRight = viewport.left + viewport.width;
+  const viewportBottom = viewport.top + viewport.height;
+
+  if (rect.top < viewport.top - tolerance) {
+    throw new Error(`Element "${label}" top (${rect.top}) is above the visible viewport (${viewport.top}).`);
+  }
+  if (rect.left < viewport.left - tolerance) {
+    throw new Error(`Element "${label}" left (${rect.left}) is left of the visible viewport (${viewport.left}).`);
+  }
+  if (rect.bottom > viewportBottom + tolerance) {
+    throw new Error(`Element "${label}" bottom (${rect.bottom}) is below the visible viewport (${viewportBottom}).`);
+  }
+  if (rect.right > viewportRight + tolerance) {
+    throw new Error(`Element "${label}" right (${rect.right}) is right of the visible viewport (${viewportRight}).`);
+  }
+};
+
+// Asserts that, with its scroll container scrolled to the very top, a content
+// element's top edge is not above the container's own top edge. Content sitting
+// above the scroll origin is clipped and unreachable (you cannot scroll past
+// the top), which is exactly how vertically-centered content taller than the
+// viewport disappears off the top. Complements assertElementWithinVisibleViewport,
+// which only checks the visual viewport and cannot see this scroll-origin clip.
+const assertContentTopReachable = async (page, scrollSelector, contentSelector, label) => {
+  const measurement = await page.evaluate((scrollSel, contentSel) => {
+    const scroller = document.querySelector(scrollSel);
+    const content = document.querySelector(contentSel);
+    if (!scroller || !content) return { found: false };
+    scroller.scrollTop = 0;
+    return {
+      found: true,
+      scrollerTop: scroller.getBoundingClientRect().top,
+      contentTop: content.getBoundingClientRect().top,
+    };
+  }, scrollSelector, contentSelector);
+
+  if (!measurement.found) {
+    throw new Error(`Could not measure "${label}": scroll container (${scrollSelector}) or content (${contentSelector}) missing.`);
+  }
+
+  const { scrollerTop, contentTop } = measurement;
+  if (contentTop < scrollerTop - VIEWPORT_BOUNDS_TOLERANCE_PX) {
+    throw new Error(`Element "${label}" (${contentSelector}) top (${contentTop}) is above its scroll container top (${scrollerTop}); it is clipped and unreachable.`);
+  }
+};
+
+// Regression test for docs/issues/17-mobile-viewport-duckduckgo: on a short
+// mobile viewport the app header must stay fully visible on load, the empty-state
+// content (book image + welcome title) must be reachable rather than clipped
+// above the scroll origin, and after the first catalog import the mobile bottom
+// navigation must stay fully within the visible viewport even after the viewport
+// grows (address bar collapsing).
+const runViewportSafeAreaTests = async () => {
+  console.log('Launching Puppeteer for mobile viewport / safe-area regression test...');
+  const browser = await puppeteer.launch({
+    headless: true,
+    defaultViewport: MOBILE_CHROME_VISIBLE_VIEWPORT,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+
+  const page = await browser.newPage();
+
+  await page.setRequestInterception(true);
+  page.on('request', (request) => {
+    if (request.url().includes('raw.githubusercontent.com')) {
+      request.abort();
+    } else {
+      request.continue();
+    }
+  });
+  page.on('pageerror', (err) => {
+    console.error(`[Browser PageError] ${err.stack || err.message}`);
+  });
+
+  try {
+    console.log(`Navigating to http://localhost:${PORT}/ on a short mobile viewport...`);
+    await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle2' });
+
+    console.log('Clearing indexedDB to start from an empty (no systems) state...');
+    await page.evaluate(async () => {
+      return new Promise((resolve) => {
+        const req = indexedDB.deleteDatabase('TomeOfBattleDB');
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+        req.onblocked = () => resolve();
+      });
+    });
+    await page.reload({ waitUntil: 'networkidle2' });
+
+    // On load (address bar "visible"), the header must be fully within view.
+    console.log('Asserting .app-header is fully within the visible viewport on load...');
+    await page.waitForSelector('.app-header', { timeout: 5000 });
+    await assertElementWithinVisibleViewport(page, '.app-header', 'app header');
+    console.log('App header is fully visible on load.');
+
+    // Shrink to a viewport shorter than the empty-state content so it overflows,
+    // then assert its top (book image and welcome title) stays reachable from the
+    // scroll top rather than being centered off the top edge.
+    console.log('Shrinking to a short viewport so the empty-state content overflows...');
+    await page.waitForSelector('.empty-importer-image', { timeout: 5000 });
+    await page.setViewport(EMPTY_STATE_OVERFLOW_VIEWPORT);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    console.log('Asserting empty-state content top is reachable, not clipped above the scroll origin...');
+    await assertContentTopReachable(page, '.app-content', '.empty-importer-image', 'empty-state book image');
+    await assertContentTopReachable(page, '.app-content', '.empty-state-title-large', 'empty-state welcome title');
+    console.log('Empty-state top content is reachable.');
+
+    // Restore the on-load viewport before importing so the rest of the flow runs
+    // under the same conditions as before.
+    await page.setViewport(MOBILE_CHROME_VISIBLE_VIEWPORT);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // Import a catalog so systems.length > 0 and the mobile bottom nav renders.
+    console.log('Uploading catalog ZIP from the empty-state importer...');
+    await page.waitForSelector('#file-upload', { timeout: 5000 });
+    const fileInput = await page.$('#file-upload');
+    if (!fileInput) {
+      throw new Error('#file-upload element not found in empty-state importer');
+    }
+    await fileInput.uploadFile(tempZipPath);
+
+    console.log('Waiting for the system import to complete...');
+    await page.waitForSelector('.desktop-nav-actions', { timeout: 15000 });
+
+    // Simulate the address bar collapsing by growing the viewport at runtime.
+    console.log('Resizing to a taller viewport (address bar "collapsed")...');
+    await page.setViewport(MOBILE_CHROME_COLLAPSED_VIEWPORT);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    console.log('Asserting .mobile-bottom-nav is fully within the visible viewport after import...');
+    await page.waitForSelector('.mobile-bottom-nav', { timeout: 5000 });
+    await assertElementWithinVisibleViewport(page, '.mobile-bottom-nav', 'mobile bottom nav');
+    console.log('Mobile bottom navigation is fully visible after catalog import.');
+
+    console.log('MOBILE VIEWPORT / SAFE-AREA REGRESSION TEST PASSED!');
+  } finally {
+    console.log('Closing viewport regression browser...');
+    await browser.close();
+  }
+};
+
 const cleanup = () => {
   console.log('Cleaning up temporary ZIP file...');
   if (fs.existsSync(tempZipPath)) {
@@ -552,6 +744,7 @@ const run = async () => {
     await packCatalogs();
     await startViteServer();
     await runUiTests();
+    await runViewportSafeAreaTests();
     cleanup();
     process.exit(0);
   } catch (err) {
