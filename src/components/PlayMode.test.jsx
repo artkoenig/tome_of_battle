@@ -40,6 +40,13 @@ vi.mock('../db/database', () => ({
   saveRoster: vi.fn()
 }));
 
+// Mock the central rule-URL resolver. These integration tests do not exercise the
+// rules dialog, so a resolver that never yields a URL keeps them focused; the
+// dialog wiring is covered by PlayMode.ruleLinks.test.jsx.
+vi.mock('../hooks/useRuleUrl', () => ({
+  useRuleUrl: () => () => null,
+}));
+
 // Mock Validator
 const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();

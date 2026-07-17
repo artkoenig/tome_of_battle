@@ -18,6 +18,13 @@ vi.mock('lucide-react', () => ({
   Redo2: () => <span data-testid="icon-redo" />,
 }));
 
+// RosterEditor resolves the RulesIndexDialog URL through the real useRuleUrl hook,
+// which reads the whfb6 linking setting. Provide it so the hook has a context.
+const mockUseSettings = vi.fn();
+vi.mock('../contexts/SettingsContext', () => ({
+  useSettings: () => mockUseSettings(),
+}));
+
 // Mock useRoster custom hook
 const mockAddUnit = vi.fn();
 const mockRemoveUnit = vi.fn();
@@ -149,6 +156,7 @@ describe('RosterEditor Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: true });
     mockRoster = JSON.parse(JSON.stringify(defaultMockRoster));
     mockCosts = JSON.parse(JSON.stringify(defaultMockCosts));
     mockValidationErrors = JSON.parse(JSON.stringify(defaultMockValidationErrors));
