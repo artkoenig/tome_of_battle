@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-import re
 from pathlib import Path
 from typing import List
 
@@ -23,16 +22,6 @@ ISSUE_ANALYSIS_SCHEMA = {
     "additionalProperties": False,
 }
 
-COMMENT_ANALYSIS_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "intent": {"type": "string", "enum": ["approve", "close", "none"]},
-        "reply": {"type": "string"},
-    },
-    "required": ["intent", "reply"],
-    "additionalProperties": False,
-}
-
 
 def read_guidelines() -> str:
     parts = []
@@ -41,25 +30,6 @@ def read_guidelines() -> str:
         if p.exists():
             parts.append(f"### {path}\n{p.read_text()}")
     return "\n\n".join(parts) if parts else "No project guidelines found."
-
-
-def is_agent_requested(comment_body: str) -> bool:
-    if not comment_body:
-        return False
-    body_lower = comment_body.lower()
-
-    direct_triggers = ["/agent", "@github-actions", "/approve", "/close", "/cancel", "/resolve"]
-    for trigger in direct_triggers:
-        if trigger in body_lower:
-            return True
-
-    keywords = ["approved", "genehmigt", "resolved", "erledigt", "solved"]
-    for kw in keywords:
-        pattern = rf"(?<![\w-]){re.escape(kw)}(?![\w-])"
-        if re.search(pattern, body_lower):
-            return True
-
-    return False
 
 
 def create_or_edit_agent_comment(issue, comment_body: str, existing_comments: List):
@@ -73,13 +43,6 @@ def create_or_edit_agent_comment(issue, comment_body: str, existing_comments: Li
 
     print("Creating new agent comment")
     issue.create_comment(comment_body)
-
-
-def find_implementation_plan(comments: List) -> str:
-    for c in reversed(comments):
-        if "Implementation Plan:" in c.body:
-            return c.body
-    return ""
 
 
 def analyze_issue(client: anthropic.Anthropic, issue_title: str, issue_body: str, comments: List[str]) -> dict:
@@ -116,76 +79,6 @@ Recent comments/discussion:
     return json.loads(text)
 
 
-def analyze_comment(
-    client: anthropic.Anthropic,
-    issue_title: str,
-    issue_body: str,
-    comment_body: str,
-    comment_author: str,
-    comments: List[str],
-) -> dict:
-    comments_history = "\n---\n".join(comments[-10:]) if comments else "No previous comments."
-    prompt = f"""
-You are an expert developer assistant. Analyze the latest comment on this GitHub issue in the context of the entire conversation.
-
-Issue Title: {issue_title}
-Issue Description:
-{issue_body}
-
-Recent conversation history (oldest to newest):
-{comments_history}
-
-Latest Comment by {comment_author}:
-{comment_body}
-
-Determine the user's intent. The intent can be:
-- "approve": The user explicitly approves the implementation plan (e.g. "/approve", "Approved", "Genehmigt", "Go ahead", "Start implementation").
-- "close": The user wants to close, cancel, or resolve the issue (e.g. "Das hat sich erledigt", "resolved", "close", "cancel", "erledigt", "fertig", "solved", "no longer needed").
-- "none": A question, feedback, clarification, or general discussion.
-"""
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=2000,
-        thinking={"type": "adaptive"},
-        system=(
-            "You are an expert developer assistant. Analyze the latest comment and return a structured JSON "
-            "response matching the given schema."
-        ),
-        output_config={"format": {"type": "json_schema", "schema": COMMENT_ANALYSIS_SCHEMA}},
-        messages=[{"role": "user", "content": prompt}],
-    )
-    text = next(b.text for b in response.content if b.type == "text")
-    return json.loads(text)
-
-
-def build_implementation_prompt(issue_number: int, issue_title: str, issue_body: str, plan_comment: str) -> str:
-    return f"""Implement the approved changes for GitHub issue #{issue_number}: {issue_title}
-
-Issue Description:
-{issue_body}
-
-Approved Implementation Plan:
-{plan_comment}
-
-CRITICAL DIRECTIVE: The core objective is defined by the Issue Title and Issue Description. The Approved Implementation Plan provides the steps to achieve this objective. Ensure the implementation directly resolves the original goal without getting distracted by unrelated details.
-
-Consult and strictly follow the project rules in '.agents/AGENTS.md' and '.agents/validation_insights.md'.
-
-Implement the changes in the codebase and verify they work by running `npm test`. Do not stop until all tests pass. When finished, open a pull request that closes #{issue_number}.
-"""
-
-
-def write_github_output(should_implement: bool, implementation_prompt: str = "") -> None:
-    github_output = os.getenv("GITHUB_OUTPUT")
-    if not github_output:
-        return
-    with open(github_output, "a") as f:
-        f.write(f"should_implement={'true' if should_implement else 'false'}\n")
-        if should_implement:
-            delimiter = "GHACTION_IMPLEMENTATION_PROMPT_EOF"
-            f.write(f"implementation_prompt<<{delimiter}\n{implementation_prompt}\n{delimiter}\n")
-
-
 def main():
     api_key = os.getenv("ANTHROPIC_API_KEY")
     github_token = os.getenv("GITHUB_TOKEN")
@@ -211,127 +104,55 @@ def main():
     issue_comments = list(issue.get_comments())
     comments_bodies = [c.body for c in issue_comments]
 
-    comment_analysis = None
-
     if event_name == "issue_comment":
         print(f"Processing comment from {comment_author}: {comment_body}")
 
         comment_author_lower = comment_author.lower()
         if "bot" in comment_author_lower or "github-actions" in comment_author_lower:
             print(f"Comment is from a bot/agent ({comment_author}). Exiting early.")
-            write_github_output(False)
             sys.exit(0)
 
-        if not is_agent_requested(comment_body):
-            print("Comment does not address/request the agent. Exiting early.")
-            write_github_output(False)
-            sys.exit(0)
+    print(f"Analyzing issue #{issue_number}: {issue.title}")
 
-        comment_res = analyze_comment(client, issue.title, issue.body, comment_body, comment_author, comments_bodies)
-        comment_intent = comment_res.get("intent", "none")
-        comment_reply = comment_res.get("reply", "")
-        print(f"Comment analysis: {comment_intent}")
+    analysis = analyze_issue(client, issue.title, issue.body, comments_bodies)
+    print(f"Analysis result: {analysis}")
 
+    labels = analysis.get("labels", [])
+    for label in labels:
         try:
-            permission = repo.get_collaborator_permission(comment_author)
-            has_write_access = permission in ["admin", "write"]
+            repo.get_label(label)
         except Exception:
-            has_write_access = False
+            repo.create_label(label, "f29513")
+        issue.add_to_labels(label)
 
-        is_owner = comment_author.lower() == repo_owner.lower()
-        is_authorized = has_write_access or is_owner
+    is_clear = analysis.get("is_clear", False)
+    if not is_clear:
+        try:
+            repo.get_label("needs-clarification")
+        except Exception:
+            repo.create_label("needs-clarification", "e61919")
+        issue.add_to_labels("needs-clarification")
 
-        if comment_intent == "close":
-            if not is_authorized:
-                print(f"User {comment_author} is not authorized to close the issue.")
-                write_github_output(False)
-                sys.exit(0)
+        questions = analysis.get("questions", [])
+        questions_md = "\n".join([f"- {q}" for q in questions])
+        comment_body = (
+            f"👋 Hello! To start the implementation, the agent needs clarification on the following questions:\n\n{questions_md}\n\n"
+            f"Please reply directly to this ticket.\n\n"
+            f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
+        )
+        create_or_edit_agent_comment(issue, comment_body, issue_comments)
+    else:
+        for label in issue.labels:
+            if label.name == "needs-clarification":
+                issue.remove_from_labels("needs-clarification")
 
-            issue.create_comment(comment_reply if comment_reply else "🔒 Issue closed by agent as resolved.")
-            issue.edit(state="closed")
-            print("Issue closed successfully.")
-            write_github_output(False)
-            sys.exit(0)
-
-        elif comment_intent == "approve":
-            if not is_authorized:
-                print(f"User {comment_author} is not authorized to approve implementations.")
-                write_github_output(False)
-                sys.exit(0)
-
-            print("Implementation approved. Handing off to the implementation agent...")
-
-            for label in issue.labels:
-                if label.name == "needs-clarification":
-                    issue.remove_from_labels("needs-clarification")
-            issue.add_to_labels("approved")
-
-            issue.create_comment(
-                comment_reply if comment_reply else "🚀 **Approval granted.** The implementation agent is starting the changes..."
-            )
-
-            plan_comment = find_implementation_plan(issue_comments)
-            if not plan_comment:
-                issue.create_comment(
-                    "⚠️ No implementation plan found in the comments. Please ask the agent to analyze the issue again."
-                )
-                write_github_output(False)
-                sys.exit(0)
-
-            implementation_prompt = build_implementation_prompt(issue_number, issue.title, issue.body, plan_comment)
-            write_github_output(True, implementation_prompt)
-            return
-
-        comment_analysis = comment_intent
-
-    if event_name == "issues" or comment_analysis == "none":
-        print(f"Analyzing issue #{issue_number}: {issue.title}")
-
-        analysis = analyze_issue(client, issue.title, issue.body, comments_bodies)
-        print(f"Analysis result: {analysis}")
-
-        labels = analysis.get("labels", [])
-        for label in labels:
-            try:
-                repo.get_label(label)
-            except Exception:
-                repo.create_label(label, "f29513")
-            issue.add_to_labels(label)
-
-        is_clear = analysis.get("is_clear", False)
-        if not is_clear:
-            try:
-                repo.get_label("needs-clarification")
-            except Exception:
-                repo.create_label("needs-clarification", "e61919")
-            issue.add_to_labels("needs-clarification")
-
-            for label in issue.labels:
-                if label.name == "approved":
-                    issue.remove_from_labels("approved")
-
-            questions = analysis.get("questions", [])
-            questions_md = "\n".join([f"- {q}" for q in questions])
-            comment_body = (
-                f"👋 Hello! To start the implementation, the agent needs clarification on the following questions:\n\n{questions_md}\n\n"
-                f"Please reply directly to this ticket.\n\n"
-                f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
-            )
-            create_or_edit_agent_comment(issue, comment_body, issue_comments)
-        else:
-            for label in issue.labels:
-                if label.name == "needs-clarification":
-                    issue.remove_from_labels("needs-clarification")
-
-            comment_body = (
-                f"📋 **Implementation Plan:**\n\n{analysis.get('implementation_plan', '')}\n\n"
-                f"---\n"
-                f"Please reply with **'Approved'** (or `/approve`) to start the implementation.\n\n"
-                f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
-            )
-            create_or_edit_agent_comment(issue, comment_body, issue_comments)
-
-    write_github_output(False)
+        comment_body = (
+            f"📋 **Implementation Plan:**\n\n{analysis.get('implementation_plan', '')}\n\n"
+            f"---\n"
+            f"Please reply with **'Approved'** (or `/approve`) to start the implementation.\n\n"
+            f"💬 *Note: To trigger the agent in subsequent comments, please use `/agent`.*"
+        )
+        create_or_edit_agent_comment(issue, comment_body, issue_comments)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -35,3 +35,4 @@ nächsten Child-Issue.
       bisher — nur der Freigabe-/Implementierungs-Pfad ist weg.
 
 ## Comments
+- Approval/authorization/implementation-handoff path removed from scripts/github_issue_agent.py (functions is_agent_requested, analyze_comment, find_implementation_plan, build_implementation_prompt, write_github_output, COMMENT_ANALYSIS_SCHEMA, and the intent close/approve logic incl. the local is_authorized check) and from .github/workflows/issue_agent.yml (dropped should_implement/implementation_prompt outputs, the claude-code-action step, and contents/pull-requests write permissions). Every non-bot issue/comment event now only analyzes and comments; workflow keeps issues: write only.
