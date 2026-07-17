@@ -39,6 +39,10 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 - **Trigger:** Automatisch bei Pushes auf beliebigen Zweigen.
 - **Ablauf:** Vercel übernimmt das Bauen und Veröffentlichen nativ. Pushes auf `main` deployen direkt nach Production. Pushes auf Feature-Branches erzeugen Preview-URLs (siehe ADR 0008).
 
+### 4. GitHub-Issue-Triage (`.github/workflows/issue_agent.yml`)
+- **Trigger:** `issues: opened` und `issue_comment: created`.
+- **Ablauf:** `scripts/github_issue_agent.py` prüft bei jedem Issue-Event zuerst, ob das Issue bereits das Label `needs-attention` trägt — falls ja, bricht es sofort ab, ohne die Gemini-API aufzurufen (das Label ist ein einmaliges, nie wieder entferntes Terminal-Signal: sobald gesetzt, reagiert der Agent auf dieses Issue nicht mehr). Andernfalls bewertet es automatisch (kein Freigabe-Gate mehr nötig, da nur noch kommentiert/gelabelt wird) über einen Gemini-API-Call (`gemini-3.1-flash-lite`, Free Tier), ob ein Report klar genug ist. Ist er unklar, postet/editiert das Skript einen Kommentar mit Rückfragen (bestehende Single-Comment-Konvention). Ist er klar und wirkt wie ein plausibler Bug oder gut formulierter Feature-Request, wird das Label `needs-attention` gesetzt. Kein Kategorie-/Prioritäts-/Aufwands-/Duplikat-Labeling.
+- **Abgrenzung:** Dieser Workflow implementiert **nicht** und öffnet **keine PRs**; er legt auch **kein** lokales main-issue an — GitHub-Issue-Triage und der lokale `docs/issues/`-Tracker bleiben vollständig getrennte Systeme. Die Workflow-Permissions umfassen nur `issues: write` (kein `contents`/`pull-requests`).
 
 ---
 
@@ -46,5 +50,7 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 
 - **Positiv:**
   - Sehr linearer, nachvollziehbarer Ablauf (Merge -> CI -> Native Vercel Deploy).
+  - Die GitHub-Issue-Triage läuft ohne Freigabe-Overhead und ohne API-Kosten (Gemini Free Tier statt Anthropic), da sie nur reversible Aktionen (Kommentar, Label) ausführt.
 - **Negativ:**
   - Alle Tests (inklusive E2E) laufen nun auf PRs gegen `main`, was Feature-PRs leicht verzögert.
+  - Ein als `needs-attention` markiertes GitHub-Issue führt zu keinem automatischen Folgeschritt — der Maintainer muss selbst entscheiden, ob und wann daraus ein lokales main-issue wird; die beiden Systeme sind bewusst nicht verknüpft.
