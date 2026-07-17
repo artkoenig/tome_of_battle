@@ -110,11 +110,11 @@ export default function RosterDashboard({
           <p className="empty-state-text text-dim">
             Noch wehen keine Banner in deinem Heerlager. Versammle deine Truppen, wähle deine Anführer und bereite dich auf kommende Schlachten vor.
           </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
-            <button className="btn-secondary empty-state-btn" onClick={handleImportClick} style={{ marginTop: 0 }}>
+          <div className="empty-state-actions">
+            <button className="btn-secondary empty-state-btn" onClick={handleImportClick}>
               <Upload size={20} /> Liste importieren
             </button>
-            <button className="btn-primary empty-state-btn" onClick={onNewRoster} style={{ marginTop: 0 }}>
+            <button className="btn-primary empty-state-btn" onClick={onNewRoster}>
               <Plus size={20} /> Erste Armeeliste ausheben
             </button>
           </div>

@@ -1532,6 +1532,17 @@ input[type="radio"]:checked::after {
     height: 100vh;
     height: 100dvh;
     height: var(--app-vh, 100dvh);
+    /* The base (desktop) #root rule sets min-height: 100vh so short pages still
+       fill the screen. Left intact on mobile it wins over the height above
+       whenever the visible area is smaller than the large (toolbar-retracted)
+       100vh — e.g. while a mobile browser's address bar is showing — forcing
+       #root taller than what is visible. Because html/body/#root are all
+       overflow: hidden, the bottom nav (last flex child) is then pushed below
+       the fold with no way to scroll to it. Mirror the same ascending-precedence
+       cascade onto min-height so #root tracks the genuinely visible height too. */
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: var(--app-vh, 100dvh);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -2363,6 +2374,16 @@ input[type="radio"]:checked::after {
 .empty-state-btn {
   padding: 14px 28px;
   font-size: var(--fs-body);
+}
+/* The empty-state action buttons sit side by side but must wrap onto separate
+   lines on a narrow phone instead of overflowing the viewport horizontally. The
+   gap applies to both axes so wrapped rows stay evenly spaced. */
+.empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
 }
 .empty-state-subtext {
   font-size: var(--fs-label);
