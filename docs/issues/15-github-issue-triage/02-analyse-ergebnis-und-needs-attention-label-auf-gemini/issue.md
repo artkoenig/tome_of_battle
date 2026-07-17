@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -43,3 +43,4 @@ durch ein festes, einfaches Schema und einen Provider-Wechsel:
       den bisherigen Anthropic-Mock an, sofern vorhanden).
 
 ## Comments
+- analyze_issue now calls Gemini (gemini-3.1-flash-lite via google-genai, models.generate_content + response_schema) and returns {is_clear, questions, needs_attention}. Freeform label array replaced by the single fixed needs-attention label (only when needs_attention=true); unclear issues still get the single edited follow-up-questions comment. Workflow switched to GEMINI_API_KEY and google-genai. Added python unittest with a mocked Gemini client (scripts/test_github_issue_agent.py).
