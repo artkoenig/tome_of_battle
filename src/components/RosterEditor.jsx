@@ -31,15 +31,22 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, _setToast] = useState(null);
-  const [rulesDialogRule, setRulesDialogRule] = useState(null);
   const resolveRuleUrl = useRuleUrl();
 
+  // Holds the rule whose external index is currently shown, together with the URL
+  // resolved at open time. Capturing the URL here (rather than re-resolving on each
+  // render) keeps an already-open dialog intact when the setting is toggled off,
+  // as required by the feature's out-of-scope note.
+  const [activeRuleDialog, setActiveRuleDialog] = useState(null);
+
   const onShowRule = useCallback((ruleName) => {
-    setRulesDialogRule(ruleName);
-  }, []);
+    const ruleUrl = resolveRuleUrl(ruleName);
+    if (!ruleUrl) return;
+    setActiveRuleDialog({ ruleName, url: ruleUrl });
+  }, [resolveRuleUrl]);
 
   const closeRulesDialog = useCallback(() => {
-    setRulesDialogRule(null);
+    setActiveRuleDialog(null);
   }, []);
 
   const costType = system?.costTypes?.find(ct => ct.id === roster?.costLimitType);
@@ -385,10 +392,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         </div>
       )}
 
-      {rulesDialogRule && (
+      {activeRuleDialog && (
         <RulesIndexDialog
-          ruleName={rulesDialogRule}
-          url={resolveRuleUrl(rulesDialogRule)}
+          ruleName={activeRuleDialog.ruleName}
+          url={activeRuleDialog.url}
           isOpen={true}
           onClose={closeRulesDialog}
         />

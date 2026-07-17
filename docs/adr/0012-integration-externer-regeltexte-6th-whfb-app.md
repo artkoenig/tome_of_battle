@@ -66,9 +66,13 @@ manuell aktualisiert und als Datenstand eingecheckt.
 ### 2. Zwei Darstellungsmodi
 
 - **Einzelne Regel/Waffe/Magic Item → Iframe-Dialog** (`RulesIndexDialog`) auf der
-  `?minimal=true`-Seite (ohne Seitennavigation). Nur wenn ein Mapping existiert;
-  der betroffene Chip zeigt dann ein **`BookOpen`-Icon**. Ohne Mapping bleibt das
-  bisherige Verhalten (Detail-Anzeige, **`Info`-Icon**) — kein Broken Link.
+  `?minimal=true`-Seite (ohne Seitennavigation). Nur wenn ein Mapping existiert
+  **und** die globale Verlinkungs-Einstellung aktiv ist (siehe
+  [ADR-0015](0015-settings-context-fuer-whfb6-verlinkung.md)); der betroffene
+  Chip zeigt dann ein **`BookOpen`-Icon**. Ohne Mapping oder bei deaktivierter
+  Einstellung bleibt das bisherige Verhalten (Detail-Anzeige, **`Info`-Icon**)
+  — kein Broken Link. Der zentrale `useRuleUrl`-Hook kapselt diese Kombination
+  aus Mapping-Lookup und Einstellung.
   **Link-Priorität (bewusste Entscheidung):** Existiert ein Regel-Link *und*
   Katalog-Info zum selben Eintrag, gewinnt der Link — die Katalog-Info wird dann
   nicht zusätzlich angeboten. Diese Entscheidung ist in der gemeinsamen Komponente

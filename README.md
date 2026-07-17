@@ -77,7 +77,7 @@ The Puppeteer end-to-end test (`src/solver/ui.test.js`) is run separately via `n
 The data flow is structured as follows: **BattleScribe XML → IndexedDB → In-Memory Roster State**
 
 1. **Import** (`src/parser/`) — `zipExtractor.js` extracts the ZIP archive, and `xmlParser.js` reads the catalog XML to translate it into a structured game system object (catalogs, categories, profiles, rules, constraints, modifiers, etc.).
-2. **Database** (`src/db/database.js`) — A Promise-based wrapper for IndexedDB with two object stores: `systems` (game systems) and `rosters` (army lists). This is the only place that accesses IndexedDB directly. `migrations.js` updates older data structures upon loading.
+2. **Database** (`src/db/database.js`) — A Promise-based wrapper for IndexedDB with three object stores: `systems` (game systems), `rosters` (army lists), and `settings` (app-wide preferences, e.g. the whfb6 rule-linking toggle). This is the only place that accesses IndexedDB directly. `migrations.js` updates older data structures upon loading.
 3. **Roster State** (`src/hooks/useRoster.js`) — The central state manager for the roster currently being edited. It builds an immutable selection tree (`Selection`), debounces saves to IndexedDB (150ms), and recalculates costs and validations on every change.
 4. **Play State** (`src/hooks/usePlayState.js`) — Manages the transient state for the play mode.
 
