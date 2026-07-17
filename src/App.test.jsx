@@ -15,6 +15,7 @@ vi.mock('lucide-react', () => ({
   Search: () => <span data-testid="icon-search" />,
   WifiOff: () => <span data-testid="icon-wifioff" />,
   Download: () => <span data-testid="icon-download" />,
+  Settings: () => <span data-testid="icon-settings" />,
   X: () => <span data-testid="icon-x" />,
 }));
 
@@ -25,6 +26,9 @@ vi.mock('./db/database', () => ({
   getAllRosters: vi.fn().mockResolvedValue([]),
   saveRoster: vi.fn().mockResolvedValue(null),
   deleteRoster: vi.fn().mockResolvedValue(null),
+  getWhfb6LinkingEnabled: vi.fn().mockResolvedValue(true),
+  setWhfb6LinkingEnabled: vi.fn().mockResolvedValue(undefined),
+  WHFB6_LINKING_DEFAULT: true,
 }));
 
 vi.mock('./db/migrations', () => ({

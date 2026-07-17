@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -17,3 +17,4 @@ Der zentrale Hook wird in diesem Issue **nicht** an bestehenden Chip-Stellen ver
 - [ ] Unit-Tests für `SettingsProvider`/`SettingsContext`, die Persistenzfunktionen in `database.js` und den zentralen Hook
 
 ## Comments
+- Added SettingsProvider/useSettings (src/contexts/SettingsContext.jsx) wrapping App and exposing { whfb6LinkingEnabled, setWhfb6LinkingEnabled }; persisted the flag in a new IndexedDB 'settings' store (DB_VERSION 1->2) with default true; added a header gear icon opening a SettingsDialog toggle; and a central useRuleUrl hook (src/hooks/useRuleUrl.js) that returns getRuleUrl(name) only when linking is enabled, else null. Hook deliberately not wired into chips yet (issues 02/03). Unit tests for all four seams; full suite green.
