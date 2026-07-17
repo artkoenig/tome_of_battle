@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -92,3 +92,4 @@ Zustandsmatrix (gilt identisch für Katalog- und Spielsystem-Zeilen):
 - [ ]
 
 ## Comments
+- Beide Child-Issues implementiert und gemerged. Testing-Skill: Spec 0 Findings, Tests gruen (406 passed, 2 skips + Headless-UI-Suite), Standards 6 nicht-blockierende Findings (5 vorbestehend, 1 aus diesem Issue: REVISION_STATE-Enum mischte Deutsch/Englisch) — gefixt in d73b1d9.
