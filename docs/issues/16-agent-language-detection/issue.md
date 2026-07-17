@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -109,3 +109,4 @@ create-vs-edit detection.
 - [ ]
 
 ## Comments
+- Vierachsige Verifikation (testing skill) durchgeführt: Standards PASS (0 blockierend, 7 vorbestehende Codebasis-Befunde außerhalb des Diffs), Spec 0 Abweichungen, Tests grün (406 Vitest + 25 Python), Docs 0 echte Inkonsistenzen. Main-Issue vollständig umgesetzt über sein einziges Child-Issue 01-agent-language-detection.
