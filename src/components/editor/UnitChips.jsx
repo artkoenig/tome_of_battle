@@ -6,7 +6,7 @@ import {
 } from '../../solver/validator';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
 import { groupProfilesByType } from '../../solver/rulesEvaluator';
-import { getRuleUrl } from '../../data/rulesLookup';
+import { useRuleUrl } from '../../hooks/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 
@@ -161,6 +161,7 @@ export function UnitUpgradesChips({
   onClickDetails,
   onShowRule
 }) {
+  const resolveRuleUrl = useRuleUrl();
   const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId, roster);
   if (selectedUpgrades.length === 0) return null;
 
@@ -177,7 +178,7 @@ export function UnitUpgradesChips({
             onClick={(e) => {
               e.stopPropagation();
               const chipName = upgrade.resolved?.name || upgrade.name;
-              if (onShowRule && getRuleUrl(chipName)) {
+              if (onShowRule && resolveRuleUrl(chipName)) {
                 onShowRule(chipName);
               } else if (descText && onClickDetails) {
                 onClickDetails(chipName, details);
@@ -211,6 +212,7 @@ export function UnitRulesChips({
   onClickDetails,
   onShowRule
 }) {
+  const resolveRuleUrl = useRuleUrl();
   const { rules } = collectUnitProfilesAndRules(system, selection, activeCatalogueId, roster);
   if (!rules || rules.length === 0) return null;
 
@@ -245,7 +247,7 @@ export function UnitRulesChips({
             className={`text-micro rule-badge ${descText ? 'has-desc' : 'no-desc'}`}
             onClick={(e) => {
               e.stopPropagation();
-              if (onShowRule && getRuleUrl(rule.name)) {
+              if (onShowRule && resolveRuleUrl(rule.name)) {
                 onShowRule(rule.name);
               } else if (descText && onClickDetails) {
                 onClickDetails(rule.name, details);

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -17,3 +17,4 @@ Bei deaktivierter Einstellung verhält sich jede betroffene Komponente so, als e
 - [ ] Bestehende Tests für `RuleChipIcon`, `OptionGroup` und die Link-Priorität bleiben grün bzw. werden um den deaktivierten Zustand ergänzt
 
 ## Comments
+- Zentralen useRuleUrl-Hook in RuleChipIcon, UnitChips (UnitRulesChips + UnitUpgradesChips – bisher duplizierte getRuleUrl-Pruefung zentralisiert) und RosterEditors RulesIndexDialog-URL verdrahtet. SelectionConfigurator/OptionGroup konsumieren den Hook transitiv ueber das gemeinsame RuleChipIcon (hatten keinen eigenen getRuleUrl-Aufruf). Deaktivierte Einstellung -> Katalog-Fallback (Info) statt BookOpen-Link, reaktiv ueber Context. Editor-Tests gruen, Deaktiviert-Zustand ergaenzt (RuleChipIcon, OptionGroup, SelectionConfigurator, neue UnitChips.test).
