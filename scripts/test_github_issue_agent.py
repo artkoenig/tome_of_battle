@@ -16,13 +16,17 @@ def build_gemini_client(payload: dict) -> MagicMock:
 
 
 class AnalyzeIssueTest(unittest.TestCase):
-    def test_returns_fixed_schema_from_gemini_response(self):
+    def test_returns_typed_issue_analysis_from_gemini_response(self):
         payload = {"is_clear": False, "questions": ["Which OS?"], "needs_attention": True}
         client = build_gemini_client(payload)
 
         result = agent.analyze_issue(client, "Crash on launch", "It crashes", ["me too"])
 
-        self.assertEqual(result, payload)
+        self.assertIsInstance(result, agent.IssueAnalysis)
+        self.assertEqual(result, agent.IssueAnalysis(**payload))
+        self.assertFalse(result.is_clear)
+        self.assertEqual(result.questions, ["Which OS?"])
+        self.assertTrue(result.needs_attention)
 
     def test_calls_gemini_with_configured_model_and_schema(self):
         client = build_gemini_client({"is_clear": True, "questions": [], "needs_attention": False})
@@ -92,6 +96,100 @@ class HasAttentionLabelTest(unittest.TestCase):
 
     def test_false_for_freshly_opened_issue_without_labels(self):
         self.assertFalse(agent.has_attention_label([]))
+
+
+class IsBotAuthorTest(unittest.TestCase):
+    def test_true_for_github_actions_bot_login(self):
+        self.assertTrue(agent.is_bot_author("github-actions[bot]"))
+
+    def test_true_for_any_login_containing_bot(self):
+        self.assertTrue(agent.is_bot_author("some-other-bot"))
+
+    def test_false_for_human_login(self):
+        self.assertFalse(agent.is_bot_author("some-user"))
+
+    def test_false_for_empty_login(self):
+        self.assertFalse(agent.is_bot_author(""))
+
+    def test_case_insensitive(self):
+        self.assertTrue(agent.is_bot_author("GitHub-Actions[BOT]"))
+
+
+class EnsureLabelTest(unittest.TestCase):
+    def test_does_not_create_label_when_it_already_exists(self):
+        repo = MagicMock()
+
+        agent.ensure_label(repo, "needs-attention", "d93f0b")
+
+        repo.get_label.assert_called_once_with("needs-attention")
+        repo.create_label.assert_not_called()
+
+    def test_creates_label_when_it_is_missing(self):
+        try:
+            from github.GithubException import UnknownObjectException
+        except ImportError:
+            self.skipTest("PyGithub is not installed in this environment")
+
+        repo = MagicMock()
+        repo.get_label.side_effect = UnknownObjectException(404, {"message": "Not Found"}, None)
+
+        agent.ensure_label(repo, "needs-attention", "d93f0b")
+
+        repo.create_label.assert_called_once_with("needs-attention", "d93f0b")
+
+    def test_does_not_swallow_unrelated_errors(self):
+        repo = MagicMock()
+        repo.get_label.side_effect = RuntimeError("network blip")
+
+        with self.assertRaises(RuntimeError):
+            agent.ensure_label(repo, "needs-attention", "d93f0b")
+
+        repo.create_label.assert_not_called()
+
+
+class LoadAgentConfigTest(unittest.TestCase):
+    REQUIRED_ENV_VARS = {
+        "GEMINI_API_KEY": "test-api-key",
+        "GITHUB_TOKEN": "test-token",
+        "ISSUE_NUMBER": "42",
+        "REPO_OWNER": "octocat",
+        "REPO_NAME": "hello-world",
+    }
+
+    def _set_env(self, **overrides):
+        values = {**self.REQUIRED_ENV_VARS, **overrides}
+        for key, value in values.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+    def tearDown(self):
+        for key in [*self.REQUIRED_ENV_VARS, "ISSUE_EVENT", "COMMENT_BODY", "COMMENT_AUTHOR"]:
+            os.environ.pop(key, None)
+
+    def test_builds_config_from_environment(self):
+        self._set_env()
+        os.environ["ISSUE_EVENT"] = "issue_comment"
+        os.environ["COMMENT_BODY"] = "hello"
+        os.environ["COMMENT_AUTHOR"] = "some-user"
+
+        config = agent.load_agent_config()
+
+        self.assertEqual(config.api_key, "test-api-key")
+        self.assertEqual(config.github_token, "test-token")
+        self.assertEqual(config.issue_number, 42)
+        self.assertEqual(config.repo_owner, "octocat")
+        self.assertEqual(config.repo_name, "hello-world")
+        self.assertEqual(config.event_name, "issue_comment")
+        self.assertEqual(config.comment_body, "hello")
+        self.assertEqual(config.comment_author, "some-user")
+
+    def test_raises_when_a_required_variable_is_missing(self):
+        self._set_env(GEMINI_API_KEY=None)
+
+        with self.assertRaises(ValueError):
+            agent.load_agent_config()
 
 
 if __name__ == "__main__":
