@@ -18,10 +18,12 @@ const CATALOGUE_FILE_EXTENSION = '.cat';
 /**
  * The four states a catalog file can be in when its available (remote) revision is
  * compared to the locally stored one. Used to annotate the import selection list.
+ * Values are stable, language-neutral identifiers — display text lives separately in
+ * Importer.jsx, not here.
  */
 export const REVISION_STATE = {
-  NEW: 'neu',
-  CURRENT: 'aktuell',
+  NEW: 'new',
+  CURRENT: 'current',
   OUTDATED: 'outdated',
   AHEAD: 'ahead',
 };
