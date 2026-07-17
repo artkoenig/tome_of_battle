@@ -20,6 +20,13 @@ const MOBILE_CHROME_COLLAPSED_VIEWPORT = { width: 375, height: 812 };
 // list can't be fetched offline in this test, so the content is shorter here
 // and we shrink the viewport instead to exercise the same overflow/clip path.
 const EMPTY_STATE_OVERFLOW_VIEWPORT = { width: 375, height: 400 };
+// A very narrow phone, to exercise horizontal overflow of the empty-state actions.
+const NARROW_PHONE_VIEWPORT = { width: 320, height: 812 };
+// Vertical space a mobile browser's toolbar occupies while showing. On a real
+// device this makes the visible height (visualViewport / --app-vh) smaller than
+// the layout 100vh; Puppeteer keeps them equal, so the test drives --app-vh down
+// by this amount to recreate that discrepancy (see runViewportSafeAreaTests).
+const SIMULATED_TOOLBAR_HEIGHT_PX = 110;
 // Allow one pixel of sub-pixel rounding when comparing bounding boxes.
 const VIEWPORT_BOUNDS_TOLERANCE_PX = 1;
 
@@ -631,6 +638,54 @@ const assertContentTopReachable = async (page, scrollSelector, contentSelector, 
   }
 };
 
+// Regression guard for docs/issues/18-mobile-viewport-tabbar-unreachable-page-not-scrollable:
+// while a mobile browser's toolbar is showing, the genuinely visible height is
+// smaller than the layout 100vh. The app shell (#root) must be sized to that
+// visible height (--app-vh), not the larger 100vh, so the bottom nav stays within
+// view and reachable. Puppeteer's setViewport makes visualViewport.height == 100vh,
+// so we drive --app-vh below the layout height to recreate the on-device
+// discrepancy that issue 17's collapse-only assertion never exercised.
+const assertShellFitsVisibleHeight = async (page, visibleHeightPx) => {
+  const measurement = await page.evaluate((visibleHeight) => {
+    document.documentElement.style.setProperty('--app-vh', `${visibleHeight}px`);
+    const root = document.getElementById('root');
+    const nav = document.querySelector('.mobile-bottom-nav');
+    void root.offsetHeight; // force a reflow before measuring
+    return {
+      rootHeight: root.getBoundingClientRect().height,
+      navBottom: nav ? nav.getBoundingClientRect().bottom : null,
+    };
+  }, visibleHeightPx);
+
+  if (measurement.navBottom === null) {
+    throw new Error('Could not measure app shell: .mobile-bottom-nav is missing.');
+  }
+  if (measurement.rootHeight > visibleHeightPx + VIEWPORT_BOUNDS_TOLERANCE_PX) {
+    throw new Error(`#root height (${measurement.rootHeight}) exceeds the visible viewport height (${visibleHeightPx}); the bottom nav is pushed below the fold.`);
+  }
+  if (measurement.navBottom > visibleHeightPx + VIEWPORT_BOUNDS_TOLERANCE_PX) {
+    throw new Error(`Tab bar bottom (${measurement.navBottom}) is below the visible viewport height (${visibleHeightPx}); it is unreachable.`);
+  }
+};
+
+// Asserts an element has no horizontal overflow (its content does not extend past
+// its own box), i.e. scrollWidth <= clientWidth. Guards the empty-state action row
+// against clipping the right button on a narrow phone.
+const assertNoHorizontalOverflow = async (page, selector, label) => {
+  const measurement = await page.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return { found: false };
+    return { found: true, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth };
+  }, selector);
+
+  if (!measurement.found) {
+    throw new Error(`Could not measure "${label}": element (${selector}) missing.`);
+  }
+  if (measurement.scrollWidth > measurement.clientWidth + VIEWPORT_BOUNDS_TOLERANCE_PX) {
+    throw new Error(`Element "${label}" (${selector}) overflows horizontally: scrollWidth ${measurement.scrollWidth} > clientWidth ${measurement.clientWidth}.`);
+  }
+};
+
 // Regression test for docs/issues/17-mobile-viewport-duckduckgo: on a short
 // mobile viewport the app header must stay fully visible on load, the empty-state
 // content (book image + welcome title) must be reachable rather than clipped
@@ -719,6 +774,29 @@ const runViewportSafeAreaTests = async () => {
     await page.waitForSelector('.mobile-bottom-nav', { timeout: 5000 });
     await assertElementWithinVisibleViewport(page, '.mobile-bottom-nav', 'mobile bottom nav');
     console.log('Mobile bottom navigation is fully visible after catalog import.');
+
+    // Toolbar-showing state: with the visible height smaller than the layout
+    // 100vh, #root must track the visible height so the tab bar stays reachable.
+    console.log('Simulating the browser toolbar showing (visible height < 100vh) and asserting the shell fits it...');
+    await assertShellFitsVisibleHeight(
+      page,
+      MOBILE_CHROME_COLLAPSED_VIEWPORT.height - SIMULATED_TOOLBAR_HEIGHT_PX,
+    );
+    console.log('#root and the tab bar stay within the visible height while the toolbar is showing.');
+
+    // On a narrow phone, the empty Heerlager action buttons must wrap rather than
+    // overflow horizontally. Navigate to the (still empty) roster dashboard first.
+    console.log('Navigating to the empty Heerlager and asserting no horizontal overflow on a narrow phone...');
+    await page.setViewport(NARROW_PHONE_VIEWPORT);
+    await page.evaluate(() => {
+      const navButtons = [...document.querySelectorAll('.mobile-bottom-nav .mobile-nav-btn')];
+      const heerlagerButton = navButtons.find((button) => /Heerlager/i.test(button.textContent));
+      if (heerlagerButton) heerlagerButton.click();
+    });
+    await page.waitForSelector('.empty-state-actions', { timeout: 5000 });
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await assertNoHorizontalOverflow(page, '.app-content', 'empty Heerlager content');
+    console.log('Empty-state actions stay within the viewport on a narrow phone.');
 
     console.log('MOBILE VIEWPORT / SAFE-AREA REGRESSION TEST PASSED!');
   } finally {
