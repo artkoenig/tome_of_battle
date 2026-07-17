@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -49,3 +49,4 @@ Zustandsmatrix (gilt identisch für Katalog- und Spielsystem-Zeilen):
       zeigt die Auswahlliste je Zeile den erwarteten Zustandstext.
 
 ## Comments
+- Neue reine Funktion deriveRevisionState in catalogUpdate.js leitet den Zustand (neu|aktuell|outdated|ahead) aus verfügbarer vs. lokal gespeicherter Revision ab und baut dabei auf dem bestehenden isOutdated ('higher wins') auf – keine zweite Vergleichslogik. Importer.jsx annotiert Spielsystem- und jede Katalog-Zeile zusätzlich zur Revision mit dem Zustandstext + Ton gemäß Matrix (dezent/Akzent/neutral); der lokale Wert kommt aus der bereits via getAllSystems() geladenen systems-Liste ohne neuen DB-Zugriff und aktualisiert sich beim Dropdown-Wechsel. Unit-Tests decken alle fünf Matrix-Zeilen (inkl. Alt-Daten ohne revision) ab; Importer.test.jsx prüft die Zustandstexte je Zeile und die Neuberechnung nach Systemwechsel.

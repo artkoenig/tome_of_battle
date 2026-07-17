@@ -630,9 +630,10 @@ describe('Importer Component', () => {
         expect(screen.getByLabelText('Bretonnia')).toBeDefined();
       });
 
-      expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 9');
-      expect(screen.getByText('Rev 8')).toBeDefined();
-      expect(screen.getByText('Rev 11')).toBeDefined();
+      // No locally stored systems (getAllSystems -> []), so every file is "neu".
+      expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 9 · neu');
+      expect(screen.getByText('Rev 8 · neu')).toBeDefined();
+      expect(screen.getByText('Rev 11 · neu')).toBeDefined();
     });
 
     it('updates the shown game-system revision when the dropdown selection changes', async () => {
@@ -647,12 +648,12 @@ describe('Importer Component', () => {
       render(<Importer showAsEmptyState={false} />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 3');
+        expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 3 · neu');
       });
 
       fireEvent.change(screen.getByRole('combobox'), { target: { value: 'sys-b' } });
 
-      expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 7');
+      expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 7 · neu');
     });
 
     it('renders no revision label when the index entry omits the revision', async () => {
@@ -671,6 +672,94 @@ describe('Importer Component', () => {
 
       expect(screen.queryByTestId('selected-system-revision')).toBeNull();
       expect(screen.queryByText(/^Rev /)).toBeNull();
+    });
+  });
+
+  describe('Revision state comparison in the bundle importer', () => {
+    let fetchSpy;
+
+    const mockIndexFetch = (index) => {
+      fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
+        if (url.includes('catpkg.json')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve(JSON.stringify(index))
+          });
+        }
+        return Promise.reject(new Error(`Unexpected fetch URL: ${url}`));
+      });
+    };
+
+    afterEach(() => {
+      fetchSpy?.mockRestore();
+    });
+
+    it('shows the derived state per catalogue row and for the game system against locally stored revisions', async () => {
+      mockIndexFetch({
+        repositoryFiles: [
+          { id: 'sys-1', name: 'System One', type: 'gamesystem', revision: 9 },
+          { id: 'cat-new', name: 'Newcomer', type: 'catalogue', revision: 5 },
+          { id: 'cat-current', name: 'UpToDate', type: 'catalogue', revision: 8 },
+          { id: 'cat-outdated', name: 'Behind', type: 'catalogue', revision: 12 },
+          { id: 'cat-ahead', name: 'SelfUpload', type: 'catalogue', revision: 4 },
+          { id: 'cat-legacy', name: 'Legacy', type: 'catalogue', revision: 6 }
+        ]
+      });
+
+      // Locally stored counterpart: system behind (7 < 9); catalogues cover every
+      // matrix row. cat-new is deliberately absent (never imported) -> "neu".
+      getAllSystems.mockResolvedValue([
+        {
+          id: 'sys-1',
+          name: 'System One',
+          revision: 7,
+          catalogues: [
+            { id: 'cat-current', revision: 8 },
+            { id: 'cat-outdated', revision: 10 },
+            { id: 'cat-ahead', revision: 9 },
+            { id: 'cat-legacy' }
+          ]
+        }
+      ]);
+
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 9 · lokal 7 · Update verfügbar');
+      });
+
+      expect(screen.getByTestId('catalog-revision-cat-new').textContent).toBe('Rev 5 · neu');
+      expect(screen.getByTestId('catalog-revision-cat-current').textContent).toBe('Rev 8 · aktuell');
+      expect(screen.getByTestId('catalog-revision-cat-outdated').textContent).toBe('Rev 12 · lokal 10 · Update verfügbar');
+      expect(screen.getByTestId('catalog-revision-cat-ahead').textContent).toBe('Rev 4 · lokal 9');
+      expect(screen.getByTestId('catalog-revision-cat-legacy').textContent).toBe('Rev 6 · lokal unbekannt · Update verfügbar');
+    });
+
+    it('recomputes the catalogue state when the selected game system changes', async () => {
+      // The index assigns every catalogue to every game system, so cat-shared appears
+      // under both systems; its state depends on which system's stored revision applies.
+      mockIndexFetch({
+        repositoryFiles: [
+          { id: 'sys-a', name: 'System A', type: 'gamesystem', revision: 5 },
+          { id: 'sys-b', name: 'System B', type: 'gamesystem', revision: 5 },
+          { id: 'cat-shared', name: 'Shared', type: 'catalogue', revision: 8 }
+        ]
+      });
+
+      getAllSystems.mockResolvedValue([
+        { id: 'sys-a', name: 'System A', revision: 5, catalogues: [{ id: 'cat-shared', revision: 3 }] },
+        { id: 'sys-b', name: 'System B', revision: 5, catalogues: [{ id: 'cat-shared', revision: 8 }] }
+      ]);
+
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('catalog-revision-cat-shared').textContent).toBe('Rev 8 · lokal 3 · Update verfügbar');
+      });
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'sys-b' } });
+
+      expect(screen.getByTestId('catalog-revision-cat-shared').textContent).toBe('Rev 8 · aktuell');
     });
   });
 });
