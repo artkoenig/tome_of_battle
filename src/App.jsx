@@ -21,6 +21,7 @@ import {
 
 
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './solver/validator';
+import useViewportHeight from './hooks/useViewportHeight';
 export function getDiffChanges(installedVersion, release) {
   if (!release) return [];
   if (!release.commits || !release.tags) {
@@ -69,6 +70,11 @@ export function getDiffChanges(installedVersion, release) {
 }
 
 export default function App() {
+  // Keep --app-vh in sync with the real visible viewport height so mobile
+  // layout (#root, .empty-state-wrapper) sizes against the area actually
+  // visible below collapsing browser chrome.
+  useViewportHeight();
+
   const [view, setView] = useState('rosters'); // rosters, importer, builder, play
   const [systems, setSystems] = useState([]);
   const [rosters, setRosters] = useState([]);
