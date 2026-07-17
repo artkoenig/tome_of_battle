@@ -9,7 +9,7 @@ import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
 import RulesIndexDialog from './RulesIndexDialog';
-import { getRuleUrl } from '../data/rulesLookup';
+import { useRuleUrl } from '../hooks/useRuleUrl';
 import GothicTooltip from './GothicTooltip';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
@@ -24,14 +24,24 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
   const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster);
 
-  const [rulesDialogRule, setRulesDialogRule] = useState(null);
+  // Central resolver that honors the global whfb6 linking setting (see ADR-0015):
+  // returns a rule URL only when linking is enabled and a mapping exists, else null.
+  const resolveRuleUrl = useRuleUrl();
+
+  // Holds the rule whose external index is currently shown, together with the URL
+  // resolved at open time. Capturing the URL here (rather than re-resolving on each
+  // render) keeps an already-open dialog intact when the setting is toggled off,
+  // as required by the feature's out-of-scope note.
+  const [activeRuleDialog, setActiveRuleDialog] = useState(null);
 
   const onShowRule = useCallback((ruleName) => {
-    setRulesDialogRule(ruleName);
-  }, []);
+    const ruleUrl = resolveRuleUrl(ruleName);
+    if (!ruleUrl) return;
+    setActiveRuleDialog({ ruleName, url: ruleUrl });
+  }, [resolveRuleUrl]);
 
   const closeRulesDialog = useCallback(() => {
-    setRulesDialogRule(null);
+    setActiveRuleDialog(null);
   }, []);
 
   const handleMouseEnter = (e, title, content) => {
@@ -257,10 +267,10 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           </GothicTooltip>
         )}
 
-        {rulesDialogRule && (
+        {activeRuleDialog && (
           <RulesIndexDialog
-            ruleName={rulesDialogRule}
-            url={getRuleUrl(rulesDialogRule)}
+            ruleName={activeRuleDialog.ruleName}
+            url={activeRuleDialog.url}
             isOpen={true}
             onClose={closeRulesDialog}
           />

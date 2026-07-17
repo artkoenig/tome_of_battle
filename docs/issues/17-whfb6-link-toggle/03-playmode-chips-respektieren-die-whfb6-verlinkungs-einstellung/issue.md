@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -16,3 +16,4 @@ Bei deaktivierter Einstellung verhält sich der Spielmodus identisch zum Roster-
 - [ ] Bestehende Tests für `PlayUnitDetails`/`PlayMode` bleiben grün bzw. werden um den deaktivierten Zustand ergänzt
 
 ## Comments
+- Wired the central useRuleUrl hook into PlayMode: the onShowRule seam (through which all three PlayUnitDetails chip groups funnel) and the RulesIndexDialog URL now resolve via the hook. When linking is off, onShowRule short-circuits so no external dialog opens (catalog fallback path). The URL is captured at open time so an already-open dialog persists when the setting is toggled off (per PRD out-of-scope note). Regelbuch button untouched. Added PlayMode.ruleLinks.test.jsx (6 tests); existing PlayMode/PlayUnitDetails tests stay green.
