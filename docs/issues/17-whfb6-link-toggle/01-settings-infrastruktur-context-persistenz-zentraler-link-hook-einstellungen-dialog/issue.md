@@ -18,3 +18,4 @@ Der zentrale Hook wird in diesem Issue **nicht** an bestehenden Chip-Stellen ver
 
 ## Comments
 - Added SettingsProvider/useSettings (src/contexts/SettingsContext.jsx) wrapping App and exposing { whfb6LinkingEnabled, setWhfb6LinkingEnabled }; persisted the flag in a new IndexedDB 'settings' store (DB_VERSION 1->2) with default true; added a header gear icon opening a SettingsDialog toggle; and a central useRuleUrl hook (src/hooks/useRuleUrl.js) that returns getRuleUrl(name) only when linking is enabled, else null. Hook deliberately not wired into chips yet (issues 02/03). Unit tests for all four seams; full suite green.
+- Implementiert: SettingsProvider/useSettings (React Context, src/contexts/SettingsContext.jsx), IndexedDB-Persistenz in database.js (DB_VERSION 1->2, neuer settings-Store), SettingsDialog ueber neues Zahnrad-Icon im Header, zentraler useRuleUrl-Hook (src/hooks/useRuleUrl.js, noch nicht verdrahtet). Tests gruen (422 passed, 2 skipped, plus E2E).
