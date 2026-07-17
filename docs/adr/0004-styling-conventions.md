@@ -45,6 +45,11 @@ Um den begrenzten Platz auf Bildschirmen optimal zu nutzen, werden Detailinforma
 - **Desktop (Breite > 900px):** Anzeige erfolgt per Hover-Tooltip (`gothic-tooltip`).
 - **Mobil (Breite <= 900px):** Tooltips werden deaktiviert. Beim Klick auf das Element öffnet sich zwingend ein `BottomSheet`-Modal von unten, das die Informationen übersichtlich darstellt und sich leicht schließen lässt.
 
+### 5. Mobile Viewport-Höhe & Safe-Area
+Mobile In-App-Browser (u. a. DuckDuckGo) berechnen `100vh`/`100dvh` bei ein-/ausblendender Browser-Chrome unzuverlässig, was in Kombination mit `overflow: hidden` zu abgeschnittenem Inhalt führt (Header oben, `.mobile-bottom-nav` unten). Verbindlich für vollflächige Mobile-Layout-Container (aktuell `#root`, `.empty-state-wrapper`):
+- `viewport-fit=cover` ist im Viewport-Meta-Tag (`index.html`) gesetzt, damit `env(safe-area-inset-*)` greift; `.app-header` polstert `padding-top` entsprechend mit `env(safe-area-inset-top)`.
+- Die Höhenquelle folgt einer aufsteigenden Fallback-Kette in CSS-Deklarationsreihenfolge: statisches `100vh` (älteste Browser) → `100dvh` (dynamische Viewport-Einheit) → `var(--app-vh, 100dvh)`, wobei `--app-vh` von einem `visualViewport`-Listener (`src/hooks/useViewportHeight.js`) laufend mit der tatsächlich sichtbaren Höhe synchron gehalten wird. Spätere gültige Deklarationen gewinnen, sodass der JS-getriebene Wert primär ist, sobald er gesetzt ist, mit den CSS-Einheiten als Fallback davor bzw. ohne `visualViewport`-Unterstützung.
+
 ### Konsequenzen (Auswirkungen)
 
 - **Positiv:** 

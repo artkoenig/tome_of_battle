@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -49,3 +49,4 @@ Root cause (static analysis, to be confirmed by the automated E2E seam and by ma
 - [ ]
 
 ## Comments
+- Vier-Achsen-Verifikation (testing skill) abgeschlossen: Standards PASS (0 blockierend, 7 vorbestehende Findings außerhalb Scope), Spezifikation 0 blockierend, Tests GREEN (142 Testdateien/1640 Tests inkl. Puppeteer-E2E), Docs 1 Finding behoben (ADR 0004 um Abschnitt 'Mobile Viewport-Höhe & Safe-Area' ergänzt). Manuelle DuckDuckGo-Geräteverifikation steht vor PR-Merge noch aus.
