@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -11,3 +11,4 @@ Blocked by: None
       ADR-0019 mit Titel, Status und Datum, konsistent zu den übrigen Zeilen
 
 ## Comments
+- ADR-0019 als Zeile in die Übersichtstabelle in docs/adr/README.md aufgenommen (Titel, Status Accepted, Datum 2026-07-18), konsistent zu den übrigen Zeilen.
