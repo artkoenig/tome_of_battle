@@ -9,7 +9,6 @@ import RosterEditor from './components/RosterEditor';
 import PlayMode from './components/PlayMode';
 import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
-import EnvBadge from './components/EnvBadge';
 import SettingsDialog from './components/SettingsDialog';
 import ConfirmationDialog from './components/editor/ConfirmationDialog';
 import { SettingsProvider } from './contexts/SettingsContext';
@@ -407,7 +406,6 @@ export default function App() {
           <div className="logo-title-group">
             <span className="logo-text">TOME OF BATTLE</span>
           </div>
-          <EnvBadge />
         </div>
         
         <div className="app-header-actions">

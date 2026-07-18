@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Datum:** 2026-07-13
 - **Beteiligte:** Entwickler, KI-Assistenten
-- **Zugehörige ADRs:** [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md)
+- **Zugehörige ADRs:** [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md), [ADR 0019: Manuelle Versionierung und Release-Freigabe](0019-manuelle-versionierung-und-release-freigabe.md)
 
 ## Kontext und Problemstellung
 
@@ -37,7 +37,10 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 
 ### 3. Vercel Deployment (Nativ via Vercel GitHub-App)
 - **Trigger:** Automatisch bei Pushes auf beliebigen Zweigen.
-- **Ablauf:** Vercel übernimmt das Bauen und Veröffentlichen nativ. Pushes auf `main` deployen direkt nach Production. Pushes auf Feature-Branches erzeugen Preview-URLs (siehe ADR 0008).
+- **Ablauf:** Vercel übernimmt das Bauen nativ. Pushes auf `main` erzeugen ein
+  Production-Deployment, das seit [ADR 0019](0019-manuelle-versionierung-und-release-freigabe.md)
+  erst durch manuelles Promoten live geschaltet wird. Pushes auf
+  Feature-Branches erzeugen Preview-URLs (siehe ADR 0008).
 
 ### 4. GitHub-Issue-Triage (`.github/workflows/issue_agent.yml`)
 - **Trigger:** `issues: opened` und `issue_comment: created`.

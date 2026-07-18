@@ -29,13 +29,3 @@ export function resolveDeployEnv({ command, branch = '', targetEnv = '' }) {
   if (env === 'development') return 'development';
   return 'preview';
 }
-
-/**
- * Umgebungen, die in der UI sichtbar gekennzeichnet werden sollen, damit sie
- * nicht mit der Live-App verwechselt werden (also alles außer Production/Dev).
- * @param {string} env
- * @returns {boolean}
- */
-export function isFlaggedEnv(env) {
-  return env === 'preview';
-}
