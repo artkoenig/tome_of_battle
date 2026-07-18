@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, ShieldAlert } from 'lucide-react';
-import { computeRosterCounts, getModifiedConstraintValue, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals } from '../../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit } from '../../solver/validator';
 export default function RosterSidebar({
   roster,
   system,
@@ -55,15 +55,16 @@ export default function RosterSidebar({
             const count = forceCategoryCounts[catLink.targetId] || 0;
             const displayCtx = { roster, system, selectionCounts, forceCategoryCounts };
 
+            const catLinkModifiers = getEffectiveModifiers(catLink);
             const minConRef = catLink.constraints?.find(c => c.type === 'min');
-            const minCon = minConRef 
-              ? Math.max(0, getModifiedConstraintValue(minConRef, catLink.modifiers, displayCtx))
+            const minCon = minConRef
+              ? Math.max(0, getModifiedConstraintValue(minConRef, catLinkModifiers, displayCtx))
               : 0;
 
             const maxConRef = catLink.constraints?.find(c => c.type === 'max');
-            let maxCon = maxConRef 
+            let maxCon = maxConRef
               ? (() => {
-                  const val = getModifiedConstraintValue(maxConRef, catLink.modifiers, displayCtx);
+                  const val = getModifiedConstraintValue(maxConRef, catLinkModifiers, displayCtx);
                   return val < 0 ? Infinity : val;
                 })()
               : Infinity;
@@ -73,7 +74,7 @@ export default function RosterSidebar({
               const charCatLink = forceDef?.categoryLinks?.find(cl => cl.targetId === '7a1c-d611-c2dc-def1');
               const charMaxConRef = charCatLink?.constraints?.find(c => c.type === 'max');
               if (charMaxConRef) {
-                const val = getModifiedConstraintValue(charMaxConRef, charCatLink.modifiers, displayCtx);
+                const val = getModifiedConstraintValue(charMaxConRef, getEffectiveModifiers(charCatLink), displayCtx);
                 if (val >= 0) maxCon = val;
               }
             }
@@ -97,8 +98,8 @@ export default function RosterSidebar({
                 >
                   {(() => {
                     const limitParts = [];
-                    if (minCon > 0) limitParts.push(`Min: ${minCon}`);
-                    if (maxCon !== Infinity) limitParts.push(`Max: ${maxCon}`);
+                    if (minCon > 0) limitParts.push(`Min: ${formatConstraintLimit(minCon, minConRef)}`);
+                    if (maxCon !== Infinity) limitParts.push(`Max: ${formatConstraintLimit(maxCon, maxConRef)}`);
                     const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
                     return `${count} ${limitText}`.trim();
                   })()}

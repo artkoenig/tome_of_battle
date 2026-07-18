@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PlayUnitDetails from './PlayUnitDetails';
+import { getSelectionTotalCost } from '../../solver/validator';
 
 vi.mock('lucide-react', () => ({
   Plus: () => <span data-testid="icon-plus" />,
@@ -155,5 +156,29 @@ describe('PlayUnitDetails collapsible profiles', () => {
     fireEvent.click(toggle);
     expect(screen.getByText('4')).toBeTruthy();
     expect(screen.getByText('3')).toBeTruthy();
+  });
+
+  // Regression (Issue 19, A1): the cost display must call getSelectionTotalCost with
+  // the EvaluationContext object (system/roster/currentCatalogueId) so modifier-aware
+  // costs stay active. The earlier positional call form put `system` into the context
+  // slot and dropped roster/catalogueId, silently disabling modifier-aware costs.
+  it('calls getSelectionTotalCost with an EvaluationContext object, not positional args', () => {
+    getSelectionTotalCost.mockClear();
+    const props = createDefaultProps();
+    render(<PlayUnitDetails {...props} />);
+
+    expect(getSelectionTotalCost).toHaveBeenCalled();
+    const [selectionArg, costTypeArg, parentCountArg, contextArg] =
+      getSelectionTotalCost.mock.calls[0];
+    expect(selectionArg).toBe(props.selection);
+    expect(costTypeArg).toBe('pts');
+    expect(parentCountArg).toBe(1);
+    expect(contextArg).toEqual({
+      system: props.system,
+      roster: props.roster,
+      currentCatalogueId: props.roster.catalogueId,
+    });
+    // Guard against the old 6-positional-argument regression.
+    expect(getSelectionTotalCost.mock.calls[0]).toHaveLength(4);
   });
 });

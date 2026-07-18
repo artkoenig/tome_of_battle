@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, isSelectionEntryHidden } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, getEffectiveModifiers, isSelectionEntryHidden } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
@@ -97,7 +97,7 @@ export default function CategoryUnitAdder({
               if (res.constraints) {
                 const maxCon = res.constraints.find(c => c.type === 'max' && (c.scope === 'roster' || c.scope === 'force' || !c.scope));
                 if (maxCon) {
-                  const effectiveMax = getModifiedConstraintValue(maxCon, res.modifiers, displayCtx);
+                  const effectiveMax = getModifiedConstraintValue(maxCon, getEffectiveModifiers(res), displayCtx);
                   if (count >= effectiveMax) {
                     isMaxedOut = true;
                   }

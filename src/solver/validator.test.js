@@ -2051,6 +2051,26 @@ it('24. Resolves force entries and evaluates hidden category links', () => {
 
   // Condition passes (count is 1)
   expect(isCategoryLinkHidden(clWithMod, system, roster, { 'cat-hq': 1 }, {})).toBe(false);
+
+  // Regression (Issue 19, B2): a hidden modifier nested in a modifierGroup must be
+  // honoured with its group condition as a gate — before the getEffectiveModifiers
+  // seam was adopted here, modifierGroup-gated modifiers were silently dropped.
+  const clWithGroupMod = {
+    id: 'cl-group-mod',
+    targetId: 'cat-hq',
+    hidden: true,
+    modifierGroups: [
+      {
+        conditions: [{ field: 'cat-hq', type: 'greaterThan', value: 0 }],
+        modifiers: [{ type: 'set', field: 'hidden', value: 'false' }]
+      }
+    ]
+  };
+
+  // Group condition fails (count is 0) → the gated modifier never fires → stays hidden.
+  expect(isCategoryLinkHidden(clWithGroupMod, system, roster, { 'cat-hq': 0 }, {})).toBe(true);
+  // Group condition passes (count is 1) → the gated modifier reveals the link.
+  expect(isCategoryLinkHidden(clWithGroupMod, system, roster, { 'cat-hq': 1 }, {})).toBe(false);
 });
 
 it('25. isSelectionEntryHidden correctly evaluates basic and modifier hidden values', () => {

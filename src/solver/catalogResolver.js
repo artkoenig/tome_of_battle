@@ -1,3 +1,5 @@
+import { InfoLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
+
 export function findEntryInCatalogue(catalogue, entryId) {
   if (!catalogue) return null;
   const cleanId = entryId && entryId.includes('::') ? entryId.split('::').pop() : entryId;
@@ -95,6 +97,110 @@ export function findEntryInSystem(system, entryId, catalogueId = null) {
 }
 
 /**
+ * Builds a linked profile or rule from its resolution target, applying an
+ * inherited hidden flag and merging the link's modifiers and modifier groups
+ * ahead of the target's. Only sets `hidden`/`modifiers`/`modifierGroups` when
+ * they carry information, so a plain target is copied verbatim.
+ */
+function buildLinkedInfoNode(target, inheritedHidden, linkModifiers = [], linkModifierGroups = []) {
+  const node = { ...target };
+  if (inheritedHidden || target.hidden === true) {
+    node.hidden = true;
+  }
+  const mergedModifiers = [...linkModifiers, ...(target.modifiers || [])];
+  if (mergedModifiers.length > 0) {
+    node.modifiers = mergedModifiers;
+  }
+  const mergedModifierGroups = [...linkModifierGroups, ...(target.modifierGroups || [])];
+  if (mergedModifierGroups.length > 0) {
+    node.modifierGroups = mergedModifierGroups;
+  }
+  return node;
+}
+
+/**
+ * Recursively flattens an infoGroup into the profiles and rules it bundles,
+ * following nested infoGroups and infoLinks. A hidden group (or an ancestor
+ * group being hidden) marks every bundled node hidden, mirroring how a hidden
+ * infoLink propagates to its target.
+ */
+function flattenInfoGroup(system, infoGroup, catalogueId, inheritedHidden = false) {
+  const profiles = [];
+  const rules = [];
+  if (!infoGroup) return { profiles, rules };
+
+  const groupHidden = inheritedHidden || infoGroup.hidden === true;
+
+  (infoGroup.profiles || []).forEach(profile => {
+    profiles.push(buildLinkedInfoNode(profile, groupHidden));
+  });
+  (infoGroup.rules || []).forEach(rule => {
+    rules.push(buildLinkedInfoNode(rule, groupHidden));
+  });
+
+  (infoGroup.infoLinks || []).forEach(link => {
+    const contributed = resolveInfoLink(system, link, catalogueId, groupHidden);
+    profiles.push(...contributed.profiles);
+    rules.push(...contributed.rules);
+  });
+
+  (infoGroup.infoGroups || []).forEach(nested => {
+    const contributed = flattenInfoGroup(system, nested, catalogueId, groupHidden);
+    profiles.push(...contributed.profiles);
+    rules.push(...contributed.rules);
+  });
+
+  return { profiles, rules };
+}
+
+/**
+ * Resolves a single infoLink to the profiles and rules it contributes. Handles
+ * all three InfoLinkKind values: a profile/rule link contributes one node; an
+ * infoGroup link contributes the whole flattened group.
+ */
+function resolveInfoLink(system, link, catalogueId, inheritedHidden = false) {
+  const empty = { profiles: [], rules: [] };
+  const target = findEntryInSystem(system, link.targetId, catalogueId);
+  if (!target) return empty;
+
+  const linkHidden = inheritedHidden || link.hidden === true;
+
+  if (link.type === InfoLinkKind.RULE) {
+    return { profiles: [], rules: [buildLinkedInfoNode(target, linkHidden, link.modifiers, link.modifierGroups)] };
+  }
+  if (link.type === InfoLinkKind.PROFILE) {
+    return { profiles: [buildLinkedInfoNode(target, linkHidden, link.modifiers, link.modifierGroups)], rules: [] };
+  }
+  if (link.type === InfoLinkKind.INFO_GROUP) {
+    return flattenInfoGroup(system, target, catalogueId, linkHidden);
+  }
+  return empty;
+}
+
+/**
+ * Gathers every profile and rule an entry bundles indirectly — through its
+ * infoLinks (profile/rule/infoGroup) and its inline infoGroups — as two flat lists.
+ */
+function collectBundledInfoNodes(system, entry, catalogueId) {
+  const profiles = [];
+  const rules = [];
+
+  (entry.infoLinks || []).forEach(link => {
+    const contributed = resolveInfoLink(system, link, catalogueId);
+    profiles.push(...contributed.profiles);
+    rules.push(...contributed.rules);
+  });
+
+  (entry.infoGroups || []).forEach(group => {
+    const contributed = flattenInfoGroup(system, group, catalogueId);
+    profiles.push(...contributed.profiles);
+    rules.push(...contributed.rules);
+  });
+
+  return { profiles, rules };
+}
+
+/**
  * Resolves an entryLink or returns the selectionEntry directly, resolving linked profiles/rules
  */
 export function resolveEntry(system, entry, catalogueId = null) {
@@ -111,11 +217,13 @@ export function resolveEntry(system, entry, catalogueId = null) {
         name: entry.name || target.name,
         constraints: [...(entry.constraints || []), ...(target.constraints || [])],
         modifiers: [...(entry.modifiers || []), ...(target.modifiers || [])],
+        modifierGroups: [...(entry.modifierGroups || []), ...(target.modifierGroups || [])],
         costs: (entry.costs && entry.costs.length > 0) ? entry.costs : (target.costs || []),
         categoryLinks: [...(entry.categoryLinks || []), ...(target.categoryLinks || [])],
         profiles: [...(entry.profiles || []), ...(target.profiles || [])],
         rules: [...(entry.rules || []), ...(target.rules || [])],
         infoLinks: [...(entry.infoLinks || []), ...(target.infoLinks || [])],
+        infoGroups: [...(entry.infoGroups || []), ...(target.infoGroups || [])],
         selectionEntries: [...(entry.selectionEntries || []), ...(target.selectionEntries || [])],
         selectionEntryGroups: [...(entry.selectionEntryGroups || []), ...(target.selectionEntryGroups || [])],
         entryLinks: [...(entry.entryLinks || []), ...(target.entryLinks || [])]
@@ -123,38 +231,23 @@ export function resolveEntry(system, entry, catalogueId = null) {
     }
   }
 
-  // Resolve infoLinks of the resolved entry
-  if (resolved.infoLinks && resolved.infoLinks.length > 0) {
-    resolved.infoLinks.forEach(link => {
-      const target = findEntryInSystem(system, link.targetId, catalogueId);
-      if (!target) return;
-
-      if (link.type === 'rule') {
-        if (!resolved.rules) resolved.rules = [];
-        if (!resolved.rules.some(r => r.id === target.id)) {
-          const linkedRule = { ...target };
-          if (link.hidden === true || target.hidden === true) {
-            linkedRule.hidden = true;
-          }
-          const mergedMods = [...(link.modifiers || []), ...(target.modifiers || [])];
-          if (mergedMods.length > 0) {
-            linkedRule.modifiers = mergedMods;
-          }
-          resolved.rules = [...resolved.rules, linkedRule];
-        }
-      } else if (link.type === 'profile') {
-        if (!resolved.profiles) resolved.profiles = [];
-        if (!resolved.profiles.some(p => p.id === target.id)) {
-          const linkedProfile = { ...target };
-          if (link.hidden === true || target.hidden === true) {
-            linkedProfile.hidden = true;
-          }
-          const mergedMods = [...(link.modifiers || []), ...(target.modifiers || [])];
-          if (mergedMods.length > 0) {
-            linkedProfile.modifiers = mergedMods;
-          }
-          resolved.profiles = [...resolved.profiles, linkedProfile];
-        }
+  // Flatten infoLinks (profile/rule/infoGroup) and inline infoGroups of the
+  // resolved entry into its profiles/rules, so downstream collection needs to
+  // read only those two lists.
+  const bundled = collectBundledInfoNodes(system, resolved, catalogueId);
+  if (bundled.profiles.length > 0) {
+    if (!resolved.profiles) resolved.profiles = [];
+    bundled.profiles.forEach(profile => {
+      if (!resolved.profiles.some(existing => existing.id === profile.id)) {
+        resolved.profiles = [...resolved.profiles, profile];
+      }
+    });
+  }
+  if (bundled.rules.length > 0) {
+    if (!resolved.rules) resolved.rules = [];
+    bundled.rules.forEach(rule => {
+      if (!resolved.rules.some(existing => existing.id === rule.id)) {
+        resolved.rules = [...resolved.rules, rule];
       }
     });
   }
@@ -167,21 +260,21 @@ export function resolveEntry(system, entry, catalogueId = null) {
     resolved.publicationRef = entryPubRef;
   }
 
+  // The rule/profile objects reached here are shared with the catalogue cache
+  // (spread into a new array, but the elements are the same references). Clone
+  // each before stamping `publicationRef` so repeated resolution never mutates
+  // cached state and leaks a stale reference across selections.
   if (resolved.rules) {
-    resolved.rules.forEach(r => {
+    resolved.rules = resolved.rules.map(r => {
       const rulePubRef = getPublicationRef(system, r.publicationId, r.page, catalogueId);
-      if (rulePubRef) {
-        r.publicationRef = rulePubRef;
-      }
+      return rulePubRef ? { ...r, publicationRef: rulePubRef } : r;
     });
   }
 
   if (resolved.profiles) {
-    resolved.profiles.forEach(p => {
+    resolved.profiles = resolved.profiles.map(p => {
       const profPubRef = getPublicationRef(system, p.publicationId, p.page, catalogueId);
-      if (profPubRef) {
-        p.publicationRef = profPubRef;
-      }
+      return profPubRef ? { ...p, publicationRef: profPubRef } : p;
     });
   }
 

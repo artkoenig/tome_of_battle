@@ -2,6 +2,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import App, { getDiffChanges } from './App';
+import { getAllSystems, getAllRosters } from './db/database';
+import { runSystemMigrations } from './db/migrations';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -35,8 +37,16 @@ vi.mock('./db/migrations', () => ({
   runSystemMigrations: vi.fn((systems) => Promise.resolve({ systems: systems || [], failures: [] })),
 }));
 
-// Mock child components
-vi.mock('./components/Importer', () => ({ default: () => <div data-testid="importer-mock">Importer Mock</div> }));
+// Mock child components. The Importer mock exposes a button that invokes the
+// `onSystemImported` callback so tests can drive the post-import flow.
+vi.mock('./components/Importer', () => ({
+  default: ({ onSystemImported }) => (
+    <div data-testid="importer-mock">
+      Importer Mock
+      <button data-testid="trigger-import" onClick={() => onSystemImported?.()}>Import</button>
+    </div>
+  ),
+}));
 vi.mock('./components/RosterEditor', () => ({ default: () => <div data-testid="editor-mock">RosterEditor Mock</div> }));
 vi.mock('./components/PlayMode', () => ({ default: () => <div data-testid="playmode-mock">PlayMode Mock</div> }));
 vi.mock('./components/editor/NewRosterModal', () => ({ default: () => <div data-testid="new-roster-modal-mock">New Roster Modal Mock</div> }));
@@ -152,6 +162,52 @@ describe('App Component PWA Update Toast Notification', () => {
       const diff = getDiffChanges('v1.0.0', release);
       expect(diff.length).toBe(51);
       expect(diff[50]).toBe('...und weitere Einträge.');
+    });
+  });
+});
+
+describe('App first-import catalog decoupling', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getAllRosters.mockResolvedValue([]);
+  });
+
+  it('navigates to the dashboard after import without waiting for the network catalog refresh', async () => {
+    const importedSystem = { id: 'sys-1', name: 'Imported System' };
+    // Empty at mount, then populated once the import has written to IndexedDB.
+    getAllSystems.mockResolvedValueOnce([]).mockResolvedValue([importedSystem]);
+    // A slow/hanging network refresh that never resolves — the bug was that the
+    // navigation awaited exactly this call.
+    runSystemMigrations.mockReturnValue(new Promise(() => {}));
+
+    render(<App />);
+
+    // With no systems yet, the empty-state Importer is shown.
+    const importButton = await screen.findByTestId('trigger-import');
+    await act(async () => {
+      fireEvent.click(importButton);
+    });
+
+    // The dashboard must appear even though runSystemMigrations is still pending,
+    // proving leaving the import view is no longer gated on the network refresh.
+    await waitFor(() => {
+      expect(screen.queryByTestId('dashboard-mock')).not.toBeNull();
+    });
+  });
+
+  it('still surfaces the failure toast when the background catalog refresh reports failures', async () => {
+    const storedSystem = { id: 'sys-1', name: 'Stored System' };
+    getAllSystems.mockResolvedValue([storedSystem]);
+    runSystemMigrations.mockResolvedValue({
+      systems: [storedSystem],
+      failures: [{ id: 'sys-1', name: 'Stored System' }],
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Konnte folgende Systeme nicht aktualisieren/)).not.toBeNull();
+      expect(screen.queryByText(/Stored System/)).not.toBeNull();
     });
   });
 });

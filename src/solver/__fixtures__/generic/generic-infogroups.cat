@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<catalogue id="cat-generic-1" name="Generic InfoGroups Catalogue" revision="1" battleScribeVersion="2.03" authorName="Test Fixture" gameSystemId="sys-generic-1" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/catalogueSchema">
+  <publications>
+    <publication id="pub-core" name="Core Rules" shortName="CR" />
+  </publications>
+  <profileTypes>
+    <profileType id="ptype-unit" name="Unit">
+      <characteristicTypes>
+        <characteristicType id="ctype-move" name="Move" />
+      </characteristicTypes>
+    </profileType>
+    <profileType id="ptype-weapon" name="Weapon">
+      <characteristicTypes>
+        <characteristicType id="ctype-range" name="Range" />
+      </characteristicTypes>
+    </profileType>
+  </profileTypes>
+  <categoryEntries>
+    <categoryEntry id="cat-core" name="Core" />
+  </categoryEntries>
+  <selectionEntries>
+    <selectionEntry id="unit-guardian" name="Arcane Guardian" type="unit" publicationId="pub-core" page="10">
+      <profiles>
+        <profile id="prof-guardian" name="Arcane Guardian" typeId="ptype-unit" typeName="Unit" publicationId="pub-core" page="10">
+          <characteristics>
+            <characteristic name="Move" typeId="ctype-move">6</characteristic>
+          </characteristics>
+        </profile>
+      </profiles>
+      <infoGroups>
+        <infoGroup id="ig-loadout" name="Standard Loadout">
+          <profiles>
+            <profile id="prof-staff" name="Arcane Staff" typeId="ptype-weapon" typeName="Weapon" publicationId="pub-core" page="11">
+              <characteristics>
+                <characteristic name="Range" typeId="ctype-range">12</characteristic>
+              </characteristics>
+            </profile>
+          </profiles>
+        </infoGroup>
+      </infoGroups>
+      <infoLinks>
+        <infoLink id="il-blessings" name="Divine Blessings" targetId="ig-blessings" type="infoGroup" />
+      </infoLinks>
+      <categoryLinks>
+        <categoryLink id="cl-core" targetId="cat-core" primary="true" />
+      </categoryLinks>
+    </selectionEntry>
+  </selectionEntries>
+  <sharedRules>
+    <rule id="rule-ward" name="Ward Save" publicationId="pub-core" page="20">
+      <description>Ignore wounds on a roll of 5+.</description>
+    </rule>
+  </sharedRules>
+  <sharedInfoGroups>
+    <infoGroup id="ig-blessings" name="Divine Blessings">
+      <rules>
+        <rule id="rule-blessed" name="Blessed" publicationId="pub-core" page="21">
+          <description>This model is immune to fear.</description>
+        </rule>
+      </rules>
+      <infoLinks>
+        <infoLink id="il-ward" name="Ward Save" targetId="rule-ward" type="rule" />
+      </infoLinks>
+    </infoGroup>
+  </sharedInfoGroups>
+</catalogue>

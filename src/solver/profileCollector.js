@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { evaluateCondition, evaluateConditionGroup } from './modifierEvaluator.js';
+import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers } from './modifierEvaluator.js';
 import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import '../types.js';
@@ -164,7 +164,8 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
 
   const addProfile = (p, sourceSel, parentSel) => {
     if (p && p.id && !seenProfileIds.has(p.id)) {
-      if (!evaluateHiddenFlag(p.hidden, p.modifiers, makeCtx(sourceSel, parentSel))) {
+      const hiddenCtx = makeCtx(sourceSel, parentSel);
+      if (!evaluateHiddenFlag(p.hidden, getEffectiveModifiers(p), hiddenCtx)) {
         seenProfileIds.add(p.id);
         const cloned = cloneProfile(p);
         cloned._sourceSelection = sourceSel;
@@ -176,7 +177,8 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
 
   const addRule = (r, sourceSel, parentSel) => {
     if (r && r.id && !seenRuleIds.has(r.id)) {
-      if (!evaluateHiddenFlag(r.hidden, r.modifiers, makeCtx(sourceSel, parentSel))) {
+      const hiddenCtx = makeCtx(sourceSel, parentSel);
+      if (!evaluateHiddenFlag(r.hidden, getEffectiveModifiers(r), hiddenCtx)) {
         seenRuleIds.add(r.id);
         rules.push(r);
       }
@@ -211,10 +213,11 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
           }
         });
 
-        // Apply selection-level characteristic modifiers to profiles
-        const charMods = (sel.modifiers || []).concat(resolved.modifiers || []);
+        // Apply selection-level characteristic modifiers to profiles. Group
+        // modifiers are folded in only when their group conditions pass (gating).
+        const ctx = makeCtx(sel, parentSel);
+        const charMods = getEffectiveModifiers(sel).concat(getEffectiveModifiers(resolved));
         if (profiles.length > 0 && charMods.length > 0) {
-          const ctx = makeCtx(sel, parentSel);
           const sourceName = sel.name || resolved.name || 'Upgrade';
           profiles.forEach(p => {
             charMods.forEach(mod => applyCharacteristicModifier(mod, p, ctx, sourceName));
@@ -254,10 +257,11 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
 
   // Apply profile-level modifiers exactly once per profile at the end of collection
   profiles.forEach(p => {
-    if (p.modifiers && p.modifiers.length > 0) {
-      const ctx = makeCtx(p._sourceSelection || selection, p._parentSelection);
+    const ctx = makeCtx(p._sourceSelection || selection, p._parentSelection);
+    const profileModifiers = getEffectiveModifiers(p);
+    if (profileModifiers.length > 0) {
       // Use profile name as the source since these are defined on the profile itself
-      p.modifiers.forEach(mod => applyCharacteristicModifier(mod, p, ctx, p.name));
+      profileModifiers.forEach(mod => applyCharacteristicModifier(mod, p, ctx, p.name));
     }
 
     delete p._sourceSelection;

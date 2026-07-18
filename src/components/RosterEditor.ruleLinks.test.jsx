@@ -59,6 +59,7 @@ vi.mock('../db/database', () => ({
 vi.mock('../solver/validator', () => ({
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
   getModifiedConstraintValue: (constraint) => (constraint.type === 'min' ? 1 : 5),
+  getEffectiveModifiers: (source) => source?.modifiers || [],
   calculateRosterCosts: () => ({ pts: 420 }),
   resolveEntry: () => ({ id: 'entry-resolved', name: 'Resolved Entry' }),
   findEntryInSystem: () => ({ id: 'entry-raw', name: 'Raw Entry' }),
@@ -67,6 +68,8 @@ vi.mock('../solver/validator', () => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find((fe) => fe.id === id) || null,
   isCategoryLinkHidden: (link) => link.hidden === true,
   getExtraResourceTotals: () => [],
+  formatConstraintLimit: (value, constraint) =>
+    (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
 }));
 
 vi.mock('./editor/CategoryUnitAdder', () => ({

@@ -181,6 +181,33 @@ test('parser trims leading/trailing whitespace in name attributes', () => {
   expect(cat.selectionEntries[0].rules[0].name).toBe('Armour of Damnation');
 });
 
+test('parseCatalogueXML reads constraint percentValue/includeChildSelections/includeChildForces', () => {
+  const catXml = `<?xml version="1.0" encoding="UTF-8"?>
+<catalogue id="cat-constraints" name="Constraint Fixture" gameSystemId="sys-123">
+  <selectionEntries>
+    <selectionEntry id="unit-lord" name="Generic Lord" type="unit">
+      <constraints>
+        <constraint id="con-percent" type="max" value="25" field="pts" scope="roster" percentValue="true" includeChildSelections="true" includeChildForces="true" />
+        <constraint id="con-plain" type="max" value="1" field="selections" scope="force" />
+      </constraints>
+    </selectionEntry>
+  </selectionEntries>
+</catalogue>
+`;
+  const cat = parseCatalogueXML(catXml);
+  const [percentCon, plainCon] = cat.selectionEntries[0].constraints;
+
+  expect(percentCon.id).toBe('con-percent');
+  expect(percentCon.percentValue).toBe(true);
+  expect(percentCon.includeChildSelections).toBe(true);
+  expect(percentCon.includeChildForces).toBe(true);
+
+  // Absent boolean attributes fall back to the schema default (false).
+  expect(plainCon.percentValue).toBe(false);
+  expect(plainCon.includeChildSelections).toBe(false);
+  expect(plainCon.includeChildForces).toBe(false);
+});
+
 test('ZIP Extraction via extractZipFiles and processImportedData', async () => {
   try {
     const zip = new JSZip();

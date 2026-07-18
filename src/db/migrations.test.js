@@ -82,10 +82,14 @@ test('one broken system does not affect the migration of the others', async () =
   expect(migrated.map(s => s.id)).toEqual(['sys-broken', 'sys-1']);
 });
 
+// Schema-valid game systems (namespace declared) so a fork update passes the import
+// schema advisory that updateSystemFromCatalogIndex now applies before parsing
+// (advisory only: it reports, it does not block — ADR 0016, Revision 2026-07-18).
+const GAME_SYSTEM_NAMESPACE = 'http://www.battlescribe.net/schema/gameSystemSchema';
 const outdatedGst = `<?xml version="1.0" encoding="UTF-8"?>
-<gameSystem id="sys-1" name="Test System" revision="8" />`;
+<gameSystem id="sys-1" name="Test System" revision="8" xmlns="${GAME_SYSTEM_NAMESPACE}"/>`;
 const currentGst = `<?xml version="1.0" encoding="UTF-8"?>
-<gameSystem id="sys-1" name="Test System" revision="9" />`;
+<gameSystem id="sys-1" name="Test System" revision="9" xmlns="${GAME_SYSTEM_NAMESPACE}"/>`;
 
 const index = {
   repositoryFiles: [

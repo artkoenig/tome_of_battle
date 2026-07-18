@@ -209,30 +209,66 @@ export default function App() {
     setSelectedSystem(system);
   };
 
-  const loadAllData = async () => {
+  // Loads systems and rosters from IndexedDB into state. Local and fast — it never
+  // touches the network — and returns the loaded systems so a caller can hand them
+  // to the background catalog refresh without reloading them.
+  const loadLocalData = async () => {
+    const dbSystems = await getAllSystems();
+    const allRosters = await getAllRosters();
+    setSystems(dbSystems);
+    setRosters(allRosters);
+    setIsDataLoaded(true);
+    return dbSystems;
+  };
+
+  // Checks the remote catalog for newer revisions and republishes the refreshed
+  // systems. This performs a real network request, so it is written to be safe to
+  // run un-awaited in the background: a refresh failure stays invisible (the catalog
+  // is only a cache) apart from the existing per-system toast on partial failures.
+  const refreshCatalogInBackground = async (dbSystems) => {
     try {
-      const dbSystems = await getAllSystems();
-      const { systems: allSystems, failures } = await runSystemMigrations(dbSystems, fetchCatalogText);
+      const { systems: refreshedSystems, failures } = await runSystemMigrations(dbSystems, fetchCatalogText);
       if (failures.length > 0) {
         showToast(
           `Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: ${failures.map(f => f.name).join(', ')}`,
           'error'
         );
       }
+      setSystems(refreshedSystems);
+    } catch (e) {
+      console.error("Error refreshing catalog in background:", e);
+    }
+  };
 
-      const allRosters = await getAllRosters();
-      setSystems(allSystems);
-      setRosters(allRosters);
-      setIsDataLoaded(true);
+  // Reloads everything and also waits for the catalog refresh. Used by callers that
+  // are not gated behind a loading overlay (tab switches, roster CRUD), where waiting
+  // for the network round-trip is acceptable.
+  const loadAllData = async () => {
+    try {
+      const dbSystems = await loadLocalData();
+      await refreshCatalogInBackground(dbSystems);
     } catch (e) {
       console.error("Error loading index data:", e);
       setIsDataLoaded(true);
     }
   };
 
-  const handleSystemImported = () => {
-    loadAllData();
+  // Awaits only the local IndexedDB reload before switching views so the first-import
+  // path (empty state -> Heerlager) has `systems` populated by the time the Importer's
+  // loading overlay comes down — otherwise the empty Importer flashes for a frame
+  // between the overlay and the RosterDashboard. The catalog refresh is a network
+  // round-trip and must NOT gate leaving the overlay, so it runs in the background and
+  // republishes the systems (and surfaces its failure toast) once it finishes.
+  const handleSystemImported = async () => {
+    let dbSystems = [];
+    try {
+      dbSystems = await loadLocalData();
+    } catch (e) {
+      console.error("Error loading index data:", e);
+      setIsDataLoaded(true);
+    }
     navigate('rosters');
+    refreshCatalogInBackground(dbSystems);
   };
 
 

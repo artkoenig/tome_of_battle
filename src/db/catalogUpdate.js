@@ -1,4 +1,5 @@
 import { processImportedData } from '../parser/xmlParser';
+import { collectSchemaWarnings } from '../parser/importSchemaGate';
 
 // The catalog data lives in a fork of the upstream BattleScribe repository and is
 // fetched at runtime over raw.githubusercontent.com, which answers with CORS
@@ -141,13 +142,22 @@ async function downloadOutdatedRawXmls(rawXmls, outdatedFiles, fetchText) {
 
 /**
  * Orchestrates a silent catalog update for a single stored system. The `fetchText`
- * dependency is injected so the whole path is testable without a network. Returns
- * the freshly parsed, updated system on success, or null when no update applies or
- * the update fails (fetch error, unparsable remote data) — in which case the caller
- * keeps the stored system untouched. Never throws and never surfaces anything to the
- * user: a failed catalog refresh is invisible by design (the catalog is a cache).
+ * dependency is injected so the whole path is testable without a network. The
+ * `collectWarnings` schema advisory (ADR 0016, Revision 2026-07-18) is injected
+ * likewise and defaults to the real collector: fetched fork data is validated against
+ * the vendored XSD, but a schema violation does *not* abort the update — it is logged
+ * (reported) and the update proceeds, mirroring the manual import's advisory
+ * behaviour. Returns the freshly parsed, updated system on success, or null when no
+ * update applies or the update genuinely fails (fetch error, unparsable remote data)
+ * — in which case the caller keeps the stored system untouched. Never throws: a
+ * failed catalog refresh is invisible by design (the catalog is a cache).
  */
-export async function updateSystemFromCatalogIndex(system, index, fetchText) {
+export async function updateSystemFromCatalogIndex(
+  system,
+  index,
+  fetchText,
+  collectWarnings = collectSchemaWarnings
+) {
   if (!index) return null;
 
   try {
@@ -155,6 +165,13 @@ export async function updateSystemFromCatalogIndex(system, index, fetchText) {
     if (outdatedFiles.length === 0) return null;
 
     const rawXmls = await downloadOutdatedRawXmls(system.rawXmls, outdatedFiles, fetchText);
+    const warnings = await collectWarnings(rawXmls.gst, rawXmls.cat);
+    if (warnings.length > 0) {
+      console.warn(
+        `Schema advisory for silent catalog update of system "${system.name}":`,
+        warnings.map((warning) => warning.message)
+      );
+    }
     const updatedSystem = processImportedData(rawXmls.gst, rawXmls.cat);
     updatedSystem.rawXmls = rawXmls;
     return updatedSystem;

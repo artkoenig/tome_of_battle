@@ -23,4 +23,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0013 | [Generischer Undo/Redo-Hook statt roster-spezifischer History-Logik](0013-generischer-undo-redo-hook.md) | Accepted | 2026-07-15 |
 | 0014 | [Kataloge als externes Fork-Repo mit Laufzeit-Abruf](0014-kataloge-als-externes-fork-repo-mit-laufzeit-abruf.md) | Accepted | 2026-07-15 |
 | 0015 | [React Context für die whfb6-Verlinkungs-Einstellung](0015-settings-context-fuer-whfb6-verlinkung.md) | Accepted | 2026-07-17 |
+| 0016 | [BattleScribe-XSD als vendored Konformitätsquelle](0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md) | Accepted | 2026-07-18 |
 
