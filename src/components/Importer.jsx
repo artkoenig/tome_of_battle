@@ -206,7 +206,7 @@ export function transformIndexToSystems(index) {
 
 /**
  * Tags every system parsed from one source's index with that source's `rawBaseUrl`, so
- * the import later fetches its files from the right fork (ADR 0016). No display label is
+ * the import later fetches its files from the right fork (ADR 0018). No display label is
  * stored or derived: the system is shown under its own catalog `name`, straight from the
  * parsed index.
  */
@@ -228,7 +228,7 @@ function buildAllSelectedCats(system) {
 
 /**
  * Loads and merges the available systems of every configured catalog source into one
- * flat list (ADR 0016 — no extra selection step; both systems share the one dropdown).
+ * flat list (ADR 0018 — no extra selection step; both systems share the one dropdown).
  * A source whose index is unreachable contributes nothing rather than failing the whole
  * list, so one source being offline never hides the other. `anyIndexReachable` stays
  * true as long as at least one source's index loaded (even if it held no systems), so

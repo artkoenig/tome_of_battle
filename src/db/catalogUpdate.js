@@ -3,7 +3,7 @@ import { collectSchemaWarnings } from '../parser/importSchemaGate';
 
 // The catalog data lives in forks of the upstream BattleScribe repositories and is
 // fetched at runtime over raw.githubusercontent.com, which answers with CORS
-// (access-control-allow-origin: *) and gzip. See ADR 0014, ADR 0015 and ADR 0016: two
+// (access-control-allow-origin: *) and gzip. See ADR 0014, ADR 0017 and ADR 0018: two
 // forks are run permanently and in parallel as named sources (Ergofarg and Lexicanum),
 // each with its own catpkg.json index. The index's own `fileUrl` fields are
 // deliberately not used; the raw URL is constructed from the source's `rawBaseUrl` so
@@ -15,7 +15,7 @@ const CATPKG_INDEX_FILE_NAME = 'catpkg.json';
  * Completes a catalog source descriptor by deriving its index URL from the raw base
  * URL, so the two never drift apart. A source is `{ gameSystemId, rawBaseUrl, indexUrl }`;
  * `gameSystemId` is the stable BattleScribe id that also keys a stored system back to its
- * source (ADR 0016 — no separate database field needed). No display label is carried: a
+ * source (ADR 0018 — no separate database field needed). No display label is carried: a
  * system is shown under its own catalog `name`, so the source is a pure fetch-origin
  * descriptor.
  */
@@ -28,7 +28,7 @@ function defineCatalogSource({ gameSystemId, rawBaseUrl }) {
 }
 
 /**
- * The catalog sources offered in parallel (ADR 0016). Each source maps a stable game
+ * The catalog sources offered in parallel (ADR 0018). Each source maps a stable game
  * system id to the fork the system's files are fetched from. A further source is added by
  * appending an entry here, without touching any branching logic (Open/Closed).
  */
@@ -47,7 +47,7 @@ export const CATALOG_SOURCES = Object.freeze([
 /**
  * The catalog source a game system id belongs to, or null when no configured source
  * owns it (e.g. a system the user uploaded from their own files). The lookup is by the
- * system's own `gameSystemId`, which is unique and stable per source (ADR 0016).
+ * system's own `gameSystemId`, which is unique and stable per source (ADR 0018).
  */
 export function findCatalogSourceForSystemId(gameSystemId) {
   return CATALOG_SOURCES.find((source) => source.gameSystemId === gameSystemId) ?? null;
@@ -253,7 +253,7 @@ export async function fetchCatalogText(url) {
 
 // Keyed first by the fetchText function identity (WeakMap, so a caller's cache is
 // released with it) and then by the index URL. Keying by URL as well is essential:
-// with several sources sharing one fetchText instance (ADR 0016), a URL-blind cache
+// with several sources sharing one fetchText instance (ADR 0018), a URL-blind cache
 // would return the first source's index for every later source (see regression test).
 let catalogIndexCache = new WeakMap();
 

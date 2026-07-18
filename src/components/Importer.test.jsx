@@ -62,7 +62,7 @@ vi.mock('jszip', () => {
 // per-source raw base URLs, and the fetch stubs below match on file-name substrings, so
 // no URL override is needed.
 
-// The multi-source importer loads every CATALOG_SOURCES entry at mount (ADR 0016). A
+// The multi-source importer loads every CATALOG_SOURCES entry at mount (ADR 0018). A
 // test that asserts on a single dataset serves it on the Lexicanum source and leaves the
 // other source's index empty, so exactly one system set appears in the dropdown.
 const LEXICANUM_CATPKG_URL_PART = 'Warhammer-Fantasy-Battles-6th-Definitive-edition/main/catpkg.json';
@@ -955,7 +955,7 @@ describe('Importer Component', () => {
     });
   });
 
-  describe('Multiple catalog sources (ADR 0016)', () => {
+  describe('Multiple catalog sources (ADR 0018)', () => {
     let fetchSpy;
 
     afterEach(() => {

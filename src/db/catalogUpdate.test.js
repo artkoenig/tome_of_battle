@@ -20,11 +20,11 @@ beforeAll(() => {
 const GAME_SYSTEM_ID = 'sys-1';
 const CATALOGUE_ID = 'cat-1';
 
-// The two runtime catalog sources run in parallel (ADR 0016).
+// The two runtime catalog sources run in parallel (ADR 0018).
 const ERGOFARG_SYSTEM_ID = '6d8e-38d9-3c69-febf';
 const LEXICANUM_SYSTEM_ID = '0d13-7737-ea86-4662';
 
-// The Lexicanum fork's raw base (ADR 0015): a fork of
+// The Lexicanum fork's raw base (ADR 0017): a fork of
 // lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition under the
 // artkoenig account, default branch `main`.
 const FORK_RAW_BASE_URL =
@@ -114,7 +114,7 @@ describe('findOutdatedCatalogFiles (pure revision comparison)', () => {
   });
 });
 
-describe('CATALOG_SOURCES (ADR 0016 — Ergofarg and Lexicanum in parallel)', () => {
+describe('CATALOG_SOURCES (ADR 0018 — Ergofarg and Lexicanum in parallel)', () => {
   test('offers exactly the two configured WHFB6 sources', () => {
     expect(CATALOG_SOURCES.map((source) => source.gameSystemId)).toEqual([
       ERGOFARG_SYSTEM_ID,
@@ -134,7 +134,7 @@ describe('CATALOG_SOURCES (ADR 0016 — Ergofarg and Lexicanum in parallel)', ()
     }
   });
 
-  test('the Lexicanum source keeps the ADR-0015 raw base', () => {
+  test('the Lexicanum source keeps the ADR-0017 raw base', () => {
     const lexicanum = findCatalogSourceForSystemId(LEXICANUM_SYSTEM_ID);
     expect(lexicanum.rawBaseUrl).toBe(FORK_RAW_BASE_URL);
   });
@@ -167,7 +167,7 @@ describe('loadCatalogIndex (cached per fetchText AND index URL)', () => {
   }
 
   test('two different index URLs sharing one fetchText return their own indexes', async () => {
-    // Regression for the ADR-0016 cache bug: a URL-blind cache returned indexA for urlB.
+    // Regression for the ADR-0018 cache bug: a URL-blind cache returned indexA for urlB.
     const fetchText = makeIndexFetch();
 
     const resultA = await loadCatalogIndex(fetchText, urlA);

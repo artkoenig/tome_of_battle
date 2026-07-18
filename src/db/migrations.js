@@ -24,7 +24,7 @@ async function reprocessStoredSystem(system) {
 
 /**
  * Attempts a silent catalog update for one stored system against the index of its own
- * source (ADR 0016). The source is resolved from the system's `gameSystemId`; a system
+ * source (ADR 0018). The source is resolved from the system's `gameSystemId`; a system
  * that belongs to no configured source (e.g. self-uploaded) has no source to update
  * from and returns null so the caller re-parses the stored data instead. The per-source
  * index is loaded via `loadCatalogIndex`, whose cache keys by URL, so several systems of
@@ -43,7 +43,7 @@ async function updateStoredSystemFromItsSource(system, fetchText) {
  * attempts a silent catalog update from its source's fork index (`fetchText` injected
  * for testability): an outdated system is refreshed to the newer revision without
  * asking. Both configured sources are updated symmetrically — each system against its
- * own source (ADR 0016). A failed or unavailable update is invisible to the user — the
+ * own source (ADR 0018). A failed or unavailable update is invisible to the user — the
  * stored data is kept and merely re-parsed with the current parser instead.
  *
  * Only a failed *re-processing* of an already-stored system is reported via

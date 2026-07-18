@@ -1,4 +1,4 @@
-# 0015: Wechsel des Katalog-Forks zu Lexicanum Imperialis mit eigener Revision-CI
+# 0017: Wechsel des Katalog-Forks zu Lexicanum Imperialis mit eigener Revision-CI
 
 - **Status:** Accepted
 - **Datum:** 2026-07-17
