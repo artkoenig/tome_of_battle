@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -78,3 +78,4 @@ Stil für einen E2E-Test.
 - [ ] `npm test` (Vitest + Puppeteer-E2E) läuft grün.
 
 ## Comments
+- Split loadAllData into loadLocalData (awaited IndexedDB reload) and refreshCatalogInBackground (non-blocking network catalog refresh). handleSystemImported now awaits only the local reload before navigate('rosters') and fires the catalog refresh in the background; the refresh still republishes systems and shows the failure toast. Added two App.test.jsx tests (navigation not gated on a pending refresh; failure toast still surfaces). E2E already intercepts raw.githubusercontent.com.
