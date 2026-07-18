@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -34,3 +34,4 @@ Kategorie-Mitgliedschaft zu prüfen — analog zur bereits vorhandenen
       weiterhin eine Kategorie-ID ist) bleiben grün
 
 ## Comments
+- instanceOf-Auswertung um Selbst-Scope-Fall erweitert: erkennt scope==eigene Entry-ID und sucht im eigenen Teilbaum nach childId anhand EFFEKTIVER (modifizierter) Kategorie-Mitgliedschaft (getEffectiveCategoryLinks), damit dynamisch (per category-add-Modifier) zugewiesene Blutlinien-Kategorien greifen. Analyse des echten Lexicanum-Katalogs: 14 von 422 instanceOf-Bedingungen folgen dem Selbst-Scope-Muster, verteilt auf 3 Vampir-Charaktereinträge (Vampire Lord, Vampire Count, Vampire Thrall), alle für Blutlinien (Blood Dragon/Necrarch/Strigoi). E2E gegen echte Katalogdaten verifiziert (WS 7->9 nur bei gewählter Blutlinie; ohne Fix bleibt 7 -> Bug reproduziert). Neuer verbatim-reduzierter Fixture + Test (modifierEvaluator.selfScope.test.js); Ergofarg-Tests und Gesamtsuite (653 Tests) grün.

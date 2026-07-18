@@ -18,6 +18,14 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
 - `characters-max-force.cat.xml` — Verbatim-Auszug aus
   `Lizardmen (6th definitive edition).cat`: die reale `forceEntry` „Red Host",
   unverändert samt der Heroes- und Characters-`categoryLink`s.
+- `vampire-selfscope-bloodline.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `Vampire Counts (6th definitive edition).cat` (abgerufen 2026-07-18): der reale
+  „Vampire Count"-`selectionEntry` (`6822-0110-a7c9-cbb0`) mit seinem realen
+  infoLink-Charakteristik-Modifier (WS +2), dessen `instanceOf`-Bedingung
+  `scope` == der **eigenen** Entry-ID trägt (Selbst-Scope-Idiom), sowie dem
+  realen `category-add`-Modifier, der die Blood-Dragon-Kategorie erst bei
+  gewählter Blutlinie zuweist. Unbeteiligte Sub-Gruppen wurden entfernt und die
+  Blutlinie als minimaler Upgrade-`selectionEntry` ergänzt (Details im Datei-Kopf).
 
 ## Wozu
 
@@ -26,6 +34,16 @@ kodieren vier IDs des neuen Datensatzes fest. Der Test extrahiert dieselben IDs
 aus diesen echten Auszügen und prüft, dass die Quirk-Funktionen sie korrekt
 verdrahten. Driften die hartkodierten IDs von den realen Katalog-IDs ab, schlägt
 der Test fehl.
+
+`vampire-selfscope-bloodline.cat.xml` verankert
+`src/solver/modifierEvaluator.selfScope.test.js`: Der Solver muss eine
+`instanceOf`-Bedingung, deren `scope` die eigene Entry-ID ist, als Suche im
+eigenen (Effektiv-Kategorie-)Teilbaum auswerten. Ohne diese Auswertung greift
+der Blutlinien-Charakteristik-Modifier nie. Von den **422** `instanceOf`-
+Bedingungen des echten Katalogs folgen **14** diesem Selbst-Scope-Muster,
+verteilt auf drei Vampir-Charaktereinträge (Vampire Lord, Vampire Count,
+Vampire Thrall); alle betreffen Blutlinien-Kategorien (Blood Dragon, Necrarch,
+Strigoi).
 
 `characters-max-force.cat.xml` belegt zusätzlich die strukturelle Voraussetzung
 des `inheritedCategoryMax`-Quirks: Die **Characters**-`categoryLink` trägt einen
