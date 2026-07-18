@@ -1,1 +1,1 @@
-/Users/artkoenig/.agents/AGENTS.md
+.agents/AGENTS.md
