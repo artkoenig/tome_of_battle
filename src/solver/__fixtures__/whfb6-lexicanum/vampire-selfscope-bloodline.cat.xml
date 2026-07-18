@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Verbatim-Auszug aus dem echten Lexicanum-Imperialis-Datensatz
+  (Vampire Counts (6th definitive edition).cat, gameSystemId 0d13-7737-ea86-4662,
+  abgerufen am 2026-07-18). Er belegt das Selbst-Scope-Idiom von instanceOf:
+
+  Der reale "Vampire Count"-selectionEntry (6822-0110-a7c9-cbb0) traegt am infoLink
+  einen Charakteristik-Modifier (WS +2), dessen instanceOf-Bedingung mit
+  scope == der eigenen Entry-ID (6822) und childId == der Blutlinien-Kategorie
+  "Blood Dragon" (4cae) gilt. Die Blood-Dragon-Kategorie wird der Einheit erst durch
+  einen category-add-Modifier zugewiesen, sobald die force-weite Blutlinien-Auswahl
+  "Bloodline of Clan Blood Dragon" (9fd9) getroffen ist. Ohne korrekte Selbst-Scope-
+  Auswertung findet die generische Kategorie-Mitgliedschaftspruefung diese
+  dynamische Kategorie nie und der WS-Modifier greift nie (siehe Issue 24/01).
+
+  Reduziert auf die tragenden Elemente: die realen Modifier/Bedingungen des Eintrags
+  bleiben unveraendert; unbeteiligte Sub-Gruppen (Mounts, Waffen, Magie) sind
+  entfernt und die Blutlinie als minimaler Upgrade-selectionEntry ergaenzt, damit sie
+  ohne den army-weiten Auswahlbaum selektierbar ist. Eingefroren (nicht auto-sync).
+-->
+<catalogue xmlns="http://www.battlescribe.net/schema/catalogueSchema" id="sscope-vc-min" name="Vampire Counts (self-scope excerpt)" revision="1" battleScribeVersion="2.03" library="false" gameSystemId="0d13-7737-ea86-4662" gameSystemRevision="1" type="catalogue"><categoryEntries><categoryEntry id="4cae-a20e-8374-b6cb" name="Blood Dragon" hidden="false" /></categoryEntries><sharedProfiles><profile id="fabd-ef67-72f5-6b3f" name="Vampire Count" hidden="false" typeId="a54a-7f00-29bf-12b1" typeName="Profile">
+      <characteristics>
+        <characteristic name="Mv" typeId="0e92-d038-82bf-fb41">6</characteristic>
+        <characteristic name="WS" typeId="f95b-da01-0578-3bdc">7</characteristic>
+        <characteristic name="BS" typeId="4a8b-0c8e-3daf-7901">5</characteristic>
+        <characteristic name="S" typeId="b690-4bc0-bb73-267b">5</characteristic>
+        <characteristic name="T" typeId="8712-f56f-5b22-a720">5</characteristic>
+        <characteristic name="W" typeId="253a-9b00-4fde-8ac2">3</characteristic>
+        <characteristic name="I" typeId="dfff-363e-f72a-5a59">7</characteristic>
+        <characteristic name="A" typeId="6b9f-c8fe-8998-27e3">4</characteristic>
+        <characteristic name="Ld" typeId="2d45-18fe-9eb3-b113">9</characteristic>
+        <characteristic name="Sv" typeId="f1be-e66c-d5e1-673c">7</characteristic>
+        <characteristic name="Sv+" typeId="d4a9-0ed4-d041-e54b">7</characteristic>
+        <characteristic name="US" typeId="fa44-51dd-e69c-8d6a">1</characteristic>
+        <characteristic name="Base" typeId="2cad-bb76-8a5a-1607">20x20</characteristic>
+      </characteristics>
+    </profile>
+    </sharedProfiles><sharedSelectionEntries><selectionEntry id="6822-0110-a7c9-cbb0" name="Vampire Count" type="unit" hidden="false"><infoLinks>
+        <infoLink id="a106-4a05-36ea-cb01" name="Vampire Count" hidden="false" targetId="fabd-ef67-72f5-6b3f" type="profile">
+          <modifierGroups>
+            <modifierGroup type="and">
+              <modifiers>
+                <modifier type="set" value="4+" field="f1be-e66c-d5e1-673c">
+                  <conditions>
+                    <condition type="instanceOf" value="0" field="selections" scope="6822-0110-a7c9-cbb0" childId="4cae-a20e-8374-b6cb" shared="true" percentValue="false" includeChildSelections="true" includeChildForces="false" />
+                  </conditions>
+                </modifier>
+                <modifier type="decrement" value="2" field="f95b-da01-0578-3bdc">
+                  <conditions>
+                    <condition type="instanceOf" value="0" field="selections" scope="6822-0110-a7c9-cbb0" childId="fc4b-a86d-5897-9e4c" shared="true" percentValue="false" includeChildSelections="true" includeChildForces="false" />
+                  </conditions>
+                </modifier>
+                <modifier type="set" value="5+" field="d4a9-0ed4-d041-e54b">
+                  <conditions>
+                    <condition type="instanceOf" value="1" field="selections" scope="6822-0110-a7c9-cbb0" childId="bf30-4ff0-a4d8-3909" shared="true" percentValue="false" includeChildSelections="true" includeChildForces="false" />
+                  </conditions>
+                </modifier>
+                <modifier type="increment" value="2" field="f95b-da01-0578-3bdc">
+                  <conditions>
+                    <condition type="instanceOf" value="0" field="selections" scope="6822-0110-a7c9-cbb0" childId="4cae-a20e-8374-b6cb" shared="true" percentValue="false" includeChildSelections="true" includeChildForces="false" />
+                  </conditions>
+                </modifier>
+                <modifier type="increment" value="1" field="6b9f-c8fe-8998-27e3">
+                  <conditions>
+                    <condition type="instanceOf" value="1" field="selections" scope="6822-0110-a7c9-cbb0" childId="bf30-4ff0-a4d8-3909" shared="true" percentValue="false" includeChildSelections="true" includeChildForces="false" />
+                  </conditions>
+                </modifier>
+              </modifiers>
+            </modifierGroup>
+          </modifierGroups>
+          <modifiers>
+            <modifier type="set" value="Vampire Countess" field="name">
+              <conditionGroups>
+                <conditionGroup type="or">
+                  <conditions>
+                    <condition type="instanceOf" value="1" field="selections" scope="force" childId="2102-34f1-c876-98c5" shared="true" includeChildSelections="true" />
+                    <condition type="atLeast" value="1" field="selections" scope="force" childId="4f07-e982-6665-70b7" shared="true" includeChildSelections="true" />
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+            </modifier>
+          </modifiers>
+        </infoLink>
+      </infoLinks>
+      <categoryLinks>
+        <categoryLink id="a707-fa03-c001-c040" name="Lord" hidden="false" targetId="d024-d25b-a9b4-73b6" primary="true" />
+        <categoryLink id="a790-7e28-f678-2eb4" name="Characters" hidden="false" targetId="7a1c-d611-c2dc-def1" primary="false" />
+        <categoryLink name="Vampire" hidden="false" id="f398-ef23-f63b-4aa6" targetId="017d-3857-a815-782f" primary="false" />
+      </categoryLinks>
+      <costs>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="205" />
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0" />
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0" />
+      </costs>
+      <modifiers>
+        <modifier type="set" value="true" field="hidden">
+          <conditionGroups>
+            <conditionGroup type="or">
+              <conditions>
+                <condition type="instanceOf" value="1" field="selections" scope="force" childId="d3af-1add-4e99-b977" shared="true" includeChildSelections="true" />
+                <condition type="instanceOf" value="1" field="selections" scope="force" childId="bf46-ee85-7c10-ba98" shared="true" includeChildSelections="true" childName="Vampire Coast (WD#306-UK)" />
+              </conditions>
+            </conditionGroup>
+          </conditionGroups>
+        </modifier>
+        <modifier type="set" value="Vampire Countess" field="name">
+          <conditionGroups>
+            <conditionGroup type="or">
+              <conditions>
+                <condition type="instanceOf" value="1" field="selections" scope="force" childId="2102-34f1-c876-98c5" shared="true" includeChildSelections="true" />
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="4f07-e982-6665-70b7" shared="true" includeChildSelections="true" />
+              </conditions>
+            </conditionGroup>
+          </conditionGroups>
+        </modifier>
+      </modifiers>
+      <modifierGroups>
+        <modifierGroup type="and">
+          <comment>BLOODLINE</comment>
+          <modifierGroups>
+            <modifierGroup type="and">
+              <modifiers>
+                <modifier type="remove" value="bf30-4ff0-a4d8-3909" field="category" />
+                <modifier type="add" value="4cae-a20e-8374-b6cb" field="category" />
+                <modifier type="remove" value="c872-4b18-1aad-6953" field="category" />
+                <modifier type="remove" value="fc4b-a86d-5897-9e4c" field="category" />
+                <modifier type="remove" value="ff24-ca11-afd5-865b" field="category" />
+                <modifier type="append" value="of Clan Blood Dragon" field="name" join=" " />
+              </modifiers>
+              <comment>Main Bloodline: Blood Dragon</comment>
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="9fd9-e05c-ffcb-2c4d" shared="true" includeChildSelections="true" />
+              </conditions>
+            </modifierGroup>
+            <modifierGroup type="and">
+              <modifiers>
+                <modifier type="remove" value="bf30-4ff0-a4d8-3909" field="category" />
+                <modifier type="remove" value="4cae-a20e-8374-b6cb" field="category" />
+                <modifier type="add" value="c872-4b18-1aad-6953" field="category" />
+                <modifier type="remove" value="fc4b-a86d-5897-9e4c" field="category" />
+                <modifier type="remove" value="ff24-ca11-afd5-865b" field="category" />
+                <modifier type="append" value="of Clan Lahmia" field="name" join=" " />
+              </modifiers>
+              <comment>Main Bloodline: Lahmia</comment>
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="4f07-e982-6665-70b7" shared="true" includeChildSelections="true" />
+              </conditions>
+            </modifierGroup>
+            <modifierGroup type="and">
+              <modifiers>
+                <modifier type="add" value="bf30-4ff0-a4d8-3909" field="category" />
+                <modifier type="remove" value="4cae-a20e-8374-b6cb" field="category" />
+                <modifier type="remove" value="c872-4b18-1aad-6953" field="category" />
+                <modifier type="remove" value="fc4b-a86d-5897-9e4c" field="category" />
+                <modifier type="remove" value="ff24-ca11-afd5-865b" field="category" />
+                <modifier type="append" value="of Clan Strigoi" field="name" join=" " />
+              </modifiers>
+              <comment>Main Bloodline: Strigoi</comment>
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="ddfa-0d72-8557-6906" shared="true" includeChildSelections="true" />
+              </conditions>
+            </modifierGroup>
+            <modifierGroup type="and">
+              <modifiers>
+                <modifier type="remove" value="bf30-4ff0-a4d8-3909" field="category" />
+                <modifier type="remove" value="4cae-a20e-8374-b6cb" field="category" />
+                <modifier type="remove" value="c872-4b18-1aad-6953" field="category" />
+                <modifier type="add" value="fc4b-a86d-5897-9e4c" field="category" />
+                <modifier type="remove" value="ff24-ca11-afd5-865b" field="category" />
+                <modifier type="append" value="of Clan Necrarch" field="name" join=" " />
+              </modifiers>
+              <comment>Main Bloodline: Necrarch</comment>
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="5017-296d-edef-4562" shared="true" includeChildSelections="true" />
+              </conditions>
+            </modifierGroup>
+            <modifierGroup type="and">
+              <modifiers>
+                <modifier type="remove" value="bf30-4ff0-a4d8-3909" field="category" />
+                <modifier type="remove" value="4cae-a20e-8374-b6cb" field="category" />
+                <modifier type="remove" value="c872-4b18-1aad-6953" field="category" />
+                <modifier type="remove" value="fc4b-a86d-5897-9e4c" field="category" />
+                <modifier type="add" value="ff24-ca11-afd5-865b" field="category" />
+                <modifier type="append" value="of Clan Von Carstein" field="name" join=" " />
+              </modifiers>
+              <comment>Main Bloodline: Von Carstein</comment>
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="f557-097a-d26b-9363" shared="true" includeChildSelections="true" />
+              </conditions>
+            </modifierGroup>
+          </modifierGroups>
+        </modifierGroup>
+      </modifierGroups>
+    <selectionEntries><selectionEntry id="9fd9-e05c-ffcb-2c4d" name="Bloodline of Clan Blood Dragon" type="upgrade" hidden="false" /></selectionEntries></selectionEntry></sharedSelectionEntries></catalogue>
