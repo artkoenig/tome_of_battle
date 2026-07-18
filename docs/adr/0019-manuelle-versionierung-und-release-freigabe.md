@@ -11,7 +11,7 @@ Mit der Umstellung auf manuelles Promoten in Vercel (automatisches Deployment be
 
 ## Entscheidungsergebnis
 
-`package.json` wird zur Single Source of Truth für die angezeigte App-Version. Nach dem Merge eines Hauptissues vom Typ `feature`/`fix` schlägt der Agent eine neue Version vor (Patch bei `fix`, Minor bei `feature`); der Nutzer bestätigt, überschreibt sie, oder lässt die Version unverändert. Bei Bestätigung wird `package.json` aktualisiert, ein Git-Tag `vX.Y.Z` auf genau diesem `main`-Commit gesetzt und beides gepusht — als ein einziger, explizit freigegebener Vorgang.
+`package.json` wird zur Single Source of Truth für die angezeigte App-Version. Vor dem Merge eines Hauptissues vom Typ `feature`/`fix` schlägt der Agent eine neue Version vor (Patch bei `fix`, Minor bei `feature`); der Nutzer bestätigt, überschreibt sie, oder lässt die Version unverändert. Bei Bestätigung wird `package.json` noch auf dem `issue/<slug>`-Branch aktualisiert und committet, sodass der Versions-Bump Teil des PRs ist und über den Squash-Merge automatisch in denselben `main`-Commit wandert. Ein direkter Push auf `main` findet dabei nie statt — der `pre-push`-Hook lehnt das kategorisch ab, unabhängig vom Zweck. Erst nach dem Merge wird auf dem aktualisierten `main` der Git-Tag `vX.Y.Z` gesetzt und ausschließlich dieser Tag gepusht (`git push origin vX.Y.Z`), was den Hook nicht betrifft, da er nur Branch-Refs prüft.
 
 Git-Tags dienen weiterhin als historische Marker für die Commit-Diff-Release-Notes (siehe Issue 03), aber nicht mehr als Quelle für die Versionsberechnung selbst.
 
