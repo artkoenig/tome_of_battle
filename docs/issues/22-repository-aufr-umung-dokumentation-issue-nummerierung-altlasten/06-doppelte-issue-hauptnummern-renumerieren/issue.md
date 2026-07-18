@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -25,3 +25,4 @@ im Git-Verlauf entstandene.
       auf die alten, jetzt umbenannten Verzeichnisnamen
 
 ## Comments
+- Doppelte Hauptnummern aufgeloest: die jeweils spaeter entstandenen Duplikat-Verzeichnisse per git mv auf die naechsten freien Nummern umbenannt (15-github-issue-triage -> 23, 17-whfb6-link-toggle -> 24, 19-battlescribe-xsd-konformitaet -> 25, 20-adr-0007-0008-veraltete-auto-deploy-beschreibung-korrigieren -> 26, 17-whfb6-lexicanum-data-source -> 27). Stale Pfad-Verweis im Child 25-.../12-... auf issue.md des Parents aktualisiert. Jede Hauptnummer kommt jetzt genau einmal vor.
