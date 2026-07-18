@@ -64,7 +64,7 @@ User Story 4; ADR 0016 braucht dafür einen Revisionseintrag, ebenso Issue
 - **`docs/adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md`**:
   Revisionseintrag ergänzen (Sichtbarkeit der Advisory-Warnung: UI-Box →
   Konsolen-Log; Begründung: Flash-Bug beim Erstimport, siehe oben).
-- **`docs/issues/19-battlescribe-xsd-konformitaet/issue.md`**: User Story 4
+- **`docs/issues/25-battlescribe-xsd-konformitaet/issue.md`**: User Story 4
   um einen Revisionshinweis ergänzen (Warnung wird geloggt, nicht mehr in der
   UI angezeigt) statt sie kommentarlos zu löschen — gleiches Muster wie beim
   bestehenden Hard-Gate→Advisory-Revisionshinweis in derselben Datei.
