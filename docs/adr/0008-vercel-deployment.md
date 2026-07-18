@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Datum:** 2026-07-13
 - **Beteiligte:** Entwickler, KI-Assistenten
-- **Zugehörige ADRs:** [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0009: Branching and Release Strategy (Trunk-based)](0009-branching-and-release-train-strategy.md)
+- **Zugehörige ADRs:** [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0009: Branching and Release Strategy (Trunk-based)](0009-branching-and-release-train-strategy.md), [ADR 0019: Manuelle Versionierung und Release-Freigabe](0019-manuelle-versionierung-und-release-freigabe.md)
 
 ## Kontext und Problemstellung
 
@@ -26,10 +26,15 @@ Gewählte Option: **Option 2 (Native Vercel-GitHub-Integration)**.
 
 Folgende Richtlinien und Mechanismen wurden etabliert:
 
-### 1. Umgebungs-Mapping
-Das Deployment erfolgt vollautomatisch über die native Vercel-GitHub-Integration:
-- **Push auf `main`:** Löst ein Production-Deployment aus (Live-App).
-- **Push auf andere Branches / PRs:** Löst ein Preview-Deployment mit dynamischer URL aus.
+### 1. Umgebungs-Mapping — Freigabe seit ADR 0019 manuell
+Vercel baut weiterhin automatisch bei jedem Push über die native
+GitHub-Integration:
+- **Push auf `main`:** Löst ein Production-**Deployment** aus, aber seit
+  [ADR 0019](0019-manuelle-versionierung-und-release-freigabe.md) **keine
+  automatische Freigabe mehr**. Die Production-Domain wird erst durch
+  manuelles Promoten des gewünschten Deployments in Vercel aktualisiert.
+- **Push auf andere Branches / PRs:** Löst weiterhin ein Preview-Deployment
+  mit dynamischer URL aus.
 - Der Git-Zweig `staging` wird komplett gelöscht.
 
 ### 2. Visuelle Umgebungserkennung (Badge)
@@ -45,4 +50,4 @@ Der Build-Prozess (`scripts/deployEnv.js`) bestimmt die Umgebung:
   - Extrem einfaches Setup ohne zusätzliche Pipeline-Schritte oder Secrets.
   - Vercel übernimmt die gesamte Orchestrierung nativ.
 - **Negativ:**
-  - Pushes auf `main` sind sofort live; es gibt keine tagbasierte Freigabeschranke mehr. Daher ist eine solide Testabdeckung in der CI unerlässlich.
+  - *(Ursprünglich, bis [ADR 0019](0019-manuelle-versionierung-und-release-freigabe.md)):* Pushes auf `main` waren sofort live, ohne Freigabeschranke. Seit ADR 0019 wird jedes Production-Deployment erst durch manuelles Promoten live geschaltet — eine solide Testabdeckung in der CI bleibt trotzdem unerlässlich, da sie vor dem Promoten die einzige automatisierte Absicherung ist.
