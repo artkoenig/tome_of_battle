@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -18,3 +18,4 @@ Projektregeln liegen bereits real und getrackt in `.agents/AGENTS.md`.
       CLAUDE.md") funktioniert wieder
 
 ## Comments
+- CLAUDE.md von totem absolutem Symlink (/Users/artkoenig/.agents/AGENTS.md) auf relativen Symlink .agents/AGENTS.md umgestellt; portabel in allen Umgebungen.
