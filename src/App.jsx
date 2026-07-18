@@ -370,7 +370,6 @@ export default function App() {
           <img src="/favicon.png" className="logo-icon" alt="Tome of Battle Logo" />
           <div className="logo-title-group">
             <span className="logo-text">TOME OF BATTLE</span>
-            <span className="font-body text-dim text-micro" style={{ opacity: 0.7 }}>{import.meta.env.VITE_APP_VERSION}</span>
           </div>
           <EnvBadge />
         </div>

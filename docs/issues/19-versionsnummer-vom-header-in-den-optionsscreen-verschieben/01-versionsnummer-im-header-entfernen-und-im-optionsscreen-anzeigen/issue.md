@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -27,3 +27,4 @@ entfällt dort. Bestehende Tests, die die Versionsnummer im Header prüfen
       grün.
 
 ## Comments
+- Versionszeile aus dem Header (src/App.jsx) entfernt und dezent im Einstellungsdialog (src/components/SettingsDialog.jsx) als 'Version <VITE_APP_VERSION>'-Zeile im text-dim/text-micro-Stil ergaenzt (.settings-version in index.css). Update-Toast/getDiffChanges bleibt unveraendert. Tests fuer beide Dateien angepasst; 15 gruen.
