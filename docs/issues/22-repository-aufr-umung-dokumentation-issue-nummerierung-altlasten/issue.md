@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -55,3 +55,4 @@ im Issue-Tracker sowie nicht mehr benötigte bzw. fehlplatzierte Dateien.
       beim Nutzer).
 
 ## Comments
+- Vier-Achsen-Verifikation (/testing) durchlaufen: Standards (oxlint gruen, 6 vorbestehende Code-Smell-Funde ausserhalb des Scopes), Spezifikation (alle Akzeptanzkriterien erfuellt, 1 harmloser Nebenfund package-lock.json-Versionsfeld), Tests (Vitest 61/61 Dateien, 646/646 gruen; Puppeteer-E2E-Flakiness nachweislich umgebungsbedingt, reproduziert identisch auf frischem origin/main ohne diesen Diff), Docs (0 Funde, vollstaendig konsistent). Keine blockierenden Befunde.
