@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -14,3 +14,4 @@ eine persönliche Konfiguration eines fremden KI-Tools ohne Projektbezug.
 - [ ] `git status` zeigt die Datei danach nicht mehr als getrackt
 
 ## Comments
+- Removed .antigravity/config.json from git tracking via git rm --cached; file stays on disk and is now honored by the existing .gitignore rule.
