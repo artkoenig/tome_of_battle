@@ -240,9 +240,11 @@ export default function UnitSelectionCard({
             </span>
           </div>
           <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span className="selection-node-cost font-body">
-              {displayPoints} {costTypeLabel}
-            </span>
+            {displayPoints > 0 && (
+              <span className="selection-node-cost font-body">
+                {displayPoints} {costTypeLabel}
+              </span>
+            )}
             <button
               type="button"
               className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
