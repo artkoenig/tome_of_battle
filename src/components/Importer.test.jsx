@@ -962,15 +962,17 @@ describe('Importer Component', () => {
       fetchSpy?.mockRestore();
     });
 
-    it('lists both sources together in one dropdown with their disambiguating labels', async () => {
+    it('lists both sources together in one dropdown under their real catalog names', async () => {
+      const ergofargName = 'Warhammer Fantasy Battle 6th edition';
+      const lexicanumName = 'Warhammer Fantasy Battles (6th definitive edition)';
       const ergofargIndex = {
         repositoryFiles: [
-          { id: ERGOFARG_SYSTEM_ID, name: 'Warhammer Fantasy Battle 6th edition', type: 'gamesystem', revision: 1 },
+          { id: ERGOFARG_SYSTEM_ID, name: ergofargName, type: 'gamesystem', revision: 1 },
         ],
       };
       const lexicanumIndex = {
         repositoryFiles: [
-          { id: LEXICANUM_SYSTEM_ID, name: 'Warhammer Fantasy Battles (6th definitive edition)', type: 'gamesystem', revision: 1 },
+          { id: LEXICANUM_SYSTEM_ID, name: lexicanumName, type: 'gamesystem', revision: 1 },
         ],
       };
       fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
@@ -983,13 +985,14 @@ describe('Importer Component', () => {
 
       render(<Importer showAsEmptyState={false} />);
 
+      // Each system is shown under its own catalog name (Child-Issue 10): the real
+      // `.gst` name, with no short label and no source qualifier appended.
       await waitFor(() => {
-        expect(screen.getByRole('option', { name: 'WHFB 6th ed. (Ergofarg)' })).toBeDefined();
+        expect(screen.getByRole('option', { name: ergofargName })).toBeDefined();
       });
-      expect(screen.getByRole('option', { name: 'WHFB 6th ed. (Lexicanum)' })).toBeDefined();
-      // The confusable raw system names are never shown to the user.
-      expect(screen.queryByText('Warhammer Fantasy Battle 6th edition')).toBeNull();
-      expect(screen.queryByText('Warhammer Fantasy Battles (6th definitive edition)')).toBeNull();
+      expect(screen.getByRole('option', { name: lexicanumName })).toBeDefined();
+      expect(screen.queryByText(/WHFB 6th ed\./)).toBeNull();
+      expect(screen.queryByText(/\(Ergofarg\)|\(Lexicanum\)/)).toBeNull();
     });
 
     it('imports the selected source from its own raw base URL', async () => {
@@ -1026,19 +1029,20 @@ describe('Importer Component', () => {
       expect(requestedFileHosts.some((url) => url.includes('Kislev.cat'))).toBe(true);
     });
 
-    it('shows the source-unique label for a stored system instead of its confusable raw name', async () => {
+    it('shows a stored system under its real catalog name, with no short label (Child-Issue 10)', async () => {
       // Uses the outer beforeEach's empty-index fetch stub: no dropdown systems, so the
-      // asserted label can only come from the imported-systems list.
+      // asserted name can only come from the imported-systems list.
+      const ergofargName = 'Warhammer Fantasy Battle 6th edition';
       getAllSystems.mockResolvedValue([
-        { id: ERGOFARG_SYSTEM_ID, name: 'Warhammer Fantasy Battle 6th edition', catalogues: [] },
+        { id: ERGOFARG_SYSTEM_ID, name: ergofargName, catalogues: [] },
       ]);
 
       render(<Importer showAsEmptyState={false} />);
 
       await waitFor(() => {
-        expect(screen.getByText('WHFB 6th ed. (Ergofarg)')).toBeDefined();
+        expect(screen.getByText(ergofargName)).toBeDefined();
       });
-      expect(screen.queryByText('Warhammer Fantasy Battle 6th edition')).toBeNull();
+      expect(screen.queryByText(/WHFB 6th ed\./)).toBeNull();
     });
   });
 });

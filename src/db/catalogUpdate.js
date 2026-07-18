@@ -13,35 +13,32 @@ const CATPKG_INDEX_FILE_NAME = 'catpkg.json';
 
 /**
  * Completes a catalog source descriptor by deriving its index URL from the raw base
- * URL, so the two never drift apart. A source is `{ gameSystemId, label, rawBaseUrl,
- * indexUrl }`; `gameSystemId` is the stable BattleScribe id that also keys a stored
- * system back to its source (ADR 0016 — no separate database field needed).
+ * URL, so the two never drift apart. A source is `{ gameSystemId, rawBaseUrl, indexUrl }`;
+ * `gameSystemId` is the stable BattleScribe id that also keys a stored system back to its
+ * source (ADR 0016 — no separate database field needed). No display label is carried: a
+ * system is shown under its own catalog `name`, so the source is a pure fetch-origin
+ * descriptor.
  */
-function defineCatalogSource({ gameSystemId, label, rawBaseUrl }) {
+function defineCatalogSource({ gameSystemId, rawBaseUrl }) {
   return Object.freeze({
     gameSystemId,
-    label,
     rawBaseUrl,
     indexUrl: `${rawBaseUrl}${CATPKG_INDEX_FILE_NAME}`,
   });
 }
 
 /**
- * The catalog sources offered in parallel (ADR 0016). The short, source-unique labels
- * disambiguate the two near-identical upstream system names ("Warhammer Fantasy Battle
- * 6th edition" vs. "Warhammer Fantasy Battles (6th definitive edition)"), which are
- * otherwise easy to confuse. A further source is added by appending an entry here,
- * without touching any branching logic (Open/Closed).
+ * The catalog sources offered in parallel (ADR 0016). Each source maps a stable game
+ * system id to the fork the system's files are fetched from. A further source is added by
+ * appending an entry here, without touching any branching logic (Open/Closed).
  */
 export const CATALOG_SOURCES = Object.freeze([
   defineCatalogSource({
     gameSystemId: '6d8e-38d9-3c69-febf',
-    label: 'WHFB 6th ed. (Ergofarg)',
     rawBaseUrl: 'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/',
   }),
   defineCatalogSource({
     gameSystemId: '0d13-7737-ea86-4662',
-    label: 'WHFB 6th ed. (Lexicanum)',
     rawBaseUrl:
       'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition/main/',
   }),
@@ -54,17 +51,6 @@ export const CATALOG_SOURCES = Object.freeze([
  */
 export function findCatalogSourceForSystemId(gameSystemId) {
   return CATALOG_SOURCES.find((source) => source.gameSystemId === gameSystemId) ?? null;
-}
-
-/**
- * The short, source-unique display label for a game system id (e.g.
- * "WHFB 6th ed. (Ergofarg)"). A system id that belongs to no configured source falls
- * back to the given name — so a self-uploaded or legacy system still shows a sensible
- * label rather than nothing.
- */
-export function resolveSystemDisplayLabel(gameSystemId, fallbackName) {
-  const source = findCatalogSourceForSystemId(gameSystemId);
-  return source ? source.label : fallbackName;
 }
 
 // catpkg `type` values as emitted by BSData/publish-catpkg (lower case).

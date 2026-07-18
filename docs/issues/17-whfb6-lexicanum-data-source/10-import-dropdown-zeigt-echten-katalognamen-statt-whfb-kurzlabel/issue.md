@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -49,3 +49,4 @@ funktionsfähig — nur die für Nutzer sichtbare Beschriftung ändert sich.
   Anzeigen (Roster-Editor-Kopfzeile, Armeeliste) bleiben unverändert korrekt.
 
 ## Comments
+- Import-Dialog zeigt jetzt den echten Katalognamen (sys.name) statt des WHFB-Kurzlabels; beide Anzeige-Aufrufe in Importer.jsx nutzen sys.name ohne Quellzusatz. Das nur fuer die Anzeige genutzte resolveSystemDisplayLabel und das CATALOG_SOURCES[].label-Feld wurden als tot entfernt (YAGNI); der Laufzeit-Update-Pfad ueber findCatalogSourceForSystemId/rawBaseUrl bleibt unveraendert. Tests entsprechend invertiert; volle Suite gruen.

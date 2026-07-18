@@ -11,7 +11,6 @@ import {
   fetchCatalogText,
   buildRawFileUrl,
   deriveRevisionState,
-  resolveSystemDisplayLabel,
   CATALOG_SOURCES,
   REVISION_STATE,
 } from '../db/catalogUpdate';
@@ -207,9 +206,9 @@ export function transformIndexToSystems(index) {
 
 /**
  * Tags every system parsed from one source's index with that source's `rawBaseUrl`, so
- * the import later fetches its files from the right fork (ADR 0016). The display label
- * is not stored here — it is derived on render from the system id via
- * `resolveSystemDisplayLabel`, keeping the label a single source of truth.
+ * the import later fetches its files from the right fork (ADR 0016). No display label is
+ * stored or derived: the system is shown under its own catalog `name`, straight from the
+ * parsed index.
  */
 function withSourceRawBaseUrl(systems, rawBaseUrl) {
   return systems.map(system => ({ ...system, rawBaseUrl }));
@@ -496,7 +495,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
             disabled={loading}
           >
             {availableSystems.map(sys => (
-              <option key={sys.id} value={sys.id}>{resolveSystemDisplayLabel(sys.id, sys.name)}</option>
+              <option key={sys.id} value={sys.id}>{sys.name}</option>
             ))}
           </select>
         </div>
@@ -626,7 +625,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                     <FileText className="text-gold" size={24} style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <h4 style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                        {resolveSystemDisplayLabel(sys.id, sys.name)}
+                        {sys.name}
                       </h4>
                       <span className="text-dim" style={{ fontSize: '0.85rem' }}>
                         {sys.catalogues?.length || 0} Fraktionskataloge geladen

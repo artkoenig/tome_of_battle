@@ -8,7 +8,6 @@ import {
   loadCatalogIndex,
   clearCatalogIndexCache,
   findCatalogSourceForSystemId,
-  resolveSystemDisplayLabel,
   CATALOG_SOURCES,
   REVISION_STATE,
 } from './catalogUpdate';
@@ -129,11 +128,10 @@ describe('CATALOG_SOURCES (ADR 0016 — Ergofarg and Lexicanum in parallel)', ()
     }
   });
 
-  test('carries the short, source-unique disambiguating labels', () => {
-    expect(CATALOG_SOURCES.map((source) => source.label)).toEqual([
-      'WHFB 6th ed. (Ergofarg)',
-      'WHFB 6th ed. (Lexicanum)',
-    ]);
+  test('is a pure fetch-origin descriptor: no display label is carried', () => {
+    for (const source of CATALOG_SOURCES) {
+      expect(source).not.toHaveProperty('label');
+    }
   });
 
   test('the Lexicanum source keeps the ADR-0015 raw base', () => {
@@ -143,29 +141,14 @@ describe('CATALOG_SOURCES (ADR 0016 — Ergofarg and Lexicanum in parallel)', ()
 });
 
 describe('findCatalogSourceForSystemId', () => {
-  test('resolves a configured game system id to its source', () => {
-    expect(findCatalogSourceForSystemId(ERGOFARG_SYSTEM_ID).label).toBe('WHFB 6th ed. (Ergofarg)');
-    expect(findCatalogSourceForSystemId(LEXICANUM_SYSTEM_ID).label).toBe('WHFB 6th ed. (Lexicanum)');
+  test('resolves a configured game system id to its fetch source', () => {
+    expect(findCatalogSourceForSystemId(ERGOFARG_SYSTEM_ID).gameSystemId).toBe(ERGOFARG_SYSTEM_ID);
+    expect(findCatalogSourceForSystemId(LEXICANUM_SYSTEM_ID).rawBaseUrl).toBe(FORK_RAW_BASE_URL);
   });
 
   test('returns null for a system id no source owns', () => {
     expect(findCatalogSourceForSystemId('unknown-system')).toBeNull();
     expect(findCatalogSourceForSystemId(undefined)).toBeNull();
-  });
-});
-
-describe('resolveSystemDisplayLabel', () => {
-  test('returns the source label for a configured system id, ignoring the raw name', () => {
-    expect(resolveSystemDisplayLabel(ERGOFARG_SYSTEM_ID, 'Warhammer Fantasy Battle 6th edition')).toBe(
-      'WHFB 6th ed. (Ergofarg)'
-    );
-    expect(
-      resolveSystemDisplayLabel(LEXICANUM_SYSTEM_ID, 'Warhammer Fantasy Battles (6th definitive edition)')
-    ).toBe('WHFB 6th ed. (Lexicanum)');
-  });
-
-  test('falls back to the given name for a system id no source owns', () => {
-    expect(resolveSystemDisplayLabel('custom-system', 'My Own System')).toBe('My Own System');
   });
 });
 
