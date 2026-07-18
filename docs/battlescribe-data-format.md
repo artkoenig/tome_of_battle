@@ -310,8 +310,20 @@ Die `categoryLink`s tragen häufig **dynamische Grenzen** über `modifier`s: In 
 erlaubten Lord-/Core-Slots mit dem Punktelimit. Genau das zeigt das Beispiel in
 [§7.7](#77-modifier-condition-condition-group-repeat).
 
+> **Zwei Orte für Force-Kategoriegrenzen.** Eine force-weite Kategoriegrenze kann an **zwei**
+> Stellen deklariert sein, und beide müssen bei der Validierung berücksichtigt werden:
+> 1. Am **`categoryLink`** innerhalb des `forceEntry` (das oben gezeigte, klassische Muster).
+> 2. Direkt an der **`categoryEntry`-Definition** ([§5.5](#55-category-entries-kategorien)) als
+>    `constraint` mit `scope="force"` (inkl. punkteskalierender `modifier`). Diese Grenze gilt dann
+>    für die Kategorie **in jeder Force**, ohne dass sie am `categoryLink` wiederholt werden muss.
+>    Der Lexicanum-WHFB6-Datensatz nutzt genau diese Variante für die Charaktergrenzen (die
+>    Characters-`categoryEntry` trägt die punkteskalierende `scope="force"`-Grenze, während die
+>    Heroes-Kategorie `max="-1"` = unbegrenzt setzt). Eine Auswertung, die nur `categoryLink`-Grenzen
+>    liest, würde diese Limits still nicht durchsetzen.
+
 > **Regeln zur Auswertung:**
-> - `scope="force"`-Constraints zählen **pro Detachment**, nicht armeeweit.
+> - `scope="force"`-Constraints zählen **pro Detachment**, nicht armeeweit — unabhängig davon, ob
+>   sie am `categoryLink` oder an der `categoryEntry`-Definition hängen.
 > - Force Entries können **sowohl im Game System (`.gst`) als auch im einzelnen Katalog (`.cat`)**
 >   deklariert sein — beim Erstellen einer Liste müssen **beide Quellen** berücksichtigt werden.
 > - Ein `forceEntry` bzw. `categoryLink` mit `hidden="true"` (oder dynamisch per Modifier
@@ -1009,7 +1021,7 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | **Modifier** | Ändert eine Eigenschaft oder einen Constraint-Wert; ggf. bedingt/wiederholend. |
 | **Condition / Condition Group** | Voraussetzung(en) für einen Modifier; `and`/`or`-Verknüpfung. |
 | **Repeat** | Wendet einen Modifier mehrfach an (z. B. pro 1000 Punkte). |
-| **Force Entry** | Detachment/Bataillon; legt per `categoryLink` fest, welche Kategorien erlaubt sind. |
+| **Force Entry** | Detachment/Bataillon; legt per `categoryLink` fest, welche Kategorien erlaubt sind. Force-weite Kategoriegrenzen können am `categoryLink` **oder** direkt an der `categoryEntry`-Definition (`scope="force"`) hängen (siehe [§5.6](#56-force-entries-detachments)). |
 | **Collective** | Flag zur Gruppierung/Synchronisierung identischer Auswahlen. |
 | **`.bsr`** | Repository-Distribution (ZIP mit Index + Katalogen + Game System). |
 

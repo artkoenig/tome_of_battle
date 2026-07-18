@@ -51,7 +51,12 @@ function checkRosterCostLimit(roster, system, errors) {
   }
 }
 
-/** Min/Max-Limits der Kategorie-Links eines Kontingents prüfen (pro Force, nicht armeeweit). */
+// Constraint-Scope, unter dem eine Kategoriegrenze für das gesamte Kontingent gilt.
+const FORCE_SCOPE = 'force';
+// Synthetische ID des per System-Quirk von einer anderen Kategorie geerbten max-Constraints.
+const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
+
+/** Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit). */
 function checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors }) {
   const { selectionCounts, categoryCounts } = counts;
 
@@ -66,50 +71,84 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
     const catDef = system.categoryEntries?.find(ce => ce.id === targetCatId);
     const catName = catDef ? catDef.name : catLink.name;
     const count = forceCategoryCounts[targetCatId] || 0;
+    const ctx = { roster, selectionCounts, forceCategoryCounts, force, system };
 
-    const constraintsToValidate = [...(catLink.constraints || [])];
+    // 1. Constraints am categoryLink (samt Quirk-geerbtem max), Modifier vom Link.
+    collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId }).forEach(con =>
+      evaluateForceCategoryConstraint({
+        con,
+        modifiers: con.isFallback ? con.modifiers : getEffectiveModifiers(catLink),
+        count, catName, forceDef, force, targetCatId, ctx, errors
+      })
+    );
 
-    // System-Quirk: Kategorie erbt einen fehlenden max-Constraint von einer anderen Kategorie
-    const inheritFromCatId = getInheritedCategoryMaxSource(system, targetCatId);
-    if (inheritFromCatId && !constraintsToValidate.some(c => c.type === 'max')) {
-      const sourceCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === inheritFromCatId);
-      const sourceMaxCon = sourceCatLink?.constraints?.find(c => c.type === 'max');
-      if (sourceMaxCon) {
-        constraintsToValidate.push({
-          ...sourceMaxCon,
-          id: 'quirk-inherited-max',
-          type: 'max',
-          isFallback: true,
-          modifiers: getEffectiveModifiers(sourceCatLink)
-        });
-      }
-    }
-
-    constraintsToValidate.forEach(con => {
-      const ctx = { roster, selectionCounts, forceCategoryCounts, force, system };
-      const finalValue = getModifiedConstraintValue(con, con.isFallback ? con.modifiers : getEffectiveModifiers(catLink), ctx);
-      if (finalValue < 0) return;
-
-      if (con.type === 'min' && count < finalValue) {
-        errors.push({
-          type: 'category-min',
-          forceId: force.id,
-          categoryId: targetCatId,
-          message: `Mindestens ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} benötigt (aktuell: ${count}).`,
-          severity: 'error'
-        });
-      }
-      if (con.type === 'max' && count > finalValue) {
-        errors.push({
-          type: 'category-max',
-          forceId: force.id,
-          categoryId: targetCatId,
-          message: `Maximal ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} erlaubt (aktuell: ${count}).`,
-          severity: 'error'
-        });
-      }
-    });
+    // 2. Force-weite Constraints direkt an der categoryEntry-Definition (neuer
+    //    Lexicanum-Datensatz), Modifier von der categoryEntry. Der alte Datensatz
+    //    deklariert hier nichts mit force-Scope, bleibt also unberührt.
+    collectCategoryEntryForceConstraints(catDef).forEach(con =>
+      evaluateForceCategoryConstraint({
+        con,
+        modifiers: getEffectiveModifiers(catDef),
+        count, catName, forceDef, force, targetCatId, ctx, errors
+      })
+    );
   });
+}
+
+/** Constraints am categoryLink, ergänzt um den per System-Quirk geerbten max-Constraint. */
+function collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId }) {
+  const constraints = [...(catLink.constraints || [])];
+
+  // System-Quirk: Kategorie erbt einen fehlenden max-Constraint von einer anderen Kategorie.
+  const inheritFromCatId = getInheritedCategoryMaxSource(system, targetCatId);
+  if (inheritFromCatId && !constraints.some(c => c.type === 'max')) {
+    const sourceCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === inheritFromCatId);
+    const sourceMaxCon = sourceCatLink?.constraints?.find(c => c.type === 'max');
+    if (sourceMaxCon) {
+      constraints.push({
+        ...sourceMaxCon,
+        id: QUIRK_INHERITED_MAX_ID,
+        type: 'max',
+        isFallback: true,
+        modifiers: getEffectiveModifiers(sourceCatLink)
+      });
+    }
+  }
+  return constraints;
+}
+
+/**
+ * Force-weite Constraints, die direkt an der categoryEntry-Definition hängen.
+ * Diese modellieren native Kategoriegrenzen des neuen Datensatzes und wurden von
+ * der reinen categoryLink-Auswertung bisher übersehen.
+ */
+function collectCategoryEntryForceConstraints(catDef) {
+  return (catDef?.constraints || []).filter(con => con.scope === FORCE_SCOPE);
+}
+
+/** Einen einzelnen Kategorie-Constraint gegen den aktuellen Kategorie-Count prüfen. */
+function evaluateForceCategoryConstraint({ con, modifiers, count, catName, forceDef, force, targetCatId, ctx, errors }) {
+  const finalValue = getModifiedConstraintValue(con, modifiers, ctx);
+  if (finalValue < 0) return; // z. B. max="-1": die Kategorie ist unbegrenzt.
+
+  if (con.type === 'min' && count < finalValue) {
+    errors.push({
+      type: 'category-min',
+      forceId: force.id,
+      categoryId: targetCatId,
+      message: `Mindestens ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} benötigt (aktuell: ${count}).`,
+      severity: 'error'
+    });
+  }
+  if (con.type === 'max' && count > finalValue) {
+    errors.push({
+      type: 'category-max',
+      forceId: force.id,
+      categoryId: targetCatId,
+      message: `Maximal ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} erlaubt (aktuell: ${count}).`,
+      severity: 'error'
+    });
+  }
 }
 
 /** Eine Selection samt Kindern rekursiv gegen ihre Entry- und Gruppen-Constraints prüfen. */

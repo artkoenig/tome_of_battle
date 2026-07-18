@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Verbatim-Auszug aus dem echten Lexicanum-Imperialis-Datensatz (siehe README.md).
+  Diese reale forceEntry ("Red Host") belegt die strukturelle Voraussetzung des
+  inheritedCategoryMax-Quirks im neuen Datensatz: der Characters-categoryLink
+  traegt einen force-weiten max-Constraint (punkteskaliert), der Heroes-categoryLink
+  traegt keinen eigenen max-Constraint.
+-->
+<catalogue xmlns="http://www.battlescribe.net/schema/catalogueSchema" id="19e3-92e5-1158-4551" name="Lizardmen" revision="1" battleScribeVersion="2.03" authorName="Lexicanum Imperialis" authorContact="lexicanum.imperialis@gmail.com" library="false" gameSystemId="0d13-7737-ea86-4662" gameSystemRevision="1" type="catalogue" authorUrl="https://karaknornwargaming.blogspot.com/p/warhammer-6th-faq-norn-consensus.html">
+  <forceEntries>
+    <forceEntry id="f7d4-7faf-8470-ee0d" name="Red Host (LUS)" publicationId="415d-9fbb-df83-ad27" page="59-61" hidden="false">
+          <categoryLinks>
+            <categoryLink id="058d-7cf5-cdd6-6c17" name="Experimental rules" hidden="false" targetId="4fed-b911-e6e0-927b" primary="false"/>
+            <categoryLink id="8b05-5778-ddb1-ad95" name="Special list rules" hidden="false" targetId="32f1-197f-d719-a393" primary="false"/>
+            <categoryLink id="0f44-3ee3-d3b7-0cec" name="Special Characters" hidden="false" targetId="0644-bfcd-32c2-21dc" primary="false"/>
+            <categoryLink id="33e7-b2ce-52ed-33ee" name="Characters" hidden="false" targetId="7a1c-d611-c2dc-def1" primary="false">
+              <constraints>
+                <constraint type="max" value="2" field="selections" scope="force" shared="true" id="2268-9f7f-5523-cff8" percentValue="false" includeChildSelections="true" includeChildForces="false"/>
+              </constraints>
+              <modifiers>
+                <modifier type="increment" value="1" field="2268-9f7f-5523-cff8">
+                  <repeats>
+                    <repeat value="1000" repeats="1" field="limit::ecfa-8486-4f6c-c249" scope="roster" childId="any" shared="true" roundUp="false" includeChildSelections="true" includeChildForces="true"/>
+                  </repeats>
+                  <conditions>
+                    <condition type="atLeast" value="2000" field="limit::ecfa-8486-4f6c-c249" scope="roster" childId="model" shared="true" percentValue="false" includeChildSelections="false" includeChildForces="false"/>
+                  </conditions>
+                </modifier>
+                <modifier type="set" value="-1" field="2268-9f7f-5523-cff8">
+                  <conditions>
+                    <condition type="lessThan" value="0" field="limit::ecfa-8486-4f6c-c249" scope="roster" childId="model" shared="true" percentValue="false" includeChildSelections="false" includeChildForces="false"/>
+                  </conditions>
+                </modifier>
+              </modifiers>
+            </categoryLink>
+            <categoryLink id="9316-a77e-7f17-1138" name="Lord" hidden="false" targetId="d024-d25b-a9b4-73b6" primary="false"/>
+            <categoryLink id="64c1-e90c-ed54-ade3" name="Heroes" hidden="false" targetId="c16b-f319-2c62-2c12" primary="false"/>
+            <categoryLink id="45a4-a523-a717-3a17" name="Core" hidden="false" targetId="64bf-efb4-9978-26df" primary="false">
+              <modifiers>
+                <modifier type="increment" value="1" field="35c2-d478-392a-aeb1">
+                  <repeats>
+                    <repeat value="1" repeats="1" field="selections" scope="force" childId="9557-839d-31fc-e10c" shared="true" roundUp="false" childName="Skink Skirmishers" includeChildSelections="true"/>
+                  </repeats>
+                </modifier>
+                <modifier type="increment" value="1" field="35c2-d478-392a-aeb1">
+                  <repeats>
+                    <repeat value="1" repeats="1" field="selections" scope="force" childId="5797-332f-ee94-ac10" shared="true" roundUp="false" childName="Lesser Swarms" includeChildSelections="true"/>
+                  </repeats>
+                </modifier>
+              </modifiers>
+            </categoryLink>
+            <categoryLink id="7c6a-ec1f-fdcd-ea1d" name="Special" hidden="false" targetId="43cc-fc3f-35a7-8d03" primary="false"/>
+            <categoryLink id="498d-266c-57b2-c07c" name="Rare" hidden="false" targetId="e94b-6a54-8779-cd60" primary="false"/>
+            <categoryLink name="Mercenaries" hidden="false" id="e500-913d-80b6-4e12" targetId="b640-7e9c-3054-c1ce"/>
+            <categoryLink name="Regiment of Renown" hidden="false" id="cdd8-8007-ab39-753d" targetId="ee09-9a50-ad78-9c32" primary="false"/>
+          </categoryLinks>
+        </forceEntry>
+  </forceEntries>
+</catalogue>

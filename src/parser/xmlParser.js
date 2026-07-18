@@ -47,12 +47,17 @@ function getRevision(el) {
 }
 
 /**
- * Parses rules from an element, accepting 'rules' or 'sharedRules' wrappers.
+ * The wrapper tag names under which an element may carry rules. Per the
+ * BattleScribe schema `rules` and `sharedRules` may appear side by side on the
+ * same element, so both must be read.
  */
-function parseRules(el) {
-  const wrapper = getChildren(el, 'rules')[0] || getChildren(el, 'sharedRules')[0];
-  if (!wrapper) return [];
-  return getChildren(wrapper, 'rule').map(ruleEl => ({
+const RULE_WRAPPER_NAMES = ['rules', 'sharedRules'];
+
+/**
+ * Maps a single `<rule>` element to a plain rule object.
+ */
+function parseRule(ruleEl) {
+  return {
     id: ruleEl.getAttribute(AttributeName.ID),
     name: getName(ruleEl),
     publicationId: ruleEl.getAttribute(AttributeName.PUBLICATION_ID),
@@ -61,7 +66,19 @@ function parseRules(el) {
     modifiers: parseModifiers(ruleEl),
     modifierGroups: parseModifierGroups(ruleEl),
     description: getChildren(ruleEl, 'description')[0]?.textContent || ''
-  }));
+  };
+}
+
+/**
+ * Parses rules from an element, returning the union of the rules found under
+ * every present wrapper (`rules` and `sharedRules`). Merging both — rather than
+ * keeping only the first-found wrapper — prevents shared rules from being
+ * silently dropped whenever an element also declares its own `rules`.
+ */
+function parseRules(el) {
+  return RULE_WRAPPER_NAMES.flatMap(wrapperName =>
+    getChildren(getChildren(el, wrapperName)[0], 'rule').map(parseRule)
+  );
 }
 
 /**
@@ -118,34 +135,41 @@ function parseInfoLinks(el) {
 }
 
 /**
- * Parses info groups from an element, accepting the inline 'infoGroups' wrapper
- * (on entries) or the top-level 'sharedInfoGroups' wrapper (on catalogue/gameSystem).
- *
- * An infoGroup is a container that bundles profiles, rules, infoLinks and further
- * nested infoGroups. Left unparsed, everything it bundles is discarded, so the
- * profiles and rules an entry declares through a group never reach the unit.
+ * The wrapper tag names under which an element may carry info groups. `infoGroups`
+ * holds an element's own groups, `sharedInfoGroups` the catalogue/system-level
+ * reusable ones; both are read so no group is missed (same class of bug as
+ * `rules`/`sharedRules` above).
  */
-function parseInfoGroups(el) {
-  const wrapper = getChildren(el, 'infoGroups')[0] || getChildren(el, 'sharedInfoGroups')[0];
-  if (!wrapper) return [];
-  return getChildren(wrapper, 'infoGroup').map(parseInfoGroup);
-}
+const INFO_GROUP_WRAPPER_NAMES = ['infoGroups', 'sharedInfoGroups'];
 
 /**
- * Parses a single infoGroup element. Recurses into nested infoGroups so the whole
- * bundle tree (profiles, rules, infoLinks) is preserved.
+ * Parses a single `<infoGroup>` element. An info group bundles profiles, rules,
+ * further info links and nested info groups, and is itself a valid `infoLink`
+ * target (type "infoGroup"), so it must carry an `id` to be found in the index.
  */
 function parseInfoGroup(groupEl) {
   return {
     id: groupEl.getAttribute(AttributeName.ID),
     name: getName(groupEl),
+    publicationId: groupEl.getAttribute(AttributeName.PUBLICATION_ID),
+    page: groupEl.getAttribute(AttributeName.PAGE),
     hidden: getBooleanAttribute(groupEl, AttributeName.HIDDEN),
-    modifiers: parseModifiers(groupEl),
     profiles: parseProfiles(groupEl),
     rules: parseRules(groupEl),
     infoLinks: parseInfoLinks(groupEl),
-    infoGroups: parseInfoGroups(groupEl)
+    infoGroups: parseInfoGroups(groupEl),
+    modifiers: parseModifiers(groupEl)
   };
+}
+
+/**
+ * Parses info groups from an element, returning the union of the groups found
+ * under every present wrapper (`infoGroups` and `sharedInfoGroups`).
+ */
+function parseInfoGroups(el) {
+  return INFO_GROUP_WRAPPER_NAMES.flatMap(wrapperName =>
+    getChildren(getChildren(el, wrapperName)[0], 'infoGroup').map(parseInfoGroup)
+  );
 }
 
 /**

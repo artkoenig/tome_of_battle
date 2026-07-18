@@ -1,10 +1,15 @@
-import { test, expect, beforeAll, describe } from 'vitest';
+import { test, expect, beforeAll, beforeEach, describe } from 'vitest';
 import { JSDOM } from 'jsdom';
 import {
   findOutdatedCatalogFiles,
   updateSystemFromCatalogIndex,
   buildRawFileUrl,
   deriveRevisionState,
+  loadCatalogIndex,
+  clearCatalogIndexCache,
+  findCatalogSourceForSystemId,
+  resolveSystemDisplayLabel,
+  CATALOG_SOURCES,
   REVISION_STATE,
 } from './catalogUpdate';
 
@@ -15,6 +20,16 @@ beforeAll(() => {
 
 const GAME_SYSTEM_ID = 'sys-1';
 const CATALOGUE_ID = 'cat-1';
+
+// The two runtime catalog sources run in parallel (ADR 0016).
+const ERGOFARG_SYSTEM_ID = '6d8e-38d9-3c69-febf';
+const LEXICANUM_SYSTEM_ID = '0d13-7737-ea86-4662';
+
+// The Lexicanum fork's raw base (ADR 0015): a fork of
+// lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition under the
+// artkoenig account, default branch `main`.
+const FORK_RAW_BASE_URL =
+  'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition/main/';
 
 function makeIndex({ gameSystemRevision = 9, catalogueRevision = 14 } = {}) {
   return {
@@ -40,6 +55,19 @@ describe('findOutdatedCatalogFiles (pure revision comparison)', () => {
     expect(outdated).toEqual([
       { type: 'gamesystem', fileName: 'Sys.gst' },
       { type: 'catalogue', fileName: 'Faction.cat' },
+    ]);
+  });
+
+  test('uses the index entry path (real file name), not a name-derived one', () => {
+    const index = {
+      repositoryFiles: [
+        { id: GAME_SYSTEM_ID, name: 'Sys', path: 'Sys (6th definitive edition).gst', type: 'gamesystem', revision: 9 },
+        { id: CATALOGUE_ID, name: 'Faction', path: 'Faction Long Name (6th definitive edition).cat', type: 'catalogue', revision: 14 },
+      ],
+    };
+    expect(findOutdatedCatalogFiles(index, makeStoredSystem())).toEqual([
+      { type: 'gamesystem', fileName: 'Sys (6th definitive edition).gst' },
+      { type: 'catalogue', fileName: 'Faction Long Name (6th definitive edition).cat' },
     ]);
   });
 
@@ -80,10 +108,131 @@ describe('findOutdatedCatalogFiles (pure revision comparison)', () => {
     expect(findOutdatedCatalogFiles(index, system)).toEqual([]);
   });
 
-  test('builds the raw URL from the fork base, URL-encoding the file name', () => {
-    expect(buildRawFileUrl('Orcs and Goblins.cat')).toBe(
-      'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Orcs%20and%20Goblins.cat'
+  test('builds the raw URL from the given source base, URL-encoding the file name', () => {
+    expect(buildRawFileUrl(FORK_RAW_BASE_URL, 'Orcs and Goblins.cat')).toBe(
+      `${FORK_RAW_BASE_URL}Orcs%20and%20Goblins.cat`
     );
+  });
+});
+
+describe('CATALOG_SOURCES (ADR 0016 — Ergofarg and Lexicanum in parallel)', () => {
+  test('offers exactly the two configured WHFB6 sources', () => {
+    expect(CATALOG_SOURCES.map((source) => source.gameSystemId)).toEqual([
+      ERGOFARG_SYSTEM_ID,
+      LEXICANUM_SYSTEM_ID,
+    ]);
+  });
+
+  test('each source derives its index URL as catpkg.json under its raw base', () => {
+    for (const source of CATALOG_SOURCES) {
+      expect(source.indexUrl).toBe(`${source.rawBaseUrl}catpkg.json`);
+    }
+  });
+
+  test('carries the short, source-unique disambiguating labels', () => {
+    expect(CATALOG_SOURCES.map((source) => source.label)).toEqual([
+      'WHFB 6th ed. (Ergofarg)',
+      'WHFB 6th ed. (Lexicanum)',
+    ]);
+  });
+
+  test('the Lexicanum source keeps the ADR-0015 raw base', () => {
+    const lexicanum = findCatalogSourceForSystemId(LEXICANUM_SYSTEM_ID);
+    expect(lexicanum.rawBaseUrl).toBe(FORK_RAW_BASE_URL);
+  });
+});
+
+describe('findCatalogSourceForSystemId', () => {
+  test('resolves a configured game system id to its source', () => {
+    expect(findCatalogSourceForSystemId(ERGOFARG_SYSTEM_ID).label).toBe('WHFB 6th ed. (Ergofarg)');
+    expect(findCatalogSourceForSystemId(LEXICANUM_SYSTEM_ID).label).toBe('WHFB 6th ed. (Lexicanum)');
+  });
+
+  test('returns null for a system id no source owns', () => {
+    expect(findCatalogSourceForSystemId('unknown-system')).toBeNull();
+    expect(findCatalogSourceForSystemId(undefined)).toBeNull();
+  });
+});
+
+describe('resolveSystemDisplayLabel', () => {
+  test('returns the source label for a configured system id, ignoring the raw name', () => {
+    expect(resolveSystemDisplayLabel(ERGOFARG_SYSTEM_ID, 'Warhammer Fantasy Battle 6th edition')).toBe(
+      'WHFB 6th ed. (Ergofarg)'
+    );
+    expect(
+      resolveSystemDisplayLabel(LEXICANUM_SYSTEM_ID, 'Warhammer Fantasy Battles (6th definitive edition)')
+    ).toBe('WHFB 6th ed. (Lexicanum)');
+  });
+
+  test('falls back to the given name for a system id no source owns', () => {
+    expect(resolveSystemDisplayLabel('custom-system', 'My Own System')).toBe('My Own System');
+  });
+});
+
+describe('loadCatalogIndex (cached per fetchText AND index URL)', () => {
+  beforeEach(() => {
+    clearCatalogIndexCache();
+  });
+
+  const indexA = { repositoryFiles: [{ id: 'a', type: 'gamesystem' }] };
+  const indexB = { repositoryFiles: [{ id: 'b', type: 'gamesystem' }] };
+  const urlA = 'https://host/sourceA/catpkg.json';
+  const urlB = 'https://host/sourceB/catpkg.json';
+
+  function makeIndexFetch() {
+    return async (url) => JSON.stringify(url.includes('sourceA') ? indexA : indexB);
+  }
+
+  test('two different index URLs sharing one fetchText return their own indexes', async () => {
+    // Regression for the ADR-0016 cache bug: a URL-blind cache returned indexA for urlB.
+    const fetchText = makeIndexFetch();
+
+    const resultA = await loadCatalogIndex(fetchText, urlA);
+    const resultB = await loadCatalogIndex(fetchText, urlB);
+
+    expect(resultA).toEqual(indexA);
+    expect(resultB).toEqual(indexB);
+  });
+
+  test('the same index URL is fetched only once, then served from cache', async () => {
+    let calls = 0;
+    const fetchText = async () => {
+      calls += 1;
+      return JSON.stringify(indexA);
+    };
+
+    await loadCatalogIndex(fetchText, urlA);
+    const second = await loadCatalogIndex(fetchText, urlA);
+
+    expect(calls).toBe(1);
+    expect(second).toEqual(indexA);
+  });
+
+  test('returns null without fetching when no fetcher or no index URL is given', async () => {
+    let called = false;
+    const fetchText = async () => {
+      called = true;
+      return '{}';
+    };
+
+    expect(await loadCatalogIndex(null, urlA)).toBeNull();
+    expect(await loadCatalogIndex(fetchText, undefined)).toBeNull();
+    expect(called).toBe(false);
+  });
+
+  test('a failing fetch caches null for that URL (no repeated attempts) and keeps others working', async () => {
+    let attempts = 0;
+    const fetchText = async (url) => {
+      attempts += 1;
+      if (url.includes('sourceA')) throw new Error('offline');
+      return JSON.stringify(indexB);
+    };
+
+    expect(await loadCatalogIndex(fetchText, urlA)).toBeNull();
+    expect(await loadCatalogIndex(fetchText, urlA)).toBeNull();
+    expect(await loadCatalogIndex(fetchText, urlB)).toEqual(indexB);
+    // urlA attempted once (then cached null), urlB attempted once.
+    expect(attempts).toBe(2);
   });
 });
 
@@ -151,7 +300,7 @@ describe('updateSystemFromCatalogIndex (orchestration via injected fetch)', () =
     const system = makeStoredSystemWithRawXmls();
     const fetchText = makeFetchText({ 'Sys.gst': gstV9, 'Faction.cat': catV14 });
 
-    const updated = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText, noWarnings);
+    const updated = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText, FORK_RAW_BASE_URL, noWarnings);
 
     expect(updated).not.toBeNull();
     expect(updated.revision).toBe(9);
@@ -170,10 +319,10 @@ describe('updateSystemFromCatalogIndex (orchestration via injected fetch)', () =
       return catV14;
     };
 
-    const updated = await updateSystemFromCatalogIndex(system, index, fetchText, noWarnings);
+    const updated = await updateSystemFromCatalogIndex(system, index, fetchText, FORK_RAW_BASE_URL, noWarnings);
 
     expect(requestedUrls).toHaveLength(1);
-    expect(requestedUrls[0]).toContain('Faction.cat');
+    expect(requestedUrls[0]).toBe(`${FORK_RAW_BASE_URL}Faction.cat`);
     expect(updated.catalogues[0].revision).toBe(14);
   });
 
@@ -184,7 +333,7 @@ describe('updateSystemFromCatalogIndex (orchestration via injected fetch)', () =
       throw new Error('offline');
     };
 
-    const result = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText);
+    const result = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText, FORK_RAW_BASE_URL);
 
     expect(result).toBeNull();
     expect(system.rawXmls).toBe(originalRawXmls);
@@ -194,7 +343,7 @@ describe('updateSystemFromCatalogIndex (orchestration via injected fetch)', () =
     const system = makeStoredSystemWithRawXmls();
     const fetchText = makeFetchText({ 'Sys.gst': '<notAGameSystem />', 'Faction.cat': catV14 });
 
-    const result = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText);
+    const result = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText, FORK_RAW_BASE_URL);
 
     expect(result).toBeNull();
   });
@@ -209,7 +358,7 @@ describe('updateSystemFromCatalogIndex (orchestration via injected fetch)', () =
       { fileName: 'Faction.cat', errors: [{ line: 4, column: null, message: 'schema violation' }], message: 'schema violation' },
     ];
 
-    const result = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText, warningCollector);
+    const result = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText, FORK_RAW_BASE_URL, warningCollector);
 
     expect(result).not.toBeNull();
     expect(result.revision).toBe(9);

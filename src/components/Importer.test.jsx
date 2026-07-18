@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Importer, { transformIndexToSystems } from './Importer';
+import Importer, { transformIndexToSystems, findMissingLibraryDependencies } from './Importer';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
@@ -58,16 +58,33 @@ vi.mock('jszip', () => {
   };
 });
 
-// Mock the catalogUpdate module: override URL constants, keep real fetch/load logic
-vi.mock('../db/catalogUpdate', async () => {
-  const actual = await vi.importActual('../db/catalogUpdate');
-  const RAW_BASE = 'https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/';
-  return {
-    ...actual,
-    CATALOG_INDEX_URL: `${RAW_BASE}catpkg.json`,
-    buildRawFileUrl: (fileName) => `${RAW_BASE}${encodeURIComponent(fileName)}`
-  };
-});
+// The real catalogUpdate module is used unmocked: CATALOG_SOURCES now provides the real
+// per-source raw base URLs, and the fetch stubs below match on file-name substrings, so
+// no URL override is needed.
+
+// The multi-source importer loads every CATALOG_SOURCES entry at mount (ADR 0016). A
+// test that asserts on a single dataset serves it on the Lexicanum source and leaves the
+// other source's index empty, so exactly one system set appears in the dropdown.
+const LEXICANUM_CATPKG_URL_PART = 'Warhammer-Fantasy-Battles-6th-Definitive-edition/main/catpkg.json';
+const ERGOFARG_SYSTEM_ID = '6d8e-38d9-3c69-febf';
+const LEXICANUM_SYSTEM_ID = '0d13-7737-ea86-4662';
+
+function makeCatpkgJsonResponse(index) {
+  return Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve(index),
+    text: () => Promise.resolve(JSON.stringify(index)),
+  });
+}
+
+// Returns a catpkg response when `url` targets any source's index — the given `index`
+// for the Lexicanum source, an empty index for every other source — or null when the
+// URL is not a catpkg request (so callers fall through to their file-fetch handling).
+function respondToCatpkg(url, index) {
+  if (!url.includes('catpkg.json')) return null;
+  const served = url.includes(LEXICANUM_CATPKG_URL_PART) ? index : { repositoryFiles: [] };
+  return makeCatpkgJsonResponse(served);
+}
 
 describe('transformIndexToSystems', () => {
   const findCatalogue = (system, id) => system.catalogues.find(cat => cat.id === id);
@@ -94,6 +111,22 @@ describe('transformIndexToSystems', () => {
     expect(findCatalogue(system, 'cat-2').revision).toBe(3);
   });
 
+  it('uses the index entry path as the file name, not a name-derived one', () => {
+    // Upstream file names are not derivable from the catalogue name (e.g. name
+    // "Chaos Dwarfs" vs file "Chaos Dwarves (6th definitive edition).cat").
+    const index = {
+      repositoryFiles: [
+        { id: 'sys-1', name: 'System One', path: 'System One (6th definitive edition).gst', type: 'gamesystem', revision: 5 },
+        { id: 'cat-1', name: 'Chaos Dwarfs', path: 'Chaos Dwarves (6th definitive edition).cat', type: 'catalogue', revision: 7 }
+      ]
+    };
+
+    const [system] = transformIndexToSystems(index);
+
+    expect(system.gst.fileName).toBe('System One (6th definitive edition).gst');
+    expect(findCatalogue(system, 'cat-1').fileName).toBe('Chaos Dwarves (6th definitive edition).cat');
+  });
+
   it('does not throw and yields an undefined revision when the index entry omits it', () => {
     const index = {
       repositoryFiles: [
@@ -112,13 +145,89 @@ describe('transformIndexToSystems', () => {
   });
 });
 
+describe('findMissingLibraryDependencies', () => {
+  const availableCatalogues = [
+    { id: 'dogs', name: 'Dogs of War' },
+    { id: 'merc', name: 'Mercenaries' },
+    { id: 'empire', name: 'Empire' },
+  ];
+
+  it('flags a catalogueLink target that exists but was left out of the selection', () => {
+    const loadedCatalogues = [
+      { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc', name: 'Mercenaries' }] },
+    ];
+
+    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['dogs']), availableCatalogues);
+
+    expect(missing).toEqual([{ id: 'merc', name: 'Mercenaries', requiredBy: ['Dogs of War'] }]);
+  });
+
+  it('returns nothing when the linked target is part of the selection', () => {
+    const loadedCatalogues = [
+      { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc', name: 'Mercenaries' }] },
+      { id: 'merc', name: 'Mercenaries', catalogueLinks: [] },
+    ];
+
+    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['dogs', 'merc']), availableCatalogues);
+
+    expect(missing).toEqual([]);
+  });
+
+  it('ignores a target that is not a selectable catalogue at all', () => {
+    const loadedCatalogues = [
+      { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'ghost', name: 'Phantom' }] },
+    ];
+
+    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['dogs']), availableCatalogues);
+
+    expect(missing).toEqual([]);
+  });
+
+  it('deduplicates a shared missing dependency and lists every referencing catalogue', () => {
+    const loadedCatalogues = [
+      { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc' }] },
+      { id: 'empire', name: 'Empire', catalogueLinks: [{ targetId: 'merc' }] },
+    ];
+
+    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['dogs', 'empire']), availableCatalogues);
+
+    expect(missing).toEqual([{ id: 'merc', name: 'Mercenaries', requiredBy: ['Dogs of War', 'Empire'] }]);
+  });
+
+  it('tolerates catalogues without catalogueLinks', () => {
+    const loadedCatalogues = [{ id: 'empire', name: 'Empire' }];
+
+    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['empire']), availableCatalogues);
+
+    expect(missing).toEqual([]);
+  });
+});
+
 describe('Importer Component', () => {
+  // These tests exercise the stored-systems / upload flows, not the bundle index.
+  // Still, the component fetches the catalog index on mount; without a stub that
+  // would be a real network request whose async failure state ("index unavailable")
+  // races with the assertions below. Stub it with a valid but empty index so mount
+  // resolves deterministically and offline. Tests that need a populated index
+  // (nested describes below) install their own fetch spy on top.
+  let indexFetchSpy;
+
   beforeEach(() => {
     clearCatalogIndexCache();
     vi.clearAllMocks();
     getAllSystems.mockResolvedValue([]);
     deleteSystem.mockResolvedValue({});
     saveSystem.mockResolvedValue({});
+    const emptyIndex = { repositoryFiles: [] };
+    indexFetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(emptyIndex),
+      text: () => Promise.resolve(JSON.stringify(emptyIndex)),
+    });
+  });
+
+  afterEach(() => {
+    indexFetchSpy.mockRestore();
   });
 
   it('1. Render Empty State', async () => {
@@ -482,13 +591,8 @@ describe('Importer Component', () => {
       };
 
       fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
-        if (url.includes('catpkg.json')) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockIndex),
-            text: () => Promise.resolve(JSON.stringify(mockIndex))
-          });
-        }
+        const catpkg = respondToCatpkg(url, mockIndex);
+        if (catpkg) return catpkg;
         if (url.includes('Warhammer%20Fantasy%20Bundle.gst')) {
           return Promise.resolve({
             ok: true,
@@ -600,17 +704,105 @@ describe('Importer Component', () => {
     });
   });
 
+  describe('Library-catalog dependency guard on bundle import', () => {
+    let fetchSpy;
+
+    beforeEach(() => {
+      const mockIndex = {
+        repositoryFiles: [
+          { id: 'sys-lex', name: 'WHFB Lexicanum', type: 'gamesystem', revision: 1 },
+          { id: 'dogs', name: 'Dogs of War', type: 'catalogue', revision: 1 },
+          { id: 'merc', name: 'Mercenaries', type: 'catalogue', revision: 1 }
+        ]
+      };
+
+      fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
+        const catpkg = respondToCatpkg(url, mockIndex);
+        if (catpkg) return catpkg;
+        if (url.includes('WHFB%20Lexicanum.gst')) {
+          return Promise.resolve({ ok: true, text: () => Promise.resolve('<gameSystem id="sys-lex" />') });
+        }
+        if (url.includes('Dogs%20of%20War.cat')) {
+          return Promise.resolve({ ok: true, text: () => Promise.resolve('<catalogue id="dogs" />') });
+        }
+        if (url.includes('Mercenaries.cat')) {
+          return Promise.resolve({ ok: true, text: () => Promise.resolve('<catalogue id="merc" library="true" />') });
+        }
+        return Promise.reject(new Error(`Unknown fetch URL: ${url}`));
+      });
+    });
+
+    afterEach(() => {
+      fetchSpy.mockRestore();
+    });
+
+    it('aborts the import and names the missing library catalog when its dependent stays selected', async () => {
+      // "Dogs of War" links to the "Mercenaries" library catalog; deselecting Mercenaries
+      // while keeping Dogs of War must abort rather than import a broken dataset.
+      processImportedData.mockReturnValue({
+        id: 'sys-lex',
+        name: 'WHFB Lexicanum',
+        catalogues: [
+          { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc', name: 'Mercenaries' }] }
+        ]
+      });
+
+      render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Mercenaries')).toBeDefined();
+      });
+
+      fireEvent.click(screen.getByLabelText('Mercenaries'));
+      fireEvent.click(screen.getByText('Importieren'));
+
+      const errorMessage = await screen.findByText(/Import abgebrochen/);
+
+      // The whole guard message lives in one element, so assert its content there rather
+      // than via getByText — the catalog checkboxes also render "Mercenaries"/"Dogs of War".
+      expect(errorMessage.textContent).toContain('Mercenaries');
+      expect(errorMessage.textContent).toContain('Dogs of War');
+      expect(saveSystem).not.toHaveBeenCalled();
+      expect(deleteSystem).not.toHaveBeenCalled();
+      expect(screen.queryByText(/erfolgreich importiert/)).toBeNull();
+    });
+
+    it('imports normally when the referenced library catalog is part of the selection', async () => {
+      const onSystemImportedMock = vi.fn();
+      processImportedData.mockReturnValue({
+        id: 'sys-lex',
+        name: 'WHFB Lexicanum',
+        catalogues: [
+          { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc', name: 'Mercenaries' }] },
+          { id: 'merc', name: 'Mercenaries', catalogueLinks: [] }
+        ]
+      });
+
+      render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Importieren')).toBeDefined();
+      });
+
+      fireEvent.click(screen.getByText('Importieren'));
+
+      await waitFor(() => {
+        expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({ id: 'sys-lex' }));
+        expect(onSystemImportedMock).toHaveBeenCalled();
+      });
+
+      expect(screen.getByText(/erfolgreich importiert/)).toBeDefined();
+      expect(screen.queryByText(/Import abgebrochen/)).toBeNull();
+    });
+  });
+
   describe('Revision labels in the bundle importer', () => {
     let fetchSpy;
 
     const mockIndexFetch = (index) => {
       fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
-        if (url.includes('catpkg.json')) {
-          return Promise.resolve({
-            ok: true,
-            text: () => Promise.resolve(JSON.stringify(index))
-          });
-        }
+        const catpkg = respondToCatpkg(url, index);
+        if (catpkg) return catpkg;
         return Promise.reject(new Error(`Unexpected fetch URL: ${url}`));
       });
     };
@@ -684,12 +876,8 @@ describe('Importer Component', () => {
 
     const mockIndexFetch = (index) => {
       fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
-        if (url.includes('catpkg.json')) {
-          return Promise.resolve({
-            ok: true,
-            text: () => Promise.resolve(JSON.stringify(index))
-          });
-        }
+        const catpkg = respondToCatpkg(url, index);
+        if (catpkg) return catpkg;
         return Promise.reject(new Error(`Unexpected fetch URL: ${url}`));
       });
     };
@@ -764,6 +952,93 @@ describe('Importer Component', () => {
       fireEvent.change(screen.getByRole('combobox'), { target: { value: 'sys-b' } });
 
       expect(screen.getByTestId('catalog-revision-cat-shared').textContent).toBe('Rev 8 · aktuell');
+    });
+  });
+
+  describe('Multiple catalog sources (ADR 0016)', () => {
+    let fetchSpy;
+
+    afterEach(() => {
+      fetchSpy?.mockRestore();
+    });
+
+    it('lists both sources together in one dropdown with their disambiguating labels', async () => {
+      const ergofargIndex = {
+        repositoryFiles: [
+          { id: ERGOFARG_SYSTEM_ID, name: 'Warhammer Fantasy Battle 6th edition', type: 'gamesystem', revision: 1 },
+        ],
+      };
+      const lexicanumIndex = {
+        repositoryFiles: [
+          { id: LEXICANUM_SYSTEM_ID, name: 'Warhammer Fantasy Battles (6th definitive edition)', type: 'gamesystem', revision: 1 },
+        ],
+      };
+      fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
+        if (url.includes('catpkg.json')) {
+          const index = url.includes(LEXICANUM_CATPKG_URL_PART) ? lexicanumIndex : ergofargIndex;
+          return makeCatpkgJsonResponse(index);
+        }
+        return Promise.reject(new Error(`Unexpected fetch URL: ${url}`));
+      });
+
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'WHFB 6th ed. (Ergofarg)' })).toBeDefined();
+      });
+      expect(screen.getByRole('option', { name: 'WHFB 6th ed. (Lexicanum)' })).toBeDefined();
+      // The confusable raw system names are never shown to the user.
+      expect(screen.queryByText('Warhammer Fantasy Battle 6th edition')).toBeNull();
+      expect(screen.queryByText('Warhammer Fantasy Battles (6th definitive edition)')).toBeNull();
+    });
+
+    it('imports the selected source from its own raw base URL', async () => {
+      const ergofargIndex = {
+        repositoryFiles: [
+          { id: ERGOFARG_SYSTEM_ID, name: 'Ergofarg', type: 'gamesystem', revision: 1 },
+          { id: 'ergofarg-cat', name: 'Kislev', type: 'catalogue', revision: 1 },
+        ],
+      };
+      const requestedFileHosts = [];
+      fetchSpy = vi.spyOn(global, 'fetch').mockImplementation((url) => {
+        if (url.includes('catpkg.json')) {
+          const index = url.includes(LEXICANUM_CATPKG_URL_PART) ? { repositoryFiles: [] } : ergofargIndex;
+          return makeCatpkgJsonResponse(index);
+        }
+        requestedFileHosts.push(url);
+        return Promise.resolve({ ok: true, text: () => Promise.resolve('<xml />') });
+      });
+      processImportedData.mockReturnValue({ id: ERGOFARG_SYSTEM_ID, name: 'Ergofarg', catalogues: [{ id: 'ergofarg-cat' }] });
+
+      render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Kislev')).toBeDefined();
+      });
+
+      fireEvent.click(screen.getByText('Importieren'));
+
+      await waitFor(() => {
+        expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({ id: ERGOFARG_SYSTEM_ID }));
+      });
+      // Files are fetched from the Ergofarg fork base, not the Lexicanum one.
+      expect(requestedFileHosts.every((url) => url.includes('Warhammer-Fantasy-6th-edition/master/'))).toBe(true);
+      expect(requestedFileHosts.some((url) => url.includes('Kislev.cat'))).toBe(true);
+    });
+
+    it('shows the source-unique label for a stored system instead of its confusable raw name', async () => {
+      // Uses the outer beforeEach's empty-index fetch stub: no dropdown systems, so the
+      // asserted label can only come from the imported-systems list.
+      getAllSystems.mockResolvedValue([
+        { id: ERGOFARG_SYSTEM_ID, name: 'Warhammer Fantasy Battle 6th edition', catalogues: [] },
+      ]);
+
+      render(<Importer showAsEmptyState={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('WHFB 6th ed. (Ergofarg)')).toBeDefined();
+      });
+      expect(screen.queryByText('Warhammer Fantasy Battle 6th edition')).toBeNull();
     });
   });
 });

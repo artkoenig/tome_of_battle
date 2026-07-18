@@ -82,18 +82,24 @@ test('one broken system does not affect the migration of the others', async () =
   expect(migrated.map(s => s.id)).toEqual(['sys-broken', 'sys-1']);
 });
 
-// Schema-valid game systems (namespace declared) so a fork update passes the import
-// schema advisory that updateSystemFromCatalogIndex now applies before parsing
-// (advisory only: it reports, it does not block — ADR 0016, Revision 2026-07-18).
+// A stored system is refreshed against the index of its own source (ADR 0018), keyed by
+// its gameSystemId. These tests therefore use the real Lexicanum id so the source lookup
+// engages; the symmetric Ergofarg case is covered separately below. Schema-valid
+// (namespace declared) so a fork update passes the import schema advisory that
+// updateSystemFromCatalogIndex now applies before parsing (advisory only: it reports,
+// it does not block — ADR 0016, Revision 2026-07-18).
 const GAME_SYSTEM_NAMESPACE = 'http://www.battlescribe.net/schema/gameSystemSchema';
+const LEXICANUM_SYSTEM_ID = '0d13-7737-ea86-4662';
+const ERGOFARG_SYSTEM_ID = '6d8e-38d9-3c69-febf';
+
 const outdatedGst = `<?xml version="1.0" encoding="UTF-8"?>
-<gameSystem id="sys-1" name="Test System" revision="8" xmlns="${GAME_SYSTEM_NAMESPACE}"/>`;
+<gameSystem id="${LEXICANUM_SYSTEM_ID}" name="Test System" revision="8" xmlns="${GAME_SYSTEM_NAMESPACE}"/>`;
 const currentGst = `<?xml version="1.0" encoding="UTF-8"?>
-<gameSystem id="sys-1" name="Test System" revision="9" xmlns="${GAME_SYSTEM_NAMESPACE}"/>`;
+<gameSystem id="${LEXICANUM_SYSTEM_ID}" name="Test System" revision="9" xmlns="${GAME_SYSTEM_NAMESPACE}"/>`;
 
 const index = {
   repositoryFiles: [
-    { id: 'sys-1', name: 'Test System', type: 'gamesystem', revision: 9 },
+    { id: LEXICANUM_SYSTEM_ID, name: 'Test System', type: 'gamesystem', revision: 9 },
   ],
 };
 
@@ -108,7 +114,7 @@ function makeFetchText({ indexPayload = index, gstPayload = currentGst } = {}) {
 test('an outdated stored system is silently updated to the higher revision', async () => {
   const systems = [
     {
-      id: 'sys-1',
+      id: LEXICANUM_SYSTEM_ID,
       name: 'Test System',
       revision: 8,
       catalogues: [],
@@ -124,10 +130,63 @@ test('an outdated stored system is silently updated to the higher revision', asy
   expect(saveSystem).toHaveBeenCalledTimes(1);
 });
 
+test('a stored Ergofarg system is updated symmetrically from its own source', async () => {
+  // ADR 0018 reinstates active updates for Ergofarg systems: each source's stored
+  // systems update against that source's index, keyed by the system's gameSystemId.
+  const ergofargOutdatedGst = `<?xml version="1.0" encoding="UTF-8"?>
+<gameSystem id="${ERGOFARG_SYSTEM_ID}" name="Ergofarg System" revision="4" xmlns="${GAME_SYSTEM_NAMESPACE}"/>`;
+  const ergofargCurrentGst = `<?xml version="1.0" encoding="UTF-8"?>
+<gameSystem id="${ERGOFARG_SYSTEM_ID}" name="Ergofarg System" revision="5" xmlns="${GAME_SYSTEM_NAMESPACE}"/>`;
+  const ergofargIndex = {
+    repositoryFiles: [
+      { id: ERGOFARG_SYSTEM_ID, name: 'Ergofarg System', type: 'gamesystem', revision: 5 },
+    ],
+  };
+  const fetchText = async (url) => {
+    if (url.endsWith('catpkg.json')) return JSON.stringify(ergofargIndex);
+    if (url.includes(encodeURIComponent('Ergofarg System.gst'))) return ergofargCurrentGst;
+    throw new Error(`Unexpected fetch: ${url}`);
+  };
+  const systems = [
+    {
+      id: ERGOFARG_SYSTEM_ID,
+      name: 'Ergofarg System',
+      revision: 4,
+      catalogues: [],
+      rawXmls: { gst: [{ name: 'Ergofarg System.gst', content: ergofargOutdatedGst }], cat: [] },
+    },
+  ];
+
+  const { systems: migrated, failures } = await runSystemMigrations(systems, fetchText);
+
+  expect(failures).toEqual([]);
+  expect(migrated[0].revision).toBe(5);
+  expect(migrated[0].rawXmls.gst[0].content).toBe(ergofargCurrentGst);
+});
+
+test('a stored system of no configured source is re-parsed but never network-updated', async () => {
+  // A self-uploaded system (unknown gameSystemId) has no source to update from: it is
+  // kept and re-parsed, and its source index is never even fetched.
+  const requestedUrls = [];
+  const fetchText = async (url) => {
+    requestedUrls.push(url);
+    return JSON.stringify(index);
+  };
+  const systems = [
+    { id: 'custom-system', name: 'Custom', catalogues: [], rawXmls: { gst: [{ name: 'c.gst', content: validGst }], cat: [] } },
+  ];
+
+  const { failures } = await runSystemMigrations(systems, fetchText);
+
+  expect(failures).toEqual([]);
+  expect(requestedUrls).toEqual([]);
+  expect(saveSystem).toHaveBeenCalledTimes(1);
+});
+
 test('a failed catalog fetch keeps stored data, reports no failure, and does not toast', async () => {
   const storedRawXmls = { gst: [{ name: 'Test System.gst', content: validGst }], cat: [] };
   const systems = [
-    { id: 'sys-1', name: 'Test System', revision: 8, catalogues: [], rawXmls: storedRawXmls },
+    { id: LEXICANUM_SYSTEM_ID, name: 'Test System', revision: 8, catalogues: [], rawXmls: storedRawXmls },
   ];
   const failingFetch = async (url) => {
     if (url.endsWith('catpkg.json')) return JSON.stringify(index);
@@ -145,7 +204,7 @@ test('a failed catalog fetch keeps stored data, reports no failure, and does not
 test('unparsable fetched catalog data falls back silently to the stored system', async () => {
   const storedRawXmls = { gst: [{ name: 'Test System.gst', content: validGst }], cat: [] };
   const systems = [
-    { id: 'sys-1', name: 'Test System', revision: 8, catalogues: [], rawXmls: storedRawXmls },
+    { id: LEXICANUM_SYSTEM_ID, name: 'Test System', revision: 8, catalogues: [], rawXmls: storedRawXmls },
   ];
 
   const { systems: migrated, failures } = await runSystemMigrations(
@@ -160,7 +219,7 @@ test('unparsable fetched catalog data falls back silently to the stored system',
 test('without an injected fetcher no network update runs (offline-safe default)', async () => {
   const systems = [
     {
-      id: 'sys-1',
+      id: LEXICANUM_SYSTEM_ID,
       name: 'Test System',
       revision: 8,
       catalogues: [],
