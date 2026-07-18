@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -52,3 +52,4 @@ erscheinen an den berechtigten Einheiten (Charakteren) und sind konfigurierbar.
 - [ ] Regressionsschutz: bestehende, katalog-interne `entryLink`-Auflösung bleibt unverändert.
 
 ## Comments
+- Per E2E verifiziert: bereits durch den Issue-07-Fix (generische hidden/Modifier-Auswertung in optionsCollector/SelectionConfigurator, kein Merge mehr nach Gruppennamen-String) als Nebeneffekt gelöst. Test: High Elves, Archmage hinzugefügt, zunächst keine Relics-of-Lustria-Gruppen sichtbar (korrekt, da die gating-Bedingung – Special list rules > Campaign/Scenario rules > 'Campaign: A Dark Conspiracy - 30th anniversary' – noch nicht erfüllt war); nach Auswahl dieser Kampagnenregel erscheinen am Archmage korrekt 'Magic Weapons/Talismans/Arcane Items/Enchanted Items (Relics of Lustria)', jeweils aus dem katalog-übergreifend verlinkten Mercenaries-Library-Katalog aufgelöst, mehrstufig verschachtelt (Wurzelgruppe -> Untergruppen -> Items). Keine eigene Implementierung nötig; alle Acceptance Criteria erfüllt.
