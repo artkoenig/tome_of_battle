@@ -3,7 +3,7 @@ import { processImportedData } from '../parser/xmlParser';
 import {
   loadCatalogIndex,
   updateSystemFromCatalogIndex,
-  CATALOG_INDEX_URL,
+  findCatalogSourceForSystemId,
 } from './catalogUpdate';
 
 function hasStoredXml(system) {
@@ -23,11 +23,28 @@ async function reprocessStoredSystem(system) {
 }
 
 /**
+ * Attempts a silent catalog update for one stored system against the index of its own
+ * source (ADR 0018). The source is resolved from the system's `gameSystemId`; a system
+ * that belongs to no configured source (e.g. self-uploaded) has no source to update
+ * from and returns null so the caller re-parses the stored data instead. The per-source
+ * index is loaded via `loadCatalogIndex`, whose cache keys by URL, so several systems of
+ * the same source share one fetch.
+ */
+async function updateStoredSystemFromItsSource(system, fetchText) {
+  const source = findCatalogSourceForSystemId(system.id);
+  if (!source) return null;
+
+  const catalogIndex = await loadCatalogIndex(fetchText, source.indexUrl);
+  return updateSystemFromCatalogIndex(system, catalogIndex, fetchText, source.rawBaseUrl);
+}
+
+/**
  * Runs automatic database migrations at app start. For each stored system it first
- * attempts a silent catalog update from the fork index (`fetchText` injected for
- * testability): an outdated system is refreshed to the newer revision without asking.
- * A failed or unavailable update is invisible to the user — the stored data is kept
- * and merely re-parsed with the current parser instead.
+ * attempts a silent catalog update from its source's fork index (`fetchText` injected
+ * for testability): an outdated system is refreshed to the newer revision without
+ * asking. Both configured sources are updated symmetrically — each system against its
+ * own source (ADR 0018). A failed or unavailable update is invisible to the user — the
+ * stored data is kept and merely re-parsed with the current parser instead.
  *
  * Only a failed *re-processing* of an already-stored system is reported via
  * `failures`; a failed catalog *fetch* never is. When no `fetchText` is injected,
@@ -36,11 +53,9 @@ async function reprocessStoredSystem(system) {
  * @param {Array} systems - The list of currently loaded systems from IndexedDB.
  * @param {(url: string) => Promise<string>} [fetchText] - Network fetcher for catalog
  *   resources (index JSON and .cat/.gst text). Omit to disable network updates.
- * @param {string} [indexUrl] - Override for the catpkg index URL (tests).
  * @returns {Promise<{systems: Array, failures: Array<{id: string, name: string}>}>}
  */
-export async function runSystemMigrations(systems, fetchText = null, indexUrl = CATALOG_INDEX_URL) {
-  const catalogIndex = await loadCatalogIndex(fetchText, indexUrl);
+export async function runSystemMigrations(systems, fetchText = null) {
   const migratedSystems = [];
   const failures = [];
 
@@ -50,7 +65,7 @@ export async function runSystemMigrations(systems, fetchText = null, indexUrl = 
       continue;
     }
 
-    const updatedSystem = await updateSystemFromCatalogIndex(system, catalogIndex, fetchText);
+    const updatedSystem = await updateStoredSystemFromItsSource(system, fetchText);
     if (updatedSystem) {
       await saveSystem(updatedSystem);
       migratedSystems.push(updatedSystem);

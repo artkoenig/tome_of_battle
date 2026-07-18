@@ -192,6 +192,34 @@ describe('includeChildSelections (gap #2)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Gap #4 (Issue 17/07) — a non-parent scoped condition counts by its childId, not by
+// the generic field ("selections"). This is what lets a force-scoped bloodline gate
+// ("atLeast 1 selections scope=force childId=<bloodline>") fire off the selection count.
+// ---------------------------------------------------------------------------
+describe('force-scoped childId conditions (gap #4)', () => {
+  const BLOODLINE_ID = 'bloodline-blood-dragon';
+  const forceChildIdCondition = {
+    type: 'atLeast', value: 1, field: 'selections', scope: 'force', childId: BLOODLINE_ID
+  };
+
+  it('counts the childId entry, so a selected bloodline satisfies the condition', () => {
+    const ctx = { selectionCounts: { [BLOODLINE_ID]: 1 }, forceCategoryCounts: {} };
+    expect(evaluateCondition(forceChildIdCondition, ctx)).toBe(true);
+  });
+
+  it('fails when the childId entry is not selected', () => {
+    const ctx = { selectionCounts: {}, forceCategoryCounts: {} };
+    expect(evaluateCondition(forceChildIdCondition, ctx)).toBe(false);
+  });
+
+  it('still counts by field when no childId is present (category force condition)', () => {
+    const categoryForceCondition = { type: 'atLeast', value: 1, field: 'cat-core', scope: 'force' };
+    const ctx = { selectionCounts: {}, forceCategoryCounts: { 'cat-core': 2 } };
+    expect(evaluateCondition(categoryForceCondition, ctx)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Gap #3 — dynamic categories via add/remove/set-primary/unset-primary.
 // ---------------------------------------------------------------------------
 describe('dynamic category modifiers (gap #3)', () => {

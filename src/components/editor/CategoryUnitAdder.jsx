@@ -12,7 +12,8 @@ export default function CategoryUnitAdder({
   costLimitType,
   addUnit,
   roster,
-  selectionCounts
+  selectionCounts,
+  entries = null
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
@@ -52,7 +53,9 @@ export default function CategoryUnitAdder({
     });
   };
 
-  const availableUnits = getCatalogItemsByCategory(categoryId)
+  // When an explicit entry list is supplied (e.g. army-wide selectors that no category
+  // surfaces), offer exactly those; otherwise fall back to the entries of the category.
+  const availableUnits = (entries || getCatalogItemsByCategory(categoryId))
     .sort((a, b) => {
       const aPoints = getOptionDisplayCost(system, a, costLimitType) || 0;
       const bPoints = getOptionDisplayCost(system, b, costLimitType) || 0;

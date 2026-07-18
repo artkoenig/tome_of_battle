@@ -28,7 +28,7 @@ export default function SelectionConfigurator({
   onShowRule
 }) {
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-  const activeForceId = roster.forces ? roster.forces.find(force => {
+  const activeForce = roster.forces ? roster.forces.find(force => {
     const containsSel = (list) => {
       if (!list) return false;
       for (const s of list) {
@@ -38,7 +38,8 @@ export default function SelectionConfigurator({
       return false;
     };
     return containsSel(force.selections);
-  })?.id : null;
+  }) : null;
+  const activeForceId = activeForce?.id ?? null;
   const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
 
   const displayCtx = {
@@ -112,29 +113,39 @@ export default function SelectionConfigurator({
   };
 
   // The `getUnitOptions` logic has been extracted to `optionsCollector.js` for testability.
-  const options = getUnitOptions(system, activeCatalogue?.id, selection);
+  // The visibility context lets the collector omit conditionally hidden options (e.g. the
+  // Vampiric Powers groups of unselected bloodlines) instead of surfacing them all.
+  const visibilityContext = { roster, selectionCounts, forceCategoryCounts, force: activeForce };
+  const options = getUnitOptions(system, activeCatalogue?.id, selection, visibilityContext);
   const groupedList = [];
   const groupMap = {};
 
   options.forEach(item => {
     const groupNameLower = item.groupName?.toLowerCase() || '';
-    const isRoleGroup = groupNameLower === 'rolle' || 
-                        groupNameLower === 'role' || 
-                        groupNameLower === 'rollen' || 
+    const isRoleGroup = groupNameLower === 'rolle' ||
+                        groupNameLower === 'role' ||
+                        groupNameLower === 'rollen' ||
                         groupNameLower === 'roles';
 
+    // Group by the group's own id, not its display name: several distinct groups can
+    // share a name (e.g. the five bloodline-specific "Vampiric Powers" groups) and must
+    // stay separate rather than collapsing into one merged group whose modifiers/items
+    // get mixed. The name is retained only for display. Falls back to the name when a
+    // group carries no id.
+    const groupKey = item.groupId || item.groupName;
+
     if (item.groupName && !isRoleGroup) {
-      if (!groupMap[item.groupName]) {
-        groupMap[item.groupName] = {
+      if (!groupMap[groupKey]) {
+        groupMap[groupKey] = {
           name: item.groupName,
           id: item.groupId,
           constraints: item.groupConstraints,
           modifiers: item.groupModifiers,
           items: []
         };
-        groupedList.push(groupMap[item.groupName]);
+        groupedList.push(groupMap[groupKey]);
       }
-      groupMap[item.groupName].items.push(item);
+      groupMap[groupKey].items.push(item);
     } else {
       groupedList.push({
         standalone: true,
@@ -343,8 +354,8 @@ export default function SelectionConfigurator({
             );
           } else {
             return (
-              <OptionGroupComponent 
-                key={group.name}
+              <OptionGroupComponent
+                key={group.id || group.name}
                 group={group}
                 selection={selection}
                 system={system}

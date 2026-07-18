@@ -11,6 +11,7 @@ import {
   fetchCatalogText,
   buildRawFileUrl,
   deriveRevisionState,
+  CATALOG_SOURCES,
   REVISION_STATE,
 } from '../db/catalogUpdate';
 
@@ -96,6 +97,79 @@ function revisionLabelClassName(tone) {
   return ['bundle-revision-label', tone].filter(Boolean).join(' ');
 }
 
+// A catalogueLink pulls shared entries from another (library) catalogue into the
+// referencing one. Deselecting that target while keeping a catalogue that links to it
+// would silently drop those shared entries on the next roster resolution, so the bundle
+// import guards against a selection that omits such a dependency.
+const MISSING_LIBRARY_DEPENDENCY_MESSAGE = {
+  headline: 'Import abgebrochen: Ein ausgewählter Katalog verweist auf einen nicht ausgewählten Bibliothekskatalog.',
+  instruction: 'Bitte wähle folgende Kataloge zusätzlich aus, um einen vollständigen Import sicherzustellen:',
+  requiredByLabel: 'benötigt von',
+  itemSeparator: '; ',
+  referenceSeparator: ', ',
+};
+
+/**
+ * Finds catalogueLinks in the loaded catalogues whose target is a real, selectable
+ * catalogue that the user left out of the current selection. Such a target is a shared
+ * (library) catalogue the referencing catalogue depends on; importing without it yields a
+ * silently incomplete dataset. Targets that are already selected, or that are not part of
+ * the available catalogues at all, are ignored.
+ *
+ * @param {{ id: string, name?: string, catalogueLinks?: { targetId?: string, name?: string }[] }[]} loadedCatalogues
+ *   the fully parsed catalogues of the current selection (their catalogueLinks are read).
+ * @param {Set<string>} selectedCatalogueIds ids the user chose to import.
+ * @param {{ id: string, name?: string }[]} availableCatalogues every catalogue the user
+ *   could have selected (from the catalog index).
+ * @returns {{ id: string, name: string, requiredBy: string[] }[]} one entry per missing
+ *   dependency, deduplicated by target id.
+ */
+export function findMissingLibraryDependencies(loadedCatalogues, selectedCatalogueIds, availableCatalogues) {
+  const availableCatalogueById = new Map(availableCatalogues.map(catalogue => [catalogue.id, catalogue]));
+  const missingDependencyById = new Map();
+
+  for (const loadedCatalogue of loadedCatalogues ?? []) {
+    for (const catalogueLink of loadedCatalogue.catalogueLinks ?? []) {
+      const targetId = catalogueLink.targetId;
+      if (!targetId || selectedCatalogueIds.has(targetId)) continue;
+
+      const availableTarget = availableCatalogueById.get(targetId);
+      if (!availableTarget) continue;
+
+      const dependency = missingDependencyById.get(targetId) ?? {
+        id: targetId,
+        name: availableTarget.name ?? catalogueLink.name ?? targetId,
+        requiredBy: [],
+      };
+      const referencingName = loadedCatalogue.name ?? loadedCatalogue.id;
+      if (referencingName && !dependency.requiredBy.includes(referencingName)) {
+        dependency.requiredBy.push(referencingName);
+      }
+      missingDependencyById.set(targetId, dependency);
+    }
+  }
+
+  return [...missingDependencyById.values()];
+}
+
+function quoteCatalogueName(value) {
+  return `„${value}"`;
+}
+
+function buildMissingLibraryDependencyMessage(missingDependencies) {
+  const { headline, instruction, requiredByLabel, itemSeparator, referenceSeparator } =
+    MISSING_LIBRARY_DEPENDENCY_MESSAGE;
+  const details = missingDependencies
+    .map(dependency => {
+      const quotedName = quoteCatalogueName(dependency.name);
+      if (dependency.requiredBy.length === 0) return quotedName;
+      const references = dependency.requiredBy.map(quoteCatalogueName).join(referenceSeparator);
+      return `${quotedName} (${requiredByLabel} ${references})`;
+    })
+    .join(itemSeparator);
+  return `${headline} ${instruction} ${details}.`;
+}
+
 export function transformIndexToSystems(index) {
   if (!index?.repositoryFiles) return [];
 
@@ -115,17 +189,66 @@ export function transformIndexToSystems(index) {
     gst: {
       id: gs.id,
       name: gs.name,
-      fileName: `${gs.name}.gst`,
+      // `path` is the real repository file name; the name+extension form is only a
+      // fallback for a legacy index without it (see catalogUpdate.rawFileName).
+      fileName: gs.path ?? `${gs.name}.gst`,
       revision: gs.revision
     },
     catalogues: catalogueEntries.map(cat => ({
         id: cat.id,
         name: cat.name,
-        fileName: `${cat.name}.cat`,
+        fileName: cat.path ?? `${cat.name}.cat`,
         revision: cat.revision
       }))
       .sort((a, b) => a.name.localeCompare(b.name))
   }));
+}
+
+/**
+ * Tags every system parsed from one source's index with that source's `rawBaseUrl`, so
+ * the import later fetches its files from the right fork (ADR 0018). No display label is
+ * stored or derived: the system is shown under its own catalog `name`, straight from the
+ * parsed index.
+ */
+function withSourceRawBaseUrl(systems, rawBaseUrl) {
+  return systems.map(system => ({ ...system, rawBaseUrl }));
+}
+
+/**
+ * A selection map that marks every catalogue of a system as selected. Used to preselect
+ * all factions whenever a system becomes the active one in the dropdown.
+ */
+function buildAllSelectedCats(system) {
+  const selected = {};
+  (system?.catalogues ?? []).forEach(cat => {
+    selected[cat.id] = true;
+  });
+  return selected;
+}
+
+/**
+ * Loads and merges the available systems of every configured catalog source into one
+ * flat list (ADR 0018 — no extra selection step; both systems share the one dropdown).
+ * A source whose index is unreachable contributes nothing rather than failing the whole
+ * list, so one source being offline never hides the other. `anyIndexReachable` stays
+ * true as long as at least one source's index loaded (even if it held no systems), so
+ * the caller only reports an outage when every source is unreachable — not when a
+ * reachable index is simply empty.
+ *
+ * @returns {Promise<{ systems: Array, anyIndexReachable: boolean }>}
+ */
+export async function loadAvailableSystemsFromSources(fetchText) {
+  const perSource = await Promise.all(
+    CATALOG_SOURCES.map(async (source) => {
+      const index = await loadCatalogIndex(fetchText, source.indexUrl);
+      const systems = index ? withSourceRawBaseUrl(transformIndexToSystems(index), source.rawBaseUrl) : [];
+      return { reachable: index !== null, systems };
+    })
+  );
+  return {
+    systems: perSource.flatMap(result => result.systems),
+    anyIndexReachable: perSource.some(result => result.reachable),
+  };
 }
 
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
@@ -156,19 +279,12 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
 
   const fetchAvailableSystems = async () => {
     try {
-      const data = await loadCatalogIndex(fetchCatalogText);
-      if (data) {
-        const systems = transformIndexToSystems(data);
+      const { systems, anyIndexReachable } = await loadAvailableSystemsFromSources(fetchCatalogText);
+      if (systems.length > 0) {
         setAvailableSystems(systems);
-        if (systems.length > 0) {
-          setSelectedBundleSysId(systems[0].id);
-          const initialCats = {};
-          systems[0].catalogues.forEach(cat => {
-            initialCats[cat.id] = true;
-          });
-          setSelectedCats(initialCats);
-        }
-      } else {
+        setSelectedBundleSysId(systems[0].id);
+        setSelectedCats(buildAllSelectedCats(systems[0]));
+      } else if (!anyIndexReachable) {
         setError('Der Katalog-Index ist derzeit nicht erreichbar. Bitte versuche es später erneut.');
       }
     } catch (e) {
@@ -182,13 +298,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
   const handleSystemChange = (sysId) => {
     setSelectedBundleSysId(sysId);
     const system = availableSystems.find(s => s.id === sysId);
-    const initialCats = {};
-    if (system) {
-      system.catalogues.forEach(cat => {
-        initialCats[cat.id] = true;
-      });
-    }
-    setSelectedCats(initialCats);
+    setSelectedCats(buildAllSelectedCats(system));
   };
 
   const handleToggleCat = (catId) => {
@@ -219,14 +329,14 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     setLoading(true);
 
     try {
-      const gstUrl = buildRawFileUrl(system.gst.fileName);
+      const gstUrl = buildRawFileUrl(system.rawBaseUrl, system.gst.fileName);
       const gstRes = await fetch(gstUrl);
       if (!gstRes.ok) throw new Error(`Fehler beim Laden des Spielsystems: ${gstRes.statusText}`);
       const gstText = await gstRes.text();
       const gstFiles = [{ name: system.gst.fileName, content: gstText }];
 
       const catFiles = await Promise.all(selectedCatList.map(async (cat) => {
-        const catUrl = buildRawFileUrl(cat.fileName);
+        const catUrl = buildRawFileUrl(system.rawBaseUrl, cat.fileName);
         const catRes = await fetch(catUrl);
         if (!catRes.ok) throw new Error(`Fehler beim Laden des Katalogs ${cat.name}: ${catRes.statusText}`);
         const catText = await catRes.text();
@@ -236,6 +346,18 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       logSchemaWarnings(await collectSchemaWarnings(gstFiles, catFiles));
 
       const systemData = processImportedData(gstFiles, catFiles);
+
+      const selectedCatalogueIds = new Set(selectedCatList.map(cat => cat.id));
+      const missingLibraryDependencies = findMissingLibraryDependencies(
+        systemData.catalogues,
+        selectedCatalogueIds,
+        system.catalogues
+      );
+      if (missingLibraryDependencies.length > 0) {
+        setError(buildMissingLibraryDependencyMessage(missingLibraryDependencies));
+        return;
+      }
+
       systemData.rawXmls = {
         gst: gstFiles,
         cat: catFiles

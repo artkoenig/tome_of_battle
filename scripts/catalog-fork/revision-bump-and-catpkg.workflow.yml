@@ -1,0 +1,58 @@
+# Workflow TEMPLATE for the Lexicanum catalog fork (see ADR-0017).
+#
+# This file is intentionally NOT under army_builder's .github/workflows/ — it must not
+# run here. Copy it into the fork repository as
+# `.github/workflows/revision-bump-and-catpkg.yml` (see README.md in this folder).
+#
+# On every push that touches catalog data, it bumps `revision` for files whose content
+# actually changed and (re)generates `catpkg.json`, then commits the result back to the
+# branch — the same "commit a generated artifact into the branch" pattern ADR-0014
+# established for catpkg.json. The bot commit carries [skip ci], so it never re-triggers
+# itself.
+name: Revision bump & catpkg
+
+on:
+  push:
+    # The Lexicanum-derived fork's default branch is `main` (ADR-0017 / issue 05).
+    branches: [main]
+    paths:
+      - '**/*.cat'
+      - '**/*.gst'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  revision-bump-and-catpkg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with history
+        uses: actions/checkout@v4
+        with:
+          # Full history so the script can read each file's pre-push version.
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25'
+
+      - name: Bump revisions and regenerate catpkg.json
+        env:
+          # The push event's "before" SHA is the state to diff against. On a branch's
+          # first push this is all-zeros; the script then treats every file as new.
+          CATALOG_SYNC_BASE_REF: ${{ github.event.before }}
+        run: node scripts/catalog-fork/generate-catpkg.js
+
+      - name: Commit result
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No revision bumps or catpkg changes to commit."
+            exit 0
+          fi
+          git config user.name 'catalog-ci'
+          git config user.email 'catalog-ci@users.noreply.github.com'
+          git add -A
+          git commit -m 'ci: bump revisions and regenerate catpkg.json [skip ci]'
+          git push
