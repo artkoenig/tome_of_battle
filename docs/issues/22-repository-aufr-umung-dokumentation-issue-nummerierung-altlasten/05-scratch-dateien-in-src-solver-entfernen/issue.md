@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -19,3 +19,4 @@ Drei Dateien in `src/solver/` sind Debug-/Scratch-Altlasten ohne Produktbezug:
       Dateien)
 
 ## Comments
+- Removed three scratch/debug files from src/solver/ (debugBigUns.js, screenshot_fonts.js, test_maneaters_scratch.test.js). npm test remains green (61 files, 646 tests + UI E2E).
