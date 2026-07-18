@@ -123,9 +123,11 @@ export default function CategoryUnitAdder({
                   <span style={{ color: isMaxedOut ? 'var(--text-dim)' : 'inherit' }}>{res.name}</span>
                   {isMaxedOut && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Nicht verfügbar)</span>}
                 </span>
-                <span className="popover-item-cost font-body text-gold" style={{ color: isMaxedOut ? 'var(--text-dim)' : 'var(--text-gold)' }}>
-                  {points > 0 ? `+${points} ${costTypeLabel}` : `0 ${costTypeLabel}`}
-                </span>
+                {points > 0 && (
+                  <span className="popover-item-cost font-body text-gold" style={{ color: isMaxedOut ? 'var(--text-dim)' : 'var(--text-gold)' }}>
+                    +{points} {costTypeLabel}
+                  </span>
+                )}
               </div>
             );
           })}

@@ -323,6 +323,7 @@ export default function PlayUnitDetails({
   const wsInfo = getWardSaveInfo(selection);
   
   const isDead = hasSubUnits ? false : (currentWounds === 0);
+  const totalCost = getSelectionTotalCost(selection, roster.costLimitType || 'pts', 1, { system, roster, currentCatalogueId: roster.catalogueId });
 
   return (
     <div 
@@ -362,9 +363,11 @@ export default function PlayUnitDetails({
                 </button>
               </div>
             )}
-            <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
-              {getSelectionTotalCost(selection, roster.costLimitType || 'pts', 1, { system, roster, currentCatalogueId: roster.catalogueId })} Pkt.
-            </div>
+            {totalCost > 0 && (
+              <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
+                {totalCost} Pkt.
+              </div>
+            )}
           </div>
         </div>
         
