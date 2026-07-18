@@ -23,6 +23,7 @@ import {
 
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './solver/validator';
 import useViewportHeight from './hooks/useViewportHeight';
+import { Analytics } from '@vercel/analytics/react';
 export function getDiffChanges(installedVersion, release) {
   if (!release) return [];
   if (!release.commits || !release.tags) {
@@ -591,6 +592,7 @@ export default function App() {
         </div>
       )}
     </div>
+    <Analytics />
     </SettingsProvider>
   );
 }
