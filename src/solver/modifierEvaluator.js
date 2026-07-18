@@ -20,7 +20,7 @@ const selectionHasCategory = (sel, categoryId, system, catalogueId) => {
     if (res.id === categoryId || res.targetId === categoryId) return true;
     if (entryHasCategoryLink(res, categoryId)) return true;
   }
-  
+
   if (sel.selections && sel.selections.length > 0) {
     for (const sub of sel.selections) {
       if (selectionHasCategory(sub, categoryId, system, catalogueId)) {
@@ -29,6 +29,67 @@ const selectionHasCategory = (sel, categoryId, system, catalogueId) => {
     }
   }
   return false;
+};
+
+// The BattleScribe `scope` keywords that are NOT entry ids. Any other scope value on an
+// instanceOf condition is a selection-entry id (see the self-scope handling below).
+const NON_ENTRY_SCOPE_KEYWORDS = ['parent', 'force', 'roster'];
+
+// Type-keyword childIds ("any model", "any unit", ...) are resolved by the generic
+// instanceOf path, not by the self-scope subtree search, which targets a concrete
+// category/entry id.
+const INSTANCE_TYPE_CHILD_IDS = ['model', 'unit', 'upgrade', 'any'];
+
+// A ctx flag that marks we are already resolving effective categories for a self-scope
+// instanceOf condition. It bounds recursion to one level: a category modifier whose own
+// gate is (pathologically) another self-scope instanceOf falls back to static links
+// instead of re-entering effective-category resolution.
+const SELF_SCOPE_CATEGORY_RESOLUTION_FLAG = '_resolvingSelfScopeCategory';
+
+const resolveCatalogueId = (ctx) =>
+  ctx.parentCatalogueId || (ctx.roster ? ctx.roster.catalogueId : null);
+
+// True when `sel` is an instance of the selection-entry `entryId`: it either directly
+// carries that entry id or its resolved definition's id/targetId matches. Used to detect
+// that a condition's `scope` names the very entry the condition is attached to.
+const selectionIsInstanceOfEntry = (sel, entryId, system, catalogueId) => {
+  if (!sel || !entryId) return false;
+  const sId = sel.selectionEntryId || sel.entryLinkId;
+  if (sId === entryId) return true;
+  const raw = findEntryInSystem(system, sId, catalogueId);
+  const res = raw && resolveEntry(system, raw, catalogueId);
+  return !!(res && (res.id === entryId || res.targetId === entryId));
+};
+
+// Effective category membership of a single selection's own entry, evaluated in `ctx` so
+// that categories a modifier adds conditionally (e.g. the bloodline category a Vampire
+// gains once its bloodline is chosen) count. Reuses getEffectiveCategoryLinks — the same
+// category resolution the category axis applies — so instanceOf sees exactly the
+// categories the rest of the app sees (single source of truth). Also matches a `childId`
+// that names the entry itself rather than a category.
+const selectionHasEffectiveCategory = (sel, categoryId, ctx) => {
+  if (!sel || !categoryId) return false;
+  const { system } = ctx;
+  const catalogueId = resolveCatalogueId(ctx);
+  const sId = sel.selectionEntryId || sel.entryLinkId;
+  if (sId === categoryId) return true;
+
+  const raw = findEntryInSystem(system, sId, catalogueId);
+  const res = raw && resolveEntry(system, raw, catalogueId);
+  if (!res) return false;
+  if (res.id === categoryId || res.targetId === categoryId) return true;
+
+  const categoryResolutionCtx = { ...ctx, selection: sel, [SELF_SCOPE_CATEGORY_RESOLUTION_FLAG]: true };
+  const effectiveLinks = getEffectiveCategoryLinks(res.categoryLinks, getEffectiveModifiers(res), categoryResolutionCtx);
+  return effectiveLinks.some(cl => cl.targetId === categoryId || cl.id === categoryId);
+};
+
+// Searches the selection's own subtree (itself and its descendant selections) for an
+// instance of `childId`, using effective (post-modifier) category membership.
+const subtreeHasInstanceOf = (sel, childId, ctx) => {
+  if (!sel) return false;
+  if (selectionHasEffectiveCategory(sel, childId, ctx)) return true;
+  return (sel.selections || []).some(sub => subtreeHasInstanceOf(sub, childId, ctx));
 };
 
 export const evaluateCondition = (cond, ctx = {}) => {
@@ -148,6 +209,26 @@ export const evaluateCondition = (cond, ctx = {}) => {
         }
 
         if (!selection || !system) return false;
+
+        // Self-scope: `scope` names the selection-entry this condition is attached to
+        // (a BattleScribe idiom meaning "search within my own subtree"), not a category
+        // id. When the current or parent selection is that entry, search its own subtree
+        // for the childId-referenced instance — including categories added by modifiers
+        // (e.g. a bloodline category the unit gains once its bloodline is chosen) —
+        // instead of the generic category-membership check, which never matches here and
+        // would leave the attached modifier permanently inactive. Mirrors the existing
+        // parent/force/roster special-casing.
+        const scopeNamesEntry = cond.scope && !NON_ENTRY_SCOPE_KEYWORDS.includes(cond.scope);
+        const childIsConcreteId = cond.childId && !INSTANCE_TYPE_CHILD_IDS.includes(cond.childId);
+        if (scopeNamesEntry && childIsConcreteId && !ctx[SELF_SCOPE_CATEGORY_RESOLUTION_FLAG]) {
+          const catId = resolveCatalogueId(ctx);
+          const selfInstance = [selection, parentSelection].find(candidate =>
+            selectionIsInstanceOfEntry(candidate, cond.scope, system, catId));
+          if (selfInstance) {
+            return subtreeHasInstanceOf(selfInstance, cond.childId, ctx);
+          }
+        }
+
         const targetChildId = cond.childId;
         const checkInstance = (sel) => {
           if (!sel) return false;
