@@ -37,10 +37,14 @@ GitHub-Integration:
   mit dynamischer URL aus.
 - Der Git-Zweig `staging` wird komplett gelöscht.
 
-### 2. Visuelle Umgebungserkennung (Badge)
-Der Build-Prozess (`scripts/deployEnv.js`) bestimmt die Umgebung:
-- Wenn der gebaute Branch `main` ist (oder `VERCEL_ENV` gleich `production`), wird die Umgebung als `production` eingestuft.
-- Bei allen anderen Builds wird die Umgebung als `preview` eingestuft und das `VORSCHAU`-Badge wird links neben dem Logo eingeblendet.
+### 2. Visuelle Umgebungserkennung (Badge) — entfernt
+Der Build-Prozess (`scripts/deployEnv.js`) bestimmt weiterhin, ob ein Build
+`production` oder `preview` ist. Das dafür ursprünglich eingeführte
+`VORSCHAU`-Badge im Header wurde jedoch wieder entfernt (siehe
+[ADR 0019](0019-manuelle-versionierung-und-release-freigabe.md)):
+Nicht-`main`-Builds sind stattdessen über den Hash-Zusatz an der angezeigten
+Versionsnummer (`<Version>+<Kurz-Hash>`) erkennbar, ohne ein separates
+UI-Element.
 
 ---
 

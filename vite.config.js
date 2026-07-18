@@ -94,13 +94,12 @@ function ensureGitHistory() {
 }
 
 /**
- * Computes this build's version and release notes from git — read only, never
- * creates or pushes anything.
+ * Computes this build's version and release notes — read only, never creates
+ * or pushes anything.
  *
- *   - building main         → next semver minor release (e.g. v1.5.0), or the
- *                             tag already on HEAD if this commit was released
- *   - building any other branch → current version + commit hash (v1.4.0+a1b2c3d)
- *   - major is only ever set manually
+ *   - version comes from package.json, set manually via scripts/release.js
+ *   - building main             → package.json version unchanged (e.g. v1.5.0)
+ *   - building any other branch → package.json version + commit hash (v1.4.0+a1b2c3d)
  *
  * Notes ("changes") are the commit subjects since the base release tag up to
  * HEAD — i.e. what is new in this build (merge commits skipped).
@@ -130,6 +129,12 @@ function parseAndFilterCommits(out) {
   return list;
 }
 
+/** Liest package.jsons "version"-Feld ("1.5.0"), das den Build versioniert. */
+function readPackageVersion() {
+  const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8'))
+  return pkg.version
+}
+
 function computeRelease() {
   if (!gitSafe('git rev-parse --is-inside-work-tree')) {
     return { version: '', date: '', changes: [], commits: [], tags: [] };
@@ -139,9 +144,9 @@ function computeRelease() {
   const isMain = detectBranch() === 'main';
   const commitHash = gitSafe('git rev-parse --short HEAD');
   const tags = gitSafe("git tag -l 'v*.*.*'").split('\n').filter(Boolean);
-  const headTags = gitSafe("git tag --points-at HEAD -l 'v*.*.*'").split('\n').filter(Boolean);
+  const packageVersion = readPackageVersion();
 
-  const { version, base } = resolveVersion({ tags, headTags, isMain, commitHash });
+  const { version, base } = resolveVersion({ tags, packageVersion, isMain, commitHash });
 
   // 1. Changes since base (backward compatibility)
   const baseLogCmd = base
