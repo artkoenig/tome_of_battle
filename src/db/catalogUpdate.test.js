@@ -141,12 +141,17 @@ function makeFetchText(fileContentsByName) {
   };
 }
 
+// These orchestration tests exercise the fetch/parse/merge flow, not schema
+// validity, so they inject a no-warning advisory collector. The collector's own
+// behaviour is covered by importSchemaGate.test.js and by the advisory test below.
+const noWarnings = async () => [];
+
 describe('updateSystemFromCatalogIndex (orchestration via injected fetch)', () => {
   test('a successful update re-parses fetched files and carries the new revisions', async () => {
     const system = makeStoredSystemWithRawXmls();
     const fetchText = makeFetchText({ 'Sys.gst': gstV9, 'Faction.cat': catV14 });
 
-    const updated = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText);
+    const updated = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText, noWarnings);
 
     expect(updated).not.toBeNull();
     expect(updated.revision).toBe(9);
@@ -165,7 +170,7 @@ describe('updateSystemFromCatalogIndex (orchestration via injected fetch)', () =
       return catV14;
     };
 
-    const updated = await updateSystemFromCatalogIndex(system, index, fetchText);
+    const updated = await updateSystemFromCatalogIndex(system, index, fetchText, noWarnings);
 
     expect(requestedUrls).toHaveLength(1);
     expect(requestedUrls[0]).toContain('Faction.cat');
@@ -192,6 +197,23 @@ describe('updateSystemFromCatalogIndex (orchestration via injected fetch)', () =
     const result = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText);
 
     expect(result).toBeNull();
+  });
+
+  test('a schema-invalid fork update is advisory: the update proceeds despite reported warnings', async () => {
+    // The fetched files parse, and the injected collector reports a schema warning.
+    // Per ADR 0016 (Revision 2026-07-18) the advisory must not abort the update: the
+    // fetched data is parsed and returned, mirroring the manual import's behaviour.
+    const system = makeStoredSystemWithRawXmls();
+    const fetchText = makeFetchText({ 'Sys.gst': gstV9, 'Faction.cat': catV14 });
+    const warningCollector = async () => [
+      { fileName: 'Faction.cat', errors: [{ line: 4, column: null, message: 'schema violation' }], message: 'schema violation' },
+    ];
+
+    const result = await updateSystemFromCatalogIndex(system, makeIndex(), fetchText, warningCollector);
+
+    expect(result).not.toBeNull();
+    expect(result.revision).toBe(9);
+    expect(result.catalogues[0].revision).toBe(14);
   });
 
   test('no index means no update attempt', async () => {

@@ -63,7 +63,17 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const getGroupedAndSortedSelections = () => {
     const groups = [];
     const costType = roster.costLimitType || 'pts';
-    
+
+    // Orders selections in place by total cost, descending. The cost context is built
+    // once per sort here rather than rebuilt for every pairwise comparison the sort makes.
+    const sortByCostDescending = (selections, catalogueId) => {
+      const costContext = { system, roster, currentCatalogueId: catalogueId };
+      selections.sort((a, b) =>
+        getSelectionTotalCost(b, costType, 1, costContext) -
+        getSelectionTotalCost(a, costType, 1, costContext)
+      );
+    };
+
     roster.forces.forEach(force => {
       const forceDef = findForceEntryById(system, force.forceEntryId);
       const categoryLinks = forceDef?.categoryLinks || [];
@@ -84,13 +94,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         });
 
         if (selections.length > 0) {
-          // Sort descending by points
-          selections.sort((a, b) => {
-            const catId = force.catalogueId || roster.catalogueId;
-            const aPoints = getSelectionTotalCost(a, costType, 1, system, roster, catId);
-            const bPoints = getSelectionTotalCost(b, costType, 1, system, roster, catId);
-            return bPoints - aPoints;
-          });
+          sortByCostDescending(selections, force.catalogueId || roster.catalogueId);
 
           const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
           const catName = catDef ? catDef.name : link.name || 'Unbekannte Kategorie';
@@ -118,13 +122,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       });
 
       if (uncategorizedSelections.length > 0) {
-        uncategorizedSelections.sort((a, b) => {
-          const catId = force.catalogueId || roster.catalogueId;
-          const aPoints = getSelectionTotalCost(a, costType, 1, system, roster, catId);
-          const bPoints = getSelectionTotalCost(b, costType, 1, system, roster, catId);
-          return bPoints - aPoints;
-        });
-        
+        sortByCostDescending(uncategorizedSelections, force.catalogueId || roster.catalogueId);
+
         groups.push({
           id: `${force.id}-uncategorized`,
           name: 'Sonstige Auswahlen',

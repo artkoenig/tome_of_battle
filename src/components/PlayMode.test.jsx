@@ -181,6 +181,27 @@ describe('PlayMode Component', () => {
     expect(unitElements[1].textContent).toContain('50 Pkt.');
   });
 
+  // Regression (Issue 19, A1): the cost sort must call getSelectionTotalCost with the
+  // EvaluationContext object (system/roster/currentCatalogueId), not the old positional
+  // form which put `system` into the context slot and dropped roster/catalogueId —
+  // silently disabling modifier-aware costs and sorting by unmodified cost.
+  it('1b. sorts using getSelectionTotalCost with an EvaluationContext object', () => {
+    render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
+
+    expect(mockGetSelectionTotalCost).toHaveBeenCalled();
+    mockGetSelectionTotalCost.mock.calls.forEach(call => {
+      expect(call).toHaveLength(4);
+      const [, costTypeArg, parentCountArg, contextArg] = call;
+      expect(costTypeArg).toBe('pts');
+      expect(parentCountArg).toBe(1);
+      expect(contextArg).toEqual({
+        system: mockSystem,
+        roster: mockRoster,
+        currentCatalogueId: 'cat-1',
+      });
+    });
+  });
+
   it('2. Back Button Action', () => {
     render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
 

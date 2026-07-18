@@ -1,4 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+import { getEffectiveModifiers } from './modifierEvaluator.js';
 
 export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
   if (!activeCatalogueId) return [];
@@ -69,7 +70,9 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
       // If the entry link points to a group, we recurse into it to extract its items
       if (child.type === 'selectionEntryGroup') {
         const combinedConstraints = prepareConstraints(resolvedChild);
-        const combinedModifiers = (resolvedChild.modifiers || []).concat(child.modifiers || []);
+        // Resolve the link's own modifiers through the same seam so its
+        // modifierGroup-gated modifiers are kept rather than silently dropped.
+        const combinedModifiers = getEffectiveModifiers(resolvedChild).concat(getEffectiveModifiers(child));
         collectOptions(resolvedChild, resolvedChild.name || child.name, resolvedChild.id || child.id, combinedConstraints, combinedModifiers);
       } else {
         // Otherwise it points to an option (upgrade, profile, etc.), so it's a selectable item
@@ -87,7 +90,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
     // 3. Process selection entry groups
     def.selectionEntryGroups?.forEach(group => {
       const combinedGroupConstraints = prepareConstraints(group);
-      collectOptions(group, group.name || currentGroupName, group.id || currentGroupId, combinedGroupConstraints, group.modifiers);
+      collectOptions(group, group.name || currentGroupName, group.id || currentGroupId, combinedGroupConstraints, getEffectiveModifiers(group));
     });
   };
 

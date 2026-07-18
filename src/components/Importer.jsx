@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
+import { Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
+import { collectSchemaWarnings } from '../parser/importSchemaGate';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import ConfirmationDialog from './editor/ConfirmationDialog';
 import {
@@ -12,6 +13,18 @@ import {
   deriveRevisionState,
   REVISION_STATE,
 } from '../db/catalogUpdate';
+
+// Advisory schema warnings are logged to the console rather than shown in the UI
+// (ADR 0016, Revision 2026-07-18): rendering them in the Importer caused a visible
+// flash on first import, between the loading overlay and the Heerlager view. This
+// mirrors the console-only pattern in `updateSystemFromCatalogIndex`.
+function logSchemaWarnings(warnings) {
+  if (warnings.length === 0) return;
+  console.warn(
+    'Schema advisory for imported game data:',
+    warnings.map((warning) => warning.message)
+  );
+}
 
 const REVISION_LABEL_PREFIX = 'Rev';
 const REVISION_SEGMENT_SEPARATOR = ' · ';
@@ -118,7 +131,6 @@ export function transformIndexToSystems(index) {
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [systemToDelete, setSystemToDelete] = useState(null);
@@ -221,6 +233,8 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         return { name: cat.fileName, content: catText };
       }));
 
+      logSchemaWarnings(await collectSchemaWarnings(gstFiles, catFiles));
+
       const systemData = processImportedData(gstFiles, catFiles);
       systemData.rawXmls = {
         gst: gstFiles,
@@ -232,32 +246,14 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
 
       setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
       loadSystems();
-      if (onSystemImported) onSystemImported();
+      // Await the parent so it has already switched to the Heerlager view before
+      // `finally` clears `loading` and unmounts this Importer — no visible flash.
+      if (onSystemImported) await onSystemImported();
     } catch (e) {
       console.error(e);
       setError(`Fehler beim Importieren der Spieldaten: ${e.message}`);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      await processUploadedFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -270,7 +266,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
   const processUploadedFile = async (file) => {
     setError(null);
     setSuccessMsg(null);
-    
+
     if (!file.name.endsWith('.zip')) {
       setError('Bitte lade eine gültige .zip-Datei hoch.');
       return;
@@ -279,6 +275,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     setLoading(true);
     try {
       const { gstFiles, catFiles } = await extractZipFiles(file);
+      logSchemaWarnings(await collectSchemaWarnings(gstFiles, catFiles));
       const systemData = processImportedData(gstFiles, catFiles);
       systemData.rawXmls = {
         gst: gstFiles,
@@ -288,7 +285,9 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       await saveSystem(systemData);
       setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
       loadSystems();
-      if (onSystemImported) onSystemImported();
+      // Await the parent so it has already switched to the Heerlager view before
+      // `finally` clears `loading` and unmounts this Importer — no visible flash.
+      if (onSystemImported) await onSystemImported();
     } catch (e) {
       console.error(e);
       setError(`Fehler beim Verarbeiten der Datei: ${e.message}`);
@@ -472,51 +471,9 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
           </div>
 
           {renderBundleImporter()}
-
-          {false && (
-            <div className="gothic-panel full-width">
-              <h3 className="text-subheading">Eigene Spieldaten hochladen</h3>
-              <p className="text-dim text-body">
-                Hast du eigene Battlescribe-Dateien? Lade sie als ZIP-Archiv hoch, um sie in deiner lokalen Bibliothek zu speichern.
-              </p>
-              <div 
-                className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''} margin-top-md`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => document.getElementById('file-upload').click()}
-              >
-                <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
-                <h3>Ziehe ein .zip-Archiv hierher</h3>
-                <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         <div className="importer-layout">
-          {false && (
-            <div className="gothic-panel bundle-importer-panel">
-              <h3 className="text-subheading">Eigene Spieldaten hochladen</h3>
-              <p className="text-dim text-body">
-                Ziehe ein .zip-Archiv hierher oder klicke, um deine Dateien zu durchsuchen.
-              </p>
-              <div 
-                className={`drop-zone desktop-drop-zone ${dragActive ? 'active' : ''} margin-top-md`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => document.getElementById('file-upload').click()}
-              >
-                <Upload className="drop-zone-icon" size={48} style={{ margin: '0 auto 12px' }} />
-                <h3>Ziehe ein .zip-Archiv hierher</h3>
-                <p className="text-dim">oder klicke, um deine Dateien zu durchsuchen</p>
-              </div>
-            </div>
-          )}
-
           {renderBundleImporter()}
         </div>
       )}
@@ -528,16 +485,6 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         accept=".zip"
         onChange={handleFileInput}
       />
-
-      {false && (
-        <button 
-          className="fab-mobile mobile-only"
-          onClick={() => document.getElementById('file-upload').click()}
-          title="Datei hochladen"
-        >
-          <Upload size={24} />
-        </button>
-      )}
 
       {!showAsEmptyState && (
         <div className="margin-top-md">

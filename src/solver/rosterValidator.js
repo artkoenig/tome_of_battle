@@ -1,6 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getModifiedConstraintValue } from './modifierEvaluator.js';
-import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost } from './rosterCounter.js';
+import { getModifiedConstraintValue, getEffectiveModifiers } from './modifierEvaluator.js';
+import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
+import { isPercentConstraint, isCostField, countSelections, resolveConstraintThreshold } from './constraintScope.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden } from './entryVisibility.js';
 import { getInheritedCategoryMaxSource } from './systemQuirks.js';
@@ -79,14 +80,14 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
           id: 'quirk-inherited-max',
           type: 'max',
           isFallback: true,
-          modifiers: sourceCatLink.modifiers
+          modifiers: getEffectiveModifiers(sourceCatLink)
         });
       }
     }
 
     constraintsToValidate.forEach(con => {
       const ctx = { roster, selectionCounts, forceCategoryCounts, force, system };
-      const finalValue = getModifiedConstraintValue(con, con.isFallback ? con.modifiers : catLink.modifiers, ctx);
+      const finalValue = getModifiedConstraintValue(con, con.isFallback ? con.modifiers : getEffectiveModifiers(catLink), ctx);
       if (finalValue < 0) return;
 
       if (con.type === 'min' && count < finalValue) {
@@ -157,7 +158,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
       system,
       parentCatalogueId: forceCatalogueId
     };
-    const finalValue = getModifiedConstraintValue(con, entry.modifiers, ctx);
+    const finalValue = getModifiedConstraintValue(con, getEffectiveModifiers(entry), ctx);
     if (finalValue < 0) return;
 
     // Check scope applicability for specific category/entry scoped constraints
@@ -187,18 +188,28 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
         return false;
       };
 
+      const scopeCatalogueId = force ? force.catalogueId : null;
+      const predicate = s => matchesEntryTarget(s, scopeCatalogueId);
+      const includeChildSelections = con.includeChildSelections;
       if (parentSelection) {
-        const childMatch = parentSelection.selections?.filter(s => matchesEntryTarget(s, force ? force.catalogueId : null)) || [];
-        count = childMatch.reduce((sum, s) => sum + (s.number || 1), 0);
+        count = countSelections(parentSelection.selections, { includeChildSelections, predicate });
       } else if (force) {
-        const forceMatch = force.selections?.filter(s => matchesEntryTarget(s, force.catalogueId)) || [];
-        count = forceMatch.reduce((sum, s) => sum + (s.number || 1), 0);
+        count = countSelections(force.selections, { includeChildSelections, predicate });
       }
     } else if (con.scope === 'roster') {
       count = Math.max(selectionCounts[entryId] || 0, (entry.targetId ? selectionCounts[entry.targetId] || 0 : 0));
     } else if (con.scope === 'force') {
-      const fCounts = force ? forceSelectionCounts[force.id] || {} : {};
-      count = Math.max(fCounts[entryId] || 0, (entry.targetId ? fCounts[entry.targetId] || 0 : 0));
+      // includeChildForces widens a force-scoped count to the whole roster
+      // (child forces are flattened as roster siblings in the roster model).
+      const scopeCounts = con.includeChildForces
+        ? selectionCounts
+        : (force ? forceSelectionCounts[force.id] || {} : {});
+      count = Math.max(scopeCounts[entryId] || 0, (entry.targetId ? scopeCounts[entry.targetId] || 0 : 0));
+    }
+
+    if (isPercentConstraint(con)) {
+      checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection, roster, system, force, forceCatalogueId, counts, errors });
+      return;
     }
 
     if (con.type === 'min' && count < finalValue) {
@@ -217,19 +228,40 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
         severity: 'error'
       });
     }
-    if (con.type === 'percent' && roster.costLimit) {
-      const finalValuePoints = (finalValue / 100) * roster.costLimit;
-      const pts = getSelectionTotalCost(selection, roster.costLimitType, 1, system, roster, forceCatalogueId, parentSelection, counts);
-      if (pts > finalValuePoints) {
-        errors.push({
-          type: 'entry-percent-max',
-          selectionId: selection.id,
-          message: `Option "${selection.name}" darf maximal ${finalValue}% der Punkte kosten (${finalValuePoints} Pkt.), kostet aber ${pts} Pkt.`,
-          severity: 'error'
-        });
-      }
-    }
   });
+}
+
+/**
+ * Prüft eine Prozent-Constraint (percentValue) eines Eintrags: die Bezugsgröße
+ * ist die Summe des Feldes im Scope, der Grenzwert `value%` davon. Punkte-Felder
+ * werden gegen die Kosten des Eintrags, `selections` gegen dessen Anzahl geprüft.
+ */
+function checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection, roster, system, force, forceCatalogueId, counts, errors }) {
+  const measuresCost = isCostField(con.field, system, roster);
+  const subject = measuresCost
+    ? getSelectionTotalCost(selection, con.field, TOP_LEVEL_PARENT_COUNT, {
+        system, roster, currentCatalogueId: forceCatalogueId, parentSelection, counts
+      })
+    : count;
+  const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection, forceCatalogueId, counts });
+  const unit = measuresCost ? 'Punkte' : 'Auswahlen';
+
+  if (con.type === 'min' && subject < threshold) {
+    errors.push({
+      type: 'entry-percent-min',
+      selectionId: selection.id,
+      message: `Option "${selection.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      severity: 'error'
+    });
+  }
+  if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
+    errors.push({
+      type: 'entry-percent-max',
+      selectionId: selection.id,
+      message: `Option "${selection.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      severity: 'error'
+    });
+  }
 }
 
 /** Constraints aller SelectionEntryGroups des Eintrags prüfen (Anzahl- und Punkte-Limits). */
@@ -291,20 +323,21 @@ function checkGroupConstraints({ selection, parentSelection, roster, system, for
 
     collectGroupItemIds(group);
 
-    const matchingSelections = selection.selections?.filter(s => {
-      const sId = s.entryLinkId || s.selectionEntryId;
-      return groupItemIds.has(sId);
-    }) || [];
-
-    const totalCount = matchingSelections.reduce((sum, s) => sum + (s.number || 1), 0);
-    const totalPoints = matchingSelections.reduce((sum, s) => {
-      const pts = getSelectionTotalCost(s, roster.costLimitType, 1, system, roster, forceCatalogueId, selection, counts);
-      return sum + pts;
-    }, 0);
+    // Selections belonging to the group. `includeChildSelections` widens the match
+    // to nested selections; without it only the group owner's direct children count.
+    const collectGroupMatches = (list, includeChildSelections) => {
+      if (!list) return [];
+      return list.flatMap(s => {
+        const sId = s.entryLinkId || s.selectionEntryId;
+        const self = groupItemIds.has(sId) ? [s] : [];
+        const nested = includeChildSelections ? collectGroupMatches(s.selections, includeChildSelections) : [];
+        return [...self, ...nested];
+      });
+    };
 
     group.constraints?.forEach(con => {
       const ctx = { roster, selectionCounts, forceCategoryCounts, selection, parentSelection, force, system, parentCatalogueId: forceCatalogueId };
-      const finalValue = getModifiedConstraintValue(con, group.modifiers, ctx);
+      const finalValue = getModifiedConstraintValue(con, getEffectiveModifiers(group), ctx);
       if (finalValue < 0) return;
 
       // Check scope applicability for specific category/entry scoped constraints
@@ -313,8 +346,24 @@ function checkGroupConstraints({ selection, parentSelection, roster, system, for
                               (entry.categoryLinks?.some(cl => cl.targetId === con.scope));
         if (!belongsToScope) return;
       }
-      const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
-      if (isCostField) {
+
+      const matchingSelections = collectGroupMatches(selection.selections, con.includeChildSelections);
+      const totalCount = matchingSelections.reduce((sum, s) => sum + (s.number || 1), 0);
+      const totalPoints = matchingSelections.reduce((sum, s) => {
+        const pts = getSelectionTotalCost(s, roster.costLimitType, TOP_LEVEL_PARENT_COUNT, {
+          system, roster, currentCatalogueId: forceCatalogueId, parentSelection: selection, counts
+        });
+        return sum + pts;
+      }, 0);
+
+      const measuresCost = isCostField(con.field, system, roster);
+
+      if (isPercentConstraint(con)) {
+        checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection, roster, system, force, forceCatalogueId, counts, errors });
+        return;
+      }
+
+      if (measuresCost) {
         if (con.type === 'max' && totalPoints > finalValue) {
           errors.push({
             type: 'group-points-max',
@@ -349,17 +398,33 @@ function checkGroupConstraints({ selection, parentSelection, roster, system, for
           });
         }
       }
-      if (con.type === 'percent' && roster.costLimit) {
-        const finalValuePoints = (finalValue / 100) * roster.costLimit;
-        if (totalPoints > finalValuePoints) {
-          errors.push({
-            type: 'group-percent-max',
-            selectionId: selection.id,
-            message: `Kategorie "${group.name}" darf maximal ${finalValue}% der Punkte kosten (${finalValuePoints} Pkt.), kostet aber ${totalPoints} Pkt.`,
-            severity: 'error'
-          });
-        }
-      }
     });
   });
+}
+
+/**
+ * Prüft eine Prozent-Constraint (percentValue) einer SelectionEntryGroup: die
+ * Gruppensumme (Punkte oder Anzahl) gegen `value%` der Bezugsgröße im Scope.
+ */
+function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection, roster, system, force, forceCatalogueId, counts, errors }) {
+  const subject = measuresCost ? totalPoints : totalCount;
+  const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection: selection, forceCatalogueId, counts });
+  const unit = measuresCost ? 'Punkte' : 'Auswahlen';
+
+  if (con.type === 'min' && subject < threshold) {
+    errors.push({
+      type: 'group-percent-min',
+      selectionId: selection.id,
+      message: `Kategorie "${group.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      severity: 'error'
+    });
+  }
+  if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
+    errors.push({
+      type: 'group-percent-max',
+      selectionId: selection.id,
+      message: `Kategorie "${group.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      severity: 'error'
+    });
+  }
 }

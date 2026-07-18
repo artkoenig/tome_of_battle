@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { resolveEntry } from './validator.js';
-import { getModifiedConstraintValue } from './modifierEvaluator.js';
+import { getModifiedConstraintValue, getEffectiveModifiers } from './modifierEvaluator.js';
 import { parseCatalogueXML } from '../parser/xmlParser.js';
 
 import { JSDOM } from 'jsdom';
@@ -29,6 +29,6 @@ const displayCtx = {
 };
 
 console.log('Original max value:', maxCon.value);
-const effectiveMax = getModifiedConstraintValue(maxCon, res.modifiers, displayCtx);
+const effectiveMax = getModifiedConstraintValue(maxCon, getEffectiveModifiers(res), displayCtx);
 console.log('Effective Max (should be 2):', effectiveMax);
 

@@ -1,4 +1,9 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+import { ModifierKind, ConditionKind } from '../parser/schema/battlescribeSchema.generated.js';
+
+// The BattleScribe modifiers that mutate category membership / the primary flag all
+// declare `field="category"`; their `value` is the target category id.
+const CATEGORY_MODIFIER_FIELD = 'category';
 
 // A resolved entry belongs to a category when one of its categoryLinks targets it.
 const entryHasCategoryLink = (resolvedEntry, categoryId) =>
@@ -79,23 +84,23 @@ export const evaluateCondition = (cond, ctx = {}) => {
   const targetValue = cond.value;
 
   switch (cond.type) {
-    case 'equalTo':
+    case ConditionKind.EQUAL_TO:
       return currentValue === targetValue;
-    case 'lessThan':
+    case ConditionKind.LESS_THAN:
       return currentValue < targetValue;
-    case 'greaterThan':
+    case ConditionKind.GREATER_THAN:
       return currentValue > targetValue;
-    case 'notEqualTo':
+    case ConditionKind.NOT_EQUAL_TO:
       return currentValue !== targetValue;
     case 'lessThanOrEqualTo':
-    case 'atMost':
+    case ConditionKind.AT_MOST:
       return currentValue <= targetValue;
     case 'greaterThanOrEqualTo':
-    case 'atLeast':
+    case ConditionKind.AT_LEAST:
       return currentValue >= targetValue;
-    case 'instanceOf':
-    case 'notInstanceOf': {
-      const isNegated = cond.type === 'notInstanceOf';
+    case ConditionKind.INSTANCE_OF:
+    case ConditionKind.NOT_INSTANCE_OF: {
+      const isNegated = cond.type === ConditionKind.NOT_INSTANCE_OF;
       const evaluateInstanceOf = () => {
         const forceEntryId = cond.scope || cond.childId;
         if (system && forceEntryId) {
@@ -186,22 +191,29 @@ export const evaluateConditionGroup = (group, ctx = {}) => {
   }
 };
 
+/**
+ * True when a modifier's own conditions/conditionGroups all pass in `ctx`.
+ * Mirrors the AND-of-conditions gating BattleScribe applies to every modifier.
+ */
+const modifierConditionsPass = (source, ctx) => {
+  const condsPass = source.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
+  const groupsPass = source.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
+  return condsPass && groupsPass;
+};
+
 export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
   let finalValue = con.value;
 
   const sortedModifiers = [...(modifiers || [])].sort((a, b) => {
-    if (a.type === 'set' && b.type !== 'set') return -1;
-    if (a.type !== 'set' && b.type === 'set') return 1;
+    if (a.type === ModifierKind.SET && b.type !== ModifierKind.SET) return -1;
+    if (a.type !== ModifierKind.SET && b.type === ModifierKind.SET) return 1;
     return 0;
   });
 
   sortedModifiers.forEach(mod => {
     if (mod.field !== con.id) return;
 
-    const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
-    const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
-
-    if (condsPass && groupsPass) {
+    if (modifierConditionsPass(mod, ctx)) {
       let modAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
 
       if (mod.repeat) {
@@ -245,15 +257,98 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
         modAmount = modAmount * repVal * (mod.repeat.repeats || 1);
       }
 
-      if (mod.type === 'set') {
+      if (mod.type === ModifierKind.SET) {
         finalValue = modAmount;
-      } else if (mod.type === 'increment') {
+      } else if (mod.type === ModifierKind.INCREMENT) {
         finalValue += modAmount;
-      } else if (mod.type === 'decrement') {
+      } else if (mod.type === ModifierKind.DECREMENT) {
         finalValue -= modAmount;
       }
     }
   });
 
   return finalValue;
+};
+
+/**
+ * Recursively pulls the modifiers out of a modifierGroup, folding the group's own
+ * conditions/conditionGroups into every contained modifier so that later condition
+ * evaluation applies the group as a gate: a contained modifier fires only when both
+ * its own and its group's conditions pass. A group-level repeat is inherited by
+ * contained modifiers that declare none. Nested groups compound their conditions.
+ */
+const collectGroupModifiers = (group, inheritedConditions, inheritedConditionGroups) => {
+  const conditions = [...inheritedConditions, ...(group.conditions || [])];
+  const conditionGroups = [...inheritedConditionGroups, ...(group.conditionGroups || [])];
+
+  const ownModifiers = (group.modifiers || []).map(mod => ({
+    ...mod,
+    conditions: [...conditions, ...(mod.conditions || [])],
+    conditionGroups: [...conditionGroups, ...(mod.conditionGroups || [])],
+    repeat: group.repeat && !mod.repeat ? group.repeat : mod.repeat
+  }));
+
+  const nestedModifiers = (group.modifierGroups || [])
+    .flatMap(nested => collectGroupModifiers(nested, conditions, conditionGroups));
+
+  return [...ownModifiers, ...nestedModifiers];
+};
+
+/**
+ * Returns the effective modifier list of an entry/link/resolved definition: its
+ * direct modifiers plus the modifiers contained in its modifierGroups, with each
+ * group modifier carrying the AND of its enclosing group conditions. This is the
+ * single place group gating is resolved, so every modifier consumer (cost, hidden,
+ * characteristics, categories) shares one rule and gates group modifiers correctly
+ * through the same condition evaluation it already applies to direct modifiers.
+ */
+export const getEffectiveModifiers = (source) => {
+  if (!source) return [];
+  const groupModifiers = (source.modifierGroups || []).flatMap(group => collectGroupModifiers(group, [], []));
+  return [...(source.modifiers || []), ...groupModifiers];
+};
+
+/**
+ * Applies the category-mutating modifiers (`add`/`remove`/`set-primary`/
+ * `unset-primary`) to a set of base categoryLinks and returns the effective links.
+ * Only modifiers whose conditions pass in `ctx` take effect, so a group's gate (via
+ * getEffectiveModifiers) or a modifier's own conditions make membership conditional.
+ * Semantics follow the BattleScribe reference: `value` is the target category id;
+ * `add`/`set-primary`/`unset-primary` create the link when it is missing.
+ */
+export const getEffectiveCategoryLinks = (baseCategoryLinks, modifiers, ctx = {}) => {
+  let links = (baseCategoryLinks || []).map(cl => ({ ...cl }));
+
+  (modifiers || []).forEach(mod => {
+    if (mod.field !== CATEGORY_MODIFIER_FIELD) return;
+    if (!modifierConditionsPass(mod, ctx)) return;
+
+    const categoryId = mod.value;
+    if (!categoryId) return;
+
+    switch (mod.type) {
+      case ModifierKind.ADD:
+        if (!links.some(cl => cl.targetId === categoryId)) {
+          links = [...links, { targetId: categoryId, primary: false }];
+        }
+        break;
+      case ModifierKind.REMOVE:
+        links = links.filter(cl => cl.targetId !== categoryId);
+        break;
+      case ModifierKind.SET_PRIMARY:
+      case ModifierKind.UNSET_PRIMARY: {
+        const isPrimary = mod.type === ModifierKind.SET_PRIMARY;
+        if (links.some(cl => cl.targetId === categoryId)) {
+          links = links.map(cl => cl.targetId === categoryId ? { ...cl, primary: isPrimary } : cl);
+        } else {
+          links = [...links, { targetId: categoryId, primary: isPrimary }];
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  });
+
+  return links;
 };

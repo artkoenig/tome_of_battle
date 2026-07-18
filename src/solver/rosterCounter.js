@@ -1,5 +1,25 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getModifiedConstraintValue } from './modifierEvaluator.js';
+import { getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks } from './modifierEvaluator.js';
+
+/**
+ * The multiplier applied to a top-level (subject) selection when its cost is
+ * summed on its own — it has no counted parent, so its parent count is one.
+ */
+export const TOP_LEVEL_PARENT_COUNT = 1;
+
+/** Fallback cost-type id used when a roster declares no explicit cost-limit type. */
+const POINTS_COST_TYPE_ID = 'pts';
+
+/**
+ * @typedef {Object} EvaluationContext
+ * The roster-wide state a cost/modifier evaluation needs, threaded as one object
+ * instead of as separate positional arguments (matches getSelectionOwnCosts).
+ * @property {Object|null} [system] resolved game system
+ * @property {Object|null} [roster] the roster being evaluated
+ * @property {string|null} [currentCatalogueId] catalogue the selection belongs to
+ * @property {Object|null} [parentSelection] the selection's parent, for conditions
+ * @property {Object|null} [counts] pre-computed roster counts (computeRosterCounts)
+ */
 
 /**
  * Recursively computes the display cost of an option definition, including its base cost
@@ -24,9 +44,9 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 
   // Apply cost modifiers if any
   const costType = resolved.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts');
-  let modifiers = resolved.modifiers || [];
-  if (entry.modifiers && entry.modifiers !== resolved.modifiers) {
-    modifiers = modifiers.concat(entry.modifiers);
+  let modifiers = getEffectiveModifiers(resolved);
+  if (entry.modifiers !== resolved.modifiers || entry.modifierGroups !== resolved.modifierGroups) {
+    modifiers = modifiers.concat(getEffectiveModifiers(entry));
   }
   if (costType && modifiers.length > 0 && ctx && Object.keys(ctx).length > 0) {
     const tempCon = { id: costType.typeId, value: directCost };
@@ -94,9 +114,10 @@ export function getSelectionOwnCosts(selection, effectiveCount, { system = null,
   const baseCosts = (resolved?.costs?.length ? resolved.costs : (selection.costs || []));
   if (!baseCosts.length) return {};
 
-  let modifiers = resolved?.modifiers || [];
-  if (selection.modifiers && selection.modifiers !== resolved?.modifiers) {
-    modifiers = modifiers.concat(selection.modifiers);
+  // Group modifiers carry their group conditions, so downstream gating applies them.
+  let modifiers = getEffectiveModifiers(resolved);
+  if (selection.modifiers !== resolved?.modifiers || selection.modifierGroups !== resolved?.modifierGroups) {
+    modifiers = modifiers.concat(getEffectiveModifiers(selection));
   }
 
   let ctx = null;
@@ -127,16 +148,22 @@ export function getSelectionOwnCosts(selection, effectiveCount, { system = null,
 }
 
 /**
- * Recursively calculates the total cost of a selection node and all its child selections.
+ * Recursively calculates the total cost of a selection node and all its child
+ * selections. The roster-wide state travels as one {@link EvaluationContext}
+ * object rather than as a long tail of positional arguments.
+ * @param {Object} selection
+ * @param {string} costLimitType
+ * @param {number} [parentCount]
+ * @param {EvaluationContext} [context]
  */
-export function getSelectionTotalCost(selection, costLimitType, parentCount = 1, system = null, roster = null, currentCatalogueId = null, parentSelection = null, counts = null) {
+export function getSelectionTotalCost(selection, costLimitType, parentCount = TOP_LEVEL_PARENT_COUNT, context = {}) {
   const effectiveCount = (selection.number || 1) * parentCount;
-  const ownCosts = getSelectionOwnCosts(selection, effectiveCount, { system, roster, currentCatalogueId, parentSelection, counts });
-  let total = ownCosts[costLimitType] ?? ownCosts['pts'] ?? 0;
+  const ownCosts = getSelectionOwnCosts(selection, effectiveCount, context);
+  let total = ownCosts[costLimitType] ?? ownCosts[POINTS_COST_TYPE_ID] ?? 0;
 
   if (selection.selections) {
     selection.selections.forEach(child => {
-      total += getSelectionTotalCost(child, costLimitType, effectiveCount, system, roster, currentCatalogueId, selection, counts);
+      total += getSelectionTotalCost(child, costLimitType, effectiveCount, { ...context, parentSelection: selection });
     });
   }
   return total;
@@ -187,12 +214,14 @@ export function calculateRosterCosts(roster, system) {
 
 /**
  * Non-primary cost types (e.g. "Casting Dice"/"Dispel Dice") that carry a nonzero
- * total in the given roster's already-computed cost totals.
+ * total in the given roster's already-computed cost totals. Cost types flagged
+ * `hidden` in the game system are never surfaced, per the BattleScribe schema.
  */
 export function getExtraResourceTotals(system, roster, costs) {
   if (!system?.costTypes || !roster) return [];
   return system.costTypes
     .filter(ct => ct.id !== roster.costLimitType)
+    .filter(ct => !ct.hidden)
     .map(ct => ({ id: ct.id, name: ct.name, total: costs?.[ct.id] || 0 }))
     .filter(ct => ct.total > 0);
 }
@@ -202,7 +231,7 @@ export const computeRosterCounts = (roster, system) => {
   const forceSelectionCounts = {};
   const categoryCounts = {};
 
-  const countSelection = (selection, forceId, forceCatalogueId, parentCount = 1, isRoot = false) => {
+  const countSelection = (selection, forceId, forceCatalogueId, parentCount = 1, isRoot = false, parentSelection = null) => {
     const effectiveCount = (selection.number || 1) * parentCount;
     const entryId = selection.entryLinkId || selection.selectionEntryId;
     
@@ -228,8 +257,23 @@ export const computeRosterCounts = (roster, system) => {
         forceSelectionCounts[forceId][resolved.targetId] = (forceSelectionCounts[forceId][resolved.targetId] || 0) + effectiveCount;
       }
       
+      // Category membership can be changed conditionally by add/remove/set-primary/
+      // unset-primary modifiers, so resolve the effective links (gated on the same
+      // conditions) before counting rather than reading the static catalogue links.
+      const categoryCtx = {
+        roster,
+        system,
+        selection,
+        parentSelection,
+        parentCatalogueId: forceCatalogueId,
+        selectionCounts,
+        forceCategoryCounts: categoryCounts[forceId]
+      };
+      const effectiveModifiers = getEffectiveModifiers(resolved);
+      const effectiveCategoryLinks = getEffectiveCategoryLinks(resolved?.categoryLinks, effectiveModifiers, categoryCtx);
+
       const seenCategories = new Set();
-      resolved?.categoryLinks?.forEach(cl => {
+      effectiveCategoryLinks.forEach(cl => {
         // Skip primary category links for nested (non-root) selections
         if (cl.primary && !isRoot) {
           return;
@@ -251,7 +295,7 @@ export const computeRosterCounts = (roster, system) => {
     }
 
     if (selection.selections) {
-      selection.selections.forEach(child => countSelection(child, forceId, forceCatalogueId, effectiveCount, false));
+      selection.selections.forEach(child => countSelection(child, forceId, forceCatalogueId, effectiveCount, false, selection));
     }
   };
 

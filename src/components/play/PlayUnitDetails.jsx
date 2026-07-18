@@ -363,7 +363,7 @@ export default function PlayUnitDetails({
               </div>
             )}
             <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
-              {getSelectionTotalCost(selection, roster.costLimitType || 'pts', 1, system, roster, roster.catalogueId)} Pkt.
+              {getSelectionTotalCost(selection, roster.costLimitType || 'pts', 1, { system, roster, currentCatalogueId: roster.catalogueId })} Pkt.
             </div>
           </div>
         </div>

@@ -230,8 +230,12 @@ export default function App() {
     }
   };
 
-  const handleSystemImported = () => {
-    loadAllData();
+  // Awaits the data reload before switching views so the first-import path
+  // (empty state -> Heerlager) has `systems` populated by the time the Importer's
+  // loading overlay comes down — otherwise the empty Importer flashes for a frame
+  // between the overlay and the RosterDashboard.
+  const handleSystemImported = async () => {
+    await loadAllData();
     navigate('rosters');
   };
 

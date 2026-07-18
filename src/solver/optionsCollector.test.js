@@ -131,9 +131,66 @@ test('should recurse into entryLinks of type selectionEntryGroup', () => {
   };
 
   const options = getUnitOptions(systemWithGroupLink, 'cat-1', unitSelection);
-  
+
   const traitOption = options.find(o => o.option.targetId === 'shared-trait1');
   expect(traitOption).toBeDefined();
   expect(traitOption?.groupName).toBe('Lahmia traits');
+});
+
+test('collects a group-link\'s modifierGroup-gated modifiers into the group modifiers (Issue 19, B3)', () => {
+  // A modifier that lives inside the group link's modifierGroups (not its direct
+  // modifiers) must still surface on the collected options' groupModifiers. Resolving
+  // the link through getEffectiveModifiers keeps the seam consistent so these gated
+  // modifiers are never silently dropped from the group's effective modifier set.
+  const GATED_MODIFIER_FIELD = 'grp-link-gated-max';
+  const systemWithGatedGroupLink = {
+    catalogs: {
+      'cat-1': {
+        id: 'cat-1',
+        selectionEntries: [
+          {
+            id: 'unit-1',
+            name: 'Unit',
+            type: 'unit',
+            entryLinks: [
+              {
+                id: 'link-group',
+                targetId: 'shared-group',
+                type: 'selectionEntryGroup',
+                modifierGroups: [
+                  {
+                    conditions: [{ field: 'some-cat', type: 'greaterThan', value: 0 }],
+                    modifiers: [{ type: 'set', field: GATED_MODIFIER_FIELD, value: 2 }]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        sharedSelectionEntryGroups: [
+          {
+            id: 'shared-group',
+            name: 'Lahmia traits',
+            entryLinks: [
+              { id: 'link-trait1', targetId: 'shared-trait1', type: 'selectionEntry' }
+            ]
+          }
+        ],
+        sharedSelectionEntries: [
+          { id: 'shared-trait1', name: 'Trait 1', type: 'upgrade' }
+        ]
+      }
+    }
+  };
+
+  const unitSelection = { selectionEntryId: 'unit-1', selections: [] };
+  const options = getUnitOptions(systemWithGatedGroupLink, 'cat-1', unitSelection);
+
+  const traitOption = options.find(o => o.option.targetId === 'shared-trait1');
+  expect(traitOption).toBeDefined();
+  const gatedModifier = traitOption.groupModifiers?.find(mod => mod.field === GATED_MODIFIER_FIELD);
+  expect(gatedModifier).toBeDefined();
+  // The enclosing modifierGroup's condition must have been folded onto the modifier.
+  expect(gatedModifier.conditions?.some(cond => cond.field === 'some-cat')).toBe(true);
 });
 

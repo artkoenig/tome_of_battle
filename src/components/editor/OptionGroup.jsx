@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT } from '../../solver/validator';
 import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
@@ -69,6 +69,12 @@ export default function OptionGroupComponent({
     parentCatalogueId: activeCatalogue.id
   };
 
+  // Resolve the group's modifiers through the shared seam so modifierGroup-gated
+  // constraint modifiers (min/max/points-limit) are honoured here exactly as the
+  // rosterValidator honours them — otherwise the group-limit display, repeatable
+  // detection and error styling would contradict the validation.
+  const groupModifiers = getEffectiveModifiers(group);
+
   const selectedItemsSummary = group.items
     .map(({ option }) => {
       const res = resolveEntry(system, option, activeCatalogue.id);
@@ -100,7 +106,7 @@ export default function OptionGroupComponent({
   // mutually-exclusive radios, and must be excluded from the radio group.
   const isRepeatableWithinGroup = (option, res) => {
     if (!res) return false;
-    return (group.modifiers || []).some(mod => {
+    return groupModifiers.some(mod => {
       if (mod.type !== 'increment' || !mod.repeat) return false;
       const raisesGroupMax = (group.constraints || []).some(c => c.type === 'max' && c.id === mod.field);
       if (!raisesGroupMax) return false;
@@ -109,10 +115,8 @@ export default function OptionGroupComponent({
     });
   };
 
-  const minLimitRaw = filteredGroupConstraints.find(c => c.type === 'min');
-  const minLimit = minLimitRaw ? getModifiedConstraintValue(minLimitRaw, group.modifiers, displayCtx) : 0;
   const maxLimitRaw = filteredGroupConstraints.find(c => c.type === 'max');
-  const maxLimit = maxLimitRaw ? getModifiedConstraintValue(maxLimitRaw, group.modifiers, displayCtx) : Infinity;
+  const maxLimit = maxLimitRaw ? getModifiedConstraintValue(maxLimitRaw, groupModifiers, displayCtx) : Infinity;
   
   const currentCount = group.items.reduce((sum, item) => {
     const res = resolveEntry(system, item.option, activeCatalogue.id);
@@ -129,7 +133,7 @@ export default function OptionGroupComponent({
   let hasGroupError = false;
   
   filteredGroupConstraints.forEach(con => {
-    const finalValue = getModifiedConstraintValue(con, group.modifiers, displayCtx);
+    const finalValue = getModifiedConstraintValue(con, groupModifiers, displayCtx);
     if (finalValue < 0) return;
     
     let activeCount = currentCount;
@@ -142,7 +146,9 @@ export default function OptionGroupComponent({
         const subId = sub.entryLinkId || sub.selectionEntryId;
         if (con.groupItemIds.has(subId)) {
           const count = sub.number || 1;
-          const pts = getSelectionTotalCost(sub, roster.costLimitType, 1, system, roster, activeCatalogue.id, selection, { selectionCounts, categoryCounts });
+          const pts = getSelectionTotalCost(sub, roster.costLimitType, TOP_LEVEL_PARENT_COUNT, {
+            system, roster, currentCatalogueId: activeCatalogue.id, parentSelection: selection, counts: { selectionCounts, categoryCounts }
+          });
           sumCount += count;
           sumPoints += pts;
         }
@@ -151,8 +157,8 @@ export default function OptionGroupComponent({
       activePoints = sumPoints;
     }
 
-    const isCostField = con.field === 'pts' || con.field === 'ecfa-8486-4f6c-c249' || con.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === con.field);
-    if (isCostField) {
+    const fieldMeasuresCost = isCostField(con.field, system, roster);
+    if (fieldMeasuresCost) {
       if (con.type === 'max') {
         if (activePoints > finalValue) {
           hasGroupError = true;
@@ -168,20 +174,19 @@ export default function OptionGroupComponent({
   });
 
   let limitParts = [];
-  const ptsConstraint = filteredGroupConstraints.find(c => 
-    c.type === 'max' && 
-    (c.field === 'pts' || c.field === 'ecfa-8486-4f6c-c249' || c.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === c.field))
+  const ptsConstraint = filteredGroupConstraints.find(c =>
+    c.type === 'max' && isCostField(c.field, system, roster)
   );
   
   if (ptsConstraint) {
-    const ptsConstraintVal = getModifiedConstraintValue(ptsConstraint, group.modifiers, displayCtx);
+    const ptsConstraintVal = getModifiedConstraintValue(ptsConstraint, groupModifiers, displayCtx);
     limitParts.push(`${currentPoints} / ${ptsConstraintVal} Pkt.`);
   } else if (currentPoints > 0) {
     limitParts.push(`${currentPoints} Pkt.`);
   }
 
   if (maxLimit !== Infinity) {
-    limitParts.push(`Max: ${maxLimit}`);
+    limitParts.push(`Max: ${formatConstraintLimit(maxLimit, maxLimitRaw)}`);
   }
 
   const limitText = limitParts.length > 0 ? `(${limitParts.join(' | ')})` : '';
@@ -273,12 +278,11 @@ export default function OptionGroupComponent({
 
             const points = isCollective ? basePoints * parentCount : basePoints;
 
-            const ptsConstraintGroup = filteredGroupConstraints.find(c => 
-              c.type === 'max' && 
-              (c.field === 'pts' || c.field === 'ecfa-8486-4f6c-c249' || c.field === roster.costLimitType || system.costTypes?.some(ct => ct.id === c.field))
+            const ptsConstraintGroup = filteredGroupConstraints.find(c =>
+              c.type === 'max' && isCostField(c.field, system, roster)
             );
             const maxPointsLimit = ptsConstraintGroup 
-              ? getModifiedConstraintValue(ptsConstraintGroup, group.modifiers, displayCtx)
+              ? getModifiedConstraintValue(ptsConstraintGroup, groupModifiers, displayCtx)
               : Infinity;
 
             let wouldExceedPointsLimit = false;
@@ -289,8 +293,9 @@ export default function OptionGroupComponent({
                 selection.selections?.forEach(sub => {
                   const subId = sub.entryLinkId || sub.selectionEntryId;
                   if (ptsConstraintGroup.groupItemIds.has(subId)) {
-                    const count = sub.number || 1;
-                    const pts = getSelectionTotalCost(sub, roster.costLimitType, 1, system, roster, activeCatalogue.id, selection, { selectionCounts, categoryCounts });
+                    const pts = getSelectionTotalCost(sub, roster.costLimitType, TOP_LEVEL_PARENT_COUNT, {
+                      system, roster, currentCatalogueId: activeCatalogue.id, parentSelection: selection, counts: { selectionCounts, categoryCounts }
+                    });
                     sumPoints += pts;
                   }
                 });

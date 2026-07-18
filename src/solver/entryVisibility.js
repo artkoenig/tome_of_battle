@@ -1,5 +1,5 @@
 import { resolveEntry } from './catalogResolver.js';
-import { evaluateCondition, evaluateConditionGroup } from './modifierEvaluator.js';
+import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers } from './modifierEvaluator.js';
 
 /**
  * Wertet den effektiven hidden-Status eines Elements aus: statisches
@@ -27,7 +27,9 @@ export function isCategoryLinkHidden(link, system, roster, selectionCounts, forc
     forceCategoryCounts,
     parentCatalogueId: roster?.catalogueId
   };
-  return evaluateHiddenFlag(link.hidden, link.modifiers, ctx);
+  // Resolve through the shared seam so modifierGroup-gated hidden modifiers on the
+  // category link are honoured, matching isSelectionEntryHidden below.
+  return evaluateHiddenFlag(link.hidden, getEffectiveModifiers(link), ctx);
 }
 
 export function isSelectionEntryHidden(entry, system, roster, selectionCounts, forceCategoryCounts, force) {
@@ -35,13 +37,6 @@ export function isSelectionEntryHidden(entry, system, roster, selectionCounts, f
   if (!res) return false;
 
   const isHidden = entry.hidden === true || res.hidden === true;
-
-  const allModifiers = [
-    ...(entry.modifiers || []),
-    ...(entry.modifierGroups?.flatMap(g => g.modifiers || []) || []),
-    ...(res.modifiers || []),
-    ...(res.modifierGroups?.flatMap(g => g.modifiers || []) || [])
-  ];
 
   const ctx = {
     roster,
@@ -51,6 +46,14 @@ export function isSelectionEntryHidden(entry, system, roster, selectionCounts, f
     force: force || roster?.forces?.[0],
     parentCatalogueId: roster?.catalogueId
   };
+
+  // Group modifiers carry their group conditions, so evaluateHiddenFlag's per-modifier
+  // condition check applies the group gate: a group's hidden modifier only fires when
+  // both its own and its group's conditions pass.
+  const allModifiers = [
+    ...getEffectiveModifiers(entry),
+    ...getEffectiveModifiers(res)
+  ];
 
   return evaluateHiddenFlag(isHidden, allModifiers, ctx);
 }

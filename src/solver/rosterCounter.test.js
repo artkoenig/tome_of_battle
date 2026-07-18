@@ -88,6 +88,6 @@ describe('rosterCounter — costs derived from the catalogue', () => {
     const roster = makeRoster();
     const unit = roster.forces[0].selections[0];
     // 100 + 6 + 5 = 111
-    expect(getSelectionTotalCost(unit, 'pts', 1, system, roster, 'cat')).toBe(111);
+    expect(getSelectionTotalCost(unit, 'pts', 1, { system, roster, currentCatalogueId: 'cat' })).toBe(111);
   });
 });

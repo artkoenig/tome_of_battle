@@ -106,6 +106,7 @@ vi.mock('../solver/validator', () => ({
     categoryCounts: { 'force-1': { 'cat-heroes': 1, 'cat-core': 2 } }
   }),
   getModifiedConstraintValue: (constraint) => (constraint.type === 'min' ? 2 : 5),
+  getEffectiveModifiers: (source) => source?.modifiers || [],
   calculateRosterCosts: () => ({ pts: 420 }),
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
@@ -114,6 +115,8 @@ vi.mock('../solver/validator', () => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
   isCategoryLinkHidden: (link) => link.hidden === true,
   getExtraResourceTotals: () => [],
+  formatConstraintLimit: (value, constraint) =>
+    (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
 }));
 
 // Dummy child components to speed up execution

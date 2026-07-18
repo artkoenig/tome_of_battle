@@ -5,6 +5,7 @@ import Importer, { transformIndexToSystems } from './Importer';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
+import { collectSchemaWarnings } from '../parser/importSchemaGate';
 import { clearCatalogIndexCache } from '../db/catalogUpdate';
 import JSZip from 'jszip';
 
@@ -36,6 +37,13 @@ vi.mock('../parser/zipExtractor', () => ({
 // Mock xmlParser
 vi.mock('../parser/xmlParser', () => ({
   processImportedData: vi.fn(),
+}));
+
+// Mock the import schema advisory. These component tests use synthetic/mock file
+// content that is not real BattleScribe XML, so the collector reports no warnings by
+// default; individual tests override it to simulate a schema-flagged import.
+vi.mock('../parser/importSchemaGate', () => ({
+  collectSchemaWarnings: vi.fn().mockResolvedValue([]),
 }));
 
 // Mock JSZip
@@ -249,6 +257,48 @@ describe('Importer Component', () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it('7b. Schema-invalid manual import logs a locatable advisory warning to the console but still imports', async () => {
+    const onSystemImportedMock = vi.fn();
+    const systemData = { id: 'sys-new', name: 'New Imported System', catalogues: [{ id: 'cat-new' }] };
+
+    extractZipFiles.mockResolvedValue({
+      gstFiles: [{ name: 'rules.gst', content: '<gameSystem/>' }],
+      catFiles: [{ name: 'faction.cat', content: '<catalogue/>' }],
+    });
+    processImportedData.mockReturnValue(systemData);
+    const locatableMessage =
+      'Die Datei „faction.cat" entspricht nicht vollständig dem BattleScribe-Schema (v2.03); ' +
+      'der Import wurde dennoch fortgesetzt. 1 Schemaverstoß/-verstöße gefunden. ' +
+      'Erster Verstoß (Zeile 4): Element ist nicht erlaubt.';
+    collectSchemaWarnings.mockResolvedValueOnce([
+      { fileName: 'faction.cat', errors: [{ line: 4, column: null, message: 'Element ist nicht erlaubt.' }], message: locatableMessage },
+    ]);
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+
+    const file = new File(['zipcontent'], 'game_system.zip', { type: 'application/zip' });
+    fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(onSystemImportedMock).toHaveBeenCalled();
+    });
+
+    // The advisory warning is logged to the console (not rendered in the DOM),
+    // carrying the locatable message (file + line).
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.arrayContaining([locatableMessage])
+    );
+    expect(screen.queryByTestId('schema-warnings')).toBeNull();
+
+    // Advisory: the flagged file is still parsed and stored; the import proceeds.
+    expect(processImportedData).toHaveBeenCalled();
+    expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({ name: 'New Imported System' }));
+
+    consoleWarnSpy.mockRestore();
+  });
+
   it('8. Export & Delete Actions', async () => {
     const mockSystems = [
       { 
@@ -322,52 +372,6 @@ describe('Importer Component', () => {
       expect(screen.queryByText('Spielsystem löschen')).toBeNull();
     });
     expect(deleteSystem).not.toHaveBeenCalled();
-  });
-
-  it.skip('9. Drag and Drop events and file drop', async () => {
-    render(<Importer showAsEmptyState={false} />);
-    
-    await waitFor(() => {
-      expect(getAllSystems).toHaveBeenCalled();
-    });
-
-    const dropZone = screen.getByText('Ziehe ein .zip-Archiv hierher');
-
-    // Drag events
-    fireEvent.dragEnter(dropZone);
-    fireEvent.dragOver(dropZone);
-    fireEvent.dragLeave(dropZone);
-
-    // Drop file
-    const file = new File(['zipcontent'], 'drop_system.zip', { type: 'application/zip' });
-    extractZipFiles.mockResolvedValue({ gstFiles: [], catFiles: [] });
-    processImportedData.mockReturnValue({ id: 'dropped', name: 'Dropped System', catalogues: [] });
-    
-    fireEvent.drop(dropZone, {
-      dataTransfer: {
-        files: [file]
-      }
-    });
-
-    await waitFor(() => {
-      expect(extractZipFiles).toHaveBeenCalledWith(file);
-    });
-  });
-
-  it.skip('10. Click drop-zone triggers hidden input click', async () => {
-    const { container } = render(<Importer showAsEmptyState={false} />);
-    
-    await waitFor(() => {
-      expect(getAllSystems).toHaveBeenCalled();
-    });
-
-    const fileInput = container.querySelector('#file-upload');
-    const inputClickSpy = vi.spyOn(fileInput, 'click').mockImplementation(() => {});
-
-    const dropZone = screen.getByText('Ziehe ein .zip-Archiv hierher');
-    fireEvent.click(dropZone);
-
-    expect(inputClickSpy).toHaveBeenCalled();
   });
 
   it('11. Export system missing rawXmls error handling', async () => {

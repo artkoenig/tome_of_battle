@@ -81,8 +81,12 @@ Alle Dateien sind **XML**. Jedes Element hat einen eigenen XML-Namespace
 > und **kein** `backups`-Ordner. Kompression und Indizierung übernimmt die Auslieferungsinfrastruktur.
 > Siehe [§11](#11-best-practices).
 
-**In diesem Projekt:** Der Importer entpackt ein `.bsz`/ZIP mit `src/parser/zipExtractor.js`,
-`src/parser/xmlParser.js` parst die `.cat`/`.gst`-XML zu einem „System"-Objekt, das in IndexedDB
+**In diesem Projekt:** Der Importer entpackt ein `.bsz`/ZIP mit `src/parser/zipExtractor.js`.
+Vor dem Parsen prüft ein **beratender** Schema-Schritt (`src/parser/schemaValidator.js`, angebunden über
+`src/parser/importSchemaGate.js`) jede Datei gegen die vendored `Catalogue.xsd` — ein Verstoß wird
+per `console.warn` protokolliert (mit Datei + Zeile), **blockiert den Import aber nicht** und wird
+**nicht in der UI angezeigt** (advisory, siehe ADR 0016). Anschließend parst
+`src/parser/xmlParser.js` die `.cat`/`.gst`-XML zu einem „System"-Objekt, das in IndexedDB
 gespeichert wird (`src/db/database.js`).
 
 ---
@@ -627,8 +631,8 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 
 | `modifier`-Attribut | Werte | Bedeutung |
 |---------------------|-------|-----------|
-| `type` | `increment` \| `decrement` \| `set` \| `append` | Operation. `increment`/`decrement`/`set` für numerische Felder, `append`/`set` für Text. |
-| `field` | *Constraint-`id`* \| *`<costTypeId>`* \| `hidden` \| `name` \| *`<characteristicTypeId>`* | Was geändert wird. |
+| `type` | `increment` \| `decrement` \| `set` \| `append` \| `add` \| `remove` \| `set-primary` \| `unset-primary` | Operation. `increment`/`decrement`/`set` für numerische Felder, `append`/`set` für Text, `add`/`remove` für Kategoriezugehörigkeit (`field="category"`), `set-primary`/`unset-primary` für das `primary`-Flag eines Kategorie-Links. |
+| `field` | *Constraint-`id`* \| *`<costTypeId>`* \| `hidden` \| `name` \| `category` \| *`<characteristicTypeId>`* | Was geändert wird. `category` (zusammen mit `add`/`remove`) ändert die Kategoriezugehörigkeit zur Laufzeit. |
 | `value` | Zahl/Text | Der anzuwendende Wert. |
 
 Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **wiederholend**
@@ -643,6 +647,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 | `scope` | Bezugsrahmen (`roster`, `force`, `parent`, …). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
 | `value` | Vergleichswert. |
+| `includeChildSelections` | Wenn `true`, werden auch **unterhalb** des Scope-Ziels verschachtelte Auswahlen mitgezählt, nicht nur dessen direkte Kinder (BattleScribe `QueryBase`-Attribut). |
 
 > **Domänenregel (Kategorie-Zähler in Conditions):** Testet eine Condition ein Kategorie-Limit
 > (z. B. „maximal 3 Helden"), müssen die Kategorie-Zähler **korrekt über alle Forces hinweg
@@ -716,6 +721,12 @@ auszublenden (in diesem Projekt ausgewertet von `src/solver/entryVisibility.js`)
 - **`primary="false"`** sind unsichtbare Tag-Kategorien für die Validierung.
 - **`hidden`** blendet eine Entität aus; per Modifier `field="hidden"` kann die Sichtbarkeit
   **dynamisch** werden (z. B. „Reittier X nur sichtbar, wenn Held Y gewählt").
+- **Laufzeit-dynamische Kategoriezugehörigkeit.** Die Kategorie-Links eines Eintrags sind nicht
+  zwingend statisch: Modifier mit `type="add"`/`type="remove"` und `field="category"` fügen eine
+  Kategoriezugehörigkeit bedingt hinzu bzw. entfernen sie, und `type="set-primary"`/`type="unset-primary"`
+  schalten das `primary`-Flag eines Kategorie-Links kontextabhängig um. Die Zähler-/Validierungs-Logik
+  muss deshalb die **effektiven** (nach Modifier-Anwendung gültigen) Kategorie-Links auswerten, nicht die
+  rohen Katalog-Links (im Projekt via `getEffectiveCategoryLinks` in `src/solver/modifierEvaluator.js`).
 - Beziehungen zwischen Einträgen und Kategorien werden **ausschließlich über `categoryLinks`/IDs**
   aufgelöst — nie über Namen.
 
@@ -949,7 +960,8 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | `constraint` | `type` | `min`, `max` |
 | `constraint` | `field` | `selections`, `forces`, *`<costTypeId>`* |
 | `constraint`/`condition`/`repeat` | `scope` | `parent`, `roster`, `force`, `category`, `self` |
-| `modifier` | `type` | `increment`, `decrement`, `set`, `append` |
+| `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `add`, `remove`, `set-primary`, `unset-primary` |
+| `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `<characteristicTypeId>` |
 | `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf` |
 | `conditionGroup` | `type` | `and`, `or` |
 
@@ -958,7 +970,7 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | Element | `field` bedeutet … | Beispielwerte |
 |---------|--------------------|---------------|
 | `constraint` | *was gezählt/summiert wird* | `selections`, `forces`, `<costTypeId>` |
-| `modifier` | *was geändert wird* | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `<characteristicTypeId>` |
+| `modifier` | *was geändert wird* | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `<characteristicTypeId>` |
 | `condition` / `repeat` | *worauf getestet/gezählt wird* | `selections`, `<costTypeId>`, `limit::<costTypeId>` |
 
 - `limit::<costTypeId>` = das **Kostenlimit** (Budget) der Roster für diese Kostenart.

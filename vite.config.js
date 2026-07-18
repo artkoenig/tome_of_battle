@@ -1,10 +1,29 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { resolve, join } from 'path'
+import { resolve, join, dirname } from 'path'
 import { execSync } from 'child_process'
+import { createRequire } from 'module'
 import { resolveVersion } from './scripts/versioning.js'
 import { resolveDeployEnv } from './scripts/deployEnv.js'
+
+const require = createRequire(import.meta.url)
+
+/**
+ * The runtime schema validation (ADR 0016) loads `xmllint-wasm`'s browser build
+ * and WASM asset in the client, so Vite's dev server must be allowed to serve
+ * them. When the app runs from a git worktree (the standard implementer setup),
+ * dependencies are hoisted to the parent repository's `node_modules`, which lives
+ * outside the worktree root and is therefore blocked by Vite's default fs-allow
+ * list. Allowing the directory where the dependency actually resolves keeps the
+ * dev server working in both a plain checkout and a worktree, without weakening
+ * the production build (this setting is dev-server only).
+ */
+function schemaValidatorDependencyRoot() {
+  const packageJsonPath = require.resolve('xmllint-wasm/package.json')
+  // <root>/node_modules/xmllint-wasm/package.json -> <root>
+  return resolve(dirname(packageJsonPath), '..', '..')
+}
 
 /**
  * Vite plugin that injects a unique build version into sw.js
@@ -198,6 +217,13 @@ export default defineConfig(({ command }) => {
   const release = computeRelease();
   return {
     plugins: [react(), swVersionPlugin(), versionPlugin()],
+    server: {
+      fs: {
+        // Keep the default (project/worktree root) and additionally allow the real
+        // location of hoisted dependencies so xmllint-wasm can be served (see above).
+        allow: [process.cwd(), schemaValidatorDependencyRoot()],
+      },
+    },
     // Deploy-Umgebung zur Build-Zeit bestimmen und der App bereitstellen, damit
     // Nicht-Production-Deploys (Preview) sichtbar gekennzeichnet werden.
     define: {

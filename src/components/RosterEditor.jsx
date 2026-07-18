@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, resolveEntry, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, resolveEntry, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -190,8 +190,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   const displayCtx = { roster, system, selectionCounts, forceCategoryCounts };
                   const minConstraint = link.constraints?.find(c => c.type === 'min');
                   const maxConstraint = link.constraints?.find(c => c.type === 'max');
-                  const minVal = minConstraint ? getModifiedConstraintValue(minConstraint, link.modifiers, displayCtx) : 0;
-                  const maxVal = maxConstraint ? getModifiedConstraintValue(maxConstraint, link.modifiers, displayCtx) : Infinity;
+                  const linkModifiers = getEffectiveModifiers(link);
+                  const minVal = minConstraint ? getModifiedConstraintValue(minConstraint, linkModifiers, displayCtx) : 0;
+                  const maxVal = maxConstraint ? getModifiedConstraintValue(maxConstraint, linkModifiers, displayCtx) : Infinity;
 
                   const isPrimaryForAny = hasPrimaryCatalogItems(link.targetId, force);
 
@@ -216,8 +217,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           </h3>
                           {(() => {
                             const limitParts = [];
-                            if (minVal > 0) limitParts.push(`Min: ${minVal}`);
-                            if (maxVal < Infinity) limitParts.push(`Max: ${maxVal}`);
+                            if (minVal > 0) limitParts.push(`Min: ${formatConstraintLimit(minVal, minConstraint)}`);
+                            if (maxVal < Infinity) limitParts.push(`Max: ${formatConstraintLimit(maxVal, maxConstraint)}`);
                             const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
                             return (
                               <span 

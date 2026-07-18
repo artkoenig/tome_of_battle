@@ -1,3 +1,5 @@
+import { AttributeName, SelectionEntryKind } from './schema/battlescribeSchema.generated.js';
+
 /**
  * Helper to get direct children of an element by tag name
  */
@@ -28,7 +30,7 @@ function getWrappedChildren(el, wrapperName, tagName) {
  * once here, at the parsing boundary, means nothing downstream needs to.
  */
 function getName(el) {
-  return el.getAttribute('name')?.trim() ?? null;
+  return el.getAttribute(AttributeName.NAME)?.trim() ?? null;
 }
 
 /**
@@ -38,7 +40,7 @@ function getName(el) {
  * (imported before revisions were tracked) as outdated.
  */
 function getRevision(el) {
-  const raw = el.getAttribute('revision');
+  const raw = el.getAttribute(AttributeName.REVISION);
   if (raw === null || raw === '') return null;
   const parsed = Number.parseInt(raw, 10);
   return Number.isNaN(parsed) ? null : parsed;
@@ -51,12 +53,13 @@ function parseRules(el) {
   const wrapper = getChildren(el, 'rules')[0] || getChildren(el, 'sharedRules')[0];
   if (!wrapper) return [];
   return getChildren(wrapper, 'rule').map(ruleEl => ({
-    id: ruleEl.getAttribute('id'),
+    id: ruleEl.getAttribute(AttributeName.ID),
     name: getName(ruleEl),
-    publicationId: ruleEl.getAttribute('publicationId'),
-    page: ruleEl.getAttribute('page'),
-    hidden: ruleEl.getAttribute('hidden') === 'true',
+    publicationId: ruleEl.getAttribute(AttributeName.PUBLICATION_ID),
+    page: ruleEl.getAttribute(AttributeName.PAGE),
+    hidden: getBooleanAttribute(ruleEl, AttributeName.HIDDEN),
     modifiers: parseModifiers(ruleEl),
+    modifierGroups: parseModifierGroups(ruleEl),
     description: getChildren(ruleEl, 'description')[0]?.textContent || ''
   }));
 }
@@ -74,21 +77,22 @@ function parseProfiles(el) {
       getChildren(charWrapper, 'characteristic').forEach(cEl => {
         characteristics.push({
           name: getName(cEl),
-          id: cEl.getAttribute('typeId'),
-          typeId: cEl.getAttribute('typeId'),
+          id: cEl.getAttribute(AttributeName.TYPE_ID),
+          typeId: cEl.getAttribute(AttributeName.TYPE_ID),
           value: cEl.textContent || ''
         });
       });
     }
     return {
-      id: profEl.getAttribute('id'),
+      id: profEl.getAttribute(AttributeName.ID),
       name: getName(profEl),
-      profileTypeId: profEl.getAttribute('profileTypeId'),
-      profileTypeName: profEl.getAttribute('profileTypeName') || profEl.getAttribute('typeName'),
-      publicationId: profEl.getAttribute('publicationId'),
-      page: profEl.getAttribute('page'),
-      hidden: profEl.getAttribute('hidden') === 'true',
+      profileTypeId: profEl.getAttribute(AttributeName.TYPE_ID),
+      profileTypeName: profEl.getAttribute(AttributeName.TYPE_NAME),
+      publicationId: profEl.getAttribute(AttributeName.PUBLICATION_ID),
+      page: profEl.getAttribute(AttributeName.PAGE),
+      hidden: getBooleanAttribute(profEl, AttributeName.HIDDEN),
       modifiers: parseModifiers(profEl),
+      modifierGroups: parseModifierGroups(profEl),
       characteristics
     };
   });
@@ -101,15 +105,47 @@ function parseInfoLinks(el) {
   const wrapper = getChildren(el, 'infoLinks')[0];
   if (!wrapper) return [];
   return getChildren(wrapper, 'infoLink').map(linkEl => ({
-    id: linkEl.getAttribute('id'),
+    id: linkEl.getAttribute(AttributeName.ID),
     name: getName(linkEl),
-    targetId: linkEl.getAttribute('targetId'),
-    type: linkEl.getAttribute('type'), // profile, rule
-    publicationId: linkEl.getAttribute('publicationId'),
-    page: linkEl.getAttribute('page'),
-    hidden: linkEl.getAttribute('hidden') === 'true',
-    modifiers: parseModifiers(linkEl)
+    targetId: linkEl.getAttribute(AttributeName.TARGET_ID),
+    type: linkEl.getAttribute(AttributeName.TYPE), // profile, rule
+    publicationId: linkEl.getAttribute(AttributeName.PUBLICATION_ID),
+    page: linkEl.getAttribute(AttributeName.PAGE),
+    hidden: getBooleanAttribute(linkEl, AttributeName.HIDDEN),
+    modifiers: parseModifiers(linkEl),
+    modifierGroups: parseModifierGroups(linkEl)
   }));
+}
+
+/**
+ * Parses info groups from an element, accepting the inline 'infoGroups' wrapper
+ * (on entries) or the top-level 'sharedInfoGroups' wrapper (on catalogue/gameSystem).
+ *
+ * An infoGroup is a container that bundles profiles, rules, infoLinks and further
+ * nested infoGroups. Left unparsed, everything it bundles is discarded, so the
+ * profiles and rules an entry declares through a group never reach the unit.
+ */
+function parseInfoGroups(el) {
+  const wrapper = getChildren(el, 'infoGroups')[0] || getChildren(el, 'sharedInfoGroups')[0];
+  if (!wrapper) return [];
+  return getChildren(wrapper, 'infoGroup').map(parseInfoGroup);
+}
+
+/**
+ * Parses a single infoGroup element. Recurses into nested infoGroups so the whole
+ * bundle tree (profiles, rules, infoLinks) is preserved.
+ */
+function parseInfoGroup(groupEl) {
+  return {
+    id: groupEl.getAttribute(AttributeName.ID),
+    name: getName(groupEl),
+    hidden: getBooleanAttribute(groupEl, AttributeName.HIDDEN),
+    modifiers: parseModifiers(groupEl),
+    profiles: parseProfiles(groupEl),
+    rules: parseRules(groupEl),
+    infoLinks: parseInfoLinks(groupEl),
+    infoGroups: parseInfoGroups(groupEl)
+  };
 }
 
 /**
@@ -120,24 +156,48 @@ function parseCosts(el) {
   if (!wrapper) return [];
   return getChildren(wrapper, 'cost').map(costEl => ({
     name: getName(costEl),
-    typeId: costEl.getAttribute('typeId'),
-    value: parseFloat(costEl.getAttribute('value')) || 0
+    typeId: costEl.getAttribute(AttributeName.TYPE_ID),
+    value: parseFloat(costEl.getAttribute(AttributeName.VALUE)) || 0
   }));
 }
 
 /**
- * Parses constraints from an element
+ * The BattleScribe QueryBase default `field`: a constraint/condition counts
+ * selections unless it names a cost-type id instead. Exported as the single
+ * source of truth so the solver's cost/selection distinction (constraintScope.js)
+ * and this parser default cannot drift apart.
+ */
+export const SELECTIONS_FIELD = 'selections';
+const DEFAULT_CONSTRAINT_SCOPE = 'parent'; // parent, force, roster, or an ancestor id
+
+/**
+ * Reads a boolean XSD attribute, treating an absent attribute as `false`
+ * (the schema default for the constraint inclusion/percent flags).
+ */
+function getBooleanAttribute(el, attributeName) {
+  return el.getAttribute(attributeName) === 'true';
+}
+
+/**
+ * Parses constraints from an element. Attribute names come from the schema SSOT
+ * (see battlescribeSchema.generated.js) so they cannot silently drift from the
+ * vendored XSD. `percentValue` marks the value as a percentage of a reference
+ * quantity; `includeChildSelections`/`includeChildForces` control whether nested
+ * selections / sibling (child) forces are counted for the constraint.
  */
 function parseConstraints(el) {
   const wrapper = getChildren(el, 'constraints')[0];
   if (!wrapper) return [];
   return getChildren(wrapper, 'constraint').map(conEl => ({
-    id: conEl.getAttribute('id'),
-    type: conEl.getAttribute('type'), // min, max, percent
-    value: parseFloat(conEl.getAttribute('value')) || 0,
-    field: conEl.getAttribute('field') || 'selections', // selections, pts, etc.
-    scope: conEl.getAttribute('scope') || 'parent', // parent, roster, force
-    shared: conEl.getAttribute('shared') === 'true'
+    id: conEl.getAttribute(AttributeName.ID),
+    type: conEl.getAttribute(AttributeName.TYPE), // min, max
+    value: parseFloat(conEl.getAttribute(AttributeName.VALUE)) || 0,
+    field: conEl.getAttribute(AttributeName.FIELD) || SELECTIONS_FIELD,
+    scope: conEl.getAttribute(AttributeName.SCOPE) || DEFAULT_CONSTRAINT_SCOPE,
+    shared: getBooleanAttribute(conEl, AttributeName.SHARED),
+    percentValue: getBooleanAttribute(conEl, AttributeName.PERCENT_VALUE),
+    includeChildSelections: getBooleanAttribute(conEl, AttributeName.INCLUDE_CHILD_SELECTIONS),
+    includeChildForces: getBooleanAttribute(conEl, AttributeName.INCLUDE_CHILD_FORCES)
   }));
 }
 
@@ -146,71 +206,111 @@ function parseConstraints(el) {
  */
 function parseCondition(condEl) {
   return {
-    type: condEl.getAttribute('type'), // equalTo, lessThan, greaterThan, etc.
-    value: parseFloat(condEl.getAttribute('value')) || 0,
-    field: condEl.getAttribute('field') || 'selections',
-    scope: condEl.getAttribute('scope') || 'parent',
-    childId: condEl.getAttribute('childId'),
-    shared: condEl.getAttribute('shared') === 'true'
+    type: condEl.getAttribute(AttributeName.TYPE), // equalTo, lessThan, greaterThan, etc.
+    value: parseFloat(condEl.getAttribute(AttributeName.VALUE)) || 0,
+    field: condEl.getAttribute(AttributeName.FIELD) || SELECTIONS_FIELD,
+    scope: condEl.getAttribute(AttributeName.SCOPE) || DEFAULT_CONSTRAINT_SCOPE,
+    childId: condEl.getAttribute(AttributeName.CHILD_ID),
+    shared: getBooleanAttribute(condEl, AttributeName.SHARED),
+    // When true, selections nested below the scope target are counted as well,
+    // not only the direct children (BattleScribe QueryBase attribute).
+    includeChildSelections: getBooleanAttribute(condEl, AttributeName.INCLUDE_CHILD_SELECTIONS)
   };
 }
 
 function parseConditionGroup(groupEl) {
   return {
-    type: groupEl.getAttribute('type') || 'and', // and, or, not
+    type: groupEl.getAttribute(AttributeName.TYPE) || 'and', // and, or, not
     conditions: getWrappedChildren(groupEl, 'conditions', 'condition').map(parseCondition),
     conditionGroups: getWrappedChildren(groupEl, 'conditionGroups', 'conditionGroup').map(parseConditionGroup)
   };
 }
 
 /**
- * Parses modifiers and modifierGroups
+ * Parses a single `repeat` element (BattleScribe Repeat, extends the filtered
+ * query base — hence `childId` and `includeChildSelections`).
+ */
+function parseRepeat(repeatsEl) {
+  return {
+    field: repeatsEl.getAttribute(AttributeName.FIELD),
+    childId: repeatsEl.getAttribute(AttributeName.CHILD_ID),
+    scope: repeatsEl.getAttribute(AttributeName.SCOPE),
+    value: parseFloat(repeatsEl.getAttribute(AttributeName.VALUE)) || 0,
+    repeats: parseFloat(repeatsEl.getAttribute(AttributeName.REPEATS)) || 1,
+    roundUp: getBooleanAttribute(repeatsEl, AttributeName.ROUND_UP),
+    includeChildSelections: getBooleanAttribute(repeatsEl, AttributeName.INCLUDE_CHILD_SELECTIONS)
+  };
+}
+
+/**
+ * Parses a single modifier element.
  */
 function parseSingleModifier(modEl) {
   const conditions = getWrappedChildren(modEl, 'conditions', 'condition').map(parseCondition);
   const conditionGroups = getWrappedChildren(modEl, 'conditionGroups', 'conditionGroup').map(parseConditionGroup);
-  
+
   const repeatsEl = getWrappedChildren(modEl, 'repeats', 'repeat')[0];
-  const repeat = repeatsEl ? {
-    field: repeatsEl.getAttribute('field'),
-    childId: repeatsEl.getAttribute('childId'),
-    scope: repeatsEl.getAttribute('scope'),
-    value: parseFloat(repeatsEl.getAttribute('value')) || 0,
-    repeats: parseFloat(repeatsEl.getAttribute('repeats')) || 1,
-    roundUp: repeatsEl.getAttribute('roundUp') === 'true'
-  } : null;
+  const repeat = repeatsEl ? parseRepeat(repeatsEl) : null;
 
   return {
-    type: modEl.getAttribute('type'), // set, increment, decrement
-    field: modEl.getAttribute('field'), // cost, hidden, constraint
-    value: modEl.getAttribute('value'),
-    valueObject: parseFloat(modEl.getAttribute('value')) || 0,
+    type: modEl.getAttribute(AttributeName.TYPE), // set, increment, decrement, add, remove, set-primary, unset-primary
+    field: modEl.getAttribute(AttributeName.FIELD), // cost, hidden, constraint, category
+    value: modEl.getAttribute(AttributeName.VALUE),
+    valueObject: parseFloat(modEl.getAttribute(AttributeName.VALUE)) || 0,
     conditions,
     conditionGroups,
     repeat
   };
 }
 
+/**
+ * Parses a single modifierGroup, preserving its own gating conditions/repeat and
+ * its contained modifiers and nested modifierGroups (BattleScribe ModifierGroup,
+ * extends ModifierBase). Groups are NOT flattened: the evaluator applies the
+ * group's conditions as a gate over the contained modifiers.
+ */
+function parseModifierGroup(groupEl) {
+  const repeatsEl = getWrappedChildren(groupEl, 'repeats', 'repeat')[0];
+  return {
+    conditions: getWrappedChildren(groupEl, 'conditions', 'condition').map(parseCondition),
+    conditionGroups: getWrappedChildren(groupEl, 'conditionGroups', 'conditionGroup').map(parseConditionGroup),
+    repeat: repeatsEl ? parseRepeat(repeatsEl) : null,
+    modifiers: getWrappedChildren(groupEl, 'modifiers', 'modifier').map(parseSingleModifier),
+    modifierGroups: getWrappedChildren(groupEl, 'modifierGroups', 'modifierGroup').map(parseModifierGroup)
+  };
+}
+
+/**
+ * Parses the direct `modifiers` of an element (not the modifierGroups — those are
+ * parsed separately via parseModifierGroups so the group's own conditions survive).
+ */
 function parseModifiers(el) {
-  const list = [];
-  const wrapper = getChildren(el, 'modifiers')[0];
-  if (wrapper) {
-    getChildren(wrapper, 'modifier').forEach(modEl => {
-      list.push(parseSingleModifier(modEl));
-    });
-  }
-  const groupsWrapper = getChildren(el, 'modifierGroups')[0];
-  if (groupsWrapper) {
-    getChildren(groupsWrapper, 'modifierGroup').forEach(groupEl => {
-      const groupModsWrapper = getChildren(groupEl, 'modifiers')[0];
-      if (groupModsWrapper) {
-        getChildren(groupModsWrapper, 'modifier').forEach(modEl => {
-          list.push(parseSingleModifier(modEl));
-        });
-      }
-    });
-  }
-  return list;
+  return getWrappedChildren(el, 'modifiers', 'modifier').map(parseSingleModifier);
+}
+
+/**
+ * Parses the `modifierGroups` of an element, keeping their structure intact.
+ */
+function parseModifierGroups(el) {
+  return getWrappedChildren(el, 'modifierGroups', 'modifierGroup').map(parseModifierGroup);
+}
+
+/**
+ * Parses a single `categoryLink`. Shared by selection entries (which care about
+ * `primary`, the display bucket) and force entries (which care about `hidden`);
+ * both attributes are read for every link so the two call sites use one parser.
+ */
+function parseCategoryLink(linkEl) {
+  return {
+    id: linkEl.getAttribute(AttributeName.ID),
+    name: getName(linkEl),
+    targetId: linkEl.getAttribute(AttributeName.TARGET_ID),
+    primary: getBooleanAttribute(linkEl, AttributeName.PRIMARY),
+    hidden: getBooleanAttribute(linkEl, AttributeName.HIDDEN),
+    constraints: parseConstraints(linkEl),
+    modifiers: parseModifiers(linkEl),
+    modifierGroups: parseModifierGroups(linkEl)
+  };
 }
 
 /**
@@ -219,14 +319,7 @@ function parseModifiers(el) {
 function parseCategoryLinks(el) {
   const wrapper = getChildren(el, 'categoryLinks')[0];
   if (!wrapper) return [];
-  return getChildren(wrapper, 'categoryLink').map(linkEl => ({
-    id: linkEl.getAttribute('id'),
-    name: getName(linkEl),
-    targetId: linkEl.getAttribute('targetId'),
-    primary: linkEl.getAttribute('primary') === 'true',
-    constraints: parseConstraints(linkEl),
-    modifiers: parseModifiers(linkEl)
-  }));
+  return getChildren(wrapper, 'categoryLink').map(parseCategoryLink);
 }
 
 /**
@@ -236,20 +329,22 @@ function parseEntryLinks(el) {
   const wrapper = getChildren(el, 'entryLinks')[0];
   if (!wrapper) return [];
   return getChildren(wrapper, 'entryLink').map(linkEl => ({
-    id: linkEl.getAttribute('id'),
+    id: linkEl.getAttribute(AttributeName.ID),
     name: getName(linkEl),
-    targetId: linkEl.getAttribute('targetId'),
-    type: linkEl.getAttribute('type'), // selectionEntry, selectionEntryGroup
-    publicationId: linkEl.getAttribute('publicationId'),
-    page: linkEl.getAttribute('page'),
-    collective: linkEl.getAttribute('collective') === 'true',
-    hidden: linkEl.getAttribute('hidden') === 'true',
+    targetId: linkEl.getAttribute(AttributeName.TARGET_ID),
+    type: linkEl.getAttribute(AttributeName.TYPE), // selectionEntry, selectionEntryGroup
+    publicationId: linkEl.getAttribute(AttributeName.PUBLICATION_ID),
+    page: linkEl.getAttribute(AttributeName.PAGE),
+    collective: getBooleanAttribute(linkEl, AttributeName.COLLECTIVE),
+    hidden: getBooleanAttribute(linkEl, AttributeName.HIDDEN),
     constraints: parseConstraints(linkEl),
     costs: parseCosts(linkEl),
     modifiers: parseModifiers(linkEl),
+    modifierGroups: parseModifierGroups(linkEl),
     profiles: parseProfiles(linkEl),
     rules: parseRules(linkEl),
     infoLinks: parseInfoLinks(linkEl),
+    infoGroups: parseInfoGroups(linkEl),
     categoryLinks: parseCategoryLinks(linkEl),
     // An entryLink may inline its own child options (e.g. a "Barding" nested under a
     // "Nightmare" mount link). These must be parsed too, otherwise they never enter
@@ -269,22 +364,24 @@ function parseSelectionEntry(el) {
   const entryLinks = parseEntryLinks(el);
 
   return {
-    id: el.getAttribute('id'),
+    id: el.getAttribute(AttributeName.ID),
     name: getName(el),
-    type: el.getAttribute('type') || 'upgrade', // unit, model, upgrade
-    publicationId: el.getAttribute('publicationId'),
-    page: el.getAttribute('page'),
-    collective: el.getAttribute('collective') === 'true',
-    hidden: el.getAttribute('hidden') === 'true',
+    type: el.getAttribute(AttributeName.TYPE) || SelectionEntryKind.UPGRADE, // unit, model, upgrade
+    publicationId: el.getAttribute(AttributeName.PUBLICATION_ID),
+    page: el.getAttribute(AttributeName.PAGE),
+    collective: getBooleanAttribute(el, AttributeName.COLLECTIVE),
+    hidden: getBooleanAttribute(el, AttributeName.HIDDEN),
     constraints: parseConstraints(el),
     costs: parseCosts(el),
     profiles: parseProfiles(el),
     rules: parseRules(el),
     infoLinks: parseInfoLinks(el),
+    infoGroups: parseInfoGroups(el),
     selectionEntries: subEntries,
     selectionEntryGroups: subGroups,
     entryLinks: entryLinks,
     modifiers: parseModifiers(el),
+    modifierGroups: parseModifierGroups(el),
     categoryLinks: parseCategoryLinks(el)
   };
 }
@@ -298,45 +395,68 @@ function parseSelectionEntryGroup(el) {
   const entryLinks = parseEntryLinks(el);
 
   return {
-    id: el.getAttribute('id'),
+    id: el.getAttribute(AttributeName.ID),
     name: getName(el),
-    defaultSelectionEntryId: el.getAttribute('defaultSelectionEntryId'),
-    publicationId: el.getAttribute('publicationId'),
-    page: el.getAttribute('page'),
-    collective: el.getAttribute('collective') === 'true',
-    hidden: el.getAttribute('hidden') === 'true',
+    defaultSelectionEntryId: el.getAttribute(AttributeName.DEFAULT_SELECTION_ENTRY_ID),
+    publicationId: el.getAttribute(AttributeName.PUBLICATION_ID),
+    page: el.getAttribute(AttributeName.PAGE),
+    collective: getBooleanAttribute(el, AttributeName.COLLECTIVE),
+    hidden: getBooleanAttribute(el, AttributeName.HIDDEN),
     constraints: parseConstraints(el),
     entryLinks: entryLinks,
     selectionEntries: subEntries,
     selectionEntryGroups: subGroups,
     infoLinks: parseInfoLinks(el),
+    infoGroups: parseInfoGroups(el),
     modifiers: parseModifiers(el),
+    modifierGroups: parseModifierGroups(el),
     categoryLinks: parseCategoryLinks(el)
   };
 }
 
 // Force Entries (Detachments etc.)
 const parseForceEntry = (el) => {
-  const catLinks = getWrappedChildren(el, 'categoryLinks', 'categoryLink').map(link => ({
-    id: link.getAttribute('id'),
-    name: getName(link),
-    hidden: link.getAttribute('hidden') === 'true',
-    targetId: link.getAttribute('targetId'),
-    constraints: parseConstraints(link),
-    modifiers: parseModifiers(link)
-  }));
-
   const subForces = getWrappedChildren(el, 'forceEntries', 'forceEntry').map(parseForceEntry);
 
   return {
-    id: el.getAttribute('id'),
+    id: el.getAttribute(AttributeName.ID),
     name: getName(el),
-    hidden: el.getAttribute('hidden') === 'true',
-    categoryLinks: catLinks,
+    hidden: getBooleanAttribute(el, AttributeName.HIDDEN),
+    categoryLinks: parseCategoryLinks(el),
     forceEntries: subForces,
     constraints: parseConstraints(el)
   };
 };
+
+/**
+ * Parses the `categoryEntries` of a game system or catalogue root — the category
+ * definitions themselves (not the links to them). Identical in both file kinds.
+ */
+function parseCategoryEntries(el) {
+  return getWrappedChildren(el, 'categoryEntries', 'categoryEntry').map(catEl => ({
+    id: catEl.getAttribute(AttributeName.ID),
+    name: getName(catEl),
+    hidden: getBooleanAttribute(catEl, AttributeName.HIDDEN),
+    constraints: parseConstraints(catEl),
+    modifiers: parseModifiers(catEl),
+    modifierGroups: parseModifierGroups(catEl)
+  }));
+}
+
+/**
+ * Parses the `publications` (source references) of a game system or catalogue
+ * root. Identical in both file kinds.
+ */
+function parsePublications(el) {
+  return getWrappedChildren(el, 'publications', 'publication').map(pubEl => ({
+    id: pubEl.getAttribute(AttributeName.ID),
+    name: getName(pubEl),
+    shortName: pubEl.getAttribute(AttributeName.SHORT_NAME),
+    publisher: pubEl.getAttribute(AttributeName.PUBLISHER),
+    publicationDate: pubEl.getAttribute(AttributeName.PUBLICATION_DATE),
+    publisherUrl: pubEl.getAttribute(AttributeName.PUBLISHER_URL)
+  }));
+}
 
 /**
  * Parses a game system XML content
@@ -352,48 +472,34 @@ export function parseGameSystemXML(xmlText) {
 
   // Cost Types
   const costTypes = getWrappedChildren(root, 'costTypes', 'costType').map(el => ({
-    id: el.getAttribute('id'),
+    id: el.getAttribute(AttributeName.ID),
     name: getName(el),
-    defaultCostLimit: parseFloat(el.getAttribute('defaultCostLimit')) || 0
+    defaultCostLimit: parseFloat(el.getAttribute(AttributeName.DEFAULT_COST_LIMIT)) || 0,
+    hidden: getBooleanAttribute(el, AttributeName.HIDDEN)
   }));
 
   // Profile Types
   const profileTypes = getWrappedChildren(root, 'profileTypes', 'profileType').map(el => {
     const charWrapper = getChildren(el, 'characteristicTypes')[0];
     const characteristics = getChildren(charWrapper, 'characteristicType').map(c => ({
-      id: c.getAttribute('id'),
+      id: c.getAttribute(AttributeName.ID),
       name: getName(c)
     }));
     return {
-      id: el.getAttribute('id'),
+      id: el.getAttribute(AttributeName.ID),
       name: getName(el),
       characteristics
     };
   });
 
-  // Category Entries
-  const categoryEntries = getWrappedChildren(root, 'categoryEntries', 'categoryEntry').map(el => ({
-    id: el.getAttribute('id'),
-    name: getName(el),
-    hidden: el.getAttribute('hidden') === 'true',
-    constraints: parseConstraints(el),
-    modifiers: parseModifiers(el)
-  }));
-  
+  const categoryEntries = parseCategoryEntries(root);
   const forceEntries = getWrappedChildren(root, 'forceEntries', 'forceEntry').map(parseForceEntry);
   const sharedSelectionEntries = getWrappedChildren(root, 'sharedSelectionEntries', 'selectionEntry').map(parseSelectionEntry);
   const sharedSelectionEntryGroups = getWrappedChildren(root, 'sharedSelectionEntryGroups', 'selectionEntryGroup').map(parseSelectionEntryGroup);
-  const publications = getWrappedChildren(root, 'publications', 'publication').map(el => ({
-    id: el.getAttribute('id'),
-    name: getName(el),
-    shortName: el.getAttribute('shortName'),
-    publisher: el.getAttribute('publisher'),
-    publicationDate: el.getAttribute('publicationDate'),
-    website: el.getAttribute('website')
-  }));
+  const publications = parsePublications(root);
 
   return {
-    id: root.getAttribute('id'),
+    id: root.getAttribute(AttributeName.ID),
     name: getName(root),
     revision: getRevision(root),
     costTypes,
@@ -404,6 +510,7 @@ export function parseGameSystemXML(xmlText) {
     sharedSelectionEntryGroups,
     sharedProfiles: parseProfiles(root),
     sharedRules: parseRules(root),
+    sharedInfoGroups: parseInfoGroups(root),
     publications
   };
 }
@@ -425,38 +532,29 @@ export function parseCatalogueXML(xmlText) {
   const sharedSelectionEntries = getWrappedChildren(root, 'sharedSelectionEntries', 'selectionEntry').map(parseSelectionEntry);
   const sharedSelectionEntryGroups = getWrappedChildren(root, 'sharedSelectionEntryGroups', 'selectionEntryGroup').map(parseSelectionEntryGroup);
   
-  const categoryEntries = getWrappedChildren(root, 'categoryEntries', 'categoryEntry').map(el => ({
-    id: el.getAttribute('id'),
-    name: getName(el),
-    hidden: el.getAttribute('hidden') === 'true',
-    constraints: parseConstraints(el),
-    modifiers: parseModifiers(el)
-  }));
-  
-  // Catalogs can also declare catalogLinks to other catalogues
+  const categoryEntries = parseCategoryEntries(root);
+
+  // Catalogs can also declare catalogLinks to other catalogues. `importRootEntries`
+  // is parsed for schema completeness but not consumed: acting on it means the
+  // library-import / targetId resolution path, which is out of scope per the PRD
+  // (ADR 0016). See docs/battlescribe-data-format.md §6.
   const catalogueLinks = getWrappedChildren(root, 'catalogueLinks', 'catalogueLink').map(el => ({
-    id: el.getAttribute('id'),
+    id: el.getAttribute(AttributeName.ID),
     name: getName(el),
-    targetId: el.getAttribute('targetId'),
-    type: el.getAttribute('type') // subRange, etc.
+    targetId: el.getAttribute(AttributeName.TARGET_ID),
+    type: el.getAttribute(AttributeName.TYPE), // catalogue
+    importRootEntries: getBooleanAttribute(el, AttributeName.IMPORT_ROOT_ENTRIES)
   }));
 
   const forceEntries = getWrappedChildren(root, 'forceEntries', 'forceEntry').map(parseForceEntry);
-  const publications = getWrappedChildren(root, 'publications', 'publication').map(el => ({
-    id: el.getAttribute('id'),
-    name: getName(el),
-    shortName: el.getAttribute('shortName'),
-    publisher: el.getAttribute('publisher'),
-    publicationDate: el.getAttribute('publicationDate'),
-    website: el.getAttribute('website')
-  }));
+  const publications = parsePublications(root);
 
   return {
-    id: root.getAttribute('id'),
+    id: root.getAttribute(AttributeName.ID),
     name: getName(root),
     revision: getRevision(root),
-    gameSystemId: root.getAttribute('gameSystemId'),
-    gameSystemRevision: root.getAttribute('gameSystemRevision'),
+    gameSystemId: root.getAttribute(AttributeName.GAME_SYSTEM_ID),
+    gameSystemRevision: root.getAttribute(AttributeName.GAME_SYSTEM_REVISION),
     selectionEntries,
     entryLinks,
     sharedSelectionEntries,
@@ -465,6 +563,7 @@ export function parseCatalogueXML(xmlText) {
     forceEntries,
     sharedProfiles: parseProfiles(root),
     sharedRules: parseRules(root),
+    sharedInfoGroups: parseInfoGroups(root),
     catalogueLinks,
     publications
   };
@@ -504,6 +603,7 @@ export function processImportedData(gstFiles, catFiles) {
     sharedSelectionEntryGroups: parsedGst.sharedSelectionEntryGroups,
     sharedProfiles: parsedGst.sharedProfiles,
     sharedRules: parsedGst.sharedRules,
+    sharedInfoGroups: parsedGst.sharedInfoGroups,
     publications: parsedGst.publications || [],
     catalogues: parsedCats
   };

@@ -228,4 +228,74 @@ describe('catalogResolver - resolveEntry', () => {
     expect(resolved.rules[0].publicationRef).toBe('[Codex, S. 45]');
     expect(resolved.profiles[0].publicationRef).toBe('[Rulebook, S. 200]');
   });
+
+  it('flattens an inline infoGroup into the entry profiles and rules', () => {
+    const mockSystem = { id: 'sys-1', catalogues: [{ id: 'cat-1' }] };
+    const entry = {
+      id: 'se-1',
+      name: 'Wizard',
+      infoGroups: [
+        {
+          id: 'ig-1',
+          name: 'Spellcasting',
+          profiles: [{ id: 'prof-spell', name: 'Fireball', characteristics: [] }],
+          rules: [{ id: 'rule-cast', name: 'Cast on 7+' }]
+        }
+      ]
+    };
+
+    const resolved = resolveEntry(mockSystem, entry, 'cat-1');
+    expect(resolved.profiles.map(p => p.id)).toEqual(['prof-spell']);
+    expect(resolved.rules.map(r => r.id)).toEqual(['rule-cast']);
+  });
+
+  it('resolves an infoLink of type infoGroup, including infoLinks nested inside the group', () => {
+    const mockSystem = {
+      id: 'sys-1',
+      catalogues: [
+        {
+          id: 'cat-1',
+          sharedRules: [{ id: 'rule-ward', name: 'Ward Save' }],
+          sharedInfoGroups: [
+            {
+              id: 'ig-blessings',
+              name: 'Blessings',
+              rules: [{ id: 'rule-blessed', name: 'Blessed' }],
+              infoLinks: [{ id: 'il-ward', targetId: 'rule-ward', type: 'rule' }]
+            }
+          ]
+        }
+      ]
+    };
+
+    const entry = {
+      id: 'se-1',
+      name: 'Priest',
+      infoLinks: [{ id: 'il-blessings', targetId: 'ig-blessings', type: 'infoGroup' }]
+    };
+
+    const resolved = resolveEntry(mockSystem, entry, 'cat-1');
+    expect(resolved.rules.map(r => r.id).sort()).toEqual(['rule-blessed', 'rule-ward']);
+  });
+
+  it('marks profiles and rules bundled by a hidden infoGroup as hidden', () => {
+    const mockSystem = { id: 'sys-1', catalogues: [{ id: 'cat-1' }] };
+    const entry = {
+      id: 'se-1',
+      name: 'Hidden Bundle',
+      infoGroups: [
+        {
+          id: 'ig-hidden',
+          name: 'Concealed',
+          hidden: true,
+          profiles: [{ id: 'prof-secret', name: 'Secret', characteristics: [] }],
+          rules: [{ id: 'rule-secret', name: 'Secret Rule' }]
+        }
+      ]
+    };
+
+    const resolved = resolveEntry(mockSystem, entry, 'cat-1');
+    expect(resolved.profiles.find(p => p.id === 'prof-secret').hidden).toBe(true);
+    expect(resolved.rules.find(r => r.id === 'rule-secret').hidden).toBe(true);
+  });
 });

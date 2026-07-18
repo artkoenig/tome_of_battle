@@ -44,6 +44,35 @@ vi.mock('../../solver/validator', () => ({
   computeRosterCounts: (...args) => mockComputeRosterCounts(...args),
   getOptionDisplayCost: (...args) => mockGetOptionDisplayCost(...args),
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
+  // Faithful copy of the real getEffectiveModifiers seam (src/solver/modifierEvaluator.js):
+  // direct modifiers plus modifierGroup modifiers, each folding its group's conditions.
+  getEffectiveModifiers: (source) => {
+    if (!source) return [];
+    const collect = (grp, conds, condGroups) => {
+      const nextConds = [...conds, ...(grp.conditions || [])];
+      const nextCondGroups = [...condGroups, ...(grp.conditionGroups || [])];
+      const own = (grp.modifiers || []).map(mod => ({
+        ...mod,
+        conditions: [...nextConds, ...(mod.conditions || [])],
+        conditionGroups: [...nextCondGroups, ...(mod.conditionGroups || [])],
+        repeat: grp.repeat && !mod.repeat ? grp.repeat : mod.repeat,
+      }));
+      const nested = (grp.modifierGroups || []).flatMap(inner => collect(inner, nextConds, nextCondGroups));
+      return [...own, ...nested];
+    };
+    const groupModifiers = (source.modifierGroups || []).flatMap(grp => collect(grp, [], []));
+    return [...(source.modifiers || []), ...groupModifiers];
+  },
+  formatConstraintLimit: (value, constraint) =>
+    (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
+  // Faithful copy of the real isCostField SSOT (src/solver/constraintScope.js).
+  isCostField: (field, system, roster = null) => {
+    if (!field || field === 'selections') return false;
+    if (field === 'pts' || field === 'ecfa-8486-4f6c-c249') return true;
+    if (roster && field === roster.costLimitType) return true;
+    return !!system?.costTypes?.some(costType => costType.id === field);
+  },
+  TOP_LEVEL_PARENT_COUNT: 1,
 }));
 
 // Mock Options Collector
@@ -634,5 +663,63 @@ describe('OptionGroup Component', () => {
     expect(screen.queryByTestId('icon-book')).toBeNull();
     // Both items now offer the catalogue Info fallback (both carry a description).
     expect(screen.getAllByTestId('icon-info')).toHaveLength(2);
+  });
+
+  it('24. Repeatable item defined via a modifierGroup renders as a stepper (Issue 19, B1)', () => {
+    // Regression: the increment+repeat modifier that lifts the group cap lives inside a
+    // modifierGroup here, not directly on group.modifiers. Before getEffectiveModifiers
+    // was adopted, isRepeatableWithinGroup read raw group.modifiers and missed it, so
+    // Dispel Scroll would wrongly render as an exclusive radio contradicting the validator.
+    mockArcaneItems();
+    const groupWithModifierGroup = {
+      id: 'grp-arcane-mg',
+      name: 'Arcane Items',
+      constraints: [{ type: 'max', value: 1, scope: 'parent', id: 'con-arcane-max' }],
+      modifierGroups: [
+        {
+          modifiers: [
+            { type: 'increment', field: 'con-arcane-max', value: 1, repeat: { childId: 'opt-scroll', value: 1, repeats: 1 } }
+          ]
+        }
+      ],
+      items: [
+        { option: { id: 'opt-scroll' }, groupConstraints: [{ type: 'max', value: 1, id: 'con-arcane-max' }] },
+        { option: { id: 'opt-wand' }, groupConstraints: [{ type: 'max', value: 1, id: 'con-arcane-max' }] }
+      ]
+    };
+
+    render(<OptionGroupComponent {...defaultProps} group={groupWithModifierGroup} />);
+    fireEvent.click(screen.getByText('Arcane Items').closest('div'));
+
+    // Grey Wand stays an exclusive radio; Dispel Scroll becomes a countable stepper.
+    expect(screen.getAllByRole('radio').length).toBe(1);
+    const scrollRow = screen.getByText('Dispel Scroll').closest('.sub-selection-row');
+    expect(scrollRow.querySelector('.quantity-control button:last-child')).not.toBeNull();
+  });
+
+  it('25. modifierGroup-gated group-constraint modifiers reach getModifiedConstraintValue (Issue 19, B1)', () => {
+    // Regression: a group's max modifier nested in a modifierGroup must be passed to the
+    // limit resolver so the displayed limit matches what the rosterValidator enforces.
+    mockGetModifiedConstraintValue.mockClear();
+    const groupWithGatedMax = {
+      id: 'grp-gated',
+      name: 'Magic Weapons',
+      constraints: [{ type: 'max', value: 1, id: 'con-max', scope: 'parent' }],
+      modifierGroups: [
+        { modifiers: [{ type: 'set', field: 'con-max', value: 2 }] }
+      ],
+      items: [
+        { option: { id: 'opt-sword' }, groupConstraints: [{ type: 'max', value: 1, id: 'con-max' }] }
+      ]
+    };
+
+    render(<OptionGroupComponent {...defaultProps} group={groupWithGatedMax} />);
+
+    const maxCall = mockGetModifiedConstraintValue.mock.calls.find(
+      call => call[0]?.id === 'con-max' && call[0]?.type === 'max'
+    );
+    expect(maxCall).toBeDefined();
+    const modifiersArg = maxCall[1];
+    expect(modifiersArg.some(mod => mod.field === 'con-max' && mod.type === 'set')).toBe(true);
   });
 });
