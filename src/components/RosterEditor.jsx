@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, resolveEntry, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, resolveEntry, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -168,8 +168,20 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
           const forceCategoryCounts = categoryCounts[force.id] || {};
 
+          // Army-wide mandatory selectors that no force category surfaces (e.g. a
+          // force-scoped root entry without a matching categoryLink) get their own
+          // configurator; selectors that a category already offers are handled there.
+          const armyWideSelectors = collectUnreachableArmyWideSelectors({
+            system, catalogueId: force.catalogueId || roster.catalogueId, forceDef,
+            roster, selectionCounts, forceCategoryCounts, force
+          });
+          const armyWideSelectorIds = new Set(armyWideSelectors.map(entry => entry.id));
+          const belongsToArmyWideSelector = s => armyWideSelectorIds.has(s.selectionEntryId || s.entryLinkId);
+          const armyWideSelectorSelections = force.selections?.filter(belongsToArmyWideSelector) || [];
+
           const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
-          const uncategorizedSelections = force.selections?.filter(s => !matchedCategoryIds.has(s.category)) || [];
+          const uncategorizedSelections = force.selections?.filter(s =>
+            !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s)) || [];
 
           return (
             <div key={force.id} className="force-editor-section" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -270,6 +282,47 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     </div>
                   );
                 })}
+
+              {/* Army-wide mandatory selectors not reachable through any force category */}
+              {armyWideSelectors.length > 0 && (
+                <div className="roster-category-group" style={{ marginBottom: '24px' }}>
+                  <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
+                    <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>Armeeweite Auswahl</h3>
+                    <CategoryUnitAdder
+                      categoryName="Armeeweite Auswahl"
+                      entries={armyWideSelectors}
+                      system={system}
+                      activeCatalogue={activeCatalogue}
+                      costTypeLabel={costTypeLabel}
+                      costLimitType={roster.costLimitType}
+                      addUnit={addUnit}
+                      roster={roster}
+                      selectionCounts={selectionCounts}
+                    />
+                  </div>
+                  {armyWideSelectorSelections.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {armyWideSelectorSelections.map(selection => (
+                        <UnitSelectionCard
+                          key={selection.id}
+                          selection={selection}
+                          selectedRosterSelection={selectedRosterSelection}
+                          setSelectedRosterSelection={setSelectedRosterSelection}
+                          roster={roster}
+                          system={system}
+                          validationErrors={validationErrors}
+                          costTypeLabel={costTypeLabel}
+                          removeUnit={removeUnit}
+                          copyUnit={copyUnit}
+                          updateSubSelection={updateSubSelection}
+                          activeCatalogue={activeCatalogue}
+                          onShowRule={onShowRule}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Uncategorized Selections (Fallback) */}
               {uncategorizedSelections.length > 0 && (

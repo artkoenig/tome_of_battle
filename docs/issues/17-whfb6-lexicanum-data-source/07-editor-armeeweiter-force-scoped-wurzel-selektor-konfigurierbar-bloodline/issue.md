@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -77,3 +77,4 @@ frei, alle anderen bleiben verborgen).
 
 ## Comments
 - Per E2E-Repro verifiziert und Beschreibung präzisiert: Bloodline-Auswahl selbst funktioniert bereits (categoryLink auf 'Special list rules' vorhanden), die Lücke liegt in der ungefilterten Options-Sammlung/-Gruppierung pro Einheit im Editor (hidden/Modifier-Flags werden dort nie ausgewertet, gleichnamige Gruppen werden unterschiedslos verschmolzen). Auf ready-for-agent triagiert.
+- Fixed the per-unit options collection/grouping so force-scoped hidden gating works: (1) evaluateCondition now counts by childId for non-parent scopes (force-scoped bloodline gate previously never fired); (2) getUnitOptions omits conditionally-hidden entryLinks/groups when given a visibility context; (3) SelectionConfigurator groups by group id, not name, so the 5 same-named 'Vampiric Powers' groups no longer merge; (4) rosterValidator flags a completely-missing mandatory force-scoped root selector (e.g. Bloodlines); (5) new armyWideSelectors module + RosterEditor section make a force-scoped root selector without a matching categoryLink configurable. Verified E2E in-browser against real Lexicanum Vampire Counts data: only the selected bloodline's Vampiric Powers render. Full suite green (647 vitest + puppeteer UI tests).

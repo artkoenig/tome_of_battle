@@ -74,11 +74,19 @@ export const evaluateCondition = (cond, ctx = {}) => {
 
       currentValue = countMatches(parentScopeTarget.selections);
     } else {
+      // Non-parent scopes (force/roster/entry/category) count by the specific target
+      // the condition names. A childId identifies that target explicitly (e.g. a
+      // bloodline entry id in "atLeast 1 selections scope=force childId=<bloodline>");
+      // plain category conditions carry the id in field and no childId. Preferring
+      // childId mirrors the parent branch's `cond.childId || cond.field`, so a
+      // force-scoped childId condition resolves against the actual selection count
+      // instead of the generic field name ("selections"), which is never a count key.
+      const countKey = cond.childId || cond.field;
       let categoryTotal = 0;
-      if (forceCategoryCounts && forceCategoryCounts[cond.field]) {
-        categoryTotal = forceCategoryCounts[cond.field];
+      if (forceCategoryCounts && forceCategoryCounts[countKey]) {
+        categoryTotal = forceCategoryCounts[countKey];
       }
-      currentValue = selectionCounts[cond.field] || categoryTotal || 0;
+      currentValue = selectionCounts[countKey] || categoryTotal || 0;
     }
   }
   const targetValue = cond.value;

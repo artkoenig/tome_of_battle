@@ -67,6 +67,7 @@ vi.mock('../solver/validator', () => ({
   getSelectionTotalCost: (sel) => sel.cost,
   findForceEntryById: (system, id) => system?.forceEntries?.find((fe) => fe.id === id) || null,
   isCategoryLinkHidden: (link) => link.hidden === true,
+  collectUnreachableArmyWideSelectors: () => [],
   getExtraResourceTotals: () => [],
   formatConstraintLimit: (value, constraint) =>
     (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,

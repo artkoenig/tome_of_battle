@@ -37,6 +37,14 @@ vi.mock('./BottomSheet', () => ({
   ) : null
 }));
 
+// Render each option group as an identifiable stub so the grouping (which key merges
+// items) is observable without pulling in OptionGroup's full dependency surface.
+vi.mock('./OptionGroup', () => ({
+  default: ({ group }) => (
+    <div data-testid="option-group" data-group-id={group.id}>{group.name}</div>
+  )
+}));
+
 // Mock validators
 const mockResolveEntry = vi.fn();
 const mockFindEntryInSystem = vi.fn();
@@ -207,5 +215,34 @@ describe('SelectionConfigurator Component', () => {
     renderConfigurator();
     expect(screen.queryByTestId('icon-book')).toBeNull();
     expect(screen.getByTestId('icon-info')).toBeTruthy();
+  });
+
+  it('keeps identically-named groups separate by grouping on the group id (Issue 17/07)', () => {
+    // Two distinct groups that happen to share the display name "Vampiric Powers" must
+    // render as two groups, not collapse into one merged group (which used to drop the
+    // second group's items/modifiers).
+    const optionA = { id: 'power-a', name: 'Blademaster' };
+    const optionB = { id: 'power-b', name: 'Red Fury' };
+    mockGetUnitOptions.mockReturnValue([
+      { option: optionA, parentDefId: 'sel-1', groupName: 'Vampiric Powers', groupId: 'vp-group-a' },
+      { option: optionB, parentDefId: 'sel-1', groupName: 'Vampiric Powers', groupId: 'vp-group-b' }
+    ]);
+    mockResolveEntry.mockImplementation(opt => opt);
+    mockFindEntryInSystem.mockImplementation(opt => opt);
+
+    render(
+      <SelectionConfigurator
+        selection={mockSelection}
+        system={mockSystem}
+        roster={mockRoster}
+        updateSubSelection={mockUpdateSubSelection}
+        costTypeLabel="Pkt."
+        activeCatalogue={mockCatalogue}
+      />
+    );
+
+    const renderedGroups = screen.getAllByTestId('option-group');
+    expect(renderedGroups).toHaveLength(2);
+    expect(renderedGroups.map(g => g.getAttribute('data-group-id')).sort()).toEqual(['vp-group-a', 'vp-group-b']);
   });
 });

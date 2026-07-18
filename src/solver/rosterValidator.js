@@ -3,7 +3,8 @@ import { getModifiedConstraintValue, getEffectiveModifiers } from './modifierEva
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, isCostField, countSelections, resolveConstraintThreshold } from './constraintScope.js';
 import { findForceEntryById } from './forceEntries.js';
-import { isCategoryLinkHidden } from './entryVisibility.js';
+import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
+import { collectForceScopedMinSelectors } from './armyWideSelectors.js';
 import { getInheritedCategoryMaxSource } from './systemQuirks.js';
 import '../types.js';
 
@@ -26,6 +27,7 @@ export function validateRoster(roster, system) {
     if (!forceDef) return;
 
     checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors });
+    checkMandatoryForceSelectors({ roster, system, force, forceDef, counts, errors });
 
     force.selections?.forEach(sel =>
       checkSelectionTree({ selection: sel, parentSelection: null, roster, system, force, counts, errors })
@@ -92,6 +94,44 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
         count, catName, forceDef, force, targetCatId, ctx, errors
       })
     );
+  });
+}
+
+/**
+ * Prüft armeeweite Pflichtauswahlen: Wurzel-Katalogeinträge mit force-scoped `min`-
+ * Constraint (z. B. die Vampire-Counts-Bloodline — „mindestens eine pro Kontingent").
+ * Solange ein solcher Eintrag gar nicht im Roster liegt, sieht ihn die eintragsweise
+ * Constraint-Prüfung nie, sodass eine komplett fehlende Pflichtauswahl unbemerkt bliebe.
+ * Hier wird nur der Fall „gar nicht vorhanden" gemeldet; ein vorhandener, aber zu geringer
+ * Count bleibt bei der eintragsweisen Prüfung, damit kein Fehler doppelt erscheint.
+ * Versteckte Selektoren (nur in bestimmten Armee-Varianten wählbar) werden übersprungen,
+ * damit ihre Pflicht nicht für Armeen greift, die sie nicht nehmen können.
+ */
+function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts, errors }) {
+  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
+  const forceCategoryCounts = categoryCounts[force.id] || {};
+  const forceCounts = forceSelectionCounts[force.id] || {};
+  const catalogueId = force.catalogueId || roster.catalogueId;
+
+  collectForceScopedMinSelectors(system, catalogueId).forEach(({ entry, minConstraint }) => {
+    if (isSelectionEntryHidden(entry, system, roster, selectionCounts, forceCategoryCounts, force)) return;
+
+    const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: catalogueId };
+    const minValue = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(entry), ctx);
+    if (minValue <= 0) return;
+
+    const currentCount = Math.max(
+      forceCounts[entry.id] || 0,
+      entry.targetId ? forceCounts[entry.targetId] || 0 : 0
+    );
+    if (currentCount === 0) {
+      errors.push({
+        type: 'force-selector-min',
+        forceId: force.id,
+        message: `Pflichtauswahl „${entry.name}" fehlt in ${forceDef.name} (mindestens ${minValue} benötigt).`,
+        severity: 'error'
+      });
+    }
   });
 }
 
