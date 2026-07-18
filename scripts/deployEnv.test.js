@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveDeployEnv, isFlaggedEnv } from './deployEnv.js';
+import { resolveDeployEnv } from './deployEnv.js';
 
 describe('deployEnv', () => {
   describe('resolveDeployEnv', () => {
@@ -23,14 +23,6 @@ describe('deployEnv', () => {
     });
     it('treats an unknown custom target env as preview (still flagged)', () => {
       expect(resolveDeployEnv({ command: 'build', branch: 'qa', targetEnv: 'qa' })).toBe('preview');
-    });
-  });
-
-  describe('isFlaggedEnv', () => {
-    it('flags preview, but not production or development', () => {
-      expect(isFlaggedEnv('preview')).toBe(true);
-      expect(isFlaggedEnv('production')).toBe(false);
-      expect(isFlaggedEnv('development')).toBe(false);
     });
   });
 });

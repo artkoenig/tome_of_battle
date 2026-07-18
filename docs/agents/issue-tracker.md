@@ -43,6 +43,42 @@ Work issues one at a time. For each:
 
 Repeat until `next` reports no ready issues.
 
+## Merging a main-issue's PR into main
+Once every child-issue of a main-issue is resolved and its PR is ready to
+merge, use **Squash-Merge** (per ADR 0009), never a regular merge commit. Set
+the squash commit's subject to `<prefix>: <short English summary>`, where
+`<prefix>` is derived from the main-issue's `Type:`:
+
+| `Type`     | Prefix       |
+|------------|--------------|
+| `feature`  | `feat:`      |
+| `fix`      | `fix:`       |
+| `refactor` | `refactor:`  |
+| `chore`    | `chore:`     |
+
+Only `feat:`/`fix:` subjects surface in the app's release notes (see
+`vite.config.js`'s commit filter); `refactor:`/`chore:` are still prefixed for
+consistency but intentionally excluded there.
+
+## Version bump after merging a feature/fix main-issue
+After a main-issue of `Type: feature` or `Type: fix` is merged into `main`,
+propose a version bump — never for `refactor`/`chore`, which have no
+user-facing release reason:
+
+1. Read the current version from `package.json`.
+2. Suggest the next version: patch bump for `fix`, minor bump for `feature`
+   (`node scripts/release.js patch` / `minor` computes this).
+3. Ask the user to confirm the suggestion, supply their own version, or leave
+   the version unchanged.
+4. If confirmed: run `node scripts/release.js <patch|minor|X.Y.Z>` to update
+   `package.json`, commit it, tag the commit `v<version>`, and push branch and
+   tag to `main` — as a single, explicitly authorized step (no separate push
+   confirmation).
+
+This step runs on `main` itself, after the merge — never on the feature
+branch — so the tag always points at a commit that is actually part of
+`main`'s history.
+
 ## Do not hand-edit
 Manage issues through the `issue-tracker` skill's `tracker.py` so that the state
 machine and blocker rules are respected.
