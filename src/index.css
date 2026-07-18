@@ -1394,6 +1394,14 @@ select option {
   line-height: 1.4;
 }
 
+.settings-version {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-gold-dim);
+  text-align: right;
+  opacity: 0.7;
+}
+
 .settings-switch {
   flex-shrink: 0;
   position: relative;

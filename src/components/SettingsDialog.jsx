@@ -5,12 +5,14 @@ import { useSettings } from '../contexts/SettingsContext';
 const LINK_SETTING_LABEL = 'Verlinkung zu 6th.whfb.app';
 const LINK_SETTING_HINT =
   'Ist die Verlinkung aus, zeigen Regel-, Waffen- und Magic-Item-Chips statt eines Links zur externen Seite die Katalog-Kurzinfo.';
+const VERSION_LABEL = 'Version';
 
 // Global settings dialog, opened from the header gear icon. Reads and writes the
 // whfb6 linking setting through the settings context, so a toggle re-renders
 // every consumer reactively (see ADR-0015).
 export default function SettingsDialog({ isOpen, onClose }) {
   const { whfb6LinkingEnabled, setWhfb6LinkingEnabled } = useSettings();
+  const appVersion = import.meta.env.VITE_APP_VERSION;
 
   if (!isOpen) return null;
 
@@ -39,6 +41,9 @@ export default function SettingsDialog({ isOpen, onClose }) {
             >
               <span className="settings-switch-thumb" />
             </button>
+          </div>
+          <div className="settings-version text-dim text-micro">
+            {VERSION_LABEL} {appVersion}
           </div>
         </div>
       </div>
