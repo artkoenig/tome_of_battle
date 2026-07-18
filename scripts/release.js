@@ -1,8 +1,8 @@
 /**
  * Manueller Release-Workflow: berechnet und schreibt die nächste App-Version
  * in package.json. Wird vom Agenten aufgerufen, nachdem der Nutzer eine
- * vorgeschlagene oder eigene Version bestätigt hat (siehe
- * docs/agents/issue-tracker.md, Abschnitt "Nach dem Merge in main").
+ * vorgeschlagene oder eigene Version bestätigt hat (siehe CLAUDE.md,
+ * Abschnitt "Version bump after merging a feature/fix main-issue").
  *
  * Reine Versionsberechnung (computeSuggestedVersion) ist von der
  * Datei-I/O (readPackageVersion/writePackageVersion) getrennt, damit die
