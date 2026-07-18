@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -22,3 +22,4 @@ referenziert ist.
 - [ ] Keine verbleibenden Links auf eine der beiden Dateien im Repo
 
 ## Comments
+- Beide veralteten PRD-Dateien (Root-PRD.md und docs/PRD-collapsible-play-profiles.md) geloescht; keine verbleibenden Links im Repo ausser den beschreibenden Issue-Dateien.
