@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -31,17 +31,18 @@ der Entry-Link selbst trägt dann keine eigenen Kategorie-Verknüpfungen,
 sodass der Fallback-Schutz fälschlich "noch nicht gezählt" annimmt.
 
 ## Acceptance Criteria
-- [ ] Eine Top-Level-Auswahl wird pro Kategorie höchstens einmal gezählt,
+- [x] Eine Top-Level-Auswahl wird pro Kategorie höchstens einmal gezählt,
       unabhängig davon, ob ihr Katalogeintrag direkt oder über einen
       Entry-Link referenziert wird und ob die Kategorie statisch oder über
       einen Modifikator zugewiesen ist.
-- [ ] Der Fallback für Auswahlen mit nicht mehr auflösbarem Katalogeintrag
+- [x] Der Fallback für Auswahlen mit nicht mehr auflösbarem Katalogeintrag
       bleibt erhalten (weiterhin korrekte Zählung anhand der gespeicherten
       Kategorie, wenn der Eintrag wirklich fehlt).
-- [ ] Neuer/angepasster Unit-Test in `src/solver/rosterCounter.test.js` (oder
+- [x] Neuer/angepasster Unit-Test in `src/solver/rosterCounter.test.js` (oder
       passender Testdatei) deckt genau dieses Szenario ab: eine Einheit,
       referenziert über einen Entry-Link, deren Kategorie über einen
       Modifikator (nicht statisch) gesetzt wird.
-- [ ] Bestehende Tests (`npm test`) bleiben grün.
+- [x] Bestehende Tests (`npm test`) bleiben grün.
 
 ## Comments
+- Fix in src/solver/rosterCounter.js: computeRosterCounts zaehlte eine per entryLink ausgewaehlte Einheit doppelt in ihre Force-Org-Kategorie, wenn diese per Modifikator (set-primary/add) statt statisch zugewiesen wurde. Ein gemeinsames seenCategories-Set ueber den katalog-basierten Zaehlpfad und den Fallback fuer nicht mehr aufloesbare Katalogeintraege behebt das. Regressionstest in src/solver/modifierGating.test.js ('does not double-count a category on a unit selected via an entryLink whose category comes from a modifier'). Vier-Achsen-Verifikation (testing skill) durchgelaufen: Standards (oxlint sauber, 0 blockierend), Spezifikation (0 Befunde, alle Acceptance Criteria erfuellt), Tests (666/666 vitest gruen), Docs (0 echtes Drift). E2E gegen echten Katalog (Lexicanum-Quelle) bestaetigt: Special zeigt jetzt 4 statt 6, Core 4 statt 6, Rare 1 statt 2 fuer die urspruenglich gemeldete Armeeliste.
