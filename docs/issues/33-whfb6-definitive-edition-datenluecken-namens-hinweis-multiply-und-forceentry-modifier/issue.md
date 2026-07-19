@@ -191,7 +191,4 @@ Vampire-Counts- oder Dwarfs-spezifische Sonderlogik (ADR-0003).
 ## Acceptance Criteria
 - [ ]
 
-## Acceptance Criteria
-- [ ]
-
 ## Comments
