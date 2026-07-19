@@ -344,7 +344,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
 }
 
 /** Constraints aller SelectionEntryGroups des Eintrags prüfen (Anzahl- und Punkte-Limits). */
-function checkGroupConstraints({ selection, parentSelection, roster, system, force, counts, errors, entry, forceCatalogueId }) {
+function checkGroupConstraints({ selection, roster, system, force, counts, errors, entry, forceCatalogueId }) {
   const { selectionCounts, categoryCounts } = counts;
   const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
 
@@ -415,7 +415,13 @@ function checkGroupConstraints({ selection, parentSelection, roster, system, for
     };
 
     group.constraints?.forEach(con => {
-      const ctx = { roster, selectionCounts, forceCategoryCounts, selection, parentSelection, force, system, parentCatalogueId: forceCatalogueId };
+      // No parentSelection here: a group's own "parent" scope is the selection that owns
+      // the group (`selection`, whose `.selections` this function itself scans below for
+      // matches), not `selection`'s outer parent. Passing the outer parent would make a
+      // self-incrementing modifier (e.g. "raise the cap for every Dispel Scroll already
+      // taken") scan one level too high whenever the group sits behind an intermediate
+      // wrapper selection, silently contributing 0 and leaving the base cap in place.
+      const ctx = { roster, selectionCounts, forceCategoryCounts, selection, force, system, parentCatalogueId: forceCatalogueId };
       const finalValue = getModifiedConstraintValue(con, getEffectiveModifiers(group), ctx);
       if (finalValue < 0) return;
 
