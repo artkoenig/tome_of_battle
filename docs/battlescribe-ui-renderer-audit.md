@@ -20,6 +20,11 @@ dort korrekt eingesammelt, erscheint es überall konsistent:
   `profiles`/`rules` ab, sodass Renderer nur zwei Listen lesen müssen.
 - `computeRosterCounts` (`src/solver/rosterCounter.js`) — Auswahl-/Kategorie-Zählungen
   (inkl. dynamischer Kategorien).
+- `getEffectiveEntryCategoryLinks` / `isEntryPrimaryInCategory`
+  (`src/solver/entryVisibility.js`) — effektive (post-Modifier) Kategoriezugehörigkeit
+  für die **UI-Einsortierung**: welcher Aushebe-Dialog eine Einheit anbietet, ob eine
+  Kategorie-Sektion überhaupt erscheint, und ob ein armeeweiter Selektor über eine
+  Force-Kategorie erreichbar ist (ergänzt in Main-Issue 29; siehe ADR 0003 §4).
 - `getExtraResourceTotals` (`src/solver/rosterCounter.js`) — Sekundär-Ressourcen für
   die Anzeige (filtert versteckte Kostenarten).
 - `getModifiedConstraintValue` (`src/solver/modifierEvaluator.js`) +
@@ -33,6 +38,7 @@ dort korrekt eingesammelt, erscheint es überall konsistent:
 | 1 | `modifierGroup` conditions/repeats (gegateter Characteristic-Modifier) | `collectUnitProfilesAndRules` → `PlayUnitDetails` (`renderProfileCell` Breakdown) | Modifizierte Werte erscheinen mit Breakdown-Tooltip; ungegatete feuern nicht | Wird via `getEffectiveModifiers`/Gating angewandt und angezeigt | OK — keine Änderung |
 | 2 | `condition`/`repeat` `includeChildSelections` | Evaluator → `computeRosterCounts`/`getModifiedConstraintValue` → Zähl-Badges | Kind-Auswahlen fließen in Zählungen/Grenzwerte ein | Vom Evaluator berücksichtigt, Ergebnis erscheint in Badges | OK — keine Änderung |
 | 3 | Modifier `add`/`remove`/`set-primary`/`unset-primary` (dynamische Kategorien) | `computeRosterCounts` (via `getEffectiveCategoryLinks`) → Kategorie-Badges in `RosterEditor`/`RosterSidebar` | Kategorie-Zählungen spiegeln dynamische Zugehörigkeit | `categoryCounts` nutzt effektive CategoryLinks; Badges zeigen dynamischen Count | OK — keine Änderung |
+| 3b | Modifier `add`/`remove`/`set-primary` (dynamische Kategorien) → **UI-Einsortierung** (Aushebe-Dialog, Sektions-Sichtbarkeit, armeeweite Selektoren) | `isEntryPrimaryInCategory`/`getEffectiveEntryCategoryLinks` (`entryVisibility.js`) → `CategoryUnitAdder`, `RosterEditor.hasPrimaryCatalogItems`, `armyWideSelectors` | Einheit erscheint im Aushebe-Dialog ihrer **effektiven** Primärkategorie | Prüfte nur statische `categoryLinks` → per Modifier umkategorisierte Einheiten (z. B. Ogerbullen) verschwanden | **Lücke → behoben** (Main-Issue 29) |
 | 4 | `infoGroups`/`sharedInfoGroups`/`infoLink type="infoGroup"` | `resolveEntry` (Flatten) → `collectUnitProfilesAndRules` → `PlayUnitDetails`, `UnitChips`, `SelectionConfigurator`, `upgradeDetails` | Gebündelte Profile/Regeln erscheinen an der Einheit | Flatten in `resolveEntry` vorhanden; Renderer lesen `profiles`/`rules` | OK — Renderer-Test ergänzt |
 | 5 | `profile@typeId`/`typeName` (Profil-Typ-Gruppierung) | `groupProfilesByType` (`rulesEvaluator.js`) → `PlayUnitDetails` Tabellen, `upgradeDetails` | Profile gruppieren generisch nach Typname als eigene Tabellen | Gruppierung liest `profileTypeName` (jetzt korrekt geparst) | OK — keine Änderung |
 | 6 | `constraint@percentValue` (Grenzwert-Anzeige) | `RosterEditor` (Kategorie-Header), `RosterSidebar` (Armeeanforderungen), `OptionGroup` (Gruppen-Limit) | Prozent-Grenzwert als Prozent kenntlich (z. B. „Max: 25 %") | Zeigte nackte Zahl „Max: 25" — nicht von absoluter Zahl unterscheidbar | **Lücke → behoben** (`formatConstraintLimit`) |
@@ -51,11 +57,24 @@ dort korrekt eingesammelt, erscheint es überall konsistent:
   über die zentralen Brücken (`resolveEntry`, `collectUnitProfilesAndRules`,
   `computeRosterCounts`, `getExtraResourceTotals`) laufen, die von den Slices 03–06
   bereits korrekt befüllt werden.
+- **Nachtrag (Main-Issue 29):** Konstrukt #3 war für die **Zähl-Badges** korrekt,
+  nicht aber für die **UI-Einsortierung** (Aushebe-Dialog, Sektions-Sichtbarkeit,
+  armeeweite Selektoren) — diese lasen weiterhin die statischen `categoryLinks`,
+  wodurch per `set-primary` umkategorisierte Einheiten (z. B. die aus dem
+  *Mercenaries*-Bibliothekskatalog importierten Ogerbullen) aus der Auswahl
+  verschwanden. Behoben über die neue Brücke `isEntryPrimaryInCategory` /
+  `getEffectiveEntryCategoryLinks` (Konstrukt #3b).
 - Ergänzte Renderer-Tests sichern die auditierten Konstrukte ab:
   - `src/solver/constraintScope.test.js` — `formatConstraintLimit` (Prozent/Absolut).
   - `src/components/editor/RosterSidebar.test.jsx` — Prozent-Grenzwert mit „%",
     versteckte Kostenart ausgeblendet, sichtbare Kostenart angezeigt.
   - `src/components/play/PlayUnitDetails.infogroups.test.jsx` — infoGroup-gebündeltes
     Profil erscheint als eigene Profiltabelle (echte Brücke, kein Solver-Mock).
+  - `src/solver/entryVisibility.test.js` — effektive Primärkategorie (Konstrukt #3b):
+    `set-primary`-Modifier über einen entryLink auf ein Bibliothekskatalog-Ziel,
+    inkl. Bedingungs-Gating.
+  - `src/components/editor/CategoryUnitAdder.test.jsx` — der Aushebe-Dialog bietet eine
+    per `set-primary` nach „Core" umkategorisierte Einheit an (echte Brücke, kein
+    Solver-Mock).
 - Nicht-anzeige-relevante Konstrukte (#7 `importRootEntries`, #9 `publisherUrl`) haben
   keinen zuständigen Renderer; die Feld-Korrektheit liegt in den Parser-Slices.

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, getEffectiveModifiers, isSelectionEntryHidden } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, getEffectiveModifiers, isSelectionEntryHidden, isEntryPrimaryInCategory } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
@@ -27,11 +27,13 @@ export default function CategoryUnitAdder({
       const resolved = resolveEntry(system, entry);
       if (!resolved) return;
 
-      const hasCategory = resolved.categoryLinks?.some(link => link.targetId === catId && link.primary) ||
-                          entry.categoryLinks?.some(link => link.targetId === catId && link.primary);
+      const force = roster.forces?.[0];
+      // Use the effective (post-modifier) primary category so units an army
+      // recategorises via a `set-primary` modifier (e.g. shared library units
+      // pulled into "Core") surface under the right section (ADR 0003 §4).
+      const hasCategory = isEntryPrimaryInCategory(entry, catId, { system, roster, selectionCounts, force });
 
       if (hasCategory) {
-        const force = roster.forces?.[0];
         const isHidden = isSelectionEntryHidden(entry, system, roster, selectionCounts, null, force);
         if (!isHidden) {
           items.push(entry);

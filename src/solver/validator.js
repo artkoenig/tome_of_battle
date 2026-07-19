@@ -20,5 +20,5 @@ export { isPercentConstraint, isCostField, countSelections, collectScopeSelectio
 export { collectUnitProfilesAndRules } from './profileCollector.js';
 export { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './rosterSync.js';
 export { findForceEntryById, getAvailableForceEntries } from './forceEntries.js';
-export { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
+export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory } from './entryVisibility.js';
 export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, isReachableViaForceCategories } from './armyWideSelectors.js';

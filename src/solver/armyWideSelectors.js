@@ -1,5 +1,5 @@
 import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
-import { isSelectionEntryHidden } from './entryVisibility.js';
+import { isSelectionEntryHidden, getEffectiveEntryCategoryLinks } from './entryVisibility.js';
 
 // Scope under which a constraint applies to the whole contingent (force), and the
 // constraint type that makes an entry a mandatory army-wide choice.
@@ -33,10 +33,14 @@ export function collectForceScopedMinSelectors(system, catalogueId) {
  * i.e. one of its categoryLinks targets a category the force offers. A force-scoped root
  * selector that is NOT reachable this way (e.g. an entry with no matching categoryLink)
  * needs a dedicated army-wide configurator, since no category surfaces it.
+ *
+ * `categoryLinks` lets the caller pass the entry's effective (post-modifier) links so a
+ * modifier-recategorised entry is judged against the same categories the adder surfaces
+ * it under (ADR 0003 §4); it defaults to the entry's static links.
  */
-export function isReachableViaForceCategories(entry, forceDef) {
+export function isReachableViaForceCategories(entry, forceDef, categoryLinks = null) {
   const forceCategoryIds = new Set((forceDef?.categoryLinks || []).map(link => link.targetId));
-  return (entry?.categoryLinks || []).some(link => forceCategoryIds.has(link.targetId));
+  return (categoryLinks || entry?.categoryLinks || []).some(link => forceCategoryIds.has(link.targetId));
 }
 
 /**
@@ -64,7 +68,8 @@ export function collectUnreachableArmyWideSelectors(visibilityContext) {
   const { system, catalogueId, forceDef, roster, selectionCounts, forceCategoryCounts, force } = visibilityContext;
   return collectForceScopedMinSelectors(system, catalogueId)
     .filter(({ entry, minConstraint }) => {
-      if (isReachableViaForceCategories(entry, forceDef)) return false;
+      const effectiveLinks = getEffectiveEntryCategoryLinks(entry, { system, roster, selectionCounts, forceCategoryCounts, force });
+      if (isReachableViaForceCategories(entry, forceDef, effectiveLinks)) return false;
       if (isSelectionEntryHidden(entry, system, roster, selectionCounts, forceCategoryCounts, force)) return false;
       return resolveForceSelectorMinimum(entry, minConstraint, visibilityContext) > 0;
     })

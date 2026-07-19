@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, resolveEntry, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -69,16 +69,14 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   }, [system, roster]);
 
 
-  const hasPrimaryCatalogItems = (catId, force) => {
+  const hasPrimaryCatalogItems = (catId, force, selectionCounts) => {
     const activeCatalogue = system.catalogues?.find(c => c.id === force.catalogueId);
     if (!activeCatalogue) return false;
 
-    const checkEntry = (entry) => {
-      const resolved = resolveEntry(system, entry, activeCatalogue?.id);
-      if (!resolved) return false;
-      return (resolved.categoryLinks?.some(link => link.targetId === catId && link.primary) ||
-             entry.categoryLinks?.some(link => link.targetId === catId && link.primary));
-    };
+    // Effective (post-modifier) primary category, so a section still renders when
+    // all its units are recategorised into it by a `set-primary` modifier — matching
+    // what the category adder offers (ADR 0003 §4).
+    const checkEntry = (entry) => isEntryPrimaryInCategory(entry, catId, { system, roster, selectionCounts, force });
 
     return activeCatalogue.selectionEntries?.some(checkEntry) ||
            activeCatalogue.entryLinks?.some(checkEntry) ||
@@ -206,7 +204,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   const minVal = minConstraint ? getModifiedConstraintValue(minConstraint, linkModifiers, displayCtx) : 0;
                   const maxVal = maxConstraint ? getModifiedConstraintValue(maxConstraint, linkModifiers, displayCtx) : Infinity;
 
-                  const isPrimaryForAny = hasPrimaryCatalogItems(link.targetId, force);
+                  const isPrimaryForAny = hasPrimaryCatalogItems(link.targetId, force, selectionCounts);
 
                   // Completely hide category groups that are not primary for any unit and have no current selections,
                   // as these are secondary rule tags (like "Characters") rather than functional UI slots.
