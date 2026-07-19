@@ -52,6 +52,13 @@ Alle Listenregeln erscheinen gebündelt unter ihrem Hauptknoten „Special list
 rules" (die bestehende, katalog-benannte Kategorie-Gruppe dient als dieser
 Hauptknoten; keine neue verschachtelte Baumstruktur).
 
+**Im Spielmodus (`PlayMode`) werden die Listenregel-Karten vollständig
+ausgeblendet.** Der Spielmodus zeigt die kampffeldrelevanten Einheiten; die
+listenweite Konfiguration gehört dort nicht hin. Es greift dasselbe Prädikat:
+Selektionen, die als Listenregel erkannt werden (`type !== "unit"`), werden aus
+der gruppierten Anzeige des Spielmodus herausgefiltert — sowohl im
+kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
+
 ## User Stories / Requirements
 1. Als Listenersteller möchte ich Listenregeln klar von Einheiten unterschieden
    sehen, damit ich nicht den Eindruck habe, sie hinzufügen, kopieren oder löschen
@@ -65,6 +72,8 @@ Hauptknoten; keine neue verschachtelte Baumstruktur).
 5. Als Wartender des Codes möchte ich, dass die Einheit/Regel-Unterscheidung
    ausschließlich aus dem Katalog-`type` folgt und für jedes künftig importierte
    System ohne Codeänderung greift.
+6. Als Spieler möchte ich im Spielmodus nur die kampffeldrelevanten Einheiten
+   sehen; die Listenregel-Karten sollen dort ausgeblendet sein.
 
 ## Technical Decisions
 - **Affected Modules (Verhalten, nicht Dateiliste):**
@@ -74,6 +83,9 @@ Hauptknoten; keine neue verschachtelte Baumstruktur).
     der Detail-Umschalter und ⋮-Menü ausblendet, Konfigurator und Badges behält.
   - Ein reines Prädikat im Solver zur Einheit/Regel-Erkennung aus dem
     aufgelösten Entry-`type`.
+  - Die Gruppierungs-/Filterlogik des Spielmodus (`PlayMode`) — schließt
+    Listenregel-Selektionen aus der Anzeige aus (kategorisierter und
+    unkategorisierter Pfad).
 - **Architektur-Entscheidungen:**
   - Erkennung strikt datengetrieben über Katalog-`type` (`type !== "unit"` ⇒
     Listenregel). Bestätigt an den echten Definitive-Edition-Daten: alle vier
@@ -96,6 +108,8 @@ Hauptknoten; keine neue verschachtelte Baumstruktur).
      Badges bleiben.
   3. `RosterEditor` (Komponententest): die Listenregel-Gruppe zeigt keinen
      „+"-Adder und bündelt die Karten unter ihrem Hauptknoten.
+  4. `PlayMode` (Komponententest): Listenregel-Selektionen erscheinen nicht in
+     der Anzeige des Spielmodus; echte Einheiten bleiben unverändert sichtbar.
 
 ## Out of Scope
 - Keine Änderung am Roster-Datenmodell, an IndexedDB oder am `.ros`-Import/Export.
