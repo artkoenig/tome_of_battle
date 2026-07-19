@@ -40,6 +40,7 @@ let mockCanRedo = false;
 
 // Mock validator spy functions
 const mockResolveEntry = vi.fn().mockReturnValue({ id: 'entry-resolved', name: 'Resolved Entry' });
+const mockIsEntryPrimaryInCategory = vi.fn().mockReturnValue(false);
 const mockFindEntryInSystem = vi.fn().mockReturnValue({ id: 'entry-raw', name: 'Raw Entry' });
 const mockCollectUnitProfilesAndRules = vi.fn().mockReturnValue({ profiles: [], rules: [] });
 
@@ -109,6 +110,7 @@ vi.mock('../solver/validator', () => ({
   getEffectiveModifiers: (source) => source?.modifiers || [],
   calculateRosterCosts: () => ({ pts: 420 }),
   resolveEntry: (...args) => mockResolveEntry(...args),
+  isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   getSelectionTotalCost: (sel) => sel.cost,
@@ -193,14 +195,14 @@ describe('RosterEditor Component', () => {
 
   it('verifies that validator methods are called with the expected game system and catalog context', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
-    
-    // RosterEditor.jsx resolves entries when verifying primary catalog items.
-    // Ensure resolveEntry is called with our system configuration and catalogueId context 'bret-cat'
-    expect(mockResolveEntry).toHaveBeenCalled();
-    expect(mockResolveEntry).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'sys-1' }),
+
+    // RosterEditor.jsx checks effective primary-category membership when deciding which
+    // category sections to surface. Ensure that check runs against our game system.
+    expect(mockIsEntryPrimaryInCategory).toHaveBeenCalled();
+    expect(mockIsEntryPrimaryInCategory).toHaveBeenCalledWith(
       expect.any(Object),
-      'bret-cat'
+      expect.any(String),
+      expect.objectContaining({ system: expect.objectContaining({ id: 'sys-1' }) })
     );
   });
 

@@ -736,9 +736,14 @@ auszublenden (in diesem Projekt ausgewertet von `src/solver/entryVisibility.js`)
 - **Laufzeit-dynamische Kategoriezugehörigkeit.** Die Kategorie-Links eines Eintrags sind nicht
   zwingend statisch: Modifier mit `type="add"`/`type="remove"` und `field="category"` fügen eine
   Kategoriezugehörigkeit bedingt hinzu bzw. entfernen sie, und `type="set-primary"`/`type="unset-primary"`
-  schalten das `primary`-Flag eines Kategorie-Links kontextabhängig um. Die Zähler-/Validierungs-Logik
-  muss deshalb die **effektiven** (nach Modifier-Anwendung gültigen) Kategorie-Links auswerten, nicht die
-  rohen Katalog-Links (im Projekt via `getEffectiveCategoryLinks` in `src/solver/modifierEvaluator.js`).
+  schalten das `primary`-Flag eines Kategorie-Links kontextabhängig um. **Sämtliche** kategorie-abhängige
+  Logik muss deshalb die **effektiven** (nach Modifier-Anwendung gültigen) Kategorie-Links auswerten, nicht
+  die rohen Katalog-Links — sowohl die Zähler-/Validierungs-Logik (via `getEffectiveCategoryLinks` in
+  `src/solver/modifierEvaluator.js`) als auch die **UI-Einsortierung** (Aushebe-Dialog,
+  Sektions-Sichtbarkeit, armeeweite Selektoren; via `getEffectiveEntryCategoryLinks` /
+  `isEntryPrimaryInCategory` in `src/solver/entryVisibility.js`). Ein häufiger Fall: ein Katalog importiert
+  per `entryLink` eine Einheit aus einem verlinkten Bibliothekskatalog und gliedert sie per `set-primary`
+  in eine eigene Kategorie um — würde nur der statische Link gelesen, verschwände die Einheit aus der UI.
 - Beziehungen zwischen Einträgen und Kategorien werden **ausschließlich über `categoryLinks`/IDs**
   aufgelöst — nie über Namen.
 
