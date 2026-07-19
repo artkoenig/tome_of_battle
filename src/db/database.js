@@ -12,6 +12,12 @@ const WHFB6_LINKING_SETTING_KEY = 'whfb6LinkingEnabled';
 // which mirrors the app's behaviour before the setting existed.
 export const WHFB6_LINKING_DEFAULT = true;
 
+// Key of the single record that persists the user's manually chosen UI locale
+// (see ADR-0022/ADR-0023). Absence of this record means the user never picked a
+// language, so browser detection decides — the store never holds a
+// detection-derived value, only an explicit choice.
+const LOCALE_SETTING_KEY = 'locale';
+
 export function openDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -159,6 +165,43 @@ export async function setWhfb6LinkingEnabled(value) {
     const transaction = db.transaction(SETTINGS_STORE, 'readwrite');
     const store = transaction.objectStore(SETTINGS_STORE);
     const request = store.put({ id: WHFB6_LINKING_SETTING_KEY, value });
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
+ * Reads the manually chosen UI locale. Resolves to `null` when the user has
+ * never picked a language, signalling the caller to fall back to browser
+ * detection rather than a hard-coded default.
+ * @returns {Promise<string|null>}
+ */
+export async function getLocale() {
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(SETTINGS_STORE, 'readonly');
+    const store = transaction.objectStore(SETTINGS_STORE);
+    const request = store.get(LOCALE_SETTING_KEY);
+    request.onsuccess = () => {
+      const record = request.result;
+      resolve(record ? record.value : null);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
+ * Persists the manually chosen UI locale as a single keyed record. This makes
+ * the choice survive reloads and permanently overrides browser detection.
+ * @param {string} locale
+ * @returns {Promise<void>}
+ */
+export async function setLocale(locale) {
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(SETTINGS_STORE, 'readwrite');
+    const store = transaction.objectStore(SETTINGS_STORE);
+    const request = store.put({ id: LOCALE_SETTING_KEY, value: locale });
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });

@@ -1,0 +1,31 @@
+{
+  "app": {
+    "loading": "Opening the tome of knowledge..."
+  },
+  "navigation": {
+    "camp": "War Camp",
+    "librarian": "Librarian"
+  },
+  "header": {
+    "install": "Install",
+    "installTitle": "Install the app on your device",
+    "offline": "Offline",
+    "offlineTitle": "Offline mode active",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "version": "Version",
+    "whfb6Linking": {
+      "label": "Link to 6th.whfb.app",
+      "hint": "When linking is off, rule, weapon and magic-item chips show the catalog quick info instead of a link to the external site."
+    },
+    "language": {
+      "label": "Language",
+      "hint": "Controls the language of the user interface. Game content stays in its original language.",
+      "german": "Deutsch",
+      "english": "English"
+    }
+  }
+}

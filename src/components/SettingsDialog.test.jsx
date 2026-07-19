@@ -84,4 +84,38 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByLabelText('Schließen'));
     expect(onClose).toHaveBeenCalled();
   });
+
+  describe('language switcher', () => {
+    const GERMAN_OPTION = 'Deutsch';
+    const ENGLISH_OPTION = 'English';
+
+    function renderWithLocale(locale, setLocale = vi.fn()) {
+      mockUseSettings.mockReturnValue({
+        whfb6LinkingEnabled: true,
+        setWhfb6LinkingEnabled: vi.fn(),
+        locale,
+        setLocale,
+      });
+      render(<SettingsDialog isOpen={true} onClose={vi.fn()} />);
+      return setLocale;
+    }
+
+    it('marks the active locale as checked and the other as unchecked', () => {
+      renderWithLocale('de');
+      expect(screen.getByRole('radio', { name: GERMAN_OPTION }).getAttribute('aria-checked')).toBe('true');
+      expect(screen.getByRole('radio', { name: ENGLISH_OPTION }).getAttribute('aria-checked')).toBe('false');
+    });
+
+    it('marks English as checked when English is the active locale', () => {
+      renderWithLocale('en');
+      expect(screen.getByRole('radio', { name: ENGLISH_OPTION }).getAttribute('aria-checked')).toBe('true');
+      expect(screen.getByRole('radio', { name: GERMAN_OPTION }).getAttribute('aria-checked')).toBe('false');
+    });
+
+    it('calls setLocale with the chosen locale when an option is clicked', () => {
+      const setLocale = renderWithLocale('de');
+      fireEvent.click(screen.getByRole('radio', { name: ENGLISH_OPTION }));
+      expect(setLocale).toHaveBeenCalledWith('en');
+    });
+  });
 });

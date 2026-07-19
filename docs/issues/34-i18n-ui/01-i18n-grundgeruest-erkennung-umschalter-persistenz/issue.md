@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -35,3 +35,4 @@ end-to-end sichtbar an der Einstellungen-UI und der App-Navigation.
       auf Deutsch).
 
 ## Comments
+- i18n-Grundgerüst umgesetzt: react-i18next-Instanz (de/en, fallbackLng en, synchron initialisiert, Dev-Warnung bei fehlendem Key), SettingsContext zum Mehr-Werte-Store erweitert ({ whfb6LinkingEnabled, locale, setWhfb6LinkingEnabled, setLocale }, ADR-0023), Browsersprachen-Erkennung mit Fallback auf Englisch, Persistenz der manuellen Wahl im settings-Store (getLocale/setLocale). Sprachumschalter in der Einstellungen-UI und übersetzte App-Navigation demonstrieren es end-to-end. Testumgebung via setupFile fix auf Deutsch.
