@@ -3,6 +3,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 import JSZip from 'jszip';
 import puppeteer from 'puppeteer';
+import { GERMAN_LOCALE } from '../i18n/localeConfig.js';
 
 const PORT = 5175;
 const tempZipPath = path.resolve('./temp_whfb6.zip');
@@ -129,6 +130,16 @@ const runUiTests = async () => {
   });
 
   const page = await browser.newPage();
+
+  // This E2E's assertions are written against the German UI-chrome strings.
+  // Headless Chromium's default navigator language does not reliably match
+  // that, and since the app now detects the browser language for first-time
+  // visitors (see ADR-0022), pin it explicitly so the test stays deterministic
+  // regardless of the host's locale.
+  await page.evaluateOnNewDocument((locale) => {
+    Object.defineProperty(navigator, 'language', { get: () => locale });
+    Object.defineProperty(navigator, 'languages', { get: () => [locale] });
+  }, GERMAN_LOCALE);
 
   // The app performs a silent catalog update from raw.githubusercontent.com at
   // startup (see docs/issues/.../06-katalog-update-zur-laufzeit). Block that host so
