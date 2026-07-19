@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   resolveEntry,
   findEntryInSystem,
@@ -161,6 +162,7 @@ export function UnitUpgradesChips({
   onClickDetails,
   onShowRule
 }) {
+  const { t } = useTranslation();
   const resolveRuleUrl = useRuleUrl();
   const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId, roster);
   if (selectedUpgrades.length === 0) return null;
@@ -169,7 +171,7 @@ export function UnitUpgradesChips({
     <div className="unit-header-upgrades">
       {selectedUpgrades.map(upgrade => {
         const descText = getUpgradeDescription(upgrade.resolved, system);
-        const details = renderUpgradeDetails(upgrade.resolved, system);
+        const details = renderUpgradeDetails(upgrade.resolved, system, t);
         
         return (
           <span 

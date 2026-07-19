@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Minus } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
 import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
@@ -27,6 +28,8 @@ export default function SelectionConfigurator({
   setActiveInfo,
   onShowRule
 }) {
+  const { t } = useTranslation();
+  const pointsAbbreviation = t('editor.points.abbreviation');
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
   const activeForce = roster.forces ? roster.forces.find(force => {
     const containsSel = (list) => {
@@ -182,7 +185,7 @@ export default function SelectionConfigurator({
 
   return (
     <div className="selection-node-body">
-      <h4>Optionen &amp; Ausrüstung konfigurieren</h4>
+      <h4>{t('editor.configurator.title')}</h4>
       <div className="sub-selection-group" style={{ borderLeft: 'none', paddingLeft: 0 }}>
         {groupedList.map((group, gIdx) => {
           if (group.standalone) {
@@ -286,18 +289,18 @@ export default function SelectionConfigurator({
                       onShowRule={onShowRule}
                       onInfoClick={() => {
                         if (window.innerWidth <= 900) {
-                          setActiveInfo({ title: res.name, text: renderUpgradeDetails(res, system) });
+                          setActiveInfo({ title: res.name, text: renderUpgradeDetails(res, system, t) });
                         }
                       }}
-                      onInfoEnter={(e) => handleMouseEnter(res.name, renderUpgradeDetails(res, system), e)}
+                      onInfoEnter={(e) => handleMouseEnter(res.name, renderUpgradeDetails(res, system, t), e)}
                       onInfoMove={handleMouseMove}
                       onInfoLeave={handleMouseLeave}
                     />
-                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>{t('editor.option.takenElsewhere')}</span>}
                   </span>
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} {pointsAbbreviation}</span>}
                   {isIndependentSubUnit ? (
                     <button 
                       type="button"
@@ -310,7 +313,7 @@ export default function SelectionConfigurator({
                       disabled={isSelectDisabled || count >= maxLimit}
                     >
                       <Plus size={12} style={{ marginRight: '4px' }} />
-                      Hinzufügen
+                      {t('editor.option.add')}
                     </button>
                   ) : isBinary ? (
                     <input 

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, X } from 'lucide-react';
 import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveName, isSelectionEntryHidden, isEntryPrimaryInCategory } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
@@ -15,8 +16,10 @@ export default function CategoryUnitAdder({
   selectionCounts,
   entries = null
 }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
+  const recruitLabel = t('editor.categoryAdder.recruit', { category: categoryName });
 
   if (!activeCatalogue) return null;
 
@@ -79,7 +82,7 @@ export default function CategoryUnitAdder({
         type="button"
         className="qty-btn" 
         onClick={() => setIsOpen(!isOpen)}
-        title={`${categoryName} ausheben`}
+        title={recruitLabel}
       >
         {isOpen ? <X size={12} /> : <Plus size={12} />}
       </button>
@@ -87,7 +90,7 @@ export default function CategoryUnitAdder({
       <BottomSheet
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title={`${categoryName} ausheben`}
+        title={recruitLabel}
         desktopMode="popover"
         containerRef={wrapperRef}
       >
@@ -123,7 +126,7 @@ export default function CategoryUnitAdder({
               >
                 <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                   <span style={{ color: isMaxedOut ? 'var(--text-dim)' : 'inherit' }}>{getEffectiveName(res, displayCtx)}</span>
-                  {isMaxedOut && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Nicht verfügbar)</span>}
+                  {isMaxedOut && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>{t('editor.option.unavailable')}</span>}
                 </span>
                 {points > 0 && (
                   <span className="popover-item-cost font-body text-gold" style={{ color: isMaxedOut ? 'var(--text-dim)' : 'var(--text-gold)' }}>

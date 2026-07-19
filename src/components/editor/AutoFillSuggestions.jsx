@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
 import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem } from '../../solver/validator';
 import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
@@ -27,6 +28,8 @@ export default function AutoFillSuggestions({
   updateSubSelection,
   costTypeLabel
 }) {
+  const { t } = useTranslation();
+  const pointsAbbreviation = t('editor.points.abbreviation');
   const [showAll, setShowAll] = useState(false);
 
   // 1. Gather all possible single upgrades
@@ -208,17 +211,21 @@ export default function AutoFillSuggestions({
     <div className="gothic-panel" style={{ padding: '20px', marginTop: '24px', borderStyle: 'solid', borderWidth: '1px', borderColor: 'var(--color-gold)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>
         <Wand2 className="text-gold" size={20} />
-        <h3 className="font-serif text-gold" style={{ margin: 0 }}>Punkte auffüllen</h3>
-        <span className="badge badge-muted" style={{ marginLeft: 'auto' }}>{remainingPoints} Pkt. übrig</span>
+        <h3 className="font-serif text-gold" style={{ margin: 0 }}>{t('editor.autoFill.title')}</h3>
+        <span className="badge badge-muted" style={{ marginLeft: 'auto' }}>{remainingPoints} {pointsAbbreviation} {t('editor.autoFill.remainingSuffix')}</span>
       </div>
 
       <p className="text-body text-dim" style={{ marginBottom: '16px' }}>
-        Du hast noch <strong>{remainingPoints} {costTypeLabel}</strong> zur Verfügung. Hier sind einige Vorschläge:
+        <Trans
+          i18nKey="editor.autoFill.intro"
+          values={{ points: remainingPoints, label: costTypeLabel }}
+          components={{ strong: <strong /> }}
+        />
       </p>
 
       {combinations.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
-          <h4 className="text-subheading" style={{ marginBottom: '12px' }}>Perfekte Kombinationen</h4>
+          <h4 className="text-subheading" style={{ marginBottom: '12px' }}>{t('editor.autoFill.perfectCombos')}</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {combinations.map((combo, idx) => {
                const grouped = {};
@@ -232,7 +239,7 @@ export default function AutoFillSuggestions({
                  <div key={idx} className="sub-selection-row" style={{ padding: '12px', background: 'rgba(226, 183, 66, 0.05)', borderRadius: '4px', border: '1px solid rgba(226, 183, 66, 0.2)' }}>
                    <div style={{ flex: 1 }}>
                      <div style={{ fontWeight: 'bold', color: 'var(--text-gold)', marginBottom: '4px' }}>
-                       Exakt {combo.sum} Pkt.
+                       {t('editor.autoFill.exactPrefix')} {combo.sum} {pointsAbbreviation}
                      </div>
                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: 'var(--fs-body)' }}>
                        {Object.values(grouped).map((g, i) => (
@@ -249,7 +256,7 @@ export default function AutoFillSuggestions({
                      style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                    >
                      <Sparkles size={14} />
-                     <span className="hide-on-mobile">Anwenden</span>
+                     <span className="hide-on-mobile">{t('editor.autoFill.apply')}</span>
                    </button>
                  </div>
                );
@@ -260,14 +267,14 @@ export default function AutoFillSuggestions({
 
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h4 className="text-subheading" style={{ margin: 0 }}>Mögliche Upgrades</h4>
+          <h4 className="text-subheading" style={{ margin: 0 }}>{t('editor.autoFill.possibleUpgrades')}</h4>
           {uniqueSingleActions.length > 3 && (
             <button 
               className="btn-secondary text-micro" 
               onClick={() => setShowAll(!showAll)}
               style={{ padding: '4px 8px' }}
             >
-              {showAll ? 'Weniger anzeigen' : 'Alle anzeigen'}
+              {showAll ? t('editor.autoFill.showLess') : t('editor.autoFill.showAll')}
             </button>
           )}
         </div>
@@ -277,14 +284,14 @@ export default function AutoFillSuggestions({
             <div key={`${action.selectionId}-${action.option.id}`} className="sub-selection-row" style={{ background: 'rgba(0,0,0,0.1)' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontWeight: 600 }}>{action.optionName}</span>
-                <span className="text-micro text-dim">für {action.selectionName}</span>
+                <span className="text-micro text-dim">{t('editor.autoFill.forSelection', { name: action.selectionName })}</span>
               </div>
               <div className="sub-selection-controls" style={{ gap: '12px' }}>
-                <span className="text-gold text-label">+{action.cost} Pkt.</span>
-                <button 
+                <span className="text-gold text-label">+{action.cost} {pointsAbbreviation}</span>
+                <button
                   className="btn-secondary square-btn"
                   onClick={() => handleApplyAction(action)}
-                  title="Hinzufügen"
+                  title={t('editor.option.add')}
                 >
                   <Plus size={14} />
                 </button>
