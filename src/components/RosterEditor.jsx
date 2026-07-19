@@ -187,6 +187,27 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           const uncategorizedSelections = force.selections?.filter(s =>
             !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s)) || [];
 
+          // Single instantiation point for this force's ListConfigurationCards, so the
+          // props every call site shares (system/roster/force/activeCatalogue/
+          // updateSubSelection/addUnitWithSubSelection) live in exactly one place —
+          // only categoryId/catalogueEntries (which enable the catalogue-driven,
+          // no-selection-yet path) legitimately differ between call sites.
+          const renderListConfigurationCard = ({ key, categoryName, categoryId = null, selections: cardSelections, catalogueEntries = null }) => (
+            <ListConfigurationCard
+              key={key}
+              categoryName={categoryName}
+              categoryId={categoryId}
+              selections={cardSelections}
+              catalogueEntries={catalogueEntries}
+              system={system}
+              roster={roster}
+              force={force}
+              activeCatalogue={activeCatalogue}
+              updateSubSelection={updateSubSelection}
+              addUnitWithSubSelection={addUnitWithSubSelection}
+            />
+          );
+
           return (
             <div key={force.id} className="force-editor-section" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {categoryLinks.map(link => {
@@ -216,21 +237,13 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     entries: categoryEntries,
                     catalogueId: force.catalogueId || roster.catalogueId
                   })) {
-                    return (
-                      <ListConfigurationCard
-                        key={link.targetId}
-                        categoryName={catName}
-                        categoryId={link.targetId}
-                        selections={selections}
-                        catalogueEntries={categoryEntries}
-                        system={system}
-                        roster={roster}
-                        force={force}
-                        activeCatalogue={activeCatalogue}
-                        updateSubSelection={updateSubSelection}
-                        addUnitWithSubSelection={addUnitWithSubSelection}
-                      />
-                    );
+                    return renderListConfigurationCard({
+                      key: link.targetId,
+                      categoryName: catName,
+                      categoryId: link.targetId,
+                      selections,
+                      catalogueEntries: categoryEntries
+                    });
                   }
 
                   const categoryErrors = validationErrors.filter(e => e.categoryId === link.targetId);
@@ -326,15 +339,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   system, force, selections: armyWideSelectorSelections,
                   catalogueId: force.catalogueId || roster.catalogueId
                 }) ? (
-                  <ListConfigurationCard
-                    categoryName="Armeeweite Auswahl"
-                    selections={armyWideSelectorSelections}
-                    system={system}
-                    roster={roster}
-                    force={force}
-                    activeCatalogue={activeCatalogue}
-                    updateSubSelection={updateSubSelection}
-                  />
+                  renderListConfigurationCard({
+                    categoryName: 'Armeeweite Auswahl',
+                    selections: armyWideSelectorSelections
+                  })
                 ) : (
                 <div className="roster-category-group" style={{ marginBottom: '24px' }}>
                   <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
@@ -382,15 +390,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   system, force, selections: uncategorizedSelections,
                   catalogueId: force.catalogueId || roster.catalogueId
                 }) ? (
-                  <ListConfigurationCard
-                    categoryName="Sonstiges"
-                    selections={uncategorizedSelections}
-                    system={system}
-                    roster={roster}
-                    force={force}
-                    activeCatalogue={activeCatalogue}
-                    updateSubSelection={updateSubSelection}
-                  />
+                  renderListConfigurationCard({
+                    categoryName: 'Sonstiges',
+                    selections: uncategorizedSelections
+                  })
                 ) : (
                 <div className="roster-category-group" style={{ marginBottom: '24px' }}>
                   <h3 className="text-subheading" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>Sonstiges</h3>
