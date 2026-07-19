@@ -49,6 +49,20 @@ const SELF_SCOPE_CATEGORY_RESOLUTION_FLAG = '_resolvingSelfScopeCategory';
 const resolveCatalogueId = (ctx) =>
   ctx.parentCatalogueId || (ctx.roster ? ctx.roster.catalogueId : null);
 
+// Resolves an id down to the canonical id of the selection entry it ultimately targets:
+// its own id if it isn't a link, or the id unchanged if it can't be resolved at all (a
+// category id or a type keyword like "model"). BattleScribe commonly exposes one shared
+// item (defined once, e.g. in the game system's common catalogue) through several
+// different entryLinks — an army-specific one and a shared one — each with its own link
+// id. Comparing raw ids would treat those as different items; comparing their canonical
+// target ids recognises them as the same one.
+const resolveCanonicalTargetId = (id, system, catalogueId) => {
+  if (!id || !system) return id;
+  const raw = findEntryInSystem(system, id, catalogueId);
+  const res = raw && resolveEntry(system, raw, catalogueId);
+  return res ? (res.targetId || res.id) : id;
+};
+
 // True when `sel` is an instance of the selection-entry `entryId`: it either directly
 // carries that entry id or its resolved definition's id/targetId matches. Used to detect
 // that a condition's `scope` names the very entry the condition is attached to.
@@ -110,6 +124,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
     if (cond.scope === 'parent' && parentScopeTarget && parentScopeTarget.selections) {
       const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
       const targetId = cond.childId || cond.field;
+      const canonicalTargetId = resolveCanonicalTargetId(targetId, system, catId);
 
       const countMatches = (list) => (list || []).reduce((sum, s) => {
         let isMatch = false;
@@ -120,6 +135,9 @@ export const evaluateCondition = (cond, ctx = {}) => {
           const raw = findEntryInSystem(system, sId, catId);
           const res = raw && resolveEntry(system, raw, catId);
           if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
+          // Two different entryLinks (e.g. an army-specific one and the shared/common
+          // catalogue's own one) can both alias the same underlying item.
+          if (res && resolveCanonicalTargetId(sId, system, catId) === canonicalTargetId) isMatch = true;
           // childId may reference a category (e.g. a bloodline): count selections
           // that belong to that category, not only those whose entry id matches.
           if (res && entryHasCategoryLink(res, targetId)) isMatch = true;
@@ -313,6 +331,7 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
           const { parentCatalogueId, system } = ctx;
           const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
           const targetId = mod.repeat.childId || mod.repeat.field;
+          const canonicalTargetId = resolveCanonicalTargetId(targetId, system, catId);
 
           const countMatches = (list) => (list || []).reduce((sum, s) => {
             let isMatch = false;
@@ -323,6 +342,9 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
               const raw = findEntryInSystem(system, sId, catId);
               const res = raw && resolveEntry(system, raw, catId);
               if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
+              // Two different entryLinks (e.g. an army-specific one and the shared/common
+              // catalogue's own one) can both alias the same underlying item.
+              if (res && resolveCanonicalTargetId(sId, system, catId) === canonicalTargetId) isMatch = true;
               if (targetId === 'model' && res && res.type === 'model') isMatch = true;
             }
             

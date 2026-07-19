@@ -1303,6 +1303,76 @@ test("21d. Repeatable magic item limit is lifted when the group sits behind an i
   expect(errors.some(e => e.type === 'group-count-max')).toBe(false);
 });
 
+// Test 21e: A group-of-groups (the real Ogre Kingdoms "Arcane Items (OK-AB + Common)"
+// pattern). An outer wrapper group's own max=1 constraint wraps an inner "Arcane Items"
+// group; the outer group's own self-incrementing modifier references the Dispel Scroll
+// via a DIFFERENT entryLink than the one actually chosen — a second alias for the same
+// underlying item, as BattleScribe data commonly exposes when an army-specific catalogue
+// and a shared/common catalogue each link to the one shared item definition. The two
+// aliases must be recognised as the same item, or the outer wrapper's cap never lifts and
+// a second Dispel Scroll is falsely reported as exceeding "max 1" — even though the inner
+// group (already covered by 21b/21d) correctly lifts its own cap.
+test("21e. Repeatable magic item limit is lifted when the modifier references a different entryLink alias of the same item", () => {
+  const system = {
+    id: 'sys-alias',
+    costTypes: [{ id: 'pts', name: 'Points', defaultCostLimit: 2000 }],
+    categoryEntries: [{ id: 'cat-hq', name: 'HQ' }],
+    forceEntries: [{ id: 'force-1', name: 'Force', categoryLinks: [{ id: 'cl-hq', targetId: 'cat-hq', name: 'HQ' }] }],
+    catalogues: [{
+      id: 'cat-1',
+      selectionEntries: [
+        { id: 'item-scroll', name: 'Dispel Scroll', costs: [{ typeId: 'pts', value: 25 }] },
+        {
+          id: 'unit-butcher',
+          name: 'Butcher',
+          type: 'unit',
+          costs: [{ typeId: 'pts', value: 100 }],
+          categoryLinks: [{ targetId: 'cat-hq' }],
+          selectionEntryGroups: [{
+            id: 'group-wrapper',
+            name: 'Arcane Items (Wrapper)',
+            constraints: [{ id: 'con-wrapper-max', type: 'max', value: 1, field: 'selections', scope: 'parent' }],
+            modifiers: [{
+              type: 'increment',
+              field: 'con-wrapper-max',
+              value: 1,
+              // References the item via the COMMON alias, never chosen by this unit.
+              repeat: { field: 'selections', scope: 'parent', childId: 'link-common-scroll', value: 1, repeats: 1 }
+            }],
+            entryLinks: [
+              // The ARMY-specific alias, actually chosen in the roster below.
+              { id: 'link-army-scroll', name: 'Dispel Scroll', targetId: 'item-scroll', type: 'selectionEntry' }
+            ],
+            selectionEntryGroups: [{
+              // Mirrors Ogre Kingdoms' unused sibling "Arcane Items (Common)" — present
+              // only so the common alias id is resolvable, never itself chosen.
+              id: 'group-common',
+              name: 'Arcane Items (Common)',
+              entryLinks: [
+                { id: 'link-common-scroll', name: 'Dispel Scroll', targetId: 'item-scroll', type: 'selectionEntry' }
+              ]
+            }]
+          }]
+        }
+      ]
+    }]
+  };
+
+  const rosterWithTwoScrolls = {
+    name: 'r', costLimit: 2000, costLimitType: 'pts', catalogueId: 'cat-1',
+    forces: [{
+      id: 'f1', forceEntryId: 'force-1', catalogueId: 'cat-1',
+      selections: [{
+        id: 'sel-butcher', selectionEntryId: 'unit-butcher', name: 'Butcher', number: 1, category: 'cat-hq',
+        selections: [{ id: 'sel-scroll', entryLinkId: 'link-army-scroll', name: 'Dispel Scroll', number: 2, costs: [{ typeId: 'pts', value: 25 }] }]
+      }]
+    }]
+  };
+
+  const errors = validateRoster(rosterWithTwoScrolls, system);
+  expect(errors.some(e => e.type === 'group-count-max')).toBe(false);
+});
+
 // Test 21c: Bloodline-gated option. A "Shield (Blood dragons only)" carries a base
 // max=0 constraint that a `set` modifier lifts to 1 when the parent contains a
 // selection of the "Blood Dragon" category. The modifier condition references the
