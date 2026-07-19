@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -28,3 +28,4 @@ sich in diesem Issue — das ist Gegenstand der Kind-Issues 04 und 05.
 - [ ] Die volle Testsuite (`npm test`) bleibt grün.
 
 ## Comments
+- Vendored Catalogue.xsd um ModifierKind-Werte 'multiply'/'prepend' und ein optionales 'join'-Attribut auf <modifier> erweitert (dokumentierte Abweichung per ADR-0016). Codegen neu ausgefuehrt; generiertes Modul enthaelt MULTIPLY/PREPEND und AttributeName.JOIN. SSOT-Guard gruen, volle vitest-Suite gruen (671).

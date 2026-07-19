@@ -46,6 +46,8 @@ export const ModifierKind = Object.freeze({
   REMOVE: 'remove',
   SET_PRIMARY: 'set-primary',
   UNSET_PRIMARY: 'unset-primary',
+  MULTIPLY: 'multiply',
+  PREPEND: 'prepend',
 });
 
 export const ConditionKind = Object.freeze({
@@ -89,6 +91,7 @@ export const AttributeName = Object.freeze({
   IMPORT_ROOT_ENTRIES: 'importRootEntries',
   INCLUDE_CHILD_FORCES: 'includeChildForces',
   INCLUDE_CHILD_SELECTIONS: 'includeChildSelections',
+  JOIN: 'join',
   LIBRARY: 'library',
   NAME: 'name',
   NUMBER: 'number',
