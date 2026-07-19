@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -30,3 +30,4 @@ durch, die auch Constraint-Werte modifiziert; deren `switch` kennt
 - [ ] Die volle Testsuite (`npm test`) bleibt grün.
 
 ## Comments
+- getModifiedConstraintValue um einen MULTIPLY-Zweig erweitert (finalValue *= modAmount); da Editor, Gesamtsumme und XML-Export alle ueber getSelectionOwnCosts/getModifiedConstraintValue laufen, wirkt der Fix einheitlich auf allen drei Oberflaechen und ebenso auf Nicht-Kosten-Constraints. Regressionstest src/solver/multiplyModifier.test.js mit realdatennahem 'Traditional Army'-Fixture (Dwarfs 2001): Bedingung erfuellt -> verdoppelt, sonst Basispreis. Volle vitest-Suite gruen (691).

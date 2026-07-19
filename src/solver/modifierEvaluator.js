@@ -374,6 +374,12 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
         finalValue += modAmount;
       } else if (mod.type === ModifierKind.DECREMENT) {
         finalValue -= modAmount;
+      } else if (mod.type === ModifierKind.MULTIPLY) {
+        // A `multiply` modifier scales the running value by its factor (e.g. the
+        // "Traditional Army" army-wide condition that doubles a unit's points cost).
+        // It shares this single evaluation path with set/increment/decrement, so a
+        // multiply on any constraint — not only a cost — is handled identically.
+        finalValue *= modAmount;
       }
     }
   });
