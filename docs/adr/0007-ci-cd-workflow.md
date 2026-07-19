@@ -47,6 +47,11 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 - **Ablauf:** `scripts/github_issue_agent.py` prüft bei jedem Issue-Event zuerst, ob das Issue bereits das Label `needs-attention` trägt — falls ja, bricht es sofort ab, ohne die Gemini-API aufzurufen (das Label ist ein einmaliges, nie wieder entferntes Terminal-Signal: sobald gesetzt, reagiert der Agent auf dieses Issue nicht mehr). Andernfalls bewertet es automatisch (kein Freigabe-Gate mehr nötig, da nur noch kommentiert/gelabelt wird) über einen Gemini-API-Call (`gemini-3.1-flash-lite`, Free Tier), ob ein Report klar genug ist. Ist er unklar, postet/editiert das Skript einen Kommentar mit Rückfragen (bestehende Single-Comment-Konvention). Ist er klar und wirkt wie ein plausibler Bug oder gut formulierter Feature-Request, wird das Label `needs-attention` gesetzt. Kein Kategorie-/Prioritäts-/Aufwands-/Duplikat-Labeling.
 - **Abgrenzung:** Dieser Workflow implementiert **nicht** und öffnet **keine PRs**; er legt auch **kein** lokales main-issue an — GitHub-Issue-Triage und der lokale `docs/issues/`-Tracker bleiben vollständig getrennte Systeme. Die Workflow-Permissions umfassen nur `issues: write` (kein `contents`/`pull-requests`).
 
+### 5. Auto-Tag bei Versions-Bump (`.github/workflows/tag-on-version-bump.yml`)
+- **Trigger:** Läuft bei jedem Push auf `main`.
+- **Ablauf:** Vergleicht das `version`-Feld in `package.json` mit dem Vorgänger-Commit. Hat es sich geändert, erstellt und pusht der Workflow den Tag `v<version>` mit dem workflow-eigenen `GITHUB_TOKEN` (`permissions: contents: write`). Existiert der Tag bereits, bricht der Lauf ohne Fehler ab (idempotent).
+- **Hintergrund:** Ersetzt den manuellen Tag-Push-Schritt aus [ADR 0019](0019-manuelle-versionierung-und-release-freigabe.md), der aus Cloud-Sessions (Claude Code on the web) heraus strukturell nicht zuverlässig funktioniert — deren Session-gebundener Git-Relay-Token erlaubt Branch-Pushes und PR-Merges, lehnt direkte Tag-Pushes aber unabhängig von GitHub-Repo-Einstellungen mit HTTP 403 ab. Die Versionsentscheidung selbst bleibt manuell (siehe ADR 0019); automatisiert wird nur der mechanische Tag-Push danach.
+
 ---
 
 ### Konsequenzen (Auswirkungen)
