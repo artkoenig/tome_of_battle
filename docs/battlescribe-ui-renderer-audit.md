@@ -45,7 +45,17 @@ dort korrekt eingesammelt, erscheint es überall konsistent:
   darauf das Editor-Anzeigemodell. Konsumiert von `PlayMode` (blendet
   Listenkonfigurationen aus der Spieleansicht vollständig aus) und `RosterEditor`
   (rendert sie als eigene `ListConfigurationCard` statt Einheitenkarten; ergänzt
-  in Main-Issue 34).
+  in Main-Issue 34). `isListConfigurationEntry` (dieselbe Datei) und
+  `isListConfigurationCategoryFromEntries` (`listConfigurationView.js`) wenden
+  dasselbe Strukturkriterium auf eine rohe Katalog-Eintragsdefinition statt auf
+  eine Roster-Selection an — die zugehörige Kategorie-Enumeration liefert
+  `getVisibleCatalogueEntriesForCategory` (`src/solver/entryVisibility.js`, aus
+  `CategoryUnitAdder`s eigener Enumeration extrahiert). Dadurch rendert
+  `RosterEditor` eine reine Listenkonfigurations-Kategorie (z. B. „Special List
+  Rules") immer als `ListConfigurationCard`, auch ganz ohne existierende
+  Roster-Selection, statt über den `CategoryUnitAdder`-Aushebe-Dialog; die erste
+  Optionswahl legt die Selection über `addUnitWithSubSelection`
+  (`src/hooks/useRoster.js`) atomar an (ergänzt in Main-Issue 35).
 
 ## Checkliste: Konstrukt → Renderer → Soll/Ist
 

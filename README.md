@@ -91,7 +91,7 @@ The rules engine handles all calculations and dependencies, working completely i
 - `rosterCounter.js` — Calculates unit counts, category limits, and point costs.
 - `rosterValidator.js` — Validates the entire roster against all XML constraints.
 - `profileCollector.js` — Determines the effective profile values and rules of a unit, taking modifiers into account.
-- `listConfiguration.js` — Classifies a selection as a „Listenkonfiguration" (an army-wide rules switch, not a playable unit; see `CONTEXT.md`).
+- `listConfiguration.js` — Classifies a selection, or a raw catalogue entry, as a „Listenkonfiguration" (an army-wide rules switch, not a playable unit; see `CONTEXT.md`).
 - `listConfigurationView.js` — Builds the editor's view model for list configurations (category grouping, radio option groups).
 - `validator.js` — Serves as a central facade to access all solver functions.
 
