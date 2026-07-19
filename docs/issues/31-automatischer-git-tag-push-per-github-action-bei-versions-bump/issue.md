@@ -60,3 +60,4 @@ Dokumentations-Konsistenz ist Teil dieses main-issues:
       Agent-Schritt.
 
 ## Comments
+- Neuer Workflow .github/workflows/tag-on-version-bump.yml implementiert: erkennt Versions-Änderung in package.json bei Push auf main (jq-Vergleich HEAD vs. HEAD^), erstellt/pusht bei Änderung den Tag v<version> mit dem workflow-eigenen GITHUB_TOKEN (permissions: contents: write), idempotent via git ls-remote-Check vorab. ADR 0019 und ADR 0007 beschreiben den neuen Mechanismus, CLAUDE.md (.agents/AGENTS.md) beschreibt den Tag-Push-Schritt jetzt als automatisch statt als Agent-Handlung. Diff-Logik lokal gegen echte Commits (84a2b80: 1.0.2->1.1.0) und Idempotenz-Check gegen git ls-remote verifiziert.
