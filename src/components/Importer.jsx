@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
@@ -27,13 +28,20 @@ function logSchemaWarnings(warnings) {
   );
 }
 
-const REVISION_LABEL_PREFIX = 'Rev';
 const REVISION_SEGMENT_SEPARATOR = ' · ';
-const NEW_STATE_TEXT = 'neu';
-const CURRENT_STATE_TEXT = 'aktuell';
-const UPDATE_AVAILABLE_TEXT = 'Update verfügbar';
-const LOCAL_REVISION_PREFIX = 'lokal';
-const UNKNOWN_LOCAL_REVISION_TEXT = 'unbekannt';
+
+// Collects the localized revision label fragments from the active translator, so the
+// pure revision-display helpers below stay free of any i18n specifics (ADR-0022).
+function buildRevisionLabels(t) {
+  return {
+    prefix: t('importer.revision.prefix'),
+    new: t('importer.revision.new'),
+    current: t('importer.revision.current'),
+    updateAvailable: t('importer.revision.updateAvailable'),
+    localPrefix: t('importer.revision.localPrefix'),
+    unknownLocal: t('importer.revision.unknownLocal'),
+  };
+}
 
 // Visual tone of a revision status per ADR 0014's state matrix, mapped to the theme's
 // helper classes: a subtle secondary text, the gold accent that flags an available
@@ -49,28 +57,28 @@ const REVISION_TONE = {
  * (see ADR 0014). Older or incomplete indices may omit it, so a non-numeric value
  * yields no label rather than an error.
  */
-function formatRevisionLabel(revision) {
+function formatRevisionLabel(revision, labels) {
   if (typeof revision !== 'number') return null;
-  return `${REVISION_LABEL_PREFIX} ${revision}`;
+  return `${labels.prefix} ${revision}`;
 }
 
-function formatLocalRevisionSegment(localFile) {
+function formatLocalRevisionSegment(localFile, labels) {
   const localRevision = localFile?.revision;
-  const value = typeof localRevision === 'number' ? localRevision : UNKNOWN_LOCAL_REVISION_TEXT;
-  return `${LOCAL_REVISION_PREFIX} ${value}`;
+  const value = typeof localRevision === 'number' ? localRevision : labels.unknownLocal;
+  return `${labels.localPrefix} ${value}`;
 }
 
 // Per-state presentation (suffix segments appended after the available revision, plus
 // tone). Keyed by state so a new state is added here rather than in a growing switch.
 const REVISION_STATE_PRESENTATION = {
-  [REVISION_STATE.NEW]: () => ({ segments: [NEW_STATE_TEXT], tone: REVISION_TONE.SUBTLE }),
-  [REVISION_STATE.CURRENT]: () => ({ segments: [CURRENT_STATE_TEXT], tone: REVISION_TONE.SUBTLE }),
-  [REVISION_STATE.OUTDATED]: (localFile) => ({
-    segments: [formatLocalRevisionSegment(localFile), UPDATE_AVAILABLE_TEXT],
+  [REVISION_STATE.NEW]: (localFile, labels) => ({ segments: [labels.new], tone: REVISION_TONE.SUBTLE }),
+  [REVISION_STATE.CURRENT]: (localFile, labels) => ({ segments: [labels.current], tone: REVISION_TONE.SUBTLE }),
+  [REVISION_STATE.OUTDATED]: (localFile, labels) => ({
+    segments: [formatLocalRevisionSegment(localFile, labels), labels.updateAvailable],
     tone: REVISION_TONE.ACCENT,
   }),
-  [REVISION_STATE.AHEAD]: (localFile) => ({
-    segments: [formatLocalRevisionSegment(localFile)],
+  [REVISION_STATE.AHEAD]: (localFile, labels) => ({
+    segments: [formatLocalRevisionSegment(localFile, labels)],
     tone: REVISION_TONE.NEUTRAL,
   }),
 };
@@ -81,12 +89,12 @@ const REVISION_STATE_PRESENTATION = {
  * `{ text, tone }` per ADR 0014's state matrix, or `null` when no available revision is
  * known (nothing to show).
  */
-function buildRevisionDisplay(availableRevision, localFile) {
-  const availableLabel = formatRevisionLabel(availableRevision);
+function buildRevisionDisplay(availableRevision, localFile, labels) {
+  const availableLabel = formatRevisionLabel(availableRevision, labels);
   if (availableLabel === null) return null;
 
   const state = deriveRevisionState(availableRevision, localFile);
-  const { segments, tone } = REVISION_STATE_PRESENTATION[state](localFile);
+  const { segments, tone } = REVISION_STATE_PRESENTATION[state](localFile, labels);
   return {
     text: [availableLabel, ...segments].join(REVISION_SEGMENT_SEPARATOR),
     tone,
@@ -101,10 +109,9 @@ function revisionLabelClassName(tone) {
 // referencing one. Deselecting that target while keeping a catalogue that links to it
 // would silently drop those shared entries on the next roster resolution, so the bundle
 // import guards against a selection that omits such a dependency.
-const MISSING_LIBRARY_DEPENDENCY_MESSAGE = {
-  headline: 'Import abgebrochen: Ein ausgewählter Katalog verweist auf einen nicht ausgewählten Bibliothekskatalog.',
-  instruction: 'Bitte wähle folgende Kataloge zusätzlich aus, um einen vollständigen Import sicherzustellen:',
-  requiredByLabel: 'benötigt von',
+// Punctuation used to assemble the missing-dependency message; language-neutral, so it
+// stays a module constant while the wording itself comes from i18next (ADR-0022).
+const MISSING_LIBRARY_DEPENDENCY_SEPARATORS = {
   itemSeparator: '; ',
   referenceSeparator: ', ',
 };
@@ -156,9 +163,9 @@ function quoteCatalogueName(value) {
   return `„${value}"`;
 }
 
-function buildMissingLibraryDependencyMessage(missingDependencies) {
-  const { headline, instruction, requiredByLabel, itemSeparator, referenceSeparator } =
-    MISSING_LIBRARY_DEPENDENCY_MESSAGE;
+function buildMissingLibraryDependencyMessage(missingDependencies, messages) {
+  const { headline, instruction, requiredByLabel } = messages;
+  const { itemSeparator, referenceSeparator } = MISSING_LIBRARY_DEPENDENCY_SEPARATORS;
   const details = missingDependencies
     .map(dependency => {
       const quotedName = quoteCatalogueName(dependency.name);
@@ -252,6 +259,8 @@ export async function loadAvailableSystemsFromSources(fetchText) {
 }
 
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
+  const { t } = useTranslation();
+  const revisionLabels = buildRevisionLabels(t);
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -285,12 +294,12 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         setSelectedBundleSysId(systems[0].id);
         setSelectedCats(buildAllSelectedCats(systems[0]));
       } else if (!anyIndexReachable) {
-        setError('Der Katalog-Index ist derzeit nicht erreichbar. Bitte versuche es später erneut.');
+        setError(t('importer.indexUnreachable'));
       }
     } catch (e) {
       console.warn("Could not load catalog index from fork", e);
       if (availableSystems.length === 0) {
-        setError('Keine Spieldaten zum Import verfügbar. Der Katalog-Index konnte nicht geladen werden.');
+        setError(t('importer.noDataAvailable'));
       }
     }
   };
@@ -331,14 +340,14 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     try {
       const gstUrl = buildRawFileUrl(system.rawBaseUrl, system.gst.fileName);
       const gstRes = await fetch(gstUrl);
-      if (!gstRes.ok) throw new Error(`Fehler beim Laden des Spielsystems: ${gstRes.statusText}`);
+      if (!gstRes.ok) throw new Error(t('importer.errorLoadingSystem', { status: gstRes.statusText }));
       const gstText = await gstRes.text();
       const gstFiles = [{ name: system.gst.fileName, content: gstText }];
 
       const catFiles = await Promise.all(selectedCatList.map(async (cat) => {
         const catUrl = buildRawFileUrl(system.rawBaseUrl, cat.fileName);
         const catRes = await fetch(catUrl);
-        if (!catRes.ok) throw new Error(`Fehler beim Laden des Katalogs ${cat.name}: ${catRes.statusText}`);
+        if (!catRes.ok) throw new Error(t('importer.errorLoadingCatalog', { name: cat.name, status: catRes.statusText }));
         const catText = await catRes.text();
         return { name: cat.fileName, content: catText };
       }));
@@ -354,7 +363,11 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         system.catalogues
       );
       if (missingLibraryDependencies.length > 0) {
-        setError(buildMissingLibraryDependencyMessage(missingLibraryDependencies));
+        setError(buildMissingLibraryDependencyMessage(missingLibraryDependencies, {
+          headline: t('importer.missingLibraryDependency.headline'),
+          instruction: t('importer.missingLibraryDependency.instruction'),
+          requiredByLabel: t('importer.missingLibraryDependency.requiredBy'),
+        }));
         return;
       }
 
@@ -366,14 +379,14 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       await deleteSystem(systemData.id);
       await saveSystem(systemData);
 
-      setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
+      setSuccessMsg(t('importer.importSuccess', { name: systemData.name, amount: systemData.catalogues.length }));
       loadSystems();
       // Await the parent so it has already switched to the Heerlager view before
       // `finally` clears `loading` and unmounts this Importer — no visible flash.
       if (onSystemImported) await onSystemImported();
     } catch (e) {
       console.error(e);
-      setError(`Fehler beim Importieren der Spieldaten: ${e.message}`);
+      setError(t('importer.errorImporting', { message: e.message }));
     } finally {
       setLoading(false);
     }
@@ -390,7 +403,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     setSuccessMsg(null);
 
     if (!file.name.endsWith('.zip')) {
-      setError('Bitte lade eine gültige .zip-Datei hoch.');
+      setError(t('importer.invalidZip'));
       return;
     }
 
@@ -405,14 +418,14 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       };
       await deleteSystem(systemData.id);
       await saveSystem(systemData);
-      setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
+      setSuccessMsg(t('importer.importSuccess', { name: systemData.name, amount: systemData.catalogues.length }));
       loadSystems();
       // Await the parent so it has already switched to the Heerlager view before
       // `finally` clears `loading` and unmounts this Importer — no visible flash.
       if (onSystemImported) await onSystemImported();
     } catch (e) {
       console.error(e);
-      setError(`Fehler beim Verarbeiten der Datei: ${e.message}`);
+      setError(t('importer.errorProcessingFile', { message: e.message }));
     } finally {
       setLoading(false);
     }
@@ -428,7 +441,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
   const handleExport = async (sys) => {
     try {
       if (!sys.rawXmls) {
-        setError('Dieses Spielsystem wurde vor dem Update importiert und besitzt keine XML-Originaldateien in der Datenbank. Bitte importiere das Spielsystem (.zip) erneut, um den Export nutzen zu können.');
+        setError(t('importer.exportMissingXml'));
         return;
       }
 
@@ -450,10 +463,10 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      setSuccessMsg(`Spielsystem "${sys.name}" erfolgreich als .zip (Originalformat) exportiert!`);
+      setSuccessMsg(t('importer.exportSuccess', { name: sys.name }));
     } catch (e) {
       console.error(e);
-      setError(`Fehler beim Exportieren des Spielsystems als ZIP: ${e.message}`);
+      setError(t('importer.errorExporting', { message: e.message }));
     }
   };
 
@@ -467,19 +480,19 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     // getAllSystems — no extra DB access) drives the "new/current/outdated/ahead" state.
     const storedSystem = selectedSystem ? systems.find(s => s.id === selectedSystem.id) ?? null : null;
     const selectedSystemRevisionDisplay = selectedSystem
-      ? buildRevisionDisplay(selectedSystem.gst.revision, storedSystem)
+      ? buildRevisionDisplay(selectedSystem.gst.revision, storedSystem, revisionLabels)
       : null;
 
     return (
       <div className="gothic-panel bundle-importer-panel full-width">
-        <h3 className="text-subheading">Vordefinierte Spieldaten importieren</h3>
+        <h3 className="text-subheading">{t('importer.bundleTitle')}</h3>
         <p className="text-dim text-body">
-          Importiere ein komplettes Spielsystem inklusive ausgewählter Fraktionen direkt aus den mitgelieferten Dateien.
+          {t('importer.bundleDescription')}
         </p>
 
         <div className="bundle-form-group">
           <div className="bundle-form-group-header">
-            <label className="text-label text-gold">Spielsystem:</label>
+            <label className="text-label text-gold">{t('importer.systemLabel')}</label>
             {selectedSystemRevisionDisplay && (
               <span
                 className={revisionLabelClassName(selectedSystemRevisionDisplay.tone)}
@@ -503,20 +516,20 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         {selectedSystem && (
           <div className="bundle-form-group">
             <div className="bundle-importer-header">
-              <label className="text-label text-gold">Kataloge ({selectedCount} ausgewählt):</label>
-              <button 
-                type="button" 
+              <label className="text-label text-gold">{t('importer.catalogsLabel', { amount: selectedCount })}</label>
+              <button
+                type="button"
                 className="btn-gold btn-sm"
                 onClick={() => handleToggleAllCats(!allChecked)}
                 disabled={loading}
               >
-                {allChecked ? 'Alle abwählen' : 'Alle auswählen'}
+                {allChecked ? t('importer.deselectAll') : t('importer.selectAll')}
               </button>
             </div>
             <div className="bundle-catalog-list-container">
               {selectedSystem.catalogues.map(cat => {
                 const storedCatalogue = storedSystem?.catalogues?.find(c => c.id === cat.id) ?? null;
-                const catalogueRevisionDisplay = buildRevisionDisplay(cat.revision, storedCatalogue);
+                const catalogueRevisionDisplay = buildRevisionDisplay(cat.revision, storedCatalogue, revisionLabels);
                 return (
                   <label key={cat.id} className="bundle-catalog-item-label">
                     <input
@@ -549,7 +562,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
             onClick={handleImportBundle}
             disabled={loading || selectedCount === 0}
           >
-            Importieren
+            {t('importer.import')}
           </button>
         </div>
       </div>
@@ -576,8 +589,8 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         <div className="modal-overlay">
           <div className="loader-overlay-content">
             <div className="gothic-spinner" />
-            <h3 className="text-subheading text-gold">Beschwöre Spieldaten...</h3>
-            <span className="text-body text-dim">Verarbeite XML-Dateien, bitte warten...</span>
+            <h3 className="text-subheading text-gold">{t('importer.loadingTitle')}</h3>
+            <span className="text-body text-dim">{t('importer.loadingText')}</span>
           </div>
         </div>
       )}
@@ -586,9 +599,9 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         <div className="empty-importer-layout">
           <div className="empty-importer-text-center">
             <div className="empty-state-image empty-importer-image empty-importer-image-centered" />
-            <h2 className="empty-state-title empty-state-title-large">Willkommen bei Tome of Battle</h2>
+            <h2 className="empty-state-title empty-state-title-large">{t('importer.welcomeTitle')}</h2>
             <p className="empty-state-text text-dim">
-              Dein Buch des Wissens ist noch leer. Um Armeen ausheben zu können, benötigst du zunächst Spieldaten im BattleScribe-Format. 
+              {t('importer.welcomeText')}
             </p>
           </div>
 
@@ -610,9 +623,9 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
 
       {!showAsEmptyState && (
         <div className="margin-top-md">
-          <h2>Importierte Spielsysteme</h2>
+          <h2>{t('importer.importedSystemsTitle')}</h2>
           {systems.length === 0 ? (
-            <p className="text-dim" style={{ textAlign: 'center', padding: '20px 0' }}>Keine Spielsysteme in der Datenbank vorhanden.</p>
+            <p className="text-dim" style={{ textAlign: 'center', padding: '20px 0' }}>{t('importer.noSystems')}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {systems.map((sys) => (
@@ -628,7 +641,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                         {sys.name}
                       </h4>
                       <span className="text-dim" style={{ fontSize: '0.85rem' }}>
-                        {sys.catalogues?.length || 0} Fraktionskataloge geladen
+                        {t('importer.factionCatalogsLoaded', { amount: sys.catalogues?.length || 0 })}
                       </span>
                     </div>
                   </div>
@@ -636,14 +649,14 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
                     <button
                       className="btn-gold square-btn"
                       onClick={() => handleExport(sys)}
-                      title="Spielsystem exportieren (.zip)"
+                      title={t('importer.exportSystemTitle')}
                     >
                       <Download size={16} />
                     </button>
                     <button
                       className="btn-danger square-btn"
                       onClick={() => handleDelete(sys.id)}
-                      title="System löschen"
+                      title={t('importer.deleteSystemTitle')}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -668,16 +681,16 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
             if (onSystemImported) onSystemImported();
           } catch (e) {
             console.error(e);
-            setError('Fehler beim Löschen des Spielsystems.');
+            setError(t('importer.errorDeleting'));
           }
         }}
-        title="Spielsystem löschen"
+        title={t('importer.deleteConfirmTitle')}
         message={
           <>
-            Bist du sicher, dass du das Spielsystem <strong>{systemToDelete?.name}</strong> und alle zugehörigen Kataloge löschen möchtest?
+            {t('importer.deleteConfirmPrefix')} <strong>{systemToDelete?.name}</strong> {t('importer.deleteConfirmSuffix')}
           </>
         }
-        confirmLabel="Löschen"
+        confirmLabel={t('importer.delete')}
         isDanger={true}
       />
     </div>

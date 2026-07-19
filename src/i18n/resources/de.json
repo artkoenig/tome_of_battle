@@ -27,5 +27,82 @@
       "german": "Deutsch",
       "english": "English"
     }
+  },
+  "dashboard": {
+    "title": "Heerlager",
+    "subtitle": "Verwalte deine Armeelisten oder erstelle neue Feldzüge.",
+    "import": "Importieren",
+    "newRoster": "Neue Armeeliste",
+    "offlineBanner": {
+      "title": "Offline-Modus aktiv",
+      "text": "Du hast keine Internetverbindung. Du kannst deine Armeelisten und Kataloge dennoch uneingeschränkt verwalten und bearbeiten."
+    },
+    "empty": {
+      "title": "Die Waffenkammern sind leer",
+      "text": "Noch wehen keine Banner in deinem Heerlager. Versammle deine Truppen, wähle deine Anführer und bereite dich auf kommende Schlachten vor.",
+      "import": "Liste importieren",
+      "create": "Erste Armeeliste ausheben"
+    },
+    "unknownSystem": "Unbekanntes System",
+    "noFaction": "Keine Fraktion",
+    "pointsAbbreviation": "Pkt.",
+    "editTitle": "Titel bearbeiten",
+    "equip": "Ausrüsten",
+    "play": "Spielen",
+    "export": "Exportieren",
+    "exportTitle": "Liste exportieren",
+    "moreActions": "Weitere Aktionen",
+    "actions": "Aktionen",
+    "armyActions": "Armee-Aktionen",
+    "createRosterSheet": "Neue Armeeliste ausheben",
+    "importRosterSheet": "Armeeliste importieren",
+    "delete": "Löschen"
+  },
+  "importer": {
+    "revision": {
+      "prefix": "Rev",
+      "new": "neu",
+      "current": "aktuell",
+      "updateAvailable": "Update verfügbar",
+      "localPrefix": "lokal",
+      "unknownLocal": "unbekannt"
+    },
+    "missingLibraryDependency": {
+      "headline": "Import abgebrochen: Ein ausgewählter Katalog verweist auf einen nicht ausgewählten Bibliothekskatalog.",
+      "instruction": "Bitte wähle folgende Kataloge zusätzlich aus, um einen vollständigen Import sicherzustellen:",
+      "requiredBy": "benötigt von"
+    },
+    "indexUnreachable": "Der Katalog-Index ist derzeit nicht erreichbar. Bitte versuche es später erneut.",
+    "noDataAvailable": "Keine Spieldaten zum Import verfügbar. Der Katalog-Index konnte nicht geladen werden.",
+    "errorLoadingSystem": "Fehler beim Laden des Spielsystems: {{status}}",
+    "errorLoadingCatalog": "Fehler beim Laden des Katalogs {{name}}: {{status}}",
+    "importSuccess": "Das System \"{{name}}\" mit {{amount}} Katalogen wurde erfolgreich importiert!",
+    "errorImporting": "Fehler beim Importieren der Spieldaten: {{message}}",
+    "invalidZip": "Bitte lade eine gültige .zip-Datei hoch.",
+    "errorProcessingFile": "Fehler beim Verarbeiten der Datei: {{message}}",
+    "exportMissingXml": "Dieses Spielsystem wurde vor dem Update importiert und besitzt keine XML-Originaldateien in der Datenbank. Bitte importiere das Spielsystem (.zip) erneut, um den Export nutzen zu können.",
+    "exportSuccess": "Spielsystem \"{{name}}\" erfolgreich als .zip (Originalformat) exportiert!",
+    "errorExporting": "Fehler beim Exportieren des Spielsystems als ZIP: {{message}}",
+    "errorDeleting": "Fehler beim Löschen des Spielsystems.",
+    "bundleTitle": "Vordefinierte Spieldaten importieren",
+    "bundleDescription": "Importiere ein komplettes Spielsystem inklusive ausgewählter Fraktionen direkt aus den mitgelieferten Dateien.",
+    "systemLabel": "Spielsystem:",
+    "catalogsLabel": "Kataloge ({{amount}} ausgewählt):",
+    "deselectAll": "Alle abwählen",
+    "selectAll": "Alle auswählen",
+    "import": "Importieren",
+    "loadingTitle": "Beschwöre Spieldaten...",
+    "loadingText": "Verarbeite XML-Dateien, bitte warten...",
+    "welcomeTitle": "Willkommen bei Tome of Battle",
+    "welcomeText": "Dein Buch des Wissens ist noch leer. Um Armeen ausheben zu können, benötigst du zunächst Spieldaten im BattleScribe-Format.",
+    "importedSystemsTitle": "Importierte Spielsysteme",
+    "noSystems": "Keine Spielsysteme in der Datenbank vorhanden.",
+    "factionCatalogsLoaded": "{{amount}} Fraktionskataloge geladen",
+    "exportSystemTitle": "Spielsystem exportieren (.zip)",
+    "deleteSystemTitle": "System löschen",
+    "deleteConfirmTitle": "Spielsystem löschen",
+    "deleteConfirmPrefix": "Bist du sicher, dass du das Spielsystem",
+    "deleteConfirmSuffix": "und alle zugehörigen Kataloge löschen möchtest?",
+    "delete": "Löschen"
   }
 }
