@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -182,3 +182,4 @@ Selection-Betrachtung auf eine Katalog-Betrachtung umgestellt:
       empty category"-Test wird an das neue Verhalten angepasst.
 
 ## Comments
+- Klassifikation von isListConfigurationCategory auf katalogbasiert erweitert (isListConfigurationEntry, isListConfigurationCategoryFromEntries), Enumeration aus CategoryUnitAdder extrahiert (getVisibleCatalogueEntriesForCategory), virtuelle Radiogruppen in buildConfigurationRadioGroups, atomare addUnitWithSubSelection fuer die erste Optionswahl. Special-List-Rules-artige Kategorien rendern jetzt immer als ListConfigurationCard, auch ohne vorhandene Auswahl. Armeeweite Auswahl/Sonstiges unveraendert. Vier-Achsen-Verifikation durchgelaufen: Standards 0 Blocker, Spezifikation 0 fehlende Kriterien, Tests 761/761 gruen plus volle Puppeteer-E2E-Suite gruen, Doku-Luecken (ADR 0003, README, UI-Renderer-Audit) behoben. CONTEXT.md um 'Listenkonfigurations-Kategorie' ergaenzt.
