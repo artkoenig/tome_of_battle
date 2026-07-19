@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -18,3 +18,4 @@ Issue 01 auf (Sprachumschalter, Erkennung, Persistenz existieren bereits).
       laufen unverändert grün (Testumgebung fix auf Deutsch).
 
 ## Comments
+- Dashboard (RosterDashboard) und Import/Export-Flow (Importer) vollständig auf react-i18next umgestellt: neue Namespaces dashboard.* und importer.* in de.json/en.json, englische Übersetzungen mit epischem Erzählton. Revisions- und Bibliotheks-Abhängigkeits-Helfer als reine Funktionen mit übergebenen Label-Objekten refaktoriert.

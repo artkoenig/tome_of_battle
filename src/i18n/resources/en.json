@@ -27,5 +27,82 @@
       "german": "Deutsch",
       "english": "English"
     }
+  },
+  "dashboard": {
+    "title": "War Camp",
+    "subtitle": "Marshal your army lists or forge new campaigns.",
+    "import": "Import",
+    "newRoster": "New Army List",
+    "offlineBanner": {
+      "title": "Offline mode active",
+      "text": "You have no connection to the aether. Even so, you may manage and edit your army lists and catalogs without hindrance."
+    },
+    "empty": {
+      "title": "The Armories Lie Empty",
+      "text": "No banners yet fly over your war camp. Gather your troops, choose your leaders, and ready yourself for the battles to come.",
+      "import": "Import a List",
+      "create": "Muster Your First Army List"
+    },
+    "unknownSystem": "Unknown System",
+    "noFaction": "No Faction",
+    "pointsAbbreviation": "pts",
+    "editTitle": "Edit title",
+    "equip": "Equip",
+    "play": "Play",
+    "export": "Export",
+    "exportTitle": "Export list",
+    "moreActions": "More actions",
+    "actions": "Actions",
+    "armyActions": "Army Actions",
+    "createRosterSheet": "Muster a New Army List",
+    "importRosterSheet": "Import an Army List",
+    "delete": "Delete"
+  },
+  "importer": {
+    "revision": {
+      "prefix": "Rev",
+      "new": "new",
+      "current": "current",
+      "updateAvailable": "update available",
+      "localPrefix": "local",
+      "unknownLocal": "unknown"
+    },
+    "missingLibraryDependency": {
+      "headline": "Import aborted: a selected catalog references a library catalog that was not selected.",
+      "instruction": "Please also select the following catalogs to ensure a complete import:",
+      "requiredBy": "required by"
+    },
+    "indexUnreachable": "The catalog index is currently unreachable. Please try again later.",
+    "noDataAvailable": "No game data available for import. The catalog index could not be loaded.",
+    "errorLoadingSystem": "Failed to load the game system: {{status}}",
+    "errorLoadingCatalog": "Failed to load the catalog {{name}}: {{status}}",
+    "importSuccess": "The system \"{{name}}\" with {{amount}} catalogs was imported successfully!",
+    "errorImporting": "Failed to import the game data: {{message}}",
+    "invalidZip": "Please upload a valid .zip file.",
+    "errorProcessingFile": "Failed to process the file: {{message}}",
+    "exportMissingXml": "This game system was imported before the update and holds no original XML files in the database. Please import the game system (.zip) again to use the export.",
+    "exportSuccess": "Game system \"{{name}}\" exported successfully as .zip (original format)!",
+    "errorExporting": "Failed to export the game system as ZIP: {{message}}",
+    "errorDeleting": "Failed to delete the game system.",
+    "bundleTitle": "Import Predefined Game Data",
+    "bundleDescription": "Import a complete game system, including selected factions, directly from the bundled files.",
+    "systemLabel": "Game system:",
+    "catalogsLabel": "Catalogs ({{amount}} selected):",
+    "deselectAll": "Deselect all",
+    "selectAll": "Select all",
+    "import": "Import",
+    "loadingTitle": "Conjuring game data...",
+    "loadingText": "Processing XML files, please wait...",
+    "welcomeTitle": "Welcome to Tome of Battle",
+    "welcomeText": "Your tome of knowledge is still empty. To muster armies, you first need game data in the BattleScribe format.",
+    "importedSystemsTitle": "Imported Game Systems",
+    "noSystems": "No game systems present in the database.",
+    "factionCatalogsLoaded": "{{amount}} faction catalogs loaded",
+    "exportSystemTitle": "Export game system (.zip)",
+    "deleteSystemTitle": "Delete system",
+    "deleteConfirmTitle": "Delete game system",
+    "deleteConfirmPrefix": "Are you sure you want to delete the game system",
+    "deleteConfirmSuffix": "and all associated catalogs?",
+    "delete": "Delete"
   }
 }

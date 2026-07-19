@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload, MoreVertical } from 'lucide-react';
 import { calculateRosterCosts, findForceEntryById } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
@@ -16,6 +17,9 @@ export default function RosterDashboard({
   onImportRoster,
   onExportRoster,
 }) {
+  const { t } = useTranslation();
+  const unknownSystemName = t('dashboard.unknownSystem');
+  const noFactionName = t('dashboard.noFaction');
   const fileInputRef = useRef(null);
 
   const handleImportClick = () => {
@@ -78,9 +82,9 @@ export default function RosterDashboard({
         >
           <WifiOff className="text-danger" size={24} style={{ flexShrink: 0 }} />
           <div>
-            <h4 style={{ margin: 0, color: 'var(--color-danger)' }} className="text-ui-title">Offline-Modus aktiv</h4>
+            <h4 style={{ margin: 0, color: 'var(--color-danger)' }} className="text-ui-title">{t('dashboard.offlineBanner.title')}</h4>
             <p style={{ margin: '2px 0 0' }} className="text-label text-dim">
-              Du hast keine Internetverbindung. Du kannst deine Armeelisten und Kataloge dennoch uneingeschränkt verwalten und bearbeiten.
+              {t('dashboard.offlineBanner.text')}
             </p>
           </div>
         </div>
@@ -89,15 +93,15 @@ export default function RosterDashboard({
       {rosters.length > 0 && (
         <div className="gothic-panel dashboard-header hide-on-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>Heerlager</h2>
-            <p className="text-dim" style={{ margin: 0 }}>Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>
+            <h2>{t('dashboard.title')}</h2>
+            <p className="text-dim" style={{ margin: 0 }}>{t('dashboard.subtitle')}</p>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button className="btn-secondary desktop-btn" onClick={handleImportClick}>
-              <Upload size={18} /> Importieren
+              <Upload size={18} /> {t('dashboard.import')}
             </button>
             <button className="btn-primary desktop-btn" onClick={onNewRoster}>
-              <Plus size={18} /> Neue Armeeliste
+              <Plus size={18} /> {t('dashboard.newRoster')}
             </button>
           </div>
         </div>
@@ -106,26 +110,26 @@ export default function RosterDashboard({
       {rosters.length === 0 ? (
         <div className="empty-state-container">
           <div className="empty-state-image empty-roster-image" />
-          <h3 className="empty-state-title">Die Waffenkammern sind leer</h3>
+          <h3 className="empty-state-title">{t('dashboard.empty.title')}</h3>
           <p className="empty-state-text text-dim">
-            Noch wehen keine Banner in deinem Heerlager. Versammle deine Truppen, wähle deine Anführer und bereite dich auf kommende Schlachten vor.
+            {t('dashboard.empty.text')}
           </p>
           <div className="empty-state-actions">
             <button className="btn-secondary empty-state-btn" onClick={handleImportClick}>
-              <Upload size={20} /> Liste importieren
+              <Upload size={20} /> {t('dashboard.empty.import')}
             </button>
             <button className="btn-primary empty-state-btn" onClick={onNewRoster}>
-              <Plus size={20} /> Erste Armeeliste ausheben
+              <Plus size={20} /> {t('dashboard.empty.create')}
             </button>
           </div>
         </div>
       ) : (() => {
         const rostersBySystemAndFaction = rosters.reduce((acc, roster) => {
           const sys = systems.find(s => s.id === roster.systemId);
-          const systemName = sys ? sys.name : 'Unbekanntes System';
-          
+          const systemName = sys ? sys.name : unknownSystemName;
+
           const cat = sys?.catalogues?.find(c => c.id === roster.catalogueId);
-          const factionName = cat ? cat.name : 'Keine Fraktion';
+          const factionName = cat ? cat.name : noFactionName;
           
           if (!acc[systemName]) {
             acc[systemName] = {};
@@ -138,8 +142,8 @@ export default function RosterDashboard({
         }, {});
 
         const sortedSystems = Object.keys(rostersBySystemAndFaction).sort((a, b) => {
-          if (a === 'Unbekanntes System') return 1;
-          if (b === 'Unbekanntes System') return -1;
+          if (a === unknownSystemName) return 1;
+          if (b === unknownSystemName) return -1;
           return a.localeCompare(b);
         });
 
@@ -148,8 +152,8 @@ export default function RosterDashboard({
             {sortedSystems.map(systemName => {
               const factionsObj = rostersBySystemAndFaction[systemName];
               const sortedFactions = Object.keys(factionsObj).sort((a, b) => {
-                if (a === 'Keine Fraktion') return 1;
-                if (b === 'Keine Fraktion') return -1;
+                if (a === noFactionName) return 1;
+                if (b === noFactionName) return -1;
                 return a.localeCompare(b);
               });
 
@@ -169,9 +173,10 @@ export default function RosterDashboard({
                           </h3>
                           <div className="dashboard-grid" style={{ marginTop: '12px' }}>
                             {factionRosters.map(({ roster, sys, cat }) => {
+                              const pointsAbbreviation = t('dashboard.pointsAbbreviation');
                               const costTypeObj = sys?.costTypes?.find(ct => ct.id === roster.costLimitType);
-                              const rawLabel = costTypeObj?.name || 'Pkt.';
-                              const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? 'Pkt.' : rawLabel;
+                              const rawLabel = costTypeObj?.name || pointsAbbreviation;
+                              const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? pointsAbbreviation : rawLabel;
                               
                               const calcCosts = (sys && roster.forces) ? calculateRosterCosts(roster, sys) : {};
                               const currentPoints = calcCosts[roster.costLimitType] || 0;
@@ -194,7 +199,7 @@ export default function RosterDashboard({
                                         <div
                                           className="roster-title-container"
                                           onClick={(e) => startEditing(roster, e)}
-                                          title="Titel bearbeiten"
+                                          title={t('dashboard.editTitle')}
                                         >
                                           <h4 className="roster-title">{roster.name}</h4>
                                           <Edit3 className="edit-icon" size={14} />
@@ -223,13 +228,13 @@ export default function RosterDashboard({
                                   </div>
                                   <div className="roster-actions" style={{ marginTop: '8px' }}>
                                     <button className="btn-sm" onClick={() => onOpenRoster(roster, 'builder')}>
-                                      <Edit3 size={14} /> Ausrüsten
+                                      <Edit3 size={14} /> {t('dashboard.equip')}
                                     </button>
 <button className="btn-sm" onClick={() => onOpenRoster(roster, 'play')}>
-  <Play size={14} /> Spielen
+  <Play size={14} /> {t('dashboard.play')}
 </button>
-                                    <button className="btn-sm hide-on-mobile" onClick={() => onExportRoster?.(roster)} title="Liste exportieren">
-                                      <Download size={14} /> Exportieren
+                                    <button className="btn-sm hide-on-mobile" onClick={() => onExportRoster?.(roster)} title={t('dashboard.exportTitle')}>
+                                      <Download size={14} /> {t('dashboard.export')}
                                     </button>
                                     <button 
                                       className="btn-danger square-btn hide-on-mobile" 
@@ -242,7 +247,7 @@ export default function RosterDashboard({
                                       className="btn-sm square-btn mobile-only" 
                                       style={{ marginLeft: 'auto' }}
                                       onClick={() => setRosterActionsRosterId(roster.id)}
-                                      title="Weitere Aktionen"
+                                      title={t('dashboard.moreActions')}
                                     >
                                       <MoreVertical size={14} />
                                     </button>
@@ -267,7 +272,7 @@ export default function RosterDashboard({
           <button 
             className="fab-mobile mobile-only"
             onClick={() => setIsActionsSheetOpen(true)}
-            title="Aktionen"
+            title={t('dashboard.actions')}
           >
             <Plus size={24} />
           </button>
@@ -275,7 +280,7 @@ export default function RosterDashboard({
           <BottomSheet
             isOpen={isActionsSheetOpen}
             onClose={() => setIsActionsSheetOpen(false)}
-            title="Armee-Aktionen"
+            title={t('dashboard.armyActions')}
           >
             <div className="popover-list">
               <div 
@@ -287,10 +292,10 @@ export default function RosterDashboard({
               >
                 <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <Plus size={18} className="text-gold" />
-                  <span>Neue Armeeliste ausheben</span>
+                  <span>{t('dashboard.createRosterSheet')}</span>
                 </span>
               </div>
-              <div 
+              <div
                 className="popover-item"
                 onClick={() => {
                   setIsActionsSheetOpen(false);
@@ -299,7 +304,7 @@ export default function RosterDashboard({
               >
                 <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <Upload size={18} className="text-gold" />
-                  <span>Armeeliste importieren</span>
+                  <span>{t('dashboard.importRosterSheet')}</span>
                 </span>
               </div>
             </div>
@@ -308,7 +313,7 @@ export default function RosterDashboard({
           <BottomSheet
             isOpen={rosterActionsRosterId !== null}
             onClose={() => setRosterActionsRosterId(null)}
-            title="Aktionen"
+            title={t('dashboard.actions')}
           >
             <div className="popover-list">
               <div 
@@ -321,10 +326,10 @@ export default function RosterDashboard({
               >
                 <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <Download size={18} />
-                  <span>Exportieren</span>
+                  <span>{t('dashboard.export')}</span>
                 </span>
               </div>
-              <div 
+              <div
                 className="popover-item"
                 onClick={() => {
                   const id = rosterActionsRosterId;
@@ -334,7 +339,7 @@ export default function RosterDashboard({
               >
                 <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <Trash2 size={18} className="text-danger" />
-                  <span>Löschen</span>
+                  <span>{t('dashboard.delete')}</span>
                 </span>
               </div>
             </div>
