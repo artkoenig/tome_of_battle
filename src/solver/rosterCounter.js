@@ -249,14 +249,20 @@ export const computeRosterCounts = (roster, system) => {
     }
 
     const entryDef = findEntryInSystem(system, entryId, forceCatalogueId);
-    
+
+    // Tracks which category ids this selection has already been counted under,
+    // so the roster-stored fallback below never re-counts a category the
+    // catalogue-driven resolution already covered (see the fallback's own
+    // comment for why that distinction matters).
+    const seenCategories = new Set();
+
     if (entryDef) {
       const resolved = resolveEntry(system, entryDef, forceCatalogueId);
       if (resolved && resolved.targetId && resolved.targetId !== entryId) {
         selectionCounts[resolved.targetId] = (selectionCounts[resolved.targetId] || 0) + effectiveCount;
         forceSelectionCounts[forceId][resolved.targetId] = (forceSelectionCounts[forceId][resolved.targetId] || 0) + effectiveCount;
       }
-      
+
       // Category membership can be changed conditionally by add/remove/set-primary/
       // unset-primary modifiers, so resolve the effective links (gated on the same
       // conditions) before counting rather than reading the static catalogue links.
@@ -272,7 +278,6 @@ export const computeRosterCounts = (roster, system) => {
       const effectiveModifiers = getEffectiveModifiers(resolved);
       const effectiveCategoryLinks = getEffectiveCategoryLinks(resolved?.categoryLinks, effectiveModifiers, categoryCtx);
 
-      const seenCategories = new Set();
       effectiveCategoryLinks.forEach(cl => {
         // Skip primary category links for nested (non-root) selections
         if (cl.primary && !isRoot) {
@@ -286,12 +291,17 @@ export const computeRosterCounts = (roster, system) => {
       });
     }
 
-    if (selection.category && isRoot) {
-      const hasCat = entryDef?.categoryLinks?.some(cl => cl.targetId === selection.category);
-      if (!hasCat) {
-        categoryCounts[forceId][selection.category] = (categoryCounts[forceId][selection.category] || 0) + effectiveCount;
-        selectionCounts[selection.category] = (selectionCounts[selection.category] || 0) + effectiveCount;
-      }
+    // Fallback for a selection whose catalogue entry no longer resolves at all
+    // (a since-deleted or since-relinked entry): fall back to the category the
+    // roster itself recorded at export time. Guarded by `seenCategories` rather
+    // than `entryDef`'s own static categoryLinks — an entry reached via an
+    // entryLink carries no categoryLinks of its own (its category lives on the
+    // link's target, or is assigned dynamically by a modifier), so checking the
+    // unresolved entryDef would double-count a category the block above already
+    // counted through the effective/resolved links.
+    if (selection.category && isRoot && !seenCategories.has(selection.category)) {
+      categoryCounts[forceId][selection.category] = (categoryCounts[forceId][selection.category] || 0) + effectiveCount;
+      selectionCounts[selection.category] = (selectionCounts[selection.category] || 0) + effectiveCount;
     }
 
     if (selection.selections) {
