@@ -85,6 +85,9 @@ Erweiterung des `SettingsContext`.
   Einschränkung des verlinkten Drittanbieter-Inhalts, kein Implementierungsfehler.
 - Weitere Sprachen über Deutsch/Englisch hinaus.
 - Übersetzung von Fehlermeldungen/Logs, die nur im Entwicklermodus sichtbar sind.
+- Der separate PWA-"Update verfügbar"-Toast (Changelog-Hinweis) bleibt
+  unabhängig von der UI-Sprache immer deutsch — anderer Mechanismus als das
+  ADR-0010-Dialog-/Toast-System, bewusst nicht Teil dieser Änderung.
 
 ## Acceptance Criteria
 - [ ]

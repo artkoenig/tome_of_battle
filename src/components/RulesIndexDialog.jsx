@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Loader2, WifiOff, RefreshCw } from 'lucide-react';
 
 // A cross-origin iframe does not reliably fire `onError`, so we also guard the
@@ -8,6 +9,7 @@ import { X, Loader2, WifiOff, RefreshCw } from 'lucide-react';
 const LOAD_TIMEOUT_MS = 15000;
 
 export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
+  const { t } = useTranslation();
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -85,7 +87,7 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
             type="button"
             className="modal-close"
             onClick={onClose}
-            title="Schließen"
+            title={t('settings.close')}
             style={{
               background: 'none',
               border: 'none',
@@ -105,9 +107,9 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
           {loadError ? (
             <div className="rules-index-error">
               <WifiOff size={32} />
-              <p>Keine Verbindung zu 6th.whfb.app</p>
+              <p>{t('rulesIndex.connectionError')}</p>
               <button type="button" className="btn" onClick={handleRetry}>
-                <RefreshCw size={16} /> <span>Erneut versuchen</span>
+                <RefreshCw size={16} /> <span>{t('rulesIndex.retry')}</span>
               </button>
             </div>
           ) : (
@@ -115,7 +117,7 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
               {!iframeLoaded && (
                 <div className="rules-index-loading">
                   <Loader2 size={32} className="spinner" />
-                  <p>Lade Regeltext...</p>
+                  <p>{t('rulesIndex.loading')}</p>
                 </div>
               )}
               <div className="rules-index-iframe-wrapper">

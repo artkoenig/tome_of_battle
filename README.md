@@ -14,6 +14,7 @@ The application runs entirely in the browser — there is no backend. Imported g
 - **Play Mode** — An additional, temporary view for tracking game rounds, victory points, command points (CP), and remaining wounds of individual models during a game.
 - **Offline-First PWA** — Installable, works completely offline, and updates reliably in the background using a service worker.
 - **Local & Secure** — All data remains in your browser's IndexedDB. No data is uploaded to any server.
+- **Multi-Language UI** — The interface is available in German and English, auto-detected from the browser and switchable at any time in Settings.
 
 The repository includes a real data package for **Warhammer Fantasy Battle 6th Edition** (`public/catalogs/whfb6/`), which serves as a sample import and for end-to-end testing.
 
@@ -114,7 +115,7 @@ For more in-depth details on the BattleScribe format, see [`docs/battlescribe-da
 
 ## Tech Stack
 
-React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer · oxlint
+React 19 · Vite · IndexedDB · JSZip · lucide-react · react-i18next · Vitest · Puppeteer · oxlint
 
 ---
 

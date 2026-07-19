@@ -2,14 +2,20 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../contexts/SettingsContext';
-import { GERMAN_LOCALE, ENGLISH_LOCALE } from '../i18n/localeConfig';
+import { SUPPORTED_LOCALES, GERMAN_LOCALE, ENGLISH_LOCALE } from '../i18n/localeConfig';
 
-// The language options rendered by the switcher, in display order. Each maps a
-// supported locale to the settings key holding its native label.
-const LANGUAGE_OPTIONS = [
-  { locale: GERMAN_LOCALE, labelKey: 'settings.language.german' },
-  { locale: ENGLISH_LOCALE, labelKey: 'settings.language.english' },
-];
+// The settings key holding each supported locale's native label.
+const LOCALE_LABEL_KEYS = {
+  [GERMAN_LOCALE]: 'settings.language.german',
+  [ENGLISH_LOCALE]: 'settings.language.english',
+};
+
+// The language options rendered by the switcher, derived from SUPPORTED_LOCALES
+// so the switcher can never drift out of sync with what i18next actually supports.
+const LANGUAGE_OPTIONS = SUPPORTED_LOCALES.map((locale) => ({
+  locale,
+  labelKey: LOCALE_LABEL_KEYS[locale],
+}));
 
 // Global settings dialog, opened from the header gear icon. Reads and writes the
 // app settings through the settings context (see ADR-0023), so a change

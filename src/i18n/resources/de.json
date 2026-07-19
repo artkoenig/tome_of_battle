@@ -56,7 +56,21 @@
     "armyActions": "Armee-Aktionen",
     "createRosterSheet": "Neue Armeeliste ausheben",
     "importRosterSheet": "Armeeliste importieren",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "newRosterModal": {
+      "title": "Neues Heer ausheben",
+      "nameLabel": "Name des Heeres",
+      "namePlaceholder": "z. B. Ultramarines 2. Kompanie",
+      "systemLabel": "Spielsystem",
+      "systemPlaceholder": "System auswählen...",
+      "noSystemsHint": "Keine Spielsysteme importiert. Bitte gehe erst in den Bibliothekar.",
+      "catalogueLabel": "Katalog / Fraktion",
+      "cataloguePlaceholder": "Fraktion auswählen...",
+      "forceLabel": "Armeestruktur / Kontingent",
+      "forcePlaceholder": "Struktur auswählen...",
+      "limitLabel": "Punktegrenze",
+      "submit": "Heerschau starten"
+    }
   },
   "importer": {
     "revision": {
@@ -251,5 +265,13 @@
     "exportFailed": "Fehler beim Exportieren: {{details}}",
     "exportFailedGeneric": "Export fehlgeschlagen.",
     "catalogRefreshFailed": "Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: {{systems}}"
+  },
+  "rulesIndex": {
+    "connectionError": "Keine Verbindung zu 6th.whfb.app",
+    "retry": "Erneut versuchen",
+    "loading": "Lade Regeltext..."
+  },
+  "previewBadge": {
+    "title": "Dies ist die Preproduction-Instanz, nicht die Live-App."
   }
 }

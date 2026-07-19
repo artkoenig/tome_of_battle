@@ -56,7 +56,21 @@
     "armyActions": "Army Actions",
     "createRosterSheet": "Muster a New Army List",
     "importRosterSheet": "Import an Army List",
-    "delete": "Delete"
+    "delete": "Delete",
+    "newRosterModal": {
+      "title": "Muster a New Host",
+      "nameLabel": "Name of the Host",
+      "namePlaceholder": "e.g. 2nd Company of Ultramar",
+      "systemLabel": "Game System",
+      "systemPlaceholder": "Choose a system...",
+      "noSystemsHint": "No game systems imported yet. Please visit the Librarian first.",
+      "catalogueLabel": "Catalog / Faction",
+      "cataloguePlaceholder": "Choose a faction...",
+      "forceLabel": "Army Structure / Force",
+      "forcePlaceholder": "Choose a structure...",
+      "limitLabel": "Point Limit",
+      "submit": "Muster the Host"
+    }
   },
   "importer": {
     "revision": {
@@ -251,5 +265,13 @@
     "exportFailed": "Export failed: {{details}}",
     "exportFailedGeneric": "Export failed.",
     "catalogRefreshFailed": "Could not update the following systems; their former state shall be kept: {{systems}}"
+  },
+  "rulesIndex": {
+    "connectionError": "No connection to 6th.whfb.app",
+    "retry": "Try Again",
+    "loading": "Conjuring the rule text..."
+  },
+  "previewBadge": {
+    "title": "This is the pre-production instance, not the live app."
   }
 }
