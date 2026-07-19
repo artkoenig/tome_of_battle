@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fixture: Listenkonfigurations-Schalter (WHFB6 Definitive Edition)
+
+  Verbatim uebernommene Auszuege aus
+  `Warhammer Fantasy Battles (6th definitive edition).gst`
+  (lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition,
+  Branch `master`, abgerufen 2026-07-19).
+
+  Enthaelt die beiden realen, roster-weiten Schalter-selectionEntries
+  „Allow experimental rules?" (8b76-92c4-23f9-54b1) und
+  „Allow special characters?" (8923-5946-7b10-8957) — jeweils unveraendert
+  samt ihrer costs (durchgehend value="0"), constraints, categoryLinks,
+  infoLinks (type="rule", also keine Profile) und ihrer selectionEntries-Kinder.
+  Beide sind der in CONTEXT.md definierte Begriff „Listenkonfiguration":
+  type="upgrade", profil- und kostenloser Teilbaum, an der Armeeliste haengend.
+
+  Zusaetzlich verbatim uebernommen als Gegenbeispiele im selben `.gst`-Kontext:
+  - „Bolt Thrower" (62e0-5a1d-ff7c-31dd): type="upgrade", traegt aber ueber
+    infoLinks reale Profile — kein profilfreier Teilbaum.
+  - „Magic Level 4" (fc28-3af2-d37a-d07e): type="upgrade", traegt aber reale
+    pts-/Wuerfel-Kosten — kein kostenloser Teilbaum.
+
+  Reduziert wurde ausschliesslich die Verschachtelung: die gameSystem-Wurzel und
+  ihr `<sharedSelectionEntries>`-Container wurden auf diese vier Eintraege
+  reduziert und in ein minimales `<catalogue>` verpackt, damit `parseCatalogueXML`
+  sie im Test unabhaengig aufloesen kann (gleiches Vorgehen wie
+  special-characters-hint.cat.xml).
+
+  Update-Politik: Eingefroren. Nicht automatisch mit dem Upstream-Fork
+  synchronisiert; dokumentiert den Stand, gegen den das Klassifikationsmerkmal
+  `isListConfiguration` verankert wurde.
+-->
+<catalogue id="cat-list-config-fixture" name="List Configuration Fixture" gameSystemId="0d13-7737-ea86-4662">
+  <sharedSelectionEntries>
+    <selectionEntry id="8b76-92c4-23f9-54b1" name="Allow experimental rules?" hidden="false" collective="false" import="true" type="upgrade">
+      <constraints>
+        <constraint field="selections" scope="force" value="1" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="b302-93b6-3d1d-13d6" type="max"/>
+        <constraint type="min" value="0" field="selections" scope="force" shared="true" id="badf-a1a1-372c-9baf" includeChildSelections="false"/>
+        <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="d67f-4b65-a832-1e1b" includeChildSelections="false"/>
+      </constraints>
+      <infoLinks>
+        <infoLink id="a873-a572-3da0-2573" name="Experimental rules" hidden="false" targetId="e29e-22d4-5752-b23d" type="rule"/>
+      </infoLinks>
+      <categoryLinks>
+        <categoryLink id="c18f-9f26-3979-0844" name="Experimental rules" hidden="false" targetId="4fed-b911-e6e0-927b" primary="false"/>
+        <categoryLink id="fc80-0bf1-e336-29f8" name="Experimental rules" hidden="false" targetId="4fed-b911-e6e0-927b" primary="false"/>
+        <categoryLink id="5bc4-45d0-347b-6365" name="Special list rules" hidden="false" targetId="32f1-197f-d719-a393" primary="true"/>
+      </categoryLinks>
+      <costs>
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0"/>
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0"/>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0"/>
+      </costs>
+      <modifiers>
+        <modifier type="set" value="1" field="d67f-4b65-a832-1e1b">
+          <conditions>
+            <condition type="atLeast" value="1" field="selections" scope="force" childId="4fed-b911-e6e0-927b" shared="true" includeChildSelections="true"/>
+          </conditions>
+        </modifier>
+        <modifier type="set" value="1" field="badf-a1a1-372c-9baf">
+          <conditions>
+            <condition type="atLeast" value="1" field="selections" scope="force" childId="4fed-b911-e6e0-927b" shared="true" includeChildSelections="true"/>
+          </conditions>
+        </modifier>
+      </modifiers>
+      <selectionEntries>
+        <selectionEntry type="upgrade" import="true" name="Allow experimental rules from ForgeWorld" hidden="false" id="8836-291a-d05c-a889" sortIndex="5">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="4779-c19a-b42d-fbbe" includeChildSelections="false"/>
+          </constraints>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Allow experimental rules from GW-website" hidden="false" id="5dac-1d03-5bb7-730b" sortIndex="4">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="4e25-69c5-5071-1e6e" includeChildSelections="false"/>
+          </constraints>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Allow experimental rules from White-Dwarf and Citadel Journal issues" hidden="false" id="cc03-e8fe-c143-6863" sortIndex="3">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="e4f3-9b1d-5233-2db0" includeChildSelections="false"/>
+            <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="4de8-720c-9d60-5ea0" includeChildSelections="false"/>
+          </constraints>
+          <modifiers>
+            <modifier type="set" value="1" field="4de8-720c-9d60-5ea0">
+              <conditionGroups>
+                <conditionGroup type="or">
+                  <conditions>
+                    <condition type="atLeast" value="1" field="selections" scope="force" childId="22b1-4841-84c1-7c98" shared="true" includeChildSelections="true"/>
+                    <condition type="instanceOf" value="1" field="selections" scope="force" childId="bf46-ee85-7c10-ba98" shared="true" includeChildSelections="true" childName="Vampire Coast (WD#306-UK)"/>
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Allow experimental rules from Chronicles/Annual/AB(appendix)" hidden="false" id="cace-490c-a31c-b8b5" defaultAmount="1" sortIndex="1">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="2253-835f-736d-3ce6" includeChildSelections="false"/>
+            <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="1eb6-b856-1ff3-80a2" includeChildSelections="false"/>
+          </constraints>
+          <modifiers>
+            <modifier type="set" value="1" field="1eb6-b856-1ff3-80a2">
+              <conditionGroups>
+                <conditionGroup type="or">
+                  <conditions>
+                    <condition type="instanceOf" value="1" field="selections" scope="force" childId="13c9-df14-b630-451b" shared="true" includeChildSelections="true"/>
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+            </modifier>
+          </modifiers>
+          <comment>Appendix lists from ArmyBooks
+Chronicles/Annual</comment>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Allow experimental rules from official Campaign Supplements (SoC/LUS/Albion)" hidden="false" id="f71a-269c-62d8-1621" defaultAmount="1" sortIndex="2">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="61dd-9f9a-1c45-d3ce" includeChildSelections="false"/>
+            <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="e188-f07a-65ec-97d5" includeChildSelections="false"/>
+          </constraints>
+          <modifiers>
+            <modifier type="set" value="1" field="e188-f07a-65ec-97d5">
+              <conditionGroups>
+                <conditionGroup type="or">
+                  <conditions>
+                    <condition type="instanceOf" value="1" field="selections" scope="force" childId="6771-bf67-e180-ca90" shared="true" includeChildSelections="true"/>
+                    <condition type="instanceOf" value="1" field="selections" scope="force" childId="76d5-dcdf-1fae-ab1e" shared="true" includeChildSelections="true"/>
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+      </selectionEntries>
+    </selectionEntry>
+    <selectionEntry id="8923-5946-7b10-8957" name="Allow special characters?" hidden="false" collective="false" import="true" type="upgrade">
+      <constraints>
+        <constraint field="selections" scope="roster" value="1" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="5036-e10c-2fd8-f135" type="max"/>
+        <constraint type="min" value="0" field="selections" scope="force" shared="true" id="3d91-4deb-faa0-9996" includeChildSelections="false"/>
+        <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="77da-4055-647c-6978" includeChildSelections="false"/>
+      </constraints>
+      <infoLinks>
+        <infoLink id="5bf6-245f-e93b-eb11" name="Special characters" hidden="false" targetId="3be4-7ba4-c28d-154b" type="rule"/>
+      </infoLinks>
+      <categoryLinks>
+        <categoryLink id="8548-b48d-04f2-5b62" name="Special list rules" hidden="false" targetId="32f1-197f-d719-a393" primary="true"/>
+      </categoryLinks>
+      <costs>
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0"/>
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0"/>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0"/>
+      </costs>
+      <modifiers>
+        <modifier type="set" value="0" field="77da-4055-647c-6978">
+          <conditions>
+            <condition type="atLeast" value="1" field="selections" scope="force" childId="0644-bfcd-32c2-21dc" shared="true" includeChildSelections="true"/>
+          </conditions>
+        </modifier>
+        <modifier type="set" value="0" field="3d91-4deb-faa0-9996">
+          <conditions>
+            <condition type="atLeast" value="1" field="selections" scope="force" childId="0644-bfcd-32c2-21dc" shared="true" includeChildSelections="true"/>
+          </conditions>
+        </modifier>
+      </modifiers>
+      <selectionEntries>
+        <selectionEntry type="upgrade" import="true" name="Special Characters from ArmyBooks" hidden="false" id="3c7a-8752-c9bc-c68c" defaultAmount="1" sortIndex="1">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="10ea-af2b-c3ab-2000" includeChildSelections="false"/>
+            <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="897e-4ab4-9306-640f" includeChildSelections="false"/>
+          </constraints>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Special Characters (Experimental) from Chronicles/Annual" hidden="false" id="b8b6-acff-664b-1ea4" defaultAmount="1" sortIndex="4">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="8186-38c1-ef10-ff51" includeChildSelections="false"/>
+            <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="dee4-a4cb-8e74-a6ba" includeChildSelections="false"/>
+          </constraints>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Special Characters from GW-website" hidden="false" id="2902-de5d-814e-8be0" sortIndex="6">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="8ef3-3c1e-f082-1fe9" includeChildSelections="false"/>
+          </constraints>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Special Characters from White-Dwarf and Citadel Journal issues" hidden="false" id="3071-044f-e1b9-c8be" sortIndex="5">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="0f62-c6fa-7a15-028b" includeChildSelections="false"/>
+            <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="5305-9d36-caa4-c907" includeChildSelections="false"/>
+          </constraints>
+          <modifiers>
+            <modifier type="set" value="1" field="5305-9d36-caa4-c907">
+              <conditionGroups>
+                <conditionGroup type="or">
+                  <conditions>
+                    <condition type="atLeast" value="1" field="selections" scope="force" childId="22b1-4841-84c1-7c98" shared="true" includeChildSelections="true"/>
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Special Characters from official Campaign Supplements (SoC/LUS/Albion)" hidden="false" id="f22c-d590-fe34-75be" defaultAmount="1" sortIndex="2">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="0e04-025b-f0b9-eab0" includeChildSelections="false"/>
+            <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="6e60-e3de-86b4-f1bb" includeChildSelections="false"/>
+          </constraints>
+          <modifiers>
+            <modifier type="set" value="1" field="6e60-e3de-86b4-f1bb">
+              <conditionGroups>
+                <conditionGroup type="or">
+                  <conditions>
+                    <condition type="instanceOf" value="1" field="selections" scope="force" childId="6771-bf67-e180-ca90" shared="true" includeChildSelections="true"/>
+                    <condition type="instanceOf" value="1" field="selections" scope="force" childId="76d5-dcdf-1fae-ab1e" shared="true" includeChildSelections="true"/>
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+        <selectionEntry type="upgrade" import="true" name="Special Characters (Official) from Chronicles/Annual" hidden="false" id="b299-772e-aa83-148f" defaultAmount="1" sortIndex="3">
+          <constraints>
+            <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="1027-7d78-6d93-5eb6" includeChildSelections="false"/>
+            <constraint type="min" value="0" field="selections" scope="parent" shared="true" id="43a3-454c-89f3-a6a6" includeChildSelections="false"/>
+          </constraints>
+        </selectionEntry>
+      </selectionEntries>
+    </selectionEntry>
+    <selectionEntry id="62e0-5a1d-ff7c-31dd" name="Bolt Thrower" publicationId="315e-e3c4-08af-fd51" page="124" hidden="false" collective="false" import="true" type="upgrade">
+      <infoLinks>
+        <infoLink id="a4ba-b2c4-6c51-fd90" name="Bolt-Thrower" hidden="false" targetId="6c75-5af6-cc63-e80a" type="profile"/>
+        <infoLink id="fbd6-1fe6-f6fe-c5ce" name="War machines" hidden="false" targetId="f9f4-4ab2-8b24-8433" type="profile"/>
+      </infoLinks>
+      <costs>
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0"/>
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0"/>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0"/>
+      </costs>
+    </selectionEntry>
+    <selectionEntry id="fc28-3af2-d37a-d07e" name="Magic Level 4" publicationId="315e-e3c4-08af-fd51" page="134" hidden="false" collective="false" import="true" type="upgrade">
+      <constraints>
+        <constraint field="selections" scope="parent" value="1" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="8975-9aca-1463-1a1f" type="max"/>
+      </constraints>
+      <costs>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="35"/>
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="4"/>
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2"/>
+      </costs>
+    </selectionEntry>
+  </sharedSelectionEntries>
+</catalogue>

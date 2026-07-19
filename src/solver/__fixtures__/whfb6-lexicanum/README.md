@@ -58,8 +58,28 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
   pts-Kosten verdoppelt, sobald König Alrik Ranulfsson (`e4c5-f4d5-a169-aaa7`,
   auf id/name/costs reduziert) im Heer steht. Ein zweiter, unbeteiligter
   `hidden`-Modifier sowie `modifierGroups`/eigene `constraints` wurden entfernt.
+- `list-configuration-switches.cat.xml` — Verbatim-Auszug aus
+  `Warhammer Fantasy Battles (6th definitive edition).gst` (abgerufen 2026-07-19):
+  die beiden realen, roster-weiten Schalter-`selectionEntry`s
+  „Allow experimental rules?" (`8b76-92c4-23f9-54b1`) und „Allow special
+  characters?" (`8923-5946-7b10-8957`), jeweils unverändert samt ihrer costs
+  (durchgehend `value="0"`), constraints, categoryLinks, infoLinks (`type="rule"`)
+  und selectionEntries-Kinder — beide sind der CONTEXT.md-Begriff
+  „Listenkonfiguration". Zusätzlich verbatim übernommen als Gegenbeispiele:
+  „Bolt Thrower" (`62e0-5a1d-ff7c-31dd`, upgrade **mit** Profil-infoLinks) und
+  „Magic Level 4" (`fc28-3af2-d37a-d07e`, upgrade **mit** pts-/Würfel-Kosten).
+  Nur die gameSystem-Wurzel und ihr `<sharedSelectionEntries>`-Container wurden
+  auf diese vier Einträge reduziert und in ein minimales `<catalogue>` verpackt.
 
 ## Wozu
+
+`list-configuration-switches.cat.xml` verankert
+`src/solver/listConfiguration.test.js`: Das Klassifikationsmerkmal
+`isListConfiguration` muss die beiden echten Schalter als Listenkonfiguration
+erkennen (type `upgrade`, profil-/kostenloser Teilbaum, Top-Level-Force-Selection)
+und einen profiltragenden bzw. kostentragenden Upgrade-Eintrag korrekt
+ausschließen. Die spielbaren Gegenbeispiele (echte Einheit, verschachtelte
+Ausrüstungs-Option) stammen aus dem echten Ergofarg-Katalog `Orcs and Goblins.cat`.
 
 Die Quirk-Funktionen (`getInheritedCategoryMaxSource`, `isQuirkGeneralEntryId`)
 kodieren vier IDs des neuen Datensatzes fest. Der Test extrahiert dieselben IDs
