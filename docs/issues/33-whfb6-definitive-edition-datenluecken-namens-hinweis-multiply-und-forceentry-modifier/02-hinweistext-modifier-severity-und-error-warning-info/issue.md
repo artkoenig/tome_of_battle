@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -35,3 +35,4 @@ bloße Listenlänge.
 - [ ] Die volle Testsuite (`npm test`) bleibt grün.
 
 ## Comments
+- field=error/warning/info-Modifier werden jetzt ausgewertet: collectTriggeredMessages (modifierEvaluator) sammelt bedingungsgegatet die Autoren-Hinweise, rosterValidator meldet sie mit severity error/warning/info. Play-Gate (isRosterValid/RosterSidebar-Badge) filtert via hasBlockingViolations auf severity==='error' statt Listenlänge. Verbatim-Bretonnia-Fixture (Allow special characters?) plus Regressionstest.

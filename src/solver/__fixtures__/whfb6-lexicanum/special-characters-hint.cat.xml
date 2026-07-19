@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fixture: field="error"-Hinweistext-Modifier (Bretonnia „Allow special characters?")
+
+  Reduzierter Verbatim-Auszug aus
+  `Bretonnia (6th definitive edition).cat`
+  (lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition,
+  Branch `master`, abgerufen 2026-07-19).
+
+  Enthaelt den realen „The Green Knight"-selectionEntry (e9d1-eb9d-7c44-f777)
+  mit seinem realen `<modifiers>`-Block: dem `field="error"`-Modifier
+  („Please enable \"Allow special characters?\"", ausgeloest solange weniger als
+  eine „Allow special characters?"-Auswahl im Kontingent liegt) und dem
+  begleitenden `set`-Modifier, der das roster-weite max-Limit dieses Sonder-
+  charakters von 0 auf 1 hebt, sobald der Schalter gesetzt ist. Beide Modifier
+  sowie die zugehoerige `constraint` (a108-21c7-ff26-24aa, max=0) sind unveraendert
+  uebernommen. Entfernt wurden nur die fuer diesen Test irrelevanten Teile des
+  Eintrags (infoLinks/profiles, ein dritter `hidden`-Modifier, der auf ein hier
+  nicht vorhandenes „Border Patrols rules"-Regelwerk verweist).
+
+  Der „Allow special characters?"-Schalter (8923-5946-7b10-8957) lebt im echten
+  Datensatz im gemeinsamen `.gst`-Katalog und wird per entryLink referenziert;
+  hier als minimaler Upgrade-selectionEntry ergaenzt, damit der Test ihn
+  unabhaengig auswaehlen kann.
+
+  Update-Politik: Eingefroren. Nicht automatisch mit dem Upstream-Fork
+  synchronisiert; dokumentiert den Stand, gegen den der Severity-/Hinweistext-
+  Modifier validiert wurde.
+-->
+<catalogue id="cat-bretonnia-hint-fixture" name="Bretonnia Hint Fixture" gameSystemId="0d13-7737-ea86-4662">
+  <sharedSelectionEntries>
+    <selectionEntry id="e9d1-eb9d-7c44-f777" name="The Green Knight" hidden="false" collective="false" type="unit">
+      <constraints>
+        <constraint field="selections" scope="roster" value="0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="a108-21c7-ff26-24aa" type="max"/>
+      </constraints>
+      <categoryLinks>
+        <categoryLink id="2feb-4215-2b1d-e492" name="Special Characters" hidden="false" targetId="0644-bfcd-32c2-21dc" primary="true"/>
+      </categoryLinks>
+      <modifiers>
+        <modifier type="set" value="1" field="a108-21c7-ff26-24aa">
+          <conditions>
+            <condition type="atLeast" value="1" field="selections" scope="force" childId="8923-5946-7b10-8957" shared="true" includeChildSelections="true"/>
+          </conditions>
+        </modifier>
+        <modifier type="add" value="Please enable &quot;Allow special characters?&quot;" field="error">
+          <conditions>
+            <condition type="lessThan" value="1" field="selections" scope="force" childId="8923-5946-7b10-8957" shared="true" includeChildSelections="true"/>
+          </conditions>
+        </modifier>
+      </modifiers>
+    </selectionEntry>
+    <selectionEntry id="8923-5946-7b10-8957" name="Allow special characters?" hidden="false" collective="false" type="upgrade"/>
+  </sharedSelectionEntries>
+</catalogue>

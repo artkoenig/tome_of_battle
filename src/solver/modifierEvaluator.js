@@ -419,6 +419,27 @@ export const getEffectiveModifiers = (source) => {
   return [...(source.modifiers || []), ...groupModifiers];
 };
 
+// BattleScribe lets catalogue authors surface context-gated, plain-text hints to the
+// player through a modifier whose `field` names a severity channel and whose `value`
+// carries the message text (e.g. `field="error" value="Please enable ..."`). These three
+// field names are also the canonical validation severities used across the app: an
+// `error` blocks the list, `warning`/`info` are purely informational.
+export const ValidationSeverity = Object.freeze({ ERROR: 'error', WARNING: 'warning', INFO: 'info' });
+
+const MESSAGE_MODIFIER_FIELDS = new Set(Object.values(ValidationSeverity));
+
+/**
+ * Collects the author-written messages of a source's error/warning/info modifiers
+ * whose conditions currently pass in `ctx`, each tagged with the severity its field
+ * names. Reuses getEffectiveModifiers + modifierConditionsPass, so modifierGroup gating
+ * and the full condition semantics apply exactly as for every other modifier consumer.
+ * @returns {{severity: string, message: string}[]}
+ */
+export const collectTriggeredMessages = (source, ctx = {}) =>
+  getEffectiveModifiers(source)
+    .filter(mod => MESSAGE_MODIFIER_FIELDS.has(mod.field) && mod.value && modifierConditionsPass(mod, ctx))
+    .map(mod => ({ severity: mod.field, message: mod.value }));
+
 /**
  * Applies the category-mutating modifiers (`add`/`remove`/`set-primary`/
  * `unset-primary`) to a set of base categoryLinks and returns the effective links.

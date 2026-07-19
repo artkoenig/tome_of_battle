@@ -18,6 +18,15 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
 - `characters-max-force.cat.xml` — Verbatim-Auszug aus
   `Lizardmen (6th definitive edition).cat`: die reale `forceEntry` „Red Host",
   unverändert samt der Heroes- und Characters-`categoryLink`s.
+- `special-characters-hint.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `Bretonnia (6th definitive edition).cat` (abgerufen 2026-07-19): der reale
+  „The Green Knight"-`selectionEntry` (`e9d1-eb9d-7c44-f777`) mit seinem realen
+  `field="error"`-Hinweistext-Modifier („Please enable \"Allow special
+  characters?\"", ausgelöst solange weniger als eine „Allow special
+  characters?"-Auswahl im Kontingent liegt) und dem begleitenden `set`-Modifier
+  auf sein roster-weites `max`-Limit. Der referenzierte Schalter (`8923-5946-7b10-8957`)
+  lebt real im `.gst`-Katalog und ist hier als minimaler Upgrade-Eintrag ergänzt
+  (Details im Datei-Kopf).
 - `vampire-selfscope-bloodline.cat.xml` — Reduzierter Verbatim-Auszug aus
   `Vampire Counts (6th definitive edition).cat` (abgerufen 2026-07-18): der reale
   „Vampire Count"-`selectionEntry` (`6822-0110-a7c9-cbb0`) mit seinem realen
@@ -44,6 +53,13 @@ Bedingungen des echten Katalogs folgen **14** diesem Selbst-Scope-Muster,
 verteilt auf drei Vampir-Charaktereinträge (Vampire Lord, Vampire Count,
 Vampire Thrall); alle betreffen Blutlinien-Kategorien (Blood Dragon, Necrarch,
 Strigoi).
+
+`special-characters-hint.cat.xml` verankert
+`src/solver/rosterValidator.messageModifiers.test.js`: Der Solver muss einen
+`field="error"/"warning"/"info"`-Modifier, dessen Bedingung zutrifft, als
+Validierungseintrag mit dem passenden Schweregrad melden — `error` blockiert das
+Spielen, `warning`/`info` erscheinen rein informativ. Über 17 Kataloge + `.gst`
+tragen **163** solcher Hinweistext-Modifier reale Klartext-Hinweise an den Spieler.
 
 `characters-max-force.cat.xml` belegt zusätzlich die strukturelle Voraussetzung
 des `inheritedCategoryMax`-Quirks: Die **Characters**-`categoryLink` trägt einen

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, ShieldAlert } from 'lucide-react';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit } from '../../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit, hasBlockingViolations, ValidationSeverity } from '../../solver/validator';
 export default function RosterSidebar({
   roster,
   system,
@@ -9,6 +9,8 @@ export default function RosterSidebar({
   costTypeLabel,
   className
 }) {
+  // Nur blockierende Verstöße machen das Roster ungültig; warning/info zählen nicht mit.
+  const blockingErrorCount = validationErrors.filter(e => e.severity === ValidationSeverity.ERROR).length;
   return (
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
@@ -21,10 +23,10 @@ export default function RosterSidebar({
         </div>
         <div className="flex-between text-label text-dim">
           <span>Status:</span>
-          {validationErrors.length === 0 ? (
-            <span className="badge badge-success">Gültig</span>
+          {hasBlockingViolations(validationErrors) ? (
+            <span className="badge badge-danger">Fehlerhaft ({blockingErrorCount})</span>
           ) : (
-            <span className="badge badge-danger">Fehlerhaft ({validationErrors.length})</span>
+            <span className="badge badge-success">Gültig</span>
           )}
         </div>
         {getExtraResourceTotals(system, roster, costs).map(res => (
