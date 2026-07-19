@@ -99,11 +99,7 @@
     "noSystems": "No game systems present in the database.",
     "factionCatalogsLoaded": "{{amount}} faction catalogs loaded",
     "exportSystemTitle": "Export game system (.zip)",
-    "deleteSystemTitle": "Delete system",
-    "deleteConfirmTitle": "Delete game system",
-    "deleteConfirmPrefix": "Are you sure you want to delete the game system",
-    "deleteConfirmSuffix": "and all associated catalogs?",
-    "delete": "Delete"
+    "deleteSystemTitle": "Delete system"
   },
   "editor": {
     "points": {
@@ -151,9 +147,6 @@
       "actions": "Actions",
       "copy": "Copy",
       "delete": "Delete",
-      "deleteTitle": "Delete unit",
-      "deleteConfirm": "Do you truly wish to delete <strong>{{name}}</strong>?",
-      "cancel": "Cancel",
       "modifications": "Modifications: {{name}}"
     },
     "profile": {
@@ -228,5 +221,35 @@
     "saveSummary": {
       "noModifiers": "No modifiers found."
     }
+  },
+  "dialogs": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteRoster": {
+      "title": "Delete Army List",
+      "message": "Dost thou truly wish to delete the army list <strong>{{name}}</strong>?"
+    },
+    "deleteSystem": {
+      "title": "Delete Game System",
+      "message": "Art thou certain thou wishest to delete the game system <strong>{{name}}</strong> and all its attendant catalogues?"
+    },
+    "deleteUnit": {
+      "title": "Delete Unit",
+      "message": "Dost thou truly wish to delete <strong>{{name}}</strong>?"
+    }
+  },
+  "toasts": {
+    "fillAllFields": "Pray, fill in every field.",
+    "createRosterFailed": "The army list could not be forged.",
+    "systemDeletedReimport": "The attendant game system has been deleted. Import it anew.",
+    "importSuccess": "Successfully imported: {{name}}",
+    "importMissingSystem": "The game system \"{{systemName}}\" (ID: {{systemId}}) is missing. Pray, import it first.",
+    "importFailed": "Import failed: {{details}}",
+    "importInvalidFile": "Invalid file format.",
+    "exportMissingSystem": "The attendant game system is missing. The export cannot be performed.",
+    "exportFailed": "Export failed: {{details}}",
+    "exportFailedGeneric": "Export failed.",
+    "catalogRefreshFailed": "Could not update the following systems; their former state shall be kept: {{systems}}"
   }
 }

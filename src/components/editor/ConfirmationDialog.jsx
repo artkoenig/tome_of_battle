@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function ConfirmationDialog({
   isOpen,
@@ -7,11 +8,17 @@ export default function ConfirmationDialog({
   onConfirm,
   title,
   message,
-  confirmLabel = 'Bestätigen',
-  cancelLabel = 'Abbrechen',
+  confirmLabel,
+  cancelLabel,
   isDanger = false
 }) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
+
+  // Fall back to the shared default labels when a caller does not override them,
+  // so every dialog stays translated without repeating the common wording.
+  const resolvedConfirmLabel = confirmLabel ?? t('dialogs.confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('dialogs.cancel');
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -52,14 +59,14 @@ export default function ConfirmationDialog({
             className="btn" 
             onClick={onClose}
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <button 
             type="button" 
             className={`btn ${isDanger ? 'btn-danger' : 'btn-primary'}`}
             onClick={onConfirm}
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </button>
         </div>
       </div>

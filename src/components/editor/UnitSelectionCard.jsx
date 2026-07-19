@@ -413,13 +413,13 @@ export default function UnitSelectionCard({
       <BottomSheet
         isOpen={showConfirmDelete}
         onClose={() => setShowConfirmDelete(false)}
-        title={t('editor.unitCard.deleteTitle')}
+        title={t('dialogs.deleteUnit.title')}
         desktopMode="modal"
       >
         <div className="info-popup-body" style={{ textAlign: 'center', padding: '16px 16px 24px 16px' }}>
           <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>
             <Trans
-              i18nKey="editor.unitCard.deleteConfirm"
+              i18nKey="dialogs.deleteUnit.message"
               values={{ name: effectiveName }}
               components={{ strong: <strong /> }}
             />
@@ -429,7 +429,7 @@ export default function UnitSelectionCard({
               className="btn"
               onClick={() => setShowConfirmDelete(false)}
             >
-              {t('editor.unitCard.cancel')}
+              {t('dialogs.cancel')}
             </button>
             <button
               className="btn btn-danger"
@@ -438,7 +438,7 @@ export default function UnitSelectionCard({
                 removeUnit(selection.id);
               }}
             >
-              {t('editor.unitCard.delete')}
+              {t('dialogs.delete')}
             </button>
           </div>
         </div>

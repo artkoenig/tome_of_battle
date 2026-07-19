@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -18,3 +18,4 @@ Toast-Benachrichtigungen) in Übersetzungsschlüssel und ergänzt die englischen
       unverändert grün (Testumgebung fix auf Deutsch).
 
 ## Comments
+- Alle Strings des ADR-0010 Dialog- und Toast-Systems in i18n-Schluessel (neue Namespaces dialogs/toasts) ueberfuehrt: showToast-Meldungen in App.jsx, die Bestaetigungsdialoge fuer Armeeliste/Spielsystem/Einheit sowie die Default-Labels der ConfirmationDialog-Komponente. Englische Uebersetzungen im epischen Ton ergaenzt. Bewusst ausgeklammert: separater PWA-Update-Toast und Importer-setError-Banner (andere Bereiche).

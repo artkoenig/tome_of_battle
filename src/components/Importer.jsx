@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
@@ -684,13 +684,15 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
             setError(t('importer.errorDeleting'));
           }
         }}
-        title={t('importer.deleteConfirmTitle')}
+        title={t('dialogs.deleteSystem.title')}
         message={
-          <>
-            {t('importer.deleteConfirmPrefix')} <strong>{systemToDelete?.name}</strong> {t('importer.deleteConfirmSuffix')}
-          </>
+          <Trans
+            i18nKey="dialogs.deleteSystem.message"
+            values={{ name: systemToDelete?.name }}
+            components={{ strong: <strong /> }}
+          />
         }
-        confirmLabel={t('importer.delete')}
+        confirmLabel={t('dialogs.delete')}
         isDanger={true}
       />
     </div>
