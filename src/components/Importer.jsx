@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
@@ -252,6 +253,7 @@ export async function loadAvailableSystemsFromSources(fetchText) {
 }
 
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
+  const { t } = useTranslation();
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -671,13 +673,15 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
             setError('Fehler beim Löschen des Spielsystems.');
           }
         }}
-        title="Spielsystem löschen"
+        title={t('dialogs.deleteSystem.title')}
         message={
-          <>
-            Bist du sicher, dass du das Spielsystem <strong>{systemToDelete?.name}</strong> und alle zugehörigen Kataloge löschen möchtest?
-          </>
+          <Trans
+            i18nKey="dialogs.deleteSystem.message"
+            values={{ name: systemToDelete?.name }}
+            components={{ strong: <strong /> }}
+          />
         }
-        confirmLabel="Löschen"
+        confirmLabel={t('dialogs.delete')}
         isDanger={true}
       />
     </div>

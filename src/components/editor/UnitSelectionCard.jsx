@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-react';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
@@ -50,6 +51,7 @@ export default function UnitSelectionCard({
   isSubUnit = false,
   onShowRule
 }) {
+  const { t } = useTranslation();
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -411,26 +413,32 @@ export default function UnitSelectionCard({
       <BottomSheet
         isOpen={showConfirmDelete}
         onClose={() => setShowConfirmDelete(false)}
-        title="Einheit löschen"
+        title={t('dialogs.deleteUnit.title')}
         desktopMode="modal"
       >
         <div className="info-popup-body" style={{ textAlign: 'center', padding: '16px 16px 24px 16px' }}>
-          <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>Möchten Sie <strong>{effectiveName}</strong> wirklich löschen?</p>
+          <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>
+            <Trans
+              i18nKey="dialogs.deleteUnit.message"
+              values={{ name: effectiveName }}
+              components={{ strong: <strong /> }}
+            />
+          </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button 
-              className="btn" 
+            <button
+              className="btn"
               onClick={() => setShowConfirmDelete(false)}
             >
-              Abbrechen
+              {t('dialogs.cancel')}
             </button>
-            <button 
-              className="btn btn-danger" 
+            <button
+              className="btn btn-danger"
               onClick={() => {
                 setShowConfirmDelete(false);
                 removeUnit(selection.id);
               }}
             >
-              Löschen
+              {t('dialogs.delete')}
             </button>
           </div>
         </div>

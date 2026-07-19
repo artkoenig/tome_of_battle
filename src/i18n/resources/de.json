@@ -27,5 +27,35 @@
       "german": "Deutsch",
       "english": "English"
     }
+  },
+  "dialogs": {
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "deleteRoster": {
+      "title": "Armeeliste löschen",
+      "message": "Möchtest du die Armeeliste <strong>{{name}}</strong> wirklich löschen?"
+    },
+    "deleteSystem": {
+      "title": "Spielsystem löschen",
+      "message": "Bist du sicher, dass du das Spielsystem <strong>{{name}}</strong> und alle zugehörigen Kataloge löschen möchtest?"
+    },
+    "deleteUnit": {
+      "title": "Einheit löschen",
+      "message": "Möchten Sie <strong>{{name}}</strong> wirklich löschen?"
+    }
+  },
+  "toasts": {
+    "fillAllFields": "Bitte fülle alle Felder aus.",
+    "createRosterFailed": "Fehler beim Erstellen der Liste.",
+    "systemDeletedReimport": "Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.",
+    "importSuccess": "Erfolgreich importiert: {{name}}",
+    "importMissingSystem": "Das Spielsystem \"{{systemName}}\" (ID: {{systemId}}) fehlt. Bitte importiere es zuerst.",
+    "importFailed": "Fehler beim Importieren: {{details}}",
+    "importInvalidFile": "Ungültiges Dateiformat.",
+    "exportMissingSystem": "Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.",
+    "exportFailed": "Fehler beim Exportieren: {{details}}",
+    "exportFailedGeneric": "Export fehlgeschlagen.",
+    "catalogRefreshFailed": "Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: {{systems}}"
   }
 }

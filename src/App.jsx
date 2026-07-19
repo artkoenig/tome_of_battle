@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Search, WifiOff, Download, Settings } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
@@ -234,7 +234,7 @@ export default function App() {
       const { systems: refreshedSystems, failures } = await runSystemMigrations(dbSystems, fetchCatalogText);
       if (failures.length > 0) {
         showToast(
-          `Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: ${failures.map(f => f.name).join(', ')}`,
+          t('toasts.catalogRefreshFailed', { systems: failures.map(f => f.name).join(', ') }),
           'error'
         );
       }
@@ -278,7 +278,7 @@ export default function App() {
 
   const handleCreateRoster = async ({ name, systemId, catId, forceEntryId, limit }) => {
     if (!name || !systemId || !catId) {
-      showToast("Bitte fülle alle Felder aus.", 'error');
+      showToast(t('toasts.fillAllFields'), 'error');
       return;
     }
 
@@ -315,14 +315,14 @@ export default function App() {
       navigate('builder', { roster, system: systemDef });
     } catch (err) {
       console.error(err);
-      showToast("Fehler beim Erstellen der Liste.", 'error');
+      showToast(t('toasts.createRosterFailed'), 'error');
     }
   };
 
   const handleOpenRoster = (roster, viewMode = 'builder') => {
     const sys = systems.find(s => s.id === roster.systemId);
     if (!sys) {
-      showToast("Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.", 'error');
+      showToast(t('toasts.systemDeletedReimport'), 'error');
       return;
     }
     navigate(viewMode, { roster, system: sys });
@@ -361,14 +361,15 @@ export default function App() {
       }
       
       await saveRoster(newRoster);
-      showToast(`Erfolgreich importiert: ${newRoster.name}`);
+      showToast(t('toasts.importSuccess', { name: newRoster.name }));
       loadAllData();
     } catch (err) {
       console.error('Import error:', err);
       if (err instanceof MissingSystemError) {
-        showToast(err.message, 'error');
+        showToast(t('toasts.importMissingSystem', { systemName: err.systemName, systemId: err.systemId }), 'error');
       } else {
-        showToast(`Fehler beim Importieren: ${err.message || 'Ungültiges Dateiformat.'}`, 'error');
+        const details = err.message || t('toasts.importInvalidFile');
+        showToast(t('toasts.importFailed', { details }), 'error');
       }
     }
   };
@@ -377,7 +378,7 @@ export default function App() {
     try {
       const system = systems.find(s => s.id === roster.systemId);
       if (!system) {
-        showToast("Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.", 'error');
+        showToast(t('toasts.exportMissingSystem'), 'error');
         return;
       }
       
@@ -395,7 +396,8 @@ export default function App() {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export error:', err);
-      showToast(`Fehler beim Exportieren: ${err.message || 'Export fehlgeschlagen.'}`, 'error');
+      const details = err.message || t('toasts.exportFailedGeneric');
+      showToast(t('toasts.exportFailed', { details }), 'error');
     }
   };
 
@@ -541,13 +543,15 @@ export default function App() {
             console.error(err);
           }
         }}
-        title="Armeeliste löschen"
+        title={t('dialogs.deleteRoster.title')}
         message={
-          <>
-            Möchtest du die Armeeliste <strong>{rosterToDelete?.name}</strong> wirklich löschen?
-          </>
+          <Trans
+            i18nKey="dialogs.deleteRoster.message"
+            values={{ name: rosterToDelete?.name }}
+            components={{ strong: <strong /> }}
+          />
         }
-        confirmLabel="Löschen"
+        confirmLabel={t('dialogs.delete')}
         isDanger={true}
       />
 
