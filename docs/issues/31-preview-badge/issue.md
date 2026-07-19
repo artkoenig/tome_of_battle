@@ -82,3 +82,4 @@ festgehalten; ADR 0008 §2 verweist per Nachtrag darauf.
 
 ## Comments
 - Preview-Badge implementiert: isPreviewHost(hostname) (src/utils/previewHost.js) vergleicht window.location.hostname positiv gegen die Konstante PREVIEW_HOSTNAME (army-builder-git-main-neardy.vercel.app). PreviewBadge.jsx rendert bei Treffer ein dezentes 'Preview'-Label im Header (.logo-container, kein Rahmen, --fs-micro). Bestehender Versions-Hash-Suffix unveraendert. Vier-Achsen-Verifikation (testing skill) durchlaufen: Standards gruen (oxlint pass, Funde ausserhalb des Diffs, siehe Issue 28), Spec alle 4 Acceptance Criteria erfuellt, Tests 670/670 + E2E gruen, Docs 0 Befunde. Versions-Bump 1.1.0 -> 1.2.0 (feature, Minor).
+- Versions-Bump auf Nutzerwunsch zurueckgenommen: package.json bleibt bei 1.1.0 (kein Versions-Bump fuer dieses Main-Issue).
