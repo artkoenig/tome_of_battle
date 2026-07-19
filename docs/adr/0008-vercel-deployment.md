@@ -46,6 +46,14 @@ Nicht-`main`-Builds sind stattdessen über den Hash-Zusatz an der angezeigten
 Versionsnummer (`<Version>+<Kurz-Hash>`) erkennbar, ohne ein separates
 UI-Element.
 
+**Nachtrag ([ADR 0021](0021-preview-badge-laufzeit-hostname-erkennung.md)):**
+Diese Begründung galt für die Unterscheidung nach Branch, nicht nach
+ausgelieferter Domain — ein `main`-Build läuft seit ADR 0019 sowohl auf der
+Vercel-Branch-Alias-URL als auch (nach manuellem Promoten) auf der echten
+Produktions-Domain, ohne dass der Hash-Suffix das unterscheiden kann. Für
+diesen Fall wurde ein Preview-Badge wieder eingeführt, das zur Laufzeit den
+Hostname vergleicht.
+
 ---
 
 ### Konsequenzen (Auswirkungen)
