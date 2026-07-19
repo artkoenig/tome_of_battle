@@ -38,7 +38,7 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
 - `vampire-coast-force-limit.cat.xml` — Reduzierter Verbatim-Auszug aus
   `Vampire Counts (6th definitive edition).cat` (abgerufen 2026-07-19): die beiden
   realen Sonderheer-`forceEntry`s „Army of the Lichemaster (WD#309-UK)"
-  (`f37a-a93e-fa22-61a8`) und „Vampire Coast (WD#306-UK)" (`bf46-ee85-7c10-ba98"`),
+  (`f37a-a93e-fa22-61a8`) und „Vampire Coast (WD#306-UK)" (`bf46-ee85-7c10-ba98`),
   jeweils samt ihrer forceEntry-eigenen Punktelimit-`constraint`
   (`type="min" field="limit::ecfa-8486-4f6c-c249" scope="roster"`, Basis 0) und des
   eigengegateten `set`-Modifiers, der diese beim Wählen des Sonderheeres auf 2000

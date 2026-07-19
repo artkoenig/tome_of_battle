@@ -1021,7 +1021,7 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | Element | `field` bedeutet … | Beispielwerte |
 |---------|--------------------|---------------|
 | `constraint` | *was gezählt/summiert wird* | `selections`, `forces`, `<costTypeId>` |
-| `modifier` | *was geändert wird* | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `<characteristicTypeId>` |
+| `modifier` | *was geändert wird* | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `error`, `warning`, `info`, `<characteristicTypeId>` |
 | `condition` / `repeat` | *worauf getestet/gezählt wird* | `selections`, `<costTypeId>`, `limit::<costTypeId>` |
 
 - `limit::<costTypeId>` = das **Kostenlimit** (Budget) der Roster für diese Kostenart.

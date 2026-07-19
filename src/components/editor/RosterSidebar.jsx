@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit, hasBlockingViolations, ValidationSeverity } from '../../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
 // Icon/CSS-Klasse je Schweregrad einer Validierungsmeldung — nur `error`
 // blockiert das Roster (siehe hasBlockingViolations); `warning`/`info`
 // erscheinen mit eigener, nicht-alarmierender Darstellung.
@@ -19,7 +19,7 @@ export default function RosterSidebar({
   className
 }) {
   // Nur blockierende Verstöße machen das Roster ungültig; warning/info zählen nicht mit.
-  const blockingErrorCount = validationErrors.filter(e => e.severity === ValidationSeverity.ERROR).length;
+  const blockingErrorCount = countBlockingViolations(validationErrors);
   return (
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
