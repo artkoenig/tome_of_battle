@@ -42,14 +42,19 @@ self.addEventListener('fetch', (event) => {
   // Don't cache data files that change independently of app builds
   if (url.pathname.includes('rules-index.json')) return;
 
+  // Catalog data (the catpkg.json index plus individual .cat/.gst files) is fetched
+  // at runtime from the fork over raw.githubusercontent.com. It must always hit the
+  // network so the revision comparison ("higher wins", see ADR 0014 / ADR 0020) sees
+  // the real current server state; a cached copy would silently serve a stale
+  // revision to the import screen and to manual reimports. Already-imported systems
+  // live entirely in IndexedDB and stay usable without a service-worker cache.
+  if (url.hostname.includes('raw.githubusercontent.com')) return;
+
   // Cache static assets and fonts
   const shouldCache =
     url.origin === self.location.origin ||
     url.hostname.includes('fonts.googleapis.com') ||
-    url.hostname.includes('fonts.gstatic.com') ||
-    // Catalog data is fetched at runtime from the fork over raw.githubusercontent.com
-    // (see ADR 0014). Caching it keeps once-imported systems usable offline.
-    url.hostname.includes('raw.githubusercontent.com');
+    url.hostname.includes('fonts.gstatic.com');
 
   if (shouldCache) {
     event.respondWith(

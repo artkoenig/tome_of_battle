@@ -127,7 +127,10 @@ Fixes müssen portiert werden. Der Abgleich gegen
   - Roster-Sync: muss nicht auflösbare Einträge künftig melden statt zu ignorieren.
   - Importer: bezieht die Systemliste aus dem Fork-Index statt aus dem
     Build-Zeit-Manifest.
-  - Service Worker: `raw.githubusercontent.com` in die Caching-Regel aufnehmen.
+  - Service Worker: `raw.githubusercontent.com` in die Caching-Regel aufnehmen
+    (revidiert durch [ADR 0020](adr/0020-katalogdaten-network-only-kein-service-worker-cache.md):
+    der Host ist inzwischen wieder vollständig vom Service-Worker-Cache
+    ausgenommen, network-only).
   - Parser: normalisiert `name`-Attribute beim Einlesen (siehe unten).
   - Build: das Manifest-generierende Vite-Plugin und `public/catalogs/` entfallen.
   - **Neu, außerhalb dieses Repos:** der Katalog-Fork

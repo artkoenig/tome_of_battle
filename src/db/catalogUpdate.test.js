@@ -1,4 +1,4 @@
-import { test, expect, beforeAll, beforeEach, describe } from 'vitest';
+import { test, expect, beforeAll, describe } from 'vitest';
 import { JSDOM } from 'jsdom';
 import {
   findOutdatedCatalogFiles,
@@ -6,7 +6,6 @@ import {
   buildRawFileUrl,
   deriveRevisionState,
   loadCatalogIndex,
-  clearCatalogIndexCache,
   findCatalogSourceForSystemId,
   CATALOG_SOURCES,
   REVISION_STATE,
@@ -152,11 +151,7 @@ describe('findCatalogSourceForSystemId', () => {
   });
 });
 
-describe('loadCatalogIndex (cached per fetchText AND index URL)', () => {
-  beforeEach(() => {
-    clearCatalogIndexCache();
-  });
-
+describe('loadCatalogIndex (network-only, no in-memory cache)', () => {
   const indexA = { repositoryFiles: [{ id: 'a', type: 'gamesystem' }] };
   const indexB = { repositoryFiles: [{ id: 'b', type: 'gamesystem' }] };
   const urlA = 'https://host/sourceA/catpkg.json';
@@ -167,7 +162,6 @@ describe('loadCatalogIndex (cached per fetchText AND index URL)', () => {
   }
 
   test('two different index URLs sharing one fetchText return their own indexes', async () => {
-    // Regression for the ADR-0018 cache bug: a URL-blind cache returned indexA for urlB.
     const fetchText = makeIndexFetch();
 
     const resultA = await loadCatalogIndex(fetchText, urlA);
@@ -177,17 +171,18 @@ describe('loadCatalogIndex (cached per fetchText AND index URL)', () => {
     expect(resultB).toEqual(indexB);
   });
 
-  test('the same index URL is fetched only once, then served from cache', async () => {
+  test('the same index URL is fetched afresh on every call (no cache hit)', async () => {
     let calls = 0;
     const fetchText = async () => {
       calls += 1;
       return JSON.stringify(indexA);
     };
 
-    await loadCatalogIndex(fetchText, urlA);
+    const first = await loadCatalogIndex(fetchText, urlA);
     const second = await loadCatalogIndex(fetchText, urlA);
 
-    expect(calls).toBe(1);
+    expect(calls).toBe(2);
+    expect(first).toEqual(indexA);
     expect(second).toEqual(indexA);
   });
 
@@ -203,7 +198,7 @@ describe('loadCatalogIndex (cached per fetchText AND index URL)', () => {
     expect(called).toBe(false);
   });
 
-  test('a failing fetch caches null for that URL (no repeated attempts) and keeps others working', async () => {
+  test('a failing fetch returns null and retries on the next call (no cached failure)', async () => {
     let attempts = 0;
     const fetchText = async (url) => {
       attempts += 1;
@@ -214,8 +209,8 @@ describe('loadCatalogIndex (cached per fetchText AND index URL)', () => {
     expect(await loadCatalogIndex(fetchText, urlA)).toBeNull();
     expect(await loadCatalogIndex(fetchText, urlA)).toBeNull();
     expect(await loadCatalogIndex(fetchText, urlB)).toEqual(indexB);
-    // urlA attempted once (then cached null), urlB attempted once.
-    expect(attempts).toBe(2);
+    // urlA attempted afresh both times (no cached null), urlB attempted once.
+    expect(attempts).toBe(3);
   });
 });
 
