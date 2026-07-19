@@ -341,28 +341,6 @@ export default function PlayUnitDetails({
             {getEffectiveSelectionName(selection, { system, roster, currentCatalogueId: roster?.catalogueId })}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {!hasSubUnits && (
-              <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
-                {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
-                <button 
-                  className="qty-btn" 
-                  onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
-                  disabled={isDead}
-                >
-                  <Minus size={12} />
-                </button>
-                <span className="font-body" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
-                  {currentWounds} / {totalMaxWounds}
-                </span>
-                <button 
-                  className="qty-btn" 
-                  onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
-                  disabled={currentWounds === totalMaxWounds}
-                >
-                  <Plus size={12} />
-                </button>
-              </div>
-            )}
             {totalCost > 0 && (
               <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
                 {totalCost} Pkt.
@@ -370,11 +348,11 @@ export default function PlayUnitDetails({
             )}
           </div>
         </div>
-        
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="play-unit-badges">
-            <div 
-              className="badge badge-success font-body" 
+            <div
+              className="badge badge-success font-body"
               style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: asInfo.breakdown.length > 0 ? 'help' : 'default' }}
               onMouseEnter={(e) => handleMouseEnter(e, 'Rüstungswurf (AS)', asInfo.breakdown)}
               onMouseLeave={handleMouseLeave}
@@ -387,8 +365,8 @@ export default function PlayUnitDetails({
             >
               AS: {asInfo.display}
             </div>
-            <div 
-              className="badge badge-warning font-body" 
+            <div
+              className="badge badge-warning font-body"
               style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: wsInfo.breakdown.length > 0 ? 'help' : 'default' }}
               onMouseEnter={(e) => handleMouseEnter(e, 'Rettungswurf (WS)', wsInfo.breakdown)}
               onMouseLeave={handleMouseLeave}
@@ -402,17 +380,41 @@ export default function PlayUnitDetails({
               WS: {wsInfo.display}
             </div>
           </div>
-          {!isSubUnit && (modelGroup || itemGroups.length > 0) && (
-            <button
-              type="button"
-              className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
-              onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-              title={isDetailsOpen ? 'Profile ausblenden' : 'Profile anzeigen'}
-              aria-expanded={isDetailsOpen}
-            >
-              <ReceiptText size={16} />
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {!hasSubUnits && (
+              <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
+                {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
+                <button
+                  className="qty-btn"
+                  onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
+                  disabled={isDead}
+                >
+                  <Minus size={12} />
+                </button>
+                <span className="font-body" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
+                  {currentWounds} / {totalMaxWounds}
+                </span>
+                <button
+                  className="qty-btn"
+                  onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
+                  disabled={currentWounds === totalMaxWounds}
+                >
+                  <Plus size={12} />
+                </button>
+              </div>
+            )}
+            {!isSubUnit && (modelGroup || itemGroups.length > 0) && (
+              <button
+                type="button"
+                className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
+                onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                title={isDetailsOpen ? 'Profile ausblenden' : 'Profile anzeigen'}
+                aria-expanded={isDetailsOpen}
+              >
+                <ReceiptText size={16} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
