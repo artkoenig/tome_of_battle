@@ -4,7 +4,7 @@ import {
   Heart, Swords, BookOpen
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals } from '../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListConfiguration } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
@@ -77,15 +77,23 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     roster.forces.forEach(force => {
       const forceDef = findForceEntryById(system, force.forceEntryId);
       const categoryLinks = forceDef?.categoryLinks || [];
+      const catalogueId = force.catalogueId || roster.catalogueId;
+
+      // List configurations (army-wide Battlescribe switches such as "Allow
+      // experimental rules?") are not playable units, so they are dropped from
+      // every play-view group up front (see docs/adr / CONTEXT.md).
+      const playableSelections = (force.selections || []).filter(
+        selection => !isListConfiguration({ system, force, selection, catalogueId })
+      );
 
       // Process defined categories
       categoryLinks.forEach(link => {
-        let selections = force.selections?.filter(s => s.category === link.targetId) || [];
+        let selections = playableSelections.filter(s => s.category === link.targetId);
         
         // Apply search filter
         selections = selections.filter(sel => {
           const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
-          const { rules } = collectUnitProfilesAndRules(system, sel, force.catalogueId || roster.catalogueId, roster);
+          const { rules } = collectUnitProfilesAndRules(system, sel, catalogueId, roster);
           const matchesRules = rules.some(r => 
             r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
             r.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -94,7 +102,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         });
 
         if (selections.length > 0) {
-          sortByCostDescending(selections, force.catalogueId || roster.catalogueId);
+          sortByCostDescending(selections, catalogueId);
 
           const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
           const catName = catDef ? catDef.name : link.name || 'Unbekannte Kategorie';
@@ -109,11 +117,11 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
       // Process uncategorized selections
       const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
-      let uncategorizedSelections = force.selections?.filter(s => !matchedCategoryIds.has(s.category)) || [];
+      let uncategorizedSelections = playableSelections.filter(s => !matchedCategoryIds.has(s.category));
       
       uncategorizedSelections = uncategorizedSelections.filter(sel => {
         const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const { rules } = collectUnitProfilesAndRules(system, sel, force.catalogueId || roster.catalogueId, roster);
+        const { rules } = collectUnitProfilesAndRules(system, sel, catalogueId, roster);
         const matchesRules = rules.some(r => 
           r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
           r.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -122,7 +130,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
       });
 
       if (uncategorizedSelections.length > 0) {
-        sortByCostDescending(uncategorizedSelections, force.catalogueId || roster.catalogueId);
+        sortByCostDescending(uncategorizedSelections, catalogueId);
 
         groups.push({
           id: `${force.id}-uncategorized`,

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -42,3 +42,4 @@ Leiste).
       kennt) zeigt in der Spieleansicht keinerlei Verhaltensänderung.
 
 ## Comments
+- Neues datengetriebenes Merkmal isListConfiguration (src/solver/listConfiguration.js): erkennt roster-weite Upgrade-Schalter mit profil-/kostenlosem Teilbaum als Top-Level-Force-Selection. PlayMode filtert sie aus allen Gruppen. Verankert an echten Definitive-Edition-Schaltern (neue Fixture) und Ergofarg-Gegenbeispielen.
