@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  ArrowLeft, Search, Plus, Minus, 
+import { useTranslation } from 'react-i18next';
+import {
+  ArrowLeft, Search, Plus, Minus,
   Heart, Swords, BookOpen
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
@@ -13,6 +14,7 @@ import { useRuleUrl } from '../hooks/useRuleUrl';
 import GothicTooltip from './GothicTooltip';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
+  const { t } = useTranslation();
   const [roster, setRoster] = useState(initialRoster);
   const [searchTerm, setSearchTerm] = useState('');
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
@@ -97,7 +99,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           sortByCostDescending(selections, force.catalogueId || roster.catalogueId);
 
           const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
-          const catName = catDef ? catDef.name : link.name || 'Unbekannte Kategorie';
+          const catName = catDef ? catDef.name : link.name || t('play.category.unknown');
 
           groups.push({
             id: `${force.id}-${link.targetId}`,
@@ -126,7 +128,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
         groups.push({
           id: `${force.id}-uncategorized`,
-          name: 'Sonstige Auswahlen',
+          name: t('play.category.other'),
           selections: uncategorizedSelections
         });
       }
@@ -156,15 +158,15 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         
         <div className="builder-top-bar-right">
           <button className="btn btn-primary" onClick={onBack} style={{ padding: '6px 12px' }}>
-            <Swords size={16} /> <span>Ausrüsten</span>
+            <Swords size={16} /> <span>{t('play.actions.equip')}</span>
           </button>
           <button
             className="btn"
             onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
-            title="Regelbuch öffnen (neuer Tab)"
+            title={t('play.actions.openRulebookTitle')}
             style={{ padding: '6px 12px', marginLeft: '8px' }}
           >
-            <BookOpen size={16} /> <span>Regelbuch</span>
+            <BookOpen size={16} /> <span>{t('play.actions.rulebook')}</span>
           </button>
         </div>
       </div>
@@ -175,15 +177,15 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           <button
             className="btn-sm play-header-back square-btn"
             onClick={onBack}
-            title="Kriegsplanung (Editieren)"
+            title={t('play.actions.backToEditTitle')}
           >
             <ArrowLeft size={16} />
           </button>
-          <h2 className="play-header-title">Spielmodus</h2>
+          <h2 className="play-header-title">{t('play.title')}</h2>
           <button
             className="btn-sm square-btn hide-on-desktop"
             onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
-            title="Regelbuch öffnen (neuer Tab)"
+            title={t('play.actions.openRulebookTitle')}
             style={{ marginLeft: 'auto' }}
           >
             <BookOpen size={16} />
@@ -243,7 +245,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-dim" style={{ fontSize: '0.9rem' }}>Keine Modifikatoren gefunden.</p>
+                <p className="text-dim" style={{ fontSize: '0.9rem' }}>{t('play.saveSummary.noModifiers')}</p>
               )
             ) : (
               saveSummaryData.breakdown

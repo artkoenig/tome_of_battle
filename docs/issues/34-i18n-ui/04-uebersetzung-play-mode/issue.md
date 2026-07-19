@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -18,3 +18,4 @@ i18n-Grundgerüst aus Issue 01 auf.
       unverändert grün (Testumgebung fix auf Deutsch).
 
 ## Comments
+- Alle hart-codierten deutschen UI-Strings im Spielmodus (PlayMode.jsx, play/PlayUnitDetails.jsx) in t()-Schluessel unter dem play-Namespace extrahiert und englische Uebersetzungen mit epischem Ton ergaenzt (de.json/en.json). Bestehende Play-Tests unveraendert gruen.

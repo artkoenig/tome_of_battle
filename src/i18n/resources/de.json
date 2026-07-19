@@ -187,5 +187,46 @@
     "common": {
       "close": "Schließen"
     }
+  },
+  "play": {
+    "title": "Spielmodus",
+    "actions": {
+      "equip": "Ausrüsten",
+      "backToEditTitle": "Kriegsplanung (Editieren)",
+      "rulebook": "Regelbuch",
+      "openRulebookTitle": "Regelbuch öffnen (neuer Tab)"
+    },
+    "category": {
+      "other": "Sonstige Auswahlen",
+      "unknown": "Unbekannte Kategorie"
+    },
+    "unit": {
+      "destroyed": "Vernichtet",
+      "destroyedLabel": "VERNICHTET",
+      "pointsSuffix": "Pkt."
+    },
+    "profile": {
+      "model": "Modell",
+      "default": "Profil",
+      "show": "Profile anzeigen",
+      "hide": "Profile ausblenden",
+      "none": "Keine Profilwerte gefunden."
+    },
+    "saves": {
+      "none": "Kein",
+      "armourTitle": "Rüstungswurf (AS)",
+      "armourAbbr": "AS",
+      "wardTitle": "Rettungswurf (WS)",
+      "wardAbbr": "WS",
+      "blessing": "Segen",
+      "blessingBreakdown5": "Segen der Herrin (5+ Rettungswurf)",
+      "blessingBreakdown56": "Segen der Herrin (5+ / 6+ Rettungswurf)"
+    },
+    "modifications": {
+      "title": "Modifikationen: {{name}}"
+    },
+    "saveSummary": {
+      "noModifiers": "Keine Modifikatoren gefunden."
+    }
   }
 }
