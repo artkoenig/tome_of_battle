@@ -1,0 +1,31 @@
+{
+  "app": {
+    "loading": "Öffne das Buch des Wissens..."
+  },
+  "navigation": {
+    "camp": "Heerlager",
+    "librarian": "Bibliothekar"
+  },
+  "header": {
+    "install": "Installieren",
+    "installTitle": "App auf dem Gerät installieren",
+    "offline": "Offline",
+    "offlineTitle": "Offline-Modus aktiv",
+    "settings": "Einstellungen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "close": "Schließen",
+    "version": "Version",
+    "whfb6Linking": {
+      "label": "Verlinkung zu 6th.whfb.app",
+      "hint": "Ist die Verlinkung aus, zeigen Regel-, Waffen- und Magic-Item-Chips statt eines Links zur externen Seite die Katalog-Kurzinfo."
+    },
+    "language": {
+      "label": "Sprache",
+      "hint": "Bestimmt die Sprache der Bedienoberfläche. Spielinhalte bleiben in ihrer Originalsprache.",
+      "german": "Deutsch",
+      "english": "English"
+    }
+  }
+}

@@ -1428,6 +1428,31 @@ select option {
   background: var(--text-gold);
 }
 
+/* Settings dialog language switcher (segmented control) */
+.settings-language-switch {
+  flex-shrink: 0;
+  display: inline-flex;
+  border: 1px solid var(--border-gold-dim);
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.settings-language-option {
+  padding: 4px 12px;
+  border: none;
+  background: var(--bg-dark);
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.settings-language-option.is-active {
+  background: rgba(226, 183, 66, 0.35);
+  color: var(--text-gold);
+}
+
 /* Error/Notification badges */
 .badge {
   display: inline-flex;

@@ -31,6 +31,11 @@ vi.mock('./db/database', () => ({
   getWhfb6LinkingEnabled: vi.fn().mockResolvedValue(true),
   setWhfb6LinkingEnabled: vi.fn().mockResolvedValue(undefined),
   WHFB6_LINKING_DEFAULT: true,
+  // The real SettingsProvider now also hydrates the UI locale on mount; without
+  // these the module mock would leave getLocale undefined and the effect would
+  // throw. null means "no persisted choice", so browser detection decides.
+  getLocale: vi.fn().mockResolvedValue(null),
+  setLocale: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('./db/migrations', () => ({

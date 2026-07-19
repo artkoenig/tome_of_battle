@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Search, WifiOff, Download, Settings } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
@@ -73,6 +74,8 @@ export function getDiffChanges(installedVersion, release) {
 }
 
 export default function App() {
+  const { t } = useTranslation();
+
   // Keep --app-vh in sync with the real visible viewport height so mobile
   // layout (#root, .empty-state-wrapper) sizes against the area actually
   // visible below collapsing browser chrome.
@@ -413,9 +416,9 @@ export default function App() {
         
         <div className="app-header-actions">
           {isOffline && (
-            <div className="offline-badge" title="Offline-Modus aktiv">
+            <div className="offline-badge" title={t('header.offlineTitle')}>
               <WifiOff size={18} className="text-danger" />
-              <span className="hide-on-mobile">Offline</span>
+              <span className="hide-on-mobile">{t('header.offline')}</span>
             </div>
           )}
 
@@ -423,10 +426,10 @@ export default function App() {
             <button
               className="install-app-btn"
               onClick={handleInstallClick}
-              title="App auf dem Gerät installieren"
+              title={t('header.installTitle')}
             >
               <Download size={18} className="text-gold" />
-              <span className="hide-on-mobile text-label">Installieren</span>
+              <span className="hide-on-mobile text-label">{t('header.install')}</span>
             </button>
           )}
 
@@ -436,13 +439,13 @@ export default function App() {
                 className={view === 'rosters' ? 'btn-primary' : ''}
                 onClick={() => { navigate('rosters'); loadAllData(); }}
               >
-                <FolderOpen size={18} /> Heerlager
+                <FolderOpen size={18} /> {t('navigation.camp')}
               </button>
               <button
                 className={view === 'importer' ? 'btn-primary' : ''}
                 onClick={() => { navigate('importer'); loadAllData(); }}
               >
-                <BookOpen size={18} /> Bibliothekar
+                <BookOpen size={18} /> {t('navigation.librarian')}
               </button>
             </div>
           )}
@@ -450,8 +453,8 @@ export default function App() {
           <button
             className="header-settings-btn"
             onClick={() => setIsSettingsOpen(true)}
-            title="Einstellungen"
-            aria-label="Einstellungen"
+            title={t('header.settings')}
+            aria-label={t('header.settings')}
           >
             <Settings size={18} />
           </button>
@@ -462,7 +465,7 @@ export default function App() {
       <main className="app-content">
         {!isDataLoaded ? (
           <div className="app-loading-screen">
-            <p className="text-dim">Öffne das Buch des Wissens...</p>
+            <p className="text-dim">{t('app.loading')}</p>
           </div>
         ) : systems.length === 0 ? (
           <Importer onSystemImported={handleSystemImported} showAsEmptyState={true} />
@@ -553,11 +556,11 @@ export default function App() {
         <nav className="mobile-bottom-nav mobile-only">
           <button className={`mobile-nav-btn ${view === 'rosters' ? 'active' : ''}`} onClick={() => { navigate('rosters'); loadAllData(); }}>
             <FolderOpen size={20} />
-            <span>Heerlager</span>
+            <span>{t('navigation.camp')}</span>
           </button>
           <button className={`mobile-nav-btn ${view === 'importer' ? 'active' : ''}`} onClick={() => { navigate('importer'); loadAllData(); }}>
             <BookOpen size={20} />
-            <span>Bibliothekar</span>
+            <span>{t('navigation.librarian')}</span>
           </button>
         </nav>
       )}
