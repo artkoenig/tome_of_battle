@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -192,3 +192,4 @@ Vampire-Counts- oder Dwarfs-spezifische Sonderlogik (ADR-0003).
 - [ ]
 
 ## Comments
+- Alle 5 Kind-Issues (01 Schema-SSOT, 02 Hinweistext-Modifier, 03 forceEntry-Punktelimit, 04 multiply-Modifier, 05 Namens-Modifier) resolved und gemergt. Vier-Achsen-Verifikation zweimal gelaufen: Standards gruen (oxlint exit 0; DRY-Hinweis zu blockingErrorCount behoben, Rest vorbestehende codebasisweite Smells), Spezifikation 0 offene Funde nach Fixes, Tests gruen (714/714 vitest; Puppeteer-E2E durchgaengig nur an der bekannten Sandbox-Netzwerksperre gescheitert, kein Code-Problem), Doku nachgezogen (battlescribe-data-format.md um multiply/prepend/join/error-warning-info/forceEntry-Modifier ergaenzt, ui-renderer-audit.md um die zwei neuen Anzeige-Bruecken, Fixture-README-Tippfehler behoben). Zwei Fixtures (multiply, Namens-Modifier) von erfunden auf echte Verbatim-Auszuege aus dem geklonten Lexicanum-Fork umgestellt. ADR-0016 amendiert (Revision 2026-07-19). Version auf 1.2.0 angehoben (Type: feature, Nutzerbestaetigung).
