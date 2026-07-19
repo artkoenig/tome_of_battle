@@ -448,7 +448,13 @@ const parseForceEntry = (el) => {
     hidden: getBooleanAttribute(el, AttributeName.HIDDEN),
     categoryLinks: parseCategoryLinks(el),
     forceEntries: subForces,
-    constraints: parseConstraints(el)
+    constraints: parseConstraints(el),
+    // A forceEntry can carry its own modifiers/modifierGroups that raise one of its
+    // own constraints when the force is chosen (e.g. the Vampire-Counts special armies
+    // lifting their roster points minimum to 2000). Deliberately not the full
+    // ContainerEntryBase — rules/profiles/infoLinks have no real occurrence here (YAGNI).
+    modifiers: parseModifiers(el),
+    modifierGroups: parseModifierGroups(el)
   };
 };
 

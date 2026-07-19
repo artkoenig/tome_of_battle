@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -31,3 +31,4 @@ Kein Bezug zu Kind-Issue 01.
 - [ ] Die volle Testsuite (`npm test`) bleibt grün.
 
 ## Comments
+- forceEntry-Parser liest jetzt modifiers/modifierGroups; neuer eng gefasster Validator-Check checkForceOwnRosterPointsLimit setzt das forceEntry-eigene limit::<costTypeId>-Roster-Minimum (Vampire-Counts-Sonderheere: ≥2000 Punkte) durch. Verbatim-Fixture + Regressionstest ergänzt.
