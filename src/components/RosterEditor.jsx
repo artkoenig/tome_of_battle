@@ -7,6 +7,8 @@ import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers,
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
 import UnitSelectionCard from './editor/UnitSelectionCard';
+import ListConfigurationCard from './editor/ListConfigurationCard';
+import { isListConfigurationCategory } from '../solver/listConfigurationView';
 import AutoFillSuggestions from './editor/AutoFillSuggestions';
 import RulesIndexDialog from './RulesIndexDialog';
 import { useRuleUrl } from '../hooks/useRuleUrl';
@@ -197,6 +199,30 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
                   const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
                   const catName = catDef ? catDef.name : link.name;
+
+                  // A category whose selections are exclusively list configurations
+                  // (classification from Child-Issue 01) collapses into a single
+                  // configuration card instead of one unit card per switch.
+                  if (isListConfigurationCategory({
+                    system,
+                    force,
+                    selections,
+                    catalogueId: force.catalogueId || roster.catalogueId
+                  })) {
+                    return (
+                      <ListConfigurationCard
+                        key={link.targetId}
+                        categoryName={catName}
+                        selections={selections}
+                        system={system}
+                        roster={roster}
+                        force={force}
+                        activeCatalogue={activeCatalogue}
+                        updateSubSelection={updateSubSelection}
+                      />
+                    );
+                  }
+
                   const categoryErrors = validationErrors.filter(e => e.categoryId === link.targetId);
                   const count = forceCategoryCounts[link.targetId] || 0;
 

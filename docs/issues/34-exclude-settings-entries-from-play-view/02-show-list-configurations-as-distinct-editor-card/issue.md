@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: [01]
 
@@ -52,3 +52,4 @@ Kategorien mit echten Einheiten bleiben unverändert (`UnitSelectionCard`).
 - [ ] Der Aushebe-Dialog (`CategoryUnitAdder.jsx`) bleibt unverändert.
 
 ## Comments
+- Editor rendert eine Kategorie mit ausschließlich Listenkonfigurationen als einzelne aufklappbare ListConfigurationCard: eingeklappt Info-akzentuierte Badges der gewählten Optionen, aufgeklappt flache Radio-Zeilen (inkl. 'Keine' je Haupteintrag), Klick setzt die Roster-Selection direkt ohne Konfigurator-Dialog, kein Kosten-Slot/Kopieren/Löschen. Reine Einheiten-Kategorien und CategoryUnitAdder unverändert. Klassifikation via isListConfiguration (Child-Issue 01).
