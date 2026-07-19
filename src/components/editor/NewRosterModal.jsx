@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getAvailableForceEntries } from '../../solver/validator';
 
 const DEFAULT_COST_LIMIT = 2000;
@@ -9,6 +10,7 @@ const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
  * selbst und meldet das Ergebnis über onCreate({ name, systemId, catId, forceEntryId, limit }).
  */
 export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [systemId, setSystemId] = useState('');
   const [catId, setCatId] = useState('');
@@ -60,16 +62,16 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content modal-new-roster-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Neues Heer ausheben</h3>
+          <h3>{t('dashboard.newRosterModal.title')}</h3>
           <button type="button" className="modal-close" onClick={onClose}>X</button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <div className="form-field">
-              <label>Name des Heeres</label>
+              <label>{t('dashboard.newRosterModal.nameLabel')}</label>
               <input
                 type="text"
-                placeholder="z. B. Ultramarines 2. Kompanie"
+                placeholder={t('dashboard.newRosterModal.namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -77,13 +79,13 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
             </div>
 
             <div className="form-field">
-              <label>Spielsystem</label>
+              <label>{t('dashboard.newRosterModal.systemLabel')}</label>
               <select
                 value={systemId}
                 onChange={(e) => handleSystemChange(e.target.value)}
                 required
               >
-                <option value="" disabled>System auswählen...</option>
+                <option value="" disabled>{t('dashboard.newRosterModal.systemPlaceholder')}</option>
                 {systems.map(s => (
                   <option key={s.id} value={s.id}>
                     {s.name}
@@ -92,20 +94,20 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
               </select>
               {systems.length === 0 && (
                 <p className="text-danger text-micro form-field-hint">
-                  Keine Spielsysteme importiert. Bitte gehe erst in den Bibliothekar.
+                  {t('dashboard.newRosterModal.noSystemsHint')}
                 </p>
               )}
             </div>
 
             <div className="form-field">
-              <label>Katalog / Fraktion</label>
+              <label>{t('dashboard.newRosterModal.catalogueLabel')}</label>
               <select
                 value={catId}
                 onChange={(e) => handleCatalogueChange(e.target.value)}
                 required
                 disabled={!systemId || activeSystem?.catalogues?.length === 0}
               >
-                <option value="" disabled>Fraktion auswählen...</option>
+                <option value="" disabled>{t('dashboard.newRosterModal.cataloguePlaceholder')}</option>
                 {activeSystem?.catalogues?.map(cat => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -115,14 +117,14 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
             </div>
 
             <div className="form-field">
-              <label>Armeestruktur / Kontingent</label>
+              <label>{t('dashboard.newRosterModal.forceLabel')}</label>
               <select
                 value={forceEntryId}
                 onChange={(e) => setForceEntryId(e.target.value)}
                 required
                 disabled={!catId || availableForceEntries.length === 0}
               >
-                <option value="" disabled>Struktur auswählen...</option>
+                <option value="" disabled>{t('dashboard.newRosterModal.forcePlaceholder')}</option>
                 {availableForceEntries.map(fe => (
                   <option key={fe.id} value={fe.id}>
                     {fe.name}
@@ -132,7 +134,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
             </div>
 
             <div className="form-field">
-              <label>Punktegrenze</label>
+              <label>{t('dashboard.newRosterModal.limitLabel')}</label>
               <div className="input-with-suffix">
                 <input
                   type="number"
@@ -141,7 +143,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
                   required
                   min={1}
                 />
-                <span className="text-subheading text-gold input-suffix-label">Pkt.</span>
+                <span className="text-subheading text-gold input-suffix-label">{t('dashboard.pointsAbbreviation')}</span>
               </div>
               <div className="preset-btn-row">
                 {COST_LIMIT_PRESETS.map(val => (
@@ -159,9 +161,9 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
           </div>
           <div className="modal-footer">
             <button type="submit" className="btn-primary" disabled={systems.length === 0}>
-              Heerschau starten
+              {t('dashboard.newRosterModal.submit')}
             </button>
-            <button type="button" onClick={onClose}>Abbrechen</button>
+            <button type="button" onClick={onClose}>{t('dialogs.cancel')}</button>
           </div>
         </form>
       </div>
