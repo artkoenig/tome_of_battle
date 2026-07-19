@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -43,19 +43,19 @@ Dokumentations-Konsistenz ist Teil dieses main-issues:
   beschreiben statt als Agent-Handlung nach dem Pull des gemergten Commits.
 
 ## Acceptance Criteria
-- [ ] Neuer Workflow `.github/workflows/*.yml`, Trigger `push` auf `main`,
+- [x] Neuer Workflow `.github/workflows/*.yml`, Trigger `push` auf `main`,
       Stil analog zu `ci.yml`/`issue_agent.yml` (explizite `permissions:`,
       deutschsprachige Step-Namen).
-- [ ] Erkennt eine Änderung des `version`-Felds in `package.json` gegenüber
+- [x] Erkennt eine Änderung des `version`-Felds in `package.json` gegenüber
       dem Vorgänger-Commit; bei keiner Änderung passiert nichts.
-- [ ] Bei erkannter Änderung: erstellt und pusht Tag `v<version>` auf den
+- [x] Bei erkannter Änderung: erstellt und pusht Tag `v<version>` auf den
       auslösenden `main`-Commit.
-- [ ] Idempotent: existiert der Tag bereits, bricht der Lauf ohne Fehler ab
+- [x] Idempotent: existiert der Tag bereits, bricht der Lauf ohne Fehler ab
       (kein Doppel-Tag, kein roter Workflow-Status).
-- [ ] ADR 0019 beschreibt den neuen Mechanismus statt des manuellen
+- [x] ADR 0019 beschreibt den neuen Mechanismus statt des manuellen
       Agent-Tag-Push.
-- [ ] ADR 0007 listet den neuen Workflow analog zu den bestehenden Einträgen.
-- [ ] CLAUDE.md, Abschnitt "Version bump after merging a feature/fix
+- [x] ADR 0007 listet den neuen Workflow analog zu den bestehenden Einträgen.
+- [x] CLAUDE.md, Abschnitt "Version bump after merging a feature/fix
       main-issue", beschreibt den Tag-Push als automatisch statt als
       Agent-Schritt.
 
