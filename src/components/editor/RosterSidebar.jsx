@@ -1,6 +1,15 @@
 import React from 'react';
-import { Check, ShieldAlert } from 'lucide-react';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit } from '../../solver/validator';
+import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
+// Icon/CSS-Klasse je Schweregrad einer Validierungsmeldung — nur `error`
+// blockiert das Roster (siehe hasBlockingViolations); `warning`/`info`
+// erscheinen mit eigener, nicht-alarmierender Darstellung.
+const SEVERITY_PRESENTATION = {
+  [ValidationSeverity.ERROR]: { Icon: ShieldAlert, itemClass: '' },
+  [ValidationSeverity.WARNING]: { Icon: AlertTriangle, itemClass: 'validation-error-item--warning' },
+  [ValidationSeverity.INFO]: { Icon: Info, itemClass: 'validation-error-item--info' }
+};
+
 export default function RosterSidebar({
   roster,
   system,
@@ -9,6 +18,8 @@ export default function RosterSidebar({
   costTypeLabel,
   className
 }) {
+  // Nur blockierende Verstöße machen das Roster ungültig; warning/info zählen nicht mit.
+  const blockingErrorCount = countBlockingViolations(validationErrors);
   return (
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
@@ -21,10 +32,10 @@ export default function RosterSidebar({
         </div>
         <div className="flex-between text-label text-dim">
           <span>Status:</span>
-          {validationErrors.length === 0 ? (
-            <span className="badge badge-success">Gültig</span>
+          {hasBlockingViolations(validationErrors) ? (
+            <span className="badge badge-danger">Fehlerhaft ({blockingErrorCount})</span>
           ) : (
-            <span className="badge badge-danger">Fehlerhaft ({validationErrors.length})</span>
+            <span className="badge badge-success">Gültig</span>
           )}
         </div>
         {getExtraResourceTotals(system, roster, costs).map(res => (
@@ -119,14 +130,17 @@ export default function RosterSidebar({
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {validationErrors.map((err, idx) => (
-              <div key={idx} className="validation-error-item">
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                  <ShieldAlert size={14} className="text-danger" style={{ marginTop: '2px', flexShrink: 0 }} />
-                  <span>{err.message}</span>
+            {validationErrors.map((err, idx) => {
+              const { Icon, itemClass } = SEVERITY_PRESENTATION[err.severity] || SEVERITY_PRESENTATION[ValidationSeverity.ERROR];
+              return (
+                <div key={idx} className={`validation-error-item ${itemClass}`}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                    <Icon size={14} style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <span>{err.message}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

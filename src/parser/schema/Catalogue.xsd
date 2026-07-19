@@ -485,6 +485,11 @@
         <xs:attribute name="type" type="tns:ModifierKind" use="required" />
         <xs:attribute name="field" type="xs:string" use="required" />
         <xs:attribute name="value" type="xs:string" use="required" />
+        <!-- Vendored divergence from upstream, see ADR 0016 (Revision 2026-07-19):
+             the Definitive-Edition catalogues carry a `join` attribute on
+             <modifier> (131 Fundstellen bei field="name") that no official
+             BSData/schemas version defines. Optional string, no default. -->
+        <xs:attribute name="join" type="xs:string" use="optional" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -505,6 +510,12 @@
       <xs:enumeration value="remove" />
       <xs:enumeration value="set-primary" />
       <xs:enumeration value="unset-primary" />
+      <!-- Vendored divergence from upstream, see ADR 0016 (Revision 2026-07-19):
+           `multiply` (Kostenverdopplung) and `prepend` (Namens-Modifikation)
+           appear in the Definitive-Edition catalogues but in no official
+           BSData/schemas version. -->
+      <xs:enumeration value="multiply" />
+      <xs:enumeration value="prepend" />
     </xs:restriction>
   </xs:simpleType>
 

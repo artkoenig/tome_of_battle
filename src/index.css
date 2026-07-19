@@ -20,10 +20,12 @@
   --color-danger: #a61c1c;   /* Crimson blood red for errors and damage */
   --color-success: #1b7340;  /* Forest green for active/valid states */
   --color-warning: #c27d13;  /* Amber/Orange for warnings */
+  --color-info: #2d6ca6;     /* Steel blue for informational hints */
 
   --text-danger-readable: #ff6b6b; /* Brighter readable red for text/badges */
   --text-success-readable: #81c784; /* Brighter readable green for text/badges */
   --text-warning-readable: #ffd54f; /* Brighter readable amber/yellow for text/badges */
+  --text-info-readable: #7ab8ea; /* Brighter readable blue for text/badges */
 
   --font-serif: 'Cinzel', Georgia, serif;
   --font-body: 'Lora', 'EB Garamond', Garamond, serif;
@@ -1457,6 +1459,12 @@ select option {
   color: var(--text-warning-readable);
 }
 
+.badge-info {
+  background-color: rgba(45, 108, 166, 0.2);
+  border: 1px solid var(--color-info);
+  color: var(--text-info-readable);
+}
+
 .badge-muted {
   background-color: rgba(152, 152, 163, 0.08);
   border: 1px solid rgba(152, 152, 163, 0.25);
@@ -1471,6 +1479,18 @@ select option {
   margin-bottom: 8px;
   font-size: var(--fs-label);
   border-radius: 0 4px 4px 0;
+}
+
+.validation-error-item--warning {
+  border-left-color: var(--color-warning);
+  background-color: rgba(194, 125, 19, 0.05);
+  color: var(--text-warning-readable);
+}
+
+.validation-error-item--info {
+  border-left-color: var(--color-info);
+  background-color: rgba(45, 108, 166, 0.05);
+  color: var(--text-info-readable);
 }
 
 /* Drag & Drop Area */

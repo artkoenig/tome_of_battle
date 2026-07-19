@@ -40,7 +40,7 @@
  * @typedef {Object} ValidationError
  * @property {string} type
  * @property {string} message
- * @property {'error'|'warning'} severity
+ * @property {'error'|'warning'|'info'} severity
  * @property {string} [forceId]
  * @property {string} [categoryId]
  * @property {string} [selectionId]

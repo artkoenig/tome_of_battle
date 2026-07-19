@@ -84,6 +84,29 @@ Die Advisory-Prüfung meldet **strukturelle** Abweichungen; die BSData-Regel
 „erlauben schlägt verbieten" betrifft **Roster-Bau-Constraints** (Semantik) —
 verschiedene Ebenen, kein Widerspruch.
 
+**Revision 2026-07-19 (Modifier-Konstrukte ohne offiziellen Schema-Beleg):**
+Der reale Lexicanum-Datensatz („Definitive Edition") nutzt drei Modifier-Konstrukte,
+die in **keiner** offiziellen `BSData/schemas`-Version belegt sind — geprüft bis
+einschließlich der unveröffentlichten `vNext`-Version (`src/xml/schema/{v2_02,
+v2_03, latest, vNext}`): `ModifierKind`-Werte `multiply` (6 Treffer, Kostenver-
+dopplung) und `prepend` (6 Treffer, Namens-Modifikation) sowie ein `join`-Attribut
+auf `<modifier>` (131 Treffer bei `field="name"`, empirisch **nicht** einheitlich
+ein Leerzeichen — u. a. NBSP und `"\xa0 + \xa0"`). Das offizielle Wiki
+(*Data structure overview*) dokumentiert dieselbe Lücke und markiert sich selbst
+als veraltet („TODO: Update to 2.02"). Diese Konstrukte werden von der echten
+BattleScribe-Referenzanwendung akzeptiert, sind aber nirgends formal spezifiziert.
+
+Entscheidung: Die vendorte `Catalogue.xsd` wird **von Hand um diese drei
+Konstrukte ergänzt** (`ModifierKind`-Enum, `join`-Attribut auf `Modifier`), mit
+Verweis auf die konkreten Katalog-Fundstellen statt auf eine (nicht existierende)
+neuere Upstream-Version. Der Codegen (`npm run generate:schema`) läuft danach
+regulär gegen die so erweiterte Datei — der SSOT-Guard bleibt dadurch intakt und
+wird nicht umgangen; nur die vendorte Datei selbst weicht bewusst und dokumentiert
+vom echten Upstream ab. Ein künftiger Versions-Sprung (siehe „Bindung an
+Formatversion 2.03" unten) muss diese Abweichung erneut prüfen: entweder deckt die
+neue Upstream-Version die drei Konstrukte inzwischen ab (Abweichung entfällt), oder
+sie muss erneut von Hand nachgezogen werden.
+
 ### Konsequenzen (Auswirkungen)
 
 - **Positiv:** Vollständige, generische Formatunterstützung; die Drift-Klasse hinter

@@ -62,6 +62,9 @@ vi.mock('../solver/validator', () => ({
   isCategoryLinkHidden: (link) => link.hidden === true,
   calculateRosterCosts: () => ({}),
   getExtraResourceTotals: () => [],
+  // Rendered PlayUnitDetails resolves the unit name through this; name resolution is
+  // covered by the solver's own unit tests, so here it returns the raw name unchanged.
+  getEffectiveSelectionName: (selection) => selection?.name ?? '',
 }));
 
 vi.mock('../solver/rulesEvaluator', () => ({

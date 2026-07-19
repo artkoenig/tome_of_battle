@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Verbatim-Auszug aus `The Empire (6th definitive edition).cat`
+  (lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition, Branch
+  master, abgerufen 2026-07-19).
+
+  Enthält unverändert die beiden Kern-Einheiten „Halberdiers" (569f-7be3-1aa2-004f)
+  und „Spearmen" (1db9-88b7-80ef-40d5) samt je einem `infoLink`, der das geteilte
+  „Empire soldier"-Profil (b777-4b66-0f67-d717) referenziert und per
+  `modifier type="set" field="name"` unbedingt auf den jeweiligen Einheitsnamen
+  umbenennt — sowie das referenzierte `profile` selbst (aus `sharedProfiles`).
+  Nur die umschließenden Container (`selectionEntries`, `sharedProfiles`) wurden
+  auf diese Einträge reduziert; `categoryLinks`/`selectionEntryGroups`/Modelle der
+  beiden Einheiten wurden entfernt (für den Namens-Modifier nicht relevant).
+-->
+<catalogue xmlns="http://www.battlescribe.net/schema/catalogueSchema" id="9c9c-b3f7-9be0-e8bb" name="The Empire" revision="1" battleScribeVersion="2.03" authorName="Lexicanum Imperialis" library="false" gameSystemId="0d13-7737-ea86-4662" gameSystemRevision="1" type="catalogue">
+  <selectionEntries>
+    <selectionEntry id="569f-7be3-1aa2-004f" name="Halberdiers" hidden="false" collective="false" import="true" type="unit">
+      <infoLinks>
+        <infoLink id="7862-004f-d888-a773" name="Empire soldier" hidden="false" targetId="b777-4b66-0f67-d717" type="profile">
+          <modifiers>
+            <modifier type="set" field="name" value="Halberdier"/>
+          </modifiers>
+        </infoLink>
+      </infoLinks>
+    </selectionEntry>
+    <selectionEntry id="1db9-88b7-80ef-40d5" name="Spearmen" hidden="false" collective="false" import="true" type="unit">
+      <infoLinks>
+        <infoLink id="2b55-60f5-d253-a504" name="Empire soldier" hidden="false" targetId="b777-4b66-0f67-d717" type="profile">
+          <modifiers>
+            <modifier type="set" field="name" value="Spearmen"/>
+          </modifiers>
+        </infoLink>
+      </infoLinks>
+    </selectionEntry>
+  </selectionEntries>
+  <sharedProfiles>
+    <profile id="b777-4b66-0f67-d717" name="Empire soldier" hidden="false" typeId="a54a-7f00-29bf-12b1" typeName="Profile">
+      <characteristics>
+        <characteristic name="Mv" typeId="0e92-d038-82bf-fb41">4</characteristic>
+        <characteristic name="WS" typeId="f95b-da01-0578-3bdc">3</characteristic>
+        <characteristic name="BS" typeId="4a8b-0c8e-3daf-7901">3</characteristic>
+        <characteristic name="S" typeId="b690-4bc0-bb73-267b">3</characteristic>
+        <characteristic name="T" typeId="8712-f56f-5b22-a720">3</characteristic>
+        <characteristic name="W" typeId="253a-9b00-4fde-8ac2">1</characteristic>
+        <characteristic name="I" typeId="dfff-363e-f72a-5a59">3</characteristic>
+        <characteristic name="A" typeId="6b9f-c8fe-8998-27e3">1</characteristic>
+        <characteristic name="Ld" typeId="2d45-18fe-9eb3-b113">7</characteristic>
+      </characteristics>
+    </profile>
+  </sharedProfiles>
+</catalogue>

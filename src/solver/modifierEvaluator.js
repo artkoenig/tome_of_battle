@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { ModifierKind, ConditionKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { ModifierKind, ConditionKind, AttributeName } from '../parser/schema/battlescribeSchema.generated.js';
 
 // The BattleScribe modifiers that mutate category membership / the primary flag all
 // declare `field="category"`; their `value` is the target category id.
@@ -374,6 +374,12 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
         finalValue += modAmount;
       } else if (mod.type === ModifierKind.DECREMENT) {
         finalValue -= modAmount;
+      } else if (mod.type === ModifierKind.MULTIPLY) {
+        // A `multiply` modifier scales the running value by its factor (e.g. the
+        // "Traditional Army" army-wide condition that doubles a unit's points cost).
+        // It shares this single evaluation path with set/increment/decrement, so a
+        // multiply on any constraint — not only a cost — is handled identically.
+        finalValue *= modAmount;
       }
     }
   });
@@ -419,6 +425,27 @@ export const getEffectiveModifiers = (source) => {
   return [...(source.modifiers || []), ...groupModifiers];
 };
 
+// BattleScribe lets catalogue authors surface context-gated, plain-text hints to the
+// player through a modifier whose `field` names a severity channel and whose `value`
+// carries the message text (e.g. `field="error" value="Please enable ..."`). These three
+// field names are also the canonical validation severities used across the app: an
+// `error` blocks the list, `warning`/`info` are purely informational.
+export const ValidationSeverity = Object.freeze({ ERROR: 'error', WARNING: 'warning', INFO: 'info' });
+
+const MESSAGE_MODIFIER_FIELDS = new Set(Object.values(ValidationSeverity));
+
+/**
+ * Collects the author-written messages of a source's error/warning/info modifiers
+ * whose conditions currently pass in `ctx`, each tagged with the severity its field
+ * names. Reuses getEffectiveModifiers + modifierConditionsPass, so modifierGroup gating
+ * and the full condition semantics apply exactly as for every other modifier consumer.
+ * @returns {{severity: string, message: string}[]}
+ */
+export const collectTriggeredMessages = (source, ctx = {}) =>
+  getEffectiveModifiers(source)
+    .filter(mod => MESSAGE_MODIFIER_FIELDS.has(mod.field) && mod.value && modifierConditionsPass(mod, ctx))
+    .map(mod => ({ severity: mod.field, message: mod.value }));
+
 /**
  * Applies the category-mutating modifiers (`add`/`remove`/`set-primary`/
  * `unset-primary`) to a set of base categoryLinks and returns the effective links.
@@ -462,4 +489,70 @@ export const getEffectiveCategoryLinks = (baseCategoryLinks, modifiers, ctx = {}
   });
 
   return links;
+};
+
+// BattleScribe name modifiers rewrite a source's display name via `field="name"`:
+//  - set:     replace the name outright with the modifier's `value`
+//  - append:  base name, then the `join` separator, then `value`
+//  - prepend: `value`, then the `join` separator, then the base name
+// `join` is a verbatim separator authored in the catalogue (a plain space, a
+// non-breaking space, " + ", ...) and defaults to no separator when the attribute is
+// absent — it must be read from the modifier, never assumed to be a space.
+const NAME_MODIFIER_FIELD = AttributeName.NAME;
+const NO_JOIN_SEPARATOR = '';
+
+const applyNameModifier = (currentName, mod) => {
+  const value = mod.value ?? '';
+  const join = mod.join ?? NO_JOIN_SEPARATOR;
+  switch (mod.type) {
+    case ModifierKind.SET:
+      return value;
+    case ModifierKind.APPEND:
+      return `${currentName}${join}${value}`;
+    case ModifierKind.PREPEND:
+      return `${value}${join}${currentName}`;
+    default:
+      return currentName;
+  }
+};
+
+/**
+ * Returns the effective display name of a source (selection entry, entry link, or
+ * profile) by applying its condition-met `field="name"` modifiers to the base
+ * `source.name`, in document order. Only modifiers whose conditions pass in `ctx` take
+ * effect, so an unmet condition leaves the raw catalogue name unchanged (AC3). Reuses
+ * getEffectiveModifiers + modifierConditionsPass, so modifierGroup gating and the full
+ * condition semantics apply exactly as for every other modifier consumer.
+ */
+export const getEffectiveName = (source, ctx = {}) => {
+  const baseName = source?.name ?? '';
+  return getEffectiveModifiers(source)
+    .filter(mod => mod.field === NAME_MODIFIER_FIELD && modifierConditionsPass(mod, ctx))
+    .reduce(applyNameModifier, baseName);
+};
+
+/**
+ * Resolves the effective display name of a roster selection. Looks up the selection's
+ * catalogue definition — whose merged modifiers carry both the entryLink's and the
+ * target's name modifiers — and applies them to the selection's stored raw name in
+ * `ctx`. The stored `selection.name` deliberately stays the raw catalogue name (the
+ * single source of truth that name-based matching relies on, AC4); this derives the
+ * display name without mutating it. Falls back to the raw name when the definition
+ * can't be resolved.
+ */
+export const getEffectiveSelectionName = (selection, ctx = {}) => {
+  const baseName = selection?.name ?? '';
+  const { system } = ctx;
+  const entryId = selection?.selectionEntryId || selection?.entryLinkId;
+  if (!system || !entryId) return baseName;
+
+  const catalogueId =
+    ctx.parentCatalogueId || ctx.currentCatalogueId || (ctx.roster ? ctx.roster.catalogueId : null);
+  const rawEntry = findEntryInSystem(system, entryId, catalogueId);
+  const resolved = rawEntry && resolveEntry(system, rawEntry, catalogueId);
+  if (!resolved) return baseName;
+
+  const nameSource = { name: baseName, modifiers: resolved.modifiers, modifierGroups: resolved.modifierGroups };
+  const nameCtx = { ...ctx, selection, parentCatalogueId: catalogueId };
+  return getEffectiveName(nameSource, nameCtx);
 };

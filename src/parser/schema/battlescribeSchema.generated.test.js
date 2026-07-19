@@ -38,6 +38,8 @@ describe('battlescribe schema module public surface', () => {
       'remove',
       'set-primary',
       'unset-primary',
+      'multiply',
+      'prepend',
     ]);
     expect(Object.values(ConditionKind)).toEqual([
       'lessThan',
@@ -73,6 +75,7 @@ describe('battlescribe schema module public surface', () => {
     expect(AttributeName.PUBLISHER_URL).toBe('publisherUrl');
     expect(AttributeName.HIDDEN).toBe('hidden');
     expect(AttributeName.TARGET_ID).toBe('targetId');
+    expect(AttributeName.JOIN).toBe('join');
   });
 
   it('freezes the canonical attribute-name map', () => {

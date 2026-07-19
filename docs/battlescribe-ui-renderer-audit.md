@@ -30,6 +30,14 @@ dort korrekt eingesammelt, erscheint es überall konsistent:
 - `getModifiedConstraintValue` (`src/solver/modifierEvaluator.js`) +
   `formatConstraintLimit` (`src/solver/constraintScope.js`) — Constraint-Grenzwerte
   für die Anzeige (inkl. Prozent-Kennzeichnung).
+- `getEffectiveName` / `getEffectiveSelectionName` (`src/solver/modifierEvaluator.js`)
+  — effektiver (namens-modifizierter) Anzeigename, konsumiert von
+  `CategoryUnitAdder`, `OptionGroup`, `UnitSelectionCard`, `PlayUnitDetails` und der
+  XML-Export-Serialisierung; der rohe Katalogname bleibt separat als SSOT für
+  namensbasierte Fuzzy-Abgleiche erhalten (ergänzt in Main-Issue 33).
+- `collectTriggeredMessages` / `ValidationSeverity` (`src/solver/modifierEvaluator.js`)
+  — kontextabhängige `field="error"/"warning"/"info"`-Hinweistexte mit Schweregrad,
+  konsumiert von `rosterValidator`/`RosterSidebar` (ergänzt in Main-Issue 33).
 
 ## Checkliste: Konstrukt → Renderer → Soll/Ist
 

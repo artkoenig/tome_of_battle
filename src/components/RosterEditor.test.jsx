@@ -71,8 +71,8 @@ const defaultMockRoster = {
 const defaultMockCosts = { pts: 420 };
 
 const defaultMockValidationErrors = [
-  { id: 'err-1', message: 'Minimale Anzahl Kern-Auswahlen nicht erreicht', categoryId: 'cat-core' },
-  { id: 'err-2', message: 'Roster exceeds cost limit', selectionId: null }
+  { id: 'err-1', message: 'Minimale Anzahl Kern-Auswahlen nicht erreicht', categoryId: 'cat-core', severity: 'error' },
+  { id: 'err-2', message: 'Roster exceeds cost limit', selectionId: null, severity: 'error' }
 ];
 
 vi.mock('../hooks/useRoster', () => ({
@@ -120,6 +120,8 @@ vi.mock('../solver/validator', () => ({
   getExtraResourceTotals: () => [],
   formatConstraintLimit: (value, constraint) =>
     (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
+  hasBlockingViolations: (errors) => (errors || []).some(e => e.severity === 'error'),
+  ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' },
 }));
 
 // Dummy child components to speed up execution

@@ -1,5 +1,6 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getModifiedConstraintValue, getEffectiveModifiers } from './modifierEvaluator.js';
+import { getModifiedConstraintValue, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
+import { ConditionKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, isCostField, countSelections, resolveConstraintThreshold } from './constraintScope.js';
 import { findForceEntryById } from './forceEntries.js';
@@ -28,6 +29,7 @@ export function validateRoster(roster, system) {
 
     checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors });
     checkMandatoryForceSelectors({ roster, system, force, forceDef, counts, errors });
+    checkForceOwnRosterPointsLimit({ roster, forceDef, errors });
 
     force.selections?.forEach(sel =>
       checkSelectionTree({ selection: sel, parentSelection: null, roster, system, force, counts, errors })
@@ -35,6 +37,23 @@ export function validateRoster(roster, system) {
   });
 
   return errors;
+}
+
+/**
+ * True, sobald mindestens ein Validierungseintrag das Spielen blockiert (Schweregrad
+ * `error`). Rein informative Einträge (`warning`/`info`) blockieren nicht. Einziger Ort
+ * der Play-Gate-Entscheidung, statt die bloße Listenlänge zu prüfen — so führt ein
+ * informativer Hinweis nicht mehr fälschlich zum gesperrten Play-Button.
+ * @param {import('../types.js').ValidationError[]} validationErrors
+ * @returns {boolean}
+ */
+export function hasBlockingViolations(validationErrors) {
+  return countBlockingViolations(validationErrors) > 0;
+}
+
+/** Anzahl der blockierenden (severity="error") Eintraege — nicht-blockierende warning/info zaehlen nicht mit. */
+export function countBlockingViolations(validationErrors) {
+  return (validationErrors || []).filter(error => error.severity === ValidationSeverity.ERROR).length;
 }
 
 /** Punkte des Rosters gegen das eingestellte Limit prüfen. */
@@ -48,7 +67,7 @@ function checkRosterCostLimit(roster, system, errors) {
     errors.push({
       type: 'roster-limit',
       message: `Punkteüberschreitung: Du hast ${current} von maximal ${limit} Punkten verwendet.`,
-      severity: 'error'
+      severity: ValidationSeverity.ERROR
     });
   }
 }
@@ -129,10 +148,92 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
         type: 'force-selector-min',
         forceId: force.id,
         message: `Pflichtauswahl „${entry.name}" fehlt in ${forceDef.name} (mindestens ${minValue} benötigt).`,
-        severity: 'error'
+        severity: ValidationSeverity.ERROR
       });
     }
   });
+}
+
+// Präfix des BattleScribe-Feldes, das eine Constraint an das Punktelimit des Rosters
+// (nicht die ausgegebenen Punkte) bindet: `limit::<costTypeId>`.
+const ROSTER_LIMIT_FIELD_PREFIX = 'limit::';
+// Scope, unter dem die forceEntry-eigene Punktelimit-Constraint das gesamte Roster meint.
+const ROSTER_SCOPE = 'roster';
+
+/**
+ * Prüft die forceEntry-eigene Punktelimit-Constraint eines gewählten Kontingents.
+ *
+ * Bewusst eng auf das real belegte Muster gefasst (Vampire-Counts-Sonderheere „Army
+ * of the Lichemaster" und „Vampire Coast"): Die forceEntry trägt eine eigene
+ * `min`-Constraint `field="limit::<costTypeId>" scope="roster"` (Basis 0) plus einen
+ * Modifier, der diese beim Wählen des Sonderheeres — gegatet auf die eigene
+ * forceEntry-Id — auf 2000 anhebt. Netto: „Wer dieses Sonderheer wählt, muss die
+ * Liste auf ≥2000 Punkte bauen." Da die Constraint nur für ein tatsächlich im Roster
+ * liegendes Kontingent geprüft wird, ist die Gate-Bedingung (dieses Kontingent ist
+ * gewählt) definitionsgemäß erfüllt; deshalb greift `getModifiedConstraintValue` auf
+ * die eigengegateten Modifier ohne weitere Kontextauswertung.
+ *
+ * Keine generische Auswertung forceEntry-eigener Modifier auf beliebige Constraints —
+ * dafür existiert kein realer Anwendungsfall.
+ */
+function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
+  const limitConstraints = (forceDef.constraints || []).filter(isRosterPointsLimitConstraint);
+  if (limitConstraints.length === 0) return;
+
+  const selfGatedModifiers = collectSelfGatedModifiers(forceDef);
+
+  limitConstraints.forEach(con => {
+    const applicableModifiers = selfGatedModifiers.filter(mod => mod.field === con.id);
+    if (applicableModifiers.length === 0) return;
+
+    const requiredLimit = getModifiedConstraintValue(con, applicableModifiers, {});
+    if (requiredLimit <= 0) return; // Basis 0 ohne greifenden Modifier: keine Untergrenze.
+
+    const costTypeId = con.field.slice(ROSTER_LIMIT_FIELD_PREFIX.length);
+    const currentLimit = roster.costLimitType === costTypeId ? (roster.costLimit || 0) : 0;
+
+    if (con.type === 'min' && currentLimit < requiredLimit) {
+      errors.push({
+        type: 'force-roster-limit',
+        forceId: forceDef.id,
+        message: `${forceDef.name} erfordert ein Punktelimit von mindestens ${requiredLimit} (aktuell: ${currentLimit}).`,
+        severity: ValidationSeverity.ERROR
+      });
+    }
+  });
+}
+
+/** Eine forceEntry-eigene Constraint, die das Roster-Punktelimit begrenzt. */
+function isRosterPointsLimitConstraint(con) {
+  return con.scope === ROSTER_SCOPE && typeof con.field === 'string' && con.field.startsWith(ROSTER_LIMIT_FIELD_PREFIX);
+}
+
+/**
+ * Effektive Modifier der forceEntry, die genau auf die eigene forceEntry-Id gegatet
+ * sind (`instanceOf`-Bedingung mit `childId`/`scope` == forceDef.id). Nur diese
+ * eigengegateten Modifier gelten für das belegte „eigenes Punktelimit anheben"-Muster;
+ * ihre Bedingung ist erfüllt, sobald das Kontingent im Roster liegt, weshalb sie hier
+ * bedingungsfrei angewendet werden dürfen.
+ */
+function collectSelfGatedModifiers(forceDef) {
+  return getEffectiveModifiers(forceDef)
+    .filter(mod => modifierIsGatedOnOwnForce(mod, forceDef.id))
+    .map(mod => ({ ...mod, conditions: [], conditionGroups: [] }));
+}
+
+/** Wahr, wenn eine `instanceOf`-Bedingung des Modifiers die eigene forceEntry-Id nennt. */
+function modifierIsGatedOnOwnForce(mod, forceEntryId) {
+  return (mod.conditions || []).some(con => conditionReferencesForce(con, forceEntryId)) ||
+    (mod.conditionGroups || []).some(group => conditionGroupReferencesForce(group, forceEntryId));
+}
+
+function conditionReferencesForce(con, forceEntryId) {
+  return con?.type === ConditionKind.INSTANCE_OF && (con.childId === forceEntryId || con.scope === forceEntryId);
+}
+
+function conditionGroupReferencesForce(group, forceEntryId) {
+  return (group?.conditions || []).some(con => conditionReferencesForce(con, forceEntryId)) ||
+    (group?.conditionGroups || []).some(nested => conditionGroupReferencesForce(nested, forceEntryId));
 }
 
 /** Constraints am categoryLink, ergänzt um den per System-Quirk geerbten max-Constraint. */
@@ -177,7 +278,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       forceId: force.id,
       categoryId: targetCatId,
       message: `Mindestens ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} benötigt (aktuell: ${count}).`,
-      severity: 'error'
+      severity: ValidationSeverity.ERROR
     });
   }
   if (con.type === 'max' && count > finalValue) {
@@ -186,7 +287,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       forceId: force.id,
       categoryId: targetCatId,
       message: `Maximal ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} erlaubt (aktuell: ${count}).`,
-      severity: 'error'
+      severity: ValidationSeverity.ERROR
     });
   }
 }
@@ -207,16 +308,47 @@ function checkSelectionTree(args) {
       type: 'unresolved-entry',
       selectionId: selection.id,
       message: `Auswahl "${selection.name}" verweist auf einen im Katalog nicht mehr vorhandenen Eintrag.`,
-      severity: 'error'
+      severity: ValidationSeverity.ERROR
     });
   } else {
     checkEntryConstraints({ ...args, entry, entryId, forceCatalogueId });
     checkGroupConstraints({ ...args, entry, forceCatalogueId });
+    checkSelectionMessages({ ...args, entry, forceCatalogueId });
   }
 
   selection.selections?.forEach(child =>
     checkSelectionTree({ ...args, selection: child, parentSelection: selection })
   );
+}
+
+/**
+ * Wertet die vom Katalogautor hinterlegten Klartext-Hinweise (`field="error"/"warning"/
+ * "info"`-Modifier) des aufgelösten Eintrags aus. Trifft die Bedingung eines solchen
+ * Modifiers zu, entsteht ein Validierungseintrag mit dem passenden Schweregrad: `error`
+ * blockiert wie ein Regelverstoß, `warning`/`info` sind rein informativ. Die
+ * Bedingungsauswertung teilt sich denselben ctx wie die Constraint-Prüfung (SSOT).
+ */
+function checkSelectionMessages({ selection, parentSelection, roster, system, force, counts, errors, entry, forceCatalogueId }) {
+  const { selectionCounts, categoryCounts } = counts;
+  const ctx = {
+    roster,
+    selectionCounts,
+    forceCategoryCounts: Object.values(categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {}),
+    selection,
+    parentSelection,
+    force,
+    system,
+    parentCatalogueId: forceCatalogueId
+  };
+
+  collectTriggeredMessages(entry, ctx).forEach(({ severity, message }) => {
+    errors.push({
+      type: `modifier-${severity}`,
+      selectionId: selection.id,
+      message,
+      severity
+    });
+  });
 }
 
 /** Individuelle Constraints des aufgelösten Eintrags prüfen (min/max/percent je Scope). */
@@ -296,7 +428,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
         type: 'entry-min',
         selectionId: selection.id,
         message: `Option "${selection.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${count}).`,
-        severity: 'error'
+        severity: ValidationSeverity.ERROR
       });
     }
     if (con.type === 'max' && count > finalValue) {
@@ -304,7 +436,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
         type: 'entry-max',
         selectionId: selection.id,
         message: `Option "${selection.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${count}).`,
-        severity: 'error'
+        severity: ValidationSeverity.ERROR
       });
     }
   });
@@ -330,7 +462,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       type: 'entry-percent-min',
       selectionId: selection.id,
       message: `Option "${selection.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
-      severity: 'error'
+      severity: ValidationSeverity.ERROR
     });
   }
   if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
@@ -338,7 +470,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       type: 'entry-percent-max',
       selectionId: selection.id,
       message: `Option "${selection.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
-      severity: 'error'
+      severity: ValidationSeverity.ERROR
     });
   }
 }
@@ -454,7 +586,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
             type: 'group-points-max',
             selectionId: selection.id,
             message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
-            severity: 'error'
+            severity: ValidationSeverity.ERROR
           });
         }
         if (con.type === 'min' && totalPoints < finalValue && totalPoints > 0) {
@@ -462,7 +594,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
             type: 'group-points-min',
             selectionId: selection.id,
             message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
-            severity: 'error'
+            severity: ValidationSeverity.ERROR
           });
         }
       } else {
@@ -471,7 +603,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
             type: 'group-count-max',
             selectionId: selection.id,
             message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
-            severity: 'error'
+            severity: ValidationSeverity.ERROR
           });
         }
         if (con.type === 'min' && totalCount < finalValue && totalCount > 0) {
@@ -479,7 +611,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
             type: 'group-count-min',
             selectionId: selection.id,
             message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
-            severity: 'error'
+            severity: ValidationSeverity.ERROR
           });
         }
       }
@@ -501,7 +633,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints,
       type: 'group-percent-min',
       selectionId: selection.id,
       message: `Kategorie "${group.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
-      severity: 'error'
+      severity: ValidationSeverity.ERROR
     });
   }
   if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
@@ -509,7 +641,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints,
       type: 'group-percent-max',
       selectionId: selection.id,
       message: `Kategorie "${group.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
-      severity: 'error'
+      severity: ValidationSeverity.ERROR
     });
   }
 }

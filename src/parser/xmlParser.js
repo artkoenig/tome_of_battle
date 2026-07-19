@@ -277,10 +277,13 @@ function parseSingleModifier(modEl) {
   const repeat = repeatsEl ? parseRepeat(repeatsEl) : null;
 
   return {
-    type: modEl.getAttribute(AttributeName.TYPE), // set, increment, decrement, add, remove, set-primary, unset-primary
-    field: modEl.getAttribute(AttributeName.FIELD), // cost, hidden, constraint, category
+    type: modEl.getAttribute(AttributeName.TYPE), // set, increment, decrement, add, remove, set-primary, unset-primary, append, prepend
+    field: modEl.getAttribute(AttributeName.FIELD), // cost, hidden, constraint, category, name
     value: modEl.getAttribute(AttributeName.VALUE),
     valueObject: parseFloat(modEl.getAttribute(AttributeName.VALUE)) || 0,
+    // Verbatim separator for append/prepend name modifiers (space, NBSP, " + ", ...).
+    // Null when absent, so consumers apply no separator rather than assuming a space.
+    join: modEl.getAttribute(AttributeName.JOIN),
     conditions,
     conditionGroups,
     repeat
@@ -448,7 +451,13 @@ const parseForceEntry = (el) => {
     hidden: getBooleanAttribute(el, AttributeName.HIDDEN),
     categoryLinks: parseCategoryLinks(el),
     forceEntries: subForces,
-    constraints: parseConstraints(el)
+    constraints: parseConstraints(el),
+    // A forceEntry can carry its own modifiers/modifierGroups that raise one of its
+    // own constraints when the force is chosen (e.g. the Vampire-Counts special armies
+    // lifting their roster points minimum to 2000). Deliberately not the full
+    // ContainerEntryBase — rules/profiles/infoLinks have no real occurrence here (YAGNI).
+    modifiers: parseModifiers(el),
+    modifierGroups: parseModifierGroups(el)
   };
 };
 

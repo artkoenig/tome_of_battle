@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Verbatim-Auszug aus `Dwarfs (2001) (6th definitive edition).cat`
+  (lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition, Branch
+  master, abgerufen 2026-07-19).
+
+  Enthält unverändert den `selectionEntry` „Organ Gun" (79c9-6f85-479d-909a) samt
+  seiner `costs` und des `multiply`-Modifiers, der die pts-Kosten
+  (`ecfa-8486-4f6c-c249`) verdoppelt, sobald König Alrik Ranulfsson
+  (`e4c5-f4d5-a169-aaa7`, siehe `<comment>`) im Heer steht — die
+  "Traditional Army"-Regel aus DW1-AB, S.53. Ein zweiter, für den multiply-Fund
+  unbeteiligter `hidden`-Modifier sowie `modifierGroups`/eigene `constraints`
+  wurden entfernt (Reduktion auf die Elemente unter Test, analog zum bestehenden
+  Muster dieses Verzeichnisses).
+
+  Der `selectionEntry` „King Alrik Ranulfsson of Karak-Hirn (DW1-AB)"
+  (e4c5-f4d5-a169-aaa7) ist auf id/name/type/costs reduziert (das reale Original
+  trägt zusätzlich Magic-Item-Auswahlgruppen, die für die reine Existenz des
+  Eintrags — der Modifier referenziert nur seine id — nicht nötig sind).
+-->
+<catalogue xmlns="http://www.battlescribe.net/schema/catalogueSchema" id="3a5f-213a-5ffc-4ec1" name="Dwarfs (2001)" revision="1" battleScribeVersion="2.03" authorName="Lexicanum Imperialis" library="false" gameSystemId="0d13-7737-ea86-4662" gameSystemRevision="1" type="catalogue">
+  <selectionEntries>
+    <selectionEntry id="79c9-6f85-479d-909a" name="Organ Gun" hidden="false" collective="false" import="true" type="unit">
+      <costs>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="125"/>
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0"/>
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0"/>
+      </costs>
+      <modifiers>
+        <modifier type="multiply" value="2" field="ecfa-8486-4f6c-c249">
+          <conditions>
+            <condition type="atLeast" value="1" field="selections" scope="force" childId="e4c5-f4d5-a169-aaa7" shared="true" includeChildSelections="true"/>
+          </conditions>
+          <comment>&quot;Traditional Army&quot;, DW1-AB, p.53</comment>
+        </modifier>
+      </modifiers>
+    </selectionEntry>
+    <selectionEntry type="unit" import="true" name="King Alrik Ranulfsson of Karak-Hirn (DW1-AB)" hidden="false" id="e4c5-f4d5-a169-aaa7" page="52-53" publicationId="6265-1d51-76e2-4fe2">
+      <costs>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="425"/>
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0"/>
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0"/>
+      </costs>
+    </selectionEntry>
+  </selectionEntries>
+</catalogue>

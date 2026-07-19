@@ -18,6 +18,15 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
 - `characters-max-force.cat.xml` — Verbatim-Auszug aus
   `Lizardmen (6th definitive edition).cat`: die reale `forceEntry` „Red Host",
   unverändert samt der Heroes- und Characters-`categoryLink`s.
+- `special-characters-hint.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `Bretonnia (6th definitive edition).cat` (abgerufen 2026-07-19): der reale
+  „The Green Knight"-`selectionEntry` (`e9d1-eb9d-7c44-f777`) mit seinem realen
+  `field="error"`-Hinweistext-Modifier („Please enable \"Allow special
+  characters?\"", ausgelöst solange weniger als eine „Allow special
+  characters?"-Auswahl im Kontingent liegt) und dem begleitenden `set`-Modifier
+  auf sein roster-weites `max`-Limit. Der referenzierte Schalter (`8923-5946-7b10-8957`)
+  lebt real im `.gst`-Katalog und ist hier als minimaler Upgrade-Eintrag ergänzt
+  (Details im Datei-Kopf).
 - `vampire-selfscope-bloodline.cat.xml` — Reduzierter Verbatim-Auszug aus
   `Vampire Counts (6th definitive edition).cat` (abgerufen 2026-07-18): der reale
   „Vampire Count"-`selectionEntry` (`6822-0110-a7c9-cbb0`) mit seinem realen
@@ -26,6 +35,29 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
   realen `category-add`-Modifier, der die Blood-Dragon-Kategorie erst bei
   gewählter Blutlinie zuweist. Unbeteiligte Sub-Gruppen wurden entfernt und die
   Blutlinie als minimaler Upgrade-`selectionEntry` ergänzt (Details im Datei-Kopf).
+- `vampire-coast-force-limit.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `Vampire Counts (6th definitive edition).cat` (abgerufen 2026-07-19): die beiden
+  realen Sonderheer-`forceEntry`s „Army of the Lichemaster (WD#309-UK)"
+  (`f37a-a93e-fa22-61a8`) und „Vampire Coast (WD#306-UK)" (`bf46-ee85-7c10-ba98`),
+  jeweils samt ihrer forceEntry-eigenen Punktelimit-`constraint`
+  (`type="min" field="limit::ecfa-8486-4f6c-c249" scope="roster"`, Basis 0) und des
+  eigengegateten `set`-Modifiers, der diese beim Wählen des Sonderheeres auf 2000
+  anhebt. Nur die umschließenden Container wurden auf `forceEntries` reduziert.
+- `empire-name-modifier.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `The Empire (6th definitive edition).cat` (abgerufen 2026-07-19): die beiden
+  realen Kern-Einheiten „Halberdiers" (`569f-7be3-1aa2-004f`) und „Spearmen"
+  (`1db9-88b7-80ef-40d5`) mit je einem realen `infoLink` auf das geteilte
+  „Empire soldier"-Profil (`b777-4b66-0f67-d717`, ebenfalls real, aus
+  `sharedProfiles`) samt dem unbedingten `type="set" field="name"`-Modifier, der
+  den Profilnamen je Einheit umbenennt. Nur die umschließenden Container
+  (`selectionEntries`, `sharedProfiles`) wurden auf diese Einträge reduziert.
+- `dwarfs-traditional-army-multiply.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `Dwarfs (2001) (6th definitive edition).cat` (abgerufen 2026-07-19): der reale
+  „Organ Gun"-`selectionEntry` (`79c9-6f85-479d-909a`) mit seinem realen
+  `type="multiply"`-Kosten-Modifier („Traditional Army", DW1-AB S.53), der die
+  pts-Kosten verdoppelt, sobald König Alrik Ranulfsson (`e4c5-f4d5-a169-aaa7`,
+  auf id/name/costs reduziert) im Heer steht. Ein zweiter, unbeteiligter
+  `hidden`-Modifier sowie `modifierGroups`/eigene `constraints` wurden entfernt.
 
 ## Wozu
 
@@ -44,6 +76,20 @@ Bedingungen des echten Katalogs folgen **14** diesem Selbst-Scope-Muster,
 verteilt auf drei Vampir-Charaktereinträge (Vampire Lord, Vampire Count,
 Vampire Thrall); alle betreffen Blutlinien-Kategorien (Blood Dragon, Necrarch,
 Strigoi).
+
+`special-characters-hint.cat.xml` verankert
+`src/solver/rosterValidator.messageModifiers.test.js`: Der Solver muss einen
+`field="error"/"warning"/"info"`-Modifier, dessen Bedingung zutrifft, als
+Validierungseintrag mit dem passenden Schweregrad melden — `error` blockiert das
+Spielen, `warning`/`info` erscheinen rein informativ. Über 17 Kataloge + `.gst`
+tragen **163** solcher Hinweistext-Modifier reale Klartext-Hinweise an den Spieler.
+
+`vampire-coast-force-limit.cat.xml` verankert
+`src/solver/rosterValidator.forceEntryRosterLimit.test.js`: Der Validator muss die
+forceEntry-eigene Punktelimit-Constraint eines gewählten Sonderheeres durchsetzen —
+unter 2000 Punkten ungültig, ab 2000 gültig, ein normales Kontingent unberührt. Von
+allen 18 Katalogen tragen ausschließlich diese **2** `forceEntry`s ein solches
+eigenes `limit::<costTypeId>`-Muster.
 
 `characters-max-force.cat.xml` belegt zusätzlich die strukturelle Voraussetzung
 des `inheritedCategoryMax`-Quirks: Die **Characters**-`categoryLink` trägt einen

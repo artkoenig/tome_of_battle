@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -57,7 +57,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   const limitPoints = roster.costLimit || 0;
   const remainingPoints = limitPoints - currentPoints;
   const generalErrors = validationErrors.filter(e => !e.categoryId && !e.selectionId);
-  const isRosterValid = validationErrors.length === 0;
+  // Nur blockierende Verstöße (severity 'error') sperren das Spielen; rein informative
+  // Hinweise (warning/info) erscheinen zwar in der Liste, gelten aber als regelkonform.
+  const isRosterValid = !hasBlockingViolations(validationErrors);
+  const advisoryMessages = validationErrors.filter(e => e.severity !== ValidationSeverity.ERROR);
   const extraResources = getExtraResourceTotals(system, roster, costs);
 
   // Resolve active catalogue definition
@@ -403,8 +406,20 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       </div>
                     ))}
                     {/* Secondary list of category & selection errors for full context */}
-                    {validationErrors.filter(e => e.categoryId || e.selectionId).map((err, idx) => (
+                    {validationErrors.filter(e => (e.categoryId || e.selectionId) && e.severity === ValidationSeverity.ERROR).map((err, idx) => (
                       <div key={idx} className="validation-error-item text-danger text-body" style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.8 }}>
+                        <AlertTriangle size={18} style={{ flexShrink: 0 }} />
+                        <span>{err.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Rein informative Hinweise des Katalogautors (warning/info) — sichtbar,
+                    aber ohne die Liste zu blockieren; daher unabhängig von isRosterValid. */}
+                {advisoryMessages.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+                    {advisoryMessages.map((err, idx) => (
+                      <div key={idx} className="validation-error-item text-dim text-body" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <AlertTriangle size={18} style={{ flexShrink: 0 }} />
                         <span>{err.message}</span>
                       </div>
