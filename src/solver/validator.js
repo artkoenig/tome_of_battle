@@ -22,3 +22,4 @@ export { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '.
 export { findForceEntryById, getAvailableForceEntries } from './forceEntries.js';
 export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory } from './entryVisibility.js';
 export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, isReachableViaForceCategories } from './armyWideSelectors.js';
+export { isListConfiguration } from './listConfiguration.js';

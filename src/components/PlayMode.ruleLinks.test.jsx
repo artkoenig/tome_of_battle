@@ -51,6 +51,9 @@ vi.mock('../solver/validator', () => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find((fe) => fe.id === id) || null,
   calculateRosterCosts: () => ({}),
   getExtraResourceTotals: () => [],
+  // These tests exercise rule links, not play-view grouping; nothing is a list
+  // configuration here, so grouping stays as it was.
+  isListConfiguration: () => false,
 }));
 
 // PlayUnitDetails is the component that renders the three chip groups. Here it is

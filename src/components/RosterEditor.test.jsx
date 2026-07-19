@@ -138,6 +138,16 @@ vi.mock('./editor/RosterSidebar', () => ({
 vi.mock('./editor/UnitSelectionCard', () => ({
   default: ({ selection }) => <div data-testid={`unit-card-${selection.id}`}>{selection.name}</div>
 }));
+vi.mock('./editor/ListConfigurationCard', () => ({
+  default: ({ categoryName }) => <div data-testid="list-config-card">{categoryName}</div>
+}));
+
+// The list-configuration classification is exercised in listConfigurationView.test.js;
+// here it is mocked so the editor's branch (config card vs. unit cards) can be steered.
+const mockIsListConfigurationCategory = vi.fn();
+vi.mock('../solver/listConfigurationView', () => ({
+  isListConfigurationCategory: (...args) => mockIsListConfigurationCategory(...args),
+}));
 
 describe('RosterEditor Component', () => {
   const mockSystem = {
@@ -170,6 +180,7 @@ describe('RosterEditor Component', () => {
     mockValidationErrors = JSON.parse(JSON.stringify(defaultMockValidationErrors));
     mockCanUndo = false;
     mockCanRedo = false;
+    mockIsListConfigurationCategory.mockReturnValue(false);
   });
 
   it('renders the roster header details and cost indicators', () => {
@@ -214,6 +225,25 @@ describe('RosterEditor Component', () => {
     fireEvent.click(adderButton);
     expect(mockAddUnit).toHaveBeenCalledTimes(1);
     expect(mockAddUnit).toHaveBeenCalledWith('mock-added-unit');
+  });
+
+  describe('List-configuration categories', () => {
+    it('renders a single ListConfigurationCard instead of unit cards for an all-config category', () => {
+      // Treat the Core category (cat-core) as a pure list-configuration category.
+      mockIsListConfigurationCategory.mockImplementation(({ selections }) =>
+        (selections || []).length > 0 && selections.every(s => s.category === 'cat-core'));
+
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+
+      // The config card replaces the two Core unit cards and carries the category name.
+      const configCard = screen.getByTestId('list-config-card');
+      expect(configCard.textContent).toBe('Core');
+      expect(screen.queryByTestId('unit-card-sel-2')).toBeNull();
+      expect(screen.queryByTestId('unit-card-sel-3')).toBeNull();
+
+      // The Heroes category keeps its normal unit card.
+      expect(screen.getByTestId('unit-card-sel-1')).toBeDefined();
+    });
   });
 
   describe('Adversarial & Stress Tests', () => {

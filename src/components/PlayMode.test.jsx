@@ -52,12 +52,14 @@ const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
 const mockCollectUnitProfilesAndRules = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
+const mockIsListConfiguration = vi.fn();
 
 vi.mock('../solver/validator', () => ({
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
+  isListConfiguration: (...args) => mockIsListConfiguration(...args),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
   isCategoryLinkHidden: (link) => link.hidden === true,
   calculateRosterCosts: () => ({}),
@@ -148,6 +150,9 @@ describe('PlayMode Component', () => {
       ],
       rules: []
     });
+
+    // By default no selection is a list configuration, so grouping is unchanged.
+    mockIsListConfiguration.mockReturnValue(false);
 
     mockFindEntryInSystem.mockReturnValue({ id: 'raw-entry' });
     mockResolveEntry.mockReturnValue({
@@ -649,5 +654,51 @@ describe('PlayMode Component', () => {
 
     // Sub-unit profile should NOT be rendered
     expect(screen.queryByText('Goblin Wolf Chariot Sub Profile')).toBeNull();
+  });
+
+  // AC #3 / #4: a roster selection classified as a list configuration renders no
+  // unit card anywhere, while the real units of the same roster stay untouched.
+  it('15. Excludes list configurations from every play-view group, keeps real units', () => {
+    const CONFIG_SELECTION_ID = 'sel-config';
+    const rosterWithConfig = {
+      ...mockRoster,
+      forces: [
+        {
+          id: 'force-1',
+          forceEntryId: 'fe-1',
+          selections: [
+            { id: 'sel-1', name: 'Knights Core', category: 'cat-core', entryLinkId: 'el-1' },
+            { id: CONFIG_SELECTION_ID, name: 'Allow experimental rules?', category: 'cat-core', entryLinkId: 'el-config' },
+            { id: 'sel-2', name: 'Trebuchet Special', category: 'cat-special', entryLinkId: 'el-2' }
+          ]
+        }
+      ]
+    };
+
+    // Only the switch selection is a list configuration.
+    mockIsListConfiguration.mockImplementation(({ selection }) => selection.id === CONFIG_SELECTION_ID);
+
+    render(<PlayMode system={mockSystem} roster={rosterWithConfig} onBack={mockOnBack} />);
+
+    // The list-configuration switch produces no unit card.
+    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
+
+    // The real units of the same roster still render, in their categories.
+    expect(screen.getByText('Knights Core')).toBeDefined();
+    expect(screen.getByText('Trebuchet Special')).toBeDefined();
+    expect(screen.getByText('Core Units')).toBeDefined();
+    expect(screen.getByText('Special Units')).toBeDefined();
+  });
+
+  // AC #5: a source without list configurations (the classifier returns false for
+  // everything) shows exactly the units it did before — no behaviour change.
+  it('16. Leaves a roster without list configurations unchanged', () => {
+    mockIsListConfiguration.mockReturnValue(false);
+
+    render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
+
+    expect(screen.getByText('Knights Core')).toBeDefined();
+    expect(screen.getByText('Trebuchet Special')).toBeDefined();
+    expect(screen.getByText('Peasants Core')).toBeDefined();
   });
 });

@@ -2801,6 +2801,30 @@ input[type="radio"]:checked::after {
   flex-shrink: 0;
 }
 
+/* List-configuration card: collapsed badges of the chosen options, styled like
+   the gold upgrade/rule chips but carrying the informational steel-blue accent
+   so a list-wide switch never reads as a real unit upgrade. */
+.list-config-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.list-config-badge {
+  background-color: rgba(45, 108, 166, 0.10);
+  border: 1px solid var(--color-info);
+  color: var(--text-parchment);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.list-config-option-row.is-selected {
+  background-color: rgba(45, 108, 166, 0.10);
+}
+
 .publication-ref {
   color: var(--text-dim);
   font-size: var(--fs-micro);
