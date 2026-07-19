@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, getEffectiveSelectionName, findEntryInSystem, resolveEntry } from '../solver/validator.js';
+import i18n from '../i18n';
 
 // Fallback point limit applied when a roster file declares none.
 const DEFAULT_COST_LIMIT = 2000;
@@ -41,6 +42,9 @@ export class MissingSystemError extends Error {
  * @returns {string} XML text
  */
 export function exportRosterToXml(roster, system) {
+  // Written into the exported .ros XML's gameSystemName attribute — file content,
+  // not a UI string, so it stays in the roster's own language rather than following
+  // the transient UI locale (consistent with ADR-0022's UI-chrome-only scope).
   const systemName = system?.name || 'Unbekanntes System';
   const systemId = system?.id || roster.systemId;
   
@@ -222,11 +226,11 @@ export function importRosterFromXml(xmlText, systems) {
   const root = doc.documentElement;
   
   if (root.nodeName !== 'roster') {
-    throw new Error('Ungültiges Dateiformat: Das Wurzelelement muss <roster> sein.');
+    throw new Error(i18n.t('rosterSerialization.invalidRootElement'));
   }
 
   const systemId = root.getAttribute('gameSystemId');
-  const systemName = root.getAttribute('gameSystemName') || 'Unbekanntes System';
+  const systemName = root.getAttribute('gameSystemName') || i18n.t('dashboard.unknownSystem');
   
   const system = systems.find(s => s.id === systemId);
   if (!system) {

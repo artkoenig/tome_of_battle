@@ -16,6 +16,7 @@ import {
   SCALY_SKIN_KEYWORDS,
   BLESSING_KEYWORDS
 } from './constants.js';
+import i18n from '../i18n';
 
 /**
  * Filters a list of profiles to include only unit models/creatures.
@@ -166,7 +167,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
       const val = extractSaveValue(asM1[1]);
       if (val && (!explicitSave || val < explicitSave)) {
         explicitSave = val;
-        if (text && !breakdown.includes(`Explizit (${val}+)`)) breakdown.push(`Explizit (${val}+)`);
+        if (text && !breakdown.includes(i18n.t('armourSave.explicit', { value: val }))) breakdown.push(i18n.t('armourSave.explicit', { value: val }));
       }
     }
     const asRe2 = new RegExp(`\\b(?:${asPattern})\\s*(?:of|von)?\\s*\\(?((?:\\+\\d)|(?:\\d\\+))\\)?`);
@@ -175,7 +176,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
       const val = extractSaveValue(asM2[1]);
       if (val && (!explicitSave || val < explicitSave)) {
         explicitSave = val;
-        if (text && !breakdown.includes(`Explizit (${val}+)`)) breakdown.push(`Explizit (${val}+)`);
+        if (text && !breakdown.includes(i18n.t('armourSave.explicit', { value: val }))) breakdown.push(i18n.t('armourSave.explicit', { value: val }));
       }
     }
 
@@ -187,7 +188,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
       const val = extractSaveValue(ssM1[1]);
       if (val && (7 - val) > scalySkinMod) {
         scalySkinMod = 7 - val;
-        if (text && !breakdown.includes(`Schuppenhaut (${val}+)`)) breakdown.push(`Schuppenhaut (${val}+)`);
+        if (text && !breakdown.includes(i18n.t('armourSave.scalySkin', { value: val }))) breakdown.push(i18n.t('armourSave.scalySkin', { value: val }));
       }
     }
     const ssRe2 = new RegExp(`\\b(?:${ssPattern})\\s*(?:of|von)?\\s*\\(?((?:\\+\\d)|(?:\\d\\+))\\)?`);
@@ -196,23 +197,23 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
       const val = extractSaveValue(ssM2[1]);
       if (val && (7 - val) > scalySkinMod) {
         scalySkinMod = 7 - val;
-        if (text && !breakdown.includes(`Schuppenhaut (${val}+)`)) breakdown.push(`Schuppenhaut (${val}+)`);
+        if (text && !breakdown.includes(i18n.t('armourSave.scalySkin', { value: val }))) breakdown.push(i18n.t('armourSave.scalySkin', { value: val }));
       }
     }
 
     // Shields
     if (SAVE_SHIELD_KEYWORDS.some(k => t.includes(k))) {
-      if (!hasShield) breakdown.push('Schild (-1)');
+      if (!hasShield) breakdown.push(i18n.t('armourSave.shield'));
       hasShield = true;
     }
 
     // Armours
     if (SAVE_FULL_PLATE_KEYWORDS.some(k => t.includes(k))) {
-      if (armourValue > 4) { armourValue = 4; breakdown.push('Plattenrüstung (4+)'); }
+      if (armourValue > 4) { armourValue = 4; breakdown.push(i18n.t('armourSave.fullPlate')); }
     } else if (SAVE_HEAVY_ARMOUR_KEYWORDS.some(k => t.includes(k))) {
-      if (armourValue > 5) { armourValue = 5; breakdown.push('Schwere Rüstung (5+)'); }
+      if (armourValue > 5) { armourValue = 5; breakdown.push(i18n.t('armourSave.heavyArmour')); }
     } else if (SAVE_LIGHT_ARMOUR_KEYWORDS.some(k => t.includes(k))) {
-      if (armourValue > 6) { armourValue = 6; breakdown.push('Leichte Rüstung (6+)'); }
+      if (armourValue > 6) { armourValue = 6; breakdown.push(i18n.t('armourSave.lightArmour')); }
     }
 
     // Mounts
@@ -220,10 +221,10 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
       if (!SAVE_MOUNTS_EXCLUDED_KEYWORDS.some(k => t.includes(k))) {
         if (!isMounted) {
           if (SAVE_MOUNTS_THICK_SKINNED_KEYWORDS.some(k => t.includes(k))) {
-            breakdown.push('Beritten (Dickhäutig) (-2)');
+            breakdown.push(i18n.t('armourSave.mountedThickSkinned'));
             isThickSkinnedMount = true;
           } else {
-            breakdown.push('Beritten (-1)');
+            breakdown.push(i18n.t('armourSave.mounted'));
           }
           isMounted = true;
         }
@@ -232,7 +233,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
 
     // Barding
     if (SAVE_BARDING_KEYWORDS.some(k => t.includes(k))) {
-      if (!isBarded) breakdown.push('Rossharnisch (-1)');
+      if (!isBarded) breakdown.push(i18n.t('armourSave.barding'));
       isBarded = true;
     }
   };
@@ -261,7 +262,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
               if (val >= 1 && val <= 6) {
                 if (explicitSave === null || val < explicitSave) {
                   explicitSave = val;
-                  if (!breakdown.includes(`Explizit (${val}+) [${item.name}]`)) breakdown.push(`Explizit (${val}+) [${item.name}]`);
+                  if (!breakdown.includes(i18n.t('armourSave.explicitNamed', { value: val, itemName: item.name }))) breakdown.push(i18n.t('armourSave.explicitNamed', { value: val, itemName: item.name }));
                 }
               }
             } else {
@@ -276,7 +277,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
                 if (mod > skipModAmount) {
                   const netMod = mod - skipModAmount;
                   genericArmourMod += netMod;
-                  if (!breakdown.includes(`Modifikator (${modMatch[1]}) [${item.name}]`)) breakdown.push(`Modifikator (${modMatch[1]}) [${item.name}]`);
+                  if (!breakdown.includes(i18n.t('armourSave.modifier', { modifier: modMatch[1], itemName: item.name }))) breakdown.push(i18n.t('armourSave.modifier', { modifier: modMatch[1], itemName: item.name }));
                 }
               }
             }
@@ -289,7 +290,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
       if (item.profileTypeName) {
         if (SAVE_CAVALRY_KEYWORDS.some(k => item.profileTypeName?.toLowerCase().includes(k))) {
           if (!isMounted && !isChariot) {
-            breakdown.push('Kavallerie/Beritten (-1)');
+            breakdown.push(i18n.t('armourSave.cavalry'));
             isMounted = true;
           }
         }
@@ -299,7 +300,7 @@ export function getArmourSave(profiles, selectionName, catalogueName, returnDeta
 
   // If we have barding, the model must be mounted!
   if (isBarded && !isMounted && !isChariot) {
-    breakdown.push('Beritten (-1) [impliziert durch Rossharnisch]');
+    breakdown.push(i18n.t('armourSave.mountedImpliedByBarding'));
     isMounted = true;
   }
 
@@ -384,7 +385,7 @@ export function getWardSave(profiles, selectionName, catalogueName, returnDetail
       const val = extractSaveValue(m1_full[1]);
       if (val && (!bestWard || val < bestWard)) {
         bestWard = val;
-        if (text && !breakdown.includes(`Rettungswurf (${val}+)`)) breakdown.push(`Rettungswurf (${val}+)`);
+        if (text && !breakdown.includes(i18n.t('armourSave.wardSave', { value: val }))) breakdown.push(i18n.t('armourSave.wardSave', { value: val }));
       }
     }
 
@@ -394,7 +395,7 @@ export function getWardSave(profiles, selectionName, catalogueName, returnDetail
       const val = extractSaveValue(m2_full[1]);
       if (val && (!bestWard || val < bestWard)) {
         bestWard = val;
-        if (text && !breakdown.includes(`Rettungswurf (${val}+)`)) breakdown.push(`Rettungswurf (${val}+)`);
+        if (text && !breakdown.includes(i18n.t('armourSave.wardSave', { value: val }))) breakdown.push(i18n.t('armourSave.wardSave', { value: val }));
       }
     }
 
@@ -405,7 +406,7 @@ export function getWardSave(profiles, selectionName, catalogueName, returnDetail
       const val = extractSaveValue(m1_abbr[1]);
       if (val && (!bestWard || val < bestWard)) {
         bestWard = val;
-        if (text && !breakdown.includes(`Rettungswurf (${val}+)`)) breakdown.push(`Rettungswurf (${val}+)`);
+        if (text && !breakdown.includes(i18n.t('armourSave.wardSave', { value: val }))) breakdown.push(i18n.t('armourSave.wardSave', { value: val }));
       }
     }
 
@@ -414,7 +415,7 @@ export function getWardSave(profiles, selectionName, catalogueName, returnDetail
       const val = extractSaveValue(m2_abbr[1]);
       if (val && (!bestWard || val < bestWard)) {
         bestWard = val;
-        if (text && !breakdown.includes(`Rettungswurf (${val}+)`)) breakdown.push(`Rettungswurf (${val}+)`);
+        if (text && !breakdown.includes(i18n.t('armourSave.wardSave', { value: val }))) breakdown.push(i18n.t('armourSave.wardSave', { value: val }));
       }
     }
   };

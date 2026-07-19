@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { X } from 'lucide-react';
 import { getAvailableForceEntries } from '../../solver/validator';
 
 const DEFAULT_COST_LIMIT = 2000;
@@ -63,7 +64,9 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
       <div className="modal-content modal-new-roster-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{t('dashboard.newRosterModal.title')}</h3>
-          <button type="button" className="modal-close" onClick={onClose}>X</button>
+          <button type="button" className="modal-close" onClick={onClose} aria-label={t('settings.close')}>
+            <X size={18} />
+          </button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
