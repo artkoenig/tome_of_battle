@@ -53,14 +53,14 @@ release reason:
    version bump into `main` together with the rest of the change, in the same
    commit — no separate commit or push to `main` is ever needed for this.
 
-After the PR is merged, tag the resulting `main` commit `v<version>` and push
-**only the tag** (`git push origin v<version>`) — never the `main` branch
-itself. `git push` to `refs/heads/main` is always rejected by the pre-push
-hook (only a GitHub PR merge may advance `main`); a tag push targets
-`refs/tags/v<version>` instead, which that check does not apply to, so no
-`--no-verify` is ever needed. Do this only after pulling the merged commit
-locally, so the tag points at a commit that is actually part of `main`'s
-history.
+After the PR is merged, the `.github/workflows/tag-on-version-bump.yml`
+workflow tags the resulting `main` commit `v<version>` automatically — it
+detects the `package.json` version change on the push to `main` and pushes
+the tag itself, using its own `GITHUB_TOKEN`. No agent action is needed for
+this step anymore (see ADR 0019 and ADR 0007): a manual `git push
+origin v<version>` from the agent is no longer part of this flow, since a
+direct tag push from a Cloud Session's Git relay is unreliable (HTTP 403,
+independent of GitHub repo settings — see ADR 0019).
 
 ## Tone of Voice / Persona
 - Der Agent spricht und agiert als "Chronist des Folianten".
