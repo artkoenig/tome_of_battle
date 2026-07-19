@@ -1237,6 +1237,72 @@ test("21b. Repeatable magic item limit is lifted during validation of a top-leve
   expect(dynamicMax).toBe(3);
 });
 
+// Test 21d: Repeatable magic items whose group sits behind an intermediate wrapper
+// selection (the real Empire "Magic Items Selection" pattern), rather than directly
+// under the top-level unit as in 21b. Here selection=wrapper and parentSelection=unit
+// when the validator recurses into it, so the parent-scoped modifier must resolve
+// against the wrapper (the group's actual owner) — not the outer unit — or the
+// self-incrementing modifier scans the wrong container, finds no Dispel Scroll, and a
+// wizard with two of them is falsely reported as exceeding "max 1 arcane item".
+test("21d. Repeatable magic item limit is lifted when the group sits behind an intermediate wrapper selection", () => {
+  const system = {
+    id: 'sys-arcane-wrapped',
+    costTypes: [{ id: 'pts', name: 'Points', defaultCostLimit: 2000 }],
+    categoryEntries: [{ id: 'cat-hq', name: 'HQ' }],
+    forceEntries: [{ id: 'force-1', name: 'Force', categoryLinks: [{ id: 'cl-hq', targetId: 'cat-hq', name: 'HQ' }] }],
+    catalogues: [{
+      id: 'cat-1',
+      selectionEntries: [{
+        id: 'unit-wizard-lord',
+        name: 'Wizard Lord',
+        type: 'unit',
+        costs: [{ typeId: 'pts', value: 100 }],
+        categoryLinks: [{ targetId: 'cat-hq' }],
+        selectionEntries: [{
+          id: 'wrapper-magic-items',
+          name: 'Magic Items Selection',
+          type: 'upgrade',
+          selectionEntryGroups: [{
+            id: 'group-arcane',
+            name: 'Arcane Items',
+            constraints: [{ id: 'con-arcane-max', type: 'max', value: 1, field: 'selections', scope: 'parent' }],
+            modifiers: [{
+              type: 'increment',
+              field: 'con-arcane-max',
+              value: 1,
+              conditions: [{ type: 'greaterThan', value: 0, field: 'selections', scope: 'parent', childId: 'item-scroll' }],
+              repeat: { field: 'selections', scope: 'parent', childId: 'item-scroll', value: 1, repeats: 1 }
+            }],
+            selectionEntries: [
+              { id: 'item-scroll', name: 'Dispel Scroll', costs: [{ typeId: 'pts', value: 25 }] },
+              { id: 'item-staff', name: 'Staff', costs: [{ typeId: 'pts', value: 50 }] }
+            ]
+          }]
+        }]
+      }]
+    }]
+  };
+
+  const rosterWithTwoScrolls = {
+    name: 'r', costLimit: 2000, costLimitType: 'pts', catalogueId: 'cat-1',
+    forces: [{
+      id: 'f1', forceEntryId: 'force-1', catalogueId: 'cat-1',
+      selections: [{
+        id: 'sel-wizard-lord', selectionEntryId: 'unit-wizard-lord', name: 'Wizard Lord', number: 1, category: 'cat-hq',
+        selections: [{
+          id: 'sel-wrapper', selectionEntryId: 'wrapper-magic-items', name: 'Magic Items Selection', number: 1,
+          selections: [{ id: 'sel-scroll', selectionEntryId: 'item-scroll', name: 'Dispel Scroll', number: 2, costs: [{ typeId: 'pts', value: 25 }] }]
+        }]
+      }]
+    }]
+  };
+
+  // Two Dispel Scrolls lift the cap to 3, so no group-count-max violation — even
+  // though the group is nested one level deeper than in 21b.
+  const errors = validateRoster(rosterWithTwoScrolls, system);
+  expect(errors.some(e => e.type === 'group-count-max')).toBe(false);
+});
+
 // Test 21c: Bloodline-gated option. A "Shield (Blood dragons only)" carries a base
 // max=0 constraint that a `set` modifier lifts to 1 when the parent contains a
 // selection of the "Blood Dragon" category. The modifier condition references the
