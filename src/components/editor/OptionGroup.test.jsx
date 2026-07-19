@@ -63,6 +63,10 @@ vi.mock('../../solver/validator', () => ({
     const groupModifiers = (source.modifierGroups || []).flatMap(grp => collect(grp, [], []));
     return [...(source.modifiers || []), ...groupModifiers];
   },
+  // Name resolution is covered by the solver's own unit tests; here it is isolated to
+  // the no-name-modifier case, which returns the source's raw name unchanged.
+  getEffectiveName: (source) => source?.name ?? '',
+  getEffectiveSelectionName: (selection) => selection?.name ?? '',
   formatConstraintLimit: (value, constraint) =>
     (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
   // Faithful copy of the real isCostField SSOT (src/solver/constraintScope.js).

@@ -13,7 +13,7 @@
  *  - entryVisibility:   hidden-Status von Einträgen/Kategorie-Links
  */
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
+export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks, collectTriggeredMessages, getEffectiveName, getEffectiveSelectionName, ValidationSeverity } from './modifierEvaluator.js';
 export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, getExtraResourceTotals, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 export { validateRoster, hasBlockingViolations } from './rosterValidator.js';
 export { isPercentConstraint, isCostField, countSelections, collectScopeSelections, getScopeReferenceTotal, resolveConstraintThreshold, formatConstraintLimit } from './constraintScope.js';

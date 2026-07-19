@@ -2,11 +2,12 @@ import React, { useState, useRef } from 'react';
 import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-react';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
-import { 
-  resolveEntry, 
-  findEntryInSystem, 
+import {
+  resolveEntry,
+  findEntryInSystem,
   calculateRosterCosts,
-  collectUnitProfilesAndRules
+  collectUnitProfilesAndRules,
+  getEffectiveSelectionName
 } from '../../solver/validator';
 import { groupProfilesByType } from '../../solver/rulesEvaluator';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
@@ -206,6 +207,7 @@ export default function UnitSelectionCard({
   };
 
   const isUnitEditing = selectedRosterSelection?.id === selection.id;
+  const effectiveName = getEffectiveSelectionName(selection, { system, roster, parentCatalogueId: activeCatalogue?.id });
   const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
   const displayPoints = unitCosts[roster.costLimitType] || 0;
   const hasSelectionError = validationErrors.some(e => e.selectionId === selection.id);
@@ -236,7 +238,7 @@ export default function UnitSelectionCard({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className="selection-node-title">
             <span className="selection-node-name text-ui-title">
-              {selection.number > 1 ? `${selection.number}x ` : ''}{selection.name}
+              {selection.number > 1 ? `${selection.number}x ` : ''}{effectiveName}
             </span>
           </div>
           <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -413,7 +415,7 @@ export default function UnitSelectionCard({
         desktopMode="modal"
       >
         <div className="info-popup-body" style={{ textAlign: 'center', padding: '16px 16px 24px 16px' }}>
-          <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>Möchten Sie <strong>{selection.name}</strong> wirklich löschen?</p>
+          <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>Möchten Sie <strong>{effectiveName}</strong> wirklich löschen?</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button 
               className="btn" 

@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers } from './modifierEvaluator.js';
+import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName } from './modifierEvaluator.js';
 import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import '../types.js';
@@ -263,6 +263,11 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
       // Use profile name as the source since these are defined on the profile itself
       profileModifiers.forEach(mod => applyCharacteristicModifier(mod, p, ctx, p.name));
     }
+
+    // Apply any condition-met `field="name"` modifiers to the (cloned) profile name,
+    // so an infoLink that renames a shared profile (e.g. The Empire "Empire soldier"
+    // -> "Halberdier"/"Spearmen") surfaces the effective name wherever profiles show.
+    p.name = getEffectiveName(p, ctx);
 
     delete p._sourceSelection;
     delete p._parentSelection;

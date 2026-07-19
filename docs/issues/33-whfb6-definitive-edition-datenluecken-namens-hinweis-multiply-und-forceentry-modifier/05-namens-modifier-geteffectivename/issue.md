@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -38,3 +38,4 @@ allen Stellen, die heute `.name` direkt lesen.
 - [ ] Die volle Testsuite (`npm test`) bleibt grün.
 
 ## Comments
+- Namens-Modifier (field=name; set/append/prepend inkl. verbatim geparstem join) umgesetzt: getEffectiveName/getEffectiveSelectionName im modifierEvaluator (SSOT), join im xmlParser geparst. Effektiver Name an allen vier Stellen sichtbar - Roster-Editor (UnitSelectionCard, OptionGroup), Aushebe-Dialog (CategoryUnitAdder), Play-Modus (PlayUnitDetails) und XML-Export (rosterSerialization) - sowie fuer infoLink-Profilnamen (profileCollector). Roher selection.name bleibt SSOT, Fuzzy-Match unveraendert. Reproduktions-Fixture The Empire (Empire soldier -> Halberdier/Spearmen). 704 vitest-Tests gruen.

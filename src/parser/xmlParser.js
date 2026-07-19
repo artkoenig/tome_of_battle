@@ -277,10 +277,13 @@ function parseSingleModifier(modEl) {
   const repeat = repeatsEl ? parseRepeat(repeatsEl) : null;
 
   return {
-    type: modEl.getAttribute(AttributeName.TYPE), // set, increment, decrement, add, remove, set-primary, unset-primary
-    field: modEl.getAttribute(AttributeName.FIELD), // cost, hidden, constraint, category
+    type: modEl.getAttribute(AttributeName.TYPE), // set, increment, decrement, add, remove, set-primary, unset-primary, append, prepend
+    field: modEl.getAttribute(AttributeName.FIELD), // cost, hidden, constraint, category, name
     value: modEl.getAttribute(AttributeName.VALUE),
     valueObject: parseFloat(modEl.getAttribute(AttributeName.VALUE)) || 0,
+    // Verbatim separator for append/prepend name modifiers (space, NBSP, " + ", ...).
+    // Null when absent, so consumers apply no separator rather than assuming a space.
+    join: modEl.getAttribute(AttributeName.JOIN),
     conditions,
     conditionGroups,
     repeat

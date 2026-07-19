@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT } from '../../solver/validator';
 import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
@@ -81,7 +81,8 @@ export default function OptionGroupComponent({
       if (!res) return null;
       const count = getSubSelectionCount(selection, res.id);
       if (count > 0) {
-        return count > 1 ? `${count}x ${res.name}` : res.name;
+        const optionName = getEffectiveName(res, displayCtx);
+        return count > 1 ? `${count}x ${optionName}` : optionName;
       }
       return null;
     })
@@ -254,6 +255,7 @@ export default function OptionGroupComponent({
             const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
             
             const isCollective = res.collective || option.collective || false;
+            const optionName = getEffectiveName(res, displayCtx);
             const isRepeatableByGroupModifier = isRepeatableWithinGroup(option, res);
             // A repeatable item never behaves as an exclusive radio, even though its
             // group is nominally capped at max=1 (the cap is lifted per copy taken).
@@ -366,7 +368,7 @@ export default function OptionGroupComponent({
                       color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit'
                     }}
                   >
-                    {res.name}
+                    {optionName}
                     <RuleChipIcon
                       name={res.name}
                       hasInfo={!!descText}
