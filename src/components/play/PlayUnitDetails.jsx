@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
 import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, getEffectiveSelectionName } from '../../solver/validator';
 import { MODEL_COUNT_PROFILE_TYPES } from '../../solver/constants';
@@ -45,6 +46,7 @@ export default function PlayUnitDetails({
   isSubUnit = false,
   onShowRule
 }) {
+  const { t } = useTranslation();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Helper to extract maximum wounds of an entry
@@ -136,13 +138,13 @@ export default function PlayUnitDetails({
         style={cellStyle}
         onMouseEnter={(e) => {
           if (modState && c.modificationBreakdown?.length > 0) {
-            handleMouseEnter(e, `Modifikationen: ${c.name}`, c.modificationBreakdown);
+            handleMouseEnter(e, t('play.modifications.title', { name: c.name }), c.modificationBreakdown);
           }
         }}
         onMouseLeave={handleMouseLeave}
         onClick={() => {
           if (modState && c.modificationBreakdown?.length > 0) {
-            setSaveSummaryData({ title: `Modifikationen: ${c.name}`, breakdown: c.modificationBreakdown });
+            setSaveSummaryData({ title: t('play.modifications.title', { name: c.name }), breakdown: c.modificationBreakdown });
             setSaveSummaryOpen(true);
           }
         }}
@@ -166,7 +168,7 @@ export default function PlayUnitDetails({
     });
 
     const showNameCol = isModel ? profiles.length > 1 : true;
-    const nameHeader = isModel ? 'Modell' : (typeName || 'Profil');
+    const nameHeader = isModel ? t('play.profile.model') : (typeName || t('play.profile.default'));
 
     return (
       <div key={key} className="profile-table-container">
@@ -229,7 +231,7 @@ export default function PlayUnitDetails({
   const getArmourSaveInfo = (sel) => {
     const data = collectSavesData(sel);
     const result = getArmourSaveLogic(data, sel.name, roster?.catalogueName, true);
-    const display = result.save === 7 || !result.save ? 'Kein' : `${result.save}+`;
+    const display = result.save === 7 || !result.save ? t('play.saves.none') : `${result.save}+`;
     return { display, breakdown: result.breakdown };
   };
 
@@ -238,19 +240,22 @@ export default function PlayUnitDetails({
     const result = getWardSaveLogic(data, sel.name, roster?.catalogueName, true);
     const blessing = hasBlessing(data, sel.name, roster?.catalogueName);
 
-    let display = 'Kein';
+    let display = t('play.saves.none');
     const breakdown = [...result.breakdown];
+    const blessingLabel = t('play.saves.blessing');
 
     if (result.save !== null) {
       if (blessing && result.save > 5) {
-        display = `${result.save}+ / 5+ (Segen)`;
-        if (!breakdown.includes('Segen der Herrin (5+ Rettungswurf)')) breakdown.push('Segen der Herrin (5+ Rettungswurf)');
+        display = `${result.save}+ / 5+ (${blessingLabel})`;
+        const blessingBreakdown = t('play.saves.blessingBreakdown5');
+        if (!breakdown.includes(blessingBreakdown)) breakdown.push(blessingBreakdown);
       } else {
         display = `${result.save}+`;
       }
     } else if (blessing) {
-      display = '5+ / 6+ (Segen)';
-      if (!breakdown.includes('Segen der Herrin (5+ / 6+ Rettungswurf)')) breakdown.push('Segen der Herrin (5+ / 6+ Rettungswurf)');
+      display = `5+ / 6+ (${blessingLabel})`;
+      const blessingBreakdown = t('play.saves.blessingBreakdown56');
+      if (!breakdown.includes(blessingBreakdown)) breakdown.push(blessingBreakdown);
     }
 
     return { display, breakdown };
@@ -332,7 +337,7 @@ export default function PlayUnitDetails({
     >
       {isDead && (
         <div className="destroyed-overlay">
-          <span className="destroyed-text">Vernichtet</span>
+          <span className="destroyed-text">{t('play.unit.destroyed')}</span>
         </div>
       )}
       <div className="play-unit-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
@@ -343,7 +348,7 @@ export default function PlayUnitDetails({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {totalCost > 0 && (
               <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
-                {totalCost} Pkt.
+                {totalCost} {t('play.unit.pointsSuffix')}
               </div>
             )}
           </div>
@@ -354,36 +359,36 @@ export default function PlayUnitDetails({
             <div
               className="badge badge-success font-body"
               style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: asInfo.breakdown.length > 0 ? 'help' : 'default' }}
-              onMouseEnter={(e) => handleMouseEnter(e, 'Rüstungswurf (AS)', asInfo.breakdown)}
+              onMouseEnter={(e) => handleMouseEnter(e, t('play.saves.armourTitle'), asInfo.breakdown)}
               onMouseLeave={handleMouseLeave}
               onClick={() => {
                 if (asInfo.breakdown.length > 0) {
-                  setSaveSummaryData({ title: 'Rüstungswurf (AS)', breakdown: asInfo.breakdown });
+                  setSaveSummaryData({ title: t('play.saves.armourTitle'), breakdown: asInfo.breakdown });
                   setSaveSummaryOpen(true);
                 }
               }}
             >
-              AS: {asInfo.display}
+              {t('play.saves.armourAbbr')}: {asInfo.display}
             </div>
             <div
               className="badge badge-warning font-body"
               style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: wsInfo.breakdown.length > 0 ? 'help' : 'default' }}
-              onMouseEnter={(e) => handleMouseEnter(e, 'Rettungswurf (WS)', wsInfo.breakdown)}
+              onMouseEnter={(e) => handleMouseEnter(e, t('play.saves.wardTitle'), wsInfo.breakdown)}
               onMouseLeave={handleMouseLeave}
               onClick={() => {
                 if (wsInfo.breakdown.length > 0) {
-                  setSaveSummaryData({ title: 'Rettungswurf (WS)', breakdown: wsInfo.breakdown });
+                  setSaveSummaryData({ title: t('play.saves.wardTitle'), breakdown: wsInfo.breakdown });
                   setSaveSummaryOpen(true);
                 }
               }}
             >
-              WS: {wsInfo.display}
+              {t('play.saves.wardAbbr')}: {wsInfo.display}
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {!hasSubUnits && (
               <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
-                {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
+                {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>{t('play.unit.destroyedLabel')}</span>}
                 <button
                   className="qty-btn"
                   onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
@@ -408,7 +413,7 @@ export default function PlayUnitDetails({
                 type="button"
                 className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
                 onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                title={isDetailsOpen ? 'Profile ausblenden' : 'Profile anzeigen'}
+                title={isDetailsOpen ? t('play.profile.hide') : t('play.profile.show')}
                 aria-expanded={isDetailsOpen}
               >
                 <ReceiptText size={16} />
@@ -425,7 +430,7 @@ export default function PlayUnitDetails({
               <div>
                 {modelGroup
                   ? renderProfileTable(modelGroup, 'model')
-                  : <p className="text-dim text-label">Keine Profilwerte gefunden.</p>}
+                  : <p className="text-dim text-label">{t('play.profile.none')}</p>}
                 {itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
               </div>
             )}

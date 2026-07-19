@@ -27,5 +27,46 @@
       "german": "Deutsch",
       "english": "English"
     }
+  },
+  "play": {
+    "title": "Field of Battle",
+    "actions": {
+      "equip": "Arm for War",
+      "backToEditTitle": "War Planning (Edit)",
+      "rulebook": "Tome of Rules",
+      "openRulebookTitle": "Open the tome of rules (new tab)"
+    },
+    "category": {
+      "other": "Other Selections",
+      "unknown": "Unknown Category"
+    },
+    "unit": {
+      "destroyed": "Slain",
+      "destroyedLabel": "SLAIN",
+      "pointsSuffix": "pts"
+    },
+    "profile": {
+      "model": "Model",
+      "default": "Profile",
+      "show": "Show profiles",
+      "hide": "Hide profiles",
+      "none": "No profile values found."
+    },
+    "saves": {
+      "none": "None",
+      "armourTitle": "Armour Save (AS)",
+      "armourAbbr": "AS",
+      "wardTitle": "Ward Save (WS)",
+      "wardAbbr": "WS",
+      "blessing": "Blessing",
+      "blessingBreakdown5": "Blessing of the Lady (5+ ward save)",
+      "blessingBreakdown56": "Blessing of the Lady (5+ / 6+ ward save)"
+    },
+    "modifications": {
+      "title": "Modifications: {{name}}"
+    },
+    "saveSummary": {
+      "noModifiers": "No modifiers found."
+    }
   }
 }
