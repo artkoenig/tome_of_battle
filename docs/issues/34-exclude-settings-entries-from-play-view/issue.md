@@ -80,8 +80,8 @@ Listenkonfiguration ist — generisch über alle Kataloge/Datenquellen hinweg
 - Modules to Test: neues Klassifikations-Prädikat (isoliert gegen Fixture-Daten),
   `PlayMode.jsx`, `RosterEditor.jsx`.
 - Test Interfaces (Seams):
-  - `isListConfiguration(system, selection, activeCatalogueId)` — neues reines
-    Solver-Prädikat.
+  - `isListConfiguration({ system, force, selection, catalogueId })` — neues
+    reines Solver-Prädikat.
   - `PlayMode.jsx` → `getGroupedAndSortedSelections` — schließt zutreffende
     Selections aus den Gruppen aus.
   - `RosterEditor.jsx`-Kategorie-Rendering — wechselt zur neuen aufklappbaren
