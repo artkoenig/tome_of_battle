@@ -123,6 +123,22 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
   „Please enable Allow special characters?").
 
 ## Acceptance Criteria
-- [ ]
+- [ ] Ein reines Solver-Prädikat erkennt eine Wurzel-Selektion mit aufgelöstem
+      Katalog-`type ≠ unit` als Listenregel (direkt unit-getestet; echte Einheiten
+      = `unit` werden nicht als Listenregel erkannt).
+- [ ] Im Roster-Editor zeigt eine Listenregel-Karte weder den Detail-/Profil-
+      Umschalter (`ReceiptText`) noch das ⋮-Menü.
+- [ ] Im Roster-Editor zeigt die Listenregel-Gruppe keinen „+"-Adder.
+- [ ] Klick auf eine Listenregel-Karte öffnet weiterhin den Options-Konfigurator
+      („Optionen & Ausrüstung konfigurieren"); die dort gewählten Optionen
+      erscheinen weiterhin als Badges auf der Karte.
+- [ ] Echte Einheiten-Kategorien (Lord, Helden, Core …) bleiben unverändert:
+      Detail-Umschalter, ⋮-Menü und „+"-Adder bleiben dort erhalten.
+- [ ] Im Spielmodus (`PlayMode`) erscheinen Listenregel-Selektionen nicht — weder
+      im kategorisierten Pfad noch unter „Sonstige Auswahlen"; echte Einheiten
+      bleiben dort sichtbar.
+- [ ] Roster-Datenmodell und `.ros`-Import/-Export bleiben unverändert (kein neues
+      persistiertes Feld).
+- [ ] Alle Unit-/Komponententests grün (`npm test`).
 
 ## Comments
