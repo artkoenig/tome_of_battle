@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT } from '../../solver/validator';
 import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
@@ -39,6 +40,8 @@ export default function OptionGroupComponent({
   onHoverLeave,
   onShowRule
 }) {
+  const { t } = useTranslation();
+  const pointsAbbreviation = t('editor.points.abbreviation');
   // Start expanded when the group already holds a selection, so choices made
   // aren't hidden behind a collapsed header. This also surfaces nested quantity
   // controls that only appear once a wrapper option is chosen — e.g. picking
@@ -181,9 +184,9 @@ export default function OptionGroupComponent({
   
   if (ptsConstraint) {
     const ptsConstraintVal = getModifiedConstraintValue(ptsConstraint, groupModifiers, displayCtx);
-    limitParts.push(`${currentPoints} / ${ptsConstraintVal} Pkt.`);
+    limitParts.push(`${currentPoints} / ${ptsConstraintVal} ${pointsAbbreviation}`);
   } else if (currentPoints > 0) {
-    limitParts.push(`${currentPoints} Pkt.`);
+    limitParts.push(`${currentPoints} ${pointsAbbreviation}`);
   }
 
   if (maxLimit !== Infinity) {
@@ -215,7 +218,7 @@ export default function OptionGroupComponent({
           </span>
           {selectedItemsSummary && (
             <span className="text-micro" style={{ color: 'var(--text-parchment)', opacity: 0.75, fontWeight: 400 }}>
-              Auswahl: {selectedItemsSummary}
+              {t('editor.optionGroup.selection')} {selectedItemsSummary}
             </span>
           )}
         </div>
@@ -375,18 +378,18 @@ export default function OptionGroupComponent({
                       onShowRule={onShowRule}
                       onInfoClick={() => {
                         if (window.innerWidth <= 900) {
-                          setActiveInfo({ title: res.name, text: renderUpgradeDetails(res, system) });
+                          setActiveInfo({ title: res.name, text: renderUpgradeDetails(res, system, t) });
                         }
                       }}
-                      onInfoEnter={(e) => onHoverEnter(res.name, renderUpgradeDetails(res, system), e)}
+                      onInfoEnter={(e) => onHoverEnter(res.name, renderUpgradeDetails(res, system, t), e)}
                       onInfoMove={onHoverMove}
                       onInfoLeave={onHoverLeave}
                     />
-                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>{t('editor.option.takenElsewhere')}</span>}
                   </span>
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} {pointsAbbreviation}</span>}
                   {isBinary ? (
                     isRadio ? (
                       <input 

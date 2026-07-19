@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
 import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
 // Icon/CSS-Klasse je Schweregrad einer Validierungsmeldung — nur `error`
@@ -18,24 +19,25 @@ export default function RosterSidebar({
   costTypeLabel,
   className
 }) {
+  const { t } = useTranslation();
   // Nur blockierende Verstöße machen das Roster ungültig; warning/info zählen nicht mit.
   const blockingErrorCount = countBlockingViolations(validationErrors);
   return (
     <div className={`builder-right-bar ${className || ''}`}>
-      <h3>Lagerbericht</h3>
+      <h3>{t('editor.sidebar.title')}</h3>
       <div style={{ margin: '16px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '12px' }}>
         <div className="flex-between text-ui-title text-gold" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-          <span>Gesamtkosten:</span>
+          <span>{t('editor.sidebar.totalCost')}</span>
           <span>
             {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
           </span>
         </div>
         <div className="flex-between text-label text-dim">
-          <span>Status:</span>
+          <span>{t('editor.sidebar.status')}</span>
           {hasBlockingViolations(validationErrors) ? (
-            <span className="badge badge-danger">Fehlerhaft ({blockingErrorCount})</span>
+            <span className="badge badge-danger">{t('editor.sidebar.invalid', { count: blockingErrorCount })}</span>
           ) : (
-            <span className="badge badge-success">Gültig</span>
+            <span className="badge badge-success">{t('editor.sidebar.valid')}</span>
           )}
         </div>
         {getExtraResourceTotals(system, roster, costs).map(res => (
@@ -48,7 +50,7 @@ export default function RosterSidebar({
 
       {/* Category breakdown */}
       <div style={{ marginBottom: '24px' }}>
-        <h4 style={{ marginBottom: '10px' }}>Armeeanforderungen</h4>
+        <h4 style={{ marginBottom: '10px' }}>{t('editor.sidebar.armyRequirements')}</h4>
         {(() => {
           const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
           const forceId = roster.forces[0]?.id;
@@ -123,10 +125,10 @@ export default function RosterSidebar({
 
       {/* Validation Errors Detailed List */}
       <div>
-        <h4 style={{ marginBottom: '10px' }}>Regelverstöße</h4>
+        <h4 style={{ marginBottom: '10px' }}>{t('editor.sidebar.violations')}</h4>
         {validationErrors.length === 0 ? (
           <p className="text-label text-success" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Check size={16} /> Alle Riten eingehalten. Roster ist bereit für die Schlacht.
+            <Check size={16} /> {t('editor.sidebar.allClear')}
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

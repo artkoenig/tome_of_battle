@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
@@ -13,6 +14,7 @@ import { useRuleUrl } from '../hooks/useRuleUrl';
 
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster }) {
+  const { t } = useTranslation();
   const {
     roster,
     costs,
@@ -50,8 +52,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   }, []);
 
   const costType = system?.costTypes?.find(ct => ct.id === roster?.costLimitType);
-  const rawLabel = costType?.name || 'Pkt.';
-  const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? 'Pkt.' : rawLabel;
+  const pointsAbbreviation = t('editor.points.abbreviation');
+  const rawLabel = costType?.name || pointsAbbreviation;
+  const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? pointsAbbreviation : rawLabel;
 
   const currentPoints = costs[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;
@@ -100,9 +103,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           type="button"
           className="btn-primary square-btn mobile-only"
           onClick={onBack}
-          title="Heerlager"
+          title={t('navigation.camp')}
         >
-          <ArrowLeft size={16} /> <span className="hide-on-mobile">Heerlager</span>
+          <ArrowLeft size={16} /> <span className="hide-on-mobile">{t('navigation.camp')}</span>
         </button>
 
         <div className="builder-top-bar-middle">
@@ -136,8 +139,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
             className="btn-secondary square-btn"
             onClick={undo}
             disabled={!canUndo}
-            title="Rückgängig"
-            aria-label="Rückgängig"
+            title={t('editor.topBar.undo')}
+            aria-label={t('editor.topBar.undo')}
           >
             <Undo2 size={16} />
           </button>
@@ -146,16 +149,16 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
             className="btn-secondary square-btn"
             onClick={redo}
             disabled={!canRedo}
-            title="Wiederherstellen"
-            aria-label="Wiederherstellen"
+            title={t('editor.topBar.redo')}
+            aria-label={t('editor.topBar.redo')}
           >
             <Redo2 size={16} />
           </button>
           <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
-            <Play size={16} /> <span>Spielen</span>
+            <Play size={16} /> <span>{t('editor.topBar.play')}</span>
           </button>
           <button className="btn-secondary hide-on-mobile" onClick={() => onExportRoster?.(roster)} style={{ padding: '6px 12px' }}>
-            <Download size={16} /> <span>Exportieren</span>
+            <Download size={16} /> <span>{t('editor.topBar.export')}</span>
           </button>
         </div>
       </div>
@@ -288,9 +291,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               {armyWideSelectors.length > 0 && (
                 <div className="roster-category-group" style={{ marginBottom: '24px' }}>
                   <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
-                    <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>Armeeweite Auswahl</h3>
+                    <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>{t('editor.sections.armyWide')}</h3>
                     <CategoryUnitAdder
-                      categoryName="Armeeweite Auswahl"
+                      categoryName={t('editor.sections.armyWide')}
                       entries={armyWideSelectors}
                       system={system}
                       activeCatalogue={activeCatalogue}
@@ -328,7 +331,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               {/* Uncategorized Selections (Fallback) */}
               {uncategorizedSelections.length > 0 && (
                 <div className="roster-category-group" style={{ marginBottom: '24px' }}>
-                  <h3 className="text-subheading" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>Sonstiges</h3>
+                  <h3 className="text-subheading" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>{t('editor.sections.misc')}</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {uncategorizedSelections.map(selection => {
                       return (
@@ -366,16 +369,16 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
               {/* 3. Centralized General Errors & Validation Summary Panel */}
               <div id="general-errors-section" className="gothic-panel general-errors-panel" style={{ padding: '20px', marginTop: '12px', borderStyle: 'solid', borderWidth: '1px', borderColor: isRosterValid ? 'var(--color-success)' : 'var(--color-danger)' }}>
-                <h3 className="font-serif text-gold" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>Lagerbericht (Gesamtstatus)</h3>
+                <h3 className="font-serif text-gold" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>{t('editor.report.title')}</h3>
                 
                 {isRosterValid ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div className="text-success text-ui-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
                       <Check size={20} />
-                      <span>Streitmacht ist regelkonform und bereit für die Schlacht!</span>
+                      <span>{t('editor.report.valid')}</span>
                     </div>
                     <p className="text-body text-dim animate-fade-in" style={{ fontStyle: 'italic', margin: '4px 0 8px 0', lineHeight: '1.4', opacity: 0.85 }}>
-                      „Die Schlachtreihen stehen fest, die Kriegstrommeln rufen nach den Tapferen. Führt Eure Streitmacht zum glorreichen Sieg!“
+                      {t('editor.report.validQuote')}
                     </p>
                     {/* Mobile-only Play button */}
                     <div className="mobile-only" style={{ width: '100%' }}>
@@ -393,7 +396,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           fontSize: 'var(--fs-body)'
                         }}
                       >
-                        <Play size={18} /> Spielen
+                        <Play size={18} /> {t('editor.topBar.play')}
                       </button>
                     </div>
                   </div>

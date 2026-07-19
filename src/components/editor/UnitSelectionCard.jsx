@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-react';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
@@ -50,6 +51,7 @@ export default function UnitSelectionCard({
   isSubUnit = false,
   onShowRule
 }) {
+  const { t } = useTranslation();
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -121,7 +123,7 @@ export default function UnitSelectionCard({
         style={cellStyle}
         onMouseEnter={(e) => {
           if (modState && c.modificationBreakdown?.length > 0) {
-            handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
+            handleMouseEnter(t('editor.unitCard.modifications', { name: c.name }), c.modificationBreakdown.join('\n'), e);
           }
         }}
         onMouseMove={handleMouseMove}
@@ -130,7 +132,7 @@ export default function UnitSelectionCard({
           if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
             e.stopPropagation();
             setActiveInfo({
-              title: `Modifikationen: ${c.name}`,
+              title: t('editor.unitCard.modifications', { name: c.name }),
               text: (
                 <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
                   {c.modificationBreakdown.map((b, bIdx) => (
@@ -164,7 +166,7 @@ export default function UnitSelectionCard({
     // unless several models share the table. Every other profile type gets a
     // leading column labelled with its own profileTypeName.
     const showNameCol = isModel ? profiles.length > 1 : true;
-    const nameHeader = isModel ? 'Modell' : (typeName || 'Profil');
+    const nameHeader = isModel ? t('editor.profile.model') : (typeName || t('editor.profile.profile'));
 
     return (
       <div key={key} className="profile-table-container">
@@ -254,7 +256,7 @@ export default function UnitSelectionCard({
                 e.stopPropagation();
                 setIsDetailsOpen(!isDetailsOpen);
               }}
-              title={isDetailsOpen ? 'Details ausblenden' : 'Details anzeigen'}
+              title={isDetailsOpen ? t('editor.unitCard.hideDetails') : t('editor.unitCard.showDetails')}
               aria-expanded={isDetailsOpen}
             >
               <ReceiptText size={16} />
@@ -264,7 +266,7 @@ export default function UnitSelectionCard({
                 type="button"
                 className="square-btn"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                title="Aktionen"
+                title={t('editor.unitCard.actions')}
               >
                 <MoreVertical size={16} />
               </button>
@@ -272,7 +274,7 @@ export default function UnitSelectionCard({
               <BottomSheet
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
-                title="Aktionen"
+                title={t('editor.unitCard.actions')}
                 desktopMode="popover"
                 containerRef={menuRef}
               >
@@ -287,7 +289,7 @@ export default function UnitSelectionCard({
                     >
                       <span className="popover-item-name unit-card-menu-item">
                         <Copy size={14} />
-                        Kopieren
+                        {t('editor.unitCard.copy')}
                       </span>
                     </div>
                   )}
@@ -300,7 +302,7 @@ export default function UnitSelectionCard({
                   >
                     <span className="popover-item-name unit-card-menu-item unit-card-menu-item-danger">
                       <Trash2 size={14} />
-                      Löschen
+                      {t('editor.unitCard.delete')}
                     </span>
                   </div>
                 </div>
@@ -411,26 +413,32 @@ export default function UnitSelectionCard({
       <BottomSheet
         isOpen={showConfirmDelete}
         onClose={() => setShowConfirmDelete(false)}
-        title="Einheit löschen"
+        title={t('editor.unitCard.deleteTitle')}
         desktopMode="modal"
       >
         <div className="info-popup-body" style={{ textAlign: 'center', padding: '16px 16px 24px 16px' }}>
-          <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>Möchten Sie <strong>{effectiveName}</strong> wirklich löschen?</p>
+          <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>
+            <Trans
+              i18nKey="editor.unitCard.deleteConfirm"
+              values={{ name: effectiveName }}
+              components={{ strong: <strong /> }}
+            />
+          </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button 
-              className="btn" 
+            <button
+              className="btn"
               onClick={() => setShowConfirmDelete(false)}
             >
-              Abbrechen
+              {t('editor.unitCard.cancel')}
             </button>
-            <button 
-              className="btn btn-danger" 
+            <button
+              className="btn btn-danger"
               onClick={() => {
                 setShowConfirmDelete(false);
                 removeUnit(selection.id);
               }}
             >
-              Löschen
+              {t('editor.unitCard.delete')}
             </button>
           </div>
         </div>

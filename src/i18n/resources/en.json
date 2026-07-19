@@ -27,5 +27,88 @@
       "german": "Deutsch",
       "english": "English"
     }
+  },
+  "editor": {
+    "points": {
+      "abbreviation": "pts"
+    },
+    "topBar": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "play": "Play",
+      "export": "Export"
+    },
+    "sections": {
+      "armyWide": "Army-Wide Selection",
+      "misc": "Miscellaneous"
+    },
+    "report": {
+      "title": "Camp Report (Overall Status)",
+      "valid": "Your host abides by the rites and stands ready for battle!",
+      "validQuote": "“The battle lines stand firm, the war drums call for the brave. Lead your host to glorious victory!”"
+    },
+    "sidebar": {
+      "title": "Camp Report",
+      "totalCost": "Total Cost:",
+      "status": "Status:",
+      "valid": "Valid",
+      "invalid": "Flawed ({{count}})",
+      "armyRequirements": "Army Requirements",
+      "violations": "Rule Violations",
+      "allClear": "All rites observed. The roster stands ready for battle."
+    },
+    "configurator": {
+      "title": "Configure Options & Equipment"
+    },
+    "optionGroup": {
+      "selection": "Selection:"
+    },
+    "option": {
+      "add": "Add",
+      "takenElsewhere": "(Already taken)",
+      "unavailable": "(Unavailable)"
+    },
+    "unitCard": {
+      "showDetails": "Show details",
+      "hideDetails": "Hide details",
+      "actions": "Actions",
+      "copy": "Copy",
+      "delete": "Delete",
+      "deleteTitle": "Delete unit",
+      "deleteConfirm": "Do you truly wish to delete <strong>{{name}}</strong>?",
+      "cancel": "Cancel",
+      "modifications": "Modifications: {{name}}"
+    },
+    "profile": {
+      "model": "Model",
+      "profile": "Profile"
+    },
+    "categoryAdder": {
+      "recruit": "Levy {{category}}"
+    },
+    "autoFill": {
+      "title": "Fill Points",
+      "remainingSuffix": "left",
+      "intro": "You still have <strong>{{points}} {{label}}</strong> at your disposal. Here are a few suggestions:",
+      "perfectCombos": "Perfect Combinations",
+      "exactPrefix": "Exactly",
+      "possibleUpgrades": "Possible Upgrades",
+      "showLess": "Show less",
+      "showAll": "Show all",
+      "apply": "Apply",
+      "forSelection": "for {{name}}"
+    },
+    "details": {
+      "description": "Description",
+      "descriptionNamed": "Description ({{name}})",
+      "specialRules": "Special Rules",
+      "profile": "Profile",
+      "profileNamed": "Profile ({{name}})",
+      "source": "Source",
+      "none": "No description available."
+    },
+    "common": {
+      "close": "Close"
+    }
   }
 }

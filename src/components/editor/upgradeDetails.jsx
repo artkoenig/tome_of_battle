@@ -4,7 +4,10 @@ import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
 // Shared renderer for the rich detail block of an upgrade/rule/magic item,
 // used by the editor chips, the SelectionConfigurator and the OptionGroup.
 // Kept in one place so all catalogue-derived detail views stay identical.
-export const renderUpgradeDetails = (res, system) => {
+// The `t` translator is injected by the calling component (which owns the
+// react-i18next hook) so this plain render helper stays framework-agnostic
+// while its chrome labels remain translatable (ADR-0022).
+export const renderUpgradeDetails = (res, system, t) => {
   if (!res) return null;
   const elements = [];
 
@@ -39,8 +42,8 @@ export const renderUpgradeDetails = (res, system) => {
     rules.forEach((r, idx) => {
       if (r.description) {
         const label = isNameSimilar(r.name, res.name)
-          ? 'Beschreibung'
-          : `Beschreibung (${r.name})`;
+          ? t('editor.details.description')
+          : t('editor.details.descriptionNamed', { name: r.name });
 
         elements.push(
           <div key={`rule-${idx}`} style={{ marginTop: '4px' }}>
@@ -78,7 +81,7 @@ export const renderUpgradeDetails = (res, system) => {
         if (specialRulesChar && specialRulesChar.value && specialRulesChar.value.trim()) {
           profileElements.push(
             <div key={`special-rules-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>Sonderregeln: </span>
+              <span className="text-gold" style={{ fontWeight: 600 }}>{t('editor.details.specialRules')}: </span>
               {specialRulesChar.value.trim()}
               {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
                 <span className="publication-ref">
@@ -94,8 +97,8 @@ export const renderUpgradeDetails = (res, system) => {
         if (nonBigEmptyChars.length > 0) {
           const stats = nonBigEmptyChars.map(c => `${c.name}: ${c.value}`).join(', ');
           const label = isNameSimilar(p.name, res.name)
-            ? 'Profil'
-            : `Profil (${p.name})`;
+            ? t('editor.details.profile')
+            : t('editor.details.profileNamed', { name: p.name });
 
           profileElements.push(
             <div key={`profile-${idx}`} style={{ marginTop: '4px' }}>
@@ -120,7 +123,7 @@ export const renderUpgradeDetails = (res, system) => {
     if (!hasRuleOrProfileRefs) {
       elements.push(
         <div key="source" style={{ marginTop: '6px' }}>
-          <span className="text-gold" style={{ fontWeight: 600 }}>Quelle: </span>
+          <span className="text-gold" style={{ fontWeight: 600 }}>{t('editor.details.source')}: </span>
           <span className="publication-ref">
             {res.publicationRef}
           </span>
@@ -131,7 +134,7 @@ export const renderUpgradeDetails = (res, system) => {
 
   return (
     <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
-      {elements.length > 0 ? elements : <span className="text-dim">Keine Beschreibung vorhanden.</span>}
+      {elements.length > 0 ? elements : <span className="text-dim">{t('editor.details.none')}</span>}
     </div>
   );
 };

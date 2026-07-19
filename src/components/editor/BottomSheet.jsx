@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 
 export default function BottomSheet({
@@ -9,6 +10,7 @@ export default function BottomSheet({
   desktopMode = 'popover', // 'popover' or 'modal'
   containerRef // optional, to handle click outside
 }) {
+  const { t } = useTranslation();
   const [renderedChildren, setRenderedChildren] = useState(isOpen ? children : null);
   const [renderedTitle, setRenderedTitle] = useState(isOpen ? title : '');
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -95,7 +97,7 @@ export default function BottomSheet({
             type="button" 
             className="bottomsheet-close-btn"
             onClick={onClose}
-            title="Schließen"
+            title={t('editor.common.close')}
           >
             <X size={18} />
           </button>

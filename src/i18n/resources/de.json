@@ -27,5 +27,88 @@
       "german": "Deutsch",
       "english": "English"
     }
+  },
+  "editor": {
+    "points": {
+      "abbreviation": "Pkt."
+    },
+    "topBar": {
+      "undo": "Rückgängig",
+      "redo": "Wiederherstellen",
+      "play": "Spielen",
+      "export": "Exportieren"
+    },
+    "sections": {
+      "armyWide": "Armeeweite Auswahl",
+      "misc": "Sonstiges"
+    },
+    "report": {
+      "title": "Lagerbericht (Gesamtstatus)",
+      "valid": "Streitmacht ist regelkonform und bereit für die Schlacht!",
+      "validQuote": "„Die Schlachtreihen stehen fest, die Kriegstrommeln rufen nach den Tapferen. Führt Eure Streitmacht zum glorreichen Sieg!“"
+    },
+    "sidebar": {
+      "title": "Lagerbericht",
+      "totalCost": "Gesamtkosten:",
+      "status": "Status:",
+      "valid": "Gültig",
+      "invalid": "Fehlerhaft ({{count}})",
+      "armyRequirements": "Armeeanforderungen",
+      "violations": "Regelverstöße",
+      "allClear": "Alle Riten eingehalten. Roster ist bereit für die Schlacht."
+    },
+    "configurator": {
+      "title": "Optionen & Ausrüstung konfigurieren"
+    },
+    "optionGroup": {
+      "selection": "Auswahl:"
+    },
+    "option": {
+      "add": "Hinzufügen",
+      "takenElsewhere": "(Bereits vergeben)",
+      "unavailable": "(Nicht verfügbar)"
+    },
+    "unitCard": {
+      "showDetails": "Details anzeigen",
+      "hideDetails": "Details ausblenden",
+      "actions": "Aktionen",
+      "copy": "Kopieren",
+      "delete": "Löschen",
+      "deleteTitle": "Einheit löschen",
+      "deleteConfirm": "Möchten Sie <strong>{{name}}</strong> wirklich löschen?",
+      "cancel": "Abbrechen",
+      "modifications": "Modifikationen: {{name}}"
+    },
+    "profile": {
+      "model": "Modell",
+      "profile": "Profil"
+    },
+    "categoryAdder": {
+      "recruit": "{{category}} ausheben"
+    },
+    "autoFill": {
+      "title": "Punkte auffüllen",
+      "remainingSuffix": "übrig",
+      "intro": "Du hast noch <strong>{{points}} {{label}}</strong> zur Verfügung. Hier sind einige Vorschläge:",
+      "perfectCombos": "Perfekte Kombinationen",
+      "exactPrefix": "Exakt",
+      "possibleUpgrades": "Mögliche Upgrades",
+      "showLess": "Weniger anzeigen",
+      "showAll": "Alle anzeigen",
+      "apply": "Anwenden",
+      "forSelection": "für {{name}}"
+    },
+    "details": {
+      "description": "Beschreibung",
+      "descriptionNamed": "Beschreibung ({{name}})",
+      "specialRules": "Sonderregeln",
+      "profile": "Profil",
+      "profileNamed": "Profil ({{name}})",
+      "source": "Quelle",
+      "none": "Keine Beschreibung vorhanden."
+    },
+    "common": {
+      "close": "Schließen"
+    }
   }
 }
