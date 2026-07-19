@@ -1,9 +1,9 @@
 # 0015: React Context für die whfb6-Verlinkungs-Einstellung
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0023](0023-settingscontext-generischer-store.md)
 - **Datum:** 2026-07-17
 - **Beteiligte:** Entwickler, KI-Assistenten
-- **Zugehörige ADRs (falls vorhanden):** Präzisiert [ADR-0010: Einheitliches Dialog- und Toast-System](0010-einheitliches-dialog-und-toast-system.md) für einen Fall, den es explizit als YAGNI-Revisionsgrund benannt hat; betrifft [ADR-0012: Integration externer Regeltexte (6th.whfb.app)](0012-integration-externer-regeltexte-6th-whfb-app.md)
+- **Zugehörige ADRs (falls vorhanden):** Präzisiert [ADR-0010: Einheitliches Dialog- und Toast-System](0010-einheitliches-dialog-und-toast-system.md) für einen Fall, den es explizit als YAGNI-Revisionsgrund benannt hat; betrifft [ADR-0012: Integration externer Regeltexte (6th.whfb.app)](0012-integration-externer-regeltexte-6th-whfb-app.md); der hier begründete enge Scope wird durch [ADR-0023](0023-settingscontext-generischer-store.md) revidiert
 
 ## Kontext und Problemstellung
 
