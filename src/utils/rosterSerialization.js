@@ -177,7 +177,9 @@ export async function compressXmlToRosz(fileName, xmlText) {
   const zip = new JSZip();
   const baseName = fileName.replace(/\.rosz$/i, '').replace(/\.ros$/i, '');
   zip.file(`${baseName}.ros`, xmlText);
-  return await zip.generateAsync({ type: 'blob' });
+  // Explicit octet-stream avoids browsers appending a ".zip" suffix to the
+  // ".rosz" download name based on JSZip's default "application/zip" blob type.
+  return await zip.generateAsync({ type: 'blob', mimeType: 'application/octet-stream' });
 }
 
 /**
