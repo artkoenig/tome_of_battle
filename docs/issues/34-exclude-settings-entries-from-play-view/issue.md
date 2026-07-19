@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -101,3 +101,4 @@ Listenkonfiguration ist — generisch über alle Kataloge/Datenquellen hinweg
 - [ ]
 
 ## Comments
+- Vier-Achsen-Verifikation (2 Durchläufe) grün: Standards-Gate PASS, Spezifikation erfüllt (keine fehlenden Anforderungen/Scope-Creep von Belang), Vitest 75/75 Dateien grün, Docs konsistent. E2E-Puppeteer-Test bleibt rot durch vorbestehende Sandbox-Netzwerkeinschränkung (gegen unveränderten origin/main-Baseline verifiziert, kein Bezug zum Diff). Nachbesserungen aus Runde 1 (tote Imports in PlayMode.jsx, RosterEditor-Coverage für Armeeweite-Auswahl/Sonstiges-Buckets, README/Audit-Doku/ADR-0003-Ergänzung, PRD-Signatur-Korrektur) gemergt. Version auf 1.2.1 gebumpt.
