@@ -6,7 +6,6 @@ import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
 import { collectSchemaWarnings } from '../parser/importSchemaGate';
-import { clearCatalogIndexCache } from '../db/catalogUpdate';
 import JSZip from 'jszip';
 
 // Mock Lucide Icons
@@ -213,7 +212,6 @@ describe('Importer Component', () => {
   let indexFetchSpy;
 
   beforeEach(() => {
-    clearCatalogIndexCache();
     vi.clearAllMocks();
     getAllSystems.mockResolvedValue([]);
     deleteSystem.mockResolvedValue({});

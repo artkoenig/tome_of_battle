@@ -251,54 +251,23 @@ export async function fetchCatalogText(url) {
   return response.text();
 }
 
-// Keyed first by the fetchText function identity (WeakMap, so a caller's cache is
-// released with it) and then by the index URL. Keying by URL as well is essential:
-// with several sources sharing one fetchText instance (ADR 0018), a URL-blind cache
-// would return the first source's index for every later source (see regression test).
-let catalogIndexCache = new WeakMap();
-
-function getCachedIndexByUrl(fetchText) {
-  let byUrl = catalogIndexCache.get(fetchText);
-  if (!byUrl) {
-    byUrl = new Map();
-    catalogIndexCache.set(fetchText, byUrl);
-  }
-  return byUrl;
-}
-
-/**
- * Clear the in-memory catalog index cache. Only needed in tests between cases;
- * in production the cache lives for the page session and is harmless.
- */
-export function clearCatalogIndexCache() {
-  // WeakMap has no clear() — the reference is held by the module; reassign.
-  catalogIndexCache = new WeakMap();
-}
-
 /**
  * Fetches and parses the catpkg index at `indexUrl`. Returns null on any failure
  * (offline, rate-limit, GitHub outage, malformed JSON) so an unreachable index leaves
  * the app working on stored data without any user-facing error. When no fetcher or no
- * index URL is provided, no request is made and null is returned. The result is cached
- * per fetchText function AND index URL, so repeated loads of the same source are free
- * while different sources stay distinct.
+ * index URL is provided, no request is made and null is returned. Every call fetches
+ * afresh (network-only, ADR 0020): the index is never held in an in-memory cache, so a
+ * user who revisits the import screen within one page session always sees the current
+ * fork revision rather than a stale one captured on first load.
  */
 export async function loadCatalogIndex(fetchText, indexUrl) {
   if (!fetchText || !indexUrl) return null;
 
-  const cachedByUrl = getCachedIndexByUrl(fetchText);
-  if (cachedByUrl.has(indexUrl)) {
-    return cachedByUrl.get(indexUrl);
-  }
-
   try {
     const indexText = await fetchText(indexUrl);
-    const index = JSON.parse(indexText);
-    cachedByUrl.set(indexUrl, index);
-    return index;
+    return JSON.parse(indexText);
   } catch (error) {
     console.warn('Catalog index unavailable; keeping stored catalog data:', error);
-    cachedByUrl.set(indexUrl, null);
     return null;
   }
 }

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -38,3 +38,4 @@ Kontext.
       (keine `clearCatalogIndexCache`-Aufrufe mehr im Testsetup) und grün.
 
 ## Comments
+- In-Memory-Index-Cache aus loadCatalogIndex entfernt: catalogIndexCache, getCachedIndexByUrl und der test-only Export clearCatalogIndexCache entfallen; jeder Aufruf fetcht frisch (network-only, ADR-0020). Tests in catalogUpdate.test.js und Importer.test.jsx angepasst.
