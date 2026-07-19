@@ -43,6 +43,21 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
   (`type="min" field="limit::ecfa-8486-4f6c-c249" scope="roster"`, Basis 0) und des
   eigengegateten `set`-Modifiers, der diese beim Wählen des Sonderheeres auf 2000
   anhebt. Nur die umschließenden Container wurden auf `forceEntries` reduziert.
+- `empire-name-modifier.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `The Empire (6th definitive edition).cat` (abgerufen 2026-07-19): die beiden
+  realen Kern-Einheiten „Halberdiers" (`569f-7be3-1aa2-004f`) und „Spearmen"
+  (`1db9-88b7-80ef-40d5`) mit je einem realen `infoLink` auf das geteilte
+  „Empire soldier"-Profil (`b777-4b66-0f67-d717`, ebenfalls real, aus
+  `sharedProfiles`) samt dem unbedingten `type="set" field="name"`-Modifier, der
+  den Profilnamen je Einheit umbenennt. Nur die umschließenden Container
+  (`selectionEntries`, `sharedProfiles`) wurden auf diese Einträge reduziert.
+- `dwarfs-traditional-army-multiply.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `Dwarfs (2001) (6th definitive edition).cat` (abgerufen 2026-07-19): der reale
+  „Organ Gun"-`selectionEntry` (`79c9-6f85-479d-909a`) mit seinem realen
+  `type="multiply"`-Kosten-Modifier („Traditional Army", DW1-AB S.53), der die
+  pts-Kosten verdoppelt, sobald König Alrik Ranulfsson (`e4c5-f4d5-a169-aaa7`,
+  auf id/name/costs reduziert) im Heer steht. Ein zweiter, unbeteiligter
+  `hidden`-Modifier sowie `modifierGroups`/eigene `constraints` wurden entfernt.
 
 ## Wozu
 

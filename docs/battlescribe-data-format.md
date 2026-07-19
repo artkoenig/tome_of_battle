@@ -330,6 +330,16 @@ erlaubten Lord-/Core-Slots mit dem Punktelimit. Genau das zeigt das Beispiel in
 >   `field="hidden"`, siehe [§8](#8-kategorien--sichtbarkeit)) darf dem Nutzer **nicht** als Option
 >   angeboten und dessen Mindestgrenzen dürfen **nicht** validiert werden.
 
+> **`forceEntry`-eigene Constraints/Modifier (eigenes Punktelimit).** Ein `forceEntry` kann —
+> zusätzlich zu seinen `categoryLinks` — **eigene** `constraints` und `modifiers` tragen (es erbt
+> von `ContainerEntryBase`). Muster im Lexicanum-WHFB6-Datensatz (zwei Vampire-Counts-Sonderheere,
+> „Army of the Lichemaster", „Vampire Coast"): eine Constraint mit `field="limit::<pts-costTypeId>"`
+> und `scope="roster"` (Basis `min="0"`, also armeeweit **kein** Mindestpunktelimit), angehoben auf
+> einen konkreten Wert durch einen `modifier`, dessen `condition` per `type="instanceOf"
+> scope="force"` auf die **eigene** `forceEntry`-Id gated ist — netto: „wird dieses Sonderheer
+> gewählt, muss die Liste auf mindestens X Punkte gebaut werden". Diese Constraint ist von den
+> `categoryLink`-Constraints ([§7.6](#76-constraint)) unabhängig und wird gesondert ausgewertet.
+
 ---
 
 ## 6. Catalogue (`.cat`)
@@ -643,9 +653,33 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 
 | `modifier`-Attribut | Werte | Bedeutung |
 |---------------------|-------|-----------|
-| `type` | `increment` \| `decrement` \| `set` \| `append` \| `add` \| `remove` \| `set-primary` \| `unset-primary` | Operation. `increment`/`decrement`/`set` für numerische Felder, `append`/`set` für Text, `add`/`remove` für Kategoriezugehörigkeit (`field="category"`), `set-primary`/`unset-primary` für das `primary`-Flag eines Kategorie-Links. |
-| `field` | *Constraint-`id`* \| *`<costTypeId>`* \| `hidden` \| `name` \| `category` \| *`<characteristicTypeId>`* | Was geändert wird. `category` (zusammen mit `add`/`remove`) ändert die Kategoriezugehörigkeit zur Laufzeit. |
-| `value` | Zahl/Text | Der anzuwendende Wert. |
+| `type` | `increment` \| `decrement` \| `set` \| `append` \| `prepend` \| `multiply` \| `add` \| `remove` \| `set-primary` \| `unset-primary` | Operation. `increment`/`decrement`/`set`/`multiply` für numerische Felder, `append`/`prepend`/`set` für Text, `add`/`remove` für Kategoriezugehörigkeit (`field="category"`), `set-primary`/`unset-primary` für das `primary`-Flag eines Kategorie-Links. |
+| `field` | *Constraint-`id`* \| *`<costTypeId>`* \| `hidden` \| `name` \| `category` \| `error` \| `warning` \| `info` \| *`<characteristicTypeId>`* | Was geändert wird. `category` (zusammen mit `add`/`remove`) ändert die Kategoriezugehörigkeit zur Laufzeit. `error`/`warning`/`info` (zusammen mit `type="add"`) tragen keinen Feldwert, sondern einen Klartext-Hinweis für den Spieler (siehe unten). |
+| `value` | Zahl/Text | Der anzuwendende Wert. Bei `append`/`prepend` der anzufügende Text. |
+| `join` | Text (optional, nur `append`/`prepend`) | Trennzeichen zwischen dem bestehenden Namen und dem angehängten/vorangestellten Text. **Wird verbatim übernommen, nicht angenommen** — reale Kataloge nutzen neben einem einfachen Leerzeichen auch NBSP (`&#160;`) und `"&#160;+&#160;"`. Fehlt das Attribut, wird ohne Trennzeichen zusammengefügt. |
+
+> **Nicht offiziell spezifiziert (`multiply`, `prepend`, `join`):** Diese drei Konstrukte sind in
+> keiner bekannten `BSData/schemas`-Version definiert — geprüft bis einschließlich der
+> unveröffentlichten `vNext`-Version. Sie werden dennoch vom BattleScribe-Referenzprogramm
+> akzeptiert und von aktiv gepflegten Datensätzen (Lexicanum Imperialis' „Definitive Edition")
+> real genutzt. Die vendorte `Catalogue.xsd` dieses Projekts wurde deshalb bewusst und dokumentiert
+> um sie erweitert (siehe [ADR 0016](adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md),
+> Revision 2026-07-19).
+
+**`field="error"`/`"warning"`/`"info"` — Klartext-Hinweise an den Spieler.** Ein `modifier
+type="add" field="error"` (analog `"warning"`/`"info"`), dessen `<conditions>`/`<conditionGroups>`
+zutreffen, ist kein Wert-Modifier, sondern eine kontextabhängige Nachricht an den Spieler — `value`
+trägt den Nachrichtentext. `error` verhält sich wie ein regulärer Regelverstoß (blockiert die
+Roster als ungültig); `warning`/`info` sind rein informativ. Beispiel (Bretonnia/Dark Elves):
+
+```xml
+<modifier type="add" value="Please enable &quot;Allow special characters?&quot;" field="error">
+  <conditions>
+    <condition type="lessThan" value="1" field="selections" scope="force"
+               childId="8923-5946-7b10-8957" shared="true" includeChildSelections="true"/>
+  </conditions>
+</modifier>
+```
 
 Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **wiederholend**
 (`<repeats>`) sein.
@@ -977,8 +1011,8 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | `constraint` | `type` | `min`, `max` |
 | `constraint` | `field` | `selections`, `forces`, *`<costTypeId>`* |
 | `constraint`/`condition`/`repeat` | `scope` | `parent`, `roster`, `force`, `category`, `self` |
-| `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `add`, `remove`, `set-primary`, `unset-primary` |
-| `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `<characteristicTypeId>` |
+| `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `prepend`, `multiply`, `add`, `remove`, `set-primary`, `unset-primary` (`prepend`/`multiply` ohne offiziellen Schema-Beleg, siehe [§7.7](#77-modifier-condition-condition-group-repeat)) |
+| `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `error`, `warning`, `info`, `<characteristicTypeId>` |
 | `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf` |
 | `conditionGroup` | `type` | `and`, `or` |
 

@@ -10,6 +10,8 @@ import RosterSidebar from './RosterSidebar';
 vi.mock('lucide-react', () => ({
   Check: (props) => <span data-testid="icon-check" {...props} />,
   ShieldAlert: (props) => <span data-testid="icon-shield-alert" {...props} />,
+  AlertTriangle: (props) => <span data-testid="icon-alert-triangle" {...props} />,
+  Info: (props) => <span data-testid="icon-info" {...props} />,
 }));
 
 const CATEGORY_ID = 'cat-core';
@@ -56,13 +58,13 @@ function makeRoster() {
   };
 }
 
-function renderSidebar({ system, roster, costs = { pts: 0 } }) {
+function renderSidebar({ system, roster, costs = { pts: 0 }, validationErrors = [] }) {
   return render(
     <RosterSidebar
       roster={roster}
       system={system}
       costs={costs}
-      validationErrors={[]}
+      validationErrors={validationErrors}
       costTypeLabel="Pkt."
     />
   );
@@ -118,5 +120,61 @@ describe('RosterSidebar hidden cost types', () => {
     renderSidebar({ system, roster: makeRoster(), costs: { pts: 0, internal: 9 } });
 
     expect(screen.queryByText('Internal Budget:')).toBeNull();
+  });
+});
+
+describe('RosterSidebar validation severity', () => {
+  it('renders an error entry with the danger icon and no severity modifier class', () => {
+    renderSidebar({
+      system: makeSystem(),
+      roster: makeRoster(),
+      validationErrors: [{ message: 'Zu viele Helden gewählt.', severity: 'error' }],
+    });
+
+    expect(screen.getByTestId('icon-shield-alert')).toBeTruthy();
+    expect(screen.getByText('Zu viele Helden gewählt.').closest('.validation-error-item').className)
+      .not.toMatch(/--warning|--info/);
+    expect(screen.getByText(/Fehlerhaft/)).toBeTruthy();
+  });
+
+  it('renders a warning entry with its own icon/class and does not mark the roster invalid', () => {
+    renderSidebar({
+      system: makeSystem(),
+      roster: makeRoster(),
+      validationErrors: [{ message: 'Bitte "Allow special characters?" aktivieren.', severity: 'warning' }],
+    });
+
+    expect(screen.getByTestId('icon-alert-triangle')).toBeTruthy();
+    expect(screen.getByText(/aktivieren/).closest('.validation-error-item').className).toMatch(/--warning/);
+    expect(screen.getByText('Gültig')).toBeTruthy();
+  });
+
+  it('renders an info entry with its own icon/class and does not mark the roster invalid', () => {
+    renderSidebar({
+      system: makeSystem(),
+      roster: makeRoster(),
+      validationErrors: [{ message: 'Hinweis zur Aufstellung.', severity: 'info' }],
+    });
+
+    expect(screen.getByTestId('icon-info')).toBeTruthy();
+    expect(screen.getByText('Hinweis zur Aufstellung.').closest('.validation-error-item').className).toMatch(/--info/);
+    expect(screen.getByText('Gültig')).toBeTruthy();
+  });
+
+  it('mixes severities: only the error contributes to the blocking count, all three render', () => {
+    renderSidebar({
+      system: makeSystem(),
+      roster: makeRoster(),
+      validationErrors: [
+        { message: 'Echter Verstoß.', severity: 'error' },
+        { message: 'Nur eine Warnung.', severity: 'warning' },
+        { message: 'Nur ein Hinweis.', severity: 'info' },
+      ],
+    });
+
+    expect(screen.getByText('Fehlerhaft (1)')).toBeTruthy();
+    expect(screen.getByText('Echter Verstoß.')).toBeTruthy();
+    expect(screen.getByText('Nur eine Warnung.')).toBeTruthy();
+    expect(screen.getByText('Nur ein Hinweis.')).toBeTruthy();
   });
 });

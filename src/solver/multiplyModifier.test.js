@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import { describe, it, test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { parseCatalogueXML } from '../parser/xmlParser.js';
@@ -15,64 +16,46 @@ beforeAll(() => {
   globalThis.XMLSerializer = jsdomObj.window.XMLSerializer;
 });
 
+const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+
 // ---------------------------------------------------------------------------
 // Regression for the WHFB6 Definitive-Edition "Traditional Army" pattern
-// (Dwarfs 2001 / 2005, DW1-AB p.53): a `modifier type="multiply" value="2"
-// field="pts"` doubles a unit's points cost once an army-wide condition holds.
-// Before the fix, getModifiedConstraintValue's switch ignored `multiply`, so the
-// unit was priced at half the correct total everywhere (editor, sum, XML export).
+// (Dwarfs 2001, DW1-AB p.53): a `modifier type="multiply" value="2"
+// field="<pts costTypeId>"` doubles the Organ Gun's points cost once King Alrik
+// Ranulfsson is in the force. Before the fix, getModifiedConstraintValue's
+// switch ignored `multiply`, so the unit was priced at half the correct total
+// everywhere (editor, sum, XML export).
 // ---------------------------------------------------------------------------
-describe('multiply cost modifier — "Traditional Army" doubling (realdatennah XML fixture)', () => {
-  const POINTS_COST_TYPE_ID = 'pts';
-  const BASE_UNIT_COST = 100;
-  const TRADITIONAL_ARMY_CATEGORY_ID = 'cat-traditional-army';
+describe('multiply cost modifier — "Traditional Army" doubling (verbatim Definitive-Edition fixture)', () => {
+  const POINTS_COST_TYPE_ID = 'ecfa-8486-4f6c-c249';
+  const BASE_UNIT_COST = 125;
+  const KING_ALRIK_ID = 'e4c5-f4d5-a169-aaa7';
 
-  // A generic, schema-valid catalogue mirroring the real Dwarf-warrior unit: a base
-  // points cost plus a multiply-by-2 modifier gated on an army-wide (force-scoped)
-  // "Traditional Army" category being present.
-  const catalogueXml = `<?xml version="1.0" encoding="UTF-8"?>
-<catalogue id="cat-dwarfs" name="Dwarfs 2001">
-  <selectionEntries>
-    <selectionEntry id="dwarf-warriors" name="Dwarf Warriors" type="unit">
-      <costs>
-        <cost name="pts" typeId="${POINTS_COST_TYPE_ID}" value="${BASE_UNIT_COST}" />
-      </costs>
-      <modifiers>
-        <modifier type="multiply" field="${POINTS_COST_TYPE_ID}" value="2">
-          <conditions>
-            <condition type="atLeast" value="1" field="${TRADITIONAL_ARMY_CATEGORY_ID}" scope="force" childId="${TRADITIONAL_ARMY_CATEGORY_ID}" />
-          </conditions>
-        </modifier>
-      </modifiers>
-    </selectionEntry>
-  </selectionEntries>
-</catalogue>`;
-
-  let warriors;
+  let organGun;
   beforeAll(() => {
-    const cat = parseCatalogueXML(catalogueXml);
-    warriors = cat.selectionEntries.find(e => e.id === 'dwarf-warriors');
+    const xml = readFileSync(`${FIXTURE_DIR}/dwarfs-traditional-army-multiply.cat.xml`, 'utf-8');
+    const cat = parseCatalogueXML(xml);
+    organGun = cat.selectionEntries.find(e => e.id === '79c9-6f85-479d-909a');
   });
 
   const pointsConstraint = { id: POINTS_COST_TYPE_ID, value: BASE_UNIT_COST };
 
   it('parses the multiply modifier with a numeric factor', () => {
-    const modifiers = getEffectiveModifiers(warriors);
+    const modifiers = getEffectiveModifiers(organGun);
     expect(modifiers).toHaveLength(1);
     expect(modifiers[0].type).toBe('multiply');
     expect(modifiers[0].valueObject).toBe(2);
   });
 
-  it('doubles the points cost when the army condition is met', () => {
-    // The "Traditional Army" category is present in the force.
-    const ctx = { forceCategoryCounts: { [TRADITIONAL_ARMY_CATEGORY_ID]: 1 } };
-    const cost = getModifiedConstraintValue(pointsConstraint, getEffectiveModifiers(warriors), ctx);
+  it('doubles the points cost when King Alrik is in the force', () => {
+    const ctx = { forceCategoryCounts: { [KING_ALRIK_ID]: 1 } };
+    const cost = getModifiedConstraintValue(pointsConstraint, getEffectiveModifiers(organGun), ctx);
     expect(cost).toBe(BASE_UNIT_COST * 2);
   });
 
-  it('leaves the base points cost unchanged when the army condition is not met', () => {
+  it('leaves the base points cost unchanged when King Alrik is not in the force', () => {
     const ctx = { forceCategoryCounts: {} };
-    const cost = getModifiedConstraintValue(pointsConstraint, getEffectiveModifiers(warriors), ctx);
+    const cost = getModifiedConstraintValue(pointsConstraint, getEffectiveModifiers(organGun), ctx);
     expect(cost).toBe(BASE_UNIT_COST);
   });
 });
