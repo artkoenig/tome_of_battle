@@ -15,6 +15,9 @@ vi.mock('../../solver/validator', () => ({
   resolveEntry: vi.fn(() => null),
   collectUnitProfilesAndRules: vi.fn(() => ({ profiles: [], rules: [] })),
   getSelectionTotalCost: vi.fn(() => 100),
+  // Name resolution is covered by the solver's own unit tests; here it returns the
+  // selection's raw name unchanged (no-name-modifier case).
+  getEffectiveSelectionName: vi.fn((selection) => selection?.name ?? ''),
 }));
 
 const mockGroupProfilesByType = vi.fn(() => []);

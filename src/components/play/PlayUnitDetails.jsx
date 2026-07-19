@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost } from '../../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, getEffectiveSelectionName } from '../../solver/validator';
 import { MODEL_COUNT_PROFILE_TYPES } from '../../solver/constants';
 import {
   getArmourSave as getArmourSaveLogic,
@@ -338,7 +338,7 @@ export default function PlayUnitDetails({
       <div className="play-unit-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
         <div className="play-unit-title text-ui-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            {selection.name}
+            {getEffectiveSelectionName(selection, { system, roster, currentCatalogueId: roster?.catalogueId })}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {!hasSubUnits && (

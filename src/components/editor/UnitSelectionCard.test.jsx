@@ -46,7 +46,10 @@ vi.mock('../../solver/validator', () => ({
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
   getSelectionTotalCost: () => 120,
-  calculateRosterCosts: () => ({ pts: 120 })
+  calculateRosterCosts: () => ({ pts: 120 }),
+  // Name resolution is covered by the solver's own unit tests; here it is isolated to
+  // the no-name-modifier case, which returns the selection's raw name unchanged.
+  getEffectiveSelectionName: (selection) => selection?.name ?? ''
 }));
 
 describe('UnitSelectionCard Component', () => {

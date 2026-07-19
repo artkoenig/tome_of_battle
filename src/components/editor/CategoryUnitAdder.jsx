@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, getEffectiveModifiers, isSelectionEntryHidden, isEntryPrimaryInCategory } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveName, isSelectionEntryHidden, isEntryPrimaryInCategory } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
@@ -122,7 +122,7 @@ export default function CategoryUnitAdder({
                 }}
               >
                 <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ color: isMaxedOut ? 'var(--text-dim)' : 'inherit' }}>{res.name}</span>
+                  <span style={{ color: isMaxedOut ? 'var(--text-dim)' : 'inherit' }}>{getEffectiveName(res, displayCtx)}</span>
                   {isMaxedOut && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Nicht verfügbar)</span>}
                 </span>
                 {points > 0 && (

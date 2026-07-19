@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fixture: field="name"-Namens-Modifier (The Empire „Empire soldier")
+
+  Nachgebildeter (NICHT verbatim) Auszug nach dem realen Muster von
+  `The Empire (6th definitive edition).cat`
+  (lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition).
+
+  Bildet das reale Umbenennungs-Muster ab: Die Staatstruppen-Einheit teilt ein
+  gemeinsames „Empire soldier"-Profil (Troop Type), das per infoLink referenziert
+  wird. Der infoLink traegt `field="name"`-Modifier, die den generischen
+  Profilnamen kontextabhaengig ueberschreiben — „Halberdier", sobald eine
+  Hellebarde gewaehlt ist, „Spearmen", sobald ein Speer gewaehlt ist. Ohne
+  Waffenwahl bleibt der rohe „Empire soldier" sichtbar.
+
+  Die Charakteristiken und IDs sind zu Testzwecken vergeben; das Struktur- und
+  Modifier-Muster (infoLink-Profil + `set`/`field="name"` mit `scope="parent"`-
+  Bedingung auf die Waffen-Unterauswahl) entspricht dem Upstream-Datensatz.
+
+  Update-Politik: Eingefroren. Dokumentiert das Muster, gegen das der Namens-
+  Modifier (getEffectiveName / infoLink-Profilname) validiert wurde.
+-->
+<catalogue id="cat-empire-name-fixture" name="Empire Name Fixture" gameSystemId="0d13-7737-ea86-4662">
+  <sharedProfiles>
+    <profile id="prof-empire-soldier" name="Empire soldier" typeId="type-model" typeName="Model">
+      <characteristics>
+        <characteristic name="M" typeId="char-m">4</characteristic>
+        <characteristic name="WS" typeId="char-ws">3</characteristic>
+        <characteristic name="BS" typeId="char-bs">3</characteristic>
+        <characteristic name="S" typeId="char-s">3</characteristic>
+        <characteristic name="T" typeId="char-t">3</characteristic>
+        <characteristic name="W" typeId="char-w">1</characteristic>
+        <characteristic name="I" typeId="char-i">3</characteristic>
+        <characteristic name="A" typeId="char-a">1</characteristic>
+        <characteristic name="Ld" typeId="char-ld">7</characteristic>
+      </characteristics>
+    </profile>
+  </sharedProfiles>
+  <sharedSelectionEntries>
+    <selectionEntry id="entry-state-troops" name="State Troops" hidden="false" collective="false" type="unit">
+      <infoLinks>
+        <infoLink id="link-empire-soldier" name="Empire soldier" hidden="false" type="profile" targetId="prof-empire-soldier">
+          <modifiers>
+            <modifier type="set" field="name" value="Halberdier">
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="parent" childId="entry-halberd" includeChildSelections="false"/>
+              </conditions>
+            </modifier>
+            <modifier type="set" field="name" value="Spearmen">
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="parent" childId="entry-spear" includeChildSelections="false"/>
+              </conditions>
+            </modifier>
+          </modifiers>
+        </infoLink>
+      </infoLinks>
+      <selectionEntries>
+        <selectionEntry id="entry-halberd" name="Halberd" hidden="false" collective="false" type="upgrade"/>
+        <selectionEntry id="entry-spear" name="Spear" hidden="false" collective="false" type="upgrade"/>
+      </selectionEntries>
+    </selectionEntry>
+  </sharedSelectionEntries>
+</catalogue>

@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { ModifierKind, ConditionKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { ModifierKind, ConditionKind, AttributeName } from '../parser/schema/battlescribeSchema.generated.js';
 
 // The BattleScribe modifiers that mutate category membership / the primary flag all
 // declare `field="category"`; their `value` is the target category id.
@@ -483,4 +483,70 @@ export const getEffectiveCategoryLinks = (baseCategoryLinks, modifiers, ctx = {}
   });
 
   return links;
+};
+
+// BattleScribe name modifiers rewrite a source's display name via `field="name"`:
+//  - set:     replace the name outright with the modifier's `value`
+//  - append:  base name, then the `join` separator, then `value`
+//  - prepend: `value`, then the `join` separator, then the base name
+// `join` is a verbatim separator authored in the catalogue (a plain space, a
+// non-breaking space, " + ", ...) and defaults to no separator when the attribute is
+// absent — it must be read from the modifier, never assumed to be a space.
+const NAME_MODIFIER_FIELD = AttributeName.NAME;
+const NO_JOIN_SEPARATOR = '';
+
+const applyNameModifier = (currentName, mod) => {
+  const value = mod.value ?? '';
+  const join = mod.join ?? NO_JOIN_SEPARATOR;
+  switch (mod.type) {
+    case ModifierKind.SET:
+      return value;
+    case ModifierKind.APPEND:
+      return `${currentName}${join}${value}`;
+    case ModifierKind.PREPEND:
+      return `${value}${join}${currentName}`;
+    default:
+      return currentName;
+  }
+};
+
+/**
+ * Returns the effective display name of a source (selection entry, entry link, or
+ * profile) by applying its condition-met `field="name"` modifiers to the base
+ * `source.name`, in document order. Only modifiers whose conditions pass in `ctx` take
+ * effect, so an unmet condition leaves the raw catalogue name unchanged (AC3). Reuses
+ * getEffectiveModifiers + modifierConditionsPass, so modifierGroup gating and the full
+ * condition semantics apply exactly as for every other modifier consumer.
+ */
+export const getEffectiveName = (source, ctx = {}) => {
+  const baseName = source?.name ?? '';
+  return getEffectiveModifiers(source)
+    .filter(mod => mod.field === NAME_MODIFIER_FIELD && modifierConditionsPass(mod, ctx))
+    .reduce(applyNameModifier, baseName);
+};
+
+/**
+ * Resolves the effective display name of a roster selection. Looks up the selection's
+ * catalogue definition — whose merged modifiers carry both the entryLink's and the
+ * target's name modifiers — and applies them to the selection's stored raw name in
+ * `ctx`. The stored `selection.name` deliberately stays the raw catalogue name (the
+ * single source of truth that name-based matching relies on, AC4); this derives the
+ * display name without mutating it. Falls back to the raw name when the definition
+ * can't be resolved.
+ */
+export const getEffectiveSelectionName = (selection, ctx = {}) => {
+  const baseName = selection?.name ?? '';
+  const { system } = ctx;
+  const entryId = selection?.selectionEntryId || selection?.entryLinkId;
+  if (!system || !entryId) return baseName;
+
+  const catalogueId =
+    ctx.parentCatalogueId || ctx.currentCatalogueId || (ctx.roster ? ctx.roster.catalogueId : null);
+  const rawEntry = findEntryInSystem(system, entryId, catalogueId);
+  const resolved = rawEntry && resolveEntry(system, rawEntry, catalogueId);
+  if (!resolved) return baseName;
+
+  const nameSource = { name: baseName, modifiers: resolved.modifiers, modifierGroups: resolved.modifierGroups };
+  const nameCtx = { ...ctx, selection, parentCatalogueId: catalogueId };
+  return getEffectiveName(nameSource, nameCtx);
 };

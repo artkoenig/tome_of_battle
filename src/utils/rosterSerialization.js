@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, findEntryInSystem, resolveEntry } from '../solver/validator.js';
+import { calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, getEffectiveSelectionName, findEntryInSystem, resolveEntry } from '../solver/validator.js';
 
 // Fallback point limit applied when a roster file declares none.
 const DEFAULT_COST_LIMIT = 2000;
@@ -122,8 +122,9 @@ function serializeSelection(sel, indent, ctx, parentCount, currentCatalogueId, p
   const resolved = resolveSelectionEntry(system, sel, currentCatalogueId);
   const selType = resolved?.type || 'upgrade';
   const isCollective = sel.collective ? 'true' : 'false';
+  const effectiveName = getEffectiveSelectionName(sel, { system, roster, currentCatalogueId, parentSelection, counts });
 
-  let sXml = `${ind}<selection id="${escapeXml(sel.id)}" name="${escapeXml(sel.name)}" entryId="${escapeXml(entryId)}" entryLinkId="${escapeXml(entryLinkId)}" number="${sel.number || 1}" type="${escapeXml(selType)}" collective="${isCollective}">\n`;
+  let sXml = `${ind}<selection id="${escapeXml(sel.id)}" name="${escapeXml(effectiveName)}" entryId="${escapeXml(entryId)}" entryLinkId="${escapeXml(entryLinkId)}" number="${sel.number || 1}" type="${escapeXml(selType)}" collective="${isCollective}">\n`;
 
   // Category Link block (only for top-level selections that carry categories)
   if (sel.category) {
