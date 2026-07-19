@@ -271,6 +271,45 @@
     "retry": "Try Again",
     "loading": "Conjuring the rule text..."
   },
+  "validator": {
+    "unitPoints": "points",
+    "unitSelections": "selections",
+    "rosterLimit": "Points exceeded: you have used {{current}} of a maximum {{limit}} points.",
+    "forceSelectorMin": "Mandatory choice \"{{entryName}}\" is missing from {{forceName}} (at least {{minValue}} required).",
+    "forceRosterLimit": "{{forceName}} requires a point limit of at least {{requiredLimit}} (currently: {{currentLimit}}).",
+    "categoryMin": "At least {{finalValue}} selections required for \"{{catName}}\" in {{forceName}} (currently: {{count}}).",
+    "categoryMax": "At most {{finalValue}} selections allowed for \"{{catName}}\" in {{forceName}} (currently: {{count}}).",
+    "unresolvedEntry": "Selection \"{{selectionName}}\" refers to an entry no longer present in the catalog.",
+    "entryMin": "Option \"{{selectionName}}\" requires at least {{finalValue}} selections (currently: {{count}}).",
+    "entryMax": "Option \"{{selectionName}}\" allows at most {{finalValue}} selections (currently: {{count}}).",
+    "entryPercentMin": "Option \"{{selectionName}}\" must make up at least {{finalValue}}% of {{unit}} ({{threshold}}), but is {{subject}}.",
+    "entryPercentMax": "Option \"{{selectionName}}\" may make up at most {{finalValue}}% of {{unit}} ({{threshold}}), but is {{subject}}.",
+    "groupPointsMax": "Category \"{{groupName}}\" allows at most {{finalValue}} points (currently: {{totalPoints}} pts for {{selectionName}}).",
+    "groupPointsMin": "Category \"{{groupName}}\" requires at least {{finalValue}} points (currently: {{totalPoints}} pts for {{selectionName}}).",
+    "groupCountMax": "Category \"{{groupName}}\" allows at most {{finalValue}} selections (currently: {{totalCount}} for {{selectionName}}).",
+    "groupCountMin": "Category \"{{groupName}}\" requires at least {{finalValue}} selections (currently: {{totalCount}} for {{selectionName}}).",
+    "groupPercentMin": "Category \"{{groupName}}\" must make up at least {{finalValue}}% of {{unit}} ({{threshold}}), but is {{subject}}.",
+    "groupPercentMax": "Category \"{{groupName}}\" may make up at most {{finalValue}}% of {{unit}} ({{threshold}}), but is {{subject}}."
+  },
+  "armourSave": {
+    "explicit": "Explicit ({{value}}+)",
+    "explicitNamed": "Explicit ({{value}}+) [{{itemName}}]",
+    "scalySkin": "Scaly Skin ({{value}}+)",
+    "shield": "Shield (-1)",
+    "fullPlate": "Full Plate Armour (4+)",
+    "heavyArmour": "Heavy Armour (5+)",
+    "lightArmour": "Light Armour (6+)",
+    "mountedThickSkinned": "Mounted (Thick-Skinned) (-2)",
+    "mounted": "Mounted (-1)",
+    "barding": "Barding (-1)",
+    "modifier": "Modifier ({{modifier}}) [{{itemName}}]",
+    "cavalry": "Cavalry/Mounted (-1)",
+    "mountedImpliedByBarding": "Mounted (-1) [implied by Barding]",
+    "wardSave": "Ward Save ({{value}}+)"
+  },
+  "rosterSerialization": {
+    "invalidRootElement": "Invalid file format: the root element must be <roster>."
+  },
   "previewBadge": {
     "title": "This is the pre-production instance, not the live app."
   }

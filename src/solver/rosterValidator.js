@@ -7,6 +7,7 @@ import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors } from './armyWideSelectors.js';
 import { getInheritedCategoryMaxSource } from './systemQuirks.js';
+import i18n from '../i18n';
 import '../types.js';
 
 /**
@@ -66,7 +67,7 @@ function checkRosterCostLimit(roster, system, errors) {
   if (current > limit) {
     errors.push({
       type: 'roster-limit',
-      message: `Punkteüberschreitung: Du hast ${current} von maximal ${limit} Punkten verwendet.`,
+      message: i18n.t('validator.rosterLimit', { current, limit }),
       severity: ValidationSeverity.ERROR
     });
   }
@@ -147,7 +148,7 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
       errors.push({
         type: 'force-selector-min',
         forceId: force.id,
-        message: `Pflichtauswahl „${entry.name}" fehlt in ${forceDef.name} (mindestens ${minValue} benötigt).`,
+        message: i18n.t('validator.forceSelectorMin', { entryName: entry.name, forceName: forceDef.name, minValue }),
         severity: ValidationSeverity.ERROR
       });
     }
@@ -196,7 +197,7 @@ function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
       errors.push({
         type: 'force-roster-limit',
         forceId: forceDef.id,
-        message: `${forceDef.name} erfordert ein Punktelimit von mindestens ${requiredLimit} (aktuell: ${currentLimit}).`,
+        message: i18n.t('validator.forceRosterLimit', { forceName: forceDef.name, requiredLimit, currentLimit }),
         severity: ValidationSeverity.ERROR
       });
     }
@@ -277,7 +278,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       type: 'category-min',
       forceId: force.id,
       categoryId: targetCatId,
-      message: `Mindestens ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} benötigt (aktuell: ${count}).`,
+      message: i18n.t('validator.categoryMin', { finalValue, catName, forceName: forceDef.name, count }),
       severity: ValidationSeverity.ERROR
     });
   }
@@ -286,7 +287,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       type: 'category-max',
       forceId: force.id,
       categoryId: targetCatId,
-      message: `Maximal ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} erlaubt (aktuell: ${count}).`,
+      message: i18n.t('validator.categoryMax', { finalValue, catName, forceName: forceDef.name, count }),
       severity: ValidationSeverity.ERROR
     });
   }
@@ -307,7 +308,7 @@ function checkSelectionTree(args) {
     errors.push({
       type: 'unresolved-entry',
       selectionId: selection.id,
-      message: `Auswahl "${selection.name}" verweist auf einen im Katalog nicht mehr vorhandenen Eintrag.`,
+      message: i18n.t('validator.unresolvedEntry', { selectionName: selection.name }),
       severity: ValidationSeverity.ERROR
     });
   } else {
@@ -427,7 +428,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
       errors.push({
         type: 'entry-min',
         selectionId: selection.id,
-        message: `Option "${selection.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${count}).`,
+        message: i18n.t('validator.entryMin', { selectionName: selection.name, finalValue, count }),
         severity: ValidationSeverity.ERROR
       });
     }
@@ -435,7 +436,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
       errors.push({
         type: 'entry-max',
         selectionId: selection.id,
-        message: `Option "${selection.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${count}).`,
+        message: i18n.t('validator.entryMax', { selectionName: selection.name, finalValue, count }),
         severity: ValidationSeverity.ERROR
       });
     }
@@ -455,13 +456,13 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       })
     : count;
   const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection, forceCatalogueId, counts });
-  const unit = measuresCost ? 'Punkte' : 'Auswahlen';
+  const unit = measuresCost ? i18n.t('validator.unitPoints') : i18n.t('validator.unitSelections');
 
   if (con.type === 'min' && subject < threshold) {
     errors.push({
       type: 'entry-percent-min',
       selectionId: selection.id,
-      message: `Option "${selection.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      message: i18n.t('validator.entryPercentMin', { selectionName: selection.name, finalValue, unit, threshold, subject }),
       severity: ValidationSeverity.ERROR
     });
   }
@@ -469,7 +470,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
     errors.push({
       type: 'entry-percent-max',
       selectionId: selection.id,
-      message: `Option "${selection.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      message: i18n.t('validator.entryPercentMax', { selectionName: selection.name, finalValue, unit, threshold, subject }),
       severity: ValidationSeverity.ERROR
     });
   }
@@ -585,7 +586,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
           errors.push({
             type: 'group-points-max',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
+            message: i18n.t('validator.groupPointsMax', { groupName: group.name, finalValue, totalPoints, selectionName: selection.name }),
             severity: ValidationSeverity.ERROR
           });
         }
@@ -593,7 +594,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
           errors.push({
             type: 'group-points-min',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
+            message: i18n.t('validator.groupPointsMin', { groupName: group.name, finalValue, totalPoints, selectionName: selection.name }),
             severity: ValidationSeverity.ERROR
           });
         }
@@ -602,7 +603,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
           errors.push({
             type: 'group-count-max',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
+            message: i18n.t('validator.groupCountMax', { groupName: group.name, finalValue, totalCount, selectionName: selection.name }),
             severity: ValidationSeverity.ERROR
           });
         }
@@ -610,7 +611,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
           errors.push({
             type: 'group-count-min',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
+            message: i18n.t('validator.groupCountMin', { groupName: group.name, finalValue, totalCount, selectionName: selection.name }),
             severity: ValidationSeverity.ERROR
           });
         }
@@ -626,13 +627,13 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
 function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection, roster, system, force, forceCatalogueId, counts, errors }) {
   const subject = measuresCost ? totalPoints : totalCount;
   const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection: selection, forceCatalogueId, counts });
-  const unit = measuresCost ? 'Punkte' : 'Auswahlen';
+  const unit = measuresCost ? i18n.t('validator.unitPoints') : i18n.t('validator.unitSelections');
 
   if (con.type === 'min' && subject < threshold) {
     errors.push({
       type: 'group-percent-min',
       selectionId: selection.id,
-      message: `Kategorie "${group.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      message: i18n.t('validator.groupPercentMin', { groupName: group.name, finalValue, unit, threshold, subject }),
       severity: ValidationSeverity.ERROR
     });
   }
@@ -640,7 +641,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints,
     errors.push({
       type: 'group-percent-max',
       selectionId: selection.id,
-      message: `Kategorie "${group.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      message: i18n.t('validator.groupPercentMax', { groupName: group.name, finalValue, unit, threshold, subject }),
       severity: ValidationSeverity.ERROR
     });
   }

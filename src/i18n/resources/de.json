@@ -271,6 +271,45 @@
     "retry": "Erneut versuchen",
     "loading": "Lade Regeltext..."
   },
+  "validator": {
+    "unitPoints": "Punkte",
+    "unitSelections": "Auswahlen",
+    "rosterLimit": "Punkteüberschreitung: Du hast {{current}} von maximal {{limit}} Punkten verwendet.",
+    "forceSelectorMin": "Pflichtauswahl „{{entryName}}\" fehlt in {{forceName}} (mindestens {{minValue}} benötigt).",
+    "forceRosterLimit": "{{forceName}} erfordert ein Punktelimit von mindestens {{requiredLimit}} (aktuell: {{currentLimit}}).",
+    "categoryMin": "Mindestens {{finalValue}} Auswahlen für \"{{catName}}\" in {{forceName}} benötigt (aktuell: {{count}}).",
+    "categoryMax": "Maximal {{finalValue}} Auswahlen für \"{{catName}}\" in {{forceName}} erlaubt (aktuell: {{count}}).",
+    "unresolvedEntry": "Auswahl \"{{selectionName}}\" verweist auf einen im Katalog nicht mehr vorhandenen Eintrag.",
+    "entryMin": "Option \"{{selectionName}}\" erfordert mindestens {{finalValue}} Auswahlen (aktuell: {{count}}).",
+    "entryMax": "Option \"{{selectionName}}\" erlaubt maximal {{finalValue}} Auswahlen (aktuell: {{count}}).",
+    "entryPercentMin": "Option \"{{selectionName}}\" muss mindestens {{finalValue}}% der {{unit}} ausmachen ({{threshold}}), ist aber {{subject}}.",
+    "entryPercentMax": "Option \"{{selectionName}}\" darf maximal {{finalValue}}% der {{unit}} ausmachen ({{threshold}}), ist aber {{subject}}.",
+    "groupPointsMax": "Kategorie \"{{groupName}}\" erlaubt maximal {{finalValue}} Punkte (aktuell: {{totalPoints}} Pkt. für {{selectionName}}).",
+    "groupPointsMin": "Kategorie \"{{groupName}}\" erfordert mindestens {{finalValue}} Punkte (aktuell: {{totalPoints}} Pkt. für {{selectionName}}).",
+    "groupCountMax": "Kategorie \"{{groupName}}\" erlaubt maximal {{finalValue}} Auswahlen (aktuell: {{totalCount}} für {{selectionName}}).",
+    "groupCountMin": "Kategorie \"{{groupName}}\" erfordert mindestens {{finalValue}} Auswahlen (aktuell: {{totalCount}} für {{selectionName}}).",
+    "groupPercentMin": "Kategorie \"{{groupName}}\" muss mindestens {{finalValue}}% der {{unit}} ausmachen ({{threshold}}), ist aber {{subject}}.",
+    "groupPercentMax": "Kategorie \"{{groupName}}\" darf maximal {{finalValue}}% der {{unit}} ausmachen ({{threshold}}), ist aber {{subject}}."
+  },
+  "armourSave": {
+    "explicit": "Explizit ({{value}}+)",
+    "explicitNamed": "Explizit ({{value}}+) [{{itemName}}]",
+    "scalySkin": "Schuppenhaut ({{value}}+)",
+    "shield": "Schild (-1)",
+    "fullPlate": "Plattenrüstung (4+)",
+    "heavyArmour": "Schwere Rüstung (5+)",
+    "lightArmour": "Leichte Rüstung (6+)",
+    "mountedThickSkinned": "Beritten (Dickhäutig) (-2)",
+    "mounted": "Beritten (-1)",
+    "barding": "Rossharnisch (-1)",
+    "modifier": "Modifikator ({{modifier}}) [{{itemName}}]",
+    "cavalry": "Kavallerie/Beritten (-1)",
+    "mountedImpliedByBarding": "Beritten (-1) [impliziert durch Rossharnisch]",
+    "wardSave": "Rettungswurf ({{value}}+)"
+  },
+  "rosterSerialization": {
+    "invalidRootElement": "Ungültiges Dateiformat: Das Wurzelelement muss <roster> sein."
+  },
   "previewBadge": {
     "title": "Dies ist die Preproduction-Instanz, nicht die Live-App."
   }
