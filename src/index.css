@@ -430,6 +430,14 @@ select option {
   text-shadow: 0 0 10px rgba(197, 155, 39, 0.3);
 }
 
+.preview-badge {
+  align-self: center;
+  font-family: var(--font-serif);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
 .desktop-nav-actions {
   display: flex;
   gap: 16px;

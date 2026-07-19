@@ -28,4 +28,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0018 | [Katalog-Mehrquellenbetrieb (Ergofarg und Lexicanum parallel)](0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md) | Accepted | 2026-07-18 |
 | 0019 | [Manuelle Versionierung über package.json statt Git-Tag-Prognose](0019-manuelle-versionierung-und-release-freigabe.md) | Accepted | 2026-07-18 |
 | 0020 | [Katalogdaten werden network-only geladen, kein Service-Worker-Cache](0020-katalogdaten-network-only-kein-service-worker-cache.md) | Accepted | 2026-07-19 |
+| 0021 | [Preview-Badge über Laufzeit-Hostname-Vergleich](0021-preview-badge-laufzeit-hostname-erkennung.md) | Accepted | 2026-07-19 |
 
