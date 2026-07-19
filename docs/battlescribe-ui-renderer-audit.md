@@ -38,6 +38,14 @@ dort korrekt eingesammelt, erscheint es überall konsistent:
 - `collectTriggeredMessages` / `ValidationSeverity` (`src/solver/modifierEvaluator.js`)
   — kontextabhängige `field="error"/"warning"/"info"`-Hinweistexte mit Schweregrad,
   konsumiert von `rosterValidator`/`RosterSidebar` (ergänzt in Main-Issue 33).
+- `isListConfiguration` (`src/solver/listConfiguration.js`) — entscheidet, ob eine
+  Selection eine „Listenkonfiguration" (armeeweiter Regel-Schalter, keine spielbare
+  Einheit; siehe `CONTEXT.md`) ist. `isListConfigurationCategory` /
+  `buildConfigurationRadioGroups` (`src/solver/listConfigurationView.js`) bauen
+  darauf das Editor-Anzeigemodell. Konsumiert von `PlayMode` (blendet
+  Listenkonfigurationen aus der Spieleansicht vollständig aus) und `RosterEditor`
+  (rendert sie als eigene `ListConfigurationCard` statt Einheitenkarten; ergänzt
+  in Main-Issue 34).
 
 ## Checkliste: Konstrukt → Renderer → Soll/Ist
 

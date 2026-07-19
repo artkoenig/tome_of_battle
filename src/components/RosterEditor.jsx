@@ -312,6 +312,20 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
               {/* Army-wide mandatory selectors not reachable through any force category */}
               {armyWideSelectors.length > 0 && (
+                isListConfigurationCategory({
+                  system, force, selections: armyWideSelectorSelections,
+                  catalogueId: force.catalogueId || roster.catalogueId
+                }) ? (
+                  <ListConfigurationCard
+                    categoryName="Armeeweite Auswahl"
+                    selections={armyWideSelectorSelections}
+                    system={system}
+                    roster={roster}
+                    force={force}
+                    activeCatalogue={activeCatalogue}
+                    updateSubSelection={updateSubSelection}
+                  />
+                ) : (
                 <div className="roster-category-group" style={{ marginBottom: '24px' }}>
                   <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
                     <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>Armeeweite Auswahl</h3>
@@ -349,10 +363,25 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     </div>
                   )}
                 </div>
+                )
               )}
 
               {/* Uncategorized Selections (Fallback) */}
               {uncategorizedSelections.length > 0 && (
+                isListConfigurationCategory({
+                  system, force, selections: uncategorizedSelections,
+                  catalogueId: force.catalogueId || roster.catalogueId
+                }) ? (
+                  <ListConfigurationCard
+                    categoryName="Sonstiges"
+                    selections={uncategorizedSelections}
+                    system={system}
+                    roster={roster}
+                    force={force}
+                    activeCatalogue={activeCatalogue}
+                    updateSubSelection={updateSubSelection}
+                  />
+                ) : (
                 <div className="roster-category-group" style={{ marginBottom: '24px' }}>
                   <h3 className="text-subheading" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>Sonstiges</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -377,6 +406,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     })}
                   </div>
                 </div>
+                )
               )}
 
               {remainingPoints > 0 && remainingPoints <= 50 && (
