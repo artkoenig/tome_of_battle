@@ -60,6 +60,26 @@ describe('useRoster Hook', () => {
     expect(result.current.roster.forces[0].selections[0].name).toBe('Space Marine');
   });
 
+  it('addUnitWithSubSelection creates the main entry and its chosen option in one step', () => {
+    const mockSave = vi.fn();
+    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+
+    const mainEntry = { id: 'entry-campaign', name: 'Campaign/Scenario rules' };
+    const optionEntry = { id: 'opt-matched-play', name: 'Matched Play' };
+
+    act(() => {
+      result.current.addUnitWithSubSelection(mainEntry, 'cat-special-rules', optionEntry);
+    });
+
+    expect(result.current.roster.forces[0].selections.length).toBe(1);
+    const mainSel = result.current.roster.forces[0].selections[0];
+    expect(mainSel.name).toBe('Campaign/Scenario rules');
+    expect(mainSel.category).toBe('cat-special-rules');
+    expect(mainSel.selections.length).toBe(1);
+    expect(mainSel.selections[0].name).toBe('Matched Play');
+    expect(mainSel.selections[0].selectionEntryId || mainSel.selections[0].entryLinkId).toBe('opt-matched-play');
+  });
+
   it('removeUnit removes a selection', () => {
     const rosterWithUnit = {
       ...initialRoster,

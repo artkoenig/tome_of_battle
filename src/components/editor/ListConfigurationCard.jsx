@@ -31,26 +31,33 @@ function ConfigurationOptionRow({ label, selected, onSelect }) {
 
 /**
  * Renders a whole category of list configurations as a single collapsible card
- * (see Child-Issue 02). Collapsed, it shows the currently chosen option of each
- * main entry as an info-accented badge; expanded, it lists every option of every
- * main entry as a flat set of radio rows (each group led by a „Keine" row),
- * without repeating the main entries' names as sub-headings. Selecting a row
- * writes straight to the roster — no cost slot, no copy/delete, no configurator
- * dialog.
+ * (see Child-Issue 02, main-issue 35). Collapsed, it shows the currently chosen
+ * option of each main entry as an info-accented badge; expanded, it lists every
+ * option of every main entry as a flat set of radio rows (each group led by a
+ * „Keine" row), without repeating the main entries' names as sub-headings.
+ * Selecting a row writes straight to the roster — no cost slot, no copy/delete,
+ * no configurator dialog. When `catalogueEntries` is supplied, main entries the
+ * roster has no selection for yet render in a virtual „Keine" state built from
+ * the catalogue definition, and picking one of their options creates the
+ * roster selection on the spot (main-issue 35) — this is how the card can
+ * appear before the player has chosen anything in the category at all.
  */
 export default function ListConfigurationCard({
   categoryName,
+  categoryId,
   selections,
+  catalogueEntries = null,
   system,
   roster,
   force,
   activeCatalogue,
-  updateSubSelection
+  updateSubSelection,
+  addUnitWithSubSelection
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const catalogueId = force?.catalogueId || roster?.catalogueId || activeCatalogue?.id || null;
-  const radioGroups = buildConfigurationRadioGroups({ system, force, selections, catalogueId });
+  const radioGroups = buildConfigurationRadioGroups({ system, selections, catalogueEntries, catalogueId });
 
   const selectedBadges = radioGroups
     .filter(group => group.selectedOption)
@@ -58,8 +65,15 @@ export default function ListConfigurationCard({
 
   // Radio semantics per main entry: picking an option clears whichever option
   // was active before (unless it is the very same one) and then sets the new one.
+  // A virtual group (no roster selection for this main entry yet) has no node
+  // updateSubSelection could target, so its first pick creates the main entry's
+  // selection and the chosen option together in one step.
   const selectOption = (group, option) => {
     if (option.selected) return;
+    if (group.isVirtual) {
+      addUnitWithSubSelection(group.entryDef, categoryId, option.def);
+      return;
+    }
     if (group.selectedOption) {
       updateSubSelection(group.mainEntrySelectionId, group.selectedOption.def, 'decrement');
     }

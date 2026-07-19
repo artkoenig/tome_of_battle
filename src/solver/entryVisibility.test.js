@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory } from './entryVisibility.js';
+import { getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory, getVisibleCatalogueEntriesForCategory } from './entryVisibility.js';
 
 // Category ids used across the fixture.
 const CAT_CORE = 'cat-core';
@@ -96,5 +96,42 @@ describe('getEffectiveEntryCategoryLinks / isEntryPrimaryInCategory', () => {
     const { system } = buildSystem();
     const dangling = { id: 'x', name: 'X', type: 'selectionEntry', targetId: 'does-not-exist' };
     expect(getEffectiveEntryCategoryLinks(dangling, { system, roster, selectionCounts: APPLIED, force })).toEqual([]);
+  });
+});
+
+// Extracted from CategoryUnitAdder's own enumeration (main-issue 35) so
+// list-configuration category classification can reuse the exact same
+// catalogue membership CategoryUnitAdder already offers as addable units.
+describe('getVisibleCatalogueEntriesForCategory', () => {
+  it('returns entryLinks whose effective primary category matches, honouring modifier-driven recategorisation', () => {
+    const { link, system } = buildSystem();
+    const armyCatalogue = system.catalogues.find(c => c.id === 'army-cat');
+
+    expect(getVisibleCatalogueEntriesForCategory(armyCatalogue, CAT_CORE, {
+      system, roster, selectionCounts: APPLIED, force
+    })).toEqual([link]);
+
+    expect(getVisibleCatalogueEntriesForCategory(armyCatalogue, CAT_CORE, {
+      system, roster, selectionCounts: GATED_OFF, force
+    })).toEqual([]);
+  });
+
+  it('excludes a conditionally hidden entry', () => {
+    const hiddenLink = {
+      id: 'link-hidden', name: 'Hidden Unit', type: 'selectionEntry', targetId: 'tgt-hidden', categoryLinks: [], hidden: true
+    };
+    const target = { id: 'tgt-hidden', name: 'Hidden Unit', type: 'unit', categoryLinks: [{ targetId: CAT_CORE, primary: true }] };
+    const catalogue = { id: 'army-cat-2', entryLinks: [hiddenLink], selectionEntries: [] };
+    const sys = { catalogues: [catalogue, { id: 'lib-2', selectionEntries: [target] }] };
+
+    expect(getVisibleCatalogueEntriesForCategory(catalogue, CAT_CORE, {
+      system: sys, roster, selectionCounts: {}, force
+    })).toEqual([]);
+  });
+
+  it('returns an empty list without a catalogue', () => {
+    expect(getVisibleCatalogueEntriesForCategory(null, CAT_CORE, {
+      system: {}, roster, selectionCounts: {}, force
+    })).toEqual([]);
   });
 });

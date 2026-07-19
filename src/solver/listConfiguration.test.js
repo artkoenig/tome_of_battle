@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { isListConfiguration } from './listConfiguration.js';
+import { isListConfiguration, isListConfigurationEntry } from './listConfiguration.js';
 import { parseCatalogueXML } from '../parser/xmlParser.js';
 
 // JSDOM stellt DOMParser für den Node-Testlauf bereit (wie in den übrigen Solver-Tests).
@@ -133,5 +133,43 @@ describe('isListConfiguration – Ergofarg-Datenquelle bleibt unverändert (AC #
     selections.forEach(sel => {
       expect(classify(force, sel, ergofargCatalogue.id)).toBe(false);
     });
+  });
+});
+
+// Katalog-Pendant (main-issue 35): dasselbe Strukturkriterium, aber gegen die
+// rohe Katalog-Eintragsdefinition geprüft, ohne dass je eine Roster-Selection
+// existiert haben muss — Grundlage für eine noch komplett leere
+// Listenkonfigurations-Kategorie, die sofort als Kachel rendert.
+describe('isListConfigurationEntry – Katalog-Pendant ohne Roster-Selection', () => {
+  const findSharedEntry = name => switchCatalogue.sharedSelectionEntries.find(e => e.name === name);
+
+  it('erkennt „Allow experimental rules?" direkt aus der Katalogdefinition', () => {
+    const entry = findSharedEntry('Allow experimental rules?');
+    expect(isListConfigurationEntry({ system, entry, catalogueId: switchCatalogue.id })).toBe(true);
+  });
+
+  it('erkennt „Allow special characters?" direkt aus der Katalogdefinition', () => {
+    const entry = findSharedEntry('Allow special characters?');
+    expect(isListConfigurationEntry({ system, entry, catalogueId: switchCatalogue.id })).toBe(true);
+  });
+
+  it('liefert false für einen Katalog-Eintrag mit Profil (Bolt Thrower)', () => {
+    const entry = findSharedEntry('Bolt Thrower');
+    expect(isListConfigurationEntry({ system, entry, catalogueId: switchCatalogue.id })).toBe(false);
+  });
+
+  it('liefert false für einen Katalog-Eintrag mit Kosten (Magic Level 4)', () => {
+    const entry = findSharedEntry('Magic Level 4');
+    expect(isListConfigurationEntry({ system, entry, catalogueId: switchCatalogue.id })).toBe(false);
+  });
+
+  it('liefert false für eine echte Einheit (Night Goblins, Ergofarg-Katalog)', () => {
+    const entry = ergofargCatalogue.selectionEntries.find(e => e.id === NIGHT_GOBLIN_UNIT_ID);
+    expect(isListConfigurationEntry({ system, entry, catalogueId: ergofargCatalogue.id })).toBe(false);
+  });
+
+  it('liefert false ohne Eintrag oder ohne System', () => {
+    expect(isListConfigurationEntry({ system, entry: null })).toBe(false);
+    expect(isListConfigurationEntry({ system: null, entry: findSharedEntry('Allow experimental rules?') })).toBe(false);
   });
 });

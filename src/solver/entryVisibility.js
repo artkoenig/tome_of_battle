@@ -109,3 +109,39 @@ export function isSelectionEntryHidden(entry, system, roster, selectionCounts, f
   // both its own and its group's conditions pass.
   return evaluateHiddenFlag(isHidden, collectEntryModifiers(entry, res), ctx);
 }
+
+/**
+ * All catalogue entries/entryLinks of `activeCatalogue` whose effective primary
+ * category is `categoryId` and that are not currently hidden — the same
+ * membership `CategoryUnitAdder` offers as addable units for a category,
+ * extracted so other consumers (e.g. list-configuration category
+ * classification) can enumerate a category's catalogue definition without
+ * re-deriving it.
+ *
+ * @param {Object} activeCatalogue the catalogue whose own entries to scan.
+ * @param {string} categoryId
+ * @param {VisibilityContext} context
+ */
+export function getVisibleCatalogueEntriesForCategory(activeCatalogue, categoryId, context) {
+  if (!activeCatalogue) return [];
+
+  const { system, roster, selectionCounts, force } = context;
+  const items = [];
+  const checkEntry = (entry) => {
+    if (!isEntryPrimaryInCategory(entry, categoryId, context)) return;
+    if (isSelectionEntryHidden(entry, system, roster, selectionCounts, null, force)) return;
+    items.push(entry);
+  };
+
+  activeCatalogue.selectionEntries?.forEach(checkEntry);
+  activeCatalogue.entryLinks?.forEach(checkEntry);
+  activeCatalogue.sharedSelectionEntries?.forEach(checkEntry);
+
+  const seen = new Set();
+  return items.filter(entry => {
+    const resolved = resolveEntry(system, entry);
+    if (!resolved || seen.has(resolved.id)) return false;
+    seen.add(resolved.id);
+    return true;
+  });
+}

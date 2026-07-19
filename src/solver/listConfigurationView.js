@@ -1,4 +1,4 @@
-import { isListConfiguration } from './listConfiguration.js';
+import { isListConfiguration, isListConfigurationEntry } from './listConfiguration.js';
 import { resolveEntry } from './catalogResolver.js';
 import { getUnitOptions } from './optionsCollector.js';
 
@@ -28,6 +28,20 @@ export function isListConfigurationCategory({ system, force, selections, catalog
   );
 }
 
+/**
+ * Katalog-Pendant zu isListConfigurationCategory: true, sobald jeder aktuell
+ * sichtbare Katalog-Eintrag der Kategorie (siehe
+ * getVisibleCatalogueEntriesForCategory) eine Listenkonfiguration ist —
+ * unabhängig davon, ob schon eine Roster-Selection existiert. Das ist, was
+ * eine noch komplett leere Listenkonfigurations-Kategorie (z. B. „Special
+ * List Rules" direkt nach dem Import) sofort als Kachel statt über den
+ * Aushebe-Dialog rendern lässt (main-issue 35).
+ */
+export function isListConfigurationCategoryFromEntries({ system, entries, catalogueId = null }) {
+  if (!Array.isArray(entries) || entries.length === 0) return false;
+  return entries.every(entry => isListConfigurationEntry({ system, entry, catalogueId }));
+}
+
 // A stored sub-selection references its option through entryLinkId (linked
 // entries) or selectionEntryId (inline entries); both equal the option def's own
 // id, which is what the editor's increment/decrement actions key on.
@@ -48,8 +62,47 @@ function activeOptionIds(mainEntrySelection) {
  * conditionally hidden, and staying context-free keeps this builder pure and
  * independent of roster-count computation.
  */
-export function buildConfigurationRadioGroups({ system, selections, catalogueId = null }) {
-  return (selections || []).map(mainEntry => {
+// Ein noch nicht gewählter Haupteintrag existiert nicht als Roster-Selection.
+// Dieser Platzhalter hat exakt die Form, die createSelectionFromDef (useRoster.js)
+// für einen frisch angelegten, noch kinderlosen Eintrag erzeugen würde — mit
+// leeren `selections`, also im „Keine"-Zustand — damit getUnitOptions/
+// activeOptionIds ihn wie eine echte Selection behandeln können.
+function buildVirtualMainEntry(entry) {
+  return {
+    id: `virtual-${entry.id}`,
+    entryLinkId: entry.targetId ? entry.id : null,
+    selectionEntryId: entry.targetId ? null : entry.id,
+    selections: []
+  };
+}
+
+/**
+ * Baut Haupteinträge entweder aus vorhandenen Roster-Selections (Standardfall,
+ * `catalogueEntries` weggelassen — Armeeweite Auswahl/Sonstiges) oder, wenn
+ * `catalogueEntries` übergeben wird, aus der vollständigen Katalogdefinition
+ * einer Listenkonfigurations-Kategorie: für jeden Katalog-Eintrag wird die
+ * passende vorhandene Selection verwendet, oder ein virtueller Platzhalter im
+ * „Keine"-Zustand, falls der Spieler diesen Eintrag noch nicht gewählt hat.
+ */
+function resolveMainEntries(selections, catalogueEntries) {
+  if (!catalogueEntries) {
+    return (selections || []).map(selection => ({ selection, entryDef: null, isVirtual: false }));
+  }
+
+  const existingByEntryId = new Map(
+    (selections || []).map(selection => [selection.entryLinkId || selection.selectionEntryId, selection])
+  );
+
+  return catalogueEntries.map(entryDef => {
+    const existing = existingByEntryId.get(entryDef.id);
+    return existing
+      ? { selection: existing, entryDef, isVirtual: false }
+      : { selection: buildVirtualMainEntry(entryDef), entryDef, isVirtual: true };
+  });
+}
+
+export function buildConfigurationRadioGroups({ system, selections, catalogueEntries = null, catalogueId = null }) {
+  return resolveMainEntries(selections, catalogueEntries).map(({ selection: mainEntry, entryDef, isVirtual }) => {
     const optionItems = getUnitOptions(system, catalogueId, mainEntry, null);
     const selectedIds = activeOptionIds(mainEntry);
 
@@ -65,6 +118,8 @@ export function buildConfigurationRadioGroups({ system, selections, catalogueId 
 
     return {
       mainEntrySelectionId: mainEntry.id,
+      entryDef,
+      isVirtual,
       options,
       selectedOption: options.find(option => option.selected) || null
     };

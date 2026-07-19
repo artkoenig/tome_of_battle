@@ -184,6 +184,34 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     setSelectedSelectionId(newUnit.id);
   };
 
+  // Für einen Haupteintrag ohne existierende Roster-Selection: legt die
+  // Top-Level-Selection an und setzt die gewählte Option direkt als Kind, in
+  // einem einzigen Roster-Update — der Endzustand entspricht exakt dem, was
+  // addUnit gefolgt von updateSubSelection(..., 'increment') für einen
+  // bereits existierenden Haupteintrag erzeugt.
+  const addUnitWithSubSelection = (entry, categoryId, optionEntry) => {
+    const newUnit = createSelectionFromDef(entry, categoryId);
+    if (!newUnit) return;
+
+    const optionSelection = createSelectionFromDef(optionEntry);
+    if (optionSelection) {
+      newUnit.selections = [...newUnit.selections, optionSelection];
+    }
+
+    setRoster(prev => {
+      const updatedForces = prev.forces.map(force => {
+        return {
+          ...force,
+          selections: [...(force.selections || []), newUnit]
+        };
+      });
+      return {
+        ...prev,
+        forces: updatedForces
+      };
+    });
+  };
+
   const removeUnit = (selectionId) => {
     setRoster(prev => {
       const updatedForces = prev.forces.map(force => {
@@ -354,6 +382,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     selectedRosterSelection,
     setSelectedRosterSelection,
     addUnit,
+    addUnitWithSubSelection,
     removeUnit,
     copyUnit,
     updateSubSelection,

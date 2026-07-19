@@ -2,13 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getVisibleCatalogueEntriesForCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
 import UnitSelectionCard from './editor/UnitSelectionCard';
 import ListConfigurationCard from './editor/ListConfigurationCard';
-import { isListConfigurationCategory } from '../solver/listConfigurationView';
+import { isListConfigurationCategory, isListConfigurationCategoryFromEntries } from '../solver/listConfigurationView';
 import AutoFillSuggestions from './editor/AutoFillSuggestions';
 import RulesIndexDialog from './RulesIndexDialog';
 import { useRuleUrl } from '../hooks/useRuleUrl';
@@ -22,6 +22,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     selectedRosterSelection,
     setSelectedRosterSelection,
     addUnit,
+    addUnitWithSubSelection,
     removeUnit,
     copyUnit,
     updateSubSelection,
@@ -200,25 +201,34 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
                   const catName = catDef ? catDef.name : link.name;
 
-                  // A category whose selections are exclusively list configurations
-                  // (classification from Child-Issue 01) collapses into a single
-                  // configuration card instead of one unit card per switch.
-                  if (isListConfigurationCategory({
+                  // A category whose catalogue-defined entries are exclusively list
+                  // configurations (classification from Child-Issue 01, catalogue-based
+                  // since main-issue 35) collapses into a single configuration card
+                  // instead of one unit card per switch — even before any of them has
+                  // been selected, since the catalogue (not the roster) decides
+                  // membership, matching what CategoryUnitAdder already offers here.
+                  const forceCatalogue = system.catalogues?.find(c => c.id === force.catalogueId) || activeCatalogue;
+                  const categoryEntries = getVisibleCatalogueEntriesForCategory(forceCatalogue, link.targetId, {
+                    system, roster, selectionCounts, force
+                  });
+                  if (isListConfigurationCategoryFromEntries({
                     system,
-                    force,
-                    selections,
+                    entries: categoryEntries,
                     catalogueId: force.catalogueId || roster.catalogueId
                   })) {
                     return (
                       <ListConfigurationCard
                         key={link.targetId}
                         categoryName={catName}
+                        categoryId={link.targetId}
                         selections={selections}
+                        catalogueEntries={categoryEntries}
                         system={system}
                         roster={roster}
                         force={force}
                         activeCatalogue={activeCatalogue}
                         updateSubSelection={updateSubSelection}
+                        addUnitWithSubSelection={addUnitWithSubSelection}
                       />
                     );
                   }

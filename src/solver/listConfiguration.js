@@ -82,13 +82,35 @@ function isTopLevelForceSelection(force, selection) {
   return (force?.selections || []).some(candidate => candidate.id === selection.id);
 }
 
+// Shared structural core of "Listenkonfiguration" (siehe CONTEXT.md): Typ
+// `upgrade`, gesamter Teilbaum profil- und kostenlos. Anwendbar sowohl auf
+// eine bereits aufgelöste Roster-Selection als auch auf eine rohe
+// Katalog-Eintragsdefinition — die beiden „Top-Level"-Ausprägungen (Force-
+// Selection vs. Katalog-Deklaration) prüfen die jeweiligen Aufrufer selbst.
+function isListConfigurationStructure(system, resolvedEntry, catalogueId) {
+  if (!resolvedEntry) return false;
+  if (resolvedEntryType(resolvedEntry) !== DEFAULT_ENTRY_TYPE) return false;
+  return isSubtreeProfileAndCostFree(system, resolvedEntry, catalogueId, new Set());
+}
+
 export function isListConfiguration({ system, force, selection, catalogueId = null }) {
   if (!system || !force || !selection) return false;
   if (!isTopLevelForceSelection(force, selection)) return false;
 
   const resolvedEntry = resolveSelectionEntry(system, selection, catalogueId);
-  if (!resolvedEntry) return false;
-  if (resolvedEntryType(resolvedEntry) !== DEFAULT_ENTRY_TYPE) return false;
+  return isListConfigurationStructure(system, resolvedEntry, catalogueId);
+}
 
-  return isSubtreeProfileAndCostFree(system, resolvedEntry, catalogueId, new Set());
+/**
+ * Katalog-Pendant zu isListConfiguration: prüft dasselbe Strukturkriterium
+ * gegen eine rohe Katalog-Eintragsdefinition (selectionEntry/entryLink) statt
+ * gegen eine Roster-Selection — nutzbar, bevor der Spieler diesen Eintrag
+ * überhaupt gewählt hat. Die „Top-Level"-Bedingung ist hier implizit: der
+ * Aufrufer muss bereits nur Einträge übergeben, die direkt unter der
+ * Kategorie deklariert sind (siehe getVisibleCatalogueEntriesForCategory).
+ */
+export function isListConfigurationEntry({ system, entry, catalogueId = null }) {
+  if (!system || !entry) return false;
+  const resolvedEntry = resolveEntry(system, entry, catalogueId);
+  return isListConfigurationStructure(system, resolvedEntry, catalogueId);
 }

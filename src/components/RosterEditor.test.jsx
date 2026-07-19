@@ -27,6 +27,7 @@ vi.mock('../contexts/SettingsContext', () => ({
 
 // Mock useRoster custom hook
 const mockAddUnit = vi.fn();
+const mockAddUnitWithSubSelection = vi.fn();
 const mockRemoveUnit = vi.fn();
 const mockCopyUnit = vi.fn();
 const mockUpdateSubSelection = vi.fn();
@@ -41,6 +42,7 @@ let mockCanRedo = false;
 // Mock validator spy functions
 const mockResolveEntry = vi.fn().mockReturnValue({ id: 'entry-resolved', name: 'Resolved Entry' });
 const mockIsEntryPrimaryInCategory = vi.fn().mockReturnValue(false);
+const mockGetVisibleCatalogueEntriesForCategory = vi.fn().mockReturnValue([]);
 const mockFindEntryInSystem = vi.fn().mockReturnValue({ id: 'entry-raw', name: 'Raw Entry' });
 const mockCollectUnitProfilesAndRules = vi.fn().mockReturnValue({ profiles: [], rules: [] });
 
@@ -83,6 +85,7 @@ vi.mock('../hooks/useRoster', () => ({
     selectedRosterSelection: null,
     setSelectedRosterSelection: mockSetSelectedRosterSelection,
     addUnit: mockAddUnit,
+    addUnitWithSubSelection: mockAddUnitWithSubSelection,
     removeUnit: mockRemoveUnit,
     copyUnit: mockCopyUnit,
     updateSubSelection: mockUpdateSubSelection,
@@ -111,6 +114,7 @@ vi.mock('../solver/validator', () => ({
   calculateRosterCosts: () => ({ pts: 420 }),
   resolveEntry: (...args) => mockResolveEntry(...args),
   isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
+  getVisibleCatalogueEntriesForCategory: (...args) => mockGetVisibleCatalogueEntriesForCategory(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   getSelectionTotalCost: (sel) => sel.cost,
@@ -145,8 +149,10 @@ vi.mock('./editor/ListConfigurationCard', () => ({
 // The list-configuration classification is exercised in listConfigurationView.test.js;
 // here it is mocked so the editor's branch (config card vs. unit cards) can be steered.
 const mockIsListConfigurationCategory = vi.fn();
+const mockIsListConfigurationCategoryFromEntries = vi.fn();
 vi.mock('../solver/listConfigurationView', () => ({
   isListConfigurationCategory: (...args) => mockIsListConfigurationCategory(...args),
+  isListConfigurationCategoryFromEntries: (...args) => mockIsListConfigurationCategoryFromEntries(...args),
 }));
 
 describe('RosterEditor Component', () => {
@@ -181,6 +187,8 @@ describe('RosterEditor Component', () => {
     mockCanUndo = false;
     mockCanRedo = false;
     mockIsListConfigurationCategory.mockReturnValue(false);
+    mockIsListConfigurationCategoryFromEntries.mockReturnValue(false);
+    mockGetVisibleCatalogueEntriesForCategory.mockReturnValue([]);
   });
 
   it('renders the roster header details and cost indicators', () => {
@@ -229,9 +237,13 @@ describe('RosterEditor Component', () => {
 
   describe('List-configuration categories', () => {
     it('renders a single ListConfigurationCard instead of unit cards for an all-config category', () => {
-      // Treat the Core category (cat-core) as a pure list-configuration category.
-      mockIsListConfigurationCategory.mockImplementation(({ selections }) =>
-        (selections || []).length > 0 && selections.every(s => s.category === 'cat-core'));
+      // Treat the Core category (cat-core) as a pure list-configuration category:
+      // the catalogue enumerates a switch entry for it, and the classification
+      // (catalogue-based since main-issue 35) accepts that enumeration.
+      mockGetVisibleCatalogueEntriesForCategory.mockImplementation((catalogue, categoryId) =>
+        categoryId === 'cat-core' ? [{ id: 'switch-1' }] : []);
+      mockIsListConfigurationCategoryFromEntries.mockImplementation(({ entries }) =>
+        (entries || []).length > 0);
 
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
 
@@ -243,6 +255,28 @@ describe('RosterEditor Component', () => {
 
       // The Heroes category keeps its normal unit card.
       expect(screen.getByTestId('unit-card-sel-1')).toBeDefined();
+    });
+
+    it('renders the ListConfigurationCard even when the category has no selections yet (main-issue 35)', () => {
+      // Core has no selections at all in this roster — the old, selection-based
+      // classification could never have shown a card here; the catalogue-based
+      // one must, since it never looks at what's already chosen.
+      mockRoster = {
+        ...defaultMockRoster,
+        forces: [{
+          ...defaultMockRoster.forces[0],
+          selections: [{ id: 'sel-1', name: 'Paladin', category: 'cat-heroes', cost: 100 }]
+        }]
+      };
+      mockGetVisibleCatalogueEntriesForCategory.mockImplementation((catalogue, categoryId) =>
+        categoryId === 'cat-core' ? [{ id: 'switch-1' }] : []);
+      mockIsListConfigurationCategoryFromEntries.mockImplementation(({ entries }) =>
+        (entries || []).length > 0);
+
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+
+      expect(screen.getByTestId('list-config-card').textContent).toBe('Core');
+      expect(screen.queryByTestId('adder-cat-core')).toBeNull();
     });
   });
 

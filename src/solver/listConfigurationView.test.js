@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { isListConfigurationCategory, buildConfigurationRadioGroups } from './listConfigurationView.js';
+import { isListConfigurationCategory, isListConfigurationCategoryFromEntries, buildConfigurationRadioGroups } from './listConfigurationView.js';
 import { parseCatalogueXML } from '../parser/xmlParser.js';
 
 // JSDOM provides DOMParser for the Node test run (as in the other solver tests).
@@ -30,14 +30,17 @@ const system = {
   catalogues: [switchCatalogue, ergofargCatalogue]
 };
 
-const switchEntryIdByName = name =>
-  switchCatalogue.sharedSelectionEntries.find(entry => entry.name === name)?.id;
+const findSharedEntry = name => switchCatalogue.sharedSelectionEntries.find(entry => entry.name === name);
+const switchEntryIdByName = name => findSharedEntry(name)?.id;
 const ALLOW_EXPERIMENTAL_ID = switchEntryIdByName('Allow experimental rules?');
 const ALLOW_SPECIALS_ID = switchEntryIdByName('Allow special characters?');
+const ALLOW_EXPERIMENTAL_ENTRY = findSharedEntry('Allow experimental rules?');
+const ALLOW_SPECIALS_ENTRY = findSharedEntry('Allow special characters?');
 
 // A real playable unit from the old data source — used to prove that a category
 // containing even one real unit does not collapse into a configuration card.
 const NIGHT_GOBLIN_UNIT_ID = 'ed65-df1a-50a2-c3ac';
+const NIGHT_GOBLIN_ENTRY = ergofargCatalogue.selectionEntries.find(e => e.id === NIGHT_GOBLIN_UNIT_ID);
 
 const selection = (id, entryId, children = []) => ({
   id,
@@ -80,6 +83,30 @@ describe('isListConfigurationCategory', () => {
   });
 });
 
+// Katalog-Pendant (main-issue 35): entscheidet allein aus der Katalogdefinition
+// der Kategorie, ganz ohne force/selections — Grundlage dafür, dass eine noch
+// komplett leere Listenkonfigurations-Kategorie sofort als Kachel rendert,
+// statt über den Aushebe-Dialog.
+describe('isListConfigurationCategoryFromEntries', () => {
+  it('is true when every catalogue entry of the category is a list configuration, without any roster selection', () => {
+    expect(isListConfigurationCategoryFromEntries({
+      system, entries: [ALLOW_EXPERIMENTAL_ENTRY, ALLOW_SPECIALS_ENTRY], catalogueId: switchCatalogue.id
+    })).toBe(true);
+  });
+
+  it('is false when a real unit is mixed into the catalogue entries', () => {
+    expect(isListConfigurationCategoryFromEntries({
+      system, entries: [ALLOW_EXPERIMENTAL_ENTRY, NIGHT_GOBLIN_ENTRY], catalogueId: ergofargCatalogue.id
+    })).toBe(false);
+  });
+
+  it('is false for an empty catalogue enumeration', () => {
+    expect(isListConfigurationCategoryFromEntries({
+      system, entries: [], catalogueId: switchCatalogue.id
+    })).toBe(false);
+  });
+});
+
 describe('buildConfigurationRadioGroups', () => {
   it('exposes every option of each main entry with none active by default', () => {
     const experimental = selection('sel-experimental', ALLOW_EXPERIMENTAL_ID);
@@ -118,5 +145,51 @@ describe('buildConfigurationRadioGroups', () => {
     });
     expect(groups).toHaveLength(2);
     expect(groups[1].options.length).toBeGreaterThan(0);
+  });
+});
+
+// catalogueEntries (main-issue 35): Haupteinträge ohne existierende Roster-
+// Selection werden virtuell im „Keine"-Zustand aus der Katalogdefinition
+// gebaut, statt eine echte Selection vorauszusetzen.
+describe('buildConfigurationRadioGroups – mit catalogueEntries', () => {
+  it('builds a virtual "Keine" group for a catalogue entry with no roster selection yet', () => {
+    const [group] = buildConfigurationRadioGroups({
+      system, selections: [], catalogueEntries: [ALLOW_EXPERIMENTAL_ENTRY], catalogueId: switchCatalogue.id
+    });
+
+    expect(group.isVirtual).toBe(true);
+    expect(group.entryDef).toBe(ALLOW_EXPERIMENTAL_ENTRY);
+    expect(group.options).toHaveLength(5);
+    expect(group.options.every(o => o.selected === false)).toBe(true);
+    expect(group.selectedOption).toBeNull();
+  });
+
+  it('uses the real roster selection instead of a virtual one when it already exists', () => {
+    const chosenOptionId = '5dac-1d03-5bb7-730b'; // "…from GW-website"
+    const child = selection('sub-1', chosenOptionId);
+    const experimental = selection('sel-experimental', ALLOW_EXPERIMENTAL_ID, [child]);
+
+    const [group] = buildConfigurationRadioGroups({
+      system, selections: [experimental], catalogueEntries: [ALLOW_EXPERIMENTAL_ENTRY], catalogueId: switchCatalogue.id
+    });
+
+    expect(group.isVirtual).toBe(false);
+    expect(group.mainEntrySelectionId).toBe('sel-experimental');
+    expect(group.selectedOption.optionId).toBe(chosenOptionId);
+  });
+
+  it('mixes virtual and real groups when only some catalogue entries have a selection', () => {
+    const experimental = selection('sel-experimental', ALLOW_EXPERIMENTAL_ID);
+    const groups = buildConfigurationRadioGroups({
+      system,
+      selections: [experimental],
+      catalogueEntries: [ALLOW_EXPERIMENTAL_ENTRY, ALLOW_SPECIALS_ENTRY],
+      catalogueId: switchCatalogue.id
+    });
+
+    expect(groups).toHaveLength(2);
+    expect(groups[0].isVirtual).toBe(false);
+    expect(groups[1].isVirtual).toBe(true);
+    expect(groups[1].entryDef).toBe(ALLOW_SPECIALS_ENTRY);
   });
 });

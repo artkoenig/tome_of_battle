@@ -16,6 +16,8 @@ vi.mock('../../solver/listConfigurationView', () => ({
 const forgeworldDef = { id: 'opt-fw' };
 const gwWebsiteDef = { id: 'opt-gw' };
 const armyBooksDef = { id: 'opt-ab' };
+const campaignRulesEntryDef = { id: 'entry-campaign' };
+const campaignOptionDef = { id: 'opt-campaign' };
 
 // Two main entries: the first has "…from GW-website" active, the second none.
 const buildGroups = () => ([
@@ -36,17 +38,35 @@ const buildGroups = () => ([
   },
 ]);
 
+// A main entry the roster has no selection for yet — its group is "virtual",
+// built straight from the catalogue definition (main-issue 35).
+const buildGroupsWithVirtualEntry = () => ([
+  ...buildGroups(),
+  {
+    mainEntrySelectionId: 'virtual-entry-campaign',
+    entryDef: campaignRulesEntryDef,
+    isVirtual: true,
+    options: [
+      { optionId: 'opt-campaign', name: 'Matched Play', def: campaignOptionDef, selected: false },
+    ],
+    selectedOption: null,
+  },
+]);
+
 const mockUpdateSubSelection = vi.fn();
+const mockAddUnitWithSubSelection = vi.fn();
 
 const renderCard = () => render(
   <ListConfigurationCard
     categoryName="Special list rules"
+    categoryId="cat-special-rules"
     selections={[{ id: 'main-experimental' }, { id: 'main-specials' }]}
     system={{ id: 'sys' }}
     roster={{ catalogueId: 'cat-1' }}
     force={{ catalogueId: 'cat-1' }}
     activeCatalogue={{ id: 'cat-1' }}
     updateSubSelection={mockUpdateSubSelection}
+    addUnitWithSubSelection={mockAddUnitWithSubSelection}
   />
 );
 
@@ -131,6 +151,18 @@ describe('ListConfigurationCard', () => {
 
     fireEvent.click(screen.getByText('From GW-website'));
 
+    expect(mockUpdateSubSelection).not.toHaveBeenCalled();
+  });
+
+  it('creates the roster selection when picking an option of a main entry with no selection yet (virtual group)', () => {
+    mockBuildConfigurationRadioGroups.mockReturnValue(buildGroupsWithVirtualEntry());
+    renderCard();
+    fireEvent.click(screen.getByRole('button'));
+
+    fireEvent.click(screen.getByText('Matched Play'));
+
+    expect(mockAddUnitWithSubSelection).toHaveBeenCalledTimes(1);
+    expect(mockAddUnitWithSubSelection).toHaveBeenCalledWith(campaignRulesEntryDef, 'cat-special-rules', campaignOptionDef);
     expect(mockUpdateSubSelection).not.toHaveBeenCalled();
   });
 

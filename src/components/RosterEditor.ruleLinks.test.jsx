@@ -63,6 +63,7 @@ vi.mock('../solver/validator', () => ({
   calculateRosterCosts: () => ({ pts: 420 }),
   resolveEntry: () => ({ id: 'entry-resolved', name: 'Resolved Entry' }),
   findEntryInSystem: () => ({ id: 'entry-raw', name: 'Raw Entry' }),
+  getVisibleCatalogueEntriesForCategory: () => [],
   collectUnitProfilesAndRules: () => ({ profiles: [], rules: [] }),
   getSelectionTotalCost: (sel) => sel.cost,
   findForceEntryById: (system, id) => system?.forceEntries?.find((fe) => fe.id === id) || null,
