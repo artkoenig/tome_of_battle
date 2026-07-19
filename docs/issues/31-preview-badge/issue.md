@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: claimed
 Type: feature
 Blocked by: None
 
@@ -20,12 +20,16 @@ unterscheiden — weder Badge noch Hash-Suffix zeigen sich dort.
 ## Solution
 Ein kleines, dezentes "Preview"-Badge im Header vergleicht zur Laufzeit
 `window.location.hostname` gegen die als benannte Konstante hinterlegte
-Produktions-Domain und wird angezeigt, sobald der Vergleich negativ ausfällt.
-Der bestehende Versions-Hash-Suffix im Einstellungen-Dialog bleibt
-unverändert erhalten — beide Signale beantworten unterschiedliche Fragen
-(Hash-Suffix: welcher Commit genau; Badge: bin ich auf der echten
-Produktions-Domain). Architektonische Begründung und verworfene Alternativen
-sind in [ADR 0021](../../adr/0021-preview-badge-laufzeit-hostname-erkennung.md)
+Preproduction-Alias-URL (`army-builder-git-main-neardy.vercel.app`) und wird
+nur bei exakter Übereinstimmung angezeigt — ein positiver Abgleich gegen
+genau diese eine URL, keine Negativ-Erkennung "alles außer Production".
+Auf allen anderen Hostnamen (echte Production-Domain, andere PR-Preview-URLs,
+`localhost`) erscheint kein Badge. Der bestehende Versions-Hash-Suffix im
+Einstellungen-Dialog bleibt unverändert erhalten — beide Signale beantworten
+unterschiedliche Fragen (Hash-Suffix: welcher Commit genau; Badge: bin ich
+auf der bekannten Preproduction-Alias-URL). Architektonische Begründung und
+verworfene Alternativen sind in
+[ADR 0021](../../adr/0021-preview-badge-laufzeit-hostname-erkennung.md)
 festgehalten; ADR 0008 §2 verweist per Nachtrag darauf.
 
 ## User Stories / Requirements
@@ -42,9 +46,9 @@ festgehalten; ADR 0008 §2 verweist per Nachtrag darauf.
   Modul, `src/index.css` (Badge-Styling).
 - **Technical Clarifications / Architectural Decisions:** siehe
   [ADR 0021](../../adr/0021-preview-badge-laufzeit-hostname-erkennung.md).
-  Erkennung erfolgt bewusst als harter Vergleich gegen genau eine
-  Produktions-Domain (Konstante, kein Muster/keine Liste) — YAGNI, da aktuell
-  nur diese eine Preproduction-URL relevant ist. Label-Text bewusst Englisch
+  Erkennung erfolgt bewusst als harter, positiver Vergleich gegen genau eine
+  Preproduction-Alias-URL (Konstante, kein Muster/keine Liste) — YAGNI, da
+  aktuell nur diese eine URL relevant ist. Label-Text bewusst Englisch
   ("Preview"), abweichend vom sonst deutschsprachigen UI, um es als
   technisches/internes Signal abzuheben. Styling: kleine Schrift, kein
   Rahmen (dezenter als das frühere `VORSCHAU`-Badge mit Rahmen).

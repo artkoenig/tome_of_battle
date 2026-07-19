@@ -24,12 +24,13 @@ unterscheiden.
 
 Ein kleines Preview-Badge im Header (Wiedereinführung, siehe unten) vergleicht
 zur Laufzeit `window.location.hostname` gegen die als benannte Konstante
-hinterlegte Produktions-Domain und wird angezeigt, sobald der Vergleich
-negativ ausfällt. Der bestehende Versions-Hash-Suffix (ADR 0019) bleibt im
-Einstellungen-Dialog für Detail-Diagnose erhalten — beide Signale schließen
-sich nicht aus, sie beantworten unterschiedliche Fragen: der Hash-Suffix
-"welcher Commit genau", das Badge "bin ich auf der echten
-Produktions-Domain".
+hinterlegte Preproduction-Alias-URL und wird nur bei exakter Übereinstimmung
+angezeigt — ein positiver Abgleich gegen genau diese eine URL, keine
+Negativ-Erkennung "alles außer Production". Der bestehende Versions-Hash-Suffix
+(ADR 0019) bleibt im Einstellungen-Dialog für Detail-Diagnose erhalten — beide
+Signale schließen sich nicht aus, sie beantworten unterschiedliche Fragen: der
+Hash-Suffix "welcher Commit genau", das Badge "bin ich auf der bekannten
+Preproduction-Alias-URL".
 
 Damit wird die in ADR 0008 Abschnitt 2 getroffene Entscheidung, auf ein
 separates UI-Element zu verzichten, für den Hostname-Fall revidiert — die
@@ -50,6 +51,8 @@ Branch, nicht nach ausgelieferter Domain.
 - **Positiv:** Sichtbare Unterscheidung genau dort, wo sie heute fehlt, ohne
   die bestehende Build-Infrastruktur (`scripts/deployEnv.js`,
   Versions-Hash-Suffix) anzufassen.
-- **Negativ:** Die Produktions-Domain liegt als Konstante im Client-Code vor;
-  bei einem Domain-Wechsel (z. B. Custom-Domain) muss diese Konstante manuell
-  nachgezogen werden.
+- **Negativ:** Die Preproduction-Alias-URL liegt als Konstante im Client-Code
+  vor; ändert sich diese URL (z. B. Vercel-Projekt-Umbenennung), muss die
+  Konstante manuell nachgezogen werden. Weitere, heute unbekannte
+  Preview-URLs werden nicht automatisch erkannt (bewusst, siehe
+  "Betrachtete Optionen").

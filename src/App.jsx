@@ -11,6 +11,7 @@ import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
 import SettingsDialog from './components/SettingsDialog';
 import ConfirmationDialog from './components/editor/ConfirmationDialog';
+import PreviewBadge from './components/PreviewBadge';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { 
   exportRosterToXml, 
@@ -407,6 +408,7 @@ export default function App() {
           <div className="logo-title-group">
             <span className="logo-text">TOME OF BATTLE</span>
           </div>
+          <PreviewBadge />
         </div>
         
         <div className="app-header-actions">
