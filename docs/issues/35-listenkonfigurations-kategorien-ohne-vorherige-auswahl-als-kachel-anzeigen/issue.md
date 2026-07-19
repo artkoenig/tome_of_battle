@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: ready-for-agent
 Type: fix
 Blocked by: None
 
@@ -155,6 +155,30 @@ Selection-Betrachtung auf eine Katalog-Betrachtung umgestellt:
   Einheiten-Kategorien unverändert im Einsatz).
 
 ## Acceptance Criteria
-- [ ]
+- [ ] Eine Kategorie, deren aktuell sichtbare Katalog-Einträge ausschließlich
+      Listenkonfigurationen sind (katalogbasiertes Klassifikationsmerkmal,
+      siehe CONTEXT.md „Listenkonfigurations-Kategorie"), rendert in
+      `RosterEditor.jsx` immer als aufklappbare `ListConfigurationCard` — auch
+      bei 0 Auswahlen auf dem Roster. Der `CategoryUnitAdder`-Aushebe-Dialog
+      erscheint für eine solche Kategorie nicht mehr.
+- [ ] Eine Kategorie mit mindestens einem echten Einheiten-Eintrag im Katalog
+      bleibt unverändert beim bisherigen `CategoryUnitAdder`-Pfad.
+- [ ] „Armeeweite Auswahl" und „Sonstiges" bleiben unverändert bei der
+      bisherigen, selection-basierten Prüfung.
+- [ ] Im aufgeklappten Zustand zeigt die Kachel für jeden Haupteintrag der
+      Kategorie eine Radiogruppe (inkl. „Keine" und aller Unteroptionen, z. B.
+      bei „Campaign/Scenario rules") — auch wenn für diesen Haupteintrag noch
+      keine Roster-Selection existiert (virtueller „Keine"-Zustand).
+- [ ] Ein Klick auf eine Options-Zeile eines noch nicht gewählten
+      Haupteintrags legt dessen Top-Level-Selection an und setzt die gewählte
+      Option in einem Schritt; der entstehende Roster-Zustand ist identisch zu
+      dem, der heute entsteht, wenn dieselbe Option bei bereits existierender
+      Selection gewählt wird.
+- [ ] Ein Klick auf „Keine" bei einem bereits gewählten Haupteintrag entfernt
+      dessen Auswahl wie bisher.
+- [ ] Bestehende Tests für den selection-basierten Pfad
+      (`listConfiguration.test.js`, `PlayMode.jsx`-Filterung) bleiben
+      unverändert grün; `listConfigurationView.test.js`s „is false for an
+      empty category"-Test wird an das neue Verhalten angepasst.
 
 ## Comments
