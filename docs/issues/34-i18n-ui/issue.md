@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -93,3 +93,4 @@ Erweiterung des `SettingsContext`.
 - [ ]
 
 ## Comments
+- Vier-Achsen-Verifikation (testing-Skill) zweimal durchlaufen. Erste Runde deckte auf: NewRosterModal.jsx, RulesIndexDialog.jsx und PreviewBadge.jsx waren von keinem Kind-Issue erfasst und blieben komplett deutsch; SettingsDialogs Sprachliste duplizierte SUPPORTED_LOCALES; README erwähnte weder Sprachumschalter noch react-i18next. Alles behoben (Merge fix-i18n-review-findings). Zweite Runde deckte eine tiefere Kategorie auf: app-generierte Texte in der Solver-Schicht (rosterValidator.js: 16 Validierungsfehlermeldungen; rulesEvaluator.js: Rüstungswurf-Aufschlüsselungs-Labels; rosterSerialization.js: eine Fehlermeldung samt Systemname-Fallback im Import-Pfad) waren ebenfalls unübersetzt. Nach Rücksprache mit dem Nutzer als in-scope entschieden (ADR-0022s 'Erklärtexte der App selbst') und behoben (Merge fix-solver-i18n-and-smells) — der Solver bleibt dabei entscheidungslogisch sprachunabhängig (ADR-0003), nur die Ausgabetext-Konstruktion nutzt jetzt i18next. Finale Testsuite: 74/74 Dateien, 736/736 Tests grün, Puppeteer-E2E grün. Bewusst nicht behoben (niedrige Priorität, nicht blockierend): 13 duplizierte atomare Übersetzungsschlüssel ohne gemeinsamen common-Namespace; zwei strukturell ähnliche Hydrations-Effekte in SettingsContext.jsx; PreviewBadge-Text 'Preview' (identisch in beiden Sprachen).
