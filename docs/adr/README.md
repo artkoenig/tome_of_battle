@@ -27,4 +27,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0017 | [Wechsel des Katalog-Forks zu Lexicanum Imperialis mit eigener Revision-CI](0017-lexicanum-katalog-fork-mit-eigener-revision-ci.md) | Accepted | 2026-07-17 |
 | 0018 | [Katalog-Mehrquellenbetrieb (Ergofarg und Lexicanum parallel)](0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md) | Accepted | 2026-07-18 |
 | 0019 | [Manuelle Versionierung über package.json statt Git-Tag-Prognose](0019-manuelle-versionierung-und-release-freigabe.md) | Accepted | 2026-07-18 |
+| 0020 | [Katalogdaten werden network-only geladen, kein Service-Worker-Cache](0020-katalogdaten-network-only-kein-service-worker-cache.md) | Accepted | 2026-07-19 |
 

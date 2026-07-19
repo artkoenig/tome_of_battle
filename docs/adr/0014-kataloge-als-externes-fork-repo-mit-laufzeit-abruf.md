@@ -141,8 +141,13 @@ Formatierung.
 - **Neutral:**
   - **Kein Offline-Regress:** Der Service Worker precacht die Kataloge schon heute
     nicht — ein Erstimport brauchte immer Netz. Der Umzug tauscht lediglich
-    same-origin gegen cross-origin; `raw.githubusercontent.com` ist dafür in die
-    `shouldCache`-Regel des Service Workers aufzunehmen.
+    same-origin gegen cross-origin; `raw.githubusercontent.com` wurde dafür
+    zunächst in die `shouldCache`-Regel des Service Workers aufgenommen. Diese
+    Teilentscheidung wurde durch [ADR 0020](0020-katalogdaten-network-only-kein-service-worker-cache.md)
+    revidiert: Das Cachen dieses Hosts unterlief den Revisionsvergleich weiter
+    unten in diesem ADR (Cache-First lieferte veraltete Revisionsdaten aus);
+    `raw.githubusercontent.com` ist seitdem explizit vom Service-Worker-Cache
+    ausgenommen (network-only).
   - Der E2E-Smoke-Test (ADR-0006) bezog seine Kataloge aus `public/catalogs/` und
     erhält stattdessen eine eingefrorene Fixture. Er wird dadurch deterministisch und
     netzunabhängig — bisher hing grünes CI an Fremddaten.
