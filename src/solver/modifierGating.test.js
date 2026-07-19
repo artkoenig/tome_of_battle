@@ -321,4 +321,38 @@ describe('dynamic category modifiers (gap #3)', () => {
     expect(withoutMedal.categoryCounts['f-1']['cat-veteran']).toBeUndefined();
     expect(withoutMedal.categoryCounts['f-1']['cat-troops']).toBe(1);
   });
+
+  it('does not double-count a category on a unit selected via an entryLink whose category comes from a modifier', () => {
+    // The "Leadbelchers" unit itself carries no static categoryLinks; an
+    // entryLink into it assigns "cat-special" dynamically via set-primary,
+    // exactly as catalogues do for conditional force-org categories. The
+    // roster selection also carries the category the exporter recorded at
+    // save time, as a re-imported .ros/.rosz roster always does.
+    const system = {
+      catalogues: [{
+        id: 'cat-1',
+        selectionEntries: [
+          { id: 'target-unit', name: 'Leadbelchers', type: 'unit' }
+        ],
+        entryLinks: [
+          {
+            id: 'link-1', targetId: 'target-unit', name: 'Leadbelchers',
+            modifiers: [{ type: 'set-primary', field: 'category', value: 'cat-special', conditions: [] }]
+          }
+        ]
+      }]
+    };
+
+    const roster = {
+      forces: [{
+        id: 'f-1', catalogueId: 'cat-1',
+        selections: [{
+          id: 's-1', entryLinkId: 'link-1', number: 1, category: 'cat-special', selections: []
+        }]
+      }]
+    };
+
+    const { categoryCounts } = computeRosterCounts(roster, system);
+    expect(categoryCounts['f-1']['cat-special']).toBe(1);
+  });
 });
