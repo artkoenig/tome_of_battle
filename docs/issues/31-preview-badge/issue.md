@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -72,12 +72,13 @@ festgehalten; ADR 0008 §2 verweist per Nachtrag darauf.
 - Änderungen am Build-Zeit-Signal `VITE_DEPLOY_ENV` / `scripts/deployEnv.js`.
 
 ## Acceptance Criteria
-- [ ] Auf `army-builder-git-main-neardy.vercel.app` erscheint im Header ein
+- [x] Auf `army-builder-git-main-neardy.vercel.app` erscheint im Header ein
       kleines "Preview"-Badge (kleine Schrift, kein Rahmen).
-- [ ] Auf der echten Produktions-Domain erscheint kein Badge.
-- [ ] Der bestehende Versions-Hash-Suffix im Einstellungen-Dialog bleibt
+- [x] Auf der echten Produktions-Domain erscheint kein Badge.
+- [x] Der bestehende Versions-Hash-Suffix im Einstellungen-Dialog bleibt
       unverändert funktionsfähig.
-- [ ] Die Hostname-Vergleichsfunktion ist isoliert unit-getestet (mind. ein
+- [x] Die Hostname-Vergleichsfunktion ist isoliert unit-getestet (mind. ein
       Fall Preview-Hostname, ein Fall Produktions-Hostname).
 
 ## Comments
+- Preview-Badge implementiert: isPreviewHost(hostname) (src/utils/previewHost.js) vergleicht window.location.hostname positiv gegen die Konstante PREVIEW_HOSTNAME (army-builder-git-main-neardy.vercel.app). PreviewBadge.jsx rendert bei Treffer ein dezentes 'Preview'-Label im Header (.logo-container, kein Rahmen, --fs-micro). Bestehender Versions-Hash-Suffix unveraendert. Vier-Achsen-Verifikation (testing skill) durchlaufen: Standards gruen (oxlint pass, Funde ausserhalb des Diffs, siehe Issue 28), Spec alle 4 Acceptance Criteria erfuellt, Tests 670/670 + E2E gruen, Docs 0 Befunde. Versions-Bump 1.1.0 -> 1.2.0 (feature, Minor).
