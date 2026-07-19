@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -52,3 +52,4 @@ Reproduktion mit den echten Empire-Daten, ohne die volle bestehende Testsuite
 - [ ] Die volle Testsuite (`npm test`) bleibt grün.
 
 ## Comments
+- Fix umgesetzt: checkGroupConstraints reicht parentSelection nicht mehr in den Gruppen-Constraint-Kontext (src/solver/rosterValidator.js). Regressionstest 21d in src/solver/validator.test.js deckt den Wrapper-Fall ab. Mit echten Empire-'Definitive Edition'-Katalogdaten reproduziert und verifiziert (Wizard Lord + Magic Items Selection + 2 Bannrollen). Volle Testsuite (653 Tests) grün, keine neuen Lint-Warnungen.
