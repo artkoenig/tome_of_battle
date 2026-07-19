@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -53,3 +53,4 @@ Reproduktion (mit dem bereits gemergten Fix aus Issue 29):
 - [ ] Die volle Testsuite (`npm test`) bleibt grün.
 
 ## Comments
+- Fix umgesetzt: neuer Helper resolveCanonicalTargetId in src/solver/modifierEvaluator.js, eingesetzt in evaluateCondition und getModifiedConstraintValue. Mit echten Ogre-Kingdoms-Katalogdaten (Fleischer + 2 Bannrollen) reproduziert und verifiziert. Neuer Regressionstest 21e (vor Fix rot, danach grün). Volle Testsuite (660 Tests) grün, keine neuen Lint-Funde. Empire-Fall (Issue 29) bleibt unverändert grün.
