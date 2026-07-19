@@ -146,6 +146,14 @@ describe('buildConfigurationRadioGroups', () => {
     expect(groups).toHaveLength(2);
     expect(groups[1].options.length).toBeGreaterThan(0);
   });
+
+  it('falls back to the stored selection name as groupName when no catalogueEntries are given', () => {
+    const experimental = selection('sel-experimental', ALLOW_EXPERIMENTAL_ID);
+    const [group] = buildConfigurationRadioGroups({
+      system, selections: [experimental], catalogueId: switchCatalogue.id
+    });
+    expect(group.groupName).toBe(experimental.name);
+  });
 });
 
 // catalogueEntries (main-issue 35): Haupteinträge ohne existierende Roster-
@@ -159,6 +167,7 @@ describe('buildConfigurationRadioGroups – mit catalogueEntries', () => {
 
     expect(group.isVirtual).toBe(true);
     expect(group.entryDef).toBe(ALLOW_EXPERIMENTAL_ENTRY);
+    expect(group.groupName).toBe('Allow experimental rules?');
     expect(group.options).toHaveLength(5);
     expect(group.options.every(o => o.selected === false)).toBe(true);
     expect(group.selectedOption).toBeNull();
@@ -176,6 +185,9 @@ describe('buildConfigurationRadioGroups – mit catalogueEntries', () => {
     expect(group.isVirtual).toBe(false);
     expect(group.mainEntrySelectionId).toBe('sel-experimental');
     expect(group.selectedOption.optionId).toBe(chosenOptionId);
+    // The catalogue-resolved name wins over the stored selection's own name
+    // (which the test helper sets to the synthetic selection id).
+    expect(group.groupName).toBe('Allow experimental rules?');
   });
 
   it('mixes virtual and real groups when only some catalogue entries have a selection', () => {

@@ -32,15 +32,18 @@ function ConfigurationOptionRow({ label, selected, onSelect }) {
 /**
  * Renders a whole category of list configurations as a single collapsible card
  * (see Child-Issue 02, main-issue 35). Collapsed, it shows the currently chosen
- * option of each main entry as an info-accented badge; expanded, it lists every
- * option of every main entry as a flat set of radio rows (each group led by a
- * „Keine" row), without repeating the main entries' names as sub-headings.
- * Selecting a row writes straight to the roster — no cost slot, no copy/delete,
- * no configurator dialog. When `catalogueEntries` is supplied, main entries the
- * roster has no selection for yet render in a virtual „Keine" state built from
- * the catalogue definition, and picking one of their options creates the
- * roster selection on the spot (main-issue 35) — this is how the card can
- * appear before the player has chosen anything in the category at all.
+ * option of each main entry as an info-accented badge; expanded, it groups the
+ * radio rows under each main entry's own name as a plain text label — not a
+ * clickable heading, no card/badge styling — each group led by a „Keine" row
+ * (main-issue 36; main-issue 34 originally specified a flat, unlabelled list,
+ * reversed after real-world categories with several multi-option main entries
+ * proved unreadable that way). Selecting a row writes straight to the roster —
+ * no cost slot, no copy/delete, no configurator dialog. When `catalogueEntries`
+ * is supplied, main entries the roster has no selection for yet render in a
+ * virtual „Keine" state built from the catalogue definition, and picking one of
+ * their options creates the roster selection on the spot (main-issue 35) — this
+ * is how the card can appear before the player has chosen anything in the
+ * category at all.
  */
 export default function ListConfigurationCard({
   categoryName,
@@ -113,7 +116,8 @@ export default function ListConfigurationCard({
         <div className="selection-node-body">
           <div className="sub-selection-group" style={{ borderLeft: 'none', paddingLeft: 0 }}>
             {radioGroups.map(group => (
-              <React.Fragment key={group.mainEntrySelectionId}>
+              <div key={group.mainEntrySelectionId} className="list-config-group">
+                <div className="list-config-group-title text-label">{group.groupName}</div>
                 <ConfigurationOptionRow
                   label={NONE_OPTION_LABEL}
                   selected={!group.selectedOption}
@@ -127,7 +131,7 @@ export default function ListConfigurationCard({
                     onSelect={() => selectOption(group, option)}
                   />
                 ))}
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </div>

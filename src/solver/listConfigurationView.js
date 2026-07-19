@@ -116,8 +116,15 @@ export function buildConfigurationRadioGroups({ system, selections, catalogueEnt
       };
     });
 
+    // Prefer resolving the main entry's name from its catalogue definition (honours
+    // name modifiers, e.g. empire-name-modifier.cat.xml), falling back to the stored
+    // selection name where no catalogue entry is available (Armeeweite Auswahl/
+    // Sonstiges, which build groups straight from selections, not catalogueEntries).
+    const resolvedMainEntry = entryDef ? resolveEntry(system, entryDef, catalogueId) : null;
+
     return {
       mainEntrySelectionId: mainEntry.id,
+      groupName: resolvedMainEntry?.name || mainEntry.name,
       entryDef,
       isVirtual,
       options,

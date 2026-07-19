@@ -2801,6 +2801,15 @@ input[type="radio"]:checked::after {
   flex-shrink: 0;
 }
 
+/* List-configuration card header: let the title and the badge row wrap onto
+   their own lines instead of sharing one flex row — otherwise a long title
+   wraps to multiple lines while the still-single-row badge stays vertically
+   centered across them, overlapping the title text (main-issue 36). */
+.list-config-card-header {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
 /* List-configuration card: collapsed badges of the chosen options, styled like
    the gold upgrade/rule chips but carrying the informational steel-blue accent
    so a list-wide switch never reads as a real unit upgrade. */
@@ -2809,6 +2818,7 @@ input[type="radio"]:checked::after {
   flex-wrap: wrap;
   gap: 6px;
   justify-content: flex-end;
+  flex-basis: 100%;
 }
 
 .list-config-badge {
@@ -2819,6 +2829,17 @@ input[type="radio"]:checked::after {
   border-radius: 3px;
   display: inline-flex;
   align-items: center;
+}
+
+/* Groups the radio rows of one main entry under its own name — a plain text
+   label, not a clickable heading or a card/badge (main-issue 36). */
+.list-config-group + .list-config-group {
+  margin-top: 12px;
+}
+
+.list-config-group-title {
+  color: var(--text-dim);
+  margin-bottom: 2px;
 }
 
 .list-config-option-row.is-selected {

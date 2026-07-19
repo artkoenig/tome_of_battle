@@ -23,6 +23,7 @@ const campaignOptionDef = { id: 'opt-campaign' };
 const buildGroups = () => ([
   {
     mainEntrySelectionId: 'main-experimental',
+    groupName: 'Allow experimental rules?',
     options: [
       { optionId: 'opt-fw', name: 'From ForgeWorld', def: forgeworldDef, selected: false },
       { optionId: 'opt-gw', name: 'From GW-website', def: gwWebsiteDef, selected: true },
@@ -31,6 +32,7 @@ const buildGroups = () => ([
   },
   {
     mainEntrySelectionId: 'main-specials',
+    groupName: 'Allow special characters?',
     options: [
       { optionId: 'opt-ab', name: 'From ArmyBooks', def: armyBooksDef, selected: false },
     ],
@@ -44,6 +46,7 @@ const buildGroupsWithVirtualEntry = () => ([
   ...buildGroups(),
   {
     mainEntrySelectionId: 'virtual-entry-campaign',
+    groupName: 'Campaign/Scenario rules',
     entryDef: campaignRulesEntryDef,
     isVirtual: true,
     options: [
@@ -99,7 +102,7 @@ describe('ListConfigurationCard', () => {
     expect(container.textContent).not.toMatch(/\d+\s*(von|\/)\s*\d+/);
   });
 
-  it('lists every option plus a "Keine" row per main entry when expanded, without main-entry sub-headings', () => {
+  it('lists every option plus a "Keine" row per main entry when expanded, grouped under the main entry\'s name', () => {
     renderCard();
     fireEvent.click(screen.getByRole('button'));
 
@@ -107,9 +110,21 @@ describe('ListConfigurationCard', () => {
     // 2 options + 1 "Keine" for the first group, 1 option + 1 "Keine" for the second.
     expect(radios).toHaveLength(5);
     expect(screen.getAllByText('Keine')).toHaveLength(2);
-    // The main entries' own names must not appear as headings.
-    expect(screen.queryByText('main-experimental')).toBeNull();
-    expect(screen.queryByText('main-specials')).toBeNull();
+    // Each main entry's own name appears once, as a plain group label.
+    expect(screen.getByText('Allow experimental rules?')).toBeDefined();
+    expect(screen.getByText('Allow special characters?')).toBeDefined();
+  });
+
+  it('renders the group title as plain text, not a clickable row', () => {
+    renderCard();
+    fireEvent.click(screen.getByRole('button'));
+
+    const groupTitle = screen.getByText('Allow experimental rules?');
+    expect(groupTitle.className).toContain('list-config-group-title');
+
+    fireEvent.click(groupTitle);
+    expect(mockUpdateSubSelection).not.toHaveBeenCalled();
+    expect(mockAddUnitWithSubSelection).not.toHaveBeenCalled();
   });
 
   it('selects an option by clearing the previous one and setting the new one', () => {
