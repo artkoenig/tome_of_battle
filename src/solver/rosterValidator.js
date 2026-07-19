@@ -48,7 +48,12 @@ export function validateRoster(roster, system) {
  * @returns {boolean}
  */
 export function hasBlockingViolations(validationErrors) {
-  return (validationErrors || []).some(error => error.severity === ValidationSeverity.ERROR);
+  return countBlockingViolations(validationErrors) > 0;
+}
+
+/** Anzahl der blockierenden (severity="error") Eintraege — nicht-blockierende warning/info zaehlen nicht mit. */
+export function countBlockingViolations(validationErrors) {
+  return (validationErrors || []).filter(error => error.severity === ValidationSeverity.ERROR).length;
 }
 
 /** Punkte des Rosters gegen das eingestellte Limit prüfen. */
