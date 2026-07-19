@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  ArrowLeft, Search, Plus, Minus, 
-  Heart, Swords, BookOpen
+import React, { useState, useCallback } from 'react';
+import {
+  ArrowLeft, Swords, BookOpen
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListConfiguration } from '../solver/validator';
+import { collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListConfiguration } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
@@ -14,7 +13,7 @@ import GothicTooltip from './GothicTooltip';
 
 export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const [roster, setRoster] = useState(initialRoster);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm] = useState('');
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
   const [saveSummaryData, setSaveSummaryData] = useState({ title: '', breakdown: [] });
   const [tooltipState, setTooltipState] = useState({ visible: false, x: 0, y: 0, title: '', content: [] });
@@ -22,7 +21,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const activeCatalogue = system?.catalogues?.find(c => c.id === roster?.catalogueId);
   const extraResources = getExtraResourceTotals(system, roster, calculateRosterCosts(roster, system));
 
-  const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster);
+  const { gameState, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster);
 
   // Central resolver that honors the global whfb6 linking setting (see ADR-0015):
   // returns a rule URL only when linking is enabled and a mapping exists, else null.
