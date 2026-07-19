@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -58,3 +58,4 @@ Der Revisionsvergleich selbst (`isOutdated`/`deriveRevisionState`, "higher wins"
 - [ ]
 
 ## Comments
+- Vier-Achsen-Verifikation (testing skill) durchlaufen: Tests grün (664 Vitest + vollständiger Puppeteer-E2E), Spezifikation vollständig erfüllt (Axis B: 1 trivialer Lockfile-Fund, keine echten Abweichungen), Standards-Gate besteht (Axis A: 8 Funde, alle bestehende Codebase-Altlasten außerhalb des Diffs, bewusst nicht in diesem Main-Issue behoben). Docs-Drift (Axis D, 3 Funde: ADR-0014 widersprach dem neuen Verhalten, ADR-0020 fehlte im Index, PRD nannte die revidierte Entscheidung ohne Verweis) nachträglich behoben — alle drei verlinken jetzt auf ADR-0020 statt Historie umzuschreiben.
