@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 
@@ -71,12 +71,16 @@ describe('PWA Configuration and Assets', () => {
     expect(messageBlockMatch[0]).toContain('skipWaiting');
   });
 
-  it('should cache raw.githubusercontent.com so imported systems stay usable offline', () => {
+  it('should exclude raw.githubusercontent.com from the cache rule (network-only, ADR 0020)', () => {
     const swPath = path.join(rootDir, 'public/sw.js');
     const swContent = fs.readFileSync(swPath, 'utf8');
     // Catalog data (index + .cat/.gst) is fetched at runtime from the fork over this
-    // host (ADR 0014); it must be part of the caching rule for offline resilience.
-    expect(swContent).toContain('raw.githubusercontent.com');
+    // host (ADR 0014). Per ADR 0020 it must bypass the service-worker cache entirely
+    // so the revision comparison always sees the real current server state — mirroring
+    // the existing rules-index.json early return.
+    expect(swContent).toMatch(
+      /if\s*\(\s*url\.hostname\.includes\(\s*'raw\.githubusercontent\.com'\s*\)\s*\)\s*return\s*;/
+    );
   });
 
   it('should have generated PNG icons in the public folder', () => {
@@ -134,5 +138,115 @@ describe('PWA Configuration and Assets', () => {
     // running app sees the newly-deployed version's notes, not the stale copy.
     expect(mainContent).toContain('/changelog.json?t=');
     expect(mainContent).toContain("detail: { worker, release }");
+  });
+});
+
+describe('Service worker fetch handler caching behaviour', () => {
+  const APP_ORIGIN = 'https://tome.example.com';
+  const RAW_HOST = 'raw.githubusercontent.com';
+  const HTTP_OK = 200;
+
+  // Loads public/sw.js into an isolated sandbox with mocked globals so the real
+  // fetch handler can be exercised directly. The handler registers itself via
+  // self.addEventListener; we capture that listener and drive it with fake events.
+  function instantiateServiceWorker({ cachedResponse = null, networkResponse = null } = {}) {
+    const rootDir = path.resolve(__dirname, '../../');
+    const swSource = fs.readFileSync(path.join(rootDir, 'public/sw.js'), 'utf8');
+
+    const listeners = {};
+    const cachePut = vi.fn();
+    const cacheMatch = vi.fn(() => Promise.resolve(cachedResponse));
+    const cache = { match: cacheMatch, put: cachePut, addAll: vi.fn(() => Promise.resolve()) };
+    const cachesOpen = vi.fn(() => Promise.resolve(cache));
+    const cachesMock = {
+      open: cachesOpen,
+      keys: vi.fn(() => Promise.resolve([])),
+      delete: vi.fn(),
+      match: vi.fn(),
+    };
+    const fetchMock = vi.fn(() => Promise.resolve(networkResponse));
+
+    const selfMock = {
+      addEventListener: (type, handler) => { listeners[type] = handler; },
+      location: { origin: APP_ORIGIN },
+      clients: { claim: vi.fn() },
+      skipWaiting: vi.fn(),
+    };
+
+    const factory = new Function('self', 'caches', 'fetch', 'console', 'URL', swSource);
+    factory(selfMock, cachesMock, fetchMock, console, URL);
+
+    return { listeners, cachesOpen, cacheMatch, cachePut, fetchMock };
+  }
+
+  function makeResponse(status = HTTP_OK) {
+    const response = { status, clone: () => response };
+    return response;
+  }
+
+  function dispatchFetch(listeners, url, method = 'GET') {
+    const event = {
+      request: { url, method },
+      responded: undefined,
+      respondWith(promise) { this.responded = promise; },
+    };
+    listeners.fetch(event);
+    return event;
+  }
+
+  it('never reads a raw.githubusercontent.com request from the cache, even when one exists', () => {
+    const staleCached = makeResponse();
+    const sw = instantiateServiceWorker({ cachedResponse: staleCached });
+
+    const event = dispatchFetch(sw.listeners, `https://${RAW_HOST}/user/repo/main/catpkg.json`);
+
+    // The handler returns early: it never claims the response, so the request
+    // falls through to the browser's real network fetch, bypassing the SW cache.
+    expect(event.responded).toBeUndefined();
+    expect(sw.cachesOpen).not.toHaveBeenCalled();
+    expect(sw.cacheMatch).not.toHaveBeenCalled();
+  });
+
+  it('never writes a successful raw.githubusercontent.com response into the cache', () => {
+    const networkResponse = makeResponse(HTTP_OK);
+    const sw = instantiateServiceWorker({ networkResponse });
+
+    const event = dispatchFetch(sw.listeners, `https://${RAW_HOST}/user/repo/main/Faction.cat`);
+
+    expect(event.responded).toBeUndefined();
+    expect(sw.cachePut).not.toHaveBeenCalled();
+  });
+
+  it('still serves same-origin assets cache-first and stores the network response', async () => {
+    const networkResponse = makeResponse(HTTP_OK);
+    const sw = instantiateServiceWorker({ cachedResponse: null, networkResponse });
+
+    const event = dispatchFetch(sw.listeners, `${APP_ORIGIN}/index.html`);
+
+    expect(event.responded).toBeDefined();
+    const result = await event.responded;
+    expect(result).toBe(networkResponse);
+    expect(sw.cachesOpen).toHaveBeenCalled();
+    expect(sw.cachePut).toHaveBeenCalled();
+  });
+
+  it('still caches Google Fonts requests', async () => {
+    const networkResponse = makeResponse(HTTP_OK);
+    const sw = instantiateServiceWorker({ networkResponse });
+
+    const event = dispatchFetch(sw.listeners, 'https://fonts.googleapis.com/css2?family=Cinzel');
+
+    expect(event.responded).toBeDefined();
+    await event.responded;
+    expect(sw.cachesOpen).toHaveBeenCalled();
+  });
+
+  it('keeps the existing rules-index.json exclusion (network-only)', () => {
+    const sw = instantiateServiceWorker();
+
+    const event = dispatchFetch(sw.listeners, `${APP_ORIGIN}/data/rules-index.json`);
+
+    expect(event.responded).toBeUndefined();
+    expect(sw.cachesOpen).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -36,3 +36,4 @@ Kontext.
       `self`/`caches`/`fetch`) belegt beide oberen Punkte.
 
 ## Comments
+- Service Worker: raw.githubusercontent.com wird per Early-Return komplett aus der Cache-Regel ausgenommen (network-only, analog rules-index.json) — kein caches.match(), kein cache.put(). pwa.test.js an das neue Verhalten angepasst und um eine Behavioral-Suite (Mock von self/caches/fetch) fuer den Fetch-Handler ergaenzt.
