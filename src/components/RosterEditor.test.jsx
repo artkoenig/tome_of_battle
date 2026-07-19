@@ -122,6 +122,7 @@ vi.mock('../solver/validator', () => ({
     (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
   hasBlockingViolations: (errors) => (errors || []).some(e => e.severity === 'error'),
   ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' },
+  isListRuleSelection: () => false,
 }));
 
 // Dummy child components to speed up execution

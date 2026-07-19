@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, isListRuleSelection } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -190,6 +190,14 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   const isHidden = isCategoryLinkHidden(link, system, roster, selectionCounts, forceCategoryCounts);
                   const selections = force.selections?.filter(s => s.category === link.targetId) || [];
 
+                  // A category whose selections are all list rules (data-driven:
+                  // catalog type = upgrade, ADR 0003) is a list-wide settings group,
+                  // not a unit slot: its cards drop the per-card unit actions and the
+                  // group offers no "add unit" button.
+                  const catalogueId = force.catalogueId || roster.catalogueId;
+                  const isListRuleGroup = selections.length > 0 &&
+                    selections.every(s => isListRuleSelection(system, s, catalogueId));
+
                   // If category link is hidden and has no selections, do not render it
                   if (isHidden && selections.length === 0) {
                     return null;
@@ -242,17 +250,19 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             );
                           })()}
                         </div>
-                        <CategoryUnitAdder
-                          categoryId={link.targetId}
-                          categoryName={catName}
-                          system={system}
-                          activeCatalogue={activeCatalogue}
-                          costTypeLabel={costTypeLabel}
-                          costLimitType={roster.costLimitType}
-                          addUnit={addUnit}
-                          roster={roster}
-                          selectionCounts={selectionCounts}
-                        />
+                        {!isListRuleGroup && (
+                          <CategoryUnitAdder
+                            categoryId={link.targetId}
+                            categoryName={catName}
+                            system={system}
+                            activeCatalogue={activeCatalogue}
+                            costTypeLabel={costTypeLabel}
+                            costLimitType={roster.costLimitType}
+                            addUnit={addUnit}
+                            roster={roster}
+                            selectionCounts={selectionCounts}
+                          />
+                        )}
                       </div>
 
 
@@ -274,6 +284,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 copyUnit={copyUnit}
                                 updateSubSelection={updateSubSelection}
                                 activeCatalogue={activeCatalogue}
+                                isListRule={isListRuleGroup}
                                 onShowRule={onShowRule}
                               />
                             );
