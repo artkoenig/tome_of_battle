@@ -2097,6 +2097,7 @@ input[type="radio"]:checked::after {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   padding: 10px 14px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -2115,6 +2116,10 @@ input[type="radio"]:checked::after {
 .popover-item-cost {
   font-size: var(--fs-label);
   font-weight: 700;
+  flex-shrink: 0;
+  min-width: 5.5rem;
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* Gesperrter Aushebe-Kandidat (ADR-0022): ausgegraut, nicht klickbar; Grund darunter. */
@@ -2132,6 +2137,8 @@ input[type="radio"]:checked::after {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .popover-item-unavailable {
