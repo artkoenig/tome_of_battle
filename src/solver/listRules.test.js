@@ -42,7 +42,7 @@ vi.mock('./entryVisibility.js', () => ({
   },
 }));
 
-import { isListRuleEntryKind, isListRuleSelection, isListRuleCategory, collectListRuleStates, resolveListRuleGroup } from './listRules.js';
+import { isListRuleEntryKind, isListRuleSelection, resolveListRuleGroup } from './listRules.js';
 
 describe('isListRuleEntryKind', () => {
   it('classifies only the upgrade type as a list rule', () => {
@@ -98,89 +98,6 @@ describe('isListRuleSelection', () => {
     expect(isListRuleSelection(system, null, 'cat-1')).toBe(false);
     expect(isListRuleSelection(system, { id: 'no-ref' }, 'cat-1')).toBe(false);
     expect(mockResolveEntry).not.toHaveBeenCalled();
-  });
-});
-
-describe('collectListRuleStates', () => {
-  // A plain switch, a container (with sub-options), a non-binary rule (max>1) and a
-  // real unit — all primary in the same rules category.
-  const ruleSwitch = { id: 'rSwitch', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Allow special characters?' };
-  const ruleContainer = {
-    id: 'rContainer', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Campaign rules',
-    __children: [{ id: 'child-opt' }],
-  };
-  const ruleMulti = {
-    id: 'rMulti', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Detachments',
-    __constraints: [{ type: 'max', value: 3, scope: 'roster' }],
-  };
-  const unitC = { id: 'uC', __type: 'unit', __primaryCat: 'cat-rules', __name: 'Some Unit' };
-  const catalogue = { entryLinks: [ruleSwitch, ruleContainer, ruleMulti], selectionEntries: [unitC] };
-
-  const makeForce = (selections) => ({ id: 'f1', catalogueId: 'cat', selections });
-  const roster = { catalogueId: 'cat' };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    // A roster selection references its rule by resolved id (entryLinkId === resolved id here).
-    mockFindEntryInSystem.mockImplementation((_system, id) => ({ id }));
-    mockResolveEntry.mockImplementation((_system, entry) => (entry ? { id: entry.id } : null));
-  });
-
-  it('enumerates every list rule of the category, unchecked, when none are present', () => {
-    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
-    expect(states.map(s => s.resolvedId)).toEqual(['rSwitch', 'rContainer', 'rMulti']);
-    expect(states.every(s => s.checked === false)).toBe(true);
-    expect(states.every(s => s.selection === null)).toBe(true);
-    expect(states.map(s => s.name)).toEqual(['Allow special characters?', 'Campaign rules', 'Detachments']);
-  });
-
-  it('marks a rule checked (with its present selection) when a selection references it', () => {
-    const force = makeForce([{ id: 'sel-1', entryLinkId: 'rSwitch', selections: [] }]);
-    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force });
-    const sw = states.find(s => s.resolvedId === 'rSwitch');
-    expect(sw.checked).toBe(true);
-    expect(sw.selection.id).toBe('sel-1');
-    expect(states.find(s => s.resolvedId === 'rContainer').checked).toBe(false);
-  });
-
-  it('classifies a plain switch as binary and a max>1 rule as non-binary (data-driven)', () => {
-    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
-    expect(states.find(s => s.resolvedId === 'rSwitch').isBinary).toBe(true);
-    expect(states.find(s => s.resolvedId === 'rMulti').isBinary).toBe(false);
-  });
-
-  it('flags a container rule (carrying sub-options) via isContainer', () => {
-    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
-    expect(states.find(s => s.resolvedId === 'rContainer').isContainer).toBe(true);
-    expect(states.find(s => s.resolvedId === 'rSwitch').isContainer).toBe(false);
-  });
-
-  it('excludes non-list-rule (unit) entries of the category', () => {
-    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
-    expect(states.some(s => s.resolvedId === 'uC')).toBe(false);
-  });
-
-  it('returns an empty list for a category with no primary entries', () => {
-    expect(collectListRuleStates({}, catalogue, 'cat-none', { roster, force: makeForce([]) })).toEqual([]);
-  });
-});
-
-describe('isListRuleCategory', () => {
-  const ruleA = { id: 'rA', __type: 'upgrade', __primaryCat: 'cat-rules' };
-  const ruleB = { id: 'rB', __type: 'upgrade', __primaryCat: 'cat-rules' };
-  const unitC = { id: 'uC', __type: 'unit', __primaryCat: 'cat-core' };
-  const catalogue = { entryLinks: [ruleA, ruleB], selectionEntries: [unitC] };
-
-  it('is true when every primary entry of the category is a list rule', () => {
-    expect(isListRuleCategory({}, catalogue, 'cat-rules', {})).toBe(true);
-  });
-
-  it('is false for a unit category', () => {
-    expect(isListRuleCategory({}, catalogue, 'cat-core', {})).toBe(false);
-  });
-
-  it('is false for a category with no primary entries', () => {
-    expect(isListRuleCategory({}, catalogue, 'cat-none', {})).toBe(false);
   });
 });
 

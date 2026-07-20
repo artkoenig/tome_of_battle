@@ -55,18 +55,6 @@ function enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force 
   return { total, ruleEntries };
 }
 
-/**
- * True, wenn `categoryId` eine *Listenregel-Kategorie* ist: sie hat mindestens
- * einen primären Katalog-Eintrag und **alle** ihre primären Einträge sind
- * Listenregeln. Damit lässt sich eine (noch) leere Kategorie datengetrieben als
- * Listenregel-Gruppe erkennen — so blitzt kein „+"-Adder auf. Eine gemischte
- * Kategorie (auch echte Einheiten) gilt bewusst nicht als Listenregel-Kategorie.
- */
-export function isListRuleCategory(system, catalogue, categoryId, { roster, force } = {}) {
-  const { total, ruleEntries } = enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force });
-  return total > 0 && ruleEntries.length === total;
-}
-
 /** Die id, unter der eine Selektion ihren Katalog-Eintrag referenziert. */
 function selectionEntryRef(selection) {
   return selection.entryLinkId || selection.selectionEntryId;
@@ -128,22 +116,6 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
  * @property {boolean} isBinary   true ⇔ reiner Schalter (Ankreuzfeld), sonst Mengen-Adder.
  * @property {boolean} isContainer true ⇔ die Regel trägt konfigurierbare Unteroptionen.
  */
-
-/**
- * Zählt die Listenregeln einer Kategorie datengetrieben auf und paart jede mit
- * ihrem Präsenz-/Schalter-Zustand — die Grundlage der Ankreuzliste. Aufgezählt
- * werden **alle** primären Listenregel-Einträge der Kategorie (ob im Roster
- * präsent oder nicht) über dieselbe Enumeration wie der „+"-Adder (ADR 0003 §4);
- * `checked` leitet sich rein aus der Roster-Präsenz ab (kein gespeicherter
- * Zustand). Dedupliziert per aufgelöster Entry-ID.
- *
- * @returns {ListRuleState[]}
- */
-export function collectListRuleStates(system, catalogue, categoryId, { roster, force } = {}) {
-  const catalogueId = force?.catalogueId || roster?.catalogueId;
-  const { ruleEntries } = enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force });
-  return buildListRuleStates(system, ruleEntries, force?.selections || [], catalogueId, categoryId);
-}
 
 /**
  * Baut aus den bereits aufgezählten Listenregel-Einträgen die

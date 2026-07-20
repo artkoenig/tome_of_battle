@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost } from '../../solver/validator';
 import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
-import BottomSheet from './BottomSheet';
 import OptionGroupComponent from './OptionGroup';
 import {
   UPGRADE_DETAILS_KEYWORDS,
