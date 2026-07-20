@@ -71,6 +71,16 @@ function selectReasonViolations(blockingViolations) {
   return authorErrors.length > 0 ? authorErrors : blockingViolations;
 }
 
+// Der hypothetische Zählstand „(aktuell: N)", den jede mechanische Validator-Meldung
+// mitführt, ist im Aushebe-Dialog eine technische Begründung ohne Nutzwert: die Obergrenze
+// selbst („erlaubt maximal 1 Auswahlen") genügt. Nur hier — auf dem reinen Anzeigepfad —
+// wird der Klammerzusatz entfernt; die Validator-Meldung selbst bleibt unangetastet (das
+// Validierungs-Panel führt sie weiter mit Zählstand, Issue-38-Out-of-Scope). Der wortgetreue
+// Autoren-`error`-Text trägt kein solches „(aktuell: …)" und bleibt damit unberührt.
+function stripHypotheticalCount(message) {
+  return message.replace(/\s*\(aktuell:[^)]*\)/, '');
+}
+
 /**
  * Reines Verfügbarkeits-Prädikat des Aushebe-Dialogs (SSOT, ADR-0022): bestimmt, ob ein
  * Katalog-Eintrag legal gewählt werden kann, indem es ihn hypothetisch in die Ziel-Force
@@ -113,6 +123,6 @@ export function getEntryAddAvailability({ entry, categoryId, force, roster, syst
     error => isBlockingAvailabilityViolation(error) && !baselineKeys.has(violationKey(error))
   );
 
-  const reasons = [...new Set(selectReasonViolations(introducedBlocking).map(error => error.message))];
+  const reasons = [...new Set(selectReasonViolations(introducedBlocking).map(error => stripHypotheticalCount(error.message)))];
   return { available: introducedBlocking.length === 0, reasons };
 }

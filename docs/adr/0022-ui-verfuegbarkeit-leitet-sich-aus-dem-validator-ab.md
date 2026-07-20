@@ -90,7 +90,13 @@ Umsetzung (reine Solver-Funktion `getEntryAddAvailability`):
   bei `modifier-error` ist das der wortgetreue Autoren-`value`, ohne
   Übersetzungs-/Parsing-Schicht. Trägt ein gesperrter Eintrag einen
   Autoren-`error`-Grund, zeigt der Dialog nur diesen und unterdrückt die redundante
-  mechanische `-max`-Meldung mit hypothetischem Zählstand („aktuell: N").
+  mechanische `-max`-Meldung. Führt eine mechanische Meldung den Grund (kein
+  Autoren-`error` vorhanden), so bleibt die Obergrenze sichtbar („… erlaubt maximal
+  N Auswahlen"), doch der rein technische **hypothetische Zählstand „(aktuell: N)"**
+  wird auf diesem Anzeigepfad entfernt (`stripHypotheticalCount`) — er ist im Dialog
+  ohne Nutzwert, die Grenze selbst genügt. Die Validator-`message` bleibt davon
+  unberührt: das Validierungs-Panel führt den Zählstand unverändert weiter (die
+  Kappung ist reine Dialog-Darstellung, keine Änderung an den Validator-Meldungen).
 
 Der frühere `isMaxedOut`-Einzelpfad im Dialog entfällt; die Verfügbarkeit hat
 danach genau einen Codepfad.
