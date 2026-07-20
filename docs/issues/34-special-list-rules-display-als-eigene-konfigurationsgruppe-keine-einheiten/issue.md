@@ -31,7 +31,8 @@ Konfigurationsgruppe unter ihrem Hauptknoten — ohne die zwei Karten-Knöpfe, o
 ## Solution
 Die Unterscheidung „Einheit vs. Listenregel" wird **system-agnostisch aus den
 Katalogdaten** abgeleitet: Eine Wurzel-Selektion, deren aufgelöster Katalog-Entry
-`type` **nicht** `unit` ist (praktisch `type="upgrade"`), gilt als *Listenregel*.
+den `type` `upgrade` trägt (also weder `unit` noch `model` — keine
+kampffeldrelevante Einheit), gilt als *Listenregel*.
 Dies steht im Einklang mit ADR 0003 (Gruppierung nie über hartkodierte
 Kategorienamen, sondern datengetrieben) und benötigt **keinen** `systemQuirks.js`-
 Eintrag und **keine** Namensprüfung.
@@ -55,7 +56,7 @@ Hauptknoten; keine neue verschachtelte Baumstruktur).
 **Im Spielmodus (`PlayMode`) werden die Listenregel-Karten vollständig
 ausgeblendet.** Der Spielmodus zeigt die kampffeldrelevanten Einheiten; die
 listenweite Konfiguration gehört dort nicht hin. Es greift dasselbe Prädikat:
-Selektionen, die als Listenregel erkannt werden (`type !== "unit"`), werden aus
+Selektionen, die als Listenregel erkannt werden (`type === "upgrade"`), werden aus
 der gruppierten Anzeige des Spielmodus herausgefiltert — sowohl im
 kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
 
@@ -87,8 +88,9 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
     Listenregel-Selektionen aus der Anzeige aus (kategorisierter und
     unkategorisierter Pfad).
 - **Architektur-Entscheidungen:**
-  - Erkennung strikt datengetrieben über Katalog-`type` (`type !== "unit"` ⇒
-    Listenregel). Bestätigt an den echten Definitive-Edition-Daten: alle vier
+  - Erkennung strikt datengetrieben über Katalog-`type` (`type === "upgrade"` ⇒
+    Listenregel; `unit`/`model` sind kampffeldrelevante Einheiten). Bestätigt an
+    den echten Definitive-Edition-Daten: alle vier
     Regeln `type="upgrade"`, echte Einheiten `type="unit"`. Anwendung des
     bestehenden Prinzips aus **ADR 0003** — kein neuer ADR, keine Namens-/
     ID-Hartkodierung, kein `systemQuirks.js`-Eintrag.
@@ -124,8 +126,8 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
 
 ## Acceptance Criteria
 - [ ] Ein reines Solver-Prädikat erkennt eine Wurzel-Selektion mit aufgelöstem
-      Katalog-`type ≠ unit` als Listenregel (direkt unit-getestet; echte Einheiten
-      = `unit` werden nicht als Listenregel erkannt).
+      Katalog-`type == upgrade` als Listenregel (direkt unit-getestet; echte
+      Einheiten = `unit`/`model` werden nicht als Listenregel erkannt).
 - [ ] Im Roster-Editor zeigt eine Listenregel-Karte weder den Detail-/Profil-
       Umschalter (`ReceiptText`) noch das ⋮-Menü.
 - [ ] Im Roster-Editor zeigt die Listenregel-Gruppe keinen „+"-Adder.

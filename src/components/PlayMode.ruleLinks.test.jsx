@@ -223,4 +223,37 @@ describe('PlayMode hides list rules', () => {
     // Exactly one unit is rendered (PlayUnitDetails stub → one chip button).
     expect(screen.getAllByTestId('chip-show-rule')).toHaveLength(1);
   });
+
+  it('also hides a list rule that falls into the uncategorized "Sonstige Auswahlen" path', () => {
+    // The list-rule selection sits in a category with no matching categoryLink,
+    // so it reaches the uncategorized branch; it must still be filtered out, and
+    // with no other uncategorized selection the "Sonstige Auswahlen" group must
+    // not appear at all.
+    const systemCoreOnly = {
+      forceEntries: [{ id: 'fe-1', categoryLinks: [{ targetId: 'cat-core', name: 'Core' }] }],
+      categoryEntries: [{ id: 'cat-core', name: 'Core Units' }],
+    };
+    const rosterWithOrphanRule = {
+      catalogueId: 'cat-1',
+      costLimitType: 'pts',
+      forces: [
+        {
+          id: 'force-1',
+          forceEntryId: 'fe-1',
+          selections: [
+            { id: 'sel-unit', name: 'Knights', category: 'cat-core', entryLinkId: 'el-1' },
+            // category 'cat-rules' has no categoryLink → uncategorized path.
+            { id: 'sel-rule', name: 'Allow experimental rules?', category: 'cat-rules', entryLinkId: 'el-rule' },
+          ],
+        },
+      ],
+    };
+
+    render(<PlayMode system={systemCoreOnly} roster={rosterWithOrphanRule} onBack={vi.fn()} />);
+
+    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
+    expect(screen.queryByText('Sonstige Auswahlen')).toBeNull();
+    expect(screen.getByText('Core Units')).toBeTruthy();
+    expect(screen.getAllByTestId('chip-show-rule')).toHaveLength(1);
+  });
 });
