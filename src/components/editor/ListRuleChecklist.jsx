@@ -91,29 +91,52 @@ export default function ListRuleChecklist({
 
         return (
           <div key={state.resolvedId} className="list-rule-item">
-            <div className="list-rule-row">
-              <span className="list-rule-chevron-slot">
-                {hasSubOptions && (
-                  <button
-                    type="button"
-                    className="list-rule-collapse"
-                    aria-expanded={isExpanded}
-                    aria-label={isExpanded ? 'Unteroptionen einklappen' : 'Unteroptionen ausklappen'}
-                    onClick={() => toggleCollapsed(state.resolvedId)}
-                  >
-                    {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                  </button>
-                )}
-              </span>
-              <label className="list-rule-toggle">
+            {hasSubOptions ? (
+              // Behälter (angehakt, mit Unteroptionen): Ein Klick auf die Zeile klappt
+              // ein/aus; nur die Checkbox schaltet die Regel an/aus. Der Chevron ist
+              // reines Icon. Die Checkbox stoppt die Klick-Propagation, damit sie die
+              // Zeile nicht zugleich einklappt.
+              <div
+                className="list-rule-row list-rule-row-expandable"
+                role="button"
+                tabIndex={0}
+                aria-expanded={isExpanded}
+                aria-label={isExpanded ? 'Unteroptionen einklappen' : 'Unteroptionen ausklappen'}
+                onClick={() => toggleCollapsed(state.resolvedId)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleCollapsed(state.resolvedId);
+                  }
+                }}
+              >
+                <span className="list-rule-chevron-slot" aria-hidden="true">
+                  {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                </span>
                 <span className="list-rule-name text-body">{state.name}</span>
                 <input
                   type="checkbox"
                   checked={state.checked}
+                  aria-label={state.name}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => toggleRule(state, e.target.checked)}
+                />
+              </div>
+            ) : (
+              // Schalter-Regel (oder noch nicht angehakter Behälter): keine
+              // Unteroptionen zum Einklappen — der Klick auf die ganze Zeile schaltet
+              // die Regel an/aus (natives Label-Verhalten).
+              <label className="list-rule-row list-rule-row-toggle">
+                <span className="list-rule-chevron-slot" />
+                <span className="list-rule-name text-body">{state.name}</span>
+                <input
+                  type="checkbox"
+                  checked={state.checked}
+                  aria-label={state.name}
                   onChange={(e) => toggleRule(state, e.target.checked)}
                 />
               </label>
-            </div>
+            )}
 
             {hasSubOptions && isExpanded && (
               <div className="list-rule-suboptions">

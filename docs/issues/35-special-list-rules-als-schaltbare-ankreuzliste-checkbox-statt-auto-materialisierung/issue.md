@@ -49,13 +49,13 @@ statt materialisierter Karten eine **flache Ankreuzliste**:
 - **Vorgabe: leer** (alle Regeln „aus") = der echte Battlescribe-Standard.
 - **Behälter-Regeln** zeigen ihre Unteroptionen **direkt und eingerückt unter
   ihrer Ankreuz-Zeile** als schlichte Options-Steuerelemente — **keine** Karte,
-  **keine** „Optionen & Ausrüstung konfigurieren"-Überschrift. Ein eigener
-  **Pfeil-Umschalter (Chevron)** an der Zeile klappt diese Unteroptionen ein/aus,
-  **unabhängig** vom Ankreuzzustand (angehakt bleibt angehakt) und **anfänglich
-  ausgeklappt** — damit lange Unteroptions-Listen kompakt gehalten werden können,
-  ohne die Regel abzuwählen (Nachschärfung aus PR-Review: die ursprüngliche
-  „ohne Ausklapp-Knopf"-Vorgabe erwies sich mit echten, langen Inhalten als
-  unhandlich).
+  **keine** „Optionen & Ausrüstung konfigurieren"-Überschrift. Die Interaktion ist
+  geteilt: **ein Klick auf die Zeile klappt die Unteroptionen ein/aus**, **nur die
+  Checkbox schaltet die Regel an/aus**. Der **Chevron ist reines Icon** (kein
+  Knopf) und zeigt den Ein-/Ausklapp-Zustand an; er ist **anfänglich ausgeklappt**.
+  So bleiben lange Unteroptions-Listen kompakt haltbar, ohne die Regel abzuwählen
+  (Nachschärfung aus PR-Review: die ursprüngliche „ohne Ausklapp-Knopf"-Vorgabe
+  erwies sich mit echten, langen Inhalten als unhandlich).
 
 Die äußere „Special list rules"-**Gruppe** bleibt wie aus Issue 34 ein
 **einklappbarer Abschnitt, per Vorgabe zugeklappt** — nur ihr *Inhalt* wird zur
@@ -142,7 +142,7 @@ nicht-destruktiv.
 - [ ] Anhaken fügt den Regel-Eintrag der Liste hinzu; Abhaken entfernt ihn. „+"-Adder und ⋮-/Löschen-Menü erscheinen für Listenregeln nicht mehr.
 - [ ] Vorgabezustand einer neuen Liste: alle Listenregeln aus (kein Eintrag präsent).
 - [ ] Das Aktivieren einer reinen Schalter-Regel beeinflusst die Liste nachweislich (ein dahinter gesperrter Eintrag wird von `max 0` auf `max 1` freigeschaltet bzw. `hidden` kippt); Deaktivieren sperrt ihn wieder (Seam C, Fixture `whfb6-lexicanum/special-characters-hint`).
-- [ ] Ist eine Behälter-Regel angehakt, erscheinen ihre Unteroptionen direkt und eingerückt unter ihrer Zeile — ohne Karte, ohne „Optionen & Ausrüstung konfigurieren"-Überschrift. Ein eigener Pfeil-Umschalter (Chevron) klappt sie ein/aus (anfänglich ausgeklappt), ohne die Regel abzuwählen.
+- [ ] Ist eine Behälter-Regel angehakt, erscheinen ihre Unteroptionen direkt und eingerückt unter ihrer Zeile — ohne Karte, ohne „Optionen & Ausrüstung konfigurieren"-Überschrift. Ein Klick auf die Zeile klappt sie ein/aus (anfänglich ausgeklappt), nur die Checkbox schaltet die Regel an/aus; der Chevron ist reines Icon.
 - [ ] Lange, umbruchlose Optionsnamen (z. B. „Chronicles/Annual/AB(appendix)") brechen um und überlagern die Checkbox-Spalte nicht.
 - [ ] Eine nicht-binäre Listenregel (`max>1`/Zahlenwert) fällt datengetrieben auf den Mengen-Adder zurück statt auf ein Ankreuzfeld (kein hartkodierter Regelname/-id; ADR 0003).
 - [ ] Die äußere „Special list rules"-Gruppe bleibt ein einklappbarer Abschnitt, per Vorgabe zugeklappt.
@@ -156,3 +156,4 @@ nicht-destruktiv.
 ## Comments
 - Umgesetzt: Auto-Materialisierung entfernt; 'Special list rules' rendern eine datengetriebene Ankreuzliste (ListRuleChecklist) — angehakt ⇔ Präsenz, Behälter-Optionen inline, nicht-binäre Regeln als Mengen-Adder, Gruppe eingeklappt per Vorgabe, Badges/Karten für Regeln entfallen. Solver-Zustand ist wieder eine echte Nutzerentscheidung (Seam C beweist max 0→1). ADR 0011-Ausnahme aufgehoben; Schema/.ros unverändert. Vier-Achsen-Prüfung grün (Standards/Spec/Tests/Docs), Lint sauber, 740 Tests grün; E2E umgebungsbedingt (Sandbox-Netz) übersprungen. Standards-Befunde #1/#4/#5/#6 behoben; #2/#3 als Issues 36/37 abgetrennt. Version 1.3.0 → 1.3.1.
 - PR-Review-Nachschärfung (UI): (1) Behälter-Unteroptionen erhalten einen eigenen Chevron-Umschalter — ein-/ausklappbar ohne Abwählen, anfänglich ausgeklappt (kehrt die fruehere 'ohne Ausklapp-Knopf'-Vorgabe um, die mit langen Inhalten unhandlich war). (2) Lange umbruchlose Optionsnamen brechen nun um (overflow-wrap) und ueberlagern die Checkbox-Spalte nicht mehr. ListRuleChecklist + index.css; Komponententests erweitert; E2E-Beleg (Bretonnia, Mobil) bestaetigt beide Behebungen.
+- PR-Review-Nachschärfung (Interaktion): Geteilte Interaktion bei Behälter-Zeilen — Klick auf die Zeile klappt die Unteroptionen ein/aus, nur die Checkbox schaltet die Regel an/aus. Chevron ist reines Icon (kein Knopf mehr). E2E belegt: Zeilenklick klappt ohne Abwählen ein, Checkboxklick schaltet ohne Einklappen. 743 Tests gruen.

@@ -106,15 +106,16 @@ describe('ListRuleChecklist', () => {
     expect(configurators[0].getAttribute('data-list-rule')).toBe('true');
   });
 
-  it('collapses a checked container\'s sub-options via its toggle without unchecking it', () => {
+  it('collapses a checked container\'s sub-options by clicking the row, without unchecking it', () => {
     mockStates = [containerRule({ checked: true, selection: { id: 'sel-2' } })];
     render(<ListRuleChecklist {...baseProps} states={mockStates} />);
 
     // Default: expanded — sub-options visible right after checking.
     expect(screen.getByTestId('selection-configurator')).not.toBeNull();
 
-    const collapseToggle = screen.getByRole('button', { name: 'Unteroptionen einklappen' });
-    fireEvent.click(collapseToggle);
+    // The whole container row is the collapse toggle (role=button); the chevron is icon-only.
+    const collapseRow = screen.getByRole('button', { name: 'Unteroptionen einklappen' });
+    fireEvent.click(collapseRow);
 
     // Collapsed: sub-options hidden, but the rule stays checked (no removal).
     expect(screen.queryByTestId('selection-configurator')).toBeNull();
@@ -123,6 +124,18 @@ describe('ListRuleChecklist', () => {
 
     // Re-expanding brings them back.
     fireEvent.click(screen.getByRole('button', { name: 'Unteroptionen ausklappen' }));
+    expect(screen.getByTestId('selection-configurator')).not.toBeNull();
+  });
+
+  it('on a container, the checkbox toggles the rule without collapsing (independent of the row click)', () => {
+    mockStates = [containerRule({ checked: true, selection: { id: 'sel-2' } })];
+    render(<ListRuleChecklist {...baseProps} states={mockStates} />);
+
+    // Clicking the checkbox removes the rule but must NOT collapse the sub-options
+    // (its click is isolated from the row's collapse handler).
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Campaign rules' }));
+    expect(baseProps.removeUnit).toHaveBeenCalledWith('sel-2');
+    expect(baseProps.removeUnit).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('selection-configurator')).not.toBeNull();
   });
 
