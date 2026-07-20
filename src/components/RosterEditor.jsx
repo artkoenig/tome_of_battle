@@ -287,6 +287,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             addUnit={addUnit}
                             roster={roster}
                             selectionCounts={selectionCounts}
+                            force={force}
                           />
                         )}
                       </div>
@@ -354,6 +355,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       addUnit={addUnit}
                       roster={roster}
                       selectionCounts={selectionCounts}
+                      force={force}
                     />
                   </div>
                   {armyWideSelectorSelections.length > 0 && (

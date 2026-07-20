@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -165,3 +165,4 @@ konform ADR-0003).
 - [ ] Volle Suite grün; keine Regression in bestehenden Katalogen/Armeen.
 
 ## Comments
+- Neuer reiner Solver-Seam getEntryAddAvailability (hypothetisches Add + validateRoster-Diff, SSOT) ersetzt den isMaxedOut-Einzelpfad im Aushebe-Dialog; gesperrte Einträge werden ausgegraut/nicht klickbar mit wortgetreuem Grund. ADR-0022 angelegt, Tests an Solver- und Komponenten-Seam.
