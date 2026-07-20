@@ -1,4 +1,4 @@
-Status: resolved
+Status: claimed
 Type: feature
 Blocked by: None
 
@@ -173,8 +173,9 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
       Kopfzeile, Klick blendet die Regel-Karten ein/aus (Standard: ausgeklappt).
 - [x] Im Roster-Editor zeigt die Listenregel-Gruppe keinen „+"-Adder.
 - [x] Klick auf eine Listenregel-Karte öffnet weiterhin den Options-Konfigurator
-      („Optionen & Ausrüstung konfigurieren"); die dort gewählten Optionen
-      erscheinen weiterhin als Badges auf der Karte.
+      — jedoch **ohne** die Überschrift „Optionen & Ausrüstung konfigurieren"
+      (für Regeln unpassend); die dort gewählten Optionen erscheinen weiterhin als
+      Badges auf der Karte.
 - [x] Echte Einheiten-Kategorien (Lord, Helden, Core …) bleiben unverändert:
       Detail-Umschalter, ⋮-Menü und „+"-Adder bleiben dort erhalten.
 - [x] Im Spielmodus (`PlayMode`) erscheinen Listenregel-Selektionen nicht — weder

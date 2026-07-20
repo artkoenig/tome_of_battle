@@ -25,7 +25,8 @@ export default function SelectionConfigurator({
   handleMouseMove,
   handleMouseLeave,
   setActiveInfo,
-  onShowRule
+  onShowRule,
+  isListRule = false
 }) {
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
   const activeForce = roster.forces ? roster.forces.find(force => {
@@ -182,7 +183,8 @@ export default function SelectionConfigurator({
 
   return (
     <div className="selection-node-body">
-      <h4>Optionen &amp; Ausrüstung konfigurieren</h4>
+      {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
+      {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
       <div className="sub-selection-group" style={{ borderLeft: 'none', paddingLeft: 0 }}>
         {groupedList.map((group, gIdx) => {
           if (group.standalone) {

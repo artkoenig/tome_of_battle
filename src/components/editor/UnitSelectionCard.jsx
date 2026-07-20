@@ -376,6 +376,7 @@ export default function UnitSelectionCard({
           handleMouseLeave={handleMouseLeave}
           setActiveInfo={setActiveInfo}
           onShowRule={onShowRule}
+          isListRule={isListRule}
         />
       )}
 
