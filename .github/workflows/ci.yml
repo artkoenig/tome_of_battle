@@ -63,3 +63,14 @@ jobs:
 
       - name: E2E-Test
         run: node src/solver/ui.test.js
+
+      # Schlägt der E2E fehl, hält ui.test.js den UI-Zustand als e2e-failure.png fest.
+      # Als Artefakt hochladen, damit der Fehler am tatsächlichen Bildschirm nachvollziehbar
+      # ist, statt nur am Stacktrace.
+      - name: Fehler-Screenshot hochladen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure-screenshot
+          path: e2e-failure.png
+          if-no-files-found: ignore

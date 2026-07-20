@@ -171,13 +171,17 @@ describe('Kategorie-Obergrenze der Force (vom alten Einzel-max-Check verfehlt)',
     expect(available).toBe(false);
   });
 
-  it('nennt weiterhin die mechanische Meldung, wenn kein Autoren-error vorliegt (Fallback)', () => {
+  it('nennt die mechanische Obergrenze ohne technischen Zählstand, wenn kein Autoren-error vorliegt (Fallback)', () => {
     // Reiner mechanischer Verstoß (category-max, kein `modifier-error`): die
-    // Priorisierung greift nicht, der mechanische Grund bleibt sichtbar.
+    // Priorisierung greift nicht, der mechanische Grund bleibt sichtbar — aber ohne
+    // den technischen Zählstand „(aktuell: N)", der im Aushebe-Dialog entfällt.
     const roster = makeRoster(2000, [{ ...selection('s-lord-1', 'lord'), category: LORDS_CATEGORY }]);
     const { reasons } = availabilityOf(lord, roster, system, LORDS_CATEGORY);
     expect(reasons.length).toBeGreaterThan(0);
-    expect(reasons.some(reason => reason.includes('erlaubt') && reason.includes('aktuell'))).toBe(true);
+    expect(reasons.some(reason => reason.includes('erlaubt'))).toBe(true);
+    expect(reasons.some(reason => reason.includes('aktuell'))).toBe(false);
+    // Der Zählstand wird präzise gekappt — der Satz bleibt inkl. Schlusspunkt intakt.
+    expect(reasons).toContain('Maximal 1 Auswahlen für "Lords" in Army erlaubt.');
   });
 
   it('lässt den Kandidaten zu, solange die Kategorie unter der Grenze liegt', () => {
