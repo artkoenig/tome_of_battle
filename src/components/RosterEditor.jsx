@@ -31,11 +31,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, _setToast] = useState(null);
-  // Listenregel-Gruppen sind ausklappbar; hier gesammelt die (pro force+Kategorie)
-  // eingeklappten Gruppen. Standard: ausgeklappt (leeres Set).
-  const [collapsedRuleGroups, setCollapsedRuleGroups] = useState(() => new Set());
+  // Listenregel-Gruppen sind ausklappbar und **standardmäßig eingeklappt**. Wir
+  // verfolgen daher die (pro force+Kategorie) ausdrücklich AUSGEKLAPPTEN Gruppen;
+  // ein leeres Set bedeutet: alle eingeklappt.
+  const [expandedRuleGroups, setExpandedRuleGroups] = useState(() => new Set());
   const toggleRuleGroup = (groupKey) => {
-    setCollapsedRuleGroups(prev => {
+    setExpandedRuleGroups(prev => {
       const next = new Set(prev);
       if (next.has(groupKey)) next.delete(groupKey); else next.add(groupKey);
       return next;
@@ -211,7 +212,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     ? selections.every(s => isListRuleSelection(system, s, catalogueId))
                     : isListRuleCategory(system, activeCatalogue, link.targetId, { roster, force });
                   const ruleGroupKey = `${force.id}:${link.targetId}`;
-                  const isRuleGroupCollapsed = isListRuleGroup && collapsedRuleGroups.has(ruleGroupKey);
+                  const isRuleGroupCollapsed = isListRuleGroup && !expandedRuleGroups.has(ruleGroupKey);
 
                   // If category link is hidden and has no selections, do not render it
                   if (isHidden && selections.length === 0) {

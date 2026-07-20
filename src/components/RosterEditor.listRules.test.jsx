@@ -153,8 +153,11 @@ describe('RosterEditor list-rule groups', () => {
     expect(adderNames).not.toContain('Special list rules');
   });
 
-  it('renders the list-rule card in list-rule mode and the unit card normally', () => {
+  it('renders the list-rule card in list-rule mode and the unit card normally (once expanded)', () => {
     renderRosterEditor();
+
+    // The list-rule group is collapsed by default — expand it first.
+    fireEvent.click(screen.getByText('Special list rules').closest('[role="button"]'));
 
     const ruleCard = screen.getByText('Allow experimental rules?').closest('[data-testid="unit-card"]');
     const unitCard = screen.getByText('Knights Errant').closest('[data-testid="unit-card"]');
@@ -163,20 +166,22 @@ describe('RosterEditor list-rule groups', () => {
     expect(unitCard.getAttribute('data-list-rule')).toBe('false');
   });
 
-  it('collapses and re-expands the list-rule group when its header is clicked', () => {
+  it('is collapsed by default and expands/collapses when its header is clicked', () => {
     renderRosterEditor();
-    expect(screen.getByText('Allow experimental rules?')).toBeTruthy();
+
+    // Default: collapsed — the rule cards are not rendered, the unit category is.
+    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
+    expect(screen.getByText('Knights Errant')).toBeTruthy();
 
     const header = screen.getByText('Special list rules').closest('[role="button"]');
     expect(header).not.toBeNull();
 
-    // Collapse: the rule card disappears, the unit category is untouched.
-    fireEvent.click(header);
-    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
-    expect(screen.getByText('Knights Errant')).toBeTruthy();
-
-    // Re-expand.
+    // Expand.
     fireEvent.click(header);
     expect(screen.getByText('Allow experimental rules?')).toBeTruthy();
+
+    // Collapse again.
+    fireEvent.click(header);
+    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
   });
 });

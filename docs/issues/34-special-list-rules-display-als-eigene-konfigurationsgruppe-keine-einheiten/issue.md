@@ -1,4 +1,4 @@
-Status: resolved
+Status: claimed
 Type: feature
 Blocked by: None
 
@@ -67,8 +67,9 @@ Im „Listenregel-Modus" werden dieselben Komponenten wiederverwendet
 Alle Listenregeln erscheinen gebündelt unter ihrem Hauptknoten „Special list
 rules" (die bestehende, katalog-benannte Kategorie-Gruppe dient als dieser
 Hauptknoten; keine neue verschachtelte Baumstruktur). Die Gruppe ist
-**ausklappbar** (Chevron in der Kopfzeile), und die Regel-Karten tragen **keinen
-gezackten Rand** (die `torn-edge`-Zierde bleibt echten Einheiten vorbehalten).
+**ausklappbar** (Chevron in der Kopfzeile) und **standardmäßig eingeklappt**, und
+die Regel-Karten tragen **keinen gezackten Rand** (die `torn-edge`-Zierde bleibt
+echten Einheiten vorbehalten).
 Die Erkennung einer Listenregel-Kategorie erfolgt bereits vor der
 Materialisierung katalog-basiert (`isListRuleCategory` über die mit dem
 „+"-Adder geteilte Aufzählung `collectPrimaryCategoryEntries`), sodass beim
@@ -169,8 +170,9 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
 - [x] Im Roster-Editor zeigt eine Listenregel-Karte weder den Detail-/Profil-
       Umschalter (`ReceiptText`) noch das ⋮-Menü — und **keinen gezackten unteren
       Rand** (die `unit-card-torn-edge`-Zierde bleibt echten Einheiten vorbehalten).
-- [x] Die „Special list rules"-Gruppe ist **ausklappbar**: ein Chevron in der
-      Kopfzeile, Klick blendet die Regel-Karten ein/aus (Standard: ausgeklappt).
+- [x] Die „Special list rules"-Gruppe ist **ausklappbar** und **standardmäßig
+      eingeklappt**: ein Chevron in der Kopfzeile, Klick blendet die Regel-Karten
+      ein/aus.
 - [x] Im Roster-Editor zeigt die Listenregel-Gruppe keinen „+"-Adder.
 - [x] Klick auf eine Listenregel-Karte öffnet weiterhin den Options-Konfigurator
       — jedoch **ohne** die Überschrift „Optionen & Ausrüstung konfigurieren"
