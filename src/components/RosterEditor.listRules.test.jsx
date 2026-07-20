@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
 
 // This suite isolates how RosterEditor treats a "list rule" category (catalog
@@ -161,5 +161,22 @@ describe('RosterEditor list-rule groups', () => {
 
     expect(ruleCard.getAttribute('data-list-rule')).toBe('true');
     expect(unitCard.getAttribute('data-list-rule')).toBe('false');
+  });
+
+  it('collapses and re-expands the list-rule group when its header is clicked', () => {
+    renderRosterEditor();
+    expect(screen.getByText('Allow experimental rules?')).toBeTruthy();
+
+    const header = screen.getByText('Special list rules').closest('[role="button"]');
+    expect(header).not.toBeNull();
+
+    // Collapse: the rule card disappears, the unit category is untouched.
+    fireEvent.click(header);
+    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
+    expect(screen.getByText('Knights Errant')).toBeTruthy();
+
+    // Re-expand.
+    fireEvent.click(header);
+    expect(screen.getByText('Allow experimental rules?')).toBeTruthy();
   });
 });
