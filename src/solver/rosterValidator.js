@@ -10,6 +10,64 @@ import { getInheritedCategoryMaxSource } from './systemQuirks.js';
 import '../types.js';
 
 /**
+ * Autoritative Sperr-Klassifikation der Aushebe-Verfügbarkeit (ADR-0022). Bildet **jeden**
+ * vom Validator erzeugten Verstoß-`type` darauf ab, ob er einen Kandidaten im Aushebe-Dialog
+ * sperrt: `true` = Obergrenze/„nicht erlaubt" (`*-max`, Autoren-`error`), `false` = Budget-/
+ * „zu-wenig"-Zustand des normalen, unfertigen Bauflusses (`*-min`, Punktelimit, unresolved).
+ *
+ * Einzige Wahrheitsquelle für diese Frage: der Dialog liest ausschließlich das hieraus
+ * gestempelte `blocksAddAvailability`-Flag jedes Verstoßes, nie die Typ-Namenskonvention.
+ */
+export const VIOLATION_BLOCKS_ADD_AVAILABILITY = Object.freeze({
+  'roster-limit': false,
+  'force-roster-limit': false,
+  'force-selector-min': false,
+  'category-min': false,
+  'category-max': true,
+  'entry-min': false,
+  'entry-max': true,
+  'entry-percent-min': false,
+  'entry-percent-max': true,
+  'group-count-min': false,
+  'group-count-max': true,
+  'group-points-min': false,
+  'group-points-max': true,
+  'group-percent-min': false,
+  'group-percent-max': true,
+  'unresolved-entry': false,
+  'modifier-error': true,
+  'modifier-warning': false,
+  'modifier-info': false
+});
+
+/**
+ * Sperr-Flag eines Verstoß-Typs. Wirft bei unklassifiziertem Typ, damit ein neu eingeführter
+ * Verstoß nicht stillschweigend als „nicht sperrend" durchrutscht (Driftschutz, ADR-0022).
+ * @param {string} type
+ * @returns {boolean}
+ */
+export function classifyBlocksAddAvailability(type) {
+  const blocks = VIOLATION_BLOCKS_ADD_AVAILABILITY[type];
+  if (typeof blocks !== 'boolean') {
+    throw new Error(
+      `Unklassifizierter Validierungstyp „${type}": in VIOLATION_BLOCKS_ADD_AVAILABILITY ergänzen (ADR-0022).`
+    );
+  }
+  return blocks;
+}
+
+/**
+ * Einziger Erzeugungspunkt eines Verstoßes: hängt ihn an die Fehlerliste und stempelt ihn
+ * mit dem autoritativen `blocksAddAvailability`-Flag. Alle Prüfungen laufen hierüber, sodass
+ * kein Verstoß ungestempelt oder unklassifiziert entstehen kann.
+ * @param {import('../types.js').ValidationError[]} errors
+ * @param {import('../types.js').ValidationError} violation
+ */
+function pushViolation(errors, violation) {
+  errors.push({ ...violation, blocksAddAvailability: classifyBlocksAddAvailability(violation.type) });
+}
+
+/**
  * Validates a roster against a game system's rules and constraints.
  * @param {import('../types.js').Roster} roster
  * @param {Object} system
@@ -64,7 +122,7 @@ function checkRosterCostLimit(roster, system, errors) {
   const limit = roster.costLimit;
   const current = costs[roster.costLimitType] || 0;
   if (current > limit) {
-    errors.push({
+    pushViolation(errors, {
       type: 'roster-limit',
       message: `Punkteüberschreitung: Du hast ${current} von maximal ${limit} Punkten verwendet.`,
       severity: ValidationSeverity.ERROR
@@ -144,7 +202,7 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
       entry.targetId ? forceCounts[entry.targetId] || 0 : 0
     );
     if (currentCount === 0) {
-      errors.push({
+      pushViolation(errors, {
         type: 'force-selector-min',
         forceId: force.id,
         message: `Pflichtauswahl „${entry.name}" fehlt in ${forceDef.name} (mindestens ${minValue} benötigt).`,
@@ -193,7 +251,7 @@ function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
     const currentLimit = roster.costLimitType === costTypeId ? (roster.costLimit || 0) : 0;
 
     if (con.type === 'min' && currentLimit < requiredLimit) {
-      errors.push({
+      pushViolation(errors, {
         type: 'force-roster-limit',
         forceId: forceDef.id,
         message: `${forceDef.name} erfordert ein Punktelimit von mindestens ${requiredLimit} (aktuell: ${currentLimit}).`,
@@ -273,7 +331,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
   if (finalValue < 0) return; // z. B. max="-1": die Kategorie ist unbegrenzt.
 
   if (con.type === 'min' && count < finalValue) {
-    errors.push({
+    pushViolation(errors, {
       type: 'category-min',
       forceId: force.id,
       categoryId: targetCatId,
@@ -282,7 +340,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
     });
   }
   if (con.type === 'max' && count > finalValue) {
-    errors.push({
+    pushViolation(errors, {
       type: 'category-max',
       forceId: force.id,
       categoryId: targetCatId,
@@ -304,7 +362,7 @@ function checkSelectionTree(args) {
   if (!entry) {
     // ADR-0011-Resilienz: die Auswahl bleibt unter ihrem gespeicherten Namen sichtbar
     // (nicht entfernt/umgebogen) — nur als Validierungsfehler gemeldet.
-    errors.push({
+    pushViolation(errors, {
       type: 'unresolved-entry',
       selectionId: selection.id,
       message: `Auswahl "${selection.name}" verweist auf einen im Katalog nicht mehr vorhandenen Eintrag.`,
@@ -342,7 +400,7 @@ function checkSelectionMessages({ selection, parentSelection, roster, system, fo
   };
 
   collectTriggeredMessages(entry, ctx).forEach(({ severity, message }) => {
-    errors.push({
+    pushViolation(errors, {
       type: `modifier-${severity}`,
       selectionId: selection.id,
       message,
@@ -424,7 +482,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
     }
 
     if (con.type === 'min' && count < finalValue) {
-      errors.push({
+      pushViolation(errors, {
         type: 'entry-min',
         selectionId: selection.id,
         message: `Option "${selection.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${count}).`,
@@ -432,7 +490,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
       });
     }
     if (con.type === 'max' && count > finalValue) {
-      errors.push({
+      pushViolation(errors, {
         type: 'entry-max',
         selectionId: selection.id,
         message: `Option "${selection.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${count}).`,
@@ -458,7 +516,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
   const unit = measuresCost ? 'Punkte' : 'Auswahlen';
 
   if (con.type === 'min' && subject < threshold) {
-    errors.push({
+    pushViolation(errors, {
       type: 'entry-percent-min',
       selectionId: selection.id,
       message: `Option "${selection.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
@@ -466,7 +524,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
     });
   }
   if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
-    errors.push({
+    pushViolation(errors, {
       type: 'entry-percent-max',
       selectionId: selection.id,
       message: `Option "${selection.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
@@ -582,7 +640,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
 
       if (measuresCost) {
         if (con.type === 'max' && totalPoints > finalValue) {
-          errors.push({
+          pushViolation(errors, {
             type: 'group-points-max',
             selectionId: selection.id,
             message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
@@ -590,7 +648,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
           });
         }
         if (con.type === 'min' && totalPoints < finalValue && totalPoints > 0) {
-          errors.push({
+          pushViolation(errors, {
             type: 'group-points-min',
             selectionId: selection.id,
             message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
@@ -599,7 +657,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
         }
       } else {
         if (con.type === 'max' && totalCount > finalValue) {
-          errors.push({
+          pushViolation(errors, {
             type: 'group-count-max',
             selectionId: selection.id,
             message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
@@ -607,7 +665,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
           });
         }
         if (con.type === 'min' && totalCount < finalValue && totalCount > 0) {
-          errors.push({
+          pushViolation(errors, {
             type: 'group-count-min',
             selectionId: selection.id,
             message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
@@ -629,7 +687,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints,
   const unit = measuresCost ? 'Punkte' : 'Auswahlen';
 
   if (con.type === 'min' && subject < threshold) {
-    errors.push({
+    pushViolation(errors, {
       type: 'group-percent-min',
       selectionId: selection.id,
       message: `Kategorie "${group.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
@@ -637,7 +695,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints,
     });
   }
   if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
-    errors.push({
+    pushViolation(errors, {
       type: 'group-percent-max',
       selectionId: selection.id,
       message: `Kategorie "${group.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,

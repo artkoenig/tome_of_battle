@@ -92,7 +92,6 @@ export default function CategoryUnitAdder({
               <div
                 key={res.id}
                 className={`popover-item ${isBlocked ? 'disabled' : ''}`}
-                style={{ opacity: isBlocked ? 0.5 : 1, cursor: isBlocked ? 'not-allowed' : 'pointer' }}
                 aria-disabled={isBlocked}
                 onClick={() => {
                   if (isBlocked) return;
@@ -100,17 +99,17 @@ export default function CategoryUnitAdder({
                   setIsOpen(false);
                 }}
               >
-                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ color: isBlocked ? 'var(--text-dim)' : 'inherit' }}>{getEffectiveName(res, displayCtx)}</span>
-                  {isBlocked && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Nicht verfügbar)</span>}
+                <span className="popover-item-name popover-item-label">
+                  <span>{getEffectiveName(res, displayCtx)}</span>
+                  {isBlocked && <span className="text-danger text-micro popover-item-unavailable">(Nicht verfügbar)</span>}
                   {isBlocked && reasons.map((reason, idx) => (
-                    <span key={idx} className="text-danger text-micro popover-item-reason" style={{ flexBasis: '100%', marginTop: '2px', opacity: 0.9 }}>
+                    <span key={idx} className="text-danger text-micro popover-item-reason">
                       {reason}
                     </span>
                   ))}
                 </span>
                 {points > 0 && (
-                  <span className="popover-item-cost font-body text-gold" style={{ color: isBlocked ? 'var(--text-dim)' : 'var(--text-gold)' }}>
+                  <span className="popover-item-cost font-body text-gold">
                     +{points} {costTypeLabel}
                   </span>
                 )}

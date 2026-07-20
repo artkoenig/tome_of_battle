@@ -1,5 +1,6 @@
 import { validateRoster } from './rosterValidator.js';
 import { resolveEntry } from './catalogResolver.js';
+import { createSelectionFromDef } from './selectionFactory.js';
 import { ValidationSeverity } from './modifierEvaluator.js';
 import '../types.js';
 
@@ -9,24 +10,18 @@ import '../types.js';
 // (siehe violationKey) deterministisch und garantiert distinkt von echten Selektionen.
 const HYPOTHETICAL_SELECTION_ID = 'hypothetical-add-candidate';
 
-// Sperr-Klassifikation (ADR-0022): Ein eingeführter Verstoß macht den Eintrag nur dann
-// „nicht verfügbar", wenn er eine „zu-viel/nicht-erlaubt"-Klasse ist — jede `*-max`-
-// Constraint (entry/category/group/percent) oder ein Autoren-`error`-Modifier. Budget-/
-// „zu-wenig"-Zustände (roster-limit, alle `*-min`, force-selector-min) gehören zum
-// normalen, unfertigen Bauzustand und sperren die Wählbarkeit nicht.
-const BLOCKING_MAX_TYPE_SUFFIX = '-max';
-const MODIFIER_ERROR_TYPE = 'modifier-error';
-
 /**
- * Wahr, wenn ein Validierungseintrag die Wählbarkeit im Aushebe-Dialog sperrt:
- * Schweregrad `error` (deckungsgleich mit `hasBlockingViolations`) UND eine
- * „zu-viel/nicht-erlaubt"-Klasse (`type` endet auf `-max` oder ist `modifier-error`).
+ * Wahr, wenn ein Validierungseintrag die Wählbarkeit im Aushebe-Dialog sperrt: Schweregrad
+ * `error` (deckungsgleich mit `hasBlockingViolations`) UND vom Validator als sperrend
+ * gestempelt (`blocksAddAvailability`, ADR-0022). Die Sperr-Klassifikation ist Sache des
+ * Validators (autoritative Tabelle in `rosterValidator.js`) — hier wird nur das Flag gelesen,
+ * nie mehr die Typ-Namenskonvention (`-max`-Suffix) interpretiert.
  * @param {import('../types.js').ValidationError} error
  * @returns {boolean}
  */
 export function isBlockingAvailabilityViolation(error) {
   if (!error || error.severity !== ValidationSeverity.ERROR) return false;
-  return error.type === MODIFIER_ERROR_TYPE || error.type.endsWith(BLOCKING_MAX_TYPE_SUFFIX);
+  return error.blocksAddAvailability === true;
 }
 
 /**
@@ -39,25 +34,6 @@ export function isBlockingAvailabilityViolation(error) {
  */
 function violationKey(error) {
   return [error.type, error.selectionId ?? '', error.categoryId ?? '', error.forceId ?? ''].join('::');
-}
-
-/**
- * Baut die synthetische Selektion des hypothetisch hinzugefügten Kandidaten. Spiegelt
- * exakt das Selektions-Shape, das `useRoster.addUnit` erzeugt (entryLinkId vs.
- * selectionEntryId je nach `targetId`, `number: 1`, Kategorie-Zuordnung), damit
- * Modifier korrekt auswerten, deren Bedingung die Präsenz des Eintrags voraussetzt.
- */
-function buildHypotheticalSelection(entry, resolved, categoryId) {
-  return {
-    id: HYPOTHETICAL_SELECTION_ID,
-    entryLinkId: entry.targetId ? entry.id : null,
-    selectionEntryId: entry.targetId ? null : entry.id,
-    name: resolved.name,
-    number: 1,
-    category: categoryId,
-    collective: resolved.collective || entry.collective || false,
-    selections: []
-  };
 }
 
 /**
@@ -83,6 +59,11 @@ function withHypotheticalSelection(roster, force, hypotheticalSelection) {
  * ohne den Kandidaten) diff't. Nur eingeführte, sperrende Verstöße (siehe
  * `isBlockingAvailabilityViolation`) machen den Eintrag „nicht verfügbar".
  *
+ * Die hypothetische Selektion wird über dieselbe geteilte Fabrik gebaut wie das echte
+ * `useRoster.addUnit` (`createSelectionFromDef`), sodass **alle Pflicht-Kinder** (`min > 0`,
+ * inkl. Default-Gruppenwahl) identisch bevölkert werden. So schlägt limit-sprengende
+ * Pflicht-Ausrüstung schon in der Verfügbarkeit an, statt erst nach dem Ausheben.
+ *
  * @param {Object} args
  * @param {Object} args.entry   der (unaufgelöste) Katalog-Eintrag/Link des Kandidaten.
  * @param {string} [args.categoryId] die Kategorie, unter der der Kandidat ausgehoben würde.
@@ -96,13 +77,16 @@ function withHypotheticalSelection(roster, force, hypotheticalSelection) {
 export function getEntryAddAvailability({ entry, categoryId, force, roster, system, baselineErrors }) {
   if (!entry || !roster || !system) return { available: true, reasons: [] };
 
-  const resolved = resolveEntry(system, entry);
-  if (!resolved) return { available: true, reasons: [] };
+  const candidate = createSelectionFromDef({ system, resolveEntry, entry, categoryId });
+  if (!candidate) return { available: true, reasons: [] };
+
+  // Stabile Top-ID erst nach dem Fabrik-Aufruf vergeben: die Fabrik verteilt frische UUIDs
+  // (nie in der Baseline), die synthetische Top-ID hält den Diff-Schlüssel deterministisch.
+  const hypotheticalSelection = { ...candidate, id: HYPOTHETICAL_SELECTION_ID };
 
   const baseline = baselineErrors ?? validateRoster(roster, system);
   const baselineKeys = new Set(baseline.map(violationKey));
 
-  const hypotheticalSelection = buildHypotheticalSelection(entry, resolved, categoryId);
   const hypotheticalRoster = withHypotheticalSelection(roster, force, hypotheticalSelection);
   const hypotheticalErrors = validateRoster(hypotheticalRoster, system);
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
+import { createSelectionFromDef as buildSelectionFromDef } from '../solver/selectionFactory';
 import { useUndoableState } from './useUndoableState';
 import '../types.js';
 
@@ -110,59 +111,10 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     };
   }, []);
 
-  // Helper to generate a new unique selection node
-  const createSelectionFromDef = (entry, categoryId = null) => {
-    const resolved = resolveEntry(system, entry);
-    if (!resolved) return null;
-
-    const selection = {
-      id: crypto.randomUUID(),
-      entryLinkId: entry.targetId ? entry.id : null,
-      selectionEntryId: entry.targetId ? null : entry.id,
-      name: resolved.name,
-      number: 1,
-      category: categoryId,
-      collective: resolved.collective || entry.collective || false,
-      selections: []
-    };
-
-    const getMinConstraintValue = (def) => def.constraints?.find(c => c.type === 'min')?.value || 0;
-
-    const addMandatoryChild = (parentSel, childDef, count) => {
-      const childSel = createSelectionFromDef(childDef);
-      if (childSel) {
-        childSel.number = count;
-        parentSel.selections.push(childSel);
-      }
-    };
-
-    const populateChildren = (def, parentSel) => {
-      [...(def.selectionEntries || []), ...(def.entryLinks || [])].forEach(child => {
-        const minCon = getMinConstraintValue(child);
-        if (minCon > 0) {
-          addMandatoryChild(parentSel, child, minCon);
-        }
-      });
-
-      def.selectionEntryGroups?.forEach(group => {
-        const minCon = getMinConstraintValue(group);
-        if (minCon > 0 && (group.selectionEntries?.length > 0 || group.entryLinks?.length > 0)) {
-          let chosenOption = null;
-          if (group.defaultSelectionEntryId) {
-            chosenOption = group.selectionEntries?.find(e => e.id === group.defaultSelectionEntryId) ||
-                           group.entryLinks?.find(l => l.id === group.defaultSelectionEntryId);
-          }
-          if (!chosenOption) {
-            chosenOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
-          }
-          addMandatoryChild(parentSel, chosenOption, minCon);
-        }
-      });
-    };
-
-    populateChildren(resolved, selection);
-    return selection;
-  };
+  // Geteilte Selektions-Fabrik (SSOT, ADR-0022): system/resolveEntry werden injiziert,
+  // sodass Ausheben und Aushebe-Verfügbarkeit dieselbe Pflicht-Kind-Bevölkerung sehen.
+  const createSelectionFromDef = (entry, categoryId = null) =>
+    buildSelectionFromDef({ system, resolveEntry, entry, categoryId });
 
   const addUnit = (entry, categoryId) => {
     const newUnit = createSelectionFromDef(entry, categoryId);
