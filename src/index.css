@@ -906,6 +906,9 @@ select option {
   flex: 1;
   min-width: 0;
   padding-right: 12px;
+  /* Lange, umbruchlose Namen (z. B. „Chronicles/Annual/AB(appendix)") sollen
+     brechen, statt in die Steuer-Spalte zu laufen und die Checkbox zu überlagern. */
+  overflow-wrap: anywhere;
 }
 
 .sub-selection-controls {
@@ -3119,30 +3122,62 @@ input[type="radio"]:checked::after {
 .list-rule-checklist {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
 }
 
 .list-rule-row {
   display: flex;
   align-items: center;
   gap: 8px;
+  /* Gleichmäßiger, etwas größerer Vertikalrhythmus — exakt wie die Options-
+     zeilen der Einheitenkarten (.sub-selection-row: 8px oben/unten). */
+  padding: 8px 0;
 }
 
-.list-rule-row-quantity {
-  justify-content: space-between;
+/* Fester Schacht links für den Chevron, damit die Namen aller obersten Zeilen
+   (mit und ohne Chevron) bündig fluchten und die Checkboxen rechts stehen. */
+.list-rule-chevron-slot {
+  flex-shrink: 0;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.list-rule-row-toggle {
+.list-rule-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  /* Checkbox rechtsbündig exakt auf einer Flucht mit den Unteroptions-Checkboxen
+     und denen der Einheitenkarten: deren Zeilen sitzen in .selection-node-body
+     (16px) und .sub-selection-row (12px) → 28px Abstand zum rechten Rand. */
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+.list-rule-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-gold);
   cursor: pointer;
 }
 
 .list-rule-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-weight: 600;
 }
 
 .list-rule-suboptions {
-  padding-left: 28px;
-  margin-left: 8px;
+  padding-left: 6px;
+  margin-left: 4px;
   border-left: 2px solid var(--border-gold-dim);
 }
 

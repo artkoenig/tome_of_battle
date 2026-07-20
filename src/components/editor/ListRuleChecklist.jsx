@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import SelectionConfigurator from './SelectionConfigurator';
 import CategoryUnitAdder from './CategoryUnitAdder';
 import BottomSheet from './BottomSheet';
@@ -10,7 +11,9 @@ import GothicTooltip from '../GothicTooltip';
  * datengetrieben aufgezählt (ob im Roster präsent oder nicht) und als Ankreuzfeld
  * dargestellt — angehakt ⇔ präsent. Anhaken fügt die Regel-Selektion hinzu,
  * Abhaken entfernt sie. Behälter-Regeln zeigen ihre Unteroptionen direkt und
- * eingerückt unter ihrer Zeile (ohne Karte, ohne Überschrift, ohne Ausklapp-Knopf).
+ * eingerückt unter ihrer Zeile (ohne Karte, ohne Überschrift). Ein eigener
+ * Pfeil-Umschalter klappt diese Unteroptionen ein bzw. aus — unabhängig vom
+ * Ankreuzzustand (angehakt bleibt angehakt), anfänglich ausgeklappt.
  * Eine nicht-binäre Regel (`max > 1`) fällt datengetrieben auf den Mengen-Adder
  * zurück (ADR 0003 — keine hartkodierten Regelnamen).
  */
@@ -30,6 +33,12 @@ export default function ListRuleChecklist({
 }) {
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
+  // Eingeklappte Behälter, nach `resolvedId`. Fehlt ein Eintrag, gilt die Zeile
+  // als ausgeklappt (Standard nach dem Anhaken), sodass Unteroptionen sofort
+  // konfigurierbar sind, aber jederzeit ohne Abwählen einklappbar bleiben.
+  const [collapsed, setCollapsed] = useState({});
+  const toggleCollapsed = (resolvedId) =>
+    setCollapsed((prev) => ({ ...prev, [resolvedId]: !prev[resolvedId] }));
 
   const handleMouseEnter = (title, text, e) => {
     if (window.innerWidth <= 900) return;
@@ -58,7 +67,8 @@ export default function ListRuleChecklist({
         // wird über den Mengen-Adder statt ein Ankreuzfeld bedient.
         if (!state.isBinary) {
           return (
-            <div key={state.resolvedId} className="list-rule-row list-rule-row-quantity">
+            <div key={state.resolvedId} className="list-rule-row">
+              <span className="list-rule-chevron-slot" />
               <span className="list-rule-name text-body">{state.name}</span>
               <CategoryUnitAdder
                 categoryId={categoryId}
@@ -76,20 +86,36 @@ export default function ListRuleChecklist({
           );
         }
 
-        const showSubOptions = state.checked && state.isContainer && state.selection;
+        const hasSubOptions = state.checked && state.isContainer && !!state.selection;
+        const isExpanded = !collapsed[state.resolvedId];
 
         return (
           <div key={state.resolvedId} className="list-rule-item">
-            <label className="list-rule-row list-rule-row-toggle">
-              <input
-                type="checkbox"
-                checked={state.checked}
-                onChange={(e) => toggleRule(state, e.target.checked)}
-              />
-              <span className="list-rule-name text-body">{state.name}</span>
-            </label>
+            <div className="list-rule-row">
+              <span className="list-rule-chevron-slot">
+                {hasSubOptions && (
+                  <button
+                    type="button"
+                    className="list-rule-collapse"
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded ? 'Unteroptionen einklappen' : 'Unteroptionen ausklappen'}
+                    onClick={() => toggleCollapsed(state.resolvedId)}
+                  >
+                    {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                  </button>
+                )}
+              </span>
+              <label className="list-rule-toggle">
+                <span className="list-rule-name text-body">{state.name}</span>
+                <input
+                  type="checkbox"
+                  checked={state.checked}
+                  onChange={(e) => toggleRule(state, e.target.checked)}
+                />
+              </label>
+            </div>
 
-            {showSubOptions && (
+            {hasSubOptions && isExpanded && (
               <div className="list-rule-suboptions">
                 <SelectionConfigurator
                   selection={state.selection}

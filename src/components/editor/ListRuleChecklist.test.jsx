@@ -106,6 +106,33 @@ describe('ListRuleChecklist', () => {
     expect(configurators[0].getAttribute('data-list-rule')).toBe('true');
   });
 
+  it('collapses a checked container\'s sub-options via its toggle without unchecking it', () => {
+    mockStates = [containerRule({ checked: true, selection: { id: 'sel-2' } })];
+    render(<ListRuleChecklist {...baseProps} states={mockStates} />);
+
+    // Default: expanded — sub-options visible right after checking.
+    expect(screen.getByTestId('selection-configurator')).not.toBeNull();
+
+    const collapseToggle = screen.getByRole('button', { name: 'Unteroptionen einklappen' });
+    fireEvent.click(collapseToggle);
+
+    // Collapsed: sub-options hidden, but the rule stays checked (no removal).
+    expect(screen.queryByTestId('selection-configurator')).toBeNull();
+    expect(screen.getByRole('checkbox', { name: 'Campaign rules' }).checked).toBe(true);
+    expect(baseProps.removeUnit).not.toHaveBeenCalled();
+
+    // Re-expanding brings them back.
+    fireEvent.click(screen.getByRole('button', { name: 'Unteroptionen ausklappen' }));
+    expect(screen.getByTestId('selection-configurator')).not.toBeNull();
+  });
+
+  it('offers no collapse toggle for a switch rule that has no sub-options', () => {
+    mockStates = [switchRule({ checked: true, selection: { id: 'sel-1' }, isContainer: false })];
+    render(<ListRuleChecklist {...baseProps} states={mockStates} />);
+
+    expect(screen.queryByRole('button', { name: /Unteroptionen/ })).toBeNull();
+  });
+
   it('does not render sub-options for a checked switch rule that has no sub-options', () => {
     mockStates = [switchRule({ checked: true, selection: { id: 'sel-1' }, isContainer: false })];
     render(<ListRuleChecklist {...baseProps} states={mockStates} />);

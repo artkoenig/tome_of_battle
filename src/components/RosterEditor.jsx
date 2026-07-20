@@ -260,13 +260,15 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>
                             {catName}
                           </h3>
-                          {(() => {
+                          {/* Der Zähl-Chip entfällt für die Listenregel-Gruppe: die Ankreuzliste
+                              zeigt den An/Aus-Zustand bereits pro Regel; eine Gesamtzahl ist redundant. */}
+                          {!isListRuleGroup && (() => {
                             const limitParts = [];
                             if (minVal > 0) limitParts.push(`Min: ${formatConstraintLimit(minVal, minConstraint)}`);
                             if (maxVal < Infinity) limitParts.push(`Max: ${formatConstraintLimit(maxVal, maxConstraint)}`);
                             const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
                             return (
-                              <span 
+                              <span
                                 className={categoryErrors.length > 0 ? "badge badge-danger" : "badge badge-muted"}
                               >
                                 {count} {limitText}
