@@ -1,4 +1,4 @@
-Status: resolved
+Status: claimed
 Type: feature
 Blocked by: None
 
@@ -10,9 +10,14 @@ Blocked by: None
 Die katalogseitige Kategorie „Special list rules" (z. B. „Allow experimental
 rules?", „Allow special characters?", „Campaign/Scenario rules", „Mercenaries and
 Regiments of Renown") hängt als **listenweite Konfiguration** an einer Armeeliste.
-Diese Einträge tragen im Katalog `type="upgrade"` und `import="true"` auf
-Force-Wurzel-Ebene — sie sind also dauerhafte, systemvorgegebene
-Einstellungsknoten, **keine** aushebbaren Einheiten.
+Diese Einträge tragen im Katalog `type="upgrade"` (mit `import="true"`) auf
+Force-Wurzel-Ebene — sie sind **keine** aushebbaren Einheiten, sondern
+listenweite Einstellungen. Die App importiert Wurzel-`entryLink`s jedoch **nicht**
+automatisch: auf einer frischen Liste ist die Gruppe „Special list rules" daher
+leer und trägt — wie jede Einheiten-Kategorie — einen „+"-Adder. Die Regeln
+werden heute also wie Einheiten per „+" hinzugefügt und per ⋮-Menü gelöscht (die
+ursprüngliche Aufnahme des Nutzers zeigte „4", weil er sie zuvor hinzugefügt
+hatte).
 
 Heute rendert sie der Roster-Editor jedoch mit exakt derselben generischen
 Kategorie-Schleife wie jede Einheiten-Kategorie (Lord, Helden, Core …): jede
@@ -37,10 +42,20 @@ Dies steht im Einklang mit ADR 0003 (Gruppierung nie über hartkodierte
 Kategorienamen, sondern datengetrieben) und benötigt **keinen** `systemQuirks.js`-
 Eintrag und **keine** Namensprüfung.
 
-Das Roster-Datenmodell bleibt **unverändert**: Listenregeln bleiben normale
-`force.selections` (`upgrade`-Selektionen). Es entsteht kein neues Roster-Feld,
-kein Umbau am `.ros`-Export (ADR 0011 unberührt). Die Änderung ist rein
-darstellungs- und interaktionsseitig.
+Damit die Regeln **dauerhaft und ohne „+"** erscheinen, werden sie beim Anlegen
+*und* Laden einer Liste **automatisch materialisiert**: fehlt eine Listenregel
+einer Force, wird sie idempotent als Selektion ergänzt (Solver-Helfer
+`materializeListRules`, in `useRoster` über den Undo-neutralen `replace`-Pfad
+angewandt — dieselbe Art system-getriebener Normalisierung wie
+`syncRosterSelectionsWithSystem`). Dadurch ist die Gruppe stets vollständig, der
+„+"-Adder entfällt zu Recht, und ein Entfernen ist nicht nötig.
+
+Das Roster-/`.ros`-**Schema** bleibt strukturell unverändert: materialisierte
+Listenregeln sind gewöhnliche `upgrade`-Selektionen wie zuvor manuell
+hinzugefügte — kein neues Feld. Neu ist allein, dass sie **automatisch statt vom
+Nutzer** angelegt werden; das ist eine bewusste, dokumentierte Ausnahme zum
+Grundsatz von **ADR 0011** (das Roster hält Nutzer-Entscheidungen), da
+Listenregeln verpflichtende, listenweite Einstellungen sind.
 
 Im „Listenregel-Modus" werden dieselben Komponenten wiederverwendet
 (`UnitSelectionCard` + `SelectionConfigurator` + Badge-Chips), jedoch:
@@ -87,6 +102,9 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
   - Die Gruppierungs-/Filterlogik des Spielmodus (`PlayMode`) — schließt
     Listenregel-Selektionen aus der Anzeige aus (kategorisierter und
     unkategorisierter Pfad).
+  - Die Roster-Initialisierung (`useRoster`) — materialisiert fehlende
+    Listenregeln idempotent beim Anlegen/Laden (Solver-Helfer
+    `materializeListRules`).
 - **Architektur-Entscheidungen:**
   - Erkennung strikt datengetrieben über Katalog-`type` (`type === "upgrade"` ⇒
     Listenregel; `unit`/`model` sind kampffeldrelevante Einheiten). Bestätigt an
@@ -94,10 +112,14 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
     Regeln `type="upgrade"`, echte Einheiten `type="unit"`. Anwendung des
     bestehenden Prinzips aus **ADR 0003** — kein neuer ADR, keine Namens-/
     ID-Hartkodierung, kein `systemQuirks.js`-Eintrag.
-  - Roster-Modell und `.ros`-Serialisierung bleiben unverändert (**ADR 0011**
-    unberührt); die Listenregeln bleiben gewöhnliche `upgrade`-Selektionen.
-- **Data Models:** keine Änderung am Roster-Schema. Die Erkennung liest nur den
-  transient aufgelösten Katalog-Entry-`type`, kein neues persistiertes Feld.
+  - Listenregeln werden **automatisch materialisiert** (dauerhaft präsent), statt
+    vom Nutzer per „+" ausgehoben zu werden — bewusste, dokumentierte Ausnahme zu
+    **ADR 0011** (siehe Solution). Schema und `.ros`-Serialisierung bleiben
+    strukturell unverändert; die Regeln sind gewöhnliche `upgrade`-Selektionen.
+- **Data Models:** keine Schema-Änderung, kein neues persistiertes Feld. Neu ist
+  nur, dass Listenregel-`upgrade`-Selektionen automatisch (idempotent) in
+  `force.selections` gesät werden. Die Erkennung liest den transient aufgelösten
+  Katalog-Entry-`type`.
 
 ## Testing Decisions
 - **Modules to Test:** das Erkennungs-Prädikat (Solver), die Auswahl-Karte im
@@ -112,9 +134,14 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
      „+"-Adder und bündelt die Karten unter ihrem Hauptknoten.
   4. `PlayMode` (Komponententest): Listenregel-Selektionen erscheinen nicht in
      der Anzeige des Spielmodus; echte Einheiten bleiben unverändert sichtbar.
+  5. `materializeListRules` (Solver, direkt unit-testbar): ergänzt fehlende
+     Listenregeln unter ihrer Primärkategorie, ist idempotent (keine Dubletten)
+     und materialisiert keine echten Einheiten.
 
 ## Out of Scope
-- Keine Änderung am Roster-Datenmodell, an IndexedDB oder am `.ros`-Import/Export.
+- Keine **Schema**-Änderung am Roster/`.ros` und kein neues Roster-Feld
+  (materialisierte Listenregeln sind gewöhnliche `upgrade`-Selektionen). Die
+  Auto-Materialisierung selbst ist Teil dieser Änderung.
 - Kein neuer `systemQuirks.js`-Eintrag und keine Namens-/ID-basierte
   Sonderbehandlung einer bestimmten Kategorie.
 - Keine Änderung an der Darstellung echter Einheiten-Kategorien (Lord, Helden,
@@ -128,6 +155,11 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
 - [x] Ein reines Solver-Prädikat erkennt eine Wurzel-Selektion mit aufgelöstem
       Katalog-`type == upgrade` als Listenregel (direkt unit-getestet; echte
       Einheiten = `unit`/`model` werden nicht als Listenregel erkannt).
+- [x] Beim Anlegen und Laden einer Liste sind alle Listenregeln der Force
+      automatisch & dauerhaft präsent (idempotent materialisiert,
+      `materializeListRules`); die Gruppe ist nie leer und trägt keinen
+      „+"-Adder — verifiziert im echten Foliant (Bretonnia, Definitive Edition:
+      4 Regeln, 0 Pkt., keine neuen Validierungsfehler).
 - [x] Im Roster-Editor zeigt eine Listenregel-Karte weder den Detail-/Profil-
       Umschalter (`ReceiptText`) noch das ⋮-Menü.
 - [x] Im Roster-Editor zeigt die Listenregel-Gruppe keinen „+"-Adder.

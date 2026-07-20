@@ -9,6 +9,8 @@ vi.mock('../solver/validator', () => ({
   validateRoster: vi.fn(() => []),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
   syncRosterSelectionsWithSystem: vi.fn(() => false),
+  // No list rules in these fixtures → materialization is a no-op here.
+  materializeListRules: vi.fn(() => null),
 }));
 
 describe('useRoster Hook', () => {
