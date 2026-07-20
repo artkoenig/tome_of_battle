@@ -88,7 +88,9 @@ Umsetzung (reine Solver-Funktion `getEntryAddAvailability`):
   stillschweigend als „nicht sperrend" durchrutscht.
 - **Grund-Anzeige:** die (deduplizierten) `message`-Texte der sperrenden Verstöße;
   bei `modifier-error` ist das der wortgetreue Autoren-`value`, ohne
-  Übersetzungs-/Parsing-Schicht.
+  Übersetzungs-/Parsing-Schicht. Trägt ein gesperrter Eintrag einen
+  Autoren-`error`-Grund, zeigt der Dialog nur diesen und unterdrückt die redundante
+  mechanische `-max`-Meldung mit hypothetischem Zählstand („aktuell: N").
 
 Der frühere `isMaxedOut`-Einzelpfad im Dialog entfällt; die Verfügbarkeit hat
 danach genau einen Codepfad.
