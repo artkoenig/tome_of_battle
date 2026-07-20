@@ -10,6 +10,11 @@ import '../types.js';
 // (siehe violationKey) deterministisch und garantiert distinkt von echten Selektionen.
 const HYPOTHETICAL_SELECTION_ID = 'hypothetical-add-candidate';
 
+// Verstoßtyp der Autoren-Fehlermeldung (`rosterValidator` erzeugt ihn als
+// `modifier-${severity}`). Aus `ValidationSeverity` abgeleitet statt als Magic String,
+// damit er mit der Schweregrad-Definition kongruent bleibt.
+const AUTHOR_ERROR_VIOLATION_TYPE = `modifier-${ValidationSeverity.ERROR}`;
+
 /**
  * Wahr, wenn ein Validierungseintrag die Wählbarkeit im Aushebe-Dialog sperrt: Schweregrad
  * `error` (deckungsgleich mit `hasBlockingViolations`) UND vom Validator als sperrend
@@ -50,6 +55,20 @@ function withHypotheticalSelection(roster, force, hypotheticalSelection) {
         : f
     )
   };
+}
+
+/**
+ * Priorisiert die Grund-Anzeige: trägt ein gesperrter Eintrag mindestens einen
+ * Autoren-`error`-Verstoß (Typ `modifier-error`), so bilden **nur** dessen Meldungen den
+ * Grund — die redundante mechanische `-max`-Meldung mit hypothetischem Zählstand
+ * („aktuell: N") wird unterdrückt, weil der verständliche Autoren-Text sie ersetzt.
+ * Fehlt ein solcher Autoren-`error`, zählen unverändert alle sperrenden Verstöße (ADR-0022).
+ * @param {import('../types.js').ValidationError[]} blockingViolations
+ * @returns {import('../types.js').ValidationError[]}
+ */
+function selectReasonViolations(blockingViolations) {
+  const authorErrors = blockingViolations.filter(error => error.type === AUTHOR_ERROR_VIOLATION_TYPE);
+  return authorErrors.length > 0 ? authorErrors : blockingViolations;
 }
 
 /**
@@ -94,6 +113,6 @@ export function getEntryAddAvailability({ entry, categoryId, force, roster, syst
     error => isBlockingAvailabilityViolation(error) && !baselineKeys.has(violationKey(error))
   );
 
-  const reasons = [...new Set(introducedBlocking.map(error => error.message))];
+  const reasons = [...new Set(selectReasonViolations(introducedBlocking).map(error => error.message))];
   return { available: introducedBlocking.length === 0, reasons };
 }

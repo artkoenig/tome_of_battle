@@ -136,6 +136,19 @@ describe('Autoren-error-Tor (Reproduktion Bretonnia „Allow special characters?
     expect(available).toBe(true);
     expect(reasons).toHaveLength(0);
   });
+
+  it('zeigt bei doppelter Sperre (mechanisch + Autoren-error) NUR den Autoren-Grund', () => {
+    // Der Green Knight ist bei inaktiver Regel „Gürtel-und-Hosenträger"-gegatet: das
+    // roster-weite max=0 (mechanisch, „aktuell: 1") UND der Autoren-`modifier-error`
+    // sperren gleichzeitig. Die Grund-Anzeige darf nur den verständlichen Autoren-Text
+    // führen, nicht die verwirrende mechanische Zählstands-Meldung.
+    const roster = buildRoster([]);
+    const { available, reasons } = availabilityOf(greenKnight, roster, buildSystem(), SPECIAL_CHARACTERS_CATEGORY);
+
+    expect(available).toBe(false);
+    expect(reasons).toEqual([VERBATIM_REASON]);
+    expect(reasons.some(reason => reason.includes('aktuell'))).toBe(false);
+  });
 });
 
 describe('Kategorie-Obergrenze der Force (vom alten Einzel-max-Check verfehlt)', () => {
@@ -156,6 +169,15 @@ describe('Kategorie-Obergrenze der Force (vom alten Einzel-max-Check verfehlt)',
     const roster = makeRoster(2000, [{ ...selection('s-lord-1', 'lord'), category: LORDS_CATEGORY }]);
     const { available } = availabilityOf(lord, roster, system, LORDS_CATEGORY);
     expect(available).toBe(false);
+  });
+
+  it('nennt weiterhin die mechanische Meldung, wenn kein Autoren-error vorliegt (Fallback)', () => {
+    // Reiner mechanischer Verstoß (category-max, kein `modifier-error`): die
+    // Priorisierung greift nicht, der mechanische Grund bleibt sichtbar.
+    const roster = makeRoster(2000, [{ ...selection('s-lord-1', 'lord'), category: LORDS_CATEGORY }]);
+    const { reasons } = availabilityOf(lord, roster, system, LORDS_CATEGORY);
+    expect(reasons.length).toBeGreaterThan(0);
+    expect(reasons.some(reason => reason.includes('erlaubt') && reason.includes('aktuell'))).toBe(true);
   });
 
   it('lässt den Kandidaten zu, solange die Kategorie unter der Grenze liegt', () => {
