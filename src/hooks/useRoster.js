@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
-import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem, materializeListRules } from '../solver/validator';
+import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
 import { useUndoableState } from './useUndoableState';
 import '../types.js';
 
@@ -163,19 +163,6 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     populateChildren(resolved, selection);
     return selection;
   };
-
-  // Listenregeln (listenweite Einstellungen) werden nicht vom Nutzer ausgehoben,
-  // sondern dauerhaft materialisiert: fehlt eine Regel einer Force, wird sie hier
-  // idempotent ergänzt. `replace` statt `setRoster`, damit dies keinen Undo-Schritt
-  // erzeugt (system-getriebene Normalisierung, wie syncRosterSelectionsWithSystem).
-  useEffect(() => {
-    if (!roster || !system) return;
-    const withListRules = materializeListRules(roster, system, createSelectionFromDef);
-    if (withListRules) replaceRoster(withListRules);
-    // createSelectionFromDef wird bewusst nicht in die Deps aufgenommen (bei jedem
-    // Render neu erzeugt); roster/system/replaceRoster steuern den Lauf.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roster, system, replaceRoster]);
 
   const addUnit = (entry, categoryId) => {
     const newUnit = createSelectionFromDef(entry, categoryId);

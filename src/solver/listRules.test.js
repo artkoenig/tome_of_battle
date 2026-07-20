@@ -11,9 +11,10 @@ vi.mock('./catalogResolver.js', () => ({
   resolveEntry: (...args) => mockResolveEntry(...args),
 }));
 
-// The shared enumeration helper is mocked so materialize/category tests drive
-// behavior via per-entry fixture flags (__type, __primaryCat, __hidden) rather
-// than the real (heavily context-dependent) primary-category / visibility logic.
+// The shared enumeration helper is mocked so state/category tests drive behavior
+// via per-entry fixture flags (__type, __primaryCat, __hidden, __name,
+// __constraints, __children) rather than the real (heavily context-dependent)
+// primary-category / visibility logic.
 vi.mock('./entryVisibility.js', () => ({
   collectPrimaryCategoryEntries: (system, catalogue, categoryId) => {
     const pools = [
@@ -26,7 +27,13 @@ vi.mock('./entryVisibility.js', () => ({
     for (const entry of pools) {
       if (entry.__primaryCat !== categoryId) continue;
       if (entry.__hidden) continue;
-      const resolved = { id: entry.id, type: entry.__type };
+      const resolved = {
+        id: entry.id,
+        type: entry.__type,
+        name: entry.__name,
+        constraints: entry.__constraints,
+        selectionEntries: entry.__children,
+      };
       if (seen.has(resolved.id)) continue;
       seen.add(resolved.id);
       out.push({ entry, resolved });
@@ -34,11 +41,8 @@ vi.mock('./entryVisibility.js', () => ({
     return out;
   },
 }));
-vi.mock('./forceEntries.js', () => ({
-  findForceEntryById: (system, id) => system.__forceDefs?.[id] || null,
-}));
 
-import { isListRuleEntryKind, isListRuleSelection, isListRuleCategory, materializeListRules } from './listRules.js';
+import { isListRuleEntryKind, isListRuleSelection, isListRuleCategory, collectListRuleStates } from './listRules.js';
 
 describe('isListRuleEntryKind', () => {
   it('classifies only the upgrade type as a list rule', () => {
@@ -97,76 +101,67 @@ describe('isListRuleSelection', () => {
   });
 });
 
-describe('materializeListRules', () => {
-  // Two list rules (upgrade, primary in the rules category) and one real unit.
-  const ruleA = { id: 'rA', __type: 'upgrade', __primaryCat: 'cat-rules' };
-  const ruleB = { id: 'rB', __type: 'upgrade', __primaryCat: 'cat-rules' };
-  const unitC = { id: 'uC', __type: 'unit', __primaryCat: 'cat-core' };
-
-  const system = {
-    catalogues: [{ id: 'cat', entryLinks: [ruleA, ruleB], selectionEntries: [unitC] }],
-    __forceDefs: {
-      fe: { categoryLinks: [{ targetId: 'cat-rules' }, { targetId: 'cat-core' }] },
-    },
+describe('collectListRuleStates', () => {
+  // A plain switch, a container (with sub-options), a non-binary rule (max>1) and a
+  // real unit — all primary in the same rules category.
+  const ruleSwitch = { id: 'rSwitch', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Allow special characters?' };
+  const ruleContainer = {
+    id: 'rContainer', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Campaign rules',
+    __children: [{ id: 'child-opt' }],
   };
+  const ruleMulti = {
+    id: 'rMulti', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Detachments',
+    __constraints: [{ type: 'max', value: 3, scope: 'roster' }],
+  };
+  const unitC = { id: 'uC', __type: 'unit', __primaryCat: 'cat-rules', __name: 'Some Unit' };
+  const catalogue = { entryLinks: [ruleSwitch, ruleContainer, ruleMulti], selectionEntries: [unitC] };
 
-  // Stand-in for useRoster.createSelectionFromDef.
-  const buildSelection = (entry, categoryId) => ({
-    id: `sel-${entry.id}`, entryLinkId: entry.id, category: categoryId, number: 1, selections: [],
-  });
-
-  const makeRoster = (selections) => ({
-    catalogueId: 'cat',
-    forces: [{ id: 'f1', forceEntryId: 'fe', catalogueId: 'cat', selections }],
-  });
+  const makeForce = (selections) => ({ id: 'f1', catalogueId: 'cat', selections });
+  const roster = { catalogueId: 'cat' };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockResolveEntry.mockImplementation((_system, entry) => (entry ? { id: entry.id, type: entry.__type } : null));
+    // A roster selection references its rule by resolved id (entryLinkId === resolved id here).
+    mockFindEntryInSystem.mockImplementation((_system, id) => ({ id }));
+    mockResolveEntry.mockImplementation((_system, entry) => (entry ? { id: entry.id } : null));
   });
 
-  it('adds every missing list rule as a selection under its primary category, but no units', () => {
-    const result = materializeListRules(makeRoster([]), system, buildSelection);
-    expect(result).not.toBeNull();
-    const sels = result.forces[0].selections;
-    expect(sels.map(s => s.entryLinkId).sort()).toEqual(['rA', 'rB']);
-    expect(sels.every(s => s.category === 'cat-rules')).toBe(true);
-    // the real unit is never materialized here
-    expect(sels.some(s => s.entryLinkId === 'uC')).toBe(false);
+  it('enumerates every list rule of the category, unchecked, when none are present', () => {
+    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
+    expect(states.map(s => s.resolvedId)).toEqual(['rSwitch', 'rContainer', 'rMulti']);
+    expect(states.every(s => s.checked === false)).toBe(true);
+    expect(states.every(s => s.selection === null)).toBe(true);
+    expect(states.map(s => s.name)).toEqual(['Allow special characters?', 'Campaign rules', 'Detachments']);
   });
 
-  it('is idempotent: returns null when all list rules are already present', () => {
-    const roster = makeRoster([
-      { id: 's1', entryLinkId: 'rA', selections: [] },
-      { id: 's2', entryLinkId: 'rB', selections: [] },
-    ]);
-    expect(materializeListRules(roster, system, buildSelection)).toBeNull();
+  it('marks a rule checked (with its present selection) when a selection references it', () => {
+    const force = makeForce([{ id: 'sel-1', entryLinkId: 'rSwitch', selections: [] }]);
+    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force });
+    const sw = states.find(s => s.resolvedId === 'rSwitch');
+    expect(sw.checked).toBe(true);
+    expect(sw.selection.id).toBe('sel-1');
+    expect(states.find(s => s.resolvedId === 'rContainer').checked).toBe(false);
   });
 
-  it('adds only the missing rules when some are already present', () => {
-    const roster = makeRoster([{ id: 's1', entryLinkId: 'rA', selections: [] }]);
-    const result = materializeListRules(roster, system, buildSelection);
-    expect(result).not.toBeNull();
-    const refs = result.forces[0].selections.map(s => s.entryLinkId).sort();
-    expect(refs).toEqual(['rA', 'rB']);
+  it('classifies a plain switch as binary and a max>1 rule as non-binary (data-driven)', () => {
+    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
+    expect(states.find(s => s.resolvedId === 'rSwitch').isBinary).toBe(true);
+    expect(states.find(s => s.resolvedId === 'rMulti').isBinary).toBe(false);
   });
 
-  it('does not materialize a hidden list-rule entry', () => {
-    const hiddenSystem = {
-      catalogues: [{ id: 'cat', entryLinks: [{ ...ruleA, __hidden: true }, ruleB], selectionEntries: [] }],
-      __forceDefs: system.__forceDefs,
-    };
-    const result = materializeListRules(makeRoster([]), hiddenSystem, buildSelection);
-    expect(result.forces[0].selections.map(s => s.entryLinkId)).toEqual(['rB']);
+  it('flags a container rule (carrying sub-options) via isContainer', () => {
+    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
+    expect(states.find(s => s.resolvedId === 'rContainer').isContainer).toBe(true);
+    expect(states.find(s => s.resolvedId === 'rSwitch').isContainer).toBe(false);
   });
 
-  it('returns null for a roster without forces or an unknown catalogue', () => {
-    expect(materializeListRules({ forces: [] }, system, buildSelection)).toBeNull();
-    expect(materializeListRules(null, system, buildSelection)).toBeNull();
-    const unknownCat = makeRoster([]);
-    unknownCat.forces[0].catalogueId = 'nope';
-    unknownCat.catalogueId = 'nope';
-    expect(materializeListRules(unknownCat, system, buildSelection)).toBeNull();
+  it('excludes non-list-rule (unit) entries of the category', () => {
+    const states = collectListRuleStates({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
+    expect(states.some(s => s.resolvedId === 'uC')).toBe(false);
+  });
+
+  it('returns an empty list for a category with no primary entries', () => {
+    expect(collectListRuleStates({}, catalogue, 'cat-none', { roster, force: makeForce([]) })).toEqual([]);
   });
 });
 

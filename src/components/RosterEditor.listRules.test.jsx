@@ -5,8 +5,8 @@ import RosterEditor from './RosterEditor';
 
 // This suite isolates how RosterEditor treats a "list rule" category (catalog
 // type = upgrade, ADR 0003) versus a normal unit category: the list-rule group
-// must drop its "+" adder and render its cards in list-rule mode, while unit
-// categories keep both.
+// drops its "+" adder and renders a checklist (ListRuleChecklist) instead of unit
+// cards, while unit categories keep both.
 
 vi.mock('../hooks/useRuleUrl', () => ({
   useRuleUrl: () => vi.fn(),
@@ -65,7 +65,9 @@ vi.mock('../solver/validator', () => ({
   getSelectionTotalCost: (sel) => sel.cost,
   findForceEntryById: (system, id) => system?.forceEntries?.find((fe) => fe.id === id) || null,
   isCategoryLinkHidden: (link) => link.hidden === true,
-  isEntryPrimaryInCategory: () => false,
+  // List rules are primary catalog entries in their category, so the (empty) group
+  // still surfaces even before any rule is checked — mirroring production.
+  isEntryPrimaryInCategory: (_entry, categoryId) => categoryId === 'cat-rules',
   collectUnreachableArmyWideSelectors: () => [],
   getExtraResourceTotals: () => [],
   formatConstraintLimit: (value) => `${value}`,
@@ -78,6 +80,9 @@ vi.mock('../solver/validator', () => ({
 vi.mock('./editor/CategoryUnitAdder', () => ({
   default: ({ categoryName }) => <div data-testid="category-unit-adder">{categoryName}</div>,
 }));
+vi.mock('./editor/ListRuleChecklist', () => ({
+  default: ({ categoryId }) => <div data-testid="list-rule-checklist" data-category={categoryId} />,
+}));
 vi.mock('./editor/RosterSidebar', () => ({
   default: () => <div data-testid="roster-sidebar" />,
 }));
@@ -85,11 +90,10 @@ vi.mock('./RulesIndexDialog', () => ({
   default: () => <div data-testid="rules-index-dialog" />,
 }));
 
-// The card is reduced to a marker that echoes the selection it renders and the
-// isListRule mode it was handed.
+// The card is reduced to a marker that echoes the selection it renders.
 vi.mock('./editor/UnitSelectionCard', () => ({
-  default: ({ selection, isListRule }) => (
-    <div data-testid="unit-card" data-selection={selection.id} data-list-rule={String(!!isListRule)}>
+  default: ({ selection }) => (
+    <div data-testid="unit-card" data-selection={selection.id}>
       {selection.name}
     </div>
   ),
@@ -98,7 +102,7 @@ vi.mock('./editor/UnitSelectionCard', () => ({
 const mockSystem = {
   id: 'sys-1',
   costTypes: [{ id: 'pts', name: 'Pts' }],
-  catalogues: [{ id: 'bret-cat', name: 'Bretonnia', selectionEntries: [] }],
+  catalogues: [{ id: 'bret-cat', name: 'Bretonnia', selectionEntries: [{ id: 'rule-entry-1' }] }],
   forceEntries: [
     {
       id: 'fe-1',
@@ -116,6 +120,8 @@ const mockSystem = {
 
 let mockRoster = {};
 
+// The list-rule category starts empty (the checklist enumerates the catalog
+// rules itself); only the unit category holds a selection.
 const defaultMockRoster = {
   id: 'roster-1',
   name: 'Bretonnian Crusaders',
@@ -128,7 +134,6 @@ const defaultMockRoster = {
       forceEntryId: 'fe-1',
       catalogueId: 'bret-cat',
       selections: [
-        { id: 'sel-rule', name: 'Allow experimental rules?', category: 'cat-rules', cost: 0 },
         { id: 'sel-unit', name: 'Knights Errant', category: 'cat-core', cost: 120 },
       ],
     },
@@ -153,35 +158,36 @@ describe('RosterEditor list-rule groups', () => {
     expect(adderNames).not.toContain('Special list rules');
   });
 
-  it('renders the list-rule card in list-rule mode and the unit card normally (once expanded)', () => {
+  it('renders the ListRuleChecklist for the list-rule group (once expanded) and cards for unit categories', () => {
     renderRosterEditor();
+
+    // The unit category renders its card regardless of the collapsed rule group.
+    expect(screen.getByText('Knights Errant')).toBeTruthy();
 
     // The list-rule group is collapsed by default — expand it first.
     fireEvent.click(screen.getByText('Special list rules').closest('[role="button"]'));
 
-    const ruleCard = screen.getByText('Allow experimental rules?').closest('[data-testid="unit-card"]');
-    const unitCard = screen.getByText('Knights Errant').closest('[data-testid="unit-card"]');
-
-    expect(ruleCard.getAttribute('data-list-rule')).toBe('true');
-    expect(unitCard.getAttribute('data-list-rule')).toBe('false');
+    const checklist = screen.getByTestId('list-rule-checklist');
+    expect(checklist.getAttribute('data-category')).toBe('cat-rules');
+    // A list rule never renders as a unit card.
+    expect(screen.queryAllByTestId('unit-card').map((el) => el.getAttribute('data-selection'))).toEqual(['sel-unit']);
   });
 
   it('is collapsed by default and expands/collapses when its header is clicked', () => {
     renderRosterEditor();
 
-    // Default: collapsed — the rule cards are not rendered, the unit category is.
-    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
-    expect(screen.getByText('Knights Errant')).toBeTruthy();
+    // Default: collapsed — the checklist is not rendered.
+    expect(screen.queryByTestId('list-rule-checklist')).toBeNull();
 
     const header = screen.getByText('Special list rules').closest('[role="button"]');
     expect(header).not.toBeNull();
 
     // Expand.
     fireEvent.click(header);
-    expect(screen.getByText('Allow experimental rules?')).toBeTruthy();
+    expect(screen.getByTestId('list-rule-checklist')).toBeTruthy();
 
     // Collapse again.
     fireEvent.click(header);
-    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
+    expect(screen.queryByTestId('list-rule-checklist')).toBeNull();
   });
 });

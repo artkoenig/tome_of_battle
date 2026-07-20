@@ -5,6 +5,7 @@ import { saveRoster } from '../db/database';
 import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, isListRuleSelection, isListRuleCategory } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
+import ListRuleChecklist from './editor/ListRuleChecklist';
 import RosterSidebar from './editor/RosterSidebar';
 import UnitSelectionCard from './editor/UnitSelectionCard';
 import AutoFillSuggestions from './editor/AutoFillSuggestions';
@@ -291,30 +292,48 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       </div>
 
 
-                      {selections.length > 0 && !isRuleGroupCollapsed && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          {selections
-                            .map(selection => {
-                            return (
-                              <UnitSelectionCard
-                                key={selection.id}
-                                selection={selection}
-                                selectedRosterSelection={selectedRosterSelection}
-                                setSelectedRosterSelection={setSelectedRosterSelection}
-                                roster={roster}
-                                system={system}
-                                validationErrors={validationErrors}
-                                costTypeLabel={costTypeLabel}
-                                removeUnit={removeUnit}
-                                copyUnit={copyUnit}
-                                updateSubSelection={updateSubSelection}
-                                activeCatalogue={activeCatalogue}
-                                isListRule={isListRuleGroup}
-                                onShowRule={onShowRule}
-                              />
-                            );
-                          })}
-                        </div>
+                      {isListRuleGroup ? (
+                        !isRuleGroupCollapsed && (
+                          <ListRuleChecklist
+                            system={system}
+                            activeCatalogue={activeCatalogue}
+                            categoryId={link.targetId}
+                            roster={roster}
+                            force={force}
+                            addUnit={addUnit}
+                            removeUnit={removeUnit}
+                            updateSubSelection={updateSubSelection}
+                            costTypeLabel={costTypeLabel}
+                            costLimitType={roster.costLimitType}
+                            selectionCounts={selectionCounts}
+                            onShowRule={onShowRule}
+                          />
+                        )
+                      ) : (
+                        selections.length > 0 && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {selections
+                              .map(selection => {
+                              return (
+                                <UnitSelectionCard
+                                  key={selection.id}
+                                  selection={selection}
+                                  selectedRosterSelection={selectedRosterSelection}
+                                  setSelectedRosterSelection={setSelectedRosterSelection}
+                                  roster={roster}
+                                  system={system}
+                                  validationErrors={validationErrors}
+                                  costTypeLabel={costTypeLabel}
+                                  removeUnit={removeUnit}
+                                  copyUnit={copyUnit}
+                                  updateSubSelection={updateSubSelection}
+                                  activeCatalogue={activeCatalogue}
+                                  onShowRule={onShowRule}
+                                />
+                              );
+                            })}
+                          </div>
+                        )
                       )}
                     </div>
                   );

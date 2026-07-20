@@ -136,6 +136,9 @@ vi.mock('./editor/CategoryUnitAdder', () => ({
     </button>
   )
 }));
+vi.mock('./editor/ListRuleChecklist', () => ({
+  default: () => <div data-testid="list-rule-checklist" />
+}));
 vi.mock('./editor/RosterSidebar', () => ({
   default: () => <div data-testid="roster-sidebar" />
 }));

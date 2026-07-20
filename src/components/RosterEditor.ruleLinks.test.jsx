@@ -79,6 +79,9 @@ vi.mock('../solver/validator', () => ({
 vi.mock('./editor/CategoryUnitAdder', () => ({
   default: () => <div data-testid="category-unit-adder" />,
 }));
+vi.mock('./editor/ListRuleChecklist', () => ({
+  default: () => <div data-testid="list-rule-checklist" />,
+}));
 vi.mock('./editor/RosterSidebar', () => ({
   default: () => <div data-testid="roster-sidebar" />,
 }));
