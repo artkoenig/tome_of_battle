@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -186,3 +186,4 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
 
 ## Comments
 - Umgesetzt: Solver-Praedikat isListRuleSelection (Katalog-type === upgrade, ADR 0003 gewahrt), re-exportiert ueber solver/validator.js. UnitSelectionCard-Listenregel-Modus (kein Detail-/Profil-Knopf, kein Aktionsmenue; Badges & Konfigurator bleiben, Details dauerhaft offen). RosterEditor: '+'-Adder fuer die Listenregel-Gruppe unterdrueckt. PlayMode: Listenregeln aus kategorisiertem UND 'Sonstige Auswahlen'-Pfad gefiltert. Roster-Modell/.ros unveraendert (ADR 0011). Vier-Achsen-Pruefung: Standards sauber, Tests gruen (730), Spezifikations-/Docs-Befunde (Testabdeckung 'Sonstige'-Pfad + Wortlaut type===upgrade) behoben. Version 1.3.0 (minor, feature).
+- Nachbesserung nach Screenshot-Verifikation & Vier-Achsen-Pruefung: (1) Auto-Materialisierung der Listenregeln (dauerhaft praesent, kein '+'/Loeschen); (2) Gruppe ausklappbar (Chevron); (3) gezackter Kartenrand entfernt; (4) DRY: geteilte Aufzaehlung collectPrimaryCategoryEntry; (5) robuste Idempotenz ueber aufgeloeste Entry-ID; (6) '+'-Flash behoben via isListRuleCategory. 739 Tests gruen, Lint sauber, ein-/ausgeklappt im echten Foliant (Bretonnia Definitive Edition) verifiziert. Version 1.3.0 (minor, feature).
