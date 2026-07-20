@@ -34,3 +34,4 @@ coverage/
 .worktrees
 .scratch/
 .antigravity/
+e2e-failure.png

@@ -6,6 +6,10 @@ import puppeteer from 'puppeteer';
 
 const PORT = 5175;
 const tempZipPath = path.resolve('./temp_whfb6.zip');
+// Bei einem Fehlschlag festgehaltener Bildschirmzustand: so lässt sich der Grund am
+// tatsächlichen UI ablesen (im CI als Artefakt hochgeladen), statt ihn aus einem
+// Stacktrace zu erraten. Repo-Wurzel, damit der CI-Upload-Schritt ihn zuverlässig findet.
+const failureScreenshotPath = path.resolve('./e2e-failure.png');
 let serverProcess = null;
 
 // 1. Pack the frozen E2E fixture (./src/solver/__fixtures__/whfb6/) into a temporary
@@ -195,9 +199,15 @@ const runUiTests = async () => {
     console.log('Uploading temporary ZIP file...');
     await fileInput.uploadFile(tempZipPath);
 
-    // Wait for the system to import and render under "Importierte Spielsysteme"
+    // Wait for the system to import and render under "Importierte Spielsysteme".
+    // Der XML-Parse des WHFB6-Fixtures ist die mit Abstand langsamste Einzelphase des
+    // Laufs; unter Last schwankt sie auf GitHub-Runnern stark. Das frühere 15-s-Limit lag
+    // zu nah am Normalfall und riss bei jeder Varianz nach oben (der Screenshot zeigte die
+    // App noch im „Verarbeite XML-Dateien…"-Zustand). Großzügige Reserve statt Flakiness;
+    // ein echter Hänger bleibt dank des Fehler-Screenshots (siehe catch) trotzdem
+    // diagnostizierbar.
     console.log('Waiting for system to be imported and parsed...');
-    await page.waitForSelector('.desktop-nav-actions', { timeout: 15000 });
+    await page.waitForSelector('.desktop-nav-actions', { timeout: 60000 });
     console.log('System imported successfully.');
 
     // Return to dashboard
@@ -529,6 +539,17 @@ const runUiTests = async () => {
     console.log('Validation error panel is visible.');
 
     console.log('ALL UI TESTS PASSED SUCCESSFULLY!');
+  } catch (err) {
+    // Den UI-Zustand im Moment des Fehlers als Vollseiten-Screenshot festhalten, solange
+    // die Seite noch offen ist (das `finally` schließt den Browser gleich). Der Screenshot
+    // ist rein diagnostisch — der ursprüngliche Fehler wird unverändert weitergereicht.
+    try {
+      await page.screenshot({ path: failureScreenshotPath, fullPage: true });
+      console.error(`Fehler-Screenshot gespeichert: ${failureScreenshotPath}`);
+    } catch (shotErr) {
+      console.error('Fehler-Screenshot konnte nicht erstellt werden:', shotErr.message);
+    }
+    throw err;
   } finally {
     console.log('Closing browser...');
     await browser.close();
