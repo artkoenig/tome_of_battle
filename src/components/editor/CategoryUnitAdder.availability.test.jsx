@@ -80,11 +80,12 @@ describe('CategoryUnitAdder — Verfügbarkeits-Darstellung', () => {
     const addUnit = vi.fn();
     renderAdder(addUnit);
 
+    // Ausgegraut/nicht-klickbar wird über die CSS-Klasse `.popover-item.disabled`
+    // ausgedrückt (ADR-0004: keine statischen Inline-Styles), nicht über style-Attribute.
     const blockedRow = screen.getByText('Emperor Fire Dragon').closest('.popover-item');
     expect(blockedRow.getAttribute('aria-disabled')).toBe('true');
     expect(blockedRow.className).toContain('disabled');
-    expect(blockedRow.style.opacity).toBe('0.5');
-    expect(blockedRow.style.cursor).toBe('not-allowed');
+    expect(blockedRow.getAttribute('style')).toBeNull();
 
     fireEvent.click(blockedRow);
     expect(addUnit).not.toHaveBeenCalled();

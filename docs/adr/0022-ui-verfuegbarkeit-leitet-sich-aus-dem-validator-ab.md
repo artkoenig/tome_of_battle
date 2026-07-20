@@ -49,22 +49,43 @@ Doppel-Implementierung — die eigentliche Ursache — nur vergrößern.
 
 Umsetzung (reine Solver-Funktion `getEntryAddAvailability`):
 
-- **Hypothetisches Hinzufügen:** eine immutable Roster-Kopie erhält in der
-  Ziel-Force eine synthetische Selektion, die exakt dem entspricht, was
-  `useRoster.addUnit` erzeugt (`entryLinkId`/`selectionEntryId`, `number: 1`,
-  Kategorie-Zuordnung). So werten auch Modifier korrekt aus, deren Bedingung die
-  eigene Präsenz des Eintrags voraussetzt.
+- **Hypothetisches Hinzufügen über die geteilte Selektions-Fabrik:** eine immutable
+  Roster-Kopie erhält in der Ziel-Force eine synthetische Selektion, die über
+  **dieselbe reine Fabrik** (`selectionFactory.createSelectionFromDef`) gebaut wird,
+  die auch das echte `useRoster.addUnit` nutzt (SSOT). Sie erzeugt nicht nur die
+  Top-Selektion (`entryLinkId`/`selectionEntryId`, `number: 1`, Kategorie-Zuordnung),
+  sondern bevölkert **alle Pflicht-Kinder** (`min > 0`, inkl. Default-Gruppenwahl)
+  rekursiv — genau wie beim echten Ausheben. Damit schlägt limit-sprengende
+  Pflicht-Ausrüstung (Kosten/Anzahl der Pflicht-Kinder) schon in der Verfügbarkeit an,
+  statt erst nach dem Ausheben; ein handnachgebautes `selections: []` würde diese
+  Verstöße übersehen. Die Fabrik erhält `system` und `resolveEntry` per Dependency
+  Injection (kein Closure über Hook-State) und bleibt so eine reine, testbare Einheit.
+  Die stabile synthetische Top-ID wird **nach** dem Fabrik-Aufruf vergeben (die Fabrik
+  verteilt frische UUIDs, die nie in der Baseline vorkommen), damit der Diff-Schlüssel
+  deterministisch und kollisionsfrei bleibt.
 - **Baseline-Diff:** die Baseline (`validateRoster` ohne Kandidat) wird **einmal
   pro Dialog-Öffnung** berechnet; pro Kandidat läuft nur die hypothetische
   Validierung. Verglichen wird über einen **stabilen Verstoß-Schlüssel** aus
   `type` + `selectionId`/`categoryId`/`forceId` — **nicht** über die
   count-behaftete `message`, damit eine bloße Zähler-Änderung an einem schon
   vorhandenen Verstoß nicht fälschlich als „neu eingeführt" gilt.
-- **Sperr-Klassifikation:** ein eingeführter Verstoß sperrt genau dann, wenn sein
-  Schweregrad `error` ist (deckungsgleich mit `hasBlockingViolations`) **und**
-  sein `type` auf `-max` endet **oder** `modifier-error` ist. Ausdrücklich
-  **nicht** sperrend: `roster-limit`, `force-roster-limit`, alle `*-min`,
-  `force-selector-min` — diese gehören zum normalen, unfertigen Bauzustand.
+- **Validator-eigene Sperr-Klassifikation:** ob ein Verstoß die Aushebe-Verfügbarkeit
+  sperrt, entscheidet der **Validator selbst**, nicht der Dialog über eine
+  Typ-Namenskonvention. `rosterValidator.js` hält dafür **eine einzige autoritative
+  Tabelle** (`VIOLATION_BLOCKS_ADD_AVAILABILITY`: `type → boolean`) und stempelt über
+  einen zentralen Erzeugungspunkt (`pushViolation`) **jeden** erzeugten Verstoß mit
+  einem expliziten `blocksAddAvailability`-Flag. Sperrend (`true`) sind die
+  Obergrenzen-/„nicht erlaubt"-Klassen — `entry-max`, `entry-percent-max`,
+  `category-max`, `group-count-max`, `group-points-max`, `group-percent-max` sowie der
+  Autoren-`modifier-error`. Nicht sperrend (`false`, normaler unfertiger Bauzustand)
+  sind `roster-limit`, `force-roster-limit`, alle `*-min`, `force-selector-min`,
+  `unresolved-entry` sowie `modifier-warning`/`modifier-info`. Ein eingeführter Verstoß
+  sperrt genau dann, wenn sein Schweregrad `error` ist (deckungsgleich mit
+  `hasBlockingViolations`) **und** sein `blocksAddAvailability` `true` ist —
+  `entryAvailability.js` liest ausschließlich dieses Flag, nie mehr den `-max`-Suffix.
+  Ein neu eingeführter, unklassifizierter `type` lässt `classifyBlocksAddAvailability`
+  **werfen** (und einen Driftschutz-Test fehlschlagen), sodass keine neue Verstoßart
+  stillschweigend als „nicht sperrend" durchrutscht.
 - **Grund-Anzeige:** die (deduplizierten) `message`-Texte der sperrenden Verstöße;
   bei `modifier-error` ist das der wortgetreue Autoren-`value`, ohne
   Übersetzungs-/Parsing-Schicht.

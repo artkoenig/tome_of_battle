@@ -1,7 +1,12 @@
 import { readFileSync } from 'fs';
 import { JSDOM } from 'jsdom';
 import { describe, it, test, expect } from 'vitest';
-import { getEntryAddAvailability, isBlockingAvailabilityViolation } from './validator.js';
+import {
+  getEntryAddAvailability,
+  isBlockingAvailabilityViolation,
+  VIOLATION_BLOCKS_ADD_AVAILABILITY,
+  classifyBlocksAddAvailability
+} from './validator.js';
 import { parseCatalogueXML } from '../parser/xmlParser.js';
 
 // JSDOM stellt DOMParser für den Node-Testlauf bereit (wie in den übrigen Solver-Tests).
@@ -41,26 +46,53 @@ function availabilityOf(entry, roster, system, categoryId) {
   return getEntryAddAvailability({ entry, categoryId, force: roster.forces[0], roster, system });
 }
 
-describe('isBlockingAvailabilityViolation — Sperr-Klassifikation (ADR-0022)', () => {
-  const err = (type, severity = 'error') => ({ type, severity });
-
-  test('sperrt jede *-max-Klasse mit severity error', () => {
-    ['entry-max', 'category-max', 'group-count-max', 'group-points-max', 'entry-percent-max', 'group-percent-max']
-      .forEach(type => expect(isBlockingAvailabilityViolation(err(type))).toBe(true));
+describe('isBlockingAvailabilityViolation — liest das Validator-Flag (ADR-0022)', () => {
+  test('sperrt, wenn blocksAddAvailability true und severity error', () => {
+    expect(isBlockingAvailabilityViolation({ type: 'entry-max', severity: 'error', blocksAddAvailability: true })).toBe(true);
+    expect(isBlockingAvailabilityViolation({ type: 'modifier-error', severity: 'error', blocksAddAvailability: true })).toBe(true);
   });
 
-  test('sperrt modifier-error', () => {
-    expect(isBlockingAvailabilityViolation(err('modifier-error'))).toBe(true);
+  test('der Typ-Suffix `-max` allein sperrt NICHT mehr — nur das explizite Flag zählt', () => {
+    expect(isBlockingAvailabilityViolation({ type: 'entry-max', severity: 'error' })).toBe(false);
+    expect(isBlockingAvailabilityViolation({ type: 'entry-max', severity: 'error', blocksAddAvailability: false })).toBe(false);
   });
 
-  test('sperrt NICHT roster-limit, force-roster-limit oder *-min', () => {
-    ['roster-limit', 'force-roster-limit', 'entry-min', 'category-min', 'group-count-min', 'force-selector-min']
-      .forEach(type => expect(isBlockingAvailabilityViolation(err(type))).toBe(false));
+  test('sperrt NICHT bei severity warning/info, selbst mit gesetztem Flag', () => {
+    expect(isBlockingAvailabilityViolation({ type: 'entry-max', severity: 'warning', blocksAddAvailability: true })).toBe(false);
+    expect(isBlockingAvailabilityViolation({ type: 'modifier-error', severity: 'info', blocksAddAvailability: true })).toBe(false);
+  });
+});
+
+describe('Sperr-Klassifikation des Validators — Driftschutz (ADR-0022)', () => {
+  const BLOCKING = [
+    'entry-max', 'category-max', 'group-count-max', 'group-points-max',
+    'entry-percent-max', 'group-percent-max', 'modifier-error'
+  ];
+  const NON_BLOCKING = [
+    'roster-limit', 'force-roster-limit', 'force-selector-min', 'category-min',
+    'entry-min', 'entry-percent-min', 'group-count-min', 'group-points-min',
+    'group-percent-min', 'unresolved-entry', 'modifier-warning', 'modifier-info'
+  ];
+
+  test('Obergrenzen-/Autoren-error-Typen sind als sperrend klassifiziert', () => {
+    BLOCKING.forEach(type => expect(VIOLATION_BLOCKS_ADD_AVAILABILITY[type]).toBe(true));
   });
 
-  test('sperrt NICHT bei severity warning/info, selbst bei *-max/modifier-error', () => {
-    expect(isBlockingAvailabilityViolation(err('entry-max', 'warning'))).toBe(false);
-    expect(isBlockingAvailabilityViolation(err('modifier-error', 'info'))).toBe(false);
+  test('Budget-/„zu-wenig"-/unresolved-Typen sind als nicht sperrend klassifiziert', () => {
+    NON_BLOCKING.forEach(type => expect(VIOLATION_BLOCKS_ADD_AVAILABILITY[type]).toBe(false));
+  });
+
+  test('jeder klassifizierte Typ trägt ein boolesches Flag', () => {
+    Object.values(VIOLATION_BLOCKS_ADD_AVAILABILITY).forEach(value => expect(typeof value).toBe('boolean'));
+  });
+
+  test('ein unklassifizierter Typ wirft — kein stilles Durchrutschen eines neuen Verstoßes', () => {
+    expect(() => classifyBlocksAddAvailability('brandneuer-max')).toThrow();
+  });
+
+  test('die Klassifikation deckt genau die erwarteten Typen ab (Neuzugang fällt auf)', () => {
+    expect(new Set(Object.keys(VIOLATION_BLOCKS_ADD_AVAILABILITY)))
+      .toEqual(new Set([...BLOCKING, ...NON_BLOCKING]));
   });
 });
 
@@ -221,5 +253,32 @@ describe('Baseline-Diff über stabilen Schlüssel (bloße Count-Änderung sperrt
 
     const { available } = availabilityOf(lord, roster, system, LORDS);
     expect(available).toBe(true);
+  });
+});
+
+describe('Pflicht-Kinder im hypothetischen Add (geteilte Selektions-Fabrik, ADR-0022)', () => {
+  // Der Kandidat trägt eine Pflicht-Ausrüstungsgruppe (min>0), deren Default-Wahl 20 Pkt
+  // kostet und das 10-Pkt-Limit derselben Gruppe sprengt. Nur wenn die Verfügbarkeit die
+  // Pflicht-Kinder — wie das echte Ausheben — mitbevölkert, schlägt das Limit an. Vor dem
+  // Fix (leere `selections`) wäre die Gruppe leer und der Kandidat fälschlich „verfügbar".
+  const wargear = { id: 'runesword', name: 'Runesword', type: 'upgrade', costs: [{ typeId: POINTS, value: 20 }] };
+  const champion = {
+    id: 'champion', name: 'Champion', type: 'unit', costs: [{ typeId: POINTS, value: 50 }],
+    selectionEntryGroups: [{
+      id: 'g-wargear', name: 'Wargear',
+      constraints: [
+        { id: 'g-min', type: 'min', value: 1, field: 'selections', scope: 'parent' },
+        { id: 'g-max-pts', type: 'max', value: 10, field: POINTS, scope: 'parent' }
+      ],
+      selectionEntries: [wargear]
+    }]
+  };
+  const system = makeSystem({ selectionEntries: [champion, wargear] });
+
+  it('sperrt, wenn ein Pflicht-Kind ein Limit sprengt', () => {
+    const roster = makeRoster(2000, []);
+    const { available, reasons } = availabilityOf(champion, roster, system);
+    expect(available).toBe(false);
+    expect(reasons.length).toBeGreaterThan(0);
   });
 });
