@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -41,11 +41,15 @@ Source of Truth):
   Eintrag 1× in die Ziel-Force der Liste gedacht) und `validateRoster` ausgeführt.
 - Das Ergebnis wird gegen die **Baseline** (Validierung der Liste *ohne* den
   Kandidaten) **diff't**: nur Verstöße, die der Kandidat **neu einführt**, zählen.
-- Von den eingeführten Verstößen sperren nur die **„zu-viel/nicht-erlaubt"-Klassen**
-  (`type` endet auf `-max` **oder** `type === 'modifier-error'`). Budget-/
-  „zu-wenig"-Zustände (`roster-limit` über Punkte, alle `*-min`,
-  `force-selector-min`) sperren **nicht** — sie gehören zum normalen, unfertigen
-  Bauzustand und dürfen das Wählen nicht verhindern.
+- Von den eingeführten Verstößen sperren nur die **„zu-viel/nicht-erlaubt"-Klassen**.
+  Ob ein Verstoß sperrt, entscheidet **der Validator selbst**: jeder erzeugte
+  Verstoß trägt ein explizites `blocksAddAvailability`-Flag, gestempelt aus einer
+  zentralen, autoritativen Tabelle im Validator (mit Driftschutz, der bei einem
+  unklassifizierten Typ wirft). Sperrend sind die Obergrenzen-/„nicht-erlaubt"-Typen
+  (die `-max`-Varianten und `modifier-error`); Budget-/„zu-wenig"-Zustände
+  (`roster-limit` über Punkte, alle `*-min`, `force-selector-min`) sperren **nicht**
+  — sie gehören zum normalen, unfertigen Bauzustand und dürfen das Wählen nicht
+  verhindern.
 - Sperrt mindestens ein Verstoß, ist der Eintrag *nicht verfügbar*; die
   **Meldungstexte** der eingeführten Verstöße sind der angezeigte Grund. Bei
   Autoren-`error`-Meldungen ist das der **wortgetreue** `value` des Modifiers
@@ -87,9 +91,14 @@ konform ADR-0003).
     Validator ab, nie aus einer parallelen Nachbildung"; erfüllt alle drei
     ADR-Kriterien: schwer reversibel als Muster, für spätere Leser überraschend,
     echtes Trade-off Rechenaufwand ↔ SSOT. Anlegen im Zuge der Umsetzung.)
-  - **Sperr-Klassen:** eingeführter Verstoß sperrt gdw. `type` auf `-max` endet
-    oder `type === 'modifier-error'`. Explizit **nicht** sperrend: `roster-limit`,
-    `force-roster-limit`, alle `*-min`, `force-selector-min`.
+  - **Sperr-Klassen (validator-eigen):** Der Validator stempelt jeden Verstoß aus
+    einer zentralen, autoritativen Tabelle mit einem `blocksAddAvailability`-Flag;
+    der Dialog liest nur dieses Flag (plus `severity === 'error'`), nie eine
+    Typnamens-Konvention. Ein unklassifizierter Typ lässt den Driftschutz werfen.
+    Sperrend: die Obergrenzen-Typen (`entry-max`, `entry-percent-max`,
+    `category-max`, `group-count-max`, `group-points-max`, `group-percent-max`) und
+    `modifier-error`. **Nicht** sperrend: `roster-limit`, `force-roster-limit`, alle
+    `*-min`, `force-selector-min`, `unresolved-entry`.
   - **Nur `error`-Schweregrad** sperrt; `warning`/`info` bleiben wählbar
     (deckungsgleich mit `hasBlockingViolations`).
   - **Stabiler Diff-Schlüssel:** eingeführt-vs-Baseline wird über eine stabile
@@ -154,7 +163,8 @@ konform ADR-0003).
       `error`-Modifiers angezeigt.
 - [ ] Verfügbarkeit wird über einen hypothetischen Add + `validateRoster`-Diff
       bestimmt (SSOT); der bisherige `isMaxedOut`-Einzelpfad ist entfernt.
-- [ ] Nur eingeführte Verstöße mit `type` auf `-max` oder `modifier-error` sperren;
+- [ ] Nur eingeführte Verstöße mit gesetztem `blocksAddAvailability`-Flag (die
+      Obergrenzen-Typen + `modifier-error`) sperren;
       `roster-limit`/`*-min`/`force-selector-min` sperren nicht (Regressionstest
       für einen über-Budget-Add, der wählbar bleibt).
 - [ ] Ein zweites/`parent`-scoped `max`, ein Prozent-max und eine erreichte
@@ -166,3 +176,4 @@ konform ADR-0003).
 
 ## Comments
 - Neuer reiner Solver-Seam getEntryAddAvailability (hypothetisches Add + validateRoster-Diff, SSOT) ersetzt den isMaxedOut-Einzelpfad im Aushebe-Dialog; gesperrte Einträge werden ausgegraut/nicht klickbar mit wortgetreuem Grund. ADR-0022 angelegt, Tests an Solver- und Komponenten-Seam.
+- Review-Nachbesserungen (Vier-Achsen-Verifikation): (1) gemeinsame reine Selektions-Fabrik src/solver/selectionFactory.js — hypothetischer Add bevoelkert Pflicht-Kinder identisch zu addUnit (echte SSOT). (2) Sperr-Klassifikation validator-eigen: zentrale Tabelle VIOLATION_BLOCKS_ADD_AVAILABILITY stempelt blocksAddAvailability je Verstoss, Driftschutz wirft bei unklassifiziertem Typ (statt -max-String-Suffix). (3) Inline-Styles nach index.css ausgelagert (ADR-0004). Lint 0 Fehler, Vitest 765 gruen + Puppeteer-E2E gruen.
