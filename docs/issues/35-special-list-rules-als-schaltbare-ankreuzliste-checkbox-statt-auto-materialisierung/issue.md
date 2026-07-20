@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -148,3 +148,4 @@ nicht-destruktiv.
 - [ ] `npm run lint` und `npm test` sind grün; Seams A/B/C abgedeckt; die `materializeListRules`-Tests sind entfernt; PlayMode-Tests bleiben grün.
 
 ## Comments
+- Umgesetzt: Auto-Materialisierung entfernt; 'Special list rules' rendern eine datengetriebene Ankreuzliste (ListRuleChecklist) — angehakt ⇔ Präsenz, Behälter-Optionen inline, nicht-binäre Regeln als Mengen-Adder, Gruppe eingeklappt per Vorgabe, Badges/Karten für Regeln entfallen. Solver-Zustand ist wieder eine echte Nutzerentscheidung (Seam C beweist max 0→1). ADR 0011-Ausnahme aufgehoben; Schema/.ros unverändert. Vier-Achsen-Prüfung grün (Standards/Spec/Tests/Docs), Lint sauber, 740 Tests grün; E2E umgebungsbedingt (Sandbox-Netz) übersprungen. Standards-Befunde #1/#4/#5/#6 behoben; #2/#3 als Issues 36/37 abgetrennt. Version 1.3.0 → 1.3.1.
