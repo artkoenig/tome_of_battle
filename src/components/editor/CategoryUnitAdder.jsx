@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveName, isSelectionEntryHidden, isEntryPrimaryInCategory } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveName, collectPrimaryCategoryEntries } from '../../solver/validator';
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
@@ -20,40 +20,11 @@ export default function CategoryUnitAdder({
 
   if (!activeCatalogue) return null;
 
-  // Filter items in the catalogue by category ID
-  const getCatalogItemsByCategory = (catId) => {
-    const items = [];
-    const checkEntry = (entry) => {
-      const resolved = resolveEntry(system, entry);
-      if (!resolved) return;
-
-      const force = roster.forces?.[0];
-      // Use the effective (post-modifier) primary category so units an army
-      // recategorises via a `set-primary` modifier (e.g. shared library units
-      // pulled into "Core") surface under the right section (ADR 0003 §4).
-      const hasCategory = isEntryPrimaryInCategory(entry, catId, { system, roster, selectionCounts, force });
-
-      if (hasCategory) {
-        const isHidden = isSelectionEntryHidden(entry, system, roster, selectionCounts, null, force);
-        if (!isHidden) {
-          items.push(entry);
-        }
-      }
-    };
-
-    activeCatalogue.selectionEntries?.forEach(checkEntry);
-    activeCatalogue.entryLinks?.forEach(checkEntry);
-    activeCatalogue.sharedSelectionEntries?.forEach(checkEntry);
-
-    // Remove duplicates by resolved ID
-    const seen = new Set();
-    return items.filter(item => {
-      const resolved = resolveEntry(system, item);
-      if (seen.has(resolved.id)) return false;
-      seen.add(resolved.id);
-      return true;
-    });
-  };
+  // Effektive (post-modifier) Primärkategorie über den geteilten Solver-Helfer
+  // aufzählen — dieselbe Grundlage nutzt die Listenregel-Erkennung (ADR 0003 §4).
+  const getCatalogItemsByCategory = (catId) =>
+    collectPrimaryCategoryEntries(system, activeCatalogue, catId, { roster, selectionCounts, force: roster.forces?.[0] })
+      .map(({ entry }) => entry);
 
   // When an explicit entry list is supplied (e.g. army-wide selectors that no category
   // surfaces), offer exactly those; otherwise fall back to the entries of the category.

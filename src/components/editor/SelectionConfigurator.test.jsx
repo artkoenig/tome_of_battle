@@ -113,6 +113,24 @@ describe('SelectionConfigurator Component', () => {
     expect(screen.queryByRole('button', { name: 'Minus' })).toBeNull();
   });
 
+  it('hides the "Optionen & Ausrüstung konfigurieren" header for a list rule', () => {
+    mockGetUnitOptions.mockReturnValue([]);
+
+    render(
+      <SelectionConfigurator
+        selection={mockSelection}
+        system={mockSystem}
+        roster={mockRoster}
+        updateSubSelection={mockUpdateSubSelection}
+        costTypeLabel="Pkt."
+        activeCatalogue={mockCatalogue}
+        isListRule
+      />
+    );
+
+    expect(screen.queryByText('Optionen & Ausrüstung konfigurieren')).toBeNull();
+  });
+
   it('renders standalone selectable options correctly', () => {
     const mockOption = { id: 'opt-1', name: 'Frag Grenades', costs: [{ typeId: 'pts', value: 5 }] };
     mockGetUnitOptions.mockReturnValue([

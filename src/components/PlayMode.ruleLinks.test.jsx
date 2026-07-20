@@ -51,6 +51,7 @@ vi.mock('../solver/validator', () => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find((fe) => fe.id === id) || null,
   calculateRosterCosts: () => ({}),
   getExtraResourceTotals: () => [],
+  isListRuleSelection: (_system, selection) => selection.category === 'cat-rules',
 }));
 
 // PlayUnitDetails is the component that renders the three chip groups. Here it is
@@ -171,5 +172,88 @@ describe('PlayMode rule-link wiring', () => {
     expect(openSpy).toHaveBeenCalledWith(REGELBUCH_URL, '_blank');
 
     openSpy.mockRestore();
+  });
+});
+
+describe('PlayMode hides list rules', () => {
+  const systemWithRules = {
+    forceEntries: [
+      {
+        id: 'fe-1',
+        categoryLinks: [
+          { targetId: 'cat-rules', name: 'Special list rules' },
+          { targetId: 'cat-core', name: 'Core' },
+        ],
+      },
+    ],
+    categoryEntries: [
+      { id: 'cat-rules', name: 'Special list rules' },
+      { id: 'cat-core', name: 'Core Units' },
+    ],
+  };
+
+  const rosterWithRules = {
+    catalogueId: 'cat-1',
+    costLimitType: 'pts',
+    forces: [
+      {
+        id: 'force-1',
+        forceEntryId: 'fe-1',
+        selections: [
+          { id: 'sel-rule', name: 'Allow experimental rules?', category: 'cat-rules', entryLinkId: 'el-rule' },
+          { id: 'sel-unit', name: 'Knights', category: 'cat-core', entryLinkId: 'el-1' },
+        ],
+      },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+  });
+
+  it('does not render the list-rule group and renders only the battlefield unit', () => {
+    render(<PlayMode system={systemWithRules} roster={rosterWithRules} onBack={vi.fn()} />);
+
+    // The list-rule category collapses to empty and is not shown; the unit
+    // category remains.
+    expect(screen.queryByText('Special list rules')).toBeNull();
+    expect(screen.getByText('Core Units')).toBeTruthy();
+
+    // Exactly one unit is rendered (PlayUnitDetails stub → one chip button).
+    expect(screen.getAllByTestId('chip-show-rule')).toHaveLength(1);
+  });
+
+  it('also hides a list rule that falls into the uncategorized "Sonstige Auswahlen" path', () => {
+    // The list-rule selection sits in a category with no matching categoryLink,
+    // so it reaches the uncategorized branch; it must still be filtered out, and
+    // with no other uncategorized selection the "Sonstige Auswahlen" group must
+    // not appear at all.
+    const systemCoreOnly = {
+      forceEntries: [{ id: 'fe-1', categoryLinks: [{ targetId: 'cat-core', name: 'Core' }] }],
+      categoryEntries: [{ id: 'cat-core', name: 'Core Units' }],
+    };
+    const rosterWithOrphanRule = {
+      catalogueId: 'cat-1',
+      costLimitType: 'pts',
+      forces: [
+        {
+          id: 'force-1',
+          forceEntryId: 'fe-1',
+          selections: [
+            { id: 'sel-unit', name: 'Knights', category: 'cat-core', entryLinkId: 'el-1' },
+            // category 'cat-rules' has no categoryLink → uncategorized path.
+            { id: 'sel-rule', name: 'Allow experimental rules?', category: 'cat-rules', entryLinkId: 'el-rule' },
+          ],
+        },
+      ],
+    };
+
+    render(<PlayMode system={systemCoreOnly} roster={rosterWithOrphanRule} onBack={vi.fn()} />);
+
+    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
+    expect(screen.queryByText('Sonstige Auswahlen')).toBeNull();
+    expect(screen.getByText('Core Units')).toBeTruthy();
+    expect(screen.getAllByTestId('chip-show-rule')).toHaveLength(1);
   });
 });

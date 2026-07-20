@@ -16,6 +16,8 @@ vi.mock('lucide-react', () => ({
   Download: () => <span data-testid="icon-download" />,
   Undo2: () => <span data-testid="icon-undo" />,
   Redo2: () => <span data-testid="icon-redo" />,
+  ChevronDown: () => <span data-testid="icon-chevron-down" />,
+  ChevronRight: () => <span data-testid="icon-chevron-right" />,
 }));
 
 // RosterEditor resolves the RulesIndexDialog URL through the real useRuleUrl hook,
@@ -122,6 +124,8 @@ vi.mock('../solver/validator', () => ({
     (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
   hasBlockingViolations: (errors) => (errors || []).some(e => e.severity === 'error'),
   ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' },
+  isListRuleSelection: () => false,
+  isListRuleCategory: () => false,
 }));
 
 // Dummy child components to speed up execution

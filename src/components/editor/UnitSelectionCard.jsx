@@ -48,6 +48,7 @@ export default function UnitSelectionCard({
   updateSubSelection,
   activeCatalogue,
   isSubUnit = false,
+  isListRule = false,
   onShowRule
 }) {
   const [activeInfo, setActiveInfo] = useState(null);
@@ -207,6 +208,9 @@ export default function UnitSelectionCard({
   };
 
   const isUnitEditing = selectedRosterSelection?.id === selection.id;
+  // Listenregeln tragen kein Einheiten-Profil zum Auf-/Zuklappen; ihre gewählten
+  // Optionen (Badges) sind stattdessen dauerhaft sichtbar.
+  const detailsOpen = isListRule || isDetailsOpen;
   const effectiveName = getEffectiveSelectionName(selection, { system, roster, parentCatalogueId: activeCatalogue?.id });
   const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
   const displayPoints = unitCosts[roster.costLimitType] || 0;
@@ -247,69 +251,75 @@ export default function UnitSelectionCard({
                 {displayPoints} {costTypeLabel}
               </span>
             )}
-            <button
-              type="button"
-              className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsDetailsOpen(!isDetailsOpen);
-              }}
-              title={isDetailsOpen ? 'Details ausblenden' : 'Details anzeigen'}
-              aria-expanded={isDetailsOpen}
-            >
-              <ReceiptText size={16} />
-            </button>
-            <div ref={menuRef} className="unit-card-menu-container" onClick={(e) => e.stopPropagation()}>
+            {/* Listenregeln sind dauerhafte Einstellungen: kein Detail-/Profil-
+                Umschalter und kein Aktionsmenü (Kopieren/Löschen). */}
+            {!isListRule && (
               <button
                 type="button"
-                className="square-btn"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                title="Aktionen"
+                className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDetailsOpen(!isDetailsOpen);
+                }}
+                title={isDetailsOpen ? 'Details ausblenden' : 'Details anzeigen'}
+                aria-expanded={isDetailsOpen}
               >
-                <MoreVertical size={16} />
+                <ReceiptText size={16} />
               </button>
+            )}
+            {!isListRule && (
+              <div ref={menuRef} className="unit-card-menu-container" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  className="square-btn"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  title="Aktionen"
+                >
+                  <MoreVertical size={16} />
+                </button>
 
-              <BottomSheet
-                isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
-                title="Aktionen"
-                desktopMode="popover"
-                containerRef={menuRef}
-              >
-                <div className="popover-list">
-                  {copyUnit && (
+                <BottomSheet
+                  isOpen={isMenuOpen}
+                  onClose={() => setIsMenuOpen(false)}
+                  title="Aktionen"
+                  desktopMode="popover"
+                  containerRef={menuRef}
+                >
+                  <div className="popover-list">
+                    {copyUnit && (
+                      <div
+                        className="popover-item"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          copyUnit(selection.id);
+                        }}
+                      >
+                        <span className="popover-item-name unit-card-menu-item">
+                          <Copy size={14} />
+                          Kopieren
+                        </span>
+                      </div>
+                    )}
                     <div
                       className="popover-item"
                       onClick={() => {
                         setIsMenuOpen(false);
-                        copyUnit(selection.id);
+                        setShowConfirmDelete(true);
                       }}
                     >
-                      <span className="popover-item-name unit-card-menu-item">
-                        <Copy size={14} />
-                        Kopieren
+                      <span className="popover-item-name unit-card-menu-item unit-card-menu-item-danger">
+                        <Trash2 size={14} />
+                        Löschen
                       </span>
                     </div>
-                  )}
-                  <div
-                    className="popover-item"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setShowConfirmDelete(true);
-                    }}
-                  >
-                    <span className="popover-item-name unit-card-menu-item unit-card-menu-item-danger">
-                      <Trash2 size={14} />
-                      Löschen
-                    </span>
                   </div>
-                </div>
-              </BottomSheet>
-            </div>
+                </BottomSheet>
+              </div>
+            )}
           </div>
         </div>
-        <div className={`unit-card-details ${isDetailsOpen ? 'is-open' : ''}`}>
-          {!isSubUnit && renderMiniProfile(selection)}
+        <div className={`unit-card-details ${detailsOpen ? 'is-open' : ''}`}>
+          {!isSubUnit && !isListRule && renderMiniProfile(selection)}
           <UnitUpgradesChips
             selection={selection}
             system={system}
@@ -325,7 +335,7 @@ export default function UnitSelectionCard({
             }}
             onShowRule={onShowRule}
           />
-          {!isSubUnit && (
+          {!isSubUnit && !isListRule && (
             <UnitRulesChips
               selection={selection}
               system={system}
@@ -342,7 +352,7 @@ export default function UnitSelectionCard({
               onShowRule={onShowRule}
             />
           )}
-          {!isUnitEditing && <div className="unit-card-torn-edge" aria-hidden="true" />}
+          {!isUnitEditing && !isListRule && <div className="unit-card-torn-edge" aria-hidden="true" />}
         </div>
       </div>
 
@@ -366,6 +376,7 @@ export default function UnitSelectionCard({
           handleMouseLeave={handleMouseLeave}
           setActiveInfo={setActiveInfo}
           onShowRule={onShowRule}
+          isListRule={isListRule}
         />
       )}
 

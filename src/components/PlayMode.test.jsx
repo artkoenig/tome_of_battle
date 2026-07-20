@@ -65,6 +65,7 @@ vi.mock('../solver/validator', () => ({
   // Rendered PlayUnitDetails resolves the unit name through this; name resolution is
   // covered by the solver's own unit tests, so here it returns the raw name unchanged.
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
+  isListRuleSelection: () => false,
 }));
 
 vi.mock('../solver/rulesEvaluator', () => ({

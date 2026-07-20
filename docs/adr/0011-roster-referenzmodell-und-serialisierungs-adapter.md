@@ -57,6 +57,15 @@ Kosten-Round-Trip-Bugklasse strukturell aus.
 - **Migration:** nicht destruktiv. Sobald der Solver Basiskosten aus dem Katalog
   liest, wird ein evtl. noch vorhandenes `costs`-Feld in gespeicherten Rostern
   ignoriert und beim nächsten Speichern lazy weggelassen.
+- **Ausnahme — auto-materialisierte Listenregeln:** Listenregeln (katalogseitige
+  `upgrade`-Wurzeleinträge, `type != unit`) sind verpflichtende, listenweite
+  Einstellungen, keine vom Nutzer ausgehobenen Einheiten. Sie werden beim
+  Anlegen/Laden einer Liste automatisch als gewöhnliche `upgrade`-Selektionen in
+  `force.selections` materialisiert (`materializeListRules`, idempotent, über den
+  Undo-neutralen `replace`-Pfad in `useRoster`). Das weicht bewusst von „speichert
+  nur Nutzer-Entscheidungen" ab, ändert aber **weder Schema noch Serialisierung**:
+  die Regeln sind strukturell dieselben Selektionen, die zuvor manuell hinzugefügt
+  wurden — neu ist allein, dass sie automatisch statt per Hand entstehen.
 
 ### 2. Options-Identität ist eine Modell-Invariante (Link-ID)
 Roster-Auswahlen referenzieren Optionen **immer über die Katalog-Link-ID** (bei

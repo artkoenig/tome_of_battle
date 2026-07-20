@@ -13,6 +13,7 @@
  *  - entryVisibility:   hidden-Status von Einträgen/Kategorie-Links
  */
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+export { isListRuleSelection, isListRuleEntryKind, isListRuleCategory, materializeListRules } from './listRules.js';
 export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks, collectTriggeredMessages, getEffectiveName, getEffectiveSelectionName, ValidationSeverity } from './modifierEvaluator.js';
 export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, getExtraResourceTotals, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 export { validateRoster, hasBlockingViolations, countBlockingViolations } from './rosterValidator.js';
@@ -20,5 +21,5 @@ export { isPercentConstraint, isCostField, countSelections, collectScopeSelectio
 export { collectUnitProfilesAndRules } from './profileCollector.js';
 export { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './rosterSync.js';
 export { findForceEntryById, getAvailableForceEntries } from './forceEntries.js';
-export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory } from './entryVisibility.js';
+export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory, collectPrimaryCategoryEntries } from './entryVisibility.js';
 export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, isReachableViaForceCategories } from './armyWideSelectors.js';
