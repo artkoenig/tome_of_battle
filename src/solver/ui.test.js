@@ -45,12 +45,38 @@ const packCatalogs = async () => {
   console.log(`Successfully packed ${count} files into: ${tempZipPath}`);
 };
 
-// 2. Start the Vite dev server programmatically on port 5175.
-const startViteServer = () => {
+// 2. Serve the app from a production build via `vite preview` (nicht der Dev-Server).
+// Der Dev-Server transpiliert den Modulgraphen on-demand erst beim ersten Seitenaufruf;
+// auf kalten CI-Runnern (frisches `npm ci`, kein warmer Vite-Cache) überschritt das unter
+// Last die Aushebe-/Import-Warteschwelle — die App blieb im „Verarbeite XML-Dateien…"-
+// Ladezustand hängen und der E2E riss reproduzierbar. Ein einmal vorab erzeugter Build wird
+// statisch ausgeliefert: kein Laufzeit-Transpilieren, deterministische Ladezeit, und näher
+// am echten Auslieferungszustand.
+
+// 2a. Produktions-Build einmalig erzeugen; erst danach wird preview bedient.
+const buildApp = () => {
   return new Promise((resolve, reject) => {
-    console.log(`Spawning Vite dev server on port ${PORT}...`);
-    // Run npx vite --port 5175 --strictPort
-    const proc = spawn('npx', ['vite', '--port', PORT.toString(), '--strictPort'], {
+    console.log('Building production bundle (vite build)...');
+    const proc = spawn('npx', ['vite', 'build'], { shell: true });
+    proc.stdout.on('data', (data) => console.log(`[vite build] ${data.toString().trim()}`));
+    proc.stderr.on('data', (data) => console.error(`[vite build stderr] ${data.toString().trim()}`));
+    proc.on('error', reject);
+    proc.on('exit', (code) => {
+      if (code === 0) {
+        console.log('Production build complete.');
+        resolve();
+      } else {
+        reject(new Error(`vite build exited with code ${code}`));
+      }
+    });
+  });
+};
+
+// 2b. Den gebauten Bundle mit `vite preview` auf Port 5175 ausliefern.
+const startPreviewServer = () => {
+  return new Promise((resolve, reject) => {
+    console.log(`Serving built bundle with vite preview on port ${PORT}...`);
+    const proc = spawn('npx', ['vite', 'preview', '--port', PORT.toString(), '--strictPort'], {
       shell: true
     });
 
@@ -60,7 +86,7 @@ const startViteServer = () => {
 
     proc.stdout.on('data', (data) => {
       const str = data.toString();
-      console.log(`[Vite stdout] ${str.trim()}`);
+      console.log(`[Vite preview] ${str.trim()}`);
       if ((str.includes(PORT.toString()) || str.includes('Local:')) && !resolved) {
         resolved = true;
         resolve(proc);
@@ -68,11 +94,11 @@ const startViteServer = () => {
     });
 
     proc.stderr.on('data', (data) => {
-      console.error(`[Vite stderr] ${data.toString()}`);
+      console.error(`[Vite preview stderr] ${data.toString()}`);
     });
 
     proc.on('error', (err) => {
-      console.error('Failed to start Vite server:', err);
+      console.error('Failed to start Vite preview server:', err);
       if (!resolved) {
         resolved = true;
         reject(err);
@@ -83,10 +109,10 @@ const startViteServer = () => {
     setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        console.log('Vite server startup timeout reached, continuing...');
+        console.log('Preview server startup timeout reached, continuing...');
         resolve(proc);
       }
-    }, 6000);
+    }, 15000);
   });
 };
 
@@ -200,14 +226,13 @@ const runUiTests = async () => {
     await fileInput.uploadFile(tempZipPath);
 
     // Wait for the system to import and render under "Importierte Spielsysteme".
-    // Der XML-Parse des WHFB6-Fixtures ist die mit Abstand langsamste Einzelphase des
-    // Laufs; unter Last schwankt sie auf GitHub-Runnern stark. Das frühere 15-s-Limit lag
-    // zu nah am Normalfall und riss bei jeder Varianz nach oben (der Screenshot zeigte die
-    // App noch im „Verarbeite XML-Dateien…"-Zustand). Großzügige Reserve statt Flakiness;
-    // ein echter Hänger bleibt dank des Fehler-Screenshots (siehe catch) trotzdem
-    // diagnostizierbar.
+    // Da der Bundle nun vorab gebaut und statisch ausgeliefert wird (siehe buildApp/
+    // startPreviewServer), entfällt die frühere kalte-Vite-Transpilierlatenz; es bleibt der
+    // reine client-seitige XML-Parse des WHFB6-Fixtures. 30 s geben dafür komfortable Reserve
+    // gegen Runner-Last, ohne die frühere 60-s-Notbremse. Ein echter Hänger bleibt dank des
+    // Fehler-Screenshots (siehe catch) diagnostizierbar.
     console.log('Waiting for system to be imported and parsed...');
-    await page.waitForSelector('.desktop-nav-actions', { timeout: 60000 });
+    await page.waitForSelector('.desktop-nav-actions', { timeout: 30000 });
     console.log('System imported successfully.');
 
     // Return to dashboard
@@ -571,7 +596,8 @@ const cleanup = () => {
 const run = async () => {
   try {
     await packCatalogs();
-    await startViteServer();
+    await buildApp();
+    await startPreviewServer();
     await runUiTests();
     cleanup();
     process.exit(0);
