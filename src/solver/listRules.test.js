@@ -11,18 +11,34 @@ vi.mock('./catalogResolver.js', () => ({
   resolveEntry: (...args) => mockResolveEntry(...args),
 }));
 
-// Enumeration helpers are mocked so materialize tests drive their behavior via
-// per-entry fixture flags (__type, __primaryCat, __hidden) rather than the real
-// (heavily context-dependent) primary-category / visibility logic.
+// The shared enumeration helper is mocked so materialize/category tests drive
+// behavior via per-entry fixture flags (__type, __primaryCat, __hidden) rather
+// than the real (heavily context-dependent) primary-category / visibility logic.
 vi.mock('./entryVisibility.js', () => ({
-  isEntryPrimaryInCategory: (entry, categoryId) => entry.__primaryCat === categoryId,
-  isSelectionEntryHidden: (entry) => !!entry.__hidden,
+  collectPrimaryCategoryEntries: (system, catalogue, categoryId) => {
+    const pools = [
+      ...(catalogue?.selectionEntries || []),
+      ...(catalogue?.entryLinks || []),
+      ...(catalogue?.sharedSelectionEntries || []),
+    ];
+    const seen = new Set();
+    const out = [];
+    for (const entry of pools) {
+      if (entry.__primaryCat !== categoryId) continue;
+      if (entry.__hidden) continue;
+      const resolved = { id: entry.id, type: entry.__type };
+      if (seen.has(resolved.id)) continue;
+      seen.add(resolved.id);
+      out.push({ entry, resolved });
+    }
+    return out;
+  },
 }));
 vi.mock('./forceEntries.js', () => ({
   findForceEntryById: (system, id) => system.__forceDefs?.[id] || null,
 }));
 
-import { isListRuleEntryKind, isListRuleSelection, materializeListRules } from './listRules.js';
+import { isListRuleEntryKind, isListRuleSelection, isListRuleCategory, materializeListRules } from './listRules.js';
 
 describe('isListRuleEntryKind', () => {
   it('classifies only the upgrade type as a list rule', () => {
@@ -151,5 +167,24 @@ describe('materializeListRules', () => {
     unknownCat.forces[0].catalogueId = 'nope';
     unknownCat.catalogueId = 'nope';
     expect(materializeListRules(unknownCat, system, buildSelection)).toBeNull();
+  });
+});
+
+describe('isListRuleCategory', () => {
+  const ruleA = { id: 'rA', __type: 'upgrade', __primaryCat: 'cat-rules' };
+  const ruleB = { id: 'rB', __type: 'upgrade', __primaryCat: 'cat-rules' };
+  const unitC = { id: 'uC', __type: 'unit', __primaryCat: 'cat-core' };
+  const catalogue = { entryLinks: [ruleA, ruleB], selectionEntries: [unitC] };
+
+  it('is true when every primary entry of the category is a list rule', () => {
+    expect(isListRuleCategory({}, catalogue, 'cat-rules', {})).toBe(true);
+  });
+
+  it('is false for a unit category', () => {
+    expect(isListRuleCategory({}, catalogue, 'cat-core', {})).toBe(false);
+  });
+
+  it('is false for a category with no primary entries', () => {
+    expect(isListRuleCategory({}, catalogue, 'cat-none', {})).toBe(false);
   });
 });

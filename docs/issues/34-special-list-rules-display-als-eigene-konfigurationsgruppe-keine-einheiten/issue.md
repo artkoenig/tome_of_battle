@@ -66,7 +66,13 @@ Im „Listenregel-Modus" werden dieselben Komponenten wiederverwendet
 
 Alle Listenregeln erscheinen gebündelt unter ihrem Hauptknoten „Special list
 rules" (die bestehende, katalog-benannte Kategorie-Gruppe dient als dieser
-Hauptknoten; keine neue verschachtelte Baumstruktur).
+Hauptknoten; keine neue verschachtelte Baumstruktur). Die Gruppe ist
+**ausklappbar** (Chevron in der Kopfzeile), und die Regel-Karten tragen **keinen
+gezackten Rand** (die `torn-edge`-Zierde bleibt echten Einheiten vorbehalten).
+Die Erkennung einer Listenregel-Kategorie erfolgt bereits vor der
+Materialisierung katalog-basiert (`isListRuleCategory` über die mit dem
+„+"-Adder geteilte Aufzählung `collectPrimaryCategoryEntries`), sodass beim
+ersten Render kein „+"-Adder aufblitzt.
 
 **Im Spielmodus (`PlayMode`) werden die Listenregel-Karten vollständig
 ausgeblendet.** Der Spielmodus zeigt die kampffeldrelevanten Einheiten; die
@@ -161,7 +167,10 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
       „+"-Adder — verifiziert im echten Foliant (Bretonnia, Definitive Edition:
       4 Regeln, 0 Pkt., keine neuen Validierungsfehler).
 - [x] Im Roster-Editor zeigt eine Listenregel-Karte weder den Detail-/Profil-
-      Umschalter (`ReceiptText`) noch das ⋮-Menü.
+      Umschalter (`ReceiptText`) noch das ⋮-Menü — und **keinen gezackten unteren
+      Rand** (die `unit-card-torn-edge`-Zierde bleibt echten Einheiten vorbehalten).
+- [x] Die „Special list rules"-Gruppe ist **ausklappbar**: ein Chevron in der
+      Kopfzeile, Klick blendet die Regel-Karten ein/aus (Standard: ausgeklappt).
 - [x] Im Roster-Editor zeigt die Listenregel-Gruppe keinen „+"-Adder.
 - [x] Klick auf eine Listenregel-Karte öffnet weiterhin den Options-Konfigurator
       („Optionen & Ausrüstung konfigurieren"); die dort gewählten Optionen

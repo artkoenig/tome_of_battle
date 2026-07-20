@@ -109,3 +109,33 @@ export function isSelectionEntryHidden(entry, system, roster, selectionCounts, f
   // both its own and its group's conditions pass.
   return evaluateHiddenFlag(isHidden, collectEntryModifiers(entry, res), ctx);
 }
+
+/**
+ * Sammelt die (nicht-versteckten) Katalog-Einträge, die in `categoryId` **primär**
+ * sind, jeweils mit ihrem aufgelösten Eintrag. Gemeinsame Grundlage des
+ * „+"-Adders (CategoryUnitAdder) und der Listenregel-Erkennung — beide gruppieren
+ * datengetrieben über die effektive Primärkategorie (ADR 0003 §4), nicht über
+ * Kategorienamen. Dedupliziert per aufgelöster Entry-ID.
+ */
+export function collectPrimaryCategoryEntries(system, catalogue, categoryId, { roster, selectionCounts = {}, force } = {}) {
+  const found = [];
+  if (!system || !catalogue) return found;
+
+  const pools = [
+    ...(catalogue.selectionEntries || []),
+    ...(catalogue.entryLinks || []),
+    ...(catalogue.sharedSelectionEntries || []),
+  ];
+  const seenResolvedIds = new Set();
+
+  for (const entry of pools) {
+    const resolved = resolveEntry(system, entry);
+    if (!resolved) continue;
+    if (!isEntryPrimaryInCategory(entry, categoryId, { system, roster, selectionCounts, force })) continue;
+    if (isSelectionEntryHidden(entry, system, roster, selectionCounts, null, force)) continue;
+    if (seenResolvedIds.has(resolved.id)) continue;
+    seenResolvedIds.add(resolved.id);
+    found.push({ entry, resolved });
+  }
+  return found;
+}

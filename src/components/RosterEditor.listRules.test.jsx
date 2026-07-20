@@ -24,6 +24,8 @@ vi.mock('lucide-react', () => ({
   Download: () => <span />,
   Undo2: () => <span />,
   Redo2: () => <span />,
+  ChevronDown: () => <span data-testid="icon-chevron-down" />,
+  ChevronRight: () => <span data-testid="icon-chevron-right" />,
 }));
 
 vi.mock('../hooks/useRoster', () => ({
@@ -70,6 +72,7 @@ vi.mock('../solver/validator', () => ({
   hasBlockingViolations: () => false,
   ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' },
   isListRuleSelection: (_system, selection) => selection.category === 'cat-rules',
+  isListRuleCategory: (_system, _catalogue, categoryId) => categoryId === 'cat-rules',
 }));
 
 vi.mock('./editor/CategoryUnitAdder', () => ({

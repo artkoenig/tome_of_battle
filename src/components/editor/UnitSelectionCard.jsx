@@ -352,7 +352,7 @@ export default function UnitSelectionCard({
               onShowRule={onShowRule}
             />
           )}
-          {!isUnitEditing && <div className="unit-card-torn-edge" aria-hidden="true" />}
+          {!isUnitEditing && !isListRule && <div className="unit-card-torn-edge" aria-hidden="true" />}
         </div>
       </div>
 

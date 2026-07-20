@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
+import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, isListRuleSelection } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, isListRuleSelection, isListRuleCategory } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import RosterSidebar from './editor/RosterSidebar';
@@ -31,6 +31,16 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, _setToast] = useState(null);
+  // Listenregel-Gruppen sind ausklappbar; hier gesammelt die (pro force+Kategorie)
+  // eingeklappten Gruppen. Standard: ausgeklappt (leeres Set).
+  const [collapsedRuleGroups, setCollapsedRuleGroups] = useState(() => new Set());
+  const toggleRuleGroup = (groupKey) => {
+    setCollapsedRuleGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupKey)) next.delete(groupKey); else next.add(groupKey);
+      return next;
+    });
+  };
   const resolveRuleUrl = useRuleUrl();
 
   // Holds the rule whose external index is currently shown, together with the URL
@@ -190,13 +200,18 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   const isHidden = isCategoryLinkHidden(link, system, roster, selectionCounts, forceCategoryCounts);
                   const selections = force.selections?.filter(s => s.category === link.targetId) || [];
 
-                  // A category whose selections are all list rules (data-driven:
-                  // catalog type = upgrade, ADR 0003) is a list-wide settings group,
-                  // not a unit slot: its cards drop the per-card unit actions and the
-                  // group offers no "add unit" button.
+                  // A list-rule group (data-driven: catalog type = upgrade, ADR 0003)
+                  // is a list-wide settings group, not a unit slot: its cards drop the
+                  // per-card unit actions and the group offers no "add unit" button.
+                  // When it already holds selections we judge by them; while it is still
+                  // empty (before materialization settles on first paint) we judge by the
+                  // category's catalog entries, so no "+" adder ever flashes.
                   const catalogueId = force.catalogueId || roster.catalogueId;
-                  const isListRuleGroup = selections.length > 0 &&
-                    selections.every(s => isListRuleSelection(system, s, catalogueId));
+                  const isListRuleGroup = selections.length > 0
+                    ? selections.every(s => isListRuleSelection(system, s, catalogueId))
+                    : isListRuleCategory(system, activeCatalogue, link.targetId, { roster, force });
+                  const ruleGroupKey = `${force.id}:${link.targetId}`;
+                  const isRuleGroupCollapsed = isListRuleGroup && collapsedRuleGroups.has(ruleGroupKey);
 
                   // If category link is hidden and has no selections, do not render it
                   if (isHidden && selections.length === 0) {
@@ -232,7 +247,16 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   return (
                     <div key={link.targetId} className="roster-category-group" style={{ marginBottom: '24px' }}>
                       <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div
+                          style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: isListRuleGroup ? 'pointer' : 'default' }}
+                          onClick={isListRuleGroup ? () => toggleRuleGroup(ruleGroupKey) : undefined}
+                          role={isListRuleGroup ? 'button' : undefined}
+                          aria-expanded={isListRuleGroup ? !isRuleGroupCollapsed : undefined}
+                          title={isListRuleGroup ? (isRuleGroupCollapsed ? 'Listenregeln ausklappen' : 'Listenregeln einklappen') : undefined}
+                        >
+                          {isListRuleGroup && (isRuleGroupCollapsed
+                            ? <ChevronRight size={18} className="text-gold" aria-hidden="true" />
+                            : <ChevronDown size={18} className="text-gold" aria-hidden="true" />)}
                           <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>
                             {catName}
                           </h3>
@@ -266,7 +290,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                       </div>
 
 
-                      {selections.length > 0 && (
+                      {selections.length > 0 && !isRuleGroupCollapsed && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {selections
                             .map(selection => {
