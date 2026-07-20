@@ -44,5 +44,6 @@
  * @property {string} [forceId]
  * @property {string} [categoryId]
  * @property {string} [selectionId]
+ * @property {boolean} [blocksAddAvailability] Vom Validator gestempelte Aushebe-Sperr-Klassifikation (ADR-0022): true = Obergrenze/„nicht erlaubt", false = Budget-/„zu-wenig"-Zustand.
  */
 export {};

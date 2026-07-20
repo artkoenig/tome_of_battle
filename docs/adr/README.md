@@ -29,4 +29,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0019 | [Manuelle Versionierung über package.json statt Git-Tag-Prognose](0019-manuelle-versionierung-und-release-freigabe.md) | Accepted | 2026-07-18 |
 | 0020 | [Katalogdaten werden network-only geladen, kein Service-Worker-Cache](0020-katalogdaten-network-only-kein-service-worker-cache.md) | Accepted | 2026-07-19 |
 | 0021 | [Preview-Badge über Laufzeit-Hostname-Vergleich](0021-preview-badge-laufzeit-hostname-erkennung.md) | Accepted | 2026-07-19 |
+| 0022 | [UI-Verfügbarkeit im Aushebe-Dialog leitet sich aus dem Validator ab](0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md) | Accepted | 2026-07-20 |
 
