@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -125,22 +125,23 @@ kategorisierten als auch im „Sonstige Auswahlen"-Pfad.
   „Please enable Allow special characters?").
 
 ## Acceptance Criteria
-- [ ] Ein reines Solver-Prädikat erkennt eine Wurzel-Selektion mit aufgelöstem
+- [x] Ein reines Solver-Prädikat erkennt eine Wurzel-Selektion mit aufgelöstem
       Katalog-`type == upgrade` als Listenregel (direkt unit-getestet; echte
       Einheiten = `unit`/`model` werden nicht als Listenregel erkannt).
-- [ ] Im Roster-Editor zeigt eine Listenregel-Karte weder den Detail-/Profil-
+- [x] Im Roster-Editor zeigt eine Listenregel-Karte weder den Detail-/Profil-
       Umschalter (`ReceiptText`) noch das ⋮-Menü.
-- [ ] Im Roster-Editor zeigt die Listenregel-Gruppe keinen „+"-Adder.
-- [ ] Klick auf eine Listenregel-Karte öffnet weiterhin den Options-Konfigurator
+- [x] Im Roster-Editor zeigt die Listenregel-Gruppe keinen „+"-Adder.
+- [x] Klick auf eine Listenregel-Karte öffnet weiterhin den Options-Konfigurator
       („Optionen & Ausrüstung konfigurieren"); die dort gewählten Optionen
       erscheinen weiterhin als Badges auf der Karte.
-- [ ] Echte Einheiten-Kategorien (Lord, Helden, Core …) bleiben unverändert:
+- [x] Echte Einheiten-Kategorien (Lord, Helden, Core …) bleiben unverändert:
       Detail-Umschalter, ⋮-Menü und „+"-Adder bleiben dort erhalten.
-- [ ] Im Spielmodus (`PlayMode`) erscheinen Listenregel-Selektionen nicht — weder
+- [x] Im Spielmodus (`PlayMode`) erscheinen Listenregel-Selektionen nicht — weder
       im kategorisierten Pfad noch unter „Sonstige Auswahlen"; echte Einheiten
       bleiben dort sichtbar.
-- [ ] Roster-Datenmodell und `.ros`-Import/-Export bleiben unverändert (kein neues
+- [x] Roster-Datenmodell und `.ros`-Import/-Export bleiben unverändert (kein neues
       persistiertes Feld).
-- [ ] Alle Unit-/Komponententests grün (`npm test`).
+- [x] Alle Unit-/Komponententests grün (`npm test`).
 
 ## Comments
+- Umgesetzt: Solver-Praedikat isListRuleSelection (Katalog-type === upgrade, ADR 0003 gewahrt), re-exportiert ueber solver/validator.js. UnitSelectionCard-Listenregel-Modus (kein Detail-/Profil-Knopf, kein Aktionsmenue; Badges & Konfigurator bleiben, Details dauerhaft offen). RosterEditor: '+'-Adder fuer die Listenregel-Gruppe unterdrueckt. PlayMode: Listenregeln aus kategorisiertem UND 'Sonstige Auswahlen'-Pfad gefiltert. Roster-Modell/.ros unveraendert (ADR 0011). Vier-Achsen-Pruefung: Standards sauber, Tests gruen (730), Spezifikations-/Docs-Befunde (Testabdeckung 'Sonstige'-Pfad + Wortlaut type===upgrade) behoben. Version 1.3.0 (minor, feature).
