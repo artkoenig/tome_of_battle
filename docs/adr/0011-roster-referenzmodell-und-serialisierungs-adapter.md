@@ -57,15 +57,20 @@ Kosten-Round-Trip-Bugklasse strukturell aus.
 - **Migration:** nicht destruktiv. Sobald der Solver Basiskosten aus dem Katalog
   liest, wird ein evtl. noch vorhandenes `costs`-Feld in gespeicherten Rostern
   ignoriert und beim nächsten Speichern lazy weggelassen.
-- **Ausnahme — auto-materialisierte Listenregeln:** Listenregeln (katalogseitige
-  `upgrade`-Wurzeleinträge, `type != unit`) sind verpflichtende, listenweite
-  Einstellungen, keine vom Nutzer ausgehobenen Einheiten. Sie werden beim
-  Anlegen/Laden einer Liste automatisch als gewöhnliche `upgrade`-Selektionen in
-  `force.selections` materialisiert (`materializeListRules`, idempotent, über den
-  Undo-neutralen `replace`-Pfad in `useRoster`). Das weicht bewusst von „speichert
-  nur Nutzer-Entscheidungen" ab, ändert aber **weder Schema noch Serialisierung**:
-  die Regeln sind strukturell dieselben Selektionen, die zuvor manuell hinzugefügt
-  wurden — neu ist allein, dass sie automatisch statt per Hand entstehen.
+- **~~Ausnahme — auto-materialisierte Listenregeln~~ (aufgehoben, Issue 35):** Die
+  in Issue 34 eingeführte Auto-Materialisierung von Listenregeln (`upgrade`-
+  Wurzeleinträge) ist zurückgebaut. Sie erzwang den „gewählt"-Zustand jeder
+  Listenregel als Konstante statt als Nutzerentscheidung — die als Frage
+  formulierten Schalter (z. B. „Allow special characters?") waren permanent „an"
+  und ließen sich nicht abschalten. `materializeListRules` und der zugehörige
+  `useEffect` in `useRoster` sind entfernt. Listenregeln folgen damit **wieder dem
+  Referenzmodell**: das Roster hält nur die tatsächlich vom Nutzer gesetzten
+  Regel-Selektionen. Die Oberfläche stellt die „Special list rules"-Gruppe als
+  **schaltbare Ankreuzliste** dar (`collectListRuleStates` + `ListRuleChecklist`),
+  angehakt ⇔ Regel im Roster präsent; Anhaken fügt die Selektion hinzu, Abhaken
+  entfernt sie. Schema und `.ros`-Serialisierung bleiben unverändert (eine aktive
+  Regel ist schlicht eine vorhandene Selektion); der Rückbau ist nicht-destruktiv
+  (bestehende Regel-Selektionen bleiben erhalten und erscheinen angehakt).
 
 ### 2. Options-Identität ist eine Modell-Invariante (Link-ID)
 Roster-Auswahlen referenzieren Optionen **immer über die Katalog-Link-ID** (bei

@@ -444,47 +444,6 @@ describe('UnitSelectionCard Component', () => {
     expect(chips.some(t => t.includes('Level 3 Shaman'))).toBe(true);
   });
 
-  describe('List rule mode (isListRule)', () => {
-    it('hides the details/profile toggle and the actions menu', () => {
-      render(<UnitSelectionCard {...defaultProps} isListRule />);
-
-      expect(screen.queryByTitle('Aktionen')).toBeNull();
-      expect(screen.queryByTitle('Details anzeigen')).toBeNull();
-      expect(screen.queryByTitle('Details ausblenden')).toBeNull();
-    });
-
-    it('keeps the selected-option badges visible without opening details', () => {
-      const { container } = render(<UnitSelectionCard {...defaultProps} isListRule />);
-
-      const details = container.querySelector('.unit-card-details');
-      expect(details.className).toContain('is-open');
-
-      const chipTexts = Array.from(container.querySelectorAll('.upgrade-badge')).map(c => c.textContent);
-      expect(chipTexts.some(t => t.includes('Barded Warhorse'))).toBe(true);
-    });
-
-    it('still opens the options configurator when the card is clicked', () => {
-      render(<UnitSelectionCard {...defaultProps} isListRule />);
-
-      const header = screen.getByText('Knights of Bretonnia').closest('.selection-node-header');
-      fireEvent.click(header);
-
-      expect(defaultProps.setSelectedRosterSelection).toHaveBeenCalledWith(defaultProps.selection);
-    });
-
-    it('renders the SelectionConfigurator when this list rule is selected', () => {
-      render(
-        <UnitSelectionCard
-          {...defaultProps}
-          isListRule
-          selectedRosterSelection={defaultProps.selection}
-        />
-      );
-
-      expect(screen.getByTestId('selection-configurator')).toBeDefined();
-    });
-  });
-
   describe('Adversarial & Stress Tests', () => {
     it('handles window resize dynamically around 900px and fires click events', () => {
       // Start as desktop

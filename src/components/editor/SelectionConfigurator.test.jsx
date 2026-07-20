@@ -186,7 +186,7 @@ describe('SelectionConfigurator Component', () => {
     const plusBtn = screen.getByTestId('icon-plus').closest('button');
     fireEvent.click(plusBtn);
     expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
-    expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'increment', 1);
+    expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'increment');
 
     mockUpdateSubSelection.mockClear();
 
@@ -194,7 +194,7 @@ describe('SelectionConfigurator Component', () => {
     const minusBtn = screen.getByTestId('icon-minus').closest('button');
     fireEvent.click(minusBtn);
     expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
-    expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'decrement', 1);
+    expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'decrement');
   });
 
   it('honors the whfb6 linking setting for standalone mapped options', () => {

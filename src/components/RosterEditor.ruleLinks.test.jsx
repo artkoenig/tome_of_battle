@@ -73,11 +73,14 @@ vi.mock('../solver/validator', () => ({
     (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
   hasBlockingViolations: (errors) => (errors || []).some(e => e.severity === 'error'),
   ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' },
-  isListRuleSelection: () => false,
+  resolveListRuleGroup: () => ({ isListRuleGroup: false, states: [] }),
 }));
 
 vi.mock('./editor/CategoryUnitAdder', () => ({
   default: () => <div data-testid="category-unit-adder" />,
+}));
+vi.mock('./editor/ListRuleChecklist', () => ({
+  default: () => <div data-testid="list-rule-checklist" />,
 }));
 vi.mock('./editor/RosterSidebar', () => ({
   default: () => <div data-testid="roster-sidebar" />,

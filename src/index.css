@@ -906,6 +906,9 @@ select option {
   flex: 1;
   min-width: 0;
   padding-right: 12px;
+  /* Lange, umbruchlose Namen (z. B. „Chronicles/Annual/AB(appendix)") sollen
+     brechen, statt in die Steuer-Spalte zu laufen und die Checkbox zu überlagern. */
+  overflow-wrap: anywhere;
 }
 
 .sub-selection-controls {
@@ -3113,5 +3116,62 @@ input[type="radio"]:checked::after {
 
 .rules-index-iframe {
   filter: invert(1) hue-rotate(180deg);
+}
+
+/* ── ListRuleChecklist (Special list rules als Ankreuzliste) ───────────── */
+.list-rule-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.list-rule-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Gleichmäßiger, etwas größerer Vertikalrhythmus — exakt wie die Options-
+     zeilen der Einheitenkarten (.sub-selection-row: 8px oben/unten). Rechter
+     Innenabstand 28px setzt die Checkbox exakt auf eine Flucht mit den
+     Unteroptions-Checkboxen (.selection-node-body 16px + .sub-selection-row 12px). */
+  padding: 8px 28px 8px 0;
+}
+
+/* Schalter-Zeile: Klick auf die ganze Zeile schaltet die Regel an/aus. */
+.list-rule-row-toggle {
+  cursor: pointer;
+}
+
+/* Behälter-Zeile: Klick auf die Zeile klappt die Unteroptionen ein/aus;
+   nur die Checkbox schaltet die Regel an/aus. */
+.list-rule-row-expandable {
+  cursor: pointer;
+}
+
+.list-rule-row input[type="checkbox"] {
+  flex-shrink: 0;
+}
+
+/* Fester Schacht links für den Chevron (reines Icon), damit die Namen aller
+   obersten Zeilen (mit und ohne Chevron) bündig fluchten. */
+.list-rule-chevron-slot {
+  flex-shrink: 0;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-gold);
+}
+
+.list-rule-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+
+.list-rule-suboptions {
+  padding-left: 6px;
+  margin-left: 4px;
+  border-left: 2px solid var(--border-gold-dim);
 }
 

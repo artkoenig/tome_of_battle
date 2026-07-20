@@ -11,7 +11,6 @@
  */
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { collectPrimaryCategoryEntries } from './entryVisibility.js';
-import { findForceEntryById } from './forceEntries.js';
 import { SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
 
 /**
@@ -40,88 +39,139 @@ export function isListRuleSelection(system, selection, catalogueId = null) {
 }
 
 /**
- * True, wenn `categoryId` eine *Listenregel-Kategorie* ist: sie hat mindestens
- * einen primären Katalog-Eintrag und **alle** ihre primären Einträge sind
- * Listenregeln. Damit lässt sich die Gruppe schon vor der Materialisierung (leere
- * `selections` beim ersten Render) als Listenregel-Gruppe erkennen — so blitzt
- * kein „+"-Adder auf, ehe die Regeln gesät sind. Eine gemischte Kategorie (auch
- * echte Einheiten) gilt bewusst nicht als Listenregel-Kategorie.
+ * Einmalige Aufzählung der *primären* Katalog-Einträge einer Kategorie: liefert
+ * die Gesamtzahl sowie die Teilmenge der Listenregel-Einträge. Sowohl die
+ * Gruppen-Klassifikation als auch die Ankreuzlisten-Zustände lassen sich so aus
+ * **einem** Katalog-Durchlauf ableiten, statt `collectPrimaryCategoryEntries`
+ * mehrfach zu durchlaufen.
  */
-export function isListRuleCategory(system, catalogue, categoryId, { roster, force } = {}) {
-  const entries = collectPrimaryCategoryEntries(system, catalogue, categoryId, { roster, force });
-  return entries.length > 0 && entries.every(({ resolved }) => isListRuleEntryKind(resolved.type));
+function enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force } = {}) {
+  let total = 0;
+  const ruleEntries = [];
+  for (const item of collectPrimaryCategoryEntries(system, catalogue, categoryId, { roster, force })) {
+    total += 1;
+    if (isListRuleEntryKind(item.resolved.type)) ruleEntries.push(item);
+  }
+  return { total, ruleEntries };
 }
 
-/** Die id, unter der eine (materialisierte) Selektion ihren Katalog-Eintrag referenziert. */
+/** Die id, unter der eine Selektion ihren Katalog-Eintrag referenziert. */
 function selectionEntryRef(selection) {
   return selection.entryLinkId || selection.selectionEntryId;
 }
 
 /**
- * Zählt die Katalog-Einträge einer Force auf, die Listenregeln sind — in einem
- * ihrer categoryLinks primär und vom `type` `upgrade`. Jeder Eintrag wird mit der
- * categoryLink-`targetId` (Gruppierung) und seiner aufgelösten Entry-ID (Abgleich)
- * gepaart. Nutzt dieselbe Aufzählung wie der „+"-Adder (ADR 0003 §4).
+ * True, wenn eine Listenregel ein reiner **binärer Schalter** ist (an/aus per
+ * Ankreuzfeld). Datengetrieben (ADR 0003): binär, solange der Eintrag keine echte
+ * Mengen-Beschränkung `max > 1` trägt. Ein Wurzel-Tor mit `max > 1` (bislang
+ * nirgends belegt) gilt als nicht-binär und fällt in der Oberfläche auf den
+ * Mengen-Adder zurück. Ausgewertet wird die statische roster-/force-weite
+ * `max`-Beschränkung; ein fehlender oder negativer Wert bedeutet „unbeschränkt
+ * binär".
  */
-function collectListRuleEntryDefs(system, catalogue, forceDef, roster, force) {
-  const found = [];
-  if (!forceDef) return found;
-  const seenResolvedIds = new Set();
+function isBinaryListRule(resolved) {
+  const maxConstraint = (resolved?.constraints || []).find(
+    (c) => c.type === 'max' && (!c.scope || c.scope === 'roster' || c.scope === 'force')
+  );
+  if (!maxConstraint) return true;
+  const { value } = maxConstraint;
+  return value === undefined || value === null || value < 0 || value <= 1;
+}
 
-  for (const link of forceDef.categoryLinks || []) {
-    const categoryId = link.targetId;
-    for (const { entry, resolved } of collectPrimaryCategoryEntries(system, catalogue, categoryId, { roster, force })) {
-      if (!isListRuleEntryKind(resolved.type)) continue;
-      if (seenResolvedIds.has(resolved.id)) continue;
-      seenResolvedIds.add(resolved.id);
-      found.push({ entry, categoryId, resolvedId: resolved.id });
-    }
-  }
-  return found;
+/** True, wenn der aufgelöste Eintrag konfigurierbare Unteroptionen trägt (Behälter-Regel). */
+function isContainerListRule(resolved) {
+  if (!resolved) return false;
+  return (
+    (resolved.selectionEntries?.length > 0) ||
+    (resolved.entryLinks?.length > 0) ||
+    (resolved.selectionEntryGroups?.length > 0)
+  );
 }
 
 /**
- * Materialisiert fehlende Listenregeln: sorgt dafür, dass jede Listenregel-Kette
- * einer Force dauerhaft als Selektion vorhanden ist — Listenregeln sind
- * listenweite Einstellungen, keine vom Nutzer hinzugefügten/entfernten Einheiten.
- * `buildSelection(entry, categoryId)` erzeugt die Selektion (wie beim manuellen
- * Hinzufügen). Idempotent: bereits vorhandene Regeln werden nicht dupliziert.
- * Gibt ein neues Roster-Objekt zurück, wenn etwas ergänzt wurde, sonst `null`.
+ * Findet die vorhandene Selektion einer Force, die auf die aufgelöste Entry-ID
+ * `resolvedId` verweist. Abgleich über die *aufgelöste* ID, damit auch importierte
+ * Roster, die eine Regel über eine andere Link-/Entry-Repräsentation referenzieren,
+ * als präsent erkannt werden.
  */
-export function materializeListRules(roster, system, buildSelection) {
-  if (!roster || !system || !Array.isArray(roster.forces)) return null;
+function findPresentSelection(system, selections, resolvedId, catalogueId) {
+  for (const sel of selections || []) {
+    const ref = selectionEntryRef(sel);
+    if (!ref) continue;
+    const resolved = resolveEntry(system, findEntryInSystem(system, ref, catalogueId), catalogueId);
+    if (resolved?.id === resolvedId) return sel;
+  }
+  return null;
+}
 
-  let changed = false;
-  const forces = roster.forces.map((force) => {
-    const forceDef = findForceEntryById(system, force.forceEntryId);
-    const catalogueId = force.catalogueId || roster.catalogueId;
-    const catalogue = system.catalogues?.find((c) => c.id === catalogueId);
-    const defs = collectListRuleEntryDefs(system, catalogue, forceDef, roster, force);
-    if (defs.length === 0) return force;
+/**
+ * @typedef {Object} ListRuleState Zustand einer einzelnen Listenregel für die
+ *   Ankreuzliste.
+ * @property {Object} entry       der Katalog-Eintrag/-Link der Regel.
+ * @property {string} name        der Anzeigename der Regel (aus dem aufgelösten Eintrag).
+ * @property {string} categoryId  die (Gruppierungs-)Kategorie der Regel.
+ * @property {string} resolvedId  die aufgelöste Entry-ID (stabiler Abgleich).
+ * @property {boolean} checked    true ⇔ die Regel ist im Roster präsent.
+ * @property {?Object} selection  die präsente Roster-Selektion (falls `checked`).
+ * @property {boolean} isBinary   true ⇔ reiner Schalter (Ankreuzfeld), sonst Mengen-Adder.
+ * @property {boolean} isContainer true ⇔ die Regel trägt konfigurierbare Unteroptionen.
+ */
 
-    const existing = force.selections || [];
-    // Abgleich über die *aufgelöste* Entry-ID, damit auch importierte Roster, die
-    // eine Regel über eine andere Link-/Entry-Repräsentation referenzieren, als
-    // vorhanden erkannt werden (keine Dubletten).
-    const presentResolvedIds = new Set();
-    for (const sel of existing) {
-      const ref = selectionEntryRef(sel);
-      if (!ref) continue;
-      const resolved = resolveEntry(system, findEntryInSystem(system, ref, catalogueId), catalogueId);
-      if (resolved?.id) presentResolvedIds.add(resolved.id);
-    }
+/**
+ * Baut aus den bereits aufgezählten Listenregel-Einträgen die
+ * {@link ListRuleState}s. Dedupliziert per aufgelöster Entry-ID; `checked` leitet
+ * sich rein aus der Roster-Präsenz ab (kein gespeicherter Zustand).
+ */
+function buildListRuleStates(system, ruleEntries, selections, catalogueId, categoryId) {
+  const seenResolvedIds = new Set();
+  const states = [];
+  for (const { entry, resolved } of ruleEntries) {
+    if (seenResolvedIds.has(resolved.id)) continue;
+    seenResolvedIds.add(resolved.id);
 
-    const additions = [];
-    for (const { entry, categoryId, resolvedId } of defs) {
-      if (presentResolvedIds.has(resolvedId)) continue;
-      const selection = buildSelection(entry, categoryId);
-      if (selection) additions.push(selection);
-    }
-    if (additions.length === 0) return force;
+    const selection = findPresentSelection(system, selections, resolved.id, catalogueId);
+    states.push({
+      entry,
+      name: resolved.name,
+      categoryId,
+      resolvedId: resolved.id,
+      checked: !!selection,
+      selection: selection || null,
+      isBinary: isBinaryListRule(resolved),
+      isContainer: isContainerListRule(resolved),
+    });
+  }
+  return states;
+}
 
-    changed = true;
-    return { ...force, selections: [...existing, ...additions] };
-  });
+/**
+ * Klassifiziert eine Kategorie-Gruppe **und** liefert – in einem einzigen
+ * Katalog-Durchlauf – die Ankreuzlisten-Zustände. Der Editor fragt genau diese
+ * eine Funktion, statt im JSX über Solver-Interna zu verzweigen, und reicht die
+ * `states` an die `ListRuleChecklist` weiter (so wird die Kategorie nur einmal
+ * traversiert, kein doppeltes `collectPrimaryCategoryEntries`).
+ *
+ * `isListRuleGroup`: Sind bereits Selektionen in der Kategorie präsent, wird nach
+ * ihnen geurteilt (sind alle Listenregeln?); ist die Kategorie (noch) leer, nach
+ * ihren Katalog-Einträgen (sind alle primären Einträge Listenregeln?). Eine
+ * gemischte Kategorie gilt bewusst nicht als Listenregel-Gruppe. `states` wird nur
+ * für eine echte Listenregel-Gruppe befüllt, sonst leer.
+ *
+ * @returns {{ isListRuleGroup: boolean, states: ListRuleState[] }}
+ */
+export function resolveListRuleGroup(system, catalogue, categoryId, { roster, force } = {}) {
+  const catalogueId = force?.catalogueId || roster?.catalogueId;
+  const allSelections = force?.selections || [];
+  const categorySelections = allSelections.filter((s) => s.category === categoryId);
+  const { total, ruleEntries } = enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force });
 
-  return changed ? { ...roster, forces } : null;
+  const isListRuleGroup = categorySelections.length > 0
+    ? categorySelections.every((s) => isListRuleSelection(system, s, catalogueId))
+    : total > 0 && ruleEntries.length === total;
+
+  const states = isListRuleGroup
+    ? buildListRuleStates(system, ruleEntries, allSelections, catalogueId, categoryId)
+    : [];
+
+  return { isListRuleGroup, states };
 }
