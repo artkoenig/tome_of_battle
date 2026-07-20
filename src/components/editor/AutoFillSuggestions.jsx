@@ -112,7 +112,6 @@ export default function AutoFillSuggestions({
               option: option,
               optionName: res.name,
               cost: points,
-              parentCount: parentCount,
               actionType: 'increment'
             });
           }
@@ -193,12 +192,12 @@ export default function AutoFillSuggestions({
 
 
   const handleApplyAction = (action) => {
-    updateSubSelection(action.selectionId, action.option, action.actionType, action.parentCount);
+    updateSubSelection(action.selectionId, action.option, action.actionType);
   };
 
   const handleApplyCombo = (combo) => {
     combo.actions.forEach(action => {
-      updateSubSelection(action.selectionId, action.option, action.actionType, action.parentCount);
+      updateSubSelection(action.selectionId, action.option, action.actionType);
     });
   };
 

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { collectListRuleStates } from '../../solver/validator';
 import SelectionConfigurator from './SelectionConfigurator';
 import CategoryUnitAdder from './CategoryUnitAdder';
 import BottomSheet from './BottomSheet';
@@ -20,7 +19,7 @@ export default function ListRuleChecklist({
   activeCatalogue,
   categoryId,
   roster,
-  force,
+  states,
   addUnit,
   removeUnit,
   updateSubSelection,
@@ -42,8 +41,7 @@ export default function ListRuleChecklist({
   };
   const handleMouseLeave = () => setHoveredInfo(null);
 
-  const states = collectListRuleStates(system, activeCatalogue, categoryId, { roster, force });
-  if (states.length === 0) return null;
+  if (!states || states.length === 0) return null;
 
   const toggleRule = (state, nextChecked) => {
     if (nextChecked) {
@@ -54,14 +52,14 @@ export default function ListRuleChecklist({
   };
 
   return (
-    <div className="list-rule-checklist" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div className="list-rule-checklist">
       {states.map((state) => {
         // Datengetriebener Rückfall: eine nicht-binäre Regel (echte Mengen-Beschränkung)
         // wird über den Mengen-Adder statt ein Ankreuzfeld bedient.
         if (!state.isBinary) {
           return (
             <div key={state.resolvedId} className="list-rule-row list-rule-row-quantity">
-              <span className="list-rule-name text-body" style={{ fontWeight: 600 }}>{state.name}</span>
+              <span className="list-rule-name text-body">{state.name}</span>
               <CategoryUnitAdder
                 categoryId={categoryId}
                 categoryName={state.name}
@@ -82,23 +80,17 @@ export default function ListRuleChecklist({
 
         return (
           <div key={state.resolvedId} className="list-rule-item">
-            <label
-              className="list-rule-row"
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-            >
+            <label className="list-rule-row list-rule-row-toggle">
               <input
                 type="checkbox"
                 checked={state.checked}
                 onChange={(e) => toggleRule(state, e.target.checked)}
               />
-              <span className="list-rule-name text-body" style={{ fontWeight: 600 }}>{state.name}</span>
+              <span className="list-rule-name text-body">{state.name}</span>
             </label>
 
             {showSubOptions && (
-              <div
-                className="list-rule-suboptions"
-                style={{ paddingLeft: '28px', borderLeft: '2px solid rgba(226, 183, 66, 0.2)', marginLeft: '8px' }}
-              >
+              <div className="list-rule-suboptions">
                 <SelectionConfigurator
                   selection={state.selection}
                   system={system}

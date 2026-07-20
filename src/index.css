@@ -3115,3 +3115,34 @@ input[type="radio"]:checked::after {
   filter: invert(1) hue-rotate(180deg);
 }
 
+/* ── ListRuleChecklist (Special list rules als Ankreuzliste) ───────────── */
+.list-rule-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-rule-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-rule-row-quantity {
+  justify-content: space-between;
+}
+
+.list-rule-row-toggle {
+  cursor: pointer;
+}
+
+.list-rule-name {
+  font-weight: 600;
+}
+
+.list-rule-suboptions {
+  padding-left: 28px;
+  margin-left: 8px;
+  border-left: 2px solid var(--border-gold-dim);
+}
+

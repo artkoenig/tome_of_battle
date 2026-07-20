@@ -244,7 +244,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     });
   };
 
-  const updateSubSelection = (unitSelectionId, optionOrId, action, parentCount = 1) => {
+  const updateSubSelection = (unitSelectionId, optionOrId, action) => {
     setRoster(prev => {
       let foundAndUpdated = false;
 

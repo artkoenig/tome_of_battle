@@ -73,8 +73,10 @@ vi.mock('../solver/validator', () => ({
   formatConstraintLimit: (value) => `${value}`,
   hasBlockingViolations: () => false,
   ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' },
-  isListRuleSelection: (_system, selection) => selection.category === 'cat-rules',
-  isListRuleCategory: (_system, _catalogue, categoryId) => categoryId === 'cat-rules',
+  resolveListRuleGroup: (_system, _catalogue, categoryId) => ({
+    isListRuleGroup: categoryId === 'cat-rules',
+    states: [],
+  }),
 }));
 
 vi.mock('./editor/CategoryUnitAdder', () => ({

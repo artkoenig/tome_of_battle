@@ -332,24 +332,24 @@ export default function OptionGroupComponent({
                 if (isBinary) {
                   if (isRadio) {
                     if (count > 0) {
-                      updateSubSelection(selection.id, option, 'decrement', parentCount);
+                      updateSubSelection(selection.id, option, 'decrement');
                     } else {
                       group.items.forEach(otherItem => {
                         const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                         if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                           const otherCount = getSubSelectionCount(selection, otherRes.id);
                           if (otherCount > 0) {
-                            updateSubSelection(selection.id, otherItem.option, 'decrement', parentCount);
+                            updateSubSelection(selection.id, otherItem.option, 'decrement');
                           }
                         }
                       });
-                      updateSubSelection(selection.id, option, 'increment', parentCount);
+                      updateSubSelection(selection.id, option, 'increment');
                     }
                   } else {
-                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment', parentCount);
+                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment');
                   }
                 } else {
-                  updateSubSelection(selection.id, option, 'increment', parentCount);
+                  updateSubSelection(selection.id, option, 'increment');
                 }
               }
             };
@@ -397,18 +397,18 @@ export default function OptionGroupComponent({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (count > 0) {
-                            updateSubSelection(selection.id, option, 'decrement', parentCount);
+                            updateSubSelection(selection.id, option, 'decrement');
                           } else if (!isSelectDisabled) {
                             group.items.forEach(otherItem => {
                               const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                               if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                                 const otherCount = getSubSelectionCount(selection, otherRes.id);
                                 if (otherCount > 0) {
-                                  updateSubSelection(selection.id, otherItem.option, 'decrement', parentCount);
+                                  updateSubSelection(selection.id, otherItem.option, 'decrement');
                                 }
                               }
                             });
-                            updateSubSelection(selection.id, option, 'increment', parentCount);
+                            updateSubSelection(selection.id, option, 'increment');
                           }
                         }}
                         onChange={() => {}}
@@ -421,7 +421,7 @@ export default function OptionGroupComponent({
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) => {
                           if (!isMandatory) {
-                            updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement', parentCount);
+                            updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
                           }
                         }}
                       />
@@ -432,7 +432,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'decrement', parentCount);
+                          updateSubSelection(selection.id, option, 'decrement');
                         }}
                         disabled={count === 0}
                       >
@@ -443,7 +443,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'increment', parentCount);
+                          updateSubSelection(selection.id, option, 'increment');
                         }}
                         disabled={isSelectDisabled}
                       >

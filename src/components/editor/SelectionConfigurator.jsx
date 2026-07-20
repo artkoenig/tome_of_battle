@@ -244,24 +244,24 @@ export default function SelectionConfigurator({
               if (isClickable) {
                 if (isIndependentSubUnit) {
                   if (count < maxLimit && !isSelectDisabled) {
-                    updateSubSelection(selection.id, option, 'add_instance', parentCount);
+                    updateSubSelection(selection.id, option, 'add_instance');
                   }
                 } else if (isBinary) {
                   const isDecrementing = count > 0;
                   if (isDecrementing) {
                     if (count > minLimit) {
-                      updateSubSelection(selection.id, option, 'decrement', parentCount);
+                      updateSubSelection(selection.id, option, 'decrement');
                     }
                   } else {
                     if (!isSelectDisabled) {
-                      updateSubSelection(selection.id, option, 'increment', parentCount);
+                      updateSubSelection(selection.id, option, 'increment');
                     }
                   }
                 } else {
                   // For standard options, clicking row increments. 
                   // If we wanted right-click to decrement we could, but click is increment.
                   if (count < maxLimit && !isSelectDisabled) {
-                    updateSubSelection(selection.id, option, 'increment', parentCount);
+                    updateSubSelection(selection.id, option, 'increment');
                   }
                 }
               }
@@ -307,7 +307,7 @@ export default function SelectionConfigurator({
                       style={{ padding: '4px 8px', height: 'auto', display: 'flex', alignItems: 'center' }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateSubSelection(selection.id, option, 'add_instance', parentCount);
+                        updateSubSelection(selection.id, option, 'add_instance');
                       }}
                       disabled={isSelectDisabled || count >= maxLimit}
                     >
@@ -322,7 +322,7 @@ export default function SelectionConfigurator({
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => {
                         if (!isMandatory && !(count > 0 && count <= minLimit)) {
-                          updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement', parentCount);
+                          updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
                         }
                       }}
                     />
@@ -332,7 +332,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'decrement', parentCount);
+                          updateSubSelection(selection.id, option, 'decrement');
                         }}
                         disabled={count <= minLimit}
                       >
@@ -343,7 +343,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'increment', parentCount);
+                          updateSubSelection(selection.id, option, 'increment');
                         }}
                         disabled={isSelectDisabled || count >= maxLimit}
                       >

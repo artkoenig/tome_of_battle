@@ -4,15 +4,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ListRuleChecklist from './ListRuleChecklist';
 
 // Seam B: the checkbox list itself. The per-rule enumeration is the solver's job
-// (covered by listRules.test.js); here it is mocked so this suite drives the UI
-// contract — a checkbox per rule, checked ⇔ present, toggling add/remove, inline
-// sub-options for a checked container, and the quantity-adder fallback for a
-// non-binary rule.
+// (covered by listRules.test.js); the states are computed in RosterEditor and
+// passed in via the `states` prop, so this suite drives the UI contract — a
+// checkbox per rule, checked ⇔ present, toggling add/remove, inline sub-options
+// for a checked container, and the quantity-adder fallback for a non-binary rule.
 
 let mockStates = [];
-vi.mock('../../solver/validator', () => ({
-  collectListRuleStates: () => mockStates,
-}));
 
 vi.mock('./SelectionConfigurator', () => ({
   default: ({ selection, isListRule }) => (
@@ -76,7 +73,7 @@ describe('ListRuleChecklist', () => {
 
   it('renders one checkbox per catalog list rule, checked exactly when present', () => {
     mockStates = [switchRule({ checked: false }), containerRule({ checked: true })];
-    render(<ListRuleChecklist {...baseProps} />);
+    render(<ListRuleChecklist {...baseProps} states={mockStates} />);
 
     const checkboxes = screen.getAllByRole('checkbox');
     expect(checkboxes.length).toBe(2);
@@ -87,7 +84,7 @@ describe('ListRuleChecklist', () => {
 
   it('checking an absent rule adds it; unchecking a present rule removes it', () => {
     mockStates = [switchRule({ checked: false }), containerRule({ checked: true, selection: { id: 'sel-2' } })];
-    render(<ListRuleChecklist {...baseProps} />);
+    render(<ListRuleChecklist {...baseProps} states={mockStates} />);
 
     fireEvent.click(screen.getByRole('checkbox', { name: 'Allow special characters?' }));
     expect(baseProps.addUnit).toHaveBeenCalledWith({ id: 'e1' }, 'cat-rules');
@@ -100,7 +97,7 @@ describe('ListRuleChecklist', () => {
     mockStates = [containerRule({ checked: true, selection: { id: 'sel-2' } }), containerRule({
       entry: { id: 'e3' }, name: 'Scenario rules', resolvedId: 'r3', checked: false, selection: null,
     })];
-    render(<ListRuleChecklist {...baseProps} />);
+    render(<ListRuleChecklist {...baseProps} states={mockStates} />);
 
     const configurators = screen.getAllByTestId('selection-configurator');
     expect(configurators.length).toBe(1);
@@ -111,14 +108,14 @@ describe('ListRuleChecklist', () => {
 
   it('does not render sub-options for a checked switch rule that has no sub-options', () => {
     mockStates = [switchRule({ checked: true, selection: { id: 'sel-1' }, isContainer: false })];
-    render(<ListRuleChecklist {...baseProps} />);
+    render(<ListRuleChecklist {...baseProps} states={mockStates} />);
 
     expect(screen.queryByTestId('selection-configurator')).toBeNull();
   });
 
   it('falls back to the quantity adder (no checkbox) for a non-binary rule', () => {
     mockStates = [switchRule({ name: 'Detachments', entry: { id: 'e9' }, resolvedId: 'r9', isBinary: false })];
-    render(<ListRuleChecklist {...baseProps} />);
+    render(<ListRuleChecklist {...baseProps} states={mockStates} />);
 
     expect(screen.queryByRole('checkbox')).toBeNull();
     const adder = screen.getByTestId('quantity-adder');
@@ -128,7 +125,7 @@ describe('ListRuleChecklist', () => {
 
   it('renders nothing when the category has no list rules', () => {
     mockStates = [];
-    const { container } = render(<ListRuleChecklist {...baseProps} />);
+    const { container } = render(<ListRuleChecklist {...baseProps} states={mockStates} />);
     expect(container.firstChild).toBeNull();
   });
 });

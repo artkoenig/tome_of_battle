@@ -42,7 +42,7 @@ vi.mock('./entryVisibility.js', () => ({
   },
 }));
 
-import { isListRuleEntryKind, isListRuleSelection, isListRuleCategory, collectListRuleStates } from './listRules.js';
+import { isListRuleEntryKind, isListRuleSelection, isListRuleCategory, collectListRuleStates, resolveListRuleGroup } from './listRules.js';
 
 describe('isListRuleEntryKind', () => {
   it('classifies only the upgrade type as a list rule', () => {
@@ -181,5 +181,55 @@ describe('isListRuleCategory', () => {
 
   it('is false for a category with no primary entries', () => {
     expect(isListRuleCategory({}, catalogue, 'cat-none', {})).toBe(false);
+  });
+});
+
+describe('resolveListRuleGroup', () => {
+  // A pure rules category and a mixed one (unit + rule) sharing the same catalog.
+  const ruleA = { id: 'rA', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Allow experimental rules?' };
+  const ruleB = { id: 'rB', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Campaign rules' };
+  const ruleC = { id: 'rC', __type: 'upgrade', __primaryCat: 'cat-mixed', __name: 'A Rule' };
+  const unitU = { id: 'uU', __type: 'unit', __primaryCat: 'cat-mixed', __name: 'Some Unit' };
+  const catalogue = { entryLinks: [ruleA, ruleB, ruleC], selectionEntries: [unitU] };
+
+  const roster = { catalogueId: 'cat' };
+  const makeForce = (selections) => ({ id: 'f1', catalogueId: 'cat', selections });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFindEntryInSystem.mockImplementation((_system, id) => ({ id }));
+    // Selections resolve to a typed entry; the fixture encodes the type in the id
+    // prefix ('u…' = unit, otherwise upgrade) so isListRuleSelection can classify.
+    mockResolveEntry.mockImplementation((_system, entry) =>
+      entry ? { id: entry.id, type: entry.id.startsWith('u') ? 'unit' : 'upgrade' } : null
+    );
+  });
+
+  it('classifies a still-empty category as a group when all primary entries are list rules, and yields their states', () => {
+    const { isListRuleGroup, states } = resolveListRuleGroup({}, catalogue, 'cat-rules', { roster, force: makeForce([]) });
+    expect(isListRuleGroup).toBe(true);
+    expect(states.map(s => s.resolvedId)).toEqual(['rA', 'rB']);
+    expect(states.every(s => s.checked === false)).toBe(true);
+  });
+
+  it('does not classify a mixed category (units + rules) as a group, and returns no states', () => {
+    const { isListRuleGroup, states } = resolveListRuleGroup({}, catalogue, 'cat-mixed', { roster, force: makeForce([]) });
+    expect(isListRuleGroup).toBe(false);
+    expect(states).toEqual([]);
+  });
+
+  it('judges a non-empty category by its selections — all list rules make it a group, and the present rule is checked', () => {
+    const force = makeForce([{ id: 'sel-1', category: 'cat-rules', entryLinkId: 'rA' }]);
+    const { isListRuleGroup, states } = resolveListRuleGroup({}, catalogue, 'cat-rules', { roster, force });
+    expect(isListRuleGroup).toBe(true);
+    expect(states.find(s => s.resolvedId === 'rA').checked).toBe(true);
+    expect(states.find(s => s.resolvedId === 'rB').checked).toBe(false);
+  });
+
+  it('is not a group when a present selection is a real unit', () => {
+    const force = makeForce([{ id: 'sel-u', category: 'cat-mixed', entryLinkId: 'uU' }]);
+    const { isListRuleGroup, states } = resolveListRuleGroup({}, catalogue, 'cat-mixed', { roster, force });
+    expect(isListRuleGroup).toBe(false);
+    expect(states).toEqual([]);
   });
 });

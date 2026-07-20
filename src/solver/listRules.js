@@ -39,16 +39,32 @@ export function isListRuleSelection(system, selection, catalogueId = null) {
 }
 
 /**
+ * Einmalige Aufzählung der *primären* Katalog-Einträge einer Kategorie: liefert
+ * die Gesamtzahl sowie die Teilmenge der Listenregel-Einträge. Sowohl die
+ * Gruppen-Klassifikation als auch die Ankreuzlisten-Zustände lassen sich so aus
+ * **einem** Katalog-Durchlauf ableiten, statt `collectPrimaryCategoryEntries`
+ * mehrfach zu durchlaufen.
+ */
+function enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force } = {}) {
+  let total = 0;
+  const ruleEntries = [];
+  for (const item of collectPrimaryCategoryEntries(system, catalogue, categoryId, { roster, force })) {
+    total += 1;
+    if (isListRuleEntryKind(item.resolved.type)) ruleEntries.push(item);
+  }
+  return { total, ruleEntries };
+}
+
+/**
  * True, wenn `categoryId` eine *Listenregel-Kategorie* ist: sie hat mindestens
  * einen primären Katalog-Eintrag und **alle** ihre primären Einträge sind
- * Listenregeln. Damit lässt sich die Gruppe schon vor der Materialisierung (leere
- * `selections` beim ersten Render) als Listenregel-Gruppe erkennen — so blitzt
- * kein „+"-Adder auf, ehe die Regeln gesät sind. Eine gemischte Kategorie (auch
- * echte Einheiten) gilt bewusst nicht als Listenregel-Kategorie.
+ * Listenregeln. Damit lässt sich eine (noch) leere Kategorie datengetrieben als
+ * Listenregel-Gruppe erkennen — so blitzt kein „+"-Adder auf. Eine gemischte
+ * Kategorie (auch echte Einheiten) gilt bewusst nicht als Listenregel-Kategorie.
  */
 export function isListRuleCategory(system, catalogue, categoryId, { roster, force } = {}) {
-  const entries = collectPrimaryCategoryEntries(system, catalogue, categoryId, { roster, force });
-  return entries.length > 0 && entries.every(({ resolved }) => isListRuleEntryKind(resolved.type));
+  const { total, ruleEntries } = enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force });
+  return total > 0 && ruleEntries.length === total;
 }
 
 /** Die id, unter der eine Selektion ihren Katalog-Eintrag referenziert. */
@@ -125,12 +141,19 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
  */
 export function collectListRuleStates(system, catalogue, categoryId, { roster, force } = {}) {
   const catalogueId = force?.catalogueId || roster?.catalogueId;
-  const selections = force?.selections || [];
+  const { ruleEntries } = enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force });
+  return buildListRuleStates(system, ruleEntries, force?.selections || [], catalogueId, categoryId);
+}
+
+/**
+ * Baut aus den bereits aufgezählten Listenregel-Einträgen die
+ * {@link ListRuleState}s. Dedupliziert per aufgelöster Entry-ID; `checked` leitet
+ * sich rein aus der Roster-Präsenz ab (kein gespeicherter Zustand).
+ */
+function buildListRuleStates(system, ruleEntries, selections, catalogueId, categoryId) {
   const seenResolvedIds = new Set();
   const states = [];
-
-  for (const { entry, resolved } of collectPrimaryCategoryEntries(system, catalogue, categoryId, { roster, force })) {
-    if (!isListRuleEntryKind(resolved.type)) continue;
+  for (const { entry, resolved } of ruleEntries) {
     if (seenResolvedIds.has(resolved.id)) continue;
     seenResolvedIds.add(resolved.id);
 
@@ -147,4 +170,36 @@ export function collectListRuleStates(system, catalogue, categoryId, { roster, f
     });
   }
   return states;
+}
+
+/**
+ * Klassifiziert eine Kategorie-Gruppe **und** liefert – in einem einzigen
+ * Katalog-Durchlauf – die Ankreuzlisten-Zustände. Der Editor fragt genau diese
+ * eine Funktion, statt im JSX über Solver-Interna zu verzweigen, und reicht die
+ * `states` an die `ListRuleChecklist` weiter (so wird die Kategorie nur einmal
+ * traversiert, kein doppeltes `collectPrimaryCategoryEntries`).
+ *
+ * `isListRuleGroup`: Sind bereits Selektionen in der Kategorie präsent, wird nach
+ * ihnen geurteilt (sind alle Listenregeln?); ist die Kategorie (noch) leer, nach
+ * ihren Katalog-Einträgen (sind alle primären Einträge Listenregeln?). Eine
+ * gemischte Kategorie gilt bewusst nicht als Listenregel-Gruppe. `states` wird nur
+ * für eine echte Listenregel-Gruppe befüllt, sonst leer.
+ *
+ * @returns {{ isListRuleGroup: boolean, states: ListRuleState[] }}
+ */
+export function resolveListRuleGroup(system, catalogue, categoryId, { roster, force } = {}) {
+  const catalogueId = force?.catalogueId || roster?.catalogueId;
+  const allSelections = force?.selections || [];
+  const categorySelections = allSelections.filter((s) => s.category === categoryId);
+  const { total, ruleEntries } = enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force });
+
+  const isListRuleGroup = categorySelections.length > 0
+    ? categorySelections.every((s) => isListRuleSelection(system, s, catalogueId))
+    : total > 0 && ruleEntries.length === total;
+
+  const states = isListRuleGroup
+    ? buildListRuleStates(system, ruleEntries, allSelections, catalogueId, categoryId)
+    : [];
+
+  return { isListRuleGroup, states };
 }

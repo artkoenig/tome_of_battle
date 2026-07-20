@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, isListRuleSelection, isListRuleCategory } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, resolveListRuleGroup } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import ListRuleChecklist from './editor/ListRuleChecklist';
@@ -204,14 +204,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
                   // A list-rule group (data-driven: catalog type = upgrade, ADR 0003)
                   // is a list-wide settings group, not a unit slot: its cards drop the
-                  // per-card unit actions and the group offers no "add unit" button.
-                  // When it already holds selections we judge by them; while it is still
-                  // empty (before materialization settles on first paint) we judge by the
-                  // category's catalog entries, so no "+" adder ever flashes.
-                  const catalogueId = force.catalogueId || roster.catalogueId;
-                  const isListRuleGroup = selections.length > 0
-                    ? selections.every(s => isListRuleSelection(system, s, catalogueId))
-                    : isListRuleCategory(system, activeCatalogue, link.targetId, { roster, force });
+                  // per-card unit actions and the group offers no "add unit" button. One
+                  // solver call classifies the group and, in the same catalog traversal,
+                  // yields the per-rule checklist states we hand down to ListRuleChecklist.
+                  const { isListRuleGroup, states: listRuleStates } = resolveListRuleGroup(
+                    system, activeCatalogue, link.targetId, { roster, force }
+                  );
                   const ruleGroupKey = `${force.id}:${link.targetId}`;
                   const isRuleGroupCollapsed = isListRuleGroup && !expandedRuleGroups.has(ruleGroupKey);
 
@@ -299,7 +297,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             activeCatalogue={activeCatalogue}
                             categoryId={link.targetId}
                             roster={roster}
-                            force={force}
+                            states={listRuleStates}
                             addUnit={addUnit}
                             removeUnit={removeUnit}
                             updateSubSelection={updateSubSelection}

@@ -215,7 +215,7 @@ describe('OptionGroup Component', () => {
 
     // Click Axe radio
     fireEvent.click(radios[0]); // Axe of Doom
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment');
 
     // Mock that Sword is currently selected (count = 1)
     defaultProps.getSubSelectionCount.mockImplementation((sel, id) => {
@@ -228,8 +228,8 @@ describe('OptionGroup Component', () => {
     const axeRadio = screen.getAllByRole('radio')[0];
     fireEvent.click(axeRadio);
 
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement', 1);
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement');
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment');
     unmount();
   });
 
@@ -265,7 +265,7 @@ describe('OptionGroup Component', () => {
 
     // Click checkbox
     fireEvent.click(checkboxes[0]);
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment');
   });
 
   it('6. Quantity Option Selection', () => {
@@ -296,13 +296,13 @@ describe('OptionGroup Component', () => {
 
     fireEvent.click(plusBtn);
     expect(defaultProps.updateSubSelection).toHaveBeenCalledTimes(1);
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'increment');
 
     defaultProps.updateSubSelection.mockClear();
 
     fireEvent.click(minusBtn);
     expect(defaultProps.updateSubSelection).toHaveBeenCalledTimes(1);
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement');
   });
 
   it('7. Exceeding Point Limit Violations', () => {
@@ -335,7 +335,7 @@ describe('OptionGroup Component', () => {
 
     // Click disabled row should not call updateSubSelection
     fireEvent.click(axeRow);
-    expect(defaultProps.updateSubSelection).not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment');
   });
 
   it('8. Roster-Wide Uniqueness (Bereits vergeben)', () => {
@@ -372,7 +372,7 @@ describe('OptionGroup Component', () => {
     expect(axeRow.className).toContain('disabled');
 
     fireEvent.click(axeRow);
-    expect(defaultProps.updateSubSelection).not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment');
   });
 
   it('9. Option name shows pointer cursor and is clickable', () => {
@@ -442,7 +442,7 @@ describe('OptionGroup Component', () => {
     // Click checkbox row (Axe) when unchecked -> increment
     const axeRow = screen.getByText('Axe of Doom').closest('.sub-selection-row');
     fireEvent.click(axeRow);
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'increment');
 
     // Mock count = 1 (checked)
     unmount(); // Unmount first to avoid JSDOM duplicate elements
@@ -456,7 +456,7 @@ describe('OptionGroup Component', () => {
     // Axe is now selected, so the group auto-expands.
     const axeRow2 = screen.getByText('Axe of Doom').closest('.sub-selection-row');
     fireEvent.click(axeRow2);
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'decrement', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-axe' }), 'decrement');
 
     unmount2();
   });
@@ -475,7 +475,7 @@ describe('OptionGroup Component', () => {
     // Click already checked Sword radio
     fireEvent.click(radios[1]); // Sword of Might radio is radios[1]
     
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-sword' }), 'decrement');
   });
 
   // A group modelling Battlescribe's "Arcane Items": nominally max=1, but an
@@ -521,7 +521,7 @@ describe('OptionGroup Component', () => {
     expect(plusBtn).not.toBeNull();
 
     fireEvent.click(plusBtn);
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-scroll' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-scroll' }), 'increment');
   });
 
   it('15. Selecting a radio sibling does not remove a repeatable item', () => {
@@ -533,8 +533,8 @@ describe('OptionGroup Component', () => {
     // Dispel Scrolls are already taken, so the group auto-expands.
     fireEvent.click(screen.getByRole('radio')); // Grey Wand
 
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-wand' }), 'increment', 1);
-    expect(defaultProps.updateSubSelection).not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-scroll' }), 'decrement', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-wand' }), 'increment');
+    expect(defaultProps.updateSubSelection).not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-scroll' }), 'decrement');
   });
 
   it('16. Passes consolidated context to getModifiedConstraintValue', () => {
@@ -596,7 +596,7 @@ describe('OptionGroup Component', () => {
     expect(screen.queryByTestId('icon-plus')).toBeNull();
 
     fireEvent.click(screen.getByRole('checkbox'));
-    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-barding' }), 'increment', 1);
+    expect(defaultProps.updateSubSelection).toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-barding' }), 'increment');
   });
 
   it('20. Upgrade with a positive min but no max stays a quantity stepper', () => {
