@@ -347,14 +347,14 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
   return (
     <div className={`container ${showAsEmptyState ? 'empty-state-wrapper' : ''}`}>
       {error && (
-        <div className="validation-error-item" style={{ borderColor: 'var(--color-danger)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="validation-error-item importer-status-banner importer-status-banner--error">
           <ShieldAlert className="text-danger" size={20} />
           <span className="text-danger">{error}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="validation-error-item" style={{ borderColor: 'var(--color-success)', background: 'rgba(27,115,64,0.05)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="validation-error-item importer-status-banner importer-status-banner--success">
           <CheckCircle2 className="text-success" size={20} />
           <span className="text-success">{successMsg}</span>
         </div>
@@ -390,8 +390,8 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
 
       <input 
         type="file" 
-        id="file-upload" 
-        style={{ display: 'none' }} 
+        id="file-upload"
+        className="is-hidden"
         accept=".zip"
         onChange={handleFileInput}
       />
@@ -400,27 +400,26 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
         <div className="margin-top-md">
           <h2>Importierte Spielsysteme</h2>
           {systems.length === 0 ? (
-            <p className="text-dim" style={{ textAlign: 'center', padding: '20px 0' }}>Keine Spielsysteme in der Datenbank vorhanden.</p>
+            <p className="text-dim importer-empty-hint">Keine Spielsysteme in der Datenbank vorhanden.</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="imported-system-list">
               {systems.map((sys) => (
-                <div 
-                  key={sys.id} 
-                  className="catalog-item"
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px' }}
+                <div
+                  key={sys.id}
+                  className="catalog-item imported-system-item"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0, paddingRight: '16px' }}>
-                    <FileText className="text-gold" size={24} style={{ flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                  <div className="imported-system-info">
+                    <FileText className="text-gold no-shrink" size={24} />
+                    <div className="flex-grow-truncating">
+                      <h4 className="imported-system-name">
                         {sys.name}
                       </h4>
-                      <span className="text-dim" style={{ fontSize: '0.85rem' }}>
+                      <span className="text-dim imported-system-catalogue-count">
                         {sys.catalogues?.length || 0} Fraktionskataloge geladen
                       </span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                  <div className="imported-system-actions">
                     <button
                       className="btn-gold square-btn"
                       onClick={() => handleExport(sys)}

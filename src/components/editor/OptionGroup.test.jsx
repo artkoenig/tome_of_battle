@@ -323,9 +323,9 @@ describe('OptionGroup Component', () => {
 
     render(<OptionGroupComponent {...defaultProps} group={ptsLimitedGroup} />);
 
-    // Header should show error/danger (background style has danger, hasGroupError = true)
+    // Header should show error/danger (error modifier class, hasGroupError = true)
     const header = screen.getByText('Magic Weapons').closest('div').parentElement;
-    expect(header.style.backgroundColor).toContain('rgba(239, 68, 68, 0.05)');
+    expect(header.className).toContain('option-group-header--error');
 
     // Sword is already selected, so the group auto-expands — no header click needed.
 

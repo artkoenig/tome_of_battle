@@ -192,28 +192,18 @@ export default function OptionGroupComponent({
   const limitText = limitParts.length > 0 ? `(${limitParts.join(' | ')})` : '';
 
   return (
-    <div style={{ marginBottom: '12px' }}>
-      <div 
+    <div className="option-group">
+      <div
         onClick={() => setIsExpanded(!isExpanded)}
-        style={{
-          backgroundColor: hasGroupError ? 'rgba(239, 68, 68, 0.05)' : 'rgba(226, 183, 66, 0.04)',
-          border: hasGroupError ? '1px solid var(--color-danger)' : '1px solid var(--border-dark)',
-          borderRadius: '4px',
-          padding: '8px 12px',
-          cursor: 'pointer',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          userSelect: 'none'
-        }}
+        className={`option-group-header${hasGroupError ? ' option-group-header--error' : ''}`}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
+        <div className="option-group-titles">
           <span className={hasGroupError ? "text-ui-title text-danger" : "text-ui-title text-gold"}>
             {group.name} 
-            <span className="text-micro" style={{ marginLeft: '6px', fontWeight: 400, color: 'var(--text-dim)' }}>{limitText}</span>
+            <span className="text-micro option-group-limit">{limitText}</span>
           </span>
           {selectedItemsSummary && (
-            <span className="text-micro" style={{ color: 'var(--text-parchment)', opacity: 0.75, fontWeight: 400 }}>
+            <span className="text-micro option-group-summary">
               Auswahl: {selectedItemsSummary}
             </span>
           )}
@@ -226,7 +216,7 @@ export default function OptionGroupComponent({
       </div>
 
       {isExpanded && (
-        <div style={{ borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px', paddingLeft: '4px' }}>
+        <div className="option-group-items">
           {group.items
             .slice()
             .sort((a, b) => {
@@ -322,7 +312,9 @@ export default function OptionGroupComponent({
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
             const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere;
 
-            const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
+            // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
+            const isUnavailable = count === 0 && isSelectDisabled;
+            const isClickable = !isMandatory && !isUnavailable;
             const handleRowClick = (e) => {
               if (e.target.closest('button') || e.target.closest('input')) {
                 return;
@@ -360,17 +352,11 @@ export default function OptionGroupComponent({
             return (
               <div 
                 key={res.id} 
-                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}`}
-                style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}
+                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
                 onClick={handleRowClick}
               >
-                <div style={{ paddingLeft: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span 
-                    style={{ 
-                      fontWeight: 600, 
-                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit'
-                    }}
-                  >
+                <div className="sub-selection-label sub-selection-label--indented">
+                  <span className={`sub-selection-option-name${isUnavailable ? ' sub-selection-option-name--unavailable' : ''}`}>
                     {optionName}
                     <RuleChipIcon
                       name={res.name}
@@ -385,11 +371,11 @@ export default function OptionGroupComponent({
                       onInfoMove={onHoverMove}
                       onInfoLeave={onHoverLeave}
                     />
-                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">(Bereits vergeben)</span>}
                   </span>
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} Pkt.</span>}
                   {isBinary ? (
                     isRadio ? (
                       <input 

@@ -570,7 +570,7 @@ export default function App() {
       )}
       {/* Global Toast Notification */}
       {toast && (
-        <div className={`gothic-toast toast-${typeof toast === 'object' ? toast.type : 'success'}`} style={{ pointerEvents: 'none' }}>
+        <div className={`gothic-toast toast-${typeof toast === 'object' ? toast.type : 'success'}`}>
           <span>{typeof toast === 'object' ? toast.message : toast}</span>
         </div>
       )}

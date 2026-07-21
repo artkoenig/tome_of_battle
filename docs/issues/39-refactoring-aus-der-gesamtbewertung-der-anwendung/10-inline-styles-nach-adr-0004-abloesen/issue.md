@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -43,3 +43,4 @@ UI-Internationalisierung — erst nach dessen Merge bearbeiten.
 Umfangreich, aber nicht schwierig: die Aufgabe ist dateiweise planbar und kann
 in mehreren Durchgängen erledigt werden.
 - Sperre aufgehoben (2026-07-21): Der urspruengliche Kommentar verlangte, den Merge des i18n-Pull-Requests (#85) abzuwarten, da beide dieselben Dateien beruehren. Entscheidung des Maintainers: die UI-Internationalisierung wird nach Abschluss des Refactorings neu aufgerollt, statt den bestehenden PR vorher zu mergen. Damit entfaellt die Wartebedingung und dieses Kind-Issue kann bearbeitet werden.
+- Alle 181 Inline-Styles in 17 Dateien nach ADR-0004 abgeloest: eine dokumentierte Utility-Schicht (flex-row/flex-col/gap-N/no-shrink/push-end u.a.) plus benannte Komponentenklassen in src/index.css; boolesche Zustaende (Fehler, vernichtet, gesperrt, Unter-Einheit) laufen jetzt ueber Modifier-Klassen. Uebrig bleibt einzig die laufend berechnete Tooltip-Position in GothicTooltip.jsx - die von der ADR ausdruecklich erlaubte Ausnahme. Die doppelte Profilzellen-Einfaerbung aus Editor und Spielmodus liegt jetzt in src/components/profileCellClasses.js mit eigenen Unit-Tests.

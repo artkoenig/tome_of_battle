@@ -60,26 +60,15 @@ export default function RosterDashboard({
         ref={fileInputRef}
         onChange={handleFileChange}
         accept=".ros,.rosz"
-        style={{ display: 'none' }}
+        className="is-hidden"
       />
       {/* PWA & Network Offline/Install Status Banners */}
       {isOffline && (
-        <div 
-          className="gothic-panel offline-banner"
-          style={{
-            marginBottom: '20px',
-            borderColor: 'var(--color-danger)',
-            background: 'rgba(166, 28, 28, 0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px 16px'
-          }}
-        >
-          <WifiOff className="text-danger" size={24} style={{ flexShrink: 0 }} />
+        <div className="gothic-panel offline-banner">
+          <WifiOff className="text-danger no-shrink" size={24} />
           <div>
-            <h4 style={{ margin: 0, color: 'var(--color-danger)' }} className="text-ui-title">Offline-Modus aktiv</h4>
-            <p style={{ margin: '2px 0 0' }} className="text-label text-dim">
+            <h4 className="text-ui-title offline-banner-title">Offline-Modus aktiv</h4>
+            <p className="text-label text-dim offline-banner-text">
               Du hast keine Internetverbindung. Du kannst deine Armeelisten und Kataloge dennoch uneingeschränkt verwalten und bearbeiten.
             </p>
           </div>
@@ -87,12 +76,12 @@ export default function RosterDashboard({
       )}
 
       {rosters.length > 0 && (
-        <div className="gothic-panel dashboard-header hide-on-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="gothic-panel dashboard-header hide-on-mobile">
           <div>
             <h2>Heerlager</h2>
-            <p className="text-dim" style={{ margin: 0 }}>Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>
+            <p className="text-dim dashboard-header-subtitle">Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="dashboard-header-actions">
             <button className="btn-secondary desktop-btn" onClick={handleImportClick}>
               <Upload size={18} /> Importieren
             </button>
@@ -144,7 +133,7 @@ export default function RosterDashboard({
         });
 
         return (
-          <div className="system-groups-container" style={{ marginTop: '24px' }}>
+          <div className="system-groups-container">
             {sortedSystems.map(systemName => {
               const factionsObj = rostersBySystemAndFaction[systemName];
               const sortedFactions = Object.keys(factionsObj).sort((a, b) => {
@@ -154,20 +143,20 @@ export default function RosterDashboard({
               });
 
               return (
-                <div key={systemName} className="system-group" style={{ marginBottom: '40px' }}>
+                <div key={systemName} className="system-group">
                   <h2 className="system-group-title text-heading">
                     {systemName}
                   </h2>
                   
-                  <div className="system-factions" style={{ paddingLeft: '16px' }}>
+                  <div className="system-factions">
                     {sortedFactions.map(factionName => {
                       const factionRosters = factionsObj[factionName];
                       return (
-                        <div key={factionName} className="faction-group" style={{ marginBottom: '28px' }}>
+                        <div key={factionName} className="faction-group">
                           <h3 className="faction-group-title text-subheading">
                             {factionName}
                           </h3>
-                          <div className="dashboard-grid" style={{ marginTop: '12px' }}>
+                          <div className="dashboard-grid">
                             {factionRosters.map(({ roster, sys, cat }) => {
                               const costTypeObj = sys?.costTypes?.find(ct => ct.id === roster.costLimitType);
                               const rawLabel = costTypeObj?.name || 'Pkt.';
@@ -177,8 +166,8 @@ export default function RosterDashboard({
                               const currentPoints = calcCosts[roster.costLimitType] || 0;
 
                               return (
-                                <div key={roster.id} className="roster-card" style={{ minHeight: 'auto', padding: '12px 16px' }}>
-                                  <div className="roster-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                                <div key={roster.id} className="roster-card">
+                                  <div className="roster-card-header">
                                     <div className="roster-title-block">
                                       {editingId === roster.id ? (
                                         <input
@@ -204,24 +193,18 @@ export default function RosterDashboard({
                                         const forceEntryId = roster.forces?.[0]?.forceEntryId;
                                         const forceDef = sys ? findForceEntryById(sys, forceEntryId) : null;
                                         return forceDef ? (
-                                          <span className="text-micro text-dim" style={{ display: 'block', marginTop: '2px' }}>
+                                          <span className="text-micro text-dim roster-force-label">
                                             {forceDef.name}
                                           </span>
                                         ) : null;
                                       })()}
                                     </div>
-                                    <div className="roster-points" style={{
-                                      whiteSpace: 'nowrap',
-                                      textAlign: 'right',
-                                      display: 'flex',
-                                      flexDirection: 'column',
-                                      alignItems: 'flex-end'
-                                    }}>
+                                    <div className="roster-points">
                                       <span className="roster-title"><span>{currentPoints}</span> / <span>{roster.costLimit}</span></span>
-                                      <span className="text-micro text-dim" style={{ display: 'block', marginTop: '2px' }}>{costTypeLabel}</span>
+                                      <span className="text-micro text-dim roster-cost-type-label">{costTypeLabel}</span>
                                     </div>
                                   </div>
-                                  <div className="roster-actions" style={{ marginTop: '8px' }}>
+                                  <div className="roster-actions">
                                     <button className="btn-sm" onClick={() => onOpenRoster(roster, 'builder')}>
                                       <Edit3 size={14} /> Ausrüsten
                                     </button>
@@ -232,15 +215,13 @@ export default function RosterDashboard({
                                       <Download size={14} /> Exportieren
                                     </button>
                                     <button 
-                                      className="btn-danger square-btn hide-on-mobile" 
-                                      style={{ marginLeft: 'auto' }}
+                                      className="btn-danger square-btn hide-on-mobile push-end"
                                       onClick={(e) => onDeleteRoster(roster.id, e)}
                                     >
                                       <Trash2 size={14} />
                                     </button>
                                     <button 
-                                      className="btn-sm square-btn mobile-only" 
-                                      style={{ marginLeft: 'auto' }}
+                                      className="btn-sm square-btn mobile-only push-end"
                                       onClick={() => setRosterActionsRosterId(roster.id)}
                                       title="Weitere Aktionen"
                                     >
@@ -285,7 +266,7 @@ export default function RosterDashboard({
                   onNewRoster();
                 }}
               >
-                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className="popover-item-name flex-row gap-12">
                   <Plus size={18} className="text-gold" />
                   <span>Neue Armeeliste ausheben</span>
                 </span>
@@ -297,7 +278,7 @@ export default function RosterDashboard({
                   handleImportClick();
                 }}
               >
-                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className="popover-item-name flex-row gap-12">
                   <Upload size={18} className="text-gold" />
                   <span>Armeeliste importieren</span>
                 </span>
@@ -319,7 +300,7 @@ export default function RosterDashboard({
                   setRosterActionsRosterId(null);
                 }}
               >
-                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className="popover-item-name flex-row gap-12">
                   <Download size={18} />
                   <span>Exportieren</span>
                 </span>
@@ -332,7 +313,7 @@ export default function RosterDashboard({
                   onDeleteRoster(id, { stopPropagation() {} });
                 }}
               >
-                <span className="popover-item-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className="popover-item-name flex-row gap-12">
                   <Trash2 size={18} className="text-danger" />
                   <span>Löschen</span>
                 </span>
