@@ -684,6 +684,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 | `scope` | Bezugsrahmen (`roster`, `force`, `parent`, …). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
 | `value` | Vergleichswert. |
+| `shared` | Ob über alle Instanzen des Eintrags im Roster gezählt wird (`true`) oder nur über die eine Instanz, an der die Condition hängt (`false`). Vorgabewert laut XSD ist `true`. |
 | `includeChildSelections` | Wenn `true`, werden auch **unterhalb** des Scope-Ziels verschachtelte Auswahlen mitgezählt, nicht nur dessen direkte Kinder (BattleScribe `QueryBase`-Attribut). |
 
 > **Domänenregel (Kategorie-Zähler in Conditions):** Testet eine Condition ein Kategorie-Limit

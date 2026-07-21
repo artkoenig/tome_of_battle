@@ -1,7 +1,7 @@
 # 0011: Roster als Referenz-Modell, abgeleitete Kosten & Serialisierungs-Adapter
 
 - **Status:** Accepted
-- **Datum:** 2026-07-13
+- **Datum:** 2026-07-21
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** 0002 (Data Flow & IndexedDB), 0003 (Battlescribe Domain Rules)
 
