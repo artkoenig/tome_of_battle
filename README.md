@@ -15,7 +15,7 @@ The application runs entirely in the browser — there is no backend. Imported g
 - **Offline-First PWA** — Installable, works completely offline, and updates reliably in the background using a service worker.
 - **Local & Secure** — All data remains in your browser's IndexedDB. No data is uploaded to any server.
 
-The repository includes a real data package for **Warhammer Fantasy Battle 6th Edition** (`public/catalogs/whfb6/`), which serves as a sample import and for end-to-end testing.
+Catalog data for **Warhammer Fantasy Battle 6th Edition** is fetched at runtime from an external catalog repository, so it is not bundled with the app. A small frozen subset lives in `src/solver/__fixtures__/whfb6/` and is used solely by the automated tests.
 
 ---
 
@@ -45,7 +45,7 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed in your terminal and import a game system to begin. You can use the bundled WHFB 6e catalogs (simply zip the files in `public/catalogs/whfb6/`) or import any other BattleScribe data package.
+Open the local URL printed in your terminal and import a game system to begin. The Librarian view lists the game systems available from the external catalog repository; alternatively, import any BattleScribe data package of your own as a ZIP archive.
 
 ---
 
@@ -68,7 +68,15 @@ npx vitest run <path>          # Runs a single test file
 npx vitest run -t "<name>"     # Runs tests matching a specific name
 ```
 
-The Puppeteer end-to-end test (`src/solver/ui.test.js`) is run separately via `npm test`. It packs the WHFB 6e catalog files into a ZIP archive, starts a Vite server, and simulates the entire flow from import to list building and play mode in a headless browser.
+The Puppeteer end-to-end test (`src/solver/ui.test.js`) is run separately via `npm test`. It simulates the entire flow from import to list building and play mode in a headless browser, and runs completely offline against the frozen catalog fixture.
+
+Screenshots of every main view, in both desktop and mobile size, are produced by:
+
+```bash
+node scripts/generate_screenshots.js   # writes to .screenshots/ (git-ignored)
+```
+
+Both share their setup — fixture, production build, static serving, network blocking, state reset — via `scripts/lib/e2e-harness.js`.
 
 ---
 
@@ -122,4 +130,4 @@ React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer ·
 
 Licensed under the **GNU General Public License v3.0**. See [`LICENSE`](LICENSE).
 
-The BattleScribe catalog data included under `public/catalogs/` belongs to its respective community authors and is used here for testing and demonstration purposes.
+The BattleScribe catalog data fetched at runtime, and the frozen test fixture under `src/solver/__fixtures__/`, belong to their respective community authors and are used here for testing and demonstration purposes.

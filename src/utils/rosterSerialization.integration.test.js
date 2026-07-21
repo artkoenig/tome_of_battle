@@ -14,7 +14,7 @@ import {
 } from '../solver/validator.js';
 import { getUnitOptions } from '../solver/optionsCollector.js';
 
-// End-to-end round-trips against the REAL WHFB6 catalogues (public/catalogs/whfb6)
+// End-to-end round-trips against the REAL WHFB6 catalogues (src/solver/__fixtures__/whfb6)
 // and real roster fixtures, each exactly 2000 points. These exercise the derived-cost
 // model, option-id reconciliation and the war-machine split across several armies
 // (Orcs & Goblins, Ogre Kingdoms, Vampire Counts), closing the gap where only mock
