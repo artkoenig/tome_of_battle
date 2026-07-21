@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -30,3 +30,4 @@ Ansicht, ersatzweise das erste des Rosters.
 - [ ] Das Verhalten bei genau einem Kontingent bleibt unverändert
 
 ## Comments
+- addUnit adressiert jetzt genau ein Kontingent (Ziel-Id, ersatzweise das erste); ForceEditorSection bindet das Kontingent der Sektion an das Ausheben. Regressionstests fuer den Mehr-Kontingent-Fall in useRoster.test.js und ForceEditorSection.test.jsx.

@@ -100,6 +100,100 @@ describe('useRoster Hook', () => {
     expect(result.current.roster.forces[0].selections[0].name).toBe('Space Marine');
   });
 
+  // Ein `.ros`-Import erzeugt beliebig viele Kontingente. Ausheben darf die
+  // Einheit dann in genau eines davon legen — sonst zählt sie mehrfach und ihre
+  // Selektions-Id existiert doppelt.
+  describe('addUnit in a roster with several forces', () => {
+    const FIRST_FORCE_ID = 'force-1';
+    const SECOND_FORCE_ID = 'force-2';
+    const multiForceRoster = {
+      ...initialRoster,
+      forces: [
+        { id: FIRST_FORCE_ID, name: 'Erstes Kontingent', selections: [] },
+        { id: SECOND_FORCE_ID, name: 'Zweites Kontingent', selections: [] }
+      ]
+    };
+    const testEntry = { id: 'entry-1', name: 'Space Marine' };
+
+    const selectionsPerForce = (result) =>
+      result.current.roster.forces.map(force => force.selections.length);
+
+    it('adds the unit to the addressed force only', () => {
+      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
+      });
+
+      expect(selectionsPerForce(result)).toEqual([0, 1]);
+      expect(result.current.roster.forces[1].selections[0].name).toBe('Space Marine');
+    });
+
+    it('keeps selection ids unique across the whole roster', () => {
+      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit(testEntry, 'cat-1', FIRST_FORCE_ID);
+      });
+
+      const allSelectionIds = result.current.roster.forces.flatMap(
+        force => force.selections.map(selection => selection.id)
+      );
+      expect(new Set(allSelectionIds).size).toBe(allSelectionIds.length);
+    });
+
+    it('removes the unit from the single force that holds it', () => {
+      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
+      });
+      const addedUnitId = result.current.roster.forces[1].selections[0].id;
+
+      act(() => {
+        result.current.removeUnit(addedUnitId);
+      });
+
+      expect(selectionsPerForce(result)).toEqual([0, 0]);
+    });
+
+    it('edits the addressed unit without touching the other force', () => {
+      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
+      });
+      const addedUnitId = result.current.roster.forces[1].selections[0].id;
+
+      act(() => {
+        result.current.subSelectionOperations.increaseCount(addedUnitId, { id: 'opt-1', name: 'Bolter' });
+      });
+
+      expect(result.current.roster.forces[1].selections[0].selections).toHaveLength(1);
+      expect(result.current.roster.forces[0].selections).toHaveLength(0);
+    });
+
+    it('falls back to the first force when no force is addressed', () => {
+      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit(testEntry, 'cat-1');
+      });
+
+      expect(selectionsPerForce(result)).toEqual([1, 0]);
+    });
+
+    it('falls back to the first force when the addressed force is unknown', () => {
+      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit(testEntry, 'cat-1', 'force-does-not-exist');
+      });
+
+      expect(selectionsPerForce(result)).toEqual([1, 0]);
+    });
+  });
+
   it('removeUnit removes a selection', () => {
     const rosterWithUnit = {
       ...initialRoster,

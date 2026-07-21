@@ -223,7 +223,8 @@ describe('RosterEditor Component', () => {
     const adderButton = screen.getByTestId('adder-cat-heroes');
     fireEvent.click(adderButton);
     expect(mockAddUnit).toHaveBeenCalledTimes(1);
-    expect(mockAddUnit).toHaveBeenCalledWith('mock-added-unit');
+    // Die Kontingent-Sektion bindet ihr eigenes Kontingent an das Ausheben.
+    expect(mockAddUnit).toHaveBeenCalledWith('mock-added-unit', undefined, 'force-1');
   });
 
   describe('Adversarial & Stress Tests', () => {

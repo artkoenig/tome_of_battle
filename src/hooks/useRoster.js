@@ -23,6 +23,22 @@ const COUNT_DECREASE = -1;
 const NO_COSTS = Object.freeze({});
 const NO_VALIDATION_ERRORS = Object.freeze([]);
 
+/** Ohne benanntes Ziel-Kontingent hebt die App in das erste des Rosters aus. */
+const FALLBACK_FORCE_INDEX = 0;
+
+/**
+ * Das eine Kontingent, in das eine ausgehobene Einheit gehört: das der aktiven
+ * Ansicht, ersatzweise das erste des Rosters. Ein `.ros`-Import bringt beliebig
+ * viele Kontingente mit, deshalb muss das Ziel eindeutig bestimmt sein.
+ * @param {import('../types.js').Force[]} forces
+ * @param {string|null} targetForceId
+ * @returns {import('../types.js').Force|null}
+ */
+function findTargetForce(forces, targetForceId) {
+  if (!forces?.length) return null;
+  return forces.find(force => force.id === targetForceId) ?? forces[FALLBACK_FORCE_INDEX];
+}
+
 /**
  * Hook to manage a roster state, cost calculations, validations and updates.
  * @param {import('../types.js').Roster} initialRoster
@@ -134,17 +150,26 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   const createSelectionFromDef = (entry, categoryId = null) =>
     buildSelectionFromDef({ system, resolveEntry, entry, categoryId });
 
-  const addUnit = (entry, categoryId) => {
+  /**
+   * Hebt `entry` in genau ein Kontingent aus.
+   * @param {Object} entry Katalogeintrag, aus dem die Selektion gebaut wird
+   * @param {string} categoryId Kategorie, unter der die Einheit geführt wird
+   * @param {string} [targetForceId] Kontingent der aktiven Ansicht; ohne Angabe
+   *   das erste Kontingent des Rosters
+   */
+  const addUnit = (entry, categoryId, targetForceId = null) => {
     const newUnit = createSelectionFromDef(entry, categoryId);
     if (!newUnit) return;
 
     setRoster(prev => {
-      const updatedForces = prev.forces.map(force => {
-        return {
-          ...force,
-          selections: [...(force.selections || []), newUnit]
-        };
-      });
+      const targetForce = findTargetForce(prev.forces, targetForceId);
+      if (!targetForce) return prev;
+
+      const updatedForces = prev.forces.map(force => (
+        force === targetForce
+          ? { ...force, selections: [...childSelectionsOf(force), newUnit] }
+          : force
+      ));
       return {
         ...prev,
         forces: updatedForces
