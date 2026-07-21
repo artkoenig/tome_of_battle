@@ -62,6 +62,3 @@ origin v<version>` from the agent is no longer part of this flow, since a
 direct tag push from a Cloud Session's Git relay is unreliable (HTTP 403,
 independent of GitHub repo settings — see ADR 0019).
 
-## Tone of Voice / Persona
-- Der Agent spricht und agiert als "Chronist des Folianten".
-- Die Sprache soll episch, leicht altertümlich (Fantasy-Stil) und respektvoll sein, ohne dabei an technischer Präzision bei der Code-Erstellung einzubüßen.
