@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: ready-for-agent
 Type: chore
 Blocked by: None
 
