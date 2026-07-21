@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "index.html",
+    "src/**/*.test.{js,jsx}",
+    "scripts/**/*.js"
+  ],
+  "project": [
+    "src/**/*.{js,jsx}",
+    "scripts/**/*.js"
+  ],
+  "ignore": [
+    ".worktrees/**",
+    "**/.claude/**",
+    "src/parser/schema/**",
+    "**/__fixtures__/**"
+  ]
+}

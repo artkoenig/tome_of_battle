@@ -34,6 +34,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Knip laeuft dateiuebergreifend (ungenutzte Dateien/Exports/Typen/Deps),
+      # was oxlint pro Datei prinzipiell nicht sieht. Vorerst warn-only
+      # (continue-on-error): Befunde sind im Log sichtbar, blockieren die CI aber
+      # nicht, solange die bestehenden Befunde noch nicht aufgeraeumt sind.
+      - name: Knip (statische Analyse, warn-only)
+        run: npm run knip
+        continue-on-error: true
+
       - name: Unit-/Component-Tests
         run: npx vitest run
 
