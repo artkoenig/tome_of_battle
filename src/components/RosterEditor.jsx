@@ -1,18 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { getExtraResourceTotals } from '../solver/validator';
+import { getExtraResourceTotals, resolveCostLimitLabel } from '../solver/validator';
 
 import RosterEditorTopBar from './editor/RosterEditorTopBar';
 import ForceEditorSection from './editor/ForceEditorSection';
 import RosterSidebar from './editor/RosterSidebar';
 import RulesIndexDialog from './RulesIndexDialog';
 import { useRuleUrl } from '../hooks/useRuleUrl';
-
-// Kostenarten heißen in den Katalogen uneinheitlich; diese Schreibweisen meinen
-// alle „Punkte“ und werden auf die im UI gewohnte Kurzform vereinheitlicht.
-const POINT_COST_TYPE_ALIASES = ['pts', 'punkte', 'points'];
-const POINT_COST_TYPE_LABEL = 'Pkt.';
 
 const ruleGroupKeyOf = (forceId, categoryId) => `${forceId}:${categoryId}`;
 
@@ -68,9 +63,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     setActiveRuleDialog(null);
   }, []);
 
-  const costType = system?.costTypes?.find(ct => ct.id === roster?.costLimitType);
-  const rawLabel = costType?.name || POINT_COST_TYPE_LABEL;
-  const costTypeLabel = POINT_COST_TYPE_ALIASES.includes(rawLabel.toLowerCase()) ? POINT_COST_TYPE_LABEL : rawLabel;
+  const costTypeLabel = resolveCostLimitLabel(roster, system);
 
   const currentPoints = costs[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;

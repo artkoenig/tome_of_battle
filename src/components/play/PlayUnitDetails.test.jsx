@@ -18,6 +18,7 @@ vi.mock('../../solver/validator', async () => ({
   // Reine Ableitung aus Roster und System — die echte Implementierung durchreichen,
   // damit der Test die tatsächlich verwendete Kostenart-id sieht.
   resolveCostLimitTypeId: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitTypeId,
+  resolveCostLimitLabel: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitLabel,
   findEntryInSystem: vi.fn(() => null),
   resolveEntry: vi.fn(() => null),
   collectUnitProfilesAndRules: vi.fn(() => ({ profiles: [], rules: [] })),

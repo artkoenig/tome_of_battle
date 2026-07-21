@@ -3,7 +3,7 @@ import { Plus, Minus, ReceiptText } from 'lucide-react';
 import {
   findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost,
   getEffectiveSelectionName, isIndependentSubUnit, MODEL_COUNT_PROFILE_TYPES,
-  groupProfilesByType, resolveCostLimitTypeId
+  groupProfilesByType, resolveCostLimitTypeId, resolveCostLimitLabel
 } from '../../solver/validator';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { getProfileCellClassName } from '../profileCellClasses';
@@ -242,7 +242,7 @@ export default function PlayUnitDetails({
           <div className="flex-row gap-8">
             {totalCost > 0 && (
               <div className="text-ui-title text-gold text-strong">
-                {totalCost} Pkt.
+                {totalCost} {resolveCostLimitLabel(roster, system)}
               </div>
             )}
           </div>

@@ -102,6 +102,8 @@ const createWoundsReader = (wounds) => (selectionId, totalMaxWounds) =>
 describe('PlayMode Component', () => {
   const mockSystem = {
     id: 'sys-1',
+    // Der Anzeigename der Kostenart kommt unveraendert aus dem Katalog.
+    costTypes: [{ id: 'pts', name: 'pts' }],
     forceEntries: [
       {
         id: 'fe-1',
@@ -183,9 +185,9 @@ describe('PlayMode Component', () => {
 
     // Verify sorting descending by cost in Core category
     // sel-1 (150 pts) should appear before sel-3 (50 pts) in the DOM
-    const unitElements = screen.getAllByText(/Pkt\./);
-    expect(unitElements[0].textContent).toContain('150 Pkt.');
-    expect(unitElements[1].textContent).toContain('50 Pkt.');
+    const unitElements = screen.getAllByText(/\d+\s*pts/);
+    expect(unitElements[0].textContent).toContain('150 pts');
+    expect(unitElements[1].textContent).toContain('50 pts');
   });
 
   // Regression (Issue 19, A1): the cost sort must call getSelectionTotalCost with the

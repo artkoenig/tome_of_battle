@@ -185,7 +185,7 @@ describe('RosterEditor Component', () => {
   it('renders the roster header details and cost indicators', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
     expect(screen.getByText('Bretonnian Crusaders')).toBeDefined();
-    expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('420 / 1000Pkt.');
+    expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('420 / 1000Pts');
   });
 
   it('keeps units within a category in their original (insertion) order', () => {
@@ -250,7 +250,7 @@ describe('RosterEditor Component', () => {
       mockCosts = { pts: 100 };
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       // 100 / (0 || 1) * 100 = 10000 -> Math.min(100, 10000) = 100
-      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('100 / 0Pkt.');
+      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('100 / 0Pts');
     });
 
     it('handles negative costLimit values', () => {
@@ -259,7 +259,7 @@ describe('RosterEditor Component', () => {
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       // 50 / -100 * 100 = -50 -> Math.min(100, -50) = -50.
       // Expect component to render without throwing, even if CSS width becomes -50%
-      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('50 / -100Pkt.');
+      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('50 / -100Pts');
     });
 
     it('handles NaN costLimit values', () => {
@@ -268,7 +268,7 @@ describe('RosterEditor Component', () => {
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       // NaN || 1 evaluates to 1. 100 / 1 * 100 = 10000 -> Math.min(100, 10000) = 100
       // NaN is falsy, so roster.costLimit || 0 evaluates to 0
-      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('100 / 0Pkt.');
+      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('100 / 0Pts');
     });
 
     it('handles Infinity costLimit values', () => {
@@ -276,7 +276,7 @@ describe('RosterEditor Component', () => {
       mockCosts = { pts: 100 };
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       // 100 / Infinity * 100 = 0 -> Math.min(100, 0) = 0
-      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('100 / InfinityPkt.');
+      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('100 / InfinityPts');
     });
 
     it('handles non-numeric costLimit string gracefully or identifies NaN representation', () => {
@@ -285,7 +285,7 @@ describe('RosterEditor Component', () => {
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       // "unlimited" || 1 evaluates to "unlimited". 100 / "unlimited" evaluates to NaN.
       // Style width will be NaN%, but it should not crash.
-      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('100 / unlimitedPkt.');
+      expect(document.querySelector('.mobile-points-indicator').textContent.replace(/\s+/g, ' ').trim()).toBe('100 / unlimitedPts');
     });
   });
 

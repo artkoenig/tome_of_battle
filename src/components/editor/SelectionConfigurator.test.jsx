@@ -63,6 +63,8 @@ vi.mock('../../solver/validator', async () => ({
   // Reine Baum-Primitive: die echte Implementierung durchreichen statt sie im Mock
   // nachzubauen — ihre Rekursion ist in rosterTree.test.js eigens abgedeckt.
   findForceContainingSelection: (await vi.importActual('../../solver/rosterTree')).findForceContainingSelection,
+  // Reine Ableitung aus Roster und System — die echte Bezeichnung der Kostenart durchreichen.
+  resolveCostLimitLabel: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitLabel,
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
@@ -80,7 +82,9 @@ vi.mock('../../solver/validator', async () => ({
 
 describe('SelectionConfigurator Component', () => {
   const mockSubSelectionOperations = createSubSelectionOperationsMock();
-  const mockSystem = { id: 'sys-1' };
+  // Reale Kataloge deklarieren ihre Kostenarten; der Anzeigename wird
+  // unveraendert uebernommen (hier `pts`, nicht uebersetzt).
+  const mockSystem = { id: 'sys-1', costTypes: [{ id: 'pts', name: 'pts' }] };
   const mockRoster = {
     costLimitType: 'pts',
     forces: [{ id: 'force-1', selections: [] }]
@@ -113,7 +117,6 @@ describe('SelectionConfigurator Component', () => {
         system={mockSystem}
         roster={mockRoster}
         subSelectionOperations={mockSubSelectionOperations}
-        costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
     );
@@ -131,7 +134,6 @@ describe('SelectionConfigurator Component', () => {
         system={mockSystem}
         roster={mockRoster}
         subSelectionOperations={mockSubSelectionOperations}
-        costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
         isListRule
       />
@@ -154,13 +156,12 @@ describe('SelectionConfigurator Component', () => {
         system={mockSystem}
         roster={mockRoster}
         subSelectionOperations={mockSubSelectionOperations}
-        costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
     );
 
     expect(screen.getByText('Frag Grenades')).toBeDefined();
-    expect(screen.getByText(/\+\s*10\s*Pkt\./)).toBeDefined(); // based on getOptionDisplayCost mock returning 10
+    expect(screen.getByText(/\+\s*10\s*pts/)).toBeDefined(); // based on getOptionDisplayCost mock returning 10
   });
 
   it('handles increment and decrement actions for standalone options', () => {
@@ -183,7 +184,6 @@ describe('SelectionConfigurator Component', () => {
         system={mockSystem}
         roster={mockRoster}
         subSelectionOperations={mockSubSelectionOperations}
-        costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
     );
@@ -226,7 +226,6 @@ describe('SelectionConfigurator Component', () => {
           system={mockSystem}
           roster={mockRoster}
           subSelectionOperations={mockSubSelectionOperations}
-          costTypeLabel="Pkt."
           activeCatalogue={mockCatalogue}
         />
       );
@@ -263,7 +262,6 @@ describe('SelectionConfigurator Component', () => {
         system={mockSystem}
         roster={mockRoster}
         subSelectionOperations={mockSubSelectionOperations}
-        costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
     );

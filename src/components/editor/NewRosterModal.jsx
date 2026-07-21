@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAvailableForceEntries } from '../../solver/validator';
+import { getAvailableForceEntries, resolveCostLimitLabel } from '../../solver/validator';
 import { DEFAULT_ROSTER_COST_LIMIT } from '../../utils/rosterDefaults';
 
 const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
@@ -136,7 +136,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
             </div>
 
             <div className="form-field">
-              <label>Punktegrenze</label>
+              <label>Kostenlimit</label>
               <div className="input-with-suffix">
                 <input
                   type="number"
@@ -145,7 +145,10 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
                   required
                   min={1}
                 />
-                <span className="text-subheading text-gold input-suffix-label">Pkt.</span>
+                <span className="text-subheading text-gold input-suffix-label">
+                  {/* Noch existiert kein Roster; das Limit gilt für die erste Kostenart des Systems. */}
+                  {resolveCostLimitLabel(null, activeSystem)}
+                </span>
               </div>
               <div className="preset-btn-row">
                 {COST_LIMIT_PRESETS.map(val => (
