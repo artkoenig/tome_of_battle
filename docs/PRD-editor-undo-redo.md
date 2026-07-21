@@ -48,7 +48,7 @@ Die Undo-Mechanik wird als generischer, wiederverwendbarer Hook implementiert (s
 
 - **Test Interfaces (Seams):**
   - `useUndoableState`: direkter Hook-Test (`renderHook`) – prüft `setState`/`undo`/`redo`/`canUndo`/`canRedo`-Semantik sowie, dass `replace` keinen Undo-Schritt erzeugt und den Redo-Stack nicht leert.
-  - `useRoster`: bestehende Testdatei `useRoster.test.js` – prüft, dass `addUnit`/`removeUnit`/`copyUnit`/`updateSubSelection`/`updateRosterName` per `undo`/`redo` rückgängig/wiederherstellbar sind, und dass die automatische `syncRosterSelectionsWithSystem`-Korrektur keinen Undo-Schritt erzeugt.
+  - `useRoster`: bestehende Testdatei `useRoster.test.js` – prüft, dass `addUnit`/`removeUnit`/`copyUnit`/die Operationen aus `subSelectionOperations`/`updateRosterName` per `undo`/`redo` rückgängig/wiederherstellbar sind, und dass die automatische `syncRosterSelectionsWithSystem`-Korrektur keinen Undo-Schritt erzeugt.
   - `RosterEditor`: bestehende Testdatei `RosterEditor.test.jsx` – prüft Rendering, disabled-State und Klick-Verdrahtung der Undo/Redo-Buttons.
 
 ## Out of Scope
