@@ -301,68 +301,81 @@ const modifierConditionsPass = (source, ctx) => {
   return condsPass && groupsPass;
 };
 
-export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
-  let finalValue = con.value;
+/**
+ * The number of times a `repeat` modifier fires in `ctx`: how often its counted
+ * quantity fits into the repeat's `value`, times its `repeats` multiplier.
+ */
+const countRepeatOccurrences = (repeat, ctx) => {
+  const { roster, selectionCounts = {}, forceCategoryCounts = {} } = ctx;
+  const targetParent = ctx.parentSelection || ctx.selection;
+  let countedQuantity = 0;
 
-  const sortedModifiers = [...(modifiers || [])].sort((a, b) => {
-    if (a.type === ModifierKind.SET && b.type !== ModifierKind.SET) return -1;
-    if (a.type !== ModifierKind.SET && b.type === ModifierKind.SET) return 1;
-    return 0;
-  });
+  if (repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
+    const { parentCatalogueId, system } = ctx;
+    const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
+    const targetId = repeat.childId || repeat.field;
+    const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
+      matchCategoryMembership: false,
+      matchUnitsAsModels: false
+    });
 
-  sortedModifiers.forEach(mod => {
-    if (mod.field !== con.id) return;
+    countedQuantity = countSelections(childSelectionsOf(targetParent), {
+      includeChildSelections: !!repeat.includeChildSelections,
+      predicate: matchesTarget
+    });
+  } else if (isRosterLimitField(repeat.field)) {
+    countedQuantity = roster?.costLimit || 0;
+  } else if (repeat.childId) {
+    countedQuantity = selectionCounts[repeat.childId] || (forceCategoryCounts && forceCategoryCounts[repeat.childId]) || 0;
+  } else if (repeat.field) {
+    countedQuantity = selectionCounts[repeat.field] || (forceCategoryCounts && forceCategoryCounts[repeat.field]) || 0;
+  }
 
-    if (modifierConditionsPass(mod, ctx)) {
-      let modAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
-
-      if (mod.repeat) {
-        let currentValue = 0;
-        const { roster, selectionCounts = {}, forceCategoryCounts = {} } = ctx;
-        const targetParent = ctx.parentSelection || ctx.selection;
-        if (mod.repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
-          const { parentCatalogueId, system } = ctx;
-          const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
-          const targetId = mod.repeat.childId || mod.repeat.field;
-          const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
-            matchCategoryMembership: false,
-            matchUnitsAsModels: false
-          });
-
-          currentValue = countSelections(childSelectionsOf(targetParent), {
-            includeChildSelections: !!mod.repeat.includeChildSelections,
-            predicate: matchesTarget
-          });
-        } else if (isRosterLimitField(mod.repeat.field)) {
-          currentValue = roster?.costLimit || 0;
-        } else if (mod.repeat.childId) {
-          currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;
-        } else if (mod.repeat.field) {
-          currentValue = selectionCounts[mod.repeat.field] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.field]) || 0;
-        }
-
-        const repVal = mod.repeat.value ? (mod.repeat.roundUp ? Math.ceil(currentValue / mod.repeat.value) : Math.floor(currentValue / mod.repeat.value)) : 0;
-        modAmount = modAmount * repVal * (mod.repeat.repeats || 1);
-      }
-
-      if (mod.type === ModifierKind.SET) {
-        finalValue = modAmount;
-      } else if (mod.type === ModifierKind.INCREMENT) {
-        finalValue += modAmount;
-      } else if (mod.type === ModifierKind.DECREMENT) {
-        finalValue -= modAmount;
-      } else if (mod.type === ModifierKind.MULTIPLY) {
-        // A `multiply` modifier scales the running value by its factor (e.g. the
-        // "Traditional Army" army-wide condition that doubles a unit's points cost).
-        // It shares this single evaluation path with set/increment/decrement, so a
-        // multiply on any constraint — not only a cost — is handled identically.
-        finalValue *= modAmount;
-      }
-    }
-  });
-
-  return finalValue;
+  const fitCount = repeat.value
+    ? (repeat.roundUp ? Math.ceil(countedQuantity / repeat.value) : Math.floor(countedQuantity / repeat.value))
+    : 0;
+  return fitCount * (repeat.repeats || 1);
 };
+
+// The amount a modifier contributes: its own numeric value, scaled by how often a
+// `repeat` makes it fire.
+const getModifierAmount = (mod, ctx) => {
+  const baseAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
+  return mod.repeat ? baseAmount * countRepeatOccurrences(mod.repeat, ctx) : baseAmount;
+};
+
+const applyValueModifier = (currentValue, mod, ctx) => {
+  const amount = getModifierAmount(mod, ctx);
+  switch (mod.type) {
+    case ModifierKind.SET:
+      return amount;
+    case ModifierKind.INCREMENT:
+      return currentValue + amount;
+    case ModifierKind.DECREMENT:
+      return currentValue - amount;
+    // A `multiply` modifier scales the running value by its factor (e.g. the
+    // "Traditional Army" army-wide condition that doubles a unit's points cost).
+    // It shares this single evaluation path with set/increment/decrement, so a
+    // multiply on any constraint — not only a cost — is handled identically.
+    case ModifierKind.MULTIPLY:
+      return currentValue * amount;
+    default:
+      return currentValue;
+  }
+};
+
+/**
+ * Returns the effective value of a constraint by applying its condition-met modifiers
+ * to `con.value`, in document order — the order the catalogue authored them in, which
+ * is the order BattleScribe itself evaluates. No modifier type is reordered: a
+ * catalogue that writes `increment 2` and then `set 5` means 5, and one that writes
+ * `set 5` and then `increment 2` means 7. This is the same ordering rule
+ * getEffectiveName applies to name modifiers.
+ */
+export const getModifiedConstraintValue = (con, modifiers, ctx = {}) =>
+  (modifiers || [])
+    .filter(mod => mod.field === con.id && modifierConditionsPass(mod, ctx))
+    .reduce((value, mod) => applyValueModifier(value, mod, ctx), con.value);
 
 /**
  * Recursively pulls the modifiers out of a modifierGroup, folding the group's own

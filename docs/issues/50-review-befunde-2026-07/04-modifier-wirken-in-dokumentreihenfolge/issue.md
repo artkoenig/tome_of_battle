@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -27,3 +27,4 @@ kommentarlos in den Code.
 - [ ] Die bestehende Testsuite bleibt grün; kippt ein Test, ist der zugrunde liegende Katalogfall benannt und in ADR 0003 festgehalten
 
 ## Comments
+- Vorsortierung der set-Modifier in getModifiedConstraintValue entfernt; Modifier wirken jetzt in Dokumentreihenfolge, wie in getEffectiveName. Neue Testdatei modifierEvaluator.documentOrder.test.js; kein bestehender Test kippte, die Regel ist in ADR 0003 festgehalten.
