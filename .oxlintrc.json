@@ -27,6 +27,16 @@
       "rules": {
         "no-restricted-imports": "off"
       }
+    },
+    {
+      // Ein Context-Modul veroeffentlicht bewusst seinen Provider (Komponente) zusammen
+      // mit dem zugehoerigen Consumer-Hook. Die Regel dient allein dem Fast Refresh des
+      // Dev-Servers; sie zu erfuellen hiesse, Context-Objekt, Provider und Hook auf drei
+      // Dateien zu verteilen und damit eine Zustaendigkeit zu zersplittern.
+      "files": ["src/contexts/**"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
     }
   ]
 }

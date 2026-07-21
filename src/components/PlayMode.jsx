@@ -1,10 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  ArrowLeft, Search, Plus, Minus, 
-  Heart, Swords, BookOpen
-} from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { ArrowLeft, Swords, BookOpen } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListRuleSelection, childSelectionsOf, TOP_LEVEL_PARENT_COUNT } from '../solver/validator';
+import { getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListRuleSelection, childSelectionsOf, TOP_LEVEL_PARENT_COUNT } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
@@ -14,7 +11,6 @@ import GothicTooltip from './GothicTooltip';
 
 export default function PlayMode({ system, roster: initialRoster, onBack, onReportError }) {
   const [roster, setRoster] = useState(initialRoster);
-  const [searchTerm, setSearchTerm] = useState('');
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
   const [saveSummaryData, setSaveSummaryData] = useState({ title: '', breakdown: [] });
   const [tooltipState, setTooltipState] = useState({ visible: false, x: 0, y: 0, title: '', content: [] });
@@ -22,7 +18,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
   const activeCatalogue = system?.catalogues?.find(c => c.id === roster?.catalogueId);
   const extraResources = getExtraResourceTotals(system, roster, calculateRosterCosts(roster, system));
 
-  const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster, onReportError);
+  const { getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster, onReportError);
 
   // Central resolver that honors the global whfb6 linking setting (see ADR-0015):
   // returns a rule URL only when linking is enabled and a mapping exists, else null.
@@ -85,18 +81,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
 
       // Process defined categories
       categoryLinks.forEach(link => {
-        let selections = childSelectionsOf(force).filter(s => s.category === link.targetId && isBattlefieldSelection(s));
-        
-        // Apply search filter
-        selections = selections.filter(sel => {
-          const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
-          const { rules } = collectUnitProfilesAndRules(system, sel, force.catalogueId || roster.catalogueId, roster);
-          const matchesRules = rules.some(r => 
-            r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-            r.description.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-          return matchesName || matchesRules || searchTerm === '';
-        });
+        const selections = childSelectionsOf(force).filter(s => s.category === link.targetId && isBattlefieldSelection(s));
 
         if (selections.length > 0) {
           sortByCostDescending(selections, force.catalogueId || roster.catalogueId);
@@ -114,17 +99,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
 
       // Process uncategorized selections
       const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
-      let uncategorizedSelections = childSelectionsOf(force).filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s));
-      
-      uncategorizedSelections = uncategorizedSelections.filter(sel => {
-        const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const { rules } = collectUnitProfilesAndRules(system, sel, force.catalogueId || roster.catalogueId, roster);
-        const matchesRules = rules.some(r => 
-          r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-          r.description.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        return matchesName || matchesRules || searchTerm === '';
-      });
+      const uncategorizedSelections = childSelectionsOf(force).filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s));
 
       if (uncategorizedSelections.length > 0) {
         sortByCostDescending(uncategorizedSelections, force.catalogueId || roster.catalogueId);
@@ -218,7 +193,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
                     selection={selection}
                     system={system}
                     roster={roster}
-                    gameState={gameState}
+                    getUnitCurrentWounds={getUnitCurrentWounds}
                     handleAdjustWound={handleAdjustWound}
                     handleMouseEnter={handleMouseEnter}
                     handleMouseLeave={handleMouseLeave}

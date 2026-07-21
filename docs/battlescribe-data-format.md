@@ -556,17 +556,6 @@ einen `characteristic`-Wert. Profile werden meist zentral unter `sharedProfiles`
 > den tatsächlich getroffenen Spielerauswahlen eingesammelt werden — dabei aber nur *aktiv gewählte*
 > optionale Upgrades berücksichtigen (siehe [§7.1](#71-selection-entry--selection-entry-group)).
 
-> **Domänen-Fallstrick (Saving Throw Modifier):** Ein Wert im Merkmal „Saving Throw Modifier" kann
-> **zwei** Bedeutungen haben, die per Regex zwingend getrennt werden müssen:
-> - **feste Basisrüstung** — Muster `(\d)\+`, z. B. `4+`, `1+` (*Flayed Hauberk*): definiert den
->   Grundrüster, sofern besser als andere Rüstung.
-> - **additiver Modifikator** — Muster `[+-]\d`, z. B. `-1`, `+1` (*Sacred Stegadon Helm*,
->   *Shield of Ghrond*): wird auf den finalen Wurf aufaddiert.
->
-> **Kein Double-Dipping:** Löst ein Gegenstand über seinen Namen bereits einen pauschalen
-> Keyword-Bonus aus (z. B. „Shield" → −1) **und** trägt zusätzlich einen `Saving Throw Modifier`, darf
-> der Modifikator nicht obendrauf gerechnet, sondern muss mit dem Keyword-Bonus verrechnet werden.
-
 ### 7.4 Rule
 
 Eine `rule` ist die **einzige mehrzeilige** Textentität — Zeilenumbrüche im `<description>` bleiben
@@ -783,8 +772,7 @@ auszublenden (in diesem Projekt ausgewertet von `src/solver/entryVisibility.js`)
 - Beziehungen zwischen Einträgen und Kategorien werden **ausschließlich über `categoryLinks`/IDs**
   aufgelöst — nie über Namen.
 
-Die einzige zulässige Ausnahme von der „keine hartkodierten Sprach-Strings"-Regel ist die konkrete
-Berechnung von **Armour Save / Ward Save** (`AS`/`WS`).
+Von der „keine hartkodierten Sprach-Strings"-Regel gibt es **keine Ausnahme**.
 
 ---
 

@@ -1,0 +1,46 @@
+/* Zerstoerte Einheit im Spielmodus. Am Ende zwei spaete globale Nachzuegler,
+   die aus Kaskadengruenden an dieser Stelle bleiben muessen. */
+/* UI/UX Optimierungen */
+.play-unit-card.unit-destroyed {
+  border-color: var(--color-danger) !important;
+  box-shadow: 0 0 10px rgba(166, 28, 28, 0.2);
+  transition: all 0.3s ease;
+}
+
+.destroyed-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+  background-color: rgba(14, 14, 17, 0.4);
+}
+
+.destroyed-text {
+  font-family: var(--font-serif);
+  color: var(--text-danger-readable);
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+@media (max-width: 900px) {
+  .destroyed-text {
+    font-size: 1.6rem;
+  }
+}
+
+.preset-btn:hover {
+  background: rgba(226, 183, 66, 0.08) !important;
+}
+
+.clickable {
+  cursor: pointer;
+}

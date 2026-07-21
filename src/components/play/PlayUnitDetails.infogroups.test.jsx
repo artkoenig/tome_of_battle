@@ -47,7 +47,7 @@ function makeProps() {
       costLimitType: 'pts',
       forces: [{ id: 'force-1', catalogueId: catalogue.id, selections: [selection] }],
     },
-    gameState: { wounds: {} },
+    getUnitCurrentWounds: (_selectionId, totalMaxWounds) => totalMaxWounds,
     handleAdjustWound: vi.fn(),
     handleMouseEnter: vi.fn(),
     handleMouseLeave: vi.fn(),

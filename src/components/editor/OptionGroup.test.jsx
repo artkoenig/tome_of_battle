@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import OptionGroupComponent from './OptionGroup';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, isUniqueOptionTakenElsewhere } from '../../solver/validator';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -148,7 +147,7 @@ describe('OptionGroup Component', () => {
     defaultProps.getSubSelectionCount.mockReset().mockReturnValue(0);
 
     mockFindEntryInSystem.mockReturnValue({ id: 'raw-entry' });
-    mockResolveEntry.mockImplementation((sys, opt, catId) => {
+    mockResolveEntry.mockImplementation((sys, opt, _catId) => {
       if (opt.id === 'opt-sword') {
         return { id: 'res-sword', name: 'Sword of Might', constraints: [] };
       }
@@ -183,7 +182,7 @@ describe('OptionGroup Component', () => {
   });
 
   it('2. Expansion Toggle', () => {
-    const { container } = render(<OptionGroupComponent {...defaultProps} />);
+    render(<OptionGroupComponent {...defaultProps} />);
 
     // Initially collapsed
     expect(screen.queryByTestId('icon-chevron-right')).toBeDefined();
@@ -251,7 +250,7 @@ describe('OptionGroup Component', () => {
       ]
     };
     
-    mockResolveEntry.mockImplementation((sys, opt, catId) => {
+    mockResolveEntry.mockImplementation((sys, opt, _catId) => {
       if (opt.id === 'opt-sword') {
         return { id: 'res-sword', name: 'Sword of Might', constraints: [{ type: 'max', value: 1 }] };
       }
@@ -275,7 +274,7 @@ describe('OptionGroup Component', () => {
 
   it('6. Quantity Option Selection', () => {
     // Mock Sword option to have max constraint of 5 (so multi-count, quantity control)
-    mockResolveEntry.mockImplementation((sys, opt, catId) => {
+    mockResolveEntry.mockImplementation((sys, opt, _catId) => {
       if (opt.id === 'opt-sword') {
         return { 
           id: 'res-sword', 
@@ -351,7 +350,7 @@ describe('OptionGroup Component', () => {
       return false;
     });
 
-    mockResolveEntry.mockImplementation((sys, opt, catId) => {
+    mockResolveEntry.mockImplementation((sys, opt, _catId) => {
       if (opt.id === 'opt-sword') {
         return { id: 'res-sword', name: 'Sword of Might', constraints: [] };
       }
@@ -429,7 +428,7 @@ describe('OptionGroup Component', () => {
       ]
     };
     
-    mockResolveEntry.mockImplementation((sys, opt, catId) => {
+    mockResolveEntry.mockImplementation((sys, opt, _catId) => {
       if (opt.id === 'opt-sword') {
         return { id: 'res-sword', name: 'Sword of Might', constraints: [{ type: 'max', value: 1 }] };
       }

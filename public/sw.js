@@ -66,7 +66,7 @@ self.addEventListener('fetch', (event) => {
               cache.put(event.request, networkResponse.clone());
             }
             return networkResponse;
-          }).catch((err) => {
+          }).catch(() => {
             // Silent catch for network connectivity issues
             return null;
           });

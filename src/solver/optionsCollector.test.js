@@ -1,6 +1,5 @@
 import { test, expect } from 'vitest';
 import { getUnitOptions } from './optionsCollector.js';
-import { resolveEntry } from './validator.js';
 
 // Mock system
 const mockSystem = {

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, formatConstraintLimit, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
+import CategoryCountBadge from './CategoryCountBadge';
+
 // Icon/CSS-Klasse je Schweregrad einer Validierungsmeldung — nur `error`
 // blockiert das Roster (siehe hasBlockingViolations); `warning`/`info`
 // erscheinen mit eigener, nicht-alarmierender Darstellung.
@@ -9,6 +11,94 @@ const SEVERITY_PRESENTATION = {
   [ValidationSeverity.WARNING]: { Icon: AlertTriangle, itemClass: 'validation-error-item--warning' },
   [ValidationSeverity.INFO]: { Icon: Info, itemClass: 'validation-error-item--info' }
 };
+
+// Die „Helden“-Kategorie trägt in den Katalogdaten kein eigenes Maximum, teilt sich
+// die Obergrenze aber mit den „Charaktermodellen“.
+const HEROES_CATEGORY_ID = 'c16b-f319-2c62-2c12';
+const CHARACTERS_CATEGORY_ID = '7a1c-d611-c2dc-def1';
+
+/**
+ * Wirksame Obergrenze eines Kategorie-Links. Fehlt die Constraint oder ergibt sie nach
+ * Anwendung der Modifikatoren einen negativen Wert, gilt die Kategorie als unbegrenzt.
+ */
+function resolveMaxLimit(maxConstraint, modifiers, displayContext) {
+  if (!maxConstraint) return Infinity;
+  const value = getModifiedConstraintValue(maxConstraint, modifiers, displayContext);
+  return value < 0 ? Infinity : value;
+}
+
+/**
+ * Rückgriff für „Helden“: übernimmt die Obergrenze der „Charaktermodelle“, weil die
+ * Kategorie sonst fälschlich als unbegrenzt erschiene.
+ */
+function resolveHeroesMaxLimit(forceDef, displayContext) {
+  const charactersLink = forceDef?.categoryLinks?.find(link => link.targetId === CHARACTERS_CATEGORY_ID);
+  const charactersMaxConstraint = charactersLink?.constraints?.find(c => c.type === 'max');
+  return resolveMaxLimit(charactersMaxConstraint, getEffectiveModifiers(charactersLink), displayContext);
+}
+
+/** Eine Zeile der Armeeanforderungen: Kategoriename und der Zähl-Chip mit seinen Grenzen. */
+function CategoryRequirementRow({ name, count, minValue, maxValue, minConstraint, maxConstraint }) {
+  const isInvalid = count < minValue || count > maxValue;
+
+  return (
+    <div className="flex-between text-label sidebar-requirement-row">
+      <span>
+        {name}:
+      </span>
+      <CategoryCountBadge
+        count={count}
+        minValue={minValue}
+        maxValue={maxValue}
+        minConstraint={minConstraint}
+        maxConstraint={maxConstraint}
+        hasErrors={isInvalid}
+      />
+    </div>
+  );
+}
+
+/**
+ * Die Armeeanforderungen der ersten Streitmacht: je sichtbarem Kategorie-Link eine
+ * Zeile mit aktueller Anzahl und den wirksamen Min-/Max-Grenzen.
+ */
+function CategoryRequirementList({ roster, system }) {
+  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
+  const force = roster.forces[0];
+  const forceDef = findForceEntryById(system, force?.forceEntryId);
+  const forceCategoryCounts = force?.id ? (categoryCounts[force.id] || {}) : {};
+  const displayContext = { roster, system, selectionCounts, forceCategoryCounts };
+
+  return (forceDef?.categoryLinks || []).map(catLink => {
+    if (isCategoryLinkHidden(catLink, { system, roster, selectionCounts, forceCategoryCounts })) {
+      return null;
+    }
+
+    const catLinkModifiers = getEffectiveModifiers(catLink);
+    const minConstraint = catLink.constraints?.find(c => c.type === 'min');
+    const minValue = minConstraint
+      ? Math.max(0, getModifiedConstraintValue(minConstraint, catLinkModifiers, displayContext))
+      : 0;
+
+    const maxConstraint = catLink.constraints?.find(c => c.type === 'max');
+    let maxValue = resolveMaxLimit(maxConstraint, catLinkModifiers, displayContext);
+    if (catLink.targetId === HEROES_CATEGORY_ID && maxValue === Infinity) {
+      maxValue = resolveHeroesMaxLimit(forceDef, displayContext);
+    }
+
+    return (
+      <CategoryRequirementRow
+        key={catLink.id}
+        name={system.categoryEntries?.find(c => c.id === catLink.targetId)?.name || catLink.name}
+        count={forceCategoryCounts[catLink.targetId] || 0}
+        minValue={minValue}
+        maxValue={maxValue}
+        minConstraint={minConstraint}
+        maxConstraint={maxConstraint}
+      />
+    );
+  });
+}
 
 export default function RosterSidebar({
   roster,
@@ -49,72 +139,7 @@ export default function RosterSidebar({
       {/* Category breakdown */}
       <div className="sidebar-section">
         <h4 className="sidebar-section-title">Armeeanforderungen</h4>
-        {(() => {
-          const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-          const forceId = roster.forces[0]?.id;
-          const forceEntryId = roster.forces[0]?.forceEntryId;
-          const forceDef = findForceEntryById(system, forceEntryId);
-          const categoryLinks = forceDef?.categoryLinks || [];
-          const forceCategoryCounts = forceId ? (categoryCounts[forceId] || {}) : {};
-
-          return categoryLinks.map(catLink => {
-            if (isCategoryLinkHidden(catLink, { system, roster, selectionCounts, forceCategoryCounts })) {
-              return null;
-            }
-
-            const catName = system.categoryEntries?.find(c => c.id === catLink.targetId)?.name || catLink.name;
-            const count = forceCategoryCounts[catLink.targetId] || 0;
-            const displayCtx = { roster, system, selectionCounts, forceCategoryCounts };
-
-            const catLinkModifiers = getEffectiveModifiers(catLink);
-            const minConRef = catLink.constraints?.find(c => c.type === 'min');
-            const minCon = minConRef
-              ? Math.max(0, getModifiedConstraintValue(minConRef, catLinkModifiers, displayCtx))
-              : 0;
-
-            const maxConRef = catLink.constraints?.find(c => c.type === 'max');
-            let maxCon = maxConRef
-              ? (() => {
-                  const val = getModifiedConstraintValue(maxConRef, catLinkModifiers, displayCtx);
-                  return val < 0 ? Infinity : val;
-                })()
-              : Infinity;
-
-            // Fallback for Heroes category limit to match Characters limit
-            if (catLink.targetId === 'c16b-f319-2c62-2c12' && maxCon === Infinity) {
-              const charCatLink = forceDef?.categoryLinks?.find(cl => cl.targetId === '7a1c-d611-c2dc-def1');
-              const charMaxConRef = charCatLink?.constraints?.find(c => c.type === 'max');
-              if (charMaxConRef) {
-                const val = getModifiedConstraintValue(charMaxConRef, getEffectiveModifiers(charCatLink), displayCtx);
-                if (val >= 0) maxCon = val;
-              }
-            }
-            
-            const isInvalid = count < minCon || count > maxCon;
-
-            return (
-              <div
-                key={catLink.id}
-                className="flex-between text-label sidebar-requirement-row"
-              >
-                <span>
-                  {catName}:
-                </span>
-                <span 
-                  className={isInvalid ? "badge badge-danger" : "badge badge-muted"} 
-                >
-                  {(() => {
-                    const limitParts = [];
-                    if (minCon > 0) limitParts.push(`Min: ${formatConstraintLimit(minCon, minConRef)}`);
-                    if (maxCon !== Infinity) limitParts.push(`Max: ${formatConstraintLimit(maxCon, maxConRef)}`);
-                    const limitText = limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
-                    return `${count} ${limitText}`.trim();
-                  })()}
-                </span>
-              </div>
-            );
-          });
-        })()}
+        <CategoryRequirementList roster={roster} system={system} />
       </div>
 
       {/* Validation Errors Detailed List */}

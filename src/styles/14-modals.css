@@ -1,0 +1,158 @@
+/* Modale Dialoge: Overlay, Kopf-/Fussbereich, Formularfelder, Bestaetigungsdialog. */
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: var(--bg-panel);
+  border: 3px double var(--border-gold);
+  border-radius: 4px;
+  width: 90%;
+  max-width: 550px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), var(--shadow-gold);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-gold-dim);
+  padding-bottom: 10px;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+/* Formularfelder in Modals */
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-field > label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-field-hint {
+  margin-top: 4px;
+}
+
+.input-with-suffix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-with-suffix input {
+  flex: 1;
+}
+
+.input-with-suffix .input-suffix-label {
+  font-weight: bold;
+}
+
+.preset-btn-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  padding: 4px 10px;
+  font-size: var(--fs-micro);
+  border-color: var(--border-dark);
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.preset-btn.active {
+  border-color: var(--text-gold);
+  background: rgba(226, 183, 66, 0.15);
+  color: var(--text-gold);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  box-shadow: none;
+  padding: 4px;
+}
+
+/* Close button that sits flush in the corner, with the icon optically centred. */
+.modal-close--flush {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content--danger {
+  border-color: var(--color-danger);
+}
+
+.modal-header--danger {
+  border-bottom-color: rgba(166, 28, 28, 0.3);
+}
+
+.confirmation-dialog-body {
+  padding: 16px 0 24px 0;
+  text-align: center;
+}
+
+.confirmation-dialog-message {
+  color: var(--text-parchment);
+  font-size: var(--fs-body);
+  margin: 0;
+}
+
+.confirmation-dialog-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  border-top: none;
+  padding: 0;
+}
+
+.rules-index-body {
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.modal-close:hover {
+  color: var(--text-gold);
+  background: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.modal-body {
+  margin-bottom: 24px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

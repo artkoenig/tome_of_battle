@@ -1,0 +1,32 @@
+/* Farb-, Schrift-, Layout- und Abstands-Hilfsklassen. */
+/* Helpers */
+.text-gold { color: var(--text-gold); }
+.text-danger { color: var(--text-danger-readable); }
+.text-success { color: var(--text-success-readable); }
+.font-serif { font-family: var(--font-serif); }
+.font-body { font-family: var(--font-body); }
+
+/* ── Layout Utilities ─────────────────────────────────────────────────────
+   Named replacements for the recurring ad-hoc layout declarations that
+   ADR-0004 §1 forbids inline. Prefer a semantic component class whenever
+   the layout belongs to one specific piece of UI; these primitives cover
+   only the patterns that repeat across many components.
+── */
+.flex-row { display: flex; align-items: center; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+/* Flex child that may shrink below its content width, so text inside can truncate. */
+.flex-grow-truncating { flex: 1; min-width: 0; }
+.no-shrink { flex-shrink: 0; }
+.push-end { margin-left: auto; }
+
+/* Gap steps of the layout spacing ramp, paired with the flex utilities above. */
+.gap-6 { gap: 6px; }
+.gap-8 { gap: 8px; }
+.gap-10 { gap: 10px; }
+.gap-12 { gap: 12px; }
+
+.no-margin { margin: 0; }
+.w-full { width: 100%; }
+.is-hidden { display: none; }
+.text-strong { font-weight: 600; }

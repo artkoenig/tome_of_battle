@@ -1,0 +1,139 @@
+/* Editor-Einheitenkarte (.selection-node) samt Kopfzeile, Fehlerhinweis und Detailtexten. */
+.selection-node {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-dark);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+/* While a bottom sheet rendered inside the card (action popover / info modal)
+   is open, drop the card's overflow clip so the desktop popover can extend
+   past the card box. The torn-edge clip-path is suspended by the matching
+   :not(:has(.gothic-bottomsheet.open)) guards on the clip-path rules below;
+   without lifting overflow too, overflow:hidden would still slice the popover. */
+.selection-node:has(.gothic-bottomsheet.open) {
+  overflow: visible;
+}
+
+.selection-node.has-error {
+  border-color: var(--color-danger);
+}
+
+@media (hover: hover) {
+  .selection-node:hover {
+    border-color: var(--border-gold-dim);
+  }
+}
+
+.selection-node-header {
+  padding: 12px 14px;
+  background-color: rgba(255,255,255,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+.selection-node-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.selection-node-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.selection-node-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Sub-unit variant: nested inside another unit card, so it steps back visually. */
+.selection-node--sub {
+  margin-top: 8px;
+  border: 1px solid rgba(226, 183, 66, 0.2);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.unit-error-alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(166, 28, 28, 0.04);
+  border-bottom: 1px solid rgba(166, 28, 28, 0.2);
+}
+
+.unit-delete-confirm-body {
+  text-align: center;
+  padding: 16px 16px 24px 16px;
+}
+
+.unit-delete-confirm-question {
+  margin-bottom: 24px;
+  color: var(--text-parchment);
+}
+
+.unit-delete-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Modifier breakdown shown in the mobile bottom sheet. */
+.modification-breakdown-list {
+  margin: 0;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.modification-breakdown-list li {
+  color: var(--text-parchment);
+  margin-bottom: 4px;
+}
+
+/* Upgrade / rule detail body shown in tooltips and info bottom sheets. */
+.upgrade-details {
+  text-align: left;
+  line-height: 1.4;
+}
+
+.upgrade-details-entry {
+  margin-top: 4px;
+}
+
+.upgrade-details-source {
+  margin-top: 6px;
+}
+
+.upgrade-details-label {
+  font-weight: 600;
+}
+
+.upgrade-details-publication-ref {
+  margin-top: 4px;
+}
+
+.selection-node-cost {
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--text-gold);
+  white-space: nowrap;
+}
+
+.selection-node-body {
+  padding: 16px;
+  background-color: rgba(0,0,0,0.15);
+  border-top: 1px solid var(--border-dark);
+}

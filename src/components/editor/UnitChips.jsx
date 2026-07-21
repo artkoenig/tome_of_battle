@@ -11,7 +11,7 @@ import { useRuleUrl } from '../../hooks/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 
-export const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
+const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
   const list = [];
   const collect = (node) => {
     if (!node.selections) return;
@@ -37,7 +37,7 @@ export const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
   return list;
 };
 
-export const getVisibleUpgrades = (sel, system, activeCatalogueId, roster) => {
+const getVisibleUpgrades = (sel, system, activeCatalogueId, roster) => {
   const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogueId, roster);
   const tableProfiles = groupProfilesByType(profiles).filter(g => !g.isModel).flatMap(g => g.profiles);
   const tableSelectionIds = new Set(
@@ -98,7 +98,7 @@ export const getVisibleUpgrades = (sel, system, activeCatalogueId, roster) => {
   });
 };
 
-export const getUpgradeDescription = (res, system) => {
+const getUpgradeDescription = (res, system) => {
   if (!res) return '';
   const descriptions = [];
 

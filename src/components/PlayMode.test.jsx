@@ -1,10 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import PlayMode from './PlayMode';
 import PlayUnitDetails from './play/PlayUnitDetails';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost } from '../solver/validator';
-import usePlayState from '../hooks/usePlayState';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -27,7 +25,7 @@ const mockAdjustTracker = vi.fn();
 const mockGetUnitCurrentWounds = vi.fn().mockReturnValue(5);
 
 vi.mock('../hooks/usePlayState', () => ({
-  default: (initialRoster, setRoster, saveRoster) => ({
+  default: (_initialRoster, _setRoster, _saveRoster) => ({
     gameState: { round: 1, vp: 0, cp: 0, wounds: { 'sel-1': 5, 'sel-2': 3, 'sel-3': 1 } },
     adjustTracker: mockAdjustTracker,
     getUnitCurrentWounds: mockGetUnitCurrentWounds,
@@ -72,8 +70,6 @@ vi.mock('../solver/validator', async (importOriginal) => ({
 }));
 
 vi.mock('../solver/rulesEvaluator', () => ({
-  getArmourSave: vi.fn().mockReturnValue({ save: 5, breakdown: ['Base: 5+'] }),
-  getWardSave: vi.fn().mockReturnValue({ save: 6, breakdown: ['Blessing: 6+'] }),
   extractModelProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Model')),
   extractUpgradeProfiles: vi.fn().mockImplementation((profiles) => profiles),
   extractWeaponProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Weapon' || p.profileTypeName === 'Waffe')),
@@ -95,9 +91,13 @@ vi.mock('../solver/rulesEvaluator', () => ({
       g.profiles.push(p);
     });
     return groups;
-  }),
-  hasBlessing: vi.fn().mockReturnValue(false)
+  })
 }));
+
+// Bildet die Lesefunktion aus usePlayState nach: ohne erfassten Wundenstand
+// gilt die Einheit als unversehrt.
+const createWoundsReader = (wounds) => (selectionId, totalMaxWounds) =>
+  wounds[selectionId] ?? totalMaxWounds;
 
 describe('PlayMode Component', () => {
   const mockSystem = {
@@ -234,52 +234,6 @@ describe('PlayMode Component', () => {
     expect(mockHandleAdjustWound).toHaveBeenCalledWith('sel-1', 1, 1);
   });
 
-  it('4. Desktop Layout Tooltips (AS/WS)', () => {
-    // Set window width to desktop
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
-
-    render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
-
-    const asBadge = screen.getAllByText('AS: 5+')[0];
-    
-    // Hover over AS badge
-    fireEvent.mouseEnter(asBadge, { clientX: 100, clientY: 200 });
-
-    // Tooltip should be visible
-    expect(screen.getByText('Rüstungswurf (AS)')).toBeDefined();
-    expect(screen.getByText('Base: 5+')).toBeDefined();
-
-    // Mouse leave
-    fireEvent.mouseLeave(asBadge);
-    expect(screen.queryByText('Rüstungswurf (AS)')).toBeNull();
-  });
-
-  it('5. Mobile Layout BottomSheet (AS/WS)', async () => {
-    // Set window width to mobile
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 768 });
-
-    render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
-
-    const asBadge = screen.getAllByText('AS: 5+')[0];
-
-    // Hover should not show tooltip on mobile
-    fireEvent.mouseEnter(asBadge);
-    expect(screen.queryByText('Rüstungswurf (AS)')).toBeNull();
-
-    // Click badge should trigger bottom sheet
-    fireEvent.click(asBadge);
-    expect(screen.getByText('Rüstungswurf (AS)')).toBeDefined();
-    expect(screen.getByText('Base: 5+')).toBeDefined();
-
-    // Click close button on bottom sheet
-    const closeBtn = screen.getByTitle('Schließen'); // BottomSheet.jsx has 'Schließen' title
-    fireEvent.click(closeBtn);
-
-    await waitFor(() => {
-      expect(screen.queryByText('Base: 5+')).toBeNull();
-    });
-  });
-
   it('8. Renders Uncategorized Selections', () => {
     const customRoster = {
       ...mockRoster,
@@ -303,7 +257,7 @@ describe('PlayMode Component', () => {
   });
 
   it('6. Collapsible Special Rules (Direct)', async () => {
-    mockCollectUnitProfilesAndRules.mockImplementation((sys, sel, catId) => ({
+    mockCollectUnitProfilesAndRules.mockImplementation((_sys, _sel, _catId) => ({
       profiles: [],
       rules: [{ id: 'rule-direct', name: 'Direct Vow', description: 'Direct test description' }]
     }));
@@ -319,7 +273,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
-        gameState={{ wounds: {} }}
+        getUnitCurrentWounds={createWoundsReader({})}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
         handleMouseLeave={vi.fn()}
@@ -348,7 +302,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
-        gameState={{ wounds: { 'sel-dead': 0 } }}
+        getUnitCurrentWounds={createWoundsReader({ 'sel-dead': 0 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
         handleMouseLeave={vi.fn()}
@@ -417,7 +371,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
-        gameState={{ wounds: { 'sel-weapons': 5 } }}
+        getUnitCurrentWounds={createWoundsReader({ 'sel-weapons': 5 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
         handleMouseLeave={vi.fn()}
@@ -488,7 +442,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
-        gameState={{ wounds: { 'sel-armours': 5 } }}
+        getUnitCurrentWounds={createWoundsReader({ 'sel-armours': 5 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
         handleMouseLeave={vi.fn()}
@@ -532,7 +486,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
-        gameState={{ wounds: {} }}
+        getUnitCurrentWounds={createWoundsReader({})}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
         handleMouseLeave={vi.fn()}
@@ -571,7 +525,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
-        gameState={{ wounds: {} }}
+        getUnitCurrentWounds={createWoundsReader({})}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
         handleMouseLeave={vi.fn()}
@@ -631,7 +585,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
-        gameState={{ wounds: { 'sel-parent': 5, 'sub-unit-1': 3 } }}
+        getUnitCurrentWounds={createWoundsReader({ 'sel-parent': 5, 'sub-unit-1': 3 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
         handleMouseLeave={vi.fn()}

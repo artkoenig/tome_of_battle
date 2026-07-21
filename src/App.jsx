@@ -450,8 +450,6 @@ export default function App() {
                 onRenameRoster={handleRenameRoster}
                 onNewRoster={() => setIsModalOpen(true)}
                 isOffline={isOffline}
-                isInstallable={isInstallable}
-                onInstallClick={promptInstall}
                 onImportRoster={handleImportRoster}
                 onExportRoster={handleExportRoster}
               />

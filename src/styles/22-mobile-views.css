@@ -1,0 +1,116 @@
+/* Mobile Anpassungen einzelner Ansichten (FAB, Leerzustaende, Rosterkarten, Spielmodus, Modal-Fuss). */
+@media (max-width: 900px) {
+  
+  .fab-mobile.mobile-only {
+    display: flex !important;
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2d2208 0%, #161103 100%);
+    border: 2px solid var(--border-gold);
+    color: var(--text-gold);
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8), var(--shadow-glow);
+    z-index: 1000;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .fab-mobile.mobile-only:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.9), 0 0 20px rgba(226, 183, 66, 0.6);
+  }
+  .fab-mobile.mobile-only:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Make dashboard header responsive */
+  .dashboard-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+    text-align: center !important;
+  }
+  .dashboard-header .desktop-btn {
+    display: none !important;
+  }
+  .dashboard-header button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Empty States on Mobile */
+  .empty-state-container {
+    padding: 20px 10px !important;
+  }
+  .empty-state-wrapper {
+    /* Same ascending precedence as #root: static vh, then dvh fallback, then
+       the JS-tracked --app-vh as the primary visible-height source. */
+    min-height: calc(100vh - 80px) !important;
+    min-height: calc(100dvh - 80px) !important;
+    min-height: calc(var(--app-vh, 100dvh) - 80px) !important;
+  }
+  .empty-roster-image {
+    max-width: 200px !important;
+    height: 180px !important;
+    margin-bottom: 16px !important;
+  }
+  .empty-importer-image {
+    max-width: 250px !important;
+    height: 180px !important;
+    margin-bottom: 16px !important;
+  }
+  .empty-state-title {
+    font-size: var(--fs-heading) !important;
+    margin-bottom: 8px !important;
+  }
+  .empty-state-title-large {
+    font-size: var(--fs-display) !important;
+    margin-bottom: 12px !important;
+  }
+  .empty-state-text {
+    font-size: var(--fs-body) !important;
+    margin-bottom: 20px !important;
+    line-height: 1.4 !important;
+  }
+  .empty-state-btn {
+    padding: 10px 20px !important;
+    font-size: var(--fs-body) !important;
+  }
+
+  /* Make roster card actions responsive */
+  .roster-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .roster-actions button:not(.btn-danger):not(.square-btn) {
+    flex: 1 !important;
+    font-size: var(--fs-micro) !important;
+    padding: 8px 10px !important;
+  }
+  .roster-actions button.btn-danger {
+    margin-left: 0 !important;
+  }
+
+  /* Responsive PlayMode structures */
+  .play-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  /* Stack modal footer buttons on mobile */
+  .modal-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .modal-footer button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}

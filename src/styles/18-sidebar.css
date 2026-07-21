@@ -1,0 +1,47 @@
+/* Editor-Seitenleiste ("Lagerbericht"). */
+/* Roster Sidebar ("Lagerbericht") */
+.sidebar-summary {
+  margin: 16px 0;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 12px;
+}
+
+.sidebar-summary-total {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.sidebar-summary-resource {
+  margin-top: 6px;
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-section-title {
+  margin-bottom: 10px;
+}
+
+.sidebar-requirement-row {
+  padding: 6px 0;
+  color: var(--text-parchment);
+}
+
+.sidebar-violation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-violation-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* Keeps the severity icon optically aligned with the first line of the message. */
+.sidebar-violation-icon {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
