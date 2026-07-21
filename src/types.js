@@ -13,6 +13,9 @@
  * @property {number} number
  * @property {string|null} category
  * @property {boolean} [collective]
+ * @property {string} [type] nur in fremden/älteren Roster-Daten vorhanden; die
+ *   eigene Fabrik und der .ros-Import setzen es nicht (defensiv gelesen, z. B.
+ *   in PlayUnitDetails)
  * @property {Selection[]} selections
  */
 

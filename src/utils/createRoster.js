@@ -30,7 +30,7 @@ export function buildRoster({ name, systemId, catId, forceEntryId, limit }, syst
     name,
     systemId,
     catalogueId: catId,
-    costLimit: parseInt(limit) || DEFAULT_ROSTER_COST_LIMIT,
+    costLimit: parseInt(String(limit), 10) || DEFAULT_ROSTER_COST_LIMIT,
     costLimitType: costType,
     forces: [{
       id: crypto.randomUUID(),
