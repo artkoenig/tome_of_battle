@@ -1,3 +1,28 @@
+/**
+ * Editing and searching of raw BattleScribe catalogue data.
+ *
+ * Two capabilities live here:
+ *  - {@link updateRawXml} applies a named {@link EntryEdit} to the raw `.cat`/`.gst` XML.
+ *  - {@link searchEditableEntries} and {@link findExactEntryById} both read the parsed
+ *    catalogue tree through the single traversal {@link walkCatalogueTree}, so they can
+ *    never drift apart in the node types they know about.
+ */
+
+const DEFAULT_GAME_SYSTEM_NAME = 'Game System';
+const MIN_SEARCH_QUERY_LENGTH = 2;
+const MAX_SEARCH_RESULTS = 50;
+const PATH_SEPARATOR = ' -> ';
+const UNNAMED_NODE_LABEL = '(unnamed)';
+
+/**
+ * Sentinel for an {@link EntryEdit} patch value: remove the attribute instead of setting it.
+ * Absence of a patch key means "leave untouched"; this symbol means "delete".
+ */
+export const REMOVE_ATTRIBUTE = Symbol('catalogEditor.removeAttribute');
+
+/** Patch keys that map 1:1 onto an XML attribute of the edited element. */
+const PATCHABLE_ATTRIBUTE_NAMES = ['name', 'publicationId', 'page'];
+
 const getDOMParser = () => {
   if (typeof DOMParser !== 'undefined') {
     return DOMParser;
@@ -24,353 +49,251 @@ const getXMLSerializer = () => {
   throw new Error('XMLSerializer is not available. Ensure you are in a jsdom or browser environment.');
 };
 
-export function updateRawXml(system, entryId, type, localName, localCosts, localConstraints, localCharacteristics, localDescription, localPublicationId, localPage) {
-  if (!system.rawXmls) return;
+const hasPatchKey = (patch, key) => Object.prototype.hasOwnProperty.call(patch, key);
 
-  let file = system.rawXmls.cat?.find(f => f.content.includes(entryId));
-  if (!file) {
-    file = system.rawXmls.gst?.find(f => f.content.includes(entryId));
+const toNumericAttributeValue = (value) => parseFloat(value) || 0;
+
+function applyAttributePatches({ element, patch }) {
+  PATCHABLE_ATTRIBUTE_NAMES.forEach((attributeName) => {
+    if (!hasPatchKey(patch, attributeName)) return;
+
+    const value = patch[attributeName];
+    if (value === REMOVE_ATTRIBUTE) {
+      element.removeAttribute(attributeName);
+    } else {
+      element.setAttribute(attributeName, value);
+    }
+  });
+}
+
+function applyCostPatches({ element, patch }) {
+  if (!hasPatchKey(patch, 'costs')) return;
+
+  Object.entries(patch.costs).forEach(([costTypeId, value]) => {
+    const costElement = element.querySelector(`cost[typeId="${costTypeId}"]`);
+    costElement?.setAttribute('value', toNumericAttributeValue(value));
+  });
+}
+
+function applyConstraintPatches({ element, patch }) {
+  if (!hasPatchKey(patch, 'constraints')) return;
+
+  Object.entries(patch.constraints).forEach(([constraintId, value]) => {
+    const constraintElement = element.querySelector(`constraint[id="${constraintId}"]`);
+    constraintElement?.setAttribute('value', toNumericAttributeValue(value));
+  });
+}
+
+function applyCharacteristicPatches({ element, patch }) {
+  if (!hasPatchKey(patch, 'characteristics')) return;
+
+  const characteristicElements = Array.from(element.querySelectorAll('characteristic'));
+  Object.entries(patch.characteristics).forEach(([characteristicName, value]) => {
+    const characteristicElement = characteristicElements
+      .find((candidate) => candidate.getAttribute('name') === characteristicName);
+    if (characteristicElement) {
+      characteristicElement.textContent = value;
+    }
+  });
+}
+
+function applyDescriptionPatch({ element, patch, doc }) {
+  if (!hasPatchKey(patch, 'description')) return;
+
+  let descriptionElement = element.querySelector('description');
+  if (!descriptionElement) {
+    descriptionElement = doc.createElement('description');
+    element.appendChild(descriptionElement);
   }
-  if (!file) return;
+  descriptionElement.textContent = patch.description;
+}
+
+/**
+ * Which patch appliers a given entry type supports. Supporting a new entry type means
+ * adding a row here — {@link updateRawXml} itself never changes.
+ */
+const PATCH_APPLIERS_BY_ENTRY_TYPE = {
+  entry: [applyCostPatches, applyConstraintPatches],
+  group: [applyConstraintPatches],
+  categoryLink: [applyConstraintPatches],
+  forceEntry: [applyConstraintPatches],
+  profile: [applyCharacteristicPatches],
+  rule: [applyDescriptionPatch],
+};
+
+/** Appliers that run for every entry type, since every element carries these attributes. */
+const UNIVERSAL_PATCH_APPLIERS = [applyAttributePatches];
+
+const findRawXmlFileContaining = (system, entryId) =>
+  system.rawXmls.cat?.find((file) => file.content.includes(entryId))
+  ?? system.rawXmls.gst?.find((file) => file.content.includes(entryId))
+  ?? null;
+
+/**
+ * @typedef {object} EntryEdit
+ * @property {string} entryId    id of the element to edit.
+ * @property {string} type       entry type, keying into {@link PATCH_APPLIERS_BY_ENTRY_TYPE}.
+ * @property {object} [patch]    only the fields to change. A missing key leaves the value
+ *                               untouched; {@link REMOVE_ATTRIBUTE} deletes an attribute.
+ *                               Supported keys: `name`, `publicationId`, `page`, `costs`,
+ *                               `constraints`, `characteristics`, `description`.
+ */
+
+/**
+ * Applies an edit to the raw XML held in `system.rawXmls`, in place.
+ *
+ * @param {object} system the parsed game system carrying `rawXmls`.
+ * @param {EntryEdit} edit the change to apply.
+ * @returns {boolean} whether a matching element was found and rewritten.
+ */
+export function updateRawXml(system, edit) {
+  if (!edit || !edit.entryId) {
+    throw new TypeError('updateRawXml requires an edit object with an entryId.');
+  }
+  if (!system?.rawXmls) return false;
+
+  const { entryId, type, patch = {} } = edit;
+
+  const file = findRawXmlFileContaining(system, entryId);
+  if (!file) return false;
 
   const DOMParserClass = getDOMParser();
-  const parser = new DOMParserClass();
-  const doc = parser.parseFromString(file.content, 'text/xml');
+  const doc = new DOMParserClass().parseFromString(file.content, 'text/xml');
 
   const element = doc.querySelector(`[id="${entryId}"]`);
-  if (!element) return;
+  if (!element) return false;
 
-  if (localName !== undefined) {
-    element.setAttribute('name', localName);
-  }
-
-  if (localPublicationId !== undefined) {
-    if (localPublicationId) {
-      element.setAttribute('publicationId', localPublicationId);
-    } else {
-      element.removeAttribute('publicationId');
-    }
-  }
-
-  if (localPage !== undefined) {
-    if (localPage) {
-      element.setAttribute('page', localPage);
-    } else {
-      element.removeAttribute('page');
-    }
-  }
-
-  if (type === 'entry') {
-    Object.entries(localCosts).forEach(([typeId, val]) => {
-      const costEl = element.querySelector(`cost[typeId="${typeId}"]`);
-      if (costEl) {
-        costEl.setAttribute('value', parseFloat(val) || 0);
-      }
-    });
-  }
-
-  if (['entry', 'group', 'categoryLink', 'forceEntry'].includes(type)) {
-    Object.entries(localConstraints).forEach(([conId, val]) => {
-      const conEl = element.querySelector(`constraint[id="${conId}"]`);
-      if (conEl) {
-        conEl.setAttribute('value', parseFloat(val) || 0);
-      }
-    });
-  }
-
-  if (type === 'profile') {
-    Object.entries(localCharacteristics).forEach(([name, val]) => {
-      const charEl = Array.from(element.querySelectorAll('characteristic')).find(c => c.getAttribute('name') === name);
-      if (charEl) {
-        charEl.textContent = val;
-      }
-    });
-  }
-
-  if (type === 'rule') {
-    let descEl = element.querySelector('description');
-    if (!descEl) {
-      descEl = doc.createElement('description');
-      element.appendChild(descEl);
-    }
-    descEl.textContent = localDescription;
-  }
+  const appliers = [
+    ...UNIVERSAL_PATCH_APPLIERS,
+    ...(PATCH_APPLIERS_BY_ENTRY_TYPE[type] ?? []),
+  ];
+  appliers.forEach((applyPatch) => applyPatch({ element, patch, doc }));
 
   const XMLSerializerClass = getXMLSerializer();
-  const serializer = new XMLSerializerClass();
-  file.content = serializer.serializeToString(doc);
+  file.content = new XMLSerializerClass().serializeToString(doc);
+  return true;
 }
 
-export function searchEditableEntries(system, query) {
-  if (!query || query.length < 2) return [];
-  const results = [];
-  const q = query.toLowerCase();
+/**
+ * Every child collection of a catalogue-tree node, with the node type and path label its
+ * members carry. This is the single place a new node type has to be registered.
+ */
+const CHILD_NODE_COLLECTIONS = [
+  { property: 'selectionEntries', nodeType: 'entry', pathPrefix: '' },
+  { property: 'entryLinks', nodeType: 'entryLink', pathPrefix: 'Link: ' },
+  { property: 'selectionEntryGroups', nodeType: 'group', pathPrefix: 'Group: ' },
+  { property: 'profiles', nodeType: 'profile', pathPrefix: 'Profile: ' },
+  { property: 'rules', nodeType: 'rule', pathPrefix: 'Rule: ' },
+  { property: 'categoryEntries', nodeType: 'category', pathPrefix: 'Category: ' },
+  { property: 'infoLinks', nodeType: 'infoLink', pathPrefix: 'InfoLink: ' },
+  { property: 'forceEntries', nodeType: 'forceEntry', pathPrefix: 'Force: ' },
+  { property: 'categoryLinks', nodeType: 'categoryLink', pathPrefix: 'CatLink: ' },
+  { property: 'sharedSelectionEntries', nodeType: 'entry', pathPrefix: 'Shared: ' },
+  { property: 'sharedSelectionEntryGroups', nodeType: 'group', pathPrefix: 'Shared Group: ' },
+  { property: 'sharedProfiles', nodeType: 'profile', pathPrefix: 'Shared Profile: ' },
+  { property: 'sharedRules', nodeType: 'rule', pathPrefix: 'Shared Rule: ' },
+];
 
-  const addEntry = (entry, catalogueName, path) => {
-    const matchesName = entry.name && entry.name.toLowerCase().includes(q);
-    const matchesId = entry.id && entry.id.toLowerCase().includes(q);
-    if (matchesName || matchesId) {
-      results.push({
-        type: 'entry',
-        id: entry.id,
-        name: entry.name,
-        catalogueName,
-        path,
-        ref: entry
-      });
-    }
-  };
+const displayNameOf = (node) => node.name || node.targetId || node.id || UNNAMED_NODE_LABEL;
 
-  const addGroup = (group, catalogueName, path) => {
-    const matchesName = group.name && group.name.toLowerCase().includes(q);
-    const matchesId = group.id && group.id.toLowerCase().includes(q);
-    if (matchesName || matchesId) {
-      results.push({
-        type: 'group',
-        id: group.id,
-        name: group.name,
-        catalogueName,
-        path,
-        ref: group
-      });
-    }
-  };
+/**
+ * @typedef {object} CatalogueTreeVisit
+ * @property {object} node           the visited node itself.
+ * @property {string} nodeType       its type, e.g. `entry`, `group`, `categoryLink`.
+ * @property {string} catalogueName  the catalogue (or game system) the node belongs to.
+ * @property {string} path           a human-readable path down to the node.
+ */
 
-  const addProfile = (profile, catalogueName, path) => {
-    const matchesName = profile.name && profile.name.toLowerCase().includes(q);
-    const matchesId = profile.id && profile.id.toLowerCase().includes(q);
-    if (matchesName || matchesId) {
-      results.push({
-        type: 'profile',
-        id: profile.id,
-        name: profile.name,
-        catalogueName,
-        path,
-        ref: profile
-      });
-    }
-  };
+function* walkNode(node, visitContext) {
+  if (!node) return;
 
-  const addRule = (rule, catalogueName, path) => {
-    const matchesName = rule.name && rule.name.toLowerCase().includes(q);
-    const matchesId = rule.id && rule.id.toLowerCase().includes(q);
-    if (matchesName || matchesId) {
-      results.push({
-        type: 'rule',
-        id: rule.id,
-        name: rule.name,
-        catalogueName,
-        path,
-        ref: rule
-      });
-    }
-  };
+  yield { ...visitContext, node };
 
-  const traverse = (item, catalogueName, path) => {
-    if (!item) return;
+  for (const collection of CHILD_NODE_COLLECTIONS) {
+    const children = node[collection.property];
+    if (!children) continue;
 
-    if (item.selectionEntries) {
-      item.selectionEntries.forEach(se => {
-        addEntry(se, catalogueName, path + " -> " + se.name);
-        traverse(se, catalogueName, path + " -> " + se.name);
-      });
-    }
-    if (item.entryLinks) {
-      item.entryLinks.forEach(el => {
-        if (el.constraints?.length > 0) {
-          addEntry(el, catalogueName, path + " -> Link: " + el.name);
-        }
-      });
-    }
-    if (item.selectionEntryGroups) {
-      item.selectionEntryGroups.forEach(seg => {
-        addGroup(seg, catalogueName, path + " -> Group: " + seg.name);
-        traverse(seg, catalogueName, path + " -> Group: " + seg.name);
-      });
-    }
-    if (item.profiles) {
-      item.profiles.forEach(p => {
-        addProfile(p, catalogueName, path + " -> Profile: " + p.name);
-      });
-    }
-    if (item.rules) {
-      item.rules.forEach(r => {
-        addRule(r, catalogueName, path + " -> Rule: " + r.name);
-      });
-    }
-  };
-
-  // Search within the Game System (.gst) data itself
-  const gstName = system.name || "Game System";
-  
-  system.sharedSelectionEntries?.forEach(se => {
-    addEntry(se, gstName, gstName + " (Shared) -> " + se.name);
-    traverse(se, gstName, gstName + " (Shared) -> " + se.name);
-  });
-  system.sharedSelectionEntryGroups?.forEach(seg => {
-    addGroup(seg, gstName, gstName + " (Shared) -> " + seg.name);
-    traverse(seg, gstName, gstName + " (Shared) -> " + seg.name);
-  });
-  system.sharedProfiles?.forEach(p => {
-    addProfile(p, gstName, gstName + " (Shared) -> " + p.name);
-  });
-  system.sharedRules?.forEach(r => {
-    addRule(r, gstName, gstName + " (Shared Rule) -> " + r.name);
-  });
-
-  system.catalogues?.forEach(cat => {
-    traverse(cat, cat.name, cat.name);
-
-    cat.sharedSelectionEntries?.forEach(se => {
-      addEntry(se, cat.name, cat.name + " (Shared) -> " + se.name);
-      traverse(se, cat.name, cat.name + " (Shared) -> " + se.name);
-    });
-    cat.sharedSelectionEntryGroups?.forEach(seg => {
-      addGroup(seg, cat.name, cat.name + " (Shared) -> " + seg.name);
-      traverse(seg, cat.name, cat.name + " (Shared) -> " + seg.name);
-    });
-    cat.sharedProfiles?.forEach(p => {
-      addProfile(p, cat.name, cat.name + " (Shared) -> " + p.name);
-    });
-    cat.sharedRules?.forEach(r => {
-      addRule(r, cat.name, cat.name + " (Shared Rule) -> " + r.name);
-    });
-  });
-
-  return results.slice(0, 50);
-}
-
-export function findExactEntryById(system, id) {
-  if (!id) return null;
-  const q = id.toLowerCase();
-  let found = null;
-
-  const check = (item, type, catalogueName, path) => {
-    if (found) return;
-    if (item && item.id && item.id.toLowerCase() === q) {
-      found = {
-        type,
-        id: item.id,
-        name: item.name || item.id,
-        catalogueName,
-        path,
-        ref: item
-      };
-    }
-  };
-
-  const traverse = (item, catalogueName, path) => {
-    if (found || !item) return;
-
-    if (item.selectionEntries) {
-      item.selectionEntries.forEach(se => {
-        check(se, 'entry', catalogueName, path + " -> " + se.name);
-        traverse(se, catalogueName, path + " -> " + se.name);
-      });
-    }
-    if (item.entryLinks) {
-      item.entryLinks.forEach(el => {
-        check(el, 'entryLink', catalogueName, path + " -> Link: " + el.name);
-        traverse(el, catalogueName, path + " -> Link: " + el.name);
-      });
-    }
-    if (item.selectionEntryGroups) {
-      item.selectionEntryGroups.forEach(seg => {
-        check(seg, 'group', catalogueName, path + " -> Group: " + seg.name);
-        traverse(seg, catalogueName, path + " -> Group: " + seg.name);
-      });
-    }
-    if (item.profiles) {
-      item.profiles.forEach(p => {
-        check(p, 'profile', catalogueName, path + " -> Profile: " + p.name);
-        traverse(p, catalogueName, path + " -> Profile: " + p.name);
-      });
-    }
-    if (item.rules) {
-      item.rules.forEach(r => {
-        check(r, 'rule', catalogueName, path + " -> Rule: " + r.name);
-        traverse(r, catalogueName, path + " -> Rule: " + r.name);
-      });
-    }
-    if (item.categoryEntries) {
-      item.categoryEntries.forEach(ce => {
-        check(ce, 'category', catalogueName, path + " -> Category: " + ce.name);
-        traverse(ce, catalogueName, path + " -> Category: " + ce.name);
-      });
-    }
-    if (item.infoLinks) {
-      item.infoLinks.forEach(il => {
-        check(il, 'infoLink', catalogueName, path + " -> InfoLink: " + (il.name || il.targetId));
-        traverse(il, catalogueName, path + " -> InfoLink: " + (il.name || il.targetId));
-      });
-    }
-    if (item.forceEntries) {
-      item.forceEntries.forEach(fe => {
-        check(fe, 'forceEntry', catalogueName, path + " -> Force: " + fe.name);
-        traverse(fe, catalogueName, path + " -> Force: " + fe.name);
-      });
-    }
-    if (item.categoryLinks) {
-      item.categoryLinks.forEach(cl => {
-        check(cl, 'categoryLink', catalogueName, path + " -> CatLink: " + (cl.name || cl.targetId));
-        traverse(cl, catalogueName, path + " -> CatLink: " + (cl.name || cl.targetId));
-      });
-    }
-  };
-
-  const gstName = system.name || "Game System";
-  check(system, 'system', gstName, gstName);
-  traverse(system, gstName, gstName);
-
-  system.sharedSelectionEntries?.forEach(se => {
-    check(se, 'entry', gstName, gstName + " (Shared) -> " + se.name);
-    traverse(se, gstName, gstName + " (Shared) -> " + se.name);
-  });
-  system.sharedSelectionEntryGroups?.forEach(seg => {
-    check(seg, 'group', gstName, gstName + " (Shared Group) -> " + seg.name);
-    traverse(seg, gstName, gstName + " (Shared Group) -> " + seg.name);
-  });
-  system.sharedProfiles?.forEach(p => {
-    check(p, 'profile', gstName, gstName + " (Shared Profile) -> " + p.name);
-    traverse(p, gstName, gstName + " (Shared Profile) -> " + p.name);
-  });
-  system.sharedRules?.forEach(r => {
-    check(r, 'rule', gstName, gstName + " (Shared Rule) -> " + r.name);
-    traverse(r, gstName, gstName + " (Shared Rule) -> " + r.name);
-  });
-  system.categoryEntries?.forEach(ce => {
-    check(ce, 'category', gstName, gstName + " (Category) -> " + ce.name);
-    traverse(ce, gstName, gstName + " (Category) -> " + ce.name);
-  });
-
-  if (system.catalogues) {
-    for (const cat of system.catalogues) {
-      if (found) break;
-      check(cat, 'catalogue', cat.name, cat.name);
-      traverse(cat, cat.name, cat.name);
-
-      cat.sharedSelectionEntries?.forEach(se => {
-        check(se, 'entry', cat.name, cat.name + " (Shared) -> " + se.name);
-        traverse(se, cat.name, cat.name + " (Shared) -> " + se.name);
-      });
-      cat.sharedSelectionEntryGroups?.forEach(seg => {
-        check(seg, 'group', cat.name, cat.name + " (Shared Group) -> " + seg.name);
-        traverse(seg, cat.name, cat.name + " (Shared Group) -> " + seg.name);
-      });
-      cat.sharedProfiles?.forEach(p => {
-        check(p, 'profile', cat.name, cat.name + " (Shared Profile) -> " + p.name);
-        traverse(p, cat.name, cat.name + " (Shared Profile) -> " + p.name);
-      });
-      cat.sharedRules?.forEach(r => {
-        check(r, 'rule', cat.name, cat.name + " (Shared Rule) -> " + r.name);
-        traverse(r, cat.name, cat.name + " (Shared Rule) -> " + r.name);
-      });
-      cat.categoryEntries?.forEach(ce => {
-        check(ce, 'category', cat.name, cat.name + " (Category) -> " + ce.name);
-        traverse(ce, cat.name, cat.name + " (Category) -> " + ce.name);
+    for (const child of children) {
+      yield* walkNode(child, {
+        nodeType: collection.nodeType,
+        catalogueName: visitContext.catalogueName,
+        path: `${visitContext.path}${PATH_SEPARATOR}${collection.pathPrefix}${displayNameOf(child)}`,
       });
     }
   }
+}
 
-  return found;
+/**
+ * The one traversal of the catalogue tree. Lazily yields every node of the game system and
+ * of each catalogue, so callers can stop as soon as they have what they need.
+ *
+ * @param {object} system the parsed game system.
+ * @returns {Generator<CatalogueTreeVisit>}
+ */
+export function* walkCatalogueTree(system) {
+  if (!system) return;
+
+  const gameSystemName = system.name || DEFAULT_GAME_SYSTEM_NAME;
+  yield* walkNode(system, {
+    nodeType: 'system',
+    catalogueName: gameSystemName,
+    path: gameSystemName,
+  });
+
+  for (const catalogue of system.catalogues ?? []) {
+    yield* walkNode(catalogue, {
+      nodeType: 'catalogue',
+      catalogueName: catalogue.name,
+      path: catalogue.name,
+    });
+  }
+}
+
+const toSearchResult = ({ node, nodeType, catalogueName, path }) => ({
+  type: nodeType,
+  id: node.id,
+  name: node.name || node.id,
+  catalogueName,
+  path,
+  ref: node,
+});
+
+/**
+ * Finds every catalogue node whose name or id contains `query`, over the same node set that
+ * {@link findExactEntryById} searches.
+ *
+ * @returns {object[]} at most {@link MAX_SEARCH_RESULTS} results.
+ */
+export function searchEditableEntries(system, query) {
+  if (!query || query.length < MIN_SEARCH_QUERY_LENGTH) return [];
+
+  const normalizedQuery = query.toLowerCase();
+  const matchesQuery = ({ node }) =>
+    Boolean(node.name?.toLowerCase().includes(normalizedQuery))
+    || Boolean(node.id?.toLowerCase().includes(normalizedQuery));
+
+  const results = [];
+  for (const visit of walkCatalogueTree(system)) {
+    if (!matchesQuery(visit)) continue;
+    results.push(toSearchResult(visit));
+    if (results.length === MAX_SEARCH_RESULTS) break;
+  }
+  return results;
+}
+
+/**
+ * Finds the single catalogue node carrying exactly this id.
+ *
+ * @returns {object|null} the search result, or `null` if no node carries that id.
+ */
+export function findExactEntryById(system, id) {
+  if (!id) return null;
+
+  const normalizedId = id.toLowerCase();
+  for (const visit of walkCatalogueTree(system)) {
+    if (visit.node.id?.toLowerCase() === normalizedId) {
+      return toSearchResult(visit);
+    }
+  }
+  return null;
 }
