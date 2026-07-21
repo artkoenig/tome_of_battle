@@ -52,8 +52,13 @@ const mockFindEntryInSystem = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
 const mockComputeRosterCounts = vi.fn();
 
-// Das Prädikat „eigenständige Untereinheit" ist eine reine Funktion ohne eigene
-// Abhängigkeiten — der Mock reicht die echte Umsetzung durch, statt sie zu stubben.
+const mockGetUnitOptions = vi.fn();
+
+// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
+// wird auch nur die Fassade gemockt. Reine Funktionen ohne eigene
+// Abhängigkeiten — das Prädikat „eigenständige Untereinheit", die
+// System-Eigenheiten und die Schlüsselwortlisten — reicht der Mock in ihrer
+// echten Umsetzung durch, statt sie zu stubben.
 vi.mock('../../solver/validator', async () => ({
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
@@ -63,14 +68,11 @@ vi.mock('../../solver/validator', async () => ({
   calculateRosterCosts: () => ({ pts: 0 }),
   getOptionDisplayCost: () => 10,
   isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
-}));
-
-// Mock optionsCollector
-const mockGetUnitOptions = vi.fn();
-vi.mock('../../solver/optionsCollector', () => ({
   getUnitOptions: (...args) => mockGetUnitOptions(...args),
   isUniqueOptionTakenElsewhere: () => false,
-  isOptionRosterUnique: () => false
+  isOptionRosterUnique: () => false,
+  isQuirkGeneralEntryId: (await vi.importActual('../../solver/systemQuirks')).isQuirkGeneralEntryId,
+  ...(await vi.importActual('../../solver/constants')),
 }));
 
 describe('SelectionConfigurator Component', () => {

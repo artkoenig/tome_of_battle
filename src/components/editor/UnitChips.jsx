@@ -3,10 +3,10 @@ import {
   resolveEntry,
   findEntryInSystem,
   collectUnitProfilesAndRules,
-  isIndependentSubUnit
+  isIndependentSubUnit,
+  groupProfilesByType,
+  UPGRADE_DETAILS_KEYWORDS
 } from '../../solver/validator';
-import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
-import { groupProfilesByType } from '../../solver/rulesEvaluator';
 import { useRuleUrl } from '../../hooks/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';

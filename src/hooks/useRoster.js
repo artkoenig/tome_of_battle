@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 
 import {
   calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
-  childSelectionsOf, findSelectionInRoster, mapSelectionTree, replaceSelectionById
+  childSelectionsOf, findSelectionInRoster, mapSelectionTree, replaceSelectionById,
+  createSelectionFromDef as buildSelectionFromDef,
+  withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../solver/validator';
-import { createSelectionFromDef as buildSelectionFromDef } from '../solver/selectionFactory';
-import { withAddedInstance, withoutInstance, withChangedOptionCount } from '../solver/subSelectionEditing';
 import { useUndoableState } from './useUndoableState';
 import {
   PERSISTENCE_FAILURE_MESSAGE,

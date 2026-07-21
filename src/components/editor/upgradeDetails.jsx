@@ -1,5 +1,5 @@
 import React from 'react';
-import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
+import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/validator';
 
 // Shared renderer for the rich detail block of an upgrade/rule/magic item,
 // used by the editor chips, the SelectionConfigurator and the OptionGroup.

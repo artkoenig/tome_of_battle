@@ -1,14 +1,11 @@
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit, isEntryScope } from '../../solver/validator';
-import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
-import OptionGroupComponent from './OptionGroup';
 import {
-  UPGRADE_DETAILS_KEYWORDS,
-  GENERAL_EXACT_KEYWORDS,
-  GENERAL_SUBSTRING_KEYWORDS
-} from '../../solver/constants';
-import { isQuirkGeneralEntryId } from '../../solver/systemQuirks';
+  resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
+  isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
+  isQuirkGeneralEntryId, UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
+} from '../../solver/validator';
+import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 

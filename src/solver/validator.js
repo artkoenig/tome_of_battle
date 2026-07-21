@@ -1,8 +1,14 @@
 /**
  * Fassade des Solvers (Regeln-Engine).
  *
- * Die restliche App importiert ausschließlich von hier; die Implementierung
- * liegt in den Fachmodulen:
+ * Anwendungscode außerhalb von `src/solver/` importiert ausschließlich von
+ * hier. Der Anspruch ist nicht bloß Konvention, sondern maschinell
+ * durchgesetzt: die Lint-Regel `no-restricted-imports` in `.oxlintrc.json`
+ * verbietet den direkten Zugriff auf die Fachmodule. Ausgenommen sind allein
+ * Testdateien — sie sprechen einzelne Fachmodule bewusst direkt an, um deren
+ * Nahtstellen isoliert zu prüfen oder zu mocken.
+ *
+ * Die Implementierung liegt in den Fachmodulen:
  *  - rosterTree:        Traversierungs-Primitive des Roster-Baums
  *  - catalogResolver:   Entry-Links/Einträge über Kataloggrenzen auflösen
  *  - modifierEvaluator: Battlescribe-Conditions/Modifier auswerten
@@ -14,6 +20,11 @@
  *  - entryVisibility:   hidden-Status von Einträgen/Kategorie-Links
  *  - subUnit:           Prädikat „eigenständige Untereinheit"
  *  - battlescribeConstants: geteilte Format-Konstanten (Scopes, Limit-Feldpräfix)
+ *  - optionsCollector:  wählbare Optionen einer Einheit einsammeln
+ *  - rulesEvaluator:    Profile gruppieren, Rüstungs-/Rettungswürfe herleiten
+ *  - selectionFactory:  Auswahl-Knoten aus einer Katalog-Definition erzeugen
+ *  - systemQuirks:      systemspezifische Eigenheiten nachschlagen
+ *  - constants:         Schlüsselwortlisten der Katalog-Heuristiken
  */
 export {
   childSelectionsOf, rootSelectionsOf, effectiveCountOf, traverseSelectionTree, foldSelectionTree,
@@ -34,3 +45,9 @@ export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategory
 export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, isReachableViaForceCategories } from './armyWideSelectors.js';
 export { isIndependentSubUnit, hasEntryChildren } from './subUnit.js';
 export { ConstraintScope, NON_ENTRY_SCOPE_KEYWORDS, isEntryScope, ROSTER_LIMIT_FIELD_PREFIX, isRosterLimitField, costTypeIdOfRosterLimitField } from './battlescribeConstants.js';
+export { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from './optionsCollector.js';
+export { groupProfilesByType, getArmourSave, getWardSave, hasBlessing } from './rulesEvaluator.js';
+export { createSelectionFromDef } from './selectionFactory.js';
+export { isQuirkGeneralEntryId } from './systemQuirks.js';
+export { UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from './constants.js';
+export { withAddedInstance, withoutInstance, withChangedOptionCount } from './subSelectionEditing.js';
