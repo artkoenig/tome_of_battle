@@ -1283,12 +1283,7 @@ select option {
 .autofill-panel {
   padding: 20px;
   margin-top: 24px;
-  border-style: solid;
-  border-width: 1px;
-  /* Kept as `currentColor` to preserve the rendering this panel has always had:
-     it previously referenced an undefined custom property, which computes to
-     the border-color initial value. */
-  border-color: currentColor;
+  border: 1px solid var(--border-gold);
 }
 
 .autofill-header {
