@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BookOpen, FolderOpen, WifiOff, Download, Settings } from 'lucide-react';
 
 import Importer from './components/Importer';
@@ -13,6 +13,7 @@ import { SettingsProvider } from './contexts/SettingsContext';
 
 import useViewportHeight from './hooks/useViewportHeight';
 import usePwaLifecycle from './hooks/usePwaLifecycle';
+import useToast from './hooks/useToast';
 import useAppData from './hooks/useAppData';
 import useRosterList from './hooks/useRosterList';
 import { getDiffChanges } from './utils/releaseDiff';
@@ -21,9 +22,6 @@ import { Analytics } from '@vercel/analytics/react';
 
 /** Der Ausgangspunkt der Verlaufs-Navigation: das Heerlager ohne offenes Roster. */
 const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: null });
-
-/** Anzeigedauer einer Toast-Benachrichtigung in Millisekunden. */
-const TOAST_DURATION_MS = 3000;
 
 export default function App() {
   // Keep --app-vh in sync with the real visible viewport height so mobile
@@ -45,25 +43,8 @@ export default function App() {
     updateRelease,
     applyUpdate,
   } = usePwaLifecycle();
-  const [toast, setToast] = useState(null);
-  const toastTimeoutRef = useRef(null);
+  const { toast, showToast, reportError } = useToast();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  const showToast = (message, type = 'success') => {
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current);
-    }
-    setToast({ message, type });
-    toastTimeoutRef.current = setTimeout(() => {
-      setToast(null);
-      toastTimeoutRef.current = null;
-    }, TOAST_DURATION_MS);
-  };
-
-  // Der zentrale Fehlerkanal der Anwendung (ADR 0010): Ansichten und Hooks, die selbst
-  // keine Oberfläche für Fehler besitzen — Autosave, Spielstand, Import —, reichen ihre
-  // Meldung hierher, statt sie in der Konsole enden zu lassen.
-  const reportError = (message) => showToast(message, 'error');
 
   // Navigates to a view and pushes a history entry, so the browser back button
   // returns to whatever view/roster was active before this call.

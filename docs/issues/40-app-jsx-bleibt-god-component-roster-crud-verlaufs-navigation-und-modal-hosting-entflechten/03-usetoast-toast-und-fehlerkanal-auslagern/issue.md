@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -21,3 +21,4 @@ durch. Verhalten (Text, Dauer, Fehlerpfad) unverändert.
   Unit-Tests; `src/App.test.jsx` bleibt unverändert grün.
 
 ## Comments
+- Toast-Zustand, Auto-Ausblende-Timer (showToast) und Fehlerkanal (reportError) in src/hooks/useToast.js gekapselt. Lokaler State, kein Context (ADR-0010). App.jsx hält keinen Toast-useState/Timer mehr, rendert das Toast-Element weiterhin an der Wurzel und reicht showToast/reportError an useAppData, useRosterList und die Kinder durch. Anzeige-/Fehlerverhalten unverändert; eigene Unit-Tests (Fake-Timer); App.test.jsx unverändert grün.
