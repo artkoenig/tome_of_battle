@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { BookOpen, FolderOpen, WifiOff, Download, Settings } from 'lucide-react';
-import { getAllSystems, getAllRosters } from './db/database';
-import { runSystemMigrations } from './db/migrations';
-import { fetchCatalogText } from './db/catalogUpdate';
 
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
@@ -16,6 +13,7 @@ import { SettingsProvider } from './contexts/SettingsContext';
 
 import useViewportHeight from './hooks/useViewportHeight';
 import usePwaLifecycle from './hooks/usePwaLifecycle';
+import useAppData from './hooks/useAppData';
 import useRosterList from './hooks/useRosterList';
 import { getDiffChanges } from './utils/releaseDiff';
 import { VIEWS, isImmersiveView } from './constants/views';
@@ -27,15 +25,6 @@ const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: nul
 /** Anzeigedauer einer Toast-Benachrichtigung in Millisekunden. */
 const TOAST_DURATION_MS = 3000;
 
-/**
- * Meldung des initialen Ladevorgangs. Er läuft ohne Backend und ohne Konsole am
- * Spieltisch — ein Fehlschlag muss den Nutzer über den Toast-Kanal (ADR 0010)
- * erreichen, sonst ist er von einem Erfolg nicht zu unterscheiden.
- */
-const ERROR_MESSAGE = Object.freeze({
-  loadData: 'Die gespeicherten Spielsysteme und Listen konnten nicht geladen werden.',
-});
-
 export default function App() {
   // Keep --app-vh in sync with the real visible viewport height so mobile
   // layout (#root, .empty-state-wrapper) sizes against the area actually
@@ -43,22 +32,10 @@ export default function App() {
   useViewportHeight();
 
   const [view, setView] = useState(VIEWS.ROSTERS);
-  const [systems, setSystems] = useState([]);
-  const [rosters, setRosters] = useState([]);
   // Einzige Quelle der Wahrheit für die Auswahl: die ID. Roster und System
   // werden daraus abgeleitet, damit eine Änderung an der Liste (etwa ein
   // Umbenennen) sofort in der geöffneten Ansicht sichtbar wird.
   const [selectedRosterId, setSelectedRosterId] = useState(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
-
-  const selectedRoster = useMemo(
-    () => rosters.find(r => r.id === selectedRosterId) || null,
-    [rosters, selectedRosterId]
-  );
-  const selectedSystem = useMemo(
-    () => (selectedRoster ? systems.find(s => s.id === selectedRoster.systemId) || null : null),
-    [systems, selectedRoster]
-  );
 
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const {
@@ -70,6 +47,7 @@ export default function App() {
   } = usePwaLifecycle();
   const [toast, setToast] = useState(null);
   const toastTimeoutRef = useRef(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const showToast = (message, type = 'success') => {
     if (toastTimeoutRef.current) {
@@ -87,6 +65,40 @@ export default function App() {
   // Meldung hierher, statt sie in der Konsole enden zu lassen.
   const reportError = (message) => showToast(message, 'error');
 
+  // Navigates to a view and pushes a history entry, so the browser back button
+  // returns to whatever view/roster was active before this call.
+  const navigate = (nextView, rosterId = null) => {
+    const isSameEntry = nextView === view && rosterId === selectedRosterId;
+    const historyState = { view: nextView, rosterId };
+
+    if (isSameEntry) {
+      window.history.replaceState(historyState, '');
+    } else {
+      window.history.pushState(historyState, '');
+    }
+
+    setView(nextView);
+    setSelectedRosterId(rosterId);
+  };
+
+  const {
+    systems,
+    rosters,
+    isDataLoaded,
+    setRosters,
+    loadAllData,
+    handleSystemImported,
+  } = useAppData({ showToast, navigate });
+
+  const selectedRoster = useMemo(
+    () => rosters.find(r => r.id === selectedRosterId) || null,
+    [rosters, selectedRosterId]
+  );
+  const selectedSystem = useMemo(
+    () => (selectedRoster ? systems.find(s => s.id === selectedRoster.systemId) || null : null),
+    [systems, selectedRoster]
+  );
+
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
@@ -98,12 +110,6 @@ export default function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
-
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  useEffect(() => {
-    loadAllData();
   }, []);
 
   // Seed a base history entry so the first back-navigation has a defined target.
@@ -123,93 +129,6 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-
-  // Navigates to a view and pushes a history entry, so the browser back button
-  // returns to whatever view/roster was active before this call.
-  const navigate = (nextView, rosterId = null) => {
-    const isSameEntry = nextView === view && rosterId === selectedRosterId;
-    const historyState = { view: nextView, rosterId };
-
-    if (isSameEntry) {
-      window.history.replaceState(historyState, '');
-    } else {
-      window.history.pushState(historyState, '');
-    }
-
-    setView(nextView);
-    setSelectedRosterId(rosterId);
-  };
-
-  // Loads systems and rosters from IndexedDB into state. Local and fast — it never
-  // touches the network — and returns the loaded systems so a caller can hand them
-  // to the background catalog refresh without reloading them.
-  const loadLocalData = async () => {
-    const dbSystems = await getAllSystems();
-    const allRosters = await getAllRosters();
-    setSystems(dbSystems);
-    setRosters(allRosters);
-    setIsDataLoaded(true);
-    return dbSystems;
-  };
-
-  // Checks the remote catalog for newer revisions and republishes the refreshed
-  // systems. This performs a real network request, so it is written to be safe to
-  // run un-awaited in the background: a refresh failure stays invisible (the catalog
-  // is only a cache) apart from the existing per-system toast on partial failures.
-  const refreshCatalogInBackground = async (dbSystems) => {
-    try {
-      const { systems: refreshedSystems, failures } = await runSystemMigrations(dbSystems, fetchCatalogText);
-      if (failures.length > 0) {
-        showToast(
-          `Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: ${failures.map(f => f.name).join(', ')}`,
-          'error'
-        );
-      }
-      setSystems(refreshedSystems);
-    } catch (e) {
-      // Bewusst nur Protokoll: der Katalog ist ein Cache, der gespeicherte Stand bleibt
-      // nutzbar. Was der Nutzer wissen muss — nicht aktualisierbare Systeme — meldet
-      // bereits der Toast oberhalb.
-      console.error("Error refreshing catalog in background:", e);
-    }
-  };
-
-  // Ein fehlgeschlagener Lesevorgang bedeutet eine leere oder unvollständige Oberfläche;
-  // ohne Meldung wäre sie von "noch keine Daten importiert" nicht zu unterscheiden.
-  const reportLoadFailure = (error) => {
-    console.error("Error loading index data:", error);
-    showToast(ERROR_MESSAGE.loadData, 'error');
-    setIsDataLoaded(true);
-  };
-
-  // Reloads everything and also waits for the catalog refresh. Used by callers that
-  // are not gated behind a loading overlay (tab switches, roster CRUD), where waiting
-  // for the network round-trip is acceptable.
-  const loadAllData = async () => {
-    try {
-      const dbSystems = await loadLocalData();
-      await refreshCatalogInBackground(dbSystems);
-    } catch (e) {
-      reportLoadFailure(e);
-    }
-  };
-
-  // Awaits only the local IndexedDB reload before switching views so the first-import
-  // path (empty state -> Heerlager) has `systems` populated by the time the Importer's
-  // loading overlay comes down — otherwise the empty Importer flashes for a frame
-  // between the overlay and the RosterDashboard. The catalog refresh is a network
-  // round-trip and must NOT gate leaving the overlay, so it runs in the background and
-  // republishes the systems (and surfaces its failure toast) once it finishes.
-  const handleSystemImported = async () => {
-    let dbSystems = [];
-    try {
-      dbSystems = await loadLocalData();
-    } catch (e) {
-      reportLoadFailure(e);
-    }
-    navigate(VIEWS.ROSTERS);
-    refreshCatalogInBackground(dbSystems);
-  };
 
   const {
     isNewRosterModalOpen,
