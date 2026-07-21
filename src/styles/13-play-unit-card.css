@@ -1,0 +1,194 @@
+/* Spielmodus-Einheitenkarte inkl. mobiler Anpassungen und Wundenanzeige. */
+/* Bulleted breakdown lists inside tooltips and bottom sheets. */
+.breakdown-list {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.breakdown-list--readable {
+  color: var(--text-parchment);
+  font-size: var(--fs-body);
+}
+
+.breakdown-list li {
+  margin-bottom: 4px;
+}
+
+.breakdown-empty-hint {
+  font-size: var(--fs-body);
+}
+
+/* Sub-unit variant: nested inside another unit card, so it steps back visually. */
+.play-unit-card--sub {
+  border: 1px solid rgba(226, 183, 66, 0.2);
+  background-color: rgba(0, 0, 0, 0.2);
+  box-shadow: none;
+}
+
+.play-unit-card {
+  width: 100%;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-dark);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 10px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.play-unit-header {
+  padding: 8px 12px;
+  background-color: rgba(226, 183, 66, 0.03);
+  border-bottom: 1px solid var(--border-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.play-unit-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Wound controls of a unit that has been destroyed — still usable, but muted. */
+.play-unit-header-controls--dimmed {
+  opacity: 0.5;
+}
+
+.play-unit-destroyed-label {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.play-unit-wound-value {
+  font-weight: 700;
+  min-width: 40px;
+  text-align: center;
+}
+
+.play-unit-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* Nested sub-units, indented behind a dim gold rule. */
+.sub-units-container {
+  border-left: 2px solid rgba(226, 183, 66, 0.2);
+}
+
+.play-unit-sub-units {
+  padding-left: 12px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.selection-node-sub-units {
+  padding-left: 16px;
+  margin-top: 8px;
+}
+
+/* Profile-table cells whose value was changed by a modifier. */
+.profile-cell--positive {
+  background-color: rgba(27, 115, 64, 0.12);
+  font-weight: bold;
+  cursor: help;
+}
+
+.profile-cell--negative {
+  background-color: rgba(166, 28, 28, 0.12);
+  font-weight: bold;
+  cursor: help;
+}
+
+.profile-cell--modified {
+  background-color: rgba(226, 183, 66, 0.12);
+  font-weight: bold;
+  cursor: help;
+}
+
+.play-header-title {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.play-unit-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.play-unit-body {
+  padding: 12px;
+}
+
+.play-unit-profiles {
+  display: none;
+}
+
+.play-unit-profiles.is-open {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .play-layout {
+    /* No top padding: a sticky child sticks to the scroll container's padding box,
+       so any padding-top would leave a gap above the header that content scrolls through. */
+    padding: 0 12px 12px !important;
+    width: 100%;
+    max-width: 100%;
+    height: 100% !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .play-header {
+    /* Break out of .play-layout's side padding so the sticky header spans the full width and sits flush at the top */
+    margin: 0 -12px 12px -12px;
+    padding: 10px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--bg-dark);
+    border-bottom: 1px solid var(--border-gold-dim);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  }
+  .play-header-title {
+    font-size: var(--fs-subheading);
+  }
+  .play-header .btn-sm:not(.square-btn) {
+    padding: 4px 8px;
+    font-size: var(--fs-micro);
+  }
+  .play-units-grid {
+    gap: 6px;
+  }
+  .play-unit-card {
+    border-radius: 2px;
+  }
+  .play-unit-header {
+    padding: 6px 8px;
+  }
+  .play-unit-title {
+    font-size: var(--fs-ui-title);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .play-unit-header-controls {
+    justify-content: space-between;
+  }
+  .play-unit-body {
+    padding: 6px 8px;
+  }
+  .profile-table th, 
+  .profile-table td {
+    padding: 3px 2px;
+    font-size: var(--fs-micro);
+  }
+}

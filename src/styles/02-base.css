@@ -1,0 +1,49 @@
+/* Reset, Body-Grundlagen und Scrollbar-Darstellung. */
+/* Reset and Global Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: radial-gradient(circle at center, #121217 0%, #030304 100%);
+  background-color: #030304;
+  color: var(--text-parchment);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+/* Elegant Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+  border-left: 1px solid var(--border-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-panel);
+  border: 2px solid var(--bg-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-gold-dim);
+}
+
+/* Below the mobile breakpoint, hide scrollbars everywhere so scrollable
+   content uses the full screen width — scrolling itself stays enabled,
+   only the visual bar (and the layout space it reserves) is removed. */
+@media (max-width: 900px) {
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge */
+  }
+  *::-webkit-scrollbar {
+    display: none; /* Chromium / Safari */
+  }
+}

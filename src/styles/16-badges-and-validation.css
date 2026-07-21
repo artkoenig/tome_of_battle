@@ -1,0 +1,69 @@
+/* Badges und Validierungsmeldungen. */
+/* Error/Notification badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-family: var(--font-body);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.badge-danger {
+  background-color: rgba(166, 28, 28, 0.2);
+  border: 1px solid var(--color-danger);
+  color: var(--text-danger-readable);
+}
+
+.badge-success {
+  background-color: rgba(27, 115, 64, 0.2);
+  border: 1px solid var(--color-success);
+  color: var(--text-success-readable);
+}
+
+.badge-muted {
+  background-color: rgba(152, 152, 163, 0.08);
+  border: 1px solid rgba(152, 152, 163, 0.25);
+  color: var(--text-dim);
+}
+
+.validation-error-item {
+  padding: 10px;
+  border-left: 3px solid var(--color-danger);
+  background-color: rgba(166, 28, 28, 0.05);
+  color: var(--text-danger-readable);
+  margin-bottom: 8px;
+  font-size: var(--fs-label);
+  border-radius: 0 4px 4px 0;
+}
+
+.validation-error-item--warning {
+  border-left-color: var(--color-warning);
+  background-color: rgba(194, 125, 19, 0.05);
+  color: var(--text-warning-readable);
+}
+
+.validation-error-item--info {
+  border-left-color: var(--color-info);
+  background-color: rgba(45, 108, 166, 0.05);
+  color: var(--text-info-readable);
+}
+
+/* Category and selection errors repeated below the blocking ones, muted so the
+   primary (general) errors keep the reader's attention. */
+.validation-error-item--secondary {
+  opacity: 0.8;
+}
+
+.validation-error-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.validation-error-list--advisory {
+  margin-top: 12px;
+}

@@ -1,0 +1,137 @@
+/* Semantische Textklassen, mobile Typo-Stufen und HTML-Grundtypografie. */
+/* ── Semantic Text Utility Classes ───────────────────────────────────────
+   Use these classes instead of ad-hoc font-size / font-family inline styles.
+   Each class defines font-family + font-size + line-height for its purpose.
+
+   .text-display    – App-Titel, großer Hero-Text (Cinzel)
+   .text-heading    – Sektions-Überschrift / h2-Niveau (Cinzel)
+   .text-subheading – Kategorie-Titel / h3-Niveau (Cinzel)
+   .text-ui-title   – Karten-Titel, Einheitsname (Cinzel)
+   .text-body       – Fließtext, Optionen, Inputs (Lora)
+   .text-label      – Meta-Info, Beschriftungen (Lora)
+   .text-micro      – Tags, Badges, Tabellenwerte (Lora)
+   .text-dim        – Farb-Modifikator: gedämpfter Sekundärtext
+──────────────────────────────────────────────────────────────────────── */
+
+.text-dim {
+  color: var(--text-dim);
+}
+
+.text-display {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  color: var(--text-gold);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.text-heading {
+  font-family: var(--font-serif);
+  font-size: var(--fs-heading);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.05em;
+  color: var(--text-gold);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.text-subheading {
+  font-family: var(--font-serif);
+  font-size: var(--fs-subheading);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  color: var(--text-gold);
+}
+
+.text-ui-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-ui-title);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+}
+
+.text-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.text-label {
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.text-micro {
+  font-family: var(--font-body);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Mobile responsive overrides for typography scale */
+@media (max-width: 900px) {
+  :root {
+    --fs-display:    1.6rem;
+    --fs-heading:    1.3rem;
+    --fs-subheading: 1.05rem;
+    --fs-ui-title:   1rem;
+    --fs-body:       0.95rem;
+    --fs-label:      0.85rem;
+    --fs-micro:      0.75rem;
+  }
+}
+
+/* ── Base HTML Heading styles (map to typography scale) ─────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--text-gold);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+h1 {
+  font-size: var(--fs-display);
+  text-align: center;
+  border-bottom: 2px double var(--border-gold);
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+
+h2 {
+  font-size: var(--fs-heading);
+  border-bottom: 1px solid var(--border-gold-dim);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+h3 {
+  font-size: var(--fs-subheading);
+  margin-bottom: 8px;
+}
+
+h4 {
+  font-size: var(--fs-ui-title);
+}
+
+p {
+  margin-bottom: 12px;
+}
+
+a {
+  color: var(--text-gold);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+a:hover {
+  color: #fff;
+  text-shadow: 0 0 5px var(--text-gold);
+}

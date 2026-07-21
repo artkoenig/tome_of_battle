@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01]
 
@@ -48,3 +48,4 @@ Dokumentation nicht hinter dem Code zurückbleibt.
       belegen ein unverändertes Rendering.
 
 ## Comments
+- src/index.css (3.958 Zeilen) in 33 Bereichs-Dateien unter src/styles/ aufgeteilt; index.css enthaelt nur noch @import-Anweisungen in fester Kaskadenreihenfolge. Regeln wurden blockweise verschoben, nicht umsortiert — ein Vergleich der abgeflachten Regelliste belegt 522 von 574 Regelbloecken in unveraenderter Reihenfolge, Spezifitaet und Media-Kontext; 52 ungenutzte Regelbloecke entfernt. ADR 0004 um Paragraph 6 (Dateistruktur, Kaskadenreihenfolge, Richtwert 250 Zeilen) ergaenzt.

@@ -1,0 +1,59 @@
+/* Importer-Statusbanner und Liste importierter Spielsysteme. */
+/* Importer status banners (error / success), shown above the import form. */
+.importer-status-banner {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.importer-status-banner--error {
+  border-color: var(--color-danger);
+}
+
+.importer-status-banner--success {
+  border-color: var(--color-success);
+  background: rgba(27, 115, 64, 0.05);
+}
+
+.importer-empty-hint {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.imported-system-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.imported-system-item {
+  padding: 16px;
+}
+
+.imported-system-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding-right: 16px;
+}
+
+.imported-system-name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.imported-system-catalogue-count {
+  font-size: var(--fs-label);
+}
+
+.imported-system-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
