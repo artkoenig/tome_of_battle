@@ -3,7 +3,8 @@ import { Plus, Minus, ReceiptText } from 'lucide-react';
 import {
   findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost,
   getEffectiveSelectionName, isIndependentSubUnit, MODEL_COUNT_PROFILE_TYPES,
-  groupProfilesByType, resolveCostLimitTypeId, resolveCostLimitLabel
+  groupProfilesByType, resolveCostLimitTypeId, resolveCostLimitLabel,
+  childSelectionsOf
 } from '../../solver/validator';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { getProfileCellClassName } from '../profileCellClasses';
@@ -81,7 +82,7 @@ export default function PlayUnitDetails({
     return w || 1;
   };
 
-  const independentSubUnits = (selection.selections || []).filter(subSel => {
+  const independentSubUnits = childSelectionsOf(selection).filter(subSel => {
     const entryId = subSel.entryLinkId || subSel.selectionEntryId;
     const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
     const resolved = resolveEntry(system, entry, roster?.catalogueId);
@@ -186,26 +187,24 @@ export default function PlayUnitDetails({
     let totalModels = 0;
     let hasModelChildren = false;
 
-    if (sel.selections && sel.selections.length > 0) {
-      sel.selections.forEach(child => {
-        const childEntryId = child.entryLinkId || child.selectionEntryId;
-        const childEntry = findEntryInSystem(system, childEntryId, roster?.catalogueId);
-        const childResolved = resolveEntry(system, childEntry, roster?.catalogueId);
-        
-        if (childResolved) {
-          const isModel = childResolved.type === 'model' || 
-                          child.type === 'model' ||
-                          childResolved.profiles?.some(p => 
-                            MODEL_COUNT_PROFILE_TYPES.includes(p.profileTypeName?.toLowerCase())
-                          );
-          
-          if (isModel) {
-            totalModels += (child.number || 1);
-            hasModelChildren = true;
-          }
+    childSelectionsOf(sel).forEach(child => {
+      const childEntryId = child.entryLinkId || child.selectionEntryId;
+      const childEntry = findEntryInSystem(system, childEntryId, roster?.catalogueId);
+      const childResolved = resolveEntry(system, childEntry, roster?.catalogueId);
+
+      if (childResolved) {
+        const isModel = childResolved.type === 'model' ||
+                        child.type === 'model' ||
+                        childResolved.profiles?.some(p =>
+                          MODEL_COUNT_PROFILE_TYPES.includes(p.profileTypeName?.toLowerCase())
+                        );
+
+        if (isModel) {
+          totalModels += (child.number || 1);
+          hasModelChildren = true;
         }
-      });
-    }
+      }
+    });
 
     if (!hasModelChildren) {
       return sel.number || 1;

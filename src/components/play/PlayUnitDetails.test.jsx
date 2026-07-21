@@ -28,6 +28,9 @@ vi.mock('../../solver/validator', async () => ({
   getEffectiveSelectionName: vi.fn((selection) => selection?.name ?? ''),
   groupProfilesByType: (...args) => mockGroupProfilesByType(...args),
   MODEL_COUNT_PROFILE_TYPES: [],
+  // Reines Zugriffs-Primitiv auf die direkten Kind-Selections — echte
+  // Implementierung durchreichen (ihre Semantik ist in rosterTree.test.js abgedeckt).
+  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
 }));
 
 vi.mock('../editor/UnitChips', () => ({

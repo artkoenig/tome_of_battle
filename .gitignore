@@ -40,3 +40,4 @@ e2e-failure.png
 # Arbeitsausgabe von scripts/generate_screenshots.js. Nicht zu verwechseln mit
 # dem versionierten screenshots/, das die kuratierten README-Bilder enthält.
 .screenshots/
+.claude/worktrees/

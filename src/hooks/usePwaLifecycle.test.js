@@ -5,6 +5,8 @@ import usePwaLifecycle from './usePwaLifecycle';
 const BEFORE_INSTALL_PROMPT_EVENT = 'beforeinstallprompt';
 const APP_INSTALLED_EVENT = 'appinstalled';
 const PWA_UPDATE_AVAILABLE_EVENT = 'pwa-update-available';
+const ONLINE_EVENT = 'online';
+const OFFLINE_EVENT = 'offline';
 
 /**
  * Minimal fake of the `beforeinstallprompt` event: records whether the browser
@@ -131,5 +133,55 @@ describe('usePwaLifecycle', () => {
     window.dispatchEvent(createInstallPromptEvent());
 
     expect(result.current.isInstallable).toBe(false);
+  });
+
+  describe('Online-/Offline-Zustand', () => {
+    afterEach(() => {
+      // navigator.onLine für nachfolgende Tests wieder auf online zurücksetzen.
+      vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true);
+    });
+
+    it('spiegelt den anfänglichen Verbindungszustand aus navigator.onLine', () => {
+      vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+
+      const { result } = renderHook(() => usePwaLifecycle());
+
+      expect(result.current.isOffline).toBe(true);
+    });
+
+    it('startet online, wenn der Browser eine Verbindung meldet', () => {
+      vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true);
+
+      const { result } = renderHook(() => usePwaLifecycle());
+
+      expect(result.current.isOffline).toBe(false);
+    });
+
+    it('wechselt in den Offline-Zustand, sobald die Verbindung verloren geht', () => {
+      const { result } = renderHook(() => usePwaLifecycle());
+
+      dispatch(new Event(OFFLINE_EVENT));
+
+      expect(result.current.isOffline).toBe(true);
+    });
+
+    it('kehrt in den Online-Zustand zurück, sobald die Verbindung wiederkehrt', () => {
+      const { result } = renderHook(() => usePwaLifecycle());
+      dispatch(new Event(OFFLINE_EVENT));
+      expect(result.current.isOffline).toBe(true);
+
+      dispatch(new Event(ONLINE_EVENT));
+
+      expect(result.current.isOffline).toBe(false);
+    });
+
+    it('reagiert nach dem Unmount nicht mehr auf Verbindungsänderungen', () => {
+      const { result, unmount } = renderHook(() => usePwaLifecycle());
+      unmount();
+
+      window.dispatchEvent(new Event(OFFLINE_EVENT));
+
+      expect(result.current.isOffline).toBe(false);
+    });
   });
 });
