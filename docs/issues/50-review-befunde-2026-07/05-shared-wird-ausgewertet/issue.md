@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: [01]
 
@@ -40,3 +40,4 @@ als bewusste Entscheidung festzuhalten und der tote Parserwert zu entfernen.
 - [ ] Falls die Auswertung nicht umgesetzt wird: ADR 0003 hält die Lücke begründet fest und der unbenutzte Parserwert ist entfernt
 
 ## Comments
+- Das BSData-Attribut shared wird jetzt ausgewertet: isSharedQuery (battlescribeConstants.js) ist die einzige Auslegung, der Validator (resolveEntryConstraintCount) und die Bedingungsauswertung (evaluateCondition) zaehlen bei shared=false nur die Instanz, an der die Query haengt. Der Parser setzt zudem den XSD-Vorgabewert true fuer ein fehlendes Attribut. ADR 0003 Abschnitt 4 haelt die Regel fest.
