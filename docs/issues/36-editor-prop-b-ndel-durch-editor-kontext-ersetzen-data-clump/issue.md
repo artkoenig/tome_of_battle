@@ -40,5 +40,5 @@ Vorbestehendes Muster; nicht durch Issue 35 verursacht, dort nur fortgeführt.
   globaler EditorContext waere falsch, weil force und activeCatalogue pro
   Force variieren — der Provider muesste zweistufig sein. Wer den Befund
   wieder aufgreifen will, findet hier den Entwurf.
-- Erneute Gesamtbewertung (2026-07-21): Der Data Clump besteht messbar fort - zwoelf identische Props an drei Aufrufstellen der Einheitenkarte in RosterEditor.jsx. Das Issue bleibt geschlossen. Die Neubewertung ist bewusst an Kind-Issue 42/01 (Zerlegung der Editor-Wurzelkomponente) gekoppelt: die Zerlegung reduziert die Zahl der Aufrufstellen, sodass der Nutzen eines - laut hiesiger Analyse zweistufigen - Providers danach anders ausfallen kann.
-- Korrektur der Nummerierung im vorigen Kommentar: das gekoppelte Kind-Issue ist 42/02 (Zerlegung der Editor-Wurzelkomponente), nicht 42/01. 42/01 ist die Entfernung der Save-Badges.
+- Erneute Gesamtbewertung (2026-07-21): Der Data Clump besteht messbar fort - zwoelf identische Props an drei Aufrufstellen der Einheitenkarte in RosterEditor.jsx. Das Issue bleibt geschlossen. Die Neubewertung ist bewusst an Kind-Issue 43/01 (Zerlegung der Editor-Wurzelkomponente) gekoppelt: die Zerlegung reduziert die Zahl der Aufrufstellen, sodass der Nutzen eines - laut hiesiger Analyse zweistufigen - Providers danach anders ausfallen kann.
+- Korrektur der Nummerierung im vorigen Kommentar: das gekoppelte Kind-Issue ist 43/02 (Zerlegung der Editor-Wurzelkomponente), nicht 43/01. 43/01 ist die Entfernung der Save-Badges.

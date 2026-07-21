@@ -4,7 +4,7 @@ Blocked by: None
 
 ## Description
 
-**Herkunft:** Nebenbefund aus Kind-Issue 42/04. Der Implementierer stieß darauf,
+**Herkunft:** Nebenbefund aus Kind-Issue 43/04. Der Implementierer stieß darauf,
 während er eine ungenutzte Prop-Kette zurückbaute, und hat ihn korrekt gemeldet
 statt ihn im laufenden Refactoring mitzuerledigen.
 
@@ -28,9 +28,9 @@ einer anderen Kosteneinheit — BattleScribe erlaubt beliebige Kostentypen, etwa
 **Erwartet:** Die Gruppen-Limitanzeige nutzt dieselbe abgeleitete Beschriftung
 wie der Rest der Oberfläche.
 
-### Zum Zusammenhang mit 42/04
+### Zum Zusammenhang mit 43/04
 
-Kind-Issue 42/04 hat die `costTypeLabel`-Prop-Kette bis `OptionGroup` **zurück**
+Kind-Issue 43/04 hat die `costTypeLabel`-Prop-Kette bis `OptionGroup` **zurück**
 gebaut, weil die Komponente sie entgegennahm, ohne sie je zu lesen — der Linter
 meldete sie zu Recht als ungenutzt. Der Rückbau löscht keine Information: die
 Prop war schon vorher wirkungslos, der Fehler bestand also bereits.
