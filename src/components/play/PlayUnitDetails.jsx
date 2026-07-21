@@ -3,7 +3,7 @@ import { Plus, Minus, ReceiptText } from 'lucide-react';
 import {
   findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost,
   getEffectiveSelectionName, isIndependentSubUnit, MODEL_COUNT_PROFILE_TYPES,
-  groupProfilesByType
+  groupProfilesByType, resolveCostLimitTypeId
 } from '../../solver/validator';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { getProfileCellClassName } from '../profileCellClasses';
@@ -223,7 +223,7 @@ export default function PlayUnitDetails({
   const itemGroups = groups.filter(g => !g.isModel);
 
   const isDead = hasSubUnits ? false : (currentWounds === 0);
-  const totalCost = getSelectionTotalCost(selection, roster.costLimitType || 'pts', 1, { system, roster, currentCatalogueId: roster.catalogueId });
+  const totalCost = getSelectionTotalCost(selection, resolveCostLimitTypeId(roster, system), 1, { system, roster, currentCatalogueId: roster.catalogueId });
 
   return (
     <div 
