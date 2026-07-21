@@ -7,7 +7,7 @@
  *
  * Jede Funktion liefert eine **frische** Struktur. Der Solver legt Caches
  * (`_entryCache`) an den Katalogen ab und einige Aufrufe (z. B.
- * `syncRosterSelectionsWithSystem`) mutieren das Roster — geteilte
+ * `reconcileImportedSelectionIds`) mutieren das Roster — geteilte
  * Modulkonstanten würden Tests voneinander abhängig machen (FIRST:
  * *Independent*).
  */

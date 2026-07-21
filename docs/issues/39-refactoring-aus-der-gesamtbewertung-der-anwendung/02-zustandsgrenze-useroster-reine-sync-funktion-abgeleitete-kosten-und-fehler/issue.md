@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01]
 
@@ -58,3 +58,4 @@ einzige Grund, aus dem sie existiert.
 - [ ] `npm run lint` und `npm test` bleiben grün
 
 ## Comments
+- syncRosterSelectionsWithSystem ist rein: sie gibt ein neues Roster zurueck (bzw. identisch das uebergebene, wenn nichts abzugleichen war) und nutzt mapSelectionTree/childSelectionsOf aus Kind-Issue 01 fuer immutables Abbilden mit Structural Sharing. costs und validationErrors in useRoster sind useMemo-Ableitungen aus Roster und System statt gespiegeltem State; die Debounce wirkt nur noch aufs Persistieren. Aufrufer (App.jsx-Import, Serialisierungs-Integrationstest) auf den Rueckgabewert umgestellt.

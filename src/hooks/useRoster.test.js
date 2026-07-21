@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
-import { syncRosterSelectionsWithSystem } from '../solver/validator';
+import { syncRosterSelectionsWithSystem, calculateRosterCosts, validateRoster } from '../solver/validator';
 
 // Only the rules engine is stubbed. The roster-tree primitives (rosterTree.js,
 // re-exported by the facade) stay real: they are pure data-structure traversal
@@ -12,7 +12,7 @@ vi.mock('../solver/validator', async (importOriginal) => ({
   calculateRosterCosts: vi.fn(() => ({ points: 100 })),
   validateRoster: vi.fn(() => []),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
-  syncRosterSelectionsWithSystem: vi.fn(() => false),
+  syncRosterSelectionsWithSystem: vi.fn(roster => roster),
 }));
 
 describe('useRoster Hook', () => {
@@ -26,27 +26,62 @@ describe('useRoster Hook', () => {
     forces: [{ selections: [] }]
   };
 
-  it('initializes with default values', () => {
+  // Der Abgleich ist rein: er gibt das Roster zurück. Der Standard „nichts
+  // anzugleichen" ist Identität; einzelne Tests setzen eine eigene Korrektur.
+  beforeEach(() => {
+    syncRosterSelectionsWithSystem.mockImplementation(roster => roster);
+  });
+
+  it('initializes with the roster and its derived costs and errors', () => {
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
     expect(result.current.roster).toEqual(initialRoster);
-    expect(result.current.costs).toEqual({});
+    expect(result.current.costs).toEqual({ points: 100 });
     expect(result.current.validationErrors).toEqual([]);
   });
 
-  it('debounces validation and cost calculation', async () => {
+  it('derives costs and validation errors from the roster without waiting for the debounce', () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+    calculateRosterCosts.mockReturnValueOnce({ points: 250 });
+    validateRoster.mockReturnValueOnce([{ message: 'Zu viele Punkte' }]);
+
+    act(() => {
+      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+    });
+
+    // Ohne Vorlauf der Debounce: Anzeige und Validierung gehören bereits zum neuen Roster
+    expect(result.current.costs).toEqual({ points: 250 });
+    expect(result.current.validationErrors).toEqual([{ message: 'Zu viele Punkte' }]);
+
+    vi.useRealTimers();
+  });
+
+  it('debounces only the persistence, not the derived values', () => {
     vi.useFakeTimers();
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
-    // Initially costs and errors might not be populated immediately if debounced
     act(() => {
       vi.advanceTimersByTime(200);
     });
+    mockSave.mockClear();
+    calculateRosterCosts.mockClear();
 
-    expect(result.current.costs.points).toBe(100);
-    
+    act(() => {
+      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+    });
+
+    expect(calculateRosterCosts).toHaveBeenCalled();
+    expect(mockSave).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(mockSave).toHaveBeenCalledTimes(1);
+
     vi.useRealTimers();
   });
 
@@ -462,7 +497,7 @@ describe('useRoster Hook', () => {
 
     it('an automatic system correction does not create its own undo step', () => {
       vi.useFakeTimers();
-      syncRosterSelectionsWithSystem.mockReturnValueOnce(true);
+      syncRosterSelectionsWithSystem.mockImplementationOnce(roster => ({ ...roster }));
 
       const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
 
@@ -483,6 +518,60 @@ describe('useRoster Hook', () => {
       expect(result.current.canUndo).toBe(false);
 
       vi.useRealTimers();
+    });
+
+    it('a state recorded in the undo history does not change retroactively', () => {
+      const STALE_NAME = 'Veralteter Katalogname';
+      const CURRENT_NAME = 'Aktueller Katalogname';
+
+      // Reiner Abgleich: veraltete Namen werden in einem NEUEN Roster nachgezogen.
+      const renameStaleUnits = (roster) => {
+        let renamed = false;
+        const forces = roster.forces.map(force => ({
+          ...force,
+          selections: force.selections.map(selection => {
+            if (selection.name !== STALE_NAME) return selection;
+            renamed = true;
+            return { ...selection, name: CURRENT_NAME };
+          })
+        }));
+        return renamed ? { ...roster, forces } : roster;
+      };
+
+      // Solange der Katalog aktuell scheint, gleicht der Effekt nichts ab.
+      let catalogueHasChanged = false;
+      syncRosterSelectionsWithSystem.mockImplementation(
+        roster => (catalogueHasChanged ? renameStaleUnits(roster) : roster)
+      );
+
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: STALE_NAME }, 'cat-1');
+      });
+
+      // Der Zustand, wie er in diesem Moment aufgezeichnet wurde
+      const recordedRoster = result.current.roster;
+      const recordedSnapshot = structuredClone(recordedRoster);
+      expect(recordedSnapshot.forces[0].selections[0].name).toBe(STALE_NAME);
+
+      // Ein Katalog-Update lässt den Abgleich bei der nächsten Änderung greifen
+      catalogueHasChanged = true;
+      act(() => {
+        result.current.addUnit({ id: 'entry-2', name: 'Terminator' }, 'cat-1');
+      });
+      expect(result.current.roster.forces[0].selections[0].name).toBe(CURRENT_NAME);
+
+      // Der aufgezeichnete Zustand ist davon unberührt: keine der Selections,
+      // die er festhält, wurde nachträglich umbenannt.
+      expect(recordedRoster).toEqual(recordedSnapshot);
+
+      // Und ein Undo führt genau auf diesen aufgezeichneten Umfang zurück.
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.roster.forces[0].selections.length)
+        .toBe(recordedSnapshot.forces[0].selections.length);
     });
   });
 });

@@ -50,8 +50,7 @@ function importFixture(system, fixture) {
   const ros = fs.readFileSync(path.join('src/utils/__fixtures__', fixture), 'utf8');
   const roster = importRosterFromXml(ros, [system]);
   reconcileImportedSelectionIds(roster, system);
-  syncRosterSelectionsWithSystem(roster, system);
-  return roster;
+  return syncRosterSelectionsWithSystem(roster, system);
 }
 
 function ptsTypeId(system) {
@@ -113,9 +112,9 @@ describe.each(ARMIES)('Real-catalogue round-trip: $label', ({ cat, fixture }) =>
     const initialErrors = errorCount(roster, system);
 
     const xml = exportRosterToXml(roster, system);
-    const roundTripped = importRosterFromXml(xml, [system]);
-    reconcileImportedSelectionIds(roundTripped, system);
-    syncRosterSelectionsWithSystem(roundTripped, system);
+    const reconciled = importRosterFromXml(xml, [system]);
+    reconcileImportedSelectionIds(reconciled, system);
+    const roundTripped = syncRosterSelectionsWithSystem(reconciled, system);
 
     expect(calculateRosterCosts(roundTripped, system)[ptsTypeId(system)]).toBe(EXPECTED_TOTAL);
     expect(errorCount(roundTripped, system)).toBe(initialErrors);

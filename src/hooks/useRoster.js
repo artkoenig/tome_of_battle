@@ -13,6 +13,10 @@ const AUTOSAVE_DEBOUNCE_MS = 150;
 /** Schrittweite, um die eine Options-Aktion die Anzahl einer Auswahl verändert. */
 const SELECTION_STEP = 1;
 
+/** Abgeleitete Werte, solange Roster oder System noch nicht vorliegen. */
+const NO_COSTS = Object.freeze({});
+const NO_VALIDATION_ERRORS = Object.freeze([]);
+
 /**
  * Hook to manage a roster state, cost calculations, validations and updates.
  * @param {import('../types.js').Roster} initialRoster
@@ -29,9 +33,21 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     canUndo,
     canRedo
   } = useUndoableState(initialRoster);
-  const [costs, setCosts] = useState({});
-  const [validationErrors, setValidationErrors] = useState([]);
   const [selectedSelectionId, setSelectedSelectionId] = useState(null);
+
+  // Kosten und Validierungsfehler sind reine Ableitungen aus Roster und System
+  // (SSOT) und werden deshalb berechnet statt in eigenem State gespiegelt. Ein
+  // gespiegelter State würde die Oberfläche — und mit ihr die aus dem Validator
+  // abgeleitete Aushebe-Verfügbarkeit (ADR-0022) — hinter dem Roster zurückhängen
+  // lassen.
+  const costs = useMemo(
+    () => (roster && system ? calculateRosterCosts(roster, system) : NO_COSTS),
+    [roster, system]
+  );
+  const validationErrors = useMemo(
+    () => (roster && system ? validateRoster(roster, system) : NO_VALIDATION_ERRORS),
+    [roster, system]
+  );
 
   // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt
   // eine (schnell veraltende) Objektreferenz zu halten.
@@ -67,26 +83,24 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     }
   };
 
-  // Debounced: Autosave, Kostenberechnung und Validierung bei jeder Roster-Änderung
+  // Katalog-Abgleich und Autosave. Die Verzögerung wirkt ausschließlich auf das
+  // Persistieren — Anzeige und Validierung leiten sich synchron aus dem Roster ab.
   useEffect(() => {
     if (!roster || !system) return;
 
-    const rosterModified = syncRosterSelectionsWithSystem(roster, system);
-    if (rosterModified) {
-      replaceRoster({ ...roster });
+    const syncedRoster = syncRosterSelectionsWithSystem(roster, system);
+    if (syncedRoster !== roster) {
+      replaceRoster(syncedRoster);
       return;
     }
 
     pendingSaveRef.current = roster;
-    const handler = setTimeout(() => {
+    const persistHandler = setTimeout(() => {
       persistRoster(roster);
       pendingSaveRef.current = null;
-
-      setCosts(calculateRosterCosts(roster, system));
-      setValidationErrors(validateRoster(roster, system));
     }, AUTOSAVE_DEBOUNCE_MS);
 
-    return () => clearTimeout(handler);
+    return () => clearTimeout(persistHandler);
   }, [roster, system, replaceRoster]);
 
   // Noch ausstehende Änderungen beim Unmount wegschreiben (z. B. bei schneller Navigation)
