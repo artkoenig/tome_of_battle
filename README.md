@@ -35,7 +35,7 @@ Catalog data for **Warhammer Fantasy Battle 6th Edition** is fetched at runtime 
 
 ## Getting Started
 
-Requires a recent version of Node.js (including `npm`).
+Requires Node.js 24 (see `.nvmrc`), including `npm`.
 
 ```bash
 # 1. Install dependencies
