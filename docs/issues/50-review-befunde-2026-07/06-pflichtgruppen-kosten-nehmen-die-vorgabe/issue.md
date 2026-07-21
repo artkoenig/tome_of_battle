@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: [01]
 
@@ -29,3 +29,4 @@ Beide Stellen müssen dieselbe Vorgabe-Ermittlung verwenden.
 - [ ] Ein Test deckt eine Gruppe ab, deren Vorgabe nicht die erste Option ist, und schlägt gegen den alten Stand fehl
 
 ## Comments
+- Die Ermittlung der Pflichtgruppen-Option liegt jetzt einmalig in src/solver/selectionMembers.js (resolveGroupDefaultMember: Katalog-Vorgabe, sonst erstes Mitglied). Fabrik und Kostenschaetzung nutzen sie beide; Tests decken eine Gruppe ab, deren Vorgabe nicht die erste Option ist.

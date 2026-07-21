@@ -1,4 +1,5 @@
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { memberDefsOf, resolveGroupDefaultMember } from './selectionMembers.js';
 import '../types.js';
 
 /**
@@ -21,11 +22,6 @@ function addMandatoryChild({ system, resolveEntry, parentSelection, childDef, co
   }
 }
 
-/** Alle Mitglieder (Einträge und Links) einer Definition oder Gruppe in einer Liste. */
-function memberDefs(defOrGroup) {
-  return [...(defOrGroup.selectionEntries || []), ...(defOrGroup.entryLinks || [])];
-}
-
 /**
  * Bevölkert jedes Mitglied, das ein eigenes `min > 0` trägt, mit genau seinem `min`.
  * Gibt die Anzahl so bevölkerter Mitglieder zurück (0, falls keines pflichtig ist).
@@ -42,12 +38,6 @@ function populateMandatoryMembers({ system, resolveEntry, parentSelection, membe
   return populatedCount;
 }
 
-/** Die konfigurierte Default-Option einer Gruppe (oder null, wenn keine gesetzt/auffindbar ist). */
-function findGroupDefaultOption(group) {
-  if (!group.defaultSelectionEntryId) return null;
-  return memberDefs(group).find(member => member.id === group.defaultSelectionEntryId) || null;
-}
-
 /**
  * Bevölkert die Pflicht-Kinder (`min > 0`) einer aufgelösten Definition rekursiv.
  * Direkte Pflicht-Einträge/-Links werden je mit ihrem eigenen `min` angelegt.
@@ -62,17 +52,17 @@ function findGroupDefaultOption(group) {
  * Optionale (min = 0) Kinder bleiben ungewählt — genau das Verhalten des echten Aushebens.
  */
 function populateChildren({ system, resolveEntry, def, parentSelection }) {
-  populateMandatoryMembers({ system, resolveEntry, parentSelection, members: memberDefs(def) });
+  populateMandatoryMembers({ system, resolveEntry, parentSelection, members: memberDefsOf(def) });
 
   def.selectionEntryGroups?.forEach(group => {
     const minValue = getMinConstraintValue(group);
-    const members = memberDefs(group);
+    const members = memberDefsOf(group);
     if (minValue <= 0 || members.length === 0) return;
 
     const itemizedCount = populateMandatoryMembers({ system, resolveEntry, parentSelection, members });
     if (itemizedCount > 0) return;
 
-    const chosenOption = findGroupDefaultOption(group) || members[0];
+    const chosenOption = resolveGroupDefaultMember(group);
     addMandatoryChild({ system, resolveEntry, parentSelection, childDef: chosenOption, count: minValue });
   });
 }
