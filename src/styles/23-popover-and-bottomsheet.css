@@ -178,9 +178,10 @@
   white-space: nowrap;
 }
 
-/* Gesperrter Aushebe-Kandidat (ADR-0022): ausgegraut, nicht klickbar; Grund darunter. */
+/* Gesperrter Aushebe-Kandidat (ADR-0022): ausgegraut, nicht klickbar; Grund darunter.
+   Kein opacity auf dem Container: das würde die Fehlerfarbe der verschachtelten
+   .text-danger-Spans mitdimmen (siehe Issue-Diskussion "Fehlermeldung zu dunkel"). */
 .popover-item.disabled {
-  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -205,7 +206,7 @@
 .popover-item-reason {
   flex-basis: 100%;
   margin-top: 2px;
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 
