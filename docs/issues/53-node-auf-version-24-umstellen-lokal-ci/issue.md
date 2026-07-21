@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -14,11 +14,12 @@ der Node-Version im Projekt (`package.json` `engines` + `.nvmrc`), damit
 lokal/CI künftig nicht wieder auseinanderlaufen.
 
 ## Acceptance Criteria
-- [ ] `.github/workflows/ci.yml`: beide `node-version`-Vorkommen auf `24`
-- [ ] `.github/workflows/issue_agent.yml`: `node-version` auf `'24'`
-- [ ] `package.json`: `engines.node` auf die 24er-Linie gesetzt
-- [ ] `.nvmrc` mit `24` angelegt
-- [ ] Lokale aktive Node-Version ist 24.x (via Homebrew)
-- [ ] `npm run depcruise` läuft lokal ohne den Node-Versionsfehler durch
+- [x] `.github/workflows/ci.yml`: beide `node-version`-Vorkommen auf `24`
+- [x] `.github/workflows/issue_agent.yml`: `node-version` auf `'24'`
+- [x] `package.json`: `engines.node` auf die 24er-Linie gesetzt
+- [x] `.nvmrc` mit `24` angelegt
+- [x] Lokale aktive Node-Version ist 24.x (via Homebrew)
+- [x] `npm run depcruise` läuft lokal ohne den Node-Versionsfehler durch
 
 ## Comments
+- Vier-Achsen-Verifikation: Standards/Spec/Tests grün, keine blockierenden Befunde. Docs-Review fand README.md ohne Node-24-Hinweis -> ergänzt (separater Commit).
