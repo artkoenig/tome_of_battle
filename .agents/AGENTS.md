@@ -15,6 +15,9 @@ All core architecture, database, styling, testing, and deployment guidelines are
 npm run dev              # Vite dev server
 npm run build             # Production build (also injects a fresh SW cache version)
 npm run lint               # oxlint
+npm run knip               # dead code / unused exports & deps, cross-file (warn-only)
+npm run depcruise            # dependency-graph rules: layering, solver facade, cycles, orphans (warn-only)
+npm run analyze              # knip + dependency-cruiser together
 npm test                     # vitest run (unit/component tests) + node src/solver/ui.test.js (puppeteer E2E)
 npx vitest run <path>          # run a single test file
 npx vitest run -t "<name>"       # run tests matching a name

@@ -34,6 +34,24 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Knip laeuft dateiuebergreifend (ungenutzte Dateien/Exports/Typen/Deps),
+      # was oxlint pro Datei prinzipiell nicht sieht. Vorerst warn-only
+      # (continue-on-error): Befunde sind im Log sichtbar, blockieren die CI aber
+      # nicht, solange die bestehenden Befunde noch nicht aufgeraeumt sind.
+      - name: Knip (statische Analyse, warn-only)
+        run: npm run knip
+        continue-on-error: true
+
+      # dependency-cruiser prueft die in ADR 0023 fixierte Solver-Fassade und die
+      # Schichtung parser -> solver -> components sowie Import-Zyklen und Waisen --
+      # Struktur-Regeln, die oxlint pro Datei nicht sieht. Wie Knip vorerst
+      # warn-only (continue-on-error): Befunde sind im Log sichtbar, blockieren
+      # die CI aber nicht, solange die bestehenden Befunde noch nicht aufgeraeumt
+      # sind.
+      - name: dependency-cruiser (statische Analyse, warn-only)
+        run: npm run depcruise
+        continue-on-error: true
+
       - name: Unit-/Component-Tests
         run: npx vitest run
 
