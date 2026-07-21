@@ -3,7 +3,8 @@ import { Plus, Minus } from 'lucide-react';
 import {
   resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
   isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
-  isQuirkGeneralEntryId, UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
+  isQuirkGeneralEntryId, findForceContainingSelection,
+  UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/validator';
 import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';
@@ -25,17 +26,7 @@ export default function SelectionConfigurator({
   isListRule = false
 }) {
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-  const activeForce = roster.forces ? roster.forces.find(force => {
-    const containsSel = (list) => {
-      if (!list) return false;
-      for (const s of list) {
-        if (s.id === selection.id) return true;
-        if (containsSel(s.selections)) return true;
-      }
-      return false;
-    };
-    return containsSel(force.selections);
-  }) : null;
+  const activeForce = findForceContainingSelection(roster, selection.id);
   const activeForceId = activeForce?.id ?? null;
   const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
 

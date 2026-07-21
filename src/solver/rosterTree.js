@@ -148,6 +148,25 @@ export function someSelectionInSubtree(selection, predicate) {
 }
 
 /**
+ * Die Force, in deren Teilbaum die Selection mit `selectionId` liegt — auf
+ * beliebiger Tiefe. Trägt keine Force die Selection, ist das Ergebnis `null`.
+ *
+ * Einzige Antwort auf die Frage „zu welchem Kontingent gehört diese Auswahl?",
+ * die Kostenanzeige, Optionsanzeige und Profilsammlung gleichermaßen brauchen,
+ * um die force-bezogenen Kategoriezählungen der Selection zuzuordnen.
+ *
+ * @param {import('../types.js').Roster|null|undefined} roster
+ * @param {string} selectionId
+ * @returns {Object|null} die Force oder `null`
+ */
+export function findForceContainingSelection(roster, selectionId) {
+  const forces = roster?.forces ?? NO_SELECTIONS;
+  return forces.find(force =>
+    someSelection(childSelectionsOf(force), selection => selection.id === selectionId)
+  ) ?? null;
+}
+
+/**
  * Summiert die effektive Anzahl (`number`) der Selections, die `predicate`
  * erfüllen. `includeChildSelections` steuert, ob geschachtelte Selections
  * mitzählen; ohne die Option wird nur die übergebene Ebene gezählt.

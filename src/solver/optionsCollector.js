@@ -31,7 +31,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
   const isHiddenInContext = (linkOrEntry) => {
     if (!visibilityContext) return false;
     const { roster, selectionCounts, forceCategoryCounts, force } = visibilityContext;
-    return isSelectionEntryHidden(linkOrEntry, system, roster, selectionCounts, forceCategoryCounts, force);
+    return isSelectionEntryHidden(linkOrEntry, { system, roster, selectionCounts, forceCategoryCounts, force });
   };
 
   // Recursive helper to find all nested entry IDs for a group

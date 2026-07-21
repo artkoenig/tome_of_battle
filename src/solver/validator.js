@@ -29,7 +29,7 @@
 export {
   childSelectionsOf, rootSelectionsOf, effectiveCountOf, traverseSelectionTree, foldSelectionTree,
   findSelectionById, findSelectionInRoster, someSelection, someSelectionInSubtree, countSelections,
-  mapSelectionTree, replaceSelectionById
+  findForceContainingSelection, mapSelectionTree, replaceSelectionById
 } from './rosterTree.js';
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 export { isListRuleSelection, isListRuleEntryKind, resolveListRuleGroup } from './listRules.js';

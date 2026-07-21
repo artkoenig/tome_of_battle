@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -78,3 +78,4 @@ Bewusst NICHT Teil dieses Issues sind die Funde 5 und 6 derselben Pruefung
 vereinzelte handgeschriebene Rekursionen in `PlayUnitDetails.jsx` und
 `SelectionConfigurator.jsx`). Sie gehoeren in eigene Issues, da Fund 5 eine
 eigene Entwurfsentscheidung verlangt statt mechanischer Ersetzung.
+- Funde 1-4 behoben: createInitialGameState() in rosterDefaults.js als einzige Quelle des Spielstand-Vorgabewerts; findForceContainingSelection() als neues rosterTree-Primitiv ersetzt die drei handgeschriebenen containsSel-Rekursionen (ueber die Fassade exportiert); isSelectionEntryHidden/isCategoryLinkHidden nehmen einen benannten VisibilityContext (das vormals positionale null ist jetzt forceCategoryCounts: null); die check*-Funktionen des Validators nehmen einen ValidationContext. Reines Refactoring, kein veraendertes Verhalten.

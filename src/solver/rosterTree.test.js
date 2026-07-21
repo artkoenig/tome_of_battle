@@ -8,6 +8,7 @@ import {
   findSelectionById,
   findSelectionInRoster,
   someSelection,
+  findForceContainingSelection,
   countSelections,
   mapSelectionTree,
   replaceSelectionById
@@ -290,5 +291,29 @@ describe('replaceSelectionById', () => {
       return { ...selection, number: 5 };
     });
     expect(replacements).toHaveLength(1);
+  });
+});
+
+describe('findForceContainingSelection', () => {
+  test('findet die Force einer Wurzel-Selection', () => {
+    expect(findForceContainingSelection(makeRoster(), 's-troop-b').id).toBe('f2');
+  });
+
+  test('findet die Force auch fuer eine tief geschachtelte Selection', () => {
+    expect(findForceContainingSelection(makeRoster(), 's-banner').id).toBe('f1');
+  });
+
+  test('liefert null, wenn keine Force die Selection traegt', () => {
+    expect(findForceContainingSelection(makeRoster(), 's-unknown')).toBeNull();
+  });
+
+  test('liefert null fuer ein Roster ohne Forces', () => {
+    expect(findForceContainingSelection({ id: 'r' }, 's-lord')).toBeNull();
+    expect(findForceContainingSelection(null, 's-lord')).toBeNull();
+  });
+
+  test('uebergeht eine Force ohne selections-Feld', () => {
+    const roster = { forces: [{ id: 'f-empty' }, { id: 'f-real', selections: [{ id: 's-x' }] }] };
+    expect(findForceContainingSelection(roster, 's-x').id).toBe('f-real');
   });
 });

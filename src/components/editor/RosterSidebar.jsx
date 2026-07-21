@@ -58,7 +58,7 @@ export default function RosterSidebar({
           const forceCategoryCounts = forceId ? (categoryCounts[forceId] || {}) : {};
 
           return categoryLinks.map(catLink => {
-            if (isCategoryLinkHidden(catLink, system, roster, selectionCounts, forceCategoryCounts)) {
+            if (isCategoryLinkHidden(catLink, { system, roster, selectionCounts, forceCategoryCounts })) {
               return null;
             }
 

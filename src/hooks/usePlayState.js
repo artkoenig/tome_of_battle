@@ -3,6 +3,7 @@ import {
   PERSISTENCE_FAILURE_MESSAGE,
   createPersistenceFailureReporter,
 } from '../utils/persistenceFailure';
+import { createInitialGameState } from '../utils/rosterDefaults';
 import '../types.js';
 
 /**
@@ -15,12 +16,7 @@ import '../types.js';
  */
 export default function usePlayState(initialRoster, setRoster, saveRosterCallback, reportError) {
   const [gameState, setGameState] = useState(() => {
-    return initialRoster.gameState || {
-      round: 1,
-      vp: 0,
-      cp: 0,
-      wounds: {} // selectionId -> array of current wounds per model or single int
-    };
+    return initialRoster.gameState || createInitialGameState();
   });
 
   const isInitialMount = useRef(true);

@@ -11,13 +11,13 @@ describe('isCategoryLinkHidden — statisches hidden-Attribut', () => {
   test('ein nicht verstecktes Link bleibt sichtbar', () => {
     const link = { id: 'cl-hq', targetId: HQ_CATEGORY_ID, hidden: false };
 
-    expect(isCategoryLinkHidden(link, system(), roster(), NO_COUNTS, NO_COUNTS)).toBe(false);
+    expect(isCategoryLinkHidden(link, { system: system(), roster: roster(), selectionCounts: NO_COUNTS, forceCategoryCounts: NO_COUNTS })).toBe(false);
   });
 
   test('ein verstecktes Link bleibt versteckt', () => {
     const link = { id: 'cl-troops', targetId: 'cat-troops', hidden: true };
 
-    expect(isCategoryLinkHidden(link, system(), roster(), NO_COUNTS, NO_COUNTS)).toBe(true);
+    expect(isCategoryLinkHidden(link, { system: system(), roster: roster(), selectionCounts: NO_COUNTS, forceCategoryCounts: NO_COUNTS })).toBe(true);
   });
 });
 
@@ -30,7 +30,7 @@ describe('isCategoryLinkHidden — hidden per Modifier', () => {
   const revealModifier = () => ({ type: 'set', field: 'hidden', value: 'false' });
 
   const evaluateWithHqCount = (link, hqCount) =>
-    isCategoryLinkHidden(link, system(), roster(), { [HQ_CATEGORY_ID]: hqCount }, NO_COUNTS);
+    isCategoryLinkHidden(link, { system: system(), roster: roster(), selectionCounts: { [HQ_CATEGORY_ID]: hqCount }, forceCategoryCounts: NO_COUNTS });
 
   test('ein direkter Modifier deckt das Link erst auf, wenn seine Bedingung greift', () => {
     const link = () => ({
@@ -106,8 +106,8 @@ describe('isSelectionEntryHidden — Sichtbarkeit von Katalogeinträgen', () => 
     const system = createSystem();
     const roster = rosterInForce(STANDARD_FORCE_ENTRY_ID);
 
-    expect(isSelectionEntryHidden(entryNamed(system, 'unit-visible'), system, roster, NO_COUNTS, NO_COUNTS)).toBe(false);
-    expect(isSelectionEntryHidden(entryNamed(system, 'unit-hidden'), system, roster, NO_COUNTS, NO_COUNTS)).toBe(true);
+    expect(isSelectionEntryHidden(entryNamed(system, 'unit-visible'), { system, roster, selectionCounts: NO_COUNTS, forceCategoryCounts: NO_COUNTS })).toBe(false);
+    expect(isSelectionEntryHidden(entryNamed(system, 'unit-hidden'), { system, roster, selectionCounts: NO_COUNTS, forceCategoryCounts: NO_COUNTS })).toBe(true);
   });
 
   test('blendet einen bedingten Eintrag nur im auslösenden Kontingent aus', () => {
@@ -116,11 +116,13 @@ describe('isSelectionEntryHidden — Sichtbarkeit von Katalogeinträgen', () => 
     const hordeRoster = rosterInForce(HORDE_FORCE_ENTRY_ID);
     const conditionalEntry = entryNamed(system, 'unit-conditional');
 
-    expect(isSelectionEntryHidden(
-      conditionalEntry, system, standardRoster, NO_COUNTS, NO_COUNTS, standardRoster.forces[0]
-    )).toBe(false);
-    expect(isSelectionEntryHidden(
-      conditionalEntry, system, hordeRoster, NO_COUNTS, NO_COUNTS, hordeRoster.forces[0]
-    )).toBe(true);
+    expect(isSelectionEntryHidden(conditionalEntry, {
+      system, roster: standardRoster, selectionCounts: NO_COUNTS,
+      forceCategoryCounts: NO_COUNTS, force: standardRoster.forces[0]
+    })).toBe(false);
+    expect(isSelectionEntryHidden(conditionalEntry, {
+      system, roster: hordeRoster, selectionCounts: NO_COUNTS,
+      forceCategoryCounts: NO_COUNTS, force: hordeRoster.forces[0]
+    })).toBe(true);
   });
 });

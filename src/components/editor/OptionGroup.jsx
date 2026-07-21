@@ -1,26 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
-
-const findForceOfSelection = (selId, forces) => {
-  if (!forces) return null;
-  for (const force of forces) {
-    const containsSel = (list) => {
-      if (!list) return false;
-      for (const s of list) {
-        if (s.id === selId) return true;
-        if (containsSel(s.selections)) return true;
-      }
-      return false;
-    };
-    if (containsSel(force.selections)) {
-      return force.id;
-    }
-  }
-  return null;
-};
 
 export default function OptionGroupComponent({ 
   group, 
@@ -55,7 +37,7 @@ export default function OptionGroupComponent({
   const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
   
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-  const activeForceId = findForceOfSelection(selection.id, roster.forces);
+  const activeForceId = findForceContainingSelection(roster, selection.id)?.id ?? null;
   const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
 
   const displayCtx = {

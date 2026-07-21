@@ -70,7 +70,7 @@ export function collectUnreachableArmyWideSelectors(visibilityContext) {
     .filter(({ entry, minConstraint }) => {
       const effectiveLinks = getEffectiveEntryCategoryLinks(entry, { system, roster, selectionCounts, forceCategoryCounts, force });
       if (isReachableViaForceCategories(entry, forceDef, effectiveLinks)) return false;
-      if (isSelectionEntryHidden(entry, system, roster, selectionCounts, forceCategoryCounts, force)) return false;
+      if (isSelectionEntryHidden(entry, { system, roster, selectionCounts, forceCategoryCounts, force })) return false;
       return resolveForceSelectorMinimum(entry, minConstraint, visibilityContext) > 0;
     })
     .map(({ entry }) => entry);
