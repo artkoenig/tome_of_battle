@@ -81,11 +81,9 @@ const countSelectedByOptionId = (unitSelection, optionId) => {
 
 describe('reconcileImportedSelectionIds', () => {
   test('rewrites target-id option references to the catalogue link/entry ids the editor matches', () => {
-    const roster = makeImportedRoster();
-    const modified = reconcileImportedSelectionIds(roster, mockSystem);
+    const reconciled = reconcileImportedSelectionIds(makeImportedRoster(), mockSystem);
 
-    expect(modified).toBe(true);
-    const children = roster.forces[0].selections[0].selections;
+    const children = reconciled.forces[0].selections[0].selections;
     const byName = Object.fromEntries(children.map(c => [c.name, c]));
 
     // Direct selectionEntry keeps its entry id.
@@ -101,27 +99,35 @@ describe('reconcileImportedSelectionIds', () => {
 
   test('makes every imported option recognisable as selected by the editor', () => {
     const roster = makeImportedRoster();
-    const unit = roster.forces[0].selections[0];
+    const importedUnit = roster.forces[0].selections[0];
 
     // Before reconciliation the linked options are invisible to the editor's matcher.
-    const options = getUnitOptions(mockSystem, 'cat', unit);
+    const options = getUnitOptions(mockSystem, 'cat', importedUnit);
     const generalOption = options.find(o => resolveEntry(mockSystem, o.option, 'cat').name === 'General');
     const generalResolvedId = resolveEntry(mockSystem, generalOption.option, 'cat').id;
-    expect(countSelectedByOptionId(unit, generalResolvedId)).toBe(0);
+    expect(countSelectedByOptionId(importedUnit, generalResolvedId)).toBe(0);
 
-    reconcileImportedSelectionIds(roster, mockSystem);
+    const reconciledUnit = reconcileImportedSelectionIds(roster, mockSystem).forces[0].selections[0];
 
     // After reconciliation each catalogue option resolves to a selected count > 0.
-    getUnitOptions(mockSystem, 'cat', unit).forEach(({ option }) => {
+    getUnitOptions(mockSystem, 'cat', reconciledUnit).forEach(({ option }) => {
       const resolvedId = resolveEntry(mockSystem, option, 'cat').id;
-      expect(countSelectedByOptionId(unit, resolvedId)).toBeGreaterThan(0);
+      expect(countSelectedByOptionId(reconciledUnit, resolvedId)).toBeGreaterThan(0);
     });
   });
 
-  test('is idempotent and leaves natively created rosters untouched', () => {
+  test('is idempotent: a second pass returns the very same roster instance', () => {
+    const firstPass = reconcileImportedSelectionIds(makeImportedRoster(), mockSystem);
+    const secondPass = reconcileImportedSelectionIds(firstPass, mockSystem);
+    expect(secondPass).toBe(firstPass);
+  });
+
+  test('leaves the passed roster untouched', () => {
     const roster = makeImportedRoster();
-    reconcileImportedSelectionIds(roster, mockSystem); // first pass fixes ids
-    const secondPass = reconcileImportedSelectionIds(roster, mockSystem);
-    expect(secondPass).toBe(false);
+    const untouchedCopy = structuredClone(roster);
+
+    reconcileImportedSelectionIds(roster, mockSystem);
+
+    expect(roster).toEqual(untouchedCopy);
   });
 });

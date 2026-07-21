@@ -48,9 +48,9 @@ function buildSystem(catFile) {
 // Mirrors the app's import flow: parse → reconcile option ids → sync names.
 function importFixture(system, fixture) {
   const ros = fs.readFileSync(path.join('src/utils/__fixtures__', fixture), 'utf8');
-  const roster = importRosterFromXml(ros, [system]);
-  reconcileImportedSelectionIds(roster, system);
-  return syncRosterSelectionsWithSystem(roster, system);
+  const imported = importRosterFromXml(ros, [system]);
+  const reconciled = reconcileImportedSelectionIds(imported, system);
+  return syncRosterSelectionsWithSystem(reconciled, system);
 }
 
 function ptsTypeId(system) {
@@ -102,7 +102,7 @@ describe.each(ARMIES)('Real-catalogue round-trip: $label', ({ cat, fixture }) =>
   test('recognises the chosen options after import and is reconcile-stable', () => {
     const system = buildSystem(cat);
     const roster = importFixture(system, fixture);
-    expect(reconcileImportedSelectionIds(roster, system)).toBe(false);
+    expect(reconcileImportedSelectionIds(roster, system)).toBe(roster);
     expect(countRecognizedSelectedOptions(roster, system)).toBeGreaterThan(20);
   });
 
@@ -112,8 +112,8 @@ describe.each(ARMIES)('Real-catalogue round-trip: $label', ({ cat, fixture }) =>
     const initialErrors = errorCount(roster, system);
 
     const xml = exportRosterToXml(roster, system);
-    const reconciled = importRosterFromXml(xml, [system]);
-    reconcileImportedSelectionIds(reconciled, system);
+    const reImported = importRosterFromXml(xml, [system]);
+    const reconciled = reconcileImportedSelectionIds(reImported, system);
     const roundTripped = syncRosterSelectionsWithSystem(reconciled, system);
 
     expect(calculateRosterCosts(roundTripped, system)[ptsTypeId(system)]).toBe(EXPECTED_TOTAL);

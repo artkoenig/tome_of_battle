@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -88,3 +88,4 @@ newRoster = syncRosterSelectionsWithSystem(newRoster, system);
 - [ ] `npm test` grün, `npm run lint` 0 Fehler / 0 Warnungen.
 
 ## Comments
+- reconcileImportedSelectionIds ist rein: sie gibt ein Roster zurueck statt das uebergebene zu mutieren, der boolean entfaellt. Umgesetzt ueber traverseSelectionTree (Top-down-Angleich der Options-Ids, damit Untereinheiten ihren eigenen Optionsvorrat bekommen) plus mapSelectionTree (Neuaufbau mit Structural Sharing). Bei 'nichts geaendert' kommt die Eingabe referenzgleich zurueck; die drei Idempotenz-Tests pruefen das jetzt ueber Identitaet, ein neuer Test belegt die Unversehrtheit der Eingabe. Force-/Roster-Ebene ist mit syncRosterSelectionsWithSystem geteilt (withForcesMapped/withSelectionsMapped).
