@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import UnitSelectionCard from './UnitSelectionCard';
+import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -41,7 +42,12 @@ const mockCollectUnitProfilesAndRules = vi.fn();
 const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
 
-vi.mock('../../solver/validator', () => ({
+// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
+// wird auch nur die Fassade gemockt. Reine Funktionen ohne eigene
+// Abhängigkeiten — das Prädikat „eigenständige Untereinheit", die
+// Profil-Gruppierung und die Schlüsselwortlisten — reicht der Mock in ihrer
+// echten Umsetzung durch, statt sie zu stubben.
+vi.mock('../../solver/validator', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
@@ -49,7 +55,10 @@ vi.mock('../../solver/validator', () => ({
   calculateRosterCosts: () => ({ pts: 120 }),
   // Name resolution is covered by the solver's own unit tests; here it is isolated to
   // the no-name-modifier case, which returns the selection's raw name unchanged.
-  getEffectiveSelectionName: (selection) => selection?.name ?? ''
+  getEffectiveSelectionName: (selection) => selection?.name ?? '',
+  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+  groupProfilesByType: (await vi.importActual('../../solver/rulesEvaluator')).groupProfilesByType,
+  ...(await vi.importActual('../../solver/constants'))
 }));
 
 describe('UnitSelectionCard Component', () => {
@@ -73,7 +82,7 @@ describe('UnitSelectionCard Component', () => {
     costTypeLabel: 'Pkt.',
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
-    updateSubSelection: vi.fn(),
+    subSelectionOperations: createSubSelectionOperationsMock(),
     activeCatalogue: { id: 'bret-cat' }
   };
 

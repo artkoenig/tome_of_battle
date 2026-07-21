@@ -1,19 +1,12 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getUnitOptions } from './optionsCollector.js';
+import { childSelectionsOf, mapSelectionTree } from './rosterTree.js';
+import { isIndependentSubUnit } from './subUnit.js';
 import '../types.js';
 
-function hasEntryChildren(res) {
-  if (!res) return false;
-  return (res.selectionEntries && res.selectionEntries.length > 0) ||
-         (res.entryLinks && res.entryLinks.length > 0) ||
-         (res.selectionEntryGroups && res.selectionEntryGroups.length > 0);
-}
+/** Leere Force-Liste für Roster ohne `forces` — vermeidet Sonderfälle im Ablauf. */
+const NO_FORCES = Object.freeze([]);
 
-function isIndependentSubUnit(res) {
-  return res && (res.type === 'unit' || res.type === 'model') &&
-         (res.collective === false || res.collective === 'false') &&
-         hasEntryChildren(res);
-}
 
 /**
  * Rewrites imported option selections so they reference catalogue entries the same
@@ -77,43 +70,95 @@ export function reconcileImportedSelectionIds(roster, system) {
 }
 
 /**
- * Gleicht gespeicherte Roster-Selections mit dem (ggf. aktualisierten)
- * System ab: Namen und Kosten werden aus den Katalogdefinitionen
- * nachgezogen. Mutiert das Roster in-place.
- * @returns {boolean} true, wenn das Roster verändert wurde
+ * True, sobald mindestens ein Element durch ein neues Objekt ersetzt wurde.
+ * Unveränderte Teilbäume behalten beim Abgleich ihre Referenz, sodass der
+ * Identitätsvergleich genügt, um „hier hat sich etwas getan" zu erkennen.
+ */
+function anyReplaced(originals, candidates) {
+  return candidates.some((candidate, index) => candidate !== originals[index]);
+}
+
+/**
+ * Kopie einer Selection ohne das veraltete `costs`-Feld. Kosten werden zur
+ * Lesezeit aus dem Katalog abgeleitet (ADR-0011) und nicht mehr gespeichert;
+ * Alt-Roster konvergieren so beiläufig auf das aktuelle Datenmodell.
+ */
+function withoutLegacyCosts(selection) {
+  const stripped = { ...selection };
+  delete stripped.costs;
+  return stripped;
+}
+
+/** Die Id, unter der eine Selection ihren Katalogeintrag referenziert. */
+function catalogueEntryIdOf(selection) {
+  return selection.selectionEntryId || selection.entryLinkId;
+}
+
+/**
+ * Die Selection mit den aus dem Katalog nachgezogenen Feldern — oder die
+ * Eingabe selbst, wenn sie dem Katalog bereits entspricht.
+ */
+function withCatalogueFieldsSynced(selection, system, catalogueId) {
+  const entryId = catalogueEntryIdOf(selection);
+  if (!entryId) return selection;
+
+  const entryDef = findEntryInSystem(system, entryId, catalogueId);
+  const resolved = entryDef && resolveEntry(system, entryDef, catalogueId);
+  if (!resolved) return selection;
+
+  const nameIsStale = selection.name !== resolved.name;
+  const carriesLegacyCosts = selection.costs !== undefined;
+  if (!nameIsStale && !carriesLegacyCosts) return selection;
+
+  const synced = carriesLegacyCosts ? withoutLegacyCosts(selection) : { ...selection };
+  synced.name = resolved.name;
+  return synced;
+}
+
+/**
+ * Gleicht einen Selection-Teilbaum mit dem Katalog ab. Der Eingabebaum bleibt
+ * unberührt; unveränderte Knoten werden geteilt statt kopiert.
+ */
+function syncSelectionTree(selection, system, catalogueId) {
+  return mapSelectionTree(selection, (node, syncedChildren) => {
+    const synced = withCatalogueFieldsSynced(node, system, catalogueId);
+    if (!anyReplaced(childSelectionsOf(node), syncedChildren)) return synced;
+    return { ...synced, selections: syncedChildren };
+  });
+}
+
+/** Gleicht die Selections einer Force ab und gibt sie unverändert zurück, wenn nichts anfiel. */
+function syncForceWithSystem(force, system, fallbackCatalogueId) {
+  const catalogueId = force.catalogueId || fallbackCatalogueId;
+  const currentSelections = childSelectionsOf(force);
+  const syncedSelections = currentSelections.map(
+    selection => syncSelectionTree(selection, system, catalogueId)
+  );
+  if (!anyReplaced(currentSelections, syncedSelections)) return force;
+  return { ...force, selections: syncedSelections };
+}
+
+/**
+ * Gleicht gespeicherte Roster-Selections mit dem (ggf. aktualisierten) System
+ * ab: Namen werden aus den Katalogdefinitionen nachgezogen, gespeicherte
+ * Alt-Kosten entfallen.
+ *
+ * Rein: das übergebene Roster wird nicht verändert. Zurück kommt ein neues
+ * Roster, oder — wenn nichts abzugleichen war — exakt das übergebene, sodass
+ * Aufrufer „unverändert" am Identitätsvergleich erkennen.
+ *
+ * @param {import('../types.js').Roster} roster
+ * @param {Object} system
+ * @returns {import('../types.js').Roster} das abgeglichene Roster
  */
 export function syncRosterSelectionsWithSystem(roster, system) {
-  if (!roster || !system) return false;
-  let rosterModified = false;
+  if (!roster || !system) return roster;
 
-  const syncSelection = (selection, catalogueId) => {
-    const entryId = selection.selectionEntryId || selection.entryLinkId;
-    if (entryId) {
-      const entryDef = findEntryInSystem(system, entryId, catalogueId);
-      if (entryDef) {
-        const resolved = resolveEntry(system, entryDef, catalogueId);
-        if (resolved) {
-          if (selection.name !== resolved.name) {
-            selection.name = resolved.name;
-            rosterModified = true;
-          }
-          // Costs are derived from the catalogue at read time (ADR-0011), not stored.
-          // Drop any legacy costs field lazily so old rosters converge to the new model.
-          if (selection.costs !== undefined) {
-            delete selection.costs;
-            rosterModified = true;
-          }
-        }
-      }
-    }
-    if (selection.selections) {
-      selection.selections.forEach(child => syncSelection(child, catalogueId));
-    }
-  };
+  const currentForces = roster.forces ?? NO_FORCES;
+  const syncedForces = currentForces.map(
+    force => syncForceWithSystem(force, system, roster.catalogueId)
+  );
+  if (!anyReplaced(currentForces, syncedForces)) return roster;
 
-  roster.forces?.forEach(force => {
-    force.selections?.forEach(sel => syncSelection(sel, force.catalogueId || roster.catalogueId));
-  });
-
-  return rosterModified;
+  return { ...roster, forces: syncedForces };
 }

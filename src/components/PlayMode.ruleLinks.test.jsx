@@ -43,7 +43,10 @@ vi.mock('../hooks/usePlayState', () => ({
   }),
 }));
 
-vi.mock('../solver/validator', () => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the facade
+// re-exports stay real, since they are pure traversal without any rules in them.
+vi.mock('../solver/validator', async (importOriginal) => ({
+  ...(await importOriginal()),
   findEntryInSystem: vi.fn(() => ({ id: 'entry' })),
   resolveEntry: vi.fn(() => ({ id: 'resolved', name: 'Resolved', profiles: [] })),
   collectUnitProfilesAndRules: vi.fn(() => ({ profiles: [], rules: [] })),

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAvailableForceEntries } from '../../solver/validator';
+import { DEFAULT_ROSTER_COST_LIMIT } from '../../utils/rosterDefaults';
 
-const DEFAULT_COST_LIMIT = 2000;
 const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
 
 /**
@@ -13,7 +13,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
   const [systemId, setSystemId] = useState('');
   const [catId, setCatId] = useState('');
   const [forceEntryId, setForceEntryId] = useState('');
-  const [limit, setLimit] = useState(DEFAULT_COST_LIMIT);
+  const [limit, setLimit] = useState(DEFAULT_ROSTER_COST_LIMIT);
 
   const defaultForceEntryId = (system, catalogueId) => {
     const avail = getAvailableForceEntries(system, catalogueId);
@@ -31,7 +31,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
   useEffect(() => {
     if (isOpen) {
       setName('');
-      setLimit(DEFAULT_COST_LIMIT);
+      setLimit(DEFAULT_ROSTER_COST_LIMIT);
       applySystemDefaults(systems[0]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -25,6 +25,9 @@ export function SettingsProvider({ children }) {
         if (isMounted) setWhfb6LinkingEnabledState(storedValue);
       })
       .catch((error) => {
+        // Console-only by design: the setting falls back to its documented default
+        // (ADR-0015) and the app stays fully usable — only the rule links are missing,
+        // which the user sees in the settings dialog itself.
         console.error('Failed to load whfb6 linking setting:', error);
       });
     return () => {
@@ -35,6 +38,8 @@ export function SettingsProvider({ children }) {
   const setWhfb6LinkingEnabled = (value) => {
     setWhfb6LinkingEnabledState(value);
     persistWhfb6LinkingEnabled(value).catch((error) => {
+      // Console-only by design: the toggle applies immediately for this session and only
+      // its persistence across restarts is lost — no data of the user's is at risk.
       console.error('Failed to persist whfb6 linking setting:', error);
     });
   };

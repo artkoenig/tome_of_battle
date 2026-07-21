@@ -29,7 +29,7 @@ test('a missing revision attribute parses as null (treated as outdated downstrea
 });
 
 test('processImportedData carries the game system revision on the stored system', () => {
-  const system = processImportedData(
+  const { system } = processImportedData(
     [{ name: 'sys.gst', content: gstWithRevision }],
     [{ name: 'faction.cat', content: catWithRevision }]
   );

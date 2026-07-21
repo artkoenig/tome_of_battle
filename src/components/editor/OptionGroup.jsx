@@ -1,27 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT } from '../../solver/validator';
-import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
-
-const findForceOfSelection = (selId, forces) => {
-  if (!forces) return null;
-  for (const force of forces) {
-    const containsSel = (list) => {
-      if (!list) return false;
-      for (const s of list) {
-        if (s.id === selId) return true;
-        if (containsSel(s.selections)) return true;
-      }
-      return false;
-    };
-    if (containsSel(force.selections)) {
-      return force.id;
-    }
-  }
-  return null;
-};
 
 export default function OptionGroupComponent({ 
   group, 
@@ -29,7 +10,7 @@ export default function OptionGroupComponent({
   system, 
   roster, 
   getSubSelectionCount, 
-  updateSubSelection, 
+  subSelectionOperations,
   costTypeLabel,
   getOptionDescription,
   activeCatalogue,
@@ -56,7 +37,7 @@ export default function OptionGroupComponent({
   const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
   
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-  const activeForceId = findForceOfSelection(selection.id, roster.forces);
+  const activeForceId = findForceContainingSelection(roster, selection.id)?.id ?? null;
   const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
 
   const displayCtx = {
@@ -91,7 +72,7 @@ export default function OptionGroupComponent({
 
   
   const filteredGroupConstraints = group.constraints?.filter(con => {
-    if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+    if (!con.scope || !isEntryScope(con.scope)) {
       return true;
     }
     return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
@@ -193,28 +174,18 @@ export default function OptionGroupComponent({
   const limitText = limitParts.length > 0 ? `(${limitParts.join(' | ')})` : '';
 
   return (
-    <div style={{ marginBottom: '12px' }}>
-      <div 
+    <div className="option-group">
+      <div
         onClick={() => setIsExpanded(!isExpanded)}
-        style={{
-          backgroundColor: hasGroupError ? 'rgba(239, 68, 68, 0.05)' : 'rgba(226, 183, 66, 0.04)',
-          border: hasGroupError ? '1px solid var(--color-danger)' : '1px solid var(--border-dark)',
-          borderRadius: '4px',
-          padding: '8px 12px',
-          cursor: 'pointer',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          userSelect: 'none'
-        }}
+        className={`option-group-header${hasGroupError ? ' option-group-header--error' : ''}`}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
+        <div className="option-group-titles">
           <span className={hasGroupError ? "text-ui-title text-danger" : "text-ui-title text-gold"}>
             {group.name} 
-            <span className="text-micro" style={{ marginLeft: '6px', fontWeight: 400, color: 'var(--text-dim)' }}>{limitText}</span>
+            <span className="text-micro option-group-limit">{limitText}</span>
           </span>
           {selectedItemsSummary && (
-            <span className="text-micro" style={{ color: 'var(--text-parchment)', opacity: 0.75, fontWeight: 400 }}>
+            <span className="text-micro option-group-summary">
               Auswahl: {selectedItemsSummary}
             </span>
           )}
@@ -227,7 +198,7 @@ export default function OptionGroupComponent({
       </div>
 
       {isExpanded && (
-        <div style={{ borderLeft: '2px solid var(--border-gold-dim)', marginTop: '6px', paddingLeft: '4px' }}>
+        <div className="option-group-items">
           {group.items
             .slice()
             .sort((a, b) => {
@@ -242,7 +213,7 @@ export default function OptionGroupComponent({
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
             const filteredOptionConstraints = res.constraints?.filter(con => {
-              if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+              if (!con.scope || !isEntryScope(con.scope)) {
                 return true;
               }
               return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
@@ -323,7 +294,9 @@ export default function OptionGroupComponent({
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
             const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere;
 
-            const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
+            // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
+            const isUnavailable = count === 0 && isSelectDisabled;
+            const isClickable = !isMandatory && !isUnavailable;
             const handleRowClick = (e) => {
               if (e.target.closest('button') || e.target.closest('input')) {
                 return;
@@ -332,24 +305,28 @@ export default function OptionGroupComponent({
                 if (isBinary) {
                   if (isRadio) {
                     if (count > 0) {
-                      updateSubSelection(selection.id, option, 'decrement');
+                      subSelectionOperations.decreaseCount(selection.id, option);
                     } else {
                       group.items.forEach(otherItem => {
                         const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                         if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                           const otherCount = getSubSelectionCount(selection, otherRes.id);
                           if (otherCount > 0) {
-                            updateSubSelection(selection.id, otherItem.option, 'decrement');
+                            subSelectionOperations.decreaseCount(selection.id, otherItem.option);
                           }
                         }
                       });
-                      updateSubSelection(selection.id, option, 'increment');
+                      subSelectionOperations.increaseCount(selection.id, option);
                     }
                   } else {
-                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment');
+                    if (count > 0) {
+                      subSelectionOperations.decreaseCount(selection.id, option);
+                    } else {
+                      subSelectionOperations.increaseCount(selection.id, option);
+                    }
                   }
                 } else {
-                  updateSubSelection(selection.id, option, 'increment');
+                  subSelectionOperations.increaseCount(selection.id, option);
                 }
               }
             };
@@ -357,17 +334,11 @@ export default function OptionGroupComponent({
             return (
               <div 
                 key={res.id} 
-                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}`}
-                style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}
+                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
                 onClick={handleRowClick}
               >
-                <div style={{ paddingLeft: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span 
-                    style={{ 
-                      fontWeight: 600, 
-                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit'
-                    }}
-                  >
+                <div className="sub-selection-label sub-selection-label--indented">
+                  <span className={`sub-selection-option-name${isUnavailable ? ' sub-selection-option-name--unavailable' : ''}`}>
                     {optionName}
                     <RuleChipIcon
                       name={res.name}
@@ -382,11 +353,11 @@ export default function OptionGroupComponent({
                       onInfoMove={onHoverMove}
                       onInfoLeave={onHoverLeave}
                     />
-                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">(Bereits vergeben)</span>}
                   </span>
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} Pkt.</span>}
                   {isBinary ? (
                     isRadio ? (
                       <input 
@@ -397,18 +368,18 @@ export default function OptionGroupComponent({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (count > 0) {
-                            updateSubSelection(selection.id, option, 'decrement');
+                            subSelectionOperations.decreaseCount(selection.id, option);
                           } else if (!isSelectDisabled) {
                             group.items.forEach(otherItem => {
                               const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                               if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                                 const otherCount = getSubSelectionCount(selection, otherRes.id);
                                 if (otherCount > 0) {
-                                  updateSubSelection(selection.id, otherItem.option, 'decrement');
+                                  subSelectionOperations.decreaseCount(selection.id, otherItem.option);
                                 }
                               }
                             });
-                            updateSubSelection(selection.id, option, 'increment');
+                            subSelectionOperations.increaseCount(selection.id, option);
                           }
                         }}
                         onChange={() => {}}
@@ -421,7 +392,11 @@ export default function OptionGroupComponent({
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) => {
                           if (!isMandatory) {
-                            updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
+                            if (e.target.checked) {
+                              subSelectionOperations.increaseCount(selection.id, option);
+                            } else {
+                              subSelectionOperations.decreaseCount(selection.id, option);
+                            }
                           }
                         }}
                       />
@@ -432,7 +407,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'decrement');
+                          subSelectionOperations.decreaseCount(selection.id, option);
                         }}
                         disabled={count === 0}
                       >
@@ -443,7 +418,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'increment');
+                          subSelectionOperations.increaseCount(selection.id, option);
                         }}
                         disabled={isSelectDisabled}
                       >

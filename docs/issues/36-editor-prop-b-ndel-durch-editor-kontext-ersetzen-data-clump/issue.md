@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: refactor
 Blocked by: None
 
@@ -28,3 +28,15 @@ Vorbestehendes Muster; nicht durch Issue 35 verursacht, dort nur fortgeführt.
 - [ ]
 
 ## Comments
+- Bleibt eigenstaendig bestehen, ruht aber hinter Issue 39/02: der Entwurf sieht vor, das Prop-Buendel erst zu fassen, nachdem der redundante Zustand in der Zustandsgrenze bereinigt ist - sonst wuerde die Redundanz in einen Context zementiert. Die Analyse zum zweistufigen Provider (Force-Scoping) ist in der Sitzung vom 2026-07-20 erarbeitet und noch nicht in dieses Issue eingetragen.
+- superseded: Auf Weisung des Maintainers geschlossen. KORREKTUR einer zuvor
+  hier eingetragenen, falschen Begruendung: der Befund ist NICHT in Issue 39
+  aufgegangen — kein Kind-Issue von 39 fasst das Prop-Buendel oder einen
+  EditorContext an (geprueft). Was 39 enthaelt, ist lediglich die
+  Voraussetzung: 39/02 bereinigt den redundanten Zustand in der
+  Zustandsgrenze, ohne den eine Buendelung die Redundanz nur zementieren
+  wuerde. Die eigentliche Umstrukturierung ist damit fallengelassen, nicht
+  verschoben. Erhalten bleibt die Analyse vom 2026-07-20: ein einziger
+  globaler EditorContext waere falsch, weil force und activeCatalogue pro
+  Force variieren — der Provider muesste zweistufig sein. Wer den Befund
+  wieder aufgreifen will, findet hier den Entwurf.

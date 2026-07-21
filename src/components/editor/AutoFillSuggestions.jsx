@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem } from '../../solver/validator';
-import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
+import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/validator';
 
 const getSubSelectionCount = (selection, optionEntryId) => {
   const findCount = (list) => {
@@ -24,7 +23,7 @@ export default function AutoFillSuggestions({
   system,
   activeCatalogue,
   remainingPoints,
-  updateSubSelection,
+  subSelectionOperations,
   costTypeLabel
 }) {
   const [showAll, setShowAll] = useState(false);
@@ -82,7 +81,7 @@ export default function AutoFillSuggestions({
 
         let maxLimit = Infinity;
         const filteredOptionConstraints = res.constraints?.filter(con => {
-          if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') return true;
+          if (!con.scope || !isEntryScope(con.scope)) return true;
           return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
                  (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
         }) || [];
@@ -111,8 +110,7 @@ export default function AutoFillSuggestions({
               selectionName: selection.name,
               option: option,
               optionName: res.name,
-              cost: points,
-              actionType: 'increment'
+              cost: points
             });
           }
         }
@@ -191,34 +189,34 @@ export default function AutoFillSuggestions({
   }, [availableActions]);
 
 
-  const handleApplyAction = (action) => {
-    updateSubSelection(action.selectionId, action.option, action.actionType);
+  // Ein Vorschlag ist stets „eine Option mehr" — die Punkte werden aufgefüllt,
+  // nie abgebaut.
+  const applySuggestedAction = (action) => {
+    subSelectionOperations.increaseCount(action.selectionId, action.option);
   };
 
   const handleApplyCombo = (combo) => {
-    combo.actions.forEach(action => {
-      updateSubSelection(action.selectionId, action.option, action.actionType);
-    });
+    combo.actions.forEach(applySuggestedAction);
   };
 
   if (availableActions.length === 0) return null;
 
   return (
-    <div className="gothic-panel" style={{ padding: '20px', marginTop: '24px', borderStyle: 'solid', borderWidth: '1px', borderColor: 'var(--color-gold)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>
+    <div className="gothic-panel autofill-panel">
+      <div className="autofill-header">
         <Wand2 className="text-gold" size={20} />
-        <h3 className="font-serif text-gold" style={{ margin: 0 }}>Punkte auffüllen</h3>
-        <span className="badge badge-muted" style={{ marginLeft: 'auto' }}>{remainingPoints} Pkt. übrig</span>
+        <h3 className="font-serif text-gold no-margin">Punkte auffüllen</h3>
+        <span className="badge badge-muted push-end">{remainingPoints} Pkt. übrig</span>
       </div>
 
-      <p className="text-body text-dim" style={{ marginBottom: '16px' }}>
+      <p className="text-body text-dim autofill-intro">
         Du hast noch <strong>{remainingPoints} {costTypeLabel}</strong> zur Verfügung. Hier sind einige Vorschläge:
       </p>
 
       {combinations.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
-          <h4 className="text-subheading" style={{ marginBottom: '12px' }}>Perfekte Kombinationen</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="autofill-section">
+          <h4 className="text-subheading autofill-section-title">Perfekte Kombinationen</h4>
+          <div className="autofill-combo-list">
             {combinations.map((combo, idx) => {
                const grouped = {};
                combo.actions.forEach(a => {
@@ -228,12 +226,12 @@ export default function AutoFillSuggestions({
                });
 
                return (
-                 <div key={idx} className="sub-selection-row" style={{ padding: '12px', background: 'rgba(226, 183, 66, 0.05)', borderRadius: '4px', border: '1px solid rgba(226, 183, 66, 0.2)' }}>
-                   <div style={{ flex: 1 }}>
-                     <div style={{ fontWeight: 'bold', color: 'var(--text-gold)', marginBottom: '4px' }}>
+                 <div key={idx} className="sub-selection-row autofill-combo-row">
+                   <div>
+                     <div className="autofill-combo-sum">
                        Exakt {combo.sum} Pkt.
                      </div>
-                     <ul style={{ margin: 0, paddingLeft: '20px', fontSize: 'var(--fs-body)' }}>
+                     <ul className="autofill-combo-items">
                        {Object.values(grouped).map((g, i) => (
                          <li key={i}>
                            {g.displayCount > 1 ? `${g.displayCount}x ` : ''}
@@ -242,10 +240,9 @@ export default function AutoFillSuggestions({
                        ))}
                      </ul>
                    </div>
-                   <button 
-                     className="btn-primary" 
+                   <button
+                     className="btn-primary autofill-apply-btn"
                      onClick={() => handleApplyCombo(combo)}
-                     style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                    >
                      <Sparkles size={14} />
                      <span className="hide-on-mobile">Anwenden</span>
@@ -258,31 +255,30 @@ export default function AutoFillSuggestions({
       )}
 
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h4 className="text-subheading" style={{ margin: 0 }}>Mögliche Upgrades</h4>
+        <div className="autofill-upgrades-header">
+          <h4 className="text-subheading no-margin">Mögliche Upgrades</h4>
           {uniqueSingleActions.length > 3 && (
-            <button 
-              className="btn-secondary text-micro" 
+            <button
+              className="btn-secondary text-micro autofill-toggle-btn"
               onClick={() => setShowAll(!showAll)}
-              style={{ padding: '4px 8px' }}
             >
               {showAll ? 'Weniger anzeigen' : 'Alle anzeigen'}
             </button>
           )}
         </div>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div className="autofill-upgrade-list">
           {(showAll ? uniqueSingleActions : uniqueSingleActions.slice(0, 3)).map((action) => (
-            <div key={`${action.selectionId}-${action.option.id}`} className="sub-selection-row" style={{ background: 'rgba(0,0,0,0.1)' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontWeight: 600 }}>{action.optionName}</span>
+            <div key={`${action.selectionId}-${action.option.id}`} className="sub-selection-row autofill-upgrade-row">
+              <div className="flex-col">
+                <span className="text-strong">{action.optionName}</span>
                 <span className="text-micro text-dim">für {action.selectionName}</span>
               </div>
-              <div className="sub-selection-controls" style={{ gap: '12px' }}>
+              <div className="sub-selection-controls autofill-upgrade-controls">
                 <span className="text-gold text-label">+{action.cost} Pkt.</span>
                 <button 
                   className="btn-secondary square-btn"
-                  onClick={() => handleApplyAction(action)}
+                  onClick={() => applySuggestedAction(action)}
                   title="Hinzufügen"
                 >
                   <Plus size={14} />

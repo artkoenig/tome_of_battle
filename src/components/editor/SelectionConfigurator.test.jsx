@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SelectionConfigurator from './SelectionConfigurator';
+import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -51,7 +52,17 @@ const mockFindEntryInSystem = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
 const mockComputeRosterCounts = vi.fn();
 
-vi.mock('../../solver/validator', () => ({
+const mockGetUnitOptions = vi.fn();
+
+// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
+// wird auch nur die Fassade gemockt. Reine Funktionen ohne eigene
+// Abhängigkeiten — das Prädikat „eigenständige Untereinheit", die
+// System-Eigenheiten und die Schlüsselwortlisten — reicht der Mock in ihrer
+// echten Umsetzung durch, statt sie zu stubben.
+vi.mock('../../solver/validator', async () => ({
+  // Reine Baum-Primitive: die echte Implementierung durchreichen statt sie im Mock
+  // nachzubauen — ihre Rekursion ist in rosterTree.test.js eigens abgedeckt.
+  findForceContainingSelection: (await vi.importActual('../../solver/rosterTree')).findForceContainingSelection,
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
@@ -59,18 +70,16 @@ vi.mock('../../solver/validator', () => ({
   getModifiedConstraintValue: (con) => con.value || 1,
   calculateRosterCosts: () => ({ pts: 0 }),
   getOptionDisplayCost: () => 10,
-}));
-
-// Mock optionsCollector
-const mockGetUnitOptions = vi.fn();
-vi.mock('../../solver/optionsCollector', () => ({
+  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
   getUnitOptions: (...args) => mockGetUnitOptions(...args),
   isUniqueOptionTakenElsewhere: () => false,
-  isOptionRosterUnique: () => false
+  isOptionRosterUnique: () => false,
+  isQuirkGeneralEntryId: (await vi.importActual('../../solver/systemQuirks')).isQuirkGeneralEntryId,
+  ...(await vi.importActual('../../solver/constants')),
 }));
 
 describe('SelectionConfigurator Component', () => {
-  const mockUpdateSubSelection = vi.fn();
+  const mockSubSelectionOperations = createSubSelectionOperationsMock();
   const mockSystem = { id: 'sys-1' };
   const mockRoster = {
     costLimitType: 'pts',
@@ -103,7 +112,7 @@ describe('SelectionConfigurator Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
@@ -121,7 +130,7 @@ describe('SelectionConfigurator Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
         isListRule
@@ -144,7 +153,7 @@ describe('SelectionConfigurator Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
@@ -173,7 +182,7 @@ describe('SelectionConfigurator Component', () => {
         selection={selectionWithGrenade}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
@@ -185,16 +194,16 @@ describe('SelectionConfigurator Component', () => {
     // Click increment
     const plusBtn = screen.getByTestId('icon-plus').closest('button');
     fireEvent.click(plusBtn);
-    expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
-    expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'increment');
+    expect(mockSubSelectionOperations.increaseCount).toHaveBeenCalledTimes(1);
+    expect(mockSubSelectionOperations.increaseCount).toHaveBeenCalledWith('sel-1', mockOption);
 
-    mockUpdateSubSelection.mockClear();
+    mockSubSelectionOperations.increaseCount.mockClear();
 
     // Click decrement
     const minusBtn = screen.getByTestId('icon-minus').closest('button');
     fireEvent.click(minusBtn);
-    expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
-    expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'decrement');
+    expect(mockSubSelectionOperations.decreaseCount).toHaveBeenCalledTimes(1);
+    expect(mockSubSelectionOperations.decreaseCount).toHaveBeenCalledWith('sel-1', mockOption);
   });
 
   it('honors the whfb6 linking setting for standalone mapped options', () => {
@@ -216,7 +225,7 @@ describe('SelectionConfigurator Component', () => {
           selection={mockSelection}
           system={mockSystem}
           roster={mockRoster}
-          updateSubSelection={mockUpdateSubSelection}
+          subSelectionOperations={mockSubSelectionOperations}
           costTypeLabel="Pkt."
           activeCatalogue={mockCatalogue}
         />
@@ -253,7 +262,7 @@ describe('SelectionConfigurator Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />

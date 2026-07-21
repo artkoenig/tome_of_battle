@@ -53,7 +53,10 @@ const mockResolveEntry = vi.fn();
 const mockCollectUnitProfilesAndRules = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
 
-vi.mock('../solver/validator', () => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the facade
+// re-exports stay real, since they are pure traversal without any rules in them.
+vi.mock('../solver/validator', async (importOriginal) => ({
+  ...(await importOriginal()),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),

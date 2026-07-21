@@ -1,37 +1,37 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
-import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
-import { createSelectionFromDef as buildSelectionFromDef } from '../solver/selectionFactory';
+import {
+  calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
+  childSelectionsOf, findSelectionInRoster, mapSelectionTree, replaceSelectionById,
+  createSelectionFromDef as buildSelectionFromDef,
+  withAddedInstance, withoutInstance, withChangedOptionCount
+} from '../solver/validator';
 import { useUndoableState } from './useUndoableState';
+import {
+  PERSISTENCE_FAILURE_MESSAGE,
+  createPersistenceFailureReporter,
+} from '../utils/persistenceFailure';
 import '../types.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 150;
 
-/** Sucht eine Selection (beliebig tief verschachtelt) im Roster per ID. */
-const findSelectionInRoster = (roster, selectionId) => {
-  if (!roster || !selectionId) return null;
-  const findIn = (list) => {
-    for (const s of list || []) {
-      if (s.id === selectionId) return s;
-      const sub = findIn(s.selections);
-      if (sub) return sub;
-    }
-    return null;
-  };
-  for (const force of roster.forces || []) {
-    const found = findIn(force.selections);
-    if (found) return found;
-  }
-  return null;
-};
+/** Verschiebung der Anzahl, die eine einzelne Nutzeraktion auslöst. */
+const COUNT_INCREASE = 1;
+const COUNT_DECREASE = -1;
+
+/** Abgeleitete Werte, solange Roster oder System noch nicht vorliegen. */
+const NO_COSTS = Object.freeze({});
+const NO_VALIDATION_ERRORS = Object.freeze([]);
 
 /**
  * Hook to manage a roster state, cost calculations, validations and updates.
  * @param {import('../types.js').Roster} initialRoster
  * @param {Object} system
  * @param {Function} saveRosterCallback
+ * @param {(message: string) => void} [reportError] app-wide error channel; a failed
+ *   autosave reaches the user through it instead of ending in the console.
  */
-export function useRoster(initialRoster, system, saveRosterCallback) {
+export function useRoster(initialRoster, system, saveRosterCallback, reportError) {
   const {
     state: roster,
     setState: setRoster,
@@ -41,9 +41,21 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     canUndo,
     canRedo
   } = useUndoableState(initialRoster);
-  const [costs, setCosts] = useState({});
-  const [validationErrors, setValidationErrors] = useState([]);
   const [selectedSelectionId, setSelectedSelectionId] = useState(null);
+
+  // Kosten und Validierungsfehler sind reine Ableitungen aus Roster und System
+  // (SSOT) und werden deshalb berechnet statt in eigenem State gespiegelt. Ein
+  // gespiegelter State würde die Oberfläche — und mit ihr die aus dem Validator
+  // abgeleitete Aushebe-Verfügbarkeit (ADR-0022) — hinter dem Roster zurückhängen
+  // lassen.
+  const costs = useMemo(
+    () => (roster && system ? calculateRosterCosts(roster, system) : NO_COSTS),
+    [roster, system]
+  );
+  const validationErrors = useMemo(
+    () => (roster && system ? validateRoster(roster, system) : NO_VALIDATION_ERRORS),
+    [roster, system]
+  );
 
   // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt
   // eine (schnell veraltende) Objektreferenz zu halten.
@@ -63,42 +75,48 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   const saveCallbackRef = useRef(saveRosterCallback);
   saveCallbackRef.current = saveRosterCallback;
   const pendingSaveRef = useRef(null);
+  // Über eine Ref, weil das Persistieren aus einem Timeout heraus läuft und dort sonst
+  // einen veralteten Kanal aus dem Erzeugungs-Render sähe.
+  const reportErrorRef = useRef(reportError);
+  reportErrorRef.current = reportError;
 
   const persistRoster = (rosterToSave) => {
-    const cb = saveCallbackRef.current;
-    if (!cb) return;
+    const save = saveCallbackRef.current;
+    if (!save) return;
+
+    const reportFailure = createPersistenceFailureReporter(
+      PERSISTENCE_FAILURE_MESSAGE.roster,
+      reportErrorRef.current
+    );
+
     try {
-      const promise = cb(rosterToSave);
-      if (promise && typeof promise.catch === 'function') {
-        promise.catch(e => {
-          console.error('Failed to auto-save roster:', e);
-        });
+      const savePromise = save(rosterToSave);
+      if (savePromise && typeof savePromise.catch === 'function') {
+        savePromise.catch(reportFailure);
       }
-    } catch (e) {
-      console.error('Failed to auto-save roster:', e);
+    } catch (error) {
+      reportFailure(error);
     }
   };
 
-  // Debounced: Autosave, Kostenberechnung und Validierung bei jeder Roster-Änderung
+  // Katalog-Abgleich und Autosave. Die Verzögerung wirkt ausschließlich auf das
+  // Persistieren — Anzeige und Validierung leiten sich synchron aus dem Roster ab.
   useEffect(() => {
     if (!roster || !system) return;
 
-    const rosterModified = syncRosterSelectionsWithSystem(roster, system);
-    if (rosterModified) {
-      replaceRoster({ ...roster });
+    const syncedRoster = syncRosterSelectionsWithSystem(roster, system);
+    if (syncedRoster !== roster) {
+      replaceRoster(syncedRoster);
       return;
     }
 
     pendingSaveRef.current = roster;
-    const handler = setTimeout(() => {
+    const persistHandler = setTimeout(() => {
       persistRoster(roster);
       pendingSaveRef.current = null;
-
-      setCosts(calculateRosterCosts(roster, system));
-      setValidationErrors(validateRoster(roster, system));
     }, AUTOSAVE_DEBOUNCE_MS);
 
-    return () => clearTimeout(handler);
+    return () => clearTimeout(persistHandler);
   }, [roster, system, replaceRoster]);
 
   // Noch ausstehende Änderungen beim Unmount wegschreiben (z. B. bei schneller Navigation)
@@ -156,15 +174,13 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   };
 
   const copyUnit = (selectionId) => {
-    const cloneSelection = (sel) => {
-      const newId = crypto.randomUUID();
-      const clonedSelections = (sel.selections || []).map(s => cloneSelection(s));
-      return {
-        ...sel,
-        id: newId,
-        selections: clonedSelections
-      };
-    };
+    // Jede Selection des Teilbaums erhält eine frische Id, damit die Kopie mit
+    // dem Original nicht kollidiert.
+    const cloneSelection = (unit) => mapSelectionTree(unit, (selection, clonedChildren) => ({
+      ...selection,
+      id: crypto.randomUUID(),
+      selections: clonedChildren
+    }));
 
     setRoster(prev => {
       let unitToCopy = null;
@@ -196,94 +212,60 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     });
   };
 
-  const updateSubSelection = (unitSelectionId, optionOrId, action) => {
+  /**
+   * Ersetzt die Kind-Liste der Einheit `unitSelectionId` — beliebiger Tiefe im
+   * Roster — durch das Ergebnis von `changeChildSelections`. Die gemeinsame
+   * Verdrahtung aller Unter-Auswahl-Operationen mit dem Roster-State.
+   * @param {string} unitSelectionId
+   * @param {(childSelections: import('../types.js').Selection[]) => import('../types.js').Selection[]} changeChildSelections
+   */
+  const updateUnitChildSelections = (unitSelectionId, changeChildSelections) => {
     setRoster(prev => {
-      let foundAndUpdated = false;
-
-      const updateDeep = (node) => {
-        if (node.id === unitSelectionId) {
-          foundAndUpdated = true;
-          const list = [...(node.selections || [])];
-          const amount = 1;
-
-          if (action === 'add_instance') {
-            const childSel = createSelectionFromDef(optionOrId);
-            if (childSel) {
-              childSel.number = amount;
-              list.push(childSel);
-            }
-          } else if (action === 'remove_instance') {
-            const removeIdx = list.findIndex(s => s.id === optionOrId);
-            if (removeIdx > -1) {
-              list.splice(removeIdx, 1);
-            }
-          } else if (action === 'increment_instance' || action === 'decrement_instance') {
-            const instIdx = list.findIndex(s => s.id === optionOrId);
-            if (instIdx > -1) {
-              if (action === 'increment_instance') {
-                list[instIdx] = { ...list[instIdx], number: (list[instIdx].number || 1) + amount };
-              } else {
-                if ((list[instIdx].number || 1) > amount) {
-                  list[instIdx] = { ...list[instIdx], number: list[instIdx].number - amount };
-                } else {
-                  list.splice(instIdx, 1);
-                }
-              }
-            }
-          } else {
-            // Original increment/decrement logic (optionOrId is an option def)
-            const optionId = optionOrId.id;
-            const idx = list.findIndex(s => (s.entryLinkId || s.selectionEntryId) === optionId);
-
-            if (action === 'increment') {
-              if (idx > -1) {
-                list[idx] = { ...list[idx], number: (list[idx].number || 1) + amount };
-              } else {
-                const childSel = createSelectionFromDef(optionOrId);
-                if (childSel) {
-                  childSel.number = amount;
-                  list.push(childSel);
-                }
-              }
-            } else if (action === 'decrement') {
-              if (idx > -1) {
-                if ((list[idx].number || 1) > amount) {
-                  list[idx] = { ...list[idx], number: list[idx].number - amount };
-                } else {
-                  list.splice(idx, 1);
-                }
-              }
-            }
-          }
-          return { ...node, selections: list };
-        }
-
-        if (node.selections && node.selections.length > 0) {
-          let updatedChildren = false;
-          const newSelections = node.selections.map(child => {
-            if (foundAndUpdated) return child;
-            const updatedChild = updateDeep(child);
-            if (updatedChild !== child) updatedChildren = true;
-            return updatedChild;
-          });
-          if (updatedChildren) return { ...node, selections: newSelections };
-        }
-        return node;
-      };
-
       const updatedForces = prev.forces.map(force => {
-        let updatedForceSelections = false;
-        const newSelections = force.selections.map(unit => {
-          const updatedUnit = updateDeep(unit);
-          if (updatedUnit !== unit) updatedForceSelections = true;
-          return updatedUnit;
-        });
-        if (updatedForceSelections) return { ...force, selections: newSelections };
-        return force;
+        const currentSelections = childSelectionsOf(force);
+        const updatedSelections = replaceSelectionById(currentSelections, unitSelectionId, unit => ({
+          ...unit,
+          selections: changeChildSelections(childSelectionsOf(unit))
+        }));
+        if (updatedSelections === currentSelections) return force;
+        return { ...force, selections: updatedSelections };
       });
 
       return { ...prev, forces: updatedForces };
     });
+  };
+
+  /** Legt eine weitere, eigenständig geführte Instanz einer Option an. */
+  const addSubSelectionInstance = (unitSelectionId, optionDefinition) =>
+    updateUnitChildSelections(unitSelectionId, childSelections =>
+      withAddedInstance(childSelections, createSelectionFromDef(optionDefinition)));
+
+  /** Entfernt eine einzeln geführte Instanz anhand ihrer Selection-Id. */
+  const removeSubSelectionInstance = (unitSelectionId, instanceSelectionId) =>
+    updateUnitChildSelections(unitSelectionId, childSelections =>
+      withoutInstance(childSelections, instanceSelectionId));
+
+  const changeSubSelectionCount = (unitSelectionId, optionDefinition, countDelta) =>
+    updateUnitChildSelections(unitSelectionId, childSelections =>
+      withChangedOptionCount(
+        childSelections,
+        optionDefinition.id,
+        countDelta,
+        () => createSelectionFromDef(optionDefinition)
+      ));
+
+  /**
+   * Die benannten Änderungsoperationen auf den Unter-Auswahlen einer Einheit.
+   * Die Oberfläche erhält sie als ein Bündel, sodass jede Ebene der
+   * Editor-Komponenten genau eine Stütze durchreicht statt vier.
+   */
+  const subSelectionOperations = {
+    addInstance: addSubSelectionInstance,
+    removeInstance: removeSubSelectionInstance,
+    increaseCount: (unitSelectionId, optionDefinition) =>
+      changeSubSelectionCount(unitSelectionId, optionDefinition, COUNT_INCREASE),
+    decreaseCount: (unitSelectionId, optionDefinition) =>
+      changeSubSelectionCount(unitSelectionId, optionDefinition, COUNT_DECREASE)
   };
 
   const updateRosterName = (newName) => {
@@ -308,7 +290,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     addUnit,
     removeUnit,
     copyUnit,
-    updateSubSelection,
+    subSelectionOperations,
     updateRosterName,
     save,
     undo,

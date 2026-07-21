@@ -19,7 +19,29 @@ export function evaluateHiddenFlag(initialHidden, modifiers, ctx) {
   return isHidden;
 }
 
-export function isCategoryLinkHidden(link, system, roster, selectionCounts, forceCategoryCounts) {
+/**
+ * @typedef {Object} VisibilityContext The roster/force bundle every entry-level
+ *   visibility and category check evaluates against. Mirrors the context object the
+ *   rest of the solver already threads (see optionsCollector / armyWideSelectors).
+ * @property {Object} system   the parsed game system (gst + catalogues).
+ * @property {Object} roster   the current roster.
+ * @property {Object} [selectionCounts]      per-entry selection counts.
+ * @property {Object} [forceCategoryCounts]  per-force category counts.
+ * @property {Object} [force]  the force being evaluated; defaults to the first force.
+ */
+
+/**
+ * True when a force's categoryLink is hidden in this context — statically or through
+ * a passing `field="hidden"` modifier.
+ *
+ * Deliberately evaluates without the context's `force`: a categoryLink is a property of
+ * the force definition itself, so its conditions never resolve against a force in the
+ * roster. Only {@link isSelectionEntryHidden} threads `force` through.
+ *
+ * @param {Object} link the categoryLink to test.
+ * @param {VisibilityContext} context
+ */
+export function isCategoryLinkHidden(link, { system, roster, selectionCounts, forceCategoryCounts }) {
   const ctx = {
     roster,
     system,
@@ -31,17 +53,6 @@ export function isCategoryLinkHidden(link, system, roster, selectionCounts, forc
   // category link are honoured, matching isSelectionEntryHidden below.
   return evaluateHiddenFlag(link.hidden, getEffectiveModifiers(link), ctx);
 }
-
-/**
- * @typedef {Object} VisibilityContext The roster/force bundle every entry-level
- *   visibility and category check evaluates against. Mirrors the context object the
- *   rest of the solver already threads (see optionsCollector / armyWideSelectors).
- * @property {Object} system   the parsed game system (gst + catalogues).
- * @property {Object} roster   the current roster.
- * @property {Object} [selectionCounts]      per-entry selection counts.
- * @property {Object} [forceCategoryCounts]  per-force category counts.
- * @property {Object} [force]  the force being evaluated; defaults to the first force.
- */
 
 // The condition-evaluation context every helper below shares: the caller's bundle plus
 // the force fallback and the catalogue id conditions resolve against.
@@ -97,12 +108,19 @@ export function isEntryPrimaryInCategory(entry, categoryId, context) {
     .some(link => link.targetId === categoryId && link.primary);
 }
 
-export function isSelectionEntryHidden(entry, system, roster, selectionCounts, forceCategoryCounts, force) {
-  const res = resolveEntry(system, entry);
+/**
+ * True when the catalogue entry is hidden in this context — statically or through a
+ * passing `field="hidden"` modifier on the entry or its resolved target.
+ *
+ * @param {Object} entry the entry/link to test.
+ * @param {VisibilityContext} context
+ */
+export function isSelectionEntryHidden(entry, context) {
+  const res = resolveEntry(context.system, entry);
   if (!res) return false;
 
   const isHidden = entry.hidden === true || res.hidden === true;
-  const ctx = buildEvalContext({ system, roster, selectionCounts, forceCategoryCounts, force });
+  const ctx = buildEvalContext(context);
 
   // Group modifiers carry their group conditions, so evaluateHiddenFlag's per-modifier
   // condition check applies the group gate: a group's hidden modifier only fires when
@@ -127,12 +145,16 @@ export function collectPrimaryCategoryEntries(system, catalogue, categoryId, { r
     ...(catalogue.sharedSelectionEntries || []),
   ];
   const seenResolvedIds = new Set();
+  const categoryContext = { system, roster, selectionCounts, force };
+  // Category counts are deliberately withheld from the hidden check: the adder lists a
+  // catalogue's entries before any force is fixed, so no per-force tally applies here.
+  const hiddenContext = { ...categoryContext, forceCategoryCounts: null };
 
   for (const entry of pools) {
     const resolved = resolveEntry(system, entry);
     if (!resolved) continue;
-    if (!isEntryPrimaryInCategory(entry, categoryId, { system, roster, selectionCounts, force })) continue;
-    if (isSelectionEntryHidden(entry, system, roster, selectionCounts, null, force)) continue;
+    if (!isEntryPrimaryInCategory(entry, categoryId, categoryContext)) continue;
+    if (isSelectionEntryHidden(entry, hiddenContext)) continue;
     if (seenResolvedIds.has(resolved.id)) continue;
     seenResolvedIds.add(resolved.id);
     found.push({ entry, resolved });

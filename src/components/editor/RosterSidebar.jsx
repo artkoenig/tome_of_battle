@@ -23,8 +23,8 @@ export default function RosterSidebar({
   return (
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
-      <div style={{ margin: '16px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '12px' }}>
-        <div className="flex-between text-ui-title text-gold" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+      <div className="sidebar-summary">
+        <div className="flex-between text-ui-title text-gold sidebar-summary-total">
           <span>Gesamtkosten:</span>
           <span>
             {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
@@ -39,7 +39,7 @@ export default function RosterSidebar({
           )}
         </div>
         {getExtraResourceTotals(system, roster, costs).map(res => (
-          <div key={res.id} className="flex-between text-label text-dim" style={{ marginTop: '6px' }}>
+          <div key={res.id} className="flex-between text-label text-dim sidebar-summary-resource">
             <span>{res.name}:</span>
             <span className="badge badge-muted">{res.total}</span>
           </div>
@@ -47,8 +47,8 @@ export default function RosterSidebar({
       </div>
 
       {/* Category breakdown */}
-      <div style={{ marginBottom: '24px' }}>
-        <h4 style={{ marginBottom: '10px' }}>Armeeanforderungen</h4>
+      <div className="sidebar-section">
+        <h4 className="sidebar-section-title">Armeeanforderungen</h4>
         {(() => {
           const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
           const forceId = roster.forces[0]?.id;
@@ -58,7 +58,7 @@ export default function RosterSidebar({
           const forceCategoryCounts = forceId ? (categoryCounts[forceId] || {}) : {};
 
           return categoryLinks.map(catLink => {
-            if (isCategoryLinkHidden(catLink, system, roster, selectionCounts, forceCategoryCounts)) {
+            if (isCategoryLinkHidden(catLink, { system, roster, selectionCounts, forceCategoryCounts })) {
               return null;
             }
 
@@ -93,13 +93,9 @@ export default function RosterSidebar({
             const isInvalid = count < minCon || count > maxCon;
 
             return (
-              <div 
-                key={catLink.id} 
-                className="flex-between text-label" 
-                style={{ 
-                  padding: '6px 0', 
-                  color: 'var(--text-parchment)'
-                }}
+              <div
+                key={catLink.id}
+                className="flex-between text-label sidebar-requirement-row"
               >
                 <span>
                   {catName}:
@@ -123,19 +119,19 @@ export default function RosterSidebar({
 
       {/* Validation Errors Detailed List */}
       <div>
-        <h4 style={{ marginBottom: '10px' }}>Regelverstöße</h4>
+        <h4 className="sidebar-section-title">Regelverstöße</h4>
         {validationErrors.length === 0 ? (
-          <p className="text-label text-success" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <p className="text-label text-success flex-row gap-6">
             <Check size={16} /> Alle Riten eingehalten. Roster ist bereit für die Schlacht.
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="sidebar-violation-list">
             {validationErrors.map((err, idx) => {
               const { Icon, itemClass } = SEVERITY_PRESENTATION[err.severity] || SEVERITY_PRESENTATION[ValidationSeverity.ERROR];
               return (
                 <div key={idx} className={`validation-error-item ${itemClass}`}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                    <Icon size={14} style={{ marginTop: '2px', flexShrink: 0 }} />
+                  <div className="sidebar-violation-body">
+                    <Icon size={14} className="sidebar-violation-icon" />
                     <span>{err.message}</span>
                   </div>
                 </div>

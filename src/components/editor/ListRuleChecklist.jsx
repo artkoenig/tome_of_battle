@@ -25,7 +25,7 @@ export default function ListRuleChecklist({
   states,
   addUnit,
   removeUnit,
-  updateSubSelection,
+  subSelectionOperations,
   costTypeLabel,
   costLimitType,
   selectionCounts,
@@ -144,7 +144,7 @@ export default function ListRuleChecklist({
                   selection={state.selection}
                   system={system}
                   roster={roster}
-                  updateSubSelection={updateSubSelection}
+                  subSelectionOperations={subSelectionOperations}
                   costTypeLabel={costTypeLabel}
                   activeCatalogue={activeCatalogue}
                   handleMouseEnter={handleMouseEnter}

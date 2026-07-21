@@ -1,5 +1,5 @@
 import React from 'react';
-import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
+import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/validator';
 
 // Shared renderer for the rich detail block of an upgrade/rule/magic item,
 // used by the editor chips, the SelectionConfigurator and the OptionGroup.
@@ -43,8 +43,8 @@ export const renderUpgradeDetails = (res, system) => {
           : `Beschreibung (${r.name})`;
 
         elements.push(
-          <div key={`rule-${idx}`} style={{ marginTop: '4px' }}>
-            <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
+          <div key={`rule-${idx}`} className="upgrade-details-entry">
+            <span className="text-gold upgrade-details-label">{label}: </span>
             {r.description}
             {r.publicationRef && (
               <span className="publication-ref">
@@ -77,8 +77,8 @@ export const renderUpgradeDetails = (res, system) => {
         // If there is special rules text, show it under "Sonderregeln:" label
         if (specialRulesChar && specialRulesChar.value && specialRulesChar.value.trim()) {
           profileElements.push(
-            <div key={`special-rules-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>Sonderregeln: </span>
+            <div key={`special-rules-${idx}`} className="upgrade-details-entry">
+              <span className="text-gold upgrade-details-label">Sonderregeln: </span>
               {specialRulesChar.value.trim()}
               {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
                 <span className="publication-ref">
@@ -98,8 +98,8 @@ export const renderUpgradeDetails = (res, system) => {
             : `Profil (${p.name})`;
 
           profileElements.push(
-            <div key={`profile-${idx}`} style={{ marginTop: '4px' }}>
-              <span className="text-gold" style={{ fontWeight: 600 }}>{label}: </span>
+            <div key={`profile-${idx}`} className="upgrade-details-entry">
+              <span className="text-gold upgrade-details-label">{label}: </span>
               {stats}
               {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
                 <span className="publication-ref">
@@ -119,8 +119,8 @@ export const renderUpgradeDetails = (res, system) => {
     const hasRuleOrProfileRefs = (res.rules && res.rules.some(r => r.publicationRef)) || (res.profiles && res.profiles.some(p => p.publicationRef));
     if (!hasRuleOrProfileRefs) {
       elements.push(
-        <div key="source" style={{ marginTop: '6px' }}>
-          <span className="text-gold" style={{ fontWeight: 600 }}>Quelle: </span>
+        <div key="source" className="upgrade-details-source">
+          <span className="text-gold upgrade-details-label">Quelle: </span>
           <span className="publication-ref">
             {res.publicationRef}
           </span>
@@ -130,7 +130,7 @@ export const renderUpgradeDetails = (res, system) => {
   }
 
   return (
-    <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
+    <div className="upgrade-details">
       {elements.length > 0 ? elements : <span className="text-dim">Keine Beschreibung vorhanden.</span>}
     </div>
   );

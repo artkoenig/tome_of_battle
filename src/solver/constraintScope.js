@@ -1,5 +1,7 @@
 import { getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
+import { countSelections, rootSelectionsOf, childSelectionsOf } from './rosterTree.js';
 import { SELECTIONS_FIELD } from '../parser/xmlParser.js';
+import { ConstraintScope } from './battlescribeConstants.js';
 import '../types.js';
 
 /**
@@ -61,22 +63,6 @@ export function isCostField(field, system, roster = null) {
 }
 
 /**
- * Recursively sums the effective count (`number`) of the selections that match
- * `predicate`. `includeChildSelections` controls whether nested selections are
- * visited; when false only the given (direct) level is counted.
- */
-export function countSelections(selections, { includeChildSelections = false, predicate = () => true } = {}) {
-  if (!selections) return 0;
-  return selections.reduce((sum, selection) => {
-    let running = sum + (predicate(selection) ? (selection.number || 1) : 0);
-    if (includeChildSelections && selection.selections) {
-      running += countSelections(selection.selections, { includeChildSelections, predicate });
-    }
-    return running;
-  }, 0);
-}
-
-/**
  * The top-level selections that make up a constraint's scope container.
  * - `roster`: every force's selections (the whole roster).
  * - `force` : the subject's own force, or — when `includeChildForces` is set —
@@ -85,16 +71,16 @@ export function countSelections(selections, { includeChildSelections = false, pr
  *   falling back to the force's selections.
  */
 export function collectScopeSelections({ roster, force, scope, parentSelection, includeChildForces = false }) {
-  if (scope === 'roster') {
-    return (roster?.forces || []).flatMap(f => f.selections || []);
+  if (scope === ConstraintScope.ROSTER) {
+    return rootSelectionsOf(roster);
   }
-  if (scope === 'force') {
-    if (includeChildForces) {
-      return (roster?.forces || []).flatMap(f => f.selections || []);
-    }
-    return force?.selections || [];
+  if (scope === ConstraintScope.FORCE) {
+    return includeChildForces ? rootSelectionsOf(roster) : childSelectionsOf(force);
   }
-  return parentSelection?.selections || force?.selections || [];
+  // An ancestor scope prefers the immediate parent's children, but a parent that
+  // carries no `selections` at all falls back to the force's own selections.
+  if (parentSelection?.selections) return childSelectionsOf(parentSelection);
+  return childSelectionsOf(force);
 }
 
 /**
@@ -111,7 +97,7 @@ export function getScopeReferenceTotal({ constraint, roster, system, force, pare
   const scopeSelections = collectScopeSelections({ roster, force, scope, parentSelection, includeChildForces });
 
   if (isCostField(field, system, roster)) {
-    if (scope === 'roster' && field === roster?.costLimitType && roster?.costLimit) {
+    if (scope === ConstraintScope.ROSTER && field === roster?.costLimitType && roster?.costLimit) {
       return roster.costLimit;
     }
     return scopeSelections.reduce(

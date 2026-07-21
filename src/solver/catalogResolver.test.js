@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { findEntryInCatalogue, findEntryInSystem, resolveEntry } from './catalogResolver.js';
 
 describe('catalogResolver - findEntryInCatalogue', () => {
-  it('finds and caches direct child objects in catalogue', () => {
+  it('finds direct child objects in catalogue', () => {
     const mockCat = {
       id: 'cat-1',
       selectionEntries: [
@@ -11,8 +11,34 @@ describe('catalogResolver - findEntryInCatalogue', () => {
     };
 
     const found = findEntryInCatalogue(mockCat, 'se-1');
-    expect(found).toEqual({ id: 'se-1', name: 'Empire Captain' });
-    expect(mockCat._entryCache.get('se-1')).toBe(found);
+    expect(found).toBe(mockCat.selectionEntries[0]);
+  });
+
+  it('reuses the index across lookups without touching the catalogue object', () => {
+    const mockCat = {
+      id: 'cat-1',
+      selectionEntries: [
+        { id: 'se-1', name: 'Empire Captain' }
+      ]
+    };
+    const ownKeysBefore = Object.keys(mockCat);
+
+    expect(findEntryInCatalogue(mockCat, 'se-1')).toBe(findEntryInCatalogue(mockCat, 'se-1'));
+    expect(Object.keys(mockCat)).toEqual(ownKeysBefore);
+  });
+
+  it('indexes a replaced catalogue object independently of the previous one', () => {
+    const originalCat = {
+      id: 'cat-1',
+      selectionEntries: [{ id: 'se-1', name: 'Original' }]
+    };
+    expect(findEntryInCatalogue(originalCat, 'se-1').name).toBe('Original');
+
+    const replacedCat = {
+      id: 'cat-1',
+      selectionEntries: [{ id: 'se-1', name: 'Brand New' }]
+    };
+    expect(findEntryInCatalogue(replacedCat, 'se-1').name).toBe('Brand New');
   });
 });
 
@@ -99,6 +125,25 @@ describe('catalogResolver - findEntryInSystem', () => {
 
     const thirdRun = findEntryInSystem(mockSystem, 'se-1');
     expect(thirdRun.name).toBe('Brand New'); // Invalidated and re-fetched
+  });
+
+  it('does not attach the index to the system or its catalogues', () => {
+    const mockSystem = {
+      id: 'sys-1',
+      catalogues: [
+        {
+          id: 'cat-1',
+          selectionEntries: [{ id: 'se-1', name: 'Captain' }]
+        }
+      ]
+    };
+    const systemKeysBefore = Object.keys(mockSystem);
+    const catalogueKeysBefore = Object.keys(mockSystem.catalogues[0]);
+
+    findEntryInSystem(mockSystem, 'se-1', 'cat-1');
+
+    expect(Object.keys(mockSystem)).toEqual(systemKeysBefore);
+    expect(Object.keys(mockSystem.catalogues[0])).toEqual(catalogueKeysBefore);
   });
 });
 

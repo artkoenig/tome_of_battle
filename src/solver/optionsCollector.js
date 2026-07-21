@@ -1,6 +1,8 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getEffectiveModifiers } from './modifierEvaluator.js';
 import { isSelectionEntryHidden } from './entryVisibility.js';
+import { isIndependentSubUnit } from './subUnit.js';
+import { ConstraintScope } from './battlescribeConstants.js';
 
 /**
  * Collects the options a unit exposes in the editor.
@@ -29,7 +31,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
   const isHiddenInContext = (linkOrEntry) => {
     if (!visibilityContext) return false;
     const { roster, selectionCounts, forceCategoryCounts, force } = visibilityContext;
-    return isSelectionEntryHidden(linkOrEntry, system, roster, selectionCounts, forceCategoryCounts, force);
+    return isSelectionEntryHidden(linkOrEntry, { system, roster, selectionCounts, forceCategoryCounts, force });
   };
 
   // Recursive helper to find all nested entry IDs for a group
@@ -123,18 +125,6 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
     });
   };
 
-  const hasEntryChildren = (res) => {
-    if (!res) return false;
-    const hasSE = res.selectionEntries && res.selectionEntries.length > 0;
-    const hasEL = res.entryLinks && res.entryLinks.length > 0;
-    const hasSEG = res.selectionEntryGroups && res.selectionEntryGroups.length > 0;
-    return hasSE || hasEL || hasSEG;
-  };
-
-  const isIndependentSubUnit = (res) => {
-    return res && (res.type === 'unit' || res.type === 'model') && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
-  };
-
   collectOptions(resolved);
   
   resolved.selectionEntries?.forEach(sub => {
@@ -215,7 +205,7 @@ export const isOptionRosterUnique = (res, system) => {
   const hasDirectConstraint = res.constraints?.some(c => 
     c.type === 'max' && 
     c.value === 1 && 
-    (c.scope === 'roster' || c.scope === 'force')
+    (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE)
   );
   if (hasDirectConstraint) return true;
 
@@ -225,7 +215,7 @@ export const isOptionRosterUnique = (res, system) => {
     return catDef?.constraints?.some(c => 
       c.type === 'max' && 
       c.value === 1 && 
-      (c.scope === 'roster' || c.scope === 'force' || !c.scope)
+      (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE || !c.scope)
     );
   });
   

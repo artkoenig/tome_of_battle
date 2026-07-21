@@ -543,11 +543,61 @@ select option {
 }
 
 /* Home / Dashboard styles */
+.offline-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-color: var(--color-danger);
+  background: rgba(166, 28, 28, 0.05);
+}
+
+.offline-banner-title {
+  margin: 0;
+  color: var(--color-danger);
+}
+
+.offline-banner-text {
+  margin: 2px 0 0;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-header-subtitle {
+  margin: 0;
+}
+
+.dashboard-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.system-groups-container {
+  margin-top: 24px;
+}
+
+.system-group {
+  margin-bottom: 40px;
+}
+
+.system-factions {
+  padding-left: 16px;
+}
+
+.faction-group {
+  margin-bottom: 28px;
+}
+
 .dashboard-grid {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 24px;
+  margin-top: 12px;
 }
 
 .system-group-title {
@@ -568,14 +618,14 @@ select option {
   background-color: var(--bg-panel);
   border: 1px solid var(--border-dark);
   border-radius: 4px;
-  padding: 20px;
+  padding: 12px 16px;
   transition: all 0.3s ease;
   position: relative;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 180px;
+  min-height: auto;
 }
 
 .roster-card:hover {
@@ -588,7 +638,25 @@ select option {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.roster-force-label {
+  display: block;
+  margin-top: 2px;
+}
+
+.roster-points {
+  white-space: nowrap;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.roster-cost-type-label {
+  display: block;
+  margin-top: 2px;
 }
 
 .roster-info {
@@ -682,7 +750,7 @@ select option {
 .roster-actions {
   display: flex;
   gap: 8px;
-  margin-top: auto;
+  margin-top: 8px;
 }
 
 /* Builder Mode Layout */
@@ -784,6 +852,121 @@ select option {
   color: var(--text-gold);
 }
 
+/* Roster Editor: top bar, category groups and status report */
+.builder-top-bar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Compact variant of the standard button used in the builder/play top bars. */
+.btn-top-bar {
+  padding: 6px 12px;
+}
+
+.mobile-points-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.force-editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.roster-category-group {
+  margin-bottom: 24px;
+}
+
+.roster-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.roster-category-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+}
+
+.roster-category-title--collapsible {
+  cursor: pointer;
+}
+
+/* Category heading inside .roster-category-header — the header already draws
+   the separating rule, so the heading itself stays free of borders. */
+.roster-category-heading {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+/* Category heading without a surrounding header row; it carries the rule itself. */
+.roster-category-heading--standalone {
+  margin: 0 0 12px 0;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 8px;
+}
+
+.unit-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.general-errors-panel {
+  padding: 20px;
+  margin-top: 12px;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.general-errors-panel--valid {
+  border-color: var(--color-success);
+}
+
+.general-errors-panel--invalid {
+  border-color: var(--color-danger);
+}
+
+.general-errors-title {
+  margin: 0 0 12px 0;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 8px;
+}
+
+.roster-valid-flavour {
+  font-style: italic;
+  margin: 4px 0 8px 0;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+.roster-play-btn-mobile {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: var(--fs-body);
+}
+
+.roster-extra-resources {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-dark);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* Active Roster Selection List */
 .roster-header-editor {
   display: flex;
@@ -830,11 +1013,20 @@ select option {
 }
 
 .selection-node-header {
-  padding: 12px 16px;
+  padding: 12px 14px;
   background-color: rgba(255,255,255,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+.selection-node-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .selection-node-title {
@@ -861,8 +1053,74 @@ select option {
 .selection-node-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   flex-shrink: 0;
+}
+
+/* Sub-unit variant: nested inside another unit card, so it steps back visually. */
+.selection-node--sub {
+  margin-top: 8px;
+  border: 1px solid rgba(226, 183, 66, 0.2);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.unit-error-alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(166, 28, 28, 0.04);
+  border-bottom: 1px solid rgba(166, 28, 28, 0.2);
+}
+
+.unit-delete-confirm-body {
+  text-align: center;
+  padding: 16px 16px 24px 16px;
+}
+
+.unit-delete-confirm-question {
+  margin-bottom: 24px;
+  color: var(--text-parchment);
+}
+
+.unit-delete-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Modifier breakdown shown in the mobile bottom sheet. */
+.modification-breakdown-list {
+  margin: 0;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.modification-breakdown-list li {
+  color: var(--text-parchment);
+  margin-bottom: 4px;
+}
+
+/* Upgrade / rule detail body shown in tooltips and info bottom sheets. */
+.upgrade-details {
+  text-align: left;
+  line-height: 1.4;
+}
+
+.upgrade-details-entry {
+  margin-top: 4px;
+}
+
+.upgrade-details-source {
+  margin-top: 6px;
+}
+
+.upgrade-details-label {
+  font-weight: 600;
+}
+
+.upgrade-details-publication-ref {
+  margin-top: 4px;
 }
 
 .selection-node-cost {
@@ -918,10 +1176,192 @@ select option {
   flex-shrink: 0;
 }
 
+/* An option that cannot currently be taken is dimmed but stays readable. */
+.sub-selection-row--unavailable {
+  opacity: 0.5;
+}
+
+.sub-selection-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Indented variant used where the row sits inside an option group. */
+.sub-selection-label--indented {
+  padding-left: 12px;
+}
+
+.sub-selection-option-name {
+  font-weight: 600;
+}
+
+.sub-selection-option-name--unavailable {
+  color: var(--text-dim);
+}
+
+.sub-selection-taken-hint {
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+.sub-selection-cost {
+  margin-right: 4px;
+}
+
+.sub-selection-add-btn {
+  padding: 4px 8px;
+  height: auto;
+  display: flex;
+  align-items: center;
+}
+
+.sub-selection-add-btn-icon {
+  margin-right: 4px;
+}
+
+/* Sub-selection group rendered flush, without the indenting rule. */
+.sub-selection-group--flush {
+  border-left: none;
+  padding-left: 0;
+}
+
+/* Collapsible option group inside a unit card */
+.option-group {
+  margin-bottom: 12px;
+}
+
+.option-group-header {
+  background-color: rgba(226, 183, 66, 0.04);
+  border: 1px solid var(--border-dark);
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.option-group-header--error {
+  background-color: rgba(239, 68, 68, 0.05);
+  border-color: var(--color-danger);
+}
+
+.option-group-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.option-group-limit {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.option-group-summary {
+  color: var(--text-parchment);
+  opacity: 0.75;
+  font-weight: 400;
+}
+
+.option-group-items {
+  border-left: 2px solid var(--border-gold-dim);
+  margin-top: 6px;
+  padding-left: 4px;
+}
+
 .quantity-control {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Auto-Fill Suggestions ("Punkte auffüllen") */
+.autofill-panel {
+  padding: 20px;
+  margin-top: 24px;
+  border: 1px solid var(--border-gold);
+}
+
+.autofill-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 8px;
+}
+
+.autofill-intro {
+  margin-bottom: 16px;
+}
+
+.autofill-section {
+  margin-bottom: 24px;
+}
+
+.autofill-section-title {
+  margin-bottom: 12px;
+}
+
+.autofill-combo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.autofill-combo-row {
+  padding: 12px;
+  background: rgba(226, 183, 66, 0.05);
+  border-radius: 4px;
+  border: 1px solid rgba(226, 183, 66, 0.2);
+}
+
+.autofill-combo-sum {
+  font-weight: bold;
+  color: var(--text-gold);
+  margin-bottom: 4px;
+}
+
+.autofill-combo-items {
+  margin: 0;
+  padding-left: 20px;
+  font-size: var(--fs-body);
+}
+
+.autofill-apply-btn {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.autofill-upgrades-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.autofill-toggle-btn {
+  padding: 4px 8px;
+}
+
+.autofill-upgrade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.autofill-upgrade-row {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.autofill-upgrade-controls {
+  gap: 12px;
 }
 
 .quantity-value {
@@ -1071,6 +1511,60 @@ select option {
   gap: 20px;
 }
 
+.play-mode-top-bar {
+  margin-bottom: 24px;
+}
+
+.play-rulebook-btn {
+  margin-left: 8px;
+}
+
+.play-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.play-category-title {
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  font-size: var(--fs-subheading);
+}
+
+.play-save-summary {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Bulleted breakdown lists inside tooltips and bottom sheets. */
+.breakdown-list {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.breakdown-list--readable {
+  color: var(--text-parchment);
+  font-size: var(--fs-body);
+}
+
+.breakdown-list li {
+  margin-bottom: 4px;
+}
+
+.breakdown-empty-hint {
+  font-size: var(--fs-body);
+}
+
+/* Sub-unit variant: nested inside another unit card, so it steps back visually. */
+.play-unit-card--sub {
+  border: 1px solid rgba(226, 183, 66, 0.2);
+  background-color: rgba(0, 0, 0, 0.2);
+  box-shadow: none;
+}
+
 .play-unit-card {
   width: 100%;
   background-color: var(--bg-panel);
@@ -1086,8 +1580,9 @@ select option {
   background-color: rgba(226, 183, 66, 0.03);
   border-bottom: 1px solid var(--border-dark);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
 }
 
 .play-unit-header-left {
@@ -1107,6 +1602,78 @@ select option {
   gap: 8px;
 }
 
+/* Wound controls of a unit that has been destroyed — still usable, but muted. */
+.play-unit-header-controls--dimmed {
+  opacity: 0.5;
+}
+
+.play-unit-destroyed-label {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.play-unit-wound-value {
+  font-weight: 700;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Save badges (AS/WS); the pointer only turns into a help cursor when a
+   breakdown is available to open. */
+.play-unit-save-badge {
+  padding: 4px 8px;
+  cursor: default;
+}
+
+.play-unit-save-badge--explainable {
+  cursor: help;
+}
+
+.play-unit-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* Nested sub-units, indented behind a dim gold rule. */
+.sub-units-container {
+  border-left: 2px solid rgba(226, 183, 66, 0.2);
+}
+
+.play-unit-sub-units {
+  padding-left: 12px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.selection-node-sub-units {
+  padding-left: 16px;
+  margin-top: 8px;
+}
+
+/* Profile-table cells whose value was changed by a modifier. */
+.profile-cell--positive {
+  background-color: rgba(27, 115, 64, 0.12);
+  font-weight: bold;
+  cursor: help;
+}
+
+.profile-cell--negative {
+  background-color: rgba(166, 28, 28, 0.12);
+  font-weight: bold;
+  cursor: help;
+}
+
+.profile-cell--modified {
+  background-color: rgba(226, 183, 66, 0.12);
+  font-weight: bold;
+  cursor: help;
+}
+
 .play-header-title {
   margin: 0;
   border: none;
@@ -1121,6 +1688,9 @@ select option {
 }
 
 .play-unit-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .play-unit-body {
@@ -1184,9 +1754,6 @@ select option {
   }
   .play-unit-header {
     padding: 6px 8px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
   }
   .play-unit-header-left {
     flex-direction: row;
@@ -1347,6 +1914,48 @@ select option {
   box-shadow: none;
   padding: 4px;
 }
+
+/* Close button that sits flush in the corner, with the icon optically centred. */
+.modal-close--flush {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content--danger {
+  border-color: var(--color-danger);
+}
+
+.modal-header--danger {
+  border-bottom-color: rgba(166, 28, 28, 0.3);
+}
+
+.confirmation-dialog-body {
+  padding: 16px 0 24px 0;
+  text-align: center;
+}
+
+.confirmation-dialog-message {
+  color: var(--text-parchment);
+  font-size: var(--fs-body);
+  margin: 0;
+}
+
+.confirmation-dialog-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  border-top: none;
+  padding: 0;
+}
+
+.rules-index-body {
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 .modal-close:hover {
   color: var(--text-gold);
   background: none;
@@ -1496,6 +2105,128 @@ select option {
   color: var(--text-info-readable);
 }
 
+/* Category and selection errors repeated below the blocking ones, muted so the
+   primary (general) errors keep the reader's attention. */
+.validation-error-item--secondary {
+  opacity: 0.8;
+}
+
+.validation-error-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.validation-error-list--advisory {
+  margin-top: 12px;
+}
+
+/* Importer status banners (error / success), shown above the import form. */
+.importer-status-banner {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.importer-status-banner--error {
+  border-color: var(--color-danger);
+}
+
+.importer-status-banner--success {
+  border-color: var(--color-success);
+  background: rgba(27, 115, 64, 0.05);
+}
+
+.importer-empty-hint {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.imported-system-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.imported-system-item {
+  padding: 16px;
+}
+
+.imported-system-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding-right: 16px;
+}
+
+.imported-system-name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.imported-system-catalogue-count {
+  font-size: var(--fs-label);
+}
+
+.imported-system-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Roster Sidebar ("Lagerbericht") */
+.sidebar-summary {
+  margin: 16px 0;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 12px;
+}
+
+.sidebar-summary-total {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.sidebar-summary-resource {
+  margin-top: 6px;
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-section-title {
+  margin-bottom: 10px;
+}
+
+.sidebar-requirement-row {
+  padding: 6px 0;
+  color: var(--text-parchment);
+}
+
+.sidebar-violation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-violation-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* Keeps the severity icon optically aligned with the first line of the message. */
+.sidebar-violation-icon {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
 /* Drag & Drop Area */
 .drop-zone {
   border: 2px dashed var(--border-gold-dim);
@@ -1524,10 +2255,31 @@ select option {
 .text-success { color: var(--text-success-readable); }
 .font-serif { font-family: var(--font-serif); }
 .font-body { font-family: var(--font-body); }
+
+/* ── Layout Utilities ─────────────────────────────────────────────────────
+   Named replacements for the recurring ad-hoc layout declarations that
+   ADR-0004 §1 forbids inline. Prefer a semantic component class whenever
+   the layout belongs to one specific piece of UI; these primitives cover
+   only the patterns that repeat across many components.
+── */
+.flex-row { display: flex; align-items: center; }
+.flex-col { display: flex; flex-direction: column; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
+/* Flex child that may shrink below its content width, so text inside can truncate. */
+.flex-grow-truncating { flex: 1; min-width: 0; }
+.no-shrink { flex-shrink: 0; }
+.push-end { margin-left: auto; }
+
+/* Gap steps of the layout spacing ramp, paired with the flex utilities above. */
+.gap-6 { gap: 6px; }
 .gap-8 { gap: 8px; }
-.gap-16 { gap: 16px; }
+.gap-10 { gap: 10px; }
+.gap-12 { gap: 12px; }
+
+.no-margin { margin: 0; }
 .w-full { width: 100%; }
+.is-hidden { display: none; }
+.text-strong { font-weight: 600; }
 
 /* Shaking animation for validation triggers */
 @keyframes shake {
@@ -1691,7 +2443,7 @@ input[type="radio"]:checked::after {
     display: none;
   }
   .system-factions {
-    padding-left: 0 !important;
+    padding-left: 0;
   }
   .roster-card {
     border-radius: 2px;
@@ -2307,6 +3059,7 @@ input[type="radio"]:checked::after {
 
 /* 8. Gothic Toast Notifications */
 .gothic-toast {
+  pointer-events: none;
   position: fixed;
   bottom: 30px;
   left: 50%;
@@ -3150,7 +3903,16 @@ input[type="radio"]:checked::after {
 }
 
 .rules-index-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
   filter: invert(1) hue-rotate(180deg);
+  /* Stays hidden until the embedded page has loaded, so the loading state shows. */
+  display: none;
+}
+
+.rules-index-iframe.is-loaded {
+  display: block;
 }
 
 /* ── ListRuleChecklist (Special list rules als Ankreuzliste) ───────────── */

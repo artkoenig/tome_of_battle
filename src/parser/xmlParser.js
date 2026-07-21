@@ -603,25 +603,48 @@ export function parseCatalogueXML(xmlText) {
 }
 
 /**
- * Combines Game System and its catalogues into a unified game dataset for local storage
+ * A catalogue file that could not be parsed and is therefore missing from the imported
+ * system. Carried out of the parser so the caller can name it to the user instead of
+ * silently importing an incomplete dataset.
+ * @typedef {{ fileName: string, message: string }} CatalogueParseFailure
+ */
+
+/**
+ * Parses every catalogue file, keeping the failures instead of dropping them: one broken
+ * catalogue must not abort the whole import, but it must not stay invisible either.
+ * @param {{ name: string, content: string }[]} catFiles
+ * @returns {{ catalogues: object[], failures: CatalogueParseFailure[] }}
+ */
+function parseCatalogueFiles(catFiles) {
+  const catalogues = [];
+  const failures = [];
+
+  for (const catFile of catFiles) {
+    try {
+      catalogues.push(parseCatalogueXML(catFile.content));
+    } catch (error) {
+      console.warn(`Failed parsing catalog ${catFile.name}:`, error);
+      failures.push({ fileName: catFile.name, message: error.message });
+    }
+  }
+
+  return { catalogues, failures };
+}
+
+/**
+ * Combines Game System and its catalogues into a unified game dataset for local storage.
+ * @returns {{ system: object, failedCatalogues: CatalogueParseFailure[] }} the assembled
+ *   system together with the catalogues that could not be parsed.
  */
 export function processImportedData(gstFiles, catFiles) {
   if (gstFiles.length === 0) {
     throw new Error('No Game System (.gst) file found in the ZIP archive.');
   }
-  
+
   // Usually there's exactly 1 gst in a ZIP, but we take the first
   const parsedGst = parseGameSystemXML(gstFiles[0].content);
-  
-  const parsedCats = [];
-  for (const catFile of catFiles) {
-    try {
-      const parsedCat = parseCatalogueXML(catFile.content);
-      parsedCats.push(parsedCat);
-    } catch (e) {
-      console.warn(`Failed parsing catalog ${catFile.name}:`, e);
-    }
-  }
+
+  const { catalogues: parsedCats, failures: failedCatalogues } = parseCatalogueFiles(catFiles);
 
   // Index everything for easy lookup
   const systemsData = {
@@ -641,5 +664,5 @@ export function processImportedData(gstFiles, catFiles) {
     catalogues: parsedCats
   };
 
-  return systemsData;
+  return { system: systemsData, failedCatalogues };
 }

@@ -1,14 +1,19 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
-import { syncRosterSelectionsWithSystem } from '../solver/validator';
+import { PERSISTENCE_FAILURE_MESSAGE } from '../utils/persistenceFailure';
+import { syncRosterSelectionsWithSystem, calculateRosterCosts, validateRoster } from '../solver/validator';
 
-// Mock dependencies
-vi.mock('../solver/validator', () => ({
+// Only the rules engine is stubbed. The roster-tree primitives (rosterTree.js,
+// re-exported by the facade) stay real: they are pure data-structure traversal
+// with no rules in them, and stubbing them would hollow out the very state
+// updates these tests assert on.
+vi.mock('../solver/validator', async (importOriginal) => ({
+  ...(await importOriginal()),
   calculateRosterCosts: vi.fn(() => ({ points: 100 })),
   validateRoster: vi.fn(() => []),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
-  syncRosterSelectionsWithSystem: vi.fn(() => false),
+  syncRosterSelectionsWithSystem: vi.fn(roster => roster),
 }));
 
 describe('useRoster Hook', () => {
@@ -22,27 +27,62 @@ describe('useRoster Hook', () => {
     forces: [{ selections: [] }]
   };
 
-  it('initializes with default values', () => {
+  // Der Abgleich ist rein: er gibt das Roster zurück. Der Standard „nichts
+  // anzugleichen" ist Identität; einzelne Tests setzen eine eigene Korrektur.
+  beforeEach(() => {
+    syncRosterSelectionsWithSystem.mockImplementation(roster => roster);
+  });
+
+  it('initializes with the roster and its derived costs and errors', () => {
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
     expect(result.current.roster).toEqual(initialRoster);
-    expect(result.current.costs).toEqual({});
+    expect(result.current.costs).toEqual({ points: 100 });
     expect(result.current.validationErrors).toEqual([]);
   });
 
-  it('debounces validation and cost calculation', async () => {
+  it('derives costs and validation errors from the roster without waiting for the debounce', () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+    calculateRosterCosts.mockReturnValueOnce({ points: 250 });
+    validateRoster.mockReturnValueOnce([{ message: 'Zu viele Punkte' }]);
+
+    act(() => {
+      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+    });
+
+    // Ohne Vorlauf der Debounce: Anzeige und Validierung gehören bereits zum neuen Roster
+    expect(result.current.costs).toEqual({ points: 250 });
+    expect(result.current.validationErrors).toEqual([{ message: 'Zu viele Punkte' }]);
+
+    vi.useRealTimers();
+  });
+
+  it('debounces only the persistence, not the derived values', () => {
     vi.useFakeTimers();
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
-    // Initially costs and errors might not be populated immediately if debounced
     act(() => {
       vi.advanceTimersByTime(200);
     });
+    mockSave.mockClear();
+    calculateRosterCosts.mockClear();
 
-    expect(result.current.costs.points).toBe(100);
-    
+    act(() => {
+      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+    });
+
+    expect(calculateRosterCosts).toHaveBeenCalled();
+    expect(mockSave).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(mockSave).toHaveBeenCalledTimes(1);
+
     vi.useRealTimers();
   });
 
@@ -229,6 +269,95 @@ describe('useRoster Hook', () => {
     vi.useRealTimers();
   });
 
+  describe('subSelectionOperations', () => {
+    const addUnitWithOption = (result, optionDefinition) => {
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      const unit = result.current.roster.forces[0].selections[0];
+      act(() => {
+        result.current.subSelectionOperations.increaseCount(unit.id, optionDefinition);
+      });
+      return unit;
+    };
+
+    const childSelectionsOfUnit = (result) => result.current.roster.forces[0].selections[0].selections;
+
+    it('increaseCount chooses an option once and raises its count afterwards', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const bolter = { id: 'opt-1', name: 'Bolter' };
+      const unit = addUnitWithOption(result, bolter);
+
+      expect(childSelectionsOfUnit(result)).toHaveLength(1);
+      expect(childSelectionsOfUnit(result)[0].number).toBe(1);
+
+      act(() => {
+        result.current.subSelectionOperations.increaseCount(unit.id, bolter);
+      });
+
+      expect(childSelectionsOfUnit(result)).toHaveLength(1);
+      expect(childSelectionsOfUnit(result)[0].number).toBe(2);
+    });
+
+    it('decreaseCount drops the option once its count reaches zero', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const bolter = { id: 'opt-1', name: 'Bolter' };
+      const unit = addUnitWithOption(result, bolter);
+
+      act(() => {
+        result.current.subSelectionOperations.decreaseCount(unit.id, bolter);
+      });
+
+      expect(childSelectionsOfUnit(result)).toHaveLength(0);
+    });
+
+    it('addInstance keeps each instance of the same option separate', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const champion = { id: 'opt-champion', name: 'Champion' };
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      const unit = result.current.roster.forces[0].selections[0];
+
+      act(() => {
+        result.current.subSelectionOperations.addInstance(unit.id, champion);
+      });
+      act(() => {
+        result.current.subSelectionOperations.addInstance(unit.id, champion);
+      });
+
+      const instances = childSelectionsOfUnit(result);
+      expect(instances).toHaveLength(2);
+      expect(instances[0].id).not.toBe(instances[1].id);
+    });
+
+    it('removeInstance removes the addressed instance by its selection id', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const champion = { id: 'opt-champion', name: 'Champion' };
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      const unit = result.current.roster.forces[0].selections[0];
+
+      act(() => {
+        result.current.subSelectionOperations.addInstance(unit.id, champion);
+      });
+      act(() => {
+        result.current.subSelectionOperations.addInstance(unit.id, champion);
+      });
+      const survivingInstanceId = childSelectionsOfUnit(result)[1].id;
+      const removedInstanceId = childSelectionsOfUnit(result)[0].id;
+
+      act(() => {
+        result.current.subSelectionOperations.removeInstance(unit.id, removedInstanceId);
+      });
+
+      expect(childSelectionsOfUnit(result).map(item => item.id)).toEqual([survivingInstanceId]);
+    });
+  });
+
   it('keeps selectedRosterSelection in sync with the roster tree (ID-based)', () => {
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
@@ -242,7 +371,7 @@ describe('useRoster Hook', () => {
 
     // Nach einer Mutation zeigt die Auswahl auf den aktualisierten Knoten aus dem Roster
     act(() => {
-      result.current.updateSubSelection(unit.id, { id: 'opt-1', name: 'Bolter' }, 'increment');
+      result.current.subSelectionOperations.increaseCount(unit.id, { id: 'opt-1', name: 'Bolter' });
     });
 
     expect(result.current.selectedRosterSelection).toBe(result.current.roster.forces[0].selections[0]);
@@ -326,7 +455,7 @@ describe('useRoster Hook', () => {
       expect(result.current.roster.forces[0].selections.length).toBe(1);
     });
 
-    it('undo reverts updateSubSelection', () => {
+    it('undo reverts a sub-selection count change', () => {
       const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
 
       act(() => {
@@ -335,7 +464,7 @@ describe('useRoster Hook', () => {
       const unit = result.current.roster.forces[0].selections[0];
 
       act(() => {
-        result.current.updateSubSelection(unit.id, { id: 'opt-1', name: 'Bolter' }, 'increment');
+        result.current.subSelectionOperations.increaseCount(unit.id, { id: 'opt-1', name: 'Bolter' });
       });
       expect(result.current.roster.forces[0].selections[0].selections.length).toBe(1);
 
@@ -458,7 +587,7 @@ describe('useRoster Hook', () => {
 
     it('an automatic system correction does not create its own undo step', () => {
       vi.useFakeTimers();
-      syncRosterSelectionsWithSystem.mockReturnValueOnce(true);
+      syncRosterSelectionsWithSystem.mockImplementationOnce(roster => ({ ...roster }));
 
       const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
 
@@ -479,6 +608,103 @@ describe('useRoster Hook', () => {
       expect(result.current.canUndo).toBe(false);
 
       vi.useRealTimers();
+    });
+
+    it('a state recorded in the undo history does not change retroactively', () => {
+      const STALE_NAME = 'Veralteter Katalogname';
+      const CURRENT_NAME = 'Aktueller Katalogname';
+
+      // Reiner Abgleich: veraltete Namen werden in einem NEUEN Roster nachgezogen.
+      const renameStaleUnits = (roster) => {
+        let renamed = false;
+        const forces = roster.forces.map(force => ({
+          ...force,
+          selections: force.selections.map(selection => {
+            if (selection.name !== STALE_NAME) return selection;
+            renamed = true;
+            return { ...selection, name: CURRENT_NAME };
+          })
+        }));
+        return renamed ? { ...roster, forces } : roster;
+      };
+
+      // Solange der Katalog aktuell scheint, gleicht der Effekt nichts ab.
+      let catalogueHasChanged = false;
+      syncRosterSelectionsWithSystem.mockImplementation(
+        roster => (catalogueHasChanged ? renameStaleUnits(roster) : roster)
+      );
+
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: STALE_NAME }, 'cat-1');
+      });
+
+      // Der Zustand, wie er in diesem Moment aufgezeichnet wurde
+      const recordedRoster = result.current.roster;
+      const recordedSnapshot = structuredClone(recordedRoster);
+      expect(recordedSnapshot.forces[0].selections[0].name).toBe(STALE_NAME);
+
+      // Ein Katalog-Update lässt den Abgleich bei der nächsten Änderung greifen
+      catalogueHasChanged = true;
+      act(() => {
+        result.current.addUnit({ id: 'entry-2', name: 'Terminator' }, 'cat-1');
+      });
+      expect(result.current.roster.forces[0].selections[0].name).toBe(CURRENT_NAME);
+
+      // Der aufgezeichnete Zustand ist davon unberührt: keine der Selections,
+      // die er festhält, wurde nachträglich umbenannt.
+      expect(recordedRoster).toEqual(recordedSnapshot);
+
+      // Und ein Undo führt genau auf diesen aufgezeichneten Umfang zurück.
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.roster.forces[0].selections.length)
+        .toBe(recordedSnapshot.forces[0].selections.length);
+    });
+  });
+  describe('failed autosave', () => {
+    // IndexedDB ist der einzige Datenpfad: scheitert das Speichern still, arbeitet der
+    // Nutzer ahnungslos weiter und verliert seine Liste.
+    it('reports a rejected save through the error channel', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const reportError = vi.fn();
+      const failingSave = vi.fn().mockRejectedValue(new Error('QuotaExceededError'));
+
+      renderHook(() => useRoster(initialRoster, mockSystem, failingSave, reportError));
+
+      await vi.waitFor(() => {
+        expect(reportError).toHaveBeenCalledWith(PERSISTENCE_FAILURE_MESSAGE.roster);
+      });
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('reports a save that throws synchronously', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const reportError = vi.fn();
+      const throwingSave = vi.fn(() => {
+        throw new Error('DB blockiert');
+      });
+
+      renderHook(() => useRoster(initialRoster, mockSystem, throwingSave, reportError));
+
+      await vi.waitFor(() => {
+        expect(reportError).toHaveBeenCalledWith(PERSISTENCE_FAILURE_MESSAGE.roster);
+      });
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('stays silent while saving succeeds', async () => {
+      const reportError = vi.fn();
+      const succeedingSave = vi.fn().mockResolvedValue(undefined);
+
+      renderHook(() => useRoster(initialRoster, mockSystem, succeedingSave, reportError));
+
+      await vi.waitFor(() => {
+        expect(succeedingSave).toHaveBeenCalled();
+      });
+      expect(reportError).not.toHaveBeenCalled();
     });
   });
 });

@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ListRuleChecklist from './ListRuleChecklist';
+import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 
 // Seam B: the checkbox list itself. The per-rule enumeration is the solver's job
 // (covered by listRules.test.js); the states are computed in RosterEditor and
@@ -34,7 +35,7 @@ const baseProps = {
   force: { id: 'f1', selections: [] },
   addUnit: vi.fn(),
   removeUnit: vi.fn(),
-  updateSubSelection: vi.fn(),
+  subSelectionOperations: createSubSelectionOperationsMock(),
   costTypeLabel: 'Pkt.',
   costLimitType: 'pts',
   selectionCounts: {},

@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: refactor
 Blocked by: None
 
@@ -28,3 +28,12 @@ Hinweis: Bei Issue 35 wird vermieden, das Tooltip-Duplikat in der neuen
 - [ ]
 
 ## Comments
+- Bleibt eigenstaendig bestehen; nicht in Issue 39 enthalten. Befund weiterhin zutreffend (Tooltip-Maschinerie parallel in UnitSelectionCard.jsx und ListRuleChecklist.jsx). Beruehrt dieselben Dateien wie der offene i18n-Pull-Request.
+- superseded: Auf Weisung des Maintainers geschlossen. KORREKTUR einer zuvor
+  hier eingetragenen, falschen Begruendung: der Befund ist NICHT in Issue 39
+  aufgegangen — kein Kind-Issue von 39 fasst die Tooltip-Maschinerie an
+  (geprueft; 39/04 betrifft App.jsx, 39/10 nur Inline-Styles). Der Befund war
+  zum Zeitpunkt der Schliessung weiterhin zutreffend: die Maschinerie liegt
+  unveraendert doppelt in UnitSelectionCard.jsx und ListRuleChecklist.jsx.
+  Er ist damit bewusst fallengelassen, nicht verschoben. Empfohlene Loesung,
+  falls er wieder aufgegriffen wird: Extraktion in einen geteilten Hook.

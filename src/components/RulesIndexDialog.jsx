@@ -78,30 +78,19 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h3 className="text-gold" style={{ margin: 0, fontFamily: 'var(--font-serif)' }}>
+          <h3 className="text-gold font-serif">
             {ruleName}
           </h3>
           <button
             type="button"
-            className="modal-close"
+            className="modal-close modal-close--flush"
             onClick={onClose}
             title="Schließen"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-dim)',
-              cursor: 'pointer',
-              fontSize: '18px',
-              padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
           >
             <X size={18} />
           </button>
         </div>
-        <div className="modal-body" style={{ overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="modal-body rules-index-body">
           {loadError ? (
             <div className="rules-index-error">
               <WifiOff size={32} />
@@ -123,15 +112,9 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
                   key={reloadKey}
                   src={url}
                   title={ruleName}
-                  className="rules-index-iframe"
+                  className={`rules-index-iframe${iframeLoaded ? ' is-loaded' : ''}`}
                   onLoad={handleIframeLoad}
                   onError={handleIframeError}
-                  style={{
-                    flex: 1,
-                    width: '100%',
-                    border: 'none',
-                    display: iframeLoaded ? 'block' : 'none',
-                  }}
                   allow="clipboard-write"
                 />
               </div>

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, getEffectiveSelectionName } from '../../solver/validator';
-import { MODEL_COUNT_PROFILE_TYPES } from '../../solver/constants';
 import {
+  findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost,
+  getEffectiveSelectionName, isIndependentSubUnit, MODEL_COUNT_PROFILE_TYPES,
   getArmourSave as getArmourSaveLogic,
   getWardSave as getWardSaveLogic,
   groupProfilesByType,
   hasBlessing
-} from '../../solver/rulesEvaluator';
+} from '../../solver/validator';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
+import { getProfileCellClassName } from '../profileCellClasses';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -88,14 +89,8 @@ export default function PlayUnitDetails({
     const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
     const resolved = resolveEntry(system, entry, roster?.catalogueId);
     
-    const hasEntryChildren = (entryNode) => {
-      if (!entryNode) return false;
-      return (entryNode.selectionEntries && entryNode.selectionEntries.length > 0) ||
-             (entryNode.entryLinks && entryNode.entryLinks.length > 0) ||
-             (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
-    };
     
-    return resolved && (resolved.type === 'unit' || resolved.type === 'model') && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+    return isIndependentSubUnit(resolved);
   });
 
   const hasSubUnits = independentSubUnits.length > 0;
@@ -110,30 +105,12 @@ export default function PlayUnitDetails({
     if (!c) return <td key={headerKey} className="font-body">-</td>;
 
     const modState = getModificationState(c);
-    const cellStyle = {};
-    let className = "font-body";
-    if (modState === 'positive') {
-      className += " text-success";
-      cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
-      cellStyle.fontWeight = 'bold';
-      cellStyle.cursor = 'help';
-    } else if (modState === 'negative') {
-      className += " text-danger";
-      cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
-      cellStyle.fontWeight = 'bold';
-      cellStyle.cursor = 'help';
-    } else if (modState === 'modified') {
-      className += " text-gold";
-      cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
-      cellStyle.fontWeight = 'bold';
-      cellStyle.cursor = 'help';
-    }
+    const className = getProfileCellClassName(modState);
 
     return (
       <td
         key={headerKey}
         className={className}
-        style={cellStyle}
         onMouseEnter={(e) => {
           if (modState && c.modificationBreakdown?.length > 0) {
             handleMouseEnter(e, `Modifikationen: ${c.name}`, c.modificationBreakdown);
@@ -327,33 +304,31 @@ export default function PlayUnitDetails({
 
   return (
     <div 
-      className={`play-unit-card ${isDead ? 'unit-destroyed' : ''}`}
-      style={isSubUnit ? { border: '1px solid rgba(226, 183, 66, 0.2)', backgroundColor: 'rgba(0,0,0,0.2)', boxShadow: 'none' } : {}}
+      className={`play-unit-card ${isDead ? 'unit-destroyed' : ''} ${isSubUnit ? 'play-unit-card--sub' : ''}`}
     >
       {isDead && (
         <div className="destroyed-overlay">
           <span className="destroyed-text">Vernichtet</span>
         </div>
       )}
-      <div className="play-unit-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
-        <div className="play-unit-title text-ui-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="play-unit-header">
+        <div className="play-unit-title text-ui-title">
           <div>
             {getEffectiveSelectionName(selection, { system, roster, currentCatalogueId: roster?.catalogueId })}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="flex-row gap-8">
             {totalCost > 0 && (
-              <div className="text-ui-title text-gold" style={{ fontWeight: 600 }}>
+              <div className="text-ui-title text-gold text-strong">
                 {totalCost} Pkt.
               </div>
             )}
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="flex-between">
           <div className="play-unit-badges">
             <div
-              className="badge badge-success font-body"
-              style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: asInfo.breakdown.length > 0 ? 'help' : 'default' }}
+              className={`badge badge-success font-body play-unit-save-badge${asInfo.breakdown.length > 0 ? ' play-unit-save-badge--explainable' : ''}`}
               onMouseEnter={(e) => handleMouseEnter(e, 'Rüstungswurf (AS)', asInfo.breakdown)}
               onMouseLeave={handleMouseLeave}
               onClick={() => {
@@ -366,8 +341,7 @@ export default function PlayUnitDetails({
               AS: {asInfo.display}
             </div>
             <div
-              className="badge badge-warning font-body"
-              style={{ fontSize: '0.75rem', padding: '4px 8px', fontWeight: 700, cursor: wsInfo.breakdown.length > 0 ? 'help' : 'default' }}
+              className={`badge badge-warning font-body play-unit-save-badge${wsInfo.breakdown.length > 0 ? ' play-unit-save-badge--explainable' : ''}`}
               onMouseEnter={(e) => handleMouseEnter(e, 'Rettungswurf (WS)', wsInfo.breakdown)}
               onMouseLeave={handleMouseLeave}
               onClick={() => {
@@ -380,10 +354,10 @@ export default function PlayUnitDetails({
               WS: {wsInfo.display}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="flex-row gap-8">
             {!hasSubUnits && (
-              <div className="play-unit-header-controls" style={{ opacity: isDead ? 0.5 : 1 }}>
-                {isDead && <span className="text-danger font-serif" style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '8px' }}>VERNICHTET</span>}
+              <div className={`play-unit-header-controls${isDead ? ' play-unit-header-controls--dimmed' : ''}`}>
+                {isDead && <span className="text-danger font-serif play-unit-destroyed-label">VERNICHTET</span>}
                 <button
                   className="qty-btn"
                   onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
@@ -391,7 +365,7 @@ export default function PlayUnitDetails({
                 >
                   <Minus size={12} />
                 </button>
-                <span className="font-body" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'center' }}>
+                <span className="font-body play-unit-wound-value">
                   {currentWounds} / {totalMaxWounds}
                 </span>
                 <button
@@ -419,7 +393,7 @@ export default function PlayUnitDetails({
       </div>
 
       <div className="play-unit-body">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="flex-col gap-8">
           <div className={`play-unit-profiles ${isDetailsOpen ? 'is-open' : ''}`}>
             {!isSubUnit && (
               <div>
@@ -431,7 +405,7 @@ export default function PlayUnitDetails({
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+          <div className="play-unit-chips">
             <UnitUpgradesChips
               selection={selection}
               system={system}
@@ -466,7 +440,7 @@ export default function PlayUnitDetails({
             />
           </div>
           {hasSubUnits && (
-            <div className="sub-units-container" style={{ paddingLeft: '12px', borderLeft: '2px solid rgba(226, 183, 66, 0.2)', marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="sub-units-container play-unit-sub-units">
               {independentSubUnits.map(subSel => (
                 <PlayUnitDetails 
                   key={subSel.id}

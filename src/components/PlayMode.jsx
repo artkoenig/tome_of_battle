@@ -4,7 +4,7 @@ import {
   Heart, Swords, BookOpen
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListRuleSelection } from '../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListRuleSelection, childSelectionsOf, TOP_LEVEL_PARENT_COUNT } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
@@ -12,7 +12,7 @@ import RulesIndexDialog from './RulesIndexDialog';
 import { useRuleUrl } from '../hooks/useRuleUrl';
 import GothicTooltip from './GothicTooltip';
 
-export default function PlayMode({ system, roster: initialRoster, onBack }) {
+export default function PlayMode({ system, roster: initialRoster, onBack, onReportError }) {
   const [roster, setRoster] = useState(initialRoster);
   const [searchTerm, setSearchTerm] = useState('');
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
@@ -22,7 +22,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const activeCatalogue = system?.catalogues?.find(c => c.id === roster?.catalogueId);
   const extraResources = getExtraResourceTotals(system, roster, calculateRosterCosts(roster, system));
 
-  const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster);
+  const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster, onReportError);
 
   // Central resolver that honors the global whfb6 linking setting (see ADR-0015):
   // returns a rule URL only when linking is enabled and a mapping exists, else null.
@@ -69,8 +69,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     const sortByCostDescending = (selections, catalogueId) => {
       const costContext = { system, roster, currentCatalogueId: catalogueId };
       selections.sort((a, b) =>
-        getSelectionTotalCost(b, costType, 1, costContext) -
-        getSelectionTotalCost(a, costType, 1, costContext)
+        getSelectionTotalCost(b, costType, TOP_LEVEL_PARENT_COUNT, costContext) -
+        getSelectionTotalCost(a, costType, TOP_LEVEL_PARENT_COUNT, costContext)
       );
     };
 
@@ -85,7 +85,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
       // Process defined categories
       categoryLinks.forEach(link => {
-        let selections = force.selections?.filter(s => s.category === link.targetId && isBattlefieldSelection(s)) || [];
+        let selections = childSelectionsOf(force).filter(s => s.category === link.targetId && isBattlefieldSelection(s));
         
         // Apply search filter
         selections = selections.filter(sel => {
@@ -114,7 +114,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
       // Process uncategorized selections
       const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
-      let uncategorizedSelections = force.selections?.filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s)) || [];
+      let uncategorizedSelections = childSelectionsOf(force).filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s));
       
       uncategorizedSelections = uncategorizedSelections.filter(sel => {
         const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -143,7 +143,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   return (
     <>
       {/* Desktop Header in Play Mode (same style as editor) */}
-      <div className="builder-top-bar hide-on-mobile" style={{ marginBottom: '24px' }}>
+      <div className="builder-top-bar play-mode-top-bar hide-on-mobile">
         <div className="builder-top-bar-left">
           <div className="builder-top-bar-title-section">
             <h2 className="builder-top-bar-title">{roster.name}</h2>
@@ -160,14 +160,13 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         </div>
         
         <div className="builder-top-bar-right">
-          <button className="btn btn-primary" onClick={onBack} style={{ padding: '6px 12px' }}>
+          <button className="btn btn-primary btn-top-bar" onClick={onBack}>
             <Swords size={16} /> <span>Ausrüsten</span>
           </button>
           <button
-            className="btn"
+            className="btn btn-top-bar play-rulebook-btn"
             onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
             title="Regelbuch öffnen (neuer Tab)"
-            style={{ padding: '6px 12px', marginLeft: '8px' }}
           >
             <BookOpen size={16} /> <span>Regelbuch</span>
           </button>
@@ -186,10 +185,9 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           </button>
           <h2 className="play-header-title">Spielmodus</h2>
           <button
-            className="btn-sm square-btn hide-on-desktop"
+            className="btn-sm square-btn hide-on-desktop push-end"
             onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
             title="Regelbuch öffnen (neuer Tab)"
-            style={{ marginLeft: 'auto' }}
           >
             <BookOpen size={16} />
           </button>
@@ -207,10 +205,10 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         )}
 
         {/* Active Units Roster Sheets */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        <div className="play-category-list">
           {getGroupedAndSortedSelections().map(group => (
             <div key={group.id} className="play-category-group">
-              <h3 className="font-serif text-gold" style={{ borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '16px', fontSize: '1.2rem' }}>
+              <h3 className="font-serif text-gold play-category-title">
                 {group.name}
               </h3>
               <div className="play-units-grid">
@@ -239,16 +237,16 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
           onClose={() => setSaveSummaryOpen(false)}
           title={saveSummaryData.title}
         >
-          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="play-save-summary">
             {Array.isArray(saveSummaryData.breakdown) ? (
               saveSummaryData.breakdown.length > 0 ? (
-                <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-parchment)', fontSize: '0.9rem' }}>
+                <ul className="breakdown-list breakdown-list--readable">
                   {saveSummaryData.breakdown.map((item, i) => (
-                    <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+                    <li key={i}>{item}</li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-dim" style={{ fontSize: '0.9rem' }}>Keine Modifikatoren gefunden.</p>
+                <p className="text-dim breakdown-empty-hint">Keine Modifikatoren gefunden.</p>
               )
             ) : (
               saveSummaryData.breakdown
@@ -260,9 +258,9 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
         {tooltipState.visible && (
           <GothicTooltip title={tooltipState.title} x={tooltipState.x} y={tooltipState.y}>
             {Array.isArray(tooltipState.content) ? (
-              <ul style={{ paddingLeft: '20px', margin: 0 }}>
+              <ul className="breakdown-list">
                 {tooltipState.content.map((item, i) => (
-                  <li key={i} style={{ marginBottom: '4px' }}>{item}</li>
+                  <li key={i}>{item}</li>
                 ))}
               </ul>
             ) : (

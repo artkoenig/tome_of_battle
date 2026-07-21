@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
+import { createSubSelectionOperationsMock } from '../test-utils/subSelectionOperationsMock';
 
 // This suite isolates how RosterEditor treats a "list rule" category (catalog
 // type = upgrade, ADR 0003) versus a normal unit category: the list-rule group
@@ -38,7 +39,7 @@ vi.mock('../hooks/useRoster', () => ({
     addUnit: vi.fn(),
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
-    updateSubSelection: vi.fn(),
+    subSelectionOperations: createSubSelectionOperationsMock(),
     updateRosterName: vi.fn(),
     save: vi.fn(),
     undo: vi.fn(),
@@ -54,7 +55,10 @@ vi.mock('../db/database', () => ({
 
 // A list rule is any selection sitting in the 'cat-rules' category here; this
 // stands in for the real type=upgrade classification the solver performs.
-vi.mock('../solver/validator', () => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the facade
+// re-exports stay real, since they are pure traversal without any rules in them.
+vi.mock('../solver/validator', async (importOriginal) => ({
+  ...(await importOriginal()),
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
   getModifiedConstraintValue: (constraint) => (constraint.type === 'min' ? 0 : Infinity),
   getEffectiveModifiers: (source) => source?.modifiers || [],

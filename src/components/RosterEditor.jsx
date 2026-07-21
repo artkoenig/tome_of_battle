@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, resolveListRuleGroup } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, resolveListRuleGroup, childSelectionsOf } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import ListRuleChecklist from './editor/ListRuleChecklist';
@@ -13,7 +13,7 @@ import RulesIndexDialog from './RulesIndexDialog';
 import { useRuleUrl } from '../hooks/useRuleUrl';
 
 
-export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster }) {
+export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster, onReportError }) {
   const {
     roster,
     costs,
@@ -23,12 +23,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     addUnit,
     removeUnit,
     copyUnit,
-    updateSubSelection,
+    subSelectionOperations,
     undo,
     redo,
     canUndo,
     canRedo
-  } = useRoster(initialRoster, system, saveRoster);
+  } = useRoster(initialRoster, system, saveRoster, onReportError);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, _setToast] = useState(null);
@@ -132,7 +132,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           </div>
 
           {/* Points limit indicator */}
-          <div className="mobile-points-indicator mobile-only" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <div className="mobile-points-indicator mobile-only">
             <span className="points-display builder-top-bar-title">
               {currentPoints}&nbsp;/ {limitPoints}
             </span>
@@ -142,7 +142,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="builder-top-bar-actions">
           <button
             type="button"
             className="btn-secondary square-btn"
@@ -163,10 +163,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           >
             <Redo2 size={16} />
           </button>
-          <button className="btn-primary hide-on-mobile" onClick={() => onPlay(roster)} style={{ padding: '6px 12px' }}>
+          <button className="btn-primary btn-top-bar hide-on-mobile" onClick={() => onPlay(roster)}>
             <Play size={16} /> <span>Spielen</span>
           </button>
-          <button className="btn-secondary hide-on-mobile" onClick={() => onExportRoster?.(roster)} style={{ padding: '6px 12px' }}>
+          <button className="btn-secondary btn-top-bar hide-on-mobile" onClick={() => onExportRoster?.(roster)}>
             <Download size={16} /> <span>Exportieren</span>
           </button>
         </div>
@@ -190,17 +190,17 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           });
           const armyWideSelectorIds = new Set(armyWideSelectors.map(entry => entry.id));
           const belongsToArmyWideSelector = s => armyWideSelectorIds.has(s.selectionEntryId || s.entryLinkId);
-          const armyWideSelectorSelections = force.selections?.filter(belongsToArmyWideSelector) || [];
+          const armyWideSelectorSelections = childSelectionsOf(force).filter(belongsToArmyWideSelector);
 
           const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
-          const uncategorizedSelections = force.selections?.filter(s =>
-            !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s)) || [];
+          const uncategorizedSelections = childSelectionsOf(force).filter(s =>
+            !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s));
 
           return (
-            <div key={force.id} className="force-editor-section" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div key={force.id} className="force-editor-section">
               {categoryLinks.map(link => {
-                  const isHidden = isCategoryLinkHidden(link, system, roster, selectionCounts, forceCategoryCounts);
-                  const selections = force.selections?.filter(s => s.category === link.targetId) || [];
+                  const isHidden = isCategoryLinkHidden(link, { system, roster, selectionCounts, forceCategoryCounts });
+                  const selections = childSelectionsOf(force).filter(s => s.category === link.targetId);
 
                   // A list-rule group (data-driven: catalog type = upgrade, ADR 0003)
                   // is a list-wide settings group, not a unit slot: its cards drop the
@@ -245,10 +245,10 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   }
 
                   return (
-                    <div key={link.targetId} className="roster-category-group" style={{ marginBottom: '24px' }}>
-                      <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
+                    <div key={link.targetId} className="roster-category-group">
+                      <div className="roster-category-header">
                         <div
-                          style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: isListRuleGroup ? 'pointer' : 'default' }}
+                          className={`roster-category-title${isListRuleGroup ? ' roster-category-title--collapsible' : ''}`}
                           onClick={isListRuleGroup ? () => toggleRuleGroup(ruleGroupKey) : undefined}
                           role={isListRuleGroup ? 'button' : undefined}
                           aria-expanded={isListRuleGroup ? !isRuleGroupCollapsed : undefined}
@@ -257,7 +257,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           {isListRuleGroup && (isRuleGroupCollapsed
                             ? <ChevronRight size={18} className="text-gold" aria-hidden="true" />
                             : <ChevronDown size={18} className="text-gold" aria-hidden="true" />)}
-                          <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>
+                          <h3 className="text-subheading roster-category-heading">
                             {catName}
                           </h3>
                           {/* Der Zähl-Chip entfällt für die Listenregel-Gruppe: die Ankreuzliste
@@ -303,7 +303,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             states={listRuleStates}
                             addUnit={addUnit}
                             removeUnit={removeUnit}
-                            updateSubSelection={updateSubSelection}
+                            subSelectionOperations={subSelectionOperations}
                             costTypeLabel={costTypeLabel}
                             costLimitType={roster.costLimitType}
                             selectionCounts={selectionCounts}
@@ -312,7 +312,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                         )
                       ) : (
                         selections.length > 0 && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <div className="unit-card-list">
                             {selections
                               .map(selection => {
                               return (
@@ -327,7 +327,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                   costTypeLabel={costTypeLabel}
                                   removeUnit={removeUnit}
                                   copyUnit={copyUnit}
-                                  updateSubSelection={updateSubSelection}
+                                  subSelectionOperations={subSelectionOperations}
                                   activeCatalogue={activeCatalogue}
                                   onShowRule={onShowRule}
                                 />
@@ -342,9 +342,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
               {/* Army-wide mandatory selectors not reachable through any force category */}
               {armyWideSelectors.length > 0 && (
-                <div className="roster-category-group" style={{ marginBottom: '24px' }}>
-                  <div className="roster-category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '12px' }}>
-                    <h3 className="text-subheading" style={{ margin: 0, border: 'none', padding: 0 }}>Armeeweite Auswahl</h3>
+                <div className="roster-category-group">
+                  <div className="roster-category-header">
+                    <h3 className="text-subheading roster-category-heading">Armeeweite Auswahl</h3>
                     <CategoryUnitAdder
                       categoryName="Armeeweite Auswahl"
                       entries={armyWideSelectors}
@@ -359,7 +359,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                     />
                   </div>
                   {armyWideSelectorSelections.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="unit-card-list">
                       {armyWideSelectorSelections.map(selection => (
                         <UnitSelectionCard
                           key={selection.id}
@@ -372,7 +372,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           costTypeLabel={costTypeLabel}
                           removeUnit={removeUnit}
                           copyUnit={copyUnit}
-                          updateSubSelection={updateSubSelection}
+                          subSelectionOperations={subSelectionOperations}
                           activeCatalogue={activeCatalogue}
                           onShowRule={onShowRule}
                         />
@@ -384,9 +384,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
               {/* Uncategorized Selections (Fallback) */}
               {uncategorizedSelections.length > 0 && (
-                <div className="roster-category-group" style={{ marginBottom: '24px' }}>
-                  <h3 className="text-subheading" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>Sonstiges</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className="roster-category-group">
+                  <h3 className="text-subheading roster-category-heading--standalone">Sonstiges</h3>
+                  <div className="unit-card-list">
                     {uncategorizedSelections.map(selection => {
                       return (
                               <UnitSelectionCard
@@ -400,7 +400,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 costTypeLabel={costTypeLabel}
                                 removeUnit={removeUnit}
                                 copyUnit={copyUnit}
-                                updateSubSelection={updateSubSelection}
+                                subSelectionOperations={subSelectionOperations}
                                 activeCatalogue={activeCatalogue}
                                 onShowRule={onShowRule}
                               />
@@ -416,56 +416,50 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   system={system}
                   activeCatalogue={activeCatalogue}
                   remainingPoints={remainingPoints}
-                  updateSubSelection={updateSubSelection}
+                  subSelectionOperations={subSelectionOperations}
                   costTypeLabel={costTypeLabel}
                 />
               )}
 
               {/* 3. Centralized General Errors & Validation Summary Panel */}
-              <div id="general-errors-section" className="gothic-panel general-errors-panel" style={{ padding: '20px', marginTop: '12px', borderStyle: 'solid', borderWidth: '1px', borderColor: isRosterValid ? 'var(--color-success)' : 'var(--color-danger)' }}>
-                <h3 className="font-serif text-gold" style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px' }}>Lagerbericht (Gesamtstatus)</h3>
+              <div
+                id="general-errors-section"
+                className={`gothic-panel general-errors-panel ${isRosterValid ? 'general-errors-panel--valid' : 'general-errors-panel--invalid'}`}
+              >
+                <h3 className="font-serif text-gold general-errors-title">Lagerbericht (Gesamtstatus)</h3>
                 
                 {isRosterValid ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div className="text-success text-ui-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                  <div className="flex-col gap-12">
+                    <div className="text-success text-ui-title flex-row gap-8 text-strong">
                       <Check size={20} />
                       <span>Streitmacht ist regelkonform und bereit für die Schlacht!</span>
                     </div>
-                    <p className="text-body text-dim animate-fade-in" style={{ fontStyle: 'italic', margin: '4px 0 8px 0', lineHeight: '1.4', opacity: 0.85 }}>
+                    <p className="text-body text-dim animate-fade-in roster-valid-flavour">
                       „Die Schlachtreihen stehen fest, die Kriegstrommeln rufen nach den Tapferen. Führt Eure Streitmacht zum glorreichen Sieg!“
                     </p>
                     {/* Mobile-only Play button */}
-                    <div className="mobile-only" style={{ width: '100%' }}>
-                      <button 
-                        type="button" 
-                        className="btn-primary" 
+                    <div className="mobile-only w-full">
+                      <button
+                        type="button"
+                        className="btn-primary roster-play-btn-mobile"
                         onClick={() => onPlay(roster)}
-                        style={{ 
-                          width: '100%', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          gap: '8px', 
-                          padding: '10px 16px',
-                          fontSize: 'var(--fs-body)'
-                        }}
                       >
                         <Play size={18} /> Spielen
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div className="validation-error-list">
                     {generalErrors.map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-danger text-body" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <AlertTriangle size={18} style={{ flexShrink: 0 }} />
+                      <div key={idx} className="validation-error-item text-danger text-body flex-row gap-10">
+                        <AlertTriangle size={18} className="no-shrink" />
                         <span>{err.message}</span>
                       </div>
                     ))}
                     {/* Secondary list of category & selection errors for full context */}
                     {validationErrors.filter(e => (e.categoryId || e.selectionId) && e.severity === ValidationSeverity.ERROR).map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-danger text-body" style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.8 }}>
-                        <AlertTriangle size={18} style={{ flexShrink: 0 }} />
+                      <div key={idx} className="validation-error-item validation-error-item--secondary text-danger text-body flex-row gap-10">
+                        <AlertTriangle size={18} className="no-shrink" />
                         <span>{err.message}</span>
                       </div>
                     ))}
@@ -474,17 +468,17 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                 {/* Rein informative Hinweise des Katalogautors (warning/info) — sichtbar,
                     aber ohne die Liste zu blockieren; daher unabhängig von isRosterValid. */}
                 {advisoryMessages.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+                  <div className="validation-error-list validation-error-list--advisory">
                     {advisoryMessages.map((err, idx) => (
-                      <div key={idx} className="validation-error-item text-dim text-body" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <AlertTriangle size={18} style={{ flexShrink: 0 }} />
+                      <div key={idx} className="validation-error-item text-dim text-body flex-row gap-10">
+                        <AlertTriangle size={18} className="no-shrink" />
                         <span>{err.message}</span>
                       </div>
                     ))}
                   </div>
                 )}
                 {extraResources.length > 0 && (
-                  <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-dark)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div className="roster-extra-resources">
                     {extraResources.map(res => (
                       <div key={res.id} className="flex-between text-label text-dim">
                         <span>{res.name}:</span>

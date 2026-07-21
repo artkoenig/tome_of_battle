@@ -2,10 +2,11 @@ import React from 'react';
 import {
   resolveEntry,
   findEntryInSystem,
-  collectUnitProfilesAndRules
+  collectUnitProfilesAndRules,
+  isIndependentSubUnit,
+  groupProfilesByType,
+  UPGRADE_DETAILS_KEYWORDS
 } from '../../solver/validator';
-import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/constants';
-import { groupProfilesByType } from '../../solver/rulesEvaluator';
 import { useRuleUrl } from '../../hooks/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
@@ -19,13 +20,7 @@ export const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
       const entry = findEntryInSystem(system, entryId, activeCatalogueId);
       const resolved = resolveEntry(system, entry, activeCatalogueId);
       
-      const hasEntryChildren = (entryNode) => {
-        if (!entryNode) return false;
-        return (entryNode.selectionEntries && entryNode.selectionEntries.length > 0) ||
-               (entryNode.entryLinks && entryNode.entryLinks.length > 0) ||
-               (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
-      };
-      const isIndependent = resolved && (resolved.type === 'unit' || resolved.type === 'model') && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+      const isIndependent = isIndependentSubUnit(resolved);
       
       if (resolved && !isIndependent) {
         list.push({
@@ -231,10 +226,10 @@ export function UnitRulesChips({
       {visibleRules.map((rule, rIdx) => {
         const descText = rule.description || '';
         const details = (
-          <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
+          <div className="upgrade-details">
             <div>{rule.description}</div>
             {rule.publicationRef && (
-              <div className="publication-ref" style={{ marginTop: '4px' }}>
+              <div className="publication-ref upgrade-details-publication-ref">
                 {rule.publicationRef}
               </div>
             )}

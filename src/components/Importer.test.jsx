@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Importer, { transformIndexToSystems, findMissingLibraryDependencies } from './Importer';
+import Importer from './Importer';
 import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { processImportedData } from '../parser/xmlParser';
@@ -37,6 +37,14 @@ vi.mock('../parser/zipExtractor', () => ({
 vi.mock('../parser/xmlParser', () => ({
   processImportedData: vi.fn(),
 }));
+
+/**
+ * Lets the parser mock report a parse result in its real shape: the assembled system
+ * plus the catalogues that failed to parse.
+ */
+function mockParseResult(system, failedCatalogues = []) {
+  processImportedData.mockReturnValue({ system, failedCatalogues });
+}
 
 // Mock the import schema advisory. These component tests use synthetic/mock file
 // content that is not real BattleScribe XML, so the collector reports no warnings by
@@ -84,123 +92,6 @@ function respondToCatpkg(url, index) {
   const served = url.includes(LEXICANUM_CATPKG_URL_PART) ? index : { repositoryFiles: [] };
   return makeCatpkgJsonResponse(served);
 }
-
-describe('transformIndexToSystems', () => {
-  const findCatalogue = (system, id) => system.catalogues.find(cat => cat.id === id);
-
-  it('returns an empty list for a missing or empty index', () => {
-    expect(transformIndexToSystems(null)).toEqual([]);
-    expect(transformIndexToSystems({})).toEqual([]);
-    expect(transformIndexToSystems({ repositoryFiles: [] })).toEqual([]);
-  });
-
-  it('passes the revision through for the game system and every catalogue', () => {
-    const index = {
-      repositoryFiles: [
-        { id: 'sys-1', name: 'System One', type: 'gamesystem', revision: 5 },
-        { id: 'cat-1', name: 'Bravo', type: 'catalogue', revision: 7 },
-        { id: 'cat-2', name: 'Alpha', type: 'catalogue', revision: 3 }
-      ]
-    };
-
-    const [system] = transformIndexToSystems(index);
-
-    expect(system.gst.revision).toBe(5);
-    expect(findCatalogue(system, 'cat-1').revision).toBe(7);
-    expect(findCatalogue(system, 'cat-2').revision).toBe(3);
-  });
-
-  it('uses the index entry path as the file name, not a name-derived one', () => {
-    // Upstream file names are not derivable from the catalogue name (e.g. name
-    // "Chaos Dwarfs" vs file "Chaos Dwarves (6th definitive edition).cat").
-    const index = {
-      repositoryFiles: [
-        { id: 'sys-1', name: 'System One', path: 'System One (6th definitive edition).gst', type: 'gamesystem', revision: 5 },
-        { id: 'cat-1', name: 'Chaos Dwarfs', path: 'Chaos Dwarves (6th definitive edition).cat', type: 'catalogue', revision: 7 }
-      ]
-    };
-
-    const [system] = transformIndexToSystems(index);
-
-    expect(system.gst.fileName).toBe('System One (6th definitive edition).gst');
-    expect(findCatalogue(system, 'cat-1').fileName).toBe('Chaos Dwarves (6th definitive edition).cat');
-  });
-
-  it('does not throw and yields an undefined revision when the index entry omits it', () => {
-    const index = {
-      repositoryFiles: [
-        { id: 'sys-1', name: 'System One', type: 'gamesystem' },
-        { id: 'cat-1', name: 'Alpha', type: 'catalogue' }
-      ]
-    };
-
-    let systems;
-    expect(() => {
-      systems = transformIndexToSystems(index);
-    }).not.toThrow();
-
-    expect(systems[0].gst.revision).toBeUndefined();
-    expect(findCatalogue(systems[0], 'cat-1').revision).toBeUndefined();
-  });
-});
-
-describe('findMissingLibraryDependencies', () => {
-  const availableCatalogues = [
-    { id: 'dogs', name: 'Dogs of War' },
-    { id: 'merc', name: 'Mercenaries' },
-    { id: 'empire', name: 'Empire' },
-  ];
-
-  it('flags a catalogueLink target that exists but was left out of the selection', () => {
-    const loadedCatalogues = [
-      { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc', name: 'Mercenaries' }] },
-    ];
-
-    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['dogs']), availableCatalogues);
-
-    expect(missing).toEqual([{ id: 'merc', name: 'Mercenaries', requiredBy: ['Dogs of War'] }]);
-  });
-
-  it('returns nothing when the linked target is part of the selection', () => {
-    const loadedCatalogues = [
-      { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc', name: 'Mercenaries' }] },
-      { id: 'merc', name: 'Mercenaries', catalogueLinks: [] },
-    ];
-
-    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['dogs', 'merc']), availableCatalogues);
-
-    expect(missing).toEqual([]);
-  });
-
-  it('ignores a target that is not a selectable catalogue at all', () => {
-    const loadedCatalogues = [
-      { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'ghost', name: 'Phantom' }] },
-    ];
-
-    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['dogs']), availableCatalogues);
-
-    expect(missing).toEqual([]);
-  });
-
-  it('deduplicates a shared missing dependency and lists every referencing catalogue', () => {
-    const loadedCatalogues = [
-      { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc' }] },
-      { id: 'empire', name: 'Empire', catalogueLinks: [{ targetId: 'merc' }] },
-    ];
-
-    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['dogs', 'empire']), availableCatalogues);
-
-    expect(missing).toEqual([{ id: 'merc', name: 'Mercenaries', requiredBy: ['Dogs of War', 'Empire'] }]);
-  });
-
-  it('tolerates catalogues without catalogueLinks', () => {
-    const loadedCatalogues = [{ id: 'empire', name: 'Empire' }];
-
-    const missing = findMissingLibraryDependencies(loadedCatalogues, new Set(['empire']), availableCatalogues);
-
-    expect(missing).toEqual([]);
-  });
-});
 
 describe('Importer Component', () => {
   // These tests exercise the stored-systems / upload flows, not the bundle index.
@@ -278,7 +169,7 @@ describe('Importer Component', () => {
       resolveZip = resolve;
     });
     extractZipFiles.mockReturnValue(zipPromise);
-    processImportedData.mockReturnValue({ id: 'dummy', catalogues: [] });
+    mockParseResult({ id: 'dummy', catalogues: [] });
     saveSystem.mockResolvedValue({});
 
     const { container } = render(<Importer showAsEmptyState={false} />);
@@ -305,7 +196,7 @@ describe('Importer Component', () => {
     const systemData = { id: 'sys-new', name: 'New Imported System', catalogues: [{ id: 'cat-new' }] };
     
     extractZipFiles.mockResolvedValue({ gstFiles: [{ name: 'rules.gst' }], catFiles: [{ name: 'faction.cat' }] });
-    processImportedData.mockReturnValue(systemData);
+    mockParseResult(systemData);
     saveSystem.mockResolvedValue({});
     getAllSystems.mockResolvedValue([]);
 
@@ -325,6 +216,41 @@ describe('Importer Component', () => {
     });
 
     expect(screen.getByText(/erfolgreich importiert/)).toBeDefined();
+  });
+
+  // Zuvor lief der Import mit unvollständigem Datensatz weiter und meldete Erfolg — mit
+  // einer Katalogzahl, welche die fehlgeschlagenen bereits nicht mehr enthielt.
+  it('5b. Names the catalogues that could not be read and reports the import as incomplete', async () => {
+    const systemData = { id: 'sys-new', name: 'New Imported System', catalogues: [{ id: 'cat-new' }] };
+    const onReportErrorMock = vi.fn();
+
+    extractZipFiles.mockResolvedValue({
+      gstFiles: [{ name: 'rules.gst' }],
+      catFiles: [{ name: 'faction.cat' }, { name: 'broken.cat' }],
+    });
+    mockParseResult(systemData, [{ fileName: 'broken.cat', message: 'Unexpected end of input' }]);
+    saveSystem.mockResolvedValue({});
+    getAllSystems.mockResolvedValue([]);
+
+    const { container } = render(
+      <Importer
+        showAsEmptyState={false}
+        onSystemImported={vi.fn()}
+        onReportError={onReportErrorMock}
+      />
+    );
+
+    const file = new File(['zipcontent'], 'game_system.zip', { type: 'application/zip' });
+    fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/broken\.cat/)).toBeDefined();
+    });
+    expect(screen.getByText(/unvollständig importiert: 1 von 2 Katalogen/)).toBeDefined();
+    expect(screen.queryByText(/erfolgreich importiert/)).toBeNull();
+    // Der Import wechselt anschließend ins Heerlager und hängt diese Ansicht ab; die
+    // Meldung muss den Nutzer deshalb auch über den anwendungsweiten Kanal erreichen.
+    expect(onReportErrorMock).toHaveBeenCalledWith(expect.stringContaining('broken.cat'));
   });
 
   it('6. Invalid Extension Rejection', async () => {
@@ -372,7 +298,7 @@ describe('Importer Component', () => {
       gstFiles: [{ name: 'rules.gst', content: '<gameSystem/>' }],
       catFiles: [{ name: 'faction.cat', content: '<catalogue/>' }],
     });
-    processImportedData.mockReturnValue(systemData);
+    mockParseResult(systemData);
     const locatableMessage =
       'Die Datei „faction.cat" entspricht nicht vollständig dem BattleScribe-Schema (v2.03); ' +
       'der Import wurde dennoch fortgesetzt. 1 Schemaverstoß/-verstöße gefunden. ' +
@@ -404,6 +330,66 @@ describe('Importer Component', () => {
     expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({ name: 'New Imported System' }));
 
     consoleWarnSpy.mockRestore();
+  });
+
+  it('7c. Uploaded archive with an unresolved library link aborts before anything is stored', async () => {
+    // The guard used to exist only on the bundle path; an uploaded archive can carry the
+    // very same incomplete catalogue set, so it must abort there as well.
+    const onSystemImportedMock = vi.fn();
+    extractZipFiles.mockResolvedValue({
+      gstFiles: [{ name: 'rules.gst', content: '<gameSystem />' }],
+      catFiles: [{ name: 'dogs.cat', content: '<catalogue />' }],
+    });
+    mockParseResult({
+      id: 'sys-upload',
+      name: 'Uploaded System',
+      catalogues: [
+        { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc', name: 'Mercenaries' }] },
+      ],
+    });
+
+    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+
+    const file = new File(['zipcontent'], 'partial_export.zip', { type: 'application/zip' });
+    fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
+
+    const errorMessage = await screen.findByText(/Import abgebrochen/);
+
+    expect(errorMessage.textContent).toContain('Mercenaries');
+    expect(errorMessage.textContent).toContain('Dogs of War');
+    expect(saveSystem).not.toHaveBeenCalled();
+    expect(deleteSystem).not.toHaveBeenCalled();
+    expect(onSystemImportedMock).not.toHaveBeenCalled();
+  });
+
+  it('7d. Uploaded archive that contains every linked catalogue imports normally', async () => {
+    const onSystemImportedMock = vi.fn();
+    extractZipFiles.mockResolvedValue({
+      gstFiles: [{ name: 'rules.gst', content: '<gameSystem />' }],
+      catFiles: [
+        { name: 'dogs.cat', content: '<catalogue />' },
+        { name: 'merc.cat', content: '<catalogue />' },
+      ],
+    });
+    mockParseResult({
+      id: 'sys-upload',
+      name: 'Uploaded System',
+      catalogues: [
+        { id: 'dogs', name: 'Dogs of War', catalogueLinks: [{ targetId: 'merc', name: 'Mercenaries' }] },
+        { id: 'merc', name: 'Mercenaries', catalogueLinks: [] },
+      ],
+    });
+
+    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+
+    const file = new File(['zipcontent'], 'full_export.zip', { type: 'application/zip' });
+    fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({ id: 'sys-upload' }));
+      expect(onSystemImportedMock).toHaveBeenCalled();
+    });
+    expect(screen.queryByText(/Import abgebrochen/)).toBeNull();
   });
 
   it('8. Export & Delete Actions', async () => {
@@ -664,7 +650,7 @@ describe('Importer Component', () => {
     it('should trigger fetches and import process on clicking import button', async () => {
       const onSystemImportedMock = vi.fn();
       const systemData = { id: 'sys-bundle-1', name: 'Warhammer Fantasy Bundle', catalogues: [{ id: 'cat-bundle-1' }, { id: 'cat-bundle-2' }] };
-      processImportedData.mockReturnValue(systemData);
+      mockParseResult(systemData);
       saveSystem.mockResolvedValue({});
 
       render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
@@ -737,7 +723,7 @@ describe('Importer Component', () => {
     it('aborts the import and names the missing library catalog when its dependent stays selected', async () => {
       // "Dogs of War" links to the "Mercenaries" library catalog; deselecting Mercenaries
       // while keeping Dogs of War must abort rather than import a broken dataset.
-      processImportedData.mockReturnValue({
+      mockParseResult({
         id: 'sys-lex',
         name: 'WHFB Lexicanum',
         catalogues: [
@@ -767,7 +753,7 @@ describe('Importer Component', () => {
 
     it('imports normally when the referenced library catalog is part of the selection', async () => {
       const onSystemImportedMock = vi.fn();
-      processImportedData.mockReturnValue({
+      mockParseResult({
         id: 'sys-lex',
         name: 'WHFB Lexicanum',
         catalogues: [
@@ -1009,7 +995,7 @@ describe('Importer Component', () => {
         requestedFileHosts.push(url);
         return Promise.resolve({ ok: true, text: () => Promise.resolve('<xml />') });
       });
-      processImportedData.mockReturnValue({ id: ERGOFARG_SYSTEM_ID, name: 'Ergofarg', catalogues: [{ id: 'ergofarg-cat' }] });
+      mockParseResult({ id: ERGOFARG_SYSTEM_ID, name: 'Ergofarg', catalogues: [{ id: 'ergofarg-cat' }] });
 
       render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
 

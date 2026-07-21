@@ -1,14 +1,12 @@
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost } from '../../solver/validator';
-import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
-import OptionGroupComponent from './OptionGroup';
 import {
-  UPGRADE_DETAILS_KEYWORDS,
-  GENERAL_EXACT_KEYWORDS,
-  GENERAL_SUBSTRING_KEYWORDS
-} from '../../solver/constants';
-import { isQuirkGeneralEntryId } from '../../solver/systemQuirks';
+  resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
+  isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
+  isQuirkGeneralEntryId, findForceContainingSelection,
+  UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
+} from '../../solver/validator';
+import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 
@@ -17,7 +15,7 @@ export default function SelectionConfigurator({
   selection,
   system,
   roster,
-  updateSubSelection,
+  subSelectionOperations,
   costTypeLabel,
   activeCatalogue,
   handleMouseEnter,
@@ -28,17 +26,7 @@ export default function SelectionConfigurator({
   isListRule = false
 }) {
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-  const activeForce = roster.forces ? roster.forces.find(force => {
-    const containsSel = (list) => {
-      if (!list) return false;
-      for (const s of list) {
-        if (s.id === selection.id) return true;
-        if (containsSel(s.selections)) return true;
-      }
-      return false;
-    };
-    return containsSel(force.selections);
-  }) : null;
+  const activeForce = findForceContainingSelection(roster, selection.id);
   const activeForceId = activeForce?.id ?? null;
   const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
 
@@ -184,7 +172,7 @@ export default function SelectionConfigurator({
     <div className="selection-node-body">
       {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
       {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
-      <div className="sub-selection-group" style={{ borderLeft: 'none', paddingLeft: 0 }}>
+      <div className="sub-selection-group sub-selection-group--flush">
         {groupedList.map((group, gIdx) => {
           if (group.standalone) {
             const { option, parentDefId } = group.item;
@@ -197,7 +185,7 @@ export default function SelectionConfigurator({
             const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
 
             const filteredOptionConstraints = res.constraints?.filter(con => {
-              if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+              if (!con.scope || !isEntryScope(con.scope)) {
                 return true;
               }
               return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
@@ -226,41 +214,37 @@ export default function SelectionConfigurator({
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
             const isSelectDisabled = isTakenElsewhere;
 
-            const hasEntryChildren = (entry) => {
-              if (!entry) return false;
-              return (entry.selectionEntries && entry.selectionEntries.length > 0) ||
-                     (entry.entryLinks && entry.entryLinks.length > 0) ||
-                     (entry.selectionEntryGroups && entry.selectionEntryGroups.length > 0);
-            };
 
-            const isIndependentSubUnit = res && (res.type === 'unit' || res.type === 'model') && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
+            const isSubUnitWithOwnOptions = isIndependentSubUnit(res);
 
-            const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
+            // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
+            const isUnavailable = count === 0 && isSelectDisabled;
+            const isClickable = !isMandatory && !isUnavailable;
             const handleRowClick = (e) => {
               if (e.target.closest('button') || e.target.closest('input')) {
                 return;
               }
               if (isClickable) {
-                if (isIndependentSubUnit) {
+                if (isSubUnitWithOwnOptions) {
                   if (count < maxLimit && !isSelectDisabled) {
-                    updateSubSelection(selection.id, option, 'add_instance');
+                    subSelectionOperations.addInstance(selection.id, option);
                   }
                 } else if (isBinary) {
                   const isDecrementing = count > 0;
                   if (isDecrementing) {
                     if (count > minLimit) {
-                      updateSubSelection(selection.id, option, 'decrement');
+                      subSelectionOperations.decreaseCount(selection.id, option);
                     }
                   } else {
                     if (!isSelectDisabled) {
-                      updateSubSelection(selection.id, option, 'increment');
+                      subSelectionOperations.increaseCount(selection.id, option);
                     }
                   }
                 } else {
                   // For standard options, clicking row increments. 
                   // If we wanted right-click to decrement we could, but click is increment.
                   if (count < maxLimit && !isSelectDisabled) {
-                    updateSubSelection(selection.id, option, 'increment');
+                    subSelectionOperations.increaseCount(selection.id, option);
                   }
                 }
               }
@@ -269,17 +253,11 @@ export default function SelectionConfigurator({
             return (
               <div 
                 key={res.id} 
-                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}`}
-                style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}
+                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
                 onClick={handleRowClick}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span 
-                    style={{ 
-                      fontWeight: 600, 
-                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit'
-                    }}
-                  >
+                <div className="sub-selection-label">
+                  <span className={`sub-selection-option-name${isUnavailable ? ' sub-selection-option-name--unavailable' : ''}`}>
                     {res.name}
                     <RuleChipIcon
                       name={res.name}
@@ -294,23 +272,22 @@ export default function SelectionConfigurator({
                       onInfoMove={handleMouseMove}
                       onInfoLeave={handleMouseLeave}
                     />
-                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">(Bereits vergeben)</span>}
                   </span>
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
-                  {isIndependentSubUnit ? (
+                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} Pkt.</span>}
+                  {isSubUnitWithOwnOptions ? (
                     <button 
                       type="button"
-                      className="btn-primary text-label"
-                      style={{ padding: '4px 8px', height: 'auto', display: 'flex', alignItems: 'center' }}
+                      className="btn-primary text-label sub-selection-add-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateSubSelection(selection.id, option, 'add_instance');
+                        subSelectionOperations.addInstance(selection.id, option);
                       }}
                       disabled={isSelectDisabled || count >= maxLimit}
                     >
-                      <Plus size={12} style={{ marginRight: '4px' }} />
+                      <Plus size={12} className="sub-selection-add-btn-icon" />
                       Hinzufügen
                     </button>
                   ) : isBinary ? (
@@ -321,7 +298,11 @@ export default function SelectionConfigurator({
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => {
                         if (!isMandatory && !(count > 0 && count <= minLimit)) {
-                          updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
+                          if (e.target.checked) {
+                            subSelectionOperations.increaseCount(selection.id, option);
+                          } else {
+                            subSelectionOperations.decreaseCount(selection.id, option);
+                          }
                         }
                       }}
                     />
@@ -331,7 +312,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'decrement');
+                          subSelectionOperations.decreaseCount(selection.id, option);
                         }}
                         disabled={count <= minLimit}
                       >
@@ -342,7 +323,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'increment');
+                          subSelectionOperations.increaseCount(selection.id, option);
                         }}
                         disabled={isSelectDisabled || count >= maxLimit}
                       >
@@ -362,7 +343,7 @@ export default function SelectionConfigurator({
                 system={system}
                 roster={roster}
                 getSubSelectionCount={getSubSelectionCount}
-                updateSubSelection={updateSubSelection}
+                subSelectionOperations={subSelectionOperations}
                 costTypeLabel={costTypeLabel}
                 getOptionDescription={getOptionDescription}
                 activeCatalogue={activeCatalogue}
