@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -86,3 +86,4 @@ Ersetzt Issue 44 und Issue 46.
       Beschriftung.
 
 ## Comments
+- Beide Kind-Issues umgesetzt und gemergt. Lint 0/0, 1065 Tests gruen (vorher 1042), E2E gruen, Screenshots geprueft. Maintainer-Entscheidungen im Feinschliff: Auffuell-Ueberschrift heisst 'Auffuellen' (statt 'Budget auffuellen'), 'Kostenlimit' im Ausheben-Dialog bleibt. ADR 0003 um Abschnitt 3a zu Kostenarten ergaenzt. Nebenbefund als Issue 48 abgetrennt.
