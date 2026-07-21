@@ -1,301 +1,216 @@
+// Erzeugt Screenshots der wichtigsten Ansichten in Desktop- und Mobil-Größe.
+// Belegt UI-sichtbare Änderungen (siehe CLAUDE.md und ADR 0006).
+//
+// Läuft netzfrei und ohne Katalogdaten im Repository: Aufbau und Datenquelle
+// kommen aus dem gemeinsamen E2E-Harness, das sich auch der Smoke-Test teilt.
+
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
-import JSZip from 'jszip';
-import puppeteer from 'puppeteer';
+import {
+  REPO_ROOT,
+  LAYOUTS,
+  startAppServer,
+  launchBrowser,
+  openAppPage,
+  resetAppState,
+  importFixtureSystem,
+} from './lib/e2e-harness.js';
 
-const PORT = 5176;
-const tempZipPath = path.resolve('./temp_whfb6.zip');
-const SCREENSHOT_DIR = process.env.SCREENSHOT_DIR || '/Users/artkoenig/.gemini/antigravity/brain/5917a49e-f622-4f07-8c4f-fe74e48d22a9/screenshots';
+// Standardmäßig repo-lokal und git-ignoriert; per Umgebungsvariable umlenkbar.
+//
+// Bewusst NICHT das versionierte `screenshots/`: dort liegen die kuratierten
+// Bilder der README. Ein netzfreier Lauf erreicht den Katalog-Index nicht und
+// zeigt daher den Offline-Hinweis — korrekt zur Verifikation, aber nichts, was
+// ungefragt in das Schaufenster des Projekts geschrieben werden darf. Wer die
+// README-Bilder erneuern will, kopiert die gewünschten Dateien bewusst hinüber.
+const SCREENSHOT_DIR = process.env.SCREENSHOT_DIR || path.join(REPO_ROOT, '.screenshots');
 
-// Ensure screenshot directory exists
-if (!fs.existsSync(SCREENSHOT_DIR)) {
-  fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
-}
+// Wartezeit, bis Layout und Übergänge zur Ruhe gekommen sind, bevor ausgelöst wird.
+const SETTLE_MS = 600;
+const INTERACTION_MS = 800;
 
-let serverProcess = null;
+const settle = (ms = SETTLE_MS) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const packCatalogs = async () => {
-  console.log('Packing ./catalogs/whfb6/ into a temporary ZIP file...');
-  const zip = new JSZip();
-  const dirPath = path.resolve('./public/catalogs/whfb6');
-  if (!fs.existsSync(dirPath)) {
-    throw new Error(`Catalog directory not found at: ${dirPath}`);
+// Knöpfe werden über ihre Beschriftung angesteuert, weil die Aushebe- und
+// Navigationsknöpfe keine stabilen Klassen tragen.
+const clickButtonLabelled = async (page, labelFragments) => {
+  const clicked = await page.evaluate((fragments) => {
+    const button = Array.from(document.querySelectorAll('button')).find((b) => {
+      const label = b.textContent.toLowerCase();
+      return fragments.some((fragment) => label.includes(fragment));
+    });
+    if (button) button.click();
+    return Boolean(button);
+  }, labelFragments);
+
+  if (!clicked) {
+    throw new Error(`Kein Knopf mit Beschriftung ${labelFragments.join(' / ')} gefunden`);
   }
-  const files = fs.readdirSync(dirPath);
-  let count = 0;
-  for (const filename of files) {
-    if (filename.endsWith('.cat') || filename.endsWith('.gst')) {
-      const filePath = path.join(dirPath, filename);
-      const content = fs.readFileSync(filePath);
-      zip.file(filename, content);
-      count++;
-    }
-  }
-  const buffer = await zip.generateAsync({ type: 'nodebuffer' });
-  fs.writeFileSync(tempZipPath, buffer);
-  console.log(`Successfully packed ${count} files into: ${tempZipPath}`);
 };
 
-const startViteServer = () => {
-  return new Promise((resolve, reject) => {
-    console.log(`Spawning Vite dev server on port ${PORT}...`);
-    const proc = spawn('npx', ['vite', '--port', PORT.toString(), '--strictPort'], {
-      shell: true
-    });
-    serverProcess = proc;
-    let resolved = false;
-    proc.stdout.on('data', (data) => {
-      const str = data.toString();
-      if ((str.includes(PORT.toString()) || str.includes('Local:')) && !resolved) {
-        resolved = true;
-        resolve(proc);
-      }
-    });
-    proc.stderr.on('data', (data) => {
-      console.error(`[Vite stderr] ${data.toString()}`);
-    });
-    proc.on('error', (err) => {
-      console.error('Failed to start Vite server:', err);
-      if (!resolved) {
-        resolved = true;
-        reject(err);
-      }
-    });
-    setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve(proc);
-      }
-    }, 6000);
-  });
+const clickRequired = async (page, selector) => {
+  const clicked = await page.evaluate((sel) => {
+    const element = document.querySelector(sel);
+    if (element) element.click();
+    return Boolean(element);
+  }, selector);
+
+  if (!clicked) {
+    throw new Error(`Element "${selector}" nicht gefunden`);
+  }
+  await settle(INTERACTION_MS);
 };
 
-const runSessionForMode = async (mode) => {
-  const isMobile = mode === 'mobile';
-  console.log(`\n--- Starting Screenshot Session for ${mode.toUpperCase()} ---`);
-  
-  const browser = await puppeteer.launch({
-    headless: true,
-    defaultViewport: isMobile 
-      ? { width: 375, height: 812, isMobile: true, hasTouch: true }
-      : { width: 1440, height: 900 },
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+const clickIfPresent = async (page, selector) => {
+  await page.evaluate((sel) => document.querySelector(sel)?.click(), selector);
+  await settle(500);
+};
+
+const ROSTER_DIALOG_LABELS = ['armeeliste', 'neu'];
+
+const openRosterDialog = async (page) => {
+  await clickButtonLabelled(page, ROSTER_DIALOG_LABELS);
+  await page.waitForSelector('form input[type="text"]', { visible: true, timeout: 5000 });
+  await settle(500);
+};
+
+// Wechselt über die Hauptnavigation die Ansicht. Ein nicht gefundener Knopf ist
+// ein Fehler, kein Grund weiterzulaufen: sonst entstehen Screenshots, die eine
+// andere Ansicht zeigen als ihr Dateiname behauptet.
+const openView = async (page, layout, label) => {
+  const containerSelector = LAYOUTS[layout].navReadySelector;
+  const clicked = await page.evaluate(
+    (selector, viewLabel) => {
+      const button = Array.from(document.querySelectorAll(`${selector} button`))
+        .find((b) => b.textContent.toLowerCase().includes(viewLabel));
+      if (button) button.click();
+      return Boolean(button);
+    },
+    containerSelector,
+    label,
+  );
+
+  if (!clicked) {
+    throw new Error(`Navigationsknopf "${label}" in ${containerSelector} nicht gefunden`);
+  }
+  await settle(INTERACTION_MS);
+};
+
+// Setzt den bereits geöffneten Aushebe-Dialog fort und wartet auf den Editor.
+const submitRosterDialog = async (page, rosterName) => {
+  await page.type('form input[type="text"]', rosterName);
+
+  // Spielsystem und Katalog jeweils auf den ersten echten Eintrag setzen; die
+  // Katalogliste füllt sich erst, nachdem das System gewählt wurde.
+  const selectFirstOption = (index) =>
+    page.evaluate((selectIndex) => {
+      const select = Array.from(document.querySelectorAll('form select'))[selectIndex];
+      if (!select || select.options.length <= 1) return false;
+      select.selectedIndex = 1;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    }, index);
+
+  if (!(await selectFirstOption(0))) {
+    throw new Error('Kein Spielsystem im Aushebe-Dialog auswählbar');
+  }
+  await page.waitForFunction(() => {
+    const select = Array.from(document.querySelectorAll('form select'))[1];
+    return select && select.options.length > 1;
   });
+  await selectFirstOption(1);
 
-  const page = await browser.newPage();
+  await page.evaluate(() => {
+    const submit = Array.from(document.querySelectorAll('form button')).find((b) => b.type === 'submit');
+    if (!submit) throw new Error('Absende-Knopf im Aushebe-Dialog nicht gefunden');
+    submit.click();
+  });
+  await page.waitForSelector('.builder-layout', { timeout: 10000 });
+  await settle(1000);
+};
 
-  const takeScreenshot = async (name) => {
-    await new Promise(r => setTimeout(r, 600)); // wait for layout/animations
-    const filename = `${mode}_${name}.png`;
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, filename) });
-    console.log(`Saved screenshot: ${filename}`);
+const runSessionForLayout = async (layout, server) => {
+  console.log(`\n--- Screenshot-Sitzung: ${layout.toUpperCase()} ---`);
+  const browser = await launchBrowser({ layout });
+  const page = await openAppPage(browser);
+
+  const capture = async (name) => {
+    await settle();
+    const fileName = `${layout}_${name}.png`;
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, fileName) });
+    console.log(`Screenshot gespeichert: ${fileName}`);
   };
 
   try {
-    console.log(`Navigating to http://localhost:${PORT}/ ...`);
-    await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle2' });
+    await resetAppState(page, server.url);
+    await capture('01_importer_empty');
 
-    // Clear indexedDB to start fresh
-    console.log('Clearing IndexedDB...');
-    await page.evaluate(async () => {
-      return new Promise((resolve) => {
-        const req = indexedDB.deleteDatabase('TomeOfBattleDB');
-        req.onsuccess = () => resolve();
-        req.onerror = () => resolve();
-        req.onblocked = () => resolve();
-      });
-    });
-    await page.reload({ waitUntil: 'networkidle2' });
+    await importFixtureSystem(page, { fixtureZipPath: server.fixtureZipPath, layout });
+    await settle(1000);
 
-    // SCREEN 1: Empty state
-    await takeScreenshot('01_importer_empty');
+    // Nach dem Import wechselt die App selbsttätig ins Heerlager. Für den Blick
+    // auf die importierten Spielsysteme muss der Bibliothekar erneut geöffnet
+    // werden, sonst zeigte dieser Screenshot dasselbe wie der nächste.
+    await openView(page, layout, 'bibliothekar');
+    await capture('02_bibliothekar_loaded');
 
-    // Upload ZIP file to import catalog
-    console.log('Uploading temporary ZIP file...');
-    await page.waitForSelector('#file-upload', { timeout: 5000 });
-    const fileInput = await page.$('#file-upload');
-    await fileInput.uploadFile(tempZipPath);
+    await openView(page, layout, 'heerlager');
+    await capture('03_dashboard_empty');
 
-    // Wait for the system to import
-    console.log('Waiting for import...');
-    if (isMobile) {
-      await page.waitForSelector('.mobile-bottom-nav', { timeout: 15000 });
-    } else {
-      await page.waitForSelector('.desktop-nav-actions', { timeout: 15000 });
-    }
-    await new Promise(r => setTimeout(r, 1000));
-    
-    // SCREEN 2: Bibliothekar after catalog imported
-    await takeScreenshot('02_bibliothekar_loaded');
+    await openRosterDialog(page);
+    await capture('04_new_roster_modal');
+    await submitRosterDialog(page, `Heerschau ${layout}`);
 
-    // Go to Heerlager (Dashboard)
-    console.log('Navigating to Heerlager...');
-    await page.evaluate((mobile) => {
-      const containerSelector = mobile ? '.mobile-bottom-nav' : '.desktop-nav-actions';
-      const btn = Array.from(document.querySelectorAll(`${containerSelector} button`))
-        .find(b => b.textContent.toLowerCase().includes('heerlager'));
-      if (btn) btn.click();
-    }, isMobile);
-    await new Promise(r => setTimeout(r, 800));
+    await clickRequired(page, '.category-unit-adder-container button');
+    await capture('06_unit_adder');
 
-    // SCREEN 3: Empty Heerlager Dashboard
-    await takeScreenshot('03_dashboard_empty');
+    await clickRequired(page, '.popover-item');
+    await clickRequired(page, '.unit-card-details-toggle');
+    await capture('05_roster_editor');
 
-    // Click button to create a new roster
-    console.log('Opening Roster creation modal...');
-    await page.evaluate(() => {
-      const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.toLowerCase().includes('armeeliste') || b.textContent.toLowerCase().includes('neu'));
-      if (btn) btn.click();
-    });
-    
-    // Wait for form to be visible
-    await page.waitForSelector('form input[type="text"]', { visible: true, timeout: 5000 });
-    await new Promise(r => setTimeout(r, 500));
+    await clickRequired(page, '.selection-node-header');
+    await capture('07_selection_configurator');
 
-    // SCREEN 4: Neues Heer ausheben bottomsheet/modal
-    await takeScreenshot('04_new_roster_modal');
+    // Auf dem Desktop schließt der Konfigurator ohne eigenen Knopf, daher optional.
+    await clickIfPresent(page, '.bottomsheet-close-btn');
 
-    // Fill form
-    console.log('Filling out Roster Details...');
-    await page.type('form input[type="text"]', `Bretonnia ${isMobile ? 'Mobile' : 'Desktop'}`);
-    await page.evaluate(() => {
-      const selects = Array.from(document.querySelectorAll('form select'));
-      const systemSelect = selects[0];
-      if (systemSelect) {
-        systemSelect.selectedIndex = 1;
-        systemSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
-    await new Promise(r => setTimeout(r, 500));
-    
-    await page.evaluate(() => {
-      const selects = Array.from(document.querySelectorAll('form select'));
-      const catSelect = selects[1];
-      if (catSelect) {
-        catSelect.selectedIndex = 1;
-        catSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
-
-    // Submit form
-    console.log('Submitting roster creation form...');
-    await page.evaluate(() => {
-      const btn = Array.from(document.querySelectorAll('form button')).find(b => b.type === 'submit');
-      if (btn) btn.click();
-    });
-    
-    // Wait for the Roster Editor to load
-    await page.waitForSelector('.builder-layout', { timeout: 10000 });
-    await new Promise(r => setTimeout(r, 1000));
-
-    // Open Unit Selection / Category Adder bottomsheet
-    console.log('Opening CategoryUnitAdder popover/bottomsheet...');
-    await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll('.category-unit-adder-container button'));
-      if (buttons.length > 0) buttons[0].click();
-    });
-    await new Promise(r => setTimeout(r, 800));
-
-    // SCREEN 6: Unit Selection popover / bottomsheet
-    await takeScreenshot('06_unit_adder');
-
-    // Add unit
-    console.log('Adding unit...');
-    await page.evaluate(() => {
-      const options = Array.from(document.querySelectorAll('.popover-item'));
-      if (options.length > 0) options[0].click();
-    });
-    await new Promise(r => setTimeout(r, 800));
-
-    // Open unit details in Roster Editor
-    console.log('Expanding unit details...');
-    await page.evaluate(() => {
-      const toggleBtn = document.querySelector('.unit-card-details-toggle');
-      if (toggleBtn) toggleBtn.click();
-    });
-    await new Promise(r => setTimeout(r, 800));
-
-    // SCREEN 5: Roster Editor / Builder view (with unit details expanded)
-    await takeScreenshot('05_roster_editor');
-
-    // Open unit config (SelectionConfigurator)
-    console.log('Opening unit configuration...');
-    await page.evaluate(() => {
-      const card = document.querySelector('.selection-node-header');
-      if (card) card.click();
-    });
-    await new Promise(r => setTimeout(r, 800));
-
-    // SCREEN 7: SelectionConfigurator dialog / bottomsheet
-    await takeScreenshot('07_selection_configurator');
-
-    // Close unit config bottomsheet
-    await page.evaluate(() => {
-      const closeBtn = document.querySelector('.bottomsheet-close-btn');
-      if (closeBtn) closeBtn.click();
-    });
-    await new Promise(r => setTimeout(r, 500));
-
-    // Go to Play Mode via dashboard to bypass validation restriction
-    console.log('Navigating back to Heerlager dashboard to open Play Mode...');
-    await page.evaluate((mobile) => {
-      const containerSelector = mobile ? '.mobile-bottom-nav' : '.desktop-nav-actions';
-      const btn = Array.from(document.querySelectorAll(`${containerSelector} button`))
-        .find(b => b.textContent.toLowerCase().includes('heerlager'));
-      if (btn) btn.click();
-    }, isMobile);
-    
-    // Wait for dashboard view to load and show the roster card
+    // Der Spielmodus wird über die Armeelisten-Karte im Heerlager gestartet.
+    await openView(page, layout, 'heerlager');
     await page.waitForSelector('.roster-card', { timeout: 10000 });
-    await new Promise(r => setTimeout(r, 600));
+    await settle();
 
-    console.log('Clicking play button on roster card...');
-    await page.evaluate(() => {
+    const startedPlayMode = await page.evaluate(() => {
       const card = document.querySelector('.roster-card');
-      if (card) {
-        const playBtn = Array.from(card.querySelectorAll('button'))
-          .find(b => b.textContent.toLowerCase().includes('schlacht') || b.textContent.toLowerCase().includes('play') || b.textContent.toLowerCase().includes('spielen'));
-        if (playBtn) playBtn.click();
-      }
+      const playButton = card && Array.from(card.querySelectorAll('button'))
+        .find((b) => /schlacht|spielen|play/.test(b.textContent.toLowerCase()));
+      if (playButton) playButton.click();
+      return Boolean(playButton);
     });
-
+    if (!startedPlayMode) {
+      throw new Error('Kein Knopf zum Starten des Spielmodus auf der Armeelisten-Karte gefunden');
+    }
     await page.waitForSelector('.play-layout', { timeout: 10000 });
-    await new Promise(r => setTimeout(r, 1000));
-
-    // SCREEN 8: Play Mode view
-    await takeScreenshot('08_play_mode');
-
-  } catch (error) {
-    console.error(`Error during ${mode} screenshot session:`, error);
+    await settle(1000);
+    await capture('08_play_mode');
   } finally {
-    console.log('Closing browser...');
     await browser.close();
   }
 };
 
-(async () => {
+const run = async () => {
+  fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
+  const server = await startAppServer();
   try {
-    await packCatalogs();
-    await startViteServer();
-    
-    // Run Desktop Session
-    await runSessionForMode('desktop');
-    
-    // Run Mobile Session
-    await runSessionForMode('mobile');
-
-  } catch (err) {
-    console.error(err);
+    for (const layout of Object.keys(LAYOUTS)) {
+      await runSessionForLayout(layout, server);
+    }
+    console.log(`\nAlle Screenshots erzeugt in: ${SCREENSHOT_DIR}`);
   } finally {
-    if (tempZipPath && fs.existsSync(tempZipPath)) {
-      fs.unlinkSync(tempZipPath);
-    }
-    if (serverProcess) {
-      console.log('Stopping Vite server...');
-      serverProcess.kill();
-    }
-    console.log('All screenshot generation complete!');
-    process.exit(0);
+    server.stop();
   }
-})();
+};
+
+run().catch((error) => {
+  console.error('Screenshot-Lauf fehlgeschlagen:', error);
+  process.exit(1);
+});

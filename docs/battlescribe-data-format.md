@@ -5,8 +5,10 @@
 >
 > **Quellen:** das offizielle [BSData Catalogue-Development-Wiki](https://github.com/BSData/catalogue-development/wiki)
 > (Home, *Data structure overview*, *Common Catalogue Patterns*, *Collective Entries*,
-> *Catalogue Guidelines*, *Data Author Guide*, *Getting Started*) sowie reale WHFB-6th-Edition-Kataloge
-> aus diesem Repository (`public/catalogs/whfb6/`). Alle XML-Beispiele stammen aus echten Dateien.
+> *Catalogue Guidelines*, *Data Author Guide*, *Getting Started*) sowie reale
+> WHFB-6th-Edition-Kataloge (heute zur Laufzeit aus dem externen Katalog-Fork bezogen, siehe
+> ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/solver/__fixtures__/whfb6/`).
+> Alle XML-Beispiele stammen aus echten Dateien.
 >
 > Diese Datei ist die **kanonische Referenz** zum Battlescribe-Datenformat für dieses Projekt
 > (inklusive der aus vergangenen Bug-Analysen gesammelten Domänen-Erkenntnisse). Wie das Projekt

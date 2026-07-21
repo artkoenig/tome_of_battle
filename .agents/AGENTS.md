@@ -18,11 +18,11 @@ npm run lint               # oxlint
 npm test                     # vitest run (unit/component tests) + node src/solver/ui.test.js (puppeteer E2E)
 npx vitest run <path>          # run a single test file
 npx vitest run -t "<name>"       # run tests matching a name
-npm run debug-ui             # node scripts/debug_ui.js — scripted puppeteer debugging session
+node scripts/generate_screenshots.js   # screenshots of every main view (desktop + mobile) -> .screenshots/
 ```
 
 - All unit tests must pass before a task is considered done.
-- On macOS, `browser_subagent`/`open_browser_url` don't work — use Puppeteer scripts in `scripts/` (e.g. `node scripts/generate_screenshots.js`). On Linux/cloud, `/browser` and `browser_subagent` work normally (see [ADR 0006](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0006-testing-and-automation.md)).
+- On macOS, `browser_subagent`/`open_browser_url` don't work — use `node scripts/generate_screenshots.js`, which runs offline against the frozen fixture and needs no catalog data in the repo. For a one-off investigation, build a throwaway script on the shared harness (`scripts/lib/e2e-harness.js`); it also offers a browser console log, a DOM dump and a headed browser. On Linux/cloud, `/browser` and `browser_subagent` work normally (see [ADR 0006](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0006-testing-and-automation.md)).
 - After any UI-visible change, take a screenshot of the affected view and send it to the user as confirmation (skip this when running on the user's local machine).
 
 ## Agent skills

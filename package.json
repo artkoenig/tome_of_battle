@@ -9,7 +9,6 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run && node src/solver/ui.test.js",
-    "debug-ui": "node scripts/debug_ui.js",
     "generate-icons": "node scripts/generate_pwa_icons.js",
     "generate:schema": "node scripts/generate-schema-module.js"
   },

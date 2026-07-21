@@ -1,14 +1,16 @@
 # E2E-Fixture: WHFB6 (eingefroren)
 
-Katalogdaten für `src/solver/ui.test.js` (siehe ADR-0006, Seam 6 im
-[PRD](../../../../docs/PRD-katalog-updates-und-roster-kompatibilitaet.md)). Der Test prüft die
-App, nicht die Katalogdaten — die Fixture ist bewusst eingefroren und unabhängig von
-`public/catalogs/`.
+Katalogdaten für die Puppeteer-Werkzeuge — den E2E-Smoke-Test `src/solver/ui.test.js` und
+`scripts/generate_screenshots.js`, die sie über das gemeinsame Harness
+`scripts/lib/e2e-harness.js` beziehen (siehe ADR-0006, Seam 6 im
+[PRD](../../../../docs/PRD-katalog-updates-und-roster-kompatibilitaet.md)). Geprüft wird die
+App, nicht die Katalogdaten — die Fixture ist bewusst eingefroren und unabhängig von den zur
+Laufzeit bezogenen Katalogen.
 
 ## Herkunft
 
-- Quelle: `public/catalogs/whfb6/Warhammer Fantasy Battle 6th edition.gst` und
-  `public/catalogs/whfb6/Ogre Kingdoms.cat`
+- Quelle: `Warhammer Fantasy Battle 6th edition.gst` und `Ogre Kingdoms.cat` aus dem damaligen
+  Verzeichnis `public/catalogs/whfb6/`, das mit ADR-0014 entfallen ist
 - Stand: Commit `d13b7e5` (2026-07-02), **vor** der Whitespace-Bereinigung aus Issue 11
   (Commit `db7848d`, 2026-07-15)
 
@@ -31,6 +33,6 @@ prüft `ui.test.js` explizit.
 
 ## Update-Politik
 
-Diese Fixture wird **nicht** automatisch mit `public/catalogs/` oder dem künftigen
-Katalog-Fork synchronisiert. Sie ändert sich nur, wenn eine App-seitige Funktionsänderung
+Diese Fixture wird **nicht** automatisch mit dem externen Katalog-Fork
+synchronisiert. Sie ändert sich nur, wenn eine App-seitige Funktionsänderung
 (z. B. neue Struktur, neue getestete Regel) das erfordert.
