@@ -1,5 +1,6 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks } from './modifierEvaluator.js';
+import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from './rosterTree.js';
 
 /**
  * The multiplier applied to a top-level (subject) selection when its cost is
@@ -87,15 +88,10 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
  * Locates the id of the force that contains the given selection.
  */
 function findForceIdContaining(roster, selection) {
-  const containsSelection = (list) => {
-    if (!list) return false;
-    for (const candidate of list) {
-      if (candidate.id === selection.id) return true;
-      if (containsSelection(candidate.selections)) return true;
-    }
-    return false;
-  };
-  return roster.forces?.find(force => containsSelection(force.selections))?.id || null;
+  const isSearchedSelection = candidate => candidate.id === selection.id;
+  return roster.forces?.find(
+    force => someSelection(childSelectionsOf(force), isSearchedSelection)
+  )?.id || null;
 }
 
 /**
@@ -157,16 +153,17 @@ export function getSelectionOwnCosts(selection, effectiveCount, { system = null,
  * @param {EvaluationContext} [context]
  */
 export function getSelectionTotalCost(selection, costLimitType, parentCount = TOP_LEVEL_PARENT_COUNT, context = {}) {
-  const effectiveCount = (selection.number || 1) * parentCount;
-  const ownCosts = getSelectionOwnCosts(selection, effectiveCount, context);
-  let total = ownCosts[costLimitType] ?? ownCosts[POINTS_COST_TYPE_ID] ?? 0;
-
-  if (selection.selections) {
-    selection.selections.forEach(child => {
-      total += getSelectionTotalCost(child, costLimitType, effectiveCount, { ...context, parentSelection: selection });
-    });
-  }
-  return total;
+  return foldSelectionTree(selection, {
+    descend: (node, { parentCount: count, evaluationContext }) => ({
+      parentCount: effectiveCountOf(node, count),
+      evaluationContext: { ...evaluationContext, parentSelection: node }
+    }),
+    combine: (node, { parentCount: count, evaluationContext }, childTotals) => {
+      const ownCosts = getSelectionOwnCosts(node, effectiveCountOf(node, count), evaluationContext);
+      const ownTotal = ownCosts[costLimitType] ?? ownCosts[POINTS_COST_TYPE_ID] ?? 0;
+      return childTotals.reduce((sum, childTotal) => sum + childTotal, ownTotal);
+    }
+  }, { parentCount, evaluationContext: context });
 }
 
 /**
@@ -185,29 +182,25 @@ export function calculateRosterCosts(roster, system) {
 
   const counts = (roster && system) ? computeRosterCounts(roster, system) : null;
 
-  const addSelectionCosts = (selection, parentCount = 1, currentCatalogueId = null, parentSelection = null) => {
-    const effectiveCount = (selection.number || 1) * parentCount;
+  const addSelectionCosts = (selection, { parentCount, parentSelection }, currentCatalogueId) => {
+    const effectiveCount = effectiveCountOf(selection, parentCount);
 
     const ownCosts = getSelectionOwnCosts(selection, effectiveCount, { system, roster, currentCatalogueId, parentSelection, counts });
     Object.entries(ownCosts).forEach(([typeId, value]) => {
       totals[typeId] = (totals[typeId] || 0) + value;
     });
 
-    if (selection.selections) {
-      selection.selections.forEach(child => {
-        addSelectionCosts(child, effectiveCount, currentCatalogueId, selection);
-      });
-    }
+    return { parentCount: effectiveCount, parentSelection: selection };
   };
 
-  if (roster && roster.forces) {
-    roster.forces.forEach(force => {
-      const currentCatalogueId = force.catalogueId || roster.catalogueId;
-      if (force.selections) {
-        force.selections.forEach(sel => addSelectionCosts(sel, 1, currentCatalogueId, null));
-      }
-    });
-  }
+  (roster?.forces ?? []).forEach(force => {
+    const currentCatalogueId = force.catalogueId || roster.catalogueId;
+    traverseSelectionTree(
+      childSelectionsOf(force),
+      (selection, context) => addSelectionCosts(selection, context, currentCatalogueId),
+      { parentCount: TOP_LEVEL_PARENT_COUNT, parentSelection: null }
+    );
+  });
 
   return totals;
 }
@@ -231,10 +224,12 @@ export const computeRosterCounts = (roster, system) => {
   const forceSelectionCounts = {};
   const categoryCounts = {};
 
-  const countSelection = (selection, forceId, forceCatalogueId, parentCount = 1, isRoot = false, parentSelection = null) => {
-    const effectiveCount = (selection.number || 1) * parentCount;
+  const countSelection = (selection, { parentCount, isRoot, parentSelection }, force) => {
+    const forceId = force.id;
+    const forceCatalogueId = force.catalogueId;
+    const effectiveCount = effectiveCountOf(selection, parentCount);
     const entryId = selection.entryLinkId || selection.selectionEntryId;
-    
+
     if (!forceSelectionCounts[forceId]) {
       forceSelectionCounts[forceId] = {};
     }
@@ -304,18 +299,16 @@ export const computeRosterCounts = (roster, system) => {
       selectionCounts[selection.category] = (selectionCounts[selection.category] || 0) + effectiveCount;
     }
 
-    if (selection.selections) {
-      selection.selections.forEach(child => countSelection(child, forceId, forceCatalogueId, effectiveCount, false, selection));
-    }
+    return { parentCount: effectiveCount, isRoot: false, parentSelection: selection };
   };
 
-  if (roster && roster.forces) {
-    roster.forces.forEach(force => {
-      if (force.selections) {
-        force.selections.forEach(sel => countSelection(sel, force.id, force.catalogueId, 1, true));
-      }
-    });
-  }
+  (roster?.forces ?? []).forEach(force => {
+    traverseSelectionTree(
+      childSelectionsOf(force),
+      (selection, context) => countSelection(selection, context, force),
+      { parentCount: TOP_LEVEL_PARENT_COUNT, isRoot: true, parentSelection: null }
+    );
+  });
 
   return { selectionCounts, forceSelectionCounts, categoryCounts };
 };

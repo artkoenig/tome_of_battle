@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -36,3 +36,4 @@ Traversierungen mitbringen und den Befund vergrößern statt ihn zu schließen.
 - [ ] `npm run lint` und `npm test` bleiben grün; kein verändertes Verhalten
 
 ## Comments
+- Neues Modul src/solver/rosterTree.js buendelt die Traversierung des Roster-Baums (childSelectionsOf, rootSelectionsOf, effectiveCountOf, traverseSelectionTree, foldSelectionTree, findSelectionById/-InRoster, someSelection(-InSubtree), countSelections, mapSelectionTree, replaceSelectionById) und wird ueber die Solver-Fassade re-exportiert. Die handgeschriebenen Rekursionen in rosterCounter, constraintScope, modifierEvaluator, useRoster, rosterSerialization sowie die flachen Force-Zugriffe in PlayMode und RosterEditor sind darauf umgestellt; der Fall 'keine Kind-Selections' lebt nur noch in childSelectionsOf. 32 neue Unit-Tests, Verhalten unveraendert.

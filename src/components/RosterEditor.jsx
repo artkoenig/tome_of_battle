@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Play, AlertTriangle, Check, ArrowLeft, Download, Undo2, Redo2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, resolveListRuleGroup } from '../solver/validator';
+import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, isEntryPrimaryInCategory, getExtraResourceTotals, formatConstraintLimit, collectUnreachableArmyWideSelectors, hasBlockingViolations, ValidationSeverity, resolveListRuleGroup, childSelectionsOf } from '../solver/validator';
 
 import CategoryUnitAdder from './editor/CategoryUnitAdder';
 import ListRuleChecklist from './editor/ListRuleChecklist';
@@ -190,17 +190,17 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           });
           const armyWideSelectorIds = new Set(armyWideSelectors.map(entry => entry.id));
           const belongsToArmyWideSelector = s => armyWideSelectorIds.has(s.selectionEntryId || s.entryLinkId);
-          const armyWideSelectorSelections = force.selections?.filter(belongsToArmyWideSelector) || [];
+          const armyWideSelectorSelections = childSelectionsOf(force).filter(belongsToArmyWideSelector);
 
           const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
-          const uncategorizedSelections = force.selections?.filter(s =>
-            !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s)) || [];
+          const uncategorizedSelections = childSelectionsOf(force).filter(s =>
+            !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s));
 
           return (
             <div key={force.id} className="force-editor-section" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {categoryLinks.map(link => {
                   const isHidden = isCategoryLinkHidden(link, system, roster, selectionCounts, forceCategoryCounts);
-                  const selections = force.selections?.filter(s => s.category === link.targetId) || [];
+                  const selections = childSelectionsOf(force).filter(s => s.category === link.targetId);
 
                   // A list-rule group (data-driven: catalog type = upgrade, ADR 0003)
                   // is a list-wide settings group, not a unit slot: its cards drop the

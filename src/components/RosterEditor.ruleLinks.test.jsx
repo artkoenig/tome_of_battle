@@ -56,7 +56,10 @@ vi.mock('../db/database', () => ({
   saveRoster: vi.fn(),
 }));
 
-vi.mock('../solver/validator', () => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the facade
+// re-exports stay real, since they are pure traversal without any rules in them.
+vi.mock('../solver/validator', async (importOriginal) => ({
+  ...(await importOriginal()),
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
   getModifiedConstraintValue: (constraint) => (constraint.type === 'min' ? 1 : 5),
   getEffectiveModifiers: (source) => source?.modifiers || [],

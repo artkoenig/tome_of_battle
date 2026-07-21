@@ -1,29 +1,17 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
-import { calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem } from '../solver/validator';
+import {
+  calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
+  childSelectionsOf, findSelectionInRoster, mapSelectionTree, replaceSelectionById
+} from '../solver/validator';
 import { createSelectionFromDef as buildSelectionFromDef } from '../solver/selectionFactory';
 import { useUndoableState } from './useUndoableState';
 import '../types.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 150;
 
-/** Sucht eine Selection (beliebig tief verschachtelt) im Roster per ID. */
-const findSelectionInRoster = (roster, selectionId) => {
-  if (!roster || !selectionId) return null;
-  const findIn = (list) => {
-    for (const s of list || []) {
-      if (s.id === selectionId) return s;
-      const sub = findIn(s.selections);
-      if (sub) return sub;
-    }
-    return null;
-  };
-  for (const force of roster.forces || []) {
-    const found = findIn(force.selections);
-    if (found) return found;
-  }
-  return null;
-};
+/** Schrittweite, um die eine Options-Aktion die Anzahl einer Auswahl verändert. */
+const SELECTION_STEP = 1;
 
 /**
  * Hook to manage a roster state, cost calculations, validations and updates.
@@ -156,15 +144,13 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   };
 
   const copyUnit = (selectionId) => {
-    const cloneSelection = (sel) => {
-      const newId = crypto.randomUUID();
-      const clonedSelections = (sel.selections || []).map(s => cloneSelection(s));
-      return {
-        ...sel,
-        id: newId,
-        selections: clonedSelections
-      };
-    };
+    // Jede Selection des Teilbaums erhält eine frische Id, damit die Kopie mit
+    // dem Original nicht kollidiert.
+    const cloneSelection = (unit) => mapSelectionTree(unit, (selection, clonedChildren) => ({
+      ...selection,
+      id: crypto.randomUUID(),
+      selections: clonedChildren
+    }));
 
     setRoster(prev => {
       let unitToCopy = null;
@@ -196,90 +182,74 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     });
   };
 
+  /**
+   * Die neue Kind-Liste einer Einheit nach einer Options-Aktion. Rein: die
+   * übergebene Liste bleibt unberührt, zurück kommt stets eine neue.
+   */
+  const applySubSelectionAction = (currentSelections, optionOrId, action) => {
+    const list = [...currentSelections];
+    const amount = SELECTION_STEP;
+
+    if (action === 'add_instance') {
+      const childSel = createSelectionFromDef(optionOrId);
+      if (childSel) {
+        childSel.number = amount;
+        list.push(childSel);
+      }
+    } else if (action === 'remove_instance') {
+      const removeIdx = list.findIndex(s => s.id === optionOrId);
+      if (removeIdx > -1) {
+        list.splice(removeIdx, 1);
+      }
+    } else if (action === 'increment_instance' || action === 'decrement_instance') {
+      const instIdx = list.findIndex(s => s.id === optionOrId);
+      if (instIdx > -1) {
+        if (action === 'increment_instance') {
+          list[instIdx] = { ...list[instIdx], number: (list[instIdx].number || 1) + amount };
+        } else if ((list[instIdx].number || 1) > amount) {
+          list[instIdx] = { ...list[instIdx], number: list[instIdx].number - amount };
+        } else {
+          list.splice(instIdx, 1);
+        }
+      }
+    } else {
+      // Original increment/decrement logic (optionOrId is an option def)
+      const optionId = optionOrId.id;
+      const idx = list.findIndex(s => (s.entryLinkId || s.selectionEntryId) === optionId);
+
+      if (action === 'increment') {
+        if (idx > -1) {
+          list[idx] = { ...list[idx], number: (list[idx].number || 1) + amount };
+        } else {
+          const childSel = createSelectionFromDef(optionOrId);
+          if (childSel) {
+            childSel.number = amount;
+            list.push(childSel);
+          }
+        }
+      } else if (action === 'decrement') {
+        if (idx > -1) {
+          if ((list[idx].number || 1) > amount) {
+            list[idx] = { ...list[idx], number: list[idx].number - amount };
+          } else {
+            list.splice(idx, 1);
+          }
+        }
+      }
+    }
+    return list;
+  };
+
   const updateSubSelection = (unitSelectionId, optionOrId, action) => {
     setRoster(prev => {
-      let foundAndUpdated = false;
-
-      const updateDeep = (node) => {
-        if (node.id === unitSelectionId) {
-          foundAndUpdated = true;
-          const list = [...(node.selections || [])];
-          const amount = 1;
-
-          if (action === 'add_instance') {
-            const childSel = createSelectionFromDef(optionOrId);
-            if (childSel) {
-              childSel.number = amount;
-              list.push(childSel);
-            }
-          } else if (action === 'remove_instance') {
-            const removeIdx = list.findIndex(s => s.id === optionOrId);
-            if (removeIdx > -1) {
-              list.splice(removeIdx, 1);
-            }
-          } else if (action === 'increment_instance' || action === 'decrement_instance') {
-            const instIdx = list.findIndex(s => s.id === optionOrId);
-            if (instIdx > -1) {
-              if (action === 'increment_instance') {
-                list[instIdx] = { ...list[instIdx], number: (list[instIdx].number || 1) + amount };
-              } else {
-                if ((list[instIdx].number || 1) > amount) {
-                  list[instIdx] = { ...list[instIdx], number: list[instIdx].number - amount };
-                } else {
-                  list.splice(instIdx, 1);
-                }
-              }
-            }
-          } else {
-            // Original increment/decrement logic (optionOrId is an option def)
-            const optionId = optionOrId.id;
-            const idx = list.findIndex(s => (s.entryLinkId || s.selectionEntryId) === optionId);
-
-            if (action === 'increment') {
-              if (idx > -1) {
-                list[idx] = { ...list[idx], number: (list[idx].number || 1) + amount };
-              } else {
-                const childSel = createSelectionFromDef(optionOrId);
-                if (childSel) {
-                  childSel.number = amount;
-                  list.push(childSel);
-                }
-              }
-            } else if (action === 'decrement') {
-              if (idx > -1) {
-                if ((list[idx].number || 1) > amount) {
-                  list[idx] = { ...list[idx], number: list[idx].number - amount };
-                } else {
-                  list.splice(idx, 1);
-                }
-              }
-            }
-          }
-          return { ...node, selections: list };
-        }
-
-        if (node.selections && node.selections.length > 0) {
-          let updatedChildren = false;
-          const newSelections = node.selections.map(child => {
-            if (foundAndUpdated) return child;
-            const updatedChild = updateDeep(child);
-            if (updatedChild !== child) updatedChildren = true;
-            return updatedChild;
-          });
-          if (updatedChildren) return { ...node, selections: newSelections };
-        }
-        return node;
-      };
-
       const updatedForces = prev.forces.map(force => {
-        let updatedForceSelections = false;
-        const newSelections = force.selections.map(unit => {
-          const updatedUnit = updateDeep(unit);
-          if (updatedUnit !== unit) updatedForceSelections = true;
-          return updatedUnit;
-        });
-        if (updatedForceSelections) return { ...force, selections: newSelections };
-        return force;
+        const currentSelections = childSelectionsOf(force);
+        const updatedSelections = replaceSelectionById(currentSelections, unitSelectionId, unit => ({
+          ...unit,
+          selections: applySubSelectionAction(childSelectionsOf(unit), optionOrId, action)
+        }));
+        if (updatedSelections === currentSelections) return force;
+        return { ...force, selections: updatedSelections };
       });
 
       return { ...prev, forces: updatedForces };
