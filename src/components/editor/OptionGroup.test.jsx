@@ -47,6 +47,8 @@ vi.mock('../../solver/validator', async () => ({
   // Reine Baum-Primitive: die echte Implementierung durchreichen statt sie im Mock
   // nachzubauen — ihre Rekursion ist in rosterTree.test.js eigens abgedeckt.
   findForceContainingSelection: (await vi.importActual('../../solver/rosterTree')).findForceContainingSelection,
+  resolveCostLimitTypeId: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitTypeId,
+  resolveCostLimitLabel: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitLabel,
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   getModifiedConstraintValue: (...args) => mockGetModifiedConstraintValue(...args),
@@ -127,7 +129,6 @@ describe('OptionGroup Component', () => {
     roster: mockRoster,
     getSubSelectionCount: vi.fn().mockReturnValue(0),
     subSelectionOperations: createSubSelectionOperationsMock(),
-    costTypeLabel: 'Pkt.',
     getOptionDescription: vi.fn().mockReturnValue('A magic weapon'),
     activeCatalogue: { id: 'cat-bretonnia' },
     setActiveInfo: vi.fn(),
@@ -203,9 +204,9 @@ describe('OptionGroup Component', () => {
     fireEvent.click(header);
 
     // Axe (30 pts) should render before Sword (20 pts)
-    const items = screen.getAllByText(/\+.*Pkt\./);
-    expect(items[0].textContent).toContain('+30 Pkt.');
-    expect(items[1].textContent).toContain('+20 Pkt.');
+    const items = screen.getAllByText(/\+.*Points/);
+    expect(items[0].textContent).toContain('+30 Points');
+    expect(items[1].textContent).toContain('+20 Points');
   });
 
   it('4. Radio Option Selection', () => {

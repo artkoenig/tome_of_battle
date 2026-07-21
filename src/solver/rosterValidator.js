@@ -1,7 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
 import { ConditionKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
+import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, isCostField, resolveConstraintThreshold } from './constraintScope.js';
 import {
   ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField
@@ -151,7 +151,7 @@ export function countBlockingViolations(validationErrors) {
   return (validationErrors || []).filter(error => error.severity === ValidationSeverity.ERROR).length;
 }
 
-/** Punkte des Rosters gegen das eingestellte Limit prüfen. */
+/** Kosten des Rosters gegen das eingestellte Limit prüfen. */
 function checkRosterCostLimit(roster, system, errors) {
   const costs = calculateRosterCosts(roster, system);
   if (!roster.costLimit || !roster.costLimitType) return;
@@ -161,7 +161,7 @@ function checkRosterCostLimit(roster, system, errors) {
   if (current > limit) {
     pushViolation(errors, {
       type: 'roster-limit',
-      message: `Punkteüberschreitung: Du hast ${current} von maximal ${limit} Punkten verwendet.`,
+      message: `Limitüberschreitung: Du hast ${current} von maximal ${limit} ${resolveCostLimitLabel(roster, system)} verwendet.`,
       severity: ValidationSeverity.ERROR
     });
   }
@@ -556,7 +556,9 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       })
     : count;
   const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection, forceCatalogueId, counts });
-  const unit = measuresCost ? 'Punkte' : 'Auswahlen';
+  // Gemessen wird die Kostenart der Constraint selbst (`con.field`) — ihre
+  // Bezeichnung stammt daher aus genau dieser Kostenart.
+  const unit = measuresCost ? resolveCostTypeLabel(system, con.field) : 'Auswahlen';
 
   if (con.type === 'min' && subject < threshold) {
     pushViolation(errors, {
@@ -683,11 +685,14 @@ function checkGroupConstraints({ selection, entry }, context) {
       }
 
       if (measuresCost) {
+        // `totalPoints` ist über die Kostenart des Rosters summiert — die Meldung
+        // benennt daher genau diese Kostenart, nicht eine festgeschriebene Einheit.
+        const costLabel = resolveCostLimitLabel(roster, system);
         if (con.type === 'max' && totalPoints > finalValue) {
           pushViolation(errors, {
             type: 'group-points-max',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
+            message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} ${costLabel} (aktuell: ${totalPoints} ${costLabel} für ${selection.name}).`,
             severity: ValidationSeverity.ERROR
           });
         }
@@ -695,7 +700,7 @@ function checkGroupConstraints({ selection, entry }, context) {
           pushViolation(errors, {
             type: 'group-points-min',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Punkte (aktuell: ${totalPoints} Pkt. für ${selection.name}).`,
+            message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} ${costLabel} (aktuell: ${totalPoints} ${costLabel} für ${selection.name}).`,
             severity: ValidationSeverity.ERROR
           });
         }
@@ -729,7 +734,9 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints,
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const subject = measuresCost ? totalPoints : totalCount;
   const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection: selection, forceCatalogueId, counts });
-  const unit = measuresCost ? 'Punkte' : 'Auswahlen';
+  // `totalPoints` wird über die Kostenart des Rosters summiert (siehe
+  // checkGroupConstraints) — die Bezeichnung muss dieselbe Kostenart benennen.
+  const unit = measuresCost ? resolveCostLimitLabel(roster, system) : 'Auswahlen';
 
   if (con.type === 'min' && subject < threshold) {
     pushViolation(errors, {

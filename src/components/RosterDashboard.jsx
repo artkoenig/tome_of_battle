@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload, MoreVertical } from 'lucide-react';
-import { calculateRosterCosts, findForceEntryById } from '../solver/validator';
+import { calculateRosterCosts, findForceEntryById, resolveCostLimitLabel } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
 
 export default function RosterDashboard({
@@ -156,10 +156,7 @@ export default function RosterDashboard({
                           </h3>
                           <div className="dashboard-grid">
                             {factionRosters.map(({ roster, sys }) => {
-                              const costTypeObj = sys?.costTypes?.find(ct => ct.id === roster.costLimitType);
-                              const rawLabel = costTypeObj?.name || 'Pkt.';
-                              const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? 'Pkt.' : rawLabel;
-                              
+                              const costTypeLabel = resolveCostLimitLabel(roster, sys);
                               const calcCosts = (sys && roster.forces) ? calculateRosterCosts(roster, sys) : {};
                               const currentPoints = calcCosts[roster.costLimitType] || 0;
 

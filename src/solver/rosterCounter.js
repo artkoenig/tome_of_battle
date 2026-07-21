@@ -8,8 +8,41 @@ import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, 
  */
 export const TOP_LEVEL_PARENT_COUNT = 1;
 
-/** Fallback cost-type id used when a roster declares no explicit cost-limit type. */
-const POINTS_COST_TYPE_ID = 'pts';
+/**
+ * The id of the cost type a roster is measured in.
+ *
+ * `cost/@typeId` always references `costType/@id`, never `costType/@name`, and
+ * that id is chosen freely by the catalogue author (GUIDs in the WHFB6 fork,
+ * `points` in wh40k-9e). No id is reserved for points, so none may be assumed:
+ * the roster's own setting is the source of truth, and the only defensible
+ * substitute is the first cost type the game system declares.
+ *
+ * @returns {string|null} the cost-type id, or null if the system declares none
+ */
+export function resolveCostLimitTypeId(roster, system) {
+  return roster?.costLimitType ?? system?.costTypes?.[0]?.id ?? null;
+}
+
+/**
+ * The display name of a cost type, taken verbatim from the game system's
+ * declaration. This is the single derivation "cost-type id → label"; nothing
+ * else in the application may name a cost type.
+ *
+ * Catalogue authors pad these names with a leading space (`" Casting Dice"`,
+ * `" Dispel Dice"`, `" PL"` in wh40k-9e), so trimming is the *only* alteration
+ * made: the name is never translated, abbreviated or otherwise normalised.
+ *
+ * @returns {string} the trimmed name, or '' if the system declares no such type
+ */
+export function resolveCostTypeLabel(system, costTypeId) {
+  const costType = system?.costTypes?.find(candidate => candidate.id === costTypeId);
+  return costType?.name?.trim() ?? '';
+}
+
+/** The display name of the cost type a roster is measured in. */
+export function resolveCostLimitLabel(roster, system) {
+  return resolveCostTypeLabel(system, resolveCostLimitTypeId(roster, system));
+}
 
 /**
  * @typedef {Object} EvaluationContext
@@ -39,18 +72,19 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
   }
 
   let total = 0;
-  
-  // 1. Direct cost of this entry
-  let directCost = resolved.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts')?.value || 0;
+
+  // 1. Direct cost of this entry, in the requested cost type only. An entry that
+  // carries no cost of that type contributes 0 — never the value of another type.
+  const costOfLimitType = resolved.costs?.find(c => c.typeId === costLimitType);
+  let directCost = costOfLimitType?.value || 0;
 
   // Apply cost modifiers if any
-  const costType = resolved.costs?.find(c => c.typeId === costLimitType || c.typeId === 'pts');
   let modifiers = getEffectiveModifiers(resolved);
   if (entry.modifiers !== resolved.modifiers || entry.modifierGroups !== resolved.modifierGroups) {
     modifiers = modifiers.concat(getEffectiveModifiers(entry));
   }
-  if (costType && modifiers.length > 0 && ctx && Object.keys(ctx).length > 0) {
-    const tempCon = { id: costType.typeId, value: directCost };
+  if (costOfLimitType && modifiers.length > 0 && ctx && Object.keys(ctx).length > 0) {
+    const tempCon = { id: costOfLimitType.typeId, value: directCost };
     directCost = getModifiedConstraintValue(tempCon, modifiers, ctx);
   }
 
@@ -160,7 +194,7 @@ export function getSelectionTotalCost(selection, costLimitType, parentCount = TO
     }),
     combine: (node, { parentCount: count, evaluationContext }, childTotals) => {
       const ownCosts = getSelectionOwnCosts(node, effectiveCountOf(node, count), evaluationContext);
-      const ownTotal = ownCosts[costLimitType] ?? ownCosts[POINTS_COST_TYPE_ID] ?? 0;
+      const ownTotal = ownCosts[costLimitType] ?? 0;
       return childTotals.reduce((sum, childTotal) => sum + childTotal, ownTotal);
     }
   }, { parentCount, evaluationContext: context });

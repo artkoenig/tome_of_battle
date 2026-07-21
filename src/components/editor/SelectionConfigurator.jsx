@@ -3,7 +3,7 @@ import { Plus, Minus } from 'lucide-react';
 import {
   resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
   isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
-  isQuirkGeneralEntryId, findForceContainingSelection,
+  isQuirkGeneralEntryId, findForceContainingSelection, resolveCostLimitLabel,
   UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/validator';
 import OptionGroupComponent from './OptionGroup';
@@ -25,6 +25,7 @@ export default function SelectionConfigurator({
   isListRule = false
 }) {
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
+  const costTypeLabel = resolveCostLimitLabel(roster, system);
   const activeForce = findForceContainingSelection(roster, selection.id);
   const activeForceId = activeForce?.id ?? null;
   const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
@@ -275,7 +276,7 @@ export default function SelectionConfigurator({
                   </span>
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} {costTypeLabel}</span>}
                   {isSubUnitWithOwnOptions ? (
                     <button 
                       type="button"

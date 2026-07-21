@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, resolveCostLimitTypeId, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 
@@ -35,6 +35,9 @@ export default function OptionGroupComponent({
   const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
   const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
   
+  const costLimitTypeId = resolveCostLimitTypeId(roster, system);
+  const costTypeLabel = resolveCostLimitLabel(roster, system);
+
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
   const activeForceId = findForceContainingSelection(roster, selection.id)?.id ?? null;
   const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
@@ -107,7 +110,7 @@ export default function OptionGroupComponent({
   const currentPoints = group.items.reduce((sum, item) => {
     const res = resolveEntry(system, item.option, activeCatalogue.id);
     const count = res ? getSubSelectionCount(selection, res.id) : 0;
-    const points = getOptionDisplayCost(system, item.option, roster.costLimitType, displayCtx);
+    const points = getOptionDisplayCost(system, item.option, costLimitTypeId, displayCtx);
     return sum + (points * count);
   }, 0);
 
@@ -161,9 +164,9 @@ export default function OptionGroupComponent({
   
   if (ptsConstraint) {
     const ptsConstraintVal = getModifiedConstraintValue(ptsConstraint, groupModifiers, displayCtx);
-    limitParts.push(`${currentPoints} / ${ptsConstraintVal} Pkt.`);
+    limitParts.push(`${currentPoints} / ${ptsConstraintVal} ${costTypeLabel}`);
   } else if (currentPoints > 0) {
-    limitParts.push(`${currentPoints} Pkt.`);
+    limitParts.push(`${currentPoints} ${costTypeLabel}`);
   }
 
   if (maxLimit !== Infinity) {
@@ -201,16 +204,15 @@ export default function OptionGroupComponent({
           {group.items
             .slice()
             .sort((a, b) => {
-               const costType = roster?.costLimitType || 'pts';
-               const aPoints = getOptionDisplayCost(system, a.option, costType, displayCtx) || 0;
-               const bPoints = getOptionDisplayCost(system, b.option, costType, displayCtx) || 0;
+               const aPoints = getOptionDisplayCost(system, a.option, costLimitTypeId, displayCtx) || 0;
+               const bPoints = getOptionDisplayCost(system, b.option, costLimitTypeId, displayCtx) || 0;
                return bPoints - aPoints; // Descending
             })
             .map(({ option, groupConstraints, parentDefId }) => {
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
             const count = getSubSelectionCount(selection, res.id);
-            const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
+            const basePoints = getOptionDisplayCost(system, option, costLimitTypeId, displayCtx);
             const filteredOptionConstraints = res.constraints?.filter(con => {
               if (!con.scope || !isEntryScope(con.scope)) {
                 return true;
@@ -356,7 +358,7 @@ export default function OptionGroupComponent({
                   </span>
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} {costTypeLabel}</span>}
                   {isBinary ? (
                     isRadio ? (
                       <input 

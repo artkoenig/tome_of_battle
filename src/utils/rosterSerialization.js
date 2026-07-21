@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import {
   calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, getEffectiveSelectionName,
   findEntryInSystem, resolveEntry, childSelectionsOf, effectiveCountOf, foldSelectionTree,
-  mapSelectionTree, TOP_LEVEL_PARENT_COUNT, isIndependentSubUnit
+  mapSelectionTree, TOP_LEVEL_PARENT_COUNT, isIndependentSubUnit, resolveCostLimitTypeId
 } from '../solver/validator.js';
 import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults.js';
 // Decimal places kept when serializing costs, to strip floating-point artifacts
@@ -60,24 +60,23 @@ export function exportRosterToXml(roster, system) {
   xml += `<roster id="${escapeXml(roster.id)}" name="${escapeXml(roster.name)}" battleScribeVersion="2.03" gameSystemId="${escapeXml(systemId)}" gameSystemRevision="1" gameSystemName="${escapeXml(systemName)}" xmlns="http://www.battlescribe.net/schema/rosterSchema">\n`;
   
   // Costs block
+  // A cost type only exists if the game system declares it — a system without any
+  // yields an empty block rather than an invented one.
   xml += '  <costs>\n';
-  if (system?.costTypes) {
-    system.costTypes.forEach(ct => {
-      const val = computedCosts[ct.id] || 0;
-      xml += `    <cost name="${escapeXml(ct.name)}" typeId="${escapeXml(ct.id)}" value="${val}"/>\n`;
-    });
-  } else {
-    xml += `    <cost name="pts" typeId="pts" value="0"/>\n`;
-  }
+  (system?.costTypes ?? []).forEach(ct => {
+    const val = computedCosts[ct.id] || 0;
+    xml += `    <cost name="${escapeXml(ct.name)}" typeId="${escapeXml(ct.id)}" value="${val}"/>\n`;
+  });
   xml += '  </costs>\n';
 
   // Cost limits block (BattleScribe stores the point limit here, not as a roster attribute)
-  const limitType = roster.costLimitType || system?.costTypes?.[0]?.id || 'pts';
-  const limitTypeDef = system?.costTypes?.find(ct => ct.id === limitType);
-  const limitName = limitTypeDef?.name || 'pts';
-  const limitValue = roster.costLimit ?? DEFAULT_ROSTER_COST_LIMIT;
+  const limitType = resolveCostLimitTypeId(roster, system);
   xml += '  <costLimits>\n';
-  xml += `    <costLimit name="${escapeXml(limitName)}" typeId="${escapeXml(limitType)}" value="${limitValue}"/>\n`;
+  if (limitType) {
+    const limitName = system?.costTypes?.find(ct => ct.id === limitType)?.name ?? limitType;
+    const limitValue = roster.costLimit ?? DEFAULT_ROSTER_COST_LIMIT;
+    xml += `    <costLimit name="${escapeXml(limitName)}" typeId="${escapeXml(limitType)}" value="${limitValue}"/>\n`;
+  }
   xml += '  </costLimits>\n';
 
   // Forces block
@@ -156,7 +155,7 @@ function serializeSelection(rootSelection, indent, ctx, parentCount, currentCata
       const ownCosts = getSelectionOwnCosts(sel, effectiveCount, nodeContext);
       sXml += `${ind}  <costs>\n`;
       Object.entries(ownCosts).forEach(([typeId, value]) => {
-        const costName = system?.costTypes?.find(c => c.id === typeId)?.name || 'pts';
+        const costName = system?.costTypes?.find(c => c.id === typeId)?.name ?? typeId;
         sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(typeId)}" value="${roundCost(value)}"/>\n`;
       });
       sXml += `${ind}  </costs>\n`;
@@ -294,7 +293,7 @@ export function importRosterFromXml(xmlText, systems) {
   }
 
   const rosterName = root.getAttribute('name') || 'Importierte Liste';
-  const costLimitType = system.costTypes?.[0]?.id || 'pts';
+  const costLimitType = resolveCostLimitTypeId(null, system);
   const costLimit = parseCostLimit(root, costLimitType);
   
   const forces = [];

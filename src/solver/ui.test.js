@@ -273,7 +273,9 @@ const runUiTests = async (server) => {
           if (!expandedGroup) return [];
           const items = Array.from(expandedGroup.querySelectorAll('.sub-selection-row'));
           return items.map(item => {
-             const pointsEl = Array.from(item.querySelectorAll('span')).find(s => s.textContent.includes('Pkt.'));
+             // Die Kostenart-Bezeichnung kommt aus dem Katalog und darf hier nicht
+             // festgeschrieben werden — der Kostenwert wird über seine Klasse gefunden.
+             const pointsEl = item.querySelector('span.sub-selection-cost');
              if (!pointsEl) return 0;
              const match = pointsEl.textContent.match(/\+?(\d+)/);
              return match ? parseInt(match[1], 10) : 0;

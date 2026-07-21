@@ -16,14 +16,6 @@ import '../types.js';
 const PERCENT_DIVISOR = 100;
 
 /**
- * Cost-field aliases that are always points even when the game system does not
- * list them among its declared cost types: the generic `'pts'` id and the legacy
- * BattleScribe points cost-type UUID that older WFB data carries verbatim.
- */
-const POINTS_COST_FIELD = 'pts';
-const LEGACY_POINTS_COST_TYPE_ID = 'ecfa-8486-4f6c-c249';
-
-/**
  * A constraint whose value is a percentage of a reference quantity rather than
  * an absolute number. Schema-valid data signals this via the `percentValue`
  * boolean (ConstraintKind is only min/max). The legacy `percent` pseudo-type is
@@ -51,13 +43,13 @@ export function formatConstraintLimit(value, constraint) {
  * counts a number of selections. The single source of truth for the
  * "is this field a cost?" question across validator and UI.
  *
- * A field is a cost when it is the generic `'pts'` id, the legacy points UUID,
- * the roster's configured cost-limit type, or any declared system cost type.
- * `selections` (or an unknown field) is treated as a selection count.
+ * A field is a cost when it is the roster's configured cost-limit type or any
+ * cost type the game system declares. `selections` (or an unknown field) is
+ * treated as a selection count — no cost-type id may be assumed, since
+ * `cost/@typeId` references an id the catalogue author chooses freely.
  */
 export function isCostField(field, system, roster = null) {
   if (!field || field === SELECTIONS_FIELD) return false;
-  if (field === POINTS_COST_FIELD || field === LEGACY_POINTS_COST_TYPE_ID) return true;
   if (roster && field === roster.costLimitType) return true;
   return !!system?.costTypes?.some(costType => costType.id === field);
 }
