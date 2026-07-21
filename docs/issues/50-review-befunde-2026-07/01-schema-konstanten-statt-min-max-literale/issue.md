@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -24,3 +24,4 @@ sich kein beobachtbares Verhalten.
 - [ ] Kein Test musste angepasst werden, um grün zu bleiben — Beleg dafür, dass sich das Verhalten nicht geändert hat
 
 ## Comments
+- Alle 'min'/'max'-Literale der Beschraenkungsart in Produktivmodulen (5 Solver-Module, 5 Editor-Komponenten) durch die generierte Konstante ConstraintKind ersetzt; die lokalen Duplikate MIN_CONSTRAINT_TYPE in armyWideSelectors.js und selectionFactory.js entfernt. Rein strukturell, kein Test angepasst.

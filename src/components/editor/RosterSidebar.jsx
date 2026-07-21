@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
 import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
 import CategoryCountBadge from './CategoryCountBadge';
+import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
 // Icon/CSS-Klasse je Schweregrad einer Validierungsmeldung — nur `error`
 // blockiert das Roster (siehe hasBlockingViolations); `warning`/`info`
@@ -33,7 +34,7 @@ function resolveMaxLimit(maxConstraint, modifiers, displayContext) {
  */
 function resolveHeroesMaxLimit(forceDef, displayContext) {
   const charactersLink = forceDef?.categoryLinks?.find(link => link.targetId === CHARACTERS_CATEGORY_ID);
-  const charactersMaxConstraint = charactersLink?.constraints?.find(c => c.type === 'max');
+  const charactersMaxConstraint = charactersLink?.constraints?.find(c => c.type === ConstraintKind.MAX);
   return resolveMaxLimit(charactersMaxConstraint, getEffectiveModifiers(charactersLink), displayContext);
 }
 
@@ -75,12 +76,12 @@ function CategoryRequirementList({ roster, system }) {
     }
 
     const catLinkModifiers = getEffectiveModifiers(catLink);
-    const minConstraint = catLink.constraints?.find(c => c.type === 'min');
+    const minConstraint = catLink.constraints?.find(c => c.type === ConstraintKind.MIN);
     const minValue = minConstraint
       ? Math.max(0, getModifiedConstraintValue(minConstraint, catLinkModifiers, displayContext))
       : 0;
 
-    const maxConstraint = catLink.constraints?.find(c => c.type === 'max');
+    const maxConstraint = catLink.constraints?.find(c => c.type === ConstraintKind.MAX);
     let maxValue = resolveMaxLimit(maxConstraint, catLinkModifiers, displayContext);
     if (catLink.targetId === HEROES_CATEGORY_ID && maxValue === Infinity) {
       maxValue = resolveHeroesMaxLimit(forceDef, displayContext);

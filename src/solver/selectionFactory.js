@@ -1,11 +1,12 @@
+import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import '../types.js';
 
-// Constraint-Typ, dessen positiver Wert ein Kind zur Pflichtauswahl macht (min > 0).
-const MIN_CONSTRAINT_TYPE = 'min';
-
-/** Wert des `min`-Constraints einer Definition (0, falls keiner vorhanden). */
+/**
+ * Wert des `min`-Constraints einer Definition (0, falls keiner vorhanden).
+ * Ein positiver Wert macht das Kind zur Pflichtauswahl.
+ */
 function getMinConstraintValue(def) {
-  return def.constraints?.find(constraint => constraint.type === MIN_CONSTRAINT_TYPE)?.value || 0;
+  return def.constraints?.find(constraint => constraint.type === ConstraintKind.MIN)?.value || 0;
 }
 
 /**

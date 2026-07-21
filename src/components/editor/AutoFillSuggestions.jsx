@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
 import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/validator';
+import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
 const getSubSelectionCount = (selection, optionEntryId) => {
   const findCount = (list) => {
@@ -86,13 +87,13 @@ export default function AutoFillSuggestions({
                  (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
         }) || [];
         
-        const maxConstraint = filteredOptionConstraints.find(c => c.type === 'max');
+        const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
         if (maxConstraint && maxConstraint.value !== undefined) {
           maxLimit = maxConstraint.value;
         }
 
         if (groupConstraints) {
-           const maxGroup = groupConstraints.find(c => c.type === 'max');
+           const maxGroup = groupConstraints.find(c => c.type === ConstraintKind.MAX);
            if (maxGroup && maxGroup.value !== undefined) {
              if (maxGroup.value < maxLimit) maxLimit = maxGroup.value;
            }

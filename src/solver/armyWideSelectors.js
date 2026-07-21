@@ -1,10 +1,9 @@
 import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { isSelectionEntryHidden, getEffectiveEntryCategoryLinks } from './entryVisibility.js';
+import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 
-// Scope under which a constraint applies to the whole contingent (force), and the
-// constraint type that makes an entry a mandatory army-wide choice.
+// Scope under which a constraint applies to the whole contingent (force).
 const FORCE_SCOPE = 'force';
-const MIN_CONSTRAINT_TYPE = 'min';
 
 /**
  * Root selectionEntries of a catalogue that carry a force-scoped `min` constraint.
@@ -22,7 +21,7 @@ export function collectForceScopedMinSelectors(system, catalogueId) {
     .map(entry => ({
       entry,
       minConstraint: (entry.constraints || []).find(
-        con => con.type === MIN_CONSTRAINT_TYPE && con.scope === FORCE_SCOPE
+        con => con.type === ConstraintKind.MIN && con.scope === FORCE_SCOPE
       )
     }))
     .filter(candidate => candidate.minConstraint);
