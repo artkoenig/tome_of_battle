@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -60,3 +60,4 @@ damaligen Bewertung.
       nicht verändert hat.
 
 ## Comments
+- RosterEditor.jsx von 525 auf 171 Zeilen reduziert und in sechs Komponenten zerlegt: RosterEditorTopBar, ForceEditorSection, RosterCategorySection, CategoryCountBadge, UnitCardList und RosterValidationPanel. Die Wurzel komponiert nur noch. Beide JSX-IIFEs sind zu benannten Einheiten geworden, die dreifach duplizierte Einheitenkarte auf einen Aufruf in UnitCardList zusammengefuehrt, die beschattete activeCatalogue-Bindung in hasPrimaryCatalogItems zu forceCatalogue aufgeloest, der leere if-Block und der unerreichbare Toast-Zustand entfernt. 42 neue isolierte Tests; die drei bestehenden Editor-Testdateien laufen unveraendert gruen. Vorher/Nachher-Screenshot des Editors ist byte-identisch (SHA-256 gleich).
