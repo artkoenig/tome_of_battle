@@ -1,7 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { childSelectionsOf, countSelections, someSelectionInSubtree } from './rosterTree.js';
+import { childSelectionsOf, countSelections, countSelectionsInSubtree, someSelectionInSubtree } from './rosterTree.js';
 import { findForceEntryById } from './forceEntries.js';
-import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
+import { ConstraintScope, isEntryScope, isRosterLimitField, isSharedQuery } from './battlescribeConstants.js';
 import {
   ModifierKind, ConditionKind, AttributeName, SelectionEntryKind
 } from '../parser/schema/battlescribeSchema.generated.js';
@@ -145,6 +145,34 @@ const createTargetSelectionMatcher = (targetId, system, catalogueId, { matchCate
   };
 };
 
+/**
+ * Der Zählwert einer **nicht geteilten** Bedingung (`shared="false"`): gezählt wird
+ * ausschließlich innerhalb der Instanz, an der die Bedingung hängt, statt über alle
+ * Vorkommen des Eintrags im Roster (ADR 0003, Abschnitt 4). `includeChildSelections`
+ * behält dabei seine Bedeutung und entscheidet, ob unterhalb der Instanz
+ * weitergezählt wird.
+ *
+ * Ohne bekannte Instanz im Kontext (z. B. bei der Prüfung eines Eintrags, der noch
+ * gar nicht im Roster liegt) gibt es nichts zu zählen: das Ergebnis ist 0. Der
+ * armeeweite Zählwert wäre hier gerade die falsche Antwort, denn genau dessen
+ * Aggregation schließt `shared="false"` aus.
+ */
+const countWithinConditionInstance = (cond, ctx) => {
+  const { selection, system, roster, parentCatalogueId } = ctx;
+  if (!selection) return 0;
+
+  const catalogueId = parentCatalogueId || (roster ? roster.catalogueId : null);
+  const matchesTarget = createTargetSelectionMatcher(cond.childId || cond.field, system, catalogueId, {
+    matchCategoryMembership: true,
+    matchUnitsAsModels: true
+  });
+
+  return countSelectionsInSubtree(selection, {
+    includeChildSelections: !!cond.includeChildSelections,
+    predicate: matchesTarget
+  });
+};
+
 export const evaluateCondition = (cond, ctx = {}) => {
   if (!cond) return false;
   const { roster, selectionCounts = {}, forceCategoryCounts = {}, selection, parentSelection, system, parentCatalogueId } = ctx;
@@ -172,6 +200,11 @@ export const evaluateCondition = (cond, ctx = {}) => {
         includeChildSelections: !!cond.includeChildSelections,
         predicate: matchesTarget
       });
+    } else if (!isSharedQuery(cond)) {
+      // Eine nicht geteilte Bedingung zählt je Instanz statt armeeweit. Der
+      // parent-Scope oben ist davon unberührt: er ist bereits an genau eine
+      // Instanz — den Eltern-Container — gebunden.
+      currentValue = countWithinConditionInstance(cond, ctx);
     } else {
       // Non-parent scopes (force/roster/entry/category) count by the specific target
       // the condition names. A childId identifies that target explicitly (e.g. a

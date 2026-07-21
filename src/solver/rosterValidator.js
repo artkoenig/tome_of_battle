@@ -4,9 +4,9 @@ import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSche
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, isCostField, resolveConstraintThreshold } from './constraintScope.js';
 import {
-  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField
+  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField, isSharedQuery
 } from './battlescribeConstants.js';
-import { countSelections } from './rosterTree.js';
+import { childSelectionsOf, countSelections, countSelectionsInSubtree } from './rosterTree.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors } from './armyWideSelectors.js';
@@ -169,6 +169,9 @@ function checkRosterCostLimit(roster, system, errors) {
 
 // Synthetische ID des per System-Quirk von einer anderen Kategorie geerbten max-Constraints.
 const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
+
+// Eine Auswahl ohne ausdrückliche `number` steht für genau eine Instanz.
+const SINGLE_INSTANCE_COUNT = 1;
 
 /**
  * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
@@ -447,6 +450,83 @@ function checkSelectionMessages({ selection, parentSelection, entry }, context) 
 }
 
 /**
+ * Prädikat „diese Auswahl ist eine Instanz des geprüften Eintrags". Verglichen wird
+ * immer über die aufgelöste Ziel-Id, nicht über die Link-Id: verschiedene Links
+ * können auf dasselbe Ziel zeigen (ADR 0003, Abschnitt 4).
+ * @param {{entry: Object, entryId: string}} subject
+ * @param {ValidationContext} context
+ * @returns {(candidate: Object) => boolean}
+ */
+function createEntryInstanceMatcher({ entry, entryId }, { system, force }) {
+  const catalogueId = force ? force.catalogueId : null;
+  return (candidate) => {
+    const candidateId = candidate.entryLinkId || candidate.selectionEntryId;
+    if (candidateId === entryId) return true;
+    if (!entry.targetId) return false;
+    if (candidateId === entry.targetId) return true;
+    const candidateDef = findEntryInSystem(system, candidateId, catalogueId);
+    const resolvedCandidate = resolveEntry(system, candidateDef, catalogueId);
+    return resolvedCandidate?.targetId === entry.targetId;
+  };
+}
+
+/** Die höhere der beiden Zählungen für Link-Id und aufgelöste Ziel-Id des Eintrags. */
+function countEntryInstances(countsByEntryId, { entry, entryId }) {
+  return Math.max(
+    countsByEntryId[entryId] || 0,
+    entry.targetId ? countsByEntryId[entry.targetId] || 0 : 0
+  );
+}
+
+/**
+ * Die Anzahl, gegen die eine Eintrags-Constraint geprüft wird — die einzige Stelle,
+ * die den Bezugsrahmen einer solchen Constraint auflöst.
+ *
+ * `shared="false"` (XSD `QueryBase`) hat dabei Vorrang vor dem `scope`: die
+ * Beschränkung gilt dann je Instanz, gezählt wird also nur im Teilbaum der einen
+ * Auswahl, an der sie hängt, statt aggregiert über alle Vorkommen des Eintrags
+ * im Roster (ADR 0003, Abschnitt 4). Ist sie geteilt — der Vorgabewert —,
+ * bestimmt wie bisher allein der `scope` den Bezugsrahmen.
+ *
+ * @param {{con: Object, selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
+ * @param {ValidationContext} context
+ * @returns {number}
+ */
+function resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context) {
+  const { force, counts } = context;
+  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
+  const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
+  const includeChildSelections = con.includeChildSelections;
+  const matchesEntry = createEntryInstanceMatcher({ entry, entryId }, context);
+  const instanceCount = selection.number || SINGLE_INSTANCE_COUNT;
+
+  if (!isSharedQuery(con)) {
+    return countSelectionsInSubtree(selection, { includeChildSelections, predicate: matchesEntry });
+  }
+
+  if (isEntryScope(con.scope)) {
+    return selectionCounts[con.scope] || forceCategoryCounts[con.scope] || instanceCount;
+  }
+  if (con.scope === ConstraintScope.PARENT) {
+    const container = parentSelection || force;
+    if (!container) return instanceCount;
+    return countSelections(childSelectionsOf(container), { includeChildSelections, predicate: matchesEntry });
+  }
+  if (con.scope === ConstraintScope.ROSTER) {
+    return countEntryInstances(selectionCounts, { entry, entryId });
+  }
+  if (con.scope === ConstraintScope.FORCE) {
+    // includeChildForces weitet eine force-bezogene Zählung auf das ganze Roster aus
+    // (Kind-Kontingente liegen im Rostermodell als Geschwister der Wurzel).
+    const scopeCounts = con.includeChildForces
+      ? selectionCounts
+      : (force ? forceSelectionCounts[force.id] || {} : {});
+    return countEntryInstances(scopeCounts, { entry, entryId });
+  }
+  return instanceCount;
+}
+
+/**
  * Individuelle Constraints des aufgelösten Eintrags prüfen (min/max/percent je Scope).
  * @param {{selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
  * @param {ValidationContext} context
@@ -455,8 +535,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
   if (!entry.constraints) return;
 
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
-  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
-  const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
+  const { selectionCounts, categoryCounts } = counts;
 
   entry.constraints.forEach(con => {
     const ctx = {
@@ -480,43 +559,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       if (!belongsToScope) return;
     }
 
-    // Determine current count in scope
-    let count = selection.number || 1;
-
-    if (isEntryScope(con.scope)) {
-      count = selectionCounts[con.scope] || (forceCategoryCounts ? forceCategoryCounts[con.scope] : 0) || count;
-    } else if (con.scope === ConstraintScope.PARENT) {
-      // Immer über aufgelöste Target-IDs vergleichen, nicht über entryLinkIds —
-      // verschiedene Links können auf dasselbe Target zeigen.
-      const matchesEntryTarget = (s, catalogueId) => {
-        const subId = s.entryLinkId || s.selectionEntryId;
-        if (subId === entryId) return true;
-        if (entry.targetId) {
-          const sDef = findEntryInSystem(system, subId, catalogueId);
-          const sRes = resolveEntry(system, sDef, catalogueId);
-          return subId === entry.targetId || (sRes && sRes.targetId === entry.targetId);
-        }
-        return false;
-      };
-
-      const scopeCatalogueId = force ? force.catalogueId : null;
-      const predicate = s => matchesEntryTarget(s, scopeCatalogueId);
-      const includeChildSelections = con.includeChildSelections;
-      if (parentSelection) {
-        count = countSelections(parentSelection.selections, { includeChildSelections, predicate });
-      } else if (force) {
-        count = countSelections(force.selections, { includeChildSelections, predicate });
-      }
-    } else if (con.scope === ConstraintScope.ROSTER) {
-      count = Math.max(selectionCounts[entryId] || 0, (entry.targetId ? selectionCounts[entry.targetId] || 0 : 0));
-    } else if (con.scope === ConstraintScope.FORCE) {
-      // includeChildForces widens a force-scoped count to the whole roster
-      // (child forces are flattened as roster siblings in the roster model).
-      const scopeCounts = con.includeChildForces
-        ? selectionCounts
-        : (force ? forceSelectionCounts[force.id] || {} : {});
-      count = Math.max(scopeCounts[entryId] || 0, (entry.targetId ? scopeCounts[entry.targetId] || 0 : 0));
-    }
+    const count = resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context);
 
     if (isPercentConstraint(con)) {
       checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection }, context);

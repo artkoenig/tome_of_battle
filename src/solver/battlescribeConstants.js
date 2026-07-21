@@ -30,6 +30,20 @@ export const NON_ENTRY_SCOPE_KEYWORDS = Object.freeze(Object.values(ConstraintSc
 export const isEntryScope = (scope) => !NON_ENTRY_SCOPE_KEYWORDS.includes(scope);
 
 /**
+ * True, wenn eine Query (Constraint oder Condition) **geteilt** ist: dann zählt
+ * sie alle Instanzen des Eintrags im gesamten Roster zusammen. Ist sie *nicht*
+ * geteilt (`shared="false"`), zählt sie nur innerhalb der einen Instanz, an der
+ * sie hängt (ADR 0003, Abschnitt 4).
+ *
+ * Einzige Auslegung des Attributs; jede zählende Stelle fragt hier, statt
+ * `query.shared` selbst zu interpretieren. Ein fehlendes Attribut gilt als
+ * geteilt — das ist der Vorgabewert der XSD (`DEFAULT_SHARED_QUERY` in
+ * `xmlParser.js`), und eine im Code gebaute Query ohne das Feld soll sich
+ * genauso verhalten wie geparste Katalogdaten ohne das Attribut.
+ */
+export const isSharedQuery = (query) => query?.shared !== false;
+
+/**
  * Ein Constraint-/Condition-`field` dieser Form bindet an das *Punktelimit* des
  * Rosters (nicht an die ausgegebenen Punkte): `limit::<costTypeId>`.
  */
