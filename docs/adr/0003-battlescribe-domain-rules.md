@@ -32,6 +32,16 @@ Für unumgängliche Besonderheiten einzelner Spielsysteme (z. B. Vererbung von K
 - Relationen müssen über eindeutige IDs (`categoryLinks`, `selectionEntryId`, etc.) aufgelöst werden.
 - Diese Regel gilt **ausnahmslos**. Die vormals hier verzeichnete Ausnahme für die Herleitung von Rüstungs- (`AS`) und Rettungswürfen (`WS`) ist entfallen: das Feature wurde ersatzlos entfernt, weil die Werte aus Regelprosa geraten statt aus Katalogdaten gelesen wurden.
 
+### 3a. Kostenarten: id ist der Schlüssel, name ist reine Anzeige
+
+- `cost/@typeId` verweist **immer** auf `costType/@id`, niemals auf `costType/@name`. Beide dürfen nie miteinander verglichen oder füreinander eingesetzt werden.
+- Die `id` einer Kostenart ist vom Katalog-Autor **frei gewählt und nicht standardisiert**: der WHFB6-Fork und Warpath verwenden GUIDs (`ecfa-8486-4f6c-c249`), Warhammer 40k 9e verwendet `points`. Eine für Punkte reservierte id existiert nicht — das BSData-Wiki führt die Verknüpfung selbst nur als TODO. **Es darf deshalb keine Kostenart-id im Code festgeschrieben werden**, auch nicht als Rückfallwert.
+- Maßgeblich ist `roster.costLimitType`; fehlt sie, ist der einzige vertretbare Ersatz die **erste vom Spielsystem deklarierte** Kostenart (`system.costTypes[0].id`). Zentral abgeleitet über `resolveCostLimitTypeId`.
+- Fehlt einer Auswahl der Wert der maßgeblichen Kostenart, ist das Ergebnis **0** — nie der Wert einer anderen Kostenart. Ein Punktwert dort, wo nach Zauberwürfeln gefragt wurde, ist kein Rückfallwert, sondern eine falsche Zahl.
+- Die **Bezeichnung** stammt unverändert aus `costType/@name` und wird ausschließlich getrimmt (die Namen tragen im Katalog teils führende Leerzeichen: `" Casting Dice"`, bei wh40k-9e `" PL"`). Es findet **keine Übersetzung** statt — auch nicht von `pts` nach `Pkt.`; die Oberfläche zeigt die Katalog-Bezeichnung. Zentral abgeleitet über `resolveCostTypeLabel`.
+
+> **Hintergrund:** Diese Regel entstand aus einem konkreten Fehler (Issue 47). `rosterCounter.js` prüfte `c.typeId === 'pts'` und verglich damit eine id gegen einen Anzeigenamen — im geladenen Katalog nie wahr. Der als Rückfall gedachte Zweig war im Betrieb toter Code und fiel nur deshalb nicht auf, weil die Testdaten `'pts'` abkürzend als *id* führten: die Suite deckte einen Pfad ab, den die Produktion nie nahm, und blieb dabei grün.
+
 ### 4. Berechnungen, Validierung und UI-Zuordnung
 
 - **Kosten- und Einschränkungsmultiplikation:** Bei verschachtelten Auswahlen muss die Menge immer als `child.number * parent.number` berechnet werden. Das Flag `collective` in Battlescribe bestimmt lediglich, wie Instanzen in der UI zusammengefasst dargestellt werden, hat aber keinen Einfluss auf die mathematische Berechnung der Gesamtzahl oder der Kosten.

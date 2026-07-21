@@ -205,7 +205,7 @@ export default function AutoFillSuggestions({
     <div className="gothic-panel autofill-panel">
       <div className="autofill-header">
         <Wand2 className="text-gold" size={20} />
-        <h3 className="font-serif text-gold no-margin">Budget auffüllen</h3>
+        <h3 className="font-serif text-gold no-margin">Auffüllen</h3>
         <span className="badge badge-muted push-end">{remainingPoints} {costTypeLabel} übrig</span>
       </div>
 
