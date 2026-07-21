@@ -168,10 +168,10 @@ const createTargetSelectionMatcher = (targetId, system, catalogueId, { matchCate
  * Aggregation schließt `shared="false"` aus.
  */
 const countWithinConditionInstance = (cond, ctx) => {
-  const { selection, system, roster, parentCatalogueId } = ctx;
+  const { selection, system } = ctx;
   if (!selection) return 0;
 
-  const catalogueId = parentCatalogueId || (roster ? roster.catalogueId : null);
+  const catalogueId = resolveContextCatalogueId(ctx);
   const matchesTarget = createTargetSelectionMatcher(cond.childId || cond.field, system, catalogueId, {
     matchCategoryMembership: true,
     matchUnitsAsModels: true
@@ -185,7 +185,7 @@ const countWithinConditionInstance = (cond, ctx) => {
 
 export const evaluateCondition = (cond, ctx = {}) => {
   if (!cond) return false;
-  const { roster, selectionCounts = {}, forceCategoryCounts = {}, selection, parentSelection, system, parentCatalogueId } = ctx;
+  const { roster, selectionCounts = {}, forceCategoryCounts = {}, selection, parentSelection, system } = ctx;
   let currentValue = 0;
   
   if (isRosterLimitField(cond.field)) {
@@ -199,7 +199,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
     // roster validation, not just in the editor UI.
     const parentScopeTarget = parentSelection || selection;
     if (cond.scope === ConstraintScope.PARENT && parentScopeTarget && parentScopeTarget.selections) {
-      const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
+      const catId = resolveContextCatalogueId(ctx);
       const targetId = cond.childId || cond.field;
       const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
         matchCategoryMembership: true,
@@ -286,7 +286,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
           const sId = sel.selectionEntryId || sel.entryLinkId;
           if (sId === targetChildId) return true;
           
-          const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
+          const catId = resolveContextCatalogueId(ctx);
           const raw = findEntryInSystem(system, sId, catId);
           const res = raw && resolveEntry(system, raw, catId);
           
@@ -354,8 +354,8 @@ const countRepeatOccurrences = (repeat, ctx) => {
   let countedQuantity = 0;
 
   if (repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
-    const { parentCatalogueId, system } = ctx;
-    const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
+    const { system } = ctx;
+    const catId = resolveContextCatalogueId(ctx);
     const targetId = repeat.childId || repeat.field;
     const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
       matchCategoryMembership: false,
