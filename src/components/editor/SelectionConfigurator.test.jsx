@@ -60,6 +60,9 @@ const mockGetUnitOptions = vi.fn();
 // System-Eigenheiten und die Schlüsselwortlisten — reicht der Mock in ihrer
 // echten Umsetzung durch, statt sie zu stubben.
 vi.mock('../../solver/validator', async () => ({
+  // Reine Baum-Primitive: die echte Implementierung durchreichen statt sie im Mock
+  // nachzubauen — ihre Rekursion ist in rosterTree.test.js eigens abgedeckt.
+  findForceContainingSelection: (await vi.importActual('../../solver/rosterTree')).findForceContainingSelection,
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),

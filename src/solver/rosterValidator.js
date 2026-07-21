@@ -72,6 +72,37 @@ function pushViolation(errors, violation) {
 }
 
 /**
+ * @typedef {Object} ValidationContext Alles, was während der Prüfung einer Force
+ *   unverändert bleibt. Jede `check*`-Funktion nimmt genau dieses Bündel entgegen,
+ *   statt seine Felder einzeln durchzureichen; nur der jeweils geprüfte Gegenstand
+ *   (Selection, Eintrag, Constraint) kommt als eigenes Argument dazu.
+ * @property {import('../types.js').Roster} roster  das geprüfte Roster.
+ * @property {Object} system            das geparste Spielsystem (gst + Kataloge).
+ * @property {Object} force             die gerade geprüfte Force.
+ * @property {Object} forceDef          ihre forceEntry-Definition im System.
+ * @property {Object} counts            die vorberechneten Zählungen des Rosters.
+ * @property {string} forceCatalogueId  Katalog, gegen den Verweise dieser Force auflösen.
+ * @property {import('../types.js').ValidationError[]} errors  Sammelziel aller Verstöße.
+ */
+
+/**
+ * Bündelt den unveränderlichen Prüfkontext einer Force. Der Katalog der Force wird
+ * hier einmal festgelegt, statt ihn in jedem Prüfschritt erneut herzuleiten.
+ * @returns {ValidationContext}
+ */
+function buildValidationContext({ roster, system, force, forceDef, counts, errors }) {
+  return {
+    roster,
+    system,
+    force,
+    forceDef,
+    counts,
+    forceCatalogueId: force.catalogueId || roster.catalogueId,
+    errors
+  };
+}
+
+/**
  * Validates a roster against a game system's rules and constraints.
  * @param {import('../types.js').Roster} roster
  * @param {Object} system
@@ -89,12 +120,14 @@ export function validateRoster(roster, system) {
     const forceDef = findForceEntryById(system, force.forceEntryId);
     if (!forceDef) return;
 
-    checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors });
-    checkMandatoryForceSelectors({ roster, system, force, forceDef, counts, errors });
-    checkForceOwnRosterPointsLimit({ roster, forceDef, errors });
+    const context = buildValidationContext({ roster, system, force, forceDef, counts, errors });
 
-    force.selections?.forEach(sel =>
-      checkSelectionTree({ selection: sel, parentSelection: null, roster, system, force, counts, errors })
+    checkForceCategoryLimits(context);
+    checkMandatoryForceSelectors(context);
+    checkForceOwnRosterPointsLimit(context);
+
+    force.selections?.forEach(selection =>
+      checkSelectionTree({ selection, parentSelection: null }, context)
     );
   });
 
@@ -137,7 +170,10 @@ function checkRosterCostLimit(roster, system, errors) {
 // Synthetische ID des per System-Quirk von einer anderen Kategorie geerbten max-Constraints.
 const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
 
-/** Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit). */
+/**
+ * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
+ * @param {ValidationContext} context
+ */
 function checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors }) {
   const { selectionCounts, categoryCounts } = counts;
 
@@ -145,7 +181,7 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
     const targetCatId = catLink.targetId;
     const forceCategoryCounts = categoryCounts[force.id] || {};
 
-    if (isCategoryLinkHidden(catLink, system, roster, selectionCounts, forceCategoryCounts)) {
+    if (isCategoryLinkHidden(catLink, { system, roster, selectionCounts, forceCategoryCounts })) {
       return;
     }
 
@@ -185,17 +221,17 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
  * Count bleibt bei der eintragsweisen Prüfung, damit kein Fehler doppelt erscheint.
  * Versteckte Selektoren (nur in bestimmten Armee-Varianten wählbar) werden übersprungen,
  * damit ihre Pflicht nicht für Armeen greift, die sie nicht nehmen können.
+ * @param {ValidationContext} context
  */
-function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts, errors }) {
+function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts, errors, forceCatalogueId }) {
   const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
   const forceCategoryCounts = categoryCounts[force.id] || {};
   const forceCounts = forceSelectionCounts[force.id] || {};
-  const catalogueId = force.catalogueId || roster.catalogueId;
 
-  collectForceScopedMinSelectors(system, catalogueId).forEach(({ entry, minConstraint }) => {
-    if (isSelectionEntryHidden(entry, system, roster, selectionCounts, forceCategoryCounts, force)) return;
+  collectForceScopedMinSelectors(system, forceCatalogueId).forEach(({ entry, minConstraint }) => {
+    if (isSelectionEntryHidden(entry, { system, roster, selectionCounts, forceCategoryCounts, force })) return;
 
-    const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: catalogueId };
+    const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
     const minValue = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(entry), ctx);
     if (minValue <= 0) return;
 
@@ -229,6 +265,7 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
  *
  * Keine generische Auswertung forceEntry-eigener Modifier auf beliebige Constraints —
  * dafür existiert kein realer Anwendungsfall.
+ * @param {ValidationContext} context
  */
 function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
   const limitConstraints = (forceDef.constraints || []).filter(isRosterPointsLimitConstraint);
@@ -346,12 +383,15 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
   }
 }
 
-/** Eine Selection samt Kindern rekursiv gegen ihre Entry- und Gruppen-Constraints prüfen. */
-function checkSelectionTree(args) {
-  const { selection, roster, system, force, errors } = args;
+/**
+ * Eine Selection samt Kindern rekursiv gegen ihre Entry- und Gruppen-Constraints prüfen.
+ * @param {{selection: Object, parentSelection: Object|null}} subject
+ * @param {ValidationContext} context
+ */
+function checkSelectionTree({ selection, parentSelection }, context) {
+  const { system, errors, forceCatalogueId } = context;
 
   const entryId = selection.entryLinkId || selection.selectionEntryId;
-  const forceCatalogueId = force?.catalogueId || roster.catalogueId;
   const rawEntry = findEntryInSystem(system, entryId, forceCatalogueId);
   const entry = resolveEntry(system, rawEntry, forceCatalogueId);
 
@@ -365,13 +405,13 @@ function checkSelectionTree(args) {
       severity: ValidationSeverity.ERROR
     });
   } else {
-    checkEntryConstraints({ ...args, entry, entryId, forceCatalogueId });
-    checkGroupConstraints({ ...args, entry, forceCatalogueId });
-    checkSelectionMessages({ ...args, entry, forceCatalogueId });
+    checkEntryConstraints({ selection, parentSelection, entry, entryId }, context);
+    checkGroupConstraints({ selection, entry }, context);
+    checkSelectionMessages({ selection, parentSelection, entry }, context);
   }
 
   selection.selections?.forEach(child =>
-    checkSelectionTree({ ...args, selection: child, parentSelection: selection })
+    checkSelectionTree({ selection: child, parentSelection: selection }, context)
   );
 }
 
@@ -382,7 +422,8 @@ function checkSelectionTree(args) {
  * blockiert wie ein Regelverstoß, `warning`/`info` sind rein informativ. Die
  * Bedingungsauswertung teilt sich denselben ctx wie die Constraint-Prüfung (SSOT).
  */
-function checkSelectionMessages({ selection, parentSelection, roster, system, force, counts, errors, entry, forceCatalogueId }) {
+function checkSelectionMessages({ selection, parentSelection, entry }, context) {
+  const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const { selectionCounts, categoryCounts } = counts;
   const ctx = {
     roster,
@@ -405,10 +446,15 @@ function checkSelectionMessages({ selection, parentSelection, roster, system, fo
   });
 }
 
-/** Individuelle Constraints des aufgelösten Eintrags prüfen (min/max/percent je Scope). */
-function checkEntryConstraints({ selection, parentSelection, roster, system, force, counts, errors, entry, entryId, forceCatalogueId }) {
+/**
+ * Individuelle Constraints des aufgelösten Eintrags prüfen (min/max/percent je Scope).
+ * @param {{selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
+ * @param {ValidationContext} context
+ */
+function checkEntryConstraints({ selection, parentSelection, entry, entryId }, context) {
   if (!entry.constraints) return;
 
+  const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
   const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
 
@@ -473,7 +519,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
     }
 
     if (isPercentConstraint(con)) {
-      checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection, roster, system, force, forceCatalogueId, counts, errors });
+      checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection }, context);
       return;
     }
 
@@ -501,7 +547,8 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
  * ist die Summe des Feldes im Scope, der Grenzwert `value%` davon. Punkte-Felder
  * werden gegen die Kosten des Eintrags, `selections` gegen dessen Anzahl geprüft.
  */
-function checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection, roster, system, force, forceCatalogueId, counts, errors }) {
+function checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection }, context) {
+  const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const measuresCost = isCostField(con.field, system, roster);
   const subject = measuresCost
     ? getSelectionTotalCost(selection, con.field, TOP_LEVEL_PARENT_COUNT, {
@@ -530,7 +577,8 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
 }
 
 /** Constraints aller SelectionEntryGroups des Eintrags prüfen (Anzahl- und Punkte-Limits). */
-function checkGroupConstraints({ selection, roster, system, force, counts, errors, entry, forceCatalogueId }) {
+function checkGroupConstraints({ selection, entry }, context) {
+  const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const { selectionCounts, categoryCounts } = counts;
   const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
 
@@ -630,7 +678,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
       const measuresCost = isCostField(con.field, system, roster);
 
       if (isPercentConstraint(con)) {
-        checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection, roster, system, force, forceCatalogueId, counts, errors });
+        checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection }, context);
         return;
       }
 
@@ -677,7 +725,8 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
  * Prüft eine Prozent-Constraint (percentValue) einer SelectionEntryGroup: die
  * Gruppensumme (Punkte oder Anzahl) gegen `value%` der Bezugsgröße im Scope.
  */
-function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection, roster, system, force, forceCatalogueId, counts, errors }) {
+function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection }, context) {
+  const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const subject = measuresCost ? totalPoints : totalCount;
   const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection: selection, forceCatalogueId, counts });
   const unit = measuresCost ? 'Punkte' : 'Auswahlen';

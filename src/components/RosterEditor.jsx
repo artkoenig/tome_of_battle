@@ -199,7 +199,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           return (
             <div key={force.id} className="force-editor-section">
               {categoryLinks.map(link => {
-                  const isHidden = isCategoryLinkHidden(link, system, roster, selectionCounts, forceCategoryCounts);
+                  const isHidden = isCategoryLinkHidden(link, { system, roster, selectionCounts, forceCategoryCounts });
                   const selections = childSelectionsOf(force).filter(s => s.category === link.targetId);
 
                   // A list-rule group (data-driven: catalog type = upgrade, ADR 0003)

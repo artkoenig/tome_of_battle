@@ -26,7 +26,7 @@ import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '.
 import useViewportHeight from './hooks/useViewportHeight';
 import usePwaLifecycle from './hooks/usePwaLifecycle';
 import { getDiffChanges } from './utils/releaseDiff';
-import { DEFAULT_ROSTER_COST_LIMIT } from './utils/rosterDefaults';
+import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './utils/rosterDefaults';
 import { VIEWS, isImmersiveView } from './constants/views';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -258,12 +258,7 @@ export default function App() {
         catalogueId: catId,
         selections: []
       }],
-      gameState: {
-        round: 1,
-        vp: 0,
-        cp: 0,
-        wounds: {}
-      }
+      gameState: createInitialGameState()
     };
 
     try {

@@ -3,6 +3,7 @@ import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEf
 import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
+import { findForceContainingSelection } from './rosterTree.js';
 import '../types.js';
 
 /**
@@ -21,15 +22,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
     const counts = computeRosterCounts(roster, system);
     selectionCounts = counts.selectionCounts;
     if (roster.forces) {
-      const containsSel = (list) => {
-        if (!list) return false;
-        for (const s of list) {
-          if (s.id === selection.id) return true;
-          if (containsSel(s.selections)) return true;
-        }
-        return false;
-      };
-      const activeForce = roster.forces.find(f => containsSel(f.selections));
+      const activeForce = findForceContainingSelection(roster, selection.id);
       if (activeForce) {
         forceCategoryCounts = counts.categoryCounts[activeForce.id] || {};
       } else {

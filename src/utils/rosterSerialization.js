@@ -4,7 +4,7 @@ import {
   findEntryInSystem, resolveEntry, childSelectionsOf, effectiveCountOf, foldSelectionTree,
   mapSelectionTree, TOP_LEVEL_PARENT_COUNT, isIndependentSubUnit
 } from '../solver/validator.js';
-import { DEFAULT_ROSTER_COST_LIMIT } from './rosterDefaults.js';
+import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults.js';
 // Decimal places kept when serializing costs, to strip floating-point artifacts
 // introduced by cost-modifier arithmetic.
 const COST_DECIMAL_PRECISION = 6;
@@ -340,12 +340,7 @@ export function importRosterFromXml(xmlText, systems) {
     costLimit,
     costLimitType,
     forces,
-    gameState: {
-      round: 1,
-      vp: 0,
-      cp: 0,
-      wounds: {}
-    }
+    gameState: createInitialGameState()
   };
 }
 

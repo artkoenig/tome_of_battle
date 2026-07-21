@@ -45,6 +45,9 @@ const mockIsOptionRosterUnique = vi.fn();
 // echte Umsetzung durch, statt sie zu stubben.
 vi.mock('../../solver/validator', async () => ({
   isEntryScope: (await vi.importActual('../../solver/battlescribeConstants')).isEntryScope,
+  // Reine Baum-Primitive: die echte Implementierung durchreichen statt sie im Mock
+  // nachzubauen — ihre Rekursion ist in rosterTree.test.js eigens abgedeckt.
+  findForceContainingSelection: (await vi.importActual('../../solver/rosterTree')).findForceContainingSelection,
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   getModifiedConstraintValue: (...args) => mockGetModifiedConstraintValue(...args),
