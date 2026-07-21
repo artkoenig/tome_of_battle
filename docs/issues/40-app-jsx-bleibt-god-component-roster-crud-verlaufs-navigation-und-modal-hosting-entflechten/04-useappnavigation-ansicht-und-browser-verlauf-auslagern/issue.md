@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -22,3 +22,4 @@ Wiederherstellung des Rosters) unverändert.
   Unit-Tests; `src/App.test.jsx` bleibt unverändert grün.
 
 ## Comments
+- Ansichts-Zustand (view), Auswahl-SSOT (selectedRosterId), navigate sowie die Verlauf-Kopplung (replaceState-Seed + popstate-Listener, push/replaceState) in src/hooks/useAppNavigation.js gebündelt. Kein Router-Paket (ADR-0005 §5) — Navigation bleibt App-Zustand. App.jsx verdrahtet nur noch view/selectedRosterId/navigate. Vor-/Zurück-Navigation unverändert; eigene Unit-Tests; App.test.jsx unverändert grün.

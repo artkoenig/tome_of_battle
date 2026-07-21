@@ -14,14 +14,12 @@ import { SettingsProvider } from './contexts/SettingsContext';
 import useViewportHeight from './hooks/useViewportHeight';
 import usePwaLifecycle from './hooks/usePwaLifecycle';
 import useToast from './hooks/useToast';
+import useAppNavigation from './hooks/useAppNavigation';
 import useAppData from './hooks/useAppData';
 import useRosterList from './hooks/useRosterList';
 import { getDiffChanges } from './utils/releaseDiff';
 import { VIEWS, isImmersiveView } from './constants/views';
 import { Analytics } from '@vercel/analytics/react';
-
-/** Der Ausgangspunkt der Verlaufs-Navigation: das Heerlager ohne offenes Roster. */
-const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: null });
 
 export default function App() {
   // Keep --app-vh in sync with the real visible viewport height so mobile
@@ -29,11 +27,7 @@ export default function App() {
   // visible below collapsing browser chrome.
   useViewportHeight();
 
-  const [view, setView] = useState(VIEWS.ROSTERS);
-  // Einzige Quelle der Wahrheit für die Auswahl: die ID. Roster und System
-  // werden daraus abgeleitet, damit eine Änderung an der Liste (etwa ein
-  // Umbenennen) sofort in der geöffneten Ansicht sichtbar wird.
-  const [selectedRosterId, setSelectedRosterId] = useState(null);
+  const { view, selectedRosterId, navigate } = useAppNavigation();
 
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const {
@@ -45,22 +39,6 @@ export default function App() {
   } = usePwaLifecycle();
   const { toast, showToast, reportError } = useToast();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  // Navigates to a view and pushes a history entry, so the browser back button
-  // returns to whatever view/roster was active before this call.
-  const navigate = (nextView, rosterId = null) => {
-    const isSameEntry = nextView === view && rosterId === selectedRosterId;
-    const historyState = { view: nextView, rosterId };
-
-    if (isSameEntry) {
-      window.history.replaceState(historyState, '');
-    } else {
-      window.history.pushState(historyState, '');
-    }
-
-    setView(nextView);
-    setSelectedRosterId(rosterId);
-  };
 
   const {
     systems,
@@ -91,24 +69,6 @@ export default function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
-
-  // Seed a base history entry so the first back-navigation has a defined target.
-  useEffect(() => {
-    window.history.replaceState(INITIAL_HISTORY_STATE, '');
-  }, []);
-
-  // Support the browser/hardware back button: restore the view (and the selected
-  // roster) that was active at that point in history, instead of leaving the app.
-  useEffect(() => {
-    const handlePopState = (event) => {
-      const state = event.state || INITIAL_HISTORY_STATE;
-      setSelectedRosterId(state.rosterId || null);
-      setView(state.view || VIEWS.ROSTERS);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const {
