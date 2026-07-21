@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -55,3 +55,4 @@ Kind-Issue 47/02. Setzt Issue 47 und ADR 0003 §3a fort.
 - [ ] `npm test` grün, `npm run lint` 0 Fehler / 0 Warnungen.
 
 ## Comments
+- Beide Kind-Issues umgesetzt und gemergt. Lint exit 0, 1070 Tests gruen (vorher 1065), E2E gruen, Build gruen. Kind 01: Regressionsabsicherung unabhaengig gegengeprueft - mit zurueckgedrehter Zeile fallen alle vier neuen Tests. Kind 02 hat ueber den Auftrag hinaus eine echte Duplizierung in rosterSync.js aufgeloest (withForcesMapped/withSelectionsMapped/catalogueEntryOf jetzt von beiden Funktionen geteilt), Verhalten unveraendert. Version bleibt auf Maintainer-Entscheidung bei 1.4.1: der behobene Fehler ist mit den heutigen Katalogdaten nicht ausloesbar, fuer Nutzer aendert sich nichts Sichtbares.
