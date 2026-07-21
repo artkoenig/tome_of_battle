@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: refactor
 Blocked by: None
 
@@ -61,3 +61,4 @@ Herkunft: Neubewertung gegen `architecture-principles` /
 - [ ] Import einer fremden Roster-Datei funktioniert unverändert (E2E).
 
 ## Comments
+- superseded: Aufgegangen in 49-constraint-kostenart-und-import-ohne-mutation/02, das denselben Umbau spezifiziert und die offene Triage-Frage beantwortet enthaelt (der boolean-Rueckgabewert steuert nichts und entfaellt ersatzlos).

@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: fix
 Blocked by: None
 
@@ -59,3 +59,4 @@ Risiko. Siehe auch ADR 0003 §3a.
 - [ ] `npm test` grün, `npm run lint` 0 Fehler / 0 Warnungen.
 
 ## Comments
+- superseded: Aufgegangen in 49-constraint-kostenart-und-import-ohne-mutation/01, das denselben Fehler spezifiziert und die offene Triage-Frage beantwortet enthaelt (kein realer Katalog fuehrt eine Constraint auf einer Nicht-Punkte-Kostenart; der Fehler ist latent).

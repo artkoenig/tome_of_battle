@@ -321,7 +321,7 @@ export default function App() {
       if (system) {
         // Imported files reference options by target id; realign them to the
         // catalogue link ids the editor matches before syncing names/costs.
-        reconcileImportedSelectionIds(newRoster, system);
+        newRoster = reconcileImportedSelectionIds(newRoster, system);
         newRoster = syncRosterSelectionsWithSystem(newRoster, system);
       }
 

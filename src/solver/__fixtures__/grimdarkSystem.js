@@ -6,10 +6,8 @@
  * Gruppenlimits, die die Solver-Tests belegen wollen.
  *
  * Jede Funktion liefert eine **frische** Struktur. Der Solver legt Caches
- * (`_entryCache`) an den Katalogen ab und einige Aufrufe (z. B.
- * `reconcileImportedSelectionIds`) mutieren das Roster — geteilte
- * Modulkonstanten würden Tests voneinander abhängig machen (FIRST:
- * *Independent*).
+ * (`_entryCache`) an den Katalogen ab — geteilte Modulkonstanten würden Tests
+ * voneinander abhängig machen (FIRST: *Independent*).
  */
 
 /**

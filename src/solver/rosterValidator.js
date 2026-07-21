@@ -670,37 +670,41 @@ function checkGroupConstraints({ selection, entry }, context) {
 
       const matchingSelections = collectGroupMatches(selection.selections, con.includeChildSelections);
       const totalCount = matchingSelections.reduce((sum, s) => sum + (s.number || 1), 0);
-      const totalPoints = matchingSelections.reduce((sum, s) => {
-        const pts = getSelectionTotalCost(s, roster.costLimitType, TOP_LEVEL_PARENT_COUNT, {
-          system, roster, currentCatalogueId: forceCatalogueId, parentSelection: selection, counts
-        });
-        return sum + pts;
-      }, 0);
 
       const measuresCost = isCostField(con.field, system, roster);
+      // Summiert wird die Kostenart, die die Constraint selbst nennt (`con.field`),
+      // nicht die des Rosters: eine Gruppengrenze darf eine andere Kostenart messen
+      // („höchstens 5 Zauberwürfel") als die, nach der die Liste gebaut wird. Über
+      // `roster.costLimitType` zu summieren vergliche Punkte gegen eine Würfelgrenze
+      // (ADR-0003 §3a).
+      const totalCost = measuresCost
+        ? matchingSelections.reduce((sum, s) => sum + getSelectionTotalCost(s, con.field, TOP_LEVEL_PARENT_COUNT, {
+            system, roster, currentCatalogueId: forceCatalogueId, parentSelection: selection, counts
+          }), 0)
+        : 0;
 
       if (isPercentConstraint(con)) {
-        checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection }, context);
+        checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, measuresCost, group, selection }, context);
         return;
       }
 
       if (measuresCost) {
-        // `totalPoints` ist über die Kostenart des Rosters summiert — die Meldung
-        // benennt daher genau diese Kostenart, nicht eine festgeschriebene Einheit.
-        const costLabel = resolveCostLimitLabel(roster, system);
-        if (con.type === 'max' && totalPoints > finalValue) {
+        // `totalCost` ist über `con.field` summiert — die Meldung benennt daher
+        // genau diese Kostenart, nicht eine festgeschriebene Einheit.
+        const costLabel = resolveCostTypeLabel(system, con.field);
+        if (con.type === 'max' && totalCost > finalValue) {
           pushViolation(errors, {
             type: 'group-points-max',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} ${costLabel} (aktuell: ${totalPoints} ${costLabel} für ${selection.name}).`,
+            message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} ${costLabel} (aktuell: ${totalCost} ${costLabel} für ${selection.name}).`,
             severity: ValidationSeverity.ERROR
           });
         }
-        if (con.type === 'min' && totalPoints < finalValue && totalPoints > 0) {
+        if (con.type === 'min' && totalCost < finalValue && totalCost > 0) {
           pushViolation(errors, {
             type: 'group-points-min',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} ${costLabel} (aktuell: ${totalPoints} ${costLabel} für ${selection.name}).`,
+            message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} ${costLabel} (aktuell: ${totalCost} ${costLabel} für ${selection.name}).`,
             severity: ValidationSeverity.ERROR
           });
         }
@@ -728,15 +732,16 @@ function checkGroupConstraints({ selection, entry }, context) {
 
 /**
  * Prüft eine Prozent-Constraint (percentValue) einer SelectionEntryGroup: die
- * Gruppensumme (Punkte oder Anzahl) gegen `value%` der Bezugsgröße im Scope.
+ * Gruppensumme (Kosten oder Anzahl) gegen `value%` der Bezugsgröße im Scope.
  */
-function checkGroupPercentConstraint({ con, finalValue, totalCount, totalPoints, measuresCost, group, selection }, context) {
+function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, measuresCost, group, selection }, context) {
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
-  const subject = measuresCost ? totalPoints : totalCount;
+  const subject = measuresCost ? totalCost : totalCount;
   const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection: selection, forceCatalogueId, counts });
-  // `totalPoints` wird über die Kostenart des Rosters summiert (siehe
-  // checkGroupConstraints) — die Bezeichnung muss dieselbe Kostenart benennen.
-  const unit = measuresCost ? resolveCostLimitLabel(roster, system) : 'Auswahlen';
+  // `totalCost` wird über `con.field` summiert (siehe checkGroupConstraints) — die
+  // Bezeichnung muss dieselbe Kostenart benennen. `getScopeReferenceTotal` bildet
+  // die Bezugsgröße derselben Kostenart, Zähler und Nenner passen also zusammen.
+  const unit = measuresCost ? resolveCostTypeLabel(system, con.field) : 'Auswahlen';
 
   if (con.type === 'min' && subject < threshold) {
     pushViolation(errors, {
