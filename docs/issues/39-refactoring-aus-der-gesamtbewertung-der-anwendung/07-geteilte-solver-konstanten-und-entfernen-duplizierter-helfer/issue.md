@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -64,3 +64,4 @@ einmal im Solver definieren.
 ## Comments
 
 Übernommen aus Issue 28 (Punkt 3, duplizierte Zähllogik).
+- Gemeinsame Konstantenquelle src/solver/battlescribeConstants.js (ConstraintScope, isEntryScope, ROSTER_LIMIT_FIELD_PREFIX) angelegt und alle handgeschriebenen Scope-/Limit-Literale in Solver und Komponenten darauf verpflichtet; Eintragsarten kommen nun durchgaengig aus SelectionEntryKind. Die lokale Kopie des Force-Eintrag-Lookups im Modifier-Evaluator ist entfernt (nutzt findForceEntryById), das Praedikat 'eigenstaendige Untereinheit' liegt genau einmal in src/solver/subUnit.js (fehlendes collective = nicht kollektiv, XSD-Vorgabe) und loest sechs Kopien ab. Punktelimit-Vorgabe zentral in src/utils/rosterDefaults.js. Offen: das nackte 2000-Literal und die Toast-Dauer 3000 in App.jsx - App.jsx gehoert zum parallel laufenden Kind-Issue 04 und wurde bewusst nicht angefasst.

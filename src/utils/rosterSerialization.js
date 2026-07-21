@@ -2,11 +2,9 @@ import JSZip from 'jszip';
 import {
   calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, getEffectiveSelectionName,
   findEntryInSystem, resolveEntry, childSelectionsOf, effectiveCountOf, foldSelectionTree,
-  mapSelectionTree, TOP_LEVEL_PARENT_COUNT
+  mapSelectionTree, TOP_LEVEL_PARENT_COUNT, isIndependentSubUnit
 } from '../solver/validator.js';
-
-// Fallback point limit applied when a roster file declares none.
-const DEFAULT_COST_LIMIT = 2000;
+import { DEFAULT_ROSTER_COST_LIMIT } from './rosterDefaults.js';
 // Decimal places kept when serializing costs, to strip floating-point artifacts
 // introduced by cost-modifier arithmetic.
 const COST_DECIMAL_PRECISION = 6;
@@ -77,7 +75,7 @@ export function exportRosterToXml(roster, system) {
   const limitType = roster.costLimitType || system?.costTypes?.[0]?.id || 'pts';
   const limitTypeDef = system?.costTypes?.find(ct => ct.id === limitType);
   const limitName = limitTypeDef?.name || 'pts';
-  const limitValue = roster.costLimit ?? DEFAULT_COST_LIMIT;
+  const limitValue = roster.costLimit ?? DEFAULT_ROSTER_COST_LIMIT;
   xml += '  <costLimits>\n';
   xml += `    <costLimit name="${escapeXml(limitName)}" typeId="${escapeXml(limitType)}" value="${limitValue}"/>\n`;
   xml += '  </costLimits>\n';
@@ -321,7 +319,7 @@ function parseCostLimit(root, costLimitType) {
   }
 
   const attributeValue = parseInt(root.getAttribute('costLimit'), 10);
-  return Number.isFinite(attributeValue) ? attributeValue : DEFAULT_COST_LIMIT;
+  return Number.isFinite(attributeValue) ? attributeValue : DEFAULT_ROSTER_COST_LIMIT;
 }
 
 /**
@@ -398,16 +396,9 @@ function checkNeedsSplit(selection, system) {
   const resolved = resolveEntry(system, entry);
   if (!resolved) return false;
 
-  // Split if type is unit/model, collective is false (default), and it has catalog options/children
-  const isIndependent = (resolved.type === 'unit' || resolved.type === 'model') &&
-                        (resolved.collective !== true && resolved.collective !== 'true');
-  if (!isIndependent) return false;
-
-  const hasCatalogChildren = (resolved.selectionEntries && resolved.selectionEntries.length > 0) ||
-                             (resolved.entryLinks && resolved.entryLinks.length > 0) ||
-                             (resolved.selectionEntryGroups && resolved.selectionEntryGroups.length > 0);
-  
-  return !!hasCatalogChildren;
+  // Aufteilen, wenn der Eintrag eine eigenständige Untereinheit ist — also je
+  // Instanz einzeln konfiguriert wird statt als eine kollektive Auswahl.
+  return isIndependentSubUnit(resolved);
 }
 
 

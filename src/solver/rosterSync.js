@@ -1,23 +1,12 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getUnitOptions } from './optionsCollector.js';
 import { childSelectionsOf, mapSelectionTree } from './rosterTree.js';
+import { isIndependentSubUnit } from './subUnit.js';
 import '../types.js';
 
 /** Leere Force-Liste für Roster ohne `forces` — vermeidet Sonderfälle im Ablauf. */
 const NO_FORCES = Object.freeze([]);
 
-function hasEntryChildren(res) {
-  if (!res) return false;
-  return (res.selectionEntries && res.selectionEntries.length > 0) ||
-         (res.entryLinks && res.entryLinks.length > 0) ||
-         (res.selectionEntryGroups && res.selectionEntryGroups.length > 0);
-}
-
-function isIndependentSubUnit(res) {
-  return res && (res.type === 'unit' || res.type === 'model') &&
-         (res.collective === false || res.collective === 'false') &&
-         hasEntryChildren(res);
-}
 
 /**
  * Rewrites imported option selections so they reference catalogue entries the same

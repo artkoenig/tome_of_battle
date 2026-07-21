@@ -37,7 +37,10 @@ const mockComputeRosterCounts = vi.fn();
 const mockGetOptionDisplayCost = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
 
-vi.mock('../../solver/validator', () => ({
+// Scope-Klassifikation ist eine reine Funktion ohne eigene Abhängigkeiten —
+// der Mock reicht die echte Umsetzung durch, statt sie zu stubben.
+vi.mock('../../solver/validator', async () => ({
+  isEntryScope: (await vi.importActual('../../solver/battlescribeConstants')).isEntryScope,
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   getModifiedConstraintValue: (...args) => mockGetModifiedConstraintValue(...args),

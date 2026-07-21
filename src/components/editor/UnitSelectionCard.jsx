@@ -7,7 +7,8 @@ import {
   findEntryInSystem,
   calculateRosterCosts,
   collectUnitProfilesAndRules,
-  getEffectiveSelectionName
+  getEffectiveSelectionName,
+  isIndependentSubUnit
 } from '../../solver/validator';
 import { groupProfilesByType } from '../../solver/rulesEvaluator';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
@@ -219,14 +220,8 @@ export default function UnitSelectionCard({
     const entry = findEntryInSystem(system, entryId, activeCatalogue?.id);
     const resolved = resolveEntry(system, entry, activeCatalogue?.id);
     
-    const hasEntryChildren = (entryNode) => {
-      if (!entryNode) return false;
-      return (entryNode.selectionEntries && entryNode.selectionEntries.length > 0) ||
-             (entryNode.entryLinks && entryNode.entryLinks.length > 0) ||
-             (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
-    };
     
-    return resolved && (resolved.type === 'unit' || resolved.type === 'model') && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+    return isIndependentSubUnit(resolved);
   });
 
   return (

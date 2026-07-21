@@ -1,6 +1,10 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { childSelectionsOf, countSelections, someSelectionInSubtree } from './rosterTree.js';
-import { ModifierKind, ConditionKind, AttributeName } from '../parser/schema/battlescribeSchema.generated.js';
+import { findForceEntryById } from './forceEntries.js';
+import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
+import {
+  ModifierKind, ConditionKind, AttributeName, SelectionEntryKind
+} from '../parser/schema/battlescribeSchema.generated.js';
 
 // The BattleScribe modifiers that mutate category membership / the primary flag all
 // declare `field="category"`; their `value` is the target category id.
@@ -27,14 +31,14 @@ const selectionEntryHasCategory = (sel, categoryId, system, catalogueId) => {
 const selectionHasCategory = (sel, categoryId, system, catalogueId) =>
   someSelectionInSubtree(sel, node => selectionEntryHasCategory(node, categoryId, system, catalogueId));
 
-// The BattleScribe `scope` keywords that are NOT entry ids. Any other scope value on an
-// instanceOf condition is a selection-entry id (see the self-scope handling below).
-const NON_ENTRY_SCOPE_KEYWORDS = ['parent', 'force', 'roster'];
-
 // Type-keyword childIds ("any model", "any unit", ...) are resolved by the generic
 // instanceOf path, not by the self-scope subtree search, which targets a concrete
-// category/entry id.
-const INSTANCE_TYPE_CHILD_IDS = ['model', 'unit', 'upgrade', 'any'];
+// category/entry id. The entry kinds come from the schema SSOT; `any` is the extra
+// BattleScribe wildcard that has no counterpart as a selection entry type.
+const ANY_INSTANCE_TYPE_CHILD_ID = 'any';
+const INSTANCE_TYPE_CHILD_IDS = Object.freeze([
+  ...Object.values(SelectionEntryKind), ANY_INSTANCE_TYPE_CHILD_ID
+]);
 
 // A ctx flag that marks we are already resolving effective categories for a self-scope
 // instanceOf condition. It bounds recursion to one level: a category modifier whose own
@@ -101,7 +105,7 @@ const subtreeHasInstanceOf = (sel, childId, ctx) =>
 
 // The BattleScribe target keyword that matches any model-like selection rather
 // than one concrete entry id.
-const MODEL_TARGET_KEYWORD = 'model';
+const MODEL_TARGET_KEYWORD = SelectionEntryKind.MODEL;
 
 /**
  * Builds the predicate that decides whether a selection counts towards a
@@ -117,7 +121,9 @@ const MODEL_TARGET_KEYWORD = 'model';
  */
 const createTargetSelectionMatcher = (targetId, system, catalogueId, { matchCategoryMembership, matchUnitsAsModels }) => {
   const canonicalTargetId = resolveCanonicalTargetId(targetId, system, catalogueId);
-  const modelLikeTypes = matchUnitsAsModels ? [MODEL_TARGET_KEYWORD, 'unit'] : [MODEL_TARGET_KEYWORD];
+  const modelLikeTypes = matchUnitsAsModels
+    ? [MODEL_TARGET_KEYWORD, SelectionEntryKind.UNIT]
+    : [MODEL_TARGET_KEYWORD];
 
   return (sel) => {
     const sId = sel.entryLinkId || sel.selectionEntryId;
@@ -144,7 +150,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
   const { roster, selectionCounts = {}, forceCategoryCounts = {}, selection, parentSelection, system, parentCatalogueId } = ctx;
   let currentValue = 0;
   
-  if (cond.field && cond.field.startsWith('limit::')) {
+  if (isRosterLimitField(cond.field)) {
     currentValue = roster?.costLimit || 0;
   } else if (cond.field) {
     // For parent-scoped conditions the "parent" is the selection that holds the
@@ -154,7 +160,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
     // e.g. "you may take more than one Dispel Scroll" also resolves during
     // roster validation, not just in the editor UI.
     const parentScopeTarget = parentSelection || selection;
-    if (cond.scope === 'parent' && parentScopeTarget && parentScopeTarget.selections) {
+    if (cond.scope === ConstraintScope.PARENT && parentScopeTarget && parentScopeTarget.selections) {
       const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
       const targetId = cond.childId || cond.field;
       const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
@@ -204,40 +210,10 @@ export const evaluateCondition = (cond, ctx = {}) => {
       const isNegated = cond.type === ConditionKind.NOT_INSTANCE_OF;
       const evaluateInstanceOf = () => {
         const forceEntryId = cond.scope || cond.childId;
-        if (system && forceEntryId) {
-          const findForceEntryInSystemLocal = (sys, id) => {
-            if (!sys || !id) return null;
-            const findInList = (list, targetId) => {
-              for (const fe of list) {
-                if (fe.id === targetId) return fe;
-                if (fe.forceEntries) {
-                  const sub = findInList(fe.forceEntries, targetId);
-                  if (sub) return sub;
-                }
-              }
-              return null;
-            };
-            if (sys.forceEntries) {
-              const found = findInList(sys.forceEntries, id);
-              if (found) return found;
-            }
-            if (sys.catalogues) {
-              for (const cat of sys.catalogues) {
-                if (cat.forceEntries) {
-                  const found = findInList(cat.forceEntries, id);
-                  if (found) return found;
-                }
-              }
-            }
-            return null;
-          };
-
-          const isForce = findForceEntryInSystemLocal(system, forceEntryId);
-          if (isForce) {
-            const isInstance = (ctx.force?.forceEntryId === forceEntryId) || 
-                               (roster?.forces?.some(f => f.forceEntryId === forceEntryId));
-            return cond.value === 0 ? !isInstance : isInstance;
-          }
+        if (system && forceEntryId && findForceEntryById(system, forceEntryId)) {
+          const isInstance = (ctx.force?.forceEntryId === forceEntryId) ||
+                             (roster?.forces?.some(f => f.forceEntryId === forceEntryId));
+          return cond.value === 0 ? !isInstance : isInstance;
         }
 
         if (!selection || !system) return false;
@@ -250,7 +226,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
         // instead of the generic category-membership check, which never matches here and
         // would leave the attached modifier permanently inactive. Mirrors the existing
         // parent/force/roster special-casing.
-        const scopeNamesEntry = cond.scope && !NON_ENTRY_SCOPE_KEYWORDS.includes(cond.scope);
+        const scopeNamesEntry = !!cond.scope && isEntryScope(cond.scope);
         const childIsConcreteId = cond.childId && !INSTANCE_TYPE_CHILD_IDS.includes(cond.childId);
         if (scopeNamesEntry && childIsConcreteId && !ctx[SELF_SCOPE_CATEGORY_RESOLUTION_FLAG]) {
           const catId = resolveCatalogueId(ctx);
@@ -272,14 +248,17 @@ export const evaluateCondition = (cond, ctx = {}) => {
           const res = raw && resolveEntry(system, raw, catId);
           
           if (res) {
-            if (cond.scope && cond.scope !== 'parent' && cond.scope !== 'force' && cond.scope !== 'roster') {
+            if (cond.scope && isEntryScope(cond.scope)) {
               const hasCat = selectionHasCategory(sel, cond.scope, system, catId);
               if (!hasCat) return false;
             }
             if (res.targetId === targetChildId || res.id === targetChildId) return true;
-            if (targetChildId === 'model' && (res.type === 'model' || res.type === 'unit')) return true;
-            if (targetChildId === 'unit' && res.type === 'unit') return true;
-            if (targetChildId === 'upgrade' && res.type === 'upgrade') return true;
+            // The `model` keyword deliberately also covers `unit` entries; the other
+            // two keywords match their own entry kind exactly.
+            if (targetChildId === SelectionEntryKind.MODEL &&
+                (res.type === SelectionEntryKind.MODEL || res.type === SelectionEntryKind.UNIT)) return true;
+            if (targetChildId === SelectionEntryKind.UNIT && res.type === SelectionEntryKind.UNIT) return true;
+            if (targetChildId === SelectionEntryKind.UPGRADE && res.type === SelectionEntryKind.UPGRADE) return true;
           }
           return false;
         };
@@ -341,7 +320,7 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
         let currentValue = 0;
         const { roster, selectionCounts = {}, forceCategoryCounts = {} } = ctx;
         const targetParent = ctx.parentSelection || ctx.selection;
-        if (mod.repeat.scope === 'parent' && targetParent && targetParent.selections) {
+        if (mod.repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
           const { parentCatalogueId, system } = ctx;
           const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
           const targetId = mod.repeat.childId || mod.repeat.field;
@@ -354,7 +333,7 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
             includeChildSelections: !!mod.repeat.includeChildSelections,
             predicate: matchesTarget
           });
-        } else if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
+        } else if (isRosterLimitField(mod.repeat.field)) {
           currentValue = roster?.costLimit || 0;
         } else if (mod.repeat.childId) {
           currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;

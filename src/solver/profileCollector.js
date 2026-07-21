@@ -2,6 +2,7 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName } from './modifierEvaluator.js';
 import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
+import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
 import '../types.js';
 
 /**
@@ -49,7 +50,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
 
   const getConditionName = (cond) => {
     if (!cond) return '';
-    const targetId = cond.scope && cond.scope !== 'parent' && cond.scope !== 'force' && cond.scope !== 'roster' ? cond.scope : (cond.childId || cond.field);
+    const targetId = cond.scope && isEntryScope(cond.scope) ? cond.scope : (cond.childId || cond.field);
     if (!targetId) return '';
     const entry = findEntryInSystem(system, targetId, activeCatalogueId);
     if (entry) return entry.name;
@@ -83,7 +84,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
   const computeRepeatCount = (mod, ctx) => {
     let currentValue = 0;
     const targetParent = ctx.parentSelection || ctx.selection;
-    if (mod.repeat.scope === 'parent' && targetParent && targetParent.selections) {
+    if (mod.repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
       const catId = activeCatalogueId || (roster ? roster.catalogueId : null);
       const targetId = mod.repeat.childId || mod.repeat.field;
 
@@ -107,7 +108,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
       }, 0);
 
       currentValue = countMatches(targetParent.selections);
-    } else if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
+    } else if (isRosterLimitField(mod.repeat.field)) {
       currentValue = roster?.costLimit || 0;
     } else if (mod.repeat.childId) {
       currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;
