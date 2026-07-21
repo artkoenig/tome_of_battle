@@ -84,7 +84,7 @@ describe('RosterDashboard Component', () => {
     expect(screen.getByText('Empire')).toBeDefined();
     expect(screen.getByText('Empire Army')).toBeDefined();
     expect(screen.getByText('2000')).toBeDefined();
-    expect(screen.getByText('Pkt.')).toBeDefined();
+    expect(screen.getByText('Punkte')).toBeDefined();
   });
 
   it('calls correct actions on button clicks', () => {

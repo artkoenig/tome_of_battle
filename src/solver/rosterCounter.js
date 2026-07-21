@@ -24,6 +24,27 @@ export function resolveCostLimitTypeId(roster, system) {
 }
 
 /**
+ * The display name of a cost type, taken verbatim from the game system's
+ * declaration. This is the single derivation "cost-type id → label"; nothing
+ * else in the application may name a cost type.
+ *
+ * Catalogue authors pad these names with a leading space (`" Casting Dice"`,
+ * `" Dispel Dice"`, `" PL"` in wh40k-9e), so trimming is the *only* alteration
+ * made: the name is never translated, abbreviated or otherwise normalised.
+ *
+ * @returns {string} the trimmed name, or '' if the system declares no such type
+ */
+export function resolveCostTypeLabel(system, costTypeId) {
+  const costType = system?.costTypes?.find(candidate => candidate.id === costTypeId);
+  return costType?.name?.trim() ?? '';
+}
+
+/** The display name of the cost type a roster is measured in. */
+export function resolveCostLimitLabel(roster, system) {
+  return resolveCostTypeLabel(system, resolveCostLimitTypeId(roster, system));
+}
+
+/**
  * @typedef {Object} EvaluationContext
  * The roster-wide state a cost/modifier evaluation needs, threaded as one object
  * instead of as separate positional arguments (matches getSelectionOwnCosts).

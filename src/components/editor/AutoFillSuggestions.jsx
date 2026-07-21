@@ -205,8 +205,8 @@ export default function AutoFillSuggestions({
     <div className="gothic-panel autofill-panel">
       <div className="autofill-header">
         <Wand2 className="text-gold" size={20} />
-        <h3 className="font-serif text-gold no-margin">Punkte auffüllen</h3>
-        <span className="badge badge-muted push-end">{remainingPoints} Pkt. übrig</span>
+        <h3 className="font-serif text-gold no-margin">Budget auffüllen</h3>
+        <span className="badge badge-muted push-end">{remainingPoints} {costTypeLabel} übrig</span>
       </div>
 
       <p className="text-body text-dim autofill-intro">
@@ -229,7 +229,7 @@ export default function AutoFillSuggestions({
                  <div key={idx} className="sub-selection-row autofill-combo-row">
                    <div>
                      <div className="autofill-combo-sum">
-                       Exakt {combo.sum} Pkt.
+                       Exakt {combo.sum} {costTypeLabel}
                      </div>
                      <ul className="autofill-combo-items">
                        {Object.values(grouped).map((g, i) => (
@@ -275,7 +275,7 @@ export default function AutoFillSuggestions({
                 <span className="text-micro text-dim">für {action.selectionName}</span>
               </div>
               <div className="sub-selection-controls autofill-upgrade-controls">
-                <span className="text-gold text-label">+{action.cost} Pkt.</span>
+                <span className="text-gold text-label">+{action.cost} {costTypeLabel}</span>
                 <button 
                   className="btn-secondary square-btn"
                   onClick={() => applySuggestedAction(action)}
