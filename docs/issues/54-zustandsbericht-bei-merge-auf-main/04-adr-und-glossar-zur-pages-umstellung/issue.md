@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -47,3 +47,4 @@ Schnitt: die Entscheidungen stehen bereits fest.
       und bei Bedarf nachgezogen.
 
 ## Comments
+- ADR 0025 angelegt (Pages-Quelle auf GitHub Actions, Jekyll-Build wird mitgefuehrt), ADR-Index ergaenzt, ADR 0007 um den Zustandsbericht-Workflow und ADR 0008 um die Abgrenzung zu Pages erweitert. CONTEXT.md fuehrt den neuen Begriff 'Zustandsbericht'; Deployment/Release/Production bleiben unveraendert an die Anwendungsauslieferung gebunden.
