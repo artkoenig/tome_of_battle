@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
+import { createSubSelectionOperationsMock } from '../test-utils/subSelectionOperationsMock';
 
 // This suite isolates how RosterEditor treats a "list rule" category (catalog
 // type = upgrade, ADR 0003) versus a normal unit category: the list-rule group
@@ -38,7 +39,7 @@ vi.mock('../hooks/useRoster', () => ({
     addUnit: vi.fn(),
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
-    updateSubSelection: vi.fn(),
+    subSelectionOperations: createSubSelectionOperationsMock(),
     updateRosterName: vi.fn(),
     save: vi.fn(),
     undo: vi.fn(),

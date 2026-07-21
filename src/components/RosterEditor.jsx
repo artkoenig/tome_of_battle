@@ -23,7 +23,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     addUnit,
     removeUnit,
     copyUnit,
-    updateSubSelection,
+    subSelectionOperations,
     undo,
     redo,
     canUndo,
@@ -303,7 +303,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                             states={listRuleStates}
                             addUnit={addUnit}
                             removeUnit={removeUnit}
-                            updateSubSelection={updateSubSelection}
+                            subSelectionOperations={subSelectionOperations}
                             costTypeLabel={costTypeLabel}
                             costLimitType={roster.costLimitType}
                             selectionCounts={selectionCounts}
@@ -327,7 +327,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                   costTypeLabel={costTypeLabel}
                                   removeUnit={removeUnit}
                                   copyUnit={copyUnit}
-                                  updateSubSelection={updateSubSelection}
+                                  subSelectionOperations={subSelectionOperations}
                                   activeCatalogue={activeCatalogue}
                                   onShowRule={onShowRule}
                                 />
@@ -372,7 +372,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                           costTypeLabel={costTypeLabel}
                           removeUnit={removeUnit}
                           copyUnit={copyUnit}
-                          updateSubSelection={updateSubSelection}
+                          subSelectionOperations={subSelectionOperations}
                           activeCatalogue={activeCatalogue}
                           onShowRule={onShowRule}
                         />
@@ -400,7 +400,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                                 costTypeLabel={costTypeLabel}
                                 removeUnit={removeUnit}
                                 copyUnit={copyUnit}
-                                updateSubSelection={updateSubSelection}
+                                subSelectionOperations={subSelectionOperations}
                                 activeCatalogue={activeCatalogue}
                                 onShowRule={onShowRule}
                               />
@@ -416,7 +416,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
                   system={system}
                   activeCatalogue={activeCatalogue}
                   remainingPoints={remainingPoints}
-                  updateSubSelection={updateSubSelection}
+                  subSelectionOperations={subSelectionOperations}
                   costTypeLabel={costTypeLabel}
                 />
               )}

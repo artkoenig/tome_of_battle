@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SelectionConfigurator from './SelectionConfigurator';
+import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -73,7 +74,7 @@ vi.mock('../../solver/optionsCollector', () => ({
 }));
 
 describe('SelectionConfigurator Component', () => {
-  const mockUpdateSubSelection = vi.fn();
+  const mockSubSelectionOperations = createSubSelectionOperationsMock();
   const mockSystem = { id: 'sys-1' };
   const mockRoster = {
     costLimitType: 'pts',
@@ -106,7 +107,7 @@ describe('SelectionConfigurator Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
@@ -124,7 +125,7 @@ describe('SelectionConfigurator Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
         isListRule
@@ -147,7 +148,7 @@ describe('SelectionConfigurator Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
@@ -176,7 +177,7 @@ describe('SelectionConfigurator Component', () => {
         selection={selectionWithGrenade}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />
@@ -188,16 +189,16 @@ describe('SelectionConfigurator Component', () => {
     // Click increment
     const plusBtn = screen.getByTestId('icon-plus').closest('button');
     fireEvent.click(plusBtn);
-    expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
-    expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'increment');
+    expect(mockSubSelectionOperations.increaseCount).toHaveBeenCalledTimes(1);
+    expect(mockSubSelectionOperations.increaseCount).toHaveBeenCalledWith('sel-1', mockOption);
 
-    mockUpdateSubSelection.mockClear();
+    mockSubSelectionOperations.increaseCount.mockClear();
 
     // Click decrement
     const minusBtn = screen.getByTestId('icon-minus').closest('button');
     fireEvent.click(minusBtn);
-    expect(mockUpdateSubSelection).toHaveBeenCalledTimes(1);
-    expect(mockUpdateSubSelection).toHaveBeenCalledWith('sel-1', mockOption, 'decrement');
+    expect(mockSubSelectionOperations.decreaseCount).toHaveBeenCalledTimes(1);
+    expect(mockSubSelectionOperations.decreaseCount).toHaveBeenCalledWith('sel-1', mockOption);
   });
 
   it('honors the whfb6 linking setting for standalone mapped options', () => {
@@ -219,7 +220,7 @@ describe('SelectionConfigurator Component', () => {
           selection={mockSelection}
           system={mockSystem}
           roster={mockRoster}
-          updateSubSelection={mockUpdateSubSelection}
+          subSelectionOperations={mockSubSelectionOperations}
           costTypeLabel="Pkt."
           activeCatalogue={mockCatalogue}
         />
@@ -256,7 +257,7 @@ describe('SelectionConfigurator Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRoster}
-        updateSubSelection={mockUpdateSubSelection}
+        subSelectionOperations={mockSubSelectionOperations}
         costTypeLabel="Pkt."
         activeCatalogue={mockCatalogue}
       />

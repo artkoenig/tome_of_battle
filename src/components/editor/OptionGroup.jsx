@@ -29,7 +29,7 @@ export default function OptionGroupComponent({
   system, 
   roster, 
   getSubSelectionCount, 
-  updateSubSelection, 
+  subSelectionOperations,
   costTypeLabel,
   getOptionDescription,
   activeCatalogue,
@@ -332,24 +332,28 @@ export default function OptionGroupComponent({
                 if (isBinary) {
                   if (isRadio) {
                     if (count > 0) {
-                      updateSubSelection(selection.id, option, 'decrement');
+                      subSelectionOperations.decreaseCount(selection.id, option);
                     } else {
                       group.items.forEach(otherItem => {
                         const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                         if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                           const otherCount = getSubSelectionCount(selection, otherRes.id);
                           if (otherCount > 0) {
-                            updateSubSelection(selection.id, otherItem.option, 'decrement');
+                            subSelectionOperations.decreaseCount(selection.id, otherItem.option);
                           }
                         }
                       });
-                      updateSubSelection(selection.id, option, 'increment');
+                      subSelectionOperations.increaseCount(selection.id, option);
                     }
                   } else {
-                    updateSubSelection(selection.id, option, count > 0 ? 'decrement' : 'increment');
+                    if (count > 0) {
+                      subSelectionOperations.decreaseCount(selection.id, option);
+                    } else {
+                      subSelectionOperations.increaseCount(selection.id, option);
+                    }
                   }
                 } else {
-                  updateSubSelection(selection.id, option, 'increment');
+                  subSelectionOperations.increaseCount(selection.id, option);
                 }
               }
             };
@@ -397,18 +401,18 @@ export default function OptionGroupComponent({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (count > 0) {
-                            updateSubSelection(selection.id, option, 'decrement');
+                            subSelectionOperations.decreaseCount(selection.id, option);
                           } else if (!isSelectDisabled) {
                             group.items.forEach(otherItem => {
                               const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                               if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                                 const otherCount = getSubSelectionCount(selection, otherRes.id);
                                 if (otherCount > 0) {
-                                  updateSubSelection(selection.id, otherItem.option, 'decrement');
+                                  subSelectionOperations.decreaseCount(selection.id, otherItem.option);
                                 }
                               }
                             });
-                            updateSubSelection(selection.id, option, 'increment');
+                            subSelectionOperations.increaseCount(selection.id, option);
                           }
                         }}
                         onChange={() => {}}
@@ -421,7 +425,11 @@ export default function OptionGroupComponent({
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) => {
                           if (!isMandatory) {
-                            updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
+                            if (e.target.checked) {
+                              subSelectionOperations.increaseCount(selection.id, option);
+                            } else {
+                              subSelectionOperations.decreaseCount(selection.id, option);
+                            }
                           }
                         }}
                       />
@@ -432,7 +440,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'decrement');
+                          subSelectionOperations.decreaseCount(selection.id, option);
                         }}
                         disabled={count === 0}
                       >
@@ -443,7 +451,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'increment');
+                          subSelectionOperations.increaseCount(selection.id, option);
                         }}
                         disabled={isSelectDisabled}
                       >

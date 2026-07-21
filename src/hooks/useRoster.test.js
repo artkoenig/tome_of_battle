@@ -268,6 +268,95 @@ describe('useRoster Hook', () => {
     vi.useRealTimers();
   });
 
+  describe('subSelectionOperations', () => {
+    const addUnitWithOption = (result, optionDefinition) => {
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      const unit = result.current.roster.forces[0].selections[0];
+      act(() => {
+        result.current.subSelectionOperations.increaseCount(unit.id, optionDefinition);
+      });
+      return unit;
+    };
+
+    const childSelectionsOfUnit = (result) => result.current.roster.forces[0].selections[0].selections;
+
+    it('increaseCount chooses an option once and raises its count afterwards', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const bolter = { id: 'opt-1', name: 'Bolter' };
+      const unit = addUnitWithOption(result, bolter);
+
+      expect(childSelectionsOfUnit(result)).toHaveLength(1);
+      expect(childSelectionsOfUnit(result)[0].number).toBe(1);
+
+      act(() => {
+        result.current.subSelectionOperations.increaseCount(unit.id, bolter);
+      });
+
+      expect(childSelectionsOfUnit(result)).toHaveLength(1);
+      expect(childSelectionsOfUnit(result)[0].number).toBe(2);
+    });
+
+    it('decreaseCount drops the option once its count reaches zero', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const bolter = { id: 'opt-1', name: 'Bolter' };
+      const unit = addUnitWithOption(result, bolter);
+
+      act(() => {
+        result.current.subSelectionOperations.decreaseCount(unit.id, bolter);
+      });
+
+      expect(childSelectionsOfUnit(result)).toHaveLength(0);
+    });
+
+    it('addInstance keeps each instance of the same option separate', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const champion = { id: 'opt-champion', name: 'Champion' };
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      const unit = result.current.roster.forces[0].selections[0];
+
+      act(() => {
+        result.current.subSelectionOperations.addInstance(unit.id, champion);
+      });
+      act(() => {
+        result.current.subSelectionOperations.addInstance(unit.id, champion);
+      });
+
+      const instances = childSelectionsOfUnit(result);
+      expect(instances).toHaveLength(2);
+      expect(instances[0].id).not.toBe(instances[1].id);
+    });
+
+    it('removeInstance removes the addressed instance by its selection id', () => {
+      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const champion = { id: 'opt-champion', name: 'Champion' };
+
+      act(() => {
+        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      });
+      const unit = result.current.roster.forces[0].selections[0];
+
+      act(() => {
+        result.current.subSelectionOperations.addInstance(unit.id, champion);
+      });
+      act(() => {
+        result.current.subSelectionOperations.addInstance(unit.id, champion);
+      });
+      const survivingInstanceId = childSelectionsOfUnit(result)[1].id;
+      const removedInstanceId = childSelectionsOfUnit(result)[0].id;
+
+      act(() => {
+        result.current.subSelectionOperations.removeInstance(unit.id, removedInstanceId);
+      });
+
+      expect(childSelectionsOfUnit(result).map(item => item.id)).toEqual([survivingInstanceId]);
+    });
+  });
+
   it('keeps selectedRosterSelection in sync with the roster tree (ID-based)', () => {
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
@@ -281,7 +370,7 @@ describe('useRoster Hook', () => {
 
     // Nach einer Mutation zeigt die Auswahl auf den aktualisierten Knoten aus dem Roster
     act(() => {
-      result.current.updateSubSelection(unit.id, { id: 'opt-1', name: 'Bolter' }, 'increment');
+      result.current.subSelectionOperations.increaseCount(unit.id, { id: 'opt-1', name: 'Bolter' });
     });
 
     expect(result.current.selectedRosterSelection).toBe(result.current.roster.forces[0].selections[0]);
@@ -365,7 +454,7 @@ describe('useRoster Hook', () => {
       expect(result.current.roster.forces[0].selections.length).toBe(1);
     });
 
-    it('undo reverts updateSubSelection', () => {
+    it('undo reverts a sub-selection count change', () => {
       const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
 
       act(() => {
@@ -374,7 +463,7 @@ describe('useRoster Hook', () => {
       const unit = result.current.roster.forces[0].selections[0];
 
       act(() => {
-        result.current.updateSubSelection(unit.id, { id: 'opt-1', name: 'Bolter' }, 'increment');
+        result.current.subSelectionOperations.increaseCount(unit.id, { id: 'opt-1', name: 'Bolter' });
       });
       expect(result.current.roster.forces[0].selections[0].selections.length).toBe(1);
 

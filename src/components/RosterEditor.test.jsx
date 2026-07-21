@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
+import { createSubSelectionOperationsMock } from '../test-utils/subSelectionOperationsMock';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -31,7 +32,7 @@ vi.mock('../contexts/SettingsContext', () => ({
 const mockAddUnit = vi.fn();
 const mockRemoveUnit = vi.fn();
 const mockCopyUnit = vi.fn();
-const mockUpdateSubSelection = vi.fn();
+const mockSubSelectionOperations = createSubSelectionOperationsMock();
 const mockSave = vi.fn();
 const mockSetSelectedRosterSelection = vi.fn();
 const mockUpdateRosterName = vi.fn();
@@ -87,7 +88,7 @@ vi.mock('../hooks/useRoster', () => ({
     addUnit: mockAddUnit,
     removeUnit: mockRemoveUnit,
     copyUnit: mockCopyUnit,
-    updateSubSelection: mockUpdateSubSelection,
+    subSelectionOperations: mockSubSelectionOperations,
     updateRosterName: mockUpdateRosterName,
     save: mockSave,
     undo: mockUndo,

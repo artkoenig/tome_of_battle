@@ -17,7 +17,7 @@ export default function SelectionConfigurator({
   selection,
   system,
   roster,
-  updateSubSelection,
+  subSelectionOperations,
   costTypeLabel,
   activeCatalogue,
   handleMouseEnter,
@@ -237,24 +237,24 @@ export default function SelectionConfigurator({
               if (isClickable) {
                 if (isSubUnitWithOwnOptions) {
                   if (count < maxLimit && !isSelectDisabled) {
-                    updateSubSelection(selection.id, option, 'add_instance');
+                    subSelectionOperations.addInstance(selection.id, option);
                   }
                 } else if (isBinary) {
                   const isDecrementing = count > 0;
                   if (isDecrementing) {
                     if (count > minLimit) {
-                      updateSubSelection(selection.id, option, 'decrement');
+                      subSelectionOperations.decreaseCount(selection.id, option);
                     }
                   } else {
                     if (!isSelectDisabled) {
-                      updateSubSelection(selection.id, option, 'increment');
+                      subSelectionOperations.increaseCount(selection.id, option);
                     }
                   }
                 } else {
                   // For standard options, clicking row increments. 
                   // If we wanted right-click to decrement we could, but click is increment.
                   if (count < maxLimit && !isSelectDisabled) {
-                    updateSubSelection(selection.id, option, 'increment');
+                    subSelectionOperations.increaseCount(selection.id, option);
                   }
                 }
               }
@@ -300,7 +300,7 @@ export default function SelectionConfigurator({
                       style={{ padding: '4px 8px', height: 'auto', display: 'flex', alignItems: 'center' }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateSubSelection(selection.id, option, 'add_instance');
+                        subSelectionOperations.addInstance(selection.id, option);
                       }}
                       disabled={isSelectDisabled || count >= maxLimit}
                     >
@@ -315,7 +315,11 @@ export default function SelectionConfigurator({
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => {
                         if (!isMandatory && !(count > 0 && count <= minLimit)) {
-                          updateSubSelection(selection.id, option, e.target.checked ? 'increment' : 'decrement');
+                          if (e.target.checked) {
+                            subSelectionOperations.increaseCount(selection.id, option);
+                          } else {
+                            subSelectionOperations.decreaseCount(selection.id, option);
+                          }
                         }
                       }}
                     />
@@ -325,7 +329,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'decrement');
+                          subSelectionOperations.decreaseCount(selection.id, option);
                         }}
                         disabled={count <= minLimit}
                       >
@@ -336,7 +340,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateSubSelection(selection.id, option, 'increment');
+                          subSelectionOperations.increaseCount(selection.id, option);
                         }}
                         disabled={isSelectDisabled || count >= maxLimit}
                       >
@@ -356,7 +360,7 @@ export default function SelectionConfigurator({
                 system={system}
                 roster={roster}
                 getSubSelectionCount={getSubSelectionCount}
-                updateSubSelection={updateSubSelection}
+                subSelectionOperations={subSelectionOperations}
                 costTypeLabel={costTypeLabel}
                 getOptionDescription={getOptionDescription}
                 activeCatalogue={activeCatalogue}

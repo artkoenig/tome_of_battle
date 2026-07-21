@@ -47,14 +47,23 @@ export function rootSelectionsOf(roster) {
 }
 
 /**
- * Die effektive Anzahl einer Selection im Baum: ihre eigene `number`,
- * multipliziert mit der effektiven Anzahl ihres Elternknotens. Fehlt `number`,
- * zählt die Selection einfach.
+ * Die eigene Anzahl einer Selection, unabhängig von ihrem Elternknoten. Fehlt
+ * `number`, zählt die Selection einfach.
+ * @param {import('../types.js').Selection} selection
+ * @returns {number}
+ */
+export function ownCountOf(selection) {
+  return selection?.number || IMPLICIT_SELECTION_COUNT;
+}
+
+/**
+ * Die effektive Anzahl einer Selection im Baum: ihre eigene Anzahl,
+ * multipliziert mit der effektiven Anzahl ihres Elternknotens.
  * @param {import('../types.js').Selection} selection
  * @param {number} parentCount effektive Anzahl des Elternknotens
  */
 export function effectiveCountOf(selection, parentCount) {
-  return (selection?.number || IMPLICIT_SELECTION_COUNT) * parentCount;
+  return ownCountOf(selection) * parentCount;
 }
 
 /**

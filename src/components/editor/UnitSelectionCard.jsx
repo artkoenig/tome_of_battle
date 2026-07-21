@@ -46,7 +46,7 @@ export default function UnitSelectionCard({
   costTypeLabel,
   removeUnit,
   copyUnit,
-  updateSubSelection,
+  subSelectionOperations,
   activeCatalogue,
   isSubUnit = false,
   onShowRule
@@ -354,7 +354,7 @@ export default function UnitSelectionCard({
           selection={selection}
           system={system}
           roster={roster}
-          updateSubSelection={updateSubSelection}
+          subSelectionOperations={subSelectionOperations}
           costTypeLabel={costTypeLabel}
           activeCatalogue={activeCatalogue}
           handleMouseEnter={handleMouseEnter}
@@ -377,9 +377,9 @@ export default function UnitSelectionCard({
               system={system}
               validationErrors={validationErrors}
               costTypeLabel={costTypeLabel}
-              removeUnit={(id) => updateSubSelection(selection.id, id, 'remove_instance')}
+              removeUnit={(subUnitSelectionId) => subSelectionOperations.removeInstance(selection.id, subUnitSelectionId)}
               copyUnit={null}
-              updateSubSelection={updateSubSelection}
+              subSelectionOperations={subSelectionOperations}
               activeCatalogue={activeCatalogue}
               isSubUnit={true}
             />

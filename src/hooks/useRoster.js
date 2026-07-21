@@ -5,13 +5,15 @@ import {
   childSelectionsOf, findSelectionInRoster, mapSelectionTree, replaceSelectionById
 } from '../solver/validator';
 import { createSelectionFromDef as buildSelectionFromDef } from '../solver/selectionFactory';
+import { withAddedInstance, withoutInstance, withChangedOptionCount } from '../solver/subSelectionEditing';
 import { useUndoableState } from './useUndoableState';
 import '../types.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 150;
 
-/** Schrittweite, um die eine Options-Aktion die Anzahl einer Auswahl verändert. */
-const SELECTION_STEP = 1;
+/** Verschiebung der Anzahl, die eine einzelne Nutzeraktion auslöst. */
+const COUNT_INCREASE = 1;
+const COUNT_DECREASE = -1;
 
 /** Abgeleitete Werte, solange Roster oder System noch nicht vorliegen. */
 const NO_COSTS = Object.freeze({});
@@ -197,70 +199,19 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   };
 
   /**
-   * Die neue Kind-Liste einer Einheit nach einer Options-Aktion. Rein: die
-   * übergebene Liste bleibt unberührt, zurück kommt stets eine neue.
+   * Ersetzt die Kind-Liste der Einheit `unitSelectionId` — beliebiger Tiefe im
+   * Roster — durch das Ergebnis von `changeChildSelections`. Die gemeinsame
+   * Verdrahtung aller Unter-Auswahl-Operationen mit dem Roster-State.
+   * @param {string} unitSelectionId
+   * @param {(childSelections: import('../types.js').Selection[]) => import('../types.js').Selection[]} changeChildSelections
    */
-  const applySubSelectionAction = (currentSelections, optionOrId, action) => {
-    const list = [...currentSelections];
-    const amount = SELECTION_STEP;
-
-    if (action === 'add_instance') {
-      const childSel = createSelectionFromDef(optionOrId);
-      if (childSel) {
-        childSel.number = amount;
-        list.push(childSel);
-      }
-    } else if (action === 'remove_instance') {
-      const removeIdx = list.findIndex(s => s.id === optionOrId);
-      if (removeIdx > -1) {
-        list.splice(removeIdx, 1);
-      }
-    } else if (action === 'increment_instance' || action === 'decrement_instance') {
-      const instIdx = list.findIndex(s => s.id === optionOrId);
-      if (instIdx > -1) {
-        if (action === 'increment_instance') {
-          list[instIdx] = { ...list[instIdx], number: (list[instIdx].number || 1) + amount };
-        } else if ((list[instIdx].number || 1) > amount) {
-          list[instIdx] = { ...list[instIdx], number: list[instIdx].number - amount };
-        } else {
-          list.splice(instIdx, 1);
-        }
-      }
-    } else {
-      // Original increment/decrement logic (optionOrId is an option def)
-      const optionId = optionOrId.id;
-      const idx = list.findIndex(s => (s.entryLinkId || s.selectionEntryId) === optionId);
-
-      if (action === 'increment') {
-        if (idx > -1) {
-          list[idx] = { ...list[idx], number: (list[idx].number || 1) + amount };
-        } else {
-          const childSel = createSelectionFromDef(optionOrId);
-          if (childSel) {
-            childSel.number = amount;
-            list.push(childSel);
-          }
-        }
-      } else if (action === 'decrement') {
-        if (idx > -1) {
-          if ((list[idx].number || 1) > amount) {
-            list[idx] = { ...list[idx], number: list[idx].number - amount };
-          } else {
-            list.splice(idx, 1);
-          }
-        }
-      }
-    }
-    return list;
-  };
-
-  const updateSubSelection = (unitSelectionId, optionOrId, action) => {
+  const updateUnitChildSelections = (unitSelectionId, changeChildSelections) => {
     setRoster(prev => {
       const updatedForces = prev.forces.map(force => {
         const currentSelections = childSelectionsOf(force);
         const updatedSelections = replaceSelectionById(currentSelections, unitSelectionId, unit => ({
           ...unit,
-          selections: applySubSelectionAction(childSelectionsOf(unit), optionOrId, action)
+          selections: changeChildSelections(childSelectionsOf(unit))
         }));
         if (updatedSelections === currentSelections) return force;
         return { ...force, selections: updatedSelections };
@@ -268,6 +219,39 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
 
       return { ...prev, forces: updatedForces };
     });
+  };
+
+  /** Legt eine weitere, eigenständig geführte Instanz einer Option an. */
+  const addSubSelectionInstance = (unitSelectionId, optionDefinition) =>
+    updateUnitChildSelections(unitSelectionId, childSelections =>
+      withAddedInstance(childSelections, createSelectionFromDef(optionDefinition)));
+
+  /** Entfernt eine einzeln geführte Instanz anhand ihrer Selection-Id. */
+  const removeSubSelectionInstance = (unitSelectionId, instanceSelectionId) =>
+    updateUnitChildSelections(unitSelectionId, childSelections =>
+      withoutInstance(childSelections, instanceSelectionId));
+
+  const changeSubSelectionCount = (unitSelectionId, optionDefinition, countDelta) =>
+    updateUnitChildSelections(unitSelectionId, childSelections =>
+      withChangedOptionCount(
+        childSelections,
+        optionDefinition.id,
+        countDelta,
+        () => createSelectionFromDef(optionDefinition)
+      ));
+
+  /**
+   * Die benannten Änderungsoperationen auf den Unter-Auswahlen einer Einheit.
+   * Die Oberfläche erhält sie als ein Bündel, sodass jede Ebene der
+   * Editor-Komponenten genau eine Stütze durchreicht statt vier.
+   */
+  const subSelectionOperations = {
+    addInstance: addSubSelectionInstance,
+    removeInstance: removeSubSelectionInstance,
+    increaseCount: (unitSelectionId, optionDefinition) =>
+      changeSubSelectionCount(unitSelectionId, optionDefinition, COUNT_INCREASE),
+    decreaseCount: (unitSelectionId, optionDefinition) =>
+      changeSubSelectionCount(unitSelectionId, optionDefinition, COUNT_DECREASE)
   };
 
   const updateRosterName = (newName) => {
@@ -292,7 +276,7 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
     addUnit,
     removeUnit,
     copyUnit,
-    updateSubSelection,
+    subSelectionOperations,
     updateRosterName,
     save,
     undo,
