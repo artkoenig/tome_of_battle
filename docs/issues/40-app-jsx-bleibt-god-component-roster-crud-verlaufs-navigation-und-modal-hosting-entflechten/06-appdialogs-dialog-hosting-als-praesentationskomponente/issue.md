@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -22,3 +22,4 @@ Bestätigen, Abbrechen) unverändert.
   unverändert grün.
 
 ## Comments
+- Die drei wurzel-gehosteten Dialoge (Einstellungen, Neues-Roster-Modal, Lösch-Bestätigung) in die reine Präsentationskomponente src/components/AppDialogs.jsx gebündelt; sie bekommt nur Sichtbarkeits-Flags und Callbacks und hält keinen State (kein Context/Provider, ADR-0010). App.jsx deklariert die Dialoge nicht mehr einzeln, sondern rendert <AppDialogs/>. Öffnen/Bestätigen/Abbrechen unverändert; eigene Unit-Tests; App.test.jsx unverändert grün.

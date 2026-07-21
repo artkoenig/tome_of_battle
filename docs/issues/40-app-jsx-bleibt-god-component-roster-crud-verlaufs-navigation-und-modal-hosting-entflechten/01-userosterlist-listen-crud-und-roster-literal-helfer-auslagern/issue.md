@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -25,3 +25,4 @@ Feature — insbesondere kein „Duplizieren".
   unverändert grün.
 
 ## Comments
+- Roster-Literal in reinen Helfer src/utils/createRoster.js (buildRoster) ausgelagert; Listen-CRUD (Anlegen/Öffnen/Abspielen/Umbenennen/Löschen/Import/Export inkl. Anlege-Modal- und Lösch-Bestätigungs-State) in src/hooks/useRosterList.js gekapselt. DB nur über database.js, Solver nur über validator.js. App.jsx ruft den Hook nur noch auf. Eigene Unit-Tests für Helfer und Hook; App.test.jsx unverändert grün.

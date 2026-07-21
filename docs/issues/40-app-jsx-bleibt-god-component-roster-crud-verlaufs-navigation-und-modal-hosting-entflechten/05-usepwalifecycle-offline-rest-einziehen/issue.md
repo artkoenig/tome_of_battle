@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -19,3 +19,4 @@ Kleiner, klar begrenzter Schnitt. Verhalten (Offline-Anzeige) unverändert.
 - [ ] Offline-Anzeige unverändert; `src/App.test.jsx` bleibt unverändert grün.
 
 ## Comments
+- isOffline-State und die online/offline-Event-Listener aus App.jsx in usePwaLifecycle.js eingezogen; der Hook deckt den Online-/Offline-Zustand jetzt vollständig ab und gibt isOffline zurück. App.jsx hält keinen eigenen isOffline-State/Listener mehr (und keinen useEffect mehr). Offline-Anzeige unverändert; usePwaLifecycle-Tests um fünf Offline-Fälle erweitert; App.test.jsx unverändert grün.

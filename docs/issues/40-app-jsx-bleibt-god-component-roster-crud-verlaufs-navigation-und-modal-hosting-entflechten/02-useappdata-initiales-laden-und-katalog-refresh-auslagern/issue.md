@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -21,3 +21,4 @@ gleiche Ladereihenfolge, gleiches Fehlerverhalten, gleicher Hintergrund-Refresh.
 - [ ] Der Hook hat eigene Unit-Tests; `src/App.test.jsx` bleibt unverändert grün.
 
 ## Comments
+- Initiales Laden (Systeme+Roster aus IndexedDB), Hintergrund-Katalog-Refresh und Behandlung eines frisch importierten Systems in src/hooks/useAppData.js gekapselt. Hält systems/rosters/isDataLoaded; reicht setRosters (optimistisches Veröffentlichen fürs CRUD), loadAllData und handleSystemImported heraus; showToast/navigate werden hereingereicht. Mount-Ladelauf über Ref auf die jüngste loadAllData-Fassung, damit keine Effekt-Abhängigkeit eine Endlosschleife auslöst. DB nur über database.js. Lade-/Fehlerverhalten unverändert; eigene Unit-Tests; App.test.jsx unverändert grün.
