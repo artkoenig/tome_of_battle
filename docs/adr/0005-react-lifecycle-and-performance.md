@@ -37,7 +37,7 @@ Folgende Richtlinien für Komponentenstruktur, Performance und Lifecycle-Managem
 - Dadurch werden Race Conditions (z. B. Zuweisung von DB-Ergebnissen an bereits demontierte Komponenten) und Memory Leaks zuverlässig verhindert.
 
 ### 5. UI-Struktur und View-Switching ohne Router
-- Die Anwendung verzichtet auf einen externen Router (wie React Router). Die Navigation zwischen den Hauptansichten (`rosters`, `importer`, `builder`, `play`) wird als einfacher Zustand (View-Switcher) direkt in `App.jsx` verwaltet. Dies hält die PWA leichtgewichtig.
+- Die Anwendung verzichtet auf einen externen Router (wie React Router). Die Navigation zwischen den Hauptansichten (`rosters`, `importer`, `builder`, `play`) wird als einfacher Zustand (View-Switcher) verwaltet — gekapselt im Hook `src/hooks/useAppNavigation.js`, den `App.jsx` verdrahtet (Navigation bleibt App-Zustand, kein Router). Dies hält die PWA leichtgewichtig.
 
 ### 6. Click-to-Edit Debug-Feature
 - Zur Entwicklung und Fehlersuche gibt es ein globales Debug-System. Durch Klicken auf ein `.debug-id-badge` (das nur auf localhost/privaten IPs aktiv ist) wird das `DebugEntryEditorModal` geöffnet, um Katalog-Einträge direkt im Kontext zu analysieren.
