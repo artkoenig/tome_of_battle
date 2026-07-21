@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -108,3 +108,4 @@ Tool-Konfiguration nicht vorgesehen.
 - [ ]
 
 ## Comments
+- Umgesetzt via Child-Issues 01-03: Knip (knip.json), dependency-cruiser (.dependency-cruiser.cjs) und ADR 0024, beide Tools warn-only in CI (Job lint-and-test), plus npm-Scripts knip/depcruise/analyze. Vier-Achsen-Verifikation: Static-Gate gruen (oxlint 0, depcruise 0 Verstoesse), Tests gruen (1128 + E2E), Spec voll erfuellt. Doku-Drift aus der Docs-Achse (README Scripts+Tech-Stack, AGENTS.md Commands) behoben. Bewusst nicht Teil: von Knip gemeldete Befunde (1 unused devDep, 26 unused exports) und die Standards-Code-Smells (Editor-Data-Clumps, App.jsx) -> eigene Folge-Issues.

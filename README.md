@@ -58,6 +58,9 @@ npm run dev        # Starts the Vite dev server with Hot Module Replacement (HMR
 npm run build      # Creates the production build (also generates a fresh service worker cache version)
 npm run preview    # Local preview of the production build
 npm run lint       # Code analysis using oxlint
+npm run knip       # Cross-file dead-code / unused-export / unused-dependency analysis (warn-only)
+npm run depcruise  # Dependency-graph rules: layering, solver facade, cycles, orphans (warn-only)
+npm run analyze    # Runs knip and dependency-cruiser together
 npm test           # Runs unit & component tests (Vitest) and the Puppeteer E2E smoke test
 ```
 
@@ -122,7 +125,7 @@ For more in-depth details on the BattleScribe format, see [`docs/battlescribe-da
 
 ## Tech Stack
 
-React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer · oxlint
+React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer · oxlint · Knip · dependency-cruiser
 
 ---
 
