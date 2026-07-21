@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -55,3 +55,4 @@ Suchfunktionen als Filter aufsetzen.
 - [ ] `npm run lint` und `npm test` bleiben grün
 
 ## Comments
+- updateRawXml nimmt jetzt ein EntryEdit-Objekt (entryId/type/patch) statt zehn Positionsparametern; 'nicht aendern' ist Abwesenheit des Patch-Schluessels, 'loeschen' das Sentinel REMOVE_ATTRIBUTE. Die Typkette ist durch PATCH_APPLIERS_BY_ENTRY_TYPE ersetzt. searchEditableEntries und findExactEntryById setzen beide auf dem einen Generator walkCatalogueTree auf und sehen damit dieselbe Knotenmenge; die vier addEntry/addGroup/addProfile/addRule-Kopien sind auf toSearchResult zurueckgefuehrt. Neue Testdatei src/parser/catalogEditor.test.js mit 23 Tests.

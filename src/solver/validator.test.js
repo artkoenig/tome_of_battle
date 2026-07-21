@@ -449,7 +449,15 @@ const testSystem = {
   }
 };
 // Perform update XML
-updateRawXml(testSystem, 'unit-thrall', 'entry', 'Vampire Thrall Elite', { pts: 95 }, { 'max-thralls': 4 }, {}, '');
+updateRawXml(testSystem, {
+  entryId: 'unit-thrall',
+  type: 'entry',
+  patch: {
+    name: 'Vampire Thrall Elite',
+    costs: { pts: 95 },
+    constraints: { 'max-thralls': 4 },
+  },
+});
 const updatedXml = testSystem.rawXmls.cat[0].content;
 const hasUpdatedName = updatedXml.includes('name="Vampire Thrall Elite"');
 const hasUpdatedPoints = updatedXml.includes('typeId="pts" value="95"');
