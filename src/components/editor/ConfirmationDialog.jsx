@@ -16,37 +16,25 @@ export default function ConfirmationDialog({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div 
-        className="modal-content" 
+        className={`modal-content${isDanger ? ' modal-content--danger' : ''}`}
         onClick={(e) => e.stopPropagation()}
-        style={isDanger ? { borderColor: 'var(--color-danger)' } : {}}
       >
-        <div className="modal-header" style={isDanger ? { borderBottomColor: 'rgba(166, 28, 28, 0.3)' } : {}}>
-          <h3 className={isDanger ? 'text-danger' : 'text-gold'} style={{ margin: 0, fontFamily: 'var(--font-serif)' }}>{title}</h3>
-          <button 
-            type="button" 
-            className="modal-close" 
+        <div className={`modal-header${isDanger ? ' modal-header--danger' : ''}`}>
+          <h3 className={`font-serif ${isDanger ? 'text-danger' : 'text-gold'}`}>{title}</h3>
+          <button
+            type="button"
+            className="modal-close modal-close--flush"
             onClick={onClose}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: 'var(--text-dim)', 
-              cursor: 'pointer',
-              fontSize: '18px',
-              padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
           >
             <X size={18} />
           </button>
         </div>
-        <div className="modal-body" style={{ padding: '16px 0 24px 0', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-parchment)', fontSize: 'var(--fs-body)', margin: 0 }}>
+        <div className="modal-body confirmation-dialog-body">
+          <p className="confirmation-dialog-message">
             {message}
           </p>
         </div>
-        <div className="modal-footer" style={{ display: 'flex', gap: '12px', justifyContent: 'center', borderTop: 'none', padding: 0 }}>
+        <div className="modal-footer confirmation-dialog-footer">
           <button 
             type="button" 
             className="btn" 

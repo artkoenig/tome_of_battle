@@ -226,10 +226,10 @@ export function UnitRulesChips({
       {visibleRules.map((rule, rIdx) => {
         const descText = rule.description || '';
         const details = (
-          <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
+          <div className="upgrade-details">
             <div>{rule.description}</div>
             {rule.publicationRef && (
-              <div className="publication-ref" style={{ marginTop: '4px' }}>
+              <div className="publication-ref upgrade-details-publication-ref">
                 {rule.publicationRef}
               </div>
             )}

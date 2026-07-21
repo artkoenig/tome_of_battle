@@ -13,6 +13,7 @@ import {
 } from '../../solver/validator';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
+import { getProfileCellClassName } from '../profileCellClasses';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -96,30 +97,12 @@ export default function UnitSelectionCard({
     if (!c) return <td key={headerKey} className="font-body">-</td>;
 
     const modState = getModificationState(c);
-    const cellStyle = {};
-    let className = "font-body";
-    if (modState === 'positive') {
-      className += " text-success";
-      cellStyle.backgroundColor = 'rgba(27, 115, 64, 0.12)';
-      cellStyle.fontWeight = 'bold';
-      cellStyle.cursor = 'help';
-    } else if (modState === 'negative') {
-      className += " text-danger";
-      cellStyle.backgroundColor = 'rgba(166, 28, 28, 0.12)';
-      cellStyle.fontWeight = 'bold';
-      cellStyle.cursor = 'help';
-    } else if (modState === 'modified') {
-      className += " text-gold";
-      cellStyle.backgroundColor = 'rgba(226, 183, 66, 0.12)';
-      cellStyle.fontWeight = 'bold';
-      cellStyle.cursor = 'help';
-    }
+    const className = getProfileCellClassName(modState);
 
     return (
       <td
         key={headerKey}
         className={className}
-        style={cellStyle}
         onMouseEnter={(e) => {
           if (modState && c.modificationBreakdown?.length > 0) {
             handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
@@ -133,9 +116,9 @@ export default function UnitSelectionCard({
             setActiveInfo({
               title: `Modifikationen: ${c.name}`,
               text: (
-                <ul style={{ margin: 0, paddingLeft: '20px', textAlign: 'left' }}>
+                <ul className="modification-breakdown-list">
                   {c.modificationBreakdown.map((b, bIdx) => (
-                    <li key={bIdx} className="text-body" style={{ color: 'var(--text-parchment)', marginBottom: '4px' }}>{b}</li>
+                    <li key={bIdx} className="text-body">{b}</li>
                   ))}
                 </ul>
               )
@@ -225,19 +208,18 @@ export default function UnitSelectionCard({
   });
 
   return (
-    <div className={`selection-node ${hasSelectionError ? 'has-error' : ''}`} style={copyUnit ? {} : { marginTop: '8px', border: '1px solid rgba(226, 183, 66, 0.2)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-      <div 
+    <div className={`selection-node ${hasSelectionError ? 'has-error' : ''} ${copyUnit ? '' : 'selection-node--sub'}`}>
+      <div
         className="selection-node-header"
-        style={{ cursor: 'pointer', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative' }}
         onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <div className="selection-node-header-row">
           <div className="selection-node-title">
             <span className="selection-node-name text-ui-title">
               {selection.number > 1 ? `${selection.number}x ` : ''}{effectiveName}
             </span>
           </div>
-          <div className="selection-node-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="selection-node-right">
             {displayPoints > 0 && (
               <span className="selection-node-cost font-body">
                 {displayPoints} {costTypeLabel}
@@ -343,7 +325,7 @@ export default function UnitSelectionCard({
       </div>
 
       {selectionErrors.map((err, idx) => (
-        <div key={idx} className="unit-error-alert text-danger text-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(166,28,28,0.04)', borderBottom: '1px solid rgba(166,28,28,0.2)' }}>
+        <div key={idx} className="unit-error-alert text-danger text-label">
           <AlertTriangle size={14} />
           <span>{err.message}</span>
         </div>
@@ -366,7 +348,7 @@ export default function UnitSelectionCard({
       )}
 
       {independentSubUnits.length > 0 && (
-        <div className="sub-units-container" style={{ paddingLeft: '16px', borderLeft: '2px solid rgba(226, 183, 66, 0.2)', marginTop: '8px' }}>
+        <div className="sub-units-container selection-node-sub-units">
           {independentSubUnits.map(subSel => (
             <UnitSelectionCard 
               key={subSel.id}
@@ -410,9 +392,9 @@ export default function UnitSelectionCard({
         title="Einheit löschen"
         desktopMode="modal"
       >
-        <div className="info-popup-body" style={{ textAlign: 'center', padding: '16px 16px 24px 16px' }}>
-          <p style={{ marginBottom: '24px', color: 'var(--text-parchment)' }}>Möchten Sie <strong>{effectiveName}</strong> wirklich löschen?</p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <div className="info-popup-body unit-delete-confirm-body">
+          <p className="unit-delete-confirm-question">Möchten Sie <strong>{effectiveName}</strong> wirklich löschen?</p>
+          <div className="unit-delete-confirm-actions">
             <button 
               className="btn" 
               onClick={() => setShowConfirmDelete(false)}

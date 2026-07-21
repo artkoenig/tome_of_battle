@@ -181,7 +181,7 @@ export default function SelectionConfigurator({
     <div className="selection-node-body">
       {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
       {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
-      <div className="sub-selection-group" style={{ borderLeft: 'none', paddingLeft: 0 }}>
+      <div className="sub-selection-group sub-selection-group--flush">
         {groupedList.map((group, gIdx) => {
           if (group.standalone) {
             const { option, parentDefId } = group.item;
@@ -226,7 +226,9 @@ export default function SelectionConfigurator({
 
             const isSubUnitWithOwnOptions = isIndependentSubUnit(res);
 
-            const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
+            // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
+            const isUnavailable = count === 0 && isSelectDisabled;
+            const isClickable = !isMandatory && !isUnavailable;
             const handleRowClick = (e) => {
               if (e.target.closest('button') || e.target.closest('input')) {
                 return;
@@ -260,17 +262,11 @@ export default function SelectionConfigurator({
             return (
               <div 
                 key={res.id} 
-                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}`}
-                style={{ opacity: (count === 0 && isSelectDisabled) ? 0.5 : 1 }}
+                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
                 onClick={handleRowClick}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span 
-                    style={{ 
-                      fontWeight: 600, 
-                      color: (count === 0 && isSelectDisabled) ? 'var(--text-dim)' : 'inherit'
-                    }}
-                  >
+                <div className="sub-selection-label">
+                  <span className={`sub-selection-option-name${isUnavailable ? ' sub-selection-option-name--unavailable' : ''}`}>
                     {res.name}
                     <RuleChipIcon
                       name={res.name}
@@ -285,23 +281,22 @@ export default function SelectionConfigurator({
                       onInfoMove={handleMouseMove}
                       onInfoLeave={handleMouseLeave}
                     />
-                    {isTakenElsewhere && <span className="text-danger text-micro" style={{ marginLeft: '6px', fontWeight: 600 }}>(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">(Bereits vergeben)</span>}
                   </span>
                 </div>
                 <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
+                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} Pkt.</span>}
                   {isSubUnitWithOwnOptions ? (
                     <button 
                       type="button"
-                      className="btn-primary text-label"
-                      style={{ padding: '4px 8px', height: 'auto', display: 'flex', alignItems: 'center' }}
+                      className="btn-primary text-label sub-selection-add-btn"
                       onClick={(e) => {
                         e.stopPropagation();
                         subSelectionOperations.addInstance(selection.id, option);
                       }}
                       disabled={isSelectDisabled || count >= maxLimit}
                     >
-                      <Plus size={12} style={{ marginRight: '4px' }} />
+                      <Plus size={12} className="sub-selection-add-btn-icon" />
                       Hinzufügen
                     </button>
                   ) : isBinary ? (
