@@ -33,6 +33,10 @@ coverage/
 
 .worktrees
 .claude/worktrees/
+# Session-scoped override for the worktree_guard.py PreToolUse hook. Local-only,
+# never committed: a routine `git add -A` during a merge would otherwise sweep
+# it into the commit and disable the guard permanently for every checkout.
+.claude/.worktree-bypass
 .scratch/
 .antigravity/
 e2e-failure.png
