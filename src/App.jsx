@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BookOpen, FolderOpen, WifiOff, Download, Settings } from 'lucide-react';
 
 import Importer from './components/Importer';
@@ -29,13 +29,13 @@ export default function App() {
 
   const { view, selectedRosterId, navigate } = useAppNavigation();
 
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const {
     isInstallable,
     promptInstall,
     isUpdateAvailable,
     updateRelease,
     applyUpdate,
+    isOffline,
   } = usePwaLifecycle();
   const { toast, showToast, reportError } = useToast();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -57,19 +57,6 @@ export default function App() {
     () => (selectedRoster ? systems.find(s => s.id === selectedRoster.systemId) || null : null),
     [systems, selectedRoster]
   );
-
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
 
   const {
     isNewRosterModalOpen,
