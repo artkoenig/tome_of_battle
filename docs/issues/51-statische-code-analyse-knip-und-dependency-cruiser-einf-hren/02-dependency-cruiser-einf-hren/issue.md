@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [01]
 
@@ -45,3 +45,4 @@ Ausdrücklich **nicht** Teil: gemeldete Verstöße im Bestand beheben (Folge-Iss
 - [ ] Verbleibende echte Verstöße sind unverändert gelassen (nicht hier behoben).
 
 ## Comments
+- dependency-cruiser (v18) additiv neben Knip eingefuehrt: .dependency-cruiser.cjs mit warn-only Regeln (Schichtung parser->solver->components, Solver-Fassade wie ADR 0023 mit denselben Ausnahmen wie die oxlint-Regel, no-circular, no-orphans; Ausschluesse wie Knip). npm-Scripts depcruise und analyze (Knip+depcruise), warn-only CI-Step im Job lint-and-test. Wirksamkeit per absichtlicher Verstoss-Proben nachgewiesen; Bestandscode ist regelkonform, keine Verstoesse behoben.
