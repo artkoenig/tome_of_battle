@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -36,9 +36,35 @@ erfolgt ausschließlich über die Fassade `src/solver/validator.js`, maschinell
 erzwungen durch eine `no-restricted-imports`-Regel.
 
 ## Acceptance Criteria
-- [ ] (noch zu spezifizieren — dieses Issue steht auf `needs-triage`)
+
+Triage-Ergebnis: Alle drei Stellen bilden auf bereits vorhandene Primitive ab;
+**kein neues Primitiv** ist nötig. Die beiden `PlayUnitDetails`-Stellen laufen
+nur über die *direkten* Kinder und bilden daher auf den Zugriffs-Primitiv
+`childSelectionsOf` ab (nicht auf die Tiefen-Traversierung). Die
+`SelectionConfigurator`-Stelle ist eine echte Tiefen-Rekursion und bildet auf
+`countSelections` ab. Alle Primitive sind über die Fassade `validator.js`
+verfügbar (ADR-0023).
+
+- [ ] `SelectionConfigurator.getSubSelectionCount`: die handgeschriebene
+  `findCount`-Rekursion ist durch `countSelections(unitSelection.selections,
+  { includeChildSelections: true, predicate })` ersetzt, wobei `predicate` eine
+  Selection über `(entryLinkId || selectionEntryId) === optionEntryId` erkennt.
+  Das gezählte Ergebnis (Summe der `number`-Werte im Teilbaum) bleibt identisch.
+- [ ] `PlayUnitDetails` `independentSubUnits` (aktuell
+  `(selection.selections || []).filter(...)`) bezieht die direkten Kinder über
+  `childSelectionsOf(selection)`.
+- [ ] `PlayUnitDetails` Modell-Zählung (aktuell `sel.selections.forEach(...)`)
+  bezieht die direkten Kinder über `childSelectionsOf(sel)`; die berechneten
+  Werte (`totalModels`, `hasModelChildren`) bleiben identisch.
+- [ ] Alle Primitive werden aus der Fassade `validator.js` importiert; kein
+  direkter Import aus `src/solver/*` außerhalb der Fassade. `npm run lint`
+  (`no-restricted-imports`) bleibt grün.
+- [ ] Die bestehende Test-Suite bleibt grün; das Verhalten der Sub-Selection-
+  Zählung und der Modell-Zählung ist unverändert.
 
 ## Comments
 
 Angelegt am 2026-07-21 aus der Vier-Achsen-Prüfung des Haupt-Issues 39,
 Achse A (`standards-reviewer`), Fund 6.
+- Triage 2026-07-21: Alle drei Stellen auf vorhandene Primitive abbildbar, kein neues Primitiv noetig. PlayUnitDetails (2x, nur direkte Kinder) -> childSelectionsOf; SelectionConfigurator (echte Rekursion) -> countSelections. Akzeptanzkriterien spezifiziert.
+- Umgesetzt: SelectionConfigurator.getSubSelectionCount nutzt countSelections; PlayUnitDetails (independentSubUnits + Modell-Zaehlung) nutzt childSelectionsOf. Test-Mocks der Fassade reichen die Primitive real durch. Lint sauber, volle Suite (1128 Unit + E2E) gruen. Kein neues Primitiv noetig.
