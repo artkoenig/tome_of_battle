@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -57,3 +57,4 @@ nirgends vorkommt.
 
 Berührt dieselben Dateien wie der offene Pull Request zur
 UI-Internationalisierung — erst nach dessen Merge bearbeiten.
+- App.jsx entflochten: Auswahl nur noch als selectedRosterId (Roster/System abgeleitet), PWA-Lebenszyklus in src/hooks/usePwaLifecycle.js, Ansichtswerte als VIEWS-Konstanten in src/constants/views.js, Release-Diff in src/utils/releaseDiff.js mit benannter Obergrenze MAX_DIFF_ENTRIES. App.jsx von 600 auf 470 Zeilen.
