@@ -26,6 +26,7 @@ import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '.
 import useViewportHeight from './hooks/useViewportHeight';
 import usePwaLifecycle from './hooks/usePwaLifecycle';
 import { getDiffChanges } from './utils/releaseDiff';
+import { DEFAULT_ROSTER_COST_LIMIT } from './utils/rosterDefaults';
 import { VIEWS, isImmersiveView } from './constants/views';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -34,9 +35,6 @@ const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: nul
 
 /** Anzeigedauer einer Toast-Benachrichtigung in Millisekunden. */
 const TOAST_DURATION_MS = 3000;
-
-/** Punktegrenze, mit der eine neue Liste angelegt wird, wenn keine angegeben ist. */
-const DEFAULT_COST_LIMIT = 2000;
 
 /** Kostenart, die verwendet wird, wenn das System keine eigene definiert. */
 const FALLBACK_COST_TYPE = 'pts';
@@ -226,7 +224,7 @@ export default function App() {
       name,
       systemId,
       catalogueId: catId,
-      costLimit: parseInt(limit) || DEFAULT_COST_LIMIT,
+      costLimit: parseInt(limit) || DEFAULT_ROSTER_COST_LIMIT,
       costLimitType: costType,
       forces: [{
         id: crypto.randomUUID(),
