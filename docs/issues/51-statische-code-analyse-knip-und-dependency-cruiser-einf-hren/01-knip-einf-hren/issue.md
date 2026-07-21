@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -38,3 +38,4 @@ Folge-Issues).
       behoben).
 
 ## Comments
+- Knip (v6) als devDependency eingefuehrt: knip.json (entry: index.html, src/**/*.test, scripts/**; project: src/**, scripts/**; ignore: .worktrees, .claude, src/parser/schema, __fixtures__), npm-Script 'knip', und CI-Step nach Lint mit continue-on-error (warn-only). Gefundene Befunde (1 unused devDep, 26 unused exports) bewusst nicht behoben.
