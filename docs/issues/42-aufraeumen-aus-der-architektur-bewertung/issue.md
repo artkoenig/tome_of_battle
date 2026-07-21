@@ -94,3 +94,4 @@ das um.
       angehoben (`node scripts/release.js minor`).
 
 ## Comments
+- Entscheidung des Maintainers am 2026-07-21, nach Abschluss aller vier Kind-Issues: (1) KEIN Versions-Bump - die Version bleibt bei 1.4.0. Damit ist Akzeptanzkriterium 5 dieses Issues bewusst nicht erfuellt, nicht vergessen. Folge: der Workflow tag-on-version-bump.yml feuert nach dem Merge nicht, es entsteht kein v-Tag fuer diese Aenderung. Wer spaeter releasen will, muss den Bump nachholen. (2) Der PR wird erst geoeffnet, wenn der separat laufende Task zur Reparatur von scripts/generate_screenshots.js durch ist - dann lassen sich die bei Kind-Issue 01 und 03 offen gebliebenen Screenshot-Kriterien noch erfuellen. Der Branch issue/aufraeumen-aus-der-architektur-bewertung bleibt bis dahin lokal und ungepusht.
