@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -49,3 +49,4 @@ UI-Internationalisierung — erst nach dessen Merge bearbeiten.
 Die geschlossene Prüflücke beim Datei-Upload ist streng genommen eine
 Verhaltensänderung. Sie ist hier bewusst zugelassen, weil sie unmittelbar aus
 der Entdopplung folgt und ohne sie eine bekannte Lücke bestehen bliebe.
+- Importer.jsx auf reine Darstellung reduziert (685 -> 448 Zeilen): Index-/Quellenverarbeitung nach src/db/catalogSourceIndex.js, Revisions-Darstellung nach src/components/importer/revisionDisplay.js, Meldungstexte nach src/components/importer/importMessages.js, Bibliotheks-Abhaengigkeitspruefung nach src/parser/libraryDependencies.js. Der Abschluss des Imports liegt nun einmalig in src/db/systemImport.js; beide Importpfade rufen ihn auf, wodurch die Abhaengigkeitspruefung auch beim Datei-Upload greift.
