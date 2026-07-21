@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: fix
 Blocked by: None
 
@@ -128,3 +128,4 @@ in Issue 46 erfasst.
 
 ## Comments
 - Geltungsbereich am 2026-07-21 von 'Oberflaeche' auf die gesamte Codebasis erweitert (Validierungsmeldungen im Solver). Maintainer-Entscheidung: die Katalog-Bezeichnung wird unveraendert angezeigt, die Alias-Uebersetzung nach 'Pkt.' entfaellt ersatzlos. Der zugehoerige Rechenfehler ist als Issue 46 abgetrennt.
+- superseded: Aufgegangen in 47-kostenart-durchgaengig-aus-katalogdaten/02: dieselbe Anforderung, aber gemeinsam mit der Wertermittlung geschnitten, weil beide dieselben Dateien und dieselben Fixtures anfassen.

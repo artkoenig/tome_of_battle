@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: fix
 Blocked by: None
 
@@ -109,3 +109,4 @@ sondern in Issue 44 erfasst.
 
 ## Comments
 - Abgetrennt von Issue 44: dort die Anzeige-Bezeichnung, hier die Wertermittlung. Beide beruhen auf derselben Recherche zu costType/@id vs. @name.
+- superseded: Aufgegangen in 47-kostenart-durchgaengig-aus-katalogdaten/01: dieselbe Anforderung, gemeinsam mit der Bezeichnung geschnitten.
