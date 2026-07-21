@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -100,3 +100,4 @@ Angelegt am 2026-07-21 aus der Vier-Achsen-Prüfung des Haupt-Issues 39,
 Achse A (`standards-reviewer`), Fund 5. Bewusst nicht in Kind-Issue 39/13
 aufgenommen, das nur die mechanisch behebbaren Funde 1-4 abdeckt.
 - Spezifiziert 2026-07-21 (grill-me-for-spec). Grundhaltung 'sanft': bestehende ADRs (0005 S5, 0010, 0002, 0023) respektiert, kein Context/Router, Verhalten identisch. Zielbild: 7 Belange -> useAppNavigation, usePwaLifecycle (Offline-Rest), useToast, AppDialogs, useRosterList (+ Roster-Literal-Helfer neben rosterDefaults.js), useAppData. Korrektur: App.jsx hat 573 Zeilen (nicht 581/470); 'Duplizieren' existiert nicht. Bereit zur Zerlegung in Kind-Issues (wartet auf Freigabe der Aufteilung).
+- Umgesetzt und gemergt: App.jsx 573->261 Zeilen, alle sieben Belange in useRosterList/createRoster, useAppData, useToast, useAppNavigation, usePwaLifecycle (Offline-Rest), AppDialogs ausgelagert. Vier-Achsen-Pruefung: Standards grün (2 minor DRY-Nits, non-blocking), Spezifikation 0 blockierende Befunde (verhaltenserhaltend, App.test.jsx byte-identisch), Tests grün (1188 Unit + E2E), Doku-Drift (ADR-0005/0010/0002, README) nachgezogen. Kein Context/Router; ADRs 0002/0005/0010/0023 gewahrt.
