@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -48,3 +48,4 @@ einem Zug.
 - [ ] `npm run lint` und `npm test` bleiben grün; kein verändertes Verhalten
 
 ## Comments
+- Datenzugriff auf einen gemeinsamen Store-Request-Helfer plus einmalig aufgeloeste, wiederverwendete Verbindung reduziert; der Auflaesungsindex des Katalog-Resolvers liegt jetzt in modulweiten WeakMaps statt als Feld am System-/Katalogobjekt, mit identischer Invalidierungsregel fuer beide Lookup-Wege.
