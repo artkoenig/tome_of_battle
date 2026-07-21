@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
+import { createSubSelectionOperationsMock } from '../test-utils/subSelectionOperationsMock';
 
 // This suite isolates RosterEditor's rule-link wiring: the `onShowRule` seam that
 // UnitSelectionCard's chips funnel through, and the resulting RulesIndexDialog URL.
@@ -42,7 +43,7 @@ vi.mock('../hooks/useRoster', () => ({
     addUnit: vi.fn(),
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
-    updateSubSelection: vi.fn(),
+    subSelectionOperations: createSubSelectionOperationsMock(),
     updateRosterName: vi.fn(),
     save: vi.fn(),
     undo: vi.fn(),

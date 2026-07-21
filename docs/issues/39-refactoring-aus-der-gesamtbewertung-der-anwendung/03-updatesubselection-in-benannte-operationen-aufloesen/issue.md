@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01, 02]
 
@@ -47,3 +47,4 @@ Baumdurchlauf kommt aus den Primitiven von Kind-Issue 01.
 
 Übernommen aus Issue 28 (Punkt 6 betreffend inkonsistente Union-Shapes,
 soweit er diese Funktion betrifft).
+- updateSubSelection durch das Bündel subSelectionOperations (addInstance/removeInstance/increaseCount/decreaseCount) ersetzt; die Aktions-Strings entfallen ersatzlos. Die reine Listenlogik liegt neu in src/solver/subSelectionEditing.js — Erhöhen/Verringern samt Null-Regel genau einmal; die toten Zweige increment_instance/decrement_instance entfielen. Der Baumdurchlauf nutzt weiterhin replaceSelectionById/childSelectionsOf aus rosterTree.js (neu: ownCountOf).

@@ -24,7 +24,7 @@ export default function AutoFillSuggestions({
   system,
   activeCatalogue,
   remainingPoints,
-  updateSubSelection,
+  subSelectionOperations,
   costTypeLabel
 }) {
   const [showAll, setShowAll] = useState(false);
@@ -111,8 +111,7 @@ export default function AutoFillSuggestions({
               selectionName: selection.name,
               option: option,
               optionName: res.name,
-              cost: points,
-              actionType: 'increment'
+              cost: points
             });
           }
         }
@@ -191,14 +190,14 @@ export default function AutoFillSuggestions({
   }, [availableActions]);
 
 
-  const handleApplyAction = (action) => {
-    updateSubSelection(action.selectionId, action.option, action.actionType);
+  // Ein Vorschlag ist stets „eine Option mehr" — die Punkte werden aufgefüllt,
+  // nie abgebaut.
+  const applySuggestedAction = (action) => {
+    subSelectionOperations.increaseCount(action.selectionId, action.option);
   };
 
   const handleApplyCombo = (combo) => {
-    combo.actions.forEach(action => {
-      updateSubSelection(action.selectionId, action.option, action.actionType);
-    });
+    combo.actions.forEach(applySuggestedAction);
   };
 
   if (availableActions.length === 0) return null;
@@ -282,7 +281,7 @@ export default function AutoFillSuggestions({
                 <span className="text-gold text-label">+{action.cost} Pkt.</span>
                 <button 
                   className="btn-secondary square-btn"
-                  onClick={() => handleApplyAction(action)}
+                  onClick={() => applySuggestedAction(action)}
                   title="Hinzufügen"
                 >
                   <Plus size={14} />

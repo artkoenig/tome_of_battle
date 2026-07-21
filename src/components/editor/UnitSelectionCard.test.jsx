@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import UnitSelectionCard from './UnitSelectionCard';
+import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -76,7 +77,7 @@ describe('UnitSelectionCard Component', () => {
     costTypeLabel: 'Pkt.',
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
-    updateSubSelection: vi.fn(),
+    subSelectionOperations: createSubSelectionOperationsMock(),
     activeCatalogue: { id: 'bret-cat' }
   };
 
