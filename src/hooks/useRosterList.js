@@ -82,6 +82,10 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     }
   };
 
+  /**
+   * @param {import('../types.js').Roster} roster
+   * @param {import('../constants/views.js').View} [viewMode]
+   */
   const openRoster = (roster, viewMode = VIEWS.BUILDER) => {
     const sys = systems.find(s => s.id === roster.systemId);
     if (!sys) {

@@ -7,7 +7,7 @@ export default function BottomSheet({
   title,
   children,
   desktopMode = 'popover', // 'popover' or 'modal'
-  containerRef // optional, to handle click outside
+  containerRef = null // optional, to handle click outside
 }) {
   const [renderedChildren, setRenderedChildren] = useState(isOpen ? children : null);
   const [renderedTitle, setRenderedTitle] = useState(isOpen ? title : '');

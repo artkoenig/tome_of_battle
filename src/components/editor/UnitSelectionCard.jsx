@@ -50,7 +50,7 @@ export default function UnitSelectionCard({
   subSelectionOperations,
   activeCatalogue,
   isSubUnit = false,
-  onShowRule
+  onShowRule = null
 }) {
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);

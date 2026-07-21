@@ -42,6 +42,8 @@ function buildAllSelectedCats(system) {
  * @param {(message: string) => void} [props.onReportError] carries a failure to the app-wide
  *   channel. Needed because a completed import navigates away and unmounts this screen, so
  *   its own error area would take the message with it.
+ * @param {boolean} [props.showAsEmptyState] renders the importer as the app's empty state
+ *   when no system exists yet.
  */
 export default function Importer({ onSystemImported, onReportError, showAsEmptyState = false }) {
   const [systems, setSystems] = useState([]);

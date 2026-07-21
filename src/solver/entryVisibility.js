@@ -158,6 +158,10 @@ export function isSelectionEntryHidden(entry, context) {
  * „+"-Adders (CategoryUnitAdder) und der Listenregel-Erkennung — beide gruppieren
  * datengetrieben über die effektive Primärkategorie (ADR 0003 §4), nicht über
  * Kategorienamen. Dedupliziert per aufgelöster Entry-ID.
+ * @param {object} system
+ * @param {object} catalogue
+ * @param {string} categoryId
+ * @param {{roster?: import('../types.js').Roster, selectionCounts?: Record<string, number>, force?: import('../types.js').Force}} [context]
  */
 export function collectPrimaryCategoryEntries(system, catalogue, categoryId, { roster, selectionCounts = {}, force } = {}) {
   const found = [];

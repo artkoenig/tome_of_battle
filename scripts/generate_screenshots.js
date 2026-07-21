@@ -81,7 +81,7 @@ const openView = async (page, layout, label) => {
   const containerSelector = LAYOUTS[layout].navReadySelector;
   const clicked = await page.evaluate(
     (selector, viewLabel) => {
-      const button = Array.from(document.querySelectorAll(`${selector} button`))
+      const button = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(`${selector} button`)))
         .find((b) => b.textContent.toLowerCase().includes(viewLabel));
       if (button) button.click();
       return Boolean(button);
@@ -104,7 +104,7 @@ const submitRosterDialog = async (page, rosterName) => {
   // Katalogliste füllt sich erst, nachdem das System gewählt wurde.
   const selectFirstOption = (index) =>
     page.evaluate((selectIndex) => {
-      const select = Array.from(document.querySelectorAll('form select'))[selectIndex];
+      const select = /** @type {HTMLSelectElement[]} */ (Array.from(document.querySelectorAll('form select')))[selectIndex];
       if (!select || select.options.length <= 1) return false;
       select.selectedIndex = 1;
       select.dispatchEvent(new Event('change', { bubbles: true }));
@@ -115,13 +115,13 @@ const submitRosterDialog = async (page, rosterName) => {
     throw new Error('Kein Spielsystem im Aushebe-Dialog auswählbar');
   }
   await page.waitForFunction(() => {
-    const select = Array.from(document.querySelectorAll('form select'))[1];
+    const select = /** @type {HTMLSelectElement[]} */ (Array.from(document.querySelectorAll('form select')))[1];
     return select && select.options.length > 1;
   });
   await selectFirstOption(1);
 
   await page.evaluate(() => {
-    const submit = Array.from(document.querySelectorAll('form button')).find((b) => b.type === 'submit');
+    const submit = /** @type {HTMLButtonElement[]} */ (Array.from(document.querySelectorAll('form button'))).find((b) => b.type === 'submit');
     if (!submit) throw new Error('Absende-Knopf im Aushebe-Dialog nicht gefunden');
     submit.click();
   });

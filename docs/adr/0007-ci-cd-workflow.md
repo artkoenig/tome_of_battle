@@ -28,7 +28,7 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 ### 1. CI Workflow (`.github/workflows/ci.yml`)
 - **Trigger:** Läuft bei Pushes und PRs gegen `main`.
 - **Jobs:**
-  - **Lint & Unit-Tests:** Führt `npm run lint` und `npx vitest run` aus.
+  - **Lint & Unit-Tests:** Führt `npm run lint`, `npm run typecheck` (TypeScript-Prüfung der JSDoc-Typen im Produktivcode via `tsc --noEmit` mit `checkJs`; Testdateien sind über die `tsconfig.json` ausgenommen) und `npx vitest run` aus.
   - **E2E-Tests:** Führt `src/solver/ui.test.js` mit einem echten, frisch installierten Chromium-Browser via Puppeteer aus. Dies garantiert, dass `main` immer voll funktionstüchtig ist.
 
 ### 2. Doku-Abgleich (`.github/workflows/doc-drift-check.yml`)

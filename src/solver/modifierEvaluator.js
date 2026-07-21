@@ -465,6 +465,8 @@ export const getEffectiveModifiers = (source) => {
 // `error` blocks the list, `warning`/`info` are purely informational.
 export const ValidationSeverity = Object.freeze({ ERROR: 'error', WARNING: 'warning', INFO: 'info' });
 
+/** @typedef {typeof ValidationSeverity[keyof typeof ValidationSeverity]} SeverityLevel */
+
 const MESSAGE_MODIFIER_FIELDS = new Set(Object.values(ValidationSeverity));
 
 /**
@@ -472,12 +474,12 @@ const MESSAGE_MODIFIER_FIELDS = new Set(Object.values(ValidationSeverity));
  * whose conditions currently pass in `ctx`, each tagged with the severity its field
  * names. Reuses getEffectiveModifiers + modifierConditionsPass, so modifierGroup gating
  * and the full condition semantics apply exactly as for every other modifier consumer.
- * @returns {{severity: string, message: string}[]}
+ * @returns {{severity: SeverityLevel, message: string}[]}
  */
 export const collectTriggeredMessages = (source, ctx = {}) =>
   getEffectiveModifiers(source)
     .filter(mod => MESSAGE_MODIFIER_FIELDS.has(mod.field) && mod.value && modifierConditionsPass(mod, ctx))
-    .map(mod => ({ severity: mod.field, message: mod.value }));
+    .map(mod => ({ severity: /** @type {SeverityLevel} */ (mod.field), message: mod.value }));
 
 /**
  * Applies the category-mutating modifiers (`add`/`remove`/`set-primary`/

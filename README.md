@@ -61,6 +61,7 @@ npm run lint       # Code analysis using oxlint
 npm run knip       # Cross-file dead-code / unused-export / unused-dependency analysis (warn-only)
 npm run depcruise  # Dependency-graph rules: layering, solver facade, cycles, orphans (warn-only)
 npm run analyze    # Runs knip and dependency-cruiser together
+npm run typecheck  # Type-checks the JSDoc annotations of the production code (tsc --noEmit, checkJs)
 npm test           # Runs unit & component tests (Vitest) and the Puppeteer E2E smoke test
 ```
 
@@ -125,7 +126,7 @@ For more in-depth details on the BattleScribe format, see [`docs/battlescribe-da
 
 ## Tech Stack
 
-React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer · oxlint · Knip · dependency-cruiser
+React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer · oxlint · Knip · dependency-cruiser · TypeScript (JSDoc-Typprüfung)
 
 ---
 

@@ -211,7 +211,7 @@ export async function crawlRulesIndex({
   sections = SECTIONS,
   derivations = DERIVATIONS,
 } = {}) {
-  const index = {};
+  const index = /** @type {Record<string, string>} */ ({});
   const failures = [];
   const sectionCount = sections.length + derivations.length;
 

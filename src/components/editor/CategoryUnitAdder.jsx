@@ -4,7 +4,7 @@ import { resolveEntry, getOptionDisplayCost, getEffectiveName, collectPrimaryCat
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
-  categoryId,
+  categoryId = null,
   categoryName,
   system,
   activeCatalogue,
@@ -13,7 +13,7 @@ export default function CategoryUnitAdder({
   addUnit,
   roster,
   selectionCounts,
-  force,
+  force = null,
   entries = null
 }) {
   const [isOpen, setIsOpen] = useState(false);

@@ -26,7 +26,7 @@ export default function RuleChipIcon({
   onInfoEnter,
   onInfoMove,
   onInfoLeave,
-  onInfoClick,
+  onInfoClick = null,
 }) {
   const resolveRuleUrl = useRuleUrl();
 
