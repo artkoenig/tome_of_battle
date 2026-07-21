@@ -1,95 +1,108 @@
 import { InfoLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
 
-export function findEntryInCatalogue(catalogue, entryId) {
-  if (!catalogue) return null;
-  const cleanId = entryId && entryId.includes('::') ? entryId.split('::').pop() : entryId;
-  
-  if (!catalogue._entryCache) {
-    catalogue._entryCache = new Map();
-    
-    const indexObject = (obj) => {
-      if (!obj || typeof obj !== 'object') return;
-      if (obj.id) {
-        catalogue._entryCache.set(obj.id, obj);
+// A Battlescribe entry id may be qualified with the catalogue it came from
+// ("<catalogueId>::<entryId>"); only the trailing part identifies the entry.
+const ENTRY_ID_QUALIFIER_SEPARATOR = '::';
+
+/**
+ * Entry indexes live in module-scoped WeakMaps rather than as a field on the
+ * indexed object, because systems and catalogues are persisted to IndexedDB
+ * verbatim — a field would be written along with them. Keying weakly also lets
+ * an index be collected as soon as the system or catalogue it belongs to is.
+ * @type {WeakMap<object, {source: *, index: Map}>}
+ */
+const catalogueEntryIndexes = new WeakMap();
+const systemEntryIndexes = new WeakMap();
+
+function stripEntryIdQualifier(entryId) {
+  return entryId && entryId.includes(ENTRY_ID_QUALIFIER_SEPARATOR)
+    ? entryId.split(ENTRY_ID_QUALIFIER_SEPARATOR).pop()
+    : entryId;
+}
+
+/**
+ * Returns the cached index of `indexedObject`, rebuilding it whenever the
+ * content it was derived from (`indexSource`) is no longer the same reference.
+ * Both lookup paths share this rule, so both invalidate alike.
+ */
+function getOrBuildIndex(indexes, indexedObject, indexSource, buildIndex) {
+  const cached = indexes.get(indexedObject);
+  if (cached && cached.source === indexSource) {
+    return cached.index;
+  }
+  const index = buildIndex();
+  indexes.set(indexedObject, { source: indexSource, index });
+  return index;
+}
+
+/** Recursively indexes every object carrying an `id` under that id. */
+function indexEntriesById(node, index) {
+  if (!node || typeof node !== 'object') return;
+  if (node.id) {
+    index.set(node.id, node);
+  }
+  for (const key in node) {
+    const value = node[key];
+    if (Array.isArray(value)) {
+      value.forEach(item => indexEntriesById(item, index));
+    } else if (value && typeof value === 'object') {
+      indexEntriesById(value, index);
+    }
+  }
+}
+
+function getCatalogueEntryIndex(catalogue) {
+  return getOrBuildIndex(catalogueEntryIndexes, catalogue, catalogue, () => {
+    const index = new Map();
+    indexEntriesById(catalogue, index);
+    return index;
+  });
+}
+
+/**
+ * Builds one entry index per catalogue, plus one for the game system's own
+ * shared data (keyed by `system.id`). Rebuilt when `system.catalogues` is
+ * replaced.
+ * @returns {Map<string, Map<string, object>>}
+ */
+function getSystemEntryIndexesByCatalogueId(system) {
+  return getOrBuildIndex(systemEntryIndexes, system, system.catalogues, () => {
+    const indexesByCatalogueId = new Map();
+
+    const indexCatalogue = (catalogue, catalogueId) => {
+      if (!catalogue) return;
+      if (!indexesByCatalogueId.has(catalogueId)) {
+        indexesByCatalogueId.set(catalogueId, new Map());
       }
-      for (const key in obj) {
-        const val = obj[key];
-        if (Array.isArray(val)) {
-          for (let i = 0; i < val.length; i++) {
-            indexObject(val[i]);
-          }
-        } else if (val && typeof val === 'object') {
-          if (key !== '_entryCache') {
-            indexObject(val);
-          }
-        }
-      }
+      indexEntriesById(catalogue, indexesByCatalogueId.get(catalogueId));
     };
 
-    indexObject(catalogue);
-  }
+    indexCatalogue(system, system.id);
+    system.catalogues?.forEach(catalogue => indexCatalogue(catalogue, catalogue.id));
 
-  return catalogue._entryCache.get(cleanId) || null;
+    return indexesByCatalogueId;
+  });
+}
+
+export function findEntryInCatalogue(catalogue, entryId) {
+  if (!catalogue) return null;
+  return getCatalogueEntryIndex(catalogue).get(stripEntryIdQualifier(entryId)) || null;
 }
 
 export function findEntryInSystem(system, entryId, catalogueId = null) {
   if (!system) return null;
-  const cleanId = entryId && entryId.includes('::') ? entryId.split('::').pop() : entryId;
-  
-  if (!system._entryCache || system._entryCacheSource !== system.catalogues) {
-    system._entryCache = new Map();
-    system._entryCacheSource = system.catalogues;
-    
-    const indexCatalogue = (cat, catId) => {
-      if (!cat) return;
-      if (!system._entryCache.has(catId)) {
-        system._entryCache.set(catId, new Map());
-      }
-      const cacheMap = system._entryCache.get(catId);
-      
-      const indexObject = (obj) => {
-        if (!obj || typeof obj !== 'object') return;
-        if (obj.id) {
-          cacheMap.set(obj.id, obj);
-        }
-        for (const key in obj) {
-          const val = obj[key];
-          if (Array.isArray(val)) {
-            for (let i = 0; i < val.length; i++) {
-              indexObject(val[i]);
-            }
-          } else if (val && typeof val === 'object') {
-            if (key !== '_entryCache' && key !== 'catalogues') {
-              indexObject(val);
-            }
-          }
-        }
-      };
-      
-      indexObject(cat);
-    };
+  const cleanId = stripEntryIdQualifier(entryId);
+  const indexesByCatalogueId = getSystemEntryIndexesByCatalogueId(system);
 
-    // Index the game system itself (using system.id)
-    indexCatalogue(system, system.id);
-    
-    // Index all catalogues
-    system.catalogues?.forEach(cat => {
-      indexCatalogue(cat, cat.id);
-    });
+  const preferredIndex = catalogueId ? indexesByCatalogueId.get(catalogueId) : null;
+  if (preferredIndex && preferredIndex.has(cleanId)) {
+    return preferredIndex.get(cleanId);
   }
 
-  // Lookup logic
-  if (catalogueId) {
-    const catMap = system._entryCache.get(catalogueId);
-    if (catMap && catMap.has(cleanId)) {
-      return catMap.get(cleanId);
-    }
-  }
-
-  // Fallback: search all maps if catalogueId is not provided or entry not found in preferred catalogue
-  for (const [catId, catMap] of system._entryCache.entries()) {
-    if (catMap.has(cleanId)) {
-      return catMap.get(cleanId);
+  // Fallback: the preferred catalogue was not given, or does not hold the entry.
+  for (const index of indexesByCatalogueId.values()) {
+    if (index.has(cleanId)) {
+      return index.get(cleanId);
     }
   }
 
