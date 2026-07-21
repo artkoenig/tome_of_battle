@@ -58,7 +58,10 @@ export function isCostField(field, system, roster = null) {
  * The top-level selections that make up a constraint's scope container.
  * - `roster`: every force's selections (the whole roster).
  * - `force` : the subject's own force, or — when `includeChildForces` is set —
- *   every force in the roster (child forces are flattened as roster siblings).
+ *   every force in the roster. `includeChildForces` officially widens the count
+ *   to the force's descendant forces; the `.ros` import flattens nested forces
+ *   into roster-level siblings (ADR-0011 §5), so no descendant relation survives
+ *   in the roster model. "Every force" is the closest available superset.
  * - otherwise (`parent`/ancestor): the immediate parent selection's children,
  *   falling back to the force's selections.
  */

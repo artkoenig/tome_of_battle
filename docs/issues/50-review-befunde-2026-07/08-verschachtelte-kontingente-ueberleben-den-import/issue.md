@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: [01]
 
@@ -33,3 +33,4 @@ korrigiert werden.
 - [ ] Wird der Verlust stattdessen nur gemeldet: der Nutzer sieht einen Hinweis, und die beiden irreführenden Kommentare sind korrigiert
 
 ## Comments
+- Der .ros-Import liest verschachtelte <forces> jetzt rekursiv und legt sie als Kontingente auf Roster-Ebene flach (Dokument-Reihenfolge, jedes mit eigener Katalog-/Force-Entry-Referenz). ADR 0011 (neuer Abschnitt 5) und die beiden includeChildForces-Kommentare beschreiben diesen Stand nun zutreffend.

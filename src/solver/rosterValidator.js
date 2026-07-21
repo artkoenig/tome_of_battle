@@ -510,8 +510,10 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
     } else if (con.scope === ConstraintScope.ROSTER) {
       count = Math.max(selectionCounts[entryId] || 0, (entry.targetId ? selectionCounts[entry.targetId] || 0 : 0));
     } else if (con.scope === ConstraintScope.FORCE) {
-      // includeChildForces widens a force-scoped count to the whole roster
-      // (child forces are flattened as roster siblings in the roster model).
+      // includeChildForces widens a force-scoped count to the force's descendant
+      // forces. The .ros import flattens nested forces into roster-level siblings
+      // (ADR-0011 §5), so no descendant relation survives in the roster model —
+      // the whole roster is the closest available superset.
       const scopeCounts = con.includeChildForces
         ? selectionCounts
         : (force ? forceSelectionCounts[force.id] || {} : {});
