@@ -73,3 +73,4 @@ durch, was für Konsistenz spricht.
       Beschriftung.
 
 ## Comments
+- Umfang erweitert nach einem Fund aus 47/01: src/solver/constraintScope.js:23-24 schreibt POINTS_COST_FIELD='pts' und LEGACY_POINTS_COST_TYPE_ID='ecfa-8486-4f6c-c249' fest. Gegenprobe gegen den geladenen Fork: field="pts" kommt in .gst und .cat NULL mal vor; field="ecfa-8486-4f6c-c249" kommt haeufig vor (Bretonnia 13, Chaos 66, Dwarfs 19, Empire 14, Lizardmen 10), ist aber in costTypes deklariert und wird daher bereits vom letzten Zweig der Funktion erfasst. Beide Aliase sind fuer die realen Daten also redundant bzw. tot. Vorsicht: sie waren defensiv fuer Daten gedacht, die eine Kostenart nicht deklarieren — vor dem Entfernen ist zu pruefen, ob isCostField ohne sie fuer undeklarierte Felder noch richtig antwortet.
