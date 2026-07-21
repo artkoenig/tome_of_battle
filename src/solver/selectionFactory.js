@@ -1,50 +1,41 @@
+import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { memberDefsOf, resolveGroupDefaultMember } from './selectionMembers.js';
 import '../types.js';
 
-// Constraint-Typ, dessen positiver Wert ein Kind zur Pflichtauswahl macht (min > 0).
-const MIN_CONSTRAINT_TYPE = 'min';
-
-/** Wert des `min`-Constraints einer Definition (0, falls keiner vorhanden). */
+/**
+ * Wert des `min`-Constraints einer Definition (0, falls keiner vorhanden).
+ * Ein positiver Wert macht das Kind zur Pflichtauswahl.
+ */
 function getMinConstraintValue(def) {
-  return def.constraints?.find(constraint => constraint.type === MIN_CONSTRAINT_TYPE)?.value || 0;
+  return def.constraints?.find(constraint => constraint.type === ConstraintKind.MIN)?.value || 0;
 }
 
 /**
  * Fügt ein Pflicht-Kind (aufgelöst über dieselbe Fabrik) mit der geforderten Mindestanzahl
  * unter die Elternselektion. Ein nicht auflösbares Kind wird übersprungen.
  */
-function addMandatoryChild({ system, resolveEntry, parentSelection, childDef, count }) {
-  const childSelection = createSelectionFromDef({ system, resolveEntry, entry: childDef });
+function addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef, count }) {
+  const childSelection = createSelectionFromDef({ system, resolveEntry, catalogueId, entry: childDef });
   if (childSelection) {
     childSelection.number = count;
     parentSelection.selections.push(childSelection);
   }
 }
 
-/** Alle Mitglieder (Einträge und Links) einer Definition oder Gruppe in einer Liste. */
-function memberDefs(defOrGroup) {
-  return [...(defOrGroup.selectionEntries || []), ...(defOrGroup.entryLinks || [])];
-}
-
 /**
  * Bevölkert jedes Mitglied, das ein eigenes `min > 0` trägt, mit genau seinem `min`.
  * Gibt die Anzahl so bevölkerter Mitglieder zurück (0, falls keines pflichtig ist).
  */
-function populateMandatoryMembers({ system, resolveEntry, parentSelection, members }) {
+function populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members }) {
   let populatedCount = 0;
   members.forEach(member => {
     const minValue = getMinConstraintValue(member);
     if (minValue > 0) {
-      addMandatoryChild({ system, resolveEntry, parentSelection, childDef: member, count: minValue });
+      addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef: member, count: minValue });
       populatedCount += 1;
     }
   });
   return populatedCount;
-}
-
-/** Die konfigurierte Default-Option einer Gruppe (oder null, wenn keine gesetzt/auffindbar ist). */
-function findGroupDefaultOption(group) {
-  if (!group.defaultSelectionEntryId) return null;
-  return memberDefs(group).find(member => member.id === group.defaultSelectionEntryId) || null;
 }
 
 /**
@@ -60,19 +51,19 @@ function findGroupDefaultOption(group) {
  *
  * Optionale (min = 0) Kinder bleiben ungewählt — genau das Verhalten des echten Aushebens.
  */
-function populateChildren({ system, resolveEntry, def, parentSelection }) {
-  populateMandatoryMembers({ system, resolveEntry, parentSelection, members: memberDefs(def) });
+function populateChildren({ system, resolveEntry, catalogueId, def, parentSelection }) {
+  populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members: memberDefsOf(def) });
 
   def.selectionEntryGroups?.forEach(group => {
     const minValue = getMinConstraintValue(group);
-    const members = memberDefs(group);
+    const members = memberDefsOf(group);
     if (minValue <= 0 || members.length === 0) return;
 
-    const itemizedCount = populateMandatoryMembers({ system, resolveEntry, parentSelection, members });
+    const itemizedCount = populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members });
     if (itemizedCount > 0) return;
 
-    const chosenOption = findGroupDefaultOption(group) || members[0];
-    addMandatoryChild({ system, resolveEntry, parentSelection, childDef: chosenOption, count: minValue });
+    const chosenOption = resolveGroupDefaultMember(group);
+    addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef: chosenOption, count: minValue });
   });
 }
 
@@ -86,13 +77,17 @@ function populateChildren({ system, resolveEntry, def, parentSelection }) {
  * Abhängigkeiten werden injiziert (Dependency Injection, kein Closure über Hook-State):
  * @param {Object} args
  * @param {Object} args.system                     das Spielsystem.
- * @param {(system: Object, entry: Object) => Object} args.resolveEntry Auflöser für Links/Einträge.
+ * @param {(system: Object, entry: Object, catalogueId: string|null) => Object} args.resolveEntry
+ *   Auflöser für Links/Einträge.
  * @param {Object} args.entry                       der (unaufgelöste) Katalog-Eintrag/Link.
+ * @param {string|null} args.catalogueId            der Katalog, aus dem `entry` stammt. Pflicht-
+ *   Kontext: bei mehreren gleichzeitig geladenen Katalogen (ADR-0018) ist eine Eintrags-Id
+ *   nur innerhalb ihres Katalogs eindeutig.
  * @param {string|null} [args.categoryId]           Kategorie der Top-Selektion (Kinder erben keine).
  * @returns {import('../types.js').Selection|null}  der Knoten, oder null bei unauflösbarem Eintrag.
  */
-export function createSelectionFromDef({ system, resolveEntry, entry, categoryId = null }) {
-  const resolved = resolveEntry(system, entry);
+export function createSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId = null }) {
+  const resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return null;
 
   const selection = {
@@ -106,6 +101,6 @@ export function createSelectionFromDef({ system, resolveEntry, entry, categoryId
     selections: []
   };
 
-  populateChildren({ system, resolveEntry, def: resolved, parentSelection: selection });
+  populateChildren({ system, resolveEntry, catalogueId, def: resolved, parentSelection: selection });
   return selection;
 }

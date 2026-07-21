@@ -182,6 +182,21 @@ export function countSelections(selections, { includeChildSelections = false, pr
 }
 
 /**
+ * Zählt wie {@link countSelections}, aber im Teilbaum *einer* Selection statt in
+ * einem Wald: die Selection selbst zählt mit, ihre Nachfahren nur, wenn
+ * `includeChildSelections` gesetzt ist. Zählendes Gegenstück zu
+ * {@link someSelectionInSubtree} und dieselbe Tiefenregel wie überall sonst —
+ * die Option entscheidet allein darüber, ob unterhalb der Wurzel weitergezählt
+ * wird.
+ *
+ * @param {import('../types.js').Selection|null|undefined} selection
+ * @returns {number}
+ */
+export function countSelectionsInSubtree(selection, options = {}) {
+  return countSelections(selection ? [selection] : NO_SELECTIONS, options);
+}
+
+/**
  * Bildet einen Teilbaum unter Wahrung der Immutabilität ab: Die Kinder werden
  * zuerst abgebildet, dann erzeugt `transform` aus Knoten und bereits
  * abgebildeten Kindern den Ersatzknoten. Der Eingabebaum bleibt unberührt.

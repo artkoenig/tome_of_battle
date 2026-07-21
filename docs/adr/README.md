@@ -18,7 +18,7 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0008 | [Native Vercel Integration](0008-vercel-deployment.md) | Accepted | 2026-07-13 |
 | 0009 | [Branching and Release Train Strategy](0009-branching-and-release-train-strategy.md) | Accepted | 2026-07-05 |
 | 0010 | [Einheitliches Dialog- und Toast-System](0010-einheitliches-dialog-und-toast-system.md) | Accepted | 2026-07-13 |
-| 0011 | [Roster als Referenz-Modell, abgeleitete Kosten & Serialisierungs-Adapter](0011-roster-referenzmodell-und-serialisierungs-adapter.md) | Accepted | 2026-07-13 |
+| 0011 | [Roster als Referenz-Modell, abgeleitete Kosten & Serialisierungs-Adapter](0011-roster-referenzmodell-und-serialisierungs-adapter.md) | Accepted | 2026-07-21 |
 | 0012 | [Integration externer WHFB-Regeltexte via 6th.whfb.app](0012-integration-externer-regeltexte-6th-whfb-app.md) | Accepted | 2026-07-15 |
 | 0013 | [Generischer Undo/Redo-Hook statt roster-spezifischer History-Logik](0013-generischer-undo-redo-hook.md) | Accepted | 2026-07-15 |
 | 0014 | [Kataloge als externes Fork-Repo mit Laufzeit-Abruf](0014-kataloge-als-externes-fork-repo-mit-laufzeit-abruf.md) | Accepted | 2026-07-15 |

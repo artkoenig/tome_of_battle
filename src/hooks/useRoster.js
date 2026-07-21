@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 
 import {
   calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
-  childSelectionsOf, findSelectionInRoster, mapSelectionTree, replaceSelectionById,
+  childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
+  mapSelectionTree, replaceSelectionById,
   createSelectionFromDef as buildSelectionFromDef,
   withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../solver/validator';
@@ -22,6 +23,22 @@ const COUNT_DECREASE = -1;
 /** Abgeleitete Werte, solange Roster oder System noch nicht vorliegen. */
 const NO_COSTS = Object.freeze({});
 const NO_VALIDATION_ERRORS = Object.freeze([]);
+
+/** Ohne benanntes Ziel-Kontingent hebt die App in das erste des Rosters aus. */
+const FALLBACK_FORCE_INDEX = 0;
+
+/**
+ * Das eine Kontingent, in das eine ausgehobene Einheit gehört: das der aktiven
+ * Ansicht, ersatzweise das erste des Rosters. Ein `.ros`-Import bringt beliebig
+ * viele Kontingente mit, deshalb muss das Ziel eindeutig bestimmt sein.
+ * @param {import('../types.js').Force[]} forces
+ * @param {string|null} targetForceId
+ * @returns {import('../types.js').Force|null}
+ */
+function findTargetForce(forces, targetForceId) {
+  if (!forces?.length) return null;
+  return forces.find(force => force.id === targetForceId) ?? forces[FALLBACK_FORCE_INDEX];
+}
 
 /**
  * Hook to manage a roster state, cost calculations, validations and updates.
@@ -129,22 +146,45 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
     };
   }, []);
 
+  /**
+   * Der Katalog, gegen den die Verweise eines Kontingents auflösen: seiner, ersatzweise
+   * der der Liste. Bei mehreren gleichzeitig geladenen Katalogen (ADR-0018) ist eine
+   * Eintrags-Id nur innerhalb ihres Katalogs eindeutig, deshalb wird er mitgegeben.
+   * @param {import('../types.js').Force|null|undefined} force
+   */
+  const catalogueIdOfForce = (force) => force?.catalogueId || roster?.catalogueId || null;
+
+  /** Der Katalog des Kontingents, das die Selektion `selectionId` enthält. */
+  const catalogueIdContaining = (selectionId) =>
+    catalogueIdOfForce(findForceContainingSelection(roster, selectionId));
+
   // Geteilte Selektions-Fabrik (SSOT, ADR-0022): system/resolveEntry werden injiziert,
   // sodass Ausheben und Aushebe-Verfügbarkeit dieselbe Pflicht-Kind-Bevölkerung sehen.
-  const createSelectionFromDef = (entry, categoryId = null) =>
-    buildSelectionFromDef({ system, resolveEntry, entry, categoryId });
+  const createSelectionFromDef = (entry, categoryId, catalogueId) =>
+    buildSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId });
 
-  const addUnit = (entry, categoryId) => {
-    const newUnit = createSelectionFromDef(entry, categoryId);
+  /**
+   * Hebt `entry` in genau ein Kontingent aus.
+   * @param {Object} entry Katalogeintrag, aus dem die Selektion gebaut wird
+   * @param {string} categoryId Kategorie, unter der die Einheit geführt wird
+   * @param {string} [targetForceId] Kontingent der aktiven Ansicht; ohne Angabe
+   *   das erste Kontingent des Rosters
+   */
+  const addUnit = (entry, categoryId, targetForceId = null) => {
+    const newUnit = createSelectionFromDef(
+      entry, categoryId, catalogueIdOfForce(findTargetForce(roster?.forces, targetForceId))
+    );
     if (!newUnit) return;
 
     setRoster(prev => {
-      const updatedForces = prev.forces.map(force => {
-        return {
-          ...force,
-          selections: [...(force.selections || []), newUnit]
-        };
-      });
+      const targetForce = findTargetForce(prev.forces, targetForceId);
+      if (!targetForce) return prev;
+
+      const updatedForces = prev.forces.map(force => (
+        force === targetForce
+          ? { ...force, selections: [...childSelectionsOf(force), newUnit] }
+          : force
+      ));
       return {
         ...prev,
         forces: updatedForces
@@ -238,7 +278,9 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   /** Legt eine weitere, eigenständig geführte Instanz einer Option an. */
   const addSubSelectionInstance = (unitSelectionId, optionDefinition) =>
     updateUnitChildSelections(unitSelectionId, childSelections =>
-      withAddedInstance(childSelections, createSelectionFromDef(optionDefinition)));
+      withAddedInstance(childSelections, createSelectionFromDef(
+        optionDefinition, null, catalogueIdContaining(unitSelectionId)
+      )));
 
   /** Entfernt eine einzeln geführte Instanz anhand ihrer Selection-Id. */
   const removeSubSelectionInstance = (unitSelectionId, instanceSelectionId) =>
@@ -251,7 +293,7 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
         childSelections,
         optionDefinition.id,
         countDelta,
-        () => createSelectionFromDef(optionDefinition)
+        () => createSelectionFromDef(optionDefinition, null, catalogueIdContaining(unitSelectionId))
       ));
 
   /**

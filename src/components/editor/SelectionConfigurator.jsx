@@ -9,6 +9,7 @@ import {
 import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
+import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
 
 export default function SelectionConfigurator({
@@ -191,8 +192,8 @@ export default function SelectionConfigurator({
               return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
                      (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
             }) || [];
-            const minConstraint = filteredOptionConstraints.find(c => c.type === 'min');
-            const maxConstraint = filteredOptionConstraints.find(c => c.type === 'max');
+            const minConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MIN);
+            const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
             const minLimit = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
             const maxLimit = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
             const isMandatory = minLimit > 0 && minLimit === maxLimit;

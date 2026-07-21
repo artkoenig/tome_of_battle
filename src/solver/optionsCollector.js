@@ -3,6 +3,7 @@ import { getEffectiveModifiers } from './modifierEvaluator.js';
 import { isSelectionEntryHidden } from './entryVisibility.js';
 import { isIndependentSubUnit } from './subUnit.js';
 import { ConstraintScope } from './battlescribeConstants.js';
+import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 
 /**
  * Collects the options a unit exposes in the editor.
@@ -31,7 +32,9 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
   const isHiddenInContext = (linkOrEntry) => {
     if (!visibilityContext) return false;
     const { roster, selectionCounts, forceCategoryCounts, force } = visibilityContext;
-    return isSelectionEntryHidden(linkOrEntry, { system, roster, selectionCounts, forceCategoryCounts, force });
+    return isSelectionEntryHidden(linkOrEntry, {
+      system, roster, selectionCounts, forceCategoryCounts, force, catalogueId: activeCatalogueId
+    });
   };
 
   // Recursive helper to find all nested entry IDs for a group
@@ -203,7 +206,7 @@ export const isOptionRosterUnique = (res, system) => {
   
   // 1. Check constraints on the entry itself
   const hasDirectConstraint = res.constraints?.some(c => 
-    c.type === 'max' && 
+    c.type === ConstraintKind.MAX && 
     c.value === 1 && 
     (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE)
   );
@@ -213,7 +216,7 @@ export const isOptionRosterUnique = (res, system) => {
   const hasCategoryConstraint = res.categoryLinks?.some(cl => {
     const catDef = system.categoryEntries?.find(ce => ce.id === cl.targetId);
     return catDef?.constraints?.some(c => 
-      c.type === 'max' && 
+      c.type === ConstraintKind.MAX && 
       c.value === 1 && 
       (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE || !c.scope)
     );

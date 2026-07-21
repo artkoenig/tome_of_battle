@@ -195,11 +195,23 @@ export const SELECTIONS_FIELD = 'selections';
 const DEFAULT_CONSTRAINT_SCOPE = 'parent'; // parent, force, roster, or an ancestor id
 
 /**
- * Reads a boolean XSD attribute, treating an absent attribute as `false`
- * (the schema default for the constraint inclusion/percent flags).
+ * The BattleScribe QueryBase default for `shared`: **true**. An absent attribute
+ * means the query aggregates over every instance of the entry in the roster;
+ * only an explicit `shared="false"` narrows it to the one instance it hangs on.
+ * The solver reads the resulting flag through `isSharedQuery`.
  */
-function getBooleanAttribute(el, attributeName) {
-  return el.getAttribute(attributeName) === 'true';
+export const DEFAULT_SHARED_QUERY = true;
+
+/**
+ * Reads a boolean XSD attribute, falling back to the default the schema declares
+ * for it when the attribute is absent. That default is `false` for the
+ * inclusion/percent flags but `true` for `shared` (XSD `QueryBase`), so it must
+ * be passed in rather than assumed — reading an absent `shared` as `false` would
+ * silently turn every aggregating query into a per-instance one.
+ */
+function getBooleanAttribute(el, attributeName, defaultValue = false) {
+  const rawValue = el.getAttribute(attributeName);
+  return rawValue === null || rawValue === undefined ? defaultValue : rawValue === 'true';
 }
 
 /**
@@ -207,7 +219,9 @@ function getBooleanAttribute(el, attributeName) {
  * (see battlescribeSchema.generated.js) so they cannot silently drift from the
  * vendored XSD. `percentValue` marks the value as a percentage of a reference
  * quantity; `includeChildSelections`/`includeChildForces` control whether nested
- * selections / sibling (child) forces are counted for the constraint.
+ * selections / sibling (child) forces are counted for the constraint; `shared`
+ * decides whether the constraint aggregates over all instances of the entry in
+ * the roster or applies to the single instance it hangs on (ADR 0003).
  */
 function parseConstraints(el) {
   const wrapper = getChildren(el, 'constraints')[0];
@@ -218,7 +232,7 @@ function parseConstraints(el) {
     value: parseFloat(conEl.getAttribute(AttributeName.VALUE)) || 0,
     field: conEl.getAttribute(AttributeName.FIELD) || SELECTIONS_FIELD,
     scope: conEl.getAttribute(AttributeName.SCOPE) || DEFAULT_CONSTRAINT_SCOPE,
-    shared: getBooleanAttribute(conEl, AttributeName.SHARED),
+    shared: getBooleanAttribute(conEl, AttributeName.SHARED, DEFAULT_SHARED_QUERY),
     percentValue: getBooleanAttribute(conEl, AttributeName.PERCENT_VALUE),
     includeChildSelections: getBooleanAttribute(conEl, AttributeName.INCLUDE_CHILD_SELECTIONS),
     includeChildForces: getBooleanAttribute(conEl, AttributeName.INCLUDE_CHILD_FORCES)
@@ -235,7 +249,7 @@ function parseCondition(condEl) {
     field: condEl.getAttribute(AttributeName.FIELD) || SELECTIONS_FIELD,
     scope: condEl.getAttribute(AttributeName.SCOPE) || DEFAULT_CONSTRAINT_SCOPE,
     childId: condEl.getAttribute(AttributeName.CHILD_ID),
-    shared: getBooleanAttribute(condEl, AttributeName.SHARED),
+    shared: getBooleanAttribute(condEl, AttributeName.SHARED, DEFAULT_SHARED_QUERY),
     // When true, selections nested below the scope target are counted as well,
     // not only the direct children (BattleScribe QueryBase attribute).
     includeChildSelections: getBooleanAttribute(condEl, AttributeName.INCLUDE_CHILD_SELECTIONS)
@@ -586,6 +600,9 @@ export function parseCatalogueXML(xmlText) {
     id: root.getAttribute(AttributeName.ID),
     name: getName(root),
     revision: getRevision(root),
+    // A library catalogue only supplies shared building blocks that other catalogues
+    // link to; it is not a playable army (Catalogue.xsd: catalogue@library).
+    isLibrary: getBooleanAttribute(root, AttributeName.LIBRARY),
     gameSystemId: root.getAttribute(AttributeName.GAME_SYSTEM_ID),
     gameSystemRevision: root.getAttribute(AttributeName.GAME_SYSTEM_REVISION),
     selectionEntries,

@@ -1,7 +1,7 @@
 # 0011: Roster als Referenz-Modell, abgeleitete Kosten & Serialisierungs-Adapter
 
 - **Status:** Accepted
-- **Datum:** 2026-07-13
+- **Datum:** 2026-07-21
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** 0002 (Data Flow & IndexedDB), 0003 (Battlescribe Domain Rules)
 
@@ -94,6 +94,24 @@ identisch.
 Felder, die `.ros` einbettet, wir aber nicht speichern (`type`, Kosten-Gesamtwerte,
 `costLimits`), leitet der Export aus dem Katalog bzw. der Berechnung ab.
 
+### 5. Unter-Kontingente werden beim Import flachgelegt
+Das `.ros`-Schema erlaubt innerhalb eines `<force>` eine weitere `<forces>`-Liste
+(Unter-Kontingente, z. B. eine Abteilung innerhalb einer Abteilung). Unser
+Roster-Modell kennt **keine Kontingent-Hierarchie**. Der Import liest solche
+Unter-Kontingente daher **rekursiv ein und legt sie als Geschwister auf
+Roster-Ebene flach** (Dokument-Reihenfolge: ein Kontingent vor seinen
+Unter-Kontingenten); jedes behält seine eigene Katalog- und
+Force-Entry-Referenz. Damit geht **keine Auswahl** verloren — verloren geht
+allein die Verschachtelungs-Beziehung. Wie beim Kriegsmaschinen-Split (§3) ist
+der Round-Trip **semantisch**, nicht strukturell identisch: der Export schreibt
+alle Kontingente flach unter `<forces>`.
+
+Folge für die Validierung: `includeChildForces` bedeutet im Original „dieses
+Kontingent und seine Nachfahren". Da die Nachfahren-Beziehung im Modell nicht
+existiert, wertet der Solver das Flag als **gesamtes Roster** aus — die kleinste
+im Modell verfügbare Obermenge. Die Kommentare in `constraintScope.js` und
+`rosterValidator.js` benennen genau das.
+
 ## Konsequenzen (Auswirkungen)
 
 - **Positiv:**
@@ -106,3 +124,7 @@ Felder, die `.ros` einbettet, wir aber nicht speichern (`type`, Kosten-Gesamtwer
     aus dem Katalog beziehen (Umbau, aber keine armeespezifische Logik).
   - Der Export benötigt zwingend das Spielsystem (bereits Voraussetzung).
   - Kein struktureller Round-Trip für Kriegsmaschinen (bewusst akzeptiert).
+  - Kein struktureller Round-Trip für Unter-Kontingente: die Verschachtelung geht
+    verloren, `includeChildForces` wird dadurch großzügiger ausgewertet als im
+    Original (bewusst akzeptiert — die Alternative wäre der Verlust ganzer
+    Kontingente samt Auswahlen).

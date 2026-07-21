@@ -1,9 +1,10 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName } from './modifierEvaluator.js';
+import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName, resolveContextCatalogueId } from './modifierEvaluator.js';
 import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
 import { findForceContainingSelection } from './rosterTree.js';
+import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import '../types.js';
 
 /**
@@ -78,7 +79,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
     let currentValue = 0;
     const targetParent = ctx.parentSelection || ctx.selection;
     if (mod.repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
-      const catId = activeCatalogueId || (roster ? roster.catalogueId : null);
+      const catId = resolveContextCatalogueId(ctx);
       const targetId = mod.repeat.childId || mod.repeat.field;
 
       const countMatches = (list) => (list || []).reduce((sum, s) => {
@@ -197,7 +198,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
         resolved.selectionEntries?.forEach(child => {
           const childResolved = resolveEntry(system, child, activeCatalogueId);
           if (childResolved) {
-            const minCon = childResolved.constraints?.find(c => c.type === 'min')?.value || 0;
+            const minCon = childResolved.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
             const isMandatory = minCon > 0;
             const isUpgrade = (childResolved.type || 'upgrade') === 'upgrade';
             if (!isUpgrade || isMandatory) {

@@ -1,6 +1,11 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks } from './modifierEvaluator.js';
+import {
+  getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks,
+  resolveContextCatalogueId
+} from './modifierEvaluator.js';
 import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from './rosterTree.js';
+import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { resolveGroupDefaultMember } from './selectionMembers.js';
 
 /**
  * The multiplier applied to a top-level (subject) selection when its cost is
@@ -58,16 +63,21 @@ export function resolveCostLimitLabel(roster, system) {
 /**
  * Recursively computes the display cost of an option definition, including its base cost
  * and the costs of any mandatory sub-selections (min > 0).
+ *
+ * `ctx` supplies the catalogue the entry was read from (see `resolveContextCatalogueId`);
+ * without it the same-id entry of another loaded catalogue could be priced instead
+ * (ADR 0018).
  */
 export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
-  let resolved = resolveEntry(system, entry);
+  const catalogueId = resolveContextCatalogueId(ctx);
+  let resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return 0;
 
   // If resolved is a skeleton or reference, look up the full entry in the system
   if (resolved.id && (!resolved.costs || resolved.costs.length === 0) && (!resolved.selectionEntries || resolved.selectionEntries.length === 0) && (!resolved.entryLinks || resolved.entryLinks.length === 0) && (!resolved.selectionEntryGroups || resolved.selectionEntryGroups.length === 0)) {
-    const fullEntry = findEntryInSystem(system, resolved.id);
+    const fullEntry = findEntryInSystem(system, resolved.id, catalogueId);
     if (fullEntry) {
-      resolved = resolveEntry(system, fullEntry);
+      resolved = resolveEntry(system, fullEntry, catalogueId);
     }
   }
 
@@ -92,7 +102,7 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 
   // 2. Direct costs of mandatory child selection entries
   resolved.selectionEntries?.forEach(child => {
-    const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
+    const minCon = child.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
     if (minCon > 0) {
       total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
     }
@@ -100,19 +110,21 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 
   // 3. Direct costs of mandatory child entry links
   resolved.entryLinks?.forEach(child => {
-    const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
+    const minCon = child.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
     if (minCon > 0) {
       total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
     }
   });
 
-  // 4. Direct costs of mandatory groups
+  // 4. Direct costs of mandatory groups. Which option a group contributes is
+  // decided by the shared derivation the selection factory uses, so the price
+  // shown here is the price the actual recruitment will incur.
   resolved.selectionEntryGroups?.forEach(group => {
-    const minCon = group.constraints?.find(c => c.type === 'min')?.value || 0;
-    if (minCon > 0 && (group.selectionEntries?.length > 0 || group.entryLinks?.length > 0)) {
-      const firstOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
-      total += getOptionDisplayCost(system, firstOption, costLimitType, ctx) * minCon;
-    }
+    const minCon = group.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
+    if (minCon <= 0) return;
+    const defaultOption = resolveGroupDefaultMember(group);
+    if (!defaultOption) return;
+    total += getOptionDisplayCost(system, defaultOption, costLimitType, ctx) * minCon;
   });
 
   return total;

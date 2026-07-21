@@ -1,7 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { childSelectionsOf, countSelections, someSelectionInSubtree } from './rosterTree.js';
+import { childSelectionsOf, countSelections, countSelectionsInSubtree, someSelectionInSubtree } from './rosterTree.js';
 import { findForceEntryById } from './forceEntries.js';
-import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
+import { ConstraintScope, isEntryScope, isRosterLimitField, isSharedQuery } from './battlescribeConstants.js';
 import {
   ModifierKind, ConditionKind, AttributeName, SelectionEntryKind
 } from '../parser/schema/battlescribeSchema.generated.js';
@@ -46,8 +46,18 @@ const INSTANCE_TYPE_CHILD_IDS = Object.freeze([
 // instead of re-entering effective-category resolution.
 const SELF_SCOPE_CATEGORY_RESOLUTION_FLAG = '_resolvingSelfScopeCategory';
 
-const resolveCatalogueId = (ctx) =>
-  ctx.parentCatalogueId || (ctx.roster ? ctx.roster.catalogueId : null);
+/**
+ * The catalogue every entry reference of an evaluation context resolves against
+ * (see `findEntryInSystem`). Contexts name that catalogue by the role it plays —
+ * `parentCatalogueId` in condition contexts, `currentCatalogueId` in cost contexts —
+ * and a roster carries its own catalogue as the outermost default. This is the single
+ * derivation of that precedence; no caller may re-implement it.
+ *
+ * @param {Object} ctx an evaluation context.
+ * @returns {string|null} the catalogue id, or null when the context names none.
+ */
+export const resolveContextCatalogueId = (ctx = {}) =>
+  ctx.parentCatalogueId || ctx.currentCatalogueId || ctx.roster?.catalogueId || null;
 
 // Resolves an id down to the canonical id of the selection entry it ultimately targets:
 // its own id if it isn't a link, or the id unchanged if it can't be resolved at all (a
@@ -84,7 +94,7 @@ const selectionIsInstanceOfEntry = (sel, entryId, system, catalogueId) => {
 const selectionHasEffectiveCategory = (sel, categoryId, ctx) => {
   if (!sel || !categoryId) return false;
   const { system } = ctx;
-  const catalogueId = resolveCatalogueId(ctx);
+  const catalogueId = resolveContextCatalogueId(ctx);
   const sId = sel.selectionEntryId || sel.entryLinkId;
   if (sId === categoryId) return true;
 
@@ -145,9 +155,37 @@ const createTargetSelectionMatcher = (targetId, system, catalogueId, { matchCate
   };
 };
 
+/**
+ * Der Zählwert einer **nicht geteilten** Bedingung (`shared="false"`): gezählt wird
+ * ausschließlich innerhalb der Instanz, an der die Bedingung hängt, statt über alle
+ * Vorkommen des Eintrags im Roster (ADR 0003, Abschnitt 4). `includeChildSelections`
+ * behält dabei seine Bedeutung und entscheidet, ob unterhalb der Instanz
+ * weitergezählt wird.
+ *
+ * Ohne bekannte Instanz im Kontext (z. B. bei der Prüfung eines Eintrags, der noch
+ * gar nicht im Roster liegt) gibt es nichts zu zählen: das Ergebnis ist 0. Der
+ * armeeweite Zählwert wäre hier gerade die falsche Antwort, denn genau dessen
+ * Aggregation schließt `shared="false"` aus.
+ */
+const countWithinConditionInstance = (cond, ctx) => {
+  const { selection, system } = ctx;
+  if (!selection) return 0;
+
+  const catalogueId = resolveContextCatalogueId(ctx);
+  const matchesTarget = createTargetSelectionMatcher(cond.childId || cond.field, system, catalogueId, {
+    matchCategoryMembership: true,
+    matchUnitsAsModels: true
+  });
+
+  return countSelectionsInSubtree(selection, {
+    includeChildSelections: !!cond.includeChildSelections,
+    predicate: matchesTarget
+  });
+};
+
 export const evaluateCondition = (cond, ctx = {}) => {
   if (!cond) return false;
-  const { roster, selectionCounts = {}, forceCategoryCounts = {}, selection, parentSelection, system, parentCatalogueId } = ctx;
+  const { roster, selectionCounts = {}, forceCategoryCounts = {}, selection, parentSelection, system } = ctx;
   let currentValue = 0;
   
   if (isRosterLimitField(cond.field)) {
@@ -161,7 +199,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
     // roster validation, not just in the editor UI.
     const parentScopeTarget = parentSelection || selection;
     if (cond.scope === ConstraintScope.PARENT && parentScopeTarget && parentScopeTarget.selections) {
-      const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
+      const catId = resolveContextCatalogueId(ctx);
       const targetId = cond.childId || cond.field;
       const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
         matchCategoryMembership: true,
@@ -172,6 +210,11 @@ export const evaluateCondition = (cond, ctx = {}) => {
         includeChildSelections: !!cond.includeChildSelections,
         predicate: matchesTarget
       });
+    } else if (!isSharedQuery(cond)) {
+      // Eine nicht geteilte Bedingung zählt je Instanz statt armeeweit. Der
+      // parent-Scope oben ist davon unberührt: er ist bereits an genau eine
+      // Instanz — den Eltern-Container — gebunden.
+      currentValue = countWithinConditionInstance(cond, ctx);
     } else {
       // Non-parent scopes (force/roster/entry/category) count by the specific target
       // the condition names. A childId identifies that target explicitly (e.g. a
@@ -229,7 +272,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
         const scopeNamesEntry = !!cond.scope && isEntryScope(cond.scope);
         const childIsConcreteId = cond.childId && !INSTANCE_TYPE_CHILD_IDS.includes(cond.childId);
         if (scopeNamesEntry && childIsConcreteId && !ctx[SELF_SCOPE_CATEGORY_RESOLUTION_FLAG]) {
-          const catId = resolveCatalogueId(ctx);
+          const catId = resolveContextCatalogueId(ctx);
           const selfInstance = [selection, parentSelection].find(candidate =>
             selectionIsInstanceOfEntry(candidate, cond.scope, system, catId));
           if (selfInstance) {
@@ -243,7 +286,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
           const sId = sel.selectionEntryId || sel.entryLinkId;
           if (sId === targetChildId) return true;
           
-          const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
+          const catId = resolveContextCatalogueId(ctx);
           const raw = findEntryInSystem(system, sId, catId);
           const res = raw && resolveEntry(system, raw, catId);
           
@@ -301,68 +344,81 @@ const modifierConditionsPass = (source, ctx) => {
   return condsPass && groupsPass;
 };
 
-export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
-  let finalValue = con.value;
+/**
+ * The number of times a `repeat` modifier fires in `ctx`: how often its counted
+ * quantity fits into the repeat's `value`, times its `repeats` multiplier.
+ */
+const countRepeatOccurrences = (repeat, ctx) => {
+  const { roster, selectionCounts = {}, forceCategoryCounts = {} } = ctx;
+  const targetParent = ctx.parentSelection || ctx.selection;
+  let countedQuantity = 0;
 
-  const sortedModifiers = [...(modifiers || [])].sort((a, b) => {
-    if (a.type === ModifierKind.SET && b.type !== ModifierKind.SET) return -1;
-    if (a.type !== ModifierKind.SET && b.type === ModifierKind.SET) return 1;
-    return 0;
-  });
+  if (repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
+    const { system } = ctx;
+    const catId = resolveContextCatalogueId(ctx);
+    const targetId = repeat.childId || repeat.field;
+    const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
+      matchCategoryMembership: false,
+      matchUnitsAsModels: false
+    });
 
-  sortedModifiers.forEach(mod => {
-    if (mod.field !== con.id) return;
+    countedQuantity = countSelections(childSelectionsOf(targetParent), {
+      includeChildSelections: !!repeat.includeChildSelections,
+      predicate: matchesTarget
+    });
+  } else if (isRosterLimitField(repeat.field)) {
+    countedQuantity = roster?.costLimit || 0;
+  } else if (repeat.childId) {
+    countedQuantity = selectionCounts[repeat.childId] || (forceCategoryCounts && forceCategoryCounts[repeat.childId]) || 0;
+  } else if (repeat.field) {
+    countedQuantity = selectionCounts[repeat.field] || (forceCategoryCounts && forceCategoryCounts[repeat.field]) || 0;
+  }
 
-    if (modifierConditionsPass(mod, ctx)) {
-      let modAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
-
-      if (mod.repeat) {
-        let currentValue = 0;
-        const { roster, selectionCounts = {}, forceCategoryCounts = {} } = ctx;
-        const targetParent = ctx.parentSelection || ctx.selection;
-        if (mod.repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
-          const { parentCatalogueId, system } = ctx;
-          const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
-          const targetId = mod.repeat.childId || mod.repeat.field;
-          const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
-            matchCategoryMembership: false,
-            matchUnitsAsModels: false
-          });
-
-          currentValue = countSelections(childSelectionsOf(targetParent), {
-            includeChildSelections: !!mod.repeat.includeChildSelections,
-            predicate: matchesTarget
-          });
-        } else if (isRosterLimitField(mod.repeat.field)) {
-          currentValue = roster?.costLimit || 0;
-        } else if (mod.repeat.childId) {
-          currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;
-        } else if (mod.repeat.field) {
-          currentValue = selectionCounts[mod.repeat.field] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.field]) || 0;
-        }
-
-        const repVal = mod.repeat.value ? (mod.repeat.roundUp ? Math.ceil(currentValue / mod.repeat.value) : Math.floor(currentValue / mod.repeat.value)) : 0;
-        modAmount = modAmount * repVal * (mod.repeat.repeats || 1);
-      }
-
-      if (mod.type === ModifierKind.SET) {
-        finalValue = modAmount;
-      } else if (mod.type === ModifierKind.INCREMENT) {
-        finalValue += modAmount;
-      } else if (mod.type === ModifierKind.DECREMENT) {
-        finalValue -= modAmount;
-      } else if (mod.type === ModifierKind.MULTIPLY) {
-        // A `multiply` modifier scales the running value by its factor (e.g. the
-        // "Traditional Army" army-wide condition that doubles a unit's points cost).
-        // It shares this single evaluation path with set/increment/decrement, so a
-        // multiply on any constraint — not only a cost — is handled identically.
-        finalValue *= modAmount;
-      }
-    }
-  });
-
-  return finalValue;
+  const fitCount = repeat.value
+    ? (repeat.roundUp ? Math.ceil(countedQuantity / repeat.value) : Math.floor(countedQuantity / repeat.value))
+    : 0;
+  return fitCount * (repeat.repeats || 1);
 };
+
+// The amount a modifier contributes: its own numeric value, scaled by how often a
+// `repeat` makes it fire.
+const getModifierAmount = (mod, ctx) => {
+  const baseAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
+  return mod.repeat ? baseAmount * countRepeatOccurrences(mod.repeat, ctx) : baseAmount;
+};
+
+const applyValueModifier = (currentValue, mod, ctx) => {
+  const amount = getModifierAmount(mod, ctx);
+  switch (mod.type) {
+    case ModifierKind.SET:
+      return amount;
+    case ModifierKind.INCREMENT:
+      return currentValue + amount;
+    case ModifierKind.DECREMENT:
+      return currentValue - amount;
+    // A `multiply` modifier scales the running value by its factor (e.g. the
+    // "Traditional Army" army-wide condition that doubles a unit's points cost).
+    // It shares this single evaluation path with set/increment/decrement, so a
+    // multiply on any constraint — not only a cost — is handled identically.
+    case ModifierKind.MULTIPLY:
+      return currentValue * amount;
+    default:
+      return currentValue;
+  }
+};
+
+/**
+ * Returns the effective value of a constraint by applying its condition-met modifiers
+ * to `con.value`, in document order — the order the catalogue authored them in, which
+ * is the order BattleScribe itself evaluates. No modifier type is reordered: a
+ * catalogue that writes `increment 2` and then `set 5` means 5, and one that writes
+ * `set 5` and then `increment 2` means 7. This is the same ordering rule
+ * getEffectiveName applies to name modifiers.
+ */
+export const getModifiedConstraintValue = (con, modifiers, ctx = {}) =>
+  (modifiers || [])
+    .filter(mod => mod.field === con.id && modifierConditionsPass(mod, ctx))
+    .reduce((value, mod) => applyValueModifier(value, mod, ctx), con.value);
 
 /**
  * Recursively pulls the modifiers out of a modifierGroup, folding the group's own
@@ -523,8 +579,7 @@ export const getEffectiveSelectionName = (selection, ctx = {}) => {
   const entryId = selection?.selectionEntryId || selection?.entryLinkId;
   if (!system || !entryId) return baseName;
 
-  const catalogueId =
-    ctx.parentCatalogueId || ctx.currentCatalogueId || (ctx.roster ? ctx.roster.catalogueId : null);
+  const catalogueId = resolveContextCatalogueId(ctx);
   const rawEntry = findEntryInSystem(system, entryId, catalogueId);
   const resolved = rawEntry && resolveEntry(system, rawEntry, catalogueId);
   if (!resolved) return baseName;

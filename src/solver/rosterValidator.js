@@ -1,12 +1,12 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
-import { ConditionKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, isCostField, resolveConstraintThreshold } from './constraintScope.js';
 import {
-  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField
+  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField, isSharedQuery
 } from './battlescribeConstants.js';
-import { countSelections } from './rosterTree.js';
+import { childSelectionsOf, countSelections, countSelectionsInSubtree } from './rosterTree.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors } from './armyWideSelectors.js';
@@ -170,6 +170,9 @@ function checkRosterCostLimit(roster, system, errors) {
 // Synthetische ID des per System-Quirk von einer anderen Kategorie geerbten max-Constraints.
 const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
 
+// Eine Auswahl ohne ausdrückliche `number` steht für genau eine Instanz.
+const SINGLE_INSTANCE_COUNT = 1;
+
 /**
  * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
  * @param {ValidationContext} context
@@ -229,7 +232,9 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
   const forceCounts = forceSelectionCounts[force.id] || {};
 
   collectForceScopedMinSelectors(system, forceCatalogueId).forEach(({ entry, minConstraint }) => {
-    if (isSelectionEntryHidden(entry, { system, roster, selectionCounts, forceCategoryCounts, force })) return;
+    if (isSelectionEntryHidden(entry, {
+      system, roster, selectionCounts, forceCategoryCounts, force, catalogueId: forceCatalogueId
+    })) return;
 
     const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
     const minValue = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(entry), ctx);
@@ -283,7 +288,7 @@ function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
     const costTypeId = costTypeIdOfRosterLimitField(con.field);
     const currentLimit = roster.costLimitType === costTypeId ? (roster.costLimit || 0) : 0;
 
-    if (con.type === 'min' && currentLimit < requiredLimit) {
+    if (con.type === ConstraintKind.MIN && currentLimit < requiredLimit) {
       pushViolation(errors, {
         type: 'force-roster-limit',
         forceId: forceDef.id,
@@ -333,14 +338,14 @@ function collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId
 
   // System-Quirk: Kategorie erbt einen fehlenden max-Constraint von einer anderen Kategorie.
   const inheritFromCatId = getInheritedCategoryMaxSource(system, targetCatId);
-  if (inheritFromCatId && !constraints.some(c => c.type === 'max')) {
+  if (inheritFromCatId && !constraints.some(c => c.type === ConstraintKind.MAX)) {
     const sourceCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === inheritFromCatId);
-    const sourceMaxCon = sourceCatLink?.constraints?.find(c => c.type === 'max');
+    const sourceMaxCon = sourceCatLink?.constraints?.find(c => c.type === ConstraintKind.MAX);
     if (sourceMaxCon) {
       constraints.push({
         ...sourceMaxCon,
         id: QUIRK_INHERITED_MAX_ID,
-        type: 'max',
+        type: ConstraintKind.MAX,
         isFallback: true,
         modifiers: getEffectiveModifiers(sourceCatLink)
       });
@@ -363,7 +368,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
   const finalValue = getModifiedConstraintValue(con, modifiers, ctx);
   if (finalValue < 0) return; // z. B. max="-1": die Kategorie ist unbegrenzt.
 
-  if (con.type === 'min' && count < finalValue) {
+  if (con.type === ConstraintKind.MIN && count < finalValue) {
     pushViolation(errors, {
       type: 'category-min',
       forceId: force.id,
@@ -372,7 +377,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       severity: ValidationSeverity.ERROR
     });
   }
-  if (con.type === 'max' && count > finalValue) {
+  if (con.type === ConstraintKind.MAX && count > finalValue) {
     pushViolation(errors, {
       type: 'category-max',
       forceId: force.id,
@@ -447,6 +452,86 @@ function checkSelectionMessages({ selection, parentSelection, entry }, context) 
 }
 
 /**
+ * Prädikat „diese Auswahl ist eine Instanz des geprüften Eintrags". Verglichen wird
+ * immer über die aufgelöste Ziel-Id, nicht über die Link-Id: verschiedene Links
+ * können auf dasselbe Ziel zeigen (ADR 0003, Abschnitt 4).
+ * @param {{entry: Object, entryId: string}} subject
+ * @param {ValidationContext} context
+ * @returns {(candidate: Object) => boolean}
+ */
+function createEntryInstanceMatcher({ entry, entryId }, { system, force }) {
+  const catalogueId = force ? force.catalogueId : null;
+  return (candidate) => {
+    const candidateId = candidate.entryLinkId || candidate.selectionEntryId;
+    if (candidateId === entryId) return true;
+    if (!entry.targetId) return false;
+    if (candidateId === entry.targetId) return true;
+    const candidateDef = findEntryInSystem(system, candidateId, catalogueId);
+    const resolvedCandidate = resolveEntry(system, candidateDef, catalogueId);
+    return resolvedCandidate?.targetId === entry.targetId;
+  };
+}
+
+/** Die höhere der beiden Zählungen für Link-Id und aufgelöste Ziel-Id des Eintrags. */
+function countEntryInstances(countsByEntryId, { entry, entryId }) {
+  return Math.max(
+    countsByEntryId[entryId] || 0,
+    entry.targetId ? countsByEntryId[entry.targetId] || 0 : 0
+  );
+}
+
+/**
+ * Die Anzahl, gegen die eine Eintrags-Constraint geprüft wird — die einzige Stelle,
+ * die den Bezugsrahmen einer solchen Constraint auflöst.
+ *
+ * `shared="false"` (XSD `QueryBase`) hat dabei Vorrang vor dem `scope`: die
+ * Beschränkung gilt dann je Instanz, gezählt wird also nur im Teilbaum der einen
+ * Auswahl, an der sie hängt, statt aggregiert über alle Vorkommen des Eintrags
+ * im Roster (ADR 0003, Abschnitt 4). Ist sie geteilt — der Vorgabewert —,
+ * bestimmt wie bisher allein der `scope` den Bezugsrahmen.
+ *
+ * @param {{con: Object, selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
+ * @param {ValidationContext} context
+ * @returns {number}
+ */
+function resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context) {
+  const { force, counts } = context;
+  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
+  const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
+  const includeChildSelections = con.includeChildSelections;
+  const matchesEntry = createEntryInstanceMatcher({ entry, entryId }, context);
+  const instanceCount = selection.number || SINGLE_INSTANCE_COUNT;
+
+  if (!isSharedQuery(con)) {
+    return countSelectionsInSubtree(selection, { includeChildSelections, predicate: matchesEntry });
+  }
+
+  if (isEntryScope(con.scope)) {
+    return selectionCounts[con.scope] || forceCategoryCounts[con.scope] || instanceCount;
+  }
+  if (con.scope === ConstraintScope.PARENT) {
+    const container = parentSelection || force;
+    if (!container) return instanceCount;
+    return countSelections(childSelectionsOf(container), { includeChildSelections, predicate: matchesEntry });
+  }
+  if (con.scope === ConstraintScope.ROSTER) {
+    return countEntryInstances(selectionCounts, { entry, entryId });
+  }
+  if (con.scope === ConstraintScope.FORCE) {
+    // includeChildForces meint laut BSData das Kontingent samt seiner Nachfahren.
+    // Der .ros-Import legt verschachtelte Kontingente als Geschwister auf
+    // Rosterebene flach (ADR-0011 §5), sodass die Nachfahren-Beziehung im
+    // Rostermodell nicht überlebt — das ganze Roster ist die nächstliegende
+    // verfügbare Obermenge.
+    const scopeCounts = con.includeChildForces
+      ? selectionCounts
+      : (force ? forceSelectionCounts[force.id] || {} : {});
+    return countEntryInstances(scopeCounts, { entry, entryId });
+  }
+  return instanceCount;
+}
+
+/**
  * Individuelle Constraints des aufgelösten Eintrags prüfen (min/max/percent je Scope).
  * @param {{selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
  * @param {ValidationContext} context
@@ -455,8 +540,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
   if (!entry.constraints) return;
 
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
-  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
-  const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
+  const { selectionCounts, categoryCounts } = counts;
 
   entry.constraints.forEach(con => {
     const ctx = {
@@ -480,50 +564,14 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       if (!belongsToScope) return;
     }
 
-    // Determine current count in scope
-    let count = selection.number || 1;
-
-    if (isEntryScope(con.scope)) {
-      count = selectionCounts[con.scope] || (forceCategoryCounts ? forceCategoryCounts[con.scope] : 0) || count;
-    } else if (con.scope === ConstraintScope.PARENT) {
-      // Immer über aufgelöste Target-IDs vergleichen, nicht über entryLinkIds —
-      // verschiedene Links können auf dasselbe Target zeigen.
-      const matchesEntryTarget = (s, catalogueId) => {
-        const subId = s.entryLinkId || s.selectionEntryId;
-        if (subId === entryId) return true;
-        if (entry.targetId) {
-          const sDef = findEntryInSystem(system, subId, catalogueId);
-          const sRes = resolveEntry(system, sDef, catalogueId);
-          return subId === entry.targetId || (sRes && sRes.targetId === entry.targetId);
-        }
-        return false;
-      };
-
-      const scopeCatalogueId = force ? force.catalogueId : null;
-      const predicate = s => matchesEntryTarget(s, scopeCatalogueId);
-      const includeChildSelections = con.includeChildSelections;
-      if (parentSelection) {
-        count = countSelections(parentSelection.selections, { includeChildSelections, predicate });
-      } else if (force) {
-        count = countSelections(force.selections, { includeChildSelections, predicate });
-      }
-    } else if (con.scope === ConstraintScope.ROSTER) {
-      count = Math.max(selectionCounts[entryId] || 0, (entry.targetId ? selectionCounts[entry.targetId] || 0 : 0));
-    } else if (con.scope === ConstraintScope.FORCE) {
-      // includeChildForces widens a force-scoped count to the whole roster
-      // (child forces are flattened as roster siblings in the roster model).
-      const scopeCounts = con.includeChildForces
-        ? selectionCounts
-        : (force ? forceSelectionCounts[force.id] || {} : {});
-      count = Math.max(scopeCounts[entryId] || 0, (entry.targetId ? scopeCounts[entry.targetId] || 0 : 0));
-    }
+    const count = resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context);
 
     if (isPercentConstraint(con)) {
       checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection }, context);
       return;
     }
 
-    if (con.type === 'min' && count < finalValue) {
+    if (con.type === ConstraintKind.MIN && count < finalValue) {
       pushViolation(errors, {
         type: 'entry-min',
         selectionId: selection.id,
@@ -531,7 +579,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
         severity: ValidationSeverity.ERROR
       });
     }
-    if (con.type === 'max' && count > finalValue) {
+    if (con.type === ConstraintKind.MAX && count > finalValue) {
       pushViolation(errors, {
         type: 'entry-max',
         selectionId: selection.id,
@@ -560,7 +608,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
   // Bezeichnung stammt daher aus genau dieser Kostenart.
   const unit = measuresCost ? resolveCostTypeLabel(system, con.field) : 'Auswahlen';
 
-  if (con.type === 'min' && subject < threshold) {
+  if (con.type === ConstraintKind.MIN && subject < threshold) {
     pushViolation(errors, {
       type: 'entry-percent-min',
       selectionId: selection.id,
@@ -568,7 +616,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       severity: ValidationSeverity.ERROR
     });
   }
-  if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
+  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
     pushViolation(errors, {
       type: 'entry-percent-max',
       selectionId: selection.id,
@@ -692,7 +740,7 @@ function checkGroupConstraints({ selection, entry }, context) {
         // `totalCost` ist über `con.field` summiert — die Meldung benennt daher
         // genau diese Kostenart, nicht eine festgeschriebene Einheit.
         const costLabel = resolveCostTypeLabel(system, con.field);
-        if (con.type === 'max' && totalCost > finalValue) {
+        if (con.type === ConstraintKind.MAX && totalCost > finalValue) {
           pushViolation(errors, {
             type: 'group-points-max',
             selectionId: selection.id,
@@ -700,7 +748,7 @@ function checkGroupConstraints({ selection, entry }, context) {
             severity: ValidationSeverity.ERROR
           });
         }
-        if (con.type === 'min' && totalCost < finalValue && totalCost > 0) {
+        if (con.type === ConstraintKind.MIN && totalCost < finalValue && totalCost > 0) {
           pushViolation(errors, {
             type: 'group-points-min',
             selectionId: selection.id,
@@ -709,7 +757,7 @@ function checkGroupConstraints({ selection, entry }, context) {
           });
         }
       } else {
-        if (con.type === 'max' && totalCount > finalValue) {
+        if (con.type === ConstraintKind.MAX && totalCount > finalValue) {
           pushViolation(errors, {
             type: 'group-count-max',
             selectionId: selection.id,
@@ -717,7 +765,7 @@ function checkGroupConstraints({ selection, entry }, context) {
             severity: ValidationSeverity.ERROR
           });
         }
-        if (con.type === 'min' && totalCount < finalValue && totalCount > 0) {
+        if (con.type === ConstraintKind.MIN && totalCount < finalValue && totalCount > 0) {
           pushViolation(errors, {
             type: 'group-count-min',
             selectionId: selection.id,
@@ -743,7 +791,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
   // die Bezugsgröße derselben Kostenart, Zähler und Nenner passen also zusammen.
   const unit = measuresCost ? resolveCostTypeLabel(system, con.field) : 'Auswahlen';
 
-  if (con.type === 'min' && subject < threshold) {
+  if (con.type === ConstraintKind.MIN && subject < threshold) {
     pushViolation(errors, {
       type: 'group-percent-min',
       selectionId: selection.id,
@@ -751,7 +799,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
       severity: ValidationSeverity.ERROR
     });
   }
-  if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
+  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
     pushViolation(errors, {
       type: 'group-percent-max',
       selectionId: selection.id,

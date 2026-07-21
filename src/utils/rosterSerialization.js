@@ -15,6 +15,31 @@ const SELECTION_INDENT_STEP = 4;
 // Each war machine / chariot split off a `number=N` selection is one independent unit.
 const SPLIT_UNIT_NUMBER = 1;
 
+// Element names of the BattleScribe roster schema this module reads.
+const ROS_TAG = Object.freeze({
+  forces: 'forces',
+  force: 'force',
+  selections: 'selections',
+  selection: 'selection',
+  categories: 'categories',
+  category: 'category',
+  costLimits: 'costLimits',
+  costLimit: 'costLimit'
+});
+
+const ELEMENT_NODE_TYPE = 1;
+
+/** All direct child elements of `node` carrying the given tag name. */
+function childElementsNamed(node, tagName) {
+  return Array.from(node.childNodes)
+    .filter(child => child.nodeType === ELEMENT_NODE_TYPE && child.nodeName === tagName);
+}
+
+/** The first direct child element with the given tag name, or null. */
+function firstChildElementNamed(node, tagName) {
+  return childElementsNamed(node, tagName)[0] ?? null;
+}
+
 function roundCost(value) {
   return Number((value || 0).toFixed(COST_DECIMAL_PRECISION));
 }
@@ -296,40 +321,8 @@ export function importRosterFromXml(xmlText, systems) {
   const costLimitType = resolveCostLimitTypeId(null, system);
   const costLimit = parseCostLimit(root, costLimitType);
   
-  const forces = [];
-  const forcesWrapper = Array.from(root.childNodes).find(node => node.nodeType === 1 && node.nodeName === 'forces');
-  if (forcesWrapper) {
-    const forceNodes = Array.from(forcesWrapper.childNodes).filter(node => node.nodeType === 1 && node.nodeName === 'force');
-    forceNodes.forEach(forceNode => {
-      const forceId = crypto.randomUUID();
-      const catalogueId = forceNode.getAttribute('catalogueId');
-      const forceEntryId = forceNode.getAttribute('entryId') || forceNode.getAttribute('forceEntryId') || system.forceEntries?.[0]?.id || null;
-      
-      const selections = [];
-      const selectionsWrapper = Array.from(forceNode.childNodes).find(node => node.nodeType === 1 && node.nodeName === 'selections');
-      if (selectionsWrapper) {
-        const selectionNodes = Array.from(selectionsWrapper.childNodes).filter(node => node.nodeType === 1 && node.nodeName === 'selection');
-        selectionNodes.forEach(selNode => {
-          const parsed = parseSelectionNode(selNode, system);
-          if (checkNeedsSplit(parsed, system)) {
-            const splitCount = parsed.number;
-            for (let i = 0; i < splitCount; i++) {
-              selections.push(createSplitSelection(parsed, i, splitCount));
-            }
-          } else {
-            selections.push(parsed);
-          }
-        });
-      }
-      
-      forces.push({
-        id: forceId,
-        forceEntryId,
-        catalogueId,
-        selections
-      });
-    });
-  }
+  const forcesWrapper = firstChildElementNamed(root, ROS_TAG.forces);
+  const forces = forcesWrapper ? flattenForceList(forcesWrapper, system) : [];
 
   return {
     id: crypto.randomUUID(),
@@ -344,13 +337,66 @@ export function importRosterFromXml(xmlText, systems) {
 }
 
 /**
+ * Reads a `<forces>` list into a flat array of forces.
+ *
+ * The roster schema lets a `<force>` nest a further `<forces>` list — sub-contingents
+ * such as detachments inside a detachment. Our roster model knows no force hierarchy,
+ * so nested forces are flattened into roster-level siblings in document order (a force
+ * before its sub-forces). This is a deliberate, lossless-for-selections import
+ * transformation (ADR-0011 §5): flattening drops the nesting relation, never a
+ * selection. Each flattened force keeps its own catalogue and force-entry reference.
+ */
+function flattenForceList(forcesWrapper, system) {
+  return childElementsNamed(forcesWrapper, ROS_TAG.force).flatMap(forceNode => {
+    const nestedWrapper = firstChildElementNamed(forceNode, ROS_TAG.forces);
+    const nestedForces = nestedWrapper ? flattenForceList(nestedWrapper, system) : [];
+    return [parseForceNode(forceNode, system), ...nestedForces];
+  });
+}
+
+/** Reads one `<force>` element into a force of our roster model (without its sub-forces). */
+function parseForceNode(forceNode, system) {
+  const selectionsWrapper = firstChildElementNamed(forceNode, ROS_TAG.selections);
+  const catalogueId = forceNode.getAttribute('catalogueId');
+  return {
+    id: crypto.randomUUID(),
+    forceEntryId: forceNode.getAttribute('entryId')
+      || forceNode.getAttribute('forceEntryId')
+      || system.forceEntries?.[0]?.id
+      || null,
+    catalogueId,
+    selections: selectionsWrapper ? parseSelectionList(selectionsWrapper, system, catalogueId) : []
+  };
+}
+
+/**
+ * Reads a `<selections>` list, applying the war-machine split (ADR-0011 §3) to every
+ * selection that needs it.
+ */
+function parseSelectionList(selectionsWrapper, system, catalogueId) {
+  return childElementsNamed(selectionsWrapper, ROS_TAG.selection).flatMap(selectionNode => {
+    const parsed = parseSelectionNode(selectionNode, system, catalogueId);
+    return checkNeedsSplit(parsed, system, catalogueId) ? splitIntoIndependentUnits(parsed) : [parsed];
+  });
+}
+
+/** Splits a `number=N` selection into N independently configurable units. */
+function splitIntoIndependentUnits(selection) {
+  const splitCount = selection.number;
+  return Array.from(
+    { length: splitCount },
+    (_unused, index) => createSplitSelection(selection, index, splitCount)
+  );
+}
+
+/**
  * Reads the point limit for the given cost type from a roster's <costLimits> block,
  * falling back to the legacy costLimit attribute and finally the default limit.
  */
 function parseCostLimit(root, costLimitType) {
-  const costLimitsWrapper = Array.from(root.childNodes).find(node => node.nodeType === 1 && node.nodeName === 'costLimits');
+  const costLimitsWrapper = firstChildElementNamed(root, ROS_TAG.costLimits);
   if (costLimitsWrapper) {
-    const limitNodes = Array.from(costLimitsWrapper.childNodes).filter(node => node.nodeType === 1 && node.nodeName === 'costLimit');
+    const limitNodes = childElementsNamed(costLimitsWrapper, ROS_TAG.costLimit);
     const matchingLimit = limitNodes.find(node => node.getAttribute('typeId') === costLimitType) || limitNodes[0];
     if (matchingLimit) {
       const value = parseFloat(matchingLimit.getAttribute('value'));
@@ -364,8 +410,10 @@ function parseCostLimit(root, costLimitType) {
 
 /**
  * Helper to recursively parse selection XML nodes.
+ * @param {string|null} catalogueId the catalogue of the force being parsed; entry ids in a
+ *   `.ros` are only unique within it (ADR 0018).
  */
-function parseSelectionNode(node, system) {
+function parseSelectionNode(node, system, catalogueId) {
   const name = node.getAttribute('name') || '';
   let entryId = node.getAttribute('entryId');
   if (entryId && entryId.includes('::')) {
@@ -379,9 +427,10 @@ function parseSelectionNode(node, system) {
   const isCollective = node.getAttribute('collective') === 'true';
 
   let category = null;
-  const categoriesWrapper = Array.from(node.childNodes).find(c => c.nodeType === 1 && c.nodeName === 'categories');
+  const categoriesWrapper = firstChildElementNamed(node, ROS_TAG.categories);
   if (categoriesWrapper) {
-    const categoryNode = Array.from(categoriesWrapper.childNodes).find(c => c.nodeType === 1 && c.nodeName === 'category' && c.getAttribute('primary') === 'true');
+    const categoryNode = childElementsNamed(categoriesWrapper, ROS_TAG.category)
+      .find(c => c.getAttribute('primary') === 'true');
     if (categoryNode) {
       category = categoryNode.getAttribute('entryId') || categoryNode.getAttribute('id');
       if (category && category.includes('::')) {
@@ -393,22 +442,8 @@ function parseSelectionNode(node, system) {
   // Costs are not stored on the roster; they are derived from the catalogue at read
   // time (ADR-0011). The <cost> elements in the .ros are therefore ignored on import.
 
-  const subSelections = [];
-  const selectionsWrapper = Array.from(node.childNodes).find(c => c.nodeType === 1 && c.nodeName === 'selections');
-  if (selectionsWrapper) {
-    const selectionNodes = Array.from(selectionsWrapper.childNodes).filter(c => c.nodeType === 1 && c.nodeName === 'selection');
-    selectionNodes.forEach(subNode => {
-      const parsedChild = parseSelectionNode(subNode, system);
-      if (checkNeedsSplit(parsedChild, system)) {
-        const splitCount = parsedChild.number;
-        for (let i = 0; i < splitCount; i++) {
-          subSelections.push(createSplitSelection(parsedChild, i, splitCount));
-        }
-      } else {
-        subSelections.push(parsedChild);
-      }
-    });
-  }
+  const selectionsWrapper = firstChildElementNamed(node, ROS_TAG.selections);
+  const subSelections = selectionsWrapper ? parseSelectionList(selectionsWrapper, system, catalogueId) : [];
 
   return {
     id: crypto.randomUUID(),
@@ -424,16 +459,17 @@ function parseSelectionNode(node, system) {
 
 /**
  * Checks if a parsed selection represents a war machine or chariot unit that needs to be split
- * into separate independent units (e.g. 2 Spear Chukkas for 1 choice).
+ * into separate independent units (e.g. 2 Spear Chukkas for 1 choice), resolving its entry
+ * against the catalogue of the force it was parsed from.
  */
-function checkNeedsSplit(selection, system) {
+function checkNeedsSplit(selection, system, catalogueId) {
   if (!system || !selection.number || selection.number <= 1) return false;
 
   const entryId = selection.selectionEntryId || selection.entryLinkId;
   if (!entryId) return false;
 
-  const entry = findEntryInSystem(system, entryId);
-  const resolved = resolveEntry(system, entry);
+  const entry = findEntryInSystem(system, entryId, catalogueId);
+  const resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return false;
 
   // Aufteilen, wenn der Eintrag eine eigenständige Untereinheit ist — also je
