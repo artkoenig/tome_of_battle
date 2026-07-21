@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -89,3 +89,4 @@ ADR 0003 §3a.
 - [ ] `npm test` grün, `npm run lint` 0 Fehler / 0 Warnungen.
 
 ## Comments
+- checkGroupConstraints summiert die Gruppenkosten jetzt ueber con.field statt roster.costLimitType; die Meldungen beider Varianten (absolut und Prozent) benennen ueber resolveCostTypeLabel(system, con.field) dieselbe Kostenart, die geprueft wurde. Neuer Regressionstest rosterValidator.groupConstraintCostType.test.js mit vier Faellen (absolut unter/ueber Grenze, Prozent unter/ueber Grenze) auf CASTING_DICE bei nach Punkten gebauter Liste; alle vier schlagen gegen das alte Verhalten fehl.
