@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -80,31 +80,37 @@ zurückgeblieben sind: die ADR zu Test und Automatisierung sowie die
 Projektanweisungen beschreiben das entfallende Debug-Skript weiterhin als
 verfügbar, und die README führt das entfallene Katalogverzeichnis noch als
 mitgeliefertes Datenpaket samt Nutzungshinweis. Nicht erfasst sind
-Rückblick-Vermerke in bereits abgeschlossenen Issues — die halten einen
-historischen Stand fest und bleiben unverändert.
+Stellen, die den Zustand **vor** der Migration bewusst historisch festhalten:
+Rückblick-Vermerke in abgeschlossenen Issues ebenso wie die Kontext- und
+Planungsabschnitte der ADRs und PRDs, die jene Umstellung beschreiben. Sie
+schildern im Präteritum, was einmal galt, und bleiben unverändert; korrigiert
+wird nur, was im Präsens eine nicht mehr existierende Ressource behauptet.
 
 ## Acceptance Criteria
 
-- [ ] Das Screenshot-Skript läuft auf einem frisch geklonten Repository ohne
+- [x] Das Screenshot-Skript läuft auf einem frisch geklonten Repository ohne
       Netzwerkzugang und ohne Katalogverzeichnis unterhalb von `public/`
       vollständig durch und legt Screenshots für Desktop- und Mobil-Viewport ab.
-- [ ] Kein Werkzeug-Skript enthält einen absoluten, rechnergebundenen Pfad; das
+- [x] Kein Werkzeug-Skript enthält einen absoluten, rechnergebundenen Pfad; das
       Ausgabeverzeichnis ist per Umgebungsvariable überschreibbar und
       standardmäßig repo-lokal und git-ignoriert.
-- [ ] Der Abruf des Katalog-Updates wird während des Laufs blockiert, sodass der
+- [x] Der Abruf des Katalog-Updates wird während des Laufs blockiert, sodass der
       Lauf ohne Netzwerk dasselbe Ergebnis liefert wie mit.
-- [ ] Ausgeliefert wird ein vorab erzeugter Produktions-Build, nicht der
+- [x] Ausgeliefert wird ein vorab erzeugter Produktions-Build, nicht der
       Dev-Server.
-- [ ] Der Ablauf „Fixture packen, ausliefern, Seite öffnen, Zustand
+- [x] Der Ablauf „Fixture packen, ausliefern, Seite öffnen, Zustand
       zurücksetzen, System importieren" existiert genau einmal im Repository und
       wird vom E2E-Smoke-Test wie vom Screenshot-Skript genutzt.
-- [ ] Der E2E-Smoke-Test läuft nach dem Umbau unverändert grün.
-- [ ] Konsolen-Mitschnitt, DOM-Ausgabe und sichtbar laufender Browser sind über
+- [x] Der E2E-Smoke-Test läuft nach dem Umbau unverändert grün.
+- [x] Konsolen-Mitschnitt, DOM-Ausgabe und sichtbar laufender Browser sind über
       das gemeinsame Modul verfügbar.
-- [ ] Das interaktive Debug-Skript und sein npm-Skript sind entfernt.
-- [ ] Keine Dokumentationsstelle außerhalb abgeschlossener Issues verweist noch
-      auf das entfernte Debug-Skript oder auf das entfallene Katalogverzeichnis
-      unterhalb von `public/` als vorhandene Ressource.
-- [ ] Die volle Vitest-Suite ist grün und der Linter meldet keine Fehler.
+- [x] Das interaktive Debug-Skript und sein npm-Skript sind entfernt.
+- [x] Keine Dokumentationsstelle behauptet im Präsens noch das entfernte
+      Debug-Skript oder das entfallene Katalogverzeichnis unterhalb von
+      `public/` als vorhandene Ressource; historische Schilderungen des
+      Vorzustands (abgeschlossene Issues, ADR- und PRD-Kontextabschnitte)
+      bleiben davon unberührt.
+- [x] Die volle Vitest-Suite ist grün und der Linter meldet keine Fehler.
 
 ## Comments
+- Umgesetzt: scripts/lib/e2e-harness.js buendelt Fixture-Packen, vite build, vite preview, Puppeteer-Seite mit gesperrtem raw.githubusercontent.com-Abruf, IndexedDB-Reset und Fixture-Import; zusaetzlich Opt-in fuer Konsolen-Mitschnitt, DOM-Ausgabe und sichtbaren Browser. src/solver/ui.test.js und scripts/generate_screenshots.js konsumieren es (Testzusicherungen unveraendert). scripts/debug_ui.js und npm run debug-ui entfernt. Doku nachgezogen: ADR 0006, AGENTS.md/CLAUDE.md, README, Fixture-README, battlescribe-data-format.md. Netto -822/+705 Zeilen. Drei Befunde traten erst beim Ausfuehren zutage: (1) 02_bibliothekar_loaded zeigte den falschen Bildschirm, weil die App nach dem Import selbsttaetig ins Heerlager wechselt - auffaellig nur durch byte-identische Dateigroesse zu 03; (2) das Skript schluckte fehlende Elemente still (if (el) el.click()), wodurch Bilder entstanden, deren Name luegt - Pflichtklicks werfen jetzt; (3) die Ausgabe haette das versionierte screenshots/ mit den kuratierten README-Bildern ueberschrieben, und zwar mit dem roten Offline-Hinweis des netzfreien Laufs - Ziel ist nun .screenshots/ (git-ignoriert). Verifikation: E2E gruen, 1005 Vitest-Tests in 112 Dateien gruen, oxlint 0 Fehler (52 vorbestehende Warnungen), Screenshot-Lauf erzeugt 16 Bilder offline. Vier-Achsen-Gate: Spezifikation 0 Befunde (alle 10 Kriterien live nachgefahren), Tests gruen, Doku 1 Befund (Tracking-Status - prozedural erwartbar, hiermit erledigt), Standards 8 Befunde ausschliesslich in vorbestehendem App-Code ausserhalb dieses Diffs; das Harness selbst ohne Beanstandung.
