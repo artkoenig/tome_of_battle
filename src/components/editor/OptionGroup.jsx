@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, resolveCostLimitTypeId, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
+import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
 export default function OptionGroupComponent({ 
   group, 
@@ -92,14 +93,14 @@ export default function OptionGroupComponent({
     if (!res) return false;
     return groupModifiers.some(mod => {
       if (mod.type !== 'increment' || !mod.repeat) return false;
-      const raisesGroupMax = (group.constraints || []).some(c => c.type === 'max' && c.id === mod.field);
+      const raisesGroupMax = (group.constraints || []).some(c => c.type === ConstraintKind.MAX && c.id === mod.field);
       if (!raisesGroupMax) return false;
       const repeatTarget = mod.repeat.childId || mod.repeat.field;
       return repeatTarget === option.id || repeatTarget === res.id || repeatTarget === res.targetId;
     });
   };
 
-  const maxLimitRaw = filteredGroupConstraints.find(c => c.type === 'max');
+  const maxLimitRaw = filteredGroupConstraints.find(c => c.type === ConstraintKind.MAX);
   const maxLimit = maxLimitRaw ? getModifiedConstraintValue(maxLimitRaw, groupModifiers, displayCtx) : Infinity;
   
   const currentCount = group.items.reduce((sum, item) => {
@@ -143,13 +144,13 @@ export default function OptionGroupComponent({
 
     const fieldMeasuresCost = isCostField(con.field, system, roster);
     if (fieldMeasuresCost) {
-      if (con.type === 'max') {
+      if (con.type === ConstraintKind.MAX) {
         if (activePoints > finalValue) {
           hasGroupError = true;
         }
       }
     } else {
-      if (con.type === 'max') {
+      if (con.type === ConstraintKind.MAX) {
         if (activeCount > finalValue) {
           hasGroupError = true;
         }
@@ -159,7 +160,7 @@ export default function OptionGroupComponent({
 
   let limitParts = [];
   const ptsConstraint = filteredGroupConstraints.find(c =>
-    c.type === 'max' && isCostField(c.field, system, roster)
+    c.type === ConstraintKind.MAX && isCostField(c.field, system, roster)
   );
   
   if (ptsConstraint) {
@@ -220,8 +221,8 @@ export default function OptionGroupComponent({
               return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
                      (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
             }) || [];
-            const minConstraint = filteredOptionConstraints.find(c => c.type === 'min');
-            const maxConstraint = filteredOptionConstraints.find(c => c.type === 'max');
+            const minConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MIN);
+            const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
             const minLimitOption = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
             const maxLimitOption = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
             const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
@@ -231,7 +232,7 @@ export default function OptionGroupComponent({
             const isRepeatableByGroupModifier = isRepeatableWithinGroup(option, res);
             // A repeatable item never behaves as an exclusive radio, even though its
             // group is nominally capped at max=1 (the cap is lifted per copy taken).
-            const isRadio = !isRepeatableByGroupModifier && groupConstraints?.some(c => c.type === 'max' && c.value === 1);
+            const isRadio = !isRepeatableByGroupModifier && groupConstraints?.some(c => c.type === ConstraintKind.MAX && c.value === 1);
             // A stepper (quantity control) requires a positive quantity signal. Without an
             // explicit max, only a real minimum (min>0, e.g. Ungors) or a collective
             // (per-model) upgrade qualifies; a plain optional upgrade with neither min nor
@@ -253,7 +254,7 @@ export default function OptionGroupComponent({
             const points = isCollective ? basePoints * parentCount : basePoints;
 
             const ptsConstraintGroup = filteredGroupConstraints.find(c =>
-              c.type === 'max' && isCostField(c.field, system, roster)
+              c.type === ConstraintKind.MAX && isCostField(c.field, system, roster)
             );
             const maxPointsLimit = ptsConstraintGroup 
               ? getModifiedConstraintValue(ptsConstraintGroup, groupModifiers, displayCtx)

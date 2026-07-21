@@ -1,6 +1,6 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
-import { ConditionKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, isCostField, resolveConstraintThreshold } from './constraintScope.js';
 import {
@@ -283,7 +283,7 @@ function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
     const costTypeId = costTypeIdOfRosterLimitField(con.field);
     const currentLimit = roster.costLimitType === costTypeId ? (roster.costLimit || 0) : 0;
 
-    if (con.type === 'min' && currentLimit < requiredLimit) {
+    if (con.type === ConstraintKind.MIN && currentLimit < requiredLimit) {
       pushViolation(errors, {
         type: 'force-roster-limit',
         forceId: forceDef.id,
@@ -333,14 +333,14 @@ function collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId
 
   // System-Quirk: Kategorie erbt einen fehlenden max-Constraint von einer anderen Kategorie.
   const inheritFromCatId = getInheritedCategoryMaxSource(system, targetCatId);
-  if (inheritFromCatId && !constraints.some(c => c.type === 'max')) {
+  if (inheritFromCatId && !constraints.some(c => c.type === ConstraintKind.MAX)) {
     const sourceCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === inheritFromCatId);
-    const sourceMaxCon = sourceCatLink?.constraints?.find(c => c.type === 'max');
+    const sourceMaxCon = sourceCatLink?.constraints?.find(c => c.type === ConstraintKind.MAX);
     if (sourceMaxCon) {
       constraints.push({
         ...sourceMaxCon,
         id: QUIRK_INHERITED_MAX_ID,
-        type: 'max',
+        type: ConstraintKind.MAX,
         isFallback: true,
         modifiers: getEffectiveModifiers(sourceCatLink)
       });
@@ -363,7 +363,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
   const finalValue = getModifiedConstraintValue(con, modifiers, ctx);
   if (finalValue < 0) return; // z. B. max="-1": die Kategorie ist unbegrenzt.
 
-  if (con.type === 'min' && count < finalValue) {
+  if (con.type === ConstraintKind.MIN && count < finalValue) {
     pushViolation(errors, {
       type: 'category-min',
       forceId: force.id,
@@ -372,7 +372,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       severity: ValidationSeverity.ERROR
     });
   }
-  if (con.type === 'max' && count > finalValue) {
+  if (con.type === ConstraintKind.MAX && count > finalValue) {
     pushViolation(errors, {
       type: 'category-max',
       forceId: force.id,
@@ -523,7 +523,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       return;
     }
 
-    if (con.type === 'min' && count < finalValue) {
+    if (con.type === ConstraintKind.MIN && count < finalValue) {
       pushViolation(errors, {
         type: 'entry-min',
         selectionId: selection.id,
@@ -531,7 +531,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
         severity: ValidationSeverity.ERROR
       });
     }
-    if (con.type === 'max' && count > finalValue) {
+    if (con.type === ConstraintKind.MAX && count > finalValue) {
       pushViolation(errors, {
         type: 'entry-max',
         selectionId: selection.id,
@@ -560,7 +560,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
   // Bezeichnung stammt daher aus genau dieser Kostenart.
   const unit = measuresCost ? resolveCostTypeLabel(system, con.field) : 'Auswahlen';
 
-  if (con.type === 'min' && subject < threshold) {
+  if (con.type === ConstraintKind.MIN && subject < threshold) {
     pushViolation(errors, {
       type: 'entry-percent-min',
       selectionId: selection.id,
@@ -568,7 +568,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       severity: ValidationSeverity.ERROR
     });
   }
-  if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
+  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
     pushViolation(errors, {
       type: 'entry-percent-max',
       selectionId: selection.id,
@@ -692,7 +692,7 @@ function checkGroupConstraints({ selection, entry }, context) {
         // `totalCost` ist über `con.field` summiert — die Meldung benennt daher
         // genau diese Kostenart, nicht eine festgeschriebene Einheit.
         const costLabel = resolveCostTypeLabel(system, con.field);
-        if (con.type === 'max' && totalCost > finalValue) {
+        if (con.type === ConstraintKind.MAX && totalCost > finalValue) {
           pushViolation(errors, {
             type: 'group-points-max',
             selectionId: selection.id,
@@ -700,7 +700,7 @@ function checkGroupConstraints({ selection, entry }, context) {
             severity: ValidationSeverity.ERROR
           });
         }
-        if (con.type === 'min' && totalCost < finalValue && totalCost > 0) {
+        if (con.type === ConstraintKind.MIN && totalCost < finalValue && totalCost > 0) {
           pushViolation(errors, {
             type: 'group-points-min',
             selectionId: selection.id,
@@ -709,7 +709,7 @@ function checkGroupConstraints({ selection, entry }, context) {
           });
         }
       } else {
-        if (con.type === 'max' && totalCount > finalValue) {
+        if (con.type === ConstraintKind.MAX && totalCount > finalValue) {
           pushViolation(errors, {
             type: 'group-count-max',
             selectionId: selection.id,
@@ -717,7 +717,7 @@ function checkGroupConstraints({ selection, entry }, context) {
             severity: ValidationSeverity.ERROR
           });
         }
-        if (con.type === 'min' && totalCount < finalValue && totalCount > 0) {
+        if (con.type === ConstraintKind.MIN && totalCount < finalValue && totalCount > 0) {
           pushViolation(errors, {
             type: 'group-count-min',
             selectionId: selection.id,
@@ -743,7 +743,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
   // die Bezugsgröße derselben Kostenart, Zähler und Nenner passen also zusammen.
   const unit = measuresCost ? resolveCostTypeLabel(system, con.field) : 'Auswahlen';
 
-  if (con.type === 'min' && subject < threshold) {
+  if (con.type === ConstraintKind.MIN && subject < threshold) {
     pushViolation(errors, {
       type: 'group-percent-min',
       selectionId: selection.id,
@@ -751,7 +751,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
       severity: ValidationSeverity.ERROR
     });
   }
-  if ((con.type === 'max' || con.type === 'percent') && subject > threshold) {
+  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
     pushViolation(errors, {
       type: 'group-percent-max',
       selectionId: selection.id,

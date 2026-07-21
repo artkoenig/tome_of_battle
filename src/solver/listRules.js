@@ -11,7 +11,7 @@
  */
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { collectPrimaryCategoryEntries } from './entryVisibility.js';
-import { SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { ConstraintKind, SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { ConstraintScope } from './battlescribeConstants.js';
 
 /**
@@ -72,7 +72,7 @@ function selectionEntryRef(selection) {
  */
 function isBinaryListRule(resolved) {
   const maxConstraint = (resolved?.constraints || []).find(
-    (c) => c.type === 'max' && (!c.scope || c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE)
+    (c) => c.type === ConstraintKind.MAX && (!c.scope || c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE)
   );
   if (!maxConstraint) return true;
   const { value } = maxConstraint;

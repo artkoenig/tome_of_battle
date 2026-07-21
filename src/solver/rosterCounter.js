@@ -1,6 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks } from './modifierEvaluator.js';
 import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from './rosterTree.js';
+import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 
 /**
  * The multiplier applied to a top-level (subject) selection when its cost is
@@ -92,7 +93,7 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 
   // 2. Direct costs of mandatory child selection entries
   resolved.selectionEntries?.forEach(child => {
-    const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
+    const minCon = child.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
     if (minCon > 0) {
       total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
     }
@@ -100,7 +101,7 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 
   // 3. Direct costs of mandatory child entry links
   resolved.entryLinks?.forEach(child => {
-    const minCon = child.constraints?.find(c => c.type === 'min')?.value || 0;
+    const minCon = child.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
     if (minCon > 0) {
       total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
     }
@@ -108,7 +109,7 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 
   // 4. Direct costs of mandatory groups
   resolved.selectionEntryGroups?.forEach(group => {
-    const minCon = group.constraints?.find(c => c.type === 'min')?.value || 0;
+    const minCon = group.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
     if (minCon > 0 && (group.selectionEntries?.length > 0 || group.entryLinks?.length > 0)) {
       const firstOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
       total += getOptionDisplayCost(system, firstOption, costLimitType, ctx) * minCon;

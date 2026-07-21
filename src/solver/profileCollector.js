@@ -4,6 +4,7 @@ import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
 import { findForceContainingSelection } from './rosterTree.js';
+import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import '../types.js';
 
 /**
@@ -197,7 +198,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
         resolved.selectionEntries?.forEach(child => {
           const childResolved = resolveEntry(system, child, activeCatalogueId);
           if (childResolved) {
-            const minCon = childResolved.constraints?.find(c => c.type === 'min')?.value || 0;
+            const minCon = childResolved.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
             const isMandatory = minCon > 0;
             const isUpgrade = (childResolved.type || 'upgrade') === 'upgrade';
             if (!isUpgrade || isMandatory) {
