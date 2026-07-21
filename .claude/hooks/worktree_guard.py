@@ -27,7 +27,17 @@ duplicated from there and must be kept in sync by hand.
 Escape hatches:
   - A bypass marker file `<main-repo-root>/.claude/.worktree-bypass` disables
     every check below, for a session the user has explicitly told to work
-    directly in the checkout (mirrors this repo's `git push --no-verify`).
+    directly in the checkout (mirrors this repo's `git push --no-verify`). The
+    marker must be git-ignored so a routine `git add -A` cannot commit it and
+    disable the guard permanently for every checkout; cloud-session-bootstrap
+    installs that `.gitignore` entry.
+  - During a merge (`git diff --diff-filter=U` reports unmerged files), the
+    files Git itself lists as conflicted may be edited directly. AGENTS.md
+    prescribes resolving the child-branch merges in the main checkout, and a
+    non-trivial merge dirties several conflicted files at once — which the
+    "single dirty file" rule would otherwise deny, forcing a session-wide
+    bypass. The exemption is scoped to Git's own conflict set: files not in that
+    set stay subject to the normal rule even mid-merge.
   - Only Edit/Write/NotebookEdit are checked. Bash-driven file writes (e.g.
     `cat > file`) are not inspected — this is a nudge for the common path, not
     a sandbox.
@@ -78,7 +88,10 @@ def is_protected_branch(branch: str | None) -> bool:
 
 
 def evaluate_direct_edit(
-    existing_files, incoming_file: str, issue_tracker_dir: str = DEFAULT_ISSUE_TRACKER_DIR
+    existing_files,
+    incoming_file: str,
+    issue_tracker_dir: str = DEFAULT_ISSUE_TRACKER_DIR,
+    merge_conflict_files=frozenset(),
 ):
     """Decide whether ``incoming_file`` may be edited directly in the main
     checkout, given the repo-relative paths already dirty there.
@@ -91,9 +104,22 @@ def evaluate_direct_edit(
     deliberately conservative approximation, not a bug: the bypass marker
     covers any resulting false positive.
 
+    ``merge_conflict_files`` is the set of repo-relative paths Git currently
+    reports as unmerged (empty unless a merge is in progress). AGENTS.md
+    prescribes resolving the child-branch merges *in the main checkout*, and a
+    non-trivial merge leaves several conflicted files dirty at once — which the
+    "exactly one dirty file" rule below would otherwise deny outright, forcing a
+    session-wide bypass. So during a merge a file Git itself lists as conflicted
+    is allowed; everything Git does *not* list as conflicted stays subject to
+    the normal rule, so the guard remains sharp for edits unrelated to the
+    merge.
+
     Returns (allowed: bool, reason: str | None).
     """
     if is_issue_tracker_path(incoming_file, issue_tracker_dir):
+        return True, None
+
+    if incoming_file in merge_conflict_files:
         return True, None
 
     relevant_existing = {
@@ -117,11 +143,21 @@ def evaluate_direct_edit(
 # Git plumbing (side-effecting, not unit-tested directly)                     #
 # --------------------------------------------------------------------------- #
 
-def _run_git(*args: str, cwd: Path) -> str | None:
+def _run_git(*args: str, cwd: Path, strip: bool = True) -> str | None:
+    """Run git and return stdout, or None on non-zero exit.
+
+    ``strip`` trims surrounding whitespace, which is right for single-value
+    output like ``rev-parse``/``symbolic-ref``. It must be left off for
+    ``status --porcelain``: that output is parsed by fixed column position, and
+    a global strip would eat the leading space of the first line (` M file`),
+    shifting every ``line[3:]`` slice and truncating the first path.
+    """
     result = subprocess.run(
         ["git", *args], cwd=cwd, capture_output=True, text=True
     )
-    return result.stdout.strip() if result.returncode == 0 else None
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() if strip else result.stdout
 
 
 def _repo_root(cwd: Path) -> str | None:
@@ -157,7 +193,8 @@ def _dirty_files(repo_root: str) -> set[str]:
     """Repo-relative paths with uncommitted changes (staged, unstaged, or
     untracked). Renames are reported under their new path."""
     out = _run_git(
-        "status", "--porcelain", "--untracked-files=all", cwd=Path(repo_root)
+        "status", "--porcelain", "--untracked-files=all", cwd=Path(repo_root),
+        strip=False,
     )
     if not out:
         return set()
@@ -168,6 +205,21 @@ def _dirty_files(repo_root: str) -> set[str]:
             body = body.split(" -> ", 1)[1]
         files.add(body.strip().strip('"'))
     return files
+
+
+def _merge_conflict_files(repo_root: str) -> set[str]:
+    """Repo-relative paths Git currently reports as unmerged (conflicted).
+
+    Empty unless a merge, rebase, or cherry-pick left conflicts to resolve.
+    ``--diff-filter=U`` lists exactly the files Git itself marks as still in
+    conflict, so the guard trusts Git's own view of what belongs to the merge
+    rather than guessing from the dirty-file set."""
+    out = _run_git(
+        "diff", "--name-only", "--diff-filter=U", cwd=Path(repo_root)
+    )
+    if not out:
+        return set()
+    return {line.strip().strip('"') for line in out.splitlines() if line.strip()}
 
 
 # --------------------------------------------------------------------------- #
@@ -232,7 +284,10 @@ def main() -> int:
 
     issue_tracker_dir = os.environ.get("ISSUE_TRACKER_DIR", DEFAULT_ISSUE_TRACKER_DIR)
     existing = _dirty_files(main_root)
-    allowed, reason = evaluate_direct_edit(existing, incoming_rel, issue_tracker_dir)
+    merge_conflicts = _merge_conflict_files(main_root)
+    allowed, reason = evaluate_direct_edit(
+        existing, incoming_rel, issue_tracker_dir, merge_conflicts
+    )
     if not allowed:
         _deny(
             f"Blocked by AGENTS.md's 'Worktree Isolation' rule: {reason}. Run "
