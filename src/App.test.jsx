@@ -1,8 +1,8 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
-import App, { getDiffChanges } from './App';
-import { getAllSystems, getAllRosters } from './db/database';
+import App from './App';
+import { getAllSystems, getAllRosters, saveRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 
 // Mock Lucide Icons
@@ -47,10 +47,28 @@ vi.mock('./components/Importer', () => ({
     </div>
   ),
 }));
-vi.mock('./components/RosterEditor', () => ({ default: () => <div data-testid="editor-mock">RosterEditor Mock</div> }));
-vi.mock('./components/PlayMode', () => ({ default: () => <div data-testid="playmode-mock">PlayMode Mock</div> }));
+// The dashboard and editor mocks expose the roster they are given (and the
+// dashboard's callbacks), so tests can drive App's navigation and observe which
+// roster state the open view actually renders.
+const { dashboardProps, editorProps } = vi.hoisted(() => ({
+  dashboardProps: { current: null },
+  editorProps: { current: null },
+}));
+
+vi.mock('./components/RosterEditor', () => ({
+  default: (props) => {
+    editorProps.current = props;
+    return <div data-testid="editor-mock">{props.roster?.name}</div>;
+  },
+}));
+vi.mock('./components/PlayMode', () => ({ default: ({ roster }) => <div data-testid="playmode-mock">{roster?.name}</div> }));
 vi.mock('./components/editor/NewRosterModal', () => ({ default: () => <div data-testid="new-roster-modal-mock">New Roster Modal Mock</div> }));
-vi.mock('./components/RosterDashboard', () => ({ default: () => <div data-testid="dashboard-mock">RosterDashboard Mock</div> }));
+vi.mock('./components/RosterDashboard', () => ({
+  default: (props) => {
+    dashboardProps.current = props;
+    return <div data-testid="dashboard-mock">RosterDashboard Mock</div>;
+  },
+}));
 
 describe('App Component PWA Update Toast Notification', () => {
   it('displays the toast notification when pwa-update-available is dispatched', async () => {
@@ -108,62 +126,6 @@ describe('App Component PWA Update Toast Notification', () => {
     expect(screen.queryByText('Eine neue Version wurde im Hintergrund geladen.')).toBeNull();
   });
 
-  describe('getDiffChanges Utility', () => {
-    it('returns legacy changes if commits or tags are missing', () => {
-      const release = { changes: ['Commit A', 'Commit B'] };
-      expect(getDiffChanges('v1.0.0', release)).toEqual(['Commit A', 'Commit B']);
-    });
-
-    it('filters commits based on installed tag version', () => {
-      const release = {
-        commits: [
-          { hash: 'aaaaaaa', subject: 'feat: Commit 3' },
-          { hash: 'bbbbbbb', subject: 'feat: Commit 2' },
-          { hash: 'ccccccc', subject: 'feat: Commit 1' }
-        ],
-        tags: [
-          { name: 'v1.1.0', hash: 'aaaaaaa' },
-          { name: 'v1.0.0', hash: 'bbbbbbb' }
-        ]
-      };
-      expect(getDiffChanges('v1.0.0', release)).toEqual(['feat: Commit 3']);
-    });
-
-    it('filters commits based on installed hash version (+hash)', () => {
-      const release = {
-        commits: [
-          { hash: 'aaaaaaa', subject: 'feat: Commit 3' },
-          { hash: 'bbbbbbb', subject: 'feat: Commit 2' },
-          { hash: 'ccccccc', subject: 'feat: Commit 1' }
-        ],
-        tags: []
-      };
-      expect(getDiffChanges('v1.0.0+bbbbbbb', release)).toEqual(['feat: Commit 3']);
-    });
-
-    it('falls back to showing first 50 commits + message if installed version not found', () => {
-      const release = {
-        commits: Array.from({ length: 60 }, (_, i) => ({ hash: i.toString(16).padStart(7, 'a'), subject: `feat: Commit ${i}` })),
-        tags: []
-      };
-      const diff = getDiffChanges('v1.0.0', release);
-      expect(diff.length).toBe(51);
-      expect(diff[50]).toBe('...und weitere Einträge.');
-    });
-
-    it('caps diff at 50 commits + message if diff is too large', () => {
-      const commits = Array.from({ length: 60 }, (_, i) => ({ hash: i.toString(16).padStart(7, 'a'), subject: `feat: Commit ${i}` }));
-      const release = {
-        commits,
-        tags: [
-          { name: 'v1.0.0', hash: (55).toString(16).padStart(7, 'a') }
-        ]
-      };
-      const diff = getDiffChanges('v1.0.0', release);
-      expect(diff.length).toBe(51);
-      expect(diff[50]).toBe('...und weitere Einträge.');
-    });
-  });
 });
 
 describe('App first-import catalog decoupling', () => {
@@ -208,6 +170,84 @@ describe('App first-import catalog decoupling', () => {
     await waitFor(() => {
       expect(screen.queryByText(/Konnte folgende Systeme nicht aktualisieren/)).not.toBeNull();
       expect(screen.queryByText(/Stored System/)).not.toBeNull();
+    });
+  });
+});
+
+describe('App roster selection derived from the roster list', () => {
+  const system = { id: 'sys-1', name: 'Stored System' };
+  const roster = { id: 'roster-1', name: 'Alter Name', systemId: 'sys-1' };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    dashboardProps.current = null;
+    editorProps.current = null;
+    getAllSystems.mockResolvedValue([system]);
+    getAllRosters.mockResolvedValue([roster]);
+    runSystemMigrations.mockImplementation((systems) =>
+      Promise.resolve({ systems: systems || [], failures: [] })
+    );
+  });
+
+  const renderAppAndOpenBuilder = async () => {
+    render(<App />);
+    await waitFor(() => expect(dashboardProps.current).not.toBeNull());
+    await act(async () => {
+      dashboardProps.current.onOpenRoster(roster, 'builder');
+    });
+    await waitFor(() => expect(screen.queryByTestId('editor-mock')).not.toBeNull());
+  };
+
+  it('renames a roster and reflects the new name in the open view immediately', async () => {
+    await renderAppAndOpenBuilder();
+    expect(screen.getByTestId('editor-mock').textContent).toBe('Alter Name');
+
+    // The rename writes to IndexedDB and reloads the list — the open view must
+    // follow that list instead of holding on to a stale roster copy.
+    const renamed = { ...roster, name: 'Neuer Name' };
+    getAllRosters.mockResolvedValue([renamed]);
+
+    await act(async () => {
+      await dashboardProps.current.onRenameRoster(roster, 'Neuer Name');
+    });
+
+    expect(saveRoster).toHaveBeenCalledWith(renamed);
+    await waitFor(() => {
+      expect(screen.getByTestId('editor-mock').textContent).toBe('Neuer Name');
+    });
+  });
+
+  it('carries the editor state into play mode when switching views', async () => {
+    await renderAppAndOpenBuilder();
+
+    const editedRoster = { ...roster, name: 'Im Editor geändert' };
+    await act(async () => {
+      editorProps.current.onPlay(editedRoster);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('playmode-mock').textContent).toBe('Im Editor geändert');
+    });
+  });
+
+  it('restores the selected roster from a browser back navigation', async () => {
+    await renderAppAndOpenBuilder();
+
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent('popstate', {
+        state: { view: 'rosters', rosterId: null },
+      }));
+    });
+    await waitFor(() => expect(screen.queryByTestId('dashboard-mock')).not.toBeNull());
+
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent('popstate', {
+        state: { view: 'builder', rosterId: roster.id },
+      }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('editor-mock').textContent).toBe('Alter Name');
     });
   });
 });

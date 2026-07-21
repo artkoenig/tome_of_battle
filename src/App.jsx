@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, FolderOpen, Plus, Trash2, Play, Edit3, Search, WifiOff, Download, Settings } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { BookOpen, FolderOpen, WifiOff, Download, Settings } from 'lucide-react';
 import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 import { fetchCatalogText } from './db/catalogUpdate';
@@ -24,53 +24,22 @@ import {
 
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './solver/validator';
 import useViewportHeight from './hooks/useViewportHeight';
+import usePwaLifecycle from './hooks/usePwaLifecycle';
+import { getDiffChanges } from './utils/releaseDiff';
+import { VIEWS, isImmersiveView } from './constants/views';
 import { Analytics } from '@vercel/analytics/react';
-export function getDiffChanges(installedVersion, release) {
-  if (!release) return [];
-  if (!release.commits || !release.tags) {
-    return release.changes || [];
-  }
 
-  let installedHash = '';
-  if (installedVersion) {
-    if (installedVersion.includes('+')) {
-      installedHash = installedVersion.split('+')[1];
-    } else {
-      const matchedTag = release.tags.find(
-        t => t.name.toLowerCase() === installedVersion.toLowerCase()
-      );
-      if (matchedTag) {
-        installedHash = matchedTag.hash;
-      }
-    }
-  }
+/** Der Ausgangspunkt der Verlaufs-Navigation: das Heerlager ohne offenes Roster. */
+const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: null });
 
-  if (installedHash) {
-    const targetHash = installedHash.toLowerCase();
-    const installedIndex = release.commits.findIndex(c => {
-      const h = c.hash.toLowerCase();
-      return h === targetHash || 
-             (h.length >= 7 && targetHash.startsWith(h)) || 
-             (targetHash.length >= 7 && h.startsWith(targetHash));
-    });
+/** Anzeigedauer einer Toast-Benachrichtigung in Millisekunden. */
+const TOAST_DURATION_MS = 3000;
 
-    if (installedIndex !== -1) {
-      const diff = release.commits.slice(0, installedIndex).map(c => c.subject);
-      if (diff.length > 50) {
-        return [...diff.slice(0, 50), '...und weitere Einträge.'];
-      }
-      return diff;
-    }
-  }
+/** Punktegrenze, mit der eine neue Liste angelegt wird, wenn keine angegeben ist. */
+const DEFAULT_COST_LIMIT = 2000;
 
-  // Fallback: If hash not found or too old (> 100 commits behind),
-  // show the latest 50 commits from the list plus the note.
-  const allCommits = release.commits.map(c => c.subject);
-  if (allCommits.length > 50) {
-    return [...allCommits.slice(0, 50), '...und weitere Einträge.'];
-  }
-  return allCommits.length > 0 ? allCommits : (release.changes || []);
-}
+/** Kostenart, die verwendet wird, wenn das System keine eigene definiert. */
+const FALLBACK_COST_TYPE = 'pts';
 
 export default function App() {
   // Keep --app-vh in sync with the real visible viewport height so mobile
@@ -78,20 +47,32 @@ export default function App() {
   // visible below collapsing browser chrome.
   useViewportHeight();
 
-  const [view, setView] = useState('rosters'); // rosters, importer, builder, play
+  const [view, setView] = useState(VIEWS.ROSTERS);
   const [systems, setSystems] = useState([]);
   const [rosters, setRosters] = useState([]);
-  const [selectedRoster, setSelectedRoster] = useState(null);
-  const [selectedSystem, setSelectedSystem] = useState(null);
+  // Einzige Quelle der Wahrheit für die Auswahl: die ID. Roster und System
+  // werden daraus abgeleitet, damit eine Änderung an der Liste (etwa ein
+  // Umbenennen) sofort in der geöffneten Ansicht sichtbar wird.
+  const [selectedRosterId, setSelectedRosterId] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // PWA & Network states
+  const selectedRoster = useMemo(
+    () => rosters.find(r => r.id === selectedRosterId) || null,
+    [rosters, selectedRosterId]
+  );
+  const selectedSystem = useMemo(
+    () => (selectedRoster ? systems.find(s => s.id === selectedRoster.systemId) || null : null),
+    [systems, selectedRoster]
+  );
+
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstallable, setIsInstallable] = useState(false);
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [waitingWorker, setWaitingWorker] = useState(null);
-  const [updateRelease, setUpdateRelease] = useState(null);
+  const {
+    isInstallable,
+    promptInstall,
+    isUpdateAvailable,
+    updateRelease,
+    applyUpdate,
+  } = usePwaLifecycle();
   const [toast, setToast] = useState(null);
   const toastTimeoutRef = useRef(null);
 
@@ -103,59 +84,21 @@ export default function App() {
     toastTimeoutRef.current = setTimeout(() => {
       setToast(null);
       toastTimeoutRef.current = null;
-    }, 3000);
+    }, TOAST_DURATION_MS);
   };
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsInstallable(true);
-    };
-    const handleAppInstalled = () => {
-      setIsInstallable(false);
-      setDeferredPrompt(null);
-    };
-    const handleUpdateAvailable = (e) => {
-      const detail = e.detail || {};
-      // detail may be the plain worker (legacy shape) or { worker, release }.
-      const worker = detail.worker || detail;
-      setWaitingWorker(worker);
-      setUpdateRelease(detail.release || null);
-      setUpdateAvailable(true);
-    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-    window.addEventListener('pwa-update-available', handleUpdateAvailable);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-      window.removeEventListener('pwa-update-available', handleUpdateAvailable);
     };
   }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to install prompt: ${outcome}`);
-    setDeferredPrompt(null);
-    setIsInstallable(false);
-  };
-
-  const handleReloadApp = () => {
-    if (waitingWorker) {
-      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-    }
-  };
 
   // Modal State for new Roster (Formular-State lebt im NewRosterModal selbst)
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -168,36 +111,27 @@ export default function App() {
 
   // Seed a base history entry so the first back-navigation has a defined target.
   useEffect(() => {
-    window.history.replaceState({ view: 'rosters', rosterId: null }, '');
+    window.history.replaceState(INITIAL_HISTORY_STATE, '');
   }, []);
 
-  // Support the browser/hardware back button: restore the view (and roster/system
-  // context) that was active at that point in history, instead of leaving the app.
+  // Support the browser/hardware back button: restore the view (and the selected
+  // roster) that was active at that point in history, instead of leaving the app.
   useEffect(() => {
     const handlePopState = (event) => {
-      const state = event.state || { view: 'rosters', rosterId: null };
-      const roster = state.rosterId ? rosters.find(r => r.id === state.rosterId) : null;
-      const sys = roster ? systems.find(s => s.id === roster.systemId) : null;
-
-      if (state.rosterId && roster && sys) {
-        setSelectedRoster(roster);
-        setSelectedSystem(sys);
-      } else {
-        setSelectedRoster(null);
-        setSelectedSystem(null);
-      }
-      setView(state.view || 'rosters');
+      const state = event.state || INITIAL_HISTORY_STATE;
+      setSelectedRosterId(state.rosterId || null);
+      setView(state.view || VIEWS.ROSTERS);
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [rosters, systems]);
+  }, []);
 
   // Navigates to a view and pushes a history entry, so the browser back button
   // returns to whatever view/roster was active before this call.
-  const navigate = (nextView, { roster = null, system = null } = {}) => {
-    const isSameEntry = nextView === view && (roster?.id || null) === (selectedRoster?.id || null);
-    const historyState = { view: nextView, rosterId: roster?.id || null };
+  const navigate = (nextView, rosterId = null) => {
+    const isSameEntry = nextView === view && rosterId === selectedRosterId;
+    const historyState = { view: nextView, rosterId };
 
     if (isSameEntry) {
       window.history.replaceState(historyState, '');
@@ -206,8 +140,13 @@ export default function App() {
     }
 
     setView(nextView);
-    setSelectedRoster(roster);
-    setSelectedSystem(system);
+    setSelectedRosterId(rosterId);
+  };
+
+  // Übernimmt einen frisch bearbeiteten Roster-Stand in die Liste, damit die
+  // abgeleitete Auswahl (und jede andere Ansicht) denselben Stand sieht.
+  const updateRosterInList = (updatedRoster) => {
+    setRosters(prev => prev.map(r => (r.id === updatedRoster.id ? updatedRoster : r)));
   };
 
   // Loads systems and rosters from IndexedDB into state. Local and fast — it never
@@ -268,7 +207,7 @@ export default function App() {
       console.error("Error loading index data:", e);
       setIsDataLoaded(true);
     }
-    navigate('rosters');
+    navigate(VIEWS.ROSTERS);
     refreshCatalogInBackground(dbSystems);
   };
 
@@ -280,14 +219,14 @@ export default function App() {
     }
 
     const systemDef = systems.find(s => s.id === systemId);
-    const costType = systemDef?.costTypes?.[0]?.id || 'pts';
+    const costType = systemDef?.costTypes?.[0]?.id || FALLBACK_COST_TYPE;
 
     const roster = {
       id: crypto.randomUUID(),
       name,
       systemId,
       catalogueId: catId,
-      costLimit: parseInt(limit) || 2000,
+      costLimit: parseInt(limit) || DEFAULT_COST_LIMIT,
       costLimitType: costType,
       forces: [{
         id: crypto.randomUUID(),
@@ -306,23 +245,33 @@ export default function App() {
     try {
       await saveRoster(roster);
       setIsModalOpen(false);
+      // Die neue Liste sofort veröffentlichen, damit die abgeleitete Auswahl
+      // den Editor öffnen kann, ohne auf das Neuladen aus der DB zu warten.
+      setRosters(prev => [...prev, roster]);
       loadAllData();
 
       // Open editor
-      navigate('builder', { roster, system: systemDef });
+      navigate(VIEWS.BUILDER, roster.id);
     } catch (err) {
       console.error(err);
       showToast("Fehler beim Erstellen der Liste.", 'error');
     }
   };
 
-  const handleOpenRoster = (roster, viewMode = 'builder') => {
+  const handleOpenRoster = (roster, viewMode = VIEWS.BUILDER) => {
     const sys = systems.find(s => s.id === roster.systemId);
     if (!sys) {
       showToast("Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.", 'error');
       return;
     }
-    navigate(viewMode, { roster, system: sys });
+    navigate(viewMode, roster.id);
+  };
+
+  // Der Editor hält den aktuellsten Stand der Liste; er wird in die Liste
+  // übernommen, bevor der Spielmodus ihn aus der Auswahl ableitet.
+  const handlePlayRoster = (updatedRoster) => {
+    updateRosterInList(updatedRoster);
+    handleOpenRoster(updatedRoster, VIEWS.PLAY);
   };
 
   const handleDeleteRoster = (id, e) => {
@@ -400,7 +349,7 @@ export default function App() {
 
   return (
     <SettingsProvider>
-    <div id="root" className={view !== 'rosters' && view !== 'importer' ? 'in-builder-mode' : ''}>
+    <div id="root" className={isImmersiveView(view) ? 'in-builder-mode' : ''}>
       {/* Premium Header */}
       <header className="app-header">
         <div className="logo-container">
@@ -422,7 +371,7 @@ export default function App() {
           {isInstallable && (
             <button
               className="install-app-btn"
-              onClick={handleInstallClick}
+              onClick={promptInstall}
               title="App auf dem Gerät installieren"
             >
               <Download size={18} className="text-gold" />
@@ -433,14 +382,14 @@ export default function App() {
           {systems.length > 0 && (
             <div className="desktop-nav-actions">
               <button
-                className={view === 'rosters' ? 'btn-primary' : ''}
-                onClick={() => { navigate('rosters'); loadAllData(); }}
+                className={view === VIEWS.ROSTERS ? 'btn-primary' : ''}
+                onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}
               >
                 <FolderOpen size={18} /> Heerlager
               </button>
               <button
-                className={view === 'importer' ? 'btn-primary' : ''}
-                onClick={() => { navigate('importer'); loadAllData(); }}
+                className={view === VIEWS.IMPORTER ? 'btn-primary' : ''}
+                onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}
               >
                 <BookOpen size={18} /> Bibliothekar
               </button>
@@ -468,7 +417,7 @@ export default function App() {
           <Importer onSystemImported={handleSystemImported} showAsEmptyState={true} />
         ) : (
           <>
-            {view === 'rosters' && (
+            {view === VIEWS.ROSTERS && (
               <RosterDashboard
                 rosters={rosters}
                 systems={systems}
@@ -478,31 +427,31 @@ export default function App() {
                 onNewRoster={() => setIsModalOpen(true)}
                 isOffline={isOffline}
                 isInstallable={isInstallable}
-                onInstallClick={handleInstallClick}
+                onInstallClick={promptInstall}
                 onImportRoster={handleImportRoster}
                 onExportRoster={handleExportRoster}
               />
             )}
 
-            {view === 'importer' && (
+            {view === VIEWS.IMPORTER && (
               <Importer onSystemImported={handleSystemImported} />
             )}
 
-            {view === 'builder' && selectedRoster && selectedSystem && (
+            {view === VIEWS.BUILDER && selectedRoster && selectedSystem && (
               <RosterEditor 
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => { navigate('rosters'); loadAllData(); }}
-                onPlay={(updatedRoster) => handleOpenRoster(updatedRoster, 'play')}
+                onBack={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}
+                onPlay={handlePlayRoster}
                 onExportRoster={handleExportRoster}
               />
             )}
 
-            {view === 'play' && selectedRoster && selectedSystem && (
+            {view === VIEWS.PLAY && selectedRoster && selectedSystem && (
               <PlayMode 
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => { navigate('builder', { roster: selectedRoster, system: selectedSystem }); }}
+                onBack={() => { navigate(VIEWS.BUILDER, selectedRosterId); }}
               />
             )}
           </>
@@ -551,18 +500,18 @@ export default function App() {
       {/* Mobile Bottom Navigation */}
       {systems.length > 0 && (
         <nav className="mobile-bottom-nav mobile-only">
-          <button className={`mobile-nav-btn ${view === 'rosters' ? 'active' : ''}`} onClick={() => { navigate('rosters'); loadAllData(); }}>
+          <button className={`mobile-nav-btn ${view === VIEWS.ROSTERS ? 'active' : ''}`} onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}>
             <FolderOpen size={20} />
             <span>Heerlager</span>
           </button>
-          <button className={`mobile-nav-btn ${view === 'importer' ? 'active' : ''}`} onClick={() => { navigate('importer'); loadAllData(); }}>
+          <button className={`mobile-nav-btn ${view === VIEWS.IMPORTER ? 'active' : ''}`} onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}>
             <BookOpen size={20} />
             <span>Bibliothekar</span>
           </button>
         </nav>
       )}
       {/* Update Available Toast Notification */}
-      {updateAvailable && (
+      {isUpdateAvailable && (
         <div className="update-toast">
           <div className="update-toast-content">
             <span className="font-serif text-gold update-toast-title">Chronik der Veränderungen</span>
@@ -582,7 +531,7 @@ export default function App() {
               <span className="update-toast-desc">Eine neue Version wurde im Hintergrund geladen.</span>
             )}
           </div>
-          <button className="btn-primary btn-sm update-toast-btn" onClick={handleReloadApp}>
+          <button className="btn-primary btn-sm update-toast-btn" onClick={applyUpdate}>
             Neu laden
           </button>
         </div>
