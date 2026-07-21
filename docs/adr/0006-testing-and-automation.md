@@ -29,6 +29,7 @@ Die Test- und Automatisierungsstrategie des Projekts basiert auf folgenden Säul
 - **Worktree-Ausschluss:** Ebenfalls ausgeschlossen sind `**/.claude/**` und `**/.worktrees/**`. Beide enthalten vollständige Arbeitskopien des Repos (Agenten-Harness bzw. Projektkonvention) und liegen innerhalb des Repos. Ohne diesen Ausschluss sammelt ein Lauf im Hauptcheckout die Testdateien aller offenen Worktrees mit, wodurch jede gemeldete Testzahl während paralleler Arbeit unbrauchbar wird.
 - **Test-Pflicht:** Bei jeder Änderung an der UI-Logik, Validierungslogik oder Importlogik muss ein entsprechender Test erstellt oder angepasst werden.
 - **Zero-Tolerance bei Fehlern:** Alle Unit-Tests *müssen* vor dem Abschluss einer Aufgabe (Task/Feature) erfolgreich durchlaufen.
+- **Statische Analyse:** Neben den Tests sichert eine mehrteilige Statik-Toolchain (oxlint, Knip, dependency-cruiser) den Code dateiübergreifend ab. Rollenverteilung, die bewusste Fassaden-Überlappung und die Gate-Strategie (warn-only → später blockierend) sind in **ADR 0024** beschrieben und hier nicht wiederholt.
 
 ### 2. Lokales vs. Cloud-Debugging & Screenshots
 Aufgrund technischer Einschränkungen unterscheidet sich das Vorgehen bei manuellen UI-Checks und Reviews:
