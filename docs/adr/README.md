@@ -31,4 +31,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0021 | [Preview-Badge über Laufzeit-Hostname-Vergleich](0021-preview-badge-laufzeit-hostname-erkennung.md) | Accepted | 2026-07-19 |
 | 0022 | [UI-Verfügbarkeit im Aushebe-Dialog leitet sich aus dem Validator ab](0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md) | Accepted | 2026-07-20 |
 | 0023 | [Die Solver-Fassade ist die exklusive Schnittstelle zur Regel-Engine](0023-solver-fassade-als-exklusive-schnittstelle.md) | Accepted | 2026-07-21 |
+| 0024 | [Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen](0024-statik-toolchain-oxlint-knip-dependency-cruiser.md) | Accepted | 2026-07-21 |
 

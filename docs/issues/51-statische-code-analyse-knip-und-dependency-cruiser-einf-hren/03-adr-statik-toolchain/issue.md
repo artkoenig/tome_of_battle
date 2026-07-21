@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [02]
 
@@ -34,3 +34,4 @@ Umfang dieser Scheibe:
       Abgrenzung „Tools einführen ≠ Befunde beheben".
 
 ## Comments
+- Neue ADR 0024 dokumentiert die Statik-Toolchain (Rollenverteilung oxlint/Knip/dependency-cruiser, bewusste Fassaden-Ueberlappung, Gate-Strategie warn-only -> blockierend, Abgrenzung Tools einfuehren != Befunde beheben). In docs/adr/README.md indexiert; ADR 0006 um Querverweis ergaenzt.
