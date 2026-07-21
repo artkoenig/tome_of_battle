@@ -18,6 +18,11 @@ const catFiles = [{ name: 'faction.cat', content: '<catalogue />' }];
 
 const noWarnings = vi.fn().mockResolvedValue([]);
 
+/** Lets the parser mock report a parse result in its real shape. */
+function mockParseResult(system, failedCatalogues = []) {
+  processImportedData.mockReturnValue({ system, failedCatalogues });
+}
+
 describe('completeSystemImport', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -27,7 +32,7 @@ describe('completeSystemImport', () => {
   });
 
   it('parses, attaches the raw XMLs and replaces the stored system', async () => {
-    processImportedData.mockReturnValue({ id: 'sys-1', name: 'System One', catalogues: [] });
+    mockParseResult({ id: 'sys-1', name: 'System One', catalogues: [] });
 
     const result = await completeSystemImport({
       gstFiles,
@@ -42,8 +47,23 @@ describe('completeSystemImport', () => {
     expect(saveSystem).toHaveBeenCalledWith(expect.objectContaining({ id: 'sys-1' }));
   });
 
+  it('reports the catalogues that failed to parse alongside the stored system', async () => {
+    const failedCatalogues = [{ fileName: 'broken.cat', message: 'Unexpected end of input' }];
+    mockParseResult({ id: 'sys-1', name: 'System One', catalogues: [] }, failedCatalogues);
+
+    const result = await completeSystemImport({
+      gstFiles,
+      catFiles,
+      catalogueDirectory: catalogueDirectoryFromLinks(),
+      collectWarnings: noWarnings,
+    });
+
+    expect(result.status).toBe(SYSTEM_IMPORT_STATUS.IMPORTED);
+    expect(result.failedCatalogues).toEqual(failedCatalogues);
+  });
+
   it('logs schema advisories to the console and imports anyway', async () => {
-    processImportedData.mockReturnValue({ id: 'sys-1', name: 'System One', catalogues: [] });
+    mockParseResult({ id: 'sys-1', name: 'System One', catalogues: [] });
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const collectWarnings = vi.fn().mockResolvedValue([{ message: 'Schema violation in faction.cat' }]);
 
@@ -64,7 +84,7 @@ describe('completeSystemImport', () => {
   });
 
   it('aborts without writing anything when a library dependency is missing', async () => {
-    processImportedData.mockReturnValue({
+    mockParseResult({
       id: 'sys-1',
       name: 'System One',
       catalogues: [
@@ -91,7 +111,7 @@ describe('completeSystemImport', () => {
   });
 
   it('propagates a persistence failure so the caller can phrase it', async () => {
-    processImportedData.mockReturnValue({ id: 'sys-1', name: 'System One', catalogues: [] });
+    mockParseResult({ id: 'sys-1', name: 'System One', catalogues: [] });
     saveSystem.mockRejectedValue(new Error('DB voll'));
 
     await expect(

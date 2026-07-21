@@ -39,6 +39,18 @@ const TOAST_DURATION_MS = 3000;
 /** Kostenart, die verwendet wird, wenn das System keine eigene definiert. */
 const FALLBACK_COST_TYPE = 'pts';
 
+/**
+ * Meldungen der Vorgänge, die auf IndexedDB schreiben oder von dort lesen. Sie laufen
+ * ohne Backend und ohne Konsole am Spieltisch — ein Fehlschlag muss den Nutzer über den
+ * Toast-Kanal (ADR 0010) erreichen, sonst ist er von einem Erfolg nicht zu unterscheiden.
+ */
+const ERROR_MESSAGE = Object.freeze({
+  createRoster: 'Fehler beim Erstellen der Liste.',
+  renameRoster: 'Die Liste konnte nicht umbenannt werden.',
+  deleteRoster: 'Die Liste konnte nicht gelöscht werden.',
+  loadData: 'Die gespeicherten Spielsysteme und Listen konnten nicht geladen werden.',
+});
+
 export default function App() {
   // Keep --app-vh in sync with the real visible viewport height so mobile
   // layout (#root, .empty-state-wrapper) sizes against the area actually
@@ -84,6 +96,11 @@ export default function App() {
       toastTimeoutRef.current = null;
     }, TOAST_DURATION_MS);
   };
+
+  // Der zentrale Fehlerkanal der Anwendung (ADR 0010): Ansichten und Hooks, die selbst
+  // keine Oberfläche für Fehler besitzen — Autosave, Spielstand, Import —, reichen ihre
+  // Meldung hierher, statt sie in der Konsole enden zu lassen.
+  const reportError = (message) => showToast(message, 'error');
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -174,8 +191,19 @@ export default function App() {
       }
       setSystems(refreshedSystems);
     } catch (e) {
+      // Bewusst nur Protokoll: der Katalog ist ein Cache, der gespeicherte Stand bleibt
+      // nutzbar. Was der Nutzer wissen muss — nicht aktualisierbare Systeme — meldet
+      // bereits der Toast oberhalb.
       console.error("Error refreshing catalog in background:", e);
     }
+  };
+
+  // Ein fehlgeschlagener Lesevorgang bedeutet eine leere oder unvollständige Oberfläche;
+  // ohne Meldung wäre sie von "noch keine Daten importiert" nicht zu unterscheiden.
+  const reportLoadFailure = (error) => {
+    console.error("Error loading index data:", error);
+    showToast(ERROR_MESSAGE.loadData, 'error');
+    setIsDataLoaded(true);
   };
 
   // Reloads everything and also waits for the catalog refresh. Used by callers that
@@ -186,8 +214,7 @@ export default function App() {
       const dbSystems = await loadLocalData();
       await refreshCatalogInBackground(dbSystems);
     } catch (e) {
-      console.error("Error loading index data:", e);
-      setIsDataLoaded(true);
+      reportLoadFailure(e);
     }
   };
 
@@ -202,8 +229,7 @@ export default function App() {
     try {
       dbSystems = await loadLocalData();
     } catch (e) {
-      console.error("Error loading index data:", e);
-      setIsDataLoaded(true);
+      reportLoadFailure(e);
     }
     navigate(VIEWS.ROSTERS);
     refreshCatalogInBackground(dbSystems);
@@ -252,7 +278,7 @@ export default function App() {
       navigate(VIEWS.BUILDER, roster.id);
     } catch (err) {
       console.error(err);
-      showToast("Fehler beim Erstellen der Liste.", 'error');
+      showToast(ERROR_MESSAGE.createRoster, 'error');
     }
   };
 
@@ -288,6 +314,7 @@ export default function App() {
       loadAllData();
     } catch (err) {
       console.error(err);
+      showToast(ERROR_MESSAGE.renameRoster, 'error');
     }
   };
 
@@ -412,7 +439,11 @@ export default function App() {
             <p className="text-dim">Öffne das Buch des Wissens...</p>
           </div>
         ) : systems.length === 0 ? (
-          <Importer onSystemImported={handleSystemImported} showAsEmptyState={true} />
+          <Importer
+            onSystemImported={handleSystemImported}
+            onReportError={reportError}
+            showAsEmptyState={true}
+          />
         ) : (
           <>
             {view === VIEWS.ROSTERS && (
@@ -432,24 +463,26 @@ export default function App() {
             )}
 
             {view === VIEWS.IMPORTER && (
-              <Importer onSystemImported={handleSystemImported} />
+              <Importer onSystemImported={handleSystemImported} onReportError={reportError} />
             )}
 
             {view === VIEWS.BUILDER && selectedRoster && selectedSystem && (
-              <RosterEditor 
+              <RosterEditor
                 system={selectedSystem}
                 roster={selectedRoster}
                 onBack={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}
                 onPlay={handlePlayRoster}
                 onExportRoster={handleExportRoster}
+                onReportError={reportError}
               />
             )}
 
             {view === VIEWS.PLAY && selectedRoster && selectedSystem && (
-              <PlayMode 
+              <PlayMode
                 system={selectedSystem}
                 roster={selectedRoster}
                 onBack={() => { navigate(VIEWS.BUILDER, selectedRosterId); }}
+                onReportError={reportError}
               />
             )}
           </>
@@ -483,6 +516,7 @@ export default function App() {
             loadAllData();
           } catch (err) {
             console.error(err);
+            showToast(ERROR_MESSAGE.deleteRoster, 'error');
           }
         }}
         title="Armeeliste löschen"

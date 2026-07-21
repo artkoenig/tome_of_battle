@@ -13,9 +13,16 @@ import {
 } from '../parser/libraryDependencies';
 import { buildRevisionDisplay, revisionLabelClassName } from './importer/revisionDisplay';
 import {
+  buildFailedCatalogueMessage,
   buildImportSuccessMessage,
   buildMissingLibraryDependencyMessage,
 } from './importer/importMessages';
+
+/** Failure texts the Importer raises itself, rather than receiving them as data. */
+const IMPORTER_ERROR_MESSAGE = Object.freeze({
+  systemListUnavailable:
+    'Die importierten Spielsysteme konnten nicht aus der Datenbank geladen werden.',
+});
 
 /**
  * A selection map that marks every catalogue of a system as selected. Used to preselect
@@ -29,7 +36,14 @@ function buildAllSelectedCats(system) {
   return selected;
 }
 
-export default function Importer({ onSystemImported, showAsEmptyState = false }) {
+/**
+ * @param {object} props
+ * @param {() => Promise<void>|void} [props.onSystemImported] runs after a system was stored.
+ * @param {(message: string) => void} [props.onReportError] carries a failure to the app-wide
+ *   channel. Needed because a completed import navigates away and unmounts this screen, so
+ *   its own error area would take the message with it.
+ */
+export default function Importer({ onSystemImported, onReportError, showAsEmptyState = false }) {
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -52,6 +66,7 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       setSystems(data);
     } catch (e) {
       console.error("Error loading systems", e);
+      setError(IMPORTER_ERROR_MESSAGE.systemListUnavailable);
     }
   };
 
@@ -67,6 +82,8 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       }
     } catch (e) {
       console.warn("Could not load catalog index from fork", e);
+      // Nur wenn noch keine Auswahl steht, ist der Fehler für den Nutzer relevant —
+      // andernfalls kann er mit dem bereits geladenen Index weiterarbeiten.
       if (availableSystems.length === 0) {
         setError('Keine Spieldaten zum Import verfügbar. Der Katalog-Index konnte nicht geladen werden.');
       }
@@ -100,6 +117,8 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
    * Runs the shared import completion for raw XML files that either import path has
    * gathered, and reflects its outcome in the UI. Both paths therefore share the schema
    * advisory, the library-dependency guard, persistence and the success confirmation.
+   * Catalogues that failed to parse are named in the same error area as the dependency
+   * warning, and the confirmation reports the import as incomplete.
    */
   const finishImport = async (gstFiles, catFiles, catalogueDirectory) => {
     const result = await completeSystemImport({ gstFiles, catFiles, catalogueDirectory });
@@ -109,7 +128,13 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
       return;
     }
 
-    setSuccessMsg(buildImportSuccessMessage(result.system));
+    const failedCatalogues = result.failedCatalogues ?? [];
+    if (failedCatalogues.length > 0) {
+      const failureMessage = buildFailedCatalogueMessage(failedCatalogues);
+      setError(failureMessage);
+      if (onReportError) onReportError(failureMessage);
+    }
+    setSuccessMsg(buildImportSuccessMessage(result.system, failedCatalogues));
     loadSystems();
     // Await the parent so it has already switched to the Heerlager view before
     // `finally` clears `loading` and unmounts this Importer — no visible flash.

@@ -198,27 +198,73 @@ export async function compressXmlToRosz(fileName, xmlText) {
 }
 
 /**
- * Decompresses a BattleScribe .rosz ZIP Blob (or handles raw .ros XML directly) and returns the XML text.
- * @param {Blob|File} fileBlob 
- * @returns {Promise<string>} XML text
+ * The local file header signature every ZIP archive starts with ("PK\x03\x04"). It tells
+ * an archive apart from raw .ros XML, so a failure to unpack it can be reported as real
+ * damage instead of being mistaken for "this file was never a ZIP".
  */
-export async function decompressRoszToXml(fileBlob) {
-  try {
-    const zip = await JSZip.loadAsync(fileBlob);
-    const rosFile = Object.keys(zip.files).find(name => name.endsWith('.ros'));
-    if (rosFile) {
-      return await zip.files[rosFile].async('text');
-    }
-  } catch (e) {
-    // Not a ZIP file, or decompression failed; fall back to reading as raw text
-  }
-  
+const ZIP_FILE_SIGNATURE = Object.freeze([0x50, 0x4b, 0x03, 0x04]);
+
+const ROSTER_XML_EXTENSION = '.ros';
+
+const ROSZ_ERROR_MESSAGE = Object.freeze({
+  damagedArchive: 'Die Datei ist ein beschädigtes ZIP-Archiv und konnte nicht entpackt werden.',
+  missingRosterEntry: `Das ZIP-Archiv enthält keine ${ROSTER_XML_EXTENSION}-Datei.`,
+});
+
+/**
+ * Whether the blob starts with the ZIP local file header signature. Only the first
+ * bytes are read, so the check stays cheap regardless of the archive's size.
+ */
+async function hasZipFileSignature(fileBlob) {
+  const header = new Uint8Array(
+    await fileBlob.slice(0, ZIP_FILE_SIGNATURE.length).arrayBuffer()
+  );
+  return ZIP_FILE_SIGNATURE.every((byte, index) => header[index] === byte);
+}
+
+function readBlobAsText(fileBlob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
     reader.onerror = () => reject(reader.error);
     reader.readAsText(fileBlob);
   });
+}
+
+/**
+ * Unpacks a .rosz archive and returns the contained roster XML.
+ * @throws {Error} when the archive is damaged or carries no .ros entry.
+ */
+async function extractRosterXmlFromZip(fileBlob) {
+  let zip;
+  try {
+    zip = await JSZip.loadAsync(fileBlob);
+  } catch (error) {
+    // The signature identified this as a ZIP, so a load failure is genuine damage
+    // and must not be papered over by the raw-XML fallback below.
+    throw new Error(`${ROSZ_ERROR_MESSAGE.damagedArchive} (${error.message})`);
+  }
+
+  const rosFileName = Object.keys(zip.files).find(name => name.endsWith(ROSTER_XML_EXTENSION));
+  if (!rosFileName) {
+    throw new Error(ROSZ_ERROR_MESSAGE.missingRosterEntry);
+  }
+  return zip.files[rosFileName].async('text');
+}
+
+/**
+ * Decompresses a BattleScribe .rosz ZIP Blob (or handles raw .ros XML directly) and returns
+ * the XML text. Which of the two it is, is decided by the ZIP signature rather than by a
+ * failed unpacking attempt — so a damaged archive surfaces as an error instead of being
+ * read as text and failing later with a misleading "invalid file format".
+ * @param {Blob|File} fileBlob
+ * @returns {Promise<string>} XML text
+ */
+export async function decompressRoszToXml(fileBlob) {
+  if (await hasZipFileSignature(fileBlob)) {
+    return extractRosterXmlFromZip(fileBlob);
+  }
+  return readBlobAsText(fileBlob);
 }
 
 /**

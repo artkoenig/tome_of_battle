@@ -6,6 +6,10 @@ import {
 } from '../solver/validator';
 import { createSelectionFromDef as buildSelectionFromDef } from '../solver/selectionFactory';
 import { useUndoableState } from './useUndoableState';
+import {
+  PERSISTENCE_FAILURE_MESSAGE,
+  createPersistenceFailureReporter,
+} from '../utils/persistenceFailure';
 import '../types.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 150;
@@ -22,8 +26,10 @@ const NO_VALIDATION_ERRORS = Object.freeze([]);
  * @param {import('../types.js').Roster} initialRoster
  * @param {Object} system
  * @param {Function} saveRosterCallback
+ * @param {(message: string) => void} [reportError] app-wide error channel; a failed
+ *   autosave reaches the user through it instead of ending in the console.
  */
-export function useRoster(initialRoster, system, saveRosterCallback) {
+export function useRoster(initialRoster, system, saveRosterCallback, reportError) {
   const {
     state: roster,
     setState: setRoster,
@@ -67,19 +73,27 @@ export function useRoster(initialRoster, system, saveRosterCallback) {
   const saveCallbackRef = useRef(saveRosterCallback);
   saveCallbackRef.current = saveRosterCallback;
   const pendingSaveRef = useRef(null);
+  // Über eine Ref, weil das Persistieren aus einem Timeout heraus läuft und dort sonst
+  // einen veralteten Kanal aus dem Erzeugungs-Render sähe.
+  const reportErrorRef = useRef(reportError);
+  reportErrorRef.current = reportError;
 
   const persistRoster = (rosterToSave) => {
-    const cb = saveCallbackRef.current;
-    if (!cb) return;
+    const save = saveCallbackRef.current;
+    if (!save) return;
+
+    const reportFailure = createPersistenceFailureReporter(
+      PERSISTENCE_FAILURE_MESSAGE.roster,
+      reportErrorRef.current
+    );
+
     try {
-      const promise = cb(rosterToSave);
-      if (promise && typeof promise.catch === 'function') {
-        promise.catch(e => {
-          console.error('Failed to auto-save roster:', e);
-        });
+      const savePromise = save(rosterToSave);
+      if (savePromise && typeof savePromise.catch === 'function') {
+        savePromise.catch(reportFailure);
       }
-    } catch (e) {
-      console.error('Failed to auto-save roster:', e);
+    } catch (error) {
+      reportFailure(error);
     }
   };
 

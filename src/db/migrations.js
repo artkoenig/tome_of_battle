@@ -16,7 +16,11 @@ function hasStoredXml(system) {
  * a re-processing failure here is a genuine problem with the user's stored system.
  */
 async function reprocessStoredSystem(system) {
-  const reParsed = processImportedData(system.rawXmls.gst, system.rawXmls.cat || []);
+  // Catalogues that fail to re-parse are deliberately not reported here: this runs
+  // unattended at app start, and the same files are re-checked (and named) whenever the
+  // user imports or updates the system. Only a failed re-processing of the whole system
+  // reaches the user, via the caller's `failures` list.
+  const { system: reParsed } = processImportedData(system.rawXmls.gst, system.rawXmls.cat || []);
   reParsed.rawXmls = system.rawXmls;
   await saveSystem(reParsed);
   return reParsed;
@@ -75,6 +79,8 @@ export async function runSystemMigrations(systems, fetchText = null) {
     try {
       migratedSystems.push(await reprocessStoredSystem(system));
     } catch (error) {
+      // Not console-only: the system is additionally recorded in `failures`, which the
+      // caller turns into a user-facing toast.
       console.error(`Failed to auto-migrate system ${system.name}:`, error);
       migratedSystems.push(system);
       failures.push({ id: system.id, name: system.name });

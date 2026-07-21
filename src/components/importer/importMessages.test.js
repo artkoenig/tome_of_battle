@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { buildImportSuccessMessage, buildMissingLibraryDependencyMessage } from './importMessages';
+import {
+  buildFailedCatalogueMessage,
+  buildImportSuccessMessage,
+  buildMissingLibraryDependencyMessage,
+} from './importMessages';
 
 describe('buildMissingLibraryDependencyMessage', () => {
   it('names the missing catalogue together with every catalogue depending on it', () => {
@@ -43,5 +47,31 @@ describe('buildImportSuccessMessage', () => {
 
   it('counts zero catalogues when the system carries none', () => {
     expect(buildImportSuccessMessage({ name: 'System One' })).toContain('mit 0 Katalogen');
+  });
+
+  it('reports an incomplete import instead of confirming success when catalogues failed', () => {
+    const message = buildImportSuccessMessage(
+      { name: 'System One', catalogues: [{ id: 'a' }, { id: 'b' }] },
+      [{ fileName: 'broken.cat', message: 'Unexpected end of input' }]
+    );
+
+    expect(message).toBe(
+      'Das System "System One" wurde unvollständig importiert: 2 von 3 Katalogen konnten gelesen werden.'
+    );
+    expect(message).not.toContain('erfolgreich');
+  });
+});
+
+describe('buildFailedCatalogueMessage', () => {
+  it('names every catalogue that could not be read, with its reason', () => {
+    const message = buildFailedCatalogueMessage([
+      { fileName: 'dogs.cat', message: 'Unexpected end of input' },
+      { fileName: 'empire.cat', message: 'Invalid XML' },
+    ]);
+
+    expect(message).toContain('dogs.cat');
+    expect(message).toContain('Unexpected end of input');
+    expect(message).toContain('empire.cat');
+    expect(message).toContain('Invalid XML');
   });
 });

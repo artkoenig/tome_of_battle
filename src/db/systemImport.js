@@ -42,7 +42,10 @@ function logSchemaWarnings(warnings) {
  *   decides which unresolved catalogueLink targets the user could still add.
  * @param {(gstFiles: object[], catFiles: object[]) => Promise<object[]>} [params.collectWarnings]
  *   injected schema advisory collector; defaults to the real one.
- * @returns {Promise<{ status: string, system?: object, missingDependencies?: object[] }>}
+ * @returns {Promise<{ status: string, system?: object, failedCatalogues?:
+ *   import('../parser/xmlParser').CatalogueParseFailure[], missingDependencies?: object[] }>}
+ *   An `IMPORTED` result carries the catalogues that failed to parse, so the caller can
+ *   name them rather than confirming a completeness the stored system does not have.
  * @throws whatever parsing or persistence throws — the caller phrases the failure.
  */
 export async function completeSystemImport({
@@ -53,7 +56,7 @@ export async function completeSystemImport({
 }) {
   logSchemaWarnings(await collectWarnings(gstFiles, catFiles));
 
-  const system = processImportedData(gstFiles, catFiles);
+  const { system, failedCatalogues } = processImportedData(gstFiles, catFiles);
 
   const missingDependencies = findMissingLibraryDependencies(system.catalogues, catalogueDirectory);
   if (missingDependencies.length > 0) {
@@ -65,5 +68,5 @@ export async function completeSystemImport({
   await deleteSystem(system.id);
   await saveSystem(system);
 
-  return { status: SYSTEM_IMPORT_STATUS.IMPORTED, system };
+  return { status: SYSTEM_IMPORT_STATUS.IMPORTED, system, failedCatalogues };
 }

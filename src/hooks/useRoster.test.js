@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
+import { PERSISTENCE_FAILURE_MESSAGE } from '../utils/persistenceFailure';
 import { syncRosterSelectionsWithSystem, calculateRosterCosts, validateRoster } from '../solver/validator';
 
 // Only the rules engine is stubbed. The roster-tree primitives (rosterTree.js,
@@ -572,6 +573,49 @@ describe('useRoster Hook', () => {
       });
       expect(result.current.roster.forces[0].selections.length)
         .toBe(recordedSnapshot.forces[0].selections.length);
+    });
+  });
+  describe('failed autosave', () => {
+    // IndexedDB ist der einzige Datenpfad: scheitert das Speichern still, arbeitet der
+    // Nutzer ahnungslos weiter und verliert seine Liste.
+    it('reports a rejected save through the error channel', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const reportError = vi.fn();
+      const failingSave = vi.fn().mockRejectedValue(new Error('QuotaExceededError'));
+
+      renderHook(() => useRoster(initialRoster, mockSystem, failingSave, reportError));
+
+      await vi.waitFor(() => {
+        expect(reportError).toHaveBeenCalledWith(PERSISTENCE_FAILURE_MESSAGE.roster);
+      });
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('reports a save that throws synchronously', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const reportError = vi.fn();
+      const throwingSave = vi.fn(() => {
+        throw new Error('DB blockiert');
+      });
+
+      renderHook(() => useRoster(initialRoster, mockSystem, throwingSave, reportError));
+
+      await vi.waitFor(() => {
+        expect(reportError).toHaveBeenCalledWith(PERSISTENCE_FAILURE_MESSAGE.roster);
+      });
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('stays silent while saving succeeds', async () => {
+      const reportError = vi.fn();
+      const succeedingSave = vi.fn().mockResolvedValue(undefined);
+
+      renderHook(() => useRoster(initialRoster, mockSystem, succeedingSave, reportError));
+
+      await vi.waitFor(() => {
+        expect(succeedingSave).toHaveBeenCalled();
+      });
+      expect(reportError).not.toHaveBeenCalled();
     });
   });
 });

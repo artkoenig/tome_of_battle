@@ -229,7 +229,7 @@ test('ZIP Extraction via extractZipFiles and processImportedData', async () => {
     expect(catFiles[0].content).toBe(mockCatXml);
 
     // Run processImportedData on the extracted lists
-    const combinedSystem = processImportedData(gstFiles, catFiles);
+    const { system: combinedSystem } = processImportedData(gstFiles, catFiles);
     expect(combinedSystem.id).toBe('sys-123');
     expect(combinedSystem.catalogues.length).toBe(1);
     expect(combinedSystem.catalogues[0].id).toBe('cat-marines');

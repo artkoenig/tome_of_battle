@@ -38,6 +38,14 @@ vi.mock('../parser/xmlParser', () => ({
   processImportedData: vi.fn(),
 }));
 
+/**
+ * Lets the parser mock report a parse result in its real shape: the assembled system
+ * plus the catalogues that failed to parse.
+ */
+function mockParseResult(system, failedCatalogues = []) {
+  processImportedData.mockReturnValue({ system, failedCatalogues });
+}
+
 // Mock the import schema advisory. These component tests use synthetic/mock file
 // content that is not real BattleScribe XML, so the collector reports no warnings by
 // default; individual tests override it to simulate a schema-flagged import.
@@ -161,7 +169,7 @@ describe('Importer Component', () => {
       resolveZip = resolve;
     });
     extractZipFiles.mockReturnValue(zipPromise);
-    processImportedData.mockReturnValue({ id: 'dummy', catalogues: [] });
+    mockParseResult({ id: 'dummy', catalogues: [] });
     saveSystem.mockResolvedValue({});
 
     const { container } = render(<Importer showAsEmptyState={false} />);
@@ -188,7 +196,7 @@ describe('Importer Component', () => {
     const systemData = { id: 'sys-new', name: 'New Imported System', catalogues: [{ id: 'cat-new' }] };
     
     extractZipFiles.mockResolvedValue({ gstFiles: [{ name: 'rules.gst' }], catFiles: [{ name: 'faction.cat' }] });
-    processImportedData.mockReturnValue(systemData);
+    mockParseResult(systemData);
     saveSystem.mockResolvedValue({});
     getAllSystems.mockResolvedValue([]);
 
@@ -208,6 +216,41 @@ describe('Importer Component', () => {
     });
 
     expect(screen.getByText(/erfolgreich importiert/)).toBeDefined();
+  });
+
+  // Zuvor lief der Import mit unvollständigem Datensatz weiter und meldete Erfolg — mit
+  // einer Katalogzahl, welche die fehlgeschlagenen bereits nicht mehr enthielt.
+  it('5b. Names the catalogues that could not be read and reports the import as incomplete', async () => {
+    const systemData = { id: 'sys-new', name: 'New Imported System', catalogues: [{ id: 'cat-new' }] };
+    const onReportErrorMock = vi.fn();
+
+    extractZipFiles.mockResolvedValue({
+      gstFiles: [{ name: 'rules.gst' }],
+      catFiles: [{ name: 'faction.cat' }, { name: 'broken.cat' }],
+    });
+    mockParseResult(systemData, [{ fileName: 'broken.cat', message: 'Unexpected end of input' }]);
+    saveSystem.mockResolvedValue({});
+    getAllSystems.mockResolvedValue([]);
+
+    const { container } = render(
+      <Importer
+        showAsEmptyState={false}
+        onSystemImported={vi.fn()}
+        onReportError={onReportErrorMock}
+      />
+    );
+
+    const file = new File(['zipcontent'], 'game_system.zip', { type: 'application/zip' });
+    fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/broken\.cat/)).toBeDefined();
+    });
+    expect(screen.getByText(/unvollständig importiert: 1 von 2 Katalogen/)).toBeDefined();
+    expect(screen.queryByText(/erfolgreich importiert/)).toBeNull();
+    // Der Import wechselt anschließend ins Heerlager und hängt diese Ansicht ab; die
+    // Meldung muss den Nutzer deshalb auch über den anwendungsweiten Kanal erreichen.
+    expect(onReportErrorMock).toHaveBeenCalledWith(expect.stringContaining('broken.cat'));
   });
 
   it('6. Invalid Extension Rejection', async () => {
@@ -255,7 +298,7 @@ describe('Importer Component', () => {
       gstFiles: [{ name: 'rules.gst', content: '<gameSystem/>' }],
       catFiles: [{ name: 'faction.cat', content: '<catalogue/>' }],
     });
-    processImportedData.mockReturnValue(systemData);
+    mockParseResult(systemData);
     const locatableMessage =
       'Die Datei „faction.cat" entspricht nicht vollständig dem BattleScribe-Schema (v2.03); ' +
       'der Import wurde dennoch fortgesetzt. 1 Schemaverstoß/-verstöße gefunden. ' +
@@ -297,7 +340,7 @@ describe('Importer Component', () => {
       gstFiles: [{ name: 'rules.gst', content: '<gameSystem />' }],
       catFiles: [{ name: 'dogs.cat', content: '<catalogue />' }],
     });
-    processImportedData.mockReturnValue({
+    mockParseResult({
       id: 'sys-upload',
       name: 'Uploaded System',
       catalogues: [
@@ -328,7 +371,7 @@ describe('Importer Component', () => {
         { name: 'merc.cat', content: '<catalogue />' },
       ],
     });
-    processImportedData.mockReturnValue({
+    mockParseResult({
       id: 'sys-upload',
       name: 'Uploaded System',
       catalogues: [
@@ -607,7 +650,7 @@ describe('Importer Component', () => {
     it('should trigger fetches and import process on clicking import button', async () => {
       const onSystemImportedMock = vi.fn();
       const systemData = { id: 'sys-bundle-1', name: 'Warhammer Fantasy Bundle', catalogues: [{ id: 'cat-bundle-1' }, { id: 'cat-bundle-2' }] };
-      processImportedData.mockReturnValue(systemData);
+      mockParseResult(systemData);
       saveSystem.mockResolvedValue({});
 
       render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
@@ -680,7 +723,7 @@ describe('Importer Component', () => {
     it('aborts the import and names the missing library catalog when its dependent stays selected', async () => {
       // "Dogs of War" links to the "Mercenaries" library catalog; deselecting Mercenaries
       // while keeping Dogs of War must abort rather than import a broken dataset.
-      processImportedData.mockReturnValue({
+      mockParseResult({
         id: 'sys-lex',
         name: 'WHFB Lexicanum',
         catalogues: [
@@ -710,7 +753,7 @@ describe('Importer Component', () => {
 
     it('imports normally when the referenced library catalog is part of the selection', async () => {
       const onSystemImportedMock = vi.fn();
-      processImportedData.mockReturnValue({
+      mockParseResult({
         id: 'sys-lex',
         name: 'WHFB Lexicanum',
         catalogues: [
@@ -952,7 +995,7 @@ describe('Importer Component', () => {
         requestedFileHosts.push(url);
         return Promise.resolve({ ok: true, text: () => Promise.resolve('<xml />') });
       });
-      processImportedData.mockReturnValue({ id: ERGOFARG_SYSTEM_ID, name: 'Ergofarg', catalogues: [{ id: 'ergofarg-cat' }] });
+      mockParseResult({ id: ERGOFARG_SYSTEM_ID, name: 'Ergofarg', catalogues: [{ id: 'ergofarg-cat' }] });
 
       render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
 
