@@ -42,3 +42,4 @@ UI-Internationalisierung — erst nach dessen Merge bearbeiten.
 
 Umfangreich, aber nicht schwierig: die Aufgabe ist dateiweise planbar und kann
 in mehreren Durchgängen erledigt werden.
+- Sperre aufgehoben (2026-07-21): Der urspruengliche Kommentar verlangte, den Merge des i18n-Pull-Requests (#85) abzuwarten, da beide dieselben Dateien beruehren. Entscheidung des Maintainers: die UI-Internationalisierung wird nach Abschluss des Refactorings neu aufgerollt, statt den bestehenden PR vorher zu mergen. Damit entfaellt die Wartebedingung und dieses Kind-Issue kann bearbeitet werden.
