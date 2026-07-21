@@ -63,6 +63,7 @@ vi.mock('../../solver/validator', async () => ({
   // Reine Baum-Primitive: die echte Implementierung durchreichen statt sie im Mock
   // nachzubauen — ihre Rekursion ist in rosterTree.test.js eigens abgedeckt.
   findForceContainingSelection: (await vi.importActual('../../solver/rosterTree')).findForceContainingSelection,
+  countSelections: (await vi.importActual('../../solver/rosterTree')).countSelections,
   // Reine Ableitung aus Roster und System — die echte Bezeichnung der Kostenart durchreichen.
   resolveCostLimitLabel: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitLabel,
   resolveEntry: (...args) => mockResolveEntry(...args),

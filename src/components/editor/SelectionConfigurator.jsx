@@ -4,6 +4,7 @@ import {
   resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
   isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
   isQuirkGeneralEntryId, findForceContainingSelection, resolveCostLimitLabel,
+  countSelections,
   UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/validator';
 import OptionGroupComponent from './OptionGroup';
@@ -86,19 +87,12 @@ export default function SelectionConfigurator({
   };
 
   const getSubSelectionCount = (unitSelection, optionEntryId) => {
-    const findCount = (list) => {
-      let count = 0;
-      for (const item of list) {
-        if ((item.entryLinkId || item.selectionEntryId) === optionEntryId) {
-          count += item.number || 1;
-        }
-        if (item.selections) {
-          count += findCount(item.selections);
-        }
-      }
-      return count;
-    };
-    return findCount(unitSelection.selections || []);
+    const matchesOption = (selection) =>
+      (selection.entryLinkId || selection.selectionEntryId) === optionEntryId;
+    return countSelections(unitSelection.selections, {
+      includeChildSelections: true,
+      predicate: matchesOption,
+    });
   };
 
   // The `getUnitOptions` logic has been extracted to `optionsCollector.js` for testability.
