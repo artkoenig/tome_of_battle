@@ -21,13 +21,13 @@ Die Anwendung verwendet derzeit native Browser-Dialoge wie `window.alert` und `w
 - **Option 1: Globale Dialog- und Toast-Provider (React Context)**
   Ein globaler React-Context verwaltet den Zustand für Toasts und Dialoge. Beliebige Komponenten können über Hooks wie `useToast()` oder `useConfirm()` Benachrichtigungen und Modals triggern.
 - **Option 2: Lokaler React-State & Root-Toasts (Gewählte Option)**
-  Wir nutzen das bestehende Toast-System in `App.jsx` und erweitern es um einen Typ (`error` / `success` / `info`), um Fehlermeldungen (roter Rand) visuell abzuheben. Bestätigungsmodale werden direkt über lokalen Zustand (z. B. `rosterToDelete`, `systemToDelete`) in den jeweiligen Ansichten deklariert und steuern die existierende `BottomSheet`-Komponente im `desktopMode="modal"`.
+  Wir nutzen das bestehende Toast-System (der Toast-Zustand liegt heute im Hook `src/hooks/useToast.js`, von `App.jsx` genutzt) und erweitern es um einen Typ (`error` / `success` / `info`), um Fehlermeldungen (roter Rand) visuell abzuheben. Bestätigungsmodale werden über lokalen Zustand (z. B. `rosterToDelete`, `systemToDelete`) deklariert und steuern die existierende `BottomSheet`-Komponente im `desktopMode="modal"`.
 
 ## Entscheidungsergebnis
 
 Gewählte Option: **Option 2**, weil sie extrem einfach, robust und performant ist. 
-- Da alle `alert`-Meldungen in `App.jsx` ausgelöst werden, reicht die Verwendung der in `App.jsx` vorhandenen Methode `showToast` vollkommen aus, ohne einen komplexen globalen Context einzuführen.
-- Bestätigungsdialoge sind stark an den Kontext des jeweiligen Löschvorgangs gebunden. Die Deklaration eines lokalen `BottomSheet` in `App.jsx` (für Listenlöschung) und in `Importer.jsx` (für Systemlöschung) entspricht genau der bestehenden Implementierung in `UnitSelectionCard.jsx`. Dies fördert die Kohärenz des Codes, ist leicht zu testen und vermeidet "Leaky Abstractions" oder globalen Overhead.
+- Da alle `alert`-Meldungen vom Wurzelbereich (`App.jsx`) ausgelöst werden, reicht die Methode `showToast` (heute im Hook `src/hooks/useToast.js` gekapselt, von `App.jsx` genutzt) vollkommen aus, ohne einen komplexen globalen Context einzuführen.
+- Bestätigungsdialoge sind stark an den Kontext des jeweiligen Löschvorgangs gebunden. Die Deklaration eines lokalen `BottomSheet` für die Listenlöschung (heute in der reinen Präsentationskomponente `src/components/AppDialogs.jsx` gehostet, von `App.jsx` mit Flags/Callbacks gesteuert) und in `Importer.jsx` (für Systemlöschung) entspricht genau der bestehenden Implementierung in `UnitSelectionCard.jsx`. Dies fördert die Kohärenz des Codes, ist leicht zu testen und vermeidet "Leaky Abstractions" oder globalen Overhead.
 
 ### Konsequenzen (Auswirkungen)
 

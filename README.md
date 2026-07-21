@@ -103,7 +103,7 @@ The rules engine handles all calculations and dependencies, working completely i
 
 ### User Interface (`src/`)
 
-`App.jsx` controls the different views (`rosters`, `importer`, `builder`, `play`) as a single-page view switcher without an external router.
+`App.jsx` orchestrates the different views (`rosters`, `importer`, `builder`, `play`) via the `useAppNavigation` hook, as a single-page view switcher without an external router.
 - The builder/editor UI is located in `src/components/editor/`.
 - The play mode UI is located in `src/components/play/`.
 - Styling is based on global CSS classes and semantic typography classes. `src/index.css` only imports the per-area stylesheets under `src/styles/`, in cascade order (see [ADR 0004](docs/adr/0004-styling-conventions.md) §6).
