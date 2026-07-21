@@ -20,32 +20,59 @@ function addMandatoryChild({ system, resolveEntry, parentSelection, childDef, co
   }
 }
 
+/** Alle Mitglieder (Einträge und Links) einer Definition oder Gruppe in einer Liste. */
+function memberDefs(defOrGroup) {
+  return [...(defOrGroup.selectionEntries || []), ...(defOrGroup.entryLinks || [])];
+}
+
 /**
- * Bevölkert die Pflicht-Kinder (`min > 0`) einer aufgelösten Definition rekursiv:
- * direkte Pflicht-Einträge/-Links sowie die Default- bzw. Erst-Wahl jeder Pflicht-Gruppe.
+ * Bevölkert jedes Mitglied, das ein eigenes `min > 0` trägt, mit genau seinem `min`.
+ * Gibt die Anzahl so bevölkerter Mitglieder zurück (0, falls keines pflichtig ist).
+ */
+function populateMandatoryMembers({ system, resolveEntry, parentSelection, members }) {
+  let populatedCount = 0;
+  members.forEach(member => {
+    const minValue = getMinConstraintValue(member);
+    if (minValue > 0) {
+      addMandatoryChild({ system, resolveEntry, parentSelection, childDef: member, count: minValue });
+      populatedCount += 1;
+    }
+  });
+  return populatedCount;
+}
+
+/** Die konfigurierte Default-Option einer Gruppe (oder null, wenn keine gesetzt/auffindbar ist). */
+function findGroupDefaultOption(group) {
+  if (!group.defaultSelectionEntryId) return null;
+  return memberDefs(group).find(member => member.id === group.defaultSelectionEntryId) || null;
+}
+
+/**
+ * Bevölkert die Pflicht-Kinder (`min > 0`) einer aufgelösten Definition rekursiv.
+ * Direkte Pflicht-Einträge/-Links werden je mit ihrem eigenen `min` angelegt.
+ *
+ * Für eine Pflichtgruppe (`min > 0`) gibt es zwei Muster:
+ * - **Itemisiert („nimm all diese")**: die Mitglieder tragen eigene `min`-Constraints;
+ *   dann wird jedes solche Mitglied mit seinem eigenen `min` bevölkert — das Gruppen-`min`
+ *   ergibt sich aus ihrer Summe, nicht aus dem Vervielfachen einer einzelnen Option.
+ * - **Wähle-eine („aus einem Topf")**: kein Mitglied ist selbst pflichtig; dann wird das
+ *   Gruppen-`min` aus der Default- bzw. Erst-Option gefüllt.
+ *
  * Optionale (min = 0) Kinder bleiben ungewählt — genau das Verhalten des echten Aushebens.
  */
 function populateChildren({ system, resolveEntry, def, parentSelection }) {
-  [...(def.selectionEntries || []), ...(def.entryLinks || [])].forEach(child => {
-    const minValue = getMinConstraintValue(child);
-    if (minValue > 0) {
-      addMandatoryChild({ system, resolveEntry, parentSelection, childDef: child, count: minValue });
-    }
-  });
+  populateMandatoryMembers({ system, resolveEntry, parentSelection, members: memberDefs(def) });
 
   def.selectionEntryGroups?.forEach(group => {
     const minValue = getMinConstraintValue(group);
-    if (minValue > 0 && (group.selectionEntries?.length > 0 || group.entryLinks?.length > 0)) {
-      let chosenOption = null;
-      if (group.defaultSelectionEntryId) {
-        chosenOption = group.selectionEntries?.find(entry => entry.id === group.defaultSelectionEntryId) ||
-                       group.entryLinks?.find(link => link.id === group.defaultSelectionEntryId);
-      }
-      if (!chosenOption) {
-        chosenOption = group.selectionEntries?.[0] || group.entryLinks?.[0];
-      }
-      addMandatoryChild({ system, resolveEntry, parentSelection, childDef: chosenOption, count: minValue });
-    }
+    const members = memberDefs(group);
+    if (minValue <= 0 || members.length === 0) return;
+
+    const itemizedCount = populateMandatoryMembers({ system, resolveEntry, parentSelection, members });
+    if (itemizedCount > 0) return;
+
+    const chosenOption = findGroupDefaultOption(group) || members[0];
+    addMandatoryChild({ system, resolveEntry, parentSelection, childDef: chosenOption, count: minValue });
   });
 }
 
