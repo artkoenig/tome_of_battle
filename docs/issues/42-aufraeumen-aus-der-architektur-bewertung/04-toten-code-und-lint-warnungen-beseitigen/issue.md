@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: ready-for-agent
 Type: refactor
 Blocked by: [01, 02, 03]
 
