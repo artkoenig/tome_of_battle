@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import ForceEditorSection from './ForceEditorSection';
 
 const mockCollectUnreachableArmyWideSelectors = vi.fn();
@@ -19,8 +19,15 @@ vi.mock('./AutoFillSuggestions', () => ({
   default: ({ remainingPoints }) => <div data-testid="auto-fill">{remainingPoints}</div>
 }));
 vi.mock('./RosterCategorySection', () => ({
-  default: ({ categoryLink, isRuleGroupExpanded }) => (
-    <div data-testid={`category-${categoryLink.targetId}`} data-expanded={String(isRuleGroupExpanded)} />
+  default: ({ categoryLink, isRuleGroupExpanded, addUnit }) => (
+    <div data-testid={`category-${categoryLink.targetId}`} data-expanded={String(isRuleGroupExpanded)}>
+      <button
+        data-testid={`add-${categoryLink.targetId}`}
+        onClick={() => addUnit({ id: 'entry-1' }, categoryLink.targetId)}
+      >
+        Ausheben
+      </button>
+    </div>
   )
 }));
 vi.mock('./RosterValidationPanel', () => ({
@@ -154,6 +161,16 @@ describe('ForceEditorSection', () => {
       />
     );
     expect(screen.getByTestId('auto-fill').textContent).toBe('50');
+  });
+
+  // Ohne das Kontingent der Sektion landete die Einheit in jedem Kontingent des Rosters.
+  it('hebt in das Kontingent aus, das die Sektion darstellt', () => {
+    const addUnit = vi.fn();
+    renderForce({ addUnit });
+
+    fireEvent.click(screen.getByTestId('add-cat-heroes'));
+
+    expect(addUnit).toHaveBeenCalledWith({ id: 'entry-1' }, 'cat-heroes', 'force-1');
   });
 
   it('schlägt keine Auffüllung vor, wenn das Punktelimit bereits erreicht ist', () => {

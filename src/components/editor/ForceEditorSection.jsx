@@ -67,6 +67,11 @@ export default function ForceEditorSection({
 
   const showAutoFillSuggestions = remainingPoints > 0 && remainingPoints <= AUTO_FILL_SUGGESTION_THRESHOLD;
 
+  // Das Ziel-Kontingent ist genau hier bekannt: jede Sektion rendert eines. Die
+  // Untersektionen heben damit weiter über zwei Argumente aus und müssen den
+  // Kontingent-Bezug nicht durchreichen.
+  const addUnitToThisForce = (entry, categoryId) => addUnit(entry, categoryId, force.id);
+
   return (
     <div className="force-editor-section">
       {categoryLinks.map(categoryLink => (
@@ -81,7 +86,7 @@ export default function ForceEditorSection({
           selectionCounts={selectionCounts}
           forceCategoryCounts={forceCategoryCounts}
           costTypeLabel={costTypeLabel}
-          addUnit={addUnit}
+          addUnit={addUnitToThisForce}
           removeUnit={removeUnit}
           subSelectionOperations={subSelectionOperations}
           unitCardContext={unitCardContext}
@@ -102,7 +107,7 @@ export default function ForceEditorSection({
               activeCatalogue={activeCatalogue}
               costTypeLabel={costTypeLabel}
               costLimitType={roster.costLimitType}
-              addUnit={addUnit}
+              addUnit={addUnitToThisForce}
               roster={roster}
               selectionCounts={selectionCounts}
               force={force}
