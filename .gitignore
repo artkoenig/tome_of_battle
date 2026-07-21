@@ -32,6 +32,7 @@ coverage/
 !.agents/validation_insights.md
 
 .worktrees
+.claude/worktrees/
 .scratch/
 .antigravity/
 e2e-failure.png
