@@ -48,8 +48,8 @@ export default function PlayUnitDetails({
   // Helper to extract maximum wounds of an entry
   const getMaxWounds = (sel) => {
     const entryId = sel.entryLinkId || sel.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId);
-    const resolved = resolveEntry(system, entry);
+    const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
+    const resolved = resolveEntry(system, entry, roster?.catalogueId);
 
     if (!resolved) return 1;
 
@@ -174,8 +174,8 @@ export default function PlayUnitDetails({
 
   const getUnitModelCount = (sel) => {
     const entryId = sel.entryLinkId || sel.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId);
-    const resolved = resolveEntry(system, entry);
+    const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
+    const resolved = resolveEntry(system, entry, roster?.catalogueId);
     
     if (!resolved) return sel.number || 1;
 
@@ -189,8 +189,8 @@ export default function PlayUnitDetails({
     if (sel.selections && sel.selections.length > 0) {
       sel.selections.forEach(child => {
         const childEntryId = child.entryLinkId || child.selectionEntryId;
-        const childEntry = findEntryInSystem(system, childEntryId);
-        const childResolved = resolveEntry(system, childEntry);
+        const childEntry = findEntryInSystem(system, childEntryId, roster?.catalogueId);
+        const childResolved = resolveEntry(system, childEntry, roster?.catalogueId);
         
         if (childResolved) {
           const isModel = childResolved.type === 'model' || 

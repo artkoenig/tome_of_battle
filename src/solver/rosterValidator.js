@@ -232,7 +232,9 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
   const forceCounts = forceSelectionCounts[force.id] || {};
 
   collectForceScopedMinSelectors(system, forceCatalogueId).forEach(({ entry, minConstraint }) => {
-    if (isSelectionEntryHidden(entry, { system, roster, selectionCounts, forceCategoryCounts, force })) return;
+    if (isSelectionEntryHidden(entry, {
+      system, roster, selectionCounts, forceCategoryCounts, force, catalogueId: forceCatalogueId
+    })) return;
 
     const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
     const minValue = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(entry), ctx);

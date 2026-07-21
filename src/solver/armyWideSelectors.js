@@ -67,9 +67,10 @@ export function collectUnreachableArmyWideSelectors(visibilityContext) {
   const { system, catalogueId, forceDef, roster, selectionCounts, forceCategoryCounts, force } = visibilityContext;
   return collectForceScopedMinSelectors(system, catalogueId)
     .filter(({ entry, minConstraint }) => {
-      const effectiveLinks = getEffectiveEntryCategoryLinks(entry, { system, roster, selectionCounts, forceCategoryCounts, force });
+      const entryContext = { system, roster, selectionCounts, forceCategoryCounts, force, catalogueId };
+      const effectiveLinks = getEffectiveEntryCategoryLinks(entry, entryContext);
       if (isReachableViaForceCategories(entry, forceDef, effectiveLinks)) return false;
-      if (isSelectionEntryHidden(entry, { system, roster, selectionCounts, forceCategoryCounts, force })) return false;
+      if (isSelectionEntryHidden(entry, entryContext)) return false;
       return resolveForceSelectorMinimum(entry, minConstraint, visibilityContext) > 0;
     })
     .map(({ entry }) => entry);

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: [01, 06]
 
@@ -31,3 +31,4 @@ Standardwert.
 - [ ] Bleibt der Rückfall bestehen, ist im Code festgehalten, für welchen Fall er noch gedacht ist
 
 ## Comments
+- Jede Aufrufstelle von resolveEntry/findEntryInSystem gibt den Katalog jetzt mit: Sichtbarkeitspruefung (neues Feld catalogueId im VisibilityContext), Zaehler/Anzeigepreis, Selektions-Fabrik (durchgereicht bis in die Pflicht-Kinder), Aushebe-Verfuegbarkeit, useRoster, Roster-Import sowie CategoryUnitAdder, PlayUnitDetails, RosterCategorySection und OptionGroup. Die Katalog-Vorrangregel liegt als resolveContextCatalogueId einmal im modifierEvaluator. Der Rueckfall ueber alle Indizes bleibt bestehen, ist im Resolver aber als das dokumentiert, wofuer er noch gedacht ist: katalogsuebergreifende Verweise auf geteilte Daten. Neue Testdatei callSites.catalogueCollisions.test.jsx deckt den Kollisionsfall ueber fuenf Aufrufstellen ab und faellt gegen den alten Stand durch.

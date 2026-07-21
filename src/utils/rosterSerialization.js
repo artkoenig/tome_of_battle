@@ -310,8 +310,8 @@ export function importRosterFromXml(xmlText, systems) {
       if (selectionsWrapper) {
         const selectionNodes = Array.from(selectionsWrapper.childNodes).filter(node => node.nodeType === 1 && node.nodeName === 'selection');
         selectionNodes.forEach(selNode => {
-          const parsed = parseSelectionNode(selNode, system);
-          if (checkNeedsSplit(parsed, system)) {
+          const parsed = parseSelectionNode(selNode, system, catalogueId);
+          if (checkNeedsSplit(parsed, system, catalogueId)) {
             const splitCount = parsed.number;
             for (let i = 0; i < splitCount; i++) {
               selections.push(createSplitSelection(parsed, i, splitCount));
@@ -364,8 +364,10 @@ function parseCostLimit(root, costLimitType) {
 
 /**
  * Helper to recursively parse selection XML nodes.
+ * @param {string|null} catalogueId the catalogue of the force being parsed; entry ids in a
+ *   `.ros` are only unique within it (ADR 0018).
  */
-function parseSelectionNode(node, system) {
+function parseSelectionNode(node, system, catalogueId) {
   const name = node.getAttribute('name') || '';
   let entryId = node.getAttribute('entryId');
   if (entryId && entryId.includes('::')) {
@@ -398,8 +400,8 @@ function parseSelectionNode(node, system) {
   if (selectionsWrapper) {
     const selectionNodes = Array.from(selectionsWrapper.childNodes).filter(c => c.nodeType === 1 && c.nodeName === 'selection');
     selectionNodes.forEach(subNode => {
-      const parsedChild = parseSelectionNode(subNode, system);
-      if (checkNeedsSplit(parsedChild, system)) {
+      const parsedChild = parseSelectionNode(subNode, system, catalogueId);
+      if (checkNeedsSplit(parsedChild, system, catalogueId)) {
         const splitCount = parsedChild.number;
         for (let i = 0; i < splitCount; i++) {
           subSelections.push(createSplitSelection(parsedChild, i, splitCount));
@@ -424,16 +426,17 @@ function parseSelectionNode(node, system) {
 
 /**
  * Checks if a parsed selection represents a war machine or chariot unit that needs to be split
- * into separate independent units (e.g. 2 Spear Chukkas for 1 choice).
+ * into separate independent units (e.g. 2 Spear Chukkas for 1 choice), resolving its entry
+ * against the catalogue of the force it was parsed from.
  */
-function checkNeedsSplit(selection, system) {
+function checkNeedsSplit(selection, system, catalogueId) {
   if (!system || !selection.number || selection.number <= 1) return false;
 
   const entryId = selection.selectionEntryId || selection.entryLinkId;
   if (!entryId) return false;
 
-  const entry = findEntryInSystem(system, entryId);
-  const resolved = resolveEntry(system, entry);
+  const entry = findEntryInSystem(system, entryId, catalogueId);
+  const resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return false;
 
   // Aufteilen, wenn der Eintrag eine eigenständige Untereinheit ist — also je

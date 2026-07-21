@@ -1,5 +1,8 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks } from './modifierEvaluator.js';
+import {
+  getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks,
+  resolveContextCatalogueId
+} from './modifierEvaluator.js';
 import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from './rosterTree.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { resolveGroupDefaultMember } from './selectionMembers.js';
@@ -60,16 +63,21 @@ export function resolveCostLimitLabel(roster, system) {
 /**
  * Recursively computes the display cost of an option definition, including its base cost
  * and the costs of any mandatory sub-selections (min > 0).
+ *
+ * `ctx` supplies the catalogue the entry was read from (see `resolveContextCatalogueId`);
+ * without it the same-id entry of another loaded catalogue could be priced instead
+ * (ADR 0018).
  */
 export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
-  let resolved = resolveEntry(system, entry);
+  const catalogueId = resolveContextCatalogueId(ctx);
+  let resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return 0;
 
   // If resolved is a skeleton or reference, look up the full entry in the system
   if (resolved.id && (!resolved.costs || resolved.costs.length === 0) && (!resolved.selectionEntries || resolved.selectionEntries.length === 0) && (!resolved.entryLinks || resolved.entryLinks.length === 0) && (!resolved.selectionEntryGroups || resolved.selectionEntryGroups.length === 0)) {
-    const fullEntry = findEntryInSystem(system, resolved.id);
+    const fullEntry = findEntryInSystem(system, resolved.id, catalogueId);
     if (fullEntry) {
-      resolved = resolveEntry(system, fullEntry);
+      resolved = resolveEntry(system, fullEntry, catalogueId);
     }
   }
 
