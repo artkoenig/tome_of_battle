@@ -1,0 +1,170 @@
+/* Editor-Grundgeruest: Builder-Layout, Katalogliste, Kategoriegruppen, Statusbericht. */
+/* Builder Mode Layout */
+.builder-layout-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 84px);
+  overflow: hidden;
+}
+
+.builder-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.builder-main {
+  background-color: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.builder-right-bar {
+  border-left: 1px solid var(--border-dark);
+  background-color: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Katalogeintrag der Aushebe-/Importlisten. */
+.catalog-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: var(--fs-body);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+}
+
+.catalog-item:hover {
+  background-color: rgba(197, 155, 39, 0.08);
+  border-color: rgba(197, 155, 39, 0.3);
+  color: var(--text-gold);
+}
+
+/* Roster Editor: top bar, category groups and status report */
+.builder-top-bar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Compact variant of the standard button used in the builder/play top bars. */
+.btn-top-bar {
+  padding: 6px 12px;
+}
+
+.mobile-points-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.force-editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.roster-category-group {
+  margin-bottom: 24px;
+}
+
+.roster-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.roster-category-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+}
+
+.roster-category-title--collapsible {
+  cursor: pointer;
+}
+
+/* Category heading inside .roster-category-header — the header already draws
+   the separating rule, so the heading itself stays free of borders. */
+.roster-category-heading {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+/* Category heading without a surrounding header row; it carries the rule itself. */
+.roster-category-heading--standalone {
+  margin: 0 0 12px 0;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 8px;
+}
+
+.unit-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.general-errors-panel {
+  padding: 20px;
+  margin-top: 12px;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.general-errors-panel--valid {
+  border-color: var(--color-success);
+}
+
+.general-errors-panel--invalid {
+  border-color: var(--color-danger);
+}
+
+.general-errors-title {
+  margin: 0 0 12px 0;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 8px;
+}
+
+.roster-valid-flavour {
+  font-style: italic;
+  margin: 4px 0 8px 0;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+.roster-play-btn-mobile {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: var(--fs-body);
+}
+
+.roster-extra-resources {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-dark);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

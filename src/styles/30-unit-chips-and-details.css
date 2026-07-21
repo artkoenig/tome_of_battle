@@ -1,0 +1,120 @@
+/* Ausruestungs- und Regel-Chips der Einheitenkarte sowie der ausklappbare
+   Kartendetail-Bereich mit der Riss-Kante. */
+/* Upgrades styling in Unit Header */
+.unit-header-upgrades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  width: 100%;
+  padding-right: 24px;
+}
+
+.upgrade-badge {
+  background-color: rgba(226, 183, 66, 0.06);
+  border: 1px solid rgba(226, 183, 66, 0.22);
+  color: var(--text-parchment);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.publication-ref {
+  color: var(--text-dim);
+  font-size: var(--fs-micro);
+  font-style: normal;
+  font-family: var(--font-body);
+  margin-left: 8px;
+}
+
+.unit-header-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  width: 100%;
+  padding-right: 24px;
+}
+
+.rule-badge {
+  background-color: rgba(226, 183, 66, 0.08);
+  border: 1px solid rgba(226, 183, 66, 0.3);
+  color: var(--text-gold);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.rule-link-icon {
+  opacity: 0.6;
+  flex-shrink: 0;
+  vertical-align: middle;
+  color: var(--text-gold);
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+/* Collapsible unit card details (mini profile + upgrade/rule chips): collapsed
+   by default on all screen widths for a compact overview.
+   Needs an explicit width because .selection-node-header centers flex items
+   on the cross axis; without it, the block shrinks to its content's width. */
+.unit-card-details {
+  width: 100%;
+  display: none;
+}
+
+.unit-card-details.is-open {
+  display: block;
+}
+
+.unit-card-details-toggle {
+  display: inline-flex;
+}
+
+.unit-card-details-toggle.is-active {
+  background-color: rgba(226, 183, 66, 0.14);
+  border-color: var(--border-gold);
+  color: var(--text-gold);
+}
+
+/* Torn-paper edge: hints that the equipment/options editor is still collapsed
+   below the visible profile. .unit-card-torn-edge itself renders nothing --
+   it only exists as a DOM marker so :has() below can detect "profile shown,
+   options editor still collapsed" and clip .selection-node's own background
+   (and border) into a zigzag along its bottom few pixels via clip-path (an
+   explicit vector polygon -- unlike a mask built from 45deg gradients, this
+   isn't distorted by the strip's non-square aspect ratio). 10 teeth across
+   the full width, each 6px deep. border-bottom is always suppressed here
+   (hover included): clip-path just slices through the existing 1px border,
+   leaving disconnected gold dots at each tooth tip on hover instead of a
+   clean line, so the torn edge is a plain cut with no border trim at all. */
+.unit-card-torn-edge {
+  display: none;
+}
+/* :not(:has(.gothic-bottomsheet.open)) suspends the clip while a bottom sheet
+   (action popover / info modal) rendered inside this node is open -- clip-path
+   clips the absolutely-positioned desktop popover, so on a short collapsed card
+   the popover would otherwise be sliced to the card's torn-edge polygon. */
+.selection-node:has(.unit-card-details.is-open .unit-card-torn-edge):not(:has(.gothic-bottomsheet.open)) {
+  border-bottom-color: transparent !important;
+  clip-path: polygon(
+    0% 0%, 100% 0%,
+    100% 100%, 95% calc(100% - 6px),
+    90% 100%, 85% calc(100% - 6px),
+    80% 100%, 75% calc(100% - 6px),
+    70% 100%, 65% calc(100% - 6px),
+    60% 100%, 55% calc(100% - 6px),
+    50% 100%, 45% calc(100% - 6px),
+    40% 100%, 35% calc(100% - 6px),
+    30% 100%, 25% calc(100% - 6px),
+    20% 100%, 15% calc(100% - 6px),
+    10% 100%, 5% calc(100% - 6px),
+    0% 100%
+  );
+}

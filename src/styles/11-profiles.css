@@ -1,0 +1,39 @@
+/* Profil-Tabellen und Mini-Profile der Einheiten. */
+/* Mini-profiles inside UnitSelectionCard editor view */
+.mini-profile {
+  align-self: flex-start;
+  width: 100%;
+}
+
+/* Stat Tables for unit profiles */
+.profile-table-container {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.profile-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: var(--fs-label);
+}
+
+.profile-table th, 
+.profile-table td {
+  padding: 8px;
+  border: 1px solid var(--border-dark);
+  text-align: center;
+}
+
+.profile-table th {
+  background-color: rgba(0, 0, 0, 0.4);
+  font-family: var(--font-serif);
+  color: var(--text-gold);
+  font-weight: 600;
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+}
+
+.profile-table tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}

@@ -1,0 +1,220 @@
+/* Aushebe-Popover, Karten-Menue und BottomSheet in der Desktop-Darstellung. */
+/* 7. Category Unit Adder Popover styling */
+.category-unit-adder-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Unit card header actions menu (kebab menu) */
+.unit-card-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.unit-card-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unit-card-menu-item-danger {
+  color: var(--text-danger-readable);
+}
+
+/* Reusable Gothic Bottomsheet Styles */
+.bottomsheet-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out, visibility 0.25s;
+}
+
+.bottomsheet-backdrop.desktop-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.gothic-bottomsheet {
+  background-color: var(--bg-panel);
+  border: 3px double var(--border-gold);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), var(--shadow-gold) !important;
+  z-index: 1060;
+  box-sizing: border-box;
+}
+
+/* Desktop behaviors */
+.gothic-bottomsheet.desktop-popover {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  width: 280px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 0 !important;
+
+  /* Transition animation */
+  opacity: 0;
+  transform: translateY(-5px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out, visibility 0.15s;
+}
+
+.gothic-bottomsheet.desktop-popover.open {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.gothic-bottomsheet.desktop-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 90%;
+  max-width: 450px;
+  padding: 24px;
+
+  /* Transition animation */
+  transform: translate(-50%, -50%) scale(0.95);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s;
+}
+
+.gothic-bottomsheet.desktop-modal.open {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.gothic-bottomsheet .bottomsheet-handle {
+  display: none;
+}
+.gothic-bottomsheet .bottomsheet-header {
+  display: none;
+}
+
+/* On desktop-modal we show header */
+.gothic-bottomsheet.desktop-modal .bottomsheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-gold-dim);
+  padding-bottom: 8px;
+}
+
+.gothic-bottomsheet.desktop-modal .bottomsheet-title {
+  display: block;
+  font-family: var(--font-serif);
+  color: var(--text-gold);
+  font-size: var(--fs-ui-title);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gothic-bottomsheet.desktop-modal .bottomsheet-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+.gothic-bottomsheet.desktop-modal .bottomsheet-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-gold);
+}
+
+.popover-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.popover-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.popover-item:hover {
+  background-color: rgba(226, 183, 66, 0.08);
+}
+
+.popover-item-name {
+  font-weight: 600;
+  font-size: var(--fs-body);
+  color: var(--text-parchment);
+}
+
+.popover-item-cost {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 5.5rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Gesperrter Aushebe-Kandidat (ADR-0022): ausgegraut, nicht klickbar; Grund darunter. */
+.popover-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.popover-item.disabled .popover-item-label,
+.popover-item.disabled .popover-item-cost {
+  color: var(--text-dim);
+}
+
+.popover-item-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.popover-item-unavailable {
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+.popover-item-reason {
+  flex-basis: 100%;
+  margin-top: 2px;
+  opacity: 0.9;
+}
+
+
+.info-popup-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  color: var(--text-parchment);
+  line-height: 1.5;
+  font-style: italic;
+  max-height: 250px;
+  overflow-y: auto;
+}

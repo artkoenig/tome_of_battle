@@ -1,0 +1,49 @@
+/* Design-Tokens: Farb-, Schrift-, Typo- und Schattenvariablen. Muss zuerst geladen werden. */
+/* Google Fonts import is in index.html */
+
+:root {
+  /* Gothic & Dark Fantasy Color Palette */
+  --bg-dark: #08080a;       /* Dark obsidian background */
+  --bg-panel: #131319;      /* Iron-gray panel background */
+  --bg-card: #31313b;       /* Slightly lighter iron-gray for cards */
+  --bg-parchment: #f5efe0;  /* Creamy parchment for paper panels */
+
+  --border-gold: #d0a52c;   /* Burnished brass/gold */
+  --border-gold-dim: #7d6520; /* Dimmed gold for inner borders */
+  --border-dark: #4a4a58;   /* Dark border color */
+
+  --text-parchment: #ece2cc;/* Parchment-colored text on dark backgrounds */
+  --text-dark: #191920;     /* Dark charcoal text for light paper elements */
+  --text-gold: #ecc157;     /* Bright gold for headers and primary stats */
+  --text-gold-bright: #f7d878; /* Brightest gold for top-tier stats/titles */
+  --text-dim: #b7b7c4;      /* Muted gray for secondary descriptions */
+
+  --color-danger: #a61c1c;   /* Crimson blood red for errors and damage */
+  --color-success: #1b7340;  /* Forest green for active/valid states */
+  --color-warning: #c27d13;  /* Amber/Orange for warnings */
+  --color-info: #2d6ca6;     /* Steel blue for informational hints */
+
+  --text-danger-readable: #ff6b6b; /* Brighter readable red for text/badges */
+  --text-success-readable: #81c784; /* Brighter readable green for text/badges */
+  --text-warning-readable: #ffd54f; /* Brighter readable amber/yellow for text/badges */
+  --text-info-readable: #7ab8ea; /* Brighter readable blue for text/badges */
+
+  --font-serif: 'Cinzel', Georgia, serif;
+  --font-body: 'Lora', 'EB Garamond', Garamond, serif;
+
+  /* ── Typography Scale ─────────────────────────────────────────────────────
+     7 semantic size steps, each mapped to a clear purpose.
+     Mobile overrides are applied via @media at the bottom of this section.
+  ── */
+  --fs-display:   2.2rem;  /* App-Titel, Hero-States groß        */
+  --fs-heading:   1.6rem;  /* Sektions-Überschrift (h2-Niveau)   */
+  --fs-subheading:1.2rem;  /* Kategorie-Titel (h3-Niveau)        */
+  --fs-ui-title:  1.05rem; /* Karten-Titel, Einheitenname        */
+  --fs-body:      0.95rem; /* Fließtext, Optionen, Inputs        */
+  --fs-label:     0.85rem; /* Meta-Info, Beschriftungen          */
+  --fs-micro:     0.75rem; /* Tags, Badges, Tabellen             */
+
+  --shadow-gold: 0 4px 20px rgba(197, 155, 39, 0.15);
+  --shadow-glow: 0 0 15px rgba(226, 183, 66, 0.4);
+  --shadow-inset: inset 0 2px 10px rgba(0, 0, 0, 0.8);
+}
