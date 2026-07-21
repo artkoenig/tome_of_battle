@@ -347,16 +347,16 @@ export default function App() {
   const handleImportRoster = async (file) => {
     try {
       const xmlText = await decompressRoszToXml(file);
-      const newRoster = importRosterFromXml(xmlText, systems);
-      
+      let newRoster = importRosterFromXml(xmlText, systems);
+
       const system = systems.find(s => s.id === newRoster.systemId);
       if (system) {
         // Imported files reference options by target id; realign them to the
         // catalogue link ids the editor matches before syncing names/costs.
         reconcileImportedSelectionIds(newRoster, system);
-        syncRosterSelectionsWithSystem(newRoster, system);
+        newRoster = syncRosterSelectionsWithSystem(newRoster, system);
       }
-      
+
       await saveRoster(newRoster);
       showToast(`Erfolgreich importiert: ${newRoster.name}`);
       loadAllData();
