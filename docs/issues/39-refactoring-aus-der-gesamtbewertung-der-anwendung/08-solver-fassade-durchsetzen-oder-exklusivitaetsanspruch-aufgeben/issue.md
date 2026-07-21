@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [07]
 
@@ -40,3 +40,4 @@ bestimmt mit, was die Fassade überhaupt exponieren muss.
 - [ ] `npm run lint` und `npm test` bleiben grün; kein verändertes Verhalten
 
 ## Comments
+- Entscheidung: Fassade DURCHSETZEN (nicht Anspruch aufgeben). Begruendung am tatsaechlichen Codestand: Die 12 Umgehungen betrafen fuenf Module (optionsCollector, rulesEvaluator, constants, systemQuirks, selectionFactory), die durchweg echte Solver-Domaenen-APIs sind — kein einziger Aufrufer brauchte echte Innereien, alle griffen nur auf Namen zu, die die Fassade ebenso gut fuehren kann. Die Fassade re-exportierte bereits 15 Geschwistermodule; die fuenf ergaenzen dieses Muster, statt es zu dehnen. Der Anspruch aufzugeben haette eine intakte Schichtung wegen einer reinen Nachlaessigkeit geopfert. Umgesetzt: Fassade um die 15 tatsaechlich genutzten Namen erweitert (YAGNI: nur Konsumiertes), alle 8 Produktionsdateien auf die Fassade umgestellt, und die Regel maschinell verankert per no-restricted-imports in .oxlintrc.json — verifiziert durch eine absichtlich eingebaute Verletzung, die der Linter meldet. Testdateien sind bewusst ausgenommen (sie mocken einzelne Nahtstellen); der Kopfkommentar benennt genau diese Ausnahme, sagt also weiterhin die Wahrheit. Kein Verhalten geaendert.

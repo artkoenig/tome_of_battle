@@ -8,9 +8,9 @@ import {
   calculateRosterCosts,
   collectUnitProfilesAndRules,
   getEffectiveSelectionName,
-  isIndependentSubUnit
+  isIndependentSubUnit,
+  groupProfilesByType
 } from '../../solver/validator';
-import { groupProfilesByType } from '../../solver/rulesEvaluator';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
 

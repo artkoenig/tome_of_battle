@@ -4,5 +4,29 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.js", "src/**/*.jsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/solver/*", "!**/solver/validator", "!**/solver/validator.js"],
+                "message": "Der Solver wird ausschliesslich ueber die Fassade src/solver/validator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt das Fachmodul direkt zu importieren."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/solver/**", "src/**/*.test.js", "src/**/*.test.jsx"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
 }

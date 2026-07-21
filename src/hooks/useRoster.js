@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 
 import {
   calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
-  childSelectionsOf, findSelectionInRoster, mapSelectionTree, replaceSelectionById
+  childSelectionsOf, findSelectionInRoster, mapSelectionTree, replaceSelectionById,
+  createSelectionFromDef as buildSelectionFromDef
 } from '../solver/validator';
-import { createSelectionFromDef as buildSelectionFromDef } from '../solver/selectionFactory';
 import { useUndoableState } from './useUndoableState';
 import '../types.js';
 

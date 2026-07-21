@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope } from '../../solver/validator';
-import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
+import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/validator';
 
 const getSubSelectionCount = (selection, optionEntryId) => {
   const findCount = (list) => {

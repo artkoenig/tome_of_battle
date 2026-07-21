@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, getEffectiveSelectionName, isIndependentSubUnit } from '../../solver/validator';
-import { MODEL_COUNT_PROFILE_TYPES } from '../../solver/constants';
 import {
+  findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost,
+  getEffectiveSelectionName, isIndependentSubUnit, MODEL_COUNT_PROFILE_TYPES,
   getArmourSave as getArmourSaveLogic,
   getWardSave as getWardSaveLogic,
   groupProfilesByType,
   hasBlessing
-} from '../../solver/rulesEvaluator';
+} from '../../solver/validator';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 
 const getModificationState = (characteristic) => {

@@ -2,8 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import OptionGroupComponent from './OptionGroup';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost } from '../../solver/validator';
-import { isUniqueOptionTakenElsewhere } from '../../solver/optionsCollector';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, isUniqueOptionTakenElsewhere } from '../../solver/validator';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -36,9 +35,13 @@ const mockGetModifiedConstraintValue = vi.fn();
 const mockComputeRosterCounts = vi.fn();
 const mockGetOptionDisplayCost = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
+const mockIsUniqueOptionTakenElsewhere = vi.fn();
+const mockIsOptionRosterUnique = vi.fn();
 
-// Scope-Klassifikation ist eine reine Funktion ohne eigene Abhängigkeiten —
-// der Mock reicht die echte Umsetzung durch, statt sie zu stubben.
+// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
+// wird auch nur die Fassade gemockt. Scope-Klassifikation und
+// Schlüsselwortlisten sind ohne eigene Abhängigkeiten — der Mock reicht ihre
+// echte Umsetzung durch, statt sie zu stubben.
 vi.mock('../../solver/validator', async () => ({
   isEntryScope: (await vi.importActual('../../solver/battlescribeConstants')).isEntryScope,
   resolveEntry: (...args) => mockResolveEntry(...args),
@@ -80,14 +83,9 @@ vi.mock('../../solver/validator', async () => ({
     return !!system?.costTypes?.some(costType => costType.id === field);
   },
   TOP_LEVEL_PARENT_COUNT: 1,
-}));
-
-// Mock Options Collector
-const mockIsUniqueOptionTakenElsewhere = vi.fn();
-const mockIsOptionRosterUnique = vi.fn();
-vi.mock('../../solver/optionsCollector', () => ({
   isUniqueOptionTakenElsewhere: (...args) => mockIsUniqueOptionTakenElsewhere(...args),
-  isOptionRosterUnique: (...args) => mockIsOptionRosterUnique(...args)
+  isOptionRosterUnique: (...args) => mockIsOptionRosterUnique(...args),
+  ...(await vi.importActual('../../solver/constants')),
 }));
 
 describe('OptionGroup Component', () => {

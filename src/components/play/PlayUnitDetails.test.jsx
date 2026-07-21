@@ -10,6 +10,10 @@ vi.mock('lucide-react', () => ({
   ReceiptText: (props) => <span data-testid="icon-receipt-text" {...props} />,
 }));
 
+const mockGroupProfilesByType = vi.fn(() => []);
+
+// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
+// wird auch nur die Fassade gemockt.
 vi.mock('../../solver/validator', () => ({
   findEntryInSystem: vi.fn(() => null),
   resolveEntry: vi.fn(() => null),
@@ -18,17 +22,10 @@ vi.mock('../../solver/validator', () => ({
   // Name resolution is covered by the solver's own unit tests; here it returns the
   // selection's raw name unchanged (no-name-modifier case).
   getEffectiveSelectionName: vi.fn((selection) => selection?.name ?? ''),
-}));
-
-const mockGroupProfilesByType = vi.fn(() => []);
-vi.mock('../../solver/rulesEvaluator', () => ({
   getArmourSave: vi.fn(() => ({ save: 7, breakdown: [] })),
   getWardSave: vi.fn(() => ({ save: null, breakdown: [] })),
   groupProfilesByType: (...args) => mockGroupProfilesByType(...args),
   hasBlessing: vi.fn(() => false),
-}));
-
-vi.mock('../../solver/constants', () => ({
   MODEL_COUNT_PROFILE_TYPES: [],
 }));
 

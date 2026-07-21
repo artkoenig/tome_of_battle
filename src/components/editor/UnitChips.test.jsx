@@ -16,18 +16,19 @@ vi.mock('lucide-react', () => ({
 const mockCollectUnitProfilesAndRules = vi.fn();
 const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
-// Das Prädikat „eigenständige Untereinheit" ist eine reine Funktion ohne eigene
-// Abhängigkeiten — der Mock reicht die echte Umsetzung durch, statt sie zu stubben.
+const mockGroupProfilesByType = vi.fn();
+
+// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
+// wird auch nur die Fassade gemockt. Das Prädikat „eigenständige Untereinheit"
+// und die Schlüsselwortlisten sind ohne eigene Abhängigkeiten — der Mock reicht
+// ihre echte Umsetzung durch, statt sie zu stubben.
 vi.mock('../../solver/validator', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
   isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
-}));
-
-const mockGroupProfilesByType = vi.fn();
-vi.mock('../../solver/rulesEvaluator', () => ({
   groupProfilesByType: (...args) => mockGroupProfilesByType(...args),
+  ...(await vi.importActual('../../solver/constants')),
 }));
 
 const mockGetRuleUrl = vi.fn();

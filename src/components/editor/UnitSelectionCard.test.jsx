@@ -41,8 +41,11 @@ const mockCollectUnitProfilesAndRules = vi.fn();
 const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
 
-// Das Prädikat „eigenständige Untereinheit" ist eine reine Funktion ohne eigene
-// Abhängigkeiten — der Mock reicht die echte Umsetzung durch, statt sie zu stubben.
+// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
+// wird auch nur die Fassade gemockt. Reine Funktionen ohne eigene
+// Abhängigkeiten — das Prädikat „eigenständige Untereinheit", die
+// Profil-Gruppierung und die Schlüsselwortlisten — reicht der Mock in ihrer
+// echten Umsetzung durch, statt sie zu stubben.
 vi.mock('../../solver/validator', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
@@ -52,7 +55,9 @@ vi.mock('../../solver/validator', async () => ({
   // Name resolution is covered by the solver's own unit tests; here it is isolated to
   // the no-name-modifier case, which returns the selection's raw name unchanged.
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit
+  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+  groupProfilesByType: (await vi.importActual('../../solver/rulesEvaluator')).groupProfilesByType,
+  ...(await vi.importActual('../../solver/constants'))
 }));
 
 describe('UnitSelectionCard Component', () => {
