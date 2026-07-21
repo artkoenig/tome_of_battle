@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -42,3 +42,4 @@ Testdateien des Projekts bereits vorbildlich zeigen.
 - [ ] `npm run lint` und `npm test` bleiben grün
 
 ## Comments
+- validator.test.js (2399 Zeilen, ~135 Anweisungen auf Modulebene, 24 Konsolenausgaben) durch 16 nach Aspekt geschnittene Testdateien mit 73 benannten Tests ersetzt. Aufbauten liegen jetzt in Fabrikfunktionen (u. a. der geteilten Fixture src/solver/__fixtures__/grimdarkSystem.js), jede Prüfung sitzt in einem eigenen Testblock, alle Konsolenausgaben sind durch Zusicherungen ersetzt.
