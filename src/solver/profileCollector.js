@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName } from './modifierEvaluator.js';
+import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName, resolveContextCatalogueId } from './modifierEvaluator.js';
 import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
@@ -79,7 +79,7 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
     let currentValue = 0;
     const targetParent = ctx.parentSelection || ctx.selection;
     if (mod.repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
-      const catId = activeCatalogueId || (roster ? roster.catalogueId : null);
+      const catId = resolveContextCatalogueId(ctx);
       const targetId = mod.repeat.childId || mod.repeat.field;
 
       const countMatches = (list) => (list || []).reduce((sum, s) => {
