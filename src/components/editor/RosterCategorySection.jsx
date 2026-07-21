@@ -29,7 +29,9 @@ function hasPrimaryCatalogItems({ system, roster, force, selectionCounts, catego
   if (!forceCatalogue) return false;
 
   const isPrimaryHere = (entry) =>
-    isEntryPrimaryInCategory(entry, categoryId, { system, roster, selectionCounts, force });
+    isEntryPrimaryInCategory(entry, categoryId, {
+      system, roster, selectionCounts, force, catalogueId: forceCatalogue.id
+    });
 
   return forceCatalogue.selectionEntries?.some(isPrimaryHere) ||
          forceCatalogue.entryLinks?.some(isPrimaryHere) ||

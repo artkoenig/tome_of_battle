@@ -33,6 +33,15 @@ export default function CategoryUnitAdder({
 
   if (!activeCatalogue) return null;
 
+  // Jede Auflösung hier läuft gegen den angezeigten Katalog: bei mehreren geladenen
+  // Katalogen (ADR-0018) ist eine Eintrags-Id nur innerhalb ihres Katalogs eindeutig.
+  const displayCtx = {
+    roster,
+    system,
+    selectionCounts,
+    parentCatalogueId: activeCatalogue.id
+  };
+
   // Effektive (post-modifier) Primärkategorie über den geteilten Solver-Helfer
   // aufzählen — dieselbe Grundlage nutzt die Listenregel-Erkennung (ADR 0003 §4).
   const getCatalogItemsByCategory = (catId) =>
@@ -43,19 +52,12 @@ export default function CategoryUnitAdder({
   // surfaces), offer exactly those; otherwise fall back to the entries of the category.
   const availableUnits = (entries || getCatalogItemsByCategory(categoryId))
     .sort((a, b) => {
-      const aPoints = getOptionDisplayCost(system, a, costLimitType) || 0;
-      const bPoints = getOptionDisplayCost(system, b, costLimitType) || 0;
+      const aPoints = getOptionDisplayCost(system, a, costLimitType, displayCtx) || 0;
+      const bPoints = getOptionDisplayCost(system, b, costLimitType, displayCtx) || 0;
       return bPoints - aPoints; // Descending
     });
 
   if (availableUnits.length === 0) return null;
-
-  const displayCtx = {
-    roster,
-    system,
-    selectionCounts,
-    parentCatalogueId: activeCatalogue?.id
-  };
 
   return (
     <div ref={wrapperRef} className="category-unit-adder-container">
@@ -77,14 +79,15 @@ export default function CategoryUnitAdder({
       >
         <div className="popover-list">
           {availableUnits.map(entry => {
-            const res = resolveEntry(system, entry);
-            const points = getOptionDisplayCost(system, entry, costLimitType);
+            const res = resolveEntry(system, entry, activeCatalogue.id);
+            const points = getOptionDisplayCost(system, entry, costLimitType, displayCtx);
 
             // Einziger Verfügbarkeits-Codepfad (ADR-0022): hypothetisches Ausheben +
             // validateRoster-Diff gegen die Baseline. Der frühere isMaxedOut-Einzelpfad
             // (genau ein max-Constraint) ist ersatzlos entfallen.
             const { available, reasons } = getEntryAddAvailability({
-              entry, categoryId, force: targetForce, roster, system, baselineErrors
+              entry, categoryId, force: targetForce, roster, system,
+              catalogueId: activeCatalogue.id, baselineErrors
             });
             const isBlocked = !available;
 

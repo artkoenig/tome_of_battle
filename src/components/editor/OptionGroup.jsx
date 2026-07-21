@@ -284,7 +284,7 @@ export default function OptionGroupComponent({
                   return otherRes && otherRes.id !== res.id && getSubSelectionCount(selection, otherRes.id) > 0;
                 });
                 if (selectedOther) {
-                  const otherPoints = getOptionDisplayCost(system, selectedOther.option, roster.costLimitType);
+                  const otherPoints = getOptionDisplayCost(system, selectedOther.option, roster.costLimitType, displayCtx);
                   pointsDiff = points - otherPoints;
                 }
               }

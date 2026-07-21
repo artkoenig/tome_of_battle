@@ -99,14 +99,23 @@ function stripHypotheticalCount(message) {
  * @param {Object} [args.force] die Ziel-Force; Fallback: die erste Force der Liste.
  * @param {import('../types.js').Roster} args.roster
  * @param {Object} args.system
+ * @param {string} [args.catalogueId] der Katalog, aus dem `entry` stammt; ohne Angabe der
+ *   der Ziel-Force bzw. der Liste. Bei mehreren geladenen Katalogen (ADR-0018) ist eine
+ *   Eintrags-Id nur innerhalb ihres Katalogs eindeutig.
  * @param {import('../types.js').ValidationError[]} [args.baselineErrors] einmal pro Dialog
  *   vorberechnete Baseline (`validateRoster(roster, system)`); wird sonst hier berechnet.
  * @returns {{ available: boolean, reasons: string[] }}
  */
-export function getEntryAddAvailability({ entry, categoryId, force, roster, system, baselineErrors }) {
+export function getEntryAddAvailability({ entry, categoryId, force, roster, system, catalogueId, baselineErrors }) {
   if (!entry || !roster || !system) return { available: true, reasons: [] };
 
-  const candidate = createSelectionFromDef({ system, resolveEntry, entry, categoryId });
+  // Derselbe Ziel-Force-Fallback wie in withHypotheticalSelection: der Kandidat wird gegen
+  // den Katalog aufgelöst, in dem er auch ausgehoben würde.
+  const targetForce = force ?? roster.forces?.[0];
+  const candidateCatalogueId = catalogueId ?? targetForce?.catalogueId ?? roster.catalogueId ?? null;
+  const candidate = createSelectionFromDef({
+    system, resolveEntry, catalogueId: candidateCatalogueId, entry, categoryId
+  });
   if (!candidate) return { available: true, reasons: [] };
 
   // Stabile Top-ID erst nach dem Fabrik-Aufruf vergeben: die Fabrik verteilt frische UUIDs

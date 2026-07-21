@@ -46,8 +46,18 @@ const INSTANCE_TYPE_CHILD_IDS = Object.freeze([
 // instead of re-entering effective-category resolution.
 const SELF_SCOPE_CATEGORY_RESOLUTION_FLAG = '_resolvingSelfScopeCategory';
 
-const resolveCatalogueId = (ctx) =>
-  ctx.parentCatalogueId || (ctx.roster ? ctx.roster.catalogueId : null);
+/**
+ * The catalogue every entry reference of an evaluation context resolves against
+ * (see `findEntryInSystem`). Contexts name that catalogue by the role it plays —
+ * `parentCatalogueId` in condition contexts, `currentCatalogueId` in cost contexts —
+ * and a roster carries its own catalogue as the outermost default. This is the single
+ * derivation of that precedence; no caller may re-implement it.
+ *
+ * @param {Object} ctx an evaluation context.
+ * @returns {string|null} the catalogue id, or null when the context names none.
+ */
+export const resolveContextCatalogueId = (ctx = {}) =>
+  ctx.parentCatalogueId || ctx.currentCatalogueId || ctx.roster?.catalogueId || null;
 
 // Resolves an id down to the canonical id of the selection entry it ultimately targets:
 // its own id if it isn't a link, or the id unchanged if it can't be resolved at all (a
@@ -84,7 +94,7 @@ const selectionIsInstanceOfEntry = (sel, entryId, system, catalogueId) => {
 const selectionHasEffectiveCategory = (sel, categoryId, ctx) => {
   if (!sel || !categoryId) return false;
   const { system } = ctx;
-  const catalogueId = resolveCatalogueId(ctx);
+  const catalogueId = resolveContextCatalogueId(ctx);
   const sId = sel.selectionEntryId || sel.entryLinkId;
   if (sId === categoryId) return true;
 
@@ -229,7 +239,7 @@ export const evaluateCondition = (cond, ctx = {}) => {
         const scopeNamesEntry = !!cond.scope && isEntryScope(cond.scope);
         const childIsConcreteId = cond.childId && !INSTANCE_TYPE_CHILD_IDS.includes(cond.childId);
         if (scopeNamesEntry && childIsConcreteId && !ctx[SELF_SCOPE_CATEGORY_RESOLUTION_FLAG]) {
-          const catId = resolveCatalogueId(ctx);
+          const catId = resolveContextCatalogueId(ctx);
           const selfInstance = [selection, parentSelection].find(candidate =>
             selectionIsInstanceOfEntry(candidate, cond.scope, system, catId));
           if (selfInstance) {
@@ -536,8 +546,7 @@ export const getEffectiveSelectionName = (selection, ctx = {}) => {
   const entryId = selection?.selectionEntryId || selection?.entryLinkId;
   if (!system || !entryId) return baseName;
 
-  const catalogueId =
-    ctx.parentCatalogueId || ctx.currentCatalogueId || (ctx.roster ? ctx.roster.catalogueId : null);
+  const catalogueId = resolveContextCatalogueId(ctx);
   const rawEntry = findEntryInSystem(system, entryId, catalogueId);
   const resolved = rawEntry && resolveEntry(system, rawEntry, catalogueId);
   if (!resolved) return baseName;

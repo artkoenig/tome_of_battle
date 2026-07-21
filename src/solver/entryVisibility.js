@@ -1,5 +1,8 @@
 import { resolveEntry } from './catalogResolver.js';
-import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveCategoryLinks } from './modifierEvaluator.js';
+import {
+  evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveCategoryLinks,
+  resolveContextCatalogueId
+} from './modifierEvaluator.js';
 
 /**
  * Wertet den effektiven hidden-Status eines Elements aus: statisches
@@ -25,10 +28,23 @@ export function evaluateHiddenFlag(initialHidden, modifiers, ctx) {
  *   rest of the solver already threads (see optionsCollector / armyWideSelectors).
  * @property {Object} system   the parsed game system (gst + catalogues).
  * @property {Object} roster   the current roster.
+ * @property {string} [catalogueId] the catalogue the entries under test were read from.
+ *   Required whenever the entries do not come from the roster's own catalogue (ADR 0018:
+ *   several catalogues are loaded side by side, and entry ids are unique only within one).
+ *   Defaults to the roster's catalogue.
  * @property {Object} [selectionCounts]      per-entry selection counts.
  * @property {Object} [forceCategoryCounts]  per-force category counts.
  * @property {Object} [force]  the force being evaluated; defaults to the first force.
  */
+
+/**
+ * The catalogue this context's entries resolve against, via the solver's single
+ * catalogue-precedence derivation.
+ * @param {VisibilityContext} context
+ */
+function catalogueIdOf(context) {
+  return resolveContextCatalogueId({ parentCatalogueId: context.catalogueId, roster: context.roster });
+}
 
 /**
  * True when a force's categoryLink is hidden in this context — statically or through
@@ -41,13 +57,14 @@ export function evaluateHiddenFlag(initialHidden, modifiers, ctx) {
  * @param {Object} link the categoryLink to test.
  * @param {VisibilityContext} context
  */
-export function isCategoryLinkHidden(link, { system, roster, selectionCounts, forceCategoryCounts }) {
+export function isCategoryLinkHidden(link, context) {
+  const { system, roster, selectionCounts, forceCategoryCounts } = context;
   const ctx = {
     roster,
     system,
     selectionCounts,
     forceCategoryCounts,
-    parentCatalogueId: roster?.catalogueId
+    parentCatalogueId: catalogueIdOf(context)
   };
   // Resolve through the shared seam so modifierGroup-gated hidden modifiers on the
   // category link are honoured, matching isSelectionEntryHidden below.
@@ -56,15 +73,22 @@ export function isCategoryLinkHidden(link, { system, roster, selectionCounts, fo
 
 // The condition-evaluation context every helper below shares: the caller's bundle plus
 // the force fallback and the catalogue id conditions resolve against.
-function buildEvalContext({ system, roster, selectionCounts, forceCategoryCounts, force }) {
+function buildEvalContext(context) {
+  const { system, roster, selectionCounts, forceCategoryCounts, force } = context;
   return {
     system,
     roster,
     selectionCounts,
     forceCategoryCounts,
     force: force || roster?.forces?.[0],
-    parentCatalogueId: roster?.catalogueId
+    parentCatalogueId: catalogueIdOf(context)
   };
+}
+
+// Resolves an entry against the catalogue its context names, so a same-id entry in a
+// sibling catalogue can never stand in for it (ADR 0018).
+function resolveEntryInContext(entry, context) {
+  return resolveEntry(context.system, entry, catalogueIdOf(context));
 }
 
 // A link plus its resolved target share their modifiers, so a group-gated modifier only
@@ -87,7 +111,7 @@ function collectEntryModifiers(entry, resolvedEntry) {
  * @param {VisibilityContext} context
  */
 export function getEffectiveEntryCategoryLinks(entry, context) {
-  const res = resolveEntry(context.system, entry);
+  const res = resolveEntryInContext(entry, context);
   if (!res) return [];
 
   const ctx = buildEvalContext(context);
@@ -116,7 +140,7 @@ export function isEntryPrimaryInCategory(entry, categoryId, context) {
  * @param {VisibilityContext} context
  */
 export function isSelectionEntryHidden(entry, context) {
-  const res = resolveEntry(context.system, entry);
+  const res = resolveEntryInContext(entry, context);
   if (!res) return false;
 
   const isHidden = entry.hidden === true || res.hidden === true;
@@ -145,13 +169,15 @@ export function collectPrimaryCategoryEntries(system, catalogue, categoryId, { r
     ...(catalogue.sharedSelectionEntries || []),
   ];
   const seenResolvedIds = new Set();
-  const categoryContext = { system, roster, selectionCounts, force };
+  // The catalogue being enumerated is the one its entries resolve against — not the
+  // roster's, which may well be a different one of the loaded catalogues (ADR 0018).
+  const categoryContext = { system, roster, selectionCounts, force, catalogueId: catalogue.id };
   // Category counts are deliberately withheld from the hidden check: the adder lists a
   // catalogue's entries before any force is fixed, so no per-force tally applies here.
   const hiddenContext = { ...categoryContext, forceCategoryCounts: null };
 
   for (const entry of pools) {
-    const resolved = resolveEntry(system, entry);
+    const resolved = resolveEntryInContext(entry, categoryContext);
     if (!resolved) continue;
     if (!isEntryPrimaryInCategory(entry, categoryId, categoryContext)) continue;
     if (isSelectionEntryHidden(entry, hiddenContext)) continue;

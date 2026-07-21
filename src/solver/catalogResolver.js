@@ -89,7 +89,26 @@ export function findEntryInCatalogue(catalogue, entryId) {
   return getCatalogueEntryIndex(catalogue).get(stripEntryIdQualifier(entryId)) || null;
 }
 
-export function findEntryInSystem(system, entryId, catalogueId = null) {
+/**
+ * Looks up an entry by id, preferring the catalogue it was referenced from.
+ *
+ * `catalogueId` is required context, not an optional refinement: several catalogues
+ * of one game system are loaded side by side (ADR 0018), and BattleScribe ids are
+ * only unique *within* a catalogue. Callers must pass the catalogue the reference
+ * was read from — typically `force.catalogueId`, falling back to `roster.catalogueId`.
+ *
+ * The scan over the remaining catalogues that follows is **only** for a reference
+ * that legitimately leaves its own catalogue: an entryLink or infoLink pointing at
+ * shared data in the game system itself or in a library catalogue the referencing
+ * catalogue imports. It is not a substitute for an unknown `catalogueId` — passing
+ * none makes the result depend on catalogue order, which is why every call site
+ * supplies one.
+ *
+ * @param {Object} system the parsed game system (gst plus its catalogues).
+ * @param {string} entryId the (possibly catalogue-qualified) entry id.
+ * @param {string|null} catalogueId the catalogue the reference was read from.
+ */
+export function findEntryInSystem(system, entryId, catalogueId) {
   if (!system) return null;
   const cleanId = stripEntryIdQualifier(entryId);
   const indexesByCatalogueId = getSystemEntryIndexesByCatalogueId(system);
@@ -99,7 +118,9 @@ export function findEntryInSystem(system, entryId, catalogueId = null) {
     return preferredIndex.get(cleanId);
   }
 
-  // Fallback: the preferred catalogue was not given, or does not hold the entry.
+  // Cross-catalogue reference: the entry lives in the game system's shared data or in
+  // a library catalogue. See the doc comment — this is not a fallback for a missing
+  // `catalogueId`.
   for (const index of indexesByCatalogueId.values()) {
     if (index.has(cleanId)) {
       return index.get(cleanId);
@@ -214,9 +235,14 @@ function collectBundledInfoNodes(system, entry, catalogueId) {
 }
 
 /**
- * Resolves an entryLink or returns the selectionEntry directly, resolving linked profiles/rules
+ * Resolves an entryLink or returns the selectionEntry directly, resolving linked
+ * profiles/rules.
+ *
+ * `catalogueId` names the catalogue `entry` was read from and is required context for
+ * the same reason as in {@link findEntryInSystem}: with several catalogues loaded at
+ * once (ADR 0018), a link target id alone does not identify one entry.
  */
-export function resolveEntry(system, entry, catalogueId = null) {
+export function resolveEntry(system, entry, catalogueId) {
   if (!entry) return null;
   
   let resolved = { ...entry };
