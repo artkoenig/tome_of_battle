@@ -12,6 +12,8 @@
  *  - rosterSync:        gespeicherte Roster mit dem System abgleichen
  *  - forceEntries:      Kontingente (Force Entries) nachschlagen
  *  - entryVisibility:   hidden-Status von Einträgen/Kategorie-Links
+ *  - subUnit:           Prädikat „eigenständige Untereinheit"
+ *  - battlescribeConstants: geteilte Format-Konstanten (Scopes, Limit-Feldpräfix)
  */
 export {
   childSelectionsOf, rootSelectionsOf, effectiveCountOf, traverseSelectionTree, foldSelectionTree,
@@ -30,3 +32,5 @@ export { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '.
 export { findForceEntryById, getAvailableForceEntries } from './forceEntries.js';
 export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory, collectPrimaryCategoryEntries } from './entryVisibility.js';
 export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, isReachableViaForceCategories } from './armyWideSelectors.js';
+export { isIndependentSubUnit, hasEntryChildren } from './subUnit.js';
+export { ConstraintScope, NON_ENTRY_SCOPE_KEYWORDS, isEntryScope, ROSTER_LIMIT_FIELD_PREFIX, isRosterLimitField, costTypeIdOfRosterLimitField } from './battlescribeConstants.js';

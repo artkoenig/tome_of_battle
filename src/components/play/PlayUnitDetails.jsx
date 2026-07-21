@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, getEffectiveSelectionName } from '../../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, getEffectiveSelectionName, isIndependentSubUnit } from '../../solver/validator';
 import { MODEL_COUNT_PROFILE_TYPES } from '../../solver/constants';
 import {
   getArmourSave as getArmourSaveLogic,
@@ -88,14 +88,8 @@ export default function PlayUnitDetails({
     const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
     const resolved = resolveEntry(system, entry, roster?.catalogueId);
     
-    const hasEntryChildren = (entryNode) => {
-      if (!entryNode) return false;
-      return (entryNode.selectionEntries && entryNode.selectionEntries.length > 0) ||
-             (entryNode.entryLinks && entryNode.entryLinks.length > 0) ||
-             (entryNode.selectionEntryGroups && entryNode.selectionEntryGroups.length > 0);
-    };
     
-    return resolved && (resolved.type === 'unit' || resolved.type === 'model') && (resolved.collective === false || resolved.collective === 'false') && hasEntryChildren(resolved);
+    return isIndependentSubUnit(resolved);
   });
 
   const hasSubUnits = independentSubUnits.length > 0;

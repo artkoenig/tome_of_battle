@@ -12,6 +12,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { collectPrimaryCategoryEntries } from './entryVisibility.js';
 import { SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { ConstraintScope } from './battlescribeConstants.js';
 
 /**
  * True, wenn ein aufgelöster Entry-Typ eine Listenregel bezeichnet. Nur der
@@ -71,7 +72,7 @@ function selectionEntryRef(selection) {
  */
 function isBinaryListRule(resolved) {
   const maxConstraint = (resolved?.constraints || []).find(
-    (c) => c.type === 'max' && (!c.scope || c.scope === 'roster' || c.scope === 'force')
+    (c) => c.type === 'max' && (!c.scope || c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE)
   );
   if (!maxConstraint) return true;
   const { value } = maxConstraint;

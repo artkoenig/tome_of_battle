@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope } from '../../solver/validator';
 import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 
 const getSubSelectionCount = (selection, optionEntryId) => {
@@ -82,7 +82,7 @@ export default function AutoFillSuggestions({
 
         let maxLimit = Infinity;
         const filteredOptionConstraints = res.constraints?.filter(con => {
-          if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') return true;
+          if (!con.scope || !isEntryScope(con.scope)) return true;
           return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
                  (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
         }) || [];

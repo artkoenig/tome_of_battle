@@ -1,6 +1,7 @@
 import { getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { countSelections, rootSelectionsOf, childSelectionsOf } from './rosterTree.js';
 import { SELECTIONS_FIELD } from '../parser/xmlParser.js';
+import { ConstraintScope } from './battlescribeConstants.js';
 import '../types.js';
 
 /**
@@ -70,10 +71,10 @@ export function isCostField(field, system, roster = null) {
  *   falling back to the force's selections.
  */
 export function collectScopeSelections({ roster, force, scope, parentSelection, includeChildForces = false }) {
-  if (scope === 'roster') {
+  if (scope === ConstraintScope.ROSTER) {
     return rootSelectionsOf(roster);
   }
-  if (scope === 'force') {
+  if (scope === ConstraintScope.FORCE) {
     return includeChildForces ? rootSelectionsOf(roster) : childSelectionsOf(force);
   }
   // An ancestor scope prefers the immediate parent's children, but a parent that
@@ -96,7 +97,7 @@ export function getScopeReferenceTotal({ constraint, roster, system, force, pare
   const scopeSelections = collectScopeSelections({ roster, force, scope, parentSelection, includeChildForces });
 
   if (isCostField(field, system, roster)) {
-    if (scope === 'roster' && field === roster?.costLimitType && roster?.costLimit) {
+    if (scope === ConstraintScope.ROSTER && field === roster?.costLimitType && roster?.costLimit) {
       return roster.costLimit;
     }
     return scopeSelections.reduce(

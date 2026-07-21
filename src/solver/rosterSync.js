@@ -1,19 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getUnitOptions } from './optionsCollector.js';
+import { isIndependentSubUnit } from './subUnit.js';
 import '../types.js';
-
-function hasEntryChildren(res) {
-  if (!res) return false;
-  return (res.selectionEntries && res.selectionEntries.length > 0) ||
-         (res.entryLinks && res.entryLinks.length > 0) ||
-         (res.selectionEntryGroups && res.selectionEntryGroups.length > 0);
-}
-
-function isIndependentSubUnit(res) {
-  return res && (res.type === 'unit' || res.type === 'model') &&
-         (res.collective === false || res.collective === 'false') &&
-         hasEntryChildren(res);
-}
 
 /**
  * Rewrites imported option selections so they reference catalogue entries the same

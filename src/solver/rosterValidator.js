@@ -3,6 +3,9 @@ import { getModifiedConstraintValue, getEffectiveModifiers, collectTriggeredMess
 import { ConditionKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, isCostField, resolveConstraintThreshold } from './constraintScope.js';
+import {
+  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField
+} from './battlescribeConstants.js';
 import { countSelections } from './rosterTree.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
@@ -131,8 +134,6 @@ function checkRosterCostLimit(roster, system, errors) {
   }
 }
 
-// Constraint-Scope, unter dem eine Kategoriegrenze für das gesamte Kontingent gilt.
-const FORCE_SCOPE = 'force';
 // Synthetische ID des per System-Quirk von einer anderen Kategorie geerbten max-Constraints.
 const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
 
@@ -213,12 +214,6 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
   });
 }
 
-// Präfix des BattleScribe-Feldes, das eine Constraint an das Punktelimit des Rosters
-// (nicht die ausgegebenen Punkte) bindet: `limit::<costTypeId>`.
-const ROSTER_LIMIT_FIELD_PREFIX = 'limit::';
-// Scope, unter dem die forceEntry-eigene Punktelimit-Constraint das gesamte Roster meint.
-const ROSTER_SCOPE = 'roster';
-
 /**
  * Prüft die forceEntry-eigene Punktelimit-Constraint eines gewählten Kontingents.
  *
@@ -248,7 +243,7 @@ function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
     const requiredLimit = getModifiedConstraintValue(con, applicableModifiers, {});
     if (requiredLimit <= 0) return; // Basis 0 ohne greifenden Modifier: keine Untergrenze.
 
-    const costTypeId = con.field.slice(ROSTER_LIMIT_FIELD_PREFIX.length);
+    const costTypeId = costTypeIdOfRosterLimitField(con.field);
     const currentLimit = roster.costLimitType === costTypeId ? (roster.costLimit || 0) : 0;
 
     if (con.type === 'min' && currentLimit < requiredLimit) {
@@ -264,7 +259,7 @@ function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
 
 /** Eine forceEntry-eigene Constraint, die das Roster-Punktelimit begrenzt. */
 function isRosterPointsLimitConstraint(con) {
-  return con.scope === ROSTER_SCOPE && typeof con.field === 'string' && con.field.startsWith(ROSTER_LIMIT_FIELD_PREFIX);
+  return con.scope === ConstraintScope.ROSTER && isRosterLimitField(con.field);
 }
 
 /**
@@ -323,7 +318,7 @@ function collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId
  * der reinen categoryLink-Auswertung bisher übersehen.
  */
 function collectCategoryEntryForceConstraints(catDef) {
-  return (catDef?.constraints || []).filter(con => con.scope === FORCE_SCOPE);
+  return (catDef?.constraints || []).filter(con => con.scope === ConstraintScope.FORCE);
 }
 
 /** Einen einzelnen Kategorie-Constraint gegen den aktuellen Kategorie-Count prüfen. */
@@ -432,7 +427,7 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
     if (finalValue < 0) return;
 
     // Check scope applicability for specific category/entry scoped constraints
-    if (con.scope !== 'parent' && con.scope !== 'force' && con.scope !== 'roster') {
+    if (isEntryScope(con.scope)) {
       const belongsToScope = (selection.selectionEntryId === con.scope || selection.entryLinkId === con.scope) ||
                             (entry.categoryLinks?.some(cl => cl.targetId === con.scope)) ||
                             (parentSelection && (parentSelection.selectionEntryId === con.scope || parentSelection.entryLinkId === con.scope));
@@ -442,9 +437,9 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
     // Determine current count in scope
     let count = selection.number || 1;
 
-    if (con.scope !== 'parent' && con.scope !== 'force' && con.scope !== 'roster') {
+    if (isEntryScope(con.scope)) {
       count = selectionCounts[con.scope] || (forceCategoryCounts ? forceCategoryCounts[con.scope] : 0) || count;
-    } else if (con.scope === 'parent') {
+    } else if (con.scope === ConstraintScope.PARENT) {
       // Immer über aufgelöste Target-IDs vergleichen, nicht über entryLinkIds —
       // verschiedene Links können auf dasselbe Target zeigen.
       const matchesEntryTarget = (s, catalogueId) => {
@@ -466,9 +461,9 @@ function checkEntryConstraints({ selection, parentSelection, roster, system, for
       } else if (force) {
         count = countSelections(force.selections, { includeChildSelections, predicate });
       }
-    } else if (con.scope === 'roster') {
+    } else if (con.scope === ConstraintScope.ROSTER) {
       count = Math.max(selectionCounts[entryId] || 0, (entry.targetId ? selectionCounts[entry.targetId] || 0 : 0));
-    } else if (con.scope === 'force') {
+    } else if (con.scope === ConstraintScope.FORCE) {
       // includeChildForces widens a force-scoped count to the whole roster
       // (child forces are flattened as roster siblings in the roster model).
       const scopeCounts = con.includeChildForces
@@ -617,7 +612,7 @@ function checkGroupConstraints({ selection, roster, system, force, counts, error
       if (finalValue < 0) return;
 
       // Check scope applicability for specific category/entry scoped constraints
-      if (con.scope !== 'parent' && con.scope !== 'force' && con.scope !== 'roster') {
+      if (isEntryScope(con.scope)) {
         const belongsToScope = (selection.selectionEntryId === con.scope || selection.entryLinkId === con.scope) ||
                               (entry.categoryLinks?.some(cl => cl.targetId === con.scope));
         if (!belongsToScope) return;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit, isEntryScope } from '../../solver/validator';
 import { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import OptionGroupComponent from './OptionGroup';
 import {
@@ -197,7 +197,7 @@ export default function SelectionConfigurator({
             const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
 
             const filteredOptionConstraints = res.constraints?.filter(con => {
-              if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+              if (!con.scope || !isEntryScope(con.scope)) {
                 return true;
               }
               return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
@@ -226,14 +226,8 @@ export default function SelectionConfigurator({
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
             const isSelectDisabled = isTakenElsewhere;
 
-            const hasEntryChildren = (entry) => {
-              if (!entry) return false;
-              return (entry.selectionEntries && entry.selectionEntries.length > 0) ||
-                     (entry.entryLinks && entry.entryLinks.length > 0) ||
-                     (entry.selectionEntryGroups && entry.selectionEntryGroups.length > 0);
-            };
 
-            const isIndependentSubUnit = res && (res.type === 'unit' || res.type === 'model') && (res.collective === false || res.collective === 'false') && hasEntryChildren(res);
+            const isSubUnitWithOwnOptions = isIndependentSubUnit(res);
 
             const isClickable = !isMandatory && !(count === 0 && isSelectDisabled);
             const handleRowClick = (e) => {
@@ -241,7 +235,7 @@ export default function SelectionConfigurator({
                 return;
               }
               if (isClickable) {
-                if (isIndependentSubUnit) {
+                if (isSubUnitWithOwnOptions) {
                   if (count < maxLimit && !isSelectDisabled) {
                     updateSubSelection(selection.id, option, 'add_instance');
                   }
@@ -299,7 +293,7 @@ export default function SelectionConfigurator({
                 </div>
                 <div className="sub-selection-controls">
                   {points > 0 && <span className="text-gold text-label" style={{ marginRight: '4px' }}>+{points} Pkt.</span>}
-                  {isIndependentSubUnit ? (
+                  {isSubUnitWithOwnOptions ? (
                     <button 
                       type="button"
                       className="btn-primary text-label"

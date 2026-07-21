@@ -51,7 +51,9 @@ const mockFindEntryInSystem = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
 const mockComputeRosterCounts = vi.fn();
 
-vi.mock('../../solver/validator', () => ({
+// Das Prädikat „eigenständige Untereinheit" ist eine reine Funktion ohne eigene
+// Abhängigkeiten — der Mock reicht die echte Umsetzung durch, statt sie zu stubben.
+vi.mock('../../solver/validator', async () => ({
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
@@ -59,6 +61,7 @@ vi.mock('../../solver/validator', () => ({
   getModifiedConstraintValue: (con) => con.value || 1,
   calculateRosterCosts: () => ({ pts: 0 }),
   getOptionDisplayCost: () => 10,
+  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
 }));
 
 // Mock optionsCollector

@@ -41,7 +41,9 @@ const mockCollectUnitProfilesAndRules = vi.fn();
 const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
 
-vi.mock('../../solver/validator', () => ({
+// Das Prädikat „eigenständige Untereinheit" ist eine reine Funktion ohne eigene
+// Abhängigkeiten — der Mock reicht die echte Umsetzung durch, statt sie zu stubben.
+vi.mock('../../solver/validator', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
@@ -49,7 +51,8 @@ vi.mock('../../solver/validator', () => ({
   calculateRosterCosts: () => ({ pts: 120 }),
   // Name resolution is covered by the solver's own unit tests; here it is isolated to
   // the no-name-modifier case, which returns the selection's raw name unchanged.
-  getEffectiveSelectionName: (selection) => selection?.name ?? ''
+  getEffectiveSelectionName: (selection) => selection?.name ?? '',
+  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit
 }));
 
 describe('UnitSelectionCard Component', () => {

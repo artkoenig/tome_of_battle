@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, TOP_LEVEL_PARENT_COUNT, isEntryScope } from '../../solver/validator';
 import { isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/optionsCollector';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
@@ -91,7 +91,7 @@ export default function OptionGroupComponent({
 
   
   const filteredGroupConstraints = group.constraints?.filter(con => {
-    if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+    if (!con.scope || !isEntryScope(con.scope)) {
       return true;
     }
     return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
@@ -242,7 +242,7 @@ export default function OptionGroupComponent({
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
             const filteredOptionConstraints = res.constraints?.filter(con => {
-              if (!con.scope || con.scope === 'parent' || con.scope === 'force' || con.scope === 'roster') {
+              if (!con.scope || !isEntryScope(con.scope)) {
                 return true;
               }
               return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
