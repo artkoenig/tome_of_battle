@@ -1,4 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+import { childSelectionsOf, countSelections, someSelectionInSubtree } from './rosterTree.js';
 import { ModifierKind, ConditionKind, AttributeName } from '../parser/schema/battlescribeSchema.generated.js';
 
 // The BattleScribe modifiers that mutate category membership / the primary flag all
@@ -9,27 +10,22 @@ const CATEGORY_MODIFIER_FIELD = 'category';
 const entryHasCategoryLink = (resolvedEntry, categoryId) =>
   !!resolvedEntry?.categoryLinks?.some(cl => cl.targetId === categoryId || cl.id === categoryId);
 
-const selectionHasCategory = (sel, categoryId, system, catalogueId) => {
-  if (!sel) return false;
+// Static (catalogue-level) category membership of a single selection's own entry,
+// without looking at its children.
+const selectionEntryHasCategory = (sel, categoryId, system, catalogueId) => {
   const sId = sel.selectionEntryId || sel.entryLinkId;
   if (sId === categoryId) return true;
 
   const raw = findEntryInSystem(system, sId, catalogueId);
   const res = raw && resolveEntry(system, raw, catalogueId);
-  if (res) {
-    if (res.id === categoryId || res.targetId === categoryId) return true;
-    if (entryHasCategoryLink(res, categoryId)) return true;
-  }
-
-  if (sel.selections && sel.selections.length > 0) {
-    for (const sub of sel.selections) {
-      if (selectionHasCategory(sub, categoryId, system, catalogueId)) {
-        return true;
-      }
-    }
-  }
-  return false;
+  if (!res) return false;
+  return res.id === categoryId || res.targetId === categoryId || entryHasCategoryLink(res, categoryId);
 };
+
+// Searches the selection's own subtree (itself and its descendants) for static
+// membership in `categoryId`.
+const selectionHasCategory = (sel, categoryId, system, catalogueId) =>
+  someSelectionInSubtree(sel, node => selectionEntryHasCategory(node, categoryId, system, catalogueId));
 
 // The BattleScribe `scope` keywords that are NOT entry ids. Any other scope value on an
 // instanceOf condition is a selection-entry id (see the self-scope handling below).
@@ -100,10 +96,47 @@ const selectionHasEffectiveCategory = (sel, categoryId, ctx) => {
 
 // Searches the selection's own subtree (itself and its descendant selections) for an
 // instance of `childId`, using effective (post-modifier) category membership.
-const subtreeHasInstanceOf = (sel, childId, ctx) => {
-  if (!sel) return false;
-  if (selectionHasEffectiveCategory(sel, childId, ctx)) return true;
-  return (sel.selections || []).some(sub => subtreeHasInstanceOf(sub, childId, ctx));
+const subtreeHasInstanceOf = (sel, childId, ctx) =>
+  someSelectionInSubtree(sel, node => selectionHasEffectiveCategory(node, childId, ctx));
+
+// The BattleScribe target keyword that matches any model-like selection rather
+// than one concrete entry id.
+const MODEL_TARGET_KEYWORD = 'model';
+
+/**
+ * Builds the predicate that decides whether a selection counts towards a
+ * parent-scoped quantity for `targetId` — an entry id, a link id, a category id,
+ * or the "model" type keyword.
+ *
+ * BattleScribe defines two such parent-scoped counts (a condition's and a
+ * modifier repeat's) that differ only in how wide they cast the net, so the two
+ * differences are explicit options instead of two copies of the matching rules:
+ * `matchCategoryMembership` also accepts a selection whose entry merely links to
+ * the target category, and `matchUnitsAsModels` lets the "model" keyword cover
+ * `unit` entries as well.
+ */
+const createTargetSelectionMatcher = (targetId, system, catalogueId, { matchCategoryMembership, matchUnitsAsModels }) => {
+  const canonicalTargetId = resolveCanonicalTargetId(targetId, system, catalogueId);
+  const modelLikeTypes = matchUnitsAsModels ? [MODEL_TARGET_KEYWORD, 'unit'] : [MODEL_TARGET_KEYWORD];
+
+  return (sel) => {
+    const sId = sel.entryLinkId || sel.selectionEntryId;
+    if (sId === targetId) return true;
+    if (!system) return false;
+
+    const raw = findEntryInSystem(system, sId, catalogueId);
+    const res = raw && resolveEntry(system, raw, catalogueId);
+    if (!res) return false;
+
+    if (res.targetId === targetId || res.id === targetId) return true;
+    // Two different entryLinks (e.g. an army-specific one and the shared/common
+    // catalogue's own one) can both alias the same underlying item.
+    if (resolveCanonicalTargetId(sId, system, catalogueId) === canonicalTargetId) return true;
+    // childId may reference a category (e.g. a bloodline): count selections that
+    // belong to that category, not only those whose entry id matches.
+    if (matchCategoryMembership && entryHasCategoryLink(res, targetId)) return true;
+    return targetId === MODEL_TARGET_KEYWORD && modelLikeTypes.includes(res.type);
+  };
 };
 
 export const evaluateCondition = (cond, ctx = {}) => {
@@ -124,34 +157,15 @@ export const evaluateCondition = (cond, ctx = {}) => {
     if (cond.scope === 'parent' && parentScopeTarget && parentScopeTarget.selections) {
       const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
       const targetId = cond.childId || cond.field;
-      const canonicalTargetId = resolveCanonicalTargetId(targetId, system, catId);
+      const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
+        matchCategoryMembership: true,
+        matchUnitsAsModels: true
+      });
 
-      const countMatches = (list) => (list || []).reduce((sum, s) => {
-        let isMatch = false;
-        const sId = s.entryLinkId || s.selectionEntryId;
-        if (sId === targetId) {
-          isMatch = true;
-        } else if (system) {
-          const raw = findEntryInSystem(system, sId, catId);
-          const res = raw && resolveEntry(system, raw, catId);
-          if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
-          // Two different entryLinks (e.g. an army-specific one and the shared/common
-          // catalogue's own one) can both alias the same underlying item.
-          if (res && resolveCanonicalTargetId(sId, system, catId) === canonicalTargetId) isMatch = true;
-          // childId may reference a category (e.g. a bloodline): count selections
-          // that belong to that category, not only those whose entry id matches.
-          if (res && entryHasCategoryLink(res, targetId)) isMatch = true;
-          if (targetId === 'model' && res && (res.type === 'model' || res.type === 'unit')) isMatch = true;
-        }
-
-        let acc = sum + (isMatch ? (s.number || 1) : 0);
-        if (cond.includeChildSelections && s.selections) {
-          acc += countMatches(s.selections);
-        }
-        return acc;
-      }, 0);
-
-      currentValue = countMatches(parentScopeTarget.selections);
+      currentValue = countSelections(childSelectionsOf(parentScopeTarget), {
+        includeChildSelections: !!cond.includeChildSelections,
+        predicate: matchesTarget
+      });
     } else {
       // Non-parent scopes (force/roster/entry/category) count by the specific target
       // the condition names. A childId identifies that target explicitly (e.g. a
@@ -331,31 +345,15 @@ export const getModifiedConstraintValue = (con, modifiers, ctx = {}) => {
           const { parentCatalogueId, system } = ctx;
           const catId = parentCatalogueId || (roster ? roster.catalogueId : null);
           const targetId = mod.repeat.childId || mod.repeat.field;
-          const canonicalTargetId = resolveCanonicalTargetId(targetId, system, catId);
+          const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
+            matchCategoryMembership: false,
+            matchUnitsAsModels: false
+          });
 
-          const countMatches = (list) => (list || []).reduce((sum, s) => {
-            let isMatch = false;
-            const sId = s.entryLinkId || s.selectionEntryId;
-            if (sId === targetId) {
-              isMatch = true;
-            } else if (system) {
-              const raw = findEntryInSystem(system, sId, catId);
-              const res = raw && resolveEntry(system, raw, catId);
-              if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
-              // Two different entryLinks (e.g. an army-specific one and the shared/common
-              // catalogue's own one) can both alias the same underlying item.
-              if (res && resolveCanonicalTargetId(sId, system, catId) === canonicalTargetId) isMatch = true;
-              if (targetId === 'model' && res && res.type === 'model') isMatch = true;
-            }
-            
-            let acc = sum + (isMatch ? (s.number || 1) : 0);
-            if (mod.repeat.includeChildSelections && s.selections) {
-              acc += countMatches(s.selections);
-            }
-            return acc;
-          }, 0);
-          
-          currentValue = countMatches(targetParent.selections);
+          currentValue = countSelections(childSelectionsOf(targetParent), {
+            includeChildSelections: !!mod.repeat.includeChildSelections,
+            predicate: matchesTarget
+          });
         } else if (mod.repeat.field && mod.repeat.field.startsWith('limit::')) {
           currentValue = roster?.costLimit || 0;
         } else if (mod.repeat.childId) {

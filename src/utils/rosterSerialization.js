@@ -1,11 +1,21 @@
 import JSZip from 'jszip';
-import { calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, getEffectiveSelectionName, findEntryInSystem, resolveEntry } from '../solver/validator.js';
+import {
+  calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, getEffectiveSelectionName,
+  findEntryInSystem, resolveEntry, childSelectionsOf, effectiveCountOf, foldSelectionTree,
+  mapSelectionTree, TOP_LEVEL_PARENT_COUNT
+} from '../solver/validator.js';
 
 // Fallback point limit applied when a roster file declares none.
 const DEFAULT_COST_LIMIT = 2000;
 // Decimal places kept when serializing costs, to strip floating-point artifacts
 // introduced by cost-modifier arithmetic.
 const COST_DECIMAL_PRECISION = 6;
+// Indentation of a force's top-level <selection>, and the extra indentation each
+// further nesting level adds.
+const SELECTION_BASE_INDENT = 8;
+const SELECTION_INDENT_STEP = 4;
+// Each war machine / chariot split off a `number=N` selection is one independent unit.
+const SPLIT_UNIT_NUMBER = 1;
 
 function roundCost(value) {
   return Number((value || 0).toFixed(COST_DECIMAL_PRECISION));
@@ -89,12 +99,10 @@ export function exportRosterToXml(roster, system) {
       xml += '      <categories/>\n';
       xml += '      <selections>\n';
       
-      if (force.selections) {
-        const catalogueId = force.catalogueId || roster.catalogueId;
-        force.selections.forEach(sel => {
-          xml += serializeSelection(sel, 8, ctx, 1, catalogueId, null);
-        });
-      }
+      const catalogueId = force.catalogueId || roster.catalogueId;
+      childSelectionsOf(force).forEach(sel => {
+        xml += serializeSelection(sel, SELECTION_BASE_INDENT, ctx, TOP_LEVEL_PARENT_COUNT, catalogueId, null);
+      });
 
       xml += '      </selections>\n';
       xml += '    </force>\n';
@@ -112,49 +120,57 @@ export function exportRosterToXml(roster, system) {
  * selection's <cost> is its own modifier-aware contribution (base × effective
  * count), so the flat sum of all selection costs equals the roster total block.
  */
-function serializeSelection(sel, indent, ctx, parentCount, currentCatalogueId, parentSelection) {
+function serializeSelection(rootSelection, indent, ctx, parentCount, currentCatalogueId, parentSelection) {
   const { system, roster, counts } = ctx;
-  const ind = ' '.repeat(indent);
-  const entryId = sel.selectionEntryId || '';
-  const entryLinkId = sel.entryLinkId || '';
-  const effectiveCount = (sel.number || 1) * parentCount;
 
-  const resolved = resolveSelectionEntry(system, sel, currentCatalogueId);
-  const selType = resolved?.type || 'upgrade';
-  const isCollective = sel.collective ? 'true' : 'false';
-  const effectiveName = getEffectiveSelectionName(sel, { system, roster, currentCatalogueId, parentSelection, counts });
+  return foldSelectionTree(rootSelection, {
+    descend: (sel, context) => ({
+      indent: context.indent + SELECTION_INDENT_STEP,
+      parentCount: effectiveCountOf(sel, context.parentCount),
+      parentSelection: sel
+    }),
+    combine: (sel, context, childXml) => {
+      const ind = ' '.repeat(context.indent);
+      const nodeContext = {
+        system, roster, currentCatalogueId, parentSelection: context.parentSelection, counts
+      };
+      const entryId = sel.selectionEntryId || '';
+      const entryLinkId = sel.entryLinkId || '';
+      const effectiveCount = effectiveCountOf(sel, context.parentCount);
 
-  let sXml = `${ind}<selection id="${escapeXml(sel.id)}" name="${escapeXml(effectiveName)}" entryId="${escapeXml(entryId)}" entryLinkId="${escapeXml(entryLinkId)}" number="${sel.number || 1}" type="${escapeXml(selType)}" collective="${isCollective}">\n`;
+      const resolved = resolveSelectionEntry(system, sel, currentCatalogueId);
+      const selType = resolved?.type || 'upgrade';
+      const isCollective = sel.collective ? 'true' : 'false';
+      const effectiveName = getEffectiveSelectionName(sel, nodeContext);
 
-  // Category Link block (only for top-level selections that carry categories)
-  if (sel.category) {
-    const catDef = system?.categoryEntries?.find(ce => ce.id === sel.category);
-    const catName = catDef?.name || 'Category';
-    sXml += `${ind}  <categories>\n`;
-    sXml += `${ind}    <category id="${escapeXml(sel.category)}" name="${escapeXml(catName)}" entryId="${escapeXml(sel.category)}" primary="true"/>\n`;
-    sXml += `${ind}  </categories>\n`;
-  }
+      let sXml = `${ind}<selection id="${escapeXml(sel.id)}" name="${escapeXml(effectiveName)}" entryId="${escapeXml(entryId)}" entryLinkId="${escapeXml(entryLinkId)}" number="${sel.number || 1}" type="${escapeXml(selType)}" collective="${isCollective}">\n`;
 
-  // Costs: the selection's own, modifier-aware contribution (derived from the catalogue).
-  const ownCosts = getSelectionOwnCosts(sel, effectiveCount, { system, roster, currentCatalogueId, parentSelection, counts });
-  sXml += `${ind}  <costs>\n`;
-  Object.entries(ownCosts).forEach(([typeId, value]) => {
-    const costName = system?.costTypes?.find(c => c.id === typeId)?.name || 'pts';
-    sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(typeId)}" value="${roundCost(value)}"/>\n`;
-  });
-  sXml += `${ind}  </costs>\n`;
+      // Category Link block (only for top-level selections that carry categories)
+      if (sel.category) {
+        const catDef = system?.categoryEntries?.find(ce => ce.id === sel.category);
+        const catName = catDef?.name || 'Category';
+        sXml += `${ind}  <categories>\n`;
+        sXml += `${ind}    <category id="${escapeXml(sel.category)}" name="${escapeXml(catName)}" entryId="${escapeXml(sel.category)}" primary="true"/>\n`;
+        sXml += `${ind}  </categories>\n`;
+      }
 
-  // Sub-selections
-  if (sel.selections && sel.selections.length > 0) {
-    sXml += `${ind}  <selections>\n`;
-    sel.selections.forEach(sub => {
-      sXml += serializeSelection(sub, indent + 4, ctx, effectiveCount, currentCatalogueId, sel);
-    });
-    sXml += `${ind}  </selections>\n`;
-  }
+      // Costs: the selection's own, modifier-aware contribution (derived from the catalogue).
+      const ownCosts = getSelectionOwnCosts(sel, effectiveCount, nodeContext);
+      sXml += `${ind}  <costs>\n`;
+      Object.entries(ownCosts).forEach(([typeId, value]) => {
+        const costName = system?.costTypes?.find(c => c.id === typeId)?.name || 'pts';
+        sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(typeId)}" value="${roundCost(value)}"/>\n`;
+      });
+      sXml += `${ind}  </costs>\n`;
 
-  sXml += `${ind}</selection>\n`;
-  return sXml;
+      if (childXml.length > 0) {
+        sXml += `${ind}  <selections>\n${childXml.join('')}${ind}  </selections>\n`;
+      }
+
+      sXml += `${ind}</selection>\n`;
+      return sXml;
+    }
+  }, { indent, parentCount, parentSelection });
 }
 
 /**
@@ -400,26 +416,16 @@ function checkNeedsSplit(selection, system) {
  * Creates a split copy of a selection for a given split index.
  */
 function createSplitSelection(original, index, totalSplit) {
-  const clone = (sel, isRoot = false) => {
-    const newNumber = isRoot ? 1 : (index === 0 ? Math.ceil(sel.number / totalSplit) : Math.floor(sel.number / totalSplit));
-    
-    const newSelections = [];
-    if (sel.selections) {
-      sel.selections.forEach(child => {
-        const clonedChild = clone(child);
-        if (clonedChild.number > 0) {
-          newSelections.push(clonedChild);
-        }
-      });
-    }
-    
-    return {
-      ...sel,
-      id: crypto.randomUUID(), // Generate a fresh UUID to prevent ID clashes
-      number: newNumber,
-      selections: newSelections
-    };
-  };
+  // The first split unit absorbs the remainder, so the shares add up to the original.
+  const splitShareOf = (selection) => (index === 0
+    ? Math.ceil(selection.number / totalSplit)
+    : Math.floor(selection.number / totalSplit));
 
-  return clone(original, true);
+  return mapSelectionTree(original, (selection, splitChildren) => ({
+    ...selection,
+    id: crypto.randomUUID(), // Generate a fresh UUID to prevent ID clashes
+    number: selection === original ? SPLIT_UNIT_NUMBER : splitShareOf(selection),
+    // A child whose share rounds down to nothing is not part of this split unit.
+    selections: splitChildren.filter(child => child.number > 0)
+  }));
 }

@@ -103,7 +103,10 @@ vi.mock('../db/database', () => ({
 }));
 
 // Mock Validators
-vi.mock('../solver/validator', () => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the facade
+// re-exports stay real, since they are pure traversal without any rules in them.
+vi.mock('../solver/validator', async (importOriginal) => ({
+  ...(await importOriginal()),
   computeRosterCounts: () => ({
     selectionCounts: {},
     categoryCounts: { 'force-1': { 'cat-heroes': 1, 'cat-core': 2 } }

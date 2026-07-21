@@ -4,7 +4,7 @@ import {
   Heart, Swords, BookOpen
 } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListRuleSelection } from '../solver/validator';
+import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListRuleSelection, childSelectionsOf, TOP_LEVEL_PARENT_COUNT } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
@@ -69,8 +69,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
     const sortByCostDescending = (selections, catalogueId) => {
       const costContext = { system, roster, currentCatalogueId: catalogueId };
       selections.sort((a, b) =>
-        getSelectionTotalCost(b, costType, 1, costContext) -
-        getSelectionTotalCost(a, costType, 1, costContext)
+        getSelectionTotalCost(b, costType, TOP_LEVEL_PARENT_COUNT, costContext) -
+        getSelectionTotalCost(a, costType, TOP_LEVEL_PARENT_COUNT, costContext)
       );
     };
 
@@ -85,7 +85,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
       // Process defined categories
       categoryLinks.forEach(link => {
-        let selections = force.selections?.filter(s => s.category === link.targetId && isBattlefieldSelection(s)) || [];
+        let selections = childSelectionsOf(force).filter(s => s.category === link.targetId && isBattlefieldSelection(s));
         
         // Apply search filter
         selections = selections.filter(sel => {
@@ -114,7 +114,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
 
       // Process uncategorized selections
       const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
-      let uncategorizedSelections = force.selections?.filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s)) || [];
+      let uncategorizedSelections = childSelectionsOf(force).filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s));
       
       uncategorizedSelections = uncategorizedSelections.filter(sel => {
         const matchesName = sel.name.toLowerCase().includes(searchTerm.toLowerCase());

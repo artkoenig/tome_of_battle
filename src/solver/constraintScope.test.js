@@ -2,7 +2,6 @@ import { describe, test, expect } from 'vitest';
 import {
   isPercentConstraint,
   isCostField,
-  countSelections,
   collectScopeSelections,
   getScopeReferenceTotal,
   resolveConstraintThreshold,
@@ -74,23 +73,7 @@ describe('isCostField', () => {
   });
 });
 
-describe('countSelections', () => {
-  const roster = makeRoster();
-  const force1 = roster.forces[0];
-
-  test('counts only direct children by default', () => {
-    expect(countSelections(force1.selections)).toBe(3); // lord(1) + trooper(2)
-  });
-
-  test('includeChildSelections descends into nested selections', () => {
-    expect(countSelections(force1.selections, { includeChildSelections: true })).toBe(4); // + banner(1)
-  });
-
-  test('applies the predicate to filter matches', () => {
-    const onlyTroopers = s => s.selectionEntryId === 'trooper';
-    expect(countSelections(force1.selections, { predicate: onlyTroopers })).toBe(2);
-  });
-});
+// countSelections is a roster-tree primitive and is covered by rosterTree.test.js.
 
 describe('collectScopeSelections', () => {
   const roster = makeRoster();

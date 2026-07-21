@@ -54,7 +54,10 @@ vi.mock('../db/database', () => ({
 
 // A list rule is any selection sitting in the 'cat-rules' category here; this
 // stands in for the real type=upgrade classification the solver performs.
-vi.mock('../solver/validator', () => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the facade
+// re-exports stay real, since they are pure traversal without any rules in them.
+vi.mock('../solver/validator', async (importOriginal) => ({
+  ...(await importOriginal()),
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
   getModifiedConstraintValue: (constraint) => (constraint.type === 'min' ? 0 : Infinity),
   getEffectiveModifiers: (source) => source?.modifiers || [],

@@ -3,8 +3,12 @@ import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
 import { syncRosterSelectionsWithSystem } from '../solver/validator';
 
-// Mock dependencies
-vi.mock('../solver/validator', () => ({
+// Only the rules engine is stubbed. The roster-tree primitives (rosterTree.js,
+// re-exported by the facade) stay real: they are pure data-structure traversal
+// with no rules in them, and stubbing them would hollow out the very state
+// updates these tests assert on.
+vi.mock('../solver/validator', async (importOriginal) => ({
+  ...(await importOriginal()),
   calculateRosterCosts: vi.fn(() => ({ points: 100 })),
   validateRoster: vi.fn(() => []),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
