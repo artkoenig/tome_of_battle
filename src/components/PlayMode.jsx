@@ -22,7 +22,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
   const activeCatalogue = system?.catalogues?.find(c => c.id === roster?.catalogueId);
   const extraResources = getExtraResourceTotals(system, roster, calculateRosterCosts(roster, system));
 
-  const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster, onReportError);
+  const { adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster, onReportError);
 
   // Central resolver that honors the global whfb6 linking setting (see ADR-0015):
   // returns a rule URL only when linking is enabled and a mapping exists, else null.
@@ -218,7 +218,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
                     selection={selection}
                     system={system}
                     roster={roster}
-                    gameState={gameState}
+                    getUnitCurrentWounds={getUnitCurrentWounds}
                     handleAdjustWound={handleAdjustWound}
                     handleMouseEnter={handleMouseEnter}
                     handleMouseLeave={handleMouseLeave}

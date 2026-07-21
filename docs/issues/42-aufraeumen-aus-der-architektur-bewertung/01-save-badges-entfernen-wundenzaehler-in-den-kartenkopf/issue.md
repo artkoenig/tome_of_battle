@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -115,3 +115,4 @@ haben ohne ihr Prüfobjekt keinen Gegenstand.
 - [ ] Haupt-Issue 28, Punkt 3 ist als gegenstandslos vermerkt.
 
 ## Comments
+- AS/WS-Badges samt Herleitungslogik (getArmourSave, getWardSave, hasBlessing), Keyword-Listen, Fassaden-Re-Exporten, zweitem Sammelpfad und CSS-Klassen ersatzlos entfernt; der Wundenzaehler steht nun links im Kartenkopf und liest seinen Stand ausschliesslich ueber getUnitCurrentWounds aus usePlayState. ADR 0003 (Ausnahme in 3, Modifikator-Absatz in 4) und die Dublette in docs/battlescribe-data-format.md bereinigt. Kein Screenshot moeglich: generate_screenshots.js benoetigt public/catalogs/whfb6, das lokal nicht vorliegt.

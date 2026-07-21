@@ -22,10 +22,7 @@ vi.mock('../../solver/validator', () => ({
   // Name resolution is covered by the solver's own unit tests; here it returns the
   // selection's raw name unchanged (no-name-modifier case).
   getEffectiveSelectionName: vi.fn((selection) => selection?.name ?? ''),
-  getArmourSave: vi.fn(() => ({ save: 7, breakdown: [] })),
-  getWardSave: vi.fn(() => ({ save: null, breakdown: [] })),
   groupProfilesByType: (...args) => mockGroupProfilesByType(...args),
-  hasBlessing: vi.fn(() => false),
   MODEL_COUNT_PROFILE_TYPES: [],
 }));
 
@@ -48,7 +45,7 @@ function createDefaultProps(overrides = {}) {
       catalogueId: 'cat-1',
       costLimitType: 'pts',
     },
-    gameState: { wounds: {} },
+    getUnitCurrentWounds: vi.fn((_selectionId, totalMaxWounds) => totalMaxWounds),
     handleAdjustWound: vi.fn(),
     handleMouseEnter: vi.fn(),
     handleMouseLeave: vi.fn(),
@@ -180,5 +177,49 @@ describe('PlayUnitDetails collapsible profiles', () => {
     });
     // Guard against the old 6-positional-argument regression.
     expect(getSelectionTotalCost.mock.calls[0]).toHaveLength(4);
+  });
+});
+
+// Issue 42/01: Die aus Regeltext geratene AS/WS-Anzeige ist ersatzlos entfallen;
+// an ihrer Stelle im Kartenkopf steht der Wundenzähler.
+describe('PlayUnitDetails Kartenkopf ohne AS/WS-Badges', () => {
+  beforeEach(() => {
+    mockGroupProfilesByType.mockReturnValue([]);
+  });
+
+  it('rendert keine Rüstungs- und Rettungswurf-Badges mehr', () => {
+    render(<PlayUnitDetails {...createDefaultProps()} />);
+
+    expect(screen.queryByText(/^AS:/)).toBeNull();
+    expect(screen.queryByText(/^WS:/)).toBeNull();
+    expect(document.querySelector('.play-unit-save-badge')).toBeNull();
+    expect(document.querySelector('.play-unit-badges')).toBeNull();
+  });
+
+  it('zeigt den Wundenzähler im Kartenkopf und meldet Änderungen nach oben', () => {
+    const props = createDefaultProps({
+      // Zwei von drei Lebenspunkten übrig, damit beide Schaltflächen bedienbar sind.
+      getUnitCurrentWounds: vi.fn(() => 2),
+    });
+    render(<PlayUnitDetails {...props} />);
+
+    const header = document.querySelector('.play-unit-header .flex-between');
+    const woundControls = header.querySelector('.play-unit-header-controls');
+    // Der Zähler ist das erste Element der Kopfzeile — die Position der Badges.
+    expect(header.firstElementChild).toBe(woundControls);
+    expect(woundControls.textContent).toContain('2 / 1');
+
+    const [decrement, increment] = woundControls.querySelectorAll('.qty-btn');
+    fireEvent.click(decrement);
+    expect(props.handleAdjustWound).toHaveBeenCalledWith('sel-1', -1, 1);
+    fireEvent.click(increment);
+    expect(props.handleAdjustWound).toHaveBeenCalledWith('sel-1', 1, 1);
+  });
+
+  it('liest den Wundenstand über die Hook-Funktion statt ihn selbst zu berechnen', () => {
+    const props = createDefaultProps();
+    render(<PlayUnitDetails {...props} />);
+
+    expect(props.getUnitCurrentWounds).toHaveBeenCalledWith('sel-1', 1);
   });
 });

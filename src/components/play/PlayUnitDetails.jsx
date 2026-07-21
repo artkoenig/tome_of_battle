@@ -3,10 +3,7 @@ import { Plus, Minus, ReceiptText } from 'lucide-react';
 import {
   findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost,
   getEffectiveSelectionName, isIndependentSubUnit, MODEL_COUNT_PROFILE_TYPES,
-  getArmourSave as getArmourSaveLogic,
-  getWardSave as getWardSaveLogic,
-  groupProfilesByType,
-  hasBlessing
+  groupProfilesByType
 } from '../../solver/validator';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { getProfileCellClassName } from '../profileCellClasses';
@@ -37,7 +34,7 @@ export default function PlayUnitDetails({
   selection,
   system,
   roster,
-  gameState,
+  getUnitCurrentWounds,
   handleAdjustWound,
   handleMouseEnter,
   handleMouseLeave,
@@ -175,64 +172,6 @@ export default function PlayUnitDetails({
 
 
 
-  const collectSavesData = (sel) => {
-    const entryId = sel.entryLinkId || sel.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId);
-    const resolved = resolveEntry(system, entry);
-    
-    const items = [];
-    if (resolved) {
-      if (resolved.name) items.push({ name: resolved.name });
-      resolved.rules?.forEach(r => items.push({ name: r.name, description: r.description, isRule: true }));
-      resolved.profiles?.forEach(p => items.push(p));
-    }
-    
-    if (sel.selections) {
-      sel.selections.forEach(subSel => {
-        if (subSel.name) items.push({ name: subSel.name });
-        const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
-        const subEntry = findEntryInSystem(system, subEntryId);
-        const subResolved = resolveEntry(system, subEntry);
-        if (subResolved) {
-          if (subResolved.name) items.push({ name: subResolved.name });
-          subResolved.rules?.forEach(r => items.push({ name: r.name, description: r.description, isRule: true }));
-          subResolved.profiles?.forEach(p => items.push(p));
-        }
-      });
-    }
-    return items;
-  };
-
-  const getArmourSaveInfo = (sel) => {
-    const data = collectSavesData(sel);
-    const result = getArmourSaveLogic(data, sel.name, roster?.catalogueName, true);
-    const display = result.save === 7 || !result.save ? 'Kein' : `${result.save}+`;
-    return { display, breakdown: result.breakdown };
-  };
-
-  const getWardSaveInfo = (sel) => {
-    const data = collectSavesData(sel);
-    const result = getWardSaveLogic(data, sel.name, roster?.catalogueName, true);
-    const blessing = hasBlessing(data, sel.name, roster?.catalogueName);
-
-    let display = 'Kein';
-    const breakdown = [...result.breakdown];
-
-    if (result.save !== null) {
-      if (blessing && result.save > 5) {
-        display = `${result.save}+ / 5+ (Segen)`;
-        if (!breakdown.includes('Segen der Herrin (5+ Rettungswurf)')) breakdown.push('Segen der Herrin (5+ Rettungswurf)');
-      } else {
-        display = `${result.save}+`;
-      }
-    } else if (blessing) {
-      display = '5+ / 6+ (Segen)';
-      if (!breakdown.includes('Segen der Herrin (5+ / 6+ Rettungswurf)')) breakdown.push('Segen der Herrin (5+ / 6+ Rettungswurf)');
-    }
-
-    return { display, breakdown };
-  };
-
   const getUnitModelCount = (sel) => {
     const entryId = sel.entryLinkId || sel.selectionEntryId;
     const entry = findEntryInSystem(system, entryId);
@@ -275,30 +214,14 @@ export default function PlayUnitDetails({
     return totalModels;
   };
 
-  const getUnitCurrentWounds = (sel, totalMaxWounds) => {
-    const id = sel.id;
-    const val = gameState.wounds[id];
-    if (val === undefined) {
-      return totalMaxWounds;
-    }
-    if (Array.isArray(val)) {
-      return val.reduce((sum, w) => sum + w, 0);
-    }
-    return val;
-  };
-
   const maxWounds = getMaxWounds(selection);
   const modelCount = getUnitModelCount(selection);
   const totalMaxWounds = modelCount * maxWounds;
-  const currentWounds = getUnitCurrentWounds(selection, totalMaxWounds);
+  const currentWounds = getUnitCurrentWounds(selection.id, totalMaxWounds);
   const { groups, rules } = getUnitProfilesAndRules(selection);
   const modelGroup = groups.find(g => g.isModel);
   const itemGroups = groups.filter(g => !g.isModel);
 
-
-  const asInfo = getArmourSaveInfo(selection);
-  const wsInfo = getWardSaveInfo(selection);
-  
   const isDead = hasSubUnits ? false : (currentWounds === 0);
   const totalCost = getSelectionTotalCost(selection, roster.costLimitType || 'pts', 1, { system, roster, currentCatalogueId: roster.catalogueId });
 
@@ -326,57 +249,35 @@ export default function PlayUnitDetails({
         </div>
 
         <div className="flex-between">
-          <div className="play-unit-badges">
-            <div
-              className={`badge badge-success font-body play-unit-save-badge${asInfo.breakdown.length > 0 ? ' play-unit-save-badge--explainable' : ''}`}
-              onMouseEnter={(e) => handleMouseEnter(e, 'Rüstungswurf (AS)', asInfo.breakdown)}
-              onMouseLeave={handleMouseLeave}
-              onClick={() => {
-                if (asInfo.breakdown.length > 0) {
-                  setSaveSummaryData({ title: 'Rüstungswurf (AS)', breakdown: asInfo.breakdown });
-                  setSaveSummaryOpen(true);
-                }
-              }}
-            >
-              AS: {asInfo.display}
+          {/* Der Wundenzähler steht links im Kartenkopf, wo zuvor die AS/WS-Badges
+              standen: er ist im Spiel das am häufigsten bediente Element. Der
+              Platzhalter hält die Position auch bei Einheiten ohne eigenen Zähler
+              (Untereinheiten führen ihn selbst), damit der Profil-Schalter rechts bleibt. */}
+          {hasSubUnits ? (
+            <div />
+          ) : (
+            <div className={`play-unit-header-controls${isDead ? ' play-unit-header-controls--dimmed' : ''}`}>
+              {isDead && <span className="text-danger font-serif play-unit-destroyed-label">VERNICHTET</span>}
+              <button
+                className="qty-btn"
+                onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
+                disabled={isDead}
+              >
+                <Minus size={12} />
+              </button>
+              <span className="font-body play-unit-wound-value">
+                {currentWounds} / {totalMaxWounds}
+              </span>
+              <button
+                className="qty-btn"
+                onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
+                disabled={currentWounds === totalMaxWounds}
+              >
+                <Plus size={12} />
+              </button>
             </div>
-            <div
-              className={`badge badge-warning font-body play-unit-save-badge${wsInfo.breakdown.length > 0 ? ' play-unit-save-badge--explainable' : ''}`}
-              onMouseEnter={(e) => handleMouseEnter(e, 'Rettungswurf (WS)', wsInfo.breakdown)}
-              onMouseLeave={handleMouseLeave}
-              onClick={() => {
-                if (wsInfo.breakdown.length > 0) {
-                  setSaveSummaryData({ title: 'Rettungswurf (WS)', breakdown: wsInfo.breakdown });
-                  setSaveSummaryOpen(true);
-                }
-              }}
-            >
-              WS: {wsInfo.display}
-            </div>
-          </div>
+          )}
           <div className="flex-row gap-8">
-            {!hasSubUnits && (
-              <div className={`play-unit-header-controls${isDead ? ' play-unit-header-controls--dimmed' : ''}`}>
-                {isDead && <span className="text-danger font-serif play-unit-destroyed-label">VERNICHTET</span>}
-                <button
-                  className="qty-btn"
-                  onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
-                  disabled={isDead}
-                >
-                  <Minus size={12} />
-                </button>
-                <span className="font-body play-unit-wound-value">
-                  {currentWounds} / {totalMaxWounds}
-                </span>
-                <button
-                  className="qty-btn"
-                  onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
-                  disabled={currentWounds === totalMaxWounds}
-                >
-                  <Plus size={12} />
-                </button>
-              </div>
-            )}
             {!isSubUnit && (modelGroup || itemGroups.length > 0) && (
               <button
                 type="button"
@@ -447,7 +348,7 @@ export default function PlayUnitDetails({
                   selection={subSel}
                   system={system}
                   roster={roster}
-                  gameState={gameState}
+                  getUnitCurrentWounds={getUnitCurrentWounds}
                   handleAdjustWound={handleAdjustWound}
                   handleMouseEnter={handleMouseEnter}
                   handleMouseLeave={handleMouseLeave}

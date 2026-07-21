@@ -1,7 +1,7 @@
 # 0003: Battlescribe Domain Rules
 
 - **Status:** Accepted
-- **Datum:** 2026-07-03
+- **Datum:** 2026-07-21
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Keine
 
@@ -30,7 +30,7 @@ Für unumgängliche Besonderheiten einzelner Spielsysteme (z. B. Vererbung von K
 ### 3. Keine sprachabhängigen Strings als Schlüssel
 - Es dürfen keine deutschen oder englischen (Sub)Strings (wie `"General"`, `"Leader"`, `"Waffe"`) als Identifikatoren fürs Parsen, Filtern oder Validieren genutzt werden.
 - Relationen müssen über eindeutige IDs (`categoryLinks`, `selectionEntryId`, etc.) aufgelöst werden.
-- **Ausnahme:** Die Berechnung und Normalisierung von Rüstungswürfen (`AS` / Armour Save) und Rettungswürfen (`WS` / Ward Save) darf charakteristische Strings (z. B. `4+`, `-1`, `+1`) analysieren, um Modifikatoren korrekt anzuwenden.
+- Diese Regel gilt **ausnahmslos**. Die vormals hier verzeichnete Ausnahme für die Herleitung von Rüstungs- (`AS`) und Rettungswürfen (`WS`) ist entfallen: das Feature wurde ersatzlos entfernt, weil die Werte aus Regelprosa geraten statt aus Katalogdaten gelesen wurden.
 
 ### 4. Berechnungen, Validierung und UI-Zuordnung
 
@@ -43,7 +43,6 @@ Für unumgängliche Besonderheiten einzelner Spielsysteme (z. B. Vererbung von K
 - **Optionale Upgrades:** Profile und Regeln von optionalen Upgrades (Mindestmenge = 0) dürfen erst dann auf das Profil der Haupteinheit aufaddiert oder angezeigt werden, wenn der Spieler diese Ausrüstung auch tatsächlich ausgewählt hat.
 - **Auswahl-Kategorien in der UI:** Die Kategorie mit `primary="true"` bestimmt, in welcher Kategorie-Gruppe (Sektion) eine Einheit in der UI einsortiert wird. Kategorien mit `primary="false"` dienen als unsichtbare Schlagworte für Validierungsregeln (z. B. zur Einschränkung, wer ein Reittier wählen darf). Die UI darf Einheiten niemals nach hardcodierten Kategorienamen gruppieren.
   - **Effektive statt statische Kategorie:** Die maßgebliche Primärkategorie ist die **effektive** — also nach Anwendung der `field="category"`-Modifier (`add` / `remove` / `set-primary` / `unset-primary`) samt ihrer Bedingungen im aktuellen Force-/Roster-Kontext. Ein Katalog kann eine (etwa aus einem verlinkten Bibliothekskatalog importierte) Einheit per `set-primary` in eine andere Kategorie seines Kontingents umgliedern; würde die UI nur die statischen `categoryLinks` lesen, verschwände die Einheit aus jeder Sektion. Die effektive Kategorie wird zentral über `getEffectiveCategoryLinks` / `getEffectiveEntryCategoryLinks` bestimmt und von allen einsortierenden Stellen (Aushebe-Dialog, Sektions-Sichtbarkeit, Armee-weite Selektoren) einheitlich genutzt.
-- **Rüstungs- und Rettungswurf-Modifikatoren:** Bei der Auswertung von Rüstungswürfen (`AS`) und Rettungswürfen (`WS`) müssen Werte per Regex in feste Basiswerte (z. B. `4+`) und Modifikatoren (z. B. `-1`/`+1`) unterschieden werden. Es muss verhindert werden, dass Boni doppelt angewendet werden (Double-Dipping), wenn beispielsweise ein namensbasierter Keyword-Bonus bereits denselben Effekt gewährt.
 
 
 ### Konsequenzen (Auswirkungen)

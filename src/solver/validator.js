@@ -46,7 +46,7 @@ export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, is
 export { isIndependentSubUnit, hasEntryChildren } from './subUnit.js';
 export { ConstraintScope, NON_ENTRY_SCOPE_KEYWORDS, isEntryScope, ROSTER_LIMIT_FIELD_PREFIX, isRosterLimitField, costTypeIdOfRosterLimitField } from './battlescribeConstants.js';
 export { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from './optionsCollector.js';
-export { groupProfilesByType, getArmourSave, getWardSave, hasBlessing } from './rulesEvaluator.js';
+export { groupProfilesByType } from './rulesEvaluator.js';
 export { createSelectionFromDef } from './selectionFactory.js';
 export { isQuirkGeneralEntryId } from './systemQuirks.js';
 export { UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from './constants.js';
