@@ -10,6 +10,12 @@
  * nie einem hartkodierten Kategorienamen (ADR 0003).
  */
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+
+/**
+ * @typedef {Object} RosterForceContext Roster-/Force-Umfeld einer Kategorie-Auswertung.
+ * @property {import('../types.js').Roster} [roster]
+ * @property {import('../types.js').Force} [force]
+ */
 import { collectPrimaryCategoryEntries } from './entryVisibility.js';
 import { ConstraintKind, SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { ConstraintScope } from './battlescribeConstants.js';
@@ -45,6 +51,10 @@ export function isListRuleSelection(system, selection, catalogueId = null) {
  * Gruppen-Klassifikation als auch die Ankreuzlisten-Zustände lassen sich so aus
  * **einem** Katalog-Durchlauf ableiten, statt `collectPrimaryCategoryEntries`
  * mehrfach zu durchlaufen.
+ * @param {object} system
+ * @param {object} catalogue
+ * @param {string} categoryId
+ * @param {RosterForceContext} [context]
  */
 function enumeratePrimaryEntries(system, catalogue, categoryId, { roster, force } = {}) {
   let total = 0;
@@ -158,6 +168,10 @@ function buildListRuleStates(system, ruleEntries, selections, catalogueId, categ
  * gemischte Kategorie gilt bewusst nicht als Listenregel-Gruppe. `states` wird nur
  * für eine echte Listenregel-Gruppe befüllt, sonst leer.
  *
+ * @param {object} system
+ * @param {object} catalogue
+ * @param {string} categoryId
+ * @param {RosterForceContext} [context]
  * @returns {{ isListRuleGroup: boolean, states: ListRuleState[] }}
  */
 export function resolveListRuleGroup(system, catalogue, categoryId, { roster, force } = {}) {

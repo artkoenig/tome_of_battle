@@ -10,6 +10,7 @@
     "knip": "knip",
     "depcruise": "depcruise src",
     "analyze": "npm run knip; npm run depcruise",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "test": "vitest run && node src/solver/ui.test.js",
     "generate-icons": "node scripts/generate_pwa_icons.js",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.2",
+    "@types/node": "26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
@@ -35,6 +37,7 @@
     "knip": "^6.27.0",
     "oxlint": "^1.69.0",
     "puppeteer": "^25.2.1",
+    "typescript": "6.0.2",
     "vite": "^8.1.0",
     "vitest": "^3.0.0"
   }

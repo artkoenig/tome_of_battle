@@ -250,7 +250,7 @@ export async function importFixtureSystem(page, { fixtureZipPath, layout = 'desk
   // Nach dem Zurücksetzen zeigt die App den leeren Bibliothekar bereits selbst;
   // steht sie doch auf einer anderen Ansicht, führt der Kopfzeilen-Knopf hin.
   await page.evaluate(() => {
-    const button = Array.from(document.querySelectorAll('header button'))
+    const button = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('header button')))
       .find((b) => b.textContent.toLowerCase().includes('bibliothekar'));
     if (button) button.click();
   });

@@ -10,7 +10,10 @@ export const VIEWS = Object.freeze({
   PLAY: 'play',
 });
 
+/** @typedef {typeof VIEWS[keyof typeof VIEWS]} View */
+
 /** Ansichten, die den Editor-/Spiel-Modus darstellen und das App-Layout umschalten. */
+/** @type {ReadonlyArray<string>} */
 const IMMERSIVE_VIEWS = Object.freeze([VIEWS.BUILDER, VIEWS.PLAY]);
 
 /**

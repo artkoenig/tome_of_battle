@@ -13,7 +13,8 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
   const [systemId, setSystemId] = useState('');
   const [catId, setCatId] = useState('');
   const [forceEntryId, setForceEntryId] = useState('');
-  const [limit, setLimit] = useState(DEFAULT_ROSTER_COST_LIMIT);
+  // Spiegelt den rohen Eingabewert des Zahlenfelds, daher auch string.
+  const [limit, setLimit] = useState(/** @type {number|string} */ (DEFAULT_ROSTER_COST_LIMIT));
 
   const defaultForceEntryId = (system, catalogueId) => {
     const avail = getAvailableForceEntries(system, catalogueId);

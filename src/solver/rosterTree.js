@@ -17,12 +17,13 @@ import '../types.js';
  * Geteilte, eingefrorene Instanz, damit ein fehlendes `selections`-Feld über
  * Aufrufe hinweg identitätsgleich bleibt und Identitätsvergleiche tragen.
  */
-const NO_SELECTIONS = Object.freeze([]);
+const NO_SELECTIONS = /** @type {import('../types.js').Selection[]} */ (Object.freeze([]));
 
 /** Effektive Anzahl einer Selection, wenn sie kein `number` trägt. */
 const IMPLICIT_SELECTION_COUNT = 1;
 
 /** Prädikat, das jede Selection akzeptiert (Vorgabe für {@link countSelections}). */
+/** @type {(selection: import('../types.js').Selection) => boolean} */
 const MATCHES_EVERY_SELECTION = () => true;
 
 /**

@@ -51,6 +51,8 @@ jobs:
       - name: dependency-cruiser (statische Analyse, warn-only)
         run: npm run depcruise
         continue-on-error: true
+      - name: Typecheck (tsc --noEmit, checkJs)
+        run: npm run typecheck
 
       - name: Unit-/Component-Tests
         run: npx vitest run
