@@ -13,7 +13,7 @@ import RulesIndexDialog from './RulesIndexDialog';
 import { useRuleUrl } from '../hooks/useRuleUrl';
 
 
-export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster }) {
+export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster, onReportError }) {
   const {
     roster,
     costs,
@@ -28,7 +28,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     redo,
     canUndo,
     canRedo
-  } = useRoster(initialRoster, system, saveRoster);
+  } = useRoster(initialRoster, system, saveRoster, onReportError);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   const [toast, _setToast] = useState(null);

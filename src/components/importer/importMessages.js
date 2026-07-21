@@ -33,10 +33,41 @@ export function buildMissingLibraryDependencyMessage(missingDependencies) {
   return `${headline} ${instruction} ${details}.`;
 }
 
+const FAILED_CATALOGUE_MESSAGE = {
+  headline: 'Folgende Kataloge konnten nicht gelesen werden und fehlen im importierten System:',
+  consequence:
+    'Armeelisten dieser Fraktionen lassen sich erst nach einem erneuten, vollständigen Import wieder aufbauen.',
+  itemSeparator: '; ',
+};
+
 /**
- * The confirmation shown after a system was stored, identical for both import paths.
+ * The confirmation shown after a system was stored, identical for both import paths. When
+ * catalogues failed to parse, it reports the import as incomplete instead of confirming a
+ * completeness the stored system does not have — the catalogue count alone would hide the
+ * loss, since the failed catalogues are already missing from it.
+ *
+ * @param {object} system the stored system.
+ * @param {import('../../parser/xmlParser').CatalogueParseFailure[]} [failedCatalogues]
  */
-export function buildImportSuccessMessage(system) {
-  const catalogueCount = system.catalogues?.length ?? 0;
-  return `Das System "${system.name}" mit ${catalogueCount} Katalogen wurde erfolgreich importiert!`;
+export function buildImportSuccessMessage(system, failedCatalogues = []) {
+  const importedCount = system.catalogues?.length ?? 0;
+  if (failedCatalogues.length === 0) {
+    return `Das System "${system.name}" mit ${importedCount} Katalogen wurde erfolgreich importiert!`;
+  }
+  const expectedCount = importedCount + failedCatalogues.length;
+  return `Das System "${system.name}" wurde unvollständig importiert: ${importedCount} von ${expectedCount} Katalogen konnten gelesen werden.`;
+}
+
+/**
+ * Names every catalogue that failed to parse, so the incompleteness is visible at the
+ * moment it happens rather than surfacing later as a broken selection reference.
+ *
+ * @param {import('../../parser/xmlParser').CatalogueParseFailure[]} failedCatalogues
+ */
+export function buildFailedCatalogueMessage(failedCatalogues) {
+  const { headline, consequence, itemSeparator } = FAILED_CATALOGUE_MESSAGE;
+  const details = failedCatalogues
+    .map((failure) => `${quoteCatalogueName(failure.fileName)} (${failure.message})`)
+    .join(itemSeparator);
+  return `${headline} ${details}. ${consequence}`;
 }

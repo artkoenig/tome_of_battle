@@ -12,7 +12,7 @@ import RulesIndexDialog from './RulesIndexDialog';
 import { useRuleUrl } from '../hooks/useRuleUrl';
 import GothicTooltip from './GothicTooltip';
 
-export default function PlayMode({ system, roster: initialRoster, onBack }) {
+export default function PlayMode({ system, roster: initialRoster, onBack, onReportError }) {
   const [roster, setRoster] = useState(initialRoster);
   const [searchTerm, setSearchTerm] = useState('');
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
@@ -22,7 +22,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack }) {
   const activeCatalogue = system?.catalogues?.find(c => c.id === roster?.catalogueId);
   const extraResources = getExtraResourceTotals(system, roster, calculateRosterCosts(roster, system));
 
-  const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster);
+  const { gameState, adjustTracker, getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster, onReportError);
 
   // Central resolver that honors the global whfb6 linking setting (see ADR-0015):
   // returns a rule URL only when linking is enabled and a mapping exists, else null.

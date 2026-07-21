@@ -240,10 +240,15 @@ export async function updateSystemFromCatalogIndex(
         warnings.map((warning) => warning.message)
       );
     }
-    const updatedSystem = processImportedData(rawXmls.gst, rawXmls.cat);
+    // A catalogue that fails to parse here is deliberately not surfaced: this update runs
+    // unattended in the background and the stored data stays usable (see the note below
+    // on the silent-by-design nature of this path).
+    const { system: updatedSystem } = processImportedData(rawXmls.gst, rawXmls.cat);
     updatedSystem.rawXmls = rawXmls;
     return updatedSystem;
   } catch (error) {
+    // Console-only by design: the catalog is a cache, and the caller keeps the stored
+    // system, so there is nothing the user could act on.
     console.warn(`Silent catalog update skipped for system "${system.name}":`, error);
     return null;
   }
@@ -277,6 +282,8 @@ export async function loadCatalogIndex(fetchText, indexUrl) {
     const indexText = await fetchText(indexUrl);
     return JSON.parse(indexText);
   } catch (error) {
+    // Console-only by design: an unreachable index leaves the app working on stored data,
+    // and the caller decides what — if anything — the user is told about it.
     console.warn('Catalog index unavailable; keeping stored catalog data:', error);
     return null;
   }

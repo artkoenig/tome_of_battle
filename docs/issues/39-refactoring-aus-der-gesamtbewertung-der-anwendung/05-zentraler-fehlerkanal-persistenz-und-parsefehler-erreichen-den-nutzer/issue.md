@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -52,3 +52,4 @@ Abhängigkeitswarnung angezeigt.
 - [ ] `npm run lint` und `npm test` bleiben grün
 
 ## Comments
+- Zentraler Fehlerkanal umgesetzt: App.jsx reicht reportError (Toast, ADR 0010) an Importer, RosterEditor und PlayMode; useRoster/usePlayState melden fehlgeschlagenes Speichern ueber den gemeinsamen createPersistenceFailureReporter. processImportedData liefert nun { system, failedCatalogues }; der Importer benennt nicht lesbare Kataloge und meldet den Import als unvollstaendig. Umbenennen, Loeschen und Laden melden ihre Fehler; decompressRoszToXml unterscheidet ueber die ZIP-Signatur den Rohtext-Rueckfall von einem beschaedigten Archiv. Verbleibende konsolen-only catch-Bloecke sind als bewusste Entscheidung kommentiert.

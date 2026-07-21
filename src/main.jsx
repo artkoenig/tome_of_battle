@@ -38,6 +38,8 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
             if (!data || !Array.isArray(data.changes) || data.changes.length === 0) return null;
             return data;
           } catch (err) {
+            // Console-only by design: the changelog only enriches the update toast, and
+            // the update itself is announced with or without it.
             console.error('Could not load changelog:', err);
             return null;
           }
@@ -66,6 +68,8 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
         };
       })
       .catch((err) => {
+        // Console-only by design: without a service worker the app still runs fully, it
+        // merely loses offline caching — there is nothing the user could act on.
         console.error('ServiceWorker registration failed: ', err);
       });
   });

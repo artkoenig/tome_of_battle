@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import App from './App';
-import { getAllSystems, getAllRosters, saveRoster } from './db/database';
+import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from './db/database';
 import { runSystemMigrations } from './db/migrations';
 
 // Mock Lucide Icons
@@ -227,6 +227,56 @@ describe('App roster selection derived from the roster list', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('playmode-mock').textContent).toBe('Im Editor geändert');
+    });
+  });
+
+  // Umbenennen, Löschen und Laden liefen bislang stumm in die Konsole: Fehlschlag und
+  // Erfolg waren für den Nutzer nicht zu unterscheiden.
+  describe('failures of the persistence operations reach the user', () => {
+    it('reports a failed rename', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await renderAppAndOpenBuilder();
+      saveRoster.mockRejectedValueOnce(new Error('DB voll'));
+
+      await act(async () => {
+        await dashboardProps.current.onRenameRoster(roster, 'Neuer Name');
+      });
+
+      expect(screen.getByText('Die Liste konnte nicht umbenannt werden.')).toBeDefined();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('reports a failed delete', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      render(<App />);
+      await waitFor(() => expect(dashboardProps.current).not.toBeNull());
+      deleteRoster.mockRejectedValueOnce(new Error('DB blockiert'));
+
+      await act(async () => {
+        dashboardProps.current.onDeleteRoster(roster.id, { stopPropagation: () => {} });
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Löschen' }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Die Liste konnte nicht gelöscht werden.')).toBeDefined();
+      });
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('reports a failed load of the stored systems and rosters', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      getAllSystems.mockRejectedValue(new Error('IndexedDB nicht verfügbar'));
+
+      render(<App />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Die gespeicherten Spielsysteme und Listen konnten nicht geladen werden.')
+        ).toBeDefined();
+      });
+      consoleErrorSpy.mockRestore();
     });
   });
 

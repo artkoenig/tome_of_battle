@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import crypto from 'crypto';
+import JSZip from 'jszip';
 import {
   exportRosterToXml,
   importRosterFromXml,
@@ -310,9 +311,27 @@ describe('Roster Serialization & Deserialization', () => {
   test('decompressing unzipped raw XML falls back to reading as text', async () => {
     const xmlText = '<?xml version="1.0"?><roster name="Raw XML Roster"></roster>';
     const blob = new Blob([xmlText], { type: 'text/xml' });
-    
+
     const decompressedXml = await decompressRoszToXml(blob);
     expect(decompressedXml).toBe(xmlText);
+  });
+
+  // A truncated .rosz used to be mistaken for "this was never a ZIP", read as text and
+  // then fail as "invalid file format" — a message pointing away from the real cause.
+  test('a damaged ZIP archive is reported as damaged, not read as raw text', async () => {
+    const xmlText = exportRosterToXml(mockRoster, mockSystems[0]);
+    const zipBlob = await compressXmlToRosz('my_test_roster', xmlText);
+    const truncatedZip = zipBlob.slice(0, Math.floor(zipBlob.size / 2));
+
+    await expect(decompressRoszToXml(truncatedZip)).rejects.toThrow(/beschädigt/);
+  });
+
+  test('a ZIP archive without a .ros entry is reported instead of read as raw text', async () => {
+    const zip = new JSZip();
+    zip.file('notes.txt', 'kein Roster');
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+    await expect(decompressRoszToXml(zipBlob)).rejects.toThrow(/\.ros/);
   });
 
   test('throws MissingSystemError if game system is not found in systems database', () => {

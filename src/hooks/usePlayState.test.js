@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import usePlayState from './usePlayState';
+import { PERSISTENCE_FAILURE_MESSAGE } from '../utils/persistenceFailure';
 
 describe('usePlayState Hook', () => {
   const initialRoster = {
@@ -88,5 +89,45 @@ describe('usePlayState Hook', () => {
     });
 
     expect(result.current.getUnitCurrentWounds('unit-2', 15)).toBe(10);
+  });
+  // Der Spielstand wird bei jeder Wunde neu geschrieben; ein stiller Fehlschlag am
+  // Spieltisch ist von einem erfolgreichen Speichern nicht zu unterscheiden.
+  it('reports a failed game state save through the error channel', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const reportError = vi.fn();
+    const failingSave = vi.fn().mockRejectedValue(new Error('QuotaExceededError'));
+    const applyUpdate = (updater) => updater(initialRoster);
+
+    const { result } = renderHook(() =>
+      usePlayState(initialRoster, applyUpdate, failingSave, reportError)
+    );
+
+    act(() => {
+      result.current.adjustTracker('vp', 3);
+    });
+
+    await vi.waitFor(() => {
+      expect(reportError).toHaveBeenCalledWith(PERSISTENCE_FAILURE_MESSAGE.gameState);
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('stays silent while the game state is saved successfully', async () => {
+    const reportError = vi.fn();
+    const succeedingSave = vi.fn().mockResolvedValue(undefined);
+    const applyUpdate = (updater) => updater(initialRoster);
+
+    const { result } = renderHook(() =>
+      usePlayState(initialRoster, applyUpdate, succeedingSave, reportError)
+    );
+
+    act(() => {
+      result.current.adjustTracker('vp', 3);
+    });
+
+    await vi.waitFor(() => {
+      expect(succeedingSave).toHaveBeenCalled();
+    });
+    expect(reportError).not.toHaveBeenCalled();
   });
 });

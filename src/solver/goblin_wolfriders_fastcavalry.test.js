@@ -11,7 +11,7 @@ globalThis.XMLSerializer = jsdomObj.window.XMLSerializer;
 // Goblin Wolf Riders lose "Fast Cavalry" while wearing (Light) Armour.
 describe('Goblin Wolf Riders — Fast Cavalry vs. Armour', () => {
   const base = './src/solver/__fixtures__/whfb6';
-  const cat = processImportedData(
+  const { system: cat } = processImportedData(
     [{ name: 'whfb6.gst', content: readFileSync(`${base}/Warhammer Fantasy Battle 6th edition.gst`, 'utf-8') }],
     [{ name: 'Orcs and Goblins.cat', content: readFileSync(`${base}/Orcs and Goblins.cat`, 'utf-8') }]
   );

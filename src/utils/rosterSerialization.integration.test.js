@@ -42,7 +42,7 @@ beforeAll(() => {
 
 function buildSystem(catFile) {
   const cat = { name: catFile, content: fs.readFileSync(path.join(CATALOG_DIR, catFile), 'utf8') };
-  return processImportedData([{ name: 'gst', content: gstContent }], [cat]);
+  return processImportedData([{ name: 'gst', content: gstContent }], [cat]).system;
 }
 
 // Mirrors the app's import flow: parse → reconcile option ids → sync names.

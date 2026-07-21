@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import {
+  PERSISTENCE_FAILURE_MESSAGE,
+  createPersistenceFailureReporter,
+} from '../utils/persistenceFailure';
 import '../types.js';
 
 /**
@@ -6,8 +10,10 @@ import '../types.js';
  * @param {import('../types.js').Roster} initialRoster
  * @param {Function} setRoster
  * @param {Function} saveRosterCallback
+ * @param {(message: string) => void} [reportError] app-wide error channel; a failed
+ *   game-state save reaches the user through it instead of ending in the console.
  */
-export default function usePlayState(initialRoster, setRoster, saveRosterCallback) {
+export default function usePlayState(initialRoster, setRoster, saveRosterCallback, reportError) {
   const [gameState, setGameState] = useState(() => {
     return initialRoster.gameState || {
       round: 1,
@@ -18,6 +24,8 @@ export default function usePlayState(initialRoster, setRoster, saveRosterCallbac
   });
 
   const isInitialMount = useRef(true);
+  const reportErrorRef = useRef(reportError);
+  reportErrorRef.current = reportError;
 
   // Save game state whenever it changes
   useEffect(() => {
@@ -25,17 +33,18 @@ export default function usePlayState(initialRoster, setRoster, saveRosterCallbac
       isInitialMount.current = false;
       return;
     }
-    const saveState = async () => {
-      // Need to use functional update pattern for setRoster to avoid stale closures if roster changes
-      setRoster(prevRoster => {
-        const updatedRoster = { ...prevRoster, gameState };
-        if (saveRosterCallback) {
-          saveRosterCallback(updatedRoster).catch(e => console.error("Failed to save game state:", e));
-        }
-        return updatedRoster;
-      });
-    };
-    saveState();
+    const reportFailure = createPersistenceFailureReporter(
+      PERSISTENCE_FAILURE_MESSAGE.gameState,
+      reportErrorRef.current
+    );
+    // Need to use functional update pattern for setRoster to avoid stale closures if roster changes
+    setRoster(prevRoster => {
+      const updatedRoster = { ...prevRoster, gameState };
+      if (saveRosterCallback) {
+        saveRosterCallback(updatedRoster).catch(reportFailure);
+      }
+      return updatedRoster;
+    });
   }, [gameState, setRoster, saveRosterCallback]);
 
   // VP, CP, and Round tracker
