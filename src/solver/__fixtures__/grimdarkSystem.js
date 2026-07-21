@@ -12,7 +12,21 @@
  * *Independent*).
  */
 
-export const POINTS = 'pts';
+/**
+ * Kostenart-ids sind GUID-förmig und stimmen bewusst **nicht** mit dem
+ * Anzeigenamen überein — `cost/@typeId` verweist auf `costType/@id`, nie auf
+ * `costType/@name` (ADR-0003). Die Werte entsprechen denen des geladenen
+ * WHFB6-Forks, damit die Suite denselben Pfad prüft, den die Produktion nimmt.
+ */
+export const POINTS = 'ecfa-8486-4f6c-c249';
+export const CASTING_DICE = 'fcec-2340-6368-a2ba';
+
+/** Anzeigenamen der Kostenarten — im Fork mit führendem Leerzeichen. */
+export const COST_TYPE_NAME = {
+  points: 'pts',
+  castingDice: ' Casting Dice'
+};
+
 export const SYSTEM_COST_LIMIT = 2000;
 
 export const CATALOGUE_ID = 'cat-marines';
@@ -87,7 +101,8 @@ export function createGrimdarkSystem() {
     id: 'sys-123',
     name: 'Test Grimdark System',
     costTypes: [
-      { id: POINTS, name: 'Points', defaultCostLimit: SYSTEM_COST_LIMIT }
+      { id: POINTS, name: COST_TYPE_NAME.points, defaultCostLimit: SYSTEM_COST_LIMIT },
+      { id: CASTING_DICE, name: COST_TYPE_NAME.castingDice }
     ],
     categoryEntries: [
       { id: CATEGORY_ID.hq, name: 'HQ' },

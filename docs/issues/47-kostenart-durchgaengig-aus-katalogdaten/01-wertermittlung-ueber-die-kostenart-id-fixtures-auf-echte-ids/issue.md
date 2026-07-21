@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -82,3 +82,4 @@ Die **Bezeichnung** ist nicht Teil dieses Kind-Issues, sondern von 02.
 - [ ] `npm test` grün, `npm run lint` 0 Fehler / 0 Warnungen.
 
 ## Comments
+- Wertermittlung laeuft ausschliesslich ueber die eingestellte Kostenart-id: neue geteilte Ableitung resolveCostLimitTypeId (rosterCounter, ueber die Fassade re-exportiert), doppelter find-Aufruf in getOptionDisplayCost auf einen reduziert, Rueckfall auf 'pts' in rosterCounter/rosterSerialization/PlayMode/OptionGroup/PlayUnitDetails/App entfernt. Fixtures fuehren jetzt GUID-foermige Kostenart-ids (ecfa-... = 'pts', fcec-... = ' Casting Dice'). 13 neue Tests in rosterCounter.costTypeSelection.test.js, davon zwei als belegter Regressionsschutz gegen den alten Rueckfall.

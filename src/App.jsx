@@ -36,9 +36,6 @@ const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: nul
 /** Anzeigedauer einer Toast-Benachrichtigung in Millisekunden. */
 const TOAST_DURATION_MS = 3000;
 
-/** Kostenart, die verwendet wird, wenn das System keine eigene definiert. */
-const FALLBACK_COST_TYPE = 'pts';
-
 /**
  * Meldungen der Vorgänge, die auf IndexedDB schreiben oder von dort lesen. Sie laufen
  * ohne Backend und ohne Konsole am Spieltisch — ein Fehlschlag muss den Nutzer über den
@@ -243,7 +240,9 @@ export default function App() {
     }
 
     const systemDef = systems.find(s => s.id === systemId);
-    const costType = systemDef?.costTypes?.[0]?.id || FALLBACK_COST_TYPE;
+    // Ein neues Roster wird in der ersten vom System deklarierten Kostenart geführt;
+    // eine Kostenart-id ist katalogspezifisch und darf nicht erfunden werden.
+    const costType = systemDef?.costTypes?.[0]?.id ?? null;
 
     const roster = {
       id: crypto.randomUUID(),
