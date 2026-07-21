@@ -72,13 +72,6 @@ async function run() {
     await new Promise(r => setTimeout(r, 500)); // sleep after click to allow UI updates
   };
 
-  const clickSelector = async (selector) => {
-    await page.waitForSelector(selector);
-    await page.click(selector);
-    console.log(`Clicked selector: "${selector}"`);
-    await new Promise(r => setTimeout(r, 500));
-  };
-
   const typeInto = async (selector, value) => {
     await page.waitForSelector(selector);
     // Clear field cleanly using DOM
@@ -126,7 +119,7 @@ async function run() {
       try {
         await clickButtonWithText('Bibliothekar');
         await takeScreenshot('02_importer_open');
-      } catch (e) {
+      } catch {
         const fileInputExists = await page.evaluate(() => !!document.querySelector('input#file-upload'));
         if (!fileInputExists) {
           throw new Error('Neither "Bibliothekar" button nor "#file-upload" input found.');
@@ -152,7 +145,7 @@ async function run() {
         const DB_VERSION = 1;
         const openRequest = indexedDB.open(DB_NAME, DB_VERSION);
         await new Promise((resolve, reject) => {
-          openRequest.onupgradeneeded = (e) => {
+          openRequest.onupgradeneeded = () => {
             const db = openRequest.result;
             if (!db.objectStoreNames.contains('systems')) {
               db.createObjectStore('systems', { keyPath: 'id' });
@@ -193,10 +186,10 @@ async function run() {
     console.log('Opening Roster Creation Modal...');
     try {
       await clickButtonWithText('Armeeliste erstellen');
-    } catch (e) {
+    } catch {
       try {
         await clickButtonWithText('Neue Armeeliste');
-      } catch (e2) {
+      } catch {
         await clickButtonWithText('ausheben');
       }
     }

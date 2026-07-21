@@ -1,10 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import PlayMode from './PlayMode';
 import PlayUnitDetails from './play/PlayUnitDetails';
-import { findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost } from '../solver/validator';
-import usePlayState from '../hooks/usePlayState';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -27,7 +25,7 @@ const mockAdjustTracker = vi.fn();
 const mockGetUnitCurrentWounds = vi.fn().mockReturnValue(5);
 
 vi.mock('../hooks/usePlayState', () => ({
-  default: (initialRoster, setRoster, saveRoster) => ({
+  default: (_initialRoster, _setRoster, _saveRoster) => ({
     gameState: { round: 1, vp: 0, cp: 0, wounds: { 'sel-1': 5, 'sel-2': 3, 'sel-3': 1 } },
     adjustTracker: mockAdjustTracker,
     getUnitCurrentWounds: mockGetUnitCurrentWounds,
@@ -259,7 +257,7 @@ describe('PlayMode Component', () => {
   });
 
   it('6. Collapsible Special Rules (Direct)', async () => {
-    mockCollectUnitProfilesAndRules.mockImplementation((sys, sel, catId) => ({
+    mockCollectUnitProfilesAndRules.mockImplementation((_sys, _sel, _catId) => ({
       profiles: [],
       rules: [{ id: 'rule-direct', name: 'Direct Vow', description: 'Direct test description' }]
     }));

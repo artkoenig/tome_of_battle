@@ -337,7 +337,6 @@ export default function UnitSelectionCard({
           system={system}
           roster={roster}
           subSelectionOperations={subSelectionOperations}
-          costTypeLabel={costTypeLabel}
           activeCatalogue={activeCatalogue}
           handleMouseEnter={handleMouseEnter}
           handleMouseMove={handleMouseMove}

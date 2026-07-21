@@ -407,7 +407,7 @@ describe('Importer Component', () => {
     getAllSystems.mockResolvedValue(mockSystems);
     const onSystemImportedMock = vi.fn();
 
-    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+    render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
 
     await waitFor(() => {
       expect(screen.getByText('Export System')).toBeDefined();

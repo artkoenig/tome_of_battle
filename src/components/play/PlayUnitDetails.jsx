@@ -218,7 +218,7 @@ export default function PlayUnitDetails({
   const modelCount = getUnitModelCount(selection);
   const totalMaxWounds = modelCount * maxWounds;
   const currentWounds = getUnitCurrentWounds(selection.id, totalMaxWounds);
-  const { groups, rules } = getUnitProfilesAndRules(selection);
+  const { groups } = getUnitProfilesAndRules(selection);
   const modelGroup = groups.find(g => g.isModel);
   const itemGroups = groups.filter(g => !g.isModel);
 

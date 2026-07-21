@@ -54,7 +54,7 @@ export default function AutoFillSuggestions({
       const options = getUnitOptions(system, activeCatalogue.id, selection);
       
       options.forEach(item => {
-        const { option, parentDefId, groupConstraints, groupModifiers } = item;
+        const { option, parentDefId, groupConstraints } = item;
         const res = resolveEntry(system, option, activeCatalogue.id);
         if (!res) return;
 

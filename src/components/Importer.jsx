@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
+import { Trash2, FileText, CheckCircle2, ShieldAlert, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
 import { getAllSystems, deleteSystem } from '../db/database';
@@ -55,9 +55,15 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
   const [selectedBundleSysId, setSelectedBundleSysId] = useState('');
   const [selectedCats, setSelectedCats] = useState({});
 
+  // Bewusst nur beim Mounten: Beide Lader sind bei jedem Render neue Funktionen und
+  // setzen Zustand, den sie im Fehlerfall selbst wieder lesen (availableSystems).
+  // In die Abhängigkeitsliste aufgenommen, würde jeder erfolgreiche Abruf die Identität
+  // ändern und den Effekt erneut auslösen — eine Endlosschleife aus Netzwerkabrufen.
+  // Der Katalog-Index wird deshalb einmal je Bildschirmaufruf geladen.
   useEffect(() => {
     loadSystems();
     fetchAvailableSystems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadSystems = async () => {

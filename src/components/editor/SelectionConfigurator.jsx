@@ -16,7 +16,6 @@ export default function SelectionConfigurator({
   system,
   roster,
   subSelectionOperations,
-  costTypeLabel,
   activeCatalogue,
   handleMouseEnter,
   handleMouseMove,
@@ -173,7 +172,7 @@ export default function SelectionConfigurator({
       {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
       {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
       <div className="sub-selection-group sub-selection-group--flush">
-        {groupedList.map((group, gIdx) => {
+        {groupedList.map((group) => {
           if (group.standalone) {
             const { option, parentDefId } = group.item;
             const res = resolveEntry(system, option, activeCatalogue.id);
@@ -344,7 +343,6 @@ export default function SelectionConfigurator({
                 roster={roster}
                 getSubSelectionCount={getSubSelectionCount}
                 subSelectionOperations={subSelectionOperations}
-                costTypeLabel={costTypeLabel}
                 getOptionDescription={getOptionDescription}
                 activeCatalogue={activeCatalogue}
                 setActiveInfo={setActiveInfo}

@@ -11,8 +11,6 @@ export default function RosterDashboard({
   onRenameRoster,
   onNewRoster,
   isOffline = false,
-  isInstallable = false,
-  onInstallClick,
   onImportRoster,
   onExportRoster,
 }) {
@@ -122,7 +120,7 @@ export default function RosterDashboard({
           if (!acc[systemName][factionName]) {
             acc[systemName][factionName] = [];
           }
-          acc[systemName][factionName].push({ roster, sys, cat });
+          acc[systemName][factionName].push({ roster, sys });
           return acc;
         }, {});
 
@@ -157,7 +155,7 @@ export default function RosterDashboard({
                             {factionName}
                           </h3>
                           <div className="dashboard-grid">
-                            {factionRosters.map(({ roster, sys, cat }) => {
+                            {factionRosters.map(({ roster, sys }) => {
                               const costTypeObj = sys?.costTypes?.find(ct => ct.id === roster.costLimitType);
                               const rawLabel = costTypeObj?.name || 'Pkt.';
                               const costTypeLabel = (rawLabel.toLowerCase() === 'pts' || rawLabel.toLowerCase() === 'punkte' || rawLabel.toLowerCase() === 'points') ? 'Pkt.' : rawLabel;

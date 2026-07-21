@@ -11,7 +11,6 @@ export default function OptionGroupComponent({
   roster, 
   getSubSelectionCount, 
   subSelectionOperations,
-  costTypeLabel,
   getOptionDescription,
   activeCatalogue,
   setActiveInfo,

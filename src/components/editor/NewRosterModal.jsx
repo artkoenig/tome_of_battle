@@ -34,6 +34,10 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
       setLimit(DEFAULT_ROSTER_COST_LIMIT);
       applySystemDefaults(systems[0]);
     }
+    // Absichtlich nur von isOpen abhängig: Der Effekt setzt das Formular beim Öffnen
+    // zurück. Nähme man systems bzw. applySystemDefaults auf, würde jede neue Identität
+    // dieser Werte das Formular auch im geöffneten Zustand zurücksetzen und dabei
+    // bereits getroffene Eingaben des Nutzers verwerfen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 

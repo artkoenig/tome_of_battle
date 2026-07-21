@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01, 02, 03]
 
@@ -46,6 +46,29 @@ Schlüsselwort-Listen und dem ungenutzten Import — deshalb ist dieses Issue du
 vorangehenden Scheiben übrig lassen, statt Warnungen zu beheben, die mit ihnen
 ohnehin verschwinden.
 
+### Nachträge (nach Merge von 01–03 ergänzt)
+
+Der Stand nach den drei vorangehenden Scheiben ist **0 Fehler, 56 Warnungen**;
+der Toast, der leere `if`-Zweig und der Keyword-Import sind bereits dort
+entfernt worden. Zusätzlich freigegeben wurde:
+
+- **Tote CSS-Klassen.** `.roster-header-editor` (samt Mobile-Overrides) und
+  `.roster-editor-points` haben nach dem Merge von Kind-Issue 02 keine
+  Verwendung mehr im JSX und entfallen.
+- **`vitest` sammelt Worktree-Kopien mit.** Agenten-Worktrees liegen unter
+  `.claude/worktrees/` innerhalb des Repos, die Projektkonvention sieht
+  zusätzlich `.worktrees/` vor. Ohne Ausschluss zählt jeder Lauf im
+  Hauptcheckout die Testdateien aller offenen Worktrees mit (gemessen 2729
+  statt 1036 Tests), womit jede Testzahl bei paralleler Arbeit wertlos wird.
+  Beide Muster gehören in das `exclude`-Array von `vitest.config.js`.
+- **JSX-IIFEs in `src/components/editor/RosterSidebar.jsx`** (Zeilen 52, 77,
+  106) — dieselbe Art Befund, die Kind-Issue 02 in `RosterEditor.jsx` behoben
+  hat: sofort aufgerufene Funktionsausdrücke sind Funktionen ohne Namen. Sie
+  werden zu benannten Funktionen bzw. kleinen Komponenten gehoben, im Schnitt
+  von `CategoryCountBadge.jsx`/`RosterValidationPanel.jsx`. Reines
+  Refactoring: Verhalten, Markup und Klassennamen bleiben identisch,
+  `RosterSidebar.test.jsx` bleibt unverändert grün.
+
 ## Acceptance Criteria
 - [ ] `npm run lint` meldet 0 Fehler **und** 0 Warnungen.
 - [ ] Jede Regel, die statt einer Behebung abgeschaltet wurde, ist in der
@@ -58,3 +81,4 @@ ohnehin verschwinden.
 - [ ] `npm test` ist grün; die Testanzahl ist nicht gesunken.
 
 ## Comments
+- 56 Lint-Warnungen auf 0 gebracht: toter Code entfernt (PlayMode-Suchfilter samt Zustand, ungenutzte Importe/Props, tote CSS-Klassen, costTypeLabel-Prop-Kette bis OptionGroup, Debug-Skript-Helfer), Mock-Signatur-Parameter auf _-Konvention umgestellt, react/only-export-components fuer src/contexts/** begruendet begrenzt, beide exhaustive-deps-Unterdrueckungen (NewRosterModal, Importer) mit Begruendung versehen. Nachtraege: vitest.config.js schliesst .claude/** und .worktrees/** aus (empirisch belegt), die drei JSX-IIFEs in RosterSidebar.jsx sind zu benannten Funktionen/Komponenten gehoben.

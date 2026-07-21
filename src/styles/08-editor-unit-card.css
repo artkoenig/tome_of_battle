@@ -1,21 +1,4 @@
 /* Editor-Einheitenkarte (.selection-node) samt Kopfzeile, Fehlerhinweis und Detailtexten. */
-/* Active Roster Selection List */
-.roster-header-editor {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px double var(--border-gold-dim);
-}
-
-.roster-editor-points {
-  font-family: var(--font-body);
-  font-size: var(--fs-subheading);
-  color: var(--text-gold);
-  font-weight: 700;
-}
-
 .selection-node {
   background-color: var(--bg-panel);
   border: 1px solid var(--border-dark);

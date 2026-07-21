@@ -96,29 +96,6 @@
     margin-left: 0 !important;
   }
 
-  /* Stack roster header editors vertically on mobile */
-  .roster-header-editor {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
-  }
-  .roster-header-editor > div:first-child {
-    width: 100% !important;
-  }
-  .roster-header-editor > div:last-child {
-    width: 100% !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    gap: 12px !important;
-  }
-  .roster-header-editor button {
-    flex: 1 !important;
-    justify-content: center !important;
-    padding: 8px 8px !important;
-    font-size: var(--fs-micro) !important;
-    gap: 4px !important;
-  }
-
   /* Responsive PlayMode structures */
   .play-header {
     flex-direction: row !important;

@@ -4,6 +4,10 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    exclude: ['**/ui.test.js', 'node_modules/**', 'dist/**'],
+    // `.claude/worktrees/` (Agenten-Harness) und `.worktrees/` (Projektkonvention)
+    // liegen innerhalb des Repos und enthalten vollstaendige Arbeitskopien. Ohne
+    // Ausschluss zaehlt jeder Lauf im Hauptcheckout die Testdateien aller offenen
+    // Worktrees mit, wodurch jede Testzahl waehrend paralleler Arbeit wertlos wird.
+    exclude: ['**/ui.test.js', 'node_modules/**', 'dist/**', '**/.claude/**', '**/.worktrees/**'],
   },
 })
