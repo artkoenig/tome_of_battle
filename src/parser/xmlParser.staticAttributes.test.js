@@ -52,6 +52,33 @@ test('catalogueLink@importRootEntries is parsed as a boolean, defaulting to fals
   expect(plain.importRootEntries).toBe(false);
 });
 
+// --- catalogue@library ---
+
+const libraryCatalogue = `<?xml version="1.0" encoding="UTF-8"?>
+<catalogue id="cat-lib" name="Shared Library" gameSystemId="sys-1" library="true" />`;
+
+const factionCatalogue = `<?xml version="1.0" encoding="UTF-8"?>
+<catalogue id="cat-faction" name="Faction" gameSystemId="sys-1" />`;
+
+test('catalogue@library is parsed as a boolean, defaulting to false', () => {
+  expect(parseCatalogueXML(libraryCatalogue).isLibrary).toBe(true);
+  expect(parseCatalogueXML(factionCatalogue).isLibrary).toBe(false);
+});
+
+test('a library catalogue keeps its shared entries for link resolution', () => {
+  const catWithSharedEntry = `<?xml version="1.0" encoding="UTF-8"?>
+<catalogue id="cat-lib" name="Shared Library" gameSystemId="sys-1" library="true">
+  <sharedSelectionEntries>
+    <selectionEntry id="shared-1" name="Bolter" type="upgrade" />
+  </sharedSelectionEntries>
+</catalogue>`;
+
+  const parsed = parseCatalogueXML(catWithSharedEntry);
+
+  expect(parsed.isLibrary).toBe(true);
+  expect(parsed.sharedSelectionEntries.map(e => e.id)).toEqual(['shared-1']);
+});
+
 // --- costType@hidden ---
 
 const gstWithHiddenCostType = `<?xml version="1.0" encoding="UTF-8"?>

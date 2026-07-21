@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAvailableForceEntries, resolveCostLimitLabel } from '../../solver/validator';
+import { getAvailableForceEntries, getPlayableCatalogues, resolveCostLimitLabel } from '../../solver/validator';
 import { DEFAULT_ROSTER_COST_LIMIT } from '../../utils/rosterDefaults';
 
 const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
@@ -22,7 +22,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
 
   const applySystemDefaults = (system) => {
     setSystemId(system?.id || '');
-    const defaultCatId = system?.catalogues?.length > 0 ? system.catalogues[0].id : '';
+    const defaultCatId = getPlayableCatalogues(system)[0]?.id ?? '';
     setCatId(defaultCatId);
     setForceEntryId(system ? defaultForceEntryId(system, defaultCatId) : '');
   };
@@ -44,6 +44,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
   if (!isOpen) return null;
 
   const activeSystem = systems.find(s => s.id === systemId);
+  const selectableCatalogues = getPlayableCatalogues(activeSystem);
   const availableForceEntries = getAvailableForceEntries(activeSystem, catId);
 
   const handleSystemChange = (id) => {
@@ -107,10 +108,10 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
                 value={catId}
                 onChange={(e) => handleCatalogueChange(e.target.value)}
                 required
-                disabled={!systemId || activeSystem?.catalogues?.length === 0}
+                disabled={!systemId || selectableCatalogues.length === 0}
               >
                 <option value="" disabled>Fraktion auswählen...</option>
-                {activeSystem?.catalogues?.map(cat => (
+                {selectableCatalogues.map(cat => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>
