@@ -4,10 +4,8 @@ import { BookOpen, FolderOpen, WifiOff, Download, Settings } from 'lucide-react'
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
 import PlayMode from './components/PlayMode';
-import NewRosterModal from './components/editor/NewRosterModal';
 import RosterDashboard from './components/RosterDashboard';
-import SettingsDialog from './components/SettingsDialog';
-import ConfirmationDialog from './components/editor/ConfirmationDialog';
+import AppDialogs from './components/AppDialogs';
 import PreviewBadge from './components/PreviewBadge';
 import { SettingsProvider } from './contexts/SettingsContext';
 
@@ -198,33 +196,17 @@ export default function App() {
         )}
       </main>
 
-      {/* Settings Dialog */}
-      <SettingsDialog
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
-
-      {/* New Roster Modal */}
-      <NewRosterModal
-        isOpen={isNewRosterModalOpen}
-        onClose={closeNewRosterModal}
-        onCreate={createRoster}
+      {/* Root-gehostete Dialoge (Einstellungen, Neues Roster, Lösch-Bestätigung) */}
+      <AppDialogs
+        isSettingsOpen={isSettingsOpen}
+        onCloseSettings={() => setIsSettingsOpen(false)}
+        isNewRosterModalOpen={isNewRosterModalOpen}
+        onCloseNewRosterModal={closeNewRosterModal}
+        onCreateRoster={createRoster}
         systems={systems}
-      />
-
-      {/* Confirmation Dialog for deleting Roster */}
-      <ConfirmationDialog
-        isOpen={!!rosterToDelete}
-        onClose={cancelRosterDeletion}
-        onConfirm={confirmRosterDeletion}
-        title="Armeeliste löschen"
-        message={
-          <>
-            Möchtest du die Armeeliste <strong>{rosterToDelete?.name}</strong> wirklich löschen?
-          </>
-        }
-        confirmLabel="Löschen"
-        isDanger={true}
+        rosterToDelete={rosterToDelete}
+        onCancelRosterDeletion={cancelRosterDeletion}
+        onConfirmRosterDeletion={confirmRosterDeletion}
       />
 
       {/* Mobile Bottom Navigation */}
