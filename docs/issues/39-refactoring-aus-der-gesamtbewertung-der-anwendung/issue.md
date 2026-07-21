@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -76,3 +76,4 @@ bearbeitet werden.
       sie als ADR dokumentiert
 
 ## Comments
+- Aufgeloest am 2026-07-21. Alle 13 Kind-Issues resolved. Vier-Achsen-Pruefung zweimal durchlaufen: Durchgang 1 ergab 6 Standards-Funde und 2 Doku-Funde; die Doku-Funde (ADR-0002) wurden korrigiert, die Standards-Funde 1-4 als Kind-Issue 13 behoben, die Funde 5 und 6 als eigene Haupt-Issues 40 und 41 abgetrennt. Durchgang 2: Tor besteht (lint exit 0), Spezifikation 0 Funde, Tests gruen (110 Dateien, 995 Tests, plus Puppeteer-E2E), Standards 6 Funde und Doku 3 Funde — saemtlich tiefere Schichten bestehender Befunde beziehungsweise ungenaue Abschlussnotizen in docs/issues, keine Regression. Sie sind bewusst nicht mehr in diesen Zweig gezogen worden und stehen zur Nachverfolgung aus. Kein Versions-Bump, da Type refactor.
