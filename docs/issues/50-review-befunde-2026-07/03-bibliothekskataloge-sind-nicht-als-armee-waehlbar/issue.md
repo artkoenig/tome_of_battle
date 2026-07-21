@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -24,3 +24,4 @@ nötig — sie sollen nur nicht mehr als Armee angeboten werden.
 - [ ] Tests decken beide Fälle ab: gekennzeichnet und nicht gekennzeichnet
 
 ## Comments
+- parseCatalogueXML liest catalogue@library als isLibrary ins Modell; neuer Selektor getPlayableCatalogues filtert Bibliothekskataloge aus der Fraktionsauswahl im NewRosterModal. Kataloge bleiben vollstaendig im System, damit geteilte Eintraege weiterhin aufgeloest werden.

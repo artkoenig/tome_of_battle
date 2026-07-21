@@ -586,6 +586,9 @@ export function parseCatalogueXML(xmlText) {
     id: root.getAttribute(AttributeName.ID),
     name: getName(root),
     revision: getRevision(root),
+    // A library catalogue only supplies shared building blocks that other catalogues
+    // link to; it is not a playable army (Catalogue.xsd: catalogue@library).
+    isLibrary: getBooleanAttribute(root, AttributeName.LIBRARY),
     gameSystemId: root.getAttribute(AttributeName.GAME_SYSTEM_ID),
     gameSystemRevision: root.getAttribute(AttributeName.GAME_SYSTEM_REVISION),
     selectionEntries,
