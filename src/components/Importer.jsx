@@ -2,217 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Trash2, FileText, CheckCircle2, ShieldAlert, Edit, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { extractZipFiles } from '../parser/zipExtractor';
-import { processImportedData } from '../parser/xmlParser';
-import { collectSchemaWarnings } from '../parser/importSchemaGate';
-import { getAllSystems, saveSystem, deleteSystem } from '../db/database';
+import { getAllSystems, deleteSystem } from '../db/database';
 import ConfirmationDialog from './editor/ConfirmationDialog';
+import { fetchCatalogText, buildRawFileUrl } from '../db/catalogUpdate';
+import { loadAvailableSystemsFromSources } from '../db/catalogSourceIndex';
+import { completeSystemImport, SYSTEM_IMPORT_STATUS } from '../db/systemImport';
 import {
-  loadCatalogIndex,
-  fetchCatalogText,
-  buildRawFileUrl,
-  deriveRevisionState,
-  CATALOG_SOURCES,
-  REVISION_STATE,
-} from '../db/catalogUpdate';
-
-// Advisory schema warnings are logged to the console rather than shown in the UI
-// (ADR 0016, Revision 2026-07-18): rendering them in the Importer caused a visible
-// flash on first import, between the loading overlay and the Heerlager view. This
-// mirrors the console-only pattern in `updateSystemFromCatalogIndex`.
-function logSchemaWarnings(warnings) {
-  if (warnings.length === 0) return;
-  console.warn(
-    'Schema advisory for imported game data:',
-    warnings.map((warning) => warning.message)
-  );
-}
-
-const REVISION_LABEL_PREFIX = 'Rev';
-const REVISION_SEGMENT_SEPARATOR = ' · ';
-const NEW_STATE_TEXT = 'neu';
-const CURRENT_STATE_TEXT = 'aktuell';
-const UPDATE_AVAILABLE_TEXT = 'Update verfügbar';
-const LOCAL_REVISION_PREFIX = 'lokal';
-const UNKNOWN_LOCAL_REVISION_TEXT = 'unbekannt';
-
-// Visual tone of a revision status per ADR 0014's state matrix, mapped to the theme's
-// helper classes: a subtle secondary text, the gold accent that flags an available
-// update, and the neutral default for a self-uploaded (higher) local revision.
-const REVISION_TONE = {
-  SUBTLE: 'text-dim',
-  ACCENT: 'text-gold',
-  NEUTRAL: '',
-};
-
-/**
- * The `revision` from a catpkg index entry is an optional integer update counter
- * (see ADR 0014). Older or incomplete indices may omit it, so a non-numeric value
- * yields no label rather than an error.
- */
-function formatRevisionLabel(revision) {
-  if (typeof revision !== 'number') return null;
-  return `${REVISION_LABEL_PREFIX} ${revision}`;
-}
-
-function formatLocalRevisionSegment(localFile) {
-  const localRevision = localFile?.revision;
-  const value = typeof localRevision === 'number' ? localRevision : UNKNOWN_LOCAL_REVISION_TEXT;
-  return `${LOCAL_REVISION_PREFIX} ${value}`;
-}
-
-// Per-state presentation (suffix segments appended after the available revision, plus
-// tone). Keyed by state so a new state is added here rather than in a growing switch.
-const REVISION_STATE_PRESENTATION = {
-  [REVISION_STATE.NEW]: () => ({ segments: [NEW_STATE_TEXT], tone: REVISION_TONE.SUBTLE }),
-  [REVISION_STATE.CURRENT]: () => ({ segments: [CURRENT_STATE_TEXT], tone: REVISION_TONE.SUBTLE }),
-  [REVISION_STATE.OUTDATED]: (localFile) => ({
-    segments: [formatLocalRevisionSegment(localFile), UPDATE_AVAILABLE_TEXT],
-    tone: REVISION_TONE.ACCENT,
-  }),
-  [REVISION_STATE.AHEAD]: (localFile) => ({
-    segments: [formatLocalRevisionSegment(localFile)],
-    tone: REVISION_TONE.NEUTRAL,
-  }),
-};
-
-/**
- * Builds the full revision display for one catalog file, comparing the available
- * revision against the locally stored file (or `null` when it is not imported). Returns
- * `{ text, tone }` per ADR 0014's state matrix, or `null` when no available revision is
- * known (nothing to show).
- */
-function buildRevisionDisplay(availableRevision, localFile) {
-  const availableLabel = formatRevisionLabel(availableRevision);
-  if (availableLabel === null) return null;
-
-  const state = deriveRevisionState(availableRevision, localFile);
-  const { segments, tone } = REVISION_STATE_PRESENTATION[state](localFile);
-  return {
-    text: [availableLabel, ...segments].join(REVISION_SEGMENT_SEPARATOR),
-    tone,
-  };
-}
-
-function revisionLabelClassName(tone) {
-  return ['bundle-revision-label', tone].filter(Boolean).join(' ');
-}
-
-// A catalogueLink pulls shared entries from another (library) catalogue into the
-// referencing one. Deselecting that target while keeping a catalogue that links to it
-// would silently drop those shared entries on the next roster resolution, so the bundle
-// import guards against a selection that omits such a dependency.
-const MISSING_LIBRARY_DEPENDENCY_MESSAGE = {
-  headline: 'Import abgebrochen: Ein ausgewählter Katalog verweist auf einen nicht ausgewählten Bibliothekskatalog.',
-  instruction: 'Bitte wähle folgende Kataloge zusätzlich aus, um einen vollständigen Import sicherzustellen:',
-  requiredByLabel: 'benötigt von',
-  itemSeparator: '; ',
-  referenceSeparator: ', ',
-};
-
-/**
- * Finds catalogueLinks in the loaded catalogues whose target is a real, selectable
- * catalogue that the user left out of the current selection. Such a target is a shared
- * (library) catalogue the referencing catalogue depends on; importing without it yields a
- * silently incomplete dataset. Targets that are already selected, or that are not part of
- * the available catalogues at all, are ignored.
- *
- * @param {{ id: string, name?: string, catalogueLinks?: { targetId?: string, name?: string }[] }[]} loadedCatalogues
- *   the fully parsed catalogues of the current selection (their catalogueLinks are read).
- * @param {Set<string>} selectedCatalogueIds ids the user chose to import.
- * @param {{ id: string, name?: string }[]} availableCatalogues every catalogue the user
- *   could have selected (from the catalog index).
- * @returns {{ id: string, name: string, requiredBy: string[] }[]} one entry per missing
- *   dependency, deduplicated by target id.
- */
-export function findMissingLibraryDependencies(loadedCatalogues, selectedCatalogueIds, availableCatalogues) {
-  const availableCatalogueById = new Map(availableCatalogues.map(catalogue => [catalogue.id, catalogue]));
-  const missingDependencyById = new Map();
-
-  for (const loadedCatalogue of loadedCatalogues ?? []) {
-    for (const catalogueLink of loadedCatalogue.catalogueLinks ?? []) {
-      const targetId = catalogueLink.targetId;
-      if (!targetId || selectedCatalogueIds.has(targetId)) continue;
-
-      const availableTarget = availableCatalogueById.get(targetId);
-      if (!availableTarget) continue;
-
-      const dependency = missingDependencyById.get(targetId) ?? {
-        id: targetId,
-        name: availableTarget.name ?? catalogueLink.name ?? targetId,
-        requiredBy: [],
-      };
-      const referencingName = loadedCatalogue.name ?? loadedCatalogue.id;
-      if (referencingName && !dependency.requiredBy.includes(referencingName)) {
-        dependency.requiredBy.push(referencingName);
-      }
-      missingDependencyById.set(targetId, dependency);
-    }
-  }
-
-  return [...missingDependencyById.values()];
-}
-
-function quoteCatalogueName(value) {
-  return `„${value}"`;
-}
-
-function buildMissingLibraryDependencyMessage(missingDependencies) {
-  const { headline, instruction, requiredByLabel, itemSeparator, referenceSeparator } =
-    MISSING_LIBRARY_DEPENDENCY_MESSAGE;
-  const details = missingDependencies
-    .map(dependency => {
-      const quotedName = quoteCatalogueName(dependency.name);
-      if (dependency.requiredBy.length === 0) return quotedName;
-      const references = dependency.requiredBy.map(quoteCatalogueName).join(referenceSeparator);
-      return `${quotedName} (${requiredByLabel} ${references})`;
-    })
-    .join(itemSeparator);
-  return `${headline} ${instruction} ${details}.`;
-}
-
-export function transformIndexToSystems(index) {
-  if (!index?.repositoryFiles) return [];
-
-  const gsType = 'gamesystem';
-  const catType = 'catalogue';
-
-  const gameSystemEntries = index.repositoryFiles.filter(
-    entry => (entry.type || '').toLowerCase() === gsType
-  );
-  const catalogueEntries = index.repositoryFiles.filter(
-    entry => (entry.type || '').toLowerCase() === catType
-  );
-
-  return gameSystemEntries.map(gs => ({
-    id: gs.id,
-    name: gs.name,
-    gst: {
-      id: gs.id,
-      name: gs.name,
-      // `path` is the real repository file name; the name+extension form is only a
-      // fallback for a legacy index without it (see catalogUpdate.rawFileName).
-      fileName: gs.path ?? `${gs.name}.gst`,
-      revision: gs.revision
-    },
-    catalogues: catalogueEntries.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        fileName: cat.path ?? `${cat.name}.cat`,
-        revision: cat.revision
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name))
-  }));
-}
-
-/**
- * Tags every system parsed from one source's index with that source's `rawBaseUrl`, so
- * the import later fetches its files from the right fork (ADR 0018). No display label is
- * stored or derived: the system is shown under its own catalog `name`, straight from the
- * parsed index.
- */
-function withSourceRawBaseUrl(systems, rawBaseUrl) {
-  return systems.map(system => ({ ...system, rawBaseUrl }));
-}
+  catalogueDirectoryFromIndex,
+  catalogueDirectoryFromLinks,
+} from '../parser/libraryDependencies';
+import { buildRevisionDisplay, revisionLabelClassName } from './importer/revisionDisplay';
+import {
+  buildImportSuccessMessage,
+  buildMissingLibraryDependencyMessage,
+} from './importer/importMessages';
 
 /**
  * A selection map that marks every catalogue of a system as selected. Used to preselect
@@ -224,31 +27,6 @@ function buildAllSelectedCats(system) {
     selected[cat.id] = true;
   });
   return selected;
-}
-
-/**
- * Loads and merges the available systems of every configured catalog source into one
- * flat list (ADR 0018 — no extra selection step; both systems share the one dropdown).
- * A source whose index is unreachable contributes nothing rather than failing the whole
- * list, so one source being offline never hides the other. `anyIndexReachable` stays
- * true as long as at least one source's index loaded (even if it held no systems), so
- * the caller only reports an outage when every source is unreachable — not when a
- * reachable index is simply empty.
- *
- * @returns {Promise<{ systems: Array, anyIndexReachable: boolean }>}
- */
-export async function loadAvailableSystemsFromSources(fetchText) {
-  const perSource = await Promise.all(
-    CATALOG_SOURCES.map(async (source) => {
-      const index = await loadCatalogIndex(fetchText, source.indexUrl);
-      const systems = index ? withSourceRawBaseUrl(transformIndexToSystems(index), source.rawBaseUrl) : [];
-      return { reachable: index !== null, systems };
-    })
-  );
-  return {
-    systems: perSource.flatMap(result => result.systems),
-    anyIndexReachable: perSource.some(result => result.reachable),
-  };
 }
 
 export default function Importer({ onSystemImported, showAsEmptyState = false }) {
@@ -318,6 +96,26 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     setSelectedCats(nextCats);
   };
 
+  /**
+   * Runs the shared import completion for raw XML files that either import path has
+   * gathered, and reflects its outcome in the UI. Both paths therefore share the schema
+   * advisory, the library-dependency guard, persistence and the success confirmation.
+   */
+  const finishImport = async (gstFiles, catFiles, catalogueDirectory) => {
+    const result = await completeSystemImport({ gstFiles, catFiles, catalogueDirectory });
+
+    if (result.status === SYSTEM_IMPORT_STATUS.MISSING_LIBRARY_DEPENDENCIES) {
+      setError(buildMissingLibraryDependencyMessage(result.missingDependencies));
+      return;
+    }
+
+    setSuccessMsg(buildImportSuccessMessage(result.system));
+    loadSystems();
+    // Await the parent so it has already switched to the Heerlager view before
+    // `finally` clears `loading` and unmounts this Importer — no visible flash.
+    if (onSystemImported) await onSystemImported();
+  };
+
   const handleImportBundle = async () => {
     const system = availableSystems.find(s => s.id === selectedBundleSysId);
     if (!system) return;
@@ -343,34 +141,9 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
         return { name: cat.fileName, content: catText };
       }));
 
-      logSchemaWarnings(await collectSchemaWarnings(gstFiles, catFiles));
-
-      const systemData = processImportedData(gstFiles, catFiles);
-
-      const selectedCatalogueIds = new Set(selectedCatList.map(cat => cat.id));
-      const missingLibraryDependencies = findMissingLibraryDependencies(
-        systemData.catalogues,
-        selectedCatalogueIds,
-        system.catalogues
-      );
-      if (missingLibraryDependencies.length > 0) {
-        setError(buildMissingLibraryDependencyMessage(missingLibraryDependencies));
-        return;
-      }
-
-      systemData.rawXmls = {
-        gst: gstFiles,
-        cat: catFiles
-      };
-
-      await deleteSystem(systemData.id);
-      await saveSystem(systemData);
-
-      setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
-      loadSystems();
-      // Await the parent so it has already switched to the Heerlager view before
-      // `finally` clears `loading` and unmounts this Importer — no visible flash.
-      if (onSystemImported) await onSystemImported();
+      // The catalog index knows every selectable catalogue, so a link target it does not
+      // list is broken upstream rather than a selection the user could complete.
+      await finishImport(gstFiles, catFiles, catalogueDirectoryFromIndex(system.catalogues));
     } catch (e) {
       console.error(e);
       setError(`Fehler beim Importieren der Spieldaten: ${e.message}`);
@@ -397,19 +170,9 @@ export default function Importer({ onSystemImported, showAsEmptyState = false })
     setLoading(true);
     try {
       const { gstFiles, catFiles } = await extractZipFiles(file);
-      logSchemaWarnings(await collectSchemaWarnings(gstFiles, catFiles));
-      const systemData = processImportedData(gstFiles, catFiles);
-      systemData.rawXmls = {
-        gst: gstFiles,
-        cat: catFiles
-      };
-      await deleteSystem(systemData.id);
-      await saveSystem(systemData);
-      setSuccessMsg(`Das System "${systemData.name}" mit ${systemData.catalogues.length} Katalogen wurde erfolgreich importiert!`);
-      loadSystems();
-      // Await the parent so it has already switched to the Heerlager view before
-      // `finally` clears `loading` and unmounts this Importer — no visible flash.
-      if (onSystemImported) await onSystemImported();
+      // An uploaded archive comes with no index bounding its catalogues, so every link
+      // target missing from the archive is one the user could add to it.
+      await finishImport(gstFiles, catFiles, catalogueDirectoryFromLinks());
     } catch (e) {
       console.error(e);
       setError(`Fehler beim Verarbeiten der Datei: ${e.message}`);

@@ -54,8 +54,10 @@ export function findCatalogSourceForSystemId(gameSystemId) {
 }
 
 // catpkg `type` values as emitted by BSData/publish-catpkg (lower case).
-const FILE_TYPE_GAME_SYSTEM = 'gamesystem';
-const FILE_TYPE_CATALOGUE = 'catalogue';
+export const CATALOG_FILE_TYPE = Object.freeze({
+  GAME_SYSTEM: 'gamesystem',
+  CATALOGUE: 'catalogue',
+});
 const GAME_SYSTEM_FILE_EXTENSION = '.gst';
 const CATALOGUE_FILE_EXTENSION = '.cat';
 
@@ -63,7 +65,7 @@ const CATALOGUE_FILE_EXTENSION = '.cat';
  * The four states a catalog file can be in when its available (remote) revision is
  * compared to the locally stored one. Used to annotate the import selection list.
  * Values are stable, language-neutral identifiers — display text lives separately in
- * Importer.jsx, not here.
+ * `src/components/importer/revisionDisplay.js`, not here.
  */
 export const REVISION_STATE = {
   NEW: 'new',
@@ -76,9 +78,17 @@ function normalizedType(indexEntry) {
   return (indexEntry.type || '').toLowerCase();
 }
 
-function findIndexEntry(index, type, id) {
+/**
+ * Every entry of a parsed catpkg index that carries the given `CATALOG_FILE_TYPE`.
+ * A missing or malformed index yields an empty list rather than an error.
+ */
+export function listIndexEntriesOfType(index, fileType) {
   const files = index?.repositoryFiles ?? [];
-  return files.find((entry) => normalizedType(entry) === type && entry.id === id) ?? null;
+  return files.filter((entry) => normalizedType(entry) === fileType);
+}
+
+function findIndexEntry(index, type, id) {
+  return listIndexEntriesOfType(index, type).find((entry) => entry.id === id) ?? null;
 }
 
 /**
@@ -124,10 +134,10 @@ export function deriveRevisionState(availableRevision, localFile) {
  * The name+extension reconstruction remains only as a fallback for a legacy index
  * that predates the `path` field.
  */
-function rawFileName(indexEntry) {
+export function rawFileName(indexEntry) {
   if (indexEntry.path) return indexEntry.path;
   const extension =
-    normalizedType(indexEntry) === FILE_TYPE_GAME_SYSTEM
+    normalizedType(indexEntry) === CATALOG_FILE_TYPE.GAME_SYSTEM
       ? GAME_SYSTEM_FILE_EXTENSION
       : CATALOGUE_FILE_EXTENSION;
   return `${indexEntry.name}${extension}`;
@@ -146,18 +156,18 @@ export function buildRawFileUrl(rawBaseUrl, fileName) {
  * @returns {Array<{type: string, fileName: string}>}
  */
 export function findOutdatedCatalogFiles(index, system) {
-  const gameSystemEntry = findIndexEntry(index, FILE_TYPE_GAME_SYSTEM, system.id);
+  const gameSystemEntry = findIndexEntry(index, CATALOG_FILE_TYPE.GAME_SYSTEM, system.id);
   if (!gameSystemEntry) return [];
 
   const outdatedFiles = [];
   if (isOutdated(gameSystemEntry.revision, system.revision)) {
-    outdatedFiles.push({ type: FILE_TYPE_GAME_SYSTEM, fileName: rawFileName(gameSystemEntry) });
+    outdatedFiles.push({ type: CATALOG_FILE_TYPE.GAME_SYSTEM, fileName: rawFileName(gameSystemEntry) });
   }
 
   for (const catalogue of system.catalogues ?? []) {
-    const catalogueEntry = findIndexEntry(index, FILE_TYPE_CATALOGUE, catalogue.id);
+    const catalogueEntry = findIndexEntry(index, CATALOG_FILE_TYPE.CATALOGUE, catalogue.id);
     if (catalogueEntry && isOutdated(catalogueEntry.revision, catalogue.revision)) {
-      outdatedFiles.push({ type: FILE_TYPE_CATALOGUE, fileName: rawFileName(catalogueEntry) });
+      outdatedFiles.push({ type: CATALOG_FILE_TYPE.CATALOGUE, fileName: rawFileName(catalogueEntry) });
     }
   }
 
@@ -179,7 +189,7 @@ async function downloadOutdatedRawXmls(rawXmls, outdatedFiles, fetchText, rawBas
 
   for (const file of outdatedFiles) {
     const content = await fetchText(buildRawFileUrl(rawBaseUrl, file.fileName));
-    if (file.type === FILE_TYPE_GAME_SYSTEM) {
+    if (file.type === CATALOG_FILE_TYPE.GAME_SYSTEM) {
       // A system has exactly one game system file; replace it wholesale so the
       // update always takes effect regardless of the stored file's name.
       gst = [{ name: file.fileName, content }];
