@@ -236,6 +236,69 @@ describe('Roster Serialization & Deserialization', () => {
     expect(selection.costs).toBeUndefined();
   });
 
+  test('imports nested sub-forces by flattening them into roster-level siblings', () => {
+    const xmlWithNestedForces = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="roster-nested-test" name="Nested Force Army" gameSystemId="system-id-123" gameSystemRevision="1" gameSystemName="Warhammer Fantasy 6th Edition" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-main" name="Standard" entryId="force-entry-id-1" catalogueId="cat-tomb-kings" catalogueRevision="1" catalogueName="Tomb Kings">
+      <selections>
+        <selection id="sel-main" name="Tomb King" entryId="weapon-gw-id" number="1" type="unit" />
+      </selections>
+      <forces>
+        <force id="force-sub" name="Detachment" entryId="force-entry-id-1" catalogueId="cat-tomb-kings" catalogueRevision="1" catalogueName="Tomb Kings">
+          <selections>
+            <selection id="sel-sub" name="Skeleton Warriors" entryId="crew-id" number="20" type="unit" />
+          </selections>
+          <forces>
+            <force id="force-sub-sub" name="Sub Detachment" entryId="force-entry-id-1" catalogueId="cat-tomb-kings" catalogueRevision="1" catalogueName="Tomb Kings">
+              <selections>
+                <selection id="sel-sub-sub" name="Orc Bully" entryId="bully-id" number="1" type="upgrade" />
+              </selections>
+            </force>
+          </forces>
+        </force>
+      </forces>
+    </force>
+  </forces>
+</roster>`;
+
+    const imported = importRosterFromXml(xmlWithNestedForces, mockSystems);
+
+    // Every force of the nesting survives, in document order: parent before its children.
+    expect(imported.forces.length).toBe(3);
+    expect(imported.forces.map(force => force.selections[0].name)).toEqual([
+      'Tomb King', 'Skeleton Warriors', 'Orc Bully'
+    ]);
+    // Each flattened force keeps its own catalogue and force-entry reference.
+    imported.forces.forEach(force => {
+      expect(force.catalogueId).toBe('cat-tomb-kings');
+      expect(force.forceEntryId).toBe('force-entry-id-1');
+    });
+    // Fresh ids, so the flattened siblings cannot clash.
+    expect(new Set(imported.forces.map(force => force.id)).size).toBe(3);
+  });
+
+  test('leaves a flat roster untouched by the sub-force flattening (import → export round trip)', () => {
+    // Freshly generated UUIDs make a literal comparison meaningless, so ids are stripped.
+    const withoutIds = (roster) => ({
+      ...roster,
+      id: undefined,
+      forces: roster.forces.map(force => ({
+        ...force,
+        id: undefined,
+        selections: force.selections.map(function stripSelectionIds(selection) {
+          return { ...selection, id: undefined, selections: selection.selections.map(stripSelectionIds) };
+        })
+      }))
+    });
+
+    const firstImport = importRosterFromXml(exportRosterToXml(mockRoster, mockSystems[0]), mockSystems);
+    expect(firstImport.forces.length).toBe(1);
+
+    const secondImport = importRosterFromXml(exportRosterToXml(firstImport, mockSystems[0]), mockSystems);
+    expect(withoutIds(secondImport)).toEqual(withoutIds(firstImport));
+  });
+
   test('splits war machine/chariot selections on import when quantity > 1', () => {
     const xmlWithWarMachine = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <roster id="roster-split-test" name="Split Test Army" gameSystemId="system-id-123" gameSystemRevision="1" gameSystemName="Warhammer Fantasy 6th Edition" xmlns="http://www.battlescribe.net/schema/rosterSchema">

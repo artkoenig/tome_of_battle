@@ -518,8 +518,11 @@ function resolveEntryConstraintCount({ con, selection, parentSelection, entry, e
     return countEntryInstances(selectionCounts, { entry, entryId });
   }
   if (con.scope === ConstraintScope.FORCE) {
-    // includeChildForces weitet eine force-bezogene Zählung auf das ganze Roster aus
-    // (Kind-Kontingente liegen im Rostermodell als Geschwister der Wurzel).
+    // includeChildForces meint laut BSData das Kontingent samt seiner Nachfahren.
+    // Der .ros-Import legt verschachtelte Kontingente als Geschwister auf
+    // Rosterebene flach (ADR-0011 §5), sodass die Nachfahren-Beziehung im
+    // Rostermodell nicht überlebt — das ganze Roster ist die nächstliegende
+    // verfügbare Obermenge.
     const scopeCounts = con.includeChildForces
       ? selectionCounts
       : (force ? forceSelectionCounts[force.id] || {} : {});
