@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -57,3 +57,4 @@ Funktionen — die I/O-Seite wird injiziert, wie es `scripts/versioning.js` und
 - [ ] `npm run lint`, `npm run typecheck` und `npx vitest run` sind grün.
 
 ## Comments
+- Drei TS2345-Typfehler in coverage.js behoben (Akkumulator-Typedef auf [number, number]-Tupel gezogen, Logik unveraendert). Sechs Auswertungs-Seams mit Vitest-Schwesterdateien abgedeckt: parseIssueMarkdown, collectOpenIssues (inkl. Regel 'auf main geschlossen => nicht offen' bei injiziertem git-Zugriff), aggregateCoverage, findLongFunctions, findCycles, classifyGate (inkl. 'nicht angelaufen' bei Umgebungsabbruch). 61 neue Tests, ohne git/vitest/Netzzugriff. lint, typecheck und vitest run gruen.
