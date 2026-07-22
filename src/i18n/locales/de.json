@@ -217,6 +217,11 @@
   "rosterList.systemMissingExport": "Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.",
   "rosterList.exportError": "Fehler beim Exportieren: {message}",
   "rosterList.exportFailed": "Export fehlgeschlagen.",
+  "rosterList.createFailed": "Fehler beim Erstellen der Liste.",
+  "rosterList.renameFailed": "Die Liste konnte nicht umbenannt werden.",
+  "rosterList.deleteFailed": "Die Liste konnte nicht gelöscht werden.",
+  "appData.loadFailed": "Die gespeicherten Spielsysteme und Listen konnten nicht geladen werden.",
+  "appData.refreshFailed": "Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: {systems}",
 
   "preview.title": "Dies ist die Preproduction-Instanz, nicht die Live-App."
 }

@@ -3,13 +3,14 @@ import { getAllSystems, getAllRosters } from '../db/database';
 import { runSystemMigrations } from '../db/migrations';
 import { fetchCatalogText } from '../db/catalogUpdate';
 import { VIEWS } from '../constants/views';
+import { t } from '../i18n/i18nStore';
 
 /**
  * Meldung des initialen Ladevorgangs. Er läuft ohne Backend und ohne Konsole am
  * Spieltisch — ein Fehlschlag muss den Nutzer über den Toast-Kanal (ADR 0010)
  * erreichen, sonst ist er von einem Erfolg nicht zu unterscheiden.
  */
-const LOAD_DATA_ERROR = 'Die gespeicherten Spielsysteme und Listen konnten nicht geladen werden.';
+const LOAD_DATA_ERROR_KEY = 'appData.loadFailed';
 
 /**
  * Kapselt das Laden der App-Daten: initiales Lesen der Systeme und Roster aus
@@ -53,7 +54,7 @@ export default function useAppData({ showToast, navigate }) {
       const { systems: refreshedSystems, failures } = await runSystemMigrations(dbSystems, fetchCatalogText);
       if (failures.length > 0) {
         showToast(
-          `Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: ${failures.map(f => f.name).join(', ')}`,
+          t('appData.refreshFailed', { systems: failures.map(f => f.name).join(', ') }),
           'error'
         );
       }
@@ -70,7 +71,7 @@ export default function useAppData({ showToast, navigate }) {
   // ohne Meldung wäre sie von "noch keine Daten importiert" nicht zu unterscheiden.
   const reportLoadFailure = (error) => {
     console.error("Error loading index data:", error);
-    showToast(LOAD_DATA_ERROR, 'error');
+    showToast(t(LOAD_DATA_ERROR_KEY), 'error');
     setIsDataLoaded(true);
   };
 

@@ -217,6 +217,11 @@
   "rosterList.systemMissingExport": "The associated game system is missing. The export cannot be performed.",
   "rosterList.exportError": "Export error: {message}",
   "rosterList.exportFailed": "Export failed.",
+  "rosterList.createFailed": "Failed to create the roster.",
+  "rosterList.renameFailed": "The roster could not be renamed.",
+  "rosterList.deleteFailed": "The roster could not be deleted.",
+  "appData.loadFailed": "The stored game systems and rosters could not be loaded.",
+  "appData.refreshFailed": "Could not update the following systems; the previous data remains in use: {systems}",
 
   "preview.title": "This is the preproduction instance, not the live app."
 }

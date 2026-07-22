@@ -17,10 +17,10 @@ import { t } from '../i18n/i18nStore';
  * am Spieltisch — ein Fehlschlag muss den Nutzer über den Toast-Kanal (ADR 0010)
  * erreichen, sonst ist er von einem Erfolg nicht zu unterscheiden.
  */
-const ERROR_MESSAGE = Object.freeze({
-  createRoster: 'Fehler beim Erstellen der Liste.',
-  renameRoster: 'Die Liste konnte nicht umbenannt werden.',
-  deleteRoster: 'Die Liste konnte nicht gelöscht werden.',
+const ERROR_MESSAGE_KEY = Object.freeze({
+  createRoster: 'rosterList.createFailed',
+  renameRoster: 'rosterList.renameFailed',
+  deleteRoster: 'rosterList.deleteFailed',
 });
 
 /**
@@ -79,7 +79,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
       navigate(VIEWS.BUILDER, roster.id);
     } catch (err) {
       console.error(err);
-      showToast(ERROR_MESSAGE.createRoster, 'error');
+      showToast(t(ERROR_MESSAGE_KEY.createRoster), 'error');
     }
   };
 
@@ -122,7 +122,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
       reloadData();
     } catch (err) {
       console.error(err);
-      showToast(ERROR_MESSAGE.deleteRoster, 'error');
+      showToast(t(ERROR_MESSAGE_KEY.deleteRoster), 'error');
     }
   };
 
@@ -134,7 +134,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
       reloadData();
     } catch (err) {
       console.error(err);
-      showToast(ERROR_MESSAGE.renameRoster, 'error');
+      showToast(t(ERROR_MESSAGE_KEY.renameRoster), 'error');
     }
   };
 
