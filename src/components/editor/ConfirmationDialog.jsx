@@ -2,6 +2,17 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from '../../i18n/useTranslation';
 
+/**
+ * @param {object} props
+ * @param {boolean} props.isOpen
+ * @param {() => void} props.onClose
+ * @param {() => void} props.onConfirm
+ * @param {string} props.title
+ * @param {import('react').ReactNode} props.message
+ * @param {string} [props.confirmLabel] Fallback: übersetztes `common.confirm`.
+ * @param {string} [props.cancelLabel] Fallback: übersetztes `common.cancel`.
+ * @param {boolean} [props.isDanger]
+ */
 export default function ConfirmationDialog({
   isOpen,
   onClose,

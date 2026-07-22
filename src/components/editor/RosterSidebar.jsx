@@ -4,6 +4,7 @@ import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers,
 import CategoryCountBadge from './CategoryCountBadge';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 import { useTranslation } from '../../i18n/useTranslation';
+import { formatValidationError } from '../../i18n/formatValidationError';
 
 // Icon/CSS-Klasse je Schweregrad einer Validierungsmeldung — nur `error`
 // blockiert das Roster (siehe hasBlockingViolations); `warning`/`info`
@@ -160,7 +161,7 @@ export default function RosterSidebar({
                 <div key={idx} className={`validation-error-item ${itemClass}`}>
                   <div className="sidebar-violation-body">
                     <Icon size={14} className="sidebar-violation-icon" />
-                    <span>{err.message}</span>
+                    <span>{formatValidationError(err, t)}</span>
                   </div>
                 </div>
               );
