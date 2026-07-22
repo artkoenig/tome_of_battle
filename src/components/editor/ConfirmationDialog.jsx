@@ -23,8 +23,10 @@ export default function ConfirmationDialog({
           <h3 className={`font-serif ${isDanger ? 'text-danger' : 'text-gold'}`}>{title}</h3>
           <button
             type="button"
-            className="modal-close modal-close--flush"
+            className="dialog-close-btn"
             onClick={onClose}
+            aria-label="Schließen"
+            title="Schließen"
           >
             <X size={18} />
           </button>

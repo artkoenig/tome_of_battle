@@ -21,7 +21,7 @@ export default function SettingsDialog({ isOpen, onClose }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="text-gold font-serif">Einstellungen</h3>
-          <button type="button" className="modal-close" onClick={onClose} aria-label="Schließen">
+          <button type="button" className="dialog-close-btn" onClick={onClose} aria-label="Schließen" title="Schließen">
             <X size={18} />
           </button>
         </div>

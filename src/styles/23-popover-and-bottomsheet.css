@@ -127,23 +127,6 @@
   letter-spacing: 0.05em;
 }
 
-.gothic-bottomsheet.desktop-modal .bottomsheet-close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
-  transition: background-color 0.2s, color 0.2s;
-}
-.gothic-bottomsheet.desktop-modal .bottomsheet-close-btn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--text-gold);
-}
-
 .popover-list {
   display: flex;
   flex-direction: column;

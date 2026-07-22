@@ -90,23 +90,6 @@
   color: var(--text-gold);
 }
 
-.modal-close {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  cursor: pointer;
-  box-shadow: none;
-  padding: 4px;
-}
-
-/* Close button that sits flush in the corner, with the icon optically centred. */
-.modal-close--flush {
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .modal-content--danger {
   border-color: var(--color-danger);
 }
@@ -140,13 +123,6 @@
   display: flex;
   flex-direction: column;
 }
-.modal-close:hover {
-  color: var(--text-gold);
-  background: none;
-  box-shadow: none;
-  transform: none;
-}
-
 .modal-body {
   margin-bottom: 24px;
 }

@@ -94,6 +94,26 @@ button:disabled {
   font-size: var(--fs-micro);
 }
 
+/* Shared circular icon-only close button for modal dialogs and the BottomSheet. */
+.dialog-close-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--text-dim);
+  padding: 6px;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+@media (hover: hover) {
+  .dialog-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-gold);
+    box-shadow: none;
+    transform: none;
+  }
+}
+
 /* Inputs and Forms */
 input[type="text"],
 input[type="number"],
