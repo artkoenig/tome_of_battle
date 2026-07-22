@@ -14,8 +14,8 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0004 | [Styling Conventions](0004-styling-conventions.md) | Accepted | 2026-07-21 |
 | 0005 | [React Lifecycle and Performance](0005-react-lifecycle-and-performance.md) | Accepted | 2026-07-03 |
 | 0006 | [Testing and Automation](0006-testing-and-automation.md) | Accepted | 2026-07-05 |
-| 0007 | [CI/CD Workflow](0007-ci-cd-workflow.md) | Accepted | 2026-07-05 |
-| 0008 | [Native Vercel Integration](0008-vercel-deployment.md) | Accepted | 2026-07-13 |
+| 0007 | [CI/CD Workflow](0007-ci-cd-workflow.md) | Accepted | 2026-07-21 |
+| 0008 | [Native Vercel Integration](0008-vercel-deployment.md) | Accepted | 2026-07-21 |
 | 0009 | [Branching and Release Train Strategy](0009-branching-and-release-train-strategy.md) | Accepted | 2026-07-05 |
 | 0010 | [Einheitliches Dialog- und Toast-System](0010-einheitliches-dialog-und-toast-system.md) | Accepted | 2026-07-13 |
 | 0011 | [Roster als Referenz-Modell, abgeleitete Kosten & Serialisierungs-Adapter](0011-roster-referenzmodell-und-serialisierungs-adapter.md) | Accepted | 2026-07-21 |
@@ -32,4 +32,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0022 | [UI-Verfügbarkeit im Aushebe-Dialog leitet sich aus dem Validator ab](0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md) | Accepted | 2026-07-20 |
 | 0023 | [Die Solver-Fassade ist die exklusive Schnittstelle zur Regel-Engine](0023-solver-fassade-als-exklusive-schnittstelle.md) | Accepted | 2026-07-21 |
 | 0024 | [Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen](0024-statik-toolchain-oxlint-knip-dependency-cruiser.md) | Accepted | 2026-07-21 |
+| 0025 | [GitHub-Pages-Quelle auf Actions umgestellt, Jekyll-Build wird mitgeführt](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md) | Accepted | 2026-07-21 |
 

@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Datum:** 2026-07-13
 - **Beteiligte:** Entwickler, KI-Assistenten
-- **Zugehörige ADRs:** [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md), [ADR 0019: Manuelle Versionierung und Release-Freigabe](0019-manuelle-versionierung-und-release-freigabe.md)
+- **Zugehörige ADRs:** [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md), [ADR 0019: Manuelle Versionierung und Release-Freigabe](0019-manuelle-versionierung-und-release-freigabe.md), [ADR 0025: GitHub-Pages-Quelle auf Actions](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md)
 
 ## Kontext und Problemstellung
 
@@ -52,6 +52,13 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 - **Ablauf:** Vergleicht das `version`-Feld in `package.json` mit dem Vorgänger-Commit. Hat es sich geändert, erstellt und pusht der Workflow den Tag `v<version>` mit dem workflow-eigenen `GITHUB_TOKEN` (`permissions: contents: write`). Existiert der Tag bereits, bricht der Lauf ohne Fehler ab (idempotent).
 - **Hintergrund:** Ersetzt den manuellen Tag-Push-Schritt aus [ADR 0019](0019-manuelle-versionierung-und-release-freigabe.md), der aus Cloud-Sessions (Claude Code on the web) heraus strukturell nicht zuverlässig funktioniert — deren Session-gebundener Git-Relay-Token erlaubt Branch-Pushes und PR-Merges, lehnt direkte Tag-Pushes aber unabhängig von GitHub-Repo-Einstellungen mit HTTP 403 ab. Die Versionsentscheidung selbst bleibt manuell (siehe ADR 0019); automatisiert wird nur der mechanische Tag-Push danach.
 
+### 6. Zustandsbericht (`.github/workflows/status-report.yml`)
+- **Trigger:** Läuft bei jedem Push auf `main`.
+- **Ablauf:** Erhebt den Projektzustand (Qualitäts-Gates mit ihrer tatsächlichen Wirksamkeit, Kennzahlen, offene Vorgänge des lokalen `docs/issues/`-Trackers), erzeugt daraus den **Zustandsbericht** als HTML-Seite, baut `docs/` zusätzlich mit `actions/jekyll-build-pages` und deployt beides gemeinsam über GitHub Pages. Der Bericht wird **nicht** committet — er ist reine Build-Ausgabe, analog zu `dist/`, womit die Regel „`main` kommt nur über PR-Merges voran" unangetastet bleibt.
+- **Besonderheiten:** Als bisher einziger Workflow braucht er `pages: write` und `id-token: write` sowie einen Checkout mit vollständiger Historie und allen Remote-Refs (der Issue-Teil liest den Tracker über mehrere Branches). Ein Gate, das gar nicht erst anläuft, lässt den Lauf nicht scheitern, sondern erscheint im Bericht als „nicht angelaufen".
+- **Vorbedingung:** Die Pages-Quelle muss von Hand auf „GitHub Actions" stehen; das bewirkt kein Workflow-Code (siehe [ADR 0025](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md)).
+- **Abgrenzung:** Dieser Workflow liefert Projektdokumentation aus, nicht die Anwendung — die kommt weiterhin von Vercel (ADR 0008). Seine Veröffentlichung ist kein *Deployment* im Sinne des Glossars (`CONTEXT.md`).
+
 ---
 
 ### Konsequenzen (Auswirkungen)
@@ -62,3 +69,5 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 - **Negativ:**
   - Alle Tests (inklusive E2E) laufen nun auf PRs gegen `main`, was Feature-PRs leicht verzögert.
   - Ein als `needs-attention` markiertes GitHub-Issue führt zu keinem automatischen Folgeschritt — der Maintainer muss selbst entscheiden, ob und wann daraus ein lokales main-issue wird; die beiden Systeme sind bewusst nicht verknüpft.
+- **Neutral:**
+  - Mit dem Zustandsbericht existiert neben Vercel ein zweiter, klar abgegrenzter Auslieferungsweg (GitHub Pages) — er veröffentlicht Projektdokumentation, nie die Anwendung.

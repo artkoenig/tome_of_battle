@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Datum:** 2026-07-13
 - **Beteiligte:** Entwickler, KI-Assistenten
-- **Zugehörige ADRs:** [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0009: Branching and Release Strategy (Trunk-based)](0009-branching-and-release-train-strategy.md), [ADR 0019: Manuelle Versionierung und Release-Freigabe](0019-manuelle-versionierung-und-release-freigabe.md)
+- **Zugehörige ADRs:** [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0009: Branching and Release Strategy (Trunk-based)](0009-branching-and-release-train-strategy.md), [ADR 0019: Manuelle Versionierung und Release-Freigabe](0019-manuelle-versionierung-und-release-freigabe.md), [ADR 0025: GitHub-Pages-Quelle auf Actions](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md)
 
 ## Kontext und Problemstellung
 
@@ -53,6 +53,21 @@ Vercel-Branch-Alias-URL als auch (nach manuellem Promoten) auf der echten
 Produktions-Domain, ohne dass der Hash-Suffix das unterscheiden kann. Für
 diesen Fall wurde ein Preview-Badge wieder eingeführt, das zur Laufzeit den
 Hostname vergleicht.
+
+### 3. Abgrenzung zu GitHub Pages
+
+Seit [ADR 0025](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md)
+veröffentlicht das Repository zusätzlich über **GitHub Pages** — den
+Zustandsbericht und den `docs/`-Baum. Das berührt diese Entscheidung nicht:
+
+- **Vercel liefert die Anwendung aus.** Nur hier gelten *Deployment*, *Release*
+  und *Production* im Sinne des Glossars (`CONTEXT.md`).
+- **Pages liefert Projektdokumentation aus** — nie ein Build der Anwendung. Die
+  Pages-Veröffentlichung ist weder ein Deployment noch ein Release; sie hat kein
+  Freigabe-Gate, weil sie nichts freizugeben hat.
+
+Die beiden Wege sind vollständig entkoppelt: kein Pages-Lauf beeinflusst ein
+Vercel-Deployment und umgekehrt.
 
 ---
 
