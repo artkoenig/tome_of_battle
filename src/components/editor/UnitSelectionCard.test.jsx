@@ -57,6 +57,7 @@ vi.mock('../../solver/validator', async () => ({
   // the no-name-modifier case, which returns the selection's raw name unchanged.
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
   isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
   groupProfilesByType: (await vi.importActual('../../solver/rulesEvaluator')).groupProfilesByType,
   ...(await vi.importActual('../../solver/constants'))
 }));
@@ -119,10 +120,26 @@ describe('UnitSelectionCard Component', () => {
 
   it('renders unit header details, costs, and selection error messages', () => {
     render(<UnitSelectionCard {...defaultProps} />);
-    
+
     expect(screen.getByText('Knights of Bretonnia')).toBeDefined();
     expect(screen.getByText('120 Pkt.')).toBeDefined();
     expect(screen.getByText('Ausrüstung unzulässig')).toBeDefined();
+  });
+
+  // Der Validator verankert Verstöße an der konkret betroffenen Selection —
+  // oft eine geschachtelte Option. Die Karte der Einheit muss diese Fehler
+  // ihres Teilbaums anzeigen, nicht nur die an ihrer Wurzel-Selection.
+  it('zeigt Fehler geschachtelter Optionen an der Karte der Einheit', () => {
+    const props = {
+      ...defaultProps,
+      validationErrors: [
+        { id: 'err-nested', selectionId: 'sub-1', message: 'Option "Barded Warhorse" erfordert mindestens 3 Auswahlen (aktuell: 2).' }
+      ]
+    };
+    const { container } = render(<UnitSelectionCard {...props} />);
+
+    expect(screen.getByText('Option "Barded Warhorse" erfordert mindestens 3 Auswahlen (aktuell: 2).')).toBeDefined();
+    expect(container.querySelector('.selection-node.has-error')).not.toBeNull();
   });
 
   it('renders characteristic table (mini profile) correctly', () => {
@@ -470,14 +487,14 @@ describe('UnitSelectionCard Component', () => {
       unmount();
     });
 
-    it('survives malformed validationErrors gracefully (or identifies vulnerabilities)', () => {
+    it('survives malformed validationErrors gracefully', () => {
       const propsWithNullError = {
         ...defaultProps,
         validationErrors: [null, { id: 'err-2', selectionId: 'sel-1', message: 'Legit error' }]
       };
-      
-      // This should fail/throw under the current implementation because it tries to read selectionId from null.
-      expect(() => render(<UnitSelectionCard {...propsWithNullError} />)).toThrow();
+
+      render(<UnitSelectionCard {...propsWithNullError} />);
+      expect(screen.getByText('Legit error')).toBeDefined();
     });
 
     it('renders weapon profiles correctly inside the mini profile table', () => {
