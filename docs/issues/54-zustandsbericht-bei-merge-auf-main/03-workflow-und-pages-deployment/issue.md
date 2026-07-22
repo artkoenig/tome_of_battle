@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [01, 02]
 
@@ -56,3 +56,4 @@ PR-Merges voran" unangetastet.
       dokumentiert und dem Maintainer benannt.
 
 ## Comments
+- Orchestrator scripts/project-state/generate.js (I/O-Rand: Gates ausfuehren, coverage-final.json/ci.yml/Produktivcode/Importgraph/Tracker-Refs lesen) baut ueber die reine buildReportModel.js das ReportModel und schreibt via renderReport die HTML-Seite; CLI-Guard am Ende. Eigener Workflow .github/workflows/status-report.yml (push:main, pages:write + id-token:write, fetch-depth 0 + expliziter origin/*-Fetch) fuehrt jekyll-build-pages ueber docs/ mit und legt den Bericht als _site/index.html daneben, deployt via deploy-pages. Ein nicht anlaufendes Gate laesst den Lauf nicht scheitern (Gate-Ergebnisse sind Daten; Generator exit 0), sondern erscheint als 'nicht angelaufen'. Bericht wird nicht committet (.report/ gitignored). Manueller Pages-Quell-Schritt im Workflow-Header dokumentiert. yaml als explizite devDependency ergaenzt (CI-Parsing). Neu: buildReportModel.test.js (9 Tests).
