@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -106,3 +106,4 @@ im Deutschen ("1 Auswahl" statt "1 Auswahlen").
 - [ ]
 
 ## Comments
+- Mehrsprachigkeit umgesetzt: eigenes i18n-Modul (ADR 0026, t() + Intl, DE/EN, EN-Fallback), Spracherkennung + Umschalter in den Einstellungen, alle App-Texte inkl. Validator (strukturierte Meldungen, Plural-Korrektur) extrahiert, Landing Page zweisprachig, Manifest & Zustandsbericht englisch, E2E/Screenshots sprachunabhängig. Vier-Achsen-Verifikation grün (1426 Tests + E2E).
