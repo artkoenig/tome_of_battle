@@ -31,11 +31,11 @@ function makeGates() {
 /** Ein abgeleitetes Gesamturteil in der Form, die `buildReportModel` erzeugt. */
 function makeAssessment(overrides = {}) {
   return {
-    headline: 'Alle 3 blockierenden Gates bestehen',
+    headline: 'All 3 blocking gates pass',
     facts: [
-      'Bestandene blockierende Gates: 3 von 3',
-      'Nur-Hinweis-Gates mit Befunden: 1',
-      'Nicht angelaufene Gates: 1',
+      'Passed blocking gates: 3 of 3',
+      'Warning-only gates with findings: 1',
+      'Gates not run: 1',
     ],
     ...overrides,
   };
@@ -102,7 +102,7 @@ describe('project-state/renderReport', () => {
     it('erzeugt ein vollstaendiges HTML-Dokument mit eingebettetem Stylesheet', () => {
       const html = renderReport(makeModel());
       expect(html.startsWith('<!DOCTYPE html>')).toBe(true);
-      expect(html).toContain('<html lang="de">');
+      expect(html).toContain('<html lang="en">');
       expect(html).toContain('<style>');
       expect(html).toContain('</html>');
     });
@@ -164,7 +164,7 @@ describe('project-state/renderReport', () => {
     it('zeigt das Gesamturteil mit Kopfzeile und gemessenen Fakten vor den Bereichen', () => {
       const model = makeModel();
       const html = renderReport(model);
-      const verdictIndex = html.indexOf('Gesamturteil');
+      const verdictIndex = html.indexOf('Overall verdict');
       const healthcheckIndex = html.indexOf('id="healthcheck"');
       expect(verdictIndex).toBeGreaterThan(-1);
       expect(verdictIndex).toBeLessThan(healthcheckIndex);
@@ -183,29 +183,29 @@ describe('project-state/renderReport', () => {
   describe('Gates mit Wirksamkeit und drittem Zustand', () => {
     it('weist je Gate aus, ob es blockiert oder nur warnt', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('blockierend');
-      expect(html).toContain('nur Hinweis');
+      expect(html).toContain('blocking');
+      expect(html).toContain('warning only');
     });
 
     it('stellt ein nicht angelaufenes Gate als solches dar und nie als bestanden', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('nicht angelaufen');
-      expect(html).toContain('nicht unterstuetzte Node-Version');
+      expect(html).toContain('not run');
+      expect(html).toContain('unsupported Node version');
       // Nur ein Gate (lint) ist bestanden; die nicht angelaufenen Gates duerfen
-      // das gruene "bestanden" nicht tragen.
-      expect((html.match(/bestanden/g) ?? []).length).toBe(1);
+      // das gruene "passed" nicht tragen.
+      expect((html.match(/passed/g) ?? []).length).toBe(1);
     });
 
     it('macht den Zustand ohne Farbe erkennbar: Symbol und Wort, nicht nur eine Klasse', () => {
       const html = renderReport(makeModel());
       expect(html).toContain('badge-inert'); // eigener Ton fuer not-run, nie badge-ok
-      expect(html).toMatch(/∅[\s\S]*?nicht angelaufen/); // Symbol + Wort tragen die Bedeutung
+      expect(html).toMatch(/∅[\s\S]*?not run/); // Symbol + Wort tragen die Bedeutung
     });
 
     it('benennt eine unbekannte Wirksamkeit und einen fehlenden Lauf', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('Wirksamkeit unbekannt'); // typecheck steht in keinem Workflow-Step
-      expect(html).toContain('kein Lauf erfasst'); // fuer Gates ohne Laufergebnis
+      expect(html).toContain('enforcement unknown'); // typecheck steht in keinem Workflow-Step
+      expect(html).toContain('no run recorded'); // fuer Gates ohne Laufergebnis
     });
   });
 
@@ -220,20 +220,20 @@ describe('project-state/renderReport', () => {
     it('zeigt Strukturfakten inklusive Zyklen und Schichtverstoessen', () => {
       const html = renderReport(makeModel());
       expect(html).toContain('src/a.js → src/b.js');
-      expect(html).toContain('parser darf nicht auf solver');
+      expect(html).toContain('parser must not depend on solver');
     });
 
     it('meldet leere Struktur ausdruecklich statt sie zu verschweigen', () => {
       const html = renderReport(makeModel({ structure: { moduleCount: 1, dependencyCount: 0, cycles: [], layerViolations: [] } }));
-      expect(html).toContain('Keine Zyklen.');
-      expect(html).toContain('Keine Schichtverstoesse.');
+      expect(html).toContain('No cycles.');
+      expect(html).toContain('No layer violations.');
     });
   });
 
   describe('LOC und Komplexitaet', () => {
     it('zeigt Umfang und Komplexitaet je Modul (Zeilen, Funktionen, Summe/Durchschnitt/Max)', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('Umfang und Komplexitaet je Modul');
+      expect(html).toContain('Size and complexity per module');
       expect(html).toContain('src/solver');
       expect(html).toContain('900'); // Zeilen je Modul
       expect(html).toContain('136'); // Summe der Komplexitaet je Modul
@@ -243,21 +243,21 @@ describe('project-state/renderReport', () => {
 
     it('fuehrt die komplexesten Funktionen auf, parallel zu den laengsten', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('Komplexeste Funktionen');
+      expect(html).toContain('Most complex functions');
       expect(html).toContain('solve');
       expect(html).toContain('src/solver/engine.js');
     });
 
     it('nennt die Gesamt-Codezeilen als Kennzahl', () => {
-      const html = renderReport(makeModel({ metrics: [{ label: 'Codezeilen gesamt', value: 1200 }] }));
-      expect(html).toContain('Codezeilen gesamt');
+      const html = renderReport(makeModel({ metrics: [{ label: 'Total lines of code', value: 1200 }] }));
+      expect(html).toContain('Total lines of code');
       expect(html).toContain('1200');
     });
 
     it('meldet fehlenden Produktivcode ausdruecklich statt leerer Tabellen', () => {
       const html = renderReport(makeModel({ moduleMetrics: [], complexFunctions: [] }));
-      expect(html).toContain('Kein Produktivcode erfasst.');
-      expect(html).toContain('Keine Funktionen erfasst.');
+      expect(html).toContain('No production code captured.');
+      expect(html).toContain('No functions captured.');
     });
   });
 
@@ -304,13 +304,13 @@ describe('project-state/renderReport', () => {
 
     it('weist sichtbar aus, dass nur gepushte Branches erfasst sind', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('Nur gepushte Branches');
+      expect(html).toContain('Only pushed branches');
       expect(html).toContain('origin/main');
     });
 
     it('meldet leere Issue-Liste ausdruecklich', () => {
       const html = renderReport(makeModel({ openIssues: [] }));
-      expect(html).toContain('Keine offenen Vorgaenge.');
+      expect(html).toContain('No open issues.');
     });
 
     it('weist nicht lesbare Vorgaenge aus, statt sie zu verschlucken', () => {

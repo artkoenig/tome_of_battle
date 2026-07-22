@@ -29,18 +29,18 @@ export const DEFAULT_MAX_LONG_FUNCTIONS = 15;
 
 /** Beschriftungen der Kennzahlen -- an einer Stelle, damit sie nicht als Magie im Code liegen. */
 const METRIC_LABELS = Object.freeze({
-  openIssues: 'Offene Vorgaenge',
-  blockingGates: 'Blockierende Gates',
-  notRunGates: 'Nicht angelaufene Gates',
-  totalLines: 'Codezeilen gesamt',
-  longFunctions: 'Ueberlange Funktionen',
-  importCycles: 'Import-Zyklen',
+  openIssues: 'Open issues',
+  blockingGates: 'Blocking gates',
+  notRunGates: 'Gates not run',
+  totalLines: 'Total lines of code',
+  longFunctions: 'Overlong functions',
+  importCycles: 'Import cycles',
 });
 
 const METRIC_HINTS = Object.freeze({
-  blockingGates: 'lassen die CI bei Befunden scheitern',
-  notRunGates: 'Werkzeug kam nicht zur Auswertung -- kein gruenes Ergebnis',
-  totalLines: 'nicht-leere Zeilen im Produktivcode',
+  blockingGates: 'fail CI on findings',
+  notRunGates: 'tool did not run -- no green result',
+  totalLines: 'non-empty lines in production code',
 });
 
 /**
@@ -208,7 +208,7 @@ function buildMetrics({ gates, openIssues, longFunctions, structure, longFunctio
       notRunGates > 0 ? METRIC_HINTS.notRunGates : undefined,
     ),
     { label: METRIC_LABELS.totalLines, value: totalLines, hint: METRIC_HINTS.totalLines },
-    { label: METRIC_LABELS.longFunctions, value: longFunctions.length, hint: `ueber ${longFunctionLimit} Zeilen` },
+    { label: METRIC_LABELS.longFunctions, value: longFunctions.length, hint: `over ${longFunctionLimit} lines` },
     { label: METRIC_LABELS.importCycles, value: structure.cycles.length },
   ];
 }
@@ -223,9 +223,9 @@ function withOptionalHint(metric, hint) {
  * nicht als Magie im Code liegen.
  */
 const VERDICT_FACT_LABELS = Object.freeze({
-  blockingPassed: 'Bestandene blockierende Gates',
-  warningFindings: 'Nur-Hinweis-Gates mit Befunden',
-  notRun: 'Nicht angelaufene Gates',
+  blockingPassed: 'Passed blocking gates',
+  warningFindings: 'Warning-only gates with findings',
+  notRun: 'Gates not run',
 });
 
 /**
@@ -259,14 +259,14 @@ function countGateFacts(gates) {
  * @returns {string}
  */
 function deriveVerdictHeadline(facts) {
-  if (facts.blockingTotal === 0) return 'Keine blockierenden Gates erfasst';
+  if (facts.blockingTotal === 0) return 'No blocking gates captured';
   if (facts.blockingFindings > 0) {
-    return `${facts.blockingFindings} von ${facts.blockingTotal} blockierenden Gates melden Befunde`;
+    return `${facts.blockingFindings} of ${facts.blockingTotal} blocking gates report findings`;
   }
   if (facts.blockingNotRun > 0) {
-    return `${facts.blockingNotRun} von ${facts.blockingTotal} blockierenden Gates sind nicht angelaufen`;
+    return `${facts.blockingNotRun} of ${facts.blockingTotal} blocking gates did not run`;
   }
-  return `Alle ${facts.blockingTotal} blockierenden Gates bestehen`;
+  return `All ${facts.blockingTotal} blocking gates pass`;
 }
 
 /**
@@ -284,7 +284,7 @@ export function deriveOverallAssessment(gates) {
   return {
     headline: deriveVerdictHeadline(facts),
     facts: [
-      `${VERDICT_FACT_LABELS.blockingPassed}: ${facts.blockingPassed} von ${facts.blockingTotal}`,
+      `${VERDICT_FACT_LABELS.blockingPassed}: ${facts.blockingPassed} of ${facts.blockingTotal}`,
       `${VERDICT_FACT_LABELS.warningFindings}: ${facts.warningFindings}`,
       `${VERDICT_FACT_LABELS.notRun}: ${facts.notRunTotal}`,
     ],

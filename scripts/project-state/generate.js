@@ -256,12 +256,12 @@ function showFileAtRef(refName, filePath) {
 
 /** Anzeigetext des Erhebungszeitpunkts, an eine feste Zeitzone gebunden. */
 function formatTimestamp(date) {
-  const formatted = date.toLocaleString('de-DE', {
+  const formatted = date.toLocaleString('en-GB', {
     timeZone: 'Europe/Berlin',
     dateStyle: 'medium',
     timeStyle: 'short',
   });
-  return `${formatted} Uhr (Europe/Berlin)`;
+  return `${formatted} (Europe/Berlin)`;
 }
 
 /**

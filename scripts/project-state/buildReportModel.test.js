@@ -90,7 +90,7 @@ describe('project-state/buildReportModel', () => {
     expect(solver).toMatchObject({ module: 'src/solver', fileCount: 1, functionCount: 1, totalComplexity: 3, maxComplexity: 3 });
     expect(solver.lines).toBe(4);
 
-    const totalLines = model.metrics.find((metric) => metric.label === 'Codezeilen gesamt');
+    const totalLines = model.metrics.find((metric) => metric.label === 'Total lines of code');
     expect(totalLines.value).toBe(7); // 4 (engine) + 3 (roster)
 
     expect(model.complexFunctions[0]).toMatchObject({ name: 'solve', complexity: 3 });
@@ -170,12 +170,12 @@ describe('project-state/buildReportModel', () => {
     );
 
     const byLabel = Object.fromEntries(model.metrics.map((metric) => [metric.label, metric]));
-    expect(byLabel['Offene Vorgaenge'].value).toBe(0);
-    expect(byLabel['Blockierende Gates'].value).toBe('1/5');
-    expect(byLabel['Nicht angelaufene Gates'].value).toBe(4);
-    expect(byLabel['Nicht angelaufene Gates'].hint).toMatch(/kein gruenes Ergebnis/);
-    expect(byLabel['Ueberlange Funktionen'].value).toBe(1);
-    expect(byLabel['Import-Zyklen'].value).toBe(1);
+    expect(byLabel['Open issues'].value).toBe(0);
+    expect(byLabel['Blocking gates'].value).toBe('1/5');
+    expect(byLabel['Gates not run'].value).toBe(4);
+    expect(byLabel['Gates not run'].hint).toMatch(/no green result/);
+    expect(byLabel['Overlong functions'].value).toBe(1);
+    expect(byLabel['Import cycles'].value).toBe(1);
   });
 
   it('drops the not-run hint when every gate actually ran', () => {
@@ -191,7 +191,7 @@ describe('project-state/buildReportModel', () => {
       }),
     );
 
-    const notRun = model.metrics.find((metric) => metric.label === 'Nicht angelaufene Gates');
+    const notRun = model.metrics.find((metric) => metric.label === 'Gates not run');
     expect(notRun.value).toBe(0);
     expect(notRun.hint).toBeUndefined();
   });
@@ -209,10 +209,10 @@ describe('project-state/buildReportModel', () => {
     // Kein hand-gepflegtes Einordnungs-Feld mehr im Modell.
     expect(model.findingAssessments).toBeUndefined();
     // Die Kopfzeile ist aus den Messwerten abgeleitet, nicht hand-formuliert.
-    expect(model.assessment.headline).toBe('Alle 1 blockierenden Gates bestehen');
+    expect(model.assessment.headline).toBe('All 1 blocking gates pass');
     expect(Array.isArray(model.assessment.facts)).toBe(true);
-    expect(model.assessment.facts).toContain('Bestandene blockierende Gates: 1 von 1');
-    expect(model.assessment.facts).toContain('Nicht angelaufene Gates: 4');
+    expect(model.assessment.facts).toContain('Passed blocking gates: 1 of 1');
+    expect(model.assessment.facts).toContain('Gates not run: 4');
   });
 
   describe('deriveOverallAssessment', () => {
@@ -226,9 +226,9 @@ describe('project-state/buildReportModel', () => {
         gate(GateStatus.Passed, GateEnforcement.Blocking),
         gate(GateStatus.Passed, GateEnforcement.Blocking),
       ]);
-      expect(assessment.headline).toBe('Alle 2 blockierenden Gates bestehen');
-      expect(assessment.facts).toContain('Bestandene blockierende Gates: 2 von 2');
-      expect(assessment.facts).toContain('Nicht angelaufene Gates: 0');
+      expect(assessment.headline).toBe('All 2 blocking gates pass');
+      expect(assessment.facts).toContain('Passed blocking gates: 2 of 2');
+      expect(assessment.facts).toContain('Gates not run: 0');
     });
 
     it('nennt Befunde eines blockierenden Gates zuerst -- der schwerste Zustand', () => {
@@ -236,7 +236,7 @@ describe('project-state/buildReportModel', () => {
         gate(GateStatus.Findings, GateEnforcement.Blocking),
         gate(GateStatus.NotRun, GateEnforcement.Blocking),
       ]);
-      expect(assessment.headline).toBe('1 von 2 blockierenden Gates melden Befunde');
+      expect(assessment.headline).toBe('1 of 2 blocking gates report findings');
     });
 
     it('meldet ein nicht angelaufenes blockierendes Gate, wenn keines Befunde hat', () => {
@@ -244,8 +244,8 @@ describe('project-state/buildReportModel', () => {
         gate(GateStatus.Passed, GateEnforcement.Blocking),
         gate(GateStatus.NotRun, GateEnforcement.Blocking),
       ]);
-      expect(assessment.headline).toBe('1 von 2 blockierenden Gates sind nicht angelaufen');
-      expect(assessment.facts).toContain('Nicht angelaufene Gates: 1');
+      expect(assessment.headline).toBe('1 of 2 blocking gates did not run');
+      expect(assessment.facts).toContain('Gates not run: 1');
     });
 
     it('zaehlt nur-Hinweis-Befunde getrennt, ohne sie zu deuten', () => {
@@ -254,9 +254,9 @@ describe('project-state/buildReportModel', () => {
         gate(GateStatus.Findings, GateEnforcement.Warning),
         gate(GateStatus.NotRun, GateEnforcement.Warning),
       ]);
-      expect(assessment.headline).toBe('Alle 1 blockierenden Gates bestehen');
-      expect(assessment.facts).toContain('Nur-Hinweis-Gates mit Befunden: 1');
-      expect(assessment.facts).toContain('Nicht angelaufene Gates: 1');
+      expect(assessment.headline).toBe('All 1 blocking gates pass');
+      expect(assessment.facts).toContain('Warning-only gates with findings: 1');
+      expect(assessment.facts).toContain('Gates not run: 1');
     });
   });
 
