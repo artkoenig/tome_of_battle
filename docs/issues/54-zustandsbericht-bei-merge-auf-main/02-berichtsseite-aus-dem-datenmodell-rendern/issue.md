@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [01]
 
@@ -55,3 +55,4 @@ Schnitt 01 (nur gepushte Branches) ist sichtbar auszuweisen.
 - [ ] `npm run lint`, `npm run typecheck` und `npx vitest run` sind grün.
 
 ## Comments
+- renderReport(model) erzeugt eine in sich geschlossene HTML-Seite (Gesamturteil, Healthcheck mit Gates/Wirksamkeit/drittem Zustand not-run, Abdeckung, laengste Funktionen, Struktur, eingeordnete Befunde; Issues als Markdown-Volltext zur Bauzeit gerendert). Blindstelle 'nur gepushte Branches' ausgewiesen. Befund-Einordnung in versionierter Hand-Datei scripts/project-state/assessment.js. Markdown->HTML via devDependency marked. lint/typecheck/vitest gruen (1272 Tests).
