@@ -272,3 +272,86 @@ test('collects a group-link\'s modifierGroup-gated modifiers into the group modi
   expect(gatedModifier.conditions?.some(cond => cond.field === 'some-cat')).toBe(true);
 });
 
+// ---------------------------------------------------------------------------
+// Issue 57/04: a nested sub-option of a grouped *upgrade*-type mount must be tied to
+// the mount's roster selection (its owner), so the editor nests it under the mount —
+// and it must not pollute the enclosing group's max count. Minimal shape:
+// group(max 1) → mount as upgrade(max 1) via entryLink → sub-option(max 1) nested on
+// the link, exactly the Empire Warhorse→Barding / Master Necromancer→Nightmare→Barding shape.
+// ---------------------------------------------------------------------------
+const MOUNTS_GROUP_ID = 'mounts-group';
+const MOUNT_LINK_ID = 'warhorse-link';
+const SUB_OPTION_ID = 'barding';
+
+const groupedUpgradeMountSystem = {
+  catalogs: {
+    'cat-1': {
+      id: 'cat-1',
+      selectionEntries: [
+        {
+          id: 'unit-1', name: 'Captain', type: 'unit',
+          selectionEntryGroups: [
+            {
+              id: MOUNTS_GROUP_ID, name: 'Mounts',
+              constraints: [{ id: 'mounts-max', type: 'max', value: 1, scope: 'parent', field: 'selections' }],
+              entryLinks: [
+                {
+                  id: MOUNT_LINK_ID, name: 'Warhorse', targetId: 'shared-warhorse', type: 'selectionEntry',
+                  selectionEntries: [
+                    { id: SUB_OPTION_ID, name: 'Barding', type: 'upgrade', constraints: [{ type: 'max', value: 1 }] }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      // The shared mount target is a plain upgrade (no children of its own) — it is the
+      // link that carries the nested Barding. This is what makes it an upgrade-mount rather
+      // than an independent sub-unit (which would get its own recursive card).
+      sharedSelectionEntries: [
+        { id: 'shared-warhorse', name: 'Warhorse', type: 'upgrade' }
+      ]
+    }
+  }
+};
+
+test('a chosen grouped upgrade-mount re-emits its sub-option owned by the mount selection', () => {
+  const MOUNT_SELECTION_ID = 'mount-instance-1';
+  const unitSelection = {
+    selectionEntryId: 'unit-1',
+    selections: [
+      { id: MOUNT_SELECTION_ID, entryLinkId: MOUNT_LINK_ID, selections: [] }
+    ]
+  };
+
+  const options = getUnitOptions(groupedUpgradeMountSystem, 'cat-1', unitSelection);
+
+  const bardingOption = options.find(o => o.option.id === SUB_OPTION_ID);
+  expect(bardingOption).toBeDefined();
+  // The sub-option is tied to the mount's roster selection, so the editor nests it there.
+  expect(bardingOption.ownerSelectionId).toBe(MOUNT_SELECTION_ID);
+
+  // The mount option itself belongs to the unit (no owning sub-selection).
+  const mountOption = options.find(o => o.option.id === MOUNT_LINK_ID);
+  expect(mountOption).toBeDefined();
+  expect(mountOption.ownerSelectionId ?? null).toBeNull();
+});
+
+test('a grouped upgrade-mount sub-option does not pollute the enclosing group\'s item count', () => {
+  const unitSelection = {
+    selectionEntryId: 'unit-1',
+    selections: [{ id: 'mount-instance-1', entryLinkId: MOUNT_LINK_ID, selections: [] }]
+  };
+
+  const options = getUnitOptions(groupedUpgradeMountSystem, 'cat-1', unitSelection);
+  const mountsMax = options.find(o => o.groupId === MOUNTS_GROUP_ID)
+    ?.groupConstraints?.find(c => c.type === 'max');
+
+  expect(mountsMax).toBeDefined();
+  // The mount is a member of the Mounts group; its Barding sub-option is not, and must
+  // therefore be absent from the group's item-id set (otherwise mount+barding = 2 > max 1).
+  expect(mountsMax.groupItemIds.has(MOUNT_LINK_ID)).toBe(true);
+  expect(mountsMax.groupItemIds.has(SUB_OPTION_ID)).toBe(false);
+});
+

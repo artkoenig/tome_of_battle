@@ -3,7 +3,7 @@ import { childSelectionsOf, countSelections, countSelectionsInSubtree, someSelec
 import { findForceEntryById } from './forceEntries.js';
 import { ConstraintScope, isEntryScope, isRosterLimitField, isSharedQuery } from './battlescribeConstants.js';
 import {
-  ModifierKind, ConditionKind, AttributeName, SelectionEntryKind
+  ModifierKind, ConditionKind, ConstraintKind, AttributeName, SelectionEntryKind
 } from '../parser/schema/battlescribeSchema.generated.js';
 
 // The BattleScribe modifiers that mutate category membership / the primary flag all
@@ -456,6 +456,53 @@ export const getEffectiveModifiers = (source) => {
   if (!source) return [];
   const groupModifiers = (source.modifierGroups || []).flatMap(group => collectGroupModifiers(group, [], []));
   return [...(source.modifiers || []), ...groupModifiers];
+};
+
+// A group whose max constraint is capped at exactly this value offers a single
+// mutually-exclusive choice (a radio). A modifier able to lift that max past this
+// cap turns the group into a multi-select — the "max-raisable ⇒ multi-select" rule.
+const SINGLE_CHOICE_GROUP_MAX = 1;
+
+/**
+ * True when `mod` targets `maxConstraint` and, applied to its base value, would push
+ * it past the single-choice cap. The already-handled `increment`+`<repeat>` pattern
+ * (§9.7 — one cap lift per copy taken of the *same* item, e.g. Dispel Scroll) is
+ * excluded: it signals a repeatable item, not an inherently multi-select group.
+ * Reuses applyValueModifier — the exact math getModifiedConstraintValue applies at
+ * runtime — so the potential value can never drift from the evaluated one.
+ */
+const modifierRaisesMaxAboveSingleChoice = (mod, maxConstraint) => {
+  if (mod.field !== maxConstraint.id) return false;
+  if (mod.repeat) return false;
+  return applyValueModifier(maxConstraint.value, mod, {}) > SINGLE_CHOICE_GROUP_MAX;
+};
+
+/**
+ * Statically decides whether any modifier of `group` can raise one of its `max`
+ * constraints above the single-choice cap, irrespective of whether that modifier's
+ * condition currently holds.
+ *
+ * This is the basis for the "max-raisable ⇒ multi-select" rule that breaks the
+ * armour+shield deadlock: an armour group is capped at `max=1` but carries a
+ * conditional `increment` on that max, gated on a sibling shield selection. Judging
+ * the *current* effective max would keep the group a radio (without a shield the max
+ * is 1), so the shield could never be picked to satisfy the condition. Judging the
+ * *potential* max instead resolves the circular dependency.
+ *
+ * Purely static: modifier conditions are intentionally ignored. The `increment`+
+ * `<repeat>` pattern is distinguished and never counts as this signal (see
+ * modifierRaisesMaxAboveSingleChoice).
+ *
+ * @param {Object} group a selectionEntryGroup definition (its constraints + modifiers).
+ * @returns {boolean} true when a non-repeat modifier can raise a max constraint above 1.
+ */
+export const canGroupMaxBeRaisedAboveSingleChoice = (group) => {
+  const maxConstraints = (group?.constraints || []).filter(con => con.type === ConstraintKind.MAX);
+  if (maxConstraints.length === 0) return false;
+
+  const modifiers = getEffectiveModifiers(group);
+  return maxConstraints.some(maxConstraint =>
+    modifiers.some(mod => modifierRaisesMaxAboveSingleChoice(mod, maxConstraint)));
 };
 
 // BattleScribe lets catalogue authors surface context-gated, plain-text hints to the

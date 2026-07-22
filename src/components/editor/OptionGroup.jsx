@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, resolveCostLimitTypeId, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, getEffectiveConstraintLimit, canGroupMaxBeRaisedAboveSingleChoice, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, resolveCostLimitTypeId, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
+import { resolveRowSelectionId } from './optionNesting';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
-export default function OptionGroupComponent({ 
-  group, 
-  selection, 
-  system, 
-  roster, 
-  getSubSelectionCount, 
+export default function OptionGroupComponent({
+  group,
+  selection,
+  system,
+  roster,
+  getSubSelectionCount,
   subSelectionOperations,
   getOptionDescription,
   activeCatalogue,
@@ -18,7 +19,11 @@ export default function OptionGroupComponent({
   onHoverEnter,
   onHoverMove,
   onHoverLeave,
-  onShowRule
+  onShowRule,
+  // Renders any sub-options re-emitted by a selected row, indented beneath it. Returns
+  // null when the row has no such children. Defaults to a no-op so a group without
+  // nesting (or a test stub) renders unchanged.
+  renderRowChildren = (_rowSelectionId) => null
 }) {
   // Start expanded when the group already holds a selection, so choices made
   // aren't hidden behind a collapsed header. This also surfaces nested quantity
@@ -108,6 +113,25 @@ export default function OptionGroupComponent({
     return sum + (res ? getSubSelectionCount(selection, res.id) : 0);
   }, 0);
 
+  // Radio-vs-Checkbox-Leitregel (mit Nutzer abgestimmt): Eine Gruppe rendert als
+  // Mehrfachauswahl (Checkboxen), sobald ihr effektives Max > 1 ist ODER ein Modifier
+  // ihr Max über 1 heben KANN — Letzteres löst den Rüstung+Schild-Teufelskreis, weil das
+  // aktuelle effektive Max ohne Schild 1 wäre. Nur eine echt fix auf 1 gedeckelte Gruppe
+  // ohne solchen Modifier bleibt gegenseitig ausschließendes Radio. Das `increment`+
+  // `<repeat>`-Stepper-Muster bleibt davon unberührt (siehe isRepeatableWithinGroup).
+  const isGroupMaxRaisable = canGroupMaxBeRaisedAboveSingleChoice(group);
+  const isGroupSingleChoice = maxLimit !== Infinity && maxLimit <= 1 && !isGroupMaxRaisable;
+
+  // Effektive Gruppen-Zähl-Obergrenze (Punkte-Caps werden separat behandelt). Sie klammert
+  // das Hinzufügen weiterer, noch nicht gewählter Optionen und deaktiviert die Gruppe ganz,
+  // sobald sie bedingt auf 0 sinkt.
+  const groupCountMaxConstraint = filteredGroupConstraints.find(
+    c => c.type === ConstraintKind.MAX && !isCostField(c.field, system, roster)
+  );
+  const effectiveGroupCountMax = groupCountMaxConstraint
+    ? getEffectiveConstraintLimit(groupCountMaxConstraint, groupModifiers, displayCtx, Infinity)
+    : Infinity;
+
   const currentPoints = group.items.reduce((sum, item) => {
     const res = resolveEntry(system, item.option, activeCatalogue.id);
     const count = res ? getSubSelectionCount(selection, res.id) : 0;
@@ -171,7 +195,15 @@ export default function OptionGroupComponent({
   }
 
   if (maxLimit !== Infinity) {
-    limitParts.push(`Max: ${formatConstraintLimit(maxLimit, maxLimitRaw)}`);
+    // Mehrfachauswahl-Gruppen zeigen einen Live-Zähler „N / M" (wie NewRecruit „2/2"),
+    // damit erkennbar bleibt, wie viele der erlaubten Optionen belegt sind. Eine echte
+    // Einzelwahl (Radio) behält die schlichte „Max: N"-Anzeige.
+    const isCountableMultiSelect = !isGroupSingleChoice && !isCostField(maxLimitRaw?.field, system, roster);
+    limitParts.push(
+      isCountableMultiSelect
+        ? `${currentCount} / ${formatConstraintLimit(maxLimit, maxLimitRaw)}`
+        : `Max: ${formatConstraintLimit(maxLimit, maxLimitRaw)}`
+    );
   }
 
   const limitText = limitParts.length > 0 ? `(${limitParts.join(' | ')})` : '';
@@ -209,9 +241,17 @@ export default function OptionGroupComponent({
                const bPoints = getOptionDisplayCost(system, b.option, costLimitTypeId, displayCtx) || 0;
                return bPoints - aPoints; // Descending
             })
-            .map(({ option, groupConstraints, parentDefId }) => {
+            .map(({ option, parentDefId, ownerSelectionId }) => {
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
+            // Where a chosen option nests: under its owning sub-selection when the collector
+            // re-emitted it from an active selection (e.g. an upgrade-type mount's Barding),
+            // otherwise directly under the unit. Only the count/display keep reading the unit
+            // selection; the mutation always targets the true parent.
+            const editTargetId = ownerSelectionId || selection.id;
+            // The roster selection this row stands for, so its own re-emitted sub-options can
+            // nest beneath it (null while unselected).
+            const rowSelectionId = resolveRowSelectionId(selection, ownerSelectionId, option, res);
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, costLimitTypeId, displayCtx);
             const filteredOptionConstraints = res.constraints?.filter(con => {
@@ -223,23 +263,28 @@ export default function OptionGroupComponent({
             }) || [];
             const minConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MIN);
             const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
-            const minLimitOption = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
-            const maxLimitOption = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
+            // Option-Grenzen aus effektiven (modifier-angepassten) Werten — konsistent mit
+            // Label/Validierung, statt aus rohen Katalogwerten.
+            const optionModifiers = getEffectiveModifiers(res);
+            const minLimitOption = getEffectiveConstraintLimit(minConstraint, optionModifiers, displayCtx, 0);
+            const maxLimitOption = getEffectiveConstraintLimit(maxConstraint, optionModifiers, displayCtx, Infinity);
             const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
-            
+
             const isCollective = res.collective || option.collective || false;
             const optionName = getEffectiveName(res, displayCtx);
             const isRepeatableByGroupModifier = isRepeatableWithinGroup(option, res);
             // A repeatable item never behaves as an exclusive radio, even though its
-            // group is nominally capped at max=1 (the cap is lifted per copy taken).
-            const isRadio = !isRepeatableByGroupModifier && groupConstraints?.some(c => c.type === ConstraintKind.MAX && c.value === 1);
+            // group is nominally capped at max=1 (the cap is lifted per copy taken). A
+            // genuinely single-choice group (effective max 1, no max-raising modifier)
+            // renders radios; a max-raisable group renders checkboxes (armour+shield).
+            const isRadio = !isRepeatableByGroupModifier && isGroupSingleChoice;
             // A stepper (quantity control) requires a positive quantity signal. Without an
             // explicit max, only a real minimum (min>0, e.g. Ungors) or a collective
             // (per-model) upgrade qualifies; a plain optional upgrade with neither min nor
             // max is binary and renders as a checkbox (e.g. Barding, a single mount/rune).
             const hasQuantitySignal = minLimitOption > 0 || isCollective;
-            const isExplicitlyMulti = (maxConstraint && maxConstraint.value > 1) || isRepeatableByGroupModifier || (!maxConstraint && !isRadio && hasQuantitySignal);
-            const isBinary = !isExplicitlyMulti && ((maxConstraint && maxConstraint.value === 1) || isRadio || !maxConstraint);
+            const isExplicitlyMulti = (maxConstraint && maxLimitOption > 1) || isRepeatableByGroupModifier || (!maxConstraint && !isRadio && hasQuantitySignal);
+            const isBinary = !isExplicitlyMulti && ((maxConstraint && maxLimitOption === 1) || isRadio || !maxConstraint);
             const descText = getOptionDescription(res);
 
             let parentCount = 1;
@@ -294,7 +339,18 @@ export default function OptionGroupComponent({
             }
             const isRosterUnique = isOptionRosterUnique(res, system);
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
-            const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere;
+            // Effektive Gruppen-Zähl-Obergrenze durchsetzen (senkender Fall / Deaktivierung):
+            // Ist die Gruppe an ihrem effektiven Max, ist das Hinzufügen einer weiteren, noch
+            // nicht gewählten Option gesperrt; ein Max von 0 deaktiviert die Gruppe ganz.
+            // Radios tauschen die aktuelle Wahl (Netto 0) und werden nicht gesperrt (außer bei
+            // Max 0). Bei einer max-HEBBAREN Gruppe greift die Klammerung bewusst NICHT: das
+            // aktuelle effektive Max wäre 1, und gerade das Hinzufügen der koppelnden Option
+            // (z. B. Schild) hebt es — eine Klammerung am aktuellen Max erzeugte erneut den
+            // Teufelskreis. Über-Auswahl fängt dort der Validator ab.
+            const isGroupCountCapReached = effectiveGroupCountMax !== Infinity && currentCount >= effectiveGroupCountMax;
+            const wouldExceedGroupCountMax = !isGroupMaxRaisable &&
+              (effectiveGroupCountMax === 0 || (!isRadio && count === 0 && isGroupCountCapReached));
+            const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere || wouldExceedGroupCountMax;
 
             // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
             const isUnavailable = count === 0 && isSelectDisabled;
@@ -307,35 +363,35 @@ export default function OptionGroupComponent({
                 if (isBinary) {
                   if (isRadio) {
                     if (count > 0) {
-                      subSelectionOperations.decreaseCount(selection.id, option);
+                      subSelectionOperations.decreaseCount(editTargetId, option);
                     } else {
                       group.items.forEach(otherItem => {
                         const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                         if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                           const otherCount = getSubSelectionCount(selection, otherRes.id);
                           if (otherCount > 0) {
-                            subSelectionOperations.decreaseCount(selection.id, otherItem.option);
+                            subSelectionOperations.decreaseCount(editTargetId, otherItem.option);
                           }
                         }
                       });
-                      subSelectionOperations.increaseCount(selection.id, option);
+                      subSelectionOperations.increaseCount(editTargetId, option);
                     }
                   } else {
                     if (count > 0) {
-                      subSelectionOperations.decreaseCount(selection.id, option);
+                      subSelectionOperations.decreaseCount(editTargetId, option);
                     } else {
-                      subSelectionOperations.increaseCount(selection.id, option);
+                      subSelectionOperations.increaseCount(editTargetId, option);
                     }
                   }
                 } else {
-                  subSelectionOperations.increaseCount(selection.id, option);
+                  subSelectionOperations.increaseCount(editTargetId, option);
                 }
               }
             };
 
             return (
-              <div 
-                key={res.id} 
+              <React.Fragment key={res.id}>
+              <div
                 className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
                 onClick={handleRowClick}
               >
@@ -370,18 +426,18 @@ export default function OptionGroupComponent({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (count > 0) {
-                            subSelectionOperations.decreaseCount(selection.id, option);
+                            subSelectionOperations.decreaseCount(editTargetId, option);
                           } else if (!isSelectDisabled) {
                             group.items.forEach(otherItem => {
                               const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                               if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                                 const otherCount = getSubSelectionCount(selection, otherRes.id);
                                 if (otherCount > 0) {
-                                  subSelectionOperations.decreaseCount(selection.id, otherItem.option);
+                                  subSelectionOperations.decreaseCount(editTargetId, otherItem.option);
                                 }
                               }
                             });
-                            subSelectionOperations.increaseCount(selection.id, option);
+                            subSelectionOperations.increaseCount(editTargetId, option);
                           }
                         }}
                         onChange={() => {}}
@@ -395,9 +451,9 @@ export default function OptionGroupComponent({
                         onChange={(e) => {
                           if (!isMandatory) {
                             if (e.target.checked) {
-                              subSelectionOperations.increaseCount(selection.id, option);
+                              subSelectionOperations.increaseCount(editTargetId, option);
                             } else {
-                              subSelectionOperations.decreaseCount(selection.id, option);
+                              subSelectionOperations.decreaseCount(editTargetId, option);
                             }
                           }
                         }}
@@ -409,7 +465,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          subSelectionOperations.decreaseCount(selection.id, option);
+                          subSelectionOperations.decreaseCount(editTargetId, option);
                         }}
                         disabled={count === 0}
                       >
@@ -420,7 +476,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          subSelectionOperations.increaseCount(selection.id, option);
+                          subSelectionOperations.increaseCount(editTargetId, option);
                         }}
                         disabled={isSelectDisabled}
                       >
@@ -430,6 +486,8 @@ export default function OptionGroupComponent({
                   )}
                 </div>
               </div>
+              {renderRowChildren(rowSelectionId)}
+              </React.Fragment>
             );
           })}
         </div>

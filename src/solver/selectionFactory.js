@@ -1,21 +1,36 @@
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { memberDefsOf, resolveGroupDefaultMember } from './selectionMembers.js';
+import { getModifiedConstraintValue, getEffectiveModifiers } from './modifierEvaluator.js';
 import '../types.js';
 
 /**
  * Wert des `min`-Constraints einer Definition (0, falls keiner vorhanden).
  * Ein positiver Wert macht das Kind zur Pflichtauswahl.
+ *
+ * Ohne `evaluationContext` wird der rohe Katalog-`min` verwendet — das langjährige
+ * Verhalten. Wird ein Kontext durchgereicht (Geschwister-Issue 02), so fließt ein
+ * bedingter Modifier, der das `min` anhebt (eine bedingt erzwungene Pflichtwahl),
+ * über den kanonischen Helfer `getModifiedConstraintValue` mit ein. Der Kontext ist
+ * die einzige Stelle, an der diese Fabrik effektive statt rohe Werte betrachtet.
+ *
+ * @param {Object} def der (aufgelöste) Katalog-Eintrag/-Gruppe.
+ * @param {Object|null} [evaluationContext] Bewertungskontext für Modifier-Bedingungen.
  */
-function getMinConstraintValue(def) {
-  return def.constraints?.find(constraint => constraint.type === ConstraintKind.MIN)?.value || 0;
+function getMinConstraintValue(def, evaluationContext = null) {
+  const minConstraint = def.constraints?.find(constraint => constraint.type === ConstraintKind.MIN);
+  if (!minConstraint) return 0;
+  if (!evaluationContext) return minConstraint.value || 0;
+
+  const effectiveMin = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(def), evaluationContext);
+  return effectiveMin > 0 ? effectiveMin : 0;
 }
 
 /**
  * Fügt ein Pflicht-Kind (aufgelöst über dieselbe Fabrik) mit der geforderten Mindestanzahl
  * unter die Elternselektion. Ein nicht auflösbares Kind wird übersprungen.
  */
-function addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef, count }) {
-  const childSelection = createSelectionFromDef({ system, resolveEntry, catalogueId, entry: childDef });
+function addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef, count, evaluationContext }) {
+  const childSelection = createSelectionFromDef({ system, resolveEntry, catalogueId, entry: childDef, evaluationContext });
   if (childSelection) {
     childSelection.number = count;
     parentSelection.selections.push(childSelection);
@@ -26,12 +41,12 @@ function addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection,
  * Bevölkert jedes Mitglied, das ein eigenes `min > 0` trägt, mit genau seinem `min`.
  * Gibt die Anzahl so bevölkerter Mitglieder zurück (0, falls keines pflichtig ist).
  */
-function populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members }) {
+function populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members, evaluationContext }) {
   let populatedCount = 0;
   members.forEach(member => {
-    const minValue = getMinConstraintValue(member);
+    const minValue = getMinConstraintValue(member, evaluationContext);
     if (minValue > 0) {
-      addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef: member, count: minValue });
+      addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef: member, count: minValue, evaluationContext });
       populatedCount += 1;
     }
   });
@@ -51,19 +66,19 @@ function populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSel
  *
  * Optionale (min = 0) Kinder bleiben ungewählt — genau das Verhalten des echten Aushebens.
  */
-function populateChildren({ system, resolveEntry, catalogueId, def, parentSelection }) {
-  populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members: memberDefsOf(def) });
+function populateChildren({ system, resolveEntry, catalogueId, def, parentSelection, evaluationContext }) {
+  populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members: memberDefsOf(def), evaluationContext });
 
   def.selectionEntryGroups?.forEach(group => {
-    const minValue = getMinConstraintValue(group);
+    const minValue = getMinConstraintValue(group, evaluationContext);
     const members = memberDefsOf(group);
     if (minValue <= 0 || members.length === 0) return;
 
-    const itemizedCount = populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members });
+    const itemizedCount = populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members, evaluationContext });
     if (itemizedCount > 0) return;
 
     const chosenOption = resolveGroupDefaultMember(group);
-    addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef: chosenOption, count: minValue });
+    addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef: chosenOption, count: minValue, evaluationContext });
   });
 }
 
@@ -84,9 +99,14 @@ function populateChildren({ system, resolveEntry, catalogueId, def, parentSelect
  *   Kontext: bei mehreren gleichzeitig geladenen Katalogen (ADR-0018) ist eine Eintrags-Id
  *   nur innerhalb ihres Katalogs eindeutig.
  * @param {string|null} [args.categoryId]           Kategorie der Top-Selektion (Kinder erben keine).
+ * @param {Object|null} [args.evaluationContext]     Optionaler Bewertungskontext für Modifier-
+ *   Bedingungen. Ohne ihn werden rohe `min`-Werte bevölkert (unverändertes Verhalten); mit ihm
+ *   werden **effektive** (modifier-angepasste) `min`-Werte herangezogen, sodass ein bedingt
+ *   erhöhtes `min` als Pflichtwahl bevölkert wird. Wird rekursiv an die Pflicht-Kinder
+ *   durchgereicht.
  * @returns {import('../types.js').Selection|null}  der Knoten, oder null bei unauflösbarem Eintrag.
  */
-export function createSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId = null }) {
+export function createSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId = null, evaluationContext = null }) {
   const resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return null;
 
@@ -101,6 +121,6 @@ export function createSelectionFromDef({ system, resolveEntry, catalogueId, entr
     selections: []
   };
 
-  populateChildren({ system, resolveEntry, catalogueId, def: resolved, parentSelection: selection });
+  populateChildren({ system, resolveEntry, catalogueId, def: resolved, parentSelection: selection, evaluationContext });
   return selection;
 }

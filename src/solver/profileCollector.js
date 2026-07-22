@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName, resolveContextCatalogueId } from './modifierEvaluator.js';
+import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName, getModifiedConstraintValue, resolveContextCatalogueId } from './modifierEvaluator.js';
 import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
@@ -198,7 +198,12 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
         resolved.selectionEntries?.forEach(child => {
           const childResolved = resolveEntry(system, child, activeCatalogueId);
           if (childResolved) {
-            const minCon = childResolved.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
+            // Effektives (modifier-angepasstes) min: ein bedingt erhöhtes min macht das
+            // Kind zur Pflichtwahl, deren Default-Profile/-Regeln hier mitzählen.
+            const minConstraint = childResolved.constraints?.find(c => c.type === ConstraintKind.MIN);
+            const minCon = minConstraint
+              ? getModifiedConstraintValue(minConstraint, getEffectiveModifiers(childResolved), makeCtx(sel, parentSel))
+              : 0;
             const isMandatory = minCon > 0;
             const isUpgrade = (childResolved.type || 'upgrade') === 'upgrade';
             if (!isUpgrade || isMandatory) {

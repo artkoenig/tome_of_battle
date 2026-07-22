@@ -4,12 +4,13 @@ import {
   resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
   isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
   isQuirkGeneralEntryId, findForceContainingSelection, resolveCostLimitLabel,
-  countSelections,
+  countSelections, getEffectiveModifiers, getEffectiveConstraintLimit,
   UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/validator';
 import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
+import { resolveRowSelectionId } from './optionNesting';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
 
@@ -124,6 +125,9 @@ export default function SelectionConfigurator({
           id: item.groupId,
           constraints: item.groupConstraints,
           modifiers: item.groupModifiers,
+          // The selection this group is re-emitted from (null for a plain unit group);
+          // drives where the group renders — nested under that selection's row.
+          ownerSelectionId: item.ownerSelectionId || null,
           items: []
         };
         groupedList.push(groupMap[groupKey]);
@@ -132,6 +136,7 @@ export default function SelectionConfigurator({
     } else {
       groupedList.push({
         standalone: true,
+        ownerSelectionId: item.ownerSelectionId || null,
         item: item
       });
     }
@@ -163,16 +168,47 @@ export default function SelectionConfigurator({
     return 0;
   });
 
-  return (
-    <div className="selection-node-body">
-      {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
-      {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
-      <div className="sub-selection-group sub-selection-group--flush">
-        {groupedList.map((group) => {
+  // Partition sections by the selection they hang off: top-level sections belong to the
+  // unit, the rest render indented under the row of the selection whose id they carry
+  // (optionsCollector's ownerSelectionId). This relationship is the sole nesting driver —
+  // no catalogue-, mount- or Barding-specific ids anywhere.
+  const sectionsByOwner = new Map();
+  const topSections = [];
+  groupedList.forEach(section => {
+    if (section.ownerSelectionId) {
+      const siblings = sectionsByOwner.get(section.ownerSelectionId) || [];
+      siblings.push(section);
+      sectionsByOwner.set(section.ownerSelectionId, siblings);
+    } else {
+      topSections.push(section);
+    }
+  });
+
+  // The sub-options a selected row re-emits, rendered indented directly beneath that row.
+  // Recurses to arbitrary depth through renderSection; null for an unselected or childless
+  // row. Indentation is purely visual — selection, count, cost and mutation targets stay
+  // untouched.
+  const renderOwnedChildren = (rowSelectionId) => {
+    const children = rowSelectionId ? sectionsByOwner.get(rowSelectionId) : null;
+    if (!children || children.length === 0) return null;
+    return (
+      <div className="nested-option-block">
+        {children.map(renderSection)}
+      </div>
+    );
+  };
+
+  const renderSection = (group) => {
           if (group.standalone) {
-            const { option, parentDefId } = group.item;
+            const { option, parentDefId, ownerSelectionId } = group.item;
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
+            // A re-emitted sub-option nests under its owning sub-selection; a plain unit
+            // option nests under the unit. Count/display keep reading the unit selection.
+            const editTargetId = ownerSelectionId || selection.id;
+            // The roster selection this row stands for, so its own re-emitted sub-options
+            // can nest beneath it (null while unselected).
+            const rowSelectionId = resolveRowSelectionId(selection, ownerSelectionId, option, res);
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
             const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
@@ -188,8 +224,11 @@ export default function SelectionConfigurator({
             }) || [];
             const minConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MIN);
             const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
-            const minLimit = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
-            const maxLimit = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
+            // Effektive (modifier-angepasste) Grenzen statt roher Katalogwerte, damit ein
+            // bedingt verändertes min/max Pflicht-/Binär-/Klammerungs-Entscheidungen steuert.
+            const optionModifiers = getEffectiveModifiers(res);
+            const minLimit = getEffectiveConstraintLimit(minConstraint, optionModifiers, displayCtx, 0);
+            const maxLimit = getEffectiveConstraintLimit(maxConstraint, optionModifiers, displayCtx, Infinity);
             const isMandatory = minLimit > 0 && minLimit === maxLimit;
             const isBinary = maxLimit === 1;
             const descText = getOptionDescription(res);
@@ -222,32 +261,32 @@ export default function SelectionConfigurator({
               if (isClickable) {
                 if (isSubUnitWithOwnOptions) {
                   if (count < maxLimit && !isSelectDisabled) {
-                    subSelectionOperations.addInstance(selection.id, option);
+                    subSelectionOperations.addInstance(editTargetId, option);
                   }
                 } else if (isBinary) {
                   const isDecrementing = count > 0;
                   if (isDecrementing) {
                     if (count > minLimit) {
-                      subSelectionOperations.decreaseCount(selection.id, option);
+                      subSelectionOperations.decreaseCount(editTargetId, option);
                     }
                   } else {
                     if (!isSelectDisabled) {
-                      subSelectionOperations.increaseCount(selection.id, option);
+                      subSelectionOperations.increaseCount(editTargetId, option);
                     }
                   }
                 } else {
                   // For standard options, clicking row increments. 
                   // If we wanted right-click to decrement we could, but click is increment.
                   if (count < maxLimit && !isSelectDisabled) {
-                    subSelectionOperations.increaseCount(selection.id, option);
+                    subSelectionOperations.increaseCount(editTargetId, option);
                   }
                 }
               }
             };
 
             return (
-              <div 
-                key={res.id} 
+              <React.Fragment key={res.id}>
+              <div
                 className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
                 onClick={handleRowClick}
               >
@@ -278,7 +317,7 @@ export default function SelectionConfigurator({
                       className="btn-primary text-label sub-selection-add-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        subSelectionOperations.addInstance(selection.id, option);
+                        subSelectionOperations.addInstance(editTargetId, option);
                       }}
                       disabled={isSelectDisabled || count >= maxLimit}
                     >
@@ -294,9 +333,9 @@ export default function SelectionConfigurator({
                       onChange={(e) => {
                         if (!isMandatory && !(count > 0 && count <= minLimit)) {
                           if (e.target.checked) {
-                            subSelectionOperations.increaseCount(selection.id, option);
+                            subSelectionOperations.increaseCount(editTargetId, option);
                           } else {
-                            subSelectionOperations.decreaseCount(selection.id, option);
+                            subSelectionOperations.decreaseCount(editTargetId, option);
                           }
                         }
                       }}
@@ -307,7 +346,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          subSelectionOperations.decreaseCount(selection.id, option);
+                          subSelectionOperations.decreaseCount(editTargetId, option);
                         }}
                         disabled={count <= minLimit}
                       >
@@ -318,7 +357,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          subSelectionOperations.increaseCount(selection.id, option);
+                          subSelectionOperations.increaseCount(editTargetId, option);
                         }}
                         disabled={isSelectDisabled || count >= maxLimit}
                       >
@@ -328,6 +367,8 @@ export default function SelectionConfigurator({
                   )}
                 </div>
               </div>
+              {renderOwnedChildren(rowSelectionId)}
+              </React.Fragment>
             );
           } else {
             return (
@@ -346,10 +387,18 @@ export default function SelectionConfigurator({
                 onHoverMove={handleMouseMove}
                 onHoverLeave={handleMouseLeave}
                 onShowRule={onShowRule}
+                renderRowChildren={renderOwnedChildren}
               />
             );
           }
-        })}
+  };
+
+  return (
+    <div className="selection-node-body">
+      {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
+      {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
+      <div className="sub-selection-group sub-selection-group--flush">
+        {topSections.map(renderSection)}
       </div>
     </div>
   );

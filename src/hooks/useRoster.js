@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
-  mapSelectionTree, replaceSelectionById,
+  mapSelectionTree, replaceSelectionById, computeRosterCounts,
   createSelectionFromDef as buildSelectionFromDef,
   withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../solver/validator';
@@ -158,10 +158,26 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   const catalogueIdContaining = (selectionId) =>
     catalogueIdOfForce(findForceContainingSelection(roster, selectionId));
 
+  /**
+   * Bewertungskontext für die effektive `min`-Seite der Fabrik: damit ein bedingt
+   * erhöhtes Gruppen-/Options-`min` (eine erzwungene Pflichtwahl) beim Ausheben als
+   * solche bevölkert wird. Ohne geladenes System/Roster gibt es keinen Kontext — die
+   * Fabrik fällt dann auf das rohe `min` zurück (unverändertes Verhalten).
+   */
+  const buildFactoryContext = (catalogueId) => {
+    if (!system || !roster) return null;
+    const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
+    const forceCategoryCounts = Object.values(categoryCounts).reduce((merged, counts) => ({ ...merged, ...counts }), {});
+    return { roster, system, selectionCounts, forceCategoryCounts, parentCatalogueId: catalogueId };
+  };
+
   // Geteilte Selektions-Fabrik (SSOT, ADR-0022): system/resolveEntry werden injiziert,
   // sodass Ausheben und Aushebe-Verfügbarkeit dieselbe Pflicht-Kind-Bevölkerung sehen.
   const createSelectionFromDef = (entry, categoryId, catalogueId) =>
-    buildSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId });
+    buildSelectionFromDef({
+      system, resolveEntry, catalogueId, entry, categoryId,
+      evaluationContext: buildFactoryContext(catalogueId)
+    });
 
   /**
    * Hebt `entry` in genau ein Kontingent aus.
