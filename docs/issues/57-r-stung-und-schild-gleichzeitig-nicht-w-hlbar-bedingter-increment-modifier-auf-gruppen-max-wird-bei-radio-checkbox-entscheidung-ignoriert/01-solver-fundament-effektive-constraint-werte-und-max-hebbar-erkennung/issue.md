@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -44,3 +44,4 @@ Facade-Grenzen nicht umgehen.
       Typecheck grün.
 
 ## Comments
+- Solver-Fundament: neue reine Funktion canGroupMaxBeRaisedAboveSingleChoice(group) in modifierEvaluator.js (via Fassade re-exportiert) erkennt statisch, ob ein Modifier die Gruppen-Max ueber 1 heben kann (increment/set), grenzt das increment+<repeat>-Muster (repeat vorhanden) sauber ab. Zusaetzlich reicht selectionFactory.createSelectionFromDef jetzt einen optionalen evaluationContext durch; getMinConstraintValue nutzt damit effektive (modifier-angepasste) min-Werte, ohne Kontext bleibt das rohe Verhalten. Keine Verhaltensaenderung an Screens. Neue Unit-Tests (maxRaisable, effectiveMin). npm test/lint/typecheck gruen.
