@@ -870,6 +870,81 @@ Regeln beliebig viele Power Stones erlauben). Der fehlende Modifier wurde deshal
 `max`-Constraint-`id`, `childId="0ed5-eacf-d55a-5e9e"`). Neu importierte Community-Kataloge können
 dieselbe Lücke mitbringen — dann ist es dieselbe Daten-Ergänzung, kein App-Bug.
 
+### 9.8 Bedingter Modifier auf ein Gruppen-Max/Min (an eine andere Auswahl oder einen Scope gekoppelt)
+
+**Abgrenzung zu [§9.7](#97-mehrfach-erlaubte-gegenstände-in-einer-max1-gruppe-dispel-scroll-etc):** §9.7
+behandelt „mehrere Stück **desselben** Items" — ein `increment`-Modifier **mit `<repeat>`**, dessen
+`<repeat>` auf **genau den einen Eintrag** zeigt, hebt die Gruppen-Kappe je gewähltem Exemplar. Das ist
+das Signal „dieses eine Item ist zählbar" (→ Mengen-Stepper), **nicht** „die Gruppe erlaubt mehrere
+**verschiedene** Optionen".
+
+Hier geht es um das andere Muster: ein `modifier` verändert das **Max (oder Min) einer ganzen
+`selectionEntryGroup`** bedingt — gekoppelt an eine **andere** Auswahl (ein Geschwister-Item, eine
+Kategorie) oder einen **Scope** (z. B. eine Rolle wie *Battle Standard Bearer*). Es ist **kein**
+`<repeat>` im Spiel; die Gruppe wird dadurch inhärent mehr- oder weniger-wählbar. Die Katalog-Daten sind
+korrekt — das effektive Limit ist schlicht kontextabhängig.
+
+Das kanonische Beispiel ist **Rüstung + Schild**: Eine Rüstungsgruppe hat `max="1"`, trägt aber einen
+`increment`-Modifier auf **die Gruppen-Max-Constraint selbst**, dessen `condition` an die Schild-Auswahl
+gekoppelt ist. Ohne Schild ist das effektive Max 1, mit Schild 2 — genau so lassen sich eine Rüstung
+**und** ein Schild kombinieren (Referenz-Tools zeigen dann „2/2"):
+
+```xml
+<selectionEntryGroup id="…" name="Armour">
+  <modifiers>
+    <!-- +1 auf die Gruppen-Max, wenn in dieser Gruppe ein Schild gewählt ist -->
+    <modifier type="increment" field="3abf-ef75-7480-0e27" value="1">
+      <conditions>
+        <condition type="equalTo" field="selections" scope="parent"
+                   childId="<Shield-Id>" value="1" includeChildSelections="true"/>
+      </conditions>
+    </modifier>
+  </modifiers>
+  <constraints>
+    <constraint id="3abf-ef75-7480-0e27" field="selections" scope="parent" type="max" value="1"/>
+  </constraints>
+  …
+</selectionEntryGroup>
+```
+
+Der Modifier kann auch **direkt am `entryLink` der koppelnden Option** hängen statt an der Gruppe — dann
+gilt er nur, wenn diese Option gewählt ist (im `whfb6`-Satz z. B. *Enchanted Shield* in *Vampire Counts*,
+ein `set`/`increment` auf die `max`-`id` der „Magic Armour"-Gruppe). Der Nettoeffekt ist derselbe.
+
+**Verwandte Klassen desselben Musters** (durchgängig in fast allen Armeebüchern beider Forks belegt):
+
+| Klasse | Wirkung auf das effektive Gruppen-Limit | UI-Konsequenz |
+|--------|------------------------------------------|----------------|
+| Max **hebend** (Rüstung+Schild) | `max` 1 → 2, wenn eine gekoppelte Option gewählt ist | Mehrfachauswahl (siehe Regel unten) |
+| Max **senkend** (umgekehrt) | `max` 2 → 1 (z. B. Waffen bei *Battle Standard Bearer*) | gegenseitiger Ausschluss (Radio) |
+| Max **auf 0** | `max` → 0 (Gruppe bedingt deaktiviert) | Gruppe nicht mehr wählbar |
+| Min **erhöht** | `min` 0 → N (bedingte Pflichtwahl) | Gruppe wird zur Pflicht |
+
+#### Abgeleitete UI-Regel: „Max-hebbar ⇒ Mehrfachauswahl mit Zähler"
+
+Die Radio-vs-Checkbox-Entscheidung einer Gruppe darf sich **nicht** am rohen Katalog-`max` und **auch
+nicht** am *aktuellen* effektiven Max festmachen, sondern daran, ob ein Modifier das Max über 1 **heben
+kann**:
+
+- Kann irgendein (nicht-`<repeat>`) Modifier das Gruppen-Max über 1 heben, rendert die Gruppe als
+  **Mehrfachauswahl mit Live-Zähler** (`N/M`, wie NewRecruit „2/2") — **schon bevor** die Bedingung
+  erfüllt ist. Andernfalls entstünde ein **Teufelskreis**: ohne Schild wäre das Max 1 → Radio → das
+  Schild ließe sich nie stabil anwählen, um die Bedingung zu erfüllen.
+- Nur eine **echt fix auf `max=1` gedeckelte** Gruppe **ohne** solchen Modifier bleibt gegenseitig
+  ausschließendes **Radio** (klassische „wähle genau 1"-Wahl, [§9.2](#92-ausrüstungswahl-wähle-genau-1-radiobutton)).
+- Der **senkende** Fall und die **Deaktivierung** leiten sich dagegen aus dem *aktuellen* effektiven Max
+  ab: Sinkt es auf 1, greift Ausschluss; sinkt es auf 0, ist die Gruppe gesperrt.
+- Das `increment`+`<repeat>`-Stepper-Muster ([§9.7](#97-mehrfach-erlaubte-gegenstände-in-einer-max1-gruppe-dispel-scroll-etc))
+  bleibt davon **unberührt** — es wird gesondert erkannt und als Mengen-Stepper gerendert.
+
+**Umsetzung:** Die statische „hebbar?"-Erkennung liefert `canGroupMaxBeRaisedAboveSingleChoice`
+(`src/solver/modifierEvaluator.js`, über die Fassade `src/solver/validator.js`); die *aktuellen*
+effektiven Werte liefern `getModifiedConstraintValue` / `getEffectiveConstraintLimit`. Sämtliche
+Auswahl-, Anzeige- und Recruit-/Autofill-Entscheidungen (Radio/Checkbox/Binär/Mandatory, der angezeigte
+„Max/Min: N", die Count-Klammerungen, `isOptionRosterUnique`, die Solver-Min-Sites) leiten sich aus
+diesen **effektiven** Werten ab — kein roher Constraint-Wert steuert mehr eine dieser Entscheidungen
+(`src/components/editor/OptionGroup.jsx`, `SelectionConfigurator.jsx`, `AutoFillSuggestions.jsx`).
+
 ---
 
 ## 10. Collective Entries
