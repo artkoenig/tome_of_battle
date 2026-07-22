@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique, getEffectiveModifiers, getEffectiveConstraintLimit } from '../../solver/validator';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
 const getSubSelectionCount = (selection, optionEntryId) => {
@@ -55,7 +55,7 @@ export default function AutoFillSuggestions({
       const options = getUnitOptions(system, activeCatalogue.id, selection);
       
       options.forEach(item => {
-        const { option, parentDefId, groupConstraints } = item;
+        const { option, parentDefId, groupConstraints, groupModifiers } = item;
         const res = resolveEntry(system, option, activeCatalogue.id);
         if (!res) return;
 
@@ -86,16 +86,17 @@ export default function AutoFillSuggestions({
           return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
                  (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
         }) || [];
-        
+
+        // Effektive (modifier-angepasste) Grenzen: Auto-Select darf nicht mehr Kopien
+        // vorschlagen, als das effektive Options- bzw. Gruppen-Max zulässt.
         const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
-        if (maxConstraint && maxConstraint.value !== undefined) {
-          maxLimit = maxConstraint.value;
-        }
+        maxLimit = getEffectiveConstraintLimit(maxConstraint, getEffectiveModifiers(res), displayCtx, Infinity);
 
         if (groupConstraints) {
            const maxGroup = groupConstraints.find(c => c.type === ConstraintKind.MAX);
-           if (maxGroup && maxGroup.value !== undefined) {
-             if (maxGroup.value < maxLimit) maxLimit = maxGroup.value;
+           if (maxGroup) {
+             const groupMaxLimit = getEffectiveConstraintLimit(maxGroup, groupModifiers || [], displayCtx, Infinity);
+             if (groupMaxLimit < maxLimit) maxLimit = groupMaxLimit;
            }
         }
 

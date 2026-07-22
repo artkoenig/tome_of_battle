@@ -52,6 +52,17 @@ vi.mock('../../solver/validator', async () => ({
   resolveEntry: (...args) => mockResolveEntry(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   getModifiedConstraintValue: (...args) => mockGetModifiedConstraintValue(...args),
+  // Effektive Grenze über denselben (gemockten) getModifiedConstraintValue, plus die
+  // Normalisierung fehlend/negativ → Fallback, die die echte Fassade vornimmt.
+  getEffectiveConstraintLimit: (constraint, modifiers, ctx, fallback = 0) => {
+    if (!constraint) return fallback;
+    const value = mockGetModifiedConstraintValue(constraint, modifiers, ctx);
+    return (value === undefined || value === null || value < 0) ? fallback : value;
+  },
+  // Statische „Max-hebbar"-Erkennung: die echte Solver-Implementierung durchreichen —
+  // sie ist rein und in modifierEvaluator.maxRaisable.test.js eigens abgedeckt.
+  canGroupMaxBeRaisedAboveSingleChoice:
+    (await vi.importActual('../../solver/modifierEvaluator')).canGroupMaxBeRaisedAboveSingleChoice,
   computeRosterCounts: (...args) => mockComputeRosterCounts(...args),
   getOptionDisplayCost: (...args) => mockGetOptionDisplayCost(...args),
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
@@ -728,5 +739,146 @@ describe('OptionGroup Component', () => {
     expect(maxCall).toBeDefined();
     const modifiersArg = maxCall[1];
     expect(modifiersArg.some(mod => mod.field === 'con-max' && mod.type === 'set')).toBe(true);
+  });
+
+  // ── Issue 57: Radio-vs-Checkbox aus effektiven Werten + Max-hebbar-Regel ──
+  // Rüstungsgruppe wie am Empire-Captain: Gruppe `max=1` plus bedingter increment auf
+  // genau diese Max-Constraint, gekoppelt an die Shield-Auswahl. Der increment-Modifier
+  // trägt KEIN <repeat>, ist also das „inhärent mehrfach"-Signal (kein Stepper-Muster).
+  const ARMOUR_MAX_ID = 'con-armour-max';
+  const SHIELD_PRESENT = () => ({ type: 'greaterThan', field: 'selections', scope: 'parent', childId: 'res-shield', value: 0 });
+  const armourGroup = {
+    id: 'grp-armour',
+    name: 'Armour',
+    constraints: [{ type: 'max', value: 1, scope: 'parent', field: 'selections', id: ARMOUR_MAX_ID }],
+    modifiers: [{ type: 'increment', field: ARMOUR_MAX_ID, value: 1, valueObject: 1, conditions: [SHIELD_PRESENT()] }],
+    items: [
+      { option: { id: 'opt-fullplate' }, groupConstraints: [{ type: 'max', value: 1, id: ARMOUR_MAX_ID }] },
+      { option: { id: 'opt-heavy' }, groupConstraints: [{ type: 'max', value: 1, id: ARMOUR_MAX_ID }] },
+      { option: { id: 'opt-light' }, groupConstraints: [{ type: 'max', value: 1, id: ARMOUR_MAX_ID }] },
+      { option: { id: 'opt-shield' }, groupConstraints: [{ type: 'max', value: 1, id: ARMOUR_MAX_ID }] }
+    ]
+  };
+
+  const mockArmourItems = () => {
+    mockResolveEntry.mockImplementation((sys, opt) => {
+      switch (opt.id) {
+        case 'opt-fullplate': return { id: 'res-fullplate', name: 'Full Plate Armour', constraints: [] };
+        case 'opt-heavy': return { id: 'res-heavy', name: 'Heavy Armour', constraints: [] };
+        case 'opt-light': return { id: 'res-light', name: 'Light Armour', constraints: [] };
+        case 'opt-shield': return { id: 'res-shield', name: 'Shield', constraints: [] };
+        default: return { id: 'unit-resolved', name: 'Captain', categoryLinks: [] };
+      }
+    });
+    mockGetOptionDisplayCost.mockImplementation((sys, opt) => {
+      if (opt.id === 'opt-fullplate') return 12;
+      if (opt.id === 'opt-shield') return 3;
+      return 4;
+    });
+  };
+
+  it('26. Armour+Shield: max-hebbare Gruppe rendert als Checkboxen — auch bevor ein Schild gewählt ist', () => {
+    // Kein Schild gewählt: das aktuelle effektive Max ist 1 (der raw-basierte Bug würde
+    // hier Radios erzwingen und den Teufelskreis auslösen). Da ein Modifier das Max über 1
+    // heben KANN, muss die Gruppe dennoch als Mehrfachauswahl rendern.
+    mockArmourItems();
+    render(<OptionGroupComponent {...defaultProps} group={armourGroup} />);
+    fireEvent.click(screen.getByText('Armour').closest('div'));
+
+    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    expect(screen.getAllByRole('checkbox')).toHaveLength(4);
+
+    // Eine Rüstung anwählbar, ohne dass etwas anderes verdrängt wird.
+    const fullPlateRow = screen.getByText('Full Plate Armour').closest('.sub-selection-row');
+    fireEvent.click(fullPlateRow);
+    expect(defaultProps.subSelectionOperations.increaseCount)
+      .toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-fullplate' }));
+  });
+
+  it('27. Armour+Shield: das Schild verdrängt die gewählte Rüstung NICHT (Teufelskreis aufgelöst)', () => {
+    // Full Plate ist bereits gewählt; das Anwählen des Schilds darf die Rüstung nicht
+    // deselektieren — genau das tat die alte Radio-Logik.
+    mockArmourItems();
+    defaultProps.getSubSelectionCount.mockImplementation((sel, id) => (id === 'res-fullplate' ? 1 : 0));
+
+    render(<OptionGroupComponent {...defaultProps} group={armourGroup} />);
+    // Auswahl vorhanden → Gruppe klappt automatisch auf.
+    const shieldRow = screen.getByText('Shield').closest('.sub-selection-row');
+    fireEvent.click(shieldRow);
+
+    expect(defaultProps.subSelectionOperations.increaseCount)
+      .toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-shield' }));
+    expect(defaultProps.subSelectionOperations.decreaseCount)
+      .not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-fullplate' }));
+  });
+
+  it('28. Armour+Shield: nach Schild-Wahl zeigt das Gruppen-Label das erhöhte Max (Live-Zähler 2/2)', () => {
+    // Rüstung + Schild gemeinsam gewählt; der Modifier hebt das effektive Max auf 2.
+    mockArmourItems();
+    defaultProps.getSubSelectionCount.mockImplementation((sel, id) => (id === 'res-fullplate' || id === 'res-shield') ? 1 : 0);
+    // Effektives Max der Rüstungs-Constraint bei gewähltem Schild: 2.
+    mockGetModifiedConstraintValue.mockImplementation((con) => (con.id === ARMOUR_MAX_ID ? 2 : con.value));
+
+    render(<OptionGroupComponent {...defaultProps} group={armourGroup} />);
+
+    // Live-Zähler „2 / 2" (belegt / erhöhtes Max), nicht mehr „Max: 1".
+    expect(screen.getByText(/2\s*\/\s*2/)).toBeDefined();
+
+    // Beide als angehakte Checkboxen (wie NewRecruit).
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(4);
+    const fullPlateBox = screen.getByText('Full Plate Armour').closest('.sub-selection-row').querySelector('input[type="checkbox"]');
+    const shieldBox = screen.getByText('Shield').closest('.sub-selection-row').querySelector('input[type="checkbox"]');
+    expect(fullPlateBox.checked).toBe(true);
+    expect(shieldBox.checked).toBe(true);
+  });
+
+  it('29. Umgekehrter Fall: sinkt das effektive Max bedingt auf 1, wird die Gruppe zum Radio (Ausschluss)', () => {
+    // Weapons-Gruppe: Basis-Max 2 (Mehrfach), per decrement bedingt auf 1 gesenkt (z. B.
+    // Battle Standard Bearer). Kein Modifier HEBT über 1 → echte Einzelwahl → Radios.
+    const weaponsGroup = {
+      id: 'grp-weapons',
+      name: 'Weapons',
+      constraints: [{ type: 'max', value: 2, scope: 'parent', field: 'selections', id: 'con-weapons-max' }],
+      modifiers: [{ type: 'decrement', field: 'con-weapons-max', value: 1, valueObject: 1, conditions: [{ type: 'greaterThan', field: 'selections', scope: 'parent', childId: 'res-bsb', value: 0 }] }],
+      items: [
+        { option: { id: 'opt-sword' }, groupConstraints: [{ type: 'max', value: 2, id: 'con-weapons-max' }] },
+        { option: { id: 'opt-axe' }, groupConstraints: [{ type: 'max', value: 2, id: 'con-weapons-max' }] }
+      ]
+    };
+    // Effektiv gesenkt auf 1 (BSB aktiv).
+    mockGetModifiedConstraintValue.mockImplementation((con) => (con.id === 'con-weapons-max' ? 1 : con.value));
+
+    render(<OptionGroupComponent {...defaultProps} group={weaponsGroup} />);
+    fireEvent.click(screen.getByText('Weapons').closest('div'));
+
+    expect(screen.getAllByRole('radio')).toHaveLength(2);
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+  });
+
+  it('30. Deaktivierung: sinkt das effektive Max bedingt auf 0, ist die Gruppe nicht mehr wählbar', () => {
+    const bardingGroup = {
+      id: 'grp-barding',
+      name: 'Mount Options',
+      constraints: [{ type: 'max', value: 1, scope: 'parent', field: 'selections', id: 'con-barding-max' }],
+      modifiers: [{ type: 'set', field: 'con-barding-max', value: '0', valueObject: 0, conditions: [{ type: 'greaterThan', field: 'selections', scope: 'parent', childId: 'res-onfoot', value: 0 }] }],
+      items: [
+        { option: { id: 'opt-barding' }, groupConstraints: [{ type: 'max', value: 1, id: 'con-barding-max' }] }
+      ]
+    };
+    mockResolveEntry.mockImplementation((sys, opt) =>
+      opt.id === 'opt-barding' ? { id: 'res-barding', name: 'Barding', constraints: [] } : { id: 'unit-resolved', name: 'Captain', categoryLinks: [] });
+    mockGetOptionDisplayCost.mockReturnValue(6);
+    // Effektives Gruppen-Max auf 0 gesenkt.
+    mockGetModifiedConstraintValue.mockImplementation((con) => (con.id === 'con-barding-max' ? 0 : con.value));
+
+    render(<OptionGroupComponent {...defaultProps} group={bardingGroup} />);
+    fireEvent.click(screen.getByText('Mount Options').closest('div'));
+
+    const bardingRow = screen.getByText('Barding').closest('.sub-selection-row');
+    expect(bardingRow.className).toContain('disabled');
+    fireEvent.click(bardingRow);
+    expect(defaultProps.subSelectionOperations.increaseCount)
+      .not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-barding' }));
   });
 });

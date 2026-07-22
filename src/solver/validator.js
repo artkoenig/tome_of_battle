@@ -37,7 +37,7 @@ export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, 
 export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, getExtraResourceTotals, resolveCostLimitTypeId, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 export { validateRoster, hasBlockingViolations, countBlockingViolations, VIOLATION_BLOCKS_ADD_AVAILABILITY, classifyBlocksAddAvailability } from './rosterValidator.js';
 export { getEntryAddAvailability, isBlockingAvailabilityViolation } from './entryAvailability.js';
-export { isPercentConstraint, isCostField, collectScopeSelections, getScopeReferenceTotal, resolveConstraintThreshold, formatConstraintLimit } from './constraintScope.js';
+export { isPercentConstraint, isCostField, collectScopeSelections, getScopeReferenceTotal, resolveConstraintThreshold, formatConstraintLimit, getEffectiveConstraintLimit } from './constraintScope.js';
 export { collectUnitProfilesAndRules } from './profileCollector.js';
 export { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './rosterSync.js';
 export { findForceEntryById, getAvailableForceEntries } from './forceEntries.js';

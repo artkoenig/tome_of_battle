@@ -1,8 +1,40 @@
 import { getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
+import { getModifiedConstraintValue } from './modifierEvaluator.js';
 import { countSelections, rootSelectionsOf, childSelectionsOf } from './rosterTree.js';
 import { SELECTIONS_FIELD } from '../parser/xmlParser.js';
 import { ConstraintScope } from './battlescribeConstants.js';
 import '../types.js';
+
+/**
+ * BattleScribe encodes an unbounded/unset numeric constraint as a negative value
+ * (the catalogues use `-1`); such a value must never drive a selection decision as
+ * if it were a real count, so it collapses to the caller's fallback.
+ */
+const UNBOUNDED_CONSTRAINT_SENTINEL = 0;
+
+/**
+ * The effective (modifier-adjusted) value of a single min/max constraint, normalised
+ * for the selection / recruit / autofill decisions that consume it. A missing
+ * constraint, or an effective value BattleScribe treats as unbounded/unset
+ * (undefined/null or negative), collapses to `fallback`.
+ *
+ * This is the single seam through which the behaviour path (radio-vs-checkbox,
+ * mandatory, quantity clamps) reads a limit, so it can never drift from the
+ * modifier-aware label/validation path that already uses `getModifiedConstraintValue`.
+ * `modifiers` are the effective modifiers of the constraint's own source (an option's
+ * or a group's `getEffectiveModifiers`), and `ctx` gates their conditions.
+ *
+ * @param {Object|null|undefined} constraint the min/max constraint, or absent.
+ * @param {Object[]} modifiers effective modifiers of the constraint's source.
+ * @param {Object} [ctx] evaluation context gating the modifier conditions.
+ * @param {number} [fallback] value for a missing/unbounded constraint.
+ * @returns {number}
+ */
+export function getEffectiveConstraintLimit(constraint, modifiers, ctx = {}, fallback = UNBOUNDED_CONSTRAINT_SENTINEL) {
+  if (!constraint) return fallback;
+  const value = getModifiedConstraintValue(constraint, modifiers, ctx);
+  return (value === undefined || value === null || value < 0) ? fallback : value;
+}
 
 /**
  * Evaluation of the BattleScribe constraint attributes `percentValue`,

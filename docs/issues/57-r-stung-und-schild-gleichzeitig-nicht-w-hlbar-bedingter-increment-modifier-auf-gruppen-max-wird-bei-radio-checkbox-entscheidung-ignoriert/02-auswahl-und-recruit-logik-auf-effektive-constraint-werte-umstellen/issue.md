@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: [01]
 
@@ -58,3 +58,4 @@ Bug E2E entlang des echten Nutzerpfads reproduzieren.
       Screenshot der Captain-Rüstungsgruppe mit Rüstung + Schild gewählt.
 
 ## Comments
+- Implementierung durch Agent fertiggestellt (Code + Tests + E2E-Screenshot), aber der Agent endete ohne Commit/Statuswechsel. Von der Hauptsitzung verifiziert und abgeschlossen: Rüstung+Schild am Captain gleichzeitig waehlbar (Screenshot .screenshots/captain-armour-shield.png: Armour 2/2, Full Plate + Shield angehakt). npm run lint, npm run typecheck und npm test (vitest + Puppeteer-E2E) gruen im Worktree.
