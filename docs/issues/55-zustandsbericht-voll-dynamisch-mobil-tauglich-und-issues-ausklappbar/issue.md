@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -100,3 +100,4 @@ Main-Issue 54).
       Generator läuft lokal durch und erzeugt eine HTML-Datei.
 
 ## Comments
+- Berichts-Renderer voll dynamisch: assessment.js + Test entfernt; Gesamturteil in buildReportModel.deriveOverallAssessment aus gemessenen Gate-Zustaenden abgeleitet (kein Handtext, kein Widerspruch zur Gate-Tabelle). Seite mobil-tauglich (Tabellen in overflow-x-Containern, relative Einheiten, Media Query fuer schmale Viewports); offene Vorgaenge als native <details>/<summary> ohne JavaScript.
