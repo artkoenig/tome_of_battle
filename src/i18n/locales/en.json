@@ -62,7 +62,7 @@
 
   "newRoster.title": "Raise a New Army",
   "newRoster.nameLabel": "Army name",
-  "newRoster.namePlaceholder": "e.g. Warhost of Altdorf",
+  "newRoster.namePlaceholder": "e.g. Grimgor's Waaagh!",
   "newRoster.systemLabel": "Game system",
   "newRoster.systemPlaceholder": "Select a system...",
   "newRoster.noSystemsHint": "No game systems imported. Please visit the Library first.",
