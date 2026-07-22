@@ -5,8 +5,9 @@
  *
  * "In sich geschlossen" heisst woertlich: die erzeugte Seite laedt keine Schriften,
  * Skripte oder Daten nach. Alles Layout liegt in einem eingebetteten `<style>`, die
- * Navigation sind reine Anker, es gibt kein `<script>`. Damit funktioniert die Seite
- * offline und veraltet nicht durch entfernte Ressourcen.
+ * Umschaltung der Bereiche ist reines CSS (versteckte Radio-Inputs mit Labels), es
+ * gibt kein `<script>`. Damit funktioniert die Seite offline und veraltet nicht
+ * durch entfernte Ressourcen.
  *
  * Jeder angezeigte Inhalt leitet sich aus der Live-Messung ab -- es gibt keinen
  * hand-gepflegten Text mehr, der der gemessenen Realitaet widersprechen koennte
@@ -29,7 +30,7 @@ import { GateStatus, GateEnforcement, GateAbortReason } from './gates.js';
 
 const DEFAULT_REPORT_TITLE = 'Projektzustandsbericht';
 
-/** Die beiden Bereiche der Seite -- beide unter einer URL, ueber Anker erreichbar. */
+/** Die beiden Bereiche der Seite -- als CSS-only-Tabs umschaltbar (siehe {@link renderTabs}). */
 const SECTIONS = Object.freeze({
   healthcheck: { id: 'healthcheck', title: 'Healthcheck' },
   issues: { id: 'issues', title: 'Issues' },
@@ -84,6 +85,17 @@ const RENDERED_ISSUE_SECTIONS = Object.freeze(['Description', 'Acceptance Criter
  */
 
 /**
+ * @typedef {object} ModuleMetric  Codeumfang und Komplexitaet eines Moduls.
+ * @property {string} module
+ * @property {number} fileCount
+ * @property {number} lines             Codezeilen (ohne Leerzeilen).
+ * @property {number} functionCount
+ * @property {number} totalComplexity   Summe der zyklomatischen Komplexitaet aller Funktionen.
+ * @property {number} averageComplexity durchschnittliche zyklomatische Komplexitaet je Funktion.
+ * @property {number} maxComplexity     hoechste zyklomatische Komplexitaet im Modul.
+ */
+
+/**
  * @typedef {object} BranchScope  Die ausgewiesene Blindstelle des Issue-Bereichs.
  * @property {string[]} scannedRefs  Refs, die der Bericht sehen konnte.
  */
@@ -103,6 +115,8 @@ const RENDERED_ISSUE_SECTIONS = Object.freeze(['Description', 'Acceptance Criter
  * @property {ReadonlyArray<import('./gates.js').GateState>} gates
  * @property {ReadonlyArray<Metric>} metrics
  * @property {ReadonlyArray<import('./coverage.js').ModuleCoverage>} coverage
+ * @property {ReadonlyArray<ModuleMetric>} [moduleMetrics]
+ * @property {ReadonlyArray<import('./complexity.js').FunctionComplexity>} [complexFunctions]
  * @property {ReadonlyArray<import('./functions.js').LongFunction>} longFunctions
  * @property {StructureFacts} structure
  * @property {ReadonlyArray<import('./issues.js').OpenIssue>} openIssues
@@ -121,8 +135,7 @@ export function renderReport(model) {
   const body = [
     renderHeader(title, model.generatedAt),
     renderOverallAssessment(model.assessment),
-    renderHealthcheckSection(model),
-    renderIssuesSection(model),
+    renderTabs(model),
   ].join('\n');
 
   return [
@@ -133,6 +146,37 @@ export function renderReport(model) {
     '</html>',
     '',
   ].join('\n');
+}
+
+/**
+ * Die beiden Bereiche als echte Tabs -- nur einer ist sichtbar, umgeschaltet wird
+ * ohne JavaScript. Zwei versteckte Radio-Inputs tragen den Zustand; die Labels
+ * daneben schalten sie um, und das Stylesheet blendet je nach angehaktem Radio
+ * genau ein Panel ein (Geschwister-Selektor). Der Healthcheck ist der
+ * Standard-Tab (`checked`). Die Radios stehen vor Umschalter und Panels, damit der
+ * `~`-Selektor beide erreicht.
+ *
+ * @param {ReportModel} model
+ */
+function renderTabs(model) {
+  const [healthcheck, issues] = [SECTIONS.healthcheck, SECTIONS.issues];
+  return [
+    '<div class="tabs">',
+    `<input type="radio" name="report-tab" id="tab-${healthcheck.id}" class="tab-radio" checked>`,
+    `<input type="radio" name="report-tab" id="tab-${issues.id}" class="tab-radio">`,
+    '<nav class="tablist" role="tablist" aria-label="Bereiche">',
+    renderTabLabel(healthcheck),
+    renderTabLabel(issues),
+    '</nav>',
+    renderHealthcheckSection(model),
+    renderIssuesSection(model),
+    '</div>',
+  ].join('\n');
+}
+
+/** @param {{ id: string, title: string }} section */
+function renderTabLabel(section) {
+  return `<label class="tab" for="tab-${section.id}" role="tab">${escapeHtml(section.title)}</label>`;
 }
 
 function renderDocumentHead(title) {
@@ -147,14 +191,10 @@ function renderDocumentHead(title) {
 }
 
 function renderHeader(title, generatedAt) {
-  const nav = Object.values(SECTIONS)
-    .map((section) => `<a href="#${section.id}">${escapeHtml(section.title)}</a>`)
-    .join('\n');
   return [
     '<header class="page-header">',
     `<h1>${escapeHtml(title)}</h1>`,
     `<p class="generated-at">Erhoben: ${escapeHtml(generatedAt)}</p>`,
-    `<nav class="section-nav">\n${nav}\n</nav>`,
     '</header>',
   ].join('\n');
 }
@@ -175,17 +215,69 @@ function renderOverallAssessment(assessment) {
 
 /** @param {ReportModel} model */
 function renderHealthcheckSection(model) {
-  const { id, title } = SECTIONS.healthcheck;
+  const { id } = SECTIONS.healthcheck;
   return [
-    `<section id="${id}" class="section">`,
-    `<h2>${escapeHtml(title)}</h2>`,
+    `<section id="${id}" class="section panel panel-${id}" role="tabpanel" aria-labelledby="tab-${id}">`,
     renderGates(model.gates),
     renderMetrics(model.metrics),
+    renderModuleMetrics(model.moduleMetrics ?? []),
     renderCoverage(model.coverage),
+    renderComplexFunctions(model.complexFunctions ?? []),
     renderLongFunctions(model.longFunctions),
     renderStructure(model.structure),
     '</section>',
   ].join('\n');
+}
+
+/** @param {ReadonlyArray<ModuleMetric>} moduleMetrics */
+function renderModuleMetrics(moduleMetrics) {
+  if (moduleMetrics.length === 0) {
+    return renderSubsection('Umfang und Komplexitaet je Modul', renderEmpty('Kein Produktivcode erfasst.'));
+  }
+  const rows = moduleMetrics
+    .map((entry) =>
+      [
+        '<tr>',
+        `<td><code>${escapeHtml(entry.module)}</code></td>`,
+        `<td class="num">${entry.fileCount}</td>`,
+        `<td class="num">${entry.lines}</td>`,
+        `<td class="num">${entry.functionCount}</td>`,
+        `<td class="num">${entry.totalComplexity}</td>`,
+        `<td class="num">${entry.averageComplexity}</td>`,
+        `<td class="num">${entry.maxComplexity}</td>`,
+        '</tr>',
+      ].join(''),
+    )
+    .join('\n');
+  return renderGridTable(
+    'Umfang und Komplexitaet je Modul',
+    '<th>Modul</th><th>Dateien</th><th>Zeilen</th><th>Funktionen</th><th>&#931;&nbsp;Komplexitaet</th><th>&#216;&nbsp;Komplexitaet</th><th>max.&nbsp;Komplexitaet</th>',
+    rows,
+  );
+}
+
+/** @param {ReadonlyArray<import('./complexity.js').FunctionComplexity>} complexFunctions */
+function renderComplexFunctions(complexFunctions) {
+  if (complexFunctions.length === 0) {
+    return renderSubsection('Komplexeste Funktionen', renderEmpty('Keine Funktionen erfasst.'));
+  }
+  const rows = complexFunctions
+    .map((fn) =>
+      [
+        '<tr>',
+        `<td><code>${escapeHtml(fn.name)}</code></td>`,
+        `<td><code>${escapeHtml(fn.path)}</code></td>`,
+        `<td class="num">${fn.complexity}</td>`,
+        `<td class="num">${fn.startLine}</td>`,
+        '</tr>',
+      ].join(''),
+    )
+    .join('\n');
+  return renderGridTable(
+    'Komplexeste Funktionen',
+    '<th>Funktion</th><th>Datei</th><th>Komplexitaet</th><th>Zeile</th>',
+    rows,
+  );
 }
 
 /** @param {ReadonlyArray<import('./gates.js').GateState>} gates */
@@ -204,12 +296,7 @@ function renderGates(gates) {
     })
     .join('\n');
 
-  return renderSubsection(
-    'Qualitaets-Gates',
-    wrapScrollable(
-      `<table class="grid"><thead><tr><th>Gate</th><th>Zustand</th><th>Wirksamkeit</th></tr></thead><tbody>${rows}</tbody></table>`,
-    ),
-  );
+  return renderGridTable('Qualitaets-Gates', '<th>Gate</th><th>Zustand</th><th>Wirksamkeit</th>', rows);
 }
 
 /** @param {import('./gates.js').GateState} gate */
@@ -253,11 +340,10 @@ function renderCoverage(coverage) {
       ].join(''),
     )
     .join('\n');
-  return renderSubsection(
+  return renderGridTable(
     'Testabdeckung je Modul',
-    wrapScrollable(
-      `<table class="grid"><thead><tr><th>Modul</th><th>Dateien</th><th>Anweisungen</th><th>Branches</th><th>Funktionen</th></tr></thead><tbody>${rows}</tbody></table>`,
-    ),
+    '<th>Modul</th><th>Dateien</th><th>Anweisungen</th><th>Branches</th><th>Funktionen</th>',
+    rows,
   );
 }
 
@@ -283,11 +369,10 @@ function renderLongFunctions(longFunctions) {
       ].join(''),
     )
     .join('\n');
-  return renderSubsection(
+  return renderGridTable(
     'Laengste Funktionen',
-    wrapScrollable(
-      `<table class="grid"><thead><tr><th>Funktion</th><th>Datei</th><th>Zeilen</th><th>Bereich</th></tr></thead><tbody>${rows}</tbody></table>`,
-    ),
+    '<th>Funktion</th><th>Datei</th><th>Zeilen</th><th>Bereich</th>',
+    rows,
   );
 }
 
@@ -322,10 +407,9 @@ function renderStructureFinding(label, items, emptyText) {
 
 /** @param {ReportModel} model */
 function renderIssuesSection(model) {
-  const { id, title } = SECTIONS.issues;
+  const { id } = SECTIONS.issues;
   return [
-    `<section id="${id}" class="section">`,
-    `<h2>${escapeHtml(title)}</h2>`,
+    `<section id="${id}" class="section panel panel-${id}" role="tabpanel" aria-labelledby="tab-${id}">`,
     renderBranchScope(model.branchScope),
     renderOpenIssues(model.openIssues),
     renderUnreadableIssues(model.unreadableIssues ?? []),
@@ -436,6 +520,22 @@ function renderSubsection(title, innerHtml) {
 }
 
 /**
+ * Eine benannte, breiten-scrollbare Tabelle im Gitter-Stil. Alle Tabellen des
+ * Berichts teilen sich dieselbe Huelle (Untergruppe + `overflow-x`-Container +
+ * `table.grid`); nur Kopf und Zeilen unterscheiden sich.
+ *
+ * @param {string} title
+ * @param {string} headerCells  die fertigen `<th>`-Zellen der Kopfzeile
+ * @param {string} rows         die fertigen `<tr>`-Zeilen
+ */
+function renderGridTable(title, headerCells, rows) {
+  return renderSubsection(
+    title,
+    wrapScrollable(`<table class="grid"><thead><tr>${headerCells}</tr></thead><tbody>${rows}</tbody></table>`),
+  );
+}
+
+/**
  * Legt breite Inhalte (Tabellen) in einen eigenen horizontal scrollbaren Container.
  * So laeuft eine breite Tabelle auf einem schmalen Viewport innerhalb ihres Rahmens
  * ueber, statt die ganze Seite horizontal scrollen zu lassen.
@@ -489,9 +589,18 @@ function escapeHtml(value) {
 }
 
 /**
- * Das eingebettete Stylesheet. Bewusst systemeigene Schriftarten (kein Nachladen),
- * helles und dunkles Erscheinungsbild ueber `prefers-color-scheme`. Die Zustaende
- * tragen ihre Bedeutung ueber Symbol und Text; die Farben hier sind nur Zugabe.
+ * Das eingebettete Stylesheet. Es nimmt den Look der Anwendung auf (ADR 0004,
+ * Gothic-/Tabletop-Thema): Pergament, Gold und Obsidian-Dunkel. Die Farbwerte sind
+ * aus `src/styles/01-tokens.css` uebernommen (kopiert, nicht importiert -- die Seite
+ * bleibt eigenstaendig). Schriften sind bewusst self-contained: kein Nachladen von
+ * Google Fonts, sondern der Fallback-Serifen-Stack der App; der App-Look wird ueber
+ * Palette, Gold und Layout getragen, nicht ueber Cinzel/Lora selbst. Helles und
+ * dunkles Erscheinungsbild ueber `prefers-color-scheme`, beide in der App-Palette.
+ * Die Zustaende tragen ihre Bedeutung ueber Symbol und Text; die Farben sind Zugabe.
+ *
+ * Die beiden Bereiche sind echte Tabs, ganz ohne JavaScript: versteckte
+ * Radio-Inputs tragen den Zustand, Labels schalten sie um, und der
+ * Geschwister-Selektor blendet je genau ein Panel ein.
  *
  * Das Layout ist durchgehend in relativen Einheiten gehalten und mobil-tauglich:
  * breite Tabellen liegen je in einem eigenen `overflow-x`-Container (`.table-scroll`),
@@ -502,29 +611,42 @@ function escapeHtml(value) {
 const REPORT_STYLES = `
 :root {
   color-scheme: light dark;
-  --bg: #f7f7f5;
-  --surface: #ffffff;
-  --text: #1c1c1e;
-  --muted: #5c5c66;
-  --border: #d8d8d2;
-  --accent: #5b3a29;
-  --ok-bg: #d8ecd6; --ok-fg: #1d4620;
-  --warn-bg: #f6e6c4; --warn-fg: #6b4a11;
-  --inert-bg: #e4e4e4; --inert-fg: #3a3a3a;
-  --neutral-bg: #e2e6ee; --neutral-fg: #2a3a52;
+  --font-heading: Georgia, "Times New Roman", "Cinzel", serif;
+  --font-body: "Iowan Old Style", "Palatino Linotype", Palatino, "EB Garamond", Garamond, Georgia, serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* Hell: Pergament + Gold (App-Palette, ADR 0004). */
+  --bg: #eee3cc;
+  --surface: #f6f0e2;
+  --surface-2: #ede1c6;
+  --text: #262019;
+  --muted: #6a5f4b;
+  --border: #d5c39a;
+  --border-strong: #b0892a;
+  --accent: #876712;
+  --accent-strong: #6d520f;
+  --ok-bg: #d8e8d0; --ok-fg: #1b5e2a;
+  --warn-bg: #f1e1bb; --warn-fg: #7a4d0b;
+  --inert-bg: #e4dabf; --inert-fg: #4a4234;
+  --neutral-bg: #d7e2ee; --neutral-fg: #23577f;
+  --shadow: 0 1px 3px rgba(60, 44, 12, .14);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #17171a;
-    --surface: #202024;
-    --text: #ececf0;
-    --muted: #a1a1ab;
-    --border: #35353c;
-    --accent: #c99b7a;
-    --ok-bg: #1f3a22; --ok-fg: #b7e6b3;
-    --warn-bg: #443413; --warn-fg: #f0d79a;
-    --inert-bg: #33333a; --inert-fg: #d0d0d6;
-    --neutral-bg: #26303f; --neutral-fg: #b9cbe6;
+    /* Dunkel: Obsidian + Gold. */
+    --bg: #08080a;
+    --surface: #14141a;
+    --surface-2: #1e1e26;
+    --text: #ece2cc;
+    --muted: #b7b7c4;
+    --border: #3a3a45;
+    --border-strong: #7d6520;
+    --accent: #ecc157;
+    --accent-strong: #f7d878;
+    --ok-bg: rgba(27, 115, 64, .24); --ok-fg: #81c784;
+    --warn-bg: rgba(194, 125, 19, .24); --warn-fg: #ffd54f;
+    --inert-bg: #24242c; --inert-fg: #b7b7c4;
+    --neutral-bg: rgba(45, 108, 166, .26); --neutral-fg: #7ab8ea;
+    --shadow: 0 2px 12px rgba(0, 0, 0, .55);
   }
 }
 * { box-sizing: border-box; }
@@ -533,33 +655,50 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  line-height: 1.55;
   overflow-wrap: break-word;
 }
 .page { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
-.page-header { border-bottom: 2px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
-h1 { font-size: 1.9rem; margin: 0 0 .25rem; }
-h2 { font-size: 1.4rem; margin: 0 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .3rem; }
-h3 { font-size: 1.1rem; margin: 1.25rem 0 .5rem; }
+.page-header { border-bottom: 2px solid var(--border-strong); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+h1 { font-family: var(--font-heading); font-size: 2rem; letter-spacing: .02em; color: var(--accent-strong); margin: 0 0 .25rem; }
+h2 { font-family: var(--font-heading); font-size: 1.4rem; letter-spacing: .02em; color: var(--accent-strong); margin: 0 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .3rem; }
+h3 { font-family: var(--font-heading); font-size: 1.12rem; color: var(--accent); margin: 1.25rem 0 .5rem; }
 h4 { font-size: .95rem; margin: 1rem 0 .35rem; color: var(--muted); }
-.generated-at { color: var(--muted); margin: 0 0 .75rem; font-size: .9rem; }
-.section-nav a { display: inline-block; margin-right: 1rem; color: var(--accent); text-decoration: none; font-weight: 600; }
-.section-nav a:hover { text-decoration: underline; }
-.section { margin-bottom: 2.5rem; }
+.generated-at { color: var(--muted); margin: 0 0 .25rem; font-size: .9rem; }
+.section { margin-bottom: 1rem; }
 .subsection { margin-bottom: 1.5rem; }
 .empty { color: var(--muted); font-size: .9rem; }
-.verdict { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 2rem; }
+.tabs { position: relative; }
+.tab-radio { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.tablist { display: flex; flex-wrap: wrap; gap: .25rem; border-bottom: 2px solid var(--border-strong); margin: 0 0 1.5rem; }
+.tab { cursor: pointer; user-select: none; padding: .5rem 1.1rem; font-family: var(--font-heading); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; font-size: .9rem; color: var(--muted); border: 1px solid transparent; border-bottom: none; border-radius: 7px 7px 0 0; }
+.tab:hover { color: var(--accent-strong); }
+.panel { display: none; }
+#tab-healthcheck:checked ~ .panel-healthcheck,
+#tab-issues:checked ~ .panel-issues { display: block; }
+#tab-healthcheck:checked ~ .tablist label[for="tab-healthcheck"],
+#tab-issues:checked ~ .tablist label[for="tab-issues"] {
+  color: var(--accent-strong);
+  background: var(--surface);
+  border-color: var(--border-strong);
+  border-bottom: 2px solid var(--surface);
+  margin-bottom: -2px;
+}
+#tab-healthcheck:focus-visible ~ .tablist label[for="tab-healthcheck"],
+#tab-issues:focus-visible ~ .tablist label[for="tab-issues"] { outline: 2px solid var(--accent); outline-offset: 2px; }
+.verdict { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--border-strong); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 2rem; box-shadow: var(--shadow); }
+.verdict h2 { border-bottom: none; margin-bottom: .25rem; }
 .verdict-headline { font-size: 1.15rem; font-weight: 600; margin: .25rem 0 .5rem; }
 .verdict-facts { list-style: none; padding: 0; margin: .5rem 0 0; display: flex; flex-direction: column; gap: .25rem; }
 .verdict-facts li { color: var(--muted); font-size: .9rem; }
 .prose :first-child { margin-top: 0; }
 .prose :last-child { margin-bottom: 0; }
-code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: .85em; overflow-wrap: anywhere; }
+code { font-family: var(--font-mono); font-size: .85em; overflow-wrap: anywhere; }
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: .5rem; }
 table.grid { width: 100%; border-collapse: collapse; font-size: .9rem; }
 table.grid th, table.grid td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
-table.grid th { color: var(--muted); font-weight: 600; }
+table.grid th { color: var(--accent); font-weight: 600; }
 td.num { text-align: right; white-space: nowrap; }
 .fraction { display: block; color: var(--muted); font-size: .8em; }
 .badge { display: inline-flex; align-items: center; gap: .35em; padding: .15em .55em; border-radius: 999px; font-size: .82rem; font-weight: 600; }
@@ -570,15 +709,15 @@ td.num { text-align: right; white-space: nowrap; }
 .badge-neutral { background: var(--neutral-bg); color: var(--neutral-fg); }
 .reason { color: var(--muted); font-size: .85rem; }
 .metric-grid { list-style: none; display: flex; flex-wrap: wrap; gap: .75rem; padding: 0; margin: .5rem 0; }
-.metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .6rem .9rem; min-width: 7rem; flex: 1 1 7rem; display: flex; flex-direction: column; }
-.metric-value { font-size: 1.5rem; font-weight: 700; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-top: 2px solid var(--border-strong); border-radius: 8px; padding: .6rem .9rem; min-width: 7rem; flex: 1 1 7rem; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+.metric-value { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; color: var(--accent-strong); }
 .metric-label { color: var(--muted); font-size: .82rem; }
 .metric-hint { color: var(--muted); font-size: .75rem; margin-top: .2rem; }
 .finding-list { margin: .35rem 0; padding-left: 1.2rem; }
 .blind-spot { background: var(--warn-bg); color: var(--warn-fg); border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.25rem; font-size: .9rem; }
-.issue { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: .75rem; }
+.issue { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: .75rem; box-shadow: var(--shadow); }
 .issue-summary { cursor: pointer; padding: .65rem 1rem; }
-.issue-summary::marker { color: var(--muted); }
+.issue-summary::marker { color: var(--accent); }
 .issue-title { font-weight: 600; }
 .issue-status { display: inline-block; margin-left: .5rem; font-size: .78rem; padding: .1em .5em; border-radius: 4px; background: var(--neutral-bg); color: var(--neutral-fg); vertical-align: middle; }
 .issue[open] .issue-summary { border-bottom: 1px solid var(--border); }
@@ -589,10 +728,10 @@ td.num { text-align: right; white-space: nowrap; }
 .issue-refs { color: var(--muted); font-size: .82rem; }
 @media (max-width: 30rem) {
   .page { padding: 1rem .85rem 3rem; }
-  h1 { font-size: 1.5rem; }
+  h1 { font-size: 1.6rem; }
   h2 { font-size: 1.2rem; }
   .verdict { padding: .85rem 1rem; }
-  .section-nav a { margin-right: .75rem; }
+  .tab { padding: .45rem .8rem; font-size: .82rem; }
   .metric { min-width: 6rem; flex-basis: 6rem; }
 }
 `.trim();

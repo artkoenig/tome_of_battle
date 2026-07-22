@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!--
+  Wurzel-Platzhalter der GitHub-Pages-Seite (siehe ADR 0025).
+
+  Diese Datei ist committete Quelle, kein Build-Artefakt: sie wird spaeter zur
+  eigentlichen Projektseite ausgebaut. Vorerst begruesst sie Besucher und
+  verweist auf den Zustandsbericht unter /status und die ADRs unter /adr.
+
+  Bewusst ohne Front matter, damit Jekyll sie unveraendert nach _site/index.html
+  kopiert, und in sich geschlossen (kein externes Nachladen), in der App-Palette
+  (ADR 0004) mit Fallback-Serifen -- wie der Bericht selbst.
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tome of Battle</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --font-heading: Georgia, "Times New Roman", "Cinzel", serif;
+  --font-body: "Iowan Old Style", "Palatino Linotype", Palatino, "EB Garamond", Garamond, Georgia, serif;
+  /* Hell: Pergament + Gold (App-Palette, ADR 0004). */
+  --bg: #eee3cc;
+  --surface: #f6f0e2;
+  --text: #262019;
+  --muted: #6a5f4b;
+  --border-strong: #b0892a;
+  --accent: #876712;
+  --accent-strong: #6d520f;
+  --shadow: 0 1px 3px rgba(60, 44, 12, .14);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dunkel: Obsidian + Gold. */
+    --bg: #08080a;
+    --surface: #14141a;
+    --text: #ece2cc;
+    --muted: #b7b7c4;
+    --border-strong: #7d6520;
+    --accent: #ecc157;
+    --accent-strong: #f7d878;
+    --shadow: 0 2px 12px rgba(0, 0, 0, .55);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.55;
+}
+main {
+  width: 100%;
+  max-width: 34rem;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+h1 {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  letter-spacing: .03em;
+  color: var(--accent-strong);
+  margin: 0 0 .25rem;
+}
+.tagline { color: var(--muted); margin: 0 0 2rem; }
+.placeholder-note { color: var(--muted); font-size: .9rem; margin: 0 0 1.75rem; }
+.links { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
+.link {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  font-size: .9rem;
+  text-decoration: none;
+  padding: .6rem 1.3rem;
+  border-radius: 8px;
+}
+.link-primary { color: var(--bg); background: var(--accent); border: 1px solid var(--border-strong); }
+.link-secondary { color: var(--accent-strong); background: transparent; border: 1px solid var(--border-strong); }
+.link:hover { border-color: var(--accent-strong); }
+</style>
+</head>
+<body>
+<main>
+<h1>Tome of Battle</h1>
+<p class="tagline">Armeelisten aus Battlescribe-Daten bauen und spielen.</p>
+<p class="placeholder-note">Die Projektseite entsteht hier. Bis dahin geht es weiter zum:</p>
+<nav class="links">
+<a class="link link-primary" href="status/">Zustandsbericht</a>
+<a class="link link-secondary" href="adr/">Architektur (ADRs)</a>
+</nav>
+</main>
+</body>
+</html>

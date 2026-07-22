@@ -75,6 +75,27 @@ describe('project-state/buildReportModel', () => {
     expect(model.longFunctions[0].path).toBe('src/b.js');
   });
 
+  it('aggregates LOC and cyclomatic complexity per module, total lines and most complex functions', () => {
+    const model = buildReportModel(
+      baseInput({
+        sources: [
+          { path: 'src/solver/engine.js', source: 'function solve(a, b) {\n  if (a) return 1;\n  return a && b;\n}\n' },
+          { path: 'src/parser/roster.js', source: 'function parse() {\n  return 1;\n}\n' },
+        ],
+      }),
+    );
+
+    const solver = model.moduleMetrics.find((entry) => entry.module === 'src/solver');
+    // solve: 1 + if + && = 3; engine.js hat 4 nicht-leere Zeilen.
+    expect(solver).toMatchObject({ module: 'src/solver', fileCount: 1, functionCount: 1, totalComplexity: 3, maxComplexity: 3 });
+    expect(solver.lines).toBe(4);
+
+    const totalLines = model.metrics.find((metric) => metric.label === 'Codezeilen gesamt');
+    expect(totalLines.value).toBe(7); // 4 (engine) + 3 (roster)
+
+    expect(model.complexFunctions[0]).toMatchObject({ name: 'solve', complexity: 3 });
+  });
+
   it('derives structure facts (modules, dependencies, cycles, layer violations) from the cruiser graph', () => {
     const model = buildReportModel(
       baseInput({

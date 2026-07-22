@@ -9,8 +9,9 @@
 #
 # Der bisherige Pages-Inhalt bleibt erhalten: `docs/` wird zusaetzlich mit
 # `actions/jekyll-build-pages` gebaut und gemeinsam mit dem Bericht deployt, sodass
-# `/adr/` und die einzelnen ADR-Seiten weiter 200 liefern und die Wurzel den Bericht
-# zeigt (statt wie bisher 404).
+# `/adr/` und die einzelnen ADR-Seiten weiter 200 liefern. Der Bericht liegt unter
+# `/status`; die Wurzel zeigt die committete Platzhalter-Seite `docs/index.html`
+# (spaeter die Projektseite).
 #
 # VORBEDINGUNG -- EINMALIGER MANUELLER SCHRITT DES MAINTAINERS:
 # Die Pages-Quelle muss von Hand von "Deploy from a branch" (`main` / `/docs`) auf
@@ -71,18 +72,20 @@ jobs:
           source: ./docs
           destination: ./_site
 
-      - name: Zustandsbericht erzeugen und als Wurzel-Seite ablegen
-        # Fuehrt die Gates aus und schreibt den Bericht als ./_site/index.html neben
-        # den Jekyll-Build. Ein Gate, das gar nicht anlaeuft, laesst diesen Schritt
+      - name: Zustandsbericht erzeugen und unter /status ablegen
+        # Fuehrt die Gates aus und schreibt den Bericht als ./_site/status/index.html
+        # neben den Jekyll-Build; die Wurzel ./_site/index.html traegt die
+        # Platzhalter-Seite aus docs/index.html. generate.js legt das Zielverzeichnis
+        # status/ selbst an. Ein Gate, das gar nicht anlaeuft, laesst diesen Schritt
         # nicht scheitern -- es erscheint im Bericht als "nicht angelaufen".
         #
         # jekyll-build-pages laeuft als Container unter fremder UID und legt ./_site
-        # in dessen Besitz an; ohne die Besitzuebernahme scheitert das Schreiben der
-        # Wurzel-Seite an EACCES (permission denied). sudo ist auf GitHub-Runnern
+        # in dessen Besitz an; ohne die Besitzuebernahme scheitert das Schreiben des
+        # Berichts an EACCES (permission denied). sudo ist auf GitHub-Runnern
         # passwortlos verfuegbar.
         run: |
           sudo chown -R "$(id -u):$(id -g)" ./_site
-          node scripts/project-state/generate.js ./_site/index.html
+          node scripts/project-state/generate.js ./_site/status/index.html
 
       - name: Pages-Artefakt hochladen
         uses: actions/upload-pages-artifact@v3
