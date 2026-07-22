@@ -1,6 +1,7 @@
 import React from 'react';
 import { Play, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
 import { findForceEntryById } from '../../solver/validator';
+import { useTranslation } from '../../i18n/useTranslation';
 
 /**
  * Untertitel der Kopfleiste: der Katalogname, ergänzt um den Namen der
@@ -34,15 +35,16 @@ export default function RosterEditorTopBar({
   canUndo,
   canRedo
 }) {
+  const { t } = useTranslation();
   return (
     <div className="builder-top-bar">
       <button
         type="button"
         className="btn-primary square-btn mobile-only"
         onClick={onBack}
-        title="Heerlager"
+        title={t('app.nav.rosters')}
       >
-        <ArrowLeft size={16} /> <span className="hide-on-mobile">Heerlager</span>
+        <ArrowLeft size={16} /> <span className="hide-on-mobile">{t('app.nav.rosters')}</span>
       </button>
 
       <div className="builder-top-bar-middle">
@@ -71,8 +73,8 @@ export default function RosterEditorTopBar({
           className="btn-secondary square-btn"
           onClick={onUndo}
           disabled={!canUndo}
-          title="Rückgängig"
-          aria-label="Rückgängig"
+          title={t('editor.undo')}
+          aria-label={t('editor.undo')}
         >
           <Undo2 size={16} />
         </button>
@@ -81,16 +83,16 @@ export default function RosterEditorTopBar({
           className="btn-secondary square-btn"
           onClick={onRedo}
           disabled={!canRedo}
-          title="Wiederherstellen"
-          aria-label="Wiederherstellen"
+          title={t('editor.redo')}
+          aria-label={t('editor.redo')}
         >
           <Redo2 size={16} />
         </button>
         <button className="btn-primary btn-top-bar hide-on-mobile" onClick={onPlay}>
-          <Play size={16} /> <span>Spielen</span>
+          <Play size={16} /> <span>{t('common.play')}</span>
         </button>
         <button className="btn-secondary btn-top-bar hide-on-mobile" onClick={onExport}>
-          <Download size={16} /> <span>Exportieren</span>
+          <Download size={16} /> <span>{t('common.export')}</span>
         </button>
       </div>
     </div>

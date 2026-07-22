@@ -4,6 +4,7 @@ import SelectionConfigurator from './SelectionConfigurator';
 import CategoryUnitAdder from './CategoryUnitAdder';
 import BottomSheet from './BottomSheet';
 import GothicTooltip from '../GothicTooltip';
+import { useTranslation } from '../../i18n/useTranslation';
 
 /**
  * Ankreuzliste der „Special list rules" einer Kategorie. Ersetzt die frühere
@@ -31,6 +32,7 @@ export default function ListRuleChecklist({
   selectionCounts,
   onShowRule,
 }) {
+  const { t } = useTranslation();
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
   // Eingeklappte Behälter, nach `resolvedId`. Fehlt ein Eintrag, gilt die Zeile
@@ -101,7 +103,7 @@ export default function ListRuleChecklist({
                 role="button"
                 tabIndex={0}
                 aria-expanded={isExpanded}
-                aria-label={isExpanded ? 'Unteroptionen einklappen' : 'Unteroptionen ausklappen'}
+                aria-label={isExpanded ? t('editor.subOptions.collapse') : t('editor.subOptions.expand')}
                 onClick={() => toggleCollapsed(state.resolvedId)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

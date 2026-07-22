@@ -9,7 +9,7 @@ import {
 } from '../solver/validator';
 import { useUndoableState } from './useUndoableState';
 import {
-  PERSISTENCE_FAILURE_MESSAGE,
+  PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,
 } from '../utils/persistenceFailure';
 import '../types.js';
@@ -102,7 +102,7 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
     if (!save) return;
 
     const reportFailure = createPersistenceFailureReporter(
-      PERSISTENCE_FAILURE_MESSAGE.roster,
+      PERSISTENCE_FAILURE_MESSAGE_KEY.roster,
       reportErrorRef.current
     );
 

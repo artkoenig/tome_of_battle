@@ -5,6 +5,7 @@ import {
   mapSelectionTree, TOP_LEVEL_PARENT_COUNT, isIndependentSubUnit, resolveCostLimitTypeId
 } from '../solver/validator.js';
 import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults.js';
+import { t } from '../i18n/i18nStore.js';
 // Decimal places kept when serializing costs, to strip floating-point artifacts
 // introduced by cost-modifier arithmetic.
 const COST_DECIMAL_PRECISION = 6;
@@ -60,7 +61,7 @@ function escapeXml(unsafe) {
  */
 export class MissingSystemError extends Error {
   constructor(systemName, systemId) {
-    super(`Das Spielsystem "${systemName}" (ID: ${systemId}) fehlt. Bitte importiere es zuerst.`);
+    super(t('serialization.missingSystem', { name: systemName, id: systemId }));
     this.name = 'MissingSystemError';
     this.systemName = systemName;
     this.systemId = systemId;
@@ -230,11 +231,6 @@ const ZIP_FILE_SIGNATURE = Object.freeze([0x50, 0x4b, 0x03, 0x04]);
 
 const ROSTER_XML_EXTENSION = '.ros';
 
-const ROSZ_ERROR_MESSAGE = Object.freeze({
-  damagedArchive: 'Die Datei ist ein beschädigtes ZIP-Archiv und konnte nicht entpackt werden.',
-  missingRosterEntry: `Das ZIP-Archiv enthält keine ${ROSTER_XML_EXTENSION}-Datei.`,
-});
-
 /**
  * Whether the blob starts with the ZIP local file header signature. Only the first
  * bytes are read, so the check stays cheap regardless of the archive's size.
@@ -266,12 +262,12 @@ async function extractRosterXmlFromZip(fileBlob) {
   } catch (error) {
     // The signature identified this as a ZIP, so a load failure is genuine damage
     // and must not be papered over by the raw-XML fallback below.
-    throw new Error(`${ROSZ_ERROR_MESSAGE.damagedArchive} (${error.message})`);
+    throw new Error(`${t('serialization.damagedArchive')} (${error.message})`);
   }
 
   const rosFileName = Object.keys(zip.files).find(name => name.endsWith(ROSTER_XML_EXTENSION));
   if (!rosFileName) {
-    throw new Error(ROSZ_ERROR_MESSAGE.missingRosterEntry);
+    throw new Error(t('serialization.missingRosterEntry', { extension: ROSTER_XML_EXTENSION }));
   }
   return zip.files[rosFileName].async('text');
 }
@@ -306,7 +302,7 @@ export function importRosterFromXml(xmlText, systems) {
   const root = doc.documentElement;
   
   if (root.nodeName !== 'roster') {
-    throw new Error('Ungültiges Dateiformat: Das Wurzelelement muss <roster> sein.');
+    throw new Error(t('serialization.invalidFormat'));
   }
 
   const systemId = root.getAttribute('gameSystemId');

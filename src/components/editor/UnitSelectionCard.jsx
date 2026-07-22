@@ -108,7 +108,7 @@ export default function UnitSelectionCard({
         className={className}
         onMouseEnter={(e) => {
           if (modState && c.modificationBreakdown?.length > 0) {
-            handleMouseEnter(`Modifikationen: ${c.name}`, c.modificationBreakdown.join('\n'), e);
+            handleMouseEnter(t('common.modifications', { name: c.name }), c.modificationBreakdown.join('\n'), e);
           }
         }}
         onMouseMove={handleMouseMove}
@@ -117,7 +117,7 @@ export default function UnitSelectionCard({
           if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
             e.stopPropagation();
             setActiveInfo({
-              title: `Modifikationen: ${c.name}`,
+              title: t('common.modifications', { name: c.name }),
               text: (
                 <ul className="modification-breakdown-list">
                   {c.modificationBreakdown.map((b, bIdx) => (
@@ -151,7 +151,7 @@ export default function UnitSelectionCard({
     // unless several models share the table. Every other profile type gets a
     // leading column labelled with its own profileTypeName.
     const showNameCol = isModel ? profiles.length > 1 : true;
-    const nameHeader = isModel ? 'Modell' : (typeName || 'Profil');
+    const nameHeader = isModel ? t('common.model') : (typeName || t('common.profileHeader'));
 
     return (
       <div key={key} className="profile-table-container">
@@ -235,7 +235,7 @@ export default function UnitSelectionCard({
                 e.stopPropagation();
                 setIsDetailsOpen(!isDetailsOpen);
               }}
-              title={isDetailsOpen ? 'Details ausblenden' : 'Details anzeigen'}
+              title={isDetailsOpen ? t('editor.hideDetails') : t('editor.showDetails')}
               aria-expanded={isDetailsOpen}
             >
               <ReceiptText size={16} />
@@ -246,7 +246,7 @@ export default function UnitSelectionCard({
                 data-testid="unit-actions-menu"
                 className="square-btn"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                title="Aktionen"
+                title={t('common.actions')}
               >
                 <MoreVertical size={16} />
               </button>
@@ -254,7 +254,7 @@ export default function UnitSelectionCard({
               <BottomSheet
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
-                title="Aktionen"
+                title={t('common.actions')}
                 desktopMode="popover"
                 containerRef={menuRef}
               >
@@ -270,7 +270,7 @@ export default function UnitSelectionCard({
                     >
                       <span className="popover-item-name unit-card-menu-item">
                         <Copy size={14} />
-                        Kopieren
+                        {t('common.copy')}
                       </span>
                     </div>
                   )}
@@ -284,7 +284,7 @@ export default function UnitSelectionCard({
                   >
                     <span className="popover-item-name unit-card-menu-item unit-card-menu-item-danger">
                       <Trash2 size={14} />
-                      Löschen
+                      {t('common.delete')}
                     </span>
                   </div>
                 </div>
@@ -394,18 +394,18 @@ export default function UnitSelectionCard({
       <BottomSheet
         isOpen={showConfirmDelete}
         onClose={() => setShowConfirmDelete(false)}
-        title="Einheit löschen"
+        title={t('editor.deleteUnit.title')}
         desktopMode="modal"
       >
         <div className="info-popup-body unit-delete-confirm-body">
-          <p className="unit-delete-confirm-question">Möchten Sie <strong>{effectiveName}</strong> wirklich löschen?</p>
+          <p className="unit-delete-confirm-question">{t('editor.deleteUnit.confirmPrefix')}<strong>{effectiveName}</strong>{t('editor.deleteUnit.confirmSuffix')}</p>
           <div className="unit-delete-confirm-actions">
             <button
               data-testid="unit-delete-cancel"
               className="btn"
               onClick={() => setShowConfirmDelete(false)}
             >
-              Abbrechen
+              {t('common.cancel')}
             </button>
             <button
               data-testid="unit-delete-confirm"
@@ -415,7 +415,7 @@ export default function UnitSelectionCard({
                 removeUnit(selection.id);
               }}
             >
-              Löschen
+              {t('common.delete')}
             </button>
           </div>
         </div>

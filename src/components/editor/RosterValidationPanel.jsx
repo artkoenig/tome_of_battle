@@ -25,16 +25,16 @@ export default function RosterValidationPanel({ validationErrors, extraResources
       id="general-errors-section"
       className={`gothic-panel general-errors-panel ${isRosterValid ? 'general-errors-panel--valid' : 'general-errors-panel--invalid'}`}
     >
-      <h3 className="font-serif text-gold general-errors-title">Lagerbericht (Gesamtstatus)</h3>
+      <h3 className="font-serif text-gold general-errors-title">{t('editor.validation.title')}</h3>
 
       {isRosterValid ? (
         <div className="flex-col gap-12">
           <div className="text-success text-ui-title flex-row gap-8 text-strong">
             <Check size={20} />
-            <span>Streitmacht ist regelkonform und bereit für die Schlacht!</span>
+            <span>{t('editor.validation.valid')}</span>
           </div>
           <p className="text-body text-dim animate-fade-in roster-valid-flavour">
-            „Die Schlachtreihen stehen fest, die Kriegstrommeln rufen nach den Tapferen. Führt Eure Streitmacht zum glorreichen Sieg!“
+            {t('editor.validation.flavour')}
           </p>
           {/* Mobile-only Play button */}
           <div className="mobile-only w-full">
@@ -43,7 +43,7 @@ export default function RosterValidationPanel({ validationErrors, extraResources
               className="btn-primary roster-play-btn-mobile"
               onClick={onPlay}
             >
-              <Play size={18} /> Spielen
+              <Play size={18} /> {t('common.play')}
             </button>
           </div>
         </div>

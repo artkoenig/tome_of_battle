@@ -4,11 +4,13 @@
  * reicht nur die installierte Version und die Release-Information herein.
  */
 
+import { t } from '../i18n/i18nStore.js';
+
 /** Höchstzahl an Einträgen, die in der Änderungsliste angezeigt werden. */
 export const MAX_DIFF_ENTRIES = 50;
 
-/** Hinweis, der eine bei {@link MAX_DIFF_ENTRIES} gekappte Liste abschließt. */
-export const TRUNCATION_NOTICE = '...und weitere Einträge.';
+/** Übersetzungsschlüssel des Hinweises, der eine bei {@link MAX_DIFF_ENTRIES} gekappte Liste abschließt. */
+export const TRUNCATION_NOTICE_KEY = 'releaseDiff.truncationNotice';
 
 /** Kürzeste Hash-Länge, ab der ein Präfixvergleich als eindeutig gilt. */
 const MIN_ABBREVIATED_HASH_LENGTH = 7;
@@ -24,7 +26,7 @@ const VERSION_HASH_SEPARATOR = '+';
  */
 function capEntries(entries) {
   if (entries.length <= MAX_DIFF_ENTRIES) return entries;
-  return [...entries.slice(0, MAX_DIFF_ENTRIES), TRUNCATION_NOTICE];
+  return [...entries.slice(0, MAX_DIFF_ENTRIES), t(TRUNCATION_NOTICE_KEY)];
 }
 
 /**

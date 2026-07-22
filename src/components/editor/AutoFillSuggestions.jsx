@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
 import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique, getEffectiveModifiers, getEffectiveConstraintLimit } from '../../solver/validator';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
+import { useTranslation } from '../../i18n/useTranslation';
 
 const getSubSelectionCount = (selection, optionEntryId) => {
   const findCount = (list) => {
@@ -27,6 +28,7 @@ export default function AutoFillSuggestions({
   subSelectionOperations,
   costTypeLabel
 }) {
+  const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
 
   // 1. Gather all possible single upgrades
@@ -207,17 +209,17 @@ export default function AutoFillSuggestions({
     <div className="gothic-panel autofill-panel">
       <div className="autofill-header">
         <Wand2 className="text-gold" size={20} />
-        <h3 className="font-serif text-gold no-margin">Auffüllen</h3>
-        <span className="badge badge-muted push-end">{remainingPoints} {costTypeLabel} übrig</span>
+        <h3 className="font-serif text-gold no-margin">{t('editor.autofill.title')}</h3>
+        <span className="badge badge-muted push-end">{t('editor.autofill.remainingBadge', { points: remainingPoints, label: costTypeLabel })}</span>
       </div>
 
       <p className="text-body text-dim autofill-intro">
-        Du hast noch <strong>{remainingPoints} {costTypeLabel}</strong> zur Verfügung. Hier sind einige Vorschläge:
+        {t('editor.autofill.introPrefix')}<strong>{remainingPoints} {costTypeLabel}</strong>{t('editor.autofill.introSuffix')}
       </p>
 
       {combinations.length > 0 && (
         <div className="autofill-section">
-          <h4 className="text-subheading autofill-section-title">Perfekte Kombinationen</h4>
+          <h4 className="text-subheading autofill-section-title">{t('editor.autofill.perfectCombos')}</h4>
           <div className="autofill-combo-list">
             {combinations.map((combo, idx) => {
                const grouped = {};
@@ -231,7 +233,7 @@ export default function AutoFillSuggestions({
                  <div key={idx} className="sub-selection-row autofill-combo-row">
                    <div>
                      <div className="autofill-combo-sum">
-                       Exakt {combo.sum} {costTypeLabel}
+                       {t('editor.autofill.exact', { sum: combo.sum, label: costTypeLabel })}
                      </div>
                      <ul className="autofill-combo-items">
                        {Object.values(grouped).map((g, i) => (
@@ -247,7 +249,7 @@ export default function AutoFillSuggestions({
                      onClick={() => handleApplyCombo(combo)}
                    >
                      <Sparkles size={14} />
-                     <span className="hide-on-mobile">Anwenden</span>
+                     <span className="hide-on-mobile">{t('editor.autofill.apply')}</span>
                    </button>
                  </div>
                );
@@ -258,13 +260,13 @@ export default function AutoFillSuggestions({
 
       <div>
         <div className="autofill-upgrades-header">
-          <h4 className="text-subheading no-margin">Mögliche Upgrades</h4>
+          <h4 className="text-subheading no-margin">{t('editor.autofill.possibleUpgrades')}</h4>
           {uniqueSingleActions.length > 3 && (
             <button
               className="btn-secondary text-micro autofill-toggle-btn"
               onClick={() => setShowAll(!showAll)}
             >
-              {showAll ? 'Weniger anzeigen' : 'Alle anzeigen'}
+              {showAll ? t('editor.autofill.showLess') : t('editor.autofill.showAll')}
             </button>
           )}
         </div>
@@ -274,14 +276,14 @@ export default function AutoFillSuggestions({
             <div key={`${action.selectionId}-${action.option.id}`} className="sub-selection-row autofill-upgrade-row">
               <div className="flex-col">
                 <span className="text-strong">{action.optionName}</span>
-                <span className="text-micro text-dim">für {action.selectionName}</span>
+                <span className="text-micro text-dim">{t('editor.autofill.forUnit', { name: action.selectionName })}</span>
               </div>
               <div className="sub-selection-controls autofill-upgrade-controls">
                 <span className="text-gold text-label">+{action.cost} {costTypeLabel}</span>
                 <button 
                   className="btn-secondary square-btn"
                   onClick={() => applySuggestedAction(action)}
-                  title="Hinzufügen"
+                  title={t('common.add')}
                 >
                   <Plus size={14} />
                 </button>

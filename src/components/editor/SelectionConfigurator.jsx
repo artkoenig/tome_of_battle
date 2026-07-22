@@ -12,6 +12,7 @@ import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 import { resolveRowSelectionId } from './optionNesting';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
+import { useTranslation } from '../../i18n/useTranslation';
 
 
 export default function SelectionConfigurator({
@@ -27,6 +28,7 @@ export default function SelectionConfigurator({
   onShowRule,
   isListRule = false
 }) {
+  const { t } = useTranslation();
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
   const costTypeLabel = resolveCostLimitLabel(roster, system);
   const activeForce = findForceContainingSelection(roster, selection.id);
@@ -306,7 +308,7 @@ export default function SelectionConfigurator({
                       onInfoMove={handleMouseMove}
                       onInfoLeave={handleMouseLeave}
                     />
-                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">{t('editor.alreadyTaken')}</span>}
                   </span>
                 </div>
                 <div className="sub-selection-controls">
@@ -322,7 +324,7 @@ export default function SelectionConfigurator({
                       disabled={isSelectDisabled || count >= maxLimit}
                     >
                       <Plus size={12} className="sub-selection-add-btn-icon" />
-                      Hinzufügen
+                      {t('common.add')}
                     </button>
                   ) : isBinary ? (
                     <input 
@@ -396,7 +398,7 @@ export default function SelectionConfigurator({
   return (
     <div className="selection-node-body">
       {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
-      {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
+      {!isListRule && <h4>{t('editor.configurator.title')}</h4>}
       <div className="sub-selection-group sub-selection-group--flush">
         {topSections.map(renderSection)}
       </div>

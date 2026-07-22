@@ -4,6 +4,7 @@ import { resolveEntry, getOptionDisplayCost, getEffectiveName, collectPrimaryCat
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatValidationError } from '../../i18n/formatValidationError';
 import BottomSheet from './BottomSheet';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export default function CategoryUnitAdder({
   categoryId = null,
@@ -68,7 +69,7 @@ export default function CategoryUnitAdder({
         type="button"
         className="qty-btn"
         onClick={() => setIsOpen(!isOpen)}
-        title={`${categoryName} ausheben`}
+        title={t('editor.adder.raise', { category: categoryName })}
       >
         {isOpen ? <X size={12} /> : <Plus size={12} />}
       </button>
@@ -76,7 +77,7 @@ export default function CategoryUnitAdder({
       <BottomSheet
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title={`${categoryName} ausheben`}
+        title={t('editor.adder.raise', { category: categoryName })}
         desktopMode="popover"
         containerRef={wrapperRef}
       >
@@ -107,7 +108,7 @@ export default function CategoryUnitAdder({
               >
                 <span className="popover-item-name popover-item-label">
                   <span>{getEffectiveName(res, displayCtx)}</span>
-                  {isBlocked && <span className="text-danger text-micro popover-item-unavailable">(Nicht verfügbar)</span>}
+                  {isBlocked && <span className="text-danger text-micro popover-item-unavailable">{t('editor.adder.unavailable')}</span>}
                   {isBlocked && reasons.map((reason, idx) => (
                     <span key={idx} className="text-danger text-micro popover-item-reason">
                       {formatValidationError(reason, t, { omitCurrentCount: true })}
