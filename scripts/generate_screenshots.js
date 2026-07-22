@@ -164,8 +164,33 @@ const runSessionForLayout = async (layout, server) => {
     await clickRequired(page, '.category-unit-adder-container button');
     await capture('06_unit_adder');
 
-    await clickRequired(page, '.popover-item');
-    await clickRequired(page, '.unit-card-details-toggle');
+    // Erste Einheit hinzufügen
+    await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll('.popover-item'));
+      if (items.length > 0) items[0].click();
+    });
+    await settle(500);
+
+    // Weitere Einheiten hinzufügen für eine vollständige, fehlerfreie Armeeliste
+    for (let i = 1; i <= 3; i++) {
+      const reopend = await page.evaluate(() => {
+        const adders = Array.from(document.querySelectorAll('.category-unit-adder-container button'));
+        const btn = adders.find((b) => b.offsetWidth > 0 && b.offsetHeight > 0);
+        if (btn) { btn.click(); return true; }
+        return false;
+      });
+      if (reopend) {
+        await settle(500);
+        await page.evaluate((idx) => {
+          const items = Array.from(document.querySelectorAll('.popover-item'));
+          if (items.length > idx) items[idx].click();
+          else if (items.length > 0) items[0].click();
+        }, i);
+        await settle(500);
+      }
+    }
+
+    await clickIfPresent(page, '.unit-card-details-toggle');
     await capture('05_roster_editor');
 
     await clickRequired(page, '.selection-node-header');
