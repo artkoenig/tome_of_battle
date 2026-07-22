@@ -29,6 +29,16 @@ const PERCENT_DECIMALS = 1;
  */
 
 /**
+ * @typedef {object} CoverageAccumulator  Laufende Summen je Modul waehrend der
+ *   Verdichtung. Jede Groesse ist ein Tupel `[abgedeckt, gesamt]`, wie es
+ *   `toMetric` erwartet -- kein wachsendes Array.
+ * @property {number} fileCount
+ * @property {[number, number]} statements
+ * @property {[number, number]} branches
+ * @property {[number, number]} functions
+ */
+
+/**
  * Verdichtet `coverage-final.json` zu Kennwerten je Modul.
  *
  * @param {Record<string, object>} coverageFinal
@@ -38,11 +48,12 @@ const PERCENT_DECIMALS = 1;
  * @returns {ModuleCoverage[]}  nach Modulnamen sortiert
  */
 export function aggregateCoverage(coverageFinal, { rootPath = '' } = {}) {
-  /** @type {Map<string, { fileCount: number, statements: number[], branches: number[], functions: number[] }>} */
+  /** @type {Map<string, CoverageAccumulator>} */
   const byModule = new Map();
 
   for (const [filePath, fileCoverage] of Object.entries(coverageFinal ?? {})) {
     const moduleName = moduleFromPath(filePath, rootPath);
+    /** @type {CoverageAccumulator} */
     const bucket = byModule.get(moduleName) ?? {
       fileCount: 0,
       statements: [0, 0],
