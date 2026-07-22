@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx oxlint *)",
+      "Bash(npx vitest *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "WebSearch",
+      "Bash(python3 -m py_compile scripts/github_issue_agent.py)",
+      "Bash(awk 'NR==5018,NR==5018+400' \"/Users/artkoenig/Workspace/army_builder/catalogs/whfb6/Orcs and Goblins.cat\")",
+      "Bash(awk 'NR>=5018 && NR<=5018+120' \"/Users/artkoenig/Workspace/army_builder/catalogs/whfb6/Orcs and Goblins.cat\")",
+      "Bash(python3 /private/tmp/claude-501/-Users-artkoenig-Workspace-army-builder/66af0b8d-cba3-40eb-8f30-872726ca2771/scratchpad/attrs.py)",
+      "Bash(cat)",
+      "Bash(python3 /private/tmp/scratch_def.py)",
+      "Bash(lsof -i :5173 -sTCP:LISTEN -n -P)",
+      "Bash(ps -p 35358 -o pid,ppid,command)"
+    ]
+  }
+}

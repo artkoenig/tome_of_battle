@@ -114,17 +114,11 @@ img {
   text-transform: uppercase;
 }
 
-.brand-icon {
+.brand-icon-img {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--accent-crimson), var(--accent-gold));
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 1.2rem;
-  box-shadow: 0 0 12px var(--accent-crimson-glow);
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
 }
 
 .nav-links {
@@ -150,12 +144,12 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.75rem;
-  font-family: var(--font-heading);
+  gap: 0.6rem;
+  padding: 0.85rem 1.85rem;
+  font-family: var(--font-title);
   font-weight: 700;
   font-size: 0.95rem;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -163,29 +157,32 @@ img {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #A82020 0%, #701414 100%);
-  color: #FFFFFF;
-  border: 1px solid rgba(255, 100, 100, 0.3);
-  box-shadow: 0 4px 20px var(--accent-crimson-glow);
+  background: linear-gradient(135deg, #2D2208 0%, #161103 100%);
+  color: var(--accent-gold-bright);
+  border: 1px solid var(--accent-gold);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.2);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  background: linear-gradient(135deg, #C92A2A 0%, #8C1919 100%);
-  box-shadow: 0 6px 25px rgba(201, 42, 42, 0.6);
+  background: linear-gradient(135deg, #44330D 0%, #201804 100%);
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+  box-shadow: 0 6px 25px rgba(212, 175, 55, 0.45);
 }
 
 .btn-secondary {
-  background: rgba(21, 26, 38, 0.8);
+  background: rgba(13, 17, 26, 0.85);
   color: var(--text-main);
   border: 1px solid var(--border-gold);
 }
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  background: rgba(30, 37, 54, 1);
-  border-color: var(--accent-gold);
+  background: rgba(21, 26, 38, 1);
+  border-color: var(--accent-gold-bright);
   color: var(--accent-gold-bright);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
 }
 
 /* Hero Section */
