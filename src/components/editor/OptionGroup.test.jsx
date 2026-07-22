@@ -881,4 +881,34 @@ describe('OptionGroup Component', () => {
     expect(defaultProps.subSelectionOperations.increaseCount)
       .not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-barding' }));
   });
+
+  // ── Issue 57/04: Unter-Option einer gruppierten Upgrade-Mount nistet unter der Mount ──
+  it('31. A sub-option of a grouped upgrade-mount edits its owning mount selection, not the unit', () => {
+    // The collector re-emits a chosen upgrade-mount's Barding tagged with ownerSelectionId =
+    // the mount's roster selection id. The mutation must target that owner so Barding nests
+    // under the mount, not as a sibling on the unit. Count/display still read the unit.
+    const MOUNT_SELECTION_ID = 'sel-mount-instance';
+    const mountSubOptionGroup = {
+      id: 'grp-warhorse',
+      name: 'Empire Warhorse',
+      constraints: [],
+      items: [
+        { option: { id: 'opt-barding' }, ownerSelectionId: MOUNT_SELECTION_ID, groupConstraints: [] }
+      ]
+    };
+    mockResolveEntry.mockImplementation((sys, opt) =>
+      opt.id === 'opt-barding'
+        ? { id: 'res-barding', name: 'Barding', constraints: [] }
+        : { id: 'unit-resolved', name: 'Captain', categoryLinks: [] });
+    mockGetOptionDisplayCost.mockReturnValue(6);
+
+    render(<OptionGroupComponent {...defaultProps} group={mountSubOptionGroup} />);
+    fireEvent.click(screen.getByText('Empire Warhorse').closest('div'));
+
+    fireEvent.click(screen.getByRole('checkbox'));
+    expect(defaultProps.subSelectionOperations.increaseCount)
+      .toHaveBeenCalledWith(MOUNT_SELECTION_ID, expect.objectContaining({ id: 'opt-barding' }));
+    expect(defaultProps.subSelectionOperations.increaseCount)
+      .not.toHaveBeenCalledWith('sel-unit', expect.objectContaining({ id: 'opt-barding' }));
+  });
 });

@@ -3,7 +3,7 @@ import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEva
 import { isSelectionEntryHidden } from './entryVisibility.js';
 import { isIndependentSubUnit } from './subUnit.js';
 import { ConstraintScope } from './battlescribeConstants.js';
-import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { ConstraintKind, EntryLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
 
 /**
  * Collects the options a unit exposes in the editor.
@@ -53,7 +53,13 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
       const res = resolveEntry(system, link, activeCatalogueId);
       if (res) {
         groupItemIds.add(res.id);
-        collectGroupItemIds(res, groupItemIds, visited);
+        // Only a linked *group* contributes further members to this group. A linked
+        // option/upgrade (e.g. an upgrade-type mount) is itself a single member; its own
+        // children are sub-options configured *under* it, not sibling choices of this
+        // group — recursing into them would wrongly count them against the group's max.
+        if (link.type === EntryLinkKind.SELECTION_ENTRY_GROUP) {
+          collectGroupItemIds(res, groupItemIds, visited);
+        }
       }
     });
     gDef.selectionEntryGroups?.forEach(subG => {
@@ -74,8 +80,16 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
 
   const optionsList = [];
 
-  // Recursive options collector
-  const collectOptions = (def, currentGroupName = null, currentGroupId = null, parentConstraints = null, parentModifiers = null) => {
+  // Recursive options collector.
+  //
+  // `ownerSelectionId` names the roster selection under which a chosen option must nest.
+  // It is null for options that belong directly to the unit, and the id of an active
+  // sub-selection for the options that selection re-emits (see collectFromActiveSelections)
+  // — e.g. the Barding of a chosen upgrade-type mount, which must attach under the mount's
+  // selection rather than as a sibling of it on the unit. It is threaded unchanged through
+  // the group/link recursion, since a display group inside an option is still nested under
+  // that same owning selection.
+  const collectOptions = (def, currentGroupName = null, currentGroupId = null, parentConstraints = null, parentModifiers = null, ownerSelectionId = null) => {
     // 1. Process selection entries
     def.selectionEntries?.forEach(child => {
       if (isHiddenInContext(child)) return;
@@ -87,7 +101,8 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
         groupName: currentGroupName,
         groupId: currentGroupId,
         groupConstraints: parentConstraints,
-        groupModifiers: parentModifiers
+        groupModifiers: parentModifiers,
+        ownerSelectionId
       });
     });
 
@@ -101,12 +116,12 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
       if (isHiddenInContext(child)) return;
 
       // If the entry link points to a group, we recurse into it to extract its items
-      if (child.type === 'selectionEntryGroup') {
+      if (child.type === EntryLinkKind.SELECTION_ENTRY_GROUP) {
         const combinedConstraints = prepareConstraints(resolvedChild);
         // Resolve the link's own modifiers through the same seam so its
         // modifierGroup-gated modifiers are kept rather than silently dropped.
         const combinedModifiers = getEffectiveModifiers(resolvedChild).concat(getEffectiveModifiers(child));
-        collectOptions(resolvedChild, resolvedChild.name || child.name, resolvedChild.id || child.id, combinedConstraints, combinedModifiers);
+        collectOptions(resolvedChild, resolvedChild.name || child.name, resolvedChild.id || child.id, combinedConstraints, combinedModifiers, ownerSelectionId);
       } else {
         // Otherwise it points to an option (upgrade, profile, etc.), so it's a selectable item
         optionsList.push({
@@ -115,7 +130,8 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
           groupName: currentGroupName,
           groupId: currentGroupId,
           groupConstraints: parentConstraints,
-          groupModifiers: parentModifiers
+          groupModifiers: parentModifiers,
+          ownerSelectionId
         });
       }
     });
@@ -124,7 +140,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
     def.selectionEntryGroups?.forEach(group => {
       if (isHiddenInContext(group)) return;
       const combinedGroupConstraints = prepareConstraints(group);
-      collectOptions(group, group.name || currentGroupName, group.id || currentGroupId, combinedGroupConstraints, getEffectiveModifiers(group));
+      collectOptions(group, group.name || currentGroupName, group.id || currentGroupId, combinedGroupConstraints, getEffectiveModifiers(group), ownerSelectionId);
     });
   };
 
@@ -147,7 +163,9 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
       if (subResolved) {
         if (!isIndependentSubUnit(subResolved)) {
           if (subResolved.selectionEntries?.length > 0 || subResolved.entryLinks?.length > 0 || subResolved.selectionEntryGroups?.length > 0) {
-            collectOptions(subResolved, subResolved.name, subResolved.id);
+            // Tag the re-emitted options with this active selection as their owner, so the
+            // editor nests a chosen sub-option under it rather than as a sibling on the unit.
+            collectOptions(subResolved, subResolved.name, subResolved.id, null, null, subSel.id);
           }
           collectFromActiveSelections(subSel);
         }

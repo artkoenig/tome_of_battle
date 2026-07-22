@@ -170,9 +170,12 @@ export default function SelectionConfigurator({
       <div className="sub-selection-group sub-selection-group--flush">
         {groupedList.map((group) => {
           if (group.standalone) {
-            const { option, parentDefId } = group.item;
+            const { option, parentDefId, ownerSelectionId } = group.item;
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
+            // A re-emitted sub-option nests under its owning sub-selection; a plain unit
+            // option nests under the unit. Count/display keep reading the unit selection.
+            const editTargetId = ownerSelectionId || selection.id;
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
             const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
@@ -225,24 +228,24 @@ export default function SelectionConfigurator({
               if (isClickable) {
                 if (isSubUnitWithOwnOptions) {
                   if (count < maxLimit && !isSelectDisabled) {
-                    subSelectionOperations.addInstance(selection.id, option);
+                    subSelectionOperations.addInstance(editTargetId, option);
                   }
                 } else if (isBinary) {
                   const isDecrementing = count > 0;
                   if (isDecrementing) {
                     if (count > minLimit) {
-                      subSelectionOperations.decreaseCount(selection.id, option);
+                      subSelectionOperations.decreaseCount(editTargetId, option);
                     }
                   } else {
                     if (!isSelectDisabled) {
-                      subSelectionOperations.increaseCount(selection.id, option);
+                      subSelectionOperations.increaseCount(editTargetId, option);
                     }
                   }
                 } else {
                   // For standard options, clicking row increments. 
                   // If we wanted right-click to decrement we could, but click is increment.
                   if (count < maxLimit && !isSelectDisabled) {
-                    subSelectionOperations.increaseCount(selection.id, option);
+                    subSelectionOperations.increaseCount(editTargetId, option);
                   }
                 }
               }
@@ -281,7 +284,7 @@ export default function SelectionConfigurator({
                       className="btn-primary text-label sub-selection-add-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        subSelectionOperations.addInstance(selection.id, option);
+                        subSelectionOperations.addInstance(editTargetId, option);
                       }}
                       disabled={isSelectDisabled || count >= maxLimit}
                     >
@@ -297,9 +300,9 @@ export default function SelectionConfigurator({
                       onChange={(e) => {
                         if (!isMandatory && !(count > 0 && count <= minLimit)) {
                           if (e.target.checked) {
-                            subSelectionOperations.increaseCount(selection.id, option);
+                            subSelectionOperations.increaseCount(editTargetId, option);
                           } else {
-                            subSelectionOperations.decreaseCount(selection.id, option);
+                            subSelectionOperations.decreaseCount(editTargetId, option);
                           }
                         }
                       }}
@@ -310,7 +313,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          subSelectionOperations.decreaseCount(selection.id, option);
+                          subSelectionOperations.decreaseCount(editTargetId, option);
                         }}
                         disabled={count <= minLimit}
                       >
@@ -321,7 +324,7 @@ export default function SelectionConfigurator({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          subSelectionOperations.increaseCount(selection.id, option);
+                          subSelectionOperations.increaseCount(editTargetId, option);
                         }}
                         disabled={isSelectDisabled || count >= maxLimit}
                       >

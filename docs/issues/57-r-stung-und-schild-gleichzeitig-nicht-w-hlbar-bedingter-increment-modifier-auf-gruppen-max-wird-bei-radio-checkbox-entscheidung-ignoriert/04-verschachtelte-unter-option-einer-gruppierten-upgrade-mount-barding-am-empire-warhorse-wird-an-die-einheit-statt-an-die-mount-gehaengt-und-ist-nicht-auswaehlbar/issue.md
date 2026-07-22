@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -80,3 +80,4 @@ das tatsächliche Problem trifft.
 
 ## Comments
 - Implementierungshinweis (verifiziert, Zeilen koennen driften): Fehl-Zuweisung entsteht in optionsCollector.js collectFromActiveSelections (~Z.142-157, re-emit ohne Parent-Auswahl-Referenz) -> OptionGroup.jsx Checkbox/Row-Handler (~Z.441/364-374, increaseCount(unit.id,...) ohne Parent-Argument) -> useRoster.js updateUnitChildSelections (~Z.278-313, mutiert direkte Einheiten-Kinder) -> subSelectionEditing.js withChangedOptionCount (~Z.82). Unterscheidung Sub-Unit vs upgrade: subUnit.js (~Z.46); Sub-Units bekommen eigene UnitSelectionCard (UnitSelectionCard.jsx ~Z.349-368) und werden von collectFromActiveSelections uebersprungen (~Z.148). groupItemIds-Verunreinigung: optionsCollector.js collectGroupItemIds (~Z.50-58). Reale Katalog-Struktur auch in Fixture Vampire Counts.cat (Master Necromancer -> Mounts -> Nightmare -> Barding, ~Z.844). Echte Empire-DE-.cat: Captain Mounts-Gruppe id a57e-900f-105a-80d6, Empire Warhorse -> Barding targetId 3211-d836-02f1-01d0.
+- Fix: der Options-Collector taggt eine aus einer aktiven (Upgrade-Mount-)Auswahl re-emittierte Unter-Option mit ownerSelectionId (der Roster-Auswahl der Mount); OptionGroup/SelectionConfigurator richten increase/decrease/addInstance an diesen Owner statt an unit.id, sodass die Unter-Option UNTER der Mount nistet. Zusaetzlich rekursiert collectGroupItemIds nicht mehr in verlinkte Optionen (nur noch in verlinkte Gruppen), womit die Verunreinigung der Mounts-Gruppen-Max-Zaehlung entfaellt. Reproduziert am realen Vampire-Counts-Katalog (Master Necromancer -> Mounts -> Nightmare -> Barding); Regressionstests: Solver-Unit + Real-Katalog-Integration + OptionGroup-Komponente. Lint/Typecheck/npm test gruen.
