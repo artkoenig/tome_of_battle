@@ -166,7 +166,7 @@ const runSessionForLayout = async (layout, server) => {
 
     // Erste Einheit hinzufügen
     await page.evaluate(() => {
-      const items = Array.from(document.querySelectorAll('.popover-item'));
+      const items = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('.popover-item')));
       if (items.length > 0) items[0].click();
     });
     await settle(500);
@@ -174,7 +174,7 @@ const runSessionForLayout = async (layout, server) => {
     // Weitere Einheiten hinzufügen für eine vollständige, fehlerfreie Armeeliste
     for (let i = 1; i <= 3; i++) {
       const reopend = await page.evaluate(() => {
-        const adders = Array.from(document.querySelectorAll('.category-unit-adder-container button'));
+        const adders = /** @type {HTMLButtonElement[]} */ (Array.from(document.querySelectorAll('.category-unit-adder-container button')));
         const btn = adders.find((b) => b.offsetWidth > 0 && b.offsetHeight > 0);
         if (btn) { btn.click(); return true; }
         return false;
@@ -182,7 +182,7 @@ const runSessionForLayout = async (layout, server) => {
       if (reopend) {
         await settle(500);
         await page.evaluate((idx) => {
-          const items = Array.from(document.querySelectorAll('.popover-item'));
+          const items = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('.popover-item')));
           if (items.length > idx) items[idx].click();
           else if (items.length > 0) items[0].click();
         }, i);
@@ -206,8 +206,8 @@ const runSessionForLayout = async (layout, server) => {
 
     const startedPlayMode = await page.evaluate(() => {
       const card = document.querySelector('.roster-card');
-      const playButton = card && Array.from(card.querySelectorAll('button'))
-        .find((b) => /schlacht|spielen|play/.test(b.textContent.toLowerCase()));
+      const playButton = card && /** @type {HTMLButtonElement[]} */ (Array.from(card.querySelectorAll('button')))
+        .find((b) => /schlacht|spielen|play/.test((b.textContent || '').toLowerCase()));
       if (playButton) playButton.click();
       return Boolean(playButton);
     });
@@ -216,9 +216,9 @@ const runSessionForLayout = async (layout, server) => {
     }
     await page.waitForSelector('.play-layout', { timeout: 10000 });
     await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll('.play-layout button'));
+      const buttons = /** @type {HTMLButtonElement[]} */ (Array.from(document.querySelectorAll('.play-layout button')));
       buttons.forEach((b) => {
-        const text = b.textContent.toLowerCase();
+        const text = (b.textContent || '').toLowerCase();
         if (text.includes('details') || text.includes('aufklappen') || b.classList.contains('unit-card-details-toggle')) {
           b.click();
         }
