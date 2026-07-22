@@ -91,10 +91,11 @@ export default function BottomSheet({
         <div className="bottomsheet-handle" />
         <div className="bottomsheet-header">
           <span className="bottomsheet-title">{renderedTitle}</span>
-          <button 
-            type="button" 
-            className="bottomsheet-close-btn"
+          <button
+            type="button"
+            className="dialog-close-btn"
             onClick={onClose}
+            aria-label="Schließen"
             title="Schließen"
           >
             <X size={18} />

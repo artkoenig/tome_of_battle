@@ -83,8 +83,9 @@ export default function RulesIndexDialog({ ruleName, url, isOpen, onClose }) {
           </h3>
           <button
             type="button"
-            className="modal-close modal-close--flush"
+            className="dialog-close-btn"
             onClick={onClose}
+            aria-label="Schließen"
             title="Schließen"
           >
             <X size={18} />

@@ -100,23 +100,6 @@
     letter-spacing: 0.05em;
   }
 
-  .gothic-bottomsheet .bottomsheet-close-btn {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
-    transition: background-color 0.2s, color 0.2s;
-  }
-  .gothic-bottomsheet .bottomsheet-close-btn:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-gold);
-  }
-
   /* Scrollable inner lists inside bottomsheets on mobile */
   .gothic-bottomsheet .popover-list {
     flex: 1;

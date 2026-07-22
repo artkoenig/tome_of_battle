@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { getAvailableForceEntries, getPlayableCatalogues, resolveCostLimitLabel } from '../../solver/validator';
 import { DEFAULT_ROSTER_COST_LIMIT } from '../../utils/rosterDefaults';
 
@@ -67,7 +68,9 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
       <div className="modal-content modal-new-roster-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Neues Heer ausheben</h3>
-          <button type="button" className="modal-close" onClick={onClose}>X</button>
+          <button type="button" className="dialog-close-btn" onClick={onClose} aria-label="Schließen" title="Schließen">
+            <X size={18} />
+          </button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
