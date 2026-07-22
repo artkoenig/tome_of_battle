@@ -1,0 +1,94 @@
+# Zustandsbericht (siehe ADR 0007, Abschnitt 6, und ADR 0025).
+#
+# Erhebt bei jedem Push auf `main` den Projektzustand (Qualitaets-Gates mit ihrer
+# tatsaechlichen Wirksamkeit, Kennzahlen, Abdeckung, Struktur, offene Vorgaenge des
+# lokalen `docs/issues/`-Trackers), erzeugt daraus die HTML-Berichtsseite und
+# veroeffentlicht sie ueber GitHub Pages. Der Bericht wird NICHT committet -- er ist
+# reine Build-Ausgabe, analog zu `dist/`, womit die Regel "`main` kommt nur ueber
+# PR-Merges voran" unangetastet bleibt.
+#
+# Der bisherige Pages-Inhalt bleibt erhalten: `docs/` wird zusaetzlich mit
+# `actions/jekyll-build-pages` gebaut und gemeinsam mit dem Bericht deployt, sodass
+# `/adr/` und die einzelnen ADR-Seiten weiter 200 liefern und die Wurzel den Bericht
+# zeigt (statt wie bisher 404).
+#
+# VORBEDINGUNG -- EINMALIGER MANUELLER SCHRITT DES MAINTAINERS:
+# Die Pages-Quelle muss von Hand von "Deploy from a branch" (`main` / `/docs`) auf
+# "GitHub Actions" umgestellt werden. Das bewirkt kein Workflow-Code (siehe ADR 0025):
+#   GitHub -> Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# Solange dieser Schritt aussteht, laeuft der Workflow zwar, sein Deployment wird von
+# Pages aber nicht uebernommen.
+name: Zustandsbericht
+
+on:
+  push:
+    branches: [main]
+
+# Der Bericht braucht als bisher einziger Workflow `pages: write` und `id-token: write`.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nur ein Bericht zugleich; ein neuerer Push loest einen laufenden ab.
+concurrency:
+  group: status-report
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (vollstaendige Historie)
+        uses: actions/checkout@v4
+        with:
+          # Der Issue-Teil liest den Tracker ueber mehrere Branches -- ein flacher
+          # Checkout genuegt nicht.
+          fetch-depth: 0
+
+      - name: Alle Remote-Branches bereitstellen
+        # `fetch-depth: 0` holt die Historie; dieser Schritt stellt zusaetzlich alle
+        # `origin/*`-Branch-Refs bereit, aus denen der Issue-Teil die offenen Vorgaenge
+        # der noch nicht gemergten Branches liest.
+        run: git fetch --prune --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Abhaengigkeiten installieren
+        run: npm ci
+
+      - name: Pages konfigurieren
+        uses: actions/configure-pages@v5
+
+      - name: Bestehenden docs/-Inhalt mit Jekyll bauen
+        # Erhaelt die heute erreichbaren ADR-Adressen; Ausgabe nach ./_site.
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
+
+      - name: Zustandsbericht erzeugen und als Wurzel-Seite ablegen
+        # Fuehrt die Gates aus und schreibt den Bericht als ./_site/index.html neben
+        # den Jekyll-Build. Ein Gate, das gar nicht anlaeuft, laesst diesen Schritt
+        # nicht scheitern -- es erscheint im Bericht als "nicht angelaufen".
+        run: node scripts/project-state/generate.js ./_site/index.html
+
+      - name: Pages-Artefakt hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Auf GitHub Pages deployen
+        id: deployment
+        uses: actions/deploy-pages@v4

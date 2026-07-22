@@ -41,3 +41,7 @@ e2e-failure.png
 # dem versionierten screenshots/, das die kuratierten README-Bilder enthält.
 .screenshots/
 .claude/worktrees/
+
+# Lokale Ausgabe des Zustandsbericht-Generators (scripts/project-state/generate.js).
+# In CI wird der Bericht direkt ins Pages-Deployment gelegt und nie committet.
+.report/
