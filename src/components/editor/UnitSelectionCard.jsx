@@ -240,6 +240,7 @@ export default function UnitSelectionCard({
             <div ref={menuRef} className="unit-card-menu-container" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
+                data-testid="unit-actions-menu"
                 className="square-btn"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 title="Aktionen"
@@ -257,6 +258,7 @@ export default function UnitSelectionCard({
                 <div className="popover-list">
                   {copyUnit && (
                     <div
+                      data-testid="unit-action-copy"
                       className="popover-item"
                       onClick={() => {
                         setIsMenuOpen(false);
@@ -270,6 +272,7 @@ export default function UnitSelectionCard({
                     </div>
                   )}
                   <div
+                    data-testid="unit-action-delete"
                     className="popover-item"
                     onClick={() => {
                       setIsMenuOpen(false);
@@ -394,14 +397,16 @@ export default function UnitSelectionCard({
         <div className="info-popup-body unit-delete-confirm-body">
           <p className="unit-delete-confirm-question">Möchten Sie <strong>{effectiveName}</strong> wirklich löschen?</p>
           <div className="unit-delete-confirm-actions">
-            <button 
-              className="btn" 
+            <button
+              data-testid="unit-delete-cancel"
+              className="btn"
               onClick={() => setShowConfirmDelete(false)}
             >
               Abbrechen
             </button>
-            <button 
-              className="btn btn-danger" 
+            <button
+              data-testid="unit-delete-confirm"
+              className="btn btn-danger"
               onClick={() => {
                 setShowConfirmDelete(false);
                 removeUnit(selection.id);

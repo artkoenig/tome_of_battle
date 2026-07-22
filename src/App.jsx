@@ -116,12 +116,14 @@ export default function App() {
           {systems.length > 0 && (
             <div className="desktop-nav-actions">
               <button
+                data-testid="nav-rosters"
                 className={view === VIEWS.ROSTERS ? 'btn-primary' : ''}
                 onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}
               >
                 <FolderOpen size={18} /> Heerlager
               </button>
               <button
+                data-testid="nav-importer"
                 className={view === VIEWS.IMPORTER ? 'btn-primary' : ''}
                 onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}
               >
@@ -212,11 +214,11 @@ export default function App() {
       {/* Mobile Bottom Navigation */}
       {systems.length > 0 && (
         <nav className="mobile-bottom-nav mobile-only">
-          <button className={`mobile-nav-btn ${view === VIEWS.ROSTERS ? 'active' : ''}`} onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}>
+          <button data-testid="nav-rosters" className={`mobile-nav-btn ${view === VIEWS.ROSTERS ? 'active' : ''}`} onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}>
             <FolderOpen size={20} />
             <span>Heerlager</span>
           </button>
-          <button className={`mobile-nav-btn ${view === VIEWS.IMPORTER ? 'active' : ''}`} onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}>
+          <button data-testid="nav-importer" className={`mobile-nav-btn ${view === VIEWS.IMPORTER ? 'active' : ''}`} onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}>
             <BookOpen size={20} />
             <span>Bibliothekar</span>
           </button>

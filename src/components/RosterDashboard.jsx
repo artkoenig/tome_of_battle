@@ -83,7 +83,7 @@ export default function RosterDashboard({
             <button className="btn-secondary desktop-btn" onClick={handleImportClick}>
               <Upload size={18} /> Importieren
             </button>
-            <button className="btn-primary desktop-btn" onClick={onNewRoster}>
+            <button data-testid="new-roster" className="btn-primary desktop-btn" onClick={onNewRoster}>
               <Plus size={18} /> Neue Armeeliste
             </button>
           </div>
@@ -101,7 +101,7 @@ export default function RosterDashboard({
             <button className="btn-secondary empty-state-btn" onClick={handleImportClick}>
               <Upload size={20} /> Liste importieren
             </button>
-            <button className="btn-primary empty-state-btn" onClick={onNewRoster}>
+            <button data-testid="new-roster" className="btn-primary empty-state-btn" onClick={onNewRoster}>
               <Plus size={20} /> Erste Armeeliste ausheben
             </button>
           </div>
@@ -203,7 +203,7 @@ export default function RosterDashboard({
                                     <button className="btn-sm" onClick={() => onOpenRoster(roster, 'builder')}>
                                       <Edit3 size={14} /> Ausrüsten
                                     </button>
-<button className="btn-sm" onClick={() => onOpenRoster(roster, 'play')}>
+<button data-testid="roster-play" className="btn-sm" onClick={() => onOpenRoster(roster, 'play')}>
   <Play size={14} /> Spielen
 </button>
                                     <button className="btn-sm hide-on-mobile" onClick={() => onExportRoster?.(roster)} title="Liste exportieren">
