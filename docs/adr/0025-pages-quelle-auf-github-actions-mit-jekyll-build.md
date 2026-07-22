@@ -156,5 +156,3 @@ erscheinen stattdessen im Issues-Bereich des Berichts.
   einer GitHub-Einstellung.
 - **Schlecht, weil** der Workflow einen zusätzlichen Bauschritt trägt und damit
   eine zusätzliche Fehlerquelle für die ADR-Adressen darstellt.
-</content>
-</invoke>
