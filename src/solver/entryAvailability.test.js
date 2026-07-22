@@ -8,10 +8,18 @@ import {
   classifyBlocksAddAvailability
 } from './validator.js';
 import { parseCatalogueXML } from '../parser/xmlParser.js';
+import { formatValidationError } from '../i18n/formatValidationError.js';
+import { t } from '../i18n/i18nStore.js';
 
 // JSDOM stellt DOMParser für den Node-Testlauf bereit (wie in den übrigen Solver-Tests).
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
+
+// `getEntryAddAvailability` liefert strukturierte Verstöße (ADR 0026); der Aushebe-Dialog
+// übersetzt sie und kappt dabei den technischen Zählstand. Der Testlauf pinnt Deutsch
+// (i18nTestSetup), sodass die früheren deutschen Grund-Texte unverändert greifen.
+const renderReasons = reasons =>
+  reasons.map(reason => formatValidationError(reason, t, { omitCurrentCount: true }));
 
 const POINTS = 'pts';
 
@@ -126,7 +134,7 @@ describe('Autoren-error-Tor (Reproduktion Bretonnia „Allow special characters?
     const { available, reasons } = availabilityOf(greenKnight, roster, buildSystem(), SPECIAL_CHARACTERS_CATEGORY);
 
     expect(available).toBe(false);
-    expect(reasons).toContain(VERBATIM_REASON);
+    expect(renderReasons(reasons)).toContain(VERBATIM_REASON);
   });
 
   it('ist verfügbar, sobald die freischaltende Regel aktiv ist', () => {
@@ -146,8 +154,8 @@ describe('Autoren-error-Tor (Reproduktion Bretonnia „Allow special characters?
     const { available, reasons } = availabilityOf(greenKnight, roster, buildSystem(), SPECIAL_CHARACTERS_CATEGORY);
 
     expect(available).toBe(false);
-    expect(reasons).toEqual([VERBATIM_REASON]);
-    expect(reasons.some(reason => reason.includes('aktuell'))).toBe(false);
+    expect(renderReasons(reasons)).toEqual([VERBATIM_REASON]);
+    expect(renderReasons(reasons).some(reason => reason.includes('aktuell'))).toBe(false);
   });
 });
 
@@ -177,11 +185,13 @@ describe('Kategorie-Obergrenze der Force (vom alten Einzel-max-Check verfehlt)',
     // den technischen Zählstand „(aktuell: N)", der im Aushebe-Dialog entfällt.
     const roster = makeRoster(2000, [{ ...selection('s-lord-1', 'lord'), category: LORDS_CATEGORY }]);
     const { reasons } = availabilityOf(lord, roster, system, LORDS_CATEGORY);
-    expect(reasons.length).toBeGreaterThan(0);
-    expect(reasons.some(reason => reason.includes('erlaubt'))).toBe(true);
-    expect(reasons.some(reason => reason.includes('aktuell'))).toBe(false);
+    const rendered = renderReasons(reasons);
+    expect(rendered.length).toBeGreaterThan(0);
+    expect(rendered.some(reason => reason.includes('erlaubt'))).toBe(true);
+    expect(rendered.some(reason => reason.includes('aktuell'))).toBe(false);
     // Der Zählstand wird präzise gekappt — der Satz bleibt inkl. Schlusspunkt intakt.
-    expect(reasons).toContain('Maximal 1 Auswahlen für "Lords" in Army erlaubt.');
+    // Numerus-korrekt (Issue 58): eine Grenze von 1 nennt „Auswahl", nicht „Auswahlen".
+    expect(rendered).toContain('Maximal 1 Auswahl für "Lords" in Army erlaubt.');
   });
 
   it('lässt den Kandidaten zu, solange die Kategorie unter der Grenze liegt', () => {

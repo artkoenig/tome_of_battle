@@ -14,6 +14,8 @@ import {
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
 import { getProfileCellClassName } from '../profileCellClasses';
+import { useTranslation } from '../../i18n/useTranslation';
+import { formatValidationError } from '../../i18n/formatValidationError';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -52,6 +54,7 @@ export default function UnitSelectionCard({
   isSubUnit = false,
   onShowRule = null
 }) {
+  const { t } = useTranslation();
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -330,7 +333,7 @@ export default function UnitSelectionCard({
       {selectionErrors.map((err, idx) => (
         <div key={idx} className="unit-error-alert text-danger text-label">
           <AlertTriangle size={14} />
-          <span>{err.message}</span>
+          <span>{formatValidationError(err, t)}</span>
         </div>
       ))}
 

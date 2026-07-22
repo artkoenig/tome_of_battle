@@ -1,6 +1,8 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Plus, X } from 'lucide-react';
 import { resolveEntry, getOptionDisplayCost, getEffectiveName, collectPrimaryCategoryEntries, validateRoster, getEntryAddAvailability } from '../../solver/validator';
+import { useTranslation } from '../../i18n/useTranslation';
+import { formatValidationError } from '../../i18n/formatValidationError';
 import BottomSheet from './BottomSheet';
 
 export default function CategoryUnitAdder({
@@ -16,6 +18,7 @@ export default function CategoryUnitAdder({
   force = null,
   entries = null
 }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -107,7 +110,7 @@ export default function CategoryUnitAdder({
                   {isBlocked && <span className="text-danger text-micro popover-item-unavailable">(Nicht verfügbar)</span>}
                   {isBlocked && reasons.map((reason, idx) => (
                     <span key={idx} className="text-danger text-micro popover-item-reason">
-                      {reason}
+                      {formatValidationError(reason, t, { omitCurrentCount: true })}
                     </span>
                   ))}
                 </span>

@@ -57,7 +57,6 @@ describe('validateRoster — roster-weites Limit über verschiedene entryLinks',
   // und die Verletzung bleibt unentdeckt.
   const BSB_TARGET_ID = 'bsb-target';
   const BSB_ROSTER_MAX = 1;
-  const EXPECTED_MESSAGE_FRAGMENT = `maximal ${BSB_ROSTER_MAX} Auswahlen`;
 
   function createSystemWithSharedBattleStandard() {
     const system = createGrimdarkSystem();
@@ -105,8 +104,10 @@ describe('validateRoster — roster-weites Limit über verschiedene entryLinks',
     });
 
     const errors = validateRoster(roster, createSystemWithSharedBattleStandard());
+    // Strukturierte Meldung (ADR 0026): der Schlüssel + die Grenze (`count`) tragen die
+    // frühere Textprüfung „maximal 1 …", sprachunabhängig.
     const battleStandardErrors = errors.filter(
-      error => error.type === VIOLATION.entryMax && error.message.includes(EXPECTED_MESSAGE_FRAGMENT)
+      error => error.type === VIOLATION.entryMax && error.messageParams?.count === BSB_ROSTER_MAX
     );
 
     expect(battleStandardErrors).toHaveLength(2);
@@ -137,7 +138,7 @@ describe('validateRoster — nicht mehr auflösbare Auswahlen', () => {
     expect(ghostErrors).toHaveLength(1);
     expect(ghostErrors[0].selectionId).toBe('sel-ghost');
     expect(ghostErrors[0].severity).toBe('error');
-    expect(ghostErrors[0].message).toContain('Retired Champion');
+    expect(ghostErrors[0].messageParams.selectionName).toBe('Retired Champion');
   });
 
   test('meldet kein unresolved-entry, solange jede Auswahl noch auflösbar ist', () => {

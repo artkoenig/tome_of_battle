@@ -1,6 +1,8 @@
 import React from 'react';
 import { Play, AlertTriangle, Check } from 'lucide-react';
 import { hasBlockingViolations, ValidationSeverity } from '../../solver/validator';
+import { useTranslation } from '../../i18n/useTranslation';
+import { formatValidationError } from '../../i18n/formatValidationError';
 
 /**
  * Der „Lagerbericht“ des Editors: Gesamtstatus der Liste, die blockierenden
@@ -8,6 +10,7 @@ import { hasBlockingViolations, ValidationSeverity } from '../../solver/validato
  * zusätzlichen Ressourcen-Summen.
  */
 export default function RosterValidationPanel({ validationErrors, extraResources, onPlay }) {
+  const { t } = useTranslation();
   // Nur blockierende Verstöße (severity 'error') sperren das Spielen; rein informative
   // Hinweise (warning/info) erscheinen zwar in der Liste, gelten aber als regelkonform.
   const isRosterValid = !hasBlockingViolations(validationErrors);
@@ -49,14 +52,14 @@ export default function RosterValidationPanel({ validationErrors, extraResources
           {generalErrors.map((err, idx) => (
             <div key={idx} className="validation-error-item text-danger text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
-              <span>{err.message}</span>
+              <span>{formatValidationError(err, t)}</span>
             </div>
           ))}
           {/* Nachgelagerte Liste der Kategorie- und Auswahlfehler für den vollen Kontext */}
           {contextualErrors.map((err, idx) => (
             <div key={idx} className="validation-error-item validation-error-item--secondary text-danger text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
-              <span>{err.message}</span>
+              <span>{formatValidationError(err, t)}</span>
             </div>
           ))}
         </div>
@@ -68,7 +71,7 @@ export default function RosterValidationPanel({ validationErrors, extraResources
           {advisoryMessages.map((err, idx) => (
             <div key={idx} className="validation-error-item text-dim text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
-              <span>{err.message}</span>
+              <span>{formatValidationError(err, t)}</span>
             </div>
           ))}
         </div>

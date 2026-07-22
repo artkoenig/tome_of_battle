@@ -71,16 +71,6 @@ function selectReasonViolations(blockingViolations) {
   return authorErrors.length > 0 ? authorErrors : blockingViolations;
 }
 
-// Der hypothetische Zählstand „(aktuell: N)", den jede mechanische Validator-Meldung
-// mitführt, ist im Aushebe-Dialog eine technische Begründung ohne Nutzwert: die Obergrenze
-// selbst („erlaubt maximal 1 Auswahlen") genügt. Nur hier — auf dem reinen Anzeigepfad —
-// wird der Klammerzusatz entfernt; die Validator-Meldung selbst bleibt unangetastet (das
-// Validierungs-Panel führt sie weiter mit Zählstand, Issue-38-Out-of-Scope). Der wortgetreue
-// Autoren-`error`-Text trägt kein solches „(aktuell: …)" und bleibt damit unberührt.
-function stripHypotheticalCount(message) {
-  return message.replace(/\s*\(aktuell:[^)]*\)/, '');
-}
-
 /**
  * Reines Verfügbarkeits-Prädikat des Aushebe-Dialogs (SSOT, ADR-0022): bestimmt, ob ein
  * Katalog-Eintrag legal gewählt werden kann, indem es ihn hypothetisch in die Ziel-Force
@@ -104,7 +94,10 @@ function stripHypotheticalCount(message) {
  *   Eintrags-Id nur innerhalb ihres Katalogs eindeutig.
  * @param {import('../types.js').ValidationError[]} [args.baselineErrors] einmal pro Dialog
  *   vorberechnete Baseline (`validateRoster(roster, system)`); wird sonst hier berechnet.
- * @returns {{ available: boolean, reasons: string[] }}
+ * @returns {{ available: boolean, reasons: import('../types.js').ValidationError[] }}
+ *   `reasons` bleiben strukturierte Verstöße (Schlüssel + Parameter, ADR 0026); die
+ *   Oberfläche übersetzt sie über `formatValidationError` und kappt dort den
+ *   „(aktuell: …)"-Zählstand (Aushebe-Dialog, ADR-0022) — der Solver bleibt sprachfrei.
  */
 export function getEntryAddAvailability({ entry, categoryId, force, roster, system, catalogueId, baselineErrors }) {
   if (!entry || !roster || !system) return { available: true, reasons: [] };
@@ -137,6 +130,10 @@ export function getEntryAddAvailability({ entry, categoryId, force, roster, syst
     error => isBlockingAvailabilityViolation(error) && !baselineKeys.has(violationKey(error))
   );
 
-  const reasons = [...new Set(selectReasonViolations(introducedBlocking).map(error => stripHypotheticalCount(error.message)))];
+  // Nach Verstoß-Identität dedupliziert (mehrere Instanzen desselben Verstoßes ergeben
+  // einen Grund), Reihenfolge bleibt erhalten. Die Übersetzung folgt an der Oberfläche.
+  const reasons = [...new Map(
+    selectReasonViolations(introducedBlocking).map(error => [violationKey(error), error])
+  ).values()];
   return { available: introducedBlocking.length === 0, reasons };
 }
