@@ -4,7 +4,7 @@ import {
   resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
   isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
   isQuirkGeneralEntryId, findForceContainingSelection, resolveCostLimitLabel,
-  countSelections,
+  countSelections, getEffectiveModifiers, getEffectiveConstraintLimit,
   UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/validator';
 import OptionGroupComponent from './OptionGroup';
@@ -188,8 +188,11 @@ export default function SelectionConfigurator({
             }) || [];
             const minConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MIN);
             const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
-            const minLimit = (minConstraint?.value === undefined || minConstraint?.value < 0) ? 0 : minConstraint.value;
-            const maxLimit = (maxConstraint?.value === undefined || maxConstraint?.value < 0) ? Infinity : maxConstraint.value;
+            // Effektive (modifier-angepasste) Grenzen statt roher Katalogwerte, damit ein
+            // bedingt verändertes min/max Pflicht-/Binär-/Klammerungs-Entscheidungen steuert.
+            const optionModifiers = getEffectiveModifiers(res);
+            const minLimit = getEffectiveConstraintLimit(minConstraint, optionModifiers, displayCtx, 0);
+            const maxLimit = getEffectiveConstraintLimit(maxConstraint, optionModifiers, displayCtx, Infinity);
             const isMandatory = minLimit > 0 && minLimit === maxLimit;
             const isBinary = maxLimit === 1;
             const descText = getOptionDescription(res);

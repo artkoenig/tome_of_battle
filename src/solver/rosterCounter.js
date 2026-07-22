@@ -100,9 +100,19 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 
   total += directCost;
 
+  // The mandatory-child minimums below are read as their EFFECTIVE (modifier-adjusted)
+  // value in `ctx`, so a conditionally-raised `min` — a pick a modifier forces — is
+  // priced exactly as the selection factory will populate it.
+  const effectiveMin = (source) => {
+    const minConstraint = source.constraints?.find(c => c.type === ConstraintKind.MIN);
+    if (!minConstraint) return 0;
+    const value = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(source), ctx);
+    return value > 0 ? value : 0;
+  };
+
   // 2. Direct costs of mandatory child selection entries
   resolved.selectionEntries?.forEach(child => {
-    const minCon = child.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
+    const minCon = effectiveMin(child);
     if (minCon > 0) {
       total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
     }
@@ -110,7 +120,7 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
 
   // 3. Direct costs of mandatory child entry links
   resolved.entryLinks?.forEach(child => {
-    const minCon = child.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
+    const minCon = effectiveMin(child);
     if (minCon > 0) {
       total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
     }
@@ -120,7 +130,7 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
   // decided by the shared derivation the selection factory uses, so the price
   // shown here is the price the actual recruitment will incur.
   resolved.selectionEntryGroups?.forEach(group => {
-    const minCon = group.constraints?.find(c => c.type === ConstraintKind.MIN)?.value || 0;
+    const minCon = effectiveMin(group);
     if (minCon <= 0) return;
     const defaultOption = resolveGroupDefaultMember(group);
     if (!defaultOption) return;

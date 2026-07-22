@@ -113,8 +113,13 @@ export function getEntryAddAvailability({ entry, categoryId, force, roster, syst
   // den Katalog aufgelöst, in dem er auch ausgehoben würde.
   const targetForce = force ?? roster.forces?.[0];
   const candidateCatalogueId = catalogueId ?? targetForce?.catalogueId ?? roster.catalogueId ?? null;
+  // Kontext für die effektive `min`-Seite der Fabrik: ein bedingt erhöhtes Pflicht-`min`
+  // wird so auch in der hypothetischen Selektion bevölkert und schlägt limit-sprengend an,
+  // konsistent mit dem echten Ausheben.
+  const factoryContext = { roster, system, parentCatalogueId: candidateCatalogueId };
   const candidate = createSelectionFromDef({
-    system, resolveEntry, catalogueId: candidateCatalogueId, entry, categoryId
+    system, resolveEntry, catalogueId: candidateCatalogueId, entry, categoryId,
+    evaluationContext: factoryContext
   });
   if (!candidate) return { available: true, reasons: [] };
 

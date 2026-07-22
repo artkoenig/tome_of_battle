@@ -17,6 +17,7 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
  * @property {import('../types.js').Force} [force]
  */
 import { collectPrimaryCategoryEntries } from './entryVisibility.js';
+import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { ConstraintKind, SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { ConstraintScope } from './battlescribeConstants.js';
 
@@ -85,8 +86,11 @@ function isBinaryListRule(resolved) {
     (c) => c.type === ConstraintKind.MAX && (!c.scope || c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE)
   );
   if (!maxConstraint) return true;
-  const { value } = maxConstraint;
-  return value === undefined || value === null || value < 0 || value <= 1;
+  // Der effektive (modifier-angepasste) Max-Wert entscheidet, nicht der rohe Katalogwert:
+  // ein Modifier, der die Obergrenze verändert, wirkt damit auch auf die Schalter-vs-Adder-
+  // Klassifikation. Ohne Roster-Kontext greifen hier nur unbedingte Modifier.
+  const effectiveMax = getModifiedConstraintValue(maxConstraint, getEffectiveModifiers(resolved), {});
+  return effectiveMax === undefined || effectiveMax === null || effectiveMax < 0 || effectiveMax <= 1;
 }
 
 /** True, wenn der aufgelöste Eintrag konfigurierbare Unteroptionen trägt (Behälter-Regel). */

@@ -71,6 +71,14 @@ vi.mock('../../solver/validator', async () => ({
   getSelectionTotalCost: (...args) => mockGetSelectionTotalCost(...args),
   computeRosterCounts: (...args) => mockComputeRosterCounts(...args),
   getModifiedConstraintValue: (con) => con.value || 1,
+  getEffectiveModifiers: (source) => source?.modifiers || [],
+  // Ohne Modifier verhält sich die effektive Grenze wie der rohe, normalisierte Wert
+  // (fehlend/negativ → Fallback) — genau das, was die echte Fassade dann liefert.
+  getEffectiveConstraintLimit: (constraint, _modifiers, _ctx, fallback = 0) => {
+    if (!constraint) return fallback;
+    const { value } = constraint;
+    return (value === undefined || value === null || value < 0) ? fallback : value;
+  },
   calculateRosterCosts: () => ({ pts: 0 }),
   getOptionDisplayCost: () => 10,
   isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,

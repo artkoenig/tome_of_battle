@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getEffectiveModifiers } from './modifierEvaluator.js';
+import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { isSelectionEntryHidden } from './entryVisibility.js';
 import { isIndependentSubUnit } from './subUnit.js';
 import { ConstraintScope } from './battlescribeConstants.js';
@@ -201,27 +201,36 @@ export const isUniqueOptionTakenElsewhere = (targetRes, system, activeCatalogueI
   return taken;
 };
 
+// "Roster-unique" means an entry (or its category) is capped at exactly one across the
+// roster/force. The cap is read as its EFFECTIVE value — modifiers on the max constraint
+// apply — so a modifier that lifts or lowers the cap is honoured rather than the raw
+// catalogue number. No roster context is available on this static-uniqueness path, so an
+// unconditional modifier decides; a purely conditional one falls through to the raw value.
+const ROSTER_UNIQUE_MAX = 1;
+
+const isEffectiveMaxRosterUnique = (constraint, modifierSource) =>
+  constraint.type === ConstraintKind.MAX &&
+  getModifiedConstraintValue(constraint, getEffectiveModifiers(modifierSource), {}) === ROSTER_UNIQUE_MAX;
+
 export const isOptionRosterUnique = (res, system) => {
   if (!res) return false;
-  
+
   // 1. Check constraints on the entry itself
-  const hasDirectConstraint = res.constraints?.some(c => 
-    c.type === ConstraintKind.MAX && 
-    c.value === 1 && 
-    (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE)
+  const hasDirectConstraint = res.constraints?.some(c =>
+    (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE) &&
+    isEffectiveMaxRosterUnique(c, res)
   );
   if (hasDirectConstraint) return true;
 
   // 2. Check constraints on the categories it links to
   const hasCategoryConstraint = res.categoryLinks?.some(cl => {
     const catDef = system.categoryEntries?.find(ce => ce.id === cl.targetId);
-    return catDef?.constraints?.some(c => 
-      c.type === ConstraintKind.MAX && 
-      c.value === 1 && 
-      (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE || !c.scope)
+    return catDef?.constraints?.some(c =>
+      (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE || !c.scope) &&
+      isEffectiveMaxRosterUnique(c, catDef)
     );
   });
-  
+
   return !!hasCategoryConstraint;
 };
 
