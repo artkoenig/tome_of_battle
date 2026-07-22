@@ -95,7 +95,6 @@
 .nested-option-block {
   margin-top: 4px;
   padding-left: 12px;
-  border-left: 2px solid var(--border-dark);
 }
 
 /* Collapsible option group inside a unit card */
