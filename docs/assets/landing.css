@@ -346,6 +346,15 @@ img {
   color: var(--accent-gold-bright);
   text-shadow: 0 0 12px rgba(212, 175, 55, 0.6);
   margin-bottom: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover .feature-icon {
+  color: #FFFFFF;
+  border-color: var(--accent-gold-bright);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.35) 0%, rgba(30, 37, 54, 0.95) 100%);
+  text-shadow: 0 0 20px #F5D061, 0 0 35px rgba(212, 175, 55, 0.9);
+  transform: scale(1.1);
 }
 
 .feature-card-title {
