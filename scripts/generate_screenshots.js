@@ -215,6 +215,15 @@ const runSessionForLayout = async (layout, server) => {
       throw new Error('Kein Knopf zum Starten des Spielmodus auf der Armeelisten-Karte gefunden');
     }
     await page.waitForSelector('.play-layout', { timeout: 10000 });
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('.play-layout button'));
+      buttons.forEach((b) => {
+        const text = b.textContent.toLowerCase();
+        if (text.includes('details') || text.includes('aufklappen') || b.classList.contains('unit-card-details-toggle')) {
+          b.click();
+        }
+      });
+    });
     await settle(1000);
     await capture('08_play_mode');
   } finally {
