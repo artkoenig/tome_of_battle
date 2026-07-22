@@ -209,6 +209,7 @@ describe('categoryLink-Constraint bleibt wirksam – echter Red-Host-Force (AC5)
 
     expect(characterErrors.length).toBeGreaterThanOrEqual(1);
     // Der strengere categoryLink-Wert (2) greift, nicht erst der categoryEntry-Wert (3).
-    expect(characterErrors.some(error => error.message.includes('Maximal 2'))).toBe(true);
+    // Strukturierte Meldung (ADR 0026): die Grenze steckt im `count`-Parameter.
+    expect(characterErrors.some(error => error.messageParams?.count === 2)).toBe(true);
   });
 });

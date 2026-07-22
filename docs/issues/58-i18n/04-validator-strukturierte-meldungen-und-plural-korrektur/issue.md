@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [02]
 
@@ -32,3 +32,4 @@ unübersetzter Pass-through.
 - [ ] Paritätstest weiterhin grün.
 
 ## Comments
+- Solver-Validator liefert strukturierte Meldungen (Schlüssel + Parameter) statt fertiger deutscher Sätze; neue src/solver/validationMessages.js hält die Schlüssel, src/i18n/formatValidationError.js übersetzt an der Oberfläche mit numerus-korrekter Pluralisierung. de/en-Locales um validation.*-Vorlagen (inkl. _one/_other) ergänzt; UI (RosterValidationPanel, UnitSelectionCard, CategoryUnitAdder) und getEntryAddAvailability-Gründe umgestellt. Bestehende Tests strukturell bzw. render-basiert angepasst, Plural-Korrektur (1 Auswahl/2 Auswahlen) in Assertions nachgezogen.

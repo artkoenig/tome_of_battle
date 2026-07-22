@@ -1,6 +1,13 @@
 import { describe, test, expect } from 'vitest';
 import { validateRoster } from './validator.js';
 import { POINTS, CASTING_DICE, COST_TYPE_NAME } from './__fixtures__/grimdarkSystem.js';
+import { formatValidationError } from '../i18n/formatValidationError.js';
+import { t } from '../i18n/i18nStore.js';
+
+// Die getrimmte Katalog-Bezeichnung erscheint erst nach der Oberflächen-Übersetzung
+// (ADR 0026). Der Testlauf pinnt Deutsch (i18nTestSetup), sodass die frühere deutsche
+// Textprüfung unverändert greift — sie belegt nun zusätzlich den unitLabel-Pass-through.
+const render = violation => formatValidationError(violation, t);
 
 /**
  * Eine Kostenlimit-Constraint auf einer Auswahlgruppe muss die Kostenart
@@ -164,8 +171,8 @@ describe('validateRoster — absolute Gruppengrenze auf einer anderen Kostenart'
     const violation = errors.find(error => error.type === VIOLATION.groupPointsMax);
 
     expect(violation).toBeDefined();
-    expect(violation.message).toContain(`${groupCastingDiceOf(STONES_OVER_LIMIT)} ${CASTING_DICE_LABEL}`);
-    expect(violation.message).not.toContain(COST_TYPE_NAME.points);
+    expect(render(violation)).toContain(`${groupCastingDiceOf(STONES_OVER_LIMIT)} ${CASTING_DICE_LABEL}`);
+    expect(render(violation)).not.toContain(COST_TYPE_NAME.points);
   });
 });
 
@@ -192,7 +199,7 @@ describe('validateRoster — Prozent-Gruppengrenze auf einer anderen Kostenart',
     const violation = errors.find(error => error.type === VIOLATION.groupPercentMax);
 
     expect(violation).toBeDefined();
-    expect(violation.message).toContain(`der ${CASTING_DICE_LABEL} ausmachen`);
-    expect(violation.message).toContain(`ist aber ${groupCastingDiceOf(POWER_STONE_COUNT)}.`);
+    expect(render(violation)).toContain(`der ${CASTING_DICE_LABEL} ausmachen`);
+    expect(render(violation)).toContain(`ist aber ${groupCastingDiceOf(POWER_STONE_COUNT)}.`);
   });
 });

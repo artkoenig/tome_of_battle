@@ -1,5 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { resolveCostTypeLabel, resolveCostLimitLabel, validateRoster } from './validator.js';
+import { formatValidationError } from '../i18n/formatValidationError.js';
+import { t } from '../i18n/i18nStore.js';
 import {
   POINTS,
   CASTING_DICE,
@@ -94,8 +96,14 @@ describe('Validierungsmeldungen benennen die Kostenart des Spielsystems', () => 
     };
   }
 
-  const rosterLimitMessage = () => validateRoster(createOverLimitRoster(), createCastingDiceSystem())
-    .find(error => error.type === 'roster-limit')?.message;
+  // Die Limitmeldung ist strukturiert (ADR 0026); der Anzeigetext entsteht erst durch
+  // die Oberflächen-Übersetzung. Der Testlauf pinnt Deutsch (i18nTestSetup), sodass die
+  // Bezeichnungs-Prüfung unverändert greift und den unitLabel-Pass-through belegt.
+  const rosterLimitMessage = () => {
+    const violation = validateRoster(createOverLimitRoster(), createCastingDiceSystem())
+      .find(error => error.type === 'roster-limit');
+    return violation ? formatValidationError(violation, t) : undefined;
+  };
 
   test('die Limitmeldung nennt die getrimmte Katalog-Bezeichnung', () => {
     expect(rosterLimitMessage()).toContain('Casting Dice');
