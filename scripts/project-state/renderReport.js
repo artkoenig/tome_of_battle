@@ -8,11 +8,15 @@
  * Navigation sind reine Anker, es gibt kein `<script>`. Damit funktioniert die Seite
  * offline und veraltet nicht durch entfernte Ressourcen.
  *
- * `renderReport` mischt zwei Quellen zusammen, die bewusst getrennt entstehen: die
- * automatisch erhobenen *Kennzahlen* (Gates, Abdeckung, Struktur) und die von Hand
- * gepflegte *Einordnung* aus {@link module:project-state/assessment}. Die Trennung
- * ist die zentrale Entscheidung des Vorhabens; hier laufen beide erst zur Anzeige
- * zusammen.
+ * Jeder angezeigte Inhalt leitet sich aus der Live-Messung ab -- es gibt keinen
+ * hand-gepflegten Text mehr, der der gemessenen Realitaet widersprechen koennte
+ * (ADR 0022: Anzeige leitet sich aus der Quelle ab, schliesst Drift strukturell
+ * aus). Das Gesamturteil entsteht aus den gemessenen Gate-Zustaenden
+ * ({@link module:project-state/buildReportModel}); hier wird es nur dargestellt.
+ *
+ * Die Seite ist bewusst mobil-tauglich: relative Einheiten, breite Tabellen liegen
+ * je in einem eigenen `overflow-x`-Container, sodass ein schmaler Viewport (~375 px)
+ * ohne horizontales Scrollen der Seite lesbar bleibt.
  *
  * Der Zeitpunkt kommt als fertiger Text herein, nicht aus `new Date()` -- so bleibt
  * die Funktion deterministisch und im Test ohne Uhr pruefbar.
@@ -22,7 +26,6 @@
 import { marked } from 'marked';
 
 import { GateStatus, GateEnforcement, GateAbortReason } from './gates.js';
-import { AssessmentVerdict } from './assessment.js';
 
 const DEFAULT_REPORT_TITLE = 'Projektzustandsbericht';
 
@@ -57,14 +60,6 @@ const GATE_ABORT_REASON_LABEL = Object.freeze({
   [GateAbortReason.NoRunRecorded]: 'kein Lauf erfasst',
 });
 
-/** Darstellung einer Befund-Einordnung, analog zu den Gate-Zustaenden. */
-const VERDICT_PRESENTATION = Object.freeze({
-  [AssessmentVerdict.Intentional]: { symbol: '✓', label: 'Absicht', tone: 'ok' },
-  [AssessmentVerdict.Accepted]: { symbol: '≈', label: 'hingenommen', tone: 'neutral' },
-  [AssessmentVerdict.NotRun]: { symbol: '∅', label: 'nicht angelaufen', tone: 'inert' },
-  [AssessmentVerdict.NeedsWork]: { symbol: '!', label: 'Handlungsbedarf', tone: 'warn' },
-});
-
 const UNKNOWN_PRESENTATION = Object.freeze({ symbol: '?', label: 'unbekannt', tone: 'neutral' });
 
 /** Schmales geschuetztes Leerzeichen: haelt Zahl und Prozentzeichen zusammen (Typografie). */
@@ -94,11 +89,17 @@ const RENDERED_ISSUE_SECTIONS = Object.freeze(['Description', 'Acceptance Criter
  */
 
 /**
+ * @typedef {object} OverallAssessment  Das Gesamturteil, der Seite vorangestellt.
+ *   Vollstaendig aus den gemessenen Gate-Zustaenden abgeleitet, kein Handtext.
+ * @property {string} headline  Der schwerwiegendste gemessene Zustand auf einen Blick.
+ * @property {ReadonlyArray<string>} facts  Die nackten Zahlen dahinter, je eine Zeile.
+ */
+
+/**
  * @typedef {object} ReportModel  Das reine Datenmodell, aus dem die Seite entsteht.
  * @property {string} [title]
  * @property {string} generatedAt  Fertiger Anzeigetext des Erhebungszeitpunkts.
- * @property {import('./assessment.js').OverallAssessment} assessment  Gesamturteil.
- * @property {ReadonlyArray<import('./assessment.js').FindingAssessment>} findingAssessments
+ * @property {OverallAssessment} assessment  Gesamturteil, aus den Messwerten abgeleitet.
  * @property {ReadonlyArray<import('./gates.js').GateState>} gates
  * @property {ReadonlyArray<Metric>} metrics
  * @property {ReadonlyArray<import('./coverage.js').ModuleCoverage>} coverage
@@ -158,13 +159,16 @@ function renderHeader(title, generatedAt) {
   ].join('\n');
 }
 
-/** @param {import('./assessment.js').OverallAssessment} assessment */
+/** @param {OverallAssessment} assessment */
 function renderOverallAssessment(assessment) {
+  const facts = assessment.facts
+    .map((fact) => `<li>${escapeHtml(fact)}</li>`)
+    .join('');
   return [
     '<section class="verdict" aria-label="Gesamturteil">',
     '<h2>Gesamturteil</h2>',
     `<p class="verdict-headline">${escapeHtml(assessment.headline)}</p>`,
-    `<div class="prose">${renderMarkdown(assessment.summary)}</div>`,
+    `<ul class="verdict-facts">${facts}</ul>`,
     '</section>',
   ].join('\n');
 }
@@ -180,7 +184,6 @@ function renderHealthcheckSection(model) {
     renderCoverage(model.coverage),
     renderLongFunctions(model.longFunctions),
     renderStructure(model.structure),
-    renderFindingAssessments(model.findingAssessments),
     '</section>',
   ].join('\n');
 }
@@ -203,7 +206,9 @@ function renderGates(gates) {
 
   return renderSubsection(
     'Qualitaets-Gates',
-    `<table class="grid"><thead><tr><th>Gate</th><th>Zustand</th><th>Wirksamkeit</th></tr></thead><tbody>${rows}</tbody></table>`,
+    wrapScrollable(
+      `<table class="grid"><thead><tr><th>Gate</th><th>Zustand</th><th>Wirksamkeit</th></tr></thead><tbody>${rows}</tbody></table>`,
+    ),
   );
 }
 
@@ -250,7 +255,9 @@ function renderCoverage(coverage) {
     .join('\n');
   return renderSubsection(
     'Testabdeckung je Modul',
-    `<table class="grid"><thead><tr><th>Modul</th><th>Dateien</th><th>Anweisungen</th><th>Branches</th><th>Funktionen</th></tr></thead><tbody>${rows}</tbody></table>`,
+    wrapScrollable(
+      `<table class="grid"><thead><tr><th>Modul</th><th>Dateien</th><th>Anweisungen</th><th>Branches</th><th>Funktionen</th></tr></thead><tbody>${rows}</tbody></table>`,
+    ),
   );
 }
 
@@ -278,7 +285,9 @@ function renderLongFunctions(longFunctions) {
     .join('\n');
   return renderSubsection(
     'Laengste Funktionen',
-    `<table class="grid"><thead><tr><th>Funktion</th><th>Datei</th><th>Zeilen</th><th>Bereich</th></tr></thead><tbody>${rows}</tbody></table>`,
+    wrapScrollable(
+      `<table class="grid"><thead><tr><th>Funktion</th><th>Datei</th><th>Zeilen</th><th>Bereich</th></tr></thead><tbody>${rows}</tbody></table>`,
+    ),
   );
 }
 
@@ -309,35 +318,6 @@ function renderStructureFinding(label, items, emptyText) {
       ? renderEmpty(emptyText)
       : `<ul class="finding-list">${items.map((item) => `<li><code>${escapeHtml(item)}</code></li>`).join('')}</ul>`;
   return `<h4>${escapeHtml(label)}</h4>${body}`;
-}
-
-/** @param {ReadonlyArray<import('./assessment.js').FindingAssessment>} findingAssessments */
-function renderFindingAssessments(findingAssessments) {
-  if (findingAssessments.length === 0) {
-    return renderSubsection('Eingeordnete Befunde', renderEmpty('Keine Einordnungen hinterlegt.'));
-  }
-  const cards = findingAssessments.map(renderFindingAssessmentCard).join('\n');
-  const note =
-    '<p class="subsection-note">Diese Einordnungen stammen aus einer von Hand gepflegten, versionierten Datei ' +
-    'und ueberstehen einen Neulauf des Generators unveraendert.</p>';
-  return renderSubsection('Eingeordnete Befunde', `${note}${cards}`);
-}
-
-/** @param {import('./assessment.js').FindingAssessment} finding */
-function renderFindingAssessmentCard(finding) {
-  const presentation = VERDICT_PRESENTATION[finding.verdict] ?? UNKNOWN_PRESENTATION;
-  const reference = finding.reference ? `<span class="reference">${escapeHtml(finding.reference)}</span>` : '';
-  return [
-    '<article class="finding">',
-    '<div class="finding-head">',
-    renderBadge(presentation),
-    `<span class="finding-source">${escapeHtml(finding.source)}</span>`,
-    reference,
-    '</div>',
-    `<h4>${escapeHtml(finding.title)}</h4>`,
-    `<div class="prose">${renderMarkdown(finding.detail)}</div>`,
-    '</article>',
-  ].join('\n');
 }
 
 /** @param {ReportModel} model */
@@ -375,24 +355,47 @@ function renderOpenIssues(openIssues) {
   return openIssues.map(renderOpenIssue).join('\n');
 }
 
-/** @param {import('./issues.js').OpenIssue} issue */
+/**
+ * Ein offener Vorgang als natives, ausklappbares `<details>` -- ohne JavaScript.
+ * Sichtbar bleibt nur die kompakte Zusammenfassungszeile (Titel, Status); die
+ * Beschreibung und die Akzeptanzkriterien klappen erst auf Wunsch darunter auf,
+ * damit der Bereich auch bei vielen Vorgaengen kurz bleibt.
+ *
+ * @param {import('./issues.js').OpenIssue} issue
+ */
 function renderOpenIssue(issue) {
-  const meta = [
+  return [
+    `<details class="issue" id="issue-${escapeHtml(anchorId(issue.id))}">`,
+    renderIssueSummary(issue),
+    '<div class="issue-body">',
+    renderIssueMeta(issue),
+    renderIssueSections(issue.sections),
+    renderIssueRefs(issue.refs),
+    '</div>',
+    '</details>',
+  ].join('\n');
+}
+
+/** Die stets sichtbare, kompakte Zeile eines Vorgangs: Titel und Status. */
+function renderIssueSummary(issue) {
+  return [
+    '<summary class="issue-summary">',
+    `<span class="issue-title">${escapeHtml(issue.title)}</span>`,
     `<span class="issue-status">${escapeHtml(issue.status)}</span>`,
+    '</summary>',
+  ].join('');
+}
+
+/** Die Kopfdaten im aufgeklappten Teil: Id, Typ und -- falls vorhanden -- Blocker. */
+function renderIssueMeta(issue) {
+  const meta = [
+    `<span class="issue-id"><code>${escapeHtml(issue.id)}</code></span>`,
     issue.type ? `<span class="issue-type">${escapeHtml(issue.type)}</span>` : '',
     issue.blockedBy.length ? `<span class="issue-blocked">blockiert von ${escapeHtml(issue.blockedBy.join(', '))}</span>` : '',
   ]
     .filter(Boolean)
     .join('\n');
-
-  return [
-    `<article class="issue" id="issue-${escapeHtml(anchorId(issue.id))}">`,
-    `<h3>${escapeHtml(issue.title)} <span class="issue-id"><code>${escapeHtml(issue.id)}</code></span></h3>`,
-    `<div class="issue-meta">${meta}</div>`,
-    renderIssueSections(issue.sections),
-    renderIssueRefs(issue.refs),
-    '</article>',
-  ].join('\n');
+  return `<div class="issue-meta">${meta}</div>`;
 }
 
 /** @param {Record<string, string>} sections */
@@ -432,6 +435,15 @@ function renderSubsection(title, innerHtml) {
   return `<div class="subsection"><h3>${escapeHtml(title)}</h3>${innerHtml}</div>`;
 }
 
+/**
+ * Legt breite Inhalte (Tabellen) in einen eigenen horizontal scrollbaren Container.
+ * So laeuft eine breite Tabelle auf einem schmalen Viewport innerhalb ihres Rahmens
+ * ueber, statt die ganze Seite horizontal scrollen zu lassen.
+ */
+function wrapScrollable(innerHtml) {
+  return `<div class="table-scroll">${innerHtml}</div>`;
+}
+
 /** @param {{ symbol: string, label: string, tone: string }} presentation */
 function renderBadge(presentation) {
   return `<span class="badge badge-${presentation.tone}"><span class="badge-symbol" aria-hidden="true">${escapeHtml(presentation.symbol)}</span>${escapeHtml(presentation.label)}</span>`;
@@ -443,8 +455,8 @@ function renderEmpty(text) {
 
 /**
  * Rendert Markdown zur Bauzeit zu HTML. Die Eingabe stammt aus den eigenen
- * `issue.md`-Dateien und der eigenen Einordnungs-Datei (vertrauenswuerdig), daher
- * wird das Ergebnis unveraendert eingebettet.
+ * `issue.md`-Dateien (vertrauenswuerdig), daher wird das Ergebnis unveraendert
+ * eingebettet.
  *
  * @param {string|null|undefined} text
  * @returns {string}
@@ -480,6 +492,12 @@ function escapeHtml(value) {
  * Das eingebettete Stylesheet. Bewusst systemeigene Schriftarten (kein Nachladen),
  * helles und dunkles Erscheinungsbild ueber `prefers-color-scheme`. Die Zustaende
  * tragen ihre Bedeutung ueber Symbol und Text; die Farben hier sind nur Zugabe.
+ *
+ * Das Layout ist durchgehend in relativen Einheiten gehalten und mobil-tauglich:
+ * breite Tabellen liegen je in einem eigenen `overflow-x`-Container (`.table-scroll`),
+ * lange Zeichenketten brechen um (`overflow-wrap`), und eine Media Query fuer schmale
+ * Viewports strafft die Abstaende -- so bleibt die Seite bei ~375 px ohne
+ * horizontales Scrollen lesbar.
  */
 const REPORT_STYLES = `
 :root {
@@ -510,12 +528,14 @@ const REPORT_STYLES = `
   }
 }
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
+  overflow-wrap: break-word;
 }
 .page { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
 .page-header { border-bottom: 2px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
@@ -528,13 +548,16 @@ h4 { font-size: .95rem; margin: 1rem 0 .35rem; color: var(--muted); }
 .section-nav a:hover { text-decoration: underline; }
 .section { margin-bottom: 2.5rem; }
 .subsection { margin-bottom: 1.5rem; }
-.subsection-note, .empty { color: var(--muted); font-size: .9rem; }
+.empty { color: var(--muted); font-size: .9rem; }
 .verdict { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 2rem; }
 .verdict-headline { font-size: 1.15rem; font-weight: 600; margin: .25rem 0 .5rem; }
+.verdict-facts { list-style: none; padding: 0; margin: .5rem 0 0; display: flex; flex-direction: column; gap: .25rem; }
+.verdict-facts li { color: var(--muted); font-size: .9rem; }
 .prose :first-child { margin-top: 0; }
 .prose :last-child { margin-bottom: 0; }
-code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: .85em; }
-table.grid { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .9rem; }
+code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: .85em; overflow-wrap: anywhere; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: .5rem; }
+table.grid { width: 100%; border-collapse: collapse; font-size: .9rem; }
 table.grid th, table.grid td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 table.grid th { color: var(--muted); font-weight: 600; }
 td.num { text-align: right; white-space: nowrap; }
@@ -547,21 +570,29 @@ td.num { text-align: right; white-space: nowrap; }
 .badge-neutral { background: var(--neutral-bg); color: var(--neutral-fg); }
 .reason { color: var(--muted); font-size: .85rem; }
 .metric-grid { list-style: none; display: flex; flex-wrap: wrap; gap: .75rem; padding: 0; margin: .5rem 0; }
-.metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .6rem .9rem; min-width: 7rem; display: flex; flex-direction: column; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .6rem .9rem; min-width: 7rem; flex: 1 1 7rem; display: flex; flex-direction: column; }
 .metric-value { font-size: 1.5rem; font-weight: 700; }
 .metric-label { color: var(--muted); font-size: .82rem; }
 .metric-hint { color: var(--muted); font-size: .75rem; margin-top: .2rem; }
 .finding-list { margin: .35rem 0; padding-left: 1.2rem; }
-.finding { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; margin-bottom: .75rem; }
-.finding-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-.finding-source { font-weight: 600; }
-.reference { color: var(--muted); font-size: .8rem; border: 1px solid var(--border); border-radius: 4px; padding: 0 .3rem; }
-.finding h4 { color: var(--text); }
 .blind-spot { background: var(--warn-bg); color: var(--warn-fg); border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.25rem; font-size: .9rem; }
-.issue { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
-.issue h3 { margin-top: 0; }
+.issue { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: .75rem; }
+.issue-summary { cursor: pointer; padding: .65rem 1rem; }
+.issue-summary::marker { color: var(--muted); }
+.issue-title { font-weight: 600; }
+.issue-status { display: inline-block; margin-left: .5rem; font-size: .78rem; padding: .1em .5em; border-radius: 4px; background: var(--neutral-bg); color: var(--neutral-fg); vertical-align: middle; }
+.issue[open] .issue-summary { border-bottom: 1px solid var(--border); }
+.issue-body { padding: .25rem 1rem 1rem; }
 .issue-id { font-weight: 400; color: var(--muted); }
-.issue-meta { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .5rem; }
+.issue-meta { display: flex; gap: .5rem; flex-wrap: wrap; margin: .5rem 0; }
 .issue-meta span { font-size: .78rem; padding: .1em .5em; border-radius: 4px; background: var(--neutral-bg); color: var(--neutral-fg); }
 .issue-refs { color: var(--muted); font-size: .82rem; }
+@media (max-width: 30rem) {
+  .page { padding: 1rem .85rem 3rem; }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.2rem; }
+  .verdict { padding: .85rem 1rem; }
+  .section-nav a { margin-right: .75rem; }
+  .metric { min-width: 6rem; flex-basis: 6rem; }
+}
 `.trim();

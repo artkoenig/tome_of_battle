@@ -23,7 +23,7 @@ Die vom Nutzer aufgerufene Live-Domain, auf die zuletzt ein Deployment manuell p
 _Avoid_: "main-Build" als Synonym für Production — seit ADR 0019 sind das zwei verschiedene Zustände.
 
 **Zustandsbericht**:
-Die bei jedem Push auf `main` neu erzeugte HTML-Seite über den Zustand des Projekts — Healthcheck (Qualitäts-Gates mit ihrer tatsächlichen Wirksamkeit, Kennzahlen, eingeordnete Befunde) und die offenen Vorgänge des lokalen Trackers. Er ist eine Momentaufnahme über das *Projekt*, richtet sich an den Maintainer und wird über GitHub Pages veröffentlicht (siehe [ADR 0025](docs/adr/0025-pages-quelle-auf-github-actions-mit-jekyll-build.md)).
+Die bei jedem Push auf `main` neu erzeugte HTML-Seite über den Zustand des Projekts — Healthcheck (Qualitäts-Gates mit ihrer tatsächlichen Wirksamkeit, Kennzahlen, Testabdeckung, längste Funktionen, Strukturfakten) und die offenen Vorgänge des lokalen Trackers. Sein Inhalt leitet sich vollständig aus der Live-Messung ab; es gibt keinen hand-gepflegten Deutungstext, der veralten könnte. Er ist eine Momentaufnahme über das *Projekt*, richtet sich an den Maintainer und wird über GitHub Pages veröffentlicht (siehe [ADR 0025](docs/adr/0025-pages-quelle-auf-github-actions-mit-jekyll-build.md)).
 
 Sein Veröffentlichen heißt **Veröffentlichung des Zustandsberichts** — es ist ausdrücklich kein *Deployment*, kein *Release* und erreicht keine *Production*: Diese drei Begriffe bleiben exklusiv an die Auslieferung der **Anwendung** über Vercel gebunden. Der Bericht enthält keinen Anwendungscode, hat keine Versionsnummer und kein Freigabe-Gate.
 _Avoid_: "Pages-Deployment", "Report-Release", "Doku-Production" — jede Übertragung der Auslieferungsbegriffe auf den Bericht verwässert sie.
