@@ -10,6 +10,7 @@ import {
 import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
+import { resolveRowSelectionId } from './optionNesting';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
 
@@ -124,6 +125,9 @@ export default function SelectionConfigurator({
           id: item.groupId,
           constraints: item.groupConstraints,
           modifiers: item.groupModifiers,
+          // The selection this group is re-emitted from (null for a plain unit group);
+          // drives where the group renders — nested under that selection's row.
+          ownerSelectionId: item.ownerSelectionId || null,
           items: []
         };
         groupedList.push(groupMap[groupKey]);
@@ -132,6 +136,7 @@ export default function SelectionConfigurator({
     } else {
       groupedList.push({
         standalone: true,
+        ownerSelectionId: item.ownerSelectionId || null,
         item: item
       });
     }
@@ -163,12 +168,37 @@ export default function SelectionConfigurator({
     return 0;
   });
 
-  return (
-    <div className="selection-node-body">
-      {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
-      {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
-      <div className="sub-selection-group sub-selection-group--flush">
-        {groupedList.map((group) => {
+  // Partition sections by the selection they hang off: top-level sections belong to the
+  // unit, the rest render indented under the row of the selection whose id they carry
+  // (optionsCollector's ownerSelectionId). This relationship is the sole nesting driver —
+  // no catalogue-, mount- or Barding-specific ids anywhere.
+  const sectionsByOwner = new Map();
+  const topSections = [];
+  groupedList.forEach(section => {
+    if (section.ownerSelectionId) {
+      const siblings = sectionsByOwner.get(section.ownerSelectionId) || [];
+      siblings.push(section);
+      sectionsByOwner.set(section.ownerSelectionId, siblings);
+    } else {
+      topSections.push(section);
+    }
+  });
+
+  // The sub-options a selected row re-emits, rendered indented directly beneath that row.
+  // Recurses to arbitrary depth through renderSection; null for an unselected or childless
+  // row. Indentation is purely visual — selection, count, cost and mutation targets stay
+  // untouched.
+  const renderOwnedChildren = (rowSelectionId) => {
+    const children = rowSelectionId ? sectionsByOwner.get(rowSelectionId) : null;
+    if (!children || children.length === 0) return null;
+    return (
+      <div className="nested-option-block">
+        {children.map(renderSection)}
+      </div>
+    );
+  };
+
+  const renderSection = (group) => {
           if (group.standalone) {
             const { option, parentDefId, ownerSelectionId } = group.item;
             const res = resolveEntry(system, option, activeCatalogue.id);
@@ -176,6 +206,9 @@ export default function SelectionConfigurator({
             // A re-emitted sub-option nests under its owning sub-selection; a plain unit
             // option nests under the unit. Count/display keep reading the unit selection.
             const editTargetId = ownerSelectionId || selection.id;
+            // The roster selection this row stands for, so its own re-emitted sub-options
+            // can nest beneath it (null while unselected).
+            const rowSelectionId = resolveRowSelectionId(selection, ownerSelectionId, option, res);
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
             const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
@@ -252,8 +285,8 @@ export default function SelectionConfigurator({
             };
 
             return (
-              <div 
-                key={res.id} 
+              <React.Fragment key={res.id}>
+              <div
                 className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
                 onClick={handleRowClick}
               >
@@ -334,6 +367,8 @@ export default function SelectionConfigurator({
                   )}
                 </div>
               </div>
+              {renderOwnedChildren(rowSelectionId)}
+              </React.Fragment>
             );
           } else {
             return (
@@ -352,10 +387,18 @@ export default function SelectionConfigurator({
                 onHoverMove={handleMouseMove}
                 onHoverLeave={handleMouseLeave}
                 onShowRule={onShowRule}
+                renderRowChildren={renderOwnedChildren}
               />
             );
           }
-        })}
+  };
+
+  return (
+    <div className="selection-node-body">
+      {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
+      {!isListRule && <h4>Optionen &amp; Ausrüstung konfigurieren</h4>}
+      <div className="sub-selection-group sub-selection-group--flush">
+        {topSections.map(renderSection)}
       </div>
     </div>
   );

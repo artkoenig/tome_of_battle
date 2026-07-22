@@ -3,14 +3,15 @@ import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
 import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, getEffectiveConstraintLimit, canGroupMaxBeRaisedAboveSingleChoice, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, resolveCostLimitTypeId, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
+import { resolveRowSelectionId } from './optionNesting';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 
-export default function OptionGroupComponent({ 
-  group, 
-  selection, 
-  system, 
-  roster, 
-  getSubSelectionCount, 
+export default function OptionGroupComponent({
+  group,
+  selection,
+  system,
+  roster,
+  getSubSelectionCount,
   subSelectionOperations,
   getOptionDescription,
   activeCatalogue,
@@ -18,7 +19,11 @@ export default function OptionGroupComponent({
   onHoverEnter,
   onHoverMove,
   onHoverLeave,
-  onShowRule
+  onShowRule,
+  // Renders any sub-options re-emitted by a selected row, indented beneath it. Returns
+  // null when the row has no such children. Defaults to a no-op so a group without
+  // nesting (or a test stub) renders unchanged.
+  renderRowChildren = (_rowSelectionId) => null
 }) {
   // Start expanded when the group already holds a selection, so choices made
   // aren't hidden behind a collapsed header. This also surfaces nested quantity
@@ -244,6 +249,9 @@ export default function OptionGroupComponent({
             // otherwise directly under the unit. Only the count/display keep reading the unit
             // selection; the mutation always targets the true parent.
             const editTargetId = ownerSelectionId || selection.id;
+            // The roster selection this row stands for, so its own re-emitted sub-options can
+            // nest beneath it (null while unselected).
+            const rowSelectionId = resolveRowSelectionId(selection, ownerSelectionId, option, res);
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, costLimitTypeId, displayCtx);
             const filteredOptionConstraints = res.constraints?.filter(con => {
@@ -382,8 +390,8 @@ export default function OptionGroupComponent({
             };
 
             return (
-              <div 
-                key={res.id} 
+              <React.Fragment key={res.id}>
+              <div
                 className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
                 onClick={handleRowClick}
               >
@@ -478,6 +486,8 @@ export default function OptionGroupComponent({
                   )}
                 </div>
               </div>
+              {renderRowChildren(rowSelectionId)}
+              </React.Fragment>
             );
           })}
         </div>

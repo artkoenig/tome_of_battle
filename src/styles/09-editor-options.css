@@ -89,6 +89,15 @@
   padding-left: 0;
 }
 
+/* Sub-options re-emitted by a selected option, indented directly beneath its row. The
+   block nests once per level, so deeper sub-options stagger automatically without any
+   depth-specific rule. Purely visual — placement only. */
+.nested-option-block {
+  margin-top: 4px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border-dark);
+}
+
 /* Collapsible option group inside a unit card */
 .option-group {
   margin-bottom: 12px;
