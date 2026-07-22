@@ -75,7 +75,14 @@ jobs:
         # Fuehrt die Gates aus und schreibt den Bericht als ./_site/index.html neben
         # den Jekyll-Build. Ein Gate, das gar nicht anlaeuft, laesst diesen Schritt
         # nicht scheitern -- es erscheint im Bericht als "nicht angelaufen".
-        run: node scripts/project-state/generate.js ./_site/index.html
+        #
+        # jekyll-build-pages laeuft als Container unter fremder UID und legt ./_site
+        # in dessen Besitz an; ohne die Besitzuebernahme scheitert das Schreiben der
+        # Wurzel-Seite an EACCES (permission denied). sudo ist auf GitHub-Runnern
+        # passwortlos verfuegbar.
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" ./_site
+          node scripts/project-state/generate.js ./_site/index.html
 
       - name: Pages-Artefakt hochladen
         uses: actions/upload-pages-artifact@v3
