@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export default function BottomSheet({
   isOpen,
@@ -9,6 +10,7 @@ export default function BottomSheet({
   desktopMode = 'popover', // 'popover' or 'modal'
   containerRef = null // optional, to handle click outside
 }) {
+  const { t } = useTranslation();
   const [renderedChildren, setRenderedChildren] = useState(isOpen ? children : null);
   const [renderedTitle, setRenderedTitle] = useState(isOpen ? title : '');
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -95,8 +97,8 @@ export default function BottomSheet({
             type="button"
             className="dialog-close-btn"
             onClick={onClose}
-            aria-label="Schließen"
-            title="Schließen"
+            aria-label={t('common.close')}
+            title={t('common.close')}
           >
             <X size={18} />
           </button>

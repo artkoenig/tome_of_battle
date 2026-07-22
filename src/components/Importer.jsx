@@ -17,12 +17,7 @@ import {
   buildImportSuccessMessage,
   buildMissingLibraryDependencyMessage,
 } from './importer/importMessages';
-
-/** Failure texts the Importer raises itself, rather than receiving them as data. */
-const IMPORTER_ERROR_MESSAGE = Object.freeze({
-  systemListUnavailable:
-    'Die importierten Spielsysteme konnten nicht aus der Datenbank geladen werden.',
-});
+import { useTranslation } from '../i18n/useTranslation';
 
 /**
  * A selection map that marks every catalogue of a system as selected. Used to preselect
@@ -46,6 +41,7 @@ function buildAllSelectedCats(system) {
  *   when no system exists yet.
  */
 export default function Importer({ onSystemImported, onReportError, showAsEmptyState = false }) {
+  const { t } = useTranslation();
   const [systems, setSystems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -74,7 +70,7 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
       setSystems(data);
     } catch (e) {
       console.error("Error loading systems", e);
-      setError(IMPORTER_ERROR_MESSAGE.systemListUnavailable);
+      setError(t('importer.error.systemListUnavailable'));
     }
   };
 
@@ -86,14 +82,14 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
         setSelectedBundleSysId(systems[0].id);
         setSelectedCats(buildAllSelectedCats(systems[0]));
       } else if (!anyIndexReachable) {
-        setError('Der Katalog-Index ist derzeit nicht erreichbar. Bitte versuche es später erneut.');
+        setError(t('importer.error.indexUnreachable'));
       }
     } catch (e) {
       console.warn("Could not load catalog index from fork", e);
       // Nur wenn noch keine Auswahl steht, ist der Fehler für den Nutzer relevant —
       // andernfalls kann er mit dem bereits geladenen Index weiterarbeiten.
       if (availableSystems.length === 0) {
-        setError('Keine Spieldaten zum Import verfügbar. Der Katalog-Index konnte nicht geladen werden.');
+        setError(t('importer.error.noDataAvailable'));
       }
     }
   };
@@ -162,14 +158,14 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
     try {
       const gstUrl = buildRawFileUrl(system.rawBaseUrl, system.gst.fileName);
       const gstRes = await fetch(gstUrl);
-      if (!gstRes.ok) throw new Error(`Fehler beim Laden des Spielsystems: ${gstRes.statusText}`);
+      if (!gstRes.ok) throw new Error(t('importer.error.systemLoadFailed', { status: gstRes.statusText }));
       const gstText = await gstRes.text();
       const gstFiles = [{ name: system.gst.fileName, content: gstText }];
 
       const catFiles = await Promise.all(selectedCatList.map(async (cat) => {
         const catUrl = buildRawFileUrl(system.rawBaseUrl, cat.fileName);
         const catRes = await fetch(catUrl);
-        if (!catRes.ok) throw new Error(`Fehler beim Laden des Katalogs ${cat.name}: ${catRes.statusText}`);
+        if (!catRes.ok) throw new Error(t('importer.error.catalogueLoadFailed', { name: cat.name, status: catRes.statusText }));
         const catText = await catRes.text();
         return { name: cat.fileName, content: catText };
       }));
@@ -179,7 +175,7 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
       await finishImport(gstFiles, catFiles, catalogueDirectoryFromIndex(system.catalogues));
     } catch (e) {
       console.error(e);
-      setError(`Fehler beim Importieren der Spieldaten: ${e.message}`);
+      setError(t('importer.error.importFailed', { message: e.message }));
     } finally {
       setLoading(false);
     }
@@ -196,7 +192,7 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
     setSuccessMsg(null);
 
     if (!file.name.endsWith('.zip')) {
-      setError('Bitte lade eine gültige .zip-Datei hoch.');
+      setError(t('importer.error.invalidZip'));
       return;
     }
 
@@ -208,7 +204,7 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
       await finishImport(gstFiles, catFiles, catalogueDirectoryFromLinks());
     } catch (e) {
       console.error(e);
-      setError(`Fehler beim Verarbeiten der Datei: ${e.message}`);
+      setError(t('importer.error.fileProcessingFailed', { message: e.message }));
     } finally {
       setLoading(false);
     }
@@ -224,7 +220,7 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
   const handleExport = async (sys) => {
     try {
       if (!sys.rawXmls) {
-        setError('Dieses Spielsystem wurde vor dem Update importiert und besitzt keine XML-Originaldateien in der Datenbank. Bitte importiere das Spielsystem (.zip) erneut, um den Export nutzen zu können.');
+        setError(t('importer.error.noRawXml'));
         return;
       }
 
@@ -246,10 +242,10 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      setSuccessMsg(`Spielsystem "${sys.name}" erfolgreich als .zip (Originalformat) exportiert!`);
+      setSuccessMsg(t('importer.success.systemExported', { name: sys.name }));
     } catch (e) {
       console.error(e);
-      setError(`Fehler beim Exportieren des Spielsystems als ZIP: ${e.message}`);
+      setError(t('importer.error.systemExportFailed', { message: e.message }));
     }
   };
 
@@ -268,14 +264,14 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
 
     return (
       <div className="gothic-panel bundle-importer-panel full-width">
-        <h3 className="text-subheading">Vordefinierte Spieldaten importieren</h3>
+        <h3 className="text-subheading">{t('importer.bundle.title')}</h3>
         <p className="text-dim text-body">
-          Importiere ein komplettes Spielsystem inklusive ausgewählter Fraktionen direkt aus den mitgelieferten Dateien.
+          {t('importer.bundle.description')}
         </p>
 
         <div className="bundle-form-group">
           <div className="bundle-form-group-header">
-            <label className="text-label text-gold">Spielsystem:</label>
+            <label className="text-label text-gold">{t('importer.bundle.systemLabel')}</label>
             {selectedSystemRevisionDisplay && (
               <span
                 className={revisionLabelClassName(selectedSystemRevisionDisplay.tone)}
@@ -299,14 +295,14 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
         {selectedSystem && (
           <div className="bundle-form-group">
             <div className="bundle-importer-header">
-              <label className="text-label text-gold">Kataloge ({selectedCount} ausgewählt):</label>
-              <button 
-                type="button" 
+              <label className="text-label text-gold">{t('importer.bundle.cataloguesLabel', { count: selectedCount })}</label>
+              <button
+                type="button"
                 className="btn-gold btn-sm"
                 onClick={() => handleToggleAllCats(!allChecked)}
                 disabled={loading}
               >
-                {allChecked ? 'Alle abwählen' : 'Alle auswählen'}
+                {allChecked ? t('importer.bundle.deselectAll') : t('importer.bundle.selectAll')}
               </button>
             </div>
             <div className="bundle-catalog-list-container">
@@ -345,7 +341,7 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
             onClick={handleImportBundle}
             disabled={loading || selectedCount === 0}
           >
-            Importieren
+            {t('common.import')}
           </button>
         </div>
       </div>
@@ -372,8 +368,8 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
         <div className="modal-overlay">
           <div className="loader-overlay-content">
             <div className="gothic-spinner" />
-            <h3 className="text-subheading text-gold">Beschwöre Spieldaten...</h3>
-            <span className="text-body text-dim">Verarbeite XML-Dateien, bitte warten...</span>
+            <h3 className="text-subheading text-gold">{t('importer.loading.title')}</h3>
+            <span className="text-body text-dim">{t('importer.loading.subtitle')}</span>
           </div>
         </div>
       )}
@@ -382,9 +378,9 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
         <div className="empty-importer-layout">
           <div className="empty-importer-text-center">
             <div className="empty-state-image empty-importer-image empty-importer-image-centered" />
-            <h2 className="empty-state-title empty-state-title-large">Willkommen bei Tome of Battle</h2>
+            <h2 className="empty-state-title empty-state-title-large">{t('importer.empty.title')}</h2>
             <p className="empty-state-text text-dim">
-              Dein Buch des Wissens ist noch leer. Um Armeen ausheben zu können, benötigst du zunächst Spieldaten im BattleScribe-Format. 
+              {t('importer.empty.text')}
             </p>
           </div>
 
@@ -406,9 +402,9 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
 
       {!showAsEmptyState && (
         <div className="margin-top-md">
-          <h2>Importierte Spielsysteme</h2>
+          <h2>{t('importer.installedTitle')}</h2>
           {systems.length === 0 ? (
-            <p className="text-dim importer-empty-hint">Keine Spielsysteme in der Datenbank vorhanden.</p>
+            <p className="text-dim importer-empty-hint">{t('importer.emptyListHint')}</p>
           ) : (
             <div className="imported-system-list">
               {systems.map((sys) => (
@@ -423,7 +419,7 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
                         {sys.name}
                       </h4>
                       <span className="text-dim imported-system-catalogue-count">
-                        {sys.catalogues?.length || 0} Fraktionskataloge geladen
+                        {t('importer.factionCataloguesLoaded', { count: sys.catalogues?.length || 0 })}
                       </span>
                     </div>
                   </div>
@@ -431,14 +427,14 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
                     <button
                       className="btn-gold square-btn"
                       onClick={() => handleExport(sys)}
-                      title="Spielsystem exportieren (.zip)"
+                      title={t('importer.exportSystemTitle')}
                     >
                       <Download size={16} />
                     </button>
                     <button
                       className="btn-danger square-btn"
                       onClick={() => handleDelete(sys.id)}
-                      title="System löschen"
+                      title={t('importer.deleteSystemTitle')}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -463,16 +459,16 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
             if (onSystemImported) onSystemImported();
           } catch (e) {
             console.error(e);
-            setError('Fehler beim Löschen des Spielsystems.');
+            setError(t('importer.error.systemDeleteFailed'));
           }
         }}
-        title="Spielsystem löschen"
+        title={t('importer.deleteSystem.title')}
         message={
           <>
-            Bist du sicher, dass du das Spielsystem <strong>{systemToDelete?.name}</strong> und alle zugehörigen Kataloge löschen möchtest?
+            {t('importer.deleteSystem.confirmPrefix')}<strong>{systemToDelete?.name}</strong>{t('importer.deleteSystem.confirmSuffix')}
           </>
         }
-        confirmLabel="Löschen"
+        confirmLabel={t('common.delete')}
         isDanger={true}
       />
     </div>

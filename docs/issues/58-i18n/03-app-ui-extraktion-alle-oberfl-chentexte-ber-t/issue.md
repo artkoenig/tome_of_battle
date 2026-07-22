@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [02]
 
@@ -32,3 +32,4 @@ Umformulierung); die englischen Übersetzungen entstehen neu.
       findet englische Texte.
 
 ## Comments
+- Extracted all remaining hardcoded German App-chrome strings (components, utils, App.jsx, plus the roster-list toasts and persistence/serialization/release messages) into src/i18n/locales de/en. Added ~178 keys with parity; German output kept verbatim, English translations new. Added an English smoke test. Solver validator messages (Issue 04) untouched.

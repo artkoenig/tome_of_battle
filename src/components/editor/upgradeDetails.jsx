@@ -1,5 +1,6 @@
 import React from 'react';
 import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/validator';
+import { t } from '../../i18n/i18nStore';
 
 // Shared renderer for the rich detail block of an upgrade/rule/magic item,
 // used by the editor chips, the SelectionConfigurator and the OptionGroup.
@@ -39,8 +40,8 @@ export const renderUpgradeDetails = (res, system) => {
     rules.forEach((r, idx) => {
       if (r.description) {
         const label = isNameSimilar(r.name, res.name)
-          ? 'Beschreibung'
-          : `Beschreibung (${r.name})`;
+          ? t('editor.details.description')
+          : t('editor.details.descriptionNamed', { name: r.name });
 
         elements.push(
           <div key={`rule-${idx}`} className="upgrade-details-entry">
@@ -78,7 +79,7 @@ export const renderUpgradeDetails = (res, system) => {
         if (specialRulesChar && specialRulesChar.value && specialRulesChar.value.trim()) {
           profileElements.push(
             <div key={`special-rules-${idx}`} className="upgrade-details-entry">
-              <span className="text-gold upgrade-details-label">Sonderregeln: </span>
+              <span className="text-gold upgrade-details-label">{t('editor.details.specialRules')}: </span>
               {specialRulesChar.value.trim()}
               {p.publicationRef && !res.rules?.some(r => r.publicationRef === p.publicationRef) && (
                 <span className="publication-ref">
@@ -94,8 +95,8 @@ export const renderUpgradeDetails = (res, system) => {
         if (nonBigEmptyChars.length > 0) {
           const stats = nonBigEmptyChars.map(c => `${c.name}: ${c.value}`).join(', ');
           const label = isNameSimilar(p.name, res.name)
-            ? 'Profil'
-            : `Profil (${p.name})`;
+            ? t('editor.details.profile')
+            : t('editor.details.profileNamed', { name: p.name });
 
           profileElements.push(
             <div key={`profile-${idx}`} className="upgrade-details-entry">
@@ -120,7 +121,7 @@ export const renderUpgradeDetails = (res, system) => {
     if (!hasRuleOrProfileRefs) {
       elements.push(
         <div key="source" className="upgrade-details-source">
-          <span className="text-gold upgrade-details-label">Quelle: </span>
+          <span className="text-gold upgrade-details-label">{t('editor.details.source')}: </span>
           <span className="publication-ref">
             {res.publicationRef}
           </span>
@@ -131,7 +132,7 @@ export const renderUpgradeDetails = (res, system) => {
 
   return (
     <div className="upgrade-details">
-      {elements.length > 0 ? elements : <span className="text-dim">Keine Beschreibung vorhanden.</span>}
+      {elements.length > 0 ? elements : <span className="text-dim">{t('editor.details.noDescription')}</span>}
     </div>
   );
 };

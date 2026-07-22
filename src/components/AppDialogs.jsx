@@ -2,6 +2,7 @@ import React from 'react';
 import SettingsDialog from './SettingsDialog';
 import NewRosterModal from './editor/NewRosterModal';
 import ConfirmationDialog from './editor/ConfirmationDialog';
+import { useTranslation } from '../i18n/useTranslation';
 
 /**
  * Bündelt die drei an der Wurzel gehosteten Dialoge (Einstellungen,
@@ -23,6 +24,7 @@ export default function AppDialogs({
   onCancelRosterDeletion,
   onConfirmRosterDeletion,
 }) {
+  const { t } = useTranslation();
   return (
     <>
       {/* Settings Dialog */}
@@ -44,13 +46,13 @@ export default function AppDialogs({
         isOpen={!!rosterToDelete}
         onClose={onCancelRosterDeletion}
         onConfirm={onConfirmRosterDeletion}
-        title="Armeeliste löschen"
+        title={t('dashboard.deleteRoster.title')}
         message={
           <>
-            Möchtest du die Armeeliste <strong>{rosterToDelete?.name}</strong> wirklich löschen?
+            {t('dashboard.deleteRoster.confirmPrefix')}<strong>{rosterToDelete?.name}</strong>{t('dashboard.deleteRoster.confirmSuffix')}
           </>
         }
-        confirmLabel="Löschen"
+        confirmLabel={t('common.delete')}
         isDanger={true}
       />
     </>

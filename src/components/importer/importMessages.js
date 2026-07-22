@@ -1,13 +1,13 @@
 // User-facing texts of the import screen. They live next to the Importer's presentation
-// rather than in the data layer, which reports the import outcome as structured data.
+// rather than in the data layer, which reports the import outcome as structured data. The
+// wording itself is resolved through the translation function `t` (ADR 0026); this module
+// only assembles the structured parts (catalogue names, counts) around it.
 
-const MISSING_LIBRARY_DEPENDENCY_MESSAGE = {
-  headline: 'Import abgebrochen: Ein ausgewählter Katalog verweist auf einen nicht ausgewählten Bibliothekskatalog.',
-  instruction: 'Bitte wähle folgende Kataloge zusätzlich aus, um einen vollständigen Import sicherzustellen:',
-  requiredByLabel: 'benötigt von',
-  itemSeparator: '; ',
-  referenceSeparator: ', ',
-};
+import { t } from '../../i18n/i18nStore';
+
+// Separators are punctuation, not translatable wording, so they stay as constants.
+const ITEM_SEPARATOR = '; ';
+const REFERENCE_SEPARATOR = ', ';
 
 function quoteCatalogueName(value) {
   return `„${value}"`;
@@ -20,25 +20,17 @@ function quoteCatalogueName(value) {
  * @param {{ id: string, name: string, requiredBy: string[] }[]} missingDependencies
  */
 export function buildMissingLibraryDependencyMessage(missingDependencies) {
-  const { headline, instruction, requiredByLabel, itemSeparator, referenceSeparator } =
-    MISSING_LIBRARY_DEPENDENCY_MESSAGE;
+  const requiredByLabel = t('importer.missingDeps.requiredBy');
   const details = missingDependencies
     .map((dependency) => {
       const quotedName = quoteCatalogueName(dependency.name);
       if (dependency.requiredBy.length === 0) return quotedName;
-      const references = dependency.requiredBy.map(quoteCatalogueName).join(referenceSeparator);
+      const references = dependency.requiredBy.map(quoteCatalogueName).join(REFERENCE_SEPARATOR);
       return `${quotedName} (${requiredByLabel} ${references})`;
     })
-    .join(itemSeparator);
-  return `${headline} ${instruction} ${details}.`;
+    .join(ITEM_SEPARATOR);
+  return `${t('importer.missingDeps.headline')} ${t('importer.missingDeps.instruction')} ${details}.`;
 }
-
-const FAILED_CATALOGUE_MESSAGE = {
-  headline: 'Folgende Kataloge konnten nicht gelesen werden und fehlen im importierten System:',
-  consequence:
-    'Armeelisten dieser Fraktionen lassen sich erst nach einem erneuten, vollständigen Import wieder aufbauen.',
-  itemSeparator: '; ',
-};
 
 /**
  * The confirmation shown after a system was stored, identical for both import paths. When
@@ -52,10 +44,14 @@ const FAILED_CATALOGUE_MESSAGE = {
 export function buildImportSuccessMessage(system, failedCatalogues = []) {
   const importedCount = system.catalogues?.length ?? 0;
   if (failedCatalogues.length === 0) {
-    return `Das System "${system.name}" mit ${importedCount} Katalogen wurde erfolgreich importiert!`;
+    return t('importer.importSuccess.complete', { name: system.name, count: importedCount });
   }
   const expectedCount = importedCount + failedCatalogues.length;
-  return `Das System "${system.name}" wurde unvollständig importiert: ${importedCount} von ${expectedCount} Katalogen konnten gelesen werden.`;
+  return t('importer.importSuccess.incomplete', {
+    name: system.name,
+    importedCount,
+    expectedCount,
+  });
 }
 
 /**
@@ -65,9 +61,8 @@ export function buildImportSuccessMessage(system, failedCatalogues = []) {
  * @param {import('../../parser/xmlParser').CatalogueParseFailure[]} failedCatalogues
  */
 export function buildFailedCatalogueMessage(failedCatalogues) {
-  const { headline, consequence, itemSeparator } = FAILED_CATALOGUE_MESSAGE;
   const details = failedCatalogues
     .map((failure) => `${quoteCatalogueName(failure.fileName)} (${failure.message})`)
-    .join(itemSeparator);
-  return `${headline} ${details}. ${consequence}`;
+    .join(ITEM_SEPARATOR);
+  return `${t('importer.failedCatalogues.headline')} ${details}. ${t('importer.failedCatalogues.consequence')}`;
 }

@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { getDiffChanges, MAX_DIFF_ENTRIES, TRUNCATION_NOTICE } from './releaseDiff';
+import { getDiffChanges, MAX_DIFF_ENTRIES, TRUNCATION_NOTICE_KEY } from './releaseDiff';
+import { t } from '../i18n/i18nStore';
+
+const TRUNCATION_NOTICE = t(TRUNCATION_NOTICE_KEY);
 
 const makeCommits = (count) =>
   Array.from({ length: count }, (_, i) => ({

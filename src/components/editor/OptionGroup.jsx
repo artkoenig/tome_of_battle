@@ -5,6 +5,7 @@ import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 import { resolveRowSelectionId } from './optionNesting';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export default function OptionGroupComponent({
   group,
@@ -25,6 +26,7 @@ export default function OptionGroupComponent({
   // nesting (or a test stub) renders unchanged.
   renderRowChildren = (_rowSelectionId) => null
 }) {
+  const { t } = useTranslation();
   // Start expanded when the group already holds a selection, so choices made
   // aren't hidden behind a collapsed header. This also surfaces nested quantity
   // controls that only appear once a wrapper option is chosen — e.g. picking
@@ -221,7 +223,7 @@ export default function OptionGroupComponent({
           </span>
           {selectedItemsSummary && (
             <span className="text-micro option-group-summary">
-              Auswahl: {selectedItemsSummary}
+              {t('editor.optionGroup.selection', { summary: selectedItemsSummary })}
             </span>
           )}
         </div>
@@ -411,7 +413,7 @@ export default function OptionGroupComponent({
                       onInfoMove={onHoverMove}
                       onInfoLeave={onHoverLeave}
                     />
-                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">(Bereits vergeben)</span>}
+                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">{t('editor.alreadyTaken')}</span>}
                   </span>
                 </div>
                 <div className="sub-selection-controls">

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload, MoreVertical } from 'lucide-react';
 import { calculateRosterCosts, findForceEntryById, resolveCostLimitLabel } from '../solver/validator';
 import BottomSheet from './editor/BottomSheet';
+import { useTranslation } from '../i18n/useTranslation';
 
 export default function RosterDashboard({
   rosters = [],
@@ -14,6 +15,9 @@ export default function RosterDashboard({
   onImportRoster,
   onExportRoster,
 }) {
+  const { t } = useTranslation();
+  const unknownSystemLabel = t('dashboard.unknownSystem');
+  const noFactionLabel = t('dashboard.noFaction');
   const fileInputRef = useRef(null);
 
   const handleImportClick = () => {
@@ -65,9 +69,9 @@ export default function RosterDashboard({
         <div className="gothic-panel offline-banner">
           <WifiOff className="text-danger no-shrink" size={24} />
           <div>
-            <h4 className="text-ui-title offline-banner-title">Offline-Modus aktiv</h4>
+            <h4 className="text-ui-title offline-banner-title">{t('app.offline.active')}</h4>
             <p className="text-label text-dim offline-banner-text">
-              Du hast keine Internetverbindung. Du kannst deine Armeelisten und Kataloge dennoch uneingeschränkt verwalten und bearbeiten.
+              {t('dashboard.offlineText')}
             </p>
           </div>
         </div>
@@ -76,15 +80,15 @@ export default function RosterDashboard({
       {rosters.length > 0 && (
         <div className="gothic-panel dashboard-header hide-on-mobile">
           <div>
-            <h2>Heerlager</h2>
-            <p className="text-dim dashboard-header-subtitle">Verwalte deine Armeelisten oder erstelle neue Feldzüge.</p>
+            <h2>{t('app.nav.rosters')}</h2>
+            <p className="text-dim dashboard-header-subtitle">{t('dashboard.subtitle')}</p>
           </div>
           <div className="dashboard-header-actions">
             <button className="btn-secondary desktop-btn" onClick={handleImportClick}>
-              <Upload size={18} /> Importieren
+              <Upload size={18} /> {t('common.import')}
             </button>
             <button data-testid="new-roster" className="btn-primary desktop-btn" onClick={onNewRoster}>
-              <Plus size={18} /> Neue Armeeliste
+              <Plus size={18} /> {t('dashboard.newRoster')}
             </button>
           </div>
         </div>
@@ -93,26 +97,26 @@ export default function RosterDashboard({
       {rosters.length === 0 ? (
         <div className="empty-state-container">
           <div className="empty-state-image empty-roster-image" />
-          <h3 className="empty-state-title">Die Waffenkammern sind leer</h3>
+          <h3 className="empty-state-title">{t('dashboard.empty.title')}</h3>
           <p className="empty-state-text text-dim">
-            Noch wehen keine Banner in deinem Heerlager. Versammle deine Truppen, wähle deine Anführer und bereite dich auf kommende Schlachten vor.
+            {t('dashboard.empty.text')}
           </p>
           <div className="empty-state-actions">
             <button className="btn-secondary empty-state-btn" onClick={handleImportClick}>
-              <Upload size={20} /> Liste importieren
+              <Upload size={20} /> {t('dashboard.empty.import')}
             </button>
             <button data-testid="new-roster" className="btn-primary empty-state-btn" onClick={onNewRoster}>
-              <Plus size={20} /> Erste Armeeliste ausheben
+              <Plus size={20} /> {t('dashboard.empty.create')}
             </button>
           </div>
         </div>
       ) : (() => {
         const rostersBySystemAndFaction = rosters.reduce((acc, roster) => {
           const sys = systems.find(s => s.id === roster.systemId);
-          const systemName = sys ? sys.name : 'Unbekanntes System';
-          
+          const systemName = sys ? sys.name : unknownSystemLabel;
+
           const cat = sys?.catalogues?.find(c => c.id === roster.catalogueId);
-          const factionName = cat ? cat.name : 'Keine Fraktion';
+          const factionName = cat ? cat.name : noFactionLabel;
           
           if (!acc[systemName]) {
             acc[systemName] = {};
@@ -125,8 +129,8 @@ export default function RosterDashboard({
         }, {});
 
         const sortedSystems = Object.keys(rostersBySystemAndFaction).sort((a, b) => {
-          if (a === 'Unbekanntes System') return 1;
-          if (b === 'Unbekanntes System') return -1;
+          if (a === unknownSystemLabel) return 1;
+          if (b === unknownSystemLabel) return -1;
           return a.localeCompare(b);
         });
 
@@ -135,8 +139,8 @@ export default function RosterDashboard({
             {sortedSystems.map(systemName => {
               const factionsObj = rostersBySystemAndFaction[systemName];
               const sortedFactions = Object.keys(factionsObj).sort((a, b) => {
-                if (a === 'Keine Fraktion') return 1;
-                if (b === 'Keine Fraktion') return -1;
+                if (a === noFactionLabel) return 1;
+                if (b === noFactionLabel) return -1;
                 return a.localeCompare(b);
               });
 
@@ -178,7 +182,7 @@ export default function RosterDashboard({
                                         <div
                                           className="roster-title-container"
                                           onClick={(e) => startEditing(roster, e)}
-                                          title="Titel bearbeiten"
+                                          title={t('dashboard.editTitle')}
                                         >
                                           <h4 className="roster-title">{roster.name}</h4>
                                           <Edit3 className="edit-icon" size={14} />
@@ -201,13 +205,13 @@ export default function RosterDashboard({
                                   </div>
                                   <div className="roster-actions">
                                     <button className="btn-sm" onClick={() => onOpenRoster(roster, 'builder')}>
-                                      <Edit3 size={14} /> Ausrüsten
+                                      <Edit3 size={14} /> {t('common.equip')}
                                     </button>
 <button data-testid="roster-play" className="btn-sm" onClick={() => onOpenRoster(roster, 'play')}>
-  <Play size={14} /> Spielen
+  <Play size={14} /> {t('common.play')}
 </button>
-                                    <button className="btn-sm hide-on-mobile" onClick={() => onExportRoster?.(roster)} title="Liste exportieren">
-                                      <Download size={14} /> Exportieren
+                                    <button className="btn-sm hide-on-mobile" onClick={() => onExportRoster?.(roster)} title={t('dashboard.exportRosterTitle')}>
+                                      <Download size={14} /> {t('common.export')}
                                     </button>
                                     <button 
                                       className="btn-danger square-btn hide-on-mobile push-end"
@@ -218,7 +222,7 @@ export default function RosterDashboard({
                                     <button 
                                       className="btn-sm square-btn mobile-only push-end"
                                       onClick={() => setRosterActionsRosterId(roster.id)}
-                                      title="Weitere Aktionen"
+                                      title={t('dashboard.moreActions')}
                                     >
                                       <MoreVertical size={14} />
                                     </button>
@@ -243,7 +247,7 @@ export default function RosterDashboard({
           <button 
             className="fab-mobile mobile-only"
             onClick={() => setIsActionsSheetOpen(true)}
-            title="Aktionen"
+            title={t('common.actions')}
           >
             <Plus size={24} />
           </button>
@@ -251,7 +255,7 @@ export default function RosterDashboard({
           <BottomSheet
             isOpen={isActionsSheetOpen}
             onClose={() => setIsActionsSheetOpen(false)}
-            title="Armee-Aktionen"
+            title={t('dashboard.armyActions')}
           >
             <div className="popover-list">
               <div 
@@ -263,7 +267,7 @@ export default function RosterDashboard({
               >
                 <span className="popover-item-name flex-row gap-12">
                   <Plus size={18} className="text-gold" />
-                  <span>Neue Armeeliste ausheben</span>
+                  <span>{t('dashboard.newRosterLong')}</span>
                 </span>
               </div>
               <div 
@@ -275,7 +279,7 @@ export default function RosterDashboard({
               >
                 <span className="popover-item-name flex-row gap-12">
                   <Upload size={18} className="text-gold" />
-                  <span>Armeeliste importieren</span>
+                  <span>{t('dashboard.importRoster')}</span>
                 </span>
               </div>
             </div>
@@ -284,7 +288,7 @@ export default function RosterDashboard({
           <BottomSheet
             isOpen={rosterActionsRosterId !== null}
             onClose={() => setRosterActionsRosterId(null)}
-            title="Aktionen"
+            title={t('common.actions')}
           >
             <div className="popover-list">
               <div 
@@ -297,7 +301,7 @@ export default function RosterDashboard({
               >
                 <span className="popover-item-name flex-row gap-12">
                   <Download size={18} />
-                  <span>Exportieren</span>
+                  <span>{t('common.export')}</span>
                 </span>
               </div>
               <div 
@@ -310,7 +314,7 @@ export default function RosterDashboard({
               >
                 <span className="popover-item-name flex-row gap-12">
                   <Trash2 size={18} className="text-danger" />
-                  <span>Löschen</span>
+                  <span>{t('common.delete')}</span>
                 </span>
               </div>
             </div>

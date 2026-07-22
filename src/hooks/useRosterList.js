@@ -10,6 +10,7 @@ import {
   MissingSystemError
 } from '../utils/rosterSerialization';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../solver/validator';
+import { t } from '../i18n/i18nStore';
 
 /**
  * Meldungen der Roster-CRUD-Vorgänge. Sie laufen ohne Backend und ohne Konsole
@@ -59,7 +60,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
 
   const createRoster = async ({ name, systemId, catId, forceEntryId, limit }) => {
     if (!name || !systemId || !catId) {
-      showToast("Bitte fülle alle Felder aus.", 'error');
+      showToast(t('rosterList.fillAllFields'), 'error');
       return;
     }
 
@@ -89,7 +90,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
   const openRoster = (roster, viewMode = VIEWS.BUILDER) => {
     const sys = systems.find(s => s.id === roster.systemId);
     if (!sys) {
-      showToast("Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.", 'error');
+      showToast(t('rosterList.systemDeleted'), 'error');
       return;
     }
     navigate(viewMode, roster.id);
@@ -151,14 +152,14 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
       }
 
       await saveRoster(newRoster);
-      showToast(`Erfolgreich importiert: ${newRoster.name}`);
+      showToast(t('rosterList.importSuccess', { name: newRoster.name }));
       reloadData();
     } catch (err) {
       console.error('Import error:', err);
       if (err instanceof MissingSystemError) {
         showToast(err.message, 'error');
       } else {
-        showToast(`Fehler beim Importieren: ${err.message || 'Ungültiges Dateiformat.'}`, 'error');
+        showToast(t('rosterList.importError', { message: err.message || t('rosterList.invalidFormat') }), 'error');
       }
     }
   };
@@ -167,7 +168,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     try {
       const system = systems.find(s => s.id === roster.systemId);
       if (!system) {
-        showToast("Das zugehörige Spielsystem fehlt. Der Export kann nicht durchgeführt werden.", 'error');
+        showToast(t('rosterList.systemMissingExport'), 'error');
         return;
       }
 
@@ -185,7 +186,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export error:', err);
-      showToast(`Fehler beim Exportieren: ${err.message || 'Export fehlgeschlagen.'}`, 'error');
+      showToast(t('rosterList.exportError', { message: err.message || t('rosterList.exportFailed') }), 'error');
     }
   };
 

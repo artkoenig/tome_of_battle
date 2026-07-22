@@ -4,24 +4,28 @@
 // verliert seine Liste. Die Konsole sieht am Spieltisch niemand, deshalb wird die Meldung
 // zusätzlich an den anwendungsweiten Kanal (Toast, ADR 0010) gereicht.
 
-/** Nutzertexte für die Schreibvorgänge, die im Hintergrund laufen. */
-export const PERSISTENCE_FAILURE_MESSAGE = Object.freeze({
-  roster:
-    'Die Armeeliste konnte nicht gespeichert werden. Deine letzten Änderungen sind nicht gesichert.',
-  gameState:
-    'Der Spielstand konnte nicht gespeichert werden. Wunden, Punkte und Runde sind nicht gesichert.',
+import { t } from '../i18n/i18nStore.js';
+
+/**
+ * Übersetzungsschlüssel der Nutzertexte je Schreibvorgang. Der konkrete Wortlaut liegt in
+ * den Sprachdateien (ADR 0026) und wird erst beim Melden in die aktive Sprache aufgelöst.
+ */
+export const PERSISTENCE_FAILURE_MESSAGE_KEY = Object.freeze({
+  roster: 'persistence.roster',
+  gameState: 'persistence.gameState',
 });
 
 /**
  * Erzeugt einen Melder, der einen Fehlschlag protokolliert und — sofern ein Kanal
- * vorhanden ist — dem Nutzer anzeigt.
+ * vorhanden ist — dem Nutzer in der aktiven Sprache anzeigt.
  *
- * @param {string} message der Nutzertext dieses Schreibvorgangs.
+ * @param {string} messageKey Übersetzungsschlüssel des Nutzertexts dieses Schreibvorgangs.
  * @param {(message: string) => void} [reportError] anwendungsweiter Fehlerkanal.
  * @returns {(error: unknown) => void}
  */
-export function createPersistenceFailureReporter(message, reportError) {
+export function createPersistenceFailureReporter(messageKey, reportError) {
   return (error) => {
+    const message = t(messageKey);
     console.error(message, error);
     if (reportError) reportError(message);
   };

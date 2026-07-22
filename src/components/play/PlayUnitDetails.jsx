@@ -8,6 +8,7 @@ import {
 } from '../../solver/validator';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { getProfileCellClassName } from '../profileCellClasses';
+import { useTranslation } from '../../i18n/useTranslation';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -44,6 +45,7 @@ export default function PlayUnitDetails({
   isSubUnit = false,
   onShowRule
 }) {
+  const { t } = useTranslation();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Helper to extract maximum wounds of an entry
@@ -111,13 +113,13 @@ export default function PlayUnitDetails({
         className={className}
         onMouseEnter={(e) => {
           if (modState && c.modificationBreakdown?.length > 0) {
-            handleMouseEnter(e, `Modifikationen: ${c.name}`, c.modificationBreakdown);
+            handleMouseEnter(e, t('common.modifications', { name: c.name }), c.modificationBreakdown);
           }
         }}
         onMouseLeave={handleMouseLeave}
         onClick={() => {
           if (modState && c.modificationBreakdown?.length > 0) {
-            setSaveSummaryData({ title: `Modifikationen: ${c.name}`, breakdown: c.modificationBreakdown });
+            setSaveSummaryData({ title: t('common.modifications', { name: c.name }), breakdown: c.modificationBreakdown });
             setSaveSummaryOpen(true);
           }
         }}
@@ -141,7 +143,7 @@ export default function PlayUnitDetails({
     });
 
     const showNameCol = isModel ? profiles.length > 1 : true;
-    const nameHeader = isModel ? 'Modell' : (typeName || 'Profil');
+    const nameHeader = isModel ? t('common.model') : (typeName || t('common.profileHeader'));
 
     return (
       <div key={key} className="profile-table-container">
@@ -230,7 +232,7 @@ export default function PlayUnitDetails({
     >
       {isDead && (
         <div className="destroyed-overlay">
-          <span className="destroyed-text">Vernichtet</span>
+          <span className="destroyed-text">{t('play.destroyed')}</span>
         </div>
       )}
       <div className="play-unit-header">
@@ -256,7 +258,7 @@ export default function PlayUnitDetails({
             <div />
           ) : (
             <div className={`play-unit-header-controls${isDead ? ' play-unit-header-controls--dimmed' : ''}`}>
-              {isDead && <span className="text-danger font-serif play-unit-destroyed-label">VERNICHTET</span>}
+              {isDead && <span className="text-danger font-serif play-unit-destroyed-label">{t('play.destroyedCaps')}</span>}
               <button
                 className="qty-btn"
                 onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
@@ -282,7 +284,7 @@ export default function PlayUnitDetails({
                 type="button"
                 className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
                 onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                title={isDetailsOpen ? 'Profile ausblenden' : 'Profile anzeigen'}
+                title={isDetailsOpen ? t('play.hideProfiles') : t('play.showProfiles')}
                 aria-expanded={isDetailsOpen}
               >
                 <ReceiptText size={16} />
@@ -299,7 +301,7 @@ export default function PlayUnitDetails({
               <div>
                 {modelGroup
                   ? renderProfileTable(modelGroup, 'model')
-                  : <p className="text-dim text-label">Keine Profilwerte gefunden.</p>}
+                  : <p className="text-dim text-label">{t('play.noProfileValues')}</p>}
                 {itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
               </div>
             )}

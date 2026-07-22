@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  PERSISTENCE_FAILURE_MESSAGE,
+  PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,
 } from '../utils/persistenceFailure';
 import { createInitialGameState } from '../utils/rosterDefaults';
@@ -30,7 +30,7 @@ export default function usePlayState(initialRoster, setRoster, saveRosterCallbac
       return;
     }
     const reportFailure = createPersistenceFailureReporter(
-      PERSISTENCE_FAILURE_MESSAGE.gameState,
+      PERSISTENCE_FAILURE_MESSAGE_KEY.gameState,
       reportErrorRef.current
     );
     // Need to use functional update pattern for setRoster to avoid stale closures if roster changes
