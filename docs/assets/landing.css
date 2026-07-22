@@ -332,16 +332,19 @@ img {
 }
 
 .feature-icon {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   border-radius: var(--radius-sm);
-  background: rgba(212, 175, 55, 0.1);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(21, 26, 38, 0.8) 100%);
   border: 1px solid var(--border-gold);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-family: var(--font-title);
+  font-size: 1.85rem;
+  font-weight: 800;
   color: var(--accent-gold-bright);
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.6);
   margin-bottom: 1.5rem;
 }
 
