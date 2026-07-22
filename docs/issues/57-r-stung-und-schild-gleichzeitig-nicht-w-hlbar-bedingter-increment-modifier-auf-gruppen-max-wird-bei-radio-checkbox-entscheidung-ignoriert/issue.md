@@ -1,4 +1,4 @@
-Status: resolved
+Status: ready-for-agent
 Type: fix
 Blocked by: None
 
