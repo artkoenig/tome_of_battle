@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -31,3 +31,4 @@ Das Verhalten der App ändert sich nicht; hinzukommen dürfen nur
 - [ ] Kein sichtbarer UI-Text wurde geändert (nur Attribute ergänzt).
 
 ## Comments
+- E2E-Test und Screenshot-Skript auf sprachunabhängige data-testid-Selektoren umgestellt; alle App-Chrome-Wort-Matches (inkl. /schlacht|spielen|play/) entfernt. Nur data-testid-Attribute ergänzt, kein sichtbarer UI-Text geändert.

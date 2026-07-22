@@ -115,7 +115,7 @@ export default function RosterSidebar({
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>Lagerbericht</h3>
       <div className="sidebar-summary">
-        <div className="flex-between text-ui-title text-gold sidebar-summary-total">
+        <div data-testid="sidebar-total-costs" className="flex-between text-ui-title text-gold sidebar-summary-total">
           <span>Gesamtkosten:</span>
           <span>
             {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
@@ -139,7 +139,7 @@ export default function RosterSidebar({
 
       {/* Category breakdown */}
       <div className="sidebar-section">
-        <h4 className="sidebar-section-title">Armeeanforderungen</h4>
+        <h4 data-testid="sidebar-army-requirements" className="sidebar-section-title">Armeeanforderungen</h4>
         <CategoryRequirementList roster={roster} system={system} />
       </div>
 
