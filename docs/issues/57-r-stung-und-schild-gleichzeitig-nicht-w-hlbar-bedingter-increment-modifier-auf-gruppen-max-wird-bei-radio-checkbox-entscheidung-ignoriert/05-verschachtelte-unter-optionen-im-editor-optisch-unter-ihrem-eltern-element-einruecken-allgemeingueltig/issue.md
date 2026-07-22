@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -78,3 +78,4 @@ zum Datenmodell-Fix aus 57/04.
 - [ ] `npm test`, Lint und Typecheck grün.
 
 ## Comments
+- Umgesetzt: neue optionNesting.js (Row->Roster-Auswahl-Id), rekursive Einrueckung in SelectionConfigurator, renderRowChildren in OptionGroup, .nested-option-block CSS. Rein praesentational; Auswahl/Zaehler/Kosten/Sperren unveraendert. Nachtraeglich: linke Rahmenlinie entfernt (nur Einrueckung). Verifiziert: Lint + Typecheck sauber, vitest 1354/1354, Puppeteer-E2E bestanden. Realer-Katalog-Komponententest (Vampire Counts, Master Necromancer -> Nightmare -> Barding) belegt Einrueckung statt Top-Level-Abschnitt.
