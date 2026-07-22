@@ -19,13 +19,15 @@ import {
 const failureScreenshotPath = path.join(REPO_ROOT, 'e2e-failure.png');
 
 // Opens the actions menu (MoreVertical popover) of the first top-level unit
-// card and clicks the entry whose label matches (e.g. "Kopieren"/"Löschen").
+// card and clicks the entry identified by its data-testid (e.g.
+// "unit-action-copy"/"unit-action-delete"). Selecting by data-testid keeps the
+// E2E language-independent — no reliance on visible German app-chrome labels.
 // The unit actions used to be inline icon buttons; they now live behind a
 // BottomSheet/popover, so the E2E drives that menu instead.
-const openUnitActionAndClick = async (page, label) => {
+const openUnitActionAndClick = async (page, actionTestId) => {
   const opened = await page.evaluate(() => {
     const node = document.querySelector('.selection-node');
-    const menuBtn = node?.querySelector('.unit-card-menu-container button[title="Aktionen"]');
+    const menuBtn = node?.querySelector('[data-testid="unit-actions-menu"]');
     if (!menuBtn) return false;
     menuBtn.click();
     return true;
@@ -34,20 +36,17 @@ const openUnitActionAndClick = async (page, label) => {
     throw new Error('Actions menu button not found on selection node');
   }
 
-  await page.waitForFunction(
-    (lbl) => Array.from(document.querySelectorAll('.popover-item')).some(i => i.textContent.includes(lbl)),
-    { timeout: 5000 },
-    label
-  );
+  const actionSelector = `[data-testid="${actionTestId}"]`;
+  await page.waitForSelector(actionSelector, { visible: true, timeout: 5000 });
 
-  const clicked = await page.evaluate((lbl) => {
-    const item = Array.from(document.querySelectorAll('.popover-item')).find(i => i.textContent.includes(lbl));
+  const clicked = await page.evaluate((selector) => {
+    const item = document.querySelector(selector);
     if (!item) return false;
     item.click();
     return true;
-  }, label);
+  }, actionSelector);
   if (!clicked) {
-    throw new Error(`Action "${label}" not found in unit actions menu`);
+    throw new Error(`Action "${actionTestId}" not found in unit actions menu`);
   }
 };
 
@@ -64,8 +63,7 @@ const runUiTests = async (server) => {
     // Return to dashboard
     console.log('Returning to Heerlager...');
     await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll('header button'));
-      const btn = buttons.find(b => b.textContent.toLowerCase().includes('heerlager'));
+      const btn = document.querySelector('header [data-testid="nav-rosters"]');
       if (btn) {
         btn.click();
       }
@@ -73,9 +71,9 @@ const runUiTests = async (server) => {
 
     // Click button to create a new roster
     console.log('Waiting for roster list area...');
-    await page.waitForSelector('button', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="new-roster"]', { timeout: 5000 });
     await page.evaluate(() => {
-      const btn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.toLowerCase().includes('armeeliste') || b.textContent.toLowerCase().includes('neu'));
+      const btn = document.querySelector('[data-testid="new-roster"]');
       if (btn) {
         btn.click();
       } else {
@@ -155,15 +153,15 @@ const runUiTests = async (server) => {
     await page.evaluate(() => {
       const rightBar = document.querySelector('.builder-right-bar');
       if (!rightBar) throw new Error('Roster sidebar not found');
-      
-      const armeeHeader = Array.from(rightBar.querySelectorAll('h4')).find(h => h.textContent === 'Armeeanforderungen');
-      if (!armeeHeader) {
-        throw new Error('Sidebar does not contain "Armeeanforderungen" heading');
+
+      const armyRequirements = rightBar.querySelector('[data-testid="sidebar-army-requirements"]');
+      if (!armyRequirements) {
+        throw new Error('Sidebar does not contain the army-requirements section');
       }
 
-      const totalCostsLabel = Array.from(rightBar.querySelectorAll('span')).find(s => s.textContent === 'Gesamtkosten:');
-      if (!totalCostsLabel) {
-        throw new Error('Sidebar does not contain "Gesamtkosten:" label');
+      const totalCosts = rightBar.querySelector('[data-testid="sidebar-total-costs"]');
+      if (!totalCosts) {
+        throw new Error('Sidebar does not contain the total-costs summary');
       }
     });
 
@@ -296,8 +294,8 @@ const runUiTests = async (server) => {
      });
      console.log(`Units count before copy: ${selectionNodesCountBefore}`);
 
-     // Copy the first unit via its actions menu ("Kopieren")
-     await openUnitActionAndClick(page, 'Kopieren');
+     // Copy the first unit via its actions menu (copy entry)
+     await openUnitActionAndClick(page, 'unit-action-copy');
 
      await new Promise(r => setTimeout(r, 800)); // wait for state update
 
@@ -314,18 +312,17 @@ const runUiTests = async (server) => {
       console.log('Verifying unit deletion confirmation - cancel scenario...');
       const countBeforeCancel = await page.evaluate(() => document.querySelectorAll('.selection-node').length);
       
-      // Delete the first unit via its actions menu ("Löschen") — opens modal
-      await openUnitActionAndClick(page, 'Löschen');
-      
-      // Wait for modal to open and click "Abbrechen"
+      // Delete the first unit via its actions menu (delete entry) — opens modal
+      await openUnitActionAndClick(page, 'unit-action-delete');
+
+      // Wait for the confirmation modal to open and click cancel
       await page.waitForFunction(() => {
-         const buttons = Array.from(document.querySelectorAll('button'));
-         return buttons.some(b => b.textContent.includes('Abbrechen') && b.closest('.gothic-bottomsheet.open'));
+         const cancelBtn = document.querySelector('[data-testid="unit-delete-cancel"]');
+         return Boolean(cancelBtn && cancelBtn.closest('.gothic-bottomsheet.open'));
       }, { timeout: 2000 });
-      
+
       await page.evaluate(() => {
-         const buttons = Array.from(document.querySelectorAll('button'));
-         const cancelBtn = buttons.find(b => b.textContent.includes('Abbrechen') && b.closest('.gothic-bottomsheet.open'));
+         const cancelBtn = document.querySelector('.gothic-bottomsheet.open [data-testid="unit-delete-cancel"]');
          if (cancelBtn) cancelBtn.click();
       });
       
@@ -340,19 +337,18 @@ const runUiTests = async (server) => {
 
       console.log('Verifying unit deletion confirmation - accept scenario...');
       
-      // Delete the first unit again via its actions menu ("Löschen")
-      await openUnitActionAndClick(page, 'Löschen');
-      
-      // Wait for modal to open and click "Löschen" (btn-danger in modal)
+      // Delete the first unit again via its actions menu (delete entry)
+      await openUnitActionAndClick(page, 'unit-action-delete');
+
+      // Wait for the confirmation modal to open and click confirm-delete
       await page.waitForFunction(() => {
-         const buttons = Array.from(document.querySelectorAll('.gothic-bottomsheet.open button.btn-danger'));
-         return buttons.some(b => b.textContent.includes('Löschen'));
+         const confirmBtn = document.querySelector('.gothic-bottomsheet.open [data-testid="unit-delete-confirm"]');
+         return Boolean(confirmBtn);
       }, { timeout: 2000 });
 
       await page.evaluate(() => {
-         const buttons = Array.from(document.querySelectorAll('.gothic-bottomsheet.open button.btn-danger'));
-         const deleteBtn = buttons.find(b => b.textContent.includes('Löschen'));
-         if (deleteBtn) deleteBtn.click();
+         const confirmBtn = document.querySelector('.gothic-bottomsheet.open [data-testid="unit-delete-confirm"]');
+         if (confirmBtn) confirmBtn.click();
       });
 
       await new Promise(r => setTimeout(r, 800)); // wait for state update

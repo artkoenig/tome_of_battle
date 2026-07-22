@@ -8,8 +8,10 @@ import PlayUnitDetails from './play/PlayUnitDetails';
 import RulesIndexDialog from './RulesIndexDialog';
 import { useRuleUrl } from '../hooks/useRuleUrl';
 import GothicTooltip from './GothicTooltip';
+import { useTranslation } from '../i18n/useTranslation';
 
 export default function PlayMode({ system, roster: initialRoster, onBack, onReportError }) {
+  const { t } = useTranslation();
   const [roster, setRoster] = useState(initialRoster);
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
   const [saveSummaryData, setSaveSummaryData] = useState({ title: '', breakdown: [] });
@@ -87,7 +89,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
           sortByCostDescending(selections, force.catalogueId || roster.catalogueId);
 
           const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
-          const catName = catDef ? catDef.name : link.name || 'Unbekannte Kategorie';
+          const catName = catDef ? catDef.name : link.name || t('play.unknownCategory');
 
           groups.push({
             id: `${force.id}-${link.targetId}`,
@@ -106,7 +108,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
 
         groups.push({
           id: `${force.id}-uncategorized`,
-          name: 'Sonstige Auswahlen',
+          name: t('play.otherSelections'),
           selections: uncategorizedSelections
         });
       }
@@ -136,14 +138,14 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
         
         <div className="builder-top-bar-right">
           <button className="btn btn-primary btn-top-bar" onClick={onBack}>
-            <Swords size={16} /> <span>Ausrüsten</span>
+            <Swords size={16} /> <span>{t('common.equip')}</span>
           </button>
           <button
             className="btn btn-top-bar play-rulebook-btn"
             onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
-            title="Regelbuch öffnen (neuer Tab)"
+            title={t('play.rulebookTitle')}
           >
-            <BookOpen size={16} /> <span>Regelbuch</span>
+            <BookOpen size={16} /> <span>{t('play.rulebook')}</span>
           </button>
         </div>
       </div>
@@ -154,15 +156,15 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
           <button
             className="btn-sm play-header-back square-btn"
             onClick={onBack}
-            title="Kriegsplanung (Editieren)"
+            title={t('play.backTitle')}
           >
             <ArrowLeft size={16} />
           </button>
-          <h2 className="play-header-title">Spielmodus</h2>
+          <h2 className="play-header-title">{t('play.title')}</h2>
           <button
             className="btn-sm square-btn hide-on-desktop push-end"
             onClick={() => window.open('https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral', '_blank')}
-            title="Regelbuch öffnen (neuer Tab)"
+            title={t('play.rulebookTitle')}
           >
             <BookOpen size={16} />
           </button>
@@ -221,7 +223,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
                   ))}
                 </ul>
               ) : (
-                <p className="text-dim breakdown-empty-hint">Keine Modifikatoren gefunden.</p>
+                <p className="text-dim breakdown-empty-hint">{t('play.noModifiers')}</p>
               )
             ) : (
               saveSummaryData.breakdown

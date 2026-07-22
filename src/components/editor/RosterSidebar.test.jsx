@@ -123,6 +123,24 @@ describe('RosterSidebar hidden cost types', () => {
   });
 });
 
+describe('RosterSidebar structured validation messages', () => {
+  it('renders a solver violation carrying messageKey/messageParams as translated text', () => {
+    renderSidebar({
+      system: makeSystem(),
+      roster: makeRoster(),
+      validationErrors: [{
+        messageKey: 'validation.rosterLimit',
+        messageParams: { current: 210, limit: 200, unitLabel: 'pts' },
+        severity: 'error',
+      }],
+    });
+
+    expect(
+      screen.getByText('Limitüberschreitung: Du hast 210 von maximal 200 pts verwendet.')
+    ).toBeTruthy();
+  });
+});
+
 describe('RosterSidebar validation severity', () => {
   it('renders an error entry with the danger icon and no severity modifier class', () => {
     renderSidebar({

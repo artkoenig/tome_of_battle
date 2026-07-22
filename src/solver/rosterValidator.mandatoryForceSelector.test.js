@@ -54,18 +54,18 @@ const forceSelectorErrors = errors => errors.filter(e => e.type === FORCE_SELECT
 describe('mandatory force-scoped selector validation (Issue 17/07)', () => {
   it('flags the mandatory selector when it is absent from the roster', () => {
     const errors = validateRoster(buildRoster([]), system);
-    const bloodlineError = forceSelectorErrors(errors).find(e => e.message.includes('Bloodlines'));
+    const bloodlineError = forceSelectorErrors(errors).find(e => e.messageParams.entryName.includes('Bloodlines'));
     expect(bloodlineError).toBeDefined();
     expect(bloodlineError.forceId).toBe('f1');
   });
 
   it('clears the error once the mandatory selector is present', () => {
     const errors = validateRoster(buildRoster([bloodlinesSelection()]), system);
-    expect(forceSelectorErrors(errors).some(e => e.message.includes('Bloodlines'))).toBe(false);
+    expect(forceSelectorErrors(errors).some(e => e.messageParams.entryName.includes('Bloodlines'))).toBe(false);
   });
 
   it('never flags a hidden mandatory selector for a standard army', () => {
     const errors = validateRoster(buildRoster([]), system);
-    expect(forceSelectorErrors(errors).some(e => e.message.includes('Sylvania'))).toBe(false);
+    expect(forceSelectorErrors(errors).some(e => e.messageParams.entryName.includes('Sylvania'))).toBe(false);
   });
 });

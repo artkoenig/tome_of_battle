@@ -17,9 +17,11 @@ import useAppData from './hooks/useAppData';
 import useRosterList from './hooks/useRosterList';
 import { getDiffChanges } from './utils/releaseDiff';
 import { VIEWS, isImmersiveView } from './constants/views';
+import { useTranslation } from './i18n/useTranslation';
 import { Analytics } from '@vercel/analytics/react';
 
 export default function App() {
+  const { t } = useTranslation();
   // Keep --app-vh in sync with the real visible viewport height so mobile
   // layout (#root, .empty-state-wrapper) sizes against the area actually
   // visible below collapsing browser chrome.
@@ -87,7 +89,7 @@ export default function App() {
       {/* Premium Header */}
       <header className="app-header">
         <div className="logo-container">
-          <img src="/favicon.png" className="logo-icon" alt="Tome of Battle Logo" />
+          <img src="/favicon.png" className="logo-icon" alt={t('app.logoAlt')} />
           <div className="logo-title-group">
             <span className="logo-text">TOME OF BATTLE</span>
           </div>
@@ -96,9 +98,9 @@ export default function App() {
 
         <div className="app-header-actions">
           {isOffline && (
-            <div className="offline-badge" title="Offline-Modus aktiv">
+            <div className="offline-badge" title={t('app.offline.active')}>
               <WifiOff size={18} className="text-danger" />
-              <span className="hide-on-mobile">Offline</span>
+              <span className="hide-on-mobile">{t('app.offline.short')}</span>
             </div>
           )}
 
@@ -106,26 +108,28 @@ export default function App() {
             <button
               className="install-app-btn"
               onClick={promptInstall}
-              title="App auf dem Gerät installieren"
+              title={t('app.install.title')}
             >
               <Download size={18} className="text-gold" />
-              <span className="hide-on-mobile text-label">Installieren</span>
+              <span className="hide-on-mobile text-label">{t('app.install.label')}</span>
             </button>
           )}
 
           {systems.length > 0 && (
             <div className="desktop-nav-actions">
               <button
+                data-testid="nav-rosters"
                 className={view === VIEWS.ROSTERS ? 'btn-primary' : ''}
                 onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}
               >
-                <FolderOpen size={18} /> Heerlager
+                <FolderOpen size={18} /> {t('app.nav.rosters')}
               </button>
               <button
+                data-testid="nav-importer"
                 className={view === VIEWS.IMPORTER ? 'btn-primary' : ''}
                 onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}
               >
-                <BookOpen size={18} /> Bibliothekar
+                <BookOpen size={18} /> {t('app.nav.importer')}
               </button>
             </div>
           )}
@@ -133,8 +137,8 @@ export default function App() {
           <button
             className="header-settings-btn"
             onClick={() => setIsSettingsOpen(true)}
-            title="Einstellungen"
-            aria-label="Einstellungen"
+            title={t('settings.title')}
+            aria-label={t('settings.title')}
           >
             <Settings size={18} />
           </button>
@@ -145,7 +149,7 @@ export default function App() {
       <main className="app-content">
         {!isDataLoaded ? (
           <div className="app-loading-screen">
-            <p className="text-dim">Öffne das Buch des Wissens...</p>
+            <p className="text-dim">{t('app.loading')}</p>
           </div>
         ) : systems.length === 0 ? (
           <Importer
@@ -212,13 +216,13 @@ export default function App() {
       {/* Mobile Bottom Navigation */}
       {systems.length > 0 && (
         <nav className="mobile-bottom-nav mobile-only">
-          <button className={`mobile-nav-btn ${view === VIEWS.ROSTERS ? 'active' : ''}`} onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}>
+          <button data-testid="nav-rosters" className={`mobile-nav-btn ${view === VIEWS.ROSTERS ? 'active' : ''}`} onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}>
             <FolderOpen size={20} />
-            <span>Heerlager</span>
+            <span>{t('app.nav.rosters')}</span>
           </button>
-          <button className={`mobile-nav-btn ${view === VIEWS.IMPORTER ? 'active' : ''}`} onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}>
+          <button data-testid="nav-importer" className={`mobile-nav-btn ${view === VIEWS.IMPORTER ? 'active' : ''}`} onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}>
             <BookOpen size={20} />
-            <span>Bibliothekar</span>
+            <span>{t('app.nav.importer')}</span>
           </button>
         </nav>
       )}
@@ -226,11 +230,11 @@ export default function App() {
       {isUpdateAvailable && (
         <div className="update-toast">
           <div className="update-toast-content">
-            <span className="font-serif text-gold update-toast-title">Chronik der Veränderungen</span>
+            <span className="font-serif text-gold update-toast-title">{t('app.update.title')}</span>
             {updateRelease && diffChanges.length > 0 ? (
               <div className="update-toast-changes">
                 <span className="update-toast-changes-heading">
-                  {updateRelease.version ? `Version ${updateRelease.version}` : 'Das ist neu'}
+                  {updateRelease.version ? t('app.update.version', { version: updateRelease.version }) : t('app.update.whatsNew')}
                   {updateRelease.date ? ` · ${updateRelease.date}` : ''}:
                 </span>
                 <ul className="update-toast-change-list">
@@ -240,11 +244,11 @@ export default function App() {
                 </ul>
               </div>
             ) : (
-              <span className="update-toast-desc">Eine neue Version wurde im Hintergrund geladen.</span>
+              <span className="update-toast-desc">{t('app.update.description')}</span>
             )}
           </div>
           <button className="btn-primary btn-sm update-toast-btn" onClick={applyUpdate}>
-            Neu laden
+            {t('app.update.reload')}
           </button>
         </div>
       )}

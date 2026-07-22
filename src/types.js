@@ -42,7 +42,9 @@
 /**
  * @typedef {Object} ValidationError
  * @property {string} type
- * @property {string} message
+ * @property {string} [messageKey] i18n-Schlüssel der strukturierten Regelmeldung (ADR 0026); die Übersetzung passiert an der Oberfläche. Für Regelverstöße gesetzt.
+ * @property {Record<string, unknown>} [messageParams] Parameter der strukturierten Meldung (Zahlen, Katalog-Namen als Pass-through).
+ * @property {string} [message] Fertiger Klartext ohne Schlüssel — nur für Autoren-Hinweise des Katalogs (Katalogsprache, Pass-through).
  * @property {'error'|'warning'|'info'} severity
  * @property {string} [forceId]
  * @property {string} [categoryId]

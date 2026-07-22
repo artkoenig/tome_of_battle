@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import usePlayState from './usePlayState';
-import { PERSISTENCE_FAILURE_MESSAGE } from '../utils/persistenceFailure';
+import { PERSISTENCE_FAILURE_MESSAGE_KEY } from '../utils/persistenceFailure';
+import { t } from '../i18n/i18nStore';
 
 describe('usePlayState Hook', () => {
   const initialRoster = {
@@ -107,7 +108,7 @@ describe('usePlayState Hook', () => {
     });
 
     await vi.waitFor(() => {
-      expect(reportError).toHaveBeenCalledWith(PERSISTENCE_FAILURE_MESSAGE.gameState);
+      expect(reportError).toHaveBeenCalledWith(t(PERSISTENCE_FAILURE_MESSAGE_KEY.gameState));
     });
     consoleErrorSpy.mockRestore();
   });

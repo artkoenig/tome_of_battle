@@ -3,6 +3,8 @@ import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
 import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
 import CategoryCountBadge from './CategoryCountBadge';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
+import { useTranslation } from '../../i18n/useTranslation';
+import { formatValidationError } from '../../i18n/formatValidationError';
 
 // Icon/CSS-Klasse je Schweregrad einer Validierungsmeldung — nur `error`
 // blockiert das Roster (siehe hasBlockingViolations); `warning`/`info`
@@ -109,24 +111,25 @@ export default function RosterSidebar({
   costTypeLabel,
   className
 }) {
+  const { t } = useTranslation();
   // Nur blockierende Verstöße machen das Roster ungültig; warning/info zählen nicht mit.
   const blockingErrorCount = countBlockingViolations(validationErrors);
   return (
     <div className={`builder-right-bar ${className || ''}`}>
-      <h3>Lagerbericht</h3>
+      <h3>{t('editor.sidebar.title')}</h3>
       <div className="sidebar-summary">
-        <div className="flex-between text-ui-title text-gold sidebar-summary-total">
-          <span>Gesamtkosten:</span>
+        <div data-testid="sidebar-total-costs" className="flex-between text-ui-title text-gold sidebar-summary-total">
+          <span>{t('editor.sidebar.totalCosts')}</span>
           <span>
             {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
           </span>
         </div>
         <div className="flex-between text-label text-dim">
-          <span>Status:</span>
+          <span>{t('editor.sidebar.status')}</span>
           {hasBlockingViolations(validationErrors) ? (
-            <span className="badge badge-danger">Fehlerhaft ({blockingErrorCount})</span>
+            <span className="badge badge-danger">{t('editor.sidebar.invalid', { count: blockingErrorCount })}</span>
           ) : (
-            <span className="badge badge-success">Gültig</span>
+            <span className="badge badge-success">{t('editor.sidebar.valid')}</span>
           )}
         </div>
         {getExtraResourceTotals(system, roster, costs).map(res => (
@@ -139,16 +142,16 @@ export default function RosterSidebar({
 
       {/* Category breakdown */}
       <div className="sidebar-section">
-        <h4 className="sidebar-section-title">Armeeanforderungen</h4>
+        <h4 data-testid="sidebar-army-requirements" className="sidebar-section-title">{t('editor.sidebar.armyRequirements')}</h4>
         <CategoryRequirementList roster={roster} system={system} />
       </div>
 
       {/* Validation Errors Detailed List */}
       <div>
-        <h4 className="sidebar-section-title">Regelverstöße</h4>
+        <h4 className="sidebar-section-title">{t('editor.sidebar.violations')}</h4>
         {validationErrors.length === 0 ? (
           <p className="text-label text-success flex-row gap-6">
-            <Check size={16} /> Alle Riten eingehalten. Roster ist bereit für die Schlacht.
+            <Check size={16} /> {t('editor.sidebar.allClear')}
           </p>
         ) : (
           <div className="sidebar-violation-list">
@@ -158,7 +161,7 @@ export default function RosterSidebar({
                 <div key={idx} className={`validation-error-item ${itemClass}`}>
                   <div className="sidebar-violation-body">
                     <Icon size={14} className="sidebar-violation-icon" />
-                    <span>{err.message}</span>
+                    <span>{formatValidationError(err, t)}</span>
                   </div>
                 </div>
               );

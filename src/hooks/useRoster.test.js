@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
-import { PERSISTENCE_FAILURE_MESSAGE } from '../utils/persistenceFailure';
+import { PERSISTENCE_FAILURE_MESSAGE_KEY } from '../utils/persistenceFailure';
+import { t } from '../i18n/i18nStore';
 import { syncRosterSelectionsWithSystem, calculateRosterCosts, validateRoster } from '../solver/validator';
 
 // Only the rules engine is stubbed. The roster-tree primitives (rosterTree.js,
@@ -769,7 +770,7 @@ describe('useRoster Hook', () => {
       renderHook(() => useRoster(initialRoster, mockSystem, failingSave, reportError));
 
       await vi.waitFor(() => {
-        expect(reportError).toHaveBeenCalledWith(PERSISTENCE_FAILURE_MESSAGE.roster);
+        expect(reportError).toHaveBeenCalledWith(t(PERSISTENCE_FAILURE_MESSAGE_KEY.roster));
       });
       consoleErrorSpy.mockRestore();
     });
@@ -784,7 +785,7 @@ describe('useRoster Hook', () => {
       renderHook(() => useRoster(initialRoster, mockSystem, throwingSave, reportError));
 
       await vi.waitFor(() => {
-        expect(reportError).toHaveBeenCalledWith(PERSISTENCE_FAILURE_MESSAGE.roster);
+        expect(reportError).toHaveBeenCalledWith(t(PERSISTENCE_FAILURE_MESSAGE_KEY.roster));
       });
       consoleErrorSpy.mockRestore();
     });

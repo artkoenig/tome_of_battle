@@ -87,4 +87,7 @@ every blocker has a lower prefix. Remove each child worktree after its merge
 
 ## Do not hand-edit
 Manage issues through the `issue-tracker` skill's `tracker.py` so that the state
-machine and blocker rules are respected.
+machine and blocker rules are respected. When you fill a freshly created issue's
+`## Description` and `## Acceptance Criteria` — the parts `tracker.py` leaves as
+placeholders — read that new `issue.md` before editing it, since the `Write`
+tool only overwrites a file already read this session.

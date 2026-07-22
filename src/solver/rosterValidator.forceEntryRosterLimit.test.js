@@ -82,7 +82,8 @@ describe('forceEntry-eigenes Punktelimit – Vampire-Counts-Sonderheere', () => 
 
     expect(limitErrors).toHaveLength(1);
     expect(limitErrors[0].forceId).toBe(LICHEMASTER_FORCE_ID);
-    expect(limitErrors[0].message).toContain(String(REQUIRED_LIMIT));
+    // Strukturierte Meldung (ADR 0026): das geforderte Limit steckt im `limit`-Parameter.
+    expect(limitErrors[0].messageParams.limit).toBe(REQUIRED_LIMIT);
     expect(limitErrors[0].severity).toBe('error');
   });
 

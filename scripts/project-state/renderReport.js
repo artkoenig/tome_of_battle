@@ -28,7 +28,7 @@ import { marked } from 'marked';
 
 import { GateStatus, GateEnforcement, GateAbortReason } from './gates.js';
 
-const DEFAULT_REPORT_TITLE = 'Projektzustandsbericht';
+const DEFAULT_REPORT_TITLE = 'Project Status Report';
 
 /** Die beiden Bereiche der Seite -- als CSS-only-Tabs umschaltbar (siehe {@link renderTabs}). */
 const SECTIONS = Object.freeze({
@@ -43,25 +43,25 @@ const SECTIONS = Object.freeze({
  * wie `passed` aussehen.
  */
 const GATE_STATUS_PRESENTATION = Object.freeze({
-  [GateStatus.Passed]: { symbol: '✓', label: 'bestanden', tone: 'ok' },
-  [GateStatus.Findings]: { symbol: '!', label: 'Befunde', tone: 'warn' },
-  [GateStatus.NotRun]: { symbol: '∅', label: 'nicht angelaufen', tone: 'inert' },
+  [GateStatus.Passed]: { symbol: '✓', label: 'passed', tone: 'ok' },
+  [GateStatus.Findings]: { symbol: '!', label: 'findings', tone: 'warn' },
+  [GateStatus.NotRun]: { symbol: '∅', label: 'not run', tone: 'inert' },
 });
 
 const GATE_ENFORCEMENT_LABEL = Object.freeze({
-  [GateEnforcement.Blocking]: 'blockierend',
-  [GateEnforcement.Warning]: 'nur Hinweis',
-  [GateEnforcement.Unknown]: 'Wirksamkeit unbekannt',
+  [GateEnforcement.Blocking]: 'blocking',
+  [GateEnforcement.Warning]: 'warning only',
+  [GateEnforcement.Unknown]: 'enforcement unknown',
 });
 
 const GATE_ABORT_REASON_LABEL = Object.freeze({
-  [GateAbortReason.UnsupportedNodeVersion]: 'nicht unterstuetzte Node-Version',
-  [GateAbortReason.ExecutableNotFound]: 'Programm nicht gefunden',
-  [GateAbortReason.ModuleNotFound]: 'Modul nicht gefunden',
-  [GateAbortReason.NoRunRecorded]: 'kein Lauf erfasst',
+  [GateAbortReason.UnsupportedNodeVersion]: 'unsupported Node version',
+  [GateAbortReason.ExecutableNotFound]: 'executable not found',
+  [GateAbortReason.ModuleNotFound]: 'module not found',
+  [GateAbortReason.NoRunRecorded]: 'no run recorded',
 });
 
-const UNKNOWN_PRESENTATION = Object.freeze({ symbol: '?', label: 'unbekannt', tone: 'neutral' });
+const UNKNOWN_PRESENTATION = Object.freeze({ symbol: '?', label: 'unknown', tone: 'neutral' });
 
 /** Schmales geschuetztes Leerzeichen: haelt Zahl und Prozentzeichen zusammen (Typografie). */
 const NON_BREAKING_SPACE = ' ';
@@ -140,7 +140,7 @@ export function renderReport(model) {
 
   return [
     '<!DOCTYPE html>',
-    '<html lang="de">',
+    '<html lang="en">',
     renderDocumentHead(title),
     `<body>\n<main class="page">\n${body}\n</main>\n</body>`,
     '</html>',
@@ -164,7 +164,7 @@ function renderTabs(model) {
     '<div class="tabs">',
     `<input type="radio" name="report-tab" id="tab-${healthcheck.id}" class="tab-radio" checked>`,
     `<input type="radio" name="report-tab" id="tab-${issues.id}" class="tab-radio">`,
-    '<nav class="tablist" role="tablist" aria-label="Bereiche">',
+    '<nav class="tablist" role="tablist" aria-label="Sections">',
     renderTabLabel(healthcheck),
     renderTabLabel(issues),
     '</nav>',
@@ -193,9 +193,9 @@ function renderDocumentHead(title) {
 function renderHeader(title, generatedAt) {
   return [
     '<header class="page-header">',
-    '<div class="header-nav"><a href="../" class="back-link">← Zurück zur Landingpage</a></div>',
+    '<div class="header-nav"><a href="../" class="back-link">← Back to landing page</a></div>',
     `<h1>${escapeHtml(title)}</h1>`,
-    `<p class="generated-at">Erhoben: ${escapeHtml(generatedAt)}</p>`,
+    `<p class="generated-at">Captured: ${escapeHtml(generatedAt)}</p>`,
     '</header>',
   ].join('\n');
 }
@@ -206,8 +206,8 @@ function renderOverallAssessment(assessment) {
     .map((fact) => `<li>${escapeHtml(fact)}</li>`)
     .join('');
   return [
-    '<section class="verdict" aria-label="Gesamturteil">',
-    '<h2>Gesamturteil</h2>',
+    '<section class="verdict" aria-label="Overall verdict">',
+    '<h2>Overall verdict</h2>',
     `<p class="verdict-headline">${escapeHtml(assessment.headline)}</p>`,
     `<ul class="verdict-facts">${facts}</ul>`,
     '</section>',
@@ -233,7 +233,7 @@ function renderHealthcheckSection(model) {
 /** @param {ReadonlyArray<ModuleMetric>} moduleMetrics */
 function renderModuleMetrics(moduleMetrics) {
   if (moduleMetrics.length === 0) {
-    return renderSubsection('Umfang und Komplexitaet je Modul', renderEmpty('Kein Produktivcode erfasst.'));
+    return renderSubsection('Size and complexity per module', renderEmpty('No production code captured.'));
   }
   const rows = moduleMetrics
     .map((entry) =>
@@ -251,8 +251,8 @@ function renderModuleMetrics(moduleMetrics) {
     )
     .join('\n');
   return renderGridTable(
-    'Umfang und Komplexitaet je Modul',
-    '<th>Modul</th><th>Dateien</th><th>Zeilen</th><th>Funktionen</th><th>&#931;&nbsp;Komplexitaet</th><th>&#216;&nbsp;Komplexitaet</th><th>max.&nbsp;Komplexitaet</th>',
+    'Size and complexity per module',
+    '<th>Module</th><th>Files</th><th>Lines</th><th>Functions</th><th>&#931;&nbsp;complexity</th><th>&#216;&nbsp;complexity</th><th>max.&nbsp;complexity</th>',
     rows,
   );
 }
@@ -260,7 +260,7 @@ function renderModuleMetrics(moduleMetrics) {
 /** @param {ReadonlyArray<import('./complexity.js').FunctionComplexity>} complexFunctions */
 function renderComplexFunctions(complexFunctions) {
   if (complexFunctions.length === 0) {
-    return renderSubsection('Komplexeste Funktionen', renderEmpty('Keine Funktionen erfasst.'));
+    return renderSubsection('Most complex functions', renderEmpty('No functions captured.'));
   }
   const rows = complexFunctions
     .map((fn) =>
@@ -275,8 +275,8 @@ function renderComplexFunctions(complexFunctions) {
     )
     .join('\n');
   return renderGridTable(
-    'Komplexeste Funktionen',
-    '<th>Funktion</th><th>Datei</th><th>Komplexitaet</th><th>Zeile</th>',
+    'Most complex functions',
+    '<th>Function</th><th>File</th><th>Complexity</th><th>Line</th>',
     rows,
   );
 }
@@ -297,7 +297,7 @@ function renderGates(gates) {
     })
     .join('\n');
 
-  return renderGridTable('Qualitaets-Gates', '<th>Gate</th><th>Zustand</th><th>Wirksamkeit</th>', rows);
+  return renderGridTable('Quality gates', '<th>Gate</th><th>State</th><th>Enforcement</th>', rows);
 }
 
 /** @param {import('./gates.js').GateState} gate */
@@ -309,7 +309,7 @@ function renderAbortReason(gate) {
 
 /** @param {ReadonlyArray<Metric>} metrics */
 function renderMetrics(metrics) {
-  if (metrics.length === 0) return renderSubsection('Kennzahlen', renderEmpty('Keine Kennzahlen erhoben.'));
+  if (metrics.length === 0) return renderSubsection('Metrics', renderEmpty('No metrics captured.'));
   const cards = metrics
     .map((metric) => {
       const hint = metric.hint ? `<span class="metric-hint">${escapeHtml(metric.hint)}</span>` : '';
@@ -322,12 +322,12 @@ function renderMetrics(metrics) {
       ].join('');
     })
     .join('\n');
-  return renderSubsection('Kennzahlen', `<ul class="metric-grid">${cards}</ul>`);
+  return renderSubsection('Metrics', `<ul class="metric-grid">${cards}</ul>`);
 }
 
 /** @param {ReadonlyArray<import('./coverage.js').ModuleCoverage>} coverage */
 function renderCoverage(coverage) {
-  if (coverage.length === 0) return renderSubsection('Testabdeckung je Modul', renderEmpty('Keine Abdeckungsdaten.'));
+  if (coverage.length === 0) return renderSubsection('Test coverage per module', renderEmpty('No coverage data.'));
   const rows = coverage
     .map((entry) =>
       [
@@ -342,8 +342,8 @@ function renderCoverage(coverage) {
     )
     .join('\n');
   return renderGridTable(
-    'Testabdeckung je Modul',
-    '<th>Modul</th><th>Dateien</th><th>Anweisungen</th><th>Branches</th><th>Funktionen</th>',
+    'Test coverage per module',
+    '<th>Module</th><th>Files</th><th>Statements</th><th>Branches</th><th>Functions</th>',
     rows,
   );
 }
@@ -356,7 +356,7 @@ function renderMetricCell(metric) {
 /** @param {ReadonlyArray<import('./functions.js').LongFunction>} longFunctions */
 function renderLongFunctions(longFunctions) {
   if (longFunctions.length === 0) {
-    return renderSubsection('Laengste Funktionen', renderEmpty('Keine Funktion ueber dem Grenzwert.'));
+    return renderSubsection('Longest functions', renderEmpty('No function over the threshold.'));
   }
   const rows = longFunctions
     .map((fn) =>
@@ -371,8 +371,8 @@ function renderLongFunctions(longFunctions) {
     )
     .join('\n');
   return renderGridTable(
-    'Laengste Funktionen',
-    '<th>Funktion</th><th>Datei</th><th>Zeilen</th><th>Bereich</th>',
+    'Longest functions',
+    '<th>Function</th><th>File</th><th>Lines</th><th>Range</th>',
     rows,
   );
 }
@@ -380,18 +380,18 @@ function renderLongFunctions(longFunctions) {
 /** @param {StructureFacts} structure */
 function renderStructure(structure) {
   const facts = [
-    `<li class="metric"><span class="metric-value">${structure.moduleCount}</span><span class="metric-label">Module</span></li>`,
-    `<li class="metric"><span class="metric-value">${structure.dependencyCount}</span><span class="metric-label">Abhaengigkeiten</span></li>`,
+    `<li class="metric"><span class="metric-value">${structure.moduleCount}</span><span class="metric-label">Modules</span></li>`,
+    `<li class="metric"><span class="metric-value">${structure.dependencyCount}</span><span class="metric-label">Dependencies</span></li>`,
   ].join('\n');
   return renderSubsection(
-    'Strukturfakten',
+    'Structure facts',
     [
       `<ul class="metric-grid">${facts}</ul>`,
-      renderStructureFinding('Import-Zyklen', structure.cycles.map((cycle) => cycle.join(' → ')), 'Keine Zyklen.'),
+      renderStructureFinding('Import cycles', structure.cycles.map((cycle) => cycle.join(' → ')), 'No cycles.'),
       renderStructureFinding(
-        'Schichtverstoesse',
-        structure.layerViolations.map((v) => `${v.from} → ${v.to} (${v.fromLayer} darf nicht auf ${v.toLayer})`),
-        'Keine Schichtverstoesse.',
+        'Layer violations',
+        structure.layerViolations.map((v) => `${v.from} → ${v.to} (${v.fromLayer} must not depend on ${v.toLayer})`),
+        'No layer violations.',
       ),
     ].join('\n'),
   );
@@ -423,20 +423,20 @@ function renderBranchScope(branchScope) {
   const refs = branchScope.scannedRefs;
   const refList =
     refs.length === 0
-      ? 'keine Refs erfasst'
+      ? 'no refs captured'
       : refs.map((ref) => `<code>${escapeHtml(ref)}</code>`).join(', ');
   return [
     '<aside class="blind-spot" role="note">',
-    '<strong>Blindstelle:</strong> Nur gepushte Branches sind erfasst. Ein CI-Laeufer sieht keine rein lokalen ',
-    'Branches; Vorgaenge, die nur lokal existieren, fehlen hier.',
-    `<br>Erfasst: ${refList}.`,
+    '<strong>Blind spot:</strong> Only pushed branches are captured. A CI runner cannot see purely local ',
+    'branches; issues that exist only locally are missing here.',
+    `<br>Captured: ${refList}.`,
     '</aside>',
   ].join('');
 }
 
 /** @param {ReadonlyArray<import('./issues.js').OpenIssue>} openIssues */
 function renderOpenIssues(openIssues) {
-  if (openIssues.length === 0) return renderEmpty('Keine offenen Vorgaenge.');
+  if (openIssues.length === 0) return renderEmpty('No open issues.');
   return openIssues.map(renderOpenIssue).join('\n');
 }
 
@@ -476,7 +476,7 @@ function renderIssueMeta(issue) {
   const meta = [
     `<span class="issue-id"><code>${escapeHtml(issue.id)}</code></span>`,
     issue.type ? `<span class="issue-type">${escapeHtml(issue.type)}</span>` : '',
-    issue.blockedBy.length ? `<span class="issue-blocked">blockiert von ${escapeHtml(issue.blockedBy.join(', '))}</span>` : '',
+    issue.blockedBy.length ? `<span class="issue-blocked">blocked by ${escapeHtml(issue.blockedBy.join(', '))}</span>` : '',
   ]
     .filter(Boolean)
     .join('\n');
@@ -498,7 +498,7 @@ function renderIssueSections(sections) {
 function renderIssueRefs(refs) {
   if (refs.length === 0) return '';
   const list = refs.map((ref) => `<code>${escapeHtml(ref)}</code>`).join(', ');
-  return `<p class="issue-refs">Gesehen auf: ${list}</p>`;
+  return `<p class="issue-refs">Seen on: ${list}</p>`;
 }
 
 /** @param {ReadonlyArray<import('./issues.js').UnreadableIssue>} unreadable */
@@ -509,7 +509,7 @@ function renderUnreadableIssues(unreadable) {
     .join('');
   return [
     '<aside class="blind-spot" role="note">',
-    '<strong>Nicht lesbar:</strong> Diese Vorgaenge liessen sich nicht auswerten und fehlen oben.',
+    '<strong>Unreadable:</strong> These issues could not be parsed and are missing above.',
     `<ul class="finding-list">${items}</ul>`,
     '</aside>',
   ].join('');

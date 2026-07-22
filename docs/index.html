@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tome of Battle — High Fantasy Army Builder</title>
   <meta name="description" content="Tome of Battle is a modern, offline-first army builder for tabletop wargaming players.">
-  
+
   <!-- Favicon & Styles -->
   <link rel="icon" href="./assets/favicon.png" type="image/png">
   <link rel="stylesheet" href="./assets/landing.css">
+  <script src="./assets/landing.js" defer></script>
 </head>
 <body>
 
@@ -20,13 +21,19 @@
           <img src="./assets/pwa-icon.png" alt="Tome of Battle Logo" class="brand-icon-img">
           <span>Tome of Battle</span>
         </a>
-        <nav>
-          <ul class="nav-links">
-            <li><a href="#features" class="nav-link">Features</a></li>
-            <li><a href="#showcase" class="nav-link">Mobile View</a></li>
-            <li><a href="./status" class="nav-link">Project Status</a></li>
-          </ul>
-        </nav>
+        <div class="nav-right">
+          <nav>
+            <ul class="nav-links">
+              <li><a href="#features" class="nav-link" data-i18n="nav-features">Features</a></li>
+              <li><a href="#showcase" class="nav-link" data-i18n="nav-mobile">Mobile View</a></li>
+              <li><a href="./status" class="nav-link" data-i18n="nav-status">Project Status</a></li>
+            </ul>
+          </nav>
+          <div class="lang-toggle" role="group" aria-label="Language / Sprache">
+            <button type="button" class="lang-toggle-btn" data-lang="de" aria-pressed="false">DE</button>
+            <button type="button" class="lang-toggle-btn" data-lang="en" aria-pressed="false">EN</button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -36,17 +43,17 @@
     <div class="hero-overlay"></div>
     <div class="container">
       <div class="hero-content">
-        <div class="hero-badge">ᛉ Tabletop Army Companion</div>
-        <h1 class="hero-title">Forge Your Legend<br>Build Your Ultimate Army</h1>
-        <p class="hero-subtitle">
+        <div class="hero-badge" data-i18n="hero-badge">ᛉ Tabletop Army Companion</div>
+        <h1 class="hero-title" data-i18n-html="hero-title">Forge Your Legend<br>Build Your Ultimate Army</h1>
+        <p class="hero-subtitle" data-i18n="hero-subtitle">
           Easily draft, customize, and manage your tabletop armies with instant point calculation and full offline access on any device.
         </p>
         <div class="hero-actions">
           <a href="https://tome-of-battle.vercel.app" target="_blank" rel="noopener" class="btn btn-primary">
-            <span>Start Building Roster</span>
+            <span data-i18n="hero-cta-primary">Start Building Roster</span>
           </a>
           <a href="https://github.com/artkoenig/army_builder" target="_blank" rel="noopener" class="btn btn-secondary">
-            <span>View Source on GitHub</span>
+            <span data-i18n="hero-cta-secondary">View Source on GitHub</span>
           </a>
         </div>
       </div>
@@ -57,39 +64,39 @@
   <section id="features" class="section">
     <div class="container">
       <div class="section-header">
-        <div class="section-subtitle">Crafted by Wargamers, for Wargamers</div>
-        <h2 class="section-title">Built for Speed & Convenience</h2>
+        <div class="section-subtitle" data-i18n="features-eyebrow">Crafted by Wargamers, for Wargamers</div>
+        <h2 class="section-title" data-i18n="features-title">Built for Speed & Convenience</h2>
       </div>
 
       <div class="feature-grid">
         <div class="feature-card">
           <div class="feature-icon">ᛟ</div>
-          <h3 class="feature-card-title">Install & Use Offline</h3>
-          <p class="feature-card-desc">
+          <h3 class="feature-card-title" data-i18n="feature-offline-title">Install & Use Offline</h3>
+          <p class="feature-card-desc" data-i18n="feature-offline-desc">
             Install directly to your phone or desktop as a web app. Access and edit all your army lists 100% offline at any gaming table.
           </p>
         </div>
 
         <div class="feature-card">
           <div class="feature-icon">ᚠ</div>
-          <h3 class="feature-card-title">Pre-Built Army Catalogs</h3>
-          <p class="feature-card-desc">
+          <h3 class="feature-card-title" data-i18n="feature-catalogs-title">Pre-Built Army Catalogs</h3>
+          <p class="feature-card-desc" data-i18n="feature-catalogs-desc">
             Game systems and army catalogs are pre-installed out of the box—no tedious manual setup or complex configuration required.
           </p>
         </div>
 
         <div class="feature-card">
           <div class="feature-icon">ᛏ</div>
-          <h3 class="feature-card-title">Powerful Rules Validation Engine</h3>
-          <p class="feature-card-desc">
+          <h3 class="feature-card-title" data-i18n="feature-validation-title">Powerful Rules Validation Engine</h3>
+          <p class="feature-card-desc" data-i18n="feature-validation-desc">
             Real-time constraint solver automatically validates army points limits, category requirements, and item restrictions while you build.
           </p>
         </div>
 
         <div class="feature-card">
           <div class="feature-icon">ᚱ</div>
-          <h3 class="feature-card-title">Direct 6th.whfb.app Integration</h3>
-          <p class="feature-card-desc">
+          <h3 class="feature-card-title" data-i18n="feature-integration-title">Direct 6th.whfb.app Integration</h3>
+          <p class="feature-card-desc" data-i18n-html="feature-integration-desc">
             Click any special rule or item inside your unit cards to instantly open full official rulebook texts, errata, and spells on <a href="https://6th.whfb.app/" target="_blank" rel="noopener" style="color: var(--accent-gold-bright); text-decoration: underline;">6th.whfb.app</a>.
           </p>
         </div>
@@ -101,8 +108,8 @@
   <section id="showcase" class="section" style="background: rgba(13, 17, 26, 0.6);">
     <div class="container">
       <div class="section-header">
-        <div class="section-subtitle">Smartphone Optimized</div>
-        <h2 class="section-title">Ready at the Gaming Table</h2>
+        <div class="section-subtitle" data-i18n="showcase-eyebrow">Smartphone Optimized</div>
+        <h2 class="section-title" data-i18n="showcase-title">Ready at the Gaming Table</h2>
       </div>
 
       <div class="showcase-grid">
@@ -110,21 +117,21 @@
           <div class="phone-mockup">
             <img src="./assets/screenshots/showcase_01_system_selection.png?v=6" alt="Catalog & System Library View">
           </div>
-          <div class="phone-caption">1. Select Game System & Faction</div>
+          <div class="phone-caption" data-i18n="showcase-caption-1">1. Select Game System & Faction</div>
         </div>
 
         <div>
           <div class="phone-mockup">
             <img src="./assets/screenshots/showcase_02_unit_item_selection.png?v=6" alt="Expanded Unit & Item Selection View">
           </div>
-          <div class="phone-caption">2. Customize Units & Wargear</div>
+          <div class="phone-caption" data-i18n="showcase-caption-2">2. Customize Units & Wargear</div>
         </div>
 
         <div>
           <div class="phone-mockup">
             <img src="./assets/screenshots/showcase_03_play_mode_long.png?v=6" alt="Play Mode Army View">
           </div>
-          <div class="phone-caption">3. Track Wounds in Play Mode</div>
+          <div class="phone-caption" data-i18n="showcase-caption-3">3. Track Wounds in Play Mode</div>
         </div>
       </div>
     </div>
@@ -135,13 +142,13 @@
     <div class="container">
       <div class="status-banner">
         <div>
-          <h3 class="status-info-title">Transparent & Open Source</h3>
-          <p class="status-info-desc">
+          <h3 class="status-info-title" data-i18n="status-title">Transparent & Open Source</h3>
+          <p class="status-info-desc" data-i18n="status-desc">
             Check real-time test coverage, quality gates, active issues, and repository stats on our automated project status dashboard.
           </p>
         </div>
         <a href="./status" class="btn btn-secondary">
-          <span>View Project Status</span>
+          <span data-i18n="status-cta">View Project Status</span>
         </a>
       </div>
     </div>
@@ -155,13 +162,13 @@
           <img src="./assets/pwa-icon.png" alt="Tome of Battle Logo" class="brand-icon-img" style="width: 28px; height: 28px;">
           <span>Tome of Battle</span>
         </div>
-        <div>
+        <div data-i18n="footer-copy">
           &copy; 2026 Tome of Battle — Open Source Tabletop Army Builder
         </div>
         <div class="footer-links">
           <a href="https://github.com/artkoenig/army_builder" target="_blank" rel="noopener" class="footer-link">GitHub</a>
-          <a href="https://github.com/artkoenig/army_builder/blob/main/LICENSE" target="_blank" rel="noopener" class="footer-link">License</a>
-          <a href="./status" class="footer-link">Status Report</a>
+          <a href="https://github.com/artkoenig/army_builder/blob/main/LICENSE" target="_blank" rel="noopener" class="footer-link" data-i18n="footer-license">License</a>
+          <a href="./status" class="footer-link" data-i18n="footer-status">Status Report</a>
         </div>
       </div>
     </div>

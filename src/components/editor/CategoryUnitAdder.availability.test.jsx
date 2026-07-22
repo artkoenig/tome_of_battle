@@ -62,9 +62,11 @@ function renderAdder(addUnit) {
 describe('CategoryUnitAdder — Verfügbarkeits-Darstellung', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // reasons sind strukturierte Verstöße (ADR 0026); ein Autoren-Hinweis trägt seinen
+    // fertigen Text im `message`-Feld (Katalog-Pass-through), das die Oberfläche direkt zeigt.
     mockGetEntryAddAvailability.mockImplementation(({ entry }) =>
       entry.id === BLOCKED_ENTRY_ID
-        ? { available: false, reasons: [BLOCK_REASON] }
+        ? { available: false, reasons: [{ message: BLOCK_REASON }] }
         : { available: true, reasons: [] }
     );
   });

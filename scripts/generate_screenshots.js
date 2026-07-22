@@ -31,20 +31,17 @@ const INTERACTION_MS = 800;
 
 const settle = (ms = SETTLE_MS) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Knöpfe werden über ihre Beschriftung angesteuert, weil die Aushebe- und
-// Navigationsknöpfe keine stabilen Klassen tragen.
-const clickButtonLabelled = async (page, labelFragments) => {
-  const clicked = await page.evaluate((fragments) => {
-    const button = Array.from(document.querySelectorAll('button')).find((b) => {
-      const label = b.textContent.toLowerCase();
-      return fragments.some((fragment) => label.includes(fragment));
-    });
-    if (button) button.click();
-    return Boolean(button);
-  }, labelFragments);
+// Bedienelemente werden über ihr `data-testid` angesteuert — sprachunabhängig,
+// damit eine spätere Sprachumschaltung dieses Skript nicht bricht.
+const clickByTestId = async (page, testId) => {
+  const clicked = await page.evaluate((id) => {
+    const element = /** @type {HTMLElement | null} */ (document.querySelector(`[data-testid="${id}"]`));
+    if (element) element.click();
+    return Boolean(element);
+  }, testId);
 
   if (!clicked) {
-    throw new Error(`Kein Knopf mit Beschriftung ${labelFragments.join(' / ')} gefunden`);
+    throw new Error(`Kein Element mit data-testid "${testId}" gefunden`);
   }
 };
 
@@ -66,32 +63,31 @@ const clickIfPresent = async (page, selector) => {
   await settle(500);
 };
 
-const ROSTER_DIALOG_LABELS = ['armeeliste', 'neu'];
-
 const openRosterDialog = async (page) => {
-  await clickButtonLabelled(page, ROSTER_DIALOG_LABELS);
+  await clickByTestId(page, 'new-roster');
   await page.waitForSelector('form input[type="text"]', { visible: true, timeout: 5000 });
   await settle(500);
 };
 
-// Wechselt über die Hauptnavigation die Ansicht. Ein nicht gefundener Knopf ist
-// ein Fehler, kein Grund weiterzulaufen: sonst entstehen Screenshots, die eine
-// andere Ansicht zeigen als ihr Dateiname behauptet.
-const openView = async (page, layout, label) => {
+// Wechselt über die Hauptnavigation die Ansicht. Der Knopf wird sprachunabhängig
+// über sein `data-testid` innerhalb des layout-spezifischen Navigationscontainers
+// angesteuert. Ein nicht gefundener Knopf ist ein Fehler, kein Grund
+// weiterzulaufen: sonst entstehen Screenshots, die eine andere Ansicht zeigen als
+// ihr Dateiname behauptet.
+const openView = async (page, layout, navTestId) => {
   const containerSelector = LAYOUTS[layout].navReadySelector;
   const clicked = await page.evaluate(
-    (selector, viewLabel) => {
-      const button = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(`${selector} button`)))
-        .find((b) => b.textContent.toLowerCase().includes(viewLabel));
+    (selector, testId) => {
+      const button = /** @type {HTMLElement | null} */ (document.querySelector(`${selector} [data-testid="${testId}"]`));
       if (button) button.click();
       return Boolean(button);
     },
     containerSelector,
-    label,
+    navTestId,
   );
 
   if (!clicked) {
-    throw new Error(`Navigationsknopf "${label}" in ${containerSelector} nicht gefunden`);
+    throw new Error(`Navigationsknopf "${navTestId}" in ${containerSelector} nicht gefunden`);
   }
   await settle(INTERACTION_MS);
 };
@@ -151,10 +147,10 @@ const runSessionForLayout = async (layout, server) => {
     // Nach dem Import wechselt die App selbsttätig ins Heerlager. Für den Blick
     // auf die importierten Spielsysteme muss der Bibliothekar erneut geöffnet
     // werden, sonst zeigte dieser Screenshot dasselbe wie der nächste.
-    await openView(page, layout, 'bibliothekar');
+    await openView(page, layout, 'nav-importer');
     await capture('02_bibliothekar_loaded');
 
-    await openView(page, layout, 'heerlager');
+    await openView(page, layout, 'nav-rosters');
     await capture('03_dashboard_empty');
 
     await openRosterDialog(page);
@@ -200,14 +196,13 @@ const runSessionForLayout = async (layout, server) => {
     await clickIfPresent(page, '.bottomsheet-close-btn');
 
     // Der Spielmodus wird über die Armeelisten-Karte im Heerlager gestartet.
-    await openView(page, layout, 'heerlager');
+    await openView(page, layout, 'nav-rosters');
     await page.waitForSelector('.roster-card', { timeout: 10000 });
     await settle();
 
     const startedPlayMode = await page.evaluate(() => {
       const card = document.querySelector('.roster-card');
-      const playButton = card && /** @type {HTMLButtonElement[]} */ (Array.from(card.querySelectorAll('button')))
-        .find((b) => /schlacht|spielen|play/.test((b.textContent || '').toLowerCase()));
+      const playButton = /** @type {HTMLElement | null} */ (card && card.querySelector('[data-testid="roster-play"]'));
       if (playButton) playButton.click();
       return Boolean(playButton);
     });
@@ -216,13 +211,8 @@ const runSessionForLayout = async (layout, server) => {
     }
     await page.waitForSelector('.play-layout', { timeout: 10000 });
     await page.evaluate(() => {
-      const buttons = /** @type {HTMLButtonElement[]} */ (Array.from(document.querySelectorAll('.play-layout button')));
-      buttons.forEach((b) => {
-        const text = (b.textContent || '').toLowerCase();
-        if (text.includes('details') || text.includes('aufklappen') || b.classList.contains('unit-card-details-toggle')) {
-          b.click();
-        }
-      });
+      const toggles = /** @type {HTMLButtonElement[]} */ (Array.from(document.querySelectorAll('.play-layout .unit-card-details-toggle')));
+      toggles.forEach((toggle) => toggle.click());
     });
     await settle(1000);
     await capture('08_play_mode');

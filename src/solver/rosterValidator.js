@@ -11,6 +11,7 @@ import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors } from './armyWideSelectors.js';
 import { getInheritedCategoryMaxSource } from './systemQuirks.js';
+import { ValidationMessageKey } from './validationMessages.js';
 import '../types.js';
 
 /**
@@ -161,7 +162,8 @@ function checkRosterCostLimit(roster, system, errors) {
   if (current > limit) {
     pushViolation(errors, {
       type: 'roster-limit',
-      message: `Limitüberschreitung: Du hast ${current} von maximal ${limit} ${resolveCostLimitLabel(roster, system)} verwendet.`,
+      messageKey: ValidationMessageKey.ROSTER_LIMIT,
+      messageParams: { current, limit, unitLabel: resolveCostLimitLabel(roster, system) },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -248,7 +250,8 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
       pushViolation(errors, {
         type: 'force-selector-min',
         forceId: force.id,
-        message: `Pflichtauswahl „${entry.name}" fehlt in ${forceDef.name} (mindestens ${minValue} benötigt).`,
+        messageKey: ValidationMessageKey.FORCE_SELECTOR_MIN,
+        messageParams: { entryName: entry.name, forceName: forceDef.name, count: minValue },
         severity: ValidationSeverity.ERROR
       });
     }
@@ -292,7 +295,8 @@ function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
       pushViolation(errors, {
         type: 'force-roster-limit',
         forceId: forceDef.id,
-        message: `${forceDef.name} erfordert ein Punktelimit von mindestens ${requiredLimit} (aktuell: ${currentLimit}).`,
+        messageKey: ValidationMessageKey.FORCE_ROSTER_LIMIT,
+        messageParams: { forceName: forceDef.name, limit: requiredLimit, current: currentLimit },
         severity: ValidationSeverity.ERROR
       });
     }
@@ -373,7 +377,8 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       type: 'category-min',
       forceId: force.id,
       categoryId: targetCatId,
-      message: `Mindestens ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} benötigt (aktuell: ${count}).`,
+      messageKey: ValidationMessageKey.CATEGORY_MIN,
+      messageParams: { count: finalValue, categoryName: catName, forceName: forceDef.name, current: count },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -382,7 +387,8 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       type: 'category-max',
       forceId: force.id,
       categoryId: targetCatId,
-      message: `Maximal ${finalValue} Auswahlen für "${catName}" in ${forceDef.name} erlaubt (aktuell: ${count}).`,
+      messageKey: ValidationMessageKey.CATEGORY_MAX,
+      messageParams: { count: finalValue, categoryName: catName, forceName: forceDef.name, current: count },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -406,7 +412,8 @@ function checkSelectionTree({ selection, parentSelection }, context) {
     pushViolation(errors, {
       type: 'unresolved-entry',
       selectionId: selection.id,
-      message: `Auswahl "${selection.name}" verweist auf einen im Katalog nicht mehr vorhandenen Eintrag.`,
+      messageKey: ValidationMessageKey.UNRESOLVED_ENTRY,
+      messageParams: { selectionName: selection.name },
       severity: ValidationSeverity.ERROR
     });
   } else {
@@ -575,7 +582,8 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       pushViolation(errors, {
         type: 'entry-min',
         selectionId: selection.id,
-        message: `Option "${selection.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${count}).`,
+        messageKey: ValidationMessageKey.ENTRY_MIN,
+        messageParams: { selectionName: selection.name, count: finalValue, current: count },
         severity: ValidationSeverity.ERROR
       });
     }
@@ -583,7 +591,8 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       pushViolation(errors, {
         type: 'entry-max',
         selectionId: selection.id,
-        message: `Option "${selection.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${count}).`,
+        messageKey: ValidationMessageKey.ENTRY_MAX,
+        messageParams: { selectionName: selection.name, count: finalValue, current: count },
         severity: ValidationSeverity.ERROR
       });
     }
@@ -605,14 +614,16 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
     : count;
   const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection, forceCatalogueId, counts });
   // Gemessen wird die Kostenart der Constraint selbst (`con.field`) — ihre
-  // Bezeichnung stammt daher aus genau dieser Kostenart.
-  const unit = measuresCost ? resolveCostTypeLabel(system, con.field) : 'Auswahlen';
+  // Bezeichnung stammt daher aus genau dieser Kostenart (Pass-through). Ohne
+  // Kostenbezug ist die Bezugsgröße die Auswahlanzahl (an der Oberfläche übersetzt).
+  const unitLabel = measuresCost ? resolveCostTypeLabel(system, con.field) : undefined;
 
   if (con.type === ConstraintKind.MIN && subject < threshold) {
     pushViolation(errors, {
       type: 'entry-percent-min',
       selectionId: selection.id,
-      message: `Option "${selection.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      messageKey: ValidationMessageKey.ENTRY_PERCENT_MIN,
+      messageParams: { selectionName: selection.name, percent: finalValue, threshold, actual: subject, unitLabel },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -620,7 +631,8 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
     pushViolation(errors, {
       type: 'entry-percent-max',
       selectionId: selection.id,
-      message: `Option "${selection.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      messageKey: ValidationMessageKey.ENTRY_PERCENT_MAX,
+      messageParams: { selectionName: selection.name, percent: finalValue, threshold, actual: subject, unitLabel },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -744,7 +756,8 @@ function checkGroupConstraints({ selection, entry }, context) {
           pushViolation(errors, {
             type: 'group-points-max',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} ${costLabel} (aktuell: ${totalCost} ${costLabel} für ${selection.name}).`,
+            messageKey: ValidationMessageKey.GROUP_POINTS_MAX,
+            messageParams: { groupName: group.name, limit: finalValue, current: totalCost, selectionName: selection.name, unitLabel: costLabel },
             severity: ValidationSeverity.ERROR
           });
         }
@@ -752,7 +765,8 @@ function checkGroupConstraints({ selection, entry }, context) {
           pushViolation(errors, {
             type: 'group-points-min',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} ${costLabel} (aktuell: ${totalCost} ${costLabel} für ${selection.name}).`,
+            messageKey: ValidationMessageKey.GROUP_POINTS_MIN,
+            messageParams: { groupName: group.name, limit: finalValue, current: totalCost, selectionName: selection.name, unitLabel: costLabel },
             severity: ValidationSeverity.ERROR
           });
         }
@@ -761,7 +775,8 @@ function checkGroupConstraints({ selection, entry }, context) {
           pushViolation(errors, {
             type: 'group-count-max',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erlaubt maximal ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
+            messageKey: ValidationMessageKey.GROUP_COUNT_MAX,
+            messageParams: { groupName: group.name, count: finalValue, current: totalCount, selectionName: selection.name },
             severity: ValidationSeverity.ERROR
           });
         }
@@ -769,7 +784,8 @@ function checkGroupConstraints({ selection, entry }, context) {
           pushViolation(errors, {
             type: 'group-count-min',
             selectionId: selection.id,
-            message: `Kategorie "${group.name}" erfordert mindestens ${finalValue} Auswahlen (aktuell: ${totalCount} für ${selection.name}).`,
+            messageKey: ValidationMessageKey.GROUP_COUNT_MIN,
+            messageParams: { groupName: group.name, count: finalValue, current: totalCount, selectionName: selection.name },
             severity: ValidationSeverity.ERROR
           });
         }
@@ -789,13 +805,15 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
   // `totalCost` wird über `con.field` summiert (siehe checkGroupConstraints) — die
   // Bezeichnung muss dieselbe Kostenart benennen. `getScopeReferenceTotal` bildet
   // die Bezugsgröße derselben Kostenart, Zähler und Nenner passen also zusammen.
-  const unit = measuresCost ? resolveCostTypeLabel(system, con.field) : 'Auswahlen';
+  // Ohne Kostenbezug ist die Bezugsgröße die Auswahlanzahl (an der Oberfläche übersetzt).
+  const unitLabel = measuresCost ? resolveCostTypeLabel(system, con.field) : undefined;
 
   if (con.type === ConstraintKind.MIN && subject < threshold) {
     pushViolation(errors, {
       type: 'group-percent-min',
       selectionId: selection.id,
-      message: `Kategorie "${group.name}" muss mindestens ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      messageKey: ValidationMessageKey.GROUP_PERCENT_MIN,
+      messageParams: { groupName: group.name, percent: finalValue, threshold, actual: subject, unitLabel },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -803,7 +821,8 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
     pushViolation(errors, {
       type: 'group-percent-max',
       selectionId: selection.id,
-      message: `Kategorie "${group.name}" darf maximal ${finalValue}% der ${unit} ausmachen (${threshold}), ist aber ${subject}.`,
+      messageKey: ValidationMessageKey.GROUP_PERCENT_MAX,
+      messageParams: { groupName: group.name, percent: finalValue, threshold, actual: subject, unitLabel },
       severity: ValidationSeverity.ERROR
     });
   }

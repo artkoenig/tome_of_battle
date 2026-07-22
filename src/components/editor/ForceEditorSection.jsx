@@ -11,9 +11,7 @@ import AutoFillSuggestions from './AutoFillSuggestions';
 import RosterCategorySection from './RosterCategorySection';
 import RosterValidationPanel from './RosterValidationPanel';
 import UnitCardList from './UnitCardList';
-
-const ARMY_WIDE_SECTION_TITLE = 'Armeeweite Auswahl';
-const UNCATEGORIZED_SECTION_TITLE = 'Sonstiges';
+import { useTranslation } from '../../i18n/useTranslation';
 
 // Ab dieser Restpunktzahl lohnt ein Auffüll-Vorschlag: darunter ist noch etwas
 // bezahlbar, darüber wäre der Vorschlag beliebig.
@@ -45,6 +43,9 @@ export default function ForceEditorSection({
   extraResources,
   onPlay
 }) {
+  const { t } = useTranslation();
+  const armyWideSectionTitle = t('editor.section.armyWide');
+  const uncategorizedSectionTitle = t('editor.section.uncategorized');
   const forceDefinition = findForceEntryById(system, force.forceEntryId);
   const categoryLinks = forceDefinition?.categoryLinks || [];
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
@@ -99,9 +100,9 @@ export default function ForceEditorSection({
       {armyWideSelectors.length > 0 && (
         <div className="roster-category-group">
           <div className="roster-category-header">
-            <h3 className="text-subheading roster-category-heading">{ARMY_WIDE_SECTION_TITLE}</h3>
+            <h3 className="text-subheading roster-category-heading">{armyWideSectionTitle}</h3>
             <CategoryUnitAdder
-              categoryName={ARMY_WIDE_SECTION_TITLE}
+              categoryName={armyWideSectionTitle}
               entries={armyWideSelectors}
               system={system}
               activeCatalogue={activeCatalogue}
@@ -119,7 +120,7 @@ export default function ForceEditorSection({
 
       {uncategorizedSelections.length > 0 && (
         <div className="roster-category-group">
-          <h3 className="text-subheading roster-category-heading--standalone">{UNCATEGORIZED_SECTION_TITLE}</h3>
+          <h3 className="text-subheading roster-category-heading--standalone">{uncategorizedSectionTitle}</h3>
           <UnitCardList selections={uncategorizedSelections} cardContext={unitCardContext} />
         </div>
       )}

@@ -14,6 +14,7 @@ import ListRuleChecklist from './ListRuleChecklist';
 import CategoryCountBadge from './CategoryCountBadge';
 import UnitCardList from './UnitCardList';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
+import { useTranslation } from '../../i18n/useTranslation';
 
 /**
  * Prüft, ob der Katalog des Kontingents überhaupt einen Eintrag kennt, für den
@@ -65,6 +66,7 @@ export default function RosterCategorySection({
   onToggleRuleGroup,
   onShowRule
 }) {
+  const { t } = useTranslation();
   const categoryId = categoryLink.targetId;
   const isHidden = isCategoryLinkHidden(categoryLink, { system, roster, selectionCounts, forceCategoryCounts });
   const selections = childSelectionsOf(force).filter(s => s.category === categoryId);
@@ -116,7 +118,7 @@ export default function RosterCategorySection({
           onClick={isListRuleGroup ? onToggleRuleGroup : undefined}
           role={isListRuleGroup ? 'button' : undefined}
           aria-expanded={isListRuleGroup ? !isRuleGroupCollapsed : undefined}
-          title={isListRuleGroup ? (isRuleGroupCollapsed ? 'Listenregeln ausklappen' : 'Listenregeln einklappen') : undefined}
+          title={isListRuleGroup ? (isRuleGroupCollapsed ? t('editor.listRules.expand') : t('editor.listRules.collapse')) : undefined}
         >
           {isListRuleGroup && (isRuleGroupCollapsed
             ? <ChevronRight size={18} className="text-gold" aria-hidden="true" />

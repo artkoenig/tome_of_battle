@@ -2,6 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { initializeLanguage } from './i18n/languageController'
+
+// Resolve the active UI language before the first render (stored choice, else
+// browser language) so the app paints in the right language and the document's
+// `lang` attribute is correct from the start (ADR 0026).
+initializeLanguage()
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

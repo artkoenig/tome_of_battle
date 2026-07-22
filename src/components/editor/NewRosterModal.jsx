@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { getAvailableForceEntries, getPlayableCatalogues, resolveCostLimitLabel } from '../../solver/validator';
 import { DEFAULT_ROSTER_COST_LIMIT } from '../../utils/rosterDefaults';
+import { useTranslation } from '../../i18n/useTranslation';
 
 const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
 
@@ -10,6 +11,7 @@ const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
  * selbst und meldet das Ergebnis über onCreate({ name, systemId, catId, forceEntryId, limit }).
  */
 export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [systemId, setSystemId] = useState('');
   const [catId, setCatId] = useState('');
@@ -67,18 +69,18 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content modal-new-roster-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Neues Heer ausheben</h3>
-          <button type="button" className="dialog-close-btn" onClick={onClose} aria-label="Schließen" title="Schließen">
+          <h3>{t('newRoster.title')}</h3>
+          <button type="button" className="dialog-close-btn" onClick={onClose} aria-label={t('common.close')} title={t('common.close')}>
             <X size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <div className="form-field">
-              <label>Name des Heeres</label>
+              <label>{t('newRoster.nameLabel')}</label>
               <input
                 type="text"
-                placeholder="z. B. Ultramarines 2. Kompanie"
+                placeholder={t('newRoster.namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -86,13 +88,13 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
             </div>
 
             <div className="form-field">
-              <label>Spielsystem</label>
+              <label>{t('newRoster.systemLabel')}</label>
               <select
                 value={systemId}
                 onChange={(e) => handleSystemChange(e.target.value)}
                 required
               >
-                <option value="" disabled>System auswählen...</option>
+                <option value="" disabled>{t('newRoster.systemPlaceholder')}</option>
                 {systems.map(s => (
                   <option key={s.id} value={s.id}>
                     {s.name}
@@ -101,20 +103,20 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
               </select>
               {systems.length === 0 && (
                 <p className="text-danger text-micro form-field-hint">
-                  Keine Spielsysteme importiert. Bitte gehe erst in den Bibliothekar.
+                  {t('newRoster.noSystemsHint')}
                 </p>
               )}
             </div>
 
             <div className="form-field">
-              <label>Katalog / Fraktion</label>
+              <label>{t('newRoster.catalogueLabel')}</label>
               <select
                 value={catId}
                 onChange={(e) => handleCatalogueChange(e.target.value)}
                 required
                 disabled={!systemId || selectableCatalogues.length === 0}
               >
-                <option value="" disabled>Fraktion auswählen...</option>
+                <option value="" disabled>{t('newRoster.factionPlaceholder')}</option>
                 {selectableCatalogues.map(cat => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -124,14 +126,14 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
             </div>
 
             <div className="form-field">
-              <label>Armeestruktur / Kontingent</label>
+              <label>{t('newRoster.forceLabel')}</label>
               <select
                 value={forceEntryId}
                 onChange={(e) => setForceEntryId(e.target.value)}
                 required
                 disabled={!catId || availableForceEntries.length === 0}
               >
-                <option value="" disabled>Struktur auswählen...</option>
+                <option value="" disabled>{t('newRoster.forcePlaceholder')}</option>
                 {availableForceEntries.map(fe => (
                   <option key={fe.id} value={fe.id}>
                     {fe.name}
@@ -141,7 +143,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
             </div>
 
             <div className="form-field">
-              <label>Kostenlimit</label>
+              <label>{t('newRoster.costLimitLabel')}</label>
               <div className="input-with-suffix">
                 <input
                   type="number"
@@ -171,9 +173,9 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
           </div>
           <div className="modal-footer">
             <button type="submit" className="btn-primary" disabled={systems.length === 0}>
-              Heerschau starten
+              {t('newRoster.submit')}
             </button>
-            <button type="button" onClick={onClose}>Abbrechen</button>
+            <button type="button" onClick={onClose}>{t('common.cancel')}</button>
           </div>
         </form>
       </div>

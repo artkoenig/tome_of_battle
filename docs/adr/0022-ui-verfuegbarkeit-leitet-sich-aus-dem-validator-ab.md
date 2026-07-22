@@ -86,15 +86,19 @@ Umsetzung (reine Solver-Funktion `getEntryAddAvailability`):
   Ein neu eingeführter, unklassifizierter `type` lässt `classifyBlocksAddAvailability`
   **werfen** (und einen Driftschutz-Test fehlschlagen), sodass keine neue Verstoßart
   stillschweigend als „nicht sperrend" durchrutscht.
-- **Grund-Anzeige:** die (deduplizierten) `message`-Texte der sperrenden Verstöße;
-  bei `modifier-error` ist das der wortgetreue Autoren-`value`, ohne
-  Übersetzungs-/Parsing-Schicht. Trägt ein gesperrter Eintrag einen
-  Autoren-`error`-Grund, zeigt der Dialog nur diesen und unterdrückt die redundante
-  mechanische `-max`-Meldung. Führt eine mechanische Meldung den Grund (kein
-  Autoren-`error` vorhanden), so bleibt die Obergrenze sichtbar („… erlaubt maximal
-  N Auswahlen"), doch der rein technische **hypothetische Zählstand „(aktuell: N)"**
-  wird auf diesem Anzeigepfad entfernt (`stripHypotheticalCount`) — er ist im Dialog
-  ohne Nutzwert, die Grenze selbst genügt. Die Validator-`message` bleibt davon
+- **Grund-Anzeige:** die (über ihre Verstoß-Identität deduplizierten) sperrenden
+  Verstöße als strukturierte `ValidationError`-Objekte; seit der i18n-Umstellung
+  (ADR 0026) liefert der Solver Schlüssel + Parameter statt fertiger Sätze, die
+  Übersetzung übernimmt `formatValidationError` in der i18n-Schicht. Bei
+  `modifier-error` bleibt es beim wortgetreuen Autoren-`value` (Katalogsprache,
+  Pass-through, ohne Übersetzungs-/Parsing-Schicht). Trägt ein gesperrter Eintrag
+  einen Autoren-`error`-Grund, zeigt der Dialog nur diesen und unterdrückt die
+  redundante mechanische `-max`-Meldung. Führt eine mechanische Meldung den Grund
+  (kein Autoren-`error` vorhanden), so bleibt die Obergrenze sichtbar („… erlaubt
+  maximal N Auswahlen"), doch der rein technische **hypothetische Zählstand
+  „(aktuell: N)"** wird auf diesem Anzeigepfad entfernt (`stripCurrentCountClause`
+  in `formatValidationError`, Option `omitCurrentCount`) — er ist im Dialog ohne
+  Nutzwert, die Grenze selbst genügt. Die Validator-Meldung bleibt davon
   unberührt: das Validierungs-Panel führt den Zählstand unverändert weiter (die
   Kappung ist reine Dialog-Darstellung, keine Änderung an den Validator-Meldungen).
 
