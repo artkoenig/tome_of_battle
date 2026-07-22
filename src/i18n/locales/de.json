@@ -1,0 +1,8 @@
+{
+  "settings.title": "Einstellungen",
+  "settings.close": "Schließen",
+  "settings.whfb6Linking.label": "Verlinkung zu 6th.whfb.app",
+  "settings.whfb6Linking.hint": "Ist die Verlinkung aus, zeigen Regel-, Waffen- und Magic-Item-Chips statt eines Links zur externen Seite die Katalog-Kurzinfo.",
+  "settings.version": "Version",
+  "settings.language.label": "Sprache"
+}
