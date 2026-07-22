@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: claimed
 Type: refactor
 Blocked by: None
 
