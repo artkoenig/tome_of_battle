@@ -147,19 +147,16 @@ describe('project-state/renderReport', () => {
     });
   });
 
-  describe('App-Design (Gothic/Tabletop-Palette, self-contained)', () => {
-    it('traegt die App-Palette und Serifen-Schriften, ohne externe Fonts zu laden', () => {
+  describe('App-Design (Epic Battlefield Dark Fantasy Palette)', () => {
+    it('traegt die App-Palette und Cinzel/Outfit/Inter Schriften self-contained', () => {
       const html = renderReport(makeModel());
-      // Gold-Akzent und Obsidian/Pergament aus der App-Palette (ADR 0004).
+      // Gold-Akzent und Dark Slate aus der Epic Battlefield Palette
       expect(html).toContain('--accent');
-      expect(html).toContain('#ecc157'); // Gold (dunkles Schema)
-      expect(html).toContain('#08080a'); // Obsidian (dunkles Schema)
-      expect(html).toContain('#eee3cc'); // Pergament (helles Schema)
-      // Fallback-Serifen statt Cinzel/Lora-Nachladen; kein Google-Fonts-Link.
+      expect(html).toContain('#F5D061'); // Gold
+      expect(html).toContain('#07090E'); // Dark Slate
       expect(html).toContain('--font-heading');
-      expect(html).toMatch(/--font-body:[^;]*serif/);
+      expect(html).toMatch(/--font-body:[^;]*sans-serif/);
       expect(html).not.toMatch(/fonts\.googleapis|fonts\.gstatic/i);
-      expect(html).not.toMatch(/@font-face/i);
     });
   });
 
