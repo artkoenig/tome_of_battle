@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -32,3 +32,4 @@ Main-Issue 58-i18n):
 - [ ] Screenshots der Landing Page in beiden Sprachen als Nachweis.
 
 ## Comments
+- Landing page made bilingual DE/EN via a standalone landing.js (own DE|EN header toggle, browser-language first visit, choice persisted in localStorage 'tob-landing-lang' separate from the app; lang attribute follows the active language). Manifest description switched to English. Status-report generator (renderReport.js, buildReportModel.js, gates.js labels, generate.js timestamp) now emits English headings, verdicts and labels; tests updated. Full npm test green (1354 tests).

@@ -140,6 +140,42 @@ img {
   color: var(--accent-gold-bright);
 }
 
+/* Language Toggle (DE / EN) */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.lang-toggle-btn {
+  padding: 0.35rem 0.7rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.lang-toggle-btn:hover {
+  color: var(--accent-gold-bright);
+}
+
+.lang-toggle-btn.is-active {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--accent-gold-bright);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

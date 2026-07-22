@@ -1,7 +1,7 @@
 {
   "name": "Tome of Battle - Army Builder",
   "short_name": "Tome of Battle",
-  "description": "Erstelle und verwalte deine Armeelisten für Tabletop-Systeme offline und unabhängig vom Browser.",
+  "description": "Build and manage your tabletop army lists offline and independently of the browser.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0e0e11",
