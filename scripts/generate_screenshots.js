@@ -164,8 +164,33 @@ const runSessionForLayout = async (layout, server) => {
     await clickRequired(page, '.category-unit-adder-container button');
     await capture('06_unit_adder');
 
-    await clickRequired(page, '.popover-item');
-    await clickRequired(page, '.unit-card-details-toggle');
+    // Erste Einheit hinzufügen
+    await page.evaluate(() => {
+      const items = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('.popover-item')));
+      if (items.length > 0) items[0].click();
+    });
+    await settle(500);
+
+    // Weitere Einheiten hinzufügen für eine vollständige, fehlerfreie Armeeliste
+    for (let i = 1; i <= 3; i++) {
+      const reopend = await page.evaluate(() => {
+        const adders = /** @type {HTMLButtonElement[]} */ (Array.from(document.querySelectorAll('.category-unit-adder-container button')));
+        const btn = adders.find((b) => b.offsetWidth > 0 && b.offsetHeight > 0);
+        if (btn) { btn.click(); return true; }
+        return false;
+      });
+      if (reopend) {
+        await settle(500);
+        await page.evaluate((idx) => {
+          const items = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('.popover-item')));
+          if (items.length > idx) items[idx].click();
+          else if (items.length > 0) items[0].click();
+        }, i);
+        await settle(500);
+      }
+    }
+
+    await clickIfPresent(page, '.unit-card-details-toggle');
     await capture('05_roster_editor');
 
     await clickRequired(page, '.selection-node-header');
@@ -181,8 +206,8 @@ const runSessionForLayout = async (layout, server) => {
 
     const startedPlayMode = await page.evaluate(() => {
       const card = document.querySelector('.roster-card');
-      const playButton = card && Array.from(card.querySelectorAll('button'))
-        .find((b) => /schlacht|spielen|play/.test(b.textContent.toLowerCase()));
+      const playButton = card && /** @type {HTMLButtonElement[]} */ (Array.from(card.querySelectorAll('button')))
+        .find((b) => /schlacht|spielen|play/.test((b.textContent || '').toLowerCase()));
       if (playButton) playButton.click();
       return Boolean(playButton);
     });
@@ -190,6 +215,15 @@ const runSessionForLayout = async (layout, server) => {
       throw new Error('Kein Knopf zum Starten des Spielmodus auf der Armeelisten-Karte gefunden');
     }
     await page.waitForSelector('.play-layout', { timeout: 10000 });
+    await page.evaluate(() => {
+      const buttons = /** @type {HTMLButtonElement[]} */ (Array.from(document.querySelectorAll('.play-layout button')));
+      buttons.forEach((b) => {
+        const text = (b.textContent || '').toLowerCase();
+        if (text.includes('details') || text.includes('aufklappen') || b.classList.contains('unit-card-details-toggle')) {
+          b.click();
+        }
+      });
+    });
     await settle(1000);
     await capture('08_play_mode');
   } finally {

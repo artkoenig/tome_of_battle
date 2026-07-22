@@ -73,18 +73,11 @@ jobs:
           destination: ./_site
 
       - name: Zustandsbericht erzeugen und unter /status ablegen
-        # Fuehrt die Gates aus und schreibt den Bericht als ./_site/status/index.html
-        # neben den Jekyll-Build; die Wurzel ./_site/index.html traegt die
-        # Platzhalter-Seite aus docs/index.html. generate.js legt das Zielverzeichnis
-        # status/ selbst an. Ein Gate, das gar nicht anlaeuft, laesst diesen Schritt
-        # nicht scheitern -- es erscheint im Bericht als "nicht angelaufen".
-        #
-        # jekyll-build-pages laeuft als Container unter fremder UID und legt ./_site
-        # in dessen Besitz an; ohne die Besitzuebernahme scheitert das Schreiben des
-        # Berichts an EACCES (permission denied). sudo ist auf GitHub-Runnern
-        # passwortlos verfuegbar.
+        # Fuehrt die Gates aus und schreibt den Bericht als ./_site/status/index.html neben
+        # den Jekyll-Build und die Landingpage (./_site/index.html).
         run: |
           sudo chown -R "$(id -u):$(id -g)" ./_site
+          mkdir -p ./_site/status
           node scripts/project-state/generate.js ./_site/status/index.html
 
       - name: Pages-Artefakt hochladen

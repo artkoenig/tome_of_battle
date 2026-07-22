@@ -1,106 +1,171 @@
 <!DOCTYPE html>
-<!--
-  Wurzel-Platzhalter der GitHub-Pages-Seite (siehe ADR 0025).
-
-  Diese Datei ist committete Quelle, kein Build-Artefakt: sie wird spaeter zur
-  eigentlichen Projektseite ausgebaut. Vorerst begruesst sie Besucher und
-  verweist auf den Zustandsbericht unter /status und die ADRs unter /adr.
-
-  Bewusst ohne Front matter, damit Jekyll sie unveraendert nach _site/index.html
-  kopiert, und in sich geschlossen (kein externes Nachladen), in der App-Palette
-  (ADR 0004) mit Fallback-Serifen -- wie der Bericht selbst.
--->
-<html lang="de">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tome of Battle</title>
-<style>
-:root {
-  color-scheme: light dark;
-  --font-heading: Georgia, "Times New Roman", "Cinzel", serif;
-  --font-body: "Iowan Old Style", "Palatino Linotype", Palatino, "EB Garamond", Garamond, Georgia, serif;
-  /* Hell: Pergament + Gold (App-Palette, ADR 0004). */
-  --bg: #eee3cc;
-  --surface: #f6f0e2;
-  --text: #262019;
-  --muted: #6a5f4b;
-  --border-strong: #b0892a;
-  --accent: #876712;
-  --accent-strong: #6d520f;
-  --shadow: 0 1px 3px rgba(60, 44, 12, .14);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dunkel: Obsidian + Gold. */
-    --bg: #08080a;
-    --surface: #14141a;
-    --text: #ece2cc;
-    --muted: #b7b7c4;
-    --border-strong: #7d6520;
-    --accent: #ecc157;
-    --accent-strong: #f7d878;
-    --shadow: 0 2px 12px rgba(0, 0, 0, .55);
-  }
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  line-height: 1.55;
-}
-main {
-  width: 100%;
-  max-width: 34rem;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-top: 3px solid var(--border-strong);
-  border-radius: 12px;
-  padding: 2.5rem 2rem;
-  box-shadow: var(--shadow);
-  text-align: center;
-}
-h1 {
-  font-family: var(--font-heading);
-  font-size: 2.2rem;
-  letter-spacing: .03em;
-  color: var(--accent-strong);
-  margin: 0 0 .25rem;
-}
-.tagline { color: var(--muted); margin: 0 0 2rem; }
-.placeholder-note { color: var(--muted); font-size: .9rem; margin: 0 0 1.75rem; }
-.links { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
-.link {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  font-size: .9rem;
-  text-decoration: none;
-  padding: .6rem 1.3rem;
-  border-radius: 8px;
-}
-.link-primary { color: var(--bg); background: var(--accent); border: 1px solid var(--border-strong); }
-.link-secondary { color: var(--accent-strong); background: transparent; border: 1px solid var(--border-strong); }
-.link:hover { border-color: var(--accent-strong); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tome of Battle — High Fantasy Army Builder</title>
+  <meta name="description" content="Tome of Battle is a modern, offline-first army builder for tabletop wargaming players.">
+  
+  <!-- Favicon & Styles -->
+  <link rel="icon" href="./assets/favicon.png" type="image/png">
+  <link rel="stylesheet" href="./assets/landing.css">
 </head>
 <body>
-<main>
-<h1>Tome of Battle</h1>
-<p class="tagline">Armeelisten aus Battlescribe-Daten bauen und spielen.</p>
-<p class="placeholder-note">Die Projektseite entsteht hier. Bis dahin geht es weiter zum:</p>
-<nav class="links">
-<a class="link link-primary" href="status/">Zustandsbericht</a>
-<a class="link link-secondary" href="adr/">Architektur (ADRs)</a>
-</nav>
-</main>
+
+  <!-- Navigation Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo">
+          <img src="./assets/pwa-icon.png" alt="Tome of Battle Logo" class="brand-icon-img">
+          <span>Tome of Battle</span>
+        </a>
+        <nav>
+          <ul class="nav-links">
+            <li><a href="#features" class="nav-link">Features</a></li>
+            <li><a href="#showcase" class="nav-link">Mobile View</a></li>
+            <li><a href="./status" class="nav-link">Project Status</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">ᛉ Tabletop Army Companion</div>
+        <h1 class="hero-title">Forge Your Legend<br>Build Your Ultimate Army</h1>
+        <p class="hero-subtitle">
+          Easily draft, customize, and manage your tabletop armies with instant point calculation and full offline access on any device.
+        </p>
+        <div class="hero-actions">
+          <a href="https://tome-of-battle.vercel.app" target="_blank" rel="noopener" class="btn btn-primary">
+            <span>Start Building Roster</span>
+          </a>
+          <a href="https://github.com/artkoenig/army_builder" target="_blank" rel="noopener" class="btn btn-secondary">
+            <span>View Source on GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Grid Section -->
+  <section id="features" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">Crafted by Wargamers, for Wargamers</div>
+        <h2 class="section-title">Built for Speed & Convenience</h2>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">ᛟ</div>
+          <h3 class="feature-card-title">Install & Use Offline</h3>
+          <p class="feature-card-desc">
+            Install directly to your phone or desktop as a web app. Access and edit all your army lists 100% offline at any gaming table.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">ᚠ</div>
+          <h3 class="feature-card-title">Pre-Built Army Catalogs</h3>
+          <p class="feature-card-desc">
+            Game systems and army catalogs are pre-installed out of the box—no tedious manual setup or complex configuration required.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">ᛏ</div>
+          <h3 class="feature-card-title">Powerful Rules Validation Engine</h3>
+          <p class="feature-card-desc">
+            Real-time constraint solver automatically validates army points limits, category requirements, and item restrictions while you build.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">ᚱ</div>
+          <h3 class="feature-card-title">Direct 6th.whfb.app Integration</h3>
+          <p class="feature-card-desc">
+            Click any special rule or item inside your unit cards to instantly open full official rulebook texts, errata, and spells on <a href="https://6th.whfb.app/" target="_blank" rel="noopener" style="color: var(--accent-gold-bright); text-decoration: underline;">6th.whfb.app</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mobile Screenshots Showcase Section -->
+  <section id="showcase" class="section" style="background: rgba(13, 17, 26, 0.6);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">Smartphone Optimized</div>
+        <h2 class="section-title">Ready at the Gaming Table</h2>
+      </div>
+
+      <div class="showcase-grid">
+        <div>
+          <div class="phone-mockup">
+            <img src="./assets/screenshots/showcase_01_system_selection.png?v=6" alt="Catalog & System Library View">
+          </div>
+          <div class="phone-caption">1. Select Game System & Faction</div>
+        </div>
+
+        <div>
+          <div class="phone-mockup">
+            <img src="./assets/screenshots/showcase_02_unit_item_selection.png?v=6" alt="Expanded Unit & Item Selection View">
+          </div>
+          <div class="phone-caption">2. Customize Units & Wargear</div>
+        </div>
+
+        <div>
+          <div class="phone-mockup">
+            <img src="./assets/screenshots/showcase_03_play_mode_long.png?v=6" alt="Play Mode Army View">
+          </div>
+          <div class="phone-caption">3. Track Wounds in Play Mode</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Status Teaser Banner Section -->
+  <section class="section" style="padding-top: 40px;">
+    <div class="container">
+      <div class="status-banner">
+        <div>
+          <h3 class="status-info-title">Transparent & Open Source</h3>
+          <p class="status-info-desc">
+            Check real-time test coverage, quality gates, active issues, and repository stats on our automated project status dashboard.
+          </p>
+        </div>
+        <a href="./status" class="btn btn-secondary">
+          <span>View Project Status</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-wrapper">
+        <div class="brand-logo" style="font-size: 1rem;">
+          <img src="./assets/pwa-icon.png" alt="Tome of Battle Logo" class="brand-icon-img" style="width: 28px; height: 28px;">
+          <span>Tome of Battle</span>
+        </div>
+        <div>
+          &copy; 2026 Tome of Battle — Open Source Tabletop Army Builder
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/artkoenig/army_builder" target="_blank" rel="noopener" class="footer-link">GitHub</a>
+          <a href="https://github.com/artkoenig/army_builder/blob/main/LICENSE" target="_blank" rel="noopener" class="footer-link">License</a>
+          <a href="./status" class="footer-link">Status Report</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>

@@ -193,6 +193,7 @@ function renderDocumentHead(title) {
 function renderHeader(title, generatedAt) {
   return [
     '<header class="page-header">',
+    '<div class="header-nav"><a href="../" class="back-link">← Zurück zur Landingpage</a></div>',
     `<h1>${escapeHtml(title)}</h1>`,
     `<p class="generated-at">Erhoben: ${escapeHtml(generatedAt)}</p>`,
     '</header>',
@@ -661,6 +662,9 @@ body {
 }
 .page { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
 .page-header { border-bottom: 2px solid var(--border-strong); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+.header-nav { margin-bottom: 0.5rem; }
+.back-link { color: var(--accent); font-size: 0.9rem; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; }
+.back-link:hover { text-decoration: underline; }
 h1 { font-family: var(--font-heading); font-size: 2rem; letter-spacing: .02em; color: var(--accent-strong); margin: 0 0 .25rem; }
 h2 { font-family: var(--font-heading); font-size: 1.4rem; letter-spacing: .02em; color: var(--accent-strong); margin: 0 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .3rem; }
 h3 { font-family: var(--font-heading); font-size: 1.12rem; color: var(--accent); margin: 1.25rem 0 .5rem; }
