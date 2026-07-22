@@ -236,9 +236,14 @@ export default function OptionGroupComponent({
                const bPoints = getOptionDisplayCost(system, b.option, costLimitTypeId, displayCtx) || 0;
                return bPoints - aPoints; // Descending
             })
-            .map(({ option, parentDefId }) => {
+            .map(({ option, parentDefId, ownerSelectionId }) => {
             const res = resolveEntry(system, option, activeCatalogue.id);
             if (!res) return null;
+            // Where a chosen option nests: under its owning sub-selection when the collector
+            // re-emitted it from an active selection (e.g. an upgrade-type mount's Barding),
+            // otherwise directly under the unit. Only the count/display keep reading the unit
+            // selection; the mutation always targets the true parent.
+            const editTargetId = ownerSelectionId || selection.id;
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, costLimitTypeId, displayCtx);
             const filteredOptionConstraints = res.constraints?.filter(con => {
@@ -350,28 +355,28 @@ export default function OptionGroupComponent({
                 if (isBinary) {
                   if (isRadio) {
                     if (count > 0) {
-                      subSelectionOperations.decreaseCount(selection.id, option);
+                      subSelectionOperations.decreaseCount(editTargetId, option);
                     } else {
                       group.items.forEach(otherItem => {
                         const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                         if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                           const otherCount = getSubSelectionCount(selection, otherRes.id);
                           if (otherCount > 0) {
-                            subSelectionOperations.decreaseCount(selection.id, otherItem.option);
+                            subSelectionOperations.decreaseCount(editTargetId, otherItem.option);
                           }
                         }
                       });
-                      subSelectionOperations.increaseCount(selection.id, option);
+                      subSelectionOperations.increaseCount(editTargetId, option);
                     }
                   } else {
                     if (count > 0) {
-                      subSelectionOperations.decreaseCount(selection.id, option);
+                      subSelectionOperations.decreaseCount(editTargetId, option);
                     } else {
-                      subSelectionOperations.increaseCount(selection.id, option);
+                      subSelectionOperations.increaseCount(editTargetId, option);
                     }
                   }
                 } else {
-                  subSelectionOperations.increaseCount(selection.id, option);
+                  subSelectionOperations.increaseCount(editTargetId, option);
                 }
               }
             };
@@ -413,18 +418,18 @@ export default function OptionGroupComponent({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (count > 0) {
-                            subSelectionOperations.decreaseCount(selection.id, option);
+                            subSelectionOperations.decreaseCount(editTargetId, option);
                           } else if (!isSelectDisabled) {
                             group.items.forEach(otherItem => {
                               const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
                               if (otherRes && otherRes.id !== res.id && !isRepeatableWithinGroup(otherItem.option, otherRes)) {
                                 const otherCount = getSubSelectionCount(selection, otherRes.id);
                                 if (otherCount > 0) {
-                                  subSelectionOperations.decreaseCount(selection.id, otherItem.option);
+                                  subSelectionOperations.decreaseCount(editTargetId, otherItem.option);
                                 }
                               }
                             });
-                            subSelectionOperations.increaseCount(selection.id, option);
+                            subSelectionOperations.increaseCount(editTargetId, option);
                           }
                         }}
                         onChange={() => {}}
@@ -438,9 +443,9 @@ export default function OptionGroupComponent({
                         onChange={(e) => {
                           if (!isMandatory) {
                             if (e.target.checked) {
-                              subSelectionOperations.increaseCount(selection.id, option);
+                              subSelectionOperations.increaseCount(editTargetId, option);
                             } else {
-                              subSelectionOperations.decreaseCount(selection.id, option);
+                              subSelectionOperations.decreaseCount(editTargetId, option);
                             }
                           }
                         }}
@@ -452,7 +457,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          subSelectionOperations.decreaseCount(selection.id, option);
+                          subSelectionOperations.decreaseCount(editTargetId, option);
                         }}
                         disabled={count === 0}
                       >
@@ -463,7 +468,7 @@ export default function OptionGroupComponent({
                         className="qty-btn" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          subSelectionOperations.increaseCount(selection.id, option);
+                          subSelectionOperations.increaseCount(editTargetId, option);
                         }}
                         disabled={isSelectDisabled}
                       >
