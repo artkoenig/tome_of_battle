@@ -4,7 +4,6 @@ import { resolveEntry, getOptionDisplayCost, getEffectiveName, collectPrimaryCat
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatValidationError } from '../../i18n/formatValidationError';
 import BottomSheet from './BottomSheet';
-import { useTranslation } from '../../i18n/useTranslation';
 
 export default function CategoryUnitAdder({
   categoryId = null,
