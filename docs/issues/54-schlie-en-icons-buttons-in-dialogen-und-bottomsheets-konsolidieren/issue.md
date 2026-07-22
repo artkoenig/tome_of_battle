@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -29,3 +29,4 @@ Label, Optik/Hover-Verhalten) für alle Dialoge und das BottomSheet.
       `getByText('X')` o.ä.) verlassen, sind angepasst und grün.
 
 ## Comments
+- Implementiert: gemeinsame CSS-Klasse .dialog-close-btn (src/styles/04-panels-and-controls.css) ersetzt .modal-close/.modal-close--flush (14-modals.css) und .bottomsheet-close-btn (23-popover-and-bottomsheet.css, 24-bottomsheet-mobile.css). Alle fuenf Schliessen-Buttons (SettingsDialog, RulesIndexDialog, ConfirmationDialog, NewRosterModal, BottomSheet) nutzen jetzt einheitlich das lucide X-Icon, aria-label="Schliessen" und title="Schliessen". NewRosterModal zeigte zuvor rohen Text "X" statt Icon. Vier-Achsen-Verifikation (testing skill) gruen: Standards (lint/typecheck PASS, 2 Befunde als out-of-scope eingestuft), Spec (alle 4 Akzeptanzkriterien erfuellt), Tests (1188/1188 vitest + Puppeteer-E2E gruen), Docs (keine Abweichung). Optionale JSX-Duplikation (gemeinsame CloseButton-Komponente) bewusst nicht umgesetzt, User-Entscheidung.
