@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-import { buildReportModel, DEFAULT_MAX_LONG_FUNCTIONS } from './buildReportModel.js';
+import { buildReportModel, DEFAULT_MAX_LONG_FUNCTIONS, deriveOverallAssessment } from './buildReportModel.js';
 import { GateStatus, GateEnforcement, GateAbortReason } from './gates.js';
-import { OVERALL_ASSESSMENT, FINDING_ASSESSMENTS, AssessmentVerdict } from './assessment.js';
 
 const GENERATED_AT = '22. Juli 2026, 06:30 Uhr (Europe/Berlin)';
 
@@ -176,20 +175,68 @@ describe('project-state/buildReportModel', () => {
     expect(notRun.hint).toBeUndefined();
   });
 
-  it('uses the hand-maintained assessment by default and honors an override', () => {
-    const byDefault = buildReportModel(baseInput());
-    expect(byDefault.assessment).toBe(OVERALL_ASSESSMENT);
-    expect(byDefault.findingAssessments).toBe(FINDING_ASSESSMENTS);
+  it('derives the overall assessment from measured gate states, without any hand text', () => {
+    // Nur lint steht im Workflow und laeuft gruen -> das einzige blockierende Gate
+    // besteht; die uebrigen ohne Lauf sind nicht angelaufen (Wirksamkeit unbekannt).
+    const model = buildReportModel(
+      baseInput({
+        gateRuns: { lint: { exitCode: 0, output: 'ok' } },
+        workflowJob: { steps: [{ run: 'npm run lint' }] },
+      }),
+    );
 
-    const custom = {
-      overallAssessment: { headline: 'Eigenes Urteil', summary: 'Begruendung.' },
-      findingAssessments: [
-        { source: 'Test', title: 'Eingeordnet', verdict: AssessmentVerdict.Accepted, detail: 'Detail.' },
-      ],
-    };
-    const overridden = buildReportModel(baseInput(custom));
-    expect(overridden.assessment).toBe(custom.overallAssessment);
-    expect(overridden.findingAssessments).toBe(custom.findingAssessments);
+    // Kein hand-gepflegtes Einordnungs-Feld mehr im Modell.
+    expect(model.findingAssessments).toBeUndefined();
+    // Die Kopfzeile ist aus den Messwerten abgeleitet, nicht hand-formuliert.
+    expect(model.assessment.headline).toBe('Alle 1 blockierenden Gates bestehen');
+    expect(Array.isArray(model.assessment.facts)).toBe(true);
+    expect(model.assessment.facts).toContain('Bestandene blockierende Gates: 1 von 1');
+    expect(model.assessment.facts).toContain('Nicht angelaufene Gates: 4');
+  });
+
+  describe('deriveOverallAssessment', () => {
+    /** Baut einen Gate-Zustand mit nur den fuer das Urteil relevanten Feldern. */
+    function gate(status, enforcement) {
+      return { id: status, label: status, command: status, status, enforcement, abortReason: null, exitCode: 0 };
+    }
+
+    it('meldet den gruenen Fall, wenn alle blockierenden Gates bestehen', () => {
+      const assessment = deriveOverallAssessment([
+        gate(GateStatus.Passed, GateEnforcement.Blocking),
+        gate(GateStatus.Passed, GateEnforcement.Blocking),
+      ]);
+      expect(assessment.headline).toBe('Alle 2 blockierenden Gates bestehen');
+      expect(assessment.facts).toContain('Bestandene blockierende Gates: 2 von 2');
+      expect(assessment.facts).toContain('Nicht angelaufene Gates: 0');
+    });
+
+    it('nennt Befunde eines blockierenden Gates zuerst -- der schwerste Zustand', () => {
+      const assessment = deriveOverallAssessment([
+        gate(GateStatus.Findings, GateEnforcement.Blocking),
+        gate(GateStatus.NotRun, GateEnforcement.Blocking),
+      ]);
+      expect(assessment.headline).toBe('1 von 2 blockierenden Gates melden Befunde');
+    });
+
+    it('meldet ein nicht angelaufenes blockierendes Gate, wenn keines Befunde hat', () => {
+      const assessment = deriveOverallAssessment([
+        gate(GateStatus.Passed, GateEnforcement.Blocking),
+        gate(GateStatus.NotRun, GateEnforcement.Blocking),
+      ]);
+      expect(assessment.headline).toBe('1 von 2 blockierenden Gates sind nicht angelaufen');
+      expect(assessment.facts).toContain('Nicht angelaufene Gates: 1');
+    });
+
+    it('zaehlt nur-Hinweis-Befunde getrennt, ohne sie zu deuten', () => {
+      const assessment = deriveOverallAssessment([
+        gate(GateStatus.Passed, GateEnforcement.Blocking),
+        gate(GateStatus.Findings, GateEnforcement.Warning),
+        gate(GateStatus.NotRun, GateEnforcement.Warning),
+      ]);
+      expect(assessment.headline).toBe('Alle 1 blockierenden Gates bestehen');
+      expect(assessment.facts).toContain('Nur-Hinweis-Gates mit Befunden: 1');
+      expect(assessment.facts).toContain('Nicht angelaufene Gates: 1');
+    });
   });
 
   it('caps long functions at the documented default when no override is given', () => {

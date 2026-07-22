@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { renderReport } from './renderReport.js';
 import { buildGateStates } from './gates.js';
-import { OVERALL_ASSESSMENT, FINDING_ASSESSMENTS } from './assessment.js';
 
 /**
  * `renderReport` ist rein: alle Tests speisen ein fertiges Datenmodell ein und
  * pruefen den HTML-Text. Kein Test beruehrt Dateisystem, Git oder Netz.
  *
- * Die Gate-Zustaende entstehen ueber `buildGateStates` aus Schnitt 01 -- ebenfalls
- * eine reine Funktion -- damit der Test genau die Form prueft, die spaeter der
- * Generator liefert.
+ * Die Gate-Zustaende entstehen ueber `buildGateStates` -- ebenfalls eine reine
+ * Funktion -- damit der Test genau die Form prueft, die spaeter der Generator
+ * liefert. Das Gesamturteil ist ein reines, aus Messwerten abgeleitetes Objekt
+ * ({ headline, facts }); es wird hier als fertige Eingabe gestellt.
  */
 function makeGates() {
   return buildGateStates({
@@ -26,6 +26,19 @@ function makeGates() {
       depcruise: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
     },
   });
+}
+
+/** Ein abgeleitetes Gesamturteil in der Form, die `buildReportModel` erzeugt. */
+function makeAssessment(overrides = {}) {
+  return {
+    headline: 'Alle 3 blockierenden Gates bestehen',
+    facts: [
+      'Bestandene blockierende Gates: 3 von 3',
+      'Nur-Hinweis-Gates mit Befunden: 1',
+      'Nicht angelaufene Gates: 1',
+    ],
+    ...overrides,
+  };
 }
 
 function makeOpenIssue(overrides = {}) {
@@ -48,8 +61,7 @@ function makeOpenIssue(overrides = {}) {
 function makeModel(overrides = {}) {
   return {
     generatedAt: '2026-07-22 10:00 UTC',
-    assessment: OVERALL_ASSESSMENT,
-    findingAssessments: FINDING_ASSESSMENTS,
+    assessment: makeAssessment(),
     gates: makeGates(),
     metrics: [{ label: 'Offene Issues', value: 3 }],
     coverage: [
@@ -106,14 +118,18 @@ describe('project-state/renderReport', () => {
     });
   });
 
-  describe('Gesamturteil vorangestellt', () => {
-    it('zeigt das Gesamturteil vor den beiden Bereichen', () => {
-      const html = renderReport(makeModel());
+  describe('Gesamturteil aus Messwerten abgeleitet', () => {
+    it('zeigt das Gesamturteil mit Kopfzeile und gemessenen Fakten vor den Bereichen', () => {
+      const model = makeModel();
+      const html = renderReport(model);
       const verdictIndex = html.indexOf('Gesamturteil');
       const healthcheckIndex = html.indexOf('id="healthcheck"');
       expect(verdictIndex).toBeGreaterThan(-1);
       expect(verdictIndex).toBeLessThan(healthcheckIndex);
-      expect(html).toContain(OVERALL_ASSESSMENT.headline);
+      expect(html).toContain(model.assessment.headline);
+      for (const fact of model.assessment.facts) {
+        expect(html).toContain(fact);
+      }
     });
 
     it('setzt den Erhebungszeitpunkt aus dem Modell ein', () => {
@@ -172,15 +188,44 @@ describe('project-state/renderReport', () => {
     });
   });
 
-  describe('Issues als Volltext, aus Markdown gerendert', () => {
-    it('rendert Beschreibung und Akzeptanzkriterien zur Bauzeit zu HTML', () => {
+  describe('mobil-tauglich', () => {
+    it('legt jede breite Tabelle in einen eigenen horizontal scrollbaren Container', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('berichtsseite rendern');
+      // Drei Tabellen (Gates, Abdeckung, laengste Funktionen), jede in ihrem Container.
+      expect((html.match(/class="table-scroll"/g) ?? []).length).toBe(3);
+      expect(html).toContain('overflow-x: auto');
+    });
+
+    it('setzt das Viewport-Meta und eine Media Query fuer schmale Viewports', () => {
+      const html = renderReport(makeModel());
+      expect(html).toContain('width=device-width, initial-scale=1');
+      expect(html).toMatch(/@media \(max-width:/);
+    });
+  });
+
+  describe('Issues kompakt und ausklappbar', () => {
+    it('stellt jeden Vorgang als natives <details> mit kompakter Zusammenfassung dar', () => {
+      const html = renderReport(makeModel());
+      expect(html).toContain('<details class="issue"');
+      // Kompakte Zeile: Titel und Status stehen in der Zusammenfassung.
+      expect(html).toMatch(/<summary class="issue-summary">[\s\S]*?berichtsseite rendern[\s\S]*?claimed[\s\S]*?<\/summary>/);
+    });
+
+    it('klappt Beschreibung und Akzeptanzkriterien im Detailteil auf, aus Markdown gerendert', () => {
+      const html = renderReport(makeModel());
+      const bodyStart = html.indexOf('<div class="issue-body">');
+      expect(bodyStart).toBeGreaterThan(-1);
       expect(html).toContain('54-bericht/02-render');
       expect(html).toContain('<strong>wichtiger</strong>'); // Markdown -> HTML
       expect(html).toContain('<li>Punkt eins</li>');
       expect(html).toContain('<h4>Acceptance Criteria</h4>');
       expect(html).toContain('Erste Bedingung');
+    });
+
+    it('kommt ohne JavaScript aus -- das Aufklappen ist rein nativ', () => {
+      const html = renderReport(makeModel());
+      expect(html).not.toMatch(/<script/i);
+      expect(html).toContain('<summary');
     });
 
     it('weist sichtbar aus, dass nur gepushte Branches erfasst sind', () => {
@@ -202,11 +247,15 @@ describe('project-state/renderReport', () => {
     });
   });
 
-  describe('Trennung von Messung und Urteil', () => {
-    it('mischt die Einordnung aus der versionierten Datei dazu', () => {
+  describe('vollstaendig dynamisch -- kein hand-gepflegter Text', () => {
+    it('enthaelt keinen der frueheren hand-gepflegten Einordnungs-Texte mehr', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('ADR 0023');
-      expect(html).toContain('von Hand gepflegten, versionierten Datei');
+      // Der alte "Eingeordnete Befunde"-Block und seine Deutungen sind restlos weg.
+      expect(html).not.toMatch(/assessment/i);
+      expect(html).not.toContain('Eingeordnete Befunde');
+      expect(html).not.toContain('von Hand gepflegten');
+      expect(html).not.toContain('Absicht');
+      expect(html).not.toContain('bricht ab');
     });
 
     it('erzeugt fuer dasselbe Modell denselben HTML-Text (ueberlebt einen Neulauf unveraendert)', () => {

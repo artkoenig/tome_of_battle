@@ -21,7 +21,6 @@ import { aggregateCoverage } from './coverage.js';
 import { findLongFunctions, DEFAULT_LONG_FUNCTION_LINES } from './functions.js';
 import { buildImportGraph, findCycles, findLayerViolations, DEFAULT_LAYERS } from './graph.js';
 import { collectOpenIssues } from './issues.js';
-import { OVERALL_ASSESSMENT, FINDING_ASSESSMENTS } from './assessment.js';
 
 /** Wie viele der laengsten Funktionen der Bericht hoechstens auffuehrt. */
 export const DEFAULT_MAX_LONG_FUNCTIONS = 15;
@@ -61,8 +60,6 @@ const METRIC_HINTS = Object.freeze({
  * @property {ReadonlyArray<{ name: string, prefix: string }>} [layers]  Schichtung fuer Verstoesse.
  * @property {ReadonlyArray<import('./issues.js').IssueRef>} [issueRefs]  Erreichbare Refs.
  * @property {(refName: string, filePath: string) => (string|null)} [showFile]  Injizierter Lesezugriff.
- * @property {import('./assessment.js').OverallAssessment} [overallAssessment]
- * @property {ReadonlyArray<import('./assessment.js').FindingAssessment>} [findingAssessments]
  */
 
 /**
@@ -85,8 +82,6 @@ export function buildReportModel({
   layers = DEFAULT_LAYERS,
   issueRefs = [],
   showFile = () => null,
-  overallAssessment = OVERALL_ASSESSMENT,
-  findingAssessments = FINDING_ASSESSMENTS,
 } = {}) {
   const gates = buildGateStates({ workflowJob, runs: gateRuns });
   const coverage = aggregateCoverage(coverageFinal, { rootPath });
@@ -98,8 +93,7 @@ export function buildReportModel({
   return {
     title,
     generatedAt,
-    assessment: overallAssessment,
-    findingAssessments,
+    assessment: deriveOverallAssessment(gates),
     gates,
     metrics,
     coverage,
@@ -176,4 +170,77 @@ function buildMetrics({ gates, openIssues, longFunctions, structure, longFunctio
 /** @param {import('./renderReport.js').Metric} metric @param {string|undefined} hint */
 function withOptionalHint(metric, hint) {
   return hint ? { ...metric, hint } : metric;
+}
+
+/**
+ * Beschriftungen der abgeleiteten Urteils-Fakten -- an einer Stelle, damit sie
+ * nicht als Magie im Code liegen.
+ */
+const VERDICT_FACT_LABELS = Object.freeze({
+  blockingPassed: 'Bestandene blockierende Gates',
+  warningFindings: 'Nur-Hinweis-Gates mit Befunden',
+  notRun: 'Nicht angelaufene Gates',
+});
+
+/**
+ * Zaehlt die Gates je betrachteter Eigenschaft. Das ist die reine, gemessene
+ * Faktenbasis des Gesamturteils -- keine Deutung, nur Abzaehlen der bereits von
+ * {@link buildGateStates} klassifizierten Zustaende.
+ *
+ * @param {ReadonlyArray<import('./gates.js').GateState>} gates
+ */
+function countGateFacts(gates) {
+  const isBlocking = (gate) => gate.enforcement === GateEnforcement.Blocking;
+  const isWarning = (gate) => gate.enforcement === GateEnforcement.Warning;
+  const hasStatus = (status) => (gate) => gate.status === status;
+
+  return {
+    blockingTotal: gates.filter(isBlocking).length,
+    blockingPassed: gates.filter((gate) => isBlocking(gate) && hasStatus(GateStatus.Passed)(gate)).length,
+    blockingFindings: gates.filter((gate) => isBlocking(gate) && hasStatus(GateStatus.Findings)(gate)).length,
+    blockingNotRun: gates.filter((gate) => isBlocking(gate) && hasStatus(GateStatus.NotRun)(gate)).length,
+    warningFindings: gates.filter((gate) => isWarning(gate) && hasStatus(GateStatus.Findings)(gate)).length,
+    notRunTotal: gates.filter(hasStatus(GateStatus.NotRun)).length,
+  };
+}
+
+/**
+ * Die Kopfzeile des Urteils nennt den schwerwiegendsten gemessenen Zustand der
+ * blockierenden Gates zuerst: erst Befunde (die die CI scheitern lassen), dann
+ * ein nicht angelaufenes Gate, sonst der gruene Fall.
+ *
+ * @param {ReturnType<typeof countGateFacts>} facts
+ * @returns {string}
+ */
+function deriveVerdictHeadline(facts) {
+  if (facts.blockingTotal === 0) return 'Keine blockierenden Gates erfasst';
+  if (facts.blockingFindings > 0) {
+    return `${facts.blockingFindings} von ${facts.blockingTotal} blockierenden Gates melden Befunde`;
+  }
+  if (facts.blockingNotRun > 0) {
+    return `${facts.blockingNotRun} von ${facts.blockingTotal} blockierenden Gates sind nicht angelaufen`;
+  }
+  return `Alle ${facts.blockingTotal} blockierenden Gates bestehen`;
+}
+
+/**
+ * Erzeugt das Gesamturteil ausschliesslich aus den gemessenen Gate-Zustaenden --
+ * eine reine Funktion ohne hand-gepflegten Text, sodass die Anzeige der
+ * Gate-Tabelle nie widersprechen kann (ADR 0022: Anzeige leitet sich aus der
+ * Quelle ab). Die Kopfzeile nennt den Zustand auf einen Blick, die Fakten sind
+ * die nackten Zahlen dahinter.
+ *
+ * @param {ReadonlyArray<import('./gates.js').GateState>} gates
+ * @returns {import('./renderReport.js').OverallAssessment}
+ */
+export function deriveOverallAssessment(gates) {
+  const facts = countGateFacts(gates);
+  return {
+    headline: deriveVerdictHeadline(facts),
+    facts: [
+      `${VERDICT_FACT_LABELS.blockingPassed}: ${facts.blockingPassed} von ${facts.blockingTotal}`,
+      `${VERDICT_FACT_LABELS.warningFindings}: ${facts.warningFindings}`,
+      `${VERDICT_FACT_LABELS.notRun}: ${facts.notRunTotal}`,
+    ],
+  };
 }
