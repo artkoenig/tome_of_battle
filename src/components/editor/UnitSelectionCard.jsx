@@ -3,14 +3,12 @@ import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-r
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
 import {
-  resolveEntry,
-  findEntryInSystem,
   calculateRosterCosts,
   collectUnitProfilesAndRules,
   getEffectiveSelectionName,
-  isIndependentSubUnit,
   groupProfilesByType
 } from '../../solver/validator';
+import { isIndependentSubUnitSelection, selectionErrorsForCard } from './unitCardValidation';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
 import { getProfileCellClassName } from '../profileCellClasses';
@@ -195,17 +193,12 @@ export default function UnitSelectionCard({
   const effectiveName = getEffectiveSelectionName(selection, { system, roster, parentCatalogueId: activeCatalogue?.id });
   const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
   const displayPoints = unitCosts[roster.costLimitType] || 0;
-  const hasSelectionError = validationErrors.some(e => e.selectionId === selection.id);
-  const selectionErrors = validationErrors.filter(e => e.selectionId === selection.id);
+  const selectionErrors = selectionErrorsForCard(validationErrors, selection, system, activeCatalogue?.id);
+  const hasSelectionError = selectionErrors.length > 0;
 
-  const independentSubUnits = (selection.selections || []).filter(subSel => {
-    const entryId = subSel.entryLinkId || subSel.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId, activeCatalogue?.id);
-    const resolved = resolveEntry(system, entry, activeCatalogue?.id);
-    
-    
-    return isIndependentSubUnit(resolved);
-  });
+  const independentSubUnits = (selection.selections || []).filter(
+    subSel => isIndependentSubUnitSelection(subSel, system, activeCatalogue?.id)
+  );
 
   return (
     <div className={`selection-node ${hasSelectionError ? 'has-error' : ''} ${copyUnit ? '' : 'selection-node--sub'}`}>
