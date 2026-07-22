@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -44,3 +44,4 @@ Katalogtexte bleiben unberührt (Katalogsprache, CONTEXT.md). Statik-Toolchain
       Deutsch gepinnt).
 
 ## Comments
+- i18n-Fundament (ADR 0026): eigenes Modul unter src/i18n/ mit t(key,params) (Platzhalter, Intl.PluralRules-Numerus, Intl.NumberFormat, EN-Fallback), reiner Spracherkennung, localStorage-Persistenz und useSyncExternalStore-Hook. Flache DE/EN-JSON-Sprachdateien + Paritaetstest. Einstellungen-Dialog laeuft komplett ueber t() und hat einen sofort wirkenden DE/EN-Umschalter; document.lang folgt der aktiven Sprache. Test-Setup pinnt global auf Deutsch.

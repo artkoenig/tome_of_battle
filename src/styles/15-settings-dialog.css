@@ -31,6 +31,34 @@
   opacity: 0.7;
 }
 
+/* Segmented control for the UI-language choice (Deutsch / English). */
+.settings-language-switch {
+  flex-shrink: 0;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border-gold-dim);
+  border-radius: 13px;
+  background: var(--bg-dark);
+}
+
+.settings-language-option {
+  padding: 3px 12px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.settings-language-option.is-active {
+  background: rgba(226, 183, 66, 0.35);
+  color: var(--text-gold);
+}
+
 .settings-switch {
   flex-shrink: 0;
   position: relative;

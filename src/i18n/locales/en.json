@@ -1,0 +1,8 @@
+{
+  "settings.title": "Settings",
+  "settings.close": "Close",
+  "settings.whfb6Linking.label": "Link to 6th.whfb.app",
+  "settings.whfb6Linking.hint": "When linking is off, rule, weapon and magic-item chips show the catalog quick info instead of a link to the external site.",
+  "settings.version": "Version",
+  "settings.language.label": "Language"
+}
