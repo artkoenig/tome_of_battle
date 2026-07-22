@@ -9,7 +9,14 @@ ADR-0022-Mechanik auf.
 
 Die Familien `entry-min`/`entry-max` (und die Prozent-Varianten
 `entry-percent-min`/`-max`) erhalten strukturierte Felder und werden über die
-zentrale Kompositions-Stelle (aus Issue 02) in Alltagssprache formuliert.
+zentrale Kompositions-Stelle (aus Issue 02) formuliert — gemäß der verbindlichen
+Ton-Vorgabe im PRD des Main-Issues 58. Für diese Familie gilt: bei einzelnen
+Einträgen wird um den Eintragsnamen herum formuliert (nicht „Auswahl"):
+
+- Eintrag max: `Commander darf „Hand Weapon" höchstens einmal wählen.`
+  (max = 0: `Commander darf „Shield" nicht wählen.`)
+- Eintrag min: `Commander braucht mindestens eine „Hand Weapon".`
+- Prozent: `„Handlanger" dürfen höchstens 50 % der Punkte ausmachen.`
 
 Besonderheit: `stripHypotheticalCount` (ADR 0022, `entryAvailability.js`) kappt
 heute per **Regex** auf den deutschen Wortlaut „(aktuell: N)" den hypothetischen

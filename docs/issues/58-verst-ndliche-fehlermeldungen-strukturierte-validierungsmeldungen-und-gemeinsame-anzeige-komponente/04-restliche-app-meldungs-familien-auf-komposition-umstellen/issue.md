@@ -13,9 +13,19 @@ Betroffene Familien (die noch nicht in Issue 02/03 behandelt wurden):
 `group-points-min`/`-max`, `group-percent-min`/`-max` und `unresolved-entry`.
 
 Jede Familie erhält strukturierte Felder am Validator und eine Vorlage in der
-zentralen Kompositions-Stelle. Autor-Meldungen (`modifier-error/-warning/-info`)
-bleiben ausdrücklich **wortgetreu** und werden nur durch die gemeinsame Komponente
-einheitlich dargestellt (ADR 0022) — sie sind nicht Teil der Umformulierung.
+zentralen Kompositions-Stelle, formuliert gemäß der verbindlichen Ton-Vorgabe im
+PRD des Main-Issues 58. Beispiele für diese Familien:
+
+- Punkte gesamt (`roster-limit`): `Die Liste hat 111 Punkte – erlaubt sind 100.`
+- Pflichteintrag (`force-selector-min`): `Die Armee braucht noch einen „General".`
+- Punktelimit (`force-roster-limit`): `Die Armee braucht ein höheres Punktelimit für „Special" (mindestens 250).`
+- Punkte Gruppe (`group-points-*`): `General darf für „Magic Items" höchstens 100 Punkte ausgeben.`
+- Prozent Gruppe (`group-percent-*`): `„Core" muss mindestens 25 % der Punkte ausmachen.`
+- Nicht mehr im Katalog (`unresolved-entry`): `„Old Model" gibt es im Katalog nicht mehr.`
+
+Autor-Meldungen (`modifier-error/-warning/-info`) bleiben ausdrücklich
+**wortgetreu** und werden nur durch die gemeinsame Komponente einheitlich
+dargestellt (ADR 0022) — sie sind nicht Teil der Umformulierung.
 
 Reine Darstellung: keine Änderung an der Validierungslogik.
 

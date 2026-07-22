@@ -15,17 +15,21 @@ die der Validator intern ohnehin schon berechnet — **keine Logikänderung**, n
 die Datenform.
 
 Eine **zentrale Kompositions-Stelle** (die einzige Quelle für deutschen
-Meldungstext, i18n-fähig ablegen) baut aus diesen Feldern einen Klartext-Satz in
-Alltagssprache, **ohne Handlungshinweis**. Die Anzeige-Komponente aus Issue 01
-bevorzugt den komponierten Satz, wenn strukturierte Felder vorliegen, und fällt
-sonst auf den bisherigen Text zurück.
+Meldungstext, i18n-fähig ablegen) baut aus diesen Feldern einen Klartext-Satz
+gemäß der verbindlichen **Ton-Vorgabe im PRD des Main-Issues 58**
+(Abschnitt „Formulierung / Ton"). Die Anzeige-Komponente aus Issue 01 bevorzugt
+den komponierten Satz, wenn strukturierte Felder vorliegen, und fällt sonst auf
+den bisherigen Text zurück.
 
-Katalognamen (`"Weapons"`, `"Commander"`) bleiben im Satz **unverändert und
+Für diese Familie gelten die PRD-Beispiele:
+
+- Gruppe max = 0 (Screenshot): `Commander darf keine Auswahl aus „Weapons" treffen.`
+- Gruppe max ≥ 1: `Butcher darf höchstens eine Auswahl aus „Arcane Items" treffen.`
+- Gruppe min: `Butcher braucht mindestens eine Auswahl aus „Arcane Items".`
+- Kategorie (Armee-Ebene): `Die Armee darf höchstens eine Auswahl aus „Special" treffen.`
+
+Katalognamen (`"Weapons"`, `"Arcane Items"`) bleiben im Satz **unverändert und
 unübersetzt** (ADR 0003).
-
-Zielwirkung: statt *„Kategorie \"Weapons\" erlaubt maximal 0 Auswahlen
-(aktuell: 1 für Commander)."* z. B. *„Der Commander darf keine Waffen haben
-(1 gewählt)."*
 
 ## Acceptance Criteria
 - [ ] Der Validator füllt für die `group-count`/`category` min/max-Familie
@@ -33,10 +37,11 @@ Zielwirkung: statt *„Kategorie \"Weapons\" erlaubt maximal 0 Auswahlen
       aktueller Wert, Einheit); Menge und Wahrheit der Verstöße bleiben unverändert
       (dieselben Verstöße wie vorher).
 - [ ] Eine zentrale, framework-freie Kompositionsfunktion erzeugt aus diesen
-      Feldern einen deutschen Klartext-Satz in Alltagssprache ohne
-      Handlungshinweis; Katalognamen bleiben wortgetreu.
-- [ ] Die Screenshot-Meldung erscheint in der App als verständlicher Klartext
-      (z. B. „Der Commander darf keine Waffen haben (1 gewählt).").
+      Feldern einen deutschen Klartext-Satz gemäß der Ton-Vorgabe im PRD
+      (ohne Possessiv, ohne interne Struktur­begriffe, „Auswahl(en)" als
+      Zählwort, Katalognamen wortgetreu, kein Handlungshinweis).
+- [ ] Die Screenshot-Meldung erscheint in der App als
+      `Commander darf keine Auswahl aus „Weapons" treffen.`
 - [ ] Meldungen ohne strukturierte Felder werden weiterhin unverändert angezeigt
       (Fallback).
 - [ ] Der deutsche Meldungstext dieser Familie entsteht an genau einer Stelle

@@ -60,9 +60,49 @@ dieses Vorhabens, siehe Out of Scope).
 - **Katalognamen** (`"Weapons"`, `"Commander"` …) bleiben unverändert und
   unübersetzt; nur das Satzgerüst darum herum ist frei formulierbar (ADR 0003).
 
-Beispiel der Zielwirkung (App-Meldung): statt der obigen Meldung etwa
-„Der Commander darf keine Waffen haben (1 gewählt)." — gleiche Aussage, ohne
-Jargon, ohne Handlungshinweis.
+Beispiel der Zielwirkung (App-Meldung): statt der obigen Meldung
+`Commander darf keine Auswahl aus „Weapons" treffen.` — gleiche Aussage, als
+natürlicher Satz, ohne interne Struktur­begriffe.
+
+## Formulierung / Ton (verbindlich)
+
+Diese Regeln gelten für **App-Meldungen** und sind die maßgebliche Vorgabe für
+die zentrale Klartext-Komposition (Autor-Meldungen bleiben wortgetreu, siehe
+oben):
+
+- Ein ganzer, natürlicher deutscher Satz. Keine internen Struktur­begriffe
+  („Kategorie", „Option", „Limitüberschreitung"), kein angehängtes
+  „(aktuell: N)".
+- Der Name der betroffenen Einheit/Auswahl steht **ohne Possessiv** am
+  Satzanfang (`Commander darf …`), nicht „dein Commander" — kein Duz-Ton, und
+  so entfällt die Artikel-/Beugungsfrage bei (oft englischen) Eigennamen.
+- Armee-/listenweite Meldungen bekommen einen Artikel: „Die Armee …",
+  „Die Liste …", sonst klängen sie abgehackt.
+- Katalognamen bleiben wortgetreu in Anführungszeichen (ADR 0003), auch
+  englische.
+- Allgemeines Zählwort ist **„Auswahl"/„Auswahlen"**, wenn es um Picks aus einer
+  Gruppe/Kategorie geht (`… höchstens eine Auswahl aus „Arcane Items" treffen`).
+- Geht es um die **Häufigkeit eines einzelnen Eintrags**, wird um den
+  Eintragsnamen herum formuliert (`„Hand Weapon" höchstens einmal wählen`), da
+  „Auswahl" dort nicht passt.
+- Kleine Zahlen als Wort („eine", „zwei", „einmal"). Kein Handlungshinweis.
+
+Verbindliche Beispiele je Familie (werden zur Testvorgabe der Komposition):
+
+| Familie | Meldung |
+| --- | --- |
+| Gruppe max = 0 (Screenshot) | `Commander darf keine Auswahl aus „Weapons" treffen.` |
+| Gruppe max ≥ 1 | `Butcher darf höchstens eine Auswahl aus „Arcane Items" treffen.` (bzw. „zwei Auswahlen") |
+| Gruppe min | `Butcher braucht mindestens eine Auswahl aus „Arcane Items".` |
+| Kategorie max (Armee) | `Die Armee darf höchstens eine Auswahl aus „Special" treffen.` |
+| Kategorie min (Armee) | `Die Armee braucht mindestens zwei Auswahlen aus „Core".` |
+| Pflichteintrag fehlt | `Die Armee braucht noch einen „General".` |
+| Eintrag max | `Commander darf „Hand Weapon" höchstens einmal wählen.` (max = 0: `… darf „Shield" nicht wählen.`) |
+| Eintrag min | `Commander braucht mindestens eine „Hand Weapon".` |
+| Punkte gesamt | `Die Liste hat 111 Punkte – erlaubt sind 100.` |
+| Punkte Gruppe | `General darf für „Magic Items" höchstens 100 Punkte ausgeben.` |
+| Prozent | `„Handlanger" dürfen höchstens 50 % der Punkte ausmachen.` |
+| Eintrag nicht mehr im Katalog | `„Old Model" gibt es im Katalog nicht mehr.` |
 
 ## User Stories / Requirements
 
