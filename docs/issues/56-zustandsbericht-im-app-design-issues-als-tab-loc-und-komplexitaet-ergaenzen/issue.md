@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -146,3 +146,4 @@ später zur Projektseite ausgebaut wird und vorerst nur auf den Bericht verlinkt
       Generator läuft lokal durch und erzeugt eine HTML-Datei.
 
 ## Comments
+- Umgesetzt: Bericht im App-Design (Pergament/Gold/Obsidian, hell+dunkel, Fallback-Serifen, kein Script); Healthcheck/Issues als CSS-only Tabs; LOC je Modul + Gesamtsumme; zyklomatische Komplexitaet je Modul (Summe/Durchschnitt/Max) + komplexeste Funktionen. Neue reine Module loc.js/complexity.js und geteiltes tsSource.js (functions.js mitgezogen) mit Tests. Bericht zieht nach /status; Wurzel-Platzhalter docs/index.html; status-report.yml + ADR 0025 angepasst. lint/typecheck/vitest gruen (1313 Tests), Vier-Achsen-Pruefung durchlaufen, Befunde (Summe-Spalte, veraltete Kommentare, DRY, Tabellen-Helfer, Hinweis) behoben.

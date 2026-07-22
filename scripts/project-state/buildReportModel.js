@@ -19,6 +19,8 @@
 import { buildGateStates, GateStatus, GateEnforcement } from './gates.js';
 import { aggregateCoverage } from './coverage.js';
 import { findLongFunctions, DEFAULT_LONG_FUNCTION_LINES } from './functions.js';
+import { aggregateLoc } from './loc.js';
+import { aggregateComplexity, DEFAULT_MAX_COMPLEX_FUNCTIONS } from './complexity.js';
 import { buildImportGraph, findCycles, findLayerViolations, DEFAULT_LAYERS } from './graph.js';
 import { collectOpenIssues } from './issues.js';
 
@@ -30,6 +32,7 @@ const METRIC_LABELS = Object.freeze({
   openIssues: 'Offene Vorgaenge',
   blockingGates: 'Blockierende Gates',
   notRunGates: 'Nicht angelaufene Gates',
+  totalLines: 'Codezeilen gesamt',
   longFunctions: 'Ueberlange Funktionen',
   importCycles: 'Import-Zyklen',
 });
@@ -37,6 +40,7 @@ const METRIC_LABELS = Object.freeze({
 const METRIC_HINTS = Object.freeze({
   blockingGates: 'lassen die CI bei Befunden scheitern',
   notRunGates: 'Werkzeug kam nicht zur Auswertung -- kein gruenes Ergebnis',
+  totalLines: 'nicht-leere Zeilen im Produktivcode',
 });
 
 /**
@@ -53,9 +57,10 @@ const METRIC_HINTS = Object.freeze({
  * @property {object|null} [workflowJob]  Der geparste CI-Job (fuer die Gate-Wirksamkeit).
  * @property {Record<string, object>} [coverageFinal]  Inhalt von `coverage-final.json`.
  * @property {string} [rootPath]  Projektwurzel, aus den Coverage-Pfaden entfernt.
- * @property {ReadonlyArray<SourceFile>} [sources]  Produktivcode fuer die Funktionslaengen.
+ * @property {ReadonlyArray<SourceFile>} [sources]  Produktivcode fuer Funktionslaengen, LOC und Komplexitaet.
  * @property {number} [longFunctionLimit]  Ab wie vielen Zeilen eine Funktion als lang gilt.
  * @property {number} [maxLongFunctions]  Obergrenze der aufgefuehrten langen Funktionen.
+ * @property {number} [maxComplexFunctions]  Obergrenze der aufgefuehrten komplexen Funktionen.
  * @property {ReadonlyArray<object>} [cruiserModules]  Modulbericht von dependency-cruiser.
  * @property {ReadonlyArray<{ name: string, prefix: string }>} [layers]  Schichtung fuer Verstoesse.
  * @property {ReadonlyArray<import('./issues.js').IssueRef>} [issueRefs]  Erreichbare Refs.
@@ -78,6 +83,7 @@ export function buildReportModel({
   sources = [],
   longFunctionLimit = DEFAULT_LONG_FUNCTION_LINES,
   maxLongFunctions = DEFAULT_MAX_LONG_FUNCTIONS,
+  maxComplexFunctions = DEFAULT_MAX_COMPLEX_FUNCTIONS,
   cruiserModules = [],
   layers = DEFAULT_LAYERS,
   issueRefs = [],
@@ -86,9 +92,10 @@ export function buildReportModel({
   const gates = buildGateStates({ workflowJob, runs: gateRuns });
   const coverage = aggregateCoverage(coverageFinal, { rootPath });
   const longFunctions = collectLongFunctions(sources, longFunctionLimit, maxLongFunctions);
+  const { moduleMetrics, totalLines, complexFunctions } = buildSizeFacts(sources, maxComplexFunctions);
   const structure = buildStructureFacts(cruiserModules, layers);
   const { issues: openIssues, unreadable } = collectOpenIssues(issueRefs, showFile);
-  const metrics = buildMetrics({ gates, openIssues, longFunctions, structure, longFunctionLimit });
+  const metrics = buildMetrics({ gates, openIssues, longFunctions, structure, longFunctionLimit, totalLines });
 
   return {
     title,
@@ -97,12 +104,49 @@ export function buildReportModel({
     gates,
     metrics,
     coverage,
+    moduleMetrics,
+    complexFunctions,
     longFunctions,
     structure,
     openIssues,
     unreadableIssues: unreadable,
     branchScope: { scannedRefs: issueRefs.map((ref) => ref.name) },
   };
+}
+
+/**
+ * Verbindet Codeumfang (LOC) und zyklomatische Komplexitaet je Modul zu einer
+ * gemeinsamen Kennzahlenreihe -- beide sind Aggregate ueber dieselben Module, und
+ * der Bericht zeigt sie in einer Tabelle nebeneinander. Dazu die Gesamtzeilen und
+ * die Liste der komplexesten Funktionen.
+ *
+ * @param {ReadonlyArray<SourceFile>} sources
+ * @param {number} maxComplexFunctions
+ * @returns {{
+ *   moduleMetrics: import('./renderReport.js').ModuleMetric[],
+ *   totalLines: number,
+ *   complexFunctions: import('./complexity.js').FunctionComplexity[],
+ * }}
+ */
+function buildSizeFacts(sources, maxComplexFunctions) {
+  const loc = aggregateLoc(sources);
+  const complexity = aggregateComplexity(sources, { maxFunctions: maxComplexFunctions });
+  const complexityByModule = new Map(complexity.modules.map((entry) => [entry.module, entry]));
+
+  const moduleMetrics = loc.modules.map((locModule) => {
+    const moduleComplexity = complexityByModule.get(locModule.module);
+    return {
+      module: locModule.module,
+      fileCount: locModule.fileCount,
+      lines: locModule.lines,
+      functionCount: moduleComplexity?.functionCount ?? 0,
+      totalComplexity: moduleComplexity?.totalComplexity ?? 0,
+      averageComplexity: moduleComplexity?.averageComplexity ?? 0,
+      maxComplexity: moduleComplexity?.maxComplexity ?? 0,
+    };
+  });
+
+  return { moduleMetrics, totalLines: loc.totalLines, complexFunctions: complexity.mostComplex };
 }
 
 /**
@@ -149,9 +193,10 @@ function countEdges(graph) {
  * @param {ReadonlyArray<import('./functions.js').LongFunction>} input.longFunctions
  * @param {import('./renderReport.js').StructureFacts} input.structure
  * @param {number} input.longFunctionLimit
+ * @param {number} input.totalLines
  * @returns {import('./renderReport.js').Metric[]}
  */
-function buildMetrics({ gates, openIssues, longFunctions, structure, longFunctionLimit }) {
+function buildMetrics({ gates, openIssues, longFunctions, structure, longFunctionLimit, totalLines }) {
   const blockingGates = gates.filter((gate) => gate.enforcement === GateEnforcement.Blocking).length;
   const notRunGates = gates.filter((gate) => gate.status === GateStatus.NotRun).length;
 
@@ -162,6 +207,7 @@ function buildMetrics({ gates, openIssues, longFunctions, structure, longFunctio
       { label: METRIC_LABELS.notRunGates, value: notRunGates },
       notRunGates > 0 ? METRIC_HINTS.notRunGates : undefined,
     ),
+    { label: METRIC_LABELS.totalLines, value: totalLines, hint: METRIC_HINTS.totalLines },
     { label: METRIC_LABELS.longFunctions, value: longFunctions.length, hint: `ueber ${longFunctionLimit} Zeilen` },
     { label: METRIC_LABELS.importCycles, value: structure.cycles.length },
   ];

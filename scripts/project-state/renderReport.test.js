@@ -73,6 +73,14 @@ function makeModel(overrides = {}) {
         functions: { covered: 9, total: 10, percent: 90 },
       },
     ],
+    moduleMetrics: [
+      { module: 'src/solver', fileCount: 6, lines: 900, functionCount: 40, totalComplexity: 136, averageComplexity: 3.4, maxComplexity: 21 },
+      { module: 'src/parser', fileCount: 3, lines: 300, functionCount: 12, totalComplexity: 25, averageComplexity: 2.1, maxComplexity: 7 },
+    ],
+    complexFunctions: [
+      { name: 'solve', path: 'src/solver/engine.js', startLine: 42, complexity: 21 },
+      { name: 'parseRoster', path: 'src/parser/roster.js', startLine: 10, complexity: 7 },
+    ],
     longFunctions: [
       { name: 'renderReport', path: 'scripts/project-state/renderReport.js', startLine: 60, endLine: 130, lineCount: 71 },
     ],
@@ -108,13 +116,50 @@ describe('project-state/renderReport', () => {
     });
   });
 
-  describe('zwei Bereiche unter einer URL', () => {
-    it('traegt Healthcheck und Issues als Anker-Bereiche mit Navigation', () => {
+  describe('zwei Bereiche als echte Tabs ohne JavaScript', () => {
+    it('traegt Healthcheck und Issues als umschaltbare Tab-Panels', () => {
       const html = renderReport(makeModel());
       expect(html).toContain('id="healthcheck"');
       expect(html).toContain('id="issues"');
-      expect(html).toContain('href="#healthcheck"');
-      expect(html).toContain('href="#issues"');
+      // Umschalter: versteckte Radios mit Labels statt Anker-Navigation.
+      expect(html).toContain('id="tab-healthcheck"');
+      expect(html).toContain('id="tab-issues"');
+      expect(html).toContain('for="tab-healthcheck"');
+      expect(html).toContain('for="tab-issues"');
+      expect(html).toContain('panel panel-healthcheck');
+      expect(html).toContain('panel panel-issues');
+      // Kein Anker-Menue mehr, keine Sprungmarken.
+      expect(html).not.toContain('href="#healthcheck"');
+      expect(html).not.toContain('href="#issues"');
+    });
+
+    it('zeigt beim Laden nur einen Tab: Healthcheck ist der angehakte Standard', () => {
+      const html = renderReport(makeModel());
+      // Der Healthcheck-Tab traegt `checked`, der Issues-Tab nicht.
+      expect(html).toMatch(/id="tab-healthcheck"[^>]*\bchecked\b/);
+      expect(html).not.toMatch(/id="tab-issues"[^>]*\bchecked\b/);
+      // Panels sind per Default unsichtbar; der Geschwister-Selektor blendet je
+      // nach angehaktem Radio genau eines ein -- ganz ohne Skript.
+      expect(html).toMatch(/\.panel\s*\{\s*display:\s*none/);
+      expect(html).toContain('#tab-healthcheck:checked ~ .panel-healthcheck');
+      expect(html).toContain('#tab-issues:checked ~ .panel-issues');
+      expect(html).not.toMatch(/<script/i);
+    });
+  });
+
+  describe('App-Design (Gothic/Tabletop-Palette, self-contained)', () => {
+    it('traegt die App-Palette und Serifen-Schriften, ohne externe Fonts zu laden', () => {
+      const html = renderReport(makeModel());
+      // Gold-Akzent und Obsidian/Pergament aus der App-Palette (ADR 0004).
+      expect(html).toContain('--accent');
+      expect(html).toContain('#ecc157'); // Gold (dunkles Schema)
+      expect(html).toContain('#08080a'); // Obsidian (dunkles Schema)
+      expect(html).toContain('#eee3cc'); // Pergament (helles Schema)
+      // Fallback-Serifen statt Cinzel/Lora-Nachladen; kein Google-Fonts-Link.
+      expect(html).toContain('--font-heading');
+      expect(html).toMatch(/--font-body:[^;]*serif/);
+      expect(html).not.toMatch(/fonts\.googleapis|fonts\.gstatic/i);
+      expect(html).not.toMatch(/@font-face/i);
     });
   });
 
@@ -188,11 +233,43 @@ describe('project-state/renderReport', () => {
     });
   });
 
+  describe('LOC und Komplexitaet', () => {
+    it('zeigt Umfang und Komplexitaet je Modul (Zeilen, Funktionen, Summe/Durchschnitt/Max)', () => {
+      const html = renderReport(makeModel());
+      expect(html).toContain('Umfang und Komplexitaet je Modul');
+      expect(html).toContain('src/solver');
+      expect(html).toContain('900'); // Zeilen je Modul
+      expect(html).toContain('136'); // Summe der Komplexitaet je Modul
+      expect(html).toContain('3.4'); // durchschnittliche Komplexitaet
+      expect(html).toContain('21'); // hoechste Komplexitaet
+    });
+
+    it('fuehrt die komplexesten Funktionen auf, parallel zu den laengsten', () => {
+      const html = renderReport(makeModel());
+      expect(html).toContain('Komplexeste Funktionen');
+      expect(html).toContain('solve');
+      expect(html).toContain('src/solver/engine.js');
+    });
+
+    it('nennt die Gesamt-Codezeilen als Kennzahl', () => {
+      const html = renderReport(makeModel({ metrics: [{ label: 'Codezeilen gesamt', value: 1200 }] }));
+      expect(html).toContain('Codezeilen gesamt');
+      expect(html).toContain('1200');
+    });
+
+    it('meldet fehlenden Produktivcode ausdruecklich statt leerer Tabellen', () => {
+      const html = renderReport(makeModel({ moduleMetrics: [], complexFunctions: [] }));
+      expect(html).toContain('Kein Produktivcode erfasst.');
+      expect(html).toContain('Keine Funktionen erfasst.');
+    });
+  });
+
   describe('mobil-tauglich', () => {
     it('legt jede breite Tabelle in einen eigenen horizontal scrollbaren Container', () => {
       const html = renderReport(makeModel());
-      // Drei Tabellen (Gates, Abdeckung, laengste Funktionen), jede in ihrem Container.
-      expect((html.match(/class="table-scroll"/g) ?? []).length).toBe(3);
+      // Fuenf Tabellen (Gates, Umfang/Komplexitaet je Modul, Abdeckung,
+      // komplexeste Funktionen, laengste Funktionen), jede in ihrem Container.
+      expect((html.match(/class="table-scroll"/g) ?? []).length).toBe(5);
       expect(html).toContain('overflow-x: auto');
     });
 

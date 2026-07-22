@@ -79,9 +79,17 @@ Workflow mit demselben Werkzeug.
 ### Aufbau
 
 Der Berichts-Workflow (siehe [ADR 0007](0007-ci-cd-workflow.md)) baut `docs/` mit
-`actions/jekyll-build-pages`, legt den erzeugten Bericht als Wurzel-Dokument
-daneben und deployt beides als **ein** Pages-Artefakt. Der Bericht wird nicht
-committet; er existiert nur als Build-Ausgabe, analog zu `dist/`.
+`actions/jekyll-build-pages` und legt den erzeugten Bericht unter `/status`
+(`_site/status/index.html`) daneben; beides wird als **ein** Pages-Artefakt
+deployt. Der Bericht wird nicht committet; er existiert nur als Build-Ausgabe,
+analog zu `dist/`. Die Wurzel `/` trägt die committete Platzhalter-Seite
+`docs/index.html` (später die Projektseite), die Jekyll unverändert nach
+`_site/index.html` übernimmt.
+
+> **Nachtrag (2026-07-22, Issue 56):** Ursprünglich lag der Bericht an der
+> Pages-Wurzel `/`. Er ist auf die Unterseite `/status` verlegt, damit die Wurzel
+> für die entstehende Projektseite frei wird; bis dahin steht dort eine
+> Platzhalter-Seite mit Link auf `/status`. `/adr/` bleibt unberührt.
 
 ### Manueller Schritt — einmalig, durch den Maintainer
 
@@ -100,20 +108,22 @@ Einstellung reversibel.
 
 | Adresse | vorher | nachher |
 | :--- | :---: | :---: |
-| `/` | 404 | 200 (Zustandsbericht) |
+| `/` | 404 | 200 (Platzhalter, später Projektseite) |
+| `/status` | 404 | 200 (Zustandsbericht) |
 | `/adr/` | 200 | 200 |
 | `/adr/<name>.html` | 200 | 200 |
 | `/issues/` | 404 | 404 |
 
 `/issues/` war nie erreichbar und bleibt es nicht — die offenen Vorgänge
-erscheinen stattdessen im Issues-Bereich des Berichts.
+erscheinen stattdessen im Issues-Bereich des Berichts (unter `/status`).
 
 ### Konsequenzen (Auswirkungen)
 
 - **Positiv:** Der Zustandsbericht wird ohne Eingriff und ohne CI-Commit auf
   `main` veröffentlicht.
 - **Positiv:** Die heute erreichbaren ADR-Adressen bleiben unverändert bestehen;
-  die Wurzel liefert erstmals Inhalt statt 404.
+  die Wurzel liefert erstmals Inhalt (die Platzhalter-Seite) statt 404, der
+  Bericht liegt unter `/status`.
 - **Positiv:** Der bislang undokumentierte Pages-Betrieb ist damit überhaupt
   erst festgehalten und bewusst gemacht.
 - **Negativ:** Der Workflow trägt jetzt Verantwortung für einen Jekyll-Build, den
