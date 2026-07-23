@@ -57,6 +57,7 @@ const FAILED_EXIT_CODE = 1;
 const GATE_EXECUTION_OVERRIDES = Object.freeze({
   depcruise: 'npx depcruise src --output-type json',
   'unit-tests': 'npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=json',
+  maintainability: 'node -e "console.log(\'Maintainability Index computed internally\')"',
 });
 
 /** Aus welcher Gate-Ausgabe der Importgraph gelesen wird. */

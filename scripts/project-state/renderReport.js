@@ -219,6 +219,8 @@ function renderModuleTiles(moduleMetrics, coverage) {
       totalComplexity: m.totalComplexity,
       averageComplexity: m.averageComplexity,
       maxComplexity: m.maxComplexity,
+      maintainabilityIndex: m.maintainabilityIndex,
+      riskProfile: m.riskProfile,
       coverage: coverageByModule.get(m.module) ?? null,
     });
   }
