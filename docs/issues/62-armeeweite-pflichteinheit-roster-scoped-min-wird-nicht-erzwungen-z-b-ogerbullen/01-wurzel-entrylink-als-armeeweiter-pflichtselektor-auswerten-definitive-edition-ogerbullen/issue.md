@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -83,3 +83,4 @@ mit einer Ogerbullen-Einheit → kein Verstoß. Die bestehenden Tests aus #122
 - [ ] Bestehende Tests (inkl. #122) und `npm test` bleiben grün.
 
 ## Comments
+- collectScopedMinSelectors erkennt jetzt zusätzlich Wurzel-entryLinks des Katalogs: die force-/roster-scoped min-Constraint am Link samt Link-Modifiern (Standard=1 vs Ironskin Tribe=0) wird ausgewertet, Ziel per resolveEntry aufgelöst, Doppel-Melden per Target-Dedupe verhindert. Zusätzlich musste die notInstanceOf/instanceOf-Force-Auswertung in modifierEvaluator die kanonische Form scope=force childId=<forceId> erkennen (bisher nur scope=<forceId>), damit die bedingte Anhebung greift. Reproduktions-Fixture (echter Ogre-Bulls-Wurzel-entryLink) + Test ergänzt.
