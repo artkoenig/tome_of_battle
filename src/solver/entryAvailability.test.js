@@ -217,6 +217,30 @@ describe('Nicht-roster/force-scoped max (self-scoped) — vom alten Einzel-max-C
   });
 });
 
+describe('Grund-Deduplizierung: count-behaftete Regel ergibt genau einen Grund', () => {
+  // Reproduziert „Fehlermeldung mehrfach angezeigt": eine entry-max-Regel heftet ihren
+  // Bruch an *jede* betroffene Instanz (eigene selectionId). Bei erreichtem Limit tragen
+  // die vorhandenen Instanzen und der hypothetische Kandidat dieselbe wortgleiche Meldung;
+  // die Grund-Anzeige des Aushebe-Dialogs darf sie nur EINMAL führen.
+  const gnoblar = {
+    id: 'gnoblar', name: 'Gnoblars', type: 'unit', costs: [{ typeId: POINTS, value: 40 }],
+    constraints: [{ id: 'gnoblar-max', type: 'max', value: 2, field: 'selections', scope: 'force' }]
+  };
+  const system = makeSystem({ selectionEntries: [gnoblar] });
+
+  it('fasst wortgleiche Gründe mehrerer betroffener Instanzen zu einem zusammen', () => {
+    // Vorhandene Instanzen tragen — wie im echten Roster — denselben Namen wie der Eintrag.
+    const roster = makeRoster(2000, [
+      { ...selection('s-gnoblar-1', 'gnoblar'), name: 'Gnoblars' },
+      { ...selection('s-gnoblar-2', 'gnoblar'), name: 'Gnoblars' }
+    ]);
+    const { available, reasons } = availabilityOf(gnoblar, roster, system);
+
+    expect(available).toBe(false);
+    expect(renderReasons(reasons)).toEqual(['„Gnoblars" darf höchstens 2 Mal gewählt werden.']);
+  });
+});
+
 describe('Prozent-max (vom alten Einzel-max-Check verfehlt)', () => {
   const lord = {
     id: 'lord', name: 'Lord', type: 'unit', costs: [{ typeId: POINTS, value: 300 }],
