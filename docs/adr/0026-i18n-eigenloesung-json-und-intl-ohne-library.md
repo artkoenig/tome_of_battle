@@ -33,3 +33,9 @@ Entscheidung neu bewerten.
   erzwingt identische Schlüsselmengen aller Sprachdateien.
 - E2E-Test und Screenshot-Skript selektieren sprachunabhängig
   (`data-testid`/Rollen statt sichtbarer Wörter).
+- Neben den von `Intl.PluralRules` gelieferten Numeruskategorien (`_one`/`_other`
+  für DE/EN) erkennt die Nachschlagefunktion einen expliziten `_zero`-Suffix:
+  Ist `count === 0` und liegt eine `<key>_zero`-Vorlage vor, wird sie bevorzugt;
+  fehlt sie, gilt unverändert die normale `_one`/`_other`-Auswahl. So kann eine
+  Obergrenze von null („darf gar nichts") einen eigenen Satz tragen, ohne dass
+  DE/EN eine `zero`-Numeruskategorie besitzen (Issue 58).

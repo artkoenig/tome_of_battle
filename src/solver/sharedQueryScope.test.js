@@ -85,9 +85,11 @@ describe('Nicht geteilte Beschränkung (shared="false") zählt nur ihre eigene I
 
     const errors = validateRoster(roster, makeSystem({ scope: 'roster', shared: false }));
 
+    // Der Verstoß feuert überhaupt nur, wenn die number=2-Instanz mitgezählt wird
+    // (ein Maximum von 1 wäre bei korrektem Nicht-Zählen nicht verletzt); die
+    // verletzte Obergrenze steckt im `count`-Parameter.
     expect(heroMaxViolations(errors)).toHaveLength(1);
-    // Strukturierte Meldung (ADR 0026): der aktuelle Zählstand steckt im `current`-Parameter.
-    expect(heroMaxViolations(errors)[0].messageParams.current).toBe(2);
+    expect(heroMaxViolations(errors)[0].messageParams.count).toBe(1);
   });
 
   test('geschachtelte Instanzen zählen nur mit includeChildSelections', () => {

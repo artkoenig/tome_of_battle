@@ -38,3 +38,21 @@ Die bei jedem Push auf `main` neu erzeugte HTML-Seite über den Zustand des Proj
 
 Sein Veröffentlichen heißt **Veröffentlichung des Zustandsberichts** — es ist ausdrücklich kein *Deployment*, kein *Release* und erreicht keine *Production*: Diese drei Begriffe bleiben exklusiv an die Auslieferung der **Anwendung** über Vercel gebunden. Der Bericht enthält keinen Anwendungscode, hat keine Versionsnummer und kein Freigabe-Gate.
 _Avoid_: "Pages-Deployment", "Report-Release", "Doku-Production" — jede Übertragung der Auslieferungsbegriffe auf den Bericht verwässert sie.
+
+### Validierung & Fehlermeldungen
+
+**Validierungsmeldung**:
+Eine einzelne Aussage des Roster-Validators über einen Regelverstoß an der Armeeliste (z. B. ein über- oder unterschrittenes Limit). Sie trägt einen stabilen maschinellen Typ, einen Schweregrad und Korrelations-IDs (Force/Kategorie/Auswahl).
+_Avoid_: "Fehler" als pauschaler Sammelbegriff — auch Hinweise und Warnungen sind Validierungsmeldungen, nicht nur blockierende Fehler.
+
+**Schweregrad** (error / warning / info):
+Die Dringlichkeitsstufe einer Validierungsmeldung. Nur `error` blockiert das Spielen der Liste; `warning` und `info` sind rein hinweisend.
+_Avoid_: "Fehlerstufe" — der Schweregrad gilt auch für nicht-fehlerhafte Meldungen.
+
+**App-Meldung** vs. **Autor-Meldung**:
+Eine App-Meldung erzeugt die Anwendung selbst aus den Regeldaten. Der Solver liefert dafür nur einen stabilen Schlüssel plus Parameter (ADR 0026); den fertigen Satz bildet erst die Oberfläche aus der Vorlage der aktiven UI-Sprache (`src/i18n/locales/de.json` bzw. `en.json`) — es gibt also je Sprache eine frei formulierbare Vorlage, keine einzelne „deutsche Vorlage". Eine Autor-Meldung ist der wortgetreue Text eines Katalog-Autors (`modifier-error/-warning/-info`) und bleibt in seiner Katalogsprache unangetastet (siehe [ADR 0022](docs/adr/0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md)).
+_Avoid_: beide unter "Fehlertext" zusammenzufassen — nur App-Meldungen dürfen umformuliert werden.
+
+**Katalogname**:
+Ein aus den Regeldaten stammender Eigenname (Einheit, Option, Kategorie — z. B. `"Weapons"`, `"Commander"`), der in Meldungen eingebettet wird. Er wird unverändert und unübersetzt übernommen (siehe [ADR 0003](docs/adr/0003-battlescribe-domain-rules.md)); nur das sprachabhängige Satzgerüst der jeweiligen Vorlage darum herum ist frei formulierbar.
+_Avoid_: Katalognamen zu "verschönern" oder zu übersetzen.

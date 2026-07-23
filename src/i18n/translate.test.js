@@ -10,6 +10,9 @@ const catalogs = {
     'points.total': '{points} points',
     selection_one: '{count} selection',
     selection_other: '{count} selections',
+    limit_zero: 'nothing allowed',
+    limit_one: 'at most {count}',
+    limit_other: 'at most {count}',
     onlyEnglish: 'English only',
   },
   de: {
@@ -44,6 +47,21 @@ describe('translateMessage', () => {
 
   it('falls back to the "other" variant when no count is supplied', () => {
     expect(translateMessage(catalogs, 'de', 'selection', {})).toBe('{count} Auswahlen');
+  });
+
+  it('prefers an explicit "zero" variant for a count of exactly zero', () => {
+    expect(translateMessage(catalogs, 'en', 'limit', { count: 0 })).toBe('nothing allowed');
+  });
+
+  it('does not use the "zero" variant for non-zero counts', () => {
+    expect(translateMessage(catalogs, 'en', 'limit', { count: 1 })).toBe('at most 1');
+    expect(translateMessage(catalogs, 'en', 'limit', { count: 2 })).toBe('at most 2');
+  });
+
+  it('falls back to the ordinary plural rule when no "zero" variant exists', () => {
+    // The German fixture omits `selection_zero`, so a count of zero must not
+    // break — it stays on the regular "other" variant (Intl has no "zero").
+    expect(translateMessage(catalogs, 'de', 'selection', { count: 0 })).toBe('0 Auswahlen');
   });
 
   it('formats a numeric parameter for the active language', () => {

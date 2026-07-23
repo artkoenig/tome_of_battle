@@ -17,31 +17,48 @@ describe('formatValidationError', () => {
     expect(formatValidationError(undefined, t)).toBe('');
   });
 
-  const categoryMax = (count, current) => ({
+  const categoryMax = count => ({
     type: 'category-max',
     messageKey: ValidationMessageKey.CATEGORY_MAX,
-    messageParams: { count, categoryName: 'Lords', forceName: 'Army', current }
+    messageParams: { count, categoryName: 'Lords', forceName: 'Army' }
   });
 
   it('bildet dieselbe Meldung numerus-korrekt in Singular und Plural (Deutsch)', () => {
-    expect(formatValidationError(categoryMax(1, 2), t))
-      .toBe('Maximal 1 Auswahl für "Lords" in Army erlaubt (aktuell: 2).');
-    expect(formatValidationError(categoryMax(3, 5), t))
-      .toBe('Maximal 3 Auswahlen für "Lords" in Army erlaubt (aktuell: 5).');
+    expect(formatValidationError(categoryMax(1), t))
+      .toBe('Die Armee darf höchstens eine Auswahl aus „Lords" treffen.');
+    expect(formatValidationError(categoryMax(3), t))
+      .toBe('Die Armee darf höchstens 3 Auswahlen aus „Lords" treffen.');
   });
 
   it('bildet dieselbe Meldung numerus-korrekt in Singular und Plural (Englisch)', () => {
     setActiveLanguage('en');
-    expect(formatValidationError(categoryMax(1, 2), t))
-      .toBe('At most 1 selection allowed for "Lords" in Army (currently: 2).');
-    expect(formatValidationError(categoryMax(3, 5), t))
-      .toBe('At most 3 selections allowed for "Lords" in Army (currently: 5).');
+    expect(formatValidationError(categoryMax(1), t))
+      .toBe('The army may take at most one selection from "Lords".');
+    expect(formatValidationError(categoryMax(3), t))
+      .toBe('The army may take at most 3 selections from "Lords".');
+  });
+
+  const groupCountMax = count => ({
+    type: 'group-count-max',
+    messageKey: ValidationMessageKey.GROUP_COUNT_MAX,
+    messageParams: { count, groupName: 'Weapons', selectionName: 'Commander' }
+  });
+
+  it('wählt bei einer Obergrenze von null die eigene "keine"-Vorlage statt der Plural-Vorlage (Deutsch)', () => {
+    expect(formatValidationError(groupCountMax(0), t))
+      .toBe('Commander darf keine Auswahl aus „Weapons" treffen.');
+  });
+
+  it('wählt bei einer Obergrenze von null die eigene "none"-Vorlage statt der Plural-Vorlage (Englisch)', () => {
+    setActiveLanguage('en');
+    expect(formatValidationError(groupCountMax(0), t))
+      .toBe('Commander can\'t take anything from "Weapons".');
   });
 
   const percentMax = unitLabel => ({
     type: 'entry-percent-max',
     messageKey: ValidationMessageKey.ENTRY_PERCENT_MAX,
-    messageParams: { selectionName: 'Sword', percent: 25, threshold: 10, actual: 12, unitLabel }
+    messageParams: { selectionName: 'Sword', percent: 25, unitLabel }
   });
 
   it('setzt das Katalog-Kostenlabel als Bezugsgröße ein, wenn eines geliefert ist (Pass-through)', () => {
@@ -52,11 +69,5 @@ describe('formatValidationError', () => {
   it('fällt ohne Kostenlabel auf das übersetzte Auswahl-Substantiv zurück', () => {
     expect(formatValidationError(percentMax(undefined), t))
       .toContain('der Auswahlen ausmachen');
-  });
-
-  it('kappt den technischen Zählstand-Zusatz für den Aushebe-Dialog', () => {
-    const rendered = formatValidationError(categoryMax(1, 2), t, { omitCurrentCount: true });
-    expect(rendered).toBe('Maximal 1 Auswahl für "Lords" in Army erlaubt.');
-    expect(rendered).not.toContain('aktuell');
   });
 });
