@@ -253,12 +253,12 @@ function renderModuleTiles(moduleMetrics, coverage) {
 
   const introHtml = [
     '<div class="module-metrics-intro">',
-    '<p><strong>Metrics Overview:</strong> The <strong>Complexity vial</strong> visualizes the Software Improvement Group (SIG) Risk Profile based on the cyclomatic complexity (CC) of all functions in the module, weighted by lines of code (LOC):</p>',
+    '<p><strong>Metrics Overview:</strong> The <strong>Complexity vial</strong> visualizes the Software Improvement Group (SIG) Risk Profile based on cyclomatic complexity weighted by lines of code (LOC):</p>',
     '<ul class="metrics-legend-list">',
-    '<li><span class="badge-dot dot-low"></span> <strong>Low Risk (CC 1–5):</strong> Simple, easily maintainable code</li>',
-    '<li><span class="badge-dot dot-moderate"></span> <strong>Moderate (CC 6–10):</strong> Moderate complexity</li>',
-    '<li><span class="badge-dot dot-high"></span> <strong>High Risk (CC 11–25):</strong> High complexity</li>',
-    '<li><span class="badge-dot dot-very-high"></span> <strong>Very High (&gt;25):</strong> Very high complexity (refactoring candidate)</li>',
+    '<li><span class="badge-dot dot-low"></span> <strong>Low Risk:</strong> Simple, easily maintainable code</li>',
+    '<li><span class="badge-dot dot-moderate"></span> <strong>Moderate Risk:</strong> Moderate complexity</li>',
+    '<li><span class="badge-dot dot-high"></span> <strong>High Risk:</strong> High complexity</li>',
+    '<li><span class="badge-dot dot-very-high"></span> <strong>Very High Risk:</strong> Very high complexity (refactoring candidate)</li>',
     '<li><strong>MI:</strong> Maintainability Index (0–100)</li>',
     '<li><strong>Coverage:</strong> Test statement coverage</li>',
     '</ul>',
