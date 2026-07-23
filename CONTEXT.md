@@ -56,3 +56,7 @@ _Avoid_: beide unter "Fehlertext" zusammenzufassen — nur App-Meldungen dürfen
 **Katalogname**:
 Ein aus den Regeldaten stammender Eigenname (Einheit, Option, Kategorie — z. B. `"Weapons"`, `"Commander"`), der in Meldungen eingebettet wird. Er wird unverändert und unübersetzt übernommen (siehe [ADR 0003](docs/adr/0003-battlescribe-domain-rules.md)); nur das sprachabhängige Satzgerüst der jeweiligen Vorlage darum herum ist frei formulierbar.
 _Avoid_: Katalognamen zu "verschönern" oder zu übersetzen.
+
+**Ursache** (einer Validierungsmeldung):
+Die auslösende Auswahl hinter einer App-Meldung, deren verletzter Grenzwert **bedingt** verändert wurde — also durch einen Modifier mit erfüllter Bedingung, der den Wert erst zum verletzten Wert gemacht hat (z. B. „weil `"Battle Standard Bearer"` gewählt ist → Waffen-Max = 0"). Eine Meldung kann mehrere Ursachen tragen (mehrere zusammenwirkende bedingte Modifier). Der Solver liefert sie sprachfrei als optionales Feld am Fehlerobjekt (benennbare Auswahl als Katalogname/-ID), die Oberfläche zeigt sie als „Ursachen"-Block (siehe [ADR 0027](docs/adr/0027-validierungs-ursachen-am-fehlerobjekt.md)).
+_Avoid_: reine Basiswerte oder unbedingte Modifier als "Ursache" zu bezeichnen — die sind Teil der Grundregel, kein „weil du X getan hast"; und nicht sauber auf eine benennbare Auswahl auflösbare Bedingungen als Ursache anzuzeigen.
