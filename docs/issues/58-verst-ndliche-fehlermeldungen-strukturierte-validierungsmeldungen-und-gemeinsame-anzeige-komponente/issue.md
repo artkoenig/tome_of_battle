@@ -45,7 +45,11 @@ Sprachdatei-Änderung plus Anpassung der Tests, die auf dem Wortlaut prüfen.
 
 - Meldungsschlüssel und Parameter bleiben unverändert.
 - Numerus (`_one`/`_other`) bleibt erhalten und wird für „eine Auswahl / zwei
-  Auswahlen" genutzt.
+  Auswahlen" genutzt. **Zusätzlich** wird eine explizite `_zero`-Variante
+  eingeführt (siehe Technical Decisions), weil das Limit 0 eine Sonderaussage
+  braucht („… keine Auswahl … treffen"), aber `0` und `2` in `Intl.PluralRules`
+  beide auf `other` fallen und eine `_other`-Vorlage daher nicht beides leisten
+  kann.
 - Katalog-abgeleitete Namen (`groupName`, `selectionName`, `categoryName`,
   Kostenart-`unitLabel`) bleiben unveränderter Pass-through (ADR 0003).
 
@@ -79,8 +83,8 @@ Gilt für **App-Meldungen** (die `validation.*`-Vorlagen). Autor-Meldungen
 | `categoryMax` (Armee) | `Die Armee darf höchstens eine Auswahl aus „Special" treffen.` |
 | `categoryMin` (Armee) | `Die Armee braucht mindestens zwei Auswahlen aus „Core".` |
 | `forceSelectorMin` | `Die Armee braucht noch einen „General".` |
-| `entryMax` | `Commander darf „Hand Weapon" höchstens einmal wählen.` (= 0: `… darf „Shield" nicht wählen.`) |
-| `entryMin` | `Commander braucht mindestens eine „Hand Weapon".` |
+| `entryMax` | `„Hand Weapon" darf höchstens einmal gewählt werden.` (= 0: `„Shield" kann nicht gewählt werden.`) |
+| `entryMin` | `„Hand Weapon" muss mindestens einmal gewählt werden.` |
 | `rosterLimit` | `Die Liste hat 111 Punkte – erlaubt sind 100.` |
 | `groupPointsMax` | `General darf für „Magic Items" höchstens 100 Punkte ausgeben.` |
 | `entryPercentMax` / `groupPercentMax` | `„Handlanger" dürfen höchstens 50 % der Punkte ausmachen.` |
@@ -101,7 +105,7 @@ verbatim; generic count word is „selection(s)".
 | `categoryMin` (army) | `The army needs at least two selections from "Core".` |
 | `forceSelectorMin` | `The army still needs a "General".` |
 | `entryMax` | `"Hand Weapon" may only be taken once.` (= 0: `"Shield" can't be taken.`) |
-| `entryMin` | `Commander needs at least one "Hand Weapon".` |
+| `entryMin` | `"Hand Weapon" must be taken at least once.` |
 | `rosterLimit` | `The list has 111 points – only 100 are allowed.` |
 | `groupPointsMax` | `General may spend at most 100 points on "Magic Items".` |
 | `entryPercentMax` / `groupPercentMax` | `"Handlers" may make up at most 50% of the points.` |
@@ -138,6 +142,18 @@ verbatim; generic count word is „selection(s)".
   keine Verhaltensänderung außer dem entfallenden Zusatz.
 - **Numerus.** Die pluralisierten Schlüssel behalten `_one`/`_other`; der neue
   Ton nutzt sie („eine Auswahl" / „… Auswahlen").
+- **Explizites `_zero` (bewusste Scope-Erweiterung).** Damit das Limit 0 seine
+  Sonderaussage bekommt („… keine Auswahl … treffen" / „… can't take anything
+  …"), obwohl `0` in `Intl.PluralRules` zu `other` zählt, wird die
+  Meldungsauswahl minimal erweitert: `selectMessageKey` (`src/i18n/translate.js`)
+  bevorzugt bei `count === 0` eine vorhandene `<key>_zero`-Vorlage (i18next-
+  Muster). Betrifft die max-Familien (`groupCountMax`, `categoryMax`, `entryMax`)
+  je DE und EN. Das ist die einzige zugelassene Mechanik-Änderung; die
+  bestehende `_one`/`_other`-Logik bleibt unberührt, und ohne `_zero`-Vorlage
+  verhält sich alles wie bisher (abwärtskompatibel).
+- **Eintrags-Meldungen ohne Besitzernamen.** `entryMin`/`entryMax` tragen keinen
+  Besitzer-Parameter (nur `{selectionName}`), daher wird ohne Einheitennamen um
+  den Eintragsnamen herum formuliert (DE wie EN) — kein „Commander …" davor.
 - **Doku-Nachzug.** Die `CONTEXT.md`-Glossareinträge zu Validierungsmeldungen
   werden auf die i18n-Realität nachgezogen (Meldungstexte liegen als Vorlage je
   Sprache in `de.json`/`en.json`, nicht als „deutsche Vorlage").
@@ -158,7 +174,8 @@ verbatim; generic count word is „selection(s)".
 
 - Jegliche Änderung an Validator-Logik (Menge/Wahrheit der Verstöße).
 - Änderungen an Mechanik, die bereits existiert: strukturierte Fehler,
-  `formatValidationError`, i18n-Infrastruktur, ADR 0026.
+  `formatValidationError`, i18n-Infrastruktur, ADR 0026. **Ausnahme:** die eine
+  oben beschriebene `_zero`-Erweiterung in `selectMessageKey`.
 - Umformulieren/Übersetzen von Autor-Meldungen (`modifier-*`) und Katalognamen.
 - Handlungshinweise / Remediation.
 - Eine zusätzliche „einheitliche Schweregrad-Komponente" — die Renderstellen
