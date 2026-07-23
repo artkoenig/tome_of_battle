@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -184,15 +184,16 @@ verbatim; generic count word is „selection(s)".
 - Weitere Sprachen über DE/EN hinaus.
 
 ## Acceptance Criteria
-- [ ] Alle `validation.*`-Vorlagen in `de.json` und `en.json` sind im
+- [x] Alle `validation.*`-Vorlagen in `de.json` und `en.json` sind im
       verbindlichen Ton umformuliert; die Screenshot-Meldung erscheint als
       `Commander darf keine Auswahl aus „Weapons" treffen.` (DE) bzw.
       `Commander can't take anything from "Weapons".` (EN).
-- [ ] Meldungsschlüssel, Parameter und Numerus (`_one`/`_other`) unverändert;
+- [x] Meldungsschlüssel, Parameter und Numerus (`_one`/`_other`) unverändert;
       Locale-Parität und Schlüssel-Abdeckung grün.
-- [ ] Keine Änderung an Validator-Logik, Formatter, Komponenten oder i18n-
+- [x] Keine Änderung an Validator-Logik, Formatter, Komponenten oder i18n-
       Mechanik; Autor-Meldungen und Katalognamen unangetastet.
-- [ ] Wortlaut-abhängige Tests auf die neuen Sätze angehoben; volle Suite grün.
-- [ ] `CONTEXT.md`-Glossar auf die i18n-Realität nachgezogen.
+- [x] Wortlaut-abhängige Tests auf die neuen Sätze angehoben; volle Suite grün.
+- [x] `CONTEXT.md`-Glossar auf die i18n-Realität nachgezogen.
 
 ## Comments
+- Abgeschlossen. Umsetzung lag im Wortlaut: alle validation.*-Vorlagen in de.json+en.json auf Alltagssprache umgeschrieben (Slice 04), explizites _zero fuer Limit-0-Sonderaussagen, toter (aktuell:N)-Kappungspfad entfernt. Cleanup: unrenderte messageParams-Felder (current/threshold/actual) aus dem Validator entfernt. Vier-Achsen-Pruefung gruen (Standards/Spec/Tests/Docs), Suite 1446 Tests + E2E gruen. Mechanik (strukturierte Fehler, formatValidationError, i18n) kam bereits mit PR #114; Slices 01-03 daher superseded. Version 1.7.0 (minor, feature).
