@@ -692,6 +692,19 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 > aggregiert** ausgelesen werden — nicht isoliert pro Force. Sonst schlagen dynamische Limits fehl,
 > sobald dieselbe Kategorie in mehreren Detachments vorkommt.
 
+> **`instanceOf`/`notInstanceOf` gegen eine `forceEntry` — zwei Kodierungen.** Eine Condition, die
+> prüft „ist das Kontingent eine Instanz dieses Detachments" (z. B. eine armeespezifische Variante),
+> kann die `forceEntry`-Id auf **zwei** Wegen benennen, und beide kommen real vor:
+> - **Selbst-gegatet:** die Id steht direkt in `scope` (`scope="<forceId>"`), `childId` bleibt leer
+>   — das Idiom des „eigenen Punktelimits" aus [§5.6](#56-force-entries-detachments).
+> - **Kanonisch:** `scope="force"` trägt das Literal-Keyword, die Id steht in `childId`
+>   (`scope="force" childId="<forceId>"`) — so gatet die „Definitive Edition" z. B. ihre
+>   Standard-vs.-Ironskin-Tribe-Regeln (`notInstanceOf` Ironskin Tribe).
+>
+> Beide bedeuten dasselbe. Die Auswertung erkennt eine `forceEntry`-Instanz-Prüfung daran, dass
+> `scope` **oder** `childId` auf eine reale `forceEntry`-Id auflöst (das Literal `"force"` tut das
+> nicht) — sonst fiele die kanonische Form fälschlich in die selektionsweise Zählung zurück.
+
 #### `conditionGroup` — Verknüpfung mehrerer Bedingungen
 
 Gruppiert Bedingungen mit `type="and"` oder `type="or"` zu komplexer Logik.
@@ -944,6 +957,31 @@ Auswahl-, Anzeige- und Recruit-/Autofill-Entscheidungen (Radio/Checkbox/Binär/M
 „Max/Min: N", die Count-Klammerungen, `isOptionRosterUnique`, die Solver-Min-Sites) leiten sich aus
 diesen **effektiven** Werten ab — kein roher Constraint-Wert steuert mehr eine dieser Entscheidungen
 (`src/components/editor/OptionGroup.jsx`, `SelectionConfigurator.jsx`, `AutoFillSuggestions.jsx`).
+
+### 9.9 Armeeweite Pflichteinheit (`min`-Constraint auf einem Wurzeleintrag)
+
+**Problem:** Eine Armee **muss** mindestens eine Einheit eines bestimmten Typs enthalten (klassisch
+Ogre Kingdoms: „mindestens eine Ogerbullen-Einheit"). Die Pflicht gilt, auch wenn die Einheit im
+Roster **ganz fehlt** — die eintragsweise Constraint-Prüfung sieht aber nur Auswahlen, die bereits
+liegen, und würde eine komplett fehlende Pflichteinheit übersehen.
+
+**Lösung:** Ein **Wurzeleintrag des Katalogs** trägt einen `min`-Constraint mit `scope="roster"`
+(armeeweit, über alle Detachments zusammen) oder `scope="force"` (pro Detachment). Zwei Kodierungen
+kommen real vor und meinen dasselbe:
+
+- **Als `selectionEntry`:** der Constraint hängt direkt am Wurzel-`selectionEntry` (alter
+  `whfb6`/ergofarg-Satz: der „Bulls"-Eintrag trägt `min scope="roster" value="1"`).
+- **Als `entryLink`:** der Katalog referenziert die geteilte Einheit als Wurzel-`entryLink`, und der
+  Constraint hängt **am Link** — Basis `min="0"`, per Link-`modifier` (gegatet auf die Armeevariante,
+  siehe [§7.7](#77-modifier-condition-condition-group-repeat)) auf 1 angehoben. So codiert die
+  „Definitive Edition" die Ogerbullen-Pflicht (Standard = 1, Ironskin Tribe = 0).
+
+**Auswertung:** Beide Wurzelformen — `selectionEntry` **und** `entryLink` — werden eingesammelt und
+gegen die armeeweite bzw. kontingentweite Zählung geprüft; fehlt die Zieleinheit ganz, entsteht ein
+blockierender Verstoß (`roster-selector-min` bzw. `force-selector-min`). Bei der `entryLink`-Form
+werden die **Constraint und die Modifier des Links** ausgewertet (nicht die des Ziels), damit die
+bedingte Anhebung greift; das Ziel wird nur zur Namensauflösung aufgelöst. Führte ein Katalog
+dieselbe Pflicht in beiden Formen, wird sie über die Ziel-Id entdoppelt (genau ein Verstoß).
 
 ---
 

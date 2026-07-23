@@ -109,3 +109,85 @@ describe('armeeweiter Pflicht-entryLink (Ogre Bulls, Definitive Edition, Issue 6
     expect(bullsErrors(errors)).toHaveLength(1);
   });
 });
+
+// Der echte Definitive-Edition-Auszug oben deckt nur den **force**-scoped Pfad ab. Die
+// beiden vom Kollektor generisch mitbedienten Fälle — ein **roster**-scoped Wurzel-entryLink
+// und das Dedupe gegen eine doppelt (als selectionEntry UND entryLink) codierte Pflicht —
+// treten in diesem Katalog nicht auf und werden hier an minimalen, synthetischen Systemen
+// geprüft (gleiches Muster wie rosterValidator.mandatoryRosterSelector.test.js).
+const ROSTER_SELECTOR_MIN = 'roster-selector-min';
+const CORE_CATEGORY = 'core';
+const SYNTH_FORCE_ENTRY_ID = 'fe-standard';
+const SYNTH_CATALOGUE_ID = 'cat-synth';
+
+const rosterScopedMin = (id, value) => ({ id, type: 'min', value, scope: 'roster', field: 'selections' });
+
+const synthForceEntries = [{
+  id: SYNTH_FORCE_ENTRY_ID, name: 'Standard',
+  categoryLinks: [{ id: 'cl-core', name: 'Core', targetId: CORE_CATEGORY }]
+}];
+
+const buildSynthSystem = ({ selectionEntries = [], entryLinks = [] }) => ({
+  id: 'sys-synth',
+  costTypes: [{ id: POINTS, name: 'pts' }],
+  categoryEntries: [{ id: CORE_CATEGORY, name: 'Core' }],
+  forceEntries: synthForceEntries,
+  catalogues: [{ id: SYNTH_CATALOGUE_ID, name: 'Synthetic', selectionEntries, entryLinks }]
+});
+
+const buildSynthRoster = (selections) => ({
+  name: 'Synthetic Roster', costLimit: 2000, costLimitType: POINTS, catalogueId: SYNTH_CATALOGUE_ID,
+  forces: [{ id: 'f1', forceEntryId: SYNTH_FORCE_ENTRY_ID, catalogueId: SYNTH_CATALOGUE_ID, selections }]
+});
+
+const rosterSelectorErrors = errors => errors.filter(e => e.type === ROSTER_SELECTOR_MIN);
+
+describe('roster-scoped Wurzel-entryLink als armeeweiter Pflichtselektor (AC1, roster-Pfad)', () => {
+  // Zieleinheit als geteilter selectionEntry (ohne eigene scoped-min-Constraint) plus ein
+  // Wurzel-entryLink, der die roster-scoped min=1 trägt — das entryLink-Pendant zum
+  // selectionEntry-Muster aus Issue 62/#122.
+  const buildRosterLinkSystem = () => buildSynthSystem({
+    selectionEntries: [
+      { id: 'bulls-target', name: 'Bulls', type: 'unit', hidden: false, categoryLinks: [{ targetId: CORE_CATEGORY, primary: true }] }
+    ],
+    entryLinks: [
+      { id: 'link-bulls', name: 'Bulls', type: 'selectionEntry', targetId: 'bulls-target', constraints: [rosterScopedMin('c-link-min', 1)] }
+    ]
+  });
+
+  it('meldet den Verstoß armeeweit (ohne forceId), wenn die verlinkte Pflichteinheit fehlt', () => {
+    const errors = rosterSelectorErrors(validateRoster(buildSynthRoster([]), buildRosterLinkSystem()));
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0].severity).toBe('error');
+    expect(errors[0].forceId).toBeUndefined();
+    expect(errors[0].messageParams.entryName).toBe('Bulls');
+  });
+
+  it('löscht den Verstoß, sobald eine über den Link gewählte Einheit im Roster liegt', () => {
+    const selection = { id: 's-bulls', entryLinkId: 'link-bulls', number: 1, selections: [] };
+    const errors = rosterSelectorErrors(validateRoster(buildSynthRoster([selection]), buildRosterLinkSystem()));
+
+    expect(errors).toHaveLength(0);
+  });
+});
+
+describe('Dedupe gegen doppelt codierte Pflicht (AC4, selectionEntry UND entryLink)', () => {
+  // Derselbe Pflicht-Gegenstand (Ziel-Id 'bulls') ist zugleich als Wurzel-selectionEntry mit
+  // roster-min und als Wurzel-entryLink mit roster-min codiert. dedupeByTarget muss das auf
+  // genau einen Verstoß reduzieren (die selectionEntry-Form, zuerst gelistet, gewinnt).
+  const buildDualEncodedSystem = () => buildSynthSystem({
+    selectionEntries: [
+      { id: 'bulls', name: 'Bulls', type: 'unit', hidden: false, categoryLinks: [{ targetId: CORE_CATEGORY, primary: true }], constraints: [rosterScopedMin('c-se-min', 1)] }
+    ],
+    entryLinks: [
+      { id: 'link-bulls', name: 'Bulls', type: 'selectionEntry', targetId: 'bulls', constraints: [rosterScopedMin('c-link-min', 1)] }
+    ]
+  });
+
+  it('erzeugt genau einen Verstoß statt zweier', () => {
+    const errors = rosterSelectorErrors(validateRoster(buildSynthRoster([]), buildDualEncodedSystem()));
+
+    expect(errors).toHaveLength(1);
+  });
+});
