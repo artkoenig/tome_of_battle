@@ -77,8 +77,8 @@ describe('Sperr-Klassifikation des Validators — Driftschutz (ADR-0022)', () =>
     'entry-percent-max', 'group-percent-max', 'modifier-error'
   ];
   const NON_BLOCKING = [
-    'roster-limit', 'force-roster-limit', 'force-selector-min', 'category-min',
-    'entry-min', 'entry-percent-min', 'group-count-min', 'group-points-min',
+    'roster-limit', 'force-roster-limit', 'force-selector-min', 'roster-selector-min',
+    'category-min', 'entry-min', 'entry-percent-min', 'group-count-min', 'group-points-min',
     'group-percent-min', 'unresolved-entry', 'modifier-warning', 'modifier-info'
   ];
 

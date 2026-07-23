@@ -8,6 +8,7 @@
   "validation.selectionsUnit": "selections",
   "validation.rosterLimit": "The list has {current} {unit} – only {limit} are allowed.",
   "validation.forceSelectorMin": "The army still needs a \"{entryName}\".",
+  "validation.rosterSelectorMin": "The army still needs a \"{entryName}\".",
   "validation.forceRosterLimit": "\"{forceName}\" needs a points limit of at least {limit}.",
   "validation.categoryMin_one": "The army needs at least one selection from \"{categoryName}\".",
   "validation.categoryMin_other": "The army needs at least {count} selections from \"{categoryName}\".",

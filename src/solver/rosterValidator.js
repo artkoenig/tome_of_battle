@@ -9,7 +9,7 @@ import {
 import { childSelectionsOf, countSelections, countSelectionsInSubtree } from './rosterTree.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
-import { collectForceScopedMinSelectors } from './armyWideSelectors.js';
+import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from './armyWideSelectors.js';
 import { getInheritedCategoryMaxSource } from './systemQuirks.js';
 import { ValidationMessageKey } from './validationMessages.js';
 import '../types.js';
@@ -27,6 +27,7 @@ export const VIOLATION_BLOCKS_ADD_AVAILABILITY = Object.freeze({
   'roster-limit': false,
   'force-roster-limit': false,
   'force-selector-min': false,
+  'roster-selector-min': false,
   'category-min': false,
   'category-max': true,
   'entry-min': false,
@@ -127,6 +128,7 @@ export function validateRoster(roster, system) {
   const counts = computeRosterCounts(roster, system);
 
   checkRosterCostLimit(roster, system, errors);
+  checkMandatoryRosterSelectors({ roster, system, counts, errors });
 
   roster.forces.forEach(force => {
     const forceDef = findForceEntryById(system, force.forceEntryId);
@@ -267,6 +269,58 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
         ...withCauses(causes)
       });
     }
+  });
+}
+
+/**
+ * Prüft armeeweite Pflichtauswahlen mit **roster**-scoped `min`-Constraint (z. B. die
+ * Ogre-Kingdoms-„Bulls": „mindestens eine Bullen-Einheit im ganzen Roster"). Anders als
+ * die force-scoped Variante zählt eine solche Pflicht über **alle** Kontingente zusammen
+ * (roster-weite Selektions-Zähler statt kontingentweiter), gilt also fürs ganze Roster und
+ * wird **einmal pro Roster** gemeldet — ohne `forceId`.
+ *
+ * Wie {@link checkMandatoryForceSelectors} nur der „gar nicht vorhanden"-Fall (Count == 0);
+ * ein vorhandener, aber zu geringer Count bleibt der eintragsweisen Prüfung überlassen, damit
+ * kein Fehler doppelt erscheint. Versteckte Selektoren (`isSelectionEntryHidden`) werden
+ * übersprungen. Ein Eintrag wird je Katalog nur einmal betrachtet, damit ein Roster mit
+ * mehreren Kontingenten desselben Katalogs die fehlende Pflicht nicht mehrfach meldet.
+ * @param {{ roster: import('../types.js').Roster, system: Object, counts: Object,
+ *   errors: import('../types.js').ValidationError[] }} context
+ */
+function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
+  const { selectionCounts, categoryCounts } = counts;
+  const consideredSelectors = new Set();
+
+  roster.forces.forEach(force => {
+    const catalogueId = force.catalogueId || roster.catalogueId;
+    const forceCategoryCounts = categoryCounts[force.id] || {};
+
+    collectRosterScopedMinSelectors(system, catalogueId).forEach(({ entry, minConstraint }) => {
+      const selectorKey = `${catalogueId}::${entry.id}`;
+      if (consideredSelectors.has(selectorKey)) return;
+
+      const visibilityContext = { system, roster, selectionCounts, forceCategoryCounts, force, catalogueId };
+      if (isSelectionEntryHidden(entry, visibilityContext)) return;
+      consideredSelectors.add(selectorKey);
+
+      const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: catalogueId };
+      const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
+      if (minValue <= 0) return;
+
+      const armyWideCount = Math.max(
+        selectionCounts[entry.id] || 0,
+        entry.targetId ? selectionCounts[entry.targetId] || 0 : 0
+      );
+      if (armyWideCount === 0) {
+        pushViolation(errors, {
+          type: 'roster-selector-min',
+          messageKey: ValidationMessageKey.ROSTER_SELECTOR_MIN,
+          messageParams: { entryName: entry.name, count: minValue },
+          severity: ValidationSeverity.ERROR,
+          ...withCauses(causes)
+        });
+      }
+    });
   });
 }
 
