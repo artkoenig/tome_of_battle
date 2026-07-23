@@ -110,7 +110,7 @@ export default function CategoryUnitAdder({
                   {isBlocked && <span className="text-danger text-micro popover-item-unavailable">{t('editor.adder.unavailable')}</span>}
                   {isBlocked && reasons.map((reason, idx) => (
                     <span key={idx} className="text-danger text-micro popover-item-reason">
-                      {formatValidationError(reason, t, { omitCurrentCount: true })}
+                      {formatValidationError(reason, t)}
                     </span>
                   ))}
                 </span>

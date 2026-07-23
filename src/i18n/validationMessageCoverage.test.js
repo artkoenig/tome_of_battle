@@ -2,7 +2,11 @@ import { describe, it, expect } from 'vitest';
 import de from './locales/de.json';
 import en from './locales/en.json';
 import { SUPPORTED_LANGUAGES } from './constants';
-import { ValidationMessageKey, PLURALIZED_VALIDATION_MESSAGE_KEYS } from '../solver/validationMessages';
+import {
+  ValidationMessageKey,
+  PLURALIZED_VALIDATION_MESSAGE_KEYS,
+  ZERO_AWARE_VALIDATION_MESSAGE_KEYS
+} from '../solver/validationMessages';
 
 // Driftschutz: Jeder Meldungsschlüssel, den der Solver erzeugen kann, muss in jeder
 // Sprachdatei eine Vorlage haben — sonst zeigte die Oberfläche den nackten Schlüssel.
@@ -11,6 +15,7 @@ import { ValidationMessageKey, PLURALIZED_VALIDATION_MESSAGE_KEYS } from '../sol
 
 const catalogs = { de, en };
 const pluralized = new Set(PLURALIZED_VALIDATION_MESSAGE_KEYS);
+const zeroAware = new Set(ZERO_AWARE_VALIDATION_MESSAGE_KEYS);
 
 describe('Validierungsmeldungen: Locale-Deckung', () => {
   for (const language of SUPPORTED_LANGUAGES) {
@@ -25,6 +30,12 @@ describe('Validierungsmeldungen: Locale-Deckung', () => {
       } else {
         it(`"${language}" liefert eine Vorlage für ${key}`, () => {
           expect(catalog[key], `${key} fehlt in ${language}`).toBeTypeOf('string');
+        });
+      }
+
+      if (zeroAware.has(key)) {
+        it(`"${language}" liefert die Nullgrenzen-Variante für ${key}`, () => {
+          expect(catalog[`${key}_zero`], `${key}_zero fehlt in ${language}`).toBeTypeOf('string');
         });
       }
     }

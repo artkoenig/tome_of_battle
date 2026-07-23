@@ -94,13 +94,14 @@ Umsetzung (reine Solver-Funktion `getEntryAddAvailability`):
   Pass-through, ohne Übersetzungs-/Parsing-Schicht). Trägt ein gesperrter Eintrag
   einen Autoren-`error`-Grund, zeigt der Dialog nur diesen und unterdrückt die
   redundante mechanische `-max`-Meldung. Führt eine mechanische Meldung den Grund
-  (kein Autoren-`error` vorhanden), so bleibt die Obergrenze sichtbar („… erlaubt
-  maximal N Auswahlen"), doch der rein technische **hypothetische Zählstand
-  „(aktuell: N)"** wird auf diesem Anzeigepfad entfernt (`stripCurrentCountClause`
-  in `formatValidationError`, Option `omitCurrentCount`) — er ist im Dialog ohne
-  Nutzwert, die Grenze selbst genügt. Die Validator-Meldung bleibt davon
-  unberührt: das Validierungs-Panel führt den Zählstand unverändert weiter (die
-  Kappung ist reine Dialog-Darstellung, keine Änderung an den Validator-Meldungen).
+  (kein Autoren-`error` vorhanden), so bleibt sie im verständlichen Ton sichtbar
+  („Commander darf keine Auswahl aus „Weapons" treffen."). Der frühere technische
+  Zählstand-Zusatz „(aktuell: N)" ist mit der verständlichen Neufassung der
+  `validation.*`-Vorlagen (Issue 58) ganz entfallen; Panel und Aushebe-Dialog
+  zeigen damit denselben Satz. Die vormalige sprachneutrale Kappung
+  (`stripCurrentCountClause` / Option `omitCurrentCount` in `formatValidationError`,
+  Schlüssel `validation.currentCountLead`) wurde als toter Code entfernt — es gibt
+  keinen Zusatz mehr zu kappen.
 
 Der frühere `isMaxedOut`-Einzelpfad im Dialog entfällt; die Verfügbarkeit hat
 danach genau einen Codepfad.

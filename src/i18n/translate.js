@@ -12,6 +12,15 @@ const COUNT_PARAM = 'count';
 // key is pluralized and the safe fallback when no more specific variant exists.
 const PLURAL_OTHER_SUFFIX = '_other';
 
+// Suffix of the explicit "zero" variant. The shipped languages have no "zero"
+// plural category, so `Intl.PluralRules` never selects one; an exact count of
+// zero is matched explicitly here (i18next-style) so a key can phrase the
+// "none" case ("takes nothing") differently from its general plural ("at most
+// N"). The variant is optional: absent it, selection falls back to the ordinary
+// `_one`/`_other` rule, keeping every existing key unchanged.
+const PLURAL_ZERO_SUFFIX = '_zero';
+const EXPLICIT_ZERO_COUNT = 0;
+
 /**
  * Resolves a key's template string, preferring the active language and falling
  * back to English (ADR 0026). Returns `undefined` when the key exists in
@@ -39,7 +48,8 @@ function hasTemplate(catalogs, language, key) {
  * Picks the concrete catalog key to render. Plain keys are used verbatim; a key
  * that has a `<key>_other` variant is pluralized via `Intl.PluralRules` against
  * the `count` parameter, falling back to the "other" variant when a more
- * specific one is absent or no count was supplied.
+ * specific one is absent or no count was supplied. A count of exactly zero
+ * prefers an explicit `<key>_zero` variant when one exists (see above).
  */
 function selectMessageKey(catalogs, language, key, params) {
   const isPluralKey = hasTemplate(catalogs, language, `${key}${PLURAL_OTHER_SUFFIX}`);
@@ -47,6 +57,11 @@ function selectMessageKey(catalogs, language, key, params) {
 
   const count = params[COUNT_PARAM];
   if (typeof count !== 'number') return `${key}${PLURAL_OTHER_SUFFIX}`;
+
+  if (count === EXPLICIT_ZERO_COUNT) {
+    const zeroKey = `${key}${PLURAL_ZERO_SUFFIX}`;
+    if (hasTemplate(catalogs, language, zeroKey)) return zeroKey;
+  }
 
   const category = new Intl.PluralRules(language).select(count);
   const variantKey = `${key}_${category}`;

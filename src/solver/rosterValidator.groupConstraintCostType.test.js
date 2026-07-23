@@ -171,7 +171,9 @@ describe('validateRoster — absolute Gruppengrenze auf einer anderen Kostenart'
     const violation = errors.find(error => error.type === VIOLATION.groupPointsMax);
 
     expect(violation).toBeDefined();
-    expect(render(violation)).toContain(`${groupCastingDiceOf(STONES_OVER_LIMIT)} ${CASTING_DICE_LABEL}`);
+    // Die Meldung benennt die Bezugs-Kostenart (Zauberwürfel-Label neben der Grenze),
+    // nicht Punkte — den technischen Zählstand nennt der neue Ton nicht mehr (Issue 58).
+    expect(render(violation)).toContain(CASTING_DICE_LABEL);
     expect(render(violation)).not.toContain(COST_TYPE_NAME.points);
   });
 });
@@ -199,7 +201,9 @@ describe('validateRoster — Prozent-Gruppengrenze auf einer anderen Kostenart',
     const violation = errors.find(error => error.type === VIOLATION.groupPercentMax);
 
     expect(violation).toBeDefined();
+    // Bezugsgröße der Prozentgrenze ist die Zauberwürfel-Summe, nicht die Punktsumme;
+    // der neue Ton nennt die Kostenart, aber keinen technischen Ist-Wert mehr (Issue 58).
     expect(render(violation)).toContain(`der ${CASTING_DICE_LABEL} ausmachen`);
-    expect(render(violation)).toContain(`ist aber ${groupCastingDiceOf(POWER_STONE_COUNT)}.`);
+    expect(render(violation)).not.toContain(COST_TYPE_NAME.points);
   });
 });

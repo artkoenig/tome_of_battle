@@ -60,8 +60,8 @@ function withHypotheticalSelection(roster, force, hypotheticalSelection) {
 /**
  * Priorisiert die Grund-Anzeige: trägt ein gesperrter Eintrag mindestens einen
  * Autoren-`error`-Verstoß (Typ `modifier-error`), so bilden **nur** dessen Meldungen den
- * Grund — die redundante mechanische `-max`-Meldung mit hypothetischem Zählstand
- * („aktuell: N") wird unterdrückt, weil der verständliche Autoren-Text sie ersetzt.
+ * Grund — die redundante mechanische `-max`-Meldung wird unterdrückt, weil der
+ * verständliche Autoren-Text sie ersetzt.
  * Fehlt ein solcher Autoren-`error`, zählen unverändert alle sperrenden Verstöße (ADR-0022).
  * @param {import('../types.js').ValidationError[]} blockingViolations
  * @returns {import('../types.js').ValidationError[]}
@@ -96,8 +96,8 @@ function selectReasonViolations(blockingViolations) {
  *   vorberechnete Baseline (`validateRoster(roster, system)`); wird sonst hier berechnet.
  * @returns {{ available: boolean, reasons: import('../types.js').ValidationError[] }}
  *   `reasons` bleiben strukturierte Verstöße (Schlüssel + Parameter, ADR 0026); die
- *   Oberfläche übersetzt sie über `formatValidationError` und kappt dort den
- *   „(aktuell: …)"-Zählstand (Aushebe-Dialog, ADR-0022) — der Solver bleibt sprachfrei.
+ *   Oberfläche übersetzt sie über `formatValidationError` in die aktive UI-Sprache
+ *   (Aushebe-Dialog, ADR-0022) — der Solver bleibt sprachfrei.
  */
 export function getEntryAddAvailability({ entry, categoryId, force, roster, system, catalogueId, baselineErrors }) {
   if (!entry || !roster || !system) return { available: true, reasons: [] };
