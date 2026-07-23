@@ -20,7 +20,7 @@ describe('formatValidationError', () => {
   const categoryMax = count => ({
     type: 'category-max',
     messageKey: ValidationMessageKey.CATEGORY_MAX,
-    messageParams: { count, categoryName: 'Lords', forceName: 'Army', current: count + 1 }
+    messageParams: { count, categoryName: 'Lords', forceName: 'Army' }
   });
 
   it('bildet dieselbe Meldung numerus-korrekt in Singular und Plural (Deutsch)', () => {
@@ -41,7 +41,7 @@ describe('formatValidationError', () => {
   const groupCountMax = count => ({
     type: 'group-count-max',
     messageKey: ValidationMessageKey.GROUP_COUNT_MAX,
-    messageParams: { count, groupName: 'Weapons', current: count + 1, selectionName: 'Commander' }
+    messageParams: { count, groupName: 'Weapons', selectionName: 'Commander' }
   });
 
   it('wählt bei einer Obergrenze von null die eigene "keine"-Vorlage statt der Plural-Vorlage (Deutsch)', () => {
@@ -58,7 +58,7 @@ describe('formatValidationError', () => {
   const percentMax = unitLabel => ({
     type: 'entry-percent-max',
     messageKey: ValidationMessageKey.ENTRY_PERCENT_MAX,
-    messageParams: { selectionName: 'Sword', percent: 25, threshold: 10, actual: 12, unitLabel }
+    messageParams: { selectionName: 'Sword', percent: 25, unitLabel }
   });
 
   it('setzt das Katalog-Kostenlabel als Bezugsgröße ein, wenn eines geliefert ist (Pass-through)', () => {

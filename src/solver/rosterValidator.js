@@ -296,7 +296,7 @@ function checkForceOwnRosterPointsLimit({ roster, forceDef, errors }) {
         type: 'force-roster-limit',
         forceId: forceDef.id,
         messageKey: ValidationMessageKey.FORCE_ROSTER_LIMIT,
-        messageParams: { forceName: forceDef.name, limit: requiredLimit, current: currentLimit },
+        messageParams: { forceName: forceDef.name, limit: requiredLimit },
         severity: ValidationSeverity.ERROR
       });
     }
@@ -378,7 +378,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       forceId: force.id,
       categoryId: targetCatId,
       messageKey: ValidationMessageKey.CATEGORY_MIN,
-      messageParams: { count: finalValue, categoryName: catName, forceName: forceDef.name, current: count },
+      messageParams: { count: finalValue, categoryName: catName, forceName: forceDef.name },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -388,7 +388,7 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       forceId: force.id,
       categoryId: targetCatId,
       messageKey: ValidationMessageKey.CATEGORY_MAX,
-      messageParams: { count: finalValue, categoryName: catName, forceName: forceDef.name, current: count },
+      messageParams: { count: finalValue, categoryName: catName, forceName: forceDef.name },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -583,7 +583,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
         type: 'entry-min',
         selectionId: selection.id,
         messageKey: ValidationMessageKey.ENTRY_MIN,
-        messageParams: { selectionName: selection.name, count: finalValue, current: count },
+        messageParams: { selectionName: selection.name, count: finalValue },
         severity: ValidationSeverity.ERROR
       });
     }
@@ -592,7 +592,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
         type: 'entry-max',
         selectionId: selection.id,
         messageKey: ValidationMessageKey.ENTRY_MAX,
-        messageParams: { selectionName: selection.name, count: finalValue, current: count },
+        messageParams: { selectionName: selection.name, count: finalValue },
         severity: ValidationSeverity.ERROR
       });
     }
@@ -623,7 +623,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       type: 'entry-percent-min',
       selectionId: selection.id,
       messageKey: ValidationMessageKey.ENTRY_PERCENT_MIN,
-      messageParams: { selectionName: selection.name, percent: finalValue, threshold, actual: subject, unitLabel },
+      messageParams: { selectionName: selection.name, percent: finalValue, unitLabel },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -632,7 +632,7 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       type: 'entry-percent-max',
       selectionId: selection.id,
       messageKey: ValidationMessageKey.ENTRY_PERCENT_MAX,
-      messageParams: { selectionName: selection.name, percent: finalValue, threshold, actual: subject, unitLabel },
+      messageParams: { selectionName: selection.name, percent: finalValue, unitLabel },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -757,7 +757,7 @@ function checkGroupConstraints({ selection, entry }, context) {
             type: 'group-points-max',
             selectionId: selection.id,
             messageKey: ValidationMessageKey.GROUP_POINTS_MAX,
-            messageParams: { groupName: group.name, limit: finalValue, current: totalCost, selectionName: selection.name, unitLabel: costLabel },
+            messageParams: { groupName: group.name, limit: finalValue, selectionName: selection.name, unitLabel: costLabel },
             severity: ValidationSeverity.ERROR
           });
         }
@@ -766,7 +766,7 @@ function checkGroupConstraints({ selection, entry }, context) {
             type: 'group-points-min',
             selectionId: selection.id,
             messageKey: ValidationMessageKey.GROUP_POINTS_MIN,
-            messageParams: { groupName: group.name, limit: finalValue, current: totalCost, selectionName: selection.name, unitLabel: costLabel },
+            messageParams: { groupName: group.name, limit: finalValue, selectionName: selection.name, unitLabel: costLabel },
             severity: ValidationSeverity.ERROR
           });
         }
@@ -776,7 +776,7 @@ function checkGroupConstraints({ selection, entry }, context) {
             type: 'group-count-max',
             selectionId: selection.id,
             messageKey: ValidationMessageKey.GROUP_COUNT_MAX,
-            messageParams: { groupName: group.name, count: finalValue, current: totalCount, selectionName: selection.name },
+            messageParams: { groupName: group.name, count: finalValue, selectionName: selection.name },
             severity: ValidationSeverity.ERROR
           });
         }
@@ -785,7 +785,7 @@ function checkGroupConstraints({ selection, entry }, context) {
             type: 'group-count-min',
             selectionId: selection.id,
             messageKey: ValidationMessageKey.GROUP_COUNT_MIN,
-            messageParams: { groupName: group.name, count: finalValue, current: totalCount, selectionName: selection.name },
+            messageParams: { groupName: group.name, count: finalValue, selectionName: selection.name },
             severity: ValidationSeverity.ERROR
           });
         }
@@ -813,7 +813,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
       type: 'group-percent-min',
       selectionId: selection.id,
       messageKey: ValidationMessageKey.GROUP_PERCENT_MIN,
-      messageParams: { groupName: group.name, percent: finalValue, threshold, actual: subject, unitLabel },
+      messageParams: { groupName: group.name, percent: finalValue, unitLabel },
       severity: ValidationSeverity.ERROR
     });
   }
@@ -822,7 +822,7 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
       type: 'group-percent-max',
       selectionId: selection.id,
       messageKey: ValidationMessageKey.GROUP_PERCENT_MAX,
-      messageParams: { groupName: group.name, percent: finalValue, threshold, actual: subject, unitLabel },
+      messageParams: { groupName: group.name, percent: finalValue, unitLabel },
       severity: ValidationSeverity.ERROR
     });
   }
