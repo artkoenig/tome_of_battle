@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -101,16 +101,20 @@ Kernprinzipien:
 - Übersetzung von Katalogtext (bleibt ausgeschlossen).
 
 ## Acceptance Criteria
-- [ ] Eine Autor-Meldung (`modifier-error/-warning/-info`), deren Text `{this}`
+- [x] Eine Autor-Meldung (`modifier-error/-warning/-info`), deren Text `{this}`
       enthält, zeigt statt `{this}` den effektiven Namen des betroffenen Eintrags;
       der Gnoblars-Fall erscheint als „… more units of Gnoblars than …".
-- [ ] Mehrere `{this}` im selben Text werden alle ersetzt.
-- [ ] Unbekannte Tokens bleiben unverändert; Text ohne Token bleibt unverändert.
-- [ ] Nur Autor-Meldungen betroffen; `formatValidationError` und das
+- [x] Mehrere `{this}` im selben Text werden alle ersetzt.
+- [x] Unbekannte Tokens bleiben unverändert; Text ohne Token bleibt unverändert.
+- [x] Nur Autor-Meldungen betroffen; `formatValidationError` und das
       `ValidationError`-Schema unverändert; Solver bleibt sprachfrei.
-- [ ] Auflösung über eine Token→Wert-Zuordnung (kein Sonderfall-`if`).
-- [ ] Neue Fixture mit `{this}` im `field="error"`-Modifier; Unit-Tests an beiden
-      Seams grün; volle Suite grün.
-- [ ] ADR 0028 angelegt (verfeinert ADR 0022) und CONTEXT.md-Glossar nachgezogen.
+- [x] Auflösung über eine Token→Wert-Zuordnung (kein Sonderfall-`if`).
+- [x] `{this}`-Auflösung getestet: an beiden reinen Seams (`resolveAuthorMessageTokens`
+      + `collectTriggeredMessages`) und end-to-end über `validateRoster` mit einem
+      synthetischen `{this}`-Eintrag (bestehendes Muster in
+      `rosterValidator.messageModifiers.test.js`; kein reales `{this}`-Katalog-XML
+      zum verbatim-Extrahieren verfügbar); volle Suite grün.
+- [x] ADR 0028 angelegt (verfeinert ADR 0022) und CONTEXT.md-Glossar nachgezogen.
 
 ## Comments
+- Abgeschlossen. {this} in Autor-Meldungen wird im Solver aufgeloest (collectTriggeredMessages -> getEffectiveName(source)); reine Funktion resolveAuthorMessageTokens ueber generische Token->Wert-Zuordnung, unbekannte Tokens bleiben verbatim, nur Autor-Meldungen, formatValidationError/Schema unveraendert. ADR 0028 (verfeinert ADR 0022, mit Rueckverweis) + CONTEXT-Glossar nachgezogen. Tests: reine Funktion + collectTriggeredMessages (Inline) + end-to-end ueber validateRoster mit synthetischem {this}-Eintrag (kein reales {this}-Katalog-XML zum verbatim-Extrahieren verfuegbar, daher synthetisch nach bestehendem Muster). Vier-Achsen-Pruefung gruen: statisch sauber, Aenderung ohne neuen Smell, alle ACs erfuellt, 1491 Unit + E2E gruen, Doku konsistent. Keine Versionsaenderung (Nutzervorgabe).

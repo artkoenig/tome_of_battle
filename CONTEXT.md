@@ -30,7 +30,7 @@ _Avoid_: "Locale" (mehr als wir abbilden — wir schalten nur Texte und Zahlenfo
 Englisch. Fehlt ein Übersetzungsschlüssel in der aktiven UI-Sprache, wird der englische Text angezeigt; neue Sprachen entstehen als reine Übersetzungsdateien gegen den englischen Schlüsselbestand.
 
 **Katalogsprache**:
-Die Sprache der geladenen Battlescribe-Katalogdaten (Einheitennamen, Regeln, Profile, Optionsnamen) — faktisch Englisch. Katalogtexte sind unveränderlicher Pass-through und werden nie von der App übersetzt, unabhängig von der UI-Sprache (Entscheidung aus Issue 47/02, bekräftigt in [ADR 0026](docs/adr/0026-i18n-eigenloesung-json-und-intl-ohne-library.md)).
+Die Sprache der geladenen Battlescribe-Katalogdaten (Einheitennamen, Regeln, Profile, Optionsnamen) — faktisch Englisch. Katalogtexte werden nie von der App übersetzt, unabhängig von der UI-Sprache (Entscheidung aus Issue 47/02, bekräftigt in [ADR 0026](docs/adr/0026-i18n-eigenloesung-json-und-intl-ohne-library.md)). „Pass-through" meint **keine Übersetzung**, nicht „byte-identisch": das Rendern belegter BattleScribe-Text-Tokens (`{this}` → Eintragsname) ist Darstellung, die den Text in Katalogsprache belässt (siehe [ADR 0028](docs/adr/0028-battlescribe-text-tokens-in-autor-meldungen.md)).
 _Avoid_: "Spieldaten übersetzen" — das wäre ein eigenes Vorhaben und liegt außerhalb der App-i18n.
 
 **Zustandsbericht**:
@@ -50,7 +50,7 @@ Die Dringlichkeitsstufe einer Validierungsmeldung. Nur `error` blockiert das Spi
 _Avoid_: "Fehlerstufe" — der Schweregrad gilt auch für nicht-fehlerhafte Meldungen.
 
 **App-Meldung** vs. **Autor-Meldung**:
-Eine App-Meldung erzeugt die Anwendung selbst aus den Regeldaten. Der Solver liefert dafür nur einen stabilen Schlüssel plus Parameter (ADR 0026); den fertigen Satz bildet erst die Oberfläche aus der Vorlage der aktiven UI-Sprache (`src/i18n/locales/de.json` bzw. `en.json`) — es gibt also je Sprache eine frei formulierbare Vorlage, keine einzelne „deutsche Vorlage". Eine Autor-Meldung ist der wortgetreue Text eines Katalog-Autors (`modifier-error/-warning/-info`) und bleibt in seiner Katalogsprache unangetastet (siehe [ADR 0022](docs/adr/0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md)).
+Eine App-Meldung erzeugt die Anwendung selbst aus den Regeldaten. Der Solver liefert dafür nur einen stabilen Schlüssel plus Parameter (ADR 0026); den fertigen Satz bildet erst die Oberfläche aus der Vorlage der aktiven UI-Sprache (`src/i18n/locales/de.json` bzw. `en.json`) — es gibt also je Sprache eine frei formulierbare Vorlage, keine einzelne „deutsche Vorlage". Eine Autor-Meldung ist der Text eines Katalog-Autors (`modifier-error/-warning/-info`) und bleibt in seiner Katalogsprache (siehe [ADR 0022](docs/adr/0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md)). Sie wird nicht übersetzt und nicht umformuliert; einzige Ausnahme ist das Rendern belegter BattleScribe-Text-Tokens (`{this}` → effektiver Name des betroffenen Eintrags) beim Erzeugen der Meldung im Solver — Darstellung, keine Übersetzung (siehe [ADR 0028](docs/adr/0028-battlescribe-text-tokens-in-autor-meldungen.md)).
 _Avoid_: beide unter "Fehlertext" zusammenzufassen — nur App-Meldungen dürfen umformuliert werden.
 
 **Katalogname**:

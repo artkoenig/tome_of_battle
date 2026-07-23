@@ -90,8 +90,11 @@ Umsetzung (reine Solver-Funktion `getEntryAddAvailability`):
   Verstöße als strukturierte `ValidationError`-Objekte; seit der i18n-Umstellung
   (ADR 0026) liefert der Solver Schlüssel + Parameter statt fertiger Sätze, die
   Übersetzung übernimmt `formatValidationError` in der i18n-Schicht. Bei
-  `modifier-error` bleibt es beim wortgetreuen Autoren-`value` (Katalogsprache,
-  Pass-through, ohne Übersetzungs-/Parsing-Schicht). Trägt ein gesperrter Eintrag
+  `modifier-error` bleibt es beim Autoren-`value` in Katalogsprache, ohne
+  Übersetzung (Pass-through). Einzige Ausnahme, nachträglich verfeinert durch
+  [ADR 0028](0028-battlescribe-text-tokens-in-autor-meldungen.md): belegte
+  BattleScribe-Text-Tokens (`{this}` → effektiver Eintragsname) werden beim
+  Erzeugen der Meldung gerendert — Darstellung, keine Übersetzung. Trägt ein gesperrter Eintrag
   einen Autoren-`error`-Grund, zeigt der Dialog nur diesen und unterdrückt die
   redundante mechanische `-max`-Meldung. Führt eine mechanische Meldung den Grund
   (kein Autoren-`error` vorhanden), so bleibt sie im verständlichen Ton sichtbar

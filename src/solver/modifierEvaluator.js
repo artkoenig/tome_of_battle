@@ -639,17 +639,42 @@ export const ValidationSeverity = Object.freeze({ ERROR: 'error', WARNING: 'warn
 
 const MESSAGE_MODIFIER_FIELDS = new Set(Object.values(ValidationSeverity));
 
+// A BattleScribe text token embedded in an author-written message value, captured by name.
+const AUTHOR_MESSAGE_TOKEN_PATTERN = /\{(\w+)\}/g;
+
+/**
+ * Renders the BattleScribe text tokens in an author-written message: each `{token}` present
+ * in `tokenValues` is replaced by its value, and every unknown token is left verbatim (ADR
+ * 0028: token rendering, not translation — the text stays in its catalogue language). Pure
+ * string→string, generic over the token map so a newly attested token is one more entry, not
+ * a special case.
+ * @param {string} text the raw author message value.
+ * @param {Record<string, string>} tokenValues token name → rendered value (e.g. `{ this: 'Gnoblars' }`).
+ * @returns {string}
+ */
+export const resolveAuthorMessageTokens = (text, tokenValues) =>
+  text.replace(AUTHOR_MESSAGE_TOKEN_PATTERN, (token, name) =>
+    name in tokenValues ? tokenValues[name] : token);
+
 /**
  * Collects the author-written messages of a source's error/warning/info modifiers
  * whose conditions currently pass in `ctx`, each tagged with the severity its field
  * names. Reuses getEffectiveModifiers + modifierConditionsPass, so modifierGroup gating
  * and the full condition semantics apply exactly as for every other modifier consumer.
+ * The message text has its BattleScribe tokens rendered (ADR 0028): `{this}` becomes the
+ * source entry's effective name, computed once and only when a message actually fired.
  * @returns {{severity: SeverityLevel, message: string}[]}
  */
-export const collectTriggeredMessages = (source, ctx = {}) =>
-  getEffectiveModifiers(source)
-    .filter(mod => MESSAGE_MODIFIER_FIELDS.has(mod.field) && mod.value && modifierConditionsPass(mod, ctx))
-    .map(mod => ({ severity: /** @type {SeverityLevel} */ (mod.field), message: mod.value }));
+export const collectTriggeredMessages = (source, ctx = {}) => {
+  const triggered = getEffectiveModifiers(source)
+    .filter(mod => MESSAGE_MODIFIER_FIELDS.has(mod.field) && mod.value && modifierConditionsPass(mod, ctx));
+  if (triggered.length === 0) return [];
+  const tokenValues = { this: getEffectiveName(source, ctx) };
+  return triggered.map(mod => ({
+    severity: /** @type {SeverityLevel} */ (mod.field),
+    message: resolveAuthorMessageTokens(mod.value, tokenValues)
+  }));
+};
 
 /**
  * Applies the category-mutating modifiers (`add`/`remove`/`set-primary`/
