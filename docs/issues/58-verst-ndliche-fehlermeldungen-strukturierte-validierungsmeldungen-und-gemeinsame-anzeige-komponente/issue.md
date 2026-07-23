@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: None
 
