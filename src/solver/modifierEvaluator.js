@@ -252,8 +252,16 @@ export const evaluateCondition = (cond, ctx = {}) => {
     case ConditionKind.NOT_INSTANCE_OF: {
       const isNegated = cond.type === ConditionKind.NOT_INSTANCE_OF;
       const evaluateInstanceOf = () => {
-        const forceEntryId = cond.scope || cond.childId;
-        if (system && forceEntryId && findForceEntryById(system, forceEntryId)) {
+        // A force instanceOf names its forceEntry either directly in `scope` (the
+        // self-gated idiom, `scope=<forceId>`) or in `childId` while `scope` carries the
+        // literal "force" keyword (BattleScribe's canonical shape, e.g. the Definitive
+        // Edition's "notInstanceOf Ironskin Tribe" gate). Pick whichever actually resolves
+        // to a real forceEntry, so both encodings enter the force branch instead of the
+        // literal keyword falling through to the selection search below.
+        const forceEntryId = system
+          ? [cond.scope, cond.childId].find(id => findForceEntryById(system, id))
+          : null;
+        if (forceEntryId) {
           const isInstance = (ctx.force?.forceEntryId === forceEntryId) ||
                              (roster?.forces?.some(f => f.forceEntryId === forceEntryId));
           return cond.value === 0 ? !isInstance : isInstance;
