@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: feature
 Blocked by: None
 
@@ -150,3 +150,4 @@ Ursache hängt am Fehlerobjekt selbst — ein Renderer, eine Wahrheit (SSOT).
 - [ ] Volle Test-Suite grün.
 
 ## Comments
+- Abgeschlossen. Ursachen bei mechanischen Validierungsmeldungen (ADR 0027): Solver leitet aus bedingten, wertverändernden Modifiern die auslösenden Auswahlen her und hängt sie als sprachfreies, optionales causes-Feld an den ValidationError (ganze Kette, dedupliziert, nur benennbar, nur App-Meldungen, generisch). UI zeigt einen Ursachen-Block an beiden Renderstellen (geteilte ValidationMessage/ValidationCauses-Komponente, i18n DE+EN). Vier-Achsen-Prüfung grün: statische Analyse sauber, alle ACs erfüllt, 1483 Unit/Component + E2E grün, Doku konsistent. Review-Fixes (ValidationMessage-Extraktion, Fassaden-Cleanup, conditionGroups-Test) eingearbeitet. Version 1.8.0 (minor).
