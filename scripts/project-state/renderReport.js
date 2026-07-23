@@ -793,7 +793,8 @@ td.num { text-align: right; white-space: nowrap; }
 .gate-card-status-ok { color: var(--ok-fg); }
 .gate-card-status-warn { color: var(--warn-fg); }
 .gate-card-status-inert { color: var(--muted); }
-.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; }
+.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 1000; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; backdrop-filter: blur(12px); }
+.gate-card:hover { z-index: 60; }
 .gate-card:hover .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
 
 /* Gate Findings Details */
@@ -819,12 +820,13 @@ td.num { text-align: right; white-space: nowrap; }
 }
 .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
 .module-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem; transition: all 0.25s ease; }
-.module-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); }
+.module-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); z-index: 50; }
 .module-card-header { border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.45rem; }
 .module-card-title { font-family: var(--font-subheading); font-size: 0.92rem; font-weight: 700; color: var(--accent-strong); word-break: break-all; }
 .module-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.25rem; display: flex; gap: 0.5rem; }
 .module-vials-row { display: flex; justify-content: space-around; align-items: flex-end; padding: 0.4rem 0.5rem; gap: 1rem; }
 .vial-container { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; cursor: help; }
+.vial-container:hover { z-index: 60; }
 .vial-label { font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-top-width: 1px; border-radius: 2px 2px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
 .vial::before { content: ""; position: absolute; top: -1px; left: -2px; right: -2px; height: 2px; background: rgba(212, 175, 55, 0.5); border-radius: 2px 2px 0 0; z-index: 5; }
@@ -844,7 +846,7 @@ td.num { text-align: right; white-space: nowrap; }
 .vial-segment-high { background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); }
 .vial-segment-very-high { background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%); }
 .vial-value-badge { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--accent); }
-.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; }
+.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 1000; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; backdrop-filter: blur(12px); }
 .vial-container:hover .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
 .tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
 .tooltip-grid { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8rem; color: var(--muted); }
