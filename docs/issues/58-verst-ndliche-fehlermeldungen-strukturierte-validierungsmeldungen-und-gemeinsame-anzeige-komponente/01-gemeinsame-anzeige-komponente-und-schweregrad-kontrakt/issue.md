@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: superseded
 Type: feature
 Blocked by: None
 
@@ -35,3 +35,4 @@ als **neue ADR (0026)** festgehalten (konkrete Token-Werte hier fixiert).
 - [ ] Komponententests decken die Darstellung je Schweregrad ab; volle Suite grün.
 
 ## Comments
+- superseded: Mechanik + Schweregrad/ADR 0026 bereits durch i18n-PR #114 auf main vorhanden; gemeinsame Renderstellen durch #113/#114 ueberarbeitet. Vorhaben auf reinen Wortlaut reduziert.

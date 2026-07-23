@@ -1,46 +1,63 @@
 Status: ready-for-agent
 Type: feature
-Blocked by: [03]
+Blocked by: None
 
 ## Description
 
-Abschluss-Slice für Issue 58: stellt die übrigen App-generierten Meldungs-Familien
-auf strukturierte Felder + zentrale Komposition um, damit **alle** App-Meldungen
-in Alltagssprache erscheinen.
+Einziger Umsetzungs-Slice von Issue 58 (Geschwister 01–03 sind `superseded`,
+da ihre Mechanik bereits durch den i18n-PR #114 auf `main` existiert).
 
-Betroffene Familien (die noch nicht in Issue 02/03 behandelt wurden):
-`roster-limit`, `force-selector-min`, `force-roster-limit`,
-`group-points-min`/`-max`, `group-percent-min`/`-max` und `unresolved-entry`.
+**Aufgabe:** Alle `validation.*`-Vorlagen in `src/i18n/locales/de.json` **und**
+`src/i18n/locales/en.json` auf den im PRD des Main-Issues 58 festgelegten Ton
+umschreiben. Meldungsschlüssel, Parameter und Numerus (`_one`/`_other`) bleiben
+unverändert; es wird nur der Vorlagentext ersetzt.
 
-Jede Familie erhält strukturierte Felder am Validator und eine Vorlage in der
-zentralen Kompositions-Stelle, formuliert gemäß der verbindlichen Ton-Vorgabe im
-PRD des Main-Issues 58. Beispiele für diese Familien:
+Betroffene Schlüssel (alle unter `validation.`):
+`rosterLimit`, `forceSelectorMin`, `forceRosterLimit`, `categoryMin`,
+`categoryMax`, `unresolvedEntry`, `entryMin`, `entryMax`, `entryPercentMin`,
+`entryPercentMax`, `groupPointsMax`, `groupPointsMin`, `groupCountMax`,
+`groupCountMin`, `groupPercentMin`, `groupPercentMax` — je DE und EN, für die
+pluralisierten Schlüssel als `_one`/`_other`-Paar.
 
-- Punkte gesamt (`roster-limit`): `Die Liste hat 111 Punkte – erlaubt sind 100.`
-- Pflichteintrag (`force-selector-min`): `Die Armee braucht noch einen „General".`
-- Punktelimit (`force-roster-limit`): `Die Armee braucht ein höheres Punktelimit für „Special" (mindestens 250).`
-- Punkte Gruppe (`group-points-*`): `General darf für „Magic Items" höchstens 100 Punkte ausgeben.`
-- Prozent Gruppe (`group-percent-*`): `„Core" muss mindestens 25 % der Punkte ausmachen.`
-- Nicht mehr im Katalog (`unresolved-entry`): `„Old Model" gibt es im Katalog nicht mehr.`
+Maßgeblich sind die verbindlichen Beispieltabellen (DE + EN) im PRD des
+Main-Issues 58. Kurzfassung der Regeln:
 
-Autor-Meldungen (`modifier-error/-warning/-info`) bleiben ausdrücklich
-**wortgetreu** und werden nur durch die gemeinsame Komponente einheitlich
-dargestellt (ADR 0022) — sie sind nicht Teil der Umformulierung.
+- Ganzer, natürlicher Satz; keine internen Struktur­begriffe; kein „(aktuell: N)".
+- Betroffener Einheiten-/Auswahlname ohne Possessiv am Satzanfang; armee-/
+  listenweite Meldungen mit Artikel („Die Armee …" / „The army …").
+- Katalognamen (`{groupName}`, `{selectionName}`, `{categoryName}`,
+  `{unitLabel}`) bleiben unveränderter Pass-through (ADR 0003).
+- Zählwort „Auswahl(en)" / „selection(s)" bei Gruppen/Kategorien; einzelne
+  Einträge um den Eintragsnamen herum formuliert.
 
-Reine Darstellung: keine Änderung an der Validierungslogik.
+**Wegfall von „(aktuell: N)":** Der neue Ton verzichtet auf den Zählstand-Zusatz.
+Damit wird `stripCurrentCountClause` / `omitCurrentCount` (ADR 0022,
+`formatValidationError`) für diese Meldungen gegenstandslos — Panel und
+Aushebe-Dialog zeigen denselben Satz. Prüfen, ob `validation.currentCountLead`
+und der Kappungs-Pfad danach toter Code sind; wenn ja, sauber entfernen (inkl.
+zugehöriger Tests), sonst belassen. Keine sonstige Verhaltensänderung.
+
+**Reine Wortlaut-Änderung:** keine Änderung an Validator-Logik,
+`formatValidationError`, Komponenten oder i18n-Mechanik.
+
+Zum Abschluss die `CONTEXT.md`-Glossareinträge zu Validierungsmeldungen auf die
+i18n-Realität nachziehen (Vorlage je Sprache statt „deutsche Vorlage").
 
 ## Acceptance Criteria
-- [ ] `roster-limit`, `force-selector-min`, `force-roster-limit`,
-      `group-points-min/-max`, `group-percent-min/-max` und `unresolved-entry`
-      tragen strukturierte Felder und werden über die zentrale Komposition in
-      Alltagssprache angezeigt.
-- [ ] Nach dieser Slice erscheinen **alle** App-generierten Meldungen als
-      verständlicher Klartext; keine App-Meldung zeigt mehr den alten technischen
-      Wortlaut.
-- [ ] Autor-Meldungen (`modifier-*`) bleiben im Wortlaut unverändert und werden
-      nur einheitlich gestylt.
-- [ ] Menge und Wahrheit aller Verstöße sind unverändert (keine Logikänderung).
-- [ ] Tests decken die Komposition der neu umgestellten Familien ab; volle Suite
-      grün.
+- [ ] Alle oben genannten `validation.*`-Schlüssel in `de.json` und `en.json`
+      tragen den neuen Ton; die Screenshot-Meldung erscheint als
+      `Commander darf keine Auswahl aus „Weapons" treffen.` (DE) /
+      `Commander can't take anything from "Weapons".` (EN).
+- [ ] Schlüssel, Parameter und Numerus unverändert; `localeParity` und
+      `validationMessageCoverage` grün.
+- [ ] „(aktuell: N)" entfällt in allen betroffenen Vorlagen; falls dadurch
+      `currentCountLead`/Kappungs-Pfad toter Code wird, ist er samt Tests
+      entfernt, sonst unverändert lauffähig.
+- [ ] Keine Änderung an Validator-Logik, Formatter, Komponenten oder i18n-
+      Mechanik; Autor-Meldungen und Katalognamen unangetastet.
+- [ ] Wortlaut-abhängige Tests (`formatValidationError.test.js`, `ui.test.js`,
+      betroffene `rosterValidator.*`-Tests) auf die neuen Sätze angehoben; volle
+      Suite grün.
+- [ ] `CONTEXT.md`-Glossar nachgezogen.
 
 ## Comments

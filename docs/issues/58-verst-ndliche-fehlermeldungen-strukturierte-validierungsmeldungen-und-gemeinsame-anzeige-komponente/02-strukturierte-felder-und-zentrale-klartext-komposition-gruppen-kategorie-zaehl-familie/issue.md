@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: superseded
 Type: feature
 Blocked by: [01]
 
@@ -50,3 +50,4 @@ unübersetzt** (ADR 0003).
       strukturierten Felder am Validator; volle Suite grün.
 
 ## Comments
+- superseded: Strukturierte Fehler (messageKey+params) und zentrale Komposition (formatValidationError) bereits durch i18n-PR #114 auf main vorhanden.

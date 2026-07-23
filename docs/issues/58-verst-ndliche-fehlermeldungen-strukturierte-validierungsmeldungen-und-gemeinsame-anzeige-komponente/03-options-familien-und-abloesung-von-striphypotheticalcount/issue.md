@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: superseded
 Type: feature
 Blocked by: [02]
 
@@ -43,3 +43,4 @@ Reine Darstellung: keine Änderung an der Verfügbarkeits-/Validierungslogik.
       Kappungs-Effekt im Aushebe-Dialog ab; volle Suite grün.
 
 ## Comments
+- superseded: stripHypotheticalCount ist auf main bereits durch sprachneutrales stripCurrentCountClause/omitCurrentCount abgeloest (i18n-PR #114).
