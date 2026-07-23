@@ -42,3 +42,17 @@ export const PLURALIZED_VALIDATION_MESSAGE_KEYS = Object.freeze([
   ValidationMessageKey.GROUP_COUNT_MAX,
   ValidationMessageKey.GROUP_COUNT_MIN
 ]);
+
+/**
+ * Obergrenzen-Familien, deren Grenze null („darf gar nichts") eine eigene
+ * Formulierung trägt statt „höchstens 0 …". Da weder Deutsch noch Englisch eine
+ * `zero`-Numeruskategorie kennen, wählt `translate` diese Vorlage über den
+ * expliziten `_zero`-Suffix, wenn `count === 0` ist. Zusätzlich zum
+ * `_one`/`_other`-Paar muss also für diese Schlüssel eine `_zero`-Vorlage je
+ * Sprache vorliegen.
+ */
+export const ZERO_AWARE_VALIDATION_MESSAGE_KEYS = Object.freeze([
+  ValidationMessageKey.CATEGORY_MAX,
+  ValidationMessageKey.ENTRY_MAX,
+  ValidationMessageKey.GROUP_COUNT_MAX
+]);

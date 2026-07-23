@@ -136,7 +136,7 @@ describe('RosterSidebar structured validation messages', () => {
     });
 
     expect(
-      screen.getByText('Limitüberschreitung: Du hast 210 von maximal 200 pts verwendet.')
+      screen.getByText('Die Liste hat 210 pts – erlaubt sind 200.')
     ).toBeTruthy();
   });
 });

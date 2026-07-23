@@ -16,10 +16,10 @@ const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
 // `getEntryAddAvailability` liefert strukturierte Verstöße (ADR 0026); der Aushebe-Dialog
-// übersetzt sie und kappt dabei den technischen Zählstand. Der Testlauf pinnt Deutsch
-// (i18nTestSetup), sodass die früheren deutschen Grund-Texte unverändert greifen.
+// übersetzt sie zur Anzeige. Der Testlauf pinnt Deutsch (i18nTestSetup), sodass die
+// deutschen Grund-Texte greifen.
 const renderReasons = reasons =>
-  reasons.map(reason => formatValidationError(reason, t, { omitCurrentCount: true }));
+  reasons.map(reason => formatValidationError(reason, t));
 
 const POINTS = 'pts';
 
@@ -147,9 +147,9 @@ describe('Autoren-error-Tor (Reproduktion Bretonnia „Allow special characters?
 
   it('zeigt bei doppelter Sperre (mechanisch + Autoren-error) NUR den Autoren-Grund', () => {
     // Der Green Knight ist bei inaktiver Regel „Gürtel-und-Hosenträger"-gegatet: das
-    // roster-weite max=0 (mechanisch, „aktuell: 1") UND der Autoren-`modifier-error`
-    // sperren gleichzeitig. Die Grund-Anzeige darf nur den verständlichen Autoren-Text
-    // führen, nicht die verwirrende mechanische Zählstands-Meldung.
+    // roster-weite max=0 (mechanisch) UND der Autoren-`modifier-error` sperren
+    // gleichzeitig. Die Grund-Anzeige darf nur den verständlichen Autoren-Text
+    // führen, nicht die redundante mechanische Meldung.
     const roster = buildRoster([]);
     const { available, reasons } = availabilityOf(greenKnight, roster, buildSystem(), SPECIAL_CHARACTERS_CATEGORY);
 
@@ -179,19 +179,18 @@ describe('Kategorie-Obergrenze der Force (vom alten Einzel-max-Check verfehlt)',
     expect(available).toBe(false);
   });
 
-  it('nennt die mechanische Obergrenze ohne technischen Zählstand, wenn kein Autoren-error vorliegt (Fallback)', () => {
+  it('nennt die mechanische Obergrenze in verständlichem Ton, wenn kein Autoren-error vorliegt (Fallback)', () => {
     // Reiner mechanischer Verstoß (category-max, kein `modifier-error`): die
-    // Priorisierung greift nicht, der mechanische Grund bleibt sichtbar — aber ohne
-    // den technischen Zählstand „(aktuell: N)", der im Aushebe-Dialog entfällt.
+    // Priorisierung greift nicht, der mechanische Grund bleibt sichtbar — im
+    // verständlichen Ton (Issue 58), ohne den früheren „(aktuell: N)"-Zusatz.
     const roster = makeRoster(2000, [{ ...selection('s-lord-1', 'lord'), category: LORDS_CATEGORY }]);
     const { reasons } = availabilityOf(lord, roster, system, LORDS_CATEGORY);
     const rendered = renderReasons(reasons);
     expect(rendered.length).toBeGreaterThan(0);
-    expect(rendered.some(reason => reason.includes('erlaubt'))).toBe(true);
+    expect(rendered.some(reason => reason.includes('höchstens'))).toBe(true);
     expect(rendered.some(reason => reason.includes('aktuell'))).toBe(false);
-    // Der Zählstand wird präzise gekappt — der Satz bleibt inkl. Schlusspunkt intakt.
     // Numerus-korrekt (Issue 58): eine Grenze von 1 nennt „Auswahl", nicht „Auswahlen".
-    expect(rendered).toContain('Maximal 1 Auswahl für "Lords" in Army erlaubt.');
+    expect(rendered).toContain('Die Armee darf höchstens eine Auswahl aus „Lords" treffen.');
   });
 
   it('lässt den Kandidaten zu, solange die Kategorie unter der Grenze liegt', () => {
