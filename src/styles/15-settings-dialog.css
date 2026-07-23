@@ -7,6 +7,12 @@
   gap: 16px;
 }
 
+/* Zusätzlicher Abstand zwischen aufeinanderfolgenden Optionen. */
+/* Vertical spacing between consecutive setting rows. */
+.settings-row + .settings-row {
+  margin-top: 24px;
+}
+
 .settings-row-text {
   display: flex;
   flex-direction: column;
