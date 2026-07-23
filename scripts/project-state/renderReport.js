@@ -251,9 +251,23 @@ function renderModuleTiles(moduleMetrics, coverage) {
 
   const cards = modules.map((item) => renderModuleCard(item)).join('\n');
 
+  const introHtml = [
+    '<div class="module-metrics-intro">',
+    '<p><strong>Erklärung der Metriken:</strong> Das <strong>Complexity-Reagenzglas</strong> visualisiert das Risiko-Profil nach dem SIG-Standard (Software Improvement Group) basierend auf der zyklomatischen Komplexität (CC) aller Funktionen im Modul, gewichtet nach Codezeilen (LOC):</p>',
+    '<ul class="metrics-legend-list">',
+    '<li><span class="badge-dot dot-low"></span> <strong>Low Risk (CC 1–5):</strong> Einfacher, gut wartbarer Code</li>',
+    '<li><span class="badge-dot dot-moderate"></span> <strong>Moderate (CC 6–10):</strong> Mäßige Komplexität</li>',
+    '<li><span class="badge-dot dot-high"></span> <strong>High Risk (CC 11–25):</strong> Hohe Komplexität</li>',
+    '<li><span class="badge-dot dot-very-high"></span> <strong>Very High (&gt;25):</strong> Sehr hohe Komplexität (Refactoring-Kandidat)</li>',
+    '<li><strong>MI:</strong> Maintainability Index (0–100)</li>',
+    '<li><strong>Coverage:</strong> Testabdeckung (Statements)</li>',
+    '</ul>',
+    '</div>',
+  ].join('');
+
   return renderSubsection(
     'Module health & metrics',
-    `<div class="module-grid">${cards}</div>`,
+    `${introHtml}\n<div class="module-grid">${cards}</div>`,
   );
 }
 
@@ -818,6 +832,16 @@ td.num { text-align: right; white-space: nowrap; }
   90% { opacity: 0.9; }
   100% { transform: translateY(-5rem) scale(1); opacity: 0; }
 }
+.module-metrics-intro { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 1.1rem; margin-top: 0.85rem; font-size: 0.84rem; color: var(--muted); line-height: 1.5; box-shadow: var(--shadow); }
+.module-metrics-intro p { margin: 0; }
+.module-metrics-intro strong { color: var(--text); }
+.metrics-legend-list { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 0.6rem 0 0 0; padding-left: 0; list-style: none; font-size: 0.78rem; }
+.metrics-legend-list li { display: flex; align-items: center; gap: 0.4rem; color: var(--muted); }
+.badge-dot { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%; flex-shrink: 0; }
+.dot-low { background: #34d399; }
+.dot-moderate { background: #fbbf24; }
+.dot-high { background: #f97316; }
+.dot-very-high { background: #c084fc; }
 .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
 .module-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem; transition: all 0.25s ease; }
 .module-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); z-index: 50; }
