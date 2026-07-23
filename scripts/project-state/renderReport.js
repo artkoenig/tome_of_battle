@@ -826,9 +826,9 @@ td.num { text-align: right; white-space: nowrap; }
 .module-vials-row { display: flex; justify-content: space-around; align-items: flex-end; padding: 0.4rem 0.5rem; gap: 1rem; }
 .vial-container { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; cursor: help; }
 .vial-label { font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-radius: 4px 4px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
-.vial::before { content: ""; position: absolute; top: 0; left: -2px; right: -2px; height: 5px; background: rgba(212, 175, 55, 0.7); border-radius: 3px 3px 0 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); z-index: 5; }
-.vial::after { content: ""; position: absolute; top: 5px; left: 3px; width: 3px; bottom: 8px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05)); border-radius: 2px; z-index: 6; pointer-events: none; }
+.vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-top-width: 1px; border-radius: 2px 2px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.vial::before { content: ""; position: absolute; top: -1px; left: -2px; right: -2px; height: 2px; background: rgba(212, 175, 55, 0.5); border-radius: 2px 2px 0 0; z-index: 5; }
+.vial::after { content: ""; position: absolute; top: 2px; left: 3px; width: 3px; bottom: 8px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05)); border-radius: 2px; z-index: 6; pointer-events: none; }
 .vial-liquid { position: relative; width: 100%; border-radius: 0 0 14px 14px; transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
 .vial-bubbles { position: absolute; inset: 0; pointer-events: none; }
 .vial-bubbles::before, .vial-bubbles::after { content: ""; position: absolute; bottom: -4px; background: rgba(255, 255, 255, 0.7); border-radius: 50%; box-shadow: 0 0 3px rgba(255, 255, 255, 0.9); }
