@@ -279,7 +279,7 @@ function renderModuleCard(item) {
     '</div>',
   ].join('');
 
-  // Coverage-Reagenzglas
+  // Coverage-Reagenzglas (rein fuer Coverage)
   const covPct = cov ? Math.min(100, Math.max(10, Math.round(cov.statements.percent))) : 0;
   const covTone = !cov
     ? 'bad'
@@ -393,7 +393,7 @@ function renderGates(gates) {
 
   const runeGridHtml = `<div class="rune-grid">${items}</div>`;
 
-  const gatesWithOutput = gates.filter((gate) => gate.output && gate.output.trim() !== '' && gate.status !== GateStatus.Passed);
+  const gatesWithOutput = gates.filter((gate) => gate.output && gate.output.trim() !== '');
 
   if (gatesWithOutput.length === 0) {
     return renderSubsection('Quality Gates', runeGridHtml);
@@ -833,6 +833,8 @@ td.num { text-align: right; white-space: nowrap; }
 .vial-bubbles::before { left: 25%; width: 4px; height: 4px; animation: bubbleRise1 2.2s infinite linear; }
 .vial-bubbles::after { left: 60%; width: 3px; height: 3px; animation: bubbleRise2 2.8s infinite linear 0.9s; }
 .vial-liquid-bad { background: linear-gradient(180deg, #F87171 0%, #DC2626 100%); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+.vial-liquid-warn { background: linear-gradient(180deg, #FBBF24 0%, #D97706 100%); box-shadow: 0 0 10px rgba(245, 208, 97, 0.4); }
+.vial-liquid-good { background: linear-gradient(180deg, #34D399 0%, #059669 100%); box-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
 .vial-segmented { display: flex; flex-direction: column-reverse; overflow: hidden; background: rgba(0, 0, 0, 0.4); }
 .vial-segment { width: 100%; transition: height 0.3s ease; min-height: 2px; }
 .vial-segment-low { background: linear-gradient(180deg, #34d399 0%, #059669 100%); }

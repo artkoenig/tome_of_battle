@@ -147,6 +147,7 @@ function normalizeCommand(command) {
  * @property {string} enforcement  Wert aus {@link GateEnforcement}.
  * @property {string|null} abortReason
  * @property {number|null} exitCode
+ * @property {string} [output]
  */
 
 /**
@@ -171,6 +172,7 @@ export function buildGateStates({ definitions = GATE_DEFINITIONS, workflowJob = 
       enforcement: findGateEnforcement(workflowJob, definition.command),
       abortReason,
       exitCode: run ? run.exitCode : null,
+      output: run?.output,
     };
   });
 }
