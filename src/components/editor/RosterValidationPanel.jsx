@@ -3,6 +3,7 @@ import { Play, AlertTriangle, Check } from 'lucide-react';
 import { hasBlockingViolations, ValidationSeverity } from '../../solver/validator';
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatValidationError } from '../../i18n/formatValidationError';
+import ValidationCauses from './ValidationCauses';
 
 /**
  * Der „Lagerbericht“ des Editors: Gesamtstatus der Liste, die blockierenden
@@ -52,14 +53,20 @@ export default function RosterValidationPanel({ validationErrors, extraResources
           {generalErrors.map((err, idx) => (
             <div key={idx} className="validation-error-item text-danger text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
-              <span>{formatValidationError(err, t)}</span>
+              <div className="validation-message-body">
+                <span>{formatValidationError(err, t)}</span>
+                <ValidationCauses error={err} />
+              </div>
             </div>
           ))}
           {/* Nachgelagerte Liste der Kategorie- und Auswahlfehler für den vollen Kontext */}
           {contextualErrors.map((err, idx) => (
             <div key={idx} className="validation-error-item validation-error-item--secondary text-danger text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
-              <span>{formatValidationError(err, t)}</span>
+              <div className="validation-message-body">
+                <span>{formatValidationError(err, t)}</span>
+                <ValidationCauses error={err} />
+              </div>
             </div>
           ))}
         </div>
@@ -71,7 +78,10 @@ export default function RosterValidationPanel({ validationErrors, extraResources
           {advisoryMessages.map((err, idx) => (
             <div key={idx} className="validation-error-item text-dim text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
-              <span>{formatValidationError(err, t)}</span>
+              <div className="validation-message-body">
+                <span>{formatValidationError(err, t)}</span>
+                <ValidationCauses error={err} />
+              </div>
             </div>
           ))}
         </div>

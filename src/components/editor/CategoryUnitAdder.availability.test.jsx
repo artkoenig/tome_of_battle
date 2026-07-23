@@ -93,6 +93,30 @@ describe('CategoryUnitAdder — Verfügbarkeits-Darstellung', () => {
     expect(addUnit).not.toHaveBeenCalled();
   });
 
+  it('zeigt am gesperrten Eintrag den „Ursachen"-Block, wenn der Grund Ursachen trägt', () => {
+    mockGetEntryAddAvailability.mockImplementation(({ entry }) =>
+      entry.id === BLOCKED_ENTRY_ID
+        ? {
+            available: false,
+            reasons: [{
+              message: BLOCK_REASON,
+              causes: [{ entryId: 'bsb', name: 'Battle Standard Bearer' }]
+            }]
+          }
+        : { available: true, reasons: [] }
+    );
+    renderAdder(vi.fn());
+
+    expect(screen.getByText('Ursachen:')).toBeTruthy();
+    expect(screen.getByText('„Battle Standard Bearer"')).toBeTruthy();
+  });
+
+  it('zeigt keinen „Ursachen"-Block, wenn der Grund keine Ursachen trägt', () => {
+    // beforeEach liefert einen Grund ohne causes-Feld — der Block darf fehlen.
+    renderAdder(vi.fn());
+    expect(document.querySelector('.validation-causes')).toBeNull();
+  });
+
   it('lässt den freien Eintrag klickbar und hebt ihn aus', () => {
     const addUnit = vi.fn();
     renderAdder(addUnit);

@@ -67,3 +67,35 @@
 .validation-error-list--advisory {
   margin-top: 12px;
 }
+
+/* Meldungstext und darunter der optionale „Ursachen"-Block stapeln vertikal,
+   während das Warn-Icon links daneben stehen bleibt (ADR 0027). */
+.validation-message-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* „Ursachen"-Block: die auslösenden Auswahlen hinter einer Meldung. An jeder
+   Renderstelle identisch (SSOT, ADR 0022); gegenüber dem Meldungstext gedämpft. */
+.validation-causes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--text-dim);
+}
+
+.validation-causes-title {
+  font-weight: 600;
+}
+
+.validation-causes-list {
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.validation-causes-item {
+  margin-top: 2px;
+}

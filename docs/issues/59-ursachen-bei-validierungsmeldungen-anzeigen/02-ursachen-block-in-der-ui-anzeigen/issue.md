@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: feature
 Blocked by: [01]
 
@@ -57,3 +57,4 @@ Ursachen-Feld am `ValidationError` auf und macht es sichtbar.
 
 ## Comments
 </content>
+- UI-Anzeige des Ursachen-Blocks umgesetzt: neue i18n-Vorlagen validation.causesTitle/causeItem (de+en), reine Seam-Funktion formatValidationCauses und die geteilte Praesentationskomponente ValidationCauses (SSOT). Eingebunden an beiden Renderstellen (RosterValidationPanel, CategoryUnitAdder). Tests: formatValidationCauses je Sprache, ValidationCauses-Component, plus Block-Abdeckung an beiden Renderstellen. Volle Suite gruen.
