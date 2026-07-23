@@ -178,11 +178,12 @@ describe('project-state/renderReport', () => {
   describe('Modul-Kacheln mit Reagenzglaesern', () => {
     it('rendert Kacheln pro Modul mit je zwei Reagenzglaesern fuer Komplexitaet und Testabdeckung und Tooltips bei Hover', () => {
       const html = renderReport(makeModel());
-      expect(html).toContain('Module health &amp; metrics');
       expect(html).toContain('module-grid');
       expect(html).toContain('module-card');
-      expect(html).toContain('vial-liquid');
-      expect(html).toContain('vial-bubbles');
+      expect(html).toContain('vial-segmented');
+      expect(html).toContain('vial-segment-low');
+      expect(html).toContain('MI 100');
+      expect(html).toContain('Complexity &amp; Risk Profile');
       expect(html).toContain('vial-tooltip');
       expect(html).toContain('src/solver');
       expect(html).toContain('136'); // total complexity badge

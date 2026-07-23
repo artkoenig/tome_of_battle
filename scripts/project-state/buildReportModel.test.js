@@ -120,7 +120,7 @@ describe('project-state/buildReportModel', () => {
 
     const byLabel = Object.fromEntries(model.metrics.map((metric) => [metric.label, metric]));
     expect(byLabel['Open issues'].value).toBe(0);
-    expect(byLabel['Blocking gates'].value).toBe('1/5');
+    expect(byLabel['Blocking gates'].value).toBe('1/6');
     expect(byLabel['Gates not run'].value).toBe(4);
     expect(byLabel['Gates not run'].hint).toMatch(/no green result/);
   });
@@ -134,6 +134,7 @@ describe('project-state/buildReportModel', () => {
           depcruise: { exitCode: 0, output: '{}' },
           typecheck: { exitCode: 0, output: 'ok' },
           'unit-tests': { exitCode: 0, output: 'ok' },
+          maintainability: { exitCode: 0, output: 'ok' },
         },
       }),
     );

@@ -86,6 +86,8 @@ const RENDERED_ISSUE_SECTIONS = Object.freeze(['Description', 'Acceptance Criter
  * @property {number} totalComplexity   Summe der zyklomatischen Komplexitaet aller Funktionen.
  * @property {number} averageComplexity durchschnittliche zyklomatische Komplexitaet je Funktion.
  * @property {number} maxComplexity     hoechste zyklomatische Komplexitaet im Modul.
+ * @property {number} [maintainabilityIndex] Maintainability Index (0..100).
+ * @property {import('./complexity.js').RiskProfile} [riskProfile] ISO 25010 / SIG Risikoprofil.
  */
 
 /**
@@ -101,6 +103,7 @@ const RENDERED_ISSUE_SECTIONS = Object.freeze(['Description', 'Acceptance Criter
  * @property {ReadonlyArray<Metric>} metrics
  * @property {ReadonlyArray<import('./coverage.js').ModuleCoverage>} coverage
  * @property {ReadonlyArray<ModuleMetric>} [moduleMetrics]
+ * @property {object} [overallComplexity]
  * @property {ReadonlyArray<import('./issues.js').OpenIssue>} openIssues
  * @property {ReadonlyArray<import('./issues.js').UnreadableIssue>} [unreadableIssues]
  * @property {BranchScope} branchScope
@@ -244,9 +247,7 @@ function renderModuleTiles(moduleMetrics, coverage) {
     return b.totalComplexity - a.totalComplexity || covA - covB || b.lines - a.lines;
   });
 
-  const maxTotalComplexity = Math.max(...modules.map((m) => m.totalComplexity), 1);
-
-  const cards = modules.map((item) => renderModuleCard(item, maxTotalComplexity)).join('\n');
+  const cards = modules.map((item) => renderModuleCard(item)).join('\n');
 
   return renderSubsection(
     'Module health & metrics',
@@ -254,27 +255,25 @@ function renderModuleTiles(moduleMetrics, coverage) {
   );
 }
 
-function renderModuleCard(item, maxTotalComplexity) {
+function renderModuleCard(item) {
   const cov = item.coverage;
-
-  // Komplexitaets-Reagenzglas
-  const complexityPct = Math.min(100, Math.max(10, Math.round((item.totalComplexity / maxTotalComplexity) * 100)));
-  const complexityTone =
-    item.totalComplexity >= 100 || item.averageComplexity >= 5
-      ? 'bad'
-      : item.totalComplexity >= 30 || item.averageComplexity >= 3
-        ? 'warn'
-        : 'good';
+  const rp = item.riskProfile ?? { lowPercent: 100, moderatePercent: 0, highPercent: 0, veryHighPercent: 0 };
+  const mi = item.maintainabilityIndex ?? 100;
 
   const complexityTooltip = [
-    `<div class="tooltip-header">Complexity: <code>${escapeHtml(item.module)}</code></div>`,
+    `<div class="tooltip-header">Complexity &amp; Risk Profile: <code>${escapeHtml(item.module)}</code></div>`,
     '<div class="tooltip-grid">',
     `<div><span>Files:</span> <strong>${item.fileCount}</strong></div>`,
     `<div><span>Lines:</span> <strong>${item.lines}</strong></div>`,
     `<div><span>Functions:</span> <strong>${item.functionCount}</strong></div>`,
+    `<div><span>Maintainability (MI):</span> <strong>${mi}/100</strong></div>`,
     `<div><span>&#931; complexity:</span> <strong>${item.totalComplexity}</strong></div>`,
     `<div><span>&#216; complexity:</span> <strong>${item.averageComplexity}</strong></div>`,
     `<div><span>max complexity:</span> <strong>${item.maxComplexity}</strong></div>`,
+    `<div><span>Low Risk (1-5):</span> <strong>${rp.lowPercent}% LOC</strong></div>`,
+    `<div><span>Moderate (6-10):</span> <strong>${rp.moderatePercent}% LOC</strong></div>`,
+    `<div><span>High Risk (11-25):</span> <strong>${rp.highPercent}% LOC</strong></div>`,
+    `<div><span>Very High (>25):</span> <strong>${rp.veryHighPercent}% LOC</strong></div>`,
     '</div>',
   ].join('');
 
@@ -306,15 +305,17 @@ function renderModuleCard(item, maxTotalComplexity) {
     `<div class="module-card-meta"><span>${item.fileCount} files</span> &bull; <span>${item.lines} lines</span></div>`,
     '</div>',
     '<div class="module-vials-row">',
-    // Complexity Vial
+    // Complexity Vial (Alchemisten-Reagenzglas mit SIG-Flüssigkeiten)
     '<div class="vial-container">',
     '<span class="vial-label">Complexity</span>',
-    '<div class="vial">',
-    `<div class="vial-liquid vial-liquid-${complexityTone}" style="height: ${complexityPct}%">`,
+    '<div class="vial vial-segmented">',
+    rp.veryHighPercent > 0 ? `<div class="vial-segment vial-segment-very-high" style="height: ${rp.veryHighPercent}%" title="Very High Risk (>25): ${rp.veryHighPercent}% LOC"></div>` : '',
+    rp.highPercent > 0 ? `<div class="vial-segment vial-segment-high" style="height: ${rp.highPercent}%" title="High Risk (11-25): ${rp.highPercent}% LOC"></div>` : '',
+    rp.moderatePercent > 0 ? `<div class="vial-segment vial-segment-moderate" style="height: ${rp.moderatePercent}%" title="Moderate Risk (6-10): ${rp.moderatePercent}% LOC"></div>` : '',
+    `<div class="vial-segment vial-segment-low" style="height: ${rp.lowPercent}%" title="Low Risk (1-5): ${rp.lowPercent}% LOC"></div>`,
     '<div class="vial-bubbles"></div>',
     '</div>',
-    '</div>',
-    `<span class="vial-value-badge">&Sigma;&nbsp;${item.totalComplexity}</span>`,
+    `<span class="vial-value-badge">MI ${mi}</span>`,
     `<div class="vial-tooltip" role="tooltip">${complexityTooltip}</div>`,
     '</div>',
     // Coverage Vial
@@ -339,6 +340,7 @@ const GATE_RUNE_EMBLEMS = Object.freeze({
   depcruise: 'ᚱ',   // Raido (Structure, Pathways)
   typecheck: 'ᚨ',   // Ansuz (Wisdom, Truth)
   'unit-tests': 'ᛉ', // Algiz (Protection, Verification)
+  maintainability: 'ᛗ', // Mannaz (Mind & Maintainability)
 });
 
 /** @param {import('./gates.js').GateState} gate */
@@ -785,8 +787,12 @@ td.num { text-align: right; white-space: nowrap; }
 .vial-bubbles::before { left: 25%; width: 4px; height: 4px; animation: bubbleRise1 2.2s infinite linear; }
 .vial-bubbles::after { left: 60%; width: 3px; height: 3px; animation: bubbleRise2 2.8s infinite linear 0.9s; }
 .vial-liquid-bad { background: linear-gradient(180deg, #F87171 0%, #DC2626 100%); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
-.vial-liquid-warn { background: linear-gradient(180deg, #FBBF24 0%, #D97706 100%); box-shadow: 0 0 10px rgba(245, 208, 97, 0.4); }
-.vial-liquid-good { background: linear-gradient(180deg, #34D399 0%, #059669 100%); box-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
+.vial-segmented { display: flex; flex-direction: column-reverse; overflow: hidden; background: rgba(0, 0, 0, 0.4); }
+.vial-segment { width: 100%; transition: height 0.3s ease; min-height: 2px; }
+.vial-segment-low { background: linear-gradient(180deg, #34d399 0%, #059669 100%); }
+.vial-segment-moderate { background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%); }
+.vial-segment-high { background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); }
+.vial-segment-very-high { background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%); }
 .vial-value-badge { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--accent); }
 .vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14rem; transition: opacity 0.2s ease, transform 0.2s ease; }
 .vial-container:hover .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }

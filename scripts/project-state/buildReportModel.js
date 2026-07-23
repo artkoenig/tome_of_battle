@@ -72,9 +72,19 @@ export function buildReportModel({
   issueRefs = [],
   showFile = () => null,
 } = {}) {
-  const gates = buildGateStates({ workflowJob, runs: gateRuns });
+  const { moduleMetrics, overallComplexity, totalLines } = buildSizeFacts(sources);
+
+  // Maintainability Index Quality Gate (MI >= 65)
+  const computedGateRuns = {
+    ...gateRuns,
+    maintainability: {
+      exitCode: overallComplexity.maintainabilityIndex >= 65 ? 0 : 1,
+      output: `Overall Maintainability Index: ${overallComplexity.maintainabilityIndex}/100 (Threshold: >=65)`,
+    },
+  };
+
+  const gates = buildGateStates({ workflowJob, runs: computedGateRuns });
   const coverage = aggregateCoverage(coverageFinal, { rootPath });
-  const { moduleMetrics, totalLines } = buildSizeFacts(sources);
   const { issues: openIssues, unreadable } = collectOpenIssues(issueRefs, showFile);
   const metrics = buildMetrics({ gates, openIssues, totalLines });
 
@@ -85,6 +95,7 @@ export function buildReportModel({
     metrics,
     coverage,
     moduleMetrics,
+    overallComplexity,
     openIssues,
     unreadableIssues: unreadable,
     branchScope: { scannedRefs: issueRefs.map((ref) => ref.name) },
@@ -99,6 +110,7 @@ export function buildReportModel({
  * @param {ReadonlyArray<SourceFile>} sources
  * @returns {{
  *   moduleMetrics: import('./renderReport.js').ModuleMetric[],
+ *   overallComplexity: object,
  *   totalLines: number,
  * }}
  */
@@ -117,10 +129,12 @@ function buildSizeFacts(sources) {
       totalComplexity: moduleComplexity?.totalComplexity ?? 0,
       averageComplexity: moduleComplexity?.averageComplexity ?? 0,
       maxComplexity: moduleComplexity?.maxComplexity ?? 0,
+      maintainabilityIndex: moduleComplexity?.maintainabilityIndex ?? 100,
+      riskProfile: moduleComplexity?.riskProfile ?? { lowLoc: 0, moderateLoc: 0, highLoc: 0, veryHighLoc: 0, lowPercent: 100, moderatePercent: 0, highPercent: 0, veryHighPercent: 0 },
     };
   });
 
-  return { moduleMetrics, totalLines: loc.totalLines };
+  return { moduleMetrics, overallComplexity: complexity.overall, totalLines: loc.totalLines };
 }
 
 /**

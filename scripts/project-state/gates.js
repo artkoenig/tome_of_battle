@@ -71,6 +71,7 @@ export const GATE_DEFINITIONS = Object.freeze([
   { id: 'depcruise', label: 'dependency-cruiser (structure)', command: 'npm run depcruise' },
   { id: 'typecheck', label: 'Typecheck (tsc --noEmit)', command: 'npm run typecheck' },
   { id: 'unit-tests', label: 'Unit/component tests', command: 'npx vitest run' },
+  { id: 'maintainability', label: 'Maintainability Index', command: 'scripts/project-state/complexity.js' },
 ]);
 
 /**
