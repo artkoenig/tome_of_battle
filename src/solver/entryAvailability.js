@@ -42,6 +42,21 @@ function violationKey(error) {
 }
 
 /**
+ * Anzeige-Identität eines Grundes: der sichtbare Meldungsinhalt — `messageKey`,
+ * `messageParams` und `causes` (die `ValidationMessage` mitrendert) — bewusst **ohne**
+ * die `selectionId`. Eine count-behaftete Regel (z. B. `entry-max`) heftet ihren Bruch
+ * an *jede* betroffene Instanz, also an jede eigene `selectionId`; über `violationKey`
+ * (der die `selectionId` trägt) blieben die wortgleichen Gründe darum unentdeckt und
+ * würden im Aushebe-Dialog mehrfach erscheinen. Für die Grund-Anzeige zählt allein der
+ * Meldungsinhalt — `violationKey` steuert unverändert nur den Baseline-Diff.
+ * @param {import('../types.js').ValidationError} error
+ * @returns {string}
+ */
+function reasonDisplayKey(error) {
+  return JSON.stringify([error.messageKey ?? '', error.messageParams ?? null, error.causes ?? null]);
+}
+
+/**
  * Immutable Kopie der Liste, in deren Ziel-Force (per `force.id`, sonst die erste Force)
  * die synthetische Selektion angehängt ist. Andere Forces bleiben unberührt.
  */
@@ -130,10 +145,12 @@ export function getEntryAddAvailability({ entry, categoryId, force, roster, syst
     error => isBlockingAvailabilityViolation(error) && !baselineKeys.has(violationKey(error))
   );
 
-  // Nach Verstoß-Identität dedupliziert (mehrere Instanzen desselben Verstoßes ergeben
-  // einen Grund), Reihenfolge bleibt erhalten. Die Übersetzung folgt an der Oberfläche.
+  // Nach Anzeige-Identität dedupliziert (siehe reasonDisplayKey): wortgleiche Gründe —
+  // etwa eine count-behaftete Regel, die ihren Bruch an jede betroffene Instanz heftet —
+  // fallen zu einem Grund zusammen. Reihenfolge bleibt erhalten; Übersetzung folgt an der
+  // Oberfläche.
   const reasons = [...new Map(
-    selectReasonViolations(introducedBlocking).map(error => [violationKey(error), error])
+    selectReasonViolations(introducedBlocking).map(error => [reasonDisplayKey(error), error])
   ).values()];
   return { available: introducedBlocking.length === 0, reasons };
 }
