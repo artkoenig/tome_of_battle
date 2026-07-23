@@ -663,6 +663,8 @@ function escapeHtml(value) {
  * horizontales Scrollen lesbar.
  */
 const REPORT_STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
 :root {
   color-scheme: dark;
   --font-heading: "Cinzel", Georgia, serif;
