@@ -1,4 +1,4 @@
-Status: resolved
+Status: ready-for-agent
 Type: fix
 Blocked by: None
 
@@ -130,3 +130,4 @@ bei der Umsetzung geklärt (Nutzer-Entscheidung: „erstmal offen lassen"). Kand
 - [x] `npm test`, `npm run lint`, `npm run typecheck` grün.
 
 ## Comments
+- Wiedereröffnet: Fix #122 deckt nur das selectionEntry-Muster (scope=roster) ab. Die Definitive Edition (lexicanum-imperialis, gameSystemId 0d13-…) codiert die Pflicht-Ogerbullen-Regel als Wurzel-entryLink mit force-scoped min (Basis 0, per Standard-Modifier auf 1). collectScopedMinSelectors durchsucht nur catalogue.selectionEntries, nie catalogue.entryLinks → die Pflicht wird dort nicht erzwungen. Folge-Child-Issue angelegt.
