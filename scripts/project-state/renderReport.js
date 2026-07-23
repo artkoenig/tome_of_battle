@@ -251,9 +251,23 @@ function renderModuleTiles(moduleMetrics, coverage) {
 
   const cards = modules.map((item) => renderModuleCard(item)).join('\n');
 
+  const introHtml = [
+    '<div class="module-metrics-intro">',
+    '<p><strong>Metrics Overview:</strong> The <strong>Complexity vial</strong> visualizes the Software Improvement Group (SIG) Risk Profile based on cyclomatic complexity weighted by lines of code (LOC):</p>',
+    '<ul class="metrics-legend-list">',
+    '<li><span class="badge-dot dot-low"></span> <strong>Low Risk:</strong> Simple, easily maintainable code</li>',
+    '<li><span class="badge-dot dot-moderate"></span> <strong>Moderate Risk:</strong> Moderate complexity</li>',
+    '<li><span class="badge-dot dot-high"></span> <strong>High Risk:</strong> High complexity</li>',
+    '<li><span class="badge-dot dot-very-high"></span> <strong>Very High Risk:</strong> Very high complexity (refactoring candidate)</li>',
+    '<li><strong>MI:</strong> Maintainability Index (0–100)</li>',
+    '<li><strong>Coverage:</strong> Test statement coverage</li>',
+    '</ul>',
+    '</div>',
+  ].join('');
+
   return renderSubsection(
     'Module health & metrics',
-    `<div class="module-grid">${cards}</div>`,
+    `${introHtml}\n<div class="module-grid">${cards}</div>`,
   );
 }
 
@@ -793,7 +807,8 @@ td.num { text-align: right; white-space: nowrap; }
 .gate-card-status-ok { color: var(--ok-fg); }
 .gate-card-status-warn { color: var(--warn-fg); }
 .gate-card-status-inert { color: var(--muted); }
-.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14.5rem; transition: opacity 0.2s ease, transform 0.2s ease; }
+.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 1000; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; backdrop-filter: blur(12px); }
+.gate-card:hover { z-index: 60; }
 .gate-card:hover .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
 
 /* Gate Findings Details */
@@ -817,18 +832,29 @@ td.num { text-align: right; white-space: nowrap; }
   90% { opacity: 0.9; }
   100% { transform: translateY(-5rem) scale(1); opacity: 0; }
 }
+.module-metrics-intro { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 1.1rem; margin-top: 0.85rem; font-size: 0.84rem; color: var(--muted); line-height: 1.5; box-shadow: var(--shadow); }
+.module-metrics-intro p { margin: 0; }
+.module-metrics-intro strong { color: var(--text); }
+.metrics-legend-list { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 0.6rem 0 0 0; padding-left: 0; list-style: none; font-size: 0.78rem; }
+.metrics-legend-list li { display: flex; align-items: center; gap: 0.4rem; color: var(--muted); }
+.badge-dot { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%; flex-shrink: 0; }
+.dot-low { background: #34d399; }
+.dot-moderate { background: #fbbf24; }
+.dot-high { background: #f97316; }
+.dot-very-high { background: #c084fc; }
 .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
 .module-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem; transition: all 0.25s ease; }
-.module-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); }
+.module-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); z-index: 50; }
 .module-card-header { border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.45rem; }
 .module-card-title { font-family: var(--font-subheading); font-size: 0.92rem; font-weight: 700; color: var(--accent-strong); word-break: break-all; }
 .module-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.25rem; display: flex; gap: 0.5rem; }
 .module-vials-row { display: flex; justify-content: space-around; align-items: flex-end; padding: 0.4rem 0.5rem; gap: 1rem; }
 .vial-container { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; cursor: help; }
+.vial-container:hover { z-index: 60; }
 .vial-label { font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-radius: 4px 4px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
-.vial::before { content: ""; position: absolute; top: 0; left: -2px; right: -2px; height: 5px; background: rgba(212, 175, 55, 0.7); border-radius: 3px 3px 0 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); z-index: 5; }
-.vial::after { content: ""; position: absolute; top: 5px; left: 3px; width: 3px; bottom: 8px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05)); border-radius: 2px; z-index: 6; pointer-events: none; }
+.vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-top-width: 1px; border-radius: 2px 2px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.vial::before { content: ""; position: absolute; top: -1px; left: -2px; right: -2px; height: 2px; background: rgba(212, 175, 55, 0.5); border-radius: 2px 2px 0 0; z-index: 5; }
+.vial::after { content: ""; position: absolute; top: 2px; left: 3px; width: 3px; bottom: 8px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05)); border-radius: 2px; z-index: 6; pointer-events: none; }
 .vial-liquid { position: relative; width: 100%; border-radius: 0 0 14px 14px; transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
 .vial-bubbles { position: absolute; inset: 0; pointer-events: none; }
 .vial-bubbles::before, .vial-bubbles::after { content: ""; position: absolute; bottom: -4px; background: rgba(255, 255, 255, 0.7); border-radius: 50%; box-shadow: 0 0 3px rgba(255, 255, 255, 0.9); }
@@ -844,10 +870,10 @@ td.num { text-align: right; white-space: nowrap; }
 .vial-segment-high { background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); }
 .vial-segment-very-high { background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%); }
 .vial-value-badge { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--accent); }
-.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14rem; transition: opacity 0.2s ease, transform 0.2s ease; }
+.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 1000; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; backdrop-filter: blur(12px); }
 .vial-container:hover .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
-.tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; }
-.tooltip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--muted); }
+.tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
+.tooltip-grid { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8rem; color: var(--muted); }
 .tooltip-grid strong { color: var(--text); font-family: var(--font-mono); }
 .issue-card { position: relative; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.85rem; overflow: hidden; box-shadow: var(--shadow); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
 .issue-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: 0 8px 20px -4px rgba(212, 175, 55, 0.2); }
