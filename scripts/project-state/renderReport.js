@@ -253,14 +253,14 @@ function renderModuleTiles(moduleMetrics, coverage) {
 
   const introHtml = [
     '<div class="module-metrics-intro">',
-    '<p><strong>Erklärung der Metriken:</strong> Das <strong>Complexity-Reagenzglas</strong> visualisiert das Risiko-Profil nach dem SIG-Standard (Software Improvement Group) basierend auf der zyklomatischen Komplexität (CC) aller Funktionen im Modul, gewichtet nach Codezeilen (LOC):</p>',
+    '<p><strong>Metrics Overview:</strong> The <strong>Complexity vial</strong> visualizes the Software Improvement Group (SIG) Risk Profile based on the cyclomatic complexity (CC) of all functions in the module, weighted by lines of code (LOC):</p>',
     '<ul class="metrics-legend-list">',
-    '<li><span class="badge-dot dot-low"></span> <strong>Low Risk (CC 1–5):</strong> Einfacher, gut wartbarer Code</li>',
-    '<li><span class="badge-dot dot-moderate"></span> <strong>Moderate (CC 6–10):</strong> Mäßige Komplexität</li>',
-    '<li><span class="badge-dot dot-high"></span> <strong>High Risk (CC 11–25):</strong> Hohe Komplexität</li>',
-    '<li><span class="badge-dot dot-very-high"></span> <strong>Very High (&gt;25):</strong> Sehr hohe Komplexität (Refactoring-Kandidat)</li>',
+    '<li><span class="badge-dot dot-low"></span> <strong>Low Risk (CC 1–5):</strong> Simple, easily maintainable code</li>',
+    '<li><span class="badge-dot dot-moderate"></span> <strong>Moderate (CC 6–10):</strong> Moderate complexity</li>',
+    '<li><span class="badge-dot dot-high"></span> <strong>High Risk (CC 11–25):</strong> High complexity</li>',
+    '<li><span class="badge-dot dot-very-high"></span> <strong>Very High (&gt;25):</strong> Very high complexity (refactoring candidate)</li>',
     '<li><strong>MI:</strong> Maintainability Index (0–100)</li>',
-    '<li><strong>Coverage:</strong> Testabdeckung (Statements)</li>',
+    '<li><strong>Coverage:</strong> Test statement coverage</li>',
     '</ul>',
     '</div>',
   ].join('');
