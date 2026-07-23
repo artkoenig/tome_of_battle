@@ -18,14 +18,9 @@
  */
 import { buildGateStates, GateStatus, GateEnforcement } from './gates.js';
 import { aggregateCoverage } from './coverage.js';
-import { findLongFunctions, DEFAULT_LONG_FUNCTION_LINES } from './functions.js';
 import { aggregateLoc } from './loc.js';
-import { aggregateComplexity, DEFAULT_MAX_COMPLEX_FUNCTIONS } from './complexity.js';
-import { buildImportGraph, findCycles, findLayerViolations, DEFAULT_LAYERS } from './graph.js';
+import { aggregateComplexity } from './complexity.js';
 import { collectOpenIssues } from './issues.js';
-
-/** Wie viele der laengsten Funktionen der Bericht hoechstens auffuehrt. */
-export const DEFAULT_MAX_LONG_FUNCTIONS = 15;
 
 /** Beschriftungen der Kennzahlen -- an einer Stelle, damit sie nicht als Magie im Code liegen. */
 const METRIC_LABELS = Object.freeze({
@@ -33,8 +28,6 @@ const METRIC_LABELS = Object.freeze({
   blockingGates: 'Blocking gates',
   notRunGates: 'Gates not run',
   totalLines: 'Total lines of code',
-  longFunctions: 'Overlong functions',
-  importCycles: 'Import cycles',
 });
 
 const METRIC_HINTS = Object.freeze({
@@ -44,7 +37,7 @@ const METRIC_HINTS = Object.freeze({
 });
 
 /**
- * @typedef {object} SourceFile  Eine bereits eingelesene Quelldatei fuer die Funktionslaengen.
+ * @typedef {object} SourceFile  Eine bereits eingelesene Quelldatei.
  * @property {string} path    Pfad relativ zur Projektwurzel (fuer die Anzeige).
  * @property {string} source  Vollstaendiger Quelltext.
  */
@@ -57,12 +50,7 @@ const METRIC_HINTS = Object.freeze({
  * @property {object|null} [workflowJob]  Der geparste CI-Job (fuer die Gate-Wirksamkeit).
  * @property {Record<string, object>} [coverageFinal]  Inhalt von `coverage-final.json`.
  * @property {string} [rootPath]  Projektwurzel, aus den Coverage-Pfaden entfernt.
- * @property {ReadonlyArray<SourceFile>} [sources]  Produktivcode fuer Funktionslaengen, LOC und Komplexitaet.
- * @property {number} [longFunctionLimit]  Ab wie vielen Zeilen eine Funktion als lang gilt.
- * @property {number} [maxLongFunctions]  Obergrenze der aufgefuehrten langen Funktionen.
- * @property {number} [maxComplexFunctions]  Obergrenze der aufgefuehrten komplexen Funktionen.
- * @property {ReadonlyArray<object>} [cruiserModules]  Modulbericht von dependency-cruiser.
- * @property {ReadonlyArray<{ name: string, prefix: string }>} [layers]  Schichtung fuer Verstoesse.
+ * @property {ReadonlyArray<SourceFile>} [sources]  Produktivcode fuer LOC und Komplexitaet.
  * @property {ReadonlyArray<import('./issues.js').IssueRef>} [issueRefs]  Erreichbare Refs.
  * @property {(refName: string, filePath: string) => (string|null)} [showFile]  Injizierter Lesezugriff.
  */
@@ -81,33 +69,22 @@ export function buildReportModel({
   coverageFinal = {},
   rootPath = '',
   sources = [],
-  longFunctionLimit = DEFAULT_LONG_FUNCTION_LINES,
-  maxLongFunctions = DEFAULT_MAX_LONG_FUNCTIONS,
-  maxComplexFunctions = DEFAULT_MAX_COMPLEX_FUNCTIONS,
-  cruiserModules = [],
-  layers = DEFAULT_LAYERS,
   issueRefs = [],
   showFile = () => null,
 } = {}) {
   const gates = buildGateStates({ workflowJob, runs: gateRuns });
   const coverage = aggregateCoverage(coverageFinal, { rootPath });
-  const longFunctions = collectLongFunctions(sources, longFunctionLimit, maxLongFunctions);
-  const { moduleMetrics, totalLines, complexFunctions } = buildSizeFacts(sources, maxComplexFunctions);
-  const structure = buildStructureFacts(cruiserModules, layers);
+  const { moduleMetrics, totalLines } = buildSizeFacts(sources);
   const { issues: openIssues, unreadable } = collectOpenIssues(issueRefs, showFile);
-  const metrics = buildMetrics({ gates, openIssues, longFunctions, structure, longFunctionLimit, totalLines });
+  const metrics = buildMetrics({ gates, openIssues, totalLines });
 
   return {
     title,
     generatedAt,
-    assessment: deriveOverallAssessment(gates),
     gates,
     metrics,
     coverage,
     moduleMetrics,
-    complexFunctions,
-    longFunctions,
-    structure,
     openIssues,
     unreadableIssues: unreadable,
     branchScope: { scannedRefs: issueRefs.map((ref) => ref.name) },
@@ -117,20 +94,17 @@ export function buildReportModel({
 /**
  * Verbindet Codeumfang (LOC) und zyklomatische Komplexitaet je Modul zu einer
  * gemeinsamen Kennzahlenreihe -- beide sind Aggregate ueber dieselben Module, und
- * der Bericht zeigt sie in einer Tabelle nebeneinander. Dazu die Gesamtzeilen und
- * die Liste der komplexesten Funktionen.
+ * der Bericht zeigt sie in einer Tabelle nebeneinander.
  *
  * @param {ReadonlyArray<SourceFile>} sources
- * @param {number} maxComplexFunctions
  * @returns {{
  *   moduleMetrics: import('./renderReport.js').ModuleMetric[],
  *   totalLines: number,
- *   complexFunctions: import('./complexity.js').FunctionComplexity[],
  * }}
  */
-function buildSizeFacts(sources, maxComplexFunctions) {
+function buildSizeFacts(sources) {
   const loc = aggregateLoc(sources);
-  const complexity = aggregateComplexity(sources, { maxFunctions: maxComplexFunctions });
+  const complexity = aggregateComplexity(sources);
   const complexityByModule = new Map(complexity.modules.map((entry) => [entry.module, entry]));
 
   const moduleMetrics = loc.modules.map((locModule) => {
@@ -146,41 +120,7 @@ function buildSizeFacts(sources, maxComplexFunctions) {
     };
   });
 
-  return { moduleMetrics, totalLines: loc.totalLines, complexFunctions: complexity.mostComplex };
-}
-
-/**
- * Die laengsten Funktionen ueber alle Quelldateien hinweg, absteigend sortiert
- * und auf die Obergrenze gekuerzt.
- *
- * @param {ReadonlyArray<SourceFile>} sources
- * @param {number} limit
- * @param {number} max
- * @returns {import('./functions.js').LongFunction[]}
- */
-function collectLongFunctions(sources, limit, max) {
-  const all = sources.flatMap(({ path, source }) => findLongFunctions(source, { path, limit }));
-  return all.sort((a, b) => b.lineCount - a.lineCount || a.startLine - b.startLine).slice(0, max);
-}
-
-/**
- * @param {ReadonlyArray<object>} cruiserModules
- * @param {ReadonlyArray<{ name: string, prefix: string }>} layers
- * @returns {import('./renderReport.js').StructureFacts}
- */
-function buildStructureFacts(cruiserModules, layers) {
-  const graph = buildImportGraph(cruiserModules);
-  return {
-    moduleCount: Object.keys(graph).length,
-    dependencyCount: countEdges(graph),
-    cycles: findCycles(graph),
-    layerViolations: findLayerViolations(graph, layers),
-  };
-}
-
-/** @param {import('./graph.js').ImportGraph} graph */
-function countEdges(graph) {
-  return Object.values(graph).reduce((sum, targets) => sum + targets.length, 0);
+  return { moduleMetrics, totalLines: loc.totalLines };
 }
 
 /**
@@ -190,13 +130,10 @@ function countEdges(graph) {
  * @param {object} input
  * @param {ReadonlyArray<import('./gates.js').GateState>} input.gates
  * @param {ReadonlyArray<import('./issues.js').OpenIssue>} input.openIssues
- * @param {ReadonlyArray<import('./functions.js').LongFunction>} input.longFunctions
- * @param {import('./renderReport.js').StructureFacts} input.structure
- * @param {number} input.longFunctionLimit
  * @param {number} input.totalLines
  * @returns {import('./renderReport.js').Metric[]}
  */
-function buildMetrics({ gates, openIssues, longFunctions, structure, longFunctionLimit, totalLines }) {
+function buildMetrics({ gates, openIssues, totalLines }) {
   const blockingGates = gates.filter((gate) => gate.enforcement === GateEnforcement.Blocking).length;
   const notRunGates = gates.filter((gate) => gate.status === GateStatus.NotRun).length;
 
@@ -208,85 +145,10 @@ function buildMetrics({ gates, openIssues, longFunctions, structure, longFunctio
       notRunGates > 0 ? METRIC_HINTS.notRunGates : undefined,
     ),
     { label: METRIC_LABELS.totalLines, value: totalLines, hint: METRIC_HINTS.totalLines },
-    { label: METRIC_LABELS.longFunctions, value: longFunctions.length, hint: `over ${longFunctionLimit} lines` },
-    { label: METRIC_LABELS.importCycles, value: structure.cycles.length },
   ];
 }
 
 /** @param {import('./renderReport.js').Metric} metric @param {string|undefined} hint */
 function withOptionalHint(metric, hint) {
   return hint ? { ...metric, hint } : metric;
-}
-
-/**
- * Beschriftungen der abgeleiteten Urteils-Fakten -- an einer Stelle, damit sie
- * nicht als Magie im Code liegen.
- */
-const VERDICT_FACT_LABELS = Object.freeze({
-  blockingPassed: 'Passed blocking gates',
-  warningFindings: 'Warning-only gates with findings',
-  notRun: 'Gates not run',
-});
-
-/**
- * Zaehlt die Gates je betrachteter Eigenschaft. Das ist die reine, gemessene
- * Faktenbasis des Gesamturteils -- keine Deutung, nur Abzaehlen der bereits von
- * {@link buildGateStates} klassifizierten Zustaende.
- *
- * @param {ReadonlyArray<import('./gates.js').GateState>} gates
- */
-function countGateFacts(gates) {
-  const isBlocking = (gate) => gate.enforcement === GateEnforcement.Blocking;
-  const isWarning = (gate) => gate.enforcement === GateEnforcement.Warning;
-  const hasStatus = (status) => (gate) => gate.status === status;
-
-  return {
-    blockingTotal: gates.filter(isBlocking).length,
-    blockingPassed: gates.filter((gate) => isBlocking(gate) && hasStatus(GateStatus.Passed)(gate)).length,
-    blockingFindings: gates.filter((gate) => isBlocking(gate) && hasStatus(GateStatus.Findings)(gate)).length,
-    blockingNotRun: gates.filter((gate) => isBlocking(gate) && hasStatus(GateStatus.NotRun)(gate)).length,
-    warningFindings: gates.filter((gate) => isWarning(gate) && hasStatus(GateStatus.Findings)(gate)).length,
-    notRunTotal: gates.filter(hasStatus(GateStatus.NotRun)).length,
-  };
-}
-
-/**
- * Die Kopfzeile des Urteils nennt den schwerwiegendsten gemessenen Zustand der
- * blockierenden Gates zuerst: erst Befunde (die die CI scheitern lassen), dann
- * ein nicht angelaufenes Gate, sonst der gruene Fall.
- *
- * @param {ReturnType<typeof countGateFacts>} facts
- * @returns {string}
- */
-function deriveVerdictHeadline(facts) {
-  if (facts.blockingTotal === 0) return 'No blocking gates captured';
-  if (facts.blockingFindings > 0) {
-    return `${facts.blockingFindings} of ${facts.blockingTotal} blocking gates report findings`;
-  }
-  if (facts.blockingNotRun > 0) {
-    return `${facts.blockingNotRun} of ${facts.blockingTotal} blocking gates did not run`;
-  }
-  return `All ${facts.blockingTotal} blocking gates pass`;
-}
-
-/**
- * Erzeugt das Gesamturteil ausschliesslich aus den gemessenen Gate-Zustaenden --
- * eine reine Funktion ohne hand-gepflegten Text, sodass die Anzeige der
- * Gate-Tabelle nie widersprechen kann (ADR 0022: Anzeige leitet sich aus der
- * Quelle ab). Die Kopfzeile nennt den Zustand auf einen Blick, die Fakten sind
- * die nackten Zahlen dahinter.
- *
- * @param {ReadonlyArray<import('./gates.js').GateState>} gates
- * @returns {import('./renderReport.js').OverallAssessment}
- */
-export function deriveOverallAssessment(gates) {
-  const facts = countGateFacts(gates);
-  return {
-    headline: deriveVerdictHeadline(facts),
-    facts: [
-      `${VERDICT_FACT_LABELS.blockingPassed}: ${facts.blockingPassed} of ${facts.blockingTotal}`,
-      `${VERDICT_FACT_LABELS.warningFindings}: ${facts.warningFindings}`,
-      `${VERDICT_FACT_LABELS.notRun}: ${facts.notRunTotal}`,
-    ],
-  };
 }

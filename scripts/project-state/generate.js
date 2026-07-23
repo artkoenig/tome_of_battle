@@ -126,15 +126,6 @@ function readJsonFile(path, fallback) {
   }
 }
 
-/** Modulbericht von dependency-cruiser aus dessen JSON-Ausgabe; bei Abbruch leer. */
-function parseCruiserModules(graphStdout) {
-  try {
-    return JSON.parse(graphStdout).modules ?? [];
-  } catch {
-    return [];
-  }
-}
-
 /**
  * Der CI-Job, der die Gates ausfuehrt -- Grundlage der Wirksamkeits-Angabe. Fehlt
  * die Datei oder laesst sie sich nicht parsen, ist die Wirksamkeit eben unbekannt.
@@ -272,7 +263,7 @@ function formatTimestamp(date) {
  */
 export function generateReportHtml({ rootDir, now = new Date() }) {
   process.stderr.write('Gates ausfuehren ...\n');
-  const { gateRuns, graphStdout } = executeGates();
+  const { gateRuns } = executeGates();
 
   process.stderr.write('Rohdaten einlesen ...\n');
   const model = buildReportModel({
@@ -282,7 +273,6 @@ export function generateReportHtml({ rootDir, now = new Date() }) {
     coverageFinal: readJsonFile(join(rootDir, COVERAGE_FILE), {}),
     rootPath: rootDir,
     sources: readSourceFiles(rootDir),
-    cruiserModules: parseCruiserModules(graphStdout),
     issueRefs: collectIssueRefs(),
     showFile: showFileAtRef,
   });

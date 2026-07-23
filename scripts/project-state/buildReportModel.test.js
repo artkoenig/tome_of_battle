@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { buildReportModel, DEFAULT_MAX_LONG_FUNCTIONS, deriveOverallAssessment } from './buildReportModel.js';
+import { buildReportModel } from './buildReportModel.js';
 import { GateStatus, GateEnforcement, GateAbortReason } from './gates.js';
 
 const GENERATED_AT = '22. Juli 2026, 06:30 Uhr (Europe/Berlin)';
@@ -8,12 +8,6 @@ const GENERATED_AT = '22. Juli 2026, 06:30 Uhr (Europe/Berlin)';
 /** Minimal gueltige Eingabe; einzelne Tests ueberschreiben nur, was sie brauchen. */
 function baseInput(overrides = {}) {
   return { generatedAt: GENERATED_AT, ...overrides };
-}
-
-/** Ein Funktionskoerper mit einer bestimmten Zeilenzahl, damit die Laenge deterministisch ist. */
-function functionWithLines(name, bodyLines) {
-  const body = Array.from({ length: bodyLines }, (_, i) => `  const v${i} = ${i};`).join('\n');
-  return `function ${name}() {\n${body}\n  return 0;\n}\n`;
 }
 
 describe('project-state/buildReportModel', () => {
@@ -58,24 +52,7 @@ describe('project-state/buildReportModel', () => {
     expect(model.coverage[0].statements).toEqual({ covered: 2, total: 3, percent: 66.7 });
   });
 
-  it('collects long functions across all sources, sorted by length and capped', () => {
-    const model = buildReportModel(
-      baseInput({
-        sources: [
-          { path: 'src/a.js', source: functionWithLines('small', 3) },
-          { path: 'src/b.js', source: functionWithLines('big', 9) },
-        ],
-        longFunctionLimit: 3,
-        maxLongFunctions: 1,
-      }),
-    );
-
-    expect(model.longFunctions).toHaveLength(1);
-    expect(model.longFunctions[0].name).toBe('big');
-    expect(model.longFunctions[0].path).toBe('src/b.js');
-  });
-
-  it('aggregates LOC and cyclomatic complexity per module, total lines and most complex functions', () => {
+  it('aggregates LOC and cyclomatic complexity per module and total lines', () => {
     const model = buildReportModel(
       baseInput({
         sources: [
@@ -92,28 +69,6 @@ describe('project-state/buildReportModel', () => {
 
     const totalLines = model.metrics.find((metric) => metric.label === 'Total lines of code');
     expect(totalLines.value).toBe(7); // 4 (engine) + 3 (roster)
-
-    expect(model.complexFunctions[0]).toMatchObject({ name: 'solve', complexity: 3 });
-  });
-
-  it('derives structure facts (modules, dependencies, cycles, layer violations) from the cruiser graph', () => {
-    const model = buildReportModel(
-      baseInput({
-        cruiserModules: [
-          { source: 'src/a.js', dependencies: [{ resolved: 'src/b.js' }] },
-          { source: 'src/b.js', dependencies: [{ resolved: 'src/a.js' }] },
-          { source: 'src/parser/p.js', dependencies: [{ resolved: 'src/solver/s.js' }] },
-          { source: 'src/solver/s.js', dependencies: [] },
-        ],
-      }),
-    );
-
-    expect(model.structure.moduleCount).toBe(4);
-    expect(model.structure.dependencyCount).toBe(3);
-    expect(model.structure.cycles).toEqual([['src/a.js', 'src/b.js']]);
-    expect(model.structure.layerViolations).toEqual([
-      { from: 'src/parser/p.js', to: 'src/solver/s.js', fromLayer: 'parser', toLayer: 'solver' },
-    ]);
   });
 
   it('collects open issues over the injected refs and exposes the scanned refs as the blind spot', () => {
@@ -152,7 +107,7 @@ describe('project-state/buildReportModel', () => {
     expect(model.branchScope.scannedRefs).toEqual(['origin/main', 'origin/issue/bar']);
   });
 
-  it('builds metrics that summarize open issues, gate enforcement and structure at a glance', () => {
+  it('builds metrics that summarize open issues and gate enforcement at a glance', () => {
     const model = buildReportModel(
       baseInput({
         gateRuns: {
@@ -160,12 +115,6 @@ describe('project-state/buildReportModel', () => {
           depcruise: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
         },
         workflowJob: { steps: [{ run: 'npm run lint' }] },
-        cruiserModules: [
-          { source: 'src/a.js', dependencies: [{ resolved: 'src/b.js' }] },
-          { source: 'src/b.js', dependencies: [{ resolved: 'src/a.js' }] },
-        ],
-        sources: [{ path: 'src/b.js', source: functionWithLines('big', 9) }],
-        longFunctionLimit: 3,
       }),
     );
 
@@ -174,8 +123,6 @@ describe('project-state/buildReportModel', () => {
     expect(byLabel['Blocking gates'].value).toBe('1/5');
     expect(byLabel['Gates not run'].value).toBe(4);
     expect(byLabel['Gates not run'].hint).toMatch(/no green result/);
-    expect(byLabel['Overlong functions'].value).toBe(1);
-    expect(byLabel['Import cycles'].value).toBe(1);
   });
 
   it('drops the not-run hint when every gate actually ran', () => {
@@ -194,78 +141,5 @@ describe('project-state/buildReportModel', () => {
     const notRun = model.metrics.find((metric) => metric.label === 'Gates not run');
     expect(notRun.value).toBe(0);
     expect(notRun.hint).toBeUndefined();
-  });
-
-  it('derives the overall assessment from measured gate states, without any hand text', () => {
-    // Nur lint steht im Workflow und laeuft gruen -> das einzige blockierende Gate
-    // besteht; die uebrigen ohne Lauf sind nicht angelaufen (Wirksamkeit unbekannt).
-    const model = buildReportModel(
-      baseInput({
-        gateRuns: { lint: { exitCode: 0, output: 'ok' } },
-        workflowJob: { steps: [{ run: 'npm run lint' }] },
-      }),
-    );
-
-    // Kein hand-gepflegtes Einordnungs-Feld mehr im Modell.
-    expect(model.findingAssessments).toBeUndefined();
-    // Die Kopfzeile ist aus den Messwerten abgeleitet, nicht hand-formuliert.
-    expect(model.assessment.headline).toBe('All 1 blocking gates pass');
-    expect(Array.isArray(model.assessment.facts)).toBe(true);
-    expect(model.assessment.facts).toContain('Passed blocking gates: 1 of 1');
-    expect(model.assessment.facts).toContain('Gates not run: 4');
-  });
-
-  describe('deriveOverallAssessment', () => {
-    /** Baut einen Gate-Zustand mit nur den fuer das Urteil relevanten Feldern. */
-    function gate(status, enforcement) {
-      return { id: status, label: status, command: status, status, enforcement, abortReason: null, exitCode: 0 };
-    }
-
-    it('meldet den gruenen Fall, wenn alle blockierenden Gates bestehen', () => {
-      const assessment = deriveOverallAssessment([
-        gate(GateStatus.Passed, GateEnforcement.Blocking),
-        gate(GateStatus.Passed, GateEnforcement.Blocking),
-      ]);
-      expect(assessment.headline).toBe('All 2 blocking gates pass');
-      expect(assessment.facts).toContain('Passed blocking gates: 2 of 2');
-      expect(assessment.facts).toContain('Gates not run: 0');
-    });
-
-    it('nennt Befunde eines blockierenden Gates zuerst -- der schwerste Zustand', () => {
-      const assessment = deriveOverallAssessment([
-        gate(GateStatus.Findings, GateEnforcement.Blocking),
-        gate(GateStatus.NotRun, GateEnforcement.Blocking),
-      ]);
-      expect(assessment.headline).toBe('1 of 2 blocking gates report findings');
-    });
-
-    it('meldet ein nicht angelaufenes blockierendes Gate, wenn keines Befunde hat', () => {
-      const assessment = deriveOverallAssessment([
-        gate(GateStatus.Passed, GateEnforcement.Blocking),
-        gate(GateStatus.NotRun, GateEnforcement.Blocking),
-      ]);
-      expect(assessment.headline).toBe('1 of 2 blocking gates did not run');
-      expect(assessment.facts).toContain('Gates not run: 1');
-    });
-
-    it('zaehlt nur-Hinweis-Befunde getrennt, ohne sie zu deuten', () => {
-      const assessment = deriveOverallAssessment([
-        gate(GateStatus.Passed, GateEnforcement.Blocking),
-        gate(GateStatus.Findings, GateEnforcement.Warning),
-        gate(GateStatus.NotRun, GateEnforcement.Warning),
-      ]);
-      expect(assessment.headline).toBe('All 1 blocking gates pass');
-      expect(assessment.facts).toContain('Warning-only gates with findings: 1');
-      expect(assessment.facts).toContain('Gates not run: 1');
-    });
-  });
-
-  it('caps long functions at the documented default when no override is given', () => {
-    const sources = Array.from({ length: DEFAULT_MAX_LONG_FUNCTIONS + 5 }, (_, i) => ({
-      path: `src/f${i}.js`,
-      source: functionWithLines(`fn${i}`, 60),
-    }));
-    const model = buildReportModel(baseInput({ sources }));
-    expect(model.longFunctions).toHaveLength(DEFAULT_MAX_LONG_FUNCTIONS);
   });
 });
