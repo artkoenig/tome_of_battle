@@ -1,0 +1,129 @@
+{
+  "$schema": "https://raw.githubusercontent.com/BSData/schemas/master/src/catpkg.schema.json",
+  "name": "whfb6",
+  "description": "Warhammer Fantasy Battle 6th Edition",
+  "battleScribeVersion": "2.03",
+  "repositoryUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/catpkg.json",
+  "githubUrl": "https://github.com/artkoenig/Warhammer-Fantasy-6th-edition",
+  "repositoryFiles": [
+    {
+      "id": "b252-9ed2-2e94-382d",
+      "name": "Bretonnia",
+      "type": "catalogue",
+      "revision": 8,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Bretonnia.cat"
+    },
+    {
+      "id": "c768-2f35-01cf-9ac8",
+      "name": "Chaos",
+      "type": "catalogue",
+      "revision": 12,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Chaos.cat"
+    },
+    {
+      "id": "7305-7dca-59e2-5b6a",
+      "name": "Dark Elves",
+      "type": "catalogue",
+      "revision": 6,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Dark%20Elves.cat"
+    },
+    {
+      "id": "4887-12ed-22a2-f461",
+      "name": "Dogs of War",
+      "type": "catalogue",
+      "revision": 4,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Dogs%20of%20War.cat"
+    },
+    {
+      "id": "3a5f-213a-5ffc-4ec0",
+      "name": "Dwarfs",
+      "type": "catalogue",
+      "revision": 4,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Dwarfs.cat"
+    },
+    {
+      "id": "5c3d-7f54-5a40-6940",
+      "name": "Empire",
+      "type": "catalogue",
+      "revision": 11,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Empire.cat"
+    },
+    {
+      "id": "3878-c4be-6286-15a7",
+      "name": "High Elf",
+      "type": "catalogue",
+      "revision": 6,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/High%20Elf.cat"
+    },
+    {
+      "id": "5f3d-d4db-ca2f-f63d",
+      "name": "Lizardmen",
+      "type": "catalogue",
+      "revision": 8,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Lizardmen.cat"
+    },
+    {
+      "id": "731d-5b13-2a92-5426",
+      "name": "Ogre Kingdoms",
+      "type": "catalogue",
+      "revision": 2,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Ogre%20Kingdoms.cat"
+    },
+    {
+      "id": "b126-4acf-f567-bea6",
+      "name": "Orcs and Goblins",
+      "type": "catalogue",
+      "revision": 14,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Orcs%20and%20Goblins.cat"
+    },
+    {
+      "id": "3bc2-0f8c-cb9c-4a90",
+      "name": "RH Chaos Dwarfs",
+      "type": "catalogue",
+      "revision": 2,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/RH%20Chaos%20Dwarfs.cat"
+    },
+    {
+      "id": "4c28-98b4-2676-d65a",
+      "name": "RH Orcs and Goblins",
+      "type": "catalogue",
+      "revision": 2,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/RH%20Orcs%20and%20Goblins.cat"
+    },
+    {
+      "id": "cac6-5f02-f95d-a403",
+      "name": "Skaven",
+      "type": "catalogue",
+      "revision": 5,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Skaven.cat"
+    },
+    {
+      "id": "9945-8537-0944-c67b",
+      "name": "Tomb Kings",
+      "type": "catalogue",
+      "revision": 7,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Tomb%20Kings.cat"
+    },
+    {
+      "id": "ea4b-9294-3427-1fc1",
+      "name": "Vampire Counts",
+      "type": "catalogue",
+      "revision": 10,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Vampire%20Counts.cat"
+    },
+    {
+      "id": "6d8e-38d9-3c69-febf",
+      "name": "Warhammer Fantasy Battle 6th edition",
+      "type": "gamesystem",
+      "revision": 9,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Warhammer%20Fantasy%20Battle%206th%20edition.gst"
+    },
+    {
+      "id": "26df-b21d-fea9-9520",
+      "name": "Wood Elf",
+      "type": "catalogue",
+      "revision": 4,
+      "fileUrl": "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-6th-edition/master/Wood%20Elf.cat"
+    }
+  ]
+}
