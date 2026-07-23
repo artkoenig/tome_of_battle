@@ -121,15 +121,14 @@ describe('project-state/renderReport', () => {
   });
 
   describe('App-Design (Epic Battlefield Dark Fantasy Palette)', () => {
-    it('traegt die App-Palette und Cinzel/Outfit/Inter Schriften self-contained', () => {
+    it('traegt die App-Palette und Cinzel/Outfit/Inter Schriften wie auf der Landingpage', () => {
       const html = renderReport(makeModel());
       // Gold-Akzent und Dark Slate aus der Epic Battlefield Palette
       expect(html).toContain('--accent');
       expect(html).toContain('#F5D061'); // Gold
       expect(html).toContain('#07090E'); // Dark Slate
       expect(html).toContain('--font-heading');
-      expect(html).toMatch(/--font-body:[^;]*sans-serif/);
-      expect(html).not.toMatch(/fonts\.googleapis|fonts\.gstatic/i);
+      expect(html).toContain('fonts.googleapis.com');
     });
   });
 

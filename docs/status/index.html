@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Project Status Report</title>
-<style>:root {
+<style>@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
   color-scheme: dark;
   --font-heading: "Cinzel", Georgia, serif;
   --font-subheading: "Outfit", sans-serif;
@@ -227,7 +229,7 @@ td.num { text-align: right; white-space: nowrap; }
 <header class="page-header">
 <div class="header-nav"><a href="../" class="back-link">← Back to landing page</a></div>
 <h1>Project Status Report</h1>
-<p class="generated-at">Captured: 23 Jul 2026, 10:07 (Europe/Berlin)</p>
+<p class="generated-at">Captured: 23 Jul 2026, 10:10 (Europe/Berlin)</p>
 </header>
 <div class="tabs">
 <input type="radio" name="report-tab" id="tab-healthcheck" class="tab-radio" checked>
@@ -241,13 +243,13 @@ td.num { text-align: right; white-space: nowrap; }
 <div class="gate-card rune-card"><div class="rune-wrapper"><div class="rune-stone rune-warn"><span class="rune-glyph" title="Rune ᚦ">ᚦ</span></div></div><span class="gate-card-label">Knip (dead code)</span><span class="gate-card-status gate-card-status-warn">findings</span><div class="gate-tooltip" role="tooltip"><div class="tooltip-header">Gate: <strong>Knip (dead code)</strong></div><div class="tooltip-grid"><div><span>Command:</span> <code>npm run knip</code></div><div><span>Status:</span> <strong>findings</strong></div><div><span>Enforcement:</span> <strong>warning only</strong></div></div></div></div>
 <div class="gate-card rune-card"><div class="rune-wrapper"><div class="rune-stone rune-ok"><span class="rune-glyph" title="Rune ᚱ">ᚱ</span></div></div><span class="gate-card-label">dependency-cruiser (structure)</span><span class="gate-card-status gate-card-status-ok">passed</span><div class="gate-tooltip" role="tooltip"><div class="tooltip-header">Gate: <strong>dependency-cruiser (structure)</strong></div><div class="tooltip-grid"><div><span>Command:</span> <code>npm run depcruise</code></div><div><span>Status:</span> <strong>passed</strong></div><div><span>Enforcement:</span> <strong>warning only</strong></div></div></div></div>
 <div class="gate-card rune-card"><div class="rune-wrapper"><div class="rune-stone rune-ok"><span class="rune-glyph" title="Rune ᚨ">ᚨ</span></div></div><span class="gate-card-label">Typecheck (tsc --noEmit)</span><span class="gate-card-status gate-card-status-ok">passed</span><div class="gate-tooltip" role="tooltip"><div class="tooltip-header">Gate: <strong>Typecheck (tsc --noEmit)</strong></div><div class="tooltip-grid"><div><span>Command:</span> <code>npm run typecheck</code></div><div><span>Status:</span> <strong>passed</strong></div><div><span>Enforcement:</span> <strong>blocking</strong></div></div></div></div>
-<div class="gate-card rune-card"><div class="rune-wrapper"><div class="rune-stone rune-ok"><span class="rune-glyph" title="Rune ᛉ">ᛉ</span></div></div><span class="gate-card-label">Unit/component tests</span><span class="gate-card-status gate-card-status-ok">passed</span><div class="gate-tooltip" role="tooltip"><div class="tooltip-header">Gate: <strong>Unit/component tests</strong></div><div class="tooltip-grid"><div><span>Command:</span> <code>npx vitest run</code></div><div><span>Status:</span> <strong>passed</strong></div><div><span>Enforcement:</span> <strong>blocking</strong></div></div></div></div>
+<div class="gate-card rune-card"><div class="rune-wrapper"><div class="rune-stone rune-inert"><span class="rune-glyph" title="Rune ᛉ">ᛉ</span></div></div><span class="gate-card-label">Unit/component tests</span><span class="gate-card-status gate-card-status-inert">not run</span><div class="gate-tooltip" role="tooltip"><div class="tooltip-header">Gate: <strong>Unit/component tests</strong></div><div class="tooltip-grid"><div><span>Command:</span> <code>npx vitest run</code></div><div><span>Status:</span> <strong>not run</strong></div><div><span>Enforcement:</span> <strong>blocking</strong></div><div><span>Reason:</span> <strong>unsupported Node version</strong></div></div></div></div>
 <div class="gate-card rune-card"><div class="rune-wrapper"><div class="rune-stone rune-ok"><span class="rune-glyph" title="Rune ᛗ">ᛗ</span></div></div><span class="gate-card-label">Maintainability Index</span><span class="gate-card-status gate-card-status-ok">passed</span><div class="gate-tooltip" role="tooltip"><div class="tooltip-header">Gate: <strong>Maintainability Index</strong></div><div class="tooltip-grid"><div><span>Command:</span> <code>scripts/project-state/complexity.js</code></div><div><span>Status:</span> <strong>passed</strong></div><div><span>Enforcement:</span> <strong>enforcement unknown</strong></div></div></div></div></div>
 <details class="gate-findings-details"><summary class="gate-findings-summary"><span class="gate-findings-title">&#128269; View Gate Findings &amp; Outputs (6)</span></summary><div class="gate-findings-list"><details class="gate-finding-item"><summary class="gate-finding-header"><span class="rune-glyph-small">ᛏ</span><strong>oxlint</strong><span class="gate-card-status gate-card-status-ok">passed</span></summary><div class="gate-finding-body"><pre><code>&gt; army_builder@1.7.0 lint
 &gt; oxlint
 
 Found 0 warnings and 0 errors.
-Finished in 17ms on 296 files with 92 rules using 14 threads.</code></pre></div></details>
+Finished in 20ms on 296 files with 92 rules using 14 threads.</code></pre></div></details>
 <details class="gate-finding-item"><summary class="gate-finding-header"><span class="rune-glyph-small">ᚦ</span><strong>Knip (dead code)</strong><span class="gate-card-status gate-card-status-warn">findings</span></summary><div class="gate-finding-body"><pre><code>&gt; army_builder@1.7.0 knip
 &gt; knip
 
@@ -14776,204 +14778,204 @@ src/parser/schema/**    knip.json  Remove from ignore</code></pre></div></detail
 }</code></pre></div></details>
 <details class="gate-finding-item"><summary class="gate-finding-header"><span class="rune-glyph-small">ᚨ</span><strong>Typecheck (tsc --noEmit)</strong><span class="gate-card-status gate-card-status-ok">passed</span></summary><div class="gate-finding-body"><pre><code>&gt; army_builder@1.7.0 typecheck
 &gt; tsc --noEmit</code></pre></div></details>
-<details class="gate-finding-item"><summary class="gate-finding-header"><span class="rune-glyph-small">ᛉ</span><strong>Unit/component tests</strong><span class="gate-card-status gate-card-status-ok">passed</span></summary><div class="gate-finding-body"><pre><code>RUN  v3.2.7 /Users/artkoenig/Workspace/army_builder
+<details class="gate-finding-item"><summary class="gate-finding-header"><span class="rune-glyph-small">ᛉ</span><strong>Unit/component tests</strong><span class="gate-card-status gate-card-status-inert">not run</span></summary><div class="gate-finding-body"><pre><code>RUN  v3.2.7 /Users/artkoenig/Workspace/army_builder
       Coverage enabled with v8
 
- ✓ scripts/catalog-fork/generate-catpkg.test.js (1 test) 237ms
- ✓ src/parser/importSchemaGate.test.js (7 tests) 225ms
- ✓ src/parser/schemaValidator.test.js (7 tests) 302ms
- ✓ src/components/RulesIndexDialog.test.jsx (15 tests) 188ms
- ✓ src/solver/optionsCollector.groupedMountSubOption.integration.test.js (2 tests) 301ms
- ✓ src/hooks/useAppData.test.js (7 tests) 389ms
- ✓ src/components/editor/OptionGroup.test.jsx (31 tests) 300ms
- ✓ src/App.test.jsx (10 tests) 279ms
- ✓ src/components/RosterEditor.test.jsx (23 tests) 222ms
- ✓ src/components/editor/SelectionConfigurator.nestedSubOptions.integration.test.jsx (1 test) 351ms
- ✓ src/hooks/useRoster.test.js (37 tests) 497ms
- ✓ src/components/Importer.test.jsx (28 tests) 574ms
- ✓ src/components/SettingsDialog.test.jsx (12 tests) 144ms
- ✓ src/components/editor/UnitSelectionCard.test.jsx (28 tests) 147ms
- ✓ src/components/AppDialogs.test.jsx (7 tests) 77ms
- ✓ src/components/RosterDashboard.test.jsx (9 tests) 190ms
- ✓ src/db/migrations.test.js (10 tests) 165ms
- ✓ src/contexts/SettingsContext.test.jsx (4 tests) 86ms
- ✓ src/components/editor/OptionGroup.groupConstraints.regression.test.jsx (5 tests) 148ms
- ✓ scripts/generate-rules-index.test.js (14 tests) 94ms
- ✓ src/components/editor/ListRuleChecklist.test.jsx (9 tests) 150ms
- ✓ src/hooks/usePlayState.test.js (6 tests) 76ms
- ✓ src/components/PlayMode.test.jsx (12 tests) 117ms
- ✓ src/components/RosterEditor.listRules.test.jsx (3 tests) 79ms
- ✓ src/db/catalogUpdate.test.js (29 tests) 73ms
- ✓ src/utils/rosterSerialization.test.js (16 tests) 52ms
- ✓ src/components/play/PlayUnitDetails.test.jsx (14 tests) 90ms
- ✓ src/hooks/useRosterList.test.js (18 tests) 67ms
- ✓ scripts/generate-schema-module.test.js (4 tests) 76ms
- ✓ src/components/editor/RosterSidebar.test.jsx (9 tests) 68ms
- ✓ src/components/PlayMode.ruleLinks.test.jsx (8 tests) 51ms
- ✓ src/components/editor/RosterCategorySection.test.jsx (12 tests) 55ms
- ✓ src/components/RosterEditor.ruleLinks.test.jsx (4 tests) 46ms
- ✓ src/parser/catalogEditor.entryUpdateSerialization.test.js (3 tests) 14ms
- ✓ src/components/editor/NewRosterModal.test.jsx (4 tests) 46ms
- ✓ src/solver/callSites.catalogueCollisions.test.jsx (5 tests) 70ms
- ✓ src/components/editor/ForceEditorSection.test.jsx (9 tests) 40ms
- ✓ src/db/database.systemPersistence.test.js (4 tests) 35ms
- ✓ src/solver/sharedQueryScope.test.js (16 tests) 16ms
- ✓ src/solver/parser.test.js (6 tests) 41ms
- ✓ src/components/editor/CategoryCountBadge.test.jsx (5 tests) 60ms
- ✓ src/utils/rosterSerialization.integration.test.js (10 tests) 3267ms
-   ✓ Real-catalogue round-trip: &#39;Orcs &amp; Goblins (Aggro Orks)&#39; &gt; imports to exactly 2000 points with derived costs  449ms
-   ✓ Real-catalogue round-trip: &#39;Orcs &amp; Goblins (Aggro Orks)&#39; &gt; recognises the chosen options after import and is reconcile-stable  425ms
-   ✓ Real-catalogue round-trip: &#39;Orcs &amp; Goblins (Aggro Orks)&#39; &gt; semantic round-trip: export then re-import keeps 2000 points and validation  409ms
-   ✓ Real-catalogue round-trip: &#39;Vampire Counts (Blood Dragons)&#39; &gt; recognises the chosen options after import and is reconcile-stable  344ms
-   ✓ Real-catalogue round-trip: &#39;Vampire Counts (Blood Dragons)&#39; &gt; semantic round-trip: export then re-import keeps 2000 points and validation  385ms
- ✓ src/components/editor/RosterValidationPanel.test.jsx (6 tests) 38ms
- ✓ src/components/editor/RosterEditorTopBar.test.jsx (7 tests) 62ms
- ✓ src/components/play/PlayUnitDetails.infogroups.test.jsx (2 tests) 38ms
- ✓ src/components/editor/SelectionConfigurator.test.jsx (6 tests) 37ms
- ✓ src/components/editor/CategoryUnitAdder.test.jsx (2 tests) 28ms
- ✓ src/hooks/useViewportHeight.test.js (8 tests) 15ms
- ✓ src/components/i18nEnglishSmoke.test.jsx (2 tests) 46ms
- ✓ src/components/editor/UnitChips.test.jsx (4 tests) 36ms
- ✓ scripts/project-state/renderReport.test.js (23 tests) 22ms
- ✓ src/components/editor/RuleChipIcon.test.jsx (8 tests) 23ms
- ✓ src/parser/xmlParser.infoGroups.test.js (4 tests) 41ms
- ✓ scripts/catalog-fork/catalogRevision.test.js (29 tests) 22ms
- ✓ src/solver/rosterCounter.costTypeLabel.test.js (8 tests) 14ms
- ✓ src/hooks/useAppNavigation.test.js (7 tests) 19ms
- ✓ src/components/editor/UnitCardList.test.jsx (4 tests) 23ms
- ✓ src/components/editor/CategoryUnitAdder.availability.test.jsx (3 tests) 29ms
- ✓ scripts/project-state/functions.test.js (9 tests) 12ms
- ✓ src/solver/rosterValidator.groupConstraintCostType.test.js (4 tests) 17ms
- ✓ scripts/project-state/complexity.test.js (10 tests) 11ms
- ✓ src/parser/catalogEditor.test.js (22 tests) 23ms
- ✓ src/parser/xmlParser.categoryLinkConstraints.test.js (2 tests) 10ms
- ✓ src/hooks/usePwaLifecycle.test.js (15 tests) 19ms
- ✓ src/hooks/useUndoableState.test.js (11 tests) 26ms
- ✓ src/components/PreviewBadge.test.jsx (2 tests) 18ms
- ✓ scripts/project-state/graph.test.js (13 tests) 9ms
+ ✓ src/parser/importSchemaGate.test.js (7 tests) 214ms
+ ✓ scripts/catalog-fork/generate-catpkg.test.js (1 test) 250ms
+ ✓ src/parser/schemaValidator.test.js (7 tests) 288ms
+ ✓ src/solver/optionsCollector.groupedMountSubOption.integration.test.js (2 tests) 253ms
+ ✓ src/components/RosterDashboard.test.jsx (9 tests) 219ms
+ ✓ src/components/editor/OptionGroup.test.jsx (31 tests) 260ms
+ ✓ src/hooks/useAppData.test.js (7 tests) 406ms
+ ✓ src/components/editor/SelectionConfigurator.nestedSubOptions.integration.test.jsx (1 test) 355ms
+ ✓ src/App.test.jsx (10 tests) 312ms
+ ✓ src/components/RosterEditor.test.jsx (23 tests) 252ms
+ ✓ src/components/Importer.test.jsx (28 tests) 566ms
+ ✓ src/hooks/useRoster.test.js (37 tests) 538ms
+ ✓ src/db/migrations.test.js (10 tests) 152ms
+ ✓ src/components/RulesIndexDialog.test.jsx (15 tests) 160ms
+ ✓ src/components/editor/ListRuleChecklist.test.jsx (9 tests) 149ms
+ ✓ src/components/SettingsDialog.test.jsx (12 tests) 142ms
+ ✓ scripts/generate-rules-index.test.js (14 tests) 80ms
+ ✓ src/components/editor/OptionGroup.groupConstraints.regression.test.jsx (5 tests) 143ms
+ ✓ src/contexts/SettingsContext.test.jsx (4 tests) 80ms
+ ✓ src/components/editor/UnitSelectionCard.test.jsx (28 tests) 146ms
+ ✓ src/components/play/PlayUnitDetails.test.jsx (14 tests) 89ms
+ ✓ src/components/RosterEditor.listRules.test.jsx (3 tests) 95ms
+ ✓ src/components/PlayMode.test.jsx (12 tests) 166ms
+ ✓ src/components/AppDialogs.test.jsx (7 tests) 160ms
+ ✓ scripts/generate-schema-module.test.js (4 tests) 92ms
+ ✓ src/db/catalogUpdate.test.js (29 tests) 83ms
+ ✓ src/hooks/usePlayState.test.js (6 tests) 72ms
+ ✓ src/hooks/useRosterList.test.js (18 tests) 54ms
+ ✓ src/components/editor/CategoryCountBadge.test.jsx (5 tests) 34ms
+ ✓ src/components/editor/RosterSidebar.test.jsx (9 tests) 56ms
+ ✓ src/components/editor/RosterEditorTopBar.test.jsx (7 tests) 50ms
+ ✓ src/solver/callSites.catalogueCollisions.test.jsx (5 tests) 61ms
+ ✓ src/components/editor/RosterCategorySection.test.jsx (12 tests) 36ms
+ ✓ src/utils/rosterSerialization.test.js (16 tests) 68ms
+ ✓ src/components/PlayMode.ruleLinks.test.jsx (8 tests) 83ms
+ ✓ src/components/RosterEditor.ruleLinks.test.jsx (4 tests) 67ms
+ ✓ src/parser/xmlParser.infoGroups.test.js (4 tests) 20ms
+ ✓ src/components/editor/NewRosterModal.test.jsx (4 tests) 54ms
+ ✓ src/db/database.settings.test.js (3 tests) 33ms
+ ✓ src/solver/parser.test.js (6 tests) 48ms
+ ✓ src/utils/rosterSerialization.integration.test.js (10 tests) 3061ms
+   ✓ Real-catalogue round-trip: &#39;Orcs &amp; Goblins (Aggro Orks)&#39; &gt; imports to exactly 2000 points with derived costs  380ms
+   ✓ Real-catalogue round-trip: &#39;Orcs &amp; Goblins (Aggro Orks)&#39; &gt; recognises the chosen options after import and is reconcile-stable  420ms
+   ✓ Real-catalogue round-trip: &#39;Orcs &amp; Goblins (Aggro Orks)&#39; &gt; semantic round-trip: export then re-import keeps 2000 points and validation  444ms
+   ✓ Real-catalogue round-trip: &#39;Vampire Counts (Blood Dragons)&#39; &gt; recognises the chosen options after import and is reconcile-stable  313ms
+ ✓ src/components/editor/ForceEditorSection.test.jsx (9 tests) 55ms
+ ✓ src/components/i18nEnglishSmoke.test.jsx (2 tests) 40ms
+ ✓ src/components/play/PlayUnitDetails.infogroups.test.jsx (2 tests) 31ms
+ ✓ src/components/editor/RosterValidationPanel.test.jsx (6 tests) 70ms
+ ✓ src/components/editor/SelectionConfigurator.test.jsx (6 tests) 36ms
+ ✓ src/components/editor/UnitChips.test.jsx (4 tests) 30ms
+ ✓ src/db/database.systemPersistence.test.js (4 tests) 31ms
+ ✓ src/components/editor/CategoryUnitAdder.availability.test.jsx (3 tests) 38ms
+ ✓ src/components/editor/CategoryUnitAdder.test.jsx (2 tests) 40ms
+ ✓ src/i18n/translate.test.js (12 tests) 13ms
+ ✓ src/hooks/useUndoableState.test.js (11 tests) 31ms
+ ✓ scripts/catalog-fork/catalogRevision.test.js (29 tests) 13ms
+ ✓ src/components/editor/UnitCardList.test.jsx (4 tests) 31ms
+ ✓ src/parser/catalogEditor.test.js (22 tests) 19ms
+ ❯ scripts/project-state/renderReport.test.js (23 tests | 2 failed) 27ms
+   ✓ project-state/renderReport &gt; eigenstaendiges Dokument &gt; erzeugt ein vollstaendiges HTML-Dokument mit eingebettetem Stylesheet 16ms
+   × project-state/renderReport &gt; eigenstaendiges Dokument &gt; laedt keine externen Ressourcen und fuehrt kein Skript 6ms
+     → expected &#39;&lt;!DOCTYPE html&gt;\n&lt;html lang=&quot;en&quot;&gt;\n&lt;h…&#39; not to match /https?:\/\//\
+   ✓ project-state/renderReport &gt; zwei Bereiche als echte Tabs ohne JavaScript &gt; traegt Healthcheck und Issues als umschaltbare Tab-Panels 0ms
+   ✓ project-state/renderReport &gt; zwei Bereiche als echte Tabs ohne JavaScript &gt; zeigt beim Laden nur einen Tab: Healthcheck ist der angehakte Standard 0ms
+   × project-state/renderReport &gt; App-Design (Epic Battlefield Dark Fantasy Palette) &gt; traegt die App-Palette und Cinzel/Outfit/Inter Schriften self-contained 1ms
+     → expected &#39;&lt;!DOCTYPE html&gt;\n&lt;html lang=&quot;en&quot;&gt;\n&lt;h…&#39; not to match /fonts\.googleapis|fonts\.gstatic/i
+   ✓ project-state/renderReport &gt; Header und Metadaten &gt; setzt den Erhebungszeitpunkt aus dem Modell ein 0ms
+   ✓ project-state/renderReport &gt; Quality Gates als leuchtende Runen &gt; stellt Gates als verschiedene leuchtende Runen mit englischen Tooltip-Details dar 0ms
+   ✓ project-state/renderReport &gt; Quality Gates als leuchtende Runen &gt; stellt ein nicht angelaufenes Gate als solches dar und nie als bestanden 0ms
+   ✓ project-state/renderReport &gt; Quality Gates als leuchtende Runen &gt; macht den Zustand ohne Farbe erkennbar: Symbol und Wort 0ms
+   ✓ project-state/renderReport &gt; Quality Gates als leuchtende Runen &gt; benennt eine unbekannte Wirksamkeit und einen fehlenden Lauf im Tooltip 0ms
+   ✓ project-state/renderReport &gt; Quality Gates als leuchtende Runen &gt; rendert aufklappbare Details/Findings fuer fehlschlagende oder abgebrochene Quality Gates 0ms
+   ✓ project-state/renderReport &gt; Modul-Kacheln mit Reagenzglaesern &gt; rendert Kacheln pro Modul mit je zwei Reagenzglaesern fuer Komplexitaet und Testabdeckung und Tooltips bei Hover 0ms
+   ✓ project-state/renderReport &gt; Modul-Kacheln mit Reagenzglaesern &gt; meldet fehlende Moduldaten ausdruecklich statt leerer Kacheln 0ms
+   ✓ project-state/renderReport &gt; mobil-tauglich &gt; setzt das Viewport-Meta und eine Media Query fuer schmale Viewports 0ms
+   ✓ project-state/renderReport &gt; Issues kompakt und ausklappbar &gt; stellt jeden Vorgang als natives &lt;details&gt; mit kompakter Zusammenfassung dar 0ms
+   ✓ project-state/renderReport &gt; Issues kompakt und ausklappbar &gt; klappt Beschreibung und Akzeptanzkriterien im Detailteil auf, aus Markdown gerendert 0ms
+   ✓ project-state/renderReport &gt; Issues kompakt und ausklappbar &gt; kommt ohne JavaScript aus -- das Aufklappen ist rein nativ 0ms
+   ✓ project-state/renderReport &gt; Issues kompakt und ausklappbar &gt; verwendet das atmosphärische Hintergrundbild fixiert als Body-Background 0ms
+   ✓ project-state/renderReport &gt; Issues kompakt und ausklappbar &gt; meldet leere Issue-Liste ausdruecklich 0ms
+   ✓ project-state/renderReport &gt; Issues kompakt und ausklappbar &gt; weist nicht lesbare Vorgaenge aus, statt sie zu verschlucken 0ms
+   ✓ project-state/renderReport &gt; vollstaendig dynamisch -- kein hand-gepflegter Text &gt; enthaelt keinen der frueheren hand-gepflegten Einordnungs-Texte mehr 0ms
+   ✓ project-state/renderReport &gt; vollstaendig dynamisch -- kein hand-gepflegter Text &gt; erzeugt fuer dasselbe Modell denselben HTML-Text (ueberlebt einen Neulauf unveraendert) 0ms
+   ✓ project-state/renderReport &gt; Robustheit &gt; maskiert Klartext, sodass Inhalte kein Markup einschleusen 0ms
+ ✓ src/components/editor/RuleChipIcon.test.jsx (8 tests) 44ms
+ ✓ src/hooks/useToast.test.js (6 tests) 17ms
+ ✓ src/parser/xmlParser.staticAttributes.test.js (9 tests) 13ms
+ ✓ src/solver/entryAvailability.test.js (21 tests) 11ms
+ ✓ src/hooks/usePwaLifecycle.test.js (15 tests) 21ms
+ ✓ src/hooks/useAppNavigation.test.js (7 tests) 26ms
+ ✓ src/components/PreviewBadge.test.jsx (2 tests) 19ms
+ ✓ src/solver/listRules.effectiveness.test.js (2 tests) 4ms
+ ✓ src/parser/xmlParser.revision.test.js (4 tests) 10ms
+ ✓ scripts/project-state/issues.test.js (19 tests) 15ms
+ ✓ src/solver/rosterValidator.groupConstraintCostType.test.js (4 tests) 19ms
+ ✓ src/solver/modifierGating.test.js (21 tests) 22ms
+ ✓ src/solver/multiplyModifier.test.js (7 tests) 15ms
+ ✓ src/solver/sharedQueryScope.test.js (16 tests) 23ms
+ ✓ src/hooks/useViewportHeight.test.js (8 tests) 19ms
+ ✓ src/solver/rosterCounter.costAggregation.test.js (6 tests) 5ms
+ ✓ src/parser/catalogEditor.entryUpdateSerialization.test.js (3 tests) 15ms
+ ✓ src/hooks/useRuleUrl.test.js (3 tests) 13ms
+ ✓ src/solver/rosterCounter.costTypeLabel.test.js (8 tests) 15ms
  ✓ src/components/importer/importMessages.test.js (7 tests) 13ms
- ✓ src/solver/multiplyModifier.test.js (7 tests) 16ms
- ✓ src/solver/modifierGating.test.js (21 tests) 16ms
- ✓ scripts/project-state/issues.test.js (19 tests) 16ms
- ✓ src/solver/entryAvailability.test.js (21 tests) 19ms
- ✓ src/hooks/useToast.test.js (6 tests) 21ms
- ✓ src/i18n/translate.test.js (12 tests) 25ms
- ✓ src/parser/xmlParser.revision.test.js (4 tests) 17ms
- ✓ src/i18n/formatValidationError.test.js (8 tests) 13ms
- ✓ scripts/project-state/loc.test.js (6 tests) 8ms
- ✓ src/parser/xmlParser.staticAttributes.test.js (9 tests) 19ms
- ✓ src/hooks/useRuleUrl.test.js (3 tests) 14ms
- ✓ scripts/rules-crawler.test.js (25 tests) 12ms
- ✓ scripts/project-state/coverage.test.js (8 tests) 9ms
+ ✓ src/i18n/formatValidationError.test.js (8 tests) 15ms
+ ✓ scripts/rules-crawler.test.js (25 tests) 9ms
  ✓ src/db/catalogSourceIndex.test.js (10 tests) 11ms
- ✓ src/solver/pwa.test.js (16 tests) 6ms
- ✓ src/solver/profileCollector.unitProfiles.test.js (6 tests) 8ms
- ✓ src/solver/selectionFactory.effectiveMin.test.js (3 tests) 3ms
- ✓ src/solver/infoGroups.test.js (5 tests) 9ms
- ✓ src/solver/goblin_wolfriders_fastcavalry.test.js (2 tests) 9ms
- ✓ src/solver/rosterValidator.categoryEntryForceLimits.test.js (7 tests) 7ms
- ✓ src/solver/rosterCounter.costTypeSelection.test.js (13 tests) 4ms
- ✓ src/solver/selectionMembers.test.js (7 tests) 3ms
- ✓ scripts/lib/e2e-harness.test.js (6 tests) 5ms
- ✓ src/db/database.settings.test.js (3 tests) 41ms
- ✓ src/db/systemImport.test.js (5 tests) 5ms
- ✓ scripts/project-state/buildReportModel.test.js (6 tests) 10ms
- ✓ src/solver/modifierEvaluator.documentOrder.test.js (5 tests) 3ms
- ✓ src/solver/modifierEvaluator.name.test.js (14 tests) 3ms
- ✓ scripts/project-state/tsSource.test.js (4 tests) 8ms
- ✓ src/solver/modifierEvaluator.selfScope.test.js (6 tests) 4ms
- ✓ src/solver/rosterValidator.messageModifiers.test.js (7 tests) 5ms
- ✓ src/solver/rosterValidator.groupConstraints.test.js (10 tests) 11ms
- ✓ src/parser/xmlParser.catalogueParseFailures.test.js (3 tests) 7ms
- ✓ src/solver/rosterTree.test.js (39 tests) 7ms
- ✓ src/solver/constraintSemantics.test.js (8 tests) 5ms
- ✓ src/i18n/localeParity.test.js (3 tests) 6ms
- ✓ src/solver/modifierEvaluator.conditionLogic.test.js (9 tests) 5ms
- ✓ src/solver/listRules.test.js (12 tests) 4ms
- ✓ src/solver/rosterValidator.forceCategoryConstraints.test.js (7 tests) 6ms
- ✓ src/solver/rosterValidator.entryConstraints.test.js (5 tests) 5ms
- ✓ src/solver/rosterCounter.mandatoryGroupDefault.test.js (3 tests) 5ms
- ✓ src/parser/schema/battlescribeSchema.generated.test.js (5 tests) 4ms
- ✓ src/solver/entryVisibility.hiddenFlags.test.js (6 tests) 3ms
- ✓ src/solver/entryVisibility.test.js (4 tests) 3ms
- ✓ src/solver/subSelectionEditing.test.js (14 tests) 4ms
+ ✓ src/solver/rosterValidator.groupConstraints.test.js (10 tests) 7ms
+ ✓ src/parser/xmlParser.categoryLinkConstraints.test.js (2 tests) 10ms
+ ✓ src/solver/rosterValidator.forceEntryRosterLimit.test.js (6 tests) 6ms
+ ✓ scripts/project-state/functions.test.js (9 tests) 15ms
+ ✓ scripts/project-state/complexity.test.js (10 tests) 12ms
  ✓ src/utils/createRoster.test.js (10 tests) 9ms
- ✓ src/solver/rosterCounter.costAggregation.test.js (6 tests) 15ms
- ✓ scripts/versioning.test.js (18 tests) 8ms
- ✓ src/solver/constraintScope.test.js (22 tests) 7ms
- ✓ src/i18n/languageDetection.test.js (5 tests) 2ms
- ✓ src/solver/catalogResolver.test.js (16 tests) 6ms
- ✓ src/i18n/validationMessageCoverage.test.js (38 tests) 8ms
- ✓ src/solver/systemQuirks.test.js (13 tests) 4ms
- ✓ src/solver/optionsCollector.test.js (9 tests) 4ms
- ✓ src/solver/optionsCollector.groupConstraintIsolation.test.js (3 tests) 2ms
- ✓ scripts/project-state/gates.test.js (12 tests) 3ms
- ✓ src/utils/persistenceFailure.test.js (2 tests) 3ms
- ✓ src/solver/rosterSync.test.js (4 tests) 7ms
- ✓ src/solver/rosterValidator.forceEntryRosterLimit.test.js (6 tests) 11ms
- ✓ src/solver/listRules.effectiveness.test.js (2 tests) 18ms
- ✓ src/solver/rosterValidator.mandatoryForceSelector.test.js (3 tests) 3ms
- ✓ src/utils/rosterDefaults.test.js (3 tests) 2ms
- ✓ src/i18n/i18nStore.test.js (5 tests) 3ms
- ✓ src/data/rulesLookup.test.js (23 tests) 4ms
- ✓ src/utils/releaseDiff.test.js (9 tests) 3ms
- ✓ src/solver/rosterCounter.test.js (4 tests) 9ms
- ✓ src/i18n/languageController.test.js (4 tests) 6ms
- ✓ src/solver/catalogResolver.catalogueCollisions.test.js (3 tests) 3ms
- ✓ src/solver/rosterSync.catalogueAlignment.test.js (6 tests) 3ms
+ ✓ src/solver/infoGroups.test.js (5 tests) 3ms
+ ✓ scripts/project-state/buildReportModel.test.js (6 tests) 11ms
+ ✓ scripts/project-state/graph.test.js (13 tests) 11ms
+ ✓ scripts/project-state/coverage.test.js (8 tests) 13ms
+ ✓ src/solver/rosterCounter.test.js (4 tests) 3ms
+ ✓ scripts/project-state/loc.test.js (6 tests) 10ms
+ ✓ scripts/versioning.test.js (18 tests) 4ms
+ ✓ src/solver/profileCollector.unitProfiles.test.js (6 tests) 6ms
+ ✓ src/i18n/validationMessageCoverage.test.js (38 tests) 3ms
+ ✓ src/solver/goblin_wolfriders_fastcavalry.test.js (2 tests) 19ms
+ ✓ scripts/project-state/tsSource.test.js (4 tests) 28ms
+ ✓ src/solver/rosterValidator.categoryEntryForceLimits.test.js (7 tests) 11ms
+ ✓ src/solver/rosterSync.test.js (4 tests) 4ms
+ ✓ src/solver/rosterTree.test.js (39 tests) 7ms
+ ✓ src/parser/xmlParser.catalogueParseFailures.test.js (3 tests) 18ms
+ ✓ src/solver/constraintScope.test.js (22 tests) 6ms
+ ✓ src/solver/rosterCounter.categoryCounts.test.js (2 tests) 3ms
+ ✓ src/i18n/localeParity.test.js (3 tests) 7ms
+ ✓ src/solver/pwa.test.js (16 tests) 6ms
+ ✓ src/i18n/languageController.test.js (4 tests) 4ms
+ ✓ src/solver/catalogResolver.test.js (16 tests) 4ms
+ ✓ src/solver/modifierEvaluator.conditionLogic.test.js (9 tests) 2ms
+ ✓ src/solver/rosterValidator.forceCategoryConstraints.test.js (7 tests) 5ms
+ ✓ src/db/systemImport.test.js (5 tests) 5ms
+ ✓ src/solver/profileCollector.nameModifier.test.js (2 tests) 8ms
+ ✓ src/solver/rosterCounter.mandatoryGroupDefault.test.js (3 tests) 3ms
+ ✓ scripts/lib/e2e-harness.test.js (6 tests) 8ms
+ ✓ src/solver/rosterValidator.entryConstraints.test.js (5 tests) 7ms
+ ✓ src/solver/subSelectionEditing.test.js (14 tests) 5ms
+ ✓ src/solver/optionsCollector.test.js (9 tests) 3ms
+ ✓ src/solver/modifierEvaluator.selfScope.test.js (6 tests) 7ms
+ ✓ src/solver/constraintSemantics.test.js (8 tests) 8ms
+ ✓ src/solver/rosterValidator.messageModifiers.test.js (7 tests) 5ms
+ ✓ src/parser/schema/battlescribeSchema.generated.test.js (5 tests) 3ms
+ ✓ src/data/rulesLookup.test.js (23 tests) 8ms
+ ✓ src/solver/rosterCounter.costTypeSelection.test.js (13 tests) 4ms
+ ✓ src/solver/listRules.test.js (12 tests) 8ms
+ ✓ src/solver/systemQuirks.test.js (13 tests) 7ms
  ✓ src/parser/libraryDependencies.test.js (10 tests) 3ms
- ✓ src/solver/modifierEvaluator.maxRaisable.test.js (11 tests) 3ms
- ✓ scripts/release.test.js (3 tests) 3ms
- ✓ src/solver/selectionFactory.test.js (4 tests) 3ms
- ✓ scripts/deployEnv.test.js (6 tests) 2ms
- ✓ src/components/editor/unitCardValidation.test.js (9 tests) 3ms
- ✓ src/solver/collective.test.js (4 tests) 3ms
+ ✓ src/solver/rosterValidator.mandatoryForceSelector.test.js (3 tests) 7ms
+ ✓ src/solver/modifierEvaluator.documentOrder.test.js (5 tests) 3ms
  ✓ src/solver/rulesEvaluator.test.js (5 tests) 3ms
- ✓ src/solver/armyWideSelectors.test.js (5 tests) 3ms
- ✓ src/components/importer/revisionDisplay.test.js (8 tests) 3ms
- ✓ src/solver/modifierEvaluator.parentScopeCounting.test.js (5 tests) 3ms
- ✓ src/solver/subUnit.test.js (10 tests) 2ms
+ ✓ scripts/project-state/gates.test.js (12 tests) 5ms
+ ✓ src/utils/persistenceFailure.test.js (2 tests) 3ms
+ ✓ src/solver/modifierEvaluator.name.test.js (14 tests) 3ms
+ ✓ src/solver/modifierEvaluator.maxRaisable.test.js (11 tests) 2ms
+ ✓ src/utils/releaseDiff.test.js (9 tests) 4ms
  ✓ src/solver/modifierEvaluator.catalogueContext.test.js (3 tests) 3ms
- ✓ src/solver/catalogueSelection.test.js (4 tests) 2ms
+ ✓ src/components/importer/revisionDisplay.test.js (8 tests) 7ms
+ ✓ scripts/release.test.js (3 tests) 3ms
+ ✓ src/i18n/i18nStore.test.js (5 tests) 8ms
+ ✓ src/solver/modifierEvaluator.parentScopeCounting.test.js (5 tests) 2ms
+ ✓ src/solver/entryVisibility.test.js (4 tests) 3ms
+ ✓ src/solver/rosterSync.catalogueAlignment.test.js (6 tests) 3ms
+ ✓ src/solver/collective.test.js (4 tests) 3ms
+ ✓ src/solver/armyWideSelectors.test.js (5 tests) 2ms
+ ✓ src/solver/modifierEvaluator.repeatingModifiers.test.js (3 tests) 2ms
+ ✓ src/components/editor/unitCardValidation.test.js (9 tests) 2ms
+ ✓ src/solver/entryVisibility.hiddenFlags.test.js (6 tests) 3ms
+ ✓ src/solver/selectionFactory.effectiveMin.test.js (3 tests) 5ms
+ ✓ src/solver/selectionFactory.test.js (4 tests) 5ms
+ ✓ src/solver/selectionMembers.test.js (7 tests) 2ms
+ ✓ src/solver/catalogueSelection.test.js (4 tests) 6ms
+ ✓ src/solver/catalogResolver.catalogueCollisions.test.js (3 tests) 2ms
+ ✓ src/solver/optionsCollector.groupConstraintIsolation.test.js (3 tests) 3ms
  ✓ src/solver/constraintScope.effectiveLimit.test.js (6 tests) 2ms
- ✓ src/solver/modifierEvaluator.repeatingModifiers.test.js (3 tests) 3ms
- ✓ src/solver/forceEntries.lookup.test.js (3 tests) 2ms
- ✓ src/solver/rosterCounter.categoryCounts.test.js (2 tests) 7ms
- ✓ src/solver/profileCollector.nameModifier.test.js (2 tests) 5ms
- ✓ src/solver/optionsCollector.rosterUniqueness.test.js (2 tests) 2ms
+ ✓ src/utils/rosterDefaults.test.js (3 tests) 2ms
+ ✓ src/solver/optionsCollector.rosterUniqueness.test.js (2 tests) 3ms
+ ✓ src/solver/subUnit.test.js (10 tests) 2ms
+ ✓ src/components/profileCellClasses.test.js (5 tests) 4ms
  ✓ src/utils/previewHost.test.js (3 tests) 2ms
  ✓ src/solver/optionsCollector.effectiveUnique.test.js (5 tests) 2ms
- ✓ src/components/profileCellClasses.test.js (5 tests) 2ms
+ ✓ scripts/deployEnv.test.js (6 tests) 2ms
+ ✓ src/i18n/languageDetection.test.js (5 tests) 2ms
+ ✓ src/solver/forceEntries.lookup.test.js (3 tests) 2ms
  ✓ src/parser/xmlParser.nameModifier.test.js (3 tests) 2ms
 
- Test Files  161 passed (161)
-      Tests  1431 passed (1431)
-   Start at  10:07:50
-   Duration  12.49s (transform 2.12s, setup 3.85s, collect 13.69s, tests 10.79s, environment 75.52s, prepare 8.61s)
-
-stderr | src/components/SettingsDialog.test.jsx &gt; SettingsDialog &gt; switches the whole dialog to English immediately when English is chosen
-An update to SettingsDialog inside a test was not wrapped in act(...).
-
-When testing, code that causes React state updates should be wrapped into act(...):
-
-act(() =&gt; {
-  /* fire events that update state */
-});
-/* assert on the output */
-
-This ensures that you&#39;re testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
-
-stderr | src/components/SettingsDialog.test.jsx &gt; SettingsDialog &gt; persists the chosen language and updates the document lang attribute
-An update to SettingsDialog inside a test was not wrapped in act(...).
-
-When testing, code that causes React state updates should be wrapped into act(...):
-
-act(() =&gt; {
-  /* fire events that update state */
-});
-/* assert on the output */
-
-This ensures that you&#39;re testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+ Test Files  1 failed | 160 passed (161)
+      Tests  2 failed | 1429 passed (1431)
+   Start at  10:10:32
+   Duration  12.57s (transform 1.95s, setup 3.83s, collect 13.50s, tests 10.78s, environment 77.74s, prepare 8.68s)
 
 stderr | src/db/migrations.test.js &gt; a system whose stored data fails to re-process is reported as a failure, keeps its old data, and is not deleted
 Failed to auto-migrate system Broken System: Error: Not a valid Game System file
@@ -15018,6 +15020,30 @@ Silent catalog update skipped for system &quot;Test System&quot;: Error: Not a v
     at Module.runSystemMigrations [90m(/Users/artkoenig/Workspace/army_builder/[39msrc/db/migrations.js:72:27[90m)[39m
     at [90m/Users/artkoenig/Workspace/army_builder/[39msrc/db/migrations.test.js:210:43
     at [90mfile:///Users/artkoenig/Workspace/army_builder/[39mnode_modules/[4m@vitest/runner[24m/dist/chunk-hooks.js:752:20
+
+stderr | src/components/SettingsDialog.test.jsx &gt; SettingsDialog &gt; switches the whole dialog to English immediately when English is chosen
+An update to SettingsDialog inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() =&gt; {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you&#39;re testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/SettingsDialog.test.jsx &gt; SettingsDialog &gt; persists the chosen language and updates the document lang attribute
+An update to SettingsDialog inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() =&gt; {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you&#39;re testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
 
 stderr | src/db/catalogUpdate.test.js &gt; loadCatalogIndex (network-only, no in-memory cache) &gt; a failing fetch returns null and retries on the next call (no cached failure)
 Catalog index unavailable; keeping stored catalog data: Error: offline
@@ -15117,32 +15143,628 @@ act(() =&gt; {
 });
 /* assert on the output */
 
-This ensures that you&#39;re testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act</code></pre></div></details>
+This ensures that you&#39;re testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  scripts/project-state/renderReport.test.js &gt; project-state/renderReport &gt; eigenstaendiges Dokument &gt; laedt keine externen Ressourcen und fuehrt kein Skript
+AssertionError: expected &#39;&lt;!DOCTYPE html&gt;\n&lt;html lang=&quot;en&quot;&gt;\n&lt;h…&#39; not to match /https?:\/\//\
+
+[32m- Expected:[39m 
+/https?:\/\//i
+
+[31m+ Received:[39m 
+&quot;&lt;!DOCTYPE html&gt;
+&lt;html lang=\&quot;en\&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=\&quot;utf-8\&quot;&gt;
+&lt;meta name=\&quot;viewport\&quot; content=\&quot;width=device-width, initial-scale=1\&quot;&gt;
+&lt;title&gt;Project Status Report&lt;/title&gt;
+&lt;style&gt;@import url(&#39;https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&amp;family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap&#39;);
+
+:root {
+  color-scheme: dark;
+  --font-heading: \&quot;Cinzel\&quot;, Georgia, serif;
+  --font-subheading: \&quot;Outfit\&quot;, sans-serif;
+  --font-body: \&quot;Inter\&quot;, system-ui, sans-serif;
+  --font-mono: ui-monospace, \&quot;SFMono-Regular\&quot;, Menlo, Consolas, monospace;
+  
+  --bg: #07090E;
+  --surface: rgba(21, 26, 38, 0.85);
+  --surface-2: #151A26;
+  --text: #F1F5F9;
+  --muted: #94A3B8;
+  --border: rgba(212, 175, 55, 0.25);
+  --border-strong: #D4AF37;
+  --accent: #F5D061;
+  --accent-strong: #F5D061;
+  
+  --ok-bg: rgba(16, 185, 129, 0.2); --ok-fg: #34D399;
+  --warn-bg: rgba(217, 119, 6, 0.25); --warn-fg: #FBBF24;
+  --inert-bg: rgba(255, 255, 255, 0.05); --inert-fg: #94A3B8;
+  --neutral-bg: rgba(59, 130, 246, 0.2); --neutral-fg: #60A5FA;
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; color-scheme: dark; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at center, rgba(7, 9, 14, 0.78) 0%, rgba(7, 9, 14, 0.52) 50%, rgba(7, 9, 14, 0.15) 100%), url(&#39;../assets/status_bg.jpg&#39;);
+  background-attachment: fixed;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+.page { max-width: 65rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+.page-header { border-bottom: 2px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+.header-nav { margin-bottom: 0.75rem; }
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-family: var(--font-subheading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.back-link:hover {
+  background: rgba(212, 175, 55, 0.25);
+  color: #FFF;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+h1 { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 700; letter-spacing: .02em; color: var(--accent-strong); margin: 0 0 .35rem; }
+h2 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; letter-spacing: .02em; color: var(--accent-strong); margin: 0 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+h3 { font-family: var(--font-subheading); font-size: 1.2rem; font-weight: 600; color: var(--accent); margin: 1.5rem 0 .5rem; }
+h4 { font-size: .95rem; margin: 1rem 0 .35rem; color: var(--muted); }
+.generated-at { color: var(--muted); margin: 0 0 .25rem; font-size: .9rem; font-family: var(--font-subheading); }
+.section { margin-bottom: 1.5rem; }
+.subsection { margin-bottom: 1.75rem; }
+.empty { color: var(--muted); font-size: .9rem; }
+.tabs { position: relative; }
+.tab-radio { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.tablist { display: flex; flex-wrap: wrap; gap: .5rem; border-bottom: 2px solid var(--border); margin: 0 0 1.75rem; }
+.tab { cursor: pointer; user-select: none; padding: .6rem 1.25rem; font-family: var(--font-heading); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; font-size: .9rem; color: var(--muted); border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; transition: all 0.2s ease; }
+.tab:hover { color: var(--accent); background: rgba(255, 255, 255, 0.03); }
+.panel { display: none; }
+#tab-healthcheck:checked ~ .panel-healthcheck,
+#tab-issues:checked ~ .panel-issues { display: block; }
+#tab-healthcheck:checked ~ .tablist label[for=\&quot;tab-healthcheck\&quot;],
+#tab-issues:checked ~ .tablist label[for=\&quot;tab-issues\&quot;] {
+  color: var(--accent-strong);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-bottom: 2px solid var(--bg);
+  margin-bottom: -2px;
+}
+.verdict { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--border-strong); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow); backdrop-filter: blur(8px); }
+.verdict h2 { border-bottom: none; margin-bottom: .25rem; }
+.verdict-headline { font-size: 1.2rem; font-weight: 600; margin: .25rem 0 .5rem; color: var(--text); }
+.verdict-facts { list-style: none; padding: 0; margin: .5rem 0 0; display: flex; flex-direction: column; gap: .35rem; }
+.verdict-facts li { color: var(--muted); font-size: .92rem; }
+.prose :first-child { margin-top: 0; }
+.prose :last-child { margin-bottom: 0; }
+code { font-family: var(--font-mono); font-size: .85em; color: var(--accent); background: rgba(255, 255, 255, 0.05); padding: 0.15em 0.4em; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.08); }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: .75rem; border-radius: 8px; border: 1px solid var(--border); }
+table.grid { width: 100%; border-collapse: collapse; font-size: .9rem; background: var(--surface); }
+table.grid th, table.grid td { text-align: left; padding: .65rem .85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.06); vertical-align: middle; }
+table.grid th { color: var(--accent); font-family: var(--font-subheading); font-weight: 600; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid var(--border); }
+td.num { text-align: right; white-space: nowrap; }
+.fraction { display: block; color: var(--muted); font-size: .8em; }
+.badge { display: inline-flex; align-items: center; gap: .35em; padding: .2em .6em; border-radius: 4px; font-size: .75rem; font-weight: 700; font-family: var(--font-subheading); text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-symbol { font-weight: 700; }
+.badge-ok { background: var(--ok-bg); color: var(--ok-fg); border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-warn { background: var(--warn-bg); color: var(--warn-fg); border: 1px solid rgba(217, 119, 6, 0.3); }
+.badge-inert { background: var(--inert-bg); color: var(--inert-fg); border: 1px dashed var(--border); }
+.badge-neutral { background: var(--neutral-bg); color: var(--neutral-fg); border: 1px solid rgba(59, 130, 246, 0.3); }
+.reason { color: var(--muted); font-size: .88rem; }
+@keyframes runePulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px currentColor); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 16px currentColor); }
+}
+.rune-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 1.1rem; margin-top: 1rem; }
+.rune-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 0.85rem 1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 0.65rem; cursor: help; transition: all 0.25s ease; }
+.rune-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); }
+.rune-wrapper { position: relative; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center; margin: 0.2rem 0; }
+.rune-stone { width: 3.6rem; height: 3.6rem; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #1e2638 0%, #0d121c 100%); border: 2px solid rgba(212, 175, 55, 0.4); box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.1), inset 0 -4px 8px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+.rune-ok { border-color: rgba(52, 211, 153, 0.6); color: #34d399; }
+.rune-ok .rune-glyph { color: #34d399; text-shadow: 0 0 10px #10b981, 0 0 20px rgba(16, 185, 129, 0.7); animation: runePulse 3.5s infinite ease-in-out; }
+.rune-warn { border-color: rgba(248, 113, 113, 0.6); color: #f87171; }
+.rune-warn .rune-glyph { color: #f87171; text-shadow: 0 0 10px #ef4444, 0 0 20px rgba(239, 68, 68, 0.7); animation: runePulse 2.5s infinite ease-in-out; }
+.rune-inert { border-color: rgba(107, 114, 128, 0.3); color: #4b5563; }
+.rune-inert .rune-glyph { color: #4b5563; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
+.rune-glyph { font-family: serif; font-size: 1.8rem; font-weight: 900; line-height: 1; user-select: none; }
+.gate-card-label { font-family: var(--font-subheading); font-size: 0.86rem; font-weight: 700; color: var(--accent-strong); text-align: center; }
+.gate-card-status { font-size: 0.72rem; font-family: var(--font-subheading); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.gate-card-status-ok { color: var(--ok-fg); }
+.gate-card-status-warn { color: var(--warn-fg); }
+.gate-card-status-inert { color: var(--muted); }
+.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14.5rem; transition: opacity 0.2s ease, transform 0.2s ease; }
+.gate-card:hover .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+
+/* Gate Findings Details */
+.gate-findings-details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 1.25rem; box-shadow: var(--shadow); }
+.gate-findings-summary { cursor: pointer; font-family: var(--font-subheading); font-weight: 700; font-size: 0.9rem; color: var(--accent); user-select: none; }
+.gate-findings-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.85rem; }
+.gate-finding-item { border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 8px; background: rgba(13, 17, 26, 0.65); padding: 0.5rem 0.75rem; }
+.gate-finding-header { cursor: pointer; display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-subheading); font-size: 0.88rem; color: var(--text); user-select: none; }
+.rune-glyph-small { font-family: serif; font-size: 1.1rem; font-weight: 900; color: var(--accent); }
+.gate-finding-body { margin-top: 0.5rem; overflow-x: auto; }
+.gate-finding-body pre { margin: 0; padding: 0.75rem 0.85rem; background: #080b12; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08); font-family: var(--font-mono); font-size: 0.8rem; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; max-height: 22rem; overflow-y: auto; }
+@keyframes bubbleRise1 {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  30% { opacity: 0.8; }
+  85% { opacity: 0.8; }
+  100% { transform: translateY(-4.5rem) scale(1.1); opacity: 0; }
+}
+@keyframes bubbleRise2 {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  40% { opacity: 0.9; }
+  90% { opacity: 0.9; }
+  100% { transform: translateY(-5rem) scale(1); opacity: 0; }
+}
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
+.module-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem; transition: all 0.25s ease; }
+.module-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); }
+.module-card-header { border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.45rem; }
+.module-card-title { font-family: var(--font-subheading); font-size: 0.92rem; font-weight: 700; color: var(--accent-strong); word-break: break-all; }
+.module-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.25rem; display: flex; gap: 0.5rem; }
+.module-vials-row { display: flex; justify-content: space-around; align-items: flex-end; padding: 0.4rem 0.5rem; gap: 1rem; }
+.vial-container { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; cursor: help; }
+.vial-label { font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-radius: 4px 4px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.vial::before { content: \&quot;\&quot;; position: absolute; top: 0; left: -2px; right: -2px; height: 5px; background: rgba(212, 175, 55, 0.7); border-radius: 3px 3px 0 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); z-index: 5; }
+.vial::after { content: \&quot;\&quot;; position: absolute; top: 5px; left: 3px; width: 3px; bottom: 8px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05)); border-radius: 2px; z-index: 6; pointer-events: none; }
+.vial-liquid { position: relative; width: 100%; border-radius: 0 0 14px 14px; transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+.vial-bubbles { position: absolute; inset: 0; pointer-events: none; }
+.vial-bubbles::before, .vial-bubbles::after { content: \&quot;\&quot;; position: absolute; bottom: -4px; background: rgba(255, 255, 255, 0.7); border-radius: 50%; box-shadow: 0 0 3px rgba(255, 255, 255, 0.9); }
+.vial-bubbles::before { left: 25%; width: 4px; height: 4px; animation: bubbleRise1 2.2s infinite linear; }
+.vial-bubbles::after { left: 60%; width: 3px; height: 3px; animation: bubbleRise2 2.8s infinite linear 0.9s; }
+.vial-liquid-bad { background: linear-gradient(180deg, #F87171 0%, #DC2626 100%); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+.vial-liquid-warn { background: linear-gradient(180deg, #FBBF24 0%, #D97706 100%); box-shadow: 0 0 10px rgba(245, 208, 97, 0.4); }
+.vial-liquid-good { background: linear-gradient(180deg, #34D399 0%, #059669 100%); box-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
+.vial-segmented { display: flex; flex-direction: column-reverse; overflow: hidden; background: rgba(0, 0, 0, 0.4); }
+.vial-segment { width: 100%; transition: height 0.3s ease; min-height: 2px; }
+.vial-segment-low { background: linear-gradient(180deg, #34d399 0%, #059669 100%); }
+.vial-segment-moderate { background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%); }
+.vial-segment-high { background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); }
+.vial-segment-very-high { background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%); }
+.vial-value-badge { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--accent); }
+.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14rem; transition: opacity 0.2s ease, transform 0.2s ease; }
+.vial-container:hover .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+.tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; }
+.tooltip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--muted); }
+.tooltip-grid strong { color: var(--text); font-family: var(--font-mono); }
+.issue-card { position: relative; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.85rem; overflow: hidden; box-shadow: var(--shadow); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+.issue-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: 0 8px 20px -4px rgba(212, 175, 55, 0.2); }
+.issue-card[open] { border-color: var(--border-strong); box-shadow: 0 10px 24px -4px rgba(212, 175, 55, 0.25); }
+.issue-card-summary { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; cursor: pointer; user-select: none; list-style: none; background-color: rgba(255, 255, 255, 0.03); transition: background-color 0.2s ease; }
+.issue-card-summary::-webkit-details-marker { display: none; }
+.issue-card-summary:hover { background-color: rgba(212, 175, 55, 0.06); }
+.issue-card-header-main { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
+.issue-card-title { font-family: var(--font-subheading); font-size: 0.94rem; font-weight: 700; color: var(--accent-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.issue-status-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.6rem; font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; flex-shrink: 0; }
+.badge-claimed { background-color: rgba(166, 28, 28, 0.2); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171; }
+.badge-ready-for-agent, .badge-ready { background-color: rgba(217, 119, 6, 0.18); border: 1px solid rgba(245, 208, 97, 0.45); color: #fbbf24; }
+.badge-resolved { background-color: rgba(16, 185, 129, 0.18); border: 1px solid rgba(52, 211, 153, 0.45); color: #34d399; }
+.badge-needs-triage, .badge-needs-info { background-color: rgba(124, 58, 237, 0.18); border: 1px solid rgba(167, 139, 250, 0.45); color: #c4b5fd; }
+.badge-superseded { background-color: rgba(107, 114, 128, 0.12); border: 1px solid rgba(156, 163, 175, 0.3); color: #9ca3af; }
+.issue-card-body { border-top: 1px solid var(--border); background-color: var(--surface); padding: 1rem 1.15rem; }
+.issue-card-body .prose { font-size: 0.84rem; line-height: 1.5; color: var(--text); }
+.issue-card-body .prose p, .issue-card-body .prose li { font-size: 0.84rem; line-height: 1.5; }
+.issue-card-body .prose h1 { font-size: 1.05rem; margin: 0.6rem 0 0.3rem; color: var(--accent-strong); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.2rem; }
+.issue-card-body .prose h2 { font-size: 0.98rem; margin: 0.5rem 0 0.25rem; color: var(--accent); border-bottom: none; }
+.issue-card-body .prose h3 { font-size: 0.92rem; margin: 0.4rem 0 0.2rem; color: var(--accent); }
+.issue-card-body .prose h4, .issue-card-body .prose h5, .issue-card-body .prose h6 { font-size: 0.86rem; margin: 0.35rem 0 0.15rem; color: var(--muted); }
+.issue-card-body h4 { font-size: 0.88rem; font-family: var(--font-subheading); color: var(--accent); margin-top: 0.85rem; margin-bottom: 0.35rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.25rem; }
+.issue-children-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
+.issue-card-sub { margin-top: 0.5rem; margin-bottom: 0.25rem; border: 1px solid rgba(212, 175, 55, 0.2); background-color: rgba(0, 0, 0, 0.25); border-radius: 6px; }
+.issue-card-sub .issue-card-summary { padding: 0.6rem 0.85rem; background-color: rgba(255, 255, 255, 0.02); }
+.issue-card-sub .issue-card-title { font-size: 0.88rem; color: var(--text); }
+@media (max-width: 30rem) {
+  .page { padding: 1rem .85rem 3rem; }
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.25rem; }
+  .verdict { padding: 1rem; }
+  .tab { padding: .5rem .9rem; font-size: .82rem; }
+}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;main class=\&quot;page\&quot;&gt;
+&lt;header class=\&quot;page-header\&quot;&gt;
+&lt;div class=\&quot;header-nav\&quot;&gt;&lt;a href=\&quot;../\&quot; class=\&quot;back-link\&quot;&gt;← Back to landing page&lt;/a&gt;&lt;/div&gt;
+&lt;h1&gt;Project Status Report&lt;/h1&gt;
+&lt;p class=\&quot;generated-at\&quot;&gt;Captured: 2026-07-22 10:00 UTC&lt;/p&gt;
+&lt;/header&gt;
+&lt;div class=\&quot;tabs\&quot;&gt;
+&lt;input type=\&quot;radio\&quot; name=\&quot;report-tab\&quot; id=\&quot;tab-healthcheck\&quot; class=\&quot;tab-radio\&quot; checked&gt;
+&lt;input type=\&quot;radio\&quot; name=\&quot;report-tab\&quot; id=\&quot;tab-issues\&quot; class=\&quot;tab-radio\&quot;&gt;
+&lt;nav class=\&quot;tablist\&quot; role=\&quot;tablist\&quot; aria-label=\&quot;Sections\&quot;&gt;
+&lt;label class=\&quot;tab\&quot; for=\&quot;tab-healthcheck\&quot; role=\&quot;tab\&quot;&gt;Healthcheck&lt;/label&gt;
+&lt;label class=\&quot;tab\&quot; for=\&quot;tab-issues\&quot; role=\&quot;tab\&quot;&gt;Issues&lt;/label&gt;
+&lt;/nav&gt;
+&lt;section id=\&quot;healthcheck\&quot; class=\&quot;section panel panel-healthcheck\&quot; role=\&quot;tabpanel\&quot; aria-labelledby=\&quot;tab-healthcheck\&quot;&gt;
+&lt;div class=\&quot;subsection\&quot;&gt;&lt;h3&gt;Quality Gates&lt;/h3&gt;&lt;div class=\&quot;rune-grid\&quot;&gt;&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-ok\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᛏ\&quot;&gt;ᛏ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;oxlint&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-ok\&quot;&gt;passed&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;oxlint&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npm run lint&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;passed&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;blocking&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-warn\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᚦ\&quot;&gt;ᚦ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;Knip (dead code)&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-warn\&quot;&gt;findings&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;Knip (dead code)&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npm run knip&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;findings&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;warning only&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-inert\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᚱ\&quot;&gt;ᚱ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;dependency-cruiser (structure)&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;dependency-cruiser (structure)&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npm run depcruise&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;not run&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;warning only&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Reason:&lt;/span&gt; &lt;strong&gt;unsupported Node version&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-inert\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᚨ\&quot;&gt;ᚨ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;Typecheck (tsc --noEmit)&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;Typecheck (tsc --noEmit)&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npm run typecheck&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;not run&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;enforcement unknown&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Reason:&lt;/span&gt; &lt;strong&gt;no run recorded&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-inert\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᛉ\&quot;&gt;ᛉ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;Unit/component tests&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;Unit/component tests&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npx vitest run&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;not run&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;enforcement unknown&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Reason:&lt;/span&gt; &lt;strong&gt;no run recorded&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-inert\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᛗ\&quot;&gt;ᛗ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;Maintainability Index&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;Maintainability Index&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;scripts/project-state/complexity.js&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;not run&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;enforcement unknown&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Reason:&lt;/span&gt; &lt;strong&gt;no run recorded&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;details class=\&quot;gate-findings-details\&quot;&gt;&lt;summary class=\&quot;gate-findings-summary\&quot;&gt;&lt;span class=\&quot;gate-findings-title\&quot;&gt;&amp;#128269; View Gate Findings &amp;amp; Outputs (3)&lt;/span&gt;&lt;/summary&gt;&lt;div class=\&quot;gate-findings-list\&quot;&gt;&lt;details class=\&quot;gate-finding-item\&quot;&gt;&lt;summary class=\&quot;gate-finding-header\&quot;&gt;&lt;span class=\&quot;rune-glyph-small\&quot;&gt;ᛏ&lt;/span&gt;&lt;strong&gt;oxlint&lt;/strong&gt;&lt;span class=\&quot;gate-card-status gate-card-status-ok\&quot;&gt;passed&lt;/span&gt;&lt;/summary&gt;&lt;div class=\&quot;gate-finding-body\&quot;&gt;&lt;pre&gt;&lt;code&gt;ok&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/details&gt;
+&lt;details class=\&quot;gate-finding-item\&quot;&gt;&lt;summary class=\&quot;gate-finding-header\&quot;&gt;&lt;span class=\&quot;rune-glyph-small\&quot;&gt;ᚦ&lt;/span&gt;&lt;strong&gt;Knip (dead code)&lt;/strong&gt;&lt;span class=\&quot;gate-card-status gate-card-status-warn\&quot;&gt;findings&lt;/span&gt;&lt;/summary&gt;&lt;div class=\&quot;gate-finding-body\&quot;&gt;&lt;pre&gt;&lt;code&gt;26 problems&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/details&gt;
+&lt;details class=\&quot;gate-finding-item\&quot;&gt;&lt;summary class=\&quot;gate-finding-header\&quot;&gt;&lt;span class=\&quot;rune-glyph-small\&quot;&gt;ᚱ&lt;/span&gt;&lt;strong&gt;dependency-cruiser (structure)&lt;/strong&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;/summary&gt;&lt;div class=\&quot;gate-finding-body\&quot;&gt;&lt;pre&gt;&lt;code&gt;ERROR: Your node version (25.0.0) is not supported.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/details&gt;&lt;/div&gt;&lt;/details&gt;&lt;/div&gt;
+&lt;div class=\&quot;subsection\&quot;&gt;&lt;h3&gt;Module health &amp;amp; metrics&lt;/h3&gt;&lt;div class=\&quot;module-grid\&quot;&gt;&lt;div class=\&quot;module-card\&quot;&gt;&lt;div class=\&quot;module-card-header\&quot;&gt;&lt;div class=\&quot;module-card-title\&quot;&gt;&lt;code&gt;src/solver&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;module-card-meta\&quot;&gt;&lt;span&gt;6 files&lt;/span&gt; &amp;bull; &lt;span&gt;900 lines&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;module-vials-row\&quot;&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Complexity&lt;/span&gt;&lt;div class=\&quot;vial vial-segmented\&quot;&gt;&lt;div class=\&quot;vial-segment vial-segment-low\&quot; style=\&quot;height: 100%\&quot; title=\&quot;Low Risk (1-5): 100% LOC\&quot;&gt;&lt;/div&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;MI 100&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Complexity &amp;amp; Risk Profile: &lt;code&gt;src/solver&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Files:&lt;/span&gt; &lt;strong&gt;6&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Lines:&lt;/span&gt; &lt;strong&gt;900&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Functions:&lt;/span&gt; &lt;strong&gt;40&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Maintainability (MI):&lt;/span&gt; &lt;strong&gt;100/100&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#931; complexity:&lt;/span&gt; &lt;strong&gt;136&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#216; complexity:&lt;/span&gt; &lt;strong&gt;3.4&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;max complexity:&lt;/span&gt; &lt;strong&gt;21&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Low Risk (1-5):&lt;/span&gt; &lt;strong&gt;100% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Moderate (6-10):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;High Risk (11-25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Very High (&gt;25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Coverage&lt;/span&gt;&lt;div class=\&quot;vial\&quot;&gt;&lt;div class=\&quot;vial-liquid vial-liquid-bad\&quot; style=\&quot;height: 0%\&quot;&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;N/A&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;No test coverage data&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;module-card\&quot;&gt;&lt;div class=\&quot;module-card-header\&quot;&gt;&lt;div class=\&quot;module-card-title\&quot;&gt;&lt;code&gt;src/parser&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;module-card-meta\&quot;&gt;&lt;span&gt;3 files&lt;/span&gt; &amp;bull; &lt;span&gt;300 lines&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;module-vials-row\&quot;&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Complexity&lt;/span&gt;&lt;div class=\&quot;vial vial-segmented\&quot;&gt;&lt;div class=\&quot;vial-segment vial-segment-low\&quot; style=\&quot;height: 100%\&quot; title=\&quot;Low Risk (1-5): 100% LOC\&quot;&gt;&lt;/div&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;MI 100&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Complexity &amp;amp; Risk Profile: &lt;code&gt;src/parser&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Files:&lt;/span&gt; &lt;strong&gt;3&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Lines:&lt;/span&gt; &lt;strong&gt;300&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Functions:&lt;/span&gt; &lt;strong&gt;12&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Maintainability (MI):&lt;/span&gt; &lt;strong&gt;100/100&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#931; complexity:&lt;/span&gt; &lt;strong&gt;25&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#216; complexity:&lt;/span&gt; &lt;strong&gt;2.1&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;max complexity:&lt;/span&gt; &lt;strong&gt;7&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Low Risk (1-5):&lt;/span&gt; &lt;strong&gt;100% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Moderate (6-10):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;High Risk (11-25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Very High (&gt;25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Coverage&lt;/span&gt;&lt;div class=\&quot;vial\&quot;&gt;&lt;div class=\&quot;vial-liquid vial-liquid-bad\&quot; style=\&quot;height: 0%\&quot;&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;N/A&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;No test coverage data&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;module-card\&quot;&gt;&lt;div class=\&quot;module-card-header\&quot;&gt;&lt;div class=\&quot;module-card-title\&quot;&gt;&lt;code&gt;scripts/project-state&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;module-card-meta\&quot;&gt;&lt;span&gt;5 files&lt;/span&gt; &amp;bull; &lt;span&gt;0 lines&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;module-vials-row\&quot;&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Complexity&lt;/span&gt;&lt;div class=\&quot;vial vial-segmented\&quot;&gt;&lt;div class=\&quot;vial-segment vial-segment-low\&quot; style=\&quot;height: 100%\&quot; title=\&quot;Low Risk (1-5): 100% LOC\&quot;&gt;&lt;/div&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;MI 100&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Complexity &amp;amp; Risk Profile: &lt;code&gt;scripts/project-state&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Files:&lt;/span&gt; &lt;strong&gt;5&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Lines:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Functions:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Maintainability (MI):&lt;/span&gt; &lt;strong&gt;100/100&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#931; complexity:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#216; complexity:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;max complexity:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Low Risk (1-5):&lt;/span&gt; &lt;strong&gt;100% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Moderate (6-10):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;High Risk (11-25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Very High (&gt;25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Coverage&lt;/span&gt;&lt;div class=\&quot;vial\&quot;&gt;&lt;div class=\&quot;vial-liquid vial-liquid-good\&quot; style=\&quot;height: 80%\&quot;&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;80 %&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Coverage: &lt;code&gt;scripts/project-state&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Statements:&lt;/span&gt; &lt;strong&gt;80 % (80/100)&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Branches:&lt;/span&gt; &lt;strong&gt;80 % (8/10)&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Functions:&lt;/span&gt; &lt;strong&gt;90 % (9/10)&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/section&gt;
+&lt;section id=\&quot;issues\&quot; class=\&quot;section panel panel-issues\&quot; role=\&quot;tabpanel\&quot; aria-labelledby=\&quot;tab-issues\&quot;&gt;
+&lt;details class=\&quot;issue issue-card\&quot; id=\&quot;issue-54-bericht-02-render\&quot;&gt;
+&lt;summary class=\&quot;issue-summary issue-card-summary\&quot;&gt;&lt;div class=\&quot;issue-card-header-main\&quot;&gt;&lt;span class=\&quot;issue-title issue-card-title\&quot;&gt;berichtsseite rendern&lt;/span&gt;&lt;/div&gt;&lt;span class=\&quot;issue-status-badge badge-claimed\&quot;&gt;claimed&lt;/span&gt;&lt;/summary&gt;
+&lt;div class=\&quot;issue-body issue-card-body\&quot;&gt;
+&lt;div class=\&quot;issue-meta\&quot;&gt;&lt;span class=\&quot;issue-id\&quot;&gt;&lt;code&gt;54-bericht/02-render&lt;/code&gt;&lt;/span&gt;
+&lt;span class=\&quot;issue-type\&quot;&gt;chore&lt;/span&gt;
+&lt;span class=\&quot;issue-blocked\&quot;&gt;blocked by 01&lt;/span&gt;&lt;/div&gt;
+&lt;h4&gt;Description&lt;/h4&gt;&lt;div class=\&quot;prose\&quot;&gt;&lt;p&gt;Ein &lt;strong&gt;wichtiger&lt;/strong&gt; Vorgang.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Punkt eins&lt;/li&gt;
+&lt;li&gt;Punkt zwei&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;h4&gt;Acceptance Criteria&lt;/h4&gt;&lt;div class=\&quot;prose\&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;input disabled=\&quot;\&quot; type=\&quot;checkbox\&quot;&gt; Erste Bedingung&lt;/li&gt;
+&lt;li&gt;&lt;input checked=\&quot;\&quot; disabled=\&quot;\&quot; type=\&quot;checkbox\&quot;&gt; Zweite Bedingung&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class=\&quot;issue-refs\&quot;&gt;Seen on: &lt;code&gt;origin/issue/foo&lt;/code&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/details&gt;
+
+&lt;/section&gt;
+&lt;/div&gt;
+&lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+&quot;
+
+ ❯ scripts/project-state/renderReport.test.js:87:24
+     85|       expect(html).not.toMatch(/&lt;script/i);
+     86|       expect(html).not.toMatch(/&lt;link\b/i);
+     87|       expect(html).not.toMatch(/https?:\/\//i);
+       |                        ^
+     88|       expect(html).not.toMatch(/@import/i);
+     89|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  scripts/project-state/renderReport.test.js &gt; project-state/renderReport &gt; App-Design (Epic Battlefield Dark Fantasy Palette) &gt; traegt die App-Palette und Cinzel/Outfit/Inter Schriften self-contained
+AssertionError: expected &#39;&lt;!DOCTYPE html&gt;\n&lt;html lang=&quot;en&quot;&gt;\n&lt;h…&#39; not to match /fonts\.googleapis|fonts\.gstatic/i
+
+[32m- Expected:[39m 
+/fonts\.googleapis|fonts\.gstatic/i
+
+[31m+ Received:[39m 
+&quot;&lt;!DOCTYPE html&gt;
+&lt;html lang=\&quot;en\&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=\&quot;utf-8\&quot;&gt;
+&lt;meta name=\&quot;viewport\&quot; content=\&quot;width=device-width, initial-scale=1\&quot;&gt;
+&lt;title&gt;Project Status Report&lt;/title&gt;
+&lt;style&gt;@import url(&#39;https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&amp;family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap&#39;);
+
+:root {
+  color-scheme: dark;
+  --font-heading: \&quot;Cinzel\&quot;, Georgia, serif;
+  --font-subheading: \&quot;Outfit\&quot;, sans-serif;
+  --font-body: \&quot;Inter\&quot;, system-ui, sans-serif;
+  --font-mono: ui-monospace, \&quot;SFMono-Regular\&quot;, Menlo, Consolas, monospace;
+  
+  --bg: #07090E;
+  --surface: rgba(21, 26, 38, 0.85);
+  --surface-2: #151A26;
+  --text: #F1F5F9;
+  --muted: #94A3B8;
+  --border: rgba(212, 175, 55, 0.25);
+  --border-strong: #D4AF37;
+  --accent: #F5D061;
+  --accent-strong: #F5D061;
+  
+  --ok-bg: rgba(16, 185, 129, 0.2); --ok-fg: #34D399;
+  --warn-bg: rgba(217, 119, 6, 0.25); --warn-fg: #FBBF24;
+  --inert-bg: rgba(255, 255, 255, 0.05); --inert-fg: #94A3B8;
+  --neutral-bg: rgba(59, 130, 246, 0.2); --neutral-fg: #60A5FA;
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; color-scheme: dark; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at center, rgba(7, 9, 14, 0.78) 0%, rgba(7, 9, 14, 0.52) 50%, rgba(7, 9, 14, 0.15) 100%), url(&#39;../assets/status_bg.jpg&#39;);
+  background-attachment: fixed;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+.page { max-width: 65rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+.page-header { border-bottom: 2px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+.header-nav { margin-bottom: 0.75rem; }
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-family: var(--font-subheading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.back-link:hover {
+  background: rgba(212, 175, 55, 0.25);
+  color: #FFF;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+h1 { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 700; letter-spacing: .02em; color: var(--accent-strong); margin: 0 0 .35rem; }
+h2 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; letter-spacing: .02em; color: var(--accent-strong); margin: 0 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+h3 { font-family: var(--font-subheading); font-size: 1.2rem; font-weight: 600; color: var(--accent); margin: 1.5rem 0 .5rem; }
+h4 { font-size: .95rem; margin: 1rem 0 .35rem; color: var(--muted); }
+.generated-at { color: var(--muted); margin: 0 0 .25rem; font-size: .9rem; font-family: var(--font-subheading); }
+.section { margin-bottom: 1.5rem; }
+.subsection { margin-bottom: 1.75rem; }
+.empty { color: var(--muted); font-size: .9rem; }
+.tabs { position: relative; }
+.tab-radio { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.tablist { display: flex; flex-wrap: wrap; gap: .5rem; border-bottom: 2px solid var(--border); margin: 0 0 1.75rem; }
+.tab { cursor: pointer; user-select: none; padding: .6rem 1.25rem; font-family: var(--font-heading); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; font-size: .9rem; color: var(--muted); border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; transition: all 0.2s ease; }
+.tab:hover { color: var(--accent); background: rgba(255, 255, 255, 0.03); }
+.panel { display: none; }
+#tab-healthcheck:checked ~ .panel-healthcheck,
+#tab-issues:checked ~ .panel-issues { display: block; }
+#tab-healthcheck:checked ~ .tablist label[for=\&quot;tab-healthcheck\&quot;],
+#tab-issues:checked ~ .tablist label[for=\&quot;tab-issues\&quot;] {
+  color: var(--accent-strong);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-bottom: 2px solid var(--bg);
+  margin-bottom: -2px;
+}
+.verdict { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--border-strong); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow); backdrop-filter: blur(8px); }
+.verdict h2 { border-bottom: none; margin-bottom: .25rem; }
+.verdict-headline { font-size: 1.2rem; font-weight: 600; margin: .25rem 0 .5rem; color: var(--text); }
+.verdict-facts { list-style: none; padding: 0; margin: .5rem 0 0; display: flex; flex-direction: column; gap: .35rem; }
+.verdict-facts li { color: var(--muted); font-size: .92rem; }
+.prose :first-child { margin-top: 0; }
+.prose :last-child { margin-bottom: 0; }
+code { font-family: var(--font-mono); font-size: .85em; color: var(--accent); background: rgba(255, 255, 255, 0.05); padding: 0.15em 0.4em; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.08); }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: .75rem; border-radius: 8px; border: 1px solid var(--border); }
+table.grid { width: 100%; border-collapse: collapse; font-size: .9rem; background: var(--surface); }
+table.grid th, table.grid td { text-align: left; padding: .65rem .85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.06); vertical-align: middle; }
+table.grid th { color: var(--accent); font-family: var(--font-subheading); font-weight: 600; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid var(--border); }
+td.num { text-align: right; white-space: nowrap; }
+.fraction { display: block; color: var(--muted); font-size: .8em; }
+.badge { display: inline-flex; align-items: center; gap: .35em; padding: .2em .6em; border-radius: 4px; font-size: .75rem; font-weight: 700; font-family: var(--font-subheading); text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-symbol { font-weight: 700; }
+.badge-ok { background: var(--ok-bg); color: var(--ok-fg); border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-warn { background: var(--warn-bg); color: var(--warn-fg); border: 1px solid rgba(217, 119, 6, 0.3); }
+.badge-inert { background: var(--inert-bg); color: var(--inert-fg); border: 1px dashed var(--border); }
+.badge-neutral { background: var(--neutral-bg); color: var(--neutral-fg); border: 1px solid rgba(59, 130, 246, 0.3); }
+.reason { color: var(--muted); font-size: .88rem; }
+@keyframes runePulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px currentColor); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 16px currentColor); }
+}
+.rune-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 1.1rem; margin-top: 1rem; }
+.rune-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 0.85rem 1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 0.65rem; cursor: help; transition: all 0.25s ease; }
+.rune-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); }
+.rune-wrapper { position: relative; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center; margin: 0.2rem 0; }
+.rune-stone { width: 3.6rem; height: 3.6rem; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #1e2638 0%, #0d121c 100%); border: 2px solid rgba(212, 175, 55, 0.4); box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.1), inset 0 -4px 8px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+.rune-ok { border-color: rgba(52, 211, 153, 0.6); color: #34d399; }
+.rune-ok .rune-glyph { color: #34d399; text-shadow: 0 0 10px #10b981, 0 0 20px rgba(16, 185, 129, 0.7); animation: runePulse 3.5s infinite ease-in-out; }
+.rune-warn { border-color: rgba(248, 113, 113, 0.6); color: #f87171; }
+.rune-warn .rune-glyph { color: #f87171; text-shadow: 0 0 10px #ef4444, 0 0 20px rgba(239, 68, 68, 0.7); animation: runePulse 2.5s infinite ease-in-out; }
+.rune-inert { border-color: rgba(107, 114, 128, 0.3); color: #4b5563; }
+.rune-inert .rune-glyph { color: #4b5563; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
+.rune-glyph { font-family: serif; font-size: 1.8rem; font-weight: 900; line-height: 1; user-select: none; }
+.gate-card-label { font-family: var(--font-subheading); font-size: 0.86rem; font-weight: 700; color: var(--accent-strong); text-align: center; }
+.gate-card-status { font-size: 0.72rem; font-family: var(--font-subheading); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.gate-card-status-ok { color: var(--ok-fg); }
+.gate-card-status-warn { color: var(--warn-fg); }
+.gate-card-status-inert { color: var(--muted); }
+.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14.5rem; transition: opacity 0.2s ease, transform 0.2s ease; }
+.gate-card:hover .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+
+/* Gate Findings Details */
+.gate-findings-details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 1.25rem; box-shadow: var(--shadow); }
+.gate-findings-summary { cursor: pointer; font-family: var(--font-subheading); font-weight: 700; font-size: 0.9rem; color: var(--accent); user-select: none; }
+.gate-findings-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.85rem; }
+.gate-finding-item { border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 8px; background: rgba(13, 17, 26, 0.65); padding: 0.5rem 0.75rem; }
+.gate-finding-header { cursor: pointer; display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-subheading); font-size: 0.88rem; color: var(--text); user-select: none; }
+.rune-glyph-small { font-family: serif; font-size: 1.1rem; font-weight: 900; color: var(--accent); }
+.gate-finding-body { margin-top: 0.5rem; overflow-x: auto; }
+.gate-finding-body pre { margin: 0; padding: 0.75rem 0.85rem; background: #080b12; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08); font-family: var(--font-mono); font-size: 0.8rem; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; max-height: 22rem; overflow-y: auto; }
+@keyframes bubbleRise1 {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  30% { opacity: 0.8; }
+  85% { opacity: 0.8; }
+  100% { transform: translateY(-4.5rem) scale(1.1); opacity: 0; }
+}
+@keyframes bubbleRise2 {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  40% { opacity: 0.9; }
+  90% { opacity: 0.9; }
+  100% { transform: translateY(-5rem) scale(1); opacity: 0; }
+}
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
+.module-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem; transition: all 0.25s ease; }
+.module-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); }
+.module-card-header { border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.45rem; }
+.module-card-title { font-family: var(--font-subheading); font-size: 0.92rem; font-weight: 700; color: var(--accent-strong); word-break: break-all; }
+.module-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.25rem; display: flex; gap: 0.5rem; }
+.module-vials-row { display: flex; justify-content: space-around; align-items: flex-end; padding: 0.4rem 0.5rem; gap: 1rem; }
+.vial-container { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; cursor: help; }
+.vial-label { font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-radius: 4px 4px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.vial::before { content: \&quot;\&quot;; position: absolute; top: 0; left: -2px; right: -2px; height: 5px; background: rgba(212, 175, 55, 0.7); border-radius: 3px 3px 0 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); z-index: 5; }
+.vial::after { content: \&quot;\&quot;; position: absolute; top: 5px; left: 3px; width: 3px; bottom: 8px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05)); border-radius: 2px; z-index: 6; pointer-events: none; }
+.vial-liquid { position: relative; width: 100%; border-radius: 0 0 14px 14px; transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+.vial-bubbles { position: absolute; inset: 0; pointer-events: none; }
+.vial-bubbles::before, .vial-bubbles::after { content: \&quot;\&quot;; position: absolute; bottom: -4px; background: rgba(255, 255, 255, 0.7); border-radius: 50%; box-shadow: 0 0 3px rgba(255, 255, 255, 0.9); }
+.vial-bubbles::before { left: 25%; width: 4px; height: 4px; animation: bubbleRise1 2.2s infinite linear; }
+.vial-bubbles::after { left: 60%; width: 3px; height: 3px; animation: bubbleRise2 2.8s infinite linear 0.9s; }
+.vial-liquid-bad { background: linear-gradient(180deg, #F87171 0%, #DC2626 100%); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+.vial-liquid-warn { background: linear-gradient(180deg, #FBBF24 0%, #D97706 100%); box-shadow: 0 0 10px rgba(245, 208, 97, 0.4); }
+.vial-liquid-good { background: linear-gradient(180deg, #34D399 0%, #059669 100%); box-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
+.vial-segmented { display: flex; flex-direction: column-reverse; overflow: hidden; background: rgba(0, 0, 0, 0.4); }
+.vial-segment { width: 100%; transition: height 0.3s ease; min-height: 2px; }
+.vial-segment-low { background: linear-gradient(180deg, #34d399 0%, #059669 100%); }
+.vial-segment-moderate { background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%); }
+.vial-segment-high { background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); }
+.vial-segment-very-high { background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%); }
+.vial-value-badge { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--accent); }
+.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14rem; transition: opacity 0.2s ease, transform 0.2s ease; }
+.vial-container:hover .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+.tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; }
+.tooltip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--muted); }
+.tooltip-grid strong { color: var(--text); font-family: var(--font-mono); }
+.issue-card { position: relative; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.85rem; overflow: hidden; box-shadow: var(--shadow); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+.issue-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: 0 8px 20px -4px rgba(212, 175, 55, 0.2); }
+.issue-card[open] { border-color: var(--border-strong); box-shadow: 0 10px 24px -4px rgba(212, 175, 55, 0.25); }
+.issue-card-summary { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; cursor: pointer; user-select: none; list-style: none; background-color: rgba(255, 255, 255, 0.03); transition: background-color 0.2s ease; }
+.issue-card-summary::-webkit-details-marker { display: none; }
+.issue-card-summary:hover { background-color: rgba(212, 175, 55, 0.06); }
+.issue-card-header-main { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
+.issue-card-title { font-family: var(--font-subheading); font-size: 0.94rem; font-weight: 700; color: var(--accent-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.issue-status-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.6rem; font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; flex-shrink: 0; }
+.badge-claimed { background-color: rgba(166, 28, 28, 0.2); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171; }
+.badge-ready-for-agent, .badge-ready { background-color: rgba(217, 119, 6, 0.18); border: 1px solid rgba(245, 208, 97, 0.45); color: #fbbf24; }
+.badge-resolved { background-color: rgba(16, 185, 129, 0.18); border: 1px solid rgba(52, 211, 153, 0.45); color: #34d399; }
+.badge-needs-triage, .badge-needs-info { background-color: rgba(124, 58, 237, 0.18); border: 1px solid rgba(167, 139, 250, 0.45); color: #c4b5fd; }
+.badge-superseded { background-color: rgba(107, 114, 128, 0.12); border: 1px solid rgba(156, 163, 175, 0.3); color: #9ca3af; }
+.issue-card-body { border-top: 1px solid var(--border); background-color: var(--surface); padding: 1rem 1.15rem; }
+.issue-card-body .prose { font-size: 0.84rem; line-height: 1.5; color: var(--text); }
+.issue-card-body .prose p, .issue-card-body .prose li { font-size: 0.84rem; line-height: 1.5; }
+.issue-card-body .prose h1 { font-size: 1.05rem; margin: 0.6rem 0 0.3rem; color: var(--accent-strong); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.2rem; }
+.issue-card-body .prose h2 { font-size: 0.98rem; margin: 0.5rem 0 0.25rem; color: var(--accent); border-bottom: none; }
+.issue-card-body .prose h3 { font-size: 0.92rem; margin: 0.4rem 0 0.2rem; color: var(--accent); }
+.issue-card-body .prose h4, .issue-card-body .prose h5, .issue-card-body .prose h6 { font-size: 0.86rem; margin: 0.35rem 0 0.15rem; color: var(--muted); }
+.issue-card-body h4 { font-size: 0.88rem; font-family: var(--font-subheading); color: var(--accent); margin-top: 0.85rem; margin-bottom: 0.35rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.25rem; }
+.issue-children-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
+.issue-card-sub { margin-top: 0.5rem; margin-bottom: 0.25rem; border: 1px solid rgba(212, 175, 55, 0.2); background-color: rgba(0, 0, 0, 0.25); border-radius: 6px; }
+.issue-card-sub .issue-card-summary { padding: 0.6rem 0.85rem; background-color: rgba(255, 255, 255, 0.02); }
+.issue-card-sub .issue-card-title { font-size: 0.88rem; color: var(--text); }
+@media (max-width: 30rem) {
+  .page { padding: 1rem .85rem 3rem; }
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.25rem; }
+  .verdict { padding: 1rem; }
+  .tab { padding: .5rem .9rem; font-size: .82rem; }
+}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;main class=\&quot;page\&quot;&gt;
+&lt;header class=\&quot;page-header\&quot;&gt;
+&lt;div class=\&quot;header-nav\&quot;&gt;&lt;a href=\&quot;../\&quot; class=\&quot;back-link\&quot;&gt;← Back to landing page&lt;/a&gt;&lt;/div&gt;
+&lt;h1&gt;Project Status Report&lt;/h1&gt;
+&lt;p class=\&quot;generated-at\&quot;&gt;Captured: 2026-07-22 10:00 UTC&lt;/p&gt;
+&lt;/header&gt;
+&lt;div class=\&quot;tabs\&quot;&gt;
+&lt;input type=\&quot;radio\&quot; name=\&quot;report-tab\&quot; id=\&quot;tab-healthcheck\&quot; class=\&quot;tab-radio\&quot; checked&gt;
+&lt;input type=\&quot;radio\&quot; name=\&quot;report-tab\&quot; id=\&quot;tab-issues\&quot; class=\&quot;tab-radio\&quot;&gt;
+&lt;nav class=\&quot;tablist\&quot; role=\&quot;tablist\&quot; aria-label=\&quot;Sections\&quot;&gt;
+&lt;label class=\&quot;tab\&quot; for=\&quot;tab-healthcheck\&quot; role=\&quot;tab\&quot;&gt;Healthcheck&lt;/label&gt;
+&lt;label class=\&quot;tab\&quot; for=\&quot;tab-issues\&quot; role=\&quot;tab\&quot;&gt;Issues&lt;/label&gt;
+&lt;/nav&gt;
+&lt;section id=\&quot;healthcheck\&quot; class=\&quot;section panel panel-healthcheck\&quot; role=\&quot;tabpanel\&quot; aria-labelledby=\&quot;tab-healthcheck\&quot;&gt;
+&lt;div class=\&quot;subsection\&quot;&gt;&lt;h3&gt;Quality Gates&lt;/h3&gt;&lt;div class=\&quot;rune-grid\&quot;&gt;&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-ok\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᛏ\&quot;&gt;ᛏ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;oxlint&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-ok\&quot;&gt;passed&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;oxlint&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npm run lint&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;passed&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;blocking&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-warn\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᚦ\&quot;&gt;ᚦ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;Knip (dead code)&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-warn\&quot;&gt;findings&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;Knip (dead code)&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npm run knip&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;findings&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;warning only&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-inert\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᚱ\&quot;&gt;ᚱ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;dependency-cruiser (structure)&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;dependency-cruiser (structure)&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npm run depcruise&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;not run&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;warning only&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Reason:&lt;/span&gt; &lt;strong&gt;unsupported Node version&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-inert\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᚨ\&quot;&gt;ᚨ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;Typecheck (tsc --noEmit)&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;Typecheck (tsc --noEmit)&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npm run typecheck&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;not run&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;enforcement unknown&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Reason:&lt;/span&gt; &lt;strong&gt;no run recorded&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-inert\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᛉ\&quot;&gt;ᛉ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;Unit/component tests&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;Unit/component tests&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;npx vitest run&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;not run&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;enforcement unknown&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Reason:&lt;/span&gt; &lt;strong&gt;no run recorded&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;gate-card rune-card\&quot;&gt;&lt;div class=\&quot;rune-wrapper\&quot;&gt;&lt;div class=\&quot;rune-stone rune-inert\&quot;&gt;&lt;span class=\&quot;rune-glyph\&quot; title=\&quot;Rune ᛗ\&quot;&gt;ᛗ&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;gate-card-label\&quot;&gt;Maintainability Index&lt;/span&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;div class=\&quot;gate-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Gate: &lt;strong&gt;Maintainability Index&lt;/strong&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Command:&lt;/span&gt; &lt;code&gt;scripts/project-state/complexity.js&lt;/code&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Status:&lt;/span&gt; &lt;strong&gt;not run&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Enforcement:&lt;/span&gt; &lt;strong&gt;enforcement unknown&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Reason:&lt;/span&gt; &lt;strong&gt;no run recorded&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;details class=\&quot;gate-findings-details\&quot;&gt;&lt;summary class=\&quot;gate-findings-summary\&quot;&gt;&lt;span class=\&quot;gate-findings-title\&quot;&gt;&amp;#128269; View Gate Findings &amp;amp; Outputs (3)&lt;/span&gt;&lt;/summary&gt;&lt;div class=\&quot;gate-findings-list\&quot;&gt;&lt;details class=\&quot;gate-finding-item\&quot;&gt;&lt;summary class=\&quot;gate-finding-header\&quot;&gt;&lt;span class=\&quot;rune-glyph-small\&quot;&gt;ᛏ&lt;/span&gt;&lt;strong&gt;oxlint&lt;/strong&gt;&lt;span class=\&quot;gate-card-status gate-card-status-ok\&quot;&gt;passed&lt;/span&gt;&lt;/summary&gt;&lt;div class=\&quot;gate-finding-body\&quot;&gt;&lt;pre&gt;&lt;code&gt;ok&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/details&gt;
+&lt;details class=\&quot;gate-finding-item\&quot;&gt;&lt;summary class=\&quot;gate-finding-header\&quot;&gt;&lt;span class=\&quot;rune-glyph-small\&quot;&gt;ᚦ&lt;/span&gt;&lt;strong&gt;Knip (dead code)&lt;/strong&gt;&lt;span class=\&quot;gate-card-status gate-card-status-warn\&quot;&gt;findings&lt;/span&gt;&lt;/summary&gt;&lt;div class=\&quot;gate-finding-body\&quot;&gt;&lt;pre&gt;&lt;code&gt;26 problems&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/details&gt;
+&lt;details class=\&quot;gate-finding-item\&quot;&gt;&lt;summary class=\&quot;gate-finding-header\&quot;&gt;&lt;span class=\&quot;rune-glyph-small\&quot;&gt;ᚱ&lt;/span&gt;&lt;strong&gt;dependency-cruiser (structure)&lt;/strong&gt;&lt;span class=\&quot;gate-card-status gate-card-status-inert\&quot;&gt;not run&lt;/span&gt;&lt;/summary&gt;&lt;div class=\&quot;gate-finding-body\&quot;&gt;&lt;pre&gt;&lt;code&gt;ERROR: Your node version (25.0.0) is not supported.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/details&gt;&lt;/div&gt;&lt;/details&gt;&lt;/div&gt;
+&lt;div class=\&quot;subsection\&quot;&gt;&lt;h3&gt;Module health &amp;amp; metrics&lt;/h3&gt;&lt;div class=\&quot;module-grid\&quot;&gt;&lt;div class=\&quot;module-card\&quot;&gt;&lt;div class=\&quot;module-card-header\&quot;&gt;&lt;div class=\&quot;module-card-title\&quot;&gt;&lt;code&gt;src/solver&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;module-card-meta\&quot;&gt;&lt;span&gt;6 files&lt;/span&gt; &amp;bull; &lt;span&gt;900 lines&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;module-vials-row\&quot;&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Complexity&lt;/span&gt;&lt;div class=\&quot;vial vial-segmented\&quot;&gt;&lt;div class=\&quot;vial-segment vial-segment-low\&quot; style=\&quot;height: 100%\&quot; title=\&quot;Low Risk (1-5): 100% LOC\&quot;&gt;&lt;/div&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;MI 100&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Complexity &amp;amp; Risk Profile: &lt;code&gt;src/solver&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Files:&lt;/span&gt; &lt;strong&gt;6&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Lines:&lt;/span&gt; &lt;strong&gt;900&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Functions:&lt;/span&gt; &lt;strong&gt;40&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Maintainability (MI):&lt;/span&gt; &lt;strong&gt;100/100&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#931; complexity:&lt;/span&gt; &lt;strong&gt;136&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#216; complexity:&lt;/span&gt; &lt;strong&gt;3.4&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;max complexity:&lt;/span&gt; &lt;strong&gt;21&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Low Risk (1-5):&lt;/span&gt; &lt;strong&gt;100% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Moderate (6-10):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;High Risk (11-25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Very High (&gt;25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Coverage&lt;/span&gt;&lt;div class=\&quot;vial\&quot;&gt;&lt;div class=\&quot;vial-liquid vial-liquid-bad\&quot; style=\&quot;height: 0%\&quot;&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;N/A&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;No test coverage data&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;module-card\&quot;&gt;&lt;div class=\&quot;module-card-header\&quot;&gt;&lt;div class=\&quot;module-card-title\&quot;&gt;&lt;code&gt;src/parser&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;module-card-meta\&quot;&gt;&lt;span&gt;3 files&lt;/span&gt; &amp;bull; &lt;span&gt;300 lines&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;module-vials-row\&quot;&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Complexity&lt;/span&gt;&lt;div class=\&quot;vial vial-segmented\&quot;&gt;&lt;div class=\&quot;vial-segment vial-segment-low\&quot; style=\&quot;height: 100%\&quot; title=\&quot;Low Risk (1-5): 100% LOC\&quot;&gt;&lt;/div&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;MI 100&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Complexity &amp;amp; Risk Profile: &lt;code&gt;src/parser&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Files:&lt;/span&gt; &lt;strong&gt;3&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Lines:&lt;/span&gt; &lt;strong&gt;300&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Functions:&lt;/span&gt; &lt;strong&gt;12&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Maintainability (MI):&lt;/span&gt; &lt;strong&gt;100/100&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#931; complexity:&lt;/span&gt; &lt;strong&gt;25&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#216; complexity:&lt;/span&gt; &lt;strong&gt;2.1&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;max complexity:&lt;/span&gt; &lt;strong&gt;7&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Low Risk (1-5):&lt;/span&gt; &lt;strong&gt;100% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Moderate (6-10):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;High Risk (11-25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Very High (&gt;25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Coverage&lt;/span&gt;&lt;div class=\&quot;vial\&quot;&gt;&lt;div class=\&quot;vial-liquid vial-liquid-bad\&quot; style=\&quot;height: 0%\&quot;&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;N/A&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;No test coverage data&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=\&quot;module-card\&quot;&gt;&lt;div class=\&quot;module-card-header\&quot;&gt;&lt;div class=\&quot;module-card-title\&quot;&gt;&lt;code&gt;scripts/project-state&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;module-card-meta\&quot;&gt;&lt;span&gt;5 files&lt;/span&gt; &amp;bull; &lt;span&gt;0 lines&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;module-vials-row\&quot;&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Complexity&lt;/span&gt;&lt;div class=\&quot;vial vial-segmented\&quot;&gt;&lt;div class=\&quot;vial-segment vial-segment-low\&quot; style=\&quot;height: 100%\&quot; title=\&quot;Low Risk (1-5): 100% LOC\&quot;&gt;&lt;/div&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;MI 100&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Complexity &amp;amp; Risk Profile: &lt;code&gt;scripts/project-state&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Files:&lt;/span&gt; &lt;strong&gt;5&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Lines:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Functions:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Maintainability (MI):&lt;/span&gt; &lt;strong&gt;100/100&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#931; complexity:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;&amp;#216; complexity:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;max complexity:&lt;/span&gt; &lt;strong&gt;0&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Low Risk (1-5):&lt;/span&gt; &lt;strong&gt;100% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Moderate (6-10):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;High Risk (11-25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Very High (&gt;25):&lt;/span&gt; &lt;strong&gt;0% LOC&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=\&quot;vial-container\&quot;&gt;&lt;span class=\&quot;vial-label\&quot;&gt;Coverage&lt;/span&gt;&lt;div class=\&quot;vial\&quot;&gt;&lt;div class=\&quot;vial-liquid vial-liquid-good\&quot; style=\&quot;height: 80%\&quot;&gt;&lt;div class=\&quot;vial-bubbles\&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=\&quot;vial-value-badge\&quot;&gt;80 %&lt;/span&gt;&lt;div class=\&quot;vial-tooltip\&quot; role=\&quot;tooltip\&quot;&gt;&lt;div class=\&quot;tooltip-header\&quot;&gt;Coverage: &lt;code&gt;scripts/project-state&lt;/code&gt;&lt;/div&gt;&lt;div class=\&quot;tooltip-grid\&quot;&gt;&lt;div&gt;&lt;span&gt;Statements:&lt;/span&gt; &lt;strong&gt;80 % (80/100)&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Branches:&lt;/span&gt; &lt;strong&gt;80 % (8/10)&lt;/strong&gt;&lt;/div&gt;&lt;div&gt;&lt;span&gt;Functions:&lt;/span&gt; &lt;strong&gt;90 % (9/10)&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/section&gt;
+&lt;section id=\&quot;issues\&quot; class=\&quot;section panel panel-issues\&quot; role=\&quot;tabpanel\&quot; aria-labelledby=\&quot;tab-issues\&quot;&gt;
+&lt;details class=\&quot;issue issue-card\&quot; id=\&quot;issue-54-bericht-02-render\&quot;&gt;
+&lt;summary class=\&quot;issue-summary issue-card-summary\&quot;&gt;&lt;div class=\&quot;issue-card-header-main\&quot;&gt;&lt;span class=\&quot;issue-title issue-card-title\&quot;&gt;berichtsseite rendern&lt;/span&gt;&lt;/div&gt;&lt;span class=\&quot;issue-status-badge badge-claimed\&quot;&gt;claimed&lt;/span&gt;&lt;/summary&gt;
+&lt;div class=\&quot;issue-body issue-card-body\&quot;&gt;
+&lt;div class=\&quot;issue-meta\&quot;&gt;&lt;span class=\&quot;issue-id\&quot;&gt;&lt;code&gt;54-bericht/02-render&lt;/code&gt;&lt;/span&gt;
+&lt;span class=\&quot;issue-type\&quot;&gt;chore&lt;/span&gt;
+&lt;span class=\&quot;issue-blocked\&quot;&gt;blocked by 01&lt;/span&gt;&lt;/div&gt;
+&lt;h4&gt;Description&lt;/h4&gt;&lt;div class=\&quot;prose\&quot;&gt;&lt;p&gt;Ein &lt;strong&gt;wichtiger&lt;/strong&gt; Vorgang.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Punkt eins&lt;/li&gt;
+&lt;li&gt;Punkt zwei&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;h4&gt;Acceptance Criteria&lt;/h4&gt;&lt;div class=\&quot;prose\&quot;&gt;&lt;ul&gt;
+&lt;li&gt;&lt;input disabled=\&quot;\&quot; type=\&quot;checkbox\&quot;&gt; Erste Bedingung&lt;/li&gt;
+&lt;li&gt;&lt;input checked=\&quot;\&quot; disabled=\&quot;\&quot; type=\&quot;checkbox\&quot;&gt; Zweite Bedingung&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p class=\&quot;issue-refs\&quot;&gt;Seen on: &lt;code&gt;origin/issue/foo&lt;/code&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/details&gt;
+
+&lt;/section&gt;
+&lt;/div&gt;
+&lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+&quot;
+
+ ❯ scripts/project-state/renderReport.test.js:132:24
+    130|       expect(html).toContain(&#39;--font-heading&#39;);
+    131|       expect(html).toMatch(/--font-body:[^;]*sans-serif/);
+    132|       expect(html).not.toMatch(/fonts\.googleapis|fonts\.gstatic/i);
+       |                        ^
+    133|     });
+    134|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯</code></pre></div></details>
 <details class="gate-finding-item"><summary class="gate-finding-header"><span class="rune-glyph-small">ᛗ</span><strong>Maintainability Index</strong><span class="gate-card-status gate-card-status-ok">passed</span></summary><div class="gate-finding-body"><pre><code>Overall Maintainability Index: 74/100 (Threshold: &gt;=65)</code></pre></div></details></div></details></div>
-<div class="subsection"><h3>Module health &amp; metrics</h3><div class="module-grid"><div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/solver</code></div><div class="module-card-meta"><span>25 files</span> &bull; <span>4234 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-very-high" style="height: 4.7%" title="Very High Risk (>25): 4.7% LOC"></div><div class="vial-segment vial-segment-high" style="height: 16.2%" title="High Risk (11-25): 16.2% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 12%" title="Moderate Risk (6-10): 12% LOC"></div><div class="vial-segment vial-segment-low" style="height: 67.1%" title="Low Risk (1-5): 67.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 74</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/solver</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>25</strong></div><div><span>Lines:</span> <strong>4234</strong></div><div><span>Functions:</span> <strong>422</strong></div><div><span>Maintainability (MI):</span> <strong>74/100</strong></div><div><span>&#931; complexity:</span> <strong>1281</strong></div><div><span>&#216; complexity:</span> <strong>3</strong></div><div><span>max complexity:</span> <strong>39</strong></div><div><span>Low Risk (1-5):</span> <strong>67.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>12% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>16.2% LOC</strong></div><div><span>Very High (>25):</span> <strong>4.7% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 98%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">97.6 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/solver</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>97.6 % (4133/4233)</strong></div><div><span>Branches:</span> <strong>83.1 % (1218/1465)</strong></div><div><span>Functions:</span> <strong>99.1 % (213/215)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/components/editor</code></div><div class="module-card-meta"><span>21 files</span> &bull; <span>3349 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-very-high" style="height: 7.9%" title="Very High Risk (>25): 7.9% LOC"></div><div class="vial-segment vial-segment-high" style="height: 25%" title="High Risk (11-25): 25% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 19%" title="Moderate Risk (6-10): 19% LOC"></div><div class="vial-segment vial-segment-low" style="height: 48.1%" title="Low Risk (1-5): 48.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 74</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/components/editor</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>21</strong></div><div><span>Lines:</span> <strong>3349</strong></div><div><span>Functions:</span> <strong>303</strong></div><div><span>Maintainability (MI):</span> <strong>74/100</strong></div><div><span>&#931; complexity:</span> <strong>929</strong></div><div><span>&#216; complexity:</span> <strong>3.1</strong></div><div><span>max complexity:</span> <strong>54</strong></div><div><span>Low Risk (1-5):</span> <strong>48.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>19% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>25% LOC</strong></div><div><span>Very High (>25):</span> <strong>7.9% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 81%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">81.3 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/components/editor</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>81.3 % (2348/2888)</strong></div><div><span>Branches:</span> <strong>81.5 % (627/769)</strong></div><div><span>Functions:</span> <strong>70.4 % (95/135)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/components</code></div><div class="module-card-meta"><span>10 files</span> &bull; <span>1429 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 29.6%" title="Moderate Risk (6-10): 29.6% LOC"></div><div class="vial-segment vial-segment-low" style="height: 70.4%" title="Low Risk (1-5): 70.4% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 76</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/components</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>10</strong></div><div><span>Lines:</span> <strong>1429</strong></div><div><span>Functions:</span> <strong>137</strong></div><div><span>Maintainability (MI):</span> <strong>76/100</strong></div><div><span>&#931; complexity:</span> <strong>244</strong></div><div><span>&#216; complexity:</span> <strong>1.8</strong></div><div><span>max complexity:</span> <strong>10</strong></div><div><span>Low Risk (1-5):</span> <strong>70.4% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>29.6% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 93%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">93.1 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/components</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>93.1 % (1167/1253)</strong></div><div><span>Branches:</span> <strong>85.9 % (201/234)</strong></div><div><span>Functions:</span> <strong>84.6 % (55/65)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/hooks</code></div><div class="module-card-meta"><span>10 files</span> &bull; <span>1019 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 2.3%" title="Moderate Risk (6-10): 2.3% LOC"></div><div class="vial-segment vial-segment-low" style="height: 97.7%" title="Low Risk (1-5): 97.7% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 75</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/hooks</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>10</strong></div><div><span>Lines:</span> <strong>1019</strong></div><div><span>Functions:</span> <strong>123</strong></div><div><span>Maintainability (MI):</span> <strong>75/100</strong></div><div><span>&#931; complexity:</span> <strong>206</strong></div><div><span>&#216; complexity:</span> <strong>1.7</strong></div><div><span>max complexity:</span> <strong>7</strong></div><div><span>Low Risk (1-5):</span> <strong>97.7% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>2.3% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 98%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">98 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/hooks</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>98 % (983/1003)</strong></div><div><span>Branches:</span> <strong>88.7 % (188/212)</strong></div><div><span>Functions:</span> <strong>96.9 % (62/64)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/parser</code></div><div class="module-card-meta"><span>6 files</span> &bull; <span>1222 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 11.9%" title="Moderate Risk (6-10): 11.9% LOC"></div><div class="vial-segment vial-segment-low" style="height: 88.1%" title="Low Risk (1-5): 88.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 69</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/parser</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>6</strong></div><div><span>Lines:</span> <strong>1222</strong></div><div><span>Functions:</span> <strong>95</strong></div><div><span>Maintainability (MI):</span> <strong>69/100</strong></div><div><span>&#931; complexity:</span> <strong>199</strong></div><div><span>&#216; complexity:</span> <strong>2.1</strong></div><div><span>max complexity:</span> <strong>8</strong></div><div><span>Low Risk (1-5):</span> <strong>88.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>11.9% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 99%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">98.9 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/parser</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>98.9 % (1215/1228)</strong></div><div><span>Branches:</span> <strong>88.9 % (241/271)</strong></div><div><span>Functions:</span> <strong>100 % (65/65)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/utils</code></div><div class="module-card-meta"><span>6 files</span> &bull; <span>620 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-high" style="height: 7.7%" title="High Risk (11-25): 7.7% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 37.6%" title="Moderate Risk (6-10): 37.6% LOC"></div><div class="vial-segment vial-segment-low" style="height: 54.7%" title="Low Risk (1-5): 54.7% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 74</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/utils</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>6</strong></div><div><span>Lines:</span> <strong>620</strong></div><div><span>Functions:</span> <strong>61</strong></div><div><span>Maintainability (MI):</span> <strong>74/100</strong></div><div><span>&#931; complexity:</span> <strong>154</strong></div><div><span>&#216; complexity:</span> <strong>2.5</strong></div><div><span>max complexity:</span> <strong>15</strong></div><div><span>Low Risk (1-5):</span> <strong>54.7% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>37.6% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>7.7% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 99%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">99.4 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/utils</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>99.4 % (619/623)</strong></div><div><span>Branches:</span> <strong>77.8 % (137/176)</strong></div><div><span>Functions:</span> <strong>97.1 % (34/35)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/db</code></div><div class="module-card-meta"><span>5 files</span> &bull; <span>620 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 6.2%" title="Moderate Risk (6-10): 6.2% LOC"></div><div class="vial-segment vial-segment-low" style="height: 93.8%" title="Low Risk (1-5): 93.8% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 78</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/db</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>5</strong></div><div><span>Lines:</span> <strong>620</strong></div><div><span>Functions:</span> <strong>74</strong></div><div><span>Maintainability (MI):</span> <strong>78/100</strong></div><div><span>&#931; complexity:</span> <strong>118</strong></div><div><span>&#216; complexity:</span> <strong>1.6</strong></div><div><span>max complexity:</span> <strong>6</strong></div><div><span>Low Risk (1-5):</span> <strong>93.8% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>6.2% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 97%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">97.2 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/db</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>97.2 % (593/610)</strong></div><div><span>Branches:</span> <strong>93 % (133/143)</strong></div><div><span>Functions:</span> <strong>83.3 % (40/48)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/components/play</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>327 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-high" style="height: 53.7%" title="High Risk (11-25): 53.7% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 24.9%" title="Moderate Risk (6-10): 24.9% LOC"></div><div class="vial-segment vial-segment-low" style="height: 21.4%" title="Low Risk (1-5): 21.4% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 73</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/components/play</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>327</strong></div><div><span>Functions:</span> <strong>32</strong></div><div><span>Maintainability (MI):</span> <strong>73/100</strong></div><div><span>&#931; complexity:</span> <strong>102</strong></div><div><span>&#216; complexity:</span> <strong>3.2</strong></div><div><span>max complexity:</span> <strong>18</strong></div><div><span>Low Risk (1-5):</span> <strong>21.4% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>24.9% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>53.7% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 91%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">90.6 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/components/play</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>90.6 % (271/299)</strong></div><div><span>Branches:</span> <strong>87.4 % (90/103)</strong></div><div><span>Functions:</span> <strong>66.7 % (12/18)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src</code></div><div class="module-card-meta"><span>3 files</span> &bull; <span>378 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-very-high" style="height: 60.4%" title="Very High Risk (>25): 60.4% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 3.5%" title="Moderate Risk (6-10): 3.5% LOC"></div><div class="vial-segment vial-segment-low" style="height: 36.1%" title="Low Risk (1-5): 36.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 81</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>3</strong></div><div><span>Lines:</span> <strong>378</strong></div><div><span>Functions:</span> <strong>26</strong></div><div><span>Maintainability (MI):</span> <strong>81/100</strong></div><div><span>&#931; complexity:</span> <strong>66</strong></div><div><span>&#216; complexity:</span> <strong>2.5</strong></div><div><span>max complexity:</span> <strong>28</strong></div><div><span>Low Risk (1-5):</span> <strong>36.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>3.5% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>60.4% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-warn" style="height: 77%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">76.5 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>76.5 % (254/332)</strong></div><div><span>Branches:</span> <strong>75 % (33/44)</strong></div><div><span>Functions:</span> <strong>10 % (1/10)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/i18n</code></div><div class="module-card-meta"><span>8 files</span> &bull; <span>306 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 11.9%" title="Moderate Risk (6-10): 11.9% LOC"></div><div class="vial-segment vial-segment-low" style="height: 88.1%" title="Low Risk (1-5): 88.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 73</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/i18n</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>8</strong></div><div><span>Lines:</span> <strong>306</strong></div><div><span>Functions:</span> <strong>23</strong></div><div><span>Maintainability (MI):</span> <strong>73/100</strong></div><div><span>&#931; complexity:</span> <strong>51</strong></div><div><span>&#216; complexity:</span> <strong>2.2</strong></div><div><span>max complexity:</span> <strong>6</strong></div><div><span>Low Risk (1-5):</span> <strong>88.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>11.9% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 97%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">96.7 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/i18n</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>96.7 % (296/306)</strong></div><div><span>Branches:</span> <strong>90.3 % (65/72)</strong></div><div><span>Functions:</span> <strong>100 % (20/20)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/components/importer</code></div><div class="module-card-meta"><span>2 files</span> &bull; <span>125 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 76</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/components/importer</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>2</strong></div><div><span>Lines:</span> <strong>125</strong></div><div><span>Functions:</span> <strong>14</strong></div><div><span>Maintainability (MI):</span> <strong>76/100</strong></div><div><span>&#931; complexity:</span> <strong>19</strong></div><div><span>&#216; complexity:</span> <strong>1.4</strong></div><div><span>max complexity:</span> <strong>2</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 100%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">100 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/components/importer</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>100 % (125/125)</strong></div><div><span>Branches:</span> <strong>100 % (26/26)</strong></div><div><span>Functions:</span> <strong>100 % (12/12)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/contexts</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>59 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 72</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/contexts</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>59</strong></div><div><span>Functions:</span> <strong>8</strong></div><div><span>Maintainability (MI):</span> <strong>72/100</strong></div><div><span>&#931; complexity:</span> <strong>10</strong></div><div><span>&#216; complexity:</span> <strong>1.3</strong></div><div><span>max complexity:</span> <strong>2</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 97%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">97.2 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/contexts</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>97.2 % (35/36)</strong></div><div><span>Branches:</span> <strong>100 % (9/9)</strong></div><div><span>Functions:</span> <strong>100 % (3/3)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/solver/__fixtures__</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>285 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 62</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/solver/__fixtures__</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>285</strong></div><div><span>Functions:</span> <strong>8</strong></div><div><span>Maintainability (MI):</span> <strong>62/100</strong></div><div><span>&#931; complexity:</span> <strong>8</strong></div><div><span>&#216; complexity:</span> <strong>1</strong></div><div><span>max complexity:</span> <strong>1</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 100%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">100 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/solver/__fixtures__</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>100 % (285/285)</strong></div><div><span>Branches:</span> <strong>100 % (8/8)</strong></div><div><span>Functions:</span> <strong>100 % (7/7)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/data</code></div><div class="module-card-meta"><span>2 files</span> &bull; <span>73 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 71.4%" title="Moderate Risk (6-10): 71.4% LOC"></div><div class="vial-segment vial-segment-low" style="height: 28.6%" title="Low Risk (1-5): 28.6% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 66</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/data</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>2</strong></div><div><span>Lines:</span> <strong>73</strong></div><div><span>Functions:</span> <strong>2</strong></div><div><span>Maintainability (MI):</span> <strong>66/100</strong></div><div><span>&#931; complexity:</span> <strong>7</strong></div><div><span>&#216; complexity:</span> <strong>3.5</strong></div><div><span>max complexity:</span> <strong>6</strong></div><div><span>Low Risk (1-5):</span> <strong>28.6% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>71.4% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 100%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">100 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/data</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>100 % (73/73)</strong></div><div><span>Branches:</span> <strong>100 % (16/16)</strong></div><div><span>Functions:</span> <strong>100 % (2/2)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/test-utils</code></div><div class="module-card-meta"><span>2 files</span> &bull; <span>24 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 79</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/test-utils</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>2</strong></div><div><span>Lines:</span> <strong>24</strong></div><div><span>Functions:</span> <strong>2</strong></div><div><span>Maintainability (MI):</span> <strong>79/100</strong></div><div><span>&#931; complexity:</span> <strong>2</strong></div><div><span>&#216; complexity:</span> <strong>1</strong></div><div><span>max complexity:</span> <strong>1</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 100%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">100 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/test-utils</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>100 % (12/12)</strong></div><div><span>Branches:</span> <strong>100 % (1/1)</strong></div><div><span>Functions:</span> <strong>100 % (1/1)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/constants</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>23 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 81</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/constants</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>23</strong></div><div><span>Functions:</span> <strong>1</strong></div><div><span>Maintainability (MI):</span> <strong>81/100</strong></div><div><span>&#931; complexity:</span> <strong>1</strong></div><div><span>&#216; complexity:</span> <strong>1</strong></div><div><span>max complexity:</span> <strong>1</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 100%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">100 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/constants</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>100 % (23/23)</strong></div><div><span>Branches:</span> <strong>100 % (1/1)</strong></div><div><span>Functions:</span> <strong>100 % (1/1)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>docs/assets</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>0 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>docs/assets</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>0</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 10%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">0 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>docs/assets</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>0 % (0/149)</strong></div><div><span>Branches:</span> <strong>0 % (0/1)</strong></div><div><span>Functions:</span> <strong>0 % (0/1)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>public</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>0 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>public</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>0</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 10%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">0 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>public</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>0 % (0/76)</strong></div><div><span>Branches:</span> <strong>0 % (0/1)</strong></div><div><span>Functions:</span> <strong>0 % (0/1)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>tools/rules-editor</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>0 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>tools/rules-editor</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>0</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 10%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">0 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>tools/rules-editor</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>0 % (0/259)</strong></div><div><span>Branches:</span> <strong>0 % (0/1)</strong></div><div><span>Functions:</span> <strong>0 % (0/1)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>scripts/lib</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>0 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>scripts/lib</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>0</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 42%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">42.1 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>scripts/lib</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>42.1 % (106/252)</strong></div><div><span>Branches:</span> <strong>100 % (6/6)</strong></div><div><span>Functions:</span> <strong>9.1 % (1/11)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>scripts</code></div><div class="module-card-meta"><span>9 files</span> &bull; <span>0 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>scripts</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>9</strong></div><div><span>Lines:</span> <strong>0</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 43%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">42.9 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>scripts</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>42.9 % (540/1260)</strong></div><div><span>Branches:</span> <strong>88.8 % (87/98)</strong></div><div><span>Functions:</span> <strong>73 % (27/37)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>scripts/catalog-fork</code></div><div class="module-card-meta"><span>2 files</span> &bull; <span>0 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>scripts/catalog-fork</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>2</strong></div><div><span>Lines:</span> <strong>0</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-warn" style="height: 66%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">65.7 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>scripts/catalog-fork</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>65.7 % (195/297)</strong></div><div><span>Branches:</span> <strong>93.9 % (31/33)</strong></div><div><span>Functions:</span> <strong>92.3 % (12/13)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>scripts/project-state</code></div><div class="module-card-meta"><span>11 files</span> &bull; <span>0 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>scripts/project-state</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>11</strong></div><div><span>Lines:</span> <strong>0</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 87%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">86.8 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>scripts/project-state</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>86.8 % (2022/2330)</strong></div><div><span>Branches:</span> <strong>83.3 % (299/359)</strong></div><div><span>Functions:</span> <strong>96.3 % (78/81)</strong></div></div></div></div></div></div>
-<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/parser/schema</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>107 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/parser/schema</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>107</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-good" style="height: 100%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">100 %</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Coverage: <code>src/parser/schema</code></div><div class="tooltip-grid"><div><span>Statements:</span> <strong>100 % (107/107)</strong></div><div><span>Branches:</span> <strong>100 % (0/0)</strong></div><div><span>Functions:</span> <strong>100 % (0/0)</strong></div></div></div></div></div></div></div></div>
+<div class="subsection"><h3>Module health &amp; metrics</h3><div class="module-grid"><div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/solver</code></div><div class="module-card-meta"><span>25 files</span> &bull; <span>4234 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-very-high" style="height: 4.7%" title="Very High Risk (>25): 4.7% LOC"></div><div class="vial-segment vial-segment-high" style="height: 16.2%" title="High Risk (11-25): 16.2% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 12%" title="Moderate Risk (6-10): 12% LOC"></div><div class="vial-segment vial-segment-low" style="height: 67.1%" title="Low Risk (1-5): 67.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 74</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/solver</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>25</strong></div><div><span>Lines:</span> <strong>4234</strong></div><div><span>Functions:</span> <strong>422</strong></div><div><span>Maintainability (MI):</span> <strong>74/100</strong></div><div><span>&#931; complexity:</span> <strong>1281</strong></div><div><span>&#216; complexity:</span> <strong>3</strong></div><div><span>max complexity:</span> <strong>39</strong></div><div><span>Low Risk (1-5):</span> <strong>67.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>12% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>16.2% LOC</strong></div><div><span>Very High (>25):</span> <strong>4.7% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/components/editor</code></div><div class="module-card-meta"><span>21 files</span> &bull; <span>3349 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-very-high" style="height: 7.9%" title="Very High Risk (>25): 7.9% LOC"></div><div class="vial-segment vial-segment-high" style="height: 25%" title="High Risk (11-25): 25% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 19%" title="Moderate Risk (6-10): 19% LOC"></div><div class="vial-segment vial-segment-low" style="height: 48.1%" title="Low Risk (1-5): 48.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 74</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/components/editor</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>21</strong></div><div><span>Lines:</span> <strong>3349</strong></div><div><span>Functions:</span> <strong>303</strong></div><div><span>Maintainability (MI):</span> <strong>74/100</strong></div><div><span>&#931; complexity:</span> <strong>929</strong></div><div><span>&#216; complexity:</span> <strong>3.1</strong></div><div><span>max complexity:</span> <strong>54</strong></div><div><span>Low Risk (1-5):</span> <strong>48.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>19% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>25% LOC</strong></div><div><span>Very High (>25):</span> <strong>7.9% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/components</code></div><div class="module-card-meta"><span>10 files</span> &bull; <span>1429 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 29.6%" title="Moderate Risk (6-10): 29.6% LOC"></div><div class="vial-segment vial-segment-low" style="height: 70.4%" title="Low Risk (1-5): 70.4% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 76</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/components</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>10</strong></div><div><span>Lines:</span> <strong>1429</strong></div><div><span>Functions:</span> <strong>137</strong></div><div><span>Maintainability (MI):</span> <strong>76/100</strong></div><div><span>&#931; complexity:</span> <strong>244</strong></div><div><span>&#216; complexity:</span> <strong>1.8</strong></div><div><span>max complexity:</span> <strong>10</strong></div><div><span>Low Risk (1-5):</span> <strong>70.4% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>29.6% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/hooks</code></div><div class="module-card-meta"><span>10 files</span> &bull; <span>1019 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 2.3%" title="Moderate Risk (6-10): 2.3% LOC"></div><div class="vial-segment vial-segment-low" style="height: 97.7%" title="Low Risk (1-5): 97.7% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 75</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/hooks</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>10</strong></div><div><span>Lines:</span> <strong>1019</strong></div><div><span>Functions:</span> <strong>123</strong></div><div><span>Maintainability (MI):</span> <strong>75/100</strong></div><div><span>&#931; complexity:</span> <strong>206</strong></div><div><span>&#216; complexity:</span> <strong>1.7</strong></div><div><span>max complexity:</span> <strong>7</strong></div><div><span>Low Risk (1-5):</span> <strong>97.7% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>2.3% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/parser</code></div><div class="module-card-meta"><span>6 files</span> &bull; <span>1222 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 11.9%" title="Moderate Risk (6-10): 11.9% LOC"></div><div class="vial-segment vial-segment-low" style="height: 88.1%" title="Low Risk (1-5): 88.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 69</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/parser</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>6</strong></div><div><span>Lines:</span> <strong>1222</strong></div><div><span>Functions:</span> <strong>95</strong></div><div><span>Maintainability (MI):</span> <strong>69/100</strong></div><div><span>&#931; complexity:</span> <strong>199</strong></div><div><span>&#216; complexity:</span> <strong>2.1</strong></div><div><span>max complexity:</span> <strong>8</strong></div><div><span>Low Risk (1-5):</span> <strong>88.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>11.9% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/utils</code></div><div class="module-card-meta"><span>6 files</span> &bull; <span>620 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-high" style="height: 7.7%" title="High Risk (11-25): 7.7% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 37.6%" title="Moderate Risk (6-10): 37.6% LOC"></div><div class="vial-segment vial-segment-low" style="height: 54.7%" title="Low Risk (1-5): 54.7% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 74</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/utils</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>6</strong></div><div><span>Lines:</span> <strong>620</strong></div><div><span>Functions:</span> <strong>61</strong></div><div><span>Maintainability (MI):</span> <strong>74/100</strong></div><div><span>&#931; complexity:</span> <strong>154</strong></div><div><span>&#216; complexity:</span> <strong>2.5</strong></div><div><span>max complexity:</span> <strong>15</strong></div><div><span>Low Risk (1-5):</span> <strong>54.7% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>37.6% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>7.7% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/db</code></div><div class="module-card-meta"><span>5 files</span> &bull; <span>620 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 6.2%" title="Moderate Risk (6-10): 6.2% LOC"></div><div class="vial-segment vial-segment-low" style="height: 93.8%" title="Low Risk (1-5): 93.8% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 78</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/db</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>5</strong></div><div><span>Lines:</span> <strong>620</strong></div><div><span>Functions:</span> <strong>74</strong></div><div><span>Maintainability (MI):</span> <strong>78/100</strong></div><div><span>&#931; complexity:</span> <strong>118</strong></div><div><span>&#216; complexity:</span> <strong>1.6</strong></div><div><span>max complexity:</span> <strong>6</strong></div><div><span>Low Risk (1-5):</span> <strong>93.8% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>6.2% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/components/play</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>327 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-high" style="height: 53.7%" title="High Risk (11-25): 53.7% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 24.9%" title="Moderate Risk (6-10): 24.9% LOC"></div><div class="vial-segment vial-segment-low" style="height: 21.4%" title="Low Risk (1-5): 21.4% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 73</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/components/play</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>327</strong></div><div><span>Functions:</span> <strong>32</strong></div><div><span>Maintainability (MI):</span> <strong>73/100</strong></div><div><span>&#931; complexity:</span> <strong>102</strong></div><div><span>&#216; complexity:</span> <strong>3.2</strong></div><div><span>max complexity:</span> <strong>18</strong></div><div><span>Low Risk (1-5):</span> <strong>21.4% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>24.9% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>53.7% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src</code></div><div class="module-card-meta"><span>3 files</span> &bull; <span>378 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-very-high" style="height: 60.4%" title="Very High Risk (>25): 60.4% LOC"></div><div class="vial-segment vial-segment-moderate" style="height: 3.5%" title="Moderate Risk (6-10): 3.5% LOC"></div><div class="vial-segment vial-segment-low" style="height: 36.1%" title="Low Risk (1-5): 36.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 81</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>3</strong></div><div><span>Lines:</span> <strong>378</strong></div><div><span>Functions:</span> <strong>26</strong></div><div><span>Maintainability (MI):</span> <strong>81/100</strong></div><div><span>&#931; complexity:</span> <strong>66</strong></div><div><span>&#216; complexity:</span> <strong>2.5</strong></div><div><span>max complexity:</span> <strong>28</strong></div><div><span>Low Risk (1-5):</span> <strong>36.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>3.5% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>60.4% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/i18n</code></div><div class="module-card-meta"><span>8 files</span> &bull; <span>306 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 11.9%" title="Moderate Risk (6-10): 11.9% LOC"></div><div class="vial-segment vial-segment-low" style="height: 88.1%" title="Low Risk (1-5): 88.1% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 73</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/i18n</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>8</strong></div><div><span>Lines:</span> <strong>306</strong></div><div><span>Functions:</span> <strong>23</strong></div><div><span>Maintainability (MI):</span> <strong>73/100</strong></div><div><span>&#931; complexity:</span> <strong>51</strong></div><div><span>&#216; complexity:</span> <strong>2.2</strong></div><div><span>max complexity:</span> <strong>6</strong></div><div><span>Low Risk (1-5):</span> <strong>88.1% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>11.9% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/components/importer</code></div><div class="module-card-meta"><span>2 files</span> &bull; <span>125 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 76</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/components/importer</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>2</strong></div><div><span>Lines:</span> <strong>125</strong></div><div><span>Functions:</span> <strong>14</strong></div><div><span>Maintainability (MI):</span> <strong>76/100</strong></div><div><span>&#931; complexity:</span> <strong>19</strong></div><div><span>&#216; complexity:</span> <strong>1.4</strong></div><div><span>max complexity:</span> <strong>2</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/contexts</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>59 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 72</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/contexts</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>59</strong></div><div><span>Functions:</span> <strong>8</strong></div><div><span>Maintainability (MI):</span> <strong>72/100</strong></div><div><span>&#931; complexity:</span> <strong>10</strong></div><div><span>&#216; complexity:</span> <strong>1.3</strong></div><div><span>max complexity:</span> <strong>2</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/solver/__fixtures__</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>285 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 62</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/solver/__fixtures__</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>285</strong></div><div><span>Functions:</span> <strong>8</strong></div><div><span>Maintainability (MI):</span> <strong>62/100</strong></div><div><span>&#931; complexity:</span> <strong>8</strong></div><div><span>&#216; complexity:</span> <strong>1</strong></div><div><span>max complexity:</span> <strong>1</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/data</code></div><div class="module-card-meta"><span>2 files</span> &bull; <span>73 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-moderate" style="height: 71.4%" title="Moderate Risk (6-10): 71.4% LOC"></div><div class="vial-segment vial-segment-low" style="height: 28.6%" title="Low Risk (1-5): 28.6% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 66</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/data</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>2</strong></div><div><span>Lines:</span> <strong>73</strong></div><div><span>Functions:</span> <strong>2</strong></div><div><span>Maintainability (MI):</span> <strong>66/100</strong></div><div><span>&#931; complexity:</span> <strong>7</strong></div><div><span>&#216; complexity:</span> <strong>3.5</strong></div><div><span>max complexity:</span> <strong>6</strong></div><div><span>Low Risk (1-5):</span> <strong>28.6% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>71.4% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/test-utils</code></div><div class="module-card-meta"><span>2 files</span> &bull; <span>24 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 79</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/test-utils</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>2</strong></div><div><span>Lines:</span> <strong>24</strong></div><div><span>Functions:</span> <strong>2</strong></div><div><span>Maintainability (MI):</span> <strong>79/100</strong></div><div><span>&#931; complexity:</span> <strong>2</strong></div><div><span>&#216; complexity:</span> <strong>1</strong></div><div><span>max complexity:</span> <strong>1</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/constants</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>23 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 81</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/constants</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>23</strong></div><div><span>Functions:</span> <strong>1</strong></div><div><span>Maintainability (MI):</span> <strong>81/100</strong></div><div><span>&#931; complexity:</span> <strong>1</strong></div><div><span>&#216; complexity:</span> <strong>1</strong></div><div><span>max complexity:</span> <strong>1</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div>
+<div class="module-card"><div class="module-card-header"><div class="module-card-title"><code>src/parser/schema</code></div><div class="module-card-meta"><span>1 files</span> &bull; <span>107 lines</span></div></div><div class="module-vials-row"><div class="vial-container"><span class="vial-label">Complexity</span><div class="vial vial-segmented"><div class="vial-segment vial-segment-low" style="height: 100%" title="Low Risk (1-5): 100% LOC"></div><div class="vial-bubbles"></div></div><span class="vial-value-badge">MI 100</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">Complexity &amp; Risk Profile: <code>src/parser/schema</code></div><div class="tooltip-grid"><div><span>Files:</span> <strong>1</strong></div><div><span>Lines:</span> <strong>107</strong></div><div><span>Functions:</span> <strong>0</strong></div><div><span>Maintainability (MI):</span> <strong>100/100</strong></div><div><span>&#931; complexity:</span> <strong>0</strong></div><div><span>&#216; complexity:</span> <strong>0</strong></div><div><span>max complexity:</span> <strong>0</strong></div><div><span>Low Risk (1-5):</span> <strong>100% LOC</strong></div><div><span>Moderate (6-10):</span> <strong>0% LOC</strong></div><div><span>High Risk (11-25):</span> <strong>0% LOC</strong></div><div><span>Very High (>25):</span> <strong>0% LOC</strong></div></div></div></div><div class="vial-container"><span class="vial-label">Coverage</span><div class="vial"><div class="vial-liquid vial-liquid-bad" style="height: 0%"><div class="vial-bubbles"></div></div></div><span class="vial-value-badge">N/A</span><div class="vial-tooltip" role="tooltip"><div class="tooltip-header">No test coverage data</div></div></div></div></div></div></div>
 </section>
 <section id="issues" class="section panel panel-issues" role="tabpanel" aria-labelledby="tab-issues">
 <details class="issue issue-card" id="issue-57-status-report-dark-fantasy-design">
@@ -15159,7 +15781,7 @@ This ensures that you&#39;re testing the behavior the user would see in the brow
 <li><input disabled="" type="checkbox"> <code>docs/status/index.html</code> is updated and committed.</li>
 </ul>
 </div>
-<p class="issue-refs">Seen on: <code>origin</code>, <code>origin/issue/59-remove-committed-status-report</code>, <code>origin/main</code></p>
+<p class="issue-refs">Seen on: <code>origin</code>, <code>origin/issue/59-remove-committed-status-report</code>, <code>origin/issue/60-status-report-mi-und-sig-reagenzglas</code>, <code>origin/main</code></p>
 </div>
 </details>
 
