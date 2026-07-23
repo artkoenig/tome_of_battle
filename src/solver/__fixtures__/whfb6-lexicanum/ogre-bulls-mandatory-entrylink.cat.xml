@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Reduzierter Verbatim-Auszug aus `Ogre Kingdoms (6th definitive edition).cat`
+  (Repo lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition,
+  Branch master, abgerufen 2026-07-23; gameSystemId 0d13-7737-ea86-4662).
+
+  Zweck: verankert die Erkennung eines armeeweiten Pflichtselektors, der als
+  Wurzel-`entryLink` (nicht als `selectionEntry`) codiert ist. Der reale
+  „Ogre Bulls"-Wurzel-`entryLink` (d82e-111e-89b9-2be1) trägt eine force-scoped
+  `min`-Constraint (Basis 0, id 32ed-26da-3f27-5c04), die der Standard-Modifier
+  der Gruppe (gegatet auf `notInstanceOf` Ironskin Tribe 8711-ed16-2a44-7251) auf
+  1 anhebt. Verbatim übernommen sind: der `Ogre Bulls`-entryLink samt seiner
+  modifierGroups/constraints/modifiers, die beiden realen forceEntries
+  „Standard (OK-AB)" (729f-9246-5cd3-5044) und „Ironskin Tribe (WD#309-UK)"
+  (8711-ed16-2a44-7251) samt ihrer categoryLinks, sowie die categoryEntry
+  „Bully Bully" (735e-2da1-6356-2fdb) und „Core" (64bf-efb4-9978-26df).
+
+  Rekonstruiert (nicht verbatim): das Ziel-`selectionEntry` 7754-8b3d-df99-d2d5.
+  Die geteilte „Ogre Bulls"-Einheit lebt real in einem Library-Katalog außerhalb
+  dieser .cat und ist hier als minimaler Kern-Unit-Eintrag nachgebildet, damit der
+  Link im Test aufgelöst und gezählt werden kann. Nur id/name/type/categoryLink
+  sind gesetzt; die realen Profile/Kosten sind für diesen Test unerheblich.
+-->
+<catalogue xmlns="http://www.battlescribe.net/schema/catalogueSchema" id="731d-5b13-2a92-5427" name="Ogre Kingdoms" revision="1" battleScribeVersion="2.03" authorName="Lexicanum Imperialis" library="false" gameSystemId="0d13-7737-ea86-4662" gameSystemRevision="1" type="catalogue">
+  <categoryEntries>
+    <categoryEntry id="735e-2da1-6356-2fdb" name="Bully Bully" hidden="false"/>
+    <categoryEntry id="64bf-efb4-9978-26df" name="Core" hidden="false"/>
+    <categoryEntry id="e94b-6a54-8779-cd60" name="Rare" hidden="false"/>
+    <categoryEntry id="ee09-9a50-ad78-9c32" name="Regiment of Renown" hidden="false"/>
+  </categoryEntries>
+  <selectionEntries>
+    <selectionEntry id="7754-8b3d-df99-d2d5" name="Ogre Bulls" hidden="false" collective="false" import="true" type="unit">
+      <categoryLinks>
+        <categoryLink name="Core" hidden="false" id="1f00-core-link-7754" targetId="64bf-efb4-9978-26df" primary="true"/>
+      </categoryLinks>
+    </selectionEntry>
+  </selectionEntries>
+  <forceEntries>
+    <forceEntry name="Standard (OK-AB)" id="729f-9246-5cd3-5044" hidden="false">
+      <categoryLinks>
+        <categoryLink name="Characters" hidden="false" id="3d2a-761f-5a5a-4291" targetId="7a1c-d611-c2dc-def1" primary="false"/>
+        <categoryLink name="Core" hidden="false" id="b508-4bfc-bcb0-3f84" targetId="64bf-efb4-9978-26df" primary="false"/>
+        <categoryLink name="Special" hidden="false" id="08dd-79ac-7127-9376" targetId="43cc-fc3f-35a7-8d03" primary="false"/>
+        <categoryLink name="Rare" hidden="false" id="7fe5-abdc-581e-567c" targetId="e94b-6a54-8779-cd60" primary="false"/>
+      </categoryLinks>
+    </forceEntry>
+    <forceEntry name="Ironskin Tribe (WD#309-UK)" id="8711-ed16-2a44-7251" hidden="false">
+      <categoryLinks>
+        <categoryLink name="Characters" hidden="false" id="1a86-ccc7-d66f-7a48" targetId="7a1c-d611-c2dc-def1" primary="false"/>
+        <categoryLink name="Core" hidden="false" id="6a19-fae1-1d57-a4a5" targetId="64bf-efb4-9978-26df" primary="false"/>
+        <categoryLink name="Special" hidden="false" id="1b8b-422a-d54f-904a" targetId="43cc-fc3f-35a7-8d03" primary="false"/>
+        <categoryLink name="Rare" hidden="false" id="9993-9762-af81-7424" targetId="e94b-6a54-8779-cd60" primary="false"/>
+      </categoryLinks>
+    </forceEntry>
+  </forceEntries>
+  <entryLinks>
+    <entryLink import="true" name="Ogre Bulls" hidden="false" id="d82e-111e-89b9-2be1" type="selectionEntry" targetId="7754-8b3d-df99-d2d5">
+      <modifierGroups>
+        <modifierGroup type="and">
+          <modifiers>
+            <modifier type="set-primary" value="64bf-efb4-9978-26df" field="category"/>
+            <modifier type="remove" value="e94b-6a54-8779-cd60" field="category"/>
+            <modifier type="add" value="64bf-efb4-9978-26df" field="category"/>
+            <modifier type="set" value="1" field="32ed-26da-3f27-5c04"/>
+            <modifier type="remove" value="ee09-9a50-ad78-9c32" field="category"/>
+          </modifiers>
+          <conditions>
+            <condition type="notInstanceOf" value="1" field="selections" scope="force" childId="8711-ed16-2a44-7251" shared="true" includeChildSelections="true"/>
+          </conditions>
+          <comment>Standard</comment>
+        </modifierGroup>
+        <modifierGroup type="and">
+          <conditions>
+            <condition type="instanceOf" value="1" field="selections" scope="force" childId="8711-ed16-2a44-7251" shared="true" includeChildSelections="true"/>
+          </conditions>
+          <comment>Ironskin Tribe</comment>
+          <modifiers>
+            <modifier type="remove" value="e94b-6a54-8779-cd60" field="category"/>
+            <modifier type="add" value="64bf-efb4-9978-26df" field="category"/>
+            <modifier type="set-primary" value="64bf-efb4-9978-26df" field="category"/>
+            <modifier type="remove" value="ee09-9a50-ad78-9c32" field="category"/>
+          </modifiers>
+        </modifierGroup>
+      </modifierGroups>
+      <constraints>
+        <constraint type="min" value="0" field="selections" scope="force" shared="true" id="32ed-26da-3f27-5c04" includeChildSelections="false"/>
+      </constraints>
+      <modifiers>
+        <modifier type="add" value="735e-2da1-6356-2fdb" field="category"/>
+      </modifiers>
+    </entryLink>
+  </entryLinks>
+</catalogue>

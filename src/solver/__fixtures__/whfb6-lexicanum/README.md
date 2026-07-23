@@ -58,6 +58,19 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
   pts-Kosten verdoppelt, sobald König Alrik Ranulfsson (`e4c5-f4d5-a169-aaa7`,
   auf id/name/costs reduziert) im Heer steht. Ein zweiter, unbeteiligter
   `hidden`-Modifier sowie `modifierGroups`/eigene `constraints` wurden entfernt.
+- `ogre-bulls-mandatory-entrylink.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `Ogre Kingdoms (6th definitive edition).cat` (abgerufen 2026-07-23): der reale
+  „Ogre Bulls"-**Wurzel-`entryLink`** (`d82e-111e-89b9-2be1`, targetId
+  `7754-8b3d-df99-d2d5`) samt seiner realen `modifierGroups`, der force-scoped
+  `min`-Constraint am Link (`32ed-26da-3f27-5c04`, Basis 0) und des `add category`-
+  Modifiers, dazu die beiden realen `forceEntry`s „Standard (OK-AB)"
+  (`729f-9246-5cd3-5044`) und „Ironskin Tribe (WD#309-UK)" (`8711-ed16-2a44-7251`)
+  mit ihren `categoryLink`s sowie die `categoryEntry`s „Bully Bully"
+  (`735e-2da1-6356-2fdb`) und „Core" (`64bf-efb4-9978-26df`). **Rekonstruiert**
+  (nicht verbatim) ist allein das Ziel-`selectionEntry` `7754-8b3d-df99-d2d5`: die
+  geteilte „Ogre Bulls"-Einheit lebt real in einem Library-Katalog außerhalb dieser
+  `.cat` und ist hier als minimaler Kern-Unit-Eintrag nachgebildet, damit der Link
+  aufgelöst und gezählt werden kann.
 
 ## Wozu
 
@@ -90,6 +103,15 @@ forceEntry-eigene Punktelimit-Constraint eines gewählten Sonderheeres durchsetz
 unter 2000 Punkten ungültig, ab 2000 gültig, ein normales Kontingent unberührt. Von
 allen 18 Katalogen tragen ausschließlich diese **2** `forceEntry`s ein solches
 eigenes `limit::<costTypeId>`-Muster.
+
+`ogre-bulls-mandatory-entrylink.cat.xml` verankert
+`src/solver/rosterValidator.mandatoryEntryLinkSelector.test.js`: Der Validator muss
+einen armeeweiten Pflichtselektor auch dann erzwingen, wenn er als Wurzel-`entryLink`
+(statt als Wurzel-`selectionEntry`) codiert ist. Die Pflicht steckt in der
+force-scoped `min`-Constraint **am Link**, die der „Standard"-Modifier der Gruppe
+(gegatet auf `notInstanceOf` Ironskin Tribe) von 0 auf 1 anhebt. Test: Standard-Armee
+ohne Ogerbullen → blockierender `force-selector-min`; mit einer Ogerbullen-Einheit →
+kein Verstoß; Ironskin-Tribe-Armee → kein Verstoß (der Link-min bleibt 0).
 
 `characters-max-force.cat.xml` belegt zusätzlich die strukturelle Voraussetzung
 des `inheritedCategoryMax`-Quirks: Die **Characters**-`categoryLink` trägt einen

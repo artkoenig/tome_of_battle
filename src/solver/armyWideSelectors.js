@@ -1,5 +1,6 @@
 import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { isSelectionEntryHidden, getEffectiveEntryCategoryLinks } from './entryVisibility.js';
+import { resolveEntry } from './catalogResolver.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 
 // Scope under which a constraint applies to the whole contingent (force).
@@ -7,25 +8,87 @@ const FORCE_SCOPE = 'force';
 // Scope under which a constraint applies to the whole roster (all contingents together).
 const ROSTER_SCOPE = 'roster';
 
+/** The `min` constraint a source carries at the given scope, if any. */
+function findScopedMinConstraint(source, scope) {
+  return (source.constraints || []).find(
+    con => con.type === ConstraintKind.MIN && con.scope === scope
+  );
+}
+
 /**
- * Root selectionEntries of a catalogue that carry a `min` constraint at the given scope.
- * BattleScribe encodes a mandatory army-wide choice this way. Each match is returned paired
- * with its scoped min constraint. Only the catalogue's own root entries are inspected,
- * mirroring how the category adder reads `catalogue.selectionEntries`.
+ * Root selectionEntries that carry a scoped `min` constraint directly, each paired with it.
+ * The raw entry is handed back so the caller evaluates the constraint against the entry's own
+ * modifiers — the same object every downstream check already consumes.
+ * @returns {Array<{ entry: Object, minConstraint: Object }>}
+ */
+function collectSelectionEntryScopedMinSelectors(catalogue, scope) {
+  return (catalogue.selectionEntries || [])
+    .map(entry => ({ entry, minConstraint: findScopedMinConstraint(entry, scope) }))
+    .filter(candidate => candidate.minConstraint);
+}
+
+/**
+ * Root entryLinks whose LINK carries a scoped `min` constraint, each paired with it. A pack
+ * such as the Definitive Edition encodes a mandatory army-wide unit as a root entryLink (not a
+ * selectionEntry): the duty lives in a force/roster-scoped `min` on the link, raised from 0 to 1
+ * by a link modifier gated on the army variant. The constraint and the modifiers evaluated are
+ * therefore the LINK's own — `getEffectiveModifiers(link)` returns exactly those, so the caller's
+ * existing evaluation honours the conditional raise. The target is resolved only to borrow its
+ * name when the link declares none; visibility and category resolution happen downstream, where
+ * `isSelectionEntryHidden` re-resolves the link itself.
+ * @returns {Array<{ entry: Object, minConstraint: Object }>}
+ */
+function collectEntryLinkScopedMinSelectors(system, catalogue, scope) {
+  return (catalogue.entryLinks || [])
+    .map(link => {
+      const minConstraint = findScopedMinConstraint(link, scope);
+      if (!minConstraint) return null;
+      const entry = link.name ? link : { ...link, name: resolveEntry(system, link, catalogue.id)?.name };
+      return { entry, minConstraint };
+    })
+    .filter(Boolean);
+}
+
+/**
+ * The resolved target id a selector ultimately requires — its link target, or its own id for a
+ * plain selectionEntry. Two selectors sharing this id are the same army-wide duty.
+ */
+function selectorTargetId({ entry }) {
+  return entry.targetId || entry.id;
+}
+
+/**
+ * Drops selectors that duplicate an earlier one's target, so a catalogue expressing the same
+ * duty as both a selectionEntry and an entryLink yields a single violation (the selectionEntry
+ * form, listed first, wins). In practice only one form occurs per catalogue.
+ * @param {Array<{ entry: Object, minConstraint: Object }>} selectors
+ */
+function dedupeByTarget(selectors) {
+  const seenTargets = new Set();
+  return selectors.filter(selector => {
+    const targetId = selectorTargetId(selector);
+    if (seenTargets.has(targetId)) return false;
+    seenTargets.add(targetId);
+    return true;
+  });
+}
+
+/**
+ * Root catalogue selectors that carry a `min` constraint at the given scope — the way
+ * BattleScribe encodes a mandatory army-wide choice. Both encodings are collected: a root
+ * `selectionEntry` bearing the constraint directly, and a root `entryLink` bearing it on the
+ * link. Each match is returned paired with its scoped min constraint. Only the catalogue's own
+ * root entries and links are inspected, mirroring how the category adder reads them.
  *
  * @returns {Array<{ entry: Object, minConstraint: Object }>}
  */
 function collectScopedMinSelectors(system, catalogueId, scope) {
   const catalogue = system?.catalogues?.find(c => c.id === catalogueId);
   if (!catalogue) return [];
-  return (catalogue.selectionEntries || [])
-    .map(entry => ({
-      entry,
-      minConstraint: (entry.constraints || []).find(
-        con => con.type === ConstraintKind.MIN && con.scope === scope
-      )
-    }))
-    .filter(candidate => candidate.minConstraint);
+  return dedupeByTarget([
+    ...collectSelectionEntryScopedMinSelectors(catalogue, scope),
+    ...collectEntryLinkScopedMinSelectors(system, catalogue, scope)
+  ]);
 }
 
 /**
