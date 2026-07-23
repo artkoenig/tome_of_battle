@@ -33,7 +33,7 @@ export {
 } from './rosterTree.js';
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 export { isListRuleSelection, isListRuleEntryKind, resolveListRuleGroup } from './listRules.js';
-export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, evaluateConstraint, evaluateConstraintWithCauses, resolveConditionTrigger, getEffectiveModifiers, getEffectiveCategoryLinks, collectTriggeredMessages, getEffectiveName, getEffectiveSelectionName, canGroupMaxBeRaisedAboveSingleChoice, ValidationSeverity } from './modifierEvaluator.js';
+export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks, collectTriggeredMessages, getEffectiveName, getEffectiveSelectionName, canGroupMaxBeRaisedAboveSingleChoice, ValidationSeverity } from './modifierEvaluator.js';
 export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, getExtraResourceTotals, resolveCostLimitTypeId, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 export { validateRoster, hasBlockingViolations, countBlockingViolations, VIOLATION_BLOCKS_ADD_AVAILABILITY, classifyBlocksAddAvailability } from './rosterValidator.js';
 export { getEntryAddAvailability, isBlockingAvailabilityViolation } from './entryAvailability.js';

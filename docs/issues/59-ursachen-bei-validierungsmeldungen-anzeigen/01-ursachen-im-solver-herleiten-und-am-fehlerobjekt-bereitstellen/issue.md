@@ -61,5 +61,4 @@ Autor-Meldungen, Basiswert-Fälle.
 - [ ] Unit-Tests an den drei Seams grün; volle Suite grün.
 
 ## Comments
-</content>
 - Solver-seitige Ursachen-Herleitung (ADR 0027): evaluateConstraint liefert neben dem Endwert die aktiv beitragenden bedingten Modifier (getModifiedConstraintValue delegiert, Zahl-Pfad unverändert); resolveConditionTrigger löst eine Modifier-Bedingung auf die benennbare auslösende Auswahl auf oder meldet nicht auflösbar; evaluateConstraintWithCauses bündelt beides. Der Roster-Validator hängt die aufgelösten Ursachen als optionales, sprachfreies Feld causes an mechanische App-Verstöße (nur bei bedingter Veränderung, ganze Kette, dedupliziert); ValidationError um optionales causes-Feld erweitert (abwärtskompatibel).

@@ -1,6 +1,6 @@
 # Validierungs-Ursachen als optionales, sprachfreies Feld am Fehlerobjekt
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Datum:** 2026-07-23
 - **Beteiligte:** Artjom König
 - **Zugehörige ADRs (falls vorhanden):** Schreibt ADR-0026 (strukturierte,

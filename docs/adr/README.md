@@ -34,5 +34,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0024 | [Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen](0024-statik-toolchain-oxlint-knip-dependency-cruiser.md) | Accepted | 2026-07-21 |
 | 0025 | [GitHub-Pages-Quelle auf Actions umgestellt, Jekyll-Build wird mitgeführt](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md) | Accepted | 2026-07-21 |
 | 0026 | [i18n als Eigenlösung: JSON-Sprachdateien + Intl-API, keine i18n-Library](0026-i18n-eigenloesung-json-und-intl-ohne-library.md) | Accepted | 2026-07-22 |
-| 0027 | [Validierungs-Ursachen als optionales, sprachfreies Feld am Fehlerobjekt](0027-validierungs-ursachen-am-fehlerobjekt.md) | Proposed | 2026-07-23 |
+| 0027 | [Validierungs-Ursachen als optionales, sprachfreies Feld am Fehlerobjekt](0027-validierungs-ursachen-am-fehlerobjekt.md) | Accepted | 2026-07-23 |
 

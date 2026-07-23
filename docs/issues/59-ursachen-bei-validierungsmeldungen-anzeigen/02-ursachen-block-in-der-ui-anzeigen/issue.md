@@ -56,5 +56,4 @@ Ursachen-Feld am `ValidationError` auf und macht es sichtbar.
 - [ ] Nach der Änderung Screenshot der betroffenen Ansicht an den Nutzer senden.
 
 ## Comments
-</content>
 - UI-Anzeige des Ursachen-Blocks umgesetzt: neue i18n-Vorlagen validation.causesTitle/causeItem (de+en), reine Seam-Funktion formatValidationCauses und die geteilte Praesentationskomponente ValidationCauses (SSOT). Eingebunden an beiden Renderstellen (RosterValidationPanel, CategoryUnitAdder). Tests: formatValidationCauses je Sprache, ValidationCauses-Component, plus Block-Abdeckung an beiden Renderstellen. Volle Suite gruen.

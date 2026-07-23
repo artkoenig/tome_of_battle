@@ -150,5 +150,3 @@ Ursache hängt am Fehlerobjekt selbst — ein Renderer, eine Wahrheit (SSOT).
 - [ ] Volle Test-Suite grün.
 
 ## Comments
-</content>
-</invoke>

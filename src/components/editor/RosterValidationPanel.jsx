@@ -2,8 +2,7 @@ import React from 'react';
 import { Play, AlertTriangle, Check } from 'lucide-react';
 import { hasBlockingViolations, ValidationSeverity } from '../../solver/validator';
 import { useTranslation } from '../../i18n/useTranslation';
-import { formatValidationError } from '../../i18n/formatValidationError';
-import ValidationCauses from './ValidationCauses';
+import ValidationMessage from './ValidationMessage';
 
 /**
  * Der „Lagerbericht“ des Editors: Gesamtstatus der Liste, die blockierenden
@@ -54,8 +53,7 @@ export default function RosterValidationPanel({ validationErrors, extraResources
             <div key={idx} className="validation-error-item text-danger text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
               <div className="validation-message-body">
-                <span>{formatValidationError(err, t)}</span>
-                <ValidationCauses error={err} />
+                <ValidationMessage error={err} />
               </div>
             </div>
           ))}
@@ -64,8 +62,7 @@ export default function RosterValidationPanel({ validationErrors, extraResources
             <div key={idx} className="validation-error-item validation-error-item--secondary text-danger text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
               <div className="validation-message-body">
-                <span>{formatValidationError(err, t)}</span>
-                <ValidationCauses error={err} />
+                <ValidationMessage error={err} />
               </div>
             </div>
           ))}
@@ -79,8 +76,7 @@ export default function RosterValidationPanel({ validationErrors, extraResources
             <div key={idx} className="validation-error-item text-dim text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
               <div className="validation-message-body">
-                <span>{formatValidationError(err, t)}</span>
-                <ValidationCauses error={err} />
+                <ValidationMessage error={err} />
               </div>
             </div>
           ))}

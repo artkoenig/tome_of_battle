@@ -199,6 +199,20 @@ describe('evaluateConstraintWithCauses — Ursachen der ganzen Kette, deduplizie
     expect(causes).toEqual([{ entryId: BATTLE_STANDARD_ID, name: 'Battle Standard Bearer' }]);
   });
 
+  test('über conditionGroups gegateter Modifier → Ursache aus der verschachtelten Bedingung', () => {
+    const groupGatedSet = {
+      type: 'set',
+      field: CONSTRAINT_ID,
+      valueObject: 0,
+      conditionGroups: [{ type: 'and', conditions: [presenceCondition(BATTLE_STANDARD_ID)] }]
+    };
+
+    const { value, causes } = evaluateConstraintWithCauses(constraint(), [groupGatedSet], causesCtx({ [BATTLE_STANDARD_ID]: 1 }));
+
+    expect(value).toBe(0);
+    expect(causes).toEqual([{ entryId: BATTLE_STANDARD_ID, name: 'Battle Standard Bearer' }]);
+  });
+
   test('bedingt verändert, aber nicht auflösbar (reiner Vergleich) → keine Ursache', () => {
     const modifier = {
       type: 'set',
