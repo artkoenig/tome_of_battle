@@ -407,6 +407,46 @@ const applyValueModifier = (currentValue, mod, ctx) => {
   }
 };
 
+// A modifier is conditional when it only fires under a condition of its own or an
+// enclosing modifierGroup's (folded into it by getEffectiveModifiers). Unconditional
+// modifiers are part of the base rule, never a "because you chose X" cause (ADR 0027).
+const modifierIsConditional = (mod) =>
+  (mod.conditions?.length > 0) || (mod.conditionGroups?.length > 0);
+
+/**
+ * @typedef {Object} ConstraintEvaluation
+ * @property {number} value  the effective constraint value after all condition-met modifiers.
+ * @property {Object[]} contributingConditionalModifiers  the subset of those modifiers that are
+ *   themselves conditional AND actually changed the running value, in document order — the
+ *   modifiers a violation of this constraint can be blamed on (ADR 0027). A condition-met
+ *   modifier that leaves the value unchanged, and every unconditional modifier, is excluded.
+ */
+
+/**
+ * Evaluates a constraint exactly like {@link getModifiedConstraintValue} — same condition-met
+ * modifiers, same document order, same math — but additionally captures the conditional
+ * modifiers that actively changed the value. The numeric result is byte-for-byte identical
+ * (getModifiedConstraintValue delegates here), so exposing the intermediate list adds no
+ * behaviour to the value path; it only surfaces the causes ADR 0027 needs.
+ * @param {Object} con a constraint (`{ id, value }`).
+ * @param {Object[]} modifiers the source's effective modifiers.
+ * @param {Object} ctx an evaluation context.
+ * @returns {ConstraintEvaluation}
+ */
+export const evaluateConstraint = (con, modifiers, ctx = {}) => {
+  const applicableModifiers = (modifiers || [])
+    .filter(mod => mod.field === con.id && modifierConditionsPass(mod, ctx));
+  const contributingConditionalModifiers = [];
+  const value = applicableModifiers.reduce((currentValue, mod) => {
+    const nextValue = applyValueModifier(currentValue, mod, ctx);
+    if (nextValue !== currentValue && modifierIsConditional(mod)) {
+      contributingConditionalModifiers.push(mod);
+    }
+    return nextValue;
+  }, con.value);
+  return { value, contributingConditionalModifiers };
+};
+
 /**
  * Returns the effective value of a constraint by applying its condition-met modifiers
  * to `con.value`, in document order — the order the catalogue authored them in, which
@@ -416,9 +456,92 @@ const applyValueModifier = (currentValue, mod, ctx) => {
  * getEffectiveName applies to name modifiers.
  */
 export const getModifiedConstraintValue = (con, modifiers, ctx = {}) =>
-  (modifiers || [])
-    .filter(mod => mod.field === con.id && modifierConditionsPass(mod, ctx))
-    .reduce((value, mod) => applyValueModifier(value, mod, ctx), con.value);
+  evaluateConstraint(con, modifiers, ctx).value;
+
+// The childIds that name an entry *kind* ("model"/"unit"/"upgrade"/"any") rather than one
+// concrete, selectable entry. A condition targeting one of these points at no namable choice.
+const SELECTABLE_ENTRY_KINDS = new Set(Object.values(SelectionEntryKind));
+
+// A resolved entry is a namable, selectable choice only when its type is a real
+// selection-entry kind — this excludes categories, force entries and other id-bearing
+// nodes the entry index also holds (ADR 0027: "nur benennbare Auswahl").
+const isSelectableEntry = (resolvedEntry) =>
+  !!resolvedEntry && SELECTABLE_ENTRY_KINDS.has(resolvedEntry.type);
+
+/**
+ * Resolves a single gating condition to the selectable choice it points at, or null when it
+ * points at none ("nicht auflösbar", ADR 0027). A condition names its target through
+ * `childId`; that target is a cause only when it resolves to a real selection entry, whose
+ * catalogue name is then passed through (ADR 0003). A condition with no childId (a pure
+ * comparison or quantity reference), or one whose childId names a category or a type keyword,
+ * yields null — so the caller shows no cause rather than a cryptic one.
+ * @param {Object} cond a BattleScribe condition.
+ * @param {Object} ctx an evaluation context (must carry `system`).
+ * @returns {import('../types.js').ValidationCause|null}
+ */
+export const resolveConditionTrigger = (cond, ctx = {}) => {
+  const targetId = cond?.childId;
+  if (!targetId || INSTANCE_TYPE_CHILD_IDS.includes(targetId)) return null;
+  const { system } = ctx;
+  if (!system) return null;
+  const catalogueId = resolveContextCatalogueId(ctx);
+  const rawEntry = findEntryInSystem(system, targetId, catalogueId);
+  const resolvedEntry = rawEntry && resolveEntry(system, rawEntry, catalogueId);
+  if (!isSelectableEntry(resolvedEntry) || !resolvedEntry.name) return null;
+  return { entryId: targetId, name: resolvedEntry.name };
+};
+
+// Flattens a condition group's own conditions and those of its nested groups into one list,
+// so a modifier gated through a group is resolved to the same triggers as a directly-gated one.
+const collectGroupConditions = (group) => [
+  ...(group.conditions || []),
+  ...(group.conditionGroups || []).flatMap(collectGroupConditions)
+];
+
+// Every condition that gates a modifier: its own plus those nested in its conditionGroups.
+const collectModifierConditions = (mod) => [
+  ...(mod.conditions || []),
+  ...(mod.conditionGroups || []).flatMap(collectGroupConditions)
+];
+
+// Keeps the first occurrence of each triggering selection, dropping later duplicates so
+// several modifiers (or conditions) gated on the same choice list it once.
+const dedupeCausesByEntryId = (causes) => {
+  const seenEntryIds = new Set();
+  return causes.filter(({ entryId }) => {
+    if (seenEntryIds.has(entryId)) return false;
+    seenEntryIds.add(entryId);
+    return true;
+  });
+};
+
+/**
+ * @typedef {Object} ConstraintValueWithCauses
+ * @property {number} value  the effective constraint value (see {@link getModifiedConstraintValue}).
+ * @property {import('../types.js').ValidationCause[]} causes  the namable selections whose
+ *   active conditional modifiers changed that value; empty when the value comes from the base
+ *   or unconditional modifiers only, or when no gating condition resolves to a namable choice.
+ */
+
+/**
+ * Evaluates a constraint and derives, in one pass, the causes of a violation of it (ADR 0027):
+ * the namable selections triggering the conditional modifiers that actively changed its value.
+ * The whole chain is reported — every contributing conditional modifier — deduplicated by the
+ * selection it names. Returns `causes: []` when there is no namable cause, so the caller can
+ * omit the optional field entirely and stay backward-compatible.
+ * @param {Object} con a constraint (`{ id, value }`).
+ * @param {Object[]} modifiers the source's effective modifiers.
+ * @param {Object} ctx an evaluation context (must carry `system` for name resolution).
+ * @returns {ConstraintValueWithCauses}
+ */
+export const evaluateConstraintWithCauses = (con, modifiers, ctx = {}) => {
+  const { value, contributingConditionalModifiers } = evaluateConstraint(con, modifiers, ctx);
+  const causes = contributingConditionalModifiers
+    .flatMap(collectModifierConditions)
+    .map(cond => resolveConditionTrigger(cond, ctx))
+    .filter(Boolean);
+  return { value, causes: dedupeCausesByEntryId(causes) };
+};
 
 /**
  * Recursively pulls the modifiers out of a modifierGroup, folding the group's own
