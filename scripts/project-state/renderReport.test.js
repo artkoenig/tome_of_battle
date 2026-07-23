@@ -173,6 +173,26 @@ describe('project-state/renderReport', () => {
       expect(html).toContain('enforcement unknown');
       expect(html).toContain('no run recorded');
     });
+
+    it('rendert aufklappbare Details/Findings fuer fehlschlagende oder abgebrochene Quality Gates', () => {
+      const model = makeModel({
+        gates: [
+          {
+            id: 'depcruise',
+            label: 'dependency-cruiser',
+            command: 'npm run depcruise',
+            status: 'findings',
+            enforcement: 'blocking',
+            abortReason: null,
+            output: 'Forbidden dependency cycle: foo -> bar -> foo',
+          },
+        ],
+      });
+      const html = renderReport(model);
+      expect(html).toContain('gate-findings-details');
+      expect(html).toContain('View Gate Findings &amp; Outputs (1)');
+      expect(html).toContain('Forbidden dependency cycle: foo -&gt; bar -&gt; foo');
+    });
   });
 
   describe('Modul-Kacheln mit Reagenzglaesern', () => {

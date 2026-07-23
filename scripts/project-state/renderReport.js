@@ -391,9 +391,43 @@ function renderGates(gates) {
     })
     .join('\n');
 
+  const runeGridHtml = `<div class="rune-grid">${items}</div>`;
+
+  const gatesWithOutput = gates.filter((gate) => gate.output && gate.output.trim() !== '' && gate.status !== GateStatus.Passed);
+
+  if (gatesWithOutput.length === 0) {
+    return renderSubsection('Quality Gates', runeGridHtml);
+  }
+
+  const findingsItems = gatesWithOutput.map((gate) => {
+    const status = GATE_STATUS_PRESENTATION[gate.status] ?? UNKNOWN_PRESENTATION;
+    const runeGlyph = getGateRune(gate);
+    return [
+      '<details class="gate-finding-item">',
+      '<summary class="gate-finding-header">',
+      `<span class="rune-glyph-small">${escapeHtml(runeGlyph)}</span>`,
+      `<strong>${escapeHtml(gate.label)}</strong>`,
+      `<span class="gate-card-status gate-card-status-${status.tone}">${escapeHtml(status.label)}</span>`,
+      '</summary>',
+      '<div class="gate-finding-body">',
+      `<pre><code>${escapeHtml(gate.output)}</code></pre>`,
+      '</div>',
+      '</details>',
+    ].join('');
+  }).join('\n');
+
+  const findingsSectionHtml = [
+    '<details class="gate-findings-details">',
+    '<summary class="gate-findings-summary">',
+    `<span class="gate-findings-title">&#128269; View Gate Findings &amp; Outputs (${gatesWithOutput.length})</span>`,
+    '</summary>',
+    `<div class="gate-findings-list">${findingsItems}</div>`,
+    '</details>',
+  ].join('');
+
   return renderSubsection(
     'Quality Gates',
-    `<div class="rune-grid">${items}</div>`,
+    `${runeGridHtml}\n${findingsSectionHtml}`,
   );
 }
 
@@ -759,6 +793,16 @@ td.num { text-align: right; white-space: nowrap; }
 .gate-card-status-inert { color: var(--muted); }
 .gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14.5rem; transition: opacity 0.2s ease, transform 0.2s ease; }
 .gate-card:hover .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+
+/* Gate Findings Details */
+.gate-findings-details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 1.25rem; box-shadow: var(--shadow); }
+.gate-findings-summary { cursor: pointer; font-family: var(--font-subheading); font-weight: 700; font-size: 0.9rem; color: var(--accent); user-select: none; }
+.gate-findings-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.85rem; }
+.gate-finding-item { border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 8px; background: rgba(13, 17, 26, 0.65); padding: 0.5rem 0.75rem; }
+.gate-finding-header { cursor: pointer; display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-subheading); font-size: 0.88rem; color: var(--text); user-select: none; }
+.rune-glyph-small { font-family: serif; font-size: 1.1rem; font-weight: 900; color: var(--accent); }
+.gate-finding-body { margin-top: 0.5rem; overflow-x: auto; }
+.gate-finding-body pre { margin: 0; padding: 0.75rem 0.85rem; background: #080b12; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08); font-family: var(--font-mono); font-size: 0.8rem; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; max-height: 22rem; overflow-y: auto; }
 @keyframes bubbleRise1 {
   0% { transform: translateY(0) scale(0.6); opacity: 0; }
   30% { opacity: 0.8; }
