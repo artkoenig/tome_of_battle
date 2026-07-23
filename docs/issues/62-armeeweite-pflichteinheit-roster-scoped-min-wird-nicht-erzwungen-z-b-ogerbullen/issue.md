@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: ready-for-agent
 Type: fix
 Blocked by: None
 
@@ -118,6 +118,15 @@ bei der Umsetzung geklärt (Nutzer-Entscheidung: „erstmal offen lassen"). Kand
 - Keine Einheiten-/armeespezifische Sonderlogik (ADR 0003).
 
 ## Acceptance Criteria
-- [ ]
+- [ ] Reproduktion zuerst: ein E2E-naher Test an `validateRoster(roster, system)` mit einer Oger-artigen Fixture ohne „Bulls"-Einheit zeigt den Bug (heute grün/kein Fehler) — er wird mit dem Fix rot→grün.
+- [ ] Ein Wurzel-`selectionEntry` mit unbedingtem `scope="roster"` `min ≥ 1`, der armeeweit fehlt (Count == 0), erzeugt über `validateRoster` genau einen `roster-selector-min`-Verstoß mit Schweregrad `error`.
+- [ ] Ist mindestens eine Instanz des Pflichteintrags im Roster vorhanden, erscheint **kein** `roster-selector-min`-Verstoß (der „zu wenig, aber vorhanden"-Fall bleibt der eintragsweisen Prüfung überlassen — keine Doppelmeldung).
+- [ ] Bei einem Roster mit mehreren Kontingenten wird der fehlende Pflichteintrag **genau einmal** (armeeweit) gemeldet, nicht pro Force; die Zählung nutzt die roster-weiten Selektions-Zähler, nicht die kontingentweiten.
+- [ ] Ein in der aktuellen Armee-Variante nicht wählbarer/versteckter Pflichteintrag (`isSelectionEntryHidden`) wird übersprungen — kein Verstoß.
+- [ ] Der `roster-selector-min`-Verstoß trägt sein `causes`-Feld nach ADR 0027 (`evaluateConstraintWithCauses` + `...withCauses(causes)`).
+- [ ] `roster-selector-min` ist in `VIOLATION_BLOCKS_ADD_AVAILABILITY` mit `false` eingetragen (nicht aushebe-sperrend, wie alle `*-min`); `classifyBlocksAddAvailability` wirft für den neuen Typ nicht, der Driftschutz-Test bleibt grün.
+- [ ] Neuer i18n-Schlüssel `validation.rosterSelectorMin` in `de.json` **und** `en.json`, Wortlaut identisch zu `validation.forceSelectorMin` (DE: „Die Armee braucht noch einen „{entryName}".") ; `{entryName}` bleibt unübersetzter Katalogname (ADR 0003).
+- [ ] Bestehendes `force-selector-min`-Verhalten unverändert (Regressionstest grün).
+- [ ] `npm test`, `npm run lint`, `npm run typecheck` grün.
 
 ## Comments
