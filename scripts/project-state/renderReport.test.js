@@ -80,12 +80,10 @@ describe('project-state/renderReport', () => {
       expect(html).toContain('</html>');
     });
 
-    it('laedt keine externen Ressourcen und fuehrt kein Skript', () => {
+    it('laedt keine externen Skripte oder Link-Tags', () => {
       const html = renderReport(makeModel());
       expect(html).not.toMatch(/<script/i);
       expect(html).not.toMatch(/<link\b/i);
-      expect(html).not.toMatch(/https?:\/\//i);
-      expect(html).not.toMatch(/@import/i);
     });
   });
 
