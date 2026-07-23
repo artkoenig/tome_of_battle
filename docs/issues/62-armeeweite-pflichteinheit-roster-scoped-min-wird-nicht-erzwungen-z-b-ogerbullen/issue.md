@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -131,3 +131,4 @@ bei der Umsetzung geklärt (Nutzer-Entscheidung: „erstmal offen lassen"). Kand
 
 ## Comments
 - Wiedereröffnet: Fix #122 deckt nur das selectionEntry-Muster (scope=roster) ab. Die Definitive Edition (lexicanum-imperialis, gameSystemId 0d13-…) codiert die Pflicht-Ogerbullen-Regel als Wurzel-entryLink mit force-scoped min (Basis 0, per Standard-Modifier auf 1). collectScopedMinSelectors durchsucht nur catalogue.selectionEntries, nie catalogue.entryLinks → die Pflicht wird dort nicht erzwungen. Folge-Child-Issue angelegt.
+- Definitive-Edition-Lücke geschlossen (Child 01 resolved): collectScopedMinSelectors wertet jetzt auch Wurzel-entryLinks aus. Vier-Achsen-Verifikation grün. Version-Bump 1.8.1 → 1.8.2 (fix).

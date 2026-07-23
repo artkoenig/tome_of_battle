@@ -67,20 +67,21 @@ mit einer Ogerbullen-Einheit → kein Verstoß. Die bestehenden Tests aus #122
 (`rosterValidator.mandatoryRosterSelector.test.js`) müssen grün bleiben.
 
 ## Acceptance Criteria
-- [ ] Ein Wurzel-`entryLink` mit force- oder roster-scoped `min ≥ 1` (nach
+- [x] Ein Wurzel-`entryLink` mit force- oder roster-scoped `min ≥ 1` (nach
   Modifier-Auswertung) wird als armeeweiter Pflichtselektor erkannt und erzwungen,
   wenn die Zieleinheit armeeweit fehlt.
-- [ ] Die bedingte Anhebung am Link (z. B. Standard = min 1, Ironskin Tribe =
+- [x] Die bedingte Anhebung am Link (z. B. Standard = min 1, Ironskin Tribe =
   min 0) wird korrekt ausgewertet: nur die Standard-Armee bekommt den Verstoß.
-- [ ] Die force-/roster-Unterscheidung bleibt erhalten (`force-selector-min` mit
+- [x] Die force-/roster-Unterscheidung bleibt erhalten (`force-selector-min` mit
   `forceId` bzw. `roster-selector-min` einmal pro Roster, ohne `forceId`); kein
   neuer Verstoß-Typ.
-- [ ] Kein Doppel-Melden, wenn Pflicht sowohl per `selectionEntry` als auch per
+- [x] Kein Doppel-Melden, wenn Pflicht sowohl per `selectionEntry` als auch per
   `entryLink` vorläge.
-- [ ] Reproduktions-Fixture aus echten Definitive-Edition-Daten + Test: Roster
+- [x] Reproduktions-Fixture aus echten Definitive-Edition-Daten + Test: Roster
   ohne Ogerbullen → blockierender Verstoß, mit einer Ogerbullen-Einheit → kein
   Verstoß.
-- [ ] Bestehende Tests (inkl. #122) und `npm test` bleiben grün.
+- [x] Bestehende Tests (inkl. #122) und `npm test` bleiben grün.
 
 ## Comments
 - collectScopedMinSelectors erkennt jetzt zusätzlich Wurzel-entryLinks des Katalogs: die force-/roster-scoped min-Constraint am Link samt Link-Modifiern (Standard=1 vs Ironskin Tribe=0) wird ausgewertet, Ziel per resolveEntry aufgelöst, Doppel-Melden per Target-Dedupe verhindert. Zusätzlich musste die notInstanceOf/instanceOf-Force-Auswertung in modifierEvaluator die kanonische Form scope=force childId=<forceId> erkennen (bisher nur scope=<forceId>), damit die bedingte Anhebung greift. Reproduktions-Fixture (echter Ogre-Bulls-Wurzel-entryLink) + Test ergänzt.
+- Verifikation (testing, 4 Achsen): Standards-Gate grün (nur vorbestehende Smells), Tests grün (1490+E2E), Spec ok. Nachgezogene Funde geschlossen: roster-scoped entryLink-Test + echter Dedupe-Doppelfall-Test ergänzt (AC1/AC4), Format-Doku §7.7 (instanceOf-Force-Kodierungen) und §9.9 (armeeweite Pflichteinheit) ergänzt, Checkboxen abgehakt.
