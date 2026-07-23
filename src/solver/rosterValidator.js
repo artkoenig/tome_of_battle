@@ -289,21 +289,28 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
  */
 function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
   const { selectionCounts, categoryCounts } = counts;
+  // A `scope="roster"` requirement is evaluated army-wide, so its hidden/min result must not
+  // depend on which contingent happens to be iterated first. We therefore aggregate the
+  // per-force category counts into one roster-wide tally and evaluate each selector against
+  // that single, force-independent context — otherwise a conditional min gated on a category
+  // present only in a later contingent would be missed once the entry is marked "considered".
+  const rosterCategoryCounts = aggregateRosterCategoryCounts(categoryCounts);
   const consideredSelectors = new Set();
 
   roster.forces.forEach(force => {
     const catalogueId = force.catalogueId || roster.catalogueId;
-    const forceCategoryCounts = categoryCounts[force.id] || {};
 
     collectRosterScopedMinSelectors(system, catalogueId).forEach(({ entry, minConstraint }) => {
       const selectorKey = `${catalogueId}::${entry.id}`;
       if (consideredSelectors.has(selectorKey)) return;
-
-      const visibilityContext = { system, roster, selectionCounts, forceCategoryCounts, force, catalogueId };
-      if (isSelectionEntryHidden(entry, visibilityContext)) return;
       consideredSelectors.add(selectorKey);
 
-      const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: catalogueId };
+      const ctx = {
+        system, roster, selectionCounts, forceCategoryCounts: rosterCategoryCounts,
+        catalogueId, parentCatalogueId: catalogueId
+      };
+      if (isSelectionEntryHidden(entry, ctx)) return;
+
       const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
       if (minValue <= 0) return;
 
@@ -322,6 +329,25 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
       }
     });
   });
+}
+
+/**
+ * Merges the per-force category counts (`{ [forceId]: { [categoryId]: n } }`) into one
+ * roster-wide tally (`{ [categoryId]: n }`), summing a category that appears in more than
+ * one contingent. Used by the roster-scoped mandatory-selector check so its evaluation is
+ * independent of contingent iteration order.
+ * @param {Record<string, Record<string, number>>} categoryCounts
+ * @returns {Record<string, number>}
+ */
+function aggregateRosterCategoryCounts(categoryCounts) {
+  /** @type {Record<string, number>} */
+  const rosterWide = {};
+  for (const perForce of Object.values(categoryCounts || {})) {
+    for (const [categoryId, count] of Object.entries(perForce)) {
+      rosterWide[categoryId] = (rosterWide[categoryId] || 0) + count;
+    }
+  }
+  return rosterWide;
 }
 
 /**
