@@ -653,7 +653,7 @@ html { -webkit-text-size-adjust: 100%; color-scheme: dark; }
 body {
   margin: 0;
   background-color: var(--bg);
-  background-image: linear-gradient(180deg, rgba(7, 9, 14, 0.72) 0%, rgba(7, 9, 14, 0.88) 100%), url('../assets/status_bg.jpg');
+  background-image: radial-gradient(ellipse at center, rgba(7, 9, 14, 0.78) 0%, rgba(7, 9, 14, 0.52) 50%, rgba(7, 9, 14, 0.15) 100%), url('../assets/status_bg.jpg');
   background-attachment: fixed;
   background-position: center center;
   background-repeat: no-repeat;
