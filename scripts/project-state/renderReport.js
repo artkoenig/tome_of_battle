@@ -793,7 +793,7 @@ td.num { text-align: right; white-space: nowrap; }
 .gate-card-status-ok { color: var(--ok-fg); }
 .gate-card-status-warn { color: var(--warn-fg); }
 .gate-card-status-inert { color: var(--muted); }
-.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14.5rem; transition: opacity 0.2s ease, transform 0.2s ease; }
+.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; }
 .gate-card:hover .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
 
 /* Gate Findings Details */
@@ -844,10 +844,10 @@ td.num { text-align: right; white-space: nowrap; }
 .vial-segment-high { background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); }
 .vial-segment-very-high { background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%); }
 .vial-value-badge { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--accent); }
-.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: 14rem; transition: opacity 0.2s ease, transform 0.2s ease; }
+.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 100; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; }
 .vial-container:hover .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
-.tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; }
-.tooltip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--muted); }
+.tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
+.tooltip-grid { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8rem; color: var(--muted); }
 .tooltip-grid strong { color: var(--text); font-family: var(--font-mono); }
 .issue-card { position: relative; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.85rem; overflow: hidden; box-shadow: var(--shadow); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
 .issue-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: 0 8px 20px -4px rgba(212, 175, 55, 0.2); }
