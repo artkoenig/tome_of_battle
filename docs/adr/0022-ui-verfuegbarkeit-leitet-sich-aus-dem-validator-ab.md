@@ -79,7 +79,7 @@ Umsetzung (reine Solver-Funktion `getEntryAddAvailability`):
   `category-max`, `group-count-max`, `group-points-max`, `group-percent-max` sowie der
   Autoren-`modifier-error`. Nicht sperrend (`false`, normaler unfertiger Bauzustand)
   sind `roster-limit`, `force-roster-limit`, alle `*-min`, `force-selector-min`,
-  `unresolved-entry` sowie `modifier-warning`/`modifier-info`. Ein eingeführter Verstoß
+  `roster-selector-min`, `unresolved-entry` sowie `modifier-warning`/`modifier-info`. Ein eingeführter Verstoß
   sperrt genau dann, wenn sein Schweregrad `error` ist (deckungsgleich mit
   `hasBlockingViolations`) **und** sein `blocksAddAvailability` `true` ist —
   `entryAvailability.js` liest ausschließlich dieses Flag, nie mehr den `-max`-Suffix.

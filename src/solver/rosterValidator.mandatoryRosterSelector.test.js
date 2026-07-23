@@ -16,7 +16,9 @@ const HEROES_CATEGORY = 'heroes';
 const BULLS_ID = 'entry-bulls';
 const HIDDEN_UNIT_ID = 'entry-hidden-legion';
 const TYRANT_ID = 'entry-tyrant';
+const IRONGUTS_ID = 'entry-ironguts';
 const BULLS_MIN_CONSTRAINT_ID = 'con-bulls-min';
+const IRONGUTS_MIN_CONSTRAINT_ID = 'con-ironguts-min';
 
 const ROSTER_SELECTOR_MIN = 'roster-selector-min';
 
@@ -34,7 +36,25 @@ const bullsMinRaisedByTyrant = () => ({
   conditions: [{ type: 'atLeast', value: 1, field: 'selections', childId: TYRANT_ID }]
 });
 
-const buildSystem = ({ bullsModifiers = [] } = {}) => ({
+// A second mandatory roster selector whose minimum is 0 by default and is raised to 1 only
+// while the Heroes *category* holds at least one model. The gate reads a per-force category
+// tally (forceCategoryCounts), so it exposes contingent-iteration-order dependence when the
+// Heroes unit sits in a different contingent than the one iterated first.
+const irongutsMinRaisedByHeroesCategory = () => ({
+  type: 'increment',
+  field: IRONGUTS_MIN_CONSTRAINT_ID,
+  valueObject: 1,
+  conditions: [{ type: 'atLeast', value: 1, field: HEROES_CATEGORY }]
+});
+
+const categoryGatedSelector = () => ({
+  id: IRONGUTS_ID, name: 'Ironguts', type: 'unit', hidden: false,
+  categoryLinks: [{ targetId: CORE_CATEGORY, primary: true }],
+  constraints: [rosterScopedMin(IRONGUTS_MIN_CONSTRAINT_ID, 0)],
+  modifiers: [irongutsMinRaisedByHeroesCategory()]
+});
+
+const buildSystem = ({ bullsModifiers = [], includeCategoryGatedSelector = false } = {}) => ({
   id: 'sys-ogre',
   costTypes: [{ id: POINTS, name: 'Points' }],
   categoryEntries: [
@@ -67,7 +87,8 @@ const buildSystem = ({ bullsModifiers = [] } = {}) => ({
       {
         id: TYRANT_ID, name: 'Tyrant', type: 'unit', hidden: false,
         categoryLinks: [{ targetId: HEROES_CATEGORY, primary: true }]
-      }
+      },
+      ...(includeCategoryGatedSelector ? [categoryGatedSelector()] : [])
     ]
   }]
 });
@@ -130,6 +151,22 @@ describe('mandatory roster-scoped selector validation (Issue 62)', () => {
     const errors = validateRoster(roster, buildSystem());
 
     expect(bullsErrors(errors)).toHaveLength(0);
+  });
+
+  it('evaluates a category-gated roster minimum army-wide, independent of contingent order', () => {
+    const system = buildSystem({ includeCategoryGatedSelector: true });
+    // Characterisation test for the army-wide semantics: the Heroes-category unit (Tyrant)
+    // sits in the SECOND contingent, the first is empty and iterated first. Ironguts' minimum
+    // is 0 until the Heroes category is populated, then 1; its own count is 0 army-wide, so the
+    // requirement must fire. The check evaluates the min against a roster-wide, force-independent
+    // context, so the result does not depend on which contingent is iterated first.
+    const roster = buildRoster([force('f1', []), force('f2', [tyrantSelection()])]);
+
+    const errors = validateRoster(roster, system);
+
+    const irongutsErrors = rosterSelectorErrors(errors)
+      .filter(e => e.messageParams.entryName === 'Ironguts');
+    expect(irongutsErrors).toHaveLength(1);
   });
 
   it('carries its causes field when a conditional modifier raised the minimum (ADR 0027)', () => {
