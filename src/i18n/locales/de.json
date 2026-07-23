@@ -31,6 +31,8 @@
   "validation.groupCountMin_other": "{selectionName} braucht mindestens {count} Auswahlen aus „{groupName}\".",
   "validation.groupPercentMin": "„{groupName}\" muss mindestens {percent} % der {unit} ausmachen.",
   "validation.groupPercentMax": "„{groupName}\" darf höchstens {percent} % der {unit} ausmachen.",
+  "validation.causesTitle": "Ursachen:",
+  "validation.causeItem": "„{name}\"",
 
   "common.close": "Schließen",
   "common.cancel": "Abbrechen",

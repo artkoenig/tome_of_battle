@@ -40,6 +40,16 @@
  */
 
 /**
+ * @typedef {Object} ValidationCause Eine benennbare auslösende Auswahl hinter einer
+ *   App-Meldung, deren verletzter Grenzwert **bedingt** verändert wurde (ADR 0027): die
+ *   Auswahl, deren aktiv greifender bedingter Modifier den Wert erst zum verletzten Wert
+ *   gemacht hat. Sprachfrei — der Solver liefert Katalog-Id und Katalogname (Pass-through,
+ *   ADR 0003); die Oberfläche rendert daraus den „Ursachen"-Block.
+ * @property {string} entryId  Katalog-Id der auslösenden Auswahl.
+ * @property {string} name     Katalogname der Auswahl (Pass-through, ADR 0003).
+ */
+
+/**
  * @typedef {Object} ValidationError
  * @property {string} type
  * @property {string} [messageKey] i18n-Schlüssel der strukturierten Regelmeldung (ADR 0026); die Übersetzung passiert an der Oberfläche. Für Regelverstöße gesetzt.
@@ -50,5 +60,6 @@
  * @property {string} [categoryId]
  * @property {string} [selectionId]
  * @property {boolean} [blocksAddAvailability] Vom Validator gestempelte Aushebe-Sperr-Klassifikation (ADR-0022): true = Obergrenze/„nicht erlaubt", false = Budget-/„zu-wenig"-Zustand.
+ * @property {ValidationCause[]} [causes] Optionale, sprachfreie Ursachen der Meldung (ADR 0027): die benennbaren auslösenden Auswahlen, deren bedingte Modifier den verletzten Grenzwert verändert haben. Nur an mechanischen App-Meldungen und nur wenn mindestens eine Ursache sauber auflösbar ist; fehlt sonst ganz (abwärtskompatibel).
  */
 export {};

@@ -64,6 +64,29 @@ const messageUnit = (id, severityField) => ({
 
 const WARNING_UNIT_ID = 'unit-warning';
 const INFO_UNIT_ID = 'unit-info';
+const TOKEN_UNIT_ID = 'unit-token';
+
+// Wie messageUnit, aber der Autortext enthält das BattleScribe-Token {this} (ADR 0028) —
+// bei Auflösung muss es zum effektiven Eintragsnamen werden. Bildet den Gnoblars-Fall nach.
+const tokenUnit = () => ({
+  id: TOKEN_UNIT_ID,
+  name: 'Gnoblars',
+  type: 'unit',
+  modifiers: [{
+    type: 'add',
+    field: 'error',
+    value: 'You cannot have more units of {this} than you have units of Ogre Bulls',
+    conditions: [{
+      type: 'atLeast',
+      value: 1,
+      field: 'selections',
+      scope: 'force',
+      childId: ALLOW_SPECIALS_TOGGLE_ID,
+      includeChildSelections: true
+    }],
+    conditionGroups: []
+  }]
+});
 
 const buildSystem = (extraEntries = []) => ({
   id: parsedHintCatalogue.gameSystemId,
@@ -131,6 +154,23 @@ describe('field="error"-Hinweistext-Modifier (Reproduktion Bretonnia)', () => {
     expect(messagesOfType(errors, MODIFIER_ERROR_TYPE)).toHaveLength(0);
     // Der Schalter hebt zugleich das roster-weite max-Limit — die Liste ist regelkonform.
     expect(hasBlockingViolations(errors)).toBe(false);
+  });
+});
+
+describe('BattleScribe-Token {this} in der Autor-Meldung wird über validateRoster aufgelöst (ADR 0028)', () => {
+  it('ersetzt {this} durch den effektiven Namen des betroffenen Eintrags', () => {
+    const roster = buildRoster([
+      selection(TOKEN_UNIT_ID, 'Gnoblars'),
+      selection(ALLOW_SPECIALS_TOGGLE_ID, 'Allow special characters?')
+    ]);
+
+    const errors = validateRoster(roster, buildSystem([tokenUnit()]));
+    const hintErrors = messagesOfType(errors, MODIFIER_ERROR_TYPE);
+
+    expect(hintErrors).toHaveLength(1);
+    expect(hintErrors[0].message).toBe(
+      'You cannot have more units of Gnoblars than you have units of Ogre Bulls'
+    );
   });
 });
 

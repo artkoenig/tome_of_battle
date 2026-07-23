@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getModifiedConstraintValue, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
+import { getModifiedConstraintValue, evaluateConstraintWithCauses, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
 import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, isCostField, resolveConstraintThreshold } from './constraintScope.js';
@@ -70,6 +70,17 @@ export function classifyBlocksAddAvailability(type) {
  */
 function pushViolation(errors, violation) {
   errors.push({ ...violation, blocksAddAvailability: classifyBlocksAddAvailability(violation.type) });
+}
+
+/**
+ * Spread-ready optionales Ursachen-Feld eines Verstoßes (ADR 0027): trägt `causes` nur, wenn
+ * mindestens eine Ursache sauber auflösbar war. Ohne Ursache bleibt das Feld weg, sodass der
+ * Verstoß byte-gleich zum bisherigen Verhalten bleibt (abwärtskompatibel).
+ * @param {import('../types.js').ValidationCause[]} causes
+ * @returns {{causes: import('../types.js').ValidationCause[]}|{}}
+ */
+function withCauses(causes) {
+  return causes.length > 0 ? { causes } : {};
 }
 
 /**
@@ -239,7 +250,7 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
     })) return;
 
     const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
-    const minValue = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(entry), ctx);
+    const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
     if (minValue <= 0) return;
 
     const currentCount = Math.max(
@@ -252,7 +263,8 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
         forceId: force.id,
         messageKey: ValidationMessageKey.FORCE_SELECTOR_MIN,
         messageParams: { entryName: entry.name, forceName: forceDef.name, count: minValue },
-        severity: ValidationSeverity.ERROR
+        severity: ValidationSeverity.ERROR,
+        ...withCauses(causes)
       });
     }
   });
@@ -369,7 +381,7 @@ function collectCategoryEntryForceConstraints(catDef) {
 
 /** Einen einzelnen Kategorie-Constraint gegen den aktuellen Kategorie-Count prüfen. */
 function evaluateForceCategoryConstraint({ con, modifiers, count, catName, forceDef, force, targetCatId, ctx, errors }) {
-  const finalValue = getModifiedConstraintValue(con, modifiers, ctx);
+  const { value: finalValue, causes } = evaluateConstraintWithCauses(con, modifiers, ctx);
   if (finalValue < 0) return; // z. B. max="-1": die Kategorie ist unbegrenzt.
 
   if (con.type === ConstraintKind.MIN && count < finalValue) {
@@ -379,7 +391,8 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       categoryId: targetCatId,
       messageKey: ValidationMessageKey.CATEGORY_MIN,
       messageParams: { count: finalValue, categoryName: catName, forceName: forceDef.name },
-      severity: ValidationSeverity.ERROR
+      severity: ValidationSeverity.ERROR,
+      ...withCauses(causes)
     });
   }
   if (con.type === ConstraintKind.MAX && count > finalValue) {
@@ -389,7 +402,8 @@ function evaluateForceCategoryConstraint({ con, modifiers, count, catName, force
       categoryId: targetCatId,
       messageKey: ValidationMessageKey.CATEGORY_MAX,
       messageParams: { count: finalValue, categoryName: catName, forceName: forceDef.name },
-      severity: ValidationSeverity.ERROR
+      severity: ValidationSeverity.ERROR,
+      ...withCauses(causes)
     });
   }
 }
@@ -560,7 +574,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       system,
       parentCatalogueId: forceCatalogueId
     };
-    const finalValue = getModifiedConstraintValue(con, getEffectiveModifiers(entry), ctx);
+    const { value: finalValue, causes } = evaluateConstraintWithCauses(con, getEffectiveModifiers(entry), ctx);
     if (finalValue < 0) return;
 
     // Check scope applicability for specific category/entry scoped constraints
@@ -574,7 +588,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
     const count = resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context);
 
     if (isPercentConstraint(con)) {
-      checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection }, context);
+      checkEntryPercentConstraint({ con, finalValue, causes, count, selection, parentSelection }, context);
       return;
     }
 
@@ -584,7 +598,8 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
         selectionId: selection.id,
         messageKey: ValidationMessageKey.ENTRY_MIN,
         messageParams: { selectionName: selection.name, count: finalValue },
-        severity: ValidationSeverity.ERROR
+        severity: ValidationSeverity.ERROR,
+        ...withCauses(causes)
       });
     }
     if (con.type === ConstraintKind.MAX && count > finalValue) {
@@ -593,7 +608,8 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
         selectionId: selection.id,
         messageKey: ValidationMessageKey.ENTRY_MAX,
         messageParams: { selectionName: selection.name, count: finalValue },
-        severity: ValidationSeverity.ERROR
+        severity: ValidationSeverity.ERROR,
+        ...withCauses(causes)
       });
     }
   });
@@ -604,7 +620,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
  * ist die Summe des Feldes im Scope, der Grenzwert `value%` davon. Punkte-Felder
  * werden gegen die Kosten des Eintrags, `selections` gegen dessen Anzahl geprüft.
  */
-function checkEntryPercentConstraint({ con, finalValue, count, selection, parentSelection }, context) {
+function checkEntryPercentConstraint({ con, finalValue, causes, count, selection, parentSelection }, context) {
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const measuresCost = isCostField(con.field, system, roster);
   const subject = measuresCost
@@ -624,7 +640,8 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       selectionId: selection.id,
       messageKey: ValidationMessageKey.ENTRY_PERCENT_MIN,
       messageParams: { selectionName: selection.name, percent: finalValue, unitLabel },
-      severity: ValidationSeverity.ERROR
+      severity: ValidationSeverity.ERROR,
+      ...withCauses(causes)
     });
   }
   if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
@@ -633,7 +650,8 @@ function checkEntryPercentConstraint({ con, finalValue, count, selection, parent
       selectionId: selection.id,
       messageKey: ValidationMessageKey.ENTRY_PERCENT_MAX,
       messageParams: { selectionName: selection.name, percent: finalValue, unitLabel },
-      severity: ValidationSeverity.ERROR
+      severity: ValidationSeverity.ERROR,
+      ...withCauses(causes)
     });
   }
 }
@@ -718,7 +736,7 @@ function checkGroupConstraints({ selection, entry }, context) {
       // taken") scan one level too high whenever the group sits behind an intermediate
       // wrapper selection, silently contributing 0 and leaving the base cap in place.
       const ctx = { roster, selectionCounts, forceCategoryCounts, selection, force, system, parentCatalogueId: forceCatalogueId };
-      const finalValue = getModifiedConstraintValue(con, getEffectiveModifiers(group), ctx);
+      const { value: finalValue, causes } = evaluateConstraintWithCauses(con, getEffectiveModifiers(group), ctx);
       if (finalValue < 0) return;
 
       // Check scope applicability for specific category/entry scoped constraints
@@ -744,7 +762,7 @@ function checkGroupConstraints({ selection, entry }, context) {
         : 0;
 
       if (isPercentConstraint(con)) {
-        checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, measuresCost, group, selection }, context);
+        checkGroupPercentConstraint({ con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection }, context);
         return;
       }
 
@@ -758,7 +776,8 @@ function checkGroupConstraints({ selection, entry }, context) {
             selectionId: selection.id,
             messageKey: ValidationMessageKey.GROUP_POINTS_MAX,
             messageParams: { groupName: group.name, limit: finalValue, selectionName: selection.name, unitLabel: costLabel },
-            severity: ValidationSeverity.ERROR
+            severity: ValidationSeverity.ERROR,
+            ...withCauses(causes)
           });
         }
         if (con.type === ConstraintKind.MIN && totalCost < finalValue && totalCost > 0) {
@@ -767,7 +786,8 @@ function checkGroupConstraints({ selection, entry }, context) {
             selectionId: selection.id,
             messageKey: ValidationMessageKey.GROUP_POINTS_MIN,
             messageParams: { groupName: group.name, limit: finalValue, selectionName: selection.name, unitLabel: costLabel },
-            severity: ValidationSeverity.ERROR
+            severity: ValidationSeverity.ERROR,
+            ...withCauses(causes)
           });
         }
       } else {
@@ -777,7 +797,8 @@ function checkGroupConstraints({ selection, entry }, context) {
             selectionId: selection.id,
             messageKey: ValidationMessageKey.GROUP_COUNT_MAX,
             messageParams: { groupName: group.name, count: finalValue, selectionName: selection.name },
-            severity: ValidationSeverity.ERROR
+            severity: ValidationSeverity.ERROR,
+            ...withCauses(causes)
           });
         }
         if (con.type === ConstraintKind.MIN && totalCount < finalValue && totalCount > 0) {
@@ -786,7 +807,8 @@ function checkGroupConstraints({ selection, entry }, context) {
             selectionId: selection.id,
             messageKey: ValidationMessageKey.GROUP_COUNT_MIN,
             messageParams: { groupName: group.name, count: finalValue, selectionName: selection.name },
-            severity: ValidationSeverity.ERROR
+            severity: ValidationSeverity.ERROR,
+            ...withCauses(causes)
           });
         }
       }
@@ -798,7 +820,7 @@ function checkGroupConstraints({ selection, entry }, context) {
  * Prüft eine Prozent-Constraint (percentValue) einer SelectionEntryGroup: die
  * Gruppensumme (Kosten oder Anzahl) gegen `value%` der Bezugsgröße im Scope.
  */
-function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, measuresCost, group, selection }, context) {
+function checkGroupPercentConstraint({ con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection }, context) {
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const subject = measuresCost ? totalCost : totalCount;
   const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection: selection, forceCatalogueId, counts });
@@ -814,7 +836,8 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
       selectionId: selection.id,
       messageKey: ValidationMessageKey.GROUP_PERCENT_MIN,
       messageParams: { groupName: group.name, percent: finalValue, unitLabel },
-      severity: ValidationSeverity.ERROR
+      severity: ValidationSeverity.ERROR,
+      ...withCauses(causes)
     });
   }
   if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
@@ -823,7 +846,8 @@ function checkGroupPercentConstraint({ con, finalValue, totalCount, totalCost, m
       selectionId: selection.id,
       messageKey: ValidationMessageKey.GROUP_PERCENT_MAX,
       messageParams: { groupName: group.name, percent: finalValue, unitLabel },
-      severity: ValidationSeverity.ERROR
+      severity: ValidationSeverity.ERROR,
+      ...withCauses(causes)
     });
   }
 }

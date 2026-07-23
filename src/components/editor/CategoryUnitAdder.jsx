@@ -2,8 +2,8 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Plus, X } from 'lucide-react';
 import { resolveEntry, getOptionDisplayCost, getEffectiveName, collectPrimaryCategoryEntries, validateRoster, getEntryAddAvailability } from '../../solver/validator';
 import { useTranslation } from '../../i18n/useTranslation';
-import { formatValidationError } from '../../i18n/formatValidationError';
 import BottomSheet from './BottomSheet';
+import ValidationMessage from './ValidationMessage';
 
 export default function CategoryUnitAdder({
   categoryId = null,
@@ -105,15 +105,15 @@ export default function CategoryUnitAdder({
                   setIsOpen(false);
                 }}
               >
-                <span className="popover-item-name popover-item-label">
+                <div className="popover-item-name popover-item-label">
                   <span>{getEffectiveName(res, displayCtx)}</span>
                   {isBlocked && <span className="text-danger text-micro popover-item-unavailable">{t('editor.adder.unavailable')}</span>}
                   {isBlocked && reasons.map((reason, idx) => (
-                    <span key={idx} className="text-danger text-micro popover-item-reason">
-                      {formatValidationError(reason, t)}
-                    </span>
+                    <div key={idx} className="text-danger text-micro popover-item-reason">
+                      <ValidationMessage error={reason} />
+                    </div>
                   ))}
-                </span>
+                </div>
                 {points > 0 && (
                   <span className="popover-item-cost font-body text-gold">
                     +{points} {costTypeLabel}

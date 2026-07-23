@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatValidationError } from './formatValidationError';
+import { formatValidationError, formatValidationCauses } from './formatValidationError';
 import { t, setActiveLanguage } from './i18nStore';
 import { ValidationMessageKey } from '../solver/validationMessages';
 
@@ -69,5 +69,43 @@ describe('formatValidationError', () => {
   it('fällt ohne Kostenlabel auf das übersetzte Auswahl-Substantiv zurück', () => {
     expect(formatValidationError(percentMax(undefined), t))
       .toContain('der Auswahlen ausmachen');
+  });
+});
+
+describe('formatValidationCauses', () => {
+  const withCauses = (...names) => ({
+    type: 'entry-max',
+    messageKey: ValidationMessageKey.ENTRY_MAX,
+    messageParams: { count: 0, selectionName: 'Long Bow' },
+    causes: names.map((name, index) => ({ entryId: `entry-${index}`, name }))
+  });
+
+  it('gibt für einen Verstoß ohne Ursachen-Feld eine leere Liste zurück', () => {
+    const withoutCauses = { messageKey: ValidationMessageKey.ENTRY_MAX, messageParams: {} };
+    expect(formatValidationCauses(withoutCauses, t)).toEqual([]);
+  });
+
+  it('gibt für ein leeres Ursachen-Feld eine leere Liste zurück', () => {
+    expect(formatValidationCauses({ causes: [] }, t)).toEqual([]);
+  });
+
+  it('gibt für einen fehlenden Verstoß eine leere Liste zurück', () => {
+    expect(formatValidationCauses(undefined, t)).toEqual([]);
+  });
+
+  it('setzt jeden Katalognamen als Listenpunkt in deutsche Anführungszeichen (Pass-through)', () => {
+    expect(formatValidationCauses(withCauses('Battle Standard Bearer'), t))
+      .toEqual(['„Battle Standard Bearer"']);
+  });
+
+  it('führt die ganze Kette mehrerer Ursachen als eigene Listenpunkte', () => {
+    expect(formatValidationCauses(withCauses('Battle Standard Bearer', 'General'), t))
+      .toEqual(['„Battle Standard Bearer"', '„General"']);
+  });
+
+  it('setzt die Katalognamen in englische Anführungszeichen, ohne sie zu übersetzen (Englisch)', () => {
+    setActiveLanguage('en');
+    expect(formatValidationCauses(withCauses('Battle Standard Bearer'), t))
+      .toEqual(['"Battle Standard Bearer"']);
   });
 });

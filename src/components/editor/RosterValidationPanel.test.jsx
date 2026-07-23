@@ -71,6 +71,29 @@ describe('RosterValidationPanel', () => {
     expect(container.querySelector('.validation-error-list--advisory').textContent).toContain('Nur ein Hinweis');
   });
 
+  it('zeigt unter einer Meldung mit Ursachen den „Ursachen"-Block als Liste', () => {
+    const { container } = renderPanel({
+      validationErrors: [{
+        message: '„Long Bow" kann nicht gewählt werden.',
+        severity: 'error',
+        causes: [{ entryId: 'bsb', name: 'Battle Standard Bearer' }]
+      }]
+    });
+
+    expect(screen.getByText('Ursachen:')).toBeDefined();
+    const causeItems = Array.from(container.querySelectorAll('.validation-causes-item'))
+      .map(node => node.textContent);
+    expect(causeItems).toEqual(['„Battle Standard Bearer"']);
+  });
+
+  it('zeigt keinen „Ursachen"-Block, wenn die Meldung keine Ursachen trägt', () => {
+    const { container } = renderPanel({
+      validationErrors: [{ message: 'Zu teuer', severity: 'error' }]
+    });
+
+    expect(container.querySelector('.validation-causes')).toBeNull();
+  });
+
   it('listet zusätzliche Ressourcen mit ihrer Summe auf', () => {
     const { container } = renderPanel({
       extraResources: [{ id: 'res-1', name: 'Bannerpunkte', total: 7 }]
