@@ -4,27 +4,49 @@ import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js
 
 // Scope under which a constraint applies to the whole contingent (force).
 const FORCE_SCOPE = 'force';
+// Scope under which a constraint applies to the whole roster (all contingents together).
+const ROSTER_SCOPE = 'roster';
 
 /**
- * Root selectionEntries of a catalogue that carry a force-scoped `min` constraint.
- * BattleScribe encodes an army-wide mandatory choice this way — e.g. the Vampire Counts
- * bloodline: "at least one bloodline per force". Each match is returned paired with its
- * force-scoped min constraint. Only the catalogue's own root entries are inspected,
+ * Root selectionEntries of a catalogue that carry a `min` constraint at the given scope.
+ * BattleScribe encodes a mandatory army-wide choice this way. Each match is returned paired
+ * with its scoped min constraint. Only the catalogue's own root entries are inspected,
  * mirroring how the category adder reads `catalogue.selectionEntries`.
  *
  * @returns {Array<{ entry: Object, minConstraint: Object }>}
  */
-export function collectForceScopedMinSelectors(system, catalogueId) {
+function collectScopedMinSelectors(system, catalogueId, scope) {
   const catalogue = system?.catalogues?.find(c => c.id === catalogueId);
   if (!catalogue) return [];
   return (catalogue.selectionEntries || [])
     .map(entry => ({
       entry,
       minConstraint: (entry.constraints || []).find(
-        con => con.type === ConstraintKind.MIN && con.scope === FORCE_SCOPE
+        con => con.type === ConstraintKind.MIN && con.scope === scope
       )
     }))
     .filter(candidate => candidate.minConstraint);
+}
+
+/**
+ * Root selectionEntries carrying a force-scoped `min` constraint — "at least one per
+ * contingent" (e.g. the Vampire Counts bloodline). See {@link collectScopedMinSelectors}.
+ *
+ * @returns {Array<{ entry: Object, minConstraint: Object }>}
+ */
+export function collectForceScopedMinSelectors(system, catalogueId) {
+  return collectScopedMinSelectors(system, catalogueId, FORCE_SCOPE);
+}
+
+/**
+ * Root selectionEntries carrying a roster-scoped `min` constraint — "at least one per
+ * roster, counted across all contingents together" (e.g. the Ogre Kingdoms "Bulls" unit).
+ * See {@link collectScopedMinSelectors}.
+ *
+ * @returns {Array<{ entry: Object, minConstraint: Object }>}
+ */
+export function collectRosterScopedMinSelectors(system, catalogueId) {
+  return collectScopedMinSelectors(system, catalogueId, ROSTER_SCOPE);
 }
 
 /**

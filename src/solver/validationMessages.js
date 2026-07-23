@@ -13,6 +13,7 @@
 export const ValidationMessageKey = Object.freeze({
   ROSTER_LIMIT: 'validation.rosterLimit',
   FORCE_SELECTOR_MIN: 'validation.forceSelectorMin',
+  ROSTER_SELECTOR_MIN: 'validation.rosterSelectorMin',
   FORCE_ROSTER_LIMIT: 'validation.forceRosterLimit',
   CATEGORY_MIN: 'validation.categoryMin',
   CATEGORY_MAX: 'validation.categoryMax',
