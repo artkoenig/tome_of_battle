@@ -27,6 +27,7 @@
 import { marked } from 'marked';
 
 import { GateStatus, GateEnforcement, GateAbortReason } from './gates.js';
+import { issueTitleFromId } from './issues.js';
 
 const DEFAULT_REPORT_TITLE = 'Project Status Report';
 
@@ -77,14 +78,6 @@ const RENDERED_ISSUE_SECTIONS = Object.freeze(['Description', 'Acceptance Criter
  */
 
 /**
- * @typedef {object} StructureFacts  Fakten ueber den Importgraphen.
- * @property {number} moduleCount
- * @property {number} dependencyCount
- * @property {string[][]} cycles          je Zyklus die beteiligten Module
- * @property {ReadonlyArray<import('./graph.js').LayerViolation>} layerViolations
- */
-
-/**
  * @typedef {object} ModuleMetric  Codeumfang und Komplexitaet eines Moduls.
  * @property {string} module
  * @property {number} fileCount
@@ -93,6 +86,8 @@ const RENDERED_ISSUE_SECTIONS = Object.freeze(['Description', 'Acceptance Criter
  * @property {number} totalComplexity   Summe der zyklomatischen Komplexitaet aller Funktionen.
  * @property {number} averageComplexity durchschnittliche zyklomatische Komplexitaet je Funktion.
  * @property {number} maxComplexity     hoechste zyklomatische Komplexitaet im Modul.
+ * @property {number} [maintainabilityIndex] Maintainability Index (0..100).
+ * @property {import('./complexity.js').RiskProfile} [riskProfile] ISO 25010 / SIG Risikoprofil.
  */
 
 /**
@@ -101,24 +96,14 @@ const RENDERED_ISSUE_SECTIONS = Object.freeze(['Description', 'Acceptance Criter
  */
 
 /**
- * @typedef {object} OverallAssessment  Das Gesamturteil, der Seite vorangestellt.
- *   Vollstaendig aus den gemessenen Gate-Zustaenden abgeleitet, kein Handtext.
- * @property {string} headline  Der schwerwiegendste gemessene Zustand auf einen Blick.
- * @property {ReadonlyArray<string>} facts  Die nackten Zahlen dahinter, je eine Zeile.
- */
-
-/**
  * @typedef {object} ReportModel  Das reine Datenmodell, aus dem die Seite entsteht.
  * @property {string} [title]
  * @property {string} generatedAt  Fertiger Anzeigetext des Erhebungszeitpunkts.
- * @property {OverallAssessment} assessment  Gesamturteil, aus den Messwerten abgeleitet.
  * @property {ReadonlyArray<import('./gates.js').GateState>} gates
  * @property {ReadonlyArray<Metric>} metrics
  * @property {ReadonlyArray<import('./coverage.js').ModuleCoverage>} coverage
  * @property {ReadonlyArray<ModuleMetric>} [moduleMetrics]
- * @property {ReadonlyArray<import('./complexity.js').FunctionComplexity>} [complexFunctions]
- * @property {ReadonlyArray<import('./functions.js').LongFunction>} longFunctions
- * @property {StructureFacts} structure
+ * @property {object} [overallComplexity]
  * @property {ReadonlyArray<import('./issues.js').OpenIssue>} openIssues
  * @property {ReadonlyArray<import('./issues.js').UnreadableIssue>} [unreadableIssues]
  * @property {BranchScope} branchScope
@@ -134,7 +119,6 @@ export function renderReport(model) {
   const title = model.title ?? DEFAULT_REPORT_TITLE;
   const body = [
     renderHeader(title, model.generatedAt),
-    renderOverallAssessment(model.assessment),
     renderTabs(model),
   ].join('\n');
 
@@ -200,19 +184,6 @@ function renderHeader(title, generatedAt) {
   ].join('\n');
 }
 
-/** @param {OverallAssessment} assessment */
-function renderOverallAssessment(assessment) {
-  const facts = assessment.facts
-    .map((fact) => `<li>${escapeHtml(fact)}</li>`)
-    .join('');
-  return [
-    '<section class="verdict" aria-label="Overall verdict">',
-    '<h2>Overall verdict</h2>',
-    `<p class="verdict-headline">${escapeHtml(assessment.headline)}</p>`,
-    `<ul class="verdict-facts">${facts}</ul>`,
-    '</section>',
-  ].join('\n');
-}
 
 /** @param {ReportModel} model */
 function renderHealthcheckSection(model) {
@@ -220,239 +191,362 @@ function renderHealthcheckSection(model) {
   return [
     `<section id="${id}" class="section panel panel-${id}" role="tabpanel" aria-labelledby="tab-${id}">`,
     renderGates(model.gates),
-    renderMetrics(model.metrics),
-    renderModuleMetrics(model.moduleMetrics ?? []),
-    renderCoverage(model.coverage),
-    renderComplexFunctions(model.complexFunctions ?? []),
-    renderLongFunctions(model.longFunctions),
-    renderStructure(model.structure),
+    renderModuleTiles(model.moduleMetrics ?? [], model.coverage ?? []),
     '</section>',
   ].join('\n');
 }
 
-/** @param {ReadonlyArray<ModuleMetric>} moduleMetrics */
-function renderModuleMetrics(moduleMetrics) {
-  if (moduleMetrics.length === 0) {
-    return renderSubsection('Size and complexity per module', renderEmpty('No production code captured.'));
+/**
+ * Baut Kacheln pro Modul mit je zwei Reagenzgläsern (Komplexität & Testabdeckung).
+ *
+ * @param {ReadonlyArray<ModuleMetric>} moduleMetrics
+ * @param {ReadonlyArray<import('./coverage.js').ModuleCoverage>} coverage
+ */
+function renderModuleTiles(moduleMetrics, coverage) {
+  if (moduleMetrics.length === 0 && coverage.length === 0) {
+    return renderSubsection('Module health & metrics', renderEmpty('No module data captured.'));
   }
-  const rows = moduleMetrics
-    .map((entry) =>
-      [
-        '<tr>',
-        `<td><code>${escapeHtml(entry.module)}</code></td>`,
-        `<td class="num">${entry.fileCount}</td>`,
-        `<td class="num">${entry.lines}</td>`,
-        `<td class="num">${entry.functionCount}</td>`,
-        `<td class="num">${entry.totalComplexity}</td>`,
-        `<td class="num">${entry.averageComplexity}</td>`,
-        `<td class="num">${entry.maxComplexity}</td>`,
-        '</tr>',
-      ].join(''),
-    )
-    .join('\n');
-  return renderGridTable(
-    'Size and complexity per module',
-    '<th>Module</th><th>Files</th><th>Lines</th><th>Functions</th><th>&#931;&nbsp;complexity</th><th>&#216;&nbsp;complexity</th><th>max.&nbsp;complexity</th>',
-    rows,
+
+  const coverageByModule = new Map(coverage.map((c) => [c.module, c]));
+  const allModules = new Map();
+
+  for (const m of moduleMetrics) {
+    allModules.set(m.module, {
+      module: m.module,
+      fileCount: m.fileCount,
+      lines: m.lines,
+      functionCount: m.functionCount,
+      totalComplexity: m.totalComplexity,
+      averageComplexity: m.averageComplexity,
+      maxComplexity: m.maxComplexity,
+      maintainabilityIndex: m.maintainabilityIndex,
+      riskProfile: m.riskProfile,
+      coverage: coverageByModule.get(m.module) ?? null,
+    });
+  }
+
+  for (const c of coverage) {
+    if (!allModules.has(c.module)) {
+      allModules.set(c.module, {
+        module: c.module,
+        fileCount: c.fileCount,
+        lines: 0,
+        functionCount: 0,
+        totalComplexity: 0,
+        averageComplexity: 0,
+        maxComplexity: 0,
+        coverage: c,
+      });
+    }
+  }
+
+  const modules = Array.from(allModules.values());
+
+  // Sortierung: Von schlecht (hohe Komplexitaet / niedrige Abdeckung) nach gut
+  modules.sort((a, b) => {
+    const covA = a.coverage?.statements.percent ?? 0;
+    const covB = b.coverage?.statements.percent ?? 0;
+    return b.totalComplexity - a.totalComplexity || covA - covB || b.lines - a.lines;
+  });
+
+  const cards = modules.map((item) => renderModuleCard(item)).join('\n');
+
+  const introHtml = [
+    '<div class="module-metrics-intro">',
+    '<p><strong>Metrics Overview:</strong> The <strong>Complexity vial</strong> visualizes the Software Improvement Group (SIG) Risk Profile based on cyclomatic complexity weighted by lines of code (LOC):</p>',
+    '<ul class="metrics-legend-list">',
+    '<li><span class="badge-dot dot-low"></span> <strong>Low Risk:</strong> Simple, easily maintainable code</li>',
+    '<li><span class="badge-dot dot-moderate"></span> <strong>Moderate Risk:</strong> Moderate complexity</li>',
+    '<li><span class="badge-dot dot-high"></span> <strong>High Risk:</strong> High complexity</li>',
+    '<li><span class="badge-dot dot-very-high"></span> <strong>Very High Risk:</strong> Very high complexity (refactoring candidate)</li>',
+    '<li><strong>MI:</strong> Maintainability Index (0–100)</li>',
+    '<li><strong>Coverage:</strong> Test statement coverage</li>',
+    '</ul>',
+    '</div>',
+  ].join('');
+
+  return renderSubsection(
+    'Module health & metrics',
+    `${introHtml}\n<div class="module-grid">${cards}</div>`,
   );
 }
 
-/** @param {ReadonlyArray<import('./complexity.js').FunctionComplexity>} complexFunctions */
-function renderComplexFunctions(complexFunctions) {
-  if (complexFunctions.length === 0) {
-    return renderSubsection('Most complex functions', renderEmpty('No functions captured.'));
-  }
-  const rows = complexFunctions
-    .map((fn) =>
-      [
-        '<tr>',
-        `<td><code>${escapeHtml(fn.name)}</code></td>`,
-        `<td><code>${escapeHtml(fn.path)}</code></td>`,
-        `<td class="num">${fn.complexity}</td>`,
-        `<td class="num">${fn.startLine}</td>`,
-        '</tr>',
-      ].join(''),
-    )
-    .join('\n');
-  return renderGridTable(
-    'Most complex functions',
-    '<th>Function</th><th>File</th><th>Complexity</th><th>Line</th>',
-    rows,
-  );
+function renderModuleCard(item) {
+  const cov = item.coverage;
+  const rp = item.riskProfile ?? { lowPercent: 100, moderatePercent: 0, highPercent: 0, veryHighPercent: 0 };
+  const mi = item.maintainabilityIndex ?? 100;
+
+  const complexityTooltip = [
+    `<div class="tooltip-header">Complexity &amp; Risk Profile: <code>${escapeHtml(item.module)}</code></div>`,
+    '<div class="tooltip-grid">',
+    `<div><span>Files:</span> <strong>${item.fileCount}</strong></div>`,
+    `<div><span>Lines:</span> <strong>${item.lines}</strong></div>`,
+    `<div><span>Functions:</span> <strong>${item.functionCount}</strong></div>`,
+    `<div><span>Maintainability (MI):</span> <strong>${mi}/100</strong></div>`,
+    `<div><span>&#931; complexity:</span> <strong>${item.totalComplexity}</strong></div>`,
+    `<div><span>&#216; complexity:</span> <strong>${item.averageComplexity}</strong></div>`,
+    `<div><span>max complexity:</span> <strong>${item.maxComplexity}</strong></div>`,
+    `<div><span>Low Risk (1-5):</span> <strong>${rp.lowPercent}% LOC</strong></div>`,
+    `<div><span>Moderate (6-10):</span> <strong>${rp.moderatePercent}% LOC</strong></div>`,
+    `<div><span>High Risk (11-25):</span> <strong>${rp.highPercent}% LOC</strong></div>`,
+    `<div><span>Very High (>25):</span> <strong>${rp.veryHighPercent}% LOC</strong></div>`,
+    '</div>',
+  ].join('');
+
+  // Coverage-Reagenzglas (rein fuer Coverage)
+  const covPct = cov ? Math.min(100, Math.max(10, Math.round(cov.statements.percent))) : 0;
+  const covTone = !cov
+    ? 'bad'
+    : cov.statements.percent < 60
+      ? 'bad'
+      : cov.statements.percent < 80
+        ? 'warn'
+        : 'good';
+
+  const covTooltip = cov
+    ? [
+        `<div class="tooltip-header">Coverage: <code>${escapeHtml(item.module)}</code></div>`,
+        '<div class="tooltip-grid">',
+        `<div><span>Statements:</span> <strong>${formatPercent(cov.statements.percent)} (${cov.statements.covered}/${cov.statements.total})</strong></div>`,
+        `<div><span>Branches:</span> <strong>${formatPercent(cov.branches.percent)} (${cov.branches.covered}/${cov.branches.total})</strong></div>`,
+        `<div><span>Functions:</span> <strong>${formatPercent(cov.functions.percent)} (${cov.functions.covered}/${cov.functions.total})</strong></div>`,
+        '</div>',
+      ].join('')
+    : `<div class="tooltip-header">No test coverage data</div>`;
+
+  return [
+    '<div class="module-card">',
+    '<div class="module-card-header">',
+    `<div class="module-card-title"><code>${escapeHtml(item.module)}</code></div>`,
+    `<div class="module-card-meta"><span>${item.fileCount} files</span> &bull; <span>${item.lines} lines</span></div>`,
+    '</div>',
+    '<div class="module-vials-row">',
+    // Complexity Vial (Alchemisten-Reagenzglas mit SIG-Flüssigkeiten)
+    '<div class="vial-container">',
+    '<span class="vial-label">Complexity</span>',
+    '<div class="vial vial-segmented">',
+    rp.veryHighPercent > 0 ? `<div class="vial-segment vial-segment-very-high" style="height: ${rp.veryHighPercent}%" title="Very High Risk (>25): ${rp.veryHighPercent}% LOC"></div>` : '',
+    rp.highPercent > 0 ? `<div class="vial-segment vial-segment-high" style="height: ${rp.highPercent}%" title="High Risk (11-25): ${rp.highPercent}% LOC"></div>` : '',
+    rp.moderatePercent > 0 ? `<div class="vial-segment vial-segment-moderate" style="height: ${rp.moderatePercent}%" title="Moderate Risk (6-10): ${rp.moderatePercent}% LOC"></div>` : '',
+    `<div class="vial-segment vial-segment-low" style="height: ${rp.lowPercent}%" title="Low Risk (1-5): ${rp.lowPercent}% LOC"></div>`,
+    '<div class="vial-bubbles"></div>',
+    '</div>',
+    `<span class="vial-value-badge">MI ${mi}</span>`,
+    `<div class="vial-tooltip" role="tooltip">${complexityTooltip}</div>`,
+    '</div>',
+    // Coverage Vial
+    '<div class="vial-container">',
+    '<span class="vial-label">Coverage</span>',
+    '<div class="vial">',
+    `<div class="vial-liquid vial-liquid-${covTone}" style="height: ${covPct}%">`,
+    '<div class="vial-bubbles"></div>',
+    '</div>',
+    '</div>',
+    `<span class="vial-value-badge">${cov ? formatPercent(cov.statements.percent) : 'N/A'}</span>`,
+    `<div class="vial-tooltip" role="tooltip">${covTooltip}</div>`,
+    '</div>',
+    '</div>',
+    '</div>',
+  ].join('');
+}
+
+const GATE_RUNE_EMBLEMS = Object.freeze({
+  lint: 'ᛏ',        // Tiwaz (Order, Precision)
+  knip: 'ᚦ',        // Thurisaz (Cleansing, Pruning)
+  depcruise: 'ᚱ',   // Raido (Structure, Pathways)
+  typecheck: 'ᚨ',   // Ansuz (Wisdom, Truth)
+  'unit-tests': 'ᛉ', // Algiz (Protection, Verification)
+  maintainability: 'ᛗ', // Mannaz (Mind & Maintainability)
+});
+
+/** @param {import('./gates.js').GateState} gate */
+function getGateRune(gate) {
+  return GATE_RUNE_EMBLEMS[gate.id] ?? 'ᛟ';
 }
 
 /** @param {ReadonlyArray<import('./gates.js').GateState>} gates */
 function renderGates(gates) {
-  const rows = gates
+  if (gates.length === 0) {
+    return renderSubsection('Quality Gates', renderEmpty('No quality gates recorded.'));
+  }
+
+  const items = gates
     .map((gate) => {
       const status = GATE_STATUS_PRESENTATION[gate.status] ?? UNKNOWN_PRESENTATION;
       const enforcement = GATE_ENFORCEMENT_LABEL[gate.enforcement] ?? GATE_ENFORCEMENT_LABEL[GateEnforcement.Unknown];
+      const abortReasonText = gate.status === GateStatus.NotRun && gate.abortReason
+        ? (GATE_ABORT_REASON_LABEL[gate.abortReason] ?? gate.abortReason)
+        : null;
+
+      const runeGlyph = getGateRune(gate);
+
+      const tooltipContent = [
+        `<div class="tooltip-header">Gate: <strong>${escapeHtml(gate.label)}</strong></div>`,
+        '<div class="tooltip-grid">',
+        `<div><span>Command:</span> <code>${escapeHtml(gate.command)}</code></div>`,
+        `<div><span>Status:</span> <strong>${escapeHtml(status.label)}</strong></div>`,
+        `<div><span>Enforcement:</span> <strong>${escapeHtml(enforcement)}</strong></div>`,
+        abortReasonText ? `<div><span>Reason:</span> <strong>${escapeHtml(abortReasonText)}</strong></div>` : '',
+        '</div>',
+      ].join('');
+
       return [
-        '<tr>',
-        `<td>${escapeHtml(gate.label)}<br><code>${escapeHtml(gate.command)}</code></td>`,
-        `<td>${renderBadge(status)}${renderAbortReason(gate)}</td>`,
-        `<td>${escapeHtml(enforcement)}</td>`,
-        '</tr>',
+        '<div class="gate-card rune-card">',
+        '<div class="rune-wrapper">',
+        `<div class="rune-stone rune-${status.tone}">`,
+        `<span class="rune-glyph" title="Rune ${escapeHtml(runeGlyph)}">${escapeHtml(runeGlyph)}</span>`,
+        '</div>',
+        '</div>',
+        `<span class="gate-card-label">${escapeHtml(gate.label)}</span>`,
+        `<span class="gate-card-status gate-card-status-${status.tone}">${escapeHtml(status.label)}</span>`,
+        `<div class="gate-tooltip" role="tooltip">${tooltipContent}</div>`,
+        '</div>',
       ].join('');
     })
     .join('\n');
 
-  return renderGridTable('Quality gates', '<th>Gate</th><th>State</th><th>Enforcement</th>', rows);
-}
+  const runeGridHtml = `<div class="rune-grid">${items}</div>`;
 
-/** @param {import('./gates.js').GateState} gate */
-function renderAbortReason(gate) {
-  if (gate.status !== GateStatus.NotRun || !gate.abortReason) return '';
-  const reason = GATE_ABORT_REASON_LABEL[gate.abortReason] ?? gate.abortReason;
-  return ` <span class="reason">(${escapeHtml(reason)})</span>`;
-}
+  const gatesWithOutput = gates.filter((gate) => gate.output && gate.output.trim() !== '');
 
-/** @param {ReadonlyArray<Metric>} metrics */
-function renderMetrics(metrics) {
-  if (metrics.length === 0) return renderSubsection('Metrics', renderEmpty('No metrics captured.'));
-  const cards = metrics
-    .map((metric) => {
-      const hint = metric.hint ? `<span class="metric-hint">${escapeHtml(metric.hint)}</span>` : '';
-      return [
-        '<li class="metric">',
-        `<span class="metric-value">${escapeHtml(String(metric.value))}</span>`,
-        `<span class="metric-label">${escapeHtml(metric.label)}</span>`,
-        hint,
-        '</li>',
-      ].join('');
-    })
-    .join('\n');
-  return renderSubsection('Metrics', `<ul class="metric-grid">${cards}</ul>`);
-}
-
-/** @param {ReadonlyArray<import('./coverage.js').ModuleCoverage>} coverage */
-function renderCoverage(coverage) {
-  if (coverage.length === 0) return renderSubsection('Test coverage per module', renderEmpty('No coverage data.'));
-  const rows = coverage
-    .map((entry) =>
-      [
-        '<tr>',
-        `<td><code>${escapeHtml(entry.module)}</code></td>`,
-        `<td class="num">${entry.fileCount}</td>`,
-        renderMetricCell(entry.statements),
-        renderMetricCell(entry.branches),
-        renderMetricCell(entry.functions),
-        '</tr>',
-      ].join(''),
-    )
-    .join('\n');
-  return renderGridTable(
-    'Test coverage per module',
-    '<th>Module</th><th>Files</th><th>Statements</th><th>Branches</th><th>Functions</th>',
-    rows,
-  );
-}
-
-/** @param {import('./coverage.js').CoverageMetric} metric */
-function renderMetricCell(metric) {
-  return `<td class="num">${formatPercent(metric.percent)}<span class="fraction">${metric.covered}/${metric.total}</span></td>`;
-}
-
-/** @param {ReadonlyArray<import('./functions.js').LongFunction>} longFunctions */
-function renderLongFunctions(longFunctions) {
-  if (longFunctions.length === 0) {
-    return renderSubsection('Longest functions', renderEmpty('No function over the threshold.'));
+  if (gatesWithOutput.length === 0) {
+    return renderSubsection('Quality Gates', runeGridHtml);
   }
-  const rows = longFunctions
-    .map((fn) =>
-      [
-        '<tr>',
-        `<td><code>${escapeHtml(fn.name)}</code></td>`,
-        `<td><code>${escapeHtml(fn.path)}</code></td>`,
-        `<td class="num">${fn.lineCount}</td>`,
-        `<td class="num">${fn.startLine}–${fn.endLine}</td>`,
-        '</tr>',
-      ].join(''),
-    )
-    .join('\n');
-  return renderGridTable(
-    'Longest functions',
-    '<th>Function</th><th>File</th><th>Lines</th><th>Range</th>',
-    rows,
-  );
-}
 
-/** @param {StructureFacts} structure */
-function renderStructure(structure) {
-  const facts = [
-    `<li class="metric"><span class="metric-value">${structure.moduleCount}</span><span class="metric-label">Modules</span></li>`,
-    `<li class="metric"><span class="metric-value">${structure.dependencyCount}</span><span class="metric-label">Dependencies</span></li>`,
-  ].join('\n');
+  const findingsItems = gatesWithOutput.map((gate) => {
+    const status = GATE_STATUS_PRESENTATION[gate.status] ?? UNKNOWN_PRESENTATION;
+    const runeGlyph = getGateRune(gate);
+    return [
+      '<details class="gate-finding-item">',
+      '<summary class="gate-finding-header">',
+      `<span class="rune-glyph-small">${escapeHtml(runeGlyph)}</span>`,
+      `<strong>${escapeHtml(gate.label)}</strong>`,
+      `<span class="gate-card-status gate-card-status-${status.tone}">${escapeHtml(status.label)}</span>`,
+      '</summary>',
+      '<div class="gate-finding-body">',
+      `<pre><code>${escapeHtml(gate.output)}</code></pre>`,
+      '</div>',
+      '</details>',
+    ].join('');
+  }).join('\n');
+
+  const findingsSectionHtml = [
+    '<details class="gate-findings-details">',
+    '<summary class="gate-findings-summary">',
+    `<span class="gate-findings-title">&#128269; View Gate Findings &amp; Outputs (${gatesWithOutput.length})</span>`,
+    '</summary>',
+    `<div class="gate-findings-list">${findingsItems}</div>`,
+    '</details>',
+  ].join('');
+
   return renderSubsection(
-    'Structure facts',
-    [
-      `<ul class="metric-grid">${facts}</ul>`,
-      renderStructureFinding('Import cycles', structure.cycles.map((cycle) => cycle.join(' → ')), 'No cycles.'),
-      renderStructureFinding(
-        'Layer violations',
-        structure.layerViolations.map((v) => `${v.from} → ${v.to} (${v.fromLayer} must not depend on ${v.toLayer})`),
-        'No layer violations.',
-      ),
-    ].join('\n'),
+    'Quality Gates',
+    `${runeGridHtml}\n${findingsSectionHtml}`,
   );
 }
 
-/** @param {string} label @param {string[]} items @param {string} emptyText */
-function renderStructureFinding(label, items, emptyText) {
-  const body =
-    items.length === 0
-      ? renderEmpty(emptyText)
-      : `<ul class="finding-list">${items.map((item) => `<li><code>${escapeHtml(item)}</code></li>`).join('')}</ul>`;
-  return `<h4>${escapeHtml(label)}</h4>${body}`;
-}
 
 /** @param {ReportModel} model */
 function renderIssuesSection(model) {
   const { id } = SECTIONS.issues;
   return [
     `<section id="${id}" class="section panel panel-${id}" role="tabpanel" aria-labelledby="tab-${id}">`,
-    renderBranchScope(model.branchScope),
     renderOpenIssues(model.openIssues),
     renderUnreadableIssues(model.unreadableIssues ?? []),
     '</section>',
   ].join('\n');
 }
 
-/** @param {BranchScope} branchScope */
-function renderBranchScope(branchScope) {
-  const refs = branchScope.scannedRefs;
-  const refList =
-    refs.length === 0
-      ? 'no refs captured'
-      : refs.map((ref) => `<code>${escapeHtml(ref)}</code>`).join(', ');
-  return [
-    '<aside class="blind-spot" role="note">',
-    '<strong>Blind spot:</strong> Only pushed branches are captured. A CI runner cannot see purely local ',
-    'branches; issues that exist only locally are missing here.',
-    `<br>Captured: ${refList}.`,
-    '</aside>',
-  ].join('');
-}
-
+/** @param {ReadonlyArray<import('./issues.js').OpenIssue>} openIssues */
 /** @param {ReadonlyArray<import('./issues.js').OpenIssue>} openIssues */
 function renderOpenIssues(openIssues) {
   if (openIssues.length === 0) return renderEmpty('No open issues.');
-  return openIssues.map(renderOpenIssue).join('\n');
+
+  /** @type {Map<string, { parentId: string, mainIssue: import('./issues.js').OpenIssue|null, children: import('./issues.js').OpenIssue[] }>} */
+  const groupMap = new Map();
+
+  for (const issue of openIssues) {
+    const parts = issue.id.split('/');
+    const parentId = parts[0];
+
+    if (!groupMap.has(parentId)) {
+      groupMap.set(parentId, { parentId, mainIssue: null, children: [] });
+    }
+    const group = groupMap.get(parentId);
+    if (parts.length === 1) {
+      group.mainIssue = issue;
+    } else {
+      group.children.push(issue);
+    }
+  }
+
+  const renderedGroups = [];
+
+  for (const group of groupMap.values()) {
+    if (group.mainIssue && group.children.length === 0) {
+      renderedGroups.push(renderOpenIssue(group.mainIssue));
+    } else if (!group.mainIssue && group.children.length === 1) {
+      renderedGroups.push(renderOpenIssue(group.children[0]));
+    } else {
+      renderedGroups.push(renderHierarchicalIssueGroup(group));
+    }
+  }
+
+  return renderedGroups.join('\n');
+}
+
+/**
+ * Rendert eine Haupt-Issue mit ihren untergeordneten Child-Issues hierarchisch.
+ * @param {{ parentId: string, mainIssue: import('./issues.js').OpenIssue|null, children: import('./issues.js').OpenIssue[] }} group
+ */
+function renderHierarchicalIssueGroup(group) {
+  if (group.mainIssue) {
+    const badgeTone = group.mainIssue.status.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+    const renderedChildren = group.children.map((child) => renderOpenIssue(child, true)).join('\n');
+    return [
+      `<details class="issue issue-card issue-card-parent" id="issue-${escapeHtml(anchorId(group.mainIssue.id))}">`,
+      renderIssueSummary(group.mainIssue, badgeTone),
+      '<div class="issue-body issue-card-body">',
+      renderIssueMeta(group.mainIssue),
+      renderIssueSections(group.mainIssue.sections),
+      renderIssueRefs(group.mainIssue.refs),
+      renderedChildren ? `<h4>Child Issues</h4><div class="issue-children-list">${renderedChildren}</div>` : '',
+      '</div>',
+      '</details>',
+    ].join('\n');
+  }
+
+  const parentTitle = issueTitleFromId(group.parentId);
+  const renderedChildren = group.children.map((child) => renderOpenIssue(child, true)).join('\n');
+  return [
+    `<details class="issue issue-card issue-card-parent" id="issue-${escapeHtml(anchorId(group.parentId))}" open>`,
+    '<summary class="issue-summary issue-card-summary">',
+    '<div class="issue-card-header-main">',
+    `<span class="issue-title issue-card-title">${escapeHtml(parentTitle)}</span>`,
+    '</div>',
+    `<span class="issue-status-badge badge-neutral">${group.children.length} active</span>`,
+    '</summary>',
+    '<div class="issue-body issue-card-body">',
+    `<div class="issue-children-list">${renderedChildren}</div>`,
+    '</div>',
+    '</details>',
+  ].join('\n');
 }
 
 /**
  * Ein offener Vorgang als natives, ausklappbares `<details>` -- ohne JavaScript.
- * Sichtbar bleibt nur die kompakte Zusammenfassungszeile (Titel, Status); die
- * Beschreibung und die Akzeptanzkriterien klappen erst auf Wunsch darunter auf,
- * damit der Bereich auch bei vielen Vorgaengen kurz bleibt.
+ * Im zusammengeklappten Zustand wird exklusiv das Wesentliche (Titel und Status-Badge) dargestellt.
  *
  * @param {import('./issues.js').OpenIssue} issue
+ * @param {boolean} [isSubIssue=false]
  */
-function renderOpenIssue(issue) {
+function renderOpenIssue(issue, isSubIssue = false) {
+  const badgeTone = issue.status.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+  const cardClass = isSubIssue ? 'issue issue-card issue-card-sub' : 'issue issue-card';
   return [
-    `<details class="issue" id="issue-${escapeHtml(anchorId(issue.id))}">`,
-    renderIssueSummary(issue),
-    '<div class="issue-body">',
+    `<details class="${cardClass}" id="issue-${escapeHtml(anchorId(issue.id))}">`,
+    renderIssueSummary(issue, badgeTone),
+    '<div class="issue-body issue-card-body">',
     renderIssueMeta(issue),
     renderIssueSections(issue.sections),
     renderIssueRefs(issue.refs),
@@ -461,12 +555,14 @@ function renderOpenIssue(issue) {
   ].join('\n');
 }
 
-/** Die stets sichtbare, kompakte Zeile eines Vorgangs: Titel und Status. */
-function renderIssueSummary(issue) {
+/** Die stets sichtbare, kompakte Zeile eines Vorgangs: Nur das Wesentliche (Titel & Status). */
+function renderIssueSummary(issue, badgeTone) {
   return [
-    '<summary class="issue-summary">',
-    `<span class="issue-title">${escapeHtml(issue.title)}</span>`,
-    `<span class="issue-status">${escapeHtml(issue.status)}</span>`,
+    '<summary class="issue-summary issue-card-summary">',
+    '<div class="issue-card-header-main">',
+    `<span class="issue-title issue-card-title">${escapeHtml(issue.title)}</span>`,
+    '</div>',
+    `<span class="issue-status-badge badge-${badgeTone}">${escapeHtml(issue.status)}</span>`,
     '</summary>',
   ].join('');
 }
@@ -520,36 +616,7 @@ function renderSubsection(title, innerHtml) {
   return `<div class="subsection"><h3>${escapeHtml(title)}</h3>${innerHtml}</div>`;
 }
 
-/**
- * Eine benannte, breiten-scrollbare Tabelle im Gitter-Stil. Alle Tabellen des
- * Berichts teilen sich dieselbe Huelle (Untergruppe + `overflow-x`-Container +
- * `table.grid`); nur Kopf und Zeilen unterscheiden sich.
- *
- * @param {string} title
- * @param {string} headerCells  die fertigen `<th>`-Zellen der Kopfzeile
- * @param {string} rows         die fertigen `<tr>`-Zeilen
- */
-function renderGridTable(title, headerCells, rows) {
-  return renderSubsection(
-    title,
-    wrapScrollable(`<table class="grid"><thead><tr>${headerCells}</tr></thead><tbody>${rows}</tbody></table>`),
-  );
-}
-
-/**
- * Legt breite Inhalte (Tabellen) in einen eigenen horizontal scrollbaren Container.
- * So laeuft eine breite Tabelle auf einem schmalen Viewport innerhalb ihres Rahmens
- * ueber, statt die ganze Seite horizontal scrollen zu lassen.
- */
-function wrapScrollable(innerHtml) {
-  return `<div class="table-scroll">${innerHtml}</div>`;
-}
-
-/** @param {{ symbol: string, label: string, tone: string }} presentation */
-function renderBadge(presentation) {
-  return `<span class="badge badge-${presentation.tone}"><span class="badge-symbol" aria-hidden="true">${escapeHtml(presentation.symbol)}</span>${escapeHtml(presentation.label)}</span>`;
-}
-
+/** @param {string} text */
 function renderEmpty(text) {
   return `<p class="empty">${escapeHtml(text)}</p>`;
 }
@@ -610,6 +677,8 @@ function escapeHtml(value) {
  * horizontales Scrollen lesbar.
  */
 const REPORT_STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
 :root {
   color-scheme: dark;
   --font-heading: "Cinzel", Georgia, serif;
@@ -637,7 +706,12 @@ const REPORT_STYLES = `
 html { -webkit-text-size-adjust: 100%; color-scheme: dark; }
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at center, rgba(7, 9, 14, 0.78) 0%, rgba(7, 9, 14, 0.52) 50%, rgba(7, 9, 14, 0.15) 100%), url('../assets/status_bg.jpg');
+  background-attachment: fixed;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: var(--text);
   font-family: var(--font-body);
   line-height: 1.6;
@@ -705,37 +779,133 @@ table.grid th, table.grid td { text-align: left; padding: .65rem .85rem; border-
 table.grid th { color: var(--accent); font-family: var(--font-subheading); font-weight: 600; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid var(--border); }
 td.num { text-align: right; white-space: nowrap; }
 .fraction { display: block; color: var(--muted); font-size: .8em; }
-.badge { display: inline-flex; align-items: center; gap: .35em; padding: .25em .65em; border-radius: 999px; font-size: .82rem; font-weight: 600; font-family: var(--font-subheading); }
+.badge { display: inline-flex; align-items: center; gap: .35em; padding: .2em .6em; border-radius: 4px; font-size: .75rem; font-weight: 700; font-family: var(--font-subheading); text-transform: uppercase; letter-spacing: 0.04em; }
 .badge-symbol { font-weight: 700; }
 .badge-ok { background: var(--ok-bg); color: var(--ok-fg); border: 1px solid rgba(16, 185, 129, 0.3); }
 .badge-warn { background: var(--warn-bg); color: var(--warn-fg); border: 1px solid rgba(217, 119, 6, 0.3); }
 .badge-inert { background: var(--inert-bg); color: var(--inert-fg); border: 1px dashed var(--border); }
 .badge-neutral { background: var(--neutral-bg); color: var(--neutral-fg); border: 1px solid rgba(59, 130, 246, 0.3); }
 .reason { color: var(--muted); font-size: .88rem; }
-.metric-grid { list-style: none; display: flex; flex-wrap: wrap; gap: 1rem; padding: 0; margin: .75rem 0; }
-.metric { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--border-strong); border-radius: 12px; padding: .85rem 1.1rem; min-width: 8rem; flex: 1 1 8rem; display: flex; flex-direction: column; box-shadow: var(--shadow); }
-.metric-value { font-family: var(--font-heading); font-size: 1.75rem; font-weight: 700; color: var(--accent-strong); }
-.metric-label { color: var(--muted); font-size: .85rem; font-family: var(--font-subheading); }
-.metric-hint { color: var(--muted); font-size: .78rem; margin-top: .25rem; }
-.finding-list { margin: .35rem 0; padding-left: 1.2rem; }
-.blind-spot { background: var(--warn-bg); color: var(--warn-fg); border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.25rem; font-size: .9rem; border: 1px solid rgba(217, 119, 6, 0.3); }
-.issue { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1rem; box-shadow: var(--shadow); overflow: hidden; }
-.issue-summary { cursor: pointer; padding: .85rem 1.1rem; font-family: var(--font-subheading); }
-.issue-summary::marker { color: var(--accent); }
-.issue-title { font-weight: 600; font-size: 1.05rem; }
-.issue-status { display: inline-block; margin-left: .5rem; font-size: .78rem; padding: .15em .6em; border-radius: 6px; background: var(--neutral-bg); color: var(--neutral-fg); border: 1px solid rgba(59, 130, 246, 0.3); vertical-align: middle; }
-.issue[open] .issue-summary { border-bottom: 1px solid var(--border); background: rgba(0, 0, 0, 0.2); }
-.issue-body { padding: .75rem 1.25rem 1.25rem; }
-.issue-id { font-weight: 400; color: var(--muted); }
-.issue-meta { display: flex; gap: .5rem; flex-wrap: wrap; margin: .5rem 0 1rem; }
-.issue-meta span { font-size: .78rem; padding: .15em .6em; border-radius: 6px; background: var(--neutral-bg); color: var(--neutral-fg); border: 1px solid rgba(59, 130, 246, 0.3); }
-.issue-refs { color: var(--muted); font-size: .82rem; margin-top: 0.75rem; }
+@keyframes runePulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px currentColor); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 16px currentColor); }
+}
+.rune-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 1.1rem; margin-top: 1rem; }
+.rune-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 0.85rem 1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 0.65rem; cursor: help; transition: all 0.25s ease; }
+.rune-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); }
+.rune-wrapper { position: relative; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center; margin: 0.2rem 0; }
+.rune-stone { width: 3.6rem; height: 3.6rem; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #1e2638 0%, #0d121c 100%); border: 2px solid rgba(212, 175, 55, 0.4); box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.1), inset 0 -4px 8px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+.rune-ok { border-color: rgba(52, 211, 153, 0.6); color: #34d399; }
+.rune-ok .rune-glyph { color: #34d399; text-shadow: 0 0 10px #10b981, 0 0 20px rgba(16, 185, 129, 0.7); animation: runePulse 3.5s infinite ease-in-out; }
+.rune-warn { border-color: rgba(248, 113, 113, 0.6); color: #f87171; }
+.rune-warn .rune-glyph { color: #f87171; text-shadow: 0 0 10px #ef4444, 0 0 20px rgba(239, 68, 68, 0.7); animation: runePulse 2.5s infinite ease-in-out; }
+.rune-inert { border-color: rgba(107, 114, 128, 0.3); color: #4b5563; }
+.rune-inert .rune-glyph { color: #4b5563; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
+.rune-glyph { font-family: serif; font-size: 1.8rem; font-weight: 900; line-height: 1; user-select: none; }
+.gate-card-label { font-family: var(--font-subheading); font-size: 0.86rem; font-weight: 700; color: var(--accent-strong); text-align: center; }
+.gate-card-status { font-size: 0.72rem; font-family: var(--font-subheading); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.gate-card-status-ok { color: var(--ok-fg); }
+.gate-card-status-warn { color: var(--warn-fg); }
+.gate-card-status-inert { color: var(--muted); }
+.gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 1000; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; backdrop-filter: blur(12px); }
+.gate-card:hover { z-index: 60; }
+.gate-card:hover .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+
+/* Gate Findings Details */
+.gate-findings-details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 1.25rem; box-shadow: var(--shadow); }
+.gate-findings-summary { cursor: pointer; font-family: var(--font-subheading); font-weight: 700; font-size: 0.9rem; color: var(--accent); user-select: none; }
+.gate-findings-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.85rem; }
+.gate-finding-item { border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 8px; background: rgba(13, 17, 26, 0.65); padding: 0.5rem 0.75rem; }
+.gate-finding-header { cursor: pointer; display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-subheading); font-size: 0.88rem; color: var(--text); user-select: none; }
+.rune-glyph-small { font-family: serif; font-size: 1.1rem; font-weight: 900; color: var(--accent); }
+.gate-finding-body { margin-top: 0.5rem; overflow-x: auto; }
+.gate-finding-body pre { margin: 0; padding: 0.75rem 0.85rem; background: #080b12; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08); font-family: var(--font-mono); font-size: 0.8rem; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; max-height: 22rem; overflow-y: auto; }
+@keyframes bubbleRise1 {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  30% { opacity: 0.8; }
+  85% { opacity: 0.8; }
+  100% { transform: translateY(-4.5rem) scale(1.1); opacity: 0; }
+}
+@keyframes bubbleRise2 {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  40% { opacity: 0.9; }
+  90% { opacity: 0.9; }
+  100% { transform: translateY(-5rem) scale(1); opacity: 0; }
+}
+.module-metrics-intro { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 1.1rem; margin-top: 0.85rem; font-size: 0.84rem; color: var(--muted); line-height: 1.5; box-shadow: var(--shadow); }
+.module-metrics-intro p { margin: 0; }
+.module-metrics-intro strong { color: var(--text); }
+.metrics-legend-list { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 0.6rem 0 0 0; padding-left: 0; list-style: none; font-size: 0.78rem; }
+.metrics-legend-list li { display: flex; align-items: center; gap: 0.4rem; color: var(--muted); }
+.badge-dot { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%; flex-shrink: 0; }
+.dot-low { background: #34d399; }
+.dot-moderate { background: #fbbf24; }
+.dot-high { background: #f97316; }
+.dot-very-high { background: #c084fc; }
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1.25rem; margin-top: 1rem; }
+.module-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem; transition: all 0.25s ease; }
+.module-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: 0 12px 28px -5px rgba(212, 175, 55, 0.25); z-index: 50; }
+.module-card-header { border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.45rem; }
+.module-card-title { font-family: var(--font-subheading); font-size: 0.92rem; font-weight: 700; color: var(--accent-strong); word-break: break-all; }
+.module-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.25rem; display: flex; gap: 0.5rem; }
+.module-vials-row { display: flex; justify-content: space-around; align-items: flex-end; padding: 0.4rem 0.5rem; gap: 1rem; }
+.vial-container { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; cursor: help; }
+.vial-container:hover { z-index: 60; }
+.vial-label { font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-top-width: 1px; border-radius: 2px 2px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.vial::before { content: ""; position: absolute; top: -1px; left: -2px; right: -2px; height: 2px; background: rgba(212, 175, 55, 0.5); border-radius: 2px 2px 0 0; z-index: 5; }
+.vial::after { content: ""; position: absolute; top: 2px; left: 3px; width: 3px; bottom: 8px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05)); border-radius: 2px; z-index: 6; pointer-events: none; }
+.vial-liquid { position: relative; width: 100%; border-radius: 0 0 14px 14px; transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+.vial-bubbles { position: absolute; inset: 0; pointer-events: none; }
+.vial-bubbles::before, .vial-bubbles::after { content: ""; position: absolute; bottom: -4px; background: rgba(255, 255, 255, 0.7); border-radius: 50%; box-shadow: 0 0 3px rgba(255, 255, 255, 0.9); }
+.vial-bubbles::before { left: 25%; width: 4px; height: 4px; animation: bubbleRise1 2.2s infinite linear; }
+.vial-bubbles::after { left: 60%; width: 3px; height: 3px; animation: bubbleRise2 2.8s infinite linear 0.9s; }
+.vial-liquid-bad { background: linear-gradient(180deg, #F87171 0%, #DC2626 100%); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+.vial-liquid-warn { background: linear-gradient(180deg, #FBBF24 0%, #D97706 100%); box-shadow: 0 0 10px rgba(245, 208, 97, 0.4); }
+.vial-liquid-good { background: linear-gradient(180deg, #34D399 0%, #059669 100%); box-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
+.vial-segmented { display: flex; flex-direction: column-reverse; overflow: hidden; background: rgba(0, 0, 0, 0.4); }
+.vial-segment { width: 100%; transition: height 0.3s ease; min-height: 2px; }
+.vial-segment-low { background: linear-gradient(180deg, #34d399 0%, #059669 100%); }
+.vial-segment-moderate { background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%); }
+.vial-segment-high { background: linear-gradient(180deg, #f97316 0%, #dc2626 100%); }
+.vial-segment-very-high { background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%); }
+.vial-value-badge { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--accent); }
+.vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 1000; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; backdrop-filter: blur(12px); }
+.vial-container:hover .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+.tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
+.tooltip-grid { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8rem; color: var(--muted); }
+.tooltip-grid strong { color: var(--text); font-family: var(--font-mono); }
+.issue-card { position: relative; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.85rem; overflow: hidden; box-shadow: var(--shadow); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+.issue-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: 0 8px 20px -4px rgba(212, 175, 55, 0.2); }
+.issue-card[open] { border-color: var(--border-strong); box-shadow: 0 10px 24px -4px rgba(212, 175, 55, 0.25); }
+.issue-card-summary { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; cursor: pointer; user-select: none; list-style: none; background-color: rgba(255, 255, 255, 0.03); transition: background-color 0.2s ease; }
+.issue-card-summary::-webkit-details-marker { display: none; }
+.issue-card-summary:hover { background-color: rgba(212, 175, 55, 0.06); }
+.issue-card-header-main { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
+.issue-card-title { font-family: var(--font-subheading); font-size: 0.94rem; font-weight: 700; color: var(--accent-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.issue-status-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.6rem; font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; flex-shrink: 0; }
+.badge-claimed { background-color: rgba(166, 28, 28, 0.2); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171; }
+.badge-ready-for-agent, .badge-ready { background-color: rgba(217, 119, 6, 0.18); border: 1px solid rgba(245, 208, 97, 0.45); color: #fbbf24; }
+.badge-resolved { background-color: rgba(16, 185, 129, 0.18); border: 1px solid rgba(52, 211, 153, 0.45); color: #34d399; }
+.badge-needs-triage, .badge-needs-info { background-color: rgba(124, 58, 237, 0.18); border: 1px solid rgba(167, 139, 250, 0.45); color: #c4b5fd; }
+.badge-superseded { background-color: rgba(107, 114, 128, 0.12); border: 1px solid rgba(156, 163, 175, 0.3); color: #9ca3af; }
+.issue-card-body { border-top: 1px solid var(--border); background-color: var(--surface); padding: 1rem 1.15rem; }
+.issue-card-body .prose { font-size: 0.84rem; line-height: 1.5; color: var(--text); }
+.issue-card-body .prose p, .issue-card-body .prose li { font-size: 0.84rem; line-height: 1.5; }
+.issue-card-body .prose h1 { font-size: 1.05rem; margin: 0.6rem 0 0.3rem; color: var(--accent-strong); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.2rem; }
+.issue-card-body .prose h2 { font-size: 0.98rem; margin: 0.5rem 0 0.25rem; color: var(--accent); border-bottom: none; }
+.issue-card-body .prose h3 { font-size: 0.92rem; margin: 0.4rem 0 0.2rem; color: var(--accent); }
+.issue-card-body .prose h4, .issue-card-body .prose h5, .issue-card-body .prose h6 { font-size: 0.86rem; margin: 0.35rem 0 0.15rem; color: var(--muted); }
+.issue-card-body h4 { font-size: 0.88rem; font-family: var(--font-subheading); color: var(--accent); margin-top: 0.85rem; margin-bottom: 0.35rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.25rem; }
+.issue-children-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
+.issue-card-sub { margin-top: 0.5rem; margin-bottom: 0.25rem; border: 1px solid rgba(212, 175, 55, 0.2); background-color: rgba(0, 0, 0, 0.25); border-radius: 6px; }
+.issue-card-sub .issue-card-summary { padding: 0.6rem 0.85rem; background-color: rgba(255, 255, 255, 0.02); }
+.issue-card-sub .issue-card-title { font-size: 0.88rem; color: var(--text); }
 @media (max-width: 30rem) {
   .page { padding: 1rem .85rem 3rem; }
   h1 { font-size: 1.75rem; }
   h2 { font-size: 1.25rem; }
   .verdict { padding: 1rem; }
   .tab { padding: .5rem .9rem; font-size: .82rem; }
-  .metric { min-width: 7rem; flex-basis: 7rem; }
 }
 `.trim();

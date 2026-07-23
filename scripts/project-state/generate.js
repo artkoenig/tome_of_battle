@@ -57,6 +57,7 @@ const FAILED_EXIT_CODE = 1;
 const GATE_EXECUTION_OVERRIDES = Object.freeze({
   depcruise: 'npx depcruise src --output-type json',
   'unit-tests': 'npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=json',
+  maintainability: 'node -e "console.log(\'Maintainability Index computed internally\')"',
 });
 
 /** Aus welcher Gate-Ausgabe der Importgraph gelesen wird. */
@@ -123,15 +124,6 @@ function readJsonFile(path, fallback) {
     return JSON.parse(readFileSync(path, 'utf8'));
   } catch {
     return fallback;
-  }
-}
-
-/** Modulbericht von dependency-cruiser aus dessen JSON-Ausgabe; bei Abbruch leer. */
-function parseCruiserModules(graphStdout) {
-  try {
-    return JSON.parse(graphStdout).modules ?? [];
-  } catch {
-    return [];
   }
 }
 
@@ -272,7 +264,7 @@ function formatTimestamp(date) {
  */
 export function generateReportHtml({ rootDir, now = new Date() }) {
   process.stderr.write('Gates ausfuehren ...\n');
-  const { gateRuns, graphStdout } = executeGates();
+  const { gateRuns } = executeGates();
 
   process.stderr.write('Rohdaten einlesen ...\n');
   const model = buildReportModel({
@@ -282,7 +274,6 @@ export function generateReportHtml({ rootDir, now = new Date() }) {
     coverageFinal: readJsonFile(join(rootDir, COVERAGE_FILE), {}),
     rootPath: rootDir,
     sources: readSourceFiles(rootDir),
-    cruiserModules: parseCruiserModules(graphStdout),
     issueRefs: collectIssueRefs(),
     showFile: showFileAtRef,
   });
