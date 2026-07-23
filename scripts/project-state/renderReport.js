@@ -652,7 +652,12 @@ const REPORT_STYLES = `
 html { -webkit-text-size-adjust: 100%; color-scheme: dark; }
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: linear-gradient(180deg, rgba(7, 9, 14, 0.72) 0%, rgba(7, 9, 14, 0.88) 100%), url('../assets/status_bg.jpg');
+  background-attachment: fixed;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: var(--text);
   font-family: var(--font-body);
   line-height: 1.6;

@@ -229,6 +229,12 @@ describe('project-state/renderReport', () => {
       expect(html).toContain('<summary');
     });
 
+    it('verwendet das atmosphärische Hintergrundbild fixiert als Body-Background', () => {
+      const html = renderReport(makeModel());
+      expect(html).toContain("url('../assets/status_bg.jpg')");
+      expect(html).toContain('background-attachment: fixed;');
+    });
+
     it('meldet leere Issue-Liste ausdruecklich', () => {
       const html = renderReport(makeModel({ openIssues: [] }));
       expect(html).toContain('No open issues.');
