@@ -1,4 +1,4 @@
-Status: resolved
+Status: claimed
 Type: refactor
 Blocked by: None
 
@@ -106,3 +106,4 @@ gilt unverändert und jetzt lückenlos).
 ## Comments
 - Zentrale Query-Engine umgesetzt (ADR 0029) über fünf Slices: queryEngine.js (scope-agnostischer Zähl-Kern), Entry-/Gruppen-/Kategorie-/Force-Constraints, Conditions & Repeats, selectionBehavior.js (UI-Verhaltensmodell), categoryLimits.js (konsistente Kategorie-Anzeige + zentraler Quirk). Alle Slices resolved, vitest 1582 + puppeteer-E2E grün. Offen für Review: benigner Modul-Zyklus modifierEvaluator->queryEngine->rosterCounter->modifierEvaluator; knip-Dead-Export isEntryScope auf der Fassade.
 - Fünf-Achsen-Review durchlaufen. Behoben: toter Legacy-Resolver in constraintScope.js entfernt (SSOT), Modul-Zyklen 3->1 (isCostField ins Leaf-Modul), toter isEntryScope-Export weg, Null-Subject-DRY, ADR 0029 an die Umsetzung angeglichen (L4/self/Stabilisierung). Tests grün (vitest 1571 + E2E), Lint/Typecheck sauber, depcruise 1 Zyklus. Bounded Stabilization bewusst nicht umgesetzt (YAGNI, in ADR vermerkt).
+- Folge-Arbeit (in PR #125 hineingezogen): Datenfluss-Prüfung zeigt, dass Slice 03 die Conditions/Repeats nur über das Zähl-Primitiv measureOver (L2b) verdrahtet hat, nicht über die eine scope-bewusste Stelle resolveScopeAnchor (L2a). Folge: derselbe Scope (z. B. force) wird für Constraints (pro Kontingent, AGGREGATE) und Conditions/Repeats (armeeweit, COUNT_BUCKET) unterschiedlich aufgelöst; profileCollector.computeRepeatCount umgeht den Kernel komplett und hat einen eigenen, schwächeren Matcher (keine Kategorie-Zählung). Neue Child-Issues 06/07 vollenden die Zentralisierung. Reopen zu ready-for-agent -> claimed.
