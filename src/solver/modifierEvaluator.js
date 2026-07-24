@@ -294,6 +294,9 @@ export const evaluateCondition = (cond, ctx = {}) => {
               if (!hasCat) return false;
             }
             if (res.targetId === targetChildId || res.id === targetChildId) return true;
+            // The model/unit/upgrade keyword-coverage rule is intentionally duplicated here
+            // for the boolean instanceOf membership path; createEntryInstanceMatcher owns the
+            // counting variant (a different operation), so the two are not folded into one.
             // The `model` keyword deliberately also covers `unit` entries; the other
             // two keywords match their own entry kind exactly.
             if (targetChildId === SelectionEntryKind.MODEL &&
@@ -336,7 +339,7 @@ export const evaluateConditionGroup = (group, ctx = {}) => {
  * True when a modifier's own conditions/conditionGroups all pass in `ctx`.
  * Mirrors the AND-of-conditions gating BattleScribe applies to every modifier.
  */
-const modifierConditionsPass = (source, ctx) => {
+export const modifierConditionsPass = (source, ctx) => {
   const condsPass = source.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
   const groupsPass = source.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
   return condsPass && groupsPass;
@@ -344,15 +347,15 @@ const modifierConditionsPass = (source, ctx) => {
 
 /**
  * The number of times a `repeat` modifier fires in `ctx`: how often its counted
- * quantity fits into the repeat's `value`, times its `repeats` multiplier. Exported
- * as the single repeat counter shared by every consumer — constraint/cost evaluation
- * here and profile-stat scaling in {@link module:profileCollector} — so no second,
- * weaker counter or target matcher can drift from the kernel (ADR 0029).
+ * quantity fits into the repeat's `value`, times its `repeats` multiplier. The single
+ * repeat counter behind every consumer — constraint/cost evaluation and profile-stat
+ * scaling both reach it through {@link getModifierAmount}, so no second, weaker counter
+ * or target matcher can drift from the kernel (ADR 0029).
  * @param {Object} repeat  a modifier's `repeat` object (`{scope, childId|field, value, repeats, roundUp}`).
  * @param {Object} ctx     the flat evaluation context.
  * @returns {number}
  */
-export const countRepeatOccurrences = (repeat, ctx) => {
+const countRepeatOccurrences = (repeat, ctx) => {
   const { roster } = ctx;
   let countedQuantity = 0;
 
@@ -373,7 +376,7 @@ export const countRepeatOccurrences = (repeat, ctx) => {
 
 // The amount a modifier contributes: its own numeric value, scaled by how often a
 // `repeat` makes it fire.
-const getModifierAmount = (mod, ctx) => {
+export const getModifierAmount = (mod, ctx) => {
   const baseAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
   return mod.repeat ? baseAmount * countRepeatOccurrences(mod.repeat, ctx) : baseAmount;
 };

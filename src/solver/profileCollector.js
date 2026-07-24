@@ -1,6 +1,6 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { countRepeatOccurrences, evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName, getModifiedConstraintValue } from './modifierEvaluator.js';
-import { computeRosterCounts } from './rosterCounter.js';
+import { getEffectiveModifiers, getEffectiveName, getModifiedConstraintValue, getModifierAmount, modifierConditionsPass } from './modifierEvaluator.js';
+import { aggregateRosterCategoryCounts, computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import { isEntryScope } from './battlescribeConstants.js';
 import { findForceContainingSelection } from './rosterTree.js';
@@ -19,21 +19,27 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
 
   let selectionCounts = {};
   let forceCategoryCounts = {};
+  // The full precomputed count tables and the owning contingent are threaded into the
+  // evaluation context so a `scope="force"` repeat/condition in the profile-stat path
+  // resolves per-contingent (via forceSelectionCounts[force.id]) exactly as the validator
+  // does — not army-wide through the missing-force fallback (ADR 0029, Slice 06).
+  let rosterCounts = null;
+  let owningForce = null;
   if (roster) {
-    const counts = computeRosterCounts(roster, system);
-    selectionCounts = counts.selectionCounts;
+    rosterCounts = computeRosterCounts(roster, system);
+    selectionCounts = rosterCounts.selectionCounts;
     if (roster.forces) {
-      const activeForce = findForceContainingSelection(roster, selection.id);
-      if (activeForce) {
-        forceCategoryCounts = counts.categoryCounts[activeForce.id] || {};
-      } else {
-        forceCategoryCounts = Object.values(counts.categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {});
-      }
+      owningForce = findForceContainingSelection(roster, selection.id);
+      forceCategoryCounts = owningForce
+        ? (rosterCounts.categoryCounts[owningForce.id] || {})
+        : aggregateRosterCategoryCounts(rosterCounts.categoryCounts);
     }
   }
 
   const makeCtx = (sourceSel, parentSel) => ({
     roster,
+    counts: rosterCounts,
+    force: owningForce,
     selectionCounts,
     forceCategoryCounts,
     selection: sourceSel,
@@ -81,16 +87,12 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
     const char = profile.characteristics?.find(c => c.id === mod.field || c.name === mod.field);
     if (!char) return;
 
-    const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
-    const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
-    if (!condsPass || !groupsPass) return;
+    if (!modifierConditionsPass(mod, ctx)) return;
 
-    let modAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
-    if (mod.repeat) {
-      // Derselbe geteilte Repeat-Zähler wie in der Validierung (ADR 0029) — kein zweiter,
-      // kategorie-blinder Zähl-Matcher mehr; `mod.repeat` ist das Repeat-Objekt selbst.
-      modAmount = modAmount * countRepeatOccurrences(mod.repeat, ctx);
-    }
+    // Geteilter Betrags-Rechner der Validierung (ADR 0029): eigener numerischer Wert,
+    // skaliert über denselben geteilten Repeat-Zähler — kein zweiter, kategorie-blinder
+    // Zähl-Matcher mehr.
+    const modAmount = getModifierAmount(mod, ctx);
 
     if (char.originalValue === undefined) {
       char.originalValue = char.value;

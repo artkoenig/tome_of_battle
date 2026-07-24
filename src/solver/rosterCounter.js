@@ -276,8 +276,11 @@ export function getExtraResourceTotals(system, roster, costs) {
 }
 
 export const computeRosterCounts = (roster, system) => {
+  /** @type {Record<string, number>} */
   const selectionCounts = {};
+  /** @type {Record<string, Record<string, number>>} */
   const forceSelectionCounts = {};
+  /** @type {Record<string, Record<string, number>>} */
   const categoryCounts = {};
 
   const countSelection = (selection, { parentCount, isRoot, parentSelection }, force) => {
@@ -367,4 +370,25 @@ export const computeRosterCounts = (roster, system) => {
   });
 
   return { selectionCounts, forceSelectionCounts, categoryCounts };
+};
+
+/**
+ * Flattens the per-force category counts (`{ [forceId]: { [categoryId]: n } }`) into one
+ * roster-wide tally (`{ [categoryId]: n }`), **summing** a category that appears in more
+ * than one contingent rather than letting the last force overwrite the earlier ones. The
+ * single source of truth for a roster-wide category total: every caller that needs a
+ * `forceCategoryCounts` map spanning the whole roster (profile stats, mandatory-selector
+ * checks, author-message and constraint evaluation, the recruit factory) goes through here.
+ * @param {Record<string, Record<string, number>>} categoryCounts
+ * @returns {Record<string, number>}
+ */
+export const aggregateRosterCategoryCounts = (categoryCounts) => {
+  /** @type {Record<string, number>} */
+  const rosterWide = {};
+  for (const perForce of Object.values(categoryCounts || {})) {
+    for (const [categoryId, count] of Object.entries(perForce)) {
+      rosterWide[categoryId] = (rosterWide[categoryId] || 0) + count;
+    }
+  }
+  return rosterWide;
 };

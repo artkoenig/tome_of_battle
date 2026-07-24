@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
-  mapSelectionTree, replaceSelectionById, computeRosterCounts,
+  mapSelectionTree, replaceSelectionById, computeRosterCounts, aggregateRosterCategoryCounts,
   createSelectionFromDef as buildSelectionFromDef,
   withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../solver/validator';
@@ -167,7 +167,7 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   const buildFactoryContext = (catalogueId) => {
     if (!system || !roster) return null;
     const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-    const forceCategoryCounts = Object.values(categoryCounts).reduce((merged, counts) => ({ ...merged, ...counts }), {});
+    const forceCategoryCounts = aggregateRosterCategoryCounts(categoryCounts);
     return { roster, system, selectionCounts, forceCategoryCounts, parentCatalogueId: catalogueId };
   };
 

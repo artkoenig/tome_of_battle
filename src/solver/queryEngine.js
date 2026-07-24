@@ -106,7 +106,7 @@ const NO_SELECTIONS = Object.freeze([]);
  * @param {Object} [system]                 das Spielsystem mit seinen Kategorie-Definitionen.
  * @returns {boolean}
  */
-export const isCategoryTargetId = (targetId, system) =>
+const isCategoryTargetId = (targetId, system) =>
   !!targetId && !!system?.categoryEntries?.some(ce => ce.id === targetId);
 
 /**
@@ -187,12 +187,12 @@ export function createEntryInstanceMatcher(target, ctx, { matchCategoryMembershi
 }
 
 /** Baut einen **Teilbaum-Anker** über die eine Instanz, an der eine nicht geteilte Query hängt. */
-export function resolveSubtreeAnchor(selection) {
+function resolveSubtreeAnchor(selection) {
   return { kind: AnchorKind.SUBTREE, selection };
 }
 
 /** Baut einen **Container-Anker** über die direkten Kinder eines Eltern-Containers (Scope `parent`). */
-export function resolveContainerAnchor(containerSelections) {
+function resolveContainerAnchor(containerSelections) {
   return { kind: AnchorKind.CONTAINER, containerSelections: containerSelections ?? NO_SELECTIONS };
 }
 

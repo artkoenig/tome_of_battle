@@ -1,7 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, evaluateConstraintWithCauses, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
 import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
+import { aggregateRosterCategoryCounts, calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isPercentConstraint, applyPercentage } from './constraintScope.js';
 import {
   ConstraintScope, isEntryScope, isCostField, isRosterLimitField, costTypeIdOfRosterLimitField
@@ -365,25 +365,6 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
 }
 
 /**
- * Merges the per-force category counts (`{ [forceId]: { [categoryId]: n } }`) into one
- * roster-wide tally (`{ [categoryId]: n }`), summing a category that appears in more than
- * one contingent. Used by the roster-scoped mandatory-selector check so its evaluation is
- * independent of contingent iteration order.
- * @param {Record<string, Record<string, number>>} categoryCounts
- * @returns {Record<string, number>}
- */
-function aggregateRosterCategoryCounts(categoryCounts) {
-  /** @type {Record<string, number>} */
-  const rosterWide = {};
-  for (const perForce of Object.values(categoryCounts || {})) {
-    for (const [categoryId, count] of Object.entries(perForce)) {
-      rosterWide[categoryId] = (rosterWide[categoryId] || 0) + count;
-    }
-  }
-  return rosterWide;
-}
-
-/**
  * Prüft die forceEntry-eigene Punktelimit-Constraint eines gewählten Kontingents.
  *
  * Bewusst eng auf das real belegte Muster gefasst (Vampire-Counts-Sonderheere „Army
@@ -561,7 +542,7 @@ function checkSelectionMessages({ selection, parentSelection, entry }, context) 
   const ctx = {
     roster,
     selectionCounts,
-    forceCategoryCounts: Object.values(categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {}),
+    forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts),
     selection,
     parentSelection,
     force,
@@ -602,7 +583,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       roster,
       counts,
       selectionCounts,
-      forceCategoryCounts: Object.values(categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {}),
+      forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts),
       selection,
       parentSelection,
       force,
