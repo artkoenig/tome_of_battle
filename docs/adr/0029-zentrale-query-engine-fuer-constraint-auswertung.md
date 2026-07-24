@@ -130,6 +130,115 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
 - **Neutral:** das Roster-/Katalog-Schema bleibt unverändert; die Fassade
   (ADR-0023) bleibt die exklusive Schnittstelle.
 
+## Architektur im Detail
+
+### Leitidee: „Alles ist eine Query"
+
+Eine **Query** misst eine Zahl `n` — *was* (`field`: Anzahl Selektionen oder
+Summe einer Kostenart) in *welchem Bezugsrahmen* (`scope` + `shared` +
+`includeChildSelections` + `childId`). Die drei Regelkonstrukte sind Queries plus
+eine dünne Reaktion auf `n`:
+
+| Query-Art | Reaktion auf den gemessenen Wert `n` |
+|---|---|
+| Constraint (min/max) | Vergleich `n` gegen effektiven Schwellenwert → erfüllt / Verstoß (+ Ursachen) |
+| Condition (`lessThan`, `atLeast`, `instanceOf`, …) | Vergleich `n` gegen `value` → Wahrheitswert |
+| Repeat | `floor/ceil(n / value) · repeats` → Wiederholungszahl |
+
+### Schichten
+
+```
+                         ┌───────────────────────────────────────────┐
+  (roster, system)  ──►  │  L1  EvaluationContext (einmaliger Vorlauf)│
+                         │      • Count-Index (computeRosterCounts)   │
+                         │      • System-/Definitions-Resolver-Index  │
+                         │      • Kostenart-Auflösung (costLimitType) │
+                         │      versioniert & memoisiert (ADR 0005)   │
+                         └───────────────────┬───────────────────────┘
+                                             │
+                         ┌───────────────────▼───────────────────────┐
+   Query + Subjekt  ──►  │  L2  measureQuery(query, subject, ctx) → n │
+                         │  ┌─────────────────────────────────────┐  │
+                         │  │ L2a resolveScopeAnchor(scope, …)     │  │  ◄── EINZIGE
+                         │  │     scope-Token → Anker (Node-Set /  │  │      scope-BEWUSSTE
+                         │  │     Count-Bucket). Nur HIER lebt die │  │      Stelle
+                         │  │     geschlossene Scope-Liste.        │  │
+                         │  └──────────────┬──────────────────────┘  │
+                         │  ┌──────────────▼──────────────────────┐  │
+                         │  │ L2b measureOver(anchor, field, opts) │  │  ◄── VÖLLIG
+                         │  │     zählt/summiert über den Anker.   │  │      scope-AGNOSTISCH
+                         │  │     Kennt kein "roster"/"force".     │  │      (Anker = Parameter)
+                         │  │     EIN Ziel-Matcher, honoriert      │  │
+                         │  │     shared/childId/includeChild…     │  │
+                         │  └─────────────────────────────────────┘  │
+                         └───────────────────┬───────────────────────┘
+                                             │
+        ┌────────────────────┬───────────────┼───────────────────┬─────────────────┐
+        ▼                    ▼                                    ▼                 ▼
+  evaluateConstraint   evaluateCondition                    evaluateRepeat   (Prozent-Nenner:
+  → {ok, n, thr,       → Wahrheitswert                      → Wiederholung    dieselbe measureQuery
+     causes}           (Komparator)                                           statt 2. Engine)
+        │                                                                     
+        ▼  L3  Konsumenten (dünn)                                            
+  ┌───────────────────────────────────────────────────────────────────────────────────┐
+  │  L4  Aufzählung von der Definitionsseite, an Instanz-Rahmen gebunden:               │
+  │      Paare (Grenzen-Quelle aus dem Definitionsbaum, gebundener Instanz-Rahmen) → L3 │
+  │      Leerer Rahmen (n = 0) ⇒ „Pflicht-Eintrag fehlt" fällt mit dem Normalfall       │
+  │      zusammen; deckt auch Force-/Kategorie-Grenzen ab, die im Instanzbaum nie als   │
+  │      Auswahl erscheinen. traverseSelectionTree bildet die Rahmen, treibt aber nicht.│
+  └───────────────────────────────────────────────────────────────────────────────────┘
+        │
+        ▼  L5  EIN Ergebnis → alles abgeleitet
+  validateRoster (Verstöße) ─┬─► entryAvailability (Diff, ADR 0022) ── bleibt
+                             ├─► NEU: SelectionBehaviorModel pro Option/Gruppe
+                             │        (radio/checkbox, mandatory, binär, „n noch erlaubt",
+                             │         Gruppen-Fehler, effektives Kategorie-Max)
+                             └─► UI rendert nur noch dieses Modell (keine Auswertung mehr)
+```
+
+- **L1 — `EvaluationContext`:** einmal pro `(roster, system)`-Version gebaut und
+  memoisiert; bündelt Count-Maps, Definitions-Resolver und Kostenart-Auflösung.
+  Macht die faktische Zweiphasigkeit zu einem *benannten Vertrag* statt zu
+  implizitem Wissen jeder Aufrufstelle.
+- **L2 — `measureQuery`, geteilt in scope-bewusst vs. scope-agnostisch:** `L2a
+  resolveScopeAnchor` ist die *einzige* Stelle, die die geschlossene Scope-Liste
+  kennt und ein Scope-Token auf einen Anker abbildet; `L2b measureOver` zählt/
+  summiert über den Anker als **Parameter**, ohne die Scope-Wörter zu kennen.
+  Ersetzt die fünf heutigen Resolver; der `parent`-Lauf existiert danach einmal.
+- **L3 — drei dünne Adapter:** `evaluateConstraint`/`evaluateCondition`/
+  `evaluateRepeat`. Schwellenwert weiter über `getModifiedConstraintValue`; der
+  Prozent-Nenner ruft dieselbe `measureQuery` → Zähler/Nenner-Divergenz entfällt.
+- **L4 — definitionsseitige Aufzählung** (siehe Entscheidung Punkt 4).
+- **L5 — ein Ergebnis, alles abgeleitet:** Verstöße, Aushebe-Verfügbarkeit (Diff,
+  ADR 0022) und das UI-Verhaltensmodell stammen aus einem Lauf.
+
+### Randbedingungen, die die Engine als Eingaben behandelt
+
+1. **Zwei Bäume, per ID verbunden.** Der Instanzbaum trägt keine Regeln; jede
+   Selektion löst ihre Definition per ID auf. Die Engine braucht einen read-only
+   System-Index (L1) und vergleicht gegen aufgelöste **Ziel-IDs**, nicht Verweis-IDs.
+2. **Globaler Count-Vorlauf ist Pflicht.** `force`/`roster`/`category`-Scopes werden
+   aus vorberechneten Zähltabellen beantwortet, nicht aus dem lokalen Teilbaum —
+   die Auswertung ist zweiphasig (Index bauen → laufen), kein reiner Single-Walk.
+3. **Nicht alle Constraints hängen am Instanzbaum.** Grenzen an Kontingent- und
+   Kategorie-Definitionen sowie Pflicht-Grenzen (die feuern, wenn ein Eintrag
+   *fehlt*) werden nur durch die definitionsseitige Aufzählung (L4) erfasst. Der
+   `.ros`-Import flacht verschachtelte Forces ein (ADR 0011 §5), sodass
+   `includeChildForces` die dokumentierte Näherung „ganzes Roster" bleibt —
+   isoliert in L2a.
+
+### Unabhängige Bestätigung (Clean-Room)
+
+Ein externer Software-Architekt hat ohne Sicht auf Code, Doku oder diesen Entwurf
+blind eine Architektur aus Problem + Datenform entworfen. Deckungsgleich bestätigt:
+das **eine Zähl-Primitiv** für alle Konstrukte und Rahmen, die **Scope-als-
+Parameter**-Trennung, die **reine Auswertungsfunktion mit einem Ergebnis-Modell**
+für Validierung *und* UI, Verfügbarkeit als **Diff zweier Läufe**, sowie
+Prozent-Zähler und -Nenner aus demselben Kernel. Zwei Schärfungen wurden daraus
+übernommen: die **definitionsseitige Aufzählung** (Punkt 4) und die **beschränkte
+Stabilisierung** (Punkt 6). SAT/CSP-Solver und ein generelles reaktives
+Abhängigkeitsdiagramm hat der Reviewer aus denselben Gründen verworfen wie hier.
+
 ## Vor- und Nachteile der Optionen
 
 ### Option 1 — Status quo lassen, punktuell härten
