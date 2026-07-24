@@ -1,8 +1,7 @@
 import React from 'react';
 import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
-import { computeRosterCounts, getModifiedConstraintValue, getEffectiveModifiers, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
+import { computeRosterCounts, getCategoryDisplayLimits, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
 import CategoryCountBadge from './CategoryCountBadge';
-import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatValidationError } from '../../i18n/formatValidationError';
 
@@ -14,31 +13,6 @@ const SEVERITY_PRESENTATION = {
   [ValidationSeverity.WARNING]: { Icon: AlertTriangle, itemClass: 'validation-error-item--warning' },
   [ValidationSeverity.INFO]: { Icon: Info, itemClass: 'validation-error-item--info' }
 };
-
-// Die „Helden“-Kategorie trägt in den Katalogdaten kein eigenes Maximum, teilt sich
-// die Obergrenze aber mit den „Charaktermodellen“.
-const HEROES_CATEGORY_ID = 'c16b-f319-2c62-2c12';
-const CHARACTERS_CATEGORY_ID = '7a1c-d611-c2dc-def1';
-
-/**
- * Wirksame Obergrenze eines Kategorie-Links. Fehlt die Constraint oder ergibt sie nach
- * Anwendung der Modifikatoren einen negativen Wert, gilt die Kategorie als unbegrenzt.
- */
-function resolveMaxLimit(maxConstraint, modifiers, displayContext) {
-  if (!maxConstraint) return Infinity;
-  const value = getModifiedConstraintValue(maxConstraint, modifiers, displayContext);
-  return value < 0 ? Infinity : value;
-}
-
-/**
- * Rückgriff für „Helden“: übernimmt die Obergrenze der „Charaktermodelle“, weil die
- * Kategorie sonst fälschlich als unbegrenzt erschiene.
- */
-function resolveHeroesMaxLimit(forceDef, displayContext) {
-  const charactersLink = forceDef?.categoryLinks?.find(link => link.targetId === CHARACTERS_CATEGORY_ID);
-  const charactersMaxConstraint = charactersLink?.constraints?.find(c => c.type === ConstraintKind.MAX);
-  return resolveMaxLimit(charactersMaxConstraint, getEffectiveModifiers(charactersLink), displayContext);
-}
 
 /** Eine Zeile der Armeeanforderungen: Kategoriename und der Zähl-Chip mit seinen Grenzen. */
 function CategoryRequirementRow({ name, count, minValue, maxValue, minConstraint, maxConstraint }) {
@@ -77,17 +51,8 @@ function CategoryRequirementList({ roster, system }) {
       return null;
     }
 
-    const catLinkModifiers = getEffectiveModifiers(catLink);
-    const minConstraint = catLink.constraints?.find(c => c.type === ConstraintKind.MIN);
-    const minValue = minConstraint
-      ? Math.max(0, getModifiedConstraintValue(minConstraint, catLinkModifiers, displayContext))
-      : 0;
-
-    const maxConstraint = catLink.constraints?.find(c => c.type === ConstraintKind.MAX);
-    let maxValue = resolveMaxLimit(maxConstraint, catLinkModifiers, displayContext);
-    if (catLink.targetId === HEROES_CATEGORY_ID && maxValue === Infinity) {
-      maxValue = resolveHeroesMaxLimit(forceDef, displayContext);
-    }
+    const { minValue, maxValue, minConstraint, maxConstraint } =
+      getCategoryDisplayLimits(catLink, { system, forceDef, displayContext });
 
     return (
       <CategoryRequirementRow

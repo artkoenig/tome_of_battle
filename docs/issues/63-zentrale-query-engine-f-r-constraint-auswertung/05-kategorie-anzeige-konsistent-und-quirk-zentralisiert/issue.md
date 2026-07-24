@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [04]
 
@@ -19,3 +19,4 @@ deklariert ist.
 - [ ] Beide Oberflächen leiten das Kategorie-Maximum aus dem Solver ab und berechnen es nicht selbst.
 
 ## Comments
+- Neuer Solver-Baustein categoryLimits.js (getCategoryDisplayLimits) als einzige Quelle des wirksamen Kategorie-Min/Max; RosterSidebar und RosterCategorySection leiten beide daraus ab. Der hartkodierte Heroes<-Characters-Fallback in RosterSidebar ist entfernt und durch den systemgebundenen Quirk (getInheritedCategoryMaxSource) ersetzt; rosterValidator teilt sich dieselbe Quirk-Anwendung (getInheritedCategoryMaxConstraint).

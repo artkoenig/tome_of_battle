@@ -95,6 +95,56 @@ describe('RosterSidebar percentValue category constraints', () => {
   });
 });
 
+describe('RosterSidebar category max inheritance (system-bound quirk)', () => {
+  // Verifizierte Anker des WHFB6-Vererbungs-Quirks (siehe systemQuirks.test.js):
+  // Heroes erbt einen fehlenden max von Characters — aber nur in diesem System.
+  const WHFB6_SYSTEM_ID = '6d8e-38d9-3c69-febf';
+  const HEROES_CATEGORY_ID = 'c16b-f319-2c62-2c12';
+  const CHARACTERS_CATEGORY_ID = '7a1c-d611-c2dc-def1';
+
+  function makeQuirkSystem(systemId) {
+    return {
+      id: systemId,
+      costTypes: [{ id: 'pts', name: 'Points' }],
+      categoryEntries: [
+        { id: HEROES_CATEGORY_ID, name: 'Heroes' },
+        { id: CHARACTERS_CATEGORY_ID, name: 'Characters' },
+      ],
+      forceEntries: [
+        {
+          id: FORCE_ENTRY_ID,
+          name: 'Main Force',
+          categoryLinks: [
+            {
+              id: 'cl-characters',
+              targetId: CHARACTERS_CATEGORY_ID,
+              name: 'Characters',
+              constraints: [{ id: 'c-max', type: 'max', value: 3, field: 'selections', scope: 'force' }],
+            },
+            { id: 'cl-heroes', targetId: HEROES_CATEGORY_ID, name: 'Heroes', constraints: [] },
+          ],
+        },
+      ],
+      catalogues: [],
+    };
+  }
+
+  const heroesRowText = () =>
+    screen.getByText('Heroes:').closest('.sidebar-requirement-row').textContent;
+
+  it('lets the Heroes row inherit the Characters maximum in the quirk system', () => {
+    renderSidebar({ system: makeQuirkSystem(WHFB6_SYSTEM_ID), roster: makeRoster() });
+
+    expect(heroesRowText()).toMatch(/Max: 3/);
+  });
+
+  it('does not apply the inheritance for a system the quirk is not declared for', () => {
+    renderSidebar({ system: makeQuirkSystem('aaaa-bbbb-cccc-dddd'), roster: makeRoster() });
+
+    expect(heroesRowText()).not.toMatch(/Max/);
+  });
+});
+
 describe('RosterSidebar hidden cost types', () => {
   it('lists a non-hidden extra resource with a nonzero total', () => {
     const system = makeSystem({

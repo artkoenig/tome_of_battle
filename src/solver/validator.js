@@ -25,6 +25,7 @@
  *  - rulesEvaluator:    Profile gruppieren, Rüstungs-/Rettungswürfe herleiten
  *  - selectionFactory:  Auswahl-Knoten aus einer Katalog-Definition erzeugen
  *  - systemQuirks:      systemspezifische Eigenheiten nachschlagen
+ *  - categoryLimits:    wirksames Min/Max einer Kategorie für die Anzeige (quirk-bewusst)
  *  - constants:         Schlüsselwortlisten der Katalog-Heuristiken
  */
 export {
@@ -52,5 +53,6 @@ export { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } fr
 export { groupProfilesByType } from './rulesEvaluator.js';
 export { createSelectionFromDef } from './selectionFactory.js';
 export { isQuirkGeneralEntryId } from './systemQuirks.js';
+export { getCategoryDisplayLimits, getInheritedCategoryMaxConstraint } from './categoryLimits.js';
 export { UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from './constants.js';
 export { withAddedInstance, withoutInstance, withChangedOptionCount } from './subSelectionEditing.js';

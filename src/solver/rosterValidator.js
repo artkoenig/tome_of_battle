@@ -10,7 +10,7 @@ import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, resolveCate
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from './armyWideSelectors.js';
-import { getInheritedCategoryMaxSource } from './systemQuirks.js';
+import { getInheritedCategoryMaxConstraint } from './categoryLimits.js';
 import { ValidationMessageKey } from './validationMessages.js';
 import '../types.js';
 
@@ -181,9 +181,6 @@ function checkRosterCostLimit(roster, system, errors) {
     });
   }
 }
-
-// Synthetische ID des per System-Quirk von einer anderen Kategorie geerbten max-Constraints.
-const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
 
 /**
  * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
@@ -450,19 +447,13 @@ function collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId
   const constraints = [...(catLink.constraints || [])];
 
   // System-Quirk: Kategorie erbt einen fehlenden max-Constraint von einer anderen Kategorie.
-  const inheritFromCatId = getInheritedCategoryMaxSource(system, targetCatId);
-  if (inheritFromCatId && !constraints.some(c => c.type === ConstraintKind.MAX)) {
-    const sourceCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === inheritFromCatId);
-    const sourceMaxCon = sourceCatLink?.constraints?.find(c => c.type === ConstraintKind.MAX);
-    if (sourceMaxCon) {
-      constraints.push({
-        ...sourceMaxCon,
-        id: QUIRK_INHERITED_MAX_ID,
-        type: ConstraintKind.MAX,
-        isFallback: true,
-        modifiers: getEffectiveModifiers(sourceCatLink)
-      });
-    }
+  // Dieselbe Quelle (`categoryLimits`) beliefert die Kategorie-Anzeige, sodass Validierung
+  // und Oberfläche denselben geerbten max verwenden (ADR 0003 §2, ADR 0029).
+  const inherited = getInheritedCategoryMaxConstraint({
+    system, forceDef, targetCatId, ownConstraints: constraints
+  });
+  if (inherited) {
+    constraints.push({ ...inherited.constraint, isFallback: true, modifiers: inherited.modifiers });
   }
   return constraints;
 }
