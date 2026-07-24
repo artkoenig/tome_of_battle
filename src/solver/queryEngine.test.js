@@ -3,8 +3,8 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { computeRosterCounts } from './rosterCounter.js';
 import { findForceContainingSelection, findSelectionInRoster } from './rosterTree.js';
 import {
-  createQueryContext, resolveScopeAnchor, measureOver, measureQuery,
-  createEntryInstanceMatcher, MeasureTarget
+  createQueryContext, resolveScopeAnchor, resolveGroupAnchor, resolveCategoryAnchor,
+  measureOver, measureQuery, createEntryInstanceMatcher, MeasureTarget
 } from './queryEngine.js';
 
 // Unit tests for the scope-agnostic counting kernel (ADR 0029). They exercise the
@@ -234,6 +234,65 @@ describe('measureOver REFERENCE — percent denominator over the same anchor', (
     const anchor = resolveScopeAnchor({ scope: 'roster', shared: false }, subjectFor(roster, heroSystem(), 's-hero').subject, subjectFor(roster, heroSystem(), 's-hero').ctx);
     const { subject, ctx } = subjectFor(roster, heroSystem(), 's-hero');
     expect(measureOver(anchor, { target: MeasureTarget.REFERENCE, field: 'selections', subject, ctx })).toBe(1);
+  });
+});
+
+describe('resolveGroupAnchor — a group frame counted and summed over the same kernel', () => {
+  // A group of two power stones (2 casting dice / 40 pts each) plus one already-matched staff.
+  const CASTING_DICE = 'cd';
+  const groupSystem = () => ({
+    id: 'sys',
+    costTypes: [{ id: POINTS, name: 'Points' }, { id: CASTING_DICE, name: 'Dice' }],
+    categoryEntries: [],
+    forceEntries: [{ id: FORCE_ENTRY_ID, name: 'Army', categoryLinks: [] }],
+    catalogues: [{ id: CATALOGUE_ID, selectionEntries: [
+      { id: 'stone', name: 'Stone', type: 'upgrade', costs: [{ typeId: POINTS, value: 40 }, { typeId: CASTING_DICE, value: 2 }] }
+    ] }]
+  });
+  const roster = makeRoster([makeForce('f1', [
+    sel({ id: 'wiz', entry: HERO_ENTRY_ID, selections: [
+      sel({ id: 's1', entry: 'stone', number: 2 }),
+      sel({ id: 's2', entry: 'stone' })
+    ] })
+  ])]);
+
+  const groupContext = () => {
+    const system = groupSystem();
+    const counts = computeRosterCounts(roster, system);
+    const ctx = createQueryContext({ roster, system, counts, forceCatalogueId: CATALOGUE_ID });
+    const owner = findSelectionInRoster(roster, 'wiz');
+    const subject = { selection: owner, parentSelection: owner, force: roster.forces[0], entry: null, entryId: 'wiz' };
+    return { ctx, subject, members: owner.selections };
+  };
+
+  test('INSTANCES sums the number of every matched member', () => {
+    const { ctx, subject, members } = groupContext();
+    expect(measureOver(resolveGroupAnchor(members), { target: MeasureTarget.INSTANCES, subject, ctx })).toBe(3);
+  });
+
+  test('REFERENCE over a cost field sums that cost across the matched members', () => {
+    const { ctx, subject, members } = groupContext();
+    // 2 stones + 1 stone = 3 stones × 2 casting dice = 6.
+    expect(measureOver(resolveGroupAnchor(members), { target: MeasureTarget.REFERENCE, field: CASTING_DICE, subject, ctx })).toBe(6);
+  });
+
+  test('an empty group measures zero', () => {
+    const { ctx, subject } = groupContext();
+    expect(measureOver(resolveGroupAnchor([]), { target: MeasureTarget.INSTANCES, subject, ctx })).toBe(0);
+  });
+});
+
+describe('resolveCategoryAnchor — a force category counted over the precomputed bucket', () => {
+  const CATEGORY_ID = 'cat-hero';
+
+  test('INSTANCES reads the category tally of the force', () => {
+    const anchor = resolveCategoryAnchor(CATEGORY_ID, { [CATEGORY_ID]: 3 });
+    expect(measureOver(anchor, { target: MeasureTarget.INSTANCES, subject: {}, ctx: {} })).toBe(3);
+  });
+
+  test('an unoccupied category is a true zero, not a single-instance fallback', () => {
+    const anchor = resolveCategoryAnchor(CATEGORY_ID, {});
+    expect(measureOver(anchor, { target: MeasureTarget.INSTANCES, subject: {}, ctx: {} })).toBe(0);
   });
 });
 

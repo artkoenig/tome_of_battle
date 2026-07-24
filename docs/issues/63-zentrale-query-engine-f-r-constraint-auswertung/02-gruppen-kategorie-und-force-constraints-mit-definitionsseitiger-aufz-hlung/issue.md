@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01]
 
@@ -21,3 +21,4 @@ spec-konform geprüft, und eine fehlende Pflichteinheit erzeugt einen Verstoß.
 - [ ] Gruppen-, Kategorie- und Force-Verstöße tragen ihre Ursache(n) nach ADR 0027 wie die Entry-Grenzen aus Slice 01.
 
 ## Comments
+- Gruppen-, Force-Kategorie- und Pflicht-Grenzen (force/roster-min, Kategorie-min) zaehlen jetzt ueber den zentralen Query-Kern (ADR 0029): neue GROUP- und CATEGORY-Anker in queryEngine.js, und rosterValidator.js routet Gruppen-Zaehler/-Kosten/-Prozentnenner, Kategorie-Cap und die definitionsseitigen Pflicht-Selektoren durch measureOver statt eigener Scope-Logik. Verhalten und Ursachen unveraendert; Prozent-Gruppengrenze misst Nenner nun ueber denselben Kern. Voller Suite gruen (1515 vitest + E2E).

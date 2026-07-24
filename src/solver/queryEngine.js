@@ -46,12 +46,15 @@ import '../types.js';
 
 /**
  * @typedef {Object} QuerySubject Der an eine konkrete Instanz gebundene Rahmen, in dem
- *   die Query ausgewertet wird — das *was zählt für wen*.
- * @property {import('../types.js').Selection} selection  die tragende Auswahl.
+ *   die Query ausgewertet wird — das *was zählt für wen*. Bei einem über einen
+ *   vorberechneten Zähl-Eimer aufgelösten Rahmen (Kategorie-Anker, definitionsseitige
+ *   Pflicht-Grenze ohne vorhandene Instanz) gibt es keine tragende Auswahl und keinen
+ *   aufgelösten Eintrag; die Instanz-bezogenen Felder sind dann `null`.
+ * @property {import('../types.js').Selection|null} selection  die tragende Auswahl.
  * @property {import('../types.js').Selection|null} parentSelection  ihr Elternknoten (für `parent`).
  * @property {Object|null} force                          das Kontingent der Auswahl.
- * @property {Object} entry                               die aufgelöste Katalogdefinition der Auswahl.
- * @property {string} entryId                             die Link-/Eintrags-ID der Auswahl.
+ * @property {Object|null} entry                          die aufgelöste Katalogdefinition der Auswahl.
+ * @property {string|null} entryId                        die Link-/Eintrags-ID der Auswahl.
  */
 
 /** Bündelt den L1-Auswertungs-Kontext als benannten Vertrag (ADR 0029). */
@@ -76,8 +79,39 @@ const AnchorKind = Object.freeze({
   SUBTREE: 'subtree',
   CONTAINER: 'container',
   AGGREGATE: 'aggregate',
-  ENTRY_BUCKET: 'entryBucket'
+  ENTRY_BUCKET: 'entryBucket',
+  GROUP: 'group',
+  CATEGORY: 'category'
 });
+
+/** Eine leere Selektions-Liste; die geteilte Instanz hält Identitätsvergleiche stabil. */
+const NO_SELECTIONS = Object.freeze([]);
+
+/**
+ * Baut einen **Gruppen-Anker** aus den bereits ausgewählten Mitglieds-Selektionen einer
+ * SelectionEntryGroup. Die *Zugehörigkeit* zu einer Gruppe (welche Katalog-Ids ihr angehören,
+ * über Aliasse und Links hinweg) ist definitionsseitige Katalog-Logik und wird vom Aufrufer
+ * aufgelöst; der Kern zählt/summiert nur noch über die übergebene, flache Trefferliste. So misst
+ * eine Gruppengrenze — Anzahl wie Kosten — über **dieselbe** Stelle wie jeder andere Bezugsrahmen.
+ * @param {import('../types.js').Selection[]} matchedSelections  die der Gruppe zugehörigen Selektionen (flach).
+ * @returns {Object} der Gruppen-Anker.
+ */
+export function resolveGroupAnchor(matchedSelections) {
+  return { kind: AnchorKind.GROUP, matchedSelections: matchedSelections ?? NO_SELECTIONS };
+}
+
+/**
+ * Baut einen **Kategorie-Anker** über den vorberechneten Kategorie-Zähl-Eimer eines Kontingents.
+ * Anders als der Eintrags-Eimer fällt eine leere Kategorie auf **0** zurück (nicht auf eine
+ * Einzelinstanz), damit eine Kategorie-Obergrenze ebenso wie eine Kategorie-Pflicht (`min`) über
+ * genau diesen Anker geprüft werden kann — auch dann, wenn die Kategorie gar nicht belegt ist.
+ * @param {string} categoryId               die Ziel-Kategorie.
+ * @param {Object} forceCategoryCounts      die Kategorie-Zählungen des Kontingents.
+ * @returns {Object} der Kategorie-Anker.
+ */
+export function resolveCategoryAnchor(categoryId, forceCategoryCounts) {
+  return { kind: AnchorKind.CATEGORY, categoryId, forceCategoryCounts: forceCategoryCounts ?? {} };
+}
 
 /** Eine Auswahl ohne ausdrückliche `number` steht für genau eine Instanz. */
 const SINGLE_INSTANCE_COUNT = 1;
@@ -202,6 +236,7 @@ function referenceSelectionsOf(anchor, subject) {
     case AnchorKind.CONTAINER:
     case AnchorKind.ENTRY_BUCKET: return anchor.containerSelections;
     case AnchorKind.AGGREGATE: return anchor.nodes;
+    case AnchorKind.GROUP: return anchor.matchedSelections;
     default: return [];
   }
 }
@@ -228,20 +263,27 @@ function measureReference(anchor, { field, includeChildSelections, subject, ctx 
 
 /** Die Anzahl der Instanzen des Subjekt-Eintrags (Zähler) über den Anker. */
 function measureInstances(anchor, { includeChildSelections, subject, ctx }) {
-  const matcher = createEntryInstanceMatcher(subject, ctx);
   const instanceCount = subject.selection?.number || SINGLE_INSTANCE_COUNT;
 
   switch (anchor.kind) {
     case AnchorKind.SUBTREE:
-      return countSelectionsInSubtree(subject.selection, { includeChildSelections, predicate: matcher });
+      return countSelectionsInSubtree(subject.selection, { includeChildSelections, predicate: createEntryInstanceMatcher(subject, ctx) });
     case AnchorKind.CONTAINER:
-      return countSelections(anchor.containerSelections, { includeChildSelections, predicate: matcher });
+      return countSelections(anchor.containerSelections, { includeChildSelections, predicate: createEntryInstanceMatcher(subject, ctx) });
     case AnchorKind.AGGREGATE:
       return countEntryInstancesInBucket(anchor.counts, subject);
     case AnchorKind.ENTRY_BUCKET:
       return anchor.selectionCounts[anchor.scopeId] ||
         anchor.forceCategoryCounts[anchor.scopeId] ||
         instanceCount;
+    case AnchorKind.GROUP:
+      // Die Trefferliste ist bereits flach aufgelöst; ihre eigene Anzahl ist die
+      // Summe der `number` je Treffer, ohne erneutes Absteigen in Kinder.
+      return countSelections(anchor.matchedSelections, {});
+    case AnchorKind.CATEGORY:
+      // Eine leere Kategorie ist echte 0 (keine Einzelinstanz-Ersatzannahme), sodass
+      // dieselbe Messung eine Kategorie-Pflicht (`min`) wie eine -Obergrenze trägt.
+      return anchor.forceCategoryCounts[anchor.categoryId] || 0;
     default:
       return instanceCount;
   }

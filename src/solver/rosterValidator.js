@@ -2,11 +2,11 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, evaluateConstraintWithCauses, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
 import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
-import { isPercentConstraint, isCostField, resolveConstraintThreshold, applyPercentage } from './constraintScope.js';
+import { isPercentConstraint, isCostField, applyPercentage } from './constraintScope.js';
 import {
   ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField
 } from './battlescribeConstants.js';
-import { createQueryContext, resolveScopeAnchor, measureOver, MeasureTarget } from './queryEngine.js';
+import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, resolveCategoryAnchor, measureOver, MeasureTarget } from './queryEngine.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from './armyWideSelectors.js';
@@ -189,8 +189,9 @@ const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
  * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
  * @param {ValidationContext} context
  */
-function checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors }) {
+function checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors, forceCatalogueId }) {
   const { selectionCounts, categoryCounts } = counts;
+  const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
 
   forceDef.categoryLinks?.forEach(catLink => {
     const targetCatId = catLink.targetId;
@@ -202,7 +203,17 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
 
     const catDef = system.categoryEntries?.find(ce => ce.id === targetCatId);
     const catName = catDef ? catDef.name : catLink.name;
-    const count = forceCategoryCounts[targetCatId] || 0;
+    // Die Kategorie-Belegung läuft über den zentralen Zähl-Kern (ADR 0029): ein
+    // Kategorie-Anker über den vorberechneten Zähl-Eimer des Kontingents. Eine leere
+    // Kategorie ist echte 0, sodass derselbe Wert Ober- wie Pflichtgrenze trägt.
+    const count = measureOver(
+      resolveCategoryAnchor(targetCatId, forceCategoryCounts),
+      {
+        target: MeasureTarget.INSTANCES,
+        subject: { selection: null, parentSelection: null, force, entry: null, entryId: null },
+        ctx: queryCtx
+      }
+    );
     const ctx = { roster, selectionCounts, forceCategoryCounts, force, system };
 
     // 1. Constraints am categoryLink (samt Quirk-geerbtem max), Modifier vom Link.
@@ -239,9 +250,9 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
  * @param {ValidationContext} context
  */
 function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts, errors, forceCatalogueId }) {
-  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
+  const { selectionCounts, categoryCounts } = counts;
   const forceCategoryCounts = categoryCounts[force.id] || {};
-  const forceCounts = forceSelectionCounts[force.id] || {};
+  const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
 
   collectForceScopedMinSelectors(system, forceCatalogueId).forEach(({ entry, minConstraint }) => {
     if (isSelectionEntryHidden(entry, {
@@ -252,9 +263,13 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
     const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
     if (minValue <= 0) return;
 
-    const currentCount = Math.max(
-      forceCounts[entry.id] || 0,
-      entry.targetId ? forceCounts[entry.targetId] || 0 : 0
+    // Die kontingentweite Belegung des Pflicht-Eintrags läuft über den zentralen Zähl-Kern
+    // (ADR 0029): ein `force`-Anker über den vorberechneten Zähl-Eimer. Fehlt der Eintrag,
+    // ist die Belegung 0 und die `min`-Pflicht schlägt an — der geforderte „fehlt ganz"-Fall.
+    const mandatorySubject = { selection: null, parentSelection: null, force, entry, entryId: entry.id };
+    const currentCount = measureOver(
+      resolveScopeAnchor({ scope: ConstraintScope.FORCE }, mandatorySubject, queryCtx),
+      { target: MeasureTarget.INSTANCES, subject: mandatorySubject, ctx: queryCtx }
     );
     if (currentCount === 0) {
       pushViolation(errors, {
@@ -296,6 +311,7 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
 
   roster.forces.forEach(force => {
     const catalogueId = force.catalogueId || roster.catalogueId;
+    const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId: catalogueId });
 
     collectRosterScopedMinSelectors(system, catalogueId).forEach(({ entry, minConstraint }) => {
       const selectorKey = `${catalogueId}::${entry.id}`;
@@ -311,9 +327,13 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
       const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
       if (minValue <= 0) return;
 
-      const armyWideCount = Math.max(
-        selectionCounts[entry.id] || 0,
-        entry.targetId ? selectionCounts[entry.targetId] || 0 : 0
+      // Roster-weite Belegung über den zentralen Zähl-Kern (ADR 0029): ein `roster`-Anker
+      // über die roster-weiten Zähl-Eimer. Fehlt der Eintrag im ganzen Roster, ist die
+      // Belegung 0 und die armeeweite `min`-Pflicht schlägt an.
+      const mandatorySubject = { selection: null, parentSelection: null, force, entry, entryId: entry.id };
+      const armyWideCount = measureOver(
+        resolveScopeAnchor({ scope: ConstraintScope.ROSTER }, mandatorySubject, queryCtx),
+        { target: MeasureTarget.INSTANCES, subject: mandatorySubject, ctx: queryCtx }
       );
       if (armyWideCount === 0) {
         pushViolation(errors, {
@@ -685,6 +705,13 @@ function checkGroupConstraints({ selection, entry }, context) {
   const { selectionCounts, categoryCounts } = counts;
   const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
 
+  const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
+  // Der Bezugsrahmen einer Gruppengrenze hängt an der Auswahl, die die Gruppe besitzt
+  // (`selection`): ihre Kinder bilden den Gruppentopf, und dieselbe Auswahl ist der
+  // `parent` einer scope-bezogenen Prozent-Referenz. Deshalb `parentSelection: selection`.
+  const groupEntryId = selection.entryLinkId || selection.selectionEntryId;
+  const groupSubject = { selection, parentSelection: selection, force, entry, entryId: groupEntryId };
+
   const groups = [];
   const collectGroups = (def) => {
     if (!def) return;
@@ -769,8 +796,12 @@ function checkGroupConstraints({ selection, entry }, context) {
         if (!belongsToScope) return;
       }
 
+      // Die Gruppen-Belegung läuft über den zentralen Zähl-Kern (ADR 0029): ein Gruppen-Anker
+      // über die aufgelöste, flache Trefferliste zählt (Anzahl) bzw. summiert (Kosten) sie an
+      // **einer** Stelle — dieselbe, die jeder andere Bezugsrahmen nutzt.
       const matchingSelections = collectGroupMatches(selection.selections, con.includeChildSelections);
-      const totalCount = matchingSelections.reduce((sum, s) => sum + (s.number || 1), 0);
+      const groupAnchor = resolveGroupAnchor(matchingSelections);
+      const totalCount = measureOver(groupAnchor, { target: MeasureTarget.INSTANCES, subject: groupSubject, ctx: queryCtx });
 
       const measuresCost = isCostField(con.field, system, roster);
       // Summiert wird die Kostenart, die die Constraint selbst nennt (`con.field`),
@@ -779,13 +810,14 @@ function checkGroupConstraints({ selection, entry }, context) {
       // `roster.costLimitType` zu summieren vergliche Punkte gegen eine Würfelgrenze
       // (ADR-0003 §3a).
       const totalCost = measuresCost
-        ? matchingSelections.reduce((sum, s) => sum + getSelectionTotalCost(s, con.field, TOP_LEVEL_PARENT_COUNT, {
-            system, roster, currentCatalogueId: forceCatalogueId, parentSelection: selection, counts
-          }), 0)
+        ? measureOver(groupAnchor, { target: MeasureTarget.REFERENCE, field: con.field, subject: groupSubject, ctx: queryCtx })
         : 0;
 
       if (isPercentConstraint(con)) {
-        checkGroupPercentConstraint({ con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection }, context);
+        checkGroupPercentConstraint(
+          { con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection },
+          { context, queryCtx, subject: groupSubject }
+        );
         return;
       }
 
@@ -842,18 +874,32 @@ function checkGroupConstraints({ selection, entry }, context) {
 /**
  * Prüft eine Prozent-Constraint (percentValue) einer SelectionEntryGroup: die
  * Gruppensumme (Kosten oder Anzahl) gegen `value%` der Bezugsgröße im Scope.
+ *
+ * Der Nenner läuft durch **denselben** Zähl-Kern wie jede andere Referenz
+ * ({@link measureOver} mit `REFERENCE` über den Scope-Anker der Constraint, ADR 0029),
+ * statt über einen eigenen Referenz-Resolver. Der Scope-Anker wird bewusst
+ * `shared`-agnostisch gebildet — die Bezugsgröße einer Gruppe ist ihr Scope-Rahmen,
+ * nicht eine einzelne tragende Instanz.
  */
-function checkGroupPercentConstraint({ con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection }, context) {
-  const { roster, system, force, counts, errors, forceCatalogueId } = context;
-  const subject = measuresCost ? totalCost : totalCount;
-  const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection: selection, forceCatalogueId, counts });
+function checkGroupPercentConstraint({ con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection }, { context, queryCtx, subject }) {
+  const { system, errors } = context;
+  const numerator = measuresCost ? totalCost : totalCount;
+  const scopeAnchor = resolveScopeAnchor({ scope: con.scope, includeChildForces: con.includeChildForces }, subject, queryCtx);
+  const reference = measureOver(scopeAnchor, {
+    target: MeasureTarget.REFERENCE,
+    field: con.field,
+    includeChildSelections: con.includeChildSelections,
+    subject,
+    ctx: queryCtx
+  });
+  const threshold = applyPercentage(finalValue, reference);
   // `totalCost` wird über `con.field` summiert (siehe checkGroupConstraints) — die
-  // Bezeichnung muss dieselbe Kostenart benennen. `getScopeReferenceTotal` bildet
-  // die Bezugsgröße derselben Kostenart, Zähler und Nenner passen also zusammen.
-  // Ohne Kostenbezug ist die Bezugsgröße die Auswahlanzahl (an der Oberfläche übersetzt).
+  // Bezeichnung muss dieselbe Kostenart benennen. Zähler und Nenner teilen dieselbe
+  // Kostenart, passen also zusammen. Ohne Kostenbezug ist die Bezugsgröße die
+  // Auswahlanzahl (an der Oberfläche übersetzt).
   const unitLabel = measuresCost ? resolveCostTypeLabel(system, con.field) : undefined;
 
-  if (con.type === ConstraintKind.MIN && subject < threshold) {
+  if (con.type === ConstraintKind.MIN && numerator < threshold) {
     pushViolation(errors, {
       type: 'group-percent-min',
       selectionId: selection.id,
@@ -863,7 +909,7 @@ function checkGroupPercentConstraint({ con, finalValue, causes, totalCount, tota
       ...withCauses(causes)
     });
   }
-  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
+  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && numerator > threshold) {
     pushViolation(errors, {
       type: 'group-percent-max',
       selectionId: selection.id,
