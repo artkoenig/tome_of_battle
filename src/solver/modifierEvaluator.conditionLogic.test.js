@@ -71,6 +71,37 @@ describe('evaluateCondition — Alias-Vergleichstypen', () => {
   });
 });
 
+describe('evaluateCondition — tolerante Zähltabellen (Render-Pfad)', () => {
+  // Regression: Die Hidden-Flag-Auswertung (entryVisibility) reicht der Bedingung bewusst
+  // `forceCategoryCounts: null` durch — „keine Kategorie-Zähler vorhanden". Der aggregierte
+  // Zweig indizierte diese Tabelle direkt und stürzte beim Roster-Render mit „Cannot read
+  // properties of null" ab (nur vom Puppeteer-E2E erkannt). Eine fehlende Tabelle zählt als 0.
+  const UNIT_ID = 'a1bc-3ae3-2a5e-fdb3';
+
+  const conditionOnUnit = { field: UNIT_ID, type: 'greaterThan', value: 0 };
+
+  test('eine aggregierte Bedingung mit forceCategoryCounts=null stürzt nicht ab', () => {
+    const ctx = {
+      roster: EMPTY_ROSTER(),
+      selectionCounts: { [UNIT_ID]: 2 },
+      forceCategoryCounts: null
+    };
+
+    expect(() => evaluateCondition(conditionOnUnit, ctx)).not.toThrow();
+    expect(evaluateCondition(conditionOnUnit, ctx)).toBe(true);
+  });
+
+  test('ohne Treffer in selectionCounts fällt sie bei null-Kategorietabelle auf 0 zurück', () => {
+    const ctx = {
+      roster: EMPTY_ROSTER(),
+      selectionCounts: {},
+      forceCategoryCounts: null
+    };
+
+    expect(evaluateCondition(conditionOnUnit, ctx)).toBe(false);
+  });
+});
+
 describe('evaluateCondition — instanceOf und seine Negation', () => {
   // `instanceOf` prüft, ob die Auswahl in einem Roster des genannten Kontingents steht.
   const HORDE_FORCE_ENTRY_ID = 'fe-horde';

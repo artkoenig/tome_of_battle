@@ -4,7 +4,7 @@ import { computeRosterCounts } from './rosterCounter.js';
 import { findForceContainingSelection, findSelectionInRoster } from './rosterTree.js';
 import {
   createQueryContext, resolveScopeAnchor, resolveGroupAnchor, resolveCategoryAnchor,
-  measureOver, measureQuery, createEntryInstanceMatcher, MeasureTarget
+  resolveCountBucketAnchor, measureOver, measureQuery, createEntryInstanceMatcher, MeasureTarget
 } from './queryEngine.js';
 
 // Unit tests for the scope-agnostic counting kernel (ADR 0029). They exercise the
@@ -293,6 +293,35 @@ describe('resolveCategoryAnchor — a force category counted over the precompute
   test('an unoccupied category is a true zero, not a single-instance fallback', () => {
     const anchor = resolveCategoryAnchor(CATEGORY_ID, {});
     expect(measureOver(anchor, { target: MeasureTarget.INSTANCES, subject: {}, ctx: {} })).toBe(0);
+  });
+});
+
+describe('resolveCountBucketAnchor — aggregate tally with tolerant tables', () => {
+  const TARGET_ID = 'a1bc-3ae3-2a5e-fdb3';
+
+  test('INSTANCES reads the roster-wide selection tally first', () => {
+    const anchor = resolveCountBucketAnchor(TARGET_ID, { selectionCounts: { [TARGET_ID]: 4 }, forceCategoryCounts: {} });
+    expect(measureOver(anchor, { target: MeasureTarget.INSTANCES })).toBe(4);
+  });
+
+  test('INSTANCES falls back to the force category tally, then to zero', () => {
+    const viaCategory = resolveCountBucketAnchor(TARGET_ID, { selectionCounts: {}, forceCategoryCounts: { [TARGET_ID]: 2 } });
+    expect(measureOver(viaCategory, { target: MeasureTarget.INSTANCES })).toBe(2);
+
+    const empty = resolveCountBucketAnchor(TARGET_ID, { selectionCounts: {}, forceCategoryCounts: {} });
+    expect(measureOver(empty, { target: MeasureTarget.INSTANCES })).toBe(0);
+  });
+
+  // Regression: the hidden-flag render path passes `forceCategoryCounts: null` to say "no
+  // category tally available". Indexing that null map threw during roster render (a crash
+  // only the puppeteer E2E caught). A missing table must count as zero, not error.
+  test('a null table is normalised to an empty one instead of throwing', () => {
+    const nullCategory = resolveCountBucketAnchor(TARGET_ID, { selectionCounts: { [TARGET_ID]: 3 }, forceCategoryCounts: null });
+    expect(() => measureOver(nullCategory, { target: MeasureTarget.INSTANCES })).not.toThrow();
+    expect(measureOver(nullCategory, { target: MeasureTarget.INSTANCES })).toBe(3);
+
+    const bothNull = resolveCountBucketAnchor(TARGET_ID, { selectionCounts: null, forceCategoryCounts: null });
+    expect(measureOver(bothNull, { target: MeasureTarget.INSTANCES })).toBe(0);
   });
 });
 

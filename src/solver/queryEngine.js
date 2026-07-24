@@ -5,6 +5,7 @@ import {
 import { getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { isCostField } from './constraintScope.js';
 import { ConstraintScope, isEntryScope, isSharedQuery } from './battlescribeConstants.js';
+import { SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { SELECTIONS_FIELD } from '../parser/xmlParser.js';
 import '../types.js';
 
@@ -81,8 +82,16 @@ const AnchorKind = Object.freeze({
   AGGREGATE: 'aggregate',
   ENTRY_BUCKET: 'entryBucket',
   GROUP: 'group',
-  CATEGORY: 'category'
+  CATEGORY: 'category',
+  COUNT_BUCKET: 'countBucket'
 });
+
+/**
+ * True, wenn ein aufgelöster Eintrag über einen seiner categoryLinks zur Kategorie `categoryId`
+ * gehört. Geteilte Katalog-Logik der Ziel-Prüfung (siehe {@link createEntryInstanceMatcher}).
+ */
+export const entryHasCategoryLink = (resolvedEntry, categoryId) =>
+  !!resolvedEntry?.categoryLinks?.some(cl => cl.targetId === categoryId || cl.id === categoryId);
 
 /** Eine leere Selektions-Liste; die geteilte Instanz hält Identitätsvergleiche stabil. */
 const NO_SELECTIONS = Object.freeze([]);
@@ -117,25 +126,84 @@ export function resolveCategoryAnchor(categoryId, forceCategoryCounts) {
 const SINGLE_INSTANCE_COUNT = 1;
 
 /**
- * Prädikat „diese Auswahl ist eine Instanz des Subjekt-Eintrags". Verglichen wird
- * über die aufgelöste Ziel-ID, nicht die Link-ID: verschiedene Links können auf
- * dasselbe Ziel zeigen (ADR 0003 §4). Der **einzige** Ziel-Matcher der Engine.
- * @param {QuerySubject} subject
- * @param {QueryContext} ctx
+ * Prädikat „diese Auswahl ist eine Instanz des Ziels". Der **einzige** Ziel-Matcher der
+ * Engine: er trägt sowohl die Grenzen-Zählung (Ziel = der Eintrag, an dem die Grenze hängt,
+ * per {@link QuerySubject}) als auch die Condition-/Repeat-Zählung (Ziel = `childId`/`field`,
+ * das eine Eintrags-ID, eine Kategorie oder das Schlüsselwort „model" benennen kann).
+ *
+ * Verglichen wird über die aufgelöste **Ziel-ID**, nicht die Verweis-ID: verschiedene Links
+ * können auf dasselbe Ziel zeigen (ADR 0003 §4). Zwei Ausprägungen, die BSData zwischen den
+ * beiden Zählungen unterscheidet, sind ausdrückliche Optionen statt zweier Matcher-Kopien:
+ * `matchCategoryMembership` zählt zusätzlich eine Auswahl, deren Eintrag nur über einen
+ * categoryLink zum Ziel gehört; `matchUnitsAsModels` lässt das Schlüsselwort „model" auch
+ * `unit`-Einträge abdecken.
+ *
+ * @param {{entryId?: string, entry?: Object|null, force?: Object|null, catalogueId?: string|null}} target
+ *   die Ziel-Beschreibung: die zu treffende ID, optional ihre bereits aufgelöste Definition
+ *   (sonst wird sie aufgelöst) und der Katalog, gegen den Kandidaten auflösen. Ein
+ *   {@link QuerySubject} erfüllt diese Form (`entryId`/`entry`/`force`).
+ * @param {{system?: Object}} ctx  nur das Spielsystem wird gelesen (Kandidaten-Auflösung).
+ * @param {{matchCategoryMembership?: boolean, matchUnitsAsModels?: boolean}} [options]
  * @returns {(candidate: import('../types.js').Selection) => boolean}
  */
-export function createEntryInstanceMatcher(subject, ctx) {
-  const { entry, entryId, force } = subject;
+export function createEntryInstanceMatcher(target, ctx, { matchCategoryMembership = false, matchUnitsAsModels = false } = {}) {
+  const { entryId, force } = target;
   const { system } = ctx;
-  const catalogueId = force ? force.catalogueId : null;
+  const catalogueId = target.catalogueId ?? (force ? force.catalogueId : null);
+  const resolveInCatalogue = (id) => resolveEntry(system, findEntryInSystem(system, id, catalogueId), catalogueId);
+  const targetEntry = target.entry ?? (system ? resolveInCatalogue(entryId) : null);
+  const targetCanonicalId = targetEntry ? (targetEntry.targetId || targetEntry.id) : entryId;
+  const modelLikeTypes = matchUnitsAsModels
+    ? [SelectionEntryKind.MODEL, SelectionEntryKind.UNIT]
+    : [SelectionEntryKind.MODEL];
+
   return (candidate) => {
     const candidateId = candidate.entryLinkId || candidate.selectionEntryId;
     if (candidateId === entryId) return true;
-    if (!entry?.targetId) return false;
-    if (candidateId === entry.targetId) return true;
-    const candidateDef = findEntryInSystem(system, candidateId, catalogueId);
-    const resolvedCandidate = resolveEntry(system, candidateDef, catalogueId);
-    return resolvedCandidate?.targetId === entry.targetId;
+    if (!system) return false;
+
+    const resolvedCandidate = resolveInCatalogue(candidateId);
+    if (!resolvedCandidate) return false;
+    if (resolvedCandidate.targetId === entryId) return true;
+
+    const candidateCanonicalId = resolvedCandidate.targetId || resolvedCandidate.id;
+    if (candidateCanonicalId === targetCanonicalId) return true;
+    if (matchCategoryMembership && entryHasCategoryLink(resolvedCandidate, entryId)) return true;
+    return entryId === SelectionEntryKind.MODEL && modelLikeTypes.includes(resolvedCandidate.type);
+  };
+}
+
+/** Baut einen **Teilbaum-Anker** über die eine Instanz, an der eine nicht geteilte Query hängt. */
+export function resolveSubtreeAnchor(selection) {
+  return { kind: AnchorKind.SUBTREE, selection };
+}
+
+/** Baut einen **Container-Anker** über die direkten Kinder eines Eltern-Containers (Scope `parent`). */
+export function resolveContainerAnchor(containerSelections) {
+  return { kind: AnchorKind.CONTAINER, containerSelections: containerSelections ?? NO_SELECTIONS };
+}
+
+/**
+ * Baut einen **Zähl-Eimer-Anker** über die vorberechneten Zähltabellen: die Anzahl greift auf
+ * `selectionCounts[targetId]` zu, fällt auf die Kategorie-Zählung `forceCategoryCounts[targetId]`
+ * und zuletzt auf 0 zurück. `selectionCounts` ist roster-weit über alle Kontingente aggregiert
+ * (computeRosterCounts), sodass eine kategoriezählende Bedingung die **aggregierte** Kategorie-Zahl
+ * liest, nicht die eines einzelnen Kontingents (ADR 0029).
+ *
+ * Beide Tabellen werden gegen `null`/`undefined` auf eine leere Tabelle normalisiert: manche
+ * Aufrufer (z. B. die Hidden-Flag-Auswertung in `entryVisibility`) reichen bewusst
+ * `forceCategoryCounts: null` durch, um „keine Kategorie-Zähler vorhanden" auszudrücken — eine
+ * fehlende Tabelle zählt als 0, nicht als Fehler.
+ * @param {string} targetId              die Ziel-ID (Eintrag oder Kategorie), deren Zähler gelesen wird.
+ * @param {{selectionCounts?: Object|null, forceCategoryCounts?: Object|null}} tables
+ * @returns {Object} der Zähl-Eimer-Anker.
+ */
+export function resolveCountBucketAnchor(targetId, { selectionCounts, forceCategoryCounts } = {}) {
+  return {
+    kind: AnchorKind.COUNT_BUCKET,
+    targetId,
+    selectionCounts: selectionCounts ?? {},
+    forceCategoryCounts: forceCategoryCounts ?? {}
   };
 }
 
@@ -169,7 +237,7 @@ export function resolveScopeAnchor(query, subject, ctx) {
   const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
 
   if (!isSharedQuery(query)) {
-    return { kind: AnchorKind.SUBTREE, selection };
+    return resolveSubtreeAnchor(selection);
   }
 
   const scope = query.scope;
@@ -188,7 +256,7 @@ export function resolveScopeAnchor(query, subject, ctx) {
 
   if (scope === ConstraintScope.PARENT) {
     const container = parentSelection ?? force;
-    return { kind: AnchorKind.CONTAINER, containerSelections: childSelectionsOf(container) };
+    return resolveContainerAnchor(childSelectionsOf(container));
   }
 
   if (scope === ConstraintScope.ROSTER) {
@@ -215,7 +283,7 @@ export function resolveScopeAnchor(query, subject, ctx) {
     };
   }
 
-  return { kind: AnchorKind.SUBTREE, selection };
+  return resolveSubtreeAnchor(selection);
 }
 
 /** Summiert die Kosten der Kostenart `field` über eine Selektions-Liste. */
@@ -261,15 +329,21 @@ function measureReference(anchor, { field, includeChildSelections, subject, ctx 
   return countSelections(referenceSelectionsOf(anchor, subject), { includeChildSelections });
 }
 
-/** Die Anzahl der Instanzen des Subjekt-Eintrags (Zähler) über den Anker. */
-function measureInstances(anchor, { includeChildSelections, subject, ctx }) {
+/**
+ * Die Anzahl der Instanzen des Ziels (Zähler) über den Anker. Zählt ein Anker über einen
+ * Ziel-Matcher (Teilbaum/Container), so verwendet er den ausdrücklich übergebenen `matcher`
+ * — den eine Condition/ein Repeat mit ihren eigenen Optionen baut — und fällt sonst auf den
+ * aus dem Subjekt abgeleiteten Grenzen-Matcher zurück.
+ */
+function measureInstances(anchor, { includeChildSelections, matcher, subject, ctx }) {
   const instanceCount = subject.selection?.number || SINGLE_INSTANCE_COUNT;
+  const matchesTarget = matcher ?? createEntryInstanceMatcher(subject, ctx);
 
   switch (anchor.kind) {
     case AnchorKind.SUBTREE:
-      return countSelectionsInSubtree(subject.selection, { includeChildSelections, predicate: createEntryInstanceMatcher(subject, ctx) });
+      return countSelectionsInSubtree(subject.selection, { includeChildSelections, predicate: matchesTarget });
     case AnchorKind.CONTAINER:
-      return countSelections(anchor.containerSelections, { includeChildSelections, predicate: createEntryInstanceMatcher(subject, ctx) });
+      return countSelections(anchor.containerSelections, { includeChildSelections, predicate: matchesTarget });
     case AnchorKind.AGGREGATE:
       return countEntryInstancesInBucket(anchor.counts, subject);
     case AnchorKind.ENTRY_BUCKET:
@@ -284,6 +358,10 @@ function measureInstances(anchor, { includeChildSelections, subject, ctx }) {
       // Eine leere Kategorie ist echte 0 (keine Einzelinstanz-Ersatzannahme), sodass
       // dieselbe Messung eine Kategorie-Pflicht (`min`) wie eine -Obergrenze trägt.
       return anchor.forceCategoryCounts[anchor.categoryId] || 0;
+    case AnchorKind.COUNT_BUCKET:
+      // Aggregierter Zähler einer Condition/eines Repeats über die vorberechneten Tabellen;
+      // eine unbelegte Ziel-ID ist echte 0 (kein Einzelinstanz-Ersatz).
+      return anchor.selectionCounts[anchor.targetId] || anchor.forceCategoryCounts[anchor.targetId] || 0;
     default:
       return instanceCount;
   }
@@ -292,15 +370,15 @@ function measureInstances(anchor, { includeChildSelections, subject, ctx }) {
 /**
  * L2b — Zählt/summiert über einen Anker. Völlig scope-agnostisch: der Anker ist ein
  * Parameter, die Funktion kennt kein `roster`/`force`/`parent`.
- * @param {Object} anchor  Ergebnis von {@link resolveScopeAnchor}.
- * @param {{target: string, field?: string, includeChildSelections?: boolean, subject: QuerySubject, ctx: QueryContext}} spec
+ * @param {Object} anchor  Ergebnis von {@link resolveScopeAnchor} bzw. eines Anker-Konstruktors.
+ * @param {{target: string, field?: string, includeChildSelections?: boolean, matcher?: Function, subject?: Partial<QuerySubject>, ctx?: Partial<QueryContext>}} spec
  * @returns {number}
  */
-export function measureOver(anchor, { target, field = SELECTIONS_FIELD, includeChildSelections = false, subject, ctx }) {
+export function measureOver(anchor, { target, field = SELECTIONS_FIELD, includeChildSelections = false, matcher, subject = {}, ctx = {} }) {
   if (target === MeasureTarget.REFERENCE) {
     return measureReference(anchor, { field, includeChildSelections, subject, ctx });
   }
-  return measureInstances(anchor, { includeChildSelections, subject, ctx });
+  return measureInstances(anchor, { includeChildSelections, matcher, subject, ctx });
 }
 
 /**

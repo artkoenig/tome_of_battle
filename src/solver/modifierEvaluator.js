@@ -1,7 +1,11 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { childSelectionsOf, countSelections, countSelectionsInSubtree, someSelectionInSubtree } from './rosterTree.js';
+import { childSelectionsOf, someSelectionInSubtree } from './rosterTree.js';
 import { findForceEntryById } from './forceEntries.js';
 import { ConstraintScope, isEntryScope, isRosterLimitField, isSharedQuery } from './battlescribeConstants.js';
+import {
+  createEntryInstanceMatcher, entryHasCategoryLink, measureOver, MeasureTarget,
+  resolveContainerAnchor, resolveCountBucketAnchor, resolveSubtreeAnchor
+} from './queryEngine.js';
 import {
   ModifierKind, ConditionKind, ConstraintKind, AttributeName, SelectionEntryKind
 } from '../parser/schema/battlescribeSchema.generated.js';
@@ -9,10 +13,6 @@ import {
 // The BattleScribe modifiers that mutate category membership / the primary flag all
 // declare `field="category"`; their `value` is the target category id.
 const CATEGORY_MODIFIER_FIELD = 'category';
-
-// A resolved entry belongs to a category when one of its categoryLinks targets it.
-const entryHasCategoryLink = (resolvedEntry, categoryId) =>
-  !!resolvedEntry?.categoryLinks?.some(cl => cl.targetId === categoryId || cl.id === categoryId);
 
 // Static (catalogue-level) category membership of a single selection's own entry,
 // without looking at its children.
@@ -59,20 +59,6 @@ const SELF_SCOPE_CATEGORY_RESOLUTION_FLAG = '_resolvingSelfScopeCategory';
 export const resolveContextCatalogueId = (ctx = {}) =>
   ctx.parentCatalogueId || ctx.currentCatalogueId || ctx.roster?.catalogueId || null;
 
-// Resolves an id down to the canonical id of the selection entry it ultimately targets:
-// its own id if it isn't a link, or the id unchanged if it can't be resolved at all (a
-// category id or a type keyword like "model"). BattleScribe commonly exposes one shared
-// item (defined once, e.g. in the game system's common catalogue) through several
-// different entryLinks — an army-specific one and a shared one — each with its own link
-// id. Comparing raw ids would treat those as different items; comparing their canonical
-// target ids recognises them as the same one.
-const resolveCanonicalTargetId = (id, system, catalogueId) => {
-  if (!id || !system) return id;
-  const raw = findEntryInSystem(system, id, catalogueId);
-  const res = raw && resolveEntry(system, raw, catalogueId);
-  return res ? (res.targetId || res.id) : id;
-};
-
 // True when `sel` is an instance of the selection-entry `entryId`: it either directly
 // carries that entry id or its resolved definition's id/targetId matches. Used to detect
 // that a condition's `scope` names the very entry the condition is attached to.
@@ -113,47 +99,13 @@ const selectionHasEffectiveCategory = (sel, categoryId, ctx) => {
 const subtreeHasInstanceOf = (sel, childId, ctx) =>
   someSelectionInSubtree(sel, node => selectionHasEffectiveCategory(node, childId, ctx));
 
-// The BattleScribe target keyword that matches any model-like selection rather
-// than one concrete entry id.
-const MODEL_TARGET_KEYWORD = SelectionEntryKind.MODEL;
-
-/**
- * Builds the predicate that decides whether a selection counts towards a
- * parent-scoped quantity for `targetId` — an entry id, a link id, a category id,
- * or the "model" type keyword.
- *
- * BattleScribe defines two such parent-scoped counts (a condition's and a
- * modifier repeat's) that differ only in how wide they cast the net, so the two
- * differences are explicit options instead of two copies of the matching rules:
- * `matchCategoryMembership` also accepts a selection whose entry merely links to
- * the target category, and `matchUnitsAsModels` lets the "model" keyword cover
- * `unit` entries as well.
- */
-const createTargetSelectionMatcher = (targetId, system, catalogueId, { matchCategoryMembership, matchUnitsAsModels }) => {
-  const canonicalTargetId = resolveCanonicalTargetId(targetId, system, catalogueId);
-  const modelLikeTypes = matchUnitsAsModels
-    ? [MODEL_TARGET_KEYWORD, SelectionEntryKind.UNIT]
-    : [MODEL_TARGET_KEYWORD];
-
-  return (sel) => {
-    const sId = sel.entryLinkId || sel.selectionEntryId;
-    if (sId === targetId) return true;
-    if (!system) return false;
-
-    const raw = findEntryInSystem(system, sId, catalogueId);
-    const res = raw && resolveEntry(system, raw, catalogueId);
-    if (!res) return false;
-
-    if (res.targetId === targetId || res.id === targetId) return true;
-    // Two different entryLinks (e.g. an army-specific one and the shared/common
-    // catalogue's own one) can both alias the same underlying item.
-    if (resolveCanonicalTargetId(sId, system, catalogueId) === canonicalTargetId) return true;
-    // childId may reference a category (e.g. a bloodline): count selections that
-    // belong to that category, not only those whose entry id matches.
-    if (matchCategoryMembership && entryHasCategoryLink(res, targetId)) return true;
-    return targetId === MODEL_TARGET_KEYWORD && modelLikeTypes.includes(res.type);
-  };
-};
+// The two parent-/self-scoped counts BattleScribe distinguishes — a condition's and a
+// modifier repeat's — differ only in how wide they cast the net. A condition also counts a
+// selection that merely links to the target category, and lets the "model" keyword cover
+// `unit` entries; a repeat demands the entry id and reads "model" literally. Both flow
+// through the one kernel matcher (createEntryInstanceMatcher), toggled by these options.
+const CONDITION_TARGET_MATCH_OPTIONS = Object.freeze({ matchCategoryMembership: true, matchUnitsAsModels: true });
+const REPEAT_TARGET_MATCH_OPTIONS = Object.freeze({ matchCategoryMembership: false, matchUnitsAsModels: false });
 
 /**
  * Der Zählwert einer **nicht geteilten** Bedingung (`shared="false"`): gezählt wird
@@ -171,15 +123,18 @@ const countWithinConditionInstance = (cond, ctx) => {
   const { selection, system } = ctx;
   if (!selection) return 0;
 
-  const catalogueId = resolveContextCatalogueId(ctx);
-  const matchesTarget = createTargetSelectionMatcher(cond.childId || cond.field, system, catalogueId, {
-    matchCategoryMembership: true,
-    matchUnitsAsModels: true
-  });
+  const matcher = createEntryInstanceMatcher(
+    { entryId: cond.childId || cond.field, catalogueId: resolveContextCatalogueId(ctx) },
+    { system },
+    CONDITION_TARGET_MATCH_OPTIONS
+  );
 
-  return countSelectionsInSubtree(selection, {
+  return measureOver(resolveSubtreeAnchor(selection), {
+    target: MeasureTarget.INSTANCES,
     includeChildSelections: !!cond.includeChildSelections,
-    predicate: matchesTarget
+    matcher,
+    subject: { selection },
+    ctx
   });
 };
 
@@ -199,16 +154,18 @@ export const evaluateCondition = (cond, ctx = {}) => {
     // roster validation, not just in the editor UI.
     const parentScopeTarget = parentSelection || selection;
     if (cond.scope === ConstraintScope.PARENT && parentScopeTarget && parentScopeTarget.selections) {
-      const catId = resolveContextCatalogueId(ctx);
-      const targetId = cond.childId || cond.field;
-      const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
-        matchCategoryMembership: true,
-        matchUnitsAsModels: true
-      });
+      const matcher = createEntryInstanceMatcher(
+        { entryId: cond.childId || cond.field, catalogueId: resolveContextCatalogueId(ctx) },
+        { system },
+        CONDITION_TARGET_MATCH_OPTIONS
+      );
 
-      currentValue = countSelections(childSelectionsOf(parentScopeTarget), {
+      currentValue = measureOver(resolveContainerAnchor(childSelectionsOf(parentScopeTarget)), {
+        target: MeasureTarget.INSTANCES,
         includeChildSelections: !!cond.includeChildSelections,
-        predicate: matchesTarget
+        matcher,
+        subject: { selection },
+        ctx
       });
     } else if (!isSharedQuery(cond)) {
       // Eine nicht geteilte Bedingung zählt je Instanz statt armeeweit. Der
@@ -217,18 +174,19 @@ export const evaluateCondition = (cond, ctx = {}) => {
       currentValue = countWithinConditionInstance(cond, ctx);
     } else {
       // Non-parent scopes (force/roster/entry/category) count by the specific target
-      // the condition names. A childId identifies that target explicitly (e.g. a
-      // bloodline entry id in "atLeast 1 selections scope=force childId=<bloodline>");
-      // plain category conditions carry the id in field and no childId. Preferring
-      // childId mirrors the parent branch's `cond.childId || cond.field`, so a
-      // force-scoped childId condition resolves against the actual selection count
-      // instead of the generic field name ("selections"), which is never a count key.
-      const countKey = cond.childId || cond.field;
-      let categoryTotal = 0;
-      if (forceCategoryCounts && forceCategoryCounts[countKey]) {
-        categoryTotal = forceCategoryCounts[countKey];
-      }
-      currentValue = selectionCounts[countKey] || categoryTotal || 0;
+      // the condition names, read from the precomputed, roster-wide count tables. A
+      // childId identifies that target explicitly (e.g. a bloodline entry id in
+      // "atLeast 1 selections scope=force childId=<bloodline>"); plain category
+      // conditions carry the id in field and no childId. Preferring childId mirrors the
+      // parent branch's `cond.childId || cond.field`, so a force-scoped childId condition
+      // resolves against the actual selection count instead of the generic field name
+      // ("selections"), which is never a count key. The count-bucket anchor reads
+      // selectionCounts first (categories aggregated across all forces), then the force
+      // category tally — so a category condition is measured army-wide, not per force.
+      currentValue = measureOver(
+        resolveCountBucketAnchor(cond.childId || cond.field, { selectionCounts, forceCategoryCounts }),
+        { target: MeasureTarget.INSTANCES, subject: {}, ctx }
+      );
     }
   }
   const targetValue = cond.value;
@@ -357,29 +315,31 @@ const modifierConditionsPass = (source, ctx) => {
  * quantity fits into the repeat's `value`, times its `repeats` multiplier.
  */
 const countRepeatOccurrences = (repeat, ctx) => {
-  const { roster, selectionCounts = {}, forceCategoryCounts = {} } = ctx;
+  const { roster, selectionCounts = {}, forceCategoryCounts = {}, system } = ctx;
   const targetParent = ctx.parentSelection || ctx.selection;
   let countedQuantity = 0;
 
   if (repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
-    const { system } = ctx;
-    const catId = resolveContextCatalogueId(ctx);
-    const targetId = repeat.childId || repeat.field;
-    const matchesTarget = createTargetSelectionMatcher(targetId, system, catId, {
-      matchCategoryMembership: false,
-      matchUnitsAsModels: false
-    });
+    const matcher = createEntryInstanceMatcher(
+      { entryId: repeat.childId || repeat.field, catalogueId: resolveContextCatalogueId(ctx) },
+      { system },
+      REPEAT_TARGET_MATCH_OPTIONS
+    );
 
-    countedQuantity = countSelections(childSelectionsOf(targetParent), {
+    countedQuantity = measureOver(resolveContainerAnchor(childSelectionsOf(targetParent)), {
+      target: MeasureTarget.INSTANCES,
       includeChildSelections: !!repeat.includeChildSelections,
-      predicate: matchesTarget
+      matcher,
+      subject: { selection: targetParent },
+      ctx
     });
   } else if (isRosterLimitField(repeat.field)) {
     countedQuantity = roster?.costLimit || 0;
-  } else if (repeat.childId) {
-    countedQuantity = selectionCounts[repeat.childId] || (forceCategoryCounts && forceCategoryCounts[repeat.childId]) || 0;
-  } else if (repeat.field) {
-    countedQuantity = selectionCounts[repeat.field] || (forceCategoryCounts && forceCategoryCounts[repeat.field]) || 0;
+  } else {
+    countedQuantity = measureOver(
+      resolveCountBucketAnchor(repeat.childId || repeat.field, { selectionCounts, forceCategoryCounts }),
+      { target: MeasureTarget.INSTANCES, subject: {}, ctx }
+    );
   }
 
   const fitCount = repeat.value

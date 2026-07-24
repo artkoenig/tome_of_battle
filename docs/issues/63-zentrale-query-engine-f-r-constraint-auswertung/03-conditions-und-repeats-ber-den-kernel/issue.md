@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01]
 
@@ -20,3 +20,4 @@ einer gemeinsamen Zählung, spec-konform.
 - [ ] Eine kategoriezählende Bedingung liest die Kategorie-Zähler korrekt über alle Forces aggregiert, nicht isoliert pro Force.
 
 ## Comments
+- Conditions und Repeats zählen jetzt über den Query-Kern (measureOver): neuer COUNT_BUCKET-Anker plus resolveSubtreeAnchor/resolveContainerAnchor tragen den aggregierten bzw. instanz-/parent-gebundenen Zähler. Die zwei Ziel-Matcher (createEntryInstanceMatcher + createTargetSelectionMatcher) sind zu einem vereinigt, per Optionen matchCategoryMembership/matchUnitsAsModels gesteuert; entryHasCategoryLink lebt nun als SSOT im Kern. Regression gefixt: resolveCountBucketAnchor normalisiert null-Zähltabellen (entryVisibility reicht forceCategoryCounts:null durch) auf leer — vorher Null-Zugriff beim Roster-Render, nur vom Puppeteer-E2E erkannt; mit gezielten Unit-Tests (Kern + Adapter) abgedeckt.
