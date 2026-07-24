@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -105,3 +105,4 @@ gilt unverändert und jetzt lückenlos).
 
 ## Comments
 - Zentrale Query-Engine umgesetzt (ADR 0029) über fünf Slices: queryEngine.js (scope-agnostischer Zähl-Kern), Entry-/Gruppen-/Kategorie-/Force-Constraints, Conditions & Repeats, selectionBehavior.js (UI-Verhaltensmodell), categoryLimits.js (konsistente Kategorie-Anzeige + zentraler Quirk). Alle Slices resolved, vitest 1582 + puppeteer-E2E grün. Offen für Review: benigner Modul-Zyklus modifierEvaluator->queryEngine->rosterCounter->modifierEvaluator; knip-Dead-Export isEntryScope auf der Fassade.
+- Fünf-Achsen-Review durchlaufen. Behoben: toter Legacy-Resolver in constraintScope.js entfernt (SSOT), Modul-Zyklen 3->1 (isCostField ins Leaf-Modul), toter isEntryScope-Export weg, Null-Subject-DRY, ADR 0029 an die Umsetzung angeglichen (L4/self/Stabilisierung). Tests grün (vitest 1571 + E2E), Lint/Typecheck sauber, depcruise 1 Zyklus. Bounded Stabilization bewusst nicht umgesetzt (YAGNI, in ADR vermerkt).
