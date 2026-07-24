@@ -101,6 +101,10 @@ vi.mock('../../solver/validator', async () => ({
   TOP_LEVEL_PARENT_COUNT: 1,
   isUniqueOptionTakenElsewhere: (...args) => mockIsUniqueOptionTakenElsewhere(...args),
   isOptionRosterUnique: (...args) => mockIsOptionRosterUnique(...args),
+  // UI-Verhaltensmodell (ADR 0029 L5): reine Entscheidungsfunktionen über bereits
+  // gemessene Grenzen — die echte Implementierung durchreichen, sie ist in
+  // selectionBehavior.test.js eigens abgedeckt.
+  ...(await vi.importActual('../../solver/selectionBehavior')),
   ...(await vi.importActual('../../solver/constants')),
 }));
 

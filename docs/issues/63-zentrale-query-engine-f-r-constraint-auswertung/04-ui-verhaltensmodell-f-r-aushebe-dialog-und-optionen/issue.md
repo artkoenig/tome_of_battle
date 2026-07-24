@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [02, 03]
 
@@ -23,3 +23,4 @@ konsistent.
 - [ ] Keine dieser Oberflächen ermittelt eine Constraint-Entscheidung selbst; sie zeigen ausschließlich das vom Solver gelieferte Verhaltensmodell an.
 
 ## Comments
+- Neues Solver-Modul selectionBehavior.js (via Fassade exportiert) liefert das UI-Verhaltensmodell je Option/Gruppe: zentrale Anwendbarkeits-Prüfung (filterEntryScopedConstraints, vormals ~4x dupliziert), Radio-vs-Checkbox/Pflicht/binär/Mehrfach (classifyGroupItem, classifyStandaloneOption, isGroupSingleChoice, isItemRepeatableWithinGroup), Gruppen-/Punkte-Caps (exceedsGroupCountMax, wouldExceedGroupPointsLimit, hasGroupConstraintError) und Autofill-Kontingent (autofillCandidateMax). OptionGroup, SelectionConfigurator und AutoFillSuggestions rendern nur noch dieses Modell und messen über die Query-Engine-Nähte; keine Constraint-Entscheidung mehr inline. CategoryUnitAdder (Gold-Standard via getEntryAddAvailability) unverändert. 47 neue Solver-Unit-Tests; vitest (1567) und Puppeteer-E2E grün.

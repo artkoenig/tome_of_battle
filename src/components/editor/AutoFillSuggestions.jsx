@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique, getEffectiveModifiers, getEffectiveConstraintLimit } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique, getEffectiveModifiers, getEffectiveConstraintLimit, filterEntryScopedConstraints, autofillCandidateMax } from '../../solver/validator';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 import { useTranslation } from '../../i18n/useTranslation';
 
@@ -82,28 +82,22 @@ export default function AutoFillSuggestions({
         const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
         if (isTakenElsewhere) return;
 
-        let maxLimit = Infinity;
-        const filteredOptionConstraints = res.constraints?.filter(con => {
-          if (!con.scope || !isEntryScope(con.scope)) return true;
-          return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
-                 (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
-        }) || [];
-
-        // Effektive (modifier-angepasste) Grenzen: Auto-Select darf nicht mehr Kopien
-        // vorschlagen, als das effektive Options- bzw. Gruppen-Max zulässt.
+        // Effektive (modifier-angepasste) Grenzen messen; die „wie viele noch erlaubt"-
+        // Entscheidung (Options- vs. Gruppen-Max, Einzigartigkeit) trifft der Solver
+        // (autofillCandidateMax) — dieselbe Ableitung wie Dialog/Gruppe/Konfigurator.
+        const filteredOptionConstraints = filterEntryScopedConstraints(res.constraints, unitResolved);
         const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
-        maxLimit = getEffectiveConstraintLimit(maxConstraint, getEffectiveModifiers(res), displayCtx, Infinity);
+        const optionMax = getEffectiveConstraintLimit(maxConstraint, getEffectiveModifiers(res), displayCtx, Infinity);
 
+        let groupMax = Infinity;
         if (groupConstraints) {
            const maxGroup = groupConstraints.find(c => c.type === ConstraintKind.MAX);
            if (maxGroup) {
-             const groupMaxLimit = getEffectiveConstraintLimit(maxGroup, groupModifiers || [], displayCtx, Infinity);
-             if (groupMaxLimit < maxLimit) maxLimit = groupMaxLimit;
+             groupMax = getEffectiveConstraintLimit(maxGroup, groupModifiers || [], displayCtx, Infinity);
            }
         }
 
-        if (isRosterUnique && maxLimit > 1) maxLimit = 1;
-
+        const maxLimit = autofillCandidateMax({ optionMax, groupMax, isRosterUnique });
         const availableQuantity = maxLimit - count;
         
         if (availableQuantity > 0) {
