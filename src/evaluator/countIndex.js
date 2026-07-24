@@ -1,20 +1,66 @@
 /**
- * Index-Schicht (`docs/evaluator-architecture.md` §3.4/§4.4).
+ * Index-Schicht (`docs/evaluator-architecture.md` §3.3/§4.4).
  *
  * Ein Durchlauf ueber die realen Knoten baut Zaehlindizes, sodass Bezuege
- * O(1)-Nachschlaege statt Baumtraversalen sind. Pro Schluessel werden
- * **Selektionsanzahl** und **Kostensumme je Kostenart** (per ID) gefuehrt
- * (`Tally`). Force-/Parent-Rahmen und die direkt/tief-Unterscheidung folgen in
- * spaeteren Scheiben; diese Scheibe fuehrt nur den ROSTER-Rahmen.
+ * O(1)-Nachschlaege statt Baumtraversalen sind. Jeder reale Knoten traegt zu
+ * einer Menge von **Scope-Schluesseln** bei — je Rahmen seiner Vorfahrenkette
+ * (die Wurzel/ROSTER, jedes umschliessende Kontingent, jeder Vorfahre bis zu
+ * sich selbst) und je Ziel (alles / eigene Definition / jede Kategorie).
+ *
+ * Pro Schluessel werden **vier** Eimer gefuehrt, nach den beiden Grenzen, die
+ * ein Beitrag auf dem Weg zum Rahmen kreuzt (§4.4): Selektionsschachtelung und
+ * Kontingentgrenze. Das Query-Primitiv summiert je nach `includeChildSelections`
+ * und `includeChildForces` die passenden Eimer. So sind beide Flags **unabhaengig
+ * voneinander** wirksam — auch in Kombination.
  */
 
-import { ScopeKeyword, scopeKey } from './model.js';
-import { realNodes } from './evalTree.js';
+import { scopeKey } from './model.js';
+import { realNodes, frameKeyOf } from './evalTree.js';
 
-const ZERO_TALLY = Object.freeze({ selectionCount: 0, costSums: new Map() });
+/**
+ * Die vier Beitrags-Eimer eines Schluessels, nach gekreuzter Grenze:
+ * - `BASE`: keine Grenze gekreuzt (der Rahmen selbst und seine direkten Kinder),
+ * - `SELECTION`: nur Selektionsschachtelung gekreuzt (`includeChildSelections`),
+ * - `FORCE`: nur eine Kontingentgrenze gekreuzt (`includeChildForces`),
+ * - `BOTH`: beide gekreuzt (nur mit beiden Flags gezaehlt).
+ */
+const Bucket = Object.freeze({
+  BASE: 'base',
+  SELECTION: 'selection',
+  FORCE: 'force',
+  BOTH: 'both',
+});
 
-/** Ein Beitrag eines Knotens: seine Selektionsanzahl und Kosten je Kostenart. */
+/** Waehlt den Eimer eines Beitrags aus den beiden gekreuzten Grenzen. */
+function bucketFor(crossedSelection, crossedForce) {
+  if (crossedSelection && crossedForce) return Bucket.BOTH;
+  if (crossedSelection) return Bucket.SELECTION;
+  if (crossedForce) return Bucket.FORCE;
+  return Bucket.BASE;
+}
+
+/** Ein leerer Zaehler (Anzahl und Kostensummen je Kostenart). */
+function emptyTally() {
+  return { selectionCount: 0, costSums: new Map() };
+}
+
+/** Ein leerer Schluessel-Eintrag: ein Zaehler je Beitrags-Eimer. */
+function emptyBuckets() {
+  return {
+    [Bucket.BASE]: emptyTally(),
+    [Bucket.SELECTION]: emptyTally(),
+    [Bucket.FORCE]: emptyTally(),
+    [Bucket.BOTH]: emptyTally(),
+  };
+}
+
+/**
+ * Der Beitrag eines Knotens: seine Selektionsanzahl und Kosten je Kostenart.
+ * **Kontingent-Knoten tragen nichts bei** — sie sind Struktur, keine Selektion;
+ * sie leiten nur die Beitraege ihrer Nachfahren an die Rahmen weiter.
+ */
 function contributionOf(node) {
+  if (node.isForce) return emptyTally();
   const selectionCount = node.instance.count;
   const costSums = new Map();
   for (const [costTypeId, perSelection] of Object.entries(node.def.costs ?? {})) {
@@ -23,35 +69,100 @@ function contributionOf(node) {
   return { selectionCount, costSums };
 }
 
-/** Addiert einen Beitrag (Anzahl und Kostensummen) auf den Schluessel `key`. */
-function addContribution(tallies, key, contribution) {
-  let tally = tallies.get(key);
-  if (tally === undefined) {
-    tally = { selectionCount: 0, costSums: new Map() };
-    tallies.set(key, tally);
-  }
+/**
+ * Die Ziel-IDs, unter denen ein Knoten in einem Rahmen zaehlbar ist: `null`
+ * ("alles im Rahmen"), seine eigene Definitions-ID und jede seiner (vorerst
+ * Basis-, spaeter effektiven) Kategorie-IDs. Effektive Kategorien ersetzen die
+ * Basis-Kategorien in Slice 04 an genau dieser Stelle, ohne die Zaehllogik zu
+ * beruehren.
+ */
+function targetsOf(node) {
+  return [null, node.def.id, ...(node.def.categoryIds ?? [])];
+}
+
+/** Addiert einen Beitrag auf einen Zaehler. */
+function addTally(tally, contribution) {
   tally.selectionCount += contribution.selectionCount;
   for (const [costTypeId, value] of contribution.costSums) {
     tally.costSums.set(costTypeId, (tally.costSums.get(costTypeId) ?? 0) + value);
   }
 }
 
+/** Addiert einen Beitrag in den Eimer `bucket` des Schluessels `key`. */
+function addContribution(tallies, key, bucket, contribution) {
+  let buckets = tallies.get(key);
+  if (buckets === undefined) {
+    buckets = emptyBuckets();
+    tallies.set(key, buckets);
+  }
+  addTally(buckets[bucket], contribution);
+}
+
+/**
+ * Traegt den Beitrag eines Knotens in alle Rahmen seiner Vorfahrenkette ein.
+ *
+ * Aufgestiegen wird vom Knoten selbst bis zur Wurzel. Fuer den Rahmen `F` sind
+ * die *strikt dazwischen* liegenden Knoten (Vorfahren des Beitragenden, echte
+ * Nachfahren von `F`) massgeblich: ein nicht-Kontingent dazwischen kreuzt die
+ * Selektionsschachtelung, ein Kontingent dazwischen eine Kontingentgrenze. Der
+ * ROSTER-Rahmen (Wurzel) umspannt **alle** Kontingente und ignoriert daher
+ * Kontingentgrenzen — `includeChildForces` hat auf Rosterebene keine Bedeutung.
+ */
+function indexNodeContribution(tallies, node) {
+  const contribution = contributionOf(node);
+  const targets = targetsOf(node);
+  let crossedSelection = false;
+  let crossedForce = false;
+  let frame = node;
+  let isImmediate = true; // der Knoten selbst: keine Grenze dazwischen
+  while (frame !== null) {
+    const forceCrossedForFrame = frame.isRoot ? false : crossedForce;
+    const bucket = bucketFor(crossedSelection, forceCrossedForFrame);
+    const frameKey = frameKeyOf(frame);
+    for (const targetId of targets) {
+      addContribution(tallies, scopeKey(frameKey, targetId), bucket, contribution);
+    }
+    // Der aktuelle Rahmen wird fuer alle *hoeheren* Rahmen zu einem
+    // dazwischenliegenden Knoten (der Beitragende selbst zaehlt nie als Grenze).
+    if (!isImmediate) {
+      if (frame.isForce) crossedForce = true;
+      else crossedSelection = true;
+    }
+    isImmediate = false;
+    frame = frame.parent;
+  }
+}
+
+/** Summiert die von den Flags erlaubten Eimer eines Schluessels zu einem Zaehler. */
+function combineBuckets(buckets, includeChildSelections, includeChildForces) {
+  const result = emptyTally();
+  addTally(result, buckets[Bucket.BASE]);
+  if (includeChildSelections) addTally(result, buckets[Bucket.SELECTION]);
+  if (includeChildForces) addTally(result, buckets[Bucket.FORCE]);
+  if (includeChildSelections && includeChildForces) addTally(result, buckets[Bucket.BOTH]);
+  return result;
+}
+
+const ZERO_TALLY = Object.freeze({ selectionCount: 0, costSums: new Map() });
+
 /**
  * Baut den Zaehlindex ueber die realen Knoten des Evaluationsbaums.
  *
  * @param {object} root Wurzel des Evaluationsbaums.
- * @returns {{ get: (key: string) => { selectionCount: number, costSums: Map<string, number> } }}
+ * @returns {{ get: (key: string, includeChildSelections?: boolean, includeChildForces?: boolean) => { selectionCount: number, costSums: Map<string, number> } }}
+ *   `get` liefert den nach den beiden `includeChild…`-Flags zusammengesetzten
+ *   Zaehler eines Schluessels (Vorgabe: nur der BASE-Eimer).
  */
 export function buildIndex(root) {
   const tallies = new Map();
   for (const node of realNodes(root)) {
-    const contribution = contributionOf(node);
-    // "Alles im Roster" und "auf diesen Eintrag gefiltert" — die beiden
-    // Schluessel, die eine ROSTER-Query in dieser Scheibe nachfragen kann.
-    addContribution(tallies, scopeKey(ScopeKeyword.ROSTER, null), contribution);
-    addContribution(tallies, scopeKey(ScopeKeyword.ROSTER, node.def.id), contribution);
+    indexNodeContribution(tallies, node);
   }
   return {
-    get: key => tallies.get(key) ?? ZERO_TALLY,
+    get: (key, includeChildSelections = false, includeChildForces = false) => {
+      const buckets = tallies.get(key);
+      if (buckets === undefined) return ZERO_TALLY;
+      return combineBuckets(buckets, includeChildSelections, includeChildForces);
+    },
   };
 }

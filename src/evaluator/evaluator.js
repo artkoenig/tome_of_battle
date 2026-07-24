@@ -35,7 +35,7 @@ export function evaluate(catalogXml, roster) {
   const index = buildIndex(root);
 
   const constraintDiagnostics = [];
-  const results = evaluateConstraints(root, index, constraintDiagnostics);
+  const results = evaluateConstraints(root, index, resolved.categoryIds, constraintDiagnostics);
 
   const diagnostics = [
     ...catalogue.diagnostics,

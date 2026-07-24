@@ -6,7 +6,11 @@
  * alle Schichten teilen. Nach dem Walking-Skeleton (Issue 01) traegt sie das
  * verbreiterte Grenz-Vokabular (Issue 02): MIN- und MAX-Grenzen ueber die
  * Selektionsanzahl *und* Kostensummen (Kostenart per ID) sowie Prozentgrenzen.
- * Weitere Scopes und Flags folgen in spaeteren Scheiben an genau dieser Stelle.
+ * Issue 03 verbreitert den Bezugsrahmen: alle Scope-Schluesselwoerter
+ * (roster/force/parent/self) plus Eintrags- und Kategorie-IDs als Ziel, die
+ * Zaehl-Flags (`shared`, `includeChildSelections`, `includeChildForces`) und die
+ * Definitionsarten, an denen die Join-Schicht Kontingente von Auswahlen und
+ * Kategorien unterscheidet.
  */
 
 /** Art einer Grenze: Unter- (MIN) oder Obergrenze (MAX). */
@@ -37,10 +41,52 @@ export function costSumField(costTypeId) {
   return Object.freeze({ kind: CountedFieldKind.COST_SUM, costTypeId });
 }
 
-/** Bezugsrahmen (Scope) einer Query. Diese Scheibe kennt nur den gesamten Roster. */
+/**
+ * Bezugsrahmen-Schluesselwoerter (Scope) einer Query
+ * (`docs/evaluator-architecture.md` §4.1: `ScopeKeyword { ROSTER, FORCE, PARENT,
+ * SELF }`). Ein Scope, der keines dieser Woerter ist, wird als **ID** gelesen:
+ * eine Eintrags-ID (naechster Vorfahre mit dieser ID) oder eine Kategorie-ID
+ * (armeeweiter Kategorierahmen).
+ */
 export const ScopeKeyword = Object.freeze({
   ROSTER: 'roster',
+  FORCE: 'force',
+  PARENT: 'parent',
+  SELF: 'self',
 });
+
+/**
+ * Definitionsart eines Knotens. Die Join-Schicht braucht sie, um Kontingente
+ * (Force) von Auswahlen (Entry) und Kategorien zu unterscheiden — nur Forces
+ * begrenzen den `force`-Bezugsrahmen und die `includeChildForces`-Ausweitung,
+ * nur Kategorien loesen die armeeweite Ziel-Typ-Regel aus (§3.3, BSData §7.7).
+ */
+export const DefinitionKind = Object.freeze({
+  ENTRY: 'entry',
+  FORCE: 'force',
+  CATEGORY: 'category',
+});
+
+/**
+ * Die drei Zaehl-Flags einer Query (`docs/evaluator-architecture.md` §4.1,
+ * `record CountFlags`). Battlescribe-Vorgabe (XSD `QueryBase`): `shared` ist
+ * standardmaessig **true** (armeeweit ueber alle Instanzen der Ziel-Definition),
+ * die beiden `includeChild…`-Flags sind standardmaessig **false**.
+ */
+export const DEFAULT_FLAGS = Object.freeze({
+  shared: true,
+  includeChildSelections: false,
+  includeChildForces: false,
+});
+
+/** Fuellt fehlende Flag-Felder mit der Battlescribe-Vorgabe (siehe {@link DEFAULT_FLAGS}). */
+export function normalizeFlags(flags) {
+  return {
+    shared: flags?.shared ?? DEFAULT_FLAGS.shared,
+    includeChildSelections: flags?.includeChildSelections ?? DEFAULT_FLAGS.includeChildSelections,
+    includeChildForces: flags?.includeChildForces ?? DEFAULT_FLAGS.includeChildForces,
+  };
+}
 
 /**
  * Sentinel fuer einen suspendierten Grenzwert: eine Prozentgrenze mit leerem

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [01]
 
@@ -25,3 +25,4 @@ ausführbare Spezifikation.
       statt einer falschen Zählung.
 
 ## Comments
+- Query-Primitiv als alleinige Zaehlstelle fuer alle Bezugsrahmen (roster/force/parent/self, Eintrags- und Kategorie-ID) und alle Flags (shared, includeChildSelections, includeChildForces) implementiert. Vier-Eimer-Index (base/selection/force/both) macht includeChildSelections und includeChildForces unabhaengig kombinierbar; Ziel-Typ-Regel (Kategorie armeeweit, Eintrag pro Kontingent, BSData §7.7) und Auflösungs-Diagnose bei nicht aufloesbarem Scope. Zweite Test-Nahtstelle: query.matrix.test.js mit einem Fall je Zelle (48 Matrix-Zellen + Ziel-Typ-, Kosten- und Unresolved-Faelle).
