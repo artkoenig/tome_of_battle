@@ -139,11 +139,20 @@ export function getScopeReferenceTotal({ constraint, roster, system, force, pare
 }
 
 /**
+ * The absolute value a percentage of a reference quantity resolves to: `value% * reference`.
+ * The single place the percent arithmetic lives, so every consumer (entry and group
+ * percent limits) turns a percentage into an absolute threshold identically.
+ */
+export function applyPercentage(value, reference) {
+  return (value / PERCENT_DIVISOR) * reference;
+}
+
+/**
  * The absolute threshold a constraint's value resolves to. For a percentage
  * constraint this is `value% * reference`; otherwise it is the value itself.
  */
 export function resolveConstraintThreshold({ constraint, value, roster, system, force, parentSelection, forceCatalogueId, counts }) {
   if (!isPercentConstraint(constraint)) return value;
   const reference = getScopeReferenceTotal({ constraint, roster, system, force, parentSelection, forceCatalogueId, counts });
-  return (value / PERCENT_DIVISOR) * reference;
+  return applyPercentage(value, reference);
 }

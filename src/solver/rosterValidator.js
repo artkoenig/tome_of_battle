@@ -2,11 +2,11 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, evaluateConstraintWithCauses, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
 import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
-import { isPercentConstraint, isCostField, resolveConstraintThreshold } from './constraintScope.js';
+import { isPercentConstraint, isCostField, resolveConstraintThreshold, applyPercentage } from './constraintScope.js';
 import {
-  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField, isSharedQuery
+  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField
 } from './battlescribeConstants.js';
-import { childSelectionsOf, countSelections, countSelectionsInSubtree } from './rosterTree.js';
+import { createQueryContext, resolveScopeAnchor, measureOver, MeasureTarget } from './queryEngine.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from './armyWideSelectors.js';
@@ -184,9 +184,6 @@ function checkRosterCostLimit(roster, system, errors) {
 
 // Synthetische ID des per System-Quirk von einer anderen Kategorie geerbten max-Constraints.
 const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
-
-// Eine Auswahl ohne ausdrückliche `number` steht für genau eine Instanz.
-const SINGLE_INSTANCE_COUNT = 1;
 
 /**
  * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
@@ -553,87 +550,11 @@ function checkSelectionMessages({ selection, parentSelection, entry }, context) 
 }
 
 /**
- * Prädikat „diese Auswahl ist eine Instanz des geprüften Eintrags". Verglichen wird
- * immer über die aufgelöste Ziel-Id, nicht über die Link-Id: verschiedene Links
- * können auf dasselbe Ziel zeigen (ADR 0003, Abschnitt 4).
- * @param {{entry: Object, entryId: string}} subject
- * @param {ValidationContext} context
- * @returns {(candidate: Object) => boolean}
- */
-function createEntryInstanceMatcher({ entry, entryId }, { system, force }) {
-  const catalogueId = force ? force.catalogueId : null;
-  return (candidate) => {
-    const candidateId = candidate.entryLinkId || candidate.selectionEntryId;
-    if (candidateId === entryId) return true;
-    if (!entry.targetId) return false;
-    if (candidateId === entry.targetId) return true;
-    const candidateDef = findEntryInSystem(system, candidateId, catalogueId);
-    const resolvedCandidate = resolveEntry(system, candidateDef, catalogueId);
-    return resolvedCandidate?.targetId === entry.targetId;
-  };
-}
-
-/** Die höhere der beiden Zählungen für Link-Id und aufgelöste Ziel-Id des Eintrags. */
-function countEntryInstances(countsByEntryId, { entry, entryId }) {
-  return Math.max(
-    countsByEntryId[entryId] || 0,
-    entry.targetId ? countsByEntryId[entry.targetId] || 0 : 0
-  );
-}
-
-/**
- * Die Anzahl, gegen die eine Eintrags-Constraint geprüft wird — die einzige Stelle,
- * die den Bezugsrahmen einer solchen Constraint auflöst.
- *
- * `shared="false"` (XSD `QueryBase`) hat dabei Vorrang vor dem `scope`: die
- * Beschränkung gilt dann je Instanz, gezählt wird also nur im Teilbaum der einen
- * Auswahl, an der sie hängt, statt aggregiert über alle Vorkommen des Eintrags
- * im Roster (ADR 0003, Abschnitt 4). Ist sie geteilt — der Vorgabewert —,
- * bestimmt wie bisher allein der `scope` den Bezugsrahmen.
- *
- * @param {{con: Object, selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
- * @param {ValidationContext} context
- * @returns {number}
- */
-function resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context) {
-  const { force, counts } = context;
-  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
-  const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
-  const includeChildSelections = con.includeChildSelections;
-  const matchesEntry = createEntryInstanceMatcher({ entry, entryId }, context);
-  const instanceCount = selection.number || SINGLE_INSTANCE_COUNT;
-
-  if (!isSharedQuery(con)) {
-    return countSelectionsInSubtree(selection, { includeChildSelections, predicate: matchesEntry });
-  }
-
-  if (isEntryScope(con.scope)) {
-    return selectionCounts[con.scope] || forceCategoryCounts[con.scope] || instanceCount;
-  }
-  if (con.scope === ConstraintScope.PARENT) {
-    const container = parentSelection || force;
-    if (!container) return instanceCount;
-    return countSelections(childSelectionsOf(container), { includeChildSelections, predicate: matchesEntry });
-  }
-  if (con.scope === ConstraintScope.ROSTER) {
-    return countEntryInstances(selectionCounts, { entry, entryId });
-  }
-  if (con.scope === ConstraintScope.FORCE) {
-    // includeChildForces meint laut BSData das Kontingent samt seiner Nachfahren.
-    // Der .ros-Import legt verschachtelte Kontingente als Geschwister auf
-    // Rosterebene flach (ADR-0011 §5), sodass die Nachfahren-Beziehung im
-    // Rostermodell nicht überlebt — das ganze Roster ist die nächstliegende
-    // verfügbare Obermenge.
-    const scopeCounts = con.includeChildForces
-      ? selectionCounts
-      : (force ? forceSelectionCounts[force.id] || {} : {});
-    return countEntryInstances(scopeCounts, { entry, entryId });
-  }
-  return instanceCount;
-}
-
-/**
  * Individuelle Constraints des aufgelösten Eintrags prüfen (min/max/percent je Scope).
+ * Der Bezugsrahmen jeder Constraint wird über den zentralen Zähl-Kern
+ * ({@link resolveScopeAnchor}/{@link measureOver}, ADR 0029) aufgelöst, statt hier
+ * eigene Scope-Logik nachzubauen. Die Grenze (`finalValue`) samt ihrer Ursachen
+ * (ADR 0027) stammt unverändert aus {@link evaluateConstraintWithCauses}.
  * @param {{selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
  * @param {ValidationContext} context
  */
@@ -642,6 +563,9 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
 
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const { selectionCounts, categoryCounts } = counts;
+
+  const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
+  const subject = { selection, parentSelection, force, entry, entryId };
 
   entry.constraints.forEach(con => {
     const ctx = {
@@ -665,10 +589,16 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       if (!belongsToScope) return;
     }
 
-    const count = resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context);
+    const anchor = resolveScopeAnchor(con, subject, queryCtx);
+    const count = measureOver(anchor, {
+      target: MeasureTarget.INSTANCES,
+      includeChildSelections: con.includeChildSelections,
+      subject,
+      ctx: queryCtx
+    });
 
     if (isPercentConstraint(con)) {
-      checkEntryPercentConstraint({ con, finalValue, causes, count, selection, parentSelection }, context);
+      checkEntryPercentConstraint({ con, finalValue, causes, count, anchor, subject }, { context, queryCtx });
       return;
     }
 
@@ -697,24 +627,37 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
 
 /**
  * Prüft eine Prozent-Constraint (percentValue) eines Eintrags: die Bezugsgröße
- * ist die Summe des Feldes im Scope, der Grenzwert `value%` davon. Punkte-Felder
- * werden gegen die Kosten des Eintrags, `selections` gegen dessen Anzahl geprüft.
+ * (Nenner) ist die Summe des Feldes im Scope, der Grenzwert `value%` davon.
+ * Punkte-Felder werden gegen die Kosten des Eintrags, `selections` gegen dessen
+ * Anzahl geprüft.
+ *
+ * Der Nenner läuft durch **denselben** Anker wie der Zähler ({@link measureOver}
+ * mit `REFERENCE`, ADR 0029), sodass Zähler und Nenner im Bezugsrahmen nicht
+ * auseinanderdriften können.
  */
-function checkEntryPercentConstraint({ con, finalValue, causes, count, selection, parentSelection }, context) {
-  const { roster, system, force, counts, errors, forceCatalogueId } = context;
+function checkEntryPercentConstraint({ con, finalValue, causes, count, anchor, subject }, { context, queryCtx }) {
+  const { roster, system, errors, forceCatalogueId, counts } = context;
+  const { selection, parentSelection } = subject;
   const measuresCost = isCostField(con.field, system, roster);
-  const subject = measuresCost
+  const numerator = measuresCost
     ? getSelectionTotalCost(selection, con.field, TOP_LEVEL_PARENT_COUNT, {
         system, roster, currentCatalogueId: forceCatalogueId, parentSelection, counts
       })
     : count;
-  const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection, forceCatalogueId, counts });
+  const reference = measureOver(anchor, {
+    target: MeasureTarget.REFERENCE,
+    field: con.field,
+    includeChildSelections: con.includeChildSelections,
+    subject,
+    ctx: queryCtx
+  });
+  const threshold = applyPercentage(finalValue, reference);
   // Gemessen wird die Kostenart der Constraint selbst (`con.field`) — ihre
   // Bezeichnung stammt daher aus genau dieser Kostenart (Pass-through). Ohne
   // Kostenbezug ist die Bezugsgröße die Auswahlanzahl (an der Oberfläche übersetzt).
   const unitLabel = measuresCost ? resolveCostTypeLabel(system, con.field) : undefined;
 
-  if (con.type === ConstraintKind.MIN && subject < threshold) {
+  if (con.type === ConstraintKind.MIN && numerator < threshold) {
     pushViolation(errors, {
       type: 'entry-percent-min',
       selectionId: selection.id,
@@ -724,7 +667,7 @@ function checkEntryPercentConstraint({ con, finalValue, causes, count, selection
       ...withCauses(causes)
     });
   }
-  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
+  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && numerator > threshold) {
     pushViolation(errors, {
       type: 'entry-percent-max',
       selectionId: selection.id,
