@@ -37,4 +37,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0027 | [Validierungs-Ursachen als optionales, sprachfreies Feld am Fehlerobjekt](0027-validierungs-ursachen-am-fehlerobjekt.md) | Accepted | 2026-07-23 |
 | 0028 | [BattleScribe-Text-Tokens in Autor-Meldungen werden gerendert, nicht übersetzt](0028-battlescribe-text-tokens-in-autor-meldungen.md) | Accepted | 2026-07-23 |
 | 0029 | [Zentrale Query-Engine für Constraint-, Condition- und Repeat-Auswertung](0029-zentrale-query-engine-fuer-constraint-auswertung.md) | Proposed | 2026-07-24 |
+| 0030 | [Zweite, räumlich getrennte Auswertungs-Engine als Reinraum-Realisierung](0030-zweite-eigenstaendige-auswertungs-engine.md) | Accepted | 2026-07-24 |
 
