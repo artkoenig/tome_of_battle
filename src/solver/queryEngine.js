@@ -96,6 +96,20 @@ export const entryHasCategoryLink = (resolvedEntry, categoryId) =>
 const NO_SELECTIONS = Object.freeze([]);
 
 /**
+ * True, wenn die gezählte **Ziel**-ID eine Kategorie benennt (statt eines Eintrags).
+ * Das ist die einzige Stelle, die die §7.7-Domänenregel als Ziel-Typ-Regel kodiert:
+ * ein Kategorie-Zähler aggregiert **armeeweit** über alle Kontingente, ein
+ * Eintrags-Zähler bleibt an seinen Scope-Rahmen (z. B. `force` = pro Kontingent)
+ * gebunden. Kategorien sind im System als `categoryEntries` definiert (SSOT); ein
+ * unbelegtes Kategorie-Ziel ist trotzdem eine Kategorie und wird hier erkannt.
+ * @param {string|null|undefined} targetId  die zu zählende Ziel-ID.
+ * @param {Object} [system]                 das Spielsystem mit seinen Kategorie-Definitionen.
+ * @returns {boolean}
+ */
+export const isCategoryTargetId = (targetId, system) =>
+  !!targetId && !!system?.categoryEntries?.some(ce => ce.id === targetId);
+
+/**
  * Baut einen **Gruppen-Anker** aus den bereits ausgewählten Mitglieds-Selektionen einer
  * SelectionEntryGroup. Die *Zugehörigkeit* zu einer Gruppe (welche Katalog-Ids ihr angehören,
  * über Aliasse und Links hinweg) ist definitionsseitige Katalog-Logik und wird vom Aufrufer
@@ -219,27 +233,43 @@ function countEntryInstancesInBucket(countsByEntryId, { entry, entryId }) {
  * geschlossene Scope-Liste kennt.
  *
  * `shared="false"` bindet unabhängig vom `scope` an den Teilbaum der tragenden
- * Instanz. Andernfalls bestimmt der `scope` den Anker:
- * - Eintrags-/Kategorie-ID → vorberechneter Zähl-Eimer (mit Container als Bezugsgröße),
+ * Instanz. Andernfalls bestimmt der `scope` den Rahmen — **einheitlich für
+ * Constraint, Condition und Repeat** (die XSD kennt für die drei keinen Unterschied,
+ * `Catalogue.xsd:421-434`); die maßgebliche Zähl-Frame folgt dem **Ziel-Typ**, nicht
+ * der Query-Art:
+ * - Eintrags-/Kategorie-ID → vorberechneter Zähl-Eimer (mit Container als Bezugsgröße);
+ *   `selectionCounts` ist roster-weit über alle Kontingente aggregiert, sodass ein
+ *   Kategorie-Scope **armeeweit** zählt (§7.7) — bewusst, nicht durch Zufall der
+ *   Fallback-Reihenfolge,
  * - `parent` → die Kinder des Eltern-Containers (ersatzweise die des Kontingents),
  * - `roster` → das ganze Roster (Zähl-Eimer + Wurzel-Selektionen),
- * - `force` → das Kontingent, per `includeChildForces` auf das ganze Roster geweitet.
+ * - `force` → **Kategorie-Ziel armeeweit** (§7.7), **Eintrags-Ziel pro Kontingent**;
+ *   `includeChildForces` weitet ohnehin auf das ganze Roster.
  *
- * @param {Object} query    die Query (Constraint/Condition) mit `scope`/`shared`/`includeChildForces`.
+ * @param {Object} query    die Query (Constraint/Condition/Repeat) mit `scope`/`shared`/`includeChildForces`.
  * @param {QuerySubject} subject
  * @param {QueryContext} ctx
  * @returns {Object} der Anker.
  */
 export function resolveScopeAnchor(query, subject, ctx) {
   const { selection, parentSelection, force } = subject;
-  const { roster, counts } = ctx;
+  const { roster, system, counts } = ctx;
   const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
+
+  const scope = query.scope;
+
+  // `parent` ist ein instanz-relativer Rahmen — die Kinder des Eltern-Containers —
+  // und geht **vor** `shared="false"`: der shared-Teilbaum bindet an die tragende
+  // Instanz, doch der parent-Rahmen ist bereits an genau diese eine Instanz gebunden,
+  // sodass `shared="false"` ihn nicht weiter einschränkt (ADR 0003 §4).
+  if (scope === ConstraintScope.PARENT) {
+    const container = parentSelection ?? force;
+    return resolveContainerAnchor(childSelectionsOf(container));
+  }
 
   if (!isSharedQuery(query)) {
     return resolveSubtreeAnchor(selection);
   }
-
-  const scope = query.scope;
 
   if (isEntryScope(scope)) {
     const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
@@ -253,11 +283,6 @@ export function resolveScopeAnchor(query, subject, ctx) {
     };
   }
 
-  if (scope === ConstraintScope.PARENT) {
-    const container = parentSelection ?? force;
-    return resolveContainerAnchor(childSelectionsOf(container));
-  }
-
   if (scope === ConstraintScope.ROSTER) {
     return {
       kind: AnchorKind.AGGREGATE,
@@ -268,15 +293,21 @@ export function resolveScopeAnchor(query, subject, ctx) {
   }
 
   if (scope === ConstraintScope.FORCE) {
+    // Ziel-Typ-Regel (§7.7, {@link isCategoryTargetId}): ein Kategorie-Ziel aggregiert
+    // armeeweit über alle Kontingente — auch unter `force`-Scope, weil `forceSelectionCounts`
+    // nur Einträge je Kontingent führt und Kategorien gerade kontingentübergreifend gelten.
+    // Ein Eintrags-Ziel bleibt am Kontingent (`forceSelectionCounts[force.id]`).
+    //
     // `includeChildForces` meint laut BSData das Kontingent samt seiner Nachfahren.
     // Der .ros-Import legt verschachtelte Kontingente als Geschwister auf Rosterebene
     // flach (ADR 0011 §5), sodass die Nachfahren-Beziehung im Modell nicht überlebt —
     // das ganze Roster ist die nächstliegende verfügbare Obermenge.
+    const countsCategory = isCategoryTargetId(subject.entryId, system);
+    const armyWide = query.includeChildForces || countsCategory;
+    const perForceCounts = force ? (forceSelectionCounts[force.id] || {}) : selectionCounts;
     return {
       kind: AnchorKind.AGGREGATE,
-      counts: query.includeChildForces
-        ? selectionCounts
-        : (force ? forceSelectionCounts[force.id] || {} : {}),
+      counts: armyWide ? selectionCounts : perForceCounts,
       nodes: query.includeChildForces ? rootSelectionsOf(roster) : childSelectionsOf(force),
       isRosterScope: false
     };

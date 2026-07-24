@@ -59,11 +59,14 @@ describe('getModifiedConstraintValue — wiederholte Modifier', () => {
     const CORE_COUNT = 4;
     const expectedRepeats = Math.floor(CORE_COUNT / REPEAT_EVERY_CORE_UNITS);
 
+    // §7.7 / ADR 0029: a category counter aggregates ARMY-WIDE — its roster-wide tally
+    // lives in selectionCounts (computeRosterCounts fills categories there too), the same
+    // frame a category condition or constraint now uses. (Previously read per-force.)
     const value = evaluate(
       incrementRepeatedBy(INCREMENT, { childId: CORE_CATEGORY_ID, value: REPEAT_EVERY_CORE_UNITS, repeats: 1 }),
       {
         roster: { costLimit: ROSTER_COST_LIMIT, costLimitType: POINTS, forces: [{ id: 'f1' }] },
-        forceCategoryCounts: { [CORE_CATEGORY_ID]: CORE_COUNT }
+        selectionCounts: { [CORE_CATEGORY_ID]: CORE_COUNT }
       }
     );
 

@@ -193,7 +193,13 @@ function nullInstanceSubject(force, entry = null) {
 }
 
 /**
- * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
+ * Min/Max-Limits einer Force-deklarierten Kategorie prüfen. Die Kategorie-Belegung
+ * zählt **armeeweit** über alle Kontingente (settled decision „Kategorie immer
+ * armeeweit", §7.7) — einheitlich mit der Art, wie Conditions, Constraints und Repeats
+ * seit ADR 0029 Kategorie-Ziele zählen. Bei Ein-Force-Rostern (der von der App
+ * erzeugte Regelfall, `createRoster.js`) ist das deckungsgleich mit der früheren
+ * per-Kontingent-Zählung; erst bei mehreren Kontingenten wird die armeeweite Aggregation
+ * sichtbar — und ist die kompositions-korrekte Lesart einer Kategoriegrenze.
  * @param {ValidationContext} context
  */
 function checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors, forceCatalogueId }) {
@@ -210,18 +216,21 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
 
     const catDef = system.categoryEntries?.find(ce => ce.id === targetCatId);
     const catName = catDef ? catDef.name : catLink.name;
-    // Die Kategorie-Belegung läuft über den zentralen Zähl-Kern (ADR 0029): ein
-    // Kategorie-Anker über den vorberechneten Zähl-Eimer des Kontingents. Eine leere
-    // Kategorie ist echte 0, sodass derselbe Wert Ober- wie Pflichtgrenze trägt.
+    // Armeeweite Kategorie-Belegung über den zentralen Zähl-Kern (ADR 0029): der
+    // Kategorie-Anker liest die roster-weite Kategorie-Summe. Diese steht bereits in
+    // `selectionCounts` — derselben Quelle, die der ENTRY_BUCKET-Anker zuerst liest —
+    // sodass ein Kategorie-Ziel überall genau dieselbe armeeweite Zahl ergibt (SSOT,
+    // keine zweite Aggregation). Eine leere Kategorie ist echte 0: derselbe Wert trägt
+    // Ober- (max) wie Pflichtgrenze (min).
     const count = measureOver(
-      resolveCategoryAnchor(targetCatId, forceCategoryCounts),
+      resolveCategoryAnchor(targetCatId, selectionCounts),
       {
         target: MeasureTarget.INSTANCES,
         subject: nullInstanceSubject(force),
         ctx: queryCtx
       }
     );
-    const ctx = { roster, selectionCounts, forceCategoryCounts, force, system };
+    const ctx = { roster, counts, selectionCounts, forceCategoryCounts, force, system };
 
     // 1. Constraints am categoryLink (samt Quirk-geerbtem max), Modifier vom Link.
     collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId }).forEach(con =>
@@ -266,7 +275,7 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
       system, roster, selectionCounts, forceCategoryCounts, force, catalogueId: forceCatalogueId
     })) return;
 
-    const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
+    const ctx = { roster, system, counts, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
     const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
     if (minValue <= 0) return;
 
@@ -326,7 +335,7 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
       consideredSelectors.add(selectorKey);
 
       const ctx = {
-        system, roster, selectionCounts, forceCategoryCounts: rosterCategoryCounts,
+        system, roster, counts, selectionCounts, forceCategoryCounts: rosterCategoryCounts,
         catalogueId, parentCatalogueId: catalogueId
       };
       if (isSelectionEntryHidden(entry, ctx)) return;
@@ -591,6 +600,7 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
   entry.constraints.forEach(con => {
     const ctx = {
       roster,
+      counts,
       selectionCounts,
       forceCategoryCounts: Object.values(categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {}),
       selection,
@@ -786,7 +796,7 @@ function checkGroupConstraints({ selection, entry }, context) {
       // self-incrementing modifier (e.g. "raise the cap for every Dispel Scroll already
       // taken") scan one level too high whenever the group sits behind an intermediate
       // wrapper selection, silently contributing 0 and leaving the base cap in place.
-      const ctx = { roster, selectionCounts, forceCategoryCounts, selection, force, system, parentCatalogueId: forceCatalogueId };
+      const ctx = { roster, counts, selectionCounts, forceCategoryCounts, selection, force, system, parentCatalogueId: forceCatalogueId };
       const { value: finalValue, causes } = evaluateConstraintWithCauses(con, getEffectiveModifiers(group), ctx);
       if (finalValue < 0) return;
 
