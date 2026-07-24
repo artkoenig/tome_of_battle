@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [01]
 
@@ -23,3 +23,4 @@ gezählten Nenner abgeleitet wird. Eine Prozentgrenze mit leerem Bezugsrahmen
       Null-Nenner-Diagnose.
 
 ## Comments
+- Grenz-Oberflaeche verbreitert: MIN-Grenzen (actual>=bound), Kostensummen-Grenzen COST_SUM(costTypeId) per ID (Index fuehrt jetzt costSums je Tally), Prozentgrenzen mit Grenzwert aus dem Nenner des Bezugsrahmens und einer zentralen roundHalfUp-Konvention (rounding.js); Nenner 0 -> SUSPENDED + zeroDenominator-Diagnose (A4). Neu: src/evaluator/rounding.js (+ .test.js), src/evaluator/constraints.test.js. Erweitert: model.js, catalogReader.js, countIndex.js, query.js, constraints.js. Voller Testlauf gruen (1608 vitest + E2E); lint/typecheck/depcruise sauber, Evaluator/Solver-Isolation intakt.

@@ -4,14 +4,16 @@
  * `src/parser/`). Er nutzt allein die Plattform-Primitive `DOMParser` (Browser
  * bzw. jsdom im Test) und erzeugt daraus das engine-eigene Definitionsmodell.
  *
- * Skeleton-Umfang (Issue 01): geschachtelte `selectionEntry`-Elemente mit
- * ihren `constraint`-Grenzen. Kein ZIP-Entpacken, kein XSD-Gate, keine
- * Link-Ketten/Importe (Resolver-Ausbaustufen spaeterer Scheiben).
+ * Umfang (Issue 01/02): geschachtelte `selectionEntry`-Elemente mit ihren
+ * `costs` (Kostenart per ID) und ihren `constraint`-Grenzen — MIN/MAX ueber
+ * Selektionsanzahl *und* Kostensummen sowie Prozentgrenzen. Kein ZIP-Entpacken,
+ * kein XSD-Gate, keine Link-Ketten/Importe (Resolver-Ausbaustufen spaeter).
  */
 
 import {
   LimitKind,
-  CountedField,
+  SELECTION_COUNT,
+  costSumField,
   ScopeKeyword,
   DiagnosticKind,
   diagnostic,
@@ -22,15 +24,19 @@ const Tag = Object.freeze({
   SELECTION_ENTRY: 'selectionEntry',
   CONSTRAINTS: 'constraints',
   CONSTRAINT: 'constraint',
+  COSTS: 'costs',
+  COST: 'cost',
 });
 
 const Attr = Object.freeze({
   ID: 'id',
   NAME: 'name',
   TYPE: 'type',
+  TYPE_ID: 'typeId',
   FIELD: 'field',
   VALUE: 'value',
   SCOPE: 'scope',
+  PERCENT_VALUE: 'percentValue',
 });
 
 /** Battlescribe-XML-Vokabular auf das engine-eigene Enum abgebildet. */
@@ -38,14 +44,27 @@ const LIMIT_KIND_BY_XML = Object.freeze({
   max: LimitKind.MAX,
   min: LimitKind.MIN,
 });
-const COUNTED_FIELD_BY_XML = Object.freeze({
-  selections: CountedField.SELECTION_COUNT,
-});
+
+/** Das `field`-Attribut, das die Selektionsanzahl statt einer Kostenart meint. */
+const SELECTION_COUNT_FIELD_XML = 'selections';
+
 const SCOPE_BY_XML = Object.freeze({
   roster: ScopeKeyword.ROSTER,
 });
 
+const BOOLEAN_TRUE_XML = 'true';
 const XML_MIME_TYPE = 'application/xml';
+
+/**
+ * Bildet das `field`-Attribut einer Grenze auf das engine-eigene Feld ab.
+ * `"selections"` meint die Selektionsanzahl; jeder andere Wert ist die **ID**
+ * einer Kostenart (Battlescribe kodiert Kosten-Grenzen ueber die Kostenart-ID
+ * im `field`-Attribut) und wird zu `COST_SUM(costTypeId)`.
+ */
+function readField(fieldAttr) {
+  if (fieldAttr === null || fieldAttr === '') return undefined;
+  return fieldAttr === SELECTION_COUNT_FIELD_XML ? SELECTION_COUNT : costSumField(fieldAttr);
+}
 
 /** Direkte Kind-Elemente eines Elements mit gegebenem Tag-Namen. */
 function directChildren(element, tagName) {
@@ -71,9 +90,10 @@ function wrappedChildren(element, wrapperTag, tagName) {
 function readConstraint(constraintEl, diagnostics) {
   const id = constraintEl.getAttribute(Attr.ID);
   const kind = LIMIT_KIND_BY_XML[constraintEl.getAttribute(Attr.TYPE)];
-  const field = COUNTED_FIELD_BY_XML[constraintEl.getAttribute(Attr.FIELD)];
+  const field = readField(constraintEl.getAttribute(Attr.FIELD));
   const scope = SCOPE_BY_XML[constraintEl.getAttribute(Attr.SCOPE)];
-  const value = Number.parseInt(constraintEl.getAttribute(Attr.VALUE), 10);
+  const value = Number.parseFloat(constraintEl.getAttribute(Attr.VALUE));
+  const isPercent = constraintEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML;
 
   if (kind === undefined || field === undefined || scope === undefined || Number.isNaN(value)) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONSTRAINT, {
@@ -84,7 +104,7 @@ function readConstraint(constraintEl, diagnostics) {
     }));
     return null;
   }
-  return { id, kind, field, scope, value };
+  return { id, kind, field, scope, value, isPercent };
 }
 
 /** Liest die Grenzen eines Eintrags. */
@@ -94,11 +114,28 @@ function readLimits(entryEl, diagnostics) {
     .filter(limit => limit !== null);
 }
 
-/** Liest einen `<selectionEntry>` samt geschachtelter Kind-Eintraege. */
+/**
+ * Liest die Basiskosten eines Eintrags als Abbildung Kostenart-ID → Wert.
+ * Kostenarten werden **per ID** (`typeId`), nie per Name, gefuehrt.
+ */
+function readCosts(entryEl) {
+  const costs = {};
+  for (const costEl of wrappedChildren(entryEl, Tag.COSTS, Tag.COST)) {
+    const costTypeId = costEl.getAttribute(Attr.TYPE_ID);
+    const value = Number.parseFloat(costEl.getAttribute(Attr.VALUE));
+    if (costTypeId !== null && !Number.isNaN(value)) {
+      costs[costTypeId] = value;
+    }
+  }
+  return costs;
+}
+
+/** Liest einen `<selectionEntry>` samt Kosten und geschachtelter Kind-Eintraege. */
 function readEntry(entryEl, diagnostics) {
   return {
     id: entryEl.getAttribute(Attr.ID),
     name: entryEl.getAttribute(Attr.NAME),
+    costs: readCosts(entryEl),
     limits: readLimits(entryEl, diagnostics),
     children: readEntries(entryEl, diagnostics),
   };

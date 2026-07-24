@@ -3,27 +3,51 @@
  * (`src/evaluator/`, ADR-0030, `docs/evaluator-architecture.md` §4.1).
  *
  * Diese Datei buendelt die Enums, Schluessel-Kodierung und Diagnose-Fabrik, die
- * alle Schichten teilen. Fuer den Walking-Skeleton (Issue 01) ist bewusst nur
- * das Vokabular des duennsten Pfades vorhanden: eine MAX-Grenze auf die
- * Selektionsanzahl im ROSTER-Bezugsrahmen. Spaetere Scheiben erweitern die
- * Enums (MIN, COST_SUM, weitere Scopes) an genau dieser Stelle.
+ * alle Schichten teilen. Nach dem Walking-Skeleton (Issue 01) traegt sie das
+ * verbreiterte Grenz-Vokabular (Issue 02): MIN- und MAX-Grenzen ueber die
+ * Selektionsanzahl *und* Kostensummen (Kostenart per ID) sowie Prozentgrenzen.
+ * Weitere Scopes und Flags folgen in spaeteren Scheiben an genau dieser Stelle.
  */
 
-/** Art einer Grenze. Skeleton wertet nur MAX aus; MIN folgt in einer spaeteren Scheibe. */
+/** Art einer Grenze: Unter- (MIN) oder Obergrenze (MAX). */
 export const LimitKind = Object.freeze({
   MIN: 'min',
   MAX: 'max',
 });
 
-/** Gezaehltes Feld einer Query. Skeleton kennt nur die Selektionsanzahl. */
-export const CountedField = Object.freeze({
+/**
+ * Diskriminator des gezaehlten Feldes einer Query. `SELECTION_COUNT` zaehlt
+ * Selektionen; `COST_SUM` summiert eine Kostenart, die per ID benannt wird
+ * (`docs/evaluator-architecture.md` §4.1: `CountedField { SELECTION_COUNT,
+ * COST_SUM(costTypeId) }`).
+ */
+export const CountedFieldKind = Object.freeze({
   SELECTION_COUNT: 'selectionCount',
+  COST_SUM: 'costSum',
 });
 
-/** Bezugsrahmen (Scope) einer Query. Skeleton kennt nur den gesamten Roster. */
+/** Das Feld "Selektionsanzahl" als unveraenderlicher, parameterloser Wert. */
+export const SELECTION_COUNT = Object.freeze({ kind: CountedFieldKind.SELECTION_COUNT });
+
+/**
+ * Das Feld "Kostensumme einer Kostenart", identifiziert **per ID** (nicht per
+ * Name) — die Auspraegung von `COST_SUM(costTypeId)`.
+ */
+export function costSumField(costTypeId) {
+  return Object.freeze({ kind: CountedFieldKind.COST_SUM, costTypeId });
+}
+
+/** Bezugsrahmen (Scope) einer Query. Diese Scheibe kennt nur den gesamten Roster. */
 export const ScopeKeyword = Object.freeze({
   ROSTER: 'roster',
 });
+
+/**
+ * Sentinel fuer einen suspendierten Grenzwert: eine Prozentgrenze mit leerem
+ * Bezugsrahmen (Nenner 0) wird weder erfuellt noch verletzt, sondern
+ * ausgesetzt (`docs/evaluator-architecture.md` §4.7, Annahme A4).
+ */
+export const SUSPENDED = Symbol('suspended');
 
 /** Klassifikation einer Diagnose (Auswertungsproblem, nie still verschluckt). */
 export const DiagnosticKind = Object.freeze({
@@ -32,6 +56,7 @@ export const DiagnosticKind = Object.freeze({
   UNSUPPORTED_CONSTRAINT: 'unsupportedConstraint',
   UNRESOLVED_SCOPE: 'unresolvedScope',
   UNSUPPORTED_FIELD: 'unsupportedField',
+  ZERO_DENOMINATOR: 'zeroDenominator',
 });
 
 const SCOPE_KEY_SEPARATOR = '::';

@@ -3,12 +3,13 @@
  * die Scopes und Felder versteht. Limit (und in spaeteren Scheiben Condition
  * und Repeat) rufen ausschliesslich diese Funktion.
  *
- * Skeleton-Umfang: nur der ROSTER-Rahmen und das Feld Selektionsanzahl. Flags
- * (`shared`, `includeChildSelections`, ...) und weitere Scopes folgen spaeter.
+ * Umfang: nur der ROSTER-Rahmen, dafuer beide Felder — Selektionsanzahl und
+ * Kostensumme je Kostenart (per ID). Flags (`shared`, `includeChildSelections`,
+ * ...) und weitere Scopes folgen in spaeteren Scheiben.
  */
 
 import {
-  CountedField,
+  CountedFieldKind,
   ScopeKeyword,
   DiagnosticKind,
   scopeKey,
@@ -23,8 +24,8 @@ function resolveFrame(scope) {
 /**
  * Zaehlt `field` im Rahmen `scope`, gefiltert auf `targetId`.
  *
- * @param {{ index: { get: (key: string) => { selectionCount: number } }, diagnostics: object[] }} ctx
- * @param {string} field  Aus `CountedField`.
+ * @param {{ index: { get: (key: string) => { selectionCount: number, costSums: Map<string, number> } }, diagnostics: object[] }} ctx
+ * @param {{ kind: string, costTypeId?: string }} field  Aus `SELECTION_COUNT` / `costSumField`.
  * @param {string} scope  Aus `ScopeKeyword`.
  * @param {string|null} targetId  Ziel-ID oder `null` fuer "alles im Rahmen".
  * @returns {number}
@@ -36,8 +37,11 @@ export function query(ctx, field, scope, targetId) {
     return 0;
   }
   const tally = ctx.index.get(scopeKey(frame, targetId));
-  if (field === CountedField.SELECTION_COUNT) {
+  if (field.kind === CountedFieldKind.SELECTION_COUNT) {
     return tally.selectionCount;
+  }
+  if (field.kind === CountedFieldKind.COST_SUM) {
+    return tally.costSums.get(field.costTypeId) ?? 0;
   }
   ctx.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_FIELD, { field }));
   return 0;
