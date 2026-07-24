@@ -39,6 +39,16 @@ Die bei jedem Push auf `main` neu erzeugte HTML-Seite über den Zustand des Proj
 Sein Veröffentlichen heißt **Veröffentlichung des Zustandsberichts** — es ist ausdrücklich kein *Deployment*, kein *Release* und erreicht keine *Production*: Diese drei Begriffe bleiben exklusiv an die Auslieferung der **Anwendung** über Vercel gebunden. Der Bericht enthält keinen Anwendungscode, hat keine Versionsnummer und kein Freigabe-Gate.
 _Avoid_: "Pages-Deployment", "Report-Release", "Doku-Production" — jede Übertragung der Auslieferungsbegriffe auf den Bericht verwässert sie.
 
+### Regelauswertung (Constraints)
+
+**Query**:
+Der gemeinsame BSData-Grundbaustein (XSD `QueryBase`), der *etwas zählt* (`field`: Anzahl Auswahlen oder Summe einer Kostenart) in einem *Bezugsrahmen* (`scope`). Seine drei Ausprägungen sind **Grenze** (Constraint, min/max), **Bedingung** (Condition, Vergleich → Wahrheitswert) und **Wiederholung** (Repeat, Teilung → Wiederholungszahl); sie unterscheiden sich nur darin, was mit dem gezählten Wert geschieht.
+_Avoid_: „Constraint" als Oberbegriff für alle drei — eine Constraint ist nur die Grenzen-Ausprägung.
+
+**Bezugsrahmen (Scope)**:
+Der Bereich, über den eine Query zählt — ein fester Satz Schlüsselwörter (`roster`, `force`, `parent`, `self`) oder die ID eines Eintrags bzw. einer Kategorie. Ein `roster`-/`force`-Bezug zählt über die ganze Liste bzw. das ganze Kontingent, nicht nur den lokalen Teilbaum.
+_Avoid_: „Scope" mit „Ziel" (`childId`, *was* gezählt wird) zu vermengen — der Bezugsrahmen ist *wo* gezählt wird.
+
 ### Validierung & Fehlermeldungen
 
 **Validierungsmeldung**:
