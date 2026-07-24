@@ -30,3 +30,4 @@ Repeat-Zähler `countRepeatOccurrences` aus `modifierEvaluator`. Der Hand-Matche
 - [ ] vitest (`npm test` Unit-Teil) und Puppeteer-E2E (`node src/solver/ui.test.js`) sind grün.
 
 ## Comments
+- Review-Nachtrag: profileCollector nutzt den geteilten Repeat-Zähler jetzt über getModifierAmount (das countRepeatOccurrences kapselt) statt es direkt zu importieren — plus den geteilten modifierConditionsPass. Der AC-Wortlaut 'importiert countRepeatOccurrences' ist damit als 'nutzt den einen geteilten Zähler' erfüllt; die Duplikation ist vollständig weg (auch getModifierAmount/Bedingungs-Gate), countRepeatOccurrences ist nun modul-intern.
