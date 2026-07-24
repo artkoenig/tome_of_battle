@@ -344,9 +344,15 @@ const modifierConditionsPass = (source, ctx) => {
 
 /**
  * The number of times a `repeat` modifier fires in `ctx`: how often its counted
- * quantity fits into the repeat's `value`, times its `repeats` multiplier.
+ * quantity fits into the repeat's `value`, times its `repeats` multiplier. Exported
+ * as the single repeat counter shared by every consumer — constraint/cost evaluation
+ * here and profile-stat scaling in {@link module:profileCollector} — so no second,
+ * weaker counter or target matcher can drift from the kernel (ADR 0029).
+ * @param {Object} repeat  a modifier's `repeat` object (`{scope, childId|field, value, repeats, roundUp}`).
+ * @param {Object} ctx     the flat evaluation context.
+ * @returns {number}
  */
-const countRepeatOccurrences = (repeat, ctx) => {
+export const countRepeatOccurrences = (repeat, ctx) => {
   const { roster } = ctx;
   let countedQuantity = 0;
 
