@@ -51,6 +51,25 @@ describe('validateRoster — Mindestbesetzung der Kontingent-Kategorien', () => 
 
     expect(errors.some(error => error.type === VIOLATION.categoryMin)).toBe(true);
   });
+
+  // Slice 08 (ADR 0029): die force-deklarierten Kategorie-Limits laufen jetzt über den
+  // EINEN Scope→Anker-Resolver (resolveScopeAnchor), nicht mehr über einen eigenen
+  // Kategorie-Anker. Der Kern der Vereinheitlichung ist die „leer = echte 0"-Semantik
+  // eines Kategorie-Ziels: nur so trägt derselbe Zählwert eine Pflicht (min) UND eine
+  // Obergrenze (max). Wäre eine leere Kategorie fälschlich 1 (der Eintrags-Fallback), so
+  // sähe die HQ-Pflicht (hqMin=1) sich zu Unrecht erfüllt.
+  test('leere Kategorie zählt echte 0: die Pflicht (min) schlägt an, die Obergrenze (max) nicht', () => {
+    const emptyHqRoster = createRoster({
+      name: 'No HQ Force',
+      selections: [createTacticalSquadSelection()]
+    });
+
+    const errors = validateRoster(emptyHqRoster, createGrimdarkSystem());
+    const hqErrors = errors.filter(error => error.categoryId === CATEGORY_ID.hq);
+
+    expect(hqErrors.some(error => error.type === VIOLATION.categoryMin)).toBe(true);
+    expect(hqErrors.some(error => error.type === VIOLATION.categoryMax)).toBe(false);
+  });
 });
 
 describe('validateRoster — Höchstzahl je Kontingent-Kategorie', () => {

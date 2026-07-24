@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -35,3 +35,4 @@ Konstruktor).
 - [ ] vitest (`npm test` Unit-Teil) und Puppeteer-E2E (`node src/solver/ui.test.js`) sind grün; lint und typecheck sauber.
 
 ## Comments
+- Umgesetzt: resolveCategoryAnchor und der CATEGORY-AnchorKind sind entfernt; resolveScopeAnchor ist der einzige Kategorie-Zähl-Eintrittspunkt. Die leere-Kategorie=0-Semantik lebt jetzt über ein isCategoryScope-Flag am ENTRY_BUCKET (Kategorie-Ziel -> 0 bei leer, Eintrags-Ziel behält den Instanz-Fallback). checkForceCategoryLimits ruft resolveScopeAnchor({scope: targetCatId}, ...). Verhaltens-Delta (spec-korrekt): ein kategorie-gescopetes Constraint auf einer LEEREN Kategorie zählt jetzt 0 statt 1 -> Pflicht-min feuert korrekt. Neuer Test (leere HQ-Kategorie: min feuert, max nicht). vitest 1591 + E2E grün, lint/typecheck/knip sauber.

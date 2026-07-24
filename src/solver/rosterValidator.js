@@ -6,7 +6,7 @@ import { isPercentConstraint, applyPercentage } from './constraintScope.js';
 import {
   ConstraintScope, isEntryScope, isCostField, isRosterLimitField, costTypeIdOfRosterLimitField
 } from './battlescribeConstants.js';
-import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, resolveCategoryAnchor, measureOver, MeasureTarget } from './queryEngine.js';
+import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, measureOver, MeasureTarget } from './queryEngine.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from './armyWideSelectors.js';
@@ -216,17 +216,18 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
 
     const catDef = system.categoryEntries?.find(ce => ce.id === targetCatId);
     const catName = catDef ? catDef.name : catLink.name;
-    // Armeeweite Kategorie-Belegung über den zentralen Zähl-Kern (ADR 0029): der
-    // Kategorie-Anker liest die roster-weite Kategorie-Summe. Diese steht bereits in
-    // `selectionCounts` — derselben Quelle, die der ENTRY_BUCKET-Anker zuerst liest —
-    // sodass ein Kategorie-Ziel überall genau dieselbe armeeweite Zahl ergibt (SSOT,
-    // keine zweite Aggregation). Eine leere Kategorie ist echte 0: derselbe Wert trägt
-    // Ober- (max) wie Pflichtgrenze (min).
+    // Armeeweite Kategorie-Belegung über den **einen** Scope→Anker-Resolver (ADR 0029):
+    // ein Kategorie-Scope (`isCategoryTargetId`) liest die roster-weite Kategorie-Summe
+    // aus `selectionCounts` — derselben Quelle und demselben Anker (ENTRY_BUCKET), den
+    // ein kategorie-gescopter Constraint nutzt — statt über einen zweiten, eigenen
+    // Kategorie-Anker. Eine leere Kategorie ist echte 0: derselbe Wert trägt Ober- (max)
+    // wie Pflichtgrenze (min).
+    const categorySubject = nullInstanceSubject(force);
     const count = measureOver(
-      resolveCategoryAnchor(targetCatId, selectionCounts),
+      resolveScopeAnchor({ scope: targetCatId }, categorySubject, queryCtx),
       {
         target: MeasureTarget.INSTANCES,
-        subject: nullInstanceSubject(force),
+        subject: categorySubject,
         ctx: queryCtx
       }
     );

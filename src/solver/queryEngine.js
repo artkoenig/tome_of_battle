@@ -81,7 +81,6 @@ const AnchorKind = Object.freeze({
   AGGREGATE: 'aggregate',
   ENTRY_BUCKET: 'entryBucket',
   GROUP: 'group',
-  CATEGORY: 'category',
   COUNT_BUCKET: 'countBucket'
 });
 
@@ -120,19 +119,6 @@ const isCategoryTargetId = (targetId, system) =>
  */
 export function resolveGroupAnchor(matchedSelections) {
   return { kind: AnchorKind.GROUP, matchedSelections: matchedSelections ?? NO_SELECTIONS };
-}
-
-/**
- * Baut einen **Kategorie-Anker** über den vorberechneten Kategorie-Zähl-Eimer eines Kontingents.
- * Anders als der Eintrags-Eimer fällt eine leere Kategorie auf **0** zurück (nicht auf eine
- * Einzelinstanz), damit eine Kategorie-Obergrenze ebenso wie eine Kategorie-Pflicht (`min`) über
- * genau diesen Anker geprüft werden kann — auch dann, wenn die Kategorie gar nicht belegt ist.
- * @param {string} categoryId               die Ziel-Kategorie.
- * @param {Object} forceCategoryCounts      die Kategorie-Zählungen des Kontingents.
- * @returns {Object} der Kategorie-Anker.
- */
-export function resolveCategoryAnchor(categoryId, forceCategoryCounts) {
-  return { kind: AnchorKind.CATEGORY, categoryId, forceCategoryCounts: forceCategoryCounts ?? {} };
 }
 
 /** Eine Auswahl ohne ausdrückliche `number` steht für genau eine Instanz. */
@@ -274,9 +260,16 @@ export function resolveScopeAnchor(query, subject, ctx) {
   if (isEntryScope(scope)) {
     const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
     const container = parentSelection ?? force;
+    // Ziel-Typ-Regel (§7.7, {@link isCategoryTargetId}): benennt der Scope eine
+    // **Kategorie**, so ist eine unbelegte Kategorie echte **0** (kein Einzelinstanz-
+    // Ersatz). Nur ein selbst-referenzieller **Eintrags**-Scope zählt die tragende
+    // Instanz als 1. Damit trägt derselbe Anker eine Kategorie-Pflicht (`min`) wie
+    // eine -Obergrenze — einheitlich über **alle** Aufrufer (auch die force-deklarierten
+    // Kategorie-Limits), statt über einen zweiten Kategorie-Anker.
     return {
       kind: AnchorKind.ENTRY_BUCKET,
       scopeId: scope,
+      isCategoryScope: isCategoryTargetId(scope, system),
       selectionCounts,
       forceCategoryCounts,
       containerSelections: childSelectionsOf(container)
@@ -377,17 +370,16 @@ function measureInstances(anchor, { includeChildSelections, matcher, subject, ct
     case AnchorKind.AGGREGATE:
       return countEntryInstancesInBucket(anchor.counts, subject);
     case AnchorKind.ENTRY_BUCKET:
+      // Ein Kategorie-Scope fällt bei Leere auf echte 0 zurück, ein Eintrags-Scope auf
+      // die eine tragende Instanz (`instanceCount`) — die Unterscheidung trifft
+      // {@link resolveScopeAnchor} über `isCategoryScope`, hier wird sie nur gelesen.
       return anchor.selectionCounts[anchor.scopeId] ||
         anchor.forceCategoryCounts[anchor.scopeId] ||
-        instanceCount;
+        (anchor.isCategoryScope ? 0 : instanceCount);
     case AnchorKind.GROUP:
       // Die Trefferliste ist bereits flach aufgelöst; ihre eigene Anzahl ist die
       // Summe der `number` je Treffer, ohne erneutes Absteigen in Kinder.
       return countSelections(anchor.matchedSelections, {});
-    case AnchorKind.CATEGORY:
-      // Eine leere Kategorie ist echte 0 (keine Einzelinstanz-Ersatzannahme), sodass
-      // dieselbe Messung eine Kategorie-Pflicht (`min`) wie eine -Obergrenze trägt.
-      return anchor.forceCategoryCounts[anchor.categoryId] || 0;
     case AnchorKind.COUNT_BUCKET:
       // Aggregierter Zähler einer Condition/eines Repeats über die vorberechneten Tabellen;
       // eine unbelegte Ziel-ID ist echte 0 (kein Einzelinstanz-Ersatz).

@@ -3,7 +3,7 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { computeRosterCounts } from './rosterCounter.js';
 import { findForceContainingSelection, findSelectionInRoster } from './rosterTree.js';
 import {
-  createQueryContext, resolveScopeAnchor, resolveGroupAnchor, resolveCategoryAnchor,
+  createQueryContext, resolveScopeAnchor, resolveGroupAnchor,
   resolveCountBucketAnchor, measureOver, measureQuery, createEntryInstanceMatcher, MeasureTarget
 } from './queryEngine.js';
 
@@ -282,17 +282,45 @@ describe('resolveGroupAnchor — a group frame counted and summed over the same 
   });
 });
 
-describe('resolveCategoryAnchor — a force category counted over the precomputed bucket', () => {
+describe('resolveScopeAnchor — a category scope counts army-wide with real-zero-empty', () => {
+  // A category-id scope resolves through the SAME seam as an entry-id scope
+  // (ENTRY_BUCKET), but the domain rule §7.7 makes an *empty* category a true 0 rather
+  // than the self-instance fallback an entry scope uses. This is what lets one anchor
+  // carry a category `min` (Pflicht) as well as a `max` — for every caller, including the
+  // force-declared category limits, without a second category-only resolver.
   const CATEGORY_ID = 'cat-hero';
+  const ENTRY_SCOPE_ID = 'some-entry-id';
+  const roster = makeRoster([makeForce('f1', [sel({ id: 's1', entry: HERO_ENTRY_ID })])]);
 
-  test('INSTANCES reads the category tally of the force', () => {
-    const anchor = resolveCategoryAnchor(CATEGORY_ID, { [CATEGORY_ID]: 3 });
-    expect(measureOver(anchor, { target: MeasureTarget.INSTANCES, subject: {}, ctx: {} })).toBe(3);
+  const categorySystem = () => {
+    const system = heroSystem();
+    system.categoryEntries = [{ id: CATEGORY_ID, name: 'Heroes' }];
+    return system;
+  };
+
+  // No bearing instance (as a force-declared category limit measures): the army-wide
+  // category tally lives in selectionCounts under the category id (computeRosterCounts).
+  const nullSubject = () => ({ selection: null, parentSelection: null, force: { id: 'f1' }, entry: null, entryId: null });
+  const measureScope = (scope, selectionCounts) => {
+    const subject = nullSubject();
+    const ctx = createQueryContext({
+      roster, system: categorySystem(),
+      counts: { selectionCounts, forceSelectionCounts: {}, categoryCounts: {} },
+      forceCatalogueId: CATALOGUE_ID
+    });
+    return measureOver(resolveScopeAnchor({ scope }, subject, ctx), { target: MeasureTarget.INSTANCES, subject, ctx });
+  };
+
+  test('an occupied category reads the army-wide tally', () => {
+    expect(measureScope(CATEGORY_ID, { [CATEGORY_ID]: 3 })).toBe(3);
   });
 
   test('an unoccupied category is a true zero, not a single-instance fallback', () => {
-    const anchor = resolveCategoryAnchor(CATEGORY_ID, {});
-    expect(measureOver(anchor, { target: MeasureTarget.INSTANCES, subject: {}, ctx: {} })).toBe(0);
+    expect(measureScope(CATEGORY_ID, {})).toBe(0);
+  });
+
+  test('an entry-id scope (not a category) keeps the single-instance fallback when empty', () => {
+    expect(measureScope(ENTRY_SCOPE_ID, {})).toBe(1);
   });
 });
 
