@@ -104,3 +104,4 @@ gilt unverändert und jetzt lückenlos).
 - [ ] Keine Oberflächen-Komponente wertet eine Constraint selbst aus; sie rendert ausschließlich das vom Solver gelieferte Verhaltensmodell.
 
 ## Comments
+- Zentrale Query-Engine umgesetzt (ADR 0029) über fünf Slices: queryEngine.js (scope-agnostischer Zähl-Kern), Entry-/Gruppen-/Kategorie-/Force-Constraints, Conditions & Repeats, selectionBehavior.js (UI-Verhaltensmodell), categoryLimits.js (konsistente Kategorie-Anzeige + zentraler Quirk). Alle Slices resolved, vitest 1582 + puppeteer-E2E grün. Offen für Review: benigner Modul-Zyklus modifierEvaluator->queryEngine->rosterCounter->modifierEvaluator; knip-Dead-Export isEntryScope auf der Fassade.
