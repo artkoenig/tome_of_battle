@@ -80,9 +80,11 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
 2. **Ein Zähl-Primitiv, scope-agnostisch.** Der Rechenkern bekommt den zu
    prüfenden Bereich als **Parameter** (einen aufgelösten Anker) und zählt/
    summiert darüber, ohne die Scope-Schlüsselwörter selbst zu kennen. Die einzige
-   Stelle, die die geschlossene Scope-Liste (`roster`/`force`/`parent`/`self`/
-   Eintrag/Kategorie) kennt, ist ein kleiner Resolver *vor* dem Kern, der ein
-   Scope-Token auf einen Anker abbildet. Der `parent`-Lauf existiert danach
+   Stelle, die die geschlossene Scope-Liste kennt, ist ein kleiner Resolver *vor*
+   dem Kern, der ein Scope-Token auf einen Anker abbildet: `roster`/`force`/`parent`
+   erhalten je einen eigenen Anker-Zweig; `self` sowie eine Eintrags-/Kategorie-ID
+   teilen sich den Instanz-/Eintrags-Anker (`self` = die eine tragende Instanz,
+   deckungsgleich mit dem bisherigen Verhalten). Der `parent`-Lauf existiert danach
    einmal. Der Kern liefert ein **reiches Ergebnis** (`{ Wert, gezählte
    Selektionen, Ursachen }`), aus dem die Ursachen nach ADR-0027 direkt folgen.
 
@@ -94,12 +96,20 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
    Der Prozent-Nenner läuft durch dasselbe Primitiv — Zähler/Nenner-Divergenz
    entfällt.
 
-4. **Aufzählung von der Definitionsseite, an Instanz-Rahmen gebunden.**
-   Constraints werden als Paare `(Grenzen-Quelle, gebundener Rahmen)` aus dem
-   Definitionsbaum aufgezählt, nicht aus dem Instanzbaum. Damit fällt „Pflicht-
-   Eintrag fehlt" mit dem Normalfall zusammen (leerer Rahmen → Anzahl 0 → `min`-
-   Verstoß) und Grenzen an Kontingent-/Kategorie-Definitionen, die im Instanzbaum
-   nie als Auswahl erscheinen, werden miterfasst.
+4. **Zählung über den Kern, Pflicht-Absenz definitionsseitig.** Die
+   Per-Selektions-Constraints werden weiterhin über den Instanzbaum-Lauf
+   (`checkSelectionTree`/`traverseSelectionTree`) erreicht; neu ist, dass ihre
+   Zählung über den Kern (`measureOver`) statt über eigene Scope-Logik läuft.
+   Der Sonderfall „Pflicht-Eintrag fehlt" wird — wo ein fehlender Eintrag im
+   Instanzbaum gar nicht vorkommt — definitionsseitig erfasst: über die
+   (bereits vor diesem Umbau bestehende, hier nur auf den Kern umgestellte)
+   Force-/Roster-Pflicht-Selektoren in `armyWideSelectors.js`. **Bekannte
+   Grenze:** eine fehlende Pflicht-Auswahl mit `scope="parent"` oder innerhalb
+   einer Gruppe wird dadurch nicht erfasst — sie würde nur sichtbar, wenn die
+   besitzende Selektion im Instanzbaum läge. Das deckt die real vorkommenden
+   Muster (armee-/kontingentweite Pflicht) ab; eine allgemeine
+   definitionsseitige Aufzählung aller Ebenen bleibt offen, falls ein Katalog
+   sie verlangt.
 
 5. **Ein Ergebnis, zwei Sichten.** Validierung ist der Filter auf Verstöße
    (ungültige Listen werden markiert, nicht hart verhindert). Die **UI-
@@ -110,12 +120,17 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
    wertet keine Constraint selbst mehr aus. Das ist ADR-0022, konsequent auf die
    ganze UI ausgeweitet.
 
-6. **Beschränkte Stabilisierung statt Fixpunkt.** Für die eine reale Kopplung —
-   ein Modifikator ändert die effektive Kategorie, eine kategoriezählende
-   Bedingung hängt davon ab — wird bei Bedarf mit einer harten Iterationsschranke
-   und deterministischem Abbruch nachgezählt. Kein allgemeiner Fixpunkt-Solver;
-   real konvergiert es in einem Durchlauf, die Schranke schützt nur gegen
-   pathologische Kataloge.
+6. **Einmaliger Durchlauf; beschränkte Stabilisierung als vorgemerkte
+   Absicherung (nicht umgesetzt).** Die Engine wertet in einem geordneten
+   Durchlauf aus, wie zuvor. Für die eine theoretische Kopplung — ein Modifikator
+   ändert die effektive Kategorie, eine kategoriezählende Bedingung hängt davon
+   ab — wäre eine beschränkte Stabilisierung (harte Iterationsschranke,
+   deterministischer Abbruch) die Absicherung. Sie ist **bewusst nicht
+   implementiert**: die real vorkommenden Kataloge konvergieren in einem
+   Durchlauf, und ein Iterations-Loop gegen ein nicht belegtes pathologisches
+   Muster wäre spekulative Verallgemeinerung (YAGNI). Der Haken bleibt hier
+   vermerkt, damit die Absicherung nachgezogen werden kann, sobald ein Katalog
+   sie tatsächlich verlangt. Kein allgemeiner Fixpunkt-Solver.
 
 ### Konsequenzen (Auswirkungen)
 
@@ -181,11 +196,11 @@ eine dünne Reaktion auf `n`:
         │                                                                     
         ▼  L3  Konsumenten (dünn)                                            
   ┌───────────────────────────────────────────────────────────────────────────────────┐
-  │  L4  Aufzählung von der Definitionsseite, an Instanz-Rahmen gebunden:               │
-  │      Paare (Grenzen-Quelle aus dem Definitionsbaum, gebundener Instanz-Rahmen) → L3 │
-  │      Leerer Rahmen (n = 0) ⇒ „Pflicht-Eintrag fehlt" fällt mit dem Normalfall       │
-  │      zusammen; deckt auch Force-/Kategorie-Grenzen ab, die im Instanzbaum nie als   │
-  │      Auswahl erscheinen. traverseSelectionTree bildet die Rahmen, treibt aber nicht.│
+  │  L4  Treiber: Instanzbaum-Lauf (checkSelectionTree/traverseSelectionTree) für die  │
+  │      Per-Selektions-Constraints; Zählung je Constraint über L3/Kern.                │
+  │      Pflicht-Absenz (Eintrag fehlt im Instanzbaum) definitionsseitig — über die     │
+  │      bestehenden Force-/Roster-Pflicht-Selektoren (armyWideSelectors), nur auf den  │
+  │      Kern umgestellt. Grenze: parent-/gruppenweite Pflicht-Absenz nicht erfasst.    │
   └───────────────────────────────────────────────────────────────────────────────────┘
         │
         ▼  L5  EIN Ergebnis → alles abgeleitet
@@ -208,7 +223,8 @@ eine dünne Reaktion auf `n`:
 - **L3 — drei dünne Adapter:** `evaluateConstraint`/`evaluateCondition`/
   `evaluateRepeat`. Schwellenwert weiter über `getModifiedConstraintValue`; der
   Prozent-Nenner ruft dieselbe `measureQuery` → Zähler/Nenner-Divergenz entfällt.
-- **L4 — definitionsseitige Aufzählung** (siehe Entscheidung Punkt 4).
+- **L4 — Instanzbaum-getriebene Zählung + definitionsseitige Pflicht-Absenz**
+  (siehe Entscheidung Punkt 4, samt der bekannten Grenze).
 - **L5 — ein Ergebnis, alles abgeleitet:** Verstöße, Aushebe-Verfügbarkeit (Diff,
   ADR 0022) und das UI-Verhaltensmodell stammen aus einem Lauf.
 
@@ -220,12 +236,12 @@ eine dünne Reaktion auf `n`:
 2. **Globaler Count-Vorlauf ist Pflicht.** `force`/`roster`/`category`-Scopes werden
    aus vorberechneten Zähltabellen beantwortet, nicht aus dem lokalen Teilbaum —
    die Auswertung ist zweiphasig (Index bauen → laufen), kein reiner Single-Walk.
-3. **Nicht alle Constraints hängen am Instanzbaum.** Grenzen an Kontingent- und
-   Kategorie-Definitionen sowie Pflicht-Grenzen (die feuern, wenn ein Eintrag
-   *fehlt*) werden nur durch die definitionsseitige Aufzählung (L4) erfasst. Der
-   `.ros`-Import flacht verschachtelte Forces ein (ADR 0011 §5), sodass
-   `includeChildForces` die dokumentierte Näherung „ganzes Roster" bleibt —
-   isoliert in L2a.
+3. **Nicht alle Constraints hängen am Instanzbaum.** Pflicht-Grenzen, die feuern,
+   wenn ein Eintrag *fehlt*, sind für Force-/Roster-Scope über die
+   definitionsseitigen Pflicht-Selektoren (L4) erfasst; parent-/gruppenweite
+   Pflicht-Absenz bleibt offen (siehe Punkt 4). Der `.ros`-Import flacht
+   verschachtelte Forces ein (ADR 0011 §5), sodass `includeChildForces` die
+   dokumentierte Näherung „ganzes Roster" bleibt — isoliert in L2a.
 
 ### Unabhängige Bestätigung (Clean-Room)
 
@@ -234,10 +250,12 @@ blind eine Architektur aus Problem + Datenform entworfen. Deckungsgleich bestät
 das **eine Zähl-Primitiv** für alle Konstrukte und Rahmen, die **Scope-als-
 Parameter**-Trennung, die **reine Auswertungsfunktion mit einem Ergebnis-Modell**
 für Validierung *und* UI, Verfügbarkeit als **Diff zweier Läufe**, sowie
-Prozent-Zähler und -Nenner aus demselben Kernel. Zwei Schärfungen wurden daraus
-übernommen: die **definitionsseitige Aufzählung** (Punkt 4) und die **beschränkte
-Stabilisierung** (Punkt 6). SAT/CSP-Solver und ein generelles reaktives
-Abhängigkeitsdiagramm hat der Reviewer aus denselben Gründen verworfen wie hier.
+Prozent-Zähler und -Nenner aus demselben Kernel. Von den Schärfungen des
+Reviewers ist die **definitionsseitige Pflicht-Absenz** (Punkt 4) für Force-/
+Roster-Scope umgesetzt; die **beschränkte Stabilisierung** (Punkt 6) ist als
+Absicherung vorgemerkt, aber bewusst nicht implementiert (YAGNI). SAT/CSP-Solver
+und ein generelles reaktives Abhängigkeitsdiagramm hat der Reviewer aus denselben
+Gründen verworfen wie hier.
 
 ## Vor- und Nachteile der Optionen
 

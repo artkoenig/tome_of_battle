@@ -1,8 +1,4 @@
-import { getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 import { getModifiedConstraintValue } from './modifierEvaluator.js';
-import { countSelections, rootSelectionsOf, childSelectionsOf } from './rosterTree.js';
-import { SELECTIONS_FIELD } from '../parser/xmlParser.js';
-import { ConstraintScope } from './battlescribeConstants.js';
 import '../types.js';
 
 /**
@@ -71,88 +67,10 @@ export function formatConstraintLimit(value, constraint) {
 }
 
 /**
- * True when the constraint counts a cost (points/resources), false when it
- * counts a number of selections. The single source of truth for the
- * "is this field a cost?" question across validator and UI.
- *
- * A field is a cost when it is the roster's configured cost-limit type or any
- * cost type the game system declares. `selections` (or an unknown field) is
- * treated as a selection count — no cost-type id may be assumed, since
- * `cost/@typeId` references an id the catalogue author chooses freely.
- */
-export function isCostField(field, system, roster = null) {
-  if (!field || field === SELECTIONS_FIELD) return false;
-  if (roster && field === roster.costLimitType) return true;
-  return !!system?.costTypes?.some(costType => costType.id === field);
-}
-
-/**
- * The top-level selections that make up a constraint's scope container.
- * - `roster`: every force's selections (the whole roster).
- * - `force` : the subject's own force, or — when `includeChildForces` is set —
- *   every force in the roster. `includeChildForces` officially widens the count
- *   to the force's descendant forces; the `.ros` import flattens nested forces
- *   into roster-level siblings (ADR-0011 §5), so no descendant relation survives
- *   in the roster model. "Every force" is the closest available superset.
- * - otherwise (`parent`/ancestor): the immediate parent selection's children,
- *   falling back to the force's selections.
- */
-export function collectScopeSelections({ roster, force, scope, parentSelection, includeChildForces = false }) {
-  if (scope === ConstraintScope.ROSTER) {
-    return rootSelectionsOf(roster);
-  }
-  if (scope === ConstraintScope.FORCE) {
-    return includeChildForces ? rootSelectionsOf(roster) : childSelectionsOf(force);
-  }
-  // An ancestor scope prefers the immediate parent's children, but a parent that
-  // carries no `selections` at all falls back to the force's own selections.
-  if (parentSelection?.selections) return childSelectionsOf(parentSelection);
-  return childSelectionsOf(force);
-}
-
-/**
- * The reference quantity a `percentValue` constraint is measured against: the
- * total of the constraint's `field` across its scope.
- * - Cost field: the summed cost in scope. For a roster-wide percentage of the
- *   roster's limited cost type, the configured points budget (`costLimit`) is
- *   the natural reference and is used when available.
- * - Selection field: the total number of selections in scope, honouring
- *   `includeChildSelections`.
- */
-export function getScopeReferenceTotal({ constraint, roster, system, force, parentSelection, forceCatalogueId, counts }) {
-  const { field, scope, includeChildForces, includeChildSelections } = constraint;
-  const scopeSelections = collectScopeSelections({ roster, force, scope, parentSelection, includeChildForces });
-
-  if (isCostField(field, system, roster)) {
-    if (scope === ConstraintScope.ROSTER && field === roster?.costLimitType && roster?.costLimit) {
-      return roster.costLimit;
-    }
-    return scopeSelections.reduce(
-      (sum, selection) => sum + getSelectionTotalCost(selection, field, TOP_LEVEL_PARENT_COUNT, {
-        system, roster, currentCatalogueId: forceCatalogueId, parentSelection, counts
-      }),
-      0
-    );
-  }
-
-  return countSelections(scopeSelections, { includeChildSelections });
-}
-
-/**
  * The absolute value a percentage of a reference quantity resolves to: `value% * reference`.
  * The single place the percent arithmetic lives, so every consumer (entry and group
  * percent limits) turns a percentage into an absolute threshold identically.
  */
 export function applyPercentage(value, reference) {
   return (value / PERCENT_DIVISOR) * reference;
-}
-
-/**
- * The absolute threshold a constraint's value resolves to. For a percentage
- * constraint this is `value% * reference`; otherwise it is the value itself.
- */
-export function resolveConstraintThreshold({ constraint, value, roster, system, force, parentSelection, forceCatalogueId, counts }) {
-  if (!isPercentConstraint(constraint)) return value;
-  const reference = getScopeReferenceTotal({ constraint, roster, system, force, parentSelection, forceCatalogueId, counts });
-  return applyPercentage(value, reference);
 }

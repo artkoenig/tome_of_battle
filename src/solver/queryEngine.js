@@ -3,8 +3,7 @@ import {
   childSelectionsOf, rootSelectionsOf, countSelections, countSelectionsInSubtree
 } from './rosterTree.js';
 import { getSelectionTotalCost, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
-import { isCostField } from './constraintScope.js';
-import { ConstraintScope, isEntryScope, isSharedQuery } from './battlescribeConstants.js';
+import { ConstraintScope, isEntryScope, isCostField, isSharedQuery } from './battlescribeConstants.js';
 import { SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { SELECTIONS_FIELD } from '../parser/xmlParser.js';
 import '../types.js';

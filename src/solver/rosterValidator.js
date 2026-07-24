@@ -2,9 +2,9 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, evaluateConstraintWithCauses, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
 import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
-import { isPercentConstraint, isCostField, applyPercentage } from './constraintScope.js';
+import { isPercentConstraint, applyPercentage } from './constraintScope.js';
 import {
-  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField
+  ConstraintScope, isEntryScope, isCostField, isRosterLimitField, costTypeIdOfRosterLimitField
 } from './battlescribeConstants.js';
 import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, resolveCategoryAnchor, measureOver, MeasureTarget } from './queryEngine.js';
 import { findForceEntryById } from './forceEntries.js';
@@ -183,6 +183,16 @@ function checkRosterCostLimit(roster, system, errors) {
 }
 
 /**
+ * Query-Subjekt ohne konkrete Selection-Instanz: benutzt, wenn über einen
+ * Kategorie-, Force- oder Roster-Anker gemessen wird, ohne an einer einzelnen
+ * Auswahl zu hängen (Kategorie- und Pflicht-Präsenz-Prüfungen). Ohne `entry`
+ * bleiben `entry`/`entryId` null; mit `entry` trägt es dessen id.
+ */
+function nullInstanceSubject(force, entry = null) {
+  return { selection: null, parentSelection: null, force, entry, entryId: entry?.id ?? null };
+}
+
+/**
  * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
  * @param {ValidationContext} context
  */
@@ -207,7 +217,7 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
       resolveCategoryAnchor(targetCatId, forceCategoryCounts),
       {
         target: MeasureTarget.INSTANCES,
-        subject: { selection: null, parentSelection: null, force, entry: null, entryId: null },
+        subject: nullInstanceSubject(force),
         ctx: queryCtx
       }
     );
@@ -263,7 +273,7 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
     // Die kontingentweite Belegung des Pflicht-Eintrags läuft über den zentralen Zähl-Kern
     // (ADR 0029): ein `force`-Anker über den vorberechneten Zähl-Eimer. Fehlt der Eintrag,
     // ist die Belegung 0 und die `min`-Pflicht schlägt an — der geforderte „fehlt ganz"-Fall.
-    const mandatorySubject = { selection: null, parentSelection: null, force, entry, entryId: entry.id };
+    const mandatorySubject = nullInstanceSubject(force, entry);
     const currentCount = measureOver(
       resolveScopeAnchor({ scope: ConstraintScope.FORCE }, mandatorySubject, queryCtx),
       { target: MeasureTarget.INSTANCES, subject: mandatorySubject, ctx: queryCtx }
@@ -327,7 +337,7 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
       // Roster-weite Belegung über den zentralen Zähl-Kern (ADR 0029): ein `roster`-Anker
       // über die roster-weiten Zähl-Eimer. Fehlt der Eintrag im ganzen Roster, ist die
       // Belegung 0 und die armeeweite `min`-Pflicht schlägt an.
-      const mandatorySubject = { selection: null, parentSelection: null, force, entry, entryId: entry.id };
+      const mandatorySubject = nullInstanceSubject(force, entry);
       const armyWideCount = measureOver(
         resolveScopeAnchor({ scope: ConstraintScope.ROSTER }, mandatorySubject, queryCtx),
         { target: MeasureTarget.INSTANCES, subject: mandatorySubject, ctx: queryCtx }

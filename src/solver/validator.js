@@ -39,7 +39,7 @@ export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, 
 export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, getExtraResourceTotals, resolveCostLimitTypeId, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 export { validateRoster, hasBlockingViolations, countBlockingViolations, VIOLATION_BLOCKS_ADD_AVAILABILITY, classifyBlocksAddAvailability } from './rosterValidator.js';
 export { getEntryAddAvailability, isBlockingAvailabilityViolation } from './entryAvailability.js';
-export { isPercentConstraint, isCostField, collectScopeSelections, getScopeReferenceTotal, resolveConstraintThreshold, formatConstraintLimit, getEffectiveConstraintLimit } from './constraintScope.js';
+export { isPercentConstraint, formatConstraintLimit, getEffectiveConstraintLimit } from './constraintScope.js';
 export { filterEntryScopedConstraints, isItemRepeatableWithinGroup, isGroupSingleChoice, classifyGroupItem, classifyStandaloneOption, exceedsGroupCountMax, wouldExceedGroupPointsLimit, hasGroupConstraintError, autofillCandidateMax } from './selectionBehavior.js';
 export { collectUnitProfilesAndRules } from './profileCollector.js';
 export { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './rosterSync.js';
@@ -48,7 +48,7 @@ export { getPlayableCatalogues } from './catalogueSelection.js';
 export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory, collectPrimaryCategoryEntries } from './entryVisibility.js';
 export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, isReachableViaForceCategories } from './armyWideSelectors.js';
 export { isIndependentSubUnit, hasEntryChildren } from './subUnit.js';
-export { ConstraintScope, NON_ENTRY_SCOPE_KEYWORDS, isEntryScope, ROSTER_LIMIT_FIELD_PREFIX, isRosterLimitField, costTypeIdOfRosterLimitField } from './battlescribeConstants.js';
+export { ConstraintScope, NON_ENTRY_SCOPE_KEYWORDS, isCostField, ROSTER_LIMIT_FIELD_PREFIX, isRosterLimitField, costTypeIdOfRosterLimitField } from './battlescribeConstants.js';
 export { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from './optionsCollector.js';
 export { groupProfilesByType } from './rulesEvaluator.js';
 export { createSelectionFromDef } from './selectionFactory.js';
