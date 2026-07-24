@@ -21,9 +21,11 @@
  *  - subUnit:           Prädikat „eigenständige Untereinheit"
  *  - battlescribeConstants: geteilte Format-Konstanten (Scopes, Limit-Feldpräfix)
  *  - optionsCollector:  wählbare Optionen einer Einheit einsammeln
+ *  - selectionBehavior: UI-Verhaltensmodell je Option/Gruppe (ADR 0029 L5, ADR 0022)
  *  - rulesEvaluator:    Profile gruppieren, Rüstungs-/Rettungswürfe herleiten
  *  - selectionFactory:  Auswahl-Knoten aus einer Katalog-Definition erzeugen
  *  - systemQuirks:      systemspezifische Eigenheiten nachschlagen
+ *  - categoryLimits:    wirksames Min/Max einer Kategorie für die Anzeige (quirk-bewusst)
  *  - constants:         Schlüsselwortlisten der Katalog-Heuristiken
  */
 export {
@@ -34,10 +36,11 @@ export {
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 export { isListRuleSelection, isListRuleEntryKind, resolveListRuleGroup } from './listRules.js';
 export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks, collectTriggeredMessages, getEffectiveName, getEffectiveSelectionName, canGroupMaxBeRaisedAboveSingleChoice, ValidationSeverity } from './modifierEvaluator.js';
-export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, getExtraResourceTotals, resolveCostLimitTypeId, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
+export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, aggregateRosterCategoryCounts, getExtraResourceTotals, resolveCostLimitTypeId, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 export { validateRoster, hasBlockingViolations, countBlockingViolations, VIOLATION_BLOCKS_ADD_AVAILABILITY, classifyBlocksAddAvailability } from './rosterValidator.js';
 export { getEntryAddAvailability, isBlockingAvailabilityViolation } from './entryAvailability.js';
-export { isPercentConstraint, isCostField, collectScopeSelections, getScopeReferenceTotal, resolveConstraintThreshold, formatConstraintLimit, getEffectiveConstraintLimit } from './constraintScope.js';
+export { isPercentConstraint, formatConstraintLimit, getEffectiveConstraintLimit } from './constraintScope.js';
+export { filterEntryScopedConstraints, isItemRepeatableWithinGroup, isGroupSingleChoice, classifyGroupItem, classifyStandaloneOption, exceedsGroupCountMax, wouldExceedGroupPointsLimit, hasGroupConstraintError, autofillCandidateMax } from './selectionBehavior.js';
 export { collectUnitProfilesAndRules } from './profileCollector.js';
 export { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from './rosterSync.js';
 export { findForceEntryById, getAvailableForceEntries } from './forceEntries.js';
@@ -45,10 +48,11 @@ export { getPlayableCatalogues } from './catalogueSelection.js';
 export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory, collectPrimaryCategoryEntries } from './entryVisibility.js';
 export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, isReachableViaForceCategories } from './armyWideSelectors.js';
 export { isIndependentSubUnit, hasEntryChildren } from './subUnit.js';
-export { ConstraintScope, NON_ENTRY_SCOPE_KEYWORDS, isEntryScope, ROSTER_LIMIT_FIELD_PREFIX, isRosterLimitField, costTypeIdOfRosterLimitField } from './battlescribeConstants.js';
+export { ConstraintScope, NON_ENTRY_SCOPE_KEYWORDS, isCostField, ROSTER_LIMIT_FIELD_PREFIX, isRosterLimitField, costTypeIdOfRosterLimitField } from './battlescribeConstants.js';
 export { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from './optionsCollector.js';
 export { groupProfilesByType } from './rulesEvaluator.js';
 export { createSelectionFromDef } from './selectionFactory.js';
 export { isQuirkGeneralEntryId } from './systemQuirks.js';
+export { getCategoryDisplayLimits, getInheritedCategoryMaxConstraint } from './categoryLimits.js';
 export { UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from './constants.js';
 export { withAddedInstance, withoutInstance, withChangedOptionCount } from './subSelectionEditing.js';

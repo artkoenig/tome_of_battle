@@ -1,8 +1,8 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveName, getModifiedConstraintValue, resolveContextCatalogueId } from './modifierEvaluator.js';
-import { computeRosterCounts } from './rosterCounter.js';
+import { getEffectiveModifiers, getEffectiveName, getModifiedConstraintValue, getModifierAmount, modifierConditionsPass } from './modifierEvaluator.js';
+import { aggregateRosterCategoryCounts, computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
-import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
+import { isEntryScope } from './battlescribeConstants.js';
 import { findForceContainingSelection } from './rosterTree.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import '../types.js';
@@ -19,21 +19,27 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
 
   let selectionCounts = {};
   let forceCategoryCounts = {};
+  // The full precomputed count tables and the owning contingent are threaded into the
+  // evaluation context so a `scope="force"` repeat/condition in the profile-stat path
+  // resolves per-contingent (via forceSelectionCounts[force.id]) exactly as the validator
+  // does — not army-wide through the missing-force fallback (ADR 0029, Slice 06).
+  let rosterCounts = null;
+  let owningForce = null;
   if (roster) {
-    const counts = computeRosterCounts(roster, system);
-    selectionCounts = counts.selectionCounts;
+    rosterCounts = computeRosterCounts(roster, system);
+    selectionCounts = rosterCounts.selectionCounts;
     if (roster.forces) {
-      const activeForce = findForceContainingSelection(roster, selection.id);
-      if (activeForce) {
-        forceCategoryCounts = counts.categoryCounts[activeForce.id] || {};
-      } else {
-        forceCategoryCounts = Object.values(counts.categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {});
-      }
+      owningForce = findForceContainingSelection(roster, selection.id);
+      forceCategoryCounts = owningForce
+        ? (rosterCounts.categoryCounts[owningForce.id] || {})
+        : aggregateRosterCategoryCounts(rosterCounts.categoryCounts);
     }
   }
 
   const makeCtx = (sourceSel, parentSel) => ({
     roster,
+    counts: rosterCounts,
+    force: owningForce,
     selectionCounts,
     forceCategoryCounts,
     selection: sourceSel,
@@ -74,46 +80,6 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
     return condNames;
   };
 
-  // Wie oft greift ein repeat-Modifier im gegebenen Kontext?
-  const computeRepeatCount = (mod, ctx) => {
-    let currentValue = 0;
-    const targetParent = ctx.parentSelection || ctx.selection;
-    if (mod.repeat.scope === ConstraintScope.PARENT && targetParent && targetParent.selections) {
-      const catId = resolveContextCatalogueId(ctx);
-      const targetId = mod.repeat.childId || mod.repeat.field;
-
-      const countMatches = (list) => (list || []).reduce((sum, s) => {
-        let isMatch = false;
-        const sId = s.entryLinkId || s.selectionEntryId;
-        if (sId === targetId) {
-          isMatch = true;
-        } else if (system) {
-          const raw = findEntryInSystem(system, sId, catId);
-          const res = raw && resolveEntry(system, raw, catId);
-          if (res && (res.targetId === targetId || res.id === targetId)) isMatch = true;
-          if (targetId === 'model' && res && (res.type === 'model' || res.type === 'unit')) isMatch = true;
-        }
-
-        let acc = sum + (isMatch ? (s.number || 1) : 0);
-        if (mod.repeat.includeChildSelections && s.selections) {
-          acc += countMatches(s.selections);
-        }
-        return acc;
-      }, 0);
-
-      currentValue = countMatches(targetParent.selections);
-    } else if (isRosterLimitField(mod.repeat.field)) {
-      currentValue = roster?.costLimit || 0;
-    } else if (mod.repeat.childId) {
-      currentValue = selectionCounts[mod.repeat.childId] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.childId]) || 0;
-    } else if (mod.repeat.field) {
-      currentValue = selectionCounts[mod.repeat.field] || (forceCategoryCounts && forceCategoryCounts[mod.repeat.field]) || 0;
-    }
-
-    const repVal = mod.repeat.value ? (mod.repeat.roundUp ? Math.ceil(currentValue / mod.repeat.value) : Math.floor(currentValue / mod.repeat.value)) : 0;
-    return repVal * (mod.repeat.repeats || 1);
-  };
-
   // Wendet einen increment/decrement/set-Modifier auf die passende
   // Characteristic eines Profils an und pflegt den Breakdown-Verlauf.
   const applyCharacteristicModifier = (mod, profile, ctx, sourceName) => {
@@ -121,14 +87,12 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
     const char = profile.characteristics?.find(c => c.id === mod.field || c.name === mod.field);
     if (!char) return;
 
-    const condsPass = mod.conditions?.every(c => evaluateCondition(c, ctx)) !== false;
-    const groupsPass = mod.conditionGroups?.every(g => evaluateConditionGroup(g, ctx)) !== false;
-    if (!condsPass || !groupsPass) return;
+    if (!modifierConditionsPass(mod, ctx)) return;
 
-    let modAmount = typeof mod.valueObject === 'number' ? mod.valueObject : (parseFloat(mod.value) || 0);
-    if (mod.repeat) {
-      modAmount = modAmount * computeRepeatCount(mod, ctx);
-    }
+    // Geteilter Betrags-Rechner der Validierung (ADR 0029): eigener numerischer Wert,
+    // skaliert über denselben geteilten Repeat-Zähler — kein zweiter, kategorie-blinder
+    // Zähl-Matcher mehr.
+    const modAmount = getModifierAmount(mod, ctx);
 
     if (char.originalValue === undefined) {
       char.originalValue = char.value;

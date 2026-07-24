@@ -109,8 +109,10 @@ alle Kontingente flach unter `<forces>`.
 Folge für die Validierung: `includeChildForces` bedeutet im Original „dieses
 Kontingent und seine Nachfahren". Da die Nachfahren-Beziehung im Modell nicht
 existiert, wertet der Solver das Flag als **gesamtes Roster** aus — die kleinste
-im Modell verfügbare Obermenge. Die Kommentare in `constraintScope.js` und
-`rosterValidator.js` benennen genau das.
+im Modell verfügbare Obermenge. Der Kommentar in `queryEngine.js`
+(`resolveScopeAnchor`, `force`-Zweig) benennt genau das — die zentrale
+scope-bewusste Stelle nach ADR 0029, an die diese Näherung seit der
+Query-Engine-Konsolidierung isoliert ist.
 
 ## Konsequenzen (Auswirkungen)
 

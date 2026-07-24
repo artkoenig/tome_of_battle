@@ -48,7 +48,10 @@ describe('multiply cost modifier — "Traditional Army" doubling (verbatim Defin
   });
 
   it('doubles the points cost when King Alrik is in the force', () => {
-    const ctx = { forceCategoryCounts: { [KING_ALRIK_ID]: 1 } };
+    // King Alrik is a selectionEntry (unit); its count lives in the selection tally,
+    // not the per-force category tally. The gating condition is scope="force" childId=
+    // <King Alrik> — a force+entry query, now resolved via resolveScopeAnchor (ADR 0029).
+    const ctx = { selectionCounts: { [KING_ALRIK_ID]: 1 } };
     const cost = getModifiedConstraintValue(pointsConstraint, getEffectiveModifiers(organGun), ctx);
     expect(cost).toBe(BASE_UNIT_COST * 2);
   });

@@ -145,7 +145,8 @@ erreicht die Nutzer nie.
 
 Die Auflösung eines Eintrags ist **kontextabhängig**. `constraint`s mit `scope="parent"` vergleichen
 aufgelöste **Ziel-IDs**, nicht `entryLinkId`s (verschiedene Links können auf dasselbe Ziel zeigen).
-`constraint`s mit `scope="force"` werden **pro Detachment** gezählt, nicht armeeweit.
+`constraint`s mit `scope="force"` zählen ein **Eintrags**-Ziel **pro Detachment**, ein
+**Kategorie**-Ziel dagegen **armeeweit** (Ziel-Typ-Regel, siehe [§7.7](#77-modifier-condition-condition-group-repeat) und ADR 0029).
 
 ---
 
@@ -324,8 +325,11 @@ erlaubten Lord-/Core-Slots mit dem Punktelimit. Genau das zeigt das Beispiel in
 >    liest, würde diese Limits still nicht durchsetzen.
 
 > **Regeln zur Auswertung:**
-> - `scope="force"`-Constraints zählen **pro Detachment**, nicht armeeweit — unabhängig davon, ob
->   sie am `categoryLink` oder an der `categoryEntry`-Definition hängen.
+> - Force-Kategoriegrenzen zählen ihr **Kategorie**-Ziel **armeeweit** (über alle Forces aggregiert) —
+>   unabhängig davon, ob sie am `categoryLink` oder an der `categoryEntry`-Definition hängen. Das ist
+>   die einheitliche Ziel-Typ-Regel aus [§7.7](#77-modifier-condition-condition-group-repeat) (ADR 0029):
+>   ein `scope="force"`-Constraint mit **Eintrags**-Ziel zählt pro Detachment, mit **Kategorie**-Ziel
+>   armeeweit. Bei Ein-Force-Listen ist beides identisch.
 > - Force Entries können **sowohl im Game System (`.gst`) als auch im einzelnen Katalog (`.cat`)**
 >   deklariert sein — beim Erstellen einer Liste müssen **beide Quellen** berücksichtigt werden.
 > - Ein `forceEntry` bzw. `categoryLink` mit `hidden="true"` (oder dynamisch per Modifier
@@ -634,7 +638,8 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 
 > **Regeln:**
 > - `scope="parent"` vergleicht aufgelöste **Ziel-IDs**, nicht `entryLinkId`s.
-> - `scope="force"` zählt **pro Detachment**.
+> - `scope="force"` zählt ein **Eintrags**-Ziel **pro Detachment**, ein **Kategorie**-Ziel **armeeweit**
+>   (Ziel-Typ-Regel, [§7.7](#77-modifier-condition-condition-group-repeat) / ADR 0029).
 > - Die `id` eines `constraint`s ist wichtig: **Modifier adressieren einen Constraint über dessen `id`**,
 >   um dessen `value` dynamisch zu ändern (siehe nächster Abschnitt).
 
@@ -687,10 +692,14 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 | `shared` | Ob über alle Instanzen des Eintrags im Roster gezählt wird (`true`) oder nur über die eine Instanz, an der die Condition hängt (`false`). Vorgabewert laut XSD ist `true`. |
 | `includeChildSelections` | Wenn `true`, werden auch **unterhalb** des Scope-Ziels verschachtelte Auswahlen mitgezählt, nicht nur dessen direkte Kinder (BattleScribe `QueryBase`-Attribut). |
 
-> **Domänenregel (Kategorie-Zähler in Conditions):** Testet eine Condition ein Kategorie-Limit
-> (z. B. „maximal 3 Helden"), müssen die Kategorie-Zähler **korrekt über alle Forces hinweg
-> aggregiert** ausgelesen werden — nicht isoliert pro Force. Sonst schlagen dynamische Limits fehl,
-> sobald dieselbe Kategorie in mehreren Detachments vorkommt.
+> **Domänenregel (Kategorie-Zähler, Ziel-Typ-Regel):** Zählt eine Query ein Kategorie-Ziel
+> (z. B. „maximal 3 Helden"), werden die Kategorie-Zähler **über alle Forces hinweg aggregiert**
+> ausgelesen — nicht isoliert pro Force. Das gilt **einheitlich für alle Query-Arten** (Constraint,
+> Condition, Repeat): das Datenformat (XSD `QueryBase`) unterscheidet `scope` nicht nach Query-Art,
+> also entscheidet der **Ziel-Typ** den Bezugsrahmen — ein `scope="force"`-Eintragsziel zählt pro
+> Detachment, ein Kategorie-Ziel armeeweit. Sonst schlagen dynamische Limits fehl, sobald dieselbe
+> Kategorie in mehreren Detachments vorkommt. Umgesetzt an genau einer Stelle (`resolveScopeAnchor`,
+> ADR 0029).
 
 > **`instanceOf`/`notInstanceOf` gegen eine `forceEntry` — zwei Kodierungen.** Eine Condition, die
 > prüft „ist das Kontingent eine Instanz dieses Detachments" (z. B. eine armeespezifische Variante),

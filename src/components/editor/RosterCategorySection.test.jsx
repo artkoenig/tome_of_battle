@@ -12,15 +12,29 @@ const mockIsCategoryLinkHidden = vi.fn();
 const mockIsEntryPrimaryInCategory = vi.fn();
 const mockResolveListRuleGroup = vi.fn();
 
+const mockGetCategoryDisplayLimits = vi.fn();
+
 vi.mock('../../solver/validator', () => ({
-  getModifiedConstraintValue: (constraint) => constraint.value,
-  getEffectiveModifiers: (source) => source?.modifiers || [],
+  getCategoryDisplayLimits: (...args) => mockGetCategoryDisplayLimits(...args),
   isCategoryLinkHidden: (...args) => mockIsCategoryLinkHidden(...args),
   isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
   resolveListRuleGroup: (...args) => mockResolveListRuleGroup(...args),
   childSelectionsOf: (force) => force.selections || [],
   formatConstraintLimit: (value) => `${value}`
 }));
+
+// Standardmäßig leitet der Mock dieselben Werte ab wie der echte Solver für die
+// Testdaten: Min aus dem min-Constraint des Links, sonst unbegrenzt.
+function deriveDisplayLimits(categoryLink) {
+  const minConstraint = (categoryLink.constraints || []).find(c => c.type === 'min') || null;
+  const maxConstraint = (categoryLink.constraints || []).find(c => c.type === 'max') || null;
+  return {
+    minValue: minConstraint ? minConstraint.value : 0,
+    maxValue: maxConstraint ? maxConstraint.value : Infinity,
+    minConstraint,
+    maxConstraint
+  };
+}
 
 vi.mock('./CategoryUnitAdder', () => ({
   default: ({ categoryId }) => <button data-testid={`adder-${categoryId}`}>Hinzufügen</button>
@@ -73,6 +87,7 @@ describe('RosterCategorySection', () => {
     mockIsCategoryLinkHidden.mockReturnValue(false);
     mockIsEntryPrimaryInCategory.mockReturnValue(true);
     mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: false, states: [] });
+    mockGetCategoryDisplayLimits.mockImplementation(deriveDisplayLimits);
   });
 
   it('rendert Kopfzeile, Zähl-Chip, Hinzufüger und die Einheitenkarten der Kategorie', () => {
@@ -82,6 +97,19 @@ describe('RosterCategorySection', () => {
     expect(container.querySelector('span.badge').textContent.replace(/\s+/g, ' ').trim()).toBe('1 / Min: 2');
     expect(screen.getByTestId('adder-cat-core')).toBeDefined();
     expect(screen.getByTestId('unit-card-sel-1')).toBeDefined();
+  });
+
+  it('leitet die Kategorie-Grenzen über den Solver ab und reicht das Kontingent (forceDef) durch', () => {
+    const forceDef = { id: 'fe-main', categoryLinks: [categoryLink] };
+    mockGetCategoryDisplayLimits.mockReturnValue({ minValue: 1, maxValue: 5, minConstraint: null, maxConstraint: { type: 'max', value: 5 } });
+
+    const { container } = renderSection({ forceDef });
+
+    expect(mockGetCategoryDisplayLimits).toHaveBeenCalledWith(
+      categoryLink,
+      expect.objectContaining({ forceDef })
+    );
+    expect(container.querySelector('span.badge').textContent.replace(/\s+/g, ' ').trim()).toBe('1 / Min: 1, Max: 5');
   });
 
   it('weicht auf den Namen der Verknüpfung aus, wenn das System die Kategorie nicht kennt', () => {

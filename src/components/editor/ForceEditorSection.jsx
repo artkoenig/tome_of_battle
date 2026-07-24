@@ -80,6 +80,7 @@ export default function ForceEditorSection({
           key={categoryLink.targetId}
           categoryLink={categoryLink}
           force={force}
+          forceDef={forceDefinition}
           system={system}
           roster={roster}
           activeCatalogue={activeCatalogue}

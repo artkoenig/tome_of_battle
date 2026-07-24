@@ -86,6 +86,10 @@ vi.mock('../../solver/validator', async () => ({
   isUniqueOptionTakenElsewhere: () => false,
   isOptionRosterUnique: () => false,
   isQuirkGeneralEntryId: (await vi.importActual('../../solver/systemQuirks')).isQuirkGeneralEntryId,
+  // UI-Verhaltensmodell (ADR 0029 L5): reine Entscheidungsfunktionen über bereits
+  // gemessene Grenzen — die echte Implementierung durchreichen (eigens abgedeckt in
+  // selectionBehavior.test.js).
+  ...(await vi.importActual('../../solver/selectionBehavior')),
   ...(await vi.importActual('../../solver/constants')),
 }));
 

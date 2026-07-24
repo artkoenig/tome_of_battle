@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
-import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, getEffectiveConstraintLimit, canGroupMaxBeRaisedAboveSingleChoice, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, resolveCostLimitTypeId, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT, isEntryScope, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection } from '../../solver/validator';
+import { resolveEntry, findEntryInSystem, getModifiedConstraintValue, getEffectiveConstraintLimit, canGroupMaxBeRaisedAboveSingleChoice, computeRosterCounts, getOptionDisplayCost, getSelectionTotalCost, getEffectiveModifiers, getEffectiveName, formatConstraintLimit, isCostField, resolveCostLimitTypeId, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT, isUniqueOptionTakenElsewhere, isOptionRosterUnique, findForceContainingSelection, filterEntryScopedConstraints, isItemRepeatableWithinGroup, isGroupSingleChoice, classifyGroupItem, exceedsGroupCountMax, wouldExceedGroupPointsLimit, hasGroupConstraintError } from '../../solver/validator';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 import { resolveRowSelectionId } from './optionNesting';
@@ -81,31 +81,13 @@ export default function OptionGroupComponent({
     .join(', ');
 
   
-  const filteredGroupConstraints = group.constraints?.filter(con => {
-    if (!con.scope || !isEntryScope(con.scope)) {
-      return true;
-    }
-    return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
-           (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
-  }) || [];
+  const filteredGroupConstraints = filterEntryScopedConstraints(group.constraints, unitResolved);
 
-  // An item is "repeatable" inside an otherwise max=1 group when the group carries
-  // an increment modifier (with a <repeat>) that raises the group's own max
-  // constraint for every selection of this very item. That is Battlescribe's
-  // encoding for the common magic items you may take more than one of — e.g.
-  // Dispel Scroll or Power Stone, which do not count against the "one item per
-  // category" limit. Such items must render as quantity steppers rather than as
-  // mutually-exclusive radios, and must be excluded from the radio group.
-  const isRepeatableWithinGroup = (option, res) => {
-    if (!res) return false;
-    return groupModifiers.some(mod => {
-      if (mod.type !== 'increment' || !mod.repeat) return false;
-      const raisesGroupMax = (group.constraints || []).some(c => c.type === ConstraintKind.MAX && c.id === mod.field);
-      if (!raisesGroupMax) return false;
-      const repeatTarget = mod.repeat.childId || mod.repeat.field;
-      return repeatTarget === option.id || repeatTarget === res.id || repeatTarget === res.targetId;
-    });
-  };
+  // Thin binding of the solver's repeatable-within-group decision to this group and its
+  // effective modifiers; the click handlers reuse it to exclude repeatable items from the
+  // radio group. The decision itself lives in the solver (isItemRepeatableWithinGroup).
+  const isRepeatableWithinGroup = (option, res) =>
+    isItemRepeatableWithinGroup(option, res, group, groupModifiers);
 
   const maxLimitRaw = filteredGroupConstraints.find(c => c.type === ConstraintKind.MAX);
   const maxLimit = maxLimitRaw ? getModifiedConstraintValue(maxLimitRaw, groupModifiers, displayCtx) : Infinity;
@@ -122,7 +104,7 @@ export default function OptionGroupComponent({
   // ohne solchen Modifier bleibt gegenseitig ausschließendes Radio. Das `increment`+
   // `<repeat>`-Stepper-Muster bleibt davon unberührt (siehe isRepeatableWithinGroup).
   const isGroupMaxRaisable = canGroupMaxBeRaisedAboveSingleChoice(group);
-  const isGroupSingleChoice = maxLimit !== Infinity && maxLimit <= 1 && !isGroupMaxRaisable;
+  const groupSingleChoice = isGroupSingleChoice(maxLimit, isGroupMaxRaisable);
 
   // Effektive Gruppen-Zähl-Obergrenze (Punkte-Caps werden separat behandelt). Sie klammert
   // das Hinzufügen weiterer, noch nicht gewählter Optionen und deaktiviert die Gruppe ganz,
@@ -141,12 +123,10 @@ export default function OptionGroupComponent({
     return sum + (points * count);
   }, 0);
 
-  let hasGroupError = false;
-  
-  filteredGroupConstraints.forEach(con => {
+  // Jede Grenze wird über die Query-Engine-Nähte gemessen (Schwellenwert, Kostensumme);
+  // ob eine davon aktuell verletzt ist, entscheidet der Solver (hasGroupConstraintError).
+  const measuredGroupConstraints = filteredGroupConstraints.map(con => {
     const finalValue = getModifiedConstraintValue(con, groupModifiers, displayCtx);
-    if (finalValue < 0) return;
-    
     let activeCount = currentCount;
     let activePoints = currentPoints;
 
@@ -168,21 +148,16 @@ export default function OptionGroupComponent({
       activePoints = sumPoints;
     }
 
-    const fieldMeasuresCost = isCostField(con.field, system, roster);
-    if (fieldMeasuresCost) {
-      if (con.type === ConstraintKind.MAX) {
-        if (activePoints > finalValue) {
-          hasGroupError = true;
-        }
-      }
-    } else {
-      if (con.type === ConstraintKind.MAX) {
-        if (activeCount > finalValue) {
-          hasGroupError = true;
-        }
-      }
-    }
+    return {
+      finalValue,
+      isMax: con.type === ConstraintKind.MAX,
+      measuresCost: isCostField(con.field, system, roster),
+      activeCount,
+      activePoints
+    };
   });
+
+  const hasGroupError = hasGroupConstraintError(measuredGroupConstraints);
 
   let limitParts = [];
   const ptsConstraint = filteredGroupConstraints.find(c =>
@@ -200,7 +175,7 @@ export default function OptionGroupComponent({
     // Mehrfachauswahl-Gruppen zeigen einen Live-Zähler „N / M" (wie NewRecruit „2/2"),
     // damit erkennbar bleibt, wie viele der erlaubten Optionen belegt sind. Eine echte
     // Einzelwahl (Radio) behält die schlichte „Max: N"-Anzeige.
-    const isCountableMultiSelect = !isGroupSingleChoice && !isCostField(maxLimitRaw?.field, system, roster);
+    const isCountableMultiSelect = !groupSingleChoice && !isCostField(maxLimitRaw?.field, system, roster);
     limitParts.push(
       isCountableMultiSelect
         ? `${currentCount} / ${formatConstraintLimit(maxLimit, maxLimitRaw)}`
@@ -256,37 +231,27 @@ export default function OptionGroupComponent({
             const rowSelectionId = resolveRowSelectionId(selection, ownerSelectionId, option, res);
             const count = getSubSelectionCount(selection, res.id);
             const basePoints = getOptionDisplayCost(system, option, costLimitTypeId, displayCtx);
-            const filteredOptionConstraints = res.constraints?.filter(con => {
-              if (!con.scope || !isEntryScope(con.scope)) {
-                return true;
-              }
-              return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
-                     (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
-            }) || [];
+            const filteredOptionConstraints = filterEntryScopedConstraints(res.constraints, unitResolved);
             const minConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MIN);
             const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
-            // Option-Grenzen aus effektiven (modifier-angepassten) Werten — konsistent mit
-            // Label/Validierung, statt aus rohen Katalogwerten.
+            // Option-Grenzen aus effektiven (modifier-angepassten) Werten messen; die
+            // Verhaltensklasse (Pflicht/Radio/binär/Mehrfach) daraus liefert der Solver
+            // (classifyGroupItem) — dieselbe Ableitung wie Dialog/Konfigurator/Autofill.
             const optionModifiers = getEffectiveModifiers(res);
             const minLimitOption = getEffectiveConstraintLimit(minConstraint, optionModifiers, displayCtx, 0);
             const maxLimitOption = getEffectiveConstraintLimit(maxConstraint, optionModifiers, displayCtx, Infinity);
-            const isMandatory = minLimitOption > 0 && minLimitOption === maxLimitOption;
 
             const isCollective = res.collective || option.collective || false;
             const optionName = getEffectiveName(res, displayCtx);
             const isRepeatableByGroupModifier = isRepeatableWithinGroup(option, res);
-            // A repeatable item never behaves as an exclusive radio, even though its
-            // group is nominally capped at max=1 (the cap is lifted per copy taken). A
-            // genuinely single-choice group (effective max 1, no max-raising modifier)
-            // renders radios; a max-raisable group renders checkboxes (armour+shield).
-            const isRadio = !isRepeatableByGroupModifier && isGroupSingleChoice;
-            // A stepper (quantity control) requires a positive quantity signal. Without an
-            // explicit max, only a real minimum (min>0, e.g. Ungors) or a collective
-            // (per-model) upgrade qualifies; a plain optional upgrade with neither min nor
-            // max is binary and renders as a checkbox (e.g. Barding, a single mount/rune).
-            const hasQuantitySignal = minLimitOption > 0 || isCollective;
-            const isExplicitlyMulti = (maxConstraint && maxLimitOption > 1) || isRepeatableByGroupModifier || (!maxConstraint && !isRadio && hasQuantitySignal);
-            const isBinary = !isExplicitlyMulti && ((maxConstraint && maxLimitOption === 1) || isRadio || !maxConstraint);
+            const { isMandatory, isRadio, isBinary } = classifyGroupItem({
+              minLimit: minLimitOption,
+              maxLimit: maxLimitOption,
+              hasMaxConstraint: !!maxConstraint,
+              isCollective,
+              isRepeatableByGroupModifier,
+              groupSingleChoice
+            });
             const descText = getOptionDescription(res);
 
             let parentCount = 1;
@@ -307,51 +272,46 @@ export default function OptionGroupComponent({
               ? getModifiedConstraintValue(ptsConstraintGroup, groupModifiers, displayCtx)
               : Infinity;
 
-            let wouldExceedPointsLimit = false;
-            if (maxPointsLimit !== Infinity) {
-              let activePoints = currentPoints;
-              if (ptsConstraintGroup.groupItemIds) {
-                let sumPoints = 0;
-                selection.selections?.forEach(sub => {
-                  const subId = sub.entryLinkId || sub.selectionEntryId;
-                  if (ptsConstraintGroup.groupItemIds.has(subId)) {
-                    const pts = getSelectionTotalCost(sub, roster.costLimitType, TOP_LEVEL_PARENT_COUNT, {
-                      system, roster, currentCatalogueId: activeCatalogue.id, parentSelection: selection, counts: { selectionCounts, categoryCounts }
-                    });
-                    sumPoints += pts;
-                  }
-                });
-                activePoints = sumPoints;
-              }
-
-              let pointsDiff = points;
-              if (isRadio && count === 0) {
-                const selectedOther = group.items.find(otherItem => {
-                  const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
-                  return otherRes && otherRes.id !== res.id && getSubSelectionCount(selection, otherRes.id) > 0;
-                });
-                if (selectedOther) {
-                  const otherPoints = getOptionDisplayCost(system, selectedOther.option, roster.costLimitType, displayCtx);
-                  pointsDiff = points - otherPoints;
+            // Gebundene Gruppen-Punkte messen (ggf. auf die groupItemIds-Teilmenge beschränkt)
+            // und die Punkte der bereits gewählten Radio-Geschwister-Option (für den Tausch-
+            // Nettobetrag); die Cap-Entscheidung daraus trifft der Solver.
+            let activeGroupPoints = currentPoints;
+            if (ptsConstraintGroup?.groupItemIds) {
+              let sumPoints = 0;
+              selection.selections?.forEach(sub => {
+                const subId = sub.entryLinkId || sub.selectionEntryId;
+                if (ptsConstraintGroup.groupItemIds.has(subId)) {
+                  sumPoints += getSelectionTotalCost(sub, roster.costLimitType, TOP_LEVEL_PARENT_COUNT, {
+                    system, roster, currentCatalogueId: activeCatalogue.id, parentSelection: selection, counts: { selectionCounts, categoryCounts }
+                  });
                 }
-              }
-              if (activePoints + pointsDiff > maxPointsLimit) {
-                wouldExceedPointsLimit = true;
+              });
+              activeGroupPoints = sumPoints;
+            }
+
+            let selectedSiblingPoints = null;
+            if (isRadio && count === 0) {
+              const selectedOther = group.items.find(otherItem => {
+                const otherRes = resolveEntry(system, otherItem.option, activeCatalogue.id);
+                return otherRes && otherRes.id !== res.id && getSubSelectionCount(selection, otherRes.id) > 0;
+              });
+              if (selectedOther) {
+                selectedSiblingPoints = getOptionDisplayCost(system, selectedOther.option, roster.costLimitType, displayCtx);
               }
             }
+
+            const wouldExceedPointsLimit = wouldExceedGroupPointsLimit({
+              maxPointsLimit, activePoints: activeGroupPoints, points, isRadio, count, selectedSiblingPoints
+            });
+
             const isRosterUnique = isOptionRosterUnique(res, system);
             const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
             // Effektive Gruppen-Zähl-Obergrenze durchsetzen (senkender Fall / Deaktivierung):
-            // Ist die Gruppe an ihrem effektiven Max, ist das Hinzufügen einer weiteren, noch
-            // nicht gewählten Option gesperrt; ein Max von 0 deaktiviert die Gruppe ganz.
-            // Radios tauschen die aktuelle Wahl (Netto 0) und werden nicht gesperrt (außer bei
-            // Max 0). Bei einer max-HEBBAREN Gruppe greift die Klammerung bewusst NICHT: das
-            // aktuelle effektive Max wäre 1, und gerade das Hinzufügen der koppelnden Option
-            // (z. B. Schild) hebt es — eine Klammerung am aktuellen Max erzeugte erneut den
-            // Teufelskreis. Über-Auswahl fängt dort der Validator ab.
-            const isGroupCountCapReached = effectiveGroupCountMax !== Infinity && currentCount >= effectiveGroupCountMax;
-            const wouldExceedGroupCountMax = !isGroupMaxRaisable &&
-              (effectiveGroupCountMax === 0 || (!isRadio && count === 0 && isGroupCountCapReached));
+            // die Entscheidung liefert der Solver (exceedsGroupCountMax) — inkl. der Ausnahmen
+            // für Radios (Tausch), max-hebbare Gruppen (Rüstung+Schild) und Max 0.
+            const wouldExceedGroupCountMax = exceedsGroupCountMax({
+              effectiveGroupCountMax, currentCount, isRadio, count, isGroupMaxRaisable
+            });
             const isSelectDisabled = wouldExceedPointsLimit || isTakenElsewhere || wouldExceedGroupCountMax;
 
             // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.

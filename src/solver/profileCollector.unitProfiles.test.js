@@ -1,5 +1,8 @@
 import { describe, test, expect } from 'vitest';
-import { collectUnitProfilesAndRules } from './validator.js';
+import {
+  collectUnitProfilesAndRules, getModifiedConstraintValue,
+  computeRosterCounts, findForceContainingSelection
+} from './validator.js';
 
 describe('collectUnitProfilesAndRules — Profile gewählter Unterauswahlen', () => {
   const CATALOGUE_ID = 'cat-profiles';
@@ -251,6 +254,270 @@ describe('collectUnitProfilesAndRules — dynamisch veränderte Charakteristika'
 
     const expectedBonus = Math.floor(MODEL_COUNT / MODELS_PER_BLOCK) * BONUS_PER_BLOCK;
     expect(attacks.value).toBe(String(Number(BASE_ATTACKS) + expectedBonus));
+  });
+});
+
+describe('collectUnitProfilesAndRules — kategorie-zählender Repeat wie in der Validierung', () => {
+  // Der Profil-Statwert-Pfad nutzt jetzt denselben geteilten Repeat-Zähler
+  // (countRepeatOccurrences, ADR 0029) wie die Validierung — kein zweiter,
+  // hand-gerollter, kategorie-blinder Zähler mehr. Diese Tests belegen, dass ein
+  // kategorie-zählender Repeat im Profil exakt dieselbe Zahl liefert wie
+  // getModifiedConstraintValue (der Validierungs-Pfad). Vor dem Umbau wich der
+  // Profil-Wert ab (siehe unten), weil der entfernte `countMatches` Kategorie-
+  // Mitgliedschaft nicht zählen konnte und ersatzweise auf die armeeweite
+  // Zähltabelle auswich.
+  const CATALOGUE_ID = 'cat-cat-repeat';
+  const CORE_CATEGORY_ID = 'cat-core';
+  const ATTACKS_CHARACTERISTIC_ID = 'char-a';
+  const ATTACKS_NAME = 'A';
+  const BASE_ATTACKS = 1;
+  const BONUS_PER_BLOCK = 1;
+  const CORE_PER_BLOCK = 2;
+
+  const CONSTRAINT_ID = 'con-ref';
+  const VALIDATION_BASE = 0;
+
+  // Baut den flachen Auswertungs-Kontext exakt so, wie collectUnitProfilesAndRules
+  // ihn intern (makeCtx) für einen Charakteristik-Modifier bildet, damit die
+  // Validierungs-Referenz über getModifiedConstraintValue denselben Rahmen misst.
+  const validationCtxFor = (system, roster, selection, parentSelection) => {
+    const counts = computeRosterCounts(roster, system);
+    const activeForce = findForceContainingSelection(roster, selection.id);
+    const forceCategoryCounts = activeForce ? (counts.categoryCounts[activeForce.id] || {}) : {};
+    return {
+      roster, system,
+      selectionCounts: counts.selectionCounts,
+      forceCategoryCounts,
+      selection, parentSelection,
+      parentCatalogueId: CATALOGUE_ID
+    };
+  };
+
+  // Die von der Validierung berechnete Wiederholungswirkung desselben Repeats.
+  const validationBonus = (system, roster, selection, parentSelection, repeat) =>
+    getModifiedConstraintValue(
+      { id: CONSTRAINT_ID, value: VALIDATION_BASE },
+      [{ field: CONSTRAINT_ID, type: 'increment', valueObject: BONUS_PER_BLOCK, repeat }],
+      validationCtxFor(system, roster, selection, parentSelection)
+    );
+
+  const attacksOf = (result, profileName) =>
+    Number(result.profiles.find(profile => profile.name === profileName)
+      .characteristics.find(characteristic => characteristic.name === ATTACKS_NAME).value);
+
+  test('armeeweiter Kategorie-Repeat: Profil-Bonus gleicht der Validierung', () => {
+    const CORE_MODELS = 6;
+    const repeat = { childId: CORE_CATEGORY_ID, value: CORE_PER_BLOCK, repeats: 1 };
+
+    const system = {
+      id: 'sys-cat-repeat',
+      categoryEntries: [{ id: CORE_CATEGORY_ID, name: 'Core' }],
+      catalogues: [{
+        id: CATALOGUE_ID,
+        sharedSelectionEntries: [{
+          id: 'unit-regiment',
+          name: 'Regiment',
+          selectionEntries: [
+            {
+              id: 'model-spearman',
+              name: 'Spearman',
+              type: 'model',
+              categoryLinks: [{ id: 'link-core', targetId: CORE_CATEGORY_ID }],
+              profiles: [{
+                id: 'prof-spearman', name: 'Spearman', typeName: 'Profile',
+                characteristics: [{ id: ATTACKS_CHARACTERISTIC_ID, name: ATTACKS_NAME, value: String(BASE_ATTACKS) }]
+              }]
+            },
+            {
+              id: 'upgrade-champion',
+              name: 'Champion',
+              type: 'upgrade',
+              // "+1 Attacke je 2 Modelle der Kategorie Core" — Ziel ist die Kategorie,
+              // deren Mitglieder nur über den categoryLink dazugehören.
+              modifiers: [{ type: 'increment', field: ATTACKS_CHARACTERISTIC_ID, value: String(BONUS_PER_BLOCK), repeat }]
+            }
+          ]
+        }]
+      }]
+    };
+
+    const roster = {
+      catalogueId: CATALOGUE_ID, costLimit: 2000, costLimitType: 'pts',
+      forces: [{
+        id: 'force-1', catalogueId: CATALOGUE_ID,
+        selections: [{
+          id: 'sel-regiment', selectionEntryId: 'unit-regiment', number: 1,
+          selections: [
+            { id: 'sel-spearman', selectionEntryId: 'model-spearman', number: CORE_MODELS },
+            { id: 'sel-champion', selectionEntryId: 'upgrade-champion', number: 1 }
+          ]
+        }]
+      }]
+    };
+
+    const regiment = roster.forces[0].selections[0];
+    const champion = regiment.selections[1];
+    const result = collectUnitProfilesAndRules(system, regiment, CATALOGUE_ID, roster);
+
+    const expectedBonus = validationBonus(system, roster, champion, regiment, repeat);
+    expect(expectedBonus).toBe(Math.floor(CORE_MODELS / CORE_PER_BLOCK) * BONUS_PER_BLOCK); // 3
+    expect(attacksOf(result, 'Spearman') - BASE_ATTACKS).toBe(expectedBonus);
+  });
+
+  test('parent-gescopter Kategorie-Repeat ohne Container: Profil folgt der Validierung (kein armeeweiter Ausweich)', () => {
+    // Ein einzelnes Charaktermodell OHNE `selections`. Sein Profil trägt einen
+    // parent-gescopten, kategorie-zählenden Repeat. Da es keinen Eltern-Container mit
+    // Core-Modellen gibt, zählt die Validierung 0 — der entfernte `countMatches` wich
+    // dagegen auf die armeeweite Core-Zahl aus und lieferte fälschlich +3
+    // (6 Core / 2). Der geteilte Zähler beseitigt genau diese Divergenz.
+    const CORE_UNITS = 6;
+    const repeat = { scope: 'parent', childId: CORE_CATEGORY_ID, value: CORE_PER_BLOCK, repeats: 1 };
+
+    const system = {
+      id: 'sys-cat-repeat-lone',
+      categoryEntries: [{ id: CORE_CATEGORY_ID, name: 'Core' }],
+      catalogues: [{
+        id: CATALOGUE_ID,
+        sharedProfiles: [{
+          id: 'prof-hero', name: 'Hero', typeName: 'Profile',
+          characteristics: [{ id: ATTACKS_CHARACTERISTIC_ID, name: ATTACKS_NAME, value: String(BASE_ATTACKS) }],
+          modifiers: [{ type: 'increment', field: ATTACKS_CHARACTERISTIC_ID, value: String(BONUS_PER_BLOCK), repeat }]
+        }],
+        sharedSelectionEntries: [
+          {
+            id: 'unit-hero', name: 'Hero', type: 'model',
+            infoLinks: [{ id: 'infolink-hero', targetId: 'prof-hero', type: 'profile' }]
+          },
+          {
+            id: 'unit-core', name: 'Spearmen', type: 'unit',
+            categoryLinks: [{ id: 'link-core', targetId: CORE_CATEGORY_ID }]
+          }
+        ]
+      }]
+    };
+
+    const roster = {
+      catalogueId: CATALOGUE_ID, costLimit: 2000, costLimitType: 'pts',
+      forces: [{
+        id: 'force-1', catalogueId: CATALOGUE_ID,
+        selections: [
+          { id: 'sel-hero', selectionEntryId: 'unit-hero', number: 1 }, // absichtlich ohne `selections`
+          { id: 'sel-core', selectionEntryId: 'unit-core', number: CORE_UNITS }
+        ]
+      }]
+    };
+
+    const hero = roster.forces[0].selections[0];
+    const result = collectUnitProfilesAndRules(system, hero, CATALOGUE_ID, roster);
+
+    const expectedBonus = validationBonus(system, roster, hero, null, repeat);
+    expect(expectedBonus).toBe(0); // parent-Scope ohne Container ⇒ keine Wiederholung
+    expect(attacksOf(result, 'Hero') - BASE_ATTACKS).toBe(expectedBonus);
+  });
+});
+
+describe('collectUnitProfilesAndRules — force-gescopter Eintrags-Repeat auf Mehr-Kontingent-Roster', () => {
+  // Regression (Slice 06/07, ADR 0029): Ein `scope="force"`-Repeat mit ENTRAGS-Ziel muss
+  // im Profil-Statwert-Pfad PRO KONTINGENT zählen — genau wie im Validierungs-Pfad. Vor dem
+  // Threading des besitzenden Kontingents (force) samt der vorberechneten Zähltabellen fiel
+  // der Profil-Pfad in resolveScopeAnchors FORCE-Zweig auf die armeeweite Tabelle zurück
+  // (Profil zählte beide Kontingente) und wich damit vom Validator ab (der pro Kontingent
+  // zählt). Dieser Test belegt den Gleichlauf.
+  const CATALOGUE_ID = 'cat-force-repeat';
+  const MODEL_ENTRY_ID = 'model-boy';
+  const ATTACKS_CHARACTERISTIC_ID = 'char-a';
+  const ATTACKS_NAME = 'A';
+  const BASE_ATTACKS = 1;
+  const BONUS_PER_BLOCK = 1;
+  const MODELS_PER_BLOCK = 5;
+  const BOYS_IN_FORCE_A = 12;
+  const BOYS_IN_FORCE_B = 10;
+  const CONSTRAINT_ID = 'con-ref';
+
+  const forceRepeat = { scope: 'force', childId: MODEL_ENTRY_ID, value: MODELS_PER_BLOCK, repeats: 1 };
+
+  const createSystem = () => ({
+    id: 'sys-force-repeat',
+    catalogues: [{
+      id: CATALOGUE_ID,
+      sharedSelectionEntries: [{
+        id: 'unit-boyz',
+        name: 'Boyz',
+        selectionEntries: [
+          {
+            id: MODEL_ENTRY_ID,
+            name: 'Boy',
+            type: 'model',
+            profiles: [{
+              id: 'prof-boy', name: 'Boy', typeName: 'Profile',
+              characteristics: [{ id: ATTACKS_CHARACTERISTIC_ID, name: ATTACKS_NAME, value: String(BASE_ATTACKS) }]
+            }]
+          },
+          {
+            id: 'upgrade-boss',
+            name: 'Boss',
+            type: 'upgrade',
+            // "+1 Attacke je 5 Boyz DESSELBEN Kontingents" — Ziel ist der Eintrag, Scope force.
+            modifiers: [{ type: 'increment', field: ATTACKS_CHARACTERISTIC_ID, value: String(BONUS_PER_BLOCK), repeat: forceRepeat }]
+          }
+        ]
+      }]
+    }]
+  });
+
+  const createRoster = () => ({
+    catalogueId: CATALOGUE_ID, costLimit: 2000, costLimitType: 'pts',
+    forces: [
+      {
+        id: 'force-a', catalogueId: CATALOGUE_ID,
+        selections: [{
+          id: 'sel-boyz-a', selectionEntryId: 'unit-boyz', number: 1,
+          selections: [
+            { id: 'sel-boy-a', selectionEntryId: MODEL_ENTRY_ID, number: BOYS_IN_FORCE_A },
+            { id: 'sel-boss-a', selectionEntryId: 'upgrade-boss', number: 1 }
+          ]
+        }]
+      },
+      {
+        id: 'force-b', catalogueId: CATALOGUE_ID,
+        selections: [{
+          id: 'sel-boyz-b', selectionEntryId: 'unit-boyz', number: 1,
+          selections: [{ id: 'sel-boy-b', selectionEntryId: MODEL_ENTRY_ID, number: BOYS_IN_FORCE_B }]
+        }]
+      }
+    ]
+  });
+
+  const attacksOf = (result) =>
+    Number(result.profiles.find(profile => profile.name === 'Boy')
+      .characteristics.find(characteristic => characteristic.name === ATTACKS_NAME).value);
+
+  test('Profil-Bonus zählt pro Kontingent und gleicht dem Validierungs-Pfad (nicht der armeeweiten Summe)', () => {
+    const system = createSystem();
+    const roster = createRoster();
+    const forceA = roster.forces[0];
+    const boyzA = forceA.selections[0];
+
+    const counts = computeRosterCounts(roster, system);
+    // Vorbedingung: der Eintrag steht pro Kontingent unterschiedlich, armeeweit ist es die Summe.
+    expect(counts.forceSelectionCounts['force-a'][MODEL_ENTRY_ID]).toBe(BOYS_IN_FORCE_A);
+    expect(counts.selectionCounts[MODEL_ENTRY_ID]).toBe(BOYS_IN_FORCE_A + BOYS_IN_FORCE_B);
+
+    // Validierungs-Referenz: derselbe Repeat, über den echten Kontingent-Kontext (force + counts)
+    // gemessen — genau wie der Validator die Constraint eines Eintrags in force-a auswertet.
+    const validationBonus = getModifiedConstraintValue(
+      { id: CONSTRAINT_ID, value: 0 },
+      [{ field: CONSTRAINT_ID, type: 'increment', valueObject: BONUS_PER_BLOCK, repeat: forceRepeat }],
+      { roster, system, counts, force: forceA, parentCatalogueId: CATALOGUE_ID }
+    );
+
+    const perForceExpected = Math.floor(BOYS_IN_FORCE_A / MODELS_PER_BLOCK) * BONUS_PER_BLOCK; // 2
+    const armyWideWrong = Math.floor((BOYS_IN_FORCE_A + BOYS_IN_FORCE_B) / MODELS_PER_BLOCK) * BONUS_PER_BLOCK; // 4
+    expect(validationBonus).toBe(perForceExpected);
+    expect(perForceExpected).not.toBe(armyWideWrong);
+
+    const result = collectUnitProfilesAndRules(system, boyzA, CATALOGUE_ID, roster);
+    expect(attacksOf(result) - BASE_ATTACKS).toBe(validationBonus);
   });
 });
 

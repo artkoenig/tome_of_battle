@@ -1,8 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import {
-  getModifiedConstraintValue,
-  getEffectiveModifiers,
+  getCategoryDisplayLimits,
   isCategoryLinkHidden,
   isEntryPrimaryInCategory,
   resolveListRuleGroup,
@@ -13,7 +12,6 @@ import CategoryUnitAdder from './CategoryUnitAdder';
 import ListRuleChecklist from './ListRuleChecklist';
 import CategoryCountBadge from './CategoryCountBadge';
 import UnitCardList from './UnitCardList';
-import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 import { useTranslation } from '../../i18n/useTranslation';
 
 /**
@@ -51,6 +49,7 @@ function hasPrimaryCatalogItems({ system, roster, force, selectionCounts, catego
 export default function RosterCategorySection({
   categoryLink,
   force,
+  forceDef,
   system,
   roster,
   activeCatalogue,
@@ -92,11 +91,8 @@ export default function RosterCategorySection({
   const count = forceCategoryCounts[categoryId] || 0;
 
   const displayContext = { roster, system, selectionCounts, forceCategoryCounts };
-  const minConstraint = categoryLink.constraints?.find(c => c.type === ConstraintKind.MIN);
-  const maxConstraint = categoryLink.constraints?.find(c => c.type === ConstraintKind.MAX);
-  const linkModifiers = getEffectiveModifiers(categoryLink);
-  const minValue = minConstraint ? getModifiedConstraintValue(minConstraint, linkModifiers, displayContext) : 0;
-  const maxValue = maxConstraint ? getModifiedConstraintValue(maxConstraint, linkModifiers, displayContext) : Infinity;
+  const { minValue, maxValue, minConstraint, maxConstraint } =
+    getCategoryDisplayLimits(categoryLink, { system, forceDef, displayContext });
 
   const isPrimaryForAnyEntry = hasPrimaryCatalogItems({ system, roster, force, selectionCounts, categoryId });
 

@@ -9,6 +9,24 @@
  * ADR 0016 für die generierten Enums bereits geschlossen hat.
  */
 
+import { SELECTIONS_FIELD } from '../parser/xmlParser.js';
+
+/**
+ * True when the constraint counts a cost (points/resources), false when it
+ * counts a number of selections. The single source of truth for the
+ * "is this field a cost?" question across validator and UI.
+ *
+ * A field is a cost when it is the roster's configured cost-limit type or any
+ * cost type the game system declares. `selections` (or an unknown field) is
+ * treated as a selection count — no cost-type id may be assumed, since
+ * `cost/@typeId` references an id the catalogue author chooses freely.
+ */
+export function isCostField(field, system, roster = null) {
+  if (!field || field === SELECTIONS_FIELD) return false;
+  if (roster && field === roster.costLimitType) return true;
+  return !!system?.costTypes?.some(costType => costType.id === field);
+}
+
 /**
  * Die `scope`-Werte, die *keine* Eintrags-ID sind: sie benennen einen
  * Bezugsrahmen statt eines konkreten Katalogeintrags. Jeder andere scope-Wert

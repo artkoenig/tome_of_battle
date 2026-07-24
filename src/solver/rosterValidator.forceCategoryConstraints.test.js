@@ -2,7 +2,10 @@ import { describe, test, expect } from 'vitest';
 import { validateRoster } from './validator.js';
 import {
   CATEGORY_ID,
+  CATALOGUE_ID,
+  FORCE_ENTRY_ID,
   FORCE_LIMIT,
+  POINTS,
   SYSTEM_COST_LIMIT,
   UNIT_COST,
   createGrimdarkSystem,
@@ -48,6 +51,25 @@ describe('validateRoster — Mindestbesetzung der Kontingent-Kategorien', () => 
 
     expect(errors.some(error => error.type === VIOLATION.categoryMin)).toBe(true);
   });
+
+  // Slice 08 (ADR 0029): die force-deklarierten Kategorie-Limits laufen jetzt über den
+  // EINEN Scope→Anker-Resolver (resolveScopeAnchor), nicht mehr über einen eigenen
+  // Kategorie-Anker. Der Kern der Vereinheitlichung ist die „leer = echte 0"-Semantik
+  // eines Kategorie-Ziels: nur so trägt derselbe Zählwert eine Pflicht (min) UND eine
+  // Obergrenze (max). Wäre eine leere Kategorie fälschlich 1 (der Eintrags-Fallback), so
+  // sähe die HQ-Pflicht (hqMin=1) sich zu Unrecht erfüllt.
+  test('leere Kategorie zählt echte 0: die Pflicht (min) schlägt an, die Obergrenze (max) nicht', () => {
+    const emptyHqRoster = createRoster({
+      name: 'No HQ Force',
+      selections: [createTacticalSquadSelection()]
+    });
+
+    const errors = validateRoster(emptyHqRoster, createGrimdarkSystem());
+    const hqErrors = errors.filter(error => error.categoryId === CATEGORY_ID.hq);
+
+    expect(hqErrors.some(error => error.type === VIOLATION.categoryMin)).toBe(true);
+    expect(hqErrors.some(error => error.type === VIOLATION.categoryMax)).toBe(false);
+  });
 });
 
 describe('validateRoster — Höchstzahl je Kontingent-Kategorie', () => {
@@ -82,6 +104,37 @@ describe('validateRoster — Höchstzahl je Kontingent-Kategorie', () => {
     const errors = validateRoster(createTwoCharacterRoster(belowModifierThreshold), createGrimdarkSystem());
 
     expect(findCharactersMaxError(errors)).toBeUndefined();
+  });
+
+  // Settled decision „Kategorie immer armeeweit" (ADR 0029, §7.7): eine
+  // Force-deklarierte Kategoriegrenze zählt über ALLE Kontingente zusammen. Auf ein
+  // Kontingent verteilt (Captain in f1, Vampir in f2) hat jedes für sich nur einen
+  // Charakter (≤ charactersMax=1) — die armeeweite Summe von 2 verletzt die Grenze
+  // dennoch. Vor der Vereinheitlichung (per-Kontingent) wäre das unbemerkt geblieben.
+  test('meldet category-max ARMEEWEIT, wenn zwei Kontingente je einen Charakter tragen', () => {
+    const aboveModifierThreshold = SYSTEM_COST_LIMIT + 500; // charactersMax bleibt 1
+    const twoForceRoster = {
+      name: 'Split Characters', costLimit: aboveModifierThreshold, costLimitType: POINTS,
+      forces: [
+        { id: 'f1', forceEntryId: FORCE_ENTRY_ID, catalogueId: CATALOGUE_ID,
+          selections: [createCaptainSelection(), createTacticalSquadSelection({ id: 'tac-1' })] },
+        { id: 'f2', forceEntryId: FORCE_ENTRY_ID, catalogueId: CATALOGUE_ID,
+          selections: [createVampireSelection(), createTacticalSquadSelection({ id: 'tac-2' })] }
+      ]
+    };
+
+    const errors = validateRoster(twoForceRoster, createGrimdarkSystem());
+
+    expect(findCharactersMaxError(errors)).toBeDefined();
+  });
+
+  // Gegenprobe: dieselben zwei Charaktere in EINEM Kontingent ergeben denselben
+  // armeeweiten Wert — das Ein-Force-Verhalten (der von der App erzeugte Regelfall)
+  // ändert sich durch die Vereinheitlichung nicht.
+  test('bleibt bei einem Kontingent unverändert: zwei Charaktere verletzen die Grenze', () => {
+    const errors = validateRoster(createTwoCharacterRoster(SYSTEM_COST_LIMIT + 500), createGrimdarkSystem());
+
+    expect(findCharactersMaxError(errors)).toBeDefined();
   });
 });
 

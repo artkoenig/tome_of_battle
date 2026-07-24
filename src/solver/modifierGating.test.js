@@ -213,8 +213,11 @@ describe('force-scoped childId conditions (gap #4)', () => {
   });
 
   it('still counts by field when no childId is present (category force condition)', () => {
+    // §7.7 / ADR 0029: a category target is counted ARMY-WIDE, even under scope=force —
+    // its aggregate tally lives in the roster-wide selectionCounts table (which
+    // computeRosterCounts fills for categories too), not the per-force category tally.
     const categoryForceCondition = { type: 'atLeast', value: 1, field: 'cat-core', scope: 'force' };
-    const ctx = { selectionCounts: {}, forceCategoryCounts: { 'cat-core': 2 } };
+    const ctx = { selectionCounts: { 'cat-core': 2 }, forceCategoryCounts: {} };
     expect(evaluateCondition(categoryForceCondition, ctx)).toBe(true);
   });
 });

@@ -1,16 +1,16 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getModifiedConstraintValue, evaluateConstraintWithCauses, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
 import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
-import { isPercentConstraint, isCostField, resolveConstraintThreshold } from './constraintScope.js';
+import { aggregateRosterCategoryCounts, calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
+import { isPercentConstraint, applyPercentage } from './constraintScope.js';
 import {
-  ConstraintScope, isEntryScope, isRosterLimitField, costTypeIdOfRosterLimitField, isSharedQuery
+  ConstraintScope, isEntryScope, isCostField, isRosterLimitField, costTypeIdOfRosterLimitField
 } from './battlescribeConstants.js';
-import { childSelectionsOf, countSelections, countSelectionsInSubtree } from './rosterTree.js';
+import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, measureOver, MeasureTarget } from './queryEngine.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from './armyWideSelectors.js';
-import { getInheritedCategoryMaxSource } from './systemQuirks.js';
+import { getInheritedCategoryMaxConstraint } from './categoryLimits.js';
 import { ValidationMessageKey } from './validationMessages.js';
 import '../types.js';
 
@@ -182,18 +182,29 @@ function checkRosterCostLimit(roster, system, errors) {
   }
 }
 
-// Synthetische ID des per System-Quirk von einer anderen Kategorie geerbten max-Constraints.
-const QUIRK_INHERITED_MAX_ID = 'quirk-inherited-max';
-
-// Eine Auswahl ohne ausdrückliche `number` steht für genau eine Instanz.
-const SINGLE_INSTANCE_COUNT = 1;
+/**
+ * Query-Subjekt ohne konkrete Selection-Instanz: benutzt, wenn über einen
+ * Kategorie-, Force- oder Roster-Anker gemessen wird, ohne an einer einzelnen
+ * Auswahl zu hängen (Kategorie- und Pflicht-Präsenz-Prüfungen). Ohne `entry`
+ * bleiben `entry`/`entryId` null; mit `entry` trägt es dessen id.
+ */
+function nullInstanceSubject(force, entry = null) {
+  return { selection: null, parentSelection: null, force, entry, entryId: entry?.id ?? null };
+}
 
 /**
- * Min/Max-Limits einer Force-Kategorie prüfen (pro Force, nicht armeeweit).
+ * Min/Max-Limits einer Force-deklarierten Kategorie prüfen. Die Kategorie-Belegung
+ * zählt **armeeweit** über alle Kontingente (settled decision „Kategorie immer
+ * armeeweit", §7.7) — einheitlich mit der Art, wie Conditions, Constraints und Repeats
+ * seit ADR 0029 Kategorie-Ziele zählen. Bei Ein-Force-Rostern (der von der App
+ * erzeugte Regelfall, `createRoster.js`) ist das deckungsgleich mit der früheren
+ * per-Kontingent-Zählung; erst bei mehreren Kontingenten wird die armeeweite Aggregation
+ * sichtbar — und ist die kompositions-korrekte Lesart einer Kategoriegrenze.
  * @param {ValidationContext} context
  */
-function checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors }) {
+function checkForceCategoryLimits({ roster, system, force, forceDef, counts, errors, forceCatalogueId }) {
   const { selectionCounts, categoryCounts } = counts;
+  const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
 
   forceDef.categoryLinks?.forEach(catLink => {
     const targetCatId = catLink.targetId;
@@ -205,8 +216,22 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
 
     const catDef = system.categoryEntries?.find(ce => ce.id === targetCatId);
     const catName = catDef ? catDef.name : catLink.name;
-    const count = forceCategoryCounts[targetCatId] || 0;
-    const ctx = { roster, selectionCounts, forceCategoryCounts, force, system };
+    // Armeeweite Kategorie-Belegung über den **einen** Scope→Anker-Resolver (ADR 0029):
+    // ein Kategorie-Scope (`isCategoryTargetId`) liest die roster-weite Kategorie-Summe
+    // aus `selectionCounts` — derselben Quelle und demselben Anker (ENTRY_BUCKET), den
+    // ein kategorie-gescopter Constraint nutzt — statt über einen zweiten, eigenen
+    // Kategorie-Anker. Eine leere Kategorie ist echte 0: derselbe Wert trägt Ober- (max)
+    // wie Pflichtgrenze (min).
+    const categorySubject = nullInstanceSubject(force);
+    const count = measureOver(
+      resolveScopeAnchor({ scope: targetCatId }, categorySubject, queryCtx),
+      {
+        target: MeasureTarget.INSTANCES,
+        subject: categorySubject,
+        ctx: queryCtx
+      }
+    );
+    const ctx = { roster, counts, selectionCounts, forceCategoryCounts, force, system };
 
     // 1. Constraints am categoryLink (samt Quirk-geerbtem max), Modifier vom Link.
     collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId }).forEach(con =>
@@ -242,22 +267,26 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
  * @param {ValidationContext} context
  */
 function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts, errors, forceCatalogueId }) {
-  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
+  const { selectionCounts, categoryCounts } = counts;
   const forceCategoryCounts = categoryCounts[force.id] || {};
-  const forceCounts = forceSelectionCounts[force.id] || {};
+  const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
 
   collectForceScopedMinSelectors(system, forceCatalogueId).forEach(({ entry, minConstraint }) => {
     if (isSelectionEntryHidden(entry, {
       system, roster, selectionCounts, forceCategoryCounts, force, catalogueId: forceCatalogueId
     })) return;
 
-    const ctx = { roster, system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
+    const ctx = { roster, system, counts, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
     const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
     if (minValue <= 0) return;
 
-    const currentCount = Math.max(
-      forceCounts[entry.id] || 0,
-      entry.targetId ? forceCounts[entry.targetId] || 0 : 0
+    // Die kontingentweite Belegung des Pflicht-Eintrags läuft über den zentralen Zähl-Kern
+    // (ADR 0029): ein `force`-Anker über den vorberechneten Zähl-Eimer. Fehlt der Eintrag,
+    // ist die Belegung 0 und die `min`-Pflicht schlägt an — der geforderte „fehlt ganz"-Fall.
+    const mandatorySubject = nullInstanceSubject(force, entry);
+    const currentCount = measureOver(
+      resolveScopeAnchor({ scope: ConstraintScope.FORCE }, mandatorySubject, queryCtx),
+      { target: MeasureTarget.INSTANCES, subject: mandatorySubject, ctx: queryCtx }
     );
     if (currentCount === 0) {
       pushViolation(errors, {
@@ -299,6 +328,7 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
 
   roster.forces.forEach(force => {
     const catalogueId = force.catalogueId || roster.catalogueId;
+    const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId: catalogueId });
 
     collectRosterScopedMinSelectors(system, catalogueId).forEach(({ entry, minConstraint }) => {
       const selectorKey = `${catalogueId}::${entry.id}`;
@@ -306,7 +336,7 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
       consideredSelectors.add(selectorKey);
 
       const ctx = {
-        system, roster, selectionCounts, forceCategoryCounts: rosterCategoryCounts,
+        system, roster, counts, selectionCounts, forceCategoryCounts: rosterCategoryCounts,
         catalogueId, parentCatalogueId: catalogueId
       };
       if (isSelectionEntryHidden(entry, ctx)) return;
@@ -314,9 +344,13 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
       const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
       if (minValue <= 0) return;
 
-      const armyWideCount = Math.max(
-        selectionCounts[entry.id] || 0,
-        entry.targetId ? selectionCounts[entry.targetId] || 0 : 0
+      // Roster-weite Belegung über den zentralen Zähl-Kern (ADR 0029): ein `roster`-Anker
+      // über die roster-weiten Zähl-Eimer. Fehlt der Eintrag im ganzen Roster, ist die
+      // Belegung 0 und die armeeweite `min`-Pflicht schlägt an.
+      const mandatorySubject = nullInstanceSubject(force, entry);
+      const armyWideCount = measureOver(
+        resolveScopeAnchor({ scope: ConstraintScope.ROSTER }, mandatorySubject, queryCtx),
+        { target: MeasureTarget.INSTANCES, subject: mandatorySubject, ctx: queryCtx }
       );
       if (armyWideCount === 0) {
         pushViolation(errors, {
@@ -329,25 +363,6 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
       }
     });
   });
-}
-
-/**
- * Merges the per-force category counts (`{ [forceId]: { [categoryId]: n } }`) into one
- * roster-wide tally (`{ [categoryId]: n }`), summing a category that appears in more than
- * one contingent. Used by the roster-scoped mandatory-selector check so its evaluation is
- * independent of contingent iteration order.
- * @param {Record<string, Record<string, number>>} categoryCounts
- * @returns {Record<string, number>}
- */
-function aggregateRosterCategoryCounts(categoryCounts) {
-  /** @type {Record<string, number>} */
-  const rosterWide = {};
-  for (const perForce of Object.values(categoryCounts || {})) {
-    for (const [categoryId, count] of Object.entries(perForce)) {
-      rosterWide[categoryId] = (rosterWide[categoryId] || 0) + count;
-    }
-  }
-  return rosterWide;
 }
 
 /**
@@ -433,19 +448,13 @@ function collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId
   const constraints = [...(catLink.constraints || [])];
 
   // System-Quirk: Kategorie erbt einen fehlenden max-Constraint von einer anderen Kategorie.
-  const inheritFromCatId = getInheritedCategoryMaxSource(system, targetCatId);
-  if (inheritFromCatId && !constraints.some(c => c.type === ConstraintKind.MAX)) {
-    const sourceCatLink = forceDef.categoryLinks?.find(cl => cl.targetId === inheritFromCatId);
-    const sourceMaxCon = sourceCatLink?.constraints?.find(c => c.type === ConstraintKind.MAX);
-    if (sourceMaxCon) {
-      constraints.push({
-        ...sourceMaxCon,
-        id: QUIRK_INHERITED_MAX_ID,
-        type: ConstraintKind.MAX,
-        isFallback: true,
-        modifiers: getEffectiveModifiers(sourceCatLink)
-      });
-    }
+  // Dieselbe Quelle (`categoryLimits`) beliefert die Kategorie-Anzeige, sodass Validierung
+  // und Oberfläche denselben geerbten max verwenden (ADR 0003 §2, ADR 0029).
+  const inherited = getInheritedCategoryMaxConstraint({
+    system, forceDef, targetCatId, ownConstraints: constraints
+  });
+  if (inherited) {
+    constraints.push({ ...inherited.constraint, isFallback: true, modifiers: inherited.modifiers });
   }
   return constraints;
 }
@@ -534,7 +543,7 @@ function checkSelectionMessages({ selection, parentSelection, entry }, context) 
   const ctx = {
     roster,
     selectionCounts,
-    forceCategoryCounts: Object.values(categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {}),
+    forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts),
     selection,
     parentSelection,
     force,
@@ -553,87 +562,11 @@ function checkSelectionMessages({ selection, parentSelection, entry }, context) 
 }
 
 /**
- * Prädikat „diese Auswahl ist eine Instanz des geprüften Eintrags". Verglichen wird
- * immer über die aufgelöste Ziel-Id, nicht über die Link-Id: verschiedene Links
- * können auf dasselbe Ziel zeigen (ADR 0003, Abschnitt 4).
- * @param {{entry: Object, entryId: string}} subject
- * @param {ValidationContext} context
- * @returns {(candidate: Object) => boolean}
- */
-function createEntryInstanceMatcher({ entry, entryId }, { system, force }) {
-  const catalogueId = force ? force.catalogueId : null;
-  return (candidate) => {
-    const candidateId = candidate.entryLinkId || candidate.selectionEntryId;
-    if (candidateId === entryId) return true;
-    if (!entry.targetId) return false;
-    if (candidateId === entry.targetId) return true;
-    const candidateDef = findEntryInSystem(system, candidateId, catalogueId);
-    const resolvedCandidate = resolveEntry(system, candidateDef, catalogueId);
-    return resolvedCandidate?.targetId === entry.targetId;
-  };
-}
-
-/** Die höhere der beiden Zählungen für Link-Id und aufgelöste Ziel-Id des Eintrags. */
-function countEntryInstances(countsByEntryId, { entry, entryId }) {
-  return Math.max(
-    countsByEntryId[entryId] || 0,
-    entry.targetId ? countsByEntryId[entry.targetId] || 0 : 0
-  );
-}
-
-/**
- * Die Anzahl, gegen die eine Eintrags-Constraint geprüft wird — die einzige Stelle,
- * die den Bezugsrahmen einer solchen Constraint auflöst.
- *
- * `shared="false"` (XSD `QueryBase`) hat dabei Vorrang vor dem `scope`: die
- * Beschränkung gilt dann je Instanz, gezählt wird also nur im Teilbaum der einen
- * Auswahl, an der sie hängt, statt aggregiert über alle Vorkommen des Eintrags
- * im Roster (ADR 0003, Abschnitt 4). Ist sie geteilt — der Vorgabewert —,
- * bestimmt wie bisher allein der `scope` den Bezugsrahmen.
- *
- * @param {{con: Object, selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
- * @param {ValidationContext} context
- * @returns {number}
- */
-function resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context) {
-  const { force, counts } = context;
-  const { selectionCounts, forceSelectionCounts, categoryCounts } = counts;
-  const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
-  const includeChildSelections = con.includeChildSelections;
-  const matchesEntry = createEntryInstanceMatcher({ entry, entryId }, context);
-  const instanceCount = selection.number || SINGLE_INSTANCE_COUNT;
-
-  if (!isSharedQuery(con)) {
-    return countSelectionsInSubtree(selection, { includeChildSelections, predicate: matchesEntry });
-  }
-
-  if (isEntryScope(con.scope)) {
-    return selectionCounts[con.scope] || forceCategoryCounts[con.scope] || instanceCount;
-  }
-  if (con.scope === ConstraintScope.PARENT) {
-    const container = parentSelection || force;
-    if (!container) return instanceCount;
-    return countSelections(childSelectionsOf(container), { includeChildSelections, predicate: matchesEntry });
-  }
-  if (con.scope === ConstraintScope.ROSTER) {
-    return countEntryInstances(selectionCounts, { entry, entryId });
-  }
-  if (con.scope === ConstraintScope.FORCE) {
-    // includeChildForces meint laut BSData das Kontingent samt seiner Nachfahren.
-    // Der .ros-Import legt verschachtelte Kontingente als Geschwister auf
-    // Rosterebene flach (ADR-0011 §5), sodass die Nachfahren-Beziehung im
-    // Rostermodell nicht überlebt — das ganze Roster ist die nächstliegende
-    // verfügbare Obermenge.
-    const scopeCounts = con.includeChildForces
-      ? selectionCounts
-      : (force ? forceSelectionCounts[force.id] || {} : {});
-    return countEntryInstances(scopeCounts, { entry, entryId });
-  }
-  return instanceCount;
-}
-
-/**
  * Individuelle Constraints des aufgelösten Eintrags prüfen (min/max/percent je Scope).
+ * Der Bezugsrahmen jeder Constraint wird über den zentralen Zähl-Kern
+ * ({@link resolveScopeAnchor}/{@link measureOver}, ADR 0029) aufgelöst, statt hier
+ * eigene Scope-Logik nachzubauen. Die Grenze (`finalValue`) samt ihrer Ursachen
+ * (ADR 0027) stammt unverändert aus {@link evaluateConstraintWithCauses}.
  * @param {{selection: Object, parentSelection: Object|null, entry: Object, entryId: string}} subject
  * @param {ValidationContext} context
  */
@@ -643,11 +576,15 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const { selectionCounts, categoryCounts } = counts;
 
+  const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
+  const subject = { selection, parentSelection, force, entry, entryId };
+
   entry.constraints.forEach(con => {
     const ctx = {
       roster,
+      counts,
       selectionCounts,
-      forceCategoryCounts: Object.values(categoryCounts).reduce((acc, c) => ({ ...acc, ...c }), {}),
+      forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts),
       selection,
       parentSelection,
       force,
@@ -665,10 +602,16 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
       if (!belongsToScope) return;
     }
 
-    const count = resolveEntryConstraintCount({ con, selection, parentSelection, entry, entryId }, context);
+    const anchor = resolveScopeAnchor(con, subject, queryCtx);
+    const count = measureOver(anchor, {
+      target: MeasureTarget.INSTANCES,
+      includeChildSelections: con.includeChildSelections,
+      subject,
+      ctx: queryCtx
+    });
 
     if (isPercentConstraint(con)) {
-      checkEntryPercentConstraint({ con, finalValue, causes, count, selection, parentSelection }, context);
+      checkEntryPercentConstraint({ con, finalValue, causes, count, anchor, subject }, { context, queryCtx });
       return;
     }
 
@@ -697,24 +640,37 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
 
 /**
  * Prüft eine Prozent-Constraint (percentValue) eines Eintrags: die Bezugsgröße
- * ist die Summe des Feldes im Scope, der Grenzwert `value%` davon. Punkte-Felder
- * werden gegen die Kosten des Eintrags, `selections` gegen dessen Anzahl geprüft.
+ * (Nenner) ist die Summe des Feldes im Scope, der Grenzwert `value%` davon.
+ * Punkte-Felder werden gegen die Kosten des Eintrags, `selections` gegen dessen
+ * Anzahl geprüft.
+ *
+ * Der Nenner läuft durch **denselben** Anker wie der Zähler ({@link measureOver}
+ * mit `REFERENCE`, ADR 0029), sodass Zähler und Nenner im Bezugsrahmen nicht
+ * auseinanderdriften können.
  */
-function checkEntryPercentConstraint({ con, finalValue, causes, count, selection, parentSelection }, context) {
-  const { roster, system, force, counts, errors, forceCatalogueId } = context;
+function checkEntryPercentConstraint({ con, finalValue, causes, count, anchor, subject }, { context, queryCtx }) {
+  const { roster, system, errors, forceCatalogueId, counts } = context;
+  const { selection, parentSelection } = subject;
   const measuresCost = isCostField(con.field, system, roster);
-  const subject = measuresCost
+  const numerator = measuresCost
     ? getSelectionTotalCost(selection, con.field, TOP_LEVEL_PARENT_COUNT, {
         system, roster, currentCatalogueId: forceCatalogueId, parentSelection, counts
       })
     : count;
-  const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection, forceCatalogueId, counts });
+  const reference = measureOver(anchor, {
+    target: MeasureTarget.REFERENCE,
+    field: con.field,
+    includeChildSelections: con.includeChildSelections,
+    subject,
+    ctx: queryCtx
+  });
+  const threshold = applyPercentage(finalValue, reference);
   // Gemessen wird die Kostenart der Constraint selbst (`con.field`) — ihre
   // Bezeichnung stammt daher aus genau dieser Kostenart (Pass-through). Ohne
   // Kostenbezug ist die Bezugsgröße die Auswahlanzahl (an der Oberfläche übersetzt).
   const unitLabel = measuresCost ? resolveCostTypeLabel(system, con.field) : undefined;
 
-  if (con.type === ConstraintKind.MIN && subject < threshold) {
+  if (con.type === ConstraintKind.MIN && numerator < threshold) {
     pushViolation(errors, {
       type: 'entry-percent-min',
       selectionId: selection.id,
@@ -724,7 +680,7 @@ function checkEntryPercentConstraint({ con, finalValue, causes, count, selection
       ...withCauses(causes)
     });
   }
-  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
+  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && numerator > threshold) {
     pushViolation(errors, {
       type: 'entry-percent-max',
       selectionId: selection.id,
@@ -741,6 +697,13 @@ function checkGroupConstraints({ selection, entry }, context) {
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const { selectionCounts, categoryCounts } = counts;
   const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
+
+  const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
+  // Der Bezugsrahmen einer Gruppengrenze hängt an der Auswahl, die die Gruppe besitzt
+  // (`selection`): ihre Kinder bilden den Gruppentopf, und dieselbe Auswahl ist der
+  // `parent` einer scope-bezogenen Prozent-Referenz. Deshalb `parentSelection: selection`.
+  const groupEntryId = selection.entryLinkId || selection.selectionEntryId;
+  const groupSubject = { selection, parentSelection: selection, force, entry, entryId: groupEntryId };
 
   const groups = [];
   const collectGroups = (def) => {
@@ -815,7 +778,7 @@ function checkGroupConstraints({ selection, entry }, context) {
       // self-incrementing modifier (e.g. "raise the cap for every Dispel Scroll already
       // taken") scan one level too high whenever the group sits behind an intermediate
       // wrapper selection, silently contributing 0 and leaving the base cap in place.
-      const ctx = { roster, selectionCounts, forceCategoryCounts, selection, force, system, parentCatalogueId: forceCatalogueId };
+      const ctx = { roster, counts, selectionCounts, forceCategoryCounts, selection, force, system, parentCatalogueId: forceCatalogueId };
       const { value: finalValue, causes } = evaluateConstraintWithCauses(con, getEffectiveModifiers(group), ctx);
       if (finalValue < 0) return;
 
@@ -826,8 +789,12 @@ function checkGroupConstraints({ selection, entry }, context) {
         if (!belongsToScope) return;
       }
 
+      // Die Gruppen-Belegung läuft über den zentralen Zähl-Kern (ADR 0029): ein Gruppen-Anker
+      // über die aufgelöste, flache Trefferliste zählt (Anzahl) bzw. summiert (Kosten) sie an
+      // **einer** Stelle — dieselbe, die jeder andere Bezugsrahmen nutzt.
       const matchingSelections = collectGroupMatches(selection.selections, con.includeChildSelections);
-      const totalCount = matchingSelections.reduce((sum, s) => sum + (s.number || 1), 0);
+      const groupAnchor = resolveGroupAnchor(matchingSelections);
+      const totalCount = measureOver(groupAnchor, { target: MeasureTarget.INSTANCES, subject: groupSubject, ctx: queryCtx });
 
       const measuresCost = isCostField(con.field, system, roster);
       // Summiert wird die Kostenart, die die Constraint selbst nennt (`con.field`),
@@ -836,13 +803,14 @@ function checkGroupConstraints({ selection, entry }, context) {
       // `roster.costLimitType` zu summieren vergliche Punkte gegen eine Würfelgrenze
       // (ADR-0003 §3a).
       const totalCost = measuresCost
-        ? matchingSelections.reduce((sum, s) => sum + getSelectionTotalCost(s, con.field, TOP_LEVEL_PARENT_COUNT, {
-            system, roster, currentCatalogueId: forceCatalogueId, parentSelection: selection, counts
-          }), 0)
+        ? measureOver(groupAnchor, { target: MeasureTarget.REFERENCE, field: con.field, subject: groupSubject, ctx: queryCtx })
         : 0;
 
       if (isPercentConstraint(con)) {
-        checkGroupPercentConstraint({ con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection }, context);
+        checkGroupPercentConstraint(
+          { con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection },
+          { context, queryCtx, subject: groupSubject }
+        );
         return;
       }
 
@@ -899,18 +867,32 @@ function checkGroupConstraints({ selection, entry }, context) {
 /**
  * Prüft eine Prozent-Constraint (percentValue) einer SelectionEntryGroup: die
  * Gruppensumme (Kosten oder Anzahl) gegen `value%` der Bezugsgröße im Scope.
+ *
+ * Der Nenner läuft durch **denselben** Zähl-Kern wie jede andere Referenz
+ * ({@link measureOver} mit `REFERENCE` über den Scope-Anker der Constraint, ADR 0029),
+ * statt über einen eigenen Referenz-Resolver. Der Scope-Anker wird bewusst
+ * `shared`-agnostisch gebildet — die Bezugsgröße einer Gruppe ist ihr Scope-Rahmen,
+ * nicht eine einzelne tragende Instanz.
  */
-function checkGroupPercentConstraint({ con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection }, context) {
-  const { roster, system, force, counts, errors, forceCatalogueId } = context;
-  const subject = measuresCost ? totalCost : totalCount;
-  const threshold = resolveConstraintThreshold({ constraint: con, value: finalValue, roster, system, force, parentSelection: selection, forceCatalogueId, counts });
+function checkGroupPercentConstraint({ con, finalValue, causes, totalCount, totalCost, measuresCost, group, selection }, { context, queryCtx, subject }) {
+  const { system, errors } = context;
+  const numerator = measuresCost ? totalCost : totalCount;
+  const scopeAnchor = resolveScopeAnchor({ scope: con.scope, includeChildForces: con.includeChildForces }, subject, queryCtx);
+  const reference = measureOver(scopeAnchor, {
+    target: MeasureTarget.REFERENCE,
+    field: con.field,
+    includeChildSelections: con.includeChildSelections,
+    subject,
+    ctx: queryCtx
+  });
+  const threshold = applyPercentage(finalValue, reference);
   // `totalCost` wird über `con.field` summiert (siehe checkGroupConstraints) — die
-  // Bezeichnung muss dieselbe Kostenart benennen. `getScopeReferenceTotal` bildet
-  // die Bezugsgröße derselben Kostenart, Zähler und Nenner passen also zusammen.
-  // Ohne Kostenbezug ist die Bezugsgröße die Auswahlanzahl (an der Oberfläche übersetzt).
+  // Bezeichnung muss dieselbe Kostenart benennen. Zähler und Nenner teilen dieselbe
+  // Kostenart, passen also zusammen. Ohne Kostenbezug ist die Bezugsgröße die
+  // Auswahlanzahl (an der Oberfläche übersetzt).
   const unitLabel = measuresCost ? resolveCostTypeLabel(system, con.field) : undefined;
 
-  if (con.type === ConstraintKind.MIN && subject < threshold) {
+  if (con.type === ConstraintKind.MIN && numerator < threshold) {
     pushViolation(errors, {
       type: 'group-percent-min',
       selectionId: selection.id,
@@ -920,7 +902,7 @@ function checkGroupPercentConstraint({ con, finalValue, causes, totalCount, tota
       ...withCauses(causes)
     });
   }
-  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && subject > threshold) {
+  if ((con.type === ConstraintKind.MAX || con.type === 'percent') && numerator > threshold) {
     pushViolation(errors, {
       type: 'group-percent-max',
       selectionId: selection.id,

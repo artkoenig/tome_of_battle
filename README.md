@@ -98,11 +98,14 @@ The data flow is structured as follows: **BattleScribe XML → IndexedDB → In-
 The rules engine handles all calculations and dependencies, working completely independently of React:
 
 - `catalogResolver.js` — Resolves entry links (`EntryLinks`) and selections against the game system.
+- `queryEngine.js` — The central, scope-agnostic counting primitive (ADR 0029): the single place that maps a BattleScribe query scope to an anchor and counts/sums over it, shared by constraints, conditions and repeats.
 - `modifierEvaluator.js` — Evaluates BattleScribe conditions and modifiers.
 - `optionsCollector.js` — Collects available profiles, rules, and options for a unit.
 - `rosterCounter.js` — Calculates unit counts, category limits, and point costs.
 - `rosterValidator.js` — Validates the entire roster against all XML constraints.
 - `profileCollector.js` — Determines the effective profile values and rules of a unit, taking modifiers into account.
+- `categoryLimits.js` — Single source of a category's effective display min/max (incl. the system-bound inheritance quirk).
+- `selectionBehavior.js` — Derives the UI behavior model (radio/checkbox, mandatory, remaining count) from the solver so the UI evaluates no constraint itself.
 - `validator.js` — Serves as a central facade to access all solver functions.
 
 ### User Interface (`src/`)

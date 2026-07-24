@@ -2,9 +2,10 @@ import React from 'react';
 import { Plus, Minus } from 'lucide-react';
 import {
   resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
-  isEntryScope, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
+  getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
   isQuirkGeneralEntryId, findForceContainingSelection, resolveCostLimitLabel,
   countSelections, getEffectiveModifiers, getEffectiveConstraintLimit,
+  filterEntryScopedConstraints, classifyStandaloneOption,
   UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
 } from '../../solver/validator';
 import OptionGroupComponent from './OptionGroup';
@@ -217,22 +218,15 @@ export default function SelectionConfigurator({
             const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
             const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
 
-            const filteredOptionConstraints = res.constraints?.filter(con => {
-              if (!con.scope || !isEntryScope(con.scope)) {
-                return true;
-              }
-              return (unitResolved?.id === con.scope || unitResolved?.targetId === con.scope) ||
-                     (unitResolved?.categoryLinks?.some(cl => cl.targetId === con.scope));
-            }) || [];
+            const filteredOptionConstraints = filterEntryScopedConstraints(res.constraints, unitResolved);
             const minConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MIN);
             const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
-            // Effektive (modifier-angepasste) Grenzen statt roher Katalogwerte, damit ein
-            // bedingt verändertes min/max Pflicht-/Binär-/Klammerungs-Entscheidungen steuert.
+            // Effektive (modifier-angepasste) Grenzen messen; die Pflicht-/Binär-Entscheidung
+            // daraus trifft der Solver (classifyStandaloneOption) — nicht die Oberfläche.
             const optionModifiers = getEffectiveModifiers(res);
             const minLimit = getEffectiveConstraintLimit(minConstraint, optionModifiers, displayCtx, 0);
             const maxLimit = getEffectiveConstraintLimit(maxConstraint, optionModifiers, displayCtx, Infinity);
-            const isMandatory = minLimit > 0 && minLimit === maxLimit;
-            const isBinary = maxLimit === 1;
+            const { isMandatory, isBinary } = classifyStandaloneOption({ minLimit, maxLimit });
             const descText = getOptionDescription(res);
 
             let parentCount = 1;

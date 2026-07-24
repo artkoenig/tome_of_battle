@@ -71,19 +71,16 @@ Work the child-issues one at a time. For each:
 Repeat until `next` reports no ready child. Then resolve the main-issue and open
 the PR.
 
-## Implementing several child-issues at once
+## Seeing the whole frontier at once
 `tracker.py next --parent <main-id> --all` prints every actionable child-issue
-instead of just the first. Blocked issues are excluded, so the printed set is
-independent by construction and safe to implement in parallel — one agent per
-child, each in its own git worktree, none of them claiming through the
-dispatcher (a worktree branches from the main-issue branch and never sees the
-dispatcher's uncommitted claim).
-
-Merge the finished child branches back into the main-issue branch **sequentially
-in dependency order**. Numeric prefix order is a valid dependency order: a child
-can only be blocked by a sibling that already existed when it was created, so
-every blocker has a lower prefix. Remove each child worktree after its merge
-(`git worktree remove`); no child branch outlives its merge.
+instead of just the first. Blocked issues are excluded, so it is an overview of
+what is currently unblocked — not an instruction to work them at the same time.
+Child-issues are implemented **sequentially, one after another** in numeric
+(dependency) order: numeric prefix order is a valid dependency order, since a
+child can only be blocked by a sibling that already existed when it was created,
+so every blocker has a lower prefix. There is no per-child worktree and no child
+branch to merge — each slice is built directly on the main-issue branch, and the
+next slice starts only once the current one is resolved.
 
 ## Do not hand-edit
 Manage issues through the `issue-tracker` skill's `tracker.py` so that the state
