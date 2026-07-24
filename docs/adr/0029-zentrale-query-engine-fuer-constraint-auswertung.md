@@ -88,6 +88,21 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
    einmal. Der Kern liefert ein **reiches Ergebnis** (`{ Wert, gezählte
    Selektionen, Ursachen }`), aus dem die Ursachen nach ADR-0027 direkt folgen.
 
+   **Zähl-Frame nach Ziel-Typ (nicht nach Query-Art).** Der `force`-Zweig
+   entscheidet den Bezugsrahmen am **Ziel-Typ**: ein **Eintrags**-Ziel zählt pro
+   Kontingent (`forceSelectionCounts[force.id]`), ein **Kategorie**-Ziel dagegen
+   **armeeweit** über alle Forces aggregiert (`isCategoryTargetId` →
+   `selectionCounts`); `roster` zählt immer armeeweit. Das gilt **einheitlich für
+   Constraint, Condition und Repeat** — die XSD (`QueryBase`) gibt für eine
+   Unterscheidung nach Query-Art nichts her, also ist der Ziel-Typ maßgeblich. Die
+   §7.7-Domänenregel („Kategorie-Zähler über alle Forces aggregiert") ist damit an
+   genau dieser einen Stelle kodiert. Bei Ein-Force-Rostern (der Regelfall der App)
+   sind beide Frames identisch; die Unterscheidung wirkt nur auf Multi-Force-Roster.
+   Diese Vereinheitlichung — Conditions, Repeats *und* der Profil-Statwert-Pfad
+   (`profileCollector`) laufen jetzt über denselben `resolveScopeAnchor` und
+   denselben Repeat-Zähler statt über eigene Inline-Auflösungen — wurde in Issue 63,
+   Slices 06/07 nachgezogen.
+
 3. **Drei dünne Adapter.** Grenze = Wert gegen (modifier-angepassten)
    Schwellenwert; Bedingung = Wert per Komparator gegen einen Vergleichswert →
    Wahrheitswert; Wiederholung = Wert ganzzahlig durch den Wert geteilt. Der

@@ -46,7 +46,7 @@ Für unumgängliche Besonderheiten einzelner Spielsysteme (z. B. Vererbung von K
 
 - **Kosten- und Einschränkungsmultiplikation:** Bei verschachtelten Auswahlen muss die Menge immer als `child.number * parent.number` berechnet werden. Das Flag `collective` in Battlescribe bestimmt lediglich, wie Instanzen in der UI zusammengefasst dargestellt werden, hat aber keinen Einfluss auf die mathematische Berechnung der Gesamtzahl oder der Kosten.
 - **Constraints (Einschränkungen):**
-  - Einschränkungen mit dem Scope `force` werden **pro Kontingent (Detachment / Force)** und nicht armeeweit ausgewertet.
+  - Einschränkungen mit dem Scope `force` werden nach **Ziel-Typ** ausgewertet: ein **Eintrags**-Ziel **pro Kontingent (Detachment / Force)**, ein **Kategorie**-Ziel dagegen **armeeweit** (über alle Forces aggregiert). Diese Ziel-Typ-Regel gilt einheitlich für Constraint, Condition und Repeat und ist in ADR 0029 zentral umgesetzt; bei Ein-Force-Listen sind beide Frames identisch.
   - Einschränkungen mit dem Scope `parent` müssen die aufgelösten **Ziel-IDs (Target IDs)** vergleichen und nicht die Link-IDs, da unterschiedliche Links auf dieselbe physische Auswahl verweisen können.
 - **Geteilte und nicht geteilte Queries (`shared`):** Das Attribut `shared` einer Query — also einer Constraint *oder* einer Condition (XSD `QueryBase`) — bestimmt ihren Bezugsrahmen:
   - `shared="true"`: gezählt werden **alle Instanzen** des Eintrags im Roster zusammen. Das ist der **Vorgabewert der XSD**; ein fehlendes Attribut bedeutet „geteilt", nicht „nicht geteilt". Der Parser muss diesen Vorgabewert setzen — ein als `false` eingelesenes fehlendes Attribut würde jede aggregierende Query stillschweigend in eine instanzweise verwandeln.

@@ -46,7 +46,7 @@ Der gemeinsame BSData-Grundbaustein (XSD `QueryBase`), der *etwas zählt* (`fiel
 _Avoid_: „Constraint" als Oberbegriff für alle drei — eine Constraint ist nur die Grenzen-Ausprägung.
 
 **Bezugsrahmen (Scope)**:
-Der Bereich, über den eine Query zählt — ein fester Satz Schlüsselwörter (`roster`, `force`, `parent`, `self`) oder die ID eines Eintrags bzw. einer Kategorie. Ein `roster`-/`force`-Bezug zählt über die ganze Liste bzw. das ganze Kontingent, nicht nur den lokalen Teilbaum.
+Der Bereich, über den eine Query zählt — ein fester Satz Schlüsselwörter (`roster`, `force`, `parent`, `self`) oder die ID eines Eintrags bzw. einer Kategorie. Ein `roster`-Bezug zählt über die ganze Liste, nicht nur den lokalen Teilbaum. Ein `force`-Bezug richtet sich nach dem **Ziel-Typ**: ein Eintrags-Ziel zählt pro Kontingent, ein Kategorie-Ziel armeeweit (über alle Forces aggregiert) — einheitlich für Constraint, Condition und Repeat (ADR 0029).
 _Avoid_: „Scope" mit „Ziel" (`childId`, *was* gezählt wird) zu vermengen — der Bezugsrahmen ist *wo* gezählt wird.
 
 ### Validierung & Fehlermeldungen
