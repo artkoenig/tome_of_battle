@@ -23,6 +23,14 @@ const SOLVER_LAYER = '^src/solver/';
 const COMPONENTS_LAYER = '^src/components/';
 const SOLVER_FACADE = '^src/solver/validator\\.js$';
 
+// Die zweite, raeumlich getrennte Auswertungs-Engine (ADR-0030). Sie ist hart
+// von src/solver/ getrennt (in beide Richtungen) und von aussen nur ueber ihre
+// eigene Fassade erreichbar. Anders als der warn-only Alt-Bestand sind diese
+// Regeln blockierend ("error"): die Engine ist neu und traegt keinen Ballast,
+// darum kann die Trennung sofort maschinell greifen statt nur zu warnen.
+const EVALUATOR_LAYER = '^src/evaluator/';
+const EVALUATOR_FACADE = '^src/evaluator/evaluator\\.js$';
+
 module.exports = {
   forbidden: [
     {
@@ -62,6 +70,37 @@ module.exports = {
       severity: 'warn',
       from: { pathNot: [SOLVER_LAYER, TEST_FILE] },
       to: { path: SOLVER_LAYER, pathNot: SOLVER_FACADE },
+    },
+    {
+      name: 'evaluator-keine-solver-abhaengigkeit',
+      comment:
+        'Harte Trennung der beiden Engines (ADR-0030): src/evaluator/ darf nie ' +
+        'aus src/solver/ importieren -- auch nicht aus dessen Fassade. Blockierend, ' +
+        'weil die Engine neu ist und keinen Alt-Bestand traegt.',
+      severity: 'error',
+      from: { path: EVALUATOR_LAYER, pathNot: TEST_FILE },
+      to: { path: SOLVER_LAYER },
+    },
+    {
+      name: 'solver-keine-evaluator-abhaengigkeit',
+      comment:
+        'Harte Trennung der beiden Engines (ADR-0030): src/solver/ darf nie aus ' +
+        'src/evaluator/ importieren -- auch nicht aus dessen Fassade. Blockierend, ' +
+        'weil die Engine neu ist und keinen Alt-Bestand traegt.',
+      severity: 'error',
+      from: { path: SOLVER_LAYER, pathNot: TEST_FILE },
+      to: { path: EVALUATOR_LAYER },
+    },
+    {
+      name: 'evaluator-nur-ueber-fassade',
+      comment:
+        'Der Evaluator wird von aussen ausschliesslich ueber die Fassade ' +
+        'src/evaluator/evaluator.js angesprochen (ADR-0030, gespiegelt aus der ' +
+        'Solver-Fassade ADR-0023). Ausgenommen sind evaluator-interne Module und ' +
+        'Testdateien -- dieselben Ausnahmen wie die oxlint-Regel no-restricted-imports.',
+      severity: 'error',
+      from: { pathNot: [EVALUATOR_LAYER, TEST_FILE] },
+      to: { path: EVALUATOR_LAYER, pathNot: EVALUATOR_FACADE },
     },
     {
       name: 'no-orphans',

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -26,3 +26,4 @@ App-Verdrahtung. Grundlage: `docs/evaluator-architecture.md`, ADR-0030.
       keine UI und kein IndexedDB.
 
 ## Comments
+- Walking-Skeleton der Reinraum-Engine src/evaluator/: Fassade evaluator.js (evaluate(catalogXml, roster)) mit duennem End-to-End-Pfad eigener XML-Leser -> Resolver -> Join/Evaluationsbaum (ohne Phantome) -> Zaehlindex/Query-Primitiv -> Constraint-Schicht (nur MAX auf Selektionsanzahl, ROSTER-Scope) -> Bericht mit Verletzungstripel. Harte Import-Trennung zu src/solver/ in beide Richtungen und Fassaden-Zwang maschinell in .oxlintrc.json (error) und .dependency-cruiser.cjs (error) durchgesetzt und per Probe-Import verifiziert. 6 Tests gruen, Gesamtsuite gruen.
