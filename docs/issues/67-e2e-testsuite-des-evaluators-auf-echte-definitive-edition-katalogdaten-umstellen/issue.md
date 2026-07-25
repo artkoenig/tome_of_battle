@@ -35,15 +35,26 @@ unberührt.
    nicht gefundene Definition erscheint weiterhin als **Diagnose**, nie als
    Absturz.
 
-2. **Neue E2E-Testsuite gegen echte, vollständige Daten.** Eine E2E-Testsuite
-   der neuen Engine prüft **alle drei** realen Definitive-Edition-Kataloge
-   (Ogre Kingdoms, Orcs and Goblins, Vampire Counts) — jeweils zusammen mit der
-   `.gst` (WHFB 6th Edition) — als vollständig aufgelöste Datensätze. Die
+2. **E2E-Ebene vollständig auf echte, vollständige Daten umgestellt.** Die
+   E2E-Testsuite der neuen Engine prüft **alle drei** realen Definitive-Edition-
+   Kataloge (Ogre Kingdoms, Orcs and Goblins, Vampire Counts) — jeweils zusammen
+   mit der `.gst` (WHFB 6th Edition) — als vollständig aufgelöste Datensätze. Die
    Katalog-Rohdaten liegen zu diesem Zweck **versioniert im Repository**.
    Assertions prüfen **bekannte, im Katalog verifizierte** Definitions-IDs,
    Namen und Grenzwerte (Muster wie im heutigen Ogre-Smoke-Test: reale
    Pflichteinheit, realer Modifikator, reale Bedingung), sodass jeder Test echtes
    Regel-Verhalten dokumentiert und robust gegen bloßes Datenwachstum ist.
+
+   **Keine synthetischen E2E-Tests mehr:** die bestehenden synthetischen
+   E2E-Tests der Engine werden **entfernt bzw. durch Real-Data-Tests ersetzt** —
+   der synthetische „Walking Skeleton"-Fassadentest, das an der Definitive
+   Edition *modellierte* synthetische Fixture und die synthetische Paritätssuite
+   gegen die alte Engine. Szenarien der Paritätssuite, die sich in echten
+   Katalogdaten wiederfinden, werden als Real-Data-E2E neu abgebildet; rein
+   synthetische Konstrukte entfallen ersatzlos. Die B1/B2-Befunde (Kategorie-
+   `max`-ohne-`min` wird nicht erzwungen; `forceEntry`-Punktelimit nicht direkt
+   ausdrückbar) bleiben ausschließlich in ADR/Issue dokumentiert, nicht mehr als
+   Test.
 
 3. **Testkatalog für die E2E-Suite.** Ein gepflegtes Markdown-Dokument listet
    **je E2E-Test der neuen Engine**:
@@ -69,7 +80,11 @@ unberührt.
 - **Kein** `catalogueLink`/`.cat`→`.cat`-Import (real nicht vorhanden).
 - **Kein** Auto-Generator und **kein** CI-Zwang für den Testkatalog.
 - Die Unit-/Komponententests der Engine behalten ihre minimalen, synthetischen
-  Eingaben; nur die E2E-/Integrationsebene stellt auf echte Daten um.
+  Eingaben; **nur die E2E-/Integrationsebene** stellt auf echte Daten um. „Keine
+  synthetischen Tests mehr" gilt ausschließlich für diese Ebene.
+- **Kein** Verlust an Regel-Abdeckung, wo ein synthetisches Paritätsszenario ein
+  reales Gegenstück hat: solche Szenarien werden real neu abgebildet, nicht bloß
+  gestrichen.
 
 ### Kontext / betroffene Bereiche (verifiziert)
 
