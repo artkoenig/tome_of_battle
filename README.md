@@ -122,12 +122,18 @@ violations/capabilities/diagnostics) and realizes the full reference design
 out. It is currently a **library only — not wired into the app** (tree-shaken from
 the production bundle), used as a proving ground for the design.
 
-Known limitations (documented, not defects): it consumes the engine's **own** XML
-vocabulary (`op`/`operation`/`targetKind`) for conditions and modifiers rather than
-raw BattleScribe attribute names, so reading a real `.cat` file exercises only
-constraints (real conditions/modifiers surface as diagnostics); and it reads a
-**single** catalogue — cross-catalogue imports/link-chains and incrementalization
-(architecture §4.9) are deferred future work.
+It reads the **canonical** BattleScribe XSD attributes (`type`/`field`/`value`)
+directly and draws its closed enum sets (constraint, condition and modifier kinds)
+from the vendored XSD single-source-of-truth rather than a separately drifting copy
+([ADR 0031](docs/adr/0031-evaluator-liest-battlescribe-xsd-syntax-und-teilt-enum-ssot.md)).
+Reading a real `.cat` file therefore exercises not just constraints but genuinely
+evaluates real conditions and modifiers — including nested condition- and
+modifier-groups (`and`/`or`) and structurally read info elements
+(`profile`/`rule`/`infoGroup`/`infoLink`).
+
+Known limitations (documented, not defects): it reads a **single** catalogue —
+cross-catalogue imports/link-chains and incrementalization (architecture §4.9) are
+deferred future work.
 
 ### User Interface (`src/`)
 

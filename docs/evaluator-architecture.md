@@ -95,9 +95,17 @@ Sprachneutral, typisiert notiert. Fehlerpfade sind explizit; nichts wird still v
 ### 4.1 Typen
 
 ```
-enum LimitKind      { MIN, MAX }
+// Die geschlossenen Format-Enums (ConstraintKind/ConditionKind/ModifierKind/
+// ConditionGroupKind) kommen aus der **einen** Quelle der Wahrheit: der aus der
+// vendored BattleScribe-XSD generierten SSOT (ADR-0031), nicht aus einer eigenen,
+// driftgefährdeten Kopie.
+enum ConstraintKind { min, max }                                  // XSD-SSOT
 enum CountedField   { SELECTION_COUNT, COST_SUM(costTypeId) }
-enum CompareOp      { LESS, GREATER, EQUAL, AT_LEAST, AT_MOST, INSTANCE_OF }
+enum ConditionKind  { lessThan, greaterThan, equalTo, notEqualTo,  // XSD-SSOT
+                      atLeast, atMost, instanceOf, notInstanceOf }
+enum ModifierKind   { set, increment, decrement, add, remove,      // XSD-SSOT (10 Werte)
+                      append, prepend, multiply, set-primary, unset-primary }
+enum ConditionGroupKind { and, or }                               // XSD-SSOT
 enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF }
 type ScopeRef       = ScopeKeyword | EntryId | CategoryId
 
@@ -107,15 +115,31 @@ record CountFlags {
   includeChildForces: bool
 }
 
-record LimitDef     { id, kind: LimitKind, field: CountedField, scope: ScopeRef,
-                      value: number, isPercent: bool, flags: CountFlags }
-record ConditionDef { op: CompareOp, field: CountedField, scope: ScopeRef,
-                      targetChildId: Id, value: number, flags: CountFlags }
-record RepeatDef    { field: CountedField, scope: ScopeRef,
-                      targetChildId: Id, perValue: number, flags: CountFlags }
-record ModifierDef  { target: PropertyRef | LimitId, operation: SET | ADD | MULTIPLY | APPEND_NOTE,
-                      value, conditions: ConditionDef[], repeats: RepeatDef[] }
-                      // Reihenfolge im Array == Dokumentreihenfolge
+record LimitDef       { id, kind: ConstraintKind, field: CountedField, scope: ScopeRef,
+                        value: number, isPercent: bool, flags: CountFlags }
+record ConditionDef   { type: ConditionKind, field: CountedField, scope: ScopeRef,
+                        targetChildId: Id, value: number, flags: CountFlags }
+record RepeatDef      { field: CountedField, scope: ScopeRef,
+                        targetChildId: Id, perValue: number, flags: CountFlags }
+record ModifierDef    { field: string,                    // roher XSD-`field`, im Resolver aufgelöst
+                        target: TargetDescriptor,          // aufgelöstes Ziel (Kosten/Grenze/Kategorie/Sichtbarkeit/Hinweis)
+                        kind: ModifierKind, value,
+                        conditions: ConditionDef[], conditionGroups: ConditionGroupDef[],
+                        repeats: RepeatDef[] }
+                        // Reihenfolge im Array == Dokumentreihenfolge
+
+// Gruppen (rekursiv, `and`/`or`): eine Bedingungsgruppe verknüpft Bedingungen und
+// weitere Untergruppen zu einem Wahrheitswert; eine Modifikatorgruppe bündelt
+// Modifikatoren unter einer gemeinsamen Gruppen-Bedingung und ist beliebig
+// verschachtelbar.
+record ConditionGroupDef { type: ConditionGroupKind, conditions: ConditionDef[],
+                          groups: ConditionGroupDef[] }
+record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],
+                          conditions: ConditionDef[], conditionGroups: ConditionGroupDef[] }
+
+// Info-Elemente: rein strukturell gelesen, ohne Grenzen- oder Modifikator-Logik.
+record InfoElement    { kind: profile | rule | infoGroup | infoLink, id, name,
+                        infos: InfoElement[] }    // infoLink verweist per targetId
 
 record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
                       baseCosts: Map<CostTypeId, number>, baseCategoryIds: Set<CategoryId>,
@@ -266,7 +290,7 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number
 ```
 function conditionHolds(ctx, c: ConditionDef): bool
   actual = query(ctx, c.field, c.scope, c.targetChildId, c.flags)
-  return compare(c.op, actual, c.value)     // eine zentrale compare()-Funktion für alle Operatoren
+  return compare(c.type, actual, c.value)   // COMPARATORS-Registry: ConditionKind → Vergleichsprädikat
 
 function repeatCount(ctx, r: RepeatDef): number
   actual = query(ctx, r.field, r.scope, r.targetChildId, r.flags)
@@ -277,20 +301,42 @@ function applyAllModifiers(tree, index, previous): EffectiveState
   for node in allNodesOf(tree):             // inkl. Phantome: auch deren Grenzen sind modifizierbar
     ctx = QueryContext(node, index, diagnostics)
     for modifier in node.def.modifiers:     // Dokumentreihenfolge — Reihenfolge ist Semantik
-      if not all(conditionHolds(ctx, c) for c in modifier.conditions): continue
-      times = modifier.repeats.isEmpty ? 1
-                                       : product(repeatCount(ctx, r) for r in modifier.repeats)
-      applyOperation(next, node, modifier, times)
+      applyModifier(ctx, next, node, modifier)
+    for group in node.def.modifierGroups:   // Modifikatorgruppen nach den freien Modifikatoren
+      applyModifierGroup(ctx, next, node, group)
   return next
 
+function applyModifier(ctx, state, node, modifier)
+  // feuert nur, wenn ALLE direkten Bedingungen UND alle Bedingungsgruppen halten
+  if not conditionsAndGroupsHold(ctx, modifier.conditions, modifier.conditionGroups): return
+  times = modifier.repeats.isEmpty ? 1
+                                   : product(repeatCount(ctx, r) for r in modifier.repeats)
+  applyOperation(state, node, modifier, times)
+
+function applyModifierGroup(ctx, state, node, group)
+  // hält die gemeinsame Gruppen-Bedingung, greifen alle enthaltenen Modifikatoren
+  // gemeinsam (jeder weiterhin unter seinen eigenen Bedingungen), sonst gemeinsam keiner
+  if not conditionsAndGroupsHold(ctx, group.conditions, group.conditionGroups): return
+  for modifier in group.modifiers:
+    applyModifier(ctx, state, node, modifier)
+
+// Eine `and`-Gruppe hält, wenn ALLE ihre Bedingungen und Untergruppen halten; eine
+// `or`-Gruppe, wenn MINDESTENS EINE hält — rekursiv über beliebige Tiefe.
+function conditionGroupHolds(ctx, group): bool
+  members = [conditionHolds(ctx, c) for c in group.conditions]
+          + [conditionGroupHolds(ctx, g) for g in group.groups]
+  return group.type == and ? all(members) : any(members)
+
 function applyOperation(state, node, modifier, times)
-  if times == 0: return
-  match modifier.operation:
-    SET         → state.write(node, modifier.target, modifier.value)      // SET ignoriert times
-    ADD         → state.write(node, modifier.target, current + modifier.value * times)
-    MULTIPLY    → state.write(node, modifier.target, current * modifier.value ^ times)
-    APPEND_NOTE → state.notes[node].append(modifier.value)
+  if times == 0 or modifier.target == null: return   // baumelndes Ziel: im Resolver gemeldet
+  handler = MODIFIER_HANDLERS[modifier.kind]          // Registry ModifierKind → Effekt
+  if handler == null: diagnostics.add(UNSUPPORTED_MODIFIER); return
+  handler(state, node, modifier.target, modifier.value, times, diagnostics)
+  // set → schreibt/setzt (ignoriert times); increment/decrement/multiply → numerisch × times;
+  // add/remove/set-primary/unset-primary → Kategorie-Mitgliedschaft; append/prepend → Hinweistext
 ```
+
+Info-Elemente (`profile`/`rule`/`infoGroup`/`infoLink`) werden rein strukturell gelesen und tragen keine Grenzen- oder Modifikator-Logik; ein `infoLink` verweist per `targetId` auf sein Ziel.
 
 Wichtig: Jede Fixpunktrunde wendet Modifikatoren auf eine frische Kopie der **Basiswerte** an — sonst würde `ADD` über Runden hinweg kumulieren.
 

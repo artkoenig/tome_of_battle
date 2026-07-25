@@ -61,9 +61,9 @@ describe('Bedingungen steuern, ob ein Modifikator die effektiven Kosten aendert'
             <constraint id="${MAX_POINTS_ID}" type="max" value="${MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
           </constraints>
           <modifiers>
-            <modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${MODIFIER_POINTS}">
+            <modifier type="increment" field="${POINTS_ID}" value="${MODIFIER_POINTS}">
               <conditions>
-                <condition op="atLeast" field="selections" scope="roster" childId="${ARCHER_ID}" value="1"/>
+                <condition type="atLeast" field="selections" scope="roster" childId="${ARCHER_ID}" value="1"/>
               </conditions>
             </modifier>
           </modifiers>
@@ -116,17 +116,17 @@ describe('Modifikatoren auf dasselbe Ziel wirken in Dokumentreihenfolge', () => 
       </catalogue>`;
   }
 
-  const ADD = `<modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${ADD_VALUE}"/>`;
-  const MULTIPLY = `<modifier operation="multiply" targetKind="cost" targetId="${POINTS_ID}" value="${MULTIPLY_VALUE}"/>`;
+  const INCREMENT = `<modifier type="increment" field="${POINTS_ID}" value="${ADD_VALUE}"/>`;
+  const MULTIPLY = `<modifier type="multiply" field="${POINTS_ID}" value="${MULTIPLY_VALUE}"/>`;
 
-  it('ADD dann MULTIPLY: (5 + 10) * 2 = 30', () => {
-    const report = evaluate(catalogueWithOrder(ADD, MULTIPLY), roster([selection(WARRIOR_ID, 1)]));
+  it('increment dann multiply: (5 + 10) * 2 = 30', () => {
+    const report = evaluate(catalogueWithOrder(INCREMENT, MULTIPLY), roster([selection(WARRIOR_ID, 1)]));
 
     expect(report.violations[0].actual).toBe((BASE_POINTS + ADD_VALUE) * MULTIPLY_VALUE);
   });
 
-  it('MULTIPLY dann ADD: (5 * 2) + 10 = 20 — dieselben Modifikatoren, andere Ordnung, anderes Ergebnis', () => {
-    const report = evaluate(catalogueWithOrder(MULTIPLY, ADD), roster([selection(WARRIOR_ID, 1)]));
+  it('multiply dann increment: (5 * 2) + 10 = 20 — dieselben Modifikatoren, andere Ordnung, anderes Ergebnis', () => {
+    const report = evaluate(catalogueWithOrder(MULTIPLY, INCREMENT), roster([selection(WARRIOR_ID, 1)]));
 
     expect(report.violations[0].actual).toBe(BASE_POINTS * MULTIPLY_VALUE + ADD_VALUE);
   });
@@ -150,7 +150,7 @@ describe('Wiederholungen multiplizieren die Modifikator-Wirkung', () => {
             <constraint id="${MAX_POINTS_ID}" type="max" value="${MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
           </constraints>
           <modifiers>
-            <modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${MODIFIER_POINTS}">
+            <modifier type="increment" field="${POINTS_ID}" value="${MODIFIER_POINTS}">
               <repeats>
                 <repeat field="selections" scope="roster" childId="${TOKEN_ID}" perValue="${PER_TOKEN}"/>
               </repeats>
@@ -190,9 +190,9 @@ describe('Modifikatoren aendern effektive Grenzwerte (durch resolveBound)', () =
             <constraint id="${MAX_WARRIORS_ID}" type="max" value="${BASE_MAX}" field="selections" scope="roster"/>
           </constraints>
           <modifiers>
-            <modifier operation="add" targetKind="limit" targetId="${MAX_WARRIORS_ID}" value="${LIMIT_BONUS}">
+            <modifier type="increment" field="${MAX_WARRIORS_ID}" value="${LIMIT_BONUS}">
               <conditions>
-                <condition op="atLeast" field="selections" scope="roster" childId="${ARCHER_ID}" value="1"/>
+                <condition type="atLeast" field="selections" scope="roster" childId="${ARCHER_ID}" value="1"/>
               </conditions>
             </modifier>
           </modifiers>
@@ -228,9 +228,9 @@ describe('Modifikatoren aendern effektive Prozent-Grenzwerte (durch dieselbe res
             <constraint id="${SHARE_ID}" type="max" value="50" percentValue="true" field="selections" scope="roster"/>
           </constraints>
           <modifiers>
-            <modifier operation="set" targetKind="limit" targetId="${SHARE_ID}" value="100">
+            <modifier type="set" field="${SHARE_ID}" value="100">
               <conditions>
-                <condition op="atLeast" field="selections" scope="roster" childId="${ARCHER_ID}" value="1"/>
+                <condition type="atLeast" field="selections" scope="roster" childId="${ARCHER_ID}" value="1"/>
               </conditions>
             </modifier>
           </modifiers>
@@ -266,7 +266,7 @@ describe('Die Zaehlung stuetzt sich auf effektive Kategorien, nicht auf Basis-Ka
       <selectionEntries>
         <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
           <modifiers>
-            <modifier operation="set" targetKind="category" targetId="${ELITE_CAT_ID}" value="true"/>
+            <modifier type="add" field="category" value="${ELITE_CAT_ID}"/>
           </modifiers>
         </selectionEntry>
       </selectionEntries>
@@ -301,10 +301,10 @@ describe('Sichtbarkeit und bedingte Hinweise als effektive Werte', () => {
       <selectionEntries>
         <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
           <modifiers>
-            <modifier operation="set" targetKind="hidden" value="true"/>
-            <modifier operation="appendNote" targetKind="note" value="${NOTE_TEXT}">
+            <modifier type="set" field="hidden" value="true"/>
+            <modifier type="append" field="notes" value="${NOTE_TEXT}">
               <conditions>
-                <condition op="atLeast" field="selections" scope="roster" childId="${WARRIOR_ID}" value="2"/>
+                <condition type="atLeast" field="selections" scope="roster" childId="${WARRIOR_ID}" value="2"/>
               </conditions>
             </modifier>
           </modifiers>
@@ -345,7 +345,7 @@ describe('Keine kumulative Drift innerhalb einer Auswertung', () => {
             <cost name="Points" typeId="${POINTS_ID}" value="${WARRIOR_BASE_POINTS}"/>
           </costs>
           <modifiers>
-            <modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${MODIFIER_POINTS}"/>
+            <modifier type="increment" field="${POINTS_ID}" value="${MODIFIER_POINTS}"/>
           </modifiers>
         </selectionEntry>
       </selectionEntries>

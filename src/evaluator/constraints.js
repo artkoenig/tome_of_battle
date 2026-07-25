@@ -12,7 +12,7 @@
  * fliesst der effektive Prozentsatz durch dieselbe `resolveBound`-Stelle.
  */
 
-import { LimitKind, SUSPENDED, DiagnosticKind, diagnostic } from './model.js';
+import { ConstraintKind, SUSPENDED, DiagnosticKind, diagnostic } from './model.js';
 import { allNodes } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -48,7 +48,7 @@ function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
   if (bound === SUSPENDED) return null;
   const actual = query(ctx, limit.field, limit.scope, node.def.id, limit.flags);
-  const satisfied = limit.kind === LimitKind.MIN ? actual >= bound : actual <= bound;
+  const satisfied = limit.kind === ConstraintKind.MIN ? actual >= bound : actual <= bound;
   return {
     limit,
     anchor: node,

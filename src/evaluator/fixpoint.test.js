@@ -59,10 +59,10 @@ describe('Konvergenz: Zaehlen haengt von effektiven Werten ab und umgekehrt', ()
             <constraint id="${MAX_POINTS_ID}" type="max" value="${MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
           </constraints>
           <modifiers>
-            <modifier operation="set" targetKind="category" targetId="${ELITE_CAT_ID}" value="true"/>
-            <modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${CATEGORY_BONUS}">
+            <modifier type="add" field="category" value="${ELITE_CAT_ID}"/>
+            <modifier type="increment" field="${POINTS_ID}" value="${CATEGORY_BONUS}">
               <conditions>
-                <condition op="atLeast" field="selections" scope="roster" childId="${ELITE_CAT_ID}" value="1"/>
+                <condition type="atLeast" field="selections" scope="roster" childId="${ELITE_CAT_ID}" value="1"/>
               </conditions>
             </modifier>
           </modifiers>
@@ -102,7 +102,7 @@ describe('Jede Runde wendet Modifikatoren auf eine frische Basiskopie an', () =>
             <constraint id="${MAX_POINTS_ID}" type="max" value="${MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
           </constraints>
           <modifiers>
-            <modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${ADD_POINTS}"/>
+            <modifier type="increment" field="${POINTS_ID}" value="${ADD_POINTS}"/>
           </modifiers>
         </selectionEntry>
       </selectionEntries>
@@ -136,18 +136,18 @@ describe('Nichtkonvergenz: oszillierende Kataloge werden sichtbar statt still fa
             <categoryLink targetId="${CAT_A_ID}"/>
           </categoryLinks>
           <modifiers>
-            <modifier operation="set" targetKind="category" targetId="${CAT_A_ID}" value="false">
+            <modifier type="remove" field="category" value="${CAT_A_ID}">
               <conditions>
-                <condition op="atLeast" field="selections" scope="roster" childId="${CAT_B_ID}" value="1"/>
+                <condition type="atLeast" field="selections" scope="roster" childId="${CAT_B_ID}" value="1"/>
               </conditions>
             </modifier>
           </modifiers>
         </selectionEntry>
         <selectionEntry id="${BETA_ID}" name="Beta" type="unit">
           <modifiers>
-            <modifier operation="set" targetKind="category" targetId="${CAT_B_ID}" value="true">
+            <modifier type="add" field="category" value="${CAT_B_ID}">
               <conditions>
-                <condition op="atLeast" field="selections" scope="roster" childId="${CAT_A_ID}" value="1"/>
+                <condition type="atLeast" field="selections" scope="roster" childId="${CAT_A_ID}" value="1"/>
               </conditions>
             </modifier>
           </modifiers>
@@ -183,9 +183,9 @@ describe('Nichtkonvergenz: oszillierende Kataloge werden sichtbar statt still fa
             <constraint id="${OSC_MAX_ID}" type="max" value="${OSC_MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
           </constraints>
           <modifiers>
-            <modifier operation="set" targetKind="cost" targetId="${POINTS_ID}" value="${OSC_SET_POINTS}">
+            <modifier type="set" field="${POINTS_ID}" value="${OSC_SET_POINTS}">
               <conditions>
-                <condition op="atMost" field="${POINTS_ID}" scope="roster" childId="${WARRIOR_ID}" value="${OSC_TRIGGER_AT_MOST}"/>
+                <condition type="atMost" field="${POINTS_ID}" scope="roster" childId="${WARRIOR_ID}" value="${OSC_TRIGGER_AT_MOST}"/>
               </conditions>
             </modifier>
           </modifiers>

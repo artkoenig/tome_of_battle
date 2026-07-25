@@ -15,14 +15,17 @@
  */
 
 import {
-  LimitKind,
   SELECTION_COUNT,
   costSumField,
-  CompareOp,
-  ModifierOperation,
-  ModifierTargetKind,
+  ConditionKind,
+  ConditionGroupKind,
+  ModifierKind,
+  ConstraintKind,
   DefinitionKind,
+  InfoElementKind,
+  InfoLinkKind,
   DiagnosticKind,
+  DEFAULT_FLAGS,
   diagnostic,
 } from './model.js';
 
@@ -41,10 +44,28 @@ const Tag = Object.freeze({
   COST: 'cost',
   MODIFIERS: 'modifiers',
   MODIFIER: 'modifier',
+  MODIFIER_GROUPS: 'modifierGroups',
+  MODIFIER_GROUP: 'modifierGroup',
   CONDITIONS: 'conditions',
   CONDITION: 'condition',
+  CONDITION_GROUPS: 'conditionGroups',
+  CONDITION_GROUP: 'conditionGroup',
   REPEATS: 'repeats',
   REPEAT: 'repeat',
+  PROFILES: 'profiles',
+  PROFILE: 'profile',
+  RULES: 'rules',
+  RULE: 'rule',
+  INFO_GROUPS: 'infoGroups',
+  INFO_GROUP: 'infoGroup',
+  INFO_LINKS: 'infoLinks',
+  INFO_LINK: 'infoLink',
+  CHARACTERISTICS: 'characteristics',
+  CHARACTERISTIC: 'characteristic',
+  // Katalogweit geteilte Info-Definitionen (die ueblichen `infoLink`-Ziele).
+  SHARED_PROFILES: 'sharedProfiles',
+  SHARED_RULES: 'sharedRules',
+  SHARED_INFO_GROUPS: 'sharedInfoGroups',
 });
 
 const Attr = Object.freeze({
@@ -53,12 +74,9 @@ const Attr = Object.freeze({
   TYPE: 'type',
   TYPE_ID: 'typeId',
   TARGET_ID: 'targetId',
-  TARGET_KIND: 'targetKind',
   FIELD: 'field',
   VALUE: 'value',
   SCOPE: 'scope',
-  OP: 'op',
-  OPERATION: 'operation',
   CHILD_ID: 'childId',
   PER_VALUE: 'perValue',
   PERCENT_VALUE: 'percentValue',
@@ -67,26 +85,20 @@ const Attr = Object.freeze({
   INCLUDE_CHILD_FORCES: 'includeChildForces',
 });
 
-/** Die gueltigen Vergleichsoperator-Werte einer Bedingung (siehe {@link CompareOp}). */
-const COMPARE_OPS = Object.freeze(new Set(Object.values(CompareOp)));
+/** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
+const CONDITION_KINDS = Object.freeze(new Set(Object.values(ConditionKind)));
 
-/** Die gueltigen Modifikator-Operationen (siehe {@link ModifierOperation}). */
-const MODIFIER_OPERATIONS = Object.freeze(new Set(Object.values(ModifierOperation)));
+/** Die gueltigen `type`-Werte einer Bedingungsgruppe (SSOT-Enum {@link ConditionGroupKind}). */
+const CONDITION_GROUP_KINDS = Object.freeze(new Set(Object.values(ConditionGroupKind)));
 
-/** Die numerischen Modifikator-Zielarten, deren `value` eine Zahl ist. */
-const NUMERIC_TARGET_KINDS = Object.freeze(new Set([ModifierTargetKind.COST, ModifierTargetKind.LIMIT]));
+/** Die gueltigen `type`-Werte eines Modifikators (SSOT-Enum {@link ModifierKind}). */
+const MODIFIER_KINDS = Object.freeze(new Set(Object.values(ModifierKind)));
 
-/** Die booleschen Modifikator-Zielarten, deren `value` an/aus schaltet. */
-const BOOLEAN_TARGET_KINDS = Object.freeze(new Set([ModifierTargetKind.CATEGORY, ModifierTargetKind.HIDDEN]));
+/** Die gueltigen `type`-Werte einer Grenze (SSOT-Enum {@link ConstraintKind}). */
+const CONSTRAINT_KINDS = Object.freeze(new Set(Object.values(ConstraintKind)));
 
-/** Die gueltigen Modifikator-Zielarten (siehe {@link ModifierTargetKind}). */
-const TARGET_KINDS = Object.freeze(new Set(Object.values(ModifierTargetKind)));
-
-/** Battlescribe-XML-Vokabular auf das engine-eigene Enum abgebildet. */
-const LIMIT_KIND_BY_XML = Object.freeze({
-  max: LimitKind.MAX,
-  min: LimitKind.MIN,
-});
+/** Die gueltigen Verweistypen eines `infoLink` (SSOT-Enum {@link InfoLinkKind}). */
+const INFO_LINK_KINDS = Object.freeze(new Set(Object.values(InfoLinkKind)));
 
 /** Das `field`-Attribut, das die Selektionsanzahl statt einer Kostenart meint. */
 const SELECTION_COUNT_FIELD_XML = 'selections';
@@ -140,9 +152,9 @@ function readBoolean(element, attr, defaultValue) {
  */
 function readFlags(element) {
   return {
-    shared: readBoolean(element, Attr.SHARED, true),
-    includeChildSelections: readBoolean(element, Attr.INCLUDE_CHILD_SELECTIONS, false),
-    includeChildForces: readBoolean(element, Attr.INCLUDE_CHILD_FORCES, false),
+    shared: readBoolean(element, Attr.SHARED, DEFAULT_FLAGS.shared),
+    includeChildSelections: readBoolean(element, Attr.INCLUDE_CHILD_SELECTIONS, DEFAULT_FLAGS.includeChildSelections),
+    includeChildForces: readBoolean(element, Attr.INCLUDE_CHILD_FORCES, DEFAULT_FLAGS.includeChildForces),
   };
 }
 
@@ -163,7 +175,8 @@ function readScope(scopeAttr) {
  */
 function readConstraint(constraintEl, diagnostics) {
   const id = constraintEl.getAttribute(Attr.ID);
-  const kind = LIMIT_KIND_BY_XML[constraintEl.getAttribute(Attr.TYPE)];
+  const type = constraintEl.getAttribute(Attr.TYPE);
+  const kind = CONSTRAINT_KINDS.has(type) ? type : undefined;
   const field = readField(constraintEl.getAttribute(Attr.FIELD));
   const scope = readScope(constraintEl.getAttribute(Attr.SCOPE));
   const value = Number.parseFloat(constraintEl.getAttribute(Attr.VALUE));
@@ -221,20 +234,20 @@ function readCategoryIds(entryEl) {
  * fehlendes `childId` bedeutet "alles im Rahmen" (Ziel `null`).
  */
 function readCondition(conditionEl, diagnostics) {
-  const op = conditionEl.getAttribute(Attr.OP);
+  const type = conditionEl.getAttribute(Attr.TYPE);
   const field = readField(conditionEl.getAttribute(Attr.FIELD));
   const scope = readScope(conditionEl.getAttribute(Attr.SCOPE));
   const value = Number.parseFloat(conditionEl.getAttribute(Attr.VALUE));
-  if (!COMPARE_OPS.has(op) || field === undefined || scope === undefined || Number.isNaN(value)) {
+  if (!CONDITION_KINDS.has(type) || field === undefined || scope === undefined || Number.isNaN(value)) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONDITION, {
-      op,
+      type,
       field: conditionEl.getAttribute(Attr.FIELD),
       scope: conditionEl.getAttribute(Attr.SCOPE),
     }));
     return null;
   }
   return {
-    op,
+    type,
     field,
     scope,
     targetChildId: conditionEl.getAttribute(Attr.CHILD_ID),
@@ -243,11 +256,44 @@ function readCondition(conditionEl, diagnostics) {
   };
 }
 
-/** Liest die Bedingungen eines Modifikators (leer, wenn keine vorhanden). */
-function readConditions(modifierEl, diagnostics) {
-  return wrappedChildren(modifierEl, Tag.CONDITIONS, Tag.CONDITION)
+/**
+ * Liest die direkten Bedingungen eines Elements (Modifikator, Bedingungsgruppe
+ * oder Modifikatorgruppe) — leer, wenn keine vorhanden.
+ */
+function readConditions(element, diagnostics) {
+  return wrappedChildren(element, Tag.CONDITIONS, Tag.CONDITION)
     .map(conditionEl => readCondition(conditionEl, diagnostics))
     .filter(condition => condition !== null);
+}
+
+/**
+ * Liest eine einzelne `<conditionGroup>` **rekursiv** in ihre `ConditionGroupDef`:
+ * ihre `type`-Verknuepfung ({@link ConditionGroupKind} `and`/`or`), ihre direkten
+ * Bedingungen und ihre verschachtelten Untergruppen (beliebige Tiefe). Ein `type`
+ * ausserhalb des SSOT-Enums wird als Diagnose gemeldet, nie still verschluckt
+ * (`docs/issues/.../design.md`, Kontrakt `ConditionGroupDef`).
+ */
+function readConditionGroup(groupEl, diagnostics) {
+  const type = groupEl.getAttribute(Attr.TYPE);
+  if (!CONDITION_GROUP_KINDS.has(type)) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONDITION_GROUP, { type }));
+    return null;
+  }
+  return {
+    type,
+    conditions: readConditions(groupEl, diagnostics),
+    groups: readConditionGroups(groupEl, diagnostics),
+  };
+}
+
+/**
+ * Liest die direkten Bedingungsgruppen eines Elements (Modifikator,
+ * Bedingungsgruppe oder Modifikatorgruppe) — leer, wenn keine vorhanden.
+ */
+function readConditionGroups(element, diagnostics) {
+  return wrappedChildren(element, Tag.CONDITION_GROUPS, Tag.CONDITION_GROUP)
+    .map(groupEl => readConditionGroup(groupEl, diagnostics))
+    .filter(group => group !== null);
 }
 
 /**
@@ -284,40 +330,28 @@ function readRepeats(modifierEl, diagnostics) {
 }
 
 /**
- * Liest den `value` eines Modifikators je nach Zielart: numerisch fuer Kosten-
- * und Grenz-Ziele, boolesch fuer Kategorie- und Sichtbarkeits-Ziele, sonst als
- * Text (Hinweis).
- */
-function readModifierValue(targetKind, rawValue) {
-  if (NUMERIC_TARGET_KINDS.has(targetKind)) return Number.parseFloat(rawValue);
-  if (BOOLEAN_TARGET_KINDS.has(targetKind)) return rawValue === BOOLEAN_TRUE_XML;
-  return rawValue;
-}
-
-/**
- * Liest einen einzelnen `<modifier>` in seine `ModifierDef` (samt Bedingungen und
- * Wiederholungen) oder meldet eine Diagnose, falls Operation oder Zielart
- * ausserhalb des Umfangs liegen — nie still verschluckt.
+ * Liest einen einzelnen `<modifier>` kanonisch (BattleScribe-XSD): die Art an
+ * `type` ({@link ModifierKind}), das Ziel roh im `field`-String und der rohe
+ * `value`-String. `field` und `value` bleiben **ungeparst** — der Resolver loest
+ * `field` genau einmal in einen `TargetDescriptor` auf, das `value`-Parsen bleibt
+ * der Apply-Schicht ueberlassen (`docs/issues/.../design.md`, Kontrakt `ModifierDef`).
+ * Ein `type` ausserhalb des SSOT-Enums wird als Diagnose gemeldet, nie still
+ * verschluckt.
  */
 function readModifier(modifierEl, diagnostics) {
-  const operation = modifierEl.getAttribute(Attr.OPERATION);
-  const targetKind = modifierEl.getAttribute(Attr.TARGET_KIND);
-  const rawValue = modifierEl.getAttribute(Attr.VALUE);
-  const value = readModifierValue(targetKind, rawValue);
-  const numericValueInvalid = NUMERIC_TARGET_KINDS.has(targetKind) && Number.isNaN(value);
-  if (!MODIFIER_OPERATIONS.has(operation) || !TARGET_KINDS.has(targetKind) || numericValueInvalid) {
-    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, {
-      operation,
-      targetKind,
-      value: rawValue,
-    }));
+  const kind = modifierEl.getAttribute(Attr.TYPE);
+  const field = modifierEl.getAttribute(Attr.FIELD);
+  const value = modifierEl.getAttribute(Attr.VALUE);
+  if (!MODIFIER_KINDS.has(kind)) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { type: kind, field, value }));
     return null;
   }
   return {
-    operation,
-    target: { kind: targetKind, id: modifierEl.getAttribute(Attr.TARGET_ID) },
+    kind,
+    field,
     value,
     conditions: readConditions(modifierEl, diagnostics),
+    conditionGroups: readConditionGroups(modifierEl, diagnostics),
     repeats: readRepeats(modifierEl, diagnostics),
   };
 }
@@ -332,6 +366,156 @@ function readModifiers(element, diagnostics) {
     .filter(modifier => modifier !== null);
 }
 
+/**
+ * Liest eine einzelne `<modifierGroup>` **rekursiv** in ihre `ModifierGroupDef`:
+ * ihre gemeinsame Gruppen-Bedingung (`conditions` **und** `conditionGroups`), die
+ * von ihr gebuendelten Modifikatoren und ihre verschachtelten Untergruppen
+ * (`modifierGroups`, beliebige Tiefe — die XSD definiert `ModifierGroup` mit einem
+ * eigenen `modifierGroups`-Element, Catalogue.xsd:523-538). Haelt die
+ * Gruppen-Bedingung, greifen alle Modifikatoren der Gruppe gemeinsam und ihre
+ * Untergruppen werden weiter ausgewertet (Auswertung in {@link ./modifiers.js}),
+ * sonst entfaellt die Gruppe samt Untergruppen gemeinsam
+ * (`docs/issues/.../design.md`, Kontrakt `ModifierGroupDef`).
+ *
+ * `ModifierGroup` erbt zudem `repeats` von `ModifierBase` (Catalogue.xsd:469-479).
+ * Volle Repeat-Semantik fuer eine *ganze* Gruppe ist bewusst **nicht** im Umfang;
+ * ein nicht-leeres `<repeats>` wird deshalb als sichtbare Grenze gemeldet, nie
+ * still verschluckt (§5, Risiko 4).
+ */
+function readModifierGroup(groupEl, diagnostics) {
+  if (wrappedChildren(groupEl, Tag.REPEATS, Tag.REPEAT).length > 0) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER_GROUP_REPEAT, {}));
+  }
+  return {
+    conditions: readConditions(groupEl, diagnostics),
+    conditionGroups: readConditionGroups(groupEl, diagnostics),
+    modifiers: readModifiers(groupEl, diagnostics),
+    modifierGroups: readModifierGroups(groupEl, diagnostics),
+  };
+}
+
+/**
+ * Liest die Modifikatorgruppen eines Knotens **in Dokumentreihenfolge** (leer,
+ * wenn keine vorhanden) — analog zu {@link readModifiers}.
+ */
+function readModifierGroups(element, diagnostics) {
+  return wrappedChildren(element, Tag.MODIFIER_GROUPS, Tag.MODIFIER_GROUP)
+    .map(groupEl => readModifierGroup(groupEl, diagnostics));
+}
+
+/**
+ * Liest eine einzelne `<characteristic>` eines Profils in ihren rohen Wert:
+ * benannt (`name`), typisiert per ID (`typeId`) und mit dem Textinhalt als Wert.
+ * Rein beschreibend — kein Constraint, kein Modifikator.
+ */
+function readCharacteristic(characteristicEl) {
+  return {
+    name: characteristicEl.getAttribute(Attr.NAME),
+    typeId: characteristicEl.getAttribute(Attr.TYPE_ID),
+    value: characteristicEl.textContent,
+  };
+}
+
+/**
+ * Liest ein `<profile>` (Info-Element `ProfileDef`): seine ID, seinen Namen, die
+ * Profiltyp-ID (`typeId`) und seine Merkmale (`characteristics`). Strukturell —
+ * ohne Grenzen-/Modifikator-Logik (`docs/issues/.../design.md`, Kontrakt `ProfileDef`).
+ */
+function readProfile(profileEl) {
+  return {
+    kind: InfoElementKind.PROFILE,
+    id: profileEl.getAttribute(Attr.ID),
+    name: profileEl.getAttribute(Attr.NAME),
+    typeId: profileEl.getAttribute(Attr.TYPE_ID),
+    characteristics: wrappedChildren(profileEl, Tag.CHARACTERISTICS, Tag.CHARACTERISTIC).map(readCharacteristic),
+  };
+}
+
+/**
+ * Liest ein `<rule>` (Info-Element `RuleDef`): seine ID und seinen Namen. Der
+ * Regeltext (`<description>`) bleibt ausserhalb des Umfangs — der Evaluator
+ * bewertet keine Texte (`docs/issues/.../design.md`, Kontrakt `RuleDef`).
+ */
+function readRule(ruleEl) {
+  return {
+    kind: InfoElementKind.RULE,
+    id: ruleEl.getAttribute(Attr.ID),
+    name: ruleEl.getAttribute(Attr.NAME),
+  };
+}
+
+/**
+ * Liest ein `<infoGroup>` (Info-Element `InfoGroupDef`) **rekursiv**: seine ID,
+ * seinen Namen und die von ihm gebuendelten Info-Elemente (`infos`, beliebige
+ * Tiefe) — verschachtelte Profile, Regeln, Info-Gruppen und Info-Links
+ * (`docs/issues/.../design.md`, Kontrakt `InfoGroupDef`).
+ */
+function readInfoGroup(infoGroupEl) {
+  return {
+    kind: InfoElementKind.INFO_GROUP,
+    id: infoGroupEl.getAttribute(Attr.ID),
+    name: infoGroupEl.getAttribute(Attr.NAME),
+    infos: readInfos(infoGroupEl),
+  };
+}
+
+/**
+ * Liest ein `<infoLink>` (Info-Element `InfoLinkDef`): seine ID, seinen Namen,
+ * den Verweistyp (`type`, aus dem SSOT-Enum {@link InfoLinkKind}) und die
+ * Ziel-ID (`targetId`). Ein `type` ausserhalb des SSOT-Enums wird zu `null`
+ * normalisiert — der Resolver loest den Link ueber `targetId` auf, unabhaengig
+ * vom Typ (`docs/issues/.../design.md`, Kontrakt `InfoLinkDef`).
+ */
+function readInfoLink(infoLinkEl) {
+  const type = infoLinkEl.getAttribute(Attr.TYPE);
+  return {
+    kind: InfoElementKind.INFO_LINK,
+    id: infoLinkEl.getAttribute(Attr.ID),
+    name: infoLinkEl.getAttribute(Attr.NAME),
+    type: INFO_LINK_KINDS.has(type) ? type : null,
+    targetId: infoLinkEl.getAttribute(Attr.TARGET_ID),
+  };
+}
+
+/**
+ * Liest die reinen Info-**Definitionen** (Profile, Regeln, Info-Gruppen) eines
+ * Elements aus den gegebenen Wrapper-Tags — der einzige Unterschied zwischen den
+ * regulaeren (`profiles`/…) und den katalogweit geteilten (`sharedProfiles`/…)
+ * Wrappern ist der Wrapper-Name.
+ */
+function readInfoDefinitions(element, profilesTag, rulesTag, infoGroupsTag) {
+  return [
+    ...wrappedChildren(element, profilesTag, Tag.PROFILE).map(readProfile),
+    ...wrappedChildren(element, rulesTag, Tag.RULE).map(readRule),
+    ...wrappedChildren(element, infoGroupsTag, Tag.INFO_GROUP).map(readInfoGroup),
+  ];
+}
+
+/**
+ * Liest die Info-Elemente eines Knotens (Eintrag, Kontingent, Kategorie oder
+ * Info-Gruppe) aus dem InfoNodeGroup-Zweig der BattleScribe-XSD: Profile, Regeln,
+ * Info-Gruppen und Info-Links — leer, wenn keine vorhanden. Rein strukturell.
+ */
+function readInfos(element) {
+  return [
+    ...readInfoDefinitions(element, Tag.PROFILES, Tag.RULES, Tag.INFO_GROUPS),
+    ...wrappedChildren(element, Tag.INFO_LINKS, Tag.INFO_LINK).map(readInfoLink),
+  ];
+}
+
+/**
+ * Liest die Info-Elemente des Katalog-Wurzelknotens: die knoteneigenen
+ * (`profiles`/`rules`/`infoGroups`/`infoLinks`) **und** die katalogweit geteilten
+ * (`sharedProfiles`/`sharedRules`/`sharedInfoGroups`), die die ueblichen Ziele der
+ * `infoLink`-Verweise sind.
+ */
+function readCatalogueInfos(root) {
+  return [
+    ...readInfos(root),
+    ...readInfoDefinitions(root, Tag.SHARED_PROFILES, Tag.SHARED_RULES, Tag.SHARED_INFO_GROUPS),
+  ];
+}
+
 /** Liest einen `<selectionEntry>` samt Kosten, Kategorien, Grenzen und Modifikatoren. */
 function readEntry(entryEl, diagnostics) {
   return {
@@ -342,6 +526,8 @@ function readEntry(entryEl, diagnostics) {
     categoryIds: readCategoryIds(entryEl),
     limits: readLimits(entryEl, diagnostics),
     modifiers: readModifiers(entryEl, diagnostics),
+    modifierGroups: readModifierGroups(entryEl, diagnostics),
+    infos: readInfos(entryEl),
     children: readEntries(entryEl, diagnostics),
   };
 }
@@ -364,6 +550,8 @@ function readForceEntry(forceEl, diagnostics) {
     kind: DefinitionKind.FORCE,
     limits: readLimits(forceEl, diagnostics),
     modifiers: readModifiers(forceEl, diagnostics),
+    modifierGroups: readModifierGroups(forceEl, diagnostics),
+    infos: readInfos(forceEl),
     children: readForceEntries(forceEl, diagnostics),
   };
 }
@@ -382,6 +570,8 @@ function readCategoryEntry(categoryEl, diagnostics) {
     kind: DefinitionKind.CATEGORY,
     limits: readLimits(categoryEl, diagnostics),
     modifiers: readModifiers(categoryEl, diagnostics),
+    modifierGroups: readModifierGroups(categoryEl, diagnostics),
+    infos: readInfos(categoryEl),
     children: [],
   };
 }
@@ -396,7 +586,7 @@ function readCategoryEntries(element, diagnostics) {
  * Liest Katalog-XML in das engine-eigene Definitionsmodell.
  *
  * @param {string} catalogXml Entpacktes `.cat`/`.gst`-XML.
- * @returns {{ id: string|null, name: string|null, entries: object[], forces: object[], categories: object[], diagnostics: object[] }}
+ * @returns {{ id: string|null, name: string|null, entries: object[], forces: object[], categories: object[], infos: object[], diagnostics: object[] }}
  */
 export function parseCatalogue(catalogXml) {
   const diagnostics = [];
@@ -408,6 +598,7 @@ export function parseCatalogue(catalogXml) {
     entries: readEntries(root, diagnostics),
     forces: readForceEntries(root, diagnostics),
     categories: readCategoryEntries(root, diagnostics),
+    infos: readCatalogueInfos(root),
     diagnostics,
   };
 }
