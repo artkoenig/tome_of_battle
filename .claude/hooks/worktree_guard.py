@@ -25,6 +25,16 @@ project has no access to this config repo's checkout, so TRIVIAL_EXTENSIONS is
 duplicated from there and must be kept in sync by hand.
 
 Escape hatches:
+  - Cloud (remote) sessions are exempt entirely: the hook no-ops before any
+    check. A Claude Code on the web session runs in its own freshly cloned
+    repository, so the isolation this guard exists to provide is already
+    guaranteed by that separate clone; there is no shared checkout to protect.
+    AGENTS.md's "Worktree Isolation" rule is therefore local-only. The session
+    is recognized as remote by ``is_remote_session``: primarily the
+    `CLAUDE_CODE_REMOTE=true` flag the SessionStart hook also keys off, but also
+    any other `CLAUDE_CODE_REMOTE_*` marker the remote environment runner sets.
+    Keying off that single flag alone was not enough — the guard kept firing in
+    cloud sessions where it did not reach this hook's subprocess as "true".
   - A bypass marker file `<main-repo-root>/.claude/.worktree-bypass` disables
     every check below, for a session the user has explicitly told to work
     directly in the checkout (mirrors this repo's `git push --no-verify`). The
@@ -70,6 +80,16 @@ CHECKED_TOOLS = frozenset({"Edit", "Write", "NotebookEdit"})
 DEFAULT_ISSUE_TRACKER_DIR = "docs/issues"
 BYPASS_MARKER_RELPATH = Path(".claude") / ".worktree-bypass"
 
+# Environment signals that mark a Claude Code cloud (remote) session. The remote
+# environment runner sets several; the guard treats any of them as conclusive
+# proof that the checkout is a fresh per-session clone. See is_remote_session
+# for why the single flag below is not enough on its own.
+REMOTE_FLAG_ENV_VAR = "CLAUDE_CODE_REMOTE"
+REMOTE_MARKER_ENV_VARS = frozenset({
+    "CLAUDE_CODE_REMOTE_SESSION_ID",
+    "CLAUDE_CODE_REMOTE_ENVIRONMENT_TYPE",
+})
+
 
 # --------------------------------------------------------------------------- #
 # Pure predicates (no git, no I/O)                                            #
@@ -80,6 +100,26 @@ def is_issue_tracker_path(rel_path: str, issue_tracker_dir: str) -> bool:
     issue tracker's own directory, exempt from worktree isolation."""
     prefix = issue_tracker_dir.strip("/") + "/"
     return rel_path.replace(os.sep, "/").startswith(prefix)
+
+
+def is_remote_session(env) -> bool:
+    """True if this process runs inside a Claude Code cloud (remote) session,
+    where the repository is a fresh per-session clone that already provides the
+    isolation this guard exists to enforce — so the guard must no-op.
+
+    The primary signal is ``CLAUDE_CODE_REMOTE == "true"`` (the flag the
+    SessionStart hook also keys off). But relying on that single variable proved
+    too brittle: the guard kept firing in cloud sessions where it did not reach
+    this hook's subprocess environment as exactly "true", blocking edits the
+    per-session clone had already made safe. So the presence of any other
+    ``CLAUDE_CODE_REMOTE_*`` session marker the remote environment runner sets
+    (a session id, an environment type) is treated as equally conclusive. Those
+    markers are never set in a local run, so widening the signal this way cannot
+    accidentally disable the guard on a developer's machine.
+    """
+    if env.get(REMOTE_FLAG_ENV_VAR) == "true":
+        return True
+    return any(env.get(name) for name in REMOTE_MARKER_ENV_VARS)
 
 
 def is_protected_branch(branch: str | None) -> bool:
@@ -237,6 +277,16 @@ def _deny(reason: str) -> None:
 
 
 def main() -> int:
+    # Cloud (remote) sessions clone the repository into their own isolated
+    # environment, so worktree isolation is already guaranteed and this guard
+    # has nothing to protect — no-op before touching stdin or git. AGENTS.md's
+    # "Worktree Isolation" rule is a local-only rule for exactly this reason.
+    # Detected via any remote marker, not just CLAUDE_CODE_REMOTE=="true": that
+    # single flag did not reliably reach this hook's subprocess, which is why
+    # the guard kept firing in cloud sessions.
+    if is_remote_session(os.environ):
+        return 0
+
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):

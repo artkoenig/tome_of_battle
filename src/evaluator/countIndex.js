@@ -86,10 +86,17 @@ function contributionOf(node, effective) {
  * Ein **Kontingent-Knoten** ist nur unter seiner eigenen Definitions-ID zaehlbar
  * (fuer Grenzen am Force-Typ) — es ist keine Selektion "im Rahmen" und traegt
  * daher weder zum `null`-Ziel noch zu Kategorien bei.
+ *
+ * Ist der Knoten Member einer `selectionEntryGroup` (`memberGroupIds`, aus dem
+ * Definitionsbaum abgeleitet), zaehlt er zusaetzlich unter jeder Gruppen-ID —
+ * so liest die gruppen-skopierte Grenze (`scope=parent`, Ziel = Gruppen-ID) im
+ * Eigentuemer-Rahmen die Zahl der gewaehlten Member.
  */
 function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id];
-  return [null, node.def.id, ...effective.categoryIdsOf(node)];
+  const targets = [null, node.def.id, ...effective.categoryIdsOf(node)];
+  if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
+  return targets;
 }
 
 /** Addiert einen Beitrag auf einen Zaehler. */

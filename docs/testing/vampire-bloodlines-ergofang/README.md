@@ -88,19 +88,20 @@ Roster rein → Bericht raus; Instanzbaum aus dem `.ros` abgeleitet). Ergebnis:
 
 | Regel | Skopus | Engine meldet es? | Beleg |
 |-------|--------|-------------------|-------|
-| **ERG-R1** (Bloodline min 1 je Charakter) | **parent/Gruppe** | **NEIN** | Test e02: `56c1-3e68-6f24-3768` feuert nicht (Count ohne Bloodline). |
-| **ERG-R1** (Bloodline max 1 je Charakter) | **parent/Gruppe** | **NEIN** | Test e03: `6d0c-37c1-e5f6-b88d` feuert nicht — auch nicht mit Gruppen-Zwischenknoten `63e7…`. |
+| **ERG-R1** (Bloodline min 1 je Charakter) | **parent/Gruppe** | **JA** | Test e02: `56c1-3e68-6f24-3768` feuert (Count ohne Bloodline, Ist 0). |
+| **ERG-R1** (Bloodline max 1 je Charakter) | **parent/Gruppe** | **JA** | Test e03: `6d0c-37c1-e5f6-b88d` feuert (zwei Bloodlines, Ist 2). |
 | **ERG-R2** (mischbar) | — | **legal (keine Verletzung)** | Test e04: zwei Charaktere, verschiedene Clans → keine Bloodline-Verletzung. |
 | **ERG-R3/R4** (clan-spezifische Ausrüstung) | Verfügbarkeit | **NEIN** | Test e05: keine Verletzung — Verfügbarkeit ist nicht als Verletzung kodiert. |
 | **ERG-R5** (Magie nicht gekoppelt) | — | **legal** | Test e06: keine Verletzung. |
 
 **Befund:** identisch zum Definitive-Set — **parent-/gruppen-skopierte**
 Selektions-Zähl-Constraints (hier die per-Charakter-Bloodline min/max) werden über
-die `evaluate`-Fassade **nicht** als Verletzung gemeldet; verfügbarkeitsbasierte
-Regeln (ERG-R3/R4) erscheinen nicht im Verletzungsbericht. Die Fixtures halten
-genau das fest. (Der einzige gemeldete Befund in allen ergofang-Rostern ist die
-force-weite „General"-Pflicht `1077-7379-f142-f382` — ohne Belang für die
-Bloodline-Regeln.)
+die `evaluate`-Fassade **als Verletzung gemeldet**, seit die Join-Schicht je
+Grenzen-tragender `selectionEntryGroup` einen Gruppen-Anker synthetisiert und deren
+Member über das Query-Primitiv zählt (Issue 68). Verfügbarkeitsbasierte Regeln
+(ERG-R3/R4) erscheinen weiterhin **nicht** im Verletzungsbericht (nicht als
+zählende Schranke kodiert). Zusätzlich meldet jede ergofang-Liste die force-weite
+„General"-Pflicht `1077-7379-f142-f382` — ohne Belang für die Bloodline-Regeln.
 
 ### Verifizierte Bausteine (aus den Katalogdaten)
 

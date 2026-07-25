@@ -139,13 +139,99 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
 }
 
 /**
+ * Die tragende Definition eines Knotens: bei einem `entryLink`-Knoten die
+ * aufgeloeste Zieldefinition (die die Gruppen traegt), sonst die eigene.
+ */
+function ownerDefinitionOf(node) {
+  if (node.def.kind === DefinitionKind.ENTRY_LINK && node.def.resolved) {
+    return node.def.resolved;
+  }
+  return node.def;
+}
+
+/**
+ * Die Grenzen-tragenden `selectionEntryGroup`s im Definitionsteilbaum eines
+ * Eigentuemers — ueber verschachtelte Gruppen hinweg, aber **nicht** ueber
+ * Eintraege hinaus: die Gruppen eines geschachtelten Eintrags gehoeren diesem
+ * Eintrag als Eigentuemer, nicht dem aeusseren. Eine gruppen-skopierte Grenze
+ * (`scope=parent`) rechnet immer gegen die naechste reale Auswahl.
+ */
+function* groupDefinitionsWithLimits(ownerDef) {
+  for (const child of ownerDef.children ?? []) {
+    if (child.kind !== DefinitionKind.GROUP) continue;
+    if ((child.limits ?? []).length > 0) yield child;
+    yield* groupDefinitionsWithLimits(child);
+  }
+}
+
+/**
+ * Haengt einen **Gruppen-Anker** unter die Eigentuemer-Auswahl: den
+ * Auswertungsanker fuer die Grenzen einer `selectionEntryGroup` (`scope=parent`).
+ * Er ist — wie ein Phantomknoten — synthetisch und zaehlt nie mit (die
+ * Index-Schicht laesst ihn aus), traegt aber die Gruppendefinition, sodass die
+ * Constraint-Schicht ihre min/max gegen den Eigentuemer-Rahmen auswertet. Er ist
+ * **immer** praesent (nicht nur bei Absenz), damit sowohl `min` (leere
+ * Pflichtgruppe) als auch `max` (zu viele Member) anschlagen koennen. Als Phantom
+ * (`isPhantom`) bleibt er aus der Zaehlung ausgeschlossen (§4.4).
+ */
+function attachGroupAnchor(owner, groupDef, nextFrameId) {
+  const node = {
+    def: groupDef,
+    instance: null,
+    parent: owner,
+    children: [],
+    isPhantom: true,
+    isRoot: false,
+    isForce: false,
+    frameId: nextFrameId(),
+    forceRoot: owner.forceRoot,
+  };
+  owner.children.push(node);
+}
+
+/**
+ * Annotiert die Member-Knoten einer Gruppe im Teilbaum des Eigentuemers mit der
+ * Gruppen-ID (`memberGroupIds`). Die Index-Schicht traegt einen so markierten
+ * Knoten zusaetzlich unter der Gruppen-ID bei, sodass die gruppen-skopierte
+ * Grenze ueber dasselbe Query-Primitiv die Member zaehlt. Synthetische Knoten
+ * (Phantome, Anker) sind keine Member.
+ */
+function annotateGroupMembers(owner, groupId, memberIds) {
+  for (const node of nodeAndDescendants(owner)) {
+    if (node === owner || node.isPhantom || node.isRoot || node.instance === null) continue;
+    if (memberIds.has(node.instance.defId)) {
+      (node.memberGroupIds ??= new Set()).add(groupId);
+    }
+  }
+}
+
+/**
+ * Synthetisiert je reale Eigentuemer-Auswahl fuer jede Grenzen-tragende
+ * `selectionEntryGroup` ihrer Definition einen Gruppen-Anker und annotiert deren
+ * Member. Gruppen-Zugehoerigkeit stammt aus dem Definitionsbaum
+ * (`resolved.groupMemberIds`), nicht aus der Instanz.
+ */
+function synthesizeGroupAnchors(root, resolved, nextFrameId) {
+  const memberIndex = resolved.groupMemberIds ?? new Map();
+  for (const owner of [...realNodes(root)]) {
+    if (owner.isForce) continue;
+    for (const groupDef of groupDefinitionsWithLimits(ownerDefinitionOf(owner))) {
+      attachGroupAnchor(owner, groupDef, nextFrameId);
+      const memberIds = memberIndex.get(groupDef.id);
+      if (memberIds !== undefined) annotateGroupMembers(owner, groupDef.id, memberIds);
+    }
+  }
+}
+
+/**
  * Baut den Evaluationsbaum aus aufgeloesten Definitionen und Roster-Instanzen.
  * Die Wurzel ist ein synthetischer Ankerknoten ohne eigene Definition; sie
  * traegt den ROSTER-Rahmen und liegt ueber keinem Kontingent. Nachdem alle realen
  * Knoten haengen, werden Phantomknoten fuer fehlende Pflichtdefinitionen
- * synthetisiert (siehe {@link synthesizeMandatoryPhantoms}).
+ * synthetisiert (siehe {@link synthesizeMandatoryPhantoms}) und Gruppen-Anker fuer
+ * gruppen-skopierte Grenzen (siehe {@link synthesizeGroupAnchors}).
  *
- * @param {{ lookup: (id: string) => object|null, definitions?: object[] }} resolved
+ * @param {{ lookup: (id: string) => object|null, definitions?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
  * @param {{ forces?: object[] }} roster
  * @returns {{ root: object, diagnostics: object[] }}
  */
@@ -167,6 +253,9 @@ export function buildEvalTree(resolved, roster) {
     attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId);
   }
   synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
+  // Nach den realen Knoten und den Pflicht-Phantomen: die Gruppen-Anker zuletzt,
+  // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
+  synthesizeGroupAnchors(root, resolved, nextFrameId);
   return { root, diagnostics };
 }
 

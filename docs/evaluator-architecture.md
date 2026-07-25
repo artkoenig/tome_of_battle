@@ -10,8 +10,9 @@ Umsetzung darf Details schärfen, solange das beschriebene Verhalten erhalten bl
 Begriffs-Brücke zum Glossar (CONTEXT.md, Abschnitt „Regelauswertung"):
 Limit → Grenze (Constraint), Condition → Bedingung, Repeat → Wiederholung,
 Scope → Bezugsrahmen, target/childId → Ziel, report/violations → Validierungsmeldungen,
-diagnostics → Diagnosen. „Phantomknoten", „Fixpunkt" und „capabilities" sind
-engine-interne Begriffe dieses Entwurfs, kein Bestandteil des Domänen-Glossars.
+diagnostics → Diagnosen. „Phantomknoten", „Gruppen-Anker", „Fixpunkt" und
+„capabilities" sind engine-interne Begriffe dieses Entwurfs, kein Bestandteil des
+Domänen-Glossars.
 -->
 
 # Auswertungs-Architektur für eine deklarative Armeelisten-Regelengine
@@ -68,9 +69,11 @@ Verheiratet Instanz- und Definitionsbaum: Jeder Instanzknoten erhält seine aufg
 
 Ein Phantomknoten zählt 0 und ist der Auswertungsanker, an dem eine Min-Grenze *gerade beim Fehlen* anschlagen kann. Ohne Phantomknoten hätten diese Regeln keinen Ort im Instanzbaum.
 
+**Gruppen-Anker.** Eine `selectionEntryGroup` ist selbst keine Auswahl, kann aber gruppen-skopierte Zähl-Grenzen (`field=selections`, `scope=parent`) tragen — „genau eine Bloodline je Charakter". Für jede solche Gruppe im Definitionsteilbaum einer realen Eigentümer-Auswahl wird ein **Gruppen-Anker** unter dieser Auswahl synthetisiert: wie ein Phantom synthetisch und nicht mitzählend, aber Träger der Gruppendefinition, sodass die Constraint-Schicht ihre min/max gegen den Eigentümer-Rahmen (`scope=parent`) auswertet. Er ist **immer** präsent, damit `min` (leere Pflichtgruppe → Ist 0) *und* `max` (zu viele Member) anschlagen. Die **Gruppen-Zugehörigkeit** der Member stammt aus dem Definitionsbaum (die Member-IDs einer Gruppe, inkl. Link-Ketten/Untergruppen), nicht aus der Instanz — das `entryGroupId`-Tag der `.ros` wird beim Import verworfen; Member-Knoten werden entsprechend annotiert (§3.3).
+
 ### 3.3 Index-Schicht: Scope-Schlüssel statt Baumtraversalen
 
-Ein Durchlauf über den Evaluationsbaum baut Zählindizes. Jeder reale Knoten trägt zu einer Menge von **Scope-Schlüsseln** bei: Wurzel (roster), sein Kontingent (force), jeder Vorfahre (für parent-Scopes), jede effektive Kategorie-ID, seine Definitions-ID (inklusive Link-Kette). Pro Schlüssel werden geführt: Anzahl Auswahlen und Summe je Kostenart, jeweils als *direkte* und *tiefe* Variante (für `includeChildSelections` / `includeChildForces`). Damit sind roster- und force-Bezüge O(1)-Lookups. Prozent-Nenner sind derselbe Lookup im Referenzrahmen.
+Ein Durchlauf über den Evaluationsbaum baut Zählindizes. Jeder reale Knoten trägt zu einer Menge von **Scope-Schlüsseln** bei: Wurzel (roster), sein Kontingent (force), jeder Vorfahre (für parent-Scopes), jede effektive Kategorie-ID, seine Definitions-ID (inklusive Link-Kette) sowie — ist er Member einer `selectionEntryGroup` — jede zugehörige Gruppen-ID (aus dem Definitionsbaum abgeleitet, §3.2). Pro Schlüssel werden geführt: Anzahl Auswahlen und Summe je Kostenart, jeweils als *direkte* und *tiefe* Variante (für `includeChildSelections` / `includeChildForces`). Damit sind roster- und force-Bezüge O(1)-Lookups, und eine gruppen-skopierte Grenze liest die Zahl ihrer Member über dasselbe Query-Primitiv (Ziel = Gruppen-ID im Eigentümer-Rahmen). Prozent-Nenner sind derselbe Lookup im Referenzrahmen.
 
 ### 3.4 Modifikator-Schicht
 

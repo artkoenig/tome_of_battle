@@ -112,17 +112,19 @@ abgeleitet). Ergebnis:
 | Regel | Skopus | Engine meldet es? | Beleg |
 |-------|--------|-------------------|-------|
 | **VBL-R1** (Bloodlines min 1) | **force** | **JA** | Test 02: Verletzung `4a0a-b107-e726-da32`, anchor „Bloodlines", actual 0 / bound 1. |
-| **VBL-R2** (max 1 Clan) | **parent/Gruppe** | **NEIN** | Test 03: `39c7-f615-17db-7016` feuert nicht — auch nicht mit Gruppen-Zwischenknoten `5655…` oder zwei getrennten „Bloodlines"-Selektionen (drei Roster-Formen geprüft). |
+| **VBL-R2** (max 1 Clan) | **parent/Gruppe** | **JA** | Test 03: Verletzung `39c7-f615-17db-7016`, zwei Clans in einer „Bloodlines"-Selektion → actual 2 / bound 1. |
 | **VBL-R4/R5** (`hidden`) | Verfügbarkeit | **NEIN** (erwartet) | Tests 04–06: keine Verletzung — der Bericht kodiert keine (Un-)Sichtbarkeit. |
 | **VBL-R6** (Profilwerte) | Profil | **NEIN** (erwartet) | Tests 07–09: keine Verletzung — der Verletzungsbericht kodiert keine Profilwerte. |
 
 **Befund:** Über die `evaluate`-Fassade feuern **force-skopierte** Pflichtregeln
-(VBL-R1), aber **parent-/gruppen-skopierte** Selektions-Zähl-Constraints auf
-verschachtelten Gruppen (VBL-R2) werden **nicht** als Verletzung gemeldet.
-Verfügbarkeit (`hidden`, VBL-R4/R5) und Profilwerte (VBL-R6) sind **nicht** Teil
-des Verletzungsberichts — sie zu prüfen erfordert die Effective-State-/Query-
-Ausgabe der Engine, nicht den Bericht. Die Fixtures pinnen damit sowohl die
-funktionierende Regel als auch die drei offenen Punkte fest.
+(VBL-R1) **und** — seit Issue 68 — **parent-/gruppen-skopierte** Selektions-Zähl-
+Constraints auf `selectionEntryGroup`s (VBL-R2): die Join-Schicht synthetisiert je
+Grenzen-tragender Gruppe einen Gruppen-Anker und zählt die Member über das
+Query-Primitiv. Verfügbarkeit (`hidden`, VBL-R4/R5) und Profilwerte (VBL-R6) sind
+weiterhin **nicht** Teil des Verletzungsberichts — sie zu prüfen erfordert die
+Effective-State-/Query-Ausgabe der Engine, nicht den Bericht. Die Fixtures pinnen
+damit die funktionierenden Zähl-Regeln sowie die bewusst nicht im Bericht
+kodierten Verfügbarkeits-/Profil-Punkte fest.
 
 ### Verifizierte Bausteine (aus den Katalogdaten)
 
