@@ -103,6 +103,27 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). Alle referenzier
 | 08 | Profil: Necrarch | wie 01 | **Derselbe** Vampire Count, Bloodline **Necrarch**. | **VBL-R6:** Profil zeigt **WS −2** ggü. Basis (und ggü. Test 07 deutlich niedriger). | [`08-profile-necrarch-count.ros`](rosters/08-profile-necrarch-count.ros) |
 | 09 | Profil: Strigoi | wie 01 | **Derselbe** Vampire Count, Bloodline **Strigoi**. | **VBL-R6:** Profil zeigt **A +1** und schlechteren Rüstungswurf **Sv+ 5+**; WS unverändert. Kontrast zu 07/08 belegt die Bloodline-Abhängigkeit. | [`09-profile-strigoi-count.ros`](rosters/09-profile-strigoi-count.ros) |
 
+## Engine-Lauf: tatsächliches Verhalten (verifiziert)
+
+Alle Fixtures wurden **durch die Engine-Fassade `evaluate`** gegeben (Black-Box:
+Roster rein → Bericht raus; Instanzbaum `{defId,count,children}` aus dem `.ros`
+abgeleitet). Ergebnis:
+
+| Regel | Skopus | Engine meldet es? | Beleg |
+|-------|--------|-------------------|-------|
+| **VBL-R1** (Bloodlines min 1) | **force** | **JA** | Test 02: Verletzung `4a0a-b107-e726-da32`, anchor „Bloodlines", actual 0 / bound 1. |
+| **VBL-R2** (max 1 Clan) | **parent/Gruppe** | **NEIN** | Test 03: `39c7-f615-17db-7016` feuert nicht — auch nicht mit Gruppen-Zwischenknoten `5655…` oder zwei getrennten „Bloodlines"-Selektionen (drei Roster-Formen geprüft). |
+| **VBL-R4/R5** (`hidden`) | Verfügbarkeit | **NEIN** (erwartet) | Tests 04–06: keine Verletzung — der Bericht kodiert keine (Un-)Sichtbarkeit. |
+| **VBL-R6** (Profilwerte) | Profil | **NEIN** (erwartet) | Tests 07–09: keine Verletzung — der Verletzungsbericht kodiert keine Profilwerte. |
+
+**Befund:** Über die `evaluate`-Fassade feuern **force-skopierte** Pflichtregeln
+(VBL-R1), aber **parent-/gruppen-skopierte** Selektions-Zähl-Constraints auf
+verschachtelten Gruppen (VBL-R2) werden **nicht** als Verletzung gemeldet.
+Verfügbarkeit (`hidden`, VBL-R4/R5) und Profilwerte (VBL-R6) sind **nicht** Teil
+des Verletzungsberichts — sie zu prüfen erfordert die Effective-State-/Query-
+Ausgabe der Engine, nicht den Bericht. Die Fixtures pinnen damit sowohl die
+funktionierende Regel als auch die drei offenen Punkte fest.
+
 ### Verifizierte Bausteine (aus den Katalogdaten)
 
 | Element | ID |
