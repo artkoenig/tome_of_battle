@@ -45,6 +45,15 @@ function compare(op, actual, expected, diagnostics) {
       return actual >= expected;
     case CompareOp.AT_MOST:
       return actual <= expected;
+    case CompareOp.INSTANCE_OF:
+      // Mitgliedschafts-Praedikat (BSData `instanceOf`): im Bezugsrahmen existiert
+      // mindestens eine Instanz des Ziels. `actual` ist die gezaehlte Zielanzahl;
+      // der `value` ist nicht schwellwertig.
+      return actual > 0;
+    case CompareOp.NOT_INSTANCE_OF:
+      // Verneinung als **eigener** type-Wert (BSData `notInstanceOf`): das Ziel ist
+      // im Bezugsrahmen abwesend. Belegte Definitive-Edition-Form: value="1".
+      return actual === 0;
     default:
       diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_COMPARATOR, { op }));
       return false;

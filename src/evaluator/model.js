@@ -91,7 +91,10 @@ export function normalizeFlags(flags) {
 /**
  * Vergleichsoperator einer Bedingung (`docs/evaluator-architecture.md` §4.1,
  * `enum CompareOp`). Slice 04 traegt die numerischen Operatoren, mit denen eine
- * Bedingung den gezaehlten Ist-Wert gegen ihren Sollwert prueft.
+ * Bedingung den gezaehlten Ist-Wert gegen ihren Sollwert prueft; Slice 08 ergaenzt
+ * `INSTANCE_OF`, den in §4.1 gelisteten, aber bis dahin nicht umgesetzten
+ * Mitgliedschafts-Operator (siehe {@link CompareOp.INSTANCE_OF} und die
+ * `compare`-Semantik in `modifiers.js`).
  */
 export const CompareOp = Object.freeze({
   LESS: 'less',
@@ -99,6 +102,16 @@ export const CompareOp = Object.freeze({
   EQUAL: 'equal',
   AT_LEAST: 'atLeast',
   AT_MOST: 'atMost',
+  // Instanz-/Mitgliedschaftspruefung. Battlescribe (BSData §7.7, XSD
+  // `Catalogue.xsd`) kennt **zwei getrennte** type-Werte, `instanceOf` und
+  // `notInstanceOf` — kein Schwellenwertvergleich, sondern ein Mitgliedschafts-
+  // Praedikat ueber dem zaehlenden Query-Primitiv: `instanceOf` haelt, wenn im
+  // Bezugsrahmen **mindestens eine** Instanz des Ziels existiert (`actual > 0`);
+  // `notInstanceOf` haelt bei deren **Abwesenheit** (`actual === 0`). Der `value`
+  // ist dabei nicht schwellwertig — die belegte Definitive-Edition-Form ist
+  // `notInstanceOf value="1"` (Abwesenheit gefordert), nicht `value=0`.
+  INSTANCE_OF: 'instanceOf',
+  NOT_INSTANCE_OF: 'notInstanceOf',
 });
 
 /**
