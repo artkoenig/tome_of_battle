@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: chore
 Blocked by: [02]
 
@@ -38,3 +38,5 @@ Stand; die Suite bleibt gruen.
 - [ ] Die vollstaendige Testsuite ist gruen.
 
 ## Comments
+- Gesamte Evaluator-E2E-Absicherung auf den manifest-getriebenen Runner ueberfuehrt. army-standard-bearer (Roster auf direkte Ziel-entryIds korrigiert, da die zusammengesetzte ::-Kennung als UNRESOLVED_DEFINITION nicht aufloest) und vampire-bloodlines-ergofang als Manifest migriert; vier neue .ros-Szenarien (ogre-kingdoms, orcs-and-goblins, vampire-counts, real-catalog-smoke) inline im Black-Box-Stil autoriert und jede Erwartung gegen echte Runner-Ausgabe verifiziert. Manifest-Schema + Runner um optionalen firing.count, einen expect.diagnostics-Block (present/absent je DiagnosticKind, optional targetId/defId/minCount) und einen Roster-dataset-Override (fuer Auswertung ohne Mercenaries) erweitert; rueckwaertskompatibel. Fuenf handgeschriebene E2E-Dateien + verwaistes realCatalogs.js entfernt, e2eRoster.js auf Bericht-Leser getrimmt. Testkatalog-Doc neu geschrieben. vitest 1797 gruen (Runner: 40), lint/typecheck/knip sauber.
+- Nachtrag (Review-Gate): Die fuenf Armee-Szenarien (ogre-kingdoms, orcs-and-goblins, vampire-counts, real-catalog-smoke, army-standard-bearer) wurden anschliessend vom echten Black-Box-Subagenten e2e-testcase-author neu autoriert, sobald dieser in der Session verfuegbar war. Jede Erwartung (limitId/actual/bound, Diagnose-Arten) ist damit allein aus dem Katalog-XML abgeleitet; der Runner-Lauf war ausschliesslich der separate Abgleichschritt (keine Divergenz -> 41/41 gruen), nicht die Quelle der Werte. Der fruehere Vermerk 'inline im Black-Box-Stil, gegen Runner-Ausgabe verifiziert' ist damit ueberholt (siehe ADR 0033, Abschnitt 'Abgleich statt Anpassung an die Engine').

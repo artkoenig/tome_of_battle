@@ -41,6 +41,19 @@ status transitions stay valid.
 See `docs/agents/issue-tracker.md` for the state model and the workflow for
 implementing tracked issues.
 
+### E2E test cases for the evaluator
+When the maintainer asks to create an E2E test case for the Reinraum evaluator
+(`src/evaluator/`), the work is **delegated to the `e2e-testcase-author`
+black-box subagent** — it is not done in the main conversation. The agent
+authors scenarios (`.ros` + `README.md` + `scenario.json`) under `docs/testing/`
+solely from the catalog data, never from the engine source, so the tests
+challenge the engine instead of mirroring it. It does **not** write the
+manifest-driven runner or any `.test.js`.
+
+See `docs/agents/e2e-testcase-author.md` for the role, the read allow-list, the
+manifest contract, and the boundary to the runner; the architecture decision is
+[ADR 0033](docs/adr/0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md).
+
 ## Version bump after merging a feature/fix main-issue
 Before a main-issue of `Type: feature` or `Type: fix` is merged, propose a
 version bump — never for `refactor`/`chore`, which have no user-facing

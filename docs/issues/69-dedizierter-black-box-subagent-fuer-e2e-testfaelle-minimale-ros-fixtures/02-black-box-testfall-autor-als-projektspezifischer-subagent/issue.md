@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: chore
 Blocked by: [01]
 
@@ -41,3 +41,5 @@ Delegations-Regel in der Projektkonfiguration (Child-Issue 04).
       lesen (an mindestens einem Beispiel belegt).
 
 ## Comments
+- Projektspezifische Subagent-Definition .claude/agents/e2e-testcase-author.md angelegt: Werkzeuge Read/Write/Glob/Grep (kein Bash), Allow-List-Rolle (Datenformat-Spec, XSD+ADRs 0003/0011/0016/0031, whfb6-definitive-Fixtures, docs/testing als Vorlage), ausdruecklicher Ausschluss von src/evaluator/*.js, vollstaendiger Liefergegenstand (.ros/README/scenario.json) inkl. Manifest-Vertrag und Herleitung der actual/bound aus der Katalog-XML.
+- Nachtrag: Der Agent wurde inzwischen real ausgeuebt — er hat im Review-Gate die fuenf Armee-Szenarien blind (nur aus Katalogdaten) autoriert; deren Manifeste reconcilen gruen gegen die Engine (41/41). Damit ist AC 3 nicht nur beschrieben, sondern am tatsaechlichen Agentenlauf belegt.

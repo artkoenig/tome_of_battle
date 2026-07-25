@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "name": "vampire-counts",
+  "description": "Die im Spielsystem definierten Pflichtregeln General (min 1) und Core (min 2) an der Vampire-Counts-Armee, plus die kataloguebergreifende Auflösung ueber Mercenaries: mit vollstaendiger Quelle loest alles auf; fehlt die deklarierte Mercenaries-Abhaengigkeit, ist das eine Diagnose (MISSING_CATALOGUE_DEPENDENCY) und der nur darueber erreichbare Pikemen-Verweis baumelt. Bloodline-Regeln sind bewusst NICHT Teil dieses Szenarios (siehe vampire-bloodlines).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-empty-force.ros",
+      "description": "Leeres VC-Kontingent, vollstaendige Quelle. General (min 1) und Core (min 2) feuern mit Ist 0; kein Verweis baumelt, keine fehlende Abhaengigkeit.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [],
+        "diagnostics": {
+          "absent": [
+            { "kind": "DANGLING_ENTRY_LINK" },
+            { "kind": "DANGLING_INFO_LINK" },
+            { "kind": "MISSING_CATALOGUE_DEPENDENCY" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-general-and-two-core.ros",
+      "description": "General-Aufwertung + zwei Core-Einheiten (Skeletons, Zombies). Bekannt-regelkonforme Liste — keine falsche General-/Core-Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["1077-7379-f142-f382", "35c2-d478-392a-aeb1"]
+      }
+    },
+    {
+      "file": "rosters/01-empty-force.ros",
+      "description": "Dasselbe leere Kontingent, aber ausgewertet OHNE die Mercenaries-Datei (Roster-`dataset`-Override). Der Auswerter meldet die fehlende Mercenaries-Abhaengigkeit; der nur darueber erreichbare Pikemen-Verweis baumelt — Hinweis, kein Absturz.",
+      "dataset": {
+        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "catalogues": [
+          "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat"
+        ]
+      },
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "diagnostics": {
+          "present": [
+            { "kind": "MISSING_CATALOGUE_DEPENDENCY", "targetId": "fc47-8392-a6c8-452a" },
+            { "kind": "DANGLING_ENTRY_LINK", "targetId": "f7d8-66b4-21ee-00dd" }
+          ]
+        }
+      }
+    }
+  ]
+}

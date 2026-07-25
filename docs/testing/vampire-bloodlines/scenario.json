@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "name": "vampire-bloodlines",
+  "description": "Bloodline-Regeln der Vampire Counts (6th Definitive Edition): Pflicht min 1 Bloodline (force-scope) und max 1 Clan je Bloodlines-Gruppe (parent-scope). Sichtbarkeit (hidden) und Profilwerte sind bewusst nicht Teil des Verletzungsberichts und werden daher nicht als feuernde Grenze erwartet.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-bloodline-legal.ros",
+      "description": "Eine Bloodlines-Selektion mit genau einer Clan-Bloodline (Blood Dragon) + Vampire Count. Legal: Pflicht (>=1) erfuellt, Clan-Obergrenze (1) erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": ["4a0a-b107-e726-da32", "39c7-f615-17db-7016"]
+      }
+    },
+    {
+      "file": "rosters/02-missing-bloodline-illegal.ros",
+      "description": "Nur ein Vampire Count, keine Bloodlines-Selektion. Die force-skopierte Pflicht min 1 feuert (VBL-R1).",
+      "expect": {
+        "firing": [
+          { "limitId": "4a0a-b107-e726-da32", "actual": 0, "bound": 1 }
+        ],
+        "absent": ["39c7-f615-17db-7016"]
+      }
+    },
+    {
+      "file": "rosters/03-two-clans-in-one-bloodlines-illegal.ros",
+      "description": "Eine Bloodlines-Selektion mit zwei Clan-Bloodlines (Blood Dragon und Lahmia). Die parent/gruppen-skopierte Clan-Obergrenze max 1 feuert (VBL-R2).",
+      "expect": {
+        "firing": [
+          { "limitId": "39c7-f615-17db-7016", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["4a0a-b107-e726-da32"]
+      }
+    },
+    {
+      "file": "rosters/04-strigoi-hides-magic-selection.ros",
+      "description": "Bloodlines mit Strigoi + Vampire Count. Strigoi verbirgt die Gruppe Magic selection (hidden) — Verfuegbarkeit, keine Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["4a0a-b107-e726-da32", "39c7-f615-17db-7016"]
+      }
+    },
+    {
+      "file": "rosters/05-blood-dragon-reveals-thrall-armour.ros",
+      "description": "Bloodlines mit Blood Dragon + Vampire Thrall. Blood Dragon blendet die Thrall-Gruppe Armour ein (hidden=false) — Verfuegbarkeit, keine Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["4a0a-b107-e726-da32", "39c7-f615-17db-7016"]
+      }
+    },
+    {
+      "file": "rosters/06-lahmia-visibility-baseline.ros",
+      "description": "Bloodlines mit Lahmia + Vampire Thrall + Vampire Count. Neutrale Grundlinie: weder VBL-R4 noch VBL-R5 greifen, keine Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["4a0a-b107-e726-da32", "39c7-f615-17db-7016"]
+      }
+    },
+    {
+      "file": "rosters/07-profile-blood-dragon-count.ros",
+      "description": "Vampire Count mit Bloodline Blood Dragon. Profilwerte sind nicht Teil des Verletzungsberichts — keine Bloodline-Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["4a0a-b107-e726-da32", "39c7-f615-17db-7016"]
+      }
+    },
+    {
+      "file": "rosters/08-profile-necrarch-count.ros",
+      "description": "Vampire Count mit Bloodline Necrarch. Profilwerte sind nicht Teil des Verletzungsberichts — keine Bloodline-Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["4a0a-b107-e726-da32", "39c7-f615-17db-7016"]
+      }
+    },
+    {
+      "file": "rosters/09-profile-strigoi-count.ros",
+      "description": "Vampire Count mit Bloodline Strigoi. Profilwerte sind nicht Teil des Verletzungsberichts — keine Bloodline-Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["4a0a-b107-e726-da32", "39c7-f615-17db-7016"]
+      }
+    }
+  ]
+}

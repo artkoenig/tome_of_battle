@@ -40,4 +40,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0030 | [Zweite, räumlich getrennte Auswertungs-Engine als Reinraum-Realisierung](0030-zweite-eigenstaendige-auswertungs-engine.md) | Accepted | 2026-07-24 |
 | 0031 | [Reinraum-Evaluator liest die BattleScribe-XSD-Syntax und teilt deren Enum-SSOT](0031-evaluator-liest-battlescribe-xsd-syntax-und-teilt-enum-ssot.md) | Accepted | 2026-07-25 |
 | 0032 | [Evaluator löst Mehr-Katalog-Datensätze (.gst + Liste von .cat) global-by-ID auf](0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md) | Accepted | 2026-07-25 |
+| 0033 | [Evaluator-E2E als datengetriebener, manifest-getriebener Runner mit Black-Box-Autorenschaft](0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md) | Accepted | 2026-07-25 |
 

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "name": "vampire-bloodlines-ergofang",
+  "description": "Bloodline-Regeln der ergofang-Variante der Vampire Counts: die Bloodline liegt als Pflicht-Gruppe (min 1 / max 1, scope=parent) je Vampir-Charakter, nicht armeeweit. Die parent-/gruppen-skopierten Zaehlgrenzen feuern ueber den Gruppen-Anker (Issue 68); clan-spezifische Ausruestung (ERG-R3/R4) ist Verfuegbarkeit und daher nicht Teil des Verletzungsberichts. Eigenstaendiger VC-Katalog ohne Mercenaries-Abhaengigkeit.",
+  "dataset": {
+    "gameSystem": "src/solver/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "catalogues": [
+      "src/solver/__fixtures__/whfb6/Vampire Counts.cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/e01-bloodline-legal.ros",
+      "description": "Vampire Count mit genau einer Bloodline (Blood Dragon) + Pflicht-Wizard-Level. Legal: ERG-R1 (min 1 / max 1 je Charakter) erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": ["56c1-3e68-6f24-3768", "6d0c-37c1-e5f6-b88d"]
+      }
+    },
+    {
+      "file": "rosters/e02-missing-bloodline-illegal.ros",
+      "description": "Vampire Count ohne Bloodline. Die parent-skopierte Pflicht min 1 (56c1) der Bloodline-Gruppe feuert (Ist 0, Grenze 1).",
+      "expect": {
+        "firing": [
+          { "limitId": "56c1-3e68-6f24-3768", "actual": 0, "bound": 1 }
+        ],
+        "absent": ["6d0c-37c1-e5f6-b88d"]
+      }
+    },
+    {
+      "file": "rosters/e03-two-bloodlines-on-one-character-illegal.ros",
+      "description": "Vampire Count mit zwei Bloodlines (Blood Dragon und Lahmia). Die parent-skopierte Obergrenze max 1 (6d0c) der Bloodline-Gruppe feuert (Ist 2, Grenze 1).",
+      "expect": {
+        "firing": [
+          { "limitId": "6d0c-37c1-e5f6-b88d", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["56c1-3e68-6f24-3768"]
+      }
+    },
+    {
+      "file": "rosters/e04-mixed-bloodlines-legal.ros",
+      "description": "Vampire Count = Blood Dragon, Vampire Thrall = Strigoi. Legal (ERG-R2): pro Charakter genau eine Bloodline, keine armeeweite Schranke.",
+      "expect": {
+        "firing": [],
+        "absent": ["56c1-3e68-6f24-3768", "6d0c-37c1-e5f6-b88d"]
+      }
+    },
+    {
+      "file": "rosters/e05-strigoi-with-armour-unavailable.ros",
+      "description": "Vampire Count = Strigoi mit Full plate armour (nur unter Blood Dragon angeboten). Verfuegbarkeit (ERG-R3/R4): nicht als zaehlende Schranke kodiert — keine Bloodline-Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["56c1-3e68-6f24-3768", "6d0c-37c1-e5f6-b88d"]
+      }
+    },
+    {
+      "file": "rosters/e06-blood-dragon-armour-and-magic-legal.ros",
+      "description": "Replik von Test2.rosz: Vampire Count = Blood Dragon + Full plate armour + Red Fury + Wizard level 1 + Handweapon. Legal im ergofang-Katalog (ERG-R4/ERG-R5): keine Bloodline-Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["56c1-3e68-6f24-3768", "6d0c-37c1-e5f6-b88d"]
+      }
+    }
+  ]
+}

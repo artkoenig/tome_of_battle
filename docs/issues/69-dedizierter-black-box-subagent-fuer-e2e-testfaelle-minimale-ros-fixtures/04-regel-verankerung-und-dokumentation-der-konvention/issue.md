@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: chore
 Blocked by: [03]
 
@@ -35,3 +35,4 @@ Nicht im Scope: der Runner, der Agent und die Migration selbst (Child-Issues
       Pflegeregel, Test-ADR, CLAUDE.md).
 
 ## Comments
+- Konvention verankert: Delegations-Trigger in CLAUDE.md/.agents/AGENTS.md (E2E-Testfall -> e2e-testcase-author), Begleit-Doku docs/agents/e2e-testcase-author.md, ADR 0033 (manifest-getriebener Runner als SSOT, Black-Box-Autorenschaft) plus Registrierung in adr/README.md. Konsistenzpass: ADR 0006 und Testkatalog-Pflegeregel auf den neuen Fluss angeglichen (kein handgeschriebener src/evaluator/e2e.*.test.js mehr), Querverweise gesetzt. lint + typecheck gruen.

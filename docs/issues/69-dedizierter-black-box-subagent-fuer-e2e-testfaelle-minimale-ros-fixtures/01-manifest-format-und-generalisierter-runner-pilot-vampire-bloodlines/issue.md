@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -41,3 +41,4 @@ der abgeloesten Testdateien.
 - [ ] Der Runlauf ist gruen und laeuft im bestehenden Testkommando mit.
 
 ## Comments
+- Umgesetzt: Manifest-Format (docs/testing/<szenario>/scenario.json; dataset + rosters[].expect{firing[{limitId,actual,bound}], absent[limitId]}), generalisierter Runner src/evaluator/e2e.testcatalog.test.js (Laufzeit-Discovery per scenario.json, keine persistierten Faelle), ausgelagerter .ros-Parser src/evaluator/__fixtures__/rosParser.js, Pilot vampire-bloodlines migriert. Volle vitest-Suite gruen (1802 Tests); neuer Runner (9) und e2e.bloodlines.ros.test.js (13) koexistieren.
