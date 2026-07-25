@@ -36,6 +36,25 @@ selectionEntry "Bloodlines" (a56a-eb32-5a45-16fd)          ← Force-Selection
 | **VBL-R1** | Eine Vampire-Counts-Armee muss **mindestens eine** „Bloodlines"-Selektion enthalten. | `selectionEntry "Bloodlines"` `a56a…` → constraint **`4a0a-b107-e726-da32`** `type=min value=1 field=selections scope=force`. |
 | **VBL-R2** | Pro „Bloodlines"-Selektion darf **höchstens eine** Clan-Bloodline gewählt werden. | Gruppe `"Vampiric Bloodline"` `5655…` → constraint **`39c7-f615-17db-7016`** `type=max value=1 field=selections scope=parent`. |
 | **VBL-R3** | Es gibt **keine** armee­weite Clan-Eindeutigkeit und **keine** erzwungene Übereinstimmung Charakter↔Armee-Clan. Die Clan-Zugehörigkeit steuert nur **Verfügbarkeit (`hidden`)** und **Namen** (z. B. „Vampire Count" → „Vampire Countess" bei Clan Lahmia). | Gruppe `5655…` hat **kein** force-scope-`max`; die Clan-Einträge haben nur `min=0` (No-op). Modifikatoren an Einheiten setzen `hidden`/`name`, keine zählende Schranke. **Nicht als harte Regel prüfbar.** |
+| **VBL-R4** | **Verstecken:** Ist eine **Strigoi**-Bloodline in der Force, wird die Gruppe **„Magic selection"** ausgeblendet → Vampire dieser Armee können **keine magischen Gegenstände** wählen. | Gruppe „Magic selection" `53e8-0ce2-eaf6-0163` (Basis `hidden=false`) → `modifier set hidden=true` mit `condition atLeast 1 childId="ddfa-…" (Strigoi) scope=force`. (Eingebunden in Vampire Lord/Count/Thrall/Fleet Captain.) |
+| **VBL-R5** | **Einblenden:** Die Gruppe **„Armour"** des **Vampire Thrall** ist standardmäßig verborgen und wird nur eingeblendet, wenn eine **Blood-Dragon-** oder **Von-Carstein**-Bloodline in der Force ist. | Gruppe „Armour" `66f2-d6a1-420c-5a39` (Basis `hidden=true`) → `modifier set hidden=false` mit `condition atLeast 1 childId="9fd9-…" (Blood Dragon) scope=force` bzw. `9fd9`/`f557` (Von Carstein). |
+
+**Hinweis zum `hidden`-Mechanismus (VBL-R4/R5):** Diese Regeln sind — wie bei den
+Magie-Items des Standartenträgers — als **Verfügbarkeit** (`hidden`) modelliert,
+nicht als zählende/punktende Schranke. Ob der Evaluator eine verfügbarkeits­
+bedingte (Un-)Sichtbarkeit meldet bzw. eine bereits gewählte, nun verborgene
+Selektion als unzulässig markiert, ist genau das, was die Tests 04–06 festhalten.
+
+### Sichtbarkeit je Bloodline — verifizierte Karte (force-scope)
+
+| Bloodline | blendet **ein** (`hidden=false`) | blendet **aus** (`hidden=true`) |
+|-----------|----------------------------------|----------------------------------|
+| Blood Dragon | Thrall „Armour" `66f2`, Wight Lord „Armour" `5771`, Vampire Lord/Count „Weapons and Armour" `ac8f`/`06c9` | — |
+| Von Carstein | Thrall „Armour" `66f2` | — |
+| Strigoi | — | „Magic selection" `53e8` |
+| Lahmia / Necrarch | (nur die immer sichtbare Gruppe „Bloodline" `0719`) | — |
+
+*(Die Gruppe „Bloodline" `0719` ist bereits per Basis sichtbar; die Reveal-Modifikatoren aller fünf Clans sind dort effektiv redundant.)*
 
 **Hinweis zu VBL-R1 (Seeding):** `min`-Regeln feuern nur, wenn die betroffene
 Definition im Kontingent instanziiert ist. Ob der Evaluator die Force-Untergrenze
@@ -61,6 +80,9 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). Alle referenzier
 | 01 | Eine Bloodline (legal) | `.gst` + VC-`.cat` (+ Mercenaries) | „Bloodlines" mit **einer** Clan-Bloodline (Blood Dragon) + ein Vampire Count. | **Keine** Bloodline-Verletzung: Pflicht (≥1) erfüllt, Clan-Obergrenze (1) erfüllt. | [`01-bloodline-legal.ros`](rosters/01-bloodline-legal.ros) |
 | 02 | Keine Bloodline (unzulässig) | wie 01 | Nur ein Vampire Count, **keine** „Bloodlines"-Selektion. | **Verletzung von VBL-R1:** die Force-Pflicht `4a0a…` (min 1) ist unerfüllt (Ist 0). *Siehe Seeding-Hinweis oben — der Test hält fest, ob die Engine dies meldet.* | [`02-missing-bloodline-illegal.ros`](rosters/02-missing-bloodline-illegal.ros) |
 | 03 | Zwei Clan-Bloodlines in einer „Bloodlines" (unzulässig) | wie 01 | Eine „Bloodlines" mit **zwei** Clan-Bloodlines (Blood Dragon **und** Lahmia). | **Verletzung von VBL-R2:** die Clan-Obergrenze `39c7…` (max 1, scope=parent) schlägt an (Ist 2, Grenze 1). | [`03-two-clans-in-one-bloodlines-illegal.ros`](rosters/03-two-clans-in-one-bloodlines-illegal.ros) |
+| 04 | Strigoi versteckt „Magic selection" | wie 01 | „Bloodlines" mit **Strigoi** + ein Vampire Count. | **VBL-R4:** Die Gruppe „Magic selection" (`53e8…`) ist auf allen Vampiren **verborgen** → keine magischen Gegenstände wählbar. | [`04-strigoi-hides-magic-selection.ros`](rosters/04-strigoi-hides-magic-selection.ros) |
+| 05 | Blood Dragon blendet Thrall-„Armour" ein | wie 01 | „Bloodlines" mit **Blood Dragon** + ein Vampire Thrall. | **VBL-R5:** Die standardmäßig verborgene Gruppe „Armour" (`66f2…`) des Thralls wird **sichtbar** → Rüstungsoptionen wählbar. | [`05-blood-dragon-reveals-thrall-armour.ros`](rosters/05-blood-dragon-reveals-thrall-armour.ros) |
+| 06 | Neutrale Grundlinie (Lahmia) | wie 01 | „Bloodlines" mit **Lahmia** + Vampire Thrall + Vampire Count. | Weder VBL-R4 noch VBL-R5 greifen: „Magic selection" (`53e8…`) bleibt **sichtbar**, Thrall-„Armour" (`66f2…`) bleibt **verborgen**. | [`06-lahmia-visibility-baseline.ros`](rosters/06-lahmia-visibility-baseline.ros) |
 
 ### Verifizierte Bausteine (aus den Katalogdaten)
 
@@ -73,3 +95,6 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). Alle referenzier
 | Bloodline of Clan Lahmia | `4f07-e982-6665-70b7` |
 | Bloodline of Clan Necrarch / Strigoi / Von Carstein | `5017-296d-edef-4562` / `ddfa-0d72-8557-6906` / `f557-097a-d26b-9363` |
 | Vampire Count (Lord) | `6822-0110-a7c9-cbb0` |
+| Vampire Thrall (Hero) | `e37b-c827-99ac-b706` |
+| Gruppe „Magic selection" (Strigoi versteckt) | `53e8-0ce2-eaf6-0163` |
+| Gruppe „Armour" Vampire Thrall (Blood Dragon/Von Carstein blenden ein) | `66f2-d6a1-420c-5a39` |
