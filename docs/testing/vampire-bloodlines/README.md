@@ -38,12 +38,22 @@ selectionEntry "Bloodlines" (a56a-eb32-5a45-16fd)          ← Force-Selection
 | **VBL-R3** | Es gibt **keine** armee­weite Clan-Eindeutigkeit und **keine** erzwungene Übereinstimmung Charakter↔Armee-Clan. Die Clan-Zugehörigkeit steuert nur **Verfügbarkeit (`hidden`)** und **Namen** (z. B. „Vampire Count" → „Vampire Countess" bei Clan Lahmia). | Gruppe `5655…` hat **kein** force-scope-`max`; die Clan-Einträge haben nur `min=0` (No-op). Modifikatoren an Einheiten setzen `hidden`/`name`, keine zählende Schranke. **Nicht als harte Regel prüfbar.** |
 | **VBL-R4** | **Verstecken:** Ist eine **Strigoi**-Bloodline in der Force, wird die Gruppe **„Magic selection"** ausgeblendet → Vampire dieser Armee können **keine magischen Gegenstände** wählen. | Gruppe „Magic selection" `53e8-0ce2-eaf6-0163` (Basis `hidden=false`) → `modifier set hidden=true` mit `condition atLeast 1 childId="ddfa-…" (Strigoi) scope=force`. (Eingebunden in Vampire Lord/Count/Thrall/Fleet Captain.) |
 | **VBL-R5** | **Einblenden:** Die Gruppe **„Armour"** des **Vampire Thrall** ist standardmäßig verborgen und wird nur eingeblendet, wenn eine **Blood-Dragon-** oder **Von-Carstein**-Bloodline in der Force ist. | Gruppe „Armour" `66f2-d6a1-420c-5a39` (Basis `hidden=true`) → `modifier set hidden=false` mit `condition atLeast 1 childId="9fd9-…" (Blood Dragon) scope=force` bzw. `9fd9`/`f557` (Von Carstein). |
+| **VBL-R6** | **Profilwerte:** Die gewählte Bloodline ändert die **Profilwerte** (WS, Attacken, Rüstungswurf) der Vampir-Charaktere **Vampire Lord / Vampire Count / Vampire Thrall**. Blood Dragon: **WS +2**, Rüstung **Sv 4+**. Necrarch: **WS −2**. Strigoi: **A +1**, schlechterer Rüstungswurf (**Sv+ 5+** Lord/Count, **6+** Thrall). Lahmia & Von Carstein: **keine** Profiländerung (Basiswerte). | Zweistufige Kette (beide Stufen in den Daten verifiziert): **(1)** Wahl der Bloodline in der Force → nested `modifierGroup` je Vampir-Held setzt die **Clan-Kategorie** der Einheit (`add category`) und hängt „of Clan X" an den Namen — Bedingung `atLeast 1 childId=<Bloodline> scope=force`. **(2)** Profil-`modifier` auf der Einheit (`set/increment/decrement` auf WS/A/Sv/Sv+) mit `condition instanceOf … childId=<Clan-Kategorie> scope=<eigene Einheit>`. Kategorien: Blood Dragon `4cae-a20e-8374-b6cb`, Necrarch `fc4b-a86d-5897-9e4c`, Strigoi `bf30-4ff0-a4d8-3909`, Lahmia `c872-4b18-1aad-6953`, Von Carstein `ff24-ca11-afd5-865b`. |
 
 **Hinweis zum `hidden`-Mechanismus (VBL-R4/R5):** Diese Regeln sind — wie bei den
 Magie-Items des Standartenträgers — als **Verfügbarkeit** (`hidden`) modelliert,
 nicht als zählende/punktende Schranke. Ob der Evaluator eine verfügbarkeits­
 bedingte (Un-)Sichtbarkeit meldet bzw. eine bereits gewählte, nun verborgene
 Selektion als unzulässig markiert, ist genau das, was die Tests 04–06 festhalten.
+
+**Hinweis zum Auslöser von VBL-R6:** Die Profil-`condition` ist
+`instanceOf … value=0/1` — welche exakte Vergleichslogik der Evaluator dahinter
+anwendet, ist engine-intern und wird als Black-Box **nicht** unterstellt. Die
+Tests 07–09 nehmen daher denselben **Vampire Count** (`6822…`) und variieren
+**nur** die Bloodline; die Assertion lautet: die vom Evaluator berechneten
+Profilwerte **unterscheiden sich je Bloodline** und entsprechen den in VBL-R6
+genannten Richtungen (Blood Dragon ≠ Necrarch ≠ Strigoi; Lahmia = Basis). Die
+konkreten Zielzahlen pinnt der Test gegen die tatsächliche Engine-Ausgabe.
 
 ### Sichtbarkeit je Bloodline — verifizierte Karte (force-scope)
 
@@ -83,6 +93,9 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). Alle referenzier
 | 04 | Strigoi versteckt „Magic selection" | wie 01 | „Bloodlines" mit **Strigoi** + ein Vampire Count. | **VBL-R4:** Die Gruppe „Magic selection" (`53e8…`) ist auf allen Vampiren **verborgen** → keine magischen Gegenstände wählbar. | [`04-strigoi-hides-magic-selection.ros`](rosters/04-strigoi-hides-magic-selection.ros) |
 | 05 | Blood Dragon blendet Thrall-„Armour" ein | wie 01 | „Bloodlines" mit **Blood Dragon** + ein Vampire Thrall. | **VBL-R5:** Die standardmäßig verborgene Gruppe „Armour" (`66f2…`) des Thralls wird **sichtbar** → Rüstungsoptionen wählbar. | [`05-blood-dragon-reveals-thrall-armour.ros`](rosters/05-blood-dragon-reveals-thrall-armour.ros) |
 | 06 | Neutrale Grundlinie (Lahmia) | wie 01 | „Bloodlines" mit **Lahmia** + Vampire Thrall + Vampire Count. | Weder VBL-R4 noch VBL-R5 greifen: „Magic selection" (`53e8…`) bleibt **sichtbar**, Thrall-„Armour" (`66f2…`) bleibt **verborgen**. | [`06-lahmia-visibility-baseline.ros`](rosters/06-lahmia-visibility-baseline.ros) |
+| 07 | Profil: Blood Dragon | wie 01 | **Derselbe** Vampire Count (`6822…`), Bloodline **Blood Dragon**. | **VBL-R6:** Profil zeigt **WS +2** und Rüstung **Sv 4+** ggü. Basis; Name wird „… of Clan Blood Dragon". | [`07-profile-blood-dragon-count.ros`](rosters/07-profile-blood-dragon-count.ros) |
+| 08 | Profil: Necrarch | wie 01 | **Derselbe** Vampire Count, Bloodline **Necrarch**. | **VBL-R6:** Profil zeigt **WS −2** ggü. Basis (und ggü. Test 07 deutlich niedriger). | [`08-profile-necrarch-count.ros`](rosters/08-profile-necrarch-count.ros) |
+| 09 | Profil: Strigoi | wie 01 | **Derselbe** Vampire Count, Bloodline **Strigoi**. | **VBL-R6:** Profil zeigt **A +1** und schlechteren Rüstungswurf **Sv+ 5+**; WS unverändert. Kontrast zu 07/08 belegt die Bloodline-Abhängigkeit. | [`09-profile-strigoi-count.ros`](rosters/09-profile-strigoi-count.ros) |
 
 ### Verifizierte Bausteine (aus den Katalogdaten)
 
@@ -98,3 +111,6 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). Alle referenzier
 | Vampire Thrall (Hero) | `e37b-c827-99ac-b706` |
 | Gruppe „Magic selection" (Strigoi versteckt) | `53e8-0ce2-eaf6-0163` |
 | Gruppe „Armour" Vampire Thrall (Blood Dragon/Von Carstein blenden ein) | `66f2-d6a1-420c-5a39` |
+| Vampire Lord (Lord) | `b77b-88d5-5e80-e178` |
+| Clan-Kategorie Blood Dragon / Necrarch / Strigoi | `4cae-a20e-8374-b6cb` / `fc4b-a86d-5897-9e4c` / `bf30-4ff0-a4d8-3909` |
+| Clan-Kategorie Lahmia / Von Carstein (kein Profil-Effekt) | `c872-4b18-1aad-6953` / `ff24-ca11-afd5-865b` |
