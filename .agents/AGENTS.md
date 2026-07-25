@@ -16,7 +16,7 @@ npm run dev              # Vite dev server
 npm run build             # Production build (also injects a fresh SW cache version)
 npm run lint               # oxlint
 npm run knip               # dead code / unused exports & deps, cross-file (warn-only)
-npm run depcruise            # dependency-graph rules: layering, solver facade, cycles, orphans (warn-only)
+npm run depcruise            # dependency-graph rules: layering, solver facade, cycles, orphans (warn-only); evaluator⇄solver-Trennung (ADR 0030) blockiert (error)
 npm run analyze              # knip + dependency-cruiser together
 npm run typecheck           # tsc --noEmit: prüft JSDoc-Typen im Produktivcode (checkJs), Tests ausgenommen
 npm test                     # vitest run (unit/component tests) + node src/solver/ui.test.js (puppeteer E2E)

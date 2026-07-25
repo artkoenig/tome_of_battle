@@ -12,14 +12,14 @@ begrenzt die Schleife; wird sie erreicht, gilt der Stand der letzten Runde plus
 eine **Nichtkonvergenz-Diagnose** — kein stilles Falschrechnen (Annahmen A2/A3).
 
 ## Acceptance Criteria
-- [ ] Ein Katalog, dessen Modifikatoren von Zählungen abhängen (und umgekehrt),
+- [x] Ein Katalog, dessen Modifikatoren von Zählungen abhängen (und umgekehrt),
       konvergiert zu stabilen effektiven Werten, und der Bericht spiegelt den
       konvergierten Stand.
-- [ ] Jede Runde wendet Modifikatoren auf eine frische Basiskopie an (keine
+- [x] Jede Runde wendet Modifikatoren auf eine frische Basiskopie an (keine
       Kumulierung über Runden).
-- [ ] Ein zyklischer/oszillierender Katalog, der innerhalb der Rundenobergrenze
+- [x] Ein zyklischer/oszillierender Katalog, der innerhalb der Rundenobergrenze
       nicht konvergiert, erzeugt eine Nichtkonvergenz-Diagnose im Bericht.
-- [ ] Bei Nichtkonvergenz liefert der Bericht dennoch die Ergebnisse der letzten
+- [x] Bei Nichtkonvergenz liefert der Bericht dennoch die Ergebnisse der letzten
       Runde, statt zu scheitern oder zu hängen.
 
 ## Comments

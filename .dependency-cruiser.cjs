@@ -5,9 +5,15 @@
  * parser -> solver -> components zu maschinell gepruefen Regeln und ergaenzt
  * die Zyklus- und Waisen-Erkennung, die oxlint pro Datei nicht leisten kann.
  *
- * Vorerst warn-only: alle Regeln haben severity "warn", damit bestehende
- * Befunde sichtbar sind, aber weder `npm run depcruise` noch die CI blockieren,
- * solange sie noch nicht in Folge-Issues aufgeraeumt sind.
+ * Die Alt-Regeln (Schichtung parser->solver->components, Solver-Fassade, Zyklen,
+ * Waisen) sind vorerst warn-only, damit bestehende Befunde sichtbar sind, ohne
+ * `npm run depcruise` zu blockieren, solange sie noch nicht aufgeraeumt sind.
+ * **Ausnahme:** die drei Engine-Trennungsregeln aus ADR 0030
+ * (`evaluator-keine-solver-abhaengigkeit`, `solver-keine-evaluator-abhaengigkeit`,
+ * `evaluator-nur-ueber-fassade`) haben severity "error" — die neue Engine hat
+ * null Verstoesse, also kostet harte Durchsetzung nichts und ein Verstoss laesst
+ * `npm run depcruise` lokal mit Exitcode != 0 fehlschlagen. Die CI bleibt durch
+ * `continue-on-error` unberuehrt.
  */
 
 // Testdateien duerfen Schichtgrenzen und die Solver-Fassade bewusst umgehen:

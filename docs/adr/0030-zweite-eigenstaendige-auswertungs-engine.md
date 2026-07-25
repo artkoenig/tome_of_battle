@@ -85,3 +85,15 @@ statt still falsch) zu realisieren.
   die `no-orphans`-Regel muss den nur test-importierten Zustand tolerieren.
 - **Neutral:** über einen späteren produktiven Cutover ist hier **nichts**
   entschieden — der wäre eine eigene, nutzer-sichtbare `feature`-Entscheidung.
+
+**Umsetzungsstand und bewusste Grenzen (Issue 65).** Die Engine ist vollständig
+gebaut (Resolver, Join/Phantomknoten, Index, Query-Primitiv, Modifikatoren mit
+Fixpunkt, Constraints, Bericht inkl. Fähigkeitsdatensatz) und mit eigener
+Testsuite plus eigenen, an der Definitive Edition (WHFB6) modellierten Fixtures
+abgedeckt. Bewusst offen geblieben, ehrlich dokumentiert statt vorgetäuscht:
+(1) der eigene Parser liest für Bedingungen/Modifikatoren das **eigene** Vokabular
+(`op`/`operation`/`targetKind`) statt der rohen BattleScribe-Attribute (`type`) —
+ein realer `.cat`-Smoke-Test übt daher nur Grenzen aus, echte Bedingungen/
+Modifikatoren erscheinen als Diagnosen; (2) es wird ein **Einzelkatalog** gelesen —
+katalogübergreifende Importe/Link-Ketten und die Inkrementalisierung
+(Architektur §4.9) sind vorgemerkte Zukunft.

@@ -73,7 +73,7 @@ export function evaluateConstraints(root, index, effective, categoryIds, diagnos
   const results = [];
   for (const node of allNodes(root)) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics });
-    for (const limit of node.def.limits) {
+    for (const limit of node.def.limits ?? []) {
       const result = evaluateLimit(limit, node, effective, ctx);
       if (result !== null) results.push(result);
     }

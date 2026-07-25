@@ -14,15 +14,15 @@ Auswertung **einer** MAX-Grenze auf Selektionsanzahl. Reine Bibliothek, keine
 App-Verdrahtung. Grundlage: `docs/evaluator-architecture.md`, ADR-0030.
 
 ## Acceptance Criteria
-- [ ] `evaluate(katalog, roster)` ist als reine Funktion über die Fassade
+- [x] `evaluate(katalog, roster)` ist als reine Funktion über die Fassade
       aufrufbar und liefert für einen minimalen Katalog + Roster einen Bericht.
-- [ ] Ein Roster, das eine MAX-Grenze auf Selektionsanzahl überschreitet, erzeugt
+- [x] Ein Roster, das eine MAX-Grenze auf Selektionsanzahl überschreitet, erzeugt
       eine Verletzung mit Ist-Wert, effektivem Grenzwert, Delta und Bezugsinstanz.
-- [ ] Ein Roster innerhalb dieser MAX-Grenze erzeugt dafür keine Verletzung.
-- [ ] Der Evaluator importiert weder aus `src/solver/` noch wird er von dort
+- [x] Ein Roster innerhalb dieser MAX-Grenze erzeugt dafür keine Verletzung.
+- [x] Der Evaluator importiert weder aus `src/solver/` noch wird er von dort
       importiert; Zugriff von außen nur über die Fassade (statisch geprüft,
       Lint/depcruise grün).
-- [ ] `evaluate()` hat keine Seiteneffekte und liest/schreibt keinen App-Zustand,
+- [x] `evaluate()` hat keine Seiteneffekte und liest/schreibt keinen App-Zustand,
       keine UI und kein IndexedDB.
 
 ## Comments

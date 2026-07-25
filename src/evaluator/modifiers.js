@@ -101,7 +101,7 @@ function allConditionsHold(ctx, modifier) {
  * `SET` ignoriert den Wiederholungsfaktor; `ADD` addiert `value·times`,
  * `MULTIPLY` multipliziert mit `value^times`.
  */
-function computeNumeric(current, operation, value, times) {
+function computeNumeric(current, operation, value, times, diagnostics) {
   switch (operation) {
     case ModifierOperation.SET:
       return value;
@@ -110,6 +110,10 @@ function computeNumeric(current, operation, value, times) {
     case ModifierOperation.MULTIPLY:
       return current * value ** times;
     default:
+      // Eine nicht-numerische Operation (z. B. APPEND_NOTE) auf einem numerischen
+      // Ziel (Kosten/Grenzwert) ist eine ungueltige Paarung — nicht still
+      // verschlucken (§5, Risiko 4), sondern als Diagnose sichtbar machen.
+      diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { operation }));
       return current;
   }
 }
@@ -123,10 +127,10 @@ function applyOperation(state, node, modifier, times, diagnostics) {
   const { target, operation, value } = modifier;
   switch (target.kind) {
     case ModifierTargetKind.COST:
-      state.writeCost(node, target.id, computeNumeric(state.currentCost(node, target.id), operation, value, times));
+      state.writeCost(node, target.id, computeNumeric(state.currentCost(node, target.id), operation, value, times, diagnostics));
       return;
     case ModifierTargetKind.LIMIT:
-      state.writeLimitValue(node, target.id, computeNumeric(state.currentLimitValue(node, target.id), operation, value, times));
+      state.writeLimitValue(node, target.id, computeNumeric(state.currentLimitValue(node, target.id), operation, value, times, diagnostics));
       return;
     case ModifierTargetKind.CATEGORY:
       if (value) state.addCategory(node, target.id);

@@ -12,14 +12,14 @@ gezählten Nenner abgeleitet wird. Eine Prozentgrenze mit leerem Bezugsrahmen
 (Annahme A4). Genau eine dokumentierte Rundungskonvention.
 
 ## Acceptance Criteria
-- [ ] Eine MIN-Grenze meldet eine Verletzung mit Ist/Grenze/Delta, wenn der
+- [x] Eine MIN-Grenze meldet eine Verletzung mit Ist/Grenze/Delta, wenn der
       gezählte Wert unter dem Grenzwert liegt, und keine, wenn er erreicht oder
       überschritten wird.
-- [ ] Grenzen über Kostensummen werten gegen die korrekte Kostenart (per ID, nicht
+- [x] Grenzen über Kostensummen werten gegen die korrekte Kostenart (per ID, nicht
       Name) aus und liefern dasselbe Tripel Ist/Grenze/Delta.
-- [ ] Eine Prozentgrenze wird gegen einen aus dem Nenner ihres Bezugsrahmens
+- [x] Eine Prozentgrenze wird gegen einen aus dem Nenner ihres Bezugsrahmens
       abgeleiteten Grenzwert ausgewertet (eine zentrale Rundungskonvention).
-- [ ] Eine Prozentgrenze mit Nenner 0 erzeugt keine Verletzung, sondern eine
+- [x] Eine Prozentgrenze mit Nenner 0 erzeugt keine Verletzung, sondern eine
       Null-Nenner-Diagnose.
 
 ## Comments

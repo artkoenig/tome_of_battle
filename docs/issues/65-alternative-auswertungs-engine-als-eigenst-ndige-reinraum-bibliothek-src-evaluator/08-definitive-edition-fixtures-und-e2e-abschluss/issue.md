@@ -11,12 +11,12 @@ Bündelt End-to-End-`evaluate()`-Tests über die realen Domänenfälle; optional
 Smoke-Test über einen realen WHFB6-Katalog.
 
 ## Acceptance Criteria
-- [ ] Die Engine hat eigene minimale `.cat`/`.gst`-Fixtures, modelliert an realen
+- [x] Die Engine hat eigene minimale `.cat`/`.gst`-Fixtures, modelliert an realen
       Definitive-Edition-/WHFB6-Fällen, nicht aus der bestehenden Engine übernommen.
-- [ ] End-to-End-`evaluate()`-Tests decken die realistischen Fälle ab, inklusive
+- [x] End-to-End-`evaluate()`-Tests decken die realistischen Fälle ab, inklusive
       einer armeeweiten Pflichteinheit (Ogerbullen), die bei Fehlen angeschlagen und
       bei Vorhandensein erfüllt ist.
-- [ ] Die vollständige Suite (beide Nahtstellen) läuft grün.
+- [x] Die vollständige Suite (beide Nahtstellen) läuft grün.
 
 ## Comments
 - INSTANCE_OF-Komparator (Slice 04 aufgeschoben): als Mitgliedschafts-Praedikat ueber dem zaehlenden Query-Primitiv umgesetzt. Semantik (in model.js/CompareOp und modifiers.js/compare() dokumentiert): value>=1 fordert Mitgliedschaft (actual>0, mindestens eine Ziel-Instanz im Rahmen), value===0 fordert Abwesenheit (actual===0, das belegte notInstanceOf-Idiom) — deckungsgleich mit der Solver-Engine (cond.value===0 ? !isInstance : isInstance). Bei mehrdeutiger BSData-Doku ist dies die defensibelste Lesart, im Code als Annahme kommentiert.

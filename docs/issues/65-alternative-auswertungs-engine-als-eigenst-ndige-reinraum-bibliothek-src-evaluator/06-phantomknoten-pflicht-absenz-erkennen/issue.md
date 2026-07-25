@@ -12,12 +12,12 @@ MIN-Grenze *gerade beim Fehlen* der Auswahl anschlägt — auch armee-/
 kontingentweite Pflichteinheiten (z. B. der Ogerbullen-Fall).
 
 ## Acceptance Criteria
-- [ ] Ein Pflichteintrag (min>0), der im Roster fehlt, erzeugt eine MIN-Verletzung,
+- [x] Ein Pflichteintrag (min>0), der im Roster fehlt, erzeugt eine MIN-Verletzung,
       verankert an einem Phantomknoten.
-- [ ] Die Absenz wird armeeweit und pro Kontingent erkannt, je nachdem, welchen
+- [x] Die Absenz wird armeeweit und pro Kontingent erkannt, je nachdem, welchen
       Bezugsrahmen die Grenze vorgibt.
-- [ ] Ein Phantomknoten trägt 0 zu Zählungen bei (er bläht keine Zählung auf).
-- [ ] Ist der Pflichteintrag in ausreichender Zahl vorhanden, wird keine solche
+- [x] Ein Phantomknoten trägt 0 zu Zählungen bei (er bläht keine Zählung auf).
+- [x] Ist der Pflichteintrag in ausreichender Zahl vorhanden, wird keine solche
       Verletzung erzeugt.
 
 ## Comments

@@ -13,15 +13,15 @@ die **zweite Test-Nahtstelle**: eine Matrix-Suite mit einem Fall je Zelle als
 ausführbare Spezifikation.
 
 ## Acceptance Criteria
-- [ ] Das Query-Primitiv liefert für jeden Bezugsrahmen (roster, force, parent,
+- [x] Das Query-Primitiv liefert für jeden Bezugsrahmen (roster, force, parent,
       self, Eintrags-ID, Kategorie-ID) die korrekte Anzahl/Summe.
-- [ ] Ein Kategorie-Ziel wird armeeweit über alle Forces gezählt, ein Eintrags-Ziel
+- [x] Ein Kategorie-Ziel wird armeeweit über alle Forces gezählt, ein Eintrags-Ziel
       pro Kontingent.
-- [ ] shared, includeChildSelections und includeChildForces verändern die gezählte
+- [x] shared, includeChildSelections und includeChildForces verändern die gezählte
       Menge wie spezifiziert — auch in Kombination.
-- [ ] Jede Zelle von shared × includeChildSelections × includeChildForces ×
+- [x] Jede Zelle von shared × includeChildSelections × includeChildForces ×
       Bezugsrahmen-Art ist durch einen ausführbaren Testfall abgedeckt.
-- [ ] Ein nicht auflösbarer Bezugsrahmen liefert 0 und eine Auflösungs-Diagnose
+- [x] Ein nicht auflösbarer Bezugsrahmen liefert 0 und eine Auflösungs-Diagnose
       statt einer falschen Zählung.
 
 ## Comments
