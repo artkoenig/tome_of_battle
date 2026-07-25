@@ -94,6 +94,8 @@ abgedeckt. Bewusst offen geblieben, ehrlich dokumentiert statt vorgetäuscht:
 (1) der eigene Parser liest für Bedingungen/Modifikatoren das **eigene** Vokabular
 (`op`/`operation`/`targetKind`) statt der rohen BattleScribe-Attribute (`type`) —
 ein realer `.cat`-Smoke-Test übt daher nur Grenzen aus, echte Bedingungen/
-Modifikatoren erscheinen als Diagnosen; (2) es wird ein **Einzelkatalog** gelesen —
+Modifikatoren erscheinen als Diagnosen (**diese Grenze wird von ADR-0031
+geschlossen**: der Evaluator liest inzwischen die kanonische XSD-Syntax und teilt
+die Enum-SSOT aus `src/parser/schema/`); (2) es wird ein **Einzelkatalog** gelesen —
 katalogübergreifende Importe/Link-Ketten und die Inkrementalisierung
 (Architektur §4.9) sind vorgemerkte Zukunft.

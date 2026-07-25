@@ -49,6 +49,14 @@ _Avoid_: „Constraint" als Oberbegriff für alle drei — eine Constraint ist n
 Der Bereich, über den eine Query zählt — ein fester Satz Schlüsselwörter (`roster`, `force`, `parent`, `self`) oder die ID eines Eintrags bzw. einer Kategorie. Ein `roster`-Bezug zählt über die ganze Liste, nicht nur den lokalen Teilbaum. Ein `force`-Bezug richtet sich nach dem **Ziel-Typ**: ein Eintrags-Ziel zählt pro Kontingent, ein Kategorie-Ziel armeeweit (über alle Forces aggregiert) — einheitlich für Constraint, Condition und Repeat (ADR 0029).
 _Avoid_: „Scope" mit „Ziel" (`childId`, *was* gezählt wird) zu vermengen — der Bezugsrahmen ist *wo* gezählt wird.
 
+**Modifikator** (Modifier):
+Eine Regel eines Katalog-Autors, die einen Zielwert verändert (XSD `Modifier`). Sie trägt eine **Art** (`type`: `set`, `increment`, `decrement`, `add`, `remove`, `append`, `prepend`, `set-primary`, `unset-primary`, `multiply`), ein **Ziel** (`field`: die ID des veränderten Werts oder ein Schlüsselwort wie `"category"`/`"hidden"`) und einen **Wert**. Es gibt **kein** eigenes `targetKind`/`targetId`-Attribut — das Ziel steckt allein im `field`-String (siehe [ADR 0016](docs/adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md), [ADR 0031](docs/adr/0031-evaluator-liest-battlescribe-xsd-syntax-und-teilt-enum-ssot.md)).
+_Avoid_: `op`/`operation`/`targetKind` — diese Namen existieren nicht in der BattleScribe-XSD; kanonisch sind `type` und `field`.
+
+**Bedingungsgruppe / Modifikatorgruppe** (conditionGroup / modifierGroup):
+Verschachtelungs-Bausteine der Regelauswertung. Eine **Bedingungsgruppe** (XSD `ConditionGroup`) verknüpft mehrere Bedingungen und/oder weitere Bedingungsgruppen mit `and`/`or` zu einem einzigen Wahrheitswert. Eine **Modifikatorgruppe** (XSD `ModifierGroup`) bündelt mehrere Modifikatoren unter einer gemeinsamen Bedingung bzw. Bedingungsgruppe, sodass sie gemeinsam greifen oder gemeinsam entfallen.
+_Avoid_: eine Bedingungsgruppe mit einer einzelnen Bedingung gleichzusetzen — die Gruppe ist die `and`/`or`-Verknüpfung, nicht der einzelne Vergleich.
+
 ### Validierung & Fehlermeldungen
 
 **Validierungsmeldung**:
