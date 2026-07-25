@@ -25,25 +25,28 @@ unberührt.
 
 ### Ziel / gewünschtes Verhalten
 
-1. **Dateiübergreifende Auflösung im Evaluator.** Die Engine löst einen realen
-   Armee-Katalog (`.cat`) samt seiner zugehörigen Spielsystemdatei (`.gst`)
-   vollständig auf: `entryLink`, `infoLink` und `sharedSelectionEntries` werden
-   transitiv über die Link-Ketten zusammengeführt, sodass per Verweis
-   importierte Definitionen tatsächlich mit-ausgewertet werden. `.cat`→`.cat`-
-   Importe (`catalogueLink`) kommen in den vendored Daten nicht vor (0 Vorkommen)
-   und sind nicht Teil dieser Änderung. Ein Verweis auf eine trotz Auflösung
-   nicht gefundene Definition erscheint weiterhin als **Diagnose**, nie als
-   Absturz.
+1. **Dateiübergreifende Auflösung im Evaluator.** Die Engine löst ein reales
+   Datenset — eine Spielsystemdatei (`.gst`) plus **eine oder mehrere**
+   Armee-Kataloge (`.cat`) — vollständig auf: `entryLink`, `infoLink`,
+   `sharedSelectionEntries` **und `catalogueLink`** (`.cat`→`.cat`-Import) werden
+   transitiv über die Link-/Import-Ketten zusammengeführt, sodass per Verweis
+   importierte Definitionen tatsächlich mit-ausgewertet werden. In den echten
+   Definitive-Edition-Daten ist dieser Import **zwingend**: jeder Armee-Katalog
+   deklariert einen `catalogueLink` auf die gemeinsame `Mercenaries`-`.cat`, und
+   z. B. die Ogre-`.cat` löst 41 ihrer Ziel-IDs ausschließlich über Mercenaries
+   auf. Ein Verweis auf eine trotz Auflösung nicht gefundene Definition erscheint
+   weiterhin als **Diagnose**, nie als Absturz.
 
 2. **E2E-Ebene vollständig auf echte, vollständige Daten umgestellt.** Die
-   E2E-Testsuite der neuen Engine prüft **alle drei** realen Definitive-Edition-
-   Kataloge (Ogre Kingdoms, Orcs and Goblins, Vampire Counts) — jeweils zusammen
-   mit der `.gst` (WHFB 6th Edition) — als vollständig aufgelöste Datensätze. Die
+   E2E-Testsuite der neuen Engine prüft echte **Definitive-Edition**-Katalogdaten
+   als vollständig aufgelöste Datensätze — jeder Armee-Katalog zusammen mit der
+   `.gst` **und** der per `catalogueLink` benötigten `Mercenaries`-`.cat`. Die
    Katalog-Rohdaten liegen zu diesem Zweck **versioniert im Repository**.
    Assertions prüfen **bekannte, im Katalog verifizierte** Definitions-IDs,
-   Namen und Grenzwerte (Muster wie im heutigen Ogre-Smoke-Test: reale
-   Pflichteinheit, realer Modifikator, reale Bedingung), sodass jeder Test echtes
-   Regel-Verhalten dokumentiert und robust gegen bloßes Datenwachstum ist.
+   Namen und Grenzwerte (reale Pflichteinheit, realer Modifikator, reale
+   Bedingung, sowie eine katalogübergreifend — über Mercenaries — aufgelöste
+   Definition), sodass jeder Test echtes Regel-Verhalten dokumentiert und robust
+   gegen bloßes Datenwachstum ist.
 
    **Keine synthetischen E2E-Tests mehr:** die bestehenden synthetischen
    E2E-Tests der Engine werden **entfernt bzw. durch Real-Data-Tests ersetzt** —
@@ -77,8 +80,11 @@ unberührt.
 - **Keine** Änderung an der alten Engine (Solver) oder ihren Testdaten.
 - **Keine** App-Verdrahtung der neuen Engine (bleibt gemäß ADR-0030 entkoppelt);
   daher kein Versions-Bump (`Type: refactor`).
-- **Kein** `catalogueLink`/`.cat`→`.cat`-Import (real nicht vorhanden).
 - **Kein** Auto-Generator und **kein** CI-Zwang für den Testkatalog.
+- **Nicht** alle 18 DE-Kataloge werden versioniert — nur die von den E2E-Tests
+  ausgeübte Teilmenge (`.gst` + `Mercenaries` + Ogre/Orcs & Goblins/Vampire
+  Counts). Die Abhängigkeit ist ein Stern (jeder Armee-Katalog → Mercenaries),
+  daher deckt diese Teilmenge den Multi-`.cat`-Fall vollständig ab.
 - Die Unit-/Komponententests der Engine behalten ihre minimalen, synthetischen
   Eingaben; **nur die E2E-/Integrationsebene** stellt auf echte Daten um. „Keine
   synthetischen Tests mehr" gilt ausschließlich für diese Ebene.
@@ -88,23 +94,35 @@ unberührt.
 
 ### Kontext / betroffene Bereiche (verifiziert)
 
-- Reale Daten unter `src/solver/__fixtures__/whfb6/`: 3 `.cat` (Ogre Kingdoms
-  206 KB, Orcs and Goblins 593 KB, Vampire Counts 375 KB) + 1 `.gst`
-  (WHFB 6th, 139 KB). Alle drei `.cat` verweisen auf dieselbe `gameSystemId`
-  der einen `.gst`.
-- Verweisdichte je Datei: Ogre 155 `entryLink` / 123 `infoLink`; O&G 249 / 352;
-  VC 176 / 201; `.gst` 48 / 74. `catalogueLink`: 0 in allen Dateien.
+- **Datenquelle:** die echte **Definitive Edition** aus
+  `artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition` (main), Upstream
+  Lexicanum Imperialis — dieselbe Quelle, die die App zur Laufzeit bezieht
+  (`CATALOG_REPO_RAW_BASE_URL`, `src/db/catalogUpdate.js`). Voller Satz: 18 `.cat`
+  + 1 `.gst` (~14 MB), `.gst`-Id `0d13-7737-ea86-4662`.
+- **Die alten Fixtures unter `src/solver/__fixtures__/whfb6/` sind NICHT die
+  Definitive Edition** (Ergofarg-Stand, `revision="1"`, self-contained, 0
+  `catalogueLink`). Sie bleiben unberührt (Solver-Testdaten). Die neue Engine
+  bekommt ihre eigenen DE-Fixtures unter `src/evaluator/__fixtures__/`.
+- **Katalogübergreifende Abhängigkeit (an echten DE-Daten verifiziert):** jeder
+  der 17 Armee-Kataloge deklariert genau **einen** `catalogueLink` → die
+  gemeinsame `Mercenaries`-`.cat`; Mercenaries selbst hat keinen. Die Ogre-`.cat`
+  hat 244 eindeutige `targetId`s, **41** lösen ausschließlich über Mercenaries
+  auf (ohne sie 41 dangling, mit ihr 0). `catalogueLink` ist damit real und
+  zwingend — die frühere „0 catalogueLink"-Annahme galt nur für die alten
+  Fixtures.
 - Fassade heute: `evaluate(catalogXml, roster)` nimmt genau **einen** Katalog-
   XML-String (`src/evaluator/evaluator.js`); der Resolver löst nur Direkteinträge
   auf (`src/evaluator/resolver.js`). Diese Änderung schließt die in ADR-0030 und
-  ADR-0031 als künftige Arbeit vermerkte Auflösungs-Grenze.
+  ADR-0031 als künftige Arbeit vermerkte Auflösungs-Grenze und wird als ADR-0032
+  festgehalten.
 
 ### Nahtstellen (Test-Seams)
 
 - Öffentliche Auswertungs-Fassade der Engine (`evaluate`, heute
   `src/evaluator/evaluator.js`) — der einzige Einstieg, über den die E2E-Tests
-  reale `.cat`+`.gst`-Daten auswerten. Die konkrete Signatur (ein XML-String
-  vs. mehrere Katalogquellen/Katalog-Set) ist eine Implementierungsentscheidung.
+  reale Daten auswerten. Die Fassade nimmt künftig **eine `.gst` + eine Liste von
+  `.cat`** entgegen (siehe ADR-0032); die genaue Signatur-Form ist eine
+  Implementierungsentscheidung.
 - Der von der Fassade gelieferte **Bericht** (`report`: `violations`,
   `capabilities`, `diagnostics`) als Beobachtungspunkt der Assertions.
 

@@ -39,4 +39,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0029 | [Zentrale Query-Engine für Constraint-, Condition- und Repeat-Auswertung](0029-zentrale-query-engine-fuer-constraint-auswertung.md) | Proposed | 2026-07-24 |
 | 0030 | [Zweite, räumlich getrennte Auswertungs-Engine als Reinraum-Realisierung](0030-zweite-eigenstaendige-auswertungs-engine.md) | Accepted | 2026-07-24 |
 | 0031 | [Reinraum-Evaluator liest die BattleScribe-XSD-Syntax und teilt deren Enum-SSOT](0031-evaluator-liest-battlescribe-xsd-syntax-und-teilt-enum-ssot.md) | Accepted | 2026-07-25 |
+| 0032 | [Evaluator löst Mehr-Katalog-Datensätze (.gst + Liste von .cat) global-by-ID auf](0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md) | Accepted | 2026-07-25 |
 
