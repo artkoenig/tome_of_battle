@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [02, 04, 06]
 
@@ -23,3 +23,4 @@ sind im Bericht gesammelt.
 - [ ] Alle bei der Auswertung ausgelösten Diagnosen sind im Bericht enthalten.
 
 ## Comments
+- buildReport erweitert um Faehigkeitsdatensaetze (SlotCapability) je auswaehlbarem Slot (reale Knoten + Phantom-Pflichtslots), abgelegt als Map unter stabilem Knoten-Pfad: effectiveMin/Max, current, headroom, isMandatoryUnmet/isBlocked/isHidden, notes. Dazu die reinen UI-Projektions-Lookups isSelectable/remainingAllowed/mandatoryOpenSlots (nur Bericht-Leser). Neue Exporte selectableSlotsOf/pathOf in evalTree.js. Alle Diagnosen (Aufloesung, unresolvedScope, zeroDenominator, Nichtkonvergenz) fliessen weiter gesammelt in den Bericht. 11 neue Tests in report.test.js; volle vitest-Suite gruen (1699 Tests).

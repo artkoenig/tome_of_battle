@@ -27,7 +27,8 @@ import { buildReport } from './report.js';
  * @param {string} catalogXml  Entpacktes `.cat`/`.gst`-XML des Katalogs.
  * @param {{ forces?: Array<{ defId: string, count: number, children?: object[] }> }} roster
  *   Instanzbaum des Rosters.
- * @returns {{ violations: object[], diagnostics: object[] }} Der Bericht.
+ * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
+ *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen.
  */
 export function evaluate(catalogXml, roster) {
   const catalogue = parseCatalogue(catalogXml);
@@ -52,5 +53,5 @@ export function evaluate(catalogXml, roster) {
     ...fixpointDiagnostics,
     ...constraintDiagnostics,
   ];
-  return buildReport(results, diagnostics);
+  return buildReport(root, effective, results, diagnostics);
 }

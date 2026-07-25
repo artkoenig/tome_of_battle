@@ -22,6 +22,9 @@ import { DefinitionKind, DiagnosticKind, LimitKind, ScopeKeyword, diagnostic } f
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
 
+/** Trennzeichen der Segmente eines Knoten-Pfads (siehe {@link pathOf}). */
+const PATH_SEPARATOR = '/';
+
 /**
  * Die Rahmen-Identitaet eines Knotens als String-Schluessel: die Wurzel ist der
  * ROSTER-Rahmen, jeder andere Knoten seine eigene, instanz-eindeutige Identitaet
@@ -197,6 +200,38 @@ export function* realNodes(root) {
   for (const node of allNodes(root)) {
     if (!node.isPhantom) yield node;
   }
+}
+
+/** True, wenn die Definition irgendeine MIN-Grenze traegt. */
+function hasAnyMinLimit(def) {
+  return (def.limits ?? []).some(limit => limit.kind === LimitKind.MIN);
+}
+
+/**
+ * Die **auswaehlbaren Slots** des Baums (§4.8): alle realen Knoten plus die
+ * Phantom-Pflichtslots — Phantomknoten, die eine MIN-Grenze verankern. Ein
+ * Phantom ohne MIN-Grenze waere kein Auswahlpunkt und bleibt aussen vor. Der
+ * Bericht baut je Slot einen Faehigkeitsdatensatz.
+ */
+export function* selectableSlotsOf(root) {
+  for (const node of allNodes(root)) {
+    if (!node.isPhantom || hasAnyMinLimit(node.def)) yield node;
+  }
+}
+
+/**
+ * Der stabile Pfad eines Knotens als String-Schluessel: die Folge der
+ * Kind-Indizes von der Wurzel bis zum Knoten (z. B. `"0/2/1"`). Zwei Instanzen
+ * derselben Definition erhalten verschiedene Pfade, weil sie an verschiedenen
+ * Positionen haengen — der Pfad ist die stabile Identitaet eines Auswahlpunkts
+ * im Bericht, ueber die die UI-Projektions-Lookups nachschlagen.
+ */
+export function pathOf(node) {
+  const segments = [];
+  for (let current = node; current.parent !== null; current = current.parent) {
+    segments.unshift(current.parent.children.indexOf(current));
+  }
+  return segments.join(PATH_SEPARATOR);
 }
 
 /** Die realen Kontingent-Knoten des Baums (Anker fuer je-Kontingent-Phantome). */
