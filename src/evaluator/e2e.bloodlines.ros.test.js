@@ -6,11 +6,10 @@
  * Verletzungsbericht gegen das **verifizierte tatsaechliche** Engine-Verhalten
  * geprueft (siehe die „Engine-Lauf"-Abschnitte der beiden README-Dateien).
  *
- * Bewusst gepinnt wird, was heute wirklich passiert:
+ * Bewusst gepinnt wird, was die Engine tut:
  *   - force-skopierte Pflicht (Bloodlines min 1) **feuert**;
  *   - parent-/gruppen-skopierte Zaehl-Constraints (max 1 Clan; per-Charakter
- *     min/max) **feuern (noch) nicht** — als `it.skip` mit Begruendung erhalten,
- *     damit die Suite gruen bleibt und die Luecke sichtbar ist;
+ *     min/max) **feuern** ueber den Gruppen-Anker-Mechanismus (Issue 68);
  *   - `hidden`/Profil erzeugen keine Verletzung (nicht Teil des Berichts).
  */
 
@@ -80,10 +79,10 @@ describe('E2E Bloodlines (Definitive-Katalog): Roster-Fixtures gegen evaluate', 
     expect(violationOf(report, VBL_R1_MIN)).toMatchObject({ actual: 0, bound: 1 });
   });
 
-  // Bekannte Luecke: parent-/gruppen-skopierte Zaehl-Constraints werden ueber die
-  // Fassade nicht als Verletzung gemeldet (drei Roster-Formen geprueft — flach,
-  // mit Gruppen-Zwischenknoten, zwei getrennte Bloodlines). Siehe README-Befund.
-  it.skip('03 zwei Clans: max 1 (parent/Gruppe) feuert — derzeit NICHT gemeldet', () => {
+  // Gruppen-skopierte Zaehl-Constraints (max 1 auf der `selectionEntryGroup`,
+  // scope=parent) feuern jetzt: die Join-Schicht synthetisiert je Gruppe einen
+  // Gruppen-Anker und zaehlt die Member ueber das Query-Primitiv (Issue 68).
+  it('03 zwei Clans: max 1 (parent/Gruppe) feuert', () => {
     const report = evaluate(vampireCountsDataset(), rosterFromRos(`${DEF}/03-two-clans-in-one-bloodlines-illegal.ros`));
     expect(violationOf(report, VBL_R2_MAX)).toMatchObject({ actual: 2, bound: 1 });
   });
@@ -112,13 +111,14 @@ describe('E2E Bloodlines (ergofang-Katalog): Roster-Fixtures gegen evaluate', ()
     }
   });
 
-  // Bekannte Luecke (wie Definitive VBL-R2): per-Charakter min/max, scope=parent.
-  it.skip('e02 fehlende Bloodline: min 1 (parent) feuert — derzeit NICHT gemeldet', () => {
+  // Per-Charakter min/max, scope=parent (wie Definitive VBL-R2): feuert jetzt
+  // ueber den Gruppen-Anker (Issue 68).
+  it('e02 fehlende Bloodline: min 1 (parent) feuert', () => {
     const report = evaluate(ergofangDataset(), rosterFromRos(`${ERG}/e02-missing-bloodline-illegal.ros`));
     expect(violationOf(report, ERG_R1_MIN)).toMatchObject({ actual: 0, bound: 1 });
   });
 
-  it.skip('e03 zwei Bloodlines: max 1 (parent) feuert — derzeit NICHT gemeldet', () => {
+  it('e03 zwei Bloodlines: max 1 (parent) feuert', () => {
     const report = evaluate(ergofangDataset(), rosterFromRos(`${ERG}/e03-two-bloodlines-on-one-character-illegal.ros`));
     expect(violationOf(report, ERG_R1_MAX)).toMatchObject({ actual: 2, bound: 1 });
   });

@@ -95,6 +95,48 @@ function collectRootDefinitions(definition, out, seen) {
 }
 
 /**
+ * Sammelt die **Member-IDs** einer `selectionEntryGroup` rekursiv: die IDs ihrer
+ * direkten Auswahl-Kinder (Eintraege/Links) sowie — ueber verschachtelte
+ * Untergruppen hinweg — deren Member. Fuer einen `entryLink` zaehlen zusaetzlich
+ * die Ziel-ID und die ID der aufgeloesten Zieldefinition, sodass eine Instanz als
+ * Member erkannt wird, unabhaengig davon, ob das Roster die Eintrags-, Link- oder
+ * Ziel-ID traegt (die Import-Schicht verwirft das `entryGroupId`-Tag, die
+ * Zugehoerigkeit wird deshalb aus dem Definitionsbaum abgeleitet — wie im
+ * Solver-Referenzpfad `collectGroupItemIds`).
+ */
+function collectGroupMemberIds(groupDef, into) {
+  for (const child of groupDef.children ?? []) {
+    if (child.kind === DefinitionKind.GROUP) {
+      collectGroupMemberIds(child, into);
+      continue;
+    }
+    into.add(child.id);
+    if (child.kind === DefinitionKind.ENTRY_LINK) {
+      if (child.targetId !== null && child.targetId !== undefined) into.add(child.targetId);
+      if (child.resolved !== null && child.resolved !== undefined) into.add(child.resolved.id);
+    }
+  }
+}
+
+/**
+ * Baut die Zugehoerigkeitstabelle `Gruppen-ID → Menge der Member-IDs`, aber nur
+ * fuer Gruppen, die eine **Grenze** tragen (nur diese synthetisiert die
+ * Join-Schicht als Anker). Muss **nach** der `entryLink`-Auflösung laufen, damit
+ * `resolved.id` je Link verfuegbar ist.
+ */
+function buildGroupMemberIndex(definitionNodes) {
+  const groupMemberIds = new Map();
+  for (const definition of definitionNodes) {
+    if (definition.kind !== DefinitionKind.GROUP) continue;
+    if ((definition.limits ?? []).length === 0) continue;
+    const members = new Set();
+    collectGroupMemberIds(definition, members);
+    groupMemberIds.set(definition.id, members);
+  }
+  return groupMemberIds;
+}
+
+/**
  * Loest einen `entryLink` transitiv und **zyklen-sicher** auf sein Ziel auf: folgt
  * einer Link→Link-Kette ueber die globale Tabelle, bis eine echte Definition
  * (Eintrag/Gruppe) erreicht ist, das Ziel fehlt (baumelnd) oder ein Zyklus die
@@ -269,7 +311,7 @@ function indexAndResolveInfos(infoRoots, byId, diagnostics) {
  * Pflichtverletzung synthetisiert.
  *
  * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
- * @returns {{ lookup: (id: string) => object|null, definitions: object[], categoryIds: Set<string>, diagnostics: object[] }}
+ * @returns {{ lookup: (id: string) => object|null, definitions: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, diagnostics: object[] }}
  */
 export function resolveCatalogue(catalogue) {
   const collector = {
@@ -317,10 +359,16 @@ export function resolveCatalogue(catalogue) {
     }
   }
 
+  // Gruppen-Zugehoerigkeit erst nach der Link-Auflösung ableiten (Slice: gruppen-
+  // skopierte Zaehl-Constraints) — die Join-Schicht synthetisiert daraus je
+  // Eigentuemer-Auswahl einen Gruppen-Anker und annotiert die Member-Knoten.
+  const groupMemberIds = buildGroupMemberIndex(definitionNodes);
+
   return {
     lookup: id => byId.get(id) ?? null,
     definitions,
     categoryIds,
+    groupMemberIds,
     diagnostics,
   };
 }
