@@ -4,6 +4,7 @@ import { parseCatalogue } from './catalogReader.js';
 import { resolveCatalogue } from './resolver.js';
 import { buildEvalTree } from './evalTree.js';
 import { buildIndex } from './countIndex.js';
+import { createBaseEffectiveState } from './effectiveState.js';
 import { query, createQueryContext } from './query.js';
 import { SELECTION_COUNT, costSumField, ScopeKeyword } from './model.js';
 
@@ -97,7 +98,9 @@ function buildEvaluation() {
   const catalogue = parseCatalogue(CATALOGUE_XML);
   const resolved = resolveCatalogue(catalogue);
   const { root } = buildEvalTree(resolved, ROSTER);
-  const index = buildIndex(root);
+  // Ohne Modifikatoren gleichen die effektiven Werte den Basiswerten; der Index
+  // ueber die Basis-Effektiv-Werte prueft daher dieselbe Zaehlsemantik wie zuvor.
+  const index = buildIndex(root, createBaseEffectiveState(root));
   return { root, index, categoryIds: resolved.categoryIds };
 }
 

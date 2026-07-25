@@ -114,3 +114,4 @@ Verhalten, das stimmen muss (Domänenregeln, ADR-0003 / BSData-Format):
 
 ## Comments
 - Architektur-Abgleich Slice 01 sauber (0 fehlende Anforderungen, 0 Scope-Creep, Isolation verifiziert). Zwei bewusst zurückgestellte, additiv nachziehbare Nähte für spätere Slices: (1) evaluate() nimmt derzeit einen Einzelkatalog-String statt catalogs[] mit Import-Ketten (§3.1/§4.2) – beim Multi-Katalog-Resolver-Slice zu weiten; (2) Diagnosen flach statt per ResolvedDef.resolutionLog (§4.1) – beim Cross-Katalog-Resolver nachzuziehen.
+- Architektur-Abgleich Slice 03: 1 Fund behoben – Ziel-Typ-Regel (Kategorie→armeeweit) galt fälschlich für jeden shared-Scope; auf scope=force eingeschränkt (ADR-0003/0029) + Regressionstest. Sonst konform; Vier-Eimer-Index als valide Realisierung von §4.4 bestätigt.

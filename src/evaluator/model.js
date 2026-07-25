@@ -89,6 +89,48 @@ export function normalizeFlags(flags) {
 }
 
 /**
+ * Vergleichsoperator einer Bedingung (`docs/evaluator-architecture.md` §4.1,
+ * `enum CompareOp`). Slice 04 traegt die numerischen Operatoren, mit denen eine
+ * Bedingung den gezaehlten Ist-Wert gegen ihren Sollwert prueft.
+ */
+export const CompareOp = Object.freeze({
+  LESS: 'less',
+  GREATER: 'greater',
+  EQUAL: 'equal',
+  AT_LEAST: 'atLeast',
+  AT_MOST: 'atMost',
+});
+
+/**
+ * Operation eines Modifikators (`docs/evaluator-architecture.md` §4.1/§4.6,
+ * `SET | ADD | MULTIPLY | APPEND_NOTE`). `SET` ignoriert den Wiederholungsfaktor;
+ * `ADD` addiert `value·times`, `MULTIPLY` multipliziert mit `value^times`,
+ * `APPEND_NOTE` haengt einen Hinweistext an.
+ */
+export const ModifierOperation = Object.freeze({
+  SET: 'set',
+  ADD: 'add',
+  MULTIPLY: 'multiply',
+  APPEND_NOTE: 'appendNote',
+});
+
+/**
+ * Zielart eines Modifikators — welche effektive Eigenschaft er veraendert
+ * (`docs/evaluator-architecture.md` §4.1, `target: PropertyRef | LimitId`). `COST`
+ * und `LIMIT` werden per ID (Kostenart bzw. Grenze) benannt und numerisch
+ * veraendert; `CATEGORY` schaltet die Zugehoerigkeit zu einer Kategorie-ID
+ * (per `value` an/aus); `HIDDEN` setzt die Sichtbarkeit; `NOTE` haengt einen
+ * bedingten Hinweis an.
+ */
+export const ModifierTargetKind = Object.freeze({
+  COST: 'cost',
+  CATEGORY: 'category',
+  LIMIT: 'limit',
+  HIDDEN: 'hidden',
+  NOTE: 'note',
+});
+
+/**
  * Sentinel fuer einen suspendierten Grenzwert: eine Prozentgrenze mit leerem
  * Bezugsrahmen (Nenner 0) wird weder erfuellt noch verletzt, sondern
  * ausgesetzt (`docs/evaluator-architecture.md` §4.7, Annahme A4).
@@ -103,6 +145,10 @@ export const DiagnosticKind = Object.freeze({
   UNRESOLVED_SCOPE: 'unresolvedScope',
   UNSUPPORTED_FIELD: 'unsupportedField',
   ZERO_DENOMINATOR: 'zeroDenominator',
+  UNSUPPORTED_MODIFIER: 'unsupportedModifier',
+  UNSUPPORTED_CONDITION: 'unsupportedCondition',
+  UNSUPPORTED_REPEAT: 'unsupportedRepeat',
+  UNSUPPORTED_COMPARATOR: 'unsupportedComparator',
 });
 
 const SCOPE_KEY_SEPARATOR = '::';

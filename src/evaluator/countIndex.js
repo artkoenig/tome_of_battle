@@ -55,15 +55,17 @@ function emptyBuckets() {
 }
 
 /**
- * Der Beitrag eines Knotens: seine Selektionsanzahl und Kosten je Kostenart.
- * **Kontingent-Knoten tragen nichts bei** — sie sind Struktur, keine Selektion;
- * sie leiten nur die Beitraege ihrer Nachfahren an die Rahmen weiter.
+ * Der Beitrag eines Knotens: seine Selektionsanzahl und **effektiven** Kosten je
+ * Kostenart. **Kontingent-Knoten tragen nichts bei** — sie sind Struktur, keine
+ * Selektion; sie leiten nur die Beitraege ihrer Nachfahren an die Rahmen weiter.
+ * Die Kosten kommen aus der Effektiv-Werte-Schicht (nach kostenaendernden
+ * Modifikatoren), nicht aus den Basisdefinitionen.
  */
-function contributionOf(node) {
+function contributionOf(node, effective) {
   if (node.isForce) return emptyTally();
   const selectionCount = node.instance.count;
   const costSums = new Map();
-  for (const [costTypeId, perSelection] of Object.entries(node.def.costs ?? {})) {
+  for (const [costTypeId, perSelection] of effective.costEntriesOf(node)) {
     costSums.set(costTypeId, perSelection * selectionCount);
   }
   return { selectionCount, costSums };
@@ -71,13 +73,13 @@ function contributionOf(node) {
 
 /**
  * Die Ziel-IDs, unter denen ein Knoten in einem Rahmen zaehlbar ist: `null`
- * ("alles im Rahmen"), seine eigene Definitions-ID und jede seiner (vorerst
- * Basis-, spaeter effektiven) Kategorie-IDs. Effektive Kategorien ersetzen die
- * Basis-Kategorien in Slice 04 an genau dieser Stelle, ohne die Zaehllogik zu
- * beruehren.
+ * ("alles im Rahmen"), seine eigene Definitions-ID und jede seiner **effektiven**
+ * Kategorie-IDs. Dies ist der Zaehl-Zugriffspunkt aus §4.4: die Zaehlung stuetzt
+ * sich auf die effektiven Kategorien (nach kategorie-aendernden Modifikatoren),
+ * nicht auf die Basis-Kategorien.
  */
-function targetsOf(node) {
-  return [null, node.def.id, ...(node.def.categoryIds ?? [])];
+function targetsOf(node, effective) {
+  return [null, node.def.id, ...effective.categoryIdsOf(node)];
 }
 
 /** Addiert einen Beitrag auf einen Zaehler. */
@@ -108,9 +110,9 @@ function addContribution(tallies, key, bucket, contribution) {
  * ROSTER-Rahmen (Wurzel) umspannt **alle** Kontingente und ignoriert daher
  * Kontingentgrenzen — `includeChildForces` hat auf Rosterebene keine Bedeutung.
  */
-function indexNodeContribution(tallies, node) {
-  const contribution = contributionOf(node);
-  const targets = targetsOf(node);
+function indexNodeContribution(tallies, node, effective) {
+  const contribution = contributionOf(node, effective);
+  const targets = targetsOf(node, effective);
   let crossedSelection = false;
   let crossedForce = false;
   let frame = node;
@@ -146,17 +148,20 @@ function combineBuckets(buckets, includeChildSelections, includeChildForces) {
 const ZERO_TALLY = Object.freeze({ selectionCount: 0, costSums: new Map() });
 
 /**
- * Baut den Zaehlindex ueber die realen Knoten des Evaluationsbaums.
+ * Baut den Zaehlindex ueber die realen Knoten des Evaluationsbaums aus den
+ * **effektiven** Werten. Effektive Kosten und Kategorien (nach den Modifikatoren)
+ * bestimmen, was gezaehlt wird — nicht die Basisdefinitionen (§4.4).
  *
  * @param {object} root Wurzel des Evaluationsbaums.
+ * @param {import('./effectiveState.js').EffectiveState} effective effektive Kosten und Kategorien je Knoten.
  * @returns {{ get: (key: string, includeChildSelections?: boolean, includeChildForces?: boolean) => { selectionCount: number, costSums: Map<string, number> } }}
  *   `get` liefert den nach den beiden `includeChild…`-Flags zusammengesetzten
  *   Zaehler eines Schluessels (Vorgabe: nur der BASE-Eimer).
  */
-export function buildIndex(root) {
+export function buildIndex(root, effective) {
   const tallies = new Map();
   for (const node of realNodes(root)) {
-    indexNodeContribution(tallies, node);
+    indexNodeContribution(tallies, node, effective);
   }
   return {
     get: (key, includeChildSelections = false, includeChildForces = false) => {

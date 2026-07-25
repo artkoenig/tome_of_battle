@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [03]
 
@@ -26,3 +26,4 @@ beantwortet.
       effektiven Werte (keine kumulative Drift innerhalb einer Auswertung).
 
 ## Comments
+- Effektiv-Werte-Schicht (Slice 04) eingefuehrt: neue effectiveState.js (EffectiveState + createBaseEffectiveState) und modifiers.js (conditionHolds/repeatCount/applyAllModifiers, Operationen SET/ADD/MULTIPLY/APPEND_NOTE, strikte Dokumentreihenfolge, times=Produkt der Wiederholungen, 0=inaktiv, immer frische Basiskopie). Modifikatoren/Bedingungen/Wiederholungen im catalogReader geparst. Verdrahtet: countIndex nutzt effektive Kosten+Kategorien (Zaehl-Swap-Punkt), constraints.resolveBound liest effektive Grenzwerte, evaluator faehrt EINEN Modifikator-Durchlauf (Fixpunkt bleibt Slice 05). 15 neue Tests in modifiers.test.js; volle Suite gruen (1676 Vitest + E2E).

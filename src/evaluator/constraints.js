@@ -7,7 +7,9 @@
  * leitet Prozentgrenzen aus dem Nenner ihres Bezugsrahmens ab (eine zentrale
  * Rundungskonvention). Sie ruft ausschliesslich das Query-Primitiv und reicht die
  * Grenzen-Flags (`shared`, `includeChildSelections`, `includeChildForces`) an
- * dieses durch. Modifizierte Grenzwerte folgen in spaeteren Scheiben.
+ * dieses durch. Der Grenzwert kommt aus der Effektiv-Werte-Schicht (Slice 04):
+ * ein Modifikator kann den Roh-Grenzwert veraendert haben — bei Prozentgrenzen
+ * fliesst der effektive Prozentsatz durch dieselbe `resolveBound`-Stelle.
  */
 
 import { LimitKind, SUSPENDED, DiagnosticKind, diagnostic } from './model.js';
@@ -18,13 +20,16 @@ import { roundHalfUp } from './rounding.js';
 const PERCENT_DIVISOR = 100;
 
 /**
- * Bestimmt den effektiven Grenzwert einer Grenze. Bei einer Prozentgrenze wird
- * er aus dem im Bezugsrahmen gezaehlten Nenner abgeleitet; ein Nenner 0 fuehrt
- * zu `SUSPENDED` samt Null-Nenner-Diagnose (A4), nie zu einer Verletzung. Nenner
- * und Zaehler teilen Scope und Flags, damit sie nicht auseinanderdriften.
+ * Bestimmt den effektiven Grenzwert einer Grenze. Der Roh-Grenzwert stammt aus
+ * der Effektiv-Werte-Schicht (durch Modifikatoren ggf. veraendert); traegt der
+ * Knoten dort keinen Wert, gilt der Basiswert der Grenze. Bei einer Prozentgrenze
+ * wird der Grenzwert aus dem im Bezugsrahmen gezaehlten Nenner abgeleitet; ein
+ * Nenner 0 fuehrt zu `SUSPENDED` samt Null-Nenner-Diagnose (A4), nie zu einer
+ * Verletzung. Nenner und Zaehler teilen Scope und Flags, damit sie nicht
+ * auseinanderdriften.
  */
-function resolveBound(limit, ctx) {
-  const raw = limit.value;
+function resolveBound(limit, node, effective, ctx) {
+  const raw = effective.limitValue(node, limit.id) ?? limit.value;
   if (!limit.isPercent) return raw;
   const denominator = query(ctx, limit.field, limit.scope, null, limit.flags);
   if (denominator === 0) {
@@ -39,8 +44,8 @@ function resolveBound(limit, ctx) {
  * oder `null`, wenn die Grenze suspendiert ist. Ziel der Zaehlung ist die
  * eigene Definition der Bezugsinstanz.
  */
-function evaluateLimit(limit, node, ctx) {
-  const bound = resolveBound(limit, ctx);
+function evaluateLimit(limit, node, effective, ctx) {
+  const bound = resolveBound(limit, node, effective, ctx);
   if (bound === SUSPENDED) return null;
   const actual = query(ctx, limit.field, limit.scope, node.def.id, limit.flags);
   const satisfied = limit.kind === LimitKind.MIN ? actual >= bound : actual <= bound;
@@ -59,16 +64,17 @@ function evaluateLimit(limit, node, ctx) {
  *
  * @param {object} root  Wurzel des Evaluationsbaums.
  * @param {{ get: Function }} index
+ * @param {import('./effectiveState.js').EffectiveState} effective effektive Grenzwerte je Knoten.
  * @param {Set<string>} categoryIds  bekannte Kategorie-IDs (Ziel-Typ-Regel).
  * @param {object[]} diagnostics  Sammelliste, in die Query- und Null-Nenner-Diagnosen fliessen.
  * @returns {object[]} Constraint-Ergebnisse (je ein Tripel; suspendierte Grenzen ausgenommen).
  */
-export function evaluateConstraints(root, index, categoryIds, diagnostics) {
+export function evaluateConstraints(root, index, effective, categoryIds, diagnostics) {
   const results = [];
   for (const node of realNodes(root)) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics });
     for (const limit of node.def.limits) {
-      const result = evaluateLimit(limit, node, ctx);
+      const result = evaluateLimit(limit, node, effective, ctx);
       if (result !== null) results.push(result);
     }
   }

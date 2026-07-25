@@ -18,6 +18,9 @@ import {
   LimitKind,
   SELECTION_COUNT,
   costSumField,
+  CompareOp,
+  ModifierOperation,
+  ModifierTargetKind,
   DefinitionKind,
   DiagnosticKind,
   diagnostic,
@@ -36,6 +39,12 @@ const Tag = Object.freeze({
   CONSTRAINT: 'constraint',
   COSTS: 'costs',
   COST: 'cost',
+  MODIFIERS: 'modifiers',
+  MODIFIER: 'modifier',
+  CONDITIONS: 'conditions',
+  CONDITION: 'condition',
+  REPEATS: 'repeats',
+  REPEAT: 'repeat',
 });
 
 const Attr = Object.freeze({
@@ -44,14 +53,34 @@ const Attr = Object.freeze({
   TYPE: 'type',
   TYPE_ID: 'typeId',
   TARGET_ID: 'targetId',
+  TARGET_KIND: 'targetKind',
   FIELD: 'field',
   VALUE: 'value',
   SCOPE: 'scope',
+  OP: 'op',
+  OPERATION: 'operation',
+  CHILD_ID: 'childId',
+  PER_VALUE: 'perValue',
   PERCENT_VALUE: 'percentValue',
   SHARED: 'shared',
   INCLUDE_CHILD_SELECTIONS: 'includeChildSelections',
   INCLUDE_CHILD_FORCES: 'includeChildForces',
 });
+
+/** Die gueltigen Vergleichsoperator-Werte einer Bedingung (siehe {@link CompareOp}). */
+const COMPARE_OPS = Object.freeze(new Set(Object.values(CompareOp)));
+
+/** Die gueltigen Modifikator-Operationen (siehe {@link ModifierOperation}). */
+const MODIFIER_OPERATIONS = Object.freeze(new Set(Object.values(ModifierOperation)));
+
+/** Die numerischen Modifikator-Zielarten, deren `value` eine Zahl ist. */
+const NUMERIC_TARGET_KINDS = Object.freeze(new Set([ModifierTargetKind.COST, ModifierTargetKind.LIMIT]));
+
+/** Die booleschen Modifikator-Zielarten, deren `value` an/aus schaltet. */
+const BOOLEAN_TARGET_KINDS = Object.freeze(new Set([ModifierTargetKind.CATEGORY, ModifierTargetKind.HIDDEN]));
+
+/** Die gueltigen Modifikator-Zielarten (siehe {@link ModifierTargetKind}). */
+const TARGET_KINDS = Object.freeze(new Set(Object.values(ModifierTargetKind)));
 
 /** Battlescribe-XML-Vokabular auf das engine-eigene Enum abgebildet. */
 const LIMIT_KIND_BY_XML = Object.freeze({
@@ -186,7 +215,124 @@ function readCategoryIds(entryEl) {
     .filter(targetId => targetId !== null && targetId !== '');
 }
 
-/** Liest einen `<selectionEntry>` samt Kosten, Kategorien und geschachtelter Kind-Eintraege. */
+/**
+ * Liest eine einzelne `<condition>` einer Bedingung in ihre `ConditionDef` oder
+ * meldet eine Diagnose, falls ihr Vokabular ausserhalb des Umfangs liegt. Ein
+ * fehlendes `childId` bedeutet "alles im Rahmen" (Ziel `null`).
+ */
+function readCondition(conditionEl, diagnostics) {
+  const op = conditionEl.getAttribute(Attr.OP);
+  const field = readField(conditionEl.getAttribute(Attr.FIELD));
+  const scope = readScope(conditionEl.getAttribute(Attr.SCOPE));
+  const value = Number.parseFloat(conditionEl.getAttribute(Attr.VALUE));
+  if (!COMPARE_OPS.has(op) || field === undefined || scope === undefined || Number.isNaN(value)) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONDITION, {
+      op,
+      field: conditionEl.getAttribute(Attr.FIELD),
+      scope: conditionEl.getAttribute(Attr.SCOPE),
+    }));
+    return null;
+  }
+  return {
+    op,
+    field,
+    scope,
+    targetChildId: conditionEl.getAttribute(Attr.CHILD_ID),
+    value,
+    flags: readFlags(conditionEl),
+  };
+}
+
+/** Liest die Bedingungen eines Modifikators (leer, wenn keine vorhanden). */
+function readConditions(modifierEl, diagnostics) {
+  return wrappedChildren(modifierEl, Tag.CONDITIONS, Tag.CONDITION)
+    .map(conditionEl => readCondition(conditionEl, diagnostics))
+    .filter(condition => condition !== null);
+}
+
+/**
+ * Liest eine einzelne `<repeat>` einer Wiederholung in ihre `RepeatDef` oder
+ * meldet eine Diagnose. `perValue` muss eine Zahl ungleich 0 sein (0 gaebe eine
+ * Division durch null).
+ */
+function readRepeat(repeatEl, diagnostics) {
+  const field = readField(repeatEl.getAttribute(Attr.FIELD));
+  const scope = readScope(repeatEl.getAttribute(Attr.SCOPE));
+  const perValue = Number.parseFloat(repeatEl.getAttribute(Attr.PER_VALUE));
+  if (field === undefined || scope === undefined || Number.isNaN(perValue) || perValue === 0) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_REPEAT, {
+      field: repeatEl.getAttribute(Attr.FIELD),
+      scope: repeatEl.getAttribute(Attr.SCOPE),
+      perValue: repeatEl.getAttribute(Attr.PER_VALUE),
+    }));
+    return null;
+  }
+  return {
+    field,
+    scope,
+    targetChildId: repeatEl.getAttribute(Attr.CHILD_ID),
+    perValue,
+    flags: readFlags(repeatEl),
+  };
+}
+
+/** Liest die Wiederholungen eines Modifikators (leer, wenn keine vorhanden). */
+function readRepeats(modifierEl, diagnostics) {
+  return wrappedChildren(modifierEl, Tag.REPEATS, Tag.REPEAT)
+    .map(repeatEl => readRepeat(repeatEl, diagnostics))
+    .filter(repeat => repeat !== null);
+}
+
+/**
+ * Liest den `value` eines Modifikators je nach Zielart: numerisch fuer Kosten-
+ * und Grenz-Ziele, boolesch fuer Kategorie- und Sichtbarkeits-Ziele, sonst als
+ * Text (Hinweis).
+ */
+function readModifierValue(targetKind, rawValue) {
+  if (NUMERIC_TARGET_KINDS.has(targetKind)) return Number.parseFloat(rawValue);
+  if (BOOLEAN_TARGET_KINDS.has(targetKind)) return rawValue === BOOLEAN_TRUE_XML;
+  return rawValue;
+}
+
+/**
+ * Liest einen einzelnen `<modifier>` in seine `ModifierDef` (samt Bedingungen und
+ * Wiederholungen) oder meldet eine Diagnose, falls Operation oder Zielart
+ * ausserhalb des Umfangs liegen — nie still verschluckt.
+ */
+function readModifier(modifierEl, diagnostics) {
+  const operation = modifierEl.getAttribute(Attr.OPERATION);
+  const targetKind = modifierEl.getAttribute(Attr.TARGET_KIND);
+  const rawValue = modifierEl.getAttribute(Attr.VALUE);
+  const value = readModifierValue(targetKind, rawValue);
+  const numericValueInvalid = NUMERIC_TARGET_KINDS.has(targetKind) && Number.isNaN(value);
+  if (!MODIFIER_OPERATIONS.has(operation) || !TARGET_KINDS.has(targetKind) || numericValueInvalid) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, {
+      operation,
+      targetKind,
+      value: rawValue,
+    }));
+    return null;
+  }
+  return {
+    operation,
+    target: { kind: targetKind, id: modifierEl.getAttribute(Attr.TARGET_ID) },
+    value,
+    conditions: readConditions(modifierEl, diagnostics),
+    repeats: readRepeats(modifierEl, diagnostics),
+  };
+}
+
+/**
+ * Liest die Modifikatoren eines Knotens **in Dokumentreihenfolge** — die
+ * Reihenfolge im Array ist die Semantik (`docs/evaluator-architecture.md` §4.1).
+ */
+function readModifiers(element, diagnostics) {
+  return wrappedChildren(element, Tag.MODIFIERS, Tag.MODIFIER)
+    .map(modifierEl => readModifier(modifierEl, diagnostics))
+    .filter(modifier => modifier !== null);
+}
+
+/** Liest einen `<selectionEntry>` samt Kosten, Kategorien, Grenzen und Modifikatoren. */
 function readEntry(entryEl, diagnostics) {
   return {
     id: entryEl.getAttribute(Attr.ID),
@@ -195,6 +341,7 @@ function readEntry(entryEl, diagnostics) {
     costs: readCosts(entryEl),
     categoryIds: readCategoryIds(entryEl),
     limits: readLimits(entryEl, diagnostics),
+    modifiers: readModifiers(entryEl, diagnostics),
     children: readEntries(entryEl, diagnostics),
   };
 }
@@ -216,6 +363,7 @@ function readForceEntry(forceEl, diagnostics) {
     name: forceEl.getAttribute(Attr.NAME),
     kind: DefinitionKind.FORCE,
     limits: readLimits(forceEl, diagnostics),
+    modifiers: readModifiers(forceEl, diagnostics),
     children: readForceEntries(forceEl, diagnostics),
   };
 }
@@ -233,6 +381,7 @@ function readCategoryEntry(categoryEl, diagnostics) {
     name: categoryEl.getAttribute(Attr.NAME),
     kind: DefinitionKind.CATEGORY,
     limits: readLimits(categoryEl, diagnostics),
+    modifiers: readModifiers(categoryEl, diagnostics),
     children: [],
   };
 }
