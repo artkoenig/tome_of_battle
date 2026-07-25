@@ -21,7 +21,7 @@ import {
   DiagnosticKind,
   diagnostic,
 } from './model.js';
-import { realNodes } from './evalTree.js';
+import { allNodes } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { createBaseEffectiveState } from './effectiveState.js';
 
@@ -148,7 +148,7 @@ function applyOperation(state, node, modifier, times, diagnostics) {
  */
 export function applyAllModifiers(root, index, categoryIds, diagnostics) {
   const state = createBaseEffectiveState(root);
-  for (const node of realNodes(root)) {
+  for (const node of allNodes(root)) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics });
     for (const modifier of node.def.modifiers ?? []) {
       if (!allConditionsHold(ctx, modifier)) continue;

@@ -33,7 +33,10 @@ function indexDefinition(definition, byId, categoryIds, diagnostics) {
  * Sicht auf.
  *
  * @param {{ entries: object[], forces?: object[], categories?: object[] }} catalogue Ergebnis von `parseCatalogue`.
- * @returns {{ lookup: (id: string) => object|null, categoryIds: Set<string>, diagnostics: object[] }}
+ * @returns {{ lookup: (id: string) => object|null, definitions: object[], categoryIds: Set<string>, diagnostics: object[] }}
+ *   `definitions` sind alle eindeutigen Definitionen (Eintraege, Kontingente,
+ *   Kategorien inkl. geschachtelter) — die Join-Schicht braucht sie, um
+ *   Phantomknoten fuer Pflichtdefinitionen ohne Instanz zu synthetisieren.
  */
 export function resolveCatalogue(catalogue) {
   const byId = new Map();
@@ -49,6 +52,7 @@ export function resolveCatalogue(catalogue) {
   }
   return {
     lookup: id => byId.get(id) ?? null,
+    definitions: [...byId.values()],
     categoryIds,
     diagnostics,
   };

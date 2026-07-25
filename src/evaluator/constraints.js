@@ -13,7 +13,7 @@
  */
 
 import { LimitKind, SUSPENDED, DiagnosticKind, diagnostic } from './model.js';
-import { realNodes } from './evalTree.js';
+import { allNodes } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
 
@@ -71,7 +71,7 @@ function evaluateLimit(limit, node, effective, ctx) {
  */
 export function evaluateConstraints(root, index, effective, categoryIds, diagnostics) {
   const results = [];
-  for (const node of realNodes(root)) {
+  for (const node of allNodes(root)) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics });
     for (const limit of node.def.limits) {
       const result = evaluateLimit(limit, node, effective, ctx);

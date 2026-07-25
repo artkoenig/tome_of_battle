@@ -15,7 +15,7 @@
  * (`docs/evaluator-architecture.md` §4.6, Schlussbemerkung).
  */
 
-import { realNodes } from './evalTree.js';
+import { allNodes } from './evalTree.js';
 
 const EMPTY_LIMIT_VALUES = Object.freeze(new Map());
 
@@ -186,7 +186,8 @@ export function countRelevantEqual(previous, next) {
 
 /**
  * Erzeugt eine frische Effektiv-Werte-Kopie aus den **Basisdefinitionen** aller
- * realen Knoten. Kein Modifikator ist angewendet: effektive Werte gleichen den
+ * Knoten — **Phantome eingeschlossen**, damit auch deren Grenzwerte modifizierbar
+ * sind (§4.6). Kein Modifikator ist angewendet: effektive Werte gleichen den
  * Basiswerten. Jede Modifikator-Anwendung startet von dieser frischen Kopie,
  * damit sich keine Wirkungen ueber Anwendungen hinweg aufsummieren.
  *
@@ -199,7 +200,7 @@ export function createBaseEffectiveState(root) {
   const limitValues = new Map();
   const notes = new Map();
   const hidden = new Set();
-  for (const node of realNodes(root)) {
+  for (const node of allNodes(root)) {
     costs.set(node, new Map(Object.entries(node.def.costs ?? {})));
     categories.set(node, new Set(node.def.categoryIds ?? []));
     const limits = new Map();

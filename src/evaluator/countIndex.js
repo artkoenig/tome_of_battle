@@ -56,13 +56,18 @@ function emptyBuckets() {
 
 /**
  * Der Beitrag eines Knotens: seine Selektionsanzahl und **effektiven** Kosten je
- * Kostenart. **Kontingent-Knoten tragen nichts bei** — sie sind Struktur, keine
- * Selektion; sie leiten nur die Beitraege ihrer Nachfahren an die Rahmen weiter.
- * Die Kosten kommen aus der Effektiv-Werte-Schicht (nach kostenaendernden
- * Modifikatoren), nicht aus den Basisdefinitionen.
+ * Kostenart. Die Kosten kommen aus der Effektiv-Werte-Schicht (nach kosten-
+ * aendernden Modifikatoren), nicht aus den Basisdefinitionen.
+ *
+ * **Kontingent-Knoten** tragen keine Kosten und zaehlen **nicht** als Selektion
+ * "im Rahmen" (kein `null`-/Kategorie-Ziel, siehe {@link targetsOf}); sie tragen
+ * aber ihre Instanzanzahl unter ihrer **eigenen Definitions-ID** bei, damit
+ * Grenzen am Force-Typ (Kontingent-Definition, §3.2) den Bestand eines
+ * Kontingents zaehlen koennen. Ohne das wuerde eine `min`-Grenze am Force-Typ
+ * selbst bei vorhandenem Kontingent `actual=0` lesen.
  */
 function contributionOf(node, effective) {
-  if (node.isForce) return emptyTally();
+  if (node.isForce) return { selectionCount: node.instance.count, costSums: new Map() };
   const selectionCount = node.instance.count;
   const costSums = new Map();
   for (const [costTypeId, perSelection] of effective.costEntriesOf(node)) {
@@ -77,8 +82,13 @@ function contributionOf(node, effective) {
  * Kategorie-IDs. Dies ist der Zaehl-Zugriffspunkt aus §4.4: die Zaehlung stuetzt
  * sich auf die effektiven Kategorien (nach kategorie-aendernden Modifikatoren),
  * nicht auf die Basis-Kategorien.
+ *
+ * Ein **Kontingent-Knoten** ist nur unter seiner eigenen Definitions-ID zaehlbar
+ * (fuer Grenzen am Force-Typ) — es ist keine Selektion "im Rahmen" und traegt
+ * daher weder zum `null`-Ziel noch zu Kategorien bei.
  */
 function targetsOf(node, effective) {
+  if (node.isForce) return [node.def.id];
   return [null, node.def.id, ...effective.categoryIdsOf(node)];
 }
 
