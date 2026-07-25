@@ -17,7 +17,7 @@
  * allen Knoten ({@link allNodes}, Phantome eingeschlossen).
  */
 
-import { DefinitionKind, DiagnosticKind, LimitKind, ScopeKeyword, diagnostic } from './model.js';
+import { DefinitionKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic } from './model.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -96,7 +96,7 @@ function attachPhantom(parent, def, nextFrameId) {
 
 /** True, wenn die Definition eine MIN-Grenze mit genau diesem Bezugsrahmen traegt. */
 function hasMinLimitInFrame(def, scope) {
-  return (def.limits ?? []).some(limit => limit.kind === LimitKind.MIN && limit.scope === scope);
+  return (def.limits ?? []).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
 }
 
 /** Summe der Instanzanzahlen realer Knoten mit dieser Definitions-ID im Teilbaum. */
@@ -204,7 +204,7 @@ export function* realNodes(root) {
 
 /** True, wenn die Definition irgendeine MIN-Grenze traegt. */
 function hasAnyMinLimit(def) {
-  return (def.limits ?? []).some(limit => limit.kind === LimitKind.MIN);
+  return (def.limits ?? []).some(limit => limit.kind === ConstraintKind.MIN);
 }
 
 /**

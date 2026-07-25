@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -25,17 +25,18 @@ verwenden, werden auf echte BattleScribe-Syntax umgeschrieben, damit die Testsui
 grün bleibt.
 
 ## Acceptance Criteria
-- [ ] Ein realer `<condition type="…">` wird an seiner Art erkannt und ausgewertet
+- [x] Ein realer `<condition type="…">` wird an seiner Art erkannt und ausgewertet
       und erscheint nicht mehr als UNSUPPORTED-Diagnose.
-- [ ] Ein realer `<modifier type="…" field="…" value="…">` wird an `type`/`field`
+- [x] Ein realer `<modifier type="…" field="…" value="…">` wird an `type`/`field`
       erkannt und verändert den effektiven Wert entsprechend seiner Art; `op`,
       `operation`, `targetKind`, `targetId` kommen im Evaluator nirgends mehr vor.
-- [ ] Alle ConditionKind-Werte inkl. `notEqualTo` werden korrekt zum Wahrheitswert
+- [x] Alle ConditionKind-Werte inkl. `notEqualTo` werden korrekt zum Wahrheitswert
       ausgewertet; alle ModifierKind-Werte werden an ihrem Namen erkannt.
-- [ ] Die Format-Enums der Engine stammen aus
+- [x] Die Format-Enums der Engine stammen aus
       `battlescribeSchema.generated.js`; es gibt keine parallele Enum-Kopie mehr
       in `model.js`.
-- [ ] Die gesamte Engine-Testsuite ist grün; die betroffenen Fixtures verwenden
+- [x] Die gesamte Engine-Testsuite ist grün; die betroffenen Fixtures verwenden
       echte BattleScribe-Syntax (`type`/`field`), nicht das alte Vokabular.
 
 ## Comments
+- XSD-Attributnamen + SSOT-Enums umgesetzt: model.js re-exportiert ConditionKind/ModifierKind/ConstraintKind/ConditionGroupKind/InfoLinkKind aus battlescribeSchema.generated.js (alte Kopien CompareOp/ModifierOperation/LimitKind entfernt); catalogReader liest kanonisch type/field/value (op/operation/targetKind/targetId entfernt); resolver baut globale id->TargetDescriptor-Symboltabelle mit Disjunktheits-Guard und loest jeden Modifikator-field einmal auf; modifiers.js nutzt Handler-Registry fuer alle ModifierKind und compare fuer alle ConditionKind inkl. notEqualTo, Tie-Break in Dokumentreihenfolge. Neuer Zwei-Wege-Vollstaendigkeitstest (enumHandlerCoverage.test.js). Fixtures auf echte Syntax. Suite gruen.

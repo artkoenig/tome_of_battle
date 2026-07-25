@@ -14,7 +14,7 @@ Bedingungen und Modifikatoren nie ausgewertet, sondern nur als Diagnose gemeldet
 Wir entscheiden, diese Grenze zu schließen. Der Evaluator liest ausschließlich die
 **kanonischen XSD-Attributnamen** (`type`, `field`, `value`, `scope`, …) und
 bezieht die geschlossenen Enum-Mengen (`ConstraintKind`, `ConditionKind`,
-`ModifierKind`, `ConditionGroupKind`, `SelectionEntryKind`, …) aus der bereits
+`ModifierKind`, `ConditionGroupKind`, `InfoLinkKind`) aus der bereits
 vendored XSD-SSOT `src/parser/schema/battlescribeSchema.generated.js` (ADR-0016),
 statt sie in `src/evaluator/model.js` zu duplizieren. Der Import aus `src/parser/`
 ist von ADR-0030 ausdrücklich erlaubt; die harte Import-Isolation gegen

@@ -168,7 +168,7 @@ describe('Bericht: versteckter Slot', () => {
       <selectionEntries>
         <selectionEntry id="${HIDDEN_DEF_ID}" name="Verborgenes Relikt" type="upgrade">
           <modifiers>
-            <modifier operation="set" targetKind="hidden" value="true"/>
+            <modifier type="set" field="hidden" value="true"/>
           </modifiers>
         </selectionEntry>
       </selectionEntries>
@@ -187,16 +187,16 @@ describe('Bericht: bedingte Hinweise am Slot', () => {
   const BANNER_DEF_ID = 'entry-banner-unit';
   const NOTE_TEXT = 'Verbund erst ab zwei Einheiten';
   const NOTE_THRESHOLD = 2;
-  // Ein APPEND_NOTE-Modifikator unter einer Bedingung: der Hinweis erscheint nur,
+  // Ein append-Modifikator unter einer Bedingung: der Hinweis erscheint nur,
   // wenn die Bedingung (self >= 2 Selektionen) haelt.
   const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     <catalogue id="cat-cap-note" name="Capability Note Catalogue">
       <selectionEntries>
         <selectionEntry id="${BANNER_DEF_ID}" name="Bannertraeger" type="unit">
           <modifiers>
-            <modifier operation="appendNote" targetKind="note" value="${NOTE_TEXT}">
+            <modifier type="append" field="notes" value="${NOTE_TEXT}">
               <conditions>
-                <condition op="atLeast" field="selections" scope="self" value="${NOTE_THRESHOLD}"/>
+                <condition type="atLeast" field="selections" scope="self" value="${NOTE_THRESHOLD}"/>
               </conditions>
             </modifier>
           </modifiers>

@@ -13,11 +13,20 @@
  * Kategorien unterscheidet.
  */
 
-/** Art einer Grenze: Unter- (MIN) oder Obergrenze (MAX). */
-export const LimitKind = Object.freeze({
-  MIN: 'min',
-  MAX: 'max',
-});
+// Die geschlossenen Format-Enums bezieht die Engine aus der **einen Quelle der
+// Wahrheit** (ADR-0016/0031): der aus der vendored BattleScribe-XSD generierten
+// SSOT. Statt eigener, driftgefaehrdeter Kopien werden `ConditionKind`
+// (Bedingungs-Art), `ModifierKind` (Modifikator-Art), `ConstraintKind`
+// (Grenzen-Art), `ConditionGroupKind` und `InfoLinkKind` hier nur noch
+// re-exportiert. Engine-eigene Konstrukte (ScopeKeyword, DefinitionKind,
+// CountedFieldKind, ModifierTargetKind, Diagnose-Infra) bleiben unten definiert.
+export {
+  ConditionKind,
+  ModifierKind,
+  ConstraintKind,
+  ConditionGroupKind,
+  InfoLinkKind,
+} from '../parser/schema/battlescribeSchema.generated.js';
 
 /**
  * Diskriminator des gezaehlten Feldes einer Query. `SELECTION_COUNT` zaehlt
@@ -89,45 +98,6 @@ export function normalizeFlags(flags) {
 }
 
 /**
- * Vergleichsoperator einer Bedingung (`docs/evaluator-architecture.md` §4.1,
- * `enum CompareOp`). Slice 04 traegt die numerischen Operatoren, mit denen eine
- * Bedingung den gezaehlten Ist-Wert gegen ihren Sollwert prueft; Slice 08 ergaenzt
- * `INSTANCE_OF`, den in §4.1 gelisteten, aber bis dahin nicht umgesetzten
- * Mitgliedschafts-Operator (siehe {@link CompareOp.INSTANCE_OF} und die
- * `compare`-Semantik in `modifiers.js`).
- */
-export const CompareOp = Object.freeze({
-  LESS: 'less',
-  GREATER: 'greater',
-  EQUAL: 'equal',
-  AT_LEAST: 'atLeast',
-  AT_MOST: 'atMost',
-  // Instanz-/Mitgliedschaftspruefung. Battlescribe (BSData §7.7, XSD
-  // `Catalogue.xsd`) kennt **zwei getrennte** type-Werte, `instanceOf` und
-  // `notInstanceOf` — kein Schwellenwertvergleich, sondern ein Mitgliedschafts-
-  // Praedikat ueber dem zaehlenden Query-Primitiv: `instanceOf` haelt, wenn im
-  // Bezugsrahmen **mindestens eine** Instanz des Ziels existiert (`actual > 0`);
-  // `notInstanceOf` haelt bei deren **Abwesenheit** (`actual === 0`). Der `value`
-  // ist dabei nicht schwellwertig — die belegte Definitive-Edition-Form ist
-  // `notInstanceOf value="1"` (Abwesenheit gefordert), nicht `value=0`.
-  INSTANCE_OF: 'instanceOf',
-  NOT_INSTANCE_OF: 'notInstanceOf',
-});
-
-/**
- * Operation eines Modifikators (`docs/evaluator-architecture.md` §4.1/§4.6,
- * `SET | ADD | MULTIPLY | APPEND_NOTE`). `SET` ignoriert den Wiederholungsfaktor;
- * `ADD` addiert `value·times`, `MULTIPLY` multipliziert mit `value^times`,
- * `APPEND_NOTE` haengt einen Hinweistext an.
- */
-export const ModifierOperation = Object.freeze({
-  SET: 'set',
-  ADD: 'add',
-  MULTIPLY: 'multiply',
-  APPEND_NOTE: 'appendNote',
-});
-
-/**
  * Zielart eines Modifikators — welche effektive Eigenschaft er veraendert
  * (`docs/evaluator-architecture.md` §4.1, `target: PropertyRef | LimitId`). `COST`
  * und `LIMIT` werden per ID (Kostenart bzw. Grenze) benannt und numerisch
@@ -141,6 +111,22 @@ export const ModifierTargetKind = Object.freeze({
   LIMIT: 'limit',
   HIDDEN: 'hidden',
   NOTE: 'note',
+});
+
+/**
+ * Art eines reinen **Info-Elements** — welcher Knoten des InfoNodeGroup-Zweigs
+ * (BattleScribe-XSD) er ist. Rein strukturell, ohne Grenzen- oder
+ * Modifikator-Logik: `PROFILE` traegt Merkmale (Characteristics), `RULE` einen
+ * benannten Regeltext, `INFO_GROUP` buendelt weitere Info-Elemente, `INFO_LINK`
+ * verweist ueber `targetId` auf ein Profil / eine Regel / eine Info-Gruppe. Diese
+ * Klassifikation ist **engine-intern** (analog {@link DefinitionKind}); der
+ * Verweistyp eines Links selbst kommt aus dem SSOT-Enum {@link InfoLinkKind}.
+ */
+export const InfoElementKind = Object.freeze({
+  PROFILE: 'profile',
+  RULE: 'rule',
+  INFO_GROUP: 'infoGroup',
+  INFO_LINK: 'infoLink',
 });
 
 /**
@@ -160,9 +146,31 @@ export const DiagnosticKind = Object.freeze({
   ZERO_DENOMINATOR: 'zeroDenominator',
   UNSUPPORTED_MODIFIER: 'unsupportedModifier',
   UNSUPPORTED_CONDITION: 'unsupportedCondition',
+  // Der `type` einer Bedingungsgruppe ist keiner der SSOT-Werte (and/or) —
+  // sichtbar gemacht statt still ignoriert. Gueltige Gruppen erzeugen keine
+  // Diagnose (Slice 02).
+  UNSUPPORTED_CONDITION_GROUP: 'unsupportedConditionGroup',
   UNSUPPORTED_REPEAT: 'unsupportedRepeat',
+  // Eine Modifikatorgruppe traegt ein nicht-leeres `<repeats>` (von ModifierBase
+  // geerbt, Catalogue.xsd:469-479). Volle Repeat-Semantik fuer eine *ganze*
+  // Gruppe ist bewusst nicht im Umfang — statt sie still zu verschlucken, wird
+  // diese Grenze als Diagnose sichtbar gemacht (§5, Risiko 4).
+  UNSUPPORTED_MODIFIER_GROUP_REPEAT: 'unsupportedModifierGroupRepeat',
   UNSUPPORTED_COMPARATOR: 'unsupportedComparator',
   NO_CONVERGENCE: 'noConvergence',
+  // Der `field` eines Modifikators verweist wie eine Definitions-ID, findet in der
+  // globalen Symboltabelle (Kostenart- und Constraint-IDs) aber kein Ziel —
+  // baumelnder Verweis, sichtbar gemacht statt still ignoriert.
+  DANGLING_MODIFIER_TARGET: 'danglingModifierTarget',
+  // Verletzung des Disjunktheits-Guards: dieselbe ID benennt zugleich eine
+  // Kostenart und eine Grenze. Der ID-Raum muss disjunkt sein, damit die ID ihr
+  // eigener Diskriminator (COST vs LIMIT) sein kann.
+  MODIFIER_TARGET_COLLISION: 'modifierTargetCollision',
+  // Der `targetId` eines `infoLink` verweist auf kein indiziertes Info-Element
+  // (Profil/Regel/Info-Gruppe) — baumelnder Verweis, sichtbar gemacht statt still
+  // ignoriert (analog {@link DANGLING_MODIFIER_TARGET}). Ein gueltiger Link erzeugt
+  // keine Diagnose.
+  DANGLING_INFO_LINK: 'danglingInfoLink',
 });
 
 const SCOPE_KEY_SEPARATOR = '::';

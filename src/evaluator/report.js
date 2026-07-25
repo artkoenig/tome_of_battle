@@ -16,7 +16,7 @@
  * nie selbst, sie projiziert nur den einen Bericht.
  */
 
-import { LimitKind } from './model.js';
+import { ConstraintKind } from './model.js';
 import { selectableSlotsOf, pathOf } from './evalTree.js';
 
 /** Projiziert ein Constraint-Ergebnis auf eine Verletzungsmeldung. */
@@ -58,8 +58,8 @@ function headroomOf(maxResult) {
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
  */
 function toCapability(node, results, effective) {
-  const minResult = findResult(results, node, LimitKind.MIN);
-  const maxResult = findResult(results, node, LimitKind.MAX);
+  const minResult = findResult(results, node, ConstraintKind.MIN);
+  const maxResult = findResult(results, node, ConstraintKind.MAX);
   return {
     node,
     effectiveMin: minResult === null ? null : minResult.bound,

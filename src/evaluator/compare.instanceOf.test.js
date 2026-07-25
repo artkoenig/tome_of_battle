@@ -1,8 +1,7 @@
 /**
  * Fokussierte Tests der Mitgliedschafts-Operatoren `instanceOf` / `notInstanceOf`
- * (`CompareOp.INSTANCE_OF` / `CompareOp.NOT_INSTANCE_OF`,
- * `docs/evaluator-architecture.md` §4.1) — in Slice 04 gelistet, hier (Slice 08)
- * umgesetzt und an echten Definitive-Edition-Daten geerdet.
+ * (`ConditionKind.INSTANCE_OF` / `ConditionKind.NOT_INSTANCE_OF`,
+ * `docs/evaluator-architecture.md` §4.1) — an echten Definitive-Edition-Daten geerdet.
  *
  * Battlescribe (BSData §7.7, XSD `Catalogue.xsd`) kennt **zwei getrennte** type-Werte,
  * kein wertbasiertes Vorzeichen: `instanceOf` haelt, wenn im Bezugsrahmen mindestens
@@ -47,9 +46,9 @@ function catalogueGatedOn(op, value) {
             <constraint id="${MAX_POINTS_ID}" type="max" value="${MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
           </constraints>
           <modifiers>
-            <modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${SURCHARGE}">
+            <modifier type="increment" field="${POINTS_ID}" value="${SURCHARGE}">
               <conditions>
-                <condition op="${op}" field="selections" scope="roster" childId="${ARCHER_ID}" value="${value}"/>
+                <condition type="${op}" field="selections" scope="roster" childId="${ARCHER_ID}" value="${value}"/>
               </conditions>
             </modifier>
           </modifiers>

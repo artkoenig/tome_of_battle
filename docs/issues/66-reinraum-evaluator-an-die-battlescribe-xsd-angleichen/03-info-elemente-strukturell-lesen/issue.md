@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01]
 
@@ -16,13 +16,14 @@ Baut auf der XSD-konformen Lesart aus 01 auf. Die Auflösung eines `infoLink` au
 sein Ziel folgt derselben Link-Auflösung wie die übrigen Verweise der Engine.
 
 ## Acceptance Criteria
-- [ ] Ein Katalog mit `profile`, `rule`, `infoGroup` und `infoLink` wird ohne
+- [x] Ein Katalog mit `profile`, `rule`, `infoGroup` und `infoLink` wird ohne
       Fehler geparst; keines dieser Elemente erzeugt eine UNSUPPORTED-Diagnose.
-- [ ] Ein `infoLink` wird auf sein Ziel (Profil/Regel/Info-Gruppe) aufgelöst und
+- [x] Ein `infoLink` wird auf sein Ziel (Profil/Regel/Info-Gruppe) aufgelöst und
       das verlinkte Info-Element ist am betroffenen Eintrag verfügbar.
-- [ ] Info-Elemente verändern weder Grenzen noch effektive Werte (sie tragen keine
+- [x] Info-Elemente verändern weder Grenzen noch effektive Werte (sie tragen keine
       Constraint-/Modifikator-Logik).
-- [ ] Die Engine-Testsuite deckt das Lesen und Auflösen der Info-Elemente ab und
+- [x] Die Engine-Testsuite deckt das Lesen und Auflösen der Info-Elemente ab und
       ist grün.
 
 ## Comments
+- Info-Elemente strukturell umgesetzt: catalogReader liest profile/rule/infoGroup/infoLink (InfoLinkKind aus SSOT), der Eintrag traegt infos[]; resolver indiziert die Info-Definitionen und loest infoLink ueber die bestehende ID-Karte auf sein Ziel (Profil/Regel/Info-Gruppe) auf. Keine UNSUPPORTED-Diagnose, keine Veraenderung von Grenzen/effektiven Werten. Neue infoElements.test.js gruen.

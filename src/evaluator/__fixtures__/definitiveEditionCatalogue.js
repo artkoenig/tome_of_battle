@@ -6,10 +6,12 @@
  * „Ogerbullen" (Bulls) mit einer armeeweiten `min`-Grenze, ein Prozent-/Kosten-
  * Kernanteil und ein auf eine Kategorie gegateter, bedingter Modifikator.
  *
- * Das Vokabular ist das **engine-eigene**, vereinfachte (`op`/`targetKind`/`childId`
- * statt der Battlescribe-Attribute `type`/`field`), das `src/evaluator/catalogReader.js`
- * liest — nicht das rohe Battlescribe-XML. Struktur und Faelle sind an den realen
- * Daten orientiert (`src/solver/__fixtures__/whfb6/Ogre Kingdoms.cat`,
+ * Das Vokabular ist die **kanonische** BattleScribe-XSD-Syntax, die
+ * `src/evaluator/catalogReader.js` liest: eine Bedingung traegt ihre Art an `type`
+ * ({@link ConditionKind}), ein Modifikator seine Art an `type` ({@link ModifierKind})
+ * und sein Ziel im rohen `field`-String (`childId` bleibt das reale BS-Attribut).
+ * Struktur und Faelle sind an den realen Daten orientiert
+ * (`src/solver/__fixtures__/whfb6/Ogre Kingdoms.cat`,
  * `docs/battlescribe-data-format.md`), die Ids und Werte sind bewusst klein und
  * lesbar gehalten.
  */
@@ -98,10 +100,9 @@ export const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
                     field="selections" scope="roster"/>
       </constraints>
       <modifiers>
-        <modifier operation="set" targetKind="limit" targetId="${IRONGUTS_MAX_ID}"
-                  value="${IRONGUTS_RAISED_MAX}">
+        <modifier type="set" field="${IRONGUTS_MAX_ID}" value="${IRONGUTS_RAISED_MAX}">
           <conditions>
-            <condition op="instanceOf" field="selections" scope="roster"
+            <condition type="instanceOf" field="selections" scope="roster"
                        childId="${CHARACTERS_CATEGORY_ID}" value="1"/>
           </conditions>
         </modifier>
