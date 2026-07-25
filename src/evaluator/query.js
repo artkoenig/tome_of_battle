@@ -15,11 +15,14 @@ import {
   CountedFieldKind,
   ScopeKeyword,
   DiagnosticKind,
+  BudgetLimitUnresolvedReason,
+  UNRESOLVED_BUDGET,
   normalizeFlags,
   scopeKey,
   diagnostic,
 } from './model.js';
 import { frameKeyOf } from './evalTree.js';
+import { EMPTY_ROSTER_BUDGET } from './rosterBudget.js';
 
 /**
  * Buendelt den Auswertungs-Kontext einer Query
@@ -31,9 +34,20 @@ import { frameKeyOf } from './evalTree.js';
  * @param {{ get: Function }} parts.index  der Zaehlindex.
  * @param {Set<string>} [parts.categoryIds]  die bekannten Kategorie-IDs (Ziel-Typ-Regel).
  * @param {object[]} parts.diagnostics  Sammelliste fuer Auswertungsprobleme.
+ * @param {import('./rosterBudget.js').RosterBudget} [parts.budget]  die
+ *   eingestellten Roster-Kostengrenzen (`RosterBudget`). In diesem Slice nur
+ *   durchgereicht — die Feldauflösung (`limit::<id>`) liest es erst im
+ *   Folge-Slice; fehlt es, gilt das leere Budget.
  */
-export function createQueryContext({ node, root, index, categoryIds, diagnostics }) {
-  return { node, root, index, categoryIds: categoryIds ?? new Set(), diagnostics };
+export function createQueryContext({ node, root, index, categoryIds, diagnostics, budget }) {
+  return {
+    node,
+    root,
+    index,
+    categoryIds: categoryIds ?? new Set(),
+    diagnostics,
+    budget: budget ?? EMPTY_ROSTER_BUDGET,
+  };
 }
 
 /** True, wenn die Ziel-ID eine Kategorie benennt (statt eines Eintrags). */
@@ -106,16 +120,55 @@ function resolveFrame(ctx, scope, targetId, flags) {
 }
 
 /**
- * Zaehlt `field` im Rahmen `scope`, gefiltert auf `targetId`, unter `flags`.
+ * Loest ein `LIMIT_VALUE(costTypeId)`-Feld aus dem Roster-Budget auf — **nicht**
+ * aus dem Zaehlindex. Die eingestellte Grenze ist roster-weit: ein Scope ungleich
+ * `roster` wird nicht still umgedeutet, sondern als Diagnose gemeldet. Eine nicht
+ * budgetierte Kostenart liefert ebenfalls keine `0`, sondern den
+ * {@link UNRESOLVED_BUDGET}-Sentinel samt Diagnose — der Konsument feuert dann
+ * **fail-closed** nicht (`design.md`, Kontrakt `query.js`).
  *
- * @param {object} ctx  aus {@link createQueryContext} (traegt `node`, `root`, `index`, `categoryIds`, `diagnostics`).
- * @param {{ kind: string, costTypeId?: string }} field  aus `SELECTION_COUNT` / `costSumField`.
+ * @returns {number|typeof UNRESOLVED_BUDGET} der eingestellte Grenzwert, oder der Sentinel.
+ */
+function resolveLimitValue(ctx, field, scope) {
+  const { costTypeId } = field;
+  if (scope !== ScopeKeyword.ROSTER) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_BUDGET_LIMIT, {
+      costTypeId,
+      reason: BudgetLimitUnresolvedReason.NON_ROSTER_SCOPE,
+      scope,
+    }));
+    return UNRESOLVED_BUDGET;
+  }
+  const bound = ctx.budget.get(costTypeId);
+  if (bound === undefined) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_BUDGET_LIMIT, {
+      costTypeId,
+      reason: BudgetLimitUnresolvedReason.NOT_BUDGETED,
+    }));
+    return UNRESOLVED_BUDGET;
+  }
+  return bound;
+}
+
+/**
+ * Zaehlt `field` im Rahmen `scope`, gefiltert auf `targetId`, unter `flags` — oder
+ * liest, fuer ein `LIMIT_VALUE`-Feld, die eingestellte Grenze aus dem Budget.
+ *
+ * @param {object} ctx  aus {@link createQueryContext} (traegt `node`, `root`, `index`, `categoryIds`, `diagnostics`, `budget`).
+ * @param {{ kind: string, costTypeId?: string }} field  aus `SELECTION_COUNT` / `costSumField` / `limitValueField`.
  * @param {string} scope  ein `ScopeKeyword` oder eine Eintrags-/Kategorie-ID.
  * @param {string|null} targetId  Ziel-ID oder `null` fuer "alles im Rahmen".
  * @param {{ shared?: boolean, includeChildSelections?: boolean, includeChildForces?: boolean }} [flags]
- * @returns {number}
+ * @returns {number|typeof UNRESOLVED_BUDGET} die Zaehlung/Grenze, oder der
+ *   Budget-Sentinel bei einem unaufloesbaren `LIMIT_VALUE`-Feld.
  */
 export function query(ctx, field, scope, targetId, flags) {
+  // Ein `LIMIT_VALUE`-Feld kommt aus dem Budget, nicht aus dem Zaehlindex — daher
+  // vor jeder Rahmen-/Index-Arbeit aufloesen (das Budget ist rahmen-unabhaengig).
+  if (field.kind === CountedFieldKind.LIMIT_VALUE) {
+    return resolveLimitValue(ctx, field, scope);
+  }
+
   const effectiveFlags = normalizeFlags(flags);
   const frame = resolveFrame(ctx, scope, targetId, effectiveFlags);
   if (frame === null || frame === undefined) {

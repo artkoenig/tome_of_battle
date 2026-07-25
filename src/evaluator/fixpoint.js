@@ -42,11 +42,14 @@ export const MAX_FIXPOINT_ROUNDS = 5;
  *
  * @param {object} root  Wurzel des Evaluationsbaums.
  * @param {Set<string>} categoryIds  bekannte Kategorie-IDs (Ziel-Typ-Regel des Query-Primitivs).
+ * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
+ *   Roster-Kostengrenzen (`RosterBudget`), durch die Modifikator-Anwendung an den
+ *   Query-Kontext durchgereicht.
  * @returns {{ effective: import('./effectiveState.js').EffectiveState, diagnostics: object[] }}
  *   der Effektiv-Zustand des Fixpunkts (oder der letzten Runde) samt Diagnosen;
  *   bei ausbleibender Konvergenz enthaelt `diagnostics` eine `NO_CONVERGENCE`-Diagnose.
  */
-export function evaluateToFixpoint(root, categoryIds) {
+export function evaluateToFixpoint(root, categoryIds, budget) {
   let effective = createBaseEffectiveState(root);
   let modifierDiagnostics = [];
   let converged = false;
@@ -54,7 +57,7 @@ export function evaluateToFixpoint(root, categoryIds) {
   for (let round = 0; round < MAX_FIXPOINT_ROUNDS; round++) {
     const index = buildIndex(root, effective);
     modifierDiagnostics = [];
-    const next = applyAllModifiers(root, index, categoryIds, modifierDiagnostics);
+    const next = applyAllModifiers(root, index, categoryIds, modifierDiagnostics, budget);
     const reachedFixpoint = countRelevantEqual(effective, next);
     effective = next; // stets fortschreiben: bei Nichtkonvergenz gilt die letzte Runde.
     if (reachedFixpoint) {

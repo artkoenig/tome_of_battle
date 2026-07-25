@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01]
 
@@ -37,3 +37,4 @@ Punktzahl ausgeblendet).
       Diagnose statt still den Wert 0 anzunehmen.
 
 ## Comments
+- Kern-Bugfix: limit::<costTypeId> wird jetzt als eigene Query-Bezugsgroesse LIMIT_VALUE gelesen und aus ctx.budget (RosterBudget) aufgeloest statt als COST_SUM still 0. model.js: CountedFieldKind.LIMIT_VALUE + limitValueField, LIMIT_FIELD_PREFIX, UNRESOLVED_BUDGET-Sentinel, BudgetLimitUnresolvedReason, DiagnosticKind.UNRESOLVED_BUDGET_LIMIT. catalogReader.readField erkennt das limit::-Praefix. query.js loest LIMIT_VALUE aus dem Budget auf (nie aus dem Zaehlindex); unauflösbar (nicht budgetiert / scope!=roster) -> Sentinel + Diagnose. constraints.js/modifiers.js behandeln den Sentinel fail-closed (Regel feuert nicht). Belegt an echten Definitive-Edition-Daten: Core-Mindestzahl skaliert 2->3->4 je Punkte-Stufe; ohne Budget bleibt Basiswert + Diagnose; set-hidden-Muster steuert Verfuegbarkeit.

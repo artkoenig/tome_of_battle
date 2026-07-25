@@ -139,6 +139,10 @@ die Enum-SSOT aus `src/parser/schema/`); (2) es wird ein **Einzelkatalog**
 gelesen — katalogübergreifende Importe/Link-Ketten und die Inkrementalisierung
 (Architektur §4.9) sind vorgemerkte Zukunft; (3) die eingestellte
 Roster-Punktgrenze (`limit::<costTypeId>` / `costLimit`/`costLimitType`) fließt
-noch nicht in die Auswertung ein, obwohl reale Kataloge budget-gesteuerte
-Bedingungen/Modifikatoren nutzen (z. B. budgetabhängige Helden-/Lord-Slots) —
-Voraussetzung für den produktiven Ersatz.
+seit Issue 68 in die Auswertung ein: die Engine nimmt das vollständige Roster
+inkl. Kostengrenzen entgegen, löst `limit::<costTypeId>` aus dem Roster-Budget
+auf (budget-gesteuerte Bedingungen/Modifikatoren wie budgetabhängige
+Helden-/Lord-Slots) und meldet Budget-Überschreitungen. Offen für den produktiven
+Ersatz bleibt allein der Cutover — die App auf die Engine zu verdrahten. (Bekannte
+Grenze außerhalb dieses Umfangs: die Sichtbarkeit einer *Kategorie* wird noch nicht
+als Verfügbarkeit im Bericht abgebildet — Kategorie-Knoten sind keine Auswahl-Slots.)

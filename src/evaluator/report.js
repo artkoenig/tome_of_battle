@@ -83,15 +83,20 @@ function toCapability(node, results, effective) {
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
+ * @param {object[]} [budgetViolations]  die roster-weiten Budget-Verletzungen
+ *   (`budget.js`, Regel „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen
+ *   in **dieselbe** `violations`-Liste und durch **dieselbe** Projektion wie die
+ *   Katalog-Grenzen, tragen aber einen synthetischen roster-weiten Anker; sie sind
+ *   keine anwaehlbaren Slots und erzeugen daher keinen Faehigkeitsdatensatz.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  */
-export function buildReport(root, effective, results, diagnostics) {
+export function buildReport(root, effective, results, diagnostics, budgetViolations = []) {
   const capabilities = new Map();
   for (const node of selectableSlotsOf(root)) {
     capabilities.set(pathOf(node), toCapability(node, results, effective));
   }
   return {
-    violations: results.filter(result => !result.satisfied).map(toViolation),
+    violations: [...results, ...budgetViolations].filter(result => !result.satisfied).map(toViolation),
     capabilities,
     diagnostics,
   };

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -29,3 +29,4 @@ diese Durchreichung kann keine budget-abhängige Auswertung entstehen.
       Ergebnis wie zuvor (keine Verhaltensänderung).
 
 ## Comments
+- Neu: src/evaluator/rosterBudget.js (immutables RosterBudget aus roster.costLimits, get/entries) + Test. Fassade evaluate nimmt RosterInput.costLimits entgegen und reicht RosterBudget als QueryContext.budget durch beide Pfade (fixpoint→modifiers und constraints). query liest budget noch nicht; leere costLimits => identisches Ergebnis. .ros-E2E reicht das vollstaendige Roster inkl. costLimits durch (rosterFromRos nicht mehr verlustbehaftet). Verifiziert: volle vitest-Suite 1799 passed/3 skipped, typecheck sauber, lint sauber.

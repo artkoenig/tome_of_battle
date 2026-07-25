@@ -26,7 +26,9 @@ import { buildEvalTree } from './evalTree.js';
 import { buildIndex } from './countIndex.js';
 import { evaluateToFixpoint } from './fixpoint.js';
 import { evaluateConstraints } from './constraints.js';
+import { evaluateRosterBudget } from './budget.js';
 import { buildReport } from './report.js';
+import { createRosterBudget } from './rosterBudget.js';
 import { DiagnosticKind, diagnostic } from './model.js';
 
 /**
@@ -70,13 +72,22 @@ function checkDatasetCoherence(gameSystemDoc, catalogueDocs, diagnostics) {
  *   Der Datensatz: die optionale Spielsystemdatei (`.gst`-XML) und die geordnete
  *   Liste der Armee-Kataloge (`.cat`-XML). Ein einzelner synthetischer Katalog wird
  *   als `{ catalogues: [xml] }` uebergeben.
- * @param {{ forces?: Array<{ defId: string, count: number, children?: object[] }> }} roster
- *   Instanzbaum des Rosters.
+ * @param {{ forces?: Array<{ defId: string, count: number, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
+ *   Das vollstaendige, aus `.ros` geparste Roster: der Instanzbaum (`forces`)
+ *   **und** die eingestellten Kostengrenzen je Kostenart (`costLimits`, die
+ *   Zuordnung Kostenart → Grenzwert, analog `<costLimits>`). Fehlt `costLimits`,
+ *   ist das Budget leer — verhaltensgleich zu einem Roster ohne Kostengrenzen.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen.
  */
 export function evaluate(dataset, roster) {
   const { gameSystem, catalogues = [] } = dataset;
+
+  // Die eingestellten Kostengrenzen des Rosters einmalig als unveraenderliches
+  // Budget-Wert-Objekt (SSOT) buendeln und bis in die Query-Kontexte durchreichen.
+  // Ausgewertet wird das Budget erst in den Folge-Slices; hier reicht die Fassade
+  // es nur verlustfrei durch (leere Grenzen ⇒ unveraendertes Ergebnis).
+  const budget = createRosterBudget(roster.costLimits);
 
   // Deterministische kataloguebergreifende Reihenfolge: Spielsystem zuerst, dann
   // die Kataloge in Aufruf-Reihenfolge (ADR-0032 Entscheidung 1 — die Reihenfolge
@@ -96,12 +107,18 @@ export function evaluate(dataset, roster) {
   // Modifikatoren von Zaehlungen, wird iterativ bis zur Konvergenz ausgewertet —
   // jede Runde von einer frischen Basiskopie, mit harter Rundenobergrenze und
   // Nichtkonvergenz-Diagnose (docs/evaluator-architecture.md §3.5/§4.2).
-  const { effective, diagnostics: fixpointDiagnostics } = evaluateToFixpoint(root, resolved.categoryIds);
+  const { effective, diagnostics: fixpointDiagnostics } = evaluateToFixpoint(root, resolved.categoryIds, budget);
 
   // Finaler, konsistenter Index aus dem konvergierten (bzw. letzten) Stand.
   const index = buildIndex(root, effective);
   const constraintDiagnostics = [];
-  const results = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics);
+  const results = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics, budget);
+
+  // Engine-allgemeine Regel „Armee zu teuer": je eingestellter Kostengrenze die am
+  // ROSTER-Rahmen verplante Summe (aus dem schon gebauten Zaehlindex) gegen ihre
+  // Grenze. Ueberschreitungen fliessen als roster-weite Budget-Verletzungen in
+  // dieselbe eine `violations`-Liste des Berichts.
+  const budgetViolations = evaluateRosterBudget(index, budget);
 
   const diagnostics = [
     ...merged.diagnostics,
@@ -111,5 +128,5 @@ export function evaluate(dataset, roster) {
     ...fixpointDiagnostics,
     ...constraintDiagnostics,
   ];
-  return buildReport(root, effective, results, diagnostics);
+  return buildReport(root, effective, results, diagnostics, budgetViolations);
 }

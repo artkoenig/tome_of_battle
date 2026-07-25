@@ -42,7 +42,7 @@ _Avoid_: "Pages-Deployment", "Report-Release", "Doku-Production" — jede Übert
 ### Regelauswertung (Constraints)
 
 **Query**:
-Der gemeinsame BSData-Grundbaustein (XSD `QueryBase`), der *etwas zählt* (`field`: Anzahl Auswahlen oder Summe einer Kostenart) in einem *Bezugsrahmen* (`scope`). Seine drei Ausprägungen sind **Grenze** (Constraint, min/max), **Bedingung** (Condition, Vergleich → Wahrheitswert) und **Wiederholung** (Repeat, Teilung → Wiederholungszahl); sie unterscheiden sich nur darin, was mit dem gezählten Wert geschieht.
+Der gemeinsame BSData-Grundbaustein (XSD `QueryBase`), der *etwas zählt oder eine Bezugsgröße liest* (`field`: Anzahl Auswahlen, Summe einer Kostenart, oder — als `limit::<costTypeId>` — die *eingestellte Grenze* einer Kostenart aus dem Roster-Budget, nicht die verplante Summe) in einem *Bezugsrahmen* (`scope`). Seine drei Ausprägungen sind **Grenze** (Constraint, min/max), **Bedingung** (Condition, Vergleich → Wahrheitswert) und **Wiederholung** (Repeat, Teilung → Wiederholungszahl); sie unterscheiden sich nur darin, was mit dem gezählten Wert geschieht.
 _Avoid_: „Constraint" als Oberbegriff für alle drei — eine Constraint ist nur die Grenzen-Ausprägung.
 
 **Bezugsrahmen (Scope)**:

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01]
 
@@ -23,3 +23,4 @@ App-Prüfung.
       Grenze geprüft.
 
 ## Comments
+- Neues Modul budget.js: engine-allgemeine Regel 'Armee zu teuer' - je Kostenart die am ROSTER-Rahmen verplante Summe (aus dem bestehenden Zaehlindex, includeChildSelections/Forces) gegen ihre eingestellte Grenze; Ueberschreitung => roster-weite Budget-Verletzung mit synthetischem Anker (model.js: ROSTER_BUDGET_ANCHOR, rosterBudgetLimitId). Verdrahtet in evaluator.js und in die eine violations-Liste (report.js, gleiche toViolation-Projektion). Unit- + E2E-Tests gruen.

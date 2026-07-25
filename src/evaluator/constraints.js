@@ -12,7 +12,7 @@
  * fliesst der effektive Prozentsatz durch dieselbe `resolveBound`-Stelle.
  */
 
-import { ConstraintKind, SUSPENDED, DiagnosticKind, diagnostic } from './model.js';
+import { ConstraintKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic } from './model.js';
 import { allNodes } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -32,6 +32,9 @@ function resolveBound(limit, node, effective, ctx) {
   const raw = effective.limitValue(node, limit.id) ?? limit.value;
   if (!limit.isPercent) return raw;
   const denominator = query(ctx, limit.field, limit.scope, null, limit.flags);
+  // Unaufloesbares Budget-Feld als Nenner (Diagnose aus `query`): die Grenze wird
+  // fail-closed suspendiert statt mit dem Sentinel weiterzurechnen.
+  if (denominator === UNRESOLVED_BUDGET) return SUSPENDED;
   if (denominator === 0) {
     ctx.diagnostics.push(diagnostic(DiagnosticKind.ZERO_DENOMINATOR, { limitId: limit.id }));
     return SUSPENDED;
@@ -48,6 +51,9 @@ function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
   if (bound === SUSPENDED) return null;
   const actual = query(ctx, limit.field, limit.scope, node.def.id, limit.flags);
+  // Zaehlt die Grenze selbst ein unaufloesbares Budget-Feld (Diagnose aus `query`),
+  // wird sie fail-closed suspendiert statt den Sentinel zu vergleichen.
+  if (actual === UNRESOLVED_BUDGET) return null;
   const satisfied = limit.kind === ConstraintKind.MIN ? actual >= bound : actual <= bound;
   return {
     limit,
@@ -67,12 +73,14 @@ function evaluateLimit(limit, node, effective, ctx) {
  * @param {import('./effectiveState.js').EffectiveState} effective effektive Grenzwerte je Knoten.
  * @param {Set<string>} categoryIds  bekannte Kategorie-IDs (Ziel-Typ-Regel).
  * @param {object[]} diagnostics  Sammelliste, in die Query- und Null-Nenner-Diagnosen fliessen.
+ * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
+ *   Roster-Kostengrenzen (`RosterBudget`), an den Query-Kontext durchgereicht.
  * @returns {object[]} Constraint-Ergebnisse (je ein Tripel; suspendierte Grenzen ausgenommen).
  */
-export function evaluateConstraints(root, index, effective, categoryIds, diagnostics) {
+export function evaluateConstraints(root, index, effective, categoryIds, diagnostics, budget) {
   const results = [];
   for (const node of allNodes(root)) {
-    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics });
+    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
     for (const limit of node.def.limits ?? []) {
       const result = evaluateLimit(limit, node, effective, ctx);
       if (result !== null) results.push(result);

@@ -36,6 +36,7 @@ import {
   ModifierKind,
   ModifierTargetKind,
   DiagnosticKind,
+  UNRESOLVED_BUDGET,
   diagnostic,
 } from './model.js';
 import { allNodes } from './evalTree.js';
@@ -79,9 +80,15 @@ function compare(type, actual, expected, diagnostics) {
   return comparator(actual, expected);
 }
 
-/** Wertet eine einzelne Bedingung ueber das Query-Primitiv aus. */
+/**
+ * Wertet eine einzelne Bedingung ueber das Query-Primitiv aus. Ein unaufloesbares
+ * Budget-Feld ({@link UNRESOLVED_BUDGET}, Diagnose bereits von `query` gemeldet)
+ * laesst die Bedingung **nicht** halten — der Modifikator feuert dann fail-closed
+ * nicht, statt mit einem erfundenen Wert zu vergleichen (`design.md`).
+ */
 function conditionHolds(ctx, condition) {
   const actual = query(ctx, condition.field, condition.scope, condition.targetChildId, condition.flags);
+  if (actual === UNRESOLVED_BUDGET) return false;
   return compare(condition.type, actual, condition.value, ctx.diagnostics);
 }
 
@@ -93,6 +100,8 @@ function conditionHolds(ctx, condition) {
 function repeatCount(ctx, repeat) {
   if (repeat.perValue === 0) return 0;
   const actual = query(ctx, repeat.field, repeat.scope, repeat.targetChildId, repeat.flags);
+  // Unaufloesbares Budget-Feld: keine Wiederholung (fail-closed, Diagnose aus `query`).
+  if (actual === UNRESOLVED_BUDGET) return 0;
   return Math.floor(actual / repeat.perValue);
 }
 
@@ -287,12 +296,14 @@ function applyModifierGroup(ctx, state, node, group, diagnostics) {
  * @param {{ get: Function }} index  der Zaehlindex, gegen den Bedingungen und Wiederholungen fragen.
  * @param {Set<string>} categoryIds  bekannte Kategorie-IDs (Ziel-Typ-Regel des Query-Primitivs).
  * @param {object[]} diagnostics  Sammelliste fuer Auswertungsprobleme.
+ * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
+ *   Roster-Kostengrenzen (`RosterBudget`), an den Query-Kontext durchgereicht.
  * @returns {import('./effectiveState.js').EffectiveState}
  */
-export function applyAllModifiers(root, index, categoryIds, diagnostics) {
+export function applyAllModifiers(root, index, categoryIds, diagnostics, budget) {
   const state = createBaseEffectiveState(root);
   for (const node of allNodes(root)) {
-    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics });
+    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
     for (const modifier of node.def.modifiers ?? []) {
       applyModifier(ctx, state, node, modifier, diagnostics);
     }
