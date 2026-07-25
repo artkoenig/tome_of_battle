@@ -38,6 +38,10 @@ coverage/
 # it into the commit and disable the guard permanently for every checkout.
 .claude/.worktree-bypass
 .scratch/
+# Temporäres Modul-Planungsartefakt des architect-Workflows je Main-Issue:
+# bleibt während der Umsetzung uncommitted im Arbeitsbaum und wird am
+# Auflösungs-Gate gelöscht — landet nie im PR.
+docs/issues/**/design.md
 .antigravity/
 e2e-failure.png
 
