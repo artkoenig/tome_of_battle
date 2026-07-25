@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: [01, 02, 03]
 
@@ -37,3 +37,4 @@ Hand (kein Generator, kein CI-Gate).
 - [ ] Die Pflege-Regel ist an sichtbarer Stelle im Repository dokumentiert.
 
 ## Comments
+- Testkatalog docs/testkatalog-evaluator-e2e.md angelegt: katalogisiert alle 23 E2E-Einzeltests (11 Szenarien) der Reinraum-Engine ueber 4 Dateien, je mit Titel, betroffenen Katalogdateien, Roster-Zustand, nicht-technischem Erwartungsergebnis und Zeilen-Link. Manuelle Pflege-Regel prominent im Dok + kurzer Verweis in ADR 0006. Deckungsgleich mit der Suite verifiziert.

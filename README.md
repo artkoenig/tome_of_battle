@@ -115,7 +115,7 @@ the reference architecture in [`docs/evaluator-architecture.md`](docs/evaluator-
 ([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md)). It coexists
 with the Solver but is **hard-isolated** from it — neither engine may import the
 other (enforced as blocking `error` rules in `.dependency-cruiser.cjs`/`.oxlintrc.json`),
-and it is reached only through its own facade `evaluate(catalogXml, roster) → report`.
+and it is reached only through its own facade `evaluate({ gameSystem, catalogues }, roster) → report`.
 It is a pure function (own parser, own data model, own report with
 violations/capabilities/diagnostics) and realizes the full reference design
 **including** the fixpoint loop and phantom nodes that ADR 0029 deliberately left
@@ -131,9 +131,17 @@ evaluates real conditions and modifiers — including nested condition- and
 modifier-groups (`and`/`or`) and structurally read info elements
 (`profile`/`rule`/`infoGroup`/`infoLink`).
 
-Known limitations (documented, not defects): it reads a **single** catalogue —
-cross-catalogue imports/link-chains and incrementalization (architecture §4.9) are
-deferred future work.
+It evaluates a **complete real dataset** — one game-system file (`.gst`) plus a
+list of army catalogues (`.cat`) — resolving cross-catalogue imports and link
+chains (`entryLink`/`infoLink`/`sharedSelectionEntries`/`catalogueLink`) over a
+single global `id→definition` table, and reporting coherence problems
+(`GAMESYSTEM_MISMATCH`, `MISSING_CATALOGUE_DEPENDENCY`) as diagnostics rather than
+mis-evaluating ([ADR 0032](docs/adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)).
+Its E2E suite runs against real Definitive-Edition catalogue data (see
+[`docs/testkatalog-evaluator-e2e.md`](docs/testkatalog-evaluator-e2e.md)).
+
+Known limitations (documented, not defects): incrementalization (architecture
+§4.9) is deferred future work.
 
 ### User Interface (`src/`)
 

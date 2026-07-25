@@ -34,8 +34,27 @@ const FieldKeyword = Object.freeze({
  */
 const REFERENCE_ID_PATTERN = /^[0-9a-fA-F]{4}(-[0-9a-fA-F]{4}){3}$/;
 
-/** Traegt jede Definition des Baums rekursiv in die ID-Karte (und Kategorie-Menge) ein. */
-function indexDefinition(definition, byId, categoryIds, diagnostics) {
+/** Die Definitionsarten, die als Pflicht-Phantom-Anker taugen (anwaehlbare Definitionen). */
+const PHANTOM_DEFINITION_KINDS = Object.freeze(new Set([
+  DefinitionKind.ENTRY,
+  DefinitionKind.FORCE,
+  DefinitionKind.CATEGORY,
+]));
+
+/**
+ * Traegt eine Definition und ihren ganzen Teilbaum (Eintraege, Gruppen, Links)
+ * rekursiv in die **globale** `id → Definition`-Tabelle ein und sammelt dabei die
+ * fuer die spaeteren Auflösungs-Durchgaenge benoetigten Knoten:
+ *
+ * - jede Definition (fuer Symboltabelle und Modifikator-Auflösung),
+ * - jeden `entryLink` (fuer die transitive Ziel-Auflösung),
+ * - die Info-Elemente jedes Knotens (fuer Indizierung/`infoLink`-Auflösung).
+ *
+ * Eine doppelte ID wird als Diagnose sichtbar (der erste Eintrag gewinnt); die
+ * Traversierung setzt trotzdem fort, damit der restliche Teilbaum indiziert wird.
+ */
+function collectDefinition(definition, collector) {
+  const { byId, categoryIds, diagnostics } = collector;
   if (byId.has(definition.id)) {
     diagnostics.push(diagnostic(DiagnosticKind.DUPLICATE_DEFINITION, { definitionId: definition.id }));
   } else {
@@ -44,9 +63,59 @@ function indexDefinition(definition, byId, categoryIds, diagnostics) {
       categoryIds.add(definition.id);
     }
   }
-  for (const child of definition.children) {
-    indexDefinition(child, byId, categoryIds, diagnostics);
+  collector.definitionNodes.push(definition);
+  if (definition.kind === DefinitionKind.ENTRY_LINK) {
+    collector.entryLinks.push(definition);
   }
+  for (const info of definition.infos ?? []) {
+    collector.infoRoots.push(info);
+  }
+  for (const child of definition.children ?? []) {
+    collectDefinition(child, collector);
+  }
+}
+
+/**
+ * Sammelt die **Wurzel-Definitionsliste** fuer die Pflicht-Phantom-Synthese: die
+ * anwaehlbaren Definitionen (Eintrag/Kontingent/Kategorie), die im Wurzel-Baum
+ * erreichbar sind. Die Traversierung steigt nur durch anwaehlbare Definitionen ab
+ * — hinter der Grenze einer Gruppe oder eines Links liegende Eintraege sind nur
+ * per Verweis bezogen und duerfen keinen Pflicht-Phantom synthetisieren (ADR-0032,
+ * Regel „geteilte/verlinkte Eintraege nicht in die Wurzel-Definitionsliste").
+ */
+function collectRootDefinitions(definition, out, seen) {
+  if (!PHANTOM_DEFINITION_KINDS.has(definition.kind)) return;
+  if (!seen.has(definition.id)) {
+    seen.add(definition.id);
+    out.push(definition);
+  }
+  for (const child of definition.children ?? []) {
+    collectRootDefinitions(child, out, seen);
+  }
+}
+
+/**
+ * Loest einen `entryLink` transitiv und **zyklen-sicher** auf sein Ziel auf: folgt
+ * einer Link→Link-Kette ueber die globale Tabelle, bis eine echte Definition
+ * (Eintrag/Gruppe) erreicht ist, das Ziel fehlt (baumelnd) oder ein Zyklus die
+ * Kette schliesst. `visited` verhindert eine Endlosschleife bei selbst- oder
+ * gegenseitig referenziellen Links.
+ *
+ * @returns {object|null} die aufgeloeste Zieldefinition, oder `null` (baumelnd/Zyklus).
+ */
+function followEntryLink(targetId, byId, visited) {
+  let currentId = targetId;
+  while (currentId !== null && currentId !== undefined && !visited.has(currentId)) {
+    visited.add(currentId);
+    const target = byId.get(currentId);
+    if (target === undefined) return null;
+    if (target.kind === DefinitionKind.ENTRY_LINK) {
+      currentId = target.targetId;
+      continue;
+    }
+    return target;
+  }
+  return null;
 }
 
 /**
@@ -136,21 +205,6 @@ function resolveModifierTargets(definitions, symbolTable, diagnostics) {
 }
 
 /**
- * Sammelt die Info-Elemente aller Wurzeln, an denen sie haengen: die katalogweit
- * geteilten (`catalogue.infos`) und die je Definition (`definition.infos`, ueber
- * Eintraege/Kontingente/Kategorien inkl. geschachtelter, die bereits alle in
- * `definitions` stehen). Nur die oberste Ebene — die Rekursion in Info-Gruppen
- * uebernehmen die Indizierung und die Link-Aufloesung selbst.
- */
-function collectInfoRoots(catalogue, definitions) {
-  const roots = [...(catalogue.infos ?? [])];
-  for (const definition of definitions) {
-    roots.push(...(definition.infos ?? []));
-  }
-  return roots;
-}
-
-/**
  * Traegt eine Info-**Definition** (Profil/Regel/Info-Gruppe) rekursiv in die
  * ID-Karte ein, damit `lookup(targetId)` sie findet. Info-Gruppen indizieren ihre
  * verschachtelten Elemente mit. Info-**Links** sind Verweise, keine Definitionen —
@@ -192,44 +246,77 @@ function resolveInfoElement(info, byId, diagnostics) {
 /**
  * Indiziert alle Info-Definitionen in die ID-Karte und loest anschliessend alle
  * `infoLink`-Verweise auf. Zwei Durchgaenge, damit ein Link ein Ziel unabhaengig
- * von dessen Dokumentposition findet.
+ * von dessen Dokumentposition (und dessen Herkunftskatalog) findet.
  */
-function indexAndResolveInfos(catalogue, definitions, byId, diagnostics) {
-  const infoRoots = collectInfoRoots(catalogue, definitions);
+function indexAndResolveInfos(infoRoots, byId, diagnostics) {
   for (const info of infoRoots) indexInfoElement(info, byId, diagnostics);
   for (const info of infoRoots) resolveInfoElement(info, byId, diagnostics);
 }
 
 /**
- * Loest einen gelesenen Katalog zu einer nachschlagbaren, unveraenderlichen
- * Sicht auf.
+ * Loest einen gelesenen Katalog (oder das zusammengefuehrte Aggregat mehrerer
+ * Dokumente, ADR-0032) zu einer nachschlagbaren, unveraenderlichen Sicht auf.
  *
- * @param {{ entries: object[], forces?: object[], categories?: object[], infos?: object[] }} catalogue Ergebnis von `parseCatalogue`.
+ * Alle mitgegebenen Quellen — Wurzel-Eintraege/Kontingente/Kategorien **und** die
+ * per Verweis bzw. geteilt bezogenen Definitionen (`sharedEntries`) — fliessen in
+ * **eine** globale `id → Definition`-Tabelle. Darueber loesen `infoLink`- und
+ * `entryLink`-Ziele transitiv und zyklen-sicher auf, katalog-intern wie
+ * kataloguebergreifend (der ID-Raum ist disjunkte GUIDs, ADR-0032).
+ *
+ * Die **Wurzel-Definitionsliste** (`definitions`) umfasst nur die anwaehlbaren,
+ * im Wurzel-Baum erreichbaren Definitionen — geteilte/verlinkte Eintraege stehen
+ * im `lookup`, aber nicht hier, damit ihre `min`-Grenze keine falsche
+ * Pflichtverletzung synthetisiert.
+ *
+ * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
  * @returns {{ lookup: (id: string) => object|null, definitions: object[], categoryIds: Set<string>, diagnostics: object[] }}
- *   `definitions` sind alle eindeutigen Definitionen (Eintraege, Kontingente,
- *   Kategorien inkl. geschachtelter) — die Join-Schicht braucht sie, um
- *   Phantomknoten fuer Pflichtdefinitionen ohne Instanz zu synthetisieren.
  */
 export function resolveCatalogue(catalogue) {
-  const byId = new Map();
-  const categoryIds = new Set();
-  const diagnostics = [];
-  const allDefinitions = [
-    ...catalogue.entries,
+  const collector = {
+    byId: new Map(),
+    categoryIds: new Set(),
+    diagnostics: [],
+    definitionNodes: [],
+    entryLinks: [],
+    infoRoots: [...(catalogue.infos ?? [])],
+  };
+  const rootForest = [
+    ...(catalogue.entries ?? []),
     ...(catalogue.forces ?? []),
     ...(catalogue.categories ?? []),
   ];
-  for (const definition of allDefinitions) {
-    indexDefinition(definition, byId, categoryIds, diagnostics);
+  for (const definition of [...rootForest, ...(catalogue.sharedEntries ?? [])]) {
+    collectDefinition(definition, collector);
   }
-  const definitions = [...byId.values()];
-  const symbolTable = buildTargetSymbolTable(definitions, diagnostics);
-  resolveModifierTargets(definitions, symbolTable, diagnostics);
-  // Info-Definitionen zusaetzlich indizieren und `infoLink`s aufloesen. `definitions`
-  // (Eintraege/Kontingente/Kategorien fuer die Join-Schicht) wird vorher fixiert,
-  // damit die Info-Definitionen zwar per `lookup` auffindbar sind, die Definitionsliste
-  // aber unveraendert bleibt.
-  indexAndResolveInfos(catalogue, definitions, byId, diagnostics);
+  const { byId, categoryIds, diagnostics, definitionNodes, entryLinks, infoRoots } = collector;
+
+  // Pflicht-Phantom-Quelle: nur die im Wurzel-Baum erreichbaren anwaehlbaren
+  // Definitionen (nicht die geteilten/verlinkten — die stehen nur im `lookup`).
+  const definitions = [];
+  const seen = new Set();
+  for (const definition of rootForest) {
+    collectRootDefinitions(definition, definitions, seen);
+  }
+
+  // Modifikator-Ziele einmal ueber die globale Symboltabelle aufloesen — fuer alle
+  // Definitionsknoten, damit auch ein per Verweis in den Baum gezogener Knoten sein
+  // `.target` traegt (die Apply-Schicht griffe sonst auf `undefined.kind` zu).
+  const symbolTable = buildTargetSymbolTable(definitionNodes, diagnostics);
+  resolveModifierTargets(definitionNodes, symbolTable, diagnostics);
+
+  // Info-Definitionen indizieren und `infoLink`s aufloesen (zwei Durchgaenge).
+  indexAndResolveInfos(infoRoots, byId, diagnostics);
+
+  // `entryLink`-Ziele ueber dieselbe globale Tabelle aufloesen (transitiv,
+  // zyklen-sicher); ein nach der Zusammenfuehrung baumelndes Ziel bleibt Diagnose.
+  for (const link of entryLinks) {
+    const target = followEntryLink(link.targetId, byId, new Set([link.id]));
+    link.resolved = target;
+    if (target === null) {
+      diagnostics.push(diagnostic(DiagnosticKind.DANGLING_ENTRY_LINK, { targetId: link.targetId }));
+    }
+  }
+
   return {
     lookup: id => byId.get(id) ?? null,
     definitions,

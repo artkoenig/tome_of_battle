@@ -78,6 +78,31 @@ Datensatz die GUID-Disjunktheit verletzt.
   vollständige Kontext-Stack-Aufbau bleibt bewusst ungebaut, bis ein realer
   Datensatz ihn erzwingt.
 
+## Bekannte Verhaltens-Charakteristiken der Engine (B1/B2)
+
+Bei der Umstellung der E2E-Tests auf echte Definitive-Edition-Daten (Issue 67)
+wurden zwei bewusste Verhaltensunterschiede des Reinraum-Evaluators zur alten
+Engine (Solver) festgehalten. Sie sind **keine** Bugs, sondern Folgen des
+Phantom-Anker-Modells (Architektur §7.7, ADR-0029); sie sind hier dauerhaft
+dokumentiert, damit ein künftiger Leser sie nicht für einen Fehler hält. Sie
+werden **nicht** als Test geführt, der die Lücke als erwartetes Verhalten
+festschreibt.
+
+- **B1 — Eine reine MAX-Kategorie ohne MIN wird nicht erzwungen.** Eine
+  Grenze der Join-Schicht wird nur ausgewertet, wenn ein Anker existiert. Für eine
+  `categoryEntry` synthetisiert die Join-Schicht einen Phantom-Anker **nur**, wenn
+  die Kategorie eine MIN-Grenze trägt (Kategorien sind selbst nie Roster-Instanzen).
+  Eine `categoryEntry` mit ausschließlich einer MAX-Grenze (ohne MIN) erhält daher
+  keinen Anker und bleibt effektiv **unbegrenzt** — eine endliche reine MAX-Kategorie
+  wird also nicht geprüft. (Der reale Fall `max="-1"` = unbegrenzt fällt ohnehin damit
+  zusammen.) Die alte Engine erzwang die Kategoriegrenze unabhängig von einer MIN.
+- **B2 — Ein `forceEntry`-eigenes Punktelimit ist nicht direkt ausdrückbar.** Ein
+  Kontingent (`forceEntry`) trägt keine Kosten, und eine Grenze zählt stets die
+  eigene Definitions-ID ihres Ankers; eine `forceEntry`-eigene Kostengrenze läse
+  daher immer 0. Die *Semantik* „dieses (Sonder-)Heer muss ≥ N Punkte bauen" ist
+  aber über eine **Kategorie-MIN-Kostengrenze** erreichbar: alle Einheiten des
+  Heeres teilen die Armee-Kategorie, deren MIN-Kostengrenze den Punkte-Boden setzt.
+
 ## Zugehörige ADRs
 
 - Schließt die in **ADR-0030** und **ADR-0031** als künftige Arbeit vermerkte

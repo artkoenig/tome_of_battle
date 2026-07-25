@@ -32,6 +32,15 @@ import {
 const Tag = Object.freeze({
   SELECTION_ENTRIES: 'selectionEntries',
   SELECTION_ENTRY: 'selectionEntry',
+  SELECTION_ENTRY_GROUPS: 'selectionEntryGroups',
+  SELECTION_ENTRY_GROUP: 'selectionEntryGroup',
+  ENTRY_LINKS: 'entryLinks',
+  ENTRY_LINK: 'entryLink',
+  CATALOGUE_LINKS: 'catalogueLinks',
+  CATALOGUE_LINK: 'catalogueLink',
+  // Katalogweit geteilte Auswahl-Definitionen — die ueblichen `entryLink`-Ziele.
+  SHARED_SELECTION_ENTRIES: 'sharedSelectionEntries',
+  SHARED_SELECTION_ENTRY_GROUPS: 'sharedSelectionEntryGroups',
   FORCE_ENTRIES: 'forceEntries',
   FORCE_ENTRY: 'forceEntry',
   CATEGORY_ENTRIES: 'categoryEntries',
@@ -74,6 +83,9 @@ const Attr = Object.freeze({
   TYPE: 'type',
   TYPE_ID: 'typeId',
   TARGET_ID: 'targetId',
+  // Die Spielsystem-Id, auf die sich ein `.cat` bezieht (Wurzelattribut). Eine
+  // `.gst` traegt sie nicht — ihre eigene `id` **ist** die Spielsystem-Id.
+  GAME_SYSTEM_ID: 'gameSystemId',
   FIELD: 'field',
   VALUE: 'value',
   SCOPE: 'scope',
@@ -528,7 +540,56 @@ function readEntry(entryEl, diagnostics) {
     modifiers: readModifiers(entryEl, diagnostics),
     modifierGroups: readModifierGroups(entryEl, diagnostics),
     infos: readInfos(entryEl),
-    children: readEntries(entryEl, diagnostics),
+    children: readSelectionChildren(entryEl, diagnostics),
+  };
+}
+
+/**
+ * Liest einen `<selectionEntryGroup>` (Bündel von Auswahl-Optionen, {@link
+ * DefinitionKind.GROUP}). Er traegt keine eigenen Kosten (Optionen tragen die
+ * Kosten), aber Grenzen/Modifikatoren und geschachtelte Auswahl-Kinder. Er ist
+ * ein **Verweisziel** eines `entryLink` und wird deshalb indiziert; als reines
+ * Bündel synthetisiert er selbst keinen Pflicht-Phantom (Resolver: nicht in der
+ * Wurzel-Definitionsliste, ADR-0032).
+ */
+function readGroup(groupEl, diagnostics) {
+  return {
+    id: groupEl.getAttribute(Attr.ID),
+    name: groupEl.getAttribute(Attr.NAME),
+    kind: DefinitionKind.GROUP,
+    limits: readLimits(groupEl, diagnostics),
+    modifiers: readModifiers(groupEl, diagnostics),
+    modifierGroups: readModifierGroups(groupEl, diagnostics),
+    infos: readInfos(groupEl),
+    children: readSelectionChildren(groupEl, diagnostics),
+  };
+}
+
+/**
+ * Liest einen `<entryLink>` ({@link DefinitionKind.ENTRY_LINK}): den Verweis auf
+ * eine importierte Definition (`targetId`) samt der **eigenen** Grenzen/
+ * Modifikatoren/Kategorien. `resolved` bleibt `null`, bis der Resolver das Ziel
+ * ueber die globale `id → Definition`-Tabelle auffindet (ADR-0032, analog
+ * {@link readInfoLink}); das aufgeloeste Ziel wird auf `resolved` vermerkt. Eine
+ * Per-Vorkommen-Ueberlagerung der eigenen Grenzen auf das Ziel wird heute noch
+ * nicht angewandt (die auswertenden Schichten lesen `resolved` nicht) — bewusst,
+ * siehe die Reconciliation von Issue 67/02. Geschachtelte Links/Eintraege werden
+ * mitgelesen.
+ */
+function readEntryLink(entryLinkEl, diagnostics) {
+  return {
+    id: entryLinkEl.getAttribute(Attr.ID),
+    name: entryLinkEl.getAttribute(Attr.NAME),
+    kind: DefinitionKind.ENTRY_LINK,
+    targetId: entryLinkEl.getAttribute(Attr.TARGET_ID),
+    costs: readCosts(entryLinkEl),
+    categoryIds: readCategoryIds(entryLinkEl),
+    limits: readLimits(entryLinkEl, diagnostics),
+    modifiers: readModifiers(entryLinkEl, diagnostics),
+    modifierGroups: readModifierGroups(entryLinkEl, diagnostics),
+    infos: readInfos(entryLinkEl),
+    children: readSelectionChildren(entryLinkEl, diagnostics),
+    resolved: null,
   };
 }
 
@@ -536,6 +597,60 @@ function readEntry(entryEl, diagnostics) {
 function readEntries(element, diagnostics) {
   return wrappedChildren(element, Tag.SELECTION_ENTRIES, Tag.SELECTION_ENTRY)
     .map(entryEl => readEntry(entryEl, diagnostics));
+}
+
+/** Liest alle direkten `<selectionEntryGroup>`-Kinder eines Elements. */
+function readGroups(element, diagnostics) {
+  return wrappedChildren(element, Tag.SELECTION_ENTRY_GROUPS, Tag.SELECTION_ENTRY_GROUP)
+    .map(groupEl => readGroup(groupEl, diagnostics));
+}
+
+/** Liest alle direkten `<entryLink>`-Kinder eines Elements. */
+function readEntryLinks(element, diagnostics) {
+  return wrappedChildren(element, Tag.ENTRY_LINKS, Tag.ENTRY_LINK)
+    .map(entryLinkEl => readEntryLink(entryLinkEl, diagnostics));
+}
+
+/**
+ * Liest die Auswahl-Kinder eines Knotens (Katalog-Wurzel, Eintrag, Gruppe oder
+ * Link): direkte `selectionEntry`, `selectionEntryGroup` und `entryLink`. Damit
+ * werden auch per Verweis importierte und gebuendelte Definitionen erfasst — die
+ * Voraussetzung fuer die kataloguebergreifende Auflösung (ADR-0032).
+ */
+function readSelectionChildren(element, diagnostics) {
+  return [
+    ...readEntries(element, diagnostics),
+    ...readGroups(element, diagnostics),
+    ...readEntryLinks(element, diagnostics),
+  ];
+}
+
+/**
+ * Liest die katalogweit **geteilten** Auswahl-Definitionen der Wurzel
+ * (`sharedSelectionEntries`/`sharedSelectionEntryGroups`) — die ueblichen Ziele
+ * der `entryLink`-Verweise. Sie werden indiziert, gehen aber nicht in die
+ * Wurzel-Definitionsliste ein (Resolver, ADR-0032).
+ */
+function readSharedEntries(root, diagnostics) {
+  return [
+    ...wrappedChildren(root, Tag.SHARED_SELECTION_ENTRIES, Tag.SELECTION_ENTRY)
+      .map(entryEl => readEntry(entryEl, diagnostics)),
+    ...wrappedChildren(root, Tag.SHARED_SELECTION_ENTRY_GROUPS, Tag.SELECTION_ENTRY_GROUP)
+      .map(groupEl => readGroup(groupEl, diagnostics)),
+  ];
+}
+
+/**
+ * Liest die `catalogueLink`-Abhaengigkeitsdeklarationen der Wurzel: je ein
+ * `{ id, name, targetId }`. `targetId` ist die Id des abhaengigen Katalogs; die
+ * Fassade prueft, ob dieser mitgegeben wurde (ADR-0032, `MISSING_CATALOGUE_DEPENDENCY`).
+ */
+function readCatalogueLinks(root) {
+  return wrappedChildren(root, Tag.CATALOGUE_LINKS, Tag.CATALOGUE_LINK).map(linkEl => ({
+    id: linkEl.getAttribute(Attr.ID),
+    name: linkEl.getAttribute(Attr.NAME),
+    targetId: linkEl.getAttribute(Attr.TARGET_ID),
+  }));
 }
 
 /**
@@ -585,8 +700,13 @@ function readCategoryEntries(element, diagnostics) {
 /**
  * Liest Katalog-XML in das engine-eigene Definitionsmodell.
  *
+ * Ein `.cat` **und** eine `.gst` teilen dieselben Element-Namen und werden von
+ * dieser Funktion gleich gelesen; nur die Wurzel unterscheidet sich (`catalogue`
+ * vs. `gameSystem`). `gameSystemId` traegt nur ein `.cat` — die `.gst` ist ihr
+ * eigenes Spielsystem (Kohaerenzpruefung in der Fassade, ADR-0032).
+ *
  * @param {string} catalogXml Entpacktes `.cat`/`.gst`-XML.
- * @returns {{ id: string|null, name: string|null, entries: object[], forces: object[], categories: object[], infos: object[], diagnostics: object[] }}
+ * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
  */
 export function parseCatalogue(catalogXml) {
   const diagnostics = [];
@@ -595,10 +715,13 @@ export function parseCatalogue(catalogXml) {
   return {
     id: root.getAttribute(Attr.ID),
     name: root.getAttribute(Attr.NAME),
-    entries: readEntries(root, diagnostics),
+    gameSystemId: root.getAttribute(Attr.GAME_SYSTEM_ID),
+    entries: readSelectionChildren(root, diagnostics),
     forces: readForceEntries(root, diagnostics),
     categories: readCategoryEntries(root, diagnostics),
+    sharedEntries: readSharedEntries(root, diagnostics),
     infos: readCatalogueInfos(root),
+    catalogueLinks: readCatalogueLinks(root),
     diagnostics,
   };
 }

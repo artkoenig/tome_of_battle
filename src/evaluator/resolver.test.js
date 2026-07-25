@@ -108,3 +108,25 @@ describe('Resolver: Disjunktheits-Guard der Symboltabelle', () => {
     );
   });
 });
+
+describe('Resolver: Disjunktheits-Guard bei kollidierender Definitions-ID', () => {
+  // ADR-0032-Sicherheitsnetz: global-by-ID setzt kataloguebergreifend disjunkte
+  // GUIDs voraus. Traegt nach dem Zusammenfuehren doch eine ID zwei Definitionen,
+  // wird die Kollision als Diagnose sichtbar statt eine Definition still zu
+  // verschlucken. Ein Ein-Katalog mit doppelter ID reizt denselben Guard isoliert.
+  it('meldet DUPLICATE_DEFINITION, wenn zwei Definitionen dieselbe ID tragen', () => {
+    const DUPLICATE_ID = 'kollidierende-definitions-id';
+    const catalogue = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-duplicate" name="Duplicate Catalogue">
+        <selectionEntries>
+          <selectionEntry id="${DUPLICATE_ID}" name="Warrior" type="unit"/>
+          <selectionEntry id="${DUPLICATE_ID}" name="Warlord" type="unit"/>
+        </selectionEntries>
+      </catalogue>`;
+    const resolved = resolveCatalogue(parseCatalogue(catalogue));
+
+    expect(resolved.diagnostics).toContainEqual(
+      expect.objectContaining({ kind: DiagnosticKind.DUPLICATE_DEFINITION, definitionId: DUPLICATE_ID })
+    );
+  });
+});

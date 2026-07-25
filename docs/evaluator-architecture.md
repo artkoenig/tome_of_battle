@@ -56,6 +56,8 @@ Roster ───────────────────────► 
 
 Löst alle ID-Verweise auf, auch über Katalog-Grenzen, und materialisiert pro Definitionsknoten eine **geschlossene Sicht**: eigener Eintrag plus hereinverlinkte Kinder, Regeln und Modifikatoren, in deterministischer Dokumentreihenfolge. Mehrdeutige IDs werden über einen Kontextstapel aufgelöst: lokaler Katalog des verweisenden Knotens → dessen Importe → Spielsystem. Jede Auflösungsentscheidung wird protokolliert (Diagnose bei Katalogfehlern). Das Ergebnis ist unveränderlich und wird gecacht, da es nicht vom Roster abhängt.
 
+> **Umsetzungshinweis (ADR-0032):** Die reale Implementierung baut diesen Kontextstapel **bewusst nicht**. Da BattleScribe-IDs global-eindeutige GUIDs sind, lösen alle Quellen (`.gst` + Liste von `.cat`) über **eine** flache globale `id→Definition`-Tabelle auf (global-by-ID); `catalogueLink` ist reine Abhängigkeits-Deklaration. Ein Disjunktheits-Guard meldet eine echte ID-Kollision als Diagnose — erst sie würde den vollen Kontextstapel erzwingen. Siehe [ADR-0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md).
+
 ### 3.2 Join-Schicht: Evaluationsbaum mit Phantomknoten
 
 Verheiratet Instanz- und Definitionsbaum: Jeder Instanzknoten erhält seine aufgelöste Definition. Zusätzlich werden **Phantomknoten** synthetisiert für Definitionen, die Grenzen tragen, aber keine Instanz haben:
