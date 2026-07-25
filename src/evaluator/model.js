@@ -74,6 +74,16 @@ export const DefinitionKind = Object.freeze({
   ENTRY: 'entry',
   FORCE: 'force',
   CATEGORY: 'category',
+  // Ein `selectionEntryGroup` buendelt Auswahl-Optionen. Er ist ein
+  // **Verweisziel** (per `entryLink`) und wird deshalb indiziert, ist aber selbst
+  // keine anwaehlbare Einheit — die Join-Schicht unterscheidet ihn ueber diese Art
+  // von ENTRY/FORCE/CATEGORY und synthetisiert fuer ihn keinen Pflicht-Phantom.
+  GROUP: 'group',
+  // Ein `entryLink` verweist ueber `targetId` auf eine importierte Definition
+  // (Eintrag/Gruppe) — katalog-intern **oder** kataloguebergreifend (ADR-0032). Er
+  // traegt eigene Grenzen/Modifikatoren, die der Resolver auf das aufgeloeste Ziel
+  // schichtet; als reiner Verweis synthetisiert er selbst nie einen Phantom.
+  ENTRY_LINK: 'entryLink',
 });
 
 /**
@@ -171,6 +181,19 @@ export const DiagnosticKind = Object.freeze({
   // ignoriert (analog {@link DANGLING_MODIFIER_TARGET}). Ein gueltiger Link erzeugt
   // keine Diagnose.
   DANGLING_INFO_LINK: 'danglingInfoLink',
+  // Der `targetId` eines `entryLink` verweist — auch nach der globalen
+  // Zusammenfuehrung aller Quellen (ADR-0032) — auf keine indizierte Definition.
+  // Sichtbar gemacht statt still ignoriert (analog {@link DANGLING_INFO_LINK}); ein
+  // aufgeloester Link erzeugt keine Diagnose.
+  DANGLING_ENTRY_LINK: 'danglingEntryLink',
+  // Ein mitgegebener Katalog nennt eine `gameSystemId`, die nicht zur mitgegebenen
+  // Spielsystemdatei (`.gst`) passt — Kohaerenz-Diagnose statt stiller
+  // Teil-Auswertung (ADR-0032, Entscheidung 3).
+  GAMESYSTEM_MISMATCH: 'gameSystemMismatch',
+  // Ein Katalog deklariert per `catalogueLink` eine Abhaengigkeit auf einen
+  // Katalog, der nicht unter den mitgegebenen Quellen ist — Kohaerenz-Diagnose
+  // statt stiller Teil-Auswertung (ADR-0032, Entscheidung 3).
+  MISSING_CATALOGUE_DEPENDENCY: 'missingCatalogueDependency',
 });
 
 const SCOPE_KEY_SEPARATOR = '::';

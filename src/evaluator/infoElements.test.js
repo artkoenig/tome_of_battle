@@ -13,7 +13,16 @@ import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { parseCatalogue } from './catalogReader.js';
 import { resolveCatalogue } from './resolver.js';
-import { evaluate } from './evaluator.js';
+import { evaluate as evaluateDataset } from './evaluator.js';
+
+/**
+ * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
+ * ADR-0032 einen Datensatz `{ gameSystem, catalogues }`; ein Einzelkatalog ohne
+ * Spielsystem ist `{ catalogues: [xml] }`.
+ */
+function evaluate(catalogXml, roster) {
+  return evaluateDataset({ catalogues: [catalogXml] }, roster);
+}
 import { InfoElementKind, InfoLinkKind, DiagnosticKind } from './model.js';
 
 const dom = new JSDOM();
