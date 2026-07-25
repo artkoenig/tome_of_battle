@@ -87,6 +87,15 @@ export class EffectiveState {
     return this.#limitValues.get(node)?.get(limitId) ?? 0;
   }
 
+  /**
+   * Die realen Knoten, fuer die dieser Zustand Werte fuehrt. Zwei Zustaende
+   * desselben Baums teilen dieselben Knoten-Objekte; darueber vergleicht die
+   * Fixpunktschleife die zaehlrelevanten Teile ({@link countRelevantEqual}).
+   */
+  nodes() {
+    return this.#costs.keys();
+  }
+
   /** Setzt den effektiven Kostenwert einer Kostenart. */
   writeCost(node, costTypeId, value) {
     this.#ensure(this.#costs, node, () => new Map()).set(costTypeId, value);
@@ -126,6 +135,53 @@ export class EffectiveState {
     }
     return value;
   }
+}
+
+/**
+ * True, wenn zwei Kostenabbildungen (Kostenart-ID → Wert je Selektion) gleich
+ * sind — reihenfolgeunabhaengig ueber Schluessel und Werte verglichen.
+ */
+function costsEqual(entriesA, entriesB) {
+  if (entriesA.length !== entriesB.length) return false;
+  const valueById = new Map(entriesB);
+  for (const [costTypeId, value] of entriesA) {
+    if (valueById.get(costTypeId) !== value) return false;
+  }
+  return true;
+}
+
+/** True, wenn zwei Kategorie-ID-Listen dieselbe Menge sind (reihenfolgeunabhaengig). */
+function categoriesEqual(idsA, idsB) {
+  if (idsA.length !== idsB.length) return false;
+  const setB = new Set(idsB);
+  for (const id of idsA) {
+    if (!setB.has(id)) return false;
+  }
+  return true;
+}
+
+/**
+ * Vergleicht die **zaehlrelevanten** Teile zweier Effektiv-Zustaende: die
+ * effektiven Kosten und die effektiven Kategorien je Knoten
+ * (`docs/evaluator-architecture.md` §4.2, `countRelevantPartsEqual`). Genau
+ * diese beiden aendern, was gezaehlt wird; Grenzwerte, Sichtbarkeit und Hinweise
+ * beeinflussen die Zaehlung nicht und bleiben deshalb aussen vor. Ist das Ergebnis
+ * `true`, hat die Fixpunktschleife ihren Fixpunkt erreicht — eine weitere Runde
+ * wuerde nichts Zaehlrelevantes mehr aendern.
+ *
+ * Beide Zustaende stammen aus demselben Baum und teilen dieselben Knoten-Objekte;
+ * es genuegt, ueber die Knoten des einen zu iterieren.
+ *
+ * @param {EffectiveState} previous
+ * @param {EffectiveState} next
+ * @returns {boolean}
+ */
+export function countRelevantEqual(previous, next) {
+  for (const node of previous.nodes()) {
+    if (!costsEqual(previous.costEntriesOf(node), next.costEntriesOf(node))) return false;
+    if (!categoriesEqual(previous.categoryIdsOf(node), next.categoryIdsOf(node))) return false;
+  }
+  return true;
 }
 
 /**

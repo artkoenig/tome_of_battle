@@ -149,6 +149,7 @@ export const DiagnosticKind = Object.freeze({
   UNSUPPORTED_CONDITION: 'unsupportedCondition',
   UNSUPPORTED_REPEAT: 'unsupportedRepeat',
   UNSUPPORTED_COMPARATOR: 'unsupportedComparator',
+  NO_CONVERGENCE: 'noConvergence',
 });
 
 const SCOPE_KEY_SEPARATOR = '::';

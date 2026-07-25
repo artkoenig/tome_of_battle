@@ -1,0 +1,205 @@
+import { JSDOM } from 'jsdom';
+import { describe, it, expect } from 'vitest';
+import { evaluate } from './evaluator.js';
+import { DiagnosticKind } from './model.js';
+
+// JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
+// Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
+const dom = new JSDOM();
+globalThis.DOMParser = dom.window.DOMParser;
+
+// ── Eigene, minimale Fixtures (ADR-0030: eigenes Datenmodell, eigene Fixtures) ──
+// Diese Scheibe (Issue 05) legt die Fixpunktschleife um die Modifikator-Anwendung:
+// Iteration bis zur Konvergenz, harte Rundenobergrenze, Nichtkonvergenz-Diagnose.
+
+const WARRIOR_ID = 'entry-warrior';
+const ALPHA_ID = 'entry-alpha';
+const BETA_ID = 'entry-beta';
+const ELITE_CAT_ID = 'cat-elite';
+const CAT_A_ID = 'cat-a';
+const CAT_B_ID = 'cat-b';
+const POINTS_ID = 'cost-points';
+
+/** Baut ein Roster aus den gegebenen Auswahl-Instanzen. */
+function roster(forces) {
+  return { forces };
+}
+
+/** Eine Auswahl-Instanz mit Anzahl und ohne Kinder. */
+function selection(defId, count) {
+  return { defId, count, children: [] };
+}
+
+/** True, wenn der Bericht eine Nichtkonvergenz-Diagnose traegt. */
+function hasNoConvergence(report) {
+  return report.diagnostics.some(d => d.kind === DiagnosticKind.NO_CONVERGENCE);
+}
+
+describe('Konvergenz: Zaehlen haengt von effektiven Werten ab und umgekehrt', () => {
+  const MAX_POINTS_ID = 'max-points';
+  const BASE_POINTS = 10;
+  const CATEGORY_BONUS = 5;
+  const MAX_POINTS = 12;
+  // Rueckkopplung ueber mehrere Runden:
+  //   M1 (unbedingt): nimmt den Warrior in die Elite-Kategorie auf.
+  //   M2: +5 Punkte, sobald armeeweit mindestens eine Elite-Selektion gezaehlt wird.
+  // Runde 1 aendert nur die Kategorie (Elite noch nicht gezaehlt), Runde 2 sieht die
+  // Elite-Zaehlung und hebt die Kosten, Runde 3 bestaetigt den Stand → Fixpunkt.
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-converge" name="Converging Catalogue">
+      <categoryEntries>
+        <categoryEntry id="${ELITE_CAT_ID}" name="Elite"/>
+      </categoryEntries>
+      <selectionEntries>
+        <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
+          <costs>
+            <cost name="Points" typeId="${POINTS_ID}" value="${BASE_POINTS}"/>
+          </costs>
+          <constraints>
+            <constraint id="${MAX_POINTS_ID}" type="max" value="${MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
+          </constraints>
+          <modifiers>
+            <modifier operation="set" targetKind="category" targetId="${ELITE_CAT_ID}" value="true"/>
+            <modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${CATEGORY_BONUS}">
+              <conditions>
+                <condition op="atLeast" field="selections" scope="roster" childId="${ELITE_CAT_ID}" value="1"/>
+              </conditions>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  it('konvergiert zu stabilen effektiven Werten; der Bericht spiegelt den konvergierten Stand', () => {
+    const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 1)]));
+
+    // Konvergierter Stand: Elite-Zaehlung greift → 10 + 5 = 15 > 12 → Verletzung.
+    expect(hasNoConvergence(report)).toBe(false);
+    expect(report.violations).toHaveLength(1);
+    expect(report.violations[0]).toMatchObject({
+      actual: BASE_POINTS + CATEGORY_BONUS,
+      bound: MAX_POINTS,
+    });
+  });
+});
+
+describe('Jede Runde wendet Modifikatoren auf eine frische Basiskopie an', () => {
+  const MAX_POINTS_ID = 'max-points';
+  const BASE_POINTS = 10;
+  const ADD_POINTS = 5;
+  const MAX_POINTS = 14;
+  // Ein **unbedingter** ADD-Modifikator. Startete eine Runde nicht von der Basis,
+  // sondern vom Vorrunden-Stand, wuerde er ueber die Runden kumulieren (15, 20,
+  // 25, …) und nie konvergieren. Frische Basiskopie ⇒ jede Runde 10 + 5 = 15.
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-fresh-base" name="Fresh Base Catalogue">
+      <selectionEntries>
+        <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
+          <costs>
+            <cost name="Points" typeId="${POINTS_ID}" value="${BASE_POINTS}"/>
+          </costs>
+          <constraints>
+            <constraint id="${MAX_POINTS_ID}" type="max" value="${MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
+          </constraints>
+          <modifiers>
+            <modifier operation="add" targetKind="cost" targetId="${POINTS_ID}" value="${ADD_POINTS}"/>
+          </modifiers>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  it('kumuliert nicht ueber Runden: der Modifikator wirkt genau einmal (15, nicht 20)', () => {
+    const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 1)]));
+
+    // Konvergiert (kein Aufsummieren) und der effektive Wert ist die **einmalige**
+    // Anwendung 10 + 5 = 15. Kumulierung wuerde stattdessen nie konvergieren.
+    expect(hasNoConvergence(report)).toBe(false);
+    expect(report.violations).toHaveLength(1);
+    expect(report.violations[0].actual).toBe(BASE_POINTS + ADD_POINTS);
+  });
+});
+
+describe('Nichtkonvergenz: oszillierende Kataloge werden sichtbar statt still falsch', () => {
+  // (a) Zwei-Knoten-Zyklus „Modifikator A aktiviert B, B deaktiviert A":
+  //   Beta nimmt sich in cat-b auf, sobald cat-a armeeweit gezaehlt wird;
+  //   Alpha verlaesst cat-a, sobald cat-b armeeweit gezaehlt wird. Der Stand
+  //   oszilliert und erreicht die Rundenobergrenze nie stabil.
+  const OSCILLATING_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-oscillate" name="Oscillating Catalogue">
+      <categoryEntries>
+        <categoryEntry id="${CAT_A_ID}" name="A"/>
+        <categoryEntry id="${CAT_B_ID}" name="B"/>
+      </categoryEntries>
+      <selectionEntries>
+        <selectionEntry id="${ALPHA_ID}" name="Alpha" type="unit">
+          <categoryLinks>
+            <categoryLink targetId="${CAT_A_ID}"/>
+          </categoryLinks>
+          <modifiers>
+            <modifier operation="set" targetKind="category" targetId="${CAT_A_ID}" value="false">
+              <conditions>
+                <condition op="atLeast" field="selections" scope="roster" childId="${CAT_B_ID}" value="1"/>
+              </conditions>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+        <selectionEntry id="${BETA_ID}" name="Beta" type="unit">
+          <modifiers>
+            <modifier operation="set" targetKind="category" targetId="${CAT_B_ID}" value="true">
+              <conditions>
+                <condition op="atLeast" field="selections" scope="roster" childId="${CAT_A_ID}" value="1"/>
+              </conditions>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  it('erzeugt eine Nichtkonvergenz-Diagnose und liefert dennoch einen Bericht (kein Absturz/Haenger)', () => {
+    const report = evaluate(OSCILLATING_XML, roster([selection(ALPHA_ID, 1), selection(BETA_ID, 1)]));
+
+    expect(hasNoConvergence(report)).toBe(true);
+    expect(Array.isArray(report.violations)).toBe(true); // Bericht kommt zustande.
+  });
+
+  // (b) Ein-Knoten-Kosten-Oszillator, dessen letzter Stand **beobachtbar** ist:
+  //   Kosten werden auf 20 gesetzt, solange die gezaehlte Kostensumme <= 10 ist;
+  //   steigt sie auf 20, faellt der Modifikator und die Kosten fallen auf 10
+  //   zurueck — und so fort. Der Bericht muss die Ergebnisse der letzten Runde
+  //   tragen, nicht scheitern.
+  const OSC_BASE_POINTS = 10;
+  const OSC_SET_POINTS = 20;
+  const OSC_TRIGGER_AT_MOST = 10;
+  const OSC_MAX_POINTS = 15;
+  const OSC_MAX_ID = 'max-points';
+  const COST_OSCILLATOR_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-cost-oscillate" name="Cost Oscillator Catalogue">
+      <selectionEntries>
+        <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
+          <costs>
+            <cost name="Points" typeId="${POINTS_ID}" value="${OSC_BASE_POINTS}"/>
+          </costs>
+          <constraints>
+            <constraint id="${OSC_MAX_ID}" type="max" value="${OSC_MAX_POINTS}" field="${POINTS_ID}" scope="roster"/>
+          </constraints>
+          <modifiers>
+            <modifier operation="set" targetKind="cost" targetId="${POINTS_ID}" value="${OSC_SET_POINTS}">
+              <conditions>
+                <condition op="atMost" field="${POINTS_ID}" scope="roster" childId="${WARRIOR_ID}" value="${OSC_TRIGGER_AT_MOST}"/>
+              </conditions>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  it('liefert die Ergebnisse der letzten Runde neben der Nichtkonvergenz-Diagnose', () => {
+    const report = evaluate(COST_OSCILLATOR_XML, roster([selection(WARRIOR_ID, 1)]));
+
+    // Nicht konvergiert, aber der Bericht traegt den Constraint-Stand der letzten
+    // Runde (Kosten auf 20 gesetzt) → 20 > 15 → Verletzung mit Ist-Wert 20.
+    expect(hasNoConvergence(report)).toBe(true);
+    expect(report.violations).toHaveLength(1);
+    expect(report.violations[0]).toMatchObject({ actual: OSC_SET_POINTS, bound: OSC_MAX_POINTS });
+  });
+});

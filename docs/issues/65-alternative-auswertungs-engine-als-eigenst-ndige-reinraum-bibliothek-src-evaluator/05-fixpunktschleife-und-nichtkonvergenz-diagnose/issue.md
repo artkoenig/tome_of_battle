@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: [04]
 
@@ -23,3 +23,4 @@ eine **Nichtkonvergenz-Diagnose** — kein stilles Falschrechnen (Annahmen A2/A3
       Runde, statt zu scheitern oder zu hängen.
 
 ## Comments
+- Fixpunktschleife (src/evaluator/fixpoint.js): iteriert buildIndex -> applyAllModifiers (frische Basiskopie je Runde) bis countRelevantEqual (effektive Kosten+Kategorien), harte Obergrenze MAX_FIXPOINT_ROUNDS=5, NO_CONVERGENCE-Diagnose bei Nichtkonvergenz mit Beibehaltung des letzten Rundenstands. evaluator.js baut danach den finalen Index aus dem konvergierten Stand. 4 neue Tests, volle Suite gruen.
