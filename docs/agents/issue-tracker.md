@@ -50,6 +50,17 @@ child-issue does not hold it up. Likewise a `superseded` blocker releases the
 issues it blocks — otherwise an issue that will never be implemented would block
 its neighbours forever.
 
+## Planning a main-issue (optional, before implementing)
+Because the child-issues are implemented one at a time and in isolation, a
+main-issue with several of them is usually planned once up front: a module-level
+plan is written to a **temporary** `docs/issues/<main-id>/design.md` — a module
+map plus the shared contracts (interfaces, types, data shapes) the slices
+exchange — so the slices are built against agreed boundaries instead of each
+inventing their own. Each slice reads it while implementing. `design.md` is a
+working artifact: it is deleted before the main-issue is committed, so it never
+enters the PR, and the `issue.md` files stay solution-free. A single-slice
+main-issue has no cross-slice boundaries to agree, so it skips this.
+
 ## Implementing a main-issue
 Every child-issue is implemented on the main-issue's one branch `issue/<slug>`;
 the pull request is opened only once every child-issue is closed (`resolved`, or

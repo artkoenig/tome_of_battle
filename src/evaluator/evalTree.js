@@ -1,0 +1,242 @@
+/**
+ * Join-Schicht (`docs/evaluator-architecture.md` §3.2/§4.3).
+ *
+ * Verheiratet Instanz- und Definitionsbaum: jeder Instanzknoten erhaelt seine
+ * aufgeloeste Definition. Ab Issue 03 traegt jeder Knoten die Struktur, die das
+ * Query-Primitiv fuer die Bezugsrahmen-Aufloesung braucht: eine stabile
+ * Rahmen-Identitaet (`frameId`), den Elternzeiger (`parent`), das umschliessende
+ * Kontingent (`forceRoot`) und die Markierung, ob der Knoten selbst ein
+ * Kontingent ist (`isForce`).
+ *
+ * Ab Issue 06 synthetisiert die Schicht zusaetzlich **Phantomknoten** (§3.2):
+ * Anker fuer Pflichtdefinitionen (`min > 0`), die im jeweiligen Bezugsrahmen keine
+ * Instanz haben. Ein Phantomknoten zaehlt nie mit (die Index-Schicht iteriert nur
+ * reale Knoten, §4.4), traegt aber die Definition und ihre Grenzen, sodass die
+ * Constraint-Schicht eine MIN-Grenze *gerade beim Fehlen* der Auswahl auswerten
+ * kann (§4.7). Die Traversierung trennt deshalb reale ({@link realNodes}) von
+ * allen Knoten ({@link allNodes}, Phantome eingeschlossen).
+ */
+
+import { DefinitionKind, DiagnosticKind, LimitKind, ScopeKeyword, diagnostic } from './model.js';
+
+/** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
+const NODE_FRAME_PREFIX = 'node:';
+
+/** Trennzeichen der Segmente eines Knoten-Pfads (siehe {@link pathOf}). */
+const PATH_SEPARATOR = '/';
+
+/**
+ * Die Rahmen-Identitaet eines Knotens als String-Schluessel: die Wurzel ist der
+ * ROSTER-Rahmen, jeder andere Knoten seine eigene, instanz-eindeutige Identitaet
+ * (zwei Instanzen derselben Definition sind **verschiedene** Rahmen).
+ */
+export function frameKeyOf(node) {
+  return node.isRoot ? ScopeKeyword.ROSTER : `${NODE_FRAME_PREFIX}${node.frameId}`;
+}
+
+/** Vergibt fortlaufende, instanz-eindeutige Rahmen-Identitaeten waehrend des Aufbaus. */
+function createFrameIdSource() {
+  let next = 0;
+  return () => next++;
+}
+
+/** Haengt einen Instanzknoten samt Kindern (Auswahlen wie geschachtelte Kontingente) an. */
+function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
+  const def = resolved.lookup(instance.defId);
+  if (def === null) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_DEFINITION, { defId: instance.defId }));
+    return;
+  }
+  const isForce = def.kind === DefinitionKind.FORCE;
+  const node = {
+    def,
+    instance,
+    parent,
+    children: [],
+    isPhantom: false,
+    isRoot: false,
+    isForce,
+    frameId: nextFrameId(),
+    // Das umschliessende Kontingent: der Knoten selbst, wenn er ein Kontingent
+    // ist, sonst das seines Elternknotens. Steht ueber keinem Kontingent (z. B.
+    // ein Wurzel-Eintrag ohne Force-Huelle), bleibt es null.
+    forceRoot: null,
+  };
+  node.forceRoot = isForce ? node : parent.forceRoot;
+  parent.children.push(node);
+  for (const childInstance of instance.children ?? []) {
+    attachInstance(node, childInstance, resolved, diagnostics, nextFrameId);
+  }
+}
+
+/**
+ * Haengt einen Phantomknoten als Auswertungsanker fuer eine Definition an, die im
+ * Rahmen `parent` eine Grenze traegt, aber keine Instanz hat. Er ist strukturell
+ * ein regulaerer Knoten (mit eigener Rahmen-Identitaet und `forceRoot`), aber ohne
+ * Instanz (`instance = null`) und als Phantom markiert — die Index-Schicht laesst
+ * ihn deshalb aus der Zaehlung aus, die Constraint-Schicht schliesst ihn ein.
+ */
+function attachPhantom(parent, def, nextFrameId) {
+  const isForce = def.kind === DefinitionKind.FORCE;
+  const node = {
+    def,
+    instance: null,
+    parent,
+    children: [],
+    isPhantom: true,
+    isRoot: false,
+    isForce,
+    frameId: nextFrameId(),
+    forceRoot: null,
+  };
+  node.forceRoot = isForce ? node : parent.forceRoot;
+  parent.children.push(node);
+  return node;
+}
+
+/** True, wenn die Definition eine MIN-Grenze mit genau diesem Bezugsrahmen traegt. */
+function hasMinLimitInFrame(def, scope) {
+  return (def.limits ?? []).some(limit => limit.kind === LimitKind.MIN && limit.scope === scope);
+}
+
+/** Summe der Instanzanzahlen realer Knoten mit dieser Definitions-ID im Teilbaum. */
+function countInstances(fromNode, defId) {
+  let total = 0;
+  for (const node of nodeAndDescendants(fromNode)) {
+    if (!node.isPhantom && !node.isRoot && node.def?.id === defId) {
+      total += node.instance?.count ?? 0;
+    }
+  }
+  return total;
+}
+
+/**
+ * Synthetisiert Phantomknoten fuer Pflichtdefinitionen (`min > 0`), die im
+ * jeweiligen Bezugsrahmen fehlen (§3.2/§4.3):
+ *
+ * - **armeeweit** (MIN-Grenze mit ROSTER-Rahmen): je ein Anker an der Wurzel,
+ *   wenn die Definition im gesamten Roster keine Instanz hat;
+ * - **je Kontingent** (MIN-Grenze mit FORCE-Rahmen): je ein Anker im betroffenen
+ *   Kontingent, wenn die Definition dort keine Instanz hat.
+ *
+ * Ein *vorhandener* Eintrag bekommt keinen Phantomknoten — seine Grenze wird schon
+ * am realen Knoten ausgewertet; nur die **Absenz** braucht einen eigenen Anker.
+ */
+function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
+  for (const def of definitions) {
+    if (hasMinLimitInFrame(def, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0) {
+      attachPhantom(root, def, nextFrameId);
+    }
+  }
+  const forceNodeList = [...forceNodes(root)];
+  for (const forceNode of forceNodeList) {
+    for (const def of definitions) {
+      if (hasMinLimitInFrame(def, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0) {
+        attachPhantom(forceNode, def, nextFrameId);
+      }
+    }
+  }
+}
+
+/**
+ * Baut den Evaluationsbaum aus aufgeloesten Definitionen und Roster-Instanzen.
+ * Die Wurzel ist ein synthetischer Ankerknoten ohne eigene Definition; sie
+ * traegt den ROSTER-Rahmen und liegt ueber keinem Kontingent. Nachdem alle realen
+ * Knoten haengen, werden Phantomknoten fuer fehlende Pflichtdefinitionen
+ * synthetisiert (siehe {@link synthesizeMandatoryPhantoms}).
+ *
+ * @param {{ lookup: (id: string) => object|null, definitions?: object[] }} resolved
+ * @param {{ forces?: object[] }} roster
+ * @returns {{ root: object, diagnostics: object[] }}
+ */
+export function buildEvalTree(resolved, roster) {
+  const diagnostics = [];
+  const nextFrameId = createFrameIdSource();
+  const root = {
+    def: null,
+    instance: null,
+    parent: null,
+    children: [],
+    isPhantom: false,
+    isRoot: true,
+    isForce: false,
+    frameId: nextFrameId(),
+    forceRoot: null,
+  };
+  for (const forceInstance of roster.forces ?? []) {
+    attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId);
+  }
+  synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
+  return { root, diagnostics };
+}
+
+/** Rekursiver Generator ueber einen Knoten und alle seine Nachfahren. */
+function* nodeAndDescendants(node) {
+  yield node;
+  for (const child of node.children) {
+    yield* nodeAndDescendants(child);
+  }
+}
+
+/**
+ * Alle Knoten des Baums (die synthetische Wurzel ausgenommen), **Phantome
+ * eingeschlossen**. Die Modifikator- und die Constraint-Schicht iterieren hierueber:
+ * auch die Grenzen eines Phantomknotens sind auszuwerten und modifizierbar
+ * (§4.6/§4.7).
+ */
+export function* allNodes(root) {
+  for (const child of root.children) {
+    yield* nodeAndDescendants(child);
+  }
+}
+
+/**
+ * Reale Knoten des Baums (die synthetische Wurzel **und** alle Phantomknoten
+ * ausgenommen). Kontingent-Knoten sind reale Knoten: sie leiten Beitraege ihrer
+ * Nachfahren weiter, tragen aber selbst keine Selektion bei (siehe Index-Schicht).
+ * Phantomknoten zaehlen nie mit (§4.4) und bleiben deshalb hier aussen vor.
+ */
+export function* realNodes(root) {
+  for (const node of allNodes(root)) {
+    if (!node.isPhantom) yield node;
+  }
+}
+
+/** True, wenn die Definition irgendeine MIN-Grenze traegt. */
+function hasAnyMinLimit(def) {
+  return (def.limits ?? []).some(limit => limit.kind === LimitKind.MIN);
+}
+
+/**
+ * Die **auswaehlbaren Slots** des Baums (§4.8): alle realen Knoten plus die
+ * Phantom-Pflichtslots — Phantomknoten, die eine MIN-Grenze verankern. Ein
+ * Phantom ohne MIN-Grenze waere kein Auswahlpunkt und bleibt aussen vor. Der
+ * Bericht baut je Slot einen Faehigkeitsdatensatz.
+ */
+export function* selectableSlotsOf(root) {
+  for (const node of allNodes(root)) {
+    if (!node.isPhantom || hasAnyMinLimit(node.def)) yield node;
+  }
+}
+
+/**
+ * Der stabile Pfad eines Knotens als String-Schluessel: die Folge der
+ * Kind-Indizes von der Wurzel bis zum Knoten (z. B. `"0/2/1"`). Zwei Instanzen
+ * derselben Definition erhalten verschiedene Pfade, weil sie an verschiedenen
+ * Positionen haengen — der Pfad ist die stabile Identitaet eines Auswahlpunkts
+ * im Bericht, ueber die die UI-Projektions-Lookups nachschlagen.
+ */
+export function pathOf(node) {
+  const segments = [];
+  for (let current = node; current.parent !== null; current = current.parent) {
+    segments.unshift(current.parent.children.indexOf(current));
+  }
+  return segments.join(PATH_SEPARATOR);
+}
+
+/** Die realen Kontingent-Knoten des Baums (Anker fuer je-Kontingent-Phantome). */
+function* forceNodes(root) {
+  for (const node of realNodes(root)) {
+    if (node.isForce) yield node;
+  }
+}

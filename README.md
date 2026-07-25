@@ -59,7 +59,7 @@ npm run build      # Creates the production build (also generates a fresh servic
 npm run preview    # Local preview of the production build
 npm run lint       # Code analysis using oxlint
 npm run knip       # Cross-file dead-code / unused-export / unused-dependency analysis (warn-only)
-npm run depcruise  # Dependency-graph rules: layering, solver facade, cycles, orphans (warn-only)
+npm run depcruise  # Dependency-graph rules: layering, solver facade, cycles, orphans (warn-only); the evaluator⇄solver separation (ADR 0030) is blocking (error)
 npm run analyze    # Runs knip and dependency-cruiser together
 npm run typecheck  # Type-checks the JSDoc annotations of the production code (tsc --noEmit, checkJs)
 npm test           # Runs unit & component tests (Vitest) and the Puppeteer E2E smoke test
@@ -107,6 +107,27 @@ The rules engine handles all calculations and dependencies, working completely i
 - `categoryLimits.js` — Single source of a category's effective display min/max (incl. the system-bound inheritance quirk).
 - `selectionBehavior.js` — Derives the UI behavior model (radio/checkbox, mandatory, remaining count) from the solver so the UI evaluates no constraint itself.
 - `validator.js` — Serves as a central facade to access all solver functions.
+
+### The Alternative Evaluator (`src/evaluator/`)
+
+A second, spatially separated rules engine, added as a clean-room realization of
+the reference architecture in [`docs/evaluator-architecture.md`](docs/evaluator-architecture.md)
+([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md)). It coexists
+with the Solver but is **hard-isolated** from it — neither engine may import the
+other (enforced as blocking `error` rules in `.dependency-cruiser.cjs`/`.oxlintrc.json`),
+and it is reached only through its own facade `evaluate(catalogXml, roster) → report`.
+It is a pure function (own parser, own data model, own report with
+violations/capabilities/diagnostics) and realizes the full reference design
+**including** the fixpoint loop and phantom nodes that ADR 0029 deliberately left
+out. It is currently a **library only — not wired into the app** (tree-shaken from
+the production bundle), used as a proving ground for the design.
+
+Known limitations (documented, not defects): it consumes the engine's **own** XML
+vocabulary (`op`/`operation`/`targetKind`) for conditions and modifiers rather than
+raw BattleScribe attribute names, so reading a real `.cat` file exercises only
+constraints (real conditions/modifiers surface as diagnostics); and it reads a
+**single** catalogue — cross-catalogue imports/link-chains and incrementalization
+(architecture §4.9) are deferred future work.
 
 ### User Interface (`src/`)
 
