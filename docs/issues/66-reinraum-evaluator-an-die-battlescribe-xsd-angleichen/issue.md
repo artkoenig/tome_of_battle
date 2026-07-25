@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -96,3 +96,4 @@ Elementtypen und geschlossenen Enum-Mengen des Formats ab.
 - [ ]
 
 ## Comments
+- Alle fuenf Slices umgesetzt und verifiziert. Reinraum-Evaluator liest reale BattleScribe-Kataloge XSD-konform: kanonische Attribute type/field/value, Enums aus der vendored SSOT (kein Enum-Drift), globale id->TargetDescriptor-Symboltabelle mit Disjunktheits-Guard, Handler-Registry + Dokumentreihenfolge, Bedingungs-/Modifikatorgruppen (inkl. beliebig verschachtelter modifierGroups), Info-Elemente strukturell, verschaerfter Real-Katalog-Smoke-Test, plus E2E-Paritaetstests gegen die alte Engine. Zwei akzeptierte Reinraum-Grenzen (B1 Kategorie-MAX ohne MIN, B2 forceEntry-Punktelimit) dokumentiert. ADR-0031 festgehalten. Zwei vollstaendige Fuenf-Achsen-Reviews durch; statische Gates gruen; Gesamtsuite gruen (vitest + Puppeteer-E2E). Kein evaluator->solver-Import (ADR-0030). Type refactor -> kein Version-Bump.
