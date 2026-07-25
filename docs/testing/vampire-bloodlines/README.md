@@ -9,6 +9,12 @@ Roster ist an einer **echten Beispiel-Datei** (`test.rosz`) verifiziert.
 - Armee: `Vampire Counts (6th definitive edition).cat`
   (`4d73-5ab0-9020-403c`, rev 1) — Force **„Standard"** `e989-15b8-7eb6-9668`
 
+> **Zwei Kataloge, zwei Modelle.** Dieses Set gilt für den **Definitive**-Katalog
+> (`4d73…`), den die neue Engine als Fixtures nutzt. Der **ergofang**-Katalog
+> (`ea4b…`, alter Solver) modelliert Bloodlines völlig anders (pro Charakter statt
+> armeeweit, Ausrüstung statt Profil) — dafür gibt es ein eigenes Parallel-Set unter
+> [`../vampire-bloodlines-ergofang/`](../vampire-bloodlines-ergofang/README.md).
+
 ## Wie eine Bloodline im Roster gewählt wird (wichtig)
 
 Anders als bei verlinkten Aufwertungen (Konvention `linkId::targetId`) werden
