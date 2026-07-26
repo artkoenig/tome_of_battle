@@ -626,11 +626,31 @@ function readEntryLinks(element, diagnostics) {
  * werden auch per Verweis importierte und gebuendelte Definitionen erfasst — die
  * Voraussetzung fuer die kataloguebergreifende Auflösung (ADR-0032).
  */
+/** Liest einen <categoryLink>. */
+function readCategoryLink(linkEl, diagnostics) {
+  return {
+    id: linkEl.getAttribute(Attr.ID),
+    name: linkEl.getAttribute(Attr.NAME),
+    kind: DefinitionKind.CATEGORY_LINK,
+    targetId: linkEl.getAttribute(Attr.TARGET_ID),
+    limits: readLimits(linkEl, diagnostics),
+    modifiers: readModifiers(linkEl, diagnostics),
+    modifierGroups: readModifierGroups(linkEl, diagnostics),
+  };
+}
+
+/** Liest alle direkten <categoryLink>-Kinder. */
+function readCategoryLinks(element, diagnostics) {
+  return wrappedChildren(element, Tag.CATEGORY_LINKS, Tag.CATEGORY_LINK)
+    .map(linkEl => readCategoryLink(linkEl, diagnostics));
+}
+
 function readSelectionChildren(element, diagnostics) {
   return [
     ...readEntries(element, diagnostics),
     ...readGroups(element, diagnostics),
     ...readEntryLinks(element, diagnostics),
+    ...readCategoryLinks(element, diagnostics),
   ];
 }
 
@@ -676,7 +696,10 @@ function readForceEntry(forceEl, diagnostics) {
     modifiers: readModifiers(forceEl, diagnostics),
     modifierGroups: readModifierGroups(forceEl, diagnostics),
     infos: readInfos(forceEl),
-    children: readForceEntries(forceEl, diagnostics),
+    children: [
+      ...readForceEntries(forceEl, diagnostics),
+      ...readCategoryLinks(forceEl, diagnostics),
+    ],
   };
 }
 

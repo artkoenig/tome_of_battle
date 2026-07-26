@@ -155,7 +155,7 @@ function ownerDefinitionOf(node) {
  */
 function* selectionDefinitionsUnder(ownerDef) {
   for (const child of ownerDef.children ?? []) {
-    if (child.kind === DefinitionKind.ENTRY_LINK || child.kind === DefinitionKind.ENTRY) {
+    if (child.kind === DefinitionKind.ENTRY_LINK || child.kind === DefinitionKind.ENTRY || child.kind === DefinitionKind.CATEGORY_LINK) {
       yield child;
     } else if (child.kind === DefinitionKind.GROUP) {
       yield* selectionDefinitionsUnder(child);
@@ -170,11 +170,14 @@ function* selectionDefinitionsUnder(ownerDef) {
  */
 function synthesizeParentScopePhantoms(root, nextFrameId) {
   for (const owner of [...realNodes(root)]) {
-    if (owner.isForce) continue;
     const ownerDef = ownerDefinitionOf(owner);
     for (const childDef of selectionDefinitionsUnder(ownerDef)) {
       if (hasMinLimitInFrame(childDef, ScopeKeyword.PARENT) && countInstances(owner, childDef.id) === 0) {
-        attachPhantom(owner, childDef, nextFrameId);
+        console.log("Synthesizing parent phantom for", childDef.id, "under owner", owner.def.id, "isForce:", owner.isForce);
+        const alreadyHasPhantom = owner.children.some(c => c.isPhantom && c.def.id === childDef.id);
+        if (!alreadyHasPhantom) {
+          attachPhantom(owner, childDef, nextFrameId);
+        }
       }
     }
   }

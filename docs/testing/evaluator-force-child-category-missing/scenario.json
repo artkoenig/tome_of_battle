@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "evaluator-force-child-category-missing",
+  "description": "Prüft, ob eine `min > 0`-Bedingung (scope=parent) direkt unter einem forceEntry->categoryLink korrekt das Fehlen von Selektionen für diese Kategorie im Roster ahndet. Spezifisch: 'Army of the Lichemaster' erfordert min 1 'Lord'.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-missing-lord-illegal.ros",
+      "description": "Eine Army of the Lichemaster ohne Auswahlen. Die limitierende Bedingung (min 1, parent-scope) der Kategorie Lord schlägt fehl, da kein Modell dieser Kategorie enthalten ist.",
+      "expect": {
+        "firing": [
+          { "limitId": "760d-2352-9fac-0e46", "actual": 0, "bound": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-has-lord-legal.ros",
+      "description": "Eine Army of the Lichemaster mit genau einem Lord (Master Necromancer). Das Minimum von 1 ist erfüllt, die Bedingung feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": ["760d-2352-9fac-0e46"]
+      }
+    }
+  ]
+}
