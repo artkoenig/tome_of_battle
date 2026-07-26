@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-scope-missing-mandatory",
+  "description": "Eine fehlende Pflicht-Auswahl innerhalb eines Parents (scope='parent', type='min', field='selections') wird nicht erfasst, wenn die besitzende Selektion (das Modell) komplett in der Einheit fehlt. Dies testet die Grenze der Engine.",
+  "dataset": {
+    "gameSystem": "scripts/__fixtures__/showcase-empire/Warhammer Fantasy Battle 6th edition.gst",
+    "catalogues": [
+      "scripts/__fixtures__/showcase-empire/Empire.cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-missing-node.ros",
+      "description": "Roster mit der Einheit, aber 0 Modellen. Constraint sollte eigentlich feuern, wird aber absent erwartet.",
+      "expect": {
+        "firing": [
+          {
+            "limitId": "d96c-c95f-8224-7c87",
+            "actual": 0,
+            "bound": 10
+          }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-present-but-insufficient.ros",
+      "description": "Roster mit der Einheit und 5 Modellen. Constraint feuert, da der Knoten existiert.",
+      "expect": {
+        "firing": [
+          {
+            "limitId": "d96c-c95f-8224-7c87",
+            "actual": 5,
+            "bound": 10
+          }
+        ],
+        "absent": []
+      }
+    }
+  ]
+}

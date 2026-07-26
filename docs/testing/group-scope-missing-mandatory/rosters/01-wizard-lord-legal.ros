@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="group-01" name="Wizard Lord Legal" battleScribeVersion="2.03" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard" entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="5c3d-7f54-5a40-6940" catalogueRevision="11" catalogueName="Empire">
+      <selections>
+        <selection id="sel-wizard-lord" name="Wizard Lord" entryId="6c9d-1b2b-80ea-92cd" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-magic-level" name="Level 3" entryId="e237-8ffb-5cb1-601b" entryLinkId="" number="1" type="upgrade" collective="false" />
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="test-02" name="test-02" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battles (6th edition)" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="5c3d-7f54-5a40-6940" catalogueRevision="11" catalogueName="Empire">
+      <selections>
+        <selection id="s-unit-1" name="Halberdiers" entryId="569f-7be3-1aa2-004f" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="s-model-1" name="Halberdiers" entryId="744d-a00d-b16c-3713" entryLinkId="" number="5" type="model"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "group-scope-missing-mandatory",
+  "description": "Eine SelectionEntryGroup mit einer min-Constraint (Pflicht-Gruppe) erfordert zwingend Auswahlen von ihren Kindern. Wenn die besitzende Selektion im Roster ist, aber 0 Kinder aus der Gruppe gewählt werden, muss die Constraint der Gruppe feuern.",
+  "dataset": {
+    "gameSystem": "scripts/__fixtures__/showcase-empire/Warhammer Fantasy Battle 6th edition.gst",
+    "catalogues": [
+      "scripts/__fixtures__/showcase-empire/Empire.cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-wizard-lord-legal.ros",
+      "description": "Wizard Lord mit genau einer Auswahl (Level 3) aus der Pflicht-Gruppe Magic Level. Das Constraint (min 1) ist erfüllt und feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": ["02cd-cabf-7e25-2b09"]
+      }
+    },
+    {
+      "file": "rosters/02-wizard-lord-missing-level.ros",
+      "description": "Wizard Lord ohne Auswahlen aus der Pflicht-Gruppe Magic Level. Die parent-skopierte Pflicht min 1 feuert.",
+      "expect": {
+        "firing": [
+          { "limitId": "02cd-cabf-7e25-2b09", "actual": 0, "bound": 1 }
+        ],
+        "absent": []
+      }
+    }
+  ]
+}
