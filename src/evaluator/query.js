@@ -131,7 +131,7 @@ function resolveFrame(ctx, scope, targetId, flags) {
  */
 function resolveLimitValue(ctx, field, scope) {
   const { costTypeId } = field;
-  if (scope !== ScopeKeyword.ROSTER) {
+  if (scope !== ScopeKeyword.ROSTER && scope !== ScopeKeyword.FORCE) {
     ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_BUDGET_LIMIT, {
       costTypeId,
       reason: BudgetLimitUnresolvedReason.NON_ROSTER_SCOPE,

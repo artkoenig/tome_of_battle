@@ -4,7 +4,7 @@
  * dem `RosterBudget` — nicht die verplante Summe aus dem Zaehlindex. Ein
  * unaufloesbares Budget liefert nicht still `0`, sondern den
  * {@link UNRESOLVED_BUDGET}-Sentinel samt Diagnose; ein Scope ungleich `roster`
- * ebenso.
+ * oder `force` ebenso.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -77,12 +77,22 @@ describe('query LIMIT_VALUE: eingestellte Grenze aus dem Budget', () => {
     );
   });
 
-  it('meldet einen Scope ungleich roster als Diagnose statt stiller Umdeutung', () => {
-    // Die Kostenart ist budgetiert; allein der abweichende Scope macht das Feld unaufloesbar.
+  it('akzeptiert den Scope force (aus Kompatibilitaet) und liest die roster-weite Grenze', () => {
     const budget = createRosterBudget([{ costTypeId: POINTS, value: POINTS_LIMIT }]);
     const { ctx, diagnostics } = contextWithBudget(budget);
 
     const result = query(ctx, limitValueField(POINTS), ScopeKeyword.FORCE, null, { shared: true });
+
+    expect(result).toBe(POINTS_LIMIT);
+    expect(diagnostics).toHaveLength(0);
+  });
+
+  it('meldet einen Scope ungleich roster/force (z.B. parent) als Diagnose', () => {
+    // Die Kostenart ist budgetiert; allein der abweichende Scope macht das Feld unaufloesbar.
+    const budget = createRosterBudget([{ costTypeId: POINTS, value: POINTS_LIMIT }]);
+    const { ctx, diagnostics } = contextWithBudget(budget);
+
+    const result = query(ctx, limitValueField(POINTS), ScopeKeyword.PARENT, null, { shared: true });
 
     expect(result).toBe(UNRESOLVED_BUDGET);
     expect(diagnostics).toContainEqual(
