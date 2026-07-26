@@ -10,8 +10,10 @@
  * Prozentgrenzen, alle Bezugsrahmen und die Zaehl-Flags (Issue 03). Dazu
  * `forceEntries` (Kontingent-Definitionen, auch geschachtelt) und
  * `categoryEntries` (Kategorie-Definitionen), damit die Join-Schicht Kontingente
- * und Kategorien kennt. Kein ZIP-Entpacken, kein XSD-Gate, keine Link-Ketten/
- * Importe (Resolver-Ausbaustufen spaeter).
+ * und Kategorien kennt. Dazu die **Datensatz-Metadaten** der Katalogwurzel, die
+ * ohne Roster gebraucht werden (ADR-0034): die Kostenart-Deklarationen
+ * (`costTypes`) und das `library`-Kennzeichen. Kein ZIP-Entpacken, kein XSD-Gate,
+ * keine Link-Ketten/Importe (Resolver-Ausbaustufen spaeter).
  */
 
 import {
@@ -46,6 +48,9 @@ const Tag = Object.freeze({
   SHARED_SELECTION_ENTRY_GROUPS: 'sharedSelectionEntryGroups',
   FORCE_ENTRIES: 'forceEntries',
   FORCE_ENTRY: 'forceEntry',
+  // Die Kostenart-Deklarationen des Datensatzes (Wurzelelement, Catalogue.xsd:712).
+  COST_TYPES: 'costTypes',
+  COST_TYPE: 'costType',
   CATEGORY_ENTRIES: 'categoryEntries',
   CATEGORY_ENTRY: 'categoryEntry',
   CATEGORY_LINKS: 'categoryLinks',
@@ -98,6 +103,15 @@ const Attr = Object.freeze({
   REPEATS: 'repeats',
   ROUND_UP: 'roundUp',
   PERCENT_VALUE: 'percentValue',
+  // Wurzelattribut eines `.cat`: true kennzeichnet eine reine **Bibliothek**, die
+  // nur per `catalogueLink` bezogen und nicht eigenstaendig gespielt wird
+  // (Catalogue.xsd:762).
+  LIBRARY: 'library',
+  // Basisattribut jeder Definition und jeder Kostenart: der Katalogautor blendet
+  // sie aus (Catalogue.xsd:92, 111).
+  HIDDEN: 'hidden',
+  // Vorgabe-Kostengrenze einer Kostenart (Catalogue.xsd:89).
+  DEFAULT_COST_LIMIT: 'defaultCostLimit',
   SHARED: 'shared',
   INCLUDE_CHILD_SELECTIONS: 'includeChildSelections',
   INCLUDE_CHILD_FORCES: 'includeChildForces',
@@ -124,6 +138,20 @@ const FORCE_COUNT_FIELD_XML = 'forces';
 
 /** Vorgabe fuer ein fehlendes `repeats`: eine Anwendung je erreichtem Schritt. */
 const SINGLE_REPEAT = 1;
+
+/** XSD-Vorgabe des `hidden`-Attributs: sichtbar (Catalogue.xsd:92, 111). */
+const DEFAULT_HIDDEN = false;
+
+/** XSD-Vorgabe des `library`-Attributs: ein spielbarer Katalog (Catalogue.xsd:762). */
+const DEFAULT_LIBRARY = false;
+
+/**
+ * Der Katalogwert, mit dem eine Kostenart **keine** Vorgabe-Grenze deklariert
+ * (XSD-Vorgabe von `defaultCostLimit`, Catalogue.xsd:89). Er wird beim Lesen auf
+ * "keine Grenze" (`null`) abgebildet, damit kein Leser den Sentinel als Zahl
+ * weiterrechnet.
+ */
+const NO_DEFAULT_COST_LIMIT = -1;
 
 const BOOLEAN_TRUE_XML = 'true';
 const BOOLEAN_FALSE_XML = 'false';
@@ -707,6 +735,31 @@ function readCatalogueLinks(root) {
 }
 
 /**
+ * Liest eine `<costType>` (Kostenart-Deklaration des Datensatzes): ihre ID, ihren
+ * Klartext-Namen, ihre Vorgabe-Grenze und ob der Autor sie ausblendet. Eine
+ * Kostenart ist eine reine Datensatz-Angabe ohne Roster-Bezug — sie beschreibt,
+ * *welche* Kosten es gibt, nicht welche verplant sind.
+ *
+ * Die Vorgabe-Grenze ist `null`, wenn der Katalog keine deklariert (fehlendes,
+ * unlesbares oder auf {@link NO_DEFAULT_COST_LIMIT} gesetztes Attribut).
+ */
+function readCostType(costTypeEl) {
+  const declaredLimit = Number.parseFloat(costTypeEl.getAttribute(Attr.DEFAULT_COST_LIMIT));
+  const hasDefaultLimit = !Number.isNaN(declaredLimit) && declaredLimit !== NO_DEFAULT_COST_LIMIT;
+  return {
+    id: costTypeEl.getAttribute(Attr.ID),
+    name: costTypeEl.getAttribute(Attr.NAME),
+    defaultLimit: hasDefaultLimit ? declaredLimit : null,
+    isHidden: readBoolean(costTypeEl, Attr.HIDDEN, DEFAULT_HIDDEN),
+  };
+}
+
+/** Liest alle `<costType>`-Deklarationen der Katalogwurzel. */
+function readCostTypes(root) {
+  return wrappedChildren(root, Tag.COST_TYPES, Tag.COST_TYPE).map(readCostType);
+}
+
+/**
  * Liest einen `<forceEntry>` (Kontingent-Definition) samt eigener Grenzen und
  * geschachtelter Kontingente. Kontingente tragen keine Selektion bei; ihre
  * Kinder im Definitionsbaum sind ihre Unter-Kontingente.
@@ -716,6 +769,7 @@ function readForceEntry(forceEl, diagnostics) {
     id: forceEl.getAttribute(Attr.ID),
     name: forceEl.getAttribute(Attr.NAME),
     kind: DefinitionKind.FORCE,
+    isHidden: readBoolean(forceEl, Attr.HIDDEN, DEFAULT_HIDDEN),
     categoryIds: readCategoryIds(forceEl),
     limits: readLimits(forceEl, diagnostics),
     modifiers: readModifiers(forceEl, diagnostics),
@@ -760,10 +814,12 @@ function readCategoryEntries(element, diagnostics) {
  * Ein `.cat` **und** eine `.gst` teilen dieselben Element-Namen und werden von
  * dieser Funktion gleich gelesen; nur die Wurzel unterscheidet sich (`catalogue`
  * vs. `gameSystem`). `gameSystemId` traegt nur ein `.cat` — die `.gst` ist ihr
- * eigenes Spielsystem (Kohaerenzpruefung in der Fassade, ADR-0032).
+ * eigenes Spielsystem (Kohaerenzpruefung in der Fassade, ADR-0032). `library`
+ * traegt ebenfalls nur ein `.cat`; eine `.gst` ist nie eine Bibliothek und faellt
+ * damit auf die XSD-Vorgabe zurueck.
  *
  * @param {string} catalogXml Entpacktes `.cat`/`.gst`-XML.
- * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
+ * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, isLibrary: boolean, costTypes: object[], entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
  */
 export function parseCatalogue(catalogXml) {
   const diagnostics = [];
@@ -773,6 +829,8 @@ export function parseCatalogue(catalogXml) {
     id: root.getAttribute(Attr.ID),
     name: root.getAttribute(Attr.NAME),
     gameSystemId: root.getAttribute(Attr.GAME_SYSTEM_ID),
+    isLibrary: readBoolean(root, Attr.LIBRARY, DEFAULT_LIBRARY),
+    costTypes: readCostTypes(root),
     entries: readSelectionChildren(root, diagnostics),
     forces: readForceEntries(root, diagnostics),
     categories: readCategoryEntries(root, diagnostics),
