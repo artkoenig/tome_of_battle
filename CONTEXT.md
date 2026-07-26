@@ -57,6 +57,16 @@ _Avoid_: `op`/`operation`/`targetKind` — diese Namen existieren nicht in der B
 Verschachtelungs-Bausteine der Regelauswertung. Eine **Bedingungsgruppe** (XSD `ConditionGroup`) verknüpft mehrere Bedingungen und/oder weitere Bedingungsgruppen mit `and`/`or` zu einem einzigen Wahrheitswert. Eine **Modifikatorgruppe** (XSD `ModifierGroup`) bündelt mehrere Modifikatoren unter einer gemeinsamen Bedingung bzw. Bedingungsgruppe, sodass sie gemeinsam greifen oder gemeinsam entfallen.
 _Avoid_: eine Bedingungsgruppe mit einer einzelnen Bedingung gleichzusetzen — die Gruppe ist die `and`/`or`-Verknüpfung, nicht der einzelne Vergleich.
 
+### Auswertungsbericht
+
+**Slot**:
+Eine Stelle im Auswertungsbaum, an der eine Auswahl stehen kann — entweder belegt durch eine Instanz aus dem Roster oder als **Phantom** synthetisiert, damit eine Grenze auch *beim Fehlen* der Auswahl ausgewertet werden kann. Zwei Instanzen derselben Definition sind zwei Slots.
+_Avoid_: „Slot" mit „Definition" gleichzusetzen — die Definition steht im Katalog, der Slot in der Auswertung einer konkreten Liste.
+
+**Fähigkeitsdatensatz** (SlotCapability):
+Was der Bericht je Slot aussagt: effektives Mindest- und Höchstmaß, aktueller Stand, verbleibender Spielraum, ob eine Pflicht unerfüllt ist, ob der Slot gesperrt oder versteckt ist, sowie die bedingten Hinweise an ihm. Er ist eine *Sicht auf denselben, genau einmal ausgewerteten Stand* wie die Validierungsmeldungen — keine zweite Auswertung.
+_Avoid_: ihn als „Verfügbarkeitsprüfung" zu bezeichnen — er ist ein abgelesener Zustand, kein eigener Prüflauf.
+
 ### Validierung & Fehlermeldungen
 
 **Validierungsmeldung**:
