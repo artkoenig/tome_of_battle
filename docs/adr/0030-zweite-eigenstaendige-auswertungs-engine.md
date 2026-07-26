@@ -139,7 +139,7 @@ die Enum-SSOT aus `src/parser/schema/`); (2) es wird ein **Einzelkatalog**
 gelesen — katalogübergreifende Importe/Link-Ketten und die Inkrementalisierung
 (Architektur §4.9) sind vorgemerkte Zukunft; (3) die eingestellte
 Roster-Punktgrenze (`limit::<costTypeId>` / `costLimit`/`costLimitType`) fließt
-seit Issue 68 in die Auswertung ein: die Engine nimmt das vollständige Roster
+seit Issue 70 in die Auswertung ein: die Engine nimmt das vollständige Roster
 inkl. Kostengrenzen entgegen, löst `limit::<costTypeId>` aus dem Roster-Budget
 auf (budget-gesteuerte Bedingungen/Modifikatoren wie budgetabhängige
 Helden-/Lord-Slots) und meldet Budget-Überschreitungen. Offen für den produktiven

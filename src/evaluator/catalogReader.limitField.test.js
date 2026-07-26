@@ -1,5 +1,5 @@
 /**
- * Feld-Abbildung des XML-Lesers (`catalogReader.js:readField`, Main-Issue 68,
+ * Feld-Abbildung des XML-Lesers (`catalogReader.js:readField`, Main-Issue 70,
  * Slice 02): das `field`-Attribut einer Grenze/Bedingung wird auf das
  * engine-eigene Feld abgebildet. `"selections"` → Selektionsanzahl, ein
  * `limit::<id>`-Praefix → die **eingestellte Kostengrenze** (`LIMIT_VALUE`), jede

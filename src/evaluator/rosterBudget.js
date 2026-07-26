@@ -1,6 +1,6 @@
 /**
  * Das Wert-Objekt der **eingestellten Roster-Kostengrenzen** (`design.md`,
- * Main-Issue 68). Es kapselt die aus dem `.ros`-`<costLimits>` mitgegebene
+ * Main-Issue 70). Es kapselt die aus dem `.ros`-`<costLimits>` mitgegebene
  * Zuordnung Kostenart → eingestellter Grenzwert und ist damit die einzige Quelle
  * der Wahrheit (SSOT) fuer die konfigurierte Grenze je Kostenart.
  *

@@ -1,5 +1,5 @@
 /**
- * Auflösung des `LIMIT_VALUE`-Feldes im Query-Primitiv (`query.js`, Main-Issue 68,
+ * Auflösung des `LIMIT_VALUE`-Feldes im Query-Primitiv (`query.js`, Main-Issue 70,
  * Slice 02). Eine `limit::<id>`-Regel liest die **eingestellte** Kostengrenze aus
  * dem `RosterBudget` — nicht die verplante Summe aus dem Zaehlindex. Ein
  * unaufloesbares Budget liefert nicht still `0`, sondern den

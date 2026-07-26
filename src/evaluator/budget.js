@@ -1,5 +1,5 @@
 /**
- * Die engine-allgemeine Regel **„Armee zu teuer"** (Main-Issue 68, `design.md`).
+ * Die engine-allgemeine Regel **„Armee zu teuer"** (Main-Issue 70, `design.md`).
  *
  * Anders als eine im Katalog hinterlegte Grenze ist dies eine Regel der
  * Auswertungs-Engine selbst: je konfigurierter Kostenart wird die am

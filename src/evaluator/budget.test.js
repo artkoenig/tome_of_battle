@@ -1,5 +1,5 @@
 /**
- * Isolierte Tests der Regel „Armee zu teuer" (`budget.js`, Main-Issue 68,
+ * Isolierte Tests der Regel „Armee zu teuer" (`budget.js`, Main-Issue 70,
  * Slice 03). Der Zaehlindex wird durch einen schlanken Fake ersetzt, damit die
  * Regel unabhaengig von der Baum-/Index-Pipeline geprueft werden kann: sie liest
  * die verplante Summe je Kostenart am ROSTER-Rahmen und vergleicht sie gegen die

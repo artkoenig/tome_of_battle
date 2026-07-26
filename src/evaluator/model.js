@@ -35,7 +35,7 @@ export {
  * COST_SUM(costTypeId) }`). `LIMIT_VALUE` liest die **eingestellte
  * Roster-Kostengrenze** einer Kostenart (per ID) aus dem `RosterBudget` — eine
  * grundverschiedene Groesse als eine gezaehlte Summe, die deshalb **nicht** aus
- * dem Zaehlindex, sondern aus dem Budget bedient wird (Main-Issue 68, `design.md`).
+ * dem Zaehlindex, sondern aus dem Budget bedient wird (Main-Issue 70, `design.md`).
  */
 export const CountedFieldKind = Object.freeze({
   SELECTION_COUNT: 'selectionCount',
@@ -242,13 +242,13 @@ export const DiagnosticKind = Object.freeze({
   // Eine Regel nennt ueber `limit::<costTypeId>` eine eingestellte Kostengrenze,
   // die sich nicht aufloesen laesst — die Kostenart ist nicht budgetiert oder das
   // Feld traegt einen Scope ungleich `roster` ({@link BudgetLimitUnresolvedReason}).
-  // Sichtbar gemacht statt still als Wert 0 angenommen (Main-Issue 68, `design.md`).
+  // Sichtbar gemacht statt still als Wert 0 angenommen (Main-Issue 70, `design.md`).
   UNRESOLVED_BUDGET_LIMIT: 'unresolvedBudgetLimit',
 });
 
 /**
  * Identitaet der **roster-weiten Budget-Verletzung** (Regel „Armee zu teuer",
- * Main-Issue 68, `design.md`). Uebersteigt die verplante Summe einer Kostenart
+ * Main-Issue 70, `design.md`). Uebersteigt die verplante Summe einer Kostenart
  * die eingestellte Grenze, meldet die Engine eine Verletzung, die — anders als
  * eine Katalog-Grenze — an keinem realen Baumknoten haengt: die Baumwurzel
  * traegt `def: null` und wird von `allNodes()` nie geliefert. Die Verletzung
