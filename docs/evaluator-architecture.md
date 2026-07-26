@@ -71,6 +71,17 @@ Ein Phantomknoten zählt 0 und ist der Auswertungsanker, an dem eine Min-Grenze 
 
 **Gruppen-Anker.** Eine `selectionEntryGroup` ist selbst keine Auswahl, kann aber gruppen-skopierte Zähl-Grenzen (`field=selections`, `scope=parent`) tragen — „genau eine Bloodline je Charakter". Für jede solche Gruppe im Definitionsteilbaum einer realen Eigentümer-Auswahl wird ein **Gruppen-Anker** unter dieser Auswahl synthetisiert: wie ein Phantom synthetisch und nicht mitzählend, aber Träger der Gruppendefinition, sodass die Constraint-Schicht ihre min/max gegen den Eigentümer-Rahmen (`scope=parent`) auswertet. Er ist **immer** präsent, damit `min` (leere Pflichtgruppe → Ist 0) *und* `max` (zu viele Member) anschlagen. Die **Gruppen-Zugehörigkeit** der Member stammt aus dem Definitionsbaum (die Member-IDs einer Gruppe, inkl. Link-Ketten/Untergruppen), nicht aus der Instanz — das `entryGroupId`-Tag der `.ros` wird beim Import verworfen; Member-Knoten werden entsprechend annotiert (§3.3).
 
+**Zwei Bauphasen und die Ankerart.** Alles bisher Genannte entsteht in **Phase 1** — dem Baum, über den die Fixpunktschleife läuft. **Phase 2** (`offer.js`) läuft *nach* der Konvergenz und hängt die **Angebots-Anker** an: einen je Definition, die im jeweiligen Rahmen wählbar ist, aber dort (noch) nicht steht (ADR-0035). Jeder Knoten trägt seine **Ankerart** — *belegt*, *Pflicht-Phantom*, *Gruppen-Anker*, *Kategorie-Anker* oder *Angebots-Anker* —, sodass die Herkunft eines Slots abgelesen und nicht aus Pfadform oder Definitionsart geraten wird.
+
+**Wählbar im Bezugsrahmen.** Ein Angebots-Anker entsteht für ein Paar (Rahmen R, Definition D) genau dann, wenn R ein *realer* Knoten ist und eine der beiden Regeln greift:
+
+1. **R ist eine Kontingent-Instanz.** D ist eine Auswahl-Definition unmittelbar unter einer Katalog- oder Spielsystem-Wurzel (die *Kandidatenmenge auf Armee-Ebene*, die der Resolver als eigene Sicht liefert), **und** mindestens eine ihrer **Basis**-Kategorien steht unter den `categoryLink`s der Kontingent-Definition von R. Trägt D gar keine Basis-Kategorie, kann keine Kategorie sie ausschließen — sie gilt als wählbar.
+2. **R ist eine belegte Auswahl.** D liegt in ihrem Definitionsteilbaum: durch `selectionEntryGroup`s hindurch und über einen `entryLink` auf sein aufgelöstes Ziel beliebig tief absteigend, **aber anhaltend beim ersten Eintrag** — die Optionen einer geschachtelten Auswahl gehören dieser, nicht dem äußeren Rahmen.
+
+Ausnahmslos gilt: der Anker ist **ein Blatt** (er ist kein realer Rahmen, erzeugt also selbst kein Angebot — das begrenzt den Zuwachs auf *(Kontingente × Wurzeldefinitionen) + (belegte Auswahlen × direkte Optionen)*); **Gesperrtes und Verstecktes wird materialisiert und markiert, nicht weggelassen** (ein fehlender Eintrag wäre von einem vergessenen nicht zu unterscheiden); und es entsteht **kein zweiter Anker**, wo im selben Rahmen schon ein Knoten derselben Definition hängt. Die Zuordnung nach Regel 1 nutzt bewusst die **Basis**-Kategorien — der Anker muss existieren, bevor seine effektiven Werte bestimmt werden können —, während der Fähigkeitsdatensatz die **effektiven** führt.
+
+Phase 2 hängt ausschließlich **hinter** alle bestehenden Kinder an. Damit bleiben Reihenfolge, Elternschaft und die Pfade aller vorhandenen Slots unverändert; die Rahmen-Identitäten zieht sie aus derselben Quelle wie Phase 1, sodass ein Anker nie die Identität eines vorhandenen Knotens wiederverwendet.
+
 ### 3.3 Index-Schicht: Scope-Schlüssel statt Baumtraversalen
 
 Ein Durchlauf über den Evaluationsbaum baut Zählindizes. Jeder reale Knoten trägt zu einer Menge von **Scope-Schlüsseln** bei: Wurzel (roster), sein Kontingent (force), jeder Vorfahre (für parent-Scopes), jede effektive Kategorie-ID, seine Definitions-ID (inklusive Link-Kette) sowie — ist er Member einer `selectionEntryGroup` — jede zugehörige Gruppen-ID (aus dem Definitionsbaum abgeleitet, §3.2). Pro Schlüssel werden geführt: Anzahl Auswahlen und Summe je Kostenart, jeweils als *direkte* und *tiefe* Variante (für `includeChildSelections` / `includeChildForces`). Damit sind roster- und force-Bezüge O(1)-Lookups, und eine gruppen-skopierte Grenze liest die Zahl ihrer Member über dasselbe Query-Primitiv (Ziel = Gruppen-ID im Eigentümer-Rahmen). Prozent-Nenner sind derselbe Lookup im Referenzrahmen.
@@ -87,7 +98,7 @@ Pro Knoten: Conditions (bool) und Repeats (Anzahl) über das Query-Primitiv ausw
 
 Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Kosten/Kategorien ab. Entscheidung: **Iteration bis zur Konvergenz mit harter Rundenobergrenze.** Ändert eine Runde keine zählrelevanten effektiven Werte mehr, ist der Fixpunkt erreicht. Wird die Obergrenze erreicht, gilt der Stand der letzten Runde und der Bericht erhält eine Nichtkonvergenz-Diagnose — stilles Falschrechnen ist ausgeschlossen.
 
-**Iteriert wird nur über die realen Knoten.** Ein synthetischer Anker (Pflicht-Phantom, Kategorie-Anker, Gruppen-Anker) trägt keine Instanz und geht in keinen Zählschlüssel ein, kann den ausgewerteten Zustand also nicht verändern; ihn mitzuiterieren berechnete jede Runde dasselbe Ergebnis neu. Seine effektiven Werte bestimmt deshalb **ein** Durchlauf nach der Konvergenz (`applyAnchorPostPass`), gegen den finalen Zählindex. Das ist exakt und keine Näherung: konvergiert die Schleife, ist der finale Index inhaltsgleich mit dem der letzten Runde. Die tragende Invariante — *ein synthetischer Anker geht nie in den Zählindex ein* — ist als Modultest der Index-Schicht festgehalten (`countIndex.syntheticAnchors.test.js`).
+**Iteriert wird nur über die realen Knoten.** Ein synthetischer Anker (Pflicht-Phantom, Kategorie-Anker, Gruppen-Anker, Angebots-Anker) trägt keine Instanz und geht in keinen Zählschlüssel ein, kann den ausgewerteten Zustand also nicht verändern; ihn mitzuiterieren berechnete jede Runde dasselbe Ergebnis neu. Seine effektiven Werte bestimmt deshalb **ein** Durchlauf nach der Konvergenz (`applyAnchorPostPass`), gegen den finalen Zählindex. Genau das trägt den Zuwachs des Angebots: die Angebots-Anker entstehen erst *nach* der Schleife (Baumphase 2) und laufen nie durch sie hindurch. Weil sie es beim Aufbau des Zustands noch nicht gab, werden ihre **Basiswerte** vor dem Nach-Durchlauf nachgetragen (`extendBaseEffectiveState`) — sonst schriebe ein `increment` ihren Grenzwert von 0 statt vom Katalogwert fort. Das ist exakt und keine Näherung: konvergiert die Schleife, ist der finale Index inhaltsgleich mit dem der letzten Runde. Die tragende Invariante — *ein synthetischer Anker geht nie in den Zählindex ein* — ist als Modultest der Index-Schicht festgehalten (`countIndex.syntheticAnchors.test.js`).
 
 **Zwei getrennte Befunde statt einer Meldung.** Bleibt die Konvergenz aus, unterscheidet die Schleife über einen Fingerabdruck der zählrelevanten Werte je Runde: kehrt ein Zustand wieder, ist es eine **Oszillation** (die Diagnose trägt die Zykluslänge — den Abstand der beiden Vorkommen); wird die Obergrenze erreicht, ohne dass sich ein Zustand wiederholt hat, ist das **erschöpftes Rundenbudget** — fachlich etwas anderes, denn dieser Katalog könnte mit mehr Runden noch konvergieren. Eine erkannte Oszillation bricht die Schleife nicht vorzeitig ab; es gilt weiterhin der Stand der letzten Runde. Zusätzlich liefert die Schleife die Knoten, deren zählrelevante Werte nicht zur Ruhe kamen — ihr Fähigkeitsdatensatz trägt „Wert nicht stabil", sodass die Unsicherheit **am betroffenen Slot** steht und nicht nur in einer globalen Liste.
 
@@ -98,8 +109,14 @@ Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Koste
 Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Der Bericht enthält:
 
 - **Verletzungen** (für die Validierungsanzeige),
-- pro Auswahlpunkt einen **Fähigkeitsdatensatz**: Definitions-ID und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die effektiven Merkmalswerte seiner Info-Elemente (für die UI-Steuerung),
+- pro **Slot** einen **Fähigkeitsdatensatz**: Definitions-ID, **Ankerart**, **Rahmen-Bezug** und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die effektiven Merkmalswerte seiner Info-Elemente (für die UI-Steuerung),
 - **Diagnosen** (Auflösungsprobleme, Oszillation, erschöpftes Rundenbudget, Null-Nenner, unauflösbare Budgetgrenze).
+
+Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** — ob dort etwas steht oder nicht: jeder Knoten jeder Ankerart, also auch ein Kategorie-Knoten und jede wählbare, nicht gewählte Definition. Verfügbarkeit wird daraus **abgelesen** statt errechnet.
+
+**Ein Angebots-Anker erzeugt keine Verletzung.** Seine Grenzen werden voll ausgewertet — daraus liest der Fähigkeitsdatensatz Höchstmaß, Belegung und Restspielraum —, aber das Ergebnis ist **nicht berichtsfähig** (`isReportable`). Andernfalls läse eine armee- oder kontingentweit skopierte Grenze am Anker denselben Wert wie am realen Knoten und meldete dieselbe Verletzung ein zweites Mal, und jede nicht gewählte Option mit einer Mindestgrenze flutete die Meldungsliste. Die Verletzungsliste bleibt vom gewachsenen Baum damit unberührt — eine prüfbare Invariante der bestehenden E2E-Suite. Die roster-weite Budget-Regel ist immer berichtsfähig.
+
+Der **Rahmen-Bezug** (Pfad und Definitions-ID des umschließenden Kontingents bzw. der Eltern-Auswahl; `null` am Roster selbst) steht neben dem Pfad, weil ein rein positioneller Schlüssel für die Oberfläche zu spröde ist. Ein **Verweis-Slot** — der Kategorie-Anker trägt den `categoryLink`, ein Angebots-Anker den `entryLink` — nennt zusätzlich sein **Ziel** (`targetDefId`): das ist das *Thema* des Slots, und dieselbe ID, über die die Constraint-Schicht ihn zählt. Ohne sie ließe sich ein Kategorie-Abschnitt allein aus dem Bericht nicht seiner Kategorie zuordnen.
 
 Zusätzlich prüft die Engine eine **roster-weite Budget-Regel** (keine Katalog-Grenze, sondern eine Regel der Engine): je eingestellter Kostenart wird die am ROSTER-Rahmen verplante Summe gegen die eingestellte Grenze dieser Kostenart geprüft; eine Überschreitung erzeugt eine Budget-Verletzung, die über einen **synthetischen** roster-weiten Anker in dieselbe Verletzungsliste wie die übrigen Verletzungen fließt.
 
@@ -176,12 +193,16 @@ record InstanceNode { defId: Id, count: number, children: InstanceNode[] }
 record CostLimit    { costTypeId: Id, value: number }                    // eine eingestellte Grenze je Kostenart
 record Roster       { forces: InstanceNode[], costLimits: CostLimit[] }  // costLimits: das eingestellte Budget je Kostenart (vollständige Liste)
 
+enum AnchorKind { OCCUPIED, MANDATORY_PHANTOM, GROUP_ANCHOR,      // Herkunft eines Slots;
+                  CATEGORY_ANCHOR, OFFER_ANCHOR }                 // genau eine je Knoten
+
 record EvalNode {
   def: ResolvedDef
   instance: InstanceNode?          // null bei Phantomknoten
   parent: EvalNode?
   children: EvalNode[]
   isPhantom: bool
+  anchorKind: AnchorKind           // abgelesen, nicht aus Pfadform geraten
   forceRoot: EvalNode              // das umschließende Kontingent
 }
 
@@ -205,9 +226,17 @@ record EffectiveState {            // Ergebnis der Modifikator-Schicht, unverän
 
 record ConstraintResult { limit: LimitDef, anchor: EvalNode,
                           actual: number, bound: number, satisfied: bool, delta: number,
+                          isReportable: bool,           // false am Angebots-Anker: speist nur
+                                                        // den Fähigkeitsdatensatz, nie die Meldung
                           derivation: LimitDerivation? }
 
 record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: der **effektive**
+                          targetDefId: Id?,             // worauf ein Verweis-Slot zeigt: die
+                                                        // Kategorie eines Kategorie-Ankers, der
+                                                        // Eintrag hinter einem entryLink; sonst null
+                          anchorKind: AnchorKind,       // Herkunft des Slots
+                          frame: { path: NodePath, defId: Id }?,  // Kontingent bzw. Eltern-Auswahl;
+                                                        // null = der Slot hängt am Roster selbst
                           effectiveMin: number?, effectiveMax: number?,
                           current: number, headroom: number?,
                           isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
@@ -255,6 +284,12 @@ function evaluate(catalogs, roster): Report
       : Diagnostic.ROUND_BUDGET_EXHAUSTED(round))
 
   index = buildIndex(tree, effective)                  // finaler, konsistenter Index
+
+  // Baumphase 2: die Angebots-Anker für alles im Rahmen Wählbare, als Blätter
+  // HINTER allen bestehenden Kindern — die Pfade vorhandener Slots bleiben stabil.
+  offerAnchors = attachOfferAnchors(tree, resolved)
+  extendBaseEffectiveState(effective, offerAnchors)    // Basiswerte nachtragen
+
   // Nach-Durchlauf: die synthetischen Anker EINMAL gegen den finalen Index. Sie
   // zählen nie mit, können also nicht zurückwirken; der Index wird nicht neu gebaut.
   diagnostics += applyModifiersOfNodes(syntheticNodesOf(tree), effective, index)
@@ -284,6 +319,23 @@ function synthesizePhantoms(forceNode, resolved)
   for entryDef in resolved.selectableEntriesOf(forceNode.def):
     if hasMinLimit(entryDef) and countInstances(forceNode, entryDef.id) == 0:
       attachPhantom(forceNode, entryDef)
+
+// ── Baumphase 2: das Angebot (offer.js), NACH der Fixpunktschleife ─────────────
+function attachOfferAnchors(tree, resolved): EvalNode[]
+  anchors = []
+  for frame in realNodesOf(tree):                       // nur reale Knoten sind Rahmen
+    occupied = identityIdsOf(child.def) for child in frame.children   // Entdopplungsbasis
+    candidates = frame.isForce
+      // Regel 1: das Armee-Angebot, gefiltert über die BASIS-Kategorien
+      ? resolved.armyLevelCandidates.filter(d → carriedBy(d, categoryLinksOf(frame.def)))
+      // Regel 2: die direkten Optionen — durch Gruppen und Link-auf-Gruppe hindurch,
+      //          anhaltend beim ersten Eintrag
+      : optionDefinitionsUnder(ownerDefinitionOf(frame))
+    for d in candidates:
+      if identityIdsOf(d) ∩ occupied ≠ ∅: continue      // kein zweiter Anker
+      anchors.add(attachOfferAnchor(frame, d))          // Blatt, HINTER allen Kindern
+      occupied += identityIdsOf(d)
+  return anchors
 ```
 
 ### 4.4 Index-Schicht
@@ -437,7 +489,9 @@ function evaluateAllConstraints(tree, effective, index, diagnostics): Constraint
       if bound == SUSPENDED: continue                    // A4: Null-Nenner
       satisfied = limit.kind == MIN ? actual >= bound : actual <= bound
       results.add(ConstraintResult(limit, node, actual, bound, satisfied,
-                                   delta = bound - actual))
+                                   delta = bound - actual,
+                                   // Am Angebots-Anker ausgewertet, aber nie gemeldet:
+                                   isReportable = node.anchorKind != OFFER_ANCHOR))
   return results
 
 function resolveBound(ctx, limit, effective): number | SUSPENDED
@@ -455,11 +509,13 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED
 ```
 function buildReport(tree, effective, results, diagnostics, unstableNodes): Report
   capabilities = {}
-  for node in selectableSlotsOf(tree):                   // reale Knoten + Phantom-Pflichtslots
+  for node in selectableSlotsOf(tree):                   // JEDER Knoten: belegt wie Anker
     minResult = findResult(results, node, MIN)
     maxResult = findResult(results, node, MAX)
     capabilities[pathOf(node)] = SlotCapability(
       node          = node,
+      anchorKind    = node.anchorKind,                 // Herkunft des Slots
+      frame         = frameReferenceOf(node),          // Kontingent bzw. Eltern-Auswahl
       effectiveMin  = minResult?.bound,
       effectiveMax  = maxResult?.bound,
       current       = maxResult?.actual ?? minResult?.actual ?? 0,
@@ -473,7 +529,7 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       authorMessages  = effective.authorMessages[node],
       characteristics = effectiveCharacteristicsOf(node, effective))
   return Report(
-    violations   = results.filter(r → not r.satisfied),
+    violations   = results.filter(r → r.isReportable and not r.satisfied),
     capabilities = capabilities,
     diagnostics  = diagnostics)
 

@@ -28,6 +28,8 @@
 import { prepareDataset } from './datasetPreparation.js';
 import { buildDatasetDescription } from './datasetDescription.js';
 import { buildEvalTree } from './evalTree.js';
+import { attachOfferAnchors } from './offer.js';
+import { extendBaseEffectiveState } from './effectiveState.js';
 import { buildIndex } from './countIndex.js';
 import { evaluateToFixpoint, applyAnchorPostPass } from './fixpoint.js';
 import { evaluateConstraints } from './constraints.js';
@@ -48,7 +50,9 @@ import { createRosterBudget } from './rosterBudget.js';
  *   Zuordnung Kostenart → Grenzwert, analog `<costLimits>`). Fehlt `costLimits`,
  *   ist das Budget leer — verhaltensgleich zu einem Roster ohne Kostengrenzen.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
- *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen.
+ *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen. Ein
+ *   Slot ist **jede Stelle, an der eine Auswahl stehen kann** — auch eine noch
+ *   nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon unberuehrt.
  */
 export function evaluate(dataset, roster) {
   // Die eingestellten Kostengrenzen des Rosters einmalig als unveraenderliches
@@ -75,9 +79,20 @@ export function evaluate(dataset, roster) {
   // Finaler, konsistenter Index aus dem konvergierten (bzw. letzten) Stand.
   const index = buildIndex(root, effective);
 
-  // Nach-Durchlauf: die synthetischen Anker bekommen ihre effektiven Werte in
-  // **einem** Durchlauf gegen diesen finalen Index. Sie zaehlen nie mit, koennen
-  // also nicht zurueckwirken — der Index wird danach nicht erneut gebaut.
+  // Baumphase 2: die **Angebots-Anker** fuer jede im Bezugsrahmen waehlbare
+  // Definition (ADR-0035), angehaengt als Blaetter hinter allen bestehenden
+  // Kindern — die Pfade vorhandener Slots bleiben damit unveraendert. Sie
+  // entstehen erst hier, weil sie in keinen Zaehlschluessel eingehen und den
+  // ausgewerteten Stand deshalb nicht veraendern koennen. Ihre Basiswerte werden
+  // in den konvergierten Zustand nachgetragen, damit ihre Grenzen vom Katalogwert
+  // aus fortgeschrieben werden und nicht von 0.
+  const offerAnchors = attachOfferAnchors(root, resolved);
+  extendBaseEffectiveState(effective, offerAnchors);
+
+  // Nach-Durchlauf: die synthetischen Anker — die aus Phase 1 wie die eben
+  // angehaengten — bekommen ihre effektiven Werte in **einem** Durchlauf gegen
+  // diesen finalen Index. Sie zaehlen nie mit, koennen also nicht zurueckwirken —
+  // der Index wird danach nicht erneut gebaut.
   const postPassDiagnostics = applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget);
 
   const constraintDiagnostics = [];

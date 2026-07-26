@@ -30,13 +30,15 @@
 
 import { prepareDataset } from '../../src/evaluator/datasetPreparation.js';
 import { buildEvalTree, allNodes } from '../../src/evaluator/evalTree.js';
+import { attachOfferAnchors } from '../../src/evaluator/offer.js';
+import { extendBaseEffectiveState } from '../../src/evaluator/effectiveState.js';
 import { buildIndex } from '../../src/evaluator/countIndex.js';
 import { evaluateToFixpoint, applyAnchorPostPass } from '../../src/evaluator/fixpoint.js';
 import { evaluateConstraints } from '../../src/evaluator/constraints.js';
 import { evaluateRosterBudget } from '../../src/evaluator/budget.js';
 import { buildReport } from '../../src/evaluator/report.js';
 import { createRosterBudget } from '../../src/evaluator/rosterBudget.js';
-import { DiagnosticKind } from '../../src/evaluator/model.js';
+import { AnchorKind, DiagnosticKind } from '../../src/evaluator/model.js';
 import { evaluate } from '../../src/evaluator/evaluator.js';
 
 /**
@@ -80,9 +82,6 @@ export const WARMUP_RUNS = 3;
 /** Wiederholungen je Fall, ueber die der Median gebildet wird. */
 export const DEFAULT_REPETITIONS = 15;
 
-/** Ersatzschluessel fuer einen synthetischen Knoten ohne eigene Definitionsart. */
-const UNKNOWN_DEFINITION_KIND = 'unbekannt';
-
 /** Die beiden Befunde, mit denen die Fixpunktschleife ihre Nichtkonvergenz meldet. */
 const NON_CONVERGENCE_KINDS = Object.freeze([
   DiagnosticKind.OSCILLATION,
@@ -108,33 +107,28 @@ function timed(run) {
 }
 
 /**
- * Zaehlt die Knoten des Auswertungsbaums, getrennt nach realen und synthetischen.
+ * Zaehlt die Knoten des Auswertungsbaums, getrennt nach realen und synthetischen,
+ * und schluesselt sie nach ihrer **Ankerart** auf (belegt / Pflicht-Phantom /
+ * Gruppen-Anker / Kategorie-Anker / Angebots-Anker).
  *
- * Die synthetischen werden zusaetzlich nach ihrer **Definitionsart** aufgeschluesselt
- * — eine unmittelbar am Knoten abgelesene Tatsache. Die feinere Aufschluesselung nach
- * *Ankerart* (Pflicht-Phantom / Gruppen-Anker / Kategorie-Anker / Angebots-Anker)
- * unterbleibt bewusst: der Knoten traegt sie heute nicht, und sie hier aus Elternschaft
- * und Definitionsart zu erraten hiesse, eine zweite Wahrheit ueber die Herkunft eines
- * Ankers zu erfinden. Sobald der Knoten seine Ankerart selbst traegt, liest sie diese
- * Stelle ab.
+ * Die Ankerart wird am Knoten **abgelesen** (`node.anchorKind`), nicht aus
+ * Elternschaft und Definitionsart erraten — sonst entstuende hier eine zweite
+ * Wahrheit ueber die Herkunft eines Ankers. Sie ist die Groesse, an der der Zuwachs
+ * des Angebots gegenueber der Grundlinie ablesbar wird.
  *
  * @param {object} root  Wurzel des Auswertungsbaums.
- * @returns {{ total: number, real: number, synthetic: number, syntheticByDefinitionKind: Map<string, number> }}
+ * @returns {{ total: number, real: number, synthetic: number, byAnchorKind: Record<string, number> }}
  */
 export function describeTree(root) {
   let real = 0;
   let synthetic = 0;
-  const syntheticByDefinitionKind = new Map();
+  const byAnchorKind = Object.fromEntries(Object.values(AnchorKind).map(kind => [kind, 0]));
   for (const node of allNodes(root)) {
-    if (!node.isPhantom) {
-      real += 1;
-      continue;
-    }
-    synthetic += 1;
-    const kind = node.def?.kind ?? UNKNOWN_DEFINITION_KIND;
-    syntheticByDefinitionKind.set(kind, (syntheticByDefinitionKind.get(kind) ?? 0) + 1);
+    if (node.isPhantom) synthetic += 1;
+    else real += 1;
+    byAnchorKind[node.anchorKind] += 1;
   }
-  return { total: real + synthetic, real, synthetic, syntheticByDefinitionKind };
+  return { total: real + synthetic, real, synthetic, byAnchorKind };
 }
 
 /**
@@ -175,13 +169,15 @@ export function measureEvaluation(dataset, roster) {
   });
   const { root, effective, index, joinDiagnostics, fixpointDiagnostics, unstableNodes, fixpoint } = iterated.value;
 
-  // (c) Nach-Durchlauf: die Modifikatoren auf den synthetischen Ankern, gegen den
-  // finalen Index. Sein getrennt ausgewiesener Anteil ist der Beleg dafuer, dass der
-  // Nach-Durchlauf den Zuwachs des Angebots aus der Schleife heraushaelt: erst der
-  // Vergleich „(b) vorher" gegen „(b)+(c) nachher" macht die Wirkung dieser
-  // Entscheidung nachweisbar. Die Baumphase 2 (die Angebots-Anker selbst) kommt
-  // spaeter hinzu und wird hier mitgemessen.
-  const postPass = timed(() => applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget));
+  // (c) Nach-Durchlauf: **Baumphase 2** (die Angebots-Anker) und die Modifikatoren
+  // auf allen synthetischen Ankern, gegen den finalen Index. Sein getrennt
+  // ausgewiesener Anteil ist der Beleg dafuer, dass der Nach-Durchlauf den Zuwachs
+  // des Angebots aus der Schleife heraushaelt: erst der Vergleich „(b) vorher" gegen
+  // „(b)+(c) nachher" macht die Wirkung dieser Entscheidung nachweisbar.
+  const postPass = timed(() => {
+    extendBaseEffectiveState(effective, attachOfferAnchors(root, resolved));
+    return applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget);
+  });
 
   // (d) Grenzen-Auswertung und Berichtsbau.
   const constraintsAndReport = timed(() => {

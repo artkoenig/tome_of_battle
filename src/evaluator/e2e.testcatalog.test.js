@@ -43,10 +43,30 @@
  *           "absent": ["<constraint-id>", ...],   // Grenzen, die NICHT feuern duerfen
  *           "capabilities": [                     // OPTIONAL: Aussagen ueber einen Slot
  *             {
- *               "defId": "<Definitions-ID des Slots>",   // Pflicht; muss im Roster eindeutig sein
+ *               // ── Auswahl des gemeinten Slots (muss genau einen treffen) ──
+ *               "defId": "<Definitions-ID des Slots>",   // die eigene Definition des Slots;
+ *                                                        // bei einem Verweis-Slot der VERWEIS
+ *               "targetDefId": "<Ziel-Definitions-ID>"?, // worauf der Verweis zeigt: die
+ *                                                        // Kategorie eines Kategorie-Ankers,
+ *                                                        // der Eintrag hinter einem entryLink.
+ *                                                        // Eines von beiden ist Pflicht.
+ *               "anchorKind": "occupied|mandatoryPhantom|groupAnchor|categoryAnchor|offerAnchor"?,
+ *                                                        // Herkunft des Slots: belegt, Pflicht-Anker,
+ *                                                        // Gruppen-/Kategorie-Anker oder das Angebot
+ *                                                        // (eine waehlbare, nicht gewaehlte Definition)
+ *               "frameDefId": "<Definitions-ID des Rahmens>"?,  // Kontingent bzw. Eltern-Auswahl,
+ *                                                        // unter der der Slot haengt
  *               "path": "<Slot-Pfad>"?,                  // nur noetig, wenn dieselbe Definition
  *                                                        // mehrfach im Roster steht
+ *               // ── Aussagen ueber den getroffenen Slot ──
  *               "name": "<effektiver Anzeigename>"?,     // nach allen Namens-Modifikatoren
+ *               "current": <ist>?,                       // aktueller Stand im Bezugsrahmen
+ *               "effectiveMin": <grenze>|null?,          // effektives Mindestmass (null = keines)
+ *               "effectiveMax": <grenze>|null?,          // effektives Hoechstmass (null = keines)
+ *               "headroom": <rest>|null?,                // verbleibender Spielraum (null ohne Hoechstmass)
+ *               "isHidden": true|false?,                 // vom Katalog ausgeblendet
+ *               "isBlocked": true|false?,                // Hoechstmass ausgeschoepft
+ *               "isMandatoryUnmet": true|false?,         // Mindestmass unerfuellt
  *               "authorMessages": [                      // die Autor-Meldungen des Slots,
  *                 { "severity": "error|warning|info", "text": "<Katalogtext>" }
  *               ]?,                                      // VOLLSTAENDIG: [] fordert „keine"
@@ -184,31 +204,80 @@ function assertViolationsMatchExpectation(report, expectation) {
 }
 
 /**
+ * Die **Merkmale, ueber die eine Slot-Erwartung ihren Slot auswaehlt** — je als
+ * Praedikat auf dem Paar (Pfad, Faehigkeitsdatensatz). Eine Tabelle statt einer
+ * Kette von Bedingungen: ein weiteres Auswahlmerkmal ist ein weiterer Eintrag.
+ *
+ * Seit das Angebot im Bericht steht (ADR-0035), traegt derselbe Eintrag oft
+ * mehrere Slots — belegt im einen Kontingent, angeboten im anderen. `anchorKind`
+ * und `frameDefId` benennen den gemeinten fachlich, statt ihn ueber einen
+ * positionellen Pfad festzunageln.
+ */
+const CAPABILITY_SELECTORS = Object.freeze({
+  defId: (spec, capability) => capability.defId === spec.defId,
+  targetDefId: (spec, capability) => capability.targetDefId === spec.targetDefId,
+  path: (spec, capability, path) => path === spec.path,
+  anchorKind: (spec, capability) => capability.anchorKind === spec.anchorKind,
+  frameDefId: (spec, capability) => capability.frame?.defId === spec.frameDefId,
+});
+
+/** Die im Manifest gesetzten Auswahlmerkmale, menschenlesbar fuer Fehlermeldungen. */
+function selectorLabel(spec) {
+  return Object.keys(CAPABILITY_SELECTORS)
+    .filter(key => spec[key] !== undefined)
+    .map(key => `${key}="${spec[key]}"`)
+    .join(', ');
+}
+
+/**
  * Der eine Faehigkeitsdatensatz, den eine Slot-Erwartung meint. Die Definitions-ID
- * benennt ihn fachlich; steht dieselbe Definition mehrfach im Roster, engt der
- * optionale `path` ein. Bleibt es mehrdeutig oder findet sich nichts, ist das ein
+ * benennt ihn fachlich; trifft sie mehrere Slots, engen `anchorKind`, `frameDefId`
+ * oder der `path` ein. Bleibt es mehrdeutig oder findet sich nichts, ist das ein
  * Manifest-Fehler mit klarer Meldung — nicht ein stillschweigend gewaehlter Slot.
  */
 function capabilityForExpectation(report, spec, manifestPath) {
-  const matches = [...report.capabilities]
-    .filter(([path, capability]) => capability.defId === spec.defId && (spec.path === undefined || spec.path === path));
+  const matches = [...report.capabilities].filter(([path, capability]) =>
+    Object.entries(CAPABILITY_SELECTORS)
+      .every(([key, matchesSelector]) => spec[key] === undefined || matchesSelector(spec, capability, path)));
 
   assertManifest(matches.length > 0, manifestPath,
-    `capabilities: kein Slot mit defId "${spec.defId}"${spec.path === undefined ? '' : ` am Pfad "${spec.path}"`}.`);
+    `capabilities: kein Slot mit ${selectorLabel(spec)}.`);
   assertManifest(matches.length === 1, manifestPath,
-    `capabilities: defId "${spec.defId}" ist mehrdeutig (Pfade: ${matches.map(([path]) => path).join(', ')}); "path" ergaenzen.`);
+    `capabilities: ${selectorLabel(spec)} ist mehrdeutig (Pfade: ${matches.map(([path]) => path).join(', ')}); ` +
+    '"anchorKind", "frameDefId" oder "path" ergaenzen.');
 
   return matches[0][1];
 }
 
+/**
+ * Die **Zustandsfelder eines Slots**, die eine Erwartung direkt vergleichen kann:
+ * Zahlen und Flags des Faehigkeitsdatensatzes. Genannt wird nur, was das Szenario
+ * festnagelt; ungenannte Felder bleiben ohne Aussage.
+ */
+const COMPARABLE_CAPABILITY_FIELDS = Object.freeze([
+  'name',
+  'current',
+  'effectiveMin',
+  'effectiveMax',
+  'headroom',
+  'isHidden',
+  'isBlocked',
+  'isMandatoryUnmet',
+]);
+
 /** Prueft die Slot-Aussagen (`capabilities`) eines Rosters gegen den Bericht. */
 function assertCapabilitiesMatchExpectation(report, expectation, manifestPath) {
   for (const spec of expectation.capabilities ?? []) {
-    assertManifest(typeof spec.defId === 'string', manifestPath, 'capabilities: Feld "defId" fehlt.');
+    // Ein Slot muss fachlich benannt sein — ueber seine eigene Definition oder,
+    // bei einem Verweis-Slot (Kategorie-Anker, verlinkte Option), ueber sein Ziel.
+    // `anchorKind`/`frameDefId`/`path` engen nur ein und benennen nichts.
+    assertManifest(typeof spec.defId === 'string' || typeof spec.targetDefId === 'string', manifestPath,
+      'capabilities: es fehlt ein benennendes Feld ("defId" oder "targetDefId").');
     const capability = capabilityForExpectation(report, spec, manifestPath);
 
-    if (spec.name !== undefined) {
-      expect(capability.name, `Slot ${spec.defId}: effektiver Anzeigename`).toBe(spec.name);
+    for (const field of COMPARABLE_CAPABILITY_FIELDS) {
+      if (spec[field] === undefined) continue;
+      expect(capability[field], `Slot ${spec.defId}: ${field}`).toEqual(spec[field]);
     }
     if (spec.authorMessages !== undefined) {
       expect(capability.authorMessages, `Slot ${spec.defId}: Zahl der Autor-Meldungen`)

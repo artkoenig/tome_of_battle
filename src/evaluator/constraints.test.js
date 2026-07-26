@@ -1,6 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { evaluate as evaluateDataset } from './evaluator.js';
+import { AnchorKind } from './model.js';
 
 /**
  * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
@@ -192,5 +193,62 @@ describe('Prozentgrenze mit Nenner 0 (Annahme A4)', () => {
     expect(report.diagnostics).toContainEqual(
       expect.objectContaining({ kind: 'zeroDenominator', limitId: MANA_SHARE_LIMIT_ID })
     );
+  });
+});
+
+describe('Berichtsfaehigkeit: welches Ergebnis als Verletzung gemeldet werden darf', () => {
+  const FORCE_DEF_ID = 'force-army';
+  const MAX_ARCHERS_LIMIT_ID = 'max-archers';
+  const MAX_ARCHERS = 1;
+  // Zwei Wurzeldefinitionen mit derselben MAX-Grenzenart: die Bogenschuetzen sind
+  // gewaehlt (belegter Slot, berichtsfaehig), die Krieger nur angeboten.
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-reportable" name="Reportable Catalogue">
+      <forceEntries>
+        <forceEntry id="${FORCE_DEF_ID}" name="Army"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${ARCHER_DEF_ID}" name="Archer" type="unit">
+          <constraints>
+            <constraint id="${MAX_ARCHERS_LIMIT_ID}" type="max" value="${MAX_ARCHERS}" field="selections" scope="roster"/>
+          </constraints>
+        </selectionEntry>
+        <selectionEntry id="${WARRIOR_DEF_ID}" name="Warrior" type="unit"/>
+      </selectionEntries>
+    </catalogue>`;
+
+  /** Ein Kontingent mit `count` Bogenschuetzen; die Krieger bleiben ungewaehlt. */
+  function armyWithArchers(count) {
+    return roster([{ defId: FORCE_DEF_ID, count: 1, children: [{ defId: ARCHER_DEF_ID, count, children: [] }] }]);
+  }
+
+  it('meldet die verletzte Grenze am belegten Slot genau einmal — nicht ein zweites Mal am Angebot', () => {
+    // Der Angebots-Anker der Bogenschuetzen entfaellt im belegten Kontingent
+    // (Entdopplung); ohne die Berichtsfaehigkeit truege ihn ein anderes Kontingent.
+    const report = evaluate(CATALOGUE_XML, armyWithArchers(MAX_ARCHERS + 1));
+
+    expect(report.violations.filter(violation => violation.limitId === MAX_ARCHERS_LIMIT_ID)).toHaveLength(1);
+  });
+
+  it('meldet dieselbe Grenze am Angebots-Anker eines zweiten Kontingents nicht noch einmal', () => {
+    // Zwei Kontingente: im ersten stehen zu viele Bogenschuetzen, im zweiten sind
+    // sie nur angeboten. Die armeeweite Grenze laese dort denselben Ist-Wert.
+    const report = evaluate(CATALOGUE_XML, roster([
+      { defId: FORCE_DEF_ID, count: 1, children: [{ defId: ARCHER_DEF_ID, count: MAX_ARCHERS + 1, children: [] }] },
+      { defId: FORCE_DEF_ID, count: 1, children: [] },
+    ]));
+
+    expect(report.violations.filter(violation => violation.limitId === MAX_ARCHERS_LIMIT_ID)).toHaveLength(1);
+  });
+
+  it('fuehrt den Angebots-Anker des zweiten Kontingents trotzdem als gesperrten Slot', () => {
+    const report = evaluate(CATALOGUE_XML, roster([
+      { defId: FORCE_DEF_ID, count: 1, children: [{ defId: ARCHER_DEF_ID, count: MAX_ARCHERS + 1, children: [] }] },
+      { defId: FORCE_DEF_ID, count: 1, children: [] },
+    ]));
+
+    const offered = [...report.capabilities.values()]
+      .find(capability => capability.defId === ARCHER_DEF_ID && capability.anchorKind === AnchorKind.OFFER_ANCHOR);
+    expect(offered).toMatchObject({ effectiveMax: MAX_ARCHERS, current: MAX_ARCHERS + 1, isBlocked: true, headroom: 0 });
   });
 });

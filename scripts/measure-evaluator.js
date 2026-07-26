@@ -167,10 +167,14 @@ function formatFixpoint({ rounds, converged, nonConvergence }) {
   return `Rundenbudget erschoepft (${rounds} Runden, ohne dass ein Zustand wiederkehrte)`;
 }
 
-/** Die synthetischen Knoten nach ihrer Definitionsart, als eine Zeile. */
-function formatSyntheticBreakdown(syntheticByDefinitionKind) {
-  return [...syntheticByDefinitionKind.entries()]
-    .sort(([left], [right]) => left.localeCompare(right))
+/**
+ * Die Knoten nach ihrer **Ankerart**, als eine Zeile — in der festen Reihenfolge
+ * der Aufzaehlung, damit zwei Laeufe Zeile fuer Zeile vergleichbar sind. Genau
+ * diese Aufschluesselung macht den Zuwachs des Angebots gegenueber der Grundlinie
+ * sichtbar.
+ */
+function formatAnchorKindBreakdown(byAnchorKind) {
+  return Object.entries(byAnchorKind)
     .map(([kind, count]) => `${kind}=${count}`)
     .join(', ');
 }
@@ -184,7 +188,7 @@ function printCase(measurementCase, summary) {
   console.log(`  Quelle:    ${measurementCase.source} (${measurementCase.catalogueCount} Katalogdatei(en))`);
   console.log(
     `  Knoten:    ${tree.total} gesamt — ${tree.real} real, ${tree.synthetic} synthetisch` +
-      (tree.synthetic > 0 ? ` (${formatSyntheticBreakdown(tree.syntheticByDefinitionKind)})` : ''),
+      ` (${formatAnchorKindBreakdown(tree.byAnchorKind)})`,
   );
   console.log(`  Fixpunkt:  ${formatFixpoint(fixpoint)}`);
   console.log(`  Dauer (Median ueber ${summary.repetitions} Laeufe):`);

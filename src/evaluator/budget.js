@@ -61,6 +61,10 @@ function evaluateCostLimit(index, { costTypeId, value }) {
     bound: value,
     satisfied: false,
     delta: value - actual,
+    // Die Budget-Regel haengt an keinem Anker des Baums, sondern am Roster als
+    // Ganzem — sie ist immer berichtsfaehig. Der Wert steht ausdruecklich hier,
+    // damit die eine Berichtsprojektion ihn nie aus einem fehlenden Feld raten muss.
+    isReportable: true,
   };
 }
 

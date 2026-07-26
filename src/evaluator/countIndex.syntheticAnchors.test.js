@@ -3,9 +3,10 @@ import { describe, it, expect } from 'vitest';
 
 import { prepareDataset } from './datasetPreparation.js';
 import { buildEvalTree, syntheticNodes, realNodes, frameKeyOf } from './evalTree.js';
+import { attachOfferAnchors } from './offer.js';
 import { buildIndex } from './countIndex.js';
 import { createBaseEffectiveState } from './effectiveState.js';
-import { scopeKey, ScopeKeyword } from './model.js';
+import { AnchorKind, scopeKey, ScopeKeyword } from './model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -100,6 +101,7 @@ function attachExtraAnchorFor(root, node) {
     isPhantom: true,
     isRoot: false,
     isForce: false,
+    anchorKind: AnchorKind.OFFER_ANCHOR,
     frameId: Number.MAX_SAFE_INTEGER,
     forceRoot: null,
   };
@@ -152,5 +154,69 @@ describe('Index-Schicht: ein synthetischer Anker geht nie in die Zaehlung ein', 
 
     const frameKeys = [...realNodes(root), ...syntheticNodes(root)].map(frameKeyOf);
     expect(new Set(frameKeys).size).toBe(frameKeys.length);
+  });
+});
+
+// ── Dieselbe Invariante am **echten** Zuwachs: den Angebots-Ankern ────────────
+// Der Fall oben baut einen Anker von Hand nach; dieser laesst Baumphase 2 selbst
+// laufen. Beides gehoert hierher: der handgebaute Fall zeigt, dass die Zaehlung
+// einen mitzaehlenden Anker gar nicht erst zulaesst, dieser hier, dass die
+// tatsaechlich gebaute Angebotsmenge ihn nicht erzeugt.
+
+const ARMY_FORCE_ID = 'force-army';
+
+/**
+ * Ein Kontingent ohne Kategorienliste und zwei Wurzeldefinitionen ohne
+ * Basis-Kategorie — beide sind damit im Kontingent waehlbar und bekommen ihren
+ * Angebots-Anker, sobald sie nicht gewaehlt sind.
+ */
+const OFFER_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+  <catalogue id="cat-offer-index" name="Offer Index Catalogue">
+    <forceEntries>
+      <forceEntry id="${ARMY_FORCE_ID}" name="Army"/>
+    </forceEntries>
+    <selectionEntries>
+      <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
+        <costs>
+          <cost name="Points" typeId="${POINTS_ID}" value="${WARRIOR_POINTS}"/>
+        </costs>
+        <categoryLinks>
+          <categoryLink targetId="${ELITE_CAT_ID}"/>
+        </categoryLinks>
+      </selectionEntry>
+      <selectionEntry id="${BANNER_ID}" name="Banner" type="upgrade"/>
+    </selectionEntries>
+    <categoryEntries>
+      <categoryEntry id="${ELITE_CAT_ID}" name="Elite"/>
+    </categoryEntries>
+  </catalogue>`;
+
+describe('Index-Schicht: auch die Angebots-Anker aus Baumphase 2 zaehlen nie mit', () => {
+  /** Kontingent mit einem Krieger; der Bannertraeger bleibt ungewaehlt (Angebot). */
+  function buildOfferTree() {
+    const { resolved } = prepareDataset({ catalogues: [OFFER_CATALOGUE_XML] });
+    const roster = {
+      forces: [{ defId: ARMY_FORCE_ID, count: 1, children: [{ defId: WARRIOR_ID, count: WARRIOR_COUNT, children: [] }] }],
+    };
+    const { root } = buildEvalTree(resolved, roster);
+    return { root, resolved };
+  }
+
+  const OFFER_KEYS = Object.freeze([
+    scopeKey(ScopeKeyword.ROSTER, null),
+    scopeKey(ScopeKeyword.ROSTER, WARRIOR_ID),
+    scopeKey(ScopeKeyword.ROSTER, BANNER_ID),
+    scopeKey(ScopeKeyword.ROSTER, ELITE_CAT_ID),
+  ]);
+
+  it('laesst jede Index-Antwort unveraendert, obwohl Baumphase 2 Anker fuer gezaehlte Definitionen anhaengt', () => {
+    const { root, resolved } = buildOfferTree();
+    const before = answersOf(buildIndex(root, createBaseEffectiveState(root)), OFFER_KEYS);
+
+    const anchors = attachOfferAnchors(root, resolved);
+
+    // Der Fall ist nicht leer: der ungewaehlte Bannertraeger ist angeboten.
+    expect(anchors.map(anchor => anchor.def.id)).toContain(BANNER_ID);
+    expect(answersOf(buildIndex(root, createBaseEffectiveState(root)), OFFER_KEYS)).toEqual(before);
   });
 });

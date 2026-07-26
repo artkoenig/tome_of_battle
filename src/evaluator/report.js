@@ -5,13 +5,20 @@
  * 2). Er traegt zwei Sichten auf denselben, genau einmal ausgewerteten Stand:
  *
  * - **Verletzungen** fuer die Validierungsanzeige (das volle Ergebnis-Tripel je
- *   angeschlagener Grenze),
- * - je auswaehlbarem Slot einen **Faehigkeitsdatensatz** (`SlotCapability`) fuer
- *   die UI-Steuerung: Definitions-ID und **effektiver** Anzeigename, effektives
- *   min/max, aktueller Stand, Restspielraum, die Pflicht-/Gesperrt-/Versteckt-Flags,
- *   das Merkmal „Wert nicht stabil", die **Autor-Meldungen** des Katalogs und die
- *   **effektiven Merkmalswerte** seiner Info-Elemente,
+ *   angeschlagener, **berichtsfaehiger** Grenze),
+ * - je Slot einen **Faehigkeitsdatensatz** (`SlotCapability`) fuer die
+ *   UI-Steuerung: Definitions-ID, **Ankerart**, Rahmen-Bezug und **effektiver**
+ *   Anzeigename, effektives min/max, aktueller Stand, Restspielraum, die
+ *   Pflicht-/Gesperrt-/Versteckt-Flags, das Merkmal „Wert nicht stabil", die
+ *   **Autor-Meldungen** des Katalogs und die **effektiven Merkmalswerte** seiner
+ *   Info-Elemente,
  * - **Diagnosen** (Aufloesung, Oszillation, erschoepftes Rundenbudget, Null-Nenner).
+ *
+ * Ein Slot ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** — ob
+ * dort etwas steht oder nicht. Verfuegbarkeit wird daraus **abgelesen** statt
+ * errechnet: gesperrt ist, wessen Hoechstmass ausgeschoepft ist; versteckt ist, was
+ * ein Modifikator ausgeblendet hat. Deshalb wird Gesperrtes und Verstecktes
+ * materialisiert und markiert, nicht weggelassen.
  *
  * Dazu die reinen **UI-Projektions-Lookups**, die ausschliesslich den Bericht
  * lesen und keine Regel erneut auswerten (§4.8, Leitprinzip 3): die UI rechnet
@@ -70,6 +77,38 @@ function findResult(results, node, kind) {
 }
 
 /**
+ * Die **Definition, auf die ein Verweis-Slot zeigt** — `null`, wenn der Slot kein
+ * Verweis ist. Ein Kategorie-Anker traegt den `categoryLink`, nicht die Kategorie;
+ * ein Angebots-Anker den `entryLink`, nicht den Eintrag (nur so gelten die am
+ * Verweis deklarierten Grenzen). Das *Thema* des Slots ist aber das Ziel — und
+ * genau darueber zaehlt ihn auch die Constraint-Schicht.
+ *
+ * Ohne dieses Feld liesse sich ein Kategorie-Abschnitt allein aus dem Bericht
+ * nicht seiner Kategorie zuordnen: die Oberflaeche muesste in den Baumknoten
+ * greifen, was ADR-0034 gerade ausschliesst. Bevorzugt wird die **aufgeloeste**
+ * Ziel-ID (bei einer Verweiskette deren Ende); ein baumelnder Verweis nennt
+ * ehrlich das Ziel, das er nicht gefunden hat.
+ */
+function targetDefIdOf(node) {
+  return node.def.resolved?.id ?? node.def.targetId ?? null;
+}
+
+/**
+ * Der **Rahmen-Bezug** eines Slots: das Kontingent bzw. die Eltern-Auswahl, unter
+ * der er haengt — mit deren stabilem Pfad und Definitions-ID. `null` bedeutet: der
+ * Slot haengt unmittelbar am Roster, sein Rahmen ist die Armee selbst.
+ *
+ * Er steht neben dem Pfad im Datensatz, weil ein rein positioneller Schluessel
+ * fuer die Oberflaeche zu sproede ist: der Pfad sagt *wo*, der Rahmen-Bezug sagt
+ * *worunter* (`design.md`, Risiko „Pfadstabilitaet").
+ */
+function frameReferenceOf(node) {
+  const frame = node.parent;
+  if (frame === null || frame.isRoot) return null;
+  return { path: pathOf(frame), defId: frame.def.id };
+}
+
+/**
  * Der Restspielraum eines Slots: `max(0, Grenzwert − Ist-Wert)`, wenn eine
  * MAX-Grenze besteht. Ohne MAX-Grenze gibt es keine Obergrenze und damit keinen
  * Restspielraum (`null`).
@@ -82,6 +121,13 @@ function headroomOf(maxResult) {
  * Baut den Faehigkeitsdatensatz eines Slots aus seinen MIN-/MAX-Ergebnissen und
  * dem effektiven Zustand. Der aktuelle Stand kommt bevorzugt aus der MAX-, sonst
  * der MIN-Grenze; traegt der Slot keine (nicht suspendierte) Grenze, ist er 0.
+ *
+ * `anchorKind` sagt, **woher** der Slot stammt (belegt, Pflicht-Phantom,
+ * Gruppen-, Kategorie- oder Angebots-Anker) — die einzige Stelle, an der die
+ * Oberflaeche die Herkunft unterscheiden koennen muss; `frame` sagt, unter welchem
+ * Kontingent bzw. welcher Eltern-Auswahl er haengt; `targetDefId` sagt bei einem
+ * Verweis-Slot, **worauf** er zeigt (die Kategorie eines Kategorie-Ankers, der
+ * Eintrag hinter einem `entryLink`).
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand. Name,
  * Merkmale und Autor-Meldungen kommen ebenfalls aus dem effektiven Zustand — die
@@ -100,6 +146,9 @@ function toCapability(node, results, effective, unstableNodes) {
   return {
     node,
     defId: node.def.id,
+    targetDefId: targetDefIdOf(node),
+    anchorKind: node.anchorKind,
+    frame: frameReferenceOf(node),
     name: effective.nameOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax: maxResult === null ? null : maxResult.bound,
@@ -116,9 +165,9 @@ function toCapability(node, results, effective, unstableNodes) {
 
 /**
  * Baut den Bericht aus dem Auswertungsbaum, dem effektiven Zustand, den
- * Constraint-Ergebnissen und den gesammelten Diagnosen. Je auswaehlbarem Slot
- * (reale Knoten plus Phantom-Pflichtslots) entsteht ein Faehigkeitsdatensatz,
- * abgelegt unter dem stabilen Pfad des Slots ({@link pathOf}).
+ * Constraint-Ergebnissen und den gesammelten Diagnosen. Je Slot — jeder Knoten
+ * jeder Ankerart — entsteht ein Faehigkeitsdatensatz, abgelegt unter dem stabilen
+ * Pfad des Slots ({@link pathOf}).
  *
  * @param {object} root  Wurzel des Evaluationsbaums.
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
@@ -143,7 +192,12 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     capabilities.set(pathOf(node), toCapability(node, results, effective, unstableNodes));
   }
   return {
-    violations: [...results, ...budgetViolations].filter(result => !result.satisfied).map(toViolation),
+    // Gemeldet wird, was **berichtsfaehig** und unerfuellt ist. Ein Ergebnis am
+    // Angebots-Anker faellt hier heraus (`constraints.js`, `isReportable`): das
+    // Nichtgewaehlte speist Faehigkeitsdatensaetze, aber nie die Meldungsliste.
+    violations: [...results, ...budgetViolations]
+      .filter(result => result.isReportable && !result.satisfied)
+      .map(toViolation),
     capabilities,
     diagnostics,
   };

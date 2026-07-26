@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: [02, 03]
 
@@ -30,3 +30,43 @@ zusaetzlich die Eintraege, die seine Kategorienliste zulaesst.
 - [ ] Neue Szenarien decken das Angebot je Kontingent, die Optionen einer belegten Auswahl und die ausgeblendete Kategorie an echten Katalogdaten ab.
 
 ## Comments
+- Umgesetzt: das **Angebot** und die **Kategorie-Knoten** im Bericht (ADR-0035).
+
+Neues Modul `offer.js` bestimmt, wer in welchem Rahmen waehlbar ist, und haengt die
+Angebots-Anker in einer **zweiten Baumphase** nach der Konvergenz als Blaetter an;
+`resolver.js` liefert dafuer die Kandidatenmenge auf Armee-Ebene als eigene Sicht.
+Jeder Knoten traegt jetzt seine **Ankerart** (`AnchorKind`: belegt / Pflicht-Phantom /
+Gruppen-Anker / Kategorie-Anker / Angebots-Anker); der Bericht fuehrt einen
+Faehigkeitsdatensatz fuer **jeden** Slot statt nur fuer reale Knoten und
+MIN-tragende Phantome — eine ausgeblendete Kategorie ist damit erstmals sichtbar
+(die offene Grenze aus ADR-0030). Ein Grenzen-Ergebnis sagt neu, ob es
+**berichtsfaehig** ist: am Angebots-Anker speist es nur den Datensatz, nie die
+Verletzungsliste. Die bestehende E2E-Suite ist unveraendert gruen — der gewachsene
+Baum aendert keine einzige Zahl.
+
+**Aufwandsmessung (`node scripts/measure-evaluator.js`), gegen die Grundlinie aus 02:**
+
+| Fall | Knoten (real/synth.) | iterierte Auswertung | Nach-Durchlauf | Grenzen+Bericht | Gesamt |
+| --- | --- | --- | --- | --- | --- |
+| klein — Grundlinie | 23 (6/17) | 1,3 ms | 0,0 ms | 0,1 ms | 363,1 ms |
+| klein — jetzt | 139 (6/133) | 0,9 ms | 1,5 ms | 1,1 ms | 341,8 ms |
+| Mehrkatalog — Grundlinie | 49 (5/44) | 1,4 ms | 0,0 ms | 0,3 ms | 845,0 ms |
+| Mehrkatalog — jetzt | 319 (5/314) | 1,0 ms | 2,2 ms | 2,2 ms | 909,3 ms |
+| groesster — Grundlinie | 42 (3/39) | 1,0 ms | 0,0 ms | 0,3 ms | 956,6 ms |
+| groesster — jetzt | 304 (3/301) | 0,8 ms | 2,5 ms | 2,0 ms | 1066,6 ms |
+
+Ankerarten im groessten Fall: occupied=3, mandatoryPhantom=24, groupAnchor=4,
+categoryAnchor=11, offerAnchor=262. Alle drei Faelle konvergieren weiterhin (2/2/1
+Runden).
+
+**Der Befund, um dessentwillen die Trennung (b)/(c) eingefuehrt wurde:** der Baum
+waechst um das 6- bis 7-Fache, die **iterierte Auswertung bleibt dabei flach**
+(1,3→0,9 / 1,4→1,0 / 1,0→0,8 ms). Der gesamte Zuwachs liegt im Nach-Durchlauf
+(0,0→1,5–2,5 ms) und in Grenzen+Bericht (0,1–0,3→1,1–2,2 ms). Der Nach-Durchlauf
+haelt das Angebot damit nachweislich aus der Fixpunktschleife heraus.
+
+Die Gesamtzeiten sind weiterhin vom Katalog-Vorlauf dominiert (98,9–99,4 %, mit
+jsdom gemessen) und schwanken zwischen Laeufen um mehr als der ganze Zuwachs
+ausmacht — die interaktive Obergrenze von 100 ms bleibt gerissen, unveraendert
+zur Grundlinie und aus demselben Grund (Baustein 8 entscheidet).
+- Geteilte Kontrakte fuer die Folge-Slices: SlotCapability traegt neu `anchorKind`, `frame: {path, defId}|null` (Kontingent bzw. Eltern-Auswahl) und `targetDefId` (worauf ein Verweis-Slot zeigt — die Kategorie eines Kategorie-Ankers). Ein Constraint-Ergebnis traegt `isReportable`. `selectableSlotsOf` liefert jetzt alle Knoten. `evalTree` baut in zwei Phasen; die Wurzel traegt die Quelle der Rahmen-Identitaeten. `extendBaseEffectiveState` traegt nachtraeglich entstandene Knoten in den Effektiv-Zustand nach. Der E2E-Manifest-Runner unterstuetzt `targetDefId`/`anchorKind`/`frameDefId` als Slot-Auswahl und die Zustandsfelder als Erwartung.

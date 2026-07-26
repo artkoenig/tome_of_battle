@@ -14,6 +14,7 @@ import {
   summarizeRuns,
   assessThresholds,
 } from './evaluator-measurement.js';
+import { AnchorKind } from '../../src/evaluator/model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den Evaluator-Tests).
 // Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -57,7 +58,7 @@ function run({ preparation, iterated = 0, postPass = 0, constraints = 0, treeTot
   return {
     phases,
     totalMs: Object.values(phases).reduce((sum, duration) => sum + duration, 0),
-    tree: { total: treeTotal, real: treeTotal, synthetic: 0, syntheticByDefinitionKind: new Map() },
+    tree: { total: treeTotal, real: treeTotal, synthetic: 0, byAnchorKind: { [AnchorKind.OCCUPIED]: treeTotal } },
     fixpoint: { rounds, converged: true },
   };
 }
@@ -82,13 +83,13 @@ describe('median', () => {
 
 describe('describeTree', () => {
   /** Baut einen Knoten der Form, die die Join-Schicht erzeugt. */
-  function node(children, { isPhantom = false, kind = 'entry' } = {}) {
-    return { children, isPhantom, def: { kind } };
+  function node(children, anchorKind = AnchorKind.OCCUPIED) {
+    return { children, isPhantom: anchorKind !== AnchorKind.OCCUPIED, anchorKind };
   }
 
   it('zaehlt reale und synthetische Knoten getrennt und laesst die Wurzel aus', () => {
     const root = {
-      children: [node([node([], { isPhantom: true, kind: 'group' })]), node([], { isPhantom: true, kind: 'categoryLink' })],
+      children: [node([node([], AnchorKind.GROUP_ANCHOR)]), node([], AnchorKind.CATEGORY_ANCHOR)],
     };
 
     const tree = describeTree(root);
@@ -96,19 +97,24 @@ describe('describeTree', () => {
     expect(tree).toMatchObject({ total: 3, real: 1, synthetic: 2 });
   });
 
-  it('schluesselt die synthetischen Knoten nach ihrer Definitionsart auf', () => {
+  it('schluesselt die Knoten nach ihrer abgelesenen Ankerart auf', () => {
     const root = {
       children: [
-        node([], { isPhantom: true, kind: 'group' }),
-        node([], { isPhantom: true, kind: 'group' }),
-        node([], { isPhantom: true, kind: 'categoryLink' }),
+        node([]),
+        node([], AnchorKind.GROUP_ANCHOR),
+        node([], AnchorKind.CATEGORY_ANCHOR),
+        node([], AnchorKind.OFFER_ANCHOR),
+        node([], AnchorKind.OFFER_ANCHOR),
       ],
     };
 
-    expect([...describeTree(root).syntheticByDefinitionKind.entries()]).toEqual([
-      ['group', 2],
-      ['categoryLink', 1],
-    ]);
+    expect(describeTree(root).byAnchorKind).toEqual({
+      [AnchorKind.OCCUPIED]: 1,
+      [AnchorKind.MANDATORY_PHANTOM]: 0,
+      [AnchorKind.GROUP_ANCHOR]: 1,
+      [AnchorKind.CATEGORY_ANCHOR]: 1,
+      [AnchorKind.OFFER_ANCHOR]: 2,
+    });
   });
 });
 

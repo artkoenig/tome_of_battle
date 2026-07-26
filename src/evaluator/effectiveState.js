@@ -26,6 +26,11 @@
  * kostet eine Fixpunktrunde nichts fuer die grosse Mehrheit unveraenderter
  * Merkmale.
  *
+ * Der Zustand laesst sich **nachtraeglich um weitere Knoten erweitern**
+ * ({@link extendBaseEffectiveState}), damit der Nach-Durchlauf die erst nach der
+ * Konvergenz entstandenen Angebots-Anker (Baumphase 2) in denselben Zustand
+ * eintraegt, ohne vorhandene Werte zu beruehren.
+ *
  * Weil jede Anwendung von einer frischen Basiskopie ausgeht, kann die
  * Fixpunktschleife dieselbe Modifikator-Anwendung ohne Umbau in eine
  * Konvergenzschleife wickeln — `ADD`/`MULTIPLY` und die Kettenschritte kumulieren
@@ -89,22 +94,37 @@ export class EffectiveState {
   #authorMessages;
 
   /**
-   * @param {Map<object, Map<string, number>>} costs  effektive Kosten je Kostenart-ID.
-   * @param {Map<object, Set<string>>}         categories effektive Kategorie-IDs.
-   * @param {Map<object, Map<string, { base: number, steps: object[] }>>} limits
-   *   je Grenzen-ID ihre **Herleitung**: Basiswert und die Schritte, die ihn
-   *   veraendert haben. Der effektive Grenzwert ist der Endstand dieser Kette —
-   *   es gibt keinen zweiten, danebenlaufenden Zahlwert, der von ihr abweichen
-   *   koennte.
+   * Erzeugt einen leeren Zustand. Die Basiswerte traegt
+   * {@link createBaseEffectiveState} je Knoten nach ({@link EffectiveState#seedNode});
+   * eine Grenze fuehrt dabei ihre **Herleitung** — Basiswert plus die Schritte, die
+   * ihn veraendert haben —, denn der effektive Grenzwert ist der Endstand dieser
+   * Kette und nicht ein zweiter, danebenlaufender Zahlwert.
    */
-  constructor(costs, categories, limits) {
-    this.#costs = costs;
-    this.#categories = categories;
-    this.#limits = limits;
+  constructor() {
+    this.#costs = new Map();
+    this.#categories = new Map();
+    this.#limits = new Map();
     this.#hidden = new Map();
     this.#names = new Map();
     this.#characteristics = new Map();
     this.#authorMessages = new Map();
+  }
+
+  /**
+   * Traegt die **Basiswerte** eines Knotens ein: seine effektiven Kosten und
+   * Kategorien starten als Kopie der Definitionswerte, jede Grenze als Herleitung
+   * ohne Schritt.
+   *
+   * Der Zustand schluesselt nach Knoten-**Objekt**; ein nachtraeglich eingetragener
+   * Knoten (Baumphase 2) kann deshalb keinen vorhandenen Eintrag ueberschreiben.
+   *
+   * @param {object} node
+   * @param {{ costs: Map<string, number>, categories: Set<string>, derivations: Map<string, { base: number, steps: object[] }> }} baseValues
+   */
+  seedNode(node, { costs, categories, derivations }) {
+    this.#costs.set(node, costs);
+    this.#categories.set(node, categories);
+    this.#limits.set(node, derivations);
   }
 
   /** Die effektiven Kostenpaare (Kostenart-ID → Wert je Selektion) eines Knotens. */
@@ -332,6 +352,35 @@ export function countRelevantDifferences(previous, next, nodes) {
 }
 
 /**
+ * Die **Basiswerte** eines Knotens aus seiner Definition: Kosten, Kategorien und
+ * je Grenze eine Herleitung, die nur aus ihrem Basiswert besteht. Ein `entryLink`
+ * erbt Kosten und Kategorien seines aufgeloesten Ziels; eigene Angaben gehen vor.
+ */
+function baseValuesOf(node) {
+  let defCosts = node.def.costs ?? {};
+  let defCategories = node.def.categoryIds ?? [];
+  // Die Grenzen kommen aus derselben Quelle wie in der Constraint-Schicht
+  // (`limitsOf`, inkl. der von einem Verweis geerbten) — sonst traegt ein
+  // Knoten einen Grenzwert, den nie jemand auswertet, oder umgekehrt.
+  const defLimits = limitsOf(node.def);
+
+  if (node.def.kind === DefinitionKind.ENTRY_LINK && node.def.resolved) {
+    defCosts = { ...(node.def.resolved.costs ?? {}), ...defCosts };
+    defCategories = [...new Set([...(node.def.resolved.categoryIds ?? []), ...defCategories])];
+  }
+
+  const derivations = new Map();
+  for (const limit of defLimits) {
+    derivations.set(limit.id, { base: limit.value, steps: [] });
+  }
+  return {
+    costs: new Map(Object.entries(defCosts)),
+    categories: new Set(defCategories),
+    derivations,
+  };
+}
+
+/**
  * Erzeugt eine frische Effektiv-Werte-Kopie aus den **Basisdefinitionen** aller
  * Knoten — **Phantome eingeschlossen**, damit auch deren Grenzwerte modifizierbar
  * sind (§4.6). Kein Modifikator ist angewendet: effektive Werte gleichen den
@@ -343,29 +392,28 @@ export function countRelevantDifferences(previous, next, nodes) {
  * @returns {EffectiveState}
  */
 export function createBaseEffectiveState(root) {
-  const costs = new Map();
-  const categories = new Map();
-  const limits = new Map();
+  const state = new EffectiveState();
   for (const node of allNodes(root)) {
-    let defCosts = node.def.costs ?? {};
-    let defCategories = node.def.categoryIds ?? [];
-    // Die Grenzen kommen aus derselben Quelle wie in der Constraint-Schicht
-    // (`limitsOf`, inkl. der von einem Verweis geerbten) — sonst traegt ein
-    // Knoten einen Grenzwert, den nie jemand auswertet, oder umgekehrt.
-    const defLimits = limitsOf(node.def);
-
-    if (node.def.kind === DefinitionKind.ENTRY_LINK && node.def.resolved) {
-      defCosts = { ...(node.def.resolved.costs ?? {}), ...defCosts };
-      defCategories = [...new Set([...(node.def.resolved.categoryIds ?? []), ...defCategories])];
-    }
-
-    costs.set(node, new Map(Object.entries(defCosts)));
-    categories.set(node, new Set(defCategories));
-    const derivations = new Map();
-    for (const limit of defLimits) {
-      derivations.set(limit.id, { base: limit.value, steps: [] });
-    }
-    limits.set(node, derivations);
+    state.seedNode(node, baseValuesOf(node));
   }
-  return new EffectiveState(costs, categories, limits);
+  return state;
+}
+
+/**
+ * Traegt die Basiswerte **nachtraeglich** entstandener Knoten in einen
+ * bestehenden Zustand nach — die Angebots-Anker aus Baumphase 2, die es beim
+ * Aufbau des Zustands noch nicht gab (ADR-0035).
+ *
+ * Ohne diesen Schritt haette ein Anker keine Herleitung fuer seine Grenzen: ein
+ * `increment` rechnete dann von 0 statt vom Katalogwert. Vorhandene Werte bleiben
+ * unberuehrt — der Zustand schluesselt nach Knoten-Objekt, und ein frisch
+ * erzeugter Anker kollidiert mit keinem Eintrag.
+ *
+ * @param {EffectiveState} state  der konvergierte Zustand.
+ * @param {Iterable<object>} nodes  die neu entstandenen Knoten.
+ */
+export function extendBaseEffectiveState(state, nodes) {
+  for (const node of nodes) {
+    state.seedNode(node, baseValuesOf(node));
+  }
 }

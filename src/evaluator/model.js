@@ -223,6 +223,43 @@ export const InfoElementKind = Object.freeze({
 });
 
 /**
+ * **Ankerart** eines Slots — woher er im Auswertungsbaum stammt. Genau eine je
+ * Knoten; sie ist die einzige Stelle, an der die Oberflaeche die Herkunft eines
+ * Slots unterscheiden koennen muss, und ersetzt jedes Raten ueber Namen oder
+ * Pfadform (`design.md`, Kontrakt „Faehigkeitsdatensatz").
+ *
+ * - `OCCUPIED` — ein **belegter** Slot: ein realer Knoten mit Instanz.
+ * - `MANDATORY_PHANTOM` — Anker fuer eine Pflichtdefinition (`min > 0`), die im
+ *   Bezugsrahmen keine Instanz hat.
+ * - `GROUP_ANCHOR` — Anker fuer die Grenzen einer `selectionEntryGroup`.
+ * - `CATEGORY_ANCHOR` — Anker fuer eine vom Kontingent gefuehrte Kategorie.
+ * - `OFFER_ANCHOR` — **Angebots-Anker**: eine im Bezugsrahmen waehlbare
+ *   Definition, die im Roster (noch) nicht vorkommt (ADR-0035).
+ */
+export const AnchorKind = Object.freeze({
+  OCCUPIED: 'occupied',
+  MANDATORY_PHANTOM: 'mandatoryPhantom',
+  GROUP_ANCHOR: 'groupAnchor',
+  CATEGORY_ANCHOR: 'categoryAnchor',
+  OFFER_ANCHOR: 'offerAnchor',
+});
+
+/**
+ * True, wenn ein Grenzen-Ergebnis an einem Anker dieser Art **berichtsfaehig**
+ * ist, also als Verletzung in die Meldungsliste gehoert.
+ *
+ * Ein **Angebots-Anker** ist die eine Ausnahme: er speist nur einen
+ * Faehigkeitsdatensatz. Andernfalls laese eine armee- oder kontingentweit
+ * skopierte Grenze an ihm denselben Wert wie am realen Knoten und meldete
+ * dieselbe Verletzung ein zweites Mal — und jede nicht gewaehlte Option mit einer
+ * Mindestgrenze flutete die Meldungsliste mit „nicht gewaehlt" (`design.md`,
+ * Kernentscheidung „Angebots-Anker erzeugen keine Verletzungen").
+ */
+export function isReportableAnchorKind(anchorKind) {
+  return anchorKind !== AnchorKind.OFFER_ANCHOR;
+}
+
+/**
  * Sentinel fuer einen suspendierten Grenzwert: eine Prozentgrenze mit leerem
  * Bezugsrahmen (Nenner 0) wird weder erfuellt noch verletzt, sondern
  * ausgesetzt (`docs/evaluator-architecture.md` §4.7, Annahme A4).

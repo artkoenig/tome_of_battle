@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ocs-02" name="OCS 02 - Clan Blood Dragons ohne Black Knights of Bretonnia" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored offer/category-slot E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Clan Blood Dragons (VC-AB)" entryId="5e95-7d57-2b9c-d77d" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-merc-ror" name="Mercenaries and Regiments of Renown" entryId="6a7d-7d85-8d7e-cbce" entryLinkId="2682-f1d1-ad94-5574" number="1" type="upgrade" collective="false">
+          <selections>
+            <selection id="sel-allow-ror" name="Allow Regiments of Renown" entryId="3d35-6b18-262f-6503" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-allow-merc" name="Allow Mercenaries" entryId="fda5-49b9-b74c-aaf4" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-black-knights" name="Black Knights" entryId="115c-d87a-35e6-26c9" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-bk-models" name="Black Knights" entryId="9252-1ba6-f635-5b22" entryLinkId="" number="5" type="model" collective="false"/>
+            <selection id="sel-bk-heavy-armour" name="Heavy Armour" entryId="d1d2-2653-7ab0-fbb0" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bk-shield" name="Shield" entryId="3667-f990-51ea-d0e4" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bk-handweapon" name="Handweapon" entryId="8a69-c735-7c76-f588" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bk-lance" name="Lance" entryId="f50b-09b7-e669-69ad" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

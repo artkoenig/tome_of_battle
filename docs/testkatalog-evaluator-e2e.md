@@ -97,7 +97,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`modifier-characteristic-value`](testing/modifier-characteristic-value/) | Definitive Ogre + Mercenaries | 3 |
 | [`modifier-effective-name`](testing/modifier-effective-name/) | Definitive VC + O&G + Mercenaries | 6 |
 | [`author-message-severity`](testing/author-message-severity/) | Definitive Ogre / VC + Mercenaries | 7 |
-| **Summe** | | **87** |
+| [`offer-and-category-slots`](testing/offer-and-category-slots/) | Definitive VC + O&G + Mercenaries | 3 |
+| **Summe** | | **90** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -382,3 +383,20 @@ ausbleibt, sobald ihre Bedingung nicht mehr hält.
 | 03 | Zwei Träger derselben Meldung (Skrag und Greasus) | Die Meldung hängt am Auswahlpunkt, nicht am Kontingent: beide tragen je eine |
 | 04–05 | Bruiser mit / ohne „Border Patrols rules" | Mit: eine Meldung vom Schweregrad *Warnung*; ohne: keine |
 | 06–07 | Vampire Fleet Captain mit / ohne „Border Patrols rules" | Mit: eine Meldung vom Schweregrad *Hinweis*; ohne: keine |
+
+## `offer-and-category-slots`
+
+Prüft, dass der Bericht nicht nur beschreibt, **was** im Roster steht, sondern
+**jede Stelle, an der eine Auswahl stehen kann**: das **Angebot** (alles, was hier
+wählbar wäre, aber noch nicht gewählt ist) und die **Kategorien** des Kontingents.
+Ein Angebot erzeugt dabei nie eine Verletzung — es ist eine Möglichkeit, keine
+Beanstandung. Die Gegenprobe gehört zwingend dazu: ein Armee-Eintrag, den der
+Katalog armeeweit **verlangt**, ist kein Angebot, sondern eine **Pflicht** — er
+erscheint als Pflicht-Stelle, und seine unerfüllte Mindestzahl wird ganz normal
+beanstandet.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Armeeliste „Clan Blood Dragons" mit einer Einheit *Black Knights*, die die Aufwertung *Black Knights of Bretonnia* trägt | Die Kategorien „Mercenaries" und „Regiment of Renown" der Liste sind dadurch **ausgeblendet**; „Heroes" ist sichtbar, ohne Ober-/Untergrenze und mit Ist-Stand 0, „Core" verlangt mindestens 2. Die gewählte Aufwertung ist **ausgereizt** (1 von 1). Nicht gewählte Optionen der Einheit (*Musician*, *Standard Bearer*) und nicht gewählte Armee-Einträge (*Fell Bats*, *Dire Wolves* — dort ausgeblendet, aber trotzdem aufgeführt — und *Manbiters*, dessen Obergrenze 0 ist) stehen als **Angebot** im Bericht. *Army of Sylvania* dagegen wird von der Armee **verlangt** und ist deshalb kein Angebot: beide Mindestzahl-Regeln werden mit Ist 0 beanstandet. Die Modellzahl *innerhalb* des nur angebotenen *Fell Bats* wird dagegen nicht beanstandet |
+| 02 | Derselbe Aufbau **ohne** jene Aufwertung | Dieselben zwei Kategorien sind jetzt **sichtbar** — das Ausblenden ist also bedingt, nicht fest. Die weggelassene Aufwertung erscheint selbst als **Angebot** an der Einheit: 0 von 1 gewählt, ein Platz frei, sichtbar. *Army of Sylvania* bleibt Pflicht mit zwei Beanstandungen |
+| 03 | Armeeliste „Army of the Lichemaster", die keine Söldner-/Regiment-of-Renown-Kategorie führt | *Fell Bats* und *Dire Wolves* werden weiterhin angeboten; *Manbiters*, dessen einzige Kategorie „Regiment of Renown" ist, **nicht** — das Angebot ist über die Kategorien der Armeeliste gefiltert. Auch hier ist *Army of Sylvania* Pflicht statt Angebot |

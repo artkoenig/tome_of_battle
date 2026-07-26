@@ -155,7 +155,9 @@ export function evaluateToFixpoint(root, categoryIds, budget) {
 
 /**
  * Der einmalige **Nach-Durchlauf**: setzt die effektiven Werte aller synthetischen
- * Anker aus dem konvergierten Stand.
+ * Anker aus dem konvergierten Stand — der aus Baumphase 1 (Pflicht-Phantome,
+ * Kategorie- und Gruppen-Anker) ebenso wie der **Angebots-Anker** aus Baumphase 2,
+ * die der Aufrufer zuvor angehaengt hat (`offer.js`, ADR-0035).
  *
  * Er ist nicht optional — die Grenzen-Schicht liest den Grenzwert eines Ankers aus
  * der Effektiv-Werte-Ebene, die Berichtsschicht seine Sichtbarkeit und seine

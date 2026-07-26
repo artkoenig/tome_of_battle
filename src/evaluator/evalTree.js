@@ -27,9 +27,23 @@
  *   bestimmt ein **einmaliger Nach-Durchlauf** nach der Konvergenz
  *   (`fixpoint.js`, `applyAnchorPostPass`), weil sie auf den ausgewerteten Stand
  *   nicht zurueckwirken koennen.
+ *
+ * Ab Issue 75/05 baut die Schicht in **zwei Phasen** (ADR-0035):
+ *
+ * - **Phase 1** ({@link buildEvalTree}) — die realen Knoten, die Pflicht-Phantome,
+ *   die Kategorie-Anker und die Gruppen-Anker. Das ist der Baum, ueber den die
+ *   Fixpunktschleife laeuft.
+ * - **Phase 2** ({@link attachOfferAnchor}, gesteuert von `offer.js`) — die
+ *   **Angebots-Anker** fuer das Waehlbare, angehaengt **hinter** allen bestehenden
+ *   Kindern, nachdem die Schleife konvergiert ist. Weil ausschliesslich angehaengt
+ *   wird, bleiben Reihenfolge, Elternschaft und damit die {@link pathOf Pfade} aller
+ *   vorhandenen Slots unveraendert.
+ *
+ * Jeder Knoten traegt seine **Ankerart** ({@link AnchorKind}) — die Herkunft eines
+ * Slots ist damit abgelesen und nicht aus Pfadform oder Definitionsart geraten.
  */
 
-import { DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
+import { AnchorKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -68,6 +82,7 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
     isPhantom: false,
     isRoot: false,
     isForce,
+    anchorKind: AnchorKind.OCCUPIED,
     frameId: nextFrameId(),
     // Das umschliessende Kontingent: der Knoten selbst, wenn er ein Kontingent
     // ist, sonst das seines Elternknotens. Steht ueber keinem Kontingent (z. B.
@@ -87,8 +102,12 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
  * ein regulaerer Knoten (mit eigener Rahmen-Identitaet und `forceRoot`), aber ohne
  * Instanz (`instance = null`) und als Phantom markiert — die Index-Schicht laesst
  * ihn deshalb aus der Zaehlung aus, die Constraint-Schicht schliesst ihn ein.
+ *
+ * Seine {@link AnchorKind Ankerart} sagt, **warum** er da ist; sie wird vom
+ * jeweiligen Synthese-Schritt gestellt, statt spaeter aus Elternschaft und
+ * Definitionsart erraten zu werden.
  */
-function attachPhantom(parent, def, nextFrameId) {
+function attachPhantom(parent, def, nextFrameId, anchorKind) {
   const isForce = def.kind === DefinitionKind.FORCE;
   const node = {
     def,
@@ -98,10 +117,44 @@ function attachPhantom(parent, def, nextFrameId) {
     isPhantom: true,
     isRoot: false,
     isForce,
+    anchorKind,
     frameId: nextFrameId(),
     forceRoot: null,
   };
   node.forceRoot = isForce ? node : parent.forceRoot;
+  parent.children.push(node);
+  return node;
+}
+
+/**
+ * **Baumphase 2**: haengt einen {@link AnchorKind.OFFER_ANCHOR Angebots-Anker} als
+ * **Blatt** hinter alle bestehenden Kinder von `parent`. Welche Definition in
+ * welchem Rahmen einen bekommt, entscheidet `offer.js`; diese Schicht stellt nur
+ * die Knotenform und zieht die Rahmen-Identitaet aus derselben Quelle wie Phase 1
+ * ({@link tree-frame-ids}), sodass ein Anker nie die Identitaet eines vorhandenen
+ * Knotens wiederverwendet.
+ *
+ * Ein Angebots-Anker ist **immer ein Blatt**: er ist kein realer Rahmen und
+ * erzeugt deshalb selbst kein Angebot (`design.md`, „Waehlbar im Bezugsrahmen").
+ *
+ * @param {object} root  Wurzel des Baums (traegt die Quelle der Rahmen-Identitaeten).
+ * @param {object} parent  der reale Rahmen, unter dem der Anker haengt.
+ * @param {object} def  die angebotene Definition (bei einem Verweis: der Verweis selbst).
+ * @returns {object} der angehaengte Anker.
+ */
+export function attachOfferAnchor(root, parent, def) {
+  const node = {
+    def,
+    instance: null,
+    parent,
+    children: [],
+    isPhantom: true,
+    isRoot: false,
+    isForce: false,
+    anchorKind: AnchorKind.OFFER_ANCHOR,
+    frameId: root.nextFrameId(),
+    forceRoot: parent.forceRoot,
+  };
   parent.children.push(node);
   return node;
 }
@@ -191,7 +244,7 @@ function countInstances(fromNode, defId) {
 function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
   for (const def of definitions) {
     if (hasMinLimitInFrame(def, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0) {
-      attachPhantom(root, def, nextFrameId);
+      attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
     }
   }
   const forceNodeList = [...forceNodes(root)];
@@ -200,14 +253,14 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
     for (const def of definitions) {
       if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
       if (hasMinLimitInFrame(def, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0) {
-        attachPhantom(forceNode, def, nextFrameId);
+        attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
       }
     }
   }
 }
 
 /** Die Kategorie-IDs, die eine Kontingent-Definition per `categoryLink` fuehrt. */
-function linkedCategoryIdsOf(forceDef) {
+export function linkedCategoryIdsOf(forceDef) {
   const ids = new Set();
   for (const childDef of forceDef.children ?? []) {
     if (childDef.kind === DefinitionKind.CATEGORY_LINK) ids.add(childDef.targetId);
@@ -235,7 +288,7 @@ function synthesizeForceCategoryAnchors(root, nextFrameId) {
   for (const forceNode of [...forceNodes(root)]) {
     for (const childDef of forceNode.def.children ?? []) {
       if (childDef.kind === DefinitionKind.CATEGORY_LINK) {
-        attachPhantom(forceNode, childDef, nextFrameId);
+        attachPhantom(forceNode, childDef, nextFrameId, AnchorKind.CATEGORY_ANCHOR);
       }
     }
   }
@@ -245,7 +298,7 @@ function synthesizeForceCategoryAnchors(root, nextFrameId) {
  * Die tragende Definition eines Knotens: bei einem `entryLink`-Knoten die
  * aufgeloeste Zieldefinition (die die Gruppen traegt), sonst die eigene.
  */
-function ownerDefinitionOf(node) {
+export function ownerDefinitionOf(node) {
   if (node.def.kind === DefinitionKind.ENTRY_LINK && node.def.resolved) {
     return node.def.resolved;
   }
@@ -284,7 +337,7 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
       if (hasMinLimitInFrame(childDef, ScopeKeyword.PARENT) && countInstances(owner, childDef.id) === 0) {
         const alreadyHasPhantom = owner.children.some(c => c.isPhantom && c.def.id === childDef.id);
         if (!alreadyHasPhantom) {
-          attachPhantom(owner, childDef, nextFrameId);
+          attachPhantom(owner, childDef, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
         }
       }
     }
@@ -325,6 +378,7 @@ function attachGroupAnchor(owner, groupDef, nextFrameId) {
     isPhantom: true,
     isRoot: false,
     isForce: false,
+    anchorKind: AnchorKind.GROUP_ANCHOR,
     frameId: nextFrameId(),
     forceRoot: owner.forceRoot,
   };
@@ -373,13 +427,20 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
 }
 
 /**
- * Baut den Evaluationsbaum aus aufgeloesten Definitionen und Roster-Instanzen.
- * Die Wurzel ist ein synthetischer Ankerknoten ohne eigene Definition; sie
- * traegt den ROSTER-Rahmen und liegt ueber keinem Kontingent. Nachdem alle realen
- * Knoten haengen, werden Phantomknoten fuer fehlende Pflichtdefinitionen
- * synthetisiert (siehe {@link synthesizeMandatoryPhantoms}), Kategorie-Anker je
- * Kontingent (siehe {@link synthesizeForceCategoryAnchors}) und Gruppen-Anker fuer
+ * Baut **Baumphase 1** aus aufgeloesten Definitionen und Roster-Instanzen: die
+ * realen Knoten und alle Anker, die schon vor der Konvergenz feststehen. Die
+ * Wurzel ist ein synthetischer Ankerknoten ohne eigene Definition; sie traegt den
+ * ROSTER-Rahmen und liegt ueber keinem Kontingent. Nachdem alle realen Knoten
+ * haengen, werden Phantomknoten fuer fehlende Pflichtdefinitionen synthetisiert
+ * (siehe {@link synthesizeMandatoryPhantoms}), Kategorie-Anker je Kontingent
+ * (siehe {@link synthesizeForceCategoryAnchors}) und Gruppen-Anker fuer
  * gruppen-skopierte Grenzen (siehe {@link synthesizeGroupAnchors}).
+ *
+ * Die Wurzel traegt zusaetzlich die **Quelle der Rahmen-Identitaeten**
+ * (`nextFrameId`) des Baums. Baumphase 2 ({@link attachOfferAnchor}) zieht aus
+ * derselben Quelle weiter, sodass ein spaeter angehaengter Anker nie die
+ * Rahmen-Identitaet eines vorhandenen Knotens wiederverwendet — sonst laese eine
+ * `self`-skopierte Grenze am Anker den Bestand eines fremden Knotens.
  *
  * @param {{ lookup: (id: string) => object|null, definitions?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
  * @param {{ forces?: object[] }} roster
@@ -396,7 +457,9 @@ export function buildEvalTree(resolved, roster) {
     isPhantom: false,
     isRoot: true,
     isForce: false,
+    anchorKind: AnchorKind.OCCUPIED,
     frameId: nextFrameId(),
+    nextFrameId,
     forceRoot: null,
   };
   for (const forceInstance of roster.forces ?? []) {
@@ -463,21 +526,21 @@ export function* syntheticNodes(root) {
   }
 }
 
-/** True, wenn die Definition irgendeine MIN-Grenze traegt. */
-function hasAnyMinLimit(def) {
-  return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN);
-}
-
 /**
- * Die **auswaehlbaren Slots** des Baums (§4.8): alle realen Knoten plus die
- * Phantom-Pflichtslots — Phantomknoten, die eine MIN-Grenze verankern. Ein
- * Phantom ohne MIN-Grenze waere kein Auswahlpunkt und bleibt aussen vor. Der
- * Bericht baut je Slot einen Faehigkeitsdatensatz.
+ * Die **Slots** des Baums (§4.8): jede Stelle, an der eine Auswahl stehen kann —
+ * ob dort etwas steht oder nicht (ADR-0035). Das sind alle Knoten jeder
+ * {@link AnchorKind Ankerart}: die belegten, die Pflicht-Phantome, die
+ * Gruppen-Anker, die Kategorie-Anker und die Angebots-Anker.
+ *
+ * Bis Issue 75/05 fielen Anker ohne MIN-Grenze hier heraus — eine
+ * budget-gesteuert ausgeblendete Kategorie war im Bericht damit unsichtbar. Nun
+ * gilt: **Gesperrtes und Verstecktes wird materialisiert und markiert, nicht
+ * weggelassen.** Ein fehlender Eintrag waere von einem vergessenen nicht zu
+ * unterscheiden, und „gesperrt" muss eine abgelesene Eigenschaft sein statt der
+ * Abwesenheit eines Eintrags.
  */
 export function* selectableSlotsOf(root) {
-  for (const node of allNodes(root)) {
-    if (!node.isPhantom || hasAnyMinLimit(node.def)) yield node;
-  }
+  yield* allNodes(root);
 }
 
 /**

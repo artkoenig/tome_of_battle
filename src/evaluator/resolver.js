@@ -113,6 +113,36 @@ function collectRootDefinitions(definition, out, seen) {
 }
 
 /**
+ * Die Definitionsarten, die als **Angebot auf Armee-Ebene** taugen: eine
+ * anwaehlbare Auswahl unmittelbar unter einer Katalog- oder Spielsystem-Wurzel.
+ * Eine Wurzel-Gruppe ist kein Auswahlpunkt, ein Wurzel-`categoryLink` keine
+ * Auswahl — beide bleiben aussen vor (`design.md`, „Waehlbar im Bezugsrahmen",
+ * Regel 1).
+ */
+const ARMY_LEVEL_CANDIDATE_KINDS = Object.freeze(new Set([
+  DefinitionKind.ENTRY,
+  DefinitionKind.ENTRY_LINK,
+]));
+
+/**
+ * Die **Kandidatenmenge des Angebots auf Armee-Ebene**: die Auswahl-Definitionen
+ * unmittelbar unter einer Katalog- oder Spielsystem-Wurzel — das, was ein
+ * Kontingent ueberhaupt aufstellen kann (ADR-0035).
+ *
+ * Sie steht hier, weil der Resolver die einzige Schicht ist, die den
+ * **Katalog**-Wurzelbestand kennt: einem Kontingent-Knoten des Auswertungsbaums
+ * ist nicht anzusehen, welche Einheiten sein Katalog fuehrt. Welche dieser
+ * Kandidaten ein *bestimmtes* Kontingent zulaesst, entscheidet `offer.js` anhand
+ * seiner Kategorienliste — nicht diese Stelle.
+ *
+ * Geteilte Definitionen (`sharedSelectionEntries`) gehoeren **nicht** dazu: sie
+ * sind nur ueber einen Verweis erreichbar und erscheinen allein an dessen Stelle.
+ */
+function collectArmyLevelCandidates(rootSelectionChildren) {
+  return rootSelectionChildren.filter(definition => ARMY_LEVEL_CANDIDATE_KINDS.has(definition.kind));
+}
+
+/**
  * Sammelt die **Member-IDs** einer `selectionEntryGroup` rekursiv: die IDs ihrer
  * direkten Auswahl-Kinder (Eintraege/Links) sowie — ueber verschachtelte
  * Untergruppen hinweg — deren Member. Fuer einen `entryLink` zaehlen zusaetzlich
@@ -410,8 +440,12 @@ function indexAndResolveInfos(infoRoots, byId, symbolTable, diagnostics) {
  * im `lookup`, aber nicht hier, damit ihre `min`-Grenze keine falsche
  * Pflichtverletzung synthetisiert.
  *
+ * Daneben liefert er die **Kandidatenmenge des Angebots auf Armee-Ebene**
+ * (`armyLevelCandidates`, siehe {@link collectArmyLevelCandidates}) als eigene,
+ * benannte Sicht — die Grundlage der Angebots-Anker je Kontingent (ADR-0035).
+ *
  * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
- * @returns {{ lookup: (id: string) => object|null, definitions: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, diagnostics: object[] }}
+ * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, diagnostics: object[] }}
  */
 export function resolveCatalogue(catalogue) {
   const collector = {
@@ -481,6 +515,7 @@ export function resolveCatalogue(catalogue) {
   return {
     lookup: id => byId.get(id) ?? null,
     definitions,
+    armyLevelCandidates: collectArmyLevelCandidates(catalogue.entries ?? []),
     categoryIds,
     groupMemberIds,
     diagnostics,

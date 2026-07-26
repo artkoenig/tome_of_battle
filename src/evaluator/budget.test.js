@@ -54,6 +54,10 @@ describe('evaluateRosterBudget — Regel „Armee zu teuer"', () => {
       bound: 2000,
       satisfied: false,
       delta: 2000 - 2200,
+      // Die Budget-Regel haengt am Roster, nicht an einem Anker des Baums — sie ist
+      // immer berichtsfaehig. Seit die Angebots-Anker Ergebnisse liefern, die *nicht*
+      // gemeldet werden duerfen (ADR-0035), traegt jedes Ergebnis diese Angabe.
+      isReportable: true,
     });
   });
 

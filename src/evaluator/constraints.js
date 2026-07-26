@@ -10,9 +10,15 @@
  * dieses durch. Der Grenzwert kommt aus der Effektiv-Werte-Schicht (Slice 04):
  * ein Modifikator kann den Roh-Grenzwert veraendert haben — bei Prozentgrenzen
  * fliesst der effektive Prozentsatz durch dieselbe `resolveBound`-Stelle.
+ *
+ * Jedes Ergebnis sagt zusaetzlich, ob es **berichtsfaehig** ist (`isReportable`):
+ * ein Ergebnis am **Angebots-Anker** speist nur den Faehigkeitsdatensatz seines
+ * Slots und wird nie als Verletzung gemeldet (ADR-0035). Die Grenzen werden dort
+ * trotzdem voll ausgewertet — genau daraus liest der Datensatz Hoechstmass,
+ * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic } from './model.js';
+import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind } from './model.js';
 import { allNodes, limitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -68,6 +74,11 @@ function evaluateLimit(limit, node, effective, ctx) {
     bound,
     satisfied,
     delta: bound - actual,
+    // Ob dieses Ergebnis **berichtsfaehig** ist, also als Verletzung gemeldet
+    // werden darf, oder nur den Faehigkeitsdatensatz seines Slots speist. Diese
+    // Schicht stellt die Unterscheidung bereit und deutet sie nicht: sie liest die
+    // Ankerart des Knotens ab (`model.js`, {@link isReportableAnchorKind}).
+    isReportable: isReportableAnchorKind(node.anchorKind),
     // Die **Herleitung** des Grenzwerts, unveraendert durchgereicht: diese Schicht
     // deutet sie nicht, sie stellt sie nur bereit (die Ursachen nach ADR-0027 sind
     // eine Filterung dieser Kette). Bei einer Prozentgrenze beschreibt sie den

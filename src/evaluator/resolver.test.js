@@ -146,3 +146,60 @@ describe('Resolver: Disjunktheits-Guard bei kollidierender Definitions-ID', () =
     );
   });
 });
+
+describe('Kandidatenmenge des Angebots auf Armee-Ebene', () => {
+  const ROOT_ENTRY_ID = 'entry-root';
+  const ROOT_LINK_ID = 'link-root';
+  const ROOT_GROUP_ID = 'group-root';
+  const SHARED_ENTRY_ID = 'shared-entry';
+  const NESTED_ENTRY_ID = 'entry-nested';
+  const CATEGORY_ID = 'cat-core';
+
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-candidates" name="Candidates Catalogue">
+      <categoryEntries>
+        <categoryEntry id="${CATEGORY_ID}" name="Core"/>
+      </categoryEntries>
+      <sharedSelectionEntries>
+        <selectionEntry id="${SHARED_ENTRY_ID}" name="Shared" type="unit"/>
+      </sharedSelectionEntries>
+      <selectionEntries>
+        <selectionEntry id="${ROOT_ENTRY_ID}" name="Root Entry" type="unit">
+          <selectionEntries>
+            <selectionEntry id="${NESTED_ENTRY_ID}" name="Nested" type="upgrade"/>
+          </selectionEntries>
+        </selectionEntry>
+      </selectionEntries>
+      <selectionEntryGroups>
+        <selectionEntryGroup id="${ROOT_GROUP_ID}" name="Root Group"/>
+      </selectionEntryGroups>
+      <entryLinks>
+        <entryLink id="${ROOT_LINK_ID}" name="Root Link" targetId="${SHARED_ENTRY_ID}" type="selectionEntry"/>
+      </entryLinks>
+      <categoryLinks>
+        <categoryLink id="link-root-category" name="Core" targetId="${CATEGORY_ID}"/>
+      </categoryLinks>
+    </catalogue>`;
+
+  /** Die Definitions-IDs der Kandidatenmenge, in Dokumentreihenfolge. */
+  function candidateIds() {
+    return resolveCatalogue(parseCatalogue(CATALOGUE_XML)).armyLevelCandidates.map(definition => definition.id);
+  }
+
+  it('fuehrt die Auswahl-Definitionen unmittelbar unter der Katalogwurzel — Eintrag wie Verweis', () => {
+    expect(candidateIds()).toEqual([ROOT_ENTRY_ID, ROOT_LINK_ID]);
+  });
+
+  it('fuehrt weder Wurzel-Gruppen noch Wurzel-Kategorieverweise: beide sind kein Auswahlpunkt', () => {
+    expect(candidateIds()).not.toContain(ROOT_GROUP_ID);
+    expect(candidateIds()).not.toContain(CATEGORY_ID);
+  });
+
+  it('fuehrt eine geteilte Definition nicht: sie erscheint allein an der Stelle ihres Verweises', () => {
+    expect(candidateIds()).not.toContain(SHARED_ENTRY_ID);
+  });
+
+  it('fuehrt keine geschachtelte Option: sie gehoert ihrer Auswahl, nicht der Armee-Ebene', () => {
+    expect(candidateIds()).not.toContain(NESTED_ENTRY_ID);
+  });
+});

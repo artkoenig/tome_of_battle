@@ -99,9 +99,19 @@ and in `docs/testing/vampire-bloodlines/scenario.json`. In outline:
         "absent": ["<constraint-id>", "..."],
         "capabilities": [
           {
-            "defId": "<definition id of the slot>",
-            "path": "<slot path — only when the same definition occurs twice>",
+            "defId": "<definition id of the slot itself — for a link slot, the link>",
+            "targetDefId": "<id the link points at — the category of a category anchor>",
+            "anchorKind": "occupied|mandatoryPhantom|groupAnchor|categoryAnchor|offerAnchor",
+            "frameDefId": "<definition id of the enclosing contingent or parent selection>",
+            "path": "<slot path — only when the selectors above still leave it ambiguous>",
             "name": "<expected effective display name>",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 3,
+            "headroom": 3,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false,
             "authorMessages": [{ "severity": "error|warning|info", "text": "<catalog text>" }],
             "characteristics": [
               { "carrierId": "<profile or infoLink id>", "typeId": "<characteristicType id>", "value": "<effective value>" }
@@ -131,9 +141,30 @@ Key points of the contract:
   per contingent, §7.7).
 - **`expect.absent`** lists limit-ids that MUST NOT fire.
 - **`expect.capabilities`** (optional) asserts what a single slot *is*, not only which
-  limits fire on it. A slot is named by its `defId` (add `path` only when the same
-  definition occurs more than once in the roster, otherwise the runner reports an
-  ambiguity). Per slot:
+  limits fire on it. A **slot** is every place a selection *can* stand — whether
+  something stands there or not: the report carries one capability record per
+  occupied selection, per mandatory anchor, per group anchor, per category of a
+  contingent, **and per selectable-but-unchosen definition** (the *offer*). Per slot:
+  - **Selecting the meant slot.** Name it with `defId` (the slot's own definition —
+    for a **link** slot that is the link itself, e.g. the `categoryLink`, not the
+    category) or with `targetDefId` (what the link points at — the *category* of a
+    category anchor, the entry behind an `entryLink`); at least one of the two is
+    mandatory. Because the same definition is usually both occupied in one
+    contingent and offered in another, narrow it further with `anchorKind`
+    (`occupied` | `mandatoryPhantom` | `groupAnchor` | `categoryAnchor` |
+    `offerAnchor`) and/or `frameDefId` (the id of the enclosing contingent or parent
+    selection). Fall back to the positional `path` only when those still leave it
+    ambiguous — the runner reports an ambiguity rather than silently picking one.
+  - **`current` / `effectiveMin` / `effectiveMax` / `headroom`** — the slot's numbers
+    in its frame: what is there now, the effective bounds (`null` = no such bound;
+    a `max` with the catalog's "unlimited" value counts as absent, not as 0), and
+    what still fits. All derived from the constraint declared in the XML and the
+    roster's structure.
+  - **`isHidden` / `isBlocked` / `isMandatoryUnmet`** — availability is *read off*
+    this record, never computed: hidden is what a `field="hidden"` modifier switched
+    off, blocked is a maximum that is used up, mandatory-unmet is a minimum that is
+    not reached. A locked or hidden slot is still **present and marked** — a missing
+    record would be indistinguishable from a forgotten one.
   - **`name`** — the **effective** display name, i.e. after every `field="name"`
     modifier that fires (`set` replaces it, `append`/`prepend` join with the
     modifier's `join` attribute, or without a separator when it has none).
