@@ -88,15 +88,6 @@ export class EffectiveState {
     return this.#limitValues.get(node)?.get(limitId) ?? 0;
   }
 
-  /**
-   * Die realen Knoten, fuer die dieser Zustand Werte fuehrt. Zwei Zustaende
-   * desselben Baums teilen dieselben Knoten-Objekte; darueber vergleicht die
-   * Fixpunktschleife die zaehlrelevanten Teile ({@link countRelevantEqual}).
-   */
-  nodes() {
-    return this.#costs.keys();
-  }
-
   /** Setzt den effektiven Kostenwert einer Kostenart. */
   writeCost(node, costTypeId, value) {
     this.#ensure(this.#costs, node, () => new Map()).set(costTypeId, value);
@@ -138,51 +129,69 @@ export class EffectiveState {
   }
 }
 
-/**
- * True, wenn zwei Kostenabbildungen (Kostenart-ID → Wert je Selektion) gleich
- * sind — reihenfolgeunabhaengig ueber Schluessel und Werte verglichen.
- */
-function costsEqual(entriesA, entriesB) {
-  if (entriesA.length !== entriesB.length) return false;
-  const valueById = new Map(entriesB);
-  for (const [costTypeId, value] of entriesA) {
-    if (valueById.get(costTypeId) !== value) return false;
-  }
-  return true;
-}
+/** Trennzeichen zwischen den Knoten-Schluesseln eines Fingerabdrucks. */
+const FINGERPRINT_SEPARATOR = '\n';
 
-/** True, wenn zwei Kategorie-ID-Listen dieselbe Menge sind (reihenfolgeunabhaengig). */
-function categoriesEqual(idsA, idsB) {
-  if (idsA.length !== idsB.length) return false;
-  const setB = new Set(idsB);
-  for (const id of idsA) {
-    if (!setB.has(id)) return false;
-  }
-  return true;
+/** Ordnet Kostenpaare nach ihrer Kostenart-ID (stabil und gebietsschema-unabhaengig). */
+function byCostTypeId([leftId], [rightId]) {
+  if (leftId < rightId) return -1;
+  return leftId > rightId ? 1 : 0;
 }
 
 /**
- * Vergleicht die **zaehlrelevanten** Teile zweier Effektiv-Zustaende: die
- * effektiven Kosten und die effektiven Kategorien je Knoten
- * (`docs/evaluator-architecture.md` §4.2, `countRelevantPartsEqual`). Genau
- * diese beiden aendern, was gezaehlt wird; Grenzwerte, Sichtbarkeit und Hinweise
- * beeinflussen die Zaehlung nicht und bleiben deshalb aussen vor. Ist das Ergebnis
- * `true`, hat die Fixpunktschleife ihren Fixpunkt erreicht — eine weitere Runde
- * wuerde nichts Zaehlrelevantes mehr aendern.
+ * Die **zaehlrelevanten** Werte eines Knotens als kanonischer Schluessel: seine
+ * effektiven Kosten und seine effektiven Kategorien, beide nach ID sortiert,
+ * sodass die Eintragungsreihenfolge den Schluessel nicht veraendert. Genau diese
+ * beiden Groessen aendern, was gezaehlt wird (`docs/evaluator-architecture.md`
+ * §4.2); Grenzwerte, Sichtbarkeit und Hinweise beeinflussen die Zaehlung nicht und
+ * bleiben deshalb aussen vor.
  *
- * Beide Zustaende stammen aus demselben Baum und teilen dieselben Knoten-Objekte;
- * es genuegt, ueber die Knoten des einen zu iterieren.
+ * Dieser Schluessel ist die **eine** Wahrheit darueber, was „zaehlrelevant" heisst:
+ * Konvergenzvergleich ({@link countRelevantDifferences}), Oszillations-Fingerabdruck
+ * ({@link countRelevantFingerprint}) und die Menge der instabilen Knoten lesen alle
+ * ihn — kein zweiter Durchgang, keine zweite Auffassung.
+ */
+function countRelevantKeyOf(state, node) {
+  const costs = state.costEntriesOf(node).sort(byCostTypeId);
+  const categoryIds = state.categoryIdsOf(node).sort();
+  return JSON.stringify([costs, categoryIds]);
+}
+
+/**
+ * Der Fingerabdruck der zaehlrelevanten Werte einer Knotenmenge: ihre
+ * Knoten-Schluessel in Traversierungsreihenfolge aneinandergereiht. Zwei
+ * Zustaende desselben Baums tragen genau dann denselben Fingerabdruck, wenn ihre
+ * zaehlrelevanten Werte ueber dieser Knotenmenge uebereinstimmen.
+ *
+ * Die Fixpunktschleife bildet ihn je Runde ueber die **iterierten** Knoten und
+ * erkennt daran eine Oszillation: taucht ein Fingerabdruck erneut auf, kehrt ein
+ * frueherer Zustand wieder, und der Abstand der beiden Vorkommen ist die
+ * Zykluslaenge.
+ *
+ * @param {EffectiveState} state
+ * @param {object[]} nodes  die Knoten, ueber die der Fingerabdruck gebildet wird.
+ * @returns {string}
+ */
+export function countRelevantFingerprint(state, nodes) {
+  return nodes.map(node => countRelevantKeyOf(state, node)).join(FINGERPRINT_SEPARATOR);
+}
+
+/**
+ * Die Knoten, deren zaehlrelevante Werte sich zwischen zwei Effektiv-Zustaenden
+ * unterscheiden. Ist die Menge leer, hat die Fixpunktschleife ihren Fixpunkt
+ * erreicht — eine weitere Runde wuerde nichts Zaehlrelevantes mehr aendern; ist sie
+ * es nicht, sind **genau diese** Knoten die instabilen: ihre Zahlen sind eine
+ * Momentaufnahme der letzten Runde und keine gesicherte Aussage.
+ *
+ * Beide Zustaende stammen aus demselben Baum und teilen dieselben Knoten-Objekte.
  *
  * @param {EffectiveState} previous
  * @param {EffectiveState} next
- * @returns {boolean}
+ * @param {object[]} nodes  die verglichenen Knoten (die iterierten, siehe `fixpoint.js`).
+ * @returns {Set<object>}
  */
-export function countRelevantEqual(previous, next) {
-  for (const node of previous.nodes()) {
-    if (!costsEqual(previous.costEntriesOf(node), next.costEntriesOf(node))) return false;
-    if (!categoriesEqual(previous.categoryIdsOf(node), next.categoryIdsOf(node))) return false;
-  }
-  return true;
+export function countRelevantDifferences(previous, next, nodes) {
+  return new Set(nodes.filter(node => countRelevantKeyOf(previous, node) !== countRelevantKeyOf(next, node)));
 }
 
 /**

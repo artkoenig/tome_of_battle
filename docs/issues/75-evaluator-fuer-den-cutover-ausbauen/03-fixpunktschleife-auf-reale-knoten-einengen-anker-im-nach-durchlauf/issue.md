@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: [02]
 
@@ -28,3 +28,4 @@ uebersehen — die Unsicherheit gehoert an den betroffenen Knoten.
 - [ ] Bei konvergierenden Daten aendert sich am Ergebnis nichts: die bestehende E2E-Suite bleibt unveraendert gruen.
 
 ## Comments
+- Die Fixpunktschleife iteriert nur noch ueber die realen Knoten; die synthetischen Anker bekommen ihre wirksamen Werte in einem Nach-Durchlauf gegen den finalen Zaehlindex (fixpoint.applyAnchorPostPass, ueber den neuen knotenmengen-bezogenen Einstieg modifiers.applyModifiersOfNodes). Nichtkonvergenz ist in zwei Befunde getrennt — OSCILLATION (mit Zykluslaenge, erkannt ueber einen Fingerabdruck der zaehlrelevanten Werte je Runde) und ROUND_BUDGET_EXHAUSTED; die frueher eine NO_CONVERGENCE-Diagnose entfaellt. Die Menge der nicht stabil gewordenen Knoten steht als isValueUnstable am Faehigkeitsdatensatz des Slots. Neuer Modultest an der Index-Schicht haelt die tragende Invariante fest (ein synthetischer Anker geht nie in die Zaehlung ein). Bestehende E2E-Suite unveraendert gruen (554 Tests); Messverfahren weist den Nach-Durchlauf jetzt getrennt aus (0,2-0,3 ms), iterierte Auswertung von 1,0-1,4 ms auf 0,7-1,1 ms gesunken.

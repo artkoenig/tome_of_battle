@@ -7,9 +7,10 @@
  * - **Verletzungen** fuer die Validierungsanzeige (das volle Ergebnis-Tripel je
  *   angeschlagener Grenze),
  * - je auswaehlbarem Slot einen **Faehigkeitsdatensatz** (`SlotCapability`) fuer
- *   die UI-Steuerung: effektives min/max, aktueller Stand, Restspielraum sowie
- *   die Pflicht-/Gesperrt-/Versteckt-Flags und die bedingten Hinweise,
- * - **Diagnosen** (Aufloesung, Nichtkonvergenz, Null-Nenner).
+ *   die UI-Steuerung: effektives min/max, aktueller Stand, Restspielraum, die
+ *   Pflicht-/Gesperrt-/Versteckt-Flags, das Merkmal „Wert nicht stabil" und die
+ *   bedingten Hinweise,
+ * - **Diagnosen** (Aufloesung, Oszillation, erschoepftes Rundenbudget, Null-Nenner).
  *
  * Dazu die reinen **UI-Projektions-Lookups**, die ausschliesslich den Bericht
  * lesen und keine Regel erneut auswerten (§4.8, Leitprinzip 3): die UI rechnet
@@ -18,6 +19,9 @@
 
 import { ConstraintKind } from './model.js';
 import { selectableSlotsOf, pathOf } from './evalTree.js';
+
+/** Der Normalfall: die Auswertung ist konvergiert, kein Slot ist instabil. */
+const NO_UNSTABLE_NODES = new Set();
 
 /** Projiziert ein Constraint-Ergebnis auf eine Verletzungsmeldung. */
 function toViolation(result) {
@@ -56,8 +60,14 @@ function headroomOf(maxResult) {
  * der MIN-Grenze; traegt der Slot keine (nicht suspendierte) Grenze, ist er 0.
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
+ *
+ * `isValueUnstable` sagt: dieser Slot lag in der Menge, deren zaehlrelevante Werte
+ * in der Fixpunktschleife nicht zur Ruhe kamen — seine Zahlen sind eine
+ * Momentaufnahme der letzten Runde, keine gesicherte Aussage. Das Merkmal ist von
+ * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
+ * ist es an jedem Slot `false`.
  */
-function toCapability(node, results, effective) {
+function toCapability(node, results, effective, unstableNodes) {
   const minResult = findResult(results, node, ConstraintKind.MIN);
   const maxResult = findResult(results, node, ConstraintKind.MAX);
   return {
@@ -69,6 +79,7 @@ function toCapability(node, results, effective) {
     isMandatoryUnmet: minResult !== null && !minResult.satisfied,
     isBlocked: maxResult !== null && maxResult.actual >= maxResult.bound,
     isHidden: effective.isHidden(node),
+    isValueUnstable: unstableNodes.has(node),
     notes: effective.notesOf(node),
   };
 }
@@ -83,19 +94,23 @@ function toCapability(node, results, effective) {
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {object[]} [budgetViolations]  die roster-weiten Budget-Verletzungen
- *   (`budget.js`, Regel „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen
- *   in **dieselbe** `violations`-Liste und durch **dieselbe** Projektion wie die
- *   Katalog-Grenzen, tragen aber einen synthetischen roster-weiten Anker; sie sind
- *   keine anwaehlbaren Slots und erzeugen daher keinen Faehigkeitsdatensatz.
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object> }} [extras]
+ *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
+ *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
+ *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
+ *   tragen aber einen synthetischen roster-weiten Anker; sie sind keine anwaehlbaren
+ *   Slots und erzeugen daher keinen Faehigkeitsdatensatz.
+ *   `unstableNodes`: die Knoten, deren zaehlrelevante Werte in der Fixpunktschleife
+ *   nicht zur Ruhe kamen (`fixpoint.js`). Ihr Faehigkeitsdatensatz wird als
+ *   „Wert nicht stabil" markiert, damit die Unsicherheit am betroffenen Slot steht.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  */
-export function buildReport(root, effective, results, diagnostics, budgetViolations = []) {
-
+export function buildReport(root, effective, results, diagnostics, extras = {}) {
+  const { budgetViolations = [], unstableNodes = NO_UNSTABLE_NODES } = extras;
 
   const capabilities = new Map();
   for (const node of selectableSlotsOf(root)) {
-    capabilities.set(pathOf(node), toCapability(node, results, effective));
+    capabilities.set(pathOf(node), toCapability(node, results, effective, unstableNodes));
   }
   return {
     violations: [...results, ...budgetViolations].filter(result => !result.satisfied).map(toViolation),

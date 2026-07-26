@@ -24,10 +24,13 @@
  * Das aufgeloeste Ziel jedes Modifikators kommt als `TargetDescriptor` aus dem
  * Resolver (`modifier.target`).
  *
- * **Umfang dieser Scheibe: genau ein Durchlauf.** Die Fixpunktschleife (Slice 05)
- * ist bewusst nicht Teil dieser Datei. `applyAllModifiers` erzeugt bei jedem Aufruf
- * eine frische Basiskopie und ist deshalb ohne Umbau in eine Konvergenzschleife
- * einzuwickeln (`docs/evaluator-architecture.md` §4.6, Schlussbemerkung).
+ * **Ein Durchlauf, zwei Aufrufer.** Die Konvergenzschleife selbst liegt in
+ * `fixpoint.js`, nicht hier. Diese Datei kennt nur den **knotenmengen-bezogenen
+ * Einstieg** {@link applyModifiersOfNodes} — „wende die Modifikatoren dieser Knoten
+ * gegen diesen Index auf diesen Zustand an" —, den die Fixpunktschleife je Runde mit
+ * den iterierten Knoten und der Nach-Durchlauf einmal mit den synthetischen Ankern
+ * ruft. {@link applyAllModifiers} ist die geschlossene Sicht darauf: ganzer Baum,
+ * frische Basiskopie (`docs/evaluator-architecture.md` §4.6, Schlussbemerkung).
  */
 
 import {
@@ -289,24 +292,33 @@ function applyModifierGroup(ctx, state, node, group, diagnostics) {
 }
 
 /**
- * Wendet **einen** Durchlauf aller Modifikatoren des Baums an und liefert die
- * effektiven Werte. Je Knoten greifen zuerst seine eigenstaendigen Modifikatoren
- * (in Dokumentreihenfolge), dann seine Modifikatorgruppen. Die Kopie startet immer
- * frisch von den Basiswerten, sodass ein erneuter Aufruf von den Basiswerten aus
- * dieselben effektiven Werte liefert (keine kumulative Drift innerhalb einer
- * Auswertung).
+ * Der **Einstieg der Modifikator-Schicht**: wendet alle Modifikatoren einer
+ * Knotenmenge gegen einen Zaehlindex auf einen gegebenen Zustand an. Je Knoten
+ * greifen zuerst seine eigenstaendigen Modifikatoren (in Dokumentreihenfolge), dann
+ * seine Modifikatorgruppen.
  *
- * @param {object} root  Wurzel des Evaluationsbaums.
- * @param {{ get: Function }} index  der Zaehlindex, gegen den Bedingungen und Wiederholungen fragen.
- * @param {Set<string>} categoryIds  bekannte Kategorie-IDs (Ziel-Typ-Regel des Query-Primitivs).
- * @param {object[]} diagnostics  Sammelliste fuer Auswertungsprobleme.
- * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
- *   Roster-Kostengrenzen (`RosterBudget`), an den Query-Kontext durchgereicht.
- * @returns {import('./effectiveState.js').EffectiveState}
+ * Knotenmenge und Zustand kommen von aussen, weil die Auswertung sie **zweimal
+ * verschieden** braucht — und beide Male dieselbe Implementierung benutzen soll
+ * (`design.md`, „Angebots-Anker ausserhalb der Fixpunktschleife"):
+ *
+ * - die Fixpunktschleife ruft ihn je Runde mit den **iterierten** (realen) Knoten
+ *   und einer frischen Basiskopie;
+ * - der Nach-Durchlauf ruft ihn einmal mit den **synthetischen Ankern** und dem
+ *   bereits konvergierten Zustand.
+ *
+ * Geschrieben wird ausschliesslich unter den Knoten der uebergebenen Menge (der
+ * Zustand schluesselt nach Knoten-Objekt), sodass der zweite Aufruf keinen Wert des
+ * ersten beruehren kann.
+ *
+ * @param {Iterable<object>} nodes  die Knoten, deren Modifikatoren angewendet werden.
+ * @param {import('./effectiveState.js').EffectiveState} state  der beschriebene Zustand.
+ * @param {{ root: object, index: { get: Function }, categoryIds: Set<string>, diagnostics: object[], budget?: import('./rosterBudget.js').RosterBudget }} context
+ *   Wurzel (Rahmen-Aufloesung), Zaehlindex, bekannte Kategorie-IDs (Ziel-Typ-Regel
+ *   des Query-Primitivs), Sammelliste fuer Auswertungsprobleme und die eingestellten
+ *   Roster-Kostengrenzen.
  */
-export function applyAllModifiers(root, index, categoryIds, diagnostics, budget) {
-  const state = createBaseEffectiveState(root);
-  for (const node of allNodes(root)) {
+export function applyModifiersOfNodes(nodes, state, { root, index, categoryIds, diagnostics, budget }) {
+  for (const node of nodes) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
     const targetModifiers = isLinkDefinition(node.def) ? node.def.resolved?.modifiers ?? [] : [];
     const linkModifiers = node.def.modifiers ?? [];
@@ -319,5 +331,29 @@ export function applyAllModifiers(root, index, categoryIds, diagnostics, budget)
       applyModifierGroup(ctx, state, node, group, diagnostics);
     }
   }
+}
+
+/**
+ * Wendet **einen** Durchlauf aller Modifikatoren des **ganzen** Baums (Anker
+ * eingeschlossen) auf eine frische Basiskopie an und liefert die effektiven Werte.
+ * Die Kopie startet immer frisch von den Basiswerten, sodass ein erneuter Aufruf
+ * von den Basiswerten aus dieselben effektiven Werte liefert (keine kumulative
+ * Drift innerhalb einer Auswertung).
+ *
+ * Das ist die geschlossene Sicht auf {@link applyModifiersOfNodes} — ein Durchlauf
+ * ueber den ganzen Baum in einem Aufruf, ohne dass der Aufrufer Knotenmenge und
+ * Zustand selbst stellt.
+ *
+ * @param {object} root  Wurzel des Evaluationsbaums.
+ * @param {{ get: Function }} index  der Zaehlindex, gegen den Bedingungen und Wiederholungen fragen.
+ * @param {Set<string>} categoryIds  bekannte Kategorie-IDs (Ziel-Typ-Regel des Query-Primitivs).
+ * @param {object[]} diagnostics  Sammelliste fuer Auswertungsprobleme.
+ * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
+ *   Roster-Kostengrenzen (`RosterBudget`), an den Query-Kontext durchgereicht.
+ * @returns {import('./effectiveState.js').EffectiveState}
+ */
+export function applyAllModifiers(root, index, categoryIds, diagnostics, budget) {
+  const state = createBaseEffectiveState(root);
+  applyModifiersOfNodes(allNodes(root), state, { root, index, categoryIds, diagnostics, budget });
   return state;
 }

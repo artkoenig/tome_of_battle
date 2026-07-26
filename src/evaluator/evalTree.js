@@ -13,8 +13,20 @@
  * Instanz haben. Ein Phantomknoten zaehlt nie mit (die Index-Schicht iteriert nur
  * reale Knoten, §4.4), traegt aber die Definition und ihre Grenzen, sodass die
  * Constraint-Schicht eine MIN-Grenze *gerade beim Fehlen* der Auswahl auswerten
- * kann (§4.7). Die Traversierung trennt deshalb reale ({@link realNodes}) von
- * allen Knoten ({@link allNodes}, Phantome eingeschlossen).
+ * kann (§4.7).
+ *
+ * Die Traversierung bietet deshalb **drei** Sichten auf denselben Baum, je nach
+ * Frage der aufrufenden Schicht:
+ *
+ * - {@link allNodes} — alle Knoten, Phantome eingeschlossen (Grenzen-Auswertung:
+ *   auch ein Anker traegt auszuwertende Grenzen);
+ * - {@link realNodes} — nur die Knoten mit Instanz. Sie sind zugleich die
+ *   **iterierten** Knoten: nur sie gehen in den Zaehlindex ein, also iteriert die
+ *   Fixpunktschleife genau ueber sie;
+ * - {@link syntheticNodes} — die Gegenmenge: alle Anker. Ihre effektiven Werte
+ *   bestimmt ein **einmaliger Nach-Durchlauf** nach der Konvergenz
+ *   (`fixpoint.js`, `applyAnchorPostPass`), weil sie auf den ausgewerteten Stand
+ *   nicht zurueckwirken koennen.
  */
 
 import { DefinitionKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
@@ -393,10 +405,30 @@ export function* allNodes(root) {
  * ausgenommen). Kontingent-Knoten sind reale Knoten: sie leiten Beitraege ihrer
  * Nachfahren weiter, tragen aber selbst keine Selektion bei (siehe Index-Schicht).
  * Phantomknoten zaehlen nie mit (§4.4) und bleiben deshalb hier aussen vor.
+ *
+ * Das ist zugleich die Knotenmenge, ueber die die **Fixpunktschleife iteriert**:
+ * weil nur reale Knoten in den Zaehlindex eingehen, kann nur ihre Veraenderung
+ * eine weitere Runde noetig machen.
  */
 export function* realNodes(root) {
   for (const node of allNodes(root)) {
     if (!node.isPhantom) yield node;
+  }
+}
+
+/**
+ * Die **synthetischen** Knoten des Baums: Pflicht-Phantome, Kategorie-Anker und
+ * Gruppen-Anker — die Gegenmenge zu {@link realNodes}.
+ *
+ * Sie tragen keine Instanz, gehen in keine Zaehlung ein und koennen den
+ * ausgewerteten Stand deshalb nicht veraendern. Ihre effektiven Werte sind eine
+ * reine Funktion des konvergierten Stands und werden in **einem** Durchlauf nach
+ * der Fixpunktschleife bestimmt (`fixpoint.js`, `applyAnchorPostPass`) statt in
+ * jeder Runde neu.
+ */
+export function* syntheticNodes(root) {
+  for (const node of allNodes(root)) {
+    if (node.isPhantom) yield node;
   }
 }
 

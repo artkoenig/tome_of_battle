@@ -31,11 +31,12 @@
 import { prepareDataset } from '../../src/evaluator/datasetPreparation.js';
 import { buildEvalTree, allNodes } from '../../src/evaluator/evalTree.js';
 import { buildIndex } from '../../src/evaluator/countIndex.js';
-import { evaluateToFixpoint } from '../../src/evaluator/fixpoint.js';
+import { evaluateToFixpoint, applyAnchorPostPass } from '../../src/evaluator/fixpoint.js';
 import { evaluateConstraints } from '../../src/evaluator/constraints.js';
 import { evaluateRosterBudget } from '../../src/evaluator/budget.js';
 import { buildReport } from '../../src/evaluator/report.js';
 import { createRosterBudget } from '../../src/evaluator/rosterBudget.js';
+import { DiagnosticKind } from '../../src/evaluator/model.js';
 import { evaluate } from '../../src/evaluator/evaluator.js';
 
 /**
@@ -81,6 +82,17 @@ export const DEFAULT_REPETITIONS = 15;
 
 /** Ersatzschluessel fuer einen synthetischen Knoten ohne eigene Definitionsart. */
 const UNKNOWN_DEFINITION_KIND = 'unbekannt';
+
+/** Die beiden Befunde, mit denen die Fixpunktschleife ihre Nichtkonvergenz meldet. */
+const NON_CONVERGENCE_KINDS = Object.freeze([
+  DiagnosticKind.OSCILLATION,
+  DiagnosticKind.ROUND_BUDGET_EXHAUSTED,
+]);
+
+/** Die Nichtkonvergenz-Diagnose der Schleife, oder `null` bei Konvergenz. */
+function nonConvergenceOf(fixpointDiagnostics) {
+  return fixpointDiagnostics.find(entry => NON_CONVERGENCE_KINDS.includes(entry.kind)) ?? null;
+}
 
 /**
  * Fuehrt `run` aus und misst seine Dauer.
@@ -141,32 +153,49 @@ export function measureEvaluation(dataset, roster) {
   const preparation = timed(() => prepareDataset(dataset));
   const { resolved, diagnostics: datasetDiagnostics } = preparation.value;
 
-  // (b) Iterierte Auswertung: Baumphase 1, Fixpunktrunden, finaler Index.
+  // (b) Iterierte Auswertung: Baumphase 1, Fixpunktrunden ueber die realen Knoten,
+  // finaler Index.
   const iterated = timed(() => {
     const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
-    const { effective, diagnostics: fixpointDiagnostics, rounds, converged } =
+    const { effective, diagnostics: fixpointDiagnostics, rounds, converged, unstableNodes } =
       evaluateToFixpoint(root, resolved.categoryIds, budget);
     const index = buildIndex(root, effective);
-    return { root, effective, index, joinDiagnostics, fixpointDiagnostics, fixpoint: { rounds, converged } };
+    return {
+      root,
+      effective,
+      index,
+      joinDiagnostics,
+      fixpointDiagnostics,
+      unstableNodes,
+      // Der Ausgang der Schleife samt ihres Befunds: konvergiert, oder die eine
+      // Nichtkonvergenz-Diagnose (Oszillation mit Zykluslaenge / erschoepftes
+      // Rundenbudget). Abgelesen statt nachgebildet — die Diagnose *ist* der Befund.
+      fixpoint: { rounds, converged, nonConvergence: nonConvergenceOf(fixpointDiagnostics) },
+    };
   });
-  const { root, effective, index, joinDiagnostics, fixpointDiagnostics, fixpoint } = iterated.value;
+  const { root, effective, index, joinDiagnostics, fixpointDiagnostics, unstableNodes, fixpoint } = iterated.value;
 
-  // (c) Nach-Durchlauf: Baumphase 2 und die Modifikatoren auf den synthetischen
-  // Ankern. Am heutigen Stand gibt es ihn nicht — alle Anker entstehen in
-  // Baumphase 1 und laufen in der Fixpunktschleife mit, ihr Aufwand steckt also in
-  // (b). Die Phase wird trotzdem als eigener, leerer Abschnitt gefuehrt, weil genau
-  // ihr Anteil spaeter der Beleg dafuer ist, dass der Nach-Durchlauf den Zuwachs des
-  // Angebots aus der Schleife heraushaelt: erst der Vergleich „(b) heute" gegen
-  // „(b)+(c) danach" macht die Wirkung dieser Entscheidung nachweisbar.
-  const postPass = timed(() => null);
+  // (c) Nach-Durchlauf: die Modifikatoren auf den synthetischen Ankern, gegen den
+  // finalen Index. Sein getrennt ausgewiesener Anteil ist der Beleg dafuer, dass der
+  // Nach-Durchlauf den Zuwachs des Angebots aus der Schleife heraushaelt: erst der
+  // Vergleich „(b) vorher" gegen „(b)+(c) nachher" macht die Wirkung dieser
+  // Entscheidung nachweisbar. Die Baumphase 2 (die Angebots-Anker selbst) kommt
+  // spaeter hinzu und wird hier mitgemessen.
+  const postPass = timed(() => applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget));
 
   // (d) Grenzen-Auswertung und Berichtsbau.
   const constraintsAndReport = timed(() => {
     const constraintDiagnostics = [];
     const results = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics, budget);
     const budgetViolations = evaluateRosterBudget(index, budget);
-    const diagnostics = [...datasetDiagnostics, ...joinDiagnostics, ...fixpointDiagnostics, ...constraintDiagnostics];
-    return buildReport(root, effective, results, diagnostics, budgetViolations);
+    const diagnostics = [
+      ...datasetDiagnostics,
+      ...joinDiagnostics,
+      ...fixpointDiagnostics,
+      ...postPass.value,
+      ...constraintDiagnostics,
+    ];
+    return buildReport(root, effective, results, diagnostics, { budgetViolations, unstableNodes });
   });
 
   const phases = {

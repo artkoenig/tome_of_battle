@@ -29,7 +29,7 @@ import { prepareDataset } from './datasetPreparation.js';
 import { buildDatasetDescription } from './datasetDescription.js';
 import { buildEvalTree } from './evalTree.js';
 import { buildIndex } from './countIndex.js';
-import { evaluateToFixpoint } from './fixpoint.js';
+import { evaluateToFixpoint, applyAnchorPostPass } from './fixpoint.js';
 import { evaluateConstraints } from './constraints.js';
 import { evaluateRosterBudget } from './budget.js';
 import { buildReport } from './report.js';
@@ -64,14 +64,22 @@ export function evaluate(dataset, roster) {
 
   const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
 
-  // Fixpunktschleife (Slice 05): Weil Zaehlen von effektiven Werten abhaengt und
-  // Modifikatoren von Zaehlungen, wird iterativ bis zur Konvergenz ausgewertet —
-  // jede Runde von einer frischen Basiskopie, mit harter Rundenobergrenze und
-  // Nichtkonvergenz-Diagnose (docs/evaluator-architecture.md §3.5/§4.2).
-  const { effective, diagnostics: fixpointDiagnostics } = evaluateToFixpoint(root, resolved.categoryIds, budget);
+  // Fixpunktschleife: Weil Zaehlen von effektiven Werten abhaengt und Modifikatoren
+  // von Zaehlungen, wird iterativ bis zur Konvergenz ausgewertet — jede Runde von
+  // einer frischen Basiskopie, mit harter Rundenobergrenze und getrennten Befunden
+  // fuer Oszillation und erschoepftes Rundenbudget (§3.5/§4.2). Iteriert wird nur
+  // ueber die **realen** Knoten: nur sie gehen in die Zaehlung ein.
+  const { effective, diagnostics: fixpointDiagnostics, unstableNodes } =
+    evaluateToFixpoint(root, resolved.categoryIds, budget);
 
   // Finaler, konsistenter Index aus dem konvergierten (bzw. letzten) Stand.
   const index = buildIndex(root, effective);
+
+  // Nach-Durchlauf: die synthetischen Anker bekommen ihre effektiven Werte in
+  // **einem** Durchlauf gegen diesen finalen Index. Sie zaehlen nie mit, koennen
+  // also nicht zurueckwirken — der Index wird danach nicht erneut gebaut.
+  const postPassDiagnostics = applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget);
+
   const constraintDiagnostics = [];
   const results = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics, budget);
 
@@ -85,10 +93,11 @@ export function evaluate(dataset, roster) {
     ...datasetDiagnostics,
     ...joinDiagnostics,
     ...fixpointDiagnostics,
+    ...postPassDiagnostics,
     ...constraintDiagnostics,
   ];
 
-  return buildReport(root, effective, results, diagnostics, budgetViolations);
+  return buildReport(root, effective, results, diagnostics, { budgetViolations, unstableNodes });
 }
 
 /**

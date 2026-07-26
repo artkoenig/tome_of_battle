@@ -30,6 +30,7 @@ import { join, resolve } from 'node:path';
 import { JSDOM } from 'jsdom';
 
 import { rosterFromRos } from '../src/evaluator/__fixtures__/rosParser.js';
+import { DiagnosticKind } from '../src/evaluator/model.js';
 import {
   MeasuredPhase,
   INTERACTIVE_BUDGET_MS,
@@ -153,11 +154,17 @@ function formatShare(share) {
   return `${(share * 100).toFixed(1)} %`.padStart(8);
 }
 
-/** Der Ausgang der Fixpunktschleife im Klartext. */
-function formatFixpoint({ rounds, converged }) {
-  return converged
-    ? `konvergiert nach ${rounds} Runde(n)`
-    : `nicht konvergiert (Rundenobergrenze nach ${rounds} Runden erreicht)`;
+/**
+ * Der Ausgang der Fixpunktschleife im Klartext — die drei Faelle, die die Schleife
+ * unterscheidet: Konvergenz, Oszillation (mit Zykluslaenge) und erschoepftes
+ * Rundenbudget.
+ */
+function formatFixpoint({ rounds, converged, nonConvergence }) {
+  if (converged) return `konvergiert nach ${rounds} Runde(n)`;
+  if (nonConvergence?.kind === DiagnosticKind.OSCILLATION) {
+    return `Oszillation nach ${rounds} Runden (Zykluslaenge ${nonConvergence.cycleLength})`;
+  }
+  return `Rundenbudget erschoepft (${rounds} Runden, ohne dass ein Zustand wiederkehrte)`;
 }
 
 /** Die synthetischen Knoten nach ihrer Definitionsart, als eine Zeile. */

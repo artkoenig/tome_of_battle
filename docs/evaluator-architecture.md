@@ -83,6 +83,10 @@ Pro Knoten: Conditions (bool) und Repeats (Anzahl) über das Query-Primitiv ausw
 
 Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Kosten/Kategorien ab. Entscheidung: **Iteration bis zur Konvergenz mit harter Rundenobergrenze.** Ändert eine Runde keine zählrelevanten effektiven Werte mehr, ist der Fixpunkt erreicht. Wird die Obergrenze erreicht, gilt der Stand der letzten Runde und der Bericht erhält eine Nichtkonvergenz-Diagnose — stilles Falschrechnen ist ausgeschlossen.
 
+**Iteriert wird nur über die realen Knoten.** Ein synthetischer Anker (Pflicht-Phantom, Kategorie-Anker, Gruppen-Anker) trägt keine Instanz und geht in keinen Zählschlüssel ein, kann den ausgewerteten Zustand also nicht verändern; ihn mitzuiterieren berechnete jede Runde dasselbe Ergebnis neu. Seine effektiven Werte bestimmt deshalb **ein** Durchlauf nach der Konvergenz (`applyAnchorPostPass`), gegen den finalen Zählindex. Das ist exakt und keine Näherung: konvergiert die Schleife, ist der finale Index inhaltsgleich mit dem der letzten Runde. Die tragende Invariante — *ein synthetischer Anker geht nie in den Zählindex ein* — ist als Modultest der Index-Schicht festgehalten (`countIndex.syntheticAnchors.test.js`).
+
+**Zwei getrennte Befunde statt einer Meldung.** Bleibt die Konvergenz aus, unterscheidet die Schleife über einen Fingerabdruck der zählrelevanten Werte je Runde: kehrt ein Zustand wieder, ist es eine **Oszillation** (die Diagnose trägt die Zykluslänge — den Abstand der beiden Vorkommen); wird die Obergrenze erreicht, ohne dass sich ein Zustand wiederholt hat, ist das **erschöpftes Rundenbudget** — fachlich etwas anderes, denn dieser Katalog könnte mit mehr Runden noch konvergieren. Eine erkannte Oszillation bricht die Schleife nicht vorzeitig ab; es gilt weiterhin der Stand der letzten Runde. Zusätzlich liefert die Schleife die Knoten, deren zählrelevante Werte nicht zur Ruhe kamen — ihr Fähigkeitsdatensatz trägt „Wert nicht stabil", sodass die Unsicherheit **am betroffenen Slot** steht und nicht nur in einer globalen Liste.
+
 *Verworfen:* „genau zwei Pässe" (einfacher, aber stille Fehler bei mehrstufigen Abhängigkeiten); Dependency-Graph mit topologischer Sortierung (roster-Scopes machen fast alles von fast allem abhängig, der Graph degeneriert).
 
 ### 3.6 Constraint-Schicht und Bericht
@@ -90,8 +94,8 @@ Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Koste
 Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Der Bericht enthält:
 
 - **Verletzungen** (für die Validierungsanzeige),
-- pro Auswahlpunkt einen **Fähigkeitsdatensatz**: effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, bedingte Hinweise (für die UI-Steuerung),
-- **Diagnosen** (Auflösungsprobleme, Nichtkonvergenz, Null-Nenner, unauflösbare Budgetgrenze).
+- pro Auswahlpunkt einen **Fähigkeitsdatensatz**: effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", bedingte Hinweise (für die UI-Steuerung),
+- **Diagnosen** (Auflösungsprobleme, Oszillation, erschöpftes Rundenbudget, Null-Nenner, unauflösbare Budgetgrenze).
 
 Zusätzlich prüft die Engine eine **roster-weite Budget-Regel** (keine Katalog-Grenze, sondern eine Regel der Engine): je eingestellter Kostenart wird die am ROSTER-Rahmen verplante Summe gegen die eingestellte Grenze dieser Kostenart geprüft; eine Überschreitung erzeugt eine Budget-Verletzung, die über einen **synthetischen** roster-weiten Anker in dieselbe Verletzungsliste wie die übrigen Verletzungen fließt.
 
@@ -182,7 +186,9 @@ record ConstraintResult { limit: LimitDef, anchor: EvalNode,
 
 record SlotCapability   { node: EvalNode, effectiveMin: number?, effectiveMax: number?,
                           current: number, headroom: number?,
-                          isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool, notes: string[] }
+                          isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
+                          isValueUnstable: bool,        // lag in der instabilen Knotenmenge
+                          notes: string[] }
 
 record Report { violations: ConstraintResult[], capabilities: Map<NodePath, SlotCapability>,
                 diagnostics: Diagnostic[] }
@@ -199,22 +205,36 @@ function evaluate(catalogs, roster): Report
   effective   = effectiveStateFromBaseDefinitions(tree)
   diagnostics = collect(resolved.allResolutionLogs)
 
+  iterated  = realNodesOf(tree)                        // nur zählende Knoten iterieren
   converged = false
+  cycleLength = null
+  seenAtRound = { fingerprint(effective, iterated): 0 }
+
   for round in 1 .. MAX_FIXPOINT_ROUNDS:
     index        = buildIndex(tree, effective)
-    newEffective = applyAllModifiers(tree, index, effective)
-    if countRelevantPartsEqual(effective, newEffective):
+    newEffective = applyModifiersOfNodes(iterated, baseStateCopy(tree), index)
+    unstable     = countRelevantDifferences(effective, newEffective, iterated)
+    print        = fingerprint(newEffective, iterated)
+    effective    = newEffective                        // bei Nichtkonvergenz gilt die letzte Runde
+    if unstable.isEmpty:
       converged = true
-      effective = newEffective
       break
-    effective = newEffective
+    if seenAtRound.has(print):                         // ein früherer Zustand kehrt wieder
+      cycleLength = cycleLength ?? round - seenAtRound[print]
+    else:
+      seenAtRound[print] = round                       // Abstand immer zum ERSTEN Vorkommen
 
   if not converged:
-    diagnostics.add(Diagnostic.NO_CONVERGENCE(MAX_FIXPOINT_ROUNDS))
+    diagnostics.add(cycleLength != null
+      ? Diagnostic.OSCILLATION(round, cycleLength)
+      : Diagnostic.ROUND_BUDGET_EXHAUSTED(round))
 
-  index   = buildIndex(tree, effective)                // finaler, konsistenter Index
+  index = buildIndex(tree, effective)                  // finaler, konsistenter Index
+  // Nach-Durchlauf: die synthetischen Anker EINMAL gegen den finalen Index. Sie
+  // zählen nie mit, können also nicht zurückwirken; der Index wird nicht neu gebaut.
+  diagnostics += applyModifiersOfNodes(syntheticNodesOf(tree), effective, index)
   results = evaluateAllConstraints(tree, effective, index, diagnostics)
-  return buildReport(tree, effective, results, diagnostics)
+  return buildReport(tree, effective, results, diagnostics, unstable)
 ```
 
 ### 4.3 Join-Schicht
@@ -320,15 +340,19 @@ function repeatCount(ctx, r: RepeatDef): number
   steps  = r.roundUp ? ceil(actual / r.perValue) : floor(actual / r.perValue)
   return steps * r.repeats                  // 0 = Modifikator inaktiv
 
-function applyAllModifiers(tree, index, previous): EffectiveState
-  next = baseStateCopy(tree)                // immer von den Basisdefinitionen aus, nie kumulativ!
-  for node in allNodesOf(tree):             // inkl. Phantome: auch deren Grenzen sind modifizierbar
+// Ein Durchlauf, zwei Aufrufer: die Fixpunktschleife ruft ihn je Runde mit den
+// ITERIERTEN (realen) Knoten und einer frischen Basiskopie, der Nach-Durchlauf
+// einmal mit den SYNTHETISCHEN Ankern und dem konvergierten Zustand. Auch die
+// Grenzen eines Ankers sind modifizierbar — nur eben nicht in jeder Runde neu.
+function applyModifiersOfNodes(nodes, state, index)
+  // schreibt ausschließlich unter den übergebenen Knoten (der Zustand schlüsselt
+  // nach Knoten-Objekt) — der zweite Aufruf berührt keinen Wert des ersten
+  for node in nodes:
     ctx = QueryContext(node, index, diagnostics)
     for modifier in node.def.modifiers:     // Dokumentreihenfolge — Reihenfolge ist Semantik
-      applyModifier(ctx, next, node, modifier)
+      applyModifier(ctx, state, node, modifier)
     for group in node.def.modifierGroups:   // Modifikatorgruppen nach den freien Modifikatoren
-      applyModifierGroup(ctx, next, node, group)
-  return next
+      applyModifierGroup(ctx, state, node, group)
 
 function applyModifier(ctx, state, node, modifier)
   // feuert nur, wenn ALLE direkten Bedingungen UND alle Bedingungsgruppen halten
@@ -393,7 +417,7 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED
 ### 4.8 Bericht und UI-Projektion
 
 ```
-function buildReport(tree, effective, results, diagnostics): Report
+function buildReport(tree, effective, results, diagnostics, unstableNodes): Report
   capabilities = {}
   for node in selectableSlotsOf(tree):                   // reale Knoten + Phantom-Pflichtslots
     minResult = findResult(results, node, MIN)
@@ -407,6 +431,7 @@ function buildReport(tree, effective, results, diagnostics): Report
       isMandatoryUnmet = minResult != null and not minResult.satisfied,
       isBlocked     = maxResult != null and maxResult.actual >= maxResult.bound,
       isHidden      = node in effective.hidden,
+      isValueUnstable = node in unstableNodes,         // kam in der Schleife nicht zur Ruhe
       notes         = effective.notes[node])
   return Report(
     violations   = results.filter(r → not r.satisfied),

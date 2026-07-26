@@ -229,7 +229,15 @@ export const DiagnosticKind = Object.freeze({
   // diese Grenze als Diagnose sichtbar gemacht (§5, Risiko 4).
   UNSUPPORTED_MODIFIER_GROUP_REPEAT: 'unsupportedModifierGroupRepeat',
   UNSUPPORTED_COMPARATOR: 'unsupportedComparator',
-  NO_CONVERGENCE: 'noConvergence',
+  // Die Fixpunktschleife kam nicht zur Ruhe, weil ein **zaehlrelevanter Zustand
+  // wiederkehrt**: der Katalog schwingt. Die Diagnose traegt neben der Rundenzahl
+  // die **Zykluslaenge** (den Abstand der beiden gleichen Zustaende) — sie ist die
+  // Angabe, die den Katalogfehler auffindbar macht.
+  OSCILLATION: 'oscillation',
+  // Die harte Rundenobergrenze ist erreicht, **ohne** dass sich ein Zustand
+  // wiederholt haette. Fachlich etwas anderes als eine Oszillation: dieser Katalog
+  // *koennte* mit mehr Runden noch konvergieren. Die Diagnose traegt die Rundenzahl.
+  ROUND_BUDGET_EXHAUSTED: 'roundBudgetExhausted',
   // Der `field` eines Modifikators verweist wie eine Definitions-ID, findet in der
   // globalen Symboltabelle (Kostenart- und Constraint-IDs) aber kein Ziel —
   // baumelnder Verweis, sichtbar gemacht statt still ignoriert.
