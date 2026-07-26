@@ -191,7 +191,14 @@ export function measureEvaluation(dataset, roster) {
       ...postPass.value,
       ...constraintDiagnostics,
     ];
-    return buildReport(root, effective, results, diagnostics, { budgetViolations, unstableNodes });
+    // `profileTypes` wie in der Fassade mitgeben: ohne sie baute die Messung eine
+    // Info-Projektion ohne Klartext-Namen und maesse damit weniger, als die Engine
+    // wirklich tut.
+    return buildReport(root, effective, results, diagnostics, {
+      budgetViolations,
+      unstableNodes,
+      profileTypes: resolved.profileTypes,
+    });
   });
 
   const phases = {
@@ -212,9 +219,14 @@ export function measureEvaluation(dataset, roster) {
 
 /**
  * Ein stabiler, vergleichbarer Fingerabdruck eines Berichts: die Verletzungen
- * (sortiert, mit Ist-Wert und Grenze), die Zahl der Faehigkeitsdatensaetze und die
- * aufgetretenen Diagnose-Arten. Bewusst keine Knoten-Referenzen — verglichen wird
- * das *Ergebnis*, nicht die Objektidentitaet.
+ * (sortiert, mit Ist-Wert und Grenze), die Zahl der Faehigkeitsdatensaetze, die
+ * Zahl ihrer Info-Elemente und die aufgetretenen Diagnose-Arten. Bewusst keine
+ * Knoten-Referenzen — verglichen wird das *Ergebnis*, nicht die Objektidentitaet.
+ *
+ * Die Info-Elemente gehen mit ein, weil die Info-Projektion sonst still
+ * auseinanderlaufen koennte: eine Nachbildung, die dem Berichtsbau die
+ * Profiltyp-Deklarationen nicht mitgibt, liefert exakt dieselben Verletzungen und
+ * denselben Datensatz-Umfang und waere ohne diese Zahl nicht zu unterscheiden.
  *
  * @param {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }} report
  * @returns {string}
@@ -224,7 +236,21 @@ export function reportFingerprint(report) {
     .map(violation => `${violation.limitId}@${violation.anchor?.defId ?? ''}=${violation.actual}/${violation.bound}`)
     .sort();
   const diagnosticKinds = report.diagnostics.map(entry => entry.kind).sort();
-  return JSON.stringify({ violations, capabilities: report.capabilities.size, diagnosticKinds });
+  return JSON.stringify({
+    violations,
+    capabilities: report.capabilities.size,
+    infoElements: countInfoElements(report.capabilities),
+    diagnosticKinds,
+  });
+}
+
+/** Die Gesamtzahl der Info-Elemente ueber alle Faehigkeitsdatensaetze eines Berichts. */
+function countInfoElements(capabilities) {
+  let total = 0;
+  for (const capability of capabilities.values()) {
+    total += capability.infoElements?.length ?? 0;
+  }
+  return total;
 }
 
 /**

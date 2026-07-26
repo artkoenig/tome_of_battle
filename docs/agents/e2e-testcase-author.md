@@ -113,9 +113,20 @@ and in `docs/testing/vampire-bloodlines/scenario.json`. In outline:
             "isBlocked": false,
             "isMandatoryUnmet": false,
             "authorMessages": [{ "severity": "error|warning|info", "text": "<catalog text>" }],
-            "characteristics": [
-              { "carrierId": "<profile or infoLink id>", "typeId": "<characteristicType id>", "value": "<effective value>" }
-            ]
+            "infoElements": [
+              {
+                "id": "<profile, rule or infoLink id — the OCCURRENCE>",
+                "kind": "profile|rule",
+                "name": "<effective display name>",
+                "profileTypeId": "<profileType id — profiles only>",
+                "profileTypeName": "<its plain-text name — profiles only>",
+                "text": "<the rule's <description> — rules only>",
+                "characteristics": [
+                  { "typeId": "<characteristicType id>", "name": "<its plain-text name>", "value": "<effective value>" }
+                ]
+              }
+            ],
+            "infoElementsAbsent": ["<id that must NOT appear in this slot's projection>"]
           }
         ],
         "diagnostics": {
@@ -172,12 +183,32 @@ Key points of the contract:
     `type="add" field="error"|"warning"|"info"` modifiers. This assertion is
     **complete** for that slot (order does not matter): `[]` demands that no author
     message fires there. `text` is the catalog text verbatim.
-  - **`characteristics`** — effective characteristic values, as a **subset**: name
-    only the ones the scenario pins down. `carrierId` is the id of the element the
-    value belongs to — the `<profile>` itself, or the `<infoLink>` through which the
-    slot pulls a shared profile in. `typeId` is the `<characteristicType>` id from
-    the game system's `<profileTypes>`; the same id is what a characteristic
-    modifier names in its `field`.
+  - **`infoElements`** — the **profiles and rule texts that apply to this slot**, as
+    a **subset**: name only the ones the scenario pins down. The list holds the
+    slot's own info elements **and those of its occupied sub-selections** (inherited),
+    in document order; an element that is itself hidden, or that hangs on a hidden
+    node, is **not** in it. `id` is mandatory and names the **occurrence**: the
+    `<profile>`/`<rule>` itself, or — when the slot pulls a shared element in — the
+    `<infoLink>`, because a linked element appears **at the link's position** and
+    under the link's name. An `<infoLink>` pointing at an `<infoGroup>` contributes
+    the group's *members*, not an entry of its own. A profile entry carries its
+    `profileTypeId`/`profileTypeName` and its `characteristics` (again a subset);
+    `typeId` is the `<characteristicType>` id from the game system's `<profileTypes>`,
+    the same id a characteristic modifier names in its `field`, and `value` is the
+    **effective** value after every modifier that fires. A rule entry carries its
+    `text` — the verbatim `<description>` (`null` when the rule has none). *Verbatim
+    means byte-exact:* 57 of the 660 `<description>` elements in the Vampire Counts
+    catalog contain **non-breaking spaces (U+00A0)**, which render like ordinary
+    spaces but are not. Copy the characters as they stand, or pin the rule down with
+    its `id`/`name` and leave `text` unasserted rather than transcribing it by eye.
+    "Hidden" here is the **effective** visibility: the base `hidden="true"` of the
+    catalog element, overridden by a `field="hidden"` modifier on that same element
+    when its conditions hold.
+  - **`infoElementsAbsent`** — the counter-statement: a list of occurrence ids that
+    must **not** appear in that slot's projection. `infoElements` alone is a subset
+    assertion and therefore never notices a *missing* entry, so the two rules that
+    are about absence — "hidden stays out" and "a link to an `<infoGroup>` carries no
+    entry of its own" — are only checkable through this key.
 - **`expect.diagnostics`** (optional) asserts over `report.diagnostics`: `present`
   requires diagnostics of a given `DiagnosticKind` (optionally narrowed by
   `targetId`/`defId`, with a `minCount`), `absent` forbids them.

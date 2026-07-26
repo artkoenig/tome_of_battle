@@ -113,7 +113,7 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
     ]);
   });
 
-  it('liest rule mit id und name in entry.infos', () => {
+  it('liest rule mit id und name in entry.infos; ohne <description> bleibt der Text leer', () => {
     const catalogue = parseCatalogue(catalogueWithInfos(InfoLinkKind.PROFILE, PROFILE_ID));
     const rule = infoOfKind(catalogue.entries[0].infos, InfoElementKind.RULE);
 
@@ -121,10 +121,20 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
       kind: InfoElementKind.RULE,
       id: 'own-rule',
       name: 'Own Rule',
+      // Der Regeltext ist XSD-optional; 10 der 1157 Regeln der Fixture-Kataloge
+      // tragen keinen. Dann `null` statt eines erfundenen Leerstrings.
+      text: null,
       isHidden: false,
       modifiers: [],
       modifierGroups: [],
     });
+  });
+
+  it('liest den Regeltext einer rule aus ihrer <description>', () => {
+    const catalogue = parseCatalogue(catalogueWithInfos(InfoLinkKind.RULE, RULE_ID));
+    const sharedRule = infoOfKind(catalogue.infos, InfoElementKind.RULE);
+
+    expect(sharedRule.text).toBe('Enemies must test.');
   });
 
   it('liest infoGroup rekursiv mit ihren verschachtelten infos', () => {

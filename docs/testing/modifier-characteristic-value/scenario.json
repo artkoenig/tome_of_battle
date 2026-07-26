@@ -22,26 +22,28 @@
         "capabilities": [
           {
             "defId": "ff8f-ce5a-d663-f9b4",
-            "characteristics": [
+            "infoElements": [
               {
-                "carrierId": "6101-0a1c-96ef-09d6",
-                "typeId": "f1be-e66c-d5e1-673c",
-                "value": "7"
-              },
-              {
-                "carrierId": "6101-0a1c-96ef-09d6",
-                "typeId": "d4a9-0ed4-d041-e54b",
-                "value": "7"
-              },
-              {
-                "carrierId": "6101-0a1c-96ef-09d6",
-                "typeId": "f95b-da01-0578-3bdc",
-                "value": "3"
-              },
-              {
-                "carrierId": "6101-0a1c-96ef-09d6",
-                "typeId": "8712-f56f-5b22-a720",
-                "value": "4"
+                "kind": "profile",
+                "id": "6101-0a1c-96ef-09d6",
+                "characteristics": [
+                  {
+                    "typeId": "f1be-e66c-d5e1-673c",
+                    "value": "7"
+                  },
+                  {
+                    "typeId": "d4a9-0ed4-d041-e54b",
+                    "value": "7"
+                  },
+                  {
+                    "typeId": "f95b-da01-0578-3bdc",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "8712-f56f-5b22-a720",
+                    "value": "4"
+                  }
+                ]
               }
             ]
           }
@@ -60,26 +62,28 @@
         "capabilities": [
           {
             "defId": "ff8f-ce5a-d663-f9b4",
-            "characteristics": [
+            "infoElements": [
               {
-                "carrierId": "6101-0a1c-96ef-09d6",
-                "typeId": "f1be-e66c-d5e1-673c",
-                "value": "6"
-              },
-              {
-                "carrierId": "6101-0a1c-96ef-09d6",
-                "typeId": "d4a9-0ed4-d041-e54b",
-                "value": "7"
-              },
-              {
-                "carrierId": "6101-0a1c-96ef-09d6",
-                "typeId": "f95b-da01-0578-3bdc",
-                "value": "3"
-              },
-              {
-                "carrierId": "6101-0a1c-96ef-09d6",
-                "typeId": "8712-f56f-5b22-a720",
-                "value": "4"
+                "kind": "profile",
+                "id": "6101-0a1c-96ef-09d6",
+                "characteristics": [
+                  {
+                    "typeId": "f1be-e66c-d5e1-673c",
+                    "value": "6"
+                  },
+                  {
+                    "typeId": "d4a9-0ed4-d041-e54b",
+                    "value": "7"
+                  },
+                  {
+                    "typeId": "f95b-da01-0578-3bdc",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "8712-f56f-5b22-a720",
+                    "value": "4"
+                  }
+                ]
               }
             ]
           }
@@ -102,116 +106,121 @@
         "capabilities": [
           {
             "defId": "6bf6-467b-2b6f-71fb",
-            "characteristics": [
+            "infoElements": [
               {
-                "carrierId": "3645-5ebd-c72a-1ebb",
-                "typeId": "f95b-da01-0578-3bdc",
-                "value": "3"
-              },
-              {
-                "carrierId": "3645-5ebd-c72a-1ebb",
-                "typeId": "4a8b-0c8e-3daf-7901",
-                "value": "3"
-              },
-              {
-                "carrierId": "3645-5ebd-c72a-1ebb",
-                "typeId": "dfff-363e-f72a-5a59",
-                "value": "3"
-              },
-              {
-                "carrierId": "3645-5ebd-c72a-1ebb",
-                "typeId": "6b9f-c8fe-8998-27e3",
-                "value": "1"
-              },
-              {
-                "carrierId": "3645-5ebd-c72a-1ebb",
-                "typeId": "253a-9b00-4fde-8ac2",
-                "value": "1"
+                "kind": "profile",
+                "id": "3645-5ebd-c72a-1ebb",
+                "characteristics": [
+                  {
+                    "typeId": "f95b-da01-0578-3bdc",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "4a8b-0c8e-3daf-7901",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "dfff-363e-f72a-5a59",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "6b9f-c8fe-8998-27e3",
+                    "value": "1"
+                  },
+                  {
+                    "typeId": "253a-9b00-4fde-8ac2",
+                    "value": "1"
+                  }
+                ]
               }
             ]
           },
           {
             "defId": "14b0-1d64-8f2c-4da2",
-            "characteristics": [
+            "infoElements": [
               {
-                "carrierId": "4288-2e40-701a-b5ac",
-                "typeId": "f95b-da01-0578-3bdc",
-                "value": "5"
-              },
-              {
-                "carrierId": "4288-2e40-701a-b5ac",
-                "typeId": "4a8b-0c8e-3daf-7901",
-                "value": "5"
-              },
-              {
-                "carrierId": "4288-2e40-701a-b5ac",
-                "typeId": "dfff-363e-f72a-5a59",
-                "value": "5"
-              },
-              {
-                "carrierId": "4288-2e40-701a-b5ac",
-                "typeId": "6b9f-c8fe-8998-27e3",
-                "value": "3"
-              },
-              {
-                "carrierId": "4288-2e40-701a-b5ac",
-                "typeId": "253a-9b00-4fde-8ac2",
-                "value": "2"
-              },
-              {
-                "carrierId": "4288-2e40-701a-b5ac",
-                "typeId": "0e92-d038-82bf-fb41",
-                "value": "4"
-              },
-              {
-                "carrierId": "4288-2e40-701a-b5ac",
-                "typeId": "2d45-18fe-9eb3-b113",
-                "value": "7"
+                "kind": "profile",
+                "id": "4288-2e40-701a-b5ac",
+                "characteristics": [
+                  {
+                    "typeId": "f95b-da01-0578-3bdc",
+                    "value": "5"
+                  },
+                  {
+                    "typeId": "4a8b-0c8e-3daf-7901",
+                    "value": "5"
+                  },
+                  {
+                    "typeId": "dfff-363e-f72a-5a59",
+                    "value": "5"
+                  },
+                  {
+                    "typeId": "6b9f-c8fe-8998-27e3",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "253a-9b00-4fde-8ac2",
+                    "value": "2"
+                  },
+                  {
+                    "typeId": "0e92-d038-82bf-fb41",
+                    "value": "4"
+                  },
+                  {
+                    "typeId": "2d45-18fe-9eb3-b113",
+                    "value": "7"
+                  }
+                ]
               }
             ]
           },
           {
             "defId": "f43c-4825-7032-8043",
-            "characteristics": [
+            "infoElements": [
               {
-                "carrierId": "cc45-7f67-1cbd-3b1a",
-                "typeId": "f95b-da01-0578-3bdc",
-                "value": "4"
-              },
-              {
-                "carrierId": "cc45-7f67-1cbd-3b1a",
-                "typeId": "4a8b-0c8e-3daf-7901",
-                "value": "3"
-              },
-              {
-                "carrierId": "cc45-7f67-1cbd-3b1a",
-                "typeId": "dfff-363e-f72a-5a59",
-                "value": "3"
-              },
-              {
-                "carrierId": "cc45-7f67-1cbd-3b1a",
-                "typeId": "6b9f-c8fe-8998-27e3",
-                "value": "1"
+                "kind": "profile",
+                "id": "cc45-7f67-1cbd-3b1a",
+                "characteristics": [
+                  {
+                    "typeId": "f95b-da01-0578-3bdc",
+                    "value": "4"
+                  },
+                  {
+                    "typeId": "4a8b-0c8e-3daf-7901",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "dfff-363e-f72a-5a59",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "6b9f-c8fe-8998-27e3",
+                    "value": "1"
+                  }
+                ]
               }
             ]
           },
           {
             "defId": "b7de-ebe9-8eb4-de58",
-            "characteristics": [
+            "infoElements": [
               {
-                "carrierId": "8ce4-f9da-a2ec-ba16",
-                "typeId": "f95b-da01-0578-3bdc",
-                "value": "4"
-              },
-              {
-                "carrierId": "8ce4-f9da-a2ec-ba16",
-                "typeId": "dfff-363e-f72a-5a59",
-                "value": "3"
-              },
-              {
-                "carrierId": "8ce4-f9da-a2ec-ba16",
-                "typeId": "6b9f-c8fe-8998-27e3",
-                "value": "1"
+                "kind": "profile",
+                "id": "8ce4-f9da-a2ec-ba16",
+                "characteristics": [
+                  {
+                    "typeId": "f95b-da01-0578-3bdc",
+                    "value": "4"
+                  },
+                  {
+                    "typeId": "dfff-363e-f72a-5a59",
+                    "value": "3"
+                  },
+                  {
+                    "typeId": "6b9f-c8fe-8998-27e3",
+                    "value": "1"
+                  }
+                ]
               }
             ]
           }

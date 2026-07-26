@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: [04, 05]
 
@@ -20,3 +20,4 @@ Slot-Menge, damit auch ein Angebots-Anker seine Profile traegt).
 - [ ] Neue Szenarien decken das an echten Katalogdaten ab.
 
 ## Comments
+- Neues Modul infoProjection.js liefert je Slot die geltenden Profile und Regeltexte (eigene + aus belegten Unter-Auswahlen geerbte, Verstecktes ausgenommen, Werte und Namen effektiv, ein Info-Verweis an seiner eigenen Stelle). Der Leser liest neu den Regeltext (<description>), infoCarriersOf steigt neu in einen infoLink auf eine infoGroup ab, und die flache characteristics-Liste des Faehigkeitsdatensatzes ist in infoElements aufgegangen.

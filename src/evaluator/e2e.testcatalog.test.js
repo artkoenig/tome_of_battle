@@ -70,9 +70,30 @@
  *               "authorMessages": [                      // die Autor-Meldungen des Slots,
  *                 { "severity": "error|warning|info", "text": "<Katalogtext>" }
  *               ]?,                                      // VOLLSTAENDIG: [] fordert „keine"
- *               "characteristics": [                     // TEILMENGE: nur die genannten Merkmale
- *                 { "carrierId": "<profile- oder infoLink-Id>", "typeId": "<characteristicType-Id>", "value": "<effektiver Wert>" }
- *               ]?
+ *               "infoElements": [                        // TEILMENGE: nur die genannten Profile/Regeln
+ *                 {
+ *                   "id": "<profile-, rule- oder infoLink-Id>",  // PFLICHT: das Vorkommen; bei einem
+ *                                                        // Info-Verweis die Id des VERWEISES, denn
+ *                                                        // dort erscheint das bezogene Element.
+ *                                                        // Muss genau einen Eintrag treffen.
+ *                   "kind": "profile|rule"?,             // Art des Eintrags
+ *                   "name": "<effektiver Anzeigename>"?, // nach allen Namens-Modifikatoren
+ *                   "profileTypeId": "<profileType-Id>"?,        // nur bei einem Profil
+ *                   "profileTypeName": "<Klartext-Name>"?,       // nur bei einem Profil
+ *                   "text": "<Regeltext>"?,              // nur bei einer Regel (<description>)
+ *                   "characteristics": [                 // TEILMENGE der Merkmale dieses Profils
+ *                     { "typeId": "<characteristicType-Id>", "name": "<Klartext-Name>"?, "value": "<effektiver Wert>" }
+ *                   ]?
+ *                 }
+ *               ]?,
+ *               "infoElementsAbsent": ["<id>", ...]?     // Vorkommen, die NICHT in der
+ *                                                        // Info-Projektion dieses Slots stehen
+ *                                                        // duerfen — die Gegenaussage zu
+ *                                                        // `infoElements`. Ohne sie waere
+ *                                                        // „Verstecktes bleibt draussen" nicht
+ *                                                        // pruefbar, weil eine reine
+ *                                                        // Teilmengen-Aussage das Fehlen eines
+ *                                                        // Eintrags nie bemerkt.
  *             }
  *           ],
  *           "diagnostics": {                      // OPTIONAL: Aussagen ueber `report.diagnostics`
@@ -98,7 +119,9 @@
  * Punktelimit, weitere Diagnose-Arten) duerfen zusaetzlich auftreten, ohne einen Fall
  * zu brechen. Innerhalb *eines* genannten Slots gilt das feiner: `name` ist eine
  * Gleichheit, `authorMessages` eine vollstaendige (aber reihenfolge-freie) Aussage
- * ueber die Meldungen dieses Slots, `characteristics` eine Teilmengen-Aussage.
+ * ueber die Meldungen dieses Slots, `infoElements` eine Teilmengen-Aussage — und
+ * innerhalb eines genannten Info-Elements sind auch dessen `characteristics` eine
+ * Teilmenge.
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -265,6 +288,71 @@ const COMPARABLE_CAPABILITY_FIELDS = Object.freeze([
   'isMandatoryUnmet',
 ]);
 
+/**
+ * Die **Skalarfelder eines Info-Element-Eintrags**, die eine Erwartung direkt
+ * vergleichen kann. Die Merkmale eines Profils sind kein Skalar und werden
+ * gesondert (als Teilmenge) geprueft.
+ */
+const COMPARABLE_INFO_ELEMENT_FIELDS = Object.freeze([
+  'kind',
+  'name',
+  'profileTypeId',
+  'profileTypeName',
+  'text',
+]);
+
+/**
+ * Der eine Eintrag der Info-Projektion, den eine Erwartung meint — benannt ueber
+ * die Id seines **Vorkommens** (bei einem Info-Verweis die des Verweises). Trifft
+ * die Id mehrere Eintraege, meint das Szenario nicht eindeutig einen: derselbe
+ * Traeger kann ueber zwei belegte Unter-Auswahlen zweimal beitragen, mit
+ * moeglicherweise verschiedenen effektiven Werten. Das ist ein Manifest-Fehler mit
+ * klarer Meldung, kein stillschweigend gewaehlter Eintrag.
+ */
+function infoElementForExpectation(capability, spec, manifestPath) {
+  const matches = capability.infoElements.filter(entry => entry.id === spec.id);
+  assertManifest(matches.length > 0, manifestPath,
+    `infoElements: kein Info-Element mit id="${spec.id}" am Slot.`);
+  assertManifest(matches.length === 1, manifestPath,
+    `infoElements: id="${spec.id}" trifft ${matches.length} Eintraege am selben Slot (geerbt aus mehreren Unter-Auswahlen).`);
+  return matches[0];
+}
+
+/** Prueft die `infoElements`-Aussagen eines Slots gegen seine Info-Projektion. */
+function assertInfoElementsMatchExpectation(capability, specs, manifestPath) {
+  for (const spec of specs) {
+    assertManifest(typeof spec.id === 'string', manifestPath,
+      'infoElements: Feld "id" fehlt (die Id des Vorkommens benennt den Eintrag).');
+    const entry = infoElementForExpectation(capability, spec, manifestPath);
+
+    for (const field of COMPARABLE_INFO_ELEMENT_FIELDS) {
+      if (spec[field] === undefined) continue;
+      expect(entry[field], `Info-Element ${spec.id}: ${field}`).toEqual(spec[field]);
+    }
+    for (const characteristic of spec.characteristics ?? []) {
+      expect(entry.characteristics, `Info-Element ${spec.id}: effektiver Merkmalswert`)
+        .toContainEqual(expect.objectContaining(characteristic));
+    }
+  }
+}
+
+/**
+ * Prueft, dass die genannten Vorkommen **nicht** in der Info-Projektion eines Slots
+ * stehen — die Gegenaussage zu {@link assertInfoElementsMatchExpectation}.
+ *
+ * Sie ist unverzichtbar, weil `infoElements` eine reine Teilmengen-Aussage ist: das
+ * Fehlen eines Eintrags bemerkt sie nie. Genau darauf laufen aber zwei Regeln der
+ * Projektion hinaus — „Verstecktes bleibt draussen" und „ein Verweis auf eine
+ * Info-Gruppe traegt selbst keinen Eintrag".
+ */
+function assertInfoElementsAbsent(capability, absentIds, spec) {
+  const presentIds = capability.infoElements.map(entry => entry.id);
+  for (const id of absentIds) {
+    expect(presentIds, `Slot ${spec.defId ?? spec.targetDefId}: Info-Element ${id} darf nicht erscheinen`)
+      .not.toContain(id);
+  }
+}
+
 /** Prueft die Slot-Aussagen (`capabilities`) eines Rosters gegen den Bericht. */
 function assertCapabilitiesMatchExpectation(report, expectation, manifestPath) {
   for (const spec of expectation.capabilities ?? []) {
@@ -286,9 +374,8 @@ function assertCapabilitiesMatchExpectation(report, expectation, manifestPath) {
         expect(capability.authorMessages, `Slot ${spec.defId}: Autor-Meldung`).toContainEqual(message);
       }
     }
-    for (const characteristic of spec.characteristics ?? []) {
-      expect(capability.characteristics, `Slot ${spec.defId}: effektiver Merkmalswert`).toContainEqual(characteristic);
-    }
+    assertInfoElementsMatchExpectation(capability, spec.infoElements ?? [], manifestPath);
+    assertInfoElementsAbsent(capability, spec.infoElementsAbsent ?? [], spec);
   }
 }
 

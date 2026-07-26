@@ -177,12 +177,25 @@ export function limitsOf(def) {
   return def.limits ?? [];
 }
 
-/** Die Info-Elemente einer Liste, verschachtelte Info-Gruppen flach mitgeliefert. */
+/**
+ * Die Info-Elemente einer Liste, verschachtelte Info-Gruppen flach mitgeliefert —
+ * **auch die einer per `infoLink` bezogenen Gruppe**.
+ *
+ * Ein Link auf ein Profil oder eine Regel *ist* das Vorkommen dieses Elements und
+ * traegt dessen Merkmale selbst (siehe {@link infoCarriersOf}); ein Link auf eine
+ * **Info-Gruppe** hat dagegen keinen eigenen Wert zu tragen — die Gruppe buendelt
+ * nur, ihre Mitglieder sind die eigentlichen Elemente. Ohne diesen Abstieg blieben
+ * sie unerreichbar: weder wirkten ihre Modifikatoren, noch erschienen sie in der
+ * Info-Projektion des Berichts (in den Fixture-Katalogen betrifft das vier Links,
+ * alle im Vampire-Counts-Katalog).
+ */
 function* infoCarriersOfList(infos) {
   for (const info of infos) {
     yield info;
     if (info.kind === InfoElementKind.INFO_GROUP) {
       yield* infoCarriersOfList(info.infos ?? []);
+    } else if (info.kind === InfoElementKind.INFO_LINK && info.resolved?.kind === InfoElementKind.INFO_GROUP) {
+      yield* infoCarriersOfList(info.resolved.infos ?? []);
     }
   }
 }
@@ -198,7 +211,9 @@ function* infoCarriersOfList(infos) {
  * ist das Vorkommen des verlinkten Profils an diesem Knoten und erbt dessen
  * Merkmale und Modifikatoren, statt die geteilte Definition ein zweites Mal als
  * eigenen Traeger zu liefern (sonst truege ein Slot dasselbe Profil doppelt —
- * einmal mit, einmal ohne die am Link erzielte Wirkung).
+ * einmal mit, einmal ohne die am Link erzielte Wirkung). Zeigt der Link auf eine
+ * **Info-Gruppe**, kommen deren Mitglieder hinzu: die Gruppe traegt selbst keinen
+ * Wert, nur ihre Mitglieder tun es ({@link infoCarriersOfList}).
  */
 export function* infoCarriersOf(def) {
   if (def === null || def === undefined) return;

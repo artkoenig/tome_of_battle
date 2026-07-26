@@ -64,10 +64,16 @@ function slotByDefId(report, defId) {
   return null;
 }
 
-/** Der effektive Merkmalswert eines Slots an einem bestimmten Traeger. */
+/**
+ * Der effektive Merkmalswert eines Slots an einem bestimmten Traeger — gelesen aus
+ * der **Info-Projektion** des Faehigkeitsdatensatzes (Issue 75/06): die flache
+ * `characteristics`-Liste ist darin aufgegangen, ein Merkmal steht seitdem an
+ * seinem Profil-Eintrag statt neben ihm.
+ */
 function characteristicOf(report, defId, carrierId, typeId) {
-  return slotByDefId(report, defId)?.characteristics
-    .find(entry => entry.carrierId === carrierId && entry.typeId === typeId)?.value ?? null;
+  const profile = slotByDefId(report, defId)?.infoElements
+    .find(entry => entry.id === carrierId);
+  return profile?.characteristics.find(entry => entry.typeId === typeId)?.value ?? null;
 }
 
 /** Ein Roster mit einer Kriegereinheit und optional einem Bannertraeger. */

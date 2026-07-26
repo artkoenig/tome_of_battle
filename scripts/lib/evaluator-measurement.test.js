@@ -136,6 +136,16 @@ describe('reportFingerprint', () => {
 
     expect(reportFingerprint(withTwo)).not.toBe(reportFingerprint(withThree));
   });
+
+  it('unterscheidet Berichte, die sich nur im Umfang der Info-Projektion unterscheiden', () => {
+    const reportWith = infoElements => ({
+      violations: [],
+      capabilities: new Map([['0', { infoElements }]]),
+      diagnostics: [],
+    });
+
+    expect(reportFingerprint(reportWith([{ id: 'profile-a' }]))).not.toBe(reportFingerprint(reportWith([])));
+  });
 });
 
 describe('assessThresholds', () => {

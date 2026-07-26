@@ -109,7 +109,7 @@ Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Koste
 Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Der Bericht enthält:
 
 - **Verletzungen** (für die Validierungsanzeige),
-- pro **Slot** einen **Fähigkeitsdatensatz**: Definitions-ID, **Ankerart**, **Rahmen-Bezug** und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die effektiven Merkmalswerte seiner Info-Elemente (für die UI-Steuerung),
+- pro **Slot** einen **Fähigkeitsdatensatz**: Definitions-ID, **Ankerart**, **Rahmen-Bezug** und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die **Info-Projektion** — die für ihn geltenden Profile und Regeltexte (für die UI-Steuerung, siehe unten),
 - **Diagnosen** (Auflösungsprobleme, Oszillation, erschöpftes Rundenbudget, Null-Nenner, unauflösbare Budgetgrenze).
 
 Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** — ob dort etwas steht oder nicht: jeder Knoten jeder Ankerart, also auch ein Kategorie-Knoten und jede wählbare, nicht gewählte Definition. Verfügbarkeit wird daraus **abgelesen** statt errechnet.
@@ -117,6 +117,13 @@ Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** 
 **Ein Angebots-Anker erzeugt keine Verletzung.** Seine Grenzen werden voll ausgewertet — daraus liest der Fähigkeitsdatensatz Höchstmaß, Belegung und Restspielraum —, aber das Ergebnis ist **nicht berichtsfähig** (`isReportable`). Andernfalls läse eine armee- oder kontingentweit skopierte Grenze am Anker denselben Wert wie am realen Knoten und meldete dieselbe Verletzung ein zweites Mal, und jede nicht gewählte Option mit einer Mindestgrenze flutete die Meldungsliste. Die Verletzungsliste bleibt vom gewachsenen Baum damit unberührt — eine prüfbare Invariante der bestehenden E2E-Suite. Die roster-weite Budget-Regel ist immer berichtsfähig.
 
 Der **Rahmen-Bezug** (Pfad und Definitions-ID des umschließenden Kontingents bzw. der Eltern-Auswahl; `null` am Roster selbst) steht neben dem Pfad, weil ein rein positioneller Schlüssel für die Oberfläche zu spröde ist. Ein **Verweis-Slot** — der Kategorie-Anker trägt den `categoryLink`, ein Angebots-Anker den `entryLink` — nennt zusätzlich sein **Ziel** (`targetDefId`): das ist das *Thema* des Slots, und dieselbe ID, über die die Constraint-Schicht ihn zählt. Ohne sie ließe sich ein Kategorie-Abschnitt allein aus dem Bericht nicht seiner Kategorie zuordnen.
+
+**Die Info-Projektion je Slot** (`infoProjection.js`) beantwortet die Frage *welche Profile und Regeltexte gelten für diesen Slot?* — eine geordnete Liste, deren Einträge je Art (Profil oder Regel), die **ID des Vorkommens**, den **effektiven** Namen und, je nach Art, Profiltyp samt Merkmalen *(Charakteristik-Typ mit Namen, effektiver Wert)* oder den Regeltext tragen. Vier Regeln bestimmen ihren Inhalt:
+
+- **Eigenes und Geerbtes.** Enthalten sind die Info-Elemente des Slots selbst **und die seiner belegten Unter-Auswahlen**, in Dokumentreihenfolge (eigene zuerst, dann die Unter-Auswahlen in Baumreihenfolge). Ein Anker ist keine belegte Auswahl und vererbt nichts nach oben; seine eigenen Elemente trägt sein eigener Datensatz. **Ohne Entdopplung**: derselbe Träger unter zwei Unter-Auswahlen kann *verschiedene* effektive Werte tragen, weil die Effektiv-Werte-Schicht nach dem Paar (Knoten, Träger) schlüsselt — eine Entdopplung nach ID würfe genau diese Unterscheidung still weg.
+- **Verstecktes bleibt draußen.** Ausgeschlossen ist, was **selbst** versteckt ist, und alles, was an einem **versteckten Knoten** hängt. „Versteckt" ist die **effektive** Sichtbarkeit: das Basis-`hidden` der Katalogdaten, überschrieben von einem `hidden`-Modifikator am selben Träger. Beide Wege kommen real vor — in den Fixture-Katalogen tragen neun Info-Elemente `hidden="true"` und dreizehn `hidden`-Modifikatoren hängen an einem Profil oder Info-Verweis, darunter ein basis-versteckter Verweis, den ein bedingter `set hidden=false` wieder einblendet.
+- **Ein Verweis erscheint an seiner eigenen Stelle.** Ein `infoLink` auf ein Profil oder eine Regel liefert **einen** Eintrag unter der ID und dem effektiven Namen des *Verweises*, mit Merkmalen bzw. Text des Ziels — die geteilte Definition erscheint nicht zusätzlich. Ein `infoLink` auf eine **Info-Gruppe** trägt selbst keinen Eintrag; an seiner Stelle stehen die **Mitglieder** der Gruppe, denn nur sie tragen Werte.
+- **Die Klartext-Namen stammen aus den `<profileType>`-Deklarationen**, und nur aus ihnen: `profileType/@name` und `characteristicType/@name` sind XSD-Pflicht, die am Profil bzw. an der Charakteristik mitgeführten Kopien (`profile/@typeName`, `characteristic/@name`) dagegen optional bzw. redundant. Ein nicht deklarierter Typ nennt seine ID und einen leeren Namen, statt einen zu erfinden.
 
 Zusätzlich prüft die Engine eine **roster-weite Budget-Regel** (keine Katalog-Grenze, sondern eine Regel der Engine): je eingestellter Kostenart wird die am ROSTER-Rahmen verplante Summe gegen die eingestellte Grenze dieser Kostenart geprüft; eine Überschreitung erzeugt eine Budget-Verletzung, die über einen **synthetischen** roster-weiten Anker in dieselbe Verletzungsliste wie die übrigen Verletzungen fließt.
 
@@ -182,7 +189,19 @@ record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGro
 record InfoElement    { kind: profile | rule | infoGroup | infoLink, id, name, isHidden: bool,
                         modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],
                         characteristics: Characteristic[],  // nur profile
+                        typeId: ProfileTypeId,              // nur profile
+                        text: string?,                      // nur rule (XSD-`description`, optional)
                         infos: InfoElement[] }    // infoLink verweist per targetId
+
+record ProfileType    { id, name, characteristicTypes: { id, name }[] }   // die EINE Quelle der
+                        // Klartext-Namen von Profiltyp und Charakteristik-Typ (XSD: beide
+                        // Pflicht; die Kopien am Profil/an der Charakteristik sind optional)
+
+record InfoEntry      { kind: profile | rule, id, name,     // id/name des VORKOMMENS (bei einem
+                        // Verweis der Verweis selbst), name effektiv
+                        profileTypeId, profileTypeName,     // nur profile
+                        characteristics: { typeId, name, value }[],   // nur profile, value effektiv
+                        text: string? }                     // nur rule
 
 record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
                       baseCosts: Map<CostTypeId, number>, baseCategoryIds: Set<CategoryId>,
@@ -242,7 +261,9 @@ record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: d
                           isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
                           isValueUnstable: bool,        // lag in der instabilen Knotenmenge
                           authorMessages: { severity, text }[],
-                          characteristics: { carrierId, typeId, value }[] }
+                          infoElements: InfoEntry[] }   // die Info-Projektion: eigene UND aus den
+                                                        // belegten Unter-Auswahlen geerbte Profile
+                                                        // und Regeltexte, Verstecktes ausgenommen
 
 record Report { violations: ConstraintResult[], capabilities: Map<NodePath, SlotCapability>,
                 diagnostics: Diagnostic[] }
@@ -472,7 +493,7 @@ function applyOperation(state, node, carrier, modifier, times, isConditional, wi
   // Ein Schreibzugriff auf eine GRENZE legt zugleich ihren Kettenschritt an (§3.4).
 ```
 
-Info-Elemente (`profile`/`rule`/`infoGroup`/`infoLink`) tragen dieselbe `EntryBase` wie eine Definition und damit **eigene Modifikatoren**; ein `infoLink` verweist per `targetId` auf sein Ziel und erbt dessen Merkmale und Modifikatoren als *sein* Vorkommen.
+Info-Elemente (`profile`/`rule`/`infoGroup`/`infoLink`) tragen dieselbe `EntryBase` wie eine Definition und damit **eigene Modifikatoren**; ein `infoLink` verweist per `targetId` auf sein Ziel und erbt dessen Merkmale und Modifikatoren als *sein* Vorkommen. Zeigt er auf eine **Info-Gruppe**, kommen deren Mitglieder als eigene Träger hinzu — die Gruppe bündelt nur, ihre Mitglieder tragen die Werte und ihre eigenen Modifikatoren.
 
 Wichtig: Jede Fixpunktrunde wendet Modifikatoren auf eine frische Kopie der **Basiswerte** an — sonst würde `ADD` über Runden hinweg kumulieren.
 
@@ -527,7 +548,7 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       defId         = node.def.id,
       name          = effective.nameOf(node),          // nach allen Namens-Modifikatoren
       authorMessages  = effective.authorMessages[node],
-      characteristics = effectiveCharacteristicsOf(node, effective))
+      infoElements    = infoElementsOf(node, effective, profileTypes))  // §3.6, infoProjection.js
   return Report(
     violations   = results.filter(r → r.isReportable and not r.satisfied),
     capabilities = capabilities,

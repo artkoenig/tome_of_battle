@@ -112,7 +112,14 @@ export function evaluate(dataset, roster) {
     ...constraintDiagnostics,
   ];
 
-  return buildReport(root, effective, results, diagnostics, { budgetViolations, unstableNodes });
+  // `profileTypes` liefert die Klartext-Namen von Profiltyp und Charakteristik-Typ
+  // fuer die Info-Projektion je Slot — die Deklarationen des Datensatzes sind ihre
+  // einzige Quelle (`infoProjection.js`).
+  return buildReport(root, effective, results, diagnostics, {
+    budgetViolations,
+    unstableNodes,
+    profileTypes: resolved.profileTypes,
+  });
 }
 
 /**

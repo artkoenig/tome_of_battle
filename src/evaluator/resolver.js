@@ -445,7 +445,7 @@ function indexAndResolveInfos(infoRoots, byId, symbolTable, diagnostics) {
  * benannte Sicht — die Grundlage der Angebots-Anker je Kontingent (ADR-0035).
  *
  * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
- * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, diagnostics: object[] }}
+ * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], diagnostics: object[] }}
  */
 export function resolveCatalogue(catalogue) {
   const collector = {
@@ -518,6 +518,12 @@ export function resolveCatalogue(catalogue) {
     armyLevelCandidates: collectArmyLevelCandidates(catalogue.entries ?? []),
     categoryIds,
     groupMemberIds,
+    // Die Profiltyp-Deklarationen wandern unveraendert durch: sie sind die
+    // **einzige** Quelle der Klartext-Namen von Profiltyp und Charakteristik-Typ
+    // (XSD: `profileType/@name` und `characteristicType/@name` sind Pflicht,
+    // `profile/@typeName` dagegen optional). Die Info-Projektion des Berichts
+    // liest sie; ausgewertet wird an ihnen nichts.
+    profileTypes: catalogue.profileTypes ?? [],
     diagnostics,
   };
 }

@@ -10,8 +10,9 @@
  *   UI-Steuerung: Definitions-ID, **Ankerart**, Rahmen-Bezug und **effektiver**
  *   Anzeigename, effektives min/max, aktueller Stand, Restspielraum, die
  *   Pflicht-/Gesperrt-/Versteckt-Flags, das Merkmal „Wert nicht stabil", die
- *   **Autor-Meldungen** des Katalogs und die **effektiven Merkmalswerte** seiner
- *   Info-Elemente,
+ *   **Autor-Meldungen** des Katalogs und die **Info-Projektion** — die fuer den
+ *   Slot geltenden Profile (mit ihren effektiven Merkmalswerten) und Regeltexte
+ *   (`infoProjection.js`),
  * - **Diagnosen** (Aufloesung, Oszillation, erschoepftes Rundenbudget, Null-Nenner).
  *
  * Ein Slot ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** — ob
@@ -26,10 +27,14 @@
  */
 
 import { ConstraintKind } from './model.js';
-import { selectableSlotsOf, pathOf, infoCarriersOf } from './evalTree.js';
+import { selectableSlotsOf, pathOf } from './evalTree.js';
+import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
 
 /** Der Normalfall: die Auswertung ist konvergiert, kein Slot ist instabil. */
 const NO_UNSTABLE_NODES = new Set();
+
+/** Ohne Profiltyp-Deklarationen bleiben die Klartext-Namen der Merkmale leer. */
+const NO_PROFILE_TYPES = Object.freeze([]);
 
 /**
  * Projiziert ein Constraint-Ergebnis auf eine Verletzungsmeldung. Sie traegt neben
@@ -49,23 +54,6 @@ function toViolation(result) {
     delta: result.delta,
     derivation: result.derivation ?? null,
   };
-}
-
-/**
- * Die **effektiven Merkmale** eines Slots: je Info-Element (Profil oder
- * Info-Verweis) seine Charakteristikwerte, nachdem die Modifikatoren gewirkt haben.
- * Der Traeger wird per ID mitgefuehrt, weil derselbe Merkmalstyp an mehreren
- * Profilen eines Slots haengen kann und ein Modifikator immer genau eines davon
- * trifft — naemlich das, an dem er haengt.
- */
-function characteristicsOf(node, effective) {
-  const entries = [];
-  for (const carrier of infoCarriersOf(node.def)) {
-    for (const { typeId, value } of effective.characteristicEntriesOf(node, carrier)) {
-      entries.push({ carrierId: carrier.id, typeId, value });
-    }
-  }
-  return entries;
 }
 
 /**
@@ -130,7 +118,9 @@ function headroomOf(maxResult) {
  * Eintrag hinter einem `entryLink`).
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand. Name,
- * Merkmale und Autor-Meldungen kommen ebenfalls aus dem effektiven Zustand — die
+ * Autor-Meldungen und die **Info-Projektion** (`infoElements`: die fuer diesen
+ * Slot geltenden Profile und Regeltexte, samt der von seinen belegten
+ * Unter-Auswahlen geerbten) kommen ebenfalls aus dem effektiven Zustand — die
  * Oberflaeche liest damit den Stand *nach* allen greifenden Modifikatoren, ohne
  * selbst zu rechnen (§4.8, Leitprinzip 3).
  *
@@ -140,7 +130,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, results, effective, unstableNodes) {
+function toCapability(node, { results, effective, unstableNodes, profileTypeRegistry }) {
   const minResult = findResult(results, node, ConstraintKind.MIN);
   const maxResult = findResult(results, node, ConstraintKind.MAX);
   return {
@@ -159,7 +149,7 @@ function toCapability(node, results, effective, unstableNodes) {
     isHidden: effective.isHidden(node),
     isValueUnstable: unstableNodes.has(node),
     authorMessages: effective.authorMessagesOf(node),
-    characteristics: characteristicsOf(node, effective),
+    infoElements: infoElementsOf(node, effective, profileTypeRegistry),
   };
 }
 
@@ -173,7 +163,7 @@ function toCapability(node, results, effective, unstableNodes) {
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[] }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -182,14 +172,27 @@ function toCapability(node, results, effective, unstableNodes) {
  *   `unstableNodes`: die Knoten, deren zaehlrelevante Werte in der Fixpunktschleife
  *   nicht zur Ruhe kamen (`fixpoint.js`). Ihr Faehigkeitsdatensatz wird als
  *   „Wert nicht stabil" markiert, damit die Unsicherheit am betroffenen Slot steht.
+ *   `profileTypes`: die Profiltyp-Deklarationen des Datensatzes (`resolver.js`) —
+ *   die Quelle der Klartext-Namen in der Info-Projektion je Slot.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  */
 export function buildReport(root, effective, results, diagnostics, extras = {}) {
-  const { budgetViolations = [], unstableNodes = NO_UNSTABLE_NODES } = extras;
+  const {
+    budgetViolations = [],
+    unstableNodes = NO_UNSTABLE_NODES,
+    profileTypes = NO_PROFILE_TYPES,
+  } = extras;
 
+  // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
+  const capabilityContext = {
+    results,
+    effective,
+    unstableNodes,
+    profileTypeRegistry: createProfileTypeRegistry(profileTypes),
+  };
   const capabilities = new Map();
   for (const node of selectableSlotsOf(root)) {
-    capabilities.set(pathOf(node), toCapability(node, results, effective, unstableNodes));
+    capabilities.set(pathOf(node), toCapability(node, capabilityContext));
   }
   return {
     // Gemeldet wird, was **berichtsfaehig** und unerfuellt ist. Ein Ergebnis am

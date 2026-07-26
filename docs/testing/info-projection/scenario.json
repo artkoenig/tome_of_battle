@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "name": "info-projection",
+  "description": "Info-Projektion je Slot: jeder Slot des Berichts fuehrt in infoElements die Profile und Regeltexte, die fuer ihn gelten - seine eigenen (profile/rule/infoGroup-Mitglied/infoLink) plus die seiner besetzten Unterauswahlen. Ein Verweis erscheint an der Stelle des Verweises und unter dessen Identitaet (id = infoLink-Id, nicht Ziel-Id), ein infoLink auf eine infoGroup liefert deren Mitglieder statt eines eigenen Eintrags. Werte sind effektiv: Merkmalswerte nach jedem greifenden Merkmals-Modifikator, der Name nach jedem greifenden field=name-Modifikator; der Regeltext ist die woertliche <description>. Wirksam verborgene Elemente (Basis-hidden, ueberschrieben durch einen field=hidden-Modifikator) fehlen - dieser Ausschluss wird per infoElementsAbsent geprueft, ebenso dass ein infoGroup-Verweis keinen eigenen Eintrag bildet und dass die Vererbung nur nach oben laeuft.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-skeletons-standard.ros",
+      "description": "Standard-Kontingent (VC-AB) mit der Core-Einheit Skeletons: 10 Skelett-Modelle, die Pflicht-Handwaffe und ein Skeleton Captain. Die Einheit selbst traegt nur den infoLink Undead; Profil-Statblock, Waffenprofil und Champion-Profil haengen an den drei Unterauswahlen und muessen nach oben in die Liste der Einheit vererbt werden. Der Skeleton Captain traegt ein DIREKT eingebettetes <profile> (Id des Profils selbst), die uebrigen drei sind <infoLink>s (Id des Verweises).",
+      "expect": {
+        "firing": [],
+        "absent": ["ad1d-03cf-a16f-ae52"],
+        "capabilities": [
+          {
+            "defId": "9ac2-f4c1-bcc3-3aee",
+            "anchorKind": "occupied",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "name": "Skeletons",
+            "infoElements": [
+              {
+                "id": "2e96-1358-0d62-d453",
+                "kind": "rule",
+                "name": "Undead",
+                "text": "See page 20 and 21 of the army book."
+              },
+              {
+                "id": "9f0d-b3a8-86ff-673e",
+                "kind": "profile",
+                "name": "Skeleton",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "0e92-d038-82bf-fb41", "name": "Mv", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "2" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "1" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "name": "Ld", "value": "3" }
+                ]
+              },
+              {
+                "id": "9314-7e3c-78ed-fbd8",
+                "kind": "profile",
+                "name": "Hand Weapon",
+                "profileTypeId": "7889-42d9-70a0-3ea9",
+                "profileTypeName": "Weapon",
+                "characteristics": [
+                  { "typeId": "a21a-cdc0-4b13-b236", "name": "Special Rules", "value": "-1 Sv with HW" }
+                ]
+              },
+              {
+                "id": "8cdc-fdc5-c29c-7d31",
+                "kind": "profile",
+                "name": "Skeleton Captain",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "2" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "2" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "name": "Ld", "value": "3" }
+                ]
+              }
+            ]
+          },
+          {
+            "defId": "eaa1-c6a6-9aae-ae9a",
+            "anchorKind": "occupied",
+            "frameDefId": "9ac2-f4c1-bcc3-3aee",
+            "name": "Skeletons",
+            "infoElements": [
+              {
+                "id": "9f0d-b3a8-86ff-673e",
+                "kind": "profile",
+                "name": "Skeleton",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "8712-f56f-5b22-a720", "name": "T", "value": "3" },
+                  { "typeId": "253a-9b00-4fde-8ac2", "name": "W", "value": "1" },
+                  { "typeId": "fa44-51dd-e69c-8d6a", "name": "US", "value": "1" }
+                ]
+              }
+            ]
+          },
+          {
+            "defId": "565b-37e6-290b-e040",
+            "anchorKind": "occupied",
+            "frameDefId": "9ac2-f4c1-bcc3-3aee",
+            "name": "Handweapon",
+            "infoElements": [
+              {
+                "id": "9314-7e3c-78ed-fbd8",
+                "kind": "profile",
+                "name": "Hand Weapon",
+                "profileTypeId": "7889-42d9-70a0-3ea9",
+                "profileTypeName": "Weapon"
+              }
+            ]
+          },
+          {
+            "defId": "31e1-bd91-2c0b-b604",
+            "anchorKind": "occupied",
+            "frameDefId": "9ac2-f4c1-bcc3-3aee",
+            "name": "Skeleton Captain",
+            "infoElements": [
+              {
+                "id": "8cdc-fdc5-c29c-7d31",
+                "kind": "profile",
+                "name": "Skeleton Captain",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-skeletons-lichemaster.ros",
+      "description": "Dieselbe Einheit im Kontingent \"Army of the Lichemaster (WD#309-UK)\", dazu die dort per min-Grenze verlangte Auswahl \"The Army of the Lichemaster\". Jetzt haelt die instanceOf-Bedingung des field=name-Modifikators am eingebetteten Skeleton-Captain-Profil: dieses Info-Element heisst \"Skeletal Chieftain\". Das benachbarte, per infoLink bezogene Skeleton-Profil traegt keinen in diesem Kontingent greifenden Modifikator und behaelt seinen Namen - die Umbenennung wirkt also genau auf ihr eigenes Vorkommen.",
+      "expect": {
+        "firing": [],
+        "absent": ["ad1d-03cf-a16f-ae52", "0005-cca1-4c68-4bcf", "d7ca-7e6b-7a46-617f"],
+        "capabilities": [
+          {
+            "defId": "31e1-bd91-2c0b-b604",
+            "anchorKind": "occupied",
+            "frameDefId": "9ac2-f4c1-bcc3-3aee",
+            "name": "Skeletal Chieftain",
+            "infoElements": [
+              {
+                "id": "8cdc-fdc5-c29c-7d31",
+                "kind": "profile",
+                "name": "Skeletal Chieftain",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "2" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "2" }
+                ]
+              }
+            ]
+          },
+          {
+            "defId": "9ac2-f4c1-bcc3-3aee",
+            "anchorKind": "occupied",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Skeletons",
+            "infoElements": [
+              {
+                "id": "8cdc-fdc5-c29c-7d31",
+                "kind": "profile",
+                "name": "Skeletal Chieftain"
+              },
+              {
+                "id": "9f0d-b3a8-86ff-673e",
+                "kind": "profile",
+                "name": "Skeleton"
+              },
+              {
+                "id": "2e96-1358-0d62-d453",
+                "kind": "rule",
+                "name": "Undead",
+                "text": "See page 20 and 21 of the army book."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-spirit-host-standard.ros",
+      "description": "Standard-Kontingent (VC-AB) mit der Einheit \"0-1 Spirit Host\" und einem Modell. Von den fuenf Info-Verweisen der Einheit sind drei wirksam sichtbar: das Profil (dessen unbedingter field=name-Modifikator es als \"Gloom\" ausweist, obwohl der Verweis \"Spirit Host\" heisst) sowie die Regeln Swarm und Ethereal. Die Merkmale stehen auf ihren Katalog-Basiswerten, weil die Merkmals-Modifikatoren des Verweises an das Lichemaster-Kontingent gebunden sind. Die beiden Basis-verborgenen Verweise Spirit Levy und Tormented bleiben hier verborgen - ihr set hidden=false ist an das Lichemaster-Kontingent gebunden, das hier nicht vorliegt; sie werden per infoElementsAbsent ausgeschlossen.",
+      "expect": {
+        "firing": [],
+        "absent": ["34f6-fda6-54a6-3deb", "6041-13bc-4302-5d28"],
+        "capabilities": [
+          {
+            "defId": "41a3-61ff-bfd0-b4b1",
+            "anchorKind": "occupied",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "name": "0-1 Spirit Host",
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "48e1-2acb-4d95-a551",
+                "kind": "profile",
+                "name": "Gloom",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "0e92-d038-82bf-fb41", "name": "Mv", "value": "6" },
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "2" },
+                  { "typeId": "b690-4bc0-bb73-267b", "name": "S", "value": "3" },
+                  { "typeId": "8712-f56f-5b22-a720", "name": "T", "value": "3" },
+                  { "typeId": "253a-9b00-4fde-8ac2", "name": "W", "value": "4" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "4" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "name": "Ld", "value": "6" },
+                  { "typeId": "fa44-51dd-e69c-8d6a", "name": "US", "value": "3" }
+                ]
+              },
+              {
+                "id": "b600-a799-afb3-3174",
+                "kind": "rule",
+                "name": "Swarm"
+              },
+              {
+                "id": "3f1c-1c30-6e83-4b75",
+                "kind": "rule",
+                "name": "Ethereal"
+              }
+            ],
+            "infoElementsAbsent": ["7f0b-7925-a1f8-1aeb", "bd66-0701-64b6-e8da"]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-spirit-host-lichemaster.ros",
+      "description": "Dieselbe Einheit im Kontingent \"Army of the Lichemaster (WD#309-UK)\", mit 10 Modellen (die dortige Mindestgrenze) und der verlangten Auswahl \"The Army of the Lichemaster\". Jetzt greifen alle drei Lichemaster-Bedingungen an den Info-Verweisen: die Basis-verborgenen Regeln Spirit Levy und Tormented werden per field=hidden-Modifikator eingeblendet und erscheinen, die Regel Swarm wird umgekehrt per set hidden=true ausgeblendet und fehlt, und die sechs Merkmals-Modifikatoren am Profil-Verweis aendern S/T/W/A/Ld/US. Die Auswahl \"The Army of the Lichemaster\" bezieht ihre Regeln ueber einen infoLink auf eine infoGroup: in der Liste stehen deren drei Mitglieder, weder der Verweis noch die Gruppe selbst. Der Modell-Slot fuehrt keines der Info-Elemente seiner Einheit - die Vererbung laeuft nur nach oben.",
+      "expect": {
+        "firing": [],
+        "absent": ["34f6-fda6-54a6-3deb", "d7ca-7e6b-7a46-617f"],
+        "capabilities": [
+          {
+            "defId": "41a3-61ff-bfd0-b4b1",
+            "anchorKind": "occupied",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Glooms",
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "48e1-2acb-4d95-a551",
+                "kind": "profile",
+                "name": "Gloom",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "0e92-d038-82bf-fb41", "name": "Mv", "value": "6" },
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "2" },
+                  { "typeId": "b690-4bc0-bb73-267b", "name": "S", "value": "2" },
+                  { "typeId": "8712-f56f-5b22-a720", "name": "T", "value": "2" },
+                  { "typeId": "253a-9b00-4fde-8ac2", "name": "W", "value": "1" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "1" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "name": "Ld", "value": "5" },
+                  { "typeId": "fa44-51dd-e69c-8d6a", "name": "US", "value": "1" }
+                ]
+              },
+              {
+                "id": "7f0b-7925-a1f8-1aeb",
+                "kind": "rule",
+                "name": "Spirit Levy",
+                "text": "Units with this rule still suffer the fears and terrors of the flesh to some degree, and take comfort in numbers. A Spirit Levy unit adds its rank bonus to its Leadership."
+              },
+              {
+                "id": "bd66-0701-64b6-e8da",
+                "kind": "rule",
+                "name": "Tormented"
+              },
+              {
+                "id": "3f1c-1c30-6e83-4b75",
+                "kind": "rule",
+                "name": "Ethereal"
+              }
+            ],
+            "infoElementsAbsent": ["b600-a799-afb3-3174"]
+          },
+          {
+            "defId": "7a8a-ae42-4d15-7d9f",
+            "anchorKind": "occupied",
+            "frameDefId": "41a3-61ff-bfd0-b4b1",
+            "name": "Gloom",
+            "infoElementsAbsent": ["48e1-2acb-4d95-a551", "3f1c-1c30-6e83-4b75"]
+          },
+          {
+            "defId": "2d69-e7b1-e2c1-92bd",
+            "anchorKind": "occupied",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "The Army of the Lichemaster",
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "b446-2605-d413-a39d",
+                "kind": "rule",
+                "name": "Fear",
+                "text": "Unit causes Fear"
+              },
+              {
+                "id": "a246-d767-6ef1-36bc",
+                "kind": "rule",
+                "name": "Immune to Panic",
+                "text": "The unit do not take Panic tests."
+              },
+              {
+                "id": "7607-820c-4f41-f190",
+                "kind": "rule",
+                "name": "Army of the Lichemaster"
+              }
+            ],
+            "infoElementsAbsent": ["fd0e-2346-9f95-8c99", "fb4b-1df6-3bf8-63dd"]
+          }
+        ]
+      }
+    }
+  ]
+}

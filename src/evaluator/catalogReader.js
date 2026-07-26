@@ -17,8 +17,10 @@
  * das `library`-Kennzeichen. Dazu die **gemeinsame `EntryBase`-Basis** jedes
  * Elements (Catalogue.xsd:102-115) — ID, Name, `hidden`, Modifikatoren und
  * Modifikatorgruppen —, die damit auch an Profilen, Regeln, Info-Gruppen und
- * Info-Verweisen gelesen wird. Kein ZIP-Entpacken, kein XSD-Gate, keine
- * Link-Ketten/Importe (Resolver-Ausbaustufen spaeter).
+ * Info-Verweisen gelesen wird, sowie den **Regeltext** einer Regel
+ * (`<description>`), den die Info-Projektion des Berichts durchreicht. Kein
+ * ZIP-Entpacken, kein XSD-Gate, keine Link-Ketten/Importe
+ * (Resolver-Ausbaustufen spaeter).
  */
 
 import {
@@ -78,6 +80,7 @@ const Tag = Object.freeze({
   PROFILE: 'profile',
   RULES: 'rules',
   RULE: 'rule',
+  DESCRIPTION: 'description',
   INFO_GROUPS: 'infoGroups',
   INFO_GROUP: 'infoGroup',
   INFO_LINKS: 'infoLinks',
@@ -542,15 +545,27 @@ function readProfile(profileEl, diagnostics) {
 }
 
 /**
- * Liest ein `<rule>` (Info-Element `RuleDef`): seine `EntryBase`-Basis. Der
- * Regeltext (`<description>`) bleibt ausserhalb des Umfangs — der Evaluator
- * bewertet keine Texte (`docs/issues/.../design.md`, Kontrakt `RuleDef`).
+ * Liest ein `<rule>` (Info-Element `RuleDef`): seine `EntryBase`-Basis und den
+ * **Regeltext** (`<description>`, XSD optional — 10 der 1157 Regeln der
+ * Fixture-Kataloge tragen keinen, dann `null`).
+ *
+ * Der Evaluator *bewertet* den Text nach wie vor nicht; er reicht ihn nur in die
+ * Info-Projektion des Berichts durch (Issue 75/06, Kontrakt „Profile und
+ * Regeltexte je Slot"). Er ist bewusst kein Modifikator-Ziel: kein Modifikator
+ * der Fixture-Kataloge adressiert `description`, der Text ist also statisch.
  */
 function readRule(ruleEl, diagnostics) {
   return {
     ...readEntryBase(ruleEl, diagnostics),
     kind: InfoElementKind.RULE,
+    text: readRuleText(ruleEl),
   };
+}
+
+/** Der Textinhalt der `<description>` einer Regel (`null`, wenn sie keine traegt). */
+function readRuleText(ruleEl) {
+  const description = directChildren(ruleEl, Tag.DESCRIPTION)[0];
+  return description === undefined ? null : description.textContent;
 }
 
 /**
