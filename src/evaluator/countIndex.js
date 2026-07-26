@@ -41,7 +41,7 @@ function bucketFor(crossedSelection, crossedForce) {
 
 /** Ein leerer Zaehler (Anzahl und Kostensummen je Kostenart). */
 function emptyTally() {
-  return { selectionCount: 0, costSums: new Map() };
+  return { selectionCount: 0, forceCount: 0, costSums: new Map() };
 }
 
 /** Ein leerer Schluessel-Eintrag: ein Zaehler je Beitrags-Eimer. */
@@ -67,13 +67,13 @@ function emptyBuckets() {
  * selbst bei vorhandenem Kontingent `actual=0` lesen.
  */
 function contributionOf(node, effective) {
-  if (node.isForce) return { selectionCount: node.instance.count, costSums: new Map() };
+  if (node.isForce) return { selectionCount: 0, forceCount: node.instance.count, costSums: new Map() };
   const selectionCount = node.instance.count;
   const costSums = new Map();
   for (const [costTypeId, perSelection] of effective.costEntriesOf(node)) {
     costSums.set(costTypeId, perSelection * selectionCount);
   }
-  return { selectionCount, costSums };
+  return { selectionCount, forceCount: 0, costSums };
 }
 
 /**
@@ -83,9 +83,9 @@ function contributionOf(node, effective) {
  * sich auf die effektiven Kategorien (nach kategorie-aendernden Modifikatoren),
  * nicht auf die Basis-Kategorien.
  *
- * Ein **Kontingent-Knoten** ist nur unter seiner eigenen Definitions-ID zaehlbar
- * (fuer Grenzen am Force-Typ) — es ist keine Selektion "im Rahmen" und traegt
- * daher weder zum `null`-Ziel noch zu Kategorien bei.
+ * Ein **Kontingent-Knoten** ist nur unter seiner eigenen Definitions-ID
+ * (fuer Grenzen am Force-Typ) und seinen Kategorie-IDs zaehlbar. Es ist keine
+ * generische Selektion "im Rahmen" und traegt daher nicht zum `null`-Ziel bei.
  *
  * Ist der Knoten Member einer `selectionEntryGroup` (`memberGroupIds`, aus dem
  * Definitionsbaum abgeleitet), zaehlt er zusaetzlich unter jeder Gruppen-ID —
@@ -93,7 +93,7 @@ function contributionOf(node, effective) {
  * Eigentuemer-Rahmen die Zahl der gewaehlten Member.
  */
 function targetsOf(node, effective) {
-  if (node.isForce) return [node.def.id];
+  if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
   const targets = [null, node.def.id, ...effective.categoryIdsOf(node)];
   if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
   if (node.def.type) targets.push(node.def.type);
@@ -103,6 +103,7 @@ function targetsOf(node, effective) {
 /** Addiert einen Beitrag auf einen Zaehler. */
 function addTally(tally, contribution) {
   tally.selectionCount += contribution.selectionCount;
+  tally.forceCount += contribution.forceCount;
   for (const [costTypeId, value] of contribution.costSums) {
     tally.costSums.set(costTypeId, (tally.costSums.get(costTypeId) ?? 0) + value);
   }
@@ -140,7 +141,11 @@ function indexNodeContribution(tallies, node, effective) {
     const bucket = bucketFor(crossedSelection, forceCrossedForFrame);
     const frameKey = frameKeyOf(frame);
     for (const targetId of targets) {
-      addContribution(tallies, scopeKey(frameKey, targetId), bucket, contribution);
+      let c = contribution;
+      if (node.isForce && targetId === node.def.id) {
+        c = { selectionCount: node.instance.count, forceCount: node.instance.count, costSums: contribution.costSums };
+      }
+      addContribution(tallies, scopeKey(frameKey, targetId), bucket, c);
     }
     // Der aktuelle Rahmen wird fuer alle *hoeheren* Rahmen zu einem
     // dazwischenliegenden Knoten (der Beitragende selbst zaehlt nie als Grenze).
@@ -163,7 +168,7 @@ function combineBuckets(buckets, includeChildSelections, includeChildForces) {
   return result;
 }
 
-const ZERO_TALLY = Object.freeze({ selectionCount: 0, costSums: new Map() });
+const ZERO_TALLY = Object.freeze({ selectionCount: 0, forceCount: 0, costSums: new Map() });
 
 /**
  * Baut den Zaehlindex ueber die realen Knoten des Evaluationsbaums aus den
@@ -172,7 +177,7 @@ const ZERO_TALLY = Object.freeze({ selectionCount: 0, costSums: new Map() });
  *
  * @param {object} root Wurzel des Evaluationsbaums.
  * @param {import('./effectiveState.js').EffectiveState} effective effektive Kosten und Kategorien je Knoten.
- * @returns {{ get: (key: string, includeChildSelections?: boolean, includeChildForces?: boolean) => { selectionCount: number, costSums: Map<string, number> } }}
+ * @returns {{ get: (key: string, includeChildSelections?: boolean, includeChildForces?: boolean) => { selectionCount: number, forceCount: number, costSums: Map<string, number> } }}
  *   `get` liefert den nach den beiden `includeChild…`-Flags zusammengesetzten
  *   Zaehler eines Schluessels (Vorgabe: nur der BASE-Eimer).
  */

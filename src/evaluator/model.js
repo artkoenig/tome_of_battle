@@ -39,12 +39,16 @@ export {
  */
 export const CountedFieldKind = Object.freeze({
   SELECTION_COUNT: 'selectionCount',
+  FORCE_COUNT: 'forceCount',
   COST_SUM: 'costSum',
   LIMIT_VALUE: 'limitValue',
 });
 
 /** Das Feld "Selektionsanzahl" als unveraenderlicher, parameterloser Wert. */
 export const SELECTION_COUNT = Object.freeze({ kind: CountedFieldKind.SELECTION_COUNT });
+
+/** Das Feld "Kontingentanzahl" als unveraenderlicher, parameterloser Wert. */
+export const FORCE_COUNT = Object.freeze({ kind: CountedFieldKind.FORCE_COUNT });
 
 /**
  * Das Feld "Kostensumme einer Kostenart", identifiziert **per ID** (nicht per
