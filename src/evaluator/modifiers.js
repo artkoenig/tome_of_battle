@@ -148,7 +148,7 @@ function conditionsAndGroupsHold(ctx, conditions, conditionGroups) {
 
 /** Meldet eine ungueltige Kind/Ziel-Paarung als Diagnose (nie still verschluckt). */
 function reportInvalidPairing(kind, target, diagnostics) {
-  diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { kind, targetKind: target.kind }));
+  diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { modifierKind: kind, targetKind: target.kind }));
 }
 
 /**

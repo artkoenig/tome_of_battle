@@ -77,8 +77,9 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`ogre-kingdoms`](testing/ogre-kingdoms/) | Definitive Ogre (+/- Mercenaries) | 11 |
 | [`orcs-and-goblins`](testing/orcs-and-goblins/) | Definitive O&G (+/- Mercenaries) | 3 |
 | [`vampire-counts`](testing/vampire-counts/) | Definitive VC (+/- Mercenaries) | 3 |
+| [`category-scope-bug`](testing/category-scope-bug/) | Definitive VC + Mercenaries | 1 |
 | [`real-catalog-smoke`](testing/real-catalog-smoke/) | Definitive Ogre (+/- Mercenaries) | 2 |
-| **Summe** | | **41** |
+| **Summe** | | **42** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -186,3 +187,11 @@ leeren Armee.
 | :--- | :--- | :--- | :--- |
 | 01 | Leere Armee (keine Kontingente) | mit Mercenaries | Vollständiger Bericht, kein Absturz; alle Verweise (auch „Pikemen") lösen auf |
 | 02 | Dieselbe leere Armee | **ohne** Mercenaries | Meldung „fehlende Abhängigkeit"; der „Pikemen"-Verweis bleibt offen — kein Absturz |
+
+## `category-scope-bug`
+
+Prüft, ob eine Constraint, die auf eine bestimmte Kategorie gescoped ist (hier: Strigoi `bf30-4ff0-a4d8-3909`), nicht irrtümlich feuert, wenn die entsprechende Auswahl (hier: Mount) in einer Einheit getroffen wird, die diese Kategorie *nicht* besitzt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Master Necromancer (enthält die gescopete Constraint), ein Von Carstein Vampire mit Mount, und ein Strigoi Vampire ohne Mount | Das Mount gehört nicht zur Strigoi-Kategorie, weshalb die Strigoi-gescopete Constraint nicht feuert — keine Verletzung |
