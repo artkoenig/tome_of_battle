@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "unresolved-limit-force-scope",
+  "description": "Verifiziert, dass limit::-Bedingungen mit scope=\"force\" das Punktebudget auf Force-Ebene korrekt lesen (keine UNRESOLVED_BUDGET_LIMIT-Diagnose) und Modifikatoren fehlerfrei triggern.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-force-limit-500.ros",
+      "description": "Ein Roster mit einer Force, die ein <costLimits> für 'pts' (ecfa-8486-4f6c-c249) auf genau 500 gesetzt hat.",
+      "expect": {
+        "firing": [
+          { "limitId": "1a97-1579-ab05-a6d7", "actual": 0, "bound": 1 }
+        ],
+        "absent": [],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_BUDGET_LIMIT" }
+          ]
+        }
+      }
+    }
+  ]
+}
