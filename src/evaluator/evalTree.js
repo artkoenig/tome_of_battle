@@ -150,6 +150,38 @@ function ownerDefinitionOf(node) {
 }
 
 /**
+ * Alle `selectionEntry`- und `entryLink`-Kinder einer Definition, rekursiv
+ * durch Gruppen (da Gruppen fuer Selektions-Zugehoerigkeit transparent sind).
+ */
+function* selectionDefinitionsUnder(ownerDef) {
+  for (const child of ownerDef.children ?? []) {
+    if (child.kind === DefinitionKind.ENTRY_LINK || child.kind === DefinitionKind.ENTRY) {
+      yield child;
+    } else if (child.kind === DefinitionKind.GROUP) {
+      yield* selectionDefinitionsUnder(child);
+    }
+  }
+}
+
+/**
+ * Synthetisiert Phantomknoten fuer Pflicht-Selektionen (`min > 0` mit `scope="parent"`),
+ * die der Nutzer beim jeweiligen Eigentuemer komplett weggelassen hat.
+ * Jeder instanziierte Knoten prueft seine Definition auf solche Pflicht-Kinder.
+ */
+function synthesizeParentScopePhantoms(root, nextFrameId) {
+  for (const owner of [...realNodes(root)]) {
+    if (owner.isForce) continue;
+    const ownerDef = ownerDefinitionOf(owner);
+    for (const childDef of selectionDefinitionsUnder(ownerDef)) {
+      if (hasMinLimitInFrame(childDef, ScopeKeyword.PARENT) && countInstances(owner, childDef.id) === 0) {
+        attachPhantom(owner, childDef, nextFrameId);
+      }
+    }
+  }
+}
+
+
+/**
  * Die Grenzen-tragenden `selectionEntryGroup`s im Definitionsteilbaum eines
  * Eigentuemers — ueber verschachtelte Gruppen hinweg, aber **nicht** ueber
  * Eintraege hinaus: die Gruppen eines geschachtelten Eintrags gehoeren diesem
@@ -253,6 +285,7 @@ export function buildEvalTree(resolved, roster) {
     attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId);
   }
   synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
+  synthesizeParentScopePhantoms(root, nextFrameId);
   // Nach den realen Knoten und den Pflicht-Phantomen: die Gruppen-Anker zuletzt,
   // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
   synthesizeGroupAnchors(root, resolved, nextFrameId);

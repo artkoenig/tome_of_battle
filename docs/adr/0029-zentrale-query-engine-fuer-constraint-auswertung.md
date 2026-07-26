@@ -116,15 +116,12 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
    (`checkSelectionTree`/`traverseSelectionTree`) erreicht; neu ist, dass ihre
    Zählung über den Kern (`measureOver`) statt über eigene Scope-Logik läuft.
    Der Sonderfall „Pflicht-Eintrag fehlt" wird — wo ein fehlender Eintrag im
-   Instanzbaum gar nicht vorkommt — definitionsseitig erfasst: über die
-   (bereits vor diesem Umbau bestehende, hier nur auf den Kern umgestellte)
-   Force-/Roster-Pflicht-Selektoren in `armyWideSelectors.js`. **Bekannte
-   Grenze:** eine fehlende Pflicht-Auswahl mit `scope="parent"` oder innerhalb
-   einer Gruppe wird dadurch nicht erfasst — sie würde nur sichtbar, wenn die
-   besitzende Selektion im Instanzbaum läge. Das deckt die real vorkommenden
-   Muster (armee-/kontingentweite Pflicht) ab; eine allgemeine
-   definitionsseitige Aufzählung aller Ebenen bleibt offen, falls ein Katalog
-   sie verlangt.
+   Instanzbaum gar nicht vorkommt — in einem späteren Ausbau durch **Phantom-Knoten** 
+   (`evalTree.js`) erfasst. Der Evaluator synthetisiert für weggelassene 
+   Pflicht-Auswahlen (roster-, force- und parent-weit) künstliche Phantom-Knoten 
+   im Instanzbaum. Dadurch werden Pflicht-Absenzen auf *allen* Ebenen generisch 
+   vom Auswertungs-Kern gefunden. Die frühere Lücke („parent-/gruppenweite Pflicht-Absenz
+   wird nicht erfasst") ist damit architektonisch geschlossen.
 
 5. **Ein Ergebnis, zwei Sichten.** Validierung ist der Filter auf Verstöße
    (ungültige Listen werden markiert, nicht hart verhindert). Die **UI-
@@ -213,9 +210,8 @@ eine dünne Reaktion auf `n`:
   ┌───────────────────────────────────────────────────────────────────────────────────┐
   │  L4  Treiber: Instanzbaum-Lauf (checkSelectionTree/traverseSelectionTree) für die  │
   │      Per-Selektions-Constraints; Zählung je Constraint über L3/Kern.                │
-  │      Pflicht-Absenz (Eintrag fehlt im Instanzbaum) definitionsseitig — über die     │
-  │      bestehenden Force-/Roster-Pflicht-Selektoren (armyWideSelectors), nur auf den  │
-  │      Kern umgestellt. Grenze: parent-/gruppenweite Pflicht-Absenz nicht erfasst.    │
+  │      Pflicht-Absenz (Eintrag fehlt) wird generisch über Phantom-Knoten im Instanz-  │
+  │      baum (`evalTree.js`) abgebildet. Jede Pflicht-Absenz erreicht so den Kern.     │
   └───────────────────────────────────────────────────────────────────────────────────┘
         │
         ▼  L5  EIN Ergebnis → alles abgeleitet
@@ -251,10 +247,10 @@ eine dünne Reaktion auf `n`:
 2. **Globaler Count-Vorlauf ist Pflicht.** `force`/`roster`/`category`-Scopes werden
    aus vorberechneten Zähltabellen beantwortet, nicht aus dem lokalen Teilbaum —
    die Auswertung ist zweiphasig (Index bauen → laufen), kein reiner Single-Walk.
-3. **Nicht alle Constraints hängen am Instanzbaum.** Pflicht-Grenzen, die feuern,
-   wenn ein Eintrag *fehlt*, sind für Force-/Roster-Scope über die
-   definitionsseitigen Pflicht-Selektoren (L4) erfasst; parent-/gruppenweite
-   Pflicht-Absenz bleibt offen (siehe Punkt 4). Der `.ros`-Import flacht
+3. **Nicht alle Constraints hängen primär am Instanzbaum.** Pflicht-Grenzen, die feuern,
+   wenn ein Eintrag *fehlt*, werden durch Phantom-Knoten (`evalTree.js`) künstlich in den 
+   Instanzbaum projiziert. Dadurch ist die ursprüngliche Lücke (parent-weite Pflicht-Absenz) 
+   mittlerweile geschlossen und jede Absenz erreicht den Evaluator auf normalem Wege.
    verschachtelte Forces ein (ADR 0011 §5), sodass `includeChildForces` die
    dokumentierte Näherung „ganzes Roster" bleibt — isoliert in L2a.
 
