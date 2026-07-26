@@ -93,7 +93,10 @@ const Attr = Object.freeze({
   VALUE: 'value',
   SCOPE: 'scope',
   CHILD_ID: 'childId',
-  PER_VALUE: 'perValue',
+  // `<repeat>`: wie oft der Modifikator je erreichtem `value` wirkt, und ob der
+  // Quotient auf- statt abgerundet wird (Catalogue.xsd:541-548).
+  REPEATS: 'repeats',
+  ROUND_UP: 'roundUp',
   PERCENT_VALUE: 'percentValue',
   SHARED: 'shared',
   INCLUDE_CHILD_SELECTIONS: 'includeChildSelections',
@@ -118,6 +121,9 @@ const INFO_LINK_KINDS = Object.freeze(new Set(Object.values(InfoLinkKind)));
 /** Das `field`-Attribut, das die Selektionsanzahl statt einer Kostenart meint. */
 const SELECTION_COUNT_FIELD_XML = 'selections';
 const FORCE_COUNT_FIELD_XML = 'forces';
+
+/** Vorgabe fuer ein fehlendes `repeats`: eine Anwendung je erreichtem Schritt. */
+const SINGLE_REPEAT = 1;
 
 const BOOLEAN_TRUE_XML = 'true';
 const BOOLEAN_FALSE_XML = 'false';
@@ -321,18 +327,31 @@ function readConditionGroups(element, diagnostics) {
 
 /**
  * Liest eine einzelne `<repeat>` einer Wiederholung in ihre `RepeatDef` oder
- * meldet eine Diagnose. `perValue` muss eine Zahl ungleich 0 sein (0 gaebe eine
- * Division durch null).
+ * meldet eine Diagnose.
+ *
+ * Die XSD leitet `Repeat` von `QueryFilteredBase` ab (Catalogue.xsd:541-548):
+ * die **Schrittweite** steht im geerbten `value` (`QueryBase`, Catalogue.xsd:427)
+ * — ein eigenes `perValue`-Attribut gibt es nicht. `repeats` (Pflicht laut XSD,
+ * defensiv auf 1 vorbelegt) ist die Zahl der Anwendungen **je** erreichtem
+ * Schritt, `roundUp` rundet den Quotienten auf statt ab. Die engine-eigene
+ * `RepeatDef` nennt die Schrittweite `perValue` ("je N"), weil sie dort als
+ * Divisor auftritt ({@link ../evaluator/modifiers.js}).
+ *
+ * Die Schrittweite muss eine Zahl ungleich 0 sein (0 gaebe eine Division durch
+ * null); ein unlesbarer Wert wird als Diagnose gemeldet, nie still verschluckt.
  */
 function readRepeat(repeatEl, diagnostics) {
   const field = readField(repeatEl.getAttribute(Attr.FIELD));
   const scope = readScope(repeatEl.getAttribute(Attr.SCOPE));
-  const perValue = Number.parseFloat(repeatEl.getAttribute(Attr.PER_VALUE));
-  if (field === undefined || scope === undefined || Number.isNaN(perValue) || perValue === 0) {
+  const perValue = Number.parseFloat(repeatEl.getAttribute(Attr.VALUE));
+  const repeatsAttr = repeatEl.getAttribute(Attr.REPEATS);
+  const repeats = repeatsAttr === null ? SINGLE_REPEAT : Number.parseInt(repeatsAttr, 10);
+  if (field === undefined || scope === undefined || Number.isNaN(perValue) || perValue === 0 || Number.isNaN(repeats)) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_REPEAT, {
       field: repeatEl.getAttribute(Attr.FIELD),
       scope: repeatEl.getAttribute(Attr.SCOPE),
-      perValue: repeatEl.getAttribute(Attr.PER_VALUE),
+      value: repeatEl.getAttribute(Attr.VALUE),
+      repeats: repeatsAttr,
     }));
     return null;
   }
@@ -341,6 +360,8 @@ function readRepeat(repeatEl, diagnostics) {
     scope,
     targetChildId: repeatEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : repeatEl.getAttribute(Attr.CHILD_ID),
     perValue,
+    repeats,
+    roundUp: readBoolean(repeatEl, Attr.ROUND_UP, false),
     flags: readFlags(repeatEl),
   };
 }

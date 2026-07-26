@@ -48,6 +48,7 @@ const PHANTOM_DEFINITION_KINDS = Object.freeze(new Set([
  *
  * - jede Definition (fuer Symboltabelle und Modifikator-Auflösung),
  * - jeden `entryLink` (fuer die transitive Ziel-Auflösung),
+ * - jeden `categoryLink` (fuer die Auflösung auf seine Kategorie-Definition),
  * - die Info-Elemente jedes Knotens (fuer Indizierung/`infoLink`-Auflösung).
  *
  * Eine doppelte ID wird als Diagnose sichtbar (der erste Eintrag gewinnt); die
@@ -66,6 +67,9 @@ function collectDefinition(definition, collector) {
   collector.definitionNodes.push(definition);
   if (definition.kind === DefinitionKind.ENTRY_LINK) {
     collector.entryLinks.push(definition);
+  }
+  if (definition.kind === DefinitionKind.CATEGORY_LINK) {
+    collector.categoryLinks.push(definition);
   }
   for (const info of definition.infos ?? []) {
     collector.infoRoots.push(info);
@@ -103,17 +107,28 @@ function collectRootDefinitions(definition, out, seen) {
  * Ziel-ID traegt (die Import-Schicht verwirft das `entryGroupId`-Tag, die
  * Zugehoerigkeit wird deshalb aus dem Definitionsbaum abgeleitet — wie im
  * Solver-Referenzpfad `collectGroupItemIds`).
+ *
+ * Zeigt ein `entryLink` auf eine **Gruppe**, gehoeren deren Member ebenfalls dazu:
+ * eine Grenze an der aeusseren Gruppe (z. B. "hoechstens 100 Punkte Magie-Items")
+ * rechnet gegen alles, was unter ihr waehlbar ist — auch wenn die Unterlisten
+ * ("Magische Waffen", "Magische Ruestung") per Verweis eingebunden sind. Der
+ * `visited`-Satz haelt eine zyklische Verweiskette endlich.
  */
-function collectGroupMemberIds(groupDef, into) {
+function collectGroupMemberIds(groupDef, into, visited = new Set()) {
+  if (visited.has(groupDef.id)) return;
+  visited.add(groupDef.id);
   for (const child of groupDef.children ?? []) {
     if (child.kind === DefinitionKind.GROUP) {
-      collectGroupMemberIds(child, into);
+      collectGroupMemberIds(child, into, visited);
       continue;
     }
     into.add(child.id);
     if (child.kind === DefinitionKind.ENTRY_LINK) {
       if (child.targetId !== null && child.targetId !== undefined) into.add(child.targetId);
-      if (child.resolved !== null && child.resolved !== undefined) into.add(child.resolved.id);
+      if (child.resolved !== null && child.resolved !== undefined) {
+        into.add(child.resolved.id);
+        if (child.resolved.kind === DefinitionKind.GROUP) collectGroupMemberIds(child.resolved, into, visited);
+      }
     }
   }
 }
@@ -320,6 +335,7 @@ export function resolveCatalogue(catalogue) {
     diagnostics: [],
     definitionNodes: [],
     entryLinks: [],
+    categoryLinks: [],
     infoRoots: [...(catalogue.infos ?? [])],
   };
   const rootForest = [
@@ -330,7 +346,7 @@ export function resolveCatalogue(catalogue) {
   for (const definition of [...rootForest, ...(catalogue.sharedEntries ?? [])]) {
     collectDefinition(definition, collector);
   }
-  const { byId, categoryIds, diagnostics, definitionNodes, entryLinks, infoRoots } = collector;
+  const { byId, categoryIds, diagnostics, definitionNodes, entryLinks, categoryLinks, infoRoots } = collector;
 
   // Pflicht-Phantom-Quelle: nur die im Wurzel-Baum erreichbaren anwaehlbaren
   // Definitionen (nicht die geteilten/verlinkten — die stehen nur im `lookup`).
@@ -356,6 +372,18 @@ export function resolveCatalogue(catalogue) {
     link.resolved = target;
     if (target === null) {
       diagnostics.push(diagnostic(DiagnosticKind.DANGLING_ENTRY_LINK, { targetId: link.targetId }));
+    }
+  }
+
+  // `categoryLink`-Ziele auf ihre Kategorie-Definition aufloesen. Der Link erbt
+  // damit deren Grenzen und Modifikatoren (wie ein `entryLink` von seinem Ziel),
+  // sodass eine am `categoryEntry` deklarierte Grenze am Kategorie-Anker des
+  // Kontingents ausgewertet wird. Ein Link zeigt immer direkt auf eine Kategorie —
+  // eine Link→Link-Kette wie beim `entryLink` gibt es hier nicht.
+  for (const link of categoryLinks) {
+    link.resolved = byId.get(link.targetId) ?? null;
+    if (link.resolved === null) {
+      diagnostics.push(diagnostic(DiagnosticKind.DANGLING_CATEGORY_LINK, { targetId: link.targetId }));
     }
   }
 

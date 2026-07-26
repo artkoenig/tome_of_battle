@@ -139,6 +139,16 @@ export const DefinitionKind = Object.freeze({
 });
 
 /**
+ * True, wenn die Definition ein **Verweis** auf eine andere ist (`entryLink`
+ * oder `categoryLink`). Beide erben Grenzen und Modifikatoren von ihrem
+ * aufgeloesten Ziel (`resolved`) und ueberschreiben sie mit ihren eigenen — die
+ * Schichten, die dieses Erben umsetzen, teilen sich dieses eine Praedikat.
+ */
+export function isLinkDefinition(def) {
+  return def.kind === DefinitionKind.ENTRY_LINK || def.kind === DefinitionKind.CATEGORY_LINK;
+}
+
+/**
  * Die drei Zaehl-Flags einer Query (`docs/evaluator-architecture.md` §4.1,
  * `record CountFlags`). Battlescribe-Vorgabe (XSD `QueryBase`): `shared` ist
  * standardmaessig **true** (armeeweit ueber alle Instanzen der Ziel-Definition),
@@ -238,6 +248,10 @@ export const DiagnosticKind = Object.freeze({
   // Sichtbar gemacht statt still ignoriert (analog {@link DANGLING_INFO_LINK}); ein
   // aufgeloester Link erzeugt keine Diagnose.
   DANGLING_ENTRY_LINK: 'danglingEntryLink',
+  // Der `targetId` eines `categoryLink` verweist auf keine indizierte
+  // Kategorie-Definition. Sichtbar gemacht statt still ignoriert (analog
+  // {@link DANGLING_ENTRY_LINK}); ein aufgeloester Link erzeugt keine Diagnose.
+  DANGLING_CATEGORY_LINK: 'danglingCategoryLink',
   // Ein mitgegebener Katalog nennt eine `gameSystemId`, die nicht zur mitgegebenen
   // Spielsystemdatei (`.gst`) passt — Kohaerenz-Diagnose statt stiller
   // Teil-Auswertung (ADR-0032, Entscheidung 3).

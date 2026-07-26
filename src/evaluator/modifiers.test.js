@@ -17,7 +17,7 @@ import { buildIndex } from './countIndex.js';
 import { createBaseEffectiveState } from './effectiveState.js';
 import { applyAllModifiers } from './modifiers.js';
 import { createQueryContext, query } from './query.js';
-import { SELECTION_COUNT } from './model.js';
+import { SELECTION_COUNT, DiagnosticKind } from './model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -147,8 +147,10 @@ describe('Wiederholungen multiplizieren die Modifikator-Wirkung', () => {
   const MODIFIER_POINTS = 5;
   const MAX_POINTS = 12;
   const PER_TOKEN = 1;
-  // Warrior: +5 Punkte je Token im Roster (Wiederholung ueber die Token-Anzahl).
-  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+  // Die Schrittweite steht im `value` der `<repeat>` (XSD `QueryBase`), die Zahl
+  // der Anwendungen je Schritt im `repeats` — ein `perValue`-Attribut kennt die
+  // XSD nicht.
+  const repeatCatalogue = (perToken, repeatAttrs = '') => `<?xml version="1.0" encoding="utf-8"?>
     <catalogue id="cat-repeat" name="Repeat Catalogue">
       <selectionEntries>
         <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
@@ -161,7 +163,7 @@ describe('Wiederholungen multiplizieren die Modifikator-Wirkung', () => {
           <modifiers>
             <modifier type="increment" field="${POINTS_ID}" value="${MODIFIER_POINTS}">
               <repeats>
-                <repeat field="selections" scope="roster" childId="${TOKEN_ID}" perValue="${PER_TOKEN}"/>
+                <repeat field="selections" scope="roster" childId="${TOKEN_ID}" value="${perToken}" ${repeatAttrs}/>
               </repeats>
             </modifier>
           </modifiers>
@@ -169,6 +171,8 @@ describe('Wiederholungen multiplizieren die Modifikator-Wirkung', () => {
         <selectionEntry id="${TOKEN_ID}" name="Token" type="upgrade"/>
       </selectionEntries>
     </catalogue>`;
+  // Warrior: +5 Punkte je Token im Roster (Wiederholung ueber die Token-Anzahl).
+  const CATALOGUE_XML = repeatCatalogue(PER_TOKEN);
 
   it('multipliziert die Wirkung mit der ganzzahligen Wiederholungszahl (value * times)', () => {
     const tokens = 3; // times = floor(3 / 1) = 3 → 10 + 5*3 = 25.
@@ -183,6 +187,33 @@ describe('Wiederholungen multiplizieren die Modifikator-Wirkung', () => {
     const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 1)]));
 
     expect(report.violations).toHaveLength(0);
+  });
+
+  it('zaehlt die Schritte aus dem `value` der Wiederholung, nicht je Selektion', () => {
+    // Schrittweite 2, 5 Token → floor(5 / 2) = 2 Schritte → 10 + 5*2 = 20.
+    const report = evaluate(repeatCatalogue(2), roster([selection(WARRIOR_ID, 1), selection(TOKEN_ID, 5)]));
+
+    expect(report.violations[0].actual).toBe(WARRIOR_BASE_POINTS + MODIFIER_POINTS * 2);
+  });
+
+  it('wendet den Modifikator `repeats`-mal je Schritt an', () => {
+    // Schrittweite 2, 4 Token → 2 Schritte, je 3 Anwendungen → 10 + 5*6 = 40.
+    const report = evaluate(repeatCatalogue(2, 'repeats="3"'), roster([selection(WARRIOR_ID, 1), selection(TOKEN_ID, 4)]));
+
+    expect(report.violations[0].actual).toBe(WARRIOR_BASE_POINTS + MODIFIER_POINTS * 6);
+  });
+
+  it('rundet den Quotienten mit `roundUp` auf statt ab', () => {
+    // Schrittweite 2, 3 Token → ceil(3 / 2) = 2 Schritte → 10 + 5*2 = 20.
+    const report = evaluate(repeatCatalogue(2, 'roundUp="true"'), roster([selection(WARRIOR_ID, 1), selection(TOKEN_ID, 3)]));
+
+    expect(report.violations[0].actual).toBe(WARRIOR_BASE_POINTS + MODIFIER_POINTS * 2);
+  });
+
+  it('meldet eine Wiederholung ohne lesbare Schrittweite als Diagnose', () => {
+    const { diagnostics } = parseCatalogue(repeatCatalogue(''));
+
+    expect(diagnostics).toContainEqual(expect.objectContaining({ kind: DiagnosticKind.UNSUPPORTED_REPEAT }));
   });
 });
 
