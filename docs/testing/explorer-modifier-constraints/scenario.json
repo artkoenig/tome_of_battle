@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "explorer-modifier-constraints",
-  "description": "Prüft die Auswertung von Modifikatoren auf Constraints an entryLinks. Konkret: Wenn Grom the Paunch (selectionEntry 1821-fbd1-0d96-2d88) in einer Orcs & Goblins Armee gewählt ist, setzt der Modifikator an entryLink a2d7-7a89-7059-81f2 ('General' unter Orc Warboss c0d1-671e-8419-f027) den Constraint fc6d-21e4-3da5-17f9 (max General-Anzahl in der Force) von 1 auf 0. Wenn ein Orc Warboss zusätzlich die General-Aufwertung wählt, muss Constraint fc6d-21e4-3da5-17f9 mit actual: 1, bound: 0 feuern. Wenn Grom the Paunch nicht gewählt ist, ist der Constraint erfüllt (actual: 1, bound: 1) und darf nicht feuern.",
+  "description": "Prüft Modifikatoren auf Grenzen an einem entryLink. Die geteilte Aufwertung 'General' (1b7c-2c90-6d96-28c9) trägt im Spielsystem die Grenze fc6d-21e4-3da5-17f9 (max 1, scope=force). Der entryLink 'General' am Orc Great Shaman (a2d7-7a89-7059-81f2, unter aa57-63c4-136b-4af5) setzt diese Grenze auf 0, wenn das Kontingent die Armeeliste 'Grimgor's Ardboyz' ist (forceEntry 1821-fbd1-0d96-2d88, Condition instanceOf mit scope=force). Das Roster wählt die Aufwertung über die Link-ID — nur so greift der Modifikator des Links.",
   "dataset": {
     "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
@@ -10,8 +10,8 @@
   },
   "rosters": [
     {
-      "file": "rosters/01-grom-plus-general-illegal.ros",
-      "description": "Orc Warboss mit General-Aufwertung UND Grom the Paunch. Der Modifikator durch Grom setzt das General-Limit fc6d-21e4-3da5-17f9 von 1 auf 0. Das Limit feuert mit actual 1, bound 0.",
+      "file": "rosters/01-grimgor-shaman-as-general-illegal.ros",
+      "description": "Kontingent 'Grimgor's Ardboyz' mit einem Orc Great Shaman, der die General-Aufwertung über den Link a2d7-7a89-7059-81f2 trägt. Der Modifikator des Links setzt fc6d-21e4-3da5-17f9 auf 0; die Grenze feuert mit actual 1, bound 0.",
       "expect": {
         "firing": [
           { "limitId": "fc6d-21e4-3da5-17f9", "actual": 1, "bound": 0 }
@@ -20,8 +20,8 @@
       }
     },
     {
-      "file": "rosters/02-general-without-grom-legal.ros",
-      "description": "Orc Warboss mit General-Aufwertung OHNE Grom the Paunch. Constraint fc6d-21e4-3da5-17f9 hat das Standardlimit 1 (actual 1, bound 1) und feuert nicht.",
+      "file": "rosters/02-standard-shaman-as-general-legal.ros",
+      "description": "Derselbe Aufbau im Kontingent 'Standard (OG-AB)'. Die Bedingung des Modifikators hält nicht, fc6d-21e4-3da5-17f9 bleibt bei max 1 und ist mit einem General erfüllt — die Grenze feuert nicht.",
       "expect": {
         "firing": [],
         "absent": [

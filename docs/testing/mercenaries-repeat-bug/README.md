@@ -1,37 +1,63 @@
-# Szenario: mercenaries-repeat-bug
+# E2E-Regeln & Testkatalog: Wiederholungen (`<repeat>`) in einem Modifikator
 
-**Thesis**: The new engine's `catalogReader.js` fails to parse `<repeat>` elements inside modifiers because it looks for a non-existent `perValue` attribute, ignoring the correct `value` and `repeats` attributes. This causes `readRepeat` to always fail with `DiagnosticKind.UNSUPPORTED_REPEAT`, meaning the modifier is never applied.
+**Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln, Constraint-IDs
+und Erwartungswerte sind **ausschliesslich aus den Katalogdaten** der *6th Definitive
+Edition* **abgeleitet**.
 
-Dieses Szenario nutzt den Datensatz **WHFB 6th Definitive Edition**, insbesondere den Katalog `Mercenaries (6th definitive edition).cat`, um den Fehler im Umgang mit `<repeat>`-Elementen zu beweisen.
+- Spielsystem: `Warhammer Fantasy Battles (6th definitive edition).gst` (`0d13-7737-ea86-4662`, rev 1)
+- Kataloge: `Ogre Kingdoms (6th definitive edition).cat` (`49a5-e8f7-aa09-ad96`) — liefert das
+  Kontingent **„Standard (OK-AB)"** `729f-9246-5cd3-5044`, das Soeldner zulaesst — und
+  `Mercenaries (6th definitive edition).cat` (`fc47-8392-a6c8-452a`) mit der Einheit selbst.
 
-## Regeln (In-World)
-Die Einheit "Toxote's Hellmounts" enthält die Modelle "Kylists (Chaos Centaur Champions)" und "Bucks (Chaos Centaur Troopers)".
-Die "Kylists" haben eine Obergrenze von 1 (max=1). Diese Obergrenze wird jedoch durch einen Modifier erhöht, der ein `<repeat>`-Element enthält: Für jeweils 2 Modelle vom Typ "Bucks" erhöht sich das Limit um 1.
-Mit 4 "Bucks" ergibt sich also ein max-Limit von `1 + (4/2) = 3` für die "Kylists".
+## Regel (In-World)
 
-## Evidence (Katalog-Daten)
+Die Soeldnereinheit „Toxote's Hellmounts" besteht aus dem Anfuehrer „Toxote", den
+Champions „Kylists" und den Truppen „Bucks". Von den Kylists ist zunaechst nur **einer**
+erlaubt; je **2** Bucks kommt **einer** hinzu. Bei 4 Bucks sind also 3 Kylists erlaubt.
+
+## Beleg (Katalog-Daten)
+
 Aus `Mercenaries (6th definitive edition).cat`:
+
 ```xml
-<selectionEntry type="model" import="true" name="Kylists (Chaos Centaur Champions)" hidden="false" id="07b6-6c42-d4d5-16e8" sortIndex="2">
+<selectionEntry type="model" name="Kylists (Chaos Centaur Champions)" id="07b6-6c42-d4d5-16e8">
   <constraints>
-    <constraint type="min" value="1" field="selections" scope="parent" shared="true" id="608d-6b9e-583a-0246" includeChildSelections="false"/>
-    <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="7200-e796-ecd2-cdaa" includeChildSelections="false"/>
+    <constraint type="min" value="1" field="selections" scope="parent" id="608d-6b9e-583a-0246"/>
+    <constraint type="max" value="1" field="selections" scope="parent" id="7200-e796-ecd2-cdaa"/>
   </constraints>
   <modifiers>
     <modifier type="increment" value="1" field="7200-e796-ecd2-cdaa">
       <repeats>
-        <repeat value="2" repeats="1" field="selections" scope="parent" childId="5350-812c-57c9-ef45" shared="true" roundUp="false"/>
+        <repeat value="2" repeats="1" field="selections" scope="parent" childId="5350-812c-57c9-ef45" roundUp="false"/>
       </repeats>
     </modifier>
   </modifiers>
 </selectionEntry>
 ```
-Das `childId` `5350-812c-57c9-ef45` referenziert den Eintrag "Bucks (Chaos Centaur Troopers)".
 
-## Verifizierte Bausteine
+`childId="5350-812c-57c9-ef45"` ist der Eintrag „Bucks (Chaos Centaur Troopers)".
 
-| Fixture | Beschreibung | expect.absent | expect.diagnostics |
-|---------|--------------|---------------|--------------------|
-| `01-repeat.ros` | Toxote's Hellmounts mit 4 Bucks und 3 Kylists. Das Limit der Kylists (max=1) sollte durch den Repeat (2x Buck) um +2 auf 3 steigen. | `7200-e796-ecd2-cdaa` (sollte **nicht** feuern) | absent: `UNSUPPORTED_REPEAT` (die Engine sollte keine Diagnose werfen) |
+Die Wiederholung liest sich direkt aus ihren Attributen: **`value="2"`** ist die
+Schrittweite (je 2 Bucks), **`repeats="1"`** die Zahl der Anwendungen je Schritt,
+**`roundUp="false"`** rundet den Quotienten ab. Bei 4 Bucks sind das
+`floor(4 / 2) × 1 = 2` Anwendungen von `increment 1` → Obergrenze `1 + 2 = 3`.
 
-Da die Engine aktuell den Repeat aufgrund des fehlenden `perValue`-Attributs nicht parst, wirft sie eine Diagnose `UNSUPPORTED_REPEAT` und belässt das Limit bei 1. Entsprechend feuert das Limit `7200-e796-ecd2-cdaa`, weil 3 Kylists ausgewählt sind. Unser Test fordert jedoch das korrekte Verhalten (`absent`), weshalb er in der fehlerhaften Engine (gewollt) fehlschlagen wird.
+| ID | Regel | Erwartung |
+|----|-------|-----------|
+| **MRB-R1** | Bei 4 Bucks erlaubt die Einheit 3 Kylists. Mit genau 3 Kylists ist `7200-e796-ecd2-cdaa` eingehalten. | Grenze feuert **nicht** (`absent`), und **keine** Wiederholung bleibt ungelesen (`UNSUPPORTED_REPEAT` `absent`). |
+
+## Testkatalog (E2E-Szenarien der neuen Engine)
+
+| # | Roster-Zustand | Erwartetes Ergebnis des Evaluators | Fixture |
+|---|----------------|------------------------------------|---------|
+| 01 | Kontingent „Standard (OK-AB)" mit Toxote's Hellmounts: 1 Toxote, 4 Bucks, 3 Kylists. | **Keine Verletzung** von `7200-e796-ecd2-cdaa`; keine Diagnose `UNSUPPORTED_REPEAT`. | [`01-repeat.ros`](rosters/01-repeat.ros) |
+
+### Verifizierte Bausteine (aus den Katalogdaten)
+
+| Element | ID |
+|---------|-----|
+| ForceEntry „Standard (OK-AB)" (Ogre Kingdoms) | `729f-9246-5cd3-5044` |
+| SelectionEntry Toxote's Hellmounts | `1a52-2060-f39b-38ee` |
+| SelectionEntry Kylists | `07b6-6c42-d4d5-16e8` |
+| SelectionEntry Bucks | `5350-812c-57c9-ef45` |
+| Grenze „max Kylists" | `7200-e796-ecd2-cdaa` |

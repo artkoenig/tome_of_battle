@@ -27,8 +27,8 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/).
 
 | # | Testtitel | Betroffene Katalogdateien | Roster-Zustand | Erwartetes Ergebnis des Evaluators | Fixture |
 |---|-----------|---------------------------|----------------|------------------------------------|---------|
-| 01 | 4 Special-Einheiten (unzulässig) | `.gst` + OK-`.cat` + Mercenaries-`.cat` | Force "Standard (OK-AB)" mit 1 Tyrant, 2 Ogre Bulls und **4 Yhetees** (Kategorie Special). | **Verletzung von FC-R1:** Constraint `16f0-6e5b-55d0-4102` (max 3) feuert mit `actual: 4`, `bound: 3`. | [`01-four-special-illegal.ros`](rosters/01-four-special-illegal.ros) |
-| 02 | 3 Special-Einheiten (legal) | wie 01 | Force "Standard (OK-AB)" mit 1 Tyrant, 2 Ogre Bulls und **3 Yhetees** (Kategorie Special). | **Keine** Verletzung von FC-R1: Constraint `16f0-6e5b-55d0-4102` (max 3) darf NICHT feuern. | [`02-three-special-legal.ros`](rosters/02-three-special-legal.ros) |
+| 01 | 4 Special-Einheiten (unzulässig) | `.gst` + OK-`.cat` + Mercenaries-`.cat` | Force „Standard (OK-AB)" mit 1 Tyrant, 2 Ogre Bulls (ueber ihren `entryLink`) und **4 Yhetees** (Kategorie Special). | **Verletzung von FC-R1:** Constraint `16f0-6e5b-55d0-4102` (max 3) feuert mit `actual: 4`, `bound: 3`. | [`01-four-special-illegal.ros`](rosters/01-four-special-illegal.ros) |
+| 02 | 3 Special-Einheiten (legal) | wie 01 | Force „Standard (OK-AB)" mit 1 Tyrant, 2 Ogre Bulls (ueber ihren `entryLink`) und **3 Yhetees** (Kategorie Special). | **Keine** Verletzung von FC-R1: Constraint `16f0-6e5b-55d0-4102` (max 3) darf NICHT feuern. | [`02-three-special-legal.ros`](rosters/02-three-special-legal.ros) |
 
 
 ### Verifizierte Bausteine (aus den Katalogdaten)
@@ -39,6 +39,6 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/).
 | Force „Standard (OK-AB)" | `729f-9246-5cd3-5044` |
 | Kategorie „Special" | `43cc-fc3f-35a7-8d03` |
 | Constraint max 3 Special (scope=force) | `16f0-6e5b-55d0-4102` |
-| Selection „General" / Tyrant | `1b7c-2c90-6d96-28c9` |
-| Selection „Ogre Bulls" | `7754-8b3d-df99-d2d5` |
+| Selection „Tyrant" | `2679-58f4-1771-662d` |
+| EntryLink „Ogre Bulls" (Ziel: geteilter Eintrag `7754-8b3d-df99-d2d5`) | `d82e-111e-89b9-2be1` |
 | Selection „Yhetees" | `9cb5-fe07-22d4-22de` |

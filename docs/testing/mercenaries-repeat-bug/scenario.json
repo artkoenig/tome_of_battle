@@ -1,17 +1,18 @@
 {
   "schemaVersion": 1,
   "name": "mercenaries-repeat-bug",
-  "description": "Thesis: The new engine's catalogReader.js fails to parse <repeat> elements inside modifiers because it looks for a non-existent perValue attribute, ignoring the correct value and repeats attributes. This causes readRepeat to always fail with DiagnosticKind.UNSUPPORTED_REPEAT, meaning the modifier is never applied. We use the Mercenaries (6th definitive edition) catalogue, which uses <repeat> to increase the max limit of 'Kylists' by 1 for every 2 'Bucks'. Under correct behavior, a max limit violation and the diagnostic should be absent.",
+  "description": "Prüft `<repeat>` in einem Modifikator: die Söldnereinheit 'Toxote's Hellmounts' (Mercenaries) hebt die Obergrenze der 'Kylists' (7200-e796-ecd2-cdaa, max 1) je 2 gewählter 'Bucks' um 1 an. Die Schrittweite steht im `value` der `<repeat>`, die Zahl der Anwendungen je Schritt im `repeats`. Bei 4 Bucks steht die Grenze auf 3 und 3 Kylists halten sie ein — die Grenze feuert nicht, und keine Wiederholung bleibt ungelesen.",
   "dataset": {
     "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
       "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [
     {
       "file": "rosters/01-repeat.ros",
-      "description": "Toxote's Hellmounts mit 4 Bucks und 3 Kylists. Richtiges Verhalten: 4 Bucks heben das max-Limit der Kylists (initial 1) über einen Modifier mit <repeat value=\"2\"> um 2 an (-> Limit = 3). Da 3 Kylists im Roster sind, greift die Limitierung nicht. Wenn der Parser den Repeat blockiert, wird das Limit nicht erhöht und die Engine feuert eine Verletzung sowie die UNSUPPORTED_REPEAT-Diagnose (wir assertieren also absent, sodass der fehlerhafte Evaluator scheitert).",
+      "description": "Ogre-Kontingent 'Standard (OK-AB)' mit der Söldnereinheit Toxote's Hellmounts: 1 Toxote, 4 Bucks und 3 Kylists. 4 Bucks heben die Kylist-Obergrenze über die Wiederholung (je 2 Bucks +1) von 1 auf 3 an; 3 Kylists halten sie ein.",
       "expect": {
         "firing": [],
         "absent": ["7200-e796-ecd2-cdaa"],

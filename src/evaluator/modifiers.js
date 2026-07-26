@@ -38,6 +38,7 @@ import {
   DiagnosticKind,
   UNRESOLVED_BUDGET,
   diagnostic,
+  isLinkDefinition,
 } from './model.js';
 import { allNodes } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
@@ -93,16 +94,19 @@ function conditionHolds(ctx, condition) {
 }
 
 /**
- * Die Wiederholungszahl einer Wiederholung: `floor(Ist-Wert / perValue)`
- * (Konvention: abrunden; 0 = Modifikator inaktiv). Ein `perValue` von 0 gaebe
- * eine Division durch null und gilt als inaktiv (0).
+ * Die Wiederholungszahl einer Wiederholung: wie oft die Schrittweite `perValue`
+ * im Ist-Wert steckt, mal `repeats` (die Anwendungen je Schritt). Der Quotient
+ * wird abgerundet, mit `roundUp` aufgerundet (Catalogue.xsd:541-548). Ein
+ * `perValue` von 0 gaebe eine Division durch null und gilt als inaktiv (0).
  */
 function repeatCount(ctx, repeat) {
   if (repeat.perValue === 0) return 0;
   const actual = query(ctx, repeat.field, repeat.scope, repeat.targetChildId, repeat.flags);
   // Unaufloesbares Budget-Feld: keine Wiederholung (fail-closed, Diagnose aus `query`).
   if (actual === UNRESOLVED_BUDGET) return 0;
-  return Math.floor(actual / repeat.perValue);
+  const quotient = actual / repeat.perValue;
+  const steps = repeat.roundUp ? Math.ceil(quotient) : Math.floor(quotient);
+  return steps * repeat.repeats;
 }
 
 /**
@@ -304,12 +308,12 @@ export function applyAllModifiers(root, index, categoryIds, diagnostics, budget)
   const state = createBaseEffectiveState(root);
   for (const node of allNodes(root)) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
-    const targetModifiers = (node.def.kind === 'entryLink' && node.def.resolved?.modifiers) ? node.def.resolved.modifiers : [];
+    const targetModifiers = isLinkDefinition(node.def) ? node.def.resolved?.modifiers ?? [] : [];
     const linkModifiers = node.def.modifiers ?? [];
     for (const modifier of [...targetModifiers, ...linkModifiers]) {
       applyModifier(ctx, state, node, modifier, diagnostics);
     }
-    const targetGroups = (node.def.kind === 'entryLink' && node.def.resolved?.modifierGroups) ? node.def.resolved.modifierGroups : [];
+    const targetGroups = isLinkDefinition(node.def) ? node.def.resolved?.modifierGroups ?? [] : [];
     const linkGroups = node.def.modifierGroups ?? [];
     for (const group of [...targetGroups, ...linkGroups]) {
       applyModifierGroup(ctx, state, node, group, diagnostics);

@@ -128,7 +128,9 @@ record LimitDef       { id, kind: ConstraintKind, field: CountedField, scope: Sc
 record ConditionDef   { type: ConditionKind, field: CountedField, scope: ScopeRef,
                         targetChildId: Id, value: number, flags: CountFlags }
 record RepeatDef      { field: CountedField, scope: ScopeRef,
-                        targetChildId: Id, perValue: number, flags: CountFlags }
+                        targetChildId: Id, perValue: number,   // XSD-`value`: die Schrittweite
+                        repeats: number, roundUp: bool,        // Anwendungen je Schritt; Rundung
+                        flags: CountFlags }
 record ModifierDef    { field: string,                    // roher XSD-`field`, im Resolver aufgelöst
                         target: TargetDescriptor,          // aufgelöstes Ziel (Kosten/Grenze/Kategorie/Sichtbarkeit/Hinweis)
                         kind: ModifierKind, value,
@@ -230,8 +232,10 @@ function buildEvalTree(resolved, roster): EvalNode
 
 function synthesizePhantoms(forceNode, resolved)
   // Anker für Grenzen an Knoten, die keine Instanz haben
-  for categoryDef in resolved.categoriesOf(forceNode.def):
-    attachPhantom(forceNode, categoryDef)
+  for categoryLink in categoryLinksOf(forceNode.def):   // IMMER, nicht nur bei Absenz:
+    attachPhantom(forceNode, categoryLink)              // eine Kategorie ist ein Zählrahmen,
+                                                        // kein Auswahlpunkt. Der Anker trägt den
+                                                        // Link (eigene + geerbte Grenzen).
   for entryDef in resolved.selectableEntriesOf(forceNode.def):
     if hasMinLimit(entryDef) and countInstances(forceNode, entryDef.id) == 0:
       attachPhantom(forceNode, entryDef)
@@ -313,7 +317,8 @@ function conditionHolds(ctx, c: ConditionDef): bool
 
 function repeatCount(ctx, r: RepeatDef): number
   actual = query(ctx, r.field, r.scope, r.targetChildId, r.flags)
-  return floor(actual / r.perValue)         // Konvention: abrunden; 0 = Modifikator inaktiv
+  steps  = r.roundUp ? ceil(actual / r.perValue) : floor(actual / r.perValue)
+  return steps * r.repeats                  // 0 = Modifikator inaktiv
 
 function applyAllModifiers(tree, index, previous): EffectiveState
   next = baseStateCopy(tree)                // immer von den Basisdefinitionen aus, nie kumulativ!

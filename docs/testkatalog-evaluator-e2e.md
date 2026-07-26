@@ -76,11 +76,21 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`army-standard-bearer`](testing/army-standard-bearer/) | Definitive O&G + Mercenaries | 7 |
 | [`ogre-kingdoms`](testing/ogre-kingdoms/) | Definitive Ogre (+/- Mercenaries) | 11 |
 | [`orcs-and-goblins`](testing/orcs-and-goblins/) | Definitive O&G (+/- Mercenaries) | 3 |
+| [`orcs-and-goblins-budget`](testing/orcs-and-goblins-budget/) | Definitive O&G + Mercenaries | 6 |
 | [`vampire-counts`](testing/vampire-counts/) | Definitive VC (+/- Mercenaries) | 3 |
 | [`category-scope-bug`](testing/category-scope-bug/) | Definitive VC + Mercenaries | 1 |
 | [`real-catalog-smoke`](testing/real-catalog-smoke/) | Definitive Ogre (+/- Mercenaries) | 2 |
-| [`mercenaries-repeat-bug`](testing/mercenaries-repeat-bug/) | Definitive Mercenaries | 1 |
-| **Summe** | | **43** |
+| [`evaluator-bug-childid-model`](testing/evaluator-bug-childid-model/) | Definitive O&G | 1 |
+| [`evaluator-force-child-category-missing`](testing/evaluator-force-child-category-missing/) | Definitive VC | 2 |
+| [`group-scope-missing-mandatory`](testing/group-scope-missing-mandatory/) | synthetischer Empire-Katalog | 2 |
+| [`parent-scope-missing-mandatory`](testing/parent-scope-missing-mandatory/) | synthetischer Empire-Katalog | 2 |
+| [`max-unlimited-violation`](testing/max-unlimited-violation/) | Definitive O&G | 1 |
+| [`mercenaries-repeat-bug`](testing/mercenaries-repeat-bug/) | Definitive Ogre + Mercenaries | 1 |
+| [`explorer-force-constraints`](testing/explorer-force-constraints/) | Definitive Ogre + Mercenaries | 2 |
+| [`explorer-category-constraints`](testing/explorer-category-constraints/) | Definitive O&G | 1 |
+| [`explorer-modifier-constraints`](testing/explorer-modifier-constraints/) | Definitive O&G | 2 |
+| [`explorer-nested-constraints`](testing/explorer-nested-constraints/) | Definitive O&G | 1 |
+| **Summe** | | **63** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -197,10 +207,110 @@ Prüft, ob eine Constraint, die auf eine bestimmte Kategorie gescoped ist (hier:
 | :--- | :--- | :--- |
 | 01 | Ein Master Necromancer (enthält die gescopete Constraint), ein Von Carstein Vampire mit Mount, und ein Strigoi Vampire ohne Mount | Das Mount gehört nicht zur Strigoi-Kategorie, weshalb die Strigoi-gescopete Constraint nicht feuert — keine Verletzung |
 
-## `mercenaries-repeat-bug`
+## `orcs-and-goblins-budget`
 
-Prüft, ob die Engine `<repeat>`-Elemente in Modifiern korrekt verarbeitet, um Limits (z. B. "max Kylists") proportional zur Anzahl einer anderen Auswahl ("Bucks") anzuheben. Beweist den Fehler im Evaluator, der `perValue` anstelle von `value`/`repeats` sucht und das Limit fälschlicherweise nicht erhöht, weil der Modifier mit `UNSUPPORTED_REPEAT` scheitert.
+Budget-gesteuertes Verhalten an echten O&G-Daten: die mit dem eingestellten
+Punktebudget skalierende Core-Mindestzahl, die armeeweite Budget-Überschreitung und
+der Fall ohne eingestelltes Budget.
 
 | # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
 | :--- | :--- | :--- |
-| 01 | Toxote's Hellmounts mit 4 Bucks und 3 Kylists | Keine Verletzung, das Limit der Kylists (max=1) wird durch die 4 Bucks um +2 angehoben. Der Repeat wird geparst, keine UNSUPPORTED_REPEAT Diagnose. (Schlägt in fehlerhafter Engine fehl). |
+| 01 | Leeres Kontingent, Budget 2000 pts | Die Core-Pflicht steigt auf 3 und feuert (Ist 0) |
+| 02 | Leeres Kontingent, Budget 3000 pts | Die Core-Pflicht steigt auf 4 und feuert (Ist 0) |
+| 03 | Drei Core-Einheiten, Budget 2000 pts | Die Core-Pflicht (3) ist erfüllt — keine Verletzung |
+| 04 | Einheit für 150 pts, Budget 100 pts | Meldung „Armee zu teuer" |
+| 05 | Dieselbe Einheit, Budget 150 pts | Genau auf der Grenze — keine Verletzung |
+| 06 | Leeres Kontingent **ohne** eingestelltes Budget | Die budget-lesende Regel meldet „Budget unbekannt" statt still mit 0 zu rechnen; die Core-Pflicht bleibt auf ihrem Basiswert |
+
+## `evaluator-bug-childid-model`
+
+Prüft, ob eine Bedingung, die auf die **Modellzahl** einer Einheit schaut
+(`childId="model"`), korrekt auswertet.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Border-Patrols-Armee mit einer Einheit aus 10 Steintrollen | Die Einheit erhält die Kategorie „BP Infantry 10+"; keine Meldung über einen nicht ausgewerteten Modifikator |
+
+## `evaluator-force-child-category-missing`
+
+Prüft, ob eine Pflicht-Untergrenze an einer Kategorie des Kontingents auch dann
+anschlägt, wenn gar keine passende Auswahl im Roster steht.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | „Army of the Lichemaster" ganz ohne Auswahlen | Die Pflicht „mindestens 1 Lord" feuert (Ist 0) |
+| 02 | Dieselbe Armee mit genau einem Lord | Die Pflicht ist erfüllt — keine Verletzung |
+
+## `group-scope-missing-mandatory`
+
+Eine Auswahlgruppe mit Untergrenze verlangt zwingend eine Auswahl aus ihren Kindern.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Wizard Lord mit genau einer Auswahl aus der Pflichtgruppe „Magic Level" | Die Pflicht ist erfüllt — keine Verletzung |
+| 02 | Wizard Lord ohne Auswahl aus dieser Gruppe | Die Pflicht feuert (Ist 0) |
+
+## `parent-scope-missing-mandatory`
+
+Grenzfall: eine Pflicht-Untergrenze an einem Modell, dessen Knoten im Roster
+komplett fehlt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Einheit ohne jedes Modell | Dokumentierte Grenze der Engine: die Modell-Pflicht feuert hier **nicht** |
+| 02 | Dieselbe Einheit mit 5 Modellen (zu wenig) | Die Pflicht feuert |
+
+## `max-unlimited-violation`
+
+Prüft die Battlescribe-Bedeutung von `max="-1"`: unbegrenzt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 21 Goblins bei „mindestens 20, Obergrenze unbegrenzt" | Keine Verletzung — eine unbegrenzte Obergrenze feuert nie |
+
+## `mercenaries-repeat-bug`
+
+Prüft Wiederholungen (`<repeat>`) in einem Modifikator: die Obergrenze der „Kylists"
+steigt je 2 gewählter „Bucks" um 1.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Toxote's Hellmounts mit 4 Bucks und 3 Kylists | Keine Verletzung: die Obergrenze der Kylists steigt von 1 auf 3. Keine Meldung über eine ungelesene Wiederholung |
+
+## `explorer-force-constraints`
+
+Prüft eine Obergrenze, die an einer **Kategorie** des Spielsystems hängt und je
+Kontingent zählt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ogre-Kontingent mit 4 Einheiten der Kategorie „Special" | Die Grenze „höchstens 3 Special" feuert (Ist 4) |
+| 02 | Dasselbe Kontingent mit 3 Einheiten | Die Grenze ist eingehalten — keine Verletzung |
+
+## `explorer-category-constraints`
+
+Prüft eine Obergrenze, die **nur eine bestimmte Armeeliste** ihrer Kategorie
+auferlegt (Grenze am `categoryLink` des Kontingents).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | „Savage Orc Horde" mit 3 Goblin-Charakteren | Die Grenze „höchstens 2 Goblin-Charaktere" feuert (Ist 3) |
+
+## `explorer-modifier-constraints`
+
+Prüft einen Modifikator, der an einem **Verweis** (`entryLink`) hängt und dort eine
+geerbte Grenze verändert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Armeeliste „Grimgor's 'Ardboyz", Orc Great Shaman als General | In dieser Liste ist kein General dieser Art erlaubt — die Grenze feuert (Ist 1, Grenze 0) |
+| 02 | Derselbe Aufbau in der Standardliste | Dort gilt „höchstens 1 General" und ist erfüllt — keine Verletzung |
+
+## `explorer-nested-constraints`
+
+Prüft eine Punktegrenze an einer Auswahlgruppe, deren Unterlisten per Verweis
+eingebunden sind.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Savage Orc Warboss mit magischen Waffen für 125 Punkte | Die Grenze „höchstens 100 Punkte magische Gegenstände" feuert (Ist 125) |

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<roster id="merc-01" name="Mercenaries Repeat Bug" battleScribeVersion="2.03" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+<roster id="merc-01" name="Toxote's Hellmounts mit 4 Bucks und 3 Kylists" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
   <forces>
-    <force id="force-1" name="Standard" entryId="2bfa-e64a-7123-895f" catalogueId="fc47-8392-a6c8-452a" catalogueRevision="1" catalogueName="Mercenaries">
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="49a5-e8f7-aa09-ad96" catalogueRevision="1" catalogueName="Ogre Kingdoms">
       <selections>
         <selection id="unit-1" name="Toxote's Hellmounts" entryId="1a52-2060-f39b-38ee" number="1" type="unit">
           <selections>
@@ -13,14 +13,14 @@
             </selection>
             <selection id="kylists-1" name="Kylists (Chaos Centaur Champions)" entryId="07b6-6c42-d4d5-16e8" number="3" type="model">
               <selections>
-                <selection id="kylists-hb" name="Halberds" entryId="0fdf-5701-cf65-7b7f" number="3" type="upgrade"/>
-                <selection id="kylists-la" name="Light Armour" entryId="87b4-096b-26b2-f644" number="3" type="upgrade"/>
+                <selection id="kylists-hb" name="Halberds" entryId="0fdf-5701-cf65-7b7f" number="1" type="upgrade"/>
+                <selection id="kylists-la" name="Light Armour" entryId="87b4-096b-26b2-f644" number="1" type="upgrade"/>
               </selections>
             </selection>
             <selection id="bucks-1" name="Bucks (Chaos Centaur Troopers)" entryId="5350-812c-57c9-ef45" number="4" type="model">
               <selections>
-                <selection id="bucks-gw" name="Great Weapon" entryId="bff7-a31e-8206-9c6f" number="4" type="upgrade"/>
-                <selection id="bucks-la" name="Light Armour" entryId="caba-49f7-8b0c-eb64" number="4" type="upgrade"/>
+                <selection id="bucks-gw" name="Great Weapon" entryId="bff7-a31e-8206-9c6f" number="1" type="upgrade"/>
+                <selection id="bucks-la" name="Light Armour" entryId="caba-49f7-8b0c-eb64" number="1" type="upgrade"/>
               </selections>
             </selection>
           </selections>

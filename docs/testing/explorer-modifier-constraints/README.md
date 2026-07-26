@@ -1,45 +1,57 @@
-# E2E-Regeln & Testkatalog: Modifier Constraints (Orcs & Goblins - Grom & General)
+# E2E-Regeln & Testkatalog: Modifikatoren auf Grenzen an einem `entryLink`
 
-**Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln, Constraint-IDs und Erwartungswerte (`actual`/`bound`) sind **ausschliesslich aus den Katalogdaten** der *6th Definitive Edition* **abgeleitet**.
+**Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln, Constraint-IDs
+und Erwartungswerte (`actual`/`bound`) sind **ausschliesslich aus den Katalogdaten** der
+*6th Definitive Edition* **abgeleitet**.
 
 - Spielsystem: `Warhammer Fantasy Battles (6th definitive edition).gst` (`0d13-7737-ea86-4662`, rev 1)
-- Armee: `Orcs and goblins (6th definitive edition).cat` (`4049-c46d-7f80-44fb`, rev 1) — Force **„Standard (OG-AB)"** `2bfa-e64a-7123-895f`.
+- Armee: `Orcs and goblins (6th definitive edition).cat` (`4049-c46d-7f80-44fb`, rev 1)
 
-## Wie Modifikatoren auf Constraints an EntryLinks wirken
+## Worum es geht
 
-Ein `entryLink` kann Modifikatoren (`modifier`) besitzen, die bei Erfüllung bestimmter Bedingungen (`conditions`) Constraint-Werte dynamisch verändern. 
+Die Aufwertung „General" ist eine geteilte Definition des Spielsystems
+(`1b7c-2c90-6d96-28c9`) und traegt dort die Grenze `fc6d-21e4-3da5-17f9`:
+`max 1` mit `scope="force"` — **ein** General je Kontingent.
 
-In Orcs & Goblins setzt die Auswahl von **Grom the Paunch** (`1821-fbd1-0d96-2d88`) über die Condition am `entryLink` `"General"` (`a2d7-7a89-7059-81f2`) das `max`-Limit des Constraints `fc6d-21e4-3da5-17f9` für die General-Auswahl von 1 auf 0.
+Jede Einheit, die General werden kann, bindet diese Aufwertung ueber einen eigenen
+`entryLink` ein. Der Link des **Orc Great Shaman** (`aa57-63c4-136b-4af5`) traegt
+zusaetzlich einen Modifikator: er setzt dieselbe Grenze auf **0**, wenn das Kontingent
+die Armeeliste „Grimgor's 'Ardboyz" ist. In-world: bei Grimgor fuehrt Grimgor — der
+Schamane darf nicht General sein.
 
-Wird zusätzlich ein Orc Warboss (`fde7-8ba8-08c8-7504`) mit der General-Aufwertung (`1b7c-2c90-6d96-28c9`) ausgewählt, so ist die Bedingung verletzt, da 1 General gewählt ist, die zugelassene Obergrenze jedoch 0 beträgt.
+Die Bedingung prueft das ueber die Kontingent-Definition selbst:
+`instanceOf … scope="force" childId="1821-fbd1-0d96-2d88"`, und
+`1821-fbd1-0d96-2d88` ist der **`forceEntry`** „Grimgor's 'Ardboyz (SoC)".
 
-Ohne Grom the Paunch gilt das Standard-Limit von max 1 General in der Force (`fc6d-21e4-3da5-17f9`), welches bei 1 General erfüllt ist.
+> **Achtung bei der Ableitung:** Der Modifikator haengt am **Link**, nicht an der
+> geteilten Definition. Ein Roster muss die Aufwertung deshalb ueber die **Link-ID**
+> `a2d7-7a89-7059-81f2` waehlen (so speichert sie auch die App: `entryLinkId` gesetzt).
+> Waehlt es stattdessen direkt die Ziel-ID `1b7c-2c90-6d96-28c9`, greift der Modifikator
+> des Links nicht — dann waere der Test wirkungslos.
 
 ## Abgeleitete Regeln (mit Beleg aus den Katalogdaten)
 
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
-| **EMC-R1** | Ist Grom the Paunch in der Armee enthalten, verringert sich das Obergrenze-Limit für Generäle (`fc6d-21e4-3da5-17f9`) von 1 auf 0. Ein weiterer General führt zur Verletzung (`actual: 1, bound: 0`). | `Orcs and goblins (6th definitive edition).cat` → `entryLink "General"` `a2d7-7a89-7059-81f2` → `modifier type="set" value="0" field="fc6d-21e4-3da5-17f9"` mit Condition `instanceOf value="1" childId="1821-fbd1-0d96-2d88" scope="force"`. |
-| **EMC-R2** | Ist Grom the Paunch NICHT in der Armee enthalten, bleibt das General-Limit auf 1. Genau ein General erfüllt die Bedingung (`actual: 1, bound: 1`) und das Limit feuert nicht. | `Warhammer Fantasy Battles (6th definitive edition).gst` → sharedSelectionEntry `"General"` `1b7c-2c90-6d96-28c9` → constraint **`fc6d-21e4-3da5-17f9`** `type="max" value="1" scope="force"`. |
-
----
+| **EMC-R1** | In der Armeeliste „Grimgor's 'Ardboyz" darf der Orc Great Shaman **nicht** General sein: die Grenze `fc6d-21e4-3da5-17f9` steht dort auf 0, ein gewaehlter General verletzt sie (`actual: 1, bound: 0`). | `Orcs and goblins (…).cat` → `selectionEntry aa57-63c4-136b-4af5` („Orc Great Shaman") → `entryLink a2d7-7a89-7059-81f2` („General") → `modifier type="set" value="0" field="fc6d-21e4-3da5-17f9"` mit `condition type="instanceOf" scope="force" childId="1821-fbd1-0d96-2d88"`. |
+| **EMC-R2** | In jeder anderen Armeeliste gilt die Grundgrenze `max 1` je Kontingent. Genau ein General haelt sie ein — die Grenze feuert nicht. | `… .gst` → `sharedSelectionEntries` → `selectionEntry 1b7c-2c90-6d96-28c9` („General") → `constraint id="fc6d-21e4-3da5-17f9" type="max" value="1" field="selections" scope="force"`. |
 
 ## Testkatalog (E2E-Szenarien der neuen Engine)
 
-Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). 
+Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/).
 
-| # | Testtitel | Betroffene Katalogdateien | Roster-Zustand | Erwartetes Ergebnis des Evaluators | Fixture |
-|---|-----------|---------------------------|----------------|------------------------------------|---------|
-| 01 | Grom plus General (unzulässig) | `.gst` + OG-`.cat` | Force "Standard", Grom the Paunch (`1821-fbd1-0d96-2d88`) UND Orc Warboss (`fde7-8ba8-08c8-7504`) mit General-Aufwertung (`1b7c-2c90-6d96-28c9`). | **Verletzung von EMC-R1:** Constraint `fc6d-21e4-3da5-17f9` (max 0) feuert mit actual: 1, bound: 0. | [`01-grom-plus-general-illegal.ros`](rosters/01-grom-plus-general-illegal.ros) |
-| 02 | General ohne Grom (zulässig) | `.gst` + OG-`.cat` | Force "Standard", Orc Warboss (`fde7-8ba8-08c8-7504`) mit General-Aufwertung (`1b7c-2c90-6d96-28c9`), **kein** Grom the Paunch. | **Keine Verletzung:** Constraint `fc6d-21e4-3da5-17f9` (max 1) ist erfüllt (`absent`). | [`02-general-without-grom-legal.ros`](rosters/02-general-without-grom-legal.ros) |
+| # | Testtitel | Roster-Zustand | Erwartetes Ergebnis des Evaluators | Fixture |
+|---|-----------|----------------|------------------------------------|---------|
+| 01 | Great Shaman als General bei Grimgor (unzulaessig) | Force „Grimgor's 'Ardboyz (SoC)" (`1821-fbd1-0d96-2d88`), ein Orc Great Shaman (`aa57-63c4-136b-4af5`) mit der General-Aufwertung ueber Link `a2d7-7a89-7059-81f2`. | **Verletzung von EMC-R1:** `fc6d-21e4-3da5-17f9` feuert mit `actual: 1`, `bound: 0`. | [`01-grimgor-shaman-as-general-illegal.ros`](rosters/01-grimgor-shaman-as-general-illegal.ros) |
+| 02 | Derselbe General in der Standardliste (zulaessig) | Force „Standard (OG-AB)" (`2bfa-e64a-7123-895f`), sonst identisch. | **Keine Verletzung:** die Bedingung des Modifikators haelt nicht, `fc6d-21e4-3da5-17f9` bleibt bei `max 1` und ist mit einem General erfuellt (`absent`). | [`02-standard-shaman-as-general-legal.ros`](rosters/02-standard-shaman-as-general-legal.ros) |
 
 ### Verifizierte Bausteine (aus den Katalogdaten)
 
 | Element | ID |
 |---------|-----|
-| Force „Standard (OG-AB)" | `2bfa-e64a-7123-895f` |
-| SelectionEntry Grom the Paunch | `1821-fbd1-0d96-2d88` |
-| SelectionEntry Orc Warboss | `fde7-8ba8-08c8-7504` |
-| EntryLink General | `a2d7-7a89-7059-81f2` |
-| SharedSelectionEntry General | `1b7c-2c90-6d96-28c9` |
-| Constraint General Max (Force) | `fc6d-21e4-3da5-17f9` |
+| ForceEntry „Grimgor's 'Ardboyz (SoC)" | `1821-fbd1-0d96-2d88` |
+| ForceEntry „Standard (OG-AB)" | `2bfa-e64a-7123-895f` |
+| SelectionEntry Orc Great Shaman | `aa57-63c4-136b-4af5` |
+| EntryLink „General" am Orc Great Shaman | `a2d7-7a89-7059-81f2` |
+| Geteilte Definition „General" (`.gst`) | `1b7c-2c90-6d96-28c9` |
+| Grenze „max 1 General je Kontingent" | `fc6d-21e4-3da5-17f9` |

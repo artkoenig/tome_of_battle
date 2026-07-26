@@ -283,7 +283,7 @@ describe('Ein `repeats` auf einer ganzen Modifikatorgruppe wird als Diagnose sic
     <modifierGroups>
       <modifierGroup>
         <repeats>
-          <repeat field="selections" scope="self" value="1" perValue="1"/>
+          <repeat field="selections" scope="self" value="1" repeats="1"/>
         </repeats>
         <conditions>
           ${atLeastOne(ARCHER_ID)}

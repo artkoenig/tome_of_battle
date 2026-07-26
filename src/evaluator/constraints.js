@@ -13,7 +13,7 @@
  */
 
 import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic } from './model.js';
-import { allNodes } from './evalTree.js';
+import { allNodes, limitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
 
@@ -87,7 +87,10 @@ export function evaluateConstraints(root, index, effective, categoryIds, diagnos
   const results = [];
   for (const node of allNodes(root)) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
-    for (const limit of node.def.limits ?? []) {
+    // Die vom Verweis geerbten Grenzen gehoeren dazu (`limitsOf` ist die eine
+    // Quelle der Wahrheit) — sonst blieben die Grenzen des Ziels eines
+    // `entryLink`/`categoryLink` still unausgewertet.
+    for (const limit of limitsOf(node.def)) {
       const result = evaluateLimit(limit, node, effective, ctx);
       if (result !== null) results.push(result);
     }

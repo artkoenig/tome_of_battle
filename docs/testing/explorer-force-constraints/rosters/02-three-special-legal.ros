@@ -3,12 +3,12 @@
   <forces>
     <force id="force-1" name="Force" entryId="729f-9246-5cd3-5044" catalogueId="49a5-e8f7-aa09-ad96" catalogueRevision="1" catalogueName="Ogre Kingdoms">
       <selections>
-        <selection id="s-tyrant-1" name="General" entryId="1b7c-2c90-6d96-28c9" entryLinkId="" number="1" type="upgrade"/>
-        <selection id="s-bulls-1" name="Ogre Bulls" entryId="7754-8b3d-df99-d2d5" entryLinkId="" number="1" type="unit"/>
-        <selection id="s-bulls-2" name="Ogre Bulls" entryId="7754-8b3d-df99-d2d5" entryLinkId="" number="1" type="unit"/>
-        <selection id="s-yhetees-1" name="Yhetees" entryId="9cb5-fe07-22d4-22de" entryLinkId="" number="1" type="unit"/>
-        <selection id="s-yhetees-2" name="Yhetees" entryId="9cb5-fe07-22d4-22de" entryLinkId="" number="1" type="unit"/>
-        <selection id="s-yhetees-3" name="Yhetees" entryId="9cb5-fe07-22d4-22de" entryLinkId="" number="1" type="unit"/>
+        <selection id="s-tyrant-1" name="Tyrant" entryId="2679-58f4-1771-662d" number="1" type="unit"/>
+        <selection id="s-bulls-1" name="Ogre Bulls" entryId="d82e-111e-89b9-2be1" number="1" type="unit"/>
+        <selection id="s-bulls-2" name="Ogre Bulls" entryId="d82e-111e-89b9-2be1" number="1" type="unit"/>
+        <selection id="s-yhetees-1" name="Yhetees" entryId="9cb5-fe07-22d4-22de" number="1" type="unit"/>
+        <selection id="s-yhetees-2" name="Yhetees" entryId="9cb5-fe07-22d4-22de" number="1" type="unit"/>
+        <selection id="s-yhetees-3" name="Yhetees" entryId="9cb5-fe07-22d4-22de" number="1" type="unit"/>
       </selections>
     </force>
   </forces>

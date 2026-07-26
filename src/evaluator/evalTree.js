@@ -17,7 +17,7 @@
  * allen Knoten ({@link allNodes}, Phantome eingeschlossen).
  */
 
-import { DefinitionKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic } from './model.js';
+import { DefinitionKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -95,11 +95,15 @@ function attachPhantom(parent, def, nextFrameId) {
 }
 
 /**
- * Liest die effektiven Basis-Limits einer Definition. Ein `entryLink` erbt
- * Limits von seinem Ziel (`resolved`), eigene Limits ueberschreiben bei gleicher ID.
+ * Liest die effektiven Basis-Limits einer Definition — die **eine** Quelle der
+ * Wahrheit fuer „welche Grenzen haengen an diesem Knoten": die Constraint-Schicht
+ * wertet genau diese aus, die Effektiv-Werte-Schicht bevoelkert genau diese.
+ *
+ * Ein Verweis (`entryLink`/`categoryLink`) erbt die Limits seines Ziels
+ * (`resolved`); eigene Limits ueberschreiben bei gleicher ID.
  */
-function limitsOf(def) {
-  if (def.kind === DefinitionKind.ENTRY_LINK && def.resolved) {
+export function limitsOf(def) {
+  if (isLinkDefinition(def) && def.resolved) {
     const merged = new Map();
     for (const limit of def.resolved.limits ?? []) merged.set(limit.id, limit);
     for (const limit of def.limits ?? []) merged.set(limit.id, limit);
@@ -135,6 +139,11 @@ function countInstances(fromNode, defId) {
  *
  * Ein *vorhandener* Eintrag bekommt keinen Phantomknoten — seine Grenze wird schon
  * am realen Knoten ausgewertet; nur die **Absenz** braucht einen eigenen Anker.
+ *
+ * Eine Kategorie, die das Kontingent per `categoryLink` fuehrt, ist hier
+ * ausgenommen: sie bekommt ihren Anker ueber
+ * {@link synthesizeForceCategoryAnchors}. Beides zugleich gaebe zwei Anker fuer
+ * dieselbe Kategorie und damit eine doppelt gemeldete Verletzung.
  */
 function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
   for (const def of definitions) {
@@ -144,9 +153,46 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
   }
   const forceNodeList = [...forceNodes(root)];
   for (const forceNode of forceNodeList) {
+    const anchoredCategoryIds = linkedCategoryIdsOf(forceNode.def);
     for (const def of definitions) {
+      if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
       if (hasMinLimitInFrame(def, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0) {
         attachPhantom(forceNode, def, nextFrameId);
+      }
+    }
+  }
+}
+
+/** Die Kategorie-IDs, die eine Kontingent-Definition per `categoryLink` fuehrt. */
+function linkedCategoryIdsOf(forceDef) {
+  const ids = new Set();
+  for (const childDef of forceDef.children ?? []) {
+    if (childDef.kind === DefinitionKind.CATEGORY_LINK) ids.add(childDef.targetId);
+  }
+  return ids;
+}
+
+/**
+ * Haengt je Kontingent einen **Kategorie-Anker** an: fuer jeden `categoryLink`
+ * seiner Kontingent-Definition einen Phantomknoten (§4.3).
+ *
+ * Anders als ein Pflicht-Phantom haengt er **immer**, nicht nur bei Absenz — eine
+ * Kategorie ist kein Auswahlpunkt, sondern ein Zaehlrahmen: ihre Grenzen ("hoechstens
+ * 3 Special-Auswahlen", "mindestens 2 Core") rechnen gegen die Zahl der Auswahlen
+ * *in* der Kategorie. Ohne diesen Anker haette eine MAX-Grenze an einer Kategorie
+ * keinen Auswertungsknoten und bliebe still unausgewertet, waehrend eine MIN-Grenze
+ * ueber {@link synthesizeMandatoryPhantoms} zufaellig einen bekaeme.
+ *
+ * Der Anker traegt den **Link**, nicht die Kategorie: so gelten die am Link
+ * deklarierten Grenzen (kontingent-spezifisch, z. B. "max 2 Goblin-Charaktere in
+ * dieser Armeeliste") zusammen mit den vom Ziel geerbten ({@link limitsOf}). Die
+ * Constraint-Schicht zaehlt fuer ihn ueber die Kategorie-ID (`targetId`).
+ */
+function synthesizeForceCategoryAnchors(root, nextFrameId) {
+  for (const forceNode of [...forceNodes(root)]) {
+    for (const childDef of forceNode.def.children ?? []) {
+      if (childDef.kind === DefinitionKind.CATEGORY_LINK) {
+        attachPhantom(forceNode, childDef, nextFrameId);
       }
     }
   }
@@ -181,13 +227,18 @@ function* selectionDefinitionsUnder(ownerDef) {
  * Synthetisiert Phantomknoten fuer Pflicht-Selektionen (`min > 0` mit `scope="parent"`),
  * die der Nutzer beim jeweiligen Eigentuemer komplett weggelassen hat.
  * Jeder instanziierte Knoten prueft seine Definition auf solche Pflicht-Kinder.
+ *
+ * Ein `categoryLink` **unter einem Kontingent** ist ausgenommen: dort haengt
+ * schon der Kategorie-Anker ({@link synthesizeForceCategoryAnchors}), und zwei
+ * Anker fuer dieselbe Kategorie meldeten dieselbe Verletzung doppelt. Unter einer
+ * Auswahl (Kategorie-Zuordnung eines Eintrags) bleibt dieser Pfad zustaendig.
  */
 function synthesizeParentScopePhantoms(root, nextFrameId) {
   for (const owner of [...realNodes(root)]) {
     const ownerDef = ownerDefinitionOf(owner);
     for (const childDef of selectionDefinitionsUnder(ownerDef)) {
+      if (owner.isForce && childDef.kind === DefinitionKind.CATEGORY_LINK) continue;
       if (hasMinLimitInFrame(childDef, ScopeKeyword.PARENT) && countInstances(owner, childDef.id) === 0) {
-        console.log("Synthesizing parent phantom for", childDef.id, "under owner", owner.def.id, "isForce:", owner.isForce);
         const alreadyHasPhantom = owner.children.some(c => c.isPhantom && c.def.id === childDef.id);
         if (!alreadyHasPhantom) {
           attachPhantom(owner, childDef, nextFrameId);
@@ -196,7 +247,6 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
     }
   }
 }
-
 
 /**
  * Die Grenzen-tragenden `selectionEntryGroup`s im Definitionsteilbaum eines
@@ -277,7 +327,8 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  * Die Wurzel ist ein synthetischer Ankerknoten ohne eigene Definition; sie
  * traegt den ROSTER-Rahmen und liegt ueber keinem Kontingent. Nachdem alle realen
  * Knoten haengen, werden Phantomknoten fuer fehlende Pflichtdefinitionen
- * synthetisiert (siehe {@link synthesizeMandatoryPhantoms}) und Gruppen-Anker fuer
+ * synthetisiert (siehe {@link synthesizeMandatoryPhantoms}), Kategorie-Anker je
+ * Kontingent (siehe {@link synthesizeForceCategoryAnchors}) und Gruppen-Anker fuer
  * gruppen-skopierte Grenzen (siehe {@link synthesizeGroupAnchors}).
  *
  * @param {{ lookup: (id: string) => object|null, definitions?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
@@ -303,6 +354,7 @@ export function buildEvalTree(resolved, roster) {
   }
   synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
   synthesizeParentScopePhantoms(root, nextFrameId);
+  synthesizeForceCategoryAnchors(root, nextFrameId);
   // Nach den realen Knoten und den Pflicht-Phantomen: die Gruppen-Anker zuletzt,
   // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
   synthesizeGroupAnchors(root, resolved, nextFrameId);

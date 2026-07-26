@@ -15,7 +15,8 @@
  * (`docs/evaluator-architecture.md` §4.6, Schlussbemerkung).
  */
 
-import { allNodes } from './evalTree.js';
+import { allNodes, limitsOf } from './evalTree.js';
+import { DefinitionKind } from './model.js';
 
 const EMPTY_LIMIT_VALUES = Object.freeze(new Map());
 
@@ -203,15 +204,14 @@ export function createBaseEffectiveState(root) {
   for (const node of allNodes(root)) {
     let defCosts = node.def.costs ?? {};
     let defCategories = node.def.categoryIds ?? [];
-    let defLimits = node.def.limits ?? [];
+    // Die Grenzen kommen aus derselben Quelle wie in der Constraint-Schicht
+    // (`limitsOf`, inkl. der von einem Verweis geerbten) — sonst traegt ein
+    // Knoten einen Grenzwert, den nie jemand auswertet, oder umgekehrt.
+    const defLimits = limitsOf(node.def);
 
-    if (node.def.kind === 'entryLink' && node.def.resolved) {
+    if (node.def.kind === DefinitionKind.ENTRY_LINK && node.def.resolved) {
       defCosts = { ...(node.def.resolved.costs ?? {}), ...defCosts };
       defCategories = [...new Set([...(node.def.resolved.categoryIds ?? []), ...defCategories])];
-      const mergedLimits = new Map();
-      for (const limit of node.def.resolved.limits ?? []) mergedLimits.set(limit.id, limit);
-      for (const limit of node.def.limits ?? []) mergedLimits.set(limit.id, limit);
-      defLimits = Array.from(mergedLimits.values());
     }
 
     costs.set(node, new Map(Object.entries(defCosts)));
