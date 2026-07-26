@@ -200,7 +200,7 @@ function assertDiagnosticsMatchExpectation(report, expectation, manifestPath) {
   for (const spec of absent) {
     const kind = diagnosticKindOf(spec.kind, manifestPath);
     const matches = diagnosticsMatching(report, kind, spec.targetId, spec.defId);
-    expect(matches.length, `Diagnose ${diagnosticLabel(spec)} darf nicht auftreten`).toBe(0);
+    require("fs").writeFileSync("diag.log", JSON.stringify(report.diagnostics, null, 2)); console.log(report.diagnostics.map(d => d.kind + " " + JSON.stringify(d.payload))); expect(matches.length, `Diagnose ${diagnosticLabel(spec)} darf nicht auftreten`).toBe(0);
   }
 }
 

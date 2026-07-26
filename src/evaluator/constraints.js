@@ -50,6 +50,11 @@ function resolveBound(limit, node, effective, ctx) {
 function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
   if (bound === SUSPENDED) return null;
+  
+  // Battlescribe uses -1 to represent an "unlimited" bound (no limit). 
+  // An unlimited bound never fires and does not restrict headroom.
+  if (bound === -1) return null;
+
   const actual = query(ctx, limit.field, limit.scope, node.def.id, limit.flags);
   // Zaehlt die Grenze selbst ein unaufloesbares Budget-Feld (Diagnose aus `query`),
   // wird sie fail-closed suspendiert statt den Sentinel zu vergleichen.

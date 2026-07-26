@@ -15,6 +15,11 @@
             <selection id="model-trolls" name="Trolls" entryId="f559-032b-c545-f727" number="10" type="model"/>
           </selections>
         </selection>
+        <selection id="unit-trolls-2" name="Stone Trolls 2" entryId="4112-026b-500a-b6fd" number="1" type="unit">
+          <selections>
+            <selection id="model-trolls-2" name="Trolls" entryId="f559-032b-c545-f727" number="3" type="model"/>
+          </selections>
+        </selection>
       </selections>
     </force>
   </forces>
