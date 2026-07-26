@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "name": "orcs-and-goblins-budget",
+  "description": "Budget-gesteuertes Verhalten der Reinraum-Engine an echten O&G-Daten: die im .gst per limit::-Modifikatoren skalierende Core-Mindestzahl (Basis 2; ab 2000 pts -> 3, ab 3000 pts -> 4), die roster-weite Budget-Ueberschreitung (Engine-Regel budget::ecfa-8486-4f6c-c249, kein Katalog-Constraint) und der fail-closed-Fall ohne gesetztes <costLimits> (Diagnose UNRESOLVED_BUDGET_LIMIT, Core-Grenze bleibt auf Basis 2). Punktebudget je Roster ueber den <costLimits>-Block eingestellt (Kostenart pts ecfa-8486-4f6c-c249).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-empty-2000.ros",
+      "description": "Leeres Kontingent, Budget pts=2000. Core-Grenze skaliert per limit::-Modifikator auf 3; Ist 0 -> feuert (Grenze 3).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 3 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-empty-3000.ros",
+      "description": "Leeres Kontingent, Budget pts=3000. Core-Grenze skaliert auf 4; Ist 0 -> feuert (Grenze 4).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/03-three-core-2000.ros",
+      "description": "Drei Core-Einheiten, Budget pts=2000 (skalierte Grenze 3). Core-Ist 3 >= 3 -> Core-Grenze feuert NICHT.",
+      "expect": {
+        "firing": [],
+        "absent": ["35c2-d478-392a-aeb1"]
+      }
+    },
+    {
+      "file": "rosters/04-over-budget.ros",
+      "description": "Orc-Boyz-Einheit mit 30 Modellen (5 pts/Modell), Budget pts=100. Verplante Summe uebersteigt das Limit -> roster-weite Budget-Verletzung budget::ecfa-8486-4f6c-c249 feuert (Ist = Summe, Grenze 100).",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 150, "bound": 100 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/05-within-budget.ros",
+      "description": "Dieselbe Einheit (Summe 150), Budget pts=150 (auf der Grenze). Summe uebersteigt das Limit nicht -> Budget-Verletzung feuert NICHT.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"]
+      }
+    },
+    {
+      "file": "rosters/06-no-budget.ros",
+      "description": "Leeres Kontingent OHNE <costLimits>. Die limit::-lesende Core-Regel erzeugt die Diagnose UNRESOLVED_BUDGET_LIMIT statt still 0; die Core-Grenze bleibt auf Basis 2 (feuert Ist 0 / Grenze 2, nicht 3).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [],
+        "diagnostics": {
+          "present": [
+            { "kind": "UNRESOLVED_BUDGET_LIMIT" }
+          ]
+        }
+      }
+    }
+  ]
+}

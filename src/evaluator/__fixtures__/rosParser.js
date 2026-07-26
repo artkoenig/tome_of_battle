@@ -42,11 +42,38 @@ function childSelections(element) {
 }
 
 /**
- * Liest eine `.ros`-Datei und liefert das Roster als Instanzbaum.
+ * Die eingestellten Kostengrenzen (`<costLimits>`) des Rosters als Liste je
+ * Kostenart. Fehlt der Block, ist die Liste leer — verhaltensgleich zu einem
+ * Roster ohne eingestelltes Budget. Rein strukturell (Black-Box), wie der Rest.
+ *
+ * @param {Document} doc Das geparste `.ros`-Dokument.
+ * @returns {Array<{ costTypeId: string, value: number }>}
+ *   Das eingestellte Budget je Kostenart.
+ */
+function costLimitsFromRoster(doc) {
+  const out = [];
+  const rosterEl = doc.getElementsByTagName('roster')[0];
+  if (!rosterEl) return out;
+  for (const child of [...rosterEl.children]) {
+    if (child.tagName !== 'costLimits') continue;
+    for (const limit of [...child.children]) {
+      if (limit.tagName !== 'costLimit') continue;
+      const costTypeId = limit.getAttribute('typeId');
+      const value = Number(limit.getAttribute('value'));
+      if (costTypeId && Number.isFinite(value)) out.push({ costTypeId, value });
+    }
+  }
+  return out;
+}
+
+/**
+ * Liest eine `.ros`-Datei und liefert das Roster als Instanzbaum inklusive der
+ * eingestellten Kostengrenzen.
  *
  * @param {string} path Pfad zur `.ros`-Datei, relativ zum Projekt-Wurzelverzeichnis
  *   (dem cwd des Testlaufs) aufgeloest — wie die uebrigen fixture-lesenden Tests.
- * @returns {{ forces: Array<{ defId: string | null, count: number, children: object[] }> }}
+ * @returns {{ forces: Array<{ defId: string | null, count: number, children: object[] }>,
+ *            costLimits: Array<{ costTypeId: string, value: number }> }}
  *   Das Roster in der von `evaluate` erwarteten Form.
  */
 export function rosterFromRos(path) {
@@ -57,5 +84,5 @@ export function rosterFromRos(path) {
     count: 1,
     children: childSelections(forceEl),
   }));
-  return { forces };
+  return { forces, costLimits: costLimitsFromRoster(doc) };
 }
