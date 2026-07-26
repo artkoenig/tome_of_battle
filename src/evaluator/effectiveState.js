@@ -201,10 +201,23 @@ export function createBaseEffectiveState(root) {
   const notes = new Map();
   const hidden = new Set();
   for (const node of allNodes(root)) {
-    costs.set(node, new Map(Object.entries(node.def.costs ?? {})));
-    categories.set(node, new Set(node.def.categoryIds ?? []));
+    let defCosts = node.def.costs ?? {};
+    let defCategories = node.def.categoryIds ?? [];
+    let defLimits = node.def.limits ?? [];
+
+    if (node.def.kind === 'entryLink' && node.def.resolved) {
+      defCosts = { ...(node.def.resolved.costs ?? {}), ...defCosts };
+      defCategories = [...new Set([...(node.def.resolved.categoryIds ?? []), ...defCategories])];
+      const mergedLimits = new Map();
+      for (const limit of node.def.resolved.limits ?? []) mergedLimits.set(limit.id, limit);
+      for (const limit of node.def.limits ?? []) mergedLimits.set(limit.id, limit);
+      defLimits = Array.from(mergedLimits.values());
+    }
+
+    costs.set(node, new Map(Object.entries(defCosts)));
+    categories.set(node, new Set(defCategories));
     const limits = new Map();
-    for (const limit of node.def.limits ?? []) {
+    for (const limit of defLimits) {
       limits.set(limit.id, limit.value);
     }
     limitValues.set(node, limits);
