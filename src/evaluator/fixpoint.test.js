@@ -11,11 +11,25 @@ function evaluate(catalogXml, roster) {
   return evaluateDataset({ catalogues: [catalogXml] }, roster);
 }
 import { DiagnosticKind } from './model.js';
+import { prepareDataset } from './datasetPreparation.js';
+import { buildEvalTree } from './evalTree.js';
+import { evaluateToFixpoint, MAX_FIXPOINT_ROUNDS } from './fixpoint.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
+
+/**
+ * Faehrt die Fixpunktschleife direkt an einem Einzelkatalog. Ihr **Ausgang**
+ * (Rundenzahl, Konvergenz) steht nur an ihrem Rueckgabewert: aus dem Bericht ist
+ * er nicht rekonstruierbar, weil dort nur der Endzustand ankommt.
+ */
+function runFixpoint(catalogXml, rosterInstance) {
+  const { resolved } = prepareDataset({ catalogues: [catalogXml] });
+  const { root } = buildEvalTree(resolved, rosterInstance);
+  return evaluateToFixpoint(root, resolved.categoryIds);
+}
 
 // ── Eigene, minimale Fixtures (ADR-0030: eigenes Datenmodell, eigene Fixtures) ──
 // Diese Scheibe (Issue 05) legt die Fixpunktschleife um die Modifikator-Anwendung:
@@ -89,6 +103,15 @@ describe('Konvergenz: Zaehlen haengt von effektiven Werten ab und umgekehrt', ()
       actual: BASE_POINTS + CATEGORY_BONUS,
       bound: MAX_POINTS,
     });
+  });
+
+  it('meldet den Ausgang: konvergiert, mit der Zahl der tatsaechlich durchlaufenen Runden', () => {
+    const outcome = runFixpoint(CATALOGUE_XML, roster([selection(WARRIOR_ID, 1)]));
+
+    expect(outcome.converged).toBe(true);
+    // Die Rueckkopplung braucht mehr als eine Runde, bleibt aber unter der Obergrenze.
+    expect(outcome.rounds).toBeGreaterThan(1);
+    expect(outcome.rounds).toBeLessThan(MAX_FIXPOINT_ROUNDS);
   });
 });
 
@@ -210,5 +233,19 @@ describe('Nichtkonvergenz: oszillierende Kataloge werden sichtbar statt still fa
     expect(hasNoConvergence(report)).toBe(true);
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toMatchObject({ actual: OSC_SET_POINTS, bound: OSC_MAX_POINTS });
+  });
+
+  it('meldet den Ausgang: nicht konvergiert, mit der ausgeschoepften Rundenobergrenze', () => {
+    const outcome = runFixpoint(COST_OSCILLATOR_XML, roster([selection(WARRIOR_ID, 1)]));
+
+    expect(outcome.converged).toBe(false);
+    expect(outcome.rounds).toBe(MAX_FIXPOINT_ROUNDS);
+  });
+
+  it('nennt in der Nichtkonvergenz-Diagnose dieselbe Rundenzahl, die die Schleife meldet', () => {
+    const outcome = runFixpoint(COST_OSCILLATOR_XML, roster([selection(WARRIOR_ID, 1)]));
+    const noConvergence = outcome.diagnostics.find(entry => entry.kind === DiagnosticKind.NO_CONVERGENCE);
+
+    expect(noConvergence).toMatchObject({ rounds: outcome.rounds });
   });
 });

@@ -45,16 +45,25 @@ export const MAX_FIXPOINT_ROUNDS = 5;
  * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
  *   Roster-Kostengrenzen (`RosterBudget`), durch die Modifikator-Anwendung an den
  *   Query-Kontext durchgereicht.
- * @returns {{ effective: import('./effectiveState.js').EffectiveState, diagnostics: object[] }}
- *   der Effektiv-Zustand des Fixpunkts (oder der letzten Runde) samt Diagnosen;
- *   bei ausbleibender Konvergenz enthaelt `diagnostics` eine `NO_CONVERGENCE`-Diagnose.
+ * @returns {{ effective: import('./effectiveState.js').EffectiveState, diagnostics: object[], rounds: number, converged: boolean }}
+ *   der Effektiv-Zustand des Fixpunkts (oder der letzten Runde) samt Diagnosen sowie
+ *   dem **Ausgang der Schleife**: die Zahl der tatsaechlich durchlaufenen Runden und
+ *   ob sie konvergiert ist. Bei ausbleibender Konvergenz enthaelt `diagnostics`
+ *   zusaetzlich eine `NO_CONVERGENCE`-Diagnose.
+ *
+ *   Den Ausgang meldet die Schleife selbst, weil nur sie ihn kennt: er laesst sich
+ *   aus dem Endzustand nicht rekonstruieren. Das Messverfahren
+ *   (`scripts/measure-evaluator.js`) weist ihn aus, damit ein Laufzeit-Ausreisser
+ *   einer Rundenzahl zuzuordnen ist statt unerklaert zu bleiben.
  */
 export function evaluateToFixpoint(root, categoryIds, budget) {
   let effective = createBaseEffectiveState(root);
   let modifierDiagnostics = [];
   let converged = false;
+  let rounds = 0;
 
   for (let round = 0; round < MAX_FIXPOINT_ROUNDS; round++) {
+    rounds = round + 1;
     const index = buildIndex(root, effective);
     modifierDiagnostics = [];
     const next = applyAllModifiers(root, index, categoryIds, modifierDiagnostics, budget);
@@ -68,7 +77,7 @@ export function evaluateToFixpoint(root, categoryIds, budget) {
 
   const diagnostics = [...modifierDiagnostics];
   if (!converged) {
-    diagnostics.push(diagnostic(DiagnosticKind.NO_CONVERGENCE, { rounds: MAX_FIXPOINT_ROUNDS }));
+    diagnostics.push(diagnostic(DiagnosticKind.NO_CONVERGENCE, { rounds }));
   }
-  return { effective, diagnostics };
+  return { effective, diagnostics, rounds, converged };
 }
