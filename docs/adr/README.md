@@ -43,4 +43,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0033 | [Evaluator-E2E als datengetriebener, manifest-getriebener Runner mit Black-Box-Autorenschaft](0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md) | Accepted | 2026-07-25 |
 | 0034 | [Der Auswertungsbericht ist die alleinige Quelle der Oberfläche](0034-auswertungsbericht-als-alleinige-quelle-der-oberflaeche.md) | Accepted | 2026-07-26 |
 | 0035 | [Verfügbarkeit aus Fähigkeitsdatensätzen statt Validierungs-Diff](0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md) | Accepted | 2026-07-26 |
+| 0036 | [Angebots-Anker als Blätter in einer zweiten Baumphase außerhalb der Fixpunktschleife](0036-angebots-anker-als-blaetter-in-einer-zweiten-baumphase.md) | Accepted | 2026-07-26 |
 
