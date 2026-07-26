@@ -1,7 +1,7 @@
 # Zweite, räumlich getrennte Auswertungs-Engine als Reinraum-Realisierung
 
 - **Status:** Accepted
-- **Datum:** 2026-07-24
+- **Datum:** 2026-07-25 (revidiert; ursprünglich 2026-07-24)
 - **Beteiligte:** Artjom König
 - **Zugehörige ADRs (falls vorhanden):** grenzt sich ab von ADR-0023 (Solver-Fassade
   als exklusive Schnittstelle) und ADR-0029 (Zentrale Query-Engine für
@@ -9,93 +9,140 @@
   [`docs/evaluator-architecture.md`](../evaluator-architecture.md); respektiert
   ADR-0003 (Battlescribe Domain Rules) und ADR-0016 (vendored XSD).
 
+## Revision (2026-07-25) — verbindliche Klarstellung
+
+Diese ADR wurde neu formuliert, um jedes Missverständnis auszuräumen. Es gilt
+ausdrücklich und ohne Ausnahme:
+
+1. **Die alte Engine unter `src/solver/` ist fehlerhaft und nicht tragfähig.**
+   Sie liefert nachweislich falsche Auswertungen und wird nicht mehr als
+   Referenz für korrektes Verhalten behandelt.
+2. **Ihr Code ist bei Auswertung, Analyse und Planung nicht zu beachten.** Weder
+   Entwurf noch Spezifikation noch Fehlersuche dürfen sich auf `src/solver/`
+   stützen oder es als Paritäts-Vorlage heranziehen. Grundlage für die neue
+   Engine sind allein die BattleScribe-Daten (`.cat`/`.gst`/XSD, ADR-0003,
+   ADR-0016) und ihr eigenes Reinraum-Modell.
+3. **Die neue Engine unter `src/evaluator/` wird mit dem erklärten Ziel
+   entwickelt, die alte vollständig zu ersetzen.** Der produktive Cutover ist
+   damit nicht mehr offen — er ist die beschlossene Richtung. Bis zum Cutover
+   bleibt die App auf `src/solver/`, aber jede neue Arbeit dient dem Ersatz,
+   nicht der Koexistenz.
+
+Die Abschnitte unten sind im Licht dieser Revision zu lesen: Passagen, die die
+Engine ursprünglich als reines, dauerhaft danebenstehendes Experiment
+beschrieben, sind durch diese Klarstellung überschrieben.
+
 ## Kontext und Problemstellung
 
-Die produktive Regel-Engine liegt in rund zwanzig verzahnten Modulen unter
-`src/solver/` hinter einer Fassade (ADR-0023). Parallel beschreibt ADR-0029 den
-laufenden In-Solver-Umbau zu einer zentralen Query-Engine — und verweist auf eine
-unabhängige Reinraum-Bestätigung durch einen externen Architekten. Dieser
-Reinraum-Entwurf (jetzt als `docs/evaluator-architecture.md` gesichert) geht in
-zwei Punkten bewusst über ADR-0029 hinaus: er stützt sich auf eine
-**Fixpunktschleife** (Iteration bis Konvergenz mit harter Rundenobergrenze) und
-auf synthetische **Phantomknoten** als Auswertungsanker — beides hat ADR-0029 §6
-als YAGNI *weggelassen*, weil kein realer Katalog es heute erzwingt.
+Die bisher produktive Regel-Engine liegt in rund zwanzig verzahnten Modulen unter
+`src/solver/` hinter einer Fassade (ADR-0023). Sie hat sich als fehlerhaft und
+nicht tragfähig erwiesen; ihr Verhalten ist keine verlässliche Grundlage mehr.
+Parallel beschrieb ADR-0029 einen In-Solver-Umbau zu einer zentralen Query-Engine
+und verwies auf eine unabhängige Reinraum-Bestätigung durch einen externen
+Architekten. Dieser Reinraum-Entwurf (jetzt als `docs/evaluator-architecture.md`
+gesichert) geht in zwei Punkten bewusst über ADR-0029 hinaus: er stützt sich auf
+eine **Fixpunktschleife** (Iteration bis Konvergenz mit harter Rundenobergrenze)
+und auf synthetische **Phantomknoten** als Auswertungsanker — beides hat ADR-0029
+§6 als YAGNI *weggelassen*.
 
-Der Wunsch ist, diesen vollen Reinraum-Entwurf als eigenständige Engine zu
-erproben, **ohne** die produktive Engine oder den ADR-0029-Pfad anzufassen —
-gleichzeitig existierend und räumlich getrennt.
+Aus dem ursprünglichen Wunsch, diesen vollen Reinraum-Entwurf zunächst
+gefahrlos neben der Produktion zu erproben, ist die verbindliche Richtung
+geworden, ihn zur **einzigen** produktiven Engine auszubauen und `src/solver/`
+abzulösen.
 
 ## Entscheidungsfaktoren (Drivers)
 
-- **Risikofreiheit für die Produktion:** die laufende App und der ADR-0029-Umbau
-  dürfen durch das Experiment nicht berührt werden.
+- **Korrektheit vor Kontinuität:** die alte Engine ist fehlerhaft; eine korrekte,
+  von Grund auf sauber modellierte Engine hat Vorrang vor dem Erhalt des
+  bestehenden Codes.
+- **Keine Kontamination durch fehlerhaften Code:** Entwurf und Analyse der neuen
+  Engine dürfen sich nicht am fehlerhaften Solver orientieren — sonst erbt die
+  neue Engine dessen Fehler.
 - **Echter Reinraum:** der Entwurf soll unverfälscht realisierbar sein, inklusive
-  der Teile, die ADR-0029 verworfen hat — sonst verliert der Vergleich seinen Wert.
-- **Erosionsfeste Trennung:** „räumlich getrennt" muss maschinell greifen, nicht
-  auf Disziplin beruhen (analog zur Durchsetzungslogik von ADR-0023).
-- **Wahrhaftigkeit der Doku:** eine zweite Engine neben der per ADR-0023 als „die
-  eine" deklarierten Fassade würde einen künftigen Leser ohne Kontext verwirren.
+  der Teile, die ADR-0029 verworfen hat.
+- **Erosionsfeste Trennung:** die Isolation gegen `src/solver/` muss maschinell
+  greifen, nicht auf Disziplin beruhen (analog zur Durchsetzungslogik von
+  ADR-0023).
+- **Wahrhaftigkeit der Doku:** ein künftiger Leser muss ohne Kontext erkennen,
+  dass `src/evaluator/` der designierte Nachfolger ist und `src/solver/` die
+  abzulösende, fehlerhafte Alt-Engine.
 
 ## Betrachtete Optionen
 
 - **Option 1 — In `src/solver/` integrieren / ADR-0029 ablösen.** Den vollen
-  Entwurf an die Stelle des laufenden Umbaus setzen. Verworfen: berührt die
-  Produktion direkt, macht den Vergleich unmöglich, entwertet die schon gebaute
-  Query-Engine.
-- **Option 2 — Eigene, isolierte Engine `src/evaluator/`.** Ein zu `src/solver/`
-  paralleler Top-Level-Ordner mit eigener Fassade, eigenem Parser, eigenem
-  Datenmodell und eigenem Report; harte Import-Isolation gegen `src/solver/` in
-  beide Richtungen; von außen nur über die eigene Fassade. Reine Bibliothek, nicht
-  in den App-Pfad verdrahtet.
-- **Option 3 — Vergleichs-Harness / Laufzeit-Umschalter.** Beide Engines zur
-  Laufzeit gegeneinander laufen lassen. Verworfen als aktueller Umfang: bindet die
-  neue Engine an den Produktivpfad, den sie gerade *nicht* berühren soll.
+  Entwurf in den bestehenden Code setzen. Verworfen: erbt die Fehler und die
+  Verflechtung der fehlerhaften Alt-Engine, statt sauber neu aufzusetzen.
+- **Option 2 — Eigene, isolierte Engine `src/evaluator/` als Nachfolger.** Ein zu
+  `src/solver/` paralleler Top-Level-Ordner mit eigener Fassade, eigenem Parser,
+  eigenem Datenmodell und eigenem Report; harte Import-Isolation gegen
+  `src/solver/` in beide Richtungen; von außen nur über die eigene Fassade.
+  Zunächst noch nicht in den App-Pfad verdrahtet, aber mit dem Ziel entwickelt,
+  die alte Engine zu ersetzen.
+- **Option 3 — Vergleichs-Harness / dauerhafter Laufzeit-Umschalter.** Beide
+  Engines dauerhaft nebeneinander laufen lassen. Verworfen: die alte Engine ist
+  fehlerhaft und soll verschwinden, nicht dauerhaft mitlaufen.
 
 ## Entscheidungsergebnis
 
 Gewählte Option: **Option 2.** Die neue Engine lebt in `src/evaluator/`,
-Geschwister zu `src/solver/`, nicht darin — `src/solver/` bleibt per ADR-0023 „die
-eine" produktive Engine. `src/evaluator/` bekommt eine **eigene Fassade** als
-einzige legale Außenschnittstelle (das Fassaden-Muster aus ADR-0023, auf die
-zweite Engine gespiegelt). Neue, maschinell geprüfte Regeln (`.oxlintrc.json`,
+Geschwister zu `src/solver/`, nicht darin, und wird zum **Nachfolger** ausgebaut.
+`src/evaluator/` bekommt eine **eigene Fassade** als einzige legale
+Außenschnittstelle (das Fassaden-Muster aus ADR-0023, auf die neue Engine
+gespiegelt). Neue, maschinell geprüfte Regeln (`.oxlintrc.json`,
 `.dependency-cruiser.cjs`, ADR-0024) trennen die beiden Engines **hart in beide
 Richtungen**: `src/evaluator/` importiert nie aus `src/solver/` und umgekehrt.
-Import aus `src/parser/` bleibt erlaubt — der Evaluator liest jedoch entpacktes
-`.cat`/`.gst`-XML **mit eigenem Parser** (Resolver-Umfang: IDs/Importe/Link-Ketten/
-Dokumentreihenfolge → aufgelöste Definitionen; **ohne** ZIP-Entpacken, XSD-Gate,
-Katalog-Editor — das bleibt Import-Pipeline).
+Diese Trennung schützt die neue Engine ausdrücklich davor, sich auf den
+fehlerhaften Alt-Code zu stützen. Import aus `src/parser/` bleibt erlaubt — der
+Evaluator liest jedoch entpacktes `.cat`/`.gst`-XML **mit eigenem Parser**
+(Resolver-Umfang: IDs/Importe/Link-Ketten/Dokumentreihenfolge → aufgelöste
+Definitionen; **ohne** ZIP-Entpacken, XSD-Gate, Katalog-Editor — das bleibt
+Import-Pipeline).
 
 **Bewusste Abweichung von ADR-0029:** Die Engine **baut** die Fixpunktschleife
 (Konvergenz, `MAX_FIXPOINT_ROUNDS`, Nichtkonvergenz-Diagnose) und die
-Phantomknoten. Das ist kein Widerspruch, sondern der Zweck: ADR-0029 ließ beides
-für die produktive Engine aus YAGNI-Gründen weg; diese separate Engine existiert
-gerade, um den vollen Entwurf als Robustheitsgarantie (Zyklen werden *sichtbar*
-statt still falsch) zu realisieren.
+Phantomknoten. Das ist kein Widerspruch, sondern der Zweck: die neue Engine
+realisiert den vollen Entwurf als Robustheitsgarantie (Zyklen werden *sichtbar*
+statt still falsch).
+
+**Analyse- und Planungsregel (verbindlich):** Bei jeder Auswertung, jedem Entwurf
+und jeder Fehlersuche für `src/evaluator/` bleibt `src/solver/` außen vor. Sein
+Verhalten ist kein Sollwert, sein Code keine Vorlage. Korrektes Verhalten wird
+ausschließlich aus den BattleScribe-Daten und dem Reinraum-Modell abgeleitet.
 
 ### Konsequenzen (Auswirkungen)
 
-- **Positiv:** die Produktion und der ADR-0029-Umbau bleiben unberührt; der volle
-  Reinraum-Entwurf ist eigenständig prüfbar; die Trennung erodiert nicht still.
+- **Positiv:** die neue Engine wird von Grund auf korrekt modelliert, ohne die
+  Fehler der Alt-Engine zu erben; die Trennung erodiert nicht still.
 - **Positiv:** ein künftiger Leser findet in dieser ADR die Erklärung, warum es
-  eine zweite Engine gibt und warum sie eine von ADR-0029 verworfene Schleife
-  trägt — statt es für einen Fehler zu halten und „aufzuräumen".
+  zwei Engines gibt, welche davon der fehlerhafte Vorgänger ist und welche der
+  Nachfolger — statt es für einen Fehler zu halten und „aufzuräumen".
 - **Negativ:** bewusst in Kauf genommene Duplikation (eigener Parser, eigenes
-  Datenmodell, eigene Fixtures) als Preis des echten Reinraums.
-- **Negativ:** `src/evaluator/` ist zunächst im App-Bundle toter Code (getreeshaked);
-  die `no-orphans`-Regel muss den nur test-importierten Zustand tolerieren.
-- **Neutral:** über einen späteren produktiven Cutover ist hier **nichts**
-  entschieden — der wäre eine eigene, nutzer-sichtbare `feature`-Entscheidung.
+  Datenmodell, eigene Fixtures) als Preis des echten Reinraums — vorübergehend,
+  bis `src/solver/` abgelöst und entfernt ist.
+- **Negativ:** `src/evaluator/` ist bis zum Cutover im App-Bundle toter Code
+  (getreeshaked); die `no-orphans`-Regel muss den nur test-importierten Zustand
+  solange tolerieren.
+- **Richtung (nicht mehr offen):** der produktive Cutover — `src/evaluator/`
+  ersetzt `src/solver/` — ist das erklärte Ziel dieser Entwicklung. Der Zeitpunkt
+  und die schrittweise Verdrahtung sind noch zu planen; das *Ob* nicht mehr.
 
-**Umsetzungsstand und bewusste Grenzen (Issue 65).** Die Engine ist vollständig
-gebaut (Resolver, Join/Phantomknoten, Index, Query-Primitiv, Modifikatoren mit
-Fixpunkt, Constraints, Bericht inkl. Fähigkeitsdatensatz) und mit eigener
-Testsuite plus eigenen, an der Definitive Edition (WHFB6) modellierten Fixtures
-abgedeckt. Bewusst offen geblieben, ehrlich dokumentiert statt vorgetäuscht:
-(1) der eigene Parser liest für Bedingungen/Modifikatoren das **eigene** Vokabular
-(`op`/`operation`/`targetKind`) statt der rohen BattleScribe-Attribute (`type`) —
-ein realer `.cat`-Smoke-Test übt daher nur Grenzen aus, echte Bedingungen/
-Modifikatoren erscheinen als Diagnosen (**diese Grenze wird von ADR-0031
-geschlossen**: der Evaluator liest inzwischen die kanonische XSD-Syntax und teilt
-die Enum-SSOT aus `src/parser/schema/`); (2) es wird ein **Einzelkatalog** gelesen —
-katalogübergreifende Importe/Link-Ketten und die Inkrementalisierung
-(Architektur §4.9) sind vorgemerkte Zukunft.
+**Umsetzungsstand und bewusste Grenzen (Issue 65 ff.).** Die Engine ist
+vollständig gebaut (Resolver, Join/Phantomknoten, Index, Query-Primitiv,
+Modifikatoren mit Fixpunkt, Constraints, Bericht inkl. Fähigkeitsdatensatz) und
+mit eigener Testsuite plus eigenen, an der Definitive Edition (WHFB6)
+modellierten Fixtures abgedeckt. Auf dem Weg zum vollständigen Ersatz sind
+weitere Lücken zu schließen, ehrlich dokumentiert statt vorgetäuscht:
+(1) der eigene Parser las anfangs für Bedingungen/Modifikatoren ein **eigenes**
+Vokabular statt der rohen BattleScribe-Attribute (**diese Grenze schließt
+ADR-0031**: der Evaluator liest inzwischen die kanonische XSD-Syntax und teilt
+die Enum-SSOT aus `src/parser/schema/`); (2) es wird ein **Einzelkatalog**
+gelesen — katalogübergreifende Importe/Link-Ketten und die Inkrementalisierung
+(Architektur §4.9) sind vorgemerkte Zukunft; (3) die eingestellte
+Roster-Punktgrenze (`limit::<costTypeId>` / `costLimit`/`costLimitType`) fließt
+seit Issue 70 in die Auswertung ein: die Engine nimmt das vollständige Roster
+inkl. Kostengrenzen entgegen, löst `limit::<costTypeId>` aus dem Roster-Budget
+auf (budget-gesteuerte Bedingungen/Modifikatoren wie budgetabhängige
+Helden-/Lord-Slots) und meldet Budget-Überschreitungen. Offen für den produktiven
+Ersatz bleibt allein der Cutover — die App auf die Engine zu verdrahten. (Bekannte
+Grenze außerhalb dieses Umfangs: die Sichtbarkeit einer *Kategorie* wird noch nicht
+als Verfügbarkeit im Bericht abgebildet — Kategorie-Knoten sind keine Auswahl-Slots.)

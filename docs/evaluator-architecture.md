@@ -91,7 +91,9 @@ Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein",
 
 - **Verletzungen** (für die Validierungsanzeige),
 - pro Auswahlpunkt einen **Fähigkeitsdatensatz**: effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, bedingte Hinweise (für die UI-Steuerung),
-- **Diagnosen** (Auflösungsprobleme, Nichtkonvergenz, Null-Nenner).
+- **Diagnosen** (Auflösungsprobleme, Nichtkonvergenz, Null-Nenner, unauflösbare Budgetgrenze).
+
+Zusätzlich prüft die Engine eine **roster-weite Budget-Regel** (keine Katalog-Grenze, sondern eine Regel der Engine): je eingestellter Kostenart wird die am ROSTER-Rahmen verplante Summe gegen die eingestellte Grenze dieser Kostenart geprüft; eine Überschreitung erzeugt eine Budget-Verletzung, die über einen **synthetischen** roster-weiten Anker in dieselbe Verletzungsliste wie die übrigen Verletzungen fließt.
 
 ## 4. Pseudocode
 
@@ -105,7 +107,8 @@ Sprachneutral, typisiert notiert. Fehlerpfade sind explizit; nichts wird still v
 // vendored BattleScribe-XSD generierten SSOT (ADR-0031), nicht aus einer eigenen,
 // driftgefährdeten Kopie.
 enum ConstraintKind { min, max }                                  // XSD-SSOT
-enum CountedField   { SELECTION_COUNT, COST_SUM(costTypeId) }
+enum CountedField   { SELECTION_COUNT, COST_SUM(costTypeId),
+                      LIMIT_VALUE(costTypeId) }   // LIMIT_VALUE: eingestellte Budgetgrenze (aus dem Roster), keine Baum-Zählung; XML-`field="limit::<costTypeId>"`
 enum ConditionKind  { lessThan, greaterThan, equalTo, notEqualTo,  // XSD-SSOT
                       atLeast, atMost, instanceOf, notInstanceOf }
 enum ModifierKind   { set, increment, decrement, add, remove,      // XSD-SSOT (10 Werte)
@@ -152,7 +155,8 @@ record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
                       children: ResolvedDef[], resolutionLog: Diagnostic[] }
 
 record InstanceNode { defId: Id, count: number, children: InstanceNode[] }
-record Roster       { forces: InstanceNode[] }
+record CostLimit    { costTypeId: Id, value: number }                    // eine eingestellte Grenze je Kostenart
+record Roster       { forces: InstanceNode[], costLimits: CostLimit[] }  // costLimits: das eingestellte Budget je Kostenart (vollständige Liste)
 
 record EvalNode {
   def: ResolvedDef
@@ -273,7 +277,17 @@ Direkte vs. tiefe Zählung: beim Eintragen wird die Beitragskette entlang der Vo
 Die eine Stelle, die Scopes, Flags und Felder versteht. Limit, Condition und Repeat rufen ausschließlich diese Funktion.
 
 ```
-function query(ctx: QueryContext, field, scope, targetId, flags): number
+function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRESOLVED_BUDGET
+  // LIMIT_VALUE liest die eingestellte Budgetgrenze aus dem Roster (ctx.budget),
+  // nicht aus dem Zählindex. Nur Bezugsrahmen ROSTER ist sinnvoll; bei anderem
+  // Scope oder fehlender Grenze: Diagnose + Sentinel (nie still 0). Die Konsumenten
+  // (Grenze/Bedingung/Repeat) behandeln den Sentinel fail-closed — die Regel feuert nicht.
+  if field == LIMIT_VALUE:
+    if scope != ROSTER or not ctx.budget.has(field.costTypeId):
+      ctx.diagnostics.add(Diagnostic.UNRESOLVED_BUDGET_LIMIT(field.costTypeId, reason))
+      return UNRESOLVED_BUDGET
+    return ctx.budget.get(field.costTypeId)
+
   frame = resolveScopeFrame(ctx.node, scope)
   // ROSTER → Wurzel | FORCE → ctx.node.forceRoot | PARENT → ctx.node.parent
   // SELF → ctx.node | EntryId/CategoryId → nächster Vorfahre bzw. Kategorierahmen mit dieser ID

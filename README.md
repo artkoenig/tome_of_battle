@@ -112,15 +112,17 @@ The rules engine handles all calculations and dependencies, working completely i
 
 A second, spatially separated rules engine, added as a clean-room realization of
 the reference architecture in [`docs/evaluator-architecture.md`](docs/evaluator-architecture.md)
-([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md)). It coexists
-with the Solver but is **hard-isolated** from it — neither engine may import the
+([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md), revised). It is the
+**designated successor** to the Solver — which is classified faulty and slated for
+replacement — and is **hard-isolated** from it — neither engine may import the
 other (enforced as blocking `error` rules in `.dependency-cruiser.cjs`/`.oxlintrc.json`),
 and it is reached only through its own facade `evaluate({ gameSystem, catalogues }, roster) → report`.
 It is a pure function (own parser, own data model, own report with
 violations/capabilities/diagnostics) and realizes the full reference design
 **including** the fixpoint loop and phantom nodes that ADR 0029 deliberately left
-out. It is currently a **library only — not wired into the app** (tree-shaken from
-the production bundle), used as a proving ground for the design.
+out. It is developed with the goal of replacing the Solver as the production engine; it is
+currently still a **library only — not yet wired into the app** (tree-shaken from
+the production bundle), with the productive cutover still pending.
 
 It reads the **canonical** BattleScribe XSD attributes (`type`/`field`/`value`)
 directly and draws its closed enum sets (constraint, condition and modifier kinds)

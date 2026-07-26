@@ -17,6 +17,8 @@
 import {
   SELECTION_COUNT,
   costSumField,
+  limitValueField,
+  LIMIT_FIELD_PREFIX,
   ConditionKind,
   ConditionGroupKind,
   ModifierKind,
@@ -121,13 +123,19 @@ const XML_MIME_TYPE = 'application/xml';
 
 /**
  * Bildet das `field`-Attribut einer Grenze auf das engine-eigene Feld ab.
- * `"selections"` meint die Selektionsanzahl; jeder andere Wert ist die **ID**
- * einer Kostenart (Battlescribe kodiert Kosten-Grenzen ueber die Kostenart-ID
- * im `field`-Attribut) und wird zu `COST_SUM(costTypeId)`.
+ * `"selections"` meint die Selektionsanzahl; ein `limit::<costTypeId>`-Praefix
+ * die **eingestellte Kostengrenze** dieser Kostenart (`LIMIT_VALUE`, aus dem
+ * Roster-Budget statt dem Zaehlindex); jeder andere Wert ist die **ID** einer
+ * Kostenart (Battlescribe kodiert Kosten-Grenzen ueber die Kostenart-ID im
+ * `field`-Attribut) und wird zur verplanten Summe `COST_SUM(costTypeId)`.
  */
 function readField(fieldAttr) {
   if (fieldAttr === null || fieldAttr === '') return undefined;
-  return fieldAttr === SELECTION_COUNT_FIELD_XML ? SELECTION_COUNT : costSumField(fieldAttr);
+  if (fieldAttr === SELECTION_COUNT_FIELD_XML) return SELECTION_COUNT;
+  if (fieldAttr.startsWith(LIMIT_FIELD_PREFIX)) {
+    return limitValueField(fieldAttr.slice(LIMIT_FIELD_PREFIX.length));
+  }
+  return costSumField(fieldAttr);
 }
 
 /** Direkte Kind-Elemente eines Elements mit gegebenem Tag-Namen. */
