@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "name": "max-unlimited-violation",
+  "description": "Asserts the correct Battlescribe behavior for constraints with max=\"-1\" (which means unlimited).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-goblin-unlimited.ros",
+      "description": "Roster with 21 Goblins. The Goblin selection has min=\"20\" and max=\"-1\" (ad41-8936-7a56-1717). Since max=\"-1\" means unlimited, there is no upper bound. The expected behavior is that the constraint is absent.",
+      "expect": {
+        "absent": ["ad41-8936-7a56-1717"]
+      }
+    }
+  ]
+}

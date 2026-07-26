@@ -96,7 +96,8 @@ function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id];
   const targets = [null, node.def.id, ...effective.categoryIdsOf(node)];
   if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
-  return targets;
+  if (node.def.type) targets.push(node.def.type);
+  return Array.from(new Set(targets));
 }
 
 /** Addiert einen Beitrag auf einen Zaehler. */

@@ -270,7 +270,7 @@ function readCondition(conditionEl, diagnostics) {
     type,
     field,
     scope,
-    targetChildId: conditionEl.getAttribute(Attr.CHILD_ID),
+    targetChildId: conditionEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : conditionEl.getAttribute(Attr.CHILD_ID),
     value,
     flags: readFlags(conditionEl),
   };
@@ -336,7 +336,7 @@ function readRepeat(repeatEl, diagnostics) {
   return {
     field,
     scope,
-    targetChildId: repeatEl.getAttribute(Attr.CHILD_ID),
+    targetChildId: repeatEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : repeatEl.getAttribute(Attr.CHILD_ID),
     perValue,
     flags: readFlags(repeatEl),
   };
@@ -542,6 +542,7 @@ function readEntry(entryEl, diagnostics) {
     id: entryEl.getAttribute(Attr.ID),
     name: entryEl.getAttribute(Attr.NAME),
     kind: DefinitionKind.ENTRY,
+    type: entryEl.getAttribute(Attr.TYPE),
     costs: readCosts(entryEl),
     categoryIds: readCategoryIds(entryEl),
     limits: readLimits(entryEl, diagnostics),

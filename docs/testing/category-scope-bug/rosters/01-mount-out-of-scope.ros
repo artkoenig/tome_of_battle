@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<roster id="93ee-a0ca-94fc-8902" name="Category Scope Bug Roster" battleScribeVersion="2.03" gameSystemId="c087-3932-a567-96a1" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="17a3-e408-db2d-7bb3" name="Vampire Counts" entryId="b1e4-e1cf-9bd6-2438" catalogueId="8e66-3042-1d6b-fa6b" catalogueRevision="1" catalogueName="Vampire Counts (6th definitive edition)">
+      <selections>
+        <!-- The constraint 6afc-566e-34d4-d35c is in Master Necromancer. We include it so the constraint is active in the roster -->
+        <selection id="c3cb-6612-da0f-cd69" name="Master Necromancer" entryId="4ee2-ac3a-3cc6-11af" type="unit">
+          <categories>
+            <category id="c6fa-502a-a929-23c2" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+        </selection>
+
+        <!-- Von Carstein Vampire EQUIPPED with a Mount -->
+        <selection id="c3cb-6612-da0f-cd71" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" type="unit">
+          <selections>
+             <selection id="54db-3129-9e19-9743" name="Bloodline of Clan Von Carstein" entryId="f557-097a-d26b-9363" type="upgrade" />
+             <selection id="2060-e4a7-849c-a115" name="Nightmare" entryId="eb23-3b80-db9b-6946" type="upgrade" />
+          </selections>
+          <categories>
+            <category id="c6fa-502a-a929-23c5" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="c6fa-502a-a929-23c6" name="Von Carstein" entryId="ff24-ca11-afd5-865b" primary="false"/>
+          </categories>
+        </selection>
+
+        <!-- Strigoi Vampire NOT equipped with a Mount -->
+        <selection id="c3cb-6612-da0f-cd70" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" type="unit">
+          <selections>
+             <selection id="54db-3129-9e19-9742" name="Bloodline of Clan Strigoi" entryId="ddfa-0d72-8557-6906" type="upgrade" />
+          </selections>
+          <categories>
+            <category id="c6fa-502a-a929-23c3" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="c6fa-502a-a929-23c4" name="Strigoi" entryId="bf30-4ff0-a4d8-3909" primary="false"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
