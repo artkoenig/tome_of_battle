@@ -133,6 +133,9 @@ export const DefinitionKind = Object.freeze({
   // traegt eigene Grenzen/Modifikatoren, die der Resolver auf das aufgeloeste Ziel
   // schichtet; als reiner Verweis synthetisiert er selbst nie einen Phantom.
   ENTRY_LINK: 'entryLink',
+  // Ein `categoryLink` ordnet eine Definition einer Kategorie zu und kann
+  // eigene Grenzen/Modifikatoren tragen, die im Scope des Elternknotens ausgwertet werden.
+  CATEGORY_LINK: 'categoryLink',
 });
 
 /**

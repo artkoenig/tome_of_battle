@@ -12,7 +12,7 @@
  * fliesst der effektive Prozentsatz durch dieselbe `resolveBound`-Stelle.
  */
 
-import { ConstraintKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic } from './model.js';
+import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic } from './model.js';
 import { allNodes } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -55,7 +55,8 @@ function evaluateLimit(limit, node, effective, ctx) {
   // An unlimited bound never fires and does not restrict headroom.
   if (bound === -1) return null;
 
-  const actual = query(ctx, limit.field, limit.scope, node.def.id, limit.flags);
+  const targetId = node.def.kind === DefinitionKind.CATEGORY_LINK ? node.def.targetId : node.def.id;
+  const actual = query(ctx, limit.field, limit.scope, targetId, limit.flags);
   // Zaehlt die Grenze selbst ein unaufloesbares Budget-Feld (Diagnose aus `query`),
   // wird sie fail-closed suspendiert statt den Sentinel zu vergleichen.
   if (actual === UNRESOLVED_BUDGET) return null;
