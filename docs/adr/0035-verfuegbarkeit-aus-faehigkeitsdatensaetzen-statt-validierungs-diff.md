@@ -108,9 +108,13 @@ Sache (ADR-0034) und ist getrennt zu spezifizieren.
 - **Positiv:** Einheit, Option und Kategorie werden über denselben Begriff
   beantwortet.
 - **Negativ:** Der Auswertungsbaum wächst erheblich — er umfasst künftig nicht
-  nur das Gewählte, sondern auch das Wählbare. Die Fixpunktschleife läuft
-  entsprechend über mehr Knoten. Ob der Zugewinn aus dem Wegfall der
-  Pro-Kandidat-Auswertung diesen Zuwachs überwiegt, ist zu **messen** und nicht
+  nur das Gewählte, sondern auch das Wählbare. Die Fixpunktschleife trägt diesen
+  Zuwachs allerdings nicht: sie iteriert allein über die realen Knoten, während
+  die synthetischen Anker ihre wirksamen Werte in **einem** Durchlauf nach der
+  Konvergenz erhalten. Das ist zulässig, weil ein Anker keine Instanz trägt, in
+  keine Zählung eingeht und den ausgewerteten Zustand deshalb nicht verändern
+  kann — er empfängt Werte, er erzeugt keine. Ob der Zugewinn aus dem Wegfall der
+  Pro-Kandidat-Auswertung den Zuwachs überwiegt, ist zu **messen** und nicht
   vorab behauptet.
 - **Negativ:** „Wählbar im Bezugsrahmen" muss präzise bestimmt werden. Zu weit
   gefasst bläht es den Baum sinnlos auf, zu eng gefasst fehlen Optionen in der
