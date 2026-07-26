@@ -142,13 +142,12 @@ Im Einzelnen ist die Auswertung dann fähig:
   Auswertungsbaum. Ob und wie ein Zwischenergebnis wiederverwendet wird — und
   damit, ob die Fassade ein- oder zweistufig ist — entscheidet eine Messung an
   echten Katalogdaten, nicht eine Vermutung. Die Messung ist Abnahmebedingung.
-- Relevante ADRs: ADR-0030 (Reinraum-Engine als Nachfolger), ADR-0032
+- Relevante ADRs: **ADR-0034** (Bericht als alleinige Quelle der Oberfläche —
+  hält die Grenze fest), **ADR-0035** (Verfügbarkeit aus Fähigkeitsdatensätzen,
+  **ersetzt ADR-0022**), ADR-0030 (Reinraum-Engine als Nachfolger), ADR-0032
   (Mehrkatalog-Auflösung), ADR-0031 (XSD-Syntax, geteilte Enum-SSOT), ADR-0033
-  (manifest-getriebene E2E-Autorenschaft), ADR-0022 (**wird abgelöst**),
-  ADR-0027, ADR-0028, ADR-0026, ADR-0011, ADR-0003, ADR-0016.
-- **Vorgeschlagen, noch nicht beschlossen:** zwei ADRs — einer über die Grenze
-  zwischen Bericht und Oberfläche samt Verbannung systemgebundener Sonderfälle,
-  einer über Verfügbarkeit aus Fähigkeitsdatensätzen als Ablösung von ADR-0022.
+  (manifest-getriebene E2E-Autorenschaft), ADR-0027, ADR-0028, ADR-0026,
+  ADR-0011, ADR-0003, ADR-0016.
 
 ## Testing Decisions
 
