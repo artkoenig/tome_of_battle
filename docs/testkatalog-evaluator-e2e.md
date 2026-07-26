@@ -79,7 +79,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`vampire-counts`](testing/vampire-counts/) | Definitive VC (+/- Mercenaries) | 3 |
 | [`category-scope-bug`](testing/category-scope-bug/) | Definitive VC + Mercenaries | 1 |
 | [`real-catalog-smoke`](testing/real-catalog-smoke/) | Definitive Ogre (+/- Mercenaries) | 2 |
-| **Summe** | | **42** |
+| [`mercenaries-repeat-bug`](testing/mercenaries-repeat-bug/) | Definitive Mercenaries | 1 |
+| **Summe** | | **43** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -195,3 +196,11 @@ Prüft, ob eine Constraint, die auf eine bestimmte Kategorie gescoped ist (hier:
 | # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
 | :--- | :--- | :--- |
 | 01 | Ein Master Necromancer (enthält die gescopete Constraint), ein Von Carstein Vampire mit Mount, und ein Strigoi Vampire ohne Mount | Das Mount gehört nicht zur Strigoi-Kategorie, weshalb die Strigoi-gescopete Constraint nicht feuert — keine Verletzung |
+
+## `mercenaries-repeat-bug`
+
+Prüft, ob die Engine `<repeat>`-Elemente in Modifiern korrekt verarbeitet, um Limits (z. B. "max Kylists") proportional zur Anzahl einer anderen Auswahl ("Bucks") anzuheben. Beweist den Fehler im Evaluator, der `perValue` anstelle von `value`/`repeats` sucht und das Limit fälschlicherweise nicht erhöht, weil der Modifier mit `UNSUPPORTED_REPEAT` scheitert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Toxote's Hellmounts mit 4 Bucks und 3 Kylists | Keine Verletzung, das Limit der Kylists (max=1) wird durch die 4 Bucks um +2 angehoben. Der Repeat wird geparst, keine UNSUPPORTED_REPEAT Diagnose. (Schlägt in fehlerhafter Engine fehl). |

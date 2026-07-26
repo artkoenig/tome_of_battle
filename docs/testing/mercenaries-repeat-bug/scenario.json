@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "name": "mercenaries-repeat-bug",
+  "description": "Thesis: The new engine's catalogReader.js fails to parse <repeat> elements inside modifiers because it looks for a non-existent perValue attribute, ignoring the correct value and repeats attributes. This causes readRepeat to always fail with DiagnosticKind.UNSUPPORTED_REPEAT, meaning the modifier is never applied. We use the Mercenaries (6th definitive edition) catalogue, which uses <repeat> to increase the max limit of 'Kylists' by 1 for every 2 'Bucks'. Under correct behavior, a max limit violation and the diagnostic should be absent.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-repeat.ros",
+      "description": "Toxote's Hellmounts mit 4 Bucks und 3 Kylists. Richtiges Verhalten: 4 Bucks heben das max-Limit der Kylists (initial 1) über einen Modifier mit <repeat value=\"2\"> um 2 an (-> Limit = 3). Da 3 Kylists im Roster sind, greift die Limitierung nicht. Wenn der Parser den Repeat blockiert, wird das Limit nicht erhöht und die Engine feuert eine Verletzung sowie die UNSUPPORTED_REPEAT-Diagnose (wir assertieren also absent, sodass der fehlerhafte Evaluator scheitert).",
+      "expect": {
+        "firing": [],
+        "absent": ["7200-e796-ecd2-cdaa"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "explorer-force-constraints",
+  "description": "Prüft die Auswertung von MAX-Constraints für Kategorien auf Force-Ebene. Konkret: Ein Ogre Kingdoms Kontingent ('Standard (OK-AB)') darf maximal 3 Special-Auswahlen enthalten. 4 Yhetees verletzen das Limit '16f0-6e5b-55d0-4102' (max 3), 3 Yhetees halten es ein.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-four-special-illegal.ros",
+      "description": "Ein Ogre Kingdoms Roster mit 1 Tyrant, 2 Ogre Bulls und 4 Einheiten Yhetees (Kategorie 'Special'). Das Limit '16f0-6e5b-55d0-4102' (max 3) muss feuern mit actual=4, bound=3.",
+      "expect": {
+        "firing": [
+          {
+            "limitId": "16f0-6e5b-55d0-4102",
+            "actual": 4,
+            "bound": 3
+          }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-three-special-legal.ros",
+      "description": "Ein Ogre Kingdoms Roster mit 1 Tyrant, 2 Ogre Bulls und 3 Einheiten Yhetees (Kategorie 'Special'). Das Limit '16f0-6e5b-55d0-4102' (max 3) ist erfüllt und darf NICHT feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "16f0-6e5b-55d0-4102"
+        ]
+      }
+    }
+  ]
+}
