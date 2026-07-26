@@ -1,8 +1,9 @@
 /**
  * Schnelle, synthetische Tests der kataloguebergreifenden Auflösung und der
  * Kohaerenz-Diagnosen der Fassade (ADR-0032) — das Gegenstueck zu den langsamen,
- * an echten Definitive-Edition-Daten laufenden E2E-Tests
- * (`e2e.realCatalog.smoke.test.js`). Hier wird das **Verhalten** an minimalen
+ * an echten Definitive-Edition-Daten laufenden E2E-Tests (dem
+ * manifest-getriebenen Runner `e2e.testcatalog.test.js`, u. a. das Szenario
+ * `docs/testing/real-catalog-smoke/`). Hier wird das **Verhalten** an minimalen
  * Katalogen isoliert geprueft (FIRST): globale `id → Definition`-Auflösung ueber
  * Dokumentgrenzen, Zyklen-Sicherheit, die Regel „geteilte/verlinkte Eintraege
  * synthetisieren keinen Pflicht-Phantom" und die beiden Kohaerenz-Diagnosen.

@@ -1,0 +1,227 @@
+/**
+ * Generalisierter, **manifest-getriebener** E2E-Runner der Reinraum-Engine.
+ *
+ * Ein einziger, versionierter Testeinstieg entdeckt zur Laufzeit **alle** Szenarien
+ * unter `docs/testing/`, die ein Manifest (`scenario.json`) tragen, wertet jedes
+ * darin deklarierte Roster gegen die oeffentliche Fassade `evaluate` aus und prueft
+ * den Bericht gegen die je Roster deklarierte Erwartung — sowohl den
+ * Verletzungsbericht (`violations`) als auch die Diagnosen (`diagnostics`). Die
+ * einzelnen Testfaelle entstehen **dynamisch zur Laufzeit** aus den Manifesten —
+ * versioniert sind nur dieser Runner und die Szenario-Daten, nicht die generierten
+ * Faelle.
+ *
+ * ── Manifest-Vertrag (`docs/testing/<szenario>/scenario.json`) ──────────────────
+ * Die Quelle der Wahrheit je Szenario, ausfuellbar aus den Katalogdaten allein
+ * (ohne Blick in den Evaluator-Quellcode):
+ *
+ *   {
+ *     "schemaVersion": 1,
+ *     "name": "<szenario-name>",
+ *     "description": "<fachliche Kurzbeschreibung>",
+ *     "dataset": {
+ *       "gameSystem": "<pfad zur .gst>",        // optional; Pfad relativ zum Repo-Wurzelverzeichnis
+ *       "catalogues": ["<pfad zur .cat>", ...]   // geordnet; Pfade relativ zum Repo-Wurzelverzeichnis
+ *     },
+ *     "rosters": [
+ *       {
+ *         "file": "rosters/<name>.ros",           // Pfad relativ zum Szenario-Verzeichnis
+ *         "description": "<fachliche Kurzbeschreibung>",
+ *         "dataset": { ... },                     // OPTIONAL: ueberschreibt das Szenario-`dataset`
+ *                                                 //           NUR fuer dieses Roster (gleiche Form).
+ *                                                 //           Damit prueft ein Roster denselben
+ *                                                 //           Aufbau gegen einen abweichenden Satz —
+ *                                                 //           z. B. ohne die Mercenaries-Abhaengigkeit.
+ *         "expect": {
+ *           "firing": [                           // Grenzen, die feuern MUESSEN
+ *             { "limitId": "<constraint-id>", "actual": <ist>, "bound": <grenze>, "count": <n>? }
+ *             //          `count` ist OPTIONAL: ist es gesetzt, muss die Grenze GENAU
+ *             //          `count`-mal feuern (ein Anker je Kontingent, §7.7), und jede
+ *             //          dieser Verletzungen traegt `actual`/`bound`. Ohne `count` wird
+ *             //          nur geprueft, dass die Grenze (mind. einmal) mit `actual`/`bound`
+ *             //          feuert.
+ *           ],
+ *           "absent": ["<constraint-id>", ...],   // Grenzen, die NICHT feuern duerfen
+ *           "diagnostics": {                      // OPTIONAL: Aussagen ueber `report.diagnostics`
+ *             "present": [                         // Diagnosen, die auftreten MUESSEN
+ *               { "kind": "<DiagnosticKind-Schluessel>", "targetId": "<id>"?, "defId": "<id>"?, "minCount": <n>? }
+ *               //         `kind` ist ein Schluessel der SSOT-Aufzaehlung `DiagnosticKind`
+ *               //         (z. B. "MISSING_CATALOGUE_DEPENDENCY"). `targetId`/`defId` engen
+ *               //         den Treffer optional auf ein konkretes Ziel ein; `minCount`
+ *               //         (Default 1) fordert mindestens so viele passende Diagnosen.
+ *             ],
+ *             "absent": [                          // Diagnose-Arten, die NICHT auftreten duerfen
+ *               { "kind": "<DiagnosticKind-Schluessel>", "targetId": "<id>"? }
+ *             ]
+ *           }
+ *         }
+ *       }
+ *     ]
+ *   }
+ *
+ * Die Erwartung ist **selektiv**, nicht erschoepfend: ueber die in `firing`/`absent`
+ * bzw. `diagnostics.present`/`diagnostics.absent` genannten Ids/Arten hinaus macht sie
+ * keine Aussage. Andere Armeeaufbau-Diagnosen (General-/Core-Pflicht, Punktelimit,
+ * weitere Diagnose-Arten) duerfen zusaetzlich auftreten, ohne einen Fall zu brechen.
+ */
+
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { describe, it, expect } from 'vitest';
+import { evaluate } from './evaluator.js';
+import { DiagnosticKind } from './model.js';
+import { violationsOf, violationOf, diagnosticsMatching } from './__fixtures__/e2eReport.js';
+import { rosterFromRos } from './__fixtures__/rosParser.js';
+
+// Relativ zum Projekt-Wurzelverzeichnis (dem cwd des Testlaufs) aufgeloest — wie
+// die uebrigen fixture-lesenden Tests des Projekts.
+const TESTING_ROOT = 'docs/testing';
+const MANIFEST_FILE = 'scenario.json';
+
+/**
+ * Wirft mit klarer, auf das Manifest verweisender Meldung, wenn eine Bedingung
+ * verletzt ist — damit ein Black-Box-Autor eines fehlerhaften Manifests sofort
+ * sieht, was fehlt, statt einen kryptischen Laufzeitfehler zu bekommen.
+ */
+function assertManifest(condition, manifestPath, message) {
+  if (!condition) {
+    throw new Error(`Ungueltiges Szenario-Manifest ${manifestPath}: ${message}`);
+  }
+}
+
+/** Liest und validiert das Manifest eines Szenario-Verzeichnisses. */
+function loadManifest(scenarioDir) {
+  const manifestPath = join(scenarioDir, MANIFEST_FILE);
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+
+  assertManifest(typeof manifest.name === 'string', manifestPath, 'Feld "name" fehlt.');
+  assertManifest(manifest.dataset != null, manifestPath, 'Feld "dataset" fehlt.');
+  assertManifest(Array.isArray(manifest.dataset.catalogues), manifestPath, '"dataset.catalogues" muss ein Array sein.');
+  assertManifest(Array.isArray(manifest.rosters), manifestPath, '"rosters" muss ein Array sein.');
+  manifest.rosters.forEach((rosterCase, index) => {
+    assertManifest(typeof rosterCase.file === 'string', manifestPath, `rosters[${index}]: Feld "file" fehlt.`);
+    assertManifest(rosterCase.expect != null, manifestPath, `rosters[${index}] (${rosterCase.file}): Feld "expect" fehlt.`);
+  });
+
+  return { ...manifest, scenarioDir, manifestPath };
+}
+
+/** Entdeckt alle Szenarien unter `docs/testing/`, die ein Manifest tragen. */
+function discoverScenarios() {
+  if (!existsSync(TESTING_ROOT)) return [];
+  return readdirSync(TESTING_ROOT, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => join(TESTING_ROOT, entry.name))
+    .filter(dir => existsSync(join(dir, MANIFEST_FILE)))
+    .map(loadManifest);
+}
+
+// Ein Datensatz wird je eindeutiger Spezifikation genau einmal von der Platte
+// gelesen — die grossen Katalog-XML teilen sich alle Roster desselben Satzes.
+const datasetCache = new Map();
+
+/**
+ * Liest die deklarierten Katalog-Inputs in den Datensatz `{ gameSystem?, catalogues }`,
+ * den `evaluate` erwartet — memoisiert je Spezifikation (`{ gameSystem?, catalogues }`).
+ */
+function readDataset(datasetSpec) {
+  const cacheKey = JSON.stringify(datasetSpec);
+  const cached = datasetCache.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const { gameSystem, catalogues } = datasetSpec;
+  const dataset = { catalogues: catalogues.map(path => readFileSync(resolve(path), 'utf8')) };
+  if (gameSystem !== undefined) {
+    dataset.gameSystem = readFileSync(resolve(gameSystem), 'utf8');
+  }
+  datasetCache.set(cacheKey, dataset);
+  return dataset;
+}
+
+/**
+ * Der fuer ein Roster gueltige Datensatz: dessen eigener `dataset`-Override, falls
+ * vorhanden, sonst der Szenario-Standard. Ein Override ersetzt den Standard
+ * vollstaendig (kein Teil-Merge) — die Roster-Spezifikation ist damit ihre eigene,
+ * lueckenlose Quelle der Wahrheit.
+ */
+function datasetForRoster(manifest, rosterCase) {
+  return readDataset(rosterCase.dataset ?? manifest.dataset);
+}
+
+/** Prueft den Verletzungsbericht gegen die `firing`/`absent`-Erwartung eines Rosters. */
+function assertViolationsMatchExpectation(report, expectation) {
+  const { firing = [], absent = [] } = expectation;
+  for (const { limitId, actual, bound, count } of firing) {
+    if (count !== undefined) {
+      const violations = violationsOf(report, limitId);
+      expect(violations, `Grenze ${limitId} muss genau ${count}x feuern`).toHaveLength(count);
+      for (const violation of violations) {
+        expect(violation, `jede Verletzung von ${limitId} traegt Ist/Grenze`).toMatchObject({ actual, bound });
+      }
+    } else {
+      expect(violationOf(report, limitId), `Grenze ${limitId} muss feuern`).toMatchObject({ actual, bound });
+    }
+  }
+  for (const limitId of absent) {
+    expect(violationsOf(report, limitId), `Grenze ${limitId} darf nicht feuern`).toHaveLength(0);
+  }
+}
+
+/**
+ * Uebersetzt einen Diagnose-Schluessel des Manifests in seinen SSOT-Wert und wirft
+ * mit klarer Manifest-Meldung, wenn der Schluessel keine bekannte Diagnose-Art ist.
+ */
+function diagnosticKindOf(kindKey, manifestPath) {
+  const kind = DiagnosticKind[kindKey];
+  assertManifest(kind !== undefined, manifestPath, `Unbekannte Diagnose-Art "${kindKey}".`);
+  return kind;
+}
+
+/** Menschenlesbarer Zusatz zur Diagnose-Spezifikation fuer Assertion-Meldungen. */
+function diagnosticLabel(spec) {
+  const target = spec.targetId !== undefined ? ` targetId=${spec.targetId}` : '';
+  const def = spec.defId !== undefined ? ` defId=${spec.defId}` : '';
+  return `${spec.kind}${target}${def}`;
+}
+
+/** Prueft die Diagnosen des Berichts gegen die optionale `diagnostics`-Erwartung eines Rosters. */
+function assertDiagnosticsMatchExpectation(report, expectation, manifestPath) {
+  const diagnosticsExpectation = expectation.diagnostics;
+  if (diagnosticsExpectation === undefined) return;
+
+  const { present = [], absent = [] } = diagnosticsExpectation;
+  for (const spec of present) {
+    const kind = diagnosticKindOf(spec.kind, manifestPath);
+    const minCount = spec.minCount ?? 1;
+    const matches = diagnosticsMatching(report, kind, spec);
+    expect(matches.length, `Diagnose ${diagnosticLabel(spec)} muss mind. ${minCount}x auftreten`).toBeGreaterThanOrEqual(
+      minCount,
+    );
+  }
+  for (const spec of absent) {
+    const kind = diagnosticKindOf(spec.kind, manifestPath);
+    const matches = diagnosticsMatching(report, kind, spec);
+    expect(matches.length, `Diagnose ${diagnosticLabel(spec)} darf nicht auftreten`).toBe(0);
+  }
+}
+
+const scenarios = discoverScenarios();
+
+describe('E2E Testkatalog (manifest-getrieben): docs/testing/<szenario>/scenario.json', () => {
+  for (const manifest of scenarios) {
+    describe(`Szenario: ${manifest.name}`, () => {
+      manifest.rosters.forEach((rosterCase, index) => {
+        // Der Roster-Dateiname allein ist nicht eindeutig: dasselbe `.ros` kann im
+        // selben Szenario mehrfach gegen verschiedene `dataset`-Overrides laufen. Die
+        // `description` (bzw. der Index als Rueckfall) haelt die Testtitel unterscheidbar.
+        const label = rosterCase.description ? `${rosterCase.file} — ${rosterCase.description}` : `${rosterCase.file} [#${index}]`;
+        it(`${label}: Bericht entspricht der deklarierten Erwartung`, () => {
+          const dataset = datasetForRoster(manifest, rosterCase);
+          const roster = rosterFromRos(join(manifest.scenarioDir, rosterCase.file));
+          const report = evaluate(dataset, roster);
+          assertViolationsMatchExpectation(report, rosterCase.expect);
+          assertDiagnosticsMatchExpectation(report, rosterCase.expect, manifest.manifestPath);
+        });
+      });
+    });
+  }
+});

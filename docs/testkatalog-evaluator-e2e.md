@@ -1,173 +1,188 @@
 # Testkatalog — E2E-Tests der Reinraum-Engine (Evaluator)
 
-Dieser Katalog beschreibt **jeden** End-to-End-Test der neuen Reinraum-Engine
+Dieser Katalog beschreibt **jeden** End-to-End-Test der Reinraum-Engine
 (`src/evaluator/`) in nicht-technischer Sprache, damit ein fachlicher Leser jeden
 geprüften Fall nachvollziehen kann — ohne den Testcode zu lesen. Er deckt
 **ausschließlich** die E2E-Tests der neuen Engine ab: keine Unit-/Komponenten-
 tests und keine Tests der alten Solver-Engine.
 
-Alle hier gelisteten Tests werten Roster gegen die **echten** Definitive-Edition-
+## Eine Quelle der Wahrheit: der manifest-getriebene Runner
+
+Die gesamte E2E-Absicherung des Evaluators läuft seit Issue 69 über **einen**
+generalisierten, manifest-getriebenen Runner:
+[`e2e.testcatalog.test.js`](../src/evaluator/e2e.testcatalog.test.js). Er entdeckt
+zur Laufzeit **alle** Szenarien unter [`docs/testing/`](testing/), die ein Manifest
+(`scenario.json`) tragen, wertet jedes darin deklarierte Roster gegen die
+öffentliche Fassade `evaluate` aus und prüft den Bericht — sowohl die
+**Verletzungen** als auch die **Diagnosen** — gegen die je Roster deklarierte
+Erwartung. Die einzelnen Testfälle entstehen **dynamisch** aus den Manifesten;
+versioniert sind nur der Runner und die Szenario-Daten.
+
+Ein **Szenario** ist ein Verzeichnis unter `docs/testing/<name>/` mit:
+
+- einem oder mehreren **Rostern** (`rosters/*.ros`) — echten Battlescribe-Roster-
+  Dateien als Engine-Eingabe;
+- einer **`README.md`** — die aus den Katalogdaten abgeleiteten Regeln samt Beleg
+  (Black-Box: nur aus den Katalogdaten, nicht aus dem Engine-Code);
+- dem Manifest **`scenario.json`** — der maschinenlesbaren Quelle der Wahrheit:
+  welche Katalogdateien geladen werden und welche Grenzen/Diagnosen je Roster
+  feuern müssen (`firing`), nicht feuern dürfen (`absent`) bzw. als Diagnose
+  auftreten oder ausbleiben müssen (`diagnostics`).
+
+Die frühere programmatische E2E-Suite (die Roster im Testcode aufbaute:
+`e2e.ogreKingdoms/orcsAndGoblins/vampireCounts/realCatalog.smoke` und die
+`e2e.*.ros`-Charakterisierung) ist vollständig in dieses Format überführt und
+entfernt.
+
+## Datengrundlage
+
+Fast alle Szenarien werten Roster gegen die **echten** Definitive-Edition-
 Katalogdaten aus (ADR-[0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)) —
-genau die Dateien, die ein Nutzer beim Import erlebt. Die Datensätze und die
-verifizierten Kennungen/Grenzwerte liefert die gemeinsame Testnaht
-[`realCatalogs.js`](../src/evaluator/__fixtures__/realCatalogs.js); die Fixture-
-Herkunft steht in [`whfb6-definitive/README.md`](../src/evaluator/__fixtures__/whfb6-definitive/README.md).
+`src/evaluator/__fixtures__/whfb6-definitive/`, genau die Dateien, die ein Nutzer
+beim Import erlebt. Ausnahme ist `vampire-bloodlines-ergofang`, das den
+eigenständigen ergofang-VC-Katalog (`src/solver/__fixtures__/whfb6/`) nutzt. Jede
+Armee-`.cat` wird zusammen mit ihrer gemeinsamen **Mercenaries**-Abhängigkeit
+ausgewertet (Stern-Struktur); einige Roster prüfen bewusst den **unvollständigen**
+Satz *ohne* Mercenaries — per Roster-`dataset`-Override im Manifest.
 
 ## Pflege-Regel (verbindlich, manuell)
 
 > **Sobald ein neues Problem der Engine erkannt und behoben wird, werden dafür
-> zwei Dinge zusammen angelegt: (1) ein E2E-Test in `src/evaluator/`, der das
-> Problem an echten Daten absichert, **und** (2) ein zugehöriger Eintrag in
-> diesem Katalog.**
+> zwei Dinge zusammen angelegt: (1) ein Szenario unter `docs/testing/` (Roster +
+> `README.md` + `scenario.json`), das das Problem an echten Daten absichert und
+> vom Runner ausgewertet wird, **und** (2) ein zugehöriger Eintrag in diesem
+> Katalog.**
+
+Das Szenario wird **Black-Box** autoriert — allein aus den Katalogdaten, ohne
+Blick in den Evaluator-Quellcode — durch den dedizierten Subagenten
+`e2e-testcase-author` (siehe [`docs/agents/e2e-testcase-author.md`](agents/e2e-testcase-author.md)
+und [ADR 0033](adr/0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md)).
+So prüft der Test die Engine, statt ihr Verhalten zu spiegeln. Es entsteht dabei
+**kein** handgeschriebener `src/evaluator/e2e.*.test.js` mehr — nur Szenario-Daten.
 
 Die Pflege erfolgt **von Hand** — es gibt bewusst **keinen** Generator und
-**kein** CI-Gate, das den Katalog gegen die Suite erzwingt. Der Katalog muss
-darum bei jeder Änderung an der E2E-Suite deckungsgleich gehalten werden: jeder
-gelistete Test existiert in der Suite, und jeder E2E-Test/jedes Szenario der
-neuen Engine steht im Katalog. Wer eine E2E-Testdatei hinzufügt, umbenennt,
-löscht oder ein `describe`/`it` ändert, aktualisiert im selben Schritt diesen
-Katalog.
+**kein** CI-Gate, das den Katalog gegen die Szenarien erzwingt. Der Katalog muss
+darum deckungsgleich zum Bestand unter `docs/testing/` gehalten werden: jedes
+gelistete Szenario/Roster existiert dort, und jedes Szenario/Roster steht im
+Katalog. Wer ein Szenario oder ein Roster hinzufügt, umbenennt oder löscht,
+aktualisiert im selben Schritt diesen Katalog.
 
-## Abgedeckte Testdateien
+## Abgedeckte Szenarien
 
-| Datei | Szenarien | Einzeltests |
-| :--- | :---: | :---: |
-| [`e2e.ogreKingdoms.test.js`](../src/evaluator/e2e.ogreKingdoms.test.js) | 6 | 11 |
-| [`e2e.orcsAndGoblins.test.js`](../src/evaluator/e2e.orcsAndGoblins.test.js) | 2 | 4 |
-| [`e2e.vampireCounts.test.js`](../src/evaluator/e2e.vampireCounts.test.js) | 2 | 4 |
-| [`e2e.realCatalog.smoke.test.js`](../src/evaluator/e2e.realCatalog.smoke.test.js) | 1 | 4 |
-| **Summe** | **11** | **23** |
+| Szenario | Datengrundlage | Roster-Fälle |
+| :--- | :--- | :---: |
+| [`vampire-bloodlines`](testing/vampire-bloodlines/) | Definitive VC + Mercenaries | 9 |
+| [`vampire-bloodlines-ergofang`](testing/vampire-bloodlines-ergofang/) | ergofang VC (ohne Mercenaries) | 6 |
+| [`army-standard-bearer`](testing/army-standard-bearer/) | Definitive O&G + Mercenaries | 7 |
+| [`ogre-kingdoms`](testing/ogre-kingdoms/) | Definitive Ogre (+/- Mercenaries) | 11 |
+| [`orcs-and-goblins`](testing/orcs-and-goblins/) | Definitive O&G (+/- Mercenaries) | 3 |
+| [`vampire-counts`](testing/vampire-counts/) | Definitive VC (+/- Mercenaries) | 3 |
+| [`real-catalog-smoke`](testing/real-catalog-smoke/) | Definitive Ogre (+/- Mercenaries) | 2 |
+| **Summe** | | **41** |
 
-### Kurzform der Katalogdateien
-
-Zur besseren Lesbarkeit werden die realen Dateinamen in der Spalte *Betroffene
-Katalogdateien* abgekürzt:
-
-- **gst** = `Warhammer Fantasy Battles (6th definitive edition).gst`
-- **Mercenaries** = `Mercenaries (6th definitive edition).cat`
-- **Ogre Kingdoms** = `Ogre Kingdoms (6th definitive edition).cat`
-- **Orcs and Goblins** = `Orcs and goblins (6th definitive edition).cat`
-- **Vampire Counts** = `Vampire Counts (6th definitive edition).cat`
-
-Jede Armee-`.cat` wird zusammen mit ihrer gemeinsamen **Mercenaries**-
-Abhängigkeit ausgewertet (Stern-Struktur). Einige Tests prüfen bewusst den
-**unvollständigen** Satz *ohne* Mercenaries — dort fehlt die Mercenaries-Datei in
-der Spalte, und genau das ist der geprüfte Fall.
+Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
+Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
+Szenario zusammen, was geprüft wird.
 
 ---
 
-## `e2e.ogreKingdoms.test.js`
+## `vampire-bloodlines` (Definitive Edition)
 
-Reale Domänen-Regeln der **Ogre-Kingdoms**-Armee an verifizierten Kennungen und
-Grenzwerten.
+Bloodline-Regeln der Vampire Counts: die force-weite **Pflicht** min 1 Bloodline
+(`4a0a-b107-e726-da32`) und die gruppen-weite **Clan-Obergrenze** max 1
+(`39c7-f615-17db-7016`). Sichtbarkeit (`hidden`) und Profilwerte sind bewusst
+**nicht** Teil des Verletzungsberichts.
 
-### Szenario: Armeeweite Pflichtregeln „General" und „Core"
-[→ describe-Block](../src/evaluator/e2e.ogreKingdoms.test.js#L70)
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Eine legale Clan-Bloodline (Blood Dragon) + Vampire Count | Keine Bloodline-Verletzung — Pflicht und Clan-Obergrenze erfüllt |
+| 02 | Nur ein Vampire Count, keine Bloodline | Die Pflicht min 1 feuert (Ist 0) |
+| 03 | Zwei Clan-Bloodlines in einer Selektion | Die Clan-Obergrenze max 1 feuert (Ist 2) |
+| 04 | Strigoi verbirgt die Gruppe „Magic selection" | Verfügbarkeit (`hidden`) — keine Verletzung |
+| 05 | Blood Dragon blendet die Thrall-Gruppe „Armour" ein | Verfügbarkeit — keine Verletzung |
+| 06 | Lahmia + Thrall + Count (neutrale Grundlinie) | Keine Verletzung |
+| 07–09 | Vampire Count mit Bloodline (Blood Dragon / Necrarch / Strigoi), Profilfokus | Profilwerte nicht im Bericht — keine Bloodline-Verletzung |
 
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Schlägt bei leerem Kontingent für General (min 1) und Core (min 2) an | gst + Ogre Kingdoms + Mercenaries | Ein Ogre-Kontingent ganz ohne Einheiten | Der Auswerter beanstandet die Armee: der Pflicht-General (mindestens 1) und die Pflicht-Kerneinheiten (mindestens 2) fehlen — gezählt 0 gegen die geforderte Zahl | [#L71](../src/evaluator/e2e.ogreKingdoms.test.js#L71) |
-| Ist erfüllt, sobald die geforderten Einheiten vorhanden sind | gst + Ogre Kingdoms + Mercenaries | Dasselbe Kontingent mit einem General und zwei Kerneinheiten | Keine General- oder Kern-Beanstandung mehr — beide Pflichten sind erfüllt | [#L86](../src/evaluator/e2e.ogreKingdoms.test.js#L86) |
+## `vampire-bloodlines-ergofang`
 
-### Szenario: Bedingter Modifikator senkt die Core-Untergrenze
-[→ describe-Block](../src/evaluator/e2e.ogreKingdoms.test.js#L94)
+Die ergofang-Variante modelliert die Bloodline als **Pflicht-Gruppe je Charakter**
+(min 1 / max 1, `56c1…`/`6d0c…`), nicht armeeweit. Eigenständiger VC-Katalog ohne
+Mercenaries.
 
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Hält die Core-Untergrenze bei 2, solange „Border Patrols rules" fehlt | gst + Ogre Kingdoms + Mercenaries | General + genau eine Kerneinheit, ohne die Sonderregel „Border Patrols rules" | Eine Kerneinheit reicht nicht: die geforderte Mindestzahl bleibt 2, also eine Beanstandung (1 von 2) | [#L101](../src/evaluator/e2e.ogreKingdoms.test.js#L101) |
-| Setzt die Core-Untergrenze auf 1, sobald „Border Patrols rules" im Roster liegt | gst + Ogre Kingdoms + Mercenaries | General + eine Kerneinheit + die Auswahl „Border Patrols rules" | Die Sonderregel senkt die geforderte Mindestzahl auf 1; dieselbe eine Kerneinheit genügt jetzt — keine Beanstandung | [#L110](../src/evaluator/e2e.ogreKingdoms.test.js#L110) |
-| Senkt die Core-Untergrenze im leeren Kontingent sichtbar von 2 auf 1 | gst + Ogre Kingdoms + Mercenaries | Einmal ein leeres Kontingent, einmal ein Kontingent, das nur „Border Patrols rules" enthält | Die geforderte Kern-Mindestzahl ist ohne die Sonderregel 2, mit ihr 1 — die Bedingung verändert die Grenze sichtbar | [#L120](../src/evaluator/e2e.ogreKingdoms.test.js#L120) |
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| e01 | Vampire Count mit genau einer Bloodline | Keine Verletzung — Pflicht je Charakter erfüllt |
+| e02 | Vampire Count ohne Bloodline | Die Pflicht min 1 je Charakter feuert (Ist 0) |
+| e03 | Zwei Bloodlines an einem Charakter | Die Obergrenze max 1 je Charakter feuert (Ist 2) |
+| e04 | Zwei Charaktere mit **verschiedenen** Bloodlines | Legal — keine armeeweite Schranke |
+| e05 | Strigoi mit „Full plate armour" (nur Blood Dragon bietet sie) | Verfügbarkeit — keine Verletzung |
+| e06 | Blood Dragon + Rüstung + Magie (Replik von `Test2.rosz`) | Legal im ergofang-Katalog — keine Verletzung |
 
-### Szenario: Unbedingte Tyrant-Obergrenze (höchstens 1)
-[→ describe-Block](../src/evaluator/e2e.ogreKingdoms.test.js#L132)
+## `army-standard-bearer`
 
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Erzeugt für zwei Tyrants eine Verletzung (Ist 2, Grenze 1) | gst + Ogre Kingdoms + Mercenaries | Zwei „Tyrant"-Auswahlen im Kontingent | Zwei Tyrants überschreiten die Obergrenze von höchstens 1 — Beanstandung (2 statt max. 1) | [#L133](../src/evaluator/e2e.ogreKingdoms.test.js#L133) |
-| Lässt genau einen Tyrant unbeanstandet | gst + Ogre Kingdoms + Mercenaries | Genau ein „Tyrant" im Kontingent | Ein Tyrant hält die Obergrenze ein — keine Beanstandung | [#L144](../src/evaluator/e2e.ogreKingdoms.test.js#L144) |
+Armee-Standartenträger (BSB) an O&G + Mercenaries. Aus den Katalogdaten abgeleitet
+feuern die **eintrags-skopierten** BSB-Zählgrenzen (armeeweit `082b…`, je Charakter
+`01a5…`); die **kategorie-skopierten** Grenzen (`2a1d…`, `6935…`) und die als
+Verfügbarkeit (`hidden`) modellierte Magic-Items-Sperre erscheinen **nicht** im
+Verletzungsbericht (Details samt Katalogbeleg in der Szenario-README).
 
-### Szenario: Katalogübergreifende Auflösung über Mercenaries
-[→ describe-Block](../src/evaluator/e2e.ogreKingdoms.test.js#L151)
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Orc Bigboss mit genau einem BSB | Keine BSB-Verletzung — Obergrenzen eingehalten |
+| 02 | Zwei Charaktere, jeder mit BSB | Die roster-weite Obergrenze feuert (Ist 2) an beiden BSB |
+| 03 | Ein Charakter, BSB doppelt (`number=2`) | Die Charakter-Obergrenze und die roster-Obergrenze feuern (Ist 2) |
+| 04 | Ein BSB + „Border Patrols rules" | Die als Kategorie-Grenze modellierte Ausnahme erscheint **nicht** — keine BSB-Verletzung |
+| 05 | Ein Orc Bigboss ohne BSB | Grundlinie — keine BSB-Diagnose |
+| 06 | BSB mit **einer** magischen Standarte | Legal — keine Verletzung |
+| 07 | BSB mit Standarte **und** zusätzlichem Magie-Item | Verfügbarkeits-Sperre (`hidden`) — keine BSB-Verletzung |
 
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Löst alle per Verweis importierten Definitionen auf | gst + Ogre Kingdoms + Mercenaries | Leeres Ogre-Kontingent, ausgewertet mit vollständiger Quelle | Alle katalogübergreifenden Verweise werden aufgelöst — kein Verweis bleibt fälschlich offen, keine Meldung über eine fehlende Abhängigkeit | [#L152](../src/evaluator/e2e.ogreKingdoms.test.js#L152) |
+## `ogre-kingdoms`
 
-### Szenario: §7.7 — Kategorie-Ziel zählt armeeweit über Kontingente
-[→ describe-Block](../src/evaluator/e2e.ogreKingdoms.test.js#L161)
+Reale Domänen-Regeln der Ogre-Armee (Ogre + gst + Mercenaries).
 
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Schlägt an jedem leeren Kontingent an | gst + Ogre Kingdoms + Mercenaries | Zwei leere Ogre-Kontingente | Jedes leere Kontingent bekommt seine eigene General- und Kern-Beanstandung (zwei je Regel), jeweils gegen die armeeweite Summe 0 | [#L177](../src/evaluator/e2e.ogreKingdoms.test.js#L177) |
-| Ist armeeweit erfüllt, sobald irgendein Kontingent die Pflicht trägt | gst + Ogre Kingdoms + Mercenaries | Ein Kontingent voll bestückt (General + zwei Kerneinheiten), ein zweites leer | Weil die Kategorie armeeweit zählt, erfüllt das bestückte Kontingent die Pflicht für die ganze Armee — auch das leere Geschwister-Kontingent wird nicht beanstandet | [#L189](../src/evaluator/e2e.ogreKingdoms.test.js#L189) |
+| # | Geprüfter Roster-Zustand | Datensatz | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- | :--- |
+| 01 | Leeres Ogre-Kontingent | mit Mercenaries | General (min 1) und Core (min 2) feuern (Ist 0); Auflösung vollständig, keine „fehlende Abhängigkeit" |
+| 01b | Dasselbe leere Kontingent | **ohne** Mercenaries | Meldung „fehlende Abhängigkeit" (Mercenaries) — kein Absturz |
+| 02 | General + zwei Core-Einheiten | mit Mercenaries | Beide Pflichten erfüllt — keine Verletzung |
+| 03 | General + eine Core-Einheit, ohne „Border Patrols rules" | mit Mercenaries | Core feuert (1 von 2) |
+| 04 | General + eine Core-Einheit + „Border Patrols rules" | mit Mercenaries | Die gesenkte Grenze (1) ist erfüllt — keine Verletzung |
+| 05 | Nur „Border Patrols rules" | mit Mercenaries | Core feuert mit **Grenze 1** statt 2 — Beleg der gesenkten Grenze |
+| 06 | Zwei Tyrants | mit Mercenaries | Die Tyrant-Obergrenze (max 1) feuert (Ist 2) |
+| 07 | Ein Tyrant | mit Mercenaries | Obergrenze eingehalten — keine Verletzung |
+| 08 | Zwei leere Kontingente | mit Mercenaries | §7.7: General und Core feuern **je zweimal** (armeeweite Summe 0) |
+| 09 | Ein Kontingent bestückt, ein zweites leer | mit Mercenaries | §7.7: die Kategorie zählt armeeweit — auch das leere Geschwister verletzt nicht |
+| 10 | Auswahl mit unbekannter Kennung | mit Mercenaries | Diagnose „nicht auflösbar" — kein Absturz |
 
-### Szenario: Unauflösbare Roster-Auswahl — Hinweis statt Absturz
-[→ describe-Block](../src/evaluator/e2e.ogreKingdoms.test.js#L199)
+## `orcs-and-goblins`
 
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Meldet eine Roster-Auswahl ohne Definition als Hinweis und stürzt nicht | gst + Ogre Kingdoms + Mercenaries | Eine Auswahl mit einer Kennung, die es im echten Katalog nicht gibt | Der Auswerter meldet die unbekannte Auswahl als Hinweis („nicht auflösbar") und liefert trotzdem einen strukturell vollständigen Bericht — kein Absturz | [#L207](../src/evaluator/e2e.ogreKingdoms.test.js#L207) |
+Die im Spielsystem definierten Pflichtregeln plus die katalogübergreifende
+Auflösung über Mercenaries.
 
----
+| # | Geprüfter Roster-Zustand | Datensatz | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- | :--- |
+| 01 | Leeres O&G-Kontingent | mit Mercenaries | General und Core feuern (Ist 0); kein Verweis offen |
+| 02 | General + zwei Core-Einheiten | mit Mercenaries | Regelkonform — keine falsche Verletzung |
+| 03 | Dasselbe leere Kontingent | **ohne** Mercenaries | Meldung „fehlende Abhängigkeit"; der „Pikemen"-Verweis bleibt offen — kein Absturz |
 
-## `e2e.orcsAndGoblins.test.js`
+## `vampire-counts`
 
-Prüft an der **Orcs-and-Goblins**-Armee die im **Spielsystem** definierten
-Pflichtregeln (für jede Armee gleich) sowie die katalogübergreifende Auflösung.
+Wie `orcs-and-goblins`, an der Vampire-Counts-Armee (Definitive-Katalog; prüft die
+General-/Core-Pflichten, **nicht** die Bloodline-Regeln).
 
-### Szenario: Armeeweite Pflichtregeln „General" und „Core"
-[→ describe-Block](../src/evaluator/e2e.orcsAndGoblins.test.js#L51)
+| # | Geprüfter Roster-Zustand | Datensatz | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- | :--- |
+| 01 | Leeres VC-Kontingent | mit Mercenaries | General und Core feuern (Ist 0); kein Verweis offen |
+| 02 | General + zwei Core-Einheiten | mit Mercenaries | Regelkonform — keine falsche Verletzung |
+| 03 | Dasselbe leere Kontingent | **ohne** Mercenaries | Meldung „fehlende Abhängigkeit"; der „Pikemen"-Verweis bleibt offen — kein Absturz |
 
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Schlägt bei leerem Kontingent für General (min 1) und Core (min 2) an | gst + Orcs and Goblins + Mercenaries | Ein leeres Orcs-and-Goblins-Kontingent | Der Auswerter beanstandet den fehlenden Pflicht-General und die fehlenden Pflicht-Kerneinheiten (0 gegen die geforderte Zahl) | [#L52](../src/evaluator/e2e.orcsAndGoblins.test.js#L52) |
-| Erzeugt für eine regelkonforme Liste keine falsche Beanstandung | gst + Orcs and Goblins + Mercenaries | General + zwei Kerneinheiten | Keine falsche General- oder Kern-Beanstandung für die bekannt-regelkonforme Liste | [#L67](../src/evaluator/e2e.orcsAndGoblins.test.js#L67) |
+## `real-catalog-smoke`
 
-### Szenario: Katalogübergreifende Auflösung über Mercenaries
-[→ describe-Block](../src/evaluator/e2e.orcsAndGoblins.test.js#L75)
+Rauchtest der Fassade an den vollständigen echten DE-Daten. Belegt die
+**Auflösungs-Fähigkeit** (nicht die Regel-Semantik einzelner Armeen) an einer
+leeren Armee.
 
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Löst mit vollständiger Quelle alle importierten Definitionen auf | gst + Orcs and Goblins + Mercenaries | Leeres Kontingent, vollständige Quelle | Kein Verweis bleibt offen, keine Meldung über eine fehlende Abhängigkeit | [#L76](../src/evaluator/e2e.orcsAndGoblins.test.js#L76) |
-| Meldet die fehlende Mercenaries-Abhängigkeit und lässt ihren Verweis offen | gst + Orcs and Goblins *(ohne Mercenaries)* | Leeres Kontingent, Quelle **ohne** die Mercenaries-Datei | Der Auswerter meldet, dass die deklarierte Mercenaries-Abhängigkeit fehlt; der nur darüber erreichbare Verweis („Pikemen") bleibt offen — als Hinweis, kein Absturz | [#L84](../src/evaluator/e2e.orcsAndGoblins.test.js#L84) |
-
----
-
-## `e2e.vampireCounts.test.js`
-
-Prüft an der **Vampire-Counts**-Armee dieselben spielsystemweiten Pflichtregeln
-und die katalogübergreifende Auflösung.
-
-### Szenario: Armeeweite Pflichtregeln „General" und „Core"
-[→ describe-Block](../src/evaluator/e2e.vampireCounts.test.js#L51)
-
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Schlägt bei leerem Kontingent für General (min 1) und Core (min 2) an | gst + Vampire Counts + Mercenaries | Ein leeres Vampire-Counts-Kontingent | Der Auswerter beanstandet den fehlenden Pflicht-General und die fehlenden Pflicht-Kerneinheiten (0 gegen die geforderte Zahl) | [#L52](../src/evaluator/e2e.vampireCounts.test.js#L52) |
-| Erzeugt für eine regelkonforme Liste keine falsche Beanstandung | gst + Vampire Counts + Mercenaries | General + zwei Kerneinheiten | Keine falsche General- oder Kern-Beanstandung für die bekannt-regelkonforme Liste | [#L67](../src/evaluator/e2e.vampireCounts.test.js#L67) |
-
-### Szenario: Katalogübergreifende Auflösung über Mercenaries
-[→ describe-Block](../src/evaluator/e2e.vampireCounts.test.js#L75)
-
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Löst mit vollständiger Quelle alle importierten Definitionen auf | gst + Vampire Counts + Mercenaries | Leeres Kontingent, vollständige Quelle | Kein Verweis bleibt offen, keine Meldung über eine fehlende Abhängigkeit | [#L76](../src/evaluator/e2e.vampireCounts.test.js#L76) |
-| Meldet die fehlende Mercenaries-Abhängigkeit und lässt ihren Verweis offen | gst + Vampire Counts *(ohne Mercenaries)* | Leeres Kontingent, Quelle **ohne** die Mercenaries-Datei | Der Auswerter meldet, dass die deklarierte Mercenaries-Abhängigkeit fehlt; der nur darüber erreichbare Verweis („Pikemen") bleibt offen — als Hinweis, kein Absturz | [#L84](../src/evaluator/e2e.vampireCounts.test.js#L84) |
-
----
-
-## `e2e.realCatalog.smoke.test.js`
-
-Rauchtest der Fassade `evaluate({ gameSystem, catalogues }, roster)` an den
-vollständigen echten DE-Daten. Belegt die **Auflösungs-Fähigkeit** der Engine
-(nicht die Regel-Semantik einzelner Armeen).
-
-### Szenario: Echte DE-Daten, katalogübergreifende Auflösung (Ogre + gst + Mercenaries)
-[→ describe-Block](../src/evaluator/e2e.realCatalog.smoke.test.js#L46)
-
-| Titel | Betroffene Katalogdateien | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Testdatei |
-| :--- | :--- | :--- | :--- | :--- |
-| Liefert für eine leere Armee einen vollständigen Bericht, ohne zu stürzen | gst + Ogre Kingdoms + Mercenaries | Eine leere Armee (keine Kontingente) | Der Auswerter liefert einen strukturell vollständigen Bericht und stürzt nicht | [#L47](../src/evaluator/e2e.realCatalog.smoke.test.js#L47) |
-| Löst alle per Verweis importierten Definitionen auf | gst + Ogre Kingdoms + Mercenaries | Leere Armee, vollständige Quelle | Kein Verweis bleibt fälschlich offen, keine Meldung über eine fehlende Abhängigkeit | [#L55](../src/evaluator/e2e.realCatalog.smoke.test.js#L55) |
-| Löst eine nur über Mercenaries erreichbare Definition auf | gst + Ogre Kingdoms + Mercenaries — **verglichen mit** gst + Ogre Kingdoms *(ohne Mercenaries)* | Leere Armee, einmal mit und einmal ohne die Mercenaries-Datei | Der reale Verweis „Pikemen" bleibt ohne Mercenaries offen und löst mit Mercenaries auf — nur die katalogübergreifende Auflösung schließt ihn | [#L65](../src/evaluator/e2e.realCatalog.smoke.test.js#L65) |
-| Meldet die fehlende Mercenaries-Abhängigkeit statt eines Absturzes | gst + Ogre Kingdoms *(ohne Mercenaries)* | Leere Armee, Quelle **ohne** die Mercenaries-Datei | Der Auswerter meldet die fehlende Abhängigkeit als Hinweis; der Bericht bleibt strukturell vollständig, kein Absturz | [#L75](../src/evaluator/e2e.realCatalog.smoke.test.js#L75) |
+| # | Geprüfter Roster-Zustand | Datensatz | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- | :--- |
+| 01 | Leere Armee (keine Kontingente) | mit Mercenaries | Vollständiger Bericht, kein Absturz; alle Verweise (auch „Pikemen") lösen auf |
+| 02 | Dieselbe leere Armee | **ohne** Mercenaries | Meldung „fehlende Abhängigkeit"; der „Pikemen"-Verweis bleibt offen — kein Absturz |

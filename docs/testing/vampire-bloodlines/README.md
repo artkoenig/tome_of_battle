@@ -103,11 +103,14 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). Alle referenzier
 | 08 | Profil: Necrarch | wie 01 | **Derselbe** Vampire Count, Bloodline **Necrarch**. | **VBL-R6:** Profil zeigt **WS −2** ggü. Basis (und ggü. Test 07 deutlich niedriger). | [`08-profile-necrarch-count.ros`](rosters/08-profile-necrarch-count.ros) |
 | 09 | Profil: Strigoi | wie 01 | **Derselbe** Vampire Count, Bloodline **Strigoi**. | **VBL-R6:** Profil zeigt **A +1** und schlechteren Rüstungswurf **Sv+ 5+**; WS unverändert. Kontrast zu 07/08 belegt die Bloodline-Abhängigkeit. | [`09-profile-strigoi-count.ros`](rosters/09-profile-strigoi-count.ros) |
 
-## Engine-Lauf: tatsächliches Verhalten (verifiziert)
+## Abgleich mit dem Engine-Bericht (Runner-Verifikation)
 
-Alle Fixtures wurden **durch die Engine-Fassade `evaluate`** gegeben (Black-Box:
-Roster rein → Bericht raus; Instanzbaum `{defId,count,children}` aus dem `.ros`
-abgeleitet). Ergebnis:
+Die oben aus den Katalogdaten **abgeleiteten** Regeln treffen die Engine erst im
+**Runner-Lauf** — der separate Verifikationsschritt, der nicht zur (blinden)
+Autorenschaft gehört (siehe [ADR 0033](../../adr/0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md)).
+Beim Anschluss dieses Szenarios an den Runner (`evaluate`: Roster rein → Bericht
+raus) wurde jede abgeleitete Erwartung gegen den tatsächlichen Bericht abgeglichen;
+Abweichungen wären zu untersuchen gewesen, nicht anzupassen. Ergebnis des Abgleichs:
 
 | Regel | Skopus | Engine meldet es? | Beleg |
 |-------|--------|-------------------|-------|

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "name": "army-standard-bearer",
+  "description": "Armee-Standartentraeger (Battle Standard Bearer) der 6th Definitive Edition (Orcs & Goblins + .gst + Mercenaries). Alle Erwartungen sind AUS DEN KATALOGDATEN abgeleitet (Black-Box, kein Blick in den Evaluator). Die BSB-Aufwertung traegt zwei eintrags-skopierte Zaehlgrenzen (auf dem geteilten .gst-Eintrag e9ad): armeeweit max 1 (082b, scope=roster) und je Charakter max 1 (01a5, scope=parent). Die zusaetzlichen KATEGORIE-skopierten Grenzen auf der categoryEntry 2ef7 (2a1d force, 6935 parent) samt der Border-Patrols-Ausnahme (Modifier setzt 2a1d auf 0) sowie die als Verfuegbarkeit (hidden) modellierte Magic-Items-Sperre gelten laut Domaenenkonvention NICHT als zaehlende Verletzung und werden daher als absent gepinnt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-bsb-single-legal.ros",
+      "description": "Ein Orc Bigboss mit genau einer BSB-Aufwertung. Legal: armeeweite Obergrenze (max 1) und Charakter-Obergrenze (max 1) eingehalten (Ist 1).",
+      "expect": {
+        "firing": [],
+        "absent": ["082b-067c-b983-c393", "01a5-106d-f6e8-560b", "2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+      }
+    },
+    {
+      "file": "rosters/02-bsb-two-in-army-illegal.ros",
+      "description": "Orc Bigboss UND Goblin Bigboss, jeder mit genau einer BSB-Aufwertung. Die armeeweite Zaehlgrenze max 1 (082b, scope=roster) feuert (Ist 2, Grenze 1). Die Charakter-Grenze (01a5) bleibt eingehalten (je 1); die kategorie-skopierte Force-Grenze (2a1d) taucht nicht als Verletzung auf.",
+      "expect": {
+        "firing": [
+          { "limitId": "082b-067c-b983-c393", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["01a5-106d-f6e8-560b", "2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+      }
+    },
+    {
+      "file": "rosters/03-bsb-twice-on-one-character-illegal.ros",
+      "description": "Ein Orc Bigboss, BSB-Aufwertung mit number=2. Die Charakter-Obergrenze max 1 (01a5, scope=parent) feuert (Ist 2, Grenze 1); zusaetzlich feuert die armeeweite Obergrenze (082b, scope=roster, Ist 2, Grenze 1). Die kategorie-skopierte Parent-Grenze (6935) taucht nicht als Verletzung auf.",
+      "expect": {
+        "firing": [
+          { "limitId": "082b-067c-b983-c393", "actual": 2, "bound": 1 },
+          { "limitId": "01a5-106d-f6e8-560b", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+      }
+    },
+    {
+      "file": "rosters/04-bsb-border-patrols-illegal.ros",
+      "description": "Ein Orc Bigboss mit genau einer BSB-Aufwertung plus die Force-Selektion Border Patrols rules. In-world verbietet Border Patrols den BSB (Modifier setzt die Kategorie-Force-Grenze 2a1d auf 0). Diese KATEGORIE-skopierte Ausnahme erscheint NICHT als zaehlende Verletzung; der eine BSB haelt zudem die eintrags-skopierten Grenzen (082b/01a5) ein.",
+      "expect": {
+        "firing": [],
+        "absent": ["082b-067c-b983-c393", "01a5-106d-f6e8-560b", "2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+      }
+    },
+    {
+      "file": "rosters/05-no-bsb-baseline.ros",
+      "description": "Ein Orc Bigboss ohne BSB. Grundlinie: der BSB ist optional (nur max-, keine min-Grenzen); bei Ist 0 feuert keine BSB-Zaehlgrenze.",
+      "expect": {
+        "firing": [],
+        "absent": ["082b-067c-b983-c393", "01a5-106d-f6e8-560b", "2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+      }
+    },
+    {
+      "file": "rosters/06-bsb-magic-standard-only-legal.ros",
+      "description": "Ein Orc Bigboss als BSB mit genau einer magischen Standarte (War Banner) und ohne weiteres Magie-Item. Legal: eine Standarte (max 1 der Magical-Standard-Gruppe) und ein BSB (max 1) — keine BSB-Zaehlgrenze feuert.",
+      "expect": {
+        "firing": [],
+        "absent": ["082b-067c-b983-c393", "01a5-106d-f6e8-560b", "2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+      }
+    },
+    {
+      "file": "rosters/07-bsb-magic-standard-plus-item-illegal.ros",
+      "description": "Ein Orc Bigboss als BSB mit magischer Standarte (War Banner) UND zusaetzlichem Magie-Item (Sword of Might). In-world unzulaessig, aber die Sperre ist als Verfuegbarkeit (Modifier set hidden=true auf der Magic-Items-Gruppe) modelliert, nicht als zaehlende Schranke — sie erscheint daher NICHT als BSB-Verletzung.",
+      "expect": {
+        "firing": [],
+        "absent": ["082b-067c-b983-c393", "01a5-106d-f6e8-560b", "2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+      }
+    }
+  ]
+}

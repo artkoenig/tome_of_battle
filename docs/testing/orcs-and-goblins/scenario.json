@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "name": "orcs-and-goblins",
+  "description": "Die im Spielsystem (.gst) definierten Pflichtregeln General (min 1, force) und Core (min 2, force) an der Orcs-and-Goblins-Armee, plus die kataloguebergreifende Aufloesung ueber Mercenaries: mit vollstaendiger Quelle loest alles auf; fehlt die per catalogueLink deklarierte Mercenaries-Abhaengigkeit, meldet der Auswerter MISSING_CATALOGUE_DEPENDENCY und der nur darueber erreichbare Pikemen-entryLink baumelt (DANGLING_ENTRY_LINK).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-empty-force.ros",
+      "description": "Leeres O&G-Kontingent, vollstaendige Quelle. General (min 1) und Core (min 2) feuern mit Ist 0; kein Verweis baumelt, keine fehlende Abhaengigkeit.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [],
+        "diagnostics": {
+          "absent": [
+            { "kind": "DANGLING_ENTRY_LINK" },
+            { "kind": "DANGLING_INFO_LINK" },
+            { "kind": "MISSING_CATALOGUE_DEPENDENCY" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-general-and-two-core.ros",
+      "description": "General-Aufwertung + zwei Core-Einheiten (Orc Boyz, Orc Arrer Boyz). Regelkonform: weder General- noch Core-Pflicht feuert (General-Ist 1, Core-Ist 2).",
+      "expect": {
+        "firing": [],
+        "absent": ["1077-7379-f142-f382", "35c2-d478-392a-aeb1"]
+      }
+    },
+    {
+      "file": "rosters/01-empty-force.ros",
+      "description": "Dasselbe leere Kontingent, aber ausgewertet OHNE die Mercenaries-Datei (Roster-dataset-Override). Der Auswerter meldet die fehlende Mercenaries-Abhaengigkeit; der nur darueber erreichbare Pikemen-Verweis baumelt — Hinweis, kein Absturz.",
+      "dataset": {
+        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "catalogues": [
+          "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat"
+        ]
+      },
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "diagnostics": {
+          "present": [
+            { "kind": "MISSING_CATALOGUE_DEPENDENCY", "targetId": "fc47-8392-a6c8-452a" },
+            { "kind": "DANGLING_ENTRY_LINK", "targetId": "f7d8-66b4-21ee-00dd" }
+          ]
+        }
+      }
+    }
+  ]
+}
