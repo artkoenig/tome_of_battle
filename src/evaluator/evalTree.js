@@ -94,9 +94,23 @@ function attachPhantom(parent, def, nextFrameId) {
   return node;
 }
 
+/**
+ * Liest die effektiven Basis-Limits einer Definition. Ein `entryLink` erbt
+ * Limits von seinem Ziel (`resolved`), eigene Limits ueberschreiben bei gleicher ID.
+ */
+function limitsOf(def) {
+  if (def.kind === DefinitionKind.ENTRY_LINK && def.resolved) {
+    const merged = new Map();
+    for (const limit of def.resolved.limits ?? []) merged.set(limit.id, limit);
+    for (const limit of def.limits ?? []) merged.set(limit.id, limit);
+    return Array.from(merged.values());
+  }
+  return def.limits ?? [];
+}
+
 /** True, wenn die Definition eine MIN-Grenze mit genau diesem Bezugsrahmen traegt. */
 function hasMinLimitInFrame(def, scope) {
-  return (def.limits ?? []).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
+  return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
 }
 
 /** Summe der Instanzanzahlen realer Knoten mit dieser Definitions-ID im Teilbaum. */
@@ -194,7 +208,7 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
 function* groupDefinitionsWithLimits(ownerDef) {
   for (const child of ownerDef.children ?? []) {
     if (child.kind !== DefinitionKind.GROUP) continue;
-    if ((child.limits ?? []).length > 0) yield child;
+    if (limitsOf(child).length > 0) yield child;
     yield* groupDefinitionsWithLimits(child);
   }
 }
@@ -329,7 +343,7 @@ export function* realNodes(root) {
 
 /** True, wenn die Definition irgendeine MIN-Grenze traegt. */
 function hasAnyMinLimit(def) {
-  return (def.limits ?? []).some(limit => limit.kind === ConstraintKind.MIN);
+  return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN);
 }
 
 /**

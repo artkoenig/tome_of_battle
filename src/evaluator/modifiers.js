@@ -304,10 +304,14 @@ export function applyAllModifiers(root, index, categoryIds, diagnostics, budget)
   const state = createBaseEffectiveState(root);
   for (const node of allNodes(root)) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
-    for (const modifier of node.def.modifiers ?? []) {
+    const targetModifiers = (node.def.kind === 'entryLink' && node.def.resolved?.modifiers) ? node.def.resolved.modifiers : [];
+    const linkModifiers = node.def.modifiers ?? [];
+    for (const modifier of [...targetModifiers, ...linkModifiers]) {
       applyModifier(ctx, state, node, modifier, diagnostics);
     }
-    for (const group of node.def.modifierGroups ?? []) {
+    const targetGroups = (node.def.kind === 'entryLink' && node.def.resolved?.modifierGroups) ? node.def.resolved.modifierGroups : [];
+    const linkGroups = node.def.modifierGroups ?? [];
+    for (const group of [...targetGroups, ...linkGroups]) {
       applyModifierGroup(ctx, state, node, group, diagnostics);
     }
   }
