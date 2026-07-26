@@ -91,6 +91,8 @@ function toCapability(node, results, effective) {
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  */
 export function buildReport(root, effective, results, diagnostics, budgetViolations = []) {
+
+
   const capabilities = new Map();
   for (const node of selectableSlotsOf(root)) {
     capabilities.set(pathOf(node), toCapability(node, results, effective));

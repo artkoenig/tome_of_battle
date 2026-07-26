@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<roster id="spear-halberd" name="02 - Spear Infantry and Halberds" battleScribeVersion="2.03" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Army of Sylvania" entryId="4072-c3b8-84c4-a097" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-skel" name="Skeletons" entryId="9ac2-f4c1-bcc3-3aee" number="1" type="unit">
+          <selections>
+            <selection id="sel-skel-model" name="Skeletons" entryId="eaa1-c6a6-9aae-ae9a" number="10" type="model">
+              <selections>
+                <selection id="sel-halberd" name="Halberds" entryId="d467-90c5-9aff-5988" number="1" type="upgrade" />
+                <selection id="sel-spear" name="Spear Infantry" entryId="29e7-8795-b6e9-d7a2" number="1" type="upgrade" />
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

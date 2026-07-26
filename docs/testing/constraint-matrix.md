@@ -28,13 +28,13 @@ Diese Matrix ordnet die im Projekt definierten XSD-Elemente (`constraint`, `cond
 | Attribut / Typ | Wert / Spezifikation | Bisher getestet in (Scenario) | Status |
 | :--- | :--- | :--- | :--- |
 | **type** | `instanceOf` | `explorer-modifier-constraints` | ✅ |
-| **type** | `lessThan` | *Vorkommen gefunden, ungetestet* | ❌ |
-| **type** | `greaterThan` | *Bisher kein expliziter E2E-Test gefunden* | ❌ |
-| **type** | `equalTo` | *Vorkommen gefunden (Budget-Limits, VC), ungetestet* | ❌ |
-| **type** | `notEqualTo` | *Bisher kein expliziter E2E-Test gefunden* | ❌ |
-| **type** | `atLeast` | *Vorkommen gefunden (Border Patrols), ungetestet* | ❌ |
-| **type** | `atMost` | *Bisher kein expliziter E2E-Test gefunden* | ❌ |
-| **type** | `notInstanceOf` | *Vorkommen gefunden (Mercenaries), ungetestet* | ❌ |
+| **type** | `lessThan` | `numeric-conditions` | ✅ |
+| **type** | `greaterThan` | `numeric-conditions` | ✅ |
+| **type** | `equalTo` | `numeric-conditions` | ✅ |
+| **type** | `notEqualTo` | `remaining-condition-types` | ✅ |
+| **type** | `atLeast` | `remaining-condition-types` | ✅ |
+| **type** | `atMost` | `remaining-condition-types` | ✅ |
+| **type** | `notInstanceOf` | `remaining-condition-types` | ✅ |
 | **childId** | `model` / Spezifische ID | `evaluator-bug-childid-model` | ✅ |
 | *(Conditions erben Scope, Field, etc. von QueryBase)* | - | - | - |
 

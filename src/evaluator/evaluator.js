@@ -128,5 +128,6 @@ export function evaluate(dataset, roster) {
     ...fixpointDiagnostics,
     ...constraintDiagnostics,
   ];
+
   return buildReport(root, effective, results, diagnostics, budgetViolations);
 }

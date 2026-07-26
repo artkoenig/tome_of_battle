@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<roster id="less-than-false" name="less-than-false" battleScribeVersion="2.03" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="f1" name="VC" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="lahmia" name="Bloodline of Clan Lahmia" entryId="4f07-e982-6665-70b7" number="1" type="upgrade"/>
+        <selection id="s1" name="Seduction, Domination, Transfix and Beguile." entryId="adfd-d46e-23ff-3d61" number="0" type="upgrade"/>
+      </selections>
+    </force>
+  </forces>
+</roster>

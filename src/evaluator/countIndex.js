@@ -94,7 +94,9 @@ function contributionOf(node, effective) {
  */
 function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
-  const targets = [null, node.def.id, ...effective.categoryIdsOf(node)];
+  const targets = [null, ...effective.categoryIdsOf(node)];
+  if (node.def.kind !== 'group') targets.push(node.def.id);
+  if (node.def.targetId) targets.push(node.def.targetId);
   if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
   if (node.def.type) targets.push(node.def.type);
   return Array.from(new Set(targets));

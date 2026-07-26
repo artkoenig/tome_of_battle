@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "remaining-condition-types",
+  "description": "Pins down modifier conditions using atLeast, which conditionally change the max limit of constraints. Specifically tests the mutual exclusion of Spear Infantry and Halberds on Skeletons using atLeast conditions.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-spear-infantry-only.ros",
+      "description": "Skeletons unit with only Spear Infantry selected. Halberds are not selected, so the atLeast constraint modifier doesn't fire, leaving the max bound of Spear Infantry at 1.",
+      "expect": {
+        "firing": [],
+        "absent": ["a54e-dfd7-e8d0-12a0", "8843-f59e-5761-bf09"]
+      }
+    },
+    {
+      "file": "rosters/02-spear-and-halberds-illegal.ros",
+      "description": "Skeletons unit with both Spear Infantry and Halberds selected. Both entries have a max constraint of 1, and each has a modifier with an 'atLeast' condition that sets the other's max bound to 0. Since both are present, both atLeast conditions are satisfied, modifying both bounds to 0 and triggering both max constraints.",
+      "expect": {
+        "firing": [
+          { "limitId": "a54e-dfd7-e8d0-12a0", "actual": 1, "bound": 0 },
+          { "limitId": "8843-f59e-5761-bf09", "actual": 1, "bound": 0 }
+        ],
+        "absent": []
+      }
+    }
+  ]
+}
