@@ -50,6 +50,7 @@ describe('mergeCatalogues: Aggregation mehrerer Dokumente zu einem Aggregat', ()
       categories: [],
       sharedEntries: [],
       infos: [],
+      profileTypes: [],
       diagnostics: [],
     });
   });

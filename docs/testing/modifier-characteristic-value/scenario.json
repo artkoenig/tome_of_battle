@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "name": "modifier-characteristic-value",
+  "description": "Merkmals-Modifikatoren: ein <modifier>, dessen field die Id eines <characteristicType> nennt, veraendert genau den Merkmalswert des Profils bzw. des Verweis-Vorkommens, an dem er haengt - und nur ihn. Roster 01/02 zeigen dieselbe Einheit mit nicht erfuellter bzw. erfuellter Bedingung (decrement auf Sv), Roster 03 zeigt vier Verweis-Vorkommen desselben geteilten Profils mit je eigenen set-Modifikatoren.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-ogre-no-light-armour.ros",
+      "description": "Soeldner-Einheit Ogres mit 3 Ogre-Modellen und Handwaffe, OHNE Leichte Ruestung. Die Bedingung des bedingten Sv-Modifikators (atLeast 1 Light Armour, scope=parent) haelt nicht; nur der unbedingte decrement 4 wirkt: Sv 11 - 4 = 7.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "0dad-7f3c-00e8-e07e",
+          "c80a-0bac-008c-d900"
+        ],
+        "capabilities": [
+          {
+            "defId": "ff8f-ce5a-d663-f9b4",
+            "characteristics": [
+              {
+                "carrierId": "6101-0a1c-96ef-09d6",
+                "typeId": "f1be-e66c-d5e1-673c",
+                "value": "7"
+              },
+              {
+                "carrierId": "6101-0a1c-96ef-09d6",
+                "typeId": "d4a9-0ed4-d041-e54b",
+                "value": "7"
+              },
+              {
+                "carrierId": "6101-0a1c-96ef-09d6",
+                "typeId": "f95b-da01-0578-3bdc",
+                "value": "3"
+              },
+              {
+                "carrierId": "6101-0a1c-96ef-09d6",
+                "typeId": "8712-f56f-5b22-a720",
+                "value": "4"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-ogre-light-armour.ros",
+      "description": "Dieselbe Einheit wie 01, zusaetzlich mit Leichter Ruestung. Jetzt haelt die Bedingung des bedingten Sv-Modifikators: Sv 11 - 1 - 4 = 6. Alle uebrigen Merkmale des Profils bleiben unveraendert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "0dad-7f3c-00e8-e07e",
+          "c80a-0bac-008c-d900"
+        ],
+        "capabilities": [
+          {
+            "defId": "ff8f-ce5a-d663-f9b4",
+            "characteristics": [
+              {
+                "carrierId": "6101-0a1c-96ef-09d6",
+                "typeId": "f1be-e66c-d5e1-673c",
+                "value": "6"
+              },
+              {
+                "carrierId": "6101-0a1c-96ef-09d6",
+                "typeId": "d4a9-0ed4-d041-e54b",
+                "value": "7"
+              },
+              {
+                "carrierId": "6101-0a1c-96ef-09d6",
+                "typeId": "f95b-da01-0578-3bdc",
+                "value": "3"
+              },
+              {
+                "carrierId": "6101-0a1c-96ef-09d6",
+                "typeId": "8712-f56f-5b22-a720",
+                "value": "4"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-amazons-infolink-profile.ros",
+      "description": "Anakonda's Amazons: vier Auswahl-Slots ziehen ueber vier verschiedene <infoLink>s dasselbe geteilte Profil 0db4-314f-7419-19d7 herein. Drei der Verweise tragen eigene set-Modifikatoren, der vierte keine. Jeder Modifikator wirkt nur auf sein eigenes Verweis-Vorkommen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "8626-3c7d-20c5-129b",
+          "bd7e-e5cf-c571-7659",
+          "d8f0-cec9-edf3-0fbe",
+          "0e94-6317-5852-6ba5",
+          "b883-c633-6422-0cbc",
+          "9e16-9834-5aaf-48a1"
+        ],
+        "capabilities": [
+          {
+            "defId": "6bf6-467b-2b6f-71fb",
+            "characteristics": [
+              {
+                "carrierId": "3645-5ebd-c72a-1ebb",
+                "typeId": "f95b-da01-0578-3bdc",
+                "value": "3"
+              },
+              {
+                "carrierId": "3645-5ebd-c72a-1ebb",
+                "typeId": "4a8b-0c8e-3daf-7901",
+                "value": "3"
+              },
+              {
+                "carrierId": "3645-5ebd-c72a-1ebb",
+                "typeId": "dfff-363e-f72a-5a59",
+                "value": "3"
+              },
+              {
+                "carrierId": "3645-5ebd-c72a-1ebb",
+                "typeId": "6b9f-c8fe-8998-27e3",
+                "value": "1"
+              },
+              {
+                "carrierId": "3645-5ebd-c72a-1ebb",
+                "typeId": "253a-9b00-4fde-8ac2",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "defId": "14b0-1d64-8f2c-4da2",
+            "characteristics": [
+              {
+                "carrierId": "4288-2e40-701a-b5ac",
+                "typeId": "f95b-da01-0578-3bdc",
+                "value": "5"
+              },
+              {
+                "carrierId": "4288-2e40-701a-b5ac",
+                "typeId": "4a8b-0c8e-3daf-7901",
+                "value": "5"
+              },
+              {
+                "carrierId": "4288-2e40-701a-b5ac",
+                "typeId": "dfff-363e-f72a-5a59",
+                "value": "5"
+              },
+              {
+                "carrierId": "4288-2e40-701a-b5ac",
+                "typeId": "6b9f-c8fe-8998-27e3",
+                "value": "3"
+              },
+              {
+                "carrierId": "4288-2e40-701a-b5ac",
+                "typeId": "253a-9b00-4fde-8ac2",
+                "value": "2"
+              },
+              {
+                "carrierId": "4288-2e40-701a-b5ac",
+                "typeId": "0e92-d038-82bf-fb41",
+                "value": "4"
+              },
+              {
+                "carrierId": "4288-2e40-701a-b5ac",
+                "typeId": "2d45-18fe-9eb3-b113",
+                "value": "7"
+              }
+            ]
+          },
+          {
+            "defId": "f43c-4825-7032-8043",
+            "characteristics": [
+              {
+                "carrierId": "cc45-7f67-1cbd-3b1a",
+                "typeId": "f95b-da01-0578-3bdc",
+                "value": "4"
+              },
+              {
+                "carrierId": "cc45-7f67-1cbd-3b1a",
+                "typeId": "4a8b-0c8e-3daf-7901",
+                "value": "3"
+              },
+              {
+                "carrierId": "cc45-7f67-1cbd-3b1a",
+                "typeId": "dfff-363e-f72a-5a59",
+                "value": "3"
+              },
+              {
+                "carrierId": "cc45-7f67-1cbd-3b1a",
+                "typeId": "6b9f-c8fe-8998-27e3",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "defId": "b7de-ebe9-8eb4-de58",
+            "characteristics": [
+              {
+                "carrierId": "8ce4-f9da-a2ec-ba16",
+                "typeId": "f95b-da01-0578-3bdc",
+                "value": "4"
+              },
+              {
+                "carrierId": "8ce4-f9da-a2ec-ba16",
+                "typeId": "dfff-363e-f72a-5a59",
+                "value": "3"
+              },
+              {
+                "carrierId": "8ce4-f9da-a2ec-ba16",
+                "typeId": "6b9f-c8fe-8998-27e3",
+                "value": "1"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

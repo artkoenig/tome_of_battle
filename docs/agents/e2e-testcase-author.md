@@ -97,6 +97,17 @@ and in `docs/testing/vampire-bloodlines/scenario.json`. In outline:
           { "limitId": "<constraint-id>", "actual": 0, "bound": 1, "count": 2 }
         ],
         "absent": ["<constraint-id>", "..."],
+        "capabilities": [
+          {
+            "defId": "<definition id of the slot>",
+            "path": "<slot path — only when the same definition occurs twice>",
+            "name": "<expected effective display name>",
+            "authorMessages": [{ "severity": "error|warning|info", "text": "<catalog text>" }],
+            "characteristics": [
+              { "carrierId": "<profile or infoLink id>", "typeId": "<characteristicType id>", "value": "<effective value>" }
+            ]
+          }
+        ],
         "diagnostics": {
           "present": [{ "kind": "<DiagnosticKind>", "targetId": "<id>", "minCount": 1 }],
           "absent": [{ "kind": "<DiagnosticKind>", "targetId": "<id>" }]
@@ -119,6 +130,23 @@ Key points of the contract:
   Optional `count` requires the limit to fire *exactly* that many times (one anchor
   per contingent, §7.7).
 - **`expect.absent`** lists limit-ids that MUST NOT fire.
+- **`expect.capabilities`** (optional) asserts what a single slot *is*, not only which
+  limits fire on it. A slot is named by its `defId` (add `path` only when the same
+  definition occurs more than once in the roster, otherwise the runner reports an
+  ambiguity). Per slot:
+  - **`name`** — the **effective** display name, i.e. after every `field="name"`
+    modifier that fires (`set` replaces it, `append`/`prepend` join with the
+    modifier's `join` attribute, or without a separator when it has none).
+  - **`authorMessages`** — the catalog's own messages at that slot, from
+    `type="add" field="error"|"warning"|"info"` modifiers. This assertion is
+    **complete** for that slot (order does not matter): `[]` demands that no author
+    message fires there. `text` is the catalog text verbatim.
+  - **`characteristics`** — effective characteristic values, as a **subset**: name
+    only the ones the scenario pins down. `carrierId` is the id of the element the
+    value belongs to — the `<profile>` itself, or the `<infoLink>` through which the
+    slot pulls a shared profile in. `typeId` is the `<characteristicType>` id from
+    the game system's `<profileTypes>`; the same id is what a characteristic
+    modifier names in its `field`.
 - **`expect.diagnostics`** (optional) asserts over `report.diagnostics`: `present`
   requires diagnostics of a given `DiagnosticKind` (optionally narrowed by
   `targetId`/`defId`, with a `minCount`), `absent` forbids them.

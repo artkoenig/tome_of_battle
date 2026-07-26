@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "name": "author-message-severity",
+  "description": "Autor-Meldungen des Katalogs (modifier type=\"add\" field=\"error\"/\"warning\"/\"info\"): haelt die Bedingung des Modifikators, liegt an der tragenden Auswahl eine Meldung mit dem Wortlaut aus dem value-Attribut und dem zugehoerigen Schweregrad an; haelt sie nicht, feuert an diesem Slot keine Meldung. Der Text bleibt unveraendert in Katalogsprache (kein Uebersetzen, kein Umformulieren). Abgedeckt sind alle drei Schweregrade: error (Skrag/Greasus, Ogre Kingdoms), warning (Bruiser, Ogre Kingdoms) und info (Vampire Fleet Captain, Vampire Counts).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-skrag-error-fires.ros",
+      "description": "Ogre-Kontingent Standard (OK-AB) mit Skrag the Slaughterer, aber OHNE die Auswahl 'Allow special characters?' (8923-5946-7b10-8957). Die Bedingung des error-Modifikators (lessThan 1, scope=force) haelt bei Ist 0 — an Skrags Slot liegt genau die eine Autor-Meldung mit Schweregrad error und dem Wortlaut aus dem value-Attribut an.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "82a9-0281-ffa1-2290",
+            "authorMessages": [
+              { "severity": "error", "text": "Please enable \"Allow special characters?\"" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-skrag-error-silent.ros",
+      "description": "Dasselbe Kontingent, zusaetzlich mit der Auswahl 'Allow special characters?'. Die Bedingung (lessThan 1, scope=force) haelt bei Ist 1 nicht mehr — an Skrags Slot feuert keine Autor-Meldung. Der Slot 'Allow special characters?' selbst traegt ueberhaupt keinen Meldungs-Modifikator und bleibt daher ebenfalls leer.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          { "defId": "82a9-0281-ffa1-2290", "authorMessages": [] },
+          { "defId": "8923-5946-7b10-8957", "authorMessages": [] }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-carriers-error-fires.ros",
+      "description": "Zwei Traeger derselben Meldung im selben Kontingent (Skrag und Greasus Goldtooth), weiterhin ohne 'Allow special characters?'. Die Meldung ist an den Slot gebunden, nicht an das Kontingent: beide Auswahlen tragen je genau eine error-Meldung mit demselben Wortlaut.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "82a9-0281-ffa1-2290",
+            "authorMessages": [
+              { "severity": "error", "text": "Please enable \"Allow special characters?\"" }
+            ]
+          },
+          {
+            "defId": "47f3-befb-e32e-0b4a",
+            "authorMessages": [
+              { "severity": "error", "text": "Please enable \"Allow special characters?\"" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-bruiser-warning-fires.ros",
+      "description": "Ogre-Kontingent mit Bruiser und der Auswahl 'Border Patrols rules' (4e15-0353-165f-5528). Die Bedingung der modifierGroup am Bruiser (atLeast 1, scope=roster) haelt — an Bruisers Slot liegt genau eine Autor-Meldung mit Schweregrad warning und dem unveraendert uebernommenen Wortlaut 'For Ogre Kingdoms, the max' an.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "d097-a3de-898f-91c8",
+            "authorMessages": [
+              { "severity": "warning", "text": "For Ogre Kingdoms, the max" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-bruiser-warning-silent.ros",
+      "description": "Dasselbe Kontingent nur mit dem Bruiser, ohne 'Border Patrols rules'. Die Bedingung der modifierGroup haelt bei Ist 0 nicht — an Bruisers Slot feuert keine Autor-Meldung.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          { "defId": "d097-a3de-898f-91c8", "authorMessages": [] }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-fleet-captain-info-fires.ros",
+      "description": "Vampire-Counts-Kontingent 'Vampire Coast (WD#306-UK)' mit Vampire Fleet Captain und 'Border Patrols rules'. Die Bedingung des info-Modifikators (atLeast 1, scope=force) haelt — an Fleet Captains Slot liegt genau eine Autor-Meldung mit Schweregrad info und dem vollstaendigen Katalogtext an.",
+      "dataset": {
+        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "catalogues": [
+          "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+        ]
+      },
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "cc50-6a0b-1c09-7d3e",
+            "authorMessages": [
+              { "severity": "info", "text": "Technically, Luthor Harkon, Arch Grand Commodore is mandatory. Since it would be illegal in Border Patrols, a house-rule allows to ignore it." }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/07-fleet-captain-info-silent.ros",
+      "description": "Dasselbe Kontingent nur mit dem Vampire Fleet Captain, ohne 'Border Patrols rules'. Die Bedingung haelt bei Ist 0 nicht — an Fleet Captains Slot feuert keine Autor-Meldung.",
+      "dataset": {
+        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "catalogues": [
+          "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+        ]
+      },
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          { "defId": "cc50-6a0b-1c09-7d3e", "authorMessages": [] }
+        ]
+      }
+    }
+  ]
+}

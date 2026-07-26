@@ -2,27 +2,47 @@
  * Modifikator-Schicht (`docs/evaluator-architecture.md` §3.4/§4.6).
  *
  * Pro Knoten werden seine **Bedingungen** (bool) und **Wiederholungen** (Anzahl)
- * ueber das Query-Primitiv (Slice 03) ausgewertet und dann die Modifikatoren
- * **strikt in Dokumentreihenfolge** auf eine frische Kopie der Basiswerte
- * angewendet. Ein Modifikator feuert nur, wenn **alle** seine Bedingungen **und
- * alle seine Bedingungsgruppen** halten; seine Wirkung wird mit dem Produkt der
+ * ueber das Query-Primitiv ausgewertet und dann die Modifikatoren **strikt in
+ * Dokumentreihenfolge** auf eine frische Kopie der Basiswerte angewendet. Ein
+ * Modifikator feuert nur, wenn **alle** seine Bedingungen **und alle** seine
+ * Bedingungsgruppen halten; seine Wirkung wird mit dem Produkt der
  * Wiederholungszahlen multipliziert. Eine Wiederholungszahl 0 laesst den
  * Modifikator inaktiv.
  *
- * **Gruppen (Slice 02).** Eine **Bedingungsgruppe** (`and`/`or`) verknuepft
- * Bedingungen und weitere Untergruppen rekursiv zu einem Wahrheitswert. Eine
- * **Modifikatorgruppe** buendelt Modifikatoren unter einer gemeinsamen
- * Gruppen-Bedingung: haelt sie, greifen alle enthaltenen Modifikatoren gemeinsam
- * (jeder weiterhin unter seinen eigenen Bedingungen), sonst gemeinsam keiner.
+ * **Gruppen.** Eine **Bedingungsgruppe** (`and`/`or`) verknuepft Bedingungen und
+ * weitere Untergruppen rekursiv zu einem Wahrheitswert. Eine **Modifikatorgruppe**
+ * buendelt Modifikatoren unter einer gemeinsamen Gruppen-Bedingung: haelt sie,
+ * greifen alle enthaltenen Modifikatoren gemeinsam (jeder weiterhin unter seinen
+ * eigenen Bedingungen), sonst gemeinsam keiner.
  *
- * Bedingung und Modifikator tragen ihre Art an den **kanonischen** BattleScribe-
- * SSOT-Enums: `condition.type` ({@link ConditionKind}) und `modifier.kind`
- * ({@link ModifierKind}). Beide Auswertungen liegen als **Handler-Registry** vor —
- * die eine bildet `ConditionKind`→Wahrheitswert ({@link COMPARATORS}), die andere
- * `ModifierKind`→Effekt ({@link MODIFIER_HANDLERS}). Ein Zwei-Wege-Vollstaendigkeits-
- * test (`enumHandlerCoverage.test.js`) haelt beide Registries mit der SSOT ehrlich.
- * Das aufgeloeste Ziel jedes Modifikators kommt als `TargetDescriptor` aus dem
- * Resolver (`modifier.target`).
+ * ── Traeger: Knoten *und* Info-Elemente ──────────────────────────────────────
+ * Ein Modifikator wirkt auf seinen **Traeger** — die Definition, an der er haengt.
+ * Das ist der Knoten selbst oder eines seiner Info-Elemente (Profil, Regel,
+ * Info-Gruppe, Info-Verweis), denn die `EntryBase` der BattleScribe-XSD gibt allen
+ * dieselben `modifiers`. Fachlich ist das der Normalfall und keine Ausnahme: in
+ * den Katalogdaten haengt **jeder** Charakteristik-Modifikator an einem Profil oder
+ * Info-Verweis, und ein `name`-Modifikator an einem Info-Verweis meint dessen
+ * Anzeigenamen, nicht den der Einheit. Ausgewertet werden die Bedingungen dabei
+ * immer im Query-Kontext des **tragenden Knotens** — nur er hat eine Position im
+ * Auswertungsbaum.
+ *
+ * ── Zwei-Ebenen-Registry statt Fallunterscheidung ────────────────────────────
+ * Bedingungs- und Modifikator-Auswertung liegen als Registry vor: die eine bildet
+ * `ConditionKind`→Wahrheitswert ({@link COMPARATORS}), die andere
+ * `ModifierKind`→(`ModifierTargetKind`→Effekt) ({@link MODIFIER_HANDLERS}). Damit
+ * ist eine gueltige Paarung ein Tabelleneintrag und eine ungueltige schlicht sein
+ * Fehlen — gemeldet als Diagnose, nie still verschluckt. Ein
+ * Zwei-Wege-Vollstaendigkeitstest (`enumHandlerCoverage.test.js`) haelt beide
+ * Registries mit der SSOT ehrlich.
+ *
+ * ── Grenzwerte entstehen als Kette ───────────────────────────────────────────
+ * Ein Modifikator auf eine **Grenze** schreibt nicht nur den neuen Zahlwert,
+ * sondern einen **Schritt seiner Herleitungskette**: Art, roher Wert,
+ * Wiederholungsfaktor, Zwischenwert, ob er bedingt war und — wenn ja — der
+ * **Zeuge**, also die benennbare Auswahl, deren Vorhandensein die Bedingung hat
+ * halten lassen (ADR-0027). Der Zeuge wird **hier** festgehalten, waehrend der
+ * Query-Kontext lebt; aus dem Endzustand liesse er sich nur durch eine zweite
+ * Rechenstelle rekonstruieren (ADR-0034).
  *
  * **Ein Durchlauf, zwei Aufrufer.** Die Konvergenzschleife selbst liegt in
  * `fixpoint.js`, nicht hier. Diese Datei kennt nur den **knotenmengen-bezogenen
@@ -36,14 +56,14 @@
 import {
   ConditionKind,
   ConditionGroupKind,
+  CountedFieldKind,
   ModifierKind,
   ModifierTargetKind,
   DiagnosticKind,
   UNRESOLVED_BUDGET,
   diagnostic,
-  isLinkDefinition,
 } from './model.js';
-import { allNodes } from './evalTree.js';
+import { allNodes, infoCarriersOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { createBaseEffectiveState } from './effectiveState.js';
 
@@ -52,6 +72,16 @@ const SINGLE_APPLICATION = 1;
 
 /** Der `value`-Text, den ein boolesches Ziel (`hidden`) als "wahr" liest. */
 const BOOLEAN_TRUE = 'true';
+
+/** Ohne `join`-Attribut werden Texte ohne Trennzeichen aneinandergefuegt. */
+const NO_JOIN = '';
+
+/**
+ * Das **Gate** eines Modifikators: ob er unter einer Bedingung stand und welche
+ * Bedingungen das waren. Es waechst beim Abstieg in eine Modifikatorgruppe, weil
+ * deren Bedingung fuer alle enthaltenen Modifikatoren mitgilt.
+ */
+const UNCONDITIONAL_GATE = Object.freeze({ isConditional: false, conditions: Object.freeze([]) });
 
 /**
  * Registry `ConditionKind → Vergleichspraedikat` (`docs/evaluator-architecture.md`
@@ -153,58 +183,168 @@ function conditionsAndGroupsHold(ctx, conditions, conditionGroups) {
     && conditionGroups.every(group => conditionGroupHolds(ctx, group));
 }
 
-/** Meldet eine ungueltige Kind/Ziel-Paarung als Diagnose (nie still verschluckt). */
-function reportInvalidPairing(kind, target, diagnostics) {
-  diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { modifierKind: kind, targetKind: target.kind }));
+// ── Zeuge einer erfuellten Bedingung (ADR-0027) ───────────────────────────────
+
+/**
+ * Der **Zeuge** einer Bedingung: die benennbare Auswahl, deren Vorhandensein sie
+ * hat halten lassen — `null`, wenn es keine gibt.
+ *
+ * Zwei Voraussetzungen, beide bewusst eng (ADR-0027, „Ehrlichkeit vor
+ * Vollstaendigkeit"): die Bedingung muss auf eine **benennbare Auswahl** zielen
+ * (der Resolver haelt sie als `condition.witnessDefinition` fest; eine Kostenschwelle
+ * oder ein Kategorie-Ziel hat keine), und diese Auswahl muss im Rahmen der Bedingung
+ * **tatsaechlich gezaehlt** worden sein. Eine Bedingung, die gerade wegen der
+ * *Abwesenheit* einer Auswahl haelt, erzeugt keinen Zeugen.
+ *
+ * Der Name ist der **Katalogname der Definition**, nicht der effektive Name einer
+ * Instanz: die Bedingung benennt eine Definition, und bei mehreren gezaehlten
+ * Instanzen gaebe es keinen eindeutigen effektiven Namen. Lieber die belegbare
+ * Angabe als eine willkuerlich ausgewaehlte.
+ */
+function witnessOfCondition(ctx, condition) {
+  const definition = condition.witnessDefinition ?? null;
+  if (definition === null) return null;
+  if (condition.field.kind !== CountedFieldKind.SELECTION_COUNT) return null;
+  // Die Zaehlung wurde fuer die Feuer-Entscheidung bereits ausgewertet; hier wird
+  // sie allein zum Nachweis der Anwesenheit erneut gelesen. Ihre Diagnosen sind
+  // dabei schon gemeldet, deshalb laeuft sie gegen eine Wegwerf-Sammelliste —
+  // sonst erschiene dieselbe Meldung doppelt.
+  const counted = query({ ...ctx, diagnostics: [] }, condition.field, condition.scope, condition.targetChildId, condition.flags);
+  if (counted === UNRESOLVED_BUDGET || counted <= 0) return null;
+  return Object.freeze({ defId: definition.id, name: definition.name ?? definition.resolved?.name ?? null });
+}
+
+/** Der erste benennbare Zeuge unter den Bedingungen, die den Modifikator haben feuern lassen. */
+function witnessOf(ctx, conditions) {
+  for (const condition of conditions) {
+    const witness = witnessOfCondition(ctx, condition);
+    if (witness !== null) return witness;
+  }
+  return null;
+}
+
+// ── Zugriffspfade je Ziel: was ein Handler liest und schreibt ─────────────────
+
+/** Kosten des Knotens (Kostenart per ID). */
+const COST_ACCESS = Object.freeze({
+  read: application => application.state.currentCost(application.node, application.target.id),
+  write: (application, value) => application.state.writeCost(application.node, application.target.id, value),
+});
+
+/**
+ * Grenzwert des Knotens (Grenze per ID). Der Schreibpfad legt zugleich den
+ * **Kettenschritt** an — den Wert ohne seinen Schritt zu setzen ist gar nicht
+ * moeglich, sodass Wert und Herleitung nicht auseinanderlaufen koennen.
+ */
+const LIMIT_ACCESS = Object.freeze({
+  read: application => application.state.currentLimitValue(application.node, application.target.id),
+  write: (application, value) => application.state.writeLimitValue(application.node, application.target.id, value, {
+    kind: application.kind,
+    rawValue: application.rawValue,
+    times: application.times,
+    isConditional: application.isConditional,
+    witness: application.witness,
+  }),
+});
+
+/** Merkmalswert am Traeger (Charakteristik-Typ per ID). */
+const CHARACTERISTIC_ACCESS = Object.freeze({
+  read: application => application.state.characteristicValue(application.node, application.carrier, application.target.id),
+  write: (application, value) =>
+    application.state.writeCharacteristic(application.node, application.carrier, application.target.id, value),
+});
+
+/** Anzeigename des Traegers. */
+const NAME_ACCESS = Object.freeze({
+  read: application => application.state.nameOf(application.node, application.carrier),
+  write: (application, value) => application.state.writeName(application.node, application.carrier, value),
+});
+
+// ── Handler-Fabriken: eine Wirkung, beliebige Zugriffspfade ───────────────────
+
+/** Meldet einen Wert, mit dem die Modifikator-Art nicht rechnen kann (nie still verschluckt). */
+function reportNonNumeric(application, value) {
+  application.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, {
+    kind: application.kind,
+    targetKind: application.target.kind,
+    targetId: application.target.id,
+    value,
+  }));
+}
+
+/** Der rohe `value` als Zahl, oder `null` samt Diagnose. */
+function numericOperandOf(application) {
+  const operand = Number.parseFloat(application.rawValue);
+  if (Number.isNaN(operand)) {
+    reportNonNumeric(application, application.rawValue);
+    return null;
+  }
+  return operand;
 }
 
 /**
- * Baut einen numerischen Handler: er parst den rohen `value`, wendet `combine`
- * auf den aktuellen effektiven Wert an und schreibt das Ergebnis in Kosten oder
- * Grenzwert. Ein nicht-numerischer `value` oder ein nicht-numerisches Ziel
- * (Kategorie/Sichtbarkeit/Hinweis) ist eine ungueltige Paarung — Diagnose.
+ * Baut einen **numerischen** Handler: er parst den rohen `value`, verknuepft ihn
+ * ueber `combine` mit dem aktuellen effektiven Wert und schreibt das Ergebnis
+ * ueber den Zugriffspfad des Ziels zurueck. Weder ein nicht-numerischer `value`
+ * noch ein nicht-numerischer Ist-Wert wird still uebergangen.
  */
-function numericHandler(combine) {
-  return (state, node, target, rawValue, times, diagnostics) => {
-    const value = Number.parseFloat(rawValue);
-    if (Number.isNaN(value)) {
-      diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { targetId: target.id, value: rawValue }));
+function numericHandler(combine, access, toStored = value => value) {
+  return application => {
+    const operand = numericOperandOf(application);
+    if (operand === null) return;
+    const current = Number.parseFloat(access.read(application));
+    if (Number.isNaN(current)) {
+      reportNonNumeric(application, access.read(application));
       return;
     }
-    if (target.kind === ModifierTargetKind.COST) {
-      state.writeCost(node, target.id, combine(state.currentCost(node, target.id), value, times));
-    } else if (target.kind === ModifierTargetKind.LIMIT) {
-      state.writeLimitValue(node, target.id, combine(state.currentLimitValue(node, target.id), value, times));
-    } else {
-      reportInvalidPairing('numeric', target, diagnostics);
-    }
+    access.write(application, toStored(combine(current, operand, application.times)));
   };
 }
 
-const setNumeric = numericHandler((current, value) => value);
-const addValue = numericHandler((current, value, times) => current + value * times);
-const subtractValue = numericHandler((current, value, times) => current - value * times);
-const multiplyValue = numericHandler((current, value, times) => current * value ** times);
+/** Baut einen Handler, der den rohen `value` als Text setzt (Namen, Merkmalswerte). */
+function textSetHandler(access) {
+  return application => access.write(application, application.rawValue);
+}
 
-/** `set` schaltet die Sichtbarkeit (`field="hidden"`) oder setzt einen numerischen Wert. */
-function setHandler(state, node, target, rawValue, times, diagnostics) {
-  if (target.kind === ModifierTargetKind.HIDDEN) {
-    state.setHidden(node, rawValue === BOOLEAN_TRUE);
-    return;
-  }
-  setNumeric(state, node, target, rawValue, times, diagnostics);
+/**
+ * Baut einen Handler, der den rohen `value` mit dem vorhandenen Text verbindet —
+ * getrennt durch das `join`-Attribut des Modifikators (vendored, ADR-0016). Gibt es
+ * noch keinen Text, steht der neue allein: ein fuehrendes Trennzeichen waere ein
+ * Darstellungsfehler, kein Katalogwille.
+ */
+function textJoinHandler(access, order) {
+  return application => {
+    const current = access.read(application);
+    const separator = application.join ?? NO_JOIN;
+    const hasText = current !== null && current !== undefined && current !== '';
+    access.write(application, hasText ? order(current, separator, application.rawValue) : application.rawValue);
+  };
+}
+
+/** Setzt die Sichtbarkeit des Traegers (`field="hidden"`). */
+function hiddenHandler(application) {
+  application.state.setHidden(application.node, application.carrier, application.rawValue === BOOLEAN_TRUE);
+}
+
+/** Haengt eine Autor-Meldung mit dem Schweregrad ihres Ziels an den Knoten an. */
+function messageHandler(application) {
+  application.state.appendAuthorMessage(application.node, application.target.id, application.rawValue);
 }
 
 /** Baut einen Kategorie-Handler: die Kategorie-ID steht im rohen `value`. */
 function categoryHandler(mutate) {
-  return (state, node, target, rawValue, times, diagnostics) => {
-    if (target.kind !== ModifierTargetKind.CATEGORY) {
-      reportInvalidPairing('category', target, diagnostics);
-      return;
-    }
-    mutate(state, node, rawValue);
-  };
+  return application => mutate(application.state, application.node, application.rawValue);
 }
+
+const setValue = (current, operand) => operand;
+const addValue = (current, operand, times) => current + operand * times;
+const subtractValue = (current, operand, times) => current - operand * times;
+const multiplyValue = (current, operand, times) => current * operand ** times;
+
+const asText = value => String(value);
+
+const appendOrder = (current, separator, value) => `${current}${separator}${value}`;
+const prependOrder = (current, separator, value) => `${value}${separator}${current}`;
 
 const addCategory = categoryHandler((state, node, categoryId) => state.addCategory(node, categoryId));
 const removeCategory = categoryHandler((state, node, categoryId) => state.removeCategory(node, categoryId));
@@ -216,58 +356,125 @@ const removeCategory = categoryHandler((state, node, categoryId) => state.remove
 const setPrimaryCategory = categoryHandler((state, node, categoryId) => state.addCategory(node, categoryId));
 const unsetPrimaryCategory = categoryHandler(() => {});
 
-/** Haengt einen Hinweistext an. Ordnung (append vs prepend) ist reine Anzeige. */
-function noteHandler(state, node, target, rawValue, times, diagnostics) {
-  if (target.kind !== ModifierTargetKind.NOTE) {
-    reportInvalidPairing('note', target, diagnostics);
-    return;
-  }
-  state.appendNote(node, rawValue);
-}
-
 /**
- * Registry `ModifierKind → Effekt` (`docs/evaluator-architecture.md` §4.1/§4.6).
- * Jeder SSOT-Wert hat genau einen Handler; ein Handler bildet die Modifikator-Art
- * auf ihre Wirkung am {@link ModifierTargetKind aufgeloesten Ziel} ab. Der
- * Zwei-Wege-Vollstaendigkeitstest sichert die Deckungsgleichheit mit der SSOT.
+ * Registry `ModifierKind → (ModifierTargetKind → Effekt)`
+ * (`docs/evaluator-architecture.md` §4.1/§4.6). Jeder SSOT-Wert hat genau einen
+ * Eintrag; die innere Tabelle sagt, auf welche Ziele diese Art wirkt und wie. Eine
+ * fehlende Paarung ist damit kein vergessener `else`-Zweig, sondern eine Luecke,
+ * die die Anwendung als Diagnose meldet.
+ *
+ * `set` ist auf einem Merkmal und einem Namen bewusst **kein** Zahl-, sondern ein
+ * Textzuweiser: die Katalogdaten setzen damit Werte wie `5+` oder `24"`, die ein
+ * Zahl-Parser verstuemmeln wuerde.
  */
 export const MODIFIER_HANDLERS = Object.freeze({
-  [ModifierKind.SET]: setHandler,
-  [ModifierKind.INCREMENT]: addValue,
-  [ModifierKind.DECREMENT]: subtractValue,
-  [ModifierKind.MULTIPLY]: multiplyValue,
-  [ModifierKind.ADD]: addCategory,
-  [ModifierKind.REMOVE]: removeCategory,
-  [ModifierKind.SET_PRIMARY]: setPrimaryCategory,
-  [ModifierKind.UNSET_PRIMARY]: unsetPrimaryCategory,
-  [ModifierKind.APPEND]: noteHandler,
-  [ModifierKind.PREPEND]: noteHandler,
+  [ModifierKind.SET]: Object.freeze({
+    [ModifierTargetKind.COST]: numericHandler(setValue, COST_ACCESS),
+    [ModifierTargetKind.LIMIT]: numericHandler(setValue, LIMIT_ACCESS),
+    [ModifierTargetKind.HIDDEN]: hiddenHandler,
+    [ModifierTargetKind.NAME]: textSetHandler(NAME_ACCESS),
+    [ModifierTargetKind.CHARACTERISTIC]: textSetHandler(CHARACTERISTIC_ACCESS),
+  }),
+  [ModifierKind.INCREMENT]: Object.freeze({
+    [ModifierTargetKind.COST]: numericHandler(addValue, COST_ACCESS),
+    [ModifierTargetKind.LIMIT]: numericHandler(addValue, LIMIT_ACCESS),
+    [ModifierTargetKind.CHARACTERISTIC]: numericHandler(addValue, CHARACTERISTIC_ACCESS, asText),
+  }),
+  [ModifierKind.DECREMENT]: Object.freeze({
+    [ModifierTargetKind.COST]: numericHandler(subtractValue, COST_ACCESS),
+    [ModifierTargetKind.LIMIT]: numericHandler(subtractValue, LIMIT_ACCESS),
+    [ModifierTargetKind.CHARACTERISTIC]: numericHandler(subtractValue, CHARACTERISTIC_ACCESS, asText),
+  }),
+  [ModifierKind.MULTIPLY]: Object.freeze({
+    [ModifierTargetKind.COST]: numericHandler(multiplyValue, COST_ACCESS),
+    [ModifierTargetKind.LIMIT]: numericHandler(multiplyValue, LIMIT_ACCESS),
+    [ModifierTargetKind.CHARACTERISTIC]: numericHandler(multiplyValue, CHARACTERISTIC_ACCESS, asText),
+  }),
+  [ModifierKind.ADD]: Object.freeze({
+    [ModifierTargetKind.CATEGORY]: addCategory,
+    [ModifierTargetKind.MESSAGE]: messageHandler,
+  }),
+  [ModifierKind.REMOVE]: Object.freeze({
+    [ModifierTargetKind.CATEGORY]: removeCategory,
+  }),
+  [ModifierKind.SET_PRIMARY]: Object.freeze({
+    [ModifierTargetKind.CATEGORY]: setPrimaryCategory,
+  }),
+  [ModifierKind.UNSET_PRIMARY]: Object.freeze({
+    [ModifierTargetKind.CATEGORY]: unsetPrimaryCategory,
+  }),
+  [ModifierKind.APPEND]: Object.freeze({
+    [ModifierTargetKind.NAME]: textJoinHandler(NAME_ACCESS, appendOrder),
+    [ModifierTargetKind.CHARACTERISTIC]: textJoinHandler(CHARACTERISTIC_ACCESS, appendOrder),
+  }),
+  [ModifierKind.PREPEND]: Object.freeze({
+    [ModifierTargetKind.NAME]: textJoinHandler(NAME_ACCESS, prependOrder),
+    [ModifierTargetKind.CHARACTERISTIC]: textJoinHandler(CHARACTERISTIC_ACCESS, prependOrder),
+  }),
 });
 
 /**
  * Wendet einen feuernden Modifikator mit gegebenem Wiederholungsfaktor auf die
- * effektive Kopie an. Ein Faktor 0 laesst alles unveraendert (inaktiv); ein
- * baumelndes Ziel (`target === null`, im Resolver bereits als Diagnose gemeldet)
- * wird stumm uebersprungen.
+ * effektive Kopie an. Ein baumelndes oder nicht deutbares Ziel (`target === null`,
+ * im Resolver bereits als Diagnose gemeldet) wird stumm uebersprungen; eine
+ * ungueltige Art/Ziel-Paarung wird hier gemeldet.
  */
-function applyOperation(state, node, modifier, times, diagnostics) {
-  if (times === 0 || modifier.target === null) return;
-  const handler = MODIFIER_HANDLERS[modifier.kind];
-  if (handler === undefined) {
+function applyOperation(scope, modifier, times, isConditional, witness) {
+  const diagnostics = scope.ctx.diagnostics;
+  const handlersByTarget = MODIFIER_HANDLERS[modifier.kind];
+  if (handlersByTarget === undefined) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { kind: modifier.kind }));
     return;
   }
-  handler(state, node, modifier.target, modifier.value, times, diagnostics);
+  const handler = handlersByTarget[modifier.target.kind];
+  if (handler === undefined) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, {
+      modifierKind: modifier.kind,
+      targetKind: modifier.target.kind,
+    }));
+    return;
+  }
+  handler({
+    state: scope.state,
+    node: scope.node,
+    carrier: scope.carrier,
+    target: modifier.target,
+    kind: modifier.kind,
+    rawValue: modifier.value,
+    join: modifier.join,
+    times,
+    isConditional,
+    witness,
+    diagnostics,
+  });
 }
 
 /**
  * Wendet **einen** Modifikator an, wenn alle seine Bedingungen und
  * Bedingungsgruppen halten. Die Wirkung wird mit seinem Wiederholungsfaktor
- * multipliziert.
+ * multipliziert; ein Faktor 0 laesst alles unveraendert (inaktiv).
+ *
+ * Zielt der Modifikator auf eine **Grenze** und stand er unter einer Bedingung,
+ * wird zusaetzlich sein Zeuge bestimmt — nur dann, denn nur der Grenzwert traegt
+ * eine Herleitungskette (`design.md`: „Nur fuer Grenzwerte, nicht fuer Kosten,
+ * Kategorien oder Namen").
  */
-function applyModifier(ctx, state, node, modifier, diagnostics) {
-  if (!conditionsAndGroupsHold(ctx, modifier.conditions, modifier.conditionGroups ?? [])) return;
-  applyOperation(state, node, modifier, modifierTimes(ctx, modifier), diagnostics);
+function applyModifier(scope, modifier, gate) {
+  const conditionGroups = modifier.conditionGroups ?? [];
+  if (!conditionsAndGroupsHold(scope.ctx, modifier.conditions, conditionGroups)) return;
+  const times = modifierTimes(scope.ctx, modifier);
+  if (times === 0 || modifier.target === null) return;
+
+  const isConditional = gate.isConditional || modifier.conditions.length > 0 || conditionGroups.length > 0;
+  const tracksWitness = isConditional && modifier.target.kind === ModifierTargetKind.LIMIT;
+  const witness = tracksWitness ? witnessOf(scope.ctx, [...modifier.conditions, ...gate.conditions]) : null;
+  applyOperation(scope, modifier, times, isConditional, witness);
+}
+
+/** Das Gate einer Modifikatorgruppe: das des Aufrufers, erweitert um ihre eigene Bedingung. */
+function gateWithin(gate, group) {
+  if (group.conditions.length === 0 && group.conditionGroups.length === 0) return gate;
+  return { isConditional: true, conditions: [...gate.conditions, ...group.conditions] };
 }
 
 /**
@@ -281,21 +488,44 @@ function applyModifier(ctx, state, node, modifier, diagnostics) {
  * rekursiven Bedingungsgruppen-Auswertung ({@link conditionGroupHolds},
  * `design.md`, Kontrakt `ModifierGroupDef`).
  */
-function applyModifierGroup(ctx, state, node, group, diagnostics) {
-  if (!conditionsAndGroupsHold(ctx, group.conditions, group.conditionGroups)) return;
+function applyModifierGroup(scope, group, gate) {
+  if (!conditionsAndGroupsHold(scope.ctx, group.conditions, group.conditionGroups)) return;
+  const innerGate = gateWithin(gate, group);
   for (const modifier of group.modifiers) {
-    applyModifier(ctx, state, node, modifier, diagnostics);
+    applyModifier(scope, modifier, innerGate);
   }
   for (const nestedGroup of group.modifierGroups ?? []) {
-    applyModifierGroup(ctx, state, node, nestedGroup, diagnostics);
+    applyModifierGroup(scope, nestedGroup, innerGate);
+  }
+}
+
+/**
+ * Die Modifikatoren (bzw. Modifikatorgruppen) eines Traegers in Wirkreihenfolge:
+ * die vom Verweisziel **geerbten** zuerst, danach die **eigenen**, sodass eigene
+ * Angaben die geerbten ueberschreiben. Dieselbe Erb-Regel wie bei den Grenzen
+ * ({@link limitsOf}) — und sie gilt fuer jeden Verweis, den Info-Verweis
+ * eingeschlossen: er ist das Vorkommen des verlinkten Profils an diesem Knoten.
+ */
+function inheritedThenOwn(subject, listName) {
+  return [...(subject.resolved?.[listName] ?? []), ...(subject[listName] ?? [])];
+}
+
+/** Wendet alle Modifikatoren **eines** Traegers in Dokumentreihenfolge an. */
+function applyCarrierModifiers(scope, subject) {
+  for (const modifier of inheritedThenOwn(subject, 'modifiers')) {
+    applyModifier(scope, modifier, UNCONDITIONAL_GATE);
+  }
+  for (const group of inheritedThenOwn(subject, 'modifierGroups')) {
+    applyModifierGroup(scope, group, UNCONDITIONAL_GATE);
   }
 }
 
 /**
  * Der **Einstieg der Modifikator-Schicht**: wendet alle Modifikatoren einer
  * Knotenmenge gegen einen Zaehlindex auf einen gegebenen Zustand an. Je Knoten
- * greifen zuerst seine eigenstaendigen Modifikatoren (in Dokumentreihenfolge), dann
- * seine Modifikatorgruppen.
+ * greifen zuerst seine eigenen Modifikatoren (in Dokumentreihenfolge), dann die
+ * seiner Info-Elemente — jeder mit seinem Traeger, aber alle im Query-Kontext des
+ * Knotens.
  *
  * Knotenmenge und Zustand kommen von aussen, weil die Auswertung sie **zweimal
  * verschieden** braucht — und beide Male dieselbe Implementierung benutzen soll
@@ -320,15 +550,9 @@ function applyModifierGroup(ctx, state, node, group, diagnostics) {
 export function applyModifiersOfNodes(nodes, state, { root, index, categoryIds, diagnostics, budget }) {
   for (const node of nodes) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
-    const targetModifiers = isLinkDefinition(node.def) ? node.def.resolved?.modifiers ?? [] : [];
-    const linkModifiers = node.def.modifiers ?? [];
-    for (const modifier of [...targetModifiers, ...linkModifiers]) {
-      applyModifier(ctx, state, node, modifier, diagnostics);
-    }
-    const targetGroups = isLinkDefinition(node.def) ? node.def.resolved?.modifierGroups ?? [] : [];
-    const linkGroups = node.def.modifierGroups ?? [];
-    for (const group of [...targetGroups, ...linkGroups]) {
-      applyModifierGroup(ctx, state, node, group, diagnostics);
+    applyCarrierModifiers({ ctx, state, node, carrier: node }, node.def);
+    for (const carrier of infoCarriersOf(node.def)) {
+      applyCarrierModifiers({ ctx, state, node, carrier }, carrier);
     }
   }
 }

@@ -68,6 +68,12 @@ function evaluateLimit(limit, node, effective, ctx) {
     bound,
     satisfied,
     delta: bound - actual,
+    // Die **Herleitung** des Grenzwerts, unveraendert durchgereicht: diese Schicht
+    // deutet sie nicht, sie stellt sie nur bereit (die Ursachen nach ADR-0027 sind
+    // eine Filterung dieser Kette). Bei einer Prozentgrenze beschreibt sie den
+    // Prozentsatz — die Groesse, auf die ein Modifikator wirkt —, nicht den daraus
+    // abgeleiteten Grenzwert.
+    derivation: effective.limitDerivation(node, limit.id),
   };
 }
 

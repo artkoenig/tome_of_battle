@@ -56,6 +56,8 @@ describe('MIN-Grenzen (Selektionsanzahl)', () => {
       actual: under,
       bound: MIN_WARRIORS,
       delta: MIN_WARRIORS - under,
+      // Unveraenderter Grenzwert: die Herleitung besteht nur aus ihrem Basiswert.
+      derivation: { base: MIN_WARRIORS, steps: [] },
     });
   });
 
@@ -106,6 +108,7 @@ describe('Grenzen ueber Kostensummen (Kostenart per ID)', () => {
       actual: WARRIOR_POINTS * count,
       bound: MAX_POINTS,
       delta: MAX_POINTS - WARRIOR_POINTS * count,
+      derivation: { base: MAX_POINTS, steps: [] },
     });
   });
 
@@ -147,6 +150,9 @@ describe('Prozentgrenzen (aus dem Nenner des Bezugsrahmens abgeleitet)', () => {
       actual: 3,
       bound: 2,
       delta: -1,
+      // Bei einer Prozentgrenze beschreibt die Herleitung den **Prozentsatz** (50),
+      // nicht den daraus abgeleiteten Grenzwert (2) — auf ihn wirkt ein Modifikator.
+      derivation: { base: 50, steps: [] },
     });
   });
 

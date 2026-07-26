@@ -41,6 +41,20 @@
  *             //          feuert.
  *           ],
  *           "absent": ["<constraint-id>", ...],   // Grenzen, die NICHT feuern duerfen
+ *           "capabilities": [                     // OPTIONAL: Aussagen ueber einen Slot
+ *             {
+ *               "defId": "<Definitions-ID des Slots>",   // Pflicht; muss im Roster eindeutig sein
+ *               "path": "<Slot-Pfad>"?,                  // nur noetig, wenn dieselbe Definition
+ *                                                        // mehrfach im Roster steht
+ *               "name": "<effektiver Anzeigename>"?,     // nach allen Namens-Modifikatoren
+ *               "authorMessages": [                      // die Autor-Meldungen des Slots,
+ *                 { "severity": "error|warning|info", "text": "<Katalogtext>" }
+ *               ]?,                                      // VOLLSTAENDIG: [] fordert „keine"
+ *               "characteristics": [                     // TEILMENGE: nur die genannten Merkmale
+ *                 { "carrierId": "<profile- oder infoLink-Id>", "typeId": "<characteristicType-Id>", "value": "<effektiver Wert>" }
+ *               ]?
+ *             }
+ *           ],
  *           "diagnostics": {                      // OPTIONAL: Aussagen ueber `report.diagnostics`
  *             "present": [                         // Diagnosen, die auftreten MUESSEN
  *               { "kind": "<DiagnosticKind-Schluessel>", "targetId": "<id>"?, "defId": "<id>"?, "minCount": <n>? }
@@ -58,10 +72,13 @@
  *     ]
  *   }
  *
- * Die Erwartung ist **selektiv**, nicht erschoepfend: ueber die in `firing`/`absent`
- * bzw. `diagnostics.present`/`diagnostics.absent` genannten Ids/Arten hinaus macht sie
- * keine Aussage. Andere Armeeaufbau-Diagnosen (General-/Core-Pflicht, Punktelimit,
- * weitere Diagnose-Arten) duerfen zusaetzlich auftreten, ohne einen Fall zu brechen.
+ * Die Erwartung ist **selektiv**, nicht erschoepfend: ueber die in `firing`/`absent`,
+ * `capabilities` bzw. `diagnostics.present`/`diagnostics.absent` genannten Ids/Arten
+ * hinaus macht sie keine Aussage. Andere Armeeaufbau-Diagnosen (General-/Core-Pflicht,
+ * Punktelimit, weitere Diagnose-Arten) duerfen zusaetzlich auftreten, ohne einen Fall
+ * zu brechen. Innerhalb *eines* genannten Slots gilt das feiner: `name` ist eine
+ * Gleichheit, `authorMessages` eine vollstaendige (aber reihenfolge-freie) Aussage
+ * ueber die Meldungen dieses Slots, `characteristics` eine Teilmengen-Aussage.
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -167,6 +184,46 @@ function assertViolationsMatchExpectation(report, expectation) {
 }
 
 /**
+ * Der eine Faehigkeitsdatensatz, den eine Slot-Erwartung meint. Die Definitions-ID
+ * benennt ihn fachlich; steht dieselbe Definition mehrfach im Roster, engt der
+ * optionale `path` ein. Bleibt es mehrdeutig oder findet sich nichts, ist das ein
+ * Manifest-Fehler mit klarer Meldung — nicht ein stillschweigend gewaehlter Slot.
+ */
+function capabilityForExpectation(report, spec, manifestPath) {
+  const matches = [...report.capabilities]
+    .filter(([path, capability]) => capability.defId === spec.defId && (spec.path === undefined || spec.path === path));
+
+  assertManifest(matches.length > 0, manifestPath,
+    `capabilities: kein Slot mit defId "${spec.defId}"${spec.path === undefined ? '' : ` am Pfad "${spec.path}"`}.`);
+  assertManifest(matches.length === 1, manifestPath,
+    `capabilities: defId "${spec.defId}" ist mehrdeutig (Pfade: ${matches.map(([path]) => path).join(', ')}); "path" ergaenzen.`);
+
+  return matches[0][1];
+}
+
+/** Prueft die Slot-Aussagen (`capabilities`) eines Rosters gegen den Bericht. */
+function assertCapabilitiesMatchExpectation(report, expectation, manifestPath) {
+  for (const spec of expectation.capabilities ?? []) {
+    assertManifest(typeof spec.defId === 'string', manifestPath, 'capabilities: Feld "defId" fehlt.');
+    const capability = capabilityForExpectation(report, spec, manifestPath);
+
+    if (spec.name !== undefined) {
+      expect(capability.name, `Slot ${spec.defId}: effektiver Anzeigename`).toBe(spec.name);
+    }
+    if (spec.authorMessages !== undefined) {
+      expect(capability.authorMessages, `Slot ${spec.defId}: Zahl der Autor-Meldungen`)
+        .toHaveLength(spec.authorMessages.length);
+      for (const message of spec.authorMessages) {
+        expect(capability.authorMessages, `Slot ${spec.defId}: Autor-Meldung`).toContainEqual(message);
+      }
+    }
+    for (const characteristic of spec.characteristics ?? []) {
+      expect(capability.characteristics, `Slot ${spec.defId}: effektiver Merkmalswert`).toContainEqual(characteristic);
+    }
+  }
+}
+
+/**
  * Uebersetzt einen Diagnose-Schluessel des Manifests in seinen SSOT-Wert und wirft
  * mit klarer Manifest-Meldung, wenn der Schluessel keine bekannte Diagnose-Art ist.
  */
@@ -219,6 +276,7 @@ describe('E2E Testkatalog (manifest-getrieben): docs/testing/<szenario>/scenario
           const roster = rosterFromRos(join(manifest.scenarioDir, rosterCase.file));
           const report = evaluate(dataset, roster);
           assertViolationsMatchExpectation(report, rosterCase.expect);
+          assertCapabilitiesMatchExpectation(report, rosterCase.expect, manifest.manifestPath);
           assertDiagnosticsMatchExpectation(report, rosterCase.expect, manifest.manifestPath);
         });
       });

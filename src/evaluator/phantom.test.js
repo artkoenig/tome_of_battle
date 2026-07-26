@@ -56,6 +56,7 @@ describe('Phantomknoten: armeeweite Pflicht-Absenz (scope=roster)', () => {
       actual: 0,
       bound: MIN_OGRE,
       delta: MIN_OGRE,
+      derivation: { base: MIN_OGRE, steps: [] },
     });
   });
 
@@ -124,6 +125,7 @@ describe('Phantomknoten: je-Kontingent Pflicht-Absenz (scope=force)', () => {
       actual: 0,
       bound: 1,
       delta: 1,
+      derivation: { base: 1, steps: [] },
     });
   });
 

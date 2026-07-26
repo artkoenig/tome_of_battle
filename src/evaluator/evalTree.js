@@ -29,7 +29,7 @@
  *   nicht zurueckwirken koennen.
  */
 
-import { DefinitionKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
+import { DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -122,6 +122,37 @@ export function limitsOf(def) {
     return Array.from(merged.values());
   }
   return def.limits ?? [];
+}
+
+/** Die Info-Elemente einer Liste, verschachtelte Info-Gruppen flach mitgeliefert. */
+function* infoCarriersOfList(infos) {
+  for (const info of infos) {
+    yield info;
+    if (info.kind === InfoElementKind.INFO_GROUP) {
+      yield* infoCarriersOfList(info.infos ?? []);
+    }
+  }
+}
+
+/**
+ * Die **Traeger** der Info-Elemente eines Knotens — die **eine** Quelle der
+ * Wahrheit fuer „welche Profile, Regeln und Info-Verweise haengen an diesem
+ * Knoten": die Modifikator-Schicht wendet ihre Modifikatoren an, die Berichts-
+ * schicht liest ihre effektiven Werte (analog {@link limitsOf} fuer Grenzen).
+ *
+ * Ein Verweis (`entryLink`) traegt die Info-Elemente seines Ziels mit — dieselbe
+ * Erb-Regel wie bei den Grenzen. Ein `infoLink` bleibt **selbst** der Traeger: er
+ * ist das Vorkommen des verlinkten Profils an diesem Knoten und erbt dessen
+ * Merkmale und Modifikatoren, statt die geteilte Definition ein zweites Mal als
+ * eigenen Traeger zu liefern (sonst truege ein Slot dasselbe Profil doppelt —
+ * einmal mit, einmal ohne die am Link erzielte Wirkung).
+ */
+export function* infoCarriersOf(def) {
+  if (def === null || def === undefined) return;
+  yield* infoCarriersOfList(def.infos ?? []);
+  if (isLinkDefinition(def) && def.resolved) {
+    yield* infoCarriersOfList(def.resolved.infos ?? []);
+  }
 }
 
 /** True, wenn die Definition eine MIN-Grenze mit genau diesem Bezugsrahmen traegt. */

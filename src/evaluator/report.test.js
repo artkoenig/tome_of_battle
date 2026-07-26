@@ -11,6 +11,7 @@ function evaluate(catalogXml, roster) {
   return evaluateDataset({ catalogues: [catalogXml] }, roster);
 }
 import { isSelectable, remainingAllowed, mandatoryOpenSlots } from './report.js';
+import { MessageSeverity } from './model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -65,7 +66,7 @@ describe('Bericht: Faehigkeitsdatensatz einer MAX-Grenze', () => {
       isBlocked: false,
       isMandatoryUnmet: false,
       isHidden: false,
-      notes: [],
+      authorMessages: [],
     });
     // UI-Projektion: rein aus dem Bericht abgeleitet.
     expect(isSelectable(report, path)).toBe(true);
@@ -192,18 +193,18 @@ describe('Bericht: versteckter Slot', () => {
   });
 });
 
-describe('Bericht: bedingte Hinweise am Slot', () => {
+describe('Bericht: bedingte Autor-Meldungen am Slot', () => {
   const BANNER_DEF_ID = 'entry-banner-unit';
   const NOTE_TEXT = 'Verbund erst ab zwei Einheiten';
   const NOTE_THRESHOLD = 2;
-  // Ein append-Modifikator unter einer Bedingung: der Hinweis erscheint nur,
-  // wenn die Bedingung (self >= 2 Selektionen) haelt.
+  // Eine Autor-Meldung unter einer Bedingung: sie erscheint nur, wenn die
+  // Bedingung (self >= 2 Selektionen) haelt.
   const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     <catalogue id="cat-cap-note" name="Capability Note Catalogue">
       <selectionEntries>
         <selectionEntry id="${BANNER_DEF_ID}" name="Bannertraeger" type="unit">
           <modifiers>
-            <modifier type="append" field="notes" value="${NOTE_TEXT}">
+            <modifier type="add" field="info" value="${NOTE_TEXT}">
               <conditions>
                 <condition type="atLeast" field="selections" scope="self" value="${NOTE_THRESHOLD}"/>
               </conditions>
@@ -213,18 +214,18 @@ describe('Bericht: bedingte Hinweise am Slot', () => {
       </selectionEntries>
     </catalogue>`;
 
-  it('haengt den bedingten Hinweis an den betreffenden Slot, wenn die Bedingung haelt', () => {
+  it('haengt die bedingte Meldung an den betreffenden Slot, wenn die Bedingung haelt', () => {
     const report = evaluate(CATALOGUE_XML, rosterOf(BANNER_DEF_ID, NOTE_THRESHOLD));
 
     const { capability } = slotByDefId(report, BANNER_DEF_ID);
-    expect(capability.notes).toEqual([NOTE_TEXT]);
+    expect(capability.authorMessages).toEqual([{ severity: MessageSeverity.INFO, text: NOTE_TEXT }]);
   });
 
-  it('laesst den Hinweis am Slot aus, wenn die Bedingung nicht haelt (der Hinweis ist wirklich bedingt)', () => {
+  it('laesst die Meldung am Slot aus, wenn die Bedingung nicht haelt (sie ist wirklich bedingt)', () => {
     const report = evaluate(CATALOGUE_XML, rosterOf(BANNER_DEF_ID, NOTE_THRESHOLD - 1));
 
     const { capability } = slotByDefId(report, BANNER_DEF_ID);
-    expect(capability.notes).toEqual([]);
+    expect(capability.authorMessages).toEqual([]);
   });
 });
 

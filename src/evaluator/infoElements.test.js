@@ -95,6 +95,11 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
       name: 'Own',
       typeId: PROFILE_TYPE_ID,
       characteristics: [],
+      // Ein Profil traegt dieselbe `EntryBase` wie eine Definition: Sichtbarkeit,
+      // Modifikatoren und Modifikatorgruppen (Catalogue.xsd:144-155).
+      isHidden: false,
+      modifiers: [],
+      modifierGroups: [],
     });
   });
 
@@ -112,7 +117,14 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
     const catalogue = parseCatalogue(catalogueWithInfos(InfoLinkKind.PROFILE, PROFILE_ID));
     const rule = infoOfKind(catalogue.entries[0].infos, InfoElementKind.RULE);
 
-    expect(rule).toEqual({ kind: InfoElementKind.RULE, id: 'own-rule', name: 'Own Rule' });
+    expect(rule).toEqual({
+      kind: InfoElementKind.RULE,
+      id: 'own-rule',
+      name: 'Own Rule',
+      isHidden: false,
+      modifiers: [],
+      modifierGroups: [],
+    });
   });
 
   it('liest infoGroup rekursiv mit ihren verschachtelten infos', () => {
@@ -122,7 +134,16 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
     expect(group.id).toBe(GROUP_ID);
     expect(group.name).toBe('Abilities');
     expect(group.infos).toEqual([
-      { kind: InfoElementKind.PROFILE, id: 'nested-profile', name: 'Charge', typeId: PROFILE_TYPE_ID, characteristics: [] },
+      {
+        kind: InfoElementKind.PROFILE,
+        id: 'nested-profile',
+        name: 'Charge',
+        typeId: PROFILE_TYPE_ID,
+        characteristics: [],
+        isHidden: false,
+        modifiers: [],
+        modifierGroups: [],
+      },
     ]);
   });
 

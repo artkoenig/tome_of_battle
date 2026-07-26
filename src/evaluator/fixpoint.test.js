@@ -327,7 +327,7 @@ describe('Nach-Durchlauf: die synthetischen Anker bekommen ihre Werte nach der K
   // Der Bannertraeger fehlt, seine Grenzen haengen deshalb an einem Phantom:
   //   * sein Hoechstmass wird bedingt angehoben (1 → 4),
   //   * er wird bedingt versteckt,
-  //   * er bekommt einen bedingten Hinweis.
+  //   * sein Anzeigename wird bedingt ergaenzt.
   // Die Bedingung haengt an der Elite-Kategorie, die der Krieger **selbst erst per
   // Modifikator** erhaelt: der Anker sieht damit nachweislich den konvergierten
   // Bestand und nicht den Ausgangszustand.
@@ -336,7 +336,8 @@ describe('Nach-Durchlauf: die synthetischen Anker bekommen ihre Werte nach der K
   const MAX_BANNER_ID = 'max-banner';
   const BASE_MAX_BANNERS = 1;
   const MAX_BANNER_BONUS = 3;
-  const BANNER_NOTE = 'Elite-Banner verfuegbar';
+  const BANNER_NAME = 'Banner';
+  const BANNER_NAME_SUFFIX = ' (Elite)';
   const ELITE_CONDITION = `
               <conditions>
                 <condition type="atLeast" field="selections" scope="roster" childId="${ELITE_CAT_ID}" value="1"/>
@@ -352,7 +353,7 @@ describe('Nach-Durchlauf: die synthetischen Anker bekommen ihre Werte nach der K
             <modifier type="add" field="category" value="${ELITE_CAT_ID}"/>
           </modifiers>
         </selectionEntry>
-        <selectionEntry id="${BANNER_ID}" name="Banner" type="upgrade">
+        <selectionEntry id="${BANNER_ID}" name="${BANNER_NAME}" type="upgrade">
           <constraints>
             <constraint id="${MIN_BANNER_ID}" type="min" value="1" field="selections" scope="roster"/>
             <constraint id="${MAX_BANNER_ID}" type="max" value="${BASE_MAX_BANNERS}" field="selections" scope="roster"/>
@@ -362,20 +363,20 @@ describe('Nach-Durchlauf: die synthetischen Anker bekommen ihre Werte nach der K
             </modifier>
             <modifier type="set" field="hidden" value="true">${ELITE_CONDITION}
             </modifier>
-            <modifier type="append" field="name" value="${BANNER_NOTE}">${ELITE_CONDITION}
+            <modifier type="append" field="name" value="${BANNER_NAME_SUFFIX}">${ELITE_CONDITION}
             </modifier>
           </modifiers>
         </selectionEntry>
       </selectionEntries>
     </catalogue>`;
 
-  it('wertet Hoechstmass, Sichtbarkeit und bedingte Hinweise des Ankers modifikator-bewusst aus', () => {
+  it('wertet Hoechstmass, Sichtbarkeit und Anzeigenamen des Ankers modifikator-bewusst aus', () => {
     const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 1)]));
 
     expect(slotByDefId(report, BANNER_ID)).toMatchObject({
       effectiveMax: BASE_MAX_BANNERS + MAX_BANNER_BONUS,
       isHidden: true,
-      notes: [BANNER_NOTE],
+      name: `${BANNER_NAME}${BANNER_NAME_SUFFIX}`,
       isMandatoryUnmet: true,
     });
   });

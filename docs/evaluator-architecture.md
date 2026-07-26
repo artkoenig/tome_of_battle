@@ -77,7 +77,11 @@ Ein Durchlauf über den Evaluationsbaum baut Zählindizes. Jeder reale Knoten tr
 
 ### 3.4 Modifikator-Schicht
 
-Pro Knoten: Conditions (bool) und Repeats (Anzahl) über das Query-Primitiv auswerten, dann Modifikatoren **strikt in Dokumentreihenfolge** auf eine Kopie der Basiseigenschaften anwenden. Ergebnis: effektive Kosten, effektive Kategorien, effektive Grenzwerte, Sichtbarkeit, bedingte Hinweistexte.
+Pro Knoten: Conditions (bool) und Repeats (Anzahl) über das Query-Primitiv auswerten, dann Modifikatoren **strikt in Dokumentreihenfolge** auf eine Kopie der Basiseigenschaften anwenden. Ergebnis: effektive Kosten, effektive Kategorien, effektive Grenzwerte, Sichtbarkeit, effektive Namen, effektive Merkmalswerte und die Autor-Meldungen des Katalogs.
+
+**Träger.** Ein Modifikator wirkt auf das Element, an dem er hängt — den Knoten selbst *oder* eines seiner Info-Elemente (Profil, Regel, Info-Gruppe, Info-Verweis), denn die `EntryBase` der XSD gibt allen dieselben `modifiers`. Das ist der Normalfall, nicht die Ausnahme: in den Fixture-Katalogen der 6th Definitive Edition hängen **alle 101** Charakteristik-Modifikatoren an einem `<profile>` (30) oder an einem `<infoLink>` (71) — **keiner** an einer `selectionEntry`, einem `entryLink`, einer Gruppe, einer Kategorie oder einem Kontingent. Damit ist die Frage, ob ein Merkmals-Modifikator *alle* Profile eines Knotens mit diesem Charakteristik-Typ trifft oder nur eines, aus den Daten beantwortet: er trifft **genau das Profil, an dem er steht** — der Knoten ist nie sein Träger. Führt ein Knoten mehrere Profile mit demselben Charakteristik-Typ, bleiben die anderen unberührt. Sichtbarkeit, Name und Merkmale schlüsseln entsprechend nach dem Paar (Knoten, Träger); Kosten, Kategorien, Grenzen und Meldungen bleiben am Knoten. Bedingungen werden immer im Query-Kontext des tragenden **Knotens** ausgewertet — nur er hat eine Position im Baum.
+
+**Grenzwerte entstehen als Kette.** Ein Modifikator auf eine Grenze schreibt nicht bloß eine Zahl, sondern einen Schritt der **Herleitungskette** dieses Grenzwerts (Art, roher Wert, Wiederholungsfaktor, Zwischenwert, ob bedingt, und bei einem bedingten Schritt der **Zeuge** — die benennbare Auswahl, deren Vorhandensein die Bedingung hat halten lassen, ADR-0027). Der Zeuge wird dort festgehalten, wo die Bedingung ausgewertet wird; nachträglich wäre er nur über eine zweite Rechenstelle zu rekonstruieren (ADR-0034). Die Kette ist die **einzige** Quelle des Endwerts — es gibt keinen zweiten Zahlwert daneben.
 
 ### 3.5 Fixpunktschleife (Kernentscheidung)
 
@@ -94,7 +98,7 @@ Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Koste
 Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Der Bericht enthält:
 
 - **Verletzungen** (für die Validierungsanzeige),
-- pro Auswahlpunkt einen **Fähigkeitsdatensatz**: effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", bedingte Hinweise (für die UI-Steuerung),
+- pro Auswahlpunkt einen **Fähigkeitsdatensatz**: Definitions-ID und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die effektiven Merkmalswerte seiner Info-Elemente (für die UI-Steuerung),
 - **Diagnosen** (Auflösungsprobleme, Oszillation, erschöpftes Rundenbudget, Null-Nenner, unauflösbare Budgetgrenze).
 
 Zusätzlich prüft die Engine eine **roster-weite Budget-Regel** (keine Katalog-Grenze, sondern eine Regel der Engine): je eingestellter Kostenart wird die am ROSTER-Rahmen verplante Summe gegen die eingestellte Grenze dieser Kostenart geprüft; eine Überschreitung erzeugt eine Budget-Verletzung, die über einen **synthetischen** roster-weiten Anker in dieselbe Verletzungsliste wie die übrigen Verletzungen fließt.
@@ -130,14 +134,19 @@ record CountFlags {
 record LimitDef       { id, kind: ConstraintKind, field: CountedField, scope: ScopeRef,
                         value: number, isPercent: bool, flags: CountFlags }
 record ConditionDef   { type: ConditionKind, field: CountedField, scope: ScopeRef,
-                        targetChildId: Id, value: number, flags: CountFlags }
+                        targetChildId: Id, value: number, flags: CountFlags,
+                        witnessDefinition: ResolvedDef? }  // im Resolver aufgelöst: die
+                        // benennbare Auswahl hinter targetChildId (sonst null)
 record RepeatDef      { field: CountedField, scope: ScopeRef,
                         targetChildId: Id, perValue: number,   // XSD-`value`: die Schrittweite
                         repeats: number, roundUp: bool,        // Anwendungen je Schritt; Rundung
                         flags: CountFlags }
 record ModifierDef    { field: string,                    // roher XSD-`field`, im Resolver aufgelöst
-                        target: TargetDescriptor,          // aufgelöstes Ziel (Kosten/Grenze/Kategorie/Sichtbarkeit/Hinweis)
+                        target: TargetDescriptor,          // aufgelöstes Ziel (Kosten/Grenze/Kategorie/
+                                                           // Sichtbarkeit/Merkmal/Name/Autor-Meldung);
+                                                           // null, wenn `field` nicht deutbar ist (Diagnose)
                         kind: ModifierKind, value,
+                        join: string?,                     // Trennzeichen für append/prepend (vendored)
                         conditions: ConditionDef[], conditionGroups: ConditionGroupDef[],
                         repeats: RepeatDef[] }
                         // Reihenfolge im Array == Dokumentreihenfolge
@@ -151,8 +160,11 @@ record ConditionGroupDef { type: ConditionGroupKind, conditions: ConditionDef[],
 record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],
                           conditions: ConditionDef[], conditionGroups: ConditionGroupDef[] }
 
-// Info-Elemente: rein strukturell gelesen, ohne Grenzen- oder Modifikator-Logik.
-record InfoElement    { kind: profile | rule | infoGroup | infoLink, id, name,
+// Info-Elemente: sie teilen die `EntryBase` der XSD und tragen deshalb eigene
+// Modifikatoren und ein `hidden`-Kennzeichen — sie sind Modifikator-Träger.
+record InfoElement    { kind: profile | rule | infoGroup | infoLink, id, name, isHidden: bool,
+                        modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],
+                        characteristics: Characteristic[],  // nur profile
                         infos: InfoElement[] }    // infoLink verweist per targetId
 
 record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
@@ -173,22 +185,35 @@ record EvalNode {
   forceRoot: EvalNode              // das umschließende Kontingent
 }
 
+// Träger = der Knoten selbst oder eines seiner Info-Elemente (§3.4).
+type Carrier = EvalNode | InfoElement
+
+record DerivationStep  { kind: ModifierKind, rawValue: string, times: number,
+                         result: number, isConditional: bool,
+                         witness: { defId, name }? }     // nur bei bedingtem Schritt
+record LimitDerivation { base: number, steps: DerivationStep[] }  // Endwert == letzter Schritt
+
 record EffectiveState {            // Ergebnis der Modifikator-Schicht, unveränderlich
   costs: Map<EvalNode, Map<CostTypeId, number>>
   categories: Map<EvalNode, Set<CategoryId>>
-  limitValues: Map<(EvalNode, LimitId), number>
-  hidden: Set<EvalNode>
-  notes: Map<EvalNode, string[]>
+  limits: Map<(EvalNode, LimitId), LimitDerivation>   // Wert *als* Kette, kein zweiter Zustand
+  hidden: Map<(EvalNode, Carrier), bool>              // nur Überschreibungen; Basis: XSD-`hidden`
+  names: Map<(EvalNode, Carrier), string>             // nur Überschreibungen; Basis: Katalogname
+  characteristics: Map<(EvalNode, Carrier, CharacteristicTypeId), string>   // nur Überschreibungen
+  authorMessages: Map<EvalNode, { severity, text }[]>
 }
 
 record ConstraintResult { limit: LimitDef, anchor: EvalNode,
-                          actual: number, bound: number, satisfied: bool, delta: number }
+                          actual: number, bound: number, satisfied: bool, delta: number,
+                          derivation: LimitDerivation? }
 
-record SlotCapability   { node: EvalNode, effectiveMin: number?, effectiveMax: number?,
+record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: der **effektive**
+                          effectiveMin: number?, effectiveMax: number?,
                           current: number, headroom: number?,
                           isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
                           isValueUnstable: bool,        // lag in der instabilen Knotenmenge
-                          notes: string[] }
+                          authorMessages: { severity, text }[],
+                          characteristics: { carrierId, typeId, value }[] }
 
 record Report { violations: ConstraintResult[], capabilities: Map<NodePath, SlotCapability>,
                 diagnostics: Diagnostic[] }
@@ -375,16 +400,27 @@ function conditionGroupHolds(ctx, group): bool
           + [conditionGroupHolds(ctx, g) for g in group.groups]
   return group.type == and ? all(members) : any(members)
 
-function applyOperation(state, node, modifier, times)
-  if times == 0 or modifier.target == null: return   // baumelndes Ziel: im Resolver gemeldet
-  handler = MODIFIER_HANDLERS[modifier.kind]          // Registry ModifierKind → Effekt
-  if handler == null: diagnostics.add(UNSUPPORTED_MODIFIER); return
-  handler(state, node, modifier.target, modifier.value, times, diagnostics)
-  // set → schreibt/setzt (ignoriert times); increment/decrement/multiply → numerisch × times;
-  // add/remove/set-primary/unset-primary → Kategorie-Mitgliedschaft; append/prepend → Hinweistext
+// Je Knoten laufen erst seine eigenen Modifikatoren, dann die seiner Info-Elemente —
+// jeder mit seinem Träger, alle im Query-Kontext des Knotens.
+function applyModifiersOfNode(state, node, ctx)
+  applyCarrier(state, node, carrier = node, subject = node.def, ctx)
+  for carrier in infoCarriersOf(node.def):             // Profile, Regeln, Info-Gruppen, Info-Verweise
+    applyCarrier(state, node, carrier, subject = carrier, ctx)
+  // Ein Verweis (entryLink/categoryLink/infoLink) wirkt mit den Modifikatoren seines
+  // Ziels ZUERST, dann seinen eigenen — dieselbe Erb-Regel wie bei den Grenzen.
+
+function applyOperation(state, node, carrier, modifier, times, isConditional, witness)
+  if times == 0 or modifier.target == null: return   // nicht deutbares Ziel: im Resolver gemeldet
+  handler = MODIFIER_HANDLERS[modifier.kind][modifier.target.kind]   // Registry Art → Ziel → Effekt
+  if handler == null: diagnostics.add(UNSUPPORTED_MODIFIER); return  // ungültige Paarung
+  handler(...)
+  // set → setzt (Zahl bei Kosten/Grenze, Text bei Name/Merkmal); increment/decrement/multiply
+  // → numerisch × times; add/remove/set-primary/unset-primary → Kategorie-Mitgliedschaft;
+  // add auf error/warning/info → Autor-Meldung; append/prepend → Text, getrennt durch `join`.
+  // Ein Schreibzugriff auf eine GRENZE legt zugleich ihren Kettenschritt an (§3.4).
 ```
 
-Info-Elemente (`profile`/`rule`/`infoGroup`/`infoLink`) werden rein strukturell gelesen und tragen keine Grenzen- oder Modifikator-Logik; ein `infoLink` verweist per `targetId` auf sein Ziel.
+Info-Elemente (`profile`/`rule`/`infoGroup`/`infoLink`) tragen dieselbe `EntryBase` wie eine Definition und damit **eigene Modifikatoren**; ein `infoLink` verweist per `targetId` auf sein Ziel und erbt dessen Merkmale und Modifikatoren als *sein* Vorkommen.
 
 Wichtig: Jede Fixpunktrunde wendet Modifikatoren auf eine frische Kopie der **Basiswerte** an — sonst würde `ADD` über Runden hinweg kumulieren.
 
@@ -430,9 +466,12 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       headroom      = maxResult != null ? max(0, maxResult.bound - maxResult.actual) : null,
       isMandatoryUnmet = minResult != null and not minResult.satisfied,
       isBlocked     = maxResult != null and maxResult.actual >= maxResult.bound,
-      isHidden      = node in effective.hidden,
+      isHidden      = effective.isHidden(node),
       isValueUnstable = node in unstableNodes,         // kam in der Schleife nicht zur Ruhe
-      notes         = effective.notes[node])
+      defId         = node.def.id,
+      name          = effective.nameOf(node),          // nach allen Namens-Modifikatoren
+      authorMessages  = effective.authorMessages[node],
+      characteristics = effectiveCharacteristicsOf(node, effective))
   return Report(
     violations   = results.filter(r → not r.satisfied),
     capabilities = capabilities,

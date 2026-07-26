@@ -173,16 +173,37 @@ export function normalizeFlags(flags) {
  * Zielart eines Modifikators — welche effektive Eigenschaft er veraendert
  * (`docs/evaluator-architecture.md` §4.1, `target: PropertyRef | LimitId`). `COST`
  * und `LIMIT` werden per ID (Kostenart bzw. Grenze) benannt und numerisch
- * veraendert; `CATEGORY` schaltet die Zugehoerigkeit zu einer Kategorie-ID
- * (per `value` an/aus); `HIDDEN` setzt die Sichtbarkeit; `NOTE` haengt einen
- * bedingten Hinweis an.
+ * veraendert; `CHARACTERISTIC` benennt per ID einen **Charakteristik-Typ** aus den
+ * Profiltypen des Spielsystems und veraendert dessen Wert am tragenden
+ * Info-Element; `CATEGORY` schaltet die Zugehoerigkeit zu einer Kategorie-ID
+ * (per `value` an/aus); `HIDDEN` setzt die Sichtbarkeit; `NAME` veraendert den
+ * Anzeigenamen; `MESSAGE` haengt eine **Autor-Meldung** des Katalogs mit ihrem
+ * Schweregrad an (`id` traegt den {@link MessageSeverity Schweregrad}).
+ *
+ * Es gibt **kein** Auffang-Ziel: ein `field`, das keines dieser Ziele benennt, ist
+ * eine Diagnose ({@link DiagnosticKind.UNSUPPORTED_MODIFIER_TARGET}) und kein
+ * stiller Hinweistext (Issue 75/04).
  */
 export const ModifierTargetKind = Object.freeze({
   COST: 'cost',
   CATEGORY: 'category',
   LIMIT: 'limit',
   HIDDEN: 'hidden',
-  NOTE: 'note',
+  CHARACTERISTIC: 'characteristic',
+  NAME: 'name',
+  MESSAGE: 'message',
+});
+
+/**
+ * Schweregrad einer **Autor-Meldung** des Katalogs (`field="error"`/`"warning"`/
+ * `"info"`, ADR-0022/0028). Engine-eigenes Enum: die XSD kennt das `field` nur als
+ * freien String, die Klassifikation gehoert der Engine. Der Wert ist sprachfrei —
+ * welchen Satz die Oberflaeche daraus baut, ist ihr Vertrag (ADR-0026).
+ */
+export const MessageSeverity = Object.freeze({
+  ERROR: 'error',
+  WARNING: 'warning',
+  INFO: 'info',
 });
 
 /**
@@ -242,6 +263,11 @@ export const DiagnosticKind = Object.freeze({
   // globalen Symboltabelle (Kostenart- und Constraint-IDs) aber kein Ziel —
   // baumelnder Verweis, sichtbar gemacht statt still ignoriert.
   DANGLING_MODIFIER_TARGET: 'danglingModifierTarget',
+  // Der `field` eines Modifikators benennt weder ein Schluesselwort-Ziel
+  // (category/hidden/name/error/warning/info) noch eine ID aus der Symboltabelle
+  // (Kostenart, Grenze, Charakteristik-Typ). Frueher fiel jeder solche Text still
+  // in ein Hinweis-Ziel; er wird jetzt sichtbar gemeldet (Issue 75/04).
+  UNSUPPORTED_MODIFIER_TARGET: 'unsupportedModifierTarget',
   // Verletzung des Disjunktheits-Guards: dieselbe ID benennt zugleich eine
   // Kostenart und eine Grenze. Der ID-Raum muss disjunkt sein, damit die ID ihr
   // eigener Diskriminator (COST vs LIMIT) sein kann.

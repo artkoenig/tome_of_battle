@@ -13,7 +13,7 @@ import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { parseCatalogue } from './catalogReader.js';
 import { resolveCatalogue } from './resolver.js';
-import { ModifierTargetKind, DiagnosticKind } from './model.js';
+import { ModifierTargetKind, MessageSeverity, DiagnosticKind } from './model.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
@@ -71,9 +71,25 @@ describe('Resolver: field→TargetDescriptor ueber die Symboltabelle', () => {
     expect(target).toEqual({ kind: ModifierTargetKind.HIDDEN, id: null });
   });
 
-  it('loest sonstigen Nicht-ID-Text zu NOTE auf', () => {
-    const { target } = resolveSingleModifierTarget('notes');
-    expect(target).toEqual({ kind: ModifierTargetKind.NOTE, id: null });
+  it('loest das Schluesselwort "name" zu NAME auf', () => {
+    const { target } = resolveSingleModifierTarget('name');
+    expect(target).toEqual({ kind: ModifierTargetKind.NAME, id: null });
+  });
+
+  it('loest "error"/"warning"/"info" zu MESSAGE mit ihrem Schweregrad auf', () => {
+    for (const severity of Object.values(MessageSeverity)) {
+      const { target } = resolveSingleModifierTarget(severity);
+      expect(target).toEqual({ kind: ModifierTargetKind.MESSAGE, id: severity });
+    }
+  });
+
+  it('meldet sonstigen Nicht-ID-Text als nicht deutbares Ziel und traegt kein Ziel', () => {
+    const { target, diagnostics } = resolveSingleModifierTarget('notes');
+
+    expect(target).toBeNull();
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({ kind: DiagnosticKind.UNSUPPORTED_MODIFIER_TARGET, field: 'notes' }),
+    );
   });
 
   it('meldet einen baumelnden ID-Verweis als Diagnose und traegt kein Ziel', () => {

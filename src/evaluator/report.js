@@ -7,9 +7,10 @@
  * - **Verletzungen** fuer die Validierungsanzeige (das volle Ergebnis-Tripel je
  *   angeschlagener Grenze),
  * - je auswaehlbarem Slot einen **Faehigkeitsdatensatz** (`SlotCapability`) fuer
- *   die UI-Steuerung: effektives min/max, aktueller Stand, Restspielraum, die
- *   Pflicht-/Gesperrt-/Versteckt-Flags, das Merkmal „Wert nicht stabil" und die
- *   bedingten Hinweise,
+ *   die UI-Steuerung: Definitions-ID und **effektiver** Anzeigename, effektives
+ *   min/max, aktueller Stand, Restspielraum, die Pflicht-/Gesperrt-/Versteckt-Flags,
+ *   das Merkmal „Wert nicht stabil", die **Autor-Meldungen** des Katalogs und die
+ *   **effektiven Merkmalswerte** seiner Info-Elemente,
  * - **Diagnosen** (Aufloesung, Oszillation, erschoepftes Rundenbudget, Null-Nenner).
  *
  * Dazu die reinen **UI-Projektions-Lookups**, die ausschliesslich den Bericht
@@ -18,12 +19,17 @@
  */
 
 import { ConstraintKind } from './model.js';
-import { selectableSlotsOf, pathOf } from './evalTree.js';
+import { selectableSlotsOf, pathOf, infoCarriersOf } from './evalTree.js';
 
 /** Der Normalfall: die Auswertung ist konvergiert, kein Slot ist instabil. */
 const NO_UNSTABLE_NODES = new Set();
 
-/** Projiziert ein Constraint-Ergebnis auf eine Verletzungsmeldung. */
+/**
+ * Projiziert ein Constraint-Ergebnis auf eine Verletzungsmeldung. Sie traegt neben
+ * dem Ergebnis-Tripel die **Herleitung** des Grenzwerts: Basiswert und die
+ * Schritte, die ihn veraendert haben. Daraus liest sich ohne zweite Auswertung ab,
+ * *warum* die Grenze auf diesem Wert steht (ADR-0027).
+ */
 function toViolation(result) {
   return {
     limitId: result.limit.id,
@@ -34,7 +40,25 @@ function toViolation(result) {
     actual: result.actual,
     bound: result.bound,
     delta: result.delta,
+    derivation: result.derivation ?? null,
   };
+}
+
+/**
+ * Die **effektiven Merkmale** eines Slots: je Info-Element (Profil oder
+ * Info-Verweis) seine Charakteristikwerte, nachdem die Modifikatoren gewirkt haben.
+ * Der Traeger wird per ID mitgefuehrt, weil derselbe Merkmalstyp an mehreren
+ * Profilen eines Slots haengen kann und ein Modifikator immer genau eines davon
+ * trifft — naemlich das, an dem er haengt.
+ */
+function characteristicsOf(node, effective) {
+  const entries = [];
+  for (const carrier of infoCarriersOf(node.def)) {
+    for (const { typeId, value } of effective.characteristicEntriesOf(node, carrier)) {
+      entries.push({ carrierId: carrier.id, typeId, value });
+    }
+  }
+  return entries;
 }
 
 /**
@@ -59,7 +83,10 @@ function headroomOf(maxResult) {
  * dem effektiven Zustand. Der aktuelle Stand kommt bevorzugt aus der MAX-, sonst
  * der MIN-Grenze; traegt der Slot keine (nicht suspendierte) Grenze, ist er 0.
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
- * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
+ * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand. Name,
+ * Merkmale und Autor-Meldungen kommen ebenfalls aus dem effektiven Zustand — die
+ * Oberflaeche liest damit den Stand *nach* allen greifenden Modifikatoren, ohne
+ * selbst zu rechnen (§4.8, Leitprinzip 3).
  *
  * `isValueUnstable` sagt: dieser Slot lag in der Menge, deren zaehlrelevante Werte
  * in der Fixpunktschleife nicht zur Ruhe kamen — seine Zahlen sind eine
@@ -72,6 +99,8 @@ function toCapability(node, results, effective, unstableNodes) {
   const maxResult = findResult(results, node, ConstraintKind.MAX);
   return {
     node,
+    defId: node.def.id,
+    name: effective.nameOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax: maxResult === null ? null : maxResult.bound,
     current: maxResult?.actual ?? minResult?.actual ?? 0,
@@ -80,7 +109,8 @@ function toCapability(node, results, effective, unstableNodes) {
     isBlocked: maxResult !== null && maxResult.actual >= maxResult.bound,
     isHidden: effective.isHidden(node),
     isValueUnstable: unstableNodes.has(node),
-    notes: effective.notesOf(node),
+    authorMessages: effective.authorMessagesOf(node),
+    characteristics: characteristicsOf(node, effective),
   };
 }
 

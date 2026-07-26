@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="mcv-03" name="MCV 03 - Anakondas Amazonen: ein geteiltes Profil, vier Verweis-Vorkommen" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored characteristic-modifier E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-experimental" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="9a0b-4d97-1625-919f" number="1" type="upgrade" collective="false"/>
+        <selection id="sel-amazons-unit" name="Anakonda&apos;s Amazons" entryId="ebf9-c112-3cb4-1f02" entryLinkId="6b83-e5d0-92db-3d36" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-amazons-models" name="Amazons" entryId="6bf6-467b-2b6f-71fb" entryLinkId="" number="5" type="model" collective="false"/>
+            <selection id="sel-blades" name="Blades of the Ancients" entryId="e8c7-69b8-d372-a5cc" entryLinkId="" entryGroupId="a2b9-a75e-a12d-748e" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="d3dc-56c1-9565-889a" entryGroupId="a2b9-a75e-a12d-748e" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-anakonda" name="Anakonda" entryId="14b0-1d64-8f2c-4da2" entryLinkId="" entryGroupId="0517-9b7e-63ff-cde0" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-humming-bird" name="Humming Bird (Standard Bearer)" entryId="f43c-4825-7032-8043" entryLinkId="" entryGroupId="0517-9b7e-63ff-cde0" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-pirrana" name="Pirrana (Musician)" entryId="b7de-ebe9-8eb4-de58" entryLinkId="" entryGroupId="0517-9b7e-63ff-cde0" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

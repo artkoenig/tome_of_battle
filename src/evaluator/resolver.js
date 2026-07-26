@@ -11,19 +11,33 @@
  * Definitionsbaum indiziert und doppelte IDs werden als Diagnose sichtbar gemacht.
  *
  * Zusaetzlich baut er eine **globale `id → TargetDescriptor`-Symboltabelle** aus
- * allen Kostenart- und allen Constraint-IDs (mit Disjunktheits-Guard) und loest
- * damit jeden Modifikator-`field` **genau einmal** in sein Ziel auf. Der `field`
+ * allen Kostenart-, Constraint- und Charakteristik-Typ-IDs (mit Disjunktheits-Guard)
+ * und loest damit jeden Modifikator-`field` **genau einmal** in sein Ziel auf —
+ * die der Definitionen wie die der Info-Elemente. Der `field`
  * bleibt roh (xs:string, ADR-0016); die Zuordnung ist statisch und haengt nicht
  * vom effektiven Zustand ab, wird also vor der Fixpunktschleife einmal berechnet
  * (Clean-Room-Abgleich Q1).
  */
 
-import { DefinitionKind, InfoElementKind, ModifierTargetKind, DiagnosticKind, diagnostic } from './model.js';
+import { DefinitionKind, InfoElementKind, ModifierTargetKind, MessageSeverity, DiagnosticKind, diagnostic } from './model.js';
 
-/** Schluesselwort-`field`-Werte, die das Ziel unmittelbar (ohne Symboltabelle) benennen. */
-const FieldKeyword = Object.freeze({
-  CATEGORY: 'category',
-  HIDDEN: 'hidden',
+/**
+ * Die Schluesselwort-`field`-Werte und ihr unmittelbares Ziel (ohne Symboltabelle).
+ * Eine Tabelle statt einer Fallunterscheidung: ein weiteres Schluesselwort ist ein
+ * weiterer Eintrag, keine weitere Verzweigung.
+ *
+ * `error`/`warning`/`info` benennen dasselbe Ziel — eine **Autor-Meldung** — und
+ * unterscheiden sich allein in ihrem Schweregrad, der deshalb als `id` mitgefuehrt
+ * wird (ADR-0022/0028). Bis Issue 75/04 fielen sie in den Kategorie-Zweig und
+ * gingen dort als ungueltige Paarung verloren.
+ */
+const KEYWORD_TARGETS = Object.freeze({
+  category: Object.freeze({ kind: ModifierTargetKind.CATEGORY, id: null }),
+  hidden: Object.freeze({ kind: ModifierTargetKind.HIDDEN, id: null }),
+  name: Object.freeze({ kind: ModifierTargetKind.NAME, id: null }),
+  error: Object.freeze({ kind: ModifierTargetKind.MESSAGE, id: MessageSeverity.ERROR }),
+  warning: Object.freeze({ kind: ModifierTargetKind.MESSAGE, id: MessageSeverity.WARNING }),
+  info: Object.freeze({ kind: ModifierTargetKind.MESSAGE, id: MessageSeverity.INFO }),
 });
 
 /**
@@ -176,25 +190,42 @@ function followEntryLink(targetId, byId, visited) {
 }
 
 /**
- * Baut die globale `id → TargetDescriptor`-Symboltabelle aus allen Kostenart-IDs
- * (→ COST) und allen Constraint-IDs (→ LIMIT) der indizierten Definitionen. Ein
- * **Disjunktheits-Guard** meldet jede Ueberschneidung: nur bei disjunktem ID-Raum
- * ist die ID ihr eigener Diskriminator (COST vs LIMIT).
+ * Traegt ein ID-Ziel in die Symboltabelle ein und meldet jede **Ueberschneidung**
+ * mit einer bereits eingetragenen, andersartigen ID als Diagnose: nur bei
+ * disjunktem ID-Raum ist die ID ihr eigener Diskriminator (Kostenart vs. Grenze
+ * vs. Charakteristik-Typ). Der erste Eintrag gewinnt.
  */
-function buildTargetSymbolTable(definitions, diagnostics) {
+function addTargetSymbol(symbolTable, id, kind, diagnostics) {
+  const existing = symbolTable.get(id);
+  if (existing !== undefined && existing.kind !== kind) {
+    diagnostics.push(diagnostic(DiagnosticKind.MODIFIER_TARGET_COLLISION, { targetId: id }));
+    return;
+  }
+  symbolTable.set(id, { kind, id });
+}
+
+/**
+ * Baut die globale `id → TargetDescriptor`-Symboltabelle aus allen Kostenart-IDs
+ * (→ COST), allen Constraint-IDs (→ LIMIT) der indizierten Definitionen und allen
+ * **Charakteristik-Typ-IDs** der Profiltypen (→ CHARACTERISTIC). Letztere liefen
+ * bis Issue 75/04 als „baumelnder Verweis" ins Leere, weil die Symboltabelle sie
+ * nicht kannte.
+ */
+function buildTargetSymbolTable(definitions, profileTypes, diagnostics) {
   const symbolTable = new Map();
   for (const definition of definitions) {
     for (const costTypeId of Object.keys(definition.costs ?? {})) {
-      symbolTable.set(costTypeId, { kind: ModifierTargetKind.COST, id: costTypeId });
+      addTargetSymbol(symbolTable, costTypeId, ModifierTargetKind.COST, diagnostics);
+    }
+  }
+  for (const profileType of profileTypes) {
+    for (const characteristicType of profileType.characteristicTypes ?? []) {
+      addTargetSymbol(symbolTable, characteristicType.id, ModifierTargetKind.CHARACTERISTIC, diagnostics);
     }
   }
   for (const definition of definitions) {
     for (const limit of definition.limits ?? []) {
-      if (symbolTable.has(limit.id) && symbolTable.get(limit.id).kind === ModifierTargetKind.COST) {
-        diagnostics.push(diagnostic(DiagnosticKind.MODIFIER_TARGET_COLLISION, { targetId: limit.id }));
-        continue;
-      }
-      symbolTable.set(limit.id, { kind: ModifierTargetKind.LIMIT, id: limit.id });
+      addTargetSymbol(symbolTable, limit.id, ModifierTargetKind.LIMIT, diagnostics);
     }
   }
   return symbolTable;
@@ -202,17 +233,20 @@ function buildTargetSymbolTable(definitions, diagnostics) {
 
 /**
  * Loest den rohen `field` eines Modifikators **einmal** in seinen
- * `TargetDescriptor` auf. Praezedenz: Schluesselwort zuerst (`category`→CATEGORY,
- * `hidden`→HIDDEN), sonst ein Treffer in der Symboltabelle (Kostenart→COST,
- * Constraint→LIMIT). Ein verbleibender Verweis, der wie eine ID aussieht, aber
- * nirgends aufloest, wird als **baumelnder** Verweis gemeldet (kein Ziel);
- * jeder andere Text ist ein Hinweis-Ziel (NOTE).
+ * `TargetDescriptor` auf. Praezedenz: Schluesselwort zuerst
+ * ({@link KEYWORD_TARGETS}), sonst ein Treffer in der Symboltabelle
+ * (Kostenart→COST, Charakteristik-Typ→CHARACTERISTIC, Constraint→LIMIT).
  *
- * @returns {{ kind: string, id: string|null }|null} das Ziel, oder `null` bei baumelndem Verweis.
+ * Ohne Treffer gibt es **kein Auffang-Ziel**: ein Verweis, der wie eine ID
+ * aussieht, ist ein **baumelnder** Verweis, jeder andere Text ein nicht deutbares
+ * Ziel — beides wird gemeldet statt still in einen Hinweistext zu fallen
+ * (Issue 75/04, „was die Engine nicht deuten kann, meldet sie sichtbar").
+ *
+ * @returns {{ kind: string, id: string|null }|null} das Ziel, oder `null`, wenn es nicht aufloest.
  */
 function resolveModifierTarget(field, symbolTable, diagnostics) {
-  if (field === FieldKeyword.CATEGORY) return { kind: ModifierTargetKind.CATEGORY, id: null };
-  if (field === FieldKeyword.HIDDEN) return { kind: ModifierTargetKind.HIDDEN, id: null };
+  const keywordTarget = Object.hasOwn(KEYWORD_TARGETS, field) ? KEYWORD_TARGETS[field] : undefined;
+  if (keywordTarget !== undefined) return keywordTarget;
 
   const symbol = symbolTable.get(field);
   if (symbol !== undefined) return symbol;
@@ -221,26 +255,68 @@ function resolveModifierTarget(field, symbolTable, diagnostics) {
     diagnostics.push(diagnostic(DiagnosticKind.DANGLING_MODIFIER_TARGET, { field }));
     return null;
   }
-  return { kind: ModifierTargetKind.NOTE, id: null };
+  diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER_TARGET, { field }));
+  return null;
 }
 
-/** Reichert jeden Modifikator einer Liste mit seinem aufgeloesten `TargetDescriptor` an. */
-function resolveModifierList(modifiers, symbolTable, diagnostics) {
-  for (const modifier of modifiers) {
-    modifier.target = resolveModifierTarget(modifier.field, symbolTable, diagnostics);
+/**
+ * Die Definitionsarten, die als **Zeuge** einer erfuellten Bedingung taugen: eine
+ * anwaehlbare Auswahl (ADR-0027 „nur benennbare Ausloeser"). Eine Kategorie, eine
+ * Gruppe oder ein Pseudo-Ziel wie `childId="model"` benennt keine Auswahl, die ein
+ * Nutzer gesetzt haette — sie bleibt ohne Zeugen, statt einen zu erfinden.
+ */
+const WITNESS_DEFINITION_KINDS = Object.freeze(new Set([
+  DefinitionKind.ENTRY,
+  DefinitionKind.ENTRY_LINK,
+]));
+
+/**
+ * Reichert eine Bedingung um die **Definition ihres Ziels** an, sofern das eine
+ * benennbare Auswahl ist (`condition.witnessDefinition`, sonst `null`). Die
+ * Zuordnung ist statisch und roster-unabhaengig — sie gehoert deshalb hierher und
+ * nicht in die je Runde laufende Modifikator-Schicht, die daraus nur noch den
+ * Zeugen eines Kettenschritts baut (ADR-0027).
+ */
+function resolveConditionWitness(condition, byId) {
+  const targetId = condition.targetChildId;
+  const definition = targetId === null || targetId === undefined ? undefined : byId.get(targetId);
+  condition.witnessDefinition = definition !== undefined && WITNESS_DEFINITION_KINDS.has(definition.kind)
+    ? definition
+    : null;
+}
+
+/** Reichert die Bedingungen und — rekursiv — die Bedingungsgruppen eines Elements an. */
+function resolveConditionWitnesses(conditions, conditionGroups, byId) {
+  for (const condition of conditions) {
+    resolveConditionWitness(condition, byId);
+  }
+  for (const group of conditionGroups) {
+    resolveConditionWitnesses(group.conditions, group.groups, byId);
   }
 }
 
 /**
- * Reichert eine Modifikatorgruppe **rekursiv** an: ihre eigenen gebuendelten
- * Modifikatoren und die aller verschachtelten Untergruppen (beliebige Tiefe).
- * Ohne diese Rekursion bliebe ein Modifikator einer inneren Gruppe ohne
- * `.target`, und die Apply-Schicht griffe auf `undefined.kind` zu.
+ * Reichert jeden Modifikator einer Liste mit seinem aufgeloesten
+ * `TargetDescriptor` und seine Bedingungen mit ihrer Zieldefinition an.
  */
-function resolveModifierGroup(group, symbolTable, diagnostics) {
-  resolveModifierList(group.modifiers, symbolTable, diagnostics);
+function resolveModifierList(modifiers, symbolTable, byId, diagnostics) {
+  for (const modifier of modifiers) {
+    modifier.target = resolveModifierTarget(modifier.field, symbolTable, diagnostics);
+    resolveConditionWitnesses(modifier.conditions, modifier.conditionGroups ?? [], byId);
+  }
+}
+
+/**
+ * Reichert eine Modifikatorgruppe **rekursiv** an: ihre eigene Gruppen-Bedingung,
+ * ihre gebuendelten Modifikatoren und die aller verschachtelten Untergruppen
+ * (beliebige Tiefe). Ohne diese Rekursion bliebe ein Modifikator einer inneren
+ * Gruppe ohne `.target`, und die Apply-Schicht griffe auf `undefined.kind` zu.
+ */
+function resolveModifierGroup(group, symbolTable, byId, diagnostics) {
+  resolveConditionWitnesses(group.conditions, group.conditionGroups, byId);
+  resolveModifierList(group.modifiers, symbolTable, byId, diagnostics);
   for (const nestedGroup of group.modifierGroups ?? []) {
-    resolveModifierGroup(nestedGroup, symbolTable, diagnostics);
+    resolveModifierGroup(nestedGroup, symbolTable, byId, diagnostics);
   }
 }
 
@@ -252,11 +328,11 @@ function resolveModifierGroup(group, symbolTable, diagnostics) {
  * tragen `null` — die Apply-Schicht ueberspringt sie stumm, weil die Diagnose
  * hier bereits gemeldet ist.
  */
-function resolveModifierTargets(definitions, symbolTable, diagnostics) {
+function resolveModifierTargets(definitions, symbolTable, byId, diagnostics) {
   for (const definition of definitions) {
-    resolveModifierList(definition.modifiers ?? [], symbolTable, diagnostics);
+    resolveModifierList(definition.modifiers ?? [], symbolTable, byId, diagnostics);
     for (const group of definition.modifierGroups ?? []) {
-      resolveModifierGroup(group, symbolTable, diagnostics);
+      resolveModifierGroup(group, symbolTable, byId, diagnostics);
     }
   }
 }
@@ -286,7 +362,15 @@ function indexInfoElement(info, byId, diagnostics) {
  * `resolved` bleibt `null`). In einer Info-Gruppe verschachtelte Links werden
  * mit aufgeloest.
  */
-function resolveInfoElement(info, byId, diagnostics) {
+function resolveInfoElement(info, byId, symbolTable, diagnostics) {
+  // Ein Info-Element traegt dieselbe `EntryBase`-Basis wie eine Definition und
+  // damit eigene Modifikatoren — an Profilen und Info-Verweisen haengt in den
+  // Katalogdaten *jeder* Charakteristik-Modifikator (Issue 75/04). Ohne diese
+  // Auflösung bliebe ihr `.target` undefiniert und die Apply-Schicht griffe darauf zu.
+  resolveModifierList(info.modifiers ?? [], symbolTable, byId, diagnostics);
+  for (const group of info.modifierGroups ?? []) {
+    resolveModifierGroup(group, symbolTable, byId, diagnostics);
+  }
   if (info.kind === InfoElementKind.INFO_LINK) {
     const target = byId.get(info.targetId) ?? null;
     if (target === null) {
@@ -296,18 +380,19 @@ function resolveInfoElement(info, byId, diagnostics) {
     return;
   }
   if (info.kind === InfoElementKind.INFO_GROUP) {
-    for (const nested of info.infos) resolveInfoElement(nested, byId, diagnostics);
+    for (const nested of info.infos) resolveInfoElement(nested, byId, symbolTable, diagnostics);
   }
 }
 
 /**
  * Indiziert alle Info-Definitionen in die ID-Karte und loest anschliessend alle
- * `infoLink`-Verweise auf. Zwei Durchgaenge, damit ein Link ein Ziel unabhaengig
- * von dessen Dokumentposition (und dessen Herkunftskatalog) findet.
+ * `infoLink`-Verweise **und** die Modifikator-Ziele der Info-Elemente auf. Zwei
+ * Durchgaenge, damit ein Link ein Ziel unabhaengig von dessen Dokumentposition
+ * (und dessen Herkunftskatalog) findet.
  */
-function indexAndResolveInfos(infoRoots, byId, diagnostics) {
+function indexAndResolveInfos(infoRoots, byId, symbolTable, diagnostics) {
   for (const info of infoRoots) indexInfoElement(info, byId, diagnostics);
-  for (const info of infoRoots) resolveInfoElement(info, byId, diagnostics);
+  for (const info of infoRoots) resolveInfoElement(info, byId, symbolTable, diagnostics);
 }
 
 /**
@@ -325,7 +410,7 @@ function indexAndResolveInfos(infoRoots, byId, diagnostics) {
  * im `lookup`, aber nicht hier, damit ihre `min`-Grenze keine falsche
  * Pflichtverletzung synthetisiert.
  *
- * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
+ * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
  * @returns {{ lookup: (id: string) => object|null, definitions: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, diagnostics: object[] }}
  */
 export function resolveCatalogue(catalogue) {
@@ -359,11 +444,12 @@ export function resolveCatalogue(catalogue) {
   // Modifikator-Ziele einmal ueber die globale Symboltabelle aufloesen — fuer alle
   // Definitionsknoten, damit auch ein per Verweis in den Baum gezogener Knoten sein
   // `.target` traegt (die Apply-Schicht griffe sonst auf `undefined.kind` zu).
-  const symbolTable = buildTargetSymbolTable(definitionNodes, diagnostics);
-  resolveModifierTargets(definitionNodes, symbolTable, diagnostics);
+  const symbolTable = buildTargetSymbolTable(definitionNodes, catalogue.profileTypes ?? [], diagnostics);
+  resolveModifierTargets(definitionNodes, symbolTable, byId, diagnostics);
 
-  // Info-Definitionen indizieren und `infoLink`s aufloesen (zwei Durchgaenge).
-  indexAndResolveInfos(infoRoots, byId, diagnostics);
+  // Info-Definitionen indizieren, `infoLink`s und die Modifikator-Ziele der
+  // Info-Elemente aufloesen (zwei Durchgaenge).
+  indexAndResolveInfos(infoRoots, byId, symbolTable, diagnostics);
 
   // `entryLink`-Ziele ueber dieselbe globale Tabelle aufloesen (transitiv,
   // zyklen-sicher); ein nach der Zusammenfuehrung baumelndes Ziel bleibt Diagnose.
