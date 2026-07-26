@@ -314,7 +314,14 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
   const memberIndex = resolved.groupMemberIds ?? new Map();
   for (const owner of [...realNodes(root)]) {
     if (owner.isForce) continue;
-    for (const groupDef of groupDefinitionsWithLimits(ownerDefinitionOf(owner))) {
+    const ownerDef = ownerDefinitionOf(owner);
+
+    if (ownerDef.kind === DefinitionKind.GROUP) {
+      const memberIds = memberIndex.get(ownerDef.id);
+      if (memberIds !== undefined) annotateGroupMembers(owner, ownerDef.id, memberIds);
+    }
+
+    for (const groupDef of groupDefinitionsWithLimits(ownerDef)) {
       attachGroupAnchor(owner, groupDef, nextFrameId);
       const memberIds = memberIndex.get(groupDef.id);
       if (memberIds !== undefined) annotateGroupMembers(owner, groupDef.id, memberIds);

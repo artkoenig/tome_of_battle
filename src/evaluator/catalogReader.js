@@ -105,6 +105,8 @@ const Attr = Object.freeze({
 
 /** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
 const CONDITION_KINDS = Object.freeze(new Set(Object.values(ConditionKind)));
+console.log("CONDITION_KINDS contains:", [...CONDITION_KINDS]);
+
 
 /** Die gueltigen `type`-Werte einer Bedingungsgruppe (SSOT-Enum {@link ConditionGroupKind}). */
 const CONDITION_GROUP_KINDS = Object.freeze(new Set(Object.values(ConditionGroupKind)));
@@ -274,6 +276,9 @@ function readCondition(conditionEl, diagnostics) {
       scope: conditionEl.getAttribute(Attr.SCOPE),
     }));
     return null;
+  }
+  if (type === 'equalTo' || type === 'lessThan' || type === 'greaterThan') {
+    console.log(`PARSED CONDITION: type=${type} value=${value} field=${field} scope=${scope}`);
   }
   return {
     type,

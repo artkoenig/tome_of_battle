@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<roster id="equal-to-false" name="equal-to-false" battleScribeVersion="2.03" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="f1" name="Orcs" entryId="1821-fbd1-0d96-2d88" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="armours" name="Magic Armour (Orc)" entryId="0953-e235-772f-9575" number="1" type="upgrade">
+          <selections>
+            <selection id="gork" name="Armour of Gork" entryId="fb6e-fc66-71f7-8152" number="1" type="upgrade"/>
+            <selection id="mork" name="Armour of Mork" entryId="79a9-e00d-17f1-e789" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
