@@ -182,6 +182,9 @@ export function query(ctx, field, scope, targetId, flags) {
   if (field.kind === CountedFieldKind.SELECTION_COUNT) {
     return tally.selectionCount;
   }
+  if (field.kind === CountedFieldKind.FORCE_COUNT) {
+    return tally.forceCount;
+  }
   if (field.kind === CountedFieldKind.COST_SUM) {
     return tally.costSums.get(field.costTypeId) ?? 0;
   }

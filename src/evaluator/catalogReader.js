@@ -16,6 +16,7 @@
 
 import {
   SELECTION_COUNT,
+  FORCE_COUNT,
   costSumField,
   limitValueField,
   LIMIT_FIELD_PREFIX,
@@ -116,6 +117,7 @@ const INFO_LINK_KINDS = Object.freeze(new Set(Object.values(InfoLinkKind)));
 
 /** Das `field`-Attribut, das die Selektionsanzahl statt einer Kostenart meint. */
 const SELECTION_COUNT_FIELD_XML = 'selections';
+const FORCE_COUNT_FIELD_XML = 'forces';
 
 const BOOLEAN_TRUE_XML = 'true';
 const BOOLEAN_FALSE_XML = 'false';
@@ -132,6 +134,7 @@ const XML_MIME_TYPE = 'application/xml';
 function readField(fieldAttr) {
   if (fieldAttr === null || fieldAttr === '') return undefined;
   if (fieldAttr === SELECTION_COUNT_FIELD_XML) return SELECTION_COUNT;
+  if (fieldAttr === FORCE_COUNT_FIELD_XML) return FORCE_COUNT;
   if (fieldAttr.startsWith(LIMIT_FIELD_PREFIX)) {
     return limitValueField(fieldAttr.slice(LIMIT_FIELD_PREFIX.length));
   }
@@ -672,6 +675,7 @@ function readForceEntry(forceEl, diagnostics) {
     id: forceEl.getAttribute(Attr.ID),
     name: forceEl.getAttribute(Attr.NAME),
     kind: DefinitionKind.FORCE,
+    categoryIds: readCategoryIds(forceEl),
     limits: readLimits(forceEl, diagnostics),
     modifiers: readModifiers(forceEl, diagnostics),
     modifierGroups: readModifierGroups(forceEl, diagnostics),
