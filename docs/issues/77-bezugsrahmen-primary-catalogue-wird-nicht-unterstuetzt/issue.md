@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -50,3 +50,13 @@ Zu (2) nachgemessen, weil der Bericht vier verletzte Module nennt: das stimmt so
 Also zwei der sechs, nicht vier; countIndex.js und resolver.js stammen aus Main-Issue 76 bzw. 79.
 
 Der sachliche Kern bleibt: Scheibe 04 ist in zwei Module gewachsen, die der Plan ausgeschlossen hatte. Kein verdecktes Wachstum — die Scheibe hat ein eigenes Kind-Issue mit eigenen Akzeptanzkriterien bekommen. Eine Nachfuehrung von design.md unterbleibt bewusst: der Plan ist ein temporaeres Artefakt und wird am Aufloesungs-Gate geloescht, es gibt also keinen kuenftigen Leser, den eine veraltete Modulkarte irrefuehren koennte. Festgehalten ist es hier.
+- Review-Gate, alle fuenf Achsen gelaufen:
+- Achse A (Standards): statische Analyse ohne blockierenden Fund fuer dieses Main-Issue (lint 0, typecheck 0, depcruise 0 Fehler; knip beendet mit 1, das ist der vorbestehende Rueckstand ausserhalb src/evaluator und liegt als Issue 87). Sechs Code-Smell-Befunde — einer davon (falscher Datensatz-Eintrag in docs/evaluator-architecture.md) hier behoben, die uebrigen fuenf als Issue 90 ausgelagert.
+- Achse B (Spezifikation): 0 Befunde. Alle Kriterien der vier Scheiben im Diff belegt; die umgeschriebenen Tests in query.primaryCatalogue.test.js sind durch AC5 der Scheibe 04 beauftragt, nicht dem Code nachgezogen.
+- Achse C (Tests): gruen. 2201 Tests in 212 Dateien plus Puppeteer-E2E.
+- Achse D (Doku): 2 Befunde, beide veraltete Verweise, beide hier behoben.
+- Achse E (Design-Konformitaet): 2 Abweichungen, beide gerechtfertigt; die Modulkarten-Zahl nachgemessen und korrigiert (siehe vorigen Kommentar).
+
+Behoben statt ausgelagert wurden drei Verweis-Befunde: (1) der Datensatz-Eintrag in docs/evaluator-architecture.md fuehrte das neue Knotenfeld unter falschem Namen, in falscher Form, mit falschem Lesezugriff und der falschen Behauptung 'nur am Kontingent besetzt'; (2) zwei Szenario-READMEs (explorer-force-constraints, mercenaries-repeat-bug) nannten fuer Ogre Kingdoms weiter 49a5-e8f7-aa09-ad96 — nachgemessen ist das gar keine Katalog-Id, sondern die Publikations-Id 'Warhammer Armies: Ogre Kingdoms (6th Edition)'; die echte Wurzel ist 731d-5b13-2a92-5427 rev 2. Danach stimmen alle 135 Katalog-Id-Nennungen der Szenario-READMEs mit den fuenf echten Fixture-Wurzeln ueberein. (3) Issue 83 zitierte Fundstellen, die dieser Diff verschoben hat — dort als Kommentar korrigiert.
+
+Zur Kenntnis fuer kuenftige Arbeit am Faehigkeitsdatensatz: Scheibe 04 hat auch eine Prozentgrenze mit Nenner null als 'nicht auswertbar' eingestuft. Gemessene Wirkung null (der Fall kommt in keinem E2E-Roster vor), aber die Verfuegbarkeitsausgabe fuer diesen Fall hat sich damit geaendert — belegt in constraints.js:62-69 und festgehalten in constraints.test.js:256.

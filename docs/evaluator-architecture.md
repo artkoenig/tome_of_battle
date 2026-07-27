@@ -276,8 +276,11 @@ record EvalNode {
   isPhantom: bool
   anchorKind: AnchorKind           // abgelesen, nicht aus Pfadform geraten
   forceRoot: EvalNode              // das umschließende Kontingent
-  primaryCatalogueId: Id?          // nur am Kontingent-Knoten besetzt; geprüft beim
-                                   // Baumbau, gelesen über primaryCatalogueIdOf (§3.2)
+  primaryCatalogue: {              // an JEDEM Knoten besetzt: das Kontingent bindet
+    id: Id?                        // sich selbst, jeder andere Knoten erbt (§3.2).
+    unresolved: Reason?            // Entweder geprüfte Id ODER Grund, nie beides.
+  }                                // Gesetzt bei der Erzeugung, nie überschrieben;
+                                   // gelesen über primaryCatalogueOf (§3.2)
 }
 
 // Träger = der Knoten selbst oder eines seiner Info-Elemente (§3.4).

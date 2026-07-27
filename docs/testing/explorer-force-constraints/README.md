@@ -4,7 +4,7 @@
 
 - Spielsystem: `Warhammer Fantasy Battles (6th definitive edition).gst` (`0d13-7737-ea86-4662`, rev 1)
 - Kataloge:
-  - `Ogre Kingdoms (6th definitive edition).cat` (`49a5-e8f7-aa09-ad96`, rev 1) — Force **„Standard (OK-AB)"** `729f-9246-5cd3-5044`
+  - `Ogre Kingdoms (6th definitive edition).cat` (`731d-5b13-2a92-5427`, rev 2) — Force **„Standard (OK-AB)"** `729f-9246-5cd3-5044`
   - `Mercenaries (6th definitive edition).cat` (`fc47-8392-a6c8-452a`, rev 1)
 
 ## Auswertung von Force Constraints auf Kategorie-Ebene
