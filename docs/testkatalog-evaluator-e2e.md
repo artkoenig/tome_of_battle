@@ -102,7 +102,9 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`info-projection`](testing/info-projection/) | Definitive VC + Mercenaries | 4 |
 | [`violation-classification`](testing/violation-classification/) | Definitive Ogre + Mercenaries | 7 |
 | [`author-message-tokens`](testing/author-message-tokens/) | Definitive Ogre + Mercenaries | 3 |
-| **Summe** | | **104** |
+| [`unlimited-sentinel`](testing/unlimited-sentinel/) | Definitive O&G | 5 |
+| [`linked-entry-type-count`](testing/linked-entry-type-count/) | Definitive Ogre + Mercenaries | 4 |
+| **Summe** | | **113** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je

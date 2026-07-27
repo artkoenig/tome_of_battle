@@ -133,12 +133,15 @@ der Gegenrichtung, dass ein verlinktes Vorkommen die Zaehlung tatsaechlich
   es in diesen Katalogdaten keinen Fall (siehe Kasten oben). Das ist eine
   Datenluecke, keine Aussage ueber die Engine.
 
-### Erwarteter Ausgangszustand
+### Entstehung
 
-Dieses Szenario entsteht **vor** der Engine-Aenderung (Issue 76/03). Solange die
-Eintragsart eines verlinkten Vorkommens nicht vom aufgeloesten Ziel bezogen wird,
-sind die Roster **02, 03 und 04 rot** und nur Roster **01** gruen. Das ist so
-gewollt: die Erwartungen stehen so, wie die Katalogdaten sie vorgeben.
+> **Historie:** Dieses Szenario entstand **vor** der Engine-Aenderung aus Issue
+> 76/03 und war bei seiner Entstehung absichtlich rot — die Roster 02, 03 und 04
+> schlugen fehl, nur Roster 01 war gruen. Ursache war, dass die Eintragsart eines
+> verlinkten Vorkommens nicht vom aufgeloesten Ziel bezogen wurde. Die Erwartungen
+> wurden also aus den Katalogdaten hergeleitet und nicht an das Verhalten der
+> Engine angepasst (ADR-0033); die Aenderung hat sie danach eingeloest. Heute sind
+> alle vier Roster gruen.
 
 ### Verifizierte Bausteine (aus den Katalogdaten)
 
