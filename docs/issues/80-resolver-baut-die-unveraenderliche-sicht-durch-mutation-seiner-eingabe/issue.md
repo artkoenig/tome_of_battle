@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -33,3 +33,4 @@ abgesichert wird (Einfrieren nach der Aufbereitung).
 - [ ] Ein Test haelt fest, dass mehrere Auswertungen desselben aufbereiteten Datensatzes einander nicht beeinflussen.
 
 ## Comments
+- Umgesetzt im Metis-Probelauf auf Branch `resolver-immutability`; Ablauf, Entscheidungen und Review-Runden stehen in `docs/issues/resolver-immutability.md`. Entschieden wurde gegen Seitentabellen und fuer erzwungene Unveraenderlichkeit nach der Aufbereitung (tiefes Einfrieren des aufgeloesten Graphen).

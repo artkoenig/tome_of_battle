@@ -1,5 +1,5 @@
 ---
-status: active
+status: waiting
 branch: resolver-immutability
 pr:
 ---
@@ -180,8 +180,61 @@ Akzeptanzkriterien (übernommen aus dem Alt-Issue
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Die vier Kriterien stammen unverändert
+  aus Alt-Issue 80 und sind in Runde 3 einzeln als erfüllt bestätigt, jedes
+  gegen die Laufzeit geprüft statt gelesen. Gewachsen ist der Umfang an einer
+  Stelle: aus der dokumentierten Vorbedingung wurde ein Laufzeit-Wächter
+  (`assertUnresolved`). Von mir autorisiert, oben begründet, vom Reviewer
+  benannt.
+- **What surprised me?** Drei Dinge. (1) Die Zusicherung selbst war dreimal
+  falsch formuliert, bevor sie stimmte — in einem Lauf, dessen ganzer Zweck es
+  ist, eine Zusicherung wahr zu machen. (2) Der Reviewer aus Runde 3 hat eine
+  Gegenprobe gebaut, die niemand beauftragt hatte: ein simuliertes Leck in
+  `evaluate`, das die Frage aus Runde 2 endgültig geklärt hat. (3) Der
+  Implementer hat zweimal ein eigenes Fehlurteil eingeräumt, statt es zu
+  verteidigen — beide Male, nachdem ein fremder Kontext mit einer Reproduktion
+  davorstand.
+- **What am I assuming without having verified it?** Dass die Berichte der
+  Subagenten wahr sind — ich habe keine Zeile dieses Codes selbst gelesen.
+  Belastbar ist daran: Exit-Codes wurden je Runde neu gemeldet, die
+  Neutralisierungs-Zahlen (8/11 → 9/12) wurden von einem zweiten Kontext exakt
+  repliziert, und jede der drei Runden hat mindestens einen Befund des
+  Vorgängers *nicht* bestätigt. Ein reines Nachplappern hätte diese Muster
+  nicht erzeugt. Ungeprüft bleibt die Leistungsmessung (~11 %): ein einziger
+  Kontext hat sie erhoben, kein zweiter sie nachgerechnet.
 
 ## Retro
+
+Der Lauf hat vier Kriterien in drei Review-Runden plus einer Bestätigungsfrage
+geschlossen. Was funktioniert hat und was nicht:
+
+**Der frische Kontext ist das tragende Teil.** Jede der drei Runden hat etwas
+gefunden, das der Implementer nicht sehen konnte — und zweimal etwas, das der
+*vorherige Reviewer* nicht gesehen hatte. Runde 3 hat außerdem einen Befund aus
+Runde 2 sachlich entkräftet: Die beiden Gleichheitstests waren doch keine
+Tautologie, ihre Begründung war nur falsch. Ein einzelner Reviewer hätte diesen
+Unterschied nicht produziert.
+
+**Der weggelassene `test-author` hat genau den vorhergesagten Schaden
+angerichtet — und die vorgesehene Kompensation hat ihn aufgefangen.** Der erste
+Test für Kriterium 4 lief gegen ein leeres Roster und prüfte nichts. Das ist die
+Selbstbestätigung, gegen die es den separaten Test-Autor gibt. Kosten: eine
+Review-Runde. Ich würde die Entscheidung wieder so treffen — die Mechanik stand
+erst am Code fest —, aber sie war nicht gratis, und das gehört so notiert.
+
+**Regel-Vorschlag für metis: Die Perzeptionsregel „gleicher Fehler zweimal"
+greift zu eng.** Kriterium 3 ist zweimal gerissen, aber nie mit identischem
+Befund — andere Datei, entgegengesetzte Ursache. Formal kein Stopp-Signal, und
+ich habe auch nicht gestoppt. Das Muster war trotzdem eines: *Aussagen über
+Unveränderlichkeit sind in diesem Code schwerer korrekt zu formulieren als der
+Code selbst zu schreiben.* Wer auf Identität prüft, sieht das nie. Vorschlag:
+die Regel auf **dasselbe Kriterium zweimal gerissen** erweitern, unabhängig vom
+Befund — das hätte hier ausgelöst und wäre die richtige Frage gewesen (ist die
+Zusicherung an zu vielen Orten formuliert?), auch wenn die Antwort am Ende nein
+war.
+
+**Was die Issue-Datei gut konnte:** Der ganze Lauf ist aus ihr rekonstruierbar,
+inklusive der Entscheidungen, die ich selbst korrigieren musste. Was sie
+schlecht konnte: `## Decisions` ist auf 100+ Zeilen gewachsen und mischt
+Triage-Protokoll mit tragenden Entscheidungen. Wer hier in Runde 4 einsteigt,
+liest viel Prozess, um an drei Sachentscheidungen zu kommen.
