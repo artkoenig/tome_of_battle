@@ -143,6 +143,10 @@ seit Issue 70 in die Auswertung ein: die Engine nimmt das vollständige Roster
 inkl. Kostengrenzen entgegen, löst `limit::<costTypeId>` aus dem Roster-Budget
 auf (budget-gesteuerte Bedingungen/Modifikatoren wie budgetabhängige
 Helden-/Lord-Slots) und meldet Budget-Überschreitungen. Offen für den produktiven
-Ersatz bleibt allein der Cutover — die App auf die Engine zu verdrahten. (Bekannte
-Grenze außerhalb dieses Umfangs: die Sichtbarkeit einer *Kategorie* wird noch nicht
-als Verfügbarkeit im Bericht abgebildet — Kategorie-Knoten sind keine Auswahl-Slots.)
+Ersatz bleibt allein der Cutover — die App auf die Engine zu verdrahten; er ist
+als Main-Issue 82 erfasst. (Die hier zuvor als offen geführte Grenze — die
+Sichtbarkeit einer *Kategorie* wird nicht als Verfügbarkeit im Bericht abgebildet —
+ist mit Issue 75/05 geschlossen: jeder Knoten trägt seine Ankerart, darunter
+`categoryAnchor`, und der Bericht führt einen Fähigkeitsdatensatz für **jeden**
+Slot statt nur für reale Knoten und MIN-tragende Phantome. Eine ausgeblendete
+Kategorie ist damit im Bericht sichtbar; siehe ADR-0035.)
