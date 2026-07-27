@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: ready-for-agent
 Type: chore
 Blocked by: None
 
@@ -49,3 +49,6 @@ erfordert — eine redaktionelle Entscheidung an einer angenommenen ADR.
 ## Comments
 - Die Umsetzung liegt bereits vor (Main-Issue 77, Scheibe 03) und ist in docs/evaluator-architecture.md §3.2, §4.1, §4.3 und §4.5 beschrieben. Es fehlt allein das Entscheidungsdokument.
 - Gleiche Lage bei zwei weiteren ADR-Kandidaten dieser Sitzung, die aus demselben Grund offen blieben: "Das Roster benennt eine Auswahl ueber den Verweis, nicht ueber sein Ziel" (Main-Issue 76) und "Die aufgeloeste Sicht des Evaluators wird nach der Aufbereitung eingefroren statt mutationsfrei gebaut" (Main-Issue 80). Wer diese ADR schreibt, sollte pruefen, ob die drei zusammengehoeren.
+- PO-Sichtung: bleibt zunaechst liegen, aber nicht mehr unbefristet. Die ADR beschreibt das Ergebnis von Main-Issue 77; solange dessen Scheibe 04 den Faehigkeitsdatensatz noch anfasst, waere sie eine Beschreibung eines beweglichen Ziels. Sie wird geschrieben, sobald 77 aufgeloest ist.
+
+Zum Vorbehalt 'Sache des Maintainers': er gilt fuer den Wortlaut von ADR-0032, nicht fuer die neue ADR selbst. Die neue ADR wird daher verfasst, ADR-0032 aber nicht umgeschrieben — sie bekommt hoechstens einen Querverweis, damit beide Aussagen zusammen gelesen werden (Datensatz hat keinen primaeren Katalog, Roster hat einen je Kontingent). Eine inhaltliche Aenderung an der angenommenen ADR bleibt dem Maintainer vorbehalten.

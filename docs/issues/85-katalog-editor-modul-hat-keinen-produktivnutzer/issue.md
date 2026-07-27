@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: ready-for-agent
 Type: chore
 Blocked by: None
 
@@ -33,3 +33,8 @@ Gefunden bei der Standards-Pruefung zu Main-Issue 79.
 
 ## Comments
 - Zusatzbefund derselben Pruefung: dass beide Gates dieses Modul nicht sehen, ist ein allgemeines Loch, nicht nur eines fuer diese Datei. Ob die Konfiguration das aendern soll (Testdateien nicht als Einstiegspunkte zu werten), ist eine eigene Frage — hier nur festgehalten, nicht entschieden.
+- PO-Sichtung, Versionsgeschichte ausgewertet (AC 1 belegt): ueber ALLE Refs und die gesamte Historie referenzieren nur vier Dateien das Modul — es selbst, seine beiden Tests und frueher src/solver/validator.test.js (Import von updateRawXml, entfernt in 1914016). Kein einziger Produktivnutzer, zu keinem Zeitpunkt. Angelegt am 2026-07-20 in 7bf437c zusammen mit der gesamten src/parser-Schicht, seither nur einmal angefasst (1914016, Issue 39). Damit ist Fall B belegt: auf Vorrat gebaut, nie angebunden.
+
+PO-Entscheid: entfernen, samt seiner beiden Testdateien. Begruendung: 299 Zeilen ohne Nutzer sind Speculative Generality; sollte je ein Katalog-Editor spezifiziert werden, ist der Code aus der Historie wiederherstellbar, waehrend die Kosten des Liegenbleibens (Pflege, Analyse-Rauschen, blinde Gates) laufend anfallen. Der Maintainer kann diesen Entscheid kippen, bevor die Scheibe umgesetzt wird.
+
+Der Zusatzbefund (beide Gates sehen das Modul nicht, weil Testdateien als Einstiegspunkte gelten, knip.json:5) bleibt hier bewusst ausgeklammert und gehoert zu Issue 87, wo die Frage 'Gate oder Hinweis' ohnehin entschieden wird.
