@@ -132,6 +132,36 @@ Akzeptanzkriterien (übernommen aus dem Alt-Issue
   dieselbe Zusicherung erneut anders formuliert; das wäre dann ein Problem
   der Verteilung, nicht der Formulierung.
 
+- **Review-Runde 3** (dritter frischer Reviewer). Fakten grün (2109 Tests,
+  Lint, Typecheck, alle Exit 0). **Alle vier Kriterien erfüllt.** Der Reviewer
+  hat nicht nur nachgelesen, sondern gegengeprobt:
+  - Neutralisierung unabhängig repliziert: 9 von 12 fallen, exakt die
+    gemeldete Aufteilung, exakt die drei benannten Überlebenden.
+  - Zu Kriterium 4 hat er die entscheidende Gegenprobe gebaut, die niemand
+    beauftragt hatte: ein simuliertes Leck in `evaluate` (jede Auswertung
+    erhöht `limit.value` am geteilten Graphen — genau das Abdriften, gegen das
+    Kriterium 4 existiert). Beide Gleichheitstests kippen daraufhin (11 von 12
+    fallen). Damit ist belegt, dass sie keine Tautologie sind: sie überleben
+    die Neutralisierung nur, weil das Wegnehmen des Einfrierens für sich
+    genommen noch keinen Rückschreibzugriff erzeugt — was zu behaupten für sie
+    korrekt ist.
+  - Die „genau zwei Dateien"-Behauptung des Implementers unabhängig geprüft:
+    hält. Kein dritter Ort formuliert die Zusicherung anders.
+  - Jede geänderte JSDoc-Behauptung zur Laufzeit nachgemessen statt gelesen.
+- *Restbefund, nicht blockierend, zur Nacharbeit beauftragt:* `resolver.js:30`
+  schreibt jeden Wurf dem strict mode zu. Bei den gehärteten Mengen wirft aber
+  die ersetzte eigene Eigenschaft (unabhängig vom Modus), nur Feldschreibzugriffe
+  hängen wirklich am strict mode. Nicht falsch, aber unpräzise — und zwar in
+  genau der Datei, auf die die drei anderen Stellen als alleinige Quelle der
+  Mechanik verweisen. Zielformulierung existiert bereits zweimal im Baum.
+- *Akzeptiert, mit Grund:* Der Reviewer merkt an, dass Runde 1 die
+  Einmal-pro-Graph-Vorbedingung als Dokumentationslücke triagiert hat, während
+  ein Laufzeit-Wächter samt zwei Tests gelandet ist. Er benennt es, ohne zu
+  widersprechen, und benennt es zu Recht — die Ausweitung war meine
+  Autorisierung: ein Wächter, der einen undurchsichtigen `TypeError` mitten in
+  der Anreicherung in einen lesbaren verwandelt, ist dieselbe
+  „fällt-bei-Verletzung-auf"-Form, die Kriterium 2 verlangt.
+
 ## Checkpoints
 
 ### Before implementation

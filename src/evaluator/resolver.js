@@ -27,8 +27,11 @@
  * Fassade zweistufig ist, traegt ein aufbereiteter Datensatz beliebig viele
  * Auswertungen (Leitprinzip 5, `effectiveState.js`); ein gewoehnlicher
  * Schreibzugriff auf diesen Graphen — aus der Engine wie vom Aufrufer — wirft
- * deshalb im Strict Mode einen `TypeError` an der schreibenden Stelle, statt
- * als ferne Korruption spaeterer Berichte aufzufallen.
+ * deshalb einen `TypeError` an der schreibenden Stelle, statt als ferne
+ * Korruption spaeterer Berichte aufzufallen. Zwei Mechanismen, je nach Ziel:
+ * ein **Feld** scheitert am eingefrorenen Objekt und damit am Strict Mode, eine
+ * **Menge oder Karte** an ihren ersetzten Mutatoren
+ * ({@link hardenCollection}), die in jedem Modus werfen.
  *
  * Die Durchsetzung zielt auf **unbeabsichtigtes Abdriften**, nicht auf
  * boeswillige Umgehung: wer eine Mutator-Methode am Prototyp vorbeiholt
