@@ -9,6 +9,13 @@
  * auf Disziplin beruhen: nach der Aufloesung ist der ganze Graph tief
  * eingefroren, und jeder spaetere Schreibversuch wirft im Strict Mode einen
  * `TypeError` — an der schreibenden Stelle, nicht als ferne Korruption.
+ *
+ * Drei Dinge stehen hier: dass der Graph eingefroren **ist** (der Mechanismus),
+ * dass die daraus folgende Einmal-Vorbedingung von `resolveCatalogue`
+ * durchgesetzt wird, und dass mehrere Auswertungen desselben aufbereiteten
+ * Datensatzes einander **nicht beeinflussen** — letzteres an einem Roster, das
+ * eine Verletzung und einen bedingten Modifikator ausloest, damit der Vergleich
+ * etwas vergleicht.
  */
 
 import { JSDOM } from 'jsdom';
@@ -154,20 +161,107 @@ describe('Resolver: die aufgeloeste Sicht ist tief eingefroren', () => {
   });
 });
 
-describe('Fassade: die Auswertung arbeitet auf dem eingefrorenen Graphen', () => {
-  it('wertet gegen den eingefrorenen aufbereiteten Datensatz aus — wiederholt und wirkungsfrei', () => {
-    const prepared = prepareDataset({ catalogues: [CATALOGUE_XML] });
-    const roster = {
-      forces: [],
-    };
+describe('Resolver: eine zweite Aufloesung derselben Knoten wird abgewiesen', () => {
+  it('meldet die verletzte Vorbedingung mit klarer Meldung statt eines rohen Schreibfehlers', () => {
+    const catalogue = parseCatalogue(CATALOGUE_XML);
+    resolveCatalogue(catalogue);
 
-    // Zwei Auswertungen desselben aufbereiteten Datensatzes: die zweite sieht
-    // exakt denselben Graphen — haette eine Auswertung geschrieben, waere sie
-    // bereits an der eingefrorenen Definition gescheitert.
-    const first = evaluate(prepared, roster);
-    const second = evaluate(prepared, roster);
+    expect(() => resolveCatalogue(catalogue)).toThrow(/bereits aufgeloest/);
+  });
 
-    expect(second.violations).toEqual(first.violations);
-    expect(second.diagnostics.map(d => d.kind)).toEqual(first.diagnostics.map(d => d.kind));
+  it('laesst die Aufloesung frisch geparster Knoten unberuehrt zu', () => {
+    resolveCatalogue(parseCatalogue(CATALOGUE_XML));
+
+    expect(resolveFixture().lookup(ENTRY_ID).id).toBe(ENTRY_ID);
+  });
+});
+
+/**
+ * Ein vergleichbarer Fingerabdruck eines Berichts: die Verletzungen mit Ist und
+ * Grenze, die Faehigkeitsdatensaetze je Slot-Pfad und die Diagnosearten.
+ * Verglichen wird das *Ergebnis*, nicht die Objektidentitaet — zwei Auswertungen
+ * liefern immer verschiedene Objekte.
+ */
+function reportFingerprint(report) {
+  return JSON.stringify({
+    violations: report.violations
+      .map(violation => `${violation.limitId}@${violation.anchor?.defId}=${violation.actual}/${violation.bound}`)
+      .sort(),
+    capabilities: [...report.capabilities]
+      .map(([path, capability]) => `${path}:${capability.defId}:${capability.current}/${capability.effectiveMax}`)
+      .sort(),
+    diagnostics: report.diagnostics.map(entry => entry.kind).sort(),
+  });
+}
+
+/** Ein Roster aus `warriors` Kriegern und `archers` Bogenschuetzen. */
+function armyOf(warriors, archers) {
+  return {
+    forces: [
+      { defId: ENTRY_ID, count: warriors, children: [] },
+      { defId: ARCHER_ID, count: archers, children: [] },
+    ],
+  };
+}
+
+describe('Fassade: mehrere Auswertungen desselben Datensatzes beeinflussen einander nicht', () => {
+  // Das Roster ist mit Absicht **aussagekraeftig**: drei Krieger reissen
+  // `limit-max-warriors` (max 2), und der Bogenschuetze erfuellt die Bedingung des
+  // Kosten-Modifikators. Jede Auswertung liest damit genau die angereicherten
+  // Felder des eingefrorenen Graphen (`modifier.target`,
+  // `condition.witnessDefinition`). Ein leeres Roster beruehrte nichts davon —
+  // der Vergleich zweier leerer Berichte sagte ueber Wechselwirkungen nichts aus.
+  const OVER_LIMIT = armyOf(3, 1);
+
+  /** Haelt fest, dass der Bericht wirklich etwas enthaelt, das auseinanderlaufen koennte. */
+  function expectSubstantive(report) {
+    expect(report.violations).toHaveLength(1);
+    expect(report.violations[0].limitId).toBe(MAX_WARRIORS_LIMIT_ID);
+    expect(report.violations[0].actual).toBe(3);
+    expect(report.violations[0].bound).toBe(2);
+    expect(report.capabilities.size).toBe(2);
+  }
+
+  it('liefert dasselbe Ergebnis, egal welche Auswertungen vorher gegen denselben Datensatz liefen', () => {
+    const shared = prepareDataset({ catalogues: [CATALOGUE_XML] });
+
+    const first = evaluate(shared, OVER_LIMIT);
+    expectSubstantive(first);
+
+    // Andere Roster dazwischen — jedes durchlaeuft Baumaufbau, Fixpunktschleife
+    // und Berichtsbau auf demselben Graphen.
+    evaluate(shared, armyOf(0, 0));
+    evaluate(shared, armyOf(2, 1));
+    evaluate(shared, armyOf(5, 3));
+
+    const afterOthers = evaluate(shared, OVER_LIMIT);
+    expectSubstantive(afterOthers);
+    expect(reportFingerprint(afterOthers)).toEqual(reportFingerprint(first));
+  });
+
+  it('liefert gegen den geteilten Datensatz dasselbe wie gegen einen frisch aufbereiteten', () => {
+    const shared = prepareDataset({ catalogues: [CATALOGUE_XML] });
+    evaluate(shared, armyOf(5, 3));
+
+    const againstShared = evaluate(shared, OVER_LIMIT);
+    const againstOwn = evaluate(prepareDataset({ catalogues: [CATALOGUE_XML] }), OVER_LIMIT);
+
+    expect(reportFingerprint(againstShared)).toEqual(reportFingerprint(againstOwn));
+  });
+
+  it('weist den Schreibzugriff ab, der eine spaetere Auswertung veraendern wuerde', () => {
+    // Die Kehrseite der beiden Tests darueber: dass die Berichte gleich bleiben,
+    // liegt nicht daran, dass heute zufaellig niemand schreibt — der Weg dorthin
+    // ist versperrt. Genau diese Werte gehen in `actual`/`bound` des oben
+    // verglichenen Berichts ein; waeren sie schreibbar, liefe jede spaetere
+    // Auswertung gegen andere Zahlen als die erste.
+    const resolved = resolveFixture();
+    const warrior = resolved.lookup(ENTRY_ID);
+    const maxWarriors = warrior.limits.find(limit => limit.id === MAX_WARRIORS_LIMIT_ID);
+
+    expect(maxWarriors.value).toBe(2);
+    expect(() => { maxWarriors.value = 99; }).toThrow(TypeError);
+    expect(() => { warrior.costs[POINTS_ID] = 999; }).toThrow(TypeError);
+    expect(maxWarriors.value).toBe(2);
   });
 });

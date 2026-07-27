@@ -21,14 +21,20 @@
  * ── Unveraenderlichkeit ist durchgesetzt, nicht nur versprochen ──────────────
  * Die Anreicherung (`modifier.target`, `condition.witnessDefinition`,
  * `info.resolved`, `link.resolved`) schreibt **einmal, waehrend der
- * Aufloesung**, auf die frisch geparsten Objekte — danach wird der gesamte
- * Definitionsgraph samt Sicht **tief eingefroren**
- * ({@link freezeResolvedView}). Seit die Fassade zweistufig ist, traegt ein
- * aufbereiteter Datensatz beliebig viele Auswertungen (Leitprinzip 5,
- * `effectiveState.js`); jeder spaetere Schreibversuch — aus der Engine wie vom
- * Aufrufer — wirft deshalb im Strict Mode einen `TypeError` an der
- * schreibenden Stelle, statt als ferne Korruption spaeterer Berichte
- * aufzufallen.
+ * Aufloesung**, auf die frisch geparsten Objekte — danach werden die
+ * zurueckgegebene Sicht und jeder von ihr getragene Definitions- und
+ * Info-Knoten **tief eingefroren** ({@link freezeResolvedView}). Seit die
+ * Fassade zweistufig ist, traegt ein aufbereiteter Datensatz beliebig viele
+ * Auswertungen (Leitprinzip 5, `effectiveState.js`); ein gewoehnlicher
+ * Schreibzugriff auf diesen Graphen — aus der Engine wie vom Aufrufer — wirft
+ * deshalb im Strict Mode einen `TypeError` an der schreibenden Stelle, statt
+ * als ferne Korruption spaeterer Berichte aufzufallen.
+ *
+ * Die Durchsetzung zielt auf **unbeabsichtigtes Abdriften**, nicht auf
+ * boeswillige Umgehung: wer eine Mutator-Methode am Prototyp vorbeiholt
+ * (`Set.prototype.add.call(...)`), kommt an den internen Slots einer Menge oder
+ * Karte weiterhin vorbei. Das ist bewusst hingenommen — die Garantie soll einen
+ * versehentlichen Schreibzugriff sofort sichtbar machen, und genau das tut sie.
  */
 
 import { DefinitionKind, InfoElementKind, ModifierTargetKind, MessageSeverity, DiagnosticKind, diagnostic } from './model.js';
@@ -441,6 +447,10 @@ function indexAndResolveInfos(infoRoots, byId, symbolTable, diagnostics) {
  * Ersetzt die mutierenden Methoden einer Menge/Karte durch werfende Varianten:
  * `Object.freeze` allein liesse `add`/`set`/`delete`/`clear` zu, weil sie keine
  * Eigenschaften schreiben, sondern internen Zustand. Lesend bleibt alles nutzbar.
+ *
+ * Das haelt den **gewoehnlichen** Zugriff (`menge.add(x)`) auf, nicht den am
+ * Prototyp vorbeigeholten (`Set.prototype.add.call(menge, x)`) — siehe die
+ * Einordnung im Kopf dieser Datei.
  */
 function hardenCollection(collection, methodNames) {
   for (const name of methodNames) {
@@ -485,8 +495,17 @@ function deepFreezeGraph(value, seen) {
  * Ueber die Sicht selbst hinaus werden alle gesammelten Knoten eingefroren,
  * denn nicht jeder ist von ihr aus per Eigenschaft erreichbar: geteilte
  * Definitionen stehen nur im `lookup`-Abschluss, eine Duplikat-Definition nicht
- * einmal dort. Nach diesem Schritt gibt es keinen beschreibbaren Weg mehr in
- * den Katalog-Graphen.
+ * einmal dort.
+ *
+ * **Was nicht eingefroren wird:** die eigenen Behaelter des uebergebenen
+ * Katalogs (`catalogue.entries`, `catalogue.infos`, …). Sie sind das Objekt des
+ * Aufrufers, nicht das Erzeugnis dieser Schicht, und die Sicht liest sie nach
+ * ihrer Rueckgabe nicht mehr: jede Liste, die sie fuehrt, ist frisch abgeleitet
+ * (`definitions`, `armyLevelCandidates`, `diagnostics`) — die einzige
+ * durchgereichte, `profileTypes`, ist als Teil der Sicht mit eingefroren. Ein
+ * Schreibzugriff auf den Katalog kann eine schon aufgeloeste Sicht daher nicht
+ * mehr veraendern; die **Knoten** darin sind ohnehin dieselben eingefrorenen
+ * Objekte.
  */
 function freezeResolvedView(view, definitionNodes, infoRoots) {
   const seen = new Set();
@@ -494,6 +513,30 @@ function freezeResolvedView(view, definitionNodes, infoRoots) {
   for (const info of infoRoots) deepFreezeGraph(info, seen);
   deepFreezeGraph(view, seen);
   return view;
+}
+
+/**
+ * Weist eine **zweite Aufloesung derselben Knoten** an der Tuer ab, mit klarer
+ * Meldung statt eines rohen `TypeError` mitten in der Anreicherung.
+ *
+ * Die Aufloesung schreibt einmalig auf die geparsten Objekte und friert sie
+ * danach ein — ein Aufruf auf schon aufgeloesten Knoten koennte gar nicht
+ * gelingen. Der Fall ist nicht konstruiert: `mergeCatalogues` teilt die
+ * Knotenobjekte seiner Quelldokumente mit dem Aggregat, zwei Aggregate ueber
+ * demselben Dokument tragen also **dieselben** Knoten. Geprueft wird vor dem
+ * ersten Schreibzugriff, sodass ein abgewiesener Aufruf nichts halb Mutiertes
+ * hinterlaesst.
+ */
+function assertUnresolved(definitionNodes, infoRoots) {
+  const resolvedNode = definitionNodes.find(node => Object.isFrozen(node))
+    ?? infoRoots.find(info => Object.isFrozen(info));
+  if (resolvedNode === undefined) return;
+  throw new TypeError(
+    'Diese Definitionen sind bereits aufgeloest und damit eingefroren: `resolveCatalogue` ist einmal ' +
+      `je geparstem Katalog aufzurufen (zuerst betroffen: \`${resolvedNode.id}\`). Fuer eine erneute ` +
+      'Aufloesung muss der Katalog neu geparst werden — ein aufbereiteter Datensatz ist dafuer da, ' +
+      'wiederverwendet statt neu aufgeloest zu werden.',
+  );
 }
 
 /**
@@ -515,13 +558,25 @@ function freezeResolvedView(view, definitionNodes, infoRoots) {
  * (`armyLevelCandidates`, siehe {@link collectArmyLevelCandidates}) als eigene,
  * benannte Sicht — die Grundlage der Angebots-Anker je Kontingent (ADR-0035).
  *
- * Die zurueckgegebene Sicht und der gesamte Definitionsgraph dahinter sind
+ * Die zurueckgegebene Sicht und jeder Definitions- und Info-Knoten dahinter sind
  * **tief eingefroren** ({@link freezeResolvedView}): die Aufloesung ist der
- * letzte Schritt, der auf die geparsten Objekte schreibt. Der uebergebene
- * Katalog wird dabei mit eingefroren — er teilt seine Objekte mit der Sicht.
+ * letzte Schritt, der auf die geparsten Objekte schreibt. Die eigenen Behaelter
+ * des uebergebenen Katalogs bleiben davon unberuehrt — was das heisst und warum,
+ * steht an {@link freezeResolvedView}.
+ *
+ * **Vorbedingung — einmal je geparstem Katalog.** Der Aufruf reichert die
+ * uebergebenen Knoten an und friert sie ein; dieselben Knoten ein zweites Mal
+ * aufzuloesen ist deshalb ausgeschlossen und wird abgewiesen. Zu beachten ist
+ * das, weil `mergeCatalogues` die Knotenobjekte seiner Quelldokumente mit dem
+ * Aggregat teilt: zwei Aggregate ueber demselben Dokument tragen dieselben
+ * Knoten. Wer erneut aufloesen will, parst erneut — oder, besser, verwendet den
+ * aufbereiteten Datensatz wieder (`datasetPreparation.js`).
  *
  * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
  * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], diagnostics: object[] }}
+ * @throws {TypeError} Wenn die uebergebenen Knoten schon aufgeloest (und damit
+ *   eingefroren) sind — siehe Vorbedingung. Geprueft wird vor dem ersten
+ *   Schreibzugriff: ein abgewiesener Aufruf laesst den Graphen unveraendert.
  */
 export function resolveCatalogue(catalogue) {
   const collector = {
@@ -542,6 +597,10 @@ export function resolveCatalogue(catalogue) {
     collectDefinition(definition, collector);
   }
   const { byId, categoryIds, diagnostics, definitionNodes, entryLinks, categoryLinks, infoRoots } = collector;
+
+  // Vorbedingung, geprueft vor dem ersten Schreibzugriff: die Knoten duerfen
+  // nicht schon einmal aufgeloest (und damit eingefroren) worden sein.
+  assertUnresolved(definitionNodes, infoRoots);
 
   // Pflicht-Phantom-Quelle: nur die im Wurzel-Baum erreichbaren anwaehlbaren
   // Definitionen (nicht die geteilten/verlinkten — die stehen nur im `lookup`).

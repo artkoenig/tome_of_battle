@@ -33,7 +33,7 @@ Reinraum-Entwurf. Grundlage sind ausschließlich das beschriebene Problem und di
 2. **Single Source of Truth.** Der Bericht ist der einzige Ort, an dem Regel-Ergebnisse existieren. Validierung und UI-Steuerung sind zwei Projektionen desselben Berichts — die Regeln werden nie zweimal ausgewertet.
 3. **Unidirektionaler Datenfluss.** Roster-Änderung → `evaluate` → neuer Bericht → Rendering. Die UI liest nur, sie rechnet nie.
 4. **Ein Query-Primitiv.** Limit, Condition und Repeat sind drei Verpackungen derselben Frage: *„Zähle `field` im Rahmen `scope`, gefiltert auf `target`, unter `flags`."* Es gibt genau eine Implementierung dieser Frage.
-5. **Immutability.** Basisdefinitionen werden nie mutiert. Modifikatoren erzeugen eine separate Ebene „effektiver Werte".
+5. **Immutability.** Die Auswertung mutiert Basisdefinitionen nie; Modifikatoren erzeugen eine separate Ebene „effektiver Werte". Der Resolver reichert die gelesenen Definitionen einmalig **während der Aufbereitung** an (aufgelöste Ziele, Zeugen, Verweisziele) und friert den aufgelösten Graphen danach ein. Die Zusicherung gilt damit nicht durch Disziplin, sondern fällt bei Verletzung auf: ein späterer Schreibzugriff wirft im strict mode an der verursachenden Stelle. Das ist tragend, seit `prepareDataset` denselben Graphen in beliebig viele Auswertungen reicht.
 
 ## 3. Bausteine und Datenfluss
 

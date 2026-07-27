@@ -70,6 +70,36 @@ Akzeptanzkriterien (übernommen aus dem Alt-Issue
 - Umgebung: Standard-Node im Sandbox ist v22.22.2 und verletzt `engines: ^24`;
   alle Läufe liefen unter v24.18.0 aus `NVM_DIR=/opt/nvm`.
 
+- **Review-Runde 1, Triage der fünf Befunde** (alle mit Reproduktion, keiner
+  nach der Reproduktionsregel verworfen):
+  - *Blockierend, zurück an den Implementer:* Befund 1 (Kriterium 4 nicht
+    erfüllt — der Test dafür ist tautologisch: leeres Roster, beide
+    Assertions reduzieren sich auf `expect([]).toEqual([])`; der Reviewer hat
+    es per Gegenprobe belegt: mit neutralisiertem `freezeResolvedView` fallen
+    18 von 20 Assertions, und die 2 Überlebenden sind genau diese) und
+    Befund 3 (Kriterium 3 der Substanz nach verletzt — das JSDoc behauptet,
+    der übergebene Katalog werde mit eingefroren; `p.entries.push(…)`,
+    `p.infos.push(…)`, `p.costTypes.push(…)`, `p.id = …` gelingen aber alle).
+  - *Mitzufixen:* Befund 2 (die Einmal-pro-Graph-Vorbedingung von
+    `resolveCatalogue` ist nicht dokumentiert; sie gilt heute nur durch die
+    zufällige Lage der Aufrufstellen).
+  - *Akzeptiert, mit Grund:* Befund 4 (`Set.prototype.add.call(…)` umgeht die
+    Härtung). Kriterium 2 verlangt, dass eine Verletzung auffällt — gegen
+    unabsichtliches Abdriften hält der Mechanismus, und der reguläre Zugriff
+    wirft. Absichtliche Umgehung über das Prototyp-Objekt abzudichten wäre
+    Aufwand ohne Schutzgewinn. Nur die absolute Formulierung muss weg.
+  - *Von mir selbst behoben:* Befund 5 — `docs/evaluator-architecture.md:36`
+    (Leitprinzip 5) sagte weiter „Basisdefinitionen werden nie mutiert" und
+    widersprach damit dem Quelldokument nach wie vor. Jetzt präzisiert:
+    einmalige Anreicherung während der Aufbereitung, danach eingefroren.
+- Leistungskosten des Einfrierens, vom Reviewer gemessen: ~11 % von
+  `prepareDataset` (1589,6 ms gegen 1428,8 ms, Median aus 5 warmen Läufen
+  über die vier WHFB6-Kataloge + `.gst`). Entschieden, die Entscheidung nicht
+  neu aufzurollen: das sind rund 160 ms einmalig je Datensatz auf einem
+  Vorlauf, der ohnehin 1,4 s dauert, und die Zusicherung ist tragend, seit
+  ein aufbereiteter Graph in beliebig viele Auswertungen reicht. Der Preis
+  steht im PR-Text, damit er widersprechbar ist.
+
 ## Checkpoints
 
 ### Before implementation
