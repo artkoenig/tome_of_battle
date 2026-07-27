@@ -35,7 +35,8 @@
  * den Bericht von aussen erreichbar und ADR-0034 nur noch eine Absichtserklaerung.
  */
 
-import { ConstraintKind, isReportableAnchorKind } from './model.js';
+import { ConstraintKind, LimitMeasure, isReportableAnchorKind } from './model.js';
+import { resolvedTargetIdOf } from './identity.js';
 import { selectableSlotsOf, pathOf } from './evalTree.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
@@ -92,16 +93,12 @@ function authorViolationsOf(slots, context) {
 /**
  * Wann ein Grenz-Ergebnis **bindender** ist als ein bereits gefundenes derselben
  * Art am selben Anker — je Grenzenart eine Regel, statt einer Fallunterscheidung
- * im Index.
+ * im Index. Verglichen wird der Abstand zwischen Grenzwert und Ist-Stand
+ * (`delta = bound − actual`), und zwar **nur unter Grenzen derselben Messgroesse**
+ * ({@link MEASURE_PRECEDENCE}) — er zaehlt, was die Grenze zaehlt:
  *
- * Ein Anker traegt seit dem Verweis-Fix mehr als eine Grenze je Art: ein per
- * `entryLink` belegter Slot fuehrt die am Verweis **und** die am Ziel deklarierten
- * Grenzen zugleich ({@link import('./evalTree.js').limitsOf}), und sie schraenken
- * einander zusaetzlich ein, statt sich zu ersetzen. Der Faehigkeitsdatensatz fuehrt
- * je Slot aber nur **eine** Unter- und eine Obergrenze — also die **bindende**:
- *
- * - **MIN**: die mit dem groessten Fehlbetrag (`delta = bound − actual`) — sie ist
- *   die Forderung, die am weitesten von der Erfuellung entfernt ist.
+ * - **MIN**: die mit dem groessten Fehlbetrag — sie ist die Forderung, die am
+ *   weitesten von der Erfuellung entfernt ist.
  * - **MAX**: die mit dem geringsten Restspielraum (kleinstes `delta`) — sie ist die
  *   Schranke, die zuerst greift.
  *
@@ -115,13 +112,86 @@ const IS_MORE_BINDING_BY_KIND = new Map([
 ]);
 
 /**
+ * Welche **Messgroesse** ein Slot ausweist, wenn er Grenzen mehrerer traegt —
+ * absteigend nach Vorrang. Ein Anker traegt seit dem Verweis-Fix mehr als eine
+ * Grenze je Art: ein per `entryLink` belegter Slot fuehrt die am Verweis **und**
+ * die am Ziel deklarierten Grenzen zugleich
+ * ({@link import('./evalTree.js').limitsOf}), und schon eine einzelne Definition
+ * darf eine Auswahl doppelt begrenzen („hoechstens 2 magische Gegenstaende **und**
+ * hoechstens 100 Punkte" — in den Katalogen dieses Repos 32-mal). Der
+ * Faehigkeitsdatensatz fuehrt je Slot aber nur **eine** Unter- und eine
+ * Obergrenze.
+ *
+ * Ueber Messgroessen hinweg ist der Abstand `bound − actual` **kein**
+ * Vergleichsmass: 2 Auswahlen sind nicht mehr oder weniger als 100 Punkte. Statt
+ * Zahlen verschiedener Einheit gegeneinanderzustellen, entscheidet deshalb ein
+ * erklaerter Vorrang, und erst **innerhalb** einer Messgroesse der Abstand
+ * ({@link IS_MORE_BINDING_BY_KIND}).
+ *
+ * Der Vorrang folgt dem, was die Oberflaeche aus dem Datensatz liest (ADR-0035):
+ * `current` und `headroom` beantworten „wie viel steht hier, wie viel passt noch"
+ * — eine Frage in der Einheit, in der an einem Slot hinzugefuegt und weggenommen
+ * wird. Deshalb steht vorn, was den **Bestand des Slots selbst** zaehlt, dahinter,
+ * was an ihm nur **summiert** wird:
+ *
+ * 1. `SELECTION_COUNT` — die Anzahl der Auswahlen: die Einheit jedes Auswahl-Slots.
+ * 2. `FORCE_COUNT` — die Anzahl der Kontingente: dieselbe Aussage fuer einen
+ *    Kontingent-Slot. Der Vorrang zwischen 1 und 2 ist ein Gleichstands-Ausschluss,
+ *    kein Fall der Katalogdaten: kein Anker der Fixture-Kataloge traegt beide
+ *    Zaehlgrenzen derselben Art (nachgezaehlt ueber alle 14 Katalog-/
+ *    Spielsystemdateien; die 32 gemischten Faelle sind samt und sonders
+ *    Auswahl+Kosten).
+ * 3. `COST_SUM` — die verplanten Kosten: sie begrenzen den Slot, sagen aber nicht,
+ *    wie viele Auswahlen noch hineinpassen.
+ * 4. `BUDGET_LIMIT` — das eingestellte Budget: am weitesten von dem entfernt, was
+ *    an diesem Slot tatsaechlich steht.
+ *
+ * Traegt ein Slot **nur** Kostengrenzen, weist er sie unveraendert aus — der
+ * Vorrang waehlt aus, was da ist, er verschweigt nichts.
+ *
+ * `LimitMeasure.ROSTER_BUDGET` fehlt bewusst: die roster-weite Regel „Armee zu
+ * teuer" (`budget.js`) haengt an keinem Slot und speist keinen
+ * Faehigkeitsdatensatz ({@link buildReport} reicht sie getrennt an die
+ * Meldungsliste). Taucht sie hier je auf, ist das ein Fehler und wird laut
+ * gemeldet, statt still den Vorrang zu entscheiden.
+ */
+const MEASURE_PRECEDENCE = Object.freeze([
+  LimitMeasure.SELECTION_COUNT,
+  LimitMeasure.FORCE_COUNT,
+  LimitMeasure.COST_SUM,
+  LimitMeasure.BUDGET_LIMIT,
+]);
+
+/** Der Rang je Messgroesse — kleiner ist vorrangig. */
+const PRECEDENCE_BY_MEASURE = new Map(MEASURE_PRECEDENCE.map((measure, rank) => [measure, rank]));
+
+/**
+ * Der Vorrang-Rang eines Grenz-Ergebnisses. Eine Messgroesse ohne Rang ist ein
+ * Bruch der Aufzaehlung oben und wird laut gemeldet, statt still zu gewinnen oder
+ * zu verlieren.
+ */
+function precedenceOf(result) {
+  const rank = PRECEDENCE_BY_MEASURE.get(result.measure);
+  if (rank === undefined) {
+    throw new Error(`Messgroesse ohne Vorrang: ${result.measure}`);
+  }
+  return rank;
+}
+
+/**
  * True, wenn `candidate` das bisher gefundene Ergebnis `incumbent` als bindendes
- * ablöst. Ohne Vorgaenger gewinnt der Kandidat; eine Grenzenart ohne Regel ist ein
- * Bruch der Zweiweg-Vollstaendigkeit oben und wird laut gemeldet, statt still die
+ * ablöst. Ohne Vorgaenger gewinnt der Kandidat; bei **verschiedenen** Messgroessen
+ * entscheidet allein deren Vorrang ({@link MEASURE_PRECEDENCE}), bei gleicher der
+ * Abstand ({@link IS_MORE_BINDING_BY_KIND}). Eine Grenzenart ohne Regel ist ein
+ * Bruch der Zweiweg-Vollstaendigkeit und wird laut gemeldet, statt still die
  * zuletzt gesehene Grenze zu zeigen.
+ *
+ * Beides zusammen ist eine totale Ordnung (erst Rang, dann Abstand), die Auswahl
+ * also unabhaengig davon, in welcher Reihenfolge die Ergebnisse eintreffen.
  */
 function isMoreBinding(candidate, incumbent) {
   if (incumbent === undefined) return true;
+  if (candidate.measure !== incumbent.measure) return precedenceOf(candidate) < precedenceOf(incumbent);
   const isMoreBindingThan = IS_MORE_BINDING_BY_KIND.get(candidate.limit.kind);
   if (isMoreBindingThan === undefined) {
     throw new Error(`Grenzenart ohne Bindungsregel: ${candidate.limit.kind}`);
@@ -165,23 +235,6 @@ function findResult(resultsByAnchor, node, kind) {
 }
 
 /**
- * Die **Definition, auf die ein Verweis-Slot zeigt** — `null`, wenn der Slot kein
- * Verweis ist. Ein Kategorie-Anker traegt den `categoryLink`, nicht die Kategorie;
- * ein Angebots-Anker den `entryLink`, nicht den Eintrag (nur so gelten die am
- * Verweis deklarierten Grenzen). Das *Thema* des Slots ist aber das Ziel — und
- * genau darueber zaehlt ihn auch die Constraint-Schicht.
- *
- * Ohne dieses Feld liesse sich ein Kategorie-Abschnitt allein aus dem Bericht
- * nicht seiner Kategorie zuordnen: die Oberflaeche muesste in den Baumknoten
- * greifen, was ADR-0034 gerade ausschliesst. Bevorzugt wird die **aufgeloeste**
- * Ziel-ID (bei einer Verweiskette deren Ende); ein baumelnder Verweis nennt
- * ehrlich das Ziel, das er nicht gefunden hat.
- */
-function targetDefIdOf(node) {
-  return node.def.resolved?.id ?? node.def.targetId ?? null;
-}
-
-/**
  * Der **Rahmen-Bezug** eines Slots: das Kontingent bzw. die Eltern-Auswahl, unter
  * der er haengt — mit deren stabilem Pfad und Definitions-ID. `null` bedeutet: der
  * Slot haengt unmittelbar am Roster, sein Rahmen ist die Armee selbst.
@@ -215,7 +268,10 @@ function headroomOf(maxResult) {
  * Oberflaeche die Herkunft unterscheiden koennen muss; `frame` sagt, unter welchem
  * Kontingent bzw. welcher Eltern-Auswahl er haengt; `targetDefId` sagt bei einem
  * Verweis-Slot, **worauf** er zeigt (die Kategorie eines Kategorie-Ankers, der
- * Eintrag hinter einem `entryLink`).
+ * Eintrag hinter einem `entryLink`) — der Slot selbst bleibt der Verweis, denn nur
+ * so gelten die an ihm deklarierten Grenzen. Ohne dieses Feld liesse sich ein
+ * Kategorie-Abschnitt allein aus dem Bericht nicht seiner Kategorie zuordnen: die
+ * Oberflaeche muesste in den Baumknoten greifen, was ADR-0034 gerade ausschliesst.
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand. Name,
  * Autor-Meldungen und die **Info-Projektion** (`infoElements`: die fuer diesen
@@ -235,7 +291,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
     defId: node.def.id,
-    targetDefId: targetDefIdOf(node),
+    targetDefId: resolvedTargetIdOf(node.def),
     anchorKind: node.anchorKind,
     frame: frameReferenceOf(node),
     name: effective.nameOf(node),

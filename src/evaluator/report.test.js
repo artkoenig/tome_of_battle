@@ -480,3 +480,84 @@ describe('Bericht: alle ausgeloesten Diagnosen sind gesammelt', () => {
     );
   });
 });
+
+describe('Bericht: ein Slot mit Grenzen mehrerer Messgroessen', () => {
+  // Ein Gegenstand, der **zweifach** begrenzt ist: nach Anzahl und nach Punkten —
+  // die haeufigste Doppelbegrenzung der echten Kataloge ("hoechstens 2 magische
+  // Gegenstaende und hoechstens 100 Punkte"). Die Zahlen sind so gewaehlt, dass
+  // die **Punkte**-Grenze den kleineren Abstand zu ihrem Grenzwert hat: wuerden
+  // die Abstaende beider Messgroessen gegeneinander verglichen, gewaenne sie —
+  // und der Slot meldete 98 von 100 statt 1 von 5.
+  const ITEM_DEF_ID = 'entry-item';
+  const POINTS_COST_TYPE_ID = 'pts';
+  const ITEM_POINTS = 98;
+  const MAX_ITEM_SELECTIONS = 5;
+  const MAX_ITEM_POINTS = 100;
+  const MIN_ITEM_SELECTIONS = 3;
+  const MIN_ITEM_POINTS = 500;
+  const MAX_POINTS_LIMIT_ID = 'max-item-points';
+
+  /** Ein Katalog mit dem Gegenstand und genau den uebergebenen Grenzen. */
+  function catalogueWith(constraintsXml) {
+    return `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-cap-measures" name="Capability Measures Catalogue">
+        <selectionEntries>
+          <selectionEntry id="${ITEM_DEF_ID}" name="Magischer Gegenstand" type="upgrade">
+            <costs>
+              <cost name="Points" typeId="${POINTS_COST_TYPE_ID}" value="${ITEM_POINTS}"/>
+            </costs>
+            <constraints>${constraintsXml}</constraints>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+  }
+
+  const MAX_BY_SELECTIONS = `<constraint id="max-item-selections" type="max" value="${MAX_ITEM_SELECTIONS}" field="selections" scope="roster"/>`;
+  const MAX_BY_POINTS = `<constraint id="${MAX_POINTS_LIMIT_ID}" type="max" value="${MAX_ITEM_POINTS}" field="${POINTS_COST_TYPE_ID}" scope="roster"/>`;
+  const MIN_BY_SELECTIONS = `<constraint id="min-item-selections" type="min" value="${MIN_ITEM_SELECTIONS}" field="selections" scope="roster"/>`;
+  const MIN_BY_POINTS = `<constraint id="min-item-points" type="min" value="${MIN_ITEM_POINTS}" field="${POINTS_COST_TYPE_ID}" scope="roster"/>`;
+
+  it('weist die Obergrenze auf Auswahlen aus, nicht die auf Punkte mit dem kleineren Abstand', () => {
+    // 1 von 5 Auswahlen (Abstand 4) gegen 98 von 100 Punkten (Abstand 2).
+    const report = evaluate(catalogueWith(MAX_BY_SELECTIONS + MAX_BY_POINTS), rosterOf(ITEM_DEF_ID, 1));
+
+    expect(slotByDefId(report, ITEM_DEF_ID).capability).toMatchObject({
+      effectiveMax: MAX_ITEM_SELECTIONS,
+      current: 1,
+      headroom: MAX_ITEM_SELECTIONS - 1,
+      isBlocked: false,
+    });
+  });
+
+  it('weist die Untergrenze auf Auswahlen aus, nicht die auf Punkte mit dem groesseren Fehlbetrag', () => {
+    // 1 von 3 Auswahlen (Fehlbetrag 2) gegen 98 von 500 Punkten (Fehlbetrag 402).
+    const report = evaluate(catalogueWith(MIN_BY_SELECTIONS + MIN_BY_POINTS), rosterOf(ITEM_DEF_ID, 1));
+
+    expect(slotByDefId(report, ITEM_DEF_ID).capability).toMatchObject({
+      effectiveMin: MIN_ITEM_SELECTIONS,
+      current: 1,
+      isMandatoryUnmet: true,
+    });
+  });
+
+  it('meldet die uebergangene Punktegrenze weiterhin als Verletzung — der Vorrang waehlt aus, er verschweigt nicht', () => {
+    // 2 Gegenstaende: 2 von 5 Auswahlen erlaubt, aber 196 von 100 Punkten.
+    const report = evaluate(catalogueWith(MAX_BY_SELECTIONS + MAX_BY_POINTS), rosterOf(ITEM_DEF_ID, 2));
+
+    expect(slotByDefId(report, ITEM_DEF_ID).capability).toMatchObject({
+      effectiveMax: MAX_ITEM_SELECTIONS,
+      current: 2,
+    });
+    expect(report.violations.map(violation => violation.limitId)).toContain(MAX_POINTS_LIMIT_ID);
+  });
+
+  it('weist eine Punktegrenze unveraendert aus, wenn der Slot keine Grenze auf Auswahlen traegt', () => {
+    const report = evaluate(catalogueWith(MAX_BY_POINTS), rosterOf(ITEM_DEF_ID, 1));
+
+    expect(slotByDefId(report, ITEM_DEF_ID).capability).toMatchObject({
+      effectiveMax: MAX_ITEM_POINTS,
+      current: ITEM_POINTS,
+      headroom: MAX_ITEM_POINTS - ITEM_POINTS,
+    });
+  });
+});

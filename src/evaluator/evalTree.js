@@ -44,7 +44,7 @@
  */
 
 import { AnchorKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
-import { identityIdsOf, isOccurrenceOf } from './identity.js';
+import { identityIdsOf, isOccurrenceOf, resolvedTargetIdOf } from './identity.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -86,7 +86,7 @@ function checkTargetCoherence(def, instance, diagnostics) {
   diagnostics.push(diagnostic(DiagnosticKind.ENTRY_LINK_TARGET_MISMATCH, {
     defId: instance.defId,
     expectedTargetDefId,
-    targetId: def.resolved?.id ?? def.targetId ?? null,
+    targetId: resolvedTargetIdOf(def),
   }));
 }
 

@@ -20,6 +20,7 @@
  */
 
 import { DefinitionKind, InfoElementKind, ModifierTargetKind, MessageSeverity, DiagnosticKind, diagnostic } from './model.js';
+import { identityIdsOf } from './identity.js';
 
 /**
  * Die Schluesselwort-`field`-Werte und ihr unmittelbares Ziel (ohne Symboltabelle).
@@ -145,12 +146,14 @@ function collectArmyLevelCandidates(rootSelectionChildren) {
 /**
  * Sammelt die **Member-IDs** einer `selectionEntryGroup` rekursiv: die IDs ihrer
  * direkten Auswahl-Kinder (Eintraege/Links) sowie — ueber verschachtelte
- * Untergruppen hinweg — deren Member. Fuer einen `entryLink` zaehlen zusaetzlich
- * die Ziel-ID und die ID der aufgeloesten Zieldefinition, sodass eine Instanz als
- * Member erkannt wird, unabhaengig davon, ob das Roster die Eintrags-, Link- oder
- * Ziel-ID traegt (die Import-Schicht verwirft das `entryGroupId`-Tag, die
- * Zugehoerigkeit wird deshalb aus dem Definitionsbaum abgeleitet — wie im
- * Solver-Referenzpfad `collectGroupItemIds`).
+ * Untergruppen hinweg — deren Member. Aufgenommen wird je Kind seine ganze
+ * {@link identityIdsOf Zaehl-Identitaet}, bei einem `entryLink` also auch Ziel-ID
+ * und aufgeloeste Ziel-ID: so wird eine Instanz als Member erkannt, unabhaengig
+ * davon, ob das Roster die Eintrags-, Link- oder Ziel-ID traegt (die Import-Schicht
+ * verwirft das `entryGroupId`-Tag, die Zugehoerigkeit wird deshalb aus dem
+ * Definitionsbaum abgeleitet — wie im Solver-Referenzpfad `collectGroupItemIds`).
+ * Die Identitaet steht dabei an **einer** Stelle (`identity.js`) — wuerde sie
+ * verschaerft, gaelte das auch hier.
  *
  * Zeigt ein `entryLink` auf eine **Gruppe**, gehoeren deren Member ebenfalls dazu:
  * eine Grenze an der aeusseren Gruppe (z. B. "hoechstens 100 Punkte Magie-Items")
@@ -166,13 +169,9 @@ function collectGroupMemberIds(groupDef, into, visited = new Set()) {
       collectGroupMemberIds(child, into, visited);
       continue;
     }
-    into.add(child.id);
-    if (child.kind === DefinitionKind.ENTRY_LINK) {
-      if (child.targetId !== null && child.targetId !== undefined) into.add(child.targetId);
-      if (child.resolved !== null && child.resolved !== undefined) {
-        into.add(child.resolved.id);
-        if (child.resolved.kind === DefinitionKind.GROUP) collectGroupMemberIds(child.resolved, into, visited);
-      }
+    for (const id of identityIdsOf(child)) into.add(id);
+    if (child.kind === DefinitionKind.ENTRY_LINK && child.resolved?.kind === DefinitionKind.GROUP) {
+      collectGroupMemberIds(child.resolved, into, visited);
     }
   }
 }

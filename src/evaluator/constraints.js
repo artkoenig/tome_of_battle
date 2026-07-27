@@ -94,7 +94,10 @@ function evaluateLimit(limit, node, effective, ctx) {
     // gezaehlten Feld (`model.js`, {@link limitMeasureOfCountedField}). Sie steht
     // hier und nicht erst in der Einordnung, weil die roster-weite Budget-Regel
     // (`budget.js`) ihre eigene Messgroesse mitbringt: so liest die Einordnung
-    // beide Herkuenfte aus **einem** Feld, statt eine davon zu erraten.
+    // beide Herkuenfte aus **einem** Feld, statt eine davon zu erraten. Der
+    // Bericht liest dasselbe Feld ein zweites Mal: `delta` traegt diese Einheit,
+    // die bindende Grenze eines Slots wird deshalb nur unter Grenzen derselben
+    // Messgroesse bestimmt (`report.js`).
     measure: limitMeasureOfCountedField(limit.field),
     // Die **Herleitung** des Grenzwerts, unveraendert durchgereicht: diese Schicht
     // deutet sie nicht, sie stellt sie nur bereit (die Ursachen nach ADR-0027 sind

@@ -220,3 +220,70 @@ describe('Index-Schicht: auch die Angebots-Anker aus Baumphase 2 zaehlen nie mit
     expect(answersOf(buildIndex(root, createBaseEffectiveState(root)), OFFER_KEYS)).toEqual(before);
   });
 });
+
+// ── Die Identitaet einer Eintragsgruppe ist kein Zaehlziel ────────────────────
+// Eine `selectionEntryGroup` buendelt nur; gezaehlt werden ihre Member. Das gilt
+// unabhaengig vom Weg, auf dem sie an ihre Stelle kommt: ein `entryLink` auf eine
+// Gruppe **ist** diese Gruppe dort, kein zaehlbares Vorkommen daneben. Truege er
+// seine Ids bei, laege eine gruppen-skopierte Grenze um eins zu hoch.
+
+const MAGIC_GROUP_ID = 'group-magic-items';
+const GROUP_LINK_ID = 'link-magic-items';
+const SWORD_ID = 'entry-sword';
+const HERO_ID = 'entry-hero';
+
+const GROUP_LINK_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+  <catalogue id="cat-group-link" name="Group Link Catalogue">
+    <sharedSelectionEntryGroups>
+      <selectionEntryGroup id="${MAGIC_GROUP_ID}" name="Magic Items">
+        <selectionEntries>
+          <selectionEntry id="${SWORD_ID}" name="Sword" type="upgrade"/>
+        </selectionEntries>
+      </selectionEntryGroup>
+    </sharedSelectionEntryGroups>
+    <selectionEntries>
+      <selectionEntry id="${HERO_ID}" name="Hero" type="unit">
+        <entryLinks>
+          <entryLink id="${GROUP_LINK_ID}" name="Magic Items" targetId="${MAGIC_GROUP_ID}" type="selectionEntryGroup"/>
+        </entryLinks>
+      </selectionEntry>
+    </selectionEntries>
+  </catalogue>`;
+
+describe('Index-Schicht: die Identitaet einer Eintragsgruppe ist kein Zaehlziel', () => {
+  /** Der Held mit dem Gruppen-Verweis, der Gruppe selbst und einem echten Member darunter. */
+  function buildGroupLinkIndex() {
+    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [GROUP_LINK_CATALOGUE_XML] }));
+    const roster = {
+      forces: [{
+        defId: HERO_ID,
+        count: 1,
+        children: [
+          { defId: GROUP_LINK_ID, count: 1, children: [] },
+          { defId: MAGIC_GROUP_ID, count: 1, children: [] },
+          { defId: SWORD_ID, count: 1, children: [] },
+        ],
+      }],
+    };
+    const { root } = buildEvalTree(resolved, roster);
+    return buildIndex(root, createBaseEffectiveState(root));
+  }
+
+  /** Der armeeweite Bestand unter einer Ziel-Id, beide Beitrags-Eimer eingeschlossen. */
+  function rosterCountOf(index, targetId) {
+    return index.get(scopeKey(ScopeKeyword.ROSTER, targetId), true, true).selectionCount;
+  }
+
+  it('zaehlt unter der Gruppen-Id nichts — weder die Gruppe selbst noch den Verweis auf sie', () => {
+    const index = buildGroupLinkIndex();
+
+    expect(rosterCountOf(index, MAGIC_GROUP_ID)).toBe(0);
+    expect(rosterCountOf(index, GROUP_LINK_ID)).toBe(0);
+  });
+
+  it('zaehlt das Member der Gruppe unveraendert unter seiner eigenen Id', () => {
+    const index = buildGroupLinkIndex();
+
+    expect(rosterCountOf(index, SWORD_ID)).toBe(1);
+  });
+});

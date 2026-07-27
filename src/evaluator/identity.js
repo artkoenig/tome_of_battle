@@ -78,6 +78,29 @@ export function identityIdsOf(def) {
 }
 
 /**
+ * Die Id der Definition, auf die ein Verweis **zeigt** — `null`, wenn die
+ * Definition kein Verweis ist (oder gar keine Definition vorliegt).
+ *
+ * Bevorzugt wird die Id des **aufgeloesten** Ziels (bei einer Verweiskette deren
+ * Ende); ein baumelnder Verweis nennt ehrlich die Ziel-Id, die er nicht gefunden
+ * hat. Das ist dieselbe Vorrangregel wie in {@link identityIdsOf}, nur auf einen
+ * einzelnen Wert verdichtet: die Identitaet sagt, *unter welchen* Ids ein
+ * Vorkommen zaehlt, dieser Zugriff sagt, *worauf* der Verweis zeigt.
+ *
+ * Er steht hier, weil beide Verbraucher dasselbe meinen und die Regel sonst
+ * zweimal geschrieben waere: der Bericht fuehrt sie als `targetDefId` am
+ * Faehigkeitsdatensatz, die Kohaerenzpruefung des Baumaufbaus als das Ziel, das
+ * ein Verweis heute tatsaechlich hat.
+ *
+ * @param {object|null|undefined} def  eine Katalogdefinition oder nichts.
+ * @returns {string|null} die Ziel-Id, oder `null` bei einer Definition ohne Ziel.
+ */
+export function resolvedTargetIdOf(def) {
+  if (!isDefinition(def)) return null;
+  return def.resolved?.id ?? def.targetId ?? null;
+}
+
+/**
  * True, wenn ein Vorkommen dieser Definition unter `wantedId` zaehlt — also
  * gleichbedeutend mit „{@link identityIdsOf} enthaelt `wantedId`", nur ohne die
  * Zwischenliste (die Anwesenheitspruefung der Ankersynthese fragt das je Knoten
@@ -93,6 +116,34 @@ export function isOccurrenceOf(def, wantedId) {
     if (readId(def) === wantedId) return true;
   }
   return false;
+}
+
+/**
+ * Die Definitionsart, die ein Vorkommen dieser Definition **wirklich** hat: bei
+ * einem Verweis die seines aufgeloesten Ziels, sonst die eigene. Ein baumelnder
+ * Verweis bleibt bei seiner eigenen Art — ueber ein Ziel, das nicht gefunden
+ * wurde, ist nichts zu behaupten.
+ */
+function occurrenceKindOf(def) {
+  return def.resolved?.kind ?? def.kind;
+}
+
+/**
+ * True, wenn die Identitaet dieser Definition ueberhaupt ein **Zaehlziel** ist.
+ *
+ * Eine `selectionEntryGroup` ist selbst kein Auswahlpunkt: sie buendelt nur, und
+ * gezaehlt werden ihre Member (`countIndex.js`, `memberGroupIds`). Ihre Identitaet
+ * steht deshalb unter keinem Zaehlziel — und zwar unabhaengig davon, auf welchem
+ * Weg sie an die Stelle kommt: ein `entryLink` auf eine Gruppe **ist** diese
+ * Gruppe an dieser Stelle, kein zaehlbares Vorkommen daneben. Truege er seine
+ * Ids bei, zaehlte eine gruppen-skopierte Grenze die Gruppe zusaetzlich zu ihren
+ * Membern und laege damit um eins zu hoch.
+ *
+ * @param {object|null|undefined} def  eine Katalogdefinition oder nichts.
+ * @returns {boolean}
+ */
+export function hasCountableIdentity(def) {
+  return isDefinition(def) && occurrenceKindOf(def) !== DefinitionKind.GROUP;
 }
 
 /**

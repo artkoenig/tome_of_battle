@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { identityIdsOf, isOccurrenceOf, entryTypeOf } from './identity.js';
+import { identityIdsOf, isOccurrenceOf, resolvedTargetIdOf, hasCountableIdentity, entryTypeOf } from './identity.js';
 import { DefinitionKind } from './model.js';
 import { SelectionEntryKind, EntryLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
 
@@ -88,6 +88,54 @@ describe('isOccurrenceOf (einseitige Frage: zaehlt dieses Vorkommen unter der Id
     expect(isOccurrenceOf(null, ENTRY_ID)).toBe(false);
     expect(isOccurrenceOf(entry(), null)).toBe(false);
     expect(isOccurrenceOf(entry(), undefined)).toBe(false);
+  });
+});
+
+describe('resolvedTargetIdOf (worauf zeigt ein Verweis?)', () => {
+  it('nennt fuer einen Verweis die Id seines aufgeloesten Ziels', () => {
+    expect(resolvedTargetIdOf(entryLink())).toBe(ENTRY_ID);
+  });
+
+  it('nennt bei einer Verweiskette deren Ende, nicht das Zwischenglied', () => {
+    const chained = entryLink({ targetId: INTERMEDIATE_LINK_ID, resolved: entry(ENTRY_ID) });
+    expect(resolvedTargetIdOf(chained)).toBe(ENTRY_ID);
+  });
+
+  it('nennt bei einem baumelnden Verweis ehrlich das Ziel, das er nicht gefunden hat', () => {
+    const dangling = { id: LINK_ID, kind: DefinitionKind.ENTRY_LINK, targetId: ENTRY_ID, resolved: null };
+    expect(resolvedTargetIdOf(dangling)).toBe(ENTRY_ID);
+  });
+
+  it('liefert nichts fuer eine Definition ohne Ziel und fuer eine fehlende Definition', () => {
+    expect(resolvedTargetIdOf(entry())).toBeNull();
+    expect(resolvedTargetIdOf(null)).toBeNull();
+    expect(resolvedTargetIdOf(undefined)).toBeNull();
+  });
+});
+
+describe('hasCountableIdentity (ist die Identitaet ueberhaupt ein Zaehlziel?)', () => {
+  it('bejaht einen Eintrag und einen Verweis auf einen Eintrag', () => {
+    expect(hasCountableIdentity(entry())).toBe(true);
+    expect(hasCountableIdentity(entryLink())).toBe(true);
+  });
+
+  it('verneint eine Eintragsgruppe — sie buendelt nur, gezaehlt werden ihre Member', () => {
+    expect(hasCountableIdentity({ id: ENTRY_ID, kind: DefinitionKind.GROUP })).toBe(false);
+  });
+
+  it('verneint auch einen Verweis auf eine Gruppe — er IST die Gruppe an dieser Stelle', () => {
+    const groupLink = entryLink({ resolved: { id: ENTRY_ID, kind: DefinitionKind.GROUP } });
+    expect(hasCountableIdentity(groupLink)).toBe(false);
+  });
+
+  it('bejaht einen baumelnden Verweis — ueber ein ungefundenes Ziel ist nichts zu behaupten', () => {
+    const dangling = { id: LINK_ID, kind: DefinitionKind.ENTRY_LINK, targetId: ENTRY_ID, resolved: null };
+    expect(hasCountableIdentity(dangling)).toBe(true);
+  });
+
+  it('verneint eine fehlende Definition', () => {
+    expect(hasCountableIdentity(null)).toBe(false);
+    expect(hasCountableIdentity(undefined)).toBe(false);
   });
 });
 

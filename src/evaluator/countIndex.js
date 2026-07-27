@@ -14,8 +14,8 @@
  * voneinander** wirksam — auch in Kombination.
  */
 
-import { DefinitionKind, scopeKey } from './model.js';
-import { identityIdsOf, entryTypeOf } from './identity.js';
+import { scopeKey } from './model.js';
+import { identityIdsOf, entryTypeOf, hasCountableIdentity } from './identity.js';
 import { realNodes, frameKeyOf } from './evalTree.js';
 
 /**
@@ -96,7 +96,10 @@ function contributionOf(node, effective) {
  *
  * Eine `selectionEntryGroup` ist selbst kein Auswahlpunkt: sie buendelt nur, und
  * ihre Identitaet ist deshalb kein Zaehlziel — gezaehlt werden ihre Member (siehe
- * `memberGroupIds` unten).
+ * `memberGroupIds` unten). Ob eine Gruppe vorliegt, entscheidet ebenfalls nicht
+ * diese Schicht: {@link hasCountableIdentity} sieht dafuer auch **hinter** einen
+ * Verweis, denn ein `entryLink` auf eine Gruppe ist diese Gruppe an dieser Stelle
+ * und kein zaehlbares Vorkommen daneben.
  *
  * Ist der Knoten Member einer `selectionEntryGroup` (`memberGroupIds`, aus dem
  * Definitionsbaum abgeleitet), zaehlt er zusaetzlich unter jeder Gruppen-ID —
@@ -113,7 +116,7 @@ function contributionOf(node, effective) {
 function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
   const targets = [null, ...effective.categoryIdsOf(node)];
-  if (node.def.kind !== DefinitionKind.GROUP) targets.push(...identityIdsOf(node.def));
+  if (hasCountableIdentity(node.def)) targets.push(...identityIdsOf(node.def));
   if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
   const entryType = entryTypeOf(node.def);
   if (entryType !== null) targets.push(entryType);

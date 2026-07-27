@@ -388,6 +388,12 @@ function identityIdsOf(d): Id[]                       // entdoppelt, ohne fehlen
 function isOccurrenceOf(d, wantedId): bool            // „zählt dieses Vorkommen unter wantedId?"
   return wantedId in identityIdsOf(d)
 
+function resolvedTargetIdOf(d): Id?                   // „worauf zeigt dieser Verweis?"
+  return d.resolved?.id ?? d.targetId ?? null         // aufgelöstes Ziel zuerst, sonst das genannte
+
+function hasCountableIdentity(d): bool                // „ist diese Identität ein Zählziel?"
+  return (d.resolved?.kind ?? d.kind) != GROUP        // auch hinter einem Verweis geprüft
+
 function entryTypeOf(d): SelectionEntryKind?          // die Eintragsart des Vorkommens
   if d is Entry:     return d.type                    // trägt sie selbst
   if d is EntryLink: return d.resolved?.type          // erbt sie vom aufgelösten Ziel
@@ -395,6 +401,8 @@ function entryTypeOf(d): SelectionEntryKind?          // die Eintragsart des Vor
 ```
 
 Die Regel ist **einseitig**: nennt eine Grenze die Ziel-Id, trifft sie das Vorkommen über *jeden* Verweis und auch das direkt gesetzte; nennt sie eine Verweis-Id, trifft sie nur die Vorkommen über genau diesen Verweis. Und sie ist **Mengenzugehörigkeit, keine Summierung je Id**: ein Vorkommen zählt für eine Grenze höchstens einmal, auch wenn mehrere seiner Ids zutreffen.
+
+Eine **`selectionEntryGroup` steht unter keinem Zählziel**: sie bündelt nur, gezählt werden ihre Member (§4.4). Das gilt unabhängig vom Weg — ein `entryLink` auf eine Gruppe *ist* diese Gruppe an seiner Stelle, kein zählbares Vorkommen daneben; die Prüfung sieht deshalb hinter den Verweis.
 
 **Die Eintragsart kommt immer vom aufgelösten Ziel.** Eine Bedingung kann statt einer Id eine Eintragsart zählen (`childId="model"`, BSData §7.7), und ein per `entryLink` hereingezogener Eintrag zählt unter derselben Art wie derselbe Eintrag direkt gesetzt — die Art gehört zum Ziel, nicht zum Weg dorthin. Das gleichnamige Attribut des Verweises wird dabei **nie** gelesen: es stammt aus einer laut XSD disjunkten Wertemenge (`EntryLinkKind` = `selectionEntry` | `selectionEntryGroup`, gegen `SelectionEntryKind` = `upgrade` | `model` | `unit`) und sagt, *worauf* der Verweis zeigt, nicht *was* das Ziel ist; als Zählziel wäre es ein bedeutungsloser Wert. Der Katalogleser liest es deshalb gar nicht erst (§3.1, ADR-0016/0031). Zeigt ein Verweis auf eine `selectionEntryGroup` oder baumelt sein Ziel, hat das Vorkommen keine Eintragsart und steht unter keiner.
 
@@ -628,7 +636,9 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED | UNLIMITED
 
 ### 4.8 Bericht und UI-Projektion
 
-**Die bindende Grenze je Slot.** Ein Slot kann mehrere Grenzen **derselben** Art tragen: ein per `entryLink` belegter Slot führt die am Verweis *und* die am Ziel deklarierten zugleich (§4.3, `limitsOf`), und sie schränken einander zusätzlich ein, statt sich zu ersetzen. Der Fähigkeitsdatensatz führt je Slot aber nur **eine** Unter- und eine Obergrenze — also die **bindende**: bei MIN die mit dem größten Fehlbetrag (`delta = bound − actual`), bei MAX die mit dem geringsten Restspielraum (kleinstes `delta`); bei Gleichstand die in Dokumentreihenfolge erste. Nie „die zuletzt ausgewertete", sonst hingen die Zahlen eines Slots an der Auswertungsreihenfolge. `current`, `headroom`, `isBlocked` und `isMandatoryUnmet` stammen aus **derselben** gewählten Grenze, damit sie zueinander passen. Die Meldungsliste bleibt unberührt: dort ist jedes Grenzergebnis weiterhin seine eigene Meldung.
+**Die bindende Grenze je Slot.** Ein Slot kann mehrere Grenzen **derselben** Art tragen: ein per `entryLink` belegter Slot führt die am Verweis *und* die am Ziel deklarierten zugleich (§4.3, `limitsOf`), und schon eine einzelne Definition darf eine Auswahl doppelt begrenzen („höchstens 2 magische Gegenstände **und** höchstens 100 Punkte"). Sie schränken einander zusätzlich ein, statt sich zu ersetzen. Der Fähigkeitsdatensatz führt je Slot aber nur **eine** Unter- und eine Obergrenze — also die **bindende**: bei MIN die mit dem größten Fehlbetrag (`delta = bound − actual`), bei MAX die mit dem geringsten Restspielraum (kleinstes `delta`); bei Gleichstand die in Dokumentreihenfolge erste. Nie „die zuletzt ausgewertete", sonst hingen die Zahlen eines Slots an der Auswertungsreihenfolge. `current`, `headroom`, `isBlocked` und `isMandatoryUnmet` stammen aus **derselben** gewählten Grenze, damit sie zueinander passen. Die Meldungsliste bleibt unberührt: dort ist jedes Grenzergebnis weiterhin seine eigene Meldung.
+
+**Der Abstand gilt nur je Messgröße.** `delta` trägt eine Einheit — es zählt, was die Grenze zählt (§3.6, `measure`). 2 Auswahlen gegen 100 Punkte zu stellen, wäre ein Vergleich über Einheiten hinweg; verglichen wird deshalb **nur innerhalb** einer Messgröße. Trägt ein Slot Grenzen **mehrerer** Messgrößen, entscheidet ein erklärter Vorrang, welche er ausweist: `selectionCount` vor `forceCount` vor `costSum` vor `budgetLimit` — vorn steht, was den **Bestand des Slots selbst** zählt, denn `current` und `headroom` beantworten der Oberfläche „wie viel steht hier, wie viel passt noch" (ADR-0035) in genau der Einheit, in der sie an einem Slot hinzufügt und wegnimmt. Trägt ein Slot nur Kostengrenzen, weist er sie unverändert aus: der Vorrang wählt aus, was da ist, er verschweigt nichts — die übergangene Grenze bleibt in der Meldungsliste.
 
 ```
 function buildReport(tree, effective, results, diagnostics, unstableNodes): Report

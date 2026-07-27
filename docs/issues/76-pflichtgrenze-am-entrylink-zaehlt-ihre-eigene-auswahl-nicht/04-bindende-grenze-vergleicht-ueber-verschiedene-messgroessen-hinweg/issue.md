@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: [03]
 
@@ -53,3 +53,4 @@ deshalb hier statt in einem eigenen Issue:
 ## Comments
 - Belegt bei der PO-Sichtung: constraints.js:87 bildet den Abstand als bound - actual und traegt bei :98 ausdruecklich ein measure-Feld; report.js:113-115 vergleicht nur den Abstand. evalTree.js:194-201 (limitsOf) fuehrt Verweis- und Ziel-Grenzen nach Kennung zusammen, sodass Grenzen mit verschiedenen Kennungen — und damit moeglicherweise verschiedenen gezaehlten Feldern — beide bestehen bleiben.
 - In den heutigen Fixture-Katalogen tritt der Fall nicht auf: dort deklarieren Verweis und Ziel dieselben Werte. Der Fehler ist deshalb an echten Daten nicht beobachtbar und gehoert in einen Modultest.
+- Die bindende Grenze wird jetzt nur noch unter Grenzen derselben Messgroesse ueber den Abstand bestimmt; ueber Messgroessen hinweg entscheidet ein erklaerter Vorrang (selectionCount vor forceCount vor costSum vor budgetLimit), begruendet in der JSDoc von report.js und in docs/evaluator-architecture.md §4.8. Dazu: collectGroupMemberIds nutzt identityIdsOf, die doppelte Ziel-Id-Ermittlung liegt als resolvedTargetIdOf in identity.js, und hasCountableIdentity sieht fuer die Gruppenregel auch hinter einen entryLink (Code an den Kommentar angeglichen).
