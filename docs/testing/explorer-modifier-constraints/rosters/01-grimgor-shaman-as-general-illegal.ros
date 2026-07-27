@@ -9,7 +9,7 @@
             <category id="cat-chars" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
           </categories>
           <selections>
-            <selection id="sel-general" name="General" entryId="a2d7-7a89-7059-81f2" entryLinkId="a2d7-7a89-7059-81f2" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-general" name="General" entryId="1b7c-2c90-6d96-28c9" entryLinkId="a2d7-7a89-7059-81f2" number="1" type="upgrade" collective="false"/>
           </selections>
         </selection>
       </selections>

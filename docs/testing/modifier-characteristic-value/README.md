@@ -174,29 +174,41 @@ Vorkommen desselben geteilten Profils (Amazons-Modell: WS 3, Humming Bird: WS 4)
 | Schalter „Allow experimental rules?" (`.gst`) | `8b76-92c4-23f9-54b1` (OK-`entryLink` `9a0b-4d97-1625-919f`) |
 | Pflichtgrenzen der Amazonen (min 5 Modelle, Blades, Ruestung, Kommandotrupp) | `bd7e-e5cf-c571-7659`, `d8f0-cec9-edf3-0fbe`, `feb1-c10d-9318-dbda`, `0e94-6317-5852-6ba5`, `b883-c633-6422-0cbc`, `9e16-9834-5aaf-48a1` |
 
-## Abgleich mit dem Engine-Lauf: zwei Grenzen aus der Erwartung genommen
+## Zwei am `entryLink` deklarierte Pflichtgrenzen — aus den Daten begründet
 
-Beim ersten Runner-Lauf feuerten drei Grenzen, die als `absent` deklariert waren,
-obwohl das Roster die geforderte Auswahl enthält:
+Zwei Pflichtgrenzen dieses Szenarios sind **nicht** an der Auswahl-Definition
+deklariert, sondern an dem `entryLink`, der sie hereinzieht — beide mit
+`scope="parent"`:
 
-| Grenze | Anker | Ist / Grenze |
-|---|---|---|
-| `dfd9-3e46-eda5-be8b` (min 1 *Hand Weapon*) | `b581-8a9e-9d0c-b7c8` | 0 / 1 |
-| `feb1-c10d-9318-dbda` (min 1 *Light Armour* der Amazonen) | `d3dc-56c1-9565-889a` | 0 / 1 |
+| Grenze | Deklariert an | Beleg (`Mercenaries (…).cat`) | Roster |
+|---|---|---|---|
+| `dfd9-3e46-eda5-be8b` — `min 1 selections`, `scope="parent"` | `entryLink` *Hand Weapon* `b581-8a9e-9d0c-b7c8` → `abdb-bbd0-41b2-5dff` | Z. 7462 (Verweis) / 7464 (Grenze) | 01, 02 |
+| `feb1-c10d-9318-dbda` — `min 1 selections`, `scope="parent"` | `entryLink` *Light Armour* `d3dc-56c1-9565-889a` → `055f-8e4e-f170-35d2` | Z. 4352 (Verweis) / 4354 (Grenze) | 03 |
 
-Die Untersuchung an den Daten zeigt ein **gemeinsames Muster, das nichts mit
-Merkmals-Modifikatoren zu tun hat**: beide Grenzen sind nicht an der Auswahl-
-Definition deklariert, sondern am `entryLink`, der sie hereinzieht
-(`Mercenaries (…).cat` Z. 7462–7464 bzw. Z. 4352–4354) — und zwar mit
-`scope="parent"`. Ein Roster benennt eine so bezogene Auswahl mit *zwei* Ids:
-`entryId` (das Ziel) und `entryLinkId` (der Verweis). Die Zählung findet die
-Instanz unter der Ziel-Id, die Pflicht-Grenze fragt aber nach der Link-Id — also
-zählt sie 0 und meldet die Pflicht als unerfüllt, obwohl die Auswahl gesetzt ist.
+Eine `<selection>` eines Rosters benennt eine so bezogene Auswahl mit **zwei**
+Ids: `entryId` das Ziel und `entryLinkId` den Verweis, über den es hereinkam
+(§3.4/§7.6). Maßgeblich für die am Verweis deklarierten Regeln ist der
+**Verweis** — das Ziel hat beliebig viele davon, jeder mit eigenen Grenzen.
 
-Das ist ein eigenständiger Befund an der Verweis-Identität, kein Ergebnis dieses
-Szenarios und keine Aussage über Merkmals-Modifikatoren. Die beiden Ids sind
-deshalb aus `absent` **entfernt** — das Manifest macht über sie schlicht keine
-Aussage mehr (die Erwartung ist selektiv, nicht erschöpfend). Sie wurden
-ausdrücklich **nicht** nach `firing` verschoben: das würde das beobachtete
-Verhalten als gewollt festschreiben. Alle Merkmals-Erwartungen dieses Szenarios
-trafen im selben Lauf unverändert zu.
+Alle drei Roster tragen genau diesen Verweis unter der jeweiligen Einheit:
+
+| Roster | `<selection>` | `entryId` | `entryLinkId` | Ist im `parent`-Rahmen |
+|---|---|---|---|---|
+| 01 | *Hand Weapon* | `abdb-bbd0-41b2-5dff` | `b581-8a9e-9d0c-b7c8` | 1 |
+| 02 | *Hand Weapon* | `abdb-bbd0-41b2-5dff` | `b581-8a9e-9d0c-b7c8` | 1 |
+| 03 | *Light Armour* | `055f-8e4e-f170-35d2` | `d3dc-56c1-9565-889a` | 1 |
+
+Der Elternrahmen ist in allen drei Fällen die Einheit, unter der die Auswahl
+hängt (*Ogres* `7db1-21db-c287-f50d` bzw. *Anakonda's Amazons*
+`ebf9-c112-3cb4-1f02`); die Verweise stehen in deren Ausrüstungsgruppen
+(`6aad-4eeb-5d2c-35cb` bzw. `a2b9-a75e-a12d-748e`), die für die
+Selektions-Zugehörigkeit transparent sind. Damit gilt in jedem Roster
+`Ist 1 ≥ Mindestmaß 1` — **beide Grenzen sind erfüllt und dürfen nicht feuern**.
+Sie stehen deshalb in der `absent`-Liste des jeweiligen Rosters.
+
+> **Historie:** Diese beiden Ids waren zwischenzeitlich aus `absent` entfernt,
+> weil der `.ros`-Leser der Testumgebung die `entryLinkId` verwarf und die
+> Pflichtgrenzen deshalb ihre eigene Auswahl nicht fanden (Ist 0 gegen
+> Mindestens 1). Das war ein Fehler der Testumgebung, keine Aussage der
+> Katalogdaten; er ist behoben, und die Erwartung steht wieder auf dem, was oben
+> aus den Daten folgt.

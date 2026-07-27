@@ -90,10 +90,56 @@ function authorViolationsOf(slots, context) {
 }
 
 /**
+ * Wann ein Grenz-Ergebnis **bindender** ist als ein bereits gefundenes derselben
+ * Art am selben Anker — je Grenzenart eine Regel, statt einer Fallunterscheidung
+ * im Index.
+ *
+ * Ein Anker traegt seit dem Verweis-Fix mehr als eine Grenze je Art: ein per
+ * `entryLink` belegter Slot fuehrt die am Verweis **und** die am Ziel deklarierten
+ * Grenzen zugleich ({@link import('./evalTree.js').limitsOf}), und sie schraenken
+ * einander zusaetzlich ein, statt sich zu ersetzen. Der Faehigkeitsdatensatz fuehrt
+ * je Slot aber nur **eine** Unter- und eine Obergrenze — also die **bindende**:
+ *
+ * - **MIN**: die mit dem groessten Fehlbetrag (`delta = bound − actual`) — sie ist
+ *   die Forderung, die am weitesten von der Erfuellung entfernt ist.
+ * - **MAX**: die mit dem geringsten Restspielraum (kleinstes `delta`) — sie ist die
+ *   Schranke, die zuerst greift.
+ *
+ * Bei Gleichstand gewinnt die zuerst gesehene, also die in Dokumentreihenfolge
+ * erste. Ohne diese Regel gewaenne schlicht die zuletzt ausgewertete, und die
+ * Zahlen eines Slots haetten von der Auswertungsreihenfolge abgehangen.
+ */
+const IS_MORE_BINDING_BY_KIND = new Map([
+  [ConstraintKind.MIN, (candidate, incumbent) => candidate.delta > incumbent.delta],
+  [ConstraintKind.MAX, (candidate, incumbent) => candidate.delta < incumbent.delta],
+]);
+
+/**
+ * True, wenn `candidate` das bisher gefundene Ergebnis `incumbent` als bindendes
+ * ablöst. Ohne Vorgaenger gewinnt der Kandidat; eine Grenzenart ohne Regel ist ein
+ * Bruch der Zweiweg-Vollstaendigkeit oben und wird laut gemeldet, statt still die
+ * zuletzt gesehene Grenze zu zeigen.
+ */
+function isMoreBinding(candidate, incumbent) {
+  if (incumbent === undefined) return true;
+  const isMoreBindingThan = IS_MORE_BINDING_BY_KIND.get(candidate.limit.kind);
+  if (isMoreBindingThan === undefined) {
+    throw new Error(`Grenzenart ohne Bindungsregel: ${candidate.limit.kind}`);
+  }
+  return isMoreBindingThan(candidate, incumbent);
+}
+
+/**
  * Die Grenz-Ergebnisse je Knoten und Art (MIN/MAX), **einmal** je Bericht
  * aufgebaut. Ohne diesen Index kostete jeder Slot zwei lineare Suchen ueber alle
  * Ergebnisse — bei einem Baum aus mehreren hundert Slots ein quadratischer Aufwand
  * fuer eine Frage, die eine Zuordnung beantwortet.
+ *
+ * Traegt ein Anker mehrere Grenzen derselben Art, bleibt die **bindende** stehen
+ * ({@link isMoreBinding}) — damit `effectiveMin`/`effectiveMax`, `current`,
+ * `headroom` und die Flags eines Slots aus **derselben** Grenze stammen und
+ * zueinander passen. Die Meldungsliste bleibt unberuehrt: sie entsteht aus der
+ * vollen Ergebnisliste, dort ist jede Grenze weiterhin ihre eigene Meldung.
  */
 function indexResultsByAnchor(results) {
   const index = new Map();
@@ -103,7 +149,9 @@ function indexResultsByAnchor(results) {
       byKind = new Map();
       index.set(result.anchor, byKind);
     }
-    byKind.set(result.limit.kind, result);
+    if (isMoreBinding(result, byKind.get(result.limit.kind))) {
+      byKind.set(result.limit.kind, result);
+    }
   }
   return index;
 }

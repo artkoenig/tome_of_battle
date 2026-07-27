@@ -391,7 +391,17 @@ function isOccurrenceOf(d, wantedId): bool            // „zählt dieses Vorkom
 
 Die Regel ist **einseitig**: nennt eine Grenze die Ziel-Id, trifft sie das Vorkommen über *jeden* Verweis und auch das direkt gesetzte; nennt sie eine Verweis-Id, trifft sie nur die Vorkommen über genau diesen Verweis. Und sie ist **Mengenzugehörigkeit, keine Summierung je Id**: ein Vorkommen zählt für eine Grenze höchstens einmal, auch wenn mehrere seiner Ids zutreffen.
 
+**Roster-Bindung eines Vorkommens.** Eine gespeicherte Auswahl benennt **zwei** Ids: den gewählten Eintrag (`entryId`) und den Verweis, über den er hereinkam (`entryLinkId`, leer bei direkter Auswahl). Gebunden wird über den **Verweis**, wenn es einen gibt — nur so gelten die an ihm deklarierten Grenzen, Modifikatoren und Kosten. Die Gegenrichtung ist nicht konstruierbar: aus dem Verweis folgt sein Ziel, aus dem Ziel aber nie *welcher* seiner n Verweise gemeint war. Die vom Roster mitgeführte Ziel-Id reist deshalb als reines **Prüfdatum** mit (`expectedTargetDefId`), nie als zweiter Auflösungsweg: passt sie nicht zur Zähl-Identität des Verweises — Kataloge werden zur Laufzeit aktualisiert (ADR-0014), eine gespeicherte Liste kann also veralten —, meldet die Join-Schicht `ENTRY_LINK_TARGET_MISMATCH` und **folgt dem Verweis**.
+
 ```
+function attachInstance(parent, instance, resolved): EvalNode
+  def = resolved.lookup(instance.defId)                 // defId = Verweis, sonst Eintrag
+  if def == null: diagnose(UNRESOLVED_DEFINITION); return   // Teilbaum übersprungen
+  if instance.expectedTargetDefId != null
+     and not isOccurrenceOf(def, instance.expectedTargetDefId):
+    diagnose(ENTRY_LINK_TARGET_MISMATCH)                // gemeldet, nicht geraten
+  ...                                                   // Auswertung folgt dem Verweis
+
 function buildEvalTree(resolved, roster): EvalNode
   root = EvalNode(def = resolved.gameSystemRoot, instance = null, isPhantom = false)
   for forceInstance in roster.forces:
@@ -607,12 +617,14 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED | UNLIMITED
 
 ### 4.8 Bericht und UI-Projektion
 
+**Die bindende Grenze je Slot.** Ein Slot kann mehrere Grenzen **derselben** Art tragen: ein per `entryLink` belegter Slot führt die am Verweis *und* die am Ziel deklarierten zugleich (§4.3, `limitsOf`), und sie schränken einander zusätzlich ein, statt sich zu ersetzen. Der Fähigkeitsdatensatz führt je Slot aber nur **eine** Unter- und eine Obergrenze — also die **bindende**: bei MIN die mit dem größten Fehlbetrag (`delta = bound − actual`), bei MAX die mit dem geringsten Restspielraum (kleinstes `delta`); bei Gleichstand die in Dokumentreihenfolge erste. Nie „die zuletzt ausgewertete", sonst hingen die Zahlen eines Slots an der Auswertungsreihenfolge. `current`, `headroom`, `isBlocked` und `isMandatoryUnmet` stammen aus **derselben** gewählten Grenze, damit sie zueinander passen. Die Meldungsliste bleibt unberührt: dort ist jedes Grenzergebnis weiterhin seine eigene Meldung.
+
 ```
 function buildReport(tree, effective, results, diagnostics, unstableNodes): Report
   capabilities = {}
   for node in selectableSlotsOf(tree):                   // JEDER Knoten: belegt wie Anker
-    minResult = findResult(results, node, MIN)
-    maxResult = findResult(results, node, MAX)
+    minResult = bindingResult(results, node, MIN)        // größter Fehlbetrag
+    maxResult = bindingResult(results, node, MAX)        // geringster Restspielraum
     capabilities[pathOf(node)] = SlotCapability(
       node          = node,
       anchorKind    = node.anchorKind,                 // Herkunft des Slots

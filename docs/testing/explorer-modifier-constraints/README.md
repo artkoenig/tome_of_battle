@@ -24,10 +24,13 @@ Die Bedingung prueft das ueber die Kontingent-Definition selbst:
 `1821-fbd1-0d96-2d88` ist der **`forceEntry`** „Grimgor's 'Ardboyz (SoC)".
 
 > **Achtung bei der Ableitung:** Der Modifikator haengt am **Link**, nicht an der
-> geteilten Definition. Ein Roster muss die Aufwertung deshalb ueber die **Link-ID**
-> `a2d7-7a89-7059-81f2` waehlen (so speichert sie auch die App: `entryLinkId` gesetzt).
-> Waehlt es stattdessen direkt die Ziel-ID `1b7c-2c90-6d96-28c9`, greift der Modifikator
-> des Links nicht — dann waere der Test wirkungslos.
+> geteilten Definition. Ein Roster muss die Aufwertung deshalb ueber den Verweis
+> `a2d7-7a89-7059-81f2` beziehen. BattleScribe schreibt das in **zwei** Attribute
+> derselben `<selection>`: `entryId="1b7c-2c90-6d96-28c9"` (das gewaehlte Ziel) und
+> `entryLinkId="a2d7-7a89-7059-81f2"` (der Verweis, ueber den es hereinkam) — genau
+> die Form, die beide Roster dieses Szenarios tragen. Kaeme die Auswahl **ohne**
+> `entryLinkId` herein (direkt gewaehlt), griffe der Modifikator des Links nicht —
+> dann waere der Test wirkungslos.
 
 ## Abgeleitete Regeln (mit Beleg aus den Katalogdaten)
 

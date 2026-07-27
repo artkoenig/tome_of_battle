@@ -8,7 +8,7 @@
             <category id="cat-core-1" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
           </categories>
         </selection>
-        <selection id="sel-ogre-bulls" name="Ogre Bulls" entryId="d82e-111e-89b9-2be1" entryLinkId="d82e-111e-89b9-2be1" number="1" type="unit" collective="false">
+        <selection id="sel-ogre-bulls" name="Ogre Bulls" entryId="7754-8b3d-df99-d2d5" entryLinkId="d82e-111e-89b9-2be1" number="1" type="unit" collective="false">
           <categories>
             <category id="cat-core-2" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
             <category id="cat-bully-bully" name="Bully Bully" entryId="735e-2da1-6356-2fdb" primary="false"/>

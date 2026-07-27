@@ -505,6 +505,12 @@ export const DiagnosticKind = Object.freeze({
   // Katalog, der nicht unter den mitgegebenen Quellen ist — Kohaerenz-Diagnose
   // statt stiller Teil-Auswertung (ADR-0032, Entscheidung 3).
   MISSING_CATALOGUE_DEPENDENCY: 'missingCatalogueDependency',
+  // Eine Roster-Auswahl benennt einen Verweis (`entryLinkId`) **und** ein Ziel
+  // (`entryId`), die nicht zusammenpassen: der Verweis loest auf etwas anderes auf
+  // als das genannte Ziel. Kataloge werden zur Laufzeit aktualisiert (ADR-0014),
+  // eine gespeicherte Liste kann also veralten. Gemeldet statt geraten — die
+  // Auswertung folgt dem **Verweis**, weil an ihm die tragenden Regeln haengen.
+  ENTRY_LINK_TARGET_MISMATCH: 'entryLinkTargetMismatch',
   // Eine Regel nennt ueber `limit::<costTypeId>` eine eingestellte Kostengrenze,
   // die sich nicht aufloesen laesst — die Kostenart ist nicht budgetiert oder das
   // Feld traegt einen Scope ungleich `roster` ({@link BudgetLimitUnresolvedReason}).

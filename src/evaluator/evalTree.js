@@ -67,6 +67,29 @@ function createFrameIdSource() {
   return () => next++;
 }
 
+/**
+ * Prueft die **Kohaerenz** einer Roster-Bindung: ein ueber einen Verweis gesetztes
+ * Vorkommen fuehrt neben der Verweis-Id die Ziel-Id mit, die das Roster beim
+ * Speichern gesehen hat. Loest der Verweis heute auf etwas anderes auf — Kataloge
+ * werden zur Laufzeit aktualisiert (ADR-0014) —, ist das zu **melden**, nicht zu
+ * erraten.
+ *
+ * Gemessen wird an der {@link isOccurrenceOf Zaehl-Identitaet} des Verweises: das
+ * genannte Ziel ist genau dann noch stimmig, wenn der Verweis unter dieser Id
+ * zaehlt. Das Pruefdatum ist **nie** ein zweiter Aufloesungsweg — bei Abweichung
+ * gilt weiterhin der Verweis, weil an ihm die tragenden Regeln haengen; die
+ * Auswertung laeuft mit der Diagnose daneben weiter.
+ */
+function checkTargetCoherence(def, instance, diagnostics) {
+  const { expectedTargetDefId } = instance;
+  if (expectedTargetDefId === undefined || isOccurrenceOf(def, expectedTargetDefId)) return;
+  diagnostics.push(diagnostic(DiagnosticKind.ENTRY_LINK_TARGET_MISMATCH, {
+    defId: instance.defId,
+    expectedTargetDefId,
+    targetId: def.resolved?.id ?? def.targetId ?? null,
+  }));
+}
+
 /** Haengt einen Instanzknoten samt Kindern (Auswahlen wie geschachtelte Kontingente) an. */
 function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
   const def = resolved.lookup(instance.defId);
@@ -74,6 +97,7 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
     diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_DEFINITION, { defId: instance.defId }));
     return;
   }
+  checkTargetCoherence(def, instance, diagnostics);
   const isForce = def.kind === DefinitionKind.FORCE;
   const node = {
     def,

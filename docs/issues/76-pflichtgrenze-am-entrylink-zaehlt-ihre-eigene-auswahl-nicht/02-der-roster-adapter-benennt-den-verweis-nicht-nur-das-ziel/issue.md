@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: [01]
 
@@ -50,3 +50,4 @@ zurueckzufuehren, sonst verdecken sie den Fix.
 ## Comments
 - Gemessener Wirkungsradius aus der Architektur-Planung: 11 von 100 Szenario-Rostern in 6 Szenarien tragen ueberhaupt eine Verweis-Id; bei 6 Rostern in 3 Szenarien deklariert der gebundene Verweis eigene Inhalte, dort aendert sich die Auswertung fachlich. Keiner der 11 gebundenen Verweise deklariert eigene Kosten oder Kategoriezuordnungen — Punktesummen und Kategorien der Suite bleiben unberuehrt.
 - Der Zahlenwert im Beschreibungstext des Main-Issues ("13 von 102 Rostern in 4 Szenarien") stammt aus einer Schaetzung und ist durch diese Messung ersetzt.
+- Der .ros-Adapter bindet eine Auswahl jetzt an den Verweis (entryLinkId) und fuehrt die Ziel-Id nur als Pruefdatum mit (expectedTargetDefId); die Join-Schicht meldet eine Abweichung als ENTRY_LINK_TARGET_MISMATCH und folgt weiter dem Verweis. Der Bericht waehlt je Slot und Grenzenart die bindende Grenze (groesster Fehlbetrag bei MIN, geringster Spielraum bei MAX) statt der zuletzt ausgewerteten. Die drei Auswahlen, die die Verweis-Id in beide Felder schrieben, sind auf die reale BattleScribe-Form zurueckgefuehrt; modifier-characteristic-value fuehrt dfd9-3e46-eda5-be8b und feb1-c10d-9318-dbda wieder in absent, aus den Katalogdaten im README begruendet.

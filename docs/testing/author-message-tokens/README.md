@@ -52,16 +52,16 @@ Der einzige Fixture-Fall, an dem sich **wirksamer** gegen **Katalog**-Namen
 abgrenzen liesse, ist **#3**; er ist mit diesen Katalogdaten nicht pruefbar —
 siehe [„Dokumentierte Luecke"](#dokumentierte-luecke-wirksamer-name-im-token-nicht-pruefbar).
 
-### Bindung der Auswahl: der `entryLink` steht im `entryId`
+### Bindung der Auswahl: die zweite Auswahl kommt ueber einen `entryLink` herein
 
-Roster **02** benennt im `entryId` seiner zweiten Auswahl **nicht** das Ziel des
-Verweises, sondern den `entryLink` selbst (`entryId` = `entryLinkId` = Id des
-Verweises). Grund: eine Auswahl wird ueber ihr `entryId` an eine Definition
-gebunden. Nennt sie das Ziel, ist der Verweis selbst nicht Teil der Bindung — und
-damit faellt alles weg, was **am `entryLink`-Element** deklariert ist (dessen
-eigene `modifiers`, `modifierGroups`, `constraints`, `costs`). Genau diese
-link-eigene Deklaration ist hier der Gegenstand: der Verweis traegt den
-**unbedingten**
+Roster **02** benennt seine zweite Auswahl mit **beiden** Ids, so wie
+BattleScribe sie schreibt: `entryId="7754-8b3d-df99-d2d5"` (das gewaehlte Ziel
+*Ogre Bulls* in der Mercenaries-`.cat`) und
+`entryLinkId="d82e-111e-89b9-2be1"` (der Wurzel-`entryLink` der Ogre-`.cat`,
+ueber den es hereinkommt). Massgeblich fuer die Regeln ist der **Verweis**: nur
+ueber ihn gilt, was **am `entryLink`-Element** deklariert ist (dessen eigene
+`modifiers`, `modifierGroups`, `constraints`, `costs`). Genau diese link-eigene
+Deklaration ist hier der Gegenstand: der Verweis traegt den **unbedingten**
 `<modifier type="add" value="735e-2da1-6356-2fdb" field="category"/>`, der direkt
 im `<modifiers>`-Block des Ogre-Bulls-Verweises `d82e-111e-89b9-2be1` steht
 (Ogre-`.cat`, Z. 3164–3166) — **nicht** in einer der beiden bedingten
@@ -69,7 +69,7 @@ im `<modifiers>`-Block des Ogre-Bulls-Verweises `d82e-111e-89b9-2be1` steht
 Einheit die Kategorie „Bully Bully" nie, und die Gegenprobe AMT-R3 waere gar nicht
 ausloesbar.
 
-Roster **01** und **03** brauchen das nicht: „Gnoblars" (`1e26-0d1a-bb3c-f47a`)
+Roster **01** und **03** brauchen keinen Verweis: „Gnoblars" (`1e26-0d1a-bb3c-f47a`)
 und Skrag (`82a9-0281-ffa1-2290`) sind Wurzel-`selectionEntry`s der Ogre-`.cat`,
 werden also direkt per `entryId` mit leerem `entryLinkId` benannt.
 
@@ -218,7 +218,7 @@ Die Tabelle ist die Begruendung der Erwartung, nicht selbst eine Assertion:
 | Force „Standard (OK-AB)" | `729f-9246-5cd3-5044` | Ogre-`.cat` → `<forceEntries>` |
 | Einheit „Gnoblars" (Traeger von `{this}`-Fall #1, **ohne** Namens-Modifikator) | `1e26-0d1a-bb3c-f47a` | Ogre-`.cat` → Wurzel-`<selectionEntries>` (Z. 16) |
 | Kategorie „Bully Bully" (Schalter der Gnoblars-Meldung) | `735e-2da1-6356-2fdb` | Ogre-`.cat` → `<categoryEntries>` (Z. 9) |
-| Wurzel-`entryLink` „Ogre Bulls" (vergibt „Bully Bully" **unbedingt**; im Roster 02 als `entryId` gebunden) → Ziel | `d82e-111e-89b9-2be1` → `7754-8b3d-df99-d2d5` | Ogre-`.cat` → `<entryLinks>` (Z. 3133; eigener `<modifiers>`-Block Z. 3164–3166) / Mercenaries-`.cat` (Z. 3438) |
+| Wurzel-`entryLink` „Ogre Bulls" (vergibt „Bully Bully" **unbedingt**; im Roster 02 als `entryLinkId` gebunden) → Ziel | `d82e-111e-89b9-2be1` → `7754-8b3d-df99-d2d5` | Ogre-`.cat` → `<entryLinks>` (Z. 3133; eigener `<modifiers>`-Block Z. 3164–3166) / Mercenaries-`.cat` (Z. 3438) |
 | Eigene Grenze des Ogre-Bulls-Verweises (nicht behauptet) | `32ed-26da-3f27-5c04` (`min 0`, `scope=force`; per `set 1` der ersten `modifierGroup`) | Ogre-`.cat` → `<entryLinks>` (Z. 3161–3163) |
 | Skrag the Slaughterer (Traeger der token-freien Meldung) | `82a9-0281-ffa1-2290` | Ogre-`.cat` → Wurzel-`<selectionEntries>` (Z. 1001) |
 | „Allow special characters?" (Schalter der Skrag-Meldung) | `8923-5946-7b10-8957` | `.gst` |
