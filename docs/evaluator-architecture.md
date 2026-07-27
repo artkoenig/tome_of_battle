@@ -86,7 +86,11 @@ Phase 2 hängt ausschließlich **hinter** alle bestehenden Kinder an. Damit blei
 
 **Der primäre Katalog hängt am Kontingent.** Der Bezugsrahmen `scope="primary-catalogue"` fragt nach dem **Armee-Katalog des Kontingents**, in dem der auswertende Knoten steht ([BSData §7.7](battlescribe-data-format.md#primary-catalogue--der-armee-katalog-des-kontingents)). Seine Quelle ist das **Roster**, nicht der Katalogsatz: `<force catalogueId="…">` der `.ros`, im Roster-Kontrakt der Fassade als optionales `forces[i].catalogueId`. Das steht **nicht** im Widerspruch zu [ADR 0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md) — ein Mehr-Katalog-*Datensatz* kennt weiterhin keinen ausgezeichneten Katalog; ausgezeichnet ist er je Kontingent, und die Auszeichnung stammt vom Roster.
 
-Die Join-Schicht bindet ihn deshalb **einmal je realem Kontingent** und prüft ihn dabei gegen die Wurzel-Ids der mitgegebenen `.cat` (die der Datensatz-Vorlauf ohnehin führt, §3.1). Fehlt die Angabe oder benennt sie keinen dieser Kataloge, bleibt der primäre Katalog `null` und die Schicht meldet das — einmal je Kontingent, nicht einmal je fragender Bedingung. Ein benannter Lesezugriff (`primaryCatalogueIdOf(node)`, neben `frameKeyOf`) liefert jedem Knoten den Katalog seines umschließenden Kontingents; das Query-Primitiv greift nie selbst in die Knotenform. Ein synthetischer Kontingent-Anker stammt aus keinem Roster-Kontingent und trägt daher nie einen primären Katalog.
+Die Join-Schicht bindet ihn deshalb **bei der Erzeugung jedes Kontingent-Knotens** und prüft ihn dabei gegen die Wurzel-Ids der mitgegebenen `.cat` (die der Datensatz-Vorlauf ohnehin führt, §3.1) — eine **Pflichteingabe** von `buildEvalTree`, denn eine still ergänzte leere Menge ließe jedes Kontingent als unauflösbar gelten und sähe wie ein Datenmangel aus.
+
+Jeder Knoten trägt die Bindung in **derselben Form**: entweder die geprüfte Katalog-Id oder den Grund, aus dem es keine gibt (keine Angabe im Roster, eine Angabe auf einen nicht mitgegebenen Katalog, oder gar kein Kontingent des Rosters über diesem Knoten). Ein bloßes `null` trüge diese Unterscheidung nicht — es hieße zugleich „noch nicht gebunden", „kein Kontingent" und „nicht auflösbar". Ein Kontingent bindet dabei sich selbst, jeder andere Knoten erbt die Bindung seines Kontingents; ein synthetischer Kontingent-Anker stammt aus keiner Roster-`<force>` und hat deshalb nie eine Id. Ein benannter Lesezugriff (`primaryCatalogueOf(node)`, neben `frameKeyOf`) liefert sie; das Query-Primitiv greift nie selbst in die Knotenform.
+
+**Gemeldet wird eine fehlgeschlagene Bindung erst, wenn eine Regel fragt** — an der fragenden Stelle im Query-Primitiv (§4.5), wie die Diagnose zur nicht auflösbaren Kostengrenze. Zwei Gründe: einem Kontingent, in dem keine Regel diesen Bezugsrahmen benutzt, ist die fehlende Angabe folgenlos vorzuwerfen; und die Unentscheidbarkeit trifft nicht nur Kontingente — ein Anker über gar keinem Kontingent (roster-weite Pflichtgrenze, synthetischer Kontingent-Anker) fällt beim Baumbau durch jedes Raster und bliebe sonst ohne jede Diagnose, obwohl seine Abfrage keine Antwort hat.
 
 ### 3.3 Index-Schicht: Scope-Schlüssel statt Baumtraversalen
 
@@ -114,10 +118,14 @@ Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Koste
 
 ### 3.6 Constraint-Schicht und Bericht
 
-Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Eine **unbegrenzt erklärte** Grenze (§3.4) hat keinen Vergleichswert und wird deshalb gar nicht ausgewertet: sie liefert kein Ergebnis, feuert nie und schränkt keinen Restspielraum ein — im Fähigkeitsdatensatz erscheint sie als `effectiveMax: null` / `headroom: null` / `isBlocked: false`, also genau als „unbegrenzt". Umgekehrt ist eine Grenze, die eine Rechnung ins Negative gezogen hat, die **schärfste** Grenze („nichts erlaubt") und wird nicht geklemmt; sie feuert, statt still zu verschwinden. Der Bericht enthält:
+Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Eine **unbegrenzt erklärte** Grenze (§3.4) hat keinen Vergleichswert und wird deshalb gar nicht ausgewertet: sie liefert kein Ergebnis, feuert nie und schränkt keinen Restspielraum ein — im Fähigkeitsdatensatz erscheint sie als `effectiveMax: null` / `headroom: null` / `isBlocked: false`, also genau als „unbegrenzt". Umgekehrt ist eine Grenze, die eine Rechnung ins Negative gezogen hat, die **schärfste** Grenze („nichts erlaubt") und wird nicht geklemmt; sie feuert, statt still zu verschwinden.
+
+**Eine Grenze ohne Antwort ist etwas anderes als keine Grenze.** Hat der Grenzwert oder der Ist-Wert einer Grenze in diesem Stand keine Antwort — unauflösbarer Bezugsrahmen, nicht budgetierte Kostenart, unentscheidbarer primärer Katalog, leerer Nenner einer Prozentgrenze —, wird sie **nicht verglichen** (fail-closed, §4.5) und meldet nichts. Sie verschwindet aber auch nicht: die Auswertung liefert sie als **nicht auswertbare Grenze** neben den Ergebnis-Tripeln, und der Fähigkeitsdatensatz ihres Slots führt ihre Art unter `unevaluatedLimitKinds`. Ohne diese Unterscheidung stünde dort dasselbe `null` wie bei „keine Grenze" — und `null` heißt hier ausdrücklich „unbegrenzt", aus „wir wissen es nicht" würde also „beliebig viel erlaubt". Für ein nicht auswertbares **Höchstmaß** gilt deshalb dieselbe Vorsicht wie bei den Bedingungen: `headroom: 0` und `isBlocked: true` statt eines zugesagten Spielraums. Ein nicht auswertbares **Mindestmaß** behauptet umgekehrt keine offene Pflicht (`isMandatoryUnmet: false`) — eine Verletzung ohne Grundlage wäre dieselbe Erfindung mit umgekehrtem Vorzeichen.
+
+Der Bericht enthält:
 
 - **Verletzungen** (für die Validierungsanzeige) — **eine** Liste fachlich eingeordneter Meldungen, siehe unten,
-- pro **Slot** einen **Fähigkeitsdatensatz**: Definitions-ID, **Ankerart**, **Rahmen-Bezug** und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die **Info-Projektion** — die für ihn geltenden Profile und Regeltexte (für die UI-Steuerung, siehe unten),
+- pro **Slot** einen **Fähigkeitsdatensatz**: Definitions-ID, **Ankerart**, **Rahmen-Bezug** und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, die Arten seiner **nicht auswertbaren** Grenzen, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die **Info-Projektion** — die für ihn geltenden Profile und Regeltexte (für die UI-Steuerung, siehe unten),
 - **Diagnosen** (Auflösungsprobleme, Oszillation, erschöpftes Rundenbudget, Null-Nenner, unauflösbare Budgetgrenze).
 
 Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** — ob dort etwas steht oder nicht: jeder Knoten jeder Ankerart, also auch ein Kategorie-Knoten und jede wählbare, nicht gewählte Definition. Verfügbarkeit wird daraus **abgelesen** statt errechnet.
@@ -326,6 +334,8 @@ record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: d
                                                         // null = der Slot hängt am Roster selbst
                           effectiveMin: number?, effectiveMax: number?,
                           current: number, headroom: number?,
+                          unevaluatedLimitKinds: ConstraintKind[],  // Grenzenarten OHNE Antwort:
+                                                        // „nicht auswertbar" ist nicht „keine Grenze"
                           isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
                           isValueUnstable: bool,        // lag in der instabilen Knotenmenge
                           authorMessages: { severity, text }[],
@@ -436,21 +446,27 @@ function buildEvalTree(resolved, roster, datasetCatalogueIds): EvalNode
     forceNode = attachChild(root, forceDef, forceInstance)
     joinChildrenRecursively(forceNode, resolved)
     synthesizePhantoms(forceNode, resolved)
-  bindPrimaryCatalogues(root, datasetCatalogueIds)     // einmal je REALEM Kontingent
   synthesizeRosterPhantoms(root, resolved)             // rosterweite Kategorie-/Eintragsgrenzen
   return root
 
-function bindPrimaryCatalogues(root, datasetCatalogueIds)
+function attachChild(parent, def, instance)             // gilt ebenso für jeden Anker
+  node = EvalNode(def, instance, parent)
+  // Bei der ERZEUGUNG gebunden, danach nie überschrieben (§3.2): ein Kontingent
+  // bindet sich selbst, jeder andere Knoten erbt die Bindung seines Kontingents.
+  node.primaryCatalogue = isForce(def) ? bindPrimaryCatalogueOfForce(def, instance)
+                                       : parent.primaryCatalogue
+  return node
+
+function bindPrimaryCatalogueOfForce(def, instance): PrimaryCatalogueBinding
   // Der primäre Katalog kommt aus dem Roster (§3.2) und wird gegen die Kataloge des
-  // Datensatzes geprüft. Beides wird gemeldet statt still als „andere Armee" gelesen:
-  // keine Angabe, und eine Angabe auf einen nicht mitgegebenen Katalog.
-  for forceNode in realForceNodes(root):
-    declared = forceNode.instance.catalogueId
-    if declared == null or declared not in datasetCatalogueIds:
-      diagnose(UNRESOLVED_PRIMARY_CATALOGUE(forceNode.def.id, declared, reason))
-      forceNode.primaryCatalogueId = null
-    else:
-      forceNode.primaryCatalogueId = declared
+  // Datensatzes geprüft. Entweder Id ODER Grund — nie beides, nie keines von beiden.
+  declared = instance?.catalogueId                      // instance == null: Kontingent-ANKER
+  if instance == null:  return { id: null, unresolved: (def.id, null, NO_ROSTER_FORCE) }
+  if declared == null:  return { id: null, unresolved: (def.id, null, NOT_DECLARED) }
+  if declared not in datasetCatalogueIds:
+                        return { id: null, unresolved: (def.id, declared, UNKNOWN_CATALOGUE) }
+  return { id: declared, unresolved: null }
+  // Gemeldet wird das NICHT hier, sondern erst, wenn eine Regel fragt (§4.5).
 
 function synthesizePhantoms(forceNode, resolved)
   // Anker für Grenzen an Knoten, die keine Instanz haben
@@ -542,11 +558,15 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
   // PRIMARY_CATALOGUE zählt nichts: die Frage ist „ist der Armee-Katalog dieses
   // Kontingents der genannte?" (BSData §7.7). Antwort in der Währung des Aufrufers,
   // damit instanceOf/notInstanceOf unverändert darauf rechnen; Flags sind ohne
-  // Wirkung. Ist der primäre Katalog nicht entscheidbar, kommt der Sentinel — die
-  // Diagnose dazu steht bereits vom Baumbau (§3.2).
+  // Wirkung. Ist der primäre Katalog nicht entscheidbar, kommt der Sentinel — samt
+  // Diagnose an DIESER Stelle: der Baumbau bindet nur (§3.2), gemeldet wird, wenn
+  // jemand fragt. Den Grund trägt die Bindung mit.
   if scope == PRIMARY_CATALOGUE:
-    primary = primaryCatalogueIdOf(ctx.node)
-    return primary == null ? UNRESOLVED_QUERY : (primary == targetId ? 1 : 0)
+    { id, unresolved } = primaryCatalogueOf(ctx.node)
+    if id == null:
+      ctx.diagnostics.add(Diagnostic.UNRESOLVED_PRIMARY_CATALOGUE(unresolved))
+      return UNRESOLVED_QUERY
+    return id == targetId ? 1 : 0
 
   frame = resolveScopeFrame(ctx.node, scope)
   // ROSTER → Wurzel | FORCE → ctx.node.forceRoot | PARENT → ctx.node.parent
@@ -562,9 +582,13 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
   table = flags.includeChildSelections ? ctx.index.deep : ctx.index.direct
   tally = table.get(ScopeKey(frame, effectiveTarget)) ?? Tally.ZERO
 
-  return field == SELECTION_COUNT
-       ? tally.selectionCount
-       : tally.costSums[field.costTypeId] ?? 0
+  if field == SELECTION_COUNT: return tally.selectionCount
+  if field == FORCE_COUNT:     return tally.forceCount
+  if field == COST_SUM:        return tally.costSums[field.costTypeId] ?? 0
+  // Ein Feld, das diese Schicht nicht zählen kann, hat KEINE Antwort — auch hier
+  // nicht die Zahl 0: es gibt nur einen Wert für „keine Antwort" (§3.6).
+  ctx.diagnostics.add(Diagnostic.UNSUPPORTED_FIELD(field))
+  return UNRESOLVED_QUERY
 ```
 
 ### 4.6 Condition, Repeat, Modifikatoren
@@ -643,21 +667,25 @@ Wichtig: Jede Fixpunktrunde wendet Modifikatoren auf eine frische Kopie der **Ba
 ### 4.7 Constraint-Auswertung
 
 ```
-function evaluateAllConstraints(tree, effective, index, diagnostics): ConstraintResult[]
-  results = []
+function evaluateAllConstraints(tree, effective, index, diagnostics)
+        : { results: ConstraintResult[], unevaluatedLimits: { limit, anchor }[] }
+  results = []; unevaluatedLimits = []
   for node in allNodesOf(tree):                          // Phantome eingeschlossen
     ctx = QueryContext(node, index, diagnostics)
     for limit in node.def.limits:
-      actual = query(ctx, limit.field, limit.scope, targetIdFor(limit, node), limit.flags)
       bound  = resolveBound(ctx, limit, effective)
-      if bound == SUSPENDED: continue                    // A4: Null-Nenner
-      if bound == UNLIMITED: continue                    // erklärt unbegrenzt: kein Ergebnis
+      if bound == UNLIMITED: continue                    // erklärt unbegrenzt: eine AUSSAGE, kein Ergebnis
+      // Keine Antwort (Null-Nenner nach A4, unauflösbarer Nenner) → nicht vergleichen,
+      // aber auch nicht verschwinden lassen: der Slot führt die Grenzenart weiter.
+      if bound == SUSPENDED: unevaluatedLimits.add({limit, anchor: node}); continue
+      actual = query(ctx, limit.field, limit.scope, targetIdFor(limit, node), limit.flags)
+      if isUnresolvedQuery(actual): unevaluatedLimits.add({limit, anchor: node}); continue
       satisfied = limit.kind == MIN ? actual >= bound : actual <= bound
       results.add(ConstraintResult(limit, node, actual, bound, satisfied,
                                    delta = bound - actual,
                                    // Am Angebots-Anker ausgewertet, aber nie gemeldet:
                                    isReportable = node.anchorKind != OFFER_ANCHOR))
-  return results
+  return { results, unevaluatedLimits }
 
 function resolveBound(ctx, limit, effective): number | SUSPENDED | UNLIMITED
   bound = effective.limitBound(ctx.node, limit)          // Zahlwert **samt Deutung** (§3.4)
@@ -667,6 +695,7 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED | UNLIMITED
   raw = bound.value
   if not limit.isPercent: return raw
   denominator = query(ctx, limit.field, limit.scope, targetId = null, limit.flags)
+  if isUnresolvedQuery(denominator): return SUSPENDED   // keine Antwort: Diagnose steht schon
   if denominator == 0:
     ctx.diagnostics.add(Diagnostic.ZERO_DENOMINATOR(limit))
     return SUSPENDED
@@ -682,11 +711,13 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED | UNLIMITED
 **`current`, `headroom` und `isBlocked` gelten je Messgröße — sie sind keine Zusage über Verfügbarkeit.** Sie stammen aus der **einen** ausgewiesenen Grenze und tragen deren Einheit; eine Grenze **anderer** Messgröße am selben Slot kann bereits ausgereizt sein, ohne dass eine dieser Zahlen es zeigt. Beispiel: ein Gegenstand kostet 98 Punkte, sein Slot führt „höchstens 5 Auswahlen" und „höchstens 100 Punkte", einer ist gewählt — der Datensatz meldet `headroom` 4 und `isBlocked` false, obwohl die zweite Auswahl die Punktegrenze bräche. Der UI-Lookup `isSelectable` unten liest deshalb genau das, was dort steht („diese Grenze sperrt nicht"), und nicht „eine weitere Auswahl ist zulässig". Die vollständige Aussage darüber, was eine Auswahl verletzt, trägt allein die Meldungsliste: dort steht **jede** Grenze mit ihrem eigenen Ergebnis.
 
 ```
-function buildReport(tree, effective, results, diagnostics, unstableNodes): Report
+function buildReport(tree, effective, {results, unevaluatedLimits}, diagnostics, unstableNodes): Report
   capabilities = {}
   for node in selectableSlotsOf(tree):                   // JEDER Knoten: belegt wie Anker
     minResult = bindingResult(results, node, MIN)        // größter Fehlbetrag
     maxResult = bindingResult(results, node, MAX)        // geringster Restspielraum
+    unevaluated = kindsOf(unevaluatedLimits, node)       // Grenzenarten ohne Antwort
+    maxUnevaluated = MAX in unevaluated
     capabilities[pathOf(node)] = SlotCapability(
       node          = node,
       anchorKind    = node.anchorKind,                 // Herkunft des Slots
@@ -694,9 +725,13 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       effectiveMin  = minResult?.bound,
       effectiveMax  = maxResult?.bound,
       current       = maxResult?.actual ?? minResult?.actual ?? 0,
-      headroom      = maxResult != null ? max(0, maxResult.bound - maxResult.actual) : null,
+      // Ohne Antwort auf ein Höchstmaß: 0 statt null — „unbekannt" darf sich nicht
+      // in „unbegrenzt" verwandeln (§3.6).
+      headroom      = maxUnevaluated ? 0
+                    : maxResult != null ? max(0, maxResult.bound - maxResult.actual) : null,
+      unevaluatedLimitKinds = unevaluated,
       isMandatoryUnmet = minResult != null and not minResult.satisfied,
-      isBlocked     = maxResult != null and maxResult.actual >= maxResult.bound,
+      isBlocked     = maxUnevaluated or (maxResult != null and maxResult.actual >= maxResult.bound),
       isHidden      = effective.isHidden(node),
       isValueUnstable = node in unstableNodes,         // kam in der Schleife nicht zur Ruhe
       defId         = node.def.id,

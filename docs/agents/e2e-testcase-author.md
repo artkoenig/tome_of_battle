@@ -234,6 +234,14 @@ Key points of the contract:
     off, blocked is a maximum that is used up, mandatory-unmet is a minimum that is
     not reached. A locked or hidden slot is still **present and marked** — a missing
     record would be indistinguishable from a forgotten one.
+  - **`unevaluatedLimitKinds`** (`[]` | `["min"]` | `["max"]` | `["min","max"]`) —
+    the limit kinds the engine could **not** evaluate at this slot, because the
+    limit's bound or its count had no answer (an unresolvable scope, a cost type the
+    roster does not budget, an undecidable primary catalogue, an empty percentage
+    denominator). Without it, "the limit could not be evaluated" would look exactly
+    like "there is no limit" — both `null`, i.e. *unbounded*. An unevaluated **max**
+    is therefore reported fail-closed: `headroom` `0` and `isBlocked` `true`, never
+    an unbounded `null`.
   - **`name`** — the **effective** display name, i.e. after every `field="name"`
     modifier that fires (`set` replaces it, `append`/`prepend` join with the
     modifier's `join` attribute, or without a separator when it has none).

@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: [03]
 
@@ -68,3 +68,4 @@ Kontingent, nicht aufloesbar.
 ## Comments
 - Punkt 1 wurde vom Pruefer nicht hergeleitet, sondern gemessen: derselbe Aufruf vor und nach Commit ff050ac liefert effectiveMax 1 -> null und headroom 1 -> null. Die Aussage im Commit-Text, die Verschiebung betreffe ausschliesslich die Sichtbarkeit, gilt fuer Verletzungen und Sichtbarkeit — der Faehigkeitsdatensatz war nicht mitgemessen.
 - Heute schlaegt das ueberwiegend ueber den Bezugsrahmen "unit" durch (Issue 83), der Mechanismus ist aber allgemein und trifft jeden nicht aufloesbaren Rahmen.
+- Nicht auswertbare Grenzen verschwinden nicht mehr: evaluateConstraints liefert neben den Ergebnis-Tripeln eine zweite Liste (LIMIT_WITHOUT_ANSWER), der Faehigkeitsdatensatz fuehrt sie je Slot als unevaluatedLimitKinds und weist ein nicht auswertbares Hoechstmass fail-closed aus (headroom 0, isBlocked true) statt als 'unbegrenzt' (null). Dazu: die Diagnose zum primaeren Katalog wandert vom Baumbau an die fragende Stelle in query.js (erscheint nur, wenn eine Regel fragt, dafuer in JEDEM unbeantwortbaren Fall, auch ausserhalb eines Kontingents, neuer Grund NO_ROSTER_FORCE); UNSUPPORTED_FIELD liefert den Sentinel statt 0; datasetCatalogueIds ist Pflichteingabe von buildEvalTree; jeder Knoten traegt dieselbe Bindung {id|unresolved}, gesetzt bei der Erzeugung. Messung ueber alle 112 E2E-Roster: keine Verletzung, keine Diagnose und keine Slot-Zahl aendert sich; 76 Slots (2 forceEntries, min-Grenze auf einem nicht budgetierten limit::-Feld) tragen jetzt sichtbar 'min' statt still zu verschwinden.

@@ -103,6 +103,13 @@
  *               "isHidden": true|false?,                 // vom Katalog ausgeblendet
  *               "isBlocked": true|false?,                // Hoechstmass ausgeschoepft
  *               "isMandatoryUnmet": true|false?,         // Mindestmass unerfuellt
+ *               "unevaluatedLimitKinds": ["min"|"max"]?, // Grenzenarten OHNE Antwort an
+ *                                                        // diesem Slot (leer, wenn alle
+ *                                                        // Grenzen ausgewertet wurden). Ein
+ *                                                        // nicht auswertbares Hoechstmass
+ *                                                        // weist fail-closed `headroom` 0 und
+ *                                                        // `isBlocked` true aus — nie das
+ *                                                        // `null`, das „unbegrenzt" hiesse.
  *               "authorMessages": [                      // die Autor-Meldungen des Slots,
  *                 { "severity": "error|warning|info", "text": "<Katalogtext>" }
  *               ]?,                                      // VOLLSTAENDIG: [] fordert „keine"
@@ -446,6 +453,7 @@ const COMPARABLE_CAPABILITY_FIELDS = Object.freeze([
   'isHidden',
   'isBlocked',
   'isMandatoryUnmet',
+  'unevaluatedLimitKinds',
 ]);
 
 /**

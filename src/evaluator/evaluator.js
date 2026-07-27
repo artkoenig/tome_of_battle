@@ -89,8 +89,9 @@ export { prepareDataset } from './datasetPreparation.js';
  *   (`<force catalogueId>` in der `.ros`) und der Bezugsrahmen jeder
  *   `primary-catalogue`-Regel darin (`docs/battlescribe-data-format.md` §7.7).
  *   Optional und abwaertskompatibel: fehlt sie oder benennt sie keinen Katalog des
- *   Datensatzes, meldet die Engine das **einmal je Kontingent** und jede solche
- *   Regel haelt fail-closed nicht.
+ *   Datensatzes, haelt jede solche Regel fail-closed nicht — und die Engine meldet
+ *   das, **sobald eine Regel danach fragt** (ein Kontingent ohne solche Regel hat
+ *   keinen Mangel).
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen. Ein
  *   Slot ist **jede Stelle, an der eine Auswahl stehen kann** — auch eine noch
