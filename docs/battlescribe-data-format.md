@@ -148,6 +148,40 @@ aufgelöste **Ziel-IDs**, nicht `entryLinkId`s (verschiedene Links können auf d
 `constraint`s mit `scope="force"` zählen ein **Eintrags**-Ziel **pro Detachment**, ein
 **Kategorie**-Ziel dagegen **armeeweit** (Ziel-Typ-Regel, siehe [§7.7](#77-modifier-condition-condition-group-repeat) und ADR 0029).
 
+### 3.5 Wie ein Roster eine Auswahl benennt: `entryId` **und** `entryLinkId`
+
+Eine `<selection>` in einem `.ros` trägt **zwei** Id-Attribute, und beide sind
+bedeutungstragend:
+
+| Attribut | Inhalt |
+|---|---|
+| `entryId` | die Id des **Ziels** — der Definition, die diese Auswahl letztlich *ist* |
+| `entryLinkId` | die Id des **Verweises**, über den die Auswahl hereinkam |
+
+Ein direkt gesetztes Vorkommen trägt nur `entryId`; `entryLinkId` ist dann leer
+oder fehlt, und beides bedeutet dasselbe. Ein über einen `<entryLink>` bezogenes
+Vorkommen trägt **beide**. Kontingente (`<force>`) tragen kein `entryLinkId`.
+
+Das ist keine Redundanz, sondern die einzige Stelle, an der die Datei festhält,
+*auf welchem Weg* eine Auswahl in den Baum gekommen ist. Ein Verweis darf eigene
+Grenzen, Modifikatoren, Kosten, Kategorien und Info-Elemente tragen, die nur *an
+seiner Position* gelten ([§7.2](#72-entry-link-info-link-category-link),
+[§9.3](#93-kosten-am-link-statt-an-der-definition)). Fehlt `entryLinkId`, ist der
+Verweis nicht rekonstruierbar — mehrere Verweise können auf dasselbe Ziel zeigen —
+und alles, was an ihm deklariert ist, gilt für dieses Vorkommen nicht.
+
+**Folge für die Zählung.** Ein so entstandenes Vorkommen ist unter **beiden** Ids
+benennbar, und unter jedem weiteren Glied einer Verweiskette. Seinen *Typ*
+(`model`, `unit`, …) erbt es dagegen von seinem Ziel: das `type`-Attribut eines
+`<entryLink>` bezeichnet die **Art des Verweisziels** (`selectionEntry` bzw.
+`selectionEntryGroup`) und **nicht** den Eintragstyp — siehe
+[§7.2](#72-entry-link-info-link-category-link). Wer den Typ am Verweis abliest,
+zählt `"selectionEntry"`. Die vollständige Regel steht in ADR 0037.
+
+**Folge für Testdaten.** Ein Roster, das `entryLinkId` wegläßt, drückt „über einen
+Verweis gesetzt" nicht aus — es beschreibt eine direkt gesetzte Auswahl. Ein
+Szenario, das Verweis-Verhalten festhalten soll, muß das Attribut also setzen.
+
 ---
 
 ## 4. Das Objektmodell im Überblick

@@ -174,29 +174,33 @@ Vorkommen desselben geteilten Profils (Amazons-Modell: WS 3, Humming Bird: WS 4)
 | Schalter „Allow experimental rules?" (`.gst`) | `8b76-92c4-23f9-54b1` (OK-`entryLink` `9a0b-4d97-1625-919f`) |
 | Pflichtgrenzen der Amazonen (min 5 Modelle, Blades, Ruestung, Kommandotrupp) | `bd7e-e5cf-c571-7659`, `d8f0-cec9-edf3-0fbe`, `feb1-c10d-9318-dbda`, `0e94-6317-5852-6ba5`, `b883-c633-6422-0cbc`, `9e16-9834-5aaf-48a1` |
 
-## Abgleich mit dem Engine-Lauf: zwei Grenzen aus der Erwartung genommen
+## Zwei am **Verweis** deklarierte Pflichtgrenzen — als `absent` zurueckgeholt
 
-Beim ersten Runner-Lauf feuerten drei Grenzen, die als `absent` deklariert waren,
-obwohl das Roster die geforderte Auswahl enthält:
+Zwei Grenzen dieses Satzes sind ein Sonderfall, weil sie **nicht** an der
+Auswahl-Definition, sondern am **`entryLink`** deklariert sind, der die Auswahl
+hereinzieht:
 
-| Grenze | Anker | Ist / Grenze |
-|---|---|---|
-| `dfd9-3e46-eda5-be8b` (min 1 *Hand Weapon*) | `b581-8a9e-9d0c-b7c8` | 0 / 1 |
-| `feb1-c10d-9318-dbda` (min 1 *Light Armour* der Amazonen) | `d3dc-56c1-9565-889a` | 0 / 1 |
+| Grenze | deklariert an | Katalogstelle | Roster | Ist / Grenze |
+|---|---|---|---|---|
+| `dfd9-3e46-eda5-be8b` (`min 1` *Hand Weapon*) | `entryLink b581-8a9e-9d0c-b7c8` → Ziel `abdb-bbd0-41b2-5dff` | `Mercenaries (…).cat` Z. 7462–7464 | 01, 02 | **1 / 1** |
+| `feb1-c10d-9318-dbda` (`min 1` *Light Armour* der Amazonen) | `entryLink d3dc-56c1-9565-889a` → Ziel `055f-8e4e-f170-35d2` | `Mercenaries (…).cat` Z. 4352–4354 | 03 | **1 / 1** |
 
-Die Untersuchung an den Daten zeigt ein **gemeinsames Muster, das nichts mit
-Merkmals-Modifikatoren zu tun hat**: beide Grenzen sind nicht an der Auswahl-
-Definition deklariert, sondern am `entryLink`, der sie hereinzieht
-(`Mercenaries (…).cat` Z. 7462–7464 bzw. Z. 4352–4354) — und zwar mit
-`scope="parent"`. Ein Roster benennt eine so bezogene Auswahl mit *zwei* Ids:
-`entryId` (das Ziel) und `entryLinkId` (der Verweis). Die Zählung findet die
-Instanz unter der Ziel-Id, die Pflicht-Grenze fragt aber nach der Link-Id — also
-zählt sie 0 und meldet die Pflicht als unerfüllt, obwohl die Auswahl gesetzt ist.
+Beide sind `type="min" value="1" field="selections" scope="parent"`. Die Roster
+enthalten die geforderte Auswahl jeweils **einmal** — mit der Ziel-Id im `entryId`
+und der Link-Id im `entryLinkId`. Damit ist die Pflicht erfuellt, und zwar
+**unabhaengig davon, welche der beiden Ids die Zaehlung benutzt**: nach der
+Ziel-Id-Leseart des Format-Dokuments (§3.4/§7.6: `scope="parent"` vergleicht
+aufgeloeste Ziel-Ids) liegt 1 Stueck von `abdb-bbd0-41b2-5dff` bzw.
+`055f-8e4e-f170-35d2` unter der Elternauswahl; nach der Link-Leseart liegt 1
+Vorkommen des Verweises `b581-8a9e-9d0c-b7c8` bzw. `d3dc-56c1-9565-889a` dort.
+Beide Wege ergeben `Ist 1 ≥ Grenze 1`.
 
-Das ist ein eigenständiger Befund an der Verweis-Identität, kein Ergebnis dieses
-Szenarios und keine Aussage über Merkmals-Modifikatoren. Die beiden Ids sind
-deshalb aus `absent` **entfernt** — das Manifest macht über sie schlicht keine
-Aussage mehr (die Erwartung ist selektiv, nicht erschöpfend). Sie wurden
-ausdrücklich **nicht** nach `firing` verschoben: das würde das beobachtete
-Verhalten als gewollt festschreiben. Alle Merkmals-Erwartungen dieses Szenarios
-trafen im selben Lauf unverändert zu.
+Aus den Daten folgt deshalb genau eine Erwartung: **diese Grenzen duerfen nicht
+feuern.** Sie stehen im Manifest wieder in `absent` (Roster 01/02 bzw. 03) und
+nicht in `firing` — eine feuernde Erwartung wuerde ein Verhalten festschreiben,
+das die Katalogdaten nicht hergeben. Fachlich gehoert der Befund nicht zu den
+Merkmals-Modifikatoren, sondern zur Identitaet einer ueber einen Verweis bezogenen
+Auswahl; diese Naht wird gesondert im Szenario
+[`linked-entry-type-counting`](../linked-entry-type-counting/README.md)
+festgenagelt (LTC-R6). Alle Merkmals-Erwartungen dieses Szenarios sind davon
+unberuehrt.

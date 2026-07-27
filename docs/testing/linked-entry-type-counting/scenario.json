@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "name": "linked-entry-type-counting",
+  "description": "Ein ueber einen <entryLink> bezogener Eintrag zaehlt unter dem rohen type-Attribut, das er von seinem Ziel erbt - genau das liest eine Bedingung mit einem Typ-Schluesselwort als childId. Die Bedingung childId=\"unit\" scope=\"force\" der .gst-Autor-Meldung \"Border Patrols rules\" (4e15-0353-165f-5528) zaehlt die Einheiten des Kontingents; die Roster stellen zwei direkt gesetzte Einheiten (Ogre-Kingdoms-Wurzeleintraege) zwei ueber einen Verweis bezogenen Einheiten (Mercenaries-Einheiten am OK-Wurzel-entryLink) gegenueber. Bei gleicher Anzahl muss dieselbe Meldung dasselbe Verhalten zeigen.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-two-direct-units.ros",
+      "description": "Referenzfall: zwei DIREKT gesetzte Einheiten (2x Ogre-Kingdoms-Wurzeleintrag \"Gorger\" 81b9-e978-56c2-e942, entryLinkId leer), je mit dem einen Pflichtmodell. childId=\"unit\" scope=\"force\" zaehlt 2 -> weder lessThan 2 noch greaterThan 4 haelt -> die Autor-Meldung der Border-Patrols-Regeln bleibt stumm.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e998-b2d3-1333-a37d"
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-two-linked-units.ros",
+      "description": "Gegenstueck zu 01: zwei ueber einen VERWEIS bezogene Einheiten (2x entryLink 42d8-7559-6542-15fc -> Mercenaries-Einheit \"Ogres\" 7db1-21db-c287-f50d, type=\"unit\"), je mit 3 Ogre-Modellen und Handwaffe. Auch hier zaehlt childId=\"unit\" scope=\"force\" 2 -> die Autor-Meldung bleibt stumm. Zusaetzlich sind die beiden Pflichtgrenzen der Einheit erfuellt: min 3 Modelle (an der Definition) und min 1 Handwaffe (am Verweis b581-8a9e-9d0c-b7c8).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "0dad-7f3c-00e8-e07e",
+          "dfd9-3e46-eda5-be8b"
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-one-direct-unit-fires.ros",
+      "description": "Gegenprobe mit Zaehnen: nur EINE direkt gesetzte Einheit. childId=\"unit\" scope=\"force\" zaehlt 1 -> lessThan 2 haelt -> die Autor-Meldung der Border-Patrols-Regeln feuert genau einmal mit Schweregrad error.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e998-b2d3-1333-a37d"
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 1,
+            "severity": "error"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-one-direct-one-linked-unit.ros",
+      "description": "Die scharfste Gegenueberstellung: eine direkt gesetzte Einheit (Gorger) und eine ueber einen Verweis bezogene Einheit (Ogres) - zusammen 2 Einheiten vom rohen Typ unit im Kontingent. Dieselbe Summe wie in 01 und 02, andere Herkunft -> die Autor-Meldung muss ebenso stumm bleiben.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e998-b2d3-1333-a37d",
+          "0dad-7f3c-00e8-e07e",
+          "dfd9-3e46-eda5-be8b"
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}
