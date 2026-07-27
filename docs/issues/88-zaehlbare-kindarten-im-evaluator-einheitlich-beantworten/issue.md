@@ -68,3 +68,4 @@ seine eigenen Konstanten, nicht den Prueflings-Code.
 
 ## Comments
 - Entstehung: dies ist die vierte Fundrunde der Standards-Achse an Main-Issue 76. Die drei vorangegangenen wurden innerhalb des Main-Issues behoben (Scheiben 04 und 05). Diese Runde wurde bewusst ausgelagert: der beauftragte Fehler ist behoben und belegt, und die Achse prueft ganze Dateien statt nur des Diffs — sie findet daher auch bei sauberem Stand weiter Umgebungs-Befunde. Weiterpolieren im Main-Issue haette dessen Abschluss verhindert, ohne den Auftrag zu verbessern.
+- Weiterer Konsistenz-Befund aus der Standards-Pruefung von Main-Issue 77: die Aufbereitung des Datensatzes fuehrt sowohl die Katalog-Dokumente als auch die daraus abgeleitete Menge ihrer Ids und reicht beide an die Kohaerenzpruefung durch. Die zweite ist aus der ersten herleitbar; beide koennen auseinanderlaufen. Moeglicherweise bewusst als Zwischenspeicher gewaehlt — dann gehoert das hingeschrieben.
