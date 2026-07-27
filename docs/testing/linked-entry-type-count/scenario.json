@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "name": "linked-entry-type-count",
+  "description": "Ein Eintrag zaehlt unter seiner Eintragsart (unit/model/upgrade) mit - unabhaengig davon, ob er direkt an seiner Stelle steht oder ueber einen entryLink hereingezogen wurde. Gepinnt an der .gst-Auswahl \"Border Patrols rules\" (4e15-0353-165f-5528), deren Autor-Meldung feuert, wenn das Kontingent weniger als ZWEI oder mehr als VIER Auswahlen der Eintragsart unit als direkte Kinder traegt (childId=\"unit\", scope=force, includeChildSelections=false). Vier Roster stellen dieselbe Einheitenzahl einmal rein direkt, einmal gemischt und einmal rein ueber Verweise her; die Meldung muss jedes Mal dasselbe sagen. Die Eintragsart kommt aus dem aufgeloesten Ziel (selectionEntry/@type aus {upgrade,model,unit}), NICHT aus entryLink/@type (aus {selectionEntry,selectionEntryGroup}) - zwei laut XSD disjunkte Wertemengen.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-zwei-einheiten-direkt.ros",
+      "description": "Kontrolle (direkt): Kontingent \"Standard (OK-AB)\" mit \"Border Patrols rules\" und ZWEI direkt gesetzten Einheiten (Yhetees 9cb5-fe07-22d4-22de, Gnoblar Trappers 041b-7d95-6ff9-754a; beide Wurzel-selectionEntry der Ogre-.cat mit type=\"unit\", entryLinkId=\"\"). Ist=2 Auswahlen der Eintragsart unit unter dem Kontingent: weder lessThan 2 noch greaterThan 4 haelt, die Autor-Meldung darf NICHT anliegen.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-eine-direkt-eine-verlinkt.ros",
+      "description": "Gemischt: dieselben zwei Einheiten-Plaetze, aber einer davon ueber einen Verweis. Yhetees (9cb5-fe07-22d4-22de) direkt, \"Ogre Bulls\" ueber den Wurzel-entryLink d82e-111e-89b9-2be1 der Ogre-.cat auf das Mercenaries-Ziel 7754-8b3d-df99-d2d5 (type=\"unit\"). Ist=2, also dasselbe Ergebnis wie Roster 01: die Autor-Meldung darf NICHT anliegen. Zaehlt das verlinkte Vorkommen nicht unter unit mit, waere Ist=1 und lessThan 2 wuerde halten.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-zwei-einheiten-verlinkt.ros",
+      "description": "Rein ueber Verweise: \"Ogre Bulls\" (entryLink d82e-111e-89b9-2be1 -> 7754-8b3d-df99-d2d5) und \"Leadbelchers\" (entryLink c487-0350-e5cf-0c0a -> da30-4b49-acc3-21a7), beide Ziele mit type=\"unit\". Ist=2, also dasselbe Ergebnis wie Roster 01: die Autor-Meldung darf NICHT anliegen. Zaehlten verlinkte Vorkommen nicht unter unit mit, waere Ist=0 und lessThan 2 wuerde halten.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-fuenf-einheiten-drei-direkt-zwei-verlinkt.ros",
+      "description": "Gegenprobe nach oben: drei direkt gesetzte Einheiten (Yhetees, Gnoblar Trappers, Gorger 81b9-e978-56c2-e942) plus zwei ueber Verweise bezogene (Ogre Bulls, Leadbelchers) = Ist 5. greaterThan 4 haelt, die Autor-Meldung MUSS am Slot \"Border Patrols rules\" anliegen. Zaehlten die verlinkten Vorkommen nicht mit, waere Ist=3 und gar keine Meldung entstuende - dieselbe Regel, nur in der Gegenrichtung belegt.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Border Patrols rules"
+          }
+        ]
+      }
+    }
+  ]
+}

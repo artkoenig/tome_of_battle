@@ -31,7 +31,7 @@ Verweis, die Eintragsart waere also gar nicht pruefbar.
 
 ## Acceptance Criteria
 - [ ] Ein ueber einen Verweis gesetzter Eintrag zaehlt unter derselben Eintragsart wie derselbe Eintrag direkt gesetzt.
-- [ ] Eine Bedingung, die nach Modellen fragt, liefert in beiden Faellen dasselbe Ergebnis.
+- [ ] Eine Bedingung, die nach einer Eintragsart fragt, liefert in beiden Faellen dasselbe Ergebnis. Belegt wird das an der Eintragsart "Einheit": auf Modell-Ebene laesst der Fixture-Satz den Unterschied nicht trennen — nur drei Modell-Eintraege sind ueberhaupt Verweis-Ziel, und keiner ihrer verlinkenden Eltern traegt eine Modell-Bedingung. Diese Luecke ist zu dokumentieren, nicht durch erfundene Daten zu schliessen.
 - [ ] Die Eintragsart wird vom aufgeloesten Ziel bezogen; das gleichnamige Attribut des Verweises fliesst nirgends in die Zaehlung ein.
 - [ ] Ein Szenario an echten Katalogdaten deckt genau diesen Unterschied ab.
 - [ ] Die uebrige Testsuite bleibt gruen; jede geaenderte Erwartung ist einzeln aus den Katalogdaten begruendet.

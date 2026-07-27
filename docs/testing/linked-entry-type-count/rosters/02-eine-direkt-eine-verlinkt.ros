@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="letc-02" name="LETC 02 - zwei Einheiten, eine direkt und eine ueber einen Verweis" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored linked-entry-type-count E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costs>
+    <cost name="Points" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
+  </costs>
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="500.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-bp-rules" name="Border Patrols rules" entryId="4e15-0353-165f-5528" entryLinkId="" number="1" type="upgrade" collective="false"/>
+        <selection id="sel-yhetees" name="Yhetees" entryId="9cb5-fe07-22d4-22de" entryLinkId="" number="1" type="unit" collective="false"/>
+        <selection id="sel-ogre-bulls" name="Ogre Bulls" entryId="7754-8b3d-df99-d2d5" entryLinkId="d82e-111e-89b9-2be1" number="1" type="unit" collective="false"/>
+      </selections>
+    </force>
+  </forces>
+</roster>
