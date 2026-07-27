@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: [01]
 
@@ -42,3 +42,4 @@ erwartbar rot sein. Das ist gewollt.
 ## Comments
 - Wird vom Black-Box-Autor verfasst (ADR-0033), allein aus den .cat/.gst-Daten und der in Scheibe 01 festgeschriebenen Bedeutung — ohne Blick in src/evaluator/.
 - Die Reihenfolge weicht bewusst vom Architektur-Plan ab, der das Szenario NACH der Engine-Aenderung vorsah. Grund: in dieser Sitzung war ein Szenario, das nach der Aenderung entstand, bereits vor ihr gruen und belegte den Fix damit nicht. Ein vor der Aenderung geschriebenes Szenario treibt sie stattdessen.
+- Szenario primary-catalogue-scope angelegt (3 Roster), im Testkatalog eingetragen (Summe 116). Der Autor hat eine ungepruefte Annahme selbst markiert (Kodierung der Diagnose) — sie war falsch und die Erwartung dadurch wirkungslos statt bindend. Nach Rueckgabe der Kodierung hat er sie korrigiert und dabei bewusst targetId mit der Katalog-Id gewaehlt statt scope: der Runner dokumentiert als Einschraenkungs-Schluessel fuer Diagnosen nur kind, targetId, defId und minCount (e2e.testcatalog.test.js:137,144) — scope waere still ignoriert worden und die Aussage zum Pauschalverbot geworden, das Issue 83 (scope='unit', 130 Vorkommen) aus fremdem Grund rot haelt. Nachgeprueft: seine Einschaetzung stimmt.

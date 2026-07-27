@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "primary-catalogue-scope",
-  "description": "Der Bezugsrahmen scope=\"primary-catalogue\" bezeichnet den Armee-Katalog des Kontingents — den Katalog, den das Roster fuer diese force angibt (<force catalogueId>), nicht den Datensatz, nicht das Spielsystem und nicht die Bibliothek, in der die Bedingung steht (Format-Dokument §7.7). Belegt am Soeldner-Eintrag 'Rhinox Riders' (5e33-e510-ba45-933e) der gemeinsamen Mercenaries-Bibliothek: seine Force-Obergrenze 47d7-b2ed-39e9-0e60 (max 1, field=selections, scope=force) wird von einem Modifikator 'set -1' auf unbegrenzt gehoben, WENN der Armee-Katalog des Kontingents Ogre Kingdoms (731d-5b13-2a92-5427) ist. Der Nachweis ist das KONTRAST-PAAR: dieselbe Auswahl, derselbe Datensatz, dieselbe Anzahl — einmal in einem Ogre-Kontingent (Grenze unbegrenzt, feuert nicht) und einmal in einem Orcs-and-Goblins-Kontingent (Grenze 1, Ist 2, feuert). Ein Ergebnis, bei dem beide Roster dasselbe sagen, kann diesen Test nicht bestehen. Roster 03 stellt beide Kontingente in EIN Roster und fordert genau EINE Verletzung — damit ist zusaetzlich gepinnt, dass der Rahmen je Kontingent und nicht je Roster aufgeloest wird. Die Spiegel-Seite derselben Bedingung wird ueber capabilities.isHidden gepinnt: die beiden Unter-Eintraege 'Extra Special choice' (6c8d-f6f3-823e-e6a5) und 'Extra Rare choice' (a97e-5cc9-264b-74f4) sind ueber genau dieses Kriterium GEGENLAEUFIG sichtbar. In keinem Fall darf noch eine Diagnose ueber einen nicht aufloesbaren Bezugsrahmen 'primary-catalogue' auftreten. Alle Erwartungen sind aus den .cat/.gst-Daten hergeleitet (Black-Box, ADR-0033); die Ids stammen ausschliesslich aus src/evaluator/__fixtures__/whfb6-definitive/ (Ogre-Wurzel endet auf 5427, nicht auf 5426 wie im alten Solver-Ausschnitt).",
+  "description": "Der Bezugsrahmen scope=\"primary-catalogue\" bezeichnet den Armee-Katalog des Kontingents — den Katalog, den das Roster fuer diese force angibt (<force catalogueId>), nicht den Datensatz, nicht das Spielsystem und nicht die Bibliothek, in der die Bedingung steht (Format-Dokument §7.7). Belegt am Soeldner-Eintrag 'Rhinox Riders' (5e33-e510-ba45-933e) der gemeinsamen Mercenaries-Bibliothek: seine Force-Obergrenze 47d7-b2ed-39e9-0e60 (max 1, field=selections, scope=force) wird von einem Modifikator 'set -1' auf unbegrenzt gehoben, WENN der Armee-Katalog des Kontingents Ogre Kingdoms (731d-5b13-2a92-5427) ist. Der Nachweis ist das KONTRAST-PAAR: dieselbe Auswahl, derselbe Datensatz, dieselbe Anzahl — einmal in einem Ogre-Kontingent (Grenze unbegrenzt, feuert nicht) und einmal in einem Orcs-and-Goblins-Kontingent (Grenze 1, Ist 2, feuert). Ein Ergebnis, bei dem beide Roster dasselbe sagen, kann diesen Test nicht bestehen. Roster 03 stellt beide Kontingente in EIN Roster und fordert genau EINE Verletzung — damit ist zusaetzlich gepinnt, dass der Rahmen je Kontingent und nicht je Roster aufgeloest wird. Die Spiegel-Seite derselben Bedingung wird ueber capabilities.isHidden gepinnt: die beiden Unter-Eintraege 'Extra Special choice' (6c8d-f6f3-823e-e6a5) und 'Extra Rare choice' (a97e-5cc9-264b-74f4) sind ueber genau dieses Kriterium GEGENLAEUFIG sichtbar. In keinem Fall darf noch eine Diagnose UNRESOLVED_SCOPE mit dem Ziel 731d-5b13-2a92-5427 auftreten — das ist die Katalog-Id, die alle drei hier geprueften Bedingungen als childId nennen. Alle Erwartungen sind aus den .cat/.gst-Daten hergeleitet (Black-Box, ADR-0033); die Ids stammen ausschliesslich aus src/evaluator/__fixtures__/whfb6-definitive/ (Ogre-Wurzel endet auf 5427, nicht auf 5426 wie im alten Solver-Ausschnitt).",
   "dataset": {
     "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
@@ -13,7 +13,7 @@
   "rosters": [
     {
       "file": "rosters/01-ogre-force-unlimited.ros",
-      "description": "Kontingent 'Standard (OK-AB)' (729f-9246-5cd3-5044) mit catalogueId=731d-5b13-2a92-5427 (Ogre Kingdoms), darin ZWEI Soeldner-Einheiten 'Rhinox Riders' (5e33-e510-ba45-933e, number=2). Der Armee-Katalog des Kontingents IST Ogre Kingdoms, also greift der Modifikator 'set -1' auf 47d7-b2ed-39e9-0e60 (Bedingung instanceOf, scope=primary-catalogue, childId=731d-5b13-2a92-5427). Die Obergrenze ist damit unbegrenzt und darf bei Ist 2 nicht feuern. Spiegelbild in der Sichtbarkeit: 'Extra Special choice' ist hier eingeblendet (Bedingung: instanceOf Ogre UND das Elternteil traegt nicht die Kategorie 'Ironskin' 7ff5-9e55-c594-4b40 — das Kontingent ist Standard, nicht Ironskin Tribe), 'Extra Rare choice' bleibt verborgen (Bedingung: notInstanceOf Ogre).",
+      "description": "Kontingent 'Standard (OK-AB)' (729f-9246-5cd3-5044) mit catalogueId=731d-5b13-2a92-5427 (Ogre Kingdoms), darin ZWEI Soeldner-Einheiten 'Rhinox Riders' (5e33-e510-ba45-933e, number=2). Der Armee-Katalog des Kontingents IST Ogre Kingdoms, also greift der Modifikator 'set -1' auf 47d7-b2ed-39e9-0e60 (Bedingung instanceOf, scope=primary-catalogue, childId=731d-5b13-2a92-5427). Die Obergrenze ist damit unbegrenzt und darf bei Ist 2 nicht feuern. Spiegelbild in der Sichtbarkeit: 'Extra Special choice' ist hier eingeblendet (Bedingung: instanceOf Ogre UND das Elternteil traegt nicht die Kategorie 'Ironskin' 7ff5-9e55-c594-4b40 — das Kontingent ist Standard, nicht Ironskin Tribe), 'Extra Rare choice' bleibt verborgen (Bedingung: notInstanceOf Ogre). Alle drei Bedingungen nennen dieselbe Katalog-Id als childId; das Kontingent traegt sie als catalogueId und sie ist geladen — der Rahmen ist also entscheidbar und darf keine UNRESOLVED_SCOPE-Diagnose auf dieses Ziel erzeugen.",
       "expect": {
         "firing": [],
         "absent": ["47d7-b2ed-39e9-0e60"],
@@ -33,14 +33,14 @@
         ],
         "diagnostics": {
           "absent": [
-            { "kind": "UNRESOLVED_SCOPE", "targetId": "primary-catalogue" }
+            { "kind": "UNRESOLVED_SCOPE", "targetId": "731d-5b13-2a92-5427" }
           ]
         }
       }
     },
     {
       "file": "rosters/02-orcs-and-goblins-force-limited.ros",
-      "description": "Gegenstueck zu Roster 01: identische Auswahl (dieselbe entryId 5e33-e510-ba45-933e aus derselben Mercenaries-Bibliothek, dieselbe Anzahl 2, derselbe Datensatz) — nur das Kontingent ist ein anderes: 'Standard (OG-AB)' (2bfa-e64a-7123-895f) mit catalogueId=4049-c46d-7f80-44fb (Orcs and Goblins). Der Armee-Katalog des Kontingents ist NICHT Ogre Kingdoms, der Modifikator greift nicht, die deklarierte Obergrenze 1 bleibt stehen. Ist 2 gegen Grenze 1 -> 47d7-b2ed-39e9-0e60 feuert. Das deckt sich mit dem Regeltext des Eintrags (Regel 'Dogs of War' 3c87-934f-1498-7fa3): ausserhalb einer Ogre-Kingdoms-Armee darf nur EINE Einheit genommen werden. Sichtbarkeit gegenlaeufig zu Roster 01: 'Extra Rare choice' eingeblendet, 'Extra Special choice' verborgen.",
+      "description": "Gegenstueck zu Roster 01: identische Auswahl (dieselbe entryId 5e33-e510-ba45-933e aus derselben Mercenaries-Bibliothek, dieselbe Anzahl 2, derselbe Datensatz) — nur das Kontingent ist ein anderes: 'Standard (OG-AB)' (2bfa-e64a-7123-895f) mit catalogueId=4049-c46d-7f80-44fb (Orcs and Goblins). Der Armee-Katalog des Kontingents ist NICHT Ogre Kingdoms, der Modifikator greift nicht, die deklarierte Obergrenze 1 bleibt stehen. Ist 2 gegen Grenze 1 -> 47d7-b2ed-39e9-0e60 feuert. Das deckt sich mit dem Regeltext des Eintrags (Regel 'Dogs of War' 3c87-934f-1498-7fa3): ausserhalb einer Ogre-Kingdoms-Armee darf nur EINE Einheit genommen werden. Sichtbarkeit gegenlaeufig zu Roster 01: 'Extra Rare choice' eingeblendet, 'Extra Special choice' verborgen. Auch hier ist der Rahmen entscheidbar — 'nein, diese Armee ist nicht Ogre Kingdoms' ist eine Antwort und keine Unaufloesbarkeit: keine UNRESOLVED_SCOPE-Diagnose auf das Ziel 731d-5b13-2a92-5427.",
       "expect": {
         "firing": [
           { "limitId": "47d7-b2ed-39e9-0e60", "actual": 2, "bound": 1 }
@@ -62,14 +62,14 @@
         ],
         "diagnostics": {
           "absent": [
-            { "kind": "UNRESOLVED_SCOPE", "targetId": "primary-catalogue" }
+            { "kind": "UNRESOLVED_SCOPE", "targetId": "731d-5b13-2a92-5427" }
           ]
         }
       }
     },
     {
       "file": "rosters/03-two-forces-frame-per-contingent.ros",
-      "description": "Beide Kontingente aus Roster 01 und 02 in EINEM Roster, jedes mit denselben zwei 'Rhinox Riders'. §7.7: catalogueId ist ein force-Attribut, der Rahmen loest also je Kontingent auf. Das Ogre-Kontingent sieht eine unbegrenzte Grenze, das Orcs-and-Goblins-Kontingent die Grenze 1 bei Ist 2. Deshalb muss 47d7-b2ed-39e9-0e60 GENAU EINMAL feuern (count=1): waere der Rahmen je Roster oder je Datensatz beantwortet, kaeme fuer beide Kontingente dieselbe Antwort heraus und die Grenze feuerte zweimal oder gar nicht.",
+      "description": "Beide Kontingente aus Roster 01 und 02 in EINEM Roster, jedes mit denselben zwei 'Rhinox Riders'. §7.7: catalogueId ist ein force-Attribut, der Rahmen loest also je Kontingent auf. Das Ogre-Kontingent sieht eine unbegrenzte Grenze, das Orcs-and-Goblins-Kontingent die Grenze 1 bei Ist 2. Deshalb muss 47d7-b2ed-39e9-0e60 GENAU EINMAL feuern (count=1): waere der Rahmen je Roster oder je Datensatz beantwortet, kaeme fuer beide Kontingente dieselbe Antwort heraus und die Grenze feuerte zweimal oder gar nicht. Beide Kontingente tragen eine geladene Katalog-Wurzel als catalogueId, also darf auch hier keine UNRESOLVED_SCOPE-Diagnose auf das Ziel 731d-5b13-2a92-5427 auftreten.",
       "expect": {
         "firing": [
           { "limitId": "47d7-b2ed-39e9-0e60", "actual": 2, "bound": 1, "count": 1 }
@@ -77,7 +77,7 @@
         "absent": [],
         "diagnostics": {
           "absent": [
-            { "kind": "UNRESOLVED_SCOPE", "targetId": "primary-catalogue" }
+            { "kind": "UNRESOLVED_SCOPE", "targetId": "731d-5b13-2a92-5427" }
           ]
         }
       }

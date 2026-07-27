@@ -55,7 +55,7 @@ Roster dasselbe sagen, kann dieses Szenario nicht bestehen.
 | **PCS-R4** | Der Katalog sagt dieselbe Regel auch in Prosa: außerhalb einer Ogre-Kingdoms-Armee ist **eine einzige** Einheit erlaubt. | `Mercenaries …cat` Z. 4258-4260, Regel „Dogs of War" `3c87-934f-1498-7fa3`: *„Units of Rhinox Riders may be included in non-Ironskin Ogre Kingdoms armies … **A single unit** may be included in **non-Ogre Kingdoms armies** too …"* |
 | **PCS-R5** | **Spiegel-Paar in der Sichtbarkeit.** Zwei Unter-Einträge derselben Einheit werden über **dasselbe** Kriterium **gegenläufig** ein- bzw. ausgeblendet: „Extra Special choice" nur **in** einer Ogre-Armee, „Extra Rare choice" nur **außerhalb**. | `Mercenaries …cat` Z. 4079: `selectionEntry name="Extra Special choice" hidden="true" id="6c8d-f6f3-823e-e6a5"` → `modifier set hidden="false"` in einer `and`-Gruppe aus `notInstanceOf scope="parent" childId="7ff5-9e55-c594-4b40"` (Kategorie „Ironskin") **und** `instanceOf scope="primary-catalogue" childId="731d-5b13-2a92-5427"` (Z. 4101/4102). Z. 4109: `selectionEntry name="Extra Rare choice" hidden="true" id="a97e-5cc9-264b-74f4"` → `modifier set hidden="false"` mit `notInstanceOf scope="primary-catalogue" childId="731d-5b13-2a92-5427"` (Z. 4129). |
 | **PCS-R6** | Der Rahmen wird **je Kontingent** beantwortet, nicht je Roster und nicht je Datensatz. `catalogueId` ist ein `<force>`-Attribut der `.ros`. | Format-Dokument §7.7, Abschnitt „Je Kontingent, nicht je Roster"; dazu „Was der Bezugsrahmen *nicht* bezeichnet": nicht den Datensatz, nicht das Spielsystem, nicht die Bibliothek, nicht den Katalog, in dem die Bedingung steht (die 20 Mercenaries-Vorkommen stehen in der Bibliothek, fragen aber nach der Armee). |
-| **PCS-R7** | Beide Kontingente tragen eine **auflösbare** Angabe: `catalogueId` verweist auf eine Katalog-Wurzel, die im Datensatz geladen ist. Der Rahmen ist damit entscheidbar — eine Diagnose „Bezugsrahmen nicht auflösbar" gehört hier **nicht** in den Bericht. | Roster-`<force catalogueId="731d-5b13-2a92-5427">` bzw. `="4049-c46d-7f80-44fb"`; beide `.cat` sind im `dataset.catalogues` des Manifests geladen (Z. 2 der jeweiligen Datei = Katalog-Wurzel). |
+| **PCS-R7** | Beide Kontingente tragen eine **auflösbare** Angabe: `catalogueId` verweist auf eine Katalog-Wurzel, die im Datensatz geladen ist. Der Rahmen ist damit entscheidbar — auch die Antwort „nein, diese Armee ist **nicht** Ogre Kingdoms" ist eine Antwort und keine Unauflösbarkeit. Eine Diagnose „Bezugsrahmen nicht auflösbar" gehört hier **nicht** in den Bericht. | Roster-`<force catalogueId="731d-5b13-2a92-5427">` bzw. `="4049-c46d-7f80-44fb"`; beide `.cat` sind im `dataset.catalogues` des Manifests geladen (Z. 2 der jeweiligen Datei = Katalog-Wurzel). Die drei hier geprüften Bedingungen (PCS-R2 sowie PCS-R5 zweimal) nennen alle **dieselbe** `childId` `731d-5b13-2a92-5427`. |
 
 ### Warum die Einheit in **beiden** Armeen wählbar ist
 
@@ -102,11 +102,15 @@ sodass die `capabilities`-Aussagen zu PCS-R5 genau **einen** Slot treffen.
   „Ogre Club" `554b-25d7-e51d-5998`, „Armour" `bb09-2c8c-3360-e742`) bleiben in
   allen drei Rostern unbesetzt. Sie feuern in **beiden** Armeen gleich und sind
   für den Kontrast ohne Belang — die Erwartung ist selektiv.
-- **Die Diagnose-Abwesenheit ist eng gefasst.** `diagnostics.absent` nennt
-  ausdrücklich `targetId: "primary-catalogue"`. Ein nicht auflösbarer Rahmen
-  **anderer** Art (z. B. das in Issue 83 beschriebene `scope="unit"`, das im
-  Definitive-Satz 130-mal vorkommt) ist nicht Gegenstand dieses Szenarios und
-  darf weiterhin gemeldet werden.
+- **Kein Pauschal-Verbot unaufgelöster Bezugsrahmen.** Die Diagnose-Abwesenheit
+  ist über das **Ziel** eingegrenzt: `diagnostics.absent` fordert
+  `{ "kind": "UNRESOLVED_SCOPE", "targetId": "731d-5b13-2a92-5427" }` — die
+  Ogre-Katalog-Wurzel, die alle drei hier geprüften Bedingungen als `childId`
+  nennen. Damit bindet die Aussage genau den Rahmen, um den es geht. Ein nicht
+  auflösbarer Rahmen **anderer** Art — etwa das in Issue 83 beschriebene
+  `scope="unit"`, das im Definitive-Satz 130-mal vorkommt — trägt niemals eine
+  Katalog-Wurzel als Ziel und bleibt deshalb unberührt: er darf weiterhin
+  gemeldet werden, ohne dieses Szenario aus einem fremden Grund rot zu halten.
 
 ---
 
@@ -120,15 +124,15 @@ sondern nur aus der Angabe des Kontingents.
 
 > **Assertion-Fokus:** die Grenze `47d7-b2ed-39e9-0e60`, die Sichtbarkeit der
 > beiden Unter-Einträge `6c8d-f6f3-823e-e6a5` / `a97e-5cc9-264b-74f4` und die
-> Abwesenheit der Diagnose zum Rahmen `primary-catalogue`. Andere
-> Armeeaufbau-Diagnosen dürfen zusätzlich auftreten. Quelle der Wahrheit ist
-> [`scenario.json`](scenario.json).
+> Abwesenheit einer `UNRESOLVED_SCOPE`-Diagnose auf das Ziel
+> `731d-5b13-2a92-5427`. Andere Armeeaufbau-Diagnosen dürfen zusätzlich
+> auftreten. Quelle der Wahrheit ist [`scenario.json`](scenario.json).
 
 | # | Testtitel | Roster-Zustand | Erwartetes Ergebnis (aus Katalogdaten abgeleitet) | Fixture |
 |---|-----------|----------------|----------------------------------------------------|---------|
-| 01 | Armee **ist** Ogre Kingdoms → Grenze unbegrenzt | Kontingent „Standard (OK-AB)" mit `catalogueId="731d-5b13-2a92-5427"`, darin „Rhinox Riders" `number="2"` (+ 1 Modell) | **PCS-R2/R3:** der `set -1`-Modifikator greift, die Obergrenze ist unbegrenzt → `47d7-b2ed-39e9-0e60` **absent**. **PCS-R5:** „Extra Special choice" `isHidden=false`, „Extra Rare choice" `isHidden=true`. **PCS-R7:** keine Diagnose zum Rahmen `primary-catalogue`. | [`01-ogre-force-unlimited.ros`](rosters/01-ogre-force-unlimited.ros) |
-| 02 | Armee ist **nicht** Ogre Kingdoms → Grenze 1 | **Identische** Auswahl, nur Kontingent „Standard (OG-AB)" mit `catalogueId="4049-c46d-7f80-44fb"` | **PCS-R2/R4:** der Modifikator greift nicht, die deklarierte Grenze 1 bleibt → `47d7-b2ed-39e9-0e60` **feuert** (Ist 2, Grenze 1). **PCS-R5 gegenläufig:** „Extra Special choice" `isHidden=true`, „Extra Rare choice" `isHidden=false`. **PCS-R7:** keine Diagnose zum Rahmen. | [`02-orcs-and-goblins-force-limited.ros`](rosters/02-orcs-and-goblins-force-limited.ros) |
-| 03 | Beide Kontingente in **einem** Roster | Ogre-Kontingent **und** O&G-Kontingent, jedes mit „Rhinox Riders" `number="2"` (+ 1 Modell) | **PCS-R6:** `47d7-b2ed-39e9-0e60` feuert **genau einmal** (`count: 1`, Ist 2, Grenze 1) — nur im O&G-Kontingent. Eine je-Roster- oder je-Datensatz-Antwort ergäbe zwangsläufig 0 oder 2 Verletzungen. **PCS-R7:** keine Diagnose zum Rahmen. | [`03-two-forces-frame-per-contingent.ros`](rosters/03-two-forces-frame-per-contingent.ros) |
+| 01 | Armee **ist** Ogre Kingdoms → Grenze unbegrenzt | Kontingent „Standard (OK-AB)" mit `catalogueId="731d-5b13-2a92-5427"`, darin „Rhinox Riders" `number="2"` (+ 1 Modell) | **PCS-R2/R3:** der `set -1`-Modifikator greift, die Obergrenze ist unbegrenzt → `47d7-b2ed-39e9-0e60` **absent**. **PCS-R5:** „Extra Special choice" `isHidden=false`, „Extra Rare choice" `isHidden=true`. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose auf `731d-5b13-2a92-5427`. | [`01-ogre-force-unlimited.ros`](rosters/01-ogre-force-unlimited.ros) |
+| 02 | Armee ist **nicht** Ogre Kingdoms → Grenze 1 | **Identische** Auswahl, nur Kontingent „Standard (OG-AB)" mit `catalogueId="4049-c46d-7f80-44fb"` | **PCS-R2/R4:** der Modifikator greift nicht, die deklarierte Grenze 1 bleibt → `47d7-b2ed-39e9-0e60` **feuert** (Ist 2, Grenze 1). **PCS-R5 gegenläufig:** „Extra Special choice" `isHidden=true`, „Extra Rare choice" `isHidden=false`. **PCS-R7:** ebenfalls keine `UNRESOLVED_SCOPE`-Diagnose auf `731d-5b13-2a92-5427` — „nein" ist eine Antwort. | [`02-orcs-and-goblins-force-limited.ros`](rosters/02-orcs-and-goblins-force-limited.ros) |
+| 03 | Beide Kontingente in **einem** Roster | Ogre-Kontingent **und** O&G-Kontingent, jedes mit „Rhinox Riders" `number="2"` (+ 1 Modell) | **PCS-R6:** `47d7-b2ed-39e9-0e60` feuert **genau einmal** (`count: 1`, Ist 2, Grenze 1) — nur im O&G-Kontingent. Eine je-Roster- oder je-Datensatz-Antwort ergäbe zwangsläufig 0 oder 2 Verletzungen. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose auf `731d-5b13-2a92-5427`. | [`03-two-forces-frame-per-contingent.ros`](rosters/03-two-forces-frame-per-contingent.ros) |
 
 ### Der Kontrast, explizit
 
@@ -137,7 +141,7 @@ sondern nur aus der Angabe des Kontingents.
 | `47d7-b2ed-39e9-0e60` | feuert **nicht** (unbegrenzt) | feuert (Ist 2 / Grenze 1) | **ja** |
 | `6c8d-f6f3-823e-e6a5` „Extra Special choice" | `isHidden=false` | `isHidden=true` | **ja** |
 | `a97e-5cc9-264b-74f4` „Extra Rare choice" | `isHidden=true` | `isHidden=false` | **ja** |
-| Diagnose zum Rahmen `primary-catalogue` | keine | keine | (gleich, absichtlich) |
+| `UNRESOLVED_SCOPE` auf `731d-5b13-2a92-5427` | keine | keine | (gleich, absichtlich) |
 
 Drei unabhängige Aussagen kippen zwischen den beiden Rostern. Ein Bericht, der
 für beide Kontingente dieselbe Antwort liefert — gleich in welche Richtung —
