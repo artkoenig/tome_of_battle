@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: refactor
 Blocked by: None
 
@@ -189,3 +189,4 @@ Im Einzelnen ist die Auswertung dann fähig:
 - [ ]
 
 ## Comments
+- Alle acht Kind-Issues resolved. Fuenf-Achsen-Review gelaufen: Tests gruen (2097 Unit/Komponenten plus Puppeteer-E2E, Exitcode 0), Design-Konformitaet ohne Abweichung, Spezifikation ohne fehlende Anforderung. Drei Befunde behoben: ungenutzte UI-Lookups aus report.js entfernt (Achse B), fehlende Szenarien im Testkatalog nachgetragen — 104 statt 94 (Achse D), und aus Achse A die Fassaden-Regel erstmals wirklich durchgesetzt (depcruise cruiste nur src, 12 error-Verstoesse aus scripts/ waren unsichtbar), der Baumknoten aus dem Bericht entfernt (ADR-0034) sowie die quadratische Ergebnissuche je Slot durch einen Index ersetzt. Drei weitere Befunde sind als eigene Issues erfasst statt nebenbei geaendert zu werden: 78 (verlinkter Eintrag zaehlt nicht unter seinem type), 79 (Sentinel -1 auf dem wirksamen Grenzwert), 80 (Mutation der Eingabe im Resolver). Dazu aus der Umsetzung: 76 (Grenze am entryLink zaehlt ihre Auswahl nicht) und 77 (scope=primary-catalogue nicht unterstuetzt).
