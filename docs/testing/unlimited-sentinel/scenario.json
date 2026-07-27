@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "name": "unlimited-sentinel",
+  "description": "Der Wert minus eins als DEKLARIERTE Grenze bedeutet 'keine Obergrenze'; derselbe Wert als Ergebnis einer Rechnung tut das nicht. Belegt an Orcs and Goblins (6th definitive edition) und der Spielsystem-Datei: (1) eine von vornherein mit -1 deklarierte, von keinem Modifikator angefasste Grenze (7fca-63fb-63d2-9dad, Kategorie 'Heroes') feuert nie; (2) ein Modifikator setzt eine endliche, gerechnete Grenze ausdruecklich auf -1 (938b-15b1-f433-e0d5 an 'Orc Big Uns' in der Armeeliste Grimgor's 'Ardboyz) -> ab dann unbegrenzt; (3) eine mit -1 deklarierte Grenze, deren wirksamer Wert ein Modifikator zu einer gewoehnlichen Zahl macht (2115-87d4-2ead-6ba1 an 'Orc Boyz', Border Patrols setzt 25), wird an dieser Zahl gemessen und nicht als unbegrenzt gelesen.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-heroes-declared-unlimited.ros",
+      "description": "Armeeliste 'Standard (OG-AB)' mit drei Einheiten der Kategorie 'Heroes' (Orc Bigboss, Goblin Bigboss, Goblin Shaman). Die Kategorie-Grenze 7fca-63fb-63d2-9dad ist im .gst mit max value=-1 deklariert und wird von KEINEM Modifikator im gesamten Datensatz adressiert; sie ist damit dauerhaft unbegrenzt und darf bei drei Helden nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["7fca-63fb-63d2-9dad"]
+      }
+    },
+    {
+      "file": "rosters/02-big-uns-computed-bound-fires.ros",
+      "description": "Kontrollfall zu Roster 03: Armeeliste 'Standard (OG-AB)', eine Einheit 'Orc Big Uns' und KEINE Auswahl der Kategorie 'Orc boyz' (344f-77ef-7238-f157). Die Grenze 938b-15b1-f433-e0d5 ist mit max value=0 (scope=roster) deklariert; ihr Hochzaehl-Modifikator wiederholt sich je Auswahl dieser Kategorie, hier also null Mal. Wirksame Grenze 0, Ist 1 -> die Grenze feuert.",
+      "expect": {
+        "firing": [
+          { "limitId": "938b-15b1-f433-e0d5", "actual": 1, "bound": 0 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/03-big-uns-modifier-sets-unlimited.ros",
+      "description": "Auspraegung 2: dieselbe Grenze 938b-15b1-f433-e0d5, aber in der Armeeliste Grimgor's 'Ardboyz (1821-fbd1-0d96-2d88). Der unbedingt am Eintrag haengende Setz-Modifikator 'set -1' greift dort und macht die Grenze unbegrenzt. Zwei Einheiten 'Orc Big Uns' ohne 'Orc boyz'-Auswahlen wuerden ohne diesen Modifikator mit Ist 2 gegen Grenze 0 feuern; mit ihm darf die Grenze nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["938b-15b1-f433-e0d5"]
+      }
+    },
+    {
+      "file": "rosters/04-orc-boyz-declared-unlimited.ros",
+      "description": "Auspraegung 1 auf Eintragsebene: Armeeliste 'Standard (OG-AB)', eine Einheit 'Orc Boyz' mit 26 Modellen. Die Modell-Grenze 2115-87d4-2ead-6ba1 ist mit max value=-1 (scope=parent) deklariert; ihr einziger Modifikator (set 25) haengt an der Auswahl 'Border Patrols rules', die hier fehlt. Wirksame Grenze bleibt unbegrenzt -> die Grenze darf nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["2115-87d4-2ead-6ba1"]
+      }
+    },
+    {
+      "file": "rosters/05-orc-boyz-border-patrol-finite.ros",
+      "description": "Gegenprobe zu Roster 04 und Beleg fuer 'das Ergebnis ist eine Zahl, nicht unbegrenzt': dasselbe Roster, zusaetzlich die Auswahl 'Border Patrols rules' (4e15-0353-165f-5528). Damit greift der Modifikator 'set 25' auf 2115-87d4-2ead-6ba1; die mit -1 deklarierte Grenze wird an ihrem wirksamen Wert 25 gemessen. Ist 26 -> die Grenze feuert.",
+      "expect": {
+        "firing": [
+          { "limitId": "2115-87d4-2ead-6ba1", "actual": 26, "bound": 25 }
+        ],
+        "absent": []
+      }
+    }
+  ]
+}

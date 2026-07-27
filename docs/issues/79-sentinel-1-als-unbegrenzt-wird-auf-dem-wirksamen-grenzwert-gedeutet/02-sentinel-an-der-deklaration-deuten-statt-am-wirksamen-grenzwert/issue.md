@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: claimed
 Type: fix
 Blocked by: [01]
 
@@ -35,7 +35,7 @@ Nachkommastelle), der Vergleich muss deshalb numerisch sein, nicht als Zeichenke
 - [ ] Unbegrenztheit wird am zuletzt deklarierten Wert entschieden, nicht am Ergebnis der Modifikator-Rechnung.
 - [ ] Eine Grenze, die ein Modifikator ins Negative zieht, gilt nicht als unbegrenzt; ein Modultest haelt diesen Fall fest, da kein Katalog ihn erzeugt.
 - [ ] Ein Modifikator, der eine endliche Grenze ausdruecklich auf minus eins setzt, macht sie unbegrenzt.
-- [ ] Eine mit minus eins deklarierte und anschliessend hochgezaehlte Grenze liefert eine gewoehnliche Zahl.
+- [ ] Eine mit minus eins deklarierte und anschliessend hochgezaehlte Grenze liefert eine gewoehnliche Zahl; ein Modultest haelt diesen Fall fest, da der Datensatz des Evaluators ihn nicht enthaelt (122 Grenzen mit minus eins, 36 Ziele arithmetischer Modifikatoren, Schnittmenge leer).
 - [ ] Es gibt genau eine benannte Quelle fuer den Sentinel; in der auswertenden Schicht steht kein Zahl-Literal mehr dafuer.
 - [ ] Der Vergleich ist numerisch und traegt beide Schreibweisen.
 - [ ] Das Szenario aus Slice 01 ist gruen; die uebrige E2E-Suite bleibt gruen, jede geaenderte Erwartung ist einzeln begruendet.

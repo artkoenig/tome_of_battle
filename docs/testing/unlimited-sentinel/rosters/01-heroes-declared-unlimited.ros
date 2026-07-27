@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="unlimited-sentinel-01" name="Heroes - Grenze von vornherein mit minus eins deklariert" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-orc-bigboss" name="Orc Bigboss" entryId="6279-4d0a-6dce-f2f3" entryLinkId="" number="1" type="unit">
+          <categories>
+            <category id="cat-chars-1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="cat-heroes-1" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+        </selection>
+        <selection id="sel-goblin-bigboss" name="Goblin Bigboss" entryId="8c8f-3fba-e337-fd2f" entryLinkId="" number="1" type="unit">
+          <categories>
+            <category id="cat-chars-2" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="cat-heroes-2" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+        </selection>
+        <selection id="sel-goblin-shaman" name="Goblin Shaman" entryId="554e-660d-0005-d122" entryLinkId="" number="1" type="unit">
+          <categories>
+            <category id="cat-chars-3" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="cat-heroes-3" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
