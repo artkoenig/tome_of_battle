@@ -13,7 +13,7 @@ import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { parseCatalogue } from './catalogReader.js';
 import { resolveCatalogue } from './resolver.js';
-import { ModifierTargetKind, DiagnosticKind } from './model.js';
+import { ModifierTargetKind, MessageSeverity, DiagnosticKind } from './model.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
@@ -71,9 +71,25 @@ describe('Resolver: field→TargetDescriptor ueber die Symboltabelle', () => {
     expect(target).toEqual({ kind: ModifierTargetKind.HIDDEN, id: null });
   });
 
-  it('loest sonstigen Nicht-ID-Text zu NOTE auf', () => {
-    const { target } = resolveSingleModifierTarget('notes');
-    expect(target).toEqual({ kind: ModifierTargetKind.NOTE, id: null });
+  it('loest das Schluesselwort "name" zu NAME auf', () => {
+    const { target } = resolveSingleModifierTarget('name');
+    expect(target).toEqual({ kind: ModifierTargetKind.NAME, id: null });
+  });
+
+  it('loest "error"/"warning"/"info" zu MESSAGE mit ihrem Schweregrad auf', () => {
+    for (const severity of Object.values(MessageSeverity)) {
+      const { target } = resolveSingleModifierTarget(severity);
+      expect(target).toEqual({ kind: ModifierTargetKind.MESSAGE, id: severity });
+    }
+  });
+
+  it('meldet sonstigen Nicht-ID-Text als nicht deutbares Ziel und traegt kein Ziel', () => {
+    const { target, diagnostics } = resolveSingleModifierTarget('notes');
+
+    expect(target).toBeNull();
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({ kind: DiagnosticKind.UNSUPPORTED_MODIFIER_TARGET, field: 'notes' }),
+    );
   });
 
   it('meldet einen baumelnden ID-Verweis als Diagnose und traegt kein Ziel', () => {
@@ -128,5 +144,62 @@ describe('Resolver: Disjunktheits-Guard bei kollidierender Definitions-ID', () =
     expect(resolved.diagnostics).toContainEqual(
       expect.objectContaining({ kind: DiagnosticKind.DUPLICATE_DEFINITION, definitionId: DUPLICATE_ID })
     );
+  });
+});
+
+describe('Kandidatenmenge des Angebots auf Armee-Ebene', () => {
+  const ROOT_ENTRY_ID = 'entry-root';
+  const ROOT_LINK_ID = 'link-root';
+  const ROOT_GROUP_ID = 'group-root';
+  const SHARED_ENTRY_ID = 'shared-entry';
+  const NESTED_ENTRY_ID = 'entry-nested';
+  const CATEGORY_ID = 'cat-core';
+
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-candidates" name="Candidates Catalogue">
+      <categoryEntries>
+        <categoryEntry id="${CATEGORY_ID}" name="Core"/>
+      </categoryEntries>
+      <sharedSelectionEntries>
+        <selectionEntry id="${SHARED_ENTRY_ID}" name="Shared" type="unit"/>
+      </sharedSelectionEntries>
+      <selectionEntries>
+        <selectionEntry id="${ROOT_ENTRY_ID}" name="Root Entry" type="unit">
+          <selectionEntries>
+            <selectionEntry id="${NESTED_ENTRY_ID}" name="Nested" type="upgrade"/>
+          </selectionEntries>
+        </selectionEntry>
+      </selectionEntries>
+      <selectionEntryGroups>
+        <selectionEntryGroup id="${ROOT_GROUP_ID}" name="Root Group"/>
+      </selectionEntryGroups>
+      <entryLinks>
+        <entryLink id="${ROOT_LINK_ID}" name="Root Link" targetId="${SHARED_ENTRY_ID}" type="selectionEntry"/>
+      </entryLinks>
+      <categoryLinks>
+        <categoryLink id="link-root-category" name="Core" targetId="${CATEGORY_ID}"/>
+      </categoryLinks>
+    </catalogue>`;
+
+  /** Die Definitions-IDs der Kandidatenmenge, in Dokumentreihenfolge. */
+  function candidateIds() {
+    return resolveCatalogue(parseCatalogue(CATALOGUE_XML)).armyLevelCandidates.map(definition => definition.id);
+  }
+
+  it('fuehrt die Auswahl-Definitionen unmittelbar unter der Katalogwurzel — Eintrag wie Verweis', () => {
+    expect(candidateIds()).toEqual([ROOT_ENTRY_ID, ROOT_LINK_ID]);
+  });
+
+  it('fuehrt weder Wurzel-Gruppen noch Wurzel-Kategorieverweise: beide sind kein Auswahlpunkt', () => {
+    expect(candidateIds()).not.toContain(ROOT_GROUP_ID);
+    expect(candidateIds()).not.toContain(CATEGORY_ID);
+  });
+
+  it('fuehrt eine geteilte Definition nicht: sie erscheint allein an der Stelle ihres Verweises', () => {
+    expect(candidateIds()).not.toContain(SHARED_ENTRY_ID);
+  });
+
+  it('fuehrt keine geschachtelte Option: sie gehoert ihrer Auswahl, nicht der Armee-Ebene', () => {
+    expect(candidateIds()).not.toContain(NESTED_ENTRY_ID);
   });
 });

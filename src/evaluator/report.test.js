@@ -1,16 +1,42 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 
 /**
- * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
- * ADR-0032 einen Datensatz `{ gameSystem, catalogues }`; ein Einzelkatalog ohne
- * Spielsystem ist `{ catalogues: [xml] }`.
+ * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade ist zweistufig
+ * (Main-Issue 75, Baustein 8): erst den Datensatz aufbereiten, dann auswerten. Der
+ * Datensatz hat die Form `{ gameSystem, catalogues }` (ADR-0032); ein Einzelkatalog
+ * ohne Spielsystem ist `{ catalogues: [xml] }`.
  */
 function evaluate(catalogXml, roster) {
-  return evaluateDataset({ catalogues: [catalogXml] }, roster);
+  return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
-import { isSelectable, remainingAllowed, mandatoryOpenSlots } from './report.js';
+import { AnchorKind, MessageSeverity } from './model.js';
+import { PreparedDataset } from './datasetPreparation.js';
+import { buildEvalTree, selectableSlotsOf } from './evalTree.js';
+import { attachOfferAnchors } from './offer.js';
+
+// ── Sicht eines Verbrauchers auf den Bericht ─────────────────────────────────
+// Reine Lesehilfen, wie sie eine Oberflaeche selbst schreiben wuerde (§4.8): sie
+// werten keine Regel aus, sondern lesen nur Felder des Faehigkeitsdatensatzes.
+// Sie stehen bewusst hier und nicht in der Engine — der Bericht traegt die
+// Aussage bereits, eine zweite Rechenstelle dafuer gaebe es sonst umsonst.
+
+/** Auswaehlbar ist ein Slot, der weder versteckt noch gesperrt ist. */
+function isSelectable(report, path) {
+  const capability = report.capabilities.get(path);
+  return capability !== undefined && !capability.isHidden && !capability.isBlocked;
+}
+
+/** Der Restspielraum eines Slots; `null` ohne Hoechstmass oder bei unbekanntem Pfad. */
+function remainingAllowed(report, path) {
+  return report.capabilities.get(path)?.headroom ?? null;
+}
+
+/** Die Slots mit unerfuellter MIN-Grenze. */
+function mandatoryOpenSlots(report) {
+  return [...report.capabilities.values()].filter(capability => capability.isMandatoryUnmet);
+}
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -28,7 +54,7 @@ const WARRIOR_NAME = 'Warrior';
 /** Sucht den Faehigkeitsdatensatz eines Slots ueber die Definitions-ID (mit seinem Pfad). */
 function slotByDefId(report, defId, { phantom = false } = {}) {
   for (const [path, capability] of report.capabilities) {
-    if (capability.node.def?.id === defId && capability.node.isPhantom === phantom) {
+    if (capability.defId === defId && (capability.anchorKind !== AnchorKind.OCCUPIED) === phantom) {
       return { path, capability };
     }
   }
@@ -65,7 +91,7 @@ describe('Bericht: Faehigkeitsdatensatz einer MAX-Grenze', () => {
       isBlocked: false,
       isMandatoryUnmet: false,
       isHidden: false,
-      notes: [],
+      authorMessages: [],
     });
     // UI-Projektion: rein aus dem Bericht abgeleitet.
     expect(isSelectable(report, path)).toBe(true);
@@ -192,18 +218,18 @@ describe('Bericht: versteckter Slot', () => {
   });
 });
 
-describe('Bericht: bedingte Hinweise am Slot', () => {
+describe('Bericht: bedingte Autor-Meldungen am Slot', () => {
   const BANNER_DEF_ID = 'entry-banner-unit';
   const NOTE_TEXT = 'Verbund erst ab zwei Einheiten';
   const NOTE_THRESHOLD = 2;
-  // Ein append-Modifikator unter einer Bedingung: der Hinweis erscheint nur,
-  // wenn die Bedingung (self >= 2 Selektionen) haelt.
+  // Eine Autor-Meldung unter einer Bedingung: sie erscheint nur, wenn die
+  // Bedingung (self >= 2 Selektionen) haelt.
   const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     <catalogue id="cat-cap-note" name="Capability Note Catalogue">
       <selectionEntries>
         <selectionEntry id="${BANNER_DEF_ID}" name="Bannertraeger" type="unit">
           <modifiers>
-            <modifier type="append" field="notes" value="${NOTE_TEXT}">
+            <modifier type="add" field="info" value="${NOTE_TEXT}">
               <conditions>
                 <condition type="atLeast" field="selections" scope="self" value="${NOTE_THRESHOLD}"/>
               </conditions>
@@ -213,18 +239,87 @@ describe('Bericht: bedingte Hinweise am Slot', () => {
       </selectionEntries>
     </catalogue>`;
 
-  it('haengt den bedingten Hinweis an den betreffenden Slot, wenn die Bedingung haelt', () => {
+  it('haengt die bedingte Meldung an den betreffenden Slot, wenn die Bedingung haelt', () => {
     const report = evaluate(CATALOGUE_XML, rosterOf(BANNER_DEF_ID, NOTE_THRESHOLD));
 
     const { capability } = slotByDefId(report, BANNER_DEF_ID);
-    expect(capability.notes).toEqual([NOTE_TEXT]);
+    expect(capability.authorMessages).toEqual([{ severity: MessageSeverity.INFO, text: NOTE_TEXT }]);
   });
 
-  it('laesst den Hinweis am Slot aus, wenn die Bedingung nicht haelt (der Hinweis ist wirklich bedingt)', () => {
+  it('laesst die Meldung am Slot aus, wenn die Bedingung nicht haelt (sie ist wirklich bedingt)', () => {
     const report = evaluate(CATALOGUE_XML, rosterOf(BANNER_DEF_ID, NOTE_THRESHOLD - 1));
 
     const { capability } = slotByDefId(report, BANNER_DEF_ID);
-    expect(capability.notes).toEqual([]);
+    expect(capability.authorMessages).toEqual([]);
+  });
+});
+
+describe('Bericht: die Kennung eines Slots leitet sich aus seinem Pfad ab', () => {
+  const FORCE_ID = 'force-army';
+  const OPTION_ID = 'entry-option';
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-slot-key" name="Slot Key Catalogue">
+      <forceEntries>
+        <forceEntry id="${FORCE_ID}" name="Army"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${WARRIOR_DEF_ID}" name="${WARRIOR_NAME}" type="unit">
+          <selectionEntries>
+            <selectionEntry id="${OPTION_ID}" name="Option" type="upgrade"/>
+          </selectionEntries>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  const ROSTER = {
+    forces: [{ defId: FORCE_ID, count: 1, children: [{ defId: WARRIOR_DEF_ID, count: 1, children: [] }] }],
+  };
+
+  /** Die Folge der Kind-Indizes von der Wurzel bis zum Knoten, hier unabhaengig gebildet. */
+  function childIndexPathOf(node) {
+    const segments = [];
+    for (let current = node; current.parent !== null; current = current.parent) {
+      segments.unshift(current.parent.children.indexOf(current));
+    }
+    return segments.join('/');
+  }
+
+  it('kennzeichnet jeden Slot mit seiner Kind-Index-Folge, nicht mit einer laufenden Nummer', () => {
+    const report = evaluate(CATALOGUE_XML, ROSTER);
+
+    // Der Bericht traegt keinen Baumknoten (ADR-0034), also wird der Baum hier
+    // unabhaengig noch einmal gebaut und die erwartete Schluesselmenge daraus
+    // gebildet — genau die Gegenprobe, die der Test meint.
+    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
+    const { root } = buildEvalTree(resolved, ROSTER);
+    attachOfferAnchors(root, resolved);
+
+    const expectedKeys = selectableSlotsOf(root).map(childIndexPathOf);
+    expect([...report.capabilities.keys()].sort()).toEqual([...expectedKeys].sort());
+    for (const key of report.capabilities.keys()) {
+      expect(key, `Slot-Kennung "${key}" ist keine Kind-Index-Folge`).toMatch(/^\d+(\/\d+)*$/);
+    }
+  });
+
+  it('liefert ueber zwei Auswertungen desselben Rosters dieselben Slot-Kennungen', () => {
+    const first = evaluate(CATALOGUE_XML, ROSTER);
+    const second = evaluate(CATALOGUE_XML, ROSTER);
+
+    expect([...second.capabilities.keys()]).toEqual([...first.capabilities.keys()]);
+  });
+
+  it('haelt die Kennung eines belegten Slots stabil, obwohl das Angebot den Baum vergroessert', () => {
+    // Der Krieger haengt als erstes Kind des Kontingents — die Angebots-Anker
+    // kommen ausschliesslich dahinter, sein Pfad bleibt damit „0/0".
+    const report = evaluate(CATALOGUE_XML, ROSTER);
+
+    const { path, capability } = slotByDefId(report, WARRIOR_DEF_ID);
+    expect(path).toBe('0/0');
+    expect(capability.anchorKind).toBe(AnchorKind.OCCUPIED);
+    // Und das Angebot ist wirklich da: die Option des Kriegers wird angeboten.
+    expect([...report.capabilities.values()].some(
+      slot => slot.defId === OPTION_ID && slot.anchorKind === AnchorKind.OFFER_ANCHOR,
+    )).toBe(true);
   });
 });
 
@@ -245,6 +340,106 @@ describe('Bericht: UI-Projektions-Lookups sind reine Bericht-Leser', () => {
 
     expect(isSelectable(report, 'kein-solcher-pfad')).toBe(false);
     expect(remainingAllowed(report, 'kein-solcher-pfad')).toBeNull();
+  });
+});
+
+describe('Bericht: Faehigkeitsdatensatz eines Kategorie-Knotens', () => {
+  const FORCE_ID = 'force-army';
+  const CORE_CATEGORY_ID = 'cat-core';
+  const HIDDEN_CATEGORY_ID = 'cat-mercenaries';
+  const TRIGGER_ID = 'entry-trigger';
+  const CORE_UNIT_ID = 'entry-core-unit';
+  const MAX_CORE = 3;
+
+  // Ein Kontingent mit zwei Kategorien: „Core" mit einer Hoechstgrenze und
+  // „Mercenaries", die ein Modifikator ausblendet, sobald der Ausloeser gewaehlt
+  // ist. Genau die Form, die die Oberflaeche als Abschnitt mit eigenen Grenzen
+  // darstellt — und die bis Issue 75/05 im Bericht gar nicht vorkam.
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-category-slot" name="Category Slot Catalogue">
+      <categoryEntries>
+        <categoryEntry id="${CORE_CATEGORY_ID}" name="Core"/>
+        <categoryEntry id="${HIDDEN_CATEGORY_ID}" name="Mercenaries"/>
+      </categoryEntries>
+      <forceEntries>
+        <forceEntry id="${FORCE_ID}" name="Army">
+          <categoryLinks>
+            <categoryLink id="link-core" name="Core" targetId="${CORE_CATEGORY_ID}">
+              <constraints>
+                <constraint id="max-core" type="max" value="${MAX_CORE}" field="selections" scope="force"/>
+              </constraints>
+            </categoryLink>
+            <categoryLink id="link-mercenaries" name="Mercenaries" targetId="${HIDDEN_CATEGORY_ID}">
+              <modifiers>
+                <modifier type="set" field="hidden" value="true">
+                  <conditions>
+                    <condition type="atLeast" field="selections" scope="force" childId="${TRIGGER_ID}" value="1"/>
+                  </conditions>
+                </modifier>
+              </modifiers>
+            </categoryLink>
+          </categoryLinks>
+        </forceEntry>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${CORE_UNIT_ID}" name="Core Unit" type="unit">
+          <categoryLinks>
+            <categoryLink targetId="${CORE_CATEGORY_ID}"/>
+          </categoryLinks>
+        </selectionEntry>
+        <selectionEntry id="${TRIGGER_ID}" name="Trigger" type="unit"/>
+      </selectionEntries>
+    </catalogue>`;
+
+  /** Ein Kontingent mit den uebergebenen Auswahl-Instanzen. */
+  function army(selections) {
+    return { forces: [{ defId: FORCE_ID, count: 1, children: selections }] };
+  }
+
+  /**
+   * Der Faehigkeitsdatensatz des Kategorie-Ankers dieser Kategorie — **allein aus
+   * dem Bericht** nachgeschlagen (`targetDefId`), ohne in den Baumknoten zu
+   * greifen. Genau das muss die Oberflaeche koennen (ADR-0034): der Anker traegt
+   * den `categoryLink`, gemeint ist die Kategorie dahinter.
+   */
+  function categorySlot(report, categoryId) {
+    return [...report.capabilities.values()].find(
+      capability => capability.anchorKind === AnchorKind.CATEGORY_ANCHOR && capability.targetDefId === categoryId,
+    );
+  }
+
+  it('fuehrt fuer jede Kategorie des Kontingents einen Slot mit Hoechstmass, Belegung und Rahmen-Bezug', () => {
+    const report = evaluate(CATALOGUE_XML, army([{ defId: CORE_UNIT_ID, count: 2, children: [] }]));
+
+    expect(categorySlot(report, CORE_CATEGORY_ID)).toMatchObject({
+      anchorKind: AnchorKind.CATEGORY_ANCHOR,
+      frame: { defId: FORCE_ID, path: '0' },
+      effectiveMax: MAX_CORE,
+      current: 2,
+      headroom: MAX_CORE - 2,
+      isBlocked: false,
+      isHidden: false,
+    });
+  });
+
+  it('meldet eine per Modifikator ausgeblendete Kategorie als versteckt und damit als nicht verfuegbar', () => {
+    const report = evaluate(CATALOGUE_XML, army([{ defId: TRIGGER_ID, count: 1, children: [] }]));
+
+    const hiddenCategory = categorySlot(report, HIDDEN_CATEGORY_ID);
+    expect(hiddenCategory.isHidden).toBe(true);
+    expect(isSelectable(report, [...report.capabilities].find(([, c]) => c === hiddenCategory)[0])).toBe(false);
+  });
+
+  it('haelt dieselbe Kategorie ohne den Ausloeser sichtbar — das Merkmal ist wirklich bedingt', () => {
+    const report = evaluate(CATALOGUE_XML, army([]));
+
+    expect(categorySlot(report, HIDDEN_CATEGORY_ID).isHidden).toBe(false);
+  });
+
+  it('meldet eine ausgeschoepfte Kategorie als gesperrt, statt sie wegzulassen', () => {
+    const report = evaluate(CATALOGUE_XML, army([{ defId: CORE_UNIT_ID, count: MAX_CORE, children: [] }]));
+
+    expect(categorySlot(report, CORE_CATEGORY_ID)).toMatchObject({ isBlocked: true, headroom: 0 });
   });
 });
 

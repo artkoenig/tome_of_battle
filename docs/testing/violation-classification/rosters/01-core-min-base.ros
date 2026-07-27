@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="vcl-01" name="VCL 01 - Ogre-Kontingent ohne Auswahlen (Core-Basiswert)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored violation-classification E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms"/>
+  </forces>
+</roster>

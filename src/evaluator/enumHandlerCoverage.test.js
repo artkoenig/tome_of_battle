@@ -16,7 +16,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { ConditionKind, ModifierKind } from './model.js';
+import { ConditionKind, ModifierKind, ModifierTargetKind } from './model.js';
 import { COMPARATORS, MODIFIER_HANDLERS } from './modifiers.js';
 
 /** Deckungsgleich = identische Schluesselmengen (jede Seite genau einmal). */
@@ -38,13 +38,23 @@ describe('COMPARATORS deckt ConditionKind zweiseitig vollstaendig ab', () => {
 });
 
 describe('MODIFIER_HANDLERS deckt ModifierKind zweiseitig vollstaendig ab', () => {
-  it('hat genau einen Handler je ModifierKind-Wert und keinen verwaisten Schluessel', () => {
+  it('hat genau eine Ziel-Tabelle je ModifierKind-Wert und keinen verwaisten Schluessel', () => {
     expectExactCoverage(Object.keys(MODIFIER_HANDLERS), Object.values(ModifierKind));
   });
 
-  it('haelt jeden Handler-Wert als aufrufbare Funktion', () => {
-    for (const handler of Object.values(MODIFIER_HANDLERS)) {
-      expect(typeof handler).toBe('function');
+  it('haelt jede Ziel-Tabelle mit mindestens einem Ziel besetzt', () => {
+    for (const [kind, handlersByTarget] of Object.entries(MODIFIER_HANDLERS)) {
+      expect(Object.keys(handlersByTarget), `Modifikator-Art ${kind} ohne wirkendes Ziel`).not.toHaveLength(0);
+    }
+  });
+
+  it('benennt in jeder Ziel-Tabelle nur gueltige Zielarten und haelt jeden Effekt aufrufbar', () => {
+    const targetKinds = new Set(Object.values(ModifierTargetKind));
+    for (const [kind, handlersByTarget] of Object.entries(MODIFIER_HANDLERS)) {
+      for (const [targetKind, handler] of Object.entries(handlersByTarget)) {
+        expect(targetKinds, `${kind} verweist auf unbekannte Zielart ${targetKind}`).toContain(targetKind);
+        expect(typeof handler).toBe('function');
+      }
     }
   });
 });

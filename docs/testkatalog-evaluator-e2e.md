@@ -13,9 +13,11 @@ generalisierten, manifest-getriebenen Runner:
 [`e2e.testcatalog.test.js`](../src/evaluator/e2e.testcatalog.test.js). Er entdeckt
 zur Laufzeit **alle** Szenarien unter [`docs/testing/`](testing/), die ein Manifest
 (`scenario.json`) tragen, wertet jedes darin deklarierte Roster gegen die
-öffentliche Fassade `evaluate` aus und prüft den Bericht — sowohl die
-**Verletzungen** als auch die **Diagnosen** — gegen die je Roster deklarierte
-Erwartung. Die einzelnen Testfälle entstehen **dynamisch** aus den Manifesten;
+öffentliche Fassade `evaluate` aus und prüft den Bericht — die **Verletzungen**,
+die **Diagnosen** und, je benanntem Auswahlpunkt, dessen **Fähigkeitsdatensatz**
+(effektiver Anzeigename, Autor-Meldungen des Katalogs, effektive Merkmalswerte
+sowie die dort geltenden Profile und Regeltexte) —
+gegen die je Roster deklarierte Erwartung. Die einzelnen Testfälle entstehen **dynamisch** aus den Manifesten;
 versioniert sind nur der Runner und die Szenario-Daten.
 
 Ein **Szenario** ist ein Verzeichnis unter `docs/testing/<name>/` mit:
@@ -27,7 +29,8 @@ Ein **Szenario** ist ein Verzeichnis unter `docs/testing/<name>/` mit:
 - dem Manifest **`scenario.json`** — der maschinenlesbaren Quelle der Wahrheit:
   welche Katalogdateien geladen werden und welche Grenzen/Diagnosen je Roster
   feuern müssen (`firing`), nicht feuern dürfen (`absent`) bzw. als Diagnose
-  auftreten oder ausbleiben müssen (`diagnostics`).
+  auftreten oder ausbleiben müssen (`diagnostics`) — und welchen Zustand ein
+  einzelner Auswahlpunkt tragen muss (`capabilities`).
 
 Die frühere programmatische E2E-Suite (die Roster im Testcode aufbaute:
 `e2e.ogreKingdoms/orcsAndGoblins/vampireCounts/realCatalog.smoke` und die
@@ -90,7 +93,16 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`explorer-category-constraints`](testing/explorer-category-constraints/) | Definitive O&G | 1 |
 | [`explorer-modifier-constraints`](testing/explorer-modifier-constraints/) | Definitive O&G | 2 |
 | [`explorer-nested-constraints`](testing/explorer-nested-constraints/) | Definitive O&G | 1 |
-| **Summe** | | **63** |
+| [`numeric-conditions`](testing/numeric-conditions/) | Definitive O&G + Mercenaries | 6 |
+| [`remaining-condition-types`](testing/remaining-condition-types/) | Definitive VC + Mercenaries | 2 |
+| [`modifier-characteristic-value`](testing/modifier-characteristic-value/) | Definitive Ogre + Mercenaries | 3 |
+| [`modifier-effective-name`](testing/modifier-effective-name/) | Definitive VC + O&G + Mercenaries | 6 |
+| [`author-message-severity`](testing/author-message-severity/) | Definitive Ogre / VC + Mercenaries | 7 |
+| [`offer-and-category-slots`](testing/offer-and-category-slots/) | Definitive VC + O&G + Mercenaries | 3 |
+| [`info-projection`](testing/info-projection/) | Definitive VC + Mercenaries | 4 |
+| [`violation-classification`](testing/violation-classification/) | Definitive Ogre + Mercenaries | 7 |
+| [`author-message-tokens`](testing/author-message-tokens/) | Definitive Ogre + Mercenaries | 3 |
+| **Summe** | | **104** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -229,7 +241,7 @@ Prüft, ob eine Bedingung, die auf die **Modellzahl** einer Einheit schaut
 
 | # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
 | :--- | :--- | :--- |
-| 01 | Border-Patrols-Armee mit einer Einheit aus 10 Steintrollen | Die Einheit erhält die Kategorie „BP Infantry 10+"; keine Meldung über einen nicht ausgewerteten Modifikator |
+| 01 | Border-Patrols-Armee mit einer Einheit aus 10 Steintrollen | Die Einheit erhält die Kategorie „BP Infantry 10+"; am Slot „Border Patrols rules" liegt **keine** Autor-Meldung an |
 
 ## `evaluator-force-child-category-missing`
 
@@ -314,3 +326,114 @@ eingebunden sind.
 | # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
 | :--- | :--- | :--- |
 | 01 | Savage Orc Warboss mit magischen Waffen für 125 Punkte | Die Grenze „höchstens 100 Punkte magische Gegenstände" feuert (Ist 125) |
+
+## `numeric-conditions`
+
+Prüft, ob die Zahlen-Vergleiche einer Modifikator-Bedingung (*kleiner als*,
+*größer als*, *gleich*) richtig greifen — je Vergleich einmal erfüllt und einmal
+verfehlt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01–02 | *gleich*-Bedingung erfüllt / verfehlt | Erfüllt hebt die Obergrenze von 1 auf 2 (keine Verletzung); verfehlt bleibt sie 1 und die Grenze feuert |
+| 03–04 | *größer als*-Bedingung erfüllt / verfehlt | Erfüllt macht die Obergrenze unbegrenzt (keine Verletzung); verfehlt bleibt sie 0 und die Grenze feuert |
+| 05–06 | *kleiner als*-Bedingung erfüllt / verfehlt | Erfüllt senkt die Pflicht auf 0 (keine Verletzung); verfehlt bleibt sie 1 und die Pflicht feuert |
+
+## `remaining-condition-types`
+
+Prüft die Bedingung *mindestens*, die eine Obergrenze verändert: Speer-Infanterie
+und Hellebarden schließen sich bei den Skeletten gegenseitig aus.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Nur Speer-Infanterie gewählt | Die Bedingung der Gegenseite greift nicht — keine Verletzung |
+| 02 | Speer-Infanterie **und** Hellebarden gewählt | Beide setzen die Obergrenze der jeweils anderen auf 0 — beide Grenzen feuern |
+
+## `modifier-characteristic-value`
+
+Prüft, dass ein Modifikator auf einen **Merkmalswert** genau das Profil trifft, an
+dem er hängt — und nur dieses.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Söldner-Ogres mit Handwaffe, **ohne** leichte Rüstung | Der bedingte Rüstungswert greift nicht; nur der unbedingte Abzug wirkt (Sv 7) |
+| 02 | Dieselbe Einheit **mit** leichter Rüstung | Beide Abzüge wirken (Sv 6); alle übrigen Merkmale bleiben unverändert |
+| 03 | Anakondas Amazonen: vier Auswahlpunkte ziehen **dasselbe** geteilte Profil über je einen eigenen Verweis herein | Jeder Modifikator wirkt nur auf sein eigenes Verweis-Vorkommen; der Verweis ohne Modifikator behält die Basiswerte |
+
+## `modifier-effective-name`
+
+Prüft, dass ein Modifikator auf den **Namen** den Anzeigenamen seines Trägers
+verändert — ersetzend (*set*) oder anfügend (*append*, mit dem Trennzeichen des
+Katalogs).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire ohne Blutlinie | Katalognamen unverändert — keine Bedingung greift |
+| 02 | Vampire mit Blutlinie „Blood Dragon" | Beide Einheiten heißen „… of Clan Blood Dragon" (mit dem geschützten Leerzeichen des Katalogs) |
+| 03 | Vampire Count mit Blutlinie „Lahmia" | Erst ersetzt, dann angefügt: „Vampire Countess of Clan Lahmia" |
+| 04–05 | Skelette im Standard- bzw. im Sylvania-Kontingent | Nur im Sylvania-Kontingent greift die Umbenennung („Sylvanian Militia" / „Skeleton Militia") |
+| 06 | Grom mit Streitwagen, dessen Profil-Verweis umbenannt wird | Der Verweis benennt nur *sein* Info-Vorkommen um; die Namen der Auswahlen bleiben unverändert |
+
+## `author-message-severity`
+
+Prüft, dass eine **Autor-Meldung** des Katalogs am betroffenen Auswahlpunkt
+erscheint — mit ihrem Schweregrad und im Wortlaut des Katalogs — und dass sie
+ausbleibt, sobald ihre Bedingung nicht mehr hält.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Skrag ohne den Schalter „Sonderfiguren erlauben" | Eine Meldung vom Schweregrad *Fehler* liegt an Skrag |
+| 02 | Derselbe Aufbau **mit** dem Schalter | Keine Meldung — weder an Skrag noch am Schalter selbst |
+| 03 | Zwei Träger derselben Meldung (Skrag und Greasus) | Die Meldung hängt am Auswahlpunkt, nicht am Kontingent: beide tragen je eine |
+| 04–05 | Bruiser mit / ohne „Border Patrols rules" | Mit: eine Meldung vom Schweregrad *Warnung*; ohne: keine |
+| 06–07 | Vampire Fleet Captain mit / ohne „Border Patrols rules" | Mit: eine Meldung vom Schweregrad *Hinweis*; ohne: keine |
+
+## `offer-and-category-slots`
+
+Prüft, dass der Bericht nicht nur beschreibt, **was** im Roster steht, sondern
+**jede Stelle, an der eine Auswahl stehen kann**: das **Angebot** (alles, was hier
+wählbar wäre, aber noch nicht gewählt ist) und die **Kategorien** des Kontingents.
+Ein Angebot erzeugt dabei nie eine Verletzung — es ist eine Möglichkeit, keine
+Beanstandung. Die Gegenprobe gehört zwingend dazu: ein Armee-Eintrag, den der
+Katalog armeeweit **verlangt**, ist kein Angebot, sondern eine **Pflicht** — er
+erscheint als Pflicht-Stelle, und seine unerfüllte Mindestzahl wird ganz normal
+beanstandet.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Armeeliste „Clan Blood Dragons" mit einer Einheit *Black Knights*, die die Aufwertung *Black Knights of Bretonnia* trägt | Die Kategorien „Mercenaries" und „Regiment of Renown" der Liste sind dadurch **ausgeblendet**; „Heroes" ist sichtbar, ohne Ober-/Untergrenze und mit Ist-Stand 0, „Core" verlangt mindestens 2. Die gewählte Aufwertung ist **ausgereizt** (1 von 1). Nicht gewählte Optionen der Einheit (*Musician*, *Standard Bearer*) und nicht gewählte Armee-Einträge (*Fell Bats*, *Dire Wolves* — dort ausgeblendet, aber trotzdem aufgeführt — und *Manbiters*, dessen Obergrenze 0 ist) stehen als **Angebot** im Bericht. *Army of Sylvania* dagegen wird von der Armee **verlangt** und ist deshalb kein Angebot: beide Mindestzahl-Regeln werden mit Ist 0 beanstandet. Die Modellzahl *innerhalb* des nur angebotenen *Fell Bats* wird dagegen nicht beanstandet |
+| 02 | Derselbe Aufbau **ohne** jene Aufwertung | Dieselben zwei Kategorien sind jetzt **sichtbar** — das Ausblenden ist also bedingt, nicht fest. Die weggelassene Aufwertung erscheint selbst als **Angebot** an der Einheit: 0 von 1 gewählt, ein Platz frei, sichtbar. *Army of Sylvania* bleibt Pflicht mit zwei Beanstandungen |
+| 03 | Armeeliste „Army of the Lichemaster", die keine Söldner-/Regiment-of-Renown-Kategorie führt | *Fell Bats* und *Dire Wolves* werden weiterhin angeboten; *Manbiters*, dessen einzige Kategorie „Regiment of Renown" ist, **nicht** — das Angebot ist über die Kategorien der Armeeliste gefiltert. Auch hier ist *Army of Sylvania* Pflicht statt Angebot |
+
+## `info-projection`
+
+Prüft die zweite Hälfte dessen, was ein Auswahlpunkt im Bericht ist: **welche
+Profile und Regeltexte gelten hier?** Jeder Slot führt dazu eine Liste — seine
+**eigenen** Profile und Regeln **plus** die seiner tatsächlich gewählten
+Unterauswahlen, nach oben vererbt. Damit steht am Statblock einer Einheit auch
+das, was erst durch eine Aufwertung dazukommt. Vier Feinheiten gehören dazu: Ein
+**Verweis** auf ein geteiltes Profil oder eine geteilte Regel erscheint an der
+Stelle des Verweises und unter dessen Identität — das ist der Grund, warum
+dasselbe geteilte Profil an mehreren Stellen verschiedene Werte tragen kann. Ein
+Verweis auf eine **Regelgruppe** liefert deren Mitglieder statt eines eigenen
+Eintrags. Alle Werte sind **effektiv**, also nach allen greifenden Modifikatoren;
+der Regeltext dagegen ist stets der unveränderte Wortlaut des Katalogs.
+**Verborgene** Elemente fehlen — wobei „verborgen" die *effektive* Sichtbarkeit
+meint, also die Grundeinstellung des Katalogs, überschrieben von einer Bedingung.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Standardliste der Vampire Counts, Einheit *Skeletons* mit 10 Modellen, Pflicht-Handwaffe und einem *Skeleton Captain* | Die Einheit führt **vier** Elemente: ihre eigene Regel „Undead" im Wortlaut des Katalogs sowie — von den drei Unterauswahlen geerbt — den Statblock „Skeleton", das Waffenprofil „Hand Weapon" (Typ „Weapon", Sonderregel „-1 Sv with HW") und das Champion-Profil „Skeleton Captain". Jede Unterauswahl selbst führt genau ihr eigenes Element. Keine Grenze verletzt |
+| 02 | **Dieselbe** Einheit in der Armeeliste „Army of the Lichemaster" | Das direkt eingebettete Champion-Profil heißt dort **„Skeletal Chieftain"** — sowohl am Champion-Auswahlpunkt als auch in der geerbten Liste der Einheit. Das benachbarte, nur *verwiesene* Profil „Skeleton" bleibt unverändert: die Umbenennung wirkt allein auf ihr eigenes Vorkommen. Keine Grenze verletzt |
+| 03 | Standardliste, Einheit *0-1 Spirit Host* mit einem Modell | Die Einheit führt das Profil — angezeigt als **„Gloom"**, obwohl der Verweis „Spirit Host" heißt — mit den **unveränderten Katalogwerten**, dazu die Regeln „Swarm" und „Ethereal". Die zwei Regeln, die der Katalog grundsätzlich verbirgt („Spirit Levy", „Tormented"), werden hier nicht eingeblendet und müssen **fehlen**. Keine Grenze verletzt |
+| 04 | **Dieselbe** Einheit in der Armeeliste „Army of the Lichemaster" (10 Modelle), dazu der dort verlangte Eintrag *The Army of the Lichemaster* | Die zwei zuvor verborgenen Regeln **„Spirit Levy"** (mit ihrem Wortlaut) und **„Tormented"** erscheinen jetzt, während „Swarm" umgekehrt **fehlt**; die Werte des Profils „Gloom" sind auf S 2 / T 2 / W 1 / A 1 / Ld 5 / US 1 geändert. Der Eintrag *The Army of the Lichemaster* bezieht seine Regeln über einen Verweis auf eine **Regelgruppe**: in seiner Liste stehen deren **drei Mitglieder** („Fear", „Immune to Panic", „Army of the Lichemaster") — **weder** der Verweis **noch** die Regelgruppe selbst. Der Modell-Auswahlpunkt führt **keines** der Elemente seiner Einheit. Keine Grenze verletzt |
+
+> **Der Ausschluss wird mitgeprüft.** Dass ein verborgenes Element **fehlt**, ist
+> keine bloße Prosa mehr: das Manifest kennt neben der „muss enthalten"-Liste
+> inzwischen eine Gegenliste „darf nicht enthalten". Darüber sind sechs
+> Ausschlüsse festgenagelt — in Roster 03, dass „Spirit Levy" und „Tormented"
+> dort nicht auftauchen; in Roster 04, dass „Swarm" dort nicht auftaucht, dass
+> der Verweis auf die Regelgruppe keinen eigenen Eintrag bildet (weder unter
+> seiner eigenen Kennung noch unter der der Gruppe) und dass der Modell-
+> Auswahlpunkt keines der Elemente seiner Einheit führt, weil die Vererbung nur
+> nach oben läuft.

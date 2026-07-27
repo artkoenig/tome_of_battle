@@ -1,14 +1,15 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 
 /**
- * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
- * ADR-0032 einen Datensatz `{ gameSystem, catalogues }`; ein Einzelkatalog ohne
- * Spielsystem ist `{ catalogues: [xml] }`.
+ * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade ist zweistufig
+ * (Main-Issue 75, Baustein 8): erst den Datensatz aufbereiten, dann auswerten. Der
+ * Datensatz hat die Form `{ gameSystem, catalogues }` (ADR-0032); ein Einzelkatalog
+ * ohne Spielsystem ist `{ catalogues: [xml] }`.
  */
 function evaluate(catalogXml, roster) {
-  return evaluateDataset({ catalogues: [catalogXml] }, roster);
+  return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
 import { parseCatalogue } from './catalogReader.js';
 import { resolveCatalogue } from './resolver.js';
@@ -17,7 +18,7 @@ import { buildIndex } from './countIndex.js';
 import { createBaseEffectiveState } from './effectiveState.js';
 import { applyAllModifiers } from './modifiers.js';
 import { createQueryContext, query } from './query.js';
-import { SELECTION_COUNT, DiagnosticKind } from './model.js';
+import { SELECTION_COUNT, DiagnosticKind, MessageSeverity } from './model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -334,7 +335,7 @@ describe('Die Zaehlung stuetzt sich auf effektive Kategorien, nicht auf Basis-Ka
   });
 });
 
-describe('Sichtbarkeit und bedingte Hinweise als effektive Werte', () => {
+describe('Sichtbarkeit und bedingte Autor-Meldungen als effektive Werte', () => {
   const NOTE_TEXT = 'Nur mit Bannertraeger.';
   const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     <catalogue id="cat-note-hidden" name="Note And Hidden Catalogue">
@@ -342,7 +343,7 @@ describe('Sichtbarkeit und bedingte Hinweise als effektive Werte', () => {
         <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
           <modifiers>
             <modifier type="set" field="hidden" value="true"/>
-            <modifier type="append" field="notes" value="${NOTE_TEXT}">
+            <modifier type="add" field="info" value="${NOTE_TEXT}">
               <conditions>
                 <condition type="atLeast" field="selections" scope="roster" childId="${WARRIOR_ID}" value="2"/>
               </conditions>
@@ -359,18 +360,18 @@ describe('Sichtbarkeit und bedingte Hinweise als effektive Werte', () => {
     return { node: root.children[0], effective };
   }
 
-  it('versteckt den Knoten und haengt den Hinweis an, wenn die Bedingung haelt', () => {
+  it('versteckt den Knoten und haengt die Meldung an, wenn die Bedingung haelt', () => {
     const { node, effective } = effectiveFor(roster([selection(WARRIOR_ID, 2)]));
 
     expect(effective.isHidden(node)).toBe(true);
-    expect(effective.notesOf(node)).toEqual([NOTE_TEXT]);
+    expect(effective.authorMessagesOf(node)).toEqual([{ severity: MessageSeverity.INFO, text: NOTE_TEXT }]);
   });
 
-  it('haengt den bedingten Hinweis nicht an, wenn die Bedingung nicht haelt', () => {
+  it('haengt die bedingte Meldung nicht an, wenn die Bedingung nicht haelt', () => {
     const { node, effective } = effectiveFor(roster([selection(WARRIOR_ID, 1)]));
 
     expect(effective.isHidden(node)).toBe(true); // unbedingt versteckt
-    expect(effective.notesOf(node)).toEqual([]); // Hinweis-Bedingung faellt
+    expect(effective.authorMessagesOf(node)).toEqual([]); // Meldungs-Bedingung faellt
   });
 });
 

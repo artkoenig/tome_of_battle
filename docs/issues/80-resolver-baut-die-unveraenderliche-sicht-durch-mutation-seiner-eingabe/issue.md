@@ -1,0 +1,35 @@
+Status: needs-triage
+Type: refactor
+Blocked by: None
+
+## Description
+
+`resolveCatalogue` (`src/evaluator/resolver.js`) verspricht eine unveraenderliche
+Sicht, erreicht sie aber, indem es auf die gelesenen Objekte schreibt:
+`modifier.target`, `condition.witnessDefinition`, `info.resolved`,
+`link.resolved`. `effectiveState.js` formuliert die entgegengesetzte Zusicherung
+(„Basisdefinitionen werden nie mutiert", Leitprinzip 5).
+
+Die Auswertung selbst haelt die Zusicherung — mutiert wird einmalig **waehrend
+der Aufbereitung**, nicht danach. Neu ist aber die Tragweite: seit Main-Issue 75
+die Fassade zweistufig geschnitten hat (`prepareDataset` → `evaluate`), reicht
+derselbe aufbereitete Graph in **beliebig viele** Auswertungen hinein. Das
+Aliasing ist damit erstmals tragend statt beilaeufig.
+
+Heute ist das nachweislich unschaedlich (`evaluate` schreibt nur in den
+effektiven Zustand, nie in die Definitionen — die E2E-Suite belegt es ueber
+wiederholte Auswertungen desselben aufbereiteten Datensatzes). Es ist aber eine
+Zusicherung, die allein durch Disziplin gilt und die ein spaeterer Schreibzugriff
+still bricht.
+
+Zu entscheiden ist, ob die Aufloesung ohne Mutation gebaut wird (Seitentabellen
+statt Feldern am Objekt) oder ob die Mutation bleibt und dafuer maschinell
+abgesichert wird (Einfrieren nach der Aufbereitung).
+
+## Acceptance Criteria
+- [ ] Es ist entschieden und begruendet, ob die Aufloesung mutationsfrei wird oder die Unveraenderlichkeit nach der Aufbereitung erzwungen wird.
+- [ ] Die gewaehlte Zusicherung gilt nicht nur per Dokumentation, sondern faellt bei Verletzung auf.
+- [ ] `resolver.js` und `effectiveState.js` sagen dasselbe ueber Unveraenderlichkeit.
+- [ ] Ein Test haelt fest, dass mehrere Auswertungen desselben aufbereiteten Datensatzes einander nicht beeinflussen.
+
+## Comments

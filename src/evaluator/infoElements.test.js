@@ -13,15 +13,16 @@ import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { parseCatalogue } from './catalogReader.js';
 import { resolveCatalogue } from './resolver.js';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 
 /**
- * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
- * ADR-0032 einen Datensatz `{ gameSystem, catalogues }`; ein Einzelkatalog ohne
- * Spielsystem ist `{ catalogues: [xml] }`.
+ * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade ist zweistufig
+ * (Main-Issue 75, Baustein 8): erst den Datensatz aufbereiten, dann auswerten. Der
+ * Datensatz hat die Form `{ gameSystem, catalogues }` (ADR-0032); ein Einzelkatalog
+ * ohne Spielsystem ist `{ catalogues: [xml] }`.
  */
 function evaluate(catalogXml, roster) {
-  return evaluateDataset({ catalogues: [catalogXml] }, roster);
+  return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
 import { InfoElementKind, InfoLinkKind, DiagnosticKind } from './model.js';
 
@@ -95,6 +96,11 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
       name: 'Own',
       typeId: PROFILE_TYPE_ID,
       characteristics: [],
+      // Ein Profil traegt dieselbe `EntryBase` wie eine Definition: Sichtbarkeit,
+      // Modifikatoren und Modifikatorgruppen (Catalogue.xsd:144-155).
+      isHidden: false,
+      modifiers: [],
+      modifierGroups: [],
     });
   });
 
@@ -108,11 +114,28 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
     ]);
   });
 
-  it('liest rule mit id und name in entry.infos', () => {
+  it('liest rule mit id und name in entry.infos; ohne <description> bleibt der Text leer', () => {
     const catalogue = parseCatalogue(catalogueWithInfos(InfoLinkKind.PROFILE, PROFILE_ID));
     const rule = infoOfKind(catalogue.entries[0].infos, InfoElementKind.RULE);
 
-    expect(rule).toEqual({ kind: InfoElementKind.RULE, id: 'own-rule', name: 'Own Rule' });
+    expect(rule).toEqual({
+      kind: InfoElementKind.RULE,
+      id: 'own-rule',
+      name: 'Own Rule',
+      // Der Regeltext ist XSD-optional; 10 der 1157 Regeln der Fixture-Kataloge
+      // tragen keinen. Dann `null` statt eines erfundenen Leerstrings.
+      text: null,
+      isHidden: false,
+      modifiers: [],
+      modifierGroups: [],
+    });
+  });
+
+  it('liest den Regeltext einer rule aus ihrer <description>', () => {
+    const catalogue = parseCatalogue(catalogueWithInfos(InfoLinkKind.RULE, RULE_ID));
+    const sharedRule = infoOfKind(catalogue.infos, InfoElementKind.RULE);
+
+    expect(sharedRule.text).toBe('Enemies must test.');
   });
 
   it('liest infoGroup rekursiv mit ihren verschachtelten infos', () => {
@@ -122,7 +145,16 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
     expect(group.id).toBe(GROUP_ID);
     expect(group.name).toBe('Abilities');
     expect(group.infos).toEqual([
-      { kind: InfoElementKind.PROFILE, id: 'nested-profile', name: 'Charge', typeId: PROFILE_TYPE_ID, characteristics: [] },
+      {
+        kind: InfoElementKind.PROFILE,
+        id: 'nested-profile',
+        name: 'Charge',
+        typeId: PROFILE_TYPE_ID,
+        characteristics: [],
+        isHidden: false,
+        modifiers: [],
+        modifierGroups: [],
+      },
     ]);
   });
 

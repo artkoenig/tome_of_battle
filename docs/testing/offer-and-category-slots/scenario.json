@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "name": "offer-and-category-slots",
+  "description": "Der Bericht beschreibt nicht nur, was im Roster steht, sondern jede Stelle, an der eine Auswahl stehen KANN. Dieses Szenario pinnt vier Aspekte davon fest: (1) das Angebot je Kontingent - wurzelnahe Katalog-Eintraege, die das Roster NICHT enthaelt, erscheinen als Slot mit anchorKind offerAnchor, gefiltert ueber die categoryLinks des forceEntry, und ein Angebots-Anker erzeugt niemals eine Verletzung; (2) die Abgrenzung zum Pflicht-Anker - ein Wurzel-Eintrag mit min-Grenze in force-/parent-Reichweite ist NICHT Teil des Angebots, sondern ein mandatoryPhantom, dessen unerfuellte min-Grenze ganz normal feuert; (3) das Angebot unterhalb einer besetzten Auswahl - die direkten Optionen einer Einheit (auch durch constraint-lose Gruppen hindurch) haengen mit frameDefId = Einheit, eine Option einer Option dagegen nicht; (4) die Kategorie-Anker eines Kontingents - je categoryLink ein Slot (defId = der categoryLink selbst, targetDefId = die Kategorie) mit Grenzen, Ist-Stand und dem bedingt gesetzten hidden-Flag.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-blood-dragon-bretonnia-hidden-categories.ros",
+      "description": "Kontingent \"Clan Blood Dragons (VC-AB)\" mit den Schaltern \"Allow Mercenaries\"/\"Allow Regiments of Renown\" und einer Einheit Black Knights, die die Aufwertung \"Black Knights of Bretonnia\" traegt. Damit haelt die Bedingung der beiden categoryLink-Modifikatoren des forceEntry (atLeast 1 Auswahl von 6afd-186f-15da-94e0, scope=force): die Kategorie-Anker \"Mercenaries\" und \"Regiment of Renown\" sind verborgen. Nicht gewaehlte Optionen der Einheit (Musician, Standard Bearer) und nicht gewaehlte Wurzel-Eintraege ohne min-Grenze (Fell Bats, Dire Wolves, Manbiters) erscheinen als Angebots-Anker; \"Army of Sylvania\" dagegen traegt zwei min-1-Grenzen und ist daher ein Pflicht-Anker, dessen Grenzen feuern.",
+      "expect": {
+        "firing": [
+          { "limitId": "1f2f-e5cc-d04d-162e", "actual": 0, "bound": 1 },
+          { "limitId": "e23f-0cea-11ac-9376", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "98c2-b213-2d60-6920"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "b640-7e9c-3054-c1ce",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Mercenaries",
+            "isHidden": true
+          },
+          {
+            "targetDefId": "ee09-9a50-ad78-9c32",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Regiment of Renown",
+            "isHidden": true
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Heroes",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Core",
+            "effectiveMin": 2,
+            "isHidden": false
+          },
+          {
+            "defId": "6afd-186f-15da-94e0",
+            "anchorKind": "occupied",
+            "frameDefId": "115c-d87a-35e6-26c9",
+            "name": "Black Knights of Bretonnia",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "4249-136b-4089-bf98",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "115c-d87a-35e6-26c9",
+            "name": "Standard Bearer",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "472e-27c4-2bb2-a482",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "115c-d87a-35e6-26c9",
+            "name": "Musician",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "a431-097d-4712-eb01",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Fell Bats",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "3c0f-28ce-0807-81fa",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Dire Wolves",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": true,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "b48b-4a69-80f1-5d47",
+            "anchorKind": "mandatoryPhantom",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Army of Sylvania",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isMandatoryUnmet": true
+          },
+          {
+            "targetDefId": "0efb-7f63-7932-0655",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Manbiters",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "headroom": 0,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-blood-dragon-plain-visible-categories.ros",
+      "description": "Derselbe Aufbau wie 01, nur OHNE die Aufwertung \"Black Knights of Bretonnia\". Die Bedingung der beiden categoryLink-Modifikatoren haelt nicht mehr (0 Auswahlen von 6afd-186f-15da-94e0 im Kontingent): \"Mercenaries\" und \"Regiment of Renown\" sind sichtbar. Die nicht mehr gewaehlte Aufwertung selbst erscheint als Angebots-Anker unter der Einheit - im Blood-Dragon-Kontingent sichtbar, weil deren hidden-Modifikator dort greift. \"Army of Sylvania\" bleibt auch hier Pflicht-Anker, nicht Angebot.",
+      "expect": {
+        "firing": [
+          { "limitId": "1f2f-e5cc-d04d-162e", "actual": 0, "bound": 1 },
+          { "limitId": "e23f-0cea-11ac-9376", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "98c2-b213-2d60-6920"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "b640-7e9c-3054-c1ce",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Mercenaries",
+            "isHidden": false
+          },
+          {
+            "targetDefId": "ee09-9a50-ad78-9c32",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Regiment of Renown",
+            "isHidden": false
+          },
+          {
+            "defId": "6afd-186f-15da-94e0",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "115c-d87a-35e6-26c9",
+            "name": "Black Knights of Bretonnia",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "4249-136b-4089-bf98",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "115c-d87a-35e6-26c9",
+            "name": "Standard Bearer",
+            "current": 0,
+            "effectiveMax": 1,
+            "headroom": 1
+          },
+          {
+            "defId": "3c0f-28ce-0807-81fa",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Dire Wolves",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": true,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "b48b-4a69-80f1-5d47",
+            "anchorKind": "mandatoryPhantom",
+            "frameDefId": "5e95-7d57-2b9c-d77d",
+            "name": "Army of Sylvania",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-lichemaster-offer-category-filter.ros",
+      "description": "Kontingent \"Army of the Lichemaster (WD#309-UK)\" mit einer Einheit Skeletons. Dieses forceEntry traegt KEINEN categoryLink auf \"Mercenaries\" (b640-...) oder \"Regiment of Renown\" (ee09-...). Wurzel-Eintraege mit passender Kategorie erscheinen weiterhin als Angebots-Anker (Fell Bats: Special; Dire Wolves: Core, dort per Modifikator verborgen) - der reine Regiment-of-Renown-Eintrag \"Manbiters\" dagegen nicht (Prosa-Negativfall, siehe README). \"Army of Sylvania\" ist auch hier Pflicht-Anker.",
+      "expect": {
+        "firing": [
+          { "limitId": "1f2f-e5cc-d04d-162e", "actual": 0, "bound": 1 },
+          { "limitId": "e23f-0cea-11ac-9376", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "98c2-b213-2d60-6920"
+        ],
+        "capabilities": [
+          {
+            "defId": "a431-097d-4712-eb01",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Fell Bats",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "3c0f-28ce-0807-81fa",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Dire Wolves",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": true,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "b48b-4a69-80f1-5d47",
+            "anchorKind": "mandatoryPhantom",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Army of Sylvania",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isMandatoryUnmet": true
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Heroes",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false
+          }
+        ]
+      }
+    }
+  ]
+}

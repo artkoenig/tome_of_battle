@@ -1,14 +1,16 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
+import { AnchorKind, ConstraintKind, LimitMeasure, MessageOrigin, MessageSeverity, ScopeKind } from './model.js';
 
 /**
- * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
- * ADR-0032 einen Datensatz `{ gameSystem, catalogues }`; ein Einzelkatalog ohne
- * Spielsystem ist `{ catalogues: [xml] }`.
+ * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade ist zweistufig
+ * (Main-Issue 75, Baustein 8): erst den Datensatz aufbereiten, dann auswerten. Der
+ * Datensatz hat die Form `{ gameSystem, catalogues }` (ADR-0032); ein Einzelkatalog
+ * ohne Spielsystem ist `{ catalogues: [xml] }`.
  */
 function evaluate(catalogXml, roster) {
-  return evaluateDataset({ catalogues: [catalogXml] }, roster);
+  return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie im Skeleton-Test).
@@ -28,6 +30,44 @@ const MANA_COST_ID = 'cost-mana-guid';
 /** Baut ein Roster mit gegebenen Instanzanzahlen je Eintrag. */
 function roster(forces) {
   return { forces };
+}
+
+/**
+ * Die Zaehl-Flags einer Grenze ohne eigene Angaben — die XSD-Vorgaben, mit denen
+ * die Einordnung einen fehlenden Wert auffuellt (`shared` ist standardmaessig true).
+ */
+const DEFAULT_SCOPE_FLAGS = {
+  shared: true,
+  includeChildSelections: false,
+  includeChildForces: false,
+};
+
+/**
+ * Die Einordnung einer abgeleiteten Meldung am belegten Slot (Issue 75/07): jede
+ * Verletzung nennt seit dieser Scheibe zusaetzlich ihre Herkunft, ihren
+ * Schweregrad, die Art der Grenze mit ihrem Bezugsrahmen und den vollstaendig
+ * beschriebenen Anker. Die Erwartungen unten bleiben **erschoepfend** (`toEqual`);
+ * dieser Helfer haelt nur den gemeinsamen Teil an einer Stelle.
+ */
+function derivedAt(defId, name, { measure, kind, scope, isPercent = false, costTypeId = null }) {
+  return {
+    origin: MessageOrigin.DERIVED_LIMIT,
+    severity: MessageSeverity.ERROR,
+    anchor: {
+      defId,
+      name,
+      path: '0',
+      anchorKind: AnchorKind.OCCUPIED,
+      isValueUnstable: false,
+    },
+    limit: {
+      kind,
+      measure,
+      costTypeId,
+      isPercent,
+      scope: { kind: scope, targetId: null, flags: DEFAULT_SCOPE_FLAGS },
+    },
+  };
 }
 
 describe('MIN-Grenzen (Selektionsanzahl)', () => {
@@ -51,11 +91,18 @@ describe('MIN-Grenzen (Selektionsanzahl)', () => {
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toEqual({
+      ...derivedAt(WARRIOR_DEF_ID, 'Warrior', {
+        kind: ConstraintKind.MIN,
+        measure: LimitMeasure.SELECTION_COUNT,
+        scope: ScopeKind.ROSTER,
+      }),
       limitId: MIN_WARRIORS_LIMIT_ID,
-      anchor: { defId: WARRIOR_DEF_ID, name: 'Warrior' },
       actual: under,
       bound: MIN_WARRIORS,
       delta: MIN_WARRIORS - under,
+      // Unveraenderter Grenzwert: die Herleitung besteht nur aus ihrem Basiswert.
+      derivation: { base: MIN_WARRIORS, steps: [] },
+      // Kein bedingter Schritt ⇒ keine benennbare Ursache ⇒ das Feld fehlt (ADR-0027).
     });
   });
 
@@ -101,11 +148,19 @@ describe('Grenzen ueber Kostensummen (Kostenart per ID)', () => {
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toEqual({
+      // Die Einordnung nennt die Kostenart, gegen die gemessen wurde — ohne sie
+      // liesse sich eine Kostensummen-Grenze nicht ihrer Kostenart zuordnen.
+      ...derivedAt(WARRIOR_DEF_ID, 'Warrior', {
+        kind: ConstraintKind.MAX,
+        measure: LimitMeasure.COST_SUM,
+        costTypeId: POINTS_COST_ID,
+        scope: ScopeKind.ROSTER,
+      }),
       limitId: MAX_POINTS_LIMIT_ID,
-      anchor: { defId: WARRIOR_DEF_ID, name: 'Warrior' },
       actual: WARRIOR_POINTS * count,
       bound: MAX_POINTS,
       delta: MAX_POINTS - WARRIOR_POINTS * count,
+      derivation: { base: MAX_POINTS, steps: [] },
     });
   });
 
@@ -142,11 +197,21 @@ describe('Prozentgrenzen (aus dem Nenner des Bezugsrahmens abgeleitet)', () => {
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toEqual({
+      // `isPercent` ist der Schluessel zum Verstaendnis der Kette: die Einordnung
+      // sagt damit, dass `bound` der abgeleitete Wert und die Kette der Prozentsatz ist.
+      ...derivedAt(WARRIOR_DEF_ID, 'Warrior', {
+        kind: ConstraintKind.MAX,
+        measure: LimitMeasure.SELECTION_COUNT,
+        isPercent: true,
+        scope: ScopeKind.ROSTER,
+      }),
       limitId: HALF_LIMIT_ID,
-      anchor: { defId: WARRIOR_DEF_ID, name: 'Warrior' },
       actual: 3,
       bound: 2,
       delta: -1,
+      // Bei einer Prozentgrenze beschreibt die Herleitung den **Prozentsatz** (50),
+      // nicht den daraus abgeleiteten Grenzwert (2) — auf ihn wirkt ein Modifikator.
+      derivation: { base: 50, steps: [] },
     });
   });
 
@@ -186,5 +251,62 @@ describe('Prozentgrenze mit Nenner 0 (Annahme A4)', () => {
     expect(report.diagnostics).toContainEqual(
       expect.objectContaining({ kind: 'zeroDenominator', limitId: MANA_SHARE_LIMIT_ID })
     );
+  });
+});
+
+describe('Berichtsfaehigkeit: welches Ergebnis als Verletzung gemeldet werden darf', () => {
+  const FORCE_DEF_ID = 'force-army';
+  const MAX_ARCHERS_LIMIT_ID = 'max-archers';
+  const MAX_ARCHERS = 1;
+  // Zwei Wurzeldefinitionen mit derselben MAX-Grenzenart: die Bogenschuetzen sind
+  // gewaehlt (belegter Slot, berichtsfaehig), die Krieger nur angeboten.
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-reportable" name="Reportable Catalogue">
+      <forceEntries>
+        <forceEntry id="${FORCE_DEF_ID}" name="Army"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${ARCHER_DEF_ID}" name="Archer" type="unit">
+          <constraints>
+            <constraint id="${MAX_ARCHERS_LIMIT_ID}" type="max" value="${MAX_ARCHERS}" field="selections" scope="roster"/>
+          </constraints>
+        </selectionEntry>
+        <selectionEntry id="${WARRIOR_DEF_ID}" name="Warrior" type="unit"/>
+      </selectionEntries>
+    </catalogue>`;
+
+  /** Ein Kontingent mit `count` Bogenschuetzen; die Krieger bleiben ungewaehlt. */
+  function armyWithArchers(count) {
+    return roster([{ defId: FORCE_DEF_ID, count: 1, children: [{ defId: ARCHER_DEF_ID, count, children: [] }] }]);
+  }
+
+  it('meldet die verletzte Grenze am belegten Slot genau einmal — nicht ein zweites Mal am Angebot', () => {
+    // Der Angebots-Anker der Bogenschuetzen entfaellt im belegten Kontingent
+    // (Entdopplung); ohne die Berichtsfaehigkeit truege ihn ein anderes Kontingent.
+    const report = evaluate(CATALOGUE_XML, armyWithArchers(MAX_ARCHERS + 1));
+
+    expect(report.violations.filter(violation => violation.limitId === MAX_ARCHERS_LIMIT_ID)).toHaveLength(1);
+  });
+
+  it('meldet dieselbe Grenze am Angebots-Anker eines zweiten Kontingents nicht noch einmal', () => {
+    // Zwei Kontingente: im ersten stehen zu viele Bogenschuetzen, im zweiten sind
+    // sie nur angeboten. Die armeeweite Grenze laese dort denselben Ist-Wert.
+    const report = evaluate(CATALOGUE_XML, roster([
+      { defId: FORCE_DEF_ID, count: 1, children: [{ defId: ARCHER_DEF_ID, count: MAX_ARCHERS + 1, children: [] }] },
+      { defId: FORCE_DEF_ID, count: 1, children: [] },
+    ]));
+
+    expect(report.violations.filter(violation => violation.limitId === MAX_ARCHERS_LIMIT_ID)).toHaveLength(1);
+  });
+
+  it('fuehrt den Angebots-Anker des zweiten Kontingents trotzdem als gesperrten Slot', () => {
+    const report = evaluate(CATALOGUE_XML, roster([
+      { defId: FORCE_DEF_ID, count: 1, children: [{ defId: ARCHER_DEF_ID, count: MAX_ARCHERS + 1, children: [] }] },
+      { defId: FORCE_DEF_ID, count: 1, children: [] },
+    ]));
+
+    const offered = [...report.capabilities.values()]
+      .find(capability => capability.defId === ARCHER_DEF_ID && capability.anchorKind === AnchorKind.OFFER_ANCHOR);
+    expect(offered).toMatchObject({ effectiveMax: MAX_ARCHERS, current: MAX_ARCHERS + 1, isBlocked: true, headroom: 0 });
   });
 });

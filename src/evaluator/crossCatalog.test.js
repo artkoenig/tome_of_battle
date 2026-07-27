@@ -11,7 +11,7 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate } from './evaluator.js';
+import { evaluate, prepareDataset } from './evaluator.js';
 import { DiagnosticKind } from './model.js';
 
 const dom = new JSDOM();
@@ -56,14 +56,14 @@ describe('Fassade: kataloguebergreifende Auflösung ueber eine globale id→Defi
     </catalogue>`;
 
   it('loest einen entryLink aus Katalog A auf sein Ziel in Katalog B auf, wenn beide mitgegeben sind', () => {
-    const report = evaluate({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A, CATALOGUE_B] }, EMPTY_ARMY);
+    const report = evaluate(prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A, CATALOGUE_B] }), EMPTY_ARMY);
 
     expect(hasDanglingEntryLink(report, IMPORTED_ID)).toBe(false);
     expect(countDiagnostics(report, DiagnosticKind.DANGLING_ENTRY_LINK)).toBe(0);
   });
 
   it('meldet denselben entryLink als baumelnd, wenn nur Katalog A ohne B mitgegeben ist', () => {
-    const report = evaluate({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A] }, EMPTY_ARMY);
+    const report = evaluate(prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A] }), EMPTY_ARMY);
 
     expect(hasDanglingEntryLink(report, IMPORTED_ID)).toBe(true);
   });
@@ -83,7 +83,7 @@ describe('Fassade: entryLink-Auflösung ist baumelnd- und zyklen-sicher', () => 
         </selectionEntries>
       </catalogue>`;
 
-    const report = evaluate({ catalogues: [catalogue] }, EMPTY_ARMY);
+    const report = evaluate(prepareDataset({ catalogues: [catalogue] }), EMPTY_ARMY);
 
     expect(hasDanglingEntryLink(report, MISSING_TARGET)).toBe(true);
     expect(Array.isArray(report.violations)).toBe(true);
@@ -99,7 +99,7 @@ describe('Fassade: entryLink-Auflösung ist baumelnd- und zyklen-sicher', () => 
         </entryLinks>
       </catalogue>`;
 
-    const report = evaluate({ catalogues: [catalogue] }, EMPTY_ARMY);
+    const report = evaluate(prepareDataset({ catalogues: [catalogue] }), EMPTY_ARMY);
 
     expect(countDiagnostics(report, DiagnosticKind.DANGLING_ENTRY_LINK)).toBeGreaterThan(0);
     expect(Array.isArray(report.violations)).toBe(true);
@@ -120,7 +120,7 @@ describe('Fassade: geteilte/verlinkte Eintraege synthetisieren keinen Pflicht-Ph
         </sharedSelectionEntries>
       </catalogue>`;
 
-    const report = evaluate({ catalogues: [catalogue] }, EMPTY_ARMY);
+    const report = evaluate(prepareDataset({ catalogues: [catalogue] }), EMPTY_ARMY);
 
     expect(report.violations).toHaveLength(0);
   });
@@ -135,7 +135,7 @@ describe('Fassade: geteilte/verlinkte Eintraege synthetisieren keinen Pflicht-Ph
         </selectionEntries>
       </catalogue>`;
 
-    const report = evaluate({ catalogues: [catalogue] }, EMPTY_ARMY);
+    const report = evaluate(prepareDataset({ catalogues: [catalogue] }), EMPTY_ARMY);
 
     expect(report.violations).toContainEqual(expect.objectContaining({ limitId: MIN_LIMIT_ID }));
   });
@@ -148,7 +148,7 @@ describe('Fassade: Kohaerenz-Diagnosen statt stiller Teil-Auswertung', () => {
         <selectionEntries><selectionEntry id="unit" name="Unit" type="unit"/></selectionEntries>
       </catalogue>`;
 
-    const report = evaluate({ gameSystem: GAME_SYSTEM_XML, catalogues: [mismatchedCatalogue] }, EMPTY_ARMY);
+    const report = evaluate(prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [mismatchedCatalogue] }), EMPTY_ARMY);
 
     expect(report.diagnostics).toContainEqual(
       expect.objectContaining({
@@ -169,7 +169,7 @@ describe('Fassade: Kohaerenz-Diagnosen statt stiller Teil-Auswertung', () => {
         </catalogueLinks>
       </catalogue>`;
 
-    const report = evaluate({ gameSystem: GAME_SYSTEM_XML, catalogues: [dependentCatalogue] }, EMPTY_ARMY);
+    const report = evaluate(prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [dependentCatalogue] }), EMPTY_ARMY);
 
     expect(report.diagnostics).toContainEqual(
       expect.objectContaining({

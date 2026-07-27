@@ -23,6 +23,8 @@ npm test                     # vitest run (unit/component tests) + node src/solv
 npx vitest run <path>          # run a single test file
 npx vitest run -t "<name>"       # run tests matching a name
 node scripts/generate_screenshots.js   # screenshots of every main view (desktop + mobile) -> .screenshots/
+node scripts/measure-evaluator.js        # Aufwandsmessung der Reinraum-Engine an echten Katalogdaten (kein Produktivcode); Exitcode 1, wenn die 100-ms-Schwelle gerissen wird
+node scripts/measure-evaluator-browser.js  # dieselbe Messung im echten Browser (Puppeteer) neben dem jsdom-Lauf — misst die Verzerrung durch jsdoms XML-Leser
 ```
 
 - All unit tests must pass before a task is considered done.

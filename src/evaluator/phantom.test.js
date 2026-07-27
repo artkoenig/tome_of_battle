@@ -1,14 +1,16 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
+import { AnchorKind, ConstraintKind, LimitMeasure, MessageOrigin, MessageSeverity, ScopeKind } from './model.js';
 
 /**
- * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
- * ADR-0032 einen Datensatz `{ gameSystem, catalogues }`; ein Einzelkatalog ohne
- * Spielsystem ist `{ catalogues: [xml] }`.
+ * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade ist zweistufig
+ * (Main-Issue 75, Baustein 8): erst den Datensatz aufbereiten, dann auswerten. Der
+ * Datensatz hat die Form `{ gameSystem, catalogues }` (ADR-0032); ein Einzelkatalog
+ * ohne Spielsystem ist `{ catalogues: [xml] }`.
  */
 function evaluate(catalogXml, roster) {
-  return evaluateDataset({ catalogues: [catalogXml] }, roster);
+  return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
@@ -26,6 +28,41 @@ const OGRE_NAME = 'Ogerbullen';
 const WARRIOR_DEF_ID = 'entry-warrior';
 const DETACHMENT_FORCE_ID = 'force-detachment';
 const MIN_OGRE_LIMIT_ID = 'min-ogre-bulls';
+
+/**
+ * Die Einordnung einer Pflicht-Verletzung am **Phantom** (Issue 75/07): seit
+ * dieser Scheibe nennt jede Verletzung zusaetzlich Herkunft, Schweregrad, Art der
+ * Grenze mit Bezugsrahmen und die **Ankerart** des Slots, an dem sie haengt.
+ *
+ * Fuer diesen Testkatalog ist die Ankerart der eigentliche Zugewinn: sie belegt
+ * schwarz auf weiss, dass die Meldung an einem Pflicht-Phantom haengt und nicht an
+ * einer belegten Auswahl — bisher war das nur am fehlenden Ist-Wert zu erahnen.
+ */
+function phantomMinViolation(scopeKind, path) {
+  return {
+    origin: MessageOrigin.DERIVED_LIMIT,
+    severity: MessageSeverity.ERROR,
+    anchor: {
+      defId: OGRE_DEF_ID,
+      name: OGRE_NAME,
+      path,
+      anchorKind: AnchorKind.MANDATORY_PHANTOM,
+      isValueUnstable: false,
+    },
+    limitId: MIN_OGRE_LIMIT_ID,
+    limit: {
+      kind: ConstraintKind.MIN,
+      measure: LimitMeasure.SELECTION_COUNT,
+      costTypeId: null,
+      isPercent: false,
+      scope: {
+        kind: scopeKind,
+        targetId: null,
+        flags: { shared: true, includeChildSelections: false, includeChildForces: false },
+      },
+    },
+  };
+}
 
 describe('Phantomknoten: armeeweite Pflicht-Absenz (scope=roster)', () => {
   const MIN_OGRE = 2;
@@ -49,13 +86,14 @@ describe('Phantomknoten: armeeweite Pflicht-Absenz (scope=roster)', () => {
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toEqual({
-      limitId: MIN_OGRE_LIMIT_ID,
-      anchor: { defId: OGRE_DEF_ID, name: OGRE_NAME },
+      // Der Phantom haengt als Blatt hinter dem Warrior am Roster ⇒ Pfad "1".
+      ...phantomMinViolation(ScopeKind.ROSTER, '1'),
       // actual === 0 beweist zugleich: der Phantom zaehlt 0. Zaehlte er als eine
       // Ogerbullen-Instanz mit, waere actual === 1 und die Grenze naeher erfuellt.
       actual: 0,
       bound: MIN_OGRE,
       delta: MIN_OGRE,
+      derivation: { base: MIN_OGRE, steps: [] },
     });
   });
 
@@ -119,11 +157,12 @@ describe('Phantomknoten: je-Kontingent Pflicht-Absenz (scope=force)', () => {
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toEqual({
-      limitId: MIN_OGRE_LIMIT_ID,
-      anchor: { defId: OGRE_DEF_ID, name: OGRE_NAME },
+      // Der Phantom haengt unter Kontingent B (Index 1) als dessen erstes Kind.
+      ...phantomMinViolation(ScopeKind.FORCE, '1/0'),
       actual: 0,
       bound: 1,
       delta: 1,
+      derivation: { base: 1, steps: [] },
     });
   });
 

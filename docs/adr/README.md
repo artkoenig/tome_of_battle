@@ -29,7 +29,7 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0019 | [Manuelle Versionierung über package.json statt Git-Tag-Prognose](0019-manuelle-versionierung-und-release-freigabe.md) | Accepted | 2026-07-18 |
 | 0020 | [Katalogdaten werden network-only geladen, kein Service-Worker-Cache](0020-katalogdaten-network-only-kein-service-worker-cache.md) | Accepted | 2026-07-19 |
 | 0021 | [Preview-Badge über Laufzeit-Hostname-Vergleich](0021-preview-badge-laufzeit-hostname-erkennung.md) | Accepted | 2026-07-19 |
-| 0022 | [UI-Verfügbarkeit im Aushebe-Dialog leitet sich aus dem Validator ab](0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md) | Accepted | 2026-07-20 |
+| 0022 | [UI-Verfügbarkeit im Aushebe-Dialog leitet sich aus dem Validator ab](0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md) | Superseded (0035) | 2026-07-20 |
 | 0023 | [Die Solver-Fassade ist die exklusive Schnittstelle zur Regel-Engine](0023-solver-fassade-als-exklusive-schnittstelle.md) | Accepted | 2026-07-21 |
 | 0024 | [Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen](0024-statik-toolchain-oxlint-knip-dependency-cruiser.md) | Accepted | 2026-07-21 |
 | 0025 | [GitHub-Pages-Quelle auf Actions umgestellt, Jekyll-Build wird mitgeführt](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md) | Accepted | 2026-07-21 |
@@ -41,4 +41,7 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0031 | [Reinraum-Evaluator liest die BattleScribe-XSD-Syntax und teilt deren Enum-SSOT](0031-evaluator-liest-battlescribe-xsd-syntax-und-teilt-enum-ssot.md) | Accepted | 2026-07-25 |
 | 0032 | [Evaluator löst Mehr-Katalog-Datensätze (.gst + Liste von .cat) global-by-ID auf](0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md) | Accepted | 2026-07-25 |
 | 0033 | [Evaluator-E2E als datengetriebener, manifest-getriebener Runner mit Black-Box-Autorenschaft](0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md) | Accepted | 2026-07-25 |
+| 0034 | [Der Auswertungsbericht ist die alleinige Quelle der Oberfläche](0034-auswertungsbericht-als-alleinige-quelle-der-oberflaeche.md) | Accepted | 2026-07-26 |
+| 0035 | [Verfügbarkeit aus Fähigkeitsdatensätzen statt Validierungs-Diff](0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md) | Accepted | 2026-07-26 |
+| 0036 | [Angebots-Anker als Blätter in einer zweiten Baumphase außerhalb der Fixpunktschleife](0036-angebots-anker-als-blaetter-in-einer-zweiten-baumphase.md) | Accepted | 2026-07-26 |
 

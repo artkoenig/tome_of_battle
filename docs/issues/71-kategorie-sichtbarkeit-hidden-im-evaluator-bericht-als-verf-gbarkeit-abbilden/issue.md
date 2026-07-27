@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: feature
 Blocked by: None
 
@@ -26,3 +26,4 @@ Kategorie-Verfügbarkeit end-to-end auf echten Katalogdaten beobachtbar ist.
 - [ ]
 
 ## Comments
+- superseded: Von 75-evaluator-fuer-den-cutover-ausbauen aufgenommen: die PRD dort verlangt Faehigkeitsdatensaetze auch fuer Kategorie-Knoten inkl. hidden, womit budget-gesteuerte Kategorie-Verfuegbarkeit end-to-end im Bericht beobachtbar wird.

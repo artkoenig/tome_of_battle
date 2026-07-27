@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ams-01" name="AMS 01 - Skrag ohne &quot;Allow special characters?&quot;" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored author-message E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-skrag" name="Skrag the Slaughterer, Prohet of the Great Maw" entryId="82a9-0281-ffa1-2290" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-special-characters" name="Special Characters" entryId="0644-bfcd-32c2-21dc" primary="true"/>
+            <category id="cat-lord" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="false"/>
+            <category id="cat-characters" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

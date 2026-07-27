@@ -1,9 +1,17 @@
 # UI-Verfügbarkeit im Aushebe-Dialog leitet sich aus dem Validator ab
 
-- **Status:** Accepted
+- **Status:** Superseded (durch ADR-0035, 2026-07-26)
 - **Datum:** 2026-07-20
 - **Beteiligte:** Chronist des Folianten
-- **Zugehörige ADRs (falls vorhanden):** Ergänzt ADR-0003 (Battlescribe Domain Rules) und ADR-0005 (React Lifecycle and Performance)
+- **Zugehörige ADRs (falls vorhanden):** Ergänzt ADR-0003 (Battlescribe Domain Rules) und ADR-0005 (React Lifecycle and Performance); **ersetzt durch [ADR-0035](0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md)**
+
+> **Überholt.** [ADR-0035](0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md)
+> leitet Verfügbarkeit künftig aus dem Fähigkeitsdatensatz eines Slots ab statt
+> aus dem Vergleich zweier Validierungsläufe. Damit entfallen sowohl das
+> hypothetische Hinzufügen samt Grundlinie als auch die Tabelle sperrender
+> Verletzungsarten. Der hier beschriebene Mechanismus bleibt bis zum Cutover auf
+> die Reinraum-Engine in Betrieb; das Dokument beschreibt also weiterhin den
+> laufenden Code, nicht mehr aber die geltende Entscheidung.
 
 ## Kontext und Problemstellung
 

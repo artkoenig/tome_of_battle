@@ -50,16 +50,19 @@ child-issue does not hold it up. Likewise a `superseded` blocker releases the
 issues it blocks — otherwise an issue that will never be implemented would block
 its neighbours forever.
 
-## Planning a main-issue (optional, before implementing)
-Because the child-issues are implemented one at a time and in isolation, a
-main-issue with several of them is usually planned once up front: a module-level
-plan is written to a **temporary** `docs/issues/<main-id>/design.md` — a module
-map plus the shared contracts (interfaces, types, data shapes) the slices
-exchange — so the slices are built against agreed boundaries instead of each
-inventing their own. Each slice reads it while implementing. `design.md` is a
-working artifact: it is deleted before the main-issue is committed, so it never
-enters the PR, and the `issue.md` files stay solution-free. A single-slice
-main-issue has no cross-slice boundaries to agree, so it skips this.
+## Planning a main-issue (module level, before slicing)
+Right after a main-issue's specification exists — and before deciding whether
+it needs child-issues at all — a module-level plan is written once,
+unconditionally, to a **temporary** `docs/issues/<main-id>/design.md`: a module
+map, an explicit single-module-vs-multiple-modules classification, and the
+shared contracts (interfaces, types, data shapes) a slice would need to honour.
+That classification is one input — not a hard rule — into whether the
+main-issue actually gets sliced into child-issues; each slice, if any get
+created, reads `design.md` while implementing. `design.md` is a working
+artifact: it is deleted before the main-issue is committed, so it never enters
+the PR, and the `issue.md` files stay solution-free. It exists for every
+main-issue, including one that ends up with no child-issues at all — it is not
+skipped just because the work turned out to be a single slice.
 
 ## Implementing a main-issue
 Every child-issue is implemented on the main-issue's one branch `issue/<slug>`;

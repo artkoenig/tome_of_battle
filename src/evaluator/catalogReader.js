@@ -10,8 +10,17 @@
  * Prozentgrenzen, alle Bezugsrahmen und die Zaehl-Flags (Issue 03). Dazu
  * `forceEntries` (Kontingent-Definitionen, auch geschachtelt) und
  * `categoryEntries` (Kategorie-Definitionen), damit die Join-Schicht Kontingente
- * und Kategorien kennt. Kein ZIP-Entpacken, kein XSD-Gate, keine Link-Ketten/
- * Importe (Resolver-Ausbaustufen spaeter).
+ * und Kategorien kennt. Dazu die **Datensatz-Metadaten** der Katalogwurzel, die
+ * ohne Roster gebraucht werden (ADR-0034): die Kostenart-Deklarationen
+ * (`costTypes`), die Profiltypen mit ihren Charakteristik-Typen (`profileTypes` —
+ * die Quelle der IDs, ueber die ein Modifikator eine Charakteristik adressiert) und
+ * das `library`-Kennzeichen. Dazu die **gemeinsame `EntryBase`-Basis** jedes
+ * Elements (Catalogue.xsd:102-115) — ID, Name, `hidden`, Modifikatoren und
+ * Modifikatorgruppen —, die damit auch an Profilen, Regeln, Info-Gruppen und
+ * Info-Verweisen gelesen wird, sowie den **Regeltext** einer Regel
+ * (`<description>`), den die Info-Projektion des Berichts durchreicht. Kein
+ * ZIP-Entpacken, kein XSD-Gate, keine Link-Ketten/Importe
+ * (Resolver-Ausbaustufen spaeter).
  */
 
 import {
@@ -46,6 +55,9 @@ const Tag = Object.freeze({
   SHARED_SELECTION_ENTRY_GROUPS: 'sharedSelectionEntryGroups',
   FORCE_ENTRIES: 'forceEntries',
   FORCE_ENTRY: 'forceEntry',
+  // Die Kostenart-Deklarationen des Datensatzes (Wurzelelement, Catalogue.xsd:712).
+  COST_TYPES: 'costTypes',
+  COST_TYPE: 'costType',
   CATEGORY_ENTRIES: 'categoryEntries',
   CATEGORY_ENTRY: 'categoryEntry',
   CATEGORY_LINKS: 'categoryLinks',
@@ -68,12 +80,20 @@ const Tag = Object.freeze({
   PROFILE: 'profile',
   RULES: 'rules',
   RULE: 'rule',
+  DESCRIPTION: 'description',
   INFO_GROUPS: 'infoGroups',
   INFO_GROUP: 'infoGroup',
   INFO_LINKS: 'infoLinks',
   INFO_LINK: 'infoLink',
   CHARACTERISTICS: 'characteristics',
   CHARACTERISTIC: 'characteristic',
+  // Die Profiltyp-Deklarationen des Datensatzes mit ihren Charakteristik-Typen
+  // (Wurzelelement, Catalogue.xsd:65-83). Sie sind die Quelle der
+  // Charakteristik-Typ-IDs, ueber die ein Modifikator eine Charakteristik adressiert.
+  PROFILE_TYPES: 'profileTypes',
+  PROFILE_TYPE: 'profileType',
+  CHARACTERISTIC_TYPES: 'characteristicTypes',
+  CHARACTERISTIC_TYPE: 'characteristicType',
   // Katalogweit geteilte Info-Definitionen (die ueblichen `infoLink`-Ziele).
   SHARED_PROFILES: 'sharedProfiles',
   SHARED_RULES: 'sharedRules',
@@ -91,6 +111,10 @@ const Attr = Object.freeze({
   GAME_SYSTEM_ID: 'gameSystemId',
   FIELD: 'field',
   VALUE: 'value',
+  // Trennzeichen, mit dem ein `append`/`prepend`-Modifikator seinen Text an den
+  // vorhandenen anfuegt. Vendored Abweichung der Definitive Edition, in der
+  // Catalogue.xsd ausdruecklich als optionales Attribut festgehalten (ADR-0016).
+  JOIN: 'join',
   SCOPE: 'scope',
   CHILD_ID: 'childId',
   // `<repeat>`: wie oft der Modifikator je erreichtem `value` wirkt, und ob der
@@ -98,6 +122,15 @@ const Attr = Object.freeze({
   REPEATS: 'repeats',
   ROUND_UP: 'roundUp',
   PERCENT_VALUE: 'percentValue',
+  // Wurzelattribut eines `.cat`: true kennzeichnet eine reine **Bibliothek**, die
+  // nur per `catalogueLink` bezogen und nicht eigenstaendig gespielt wird
+  // (Catalogue.xsd:762).
+  LIBRARY: 'library',
+  // Basisattribut jeder Definition und jeder Kostenart: der Katalogautor blendet
+  // sie aus (Catalogue.xsd:92, 111).
+  HIDDEN: 'hidden',
+  // Vorgabe-Kostengrenze einer Kostenart (Catalogue.xsd:89).
+  DEFAULT_COST_LIMIT: 'defaultCostLimit',
   SHARED: 'shared',
   INCLUDE_CHILD_SELECTIONS: 'includeChildSelections',
   INCLUDE_CHILD_FORCES: 'includeChildForces',
@@ -105,8 +138,6 @@ const Attr = Object.freeze({
 
 /** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
 const CONDITION_KINDS = Object.freeze(new Set(Object.values(ConditionKind)));
-console.log("CONDITION_KINDS contains:", [...CONDITION_KINDS]);
-
 
 /** Die gueltigen `type`-Werte einer Bedingungsgruppe (SSOT-Enum {@link ConditionGroupKind}). */
 const CONDITION_GROUP_KINDS = Object.freeze(new Set(Object.values(ConditionGroupKind)));
@@ -126,6 +157,20 @@ const FORCE_COUNT_FIELD_XML = 'forces';
 
 /** Vorgabe fuer ein fehlendes `repeats`: eine Anwendung je erreichtem Schritt. */
 const SINGLE_REPEAT = 1;
+
+/** XSD-Vorgabe des `hidden`-Attributs: sichtbar (Catalogue.xsd:92, 111). */
+const DEFAULT_HIDDEN = false;
+
+/** XSD-Vorgabe des `library`-Attributs: ein spielbarer Katalog (Catalogue.xsd:762). */
+const DEFAULT_LIBRARY = false;
+
+/**
+ * Der Katalogwert, mit dem eine Kostenart **keine** Vorgabe-Grenze deklariert
+ * (XSD-Vorgabe von `defaultCostLimit`, Catalogue.xsd:89). Er wird beim Lesen auf
+ * "keine Grenze" (`null`) abgebildet, damit kein Leser den Sentinel als Zahl
+ * weiterrechnet.
+ */
+const NO_DEFAULT_COST_LIMIT = -1;
 
 const BOOLEAN_TRUE_XML = 'true';
 const BOOLEAN_FALSE_XML = 'false';
@@ -277,9 +322,6 @@ function readCondition(conditionEl, diagnostics) {
     }));
     return null;
   }
-  if (type === 'equalTo' || type === 'lessThan' || type === 'greaterThan') {
-    console.log(`PARSED CONDITION: type=${type} value=${value} field=${field} scope=${scope}`);
-  }
   return {
     type,
     field,
@@ -399,6 +441,9 @@ function readModifier(modifierEl, diagnostics) {
     kind,
     field,
     value,
+    // `null`, wenn der Katalog kein Trennzeichen deklariert: dann wird der Text
+    // ohne Trenner angefuegt.
+    join: modifierEl.getAttribute(Attr.JOIN),
     conditions: readConditions(modifierEl, diagnostics),
     conditionGroups: readConditionGroups(modifierEl, diagnostics),
     repeats: readRepeats(modifierEl, diagnostics),
@@ -453,6 +498,24 @@ function readModifierGroups(element, diagnostics) {
 }
 
 /**
+ * Liest die **gemeinsame Basis** jedes Katalog-Elements des `EntryBase`-Zweigs
+ * (Catalogue.xsd:102-115): Auswahl-Definitionen, Kontingente, Kategorien, Verweise
+ * **und** Info-Elemente teilen ID, Namen, das `hidden`-Kennzeichen sowie
+ * Modifikatoren und Modifikatorgruppen. Die eine Lesestelle haelt sie
+ * deckungsgleich — insbesondere traegt damit auch ein Profil oder ein Info-Verweis
+ * seine Modifikatoren, die die Engine bisher gar nicht kannte (Issue 75/04).
+ */
+function readEntryBase(element, diagnostics) {
+  return {
+    id: element.getAttribute(Attr.ID),
+    name: element.getAttribute(Attr.NAME),
+    isHidden: readBoolean(element, Attr.HIDDEN, DEFAULT_HIDDEN),
+    modifiers: readModifiers(element, diagnostics),
+    modifierGroups: readModifierGroups(element, diagnostics),
+  };
+}
+
+/**
  * Liest eine einzelne `<characteristic>` eines Profils in ihren rohen Wert:
  * benannt (`name`), typisiert per ID (`typeId`) und mit dem Textinhalt als Wert.
  * Rein beschreibend — kein Constraint, kein Modifikator.
@@ -466,63 +529,74 @@ function readCharacteristic(characteristicEl) {
 }
 
 /**
- * Liest ein `<profile>` (Info-Element `ProfileDef`): seine ID, seinen Namen, die
- * Profiltyp-ID (`typeId`) und seine Merkmale (`characteristics`). Strukturell —
- * ohne Grenzen-/Modifikator-Logik (`docs/issues/.../design.md`, Kontrakt `ProfileDef`).
+ * Liest ein `<profile>` (Info-Element `ProfileDef`): seine `EntryBase`-Basis, die
+ * Profiltyp-ID (`typeId`) und seine Merkmale (`characteristics`). Die
+ * Modifikatoren der Basis sind hier tragend: **jeder** Charakteristik-Modifikator
+ * der Katalogdaten haengt an einem Profil oder an einem Info-Verweis, nie an einer
+ * Auswahl-Definition (Issue 75/04, Beleg in der Szenario-Doku).
  */
-function readProfile(profileEl) {
+function readProfile(profileEl, diagnostics) {
   return {
+    ...readEntryBase(profileEl, diagnostics),
     kind: InfoElementKind.PROFILE,
-    id: profileEl.getAttribute(Attr.ID),
-    name: profileEl.getAttribute(Attr.NAME),
     typeId: profileEl.getAttribute(Attr.TYPE_ID),
     characteristics: wrappedChildren(profileEl, Tag.CHARACTERISTICS, Tag.CHARACTERISTIC).map(readCharacteristic),
   };
 }
 
 /**
- * Liest ein `<rule>` (Info-Element `RuleDef`): seine ID und seinen Namen. Der
- * Regeltext (`<description>`) bleibt ausserhalb des Umfangs — der Evaluator
- * bewertet keine Texte (`docs/issues/.../design.md`, Kontrakt `RuleDef`).
+ * Liest ein `<rule>` (Info-Element `RuleDef`): seine `EntryBase`-Basis und den
+ * **Regeltext** (`<description>`, XSD optional — 10 der 1157 Regeln der
+ * Fixture-Kataloge tragen keinen, dann `null`).
+ *
+ * Der Evaluator *bewertet* den Text nach wie vor nicht; er reicht ihn nur in die
+ * Info-Projektion des Berichts durch (Issue 75/06, Kontrakt „Profile und
+ * Regeltexte je Slot"). Er ist bewusst kein Modifikator-Ziel: kein Modifikator
+ * der Fixture-Kataloge adressiert `description`, der Text ist also statisch.
  */
-function readRule(ruleEl) {
+function readRule(ruleEl, diagnostics) {
   return {
+    ...readEntryBase(ruleEl, diagnostics),
     kind: InfoElementKind.RULE,
-    id: ruleEl.getAttribute(Attr.ID),
-    name: ruleEl.getAttribute(Attr.NAME),
+    text: readRuleText(ruleEl),
   };
 }
 
+/** Der Textinhalt der `<description>` einer Regel (`null`, wenn sie keine traegt). */
+function readRuleText(ruleEl) {
+  const description = directChildren(ruleEl, Tag.DESCRIPTION)[0];
+  return description === undefined ? null : description.textContent;
+}
+
 /**
- * Liest ein `<infoGroup>` (Info-Element `InfoGroupDef`) **rekursiv**: seine ID,
- * seinen Namen und die von ihm gebuendelten Info-Elemente (`infos`, beliebige
+ * Liest ein `<infoGroup>` (Info-Element `InfoGroupDef`) **rekursiv**: seine
+ * `EntryBase`-Basis und die von ihm gebuendelten Info-Elemente (`infos`, beliebige
  * Tiefe) — verschachtelte Profile, Regeln, Info-Gruppen und Info-Links
  * (`docs/issues/.../design.md`, Kontrakt `InfoGroupDef`).
  */
-function readInfoGroup(infoGroupEl) {
+function readInfoGroup(infoGroupEl, diagnostics) {
   return {
+    ...readEntryBase(infoGroupEl, diagnostics),
     kind: InfoElementKind.INFO_GROUP,
-    id: infoGroupEl.getAttribute(Attr.ID),
-    name: infoGroupEl.getAttribute(Attr.NAME),
-    infos: readInfos(infoGroupEl),
+    infos: readInfos(infoGroupEl, diagnostics),
   };
 }
 
 /**
- * Liest ein `<infoLink>` (Info-Element `InfoLinkDef`): seine ID, seinen Namen,
+ * Liest ein `<infoLink>` (Info-Element `InfoLinkDef`): seine `EntryBase`-Basis,
  * den Verweistyp (`type`, aus dem SSOT-Enum {@link InfoLinkKind}) und die
  * Ziel-ID (`targetId`). Ein `type` ausserhalb des SSOT-Enums wird zu `null`
  * normalisiert — der Resolver loest den Link ueber `targetId` auf, unabhaengig
  * vom Typ (`docs/issues/.../design.md`, Kontrakt `InfoLinkDef`).
  */
-function readInfoLink(infoLinkEl) {
+function readInfoLink(infoLinkEl, diagnostics) {
   const type = infoLinkEl.getAttribute(Attr.TYPE);
   return {
+    ...readEntryBase(infoLinkEl, diagnostics),
     kind: InfoElementKind.INFO_LINK,
-    id: infoLinkEl.getAttribute(Attr.ID),
-    name: infoLinkEl.getAttribute(Attr.NAME),
     type: INFO_LINK_KINDS.has(type) ? type : null,
     targetId: infoLinkEl.getAttribute(Attr.TARGET_ID),
+    resolved: null,
   };
 }
 
@@ -532,23 +606,23 @@ function readInfoLink(infoLinkEl) {
  * regulaeren (`profiles`/…) und den katalogweit geteilten (`sharedProfiles`/…)
  * Wrappern ist der Wrapper-Name.
  */
-function readInfoDefinitions(element, profilesTag, rulesTag, infoGroupsTag) {
+function readInfoDefinitions(element, diagnostics, profilesTag, rulesTag, infoGroupsTag) {
   return [
-    ...wrappedChildren(element, profilesTag, Tag.PROFILE).map(readProfile),
-    ...wrappedChildren(element, rulesTag, Tag.RULE).map(readRule),
-    ...wrappedChildren(element, infoGroupsTag, Tag.INFO_GROUP).map(readInfoGroup),
+    ...wrappedChildren(element, profilesTag, Tag.PROFILE).map(profileEl => readProfile(profileEl, diagnostics)),
+    ...wrappedChildren(element, rulesTag, Tag.RULE).map(ruleEl => readRule(ruleEl, diagnostics)),
+    ...wrappedChildren(element, infoGroupsTag, Tag.INFO_GROUP).map(groupEl => readInfoGroup(groupEl, diagnostics)),
   ];
 }
 
 /**
  * Liest die Info-Elemente eines Knotens (Eintrag, Kontingent, Kategorie oder
  * Info-Gruppe) aus dem InfoNodeGroup-Zweig der BattleScribe-XSD: Profile, Regeln,
- * Info-Gruppen und Info-Links — leer, wenn keine vorhanden. Rein strukturell.
+ * Info-Gruppen und Info-Links — leer, wenn keine vorhanden.
  */
-function readInfos(element) {
+function readInfos(element, diagnostics) {
   return [
-    ...readInfoDefinitions(element, Tag.PROFILES, Tag.RULES, Tag.INFO_GROUPS),
-    ...wrappedChildren(element, Tag.INFO_LINKS, Tag.INFO_LINK).map(readInfoLink),
+    ...readInfoDefinitions(element, diagnostics, Tag.PROFILES, Tag.RULES, Tag.INFO_GROUPS),
+    ...wrappedChildren(element, Tag.INFO_LINKS, Tag.INFO_LINK).map(linkEl => readInfoLink(linkEl, diagnostics)),
   ];
 }
 
@@ -558,26 +632,46 @@ function readInfos(element) {
  * (`sharedProfiles`/`sharedRules`/`sharedInfoGroups`), die die ueblichen Ziele der
  * `infoLink`-Verweise sind.
  */
-function readCatalogueInfos(root) {
+function readCatalogueInfos(root, diagnostics) {
   return [
-    ...readInfos(root),
-    ...readInfoDefinitions(root, Tag.SHARED_PROFILES, Tag.SHARED_RULES, Tag.SHARED_INFO_GROUPS),
+    ...readInfos(root, diagnostics),
+    ...readInfoDefinitions(root, diagnostics, Tag.SHARED_PROFILES, Tag.SHARED_RULES, Tag.SHARED_INFO_GROUPS),
   ];
+}
+
+/**
+ * Liest einen `<profileType>` samt seiner `<characteristicType>`-Deklarationen:
+ * die **Quelle der Charakteristik-Typ-IDs**, ueber die ein Modifikator eine
+ * Charakteristik adressiert (Catalogue.xsd:49-83). Reine Datensatz-Angabe ohne
+ * Roster-Bezug — sie beschreibt, *welche* Merkmale es gibt, nicht welche gelten.
+ */
+function readProfileType(profileTypeEl) {
+  return {
+    id: profileTypeEl.getAttribute(Attr.ID),
+    name: profileTypeEl.getAttribute(Attr.NAME),
+    characteristicTypes: wrappedChildren(profileTypeEl, Tag.CHARACTERISTIC_TYPES, Tag.CHARACTERISTIC_TYPE)
+      .map(characteristicTypeEl => ({
+        id: characteristicTypeEl.getAttribute(Attr.ID),
+        name: characteristicTypeEl.getAttribute(Attr.NAME),
+      })),
+  };
+}
+
+/** Liest alle `<profileType>`-Deklarationen der Katalogwurzel. */
+function readProfileTypes(root) {
+  return wrappedChildren(root, Tag.PROFILE_TYPES, Tag.PROFILE_TYPE).map(readProfileType);
 }
 
 /** Liest einen `<selectionEntry>` samt Kosten, Kategorien, Grenzen und Modifikatoren. */
 function readEntry(entryEl, diagnostics) {
   return {
-    id: entryEl.getAttribute(Attr.ID),
-    name: entryEl.getAttribute(Attr.NAME),
+    ...readEntryBase(entryEl, diagnostics),
     kind: DefinitionKind.ENTRY,
     type: entryEl.getAttribute(Attr.TYPE),
     costs: readCosts(entryEl),
     categoryIds: readCategoryIds(entryEl),
     limits: readLimits(entryEl, diagnostics),
-    modifiers: readModifiers(entryEl, diagnostics),
-    modifierGroups: readModifierGroups(entryEl, diagnostics),
-    infos: readInfos(entryEl),
+    infos: readInfos(entryEl, diagnostics),
     children: readSelectionChildren(entryEl, diagnostics),
   };
 }
@@ -592,13 +686,10 @@ function readEntry(entryEl, diagnostics) {
  */
 function readGroup(groupEl, diagnostics) {
   return {
-    id: groupEl.getAttribute(Attr.ID),
-    name: groupEl.getAttribute(Attr.NAME),
+    ...readEntryBase(groupEl, diagnostics),
     kind: DefinitionKind.GROUP,
     limits: readLimits(groupEl, diagnostics),
-    modifiers: readModifiers(groupEl, diagnostics),
-    modifierGroups: readModifierGroups(groupEl, diagnostics),
-    infos: readInfos(groupEl),
+    infos: readInfos(groupEl, diagnostics),
     children: readSelectionChildren(groupEl, diagnostics),
   };
 }
@@ -609,23 +700,21 @@ function readGroup(groupEl, diagnostics) {
  * Modifikatoren/Kategorien. `resolved` bleibt `null`, bis der Resolver das Ziel
  * ueber die globale `id → Definition`-Tabelle auffindet (ADR-0032, analog
  * {@link readInfoLink}); das aufgeloeste Ziel wird auf `resolved` vermerkt. Eine
- * Per-Vorkommen-Ueberlagerung der eigenen Grenzen auf das Ziel wird heute noch
- * nicht angewandt (die auswertenden Schichten lesen `resolved` nicht) — bewusst,
- * siehe die Reconciliation von Issue 67/02. Geschachtelte Links/Eintraege werden
- * mitgelesen.
+ * Per-Vorkommen-Ueberlagerung schichten die auswertenden Ebenen selbst ueber
+ * `resolved`: Grenzen in `evalTree.limitsOf`, Kosten und Kategorien in
+ * `effectiveState`, Modifikatoren und Info-Elemente in `modifiers`/`evalTree`.
+ * Der Leser vermerkt hier also nur das Ziel; er verschmilzt nichts. Geschachtelte
+ * Links/Eintraege werden mitgelesen.
  */
 function readEntryLink(entryLinkEl, diagnostics) {
   return {
-    id: entryLinkEl.getAttribute(Attr.ID),
-    name: entryLinkEl.getAttribute(Attr.NAME),
+    ...readEntryBase(entryLinkEl, diagnostics),
     kind: DefinitionKind.ENTRY_LINK,
     targetId: entryLinkEl.getAttribute(Attr.TARGET_ID),
     costs: readCosts(entryLinkEl),
     categoryIds: readCategoryIds(entryLinkEl),
     limits: readLimits(entryLinkEl, diagnostics),
-    modifiers: readModifiers(entryLinkEl, diagnostics),
-    modifierGroups: readModifierGroups(entryLinkEl, diagnostics),
-    infos: readInfos(entryLinkEl),
+    infos: readInfos(entryLinkEl, diagnostics),
     children: readSelectionChildren(entryLinkEl, diagnostics),
     resolved: null,
   };
@@ -658,13 +747,10 @@ function readEntryLinks(element, diagnostics) {
 /** Liest einen <categoryLink>. */
 function readCategoryLink(linkEl, diagnostics) {
   return {
-    id: linkEl.getAttribute(Attr.ID),
-    name: linkEl.getAttribute(Attr.NAME),
+    ...readEntryBase(linkEl, diagnostics),
     kind: DefinitionKind.CATEGORY_LINK,
     targetId: linkEl.getAttribute(Attr.TARGET_ID),
     limits: readLimits(linkEl, diagnostics),
-    modifiers: readModifiers(linkEl, diagnostics),
-    modifierGroups: readModifierGroups(linkEl, diagnostics),
   };
 }
 
@@ -712,20 +798,42 @@ function readCatalogueLinks(root) {
 }
 
 /**
+ * Liest eine `<costType>` (Kostenart-Deklaration des Datensatzes): ihre ID, ihren
+ * Klartext-Namen, ihre Vorgabe-Grenze und ob der Autor sie ausblendet. Eine
+ * Kostenart ist eine reine Datensatz-Angabe ohne Roster-Bezug — sie beschreibt,
+ * *welche* Kosten es gibt, nicht welche verplant sind.
+ *
+ * Die Vorgabe-Grenze ist `null`, wenn der Katalog keine deklariert (fehlendes,
+ * unlesbares oder auf {@link NO_DEFAULT_COST_LIMIT} gesetztes Attribut).
+ */
+function readCostType(costTypeEl) {
+  const declaredLimit = Number.parseFloat(costTypeEl.getAttribute(Attr.DEFAULT_COST_LIMIT));
+  const hasDefaultLimit = !Number.isNaN(declaredLimit) && declaredLimit !== NO_DEFAULT_COST_LIMIT;
+  return {
+    id: costTypeEl.getAttribute(Attr.ID),
+    name: costTypeEl.getAttribute(Attr.NAME),
+    defaultLimit: hasDefaultLimit ? declaredLimit : null,
+    isHidden: readBoolean(costTypeEl, Attr.HIDDEN, DEFAULT_HIDDEN),
+  };
+}
+
+/** Liest alle `<costType>`-Deklarationen der Katalogwurzel. */
+function readCostTypes(root) {
+  return wrappedChildren(root, Tag.COST_TYPES, Tag.COST_TYPE).map(readCostType);
+}
+
+/**
  * Liest einen `<forceEntry>` (Kontingent-Definition) samt eigener Grenzen und
  * geschachtelter Kontingente. Kontingente tragen keine Selektion bei; ihre
  * Kinder im Definitionsbaum sind ihre Unter-Kontingente.
  */
 function readForceEntry(forceEl, diagnostics) {
   return {
-    id: forceEl.getAttribute(Attr.ID),
-    name: forceEl.getAttribute(Attr.NAME),
+    ...readEntryBase(forceEl, diagnostics),
     kind: DefinitionKind.FORCE,
     categoryIds: readCategoryIds(forceEl),
     limits: readLimits(forceEl, diagnostics),
-    modifiers: readModifiers(forceEl, diagnostics),
-    modifierGroups: readModifierGroups(forceEl, diagnostics),
-    infos: readInfos(forceEl),
+    infos: readInfos(forceEl, diagnostics),
     children: [
       ...readForceEntries(forceEl, diagnostics),
       ...readCategoryLinks(forceEl, diagnostics),
@@ -742,13 +850,10 @@ function readForceEntries(element, diagnostics) {
 /** Liest eine `<categoryEntry>` (Kategorie-Definition) samt eigener Grenzen. */
 function readCategoryEntry(categoryEl, diagnostics) {
   return {
-    id: categoryEl.getAttribute(Attr.ID),
-    name: categoryEl.getAttribute(Attr.NAME),
+    ...readEntryBase(categoryEl, diagnostics),
     kind: DefinitionKind.CATEGORY,
     limits: readLimits(categoryEl, diagnostics),
-    modifiers: readModifiers(categoryEl, diagnostics),
-    modifierGroups: readModifierGroups(categoryEl, diagnostics),
-    infos: readInfos(categoryEl),
+    infos: readInfos(categoryEl, diagnostics),
     children: [],
   };
 }
@@ -765,10 +870,12 @@ function readCategoryEntries(element, diagnostics) {
  * Ein `.cat` **und** eine `.gst` teilen dieselben Element-Namen und werden von
  * dieser Funktion gleich gelesen; nur die Wurzel unterscheidet sich (`catalogue`
  * vs. `gameSystem`). `gameSystemId` traegt nur ein `.cat` — die `.gst` ist ihr
- * eigenes Spielsystem (Kohaerenzpruefung in der Fassade, ADR-0032).
+ * eigenes Spielsystem (Kohaerenzpruefung in der Fassade, ADR-0032). `library`
+ * traegt ebenfalls nur ein `.cat`; eine `.gst` ist nie eine Bibliothek und faellt
+ * damit auf die XSD-Vorgabe zurueck.
  *
  * @param {string} catalogXml Entpacktes `.cat`/`.gst`-XML.
- * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
+ * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, isLibrary: boolean, costTypes: object[], profileTypes: object[], entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
  */
 export function parseCatalogue(catalogXml) {
   const diagnostics = [];
@@ -778,11 +885,14 @@ export function parseCatalogue(catalogXml) {
     id: root.getAttribute(Attr.ID),
     name: root.getAttribute(Attr.NAME),
     gameSystemId: root.getAttribute(Attr.GAME_SYSTEM_ID),
+    isLibrary: readBoolean(root, Attr.LIBRARY, DEFAULT_LIBRARY),
+    costTypes: readCostTypes(root),
+    profileTypes: readProfileTypes(root),
     entries: readSelectionChildren(root, diagnostics),
     forces: readForceEntries(root, diagnostics),
     categories: readCategoryEntries(root, diagnostics),
     sharedEntries: readSharedEntries(root, diagnostics),
-    infos: readCatalogueInfos(root),
+    infos: readCatalogueInfos(root, diagnostics),
     catalogueLinks: readCatalogueLinks(root),
     diagnostics,
   };
