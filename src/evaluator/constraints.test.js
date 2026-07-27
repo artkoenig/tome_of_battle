@@ -252,6 +252,16 @@ describe('Prozentgrenze mit Nenner 0 (Annahme A4)', () => {
       expect.objectContaining({ kind: 'zeroDenominator', limitId: MANA_SHARE_LIMIT_ID })
     );
   });
+
+  it('laesst die suspendierte Grenze nicht aus dem Faehigkeitsdatensatz fallen', () => {
+    const report = evaluate(CATALOGUE_XML, roster([{ defId: WARRIOR_DEF_ID, count: 2, children: [] }]));
+
+    // Auch hier gilt: eine Grenze, die keine Zahlen geliefert hat, darf am Slot
+    // nicht wie „gar keine Grenze" — also wie „unbegrenzt" — aussehen (Issue 77).
+    const [capability] = [...report.capabilities.values()].filter(entry => entry.defId === WARRIOR_DEF_ID);
+    expect(capability.unevaluatedLimitKinds).toEqual([ConstraintKind.MAX]);
+    expect(capability.headroom).toBe(0);
+  });
 });
 
 describe('Unbegrenztheit: der Sentinel wird an der Deklaration gedeutet, nicht am Ergebnis', () => {

@@ -179,11 +179,14 @@ describe('primary-catalogue: ein nicht entscheidbares Kontingent wird gemeldet u
   });
 
   it('meldet **nur, wenn eine Regel fragt** — ein Kontingent ohne solche Regel hat keinen Mangel', () => {
-    // Derselbe Datensatz, dasselbe Kontingent ohne Katalog-Angabe — aber die
-    // Auswahl, deren Modifikator nach dem primaeren Katalog fragt, fehlt. Damit
-    // benutzt keine Regel den Bezugsrahmen, und der Bericht wirft dem Kontingent
-    // nichts vor (Vorbild: die Diagnose zur nicht aufloesbaren Kostengrenze).
-    const { report } = mercenaryViolationsOf([{ defId: FORCE_A_ID, count: 1, children: [] }]);
+    // Derselbe Fehler im Roster (Kontingent ohne Katalog-Angabe), aber ein
+    // Datensatz **ohne** die Bibliothek: keine Regel benutzt den Bezugsrahmen. Dann
+    // ist die fehlende Angabe folgenlos, und der Bericht wirft dem Kontingent
+    // nichts vor — dasselbe Verhalten wie bei der nicht aufloesbaren Kostengrenze,
+    // die erst erscheint, wenn jemand fragt.
+    const report = evaluate(prepareDataset({ catalogues: [ARMY_A_XML, ARMY_B_XML] }), {
+      forces: [{ defId: FORCE_A_ID, count: 1, children: [] }],
+    });
 
     expect(report.diagnostics.filter(entry => entry.kind === DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE)).toHaveLength(0);
   });
