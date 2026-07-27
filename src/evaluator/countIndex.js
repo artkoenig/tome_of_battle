@@ -15,7 +15,7 @@
  */
 
 import { DefinitionKind, scopeKey } from './model.js';
-import { identityIdsOf } from './identity.js';
+import { identityIdsOf, entryTypeOf } from './identity.js';
 import { realNodes, frameKeyOf } from './evalTree.js';
 
 /**
@@ -103,19 +103,20 @@ function contributionOf(node, effective) {
  * so liest die gruppen-skopierte Grenze (`scope=parent`, Ziel = Gruppen-ID) im
  * Eigentuemer-Rahmen die Zahl der gewaehlten Member.
  *
- * Dazu ein Ziel, das nicht aus der Identitaet stammt:
- * - **`type`** — das rohe `type`-Attribut des Eintrags (`model`, `unit`, …). Es
- *   traegt die Bedingung `childId="model"`. Achtung: nur {@link readEntry} liest
- *   dieses Attribut, {@link readEntryLink} nicht — ein verlinkter Eintrag zaehlt
- *   daher heute nicht unter seinem Typ. Als eigener Befund erfasst, nicht hier
- *   nebenbei geaendert.
+ * Dazu ein Ziel, das keine Id ist:
+ * - die **Eintragsart** (`model`, `unit`, `upgrade`) — das Ziel der Bedingung
+ *   `childId="model"`. Welche das ist, entscheidet diese Schicht ebenfalls nicht:
+ *   {@link entryTypeOf} bezieht sie beim Eintrag von ihm selbst und beim Verweis
+ *   vom **aufgeloesten Ziel**. So zaehlt ein verlinktes Vorkommen unter derselben
+ *   Eintragsart wie dasselbe Ziel direkt gesetzt.
  */
 function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
   const targets = [null, ...effective.categoryIdsOf(node)];
   if (node.def.kind !== DefinitionKind.GROUP) targets.push(...identityIdsOf(node.def));
   if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
-  if (node.def.type) targets.push(node.def.type);
+  const entryType = entryTypeOf(node.def);
+  if (entryType !== null) targets.push(entryType);
   return Array.from(new Set(targets));
 }
 

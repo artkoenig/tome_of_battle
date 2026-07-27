@@ -1,7 +1,8 @@
 /**
  * Zaehl-Identitaet einer Definition (`docs/evaluator-architecture.md` §4.3/§4.4) —
  * die **eine** Stelle, die beantwortet: *unter welchen Ids ist ein Vorkommen
- * dieser Definition zaehlbar?*
+ * dieser Definition zaehlbar?* — und, als zweite Haelfte derselben Frage:
+ * *welche Eintragsart hat es?* ({@link entryTypeOf}).
  *
  * Ein Eintrag kann an einer Stelle direkt stehen oder ueber einen `entryLink`
  * hereingezogen werden. Beide Wege benennen dasselbe Vorkommen, aber unter
@@ -23,6 +24,8 @@
  * Rein und roster-unabhaengig: das Modul kennt nur Definitionen, keinen Baum,
  * keinen Zustand.
  */
+
+import { DefinitionKind } from './model.js';
 
 /**
  * Die Bestandteile der Identitaet, als **eine** Quelle fuer beide Abfrageformen
@@ -90,4 +93,49 @@ export function isOccurrenceOf(def, wantedId) {
     if (readId(def) === wantedId) return true;
   }
   return false;
+}
+
+/**
+ * Woher die **Eintragsart** eines Vorkommens stammt, je Definitionsart — die
+ * zweite Haelfte der Zaehl-Identitaet, denn eine Bedingung kann statt einer Id
+ * eine Eintragsart zaehlen (`childId="model"`, BSData §7.7).
+ *
+ * - Ein **Eintrag** traegt seine Art selbst (`selectionEntry/@type`).
+ * - Ein **Verweis** hat keine eigene: seine Art kommt vom **aufgeloesten Ziel**.
+ *   Sein gleichnamiges Attribut wird bewusst **nicht** gelesen — es stammt aus
+ *   einer anderen, laut Schema disjunkten Wertemenge (`EntryLinkKind`:
+ *   `selectionEntry` | `selectionEntryGroup`) als die Eintragsart
+ *   (`SelectionEntryKind`: `upgrade` | `model` | `unit`) und sagt, *worauf* der
+ *   Verweis zeigt, nicht *was* das Ziel ist. Als Zaehlziel waere es ein
+ *   bedeutungsloser Wert. Der Katalogleser liest es deshalb gar nicht erst
+ *   (ADR-0016/0031: roh und schema-treu).
+ * - Jede andere Definitionsart (Gruppe, Kontingent, Kategorie, Kategorie-Verweis)
+ *   hat keine Eintragsart und steht unter keiner.
+ *
+ * Das aufgeloeste Ziel ist bereits das **Ende** einer etwaigen Verweiskette
+ * (`resolver.js`, `followEntryLink`), hier wird also keine Kette abgelaufen.
+ */
+const ENTRY_TYPE_READERS = Object.freeze({
+  [DefinitionKind.ENTRY]: def => def.type,
+  [DefinitionKind.ENTRY_LINK]: def => def.resolved?.type,
+});
+
+/**
+ * Die Eintragsart, unter der ein Vorkommen dieser Definition zaehlt — bei einem
+ * Verweis die seines aufgeloesten Ziels, sonst die eigene.
+ *
+ * Damit zaehlt ein ueber einen Verweis hereingezogener Eintrag unter derselben
+ * Eintragsart wie derselbe Eintrag direkt gesetzt: die Art gehoert zum Ziel, nicht
+ * zum Weg dorthin.
+ *
+ * @param {object|null|undefined} def  eine Katalogdefinition oder nichts.
+ * @returns {string|null} die Eintragsart (ein Wert von `SelectionEntryKind`:
+ *   `upgrade` | `model` | `unit`); `null`, wenn die Definition keine traegt —
+ *   etwa eine Gruppe, ein Kontingent oder ein Verweis mit baumelndem Ziel.
+ */
+export function entryTypeOf(def) {
+  if (!isDefinition(def)) return null;
+  const readEntryType = ENTRY_TYPE_READERS[def.kind];
+  if (readEntryType === undefined) return null;
+  return readEntryType(def) ?? null;
 }

@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: fix
 Blocked by: [02]
 
@@ -41,3 +41,4 @@ Verweis, die Eintragsart waere also gar nicht pruefbar.
 - Uebernimmt den Inhalt von Main-Issue 78. Dieses wird nach Abschluss als abgeloest geschlossen, mit Verweis hierher.
 - Autorenschaft: das Szenario ist ein Black-Box-Testfall nach ADR-0033 und wird vom e2e-testcase-author allein aus den Katalogdaten verfasst — VOR der Engine-Aenderung. Fachliche Vorlage ist das vorhandene Szenario evaluator-bug-childid-model, das dieselbe Bedingung heute nur an direkt gesetzten Eintraegen prueft; der neue Fall ist dieselbe Aussage fuer einen ueber einen Verweis bezogenen Eintrag.
 - Unabhaengig bestaetigt: ein externer Gutachter, der weder den Code noch diesen Plan gesehen hat, kam auf dieselbe Regel und nannte "die Eintragsart aus dem Art-Attribut des Verweises ableiten" ausdruecklich als etwas, das er verweigern wuerde.
+- Vertrag K2 umgesetzt: identity.js liefert entryTypeOf(def) — beim Eintrag dessen eigenes type, beim Verweis das des aufgeloesten Ziels, sonst null; das gleichnamige Attribut des Verweises (EntryLinkKind) wird nie gelesen. countIndex.targetsOf, der einzige Verbraucher, bezieht die Eintragsart nur noch von dort. Szenario linked-entry-type-count (Roster 02/03/04) ist gruen, ohne dass eine Erwartung angefasst wurde; alle 113 E2E-Szenarien und die gesamte Suite bleiben gruen. docs/evaluator-architecture.md §4.3/§4.4 beschreiben die Herkunft der Eintragsart.

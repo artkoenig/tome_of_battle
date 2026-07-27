@@ -387,9 +387,16 @@ function identityIdsOf(d): Id[]                       // entdoppelt, ohne fehlen
 
 function isOccurrenceOf(d, wantedId): bool            // „zählt dieses Vorkommen unter wantedId?"
   return wantedId in identityIdsOf(d)
+
+function entryTypeOf(d): SelectionEntryKind?          // die Eintragsart des Vorkommens
+  if d is Entry:     return d.type                    // trägt sie selbst
+  if d is EntryLink: return d.resolved?.type          // erbt sie vom aufgelösten Ziel
+  return null                                         // Gruppe/Kontingent/Kategorie: keine
 ```
 
 Die Regel ist **einseitig**: nennt eine Grenze die Ziel-Id, trifft sie das Vorkommen über *jeden* Verweis und auch das direkt gesetzte; nennt sie eine Verweis-Id, trifft sie nur die Vorkommen über genau diesen Verweis. Und sie ist **Mengenzugehörigkeit, keine Summierung je Id**: ein Vorkommen zählt für eine Grenze höchstens einmal, auch wenn mehrere seiner Ids zutreffen.
+
+**Die Eintragsart kommt immer vom aufgelösten Ziel.** Eine Bedingung kann statt einer Id eine Eintragsart zählen (`childId="model"`, BSData §7.7), und ein per `entryLink` hereingezogener Eintrag zählt unter derselben Art wie derselbe Eintrag direkt gesetzt — die Art gehört zum Ziel, nicht zum Weg dorthin. Das gleichnamige Attribut des Verweises wird dabei **nie** gelesen: es stammt aus einer laut XSD disjunkten Wertemenge (`EntryLinkKind` = `selectionEntry` | `selectionEntryGroup`, gegen `SelectionEntryKind` = `upgrade` | `model` | `unit`) und sagt, *worauf* der Verweis zeigt, nicht *was* das Ziel ist; als Zählziel wäre es ein bedeutungsloser Wert. Der Katalogleser liest es deshalb gar nicht erst (§3.1, ADR-0016/0031). Zeigt ein Verweis auf eine `selectionEntryGroup` oder baumelt sein Ziel, hat das Vorkommen keine Eintragsart und steht unter keiner.
 
 **Roster-Bindung eines Vorkommens.** Eine gespeicherte Auswahl benennt **zwei** Ids: den gewählten Eintrag (`entryId`) und den Verweis, über den er hereinkam (`entryLinkId`, leer bei direkter Auswahl). Gebunden wird über den **Verweis**, wenn es einen gibt — nur so gelten die an ihm deklarierten Grenzen, Modifikatoren und Kosten. Die Gegenrichtung ist nicht konstruierbar: aus dem Verweis folgt sein Ziel, aus dem Ziel aber nie *welcher* seiner n Verweise gemeint war. Die vom Roster mitgeführte Ziel-Id reist deshalb als reines **Prüfdatum** mit (`expectedTargetDefId`), nie als zweiter Auflösungsweg: passt sie nicht zur Zähl-Identität des Verweises — Kataloge werden zur Laufzeit aktualisiert (ADR-0014), eine gespeicherte Liste kann also veralten —, meldet die Join-Schicht `ENTRY_LINK_TARGET_MISMATCH` und **folgt dem Verweis**.
 
@@ -472,10 +479,14 @@ function scopeKeysOf(node, effective): ScopeKey[]
       keys.add(ScopeKey(frame, identityId))
     for categoryId in effective.categories[node]:       // effektive, nicht Basis-Kategorien!
       keys.add(ScopeKey(frame, categoryId))
+    entryType = entryTypeOf(node.def)                   // §4.3: beim Verweis die des Ziels
+    if entryType != null: keys.add(ScopeKey(frame, entryType))   // childId="model"/"unit"/"upgrade"
   return keys
 ```
 
 Die Identitäts-Ids sind entdoppelt und stehen je Rahmen unter **verschiedenen** Schlüsseln — ein Vorkommen wird von einer Grenze also höchstens einmal gezählt, gleich wie viele seiner Ids zutreffen.
+
+Neben den Ids ist auch die **Eintragsart** ein Zählziel (§4.3): sie bedient die Bedingungen, die statt einer Id ein Typ-Schlüsselwort nennen. Weil sie bei einem Verweis vom aufgelösten Ziel stammt, zählt eine solche Bedingung ein verlinktes Vorkommen genauso wie ein direkt gesetztes. Rohe Typ-Schlüsselwörter und GUIDs teilen sich dabei denselben Ziel-Namensraum; eine Kollision ist ausgeschlossen, weil Katalog-Ids dem Vierergruppen-Muster folgen und kein Schlüsselwort es erfüllt.
 
 Direkte vs. tiefe Zählung: beim Eintragen wird die Beitragskette entlang der Vorfahren geführt — der unmittelbare Elternrahmen erhält den Beitrag in `direct` und `deep`, weiter entfernte Rahmen nur in `deep`.
 

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { identityIdsOf, isOccurrenceOf } from './identity.js';
+import { identityIdsOf, isOccurrenceOf, entryTypeOf } from './identity.js';
 import { DefinitionKind } from './model.js';
+import { SelectionEntryKind, EntryLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
 
 const ENTRY_ID = 'abdb-bbd0-41b2-5dff';
 const LINK_ID = 'b581-8a9e-9d0c-b7c8';
@@ -87,5 +88,59 @@ describe('isOccurrenceOf (einseitige Frage: zaehlt dieses Vorkommen unter der Id
     expect(isOccurrenceOf(null, ENTRY_ID)).toBe(false);
     expect(isOccurrenceOf(entry(), null)).toBe(false);
     expect(isOccurrenceOf(entry(), undefined)).toBe(false);
+  });
+});
+
+/** Ein Eintrag mit erklaerter Eintragsart. */
+function typedEntry(type, id = ENTRY_ID) {
+  return { ...entry(id), type };
+}
+
+describe('entryTypeOf (Eintragsart eines Vorkommens)', () => {
+  it('liest die Eintragsart eines direkt gesetzten Eintrags an ihm selbst', () => {
+    expect(entryTypeOf(typedEntry(SelectionEntryKind.UNIT))).toBe(SelectionEntryKind.UNIT);
+    expect(entryTypeOf(typedEntry(SelectionEntryKind.MODEL))).toBe(SelectionEntryKind.MODEL);
+  });
+
+  it('liest die Eintragsart eines Verweises an seinem aufgeloesten Ziel', () => {
+    const link = entryLink({ resolved: typedEntry(SelectionEntryKind.UNIT) });
+    expect(entryTypeOf(link)).toBe(SelectionEntryKind.UNIT);
+  });
+
+  it('liefert fuer Verweis und Ziel dieselbe Eintragsart — die Herkunft aendert sie nicht', () => {
+    const target = typedEntry(SelectionEntryKind.MODEL);
+    expect(entryTypeOf(entryLink({ resolved: target }))).toBe(entryTypeOf(target));
+  });
+
+  it('liest NIE das gleichnamige Attribut des Verweises — es traegt eine Verweisart, keine Eintragsart', () => {
+    const linkWithOwnKind = {
+      ...entryLink({ resolved: typedEntry(SelectionEntryKind.UNIT) }),
+      type: EntryLinkKind.SELECTION_ENTRY,
+    };
+    expect(entryTypeOf(linkWithOwnKind)).toBe(SelectionEntryKind.UNIT);
+    expect(Object.values(EntryLinkKind)).not.toContain(entryTypeOf(linkWithOwnKind));
+  });
+
+  it('liefert nichts, wenn das Ziel eines Verweises baumelt', () => {
+    const dangling = { id: LINK_ID, kind: DefinitionKind.ENTRY_LINK, targetId: ENTRY_ID, resolved: null };
+    expect(entryTypeOf(dangling)).toBeNull();
+  });
+
+  it('liefert nichts fuer einen Verweis auf eine Gruppe — ein Buendel hat keine Eintragsart', () => {
+    const groupLink = entryLink({ resolved: { id: ENTRY_ID, kind: DefinitionKind.GROUP } });
+    expect(entryTypeOf(groupLink)).toBeNull();
+  });
+
+  it('liefert nichts fuer Definitionsarten ohne Eintragsart', () => {
+    expect(entryTypeOf({ id: ENTRY_ID, kind: DefinitionKind.GROUP })).toBeNull();
+    expect(entryTypeOf({ id: ENTRY_ID, kind: DefinitionKind.FORCE })).toBeNull();
+    expect(entryTypeOf({ id: CATEGORY_ID, kind: DefinitionKind.CATEGORY })).toBeNull();
+    expect(entryTypeOf({ id: CATEGORY_ID, kind: DefinitionKind.CATEGORY_LINK, targetId: CATEGORY_ID })).toBeNull();
+  });
+
+  it('liefert nichts fuer einen Eintrag ohne erklaerte Art und fuer eine fehlende Definition', () => {
+    expect(entryTypeOf(entry())).toBeNull();
+    expect(entryTypeOf(null)).toBeNull();
+    expect(entryTypeOf(undefined)).toBeNull();
   });
 });
