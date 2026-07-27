@@ -227,8 +227,11 @@ Key points of the contract:
   - **`current` / `effectiveMin` / `effectiveMax` / `headroom`** — the slot's numbers
     in its frame: what is there now, the effective bounds (`null` = no such bound;
     a `max` with the catalog's "unlimited" value counts as absent, not as 0), and
-    what still fits. All derived from the constraint declared in the XML and the
-    roster's structure.
+    what still fits. The bounds and `headroom` derive from the constraint declared
+    in the XML and the roster's structure. `current` does **not**: it is what the
+    bounding constraint counted, and where a slot declares no bound at all — or
+    only an unlimited one, or one the engine could not answer — it is a plain count
+    of what stands at that slot. Expect a real count there, never 0.
   - **`isHidden` / `isBlocked` / `isMandatoryUnmet`** — availability is *read off*
     this record, never computed: hidden is what a `field="hidden"` modifier switched
     off, blocked is a maximum that is used up, mandatory-unmet is a minimum that is
