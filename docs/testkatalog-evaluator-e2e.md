@@ -104,7 +104,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`author-message-tokens`](testing/author-message-tokens/) | Definitive Ogre + Mercenaries | 3 |
 | [`unlimited-sentinel`](testing/unlimited-sentinel/) | Definitive O&G | 5 |
 | [`linked-entry-type-count`](testing/linked-entry-type-count/) | Definitive Ogre + Mercenaries | 4 |
-| **Summe** | | **113** |
+| [`primary-catalogue-scope`](testing/primary-catalogue-scope/) | Definitive Ogre + O&G + Mercenaries | 3 |
+| **Summe** | | **116** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -439,3 +440,27 @@ meint, also die Grundeinstellung des Katalogs, überschrieben von einer Bedingun
 > seiner eigenen Kennung noch unter der der Gruppe) und dass der Modell-
 > Auswahlpunkt keines der Elemente seiner Einheit führt, weil die Vererbung nur
 > nach oben läuft.
+
+## `primary-catalogue-scope`
+
+Prüft den Bezugsrahmen **„Armee-Katalog des Kontingents"**: Eine Bedingung kann
+fragen „ist die geführte Armee dieser Katalog?" bzw. „ist sie es **nicht**?".
+Maßgeblich ist allein der Katalog, den das Roster **je Kontingent** angibt — nicht
+der geladene Datensatz, nicht das Spielsystem und nicht die Bibliothek, in der die
+Bedingung steht.
+
+**Warum ein einzelnes Roster hier nichts belegt.** „Feuert nicht" kann zweierlei
+heißen: der Rahmen wurde gelesen und die Ausnahme greift — oder der Rahmen wurde
+gar nicht gelesen. Beides sieht im Bericht gleich aus. Der Nachweis ist deshalb
+das **Kontrast-Paar**: dieselbe Söldner-Einheit (*Rhinox Riders* aus der
+gemeinsamen Mercenaries-Bibliothek), derselbe Datensatz, dieselbe Anzahl — einmal
+in einer Ogre-Kingdoms-Armee und einmal in einer Orcs-and-Goblins-Armee, mit
+**gegenläufigem** Ergebnis. Ein Ergebnis, bei dem beide Fälle dasselbe sagen, kann
+diesen Test nicht bestehen. Das Szenario ist **vor** der Engine-Änderung
+entstanden und bis dahin erwartbar rot.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ogre-Kingdoms-Kontingent mit **zwei** Einheiten *Rhinox Riders* | In der Ogre-Armee hebt der Katalog die Obergrenze auf **unbegrenzt** — keine Verletzung. Zugleich ist dort die Unterauswahl „Extra Special choice" **eingeblendet** und „Extra Rare choice" **ausgeblendet**. Keine Meldung „Bezugsrahmen nicht auflösbar" |
+| 02 | **Dieselbe** Auswahl in einem Orcs-and-Goblins-Kontingent | Außerhalb einer Ogre-Armee gilt „nur eine Einheit" — die Obergrenze feuert (Ist 2, Grenze 1). Die Sichtbarkeit kippt **gegenläufig**: „Extra Rare choice" eingeblendet, „Extra Special choice" ausgeblendet. Ebenfalls keine Meldung „Bezugsrahmen nicht auflösbar" |
+| 03 | **Beide** Kontingente in *einem* Roster, je zwei *Rhinox Riders* | Die Frage wird je Kontingent beantwortet: die Obergrenze feuert **genau einmal** — nur im Orcs-and-Goblins-Kontingent. Eine je-Roster- oder je-Datensatz-Antwort ergäbe zwangsläufig null oder zwei Beanstandungen |

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="primary-catalogue-scope-01" name="01-ogre-force-unlimited" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="s-rhinox-unit" name="Rhinox Riders" entryId="5e33-e510-ba45-933e" entryLinkId="" number="2" type="unit">
+          <selections>
+            <selection id="s-rhinox-model" name="Rhinox Riders" entryId="c7a1-044e-39f1-9ad8" entryLinkId="" number="1" type="model"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
