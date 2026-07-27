@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: [01]
 
@@ -43,3 +43,4 @@ Nachkommastelle), der Vergleich muss deshalb numerisch sein, nicht als Zeichenke
 
 ## Comments
 - Belegt: die Deutung darf nicht am Rohwert allein haengen. In den Daten setzen Modifikatoren eine endliche Grenze ausdruecklich auf minus eins (Auspraegung 2) — eine reine Rohwert-Pruefung wuerde diese Faelle verlieren. Umgekehrt traegt die Spielsystem-Datei eine mit minus eins deklarierte Obergrenze, auf der ein Hochzaehlen je Punktmenge liegt (Auspraegung 3) — eine reine Ergebnis-Pruefung verliert diese. Nur "zuletzt deklarierter Wert" traegt beide.
+- Unbegrenztheit wird jetzt am zuletzt DEKLARIERTEN Wert entschieden: neue Lesemethode EffectiveState#limitBound liefert den Grenzwert samt Deutung (Basiswert ohne Schritt, sonst der rohe value eines abschliessenden set); resolveBound liefert dafuer den neuen Sentinel UNLIMITED — vor jeder Prozentableitung — und das harte -1-Literal in constraints.js entfaellt. Der Sentinel hat mit isUnlimitedDeclaration (numerisch, traegt -1 und -1.0) genau eine Quelle, die auch catalogReader.js fuer defaultCostLimit nutzt; die private Konstante dort entfaellt. Sieben Modultests in constraints.test.js, darunter die beiden im Datensatz unbelegten Faelle (Negativ-Zug, hochgezaehlte -1-Grenze). Format- und Architektur-Dokument nachgezogen.

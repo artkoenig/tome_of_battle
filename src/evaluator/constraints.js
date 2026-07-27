@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
+import { ConstraintKind, DefinitionKind, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
 import { allNodes, limitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -28,14 +28,24 @@ const PERCENT_DIVISOR = 100;
 /**
  * Bestimmt den effektiven Grenzwert einer Grenze. Der Roh-Grenzwert stammt aus
  * der Effektiv-Werte-Schicht (durch Modifikatoren ggf. veraendert); traegt der
- * Knoten dort keinen Wert, gilt der Basiswert der Grenze. Bei einer Prozentgrenze
- * wird der Grenzwert aus dem im Bezugsrahmen gezaehlten Nenner abgeleitet; ein
- * Nenner 0 fuehrt zu `SUSPENDED` samt Null-Nenner-Diagnose (A4), nie zu einer
- * Verletzung. Nenner und Zaehler teilen Scope und Flags, damit sie nicht
- * auseinanderdriften.
+ * Knoten dort keinen Wert, gilt der Basiswert der Grenze.
+ *
+ * Eine **unbegrenzt erklaerte** Grenze liefert `UNLIMITED` — und zwar **vor**
+ * jeder Prozentableitung: sie gilt ohnehin nicht, stellt also keine Nenner-Abfrage
+ * und erzeugt keine unsinnige Null-Nenner-Diagnose. Ob sie unbegrenzt ist,
+ * entscheidet die Effektiv-Werte-Schicht am zuletzt *erklaerten* Wert
+ * ({@link import('./effectiveState.js').EffectiveState#limitBound}); diese Schicht
+ * deutet keinen Zahlwert selbst.
+ *
+ * Bei einer Prozentgrenze wird der Grenzwert aus dem im Bezugsrahmen gezaehlten
+ * Nenner abgeleitet; ein Nenner 0 fuehrt zu `SUSPENDED` samt
+ * Null-Nenner-Diagnose (A4), nie zu einer Verletzung. Nenner und Zaehler teilen
+ * Scope und Flags, damit sie nicht auseinanderdriften.
  */
 function resolveBound(limit, node, effective, ctx) {
-  const raw = effective.limitValue(node, limit.id) ?? limit.value;
+  const effectiveBound = effective.limitBound(node, limit);
+  if (effectiveBound.isUnlimited) return UNLIMITED;
+  const raw = effectiveBound.value;
   if (!limit.isPercent) return raw;
   const denominator = query(ctx, limit.field, limit.scope, null, limit.flags);
   // Unaufloesbares Budget-Feld als Nenner (Diagnose aus `query`): die Grenze wird
@@ -50,16 +60,17 @@ function resolveBound(limit, node, effective, ctx) {
 
 /**
  * Wertet eine einzelne Grenze am Knoten aus und liefert ihr Ergebnis-Tripel,
- * oder `null`, wenn die Grenze suspendiert ist. Ziel der Zaehlung ist die
- * eigene Definition der Bezugsinstanz.
+ * oder `null`, wenn die Grenze gar nicht ausgewertet wird — weil sie suspendiert
+ * oder unbegrenzt erklaert ist. Ziel der Zaehlung ist die eigene Definition der
+ * Bezugsinstanz.
  */
 function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
   if (bound === SUSPENDED) return null;
-  
-  // Battlescribe uses -1 to represent an "unlimited" bound (no limit). 
-  // An unlimited bound never fires and does not restrict headroom.
-  if (bound === -1) return null;
+  // Eine unbegrenzt erklaerte Grenze hat keinen Vergleichswert: sie feuert nie und
+  // schraenkt keinen Restspielraum ein. Der Bericht sieht dafuer — wie fuer jede
+  // nicht ausgewertete Grenze — schlicht kein Ergebnis.
+  if (bound === UNLIMITED) return null;
 
   const targetId = node.def.kind === DefinitionKind.CATEGORY_LINK ? node.def.targetId : node.def.id;
   const actual = query(ctx, limit.field, limit.scope, targetId, limit.flags);

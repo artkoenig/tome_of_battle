@@ -39,6 +39,7 @@ import {
   DiagnosticKind,
   DEFAULT_FLAGS,
   diagnostic,
+  isUnlimitedDeclaration,
 } from './model.js';
 
 const Tag = Object.freeze({
@@ -163,14 +164,6 @@ const DEFAULT_HIDDEN = false;
 
 /** XSD-Vorgabe des `library`-Attributs: ein spielbarer Katalog (Catalogue.xsd:762). */
 const DEFAULT_LIBRARY = false;
-
-/**
- * Der Katalogwert, mit dem eine Kostenart **keine** Vorgabe-Grenze deklariert
- * (XSD-Vorgabe von `defaultCostLimit`, Catalogue.xsd:89). Er wird beim Lesen auf
- * "keine Grenze" (`null`) abgebildet, damit kein Leser den Sentinel als Zahl
- * weiterrechnet.
- */
-const NO_DEFAULT_COST_LIMIT = -1;
 
 const BOOLEAN_TRUE_XML = 'true';
 const BOOLEAN_FALSE_XML = 'false';
@@ -803,12 +796,16 @@ function readCatalogueLinks(root) {
  * Kostenart ist eine reine Datensatz-Angabe ohne Roster-Bezug — sie beschreibt,
  * *welche* Kosten es gibt, nicht welche verplant sind.
  *
- * Die Vorgabe-Grenze ist `null`, wenn der Katalog keine deklariert (fehlendes,
- * unlesbares oder auf {@link NO_DEFAULT_COST_LIMIT} gesetztes Attribut).
+ * Die Vorgabe-Grenze ist `null`, wenn der Katalog keine deklariert: bei fehlendem
+ * oder unlesbarem Attribut, und bei der XSD-Vorgabe `defaultCostLimit="-1"`
+ * (Catalogue.xsd:89) — dem geteilten Unbegrenzt-Sentinel
+ * ({@link isUnlimitedDeclaration}). So rechnet kein Leser den Sentinel als Zahl
+ * weiter.
  */
 function readCostType(costTypeEl) {
-  const declaredLimit = Number.parseFloat(costTypeEl.getAttribute(Attr.DEFAULT_COST_LIMIT));
-  const hasDefaultLimit = !Number.isNaN(declaredLimit) && declaredLimit !== NO_DEFAULT_COST_LIMIT;
+  const declaredLimitAttr = costTypeEl.getAttribute(Attr.DEFAULT_COST_LIMIT);
+  const declaredLimit = Number.parseFloat(declaredLimitAttr);
+  const hasDefaultLimit = !Number.isNaN(declaredLimit) && !isUnlimitedDeclaration(declaredLimitAttr);
   return {
     id: costTypeEl.getAttribute(Attr.ID),
     name: costTypeEl.getAttribute(Attr.NAME),

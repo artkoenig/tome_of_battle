@@ -96,6 +96,8 @@ Pro Knoten: Conditions (bool) und Repeats (Anzahl) über das Query-Primitiv ausw
 
 **Grenzwerte entstehen als Kette.** Ein Modifikator auf eine Grenze schreibt nicht bloß eine Zahl, sondern einen Schritt der **Herleitungskette** dieses Grenzwerts (Art, roher Wert, Wiederholungsfaktor, Zwischenwert, ob bedingt, und bei einem bedingten Schritt der **Zeuge** — die benennbare Auswahl, deren Vorhandensein die Bedingung hat halten lassen, ADR-0027). Der Zeuge wird dort festgehalten, wo die Bedingung ausgewertet wird; nachträglich wäre er nur über eine zweite Rechenstelle zu rekonstruieren (ADR-0034). Die Kette ist die **einzige** Quelle des Endwerts — es gibt keinen zweiten Zahlwert daneben.
 
+**Unbegrenzt liest nur diese Schicht ab.** Der Katalogwert `-1` bedeutet „keine Grenze" ([BSData §7.6](battlescribe-data-format.md#76-constraint)), und zwar als Eigenschaft der **Deklaration**, nicht der Zahl: gemeint ist er genau dann, wenn der zuletzt *erklärte* Wert der Kette dieser Wert ist — der Basiswert, solange kein Modifikator gegriffen hat, sonst der rohe `value` eines abschließenden `set`. Ein rechnender Schritt (`increment`/`decrement`/`multiply`) erklärt nichts, sein Ergebnis ist immer eine gewöhnliche Zahl, auch wenn sie zufällig `-1` ist. Weil nur diese Schicht die Kette besitzt, wird die Frage hier beantwortet (`EffectiveState#limitBound` liefert den Grenzwert **samt seiner Deutung**) und nirgends sonst; die Constraint-Schicht vergleicht keinen Zahlwert mehr gegen ein Literal, und die Kettenform bleibt gekapselt. Der Sonderwert selbst steht als **eine** benannte Konstante im geteilten Vokabular (`model.js`), die auch die Katalog-Randschicht für `costType/@defaultCostLimit` liest; der Vergleich ist numerisch, damit beide Schreibweisen (`-1`, `-1.0`) tragen.
+
 ### 3.5 Fixpunktschleife (Kernentscheidung)
 
 Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Kosten/Kategorien ab. Entscheidung: **Iteration bis zur Konvergenz mit harter Rundenobergrenze.** Ändert eine Runde keine zählrelevanten effektiven Werte mehr, ist der Fixpunkt erreicht. Wird die Obergrenze erreicht, gilt der Stand der letzten Runde und der Bericht erhält eine Nichtkonvergenz-Diagnose — stilles Falschrechnen ist ausgeschlossen.
@@ -108,7 +110,7 @@ Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Koste
 
 ### 3.6 Constraint-Schicht und Bericht
 
-Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Der Bericht enthält:
+Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Eine **unbegrenzt erklärte** Grenze (§3.4) hat keinen Vergleichswert und wird deshalb gar nicht ausgewertet: sie liefert kein Ergebnis, feuert nie und schränkt keinen Restspielraum ein — im Fähigkeitsdatensatz erscheint sie als `effectiveMax: null` / `headroom: null` / `isBlocked: false`, also genau als „unbegrenzt". Umgekehrt ist eine Grenze, die eine Rechnung ins Negative gezogen hat, die **schärfste** Grenze („nichts erlaubt") und wird nicht geklemmt; sie feuert, statt still zu verschwinden. Der Bericht enthält:
 
 - **Verletzungen** (für die Validierungsanzeige) — **eine** Liste fachlich eingeordneter Meldungen, siehe unten,
 - pro **Slot** einen **Fähigkeitsdatensatz**: Definitions-ID, **Ankerart**, **Rahmen-Bezug** und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die **Info-Projektion** — die für ihn geltenden Profile und Regeltexte (für die UI-Steuerung, siehe unten),
@@ -565,6 +567,7 @@ function evaluateAllConstraints(tree, effective, index, diagnostics): Constraint
       actual = query(ctx, limit.field, limit.scope, targetIdFor(limit, node), limit.flags)
       bound  = resolveBound(ctx, limit, effective)
       if bound == SUSPENDED: continue                    // A4: Null-Nenner
+      if bound == UNLIMITED: continue                    // erklärt unbegrenzt: kein Ergebnis
       satisfied = limit.kind == MIN ? actual >= bound : actual <= bound
       results.add(ConstraintResult(limit, node, actual, bound, satisfied,
                                    delta = bound - actual,
@@ -572,8 +575,12 @@ function evaluateAllConstraints(tree, effective, index, diagnostics): Constraint
                                    isReportable = node.anchorKind != OFFER_ANCHOR))
   return results
 
-function resolveBound(ctx, limit, effective): number | SUSPENDED
-  raw = effective.limitValues[(ctx.node, limit.id)]      // ggf. durch Modifikatoren verändert
+function resolveBound(ctx, limit, effective): number | SUSPENDED | UNLIMITED
+  bound = effective.limitBound(ctx.node, limit)          // Zahlwert **samt Deutung** (§3.4)
+  // Der Sentinel schlägt Prozent: eine ohnehin nicht geltende Grenze stellt keine
+  // Nenner-Abfrage und erzeugt keine unsinnige Null-Nenner-Diagnose.
+  if bound.isUnlimited: return UNLIMITED
+  raw = bound.value
   if not limit.isPercent: return raw
   denominator = query(ctx, limit.field, limit.scope, targetId = null, limit.flags)
   if denominator == 0:

@@ -388,6 +388,58 @@ export const ScopeKind = Object.freeze({
  */
 export const SUSPENDED = Symbol('suspended');
 
+/**
+ * Der Katalogwert, mit dem Battlescribe **keine Grenze** erklaert — die **eine**
+ * Quelle dieses Literals in der ganzen Engine. Er tritt an drei Stellen auf:
+ * an `constraint/@value`, am `value` eines `set`-Modifikators auf eine Grenze und
+ * an `costType/@defaultCostLimit` (dort als XSD-Vorgabe, Catalogue.xsd:89).
+ *
+ * Er ist eine Eigenschaft der **Deklaration**, nicht des Zahlenwerts: gemeint ist
+ * er genau dann, wenn der zuletzt *erklaerte* Wert dieser Wert ist. Was
+ * `increment`/`decrement`/`multiply` **errechnet** haben, ist immer eine
+ * gewoehnliche Zahl — auch wenn sie zufaellig gleich diesem Wert ist
+ * (`docs/battlescribe-data-format.md` §7.6).
+ *
+ * Bewusst **nicht** exportiert: Der einzige Weg, nach ihm zu fragen, ist
+ * {@link isUnlimitedDeclaration} — so gibt es neben der einen Quelle des Wertes
+ * auch nur einen Vergleichsweg, und kein Konsument kann den Sentinel erneut
+ * textuell oder gegen einen ungeparsten Wert pruefen.
+ */
+const UNLIMITED_LIMIT_VALUE = -1;
+
+/**
+ * True, wenn ein **erklaerter** Wert die Unbegrenztheit meint
+ * ({@link UNLIMITED_LIMIT_VALUE}).
+ *
+ * Der Vergleich ist **numerisch, nie textuell**: beide Schreibweisen des Wertes
+ * kommen real vor (`-1` in der Definitive Edition, `-1.0` in den aelteren
+ * Datensaetzen), ein `rawValue === '-1'` waere ein stiller Fehlschlag auf der
+ * zweiten. Ein nicht lesbarer Wert ist nie der Sentinel.
+ *
+ * @param {number|string|null|undefined} declaredValue  der erklaerte Wert: der
+ *   Basiswert einer Grenze oder der rohe `value` eines `set`-Modifikators.
+ * @returns {boolean}
+ */
+export function isUnlimitedDeclaration(declaredValue) {
+  // `String(...)` normalisiert die beiden realen Herkuenfte — den bereits geparsten
+  // Basiswert einer Grenze (Zahl) und den rohen `value` eines Modifikators (Text) —
+  // auf **einen** Vergleichsweg; `null`/`undefined` werden dabei zu NaN.
+  return Number.parseFloat(String(declaredValue)) === UNLIMITED_LIMIT_VALUE;
+}
+
+/**
+ * Sentinel-Rueckgabewert der Grenzwert-Aufloesung fuer eine **unbegrenzte**
+ * Grenze — in einer Reihe mit {@link SUSPENDED} und {@link UNRESOLVED_BUDGET}.
+ * Eine solche Grenze hat keinen Vergleichswert und wird deshalb nicht
+ * ausgewertet: sie feuert nie und schraenkt keinen Restspielraum ein.
+ *
+ * Bewusst **kein** `-1` als Zahl: sonst raete jeder Konsument erneut, ob der Wert
+ * eine Grenze oder ein Sonderzeichen ist — genau die Verwechslung, die dieser
+ * Sentinel ausschliesst. Er verlaesst die Constraint-Schicht nie; der Bericht
+ * sieht weiterhin nur "kein Ergebnis".
+ */
+export const UNLIMITED = Symbol('unlimited');
+
 /** Klassifikation einer Diagnose (Auswertungsproblem, nie still verschluckt). */
 export const DiagnosticKind = Object.freeze({
   UNRESOLVED_DEFINITION: 'unresolvedDefinition',

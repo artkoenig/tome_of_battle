@@ -232,7 +232,7 @@ Ein `costType` abstrahiert eine **abzählbare Ressource** — meist Punkte, aber
 
 | Attribut | Bedeutung |
 |----------|-----------|
-| `defaultCostLimit` | Standard-Obergrenze; `-1.0` = kein Limit. |
+| `defaultCostLimit` | Standard-Obergrenze; `-1` bzw. `-1.0` = kein Limit (derselbe Sonderwert wie bei `constraint/@value`, [§7.6](#76-constraint) — hier zugleich die XSD-Vorgabe). |
 | `hidden` | Ob die Kostenart dem Nutzer angezeigt wird. |
 
 ### 5.4 Profile Types & Characteristic Types
@@ -611,7 +611,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 | `type` | `min` \| `max` | Untere oder obere Grenze. |
 | `field` | `selections` \| `forces` \| *`<costTypeId>`* | Was gezählt/summiert wird: Anzahl Auswahlen, Anzahl Forces oder die Summe einer Kostenart. |
 | `scope` | `parent` \| `roster` \| `force` \| `category` \| `self` | Bezugsrahmen der Zählung. |
-| `value` | Zahl | Der Grenzwert (`-1.0` = unbegrenzt). |
+| `value` | Zahl | Der Grenzwert (`-1` bzw. `-1.0` = unbegrenzt, siehe „Unbegrenzt ist eine Deklaration" unten). |
 | `percentValue` | `true`/`false` | Ob `value` als Prozentsatz zu interpretieren ist. |
 | `shared` | `true`/`false` | Ob der gezählte Wert über alle Link-Instanzen geteilt wird oder pro Instanz gilt. |
 | `includeChildSelections` | `true`/`false` | Ob verschachtelte Auswahlen mitgezählt werden. |
@@ -636,6 +636,24 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 </constraints>
 ```
 
+**„Unbegrenzt" ist eine Deklaration, keine Zahl.** `-1` steht an drei Stellen für „keine Grenze":
+an `constraint/@value`, am `value` eines `modifier type="set"` auf einen Constraint und an
+`costType/@defaultCostLimit` ([§5.3](#53-cost-types-kostenarten); dort ist es sogar die XSD-Vorgabe).
+Gemeint ist der Sonderwert genau dann, wenn er der **zuletzt erklärte** Wert ist — nicht, wenn er
+zufällig als Rechenergebnis herauskommt. Beide Lesarten sind in echten Katalogen belegt:
+
+| Herkunft des wirksamen Werts | Bedeutung | Beleg |
+|------------------------------|-----------|-------|
+| `value="-1"`, kein Modifier greift | unbegrenzt | `.gst`-Kategorie „Heroes" `c16b-f319-2c62-2c12`, Constraint `7fca-63fb-63d2-9dad` |
+| Ein `modifier type="set" value="-1"` greift auf eine **endliche** Grenze | ab dann unbegrenzt | „Orc Big 'Uns" `eeb1-a6c4-b57e-f08c`, Constraint `938b-15b1-f433-e0d5` (Basiswert `0`) |
+| Ein `modifier type="set"` setzt eine mit `-1` deklarierte Grenze auf eine Zahl | gewöhnliche Zahl | Modell „Orc Boyz" `cef0-77ce-8158-32d4`, Constraint `2115-87d4-2ead-6ba1` (`set 25`) |
+| `increment`/`decrement`/`multiply` **errechnen** den Wert | gewöhnliche Zahl — auch wenn sie `-1` ist | `-1` wird real arithmetisch benutzt: `ffea-b24a-0cdf-781e` (`max="-1.0"` am Lord-`categoryLink` der `whfb6`-`.gst`) trägt ein `increment 1.0` je 1000 Punkte |
+
+Eine Grenze, die eine Rechnung ins Negative zieht, ist deshalb **nicht** unbegrenzt, sondern die
+schärfste mögliche Grenze („nichts erlaubt"); sie wird nicht auf 0 geklemmt. Der Vergleich mit dem
+Sonderwert ist **numerisch**, nie textuell: beide Schreibweisen kommen vor (`-1` in der Definitive
+Edition, `-1.0` in den älteren Datensätzen).
+
 > **Regeln:**
 > - `scope="parent"` vergleicht aufgelöste **Ziel-IDs**, nicht `entryLinkId`s.
 > - `scope="force"` zählt ein **Eintrags**-Ziel **pro Detachment**, ein **Kategorie**-Ziel **armeeweit**
@@ -651,7 +669,7 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 |---------------------|-------|-----------|
 | `type` | `increment` \| `decrement` \| `set` \| `append` \| `prepend` \| `multiply` \| `add` \| `remove` \| `set-primary` \| `unset-primary` | Operation. `increment`/`decrement`/`set`/`multiply` für numerische Felder, `append`/`prepend`/`set` für Text, `add`/`remove` für Kategoriezugehörigkeit (`field="category"`), `set-primary`/`unset-primary` für das `primary`-Flag eines Kategorie-Links. |
 | `field` | *Constraint-`id`* \| *`<costTypeId>`* \| `hidden` \| `name` \| `category` \| `error` \| `warning` \| `info` \| *`<characteristicTypeId>`* | Was geändert wird. `category` (zusammen mit `add`/`remove`) ändert die Kategoriezugehörigkeit zur Laufzeit. `error`/`warning`/`info` (zusammen mit `type="add"`) tragen keinen Feldwert, sondern einen Klartext-Hinweis für den Spieler (siehe unten). |
-| `value` | Zahl/Text | Der anzuwendende Wert. Bei `append`/`prepend` der anzufügende Text. |
+| `value` | Zahl/Text | Der anzuwendende Wert. Bei `append`/`prepend` der anzufügende Text. Bei `type="set"` auf einen Constraint ist `-1` der Sonderwert „unbegrenzt" ([§7.6](#76-constraint)) — bei `increment`/`decrement`/`multiply` dagegen ein gewöhnlicher Operand. |
 | `join` | Text (optional, nur `append`/`prepend`) | Trennzeichen zwischen dem bestehenden Namen und dem angehängten/vorangestellten Text. **Wird verbatim übernommen, nicht angenommen** — reale Kataloge nutzen neben einem einfachen Leerzeichen auch NBSP (`&#160;`) und `"&#160;+&#160;"`. Fehlt das Attribut, wird ohne Trennzeichen zusammengefügt. |
 
 > **Nicht offiziell spezifiziert (`multiply`, `prepend`, `join`):** Diese drei Konstrukte sind in

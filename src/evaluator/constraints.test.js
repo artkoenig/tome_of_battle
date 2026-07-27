@@ -254,6 +254,124 @@ describe('Prozentgrenze mit Nenner 0 (Annahme A4)', () => {
   });
 });
 
+describe('Unbegrenztheit: der Sentinel wird an der Deklaration gedeutet, nicht am Ergebnis', () => {
+  const MAX_WARRIORS_LIMIT_ID = 'max-warriors';
+  // Beide Schreibweisen des Sentinels kommen in echten Katalogen vor: `-1` in der
+  // Definitive Edition, `-1.0` in den aelteren Datensaetzen. Sie stehen hier als
+  // **Rohtext**, denn genau die Textform ist es, die numerisch gedeutet werden muss.
+  const UNLIMITED_XML = '-1';
+  const UNLIMITED_XML_DECIMAL = '-1.0';
+
+  /**
+   * Ein Katalog mit genau einer MAX-Grenze (Selektionsanzahl, roster-weit) am
+   * Krieger — deklariert mit `declaredValue`, optional veraendert durch die
+   * mitgegebenen, bedingungslosen Modifikatoren.
+   */
+  function catalogueWith(declaredValue, modifiersXml = '') {
+    return `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-unlimited" name="Unlimited Catalogue">
+        <selectionEntries>
+          <selectionEntry id="${WARRIOR_DEF_ID}" name="Warrior" type="unit">
+            <constraints>
+              <constraint id="${MAX_WARRIORS_LIMIT_ID}" type="max" value="${declaredValue}" field="selections" scope="roster"/>
+            </constraints>
+            <modifiers>${modifiersXml}</modifiers>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+  }
+
+  /** Ein bedingungsloser Modifikator auf die eine MAX-Grenze. */
+  function limitModifier(type, value) {
+    return `<modifier type="${type}" field="${MAX_WARRIORS_LIMIT_ID}" value="${value}"/>`;
+  }
+
+  /** Die Verletzungen der einen MAX-Grenze im Roster mit `count` Kriegern. */
+  function violationsOf(catalogueXml, count) {
+    const report = evaluate(catalogueXml, roster([{ defId: WARRIOR_DEF_ID, count, children: [] }]));
+    return report.violations.filter(violation => violation.limitId === MAX_WARRIORS_LIMIT_ID);
+  }
+
+  it('laesst eine mit dem Sentinel deklarierte Grenze nie feuern', () => {
+    expect(violationsOf(catalogueWith(UNLIMITED_XML), 99)).toHaveLength(0);
+  });
+
+  it('erkennt den Sentinel auch in der Dezimal-Schreibweise der Deklaration', () => {
+    expect(violationsOf(catalogueWith(UNLIMITED_XML_DECIMAL), 99)).toHaveLength(0);
+  });
+
+  it('macht eine endliche Grenze unbegrenzt, wenn ein Modifikator sie auf den Sentinel setzt', () => {
+    const catalogueXml = catalogueWith(1, limitModifier('set', UNLIMITED_XML));
+
+    expect(violationsOf(catalogueXml, 2)).toHaveLength(0);
+  });
+
+  it('erkennt den Sentinel auch in der Dezimal-Schreibweise eines Setz-Modifikators', () => {
+    const catalogueXml = catalogueWith(1, limitModifier('set', UNLIMITED_XML_DECIMAL));
+
+    expect(violationsOf(catalogueXml, 2)).toHaveLength(0);
+  });
+
+  // Kein Katalog im Repo zieht eine Grenze ins Negative — deshalb steht dieser Fall
+  // hier als Modultest und nicht als E2E-Szenario (ADR-0033: keine erfundenen
+  // Katalogdaten). Er landet bewusst **exakt** auf dem Sentinel: eine Deutung am
+  // Ergebnis statt an der Deklaration liesse die schaerfste aller Grenzen still
+  // verschwinden.
+  it('deutet eine von einem Modifikator ins Negative gezogene Grenze nicht als unbegrenzt', () => {
+    const catalogueXml = catalogueWith(1, limitModifier('decrement', 2));
+
+    const violations = violationsOf(catalogueXml, 1);
+
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({ actual: 1, bound: -1 });
+  });
+
+  // Ebenfalls unbelegt im Datensatz des Evaluators (122 Grenzen mit dem Sentinel,
+  // 36 Ziele arithmetischer Modifikatoren, Schnittmenge leer) — und ebenfalls
+  // deshalb ein Modultest: eine Rechnung erklaert nichts, ihr Ergebnis ist immer
+  // eine gewoehnliche Zahl.
+  it('macht aus einer mit dem Sentinel deklarierten, hochgezaehlten Grenze eine gewoehnliche Zahl', () => {
+    const catalogueXml = catalogueWith(UNLIMITED_XML, limitModifier('increment', 2));
+
+    const violations = violationsOf(catalogueXml, 2);
+
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({ actual: 2, bound: 1 });
+  });
+
+  it('haelt eine Grenze auch dann fuer eine Zahl, wenn die Rechnung genau auf dem Sentinel landet', () => {
+    // 0 - 1 = -1: derselbe Zahlwert wie der Sentinel, aber keine Erklaerung.
+    const catalogueXml = catalogueWith(0, limitModifier('decrement', 1));
+
+    const violations = violationsOf(catalogueXml, 1);
+
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({ actual: 1, bound: -1 });
+  });
+
+  it('fragt fuer eine unbegrenzte Prozentgrenze keinen Nenner ab und meldet keinen Null-Nenner', () => {
+    // Eine unbegrenzte Grenze gilt ohnehin nicht; eine Null-Nenner-Diagnose fuer sie
+    // waere ein Befund ueber eine Regel, die gar nicht ausgewertet wird.
+    const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-unlimited-percent" name="Unlimited Percent Catalogue">
+        <selectionEntries>
+          <selectionEntry id="${WARRIOR_DEF_ID}" name="Warrior" type="unit">
+            <constraints>
+              <constraint id="${MAX_WARRIORS_LIMIT_ID}" type="max" value="${UNLIMITED_XML}" percentValue="true" field="${MANA_COST_ID}" scope="roster"/>
+            </constraints>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+
+    const report = evaluate(catalogueXml, roster([{ defId: WARRIOR_DEF_ID, count: 1, children: [] }]));
+
+    expect(report.violations).toHaveLength(0);
+    expect(report.diagnostics).not.toContainEqual(
+      expect.objectContaining({ kind: 'zeroDenominator', limitId: MAX_WARRIORS_LIMIT_ID })
+    );
+  });
+});
+
 describe('Berichtsfaehigkeit: welches Ergebnis als Verletzung gemeldet werden darf', () => {
   const FORCE_DEF_ID = 'force-army';
   const MAX_ARCHERS_LIMIT_ID = 'max-archers';

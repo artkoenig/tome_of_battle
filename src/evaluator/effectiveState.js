@@ -38,7 +38,7 @@
  */
 
 import { allNodes, limitsOf } from './evalTree.js';
-import { DefinitionKind } from './model.js';
+import { DefinitionKind, ModifierKind, isUnlimitedDeclaration } from './model.js';
 
 const EMPTY_CHARACTERISTICS = Object.freeze([]);
 const NO_AUTHOR_MESSAGES = Object.freeze([]);
@@ -147,6 +147,32 @@ export class EffectiveState {
   limitValue(node, limitId) {
     const derivation = this.#limits.get(node)?.get(limitId);
     return derivation === undefined ? undefined : valueOfDerivation(derivation);
+  }
+
+  /**
+   * Der effektive Grenzwert einer Grenze **samt seiner Deutung**: ob die Grenze
+   * unbegrenzt ist und, unabhaengig davon, welchen Zahlwert ihre Herleitung
+   * ergeben hat.
+   *
+   * Diese Schicht besitzt die Herleitungskette und ist damit die einzige Stelle,
+   * die weiss, welcher Wert zuletzt **erklaert** wurde — deshalb wird die
+   * Unbegrenztheit hier entschieden und nicht am fertigen Zahlwert. Die Kettenform
+   * bleibt dabei gekapselt: kein Konsument liest `steps` fuer diese Frage.
+   *
+   * @param {object} node
+   * @param {{ id: string, value: number }} limit  die Grenze; ihr Basiswert gilt,
+   *   wenn der Knoten keine Herleitung fuer sie fuehrt.
+   * @returns {{ isUnlimited: boolean, value: number }} `value` ist auch bei
+   *   `isUnlimited` gesetzt, damit eine Diagnose ihn nennen kann.
+   */
+  limitBound(node, limit) {
+    // Traegt der Knoten die Grenze nicht, gilt ihr Basiswert — als Kette ohne
+    // Schritt, damit beide Faelle **einen** Deutungsweg teilen.
+    const derivation = this.#limits.get(node)?.get(limit.id) ?? { base: limit.value, steps: [] };
+    return Object.freeze({
+      isUnlimited: isUnlimitedDeclaration(lastDeclaredValueOf(derivation)),
+      value: valueOfDerivation(derivation),
+    });
   }
 
   /**
@@ -269,6 +295,21 @@ function valueOfDerivation(derivation) {
   return derivation.steps.length === 0
     ? derivation.base
     : derivation.steps[derivation.steps.length - 1].result;
+}
+
+/**
+ * Der zuletzt **erklaerte** Wert einer Herleitung — der einzige, an dem sich der
+ * Unbegrenzt-Sentinel deuten laesst: der Basiswert, solange kein Modifikator
+ * gegriffen hat, sonst der rohe `value` eines abschliessenden `set`.
+ *
+ * Ein rechnender Schritt (`increment`/`decrement`/`multiply`) erklaert nichts, er
+ * rechnet — sein Ergebnis ist deshalb immer eine gewoehnliche Zahl. `null` steht
+ * fuer "gar keine Erklaerung" und ist damit nie der Sentinel.
+ */
+function lastDeclaredValueOf(derivation) {
+  const lastStep = derivation.steps[derivation.steps.length - 1];
+  if (lastStep === undefined) return derivation.base;
+  return lastStep.kind === ModifierKind.SET ? lastStep.rawValue : null;
 }
 
 const newMap = () => new Map();
