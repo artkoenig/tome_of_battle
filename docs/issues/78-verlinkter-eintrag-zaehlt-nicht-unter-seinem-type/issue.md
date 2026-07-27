@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: fix
 Blocked by: None
 
@@ -32,3 +32,4 @@ anzufassen ist wahrscheinlich billiger als nacheinander.
 - [ ] Die uebrige E2E-Suite bleibt gruen; jede geaenderte Erwartung ist einzeln begruendet.
 
 ## Comments
+- superseded: Aufgegangen in Main-Issue 81 (Verweis-Identitaet in der Zaehlung), das Symptom 2 unveraendert uebernimmt. Issue 78 empfahl diese Zusammenlegung selbst.

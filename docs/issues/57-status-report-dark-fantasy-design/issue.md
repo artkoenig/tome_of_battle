@@ -1,9 +1,12 @@
-Status: ready-for-agent
+Status: superseded
 Type: style
 Blocked by: None
 
 ## Description
 # PRD: Epic Battlefield Theme for Status Report
+
+## Comments
+- superseded: Vom Maintainer verworfen: wird nicht mehr umgesetzt.
 
 ## Problem Statement
 The automated project status report page at `/status` currently uses the legacy light parchment design system instead of matching the newly introduced "Epic Battlefield" dark fantasy design system of the landing page.

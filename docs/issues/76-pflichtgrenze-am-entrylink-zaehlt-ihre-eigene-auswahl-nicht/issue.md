@@ -1,4 +1,4 @@
-Status: needs-triage
+Status: superseded
 Type: fix
 Blocked by: None
 
@@ -38,3 +38,4 @@ gehoert deshalb nicht in einen laufenden Slice von Issue 75.
 
 ## Comments
 - Dieselbe Wurzel auf der Fixture-Seite, gefunden in Slice 75/07: Der .ros-Leser der Testumgebung (src/evaluator/__fixtures__/rosParser.js) bindet eine Auswahl allein ueber entryId und ignoriert entryLinkId. Alles, was am <entryLink> selbst deklariert ist, gilt damit im Test nie — im Widerspruch zu report.js, das den Verweis-Slot ausdruecklich den Verweis tragen laesst. Belegt an Ogre Kingdoms (6th definitive edition).cat:3165: dort gewaehrt Verweis d82e 'Bully Bully' bedingungslos. Betrifft 13 von 102 vorhandenen Rostern in 4 Szenarien. Wer 76 behebt, sollte beide Stellen zusammen anfassen: Engine-Zaehlung und Roster-Adapter benennen eine Auswahl nur dann gleich, wenn beide Ids tragen.
+- superseded: Aufgegangen in Main-Issue 81 (Verweis-Identitaet in der Zaehlung), das Symptom 1 unveraendert samt beiden Belegfaellen und der Fixture-Seite uebernimmt und mit Issue 78 dieselbe Wurzel gemeinsam behebt.
