@@ -84,6 +84,16 @@ export { prepareDataset } from './datasetPreparation.js';
  *   **und** die eingestellten Kostengrenzen je Kostenart (`costLimits`, die
  *   Zuordnung Kostenart → Grenzwert, analog `<costLimits>`). Fehlt `costLimits`,
  *   ist das Budget leer — verhaltensgleich zu einem Roster ohne Kostengrenzen.
+ *
+ *   Ein Instanzknoten ist
+ *   `{ defId, linkDefId?, count, children? }`: `defId` ist die **Ziel**-Id (`.ros`
+ *   `entryId`), `linkDefId` die Id des **Verweises**, ueber den das Vorkommen
+ *   hereinkam (`.ros` `entryLinkId`, §3.5 des Formatdokuments). Ein leerer String
+ *   und ein fehlendes Feld bedeuten gleichermassen „direkt gesetzt"; `forces` tragen
+ *   kein `linkDefId`. Nennt ein Roster den Verweis, ist **er** das Vorkommen
+ *   (ADR-0037) — nur so gelten die an ihm deklarierten Grenzen, Kosten und
+ *   Modifikatoren. Nennt es ihn nicht, gilt das Ziel; der Verweis wird **nicht**
+ *   geraten, auch wenn nur einer in Frage kommt.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen. Ein
  *   Slot ist **jede Stelle, an der eine Auswahl stehen kann** — auch eine noch

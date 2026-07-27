@@ -51,7 +51,7 @@
  * Nach-Durchlauf in `fixpoint.js`), die Grenzen-Auswertung `constraints.js`.
  */
 
-import { DefinitionKind, isLinkDefinition } from './model.js';
+import { DefinitionKind, isLinkDefinition, occurrenceIdsOf, namesSameOccurrence } from './model.js';
 import { attachOfferAnchor, realNodes, ownerDefinitionOf, linkedCategoryIdsOf } from './evalTree.js';
 
 /**
@@ -84,23 +84,14 @@ function isCarriedByForce(def, forceCategoryIds) {
 }
 
 /**
- * Die IDs, unter denen eine Definition als „schon vorhanden" gelten kann: ihre
- * eigene, die Ziel-ID eines Verweises und die ID des aufgeloesten Ziels. Ein
- * Roster kann dieselbe Auswahl unter der Link- **oder** unter der Ziel-ID fuehren;
- * ohne alle drei entstuende neben dem realen Knoten ein zweiter Anker.
+ * Die Identitaets-IDs aller Knoten, die im Rahmen bereits haengen (Entdopplungs-Basis).
+ * Sie stehen als abgelesenes Feld an jedem Knoten — die Join-Schicht hat sie beim
+ * Aufbau bestimmt (`model.js`, {@link occurrenceIdsOf}).
  */
-function identityIdsOf(def) {
-  const ids = [def.id];
-  if (def.targetId !== null && def.targetId !== undefined) ids.push(def.targetId);
-  if (def.resolved !== null && def.resolved !== undefined) ids.push(def.resolved.id);
-  return ids;
-}
-
-/** Die Identitaets-IDs aller Knoten, die im Rahmen bereits haengen (Entdopplungs-Basis). */
 function occupiedIdsOf(frame) {
   const ids = new Set();
   for (const child of frame.children) {
-    for (const id of identityIdsOf(child.def)) ids.add(id);
+    for (const id of child.occurrenceIds) ids.add(id);
   }
   return ids;
 }
@@ -171,12 +162,13 @@ export function attachOfferAnchors(root, resolved) {
   for (const frame of frames) {
     const occupiedIds = occupiedIdsOf(frame);
     for (const def of candidatesFor(frame, armyLevelCandidates)) {
-      if (identityIdsOf(def).some(id => occupiedIds.has(id))) continue;
+      const candidateIds = occurrenceIdsOf(def, root.builder.lookup);
+      if (namesSameOccurrence(candidateIds, occupiedIds)) continue;
       anchors.push(attachOfferAnchor(root, frame, def));
       // Der frische Anker belegt seine Definition im Rahmen: erscheint dieselbe
       // Definition in der Kandidatenliste ein zweites Mal (etwa als Eintrag und
       // als Verweis auf ihn), entsteht kein zweiter Anker.
-      for (const id of identityIdsOf(def)) occupiedIds.add(id);
+      for (const id of candidateIds) occupiedIds.add(id);
     }
   }
   return anchors;

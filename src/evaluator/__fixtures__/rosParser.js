@@ -3,9 +3,16 @@
  * `{ forces: [{ defId, count, children }] }`, den die Fassade `evaluate` erwartet.
  *
  * Die Uebersetzung ist rein strukturell (Black-Box): jede `<selection>` wird ueber
- * ihre `entryId` zur Definitions-Id, `number` zur Anzahl (Default 1), und ihre
+ * ihre `entryId` zur Definitions-Id, ueber ihre `entryLinkId` zur Id des Verweises,
+ * durch den sie hereinkam, `number` zur Anzahl (Default 1), und ihre
  * verschachtelten `<selections>` werden rekursiv zu Kindern. Kein Evaluator-Wissen
  * fliesst ein — genau die Naht, die ein Black-Box-Testautor braucht.
+ *
+ * **Beide** Ids gehoeren dazu, weil das Format beide fuehrt
+ * (`docs/battlescribe-data-format.md` §3.5): ohne `entryLinkId` liesse sich „ueber
+ * einen Verweis gesetzt" in einer `.ros`-Datei nicht ausdruecken, und der Fall waere
+ * nicht pruefbar. Ein leerer String und ein fehlendes Attribut bedeuten
+ * gleichermassen „direkt gesetzt"; ein `<force>` traegt keine Verweis-Id.
  *
  * Ausgelagert aus den handgeschriebenen `e2e.*.ros.test.js`, damit der
  * generalisierte, manifest-getriebene Runner (`e2e.testcatalog.test.js`) dieselbe
@@ -22,7 +29,7 @@ const dom = new JSDOM();
  * Die verschachtelten `<selection>`-Kinder eines Elements als Instanzbaum-Knoten.
  *
  * @param {Element} element Ein `<force>`- oder `<selection>`-Element.
- * @returns {Array<{ defId: string | null, count: number, children: object[] }>}
+ * @returns {Array<{ defId: string | null, linkDefId: string | null, count: number, children: object[] }>}
  *   Die direkten Auswahl-Kinder, jeweils rekursiv aufgeloest.
  */
 function childSelections(element) {
@@ -33,6 +40,7 @@ function childSelections(element) {
       if (selection.tagName !== 'selection') continue;
       out.push({
         defId: selection.getAttribute('entryId'),
+        linkDefId: selection.getAttribute('entryLinkId'),
         count: Number(selection.getAttribute('number') || '1'),
         children: childSelections(selection),
       });
@@ -74,7 +82,8 @@ function costLimitsFromRoster(doc) {
  *   (dem cwd des Testlaufs) aufgeloest — wie die uebrigen fixture-lesenden Tests.
  * @returns {{ forces: Array<{ defId: string | null, count: number, children: object[] }>,
  *            costLimits: Array<{ costTypeId: string, value: number }> }}
- *   Das Roster in der von `evaluate` erwarteten Form.
+ *   Das Roster in der von `evaluate` erwarteten Form. Die `forces` tragen keine
+ *   Verweis-Id, ihre Auswahl-Kinder je eine (`linkDefId`, ggf. leer).
  */
 export function rosterFromRos(path) {
   const xml = readFileSync(resolve(path), 'utf8');

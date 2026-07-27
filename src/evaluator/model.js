@@ -28,6 +28,13 @@ export {
   InfoLinkKind,
 } from '../parser/schema/battlescribeSchema.generated.js';
 
+// Die geschlossene Vokabelmenge des rohen `type`-Attributs eines
+// `selectionEntry` (`model`/`unit`/`upgrade`) — dieselbe SSOT, nur nicht
+// re-exportiert: nach aussen tritt sie allein ueber {@link countedTypeOf} und
+// {@link queryScopeKey} auf, damit kein Konsument gegen ein einzelnes Vokabelwort
+// programmiert.
+import { SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
+
 /**
  * Diskriminator des gezaehlten Feldes einer Query. `SELECTION_COUNT` zaehlt
  * Selektionen; `COST_SUM` summiert eine Kostenart, die per ID benannt wird
@@ -146,6 +153,84 @@ export const DefinitionKind = Object.freeze({
  */
 export function isLinkDefinition(def) {
   return def.kind === DefinitionKind.ENTRY_LINK || def.kind === DefinitionKind.CATEGORY_LINK;
+}
+
+/**
+ * Die Ids, unter denen ein **Vorkommen** dieser Definition benennbar ist: ihre
+ * eigene Id **und jedes Glied ihrer Verweiskette bis einschliesslich des Ziels**
+ * (`design.md`, Kontrakt 3). Identitaet ist damit **mengenwertig** und nicht
+ * skalar — genau daran scheiterte die Zaehlung eines ueber einen `entryLink`
+ * gesetzten Vorkommens: es war entweder unter der Verweis- oder unter der Ziel-Id
+ * auffindbar, nie unter beiden.
+ *
+ * Die Kette wird Glied fuer Glied gelaufen, statt drei Stichproben zu nehmen
+ * (eigene Id, `targetId`, `resolved.id`): bei einer Kette `L1 → L2 → L3 → D`
+ * liesse das `L3` aus, und eine Grenze oder Bedingung, die `L3` benennt, faende
+ * ihr Vorkommen nicht — dieselbe Fehlerklasse, nur eine Ebene tiefer. Der Lauf ist
+ * **zyklen-sicher** ueber die schon besuchten Ids (wie
+ * `resolver.followEntryLink`); eine Kette ohne Ende endet damit, statt endlos zu
+ * laufen, und ist als baumelnder Verweis bereits diagnostiziert.
+ *
+ * @param {{ id: string, kind: string, targetId?: string|null }} def  die Definition eines Vorkommens.
+ * @param {(id: string) => object|null} lookup  der Definitions-Nachschlag des
+ *   Resolvers. Er ist noetig, weil die *mittleren* Glieder einer Kette nur ueber
+ *   ihre Id erreichbar sind: ein Verweis kennt sein naechstes Glied (`targetId`)
+ *   und — vom Resolver aufgeloest — sein Kettenende (`resolved`), aber keinen
+ *   Zeiger auf die Verweisobjekte dazwischen.
+ * @returns {string[]} die Ids in Kettenreihenfolge, dedupliziert.
+ */
+export function occurrenceIdsOf(def, lookup) {
+  const ids = [def.id];
+  if (!isLinkDefinition(def)) return ids;
+
+  const seen = new Set(ids);
+  let currentId = def.targetId;
+  while (currentId !== null && currentId !== undefined && !seen.has(currentId)) {
+    seen.add(currentId);
+    ids.push(currentId);
+    const target = lookup(currentId);
+    if (target === null || target === undefined || !isLinkDefinition(target)) break;
+    currentId = target.targetId;
+  }
+  return ids;
+}
+
+/**
+ * True, wenn zwei Id-Mengen **dasselbe Vorkommen** benennen, also sich schneiden
+ * (`design.md`, Kontrakt 3). Damit greift jede Entdopplung auch fuer ein Roster,
+ * das nur eine der beiden Ids nennt: der reale Knoten unter dem Verweis und die
+ * Definition, die das Ziel nennt, sind dasselbe Vorkommen.
+ *
+ * @param {Iterable<string>} ids
+ * @param {{ has: (id: string) => boolean }} otherIds
+ */
+export function namesSameOccurrence(ids, otherIds) {
+  for (const id of ids) {
+    if (otherIds.has(id)) return true;
+  }
+  return false;
+}
+
+/**
+ * Der **gezaehlte Typ** einer Definition: das rohe `type`-Attribut (`model`,
+ * `unit`, `upgrade`) der *tragenden* Definition — bei einem Verweis das seines
+ * aufgeloesten Ziels, sonst das eigene (`design.md`, Kontrakt 4). Genau dieses
+ * Attribut liest eine Bedingung, deren `childId` ein Typ-Schluesselwort ist.
+ *
+ * Ein Ziel ohne `type` (eine `selectionEntryGroup`, ein Kontingent, eine
+ * Kategorie) liefert `undefined` und traegt kein Typ-Ziel bei.
+ *
+ * **Nicht** aus `entryLink/@type` gelesen: die XSD besetzt dieses Attribut mit der
+ * *Art des Verweisziels* (`selectionEntry`/`selectionEntryGroup`), nicht mit dem
+ * Eintragstyp — es mitzulesen wuerde `"selectionEntry"` als Typ zaehlen und eine
+ * `childId="model"`-Bedingung still auf 0 lassen.
+ *
+ * @param {{ type?: string|null, kind: string, resolved?: object|null }} def
+ * @returns {string|undefined}
+ */
+export function countedTypeOf(def) {
+  const carrier = isLinkDefinition(def) ? def.resolved : def;
+  return carrier?.type ?? undefined;
 }
 
 /**
@@ -508,11 +593,48 @@ const SCOPE_KEY_SEPARATOR = '::';
 const SCOPE_KEY_NO_TARGET = '*';
 
 /**
- * Kodiert einen Index-Schluessel aus Bezugsrahmen und optionalem Ziel.
+ * Kodiert einen Index-Schluessel aus Bezugsrahmen und optionalem **Id-Ziel**.
  * `null` als Ziel bedeutet "alles in diesem Rahmen" (Index-Schicht §3.4/§4.4).
  */
 export function scopeKey(frame, targetId) {
   return `${frame}${SCOPE_KEY_SEPARATOR}${targetId ?? SCOPE_KEY_NO_TARGET}`;
+}
+
+/**
+ * Praefix des **Typ-Schluesselraums** des Zaehlindex (`design.md`, Kontrakt 8).
+ *
+ * Ein Knoten traegt zwei grundverschiedene Wertarten als Zaehlziel bei: Ids
+ * (eigene, Kettenglieder, Kategorien, Gruppen) und ein Vokabelwort aus dem
+ * geschlossenen XSD-Typvorrat. Fielen beide in **einen** Schluesselraum, zaehlte
+ * eine Katalog-Id, die zufaellig `model` lautet, als Typ. Der Praefix haelt die
+ * Raeume getrennt — dieselbe Technik, mit der {@link LIMIT_FIELD_PREFIX} und
+ * `budget::` engine-eigene Schluessel vom Katalog-Id-Raum trennen.
+ */
+const TYPE_TARGET_PREFIX = 'type:';
+
+/** Die geschlossene XSD-Vokabelmenge der gezaehlten Eintragstypen (SSOT, ADR-0016). */
+const COUNTED_TYPE_KEYWORDS = new Set(Object.values(SelectionEntryKind));
+
+/**
+ * Kodiert einen Index-Schluessel aus Bezugsrahmen und **Typ-Ziel** — dem rohen
+ * Eintragstyp aus {@link countedTypeOf}, im eigenen Schluesselraum.
+ */
+export function typeScopeKey(frame, type) {
+  return scopeKey(frame, `${TYPE_TARGET_PREFIX}${type}`);
+}
+
+/**
+ * Der Index-Schluessel, unter dem eine **Query** ihr rohes Ziel nachschlaegt: das
+ * Ziel einer Bedingung/Grenze ist entweder ein Typ-Schluesselwort oder eine Id, und
+ * welches von beidem, entscheidet allein der geschlossene XSD-Typvorrat — nicht die
+ * Form der Zeichenkette. Die Regel ist damit **keyword-agnostisch**: ein weiteres
+ * Typ-Vokabelwort in der XSD wirkt hier ohne Codeaenderung, und eine Katalog-Id
+ * bleibt eine Katalog-Id, auch wenn sie wie ein Vokabelwort aussieht.
+ */
+export function queryScopeKey(frame, rawTarget) {
+  return COUNTED_TYPE_KEYWORDS.has(rawTarget)
+    ? typeScopeKey(frame, rawTarget)
+    : scopeKey(frame, rawTarget);
 }
 
 /** Erzeugt eine unveraenderliche Diagnose. */

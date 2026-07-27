@@ -18,7 +18,7 @@ import {
   BudgetLimitUnresolvedReason,
   UNRESOLVED_BUDGET,
   normalizeFlags,
-  scopeKey,
+  queryScopeKey,
   diagnostic,
 } from './model.js';
 import { frameKeyOf } from './evalTree.js';
@@ -55,10 +55,19 @@ function isCategoryTarget(targetId, categoryIds) {
   return targetId !== null && targetId !== undefined && categoryIds.has(targetId);
 }
 
-/** Der naechste Vorfahre (den Knoten eingeschlossen), dessen Definition `id` traegt. */
+/**
+ * Der naechste Vorfahre (den Knoten eingeschlossen), dessen **Vorkommen** die Id
+ * `id` traegt — die eigene Definitions-Id oder ein Glied seiner Verweiskette
+ * (`design.md`, Kontrakt 3).
+ *
+ * Verglichen wird die ganze Identitaets-Menge und nicht `def.id`: ein ueber einen
+ * `entryLink` gesetzter Rahmenknoten traegt den **Verweis** als Definition, und ein
+ * `scope="<Ziel-Id>"` faende seinen Rahmen sonst nicht mehr — er liefe in einen
+ * unaufloesbaren Bezugsrahmen und zaehlte 0.
+ */
 function nearestAncestorWithDefId(node, id) {
   for (let current = node; current !== null && !current.isRoot; current = current.parent) {
-    if (current.def?.id === id) return current;
+    if (current.occurrenceIds.has(id)) return current;
   }
   return null;
 }
@@ -176,7 +185,9 @@ export function query(ctx, field, scope, targetId, flags) {
     return 0;
   }
 
-  const key = scopeKey(frameKeyOf(frame), targetId);
+  // Der Schluesselraum haengt am Ziel: ein Typ-Schluesselwort schlaegt im
+  // Typ-Raum nach, jedes andere Ziel im Id-Raum (`model.js`, Kontrakt 8).
+  const key = queryScopeKey(frameKeyOf(frame), targetId);
   const tally = ctx.index.get(key, effectiveFlags.includeChildSelections, effectiveFlags.includeChildForces);
 
   if (field.kind === CountedFieldKind.SELECTION_COUNT) {

@@ -14,7 +14,7 @@
  * voneinander** wirksam — auch in Kombination.
  */
 
-import { DefinitionKind, scopeKey } from './model.js';
+import { DefinitionKind, scopeKey, typeScopeKey } from './model.js';
 import { realNodes, frameKeyOf } from './evalTree.js';
 
 /**
@@ -77,39 +77,46 @@ function contributionOf(node, effective) {
 }
 
 /**
- * Die Ziel-IDs, unter denen ein Knoten in einem Rahmen zaehlbar ist: `null`
- * ("alles im Rahmen"), seine eigene Definitions-ID und jede seiner **effektiven**
- * Kategorie-IDs. Dies ist der Zaehl-Zugriffspunkt aus §4.4: die Zaehlung stuetzt
- * sich auf die effektiven Kategorien (nach kategorie-aendernden Modifikatoren),
- * nicht auf die Basis-Kategorien.
+ * Die Ziele, unter denen ein Knoten in einem Rahmen zaehlbar ist — getrennt nach
+ * den **zwei Schluesselraeumen** des Index (`design.md`, Kontrakt 8):
+ *
+ * - **Id-Ziele**: `null` ("alles im Rahmen"), jede Id seines Vorkommens
+ *   (`occurrenceIds`: die eigene und jedes Glied seiner Verweiskette bis zum Ziel,
+ *   Kontrakt 3), jede seiner **effektiven** Kategorie-IDs und jede Gruppen-ID, deren
+ *   Member er ist. Dies ist der Zaehl-Zugriffspunkt aus §4.4: die Zaehlung stuetzt
+ *   sich auf die effektiven Kategorien (nach kategorie-aendernden Modifikatoren),
+ *   nicht auf die Basis-Kategorien.
+ * - **Typ-Ziel**: der gezaehlte Typ seines Vorkommens (`countedType`: das rohe
+ *   `type`-Attribut der tragenden Definition, bei einem Verweis das seines Ziels,
+ *   Kontrakt 4). Das ist es, was eine Bedingung mit einem Typ-Schluesselwort als
+ *   `childId` liest. Ein Ziel ohne `type` (eine Gruppe) traegt keines bei.
+ *
+ * Beide Wertarten fallen in **getrennte** Schluesselraeume: eine Katalog-Id, die
+ * zufaellig `model` lautet, zaehlt deshalb nicht als Typ.
+ *
+ * Dass ein Vorkommen unter *allen* seinen Ids zaehlt, ist die Naht, an der eine am
+ * `entryLink` deklarierte Grenze ihre eigene Auswahl findet **und** eine am Ziel
+ * deklarierte dieselbe Auswahl trotzdem sieht. Doppelt gezaehlt wird dabei nichts:
+ * jede Abfrage nennt genau einen Schluessel.
  *
  * Ein **Kontingent-Knoten** ist nur unter seiner eigenen Definitions-ID
  * (fuer Grenzen am Force-Typ) und seinen Kategorie-IDs zaehlbar. Es ist keine
- * generische Selektion "im Rahmen" und traegt daher nicht zum `null`-Ziel bei.
+ * generische Selektion "im Rahmen" und traegt daher weder zum `null`-Ziel noch zu
+ * einem Typ-Ziel bei.
  *
- * Ist der Knoten Member einer `selectionEntryGroup` (`memberGroupIds`, aus dem
- * Definitionsbaum abgeleitet), zaehlt er zusaetzlich unter jeder Gruppen-ID —
- * so liest die gruppen-skopierte Grenze (`scope=parent`, Ziel = Gruppen-ID) im
- * Eigentuemer-Rahmen die Zahl der gewaehlten Member.
- *
- * Dazu zwei Ziele, die nicht aus dem Knoten selbst stammen:
- * - **`targetId`** — ein `entryLink` zaehlt auch unter der Id, auf die er zeigt.
- *   Nur so trifft eine Grenze, die den Eintrag benennt, auch das ueber einen
- *   Verweis gesetzte Vorkommen.
- * - **`type`** — das rohe `type`-Attribut des Eintrags (`model`, `unit`, …). Es
- *   traegt die Bedingung `childId="model"`. Achtung: nur {@link readEntry} liest
- *   dieses Attribut, {@link readEntryLink} nicht — ein verlinkter Eintrag zaehlt
- *   daher heute nicht unter seinem Typ. Als eigener Befund erfasst, nicht hier
- *   nebenbei geaendert.
+ * Eine **Gruppe** als Definition eines realen Knotens traegt keine Id-Ziele: eine
+ * Gruppe ist kein Auswahlpunkt, ihre Zaehlung laeuft ueber die `memberGroupIds`
+ * ihrer Member.
  */
-function targetsOf(node, effective) {
-  if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
-  const targets = [null, ...effective.categoryIdsOf(node)];
-  if (node.def.kind !== DefinitionKind.GROUP) targets.push(node.def.id);
-  if (node.def.targetId) targets.push(node.def.targetId);
-  if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
-  if (node.def.type) targets.push(node.def.type);
-  return Array.from(new Set(targets));
+function countTargetsOf(node, effective) {
+  const categoryIds = effective.categoryIdsOf(node);
+  if (node.isForce) {
+    return { idTargets: Array.from(new Set([node.def.id, ...categoryIds])), typeTarget: null };
+  }
+  const idTargets = [null, ...categoryIds];
+  if (node.def.kind !== DefinitionKind.GROUP) idTargets.push(...node.occurrenceIds);
+  if (node.memberGroupIds !== undefined) idTargets.push(...node.memberGroupIds);
+  return { idTargets: Array.from(new Set(idTargets)), typeTarget: node.countedType ?? null };
 }
 
 /** Addiert einen Beitrag auf einen Zaehler. */
@@ -143,7 +150,7 @@ function addContribution(tallies, key, bucket, contribution) {
  */
 function indexNodeContribution(tallies, node, effective) {
   const contribution = contributionOf(node, effective);
-  const targets = targetsOf(node, effective);
+  const { idTargets, typeTarget } = countTargetsOf(node, effective);
   let crossedSelection = false;
   let crossedForce = false;
   let frame = node;
@@ -152,12 +159,15 @@ function indexNodeContribution(tallies, node, effective) {
     const forceCrossedForFrame = frame.isRoot ? false : crossedForce;
     const bucket = bucketFor(crossedSelection, forceCrossedForFrame);
     const frameKey = frameKeyOf(frame);
-    for (const targetId of targets) {
+    for (const targetId of idTargets) {
       let c = contribution;
       if (node.isForce && targetId === node.def.id) {
         c = { selectionCount: node.instance.count, forceCount: node.instance.count, costSums: contribution.costSums };
       }
       addContribution(tallies, scopeKey(frameKey, targetId), bucket, c);
+    }
+    if (typeTarget !== null) {
+      addContribution(tallies, typeScopeKey(frameKey, typeTarget), bucket, contribution);
     }
     // Der aktuelle Rahmen wird fuer alle *hoeheren* Rahmen zu einem
     // dazwischenliegenden Knoten (der Beitragende selbst zaehlt nie als Grenze).

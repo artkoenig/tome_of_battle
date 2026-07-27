@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
+import { ConstraintKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isLinkDefinition, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
 import { allNodes, limitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -49,9 +49,30 @@ function resolveBound(limit, node, effective, ctx) {
 }
 
 /**
+ * Das **Zaehl-Ziel** einer Grenze: die Definition, deren Bestand sie misst
+ * (`design.md`, Kontrakt 5).
+ *
+ * Ist der Anker ein **Verweis** — ein `entryLink` wie ein `categoryLink` —, zaehlt
+ * die Grenze unter der **aufgeloesten Ziel-Id**, nicht unter der Verweis-Id. Das
+ * Format haelt das zweimal ausdruecklich fest (`docs/battlescribe-data-format.md`
+ * §3.4/§7.6: „`scope="parent"` vergleicht aufgeloeste Ziel-Ids, nicht
+ * `entryLinkId`s — verschiedene Links koennen auf dasselbe Ziel zeigen"). Preis der
+ * Regel: eine `max`-Grenze aggregiert ueber alle Verweise auf dasselbe Ziel im
+ * Rahmen — bewusst hingenommen, weil die Alternative dem Format widerspraeche.
+ *
+ * Ein Praedikat statt einer Sonderbehandlung fuer `categoryLink`: beide Verweisarten
+ * folgen derselben Regel, und ein Vorkommen unter einem `entryLink` zaehlt seit
+ * ADR-0037 genauso ueber sein Ziel wie ein Kategorie-Anker.
+ */
+function countingTargetIdOf(def) {
+  if (!isLinkDefinition(def)) return def.id;
+  return def.resolved?.id ?? def.targetId;
+}
+
+/**
  * Wertet eine einzelne Grenze am Knoten aus und liefert ihr Ergebnis-Tripel,
- * oder `null`, wenn die Grenze suspendiert ist. Ziel der Zaehlung ist die
- * eigene Definition der Bezugsinstanz.
+ * oder `null`, wenn die Grenze suspendiert ist. Ziel der Zaehlung ist das
+ * {@link countingTargetIdOf Zaehl-Ziel} der Bezugsinstanz.
  */
 function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
@@ -61,8 +82,7 @@ function evaluateLimit(limit, node, effective, ctx) {
   // An unlimited bound never fires and does not restrict headroom.
   if (bound === -1) return null;
 
-  const targetId = node.def.kind === DefinitionKind.CATEGORY_LINK ? node.def.targetId : node.def.id;
-  const actual = query(ctx, limit.field, limit.scope, targetId, limit.flags);
+  const actual = query(ctx, limit.field, limit.scope, countingTargetIdOf(node.def), limit.flags);
   // Zaehlt die Grenze selbst ein unaufloesbares Budget-Feld (Diagnose aus `query`),
   // wird sie fail-closed suspendiert statt den Sentinel zu vergleichen.
   if (actual === UNRESOLVED_BUDGET) return null;

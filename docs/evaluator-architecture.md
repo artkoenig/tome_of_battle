@@ -227,7 +227,11 @@ record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
                       limits: LimitDef[], modifiers: ModifierDef[],
                       children: ResolvedDef[], resolutionLog: Diagnostic[] }
 
-record InstanceNode { defId: Id, count: number, children: InstanceNode[] }
+record InstanceNode { defId: Id, linkDefId: Id?, count: number, children: InstanceNode[] }
+                    // defId = Ziel (.ros entryId), linkDefId = Verweis, über den das
+                    // Vorkommen hereinkam (.ros entryLinkId); leer/fehlend = direkt
+                    // gesetzt. Ist linkDefId besetzt, trägt der Verweis das Vorkommen
+                    // (ADR-0037); Kontingente tragen kein linkDefId.
 record CostLimit    { costTypeId: Id, value: number }                    // eine eingestellte Grenze je Kostenart
 record Roster       { forces: InstanceNode[], costLimits: CostLimit[] }  // costLimits: das eingestellte Budget je Kostenart (vollständige Liste)
 

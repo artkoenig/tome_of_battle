@@ -2,7 +2,16 @@
  * Join-Schicht (`docs/evaluator-architecture.md` §3.2/§4.3).
  *
  * Verheiratet Instanz- und Definitionsbaum: jeder Instanzknoten erhaelt seine
- * aufgeloeste Definition. Ab Issue 03 traegt jeder Knoten die Struktur, die das
+ * aufgeloeste Definition.
+ *
+ * Sie ist damit **die** Stelle, an der die Verweis-Identitaet eines Vorkommens
+ * entsteht (ADR-0037): nennt das Roster einen `entryLink`, ist **dieser** die
+ * Definition des Vorkommens ({@link occurrenceDefinitionOf}), und der Knoten traegt
+ * die Ids, unter denen er zaehlbar ist, sowie seinen gezaehlten Typ als abgelesene
+ * Felder ({@link identityOf}). Jede spaetere Schicht liest diese Felder, statt die
+ * Regel ein zweites Mal zu formulieren.
+ *
+ * Ab Issue 03 traegt jeder Knoten zusaetzlich die Struktur, die das
  * Query-Primitiv fuer die Bezugsrahmen-Aufloesung braucht: eine stabile
  * Rahmen-Identitaet (`frameId`), den Elternzeiger (`parent`), das umschliessende
  * Kontingent (`forceRoot`) und die Markierung, ob der Knoten selbst ein
@@ -43,7 +52,7 @@
  * Slots ist damit abgelesen und nicht aus Pfadform oder Definitionsart geraten.
  */
 
-import { AnchorKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
+import { AnchorKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition, occurrenceIdsOf, countedTypeOf, namesSameOccurrence } from './model.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -66,16 +75,76 @@ function createFrameIdSource() {
   return () => next++;
 }
 
+/**
+ * Die beiden baumweiten Mittel, die **jede** Knoten-Erzeugung braucht: die Quelle
+ * der Rahmen-Identitaeten und der Definitions-Nachschlag, aus dem die
+ * Verweis-Identitaet eines Vorkommens gelesen wird (`design.md`, Kontrakt 3).
+ *
+ * Als **ein** Wert weitergegeben und an der Wurzel hinterlegt, damit Baumphase 2
+ * ({@link attachOfferAnchor}) aus denselben Quellen zieht wie Baumphase 1: sonst
+ * bekaeme ein spaeter angehaengter Anker eine schon vergebene Rahmen-Identitaet
+ * oder — schlimmer, weil still — eine andere Lesart seiner Identitaet als ein
+ * realer Knoten derselben Definition.
+ */
+function createTreeBuilder(lookup) {
+  return { nextFrameId: createFrameIdSource(), lookup };
+}
+
+/**
+ * Die **Identitaetsfelder** eines Knotens, aus seiner Definition gelesen: die Ids,
+ * unter denen sein Vorkommen zaehlbar ist, und der Typ, unter dem es zaehlt
+ * (`design.md`, Kontrakte 3 und 4). Sie stehen am Knoten, weil sie eine reine
+ * Funktion seiner Definition sind — die Index- und die Query-Schicht lesen sie ab
+ * und brauchen dafuer keinen Definitions-Nachschlag.
+ */
+function identityOf(def, builder) {
+  return {
+    occurrenceIds: new Set(occurrenceIdsOf(def, builder.lookup)),
+    countedType: countedTypeOf(def),
+  };
+}
+
+/**
+ * Die **Definition eines Vorkommens** — die eine Stelle, an der entschieden wird,
+ * *was* ein Roster-Knoten ist (`design.md`, Kontrakt 2, ADR-0037).
+ *
+ * Nennt das Roster einen Verweis (`linkDefId`, `.ros` `entryLinkId`) und loest der
+ * auf einen `entryLink` auf, **gewinnt der Verweis**: er ist das Vorkommen, das
+ * Ziel bleibt ueber `resolved` erreichbar. Nur so gelten die am Verweis
+ * deklarierten Grenzen, Modifikatoren, Kosten, Kategorien und Info-Elemente fuer
+ * dieses Vorkommen — ein Verweis ist kein Durchleitungsknoten.
+ *
+ * Zwei Grenzfaelle, bewusst so entschieden:
+ * - Ein besetztes `linkDefId`, das **nirgends** aufloest, ist ein Roster-Fehler:
+ *   es gilt `defId`, und die unaufgeloeste Id wird als
+ *   {@link DiagnosticKind.UNRESOLVED_DEFINITION} sichtbar (keine neue Diagnose-Art).
+ * - Ein `linkDefId`, das auf etwas **anderes** als einen `entryLink` zeigt, ist
+ *   kein Verweis und traegt deshalb kein Vorkommen; es gilt `defId`.
+ */
+function occurrenceDefinitionOf(instance, lookup, diagnostics) {
+  const { linkDefId } = instance;
+  if (linkDefId !== null && linkDefId !== undefined && linkDefId !== '') {
+    const linkDef = lookup(linkDefId);
+    if (linkDef === null || linkDef === undefined) {
+      diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_DEFINITION, { defId: linkDefId }));
+    } else if (linkDef.kind === DefinitionKind.ENTRY_LINK) {
+      return linkDef;
+    }
+  }
+  return lookup(instance.defId);
+}
+
 /** Haengt einen Instanzknoten samt Kindern (Auswahlen wie geschachtelte Kontingente) an. */
-function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
-  const def = resolved.lookup(instance.defId);
-  if (def === null) {
+function attachInstance(parent, instance, builder, diagnostics) {
+  const def = occurrenceDefinitionOf(instance, builder.lookup, diagnostics);
+  if (def === null || def === undefined) {
     diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_DEFINITION, { defId: instance.defId }));
     return;
   }
   const isForce = def.kind === DefinitionKind.FORCE;
   const node = {
     def,
+    ...identityOf(def, builder),
     instance,
     parent,
     children: [],
@@ -83,7 +152,7 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
     isRoot: false,
     isForce,
     anchorKind: AnchorKind.OCCUPIED,
-    frameId: nextFrameId(),
+    frameId: builder.nextFrameId(),
     // Das umschliessende Kontingent: der Knoten selbst, wenn er ein Kontingent
     // ist, sonst das seines Elternknotens. Steht ueber keinem Kontingent (z. B.
     // ein Wurzel-Eintrag ohne Force-Huelle), bleibt es null.
@@ -92,7 +161,7 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
   node.forceRoot = isForce ? node : parent.forceRoot;
   parent.children.push(node);
   for (const childInstance of instance.children ?? []) {
-    attachInstance(node, childInstance, resolved, diagnostics, nextFrameId);
+    attachInstance(node, childInstance, builder, diagnostics);
   }
 }
 
@@ -107,10 +176,11 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
  * jeweiligen Synthese-Schritt gestellt, statt spaeter aus Elternschaft und
  * Definitionsart erraten zu werden.
  */
-function attachPhantom(parent, def, nextFrameId, anchorKind) {
+function attachPhantom(parent, def, builder, anchorKind) {
   const isForce = def.kind === DefinitionKind.FORCE;
   const node = {
     def,
+    ...identityOf(def, builder),
     instance: null,
     parent,
     children: [],
@@ -118,7 +188,7 @@ function attachPhantom(parent, def, nextFrameId, anchorKind) {
     isRoot: false,
     isForce,
     anchorKind,
-    frameId: nextFrameId(),
+    frameId: builder.nextFrameId(),
     forceRoot: null,
   };
   node.forceRoot = isForce ? node : parent.forceRoot;
@@ -130,9 +200,9 @@ function attachPhantom(parent, def, nextFrameId, anchorKind) {
  * **Baumphase 2**: haengt einen {@link AnchorKind.OFFER_ANCHOR Angebots-Anker} als
  * **Blatt** hinter alle bestehenden Kinder von `parent`. Welche Definition in
  * welchem Rahmen einen bekommt, entscheidet `offer.js`; diese Schicht stellt nur
- * die Knotenform und zieht die Rahmen-Identitaet aus derselben Quelle wie Phase 1
- * ({@link tree-frame-ids}), sodass ein Anker nie die Identitaet eines vorhandenen
- * Knotens wiederverwendet.
+ * die Knotenform und zieht Rahmen- wie Verweis-Identitaet aus derselben Quelle wie
+ * Phase 1 (dem {@link createTreeBuilder Baumeister} an der Wurzel), sodass ein Anker
+ * nie die Identitaet eines vorhandenen Knotens wiederverwendet.
  *
  * Ein Angebots-Anker ist **immer ein Blatt**: er ist kein realer Rahmen und
  * erzeugt deshalb selbst kein Angebot (`design.md`, „Waehlbar im Bezugsrahmen").
@@ -145,6 +215,7 @@ function attachPhantom(parent, def, nextFrameId, anchorKind) {
 export function attachOfferAnchor(root, parent, def) {
   const node = {
     def,
+    ...identityOf(def, root.builder),
     instance: null,
     parent,
     children: [],
@@ -152,7 +223,7 @@ export function attachOfferAnchor(root, parent, def) {
     isRoot: false,
     isForce: false,
     anchorKind: AnchorKind.OFFER_ANCHOR,
-    frameId: root.nextFrameId(),
+    frameId: root.builder.nextFrameId(),
     forceRoot: parent.forceRoot,
   };
   parent.children.push(node);
@@ -228,11 +299,21 @@ function hasMinLimitInFrame(def, scope) {
   return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
 }
 
-/** Summe der Instanzanzahlen realer Knoten mit dieser Definitions-ID im Teilbaum. */
-function countInstances(fromNode, defId) {
+/**
+ * Summe der Instanzanzahlen der realen Knoten im Teilbaum, die **dasselbe
+ * Vorkommen** wie diese Definition benennen (`design.md`, Kontrakt 3).
+ *
+ * Verglichen werden Id-**Mengen**, nicht einzelne Ids: ein ueber `L → D` gesetztes
+ * Vorkommen ist derselbe Auswahlpunkt, ob die Pflichtdefinition nun `L` oder `D`
+ * nennt. Verglich die Entdopplung nur eine Id, entstuende neben dem realen Knoten
+ * ein Pflicht-Phantom fuer denselben Punkt — und mit ihm eine Pflichtverletzung
+ * fuer eine Auswahl, die der Nutzer sehr wohl gesetzt hat.
+ */
+function countInstances(fromNode, def, builder) {
+  const ids = occurrenceIdsOf(def, builder.lookup);
   let total = 0;
   for (const node of nodeAndDescendants(fromNode)) {
-    if (!node.isPhantom && !node.isRoot && node.def?.id === defId) {
+    if (!node.isPhantom && !node.isRoot && namesSameOccurrence(ids, node.occurrenceIds)) {
       total += node.instance?.count ?? 0;
     }
   }
@@ -256,10 +337,10 @@ function countInstances(fromNode, defId) {
  * {@link synthesizeForceCategoryAnchors}. Beides zugleich gaebe zwei Anker fuer
  * dieselbe Kategorie und damit eine doppelt gemeldete Verletzung.
  */
-function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
+function synthesizeMandatoryPhantoms(root, definitions, builder) {
   for (const def of definitions) {
-    if (hasMinLimitInFrame(def, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0) {
-      attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
+    if (hasMinLimitInFrame(def, ScopeKeyword.ROSTER) && countInstances(root, def, builder) === 0) {
+      attachPhantom(root, def, builder, AnchorKind.MANDATORY_PHANTOM);
     }
   }
   const forceNodeList = [...forceNodes(root)];
@@ -267,8 +348,8 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
     const anchoredCategoryIds = linkedCategoryIdsOf(forceNode.def);
     for (const def of definitions) {
       if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
-      if (hasMinLimitInFrame(def, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0) {
-        attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
+      if (hasMinLimitInFrame(def, ScopeKeyword.FORCE) && countInstances(forceNode, def, builder) === 0) {
+        attachPhantom(forceNode, def, builder, AnchorKind.MANDATORY_PHANTOM);
       }
     }
   }
@@ -299,11 +380,11 @@ export function linkedCategoryIdsOf(forceDef) {
  * dieser Armeeliste") zusammen mit den vom Ziel geerbten ({@link limitsOf}). Die
  * Constraint-Schicht zaehlt fuer ihn ueber die Kategorie-ID (`targetId`).
  */
-function synthesizeForceCategoryAnchors(root, nextFrameId) {
+function synthesizeForceCategoryAnchors(root, builder) {
   for (const forceNode of [...forceNodes(root)]) {
     for (const childDef of forceNode.def.children ?? []) {
       if (childDef.kind === DefinitionKind.CATEGORY_LINK) {
-        attachPhantom(forceNode, childDef, nextFrameId, AnchorKind.CATEGORY_ANCHOR);
+        attachPhantom(forceNode, childDef, builder, AnchorKind.CATEGORY_ANCHOR);
       }
     }
   }
@@ -344,15 +425,15 @@ function* selectionDefinitionsUnder(ownerDef) {
  * Anker fuer dieselbe Kategorie meldeten dieselbe Verletzung doppelt. Unter einer
  * Auswahl (Kategorie-Zuordnung eines Eintrags) bleibt dieser Pfad zustaendig.
  */
-function synthesizeParentScopePhantoms(root, nextFrameId) {
+function synthesizeParentScopePhantoms(root, builder) {
   for (const owner of [...realNodes(root)]) {
     const ownerDef = ownerDefinitionOf(owner);
     for (const childDef of selectionDefinitionsUnder(ownerDef)) {
       if (owner.isForce && childDef.kind === DefinitionKind.CATEGORY_LINK) continue;
-      if (hasMinLimitInFrame(childDef, ScopeKeyword.PARENT) && countInstances(owner, childDef.id) === 0) {
+      if (hasMinLimitInFrame(childDef, ScopeKeyword.PARENT) && countInstances(owner, childDef, builder) === 0) {
         const alreadyHasPhantom = owner.children.some(c => c.isPhantom && c.def.id === childDef.id);
         if (!alreadyHasPhantom) {
-          attachPhantom(owner, childDef, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
+          attachPhantom(owner, childDef, builder, AnchorKind.MANDATORY_PHANTOM);
         }
       }
     }
@@ -384,9 +465,10 @@ function* groupDefinitionsWithLimits(ownerDef) {
  * Pflichtgruppe) als auch `max` (zu viele Member) anschlagen koennen. Als Phantom
  * (`isPhantom`) bleibt er aus der Zaehlung ausgeschlossen (§4.4).
  */
-function attachGroupAnchor(owner, groupDef, nextFrameId) {
+function attachGroupAnchor(owner, groupDef, builder) {
   const node = {
     def: groupDef,
+    ...identityOf(groupDef, builder),
     instance: null,
     parent: owner,
     children: [],
@@ -394,7 +476,7 @@ function attachGroupAnchor(owner, groupDef, nextFrameId) {
     isRoot: false,
     isForce: false,
     anchorKind: AnchorKind.GROUP_ANCHOR,
-    frameId: nextFrameId(),
+    frameId: builder.nextFrameId(),
     forceRoot: owner.forceRoot,
   };
   owner.children.push(node);
@@ -410,7 +492,10 @@ function attachGroupAnchor(owner, groupDef, nextFrameId) {
 function annotateGroupMembers(owner, groupId, memberIds) {
   for (const node of nodeAndDescendants(owner)) {
     if (node === owner || node.isPhantom || node.isRoot || node.instance === null) continue;
-    if (memberIds.has(node.instance.defId)) {
+    // Verglichen wird die **Identitaet** des Vorkommens, nicht die eine Id, die das
+    // Roster nennt: ein per Verweis bezogenes Member ist Member, ob die
+    // Zugehoerigkeitstabelle nun den Verweis oder sein Ziel fuehrt.
+    if (namesSameOccurrence(node.occurrenceIds, memberIds)) {
       (node.memberGroupIds ??= new Set()).add(groupId);
     }
   }
@@ -422,7 +507,7 @@ function annotateGroupMembers(owner, groupId, memberIds) {
  * Member. Gruppen-Zugehoerigkeit stammt aus dem Definitionsbaum
  * (`resolved.groupMemberIds`), nicht aus der Instanz.
  */
-function synthesizeGroupAnchors(root, resolved, nextFrameId) {
+function synthesizeGroupAnchors(root, resolved, builder) {
   const memberIndex = resolved.groupMemberIds ?? new Map();
   for (const owner of [...realNodes(root)]) {
     if (owner.isForce) continue;
@@ -434,7 +519,7 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
     }
 
     for (const groupDef of groupDefinitionsWithLimits(ownerDef)) {
-      attachGroupAnchor(owner, groupDef, nextFrameId);
+      attachGroupAnchor(owner, groupDef, builder);
       const memberIds = memberIndex.get(groupDef.id);
       if (memberIds !== undefined) annotateGroupMembers(owner, groupDef.id, memberIds);
     }
@@ -451,11 +536,13 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  * (siehe {@link synthesizeForceCategoryAnchors}) und Gruppen-Anker fuer
  * gruppen-skopierte Grenzen (siehe {@link synthesizeGroupAnchors}).
  *
- * Die Wurzel traegt zusaetzlich die **Quelle der Rahmen-Identitaeten**
- * (`nextFrameId`) des Baums. Baumphase 2 ({@link attachOfferAnchor}) zieht aus
- * derselben Quelle weiter, sodass ein spaeter angehaengter Anker nie die
- * Rahmen-Identitaet eines vorhandenen Knotens wiederverwendet — sonst laese eine
- * `self`-skopierte Grenze am Anker den Bestand eines fremden Knotens.
+ * Die Wurzel traegt zusaetzlich den {@link createTreeBuilder Baumeister}
+ * (`builder`): die Quelle der Rahmen-Identitaeten und den Definitions-Nachschlag.
+ * Baumphase 2 ({@link attachOfferAnchor}) zieht aus derselben Quelle weiter, sodass
+ * ein spaeter angehaengter Anker nie die Rahmen-Identitaet eines vorhandenen Knotens
+ * wiederverwendet — sonst laese eine `self`-skopierte Grenze am Anker den Bestand
+ * eines fremden Knotens — und seine Verweis-Identitaet genauso liest wie ein realer
+ * Knoten derselben Definition.
  *
  * @param {{ lookup: (id: string) => object|null, definitions?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
  * @param {{ forces?: object[] }} roster
@@ -463,9 +550,13 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  */
 export function buildEvalTree(resolved, roster) {
   const diagnostics = [];
-  const nextFrameId = createFrameIdSource();
+  const builder = createTreeBuilder(resolved.lookup);
   const root = {
     def: null,
+    // Die Wurzel ist kein Vorkommen: sie traegt keine Definition, also auch keine
+    // Identitaet, unter der etwas sie zaehlen koennte. `allNodes` liefert sie nie.
+    occurrenceIds: new Set(),
+    countedType: undefined,
     instance: null,
     parent: null,
     children: [],
@@ -473,19 +564,19 @@ export function buildEvalTree(resolved, roster) {
     isRoot: true,
     isForce: false,
     anchorKind: AnchorKind.OCCUPIED,
-    frameId: nextFrameId(),
-    nextFrameId,
+    frameId: builder.nextFrameId(),
+    builder,
     forceRoot: null,
   };
   for (const forceInstance of roster.forces ?? []) {
-    attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId);
+    attachInstance(root, forceInstance, builder, diagnostics);
   }
-  synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
-  synthesizeParentScopePhantoms(root, nextFrameId);
-  synthesizeForceCategoryAnchors(root, nextFrameId);
+  synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], builder);
+  synthesizeParentScopePhantoms(root, builder);
+  synthesizeForceCategoryAnchors(root, builder);
   // Nach den realen Knoten und den Pflicht-Phantomen: die Gruppen-Anker zuletzt,
   // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
-  synthesizeGroupAnchors(root, resolved, nextFrameId);
+  synthesizeGroupAnchors(root, resolved, builder);
   return { root, diagnostics };
 }
 
