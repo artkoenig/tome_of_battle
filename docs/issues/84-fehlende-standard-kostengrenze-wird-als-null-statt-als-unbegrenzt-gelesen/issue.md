@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: claimed
 Type: fix
 Blocked by: None
 

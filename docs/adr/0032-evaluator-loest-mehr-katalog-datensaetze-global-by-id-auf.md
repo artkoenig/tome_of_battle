@@ -107,3 +107,11 @@ festschreibt.
 
 - Schließt die in **ADR-0030** und **ADR-0031** als künftige Arbeit vermerkte
   katalogübergreifende Auflösungs-Grenze.
+- **ADR-0037** ist zusammen mit dieser ADR zu lesen. Beschluss 2 hier führt alle
+  Quellen in eine flache Symboltabelle zusammen; ein so zusammengeführter
+  Datensatz hat deshalb **keinen** ausgezeichneten primären Katalog. Der
+  Bezugsrahmen `scope="primary-catalogue"` fragt trotzdem nach einem — ADR-0037
+  entscheidet, dass dessen Antwort aus dem **Roster** kommt (dem Kontingent, in
+  dem der auswertende Knoten steht), nicht aus dem Datensatz. Beide Aussagen
+  gelten gleichzeitig und widersprechen sich nicht: der Datensatz hat keinen,
+  das Roster hat einen je Kontingent.

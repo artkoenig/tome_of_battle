@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 Type: chore
 Blocked by: None
 
@@ -52,3 +52,10 @@ erfordert — eine redaktionelle Entscheidung an einer angenommenen ADR.
 - PO-Sichtung: bleibt zunaechst liegen, aber nicht mehr unbefristet. Die ADR beschreibt das Ergebnis von Main-Issue 77; solange dessen Scheibe 04 den Faehigkeitsdatensatz noch anfasst, waere sie eine Beschreibung eines beweglichen Ziels. Sie wird geschrieben, sobald 77 aufgeloest ist.
 
 Zum Vorbehalt 'Sache des Maintainers': er gilt fuer den Wortlaut von ADR-0032, nicht fuer die neue ADR selbst. Die neue ADR wird daher verfasst, ADR-0032 aber nicht umgeschrieben — sie bekommt hoechstens einen Querverweis, damit beide Aussagen zusammen gelesen werden (Datensatz hat keinen primaeren Katalog, Roster hat einen je Kontingent). Eine inhaltliche Aenderung an der angenommenen ADR bleibt dem Maintainer vorbehalten.
+- Umgesetzt als ADR-0037 (docs/adr/0037-primaerer-katalog-kommt-aus-dem-roster-kontingent.md), im Index eingetragen, und docs/evaluator-architecture.md §3.2 verweist darauf.
+
+Zwei Dinge sind beim Schreiben genauer geworden als in der Vorlage oben:
+- Die Behauptung 'ADR-0032 sagt ausdruecklich, der Datensatz kenne keinen ausgezeichneten primaeren Katalog' stimmt so nicht. ADR-0032 sagt das nirgends woertlich; es folgt aus seinem Beschluss 2 (alle Quellen in EINE flache Symboltabelle, kein Kontext-Stack). Die neue ADR sagt das jetzt so — hergeleitet statt zitiert.
+- Die Vorkommen sind nachgezaehlt statt uebernommen: 27 Mal scope='primary-catalogue' im eingefrorenen Datensatz, davon 20 in Mercenaries.cat und 7 in der .gst, ausschliesslich in Bedingungen (18 instanceOf, 9 notInstanceOf). Genau daraus ergibt sich das entscheidende Argument gegen Alternative 2 (Herkunft aus der Definition): die Regeln stehen in der Soeldner-Bibliothek und im Spielsystem, ihr 'primaerer Katalog' waere also nie die Armee, nach der sie fragen.
+
+An ADR-0032 wurde die Entscheidung NICHT angetastet, nur ein Querverweis im Abschnitt 'Zugehoerige ADRs' ergaenzt, der beide Aussagen zusammen lesbar macht. Eine inhaltliche Aenderung an der angenommenen ADR bleibt dem Maintainer vorbehalten.
