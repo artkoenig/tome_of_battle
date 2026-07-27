@@ -11,8 +11,29 @@ import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 function evaluate(catalogXml, roster) {
   return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
-import { isSelectable, remainingAllowed, mandatoryOpenSlots } from './report.js';
 import { AnchorKind, MessageSeverity } from './model.js';
+
+// ── Sicht eines Verbrauchers auf den Bericht ─────────────────────────────────
+// Reine Lesehilfen, wie sie eine Oberflaeche selbst schreiben wuerde (§4.8): sie
+// werten keine Regel aus, sondern lesen nur Felder des Faehigkeitsdatensatzes.
+// Sie stehen bewusst hier und nicht in der Engine — der Bericht traegt die
+// Aussage bereits, eine zweite Rechenstelle dafuer gaebe es sonst umsonst.
+
+/** Auswaehlbar ist ein Slot, der weder versteckt noch gesperrt ist. */
+function isSelectable(report, path) {
+  const capability = report.capabilities.get(path);
+  return capability !== undefined && !capability.isHidden && !capability.isBlocked;
+}
+
+/** Der Restspielraum eines Slots; `null` ohne Hoechstmass oder bei unbekanntem Pfad. */
+function remainingAllowed(report, path) {
+  return report.capabilities.get(path)?.headroom ?? null;
+}
+
+/** Die Slots mit unerfuellter MIN-Grenze. */
+function mandatoryOpenSlots(report) {
+  return [...report.capabilities.values()].filter(capability => capability.isMandatoryUnmet);
+}
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.

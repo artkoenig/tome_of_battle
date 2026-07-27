@@ -620,7 +620,8 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
     capabilities = capabilities,
     diagnostics  = diagnostics)
 
-// UI-Seite: reine Lookups, keine Regelauswertung
+// UI-Seite: reine Lookups, keine Regelauswertung. Sie gehoeren zum Verbraucher
+// und stehen bewusst NICHT in der Engine — der Bericht traegt die Aussage schon.
 function isSelectable(report, path):  cap = report.capabilities[path]
                                       return not cap.isHidden and not cap.isBlocked
 function remainingAllowed(report, path): return report.capabilities[path].headroom

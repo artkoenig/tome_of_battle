@@ -248,31 +248,3 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     diagnostics,
   };
 }
-
-// ── UI-Projektions-Lookups: reine Bericht-Leser, keine Regelauswertung (§4.8) ──
-
-/**
- * True, wenn der Slot am gegebenen Pfad auswaehlbar ist: weder versteckt noch
- * gesperrt. Ein unbekannter Pfad ist kein auswaehlbarer Slot (`false`).
- */
-export function isSelectable(report, path) {
-  const capability = report.capabilities.get(path);
-  return capability !== undefined && !capability.isHidden && !capability.isBlocked;
-}
-
-/**
- * Der Restspielraum des Slots am gegebenen Pfad (`headroom`): wie viele weitere
- * Auswahlen die MAX-Grenze noch zulaesst. `null`, wenn der Slot keine MAX-Grenze
- * traegt oder der Pfad unbekannt ist.
- */
-export function remainingAllowed(report, path) {
-  return report.capabilities.get(path)?.headroom ?? null;
-}
-
-/**
- * Die offenen Pflichtslots des Berichts: alle Faehigkeitsdatensaetze, deren
- * MIN-Grenze unerfuellt ist (`isMandatoryUnmet`).
- */
-export function mandatoryOpenSlots(report) {
-  return [...report.capabilities.values()].filter(capability => capability.isMandatoryUnmet);
-}
