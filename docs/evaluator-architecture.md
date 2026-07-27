@@ -397,11 +397,18 @@ function evaluate(prepared, roster): Report            // Schritt 2, beliebig of
   offerAnchors = attachOfferAnchors(tree, resolved)
   extendBaseEffectiveState(effective, offerAnchors)    // Basiswerte nachtragen
 
+  // Belegung je Slot aus demselben finalen Index — der Ist-Stand eines Slots,
+  // dessen Grenzen keinen beisteuern (§4.8). Erst hier, damit auch die eben
+  // angehängten Angebots-Anker einen Eintrag tragen.
+  occupancy = buildOccupancyIndex(tree, index, categoryIds)
+
   // Nach-Durchlauf: die synthetischen Anker EINMAL gegen den finalen Index. Sie
   // zählen nie mit, können also nicht zurückwirken; der Index wird nicht neu gebaut.
   diagnostics += applyModifiersOfNodes(syntheticNodesOf(tree), effective, index)
-  results = evaluateAllConstraints(tree, effective, index, diagnostics)
-  return buildReport(tree, effective, results, diagnostics, unstable)
+  // liefert { results, unevaluatedLimits } — Grenzen ohne Antwort gehen nicht
+  // verloren, sondern werden am Slot ausgewiesen (§4.7).
+  constraintEvaluation = evaluateAllConstraints(tree, effective, index, diagnostics)
+  return buildReport(tree, effective, constraintEvaluation, occupancy, diagnostics, unstable)
 ```
 
 ### 4.3 Join-Schicht
