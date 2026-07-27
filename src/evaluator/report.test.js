@@ -11,7 +11,15 @@ import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 function evaluate(catalogXml, roster) {
   return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
-import { AnchorKind, MessageSeverity } from './model.js';
+import {
+  AnchorKind,
+  MessageSeverity,
+  ConstraintKind,
+  LimitMeasure,
+  ROSTER_BUDGET_ANCHOR,
+  rosterBudgetLimitId,
+} from './model.js';
+import { buildReport } from './report.js';
 import { PreparedDataset } from './datasetPreparation.js';
 import { buildEvalTree, selectableSlotsOf } from './evalTree.js';
 import { attachOfferAnchors } from './offer.js';
@@ -559,5 +567,92 @@ describe('Bericht: ein Slot mit Grenzen mehrerer Messgroessen', () => {
       current: ITEM_POINTS,
       headroom: MAX_ITEM_POINTS - ITEM_POINTS,
     });
+  });
+
+  it('meldet Spielraum in der ausgewiesenen Messgroesse — das ist keine Zusage ueber Verfuegbarkeit', () => {
+    // Dieselbe Lage wie im ersten Fall, hier als ausdrueckliche Aussage (§4.8):
+    // der Slot meldet 4 freie Auswahlen und „nicht gesperrt", obwohl eine zweite
+    // Auswahl (2 x 98) die Punktegrenze braeche. Was eine weitere Auswahl
+    // verletzte, sagt allein die Meldungsliste — sie fuehrt jede Grenze.
+    const report = evaluate(catalogueWith(MAX_BY_SELECTIONS + MAX_BY_POINTS), rosterOf(ITEM_DEF_ID, 1));
+
+    expect(slotByDefId(report, ITEM_DEF_ID).capability).toMatchObject({
+      headroom: MAX_ITEM_SELECTIONS - 1,
+      isBlocked: false,
+    });
+    expect(ITEM_POINTS * 2).toBeGreaterThan(MAX_ITEM_POINTS);
+  });
+});
+
+describe('Bericht: eine Messgroesse, die an keinem Slot ausweisbar ist', () => {
+  // Die roster-weite Regel „Armee zu teuer" (`budget.js`) haengt an keinem Slot:
+  // ihre Ergebnisse gehoeren in die Meldungsliste (`extras.budgetViolations`), nie
+  // in die Ergebnisliste, aus der die Faehigkeitsdatensaetze entstehen. Beide
+  // Listen laufen im Bericht dicht nebeneinander — die Zusicherung muss deshalb
+  // schon beim **ersten** so gemessenen Ergebnis anschlagen: alle Budget-
+  // Ergebnisse teilen denselben Anker, dieselbe Grenzenart und dieselbe
+  // Messgroesse, sie treffen also nie auf eine andere Messgroesse, an der ein
+  // Vergleich sie auffallen liesse.
+  const POINTS_COST_TYPE_ID = 'points-cost-type';
+  const MANA_COST_TYPE_ID = 'mana-cost-type';
+  const PLANNED_SUM = 2200;
+  const BUDGET = 2000;
+
+  // Ein Baum ohne Slots: die Zusicherung greift beim Aufbau des Ergebnis-Index,
+  // also vor dem ersten Faehigkeitsdatensatz — ein leerer Baum genuegt, und der
+  // effektive Zustand wird auf diesem Weg nie gelesen.
+  const TREE_WITHOUT_SLOTS = { children: [], parent: null, isRoot: true, def: null };
+  const UNUSED_EFFECTIVE_STATE = {};
+  const NO_DIAGNOSTICS = [];
+
+  /** Ein Ergebnis in genau der Form, die `budget.js` liefert. */
+  function budgetResultOf(costTypeId) {
+    return {
+      limit: { id: rosterBudgetLimitId(costTypeId), kind: ConstraintKind.MAX },
+      anchor: ROSTER_BUDGET_ANCHOR,
+      actual: PLANNED_SUM,
+      bound: BUDGET,
+      satisfied: false,
+      delta: BUDGET - PLANNED_SUM,
+      isReportable: true,
+      measure: LimitMeasure.ROSTER_BUDGET,
+    };
+  }
+
+  /** Baut den Bericht mit den uebergebenen Ergebnissen in der **Slot**-Ergebnisliste. */
+  function buildingReportFrom(results) {
+    return () => buildReport(TREE_WITHOUT_SLOTS, UNUSED_EFFECTIVE_STATE, results, NO_DIAGNOSTICS);
+  }
+
+  it('meldet ein einzelnes solches Ergebnis laut, statt es still zu indizieren', () => {
+    expect(buildingReportFrom([budgetResultOf(POINTS_COST_TYPE_ID)])).toThrow(LimitMeasure.ROSTER_BUDGET);
+  });
+
+  it('meldet auch zwei davon laut — sie treffen nur aufeinander, nie auf eine andere Messgroesse', () => {
+    expect(buildingReportFrom([
+      budgetResultOf(POINTS_COST_TYPE_ID),
+      budgetResultOf(MANA_COST_TYPE_ID),
+    ])).toThrow(LimitMeasure.ROSTER_BUDGET);
+  });
+
+  it('nimmt dieselbe Verletzung auf ihrem vorgesehenen Weg an: als roster-weite Meldung ohne Slot', () => {
+    const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-budget-measure" name="Budget Measure Catalogue">
+        <selectionEntries>
+          <selectionEntry id="${WARRIOR_DEF_ID}" name="${WARRIOR_NAME}" type="unit">
+            <costs>
+              <cost name="Points" typeId="${POINTS_COST_TYPE_ID}" value="${BUDGET}"/>
+            </costs>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+
+    const report = evaluate(catalogueXml, {
+      costLimits: [{ costTypeId: POINTS_COST_TYPE_ID, value: BUDGET }],
+      forces: [{ defId: WARRIOR_DEF_ID, count: 2, children: [] }],
+    });
+
+    expect(report.violations.map(violation => violation.limit.measure)).toEqual([LimitMeasure.ROSTER_BUDGET]);
+    expect([...report.capabilities.values()].every(capability => capability.effectiveMax === null)).toBe(true);
   });
 });

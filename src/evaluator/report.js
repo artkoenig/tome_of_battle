@@ -118,9 +118,8 @@ const IS_MORE_BINDING_BY_KIND = new Map([
  * die am Ziel deklarierten Grenzen zugleich
  * ({@link import('./evalTree.js').limitsOf}), und schon eine einzelne Definition
  * darf eine Auswahl doppelt begrenzen („hoechstens 2 magische Gegenstaende **und**
- * hoechstens 100 Punkte" — in den Katalogen dieses Repos 32-mal). Der
- * Faehigkeitsdatensatz fuehrt je Slot aber nur **eine** Unter- und eine
- * Obergrenze.
+ * hoechstens 100 Punkte"). Der Faehigkeitsdatensatz fuehrt je Slot aber nur
+ * **eine** Unter- und eine Obergrenze.
  *
  * Ueber Messgroessen hinweg ist der Abstand `bound − actual` **kein**
  * Vergleichsmass: 2 Auswahlen sind nicht mehr oder weniger als 100 Punkte. Statt
@@ -136,11 +135,9 @@ const IS_MORE_BINDING_BY_KIND = new Map([
  *
  * 1. `SELECTION_COUNT` — die Anzahl der Auswahlen: die Einheit jedes Auswahl-Slots.
  * 2. `FORCE_COUNT` — die Anzahl der Kontingente: dieselbe Aussage fuer einen
- *    Kontingent-Slot. Der Vorrang zwischen 1 und 2 ist ein Gleichstands-Ausschluss,
- *    kein Fall der Katalogdaten: kein Anker der Fixture-Kataloge traegt beide
- *    Zaehlgrenzen derselben Art (nachgezaehlt ueber alle 14 Katalog-/
- *    Spielsystemdateien; die 32 gemischten Faelle sind samt und sonders
- *    Auswahl+Kosten).
+ *    Kontingent-Slot. Der Vorrang zwischen 1 und 2 ist ein reiner
+ *    Gleichstands-Ausschluss — er haelt die Ordnung total, falls ein Anker je
+ *    beide Zaehlgrenzen derselben Art traegt, und trifft sonst keine Aussage.
  * 3. `COST_SUM` — die verplanten Kosten: sie begrenzen den Slot, sagen aber nicht,
  *    wie viele Auswahlen noch hineinpassen.
  * 4. `BUDGET_LIMIT` — das eingestellte Budget: am weitesten von dem entfernt, was
@@ -152,8 +149,10 @@ const IS_MORE_BINDING_BY_KIND = new Map([
  * `LimitMeasure.ROSTER_BUDGET` fehlt bewusst: die roster-weite Regel „Armee zu
  * teuer" (`budget.js`) haengt an keinem Slot und speist keinen
  * Faehigkeitsdatensatz ({@link buildReport} reicht sie getrennt an die
- * Meldungsliste). Taucht sie hier je auf, ist das ein Fehler und wird laut
- * gemeldet, statt still den Vorrang zu entscheiden.
+ * Meldungsliste). Erreicht ein so gemessenes Ergebnis dennoch den Index, wird es
+ * laut gemeldet, statt still den Vorrang zu entscheiden — die Zusicherung gilt
+ * fuer **jedes** indizierte Ergebnis ({@link isMoreBinding}), nicht erst dort, wo
+ * zwei Messgroessen aufeinandertreffen.
  */
 const MEASURE_PRECEDENCE = Object.freeze([
   LimitMeasure.SELECTION_COUNT,
@@ -166,9 +165,11 @@ const MEASURE_PRECEDENCE = Object.freeze([
 const PRECEDENCE_BY_MEASURE = new Map(MEASURE_PRECEDENCE.map((measure, rank) => [measure, rank]));
 
 /**
- * Der Vorrang-Rang eines Grenz-Ergebnisses. Eine Messgroesse ohne Rang ist ein
- * Bruch der Aufzaehlung oben und wird laut gemeldet, statt still zu gewinnen oder
- * zu verlieren.
+ * Der Vorrang-Rang eines Grenz-Ergebnisses — und zugleich die Zusicherung, dass
+ * seine Messgroesse an einem Slot ueberhaupt ausweisbar ist. Eine Messgroesse ohne
+ * Rang ist ein Bruch der Aufzaehlung oben (etwa die roster-weite Budget-Regel, die
+ * an keinem Slot haengt) und wird laut gemeldet, statt still zu gewinnen oder zu
+ * verlieren.
  */
 function precedenceOf(result) {
   const rank = PRECEDENCE_BY_MEASURE.get(result.measure);
@@ -182,16 +183,28 @@ function precedenceOf(result) {
  * True, wenn `candidate` das bisher gefundene Ergebnis `incumbent` als bindendes
  * ablöst. Ohne Vorgaenger gewinnt der Kandidat; bei **verschiedenen** Messgroessen
  * entscheidet allein deren Vorrang ({@link MEASURE_PRECEDENCE}), bei gleicher der
- * Abstand ({@link IS_MORE_BINDING_BY_KIND}). Eine Grenzenart ohne Regel ist ein
- * Bruch der Zweiweg-Vollstaendigkeit und wird laut gemeldet, statt still die
+ * Abstand ({@link IS_MORE_BINDING_BY_KIND}). Verglichen werden dafuer die Raenge,
+ * nicht die Messgroessen selbst: der Vorrang ist eine Aufzaehlung ohne Dopplung,
+ * gleicher Rang heisst also gleiche Messgroesse. Eine Grenzenart ohne Regel ist
+ * ein Bruch der Zweiweg-Vollstaendigkeit und wird laut gemeldet, statt still die
  * zuletzt gesehene Grenze zu zeigen.
+ *
+ * Der Rang des Kandidaten wird **vor** dem Sonderfall „noch kein Vorgaenger"
+ * bestimmt, denn er ist nicht nur Vergleichswert, sondern die Zusicherung aus
+ * {@link precedenceOf}. Haengt sie am Zusammentreffen zweier Messgroessen, gilt
+ * sie fuer einen Anker mit nur **einer** Messgroesse gar nicht — und genau so
+ * sehen die Ergebnisse der Budget-Regel aus: alle am selben roster-weiten Anker,
+ * alle MAX, alle `ROSTER_BUDGET`. Sie fielen sonst samt und sonders in den
+ * frueh zurueckkehrenden Zweig und wuerden still indiziert.
  *
  * Beides zusammen ist eine totale Ordnung (erst Rang, dann Abstand), die Auswahl
  * also unabhaengig davon, in welcher Reihenfolge die Ergebnisse eintreffen.
  */
 function isMoreBinding(candidate, incumbent) {
+  const candidateRank = precedenceOf(candidate);
   if (incumbent === undefined) return true;
-  if (candidate.measure !== incumbent.measure) return precedenceOf(candidate) < precedenceOf(incumbent);
+  const incumbentRank = precedenceOf(incumbent);
+  if (candidateRank !== incumbentRank) return candidateRank < incumbentRank;
   const isMoreBindingThan = IS_MORE_BINDING_BY_KIND.get(candidate.limit.kind);
   if (isMoreBindingThan === undefined) {
     throw new Error(`Grenzenart ohne Bindungsregel: ${candidate.limit.kind}`);
@@ -273,7 +286,14 @@ function headroomOf(maxResult) {
  * Kategorie-Abschnitt allein aus dem Bericht nicht seiner Kategorie zuordnen: die
  * Oberflaeche muesste in den Baumknoten greifen, was ADR-0034 gerade ausschliesst.
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
- * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand. Name,
+ * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
+ *
+ * `current`, `headroom` und `isBlocked` gelten dabei **in der Messgroesse der
+ * ausgewiesenen Grenze** ({@link MEASURE_PRECEDENCE}) und sind keine Zusage ueber
+ * Verfuegbarkeit: ein Slot kann „noch 4 frei" melden und trotzdem an einer Grenze
+ * anderer Messgroesse haengen — etwa 4 freie Auswahlen bei 98 von 100 Punkten. Was
+ * eine weitere Auswahl tatsaechlich verletzte, sagt die Meldungsliste, die **jede**
+ * Grenze fuehrt (§4.8). Name,
  * Autor-Meldungen und die **Info-Projektion** (`infoElements`: die fuer diesen
  * Slot geltenden Profile und Regeltexte, samt der von seinen belegten
  * Unter-Auswahlen geerbten) kommen ebenfalls aus dem effektiven Zustand — die

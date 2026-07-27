@@ -144,22 +144,48 @@ function collectArmyLevelCandidates(rootSelectionChildren) {
 }
 
 /**
- * Sammelt die **Member-IDs** einer `selectionEntryGroup` rekursiv: die IDs ihrer
- * direkten Auswahl-Kinder (Eintraege/Links) sowie — ueber verschachtelte
- * Untergruppen hinweg — deren Member. Aufgenommen wird je Kind seine ganze
- * {@link identityIdsOf Zaehl-Identitaet}, bei einem `entryLink` also auch Ziel-ID
- * und aufgeloeste Ziel-ID: so wird eine Instanz als Member erkannt, unabhaengig
- * davon, ob das Roster die Eintrags-, Link- oder Ziel-ID traegt (die Import-Schicht
- * verwirft das `entryGroupId`-Tag, die Zugehoerigkeit wird deshalb aus dem
- * Definitionsbaum abgeleitet — wie im Solver-Referenzpfad `collectGroupItemIds`).
- * Die Identitaet steht dabei an **einer** Stelle (`identity.js`) — wuerde sie
- * verschaerft, gaelte das auch hier.
+ * Die Definitionsarten, deren {@link identityIdsOf Zaehl-Identitaet} in die
+ * Mitgliederliste einer Gruppe eingeht: eine **waehlbare** Option — ein Eintrag
+ * oder ein Verweis auf einen.
  *
- * Zeigt ein `entryLink` auf eine **Gruppe**, gehoeren deren Member ebenfalls dazu:
- * eine Grenze an der aeusseren Gruppe (z. B. "hoechstens 100 Punkte Magie-Items")
- * rechnet gegen alles, was unter ihr waehlbar ist — auch wenn die Unterlisten
- * ("Magische Waffen", "Magische Ruestung") per Verweis eingebunden sind. Der
- * `visited`-Satz haelt eine zyklische Verweiskette endlich.
+ * Bewusst eine Erlaubnisliste, denn `children` traegt mehr als die Auswahl-Kinder
+ * (`catalogReader.readSelectionChildren`): ein `selectionEntryGroup` darf laut
+ * `Catalogue.xsd` auch `categoryLinks` fuehren, und die zeichnen die Gruppe mit
+ * einer **Kategorie** aus, statt eine Auswahl unter ihr anzubieten. Ihre Ids —
+ * die des Links und die der Kategorie — gehoeren nicht in die Mitgliederliste:
+ * sonst vermischte sie „ist Mitglied dieser Gruppe" mit „ist eine Kategorie, mit
+ * der die Gruppe ausgezeichnet ist", und eine gruppen-skopierte Grenze zaehlte
+ * einen Knoten mit, den nur seine Kategorie mit der Gruppe verbindet.
+ */
+const MEMBER_DEFINITION_KINDS = new Set([DefinitionKind.ENTRY, DefinitionKind.ENTRY_LINK]);
+
+/**
+ * Sammelt die **Member-IDs** einer `selectionEntryGroup` rekursiv. Member sind ihre
+ * waehlbaren Kinder ({@link MEMBER_DEFINITION_KINDS}) und — ueber verschachtelte
+ * Untergruppen hinweg — deren Member; alles andere unter `children` bleibt aussen
+ * vor. Je Member wird seine ganze {@link identityIdsOf Zaehl-Identitaet}
+ * aufgenommen, bei einem `entryLink` also auch Ziel-ID und aufgeloeste Ziel-ID: so
+ * wird eine Instanz als Member erkannt, unabhaengig davon, ob das Roster die
+ * Eintrags-, Link- oder Ziel-ID traegt (die Import-Schicht verwirft das
+ * `entryGroupId`-Tag, die Zugehoerigkeit wird deshalb aus dem Definitionsbaum
+ * abgeleitet — wie im Solver-Referenzpfad `collectGroupItemIds`). Die Identitaet
+ * steht dabei an **einer** Stelle (`identity.js`) — wuerde sie verschaerft, gaelte
+ * das auch hier.
+ *
+ * Die drei Faelle je Kind:
+ *
+ * - **Untergruppe** — selbst kein Auswahlpunkt: ihre Ids bleiben draussen, ihre
+ *   Member kommen hinzu.
+ * - **Eintrag oder Verweis** — ein Auswahlpunkt: seine Identitaet kommt hinzu.
+ *   Zeigt ein `entryLink` auf eine **Gruppe**, gehoeren deren Member ebenfalls
+ *   dazu: eine Grenze an der aeusseren Gruppe (z. B. "hoechstens 100 Punkte
+ *   Magie-Items") rechnet gegen alles, was unter ihr waehlbar ist — auch wenn die
+ *   Unterlisten ("Magische Waffen", "Magische Ruestung") per Verweis eingebunden
+ *   sind.
+ * - **Kategorie-Verweis** — keine Auswahl, sondern eine Auszeichnung der Gruppe:
+ *   bleibt vollstaendig draussen ({@link MEMBER_DEFINITION_KINDS}).
+ *
+ * Der `visited`-Satz haelt eine zyklische Verweiskette endlich.
  */
 function collectGroupMemberIds(groupDef, into, visited = new Set()) {
   if (visited.has(groupDef.id)) return;
@@ -169,6 +195,7 @@ function collectGroupMemberIds(groupDef, into, visited = new Set()) {
       collectGroupMemberIds(child, into, visited);
       continue;
     }
+    if (!MEMBER_DEFINITION_KINDS.has(child.kind)) continue;
     for (const id of identityIdsOf(child)) into.add(id);
     if (child.kind === DefinitionKind.ENTRY_LINK && child.resolved?.kind === DefinitionKind.GROUP) {
       collectGroupMemberIds(child.resolved, into, visited);

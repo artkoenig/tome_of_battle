@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: [04]
 
@@ -61,3 +61,4 @@ gehalten oder sie verschwinden.
 
 ## Comments
 - Alle vier Punkte stammen aus der Nachpruefung von Scheibe 04 und betreffen ausschliesslich Code, der in diesem Main-Issue entstanden ist. Punkt 1 wurde vom Pruefer nicht hergeleitet, sondern ausgefuehrt: buildReport mit zwei ueberschrittenen Kostenarten wirft nicht.
+- Vier Nachbesserungen: (1) Die Zusicherung zur ausgelassenen Budget-Messgroesse gilt jetzt wirklich — isMoreBinding bestimmt den Vorrang-Rang des Kandidaten vor dem Sonderfall 'kein Vorgaenger' und vergleicht Raenge statt Messgroessen, sodass jedes indizierte Ergebnis geprueft wird; zwei neue Tests halten fest, dass ein bzw. zwei Budget-Ergebnisse in der Slot-Ergebnisliste werfen, ein dritter, dass der vorgesehene Weg ueber budgetViolations unveraendert traegt. (2) collectGroupMemberIds nimmt nur noch Eintraege und entryLinks auf (Erlaubnisliste MEMBER_DEFINITION_KINDS); categoryLinks und ihre Kategorie-Ids fallen heraus, der Kommentar beschreibt alle vier Kindarten. (3) docs/evaluator-architecture.md 4.8 sagt ausdruecklich, dass current/headroom/isBlocked je Messgroesse gelten und keine Zusage ueber Verfuegbarkeit sind (Beispiel 98 Punkte / max 5 Auswahlen / max 100 Punkte); dieselbe Aussage steht am toCapability-JSDoc und als eigener Test. (4) Die gezaehlten Katalogwerte (32 Paare, 14 Dateien) sind aus den Kommentaren entfernt; die qualitativen Aussagen bleiben.

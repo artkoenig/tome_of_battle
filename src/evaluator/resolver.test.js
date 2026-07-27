@@ -203,3 +203,76 @@ describe('Kandidatenmenge des Angebots auf Armee-Ebene', () => {
     expect(candidateIds()).not.toContain(NESTED_ENTRY_ID);
   });
 });
+
+describe('Resolver: die Mitglieder einer Gruppe', () => {
+  const HERO_ID = 'entry-hero';
+  const GROUP_ID = 'group-magic-items';
+  const NESTED_GROUP_ID = 'group-magic-weapons';
+  const MEMBER_ENTRY_ID = 'entry-magic-sword';
+  const NESTED_MEMBER_ENTRY_ID = 'entry-magic-axe';
+  const MEMBER_LINK_ID = 'link-magic-shield';
+  const SHARED_ENTRY_ID = 'shared-entry-magic-shield';
+  const MAGIC_CATEGORY_ID = 'cat-magic';
+  const MAGIC_CATEGORY_LINK_ID = 'clink-magic';
+
+  // Eine Grenzen-tragende Gruppe mit allen vier Kindarten, die `Catalogue.xsd`
+  // unter einem `selectionEntryGroup` erlaubt: ein Eintrag, ein Verweis, eine
+  // Untergruppe — und ein `categoryLink`, der die Gruppe mit einer Kategorie
+  // **auszeichnet**, statt eine Auswahl unter ihr anzubieten.
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-group-members" name="Group Members Catalogue">
+      <categoryEntries>
+        <categoryEntry id="${MAGIC_CATEGORY_ID}" name="Magie"/>
+      </categoryEntries>
+      <sharedSelectionEntries>
+        <selectionEntry id="${SHARED_ENTRY_ID}" name="Magisches Schild" type="upgrade"/>
+      </sharedSelectionEntries>
+      <selectionEntries>
+        <selectionEntry id="${HERO_ID}" name="Held" type="unit">
+          <selectionEntryGroups>
+            <selectionEntryGroup id="${GROUP_ID}" name="Magische Gegenstaende">
+              <constraints>
+                <constraint id="max-magic-items" type="max" value="2" field="selections" scope="parent"/>
+              </constraints>
+              <categoryLinks>
+                <categoryLink id="${MAGIC_CATEGORY_LINK_ID}" name="Magie" targetId="${MAGIC_CATEGORY_ID}"/>
+              </categoryLinks>
+              <selectionEntries>
+                <selectionEntry id="${MEMBER_ENTRY_ID}" name="Magisches Schwert" type="upgrade"/>
+              </selectionEntries>
+              <selectionEntryGroups>
+                <selectionEntryGroup id="${NESTED_GROUP_ID}" name="Magische Waffen">
+                  <selectionEntries>
+                    <selectionEntry id="${NESTED_MEMBER_ENTRY_ID}" name="Magische Axt" type="upgrade"/>
+                  </selectionEntries>
+                </selectionEntryGroup>
+              </selectionEntryGroups>
+              <entryLinks>
+                <entryLink id="${MEMBER_LINK_ID}" name="Magisches Schild" targetId="${SHARED_ENTRY_ID}" type="selectionEntry"/>
+              </entryLinks>
+            </selectionEntryGroup>
+          </selectionEntryGroups>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  /** Die Mitglieder-IDs der Gruppe, alphabetisch — die Reihenfolge ist bedeutungslos. */
+  function memberIds() {
+    return [...resolveCatalogue(parseCatalogue(CATALOGUE_XML)).groupMemberIds.get(GROUP_ID)].sort();
+  }
+
+  it('fuehrt die waehlbaren Kinder — den Eintrag, den Verweis samt Ziel-ID und die Member der Untergruppe', () => {
+    expect(memberIds()).toEqual(
+      [MEMBER_ENTRY_ID, MEMBER_LINK_ID, SHARED_ENTRY_ID, NESTED_MEMBER_ENTRY_ID].sort()
+    );
+  });
+
+  it('fuehrt weder den Kategorie-Verweis noch seine Kategorie: eine Auszeichnung ist kein Mitglied', () => {
+    expect(memberIds()).not.toContain(MAGIC_CATEGORY_LINK_ID);
+    expect(memberIds()).not.toContain(MAGIC_CATEGORY_ID);
+  });
+
+  it('fuehrt die Untergruppe nicht selbst: sie buendelt, sie ist kein Auswahlpunkt', () => {
+    expect(memberIds()).not.toContain(NESTED_GROUP_ID);
+  });
+});
