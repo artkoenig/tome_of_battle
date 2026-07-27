@@ -2,7 +2,10 @@
  * Effektiv-Werte-Schicht (`docs/evaluator-architecture.md` §3.4/§4.1,
  * `record EffectiveState`).
  *
- * Basisdefinitionen werden nie mutiert (Leitprinzip 5, Immutability). Diese
+ * Basisdefinitionen werden nie mutiert (Leitprinzip 5, Immutability) — und das
+ * nicht nur als Disziplin: der Resolver friert den aufgeloesten Definitionsgraphen
+ * nach der Aufbereitung tief ein (`resolver.js`, `freezeResolvedView`), ein
+ * Schreibversuch wirft im Strict Mode. Diese
  * Schicht traegt eine **separate** Ebene effektiver Werte: effektive Kosten,
  * effektive Kategorien, effektive Grenzwerte samt ihrer **Herleitungskette**, die
  * Sichtbarkeit, die effektiven Namen, die effektiven Charakteristikwerte und die

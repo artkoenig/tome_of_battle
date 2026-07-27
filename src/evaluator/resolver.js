@@ -17,6 +17,18 @@
  * bleibt roh (xs:string, ADR-0016); die Zuordnung ist statisch und haengt nicht
  * vom effektiven Zustand ab, wird also vor der Fixpunktschleife einmal berechnet
  * (Clean-Room-Abgleich Q1).
+ *
+ * ── Unveraenderlichkeit ist durchgesetzt, nicht nur versprochen ──────────────
+ * Die Anreicherung (`modifier.target`, `condition.witnessDefinition`,
+ * `info.resolved`, `link.resolved`) schreibt **einmal, waehrend der
+ * Aufloesung**, auf die frisch geparsten Objekte — danach wird der gesamte
+ * Definitionsgraph samt Sicht **tief eingefroren**
+ * ({@link freezeResolvedView}). Seit die Fassade zweistufig ist, traegt ein
+ * aufbereiteter Datensatz beliebig viele Auswertungen (Leitprinzip 5,
+ * `effectiveState.js`); jeder spaetere Schreibversuch — aus der Engine wie vom
+ * Aufrufer — wirft deshalb im Strict Mode einen `TypeError` an der
+ * schreibenden Stelle, statt als ferne Korruption spaeterer Berichte
+ * aufzufallen.
  */
 
 import { DefinitionKind, InfoElementKind, ModifierTargetKind, MessageSeverity, DiagnosticKind, diagnostic } from './model.js';
@@ -426,6 +438,65 @@ function indexAndResolveInfos(infoRoots, byId, symbolTable, diagnostics) {
 }
 
 /**
+ * Ersetzt die mutierenden Methoden einer Menge/Karte durch werfende Varianten:
+ * `Object.freeze` allein liesse `add`/`set`/`delete`/`clear` zu, weil sie keine
+ * Eigenschaften schreiben, sondern internen Zustand. Lesend bleibt alles nutzbar.
+ */
+function hardenCollection(collection, methodNames) {
+  for (const name of methodNames) {
+    Object.defineProperty(collection, name, {
+      value: function frozenCollectionMutator() {
+        throw new TypeError(`Die aufgeloeste Sicht ist unveraenderlich: ${name}() ist nicht erlaubt.`);
+      },
+    });
+  }
+}
+
+/**
+ * Friert einen Objektgraphen **tief und zyklen-sicher** ein: jedes erreichbare
+ * Objekt (auch ueber `resolved`-Rueckverweise, daher der `seen`-Satz), jede
+ * Liste, jede Menge und jede Karte. Mengen und Karten werden zusaetzlich
+ * gehaertet ({@link hardenCollection}), weil `Object.freeze` ihre Eintraege
+ * nicht schuetzt.
+ */
+function deepFreezeGraph(value, seen) {
+  if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return;
+  if (seen.has(value)) return;
+  seen.add(value);
+  if (value instanceof Map) {
+    for (const [key, entry] of value) {
+      deepFreezeGraph(key, seen);
+      deepFreezeGraph(entry, seen);
+    }
+    hardenCollection(value, ['set', 'delete', 'clear']);
+  } else if (value instanceof Set) {
+    for (const entry of value) deepFreezeGraph(entry, seen);
+    hardenCollection(value, ['add', 'delete', 'clear']);
+  } else {
+    for (const key of Object.keys(value)) deepFreezeGraph(value[key], seen);
+  }
+  Object.freeze(value);
+}
+
+/**
+ * Friert die fertig aufgeloeste Sicht **und jeden Definitionsknoten** ein — die
+ * Immutability-Garantie dieser Schicht als Mechanik statt als Disziplin.
+ *
+ * Ueber die Sicht selbst hinaus werden alle gesammelten Knoten eingefroren,
+ * denn nicht jeder ist von ihr aus per Eigenschaft erreichbar: geteilte
+ * Definitionen stehen nur im `lookup`-Abschluss, eine Duplikat-Definition nicht
+ * einmal dort. Nach diesem Schritt gibt es keinen beschreibbaren Weg mehr in
+ * den Katalog-Graphen.
+ */
+function freezeResolvedView(view, definitionNodes, infoRoots) {
+  const seen = new Set();
+  for (const definition of definitionNodes) deepFreezeGraph(definition, seen);
+  for (const info of infoRoots) deepFreezeGraph(info, seen);
+  deepFreezeGraph(view, seen);
+  return view;
+}
+
+/**
  * Loest einen gelesenen Katalog (oder das zusammengefuehrte Aggregat mehrerer
  * Dokumente, ADR-0032) zu einer nachschlagbaren, unveraenderlichen Sicht auf.
  *
@@ -443,6 +514,11 @@ function indexAndResolveInfos(infoRoots, byId, symbolTable, diagnostics) {
  * Daneben liefert er die **Kandidatenmenge des Angebots auf Armee-Ebene**
  * (`armyLevelCandidates`, siehe {@link collectArmyLevelCandidates}) als eigene,
  * benannte Sicht — die Grundlage der Angebots-Anker je Kontingent (ADR-0035).
+ *
+ * Die zurueckgegebene Sicht und der gesamte Definitionsgraph dahinter sind
+ * **tief eingefroren** ({@link freezeResolvedView}): die Aufloesung ist der
+ * letzte Schritt, der auf die geparsten Objekte schreibt. Der uebergebene
+ * Katalog wird dabei mit eingefroren — er teilt seine Objekte mit der Sicht.
  *
  * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
  * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], diagnostics: object[] }}
@@ -512,7 +588,7 @@ export function resolveCatalogue(catalogue) {
   // Eigentuemer-Auswahl einen Gruppen-Anker und annotiert die Member-Knoten.
   const groupMemberIds = buildGroupMemberIndex(definitionNodes);
 
-  return {
+  return freezeResolvedView({
     lookup: id => byId.get(id) ?? null,
     definitions,
     armyLevelCandidates: collectArmyLevelCandidates(catalogue.entries ?? []),
@@ -525,5 +601,5 @@ export function resolveCatalogue(catalogue) {
     // liest sie; ausgewertet wird an ihnen nichts.
     profileTypes: catalogue.profileTypes ?? [],
     diagnostics,
-  };
+  }, definitionNodes, infoRoots);
 }

@@ -1,0 +1,95 @@
+---
+status: active
+branch: resolver-immutability
+pr:
+---
+
+# Resolver: unveränderliche Sicht ohne Mutation der Eingabe zusichern
+
+## Intent
+
+`resolveCatalogue` (`src/evaluator/resolver.js`) verspricht eine unveränderliche
+Sicht auf die Katalogdaten, erreicht sie aber, indem es auf die gelesenen
+Objekte schreibt (`modifier.target`, `condition.witnessDefinition`,
+`info.resolved`, `link.resolved`). `effectiveState.js` formuliert die
+entgegengesetzte Zusicherung („Basisdefinitionen werden nie mutiert",
+Leitprinzip 5). Seit dem zweistufigen Schnitt der Fassade
+(`prepareDataset` → `evaluate`, Main-Issue 75) reicht derselbe aufbereitete
+Graph in beliebig viele Auswertungen hinein — das Aliasing ist tragend
+geworden und gilt bisher allein durch Disziplin.
+
+Akzeptanzkriterien (übernommen aus dem Alt-Issue
+`docs/issues/80-resolver-baut-die-unveraenderliche-sicht-durch-mutation-seiner-eingabe/`):
+
+1. Es ist entschieden und begründet, ob die Auflösung mutationsfrei wird
+   (Seitentabellen) oder die Unveränderlichkeit nach der Aufbereitung
+   erzwungen wird (Einfrieren).
+2. Die gewählte Zusicherung gilt nicht nur per Dokumentation, sondern fällt
+   bei Verletzung auf.
+3. `resolver.js` und `effectiveState.js` sagen dasselbe über
+   Unveränderlichkeit.
+4. Ein Test hält fest, dass mehrere Auswertungen desselben aufbereiteten
+   Datensatzes einander nicht beeinflussen.
+
+## Plan
+
+## Tasks
+
+## Decisions
+
+- Quelle des Intents: Alt-Issue 80 (`needs-triage`, Type refactor), gefunden
+  bei der Standards-Prüfung von Main-Issue 75. Vom Menschen beauftragt:
+  „such dir was Passendes aus dem Backlog aus" — Auswahlgrund: selbstständig
+  umsetzbar, klare falsifizierbare Kriterien, echte interne Design-Entscheidung.
+- Dieser Lauf ist ein Metis-Probelauf ohne Migration: das alte
+  Workflow-Wiring des Projekts bleibt unangetastet; nur diese Issue-Datei
+  folgt dem neuen Template.
+- Die Design-Entscheidung (Kriterium 1) ist intern, nicht outward-facing —
+  sie liegt beim Lauf, nicht beim Menschen. Der Implementer entscheidet am
+  Code und begründet; die Entscheidung wird hier nachgetragen.
+- Kein separater `test-author`: Kriterium 1 wählt die Mechanik erst am Code,
+  die ein blinder Test-Autor nicht testen könnte; Kriterien 2 und 4 sind
+  mechanisch scharf genug, dass ein tautologischer Test auffällt. Der
+  Implementer schreibt die Tests selbst (Invariante 2). Gegenprüfung liegt
+  beim Reviewer, Prüfung 3 (Tests gegen den Intent).
+
+- **Kriterium 1, entschieden vom Implementer am Code:** Die einmalige Mutation
+  während der Aufbereitung bleibt; die Unveränderlichkeit wird danach
+  erzwungen (tiefes Einfrieren des aufbereiteten Graphen). Begründung: die
+  Anreicherung „einmal auflösen, oft lesen" ist gemessene Architektur (die
+  Aufbereitung ist 98,9–99,5 % der Kosten einer Auswertung); Seitentabellen
+  hätten Nachschlage-Zugriffe durch mindestens sechs Verbrauchermodule
+  gefädelt, ohne Verhaltensgewinn — und hätten für Kriterium 2 trotzdem einen
+  eigenen Durchsetzungsmechanismus gebraucht. `Object.freeze` ist im Projekt
+  bereits das idiomatische Mittel dafür, und ESM läuft im strict mode: ein
+  Schreibzugriff wirft `TypeError` an der verursachenden Stelle.
+- Annahme des Implementers, an den Reviewer weitergereicht: Das Einfrieren
+  trifft als Nebenwirkung auch den geparsten Eingabe-Katalog (er teilt Objekte
+  mit der aufgelösten Sicht). Belegt durch die grüne Gesamtsuite, dokumentiert
+  im JSDoc — aber es ist eine Verhaltensänderung über den Resolver hinaus.
+- Umgebung: Standard-Node im Sandbox ist v22.22.2 und verletzt `engines: ^24`;
+  alle Läufe liefen unter v24.18.0 aus `NVM_DIR=/opt/nvm`.
+
+## Checkpoints
+
+### Before implementation
+
+- **Does this match what was asked?** Ja — der Mensch hat die Auswahl aus dem
+  Backlog delegiert; Intent und Kriterien sind unverändert aus Alt-Issue 80
+  übernommen, das den Befund am Code belegt.
+- **What surprised me?** Nichts Materielles. Auffällig nur: Alt-Issue 73 ist
+  `claimed` — ein unterbrochener Lauf des alten Workflows; nicht angefasst.
+- **What am I assuming without having verified it?** (a) Dass die vier
+  genannten Mutationsstellen nach dem Merge von Main-Issue 75 (#142,
+  `85cbb2c`) noch so existieren — das Alt-Issue wurde währenddessen
+  geschrieben. (b) Dass die E2E-Suite wiederholte Auswertungen desselben
+  Datensatzes tatsächlich abdeckt, wie das Alt-Issue behauptet. Beides
+  verifiziert der Implementer als Erstes; weicht es ab, meldet er Surprise.
+
+### Before the PR
+
+- Does this match what was asked?
+- What surprised me?
+- What am I assuming without having verified it?
+
+## Retro
