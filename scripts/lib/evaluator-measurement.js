@@ -193,11 +193,13 @@ export function measureEvaluation(dataset, roster) {
     ];
     // `profileTypes` wie in der Fassade mitgeben: ohne sie baute die Messung eine
     // Info-Projektion ohne Klartext-Namen und maesse damit weniger, als die Engine
-    // wirklich tut.
+    // wirklich tut. `categoryIds` aus demselben Grund: ohne sie ordnete die Messung
+    // einen ID-Bezugsrahmen als Eintrags- statt als Kategorie-Rahmen ein.
     return buildReport(root, effective, results, diagnostics, {
       budgetViolations,
       unstableNodes,
       profileTypes: resolved.profileTypes,
+      categoryIds: resolved.categoryIds,
     });
   });
 
@@ -228,12 +230,26 @@ export function measureEvaluation(dataset, roster) {
  * Profiltyp-Deklarationen nicht mitgibt, liefert exakt dieselben Verletzungen und
  * denselben Datensatz-Umfang und waere ohne diese Zahl nicht zu unterscheiden.
  *
+ * Aus demselben Grund geht die **Einordnung** jeder Meldung mit ein (Issue 75/07):
+ * Herkunft, Schweregrad, Ankerart, Messgroesse, Rahmenart und die Zahl der
+ * Ursachen. Eine Nachbildung, die dem Berichtsbau etwa die Kategorie-IDs nicht
+ * mitgibt, ordnete einen ID-Bezugsrahmen falsch ein — und liefe ohne diese Felder
+ * mit identischem Fingerabdruck still an der Fassade vorbei.
+ *
  * @param {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }} report
  * @returns {string}
  */
 export function reportFingerprint(report) {
   const violations = report.violations
-    .map(violation => `${violation.limitId}@${violation.anchor?.defId ?? ''}=${violation.actual}/${violation.bound}`)
+    .map(violation => [
+      `${violation.limitId ?? ''}@${violation.anchor?.defId ?? ''}=${violation.actual}/${violation.bound}`,
+      violation.origin,
+      violation.severity,
+      violation.anchor?.anchorKind,
+      violation.limit?.measure,
+      violation.limit?.scope?.kind,
+      (violation.causes ?? []).length,
+    ].join('|'))
     .sort();
   const diagnosticKinds = report.diagnostics.map(entry => entry.kind).sort();
   return JSON.stringify({

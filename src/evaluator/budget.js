@@ -20,14 +20,35 @@
  * Regel an keinem realen Baumknoten haengt.
  */
 
-import { scopeKey, ScopeKeyword, ROSTER_BUDGET_ANCHOR, rosterBudgetLimitId } from './model.js';
+import {
+  scopeKey,
+  ScopeKeyword,
+  ConstraintKind,
+  LimitMeasure,
+  ROSTER_BUDGET_ANCHOR,
+  costSumField,
+  rosterBudgetLimitId,
+} from './model.js';
+
+/**
+ * Der Bezugsrahmen der Budget-Regel: der **ganze** Roster — inklusive
+ * geschachtelter Selektionen und Kontingente —, damit die Summe jede
+ * kostentragende Auswahl der Armee erfasst und nicht nur die direkt unter einem
+ * Kontingent liegenden.
+ *
+ * Dieselben Flags speisen die Zaehlung ({@link plannedRosterSum}) **und** die
+ * Einordnung der Verletzung ({@link rosterBudgetLimit}); zwei Kopien koennten
+ * auseinanderlaufen und die Meldung einen Rahmen nennen lassen, in dem gar nicht
+ * gezaehlt wurde.
+ */
+const ROSTER_WIDE_FLAGS = Object.freeze({
+  shared: true,
+  includeChildSelections: true,
+  includeChildForces: true,
+});
 
 /**
  * Die am ROSTER-Rahmen verplante Summe einer Kostenart aus dem Zaehlindex.
- * Der ROSTER-Rahmen umspannt den gesamten Roster — inklusive geschachtelter
- * Selektionen (`includeChildSelections`) und Kontingente (`includeChildForces`) —,
- * damit die Summe jede kostentragende Auswahl der Armee erfasst, nicht nur die
- * direkt unter einem Kontingent liegenden.
  *
  * @param {{ get: Function }} index  der Zaehlindex.
  * @param {string} costTypeId  die Kostenart, deren verplante Summe gelesen wird.
@@ -35,10 +56,32 @@ import { scopeKey, ScopeKeyword, ROSTER_BUDGET_ANCHOR, rosterBudgetLimitId } fro
  */
 function plannedRosterSum(index, costTypeId) {
   const rosterKey = scopeKey(ScopeKeyword.ROSTER, null);
-  const includeChildSelections = true;
-  const includeChildForces = true;
-  const tally = index.get(rosterKey, includeChildSelections, includeChildForces);
+  const tally = index.get(
+    rosterKey,
+    ROSTER_WIDE_FLAGS.includeChildSelections,
+    ROSTER_WIDE_FLAGS.includeChildForces,
+  );
   return tally.costSums.get(costTypeId) ?? 0;
+}
+
+/**
+ * Die **synthetische Grenze** der Budget-Regel einer Kostenart. Sie traegt
+ * dieselbe Form wie eine Katalog-Grenze, damit die eine Einordnung
+ * (`violationClassification.js`) beide Herkuenfte ohne Sonderfall liest: eine
+ * MAX-Grenze ueber die verplante Summe dieser Kostenart im roster-weiten Rahmen.
+ *
+ * Ihre Id kommt aus dem engine-eigenen `budget::`-Raum und kollidiert deshalb nie
+ * mit einer Katalog-Grenze.
+ */
+function rosterBudgetLimit(costTypeId) {
+  return Object.freeze({
+    id: rosterBudgetLimitId(costTypeId),
+    kind: ConstraintKind.MAX,
+    field: costSumField(costTypeId),
+    scope: ScopeKeyword.ROSTER,
+    isPercent: false,
+    flags: ROSTER_WIDE_FLAGS,
+  });
 }
 
 /**
@@ -55,7 +98,7 @@ function evaluateCostLimit(index, { costTypeId, value }) {
   const actual = plannedRosterSum(index, costTypeId);
   if (actual <= value) return null;
   return {
-    limit: { id: rosterBudgetLimitId(costTypeId) },
+    limit: rosterBudgetLimit(costTypeId),
     anchor: ROSTER_BUDGET_ANCHOR,
     actual,
     bound: value,
@@ -65,6 +108,11 @@ function evaluateCostLimit(index, { costTypeId, value }) {
     // Ganzem — sie ist immer berichtsfaehig. Der Wert steht ausdruecklich hier,
     // damit die eine Berichtsprojektion ihn nie aus einem fehlenden Feld raten muss.
     isReportable: true,
+    // Ihre **Messgroesse** ist eine eigene Art, keine Kostensummen-Grenze des
+    // Katalogs: gemessen wird die verplante Summe gegen die im Roster
+    // **eingestellte** Grenze. Aus derselben Not wie `isReportable` steht sie
+    // ausdruecklich hier — die Einordnung liest sie ab, statt sie zu erraten.
+    measure: LimitMeasure.ROSTER_BUDGET,
   };
 }
 

@@ -4,8 +4,12 @@
  * Der Bericht ist die **einzige** Quelle der Auswertungsergebnisse (Leitprinzip
  * 2). Er traegt zwei Sichten auf denselben, genau einmal ausgewerteten Stand:
  *
- * - **Verletzungen** fuer die Validierungsanzeige (das volle Ergebnis-Tripel je
- *   angeschlagener, **berichtsfaehiger** Grenze),
+ * - **Verletzungen** fuer die Validierungsanzeige — **eine** Liste fachlich
+ *   eingeordneter Meldungen (`violationClassification.js`) mit einem
+ *   Herkunfts-Diskriminator: aus einer Grenze **abgeleitete** Meldungen (das volle
+ *   Ergebnis-Tripel je angeschlagener, **berichtsfaehiger** Grenze, samt Art der
+ *   Grenze, Bezugsrahmen, Herleitungskette und den daraus gelesenen **Ursachen**,
+ *   `causes.js`) und die **Autor-Meldungen** des Katalogs (`authorMessages.js`),
  * - je Slot einen **Faehigkeitsdatensatz** (`SlotCapability`) fuer die
  *   UI-Steuerung: Definitions-ID, **Ankerart**, Rahmen-Bezug und **effektiver**
  *   Anzeigename, effektives min/max, aktueller Stand, Restspielraum, die
@@ -26,9 +30,12 @@
  * nie selbst, sie projiziert nur den einen Bericht.
  */
 
-import { ConstraintKind } from './model.js';
+import { ConstraintKind, isReportableAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf } from './evalTree.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
+import { renderedAuthorMessagesOf } from './authorMessages.js';
+import { classifyDerivedViolation, classifyAuthorMessage } from './violationClassification.js';
+import { causesFieldOf } from './causes.js';
 
 /** Der Normalfall: die Auswertung ist konvergiert, kein Slot ist instabil. */
 const NO_UNSTABLE_NODES = new Set();
@@ -36,24 +43,45 @@ const NO_UNSTABLE_NODES = new Set();
 /** Ohne Profiltyp-Deklarationen bleiben die Klartext-Namen der Merkmale leer. */
 const NO_PROFILE_TYPES = Object.freeze([]);
 
+/** Ohne bekannte Kategorie-IDs ist jeder ID-Bezugsrahmen ein Eintrags-Rahmen. */
+const NO_CATEGORY_IDS = new Set();
+
 /**
- * Projiziert ein Constraint-Ergebnis auf eine Verletzungsmeldung. Sie traegt neben
- * dem Ergebnis-Tripel die **Herleitung** des Grenzwerts: Basiswert und die
- * Schritte, die ihn veraendert haben. Daraus liest sich ohne zweite Auswertung ab,
- * *warum* die Grenze auf diesem Wert steht (ADR-0027).
+ * Projiziert ein Constraint-Ergebnis auf eine **abgeleitete** Meldung: die
+ * sprachfreie Einordnung (Herkunft, Schweregrad, Anker, Art der Grenze,
+ * Bezugsrahmen) plus das Ergebnis-Tripel, die **Herleitung** des Grenzwerts und —
+ * sofern benennbar — die daraus gelesenen **Ursachen** (ADR-0027).
+ *
+ * Die Ursachen entstehen als reine Filterung derselben Kette, nicht aus einer
+ * zweiten Herleitung: `causes.js` liest sie, es rechnet nichts nach.
  */
-function toViolation(result) {
+function toDerivedViolation(result, context) {
   return {
-    limitId: result.limit.id,
-    anchor: {
-      defId: result.anchor.def.id,
-      name: result.anchor.def.name,
-    },
-    actual: result.actual,
-    bound: result.bound,
-    delta: result.delta,
-    derivation: result.derivation ?? null,
+    ...classifyDerivedViolation(result, context),
+    ...causesFieldOf(result.derivation),
   };
+}
+
+/**
+ * Die **Autor-Meldungen** aller berichtsfaehigen Slots als Meldungen derselben
+ * Liste. Gelesen werden die bereits gebauten Faehigkeitsdatensaetze — dieselben
+ * gerenderten Texte, die auch am Slot stehen; zweimal zu rendern hiesse, zwei
+ * Texte zu fuehren, die auseinanderlaufen koennen.
+ *
+ * Ein **Angebots-Anker** faellt heraus (dieselbe Berichtsfaehigkeits-Regel wie bei
+ * den Grenzen, ADR-0035/0036): eine Meldung an einer nicht gewaehlten Option
+ * spraeche ueber etwas, das gar nicht in der Liste steht — sein Datensatz fuehrt
+ * sie weiterhin, damit die Oberflaeche sie am Angebot zeigen kann.
+ */
+function authorViolationsOf(capabilities, context) {
+  const violations = [];
+  for (const capability of capabilities.values()) {
+    if (!isReportableAnchorKind(capability.anchorKind)) continue;
+    for (const message of capability.authorMessages) {
+      violations.push(classifyAuthorMessage(capability.node, message, context));
+    }
+  }
+  return violations;
 }
 
 /**
@@ -148,7 +176,7 @@ function toCapability(node, { results, effective, unstableNodes, profileTypeRegi
     isBlocked: maxResult !== null && maxResult.actual >= maxResult.bound,
     isHidden: effective.isHidden(node),
     isValueUnstable: unstableNodes.has(node),
-    authorMessages: effective.authorMessagesOf(node),
+    authorMessages: renderedAuthorMessagesOf(node, effective),
     infoElements: infoElementsOf(node, effective, profileTypeRegistry),
   };
 }
@@ -163,7 +191,7 @@ function toCapability(node, { results, effective, unstableNodes, profileTypeRegi
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[] }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -174,6 +202,10 @@ function toCapability(node, { results, effective, unstableNodes, profileTypeRegi
  *   „Wert nicht stabil" markiert, damit die Unsicherheit am betroffenen Slot steht.
  *   `profileTypes`: die Profiltyp-Deklarationen des Datensatzes (`resolver.js`) —
  *   die Quelle der Klartext-Namen in der Info-Projektion je Slot.
+ *   `categoryIds`: die bekannten Kategorie-IDs (`resolver.js`) — sie entscheiden,
+ *   ob ein ID-Bezugsrahmen einer Grenze eine Kategorie oder einen Eintrag benennt
+ *   (`violationClassification.js`), gelesen aus **derselben** Quelle wie im
+ *   Query-Primitiv.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  */
 export function buildReport(root, effective, results, diagnostics, extras = {}) {
@@ -181,6 +213,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     budgetViolations = [],
     unstableNodes = NO_UNSTABLE_NODES,
     profileTypes = NO_PROFILE_TYPES,
+    categoryIds = NO_CATEGORY_IDS,
   } = extras;
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
@@ -194,13 +227,23 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
   for (const node of selectableSlotsOf(root)) {
     capabilities.set(pathOf(node), toCapability(node, capabilityContext));
   }
+
+  // Der geteilte Lesekontext der Einordnung: effektive Namen, die instabile
+  // Knotenmenge und die bekannten Kategorie-IDs.
+  const classificationContext = { effective, unstableNodes, categoryIds };
+
   return {
-    // Gemeldet wird, was **berichtsfaehig** und unerfuellt ist. Ein Ergebnis am
-    // Angebots-Anker faellt hier heraus (`constraints.js`, `isReportable`): das
-    // Nichtgewaehlte speist Faehigkeitsdatensaetze, aber nie die Meldungsliste.
-    violations: [...results, ...budgetViolations]
-      .filter(result => result.isReportable && !result.satisfied)
-      .map(toViolation),
+    // **Eine** Meldungsliste fuer beide Herkuenfte, unterschieden durch den
+    // Diskriminator `origin` — zwei Listen waeren zwei Wege zur selben Frage
+    // (ADR-0034). Gemeldet wird, was **berichtsfaehig** und unerfuellt ist; ein
+    // Ergebnis am Angebots-Anker faellt heraus (`constraints.js`, `isReportable`):
+    // das Nichtgewaehlte speist Faehigkeitsdatensaetze, aber nie die Meldungsliste.
+    violations: [
+      ...[...results, ...budgetViolations]
+        .filter(result => result.isReportable && !result.satisfied)
+        .map(result => toDerivedViolation(result, classificationContext)),
+      ...authorViolationsOf(capabilities, classificationContext),
+    ],
     capabilities,
     diagnostics,
   };

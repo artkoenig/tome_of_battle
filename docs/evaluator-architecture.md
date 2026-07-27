@@ -108,11 +108,28 @@ Modifikatoren hängen von Zählungen ab; Zählungen hängen von effektiven Koste
 
 Jede effektive Grenze wird ausgewertet und liefert nie nur „verletzt ja/nein", sondern immer das volle Tripel **Ist-Wert / effektiver Grenzwert / Delta** plus Bezugsinstanz. Der Bericht enthält:
 
-- **Verletzungen** (für die Validierungsanzeige),
+- **Verletzungen** (für die Validierungsanzeige) — **eine** Liste fachlich eingeordneter Meldungen, siehe unten,
 - pro **Slot** einen **Fähigkeitsdatensatz**: Definitions-ID, **Ankerart**, **Rahmen-Bezug** und effektiver Anzeigename, effektives min/max, aktueller Stand, Restspielraum, Pflicht-Flag, Gesperrt-Flag, Versteckt-Flag, das Merkmal „Wert nicht stabil", die Autor-Meldungen des Katalogs und die **Info-Projektion** — die für ihn geltenden Profile und Regeltexte (für die UI-Steuerung, siehe unten),
 - **Diagnosen** (Auflösungsprobleme, Oszillation, erschöpftes Rundenbudget, Null-Nenner, unauflösbare Budgetgrenze).
 
 Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** — ob dort etwas steht oder nicht: jeder Knoten jeder Ankerart, also auch ein Kategorie-Knoten und jede wählbare, nicht gewählte Definition. Verfügbarkeit wird daraus **abgelesen** statt errechnet.
+
+**Die Meldungsliste ist fachlich eingeordnet und sprachfrei** (`violationClassification.js`, ADR-0034). Die Engine ordnet ein, die Oberfläche formuliert: im Bericht steht kein i18n-Schlüssel und kein übersetzter Satz. Jede Meldung trägt:
+
+- **Herkunft** (`origin`) — der Diskriminator, der bestimmt, welche übrigen Felder besetzt sind: *aus einer Grenze abgeleitet* (eine Katalog-Grenze **oder** die engine-eigene Budget-Regel) oder *Autor-Meldung* des Katalogs. Es gibt bewusst **eine** Liste für beide: zwei Listen wären zwei Wege zur selben Frage („was stimmt an dieser Liste nicht?").
+- **Schweregrad** — bei einer abgeleiteten Meldung immer *Fehler* (eine gerissene Grenze macht die Liste regelwidrig; eine unerfüllte Pflicht als bloße Warnung auszuweisen wäre eine Anzeige-Entscheidung und liegt außerhalb der Engine); bei einer Autor-Meldung der aus dem Katalog übernommene (`field="error"`/`"warning"`/`"info"`).
+- **Anker** — Definitions-ID, **effektiver** Name, stabiler Slot-Pfad, **Ankerart** und das Merkmal „Wert nicht stabil". Die Ankerart ist die Aufzählung der Fähigkeitsdatensätze, erweitert um genau einen Wert: den `ROSTER` der Budget-Regel, die an keinem Slot hängt und deshalb `path: null` trägt.
+- **Nur abgeleitet:** Grenz-ID, **Art der Grenze** (Mindest-/Höchstmaß × *was gemessen wird*: Auswahlanzahl, Kontingentanzahl, Kostensumme, eingestellte Kostengrenze oder die Roster-Budget-Regel; dazu die Kostenart und das Prozent-Kennzeichen), **Bezugsrahmen** (dessen *Art* — Schlüsselwort oder Eintrags- bzw. Kategorie-ID —, die Ziel-ID und die drei Zähl-Flags), Ist-Wert, Grenze, Differenz und die **Herleitungskette**.
+- **Nur Autor-Meldung:** der Katalogtext mit aufgelösten Text-Tokens (siehe unten).
+- **Ursachen** (optional, nur abgeleitet, ADR-0027, `causes.js`) — siehe unten.
+
+**Jedes Feld der Einordnung ist ein geschlossener Wertevorrat**, keine freie Zeichenkette. Das ist der Punkt: eine Fallunterscheidung in der Oberfläche wird dadurch erschöpfend und ein fehlender Fall auffindbar. Der rohe `scope` einer Grenze etwa ist im XML ein Schlüsselwort *oder* eine ID — ihm sieht man nicht an, welches von beidem; die Einordnung nimmt der Oberfläche genau diesen Rateschritt ab, und zwar an derselben Quelle, an der auch das Query-Primitiv den Rahmen auflöst.
+
+**Ursachen werden aus der Herleitungskette *gelesen*, nicht rekonstruiert** (`causes.js`). Eine Ursache ist ein Kettenschritt, der drei Dinge zugleich war: **bedingt** (ein unbedingter Modifikator gilt immer und erklärt nichts), **wirksam** (er hat den Wert tatsächlich verändert — gemessen gegen seinen Vorgängerschritt, nicht gegen den Basiswert) und **benennbar** (er trägt einen Zeugen). Ausgegeben werden dessen Zeuge, die Modifikator-Art und der Zwischenwert. Löst eine Bedingung auf keine benennbare Auswahl auf, bleibt der Schritt in der Kette sichtbar, erzeugt aber keine erfundene Ursache; bleibt danach keine übrig, **fehlt das Feld ganz** statt leer dazustehen. Nachträglich ließe sich der Zeuge nur gewinnen, indem alle Bedingungen gegen einen womöglich anderen Index erneut ausgewertet würden — eine zweite Rechenstelle, genau das, was ADR-0034 ausschließt.
+
+**Eine Autor-Meldung wird gerendert, nicht übersetzt** (`authorMessages.js`, ADR-0028). Der Text bleibt in Katalogsprache; aufgelöst wird allein, was BattleScribe selbst auflöst: das Token `{this}` → der **effektive** Name des tragenden Knotens. Die Zuordnung ist eine Tabelle, kein Sonderfall-`if`; ein unbelegtes Token bleibt verbatim stehen, denn eine vollständige Token-Spezifikation existiert nicht. In den Fixture-Katalogen ist `{this}` das einzige vorkommende Token (7 Fundstellen, alle in `modifier/@value` von Meldungs-Modifikatoren). Gerendert wird **einmal**, und dieselben Meldungen speisen den Fähigkeitsdatensatz des Slots *und* die Meldungsliste — zwei Renderstellen könnten zwei Texte führen, die auseinanderlaufen.
+
+**Ein Angebots-Anker erzeugt auch keine Autor-Meldung.** Dieselbe Berichtsfähigkeits-Regel wie bei den Grenzen: sein Fähigkeitsdatensatz führt sie weiterhin, damit die Oberfläche sie am Angebot zeigen kann, aber die Meldungsliste spräche sonst über etwas, das gar nicht in der Liste steht.
 
 **Ein Angebots-Anker erzeugt keine Verletzung.** Seine Grenzen werden voll ausgewertet — daraus liest der Fähigkeitsdatensatz Höchstmaß, Belegung und Restspielraum —, aber das Ergebnis ist **nicht berichtsfähig** (`isReportable`). Andernfalls läse eine armee- oder kontingentweit skopierte Grenze am Anker denselben Wert wie am realen Knoten und meldete dieselbe Verletzung ein zweites Mal, und jede nicht gewählte Option mit einer Mindestgrenze flutete die Meldungsliste. Die Verletzungsliste bleibt vom gewachsenen Baum damit unberührt — eine prüfbare Invariante der bestehenden E2E-Suite. Die roster-weite Budget-Regel ist immer berichtsfähig.
 
@@ -215,6 +232,20 @@ record Roster       { forces: InstanceNode[], costLimits: CostLimit[] }  // cost
 enum AnchorKind { OCCUPIED, MANDATORY_PHANTOM, GROUP_ANCHOR,      // Herkunft eines Slots;
                   CATEGORY_ANCHOR, OFFER_ANCHOR }                 // genau eine je Knoten
 
+// ── Sprachfreie Einordnung einer Meldung (§3.6, ADR-0034) ────────────────────
+enum MessageAnchorKind { ...AnchorKind, ROSTER }   // Obermenge, kein zweiter Vorrat:
+                       // ROSTER trägt allein die Budget-Regel (kein Slot ⇒ path = null)
+enum MessageOrigin  { DERIVED_LIMIT, AUTHOR_MESSAGE }   // der Diskriminator: er bestimmt,
+                       // welche Felder einer Meldung besetzt sind
+enum MessageSeverity { ERROR, WARNING, INFO }
+enum LimitMeasure   { SELECTION_COUNT, FORCE_COUNT, COST_SUM,   // WAS die Grenze misst;
+                      BUDGET_LIMIT, ROSTER_BUDGET }             // die ersten vier je genau
+                      // ein CountedFieldKind (limitMeasureOfCountedField), ROSTER_BUDGET
+                      // ist die engine-eigene Regel „Armee zu teuer"
+enum ScopeKind      { ROSTER, FORCE, PARENT, SELF,   // die vier Werte aus ScopeKeyword …
+                      ENTRY_ID, CATEGORY_ID }        // … plus die beiden ID-Rahmen: dem rohen
+                      // `scope` sieht man nicht an, welches von beidem er ist
+
 record EvalNode {
   def: ResolvedDef
   instance: InstanceNode?          // null bei Phantomknoten
@@ -247,7 +278,28 @@ record ConstraintResult { limit: LimitDef, anchor: EvalNode,
                           actual: number, bound: number, satisfied: bool, delta: number,
                           isReportable: bool,           // false am Angebots-Anker: speist nur
                                                         // den Fähigkeitsdatensatz, nie die Meldung
+                          measure: LimitMeasure,        // Rohdatum der Einordnung: abgelesen am
+                                                        // Feld — die Budget-Regel bringt ihr
+                                                        // eigenes mit, statt es raten zu lassen
                           derivation: LimitDerivation? }
+
+// Die eine Meldungsliste des Berichts. `origin` sagt, welche Felder besetzt sind.
+record MessageAnchor  { defId, name: string?,        // name: der **effektive**
+                        path: NodePath?,             // null nur am ROSTER-Anker
+                        anchorKind: MessageAnchorKind, isValueUnstable: bool }
+record LimitFacts     { kind: ConstraintKind, measure: LimitMeasure,
+                        costTypeId: Id?, isPercent: bool,   // isPercent: `bound` ist der
+                                                     // abgeleitete Wert, die Kette der Prozentsatz
+                        scope: { kind: ScopeKind, targetId: Id?, flags: CountFlags } }
+record Cause          { witness: { defId, name },    // die auslösende, benennbare Auswahl
+                        modifierKind: ModifierKind, value: number }   // wie sie wirkte, worauf
+record Message        { origin: MessageOrigin, severity: MessageSeverity, anchor: MessageAnchor,
+                        // nur origin == DERIVED_LIMIT:
+                        limitId: Id, limit: LimitFacts,
+                        actual: number, bound: number, delta: number,
+                        derivation: LimitDerivation?, causes: Cause[]?,   // causes FEHLT, wenn leer
+                        // nur origin == AUTHOR_MESSAGE:
+                        text: string }               // Katalogtext, Text-Tokens aufgelöst
 
 record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: der **effektive**
                           targetDefId: Id?,             // worauf ein Verweis-Slot zeigt: die
@@ -265,7 +317,7 @@ record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: d
                                                         // belegten Unter-Auswahlen geerbte Profile
                                                         // und Regeltexte, Verstecktes ausgenommen
 
-record Report { violations: ConstraintResult[], capabilities: Map<NodePath, SlotCapability>,
+record Report { violations: Message[], capabilities: Map<NodePath, SlotCapability>,
                 diagnostics: Diagnostic[] }
 ```
 
@@ -547,10 +599,19 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       isValueUnstable = node in unstableNodes,         // kam in der Schleife nicht zur Ruhe
       defId         = node.def.id,
       name          = effective.nameOf(node),          // nach allen Namens-Modifikatoren
-      authorMessages  = effective.authorMessages[node],
+      authorMessages  = renderedAuthorMessagesOf(node, effective),   // §3.6, ADR-0028
       infoElements    = infoElementsOf(node, effective, profileTypes))  // §3.6, infoProjection.js
+
+  // EINE Liste, zwei Herkünfte, ein Diskriminator (§3.6). Die Autor-Meldungen kommen
+  // aus den eben gebauten Fähigkeitsdatensätzen — dieselben gerenderten Texte, nicht
+  // ein zweites Mal gerendert.
+  derived = results.filter(r → r.isReportable and not r.satisfied)
+                   .map(r → classifyDerivedViolation(r, ctx) + causesFieldOf(r.derivation))
+  authored = capabilities.values
+                   .filter(c → isReportableAnchorKind(c.anchorKind))   // nie am Angebots-Anker
+                   .flatMap(c → c.authorMessages.map(m → classifyAuthorMessage(c.node, m, ctx)))
   return Report(
-    violations   = results.filter(r → r.isReportable and not r.satisfied),
+    violations   = derived + authored,
     capabilities = capabilities,
     diagnostics  = diagnostics)
 

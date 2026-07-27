@@ -11,6 +11,10 @@ import { evaluateRosterBudget } from './budget.js';
 import {
   scopeKey,
   ScopeKeyword,
+  ConstraintKind,
+  LimitMeasure,
+  MessageAnchorKind,
+  costSumField,
   rosterBudgetLimitId,
   ROSTER_BUDGET_ANCHOR_ID,
   ROSTER_BUDGET_ANCHOR_NAME,
@@ -48,8 +52,22 @@ describe('evaluateRosterBudget — Regel „Armee zu teuer"', () => {
 
     expect(violations).toHaveLength(1);
     expect(violations[0]).toEqual({
-      limit: { id: rosterBudgetLimitId(POINTS) },
-      anchor: { def: { id: ROSTER_BUDGET_ANCHOR_ID, name: ROSTER_BUDGET_ANCHOR_NAME } },
+      // Seit Issue 75/07 traegt die synthetische Grenze dieselbe Form wie eine
+      // Katalog-Grenze — Art, gemessenes Feld, Bezugsrahmen und Zaehl-Flags —,
+      // damit die eine Einordnung beide Herkuenfte ohne Sonderfall liest.
+      limit: {
+        id: rosterBudgetLimitId(POINTS),
+        kind: ConstraintKind.MAX,
+        field: costSumField(POINTS),
+        scope: ScopeKeyword.ROSTER,
+        isPercent: false,
+        flags: { shared: true, includeChildSelections: true, includeChildForces: true },
+      },
+      anchor: {
+        def: { id: ROSTER_BUDGET_ANCHOR_ID, name: ROSTER_BUDGET_ANCHOR_NAME },
+        // Der Anker ist kein Slot des Baums, sondern die Armee als Ganzes.
+        anchorKind: MessageAnchorKind.ROSTER,
+      },
       actual: 2200,
       bound: 2000,
       satisfied: false,
@@ -58,6 +76,9 @@ describe('evaluateRosterBudget — Regel „Armee zu teuer"', () => {
       // immer berichtsfaehig. Seit die Angebots-Anker Ergebnisse liefern, die *nicht*
       // gemeldet werden duerfen (ADR-0035), traegt jedes Ergebnis diese Angabe.
       isReportable: true,
+      // Eigene Messgroesse: verplante Summe gegen die **eingestellte** Grenze,
+      // keine Kostensummen-Grenze des Katalogs.
+      measure: LimitMeasure.ROSTER_BUDGET,
     });
   });
 

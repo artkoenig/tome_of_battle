@@ -260,6 +260,128 @@ export function isReportableAnchorKind(anchorKind) {
 }
 
 /**
+ * Die **Ankerart einer Berichtsmeldung**: jede Slot-Ankerart aus {@link AnchorKind}
+ * und zusaetzlich der `ROSTER` — der Anker der engine-eigenen Budget-Regel
+ * („Armee zu teuer", `budget.js`), die an keinem Slot des Auswertungsbaums haengt,
+ * sondern an der Armee als Ganzem.
+ *
+ * Sie ist bewusst eine **Obermenge** von {@link AnchorKind} und keine Kopie: der
+ * Spread haelt beide ohne Drift zusammen, und jede Ankerart eines
+ * Faehigkeitsdatensatzes ist damit zugleich eine gueltige Meldungs-Ankerart
+ * (`design.md`, Kontrakt „Eingeordnete Verletzung": „dieselbe Aufzaehlung wie im
+ * Faehigkeitsdatensatz"). Umgekehrt bleibt `AnchorKind` die Aufzaehlung der
+ * **Baumknoten** — ein Roster ist kein Slot und taucht in keiner Slot-Statistik auf.
+ */
+export const MessageAnchorKind = Object.freeze({
+  ...AnchorKind,
+  ROSTER: 'roster',
+});
+
+/**
+ * True, wenn die Ankerart einen **Slot des Auswertungsbaums** benennt und damit
+ * einen stabilen Pfad hat. Nur der roster-weite Anker der Budget-Regel hat keinen:
+ * er ist kein Baumknoten, also traegt seine Meldung `path: null` statt eines
+ * erfundenen Pfads.
+ */
+export function isSlotAnchorKind(anchorKind) {
+  return anchorKind !== MessageAnchorKind.ROSTER;
+}
+
+/**
+ * **Herkunft** einer Berichtsmeldung — der Diskriminator der einen Meldungsliste
+ * (`design.md`, Kontrakt „Eingeordnete Verletzung"). Er bestimmt, welche der
+ * uebrigen Felder besetzt sind; die Oberflaeche muss nichts raten.
+ *
+ * - `DERIVED_LIMIT` — von der Engine **aus einer Grenze abgeleitet**: aus einer
+ *   Katalog-Grenze oder aus der engine-eigenen Budget-Regel. Traegt Grenz-Id,
+ *   Einordnung der Grenze, Ist-Wert, Grenzwert, Differenz, Herleitungskette und
+ *   — sofern benennbar — die Ursachen (ADR-0027).
+ * - `AUTHOR_MESSAGE` — eine **Meldung des Katalog-Autors** (`field="error"`/
+ *   `"warning"`/`"info"`). Traegt den Katalogtext mit aufgeloesten Text-Tokens
+ *   (ADR-0028) und keines der Grenzen-Felder.
+ *
+ * Zwei getrennte Listen waeren zwei Wege zur selben Frage („was stimmt an dieser
+ * Liste nicht?") — genau das schliesst ADR-0034 aus.
+ */
+export const MessageOrigin = Object.freeze({
+  DERIVED_LIMIT: 'derivedLimit',
+  AUTHOR_MESSAGE: 'authorMessage',
+});
+
+/**
+ * **Was eine Grenze misst** — die „Art der Grenze" der Einordnung, sprachfrei.
+ * Zusammen mit {@link ConstraintKind} (Mindest- oder Hoechstmass) und dem
+ * Prozent-Kennzeichen bestimmt sie eindeutig, welchen Satz die Oberflaeche waehlt
+ * (ADR-0034: die Engine ordnet ein, die Oberflaeche formuliert).
+ *
+ * Die ersten vier Werte sind die Messgroessen der Katalog-Grenzen — je genau eine
+ * Auspraegung von {@link CountedFieldKind}, abgebildet durch
+ * {@link limitMeasureOfCountedField}. `ROSTER_BUDGET` ist die engine-eigene Regel
+ * „Armee zu teuer" (`budget.js`): sie stammt aus keiner Katalog-Grenze und haengt
+ * an keinem Slot, ist also eine eigene Art und nicht bloss eine weitere
+ * Kostensummen-Grenze.
+ */
+export const LimitMeasure = Object.freeze({
+  SELECTION_COUNT: 'selectionCount',
+  FORCE_COUNT: 'forceCount',
+  COST_SUM: 'costSum',
+  BUDGET_LIMIT: 'budgetLimit',
+  ROSTER_BUDGET: 'rosterBudget',
+});
+
+/**
+ * Die Messgroesse je gezaehltem Feld. Total ueber {@link CountedFieldKind} — die
+ * Zweiweg-Vollstaendigkeit ist als Modultest festgehalten, damit ein neues Feld
+ * nicht still ohne Einordnung durchrutscht.
+ */
+/** @type {Map<string, string>} */
+const LIMIT_MEASURE_BY_COUNTED_FIELD = new Map([
+  [CountedFieldKind.SELECTION_COUNT, LimitMeasure.SELECTION_COUNT],
+  [CountedFieldKind.FORCE_COUNT, LimitMeasure.FORCE_COUNT],
+  [CountedFieldKind.COST_SUM, LimitMeasure.COST_SUM],
+  [CountedFieldKind.LIMIT_VALUE, LimitMeasure.BUDGET_LIMIT],
+]);
+
+/**
+ * Die {@link LimitMeasure Messgroesse} eines gezaehlten Feldes. Ein Feld ohne
+ * Messgroesse ist ein Bruch der Zweiweg-Vollstaendigkeit oben und wird laut
+ * gemeldet statt als `undefined` in den Bericht zu sickern — eine Meldung, deren
+ * Art die Oberflaeche raten muesste, waere schlimmer als keine.
+ *
+ * @param {{ kind: string }} field  ein Feld aus `SELECTION_COUNT` / `FORCE_COUNT` /
+ *   {@link costSumField} / {@link limitValueField}.
+ * @returns {string} der {@link LimitMeasure}-Wert.
+ */
+export function limitMeasureOfCountedField(field) {
+  const measure = LIMIT_MEASURE_BY_COUNTED_FIELD.get(field?.kind);
+  if (measure === undefined) {
+    throw new Error(`Gezaehltes Feld ohne Messgroesse: ${JSON.stringify(field)}`);
+  }
+  return measure;
+}
+
+/**
+ * **Art des Bezugsrahmens** einer Grenze. Der rohe `scope` einer Grenze ist
+ * entweder ein Schluesselwort **oder** eine ID — welches von beidem, sieht man ihm
+ * nicht an. Genau dieses Ansehen waere der Rateschritt, den die Oberflaeche nicht
+ * tun soll; die Einordnung nimmt ihn ihr ab.
+ *
+ * Die vier Schluesselwort-Werte sind die aus {@link ScopeKeyword} (dieselbe eine
+ * Quelle, kein zweiter Wertevorrat); `ENTRY_ID` und `CATEGORY_ID` benennen die
+ * beiden ID-Faelle, die das Query-Primitiv unterscheidet: eine Eintrags-ID loest
+ * auf den naechsten Vorfahren mit dieser ID auf, eine Kategorie-ID auf den
+ * armeeweiten Kategorierahmen (`query.js`, §3.3).
+ */
+export const ScopeKind = Object.freeze({
+  ROSTER: ScopeKeyword.ROSTER,
+  FORCE: ScopeKeyword.FORCE,
+  PARENT: ScopeKeyword.PARENT,
+  SELF: ScopeKeyword.SELF,
+  ENTRY_ID: 'entryId',
+  CATEGORY_ID: 'categoryId',
+});
+
+/**
  * Sentinel fuer einen suspendierten Grenzwert: eine Prozentgrenze mit leerem
  * Bezugsrahmen (Nenner 0) wird weder erfuellt noch verletzt, sondern
  * ausgesetzt (`docs/evaluator-architecture.md` §4.7, Annahme A4).
@@ -353,12 +475,17 @@ export const ROSTER_BUDGET_ANCHOR_NAME = 'Roster';
 /**
  * Der synthetische roster-weite Anker einer Budget-Verletzung: ein Knoten-artiges
  * Objekt, das nur die von der Berichtsprojektion gelesene `def`-Form traegt
- * (`{ def: { id, name } }`). Kein realer Baumknoten — er dient allein dazu, die
- * roster-weite Budget-Verletzung an denselben Berichtspfad wie die uebrigen
- * Verletzungen anzuschliessen.
+ * (`{ def: { id, name } }`) plus seine {@link MessageAnchorKind Ankerart}. Kein
+ * realer Baumknoten — er dient allein dazu, die roster-weite Budget-Verletzung an
+ * denselben Berichtspfad wie die uebrigen Verletzungen anzuschliessen.
+ *
+ * Die Ankerart steht ausdruecklich hier, damit die Einordnung sie **ablesen** und
+ * nicht aus einem fehlenden Feld schliessen muss — dieselbe Begruendung, aus der
+ * die Budget-Verletzung ihr `isReportable` explizit setzt.
  */
 export const ROSTER_BUDGET_ANCHOR = Object.freeze({
   def: Object.freeze({ id: ROSTER_BUDGET_ANCHOR_ID, name: ROSTER_BUDGET_ANCHOR_NAME }),
+  anchorKind: MessageAnchorKind.ROSTER,
 });
 
 /**

@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { evaluate as evaluateDataset } from './evaluator.js';
-import { AnchorKind } from './model.js';
+import { AnchorKind, ConstraintKind, LimitMeasure, MessageOrigin, MessageSeverity, ScopeKind } from './model.js';
 
 /**
  * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
@@ -31,6 +31,44 @@ function roster(forces) {
   return { forces };
 }
 
+/**
+ * Die Zaehl-Flags einer Grenze ohne eigene Angaben — die XSD-Vorgaben, mit denen
+ * die Einordnung einen fehlenden Wert auffuellt (`shared` ist standardmaessig true).
+ */
+const DEFAULT_SCOPE_FLAGS = {
+  shared: true,
+  includeChildSelections: false,
+  includeChildForces: false,
+};
+
+/**
+ * Die Einordnung einer abgeleiteten Meldung am belegten Slot (Issue 75/07): jede
+ * Verletzung nennt seit dieser Scheibe zusaetzlich ihre Herkunft, ihren
+ * Schweregrad, die Art der Grenze mit ihrem Bezugsrahmen und den vollstaendig
+ * beschriebenen Anker. Die Erwartungen unten bleiben **erschoepfend** (`toEqual`);
+ * dieser Helfer haelt nur den gemeinsamen Teil an einer Stelle.
+ */
+function derivedAt(defId, name, { measure, kind, scope, isPercent = false, costTypeId = null }) {
+  return {
+    origin: MessageOrigin.DERIVED_LIMIT,
+    severity: MessageSeverity.ERROR,
+    anchor: {
+      defId,
+      name,
+      path: '0',
+      anchorKind: AnchorKind.OCCUPIED,
+      isValueUnstable: false,
+    },
+    limit: {
+      kind,
+      measure,
+      costTypeId,
+      isPercent,
+      scope: { kind: scope, targetId: null, flags: DEFAULT_SCOPE_FLAGS },
+    },
+  };
+}
+
 describe('MIN-Grenzen (Selektionsanzahl)', () => {
   const MIN_WARRIORS = 3;
   const MIN_WARRIORS_LIMIT_ID = 'min-warriors';
@@ -52,13 +90,18 @@ describe('MIN-Grenzen (Selektionsanzahl)', () => {
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toEqual({
+      ...derivedAt(WARRIOR_DEF_ID, 'Warrior', {
+        kind: ConstraintKind.MIN,
+        measure: LimitMeasure.SELECTION_COUNT,
+        scope: ScopeKind.ROSTER,
+      }),
       limitId: MIN_WARRIORS_LIMIT_ID,
-      anchor: { defId: WARRIOR_DEF_ID, name: 'Warrior' },
       actual: under,
       bound: MIN_WARRIORS,
       delta: MIN_WARRIORS - under,
       // Unveraenderter Grenzwert: die Herleitung besteht nur aus ihrem Basiswert.
       derivation: { base: MIN_WARRIORS, steps: [] },
+      // Kein bedingter Schritt ⇒ keine benennbare Ursache ⇒ das Feld fehlt (ADR-0027).
     });
   });
 
@@ -104,8 +147,15 @@ describe('Grenzen ueber Kostensummen (Kostenart per ID)', () => {
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toEqual({
+      // Die Einordnung nennt die Kostenart, gegen die gemessen wurde — ohne sie
+      // liesse sich eine Kostensummen-Grenze nicht ihrer Kostenart zuordnen.
+      ...derivedAt(WARRIOR_DEF_ID, 'Warrior', {
+        kind: ConstraintKind.MAX,
+        measure: LimitMeasure.COST_SUM,
+        costTypeId: POINTS_COST_ID,
+        scope: ScopeKind.ROSTER,
+      }),
       limitId: MAX_POINTS_LIMIT_ID,
-      anchor: { defId: WARRIOR_DEF_ID, name: 'Warrior' },
       actual: WARRIOR_POINTS * count,
       bound: MAX_POINTS,
       delta: MAX_POINTS - WARRIOR_POINTS * count,
@@ -146,8 +196,15 @@ describe('Prozentgrenzen (aus dem Nenner des Bezugsrahmens abgeleitet)', () => {
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toEqual({
+      // `isPercent` ist der Schluessel zum Verstaendnis der Kette: die Einordnung
+      // sagt damit, dass `bound` der abgeleitete Wert und die Kette der Prozentsatz ist.
+      ...derivedAt(WARRIOR_DEF_ID, 'Warrior', {
+        kind: ConstraintKind.MAX,
+        measure: LimitMeasure.SELECTION_COUNT,
+        isPercent: true,
+        scope: ScopeKind.ROSTER,
+      }),
       limitId: HALF_LIMIT_ID,
-      anchor: { defId: WARRIOR_DEF_ID, name: 'Warrior' },
       actual: 3,
       bound: 2,
       delta: -1,

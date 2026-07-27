@@ -114,11 +114,14 @@ export function evaluate(dataset, roster) {
 
   // `profileTypes` liefert die Klartext-Namen von Profiltyp und Charakteristik-Typ
   // fuer die Info-Projektion je Slot — die Deklarationen des Datensatzes sind ihre
-  // einzige Quelle (`infoProjection.js`).
+  // einzige Quelle (`infoProjection.js`). `categoryIds` ist dieselbe Menge, an der
+  // das Query-Primitiv einen ID-Bezugsrahmen aufloest; die Einordnung einer
+  // Verletzung liest daran ab, ob deren Rahmen eine Kategorie oder ein Eintrag ist.
   return buildReport(root, effective, results, diagnostics, {
     budgetViolations,
     unstableNodes,
     profileTypes: resolved.profileTypes,
+    categoryIds: resolved.categoryIds,
   });
 }
 

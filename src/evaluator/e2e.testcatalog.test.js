@@ -41,6 +41,42 @@
  *             //          feuert.
  *           ],
  *           "absent": ["<constraint-id>", ...],   // Grenzen, die NICHT feuern duerfen
+           "messages": [                          // OPTIONAL: Aussagen ueber die EINGEORDNETE
+             {                                    //           Meldung (dieselbe `violations`-Liste)
+               // ── Auswahl der gemeinten Meldung (Vorgabe: muss genau eine treffen) ──
+               "origin": "derivedLimit|authorMessage",  // PFLICHT: der Diskriminator der Herkunft.
+                                                  // `derivedLimit` = von der Engine aus einer Grenze
+                                                  // abgeleitet; `authorMessage` = Meldung des
+                                                  // Katalog-Autors (field="error"/"warning"/"info")
+               "limitId": "<constraint-id>"?,     // nur bei derivedLimit
+               "anchorDefId": "<Definitions-ID>"?, // Anker, an dem die Meldung haengt
+               "anchorPath": "<Slot-Pfad>"?,      // nur noetig, wenn es sonst mehrdeutig bleibt
+               "text": "<Meldungstext>"?,         // bei einer Autor-Meldung zugleich Auswahl UND
+                                                  // Aussage: der Katalogtext, Text-Tokens wie
+                                                  // `{this}` durch den effektiven Namen ersetzt
+               "count": <n>?,                     // OPTIONAL: GENAU n Treffer. `0` fordert, dass
+                                                  // keine solche Meldung erscheint.
+               // ── Aussagen ueber die getroffene(n) Meldung(en) ──
+               "severity": "error|warning|info"?, // abgeleitet: immer error; Autor-Meldung: aus dem Katalog
+               "anchorName": "<effektiver Name>"?,
+               "anchorKind": "occupied|mandatoryPhantom|groupAnchor|categoryAnchor|offerAnchor|roster"?,
+                                                  // `roster` traegt allein die engine-eigene
+                                                  // Budget-Regel; sie haengt an keinem Slot
+               "isValueUnstable": true|false?,
+               "limitKind": "min|max"?,           // nur bei derivedLimit: Mindest- oder Hoechstmass
+               "measure": "selectionCount|forceCount|costSum|budgetLimit|rosterBudget"?,
+                                                  // WAS die Grenze misst
+               "costTypeId": "<costType-Id>"|null?,  // bei einer kostenbezogenen Messgroesse
+               "isPercent": true|false?,          // Prozentgrenze: `bound` ist der abgeleitete Wert
+               "scopeKind": "roster|force|parent|self|entryId|categoryId"?,  // Art des Bezugsrahmens
+               "scopeTargetId": "<id>"|null?,     // die Ziel-Id eines ID-Bezugsrahmens
+               "actual": <ist>?, "bound": <grenze>?, "delta": <differenz>?,
+               "causes": [                        // die ausloesenden Auswahlen (ADR-0027):
+                 { "witnessDefId": "<id>", "witnessName": "<Katalogname>",
+                   "modifierKind": "set|increment|decrement|multiply|...", "value": <zwischenwert> }
+               ]?                                 // VOLLSTAENDIG: [] fordert „keine Ursache"
+             }
+           ],
  *           "capabilities": [                     // OPTIONAL: Aussagen ueber einen Slot
  *             {
  *               // ── Auswahl des gemeinten Slots (muss genau einen treffen) ──
@@ -114,8 +150,8 @@
  *   }
  *
  * Die Erwartung ist **selektiv**, nicht erschoepfend: ueber die in `firing`/`absent`,
- * `capabilities` bzw. `diagnostics.present`/`diagnostics.absent` genannten Ids/Arten
- * hinaus macht sie keine Aussage. Andere Armeeaufbau-Diagnosen (General-/Core-Pflicht,
+ * `messages`, `capabilities` bzw. `diagnostics.present`/`diagnostics.absent` genannten
+ * Ids/Arten hinaus macht sie keine Aussage. Andere Armeeaufbau-Diagnosen (General-/Core-Pflicht,
  * Punktelimit, weitere Diagnose-Arten) duerfen zusaetzlich auftreten, ohne einen Fall
  * zu brechen. Innerhalb *eines* genannten Slots gilt das feiner: `name` ist eine
  * Gleichheit, `authorMessages` eine vollstaendige (aber reihenfolge-freie) Aussage
@@ -223,6 +259,120 @@ function assertViolationsMatchExpectation(report, expectation) {
   }
   for (const limitId of absent) {
     expect(violationsOf(report, limitId), `Grenze ${limitId} darf nicht feuern`).toHaveLength(0);
+  }
+}
+
+/**
+ * Die **Merkmale, ueber die eine Meldungs-Erwartung ihre Meldung auswaehlt**.
+ * `origin` ist Pflicht: es ist der Diskriminator, der bestimmt, welche Felder eine
+ * Meldung ueberhaupt traegt. Die uebrigen engen nur ein.
+ *
+ * `text` steht bewusst hier und nicht unter den Aussagen: bei einer Autor-Meldung
+ * ist der Wortlaut das benennende Merkmal. Ein abweichender Text findet dann keine
+ * Meldung — und die Fehlermeldung nennt genau den erwarteten Wortlaut, statt einen
+ * Zeichenvergleich an unbekannter Stelle zu zeigen.
+ */
+const MESSAGE_SELECTORS = Object.freeze({
+  origin: (spec, message) => message.origin === spec.origin,
+  limitId: (spec, message) => message.limitId === spec.limitId,
+  anchorDefId: (spec, message) => message.anchor.defId === spec.anchorDefId,
+  anchorPath: (spec, message) => message.anchor.path === spec.anchorPath,
+  text: (spec, message) => message.text === spec.text,
+});
+
+/**
+ * Die **Felder einer eingeordneten Meldung**, die eine Erwartung direkt vergleichen
+ * kann — je mit dem Zugriff auf ihre Stelle in der Meldung. Die Einordnung ist
+ * geschachtelt (Anker, Grenze, Bezugsrahmen), das Manifest bleibt flach: ein
+ * Szenario-Autor soll ein Merkmal benennen, nicht eine Objektform nachbauen.
+ *
+ * Die Grenzen-Felder liefern an einer Autor-Meldung `undefined`, weil sie dort
+ * nicht besetzt sind — ein Manifest, das sie dennoch behauptet, faellt auf.
+ */
+const COMPARABLE_MESSAGE_FIELDS = Object.freeze({
+  severity: message => message.severity,
+  anchorName: message => message.anchor.name,
+  anchorKind: message => message.anchor.anchorKind,
+  isValueUnstable: message => message.anchor.isValueUnstable,
+  limitKind: message => message.limit?.kind,
+  measure: message => message.limit?.measure,
+  costTypeId: message => message.limit?.costTypeId,
+  isPercent: message => message.limit?.isPercent,
+  scopeKind: message => message.limit?.scope.kind,
+  scopeTargetId: message => message.limit?.scope.targetId,
+  actual: message => message.actual,
+  bound: message => message.bound,
+  delta: message => message.delta,
+  text: message => message.text,
+});
+
+/** Die im Manifest gesetzten Auswahlmerkmale einer Meldung, menschenlesbar. */
+function messageSelectorLabel(spec) {
+  return Object.keys(MESSAGE_SELECTORS)
+    .filter(key => spec[key] !== undefined)
+    .map(key => `${key}="${spec[key]}"`)
+    .join(', ');
+}
+
+/**
+ * Die Meldungen, die eine Erwartung meint. Ohne `count` muss es **genau eine**
+ * sein — sonst meint das Szenario nicht eindeutig eine, und das ist ein
+ * Manifest-Fehler mit klarer Meldung statt einer stillschweigend gewaehlten. Mit
+ * `count` ist die Trefferzahl selbst die Aussage; `count: 0` fordert Abwesenheit.
+ */
+function messagesForExpectation(report, spec, manifestPath) {
+  const matches = report.violations.filter(message =>
+    Object.entries(MESSAGE_SELECTORS)
+      .every(([key, matchesSelector]) => spec[key] === undefined || matchesSelector(spec, message)));
+
+  if (spec.count !== undefined) {
+    expect(matches, `messages: ${messageSelectorLabel(spec)} muss genau ${spec.count}x erscheinen`)
+      .toHaveLength(spec.count);
+    return matches;
+  }
+  assertManifest(matches.length > 0, manifestPath,
+    `messages: keine Meldung mit ${messageSelectorLabel(spec)}.`);
+  assertManifest(matches.length === 1, manifestPath,
+    `messages: ${messageSelectorLabel(spec)} ist mehrdeutig (${matches.length} Treffer); ` +
+    '"anchorDefId", "anchorPath" oder "count" ergaenzen.');
+  return matches;
+}
+
+/**
+ * Prueft die **Ursachen** einer Meldung (ADR-0027). Vollstaendig und
+ * reihenfolge-frei: `[]` fordert, dass die Meldung keine benennbare Ursache traegt
+ * — und weil das Feld dann ganz fehlt, wird es als leere Liste gelesen.
+ */
+function assertCausesMatchExpectation(message, expectedCauses, spec) {
+  const actualCauses = (message.causes ?? []).map(cause => ({
+    witnessDefId: cause.witness.defId,
+    witnessName: cause.witness.name,
+    modifierKind: cause.modifierKind,
+    value: cause.value,
+  }));
+  expect(actualCauses, `Meldung ${messageSelectorLabel(spec)}: Zahl der Ursachen`)
+    .toHaveLength(expectedCauses.length);
+  for (const expectedCause of expectedCauses) {
+    expect(actualCauses, `Meldung ${messageSelectorLabel(spec)}: Ursache`)
+      .toContainEqual(expect.objectContaining(expectedCause));
+  }
+}
+
+/** Prueft die `messages`-Aussagen eines Rosters gegen die eingeordnete Meldungsliste. */
+function assertMessagesMatchExpectation(report, expectation, manifestPath) {
+  for (const spec of expectation.messages ?? []) {
+    // Ohne Herkunft ist nicht bestimmt, welche Felder die gemeinte Meldung traegt.
+    assertManifest(typeof spec.origin === 'string', manifestPath,
+      'messages: Feld "origin" fehlt (der Diskriminator der Herkunft).');
+    const messages = messagesForExpectation(report, spec, manifestPath);
+
+    for (const message of messages) {
+      for (const [field, valueOf] of Object.entries(COMPARABLE_MESSAGE_FIELDS)) {
+        if (spec[field] === undefined) continue;
+        expect(valueOf(message), `Meldung ${messageSelectorLabel(spec)}: ${field}`).toEqual(spec[field]);
+      }
+      if (spec.causes !== undefined) assertCausesMatchExpectation(message, spec.causes, spec);
+    }
   }
 }
 
@@ -405,14 +555,14 @@ function assertDiagnosticsMatchExpectation(report, expectation, manifestPath) {
   for (const spec of present) {
     const kind = diagnosticKindOf(spec.kind, manifestPath);
     const minCount = spec.minCount ?? 1;
-    const matches = diagnosticsMatching(report, kind, spec.targetId, spec.defId);
+    const matches = diagnosticsMatching(report, kind, spec);
     expect(matches.length, `Diagnose ${diagnosticLabel(spec)} muss mind. ${minCount}x auftreten`).toBeGreaterThanOrEqual(
       minCount,
     );
   }
   for (const spec of absent) {
     const kind = diagnosticKindOf(spec.kind, manifestPath);
-    const matches = diagnosticsMatching(report, kind, spec.targetId, spec.defId);
+    const matches = diagnosticsMatching(report, kind, spec);
     expect(matches.length, `Diagnose ${diagnosticLabel(spec)} darf nicht auftreten`).toBe(0);
   }
 }
@@ -432,6 +582,7 @@ describe('E2E Testkatalog (manifest-getrieben): docs/testing/<szenario>/scenario
           const roster = rosterFromRos(join(manifest.scenarioDir, rosterCase.file));
           const report = evaluate(dataset, roster);
           assertViolationsMatchExpectation(report, rosterCase.expect);
+          assertMessagesMatchExpectation(report, rosterCase.expect, manifest.manifestPath);
           assertCapabilitiesMatchExpectation(report, rosterCase.expect, manifest.manifestPath);
           assertDiagnosticsMatchExpectation(report, rosterCase.expect, manifest.manifestPath);
         });

@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind } from './model.js';
+import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
 import { allNodes, limitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -79,6 +79,12 @@ function evaluateLimit(limit, node, effective, ctx) {
     // Schicht stellt die Unterscheidung bereit und deutet sie nicht: sie liest die
     // Ankerart des Knotens ab (`model.js`, {@link isReportableAnchorKind}).
     isReportable: isReportableAnchorKind(node.anchorKind),
+    // Die **Messgroesse** der Grenze — ein Rohdatum der Einordnung, abgelesen am
+    // gezaehlten Feld (`model.js`, {@link limitMeasureOfCountedField}). Sie steht
+    // hier und nicht erst in der Einordnung, weil die roster-weite Budget-Regel
+    // (`budget.js`) ihre eigene Messgroesse mitbringt: so liest die Einordnung
+    // beide Herkuenfte aus **einem** Feld, statt eine davon zu erraten.
+    measure: limitMeasureOfCountedField(limit.field),
     // Die **Herleitung** des Grenzwerts, unveraendert durchgereicht: diese Schicht
     // deutet sie nicht, sie stellt sie nur bereit (die Ursachen nach ADR-0027 sind
     // eine Filterung dieser Kette). Bei einer Prozentgrenze beschreibt sie den

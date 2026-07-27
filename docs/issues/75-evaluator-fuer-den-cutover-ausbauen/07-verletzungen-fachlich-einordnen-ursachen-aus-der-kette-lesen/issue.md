@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: refactor
 Blocked by: [04, 06]
 
@@ -27,3 +27,4 @@ traegt.
 - [ ] Aus der Einordnung laesst sich eindeutig und ohne Rateschritt ein Anzeigetext bestimmen; das ist an den heute vorhandenen Meldungsarten durchgespielt.
 
 ## Comments
+- Meldungen werden jetzt sprachfrei eingeordnet: neue Module violationClassification.js (Herkunft, Schweregrad, Anker, Art der Grenze, Bezugsrahmen - alles aus geschlossenen Enums in model.js), causes.js (reiner Leser der Herleitungskette nach ADR-0027) und authorMessages.js (Token-Rendering {this} nach ADR-0028). report.js fuehrt beide Herkuenfte in EINER violations-Liste mit dem Diskriminator 'origin'; ein Angebots-Anker steuert weiterhin nichts bei. Neue E2E-Szenarien violation-classification und author-message-tokens (Black-Box-Autor); Manifest um den Abschnitt expect.messages erweitert.

@@ -97,6 +97,31 @@ and in `docs/testing/vampire-bloodlines/scenario.json`. In outline:
           { "limitId": "<constraint-id>", "actual": 0, "bound": 1, "count": 2 }
         ],
         "absent": ["<constraint-id>", "..."],
+        "messages": [
+          {
+            "origin": "derivedLimit|authorMessage",
+            "limitId": "<constraint id — derivedLimit only>",
+            "anchorDefId": "<definition id of the anchor>",
+            "anchorPath": "<slot path — last resort>",
+            "text": "<message text — selector AND assertion for an author message>",
+            "count": 0,
+            "severity": "error|warning|info",
+            "anchorName": "<effective display name of the anchor>",
+            "anchorKind": "occupied|mandatoryPhantom|groupAnchor|categoryAnchor|offerAnchor|roster",
+            "isValueUnstable": false,
+            "limitKind": "min|max",
+            "measure": "selectionCount|forceCount|costSum|budgetLimit|rosterBudget",
+            "costTypeId": "<costType id, or null>",
+            "isPercent": false,
+            "scopeKind": "roster|force|parent|self|entryId|categoryId",
+            "scopeTargetId": "<id, or null>",
+            "actual": 0, "bound": 1, "delta": 1,
+            "causes": [
+              { "witnessDefId": "<id>", "witnessName": "<catalog name>",
+                "modifierKind": "set|increment|decrement|multiply", "value": 0 }
+            ]
+          }
+        ],
         "capabilities": [
           {
             "defId": "<definition id of the slot itself — for a link slot, the link>",
@@ -151,6 +176,39 @@ Key points of the contract:
   Optional `count` requires the limit to fire *exactly* that many times (one anchor
   per contingent, §7.7).
 - **`expect.absent`** lists limit-ids that MUST NOT fire.
+- **`expect.messages`** (optional) asserts what a single message *is*, in domain terms.
+  The report carries **one** message list holding both kinds, told apart by the
+  mandatory `origin` discriminator: `derivedLimit` (the engine derived it from an
+  unsatisfied `<constraint>`, or from its own "army too expensive" budget rule) and
+  `authorMessage` (a `<modifier type="add" field="error"|"warning"|"info">` whose
+  conditions hold). `origin` decides which fields a message even carries — the limit
+  fields are absent on an author message, `text` is absent on a derived one.
+  - **Selecting the meant message.** `origin` plus, as needed, `limitId`,
+    `anchorDefId`, `anchorPath` or — for an author message — the exact `text`. It
+    must hit exactly one, unless `count` states how many; `count: 0` demands absence.
+  - **`limitKind` / `measure` / `costTypeId` / `isPercent`** — *what kind* of limit
+    it is: `min` or `max`, over the selection count (`field="selections"`), a cost
+    sum (`field="<costType id>"`), the contingent count (`field="forces"`), the
+    configured cost limit (`field="limit::<costType id>"`), or the engine's own
+    roster budget. For a percent constraint the reported `bound` is the derived
+    absolute number, while the derivation describes the percentage.
+  - **`scopeKind` / `scopeTargetId`** — *what kind* of reference frame. The raw
+    `scope` attribute is a keyword **or** an id, and one cannot tell by looking; the
+    report says which, so a scenario states `entryId` vs `categoryId` explicitly.
+  - **`anchorKind`** — where it hangs. `roster` is carried only by the army-too-expensive
+    rule; an `offerAnchor` never carries a message at all, though its capability
+    record still lists its `authorMessages`.
+  - **`severity`** — a derived message is always `error`; an author message keeps the
+    severity its modifier's `field` names.
+  - **`causes`** — the triggering selections (ADR-0027): a limit modifier that carried
+    conditions, actually changed the number, and whose condition names a selectable
+    entry (via `childId`, counting `field="selections"`, actually present). A modifier
+    without conditions is not a cause, and a condition aimed at a category or at
+    `childId="model"` yields none — nothing is invented. This assertion is **complete**
+    and order-free; `[]` demands that the message names no cause.
+  - **`text`** — for an author message, the catalog wording, NOT translated and NOT
+    reworded, but with the BattleScribe token `{this}` replaced by the entry's
+    **effective** display name. An unknown token stays verbatim.
 - **`expect.capabilities`** (optional) asserts what a single slot *is*, not only which
   limits fire on it. A **slot** is every place a selection *can* stand — whether
   something stands there or not: the report carries one capability record per
