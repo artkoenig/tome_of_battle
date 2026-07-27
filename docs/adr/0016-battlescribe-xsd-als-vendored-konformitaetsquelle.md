@@ -52,6 +52,18 @@ Sache des Engine-Verhaltens (`wham`) und der bestehenden Tests.
   Enum-/Attributnamen-Modul aus der vendored XSD; ein Guard-Check erzwingt
   „committed == aus XSD generiert". Parser/Evaluator konsumieren ausschließlich
   dieses Modul.
+
+  **Ergänzung 2026-07-27 (Attribut-Vorgaben):** Der Codegen emittiert neben den
+  Enums und den kanonischen Attributnamen auch die **Vorgabewerte**, die die XSD
+  für ihre Attribute deklariert (`xs:attribute/@default`), als `AttributeDefault`
+  — im Rohtext der XSD und nach Attributnamen sortiert. Ein fehlendes Attribut
+  ist laut XSD so zu lesen, als stünde dieser Text in der Datei; die Vorgabe
+  gehört damit zum **Format**, nicht zum jeweiligen Leser. Vorher schrieb jeder
+  Leser seinen eigenen Rückfallwert hin — so entstand der Fehler, dass ein
+  fehlendes `costType/@defaultCostLimit` (XSD-Vorgabe `-1` = keine Grenze) als
+  Grenze von null gelesen wurde. Deklariert derselbe Attributname zwei
+  verschiedene Vorgaben, bricht der Codegen laut ab, statt eine davon still zu
+  gewinnen.
 - **Import-Validierung:** **Advisory** — jede importierte `.cat`/`.gst` wird vor
   dem Parsen mit **`xmllint-wasm`** (libxml2→WASM) gegen die vendored XSD validiert;
   bei Schemaverstoß wird der Import **nicht abgelehnt, sondern fortgesetzt** und der

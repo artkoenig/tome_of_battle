@@ -1,4 +1,8 @@
-import { AttributeName, SelectionEntryKind } from './schema/battlescribeSchema.generated.js';
+import {
+  AttributeDefault,
+  AttributeName,
+  SelectionEntryKind,
+} from './schema/battlescribeSchema.generated.js';
 
 /**
  * Helper to get direct children of an element by tag name
@@ -212,6 +216,28 @@ export const DEFAULT_SHARED_QUERY = true;
 function getBooleanAttribute(el, attributeName, defaultValue = false) {
   const rawValue = el.getAttribute(attributeName);
   return rawValue === null || rawValue === undefined ? defaultValue : rawValue === 'true';
+}
+
+/**
+ * Reads a decimal XSD attribute (`xs:decimal`), falling back to the default the
+ * schema declares for that attribute when it is absent or unreadable. The
+ * declared default is passed in as its raw XSD text and runs through the same
+ * conversion as a present value, so an absent attribute is read exactly as if
+ * the schema's own default stood in the file — and the value itself is never
+ * restated here as a literal.
+ *
+ * Deliberately not a truthiness fallback (`parseFloat(...) || fallback`): that
+ * cannot tell a declared `0` from a missing attribute and would silently turn
+ * both into the same number.
+ *
+ * @param {Element} el
+ * @param {string} attributeName
+ * @param {string} declaredSchemaDefault  the attribute's XSD `default`, verbatim
+ * @returns {number}
+ */
+function getDecimalAttribute(el, attributeName, declaredSchemaDefault) {
+  const parsedValue = Number.parseFloat(el.getAttribute(attributeName));
+  return Number.isNaN(parsedValue) ? Number.parseFloat(declaredSchemaDefault) : parsedValue;
 }
 
 /**
@@ -517,11 +543,18 @@ export function parseGameSystemXML(xmlText) {
     throw new Error('Not a valid Game System file');
   }
 
-  // Cost Types
+  // Cost Types. `defaultCostLimit` is read format-faithfully: a system that
+  // declares none carries the schema's own default (`-1`, the format's "no
+  // limit" value, see docs/battlescribe-data-format.md §5.3), never a limit of
+  // zero — and an explicitly declared 0 stays exactly that.
   const costTypes = getWrappedChildren(root, 'costTypes', 'costType').map(el => ({
     id: el.getAttribute(AttributeName.ID),
     name: getName(el),
-    defaultCostLimit: parseFloat(el.getAttribute(AttributeName.DEFAULT_COST_LIMIT)) || 0,
+    defaultCostLimit: getDecimalAttribute(
+      el,
+      AttributeName.DEFAULT_COST_LIMIT,
+      AttributeDefault.DEFAULT_COST_LIMIT
+    ),
     hidden: getBooleanAttribute(el, AttributeName.HIDDEN)
   }));
 

@@ -4,9 +4,10 @@
 // src/parser/schema/Catalogue.xsd by `npm run generate:schema`.
 //
 // This module is the single source of truth for the BattleScribe data format's
-// closed enum sets and canonical attribute names (see ADR 0016). Parser and
-// evaluator consume these constants instead of hand-typed string literals, which
-// structurally eliminates the drift class behind the format bugs.
+// closed enum sets, canonical attribute names and declared attribute defaults
+// (see ADR 0016). Parser and evaluator consume these constants instead of
+// hand-typed string literals, which structurally eliminates the drift class
+// behind the format bugs.
 //
 // A guard check (scripts/generate-schema-module.test.js) regenerates this file
 // from the vendored XSD and fails if the committed content has drifted.
@@ -113,4 +114,19 @@ export const AttributeName = Object.freeze({
   TYPE_ID: 'typeId',
   TYPE_NAME: 'typeName',
   VALUE: 'value',
+});
+
+export const AttributeDefault = Object.freeze({
+  COLLECTIVE: 'false',
+  DEFAULT_COST_LIMIT: '-1',
+  HIDDEN: 'false',
+  IMPORT: 'false',
+  IMPORT_ROOT_ENTRIES: 'false',
+  INCLUDE_CHILD_FORCES: 'false',
+  INCLUDE_CHILD_SELECTIONS: 'false',
+  LIBRARY: 'false',
+  PERCENT_VALUE: 'false',
+  PRIMARY: 'false',
+  ROUND_UP: 'false',
+  SHARED: 'true',
 });

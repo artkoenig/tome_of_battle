@@ -40,6 +40,29 @@ describe('battlescribe schema SSOT guard', () => {
     expect(regenerated).toContain("FORMATION: 'formation'");
   });
 
+  it('goes red when a declared attribute default in the vendored XSD is changed', () => {
+    const mutatedXsd = vendoredXsd.replace(
+      '<xs:attribute name="defaultCostLimit" type="xs:decimal" default="-1" />',
+      '<xs:attribute name="defaultCostLimit" type="xs:decimal" default="-2" />',
+    );
+    expect(mutatedXsd).not.toBe(vendoredXsd); // the target line really existed
+
+    const regenerated = generateSchemaModuleSource(mutatedXsd);
+
+    expect(regenerated).not.toBe(committedModule);
+    expect(regenerated).toContain("DEFAULT_COST_LIMIT: '-2'");
+  });
+
+  it('refuses to generate when one attribute name declares two different defaults', () => {
+    const mutatedXsd = vendoredXsd.replace(
+      '<xs:attribute name="hidden" type="xs:boolean" default="false" />',
+      '<xs:attribute name="hidden" type="xs:boolean" default="true" />',
+    );
+    expect(mutatedXsd).not.toBe(vendoredXsd);
+
+    expect(() => generateSchemaModuleSource(mutatedXsd)).toThrow(/conflicting defaults/);
+  });
+
   it('goes red when a canonical attribute name in the vendored XSD is changed', () => {
     const mutatedXsd = vendoredXsd.replace(
       'name="includeChildSelections"',

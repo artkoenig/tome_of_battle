@@ -105,6 +105,42 @@ test('a hidden cost type is excluded from the displayed extra resources', () => 
   expect(resources.some(r => r.id === 'secret')).toBe(false);
 });
 
+// --- costType@defaultCostLimit ---
+
+const gstWithCostLimits = `<?xml version="1.0" encoding="UTF-8"?>
+<gameSystem id="sys-1" name="Test System">
+  <costTypes>
+    <costType id="declared" name="Points" defaultCostLimit="2000" />
+    <costType id="undeclared" name="Casting Dice" />
+    <costType id="zero" name="Zero Budget" defaultCostLimit="0" />
+    <costType id="unreadable" name="Broken" defaultCostLimit="not-a-number" />
+  </costTypes>
+</gameSystem>`;
+
+const limitOf = costTypeId =>
+  parseGameSystemXML(gstWithCostLimits).costTypes.find(ct => ct.id === costTypeId).defaultCostLimit;
+
+// -1 is the format's "no limit" value and, for this attribute, the XSD's own
+// default (Catalogue.xsd, CostType) — so an absent attribute means unlimited.
+const SCHEMA_DEFAULT_COST_LIMIT = -1;
+
+test('a missing costType@defaultCostLimit is read as the schema default (no limit), not as a limit of zero', () => {
+  expect(limitOf('undeclared')).toBe(SCHEMA_DEFAULT_COST_LIMIT);
+});
+
+test('an unreadable costType@defaultCostLimit falls back to the schema default too', () => {
+  expect(limitOf('unreadable')).toBe(SCHEMA_DEFAULT_COST_LIMIT);
+});
+
+test('an explicitly declared costType@defaultCostLimit of zero stays zero, distinguishable from the missing case', () => {
+  expect(limitOf('zero')).toBe(0);
+  expect(limitOf('zero')).not.toBe(limitOf('undeclared'));
+});
+
+test('a declared costType@defaultCostLimit is parsed verbatim', () => {
+  expect(limitOf('declared')).toBe(2000);
+});
+
 // --- publication@publisherUrl (not the nonexistent website) ---
 
 const catWithPublication = `<?xml version="1.0" encoding="UTF-8"?>

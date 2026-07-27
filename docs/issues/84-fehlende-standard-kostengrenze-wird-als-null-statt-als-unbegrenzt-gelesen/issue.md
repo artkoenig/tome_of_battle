@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -38,3 +38,4 @@ Gefunden bei der Umsetzung von Main-Issue 79, dort bewusst nicht mitgeaendert.
 
 ## Comments
 - Belegt bei der PO-Sichtung: xmlParser.js:524 nutzt `parseFloat(...) || 0`; Catalogue.xsd:89 fuehrt default="-1". Importeure von src/parser laut Abhaengigkeiten: src/components, src/components/editor, src/components/play, src/db, src/evaluator, src/solver, src/utils.
+- xmlParser liest costType/@defaultCostLimit nicht mehr mit 'parseFloat(...) || 0': der neue Helfer getDecimalAttribute faellt bei fehlendem oder unlesbarem Attribut auf die XSD-Vorgabe zurueck, ein ausdrueckliches 0 bleibt 0. Der Wert -1 wird nirgends neu hingeschrieben — der Codegen (scripts/generate-schema-module.js, ADR-0016) emittiert jetzt zusaetzlich die deklarierten Attribut-Vorgaben der vendored XSD als AttributeDefault; der Parser bezieht die Vorgabe aus dieser SSOT seiner eigenen Schicht, ohne Abhaengigkeit zum Evaluator (depcruise: 0 Fehler). Gemessen an den Fixture-Katalogen: 9 costType-Deklarationen in 3 .gst-Dateien, alle mit Attribut (6x -1.0, 3x -1), kein geparster Wert aendert sich — der Fehler war latent, und kein Produktivmodul liest defaultCostLimit heute. Tests: vier Faelle in xmlParser.staticAttributes.test.js (fehlend, unlesbar, ausdrueckliches 0, deklarierter Wert) plus Oberflaechen- und Guard-Tests fuer AttributeDefault. Suite gruen (2210 Tests + E2E).

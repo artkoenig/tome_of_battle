@@ -9,6 +9,7 @@ import {
   ConditionKind,
   ConditionGroupKind,
   AttributeName,
+  AttributeDefault,
 } from './battlescribeSchema.generated.js';
 
 const allEnums = {
@@ -80,5 +81,21 @@ describe('battlescribe schema module public surface', () => {
 
   it('freezes the canonical attribute-name map', () => {
     expect(Object.isFrozen(AttributeName)).toBe(true);
+  });
+
+  it('exposes the defaults the XSD declares for its attributes, verbatim', () => {
+    expect(AttributeDefault.DEFAULT_COST_LIMIT).toBe('-1');
+    expect(AttributeDefault.SHARED).toBe('true');
+    expect(AttributeDefault.HIDDEN).toBe('false');
+    expect(AttributeDefault.INCLUDE_CHILD_SELECTIONS).toBe('false');
+  });
+
+  it('carries a default only for the attributes the XSD actually declares one for', () => {
+    expect(AttributeDefault.VALUE).toBeUndefined();
+    expect(AttributeDefault.ID).toBeUndefined();
+  });
+
+  it('freezes the declared attribute-default map', () => {
+    expect(Object.isFrozen(AttributeDefault)).toBe(true);
   });
 });
