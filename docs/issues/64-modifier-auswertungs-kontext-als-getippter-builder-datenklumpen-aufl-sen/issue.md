@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: superseded
 Type: refactor
 Blocked by: None
 
@@ -30,3 +30,4 @@ den Scope der Scope-Vereinheitlichung nicht zu sprengen).
 - [ ] Kein Verhaltenswechsel: vitest + E2E bleiben grün; reiner Struktur-Refactor.
 
 ## Comments
+- superseded: PO-Entscheid: ADR-0030 (Revision 2026-07-25, Punkt 1 und 3) erklaert src/solver/ fuer fehlerhaft und legt fest, dass bis zum Cutover jede neue Arbeit dem Ersatz dient, nicht der Koexistenz. Dieses Issue ist ein reiner Struktur-Refactor ueber 22 Produktiv- und 35 Testdateien genau in diesem abzuloesenden Code (28 Produktiv-/71 Testdateien unter src/solver/) — Koexistenz-Arbeit, die die ADR ausschliesst. Unabhaengig davon sind die eigenen Kriterien nicht gemeinsam erfuellbar: AC2 (keine doppelte Fuehrung von counts und seinen Scheiben) und AC3 (kein Verhaltenswechsel) kollidieren, weil an denselben Aufrufstellen zwei Leser verschiedene Zaehlrahmen lesen (rosterValidator.js:338-342: isSelectionEntryHidden liest die roster-aggregierte Scheibe, evaluateConstraintWithCauses liest counts.categoryCounts pro Force) und ein Kontext nur einen Rahmen tragen kann. Umkehrbar: bei anderer Entscheidung neu aufnehmen.
