@@ -15,6 +15,7 @@
  */
 
 import { DefinitionKind, scopeKey } from './model.js';
+import { identityIdsOf } from './identity.js';
 import { realNodes, frameKeyOf } from './evalTree.js';
 
 /**
@@ -78,24 +79,31 @@ function contributionOf(node, effective) {
 
 /**
  * Die Ziel-IDs, unter denen ein Knoten in einem Rahmen zaehlbar ist: `null`
- * ("alles im Rahmen"), seine eigene Definitions-ID und jede seiner **effektiven**
- * Kategorie-IDs. Dies ist der Zaehl-Zugriffspunkt aus §4.4: die Zaehlung stuetzt
- * sich auf die effektiven Kategorien (nach kategorie-aendernden Modifikatoren),
- * nicht auf die Basis-Kategorien.
+ * ("alles im Rahmen"), seine {@link identityIdsOf Zaehl-Identitaet} und jede
+ * seiner **effektiven** Kategorie-IDs. Dies ist der Zaehl-Zugriffspunkt aus §4.4:
+ * die Zaehlung stuetzt sich auf die effektiven Kategorien (nach kategorie-
+ * aendernden Modifikatoren), nicht auf die Basis-Kategorien.
+ *
+ * Unter welchen Ids das Vorkommen selbst steht, entscheidet diese Schicht
+ * **nicht**: das ist die Zaehl-Identitaet aus `identity.js` — die eigene Id und,
+ * bei einem Verweis, die seines Ziels. Nur so trifft eine Grenze, die den Eintrag
+ * benennt, auch das ueber einen Verweis gesetzte Vorkommen. Die Liste ist
+ * entdoppelt, ein Vorkommen zaehlt also je Ziel-ID hoechstens einmal.
  *
  * Ein **Kontingent-Knoten** ist nur unter seiner eigenen Definitions-ID
  * (fuer Grenzen am Force-Typ) und seinen Kategorie-IDs zaehlbar. Es ist keine
  * generische Selektion "im Rahmen" und traegt daher nicht zum `null`-Ziel bei.
+ *
+ * Eine `selectionEntryGroup` ist selbst kein Auswahlpunkt: sie buendelt nur, und
+ * ihre Identitaet ist deshalb kein Zaehlziel — gezaehlt werden ihre Member (siehe
+ * `memberGroupIds` unten).
  *
  * Ist der Knoten Member einer `selectionEntryGroup` (`memberGroupIds`, aus dem
  * Definitionsbaum abgeleitet), zaehlt er zusaetzlich unter jeder Gruppen-ID —
  * so liest die gruppen-skopierte Grenze (`scope=parent`, Ziel = Gruppen-ID) im
  * Eigentuemer-Rahmen die Zahl der gewaehlten Member.
  *
- * Dazu zwei Ziele, die nicht aus dem Knoten selbst stammen:
- * - **`targetId`** — ein `entryLink` zaehlt auch unter der Id, auf die er zeigt.
- *   Nur so trifft eine Grenze, die den Eintrag benennt, auch das ueber einen
- *   Verweis gesetzte Vorkommen.
+ * Dazu ein Ziel, das nicht aus der Identitaet stammt:
  * - **`type`** — das rohe `type`-Attribut des Eintrags (`model`, `unit`, …). Es
  *   traegt die Bedingung `childId="model"`. Achtung: nur {@link readEntry} liest
  *   dieses Attribut, {@link readEntryLink} nicht — ein verlinkter Eintrag zaehlt
@@ -105,8 +113,7 @@ function contributionOf(node, effective) {
 function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
   const targets = [null, ...effective.categoryIdsOf(node)];
-  if (node.def.kind !== DefinitionKind.GROUP) targets.push(node.def.id);
-  if (node.def.targetId) targets.push(node.def.targetId);
+  if (node.def.kind !== DefinitionKind.GROUP) targets.push(...identityIdsOf(node.def));
   if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
   if (node.def.type) targets.push(node.def.type);
   return Array.from(new Set(targets));

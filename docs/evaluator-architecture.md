@@ -86,7 +86,7 @@ Phase 2 hängt ausschließlich **hinter** alle bestehenden Kinder an. Damit blei
 
 ### 3.3 Index-Schicht: Scope-Schlüssel statt Baumtraversalen
 
-Ein Durchlauf über den Evaluationsbaum baut Zählindizes. Jeder reale Knoten trägt zu einer Menge von **Scope-Schlüsseln** bei: Wurzel (roster), sein Kontingent (force), jeder Vorfahre (für parent-Scopes), jede effektive Kategorie-ID, seine Definitions-ID (inklusive Link-Kette) sowie — ist er Member einer `selectionEntryGroup` — jede zugehörige Gruppen-ID (aus dem Definitionsbaum abgeleitet, §3.2). Pro Schlüssel werden geführt: Anzahl Auswahlen und Summe je Kostenart, jeweils als *direkte* und *tiefe* Variante (für `includeChildSelections` / `includeChildForces`). Damit sind roster- und force-Bezüge O(1)-Lookups, und eine gruppen-skopierte Grenze liest die Zahl ihrer Member über dasselbe Query-Primitiv (Ziel = Gruppen-ID im Eigentümer-Rahmen). Prozent-Nenner sind derselbe Lookup im Referenzrahmen.
+Ein Durchlauf über den Evaluationsbaum baut Zählindizes. Jeder reale Knoten trägt zu einer Menge von **Scope-Schlüsseln** bei: Wurzel (roster), sein Kontingent (force), jeder Vorfahre (für parent-Scopes), jede effektive Kategorie-ID, seine **Zähl-Identität** (die eigene Definitions-ID und, ist er über einen `entryLink` gesetzt, auch dessen Ziel — §4.3) sowie — ist er Member einer `selectionEntryGroup` — jede zugehörige Gruppen-ID (aus dem Definitionsbaum abgeleitet, §3.2). Pro Schlüssel werden geführt: Anzahl Auswahlen und Summe je Kostenart, jeweils als *direkte* und *tiefe* Variante (für `includeChildSelections` / `includeChildForces`). Damit sind roster- und force-Bezüge O(1)-Lookups, und eine gruppen-skopierte Grenze liest die Zahl ihrer Member über dasselbe Query-Primitiv (Ziel = Gruppen-ID im Eigentümer-Rahmen). Prozent-Nenner sind derselbe Lookup im Referenzrahmen.
 
 ### 3.4 Modifikator-Schicht
 
@@ -379,6 +379,18 @@ function evaluate(prepared, roster): Report            // Schritt 2, beliebig of
 
 ### 4.3 Join-Schicht
 
+**Zähl-Identität eines Vorkommens (`identity.js`).** Ein Eintrag kann an einer Stelle direkt stehen oder über einen `entryLink` hereingezogen werden. Beide Wege benennen dasselbe Vorkommen, aber unter verschiedenen Ids — der Verweis hat eine eigene —, und Grenzen können an beiden hängen. Unter welchen Ids ein Vorkommen zählbar ist, beantwortet deshalb **eine** Stelle, die alle Zählstellen benutzen: die Zählung (§4.4), die Anwesenheitsprüfung und die Gruppen-Zugehörigkeit dieser Schicht sowie die Rahmen-Auflösung des Query-Primitivs (§4.5) und die Entdopplung des Angebots.
+
+```
+function identityIdsOf(d): Id[]                       // entdoppelt, ohne fehlende Angaben
+  return distinct([d.id, d.targetId, d.resolved?.id]) // endet am aufgelösten Ziel, folgt keiner Kette
+
+function isOccurrenceOf(d, wantedId): bool            // „zählt dieses Vorkommen unter wantedId?"
+  return wantedId in identityIdsOf(d)
+```
+
+Die Regel ist **einseitig**: nennt eine Grenze die Ziel-Id, trifft sie das Vorkommen über *jeden* Verweis und auch das direkt gesetzte; nennt sie eine Verweis-Id, trifft sie nur die Vorkommen über genau diesen Verweis. Und sie ist **Mengenzugehörigkeit, keine Summierung je Id**: ein Vorkommen zählt für eine Grenze höchstens einmal, auch wenn mehrere seiner Ids zutreffen.
+
 ```
 function buildEvalTree(resolved, roster): EvalNode
   root = EvalNode(def = resolved.gameSystemRoot, instance = null, isPhantom = false)
@@ -399,6 +411,9 @@ function synthesizePhantoms(forceNode, resolved)
   for entryDef in resolved.selectableEntriesOf(forceNode.def):
     if hasMinLimit(entryDef) and countInstances(forceNode, entryDef.id) == 0:
       attachPhantom(forceNode, entryDef)
+
+function countInstances(fromNode, defId): number      // Anwesenheitsprüfung über die Identität
+  return sum(n.instance.count for n in realNodesUnder(fromNode) if isOccurrenceOf(n.def, defId))
 
 // ── Baumphase 2: das Angebot (offer.js), NACH der Fixpunktschleife ─────────────
 function attachOfferAnchors(tree, resolved): EvalNode[]
@@ -443,13 +458,14 @@ function scopeKeysOf(node, effective): ScopeKey[]
   keys = []
   for frame in [ROSTER, node.forceRoot] + ancestorsOf(node):
     keys.add(ScopeKey(frame, targetId = null))          // „alles in diesem Rahmen"
-    keys.add(ScopeKey(frame, node.def.id))              // gefiltert auf Eintrag
-    for linkedId in linkChainOf(node.def):              // Verweis-Kette mitzählen
-      keys.add(ScopeKey(frame, linkedId))
+    for identityId in identityIdsOf(node.def):          // §4.3: eigene Id UND Verweis-Ziel
+      keys.add(ScopeKey(frame, identityId))
     for categoryId in effective.categories[node]:       // effektive, nicht Basis-Kategorien!
       keys.add(ScopeKey(frame, categoryId))
   return keys
 ```
+
+Die Identitäts-Ids sind entdoppelt und stehen je Rahmen unter **verschiedenen** Schlüsseln — ein Vorkommen wird von einer Grenze also höchstens einmal gezählt, gleich wie viele seiner Ids zutreffen.
 
 Direkte vs. tiefe Zählung: beim Eintragen wird die Beitragskette entlang der Vorfahren geführt — der unmittelbare Elternrahmen erhält den Beitrag in `direct` und `deep`, weiter entfernte Rahmen nur in `deep`.
 

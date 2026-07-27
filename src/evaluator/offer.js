@@ -52,6 +52,7 @@
  */
 
 import { DefinitionKind, isLinkDefinition } from './model.js';
+import { identityIdsOf } from './identity.js';
 import { attachOfferAnchor, realNodes, ownerDefinitionOf, linkedCategoryIdsOf } from './evalTree.js';
 
 /**
@@ -84,19 +85,12 @@ function isCarriedByForce(def, forceCategoryIds) {
 }
 
 /**
- * Die IDs, unter denen eine Definition als „schon vorhanden" gelten kann: ihre
- * eigene, die Ziel-ID eines Verweises und die ID des aufgeloesten Ziels. Ein
- * Roster kann dieselbe Auswahl unter der Link- **oder** unter der Ziel-ID fuehren;
- * ohne alle drei entstuende neben dem realen Knoten ein zweiter Anker.
+ * Die Identitaets-IDs aller Knoten, die im Rahmen bereits haengen
+ * (Entdopplungs-Basis). Ob eine Definition als „schon vorhanden" gilt, entscheidet
+ * ihre {@link identityIdsOf Zaehl-Identitaet}: ein Roster kann dieselbe Auswahl
+ * unter der Link- **oder** unter der Ziel-ID fuehren; ohne beide entstuende neben
+ * dem realen Knoten ein zweiter Anker.
  */
-function identityIdsOf(def) {
-  const ids = [def.id];
-  if (def.targetId !== null && def.targetId !== undefined) ids.push(def.targetId);
-  if (def.resolved !== null && def.resolved !== undefined) ids.push(def.resolved.id);
-  return ids;
-}
-
-/** Die Identitaets-IDs aller Knoten, die im Rahmen bereits haengen (Entdopplungs-Basis). */
 function occupiedIdsOf(frame) {
   const ids = new Set();
   for (const child of frame.children) {

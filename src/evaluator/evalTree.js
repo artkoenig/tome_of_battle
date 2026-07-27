@@ -44,6 +44,7 @@
  */
 
 import { AnchorKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
+import { identityIdsOf, isOccurrenceOf } from './identity.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -228,11 +229,17 @@ function hasMinLimitInFrame(def, scope) {
   return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
 }
 
-/** Summe der Instanzanzahlen realer Knoten mit dieser Definitions-ID im Teilbaum. */
+/**
+ * Summe der Instanzanzahlen realer Knoten im Teilbaum, die ein **Vorkommen** der
+ * gesuchten Definition sind — also unter `defId` zaehlen (`identity.js`). Ein
+ * ueber einen Verweis gesetztes Vorkommen zaehlt damit auch fuer eine Grenze, die
+ * das Ziel benennt; jeder Knoten zaehlt hoechstens einmal, gleich wie viele seiner
+ * Ids zutreffen.
+ */
 function countInstances(fromNode, defId) {
   let total = 0;
   for (const node of nodeAndDescendants(fromNode)) {
-    if (!node.isPhantom && !node.isRoot && node.def?.id === defId) {
+    if (!node.isPhantom && !node.isRoot && isOccurrenceOf(node.def, defId)) {
       total += node.instance?.count ?? 0;
     }
   }
@@ -406,11 +413,17 @@ function attachGroupAnchor(owner, groupDef, nextFrameId) {
  * Knoten zusaetzlich unter der Gruppen-ID bei, sodass die gruppen-skopierte
  * Grenze ueber dasselbe Query-Primitiv die Member zaehlt. Synthetische Knoten
  * (Phantome, Anker) sind keine Member.
+ *
+ * Member ist ein Knoten, wenn **eine** Id seiner {@link identityIdsOf
+ * Zaehl-Identitaet} in der Mitgliederliste steht — ein per Verweis gesetztes
+ * Vorkommen also auch dann, wenn die Liste nur sein Ziel nennt. Die Markierung
+ * ist eine Mengenzugehoerigkeit: mehrere zutreffende Ids markieren denselben
+ * Knoten einmal.
  */
 function annotateGroupMembers(owner, groupId, memberIds) {
   for (const node of nodeAndDescendants(owner)) {
     if (node === owner || node.isPhantom || node.isRoot || node.instance === null) continue;
-    if (memberIds.has(node.instance.defId)) {
+    if (identityIdsOf(node.def).some(id => memberIds.has(id))) {
       (node.memberGroupIds ??= new Set()).add(groupId);
     }
   }

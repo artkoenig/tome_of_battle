@@ -21,6 +21,7 @@ import {
   scopeKey,
   diagnostic,
 } from './model.js';
+import { isOccurrenceOf } from './identity.js';
 import { frameKeyOf } from './evalTree.js';
 import { EMPTY_ROSTER_BUDGET } from './rosterBudget.js';
 
@@ -55,10 +56,15 @@ function isCategoryTarget(targetId, categoryIds) {
   return targetId !== null && targetId !== undefined && categoryIds.has(targetId);
 }
 
-/** Der naechste Vorfahre (den Knoten eingeschlossen), dessen Definition `id` traegt. */
+/**
+ * Der naechste Vorfahre (den Knoten eingeschlossen), der ein **Vorkommen** der
+ * Definition `id` ist — also unter dieser Id zaehlt (`identity.js`). Damit findet
+ * eine Grenze, die ihren Bezugsrahmen ueber die Eintrags-Id benennt, auch die per
+ * Verweis gesetzte Auswahl als benannten Rahmen.
+ */
 function nearestAncestorWithDefId(node, id) {
   for (let current = node; current !== null && !current.isRoot; current = current.parent) {
-    if (current.def?.id === id) return current;
+    if (isOccurrenceOf(current.def, id)) return current;
   }
   return null;
 }
