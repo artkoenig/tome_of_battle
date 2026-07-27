@@ -3,15 +3,16 @@ import { describe, it, expect } from 'vitest';
 import { evaluate as evaluateDataset } from './evaluator.js';
 
 /**
- * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade nimmt seit
- * ADR-0032 einen Datensatz `{ gameSystem, catalogues }`; ein Einzelkatalog ohne
- * Spielsystem ist `{ catalogues: [xml] }`.
+ * Wertet einen einzelnen synthetischen Katalog aus. Die Fassade ist zweistufig
+ * (Main-Issue 75, Baustein 8): erst den Datensatz aufbereiten, dann auswerten. Der
+ * Datensatz hat die Form `{ gameSystem, catalogues }` (ADR-0032); ein Einzelkatalog
+ * ohne Spielsystem ist `{ catalogues: [xml] }`.
  */
 function evaluate(catalogXml, roster) {
-  return evaluateDataset({ catalogues: [catalogXml] }, roster);
+  return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
 import { DiagnosticKind } from './model.js';
-import { prepareDataset } from './datasetPreparation.js';
+import { PreparedDataset, prepareDataset } from './datasetPreparation.js';
 import { buildEvalTree } from './evalTree.js';
 import { evaluateToFixpoint, MAX_FIXPOINT_ROUNDS } from './fixpoint.js';
 
@@ -26,7 +27,7 @@ globalThis.DOMParser = dom.window.DOMParser;
  * er nicht rekonstruierbar, weil dort nur der Endzustand ankommt.
  */
 function runFixpoint(catalogXml, rosterInstance) {
-  const { resolved } = prepareDataset({ catalogues: [catalogXml] });
+  const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [catalogXml] }));
   const { root } = buildEvalTree(resolved, rosterInstance);
   return evaluateToFixpoint(root, resolved.categoryIds);
 }

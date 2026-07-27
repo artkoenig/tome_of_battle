@@ -9,11 +9,20 @@
  * Implementierung — es gibt keinen zweiten Weg, aus XML eine aufgeloeste Sicht zu
  * machen.
  *
- * Der Schritt ist eine reine Funktion ohne Zwischenspeicher: ob sein Ergebnis
- * kuenftig wiederverwendet wird — und damit, ob die Fassade ein- oder zweistufig
- * ist —, entscheidet eine Messung an echten Katalogdaten, nicht eine Vermutung
- * (Main-Issue 75, `design.md`, „Ein- oder zweistufige Fassade"). Bis dahin bleibt
- * er **engine-intern**: nach aussen fuehrt allein die Fassade.
+ * Der Schritt ist eine reine Funktion ohne eigenen Zwischenspeicher. Ob sein
+ * Ergebnis wiederverwendet wird, hat eine Messung an echten Katalogdaten
+ * entschieden und nicht eine Vermutung (Main-Issue 75, `design.md`, „Ein- oder
+ * zweistufige Fassade"): der Vorlauf macht **98,9–99,5 %** einer vollstaendigen
+ * Auswertung aus und reisst damit die vorab festgelegte Schwelle von 50 % um
+ * Groessenordnungen. Die Fassade ist deshalb **zweistufig** — sie exportiert
+ * diesen Schritt, und Auswertung wie Beschreibung arbeiten auf seinem Ergebnis.
+ *
+ * Nach aussen gereicht wird dabei nicht die aufgeloeste Sicht selbst, sondern ein
+ * **undurchsichtiger Griff** ({@link PreparedDataset}): der Aufrufer haelt den
+ * aufbereiteten Datensatz und gibt ihn zurueck, kann aber in ihn nicht
+ * hineingreifen. Genau das ist der Zweck des Main-Issues — die Oberflaeche
+ * bekommt keine Kenntnis der Engine-Interna, sondern allein den Bericht
+ * (ADR-0034).
  */
 
 import { parseCatalogue } from './catalogReader.js';
@@ -56,6 +65,54 @@ function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnosti
 }
 
 /**
+ * Der **aufbereitete Datensatz** — das Ergebnis des Katalog-Vorlaufs als
+ * undurchsichtiger Griff.
+ *
+ * Er traegt keine oeffentliche Eigenschaft: von aussen ist er nichts als ein Wert,
+ * den man von {@link prepareDataset} bekommt und an die Fassade zurueckgibt. Die
+ * aufgeloeste Sicht, die gelesenen Dokumente und die Diagnosen des Vorlaufs liegen
+ * in einem privaten Feld und sind allein ueber {@link PreparedDataset.contentsOf}
+ * erreichbar — engine-intern, denn nach aussen fuehrt nur die Fassade
+ * (`evaluator.js`, maschinell durchgesetzt).
+ *
+ * Warum ueberhaupt gekapselt: die zweistufige Fassade gibt dem Aufrufer einen
+ * Zwischenstand in die Hand. Gaebe sie ihm die aufgeloeste Sicht offen, waere aus
+ * der Wiederverwendung eines Ergebnisses ein Wissen ueber den inneren Aufbau der
+ * Engine geworden — dieselbe Kopplung, deren Beseitigung der ganze Umbau
+ * bezweckt (ADR-0034).
+ */
+export class PreparedDataset {
+  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }} */
+  #contents;
+
+  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }} contents */
+  constructor(contents) {
+    this.#contents = contents;
+  }
+
+  /**
+   * Der Inhalt eines aufbereiteten Datensatzes — **engine-intern**.
+   *
+   * @param {PreparedDataset} prepared  Das Ergebnis von {@link prepareDataset}.
+   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }}
+   * @throws {TypeError} Wenn kein aufbereiteter Datensatz uebergeben wurde. Das ist
+   *   der haeufigste Aufruffehler der zweistufigen Fassade — ein roher Datensatz
+   *   `{ gameSystem, catalogues }` statt seines aufbereiteten Ergebnisses —, und er
+   *   faellt hier sofort mit klarer Meldung auf, statt spaeter als fehlendes Feld.
+   */
+  static contentsOf(prepared) {
+    if (!(prepared instanceof PreparedDataset)) {
+      throw new TypeError(
+        'Erwartet wird ein mit `prepareDataset(datensatz)` aufbereiteter Datensatz, nicht der rohe ' +
+          'Datensatz `{ gameSystem, catalogues }`. Die Fassade ist zweistufig: einmal aufbereiten, ' +
+          'dann dasselbe Ergebnis fuer beliebig viele Auswertungen wiederverwenden.',
+      );
+    }
+    return prepared.#contents;
+  }
+}
+
+/**
  * Bereitet einen Datensatz rosterunabhaengig auf: liest die Spielsystemdatei und
  * die Kataloge, prueft ihre Kohaerenz, fuehrt sie in der deterministischen
  * engine-eigenen Reihenfolge zusammen (Spielsystem zuerst, dann die Kataloge in
@@ -68,9 +125,10 @@ function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnosti
  * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
  *   Die optionale Spielsystemdatei (`.gst`-XML) und die geordnete Liste der
  *   Armee-Kataloge (`.cat`-XML).
- * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }}
- *   Die gelesenen Dokumente, die aufgeloeste Sicht und alle im Vorlauf
- *   angefallenen Diagnosen (Zusammenfuehrung, Kohaerenz, Auflösung).
+ * @returns {PreparedDataset}
+ *   Der aufbereitete Datensatz als undurchsichtiger Griff: er haelt die gelesenen
+ *   Dokumente, die aufgeloeste Sicht und alle im Vorlauf angefallenen Diagnosen
+ *   (Zusammenfuehrung, Kohaerenz, Auflösung), gibt sie nach aussen aber nicht preis.
  */
 export function prepareDataset(dataset) {
   const { gameSystem, catalogues = [] } = dataset;
@@ -87,10 +145,10 @@ export function prepareDataset(dataset) {
   const merged = mergeCatalogues(documents);
   const resolved = resolveCatalogue(merged);
 
-  return {
+  return new PreparedDataset({
     gameSystemDocument,
     catalogueDocuments,
     resolved,
     diagnostics: [...merged.diagnostics, ...coherenceDiagnostics, ...resolved.diagnostics],
-  };
+  });
 }

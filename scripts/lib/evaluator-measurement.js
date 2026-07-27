@@ -28,7 +28,7 @@
  * umgekehrt.
  */
 
-import { prepareDataset } from '../../src/evaluator/datasetPreparation.js';
+import { PreparedDataset, prepareDataset } from '../../src/evaluator/datasetPreparation.js';
 import { buildEvalTree, allNodes } from '../../src/evaluator/evalTree.js';
 import { attachOfferAnchors } from '../../src/evaluator/offer.js';
 import { extendBaseEffectiveState } from '../../src/evaluator/effectiveState.js';
@@ -143,9 +143,12 @@ export function describeTree(root) {
 export function measureEvaluation(dataset, roster) {
   const budget = createRosterBudget(roster.costLimits);
 
-  // (a) Katalog-Vorlauf: lesen → zusammenfuehren → aufloesen.
+  // (a) Katalog-Vorlauf: lesen → zusammenfuehren → aufloesen. Seit die Fassade
+  // zweistufig ist, ist das ihr erster Schritt; die Messung ruft ihn genauso auf
+  // und packt sein Ergebnis engine-intern aus, um die folgenden Abschnitte einzeln
+  // messen zu koennen.
   const preparation = timed(() => prepareDataset(dataset));
-  const { resolved, diagnostics: datasetDiagnostics } = preparation.value;
+  const { resolved, diagnostics: datasetDiagnostics } = PreparedDataset.contentsOf(preparation.value);
 
   // (b) Iterierte Auswertung: Baumphase 1, Fixpunktrunden ueber die realen Knoten,
   // finaler Index.
@@ -279,7 +282,7 @@ function countInfoElements(capabilities) {
  * @param {object} measuredReport  Der von {@link measureEvaluation} erzeugte Bericht.
  */
 export function assertMatchesFacade(dataset, roster, measuredReport) {
-  const facadeFingerprint = reportFingerprint(evaluate(dataset, roster));
+  const facadeFingerprint = reportFingerprint(evaluate(prepareDataset(dataset), roster));
   const measuredFingerprint = reportFingerprint(measuredReport);
   if (facadeFingerprint !== measuredFingerprint) {
     throw new Error(

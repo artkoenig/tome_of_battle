@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 
-import { prepareDataset } from './datasetPreparation.js';
+import { PreparedDataset, prepareDataset } from './datasetPreparation.js';
 import { buildEvalTree, allNodes, realNodes, pathOf, frameKeyOf } from './evalTree.js';
 import { attachOfferAnchors } from './offer.js';
 import { evaluate as evaluateDataset } from './evaluator.js';
@@ -103,7 +103,7 @@ function selection(defId, children = []) {
 
 /** Baut Baumphase 1 und haengt anschliessend die Angebots-Anker an (Baumphase 2). */
 function buildTreeWithOffer(roster, catalogXml = CATALOGUE_XML) {
-  const { resolved } = prepareDataset({ catalogues: [catalogXml] });
+  const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [catalogXml] }));
   const { root } = buildEvalTree(resolved, roster);
   const anchors = attachOfferAnchors(root, resolved);
   return { root, anchors };
@@ -242,7 +242,7 @@ describe('Entdopplung: kein zweiter Anker fuer dieselbe Definition im selben Rah
 
 describe('Baumphase 2 laesst den bestehenden Baum unberuehrt', () => {
   it('haelt die Pfade aller vor Phase 2 vorhandenen Slots stabil', () => {
-    const { resolved } = prepareDataset({ catalogues: [CATALOGUE_XML] });
+    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
     const roster = armyWith([selection(SPEARMEN_ID, [selection(SHIELD_ID)])]);
     const { root } = buildEvalTree(resolved, roster);
     const pathsBefore = new Map([...allNodes(root)].map(node => [node, pathOf(node)]));
@@ -277,7 +277,7 @@ describe('Baumphase 2 laesst den bestehenden Baum unberuehrt', () => {
   });
 
   it('erweitert die Menge der realen Knoten nicht', () => {
-    const { resolved } = prepareDataset({ catalogues: [CATALOGUE_XML] });
+    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
     const roster = armyWith([selection(SPEARMEN_ID)]);
     const { root } = buildEvalTree(resolved, roster);
     const realBefore = [...realNodes(root)];
@@ -310,13 +310,13 @@ describe('Bericht: das Angebot speist Faehigkeitsdatensaetze, aber nie die Verle
     </catalogue>`;
 
   it('meldet keine Verletzung fuer eine angebotene, nicht gewaehlte Definition', () => {
-    const report = evaluateDataset({ catalogues: [MIN_CATALOGUE_XML] }, armyWith([]));
+    const report = evaluateDataset(prepareDataset({ catalogues: [MIN_CATALOGUE_XML] }), armyWith([]));
 
     expect(report.violations.filter(violation => violation.limitId === MIN_LIMIT_ID)).toEqual([]);
   });
 
   it('fuehrt fuer sie trotzdem einen Faehigkeitsdatensatz mit ihrem unerfuellten Mindestmass', () => {
-    const report = evaluateDataset({ catalogues: [MIN_CATALOGUE_XML] }, armyWith([]));
+    const report = evaluateDataset(prepareDataset({ catalogues: [MIN_CATALOGUE_XML] }), armyWith([]));
 
     const offered = [...report.capabilities.values()]
       .find(capability => capability.defId === OFFERED_MIN_ID);

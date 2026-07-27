@@ -11,7 +11,7 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { prepareDataset } from './datasetPreparation.js';
+import { PreparedDataset, prepareDataset } from './datasetPreparation.js';
 import { DiagnosticKind } from './model.js';
 
 const dom = new JSDOM();
@@ -30,6 +30,16 @@ function catalogueXml(id, name, { gameSystemId = GAME_SYSTEM_ID, body = '' } = {
     <catalogue id="${id}" name="${name}" gameSystemId="${gameSystemId}">${body}</catalogue>`;
 }
 
+/**
+ * Der **Inhalt** eines aufbereiteten Datensatzes: was der Vorlauf erarbeitet hat.
+ * Nach aussen gibt `prepareDataset` seit der zweistufigen Fassade (Main-Issue 75,
+ * Baustein 8) nur den undurchsichtigen Griff; die Tests dieses Moduls pruefen den
+ * Vorlauf selbst und packen ihn deshalb engine-intern aus.
+ */
+function prepareDatasetContents(dataset) {
+  return PreparedDataset.contentsOf(prepareDataset(dataset));
+}
+
 /** Die Diagnose-Arten des Vorlaufs in ihrer Reihenfolge. */
 function diagnosticKinds(prepared) {
   return prepared.diagnostics.map(diagnostic => diagnostic.kind);
@@ -37,7 +47,7 @@ function diagnosticKinds(prepared) {
 
 describe('prepareDataset: die gelesenen Dokumente bleiben einzeln erhalten', () => {
   it('trennt die Spielsystemdatei von den Katalogen und haelt deren Aufruf-Reihenfolge', () => {
-    const prepared = prepareDataset({
+    const prepared = prepareDatasetContents({
       gameSystem: GAME_SYSTEM_XML,
       catalogues: [catalogueXml('cat-a', 'A'), catalogueXml('cat-b', 'B')],
     });
@@ -47,14 +57,14 @@ describe('prepareDataset: die gelesenen Dokumente bleiben einzeln erhalten', () 
   });
 
   it('laesst das Spielsystem-Dokument weg, wenn keine .gst mitgegeben ist', () => {
-    const prepared = prepareDataset({ catalogues: [catalogueXml('cat-a', 'A')] });
+    const prepared = prepareDatasetContents({ catalogues: [catalogueXml('cat-a', 'A')] });
 
     expect(prepared.gameSystemDocument).toBeNull();
     expect(prepared.catalogueDocuments).toHaveLength(1);
   });
 
   it('kommt ohne jede Quelle aus (leerer Datensatz, keine Diagnose)', () => {
-    const prepared = prepareDataset({});
+    const prepared = prepareDatasetContents({});
 
     expect(prepared.gameSystemDocument).toBeNull();
     expect(prepared.catalogueDocuments).toEqual([]);
@@ -68,7 +78,7 @@ describe('prepareDataset: aufgeloeste, rosterunabhaengige Sicht', () => {
       body: '<selectionEntries><selectionEntry id="unit" name="Unit" type="unit"/></selectionEntries>',
     });
 
-    const prepared = prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogue] });
+    const prepared = prepareDatasetContents({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogue] });
 
     expect(prepared.resolved.lookup('unit').name).toBe('Unit');
   });
@@ -76,7 +86,7 @@ describe('prepareDataset: aufgeloeste, rosterunabhaengige Sicht', () => {
 
 describe('prepareDataset: Diagnosen des Vorlaufs', () => {
   it('meldet einen Katalog, dessen Spielsystem nicht zur mitgegebenen .gst passt', () => {
-    const prepared = prepareDataset({
+    const prepared = prepareDatasetContents({
       gameSystem: GAME_SYSTEM_XML,
       catalogues: [catalogueXml('cat-a', 'A', { gameSystemId: OTHER_GAME_SYSTEM_ID })],
     });
@@ -94,7 +104,7 @@ describe('prepareDataset: Diagnosen des Vorlaufs', () => {
       body: `<catalogueLinks><catalogueLink id="link" name="Dep" targetId="${ABSENT_CATALOGUE_ID}"/></catalogueLinks>`,
     });
 
-    const prepared = prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [dependent] });
+    const prepared = prepareDatasetContents({ gameSystem: GAME_SYSTEM_XML, catalogues: [dependent] });
 
     expect(prepared.diagnostics).toContainEqual({
       kind: DiagnosticKind.MISSING_CATALOGUE_DEPENDENCY,
@@ -109,17 +119,55 @@ describe('prepareDataset: Diagnosen des Vorlaufs', () => {
       body: '<entryLinks><entryLink id="link" name="Missing" targetId="nowhere" type="selectionEntry"/></entryLinks>',
     });
 
-    const prepared = prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogue] });
+    const prepared = prepareDatasetContents({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogue] });
 
     expect(diagnosticKinds(prepared)).toContain(DiagnosticKind.DANGLING_ENTRY_LINK);
   });
 
   it('meldet einen kohaerenten Datensatz ohne Diagnose', () => {
-    const prepared = prepareDataset({
+    const prepared = prepareDatasetContents({
       gameSystem: GAME_SYSTEM_XML,
       catalogues: [catalogueXml('cat-a', 'A')],
     });
 
     expect(prepared.diagnostics).toEqual([]);
+  });
+});
+
+describe('prepareDataset: der aufbereitete Datensatz ist ein undurchsichtiger Griff', () => {
+  it('gibt nach aussen keine einzige Eigenschaft preis', () => {
+    const prepared = prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogueXml('cat-a', 'A')] });
+
+    // Weder die aufgeloeste Sicht noch die gelesenen Dokumente sind von aussen zu
+    // erreichen: genau darum geht es — der Aufrufer haelt den Datensatz, ohne
+    // etwas ueber den inneren Aufbau der Engine zu erfahren (ADR-0034).
+    expect(Object.keys(prepared)).toEqual([]);
+    expect(Object.getOwnPropertyNames(prepared)).toEqual([]);
+    expect(JSON.stringify(prepared)).toBe('{}');
+    expect(prepared.resolved).toBeUndefined();
+  });
+
+  it('weist einen rohen Datensatz mit einer Meldung zurueck, die den Aufruffehler benennt', () => {
+    // Der haeufigste Fehler der zweistufigen Fassade: der Vorbereitungsschritt wird
+    // uebersprungen. Er darf nicht als fehlendes Feld tief in der Auswertung
+    // auffallen, sondern an der Naht, an der er entsteht.
+    expect(() => PreparedDataset.contentsOf({ catalogues: [catalogueXml('cat-a', 'A')] }))
+      .toThrow(TypeError);
+    expect(() => PreparedDataset.contentsOf({ catalogues: [] }))
+      .toThrow(/prepareDataset/);
+  });
+
+  it('liefert je Aufruf einen eigenen Griff — die Vorbereitung hat keinen Zwischenspeicher', () => {
+    const dataset = { gameSystem: GAME_SYSTEM_XML, catalogues: [catalogueXml('cat-a', 'A')] };
+
+    // Wiederverwendet wird ein Griff, weil der Aufrufer ihn haelt — nicht, weil die
+    // Engine hinter seinem Ruecken zwischenspeicherte. `prepareDataset` bleibt eine
+    // reine Funktion; wer zweimal aufbereitet, bekommt zwei gleichwertige Ergebnisse.
+    const first = prepareDataset(dataset);
+    const second = prepareDataset(dataset);
+
+    expect(first).not.toBe(second);
+    expect(PreparedDataset.contentsOf(first).resolved)
+      .not.toBe(PreparedDataset.contentsOf(second).resolved);
   });
 });

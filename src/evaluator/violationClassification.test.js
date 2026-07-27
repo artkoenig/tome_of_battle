@@ -20,7 +20,7 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 import {
   AnchorKind,
   ConstraintKind,
@@ -44,7 +44,7 @@ globalThis.DOMParser = dom.window.DOMParser;
 
 /** Wertet einen einzelnen synthetischen Katalog aus (ADR-0032: Datensatz-Form). */
 function evaluate(catalogXml, roster) {
-  return evaluateDataset({ catalogues: [catalogXml] }, roster);
+  return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
 
 /** Die Meldungen des Berichts zu einer Grenz-Id. */

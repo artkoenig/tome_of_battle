@@ -8,15 +8,32 @@
  * Richtungen) sind maschinell durchgesetzt (`.oxlintrc.json`,
  * `.dependency-cruiser.cjs`).
  *
- * Die Auswertung ist eine reine Funktion `evaluate(datensatz, roster) → Bericht`
- * ohne Seiteneffekte: kein App-Zustand, keine UI, kein IndexedDB
- * (`docs/evaluator-architecture.md` §2, Leitprinzip 1).
+ * ── Die Fassade ist zweistufig ───────────────────────────────────────────────
+ * Sie fuehrt in zwei Schritten:
  *
- * Daneben beantwortet die Fassade die Fragen, die sich **ohne Roster** stellen —
- * `describeDataset(datensatz) → Beschreibung` (ADR-0034). Beide Wege teilen
- * denselben rosterunabhaengigen Katalog-Vorlauf
- * ({@link ./datasetPreparation.js prepareDataset}), sodass es keine zweite
- * Lesart derselben Katalogdaten gibt.
+ *   1. `prepareDataset(datensatz) → aufbereiteter Datensatz` — der
+ *      rosterunabhaengige Katalog-Vorlauf (lesen → zusammenfuehren → aufloesen),
+ *      **einmal je Datensatz**;
+ *   2. `evaluate(aufbereiteter Datensatz, roster) → Bericht` bzw.
+ *      `describeDataset(aufbereiteter Datensatz) → Beschreibung` — beliebig oft
+ *      gegen dasselbe Ergebnis des ersten Schritts.
+ *
+ * Das ist kein Vorgriff, sondern das Ergebnis der Messung an echten Katalogdaten
+ * (Main-Issue 75, Baustein 8, `scripts/measure-evaluator.js`): der Vorlauf macht
+ * **98,9–99,5 %** einer vollstaendigen Auswertung aus — die vorab festgelegte
+ * Schwelle lag bei 50 %. Wer denselben Datensatz zweimal auswertet, spart damit
+ * praktisch die gesamte Laufzeit der zweiten Auswertung.
+ *
+ * Der aufbereitete Datensatz ist ein **undurchsichtiger Griff**: der Aufrufer
+ * haelt ihn und gibt ihn zurueck, greift aber nicht in ihn hinein. Die Oberflaeche
+ * bekommt so keinerlei Kenntnis vom inneren Aufbau der Engine — allein den
+ * Bericht (ADR-0034).
+ *
+ * Die Auswertung bleibt dabei eine reine Funktion
+ * `evaluate(aufbereiteter Datensatz, roster) → Bericht` ohne Seiteneffekte: kein
+ * App-Zustand, keine UI, kein IndexedDB (`docs/evaluator-architecture.md` §2,
+ * Leitprinzip 1). Auch die Beschreibung ohne Roster (ADR-0034) liest denselben
+ * einen Vorlauf — es gibt keine zweite Lesart derselben Katalogdaten.
  *
  * Der Datensatz trennt die **einzelne** Spielsystemdatei (`.gst`) strukturell von
  * der **Liste** der Armee-Kataloge (`.cat`) — `{ gameSystem, catalogues }`
@@ -25,7 +42,7 @@
  * selbst ab; sie ist **keine** positionsabhaengige Aufrufer-Konvention.
  */
 
-import { prepareDataset } from './datasetPreparation.js';
+import { PreparedDataset } from './datasetPreparation.js';
 import { buildDatasetDescription } from './datasetDescription.js';
 import { buildEvalTree } from './evalTree.js';
 import { attachOfferAnchors } from './offer.js';
@@ -38,12 +55,30 @@ import { buildReport } from './report.js';
 import { createRosterBudget } from './rosterBudget.js';
 
 /**
- * Wertet ein Roster gegen einen Datensatz aus und liefert den Bericht.
+ * Der **erste Schritt** der Fassade: bereitet einen Datensatz rosterunabhaengig
+ * auf (lesen → zusammenfuehren → aufloesen) und liefert das Ergebnis als
+ * undurchsichtigen Griff, den {@link evaluate} und {@link describeDataset}
+ * entgegennehmen.
  *
- * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
- *   Der Datensatz: die optionale Spielsystemdatei (`.gst`-XML) und die geordnete
- *   Liste der Armee-Kataloge (`.cat`-XML). Ein einzelner synthetischer Katalog wird
- *   als `{ catalogues: [xml] }` uebergeben.
+ * Einmal je Datensatz aufrufen und das Ergebnis halten, solange der Datensatz
+ * gilt: es haengt nicht vom Roster ab und traegt die weit ueberwiegende Last einer
+ * Auswertung (siehe Kopf dieser Datei). Aendert sich der Datensatz — ein Katalog
+ * kommt hinzu, ein Update wird eingespielt —, wird neu aufbereitet.
+ *
+ * Der Schritt wird unveraendert durchgereicht, statt hier noch einmal verpackt zu
+ * werden: es gibt genau eine Implementierung des Katalog-Vorlaufs. Signatur und
+ * Diagnosen sind an ihr dokumentiert
+ * ({@link ./datasetPreparation.js prepareDataset}).
+ */
+export { prepareDataset } from './datasetPreparation.js';
+
+/**
+ * Wertet ein Roster gegen einen **aufbereiteten** Datensatz aus und liefert den
+ * Bericht.
+ *
+ * @param {import('./datasetPreparation.js').PreparedDataset} prepared
+ *   Das Ergebnis von {@link prepareDataset} — derselbe Griff darf beliebig oft und
+ *   fuer beliebig viele Roster wiederverwendet werden.
  * @param {{ forces?: Array<{ defId: string, count: number, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
  *   Das vollstaendige, aus `.ros` geparste Roster: der Instanzbaum (`forces`)
  *   **und** die eingestellten Kostengrenzen je Kostenart (`costLimits`, die
@@ -54,17 +89,17 @@ import { createRosterBudget } from './rosterBudget.js';
  *   Slot ist **jede Stelle, an der eine Auswahl stehen kann** — auch eine noch
  *   nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon unberuehrt.
  */
-export function evaluate(dataset, roster) {
+export function evaluate(prepared, roster) {
   // Die eingestellten Kostengrenzen des Rosters einmalig als unveraenderliches
   // Budget-Wert-Objekt (SSOT) buendeln und bis in die Query-Kontexte durchreichen.
   // Ausgewertet wird das Budget erst in den Folge-Slices; hier reicht die Fassade
   // es nur verlustfrei durch (leere Grenzen ⇒ unveraendertes Ergebnis).
   const budget = createRosterBudget(roster.costLimits);
 
-  // Rosterunabhaengiger Katalog-Vorlauf (lesen → zusammenfuehren → aufloesen) als
-  // eigener, benannter Schritt — dieselbe Implementierung, die auch
-  // {@link describeDataset} benutzt.
-  const { resolved, diagnostics: datasetDiagnostics } = prepareDataset(dataset);
+  // Der rosterunabhaengige Katalog-Vorlauf ist bereits gelaufen: die Auswertung
+  // liest sein Ergebnis, statt die Kataloge erneut zu lesen. Das ist die
+  // Wiederverwendung, um derentwillen die Fassade zweistufig ist.
+  const { resolved, diagnostics: datasetDiagnostics } = PreparedDataset.contentsOf(prepared);
 
   const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
 
@@ -136,14 +171,14 @@ export function evaluate(dataset, roster) {
  * Grenze aus; wer eine Aussage ueber einen konkreten Bestand braucht, wertet mit
  * {@link evaluate} aus.
  *
- * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
- *   Derselbe Datensatz wie bei {@link evaluate}: die optionale Spielsystemdatei
- *   (`.gst`-XML) und die geordnete Liste der Armee-Kataloge (`.cat`-XML).
+ * @param {import('./datasetPreparation.js').PreparedDataset} prepared
+ *   Derselbe aufbereitete Datensatz wie bei {@link evaluate} — Beschreibung und
+ *   Auswertung teilen sich denselben einen Vorlauf.
  * @returns {{ costTypes: object[], catalogues: object[], creatableForces: object[], diagnostics: object[] }}
  *   Die Beschreibung samt der Diagnosen des Katalog-Vorlaufs — ein Katalogfehler
  *   (fehlende Abhaengigkeit, nicht passendes Spielsystem, doppelte oder baumelnde
  *   Verweise) wird auch ohne Roster sichtbar und nie still verschluckt.
  */
-export function describeDataset(dataset) {
-  return buildDatasetDescription(prepareDataset(dataset));
+export function describeDataset(prepared) {
+  return buildDatasetDescription(PreparedDataset.contentsOf(prepared));
 }

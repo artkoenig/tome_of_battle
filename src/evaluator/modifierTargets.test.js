@@ -1,6 +1,6 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 import { DiagnosticKind, MessageSeverity } from './model.js';
 
 /**
@@ -53,7 +53,7 @@ function bannerCondition(value) {
 }
 
 function evaluate(catalogueXml, roster) {
-  return evaluateDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogueXml] }, roster);
+  return evaluateDataset(prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogueXml] }), roster);
 }
 
 /** Sucht den Faehigkeitsdatensatz eines Slots ueber die Definitions-ID. */

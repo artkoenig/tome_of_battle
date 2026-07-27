@@ -1,6 +1,6 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 import { ModifierKind } from './model.js';
 
 /**
@@ -55,7 +55,7 @@ function catalogueWith(modifiersXml) {
 function evaluate(catalogueXml, { warriors, banners }) {
   const forces = [{ defId: WARRIOR_ID, count: warriors, children: [] }];
   if (banners > 0) forces.push({ defId: BANNER_ID, count: banners, children: [] });
-  return evaluateDataset({ catalogues: [catalogueXml] }, { forces });
+  return evaluateDataset(prepareDataset({ catalogues: [catalogueXml] }), { forces });
 }
 
 /** Die Herleitung der Kriegergrenze aus der gemeldeten Verletzung. */

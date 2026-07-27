@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { describeDataset, evaluate } from './evaluator.js';
+import { describeDataset, evaluate, prepareDataset } from './evaluator.js';
 import { DiagnosticKind } from './model.js';
 
 const dom = new JSDOM();
@@ -70,7 +70,7 @@ const WHFB_DATASET = {
 
 // Die echten Kataloge sind gross; die Beschreibung ist eine reine Funktion und
 // wird deshalb einmal fuer alle Faelle gebildet statt je Fall neu.
-const WHFB_DESCRIPTION = describeDataset(WHFB_DATASET);
+const WHFB_DESCRIPTION = describeDataset(prepareDataset(WHFB_DATASET));
 
 /** Der beschriebene Eintrag mit gegebener ID, oder `undefined`. */
 function byId(entries, id) {
@@ -79,7 +79,7 @@ function byId(entries, id) {
 
 describe('describeDataset: Kostenarten ohne Roster', () => {
   it('nennt Kostenart-ID, Klartext-Name und Vorgabe-Grenze', () => {
-    const description = describeDataset(SYNTHETIC_DATASET);
+    const description = describeDataset(prepareDataset(SYNTHETIC_DATASET));
 
     expect(description.costTypes).toEqual([
       { id: POINTS_COST_TYPE_ID, name: 'pts', defaultLimit: 2000, isHidden: false },
@@ -95,7 +95,7 @@ describe('describeDataset: Kostenarten ohne Roster', () => {
 
 describe('describeDataset: spielbare Kataloge und Bibliotheken', () => {
   it('unterscheidet den spielbaren Katalog von der reinen Bibliothek', () => {
-    const description = describeDataset(SYNTHETIC_DATASET);
+    const description = describeDataset(prepareDataset(SYNTHETIC_DATASET));
 
     expect(description.catalogues).toEqual([
       { id: 'cat-army', name: 'Army', gameSystemId: GAME_SYSTEM_ID, isLibrary: false },
@@ -118,7 +118,7 @@ describe('describeDataset: spielbare Kataloge und Bibliotheken', () => {
 
 describe('describeDataset: anlegbare Kontingente', () => {
   it('nennt die Kontingente der Katalogwurzel samt Quelle und Sichtbarkeit', () => {
-    const description = describeDataset(SYNTHETIC_DATASET);
+    const description = describeDataset(prepareDataset(SYNTHETIC_DATASET));
 
     expect(description.creatableForces).toEqual([
       { id: 'force-standard', name: 'Standard', isHidden: false, sourceId: 'cat-army' },
@@ -127,7 +127,7 @@ describe('describeDataset: anlegbare Kontingente', () => {
   });
 
   it('fuehrt ein Unter-Kontingent nicht als eigenstaendig anlegbar', () => {
-    const description = describeDataset(SYNTHETIC_DATASET);
+    const description = describeDataset(prepareDataset(SYNTHETIC_DATASET));
 
     expect(byId(description.creatableForces, 'force-nested')).toBeUndefined();
   });
@@ -149,7 +149,7 @@ describe('describeDataset: Diagnosen ohne Roster', () => {
     const foreign = `<?xml version="1.0"?>
       <catalogue id="cat-foreign" name="Foreign" gameSystemId="${OTHER_GAME_SYSTEM_ID}"/>`;
 
-    const description = describeDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [foreign] });
+    const description = describeDataset(prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [foreign] }));
 
     expect(description.diagnostics).toContainEqual({
       kind: DiagnosticKind.GAMESYSTEM_MISMATCH,
@@ -165,7 +165,7 @@ describe('describeDataset: Diagnosen ohne Roster', () => {
         <catalogueLinks><catalogueLink id="link" name="Mercenaries" targetId="cat-library"/></catalogueLinks>
       </catalogue>`;
 
-    const description = describeDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [dependent] });
+    const description = describeDataset(prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [dependent] }));
 
     expect(description.diagnostics).toContainEqual({
       kind: DiagnosticKind.MISSING_CATALOGUE_DEPENDENCY,
@@ -180,10 +180,12 @@ describe('describeDataset: Diagnosen ohne Roster', () => {
       <catalogue id="cat-foreign" name="Foreign" gameSystemId="${OTHER_GAME_SYSTEM_ID}">
         <entryLinks><entryLink id="link" name="Missing" targetId="nowhere" type="selectionEntry"/></entryLinks>
       </catalogue>`;
-    const dataset = { gameSystem: GAME_SYSTEM_XML, catalogues: [foreign] };
+    // Ein Datensatz, **ein** Vorlauf: seit die Fassade zweistufig ist, teilen sich
+    // Beschreibung und Auswertung buchstaeblich dasselbe aufbereitete Ergebnis.
+    const prepared = prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [foreign] });
 
-    const described = describeDataset(dataset).diagnostics;
-    const evaluated = evaluate(dataset, { forces: [] }).diagnostics;
+    const described = describeDataset(prepared).diagnostics;
+    const evaluated = evaluate(prepared, { forces: [] }).diagnostics;
 
     expect(described).not.toEqual([]);
     expect(evaluated.slice(0, described.length)).toEqual(described);
@@ -199,7 +201,7 @@ describe('describeDataset: Diagnosen ohne Roster', () => {
 
 describe('describeDataset: keine Zaehlung, keine Grenzenauswertung', () => {
   it('beschreibt den Datensatz ohne jeden Roster-Bezug (kein Bericht-Feld)', () => {
-    const description = describeDataset(SYNTHETIC_DATASET);
+    const description = describeDataset(prepareDataset(SYNTHETIC_DATASET));
 
     expect(Object.keys(description).sort()).toEqual(
       ['catalogues', 'costTypes', 'creatableForces', 'diagnostics'],

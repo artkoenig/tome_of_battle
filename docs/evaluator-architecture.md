@@ -29,7 +29,7 @@ Reinraum-Entwurf. Grundlage sind ausschließlich das beschriebene Problem und di
 
 ## 2. Leitprinzipien
 
-1. **Eine reine Funktion.** Die gesamte Auswertung ist `evaluate(Katalog, Roster) → Bericht`. Keine Seiteneffekte, kein verteilter Zustand. Damit ist die Logik ohne UI und ohne Framework testbar.
+1. **Eine reine Funktion.** Die gesamte Auswertung ist `evaluate(Katalog, Roster) → Bericht`. Keine Seiteneffekte, kein verteilter Zustand. Damit ist die Logik ohne UI und ohne Framework testbar. Der rosterunabhängige Katalog-Vorlauf ist dabei als eigener erster Schritt herausgezogen (`prepareDataset`, siehe §3.1) — das ändert nichts an der Reinheit: sein Ergebnis ist unveränderlich, und der Aufrufer reicht es wieder herein, statt dass die Engine es hinter seinem Rücken hielte.
 2. **Single Source of Truth.** Der Bericht ist der einzige Ort, an dem Regel-Ergebnisse existieren. Validierung und UI-Steuerung sind zwei Projektionen desselben Berichts — die Regeln werden nie zweimal ausgewertet.
 3. **Unidirektionaler Datenfluss.** Roster-Änderung → `evaluate` → neuer Bericht → Rendering. Die UI liest nur, sie rechnet nie.
 4. **Ein Query-Primitiv.** Limit, Condition und Repeat sind drei Verpackungen derselben Frage: *„Zähle `field` im Rahmen `scope`, gefiltert auf `target`, unter `flags`."* Es gibt genau eine Implementierung dieser Frage.
@@ -38,7 +38,7 @@ Reinraum-Entwurf. Grundlage sind ausschließlich das beschriebene Problem und di
 ## 3. Bausteine und Datenfluss
 
 ```
-Kataloge ──► [1 Resolver] ──► aufgelöste Definitionen (rosterunabhängig, gecacht)
+Kataloge ──► [1 Resolver] ──► aufgelöste Definitionen (rosterunabhängig, einmal je Datensatz)
                                       │
 Roster ───────────────────────► [2 Join-Schicht] ──► Evaluationsbaum (inkl. Phantomknoten)
                                       │
@@ -55,7 +55,9 @@ Roster ───────────────────────► 
 
 ### 3.1 Resolver (rosterunabhängig)
 
-Löst alle ID-Verweise auf, auch über Katalog-Grenzen, und materialisiert pro Definitionsknoten eine **geschlossene Sicht**: eigener Eintrag plus hereinverlinkte Kinder, Regeln und Modifikatoren, in deterministischer Dokumentreihenfolge. Mehrdeutige IDs werden über einen Kontextstapel aufgelöst: lokaler Katalog des verweisenden Knotens → dessen Importe → Spielsystem. Jede Auflösungsentscheidung wird protokolliert (Diagnose bei Katalogfehlern). Das Ergebnis ist unveränderlich und wird gecacht, da es nicht vom Roster abhängt.
+Löst alle ID-Verweise auf, auch über Katalog-Grenzen, und materialisiert pro Definitionsknoten eine **geschlossene Sicht**: eigener Eintrag plus hereinverlinkte Kinder, Regeln und Modifikatoren, in deterministischer Dokumentreihenfolge. Mehrdeutige IDs werden über einen Kontextstapel aufgelöst: lokaler Katalog des verweisenden Knotens → dessen Importe → Spielsystem. Jede Auflösungsentscheidung wird protokolliert (Diagnose bei Katalogfehlern). Das Ergebnis ist unveränderlich und wird **einmal je Datensatz gebildet und über beliebig viele Auswertungen wiederverwendet**, da es nicht vom Roster abhängt.
+
+> **Umsetzungshinweis (Main-Issue 75, Baustein 8):** Die Wiederverwendung liegt beim **Aufrufer**, nicht in einem versteckten Zwischenspeicher der Engine. Die Fassade ist dafür zweistufig: `prepareDataset(datensatz)` liefert den aufbereiteten Datensatz als **undurchsichtigen Griff**, den `evaluate(aufbereiteter Datensatz, roster)` und `describeDataset(aufbereiteter Datensatz)` entgegennehmen. Beide bleiben damit reine Funktionen (Leitprinzip 1) — ein Cache im Inneren wäre genau der verteilte Zustand, den dieser Entwurf ausschließt. Gemessen an echten Katalogdaten trägt dieser Vorlauf 97–99,5 % einer vollständigen Auswertung (`scripts/measure-evaluator.js`, `scripts/measure-evaluator-browser.js`); die vorab festgelegte Schwelle für die zweistufige Form lag bei 50 %.
 
 > **Umsetzungshinweis (ADR-0032):** Die reale Implementierung baut diesen Kontextstapel **bewusst nicht**. Da BattleScribe-IDs global-eindeutige GUIDs sind, lösen alle Quellen (`.gst` + Liste von `.cat`) über **eine** flache globale `id→Definition`-Tabelle auf (global-by-ID); `catalogueLink` ist reine Abhängigkeits-Deklaration. Ein Disjunktheits-Guard meldet eine echte ID-Kollision als Diagnose — erst sie würde den vollen Kontextstapel erzwingen. Siehe [ADR-0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md).
 
@@ -326,8 +328,11 @@ record Report { violations: Message[], capabilities: Map<NodePath, SlotCapabilit
 ```
 const MAX_FIXPOINT_ROUNDS = 5
 
-function evaluate(catalogs, roster): Report
-  resolved    = resolveCatalogs(catalogs)              // gecacht; rosterunabhängig
+function prepareDataset(catalogs): PreparedDataset     // Schritt 1, einmal je Datensatz
+  return opaque(resolveCatalogs(catalogs))             // rosterunabhängig, unveränderlich
+
+function evaluate(prepared, roster): Report            // Schritt 2, beliebig oft
+  resolved    = contentsOf(prepared)                   // wiederverwendet, nicht neu gelesen
   tree        = buildEvalTree(resolved, roster)
   effective   = effectiveStateFromBaseDefinitions(tree)
   diagnostics = collect(resolved.allResolutionLogs)

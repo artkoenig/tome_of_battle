@@ -14,7 +14,7 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluate as evaluateDataset } from './evaluator.js';
+import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 import { InfoElementKind } from './model.js';
 
 const dom = new JSDOM();
@@ -47,7 +47,7 @@ const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
   </gameSystem>`;
 
 function evaluate(catalogueXml, roster) {
-  return evaluateDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogueXml] }, roster);
+  return evaluateDataset(prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [catalogueXml] }), roster);
 }
 
 /** Der Faehigkeitsdatensatz des belegten Slots mit dieser Definitions-ID. */
@@ -408,7 +408,7 @@ describe('Info-Projektion: ohne Profiltyp-Deklaration bleiben die Klartext-Namen
     </catalogue>`;
 
   it('nennt IDs und Werte weiterhin vollstaendig, den unbekannten Namen aber ehrlich als null', () => {
-    const report = evaluateDataset({ catalogues: [CATALOGUE_XML] }, rosterWithOption({ withOption: false }));
+    const report = evaluateDataset(prepareDataset({ catalogues: [CATALOGUE_XML] }), rosterWithOption({ withOption: false }));
 
     expect(infoElementsOfSlot(report, UNIT_ID)).toEqual([{
       kind: InfoElementKind.PROFILE,

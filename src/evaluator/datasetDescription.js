@@ -96,7 +96,9 @@ function creatableForcesOf(prepared) {
  * Baut die Beschreibung eines aufbereiteten Datensatzes.
  *
  * @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], diagnostics: object[] }} prepared
- *   Das Ergebnis von {@link ./datasetPreparation.js prepareDataset}.
+ *   Der **Inhalt** eines aufbereiteten Datensatzes, also
+ *   `PreparedDataset.contentsOf(...)` — nicht der Griff selbst. Ihn auszupacken ist
+ *   Sache der Fassade; die Beschreibung arbeitet engine-intern auf den Dokumenten.
  * @returns {{ costTypes: object[], catalogues: object[], creatableForces: object[], diagnostics: object[] }}
  *   Die Beschreibung. Die Diagnosen sind die des Katalog-Vorlaufs — dieselben, die
  *   eine Auswertung desselben Datensatzes vor dem ersten Roster-Bezug meldet, in

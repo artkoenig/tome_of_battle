@@ -23,186 +23,27 @@
  * ist damit nach oben verzerrt; belastbar ist der Vergleich derselben Messung mit
  * sich selbst — also Grundlinie gegen Nachmessung, die dieses Skript unveraendert
  * wiederholt.
+ *
+ * Wie gross die Verzerrung wirklich ist, misst `scripts/measure-evaluator-browser.js`:
+ * es fuehrt dieselben Faelle im echten Browser aus und stellt beide Laeufe
+ * nebeneinander.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
 import { JSDOM } from 'jsdom';
 
-import { rosterFromRos } from '../src/evaluator/__fixtures__/rosParser.js';
-import { DiagnosticKind } from '../src/evaluator/model.js';
 import {
-  MeasuredPhase,
-  INTERACTIVE_BUDGET_MS,
-  TWO_STAGE_PREPARATION_SHARE,
   DEFAULT_REPETITIONS,
   measureCase,
-  assessThresholds,
 } from './lib/evaluator-measurement.js';
+import { MEASUREMENT_CASES, resolveCase, resolveAllCases } from './lib/evaluator-measurement-cases.js';
+import { printCase, printThresholdSummary } from './lib/evaluator-measurement-output.js';
 
 // Der eigene XML-Leser der Engine nutzt das Plattform-Primitiv `DOMParser`; in Node
 // stellt jsdom es bereit — dieselbe Naht, ueber die auch die Tests die Engine fahren.
 globalThis.DOMParser = new JSDOM().window.DOMParser;
 
-/** Wurzel der E2E-Szenarien, relativ zum Projekt-Wurzelverzeichnis (dem cwd). */
-const TESTING_ROOT = 'docs/testing';
-
-/** Dateiname des Szenario-Manifests (Vertrag siehe `src/evaluator/e2e.testcatalog.test.js`). */
-const MANIFEST_FILE = 'scenario.json';
-
-/**
- * Die Faelle der Grundlinie — bewusst festgelegt und nicht automatisch gewaehlt,
- * damit die Nachmessung dieselben Faelle wiederholt und die beiden Laeufe
- * vergleichbar bleiben. Alle drei laufen gegen die Definitive-Edition-Kataloge:
- *
- * - **klein**: Spielsystem plus *ein* Armee-Katalog, knappes Roster — der
- *   guenstigste Fall, den es an echten Daten gibt;
- * - **Mehrkatalog (Vampire Counts + Mercenaries)**: der von `design.md` ausdruecklich
- *   verlangte Fall; unter allen Szenarien zugleich der mit dem groessten
- *   Auswertungsbaum;
- * - **groesster Datensatz**: Spielsystem plus drei Armee-Kataloge. Er traegt die
- *   Bewertung gegen die interaktive Obergrenze, weil er den groessten
- *   Definitionsbestand aufbereiten muss.
- *
- * Bewusst ausgelassen sind die Szenarien gegen `src/solver/__fixtures__/` und
- * `scripts/__fixtures__/`: gemessen wird gegen den Datenbestand, den die Engine
- * als ihren eigenen fuehrt (ADR-0030).
- */
-const MEASUREMENT_CASES = Object.freeze([
-  { label: 'klein — Spielsystem + 1 Armee-Katalog', scenario: 'evaluator-bug-childid-model', roster: 'rosters/01-stone-trolls.ros' },
-  { label: 'Mehrkatalog — Vampire Counts + Mercenaries', scenario: 'vampire-bloodlines', roster: 'rosters/06-lahmia-visibility-baseline.ros' },
-  { label: 'groesster Datensatz — Spielsystem + 3 Armee-Kataloge', scenario: 'numeric-conditions', roster: 'rosters/greater-than-true.ros' },
-]);
-
-/** Klartext-Bezeichnung je gemessenem Abschnitt, in der Reihenfolge der Auswertung. */
-const PHASE_LABELS = Object.freeze([
-  [MeasuredPhase.PREPARATION, 'Vorbereitung des Datensatzes'],
-  [MeasuredPhase.ITERATED_EVALUATION, 'Iterierte Auswertung'],
-  [MeasuredPhase.POST_PASS, 'Nach-Durchlauf'],
-  [MeasuredPhase.CONSTRAINTS_AND_REPORT, 'Grenzen und Bericht'],
-]);
-
-/** Liest das Manifest eines Szenarios. */
-function loadManifest(scenarioName) {
-  const manifestPath = join(TESTING_ROOT, scenarioName, MANIFEST_FILE);
-  if (!existsSync(manifestPath)) {
-    throw new Error(`Szenario "${scenarioName}" hat kein Manifest unter ${manifestPath}.`);
-  }
-  return { ...JSON.parse(readFileSync(manifestPath, 'utf8')), scenarioDir: join(TESTING_ROOT, scenarioName) };
-}
-
-/** Liest die im Manifest deklarierten Katalog-Dateien in den Datensatz der Fassade. */
-function readDataset(datasetSpec) {
-  const dataset = { catalogues: datasetSpec.catalogues.map(path => readFileSync(resolve(path), 'utf8')) };
-  if (datasetSpec.gameSystem !== undefined) {
-    dataset.gameSystem = readFileSync(resolve(datasetSpec.gameSystem), 'utf8');
-  }
-  return dataset;
-}
-
-/**
- * Loest einen Messfall zu seinen Eingaben auf. Ein Roster darf im Manifest einen
- * eigenen `dataset`-Override tragen; er ersetzt den Szenario-Standard vollstaendig.
- */
-function resolveCase({ label, scenario, roster }) {
-  const manifest = loadManifest(scenario);
-  const rosterCase = manifest.rosters.find(entry => entry.file === roster);
-  if (rosterCase === undefined) {
-    throw new Error(`Szenario "${scenario}" kennt kein Roster "${roster}".`);
-  }
-  const datasetSpec = rosterCase.dataset ?? manifest.dataset;
-  return {
-    label,
-    source: `${scenario}/${roster}`,
-    catalogueCount: datasetSpec.catalogues.length + (datasetSpec.gameSystem === undefined ? 0 : 1),
-    dataset: readDataset(datasetSpec),
-    roster: rosterFromRos(join(manifest.scenarioDir, roster)),
-  };
-}
-
-/** Alle Roster aller Szenarien als Messfaelle — die Uebersicht hinter `--all`. */
-function resolveAllCases() {
-  const seen = new Set();
-  const cases = [];
-  for (const scenario of readdirSorted(TESTING_ROOT)) {
-    if (!existsSync(join(TESTING_ROOT, scenario, MANIFEST_FILE))) continue;
-    for (const rosterCase of loadManifest(scenario).rosters) {
-      const key = `${scenario}/${rosterCase.file}`;
-      if (seen.has(key)) continue; // dasselbe Roster steht in manchen Manifesten mehrfach
-      seen.add(key);
-      cases.push(resolveCase({ label: rosterCase.description ?? rosterCase.file, scenario, roster: rosterCase.file }));
-    }
-  }
-  return cases;
-}
-
-/** Die Unterverzeichnisse eines Verzeichnisses, alphabetisch — fuer stabile Ausgabe. */
-function readdirSorted(directory) {
-  return readdirSync(directory, { withFileTypes: true })
-    .filter(entry => entry.isDirectory())
-    .map(entry => entry.name)
-    .sort();
-}
-
-/** Formatiert eine Dauer auf zehntel Millisekunden. */
-function formatMs(durationMs) {
-  return `${durationMs.toFixed(1)} ms`.padStart(10);
-}
-
-/** Formatiert einen Anteil als Prozentwert. */
-function formatShare(share) {
-  return `${(share * 100).toFixed(1)} %`.padStart(8);
-}
-
-/**
- * Der Ausgang der Fixpunktschleife im Klartext — die drei Faelle, die die Schleife
- * unterscheidet: Konvergenz, Oszillation (mit Zykluslaenge) und erschoepftes
- * Rundenbudget.
- */
-function formatFixpoint({ rounds, converged, nonConvergence }) {
-  if (converged) return `konvergiert nach ${rounds} Runde(n)`;
-  if (nonConvergence?.kind === DiagnosticKind.OSCILLATION) {
-    return `Oszillation nach ${rounds} Runden (Zykluslaenge ${nonConvergence.cycleLength})`;
-  }
-  return `Rundenbudget erschoepft (${rounds} Runden, ohne dass ein Zustand wiederkehrte)`;
-}
-
-/**
- * Die Knoten nach ihrer **Ankerart**, als eine Zeile — in der festen Reihenfolge
- * der Aufzaehlung, damit zwei Laeufe Zeile fuer Zeile vergleichbar sind. Genau
- * diese Aufschluesselung macht den Zuwachs des Angebots gegenueber der Grundlinie
- * sichtbar.
- */
-function formatAnchorKindBreakdown(byAnchorKind) {
-  return Object.entries(byAnchorKind)
-    .map(([kind, count]) => `${kind}=${count}`)
-    .join(', ');
-}
-
-/** Gibt das Ergebnis eines Falls aus und liefert dessen Schwellen-Urteil zurueck. */
-function printCase(measurementCase, summary) {
-  const { tree, fixpoint, phases, totalMs, preparationShare } = summary;
-  const verdict = assessThresholds(summary);
-
-  console.log(`\nFall: ${measurementCase.label}`);
-  console.log(`  Quelle:    ${measurementCase.source} (${measurementCase.catalogueCount} Katalogdatei(en))`);
-  console.log(
-    `  Knoten:    ${tree.total} gesamt — ${tree.real} real, ${tree.synthetic} synthetisch` +
-      ` (${formatAnchorKindBreakdown(tree.byAnchorKind)})`,
-  );
-  console.log(`  Fixpunkt:  ${formatFixpoint(fixpoint)}`);
-  console.log(`  Dauer (Median ueber ${summary.repetitions} Laeufe):`);
-  for (const [phase, label] of PHASE_LABELS) {
-    console.log(`    ${label.padEnd(30)}${formatMs(phases[phase])}${formatShare(phases[phase] / totalMs)}`);
-  }
-  console.log(`    ${'Gesamt'.padEnd(30)}${formatMs(totalMs)}`);
-  console.log(
-    `  Schwellen: interaktive Obergrenze ${INTERACTIVE_BUDGET_MS} ms → ` +
-      `${verdict.withinInteractiveBudget ? 'eingehalten' : 'GERISSEN'}; Vorbereitungsanteil ` +
-      `${formatShare(preparationShare).trim()} (Schwelle: mehr als ${TWO_STAGE_PREPARATION_SHARE * 100} %) → Fassade ${verdict.facadeShape}`,
-  );
-  return verdict;
-}
+/** Bezeichnung der einen Messreihe dieses Laufs — die Ausgabe traegt Spalten. */
+const COLUMN_LABEL = 'jsdom (Node)';
 
 /** Liest die Aufrufoptionen. */
 function parseOptions(argv) {
@@ -227,22 +68,15 @@ function main() {
   console.log('Reinraum-Engine — Aufwandsmessung');
   console.log(`Node ${process.version}, XML-Leser ueber den DOMParser von jsdom, ${options.repetitions} Wiederholungen je Fall.`);
 
-  const verdicts = cases.map(measurementCase =>
-    printCase(measurementCase, measureCase(measurementCase.dataset, measurementCase.roster, { repetitions: options.repetitions })),
-  );
+  const verdicts = cases.flatMap(measurementCase =>
+    printCase(measurementCase, [{
+      label: COLUMN_LABEL,
+      summary: measureCase(measurementCase.dataset, measurementCase.roster, { repetitions: options.repetitions }),
+    }]));
 
-  const breaching = verdicts.filter(verdict => !verdict.withinInteractiveBudget).length;
-  console.log('');
-  if (breaching === 0) {
-    console.log(`Alle ${verdicts.length} Faelle bleiben unter der interaktiven Obergrenze von ${INTERACTIVE_BUDGET_MS} ms.`);
-    return;
+  if (printThresholdSummary(verdicts) > 0) {
+    process.exitCode = THRESHOLD_BREACH_EXIT_CODE;
   }
-  console.log(
-    `BLOCKIERENDER BEFUND: ${breaching} von ${verdicts.length} Faellen reissen die interaktive Obergrenze von ` +
-      `${INTERACTIVE_BUDGET_MS} ms. Der Wert ist mit dem DOMParser von jsdom gemessen und im Browser vermutlich ` +
-      'niedriger — die Groessenordnung des Vorbereitungsanteils bleibt davon unberuehrt.',
-  );
-  process.exitCode = THRESHOLD_BREACH_EXIT_CODE;
 }
 
 main();

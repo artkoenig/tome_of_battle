@@ -41,42 +41,42 @@
  *             //          feuert.
  *           ],
  *           "absent": ["<constraint-id>", ...],   // Grenzen, die NICHT feuern duerfen
-           "messages": [                          // OPTIONAL: Aussagen ueber die EINGEORDNETE
-             {                                    //           Meldung (dieselbe `violations`-Liste)
-               // ── Auswahl der gemeinten Meldung (Vorgabe: muss genau eine treffen) ──
-               "origin": "derivedLimit|authorMessage",  // PFLICHT: der Diskriminator der Herkunft.
-                                                  // `derivedLimit` = von der Engine aus einer Grenze
-                                                  // abgeleitet; `authorMessage` = Meldung des
-                                                  // Katalog-Autors (field="error"/"warning"/"info")
-               "limitId": "<constraint-id>"?,     // nur bei derivedLimit
-               "anchorDefId": "<Definitions-ID>"?, // Anker, an dem die Meldung haengt
-               "anchorPath": "<Slot-Pfad>"?,      // nur noetig, wenn es sonst mehrdeutig bleibt
-               "text": "<Meldungstext>"?,         // bei einer Autor-Meldung zugleich Auswahl UND
-                                                  // Aussage: der Katalogtext, Text-Tokens wie
-                                                  // `{this}` durch den effektiven Namen ersetzt
-               "count": <n>?,                     // OPTIONAL: GENAU n Treffer. `0` fordert, dass
-                                                  // keine solche Meldung erscheint.
-               // ── Aussagen ueber die getroffene(n) Meldung(en) ──
-               "severity": "error|warning|info"?, // abgeleitet: immer error; Autor-Meldung: aus dem Katalog
-               "anchorName": "<effektiver Name>"?,
-               "anchorKind": "occupied|mandatoryPhantom|groupAnchor|categoryAnchor|offerAnchor|roster"?,
-                                                  // `roster` traegt allein die engine-eigene
-                                                  // Budget-Regel; sie haengt an keinem Slot
-               "isValueUnstable": true|false?,
-               "limitKind": "min|max"?,           // nur bei derivedLimit: Mindest- oder Hoechstmass
-               "measure": "selectionCount|forceCount|costSum|budgetLimit|rosterBudget"?,
-                                                  // WAS die Grenze misst
-               "costTypeId": "<costType-Id>"|null?,  // bei einer kostenbezogenen Messgroesse
-               "isPercent": true|false?,          // Prozentgrenze: `bound` ist der abgeleitete Wert
-               "scopeKind": "roster|force|parent|self|entryId|categoryId"?,  // Art des Bezugsrahmens
-               "scopeTargetId": "<id>"|null?,     // die Ziel-Id eines ID-Bezugsrahmens
-               "actual": <ist>?, "bound": <grenze>?, "delta": <differenz>?,
-               "causes": [                        // die ausloesenden Auswahlen (ADR-0027):
-                 { "witnessDefId": "<id>", "witnessName": "<Katalogname>",
-                   "modifierKind": "set|increment|decrement|multiply|...", "value": <zwischenwert> }
-               ]?                                 // VOLLSTAENDIG: [] fordert „keine Ursache"
-             }
-           ],
+ *           "messages": [                          // OPTIONAL: Aussagen ueber die EINGEORDNETE
+ *             {                                    //           Meldung (dieselbe `violations`-Liste)
+ *               // ── Auswahl der gemeinten Meldung (Vorgabe: muss genau eine treffen) ──
+ *               "origin": "derivedLimit|authorMessage",  // PFLICHT: der Diskriminator der Herkunft.
+ *                                                  // `derivedLimit` = von der Engine aus einer Grenze
+ *                                                  // abgeleitet; `authorMessage` = Meldung des
+ *                                                  // Katalog-Autors (field="error"/"warning"/"info")
+ *               "limitId": "<constraint-id>"?,     // nur bei derivedLimit
+ *               "anchorDefId": "<Definitions-ID>"?, // Anker, an dem die Meldung haengt
+ *               "anchorPath": "<Slot-Pfad>"?,      // nur noetig, wenn es sonst mehrdeutig bleibt
+ *               "text": "<Meldungstext>"?,         // bei einer Autor-Meldung zugleich Auswahl UND
+ *                                                  // Aussage: der Katalogtext, Text-Tokens wie
+ *                                                  // `{this}` durch den effektiven Namen ersetzt
+ *               "count": <n>?,                     // OPTIONAL: GENAU n Treffer. `0` fordert, dass
+ *                                                  // keine solche Meldung erscheint.
+ *               // ── Aussagen ueber die getroffene(n) Meldung(en) ──
+ *               "severity": "error|warning|info"?, // abgeleitet: immer error; Autor-Meldung: aus dem Katalog
+ *               "anchorName": "<effektiver Name>"?,
+ *               "anchorKind": "occupied|mandatoryPhantom|groupAnchor|categoryAnchor|offerAnchor|roster"?,
+ *                                                  // `roster` traegt allein die engine-eigene
+ *                                                  // Budget-Regel; sie haengt an keinem Slot
+ *               "isValueUnstable": true|false?,
+ *               "limitKind": "min|max"?,           // nur bei derivedLimit: Mindest- oder Hoechstmass
+ *               "measure": "selectionCount|forceCount|costSum|budgetLimit|rosterBudget"?,
+ *                                                  // WAS die Grenze misst
+ *               "costTypeId": "<costType-Id>"|null?,  // bei einer kostenbezogenen Messgroesse
+ *               "isPercent": true|false?,          // Prozentgrenze: `bound` ist der abgeleitete Wert
+ *               "scopeKind": "roster|force|parent|self|entryId|categoryId"?,  // Art des Bezugsrahmens
+ *               "scopeTargetId": "<id>"|null?,     // die Ziel-Id eines ID-Bezugsrahmens
+ *               "actual": <ist>?, "bound": <grenze>?, "delta": <differenz>?,
+ *               "causes": [                        // die ausloesenden Auswahlen (ADR-0027):
+ *                 { "witnessDefId": "<id>", "witnessName": "<Katalogname>",
+ *                   "modifierKind": "set|increment|decrement|multiply|...", "value": <zwischenwert> }
+ *               ]?                                 // VOLLSTAENDIG: [] fordert „keine Ursache"
+ *             }
+ *           ],
  *           "capabilities": [                     // OPTIONAL: Aussagen ueber einen Slot
  *             {
  *               // ── Auswahl des gemeinten Slots (muss genau einen treffen) ──
@@ -163,7 +163,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { evaluate } from './evaluator.js';
+import { evaluate, prepareDataset } from './evaluator.js';
 import { DiagnosticKind } from './model.js';
 import { violationsOf, violationOf, diagnosticsMatching } from './__fixtures__/e2eReport.js';
 import { rosterFromRos } from './__fixtures__/rosParser.js';
@@ -212,16 +212,25 @@ function discoverScenarios() {
 }
 
 // Ein Datensatz wird je eindeutiger Spezifikation genau einmal von der Platte
-// gelesen — die grossen Katalog-XML teilen sich alle Roster desselben Satzes.
-const datasetCache = new Map();
+// gelesen UND genau einmal aufbereitet — die grossen Katalog-XML teilen sich alle
+// Roster desselben Satzes.
+const preparedDatasetCache = new Map();
 
 /**
- * Liest die deklarierten Katalog-Inputs in den Datensatz `{ gameSystem?, catalogues }`,
- * den `evaluate` erwartet — memoisiert je Spezifikation (`{ gameSystem?, catalogues }`).
+ * Liest die deklarierten Katalog-Inputs und bereitet sie zu dem aufbereiteten
+ * Datensatz auf, den `evaluate` erwartet — memoisiert je Spezifikation
+ * (`{ gameSystem?, catalogues }`).
+ *
+ * Memoisiert wird bewusst die **Aufbereitung**, nicht nur der gelesene XML-Text:
+ * der rosterunabhaengige Katalog-Vorlauf macht an echten Katalogdaten 98,9–99,5 %
+ * einer Auswertung aus (Main-Issue 75, Baustein 8). Ihn je Fall zu wiederholen
+ * hiess, denselben Datensatz fuer jedes der Roster erneut zu parsen und
+ * aufzuloesen — dieselbe Rechnung, immer wieder. Genau das ist der Grund, aus dem
+ * die Fassade zweistufig ist, und dieser Runner ist ihr erster Verbraucher.
  */
-function readDataset(datasetSpec) {
+function preparedDatasetOf(datasetSpec) {
   const cacheKey = JSON.stringify(datasetSpec);
-  const cached = datasetCache.get(cacheKey);
+  const cached = preparedDatasetCache.get(cacheKey);
   if (cached !== undefined) return cached;
 
   const { gameSystem, catalogues } = datasetSpec;
@@ -229,18 +238,19 @@ function readDataset(datasetSpec) {
   if (gameSystem !== undefined) {
     dataset.gameSystem = readFileSync(resolve(gameSystem), 'utf8');
   }
-  datasetCache.set(cacheKey, dataset);
-  return dataset;
+  const prepared = prepareDataset(dataset);
+  preparedDatasetCache.set(cacheKey, prepared);
+  return prepared;
 }
 
 /**
- * Der fuer ein Roster gueltige Datensatz: dessen eigener `dataset`-Override, falls
- * vorhanden, sonst der Szenario-Standard. Ein Override ersetzt den Standard
- * vollstaendig (kein Teil-Merge) — die Roster-Spezifikation ist damit ihre eigene,
- * lueckenlose Quelle der Wahrheit.
+ * Der fuer ein Roster gueltige, aufbereitete Datensatz: dessen eigener
+ * `dataset`-Override, falls vorhanden, sonst der Szenario-Standard. Ein Override
+ * ersetzt den Standard vollstaendig (kein Teil-Merge) — die Roster-Spezifikation
+ * ist damit ihre eigene, lueckenlose Quelle der Wahrheit.
  */
-function datasetForRoster(manifest, rosterCase) {
-  return readDataset(rosterCase.dataset ?? manifest.dataset);
+function preparedDatasetForRoster(manifest, rosterCase) {
+  return preparedDatasetOf(rosterCase.dataset ?? manifest.dataset);
 }
 
 /** Prueft den Verletzungsbericht gegen die `firing`/`absent`-Erwartung eines Rosters. */
@@ -578,9 +588,9 @@ describe('E2E Testkatalog (manifest-getrieben): docs/testing/<szenario>/scenario
         // `description` (bzw. der Index als Rueckfall) haelt die Testtitel unterscheidbar.
         const label = rosterCase.description ? `${rosterCase.file} — ${rosterCase.description}` : `${rosterCase.file} [#${index}]`;
         it(`${label}: Bericht entspricht der deklarierten Erwartung`, () => {
-          const dataset = datasetForRoster(manifest, rosterCase);
+          const prepared = preparedDatasetForRoster(manifest, rosterCase);
           const roster = rosterFromRos(join(manifest.scenarioDir, rosterCase.file));
-          const report = evaluate(dataset, roster);
+          const report = evaluate(prepared, roster);
           assertViolationsMatchExpectation(report, rosterCase.expect);
           assertMessagesMatchExpectation(report, rosterCase.expect, manifest.manifestPath);
           assertCapabilitiesMatchExpectation(report, rosterCase.expect, manifest.manifestPath);

@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 
-import { prepareDataset } from './datasetPreparation.js';
+import { PreparedDataset, prepareDataset } from './datasetPreparation.js';
 import { buildEvalTree, syntheticNodes, realNodes, frameKeyOf } from './evalTree.js';
 import { attachOfferAnchors } from './offer.js';
 import { buildIndex } from './countIndex.js';
@@ -60,7 +60,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 /** Baut Baum und Index aus dem Katalog und einem Roster aus einer Krieger-Auswahl. */
 function buildTreeAndIndex() {
-  const { resolved } = prepareDataset({ catalogues: [CATALOGUE_XML] });
+  const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
   const roster = { forces: [{ defId: WARRIOR_ID, count: WARRIOR_COUNT, children: [] }] };
   const { root } = buildEvalTree(resolved, roster);
   return { root, index: buildIndex(root, createBaseEffectiveState(root)) };
@@ -194,7 +194,7 @@ const OFFER_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 describe('Index-Schicht: auch die Angebots-Anker aus Baumphase 2 zaehlen nie mit', () => {
   /** Kontingent mit einem Krieger; der Bannertraeger bleibt ungewaehlt (Angebot). */
   function buildOfferTree() {
-    const { resolved } = prepareDataset({ catalogues: [OFFER_CATALOGUE_XML] });
+    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [OFFER_CATALOGUE_XML] }));
     const roster = {
       forces: [{ defId: ARMY_FORCE_ID, count: 1, children: [{ defId: WARRIOR_ID, count: WARRIOR_COUNT, children: [] }] }],
     };
