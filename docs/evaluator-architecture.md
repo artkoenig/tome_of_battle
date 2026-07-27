@@ -260,6 +260,12 @@ record EvalNode {
   isPhantom: bool
   anchorKind: AnchorKind           // abgelesen, nicht aus Pfadform geraten
   forceRoot: EvalNode              // das umschließende Kontingent
+  occurrenceIds: Set<Id>           // unter welchen Ids dieses Vorkommen zählbar ist:
+                                   // die eigene plus JEDES Glied der Verweiskette bis
+                                   // zum Ziel (ADR-0037). Zwei Knoten benennen dasselbe
+                                   // Vorkommen, wenn ihre Mengen sich schneiden.
+  countedType: string?             // roher `type` des Kettenendes (`model`, `unit`, …);
+                                   // null, wenn das Ziel keinen trägt (z. B. eine Gruppe)
 }
 
 // Träger = der Knoten selbst oder eines seiner Info-Elemente (§3.4).
@@ -406,7 +412,8 @@ function synthesizePhantoms(forceNode, resolved)
 function attachOfferAnchors(tree, resolved): EvalNode[]
   anchors = []
   for frame in realNodesOf(tree):                       // nur reale Knoten sind Rahmen
-    occupied = identityIdsOf(child.def) for child in frame.children   // Entdopplungsbasis
+    occupied = child.occurrenceIds for child in frame.children   // Entdopplungsbasis;
+                                                        // abgelesenes Feld, siehe §4.2
     candidates = frame.isForce
       // Regel 1: das Armee-Angebot, gefiltert über die BASIS-Kategorien
       ? resolved.armyLevelCandidates.filter(d → carriedBy(d, categoryLinksOf(frame.def)))
@@ -414,16 +421,24 @@ function attachOfferAnchors(tree, resolved): EvalNode[]
       //          anhaltend beim ersten Eintrag
       : optionDefinitionsUnder(ownerDefinitionOf(frame))
     for d in candidates:
-      if identityIdsOf(d) ∩ occupied ≠ ∅: continue      // kein zweiter Anker
+      if occurrenceIdsOf(d, lookup) ∩ occupied ≠ ∅: continue   // kein zweiter Anker
       anchors.add(attachOfferAnchor(frame, d))          // Blatt, HINTER allen Kindern
-      occupied += identityIdsOf(d)
+      occupied += occurrenceIdsOf(d, lookup)
   return anchors
 ```
 
 ### 4.4 Index-Schicht
 
 ```
-record ScopeKey(frame: ROSTER | ForceNode | EvalNode, targetId: Id?)
+record ScopeKey(frame: ROSTER | ForceNode | EvalNode, target: Target?)
+
+// Ein Ziel ist ENTWEDER eine Id ODER ein Typ-Vokabelwort, und die beiden liegen in
+// GETRENNTEN Schlüsselräumen (ADR-0037, Kontrakt 8). Sonst würde eine Katalog-Id, die
+// zufällig `model` lautet, als Typ-Vokabelwort mitzählen. Ein rohes Query-Ziel ist
+// genau dann ein Typ-Ziel, wenn es im geschlossenen XSD-Typvorrat steht.
+// Preis dieser Trennung, bewusst fail-closed: ein Eintrag, dessen Id wörtlich `model`
+// lautet, ist über eine Query nicht mehr als Id erreichbar (Zählung 0).
+type Target = IdTarget(Id) | TypeTarget(string)
 
 record Index {
   direct: Map<ScopeKey, Tally>      // ohne Kindauswahlen
@@ -444,12 +459,13 @@ function buildIndex(tree, effective): Index
 function scopeKeysOf(node, effective): ScopeKey[]
   keys = []
   for frame in [ROSTER, node.forceRoot] + ancestorsOf(node):
-    keys.add(ScopeKey(frame, targetId = null))          // „alles in diesem Rahmen"
-    keys.add(ScopeKey(frame, node.def.id))              // gefiltert auf Eintrag
-    for linkedId in linkChainOf(node.def):              // Verweis-Kette mitzählen
-      keys.add(ScopeKey(frame, linkedId))
+    keys.add(ScopeKey(frame, target = null))            // „alles in diesem Rahmen"
+    for id in node.occurrenceIds:                       // eigene Id UND jedes Glied der
+      keys.add(ScopeKey(frame, IdTarget(id)))           // Verweis-Kette (§4.2, ADR-0037)
+    if node.countedType ≠ null:                         // getrennter Schlüsselraum
+      keys.add(ScopeKey(frame, TypeTarget(node.countedType)))
     for categoryId in effective.categories[node]:       // effektive, nicht Basis-Kategorien!
-      keys.add(ScopeKey(frame, categoryId))
+      keys.add(ScopeKey(frame, IdTarget(categoryId)))
   return keys
 ```
 
@@ -474,11 +490,17 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
   frame = resolveScopeFrame(ctx.node, scope)
   // ROSTER → Wurzel | FORCE → ctx.node.forceRoot | PARENT → ctx.node.parent
   // SELF → ctx.node | EntryId/CategoryId → nächster Vorfahre bzw. Kategorierahmen mit dieser ID
+  //   — der Vorfahre wird über SEINE GANZE Id-Menge getroffen (§4.2), nicht nur über
+  //     `def.id`: trägt ein Rahmenknoten die Verweis-Id, fände ein Scope, der das Ziel
+  //     nennt, ihn sonst nicht mehr (ADR-0037).
   if frame == null:
     ctx.diagnostics.add(Diagnostic.UNRESOLVED_SCOPE(scope, ctx.node))
     return 0
 
-  effectiveTarget = flags.shared ? targetId : narrowToOwnInstance(ctx.node, targetId)
+  // Das rohe Query-Ziel wird hier in den richtigen Schlüsselraum überführt: steht es im
+  // geschlossenen XSD-Typvorrat, ist es ein TypeTarget, sonst ein IdTarget (§4.4).
+  target = classifyTarget(targetId)
+  effectiveTarget = flags.shared ? target : narrowToOwnInstance(ctx.node, target)
   table = flags.includeChildSelections ? ctx.index.deep : ctx.index.direct
   tally = table.get(ScopeKey(frame, effectiveTarget)) ?? Tally.ZERO
 
