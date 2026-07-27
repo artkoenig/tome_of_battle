@@ -25,9 +25,14 @@
  * ein Modifikator ausgeblendet hat. Deshalb wird Gesperrtes und Verstecktes
  * materialisiert und markiert, nicht weggelassen.
  *
- * Dazu die reinen **UI-Projektions-Lookups**, die ausschliesslich den Bericht
- * lesen und keine Regel erneut auswerten (§4.8, Leitprinzip 3): die UI rechnet
- * nie selbst, sie projiziert nur den einen Bericht.
+ * Was die Oberflaeche daraus liest — „auswaehlbar?", „wie viel passt noch?",
+ * „welche Pflicht ist offen?" — sind reine Lookups auf diese Felder und gehoeren
+ * deshalb zum Verbraucher, nicht hierher (§4.8, Leitprinzip 3): die UI rechnet nie
+ * selbst, sie projiziert nur den einen Bericht.
+ *
+ * Der Bericht traegt **keinen** Baumknoten. Was die Einordnung an internem Zustand
+ * braucht, reist neben dem Datensatz, nicht in ihm — sonst waere der Knoten ueber
+ * den Bericht von aussen erreichbar und ADR-0034 nur noch eine Absichtserklaerung.
  */
 
 import { ConstraintKind, isReportableAnchorKind } from './model.js';
@@ -73,23 +78,42 @@ function toDerivedViolation(result, context) {
  * spraeche ueber etwas, das gar nicht in der Liste steht — sein Datensatz fuehrt
  * sie weiterhin, damit die Oberflaeche sie am Angebot zeigen kann.
  */
-function authorViolationsOf(capabilities, context) {
+function authorViolationsOf(slots, context) {
   const violations = [];
-  for (const capability of capabilities.values()) {
+  for (const { node, capability } of slots) {
     if (!isReportableAnchorKind(capability.anchorKind)) continue;
     for (const message of capability.authorMessages) {
-      violations.push(classifyAuthorMessage(capability.node, message, context));
+      violations.push(classifyAuthorMessage(node, message, context));
     }
   }
   return violations;
 }
 
 /**
+ * Die Grenz-Ergebnisse je Knoten und Art (MIN/MAX), **einmal** je Bericht
+ * aufgebaut. Ohne diesen Index kostete jeder Slot zwei lineare Suchen ueber alle
+ * Ergebnisse — bei einem Baum aus mehreren hundert Slots ein quadratischer Aufwand
+ * fuer eine Frage, die eine Zuordnung beantwortet.
+ */
+function indexResultsByAnchor(results) {
+  const index = new Map();
+  for (const result of results) {
+    let byKind = index.get(result.anchor);
+    if (byKind === undefined) {
+      byKind = new Map();
+      index.set(result.anchor, byKind);
+    }
+    byKind.set(result.limit.kind, result);
+  }
+  return index;
+}
+
+/**
  * Das Ergebnis der Grenze gegebener Art (MIN/MAX) am Knoten, oder `null`, wenn
  * der Knoten keine solche (nicht suspendierte) Grenze traegt.
  */
-function findResult(results, node, kind) {
-  return results.find(result => result.anchor === node && result.limit.kind === kind) ?? null;
+function findResult(resultsByAnchor, node, kind) {
+  return resultsByAnchor.get(node)?.get(kind) ?? null;
 }
 
 /**
@@ -158,11 +182,10 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { results, effective, unstableNodes, profileTypeRegistry }) {
-  const minResult = findResult(results, node, ConstraintKind.MIN);
-  const maxResult = findResult(results, node, ConstraintKind.MAX);
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry }) {
+  const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
+  const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
-    node,
     defId: node.def.id,
     targetDefId: targetDefIdOf(node),
     anchorKind: node.anchorKind,
@@ -218,14 +241,20 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
   const capabilityContext = {
-    results,
+    resultsByAnchor: indexResultsByAnchor(results),
     effective,
     unstableNodes,
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
   };
+  // Der Knoten bleibt **engine-intern**: die Autor-Meldungen brauchen ihn, der
+  // Bericht darf ihn nicht tragen (ADR-0034 — die Oberflaeche liest den Bericht
+  // und nichts dahinter). Er reist deshalb neben dem Datensatz, nicht in ihm.
   const capabilities = new Map();
+  const slots = [];
   for (const node of selectableSlotsOf(root)) {
-    capabilities.set(pathOf(node), toCapability(node, capabilityContext));
+    const capability = toCapability(node, capabilityContext);
+    capabilities.set(pathOf(node), capability);
+    slots.push({ node, capability });
   }
 
   // Der geteilte Lesekontext der Einordnung: effektive Namen, die instabile
@@ -242,7 +271,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
       ...[...results, ...budgetViolations]
         .filter(result => result.isReportable && !result.satisfied)
         .map(result => toDerivedViolation(result, classificationContext)),
-      ...authorViolationsOf(capabilities, classificationContext),
+      ...authorViolationsOf(slots, classificationContext),
     ],
     capabilities,
     diagnostics,

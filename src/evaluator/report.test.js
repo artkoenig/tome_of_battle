@@ -12,6 +12,9 @@ function evaluate(catalogXml, roster) {
   return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
 import { AnchorKind, MessageSeverity } from './model.js';
+import { PreparedDataset } from './datasetPreparation.js';
+import { buildEvalTree, selectableSlotsOf } from './evalTree.js';
+import { attachOfferAnchors } from './offer.js';
 
 // ── Sicht eines Verbrauchers auf den Bericht ─────────────────────────────────
 // Reine Lesehilfen, wie sie eine Oberflaeche selbst schreiben wuerde (§4.8): sie
@@ -51,7 +54,7 @@ const WARRIOR_NAME = 'Warrior';
 /** Sucht den Faehigkeitsdatensatz eines Slots ueber die Definitions-ID (mit seinem Pfad). */
 function slotByDefId(report, defId, { phantom = false } = {}) {
   for (const [path, capability] of report.capabilities) {
-    if (capability.node.def?.id === defId && capability.node.isPhantom === phantom) {
+    if (capability.defId === defId && (capability.anchorKind !== AnchorKind.OCCUPIED) === phantom) {
       return { path, capability };
     }
   }
@@ -284,8 +287,17 @@ describe('Bericht: die Kennung eines Slots leitet sich aus seinem Pfad ab', () =
   it('kennzeichnet jeden Slot mit seiner Kind-Index-Folge, nicht mit einer laufenden Nummer', () => {
     const report = evaluate(CATALOGUE_XML, ROSTER);
 
-    for (const [key, capability] of report.capabilities) {
-      expect(key).toBe(childIndexPathOf(capability.node));
+    // Der Bericht traegt keinen Baumknoten (ADR-0034), also wird der Baum hier
+    // unabhaengig noch einmal gebaut und die erwartete Schluesselmenge daraus
+    // gebildet — genau die Gegenprobe, die der Test meint.
+    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
+    const { root } = buildEvalTree(resolved, ROSTER);
+    attachOfferAnchors(root, resolved);
+
+    const expectedKeys = selectableSlotsOf(root).map(childIndexPathOf);
+    expect([...report.capabilities.keys()].sort()).toEqual([...expectedKeys].sort());
+    for (const key of report.capabilities.keys()) {
+      expect(key, `Slot-Kennung "${key}" ist keine Kind-Index-Folge`).toMatch(/^\d+(\/\d+)*$/);
     }
   });
 

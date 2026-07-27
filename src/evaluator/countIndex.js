@@ -14,7 +14,7 @@
  * voneinander** wirksam — auch in Kombination.
  */
 
-import { scopeKey } from './model.js';
+import { DefinitionKind, scopeKey } from './model.js';
 import { realNodes, frameKeyOf } from './evalTree.js';
 
 /**
@@ -91,11 +91,21 @@ function contributionOf(node, effective) {
  * Definitionsbaum abgeleitet), zaehlt er zusaetzlich unter jeder Gruppen-ID —
  * so liest die gruppen-skopierte Grenze (`scope=parent`, Ziel = Gruppen-ID) im
  * Eigentuemer-Rahmen die Zahl der gewaehlten Member.
+ *
+ * Dazu zwei Ziele, die nicht aus dem Knoten selbst stammen:
+ * - **`targetId`** — ein `entryLink` zaehlt auch unter der Id, auf die er zeigt.
+ *   Nur so trifft eine Grenze, die den Eintrag benennt, auch das ueber einen
+ *   Verweis gesetzte Vorkommen.
+ * - **`type`** — das rohe `type`-Attribut des Eintrags (`model`, `unit`, …). Es
+ *   traegt die Bedingung `childId="model"`. Achtung: nur {@link readEntry} liest
+ *   dieses Attribut, {@link readEntryLink} nicht — ein verlinkter Eintrag zaehlt
+ *   daher heute nicht unter seinem Typ. Als eigener Befund erfasst, nicht hier
+ *   nebenbei geaendert.
  */
 function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
   const targets = [null, ...effective.categoryIdsOf(node)];
-  if (node.def.kind !== 'group') targets.push(node.def.id);
+  if (node.def.kind !== DefinitionKind.GROUP) targets.push(node.def.id);
   if (node.def.targetId) targets.push(node.def.targetId);
   if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
   if (node.def.type) targets.push(node.def.type);

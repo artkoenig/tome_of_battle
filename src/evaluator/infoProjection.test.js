@@ -15,7 +15,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
-import { InfoElementKind } from './model.js';
+import { AnchorKind, InfoElementKind } from './model.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
@@ -53,7 +53,7 @@ function evaluate(catalogueXml, roster) {
 /** Der Faehigkeitsdatensatz des belegten Slots mit dieser Definitions-ID. */
 function occupiedSlot(report, defId) {
   for (const capability of report.capabilities.values()) {
-    if (capability.node.def?.id === defId && !capability.node.isPhantom) return capability;
+    if (capability.defId === defId && capability.anchorKind === AnchorKind.OCCUPIED) return capability;
   }
   return null;
 }

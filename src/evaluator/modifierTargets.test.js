@@ -59,7 +59,7 @@ function evaluate(catalogueXml, roster) {
 /** Sucht den Faehigkeitsdatensatz eines Slots ueber die Definitions-ID. */
 function slotByDefId(report, defId) {
   for (const capability of report.capabilities.values()) {
-    if (capability.node.def?.id === defId) return capability;
+    if (capability.defId === defId) return capability;
   }
   return null;
 }

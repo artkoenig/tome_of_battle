@@ -37,6 +37,14 @@ const SOLVER_FACADE = '^src/solver/validator\\.js$';
 const EVALUATOR_LAYER = '^src/evaluator/';
 const EVALUATOR_FACADE = '^src/evaluator/evaluator\\.js$';
 
+// Die **einzige** deklarierte Ausnahme von der Fassaden-Regel: das Messwerkzeug.
+// Es ist ausdruecklich kein Produktivcode (kein src/-Modul importiert scripts/),
+// und seine Aufgabe ist gerade, die einzelnen Stufen der Auswertung getrennt zu
+// stoppen — das geht nur von innen. Die Ausnahme steht hier benannt, statt sich
+// aus einem zu engen Pruefumfang zu ergeben: `npm run depcruise` cruist src UND
+// scripts, damit jeder andere Zugriff aus scripts/ auffaellt.
+const EVALUATOR_MEASUREMENT = '^scripts/(lib/evaluator-measurement|measure-evaluator)';
+
 module.exports = {
   forbidden: [
     {
@@ -102,10 +110,12 @@ module.exports = {
       comment:
         'Der Evaluator wird von aussen ausschliesslich ueber die Fassade ' +
         'src/evaluator/evaluator.js angesprochen (ADR-0030, gespiegelt aus der ' +
-        'Solver-Fassade ADR-0023). Ausgenommen sind evaluator-interne Module und ' +
-        'Testdateien -- dieselben Ausnahmen wie die oxlint-Regel no-restricted-imports.',
+        'Solver-Fassade ADR-0023). Ausgenommen sind evaluator-interne Module, ' +
+        'Testdateien -- dieselben Ausnahmen wie die oxlint-Regel ' +
+        'no-restricted-imports -- und das Messwerkzeug, das die Stufen der ' +
+        'Auswertung getrennt stoppt und dafuer von innen greifen muss.',
       severity: 'error',
-      from: { pathNot: [EVALUATOR_LAYER, TEST_FILE] },
+      from: { pathNot: [EVALUATOR_LAYER, TEST_FILE, EVALUATOR_MEASUREMENT] },
       to: { path: EVALUATOR_LAYER, pathNot: EVALUATOR_FACADE },
     },
     {

@@ -15,7 +15,7 @@
  *
  * Die Verletzung traegt die gleiche Form wie die uebrigen Constraint-Ergebnisse
  * (`{ limit, anchor, actual, bound, satisfied, delta }`) und wird darum von der
- * **einen** Berichtsprojektion (`report.js:toViolation`) erfasst — mit einem
+ * **einen** Berichtsprojektion (`report.js:toDerivedViolation`) erfasst — mit einem
  * synthetischen roster-weiten Anker ({@link ROSTER_BUDGET_ANCHOR}), weil die
  * Regel an keinem realen Baumknoten haengt.
  */

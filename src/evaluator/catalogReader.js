@@ -700,10 +700,11 @@ function readGroup(groupEl, diagnostics) {
  * Modifikatoren/Kategorien. `resolved` bleibt `null`, bis der Resolver das Ziel
  * ueber die globale `id → Definition`-Tabelle auffindet (ADR-0032, analog
  * {@link readInfoLink}); das aufgeloeste Ziel wird auf `resolved` vermerkt. Eine
- * Per-Vorkommen-Ueberlagerung der eigenen Grenzen auf das Ziel wird heute noch
- * nicht angewandt (die auswertenden Schichten lesen `resolved` nicht) — bewusst,
- * siehe die Reconciliation von Issue 67/02. Geschachtelte Links/Eintraege werden
- * mitgelesen.
+ * Per-Vorkommen-Ueberlagerung schichten die auswertenden Ebenen selbst ueber
+ * `resolved`: Grenzen in `evalTree.limitsOf`, Kosten und Kategorien in
+ * `effectiveState`, Modifikatoren und Info-Elemente in `modifiers`/`evalTree`.
+ * Der Leser vermerkt hier also nur das Ziel; er verschmilzt nichts. Geschachtelte
+ * Links/Eintraege werden mitgelesen.
  */
 function readEntryLink(entryLinkEl, diagnostics) {
   return {

@@ -11,7 +11,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "knip": "knip",
-    "depcruise": "depcruise src",
+    "depcruise": "depcruise src scripts",
     "analyze": "npm run knip; npm run depcruise",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",

@@ -68,7 +68,7 @@ function hasNoConvergence(report) {
 /** Der Faehigkeitsdatensatz des Slots mit dieser Definitions-ID (oder `null`). */
 function slotByDefId(report, defId) {
   for (const capability of report.capabilities.values()) {
-    if (capability.node.def?.id === defId) return capability;
+    if (capability.defId === defId) return capability;
   }
   return null;
 }
