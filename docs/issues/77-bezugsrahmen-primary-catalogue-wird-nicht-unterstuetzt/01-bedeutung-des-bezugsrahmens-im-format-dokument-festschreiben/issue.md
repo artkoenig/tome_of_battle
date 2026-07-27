@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -38,3 +38,5 @@ beiden folgenden Scheiben gebaut und geprueft werden.
 - [ ] Das Verhaeltnis zu ADR-0032 ist benannt: der Datensatz hat keinen primaeren Katalog, das Roster hat einen je Kontingent.
 
 ## Comments
+- docs/battlescribe-data-format.md: scope="primary-catalogue" in beide Scope-Aufzaehlungen (7.6 Constraint, 7.7 Condition) und die Anhangstabelle 13.1 aufgenommen; neuer Abschnitt in 7.7 haelt die Bedeutung fest (Armee-Katalog des Kontingents, aus <force catalogueId> der .ros) samt Belegtabelle und drei Klartext-Fundstellen aus src/evaluator/__fixtures__/whfb6-definitive/, der Abgrenzung was der Rahmen NICHT bezeichnet, und dem Verhaeltnis zu ADR 0032. Alle Belege gegen die echten Katalogdaten nachgeprueft. Kein Code geaendert; Suite unveraendert gruen.
+- Wichtiger Nebenbefund des Umsetzers: die Ogre-Wurzel-Id lautet 731d-5b13-2a92-5426 in src/solver/__fixtures__/whfb6/ und 731d-5b13-2a92-5427 in src/evaluator/__fixtures__/whfb6-definitive/ — ein Zeichen Unterschied. Ein Beleg aus dem falschen Ausschnitt sieht damit richtig aus und ist es nicht. Genau diese Verwechslung ist in dieser Sitzung schon einmal passiert (Sentinel-Beleg ffea-b24a). Der Umsetzer hat einen Warnhinweis in den neuen Abschnitt gesetzt; der Kopf des Dokuments wurde zusaetzlich korrigiert, weil er nur den Solver-Ausschnitt nannte und fuer 'wie das Projekt auswertet' auf src/solver/ verwies — die laut ADR-0030 fehlerhafte Engine.

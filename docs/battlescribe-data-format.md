@@ -7,13 +7,22 @@
 > (Home, *Data structure overview*, *Common Catalogue Patterns*, *Collective Entries*,
 > *Catalogue Guidelines*, *Data Author Guide*, *Getting Started*) sowie reale
 > WHFB-6th-Edition-Kataloge (heute zur Laufzeit aus dem externen Katalog-Fork bezogen, siehe
-> ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/solver/__fixtures__/whfb6/`).
+> ADR-0014). Es gibt **zwei** eingefrorene Ausschnitte, und sie sind nicht
+> austauschbar: `src/evaluator/__fixtures__/whfb6-definitive/` (Definitive Edition, der
+> Datensatz der Reinraum-Engine und Grundlage aller E2E-Szenarien nach ADR-0033) und
+> `src/solver/__fixtures__/whfb6/` (aeltere Ausgabe, gehoert zur abzuloesenden Engine).
+> **Achtung:** dieselben Kataloge tragen in beiden Ausschnitten teils verschiedene Ids, die
+> sich nur im letzten Zeichen unterscheiden. Ein Beleg aus dem Solver-Ausschnitt ist deshalb
+> kein Beleg fuer die Reinraum-Engine.
 > Alle XML-Beispiele stammen aus echten Dateien.
 >
 > Diese Datei ist die **kanonische Referenz** zum Battlescribe-Datenformat für dieses Projekt
 > (inklusive der aus vergangenen Bug-Analysen gesammelten Domänen-Erkenntnisse). Wie das Projekt
-> das Format konkret parst und auswertet, steht in [`CLAUDE.md`](../CLAUDE.md) sowie in den
-> Solver-Modulen unter [`src/solver/`](../src/solver/).
+> das Format konkret parst und auswertet, steht in [`CLAUDE.md`](../CLAUDE.md) und in
+> [`docs/evaluator-architecture.md`](evaluator-architecture.md) zur Reinraum-Engine unter
+> [`src/evaluator/`](../src/evaluator/). Die aeltere Engine unter `src/solver/` ist laut
+> ADR-0030 fehlerhaft und wird abgeloest — sie ist ausdruecklich **keine** Referenz fuer
+> korrektes Verhalten.
 
 ---
 
@@ -610,7 +619,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 |----------|-------|-----------|
 | `type` | `min` \| `max` | Untere oder obere Grenze. |
 | `field` | `selections` \| `forces` \| *`<costTypeId>`* | Was gezählt/summiert wird: Anzahl Auswahlen, Anzahl Forces oder die Summe einer Kostenart. |
-| `scope` | `parent` \| `roster` \| `force` \| `category` \| `self` | Bezugsrahmen der Zählung. |
+| `scope` | `parent` \| `roster` \| `force` \| `category` \| `self` \| `primary-catalogue` | Bezugsrahmen der Zählung. `primary-catalogue` ist kein Zählrahmen, sondern der Armee-Katalog des Kontingents ([§7.7](#primary-catalogue--der-armee-katalog-des-kontingents)); real belegt ist er nur an `condition`. |
 | `value` | Zahl | Der Grenzwert (`-1` bzw. `-1.0` = unbegrenzt, siehe „Unbegrenzt ist eine Deklaration" unten). |
 | `percentValue` | `true`/`false` | Ob `value` als Prozentsatz zu interpretieren ist. |
 | `shared` | `true`/`false` | Ob der gezählte Wert über alle Link-Instanzen geteilt wird oder pro Instanz gilt. |
@@ -704,7 +713,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 |----------------------|-----------|
 | `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`. |
 | `field` | Was verglichen wird — z. B. `selections`, eine Kostenart oder `limit::<costTypeId>` (das **Kostenlimit** der Roster). |
-| `scope` | Bezugsrahmen (`roster`, `force`, `parent`, …). |
+| `scope` | Bezugsrahmen (`roster`, `force`, `parent`, `category`, `self`, `primary-catalogue`). `primary-catalogue` zählt nichts, sondern prüft den Armee-Katalog des Kontingents — siehe [unten](#primary-catalogue--der-armee-katalog-des-kontingents). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
 | `value` | Vergleichswert. |
 | `shared` | Ob über alle Instanzen des Eintrags im Roster gezählt wird (`true`) oder nur über die eine Instanz, an der die Condition hängt (`false`). Vorgabewert laut XSD ist `true`. |
@@ -731,6 +740,99 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 > Beide bedeuten dasselbe. Die Auswertung erkennt eine `forceEntry`-Instanz-Prüfung daran, dass
 > `scope` **oder** `childId` auf eine reale `forceEntry`-Id auflöst (das Literal `"force"` tut das
 > nicht) — sonst fiele die kanonische Form fälschlich in die selektionsweise Zählung zurück.
+
+#### `primary-catalogue` — der Armee-Katalog des Kontingents
+
+`primary-catalogue` ist ein eigenes Scope-Keyword. Es bezeichnet den **Armee-Katalog (`.cat`), aus
+dem das Kontingent gebaut ist**, in dem der auswertende Knoten steht — also den Katalog, den das
+Roster für diese `force` angibt (`<force … catalogueId="…">` in der `.ros`). `childId` trägt dabei
+die **Wurzel-`id` einer `.cat`**; `instanceOf`/`notInstanceOf` fragt damit „ist die geführte Armee
+dieser Katalog?".
+
+Die vendorte `Catalogue.xsd` hilft hier nicht weiter: sie typisiert `QueryBase/@scope` nur als
+`xs:string` (Z. 426) und zählt gar keine Werte auf. Die Bedeutung ist deshalb unten aus den
+Katalogdaten belegt, nicht aus dem Schema abgeleitet.
+
+**Datengrundlage des Belegs:** der eingefrorene Definitive-Edition-Satz unter
+`src/evaluator/__fixtures__/whfb6-definitive/` — `.gst` plus Ogre Kingdoms, Orcs and Goblins,
+Vampire Counts und die Bibliothek Mercenaries.
+
+> **Vorsicht bei den Ids:** der ältere Satz unter `src/solver/__fixtures__/whfb6/` trägt für
+> dieselben Armeen **andere**, teils fast identische Katalog-Ids — Ogre Kingdoms ist dort
+> `731d-5b13-2a92-5426`, hier `731d-5b13-2a92-5427`. Alle Ids in diesem Abschnitt stammen aus dem
+> Definitive-Edition-Satz.
+
+| Frage | Befund |
+|-------|--------|
+| Vorkommen | **27** — 7 in der `.gst`, 20 in `Mercenaries (…).cat`; **0** in den drei Armee-Katalogen |
+| Element | **alle 27** sind `<condition>` — kein `constraint`, kein `repeat` |
+| `type` | 18 × `instanceOf`, 9 × `notInstanceOf` — sonst keiner |
+| `field` / `value` / `shared` | **alle 27** einheitlich `field="selections"`, `value="1"`, `shared="true"` |
+| Zähl-Flags | `includeChildSelections="true"` bei 4 Vorkommen (`.gst` Z. 773; `Mercenaries` Z. 4797, 4925, 6743); `includeChildForces` fehlt bei allen 27 |
+| distinkte `childId` | 14 |
+| davon im Satz auflösbar | **3 — und zwar ausschließlich als Wurzel-`id` einer `.cat`** (jeweils Z. 2 der Datei): `731d-5b13-2a92-5427` = Ogre Kingdoms, `4d73-5ab0-9020-403c` = Vampire Counts, `4049-c46d-7f80-44fb` = Orcs and Goblins |
+| die übrigen 11 | kommen im Satz **ausschließlich als `childId`** vor, nie als `id` irgendeines Elements — sie zeigen also auf Kataloge außerhalb dieses Ausschnitts (die Edition hat 17 Armee-Kataloge, siehe ADR 0032). Zwei tragen den Armeenamen offen mit: `childName="Tomb Kings"` (`9945-8537-0944-c67b`), `childName="Dogs of War"` (`fa9c-5f79-ce12-480c`) |
+| **nie** als `childId` | die Wurzel-`id` der Bibliothek Mercenaries (`fc47-8392-a6c8-452a`, `library="true"`) und die Spielsystem-Id (`0d13-7737-ea86-4662`) |
+| `primary-category` | **0** Vorkommen — das Gegenstück existiert in diesen Daten nicht |
+
+Drei Fundstellen zeigen die Bedeutung im Klartext:
+
+- **`.gst` Z. 773** — die Kategorie „Chariot" (`d36d-5455-9f4d-3100`) trägt einen `max="-1"`-Constraint
+  (`4b43-5d4e-94ca-1fd5`, also unbegrenzt), den ein Modifier bei aktiven Border-Patrol-Regeln auf 1
+  setzt — gegatet mit `notInstanceOf … childName="Tomb Kings"` und dem Kommentar *„Tomb Kings may
+  have more than one Chariot"* unmittelbar daneben. Der Rahmen ist die *Armee*, nicht die Auswahl.
+- **`.gst` Z. 2300-2302 und Z. 2326-2328** — die versteckten Kampagnen-Einträge *„Campaign:
+  Bugman's Lament"* (`22b1-4841-84c1-7c98`) und *„Campaign: The Return of the Lichemaster"*
+  (`16ec-3170-c552-6824`) werden per `or`-Gruppe aus je drei `instanceOf` sichtbar geschaltet
+  (`set hidden="false"`) — für Orcs and Goblins (`4049-…`) bzw. Vampire Counts (`4d73-…`) und je
+  zwei weitere Kataloge. Ein Kampagnen-Eintrag ist genau für die daran beteiligten Armeen wählbar.
+- **`Mercenaries` Z. 3848/3853** — derselbe Eintrag *„Extra Rare choice"* (`ea59-6ea6-b3c9-c34a`)
+  hebt seinen `min`-Constraint `9e9f-e78d-6390-accc` von 0 auf 1, **wenn** die Armee **nicht** Ogre
+  Kingdoms ist, und setzt `hidden="true"`, **wenn** sie es ist. Ein Paar `notInstanceOf`/`instanceOf`
+  auf dieselbe Katalog-Id mit gegenläufiger Wirkung.
+
+Das deckt sich mit der Rolle der Bibliothek: `Mercenaries` (`library="true"`) hängt von keinem
+weiteren Katalog ab und wird von **jedem** Armee-Katalog per `catalogueLink` eingebunden (im
+Fixture-Satz von allen dreien). Ihre Einträge müssen sich also gegen die Armee gaten, die den
+Söldner anwirbt — genau das leistet `primary-catalogue`.
+
+**Was der Bezugsrahmen *nicht* bezeichnet:**
+
+- **Nicht den Datensatz.** Er meint nicht „einer der geladenen Kataloge" und keinen ausgezeichneten
+  Katalog des Datensatzes. Die Frage wird je Kontingent beantwortet, nicht je Datensatz.
+- **Nicht das Spielsystem.** Die `.gst`-Id (`0d13-7737-ea86-4662`) kommt als `childId` **nie** vor.
+- **Nicht die gemeinsame Bibliothek.** Die Mercenaries-Id (`fc47-8392-a6c8-452a`) kommt als
+  `childId` **nie** vor.
+- **Nicht den Katalog, in dem die Bedingung steht.** Die 20 Vorkommen in `Mercenaries` stehen in der
+  Bibliothek, fragen aber nach der Armee. Herkunft der Definition ≠ Bezugsrahmen.
+- **Kein Zählrahmen.** `childId` ist eine Katalog-Wurzel und damit nie eine auswählbare Definition —
+  es gibt nichts zu zählen. `field="selections" value="1"` ist hier die kanonische Schreibweise der
+  Identitätsfrage, keine echte Zählung; entsprechend ändern `shared` und `includeChildSelections`
+  nichts an der Antwort. Belegt: 4 der 27 Vorkommen tragen `includeChildSelections="true"` und
+  bedeuten dasselbe wie die übrigen 23.
+
+**Je Kontingent, nicht je Roster.** `catalogueId` ist in der `.ros` ein `<force>`-Attribut:
+
+```xml
+<force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044"
+       catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+```
+
+Ein Roster mit Verbündeten-Kontingenten aus verschiedenen Katalogen beantwortet
+dieselbe Bedingung je Kontingent unterschiedlich; der Rahmen löst über das umschließende Kontingent
+auf, genau wie `scope="force"`.
+
+**Verhältnis zu [ADR 0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md).**
+Kein Widerspruch. ADR 0032 stellt fest, dass ein Mehr-Katalog-*Datensatz* keinen ausgezeichneten
+Katalog kennt: alle Quellen werden global-by-ID in **eine** flache Symboltabelle gemischt, und
+`catalogueLink` ist reine Abhängigkeits-Deklaration, kein eigener Auflösungsmechanismus. Der primäre
+Katalog ist keine Eigenschaft des Datensatzes, sondern des **Rosters** — und dort eine **je
+Kontingent**. Beide Aussagen stehen nebeneinander.
+
+> **Für `constraint` und `repeat` nicht belegt.** Da `scope` laut XSD an der gemeinsamen
+> `QueryBase` hängt, wäre `primary-catalogue` dort formal zulässig; in den Katalogdaten kommt es
+> aber ausschließlich an `condition` vor (27/27). Eine Grenze oder Wiederholung „im Bezugsrahmen des
+> primären Katalogs" ist damit unbelegt und sollte nicht angenommen werden.
 
 #### `conditionGroup` — Verknüpfung mehrerer Bedingungen
 
@@ -1141,7 +1243,7 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | `infoLink` | `type` | `profile`, `rule`, `infoGroup` |
 | `constraint` | `type` | `min`, `max` |
 | `constraint` | `field` | `selections`, `forces`, *`<costTypeId>`* |
-| `constraint`/`condition`/`repeat` | `scope` | `parent`, `roster`, `force`, `category`, `self` |
+| `constraint`/`condition`/`repeat` | `scope` | `parent`, `roster`, `force`, `category`, `self`, `primary-catalogue` (letzteres nur an `condition` belegt und kein Zählrahmen, siehe [§7.7](#primary-catalogue--der-armee-katalog-des-kontingents)) |
 | `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `prepend`, `multiply`, `add`, `remove`, `set-primary`, `unset-primary` (`prepend`/`multiply` ohne offiziellen Schema-Beleg, siehe [§7.7](#77-modifier-condition-condition-group-repeat)) |
 | `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `error`, `warning`, `info`, `<characteristicTypeId>` |
 | `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf` |
