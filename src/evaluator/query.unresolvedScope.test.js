@@ -69,7 +69,7 @@ describe('unaufloesbarer Bezugsrahmen: der Sentinel statt einer erfundenen Null'
   it('liefert den Sentinel und meldet den Rahmen als unaufloesbar', () => {
     const catalogue = parseCatalogue(CATALOGUE_XML);
     const resolved = resolveCatalogue(catalogue);
-    const { root } = buildEvalTree(resolved, ROSTER);
+    const { root } = buildEvalTree(resolved, ROSTER, new Set([catalogue.id]));
     const index = buildIndex(root, createBaseEffectiveState(root));
     const diagnostics = [];
     const ctx = createQueryContext({

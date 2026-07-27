@@ -298,8 +298,8 @@ describe('Bericht: die Kennung eines Slots leitet sich aus seinem Pfad ab', () =
     // Der Bericht traegt keinen Baumknoten (ADR-0034), also wird der Baum hier
     // unabhaengig noch einmal gebaut und die erwartete Schluesselmenge daraus
     // gebildet — genau die Gegenprobe, die der Test meint.
-    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
-    const { root } = buildEvalTree(resolved, ROSTER);
+    const { resolved, catalogueIds } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
+    const { root } = buildEvalTree(resolved, ROSTER, catalogueIds);
     attachOfferAnchors(root, resolved);
 
     const expectedKeys = selectableSlotsOf(root).map(childIndexPathOf);
@@ -621,7 +621,8 @@ describe('Bericht: eine Messgroesse, die an keinem Slot ausweisbar ist', () => {
 
   /** Baut den Bericht mit den uebergebenen Ergebnissen in der **Slot**-Ergebnisliste. */
   function buildingReportFrom(results) {
-    return () => buildReport(TREE_WITHOUT_SLOTS, UNUSED_EFFECTIVE_STATE, results, NO_DIAGNOSTICS);
+    const constraintEvaluation = { results, unevaluatedLimits: [] };
+    return () => buildReport(TREE_WITHOUT_SLOTS, UNUSED_EFFECTIVE_STATE, constraintEvaluation, NO_DIAGNOSTICS);
   }
 
   it('meldet ein einzelnes solches Ergebnis laut, statt es still zu indizieren', () => {

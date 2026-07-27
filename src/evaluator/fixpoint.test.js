@@ -27,8 +27,8 @@ globalThis.DOMParser = dom.window.DOMParser;
  * er nicht rekonstruierbar, weil dort nur der Endzustand ankommt.
  */
 function runFixpoint(catalogXml, rosterInstance) {
-  const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [catalogXml] }));
-  const { root } = buildEvalTree(resolved, rosterInstance);
+  const { resolved, catalogueIds } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [catalogXml] }));
+  const { root } = buildEvalTree(resolved, rosterInstance, catalogueIds);
   return evaluateToFixpoint(root, resolved.categoryIds);
 }
 

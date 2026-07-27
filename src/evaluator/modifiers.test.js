@@ -50,7 +50,7 @@ function selection(defId, count) {
 function buildTree(catalogXml, rosterInput) {
   const catalogue = parseCatalogue(catalogXml);
   const resolved = resolveCatalogue(catalogue);
-  const { root } = buildEvalTree(resolved, rosterInput);
+  const { root } = buildEvalTree(resolved, rosterInput, new Set([catalogue.id]));
   return { root, categoryIds: resolved.categoryIds };
 }
 

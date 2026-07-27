@@ -60,9 +60,9 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 /** Baut Baum und Index aus dem Katalog und einem Roster aus einer Krieger-Auswahl. */
 function buildTreeAndIndex() {
-  const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
+  const { resolved, catalogueIds } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
   const roster = { forces: [{ defId: WARRIOR_ID, count: WARRIOR_COUNT, children: [] }] };
-  const { root } = buildEvalTree(resolved, roster);
+  const { root } = buildEvalTree(resolved, roster, catalogueIds);
   return { root, index: buildIndex(root, createBaseEffectiveState(root)) };
 }
 
@@ -194,11 +194,11 @@ const OFFER_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 describe('Index-Schicht: auch die Angebots-Anker aus Baumphase 2 zaehlen nie mit', () => {
   /** Kontingent mit einem Krieger; der Bannertraeger bleibt ungewaehlt (Angebot). */
   function buildOfferTree() {
-    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [OFFER_CATALOGUE_XML] }));
+    const { resolved, catalogueIds } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [OFFER_CATALOGUE_XML] }));
     const roster = {
       forces: [{ defId: ARMY_FORCE_ID, count: 1, children: [{ defId: WARRIOR_ID, count: WARRIOR_COUNT, children: [] }] }],
     };
-    const { root } = buildEvalTree(resolved, roster);
+    const { root } = buildEvalTree(resolved, roster, catalogueIds);
     return { root, resolved };
   }
 
@@ -253,7 +253,7 @@ const GROUP_LINK_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 describe('Index-Schicht: die Identitaet einer Eintragsgruppe ist kein Zaehlziel', () => {
   /** Der Held mit dem Gruppen-Verweis, der Gruppe selbst und einem echten Member darunter. */
   function buildGroupLinkIndex() {
-    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [GROUP_LINK_CATALOGUE_XML] }));
+    const { resolved, catalogueIds } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [GROUP_LINK_CATALOGUE_XML] }));
     const roster = {
       forces: [{
         defId: HERO_ID,
@@ -265,7 +265,7 @@ describe('Index-Schicht: die Identitaet einer Eintragsgruppe ist kein Zaehlziel'
         ],
       }],
     };
-    const { root } = buildEvalTree(resolved, roster);
+    const { root } = buildEvalTree(resolved, roster, catalogueIds);
     return buildIndex(root, createBaseEffectiveState(root));
   }
 

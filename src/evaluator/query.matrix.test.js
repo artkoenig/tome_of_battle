@@ -97,7 +97,7 @@ const ROSTER = {
 function buildEvaluation() {
   const catalogue = parseCatalogue(CATALOGUE_XML);
   const resolved = resolveCatalogue(catalogue);
-  const { root } = buildEvalTree(resolved, ROSTER);
+  const { root } = buildEvalTree(resolved, ROSTER, new Set([catalogue.id]));
   // Ohne Modifikatoren gleichen die effektiven Werte den Basiswerten; der Index
   // ueber die Basis-Effektiv-Werte prueft daher dieselbe Zaehlsemantik wie zuvor.
   const index = buildIndex(root, createBaseEffectiveState(root));

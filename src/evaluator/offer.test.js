@@ -103,8 +103,8 @@ function selection(defId, children = []) {
 
 /** Baut Baumphase 1 und haengt anschliessend die Angebots-Anker an (Baumphase 2). */
 function buildTreeWithOffer(roster, catalogXml = CATALOGUE_XML) {
-  const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [catalogXml] }));
-  const { root } = buildEvalTree(resolved, roster);
+  const { resolved, catalogueIds } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [catalogXml] }));
+  const { root } = buildEvalTree(resolved, roster, catalogueIds);
   const anchors = attachOfferAnchors(root, resolved);
   return { root, anchors };
 }
@@ -242,9 +242,9 @@ describe('Entdopplung: kein zweiter Anker fuer dieselbe Definition im selben Rah
 
 describe('Baumphase 2 laesst den bestehenden Baum unberuehrt', () => {
   it('haelt die Pfade aller vor Phase 2 vorhandenen Slots stabil', () => {
-    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
+    const { resolved, catalogueIds } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
     const roster = armyWith([selection(SPEARMEN_ID, [selection(SHIELD_ID)])]);
-    const { root } = buildEvalTree(resolved, roster);
+    const { root } = buildEvalTree(resolved, roster, catalogueIds);
     const pathsBefore = new Map([...allNodes(root)].map(node => [node, pathOf(node)]));
 
     attachOfferAnchors(root, resolved);
@@ -277,9 +277,9 @@ describe('Baumphase 2 laesst den bestehenden Baum unberuehrt', () => {
   });
 
   it('erweitert die Menge der realen Knoten nicht', () => {
-    const { resolved } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
+    const { resolved, catalogueIds } = PreparedDataset.contentsOf(prepareDataset({ catalogues: [CATALOGUE_XML] }));
     const roster = armyWith([selection(SPEARMEN_ID)]);
-    const { root } = buildEvalTree(resolved, roster);
+    const { root } = buildEvalTree(resolved, roster, catalogueIds);
     const realBefore = [...realNodes(root)];
 
     attachOfferAnchors(root, resolved);

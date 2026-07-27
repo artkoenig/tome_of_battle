@@ -140,8 +140,11 @@ export function evaluate(prepared, roster) {
   // der Index wird danach nicht erneut gebaut.
   const postPassDiagnostics = applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget);
 
+  // Zwei Listen: die verglichenen Grenzen und die, die **keine Antwort** hatten.
+  // Letztere melden nichts, erscheinen aber am Faehigkeitsdatensatz ihres Slots —
+  // sonst waere „nicht auswertbar" dort von „keine Grenze" nicht zu unterscheiden.
   const constraintDiagnostics = [];
-  const results = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics, budget);
+  const constraintEvaluation = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics, budget);
 
   // Engine-allgemeine Regel „Armee zu teuer": je eingestellter Kostengrenze die am
   // ROSTER-Rahmen verplante Summe (aus dem schon gebauten Zaehlindex) gegen ihre
@@ -162,7 +165,7 @@ export function evaluate(prepared, roster) {
   // einzige Quelle (`infoProjection.js`). `categoryIds` ist dieselbe Menge, an der
   // das Query-Primitiv einen ID-Bezugsrahmen aufloest; die Einordnung einer
   // Verletzung liest daran ab, ob deren Rahmen eine Kategorie oder ein Eintrag ist.
-  return buildReport(root, effective, results, diagnostics, {
+  return buildReport(root, effective, constraintEvaluation, diagnostics, {
     budgetViolations,
     unstableNodes,
     profileTypes: resolved.profileTypes,

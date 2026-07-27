@@ -145,10 +145,11 @@ export const ScopeKeyword = Object.freeze({
 });
 
 /**
- * Grund, aus dem der **primaere Katalog** eines Kontingents nicht entscheidbar ist
- * — zwei distinkte Ursachen unter derselben Diagnose
+ * Grund, aus dem der **primaere Katalog** eines Knotens nicht entscheidbar ist —
+ * drei distinkte Ursachen unter derselben Diagnose
  * {@link DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE}, damit ein Berichts-Leser
- * „das Roster sagt es nicht" von „das Roster sagt etwas Unbekanntes" trennen kann.
+ * „das Roster sagt es nicht", „das Roster sagt etwas Unbekanntes" und „hier gibt es
+ * gar kein Kontingent, das es sagen koennte" trennen kann.
  */
 export const PrimaryCatalogueUnresolvedReason = Object.freeze({
   // Das Kontingent des Rosters traegt keine Katalog-Angabe (`<force catalogueId>`).
@@ -157,6 +158,12 @@ export const PrimaryCatalogueUnresolvedReason = Object.freeze({
   // ein Roster-/Datensatz-Kohaerenzfehler derselben Art wie
   // {@link DiagnosticKind.MISSING_CATALOGUE_DEPENDENCY} (ADR-0032).
   UNKNOWN_CATALOGUE: 'unknownCatalogue',
+  // Der Knoten liegt ueber **keinem Kontingent des Rosters**: ein Anker unmittelbar
+  // an der Wurzel (roster-weite Pflichtgrenze) oder ein synthetischer
+  // Kontingent-Anker, der aus keiner `<force>` stammt. Es gibt hier niemanden, der
+  // eine Katalog-Angabe machen koennte — die Frage bleibt trotzdem unbeantwortet
+  // und wird deshalb gemeldet statt still mit „andere Armee" beantwortet.
+  NO_ROSTER_FORCE: 'noRosterForce',
 });
 
 /**
@@ -563,11 +570,14 @@ export const DiagnosticKind = Object.freeze({
   // Feld traegt einen Scope ungleich `roster` ({@link BudgetLimitUnresolvedReason}).
   // Sichtbar gemacht statt still als Wert 0 angenommen (Main-Issue 70, `design.md`).
   UNRESOLVED_BUDGET_LIMIT: 'unresolvedBudgetLimit',
-  // Der **primaere Katalog** eines Kontingents ist nicht entscheidbar: das Roster
-  // nennt fuer dieses Kontingent keinen Katalog oder einen, der nicht zu den
-  // mitgegebenen gehoert ({@link PrimaryCatalogueUnresolvedReason}). Gemeldet
-  // **einmal je Kontingent** beim Baumbau — nicht je Bedingung, die danach fragt.
-  // Jede `primary-catalogue`-Regel dieses Kontingents haelt dann fail-closed nicht
+  // Der **primaere Katalog** eines Knotens ist nicht entscheidbar: das Roster nennt
+  // fuer sein Kontingent keinen Katalog, einen, der nicht zu den mitgegebenen
+  // gehoert, oder der Knoten liegt ueber gar keinem Kontingent
+  // ({@link PrimaryCatalogueUnresolvedReason}). Gemeldet **wenn eine Regel fragt**
+  // — wie die Diagnose zur nicht aufloesbaren Kostengrenze
+  // ({@link UNRESOLVED_BUDGET_LIMIT}), und aus demselben Grund: ein Kontingent, in
+  // dem keine Regel diesen Bezugsrahmen benutzt, hat keinen Mangel. Jede fragende
+  // `primary-catalogue`-Regel haelt dann fail-closed nicht
   // (Issue 77, `docs/battlescribe-data-format.md` §7.7).
   UNRESOLVED_PRIMARY_CATALOGUE: 'unresolvedPrimaryCatalogue',
 });

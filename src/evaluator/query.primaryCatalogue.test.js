@@ -7,10 +7,12 @@
  * Zwei Nahtstellen werden hier festgenagelt:
  *
  * 1. **das Query-Primitiv** (`query.js`) — die Antwort `1`/`0`, ihre
- *    Flag-Unabhaengigkeit und der {@link UNRESOLVED_QUERY}-Sentinel, wenn der
- *    primaere Katalog nicht entscheidbar ist;
+ *    Flag-Unabhaengigkeit, der {@link UNRESOLVED_QUERY}-Sentinel, wenn der
+ *    primaere Katalog nicht entscheidbar ist, und die Diagnose dazu: gemeldet
+ *    **wenn eine Regel fragt**, und dann in jedem Fall — auch ueber gar keinem
+ *    Kontingent;
  * 2. **die Join-Schicht** (`evalTree.js`) — die Bindung je Kontingent gegen die
- *    Kataloge des Datensatzes und ihre Diagnose, **einmal je Kontingent**.
+ *    Kataloge des Datensatzes, an **jedem** Knoten in derselben Form.
  *
  * Dazu die Wirkung durch die oeffentliche Fassade: dieselbe Auswahl in zwei
  * verschiedenen Kontingenten muss ein **gegenlaeufiges** Ergebnis liefern — nur
@@ -23,7 +25,7 @@ import { evaluate, prepareDataset } from './evaluator.js';
 import { parseCatalogue } from './catalogReader.js';
 import { mergeCatalogues } from './catalogSet.js';
 import { resolveCatalogue } from './resolver.js';
-import { buildEvalTree, primaryCatalogueIdOf } from './evalTree.js';
+import { buildEvalTree, primaryCatalogueOf, allNodes } from './evalTree.js';
 import { buildIndex } from './countIndex.js';
 import { createBaseEffectiveState } from './effectiveState.js';
 import { query, createQueryContext } from './query.js';
@@ -176,12 +178,14 @@ describe('primary-catalogue: ein nicht entscheidbares Kontingent wird gemeldet u
     );
   });
 
-  it('meldet **einmal je Kontingent**, nicht einmal je fragender Bedingung', () => {
-    const { report } = mercenaryViolationsOf([
-      { defId: FORCE_A_ID, count: 1, children: [{ defId: MERCENARY_ID, count: CHOSEN_MERCENARIES, children: [] }] },
-    ]);
+  it('meldet **nur, wenn eine Regel fragt** — ein Kontingent ohne solche Regel hat keinen Mangel', () => {
+    // Derselbe Datensatz, dasselbe Kontingent ohne Katalog-Angabe — aber die
+    // Auswahl, deren Modifikator nach dem primaeren Katalog fragt, fehlt. Damit
+    // benutzt keine Regel den Bezugsrahmen, und der Bericht wirft dem Kontingent
+    // nichts vor (Vorbild: die Diagnose zur nicht aufloesbaren Kostengrenze).
+    const { report } = mercenaryViolationsOf([{ defId: FORCE_A_ID, count: 1, children: [] }]);
 
-    expect(report.diagnostics.filter(entry => entry.kind === DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE)).toHaveLength(1);
+    expect(report.diagnostics.filter(entry => entry.kind === DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE)).toHaveLength(0);
   });
 });
 
@@ -260,14 +264,40 @@ describe('query: der Bezugsrahmen primary-catalogue antwortet ohne Zaehlung', ()
       .toBe(UNRESOLVED_QUERY);
   });
 
-  it('meldet den unentscheidbaren Fall nicht erneut je Query — die Diagnose steht schon vom Baumbau', () => {
+  it('meldet den unentscheidbaren Fall an der fragenden Stelle — der Baumbau meldet ihn nicht', () => {
     const { ctx, diagnostics, joinDiagnostics } = contextAtMercenary([force(FORCE_A_ID, UNKNOWN_CATALOGUE_ID)]);
 
     query(ctx, SELECTION_COUNT, ScopeKeyword.PRIMARY_CATALOGUE, ARMY_A_CATALOGUE_ID, { shared: true });
-    query(ctx, SELECTION_COUNT, ScopeKeyword.PRIMARY_CATALOGUE, ARMY_A_CATALOGUE_ID, { shared: true });
 
-    expect(diagnostics).toHaveLength(0);
-    expect(joinDiagnostics.filter(entry => entry.kind === DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE)).toHaveLength(1);
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({
+        kind: DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE,
+        forceDefId: FORCE_A_ID,
+        catalogueId: UNKNOWN_CATALOGUE_ID,
+        reason: PrimaryCatalogueUnresolvedReason.UNKNOWN_CATALOGUE,
+      }),
+    );
+    // Der Baumbau bindet, er klagt nicht an: ohne fragende Regel bliebe es still.
+    expect(joinDiagnostics.filter(entry => entry.kind === DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE)).toHaveLength(0);
+  });
+
+  it('meldet auch **ausserhalb** eines Kontingents — dort entstuende die Antwort sonst ohne jede Diagnose', () => {
+    // Die Wurzel steht ueber keinem Kontingent (wie der Anker einer roster-weiten
+    // Pflichtgrenze). Der Baumbau kann diesen Fall nicht melden: er kennt nur
+    // Kontingente. Ohne die Meldung an der fragenden Stelle bliebe hier eine
+    // unbeantwortbare Abfrage voellig stumm.
+    const { ctx, diagnostics } = contextAtMercenary([force(FORCE_A_ID, ARMY_A_CATALOGUE_ID)]);
+    const rootContext = { ...ctx, node: ctx.root };
+
+    const answer = query(rootContext, SELECTION_COUNT, ScopeKeyword.PRIMARY_CATALOGUE, ARMY_A_CATALOGUE_ID, { shared: true });
+
+    expect(answer).toBe(UNRESOLVED_QUERY);
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({
+        kind: DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE,
+        reason: PrimaryCatalogueUnresolvedReason.NO_ROSTER_FORCE,
+      }),
+    );
   });
 });
 
@@ -275,13 +305,33 @@ describe('evalTree: der primaere Katalog haengt am Kontingent, nicht am einzelne
   it('liefert fuer jeden Knoten den Katalog seines umschliessenden Kontingents', () => {
     const { mercenaryNode } = contextAtMercenary([force(FORCE_A_ID, ARMY_A_CATALOGUE_ID)]);
 
-    expect(primaryCatalogueIdOf(mercenaryNode)).toBe(ARMY_A_CATALOGUE_ID);
-    expect(primaryCatalogueIdOf(mercenaryNode.parent)).toBe(ARMY_A_CATALOGUE_ID);
+    expect(primaryCatalogueOf(mercenaryNode)).toEqual({ id: ARMY_A_CATALOGUE_ID, unresolved: null });
+    expect(primaryCatalogueOf(mercenaryNode.parent)).toEqual({ id: ARMY_A_CATALOGUE_ID, unresolved: null });
   });
 
-  it('liefert null ueber keinem Kontingent — die Wurzel gehoert zu keiner Armee', () => {
+  it('sagt ueber keinem Kontingent nicht nur „keine Id", sondern **warum**', () => {
     const { ctx } = contextAtMercenary([force(FORCE_A_ID, ARMY_A_CATALOGUE_ID)]);
 
-    expect(primaryCatalogueIdOf(ctx.root)).toBeNull();
+    // Die Wurzel gehoert zu keiner Armee. Ein blosses `null` hiesse hier zugleich
+    // „noch nicht gebunden", „kein Kontingent" und „nicht aufloesbar" — die Bindung
+    // traegt deshalb den Grund mit, aus dem die Diagnose entsteht.
+    expect(primaryCatalogueOf(ctx.root)).toEqual({
+      id: null,
+      unresolved: {
+        forceDefId: null,
+        catalogueId: null,
+        reason: PrimaryCatalogueUnresolvedReason.NO_ROSTER_FORCE,
+      },
+    });
+  });
+
+  it('gibt jedem Knoten dieselbe Form — auch dem Anker, der zu keinem Kontingent gehoert', () => {
+    const { ctx } = contextAtMercenary([force(FORCE_A_ID, ARMY_A_CATALOGUE_ID)]);
+
+    for (const node of allNodes(ctx.root)) {
+      expect(Object.keys(primaryCatalogueOf(node)).sort()).toEqual(['id', 'unresolved']);
+      // Genau eines der beiden Felder ist besetzt.
+      expect(primaryCatalogueOf(node).id === null).toBe(primaryCatalogueOf(node).unresolved !== null);
+    }
   });
 });

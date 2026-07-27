@@ -62,75 +62,84 @@ export function frameKeyOf(node) {
 }
 
 /**
- * Der **primaere Katalog** eines Knotens: die geprüfte Wurzel-Id des
- * Armee-Katalogs des Kontingents, in dem der Knoten sitzt — oder `null`, wenn er
- * ueber keinem Kontingent liegt, das Kontingent keine Katalog-Angabe traegt oder
- * diese auf keinen Katalog des Datensatzes zeigt
- * (`docs/battlescribe-data-format.md` §7.7).
+ * Die **Bindung des primaeren Katalogs** eines Knotens: der Armee-Katalog des
+ * Kontingents, in dem der Knoten sitzt (`docs/battlescribe-data-format.md` §7.7).
  *
- * Der benannte Lesezugriff steht neben {@link frameKeyOf}, damit das
+ * Genau **eines** der beiden Felder ist besetzt — entweder steht die geprüfte
+ * Katalog-Wurzel-Id da, oder der Grund, aus dem es keine gibt. Ein blosses `null`
+ * traegt diese Unterscheidung nicht: es hiesse zugleich „noch nicht gebunden",
+ * „kein Kontingent" und „nicht aufloesbar". Deshalb wird die Bindung **bei der
+ * Erzeugung des Knotens** gesetzt und danach nie ueberschrieben.
+ *
+ * @typedef {{ id: string|null, unresolved: { forceDefId: string|null, catalogueId: string|null, reason: string }|null }} PrimaryCatalogueBinding
+ */
+
+/** Die Bindung eines Knotens, dessen primaerer Katalog feststeht. */
+function boundPrimaryCatalogue(catalogueId) {
+  return Object.freeze({ id: catalogueId, unresolved: null });
+}
+
+/**
+ * Die Bindung eines Knotens ohne entscheidbaren primaeren Katalog — samt der
+ * Angaben, aus denen die Diagnose entsteht, wenn eine Regel danach fragt.
+ */
+function unresolvedPrimaryCatalogue(forceDefId, catalogueId, reason) {
+  return Object.freeze({ id: null, unresolved: Object.freeze({ forceDefId, catalogueId, reason }) });
+}
+
+/**
+ * Die Bindung eines Knotens, der **ueber keinem Kontingent des Rosters** liegt:
+ * die Wurzel und alles, was unmittelbar an ihr haengt (z. B. der Anker einer
+ * roster-weiten Pflichtgrenze).
+ */
+const NO_ROSTER_FORCE_BINDING = unresolvedPrimaryCatalogue(
+  null,
+  null,
+  PrimaryCatalogueUnresolvedReason.NO_ROSTER_FORCE,
+);
+
+/**
+ * Der **primaere Katalog** eines Knotens: die Bindung des Kontingents, in dem er
+ * sitzt. Der benannte Lesezugriff steht neben {@link frameKeyOf}, damit das
  * Query-Primitiv den Bezugsrahmen `primary-catalogue` aufloest, ohne selbst in die
- * Knotenform zu greifen. Geprueft wurde **einmal beim Baumbau**
- * ({@link bindPrimaryCatalogues}), nicht je Query — sonst stuende dieselbe
- * Diagnose acht- bis neunmal je Kontingent im Bericht.
+ * Knotenform zu greifen.
+ *
+ * Jeder Knoten traegt sie — ein Kontingent seine eigene, jeder andere die seines
+ * Kontingents —, sodass der Zugriff nie eine Kette hochlaufen und nie ein fehlendes
+ * Feld deuten muss.
  *
  * @param {object} node  ein Knoten des Auswertungsbaums.
- * @returns {string|null} die Katalog-Wurzel-Id des umschliessenden Kontingents.
+ * @returns {PrimaryCatalogueBinding} die Bindung des umschliessenden Kontingents.
  */
-export function primaryCatalogueIdOf(node) {
-  return node.forceRoot?.primaryCatalogueId ?? null;
+export function primaryCatalogueOf(node) {
+  return node.primaryCatalogue;
 }
 
 /**
- * Bindet jedem **realen Kontingent** seinen primaeren Katalog an: die
- * `catalogueId`, die das Roster fuer diese `force` angibt — sofern sie einen der
- * mitgegebenen Kataloge benennt.
+ * Bindet einem **Kontingent-Knoten** seinen primaeren Katalog: die `catalogueId`,
+ * die das Roster fuer diese `force` angibt — sofern sie einen der mitgegebenen
+ * Kataloge benennt.
  *
- * Beides wird gemeldet statt still als „andere Armee" gelesen: ein Kontingent ohne
- * Angabe und eines, dessen Angabe auf keinen Katalog des Datensatzes zeigt. Der
- * zweite Fall ist ein Roster-/Datensatz-Kohaerenzfehler derselben Art wie
+ * Zwei Faelle ergeben keine Bindung und werden als Grund festgehalten, statt still
+ * als „andere Armee" gelesen zu werden: ein Kontingent ohne Angabe und eines,
+ * dessen Angabe auf keinen Katalog des Datensatzes zeigt — ein Roster-/Datensatz-
+ * Kohaerenzfehler derselben Art wie
  * {@link DiagnosticKind.MISSING_CATALOGUE_DEPENDENCY} (ADR-0032, Entscheidung 3).
- * In beiden Faellen bleibt der primaere Katalog `null`, und jede
- * `primary-catalogue`-Bedingung dieses Kontingents haelt **fail-closed** nicht.
  *
- * Synthetische Kontingent-Anker bekommen bewusst keine Bindung: sie stammen aus
- * keinem Roster-Kontingent, also gaebe es fuer sie keine Angabe zu vermissen. Ihr
- * primaerer Katalog bleibt `null` — sichtbar unentscheidbar, ohne eine Diagnose
- * ueber etwas zu erfinden, das der Nutzer nie erklaert hat.
- *
- * @param {object} root  Wurzel des Auswertungsbaums (nach dem Anhaengen der realen Knoten).
+ * @param {object} def  die Kontingent-Definition.
+ * @param {object} instance  die Roster-`force` dieses Kontingents.
  * @param {Set<string>} datasetCatalogueIds  die Wurzel-Ids der mitgegebenen Kataloge.
- * @param {object[]} diagnostics  Sammelliste fuer Auswertungsprobleme.
+ * @returns {PrimaryCatalogueBinding}
  */
-function bindPrimaryCatalogues(root, datasetCatalogueIds, diagnostics) {
-  for (const forceNode of forceNodes(root)) {
-    // `forceNodes` liefert nur **reale** Kontingente — sie tragen immer eine Instanz.
-    const declaredCatalogueId = forceNode.instance.catalogueId ?? null;
-    const reason = unresolvedPrimaryCatalogueReason(declaredCatalogueId, datasetCatalogueIds);
-    if (reason === null) {
-      forceNode.primaryCatalogueId = declaredCatalogueId;
-      continue;
-    }
-    forceNode.primaryCatalogueId = null;
-    diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE, {
-      forceDefId: forceNode.def.id,
-      catalogueId: declaredCatalogueId,
-      reason,
-    }));
-  }
-}
-
-/**
- * Der Grund, aus dem eine Katalog-Angabe keinen primaeren Katalog ergibt — `null`,
- * wenn sie einen der mitgegebenen Kataloge benennt.
- */
-function unresolvedPrimaryCatalogueReason(declaredCatalogueId, datasetCatalogueIds) {
+function bindPrimaryCatalogueOfForce(def, instance, datasetCatalogueIds) {
+  const declaredCatalogueId = instance.catalogueId ?? null;
   if (declaredCatalogueId === null || declaredCatalogueId === '') {
-    return PrimaryCatalogueUnresolvedReason.NOT_DECLARED;
+    return unresolvedPrimaryCatalogue(def.id, null, PrimaryCatalogueUnresolvedReason.NOT_DECLARED);
   }
-  return datasetCatalogueIds.has(declaredCatalogueId)
-    ? null
-    : PrimaryCatalogueUnresolvedReason.UNKNOWN_CATALOGUE;
+  if (!datasetCatalogueIds.has(declaredCatalogueId)) {
+    return unresolvedPrimaryCatalogue(def.id, declaredCatalogueId, PrimaryCatalogueUnresolvedReason.UNKNOWN_CATALOGUE);
+  }
+  return boundPrimaryCatalogue(declaredCatalogueId);
 }
 
 /** Vergibt fortlaufende, instanz-eindeutige Rahmen-Identitaeten waehrend des Aufbaus. */
@@ -162,8 +171,18 @@ function checkTargetCoherence(def, instance, diagnostics) {
   }));
 }
 
-/** Haengt einen Instanzknoten samt Kindern (Auswahlen wie geschachtelte Kontingente) an. */
-function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
+/**
+ * Haengt einen Instanzknoten samt Kindern (Auswahlen wie geschachtelte
+ * Kontingente) an.
+ *
+ * @param {object} parent  der Knoten, unter den angehaengt wird.
+ * @param {object} instance  die Roster-Auswahl.
+ * @param {{ resolved: object, diagnostics: object[], nextFrameId: Function, datasetCatalogueIds: Set<string> }} build
+ *   die Eingaben des Baumbaus, gebuendelt, weil sie unveraendert durch die ganze
+ *   Rekursion reisen.
+ */
+function attachInstance(parent, instance, build) {
+  const { resolved, diagnostics, nextFrameId, datasetCatalogueIds } = build;
   const def = resolved.lookup(instance.defId);
   if (def === null) {
     diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_DEFINITION, { defId: instance.defId }));
@@ -185,15 +204,17 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
     // ist, sonst das seines Elternknotens. Steht ueber keinem Kontingent (z. B.
     // ein Wurzel-Eintrag ohne Force-Huelle), bleibt es null.
     forceRoot: null,
-    // Nur an einem Kontingent-Knoten besetzt, und erst von
-    // {@link bindPrimaryCatalogues} — bis dahin (und an jedem anderen Knoten)
-    // heisst `null` „kein entscheidbarer primaerer Katalog".
-    primaryCatalogueId: null,
+    // Der primaere Katalog: an einem Kontingent seine eigene, geprüfte Bindung,
+    // sonst die des umschliessenden Kontingents. Gesetzt bei der Erzeugung und nie
+    // ueberschrieben ({@link primaryCatalogueOf}).
+    primaryCatalogue: isForce
+      ? bindPrimaryCatalogueOfForce(def, instance, datasetCatalogueIds)
+      : parent.primaryCatalogue,
   };
   node.forceRoot = isForce ? node : parent.forceRoot;
   parent.children.push(node);
   for (const childInstance of instance.children ?? []) {
-    attachInstance(node, childInstance, resolved, diagnostics, nextFrameId);
+    attachInstance(node, childInstance, build);
   }
 }
 
@@ -221,9 +242,12 @@ function attachPhantom(parent, def, nextFrameId, anchorKind) {
     anchorKind,
     frameId: nextFrameId(),
     forceRoot: null,
-    // Ein synthetischer Kontingent-Anker stammt aus keinem Roster-Kontingent und
-    // traegt deshalb nie einen primaeren Katalog (siehe {@link bindPrimaryCatalogues}).
-    primaryCatalogueId: null,
+    // Ein synthetischer Kontingent-Anker stammt aus keiner Roster-`<force>`: fuer
+    // ihn kann es gar keine Katalog-Angabe geben. Jeder andere Anker erbt die
+    // Bindung seines Kontingents.
+    primaryCatalogue: isForce
+      ? unresolvedPrimaryCatalogue(def.id, null, PrimaryCatalogueUnresolvedReason.NO_ROSTER_FORCE)
+      : parent.primaryCatalogue,
   };
   node.forceRoot = isForce ? node : parent.forceRoot;
   parent.children.push(node);
@@ -258,6 +282,9 @@ export function attachOfferAnchor(root, parent, def) {
     anchorKind: AnchorKind.OFFER_ANCHOR,
     frameId: root.nextFrameId(),
     forceRoot: parent.forceRoot,
+    // Ein Angebots-Anker ist nie ein Kontingent und erbt darum immer die Bindung
+    // seines Rahmens — dieselbe Knotenform wie in Phase 1.
+    primaryCatalogue: parent.primaryCatalogue,
   };
   parent.children.push(node);
   return node;
@@ -506,6 +533,9 @@ function attachGroupAnchor(owner, groupDef, nextFrameId) {
     anchorKind: AnchorKind.GROUP_ANCHOR,
     frameId: nextFrameId(),
     forceRoot: owner.forceRoot,
+    // Ein Gruppen-Anker ist nie ein Kontingent und erbt darum immer die Bindung
+    // seines Eigentuemers.
+    primaryCatalogue: owner.primaryCatalogue,
   };
   owner.children.push(node);
 }
@@ -573,18 +603,26 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  * Rahmen-Identitaet eines vorhandenen Knotens wiederverwendet — sonst laese eine
  * `self`-skopierte Grenze am Anker den Bestand eines fremden Knotens.
  *
- * Jedes reale Kontingent bekommt ausserdem seinen **primaeren Katalog** gebunden
- * (siehe {@link bindPrimaryCatalogues}) — die eine Stelle, an der die Angabe des
- * Rosters gegen die Kataloge des Datensatzes geprueft wird.
+ * Jedes Kontingent bekommt dabei seinen **primaeren Katalog** gebunden (siehe
+ * {@link bindPrimaryCatalogueOfForce}) — die eine Stelle, an der die Angabe des
+ * Rosters gegen die Kataloge des Datensatzes geprueft wird. Gemeldet wird eine
+ * fehlgeschlagene Bindung hier **nicht**: erst wenn eine Regel den Bezugsrahmen
+ * benutzt, ist sie ein Mangel (`query.js`, {@link primaryCatalogueOf}).
  *
  * @param {{ lookup: (id: string) => object|null, definitions?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
  * @param {{ forces?: object[] }} roster
- * @param {Set<string>} [datasetCatalogueIds]  die Wurzel-Ids der mitgegebenen
- *   Kataloge (`.cat`). Ohne sie ist kein primaerer Katalog entscheidbar — jedes
- *   Kontingent meldet das und jede `primary-catalogue`-Regel haelt fail-closed nicht.
+ * @param {Set<string>} datasetCatalogueIds  die Wurzel-Ids der mitgegebenen
+ *   Kataloge (`.cat`) — **Pflichteingabe**: an ihr entscheidet sich, ob die
+ *   Katalog-Angabe eines Kontingents einen bekannten Katalog benennt. Ein stiller
+ *   Ersatzwert (die leere Menge) liesse jedes Kontingent als unaufloesbar gelten
+ *   und jede `primary-catalogue`-Regel fail-closed schweigen — ein vergessenes
+ *   Argument saehe damit aus wie ein Datenmangel.
  * @returns {{ root: object, diagnostics: object[] }}
  */
-export function buildEvalTree(resolved, roster, datasetCatalogueIds = new Set()) {
+export function buildEvalTree(resolved, roster, datasetCatalogueIds) {
+  if (!(datasetCatalogueIds instanceof Set)) {
+    throw new Error('buildEvalTree: die Katalog-Ids des Datensatzes sind eine Pflichteingabe (Set<string>).');
+  }
   const diagnostics = [];
   const nextFrameId = createFrameIdSource();
   const root = {
@@ -599,13 +637,14 @@ export function buildEvalTree(resolved, roster, datasetCatalogueIds = new Set())
     frameId: nextFrameId(),
     nextFrameId,
     forceRoot: null,
+    // Die Wurzel ist die Armee, kein Kontingent: was unmittelbar an ihr haengt,
+    // hat keinen primaeren Katalog zu erben.
+    primaryCatalogue: NO_ROSTER_FORCE_BINDING,
   };
+  const build = { resolved, diagnostics, nextFrameId, datasetCatalogueIds };
   for (const forceInstance of roster.forces ?? []) {
-    attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId);
+    attachInstance(root, forceInstance, build);
   }
-  // Vor jeder Synthese: die Bindung gilt den **realen** Kontingenten des Rosters,
-  // und die Anker haengen darunter schon in ihrem Kontingent.
-  bindPrimaryCatalogues(root, datasetCatalogueIds, diagnostics);
   synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
   synthesizeParentScopePhantoms(root, nextFrameId);
   synthesizeForceCategoryAnchors(root, nextFrameId);

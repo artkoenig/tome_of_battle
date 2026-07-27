@@ -59,24 +59,38 @@ function resolveBound(limit, node, effective, ctx) {
 }
 
 /**
- * Wertet eine einzelne Grenze am Knoten aus und liefert ihr Ergebnis-Tripel,
- * oder `null`, wenn die Grenze gar nicht ausgewertet wird — weil sie suspendiert
- * oder unbegrenzt erklaert ist. Ziel der Zaehlung ist die eigene Definition der
- * Bezugsinstanz.
+ * Kennzeichnung einer Grenze, die **keine Antwort** hat: ihr Grenzwert oder ihr
+ * Ist-Wert liess sich in diesem Stand nicht bestimmen (unaufloesbarer Bezugsrahmen,
+ * nicht budgetierte Kostenart, unentscheidbarer primaerer Katalog, leerer Nenner
+ * einer Prozentgrenze). Sie wird **nicht** verglichen — aber auch nicht
+ * verschwiegen: der Bericht fuehrt sie am Slot als nicht auswertbare Grenze, damit
+ * „es gibt keine Grenze" und „die Grenze war nicht auswertbar" unterscheidbar
+ * bleiben (Issue 77). Ohne diese Unterscheidung waere aus „wir wissen es nicht" im
+ * Faehigkeitsdatensatz „unbegrenzt" geworden.
+ */
+const LIMIT_WITHOUT_ANSWER = Symbol('limitWithoutAnswer');
+
+/**
+ * Wertet eine einzelne Grenze am Knoten aus. Ziel der Zaehlung ist die eigene
+ * Definition der Bezugsinstanz.
+ *
+ * @returns {object|typeof LIMIT_WITHOUT_ANSWER|null} das Ergebnis-Tripel; der
+ *   {@link LIMIT_WITHOUT_ANSWER}-Vermerk, wenn die Grenze keine Antwort hat; oder
+ *   `null`, wenn sie gar nicht gilt (unbegrenzt erklaert).
  */
 function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
-  if (bound === SUSPENDED) return null;
+  if (bound === SUSPENDED) return LIMIT_WITHOUT_ANSWER;
   // Eine unbegrenzt erklaerte Grenze hat keinen Vergleichswert: sie feuert nie und
-  // schraenkt keinen Restspielraum ein. Der Bericht sieht dafuer — wie fuer jede
-  // nicht ausgewertete Grenze — schlicht kein Ergebnis.
+  // schraenkt keinen Restspielraum ein. Das ist eine **Aussage** („keine
+  // Obergrenze"), keine offene Frage — der Bericht weist sie genau so aus.
   if (bound === UNLIMITED) return null;
 
   const targetId = node.def.kind === DefinitionKind.CATEGORY_LINK ? node.def.targetId : node.def.id;
   const actual = query(ctx, limit.field, limit.scope, targetId, limit.flags);
   // Hat die Zaehlung der Grenze keine Antwort (Diagnose bereits gemeldet), wird die
-  // Grenze fail-closed suspendiert statt den Sentinel zu vergleichen.
-  if (isUnresolvedQuery(actual)) return null;
+  // Grenze fail-closed nicht verglichen — und als solche vermerkt.
+  if (isUnresolvedQuery(actual)) return LIMIT_WITHOUT_ANSWER;
   const satisfied = limit.kind === ConstraintKind.MIN ? actual >= bound : actual <= bound;
   return {
     limit,
@@ -111,6 +125,13 @@ function evaluateLimit(limit, node, effective, ctx) {
 /**
  * Wertet alle MIN- und MAX-Grenzen des Baums aus.
  *
+ * Geliefert werden **zwei** Listen, weil eine Grenze ohne Antwort etwas anderes ist
+ * als eine, die es nicht gibt: die Ergebnis-Tripel speisen Meldungen und Zahlen,
+ * die nicht auswertbaren Grenzen speisen allein den Faehigkeitsdatensatz ihres
+ * Slots ({@link LIMIT_WITHOUT_ANSWER}). Eine gemeinsame Liste haette beide Arten
+ * durch dieselbe Verletzungspruefung geschickt — ein Tripel ohne `satisfied` waere
+ * dort als unerfuellte Grenze gelesen worden.
+ *
  * @param {object} root  Wurzel des Evaluationsbaums.
  * @param {{ get: Function }} index
  * @param {import('./effectiveState.js').EffectiveState} effective effektive Grenzwerte je Knoten.
@@ -118,19 +139,25 @@ function evaluateLimit(limit, node, effective, ctx) {
  * @param {object[]} diagnostics  Sammelliste, in die Query- und Null-Nenner-Diagnosen fliessen.
  * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
  *   Roster-Kostengrenzen (`RosterBudget`), an den Query-Kontext durchgereicht.
- * @returns {object[]} Constraint-Ergebnisse (je ein Tripel; suspendierte Grenzen ausgenommen).
+ * @returns {{ results: object[], unevaluatedLimits: { limit: object, anchor: object }[] }}
+ *   die Ergebnis-Tripel und die Grenzen ohne Antwort, je mit ihrem Anker.
  */
 export function evaluateConstraints(root, index, effective, categoryIds, diagnostics, budget) {
   const results = [];
+  const unevaluatedLimits = [];
   for (const node of allNodes(root)) {
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
     // Die vom Verweis geerbten Grenzen gehoeren dazu (`limitsOf` ist die eine
     // Quelle der Wahrheit) — sonst blieben die Grenzen des Ziels eines
     // `entryLink`/`categoryLink` still unausgewertet.
     for (const limit of limitsOf(node.def)) {
-      const result = evaluateLimit(limit, node, effective, ctx);
-      if (result !== null) results.push(result);
+      const evaluation = evaluateLimit(limit, node, effective, ctx);
+      if (evaluation === LIMIT_WITHOUT_ANSWER) {
+        unevaluatedLimits.push({ limit, anchor: node });
+      } else if (evaluation !== null) {
+        results.push(evaluation);
+      }
     }
   }
-  return results;
+  return { results, unevaluatedLimits };
 }

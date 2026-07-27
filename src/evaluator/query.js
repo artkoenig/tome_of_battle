@@ -35,7 +35,7 @@ import {
   diagnostic,
 } from './model.js';
 import { isOccurrenceOf } from './identity.js';
-import { frameKeyOf, primaryCatalogueIdOf } from './evalTree.js';
+import { frameKeyOf, primaryCatalogueOf } from './evalTree.js';
 import { EMPTY_ROSTER_BUDGET } from './rosterBudget.js';
 
 /**
@@ -193,10 +193,16 @@ function resolveLimitValue(ctx, field, scope) {
  * „nein" —, damit `instanceOf` (`actual > 0`) und `notInstanceOf` (`actual === 0`)
  * unveraendert darauf rechnen. Ist der primaere Katalog **nicht entscheidbar**,
  * kommt statt einer erfundenen Zahl der {@link UNRESOLVED_QUERY}-Sentinel: die
- * Bedingung haelt dann weder in der einen noch in der anderen Richtung. Die
- * Diagnose dazu steht bereits vom Baumbau im Bericht
- * (`evalTree.js`, `bindPrimaryCatalogues`) — hier waere sie einmal je Bedingung
- * statt einmal je Kontingent.
+ * Bedingung haelt dann weder in der einen noch in der anderen Richtung.
+ *
+ * Gemeldet wird das **hier**, an der fragenden Stelle — wie bei der nicht
+ * aufloesbaren Kostengrenze ({@link resolveLimitValue}) und aus denselben zwei
+ * Gruenden: ein Kontingent, in dem keine Regel diesen Rahmen benutzt, hat keinen
+ * Mangel zu melden, und die Unentscheidbarkeit trifft nicht nur Kontingente — ein
+ * Anker ueber gar keinem Kontingent (roster-weite Pflichtgrenze, synthetischer
+ * Kontingent-Anker) faellt beim Baumbau durch jedes Raster und bliebe sonst ohne
+ * jede Diagnose. Den Grund traegt die Bindung selbst
+ * ({@link import('./evalTree.js').primaryCatalogueOf}).
  *
  * Ein anderes Feld als die Selektionszaehlung ist an diesem Rahmen **unbelegt**
  * (alle 27 Vorkommen tragen `field="selections"`). Was eine Kostensumme „im
@@ -210,9 +216,12 @@ function resolvePrimaryCatalogue(ctx, field, targetId) {
     ctx.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_FIELD, { field, scope: ScopeKeyword.PRIMARY_CATALOGUE }));
     return UNRESOLVED_QUERY;
   }
-  const primaryCatalogueId = primaryCatalogueIdOf(ctx.node);
-  if (primaryCatalogueId === null) return UNRESOLVED_QUERY;
-  return primaryCatalogueId === targetId ? MATCHES_PRIMARY_CATALOGUE : DIFFERS_FROM_PRIMARY_CATALOGUE;
+  const { id, unresolved } = primaryCatalogueOf(ctx.node);
+  if (id === null) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE, unresolved));
+    return UNRESOLVED_QUERY;
+  }
+  return id === targetId ? MATCHES_PRIMARY_CATALOGUE : DIFFERS_FROM_PRIMARY_CATALOGUE;
 }
 
 /**
@@ -263,6 +272,11 @@ export function query(ctx, field, scope, targetId, flags) {
   if (field.kind === CountedFieldKind.COST_SUM) {
     return tally.costSums.get(field.costTypeId) ?? 0;
   }
+  // Ein Feld, das diese Schicht nicht zaehlen kann, hat **keine** Antwort — auch
+  // hier nicht. Frueher stand an dieser Stelle `0`, waehrend dieselbe Diagnose im
+  // Rahmen `primary-catalogue` schon den Sentinel lieferte: zwei Antworten auf
+  // dieselbe Frage, von denen ein Konsument die eine prueft und die andere vergisst
+  // (Issue 77).
   ctx.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_FIELD, { field }));
-  return 0;
+  return UNRESOLVED_QUERY;
 }

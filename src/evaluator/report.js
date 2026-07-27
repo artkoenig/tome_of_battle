@@ -241,10 +241,47 @@ function indexResultsByAnchor(results) {
 
 /**
  * Das Ergebnis der Grenze gegebener Art (MIN/MAX) am Knoten, oder `null`, wenn
- * der Knoten keine solche (nicht suspendierte) Grenze traegt.
+ * der Knoten keine solche ausgewertete Grenze traegt.
  */
 function findResult(resultsByAnchor, node, kind) {
   return resultsByAnchor.get(node)?.get(kind) ?? null;
+}
+
+/** Die Reihenfolge, in der ein Slot seine nicht auswertbaren Grenzenarten fuehrt. */
+const CONSTRAINT_KIND_ORDER = Object.freeze([ConstraintKind.MIN, ConstraintKind.MAX]);
+
+/** Kein Slot ohne nicht auswertbare Grenze traegt eine eigene, leere Liste. */
+const NO_UNEVALUATED_LIMIT_KINDS = Object.freeze([]);
+
+/**
+ * Die **nicht auswertbaren** Grenzen je Knoten und Art, **einmal** je Bericht
+ * aufgebaut — dieselbe Zuordnung wie {@link indexResultsByAnchor}, nur fuer die
+ * Grenzen ohne Antwort (`constraints.js`, `LIMIT_WITHOUT_ANSWER`). Gezaehlt wird
+ * nichts: fuer den Slot ist allein entscheidend, **ob** eine Grenze dieser Art ohne
+ * Antwort blieb.
+ */
+function indexUnevaluatedLimitsByAnchor(unevaluatedLimits) {
+  const index = new Map();
+  for (const { limit, anchor } of unevaluatedLimits) {
+    let kinds = index.get(anchor);
+    if (kinds === undefined) {
+      kinds = new Set();
+      index.set(anchor, kinds);
+    }
+    kinds.add(limit.kind);
+  }
+  return index;
+}
+
+/**
+ * Die Grenzenarten, deren Auswertung an diesem Slot **keine Antwort** hatte — in
+ * fester Reihenfolge, damit der Datensatz nicht an der Auswertungsreihenfolge
+ * haengt.
+ */
+function unevaluatedLimitKindsOf(unevaluatedByAnchor, node) {
+  const kinds = unevaluatedByAnchor.get(node);
+  if (kinds === undefined) return NO_UNEVALUATED_LIMIT_KINDS;
+  return Object.freeze(CONSTRAINT_KIND_ORDER.filter(kind => kinds.has(kind)));
 }
 
 /**
@@ -262,12 +299,24 @@ function frameReferenceOf(node) {
   return { path: pathOf(frame), defId: frame.def.id };
 }
 
+/** Der Restspielraum, den eine Grenze ohne Antwort zulaesst: keiner. */
+const NO_HEADROOM = 0;
+
 /**
  * Der Restspielraum eines Slots: `max(0, Grenzwert − Ist-Wert)`, wenn eine
- * MAX-Grenze besteht. Ohne MAX-Grenze gibt es keine Obergrenze und damit keinen
- * Restspielraum (`null`).
+ * MAX-Grenze ausgewertet wurde. Ohne MAX-Grenze gibt es keine Obergrenze und damit
+ * keinen Restspielraum (`null`).
+ *
+ * Blieb dagegen eine MAX-Grenze des Slots **ohne Antwort**, ist der Restspielraum
+ * nicht unbekannt-also-unbegrenzt, sondern **null Stueck**: „wir wissen es nicht"
+ * darf sich nicht in „unbegrenzt" verwandeln (Issue 77). `null` bliebe genau diese
+ * Verwandlung, denn es ist die Schreibweise fuer „keine Obergrenze". Welche Art
+ * ohne Antwort blieb, sagt `unevaluatedLimitKinds` am selben Datensatz — die 0 ist
+ * damit als vorsichtige Antwort erkennbar und nicht von einer ausgeschoepften
+ * Grenze zu unterscheiden gezwungen.
  */
-function headroomOf(maxResult) {
+function headroomOf(maxResult, hasUnevaluatedMaxLimit) {
+  if (hasUnevaluatedMaxLimit) return NO_HEADROOM;
   return maxResult === null ? null : Math.max(0, maxResult.bound - maxResult.actual);
 }
 
@@ -293,7 +342,15 @@ function headroomOf(maxResult) {
  * Verfuegbarkeit: ein Slot kann „noch 4 frei" melden und trotzdem an einer Grenze
  * anderer Messgroesse haengen — etwa 4 freie Auswahlen bei 98 von 100 Punkten. Was
  * eine weitere Auswahl tatsaechlich verletzte, sagt die Meldungsliste, die **jede**
- * Grenze fuehrt (§4.8). Name,
+ * Grenze fuehrt (§4.8).
+ *
+ * `unevaluatedLimitKinds` traegt die Gegenprobe zu diesen Zahlen: die Grenzenarten,
+ * deren Auswertung **keine Antwort** hatte. Ohne sie waere eine nicht auswertbare
+ * Grenze im Datensatz von einer nicht vorhandenen nicht zu unterscheiden — beide
+ * saehen wie `null` aus, und `null` heisst hier „keine Grenze", also unbegrenzt.
+ * Genau diese Verwandlung von „wir wissen es nicht" in „unbegrenzt" ist der Grund
+ * fuer das Feld; die MAX-Seite wird deshalb zusaetzlich fail-closed ausgewiesen
+ * (`headroom` 0, `isBlocked` true). Name,
  * Autor-Meldungen und die **Info-Projektion** (`infoElements`: die fuer diesen
  * Slot geltenden Profile und Regeltexte, samt der von seinen belegten
  * Unter-Auswahlen geerbten) kommen ebenfalls aus dem effektiven Zustand — die
@@ -306,9 +363,11 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry }) {
+function toCapability(node, { resultsByAnchor, unevaluatedByAnchor, effective, unstableNodes, profileTypeRegistry }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
+  const unevaluatedLimitKinds = unevaluatedLimitKindsOf(unevaluatedByAnchor, node);
+  const hasUnevaluatedMaxLimit = unevaluatedLimitKinds.includes(ConstraintKind.MAX);
   return {
     defId: node.def.id,
     targetDefId: resolvedTargetIdOf(node.def),
@@ -318,9 +377,16 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax: maxResult === null ? null : maxResult.bound,
     current: maxResult?.actual ?? minResult?.actual ?? 0,
-    headroom: headroomOf(maxResult),
+    headroom: headroomOf(maxResult, hasUnevaluatedMaxLimit),
     isMandatoryUnmet: minResult !== null && !minResult.satisfied,
-    isBlocked: maxResult !== null && maxResult.actual >= maxResult.bound,
+    // Fail-closed wie der Restspielraum: eine Obergrenze ohne Antwort sperrt, statt
+    // eine Auswahl zuzusagen, die sie vielleicht gerade verboten haette.
+    isBlocked: hasUnevaluatedMaxLimit || (maxResult !== null && maxResult.actual >= maxResult.bound),
+    // Die Grenzenarten, deren Auswertung an diesem Slot **keine Antwort** hatte
+    // (`constraints.js`). Ohne dieses Feld waere „die Grenze war nicht auswertbar"
+    // von „es gibt keine Grenze" nicht zu unterscheiden — beides saehe im Datensatz
+    // wie `effectiveMin`/`effectiveMax` `null` aus, also wie „unbegrenzt".
+    unevaluatedLimitKinds,
     isHidden: effective.isHidden(node),
     isValueUnstable: unstableNodes.has(node),
     authorMessages: renderedAuthorMessagesOf(node, effective),
@@ -336,7 +402,10 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  *
  * @param {object} root  Wurzel des Evaluationsbaums.
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
- * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
+ * @param {{ results: object[], unevaluatedLimits: object[] }} constraintEvaluation
+ *   die Auswertung der Grenzen (`evaluateConstraints`): die Ergebnis-Tripel und die
+ *   Grenzen ohne Antwort. Beide speisen den Faehigkeitsdatensatz; Meldungen macht
+ *   nur die erste Liste — eine Grenze ohne Antwort behauptet nichts.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
  * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
@@ -355,7 +424,8 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  *   Query-Primitiv.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  */
-export function buildReport(root, effective, results, diagnostics, extras = {}) {
+export function buildReport(root, effective, constraintEvaluation, diagnostics, extras = {}) {
+  const { results, unevaluatedLimits } = constraintEvaluation;
   const {
     budgetViolations = [],
     unstableNodes = NO_UNSTABLE_NODES,
@@ -366,6 +436,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
   const capabilityContext = {
     resultsByAnchor: indexResultsByAnchor(results),
+    unevaluatedByAnchor: indexUnevaluatedLimitsByAnchor(unevaluatedLimits),
     effective,
     unstableNodes,
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
