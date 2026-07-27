@@ -7,8 +7,10 @@
  * frisch geparsten Objekte. Seit die Fassade zweistufig ist (ein aufbereiteter
  * Datensatz traegt beliebig viele Auswertungen), darf diese Garantie nicht nur
  * auf Disziplin beruhen: nach der Aufloesung ist der ganze Graph tief
- * eingefroren, und jeder spaetere Schreibversuch wirft im Strict Mode einen
- * `TypeError` — an der schreibenden Stelle, nicht als ferne Korruption.
+ * eingefroren, und ein gewoehnlicher Schreibzugriff scheitert mit einem
+ * `TypeError` — an der schreibenden Stelle, nicht als ferne Korruption. Die
+ * Reichweite dieser Durchsetzung (und was sie bewusst nicht abfaengt) steht im
+ * Kopf von `resolver.js`.
  *
  * Drei Dinge stehen hier: dass der Graph eingefroren **ist** (der Mechanismus),
  * dass die daraus folgende Einmal-Vorbedingung von `resolveCatalogue`
@@ -23,6 +25,10 @@ import { describe, it, expect } from 'vitest';
 import { parseCatalogue } from './catalogReader.js';
 import { resolveCatalogue } from './resolver.js';
 import { evaluate, prepareDataset } from './evaluator.js';
+// Engine-intern und hier bewusst benutzt: nur ueber diesen Zugang laesst sich der
+// Graph *desselben* aufbereiteten Datensatzes zwischen zwei Auswertungen
+// angreifen — von aussen ist der Griff undurchsichtig.
+import { PreparedDataset } from './datasetPreparation.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
@@ -247,6 +253,31 @@ describe('Fassade: mehrere Auswertungen desselben Datensatzes beeinflussen einan
     const againstOwn = evaluate(prepareDataset({ catalogues: [CATALOGUE_XML] }), OVER_LIMIT);
 
     expect(reportFingerprint(againstShared)).toEqual(reportFingerprint(againstOwn));
+  });
+
+  it('haelt einen Schreibzugriff zwischen zwei Auswertungen von der zweiten fern', () => {
+    const shared = prepareDataset({ catalogues: [CATALOGUE_XML] });
+    const first = evaluate(shared, OVER_LIMIT);
+    expectSubstantive(first);
+
+    // Der Angriff auf die Wiederverwendung, ueber den engine-internen Zugang zum
+    // aufbereiteten Datensatz gefuehrt: die Grenze hochsetzen, gegen die eben
+    // ausgewertet wurde. Gelaenge er, verschwaende `limit-max-warriors` aus jedem
+    // spaeteren Bericht — genau die stille Abhaengigkeit vom Verlauf frueherer
+    // Auswertungen, die die Durchsetzung ausschliesst. Der Schreibversuch wird
+    // bewusst geschluckt: dieser Test prueft nicht, *dass* er wirft, sondern dass
+    // die zweite Auswertung unberuehrt bleibt.
+    const { resolved } = PreparedDataset.contentsOf(shared);
+    const maxWarriors = resolved.lookup(ENTRY_ID).limits.find(limit => limit.id === MAX_WARRIORS_LIMIT_ID);
+    try {
+      maxWarriors.value = 99;
+    } catch {
+      // Die Durchsetzung haelt — der erwartete Fall.
+    }
+
+    const second = evaluate(shared, OVER_LIMIT);
+    expectSubstantive(second);
+    expect(reportFingerprint(second)).toEqual(reportFingerprint(first));
   });
 
   it('weist den Schreibzugriff ab, der eine spaetere Auswertung veraendern wuerde', () => {

@@ -100,6 +100,38 @@ Akzeptanzkriterien (übernommen aus dem Alt-Issue
   ein aufbereiteter Graph in beliebig viele Auswertungen reicht. Der Preis
   steht im PR-Text, damit er widersprechbar ist.
 
+- **Review-Runde 2** (frischer Reviewer, nicht der aus Runde 1). Fakten grün
+  (`npm test` 2108 Tests, `npm run lint`, `npm run typecheck`, alle Exit 0);
+  Kriterien 1, 2 und 4 erfüllt, Kriterium 3 erneut nicht — an anderer Stelle
+  und aus dem entgegengesetzten Grund als in Runde 1:
+  - *Blockierend, zurück an den Implementer:* `effectiveState.js:5` trägt
+    unverändert den Satz „Basisdefinitionen werden nie mutiert" — genau die
+    Zusicherung, die der Intent als Widerspruch benennt. Der Implementer hatte
+    in Runde 1 geurteilt, die Datei sei „true as written" und brauche keine
+    Änderung; das Urteil hält der Zeile nicht stand. Dazu `effectiveState.js:8`
+    („ein Schreibversuch wirft im Strict Mode") — dieselbe absolute
+    Formulierung, die in `resolver.js` schon korrigiert wurde.
+  - *Von mir selbst behoben:* Meine eigene Korrektur an
+    `docs/evaluator-architecture.md` (Leitprinzip 5) aus Runde 1 trug denselben
+    Fehler — sie behauptete den Wurf im strict mode absolut. Jetzt präzisiert:
+    Felder über den strict mode, Mengen/Abbildungen über ersetzte Mutatoren,
+    Prototyp-Umgehung ausdrücklich ausgenommen.
+  - *Nicht blockierend, aber zur Nacharbeit beauftragt:* Die Begründung des
+    Implementers, die beiden Gleichheitstests könnten „konstruktionsbedingt
+    nicht kippen", ist widerlegt. Der Reviewer hat die Neutralisierung
+    repliziert (8/11 wie gemeldet) und dann einen Test gebaut, der Kriterium 4
+    ausdrückt *und* kippt: Schreibzugriff auf `limits[0].value` über
+    `PreparedDataset.contentsOf`, danach Vergleich zweier Berichte —
+    grün gegen HEAD, rot mit neutralisierter Durchsetzung (`limit-max-warriors`
+    verschwindet, weil die Grenze auf 99 steigt). Der Test wird ergänzt.
+- Perzeptionsregel geprüft: Kriterium 3 ist zweimal in Folge gerissen, aber
+  nicht mit identischem Befund (Runde 1: `resolver.js` behauptete ein
+  Einfrieren, das nicht stattfindet; Runde 2: `effectiveState.js` bestreitet
+  einen Schreibzugriff, der stattfindet). Kein Stopp — aber der Implementer
+  ist angewiesen, zu melden statt zu flicken, falls eine dritte Stelle
+  dieselbe Zusicherung erneut anders formuliert; das wäre dann ein Problem
+  der Verteilung, nicht der Formulierung.
+
 ## Checkpoints
 
 ### Before implementation
