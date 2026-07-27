@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: superseded
 Type: fix
 Blocked by: None
 
@@ -32,3 +32,4 @@ anzufassen ist wahrscheinlich billiger als nacheinander.
 - [ ] Die uebrige E2E-Suite bleibt gruen; jede geaenderte Erwartung ist einzeln begruendet.
 
 ## Comments
+- superseded: Inhaltlich erledigt durch Main-Issue 76, Scheibe 03 (ein verlinkter Eintrag zaehlt unter derselben Eintragsart wie ein direkt gesetzter). Beide Issues beantworten dieselbe Frage — unter welchen Ids und unter welcher Eintragsart ein ueber einen Verweis gesetztes Vorkommen zaehlbar ist — und beide haetten dieselben Erwartungslisten der E2E-Suite umgezogen. Getrennt umgesetzt haette das geheissen, die Suite zweimal auf einem halb definierten Vertrag gruen zu ziehen. Die Kriterien dieses Issues wurden bei der Spezifikations-Pruefung von 76 ausdruecklich mitgeprueft und als erfuellt bestaetigt; das Szenario docs/testing/linked-entry-type-count/ deckt den Fall an echten Katalogdaten ab.
