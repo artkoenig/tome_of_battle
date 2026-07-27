@@ -3,7 +3,7 @@
  * Slice 02). Eine `limit::<id>`-Regel liest die **eingestellte** Kostengrenze aus
  * dem `RosterBudget` — nicht die verplante Summe aus dem Zaehlindex. Ein
  * unaufloesbares Budget liefert nicht still `0`, sondern den
- * {@link UNRESOLVED_BUDGET}-Sentinel samt Diagnose; ein Scope ungleich `roster`
+ * {@link UNRESOLVED_QUERY}-Sentinel samt Diagnose; ein Scope ungleich `roster`
  * ebenso.
  */
 
@@ -13,7 +13,7 @@ import {
   limitValueField,
   costSumField,
   ScopeKeyword,
-  UNRESOLVED_BUDGET,
+  UNRESOLVED_QUERY,
   DiagnosticKind,
   BudgetLimitUnresolvedReason,
 } from './model.js';
@@ -67,7 +67,7 @@ describe('query LIMIT_VALUE: eingestellte Grenze aus dem Budget', () => {
 
     const result = query(ctx, limitValueField(POINTS), ScopeKeyword.ROSTER, null, { shared: true });
 
-    expect(result).toBe(UNRESOLVED_BUDGET);
+    expect(result).toBe(UNRESOLVED_QUERY);
     expect(diagnostics).toContainEqual(
       expect.objectContaining({
         kind: DiagnosticKind.UNRESOLVED_BUDGET_LIMIT,
@@ -84,7 +84,7 @@ describe('query LIMIT_VALUE: eingestellte Grenze aus dem Budget', () => {
 
     const result = query(ctx, limitValueField(POINTS), ScopeKeyword.FORCE, null, { shared: true });
 
-    expect(result).toBe(UNRESOLVED_BUDGET);
+    expect(result).toBe(UNRESOLVED_QUERY);
     expect(diagnostics).toContainEqual(
       expect.objectContaining({
         kind: DiagnosticKind.UNRESOLVED_BUDGET_LIMIT,

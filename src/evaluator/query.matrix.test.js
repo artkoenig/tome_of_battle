@@ -6,7 +6,7 @@ import { buildEvalTree } from './evalTree.js';
 import { buildIndex } from './countIndex.js';
 import { createBaseEffectiveState } from './effectiveState.js';
 import { query, createQueryContext } from './query.js';
-import { SELECTION_COUNT, costSumField, ScopeKeyword } from './model.js';
+import { SELECTION_COUNT, costSumField, ScopeKeyword, UNRESOLVED_QUERY } from './model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -240,12 +240,16 @@ describe('Kostensummen-Ziel (Summe statt Anzahl)', () => {
 });
 
 describe('Nicht aufloesbarer Bezugsrahmen', () => {
-  it('liefert 0 und eine Auflösungs-Diagnose statt einer falschen Zaehlung', () => {
+  // Seit Issue 77 fail-closed: ein Rahmen ohne Rahmenknoten liefert **keine Zahl**.
+  // Die frueher hier zurueckgegebene 0 war eine Behauptung („nichts gezaehlt"), die
+  // `notInstanceOf` (`actual === 0`) als erfuellte Bedingung las — die Regel feuerte
+  // also gerade dann, wenn die Engine ihren Rahmen nicht verstand.
+  it('liefert den Unaufloesbar-Sentinel und eine Auflösungs-Diagnose statt einer falschen Zaehlung', () => {
     const { ctx, diagnostics } = contextAtBezugsinstanz();
 
     const result = query(ctx, SELECTION_COUNT, 'ghost-entry-id', UNIT, { shared: true });
 
-    expect(result).toBe(0);
+    expect(result).toBe(UNRESOLVED_QUERY);
     expect(diagnostics).toContainEqual(
       expect.objectContaining({ kind: 'unresolvedScope', scope: 'ghost-entry-id' })
     );

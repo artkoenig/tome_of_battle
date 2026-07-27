@@ -60,7 +60,7 @@ import {
   ModifierKind,
   ModifierTargetKind,
   DiagnosticKind,
-  UNRESOLVED_BUDGET,
+  isUnresolvedQuery,
   diagnostic,
 } from './model.js';
 import { allNodes, infoCarriersOf } from './evalTree.js';
@@ -115,14 +115,21 @@ function compare(type, actual, expected, diagnostics) {
 }
 
 /**
- * Wertet eine einzelne Bedingung ueber das Query-Primitiv aus. Ein unaufloesbares
- * Budget-Feld ({@link UNRESOLVED_BUDGET}, Diagnose bereits von `query` gemeldet)
- * laesst die Bedingung **nicht** halten — der Modifikator feuert dann fail-closed
- * nicht, statt mit einem erfundenen Wert zu vergleichen (`design.md`).
+ * Wertet eine einzelne Bedingung ueber das Query-Primitiv aus. Eine Query **ohne
+ * Antwort** ({@link isUnresolvedQuery}: unaufloesbarer Bezugsrahmen, nicht
+ * budgetierte Kostenart, unentscheidbarer primaerer Katalog — die Diagnose hat
+ * `query` bzw. der Baumbau bereits gemeldet) laesst die Bedingung **nicht** halten:
+ * der Modifikator feuert dann fail-closed nicht, statt mit einem erfundenen Wert
+ * zu vergleichen.
+ *
+ * Das gilt ausdruecklich in **beide** Richtungen. Frueher lieferte ein
+ * unaufloesbarer Rahmen die Zahl 0, und `notInstanceOf` (`actual === 0`) las das
+ * als „trifft zu" — die Bedingung hielt gerade dann, wenn die Engine ihren Rahmen
+ * nicht kannte (Issue 77).
  */
 function conditionHolds(ctx, condition) {
   const actual = query(ctx, condition.field, condition.scope, condition.targetChildId, condition.flags);
-  if (actual === UNRESOLVED_BUDGET) return false;
+  if (isUnresolvedQuery(actual)) return false;
   return compare(condition.type, actual, condition.value, ctx.diagnostics);
 }
 
@@ -135,8 +142,8 @@ function conditionHolds(ctx, condition) {
 function repeatCount(ctx, repeat) {
   if (repeat.perValue === 0) return 0;
   const actual = query(ctx, repeat.field, repeat.scope, repeat.targetChildId, repeat.flags);
-  // Unaufloesbares Budget-Feld: keine Wiederholung (fail-closed, Diagnose aus `query`).
-  if (actual === UNRESOLVED_BUDGET) return 0;
+  // Query ohne Antwort: keine Wiederholung (fail-closed, Diagnose bereits gemeldet).
+  if (isUnresolvedQuery(actual)) return 0;
   const quotient = actual / repeat.perValue;
   const steps = repeat.roundUp ? Math.ceil(quotient) : Math.floor(quotient);
   return steps * repeat.repeats;
@@ -210,7 +217,7 @@ function witnessOfCondition(ctx, condition) {
   // dabei schon gemeldet, deshalb laeuft sie gegen eine Wegwerf-Sammelliste —
   // sonst erschiene dieselbe Meldung doppelt.
   const counted = query({ ...ctx, diagnostics: [] }, condition.field, condition.scope, condition.targetChildId, condition.flags);
-  if (counted === UNRESOLVED_BUDGET || counted <= 0) return null;
+  if (isUnresolvedQuery(counted) || counted <= 0) return null;
   return Object.freeze({ defId: definition.id, name: definition.name ?? definition.resolved?.name ?? null });
 }
 

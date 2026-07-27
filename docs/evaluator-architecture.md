@@ -84,6 +84,10 @@ Ausnahmslos gilt: der Anker ist **ein Blatt** (er ist kein realer Rahmen, erzeug
 
 Phase 2 hängt ausschließlich **hinter** alle bestehenden Kinder an. Damit bleiben Reihenfolge, Elternschaft und die Pfade aller vorhandenen Slots unverändert; die Rahmen-Identitäten zieht sie aus derselben Quelle wie Phase 1, sodass ein Anker nie die Identität eines vorhandenen Knotens wiederverwendet.
 
+**Der primäre Katalog hängt am Kontingent.** Der Bezugsrahmen `scope="primary-catalogue"` fragt nach dem **Armee-Katalog des Kontingents**, in dem der auswertende Knoten steht ([BSData §7.7](battlescribe-data-format.md#primary-catalogue--der-armee-katalog-des-kontingents)). Seine Quelle ist das **Roster**, nicht der Katalogsatz: `<force catalogueId="…">` der `.ros`, im Roster-Kontrakt der Fassade als optionales `forces[i].catalogueId`. Das steht **nicht** im Widerspruch zu [ADR 0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md) — ein Mehr-Katalog-*Datensatz* kennt weiterhin keinen ausgezeichneten Katalog; ausgezeichnet ist er je Kontingent, und die Auszeichnung stammt vom Roster.
+
+Die Join-Schicht bindet ihn deshalb **einmal je realem Kontingent** und prüft ihn dabei gegen die Wurzel-Ids der mitgegebenen `.cat` (die der Datensatz-Vorlauf ohnehin führt, §3.1). Fehlt die Angabe oder benennt sie keinen dieser Kataloge, bleibt der primäre Katalog `null` und die Schicht meldet das — einmal je Kontingent, nicht einmal je fragender Bedingung. Ein benannter Lesezugriff (`primaryCatalogueIdOf(node)`, neben `frameKeyOf`) liefert jedem Knoten den Katalog seines umschließenden Kontingents; das Query-Primitiv greift nie selbst in die Knotenform. Ein synthetischer Kontingent-Anker stammt aus keinem Roster-Kontingent und trägt daher nie einen primären Katalog.
+
 ### 3.3 Index-Schicht: Scope-Schlüssel statt Baumtraversalen
 
 Ein Durchlauf über den Evaluationsbaum baut Zählindizes. Jeder reale Knoten trägt zu einer Menge von **Scope-Schlüsseln** bei: Wurzel (roster), sein Kontingent (force), jeder Vorfahre (für parent-Scopes), jede effektive Kategorie-ID, seine **Zähl-Identität** (die eigene Definitions-ID und, ist er über einen `entryLink` gesetzt, auch dessen Ziel — §4.3) sowie — ist er Member einer `selectionEntryGroup` — jede zugehörige Gruppen-ID (aus dem Definitionsbaum abgeleitet, §3.2). Pro Schlüssel werden geführt: Anzahl Auswahlen und Summe je Kostenart, jeweils als *direkte* und *tiefe* Variante (für `includeChildSelections` / `includeChildForces`). Damit sind roster- und force-Bezüge O(1)-Lookups, und eine gruppen-skopierte Grenze liest die Zahl ihrer Member über dasselbe Query-Primitiv (Ziel = Gruppen-ID im Eigentümer-Rahmen). Prozent-Nenner sind derselbe Lookup im Referenzrahmen.
@@ -167,7 +171,9 @@ enum ConditionKind  { lessThan, greaterThan, equalTo, notEqualTo,  // XSD-SSOT
 enum ModifierKind   { set, increment, decrement, add, remove,      // XSD-SSOT (10 Werte)
                       append, prepend, multiply, set-primary, unset-primary }
 enum ConditionGroupKind { and, or }                               // XSD-SSOT
-enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF }
+enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF,
+                      PRIMARY_CATALOGUE }  // BSData §7.7: kein Zählrahmen, sondern
+                      // der Armee-Katalog des Kontingents (Quelle: Roster, §3.2)
 type ScopeRef       = ScopeKeyword | EntryId | CategoryId
 
 record CountFlags {
@@ -230,8 +236,11 @@ record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
                       children: ResolvedDef[], resolutionLog: Diagnostic[] }
 
 record InstanceNode { defId: Id, count: number, children: InstanceNode[] }
+record ForceInstance extends InstanceNode { catalogueId: Id? }  // der Armee-Katalog des
+                      // Kontingents (`<force catalogueId>` der .ros) — optional; fehlt er,
+                      // ist der primäre Katalog nicht entscheidbar (§3.2, BSData §7.7)
 record CostLimit    { costTypeId: Id, value: number }                    // eine eingestellte Grenze je Kostenart
-record Roster       { forces: InstanceNode[], costLimits: CostLimit[] }  // costLimits: das eingestellte Budget je Kostenart (vollständige Liste)
+record Roster       { forces: ForceInstance[], costLimits: CostLimit[] }  // costLimits: das eingestellte Budget je Kostenart (vollständige Liste)
 
 enum AnchorKind { OCCUPIED, MANDATORY_PHANTOM, GROUP_ANCHOR,      // Herkunft eines Slots;
                   CATEGORY_ANCHOR, OFFER_ANCHOR }                 // genau eine je Knoten
@@ -246,7 +255,8 @@ enum LimitMeasure   { SELECTION_COUNT, FORCE_COUNT, COST_SUM,   // WAS die Grenz
                       BUDGET_LIMIT, ROSTER_BUDGET }             // die ersten vier je genau
                       // ein CountedFieldKind (limitMeasureOfCountedField), ROSTER_BUDGET
                       // ist die engine-eigene Regel „Armee zu teuer"
-enum ScopeKind      { ROSTER, FORCE, PARENT, SELF,   // die vier Werte aus ScopeKeyword …
+enum ScopeKind      { ROSTER, FORCE, PARENT, SELF,   // die Werte aus ScopeKeyword …
+                      PRIMARY_CATALOGUE,
                       ENTRY_ID, CATEGORY_ID }        // … plus die beiden ID-Rahmen: dem rohen
                       // `scope` sieht man nicht an, welches von beidem er ist
 
@@ -258,6 +268,8 @@ record EvalNode {
   isPhantom: bool
   anchorKind: AnchorKind           // abgelesen, nicht aus Pfadform geraten
   forceRoot: EvalNode              // das umschließende Kontingent
+  primaryCatalogueId: Id?          // nur am Kontingent-Knoten besetzt; geprüft beim
+                                   // Baumbau, gelesen über primaryCatalogueIdOf (§3.2)
 }
 
 // Träger = der Knoten selbst oder eines seiner Info-Elemente (§3.4).
@@ -417,15 +429,28 @@ function attachInstance(parent, instance, resolved): EvalNode
     diagnose(ENTRY_LINK_TARGET_MISMATCH)                // gemeldet, nicht geraten
   ...                                                   // Auswertung folgt dem Verweis
 
-function buildEvalTree(resolved, roster): EvalNode
+function buildEvalTree(resolved, roster, datasetCatalogueIds): EvalNode
   root = EvalNode(def = resolved.gameSystemRoot, instance = null, isPhantom = false)
   for forceInstance in roster.forces:
     forceDef  = resolved.lookup(forceInstance.defId)   // Fehler → Diagnose + Knoten überspringen
     forceNode = attachChild(root, forceDef, forceInstance)
     joinChildrenRecursively(forceNode, resolved)
     synthesizePhantoms(forceNode, resolved)
+  bindPrimaryCatalogues(root, datasetCatalogueIds)     // einmal je REALEM Kontingent
   synthesizeRosterPhantoms(root, resolved)             // rosterweite Kategorie-/Eintragsgrenzen
   return root
+
+function bindPrimaryCatalogues(root, datasetCatalogueIds)
+  // Der primäre Katalog kommt aus dem Roster (§3.2) und wird gegen die Kataloge des
+  // Datensatzes geprüft. Beides wird gemeldet statt still als „andere Armee" gelesen:
+  // keine Angabe, und eine Angabe auf einen nicht mitgegebenen Katalog.
+  for forceNode in realForceNodes(root):
+    declared = forceNode.instance.catalogueId
+    if declared == null or declared not in datasetCatalogueIds:
+      diagnose(UNRESOLVED_PRIMARY_CATALOGUE(forceNode.def.id, declared, reason))
+      forceNode.primaryCatalogueId = null
+    else:
+      forceNode.primaryCatalogueId = declared
 
 function synthesizePhantoms(forceNode, resolved)
   // Anker für Grenzen an Knoten, die keine Instanz haben
@@ -503,7 +528,7 @@ Direkte vs. tiefe Zählung: beim Eintragen wird die Beitragskette entlang der Vo
 Die eine Stelle, die Scopes, Flags und Felder versteht. Limit, Condition und Repeat rufen ausschließlich diese Funktion.
 
 ```
-function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRESOLVED_BUDGET
+function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRESOLVED_QUERY
   // LIMIT_VALUE liest die eingestellte Budgetgrenze aus dem Roster (ctx.budget),
   // nicht aus dem Zählindex. Nur Bezugsrahmen ROSTER ist sinnvoll; bei anderem
   // Scope oder fehlender Grenze: Diagnose + Sentinel (nie still 0). Die Konsumenten
@@ -511,15 +536,27 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
   if field == LIMIT_VALUE:
     if scope != ROSTER or not ctx.budget.has(field.costTypeId):
       ctx.diagnostics.add(Diagnostic.UNRESOLVED_BUDGET_LIMIT(field.costTypeId, reason))
-      return UNRESOLVED_BUDGET
+      return UNRESOLVED_QUERY
     return ctx.budget.get(field.costTypeId)
+
+  // PRIMARY_CATALOGUE zählt nichts: die Frage ist „ist der Armee-Katalog dieses
+  // Kontingents der genannte?" (BSData §7.7). Antwort in der Währung des Aufrufers,
+  // damit instanceOf/notInstanceOf unverändert darauf rechnen; Flags sind ohne
+  // Wirkung. Ist der primäre Katalog nicht entscheidbar, kommt der Sentinel — die
+  // Diagnose dazu steht bereits vom Baumbau (§3.2).
+  if scope == PRIMARY_CATALOGUE:
+    primary = primaryCatalogueIdOf(ctx.node)
+    return primary == null ? UNRESOLVED_QUERY : (primary == targetId ? 1 : 0)
 
   frame = resolveScopeFrame(ctx.node, scope)
   // ROSTER → Wurzel | FORCE → ctx.node.forceRoot | PARENT → ctx.node.parent
   // SELF → ctx.node | EntryId/CategoryId → nächster Vorfahre bzw. Kategorierahmen mit dieser ID
   if frame == null:
     ctx.diagnostics.add(Diagnostic.UNRESOLVED_SCOPE(scope, ctx.node))
-    return 0
+    // Fail-closed, kein stilles 0: eine 0 wäre die Behauptung „nichts gezählt",
+    // die notInstanceOf (actual == 0) als erfüllte Bedingung liest — die Regel
+    // feuerte also gerade dann, wenn die Engine ihren Rahmen nicht versteht.
+    return UNRESOLVED_QUERY
 
   effectiveTarget = flags.shared ? targetId : narrowToOwnInstance(ctx.node, targetId)
   table = flags.includeChildSelections ? ctx.index.deep : ctx.index.direct
@@ -535,10 +572,12 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
 ```
 function conditionHolds(ctx, c: ConditionDef): bool
   actual = query(ctx, c.field, c.scope, c.targetChildId, c.flags)
+  if isUnresolvedQuery(actual): return false   // fail-closed, in BEIDE Richtungen
   return compare(c.type, actual, c.value)   // COMPARATORS-Registry: ConditionKind → Vergleichsprädikat
 
 function repeatCount(ctx, r: RepeatDef): number
   actual = query(ctx, r.field, r.scope, r.targetChildId, r.flags)
+  if isUnresolvedQuery(actual): return 0       // keine Wiederholung ohne Antwort
   steps  = r.roundUp ? ceil(actual / r.perValue) : floor(actual / r.perValue)
   return steps * r.repeats                  // 0 = Modifikator inaktiv
 

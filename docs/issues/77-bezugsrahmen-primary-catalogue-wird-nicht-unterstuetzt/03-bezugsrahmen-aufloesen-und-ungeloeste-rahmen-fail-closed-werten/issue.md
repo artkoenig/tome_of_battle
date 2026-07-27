@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: [02]
 
@@ -49,3 +49,4 @@ verschieben.
 ## Comments
 - Am laufenden System nachgestellt: gegen ogre-kingdoms/02-general-and-two-core.ros meldet die Fassade 9 Diagnosen mit diesem Bezugsrahmen, und die zugehoerigen Bedingungen feuern trotzdem.
 - Beruehrt Issue 83 (Bezugsrahmen "unit" wird als Id gelesen): dieselbe fail-open-Schwaeche, anderer Rahmen. Nach dieser Scheibe faellt 83 sichtbar aus, statt still falsch zu wirken — behoben ist es damit nicht.
+- Bezugsrahmen aufgeloest: die Join-Schicht bindet jedem realen Kontingent seinen primaeren Katalog (Roster-`<force catalogueId>`, geprueft gegen die Katalog-Wurzel-Ids des aufbereiteten Datensatzes) und meldet ihn einmal je Kontingent als UNRESOLVED_PRIMARY_CATALOGUE, wenn er fehlt oder unbekannt ist; das Query-Primitiv beantwortet `primary-catalogue` als Identitaetsfrage vor jeder Rahmen-/Indexarbeit. Zugleich generell fail-closed: jede Query ohne Antwort (unaufloesbarer Rahmen, nicht budgetierte Kostenart, unentscheidbarer primaerer Katalog) liefert den einen UNRESOLVED_QUERY-Sentinel statt 0, sodass auch notInstanceOf nicht mehr faelschlich haelt. Alle .ros-Fixtures tragen jetzt die echte Katalog-Id (22x Platzhalter "cat", 3x Publikations-Id 49a5-…, 1x 8e66-…). Messung ueber alle 112 Szenario-Roster: unresolvedScope mit scope=primary-catalogue 725 -> 0, UNRESOLVED_PRIMARY_CATALOGUE 0; Verletzungen aendern sich nur in den 3 Rostern des neuen Szenarios.

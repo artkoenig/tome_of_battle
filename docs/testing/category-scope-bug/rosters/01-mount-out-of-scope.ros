@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <roster id="93ee-a0ca-94fc-8902" name="Category Scope Bug Roster" battleScribeVersion="2.03" gameSystemId="c087-3932-a567-96a1" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
   <forces>
-    <force id="17a3-e408-db2d-7bb3" name="Vampire Counts" entryId="b1e4-e1cf-9bd6-2438" catalogueId="8e66-3042-1d6b-fa6b" catalogueRevision="1" catalogueName="Vampire Counts (6th definitive edition)">
+    <force id="17a3-e408-db2d-7bb3" name="Vampire Counts" entryId="b1e4-e1cf-9bd6-2438" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts (6th definitive edition)">
       <selections>
         <!-- The constraint 6afc-566e-34d4-d35c is in Master Necromancer. We include it so the constraint is active in the roster -->
         <selection id="c3cb-6612-da0f-cd69" name="Master Necromancer" entryId="4ee2-ac3a-3cc6-11af" type="unit">

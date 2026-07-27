@@ -9,6 +9,19 @@
  * `includeChildSelections`, `includeChildForces`) — auch in Kombination. Die
  * Domaenenregel „Kategorie-Ziel armeeweit, Eintrags-Ziel pro Kontingent"
  * (BSData §7.7) sitzt an genau dieser Stelle.
+ *
+ * ── Zwei Rahmen, die nichts zaehlen ──────────────────────────────────────────
+ * Zwei Faelle werden **vor** jeder Rahmen- und Indexarbeit beantwortet, weil ihre
+ * Antwort nicht aus dem Zaehlindex kommt: das Feld `limit::<costTypeId>` (die
+ * eingestellte Kostengrenze aus dem Roster-Budget) und der Bezugsrahmen
+ * `primary-catalogue` (der Armee-Katalog des Kontingents, BSData §7.7).
+ *
+ * ── Keine Antwort ist keine Null ─────────────────────────────────────────────
+ * Hat eine Query in diesem Stand **keine** Antwort — unaufloesbarer Rahmen,
+ * nicht budgetierte Kostenart, unentscheidbarer primaerer Katalog —, liefert sie
+ * den {@link UNRESOLVED_QUERY}-Sentinel statt einer Zahl. Eine `0` waere hier eine
+ * Behauptung („nichts gezaehlt"), die `notInstanceOf` als erfuellte Bedingung
+ * liest; der Sentinel laesst jeden Konsumenten fail-closed schweigen (Issue 77).
  */
 
 import {
@@ -16,13 +29,13 @@ import {
   ScopeKeyword,
   DiagnosticKind,
   BudgetLimitUnresolvedReason,
-  UNRESOLVED_BUDGET,
+  UNRESOLVED_QUERY,
   normalizeFlags,
   scopeKey,
   diagnostic,
 } from './model.js';
 import { isOccurrenceOf } from './identity.js';
-import { frameKeyOf } from './evalTree.js';
+import { frameKeyOf, primaryCatalogueIdOf } from './evalTree.js';
 import { EMPTY_ROSTER_BUDGET } from './rosterBudget.js';
 
 /**
@@ -50,6 +63,14 @@ export function createQueryContext({ node, root, index, categoryIds, diagnostics
     budget: budget ?? EMPTY_ROSTER_BUDGET,
   };
 }
+
+/**
+ * Die Antwort auf `primary-catalogue` in der Waehrung des Query-Primitivs: die
+ * Identitaetsfrage wird als Zaehlung *geschrieben* (`field="selections" value="1"`),
+ * damit `instanceOf`/`notInstanceOf` unveraendert darauf rechnen (§7.7).
+ */
+const MATCHES_PRIMARY_CATALOGUE = 1;
+const DIFFERS_FROM_PRIMARY_CATALOGUE = 0;
 
 /** True, wenn die Ziel-ID eine Kategorie benennt (statt eines Eintrags). */
 function isCategoryTarget(targetId, categoryIds) {
@@ -130,10 +151,10 @@ function resolveFrame(ctx, scope, targetId, flags) {
  * aus dem Zaehlindex. Die eingestellte Grenze ist roster-weit: ein Scope ungleich
  * `roster` wird nicht still umgedeutet, sondern als Diagnose gemeldet. Eine nicht
  * budgetierte Kostenart liefert ebenfalls keine `0`, sondern den
- * {@link UNRESOLVED_BUDGET}-Sentinel samt Diagnose — der Konsument feuert dann
+ * {@link UNRESOLVED_QUERY}-Sentinel samt Diagnose — der Konsument feuert dann
  * **fail-closed** nicht (`design.md`, Kontrakt `query.js`).
  *
- * @returns {number|typeof UNRESOLVED_BUDGET} der eingestellte Grenzwert, oder der Sentinel.
+ * @returns {number|typeof UNRESOLVED_QUERY} der eingestellte Grenzwert, oder der Sentinel.
  */
 function resolveLimitValue(ctx, field, scope) {
   const { costTypeId } = field;
@@ -143,7 +164,7 @@ function resolveLimitValue(ctx, field, scope) {
       reason: BudgetLimitUnresolvedReason.NON_ROSTER_SCOPE,
       scope,
     }));
-    return UNRESOLVED_BUDGET;
+    return UNRESOLVED_QUERY;
   }
   const bound = ctx.budget.get(costTypeId);
   if (bound === undefined) {
@@ -151,9 +172,47 @@ function resolveLimitValue(ctx, field, scope) {
       costTypeId,
       reason: BudgetLimitUnresolvedReason.NOT_BUDGETED,
     }));
-    return UNRESOLVED_BUDGET;
+    return UNRESOLVED_QUERY;
   }
   return bound;
+}
+
+/**
+ * Beantwortet den Bezugsrahmen `primary-catalogue`: **ist der Armee-Katalog des
+ * Kontingents, in dem der Knoten sitzt, der genannte Katalog?**
+ * (`docs/battlescribe-data-format.md` §7.7).
+ *
+ * Das ist **keine Zaehlung**: `childId` benennt eine Katalog-Wurzel und damit nie
+ * eine auswaehlbare Definition, es gibt also nichts zu zaehlen. `field="selections"
+ * value="1"` ist die kanonische Schreibweise der Identitaetsfrage — entsprechend
+ * bleiben `shared` und die beiden `includeChild…`-Flags ohne Wirkung. Belegt: 4 der
+ * 27 Vorkommen tragen `includeChildSelections="true"` und bedeuten dasselbe wie die
+ * uebrigen 23.
+ *
+ * Die Antwort wird in der Waehrung des Aufrufers gegeben — `1` fuer „ja", `0` fuer
+ * „nein" —, damit `instanceOf` (`actual > 0`) und `notInstanceOf` (`actual === 0`)
+ * unveraendert darauf rechnen. Ist der primaere Katalog **nicht entscheidbar**,
+ * kommt statt einer erfundenen Zahl der {@link UNRESOLVED_QUERY}-Sentinel: die
+ * Bedingung haelt dann weder in der einen noch in der anderen Richtung. Die
+ * Diagnose dazu steht bereits vom Baumbau im Bericht
+ * (`evalTree.js`, `bindPrimaryCatalogues`) — hier waere sie einmal je Bedingung
+ * statt einmal je Kontingent.
+ *
+ * Ein anderes Feld als die Selektionszaehlung ist an diesem Rahmen **unbelegt**
+ * (alle 27 Vorkommen tragen `field="selections"`). Was eine Kostensumme „im
+ * Bezugsrahmen des primaeren Katalogs" bedeuten soll, sagen die Daten nicht — die
+ * Frage wird deshalb gemeldet und nicht mit der Identitaetsantwort beantwortet.
+ *
+ * @returns {number|typeof UNRESOLVED_QUERY} `1`/`0`, oder der Sentinel.
+ */
+function resolvePrimaryCatalogue(ctx, field, targetId) {
+  if (field.kind !== CountedFieldKind.SELECTION_COUNT) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_FIELD, { field, scope: ScopeKeyword.PRIMARY_CATALOGUE }));
+    return UNRESOLVED_QUERY;
+  }
+  const primaryCatalogueId = primaryCatalogueIdOf(ctx.node);
+  if (primaryCatalogueId === null) return UNRESOLVED_QUERY;
+  return primaryCatalogueId === targetId ? MATCHES_PRIMARY_CATALOGUE : DIFFERS_FROM_PRIMARY_CATALOGUE;
 }
 
 /**
@@ -165,8 +224,8 @@ function resolveLimitValue(ctx, field, scope) {
  * @param {string} scope  ein `ScopeKeyword` oder eine Eintrags-/Kategorie-ID.
  * @param {string|null} targetId  Ziel-ID oder `null` fuer "alles im Rahmen".
  * @param {{ shared?: boolean, includeChildSelections?: boolean, includeChildForces?: boolean }} [flags]
- * @returns {number|typeof UNRESOLVED_BUDGET} die Zaehlung/Grenze, oder der
- *   Budget-Sentinel bei einem unaufloesbaren `LIMIT_VALUE`-Feld.
+ * @returns {number|typeof UNRESOLVED_QUERY} die Zaehlung/Grenze/Antwort, oder der
+ *   Sentinel, wenn die Query in diesem Stand keine Antwort hat.
  */
 export function query(ctx, field, scope, targetId, flags) {
   // Ein `LIMIT_VALUE`-Feld kommt aus dem Budget, nicht aus dem Zaehlindex — daher
@@ -174,12 +233,22 @@ export function query(ctx, field, scope, targetId, flags) {
   if (field.kind === CountedFieldKind.LIMIT_VALUE) {
     return resolveLimitValue(ctx, field, scope);
   }
+  // `primary-catalogue` ist kein Zaehlrahmen, sondern eine Identitaetsfrage — aus
+  // demselben Grund vor jeder Rahmen-/Index-Arbeit beantwortet (§7.7).
+  if (scope === ScopeKeyword.PRIMARY_CATALOGUE) {
+    return resolvePrimaryCatalogue(ctx, field, targetId);
+  }
 
   const effectiveFlags = normalizeFlags(flags);
   const frame = resolveFrame(ctx, scope, targetId, effectiveFlags);
   if (frame === null || frame === undefined) {
     ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_SCOPE, { scope, targetId }));
-    return 0;
+    // Fail-closed: ein Rahmen, der nicht aufloest, liefert **keine** Zahl. Frueher
+    // stand hier `0` — und `notInstanceOf` (`actual === 0`) las das als „trifft zu",
+    // sodass genau die Regeln feuerten, die der unaufloesbare Rahmen ausschliessen
+    // sollte (Issue 77). Der Sentinel laesst jeden Konsumenten schweigen, sichtbar
+    // begleitet von der Diagnose darueber.
+    return UNRESOLVED_QUERY;
   }
 
   const key = scopeKey(frameKeyOf(frame), targetId);

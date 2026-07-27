@@ -154,33 +154,34 @@ deren **alle sieben** `condition`s `scope="primary-catalogue"` tragen:
            scope="primary-catalogue" childId="4d73-5ab0-9020-403c" shared="true"/>
 ```
 
-`primary-catalogue` ist **kein** Bezugsrahmen, den die Datenlage aufloesen kann.
-Das XSD typisiert `scope` nur als `xs:string` (`Catalogue.xsd`, Z. 426) und
-zaehlt nichts auf; die Aufzaehlung steht allein in
-[`battlescribe-data-format.md`](../../battlescribe-data-format.md) (§ „Constraint",
-Z. 613: `parent | roster | force | category | self`; § „Condition", Z. 689:
-„Bezugsrahmen (`roster`, `force`, `parent`, …)"). Ausserhalb dieser
-Schluesselwoerter ist ein `scope` die **Id eines Elements** (ebd., Z. 707–714) —
-und `primary-catalogue` ist beides nicht: es steht in keiner der Aufzaehlungen,
-und in den Fixtures gibt es **kein** Element mit `id="primary-catalogue"`
-(0 Treffer). Der Scope ist damit nicht aufloesbar, die `modifierGroup` greift
-folglich in **keinem** Kontingent, gleich welcher Armeekatalog fuehrt.
+Der Grund fuer die Luecke liegt damit in **diesem** Datensatz, nicht mehr in einer
+Faehigkeitsluecke: `primary-catalogue` bezeichnet den Armee-Katalog des
+Kontingents und ist seit Issue 77 aufloesbar
+([`battlescribe-data-format.md` §7.7](../../battlescribe-data-format.md#primary-catalogue--der-armee-katalog-des-kontingents),
+festgenagelt in [`primary-catalogue-scope`](../primary-catalogue-scope/README.md)).
+Von den sieben `childId` der `or`-Gruppe liegen nur zwei im Fixture-Satz:
+`4d73-5ab0-9020-403c` (Vampire Counts) und `4049-c46d-7f80-44fb` (Orcs and
+Goblins). Die uebrigen fuenf (`c817-…`, `d4c0-…`, `6b83-…`, `cac6-…`,
+`9945-…` = Tomb Kings) kommen im Ausschnitt als `id` **null**-mal vor. **Ogre
+Kingdoms `731d-5b13-2a92-5427` steht nicht darunter** — und der Datensatz dieses
+Szenarios ist Ogre + Mercenaries, also haelt die `or`-Gruppe hier in keinem
+Roster.
 
-Ein Roster kann diesen Fall deshalb weder ausloesen noch gegen einen
-Kontrastfall stellen: „Gruppe greift" ist mit diesen Daten nicht herstellbar, und
-„Gruppe greift nicht" belegt nichts ueber die Token-Aufloesung, weil es schon am
-Scope scheitert und nicht an der Katalog-Aufzaehlung.
+Damit bleibt die Aussage ungeprueft, aber aus einem anderen Grund als frueher:
+nicht weil der Rahmen unlesbar waere, sondern weil dieses Szenario keinen der
+sieben genannten Kataloge fuehrt. Ein Kontrastfall waere jetzt herstellbar — er
+braucht einen anderen Datensatz (z. B. Vampire Counts + Mercenaries) und
+zusaetzlich die daneben stehende Bedingung derselben `and`-Gruppe
+(`lessThan value="1" field="selections" scope="force"
+childId="7d87-7436-5341-bbc0"`, Z. 4824). Das ist Sache eines eigenen Szenarios
+und wird getrennt nachgehalten; hier wird nichts geraten.
 
-Diese Luecke ist eine **Faehigkeitsluecke des Bezugsrahmens**
-(`scope="primary-catalogue"` — in den Fixtures 27 Bedingungen: 7 in der `.gst`,
-20 in der Mercenaries-`.cat`), kein Mangel dieses Szenarios; sie wird getrennt
-nachgehalten. Frueher lagen hier zwei Roster
-(`04-amazon-token-with-name-modifier` und `05-amazon-plain-name-in-ogre`), die
-den Fall zu pinnen versuchten. Sie sind entfernt: Roster 04 war gegen diese
-Katalogdaten nicht belegbar, und Roster 05 war zwar gruen, aber aus dem falschen
-Grund — es begruendete das Schweigen der Gruppe mit der Katalog-Aufzaehlung
-(Ogre Kingdoms `731d-5b13-2a92-5427` fehlt darin), waehrend sie in Wahrheit am
-unaufloesbaren Scope schweigt, und war damit kein Kontrast mehr.
+Frueher lagen hier zwei Roster (`04-amazon-token-with-name-modifier` und
+`05-amazon-plain-name-in-ogre`), die den Fall zu pinnen versuchten. Sie bleiben
+entfernt: Roster 04 war gegen diese Katalogdaten nicht belegbar, und Roster 05
+war zwar gruen, aber ohne Kontrast — es zeigte allein das Schweigen der Gruppe.
+Seine damalige Begruendung (Ogre fehlt in der Katalog-Aufzaehlung) ist nach der
+Korrektur des Bezugsrahmens allerdings die **richtige**.
 
 ---
 
@@ -223,6 +224,6 @@ Die Tabelle ist die Begruendung der Erwartung, nicht selbst eine Assertion:
 | Skrag the Slaughterer (Traeger der token-freien Meldung) | `82a9-0281-ffa1-2290` | Ogre-`.cat` → Wurzel-`<selectionEntries>` (Z. 1001) |
 | „Allow special characters?" (Schalter der Skrag-Meldung) | `8923-5946-7b10-8957` | `.gst` |
 | **Beleg der Luecke:** „0-1 Amazon Serpent Priestess" (einziger Traeger von `field="name"`-Modifikator **und** `{this}`-Meldung in derselben `modifierGroup`; **nicht** gepinnt) | `9ddd-69c8-644d-abc2` | Mercenaries-`.cat` → `<sharedSelectionEntries>` (Z. 4702), `modifierGroup` Z. 4814–4841 |
-| **Beleg der Luecke:** `conditionGroup type="or"` aus sieben `condition … scope="primary-catalogue"` (Bezugsrahmen nicht aufloesbar) | — (Bedingungen tragen keine Id; `childId`s u. a. `4d73-5ab0-9020-403c`, `4049-c46d-7f80-44fb`) | Mercenaries-`.cat` → Z. 4827–4837 |
+| **Beleg der Luecke:** `conditionGroup type="or"` aus sieben `condition … scope="primary-catalogue"` (Rahmen aufloesbar, aber **Ogre Kingdoms `731d-5b13-2a92-5427` steht nicht unter den sieben `childId`**) | — (Bedingungen tragen keine Id; `childId`s u. a. `4d73-5ab0-9020-403c`, `4049-c46d-7f80-44fb`) | Mercenaries-`.cat` → Z. 4827–4837 |
 | `catalogueLink` Ogre → Mercenaries | `a067-78d5-50a2-affe` → `fc47-8392-a6c8-452a` | Ogre-`.cat` |
 | Nicht behauptet: `max 0`-Grenzen Gnoblars / Skrag | `a177-82fc-0b76-5b73` / `2e16-3ee1-477f-acf5` | Ogre-`.cat` |

@@ -77,13 +77,38 @@ export function limitValueField(costTypeId) {
 export const LIMIT_FIELD_PREFIX = 'limit::';
 
 /**
- * Sentinel-Rueckgabewert des Query-Primitivs fuer ein **unaufloesbares Budget**:
- * ein `LIMIT_VALUE`-Feld, dessen Kostengrenze weder im Budget noch (bei
- * abweichendem Scope) sinnvoll deklariert ist. Bewusst **kein** `0`, damit kein
- * Konsument einen erfundenen Wert weiterrechnet: jede Regel behandelt diesen
- * Sentinel **fail-closed** — sie feuert nicht (`design.md`, Clean-Room-Abgleich).
+ * Sentinel-Rueckgabewert des Query-Primitivs fuer eine **unbeantwortbare Query**:
+ * die Frage hat in diesem Auswertungsstand keine Antwort. Drei Herkuenfte, eine
+ * Bedeutung:
+ *
+ * - ein `LIMIT_VALUE`-Feld, dessen Kostengrenze weder im Budget noch (bei
+ *   abweichendem Scope) sinnvoll deklariert ist;
+ * - ein **Bezugsrahmen**, der nicht auf einen Rahmenknoten aufloest;
+ * - ein Kontingent ohne entscheidbaren primaeren Katalog (`primary-catalogue`).
+ *
+ * Bewusst **kein** `0`, damit kein Konsument einen erfundenen Wert weiterrechnet:
+ * jede Regel behandelt diesen Sentinel **fail-closed** — sie feuert nicht.
+ *
+ * Genau **ein** Sentinel fuer alle drei Herkuenfte, weil jeder Konsument sie
+ * gleich behandeln muss. Zwei Sentinel-Werte hiessen, dass ein Konsument den einen
+ * pruefen und den anderen vergessen kann — der stille Fail-open, den Issue 77
+ * beseitigt. *Warum* eine Query unbeantwortbar war, sagt die zugehoerige Diagnose,
+ * nicht der Rueckgabewert.
  */
-export const UNRESOLVED_BUDGET = Symbol('unresolvedBudget');
+export const UNRESOLVED_QUERY = Symbol('unresolvedQuery');
+
+/**
+ * True, wenn ein Query-Ergebnis der {@link UNRESOLVED_QUERY}-Sentinel ist — der
+ * **eine** Pruefweg fuer alle Konsumenten (Bedingung, Wiederholung, Grenze).
+ *
+ * @param {number|typeof UNRESOLVED_QUERY} queryResult  das Ergebnis von `query`.
+ * @returns {queryResult is typeof UNRESOLVED_QUERY} Als **Typwaechter** deklariert,
+ *   damit der Nein-Zweig beim Aufrufer wieder eine reine Zahl ist — sonst muesste
+ *   jede Rechenstelle den Sentinel erneut ausschliessen.
+ */
+export function isUnresolvedQuery(queryResult) {
+  return queryResult === UNRESOLVED_QUERY;
+}
 
 /**
  * Grund, aus dem ein `LIMIT_VALUE`-Feld unaufloesbar ist — zwei distinkte
@@ -102,15 +127,36 @@ export const BudgetLimitUnresolvedReason = Object.freeze({
 /**
  * Bezugsrahmen-Schluesselwoerter (Scope) einer Query
  * (`docs/evaluator-architecture.md` §4.1: `ScopeKeyword { ROSTER, FORCE, PARENT,
- * SELF }`). Ein Scope, der keines dieser Woerter ist, wird als **ID** gelesen:
- * eine Eintrags-ID (naechster Vorfahre mit dieser ID) oder eine Kategorie-ID
- * (armeeweiter Kategorierahmen).
+ * SELF, PRIMARY_CATALOGUE }`). Ein Scope, der keines dieser Woerter ist, wird als
+ * **ID** gelesen: eine Eintrags-ID (naechster Vorfahre mit dieser ID) oder eine
+ * Kategorie-ID (armeeweiter Kategorierahmen).
+ *
+ * `PRIMARY_CATALOGUE` faellt aus der Reihe: er benennt **keinen Rahmenknoten** und
+ * damit keine Zaehlmenge, sondern den Armee-Katalog des Kontingents, in dem der
+ * Knoten sitzt — die Frage „ist die gefuehrte Armee dieser Katalog?"
+ * (`docs/battlescribe-data-format.md` §7.7).
  */
 export const ScopeKeyword = Object.freeze({
   ROSTER: 'roster',
   FORCE: 'force',
   PARENT: 'parent',
   SELF: 'self',
+  PRIMARY_CATALOGUE: 'primary-catalogue',
+});
+
+/**
+ * Grund, aus dem der **primaere Katalog** eines Kontingents nicht entscheidbar ist
+ * — zwei distinkte Ursachen unter derselben Diagnose
+ * {@link DiagnosticKind.UNRESOLVED_PRIMARY_CATALOGUE}, damit ein Berichts-Leser
+ * „das Roster sagt es nicht" von „das Roster sagt etwas Unbekanntes" trennen kann.
+ */
+export const PrimaryCatalogueUnresolvedReason = Object.freeze({
+  // Das Kontingent des Rosters traegt keine Katalog-Angabe (`<force catalogueId>`).
+  NOT_DECLARED: 'notDeclared',
+  // Die Katalog-Angabe des Kontingents benennt keinen der mitgegebenen Kataloge —
+  // ein Roster-/Datensatz-Kohaerenzfehler derselben Art wie
+  // {@link DiagnosticKind.MISSING_CATALOGUE_DEPENDENCY} (ADR-0032).
+  UNKNOWN_CATALOGUE: 'unknownCatalogue',
 });
 
 /**
@@ -366,7 +412,7 @@ export function limitMeasureOfCountedField(field) {
  * nicht an. Genau dieses Ansehen waere der Rateschritt, den die Oberflaeche nicht
  * tun soll; die Einordnung nimmt ihn ihr ab.
  *
- * Die vier Schluesselwort-Werte sind die aus {@link ScopeKeyword} (dieselbe eine
+ * Die Schluesselwort-Werte sind die aus {@link ScopeKeyword} (dieselbe eine
  * Quelle, kein zweiter Wertevorrat); `ENTRY_ID` und `CATEGORY_ID` benennen die
  * beiden ID-Faelle, die das Query-Primitiv unterscheidet: eine Eintrags-ID loest
  * auf den naechsten Vorfahren mit dieser ID auf, eine Kategorie-ID auf den
@@ -377,6 +423,7 @@ export const ScopeKind = Object.freeze({
   FORCE: ScopeKeyword.FORCE,
   PARENT: ScopeKeyword.PARENT,
   SELF: ScopeKeyword.SELF,
+  PRIMARY_CATALOGUE: ScopeKeyword.PRIMARY_CATALOGUE,
   ENTRY_ID: 'entryId',
   CATEGORY_ID: 'categoryId',
 });
@@ -429,7 +476,7 @@ export function isUnlimitedDeclaration(declaredValue) {
 
 /**
  * Sentinel-Rueckgabewert der Grenzwert-Aufloesung fuer eine **unbegrenzte**
- * Grenze — in einer Reihe mit {@link SUSPENDED} und {@link UNRESOLVED_BUDGET}.
+ * Grenze — in einer Reihe mit {@link SUSPENDED} und {@link UNRESOLVED_QUERY}.
  * Eine solche Grenze hat keinen Vergleichswert und wird deshalb nicht
  * ausgewertet: sie feuert nie und schraenkt keinen Restspielraum ein.
  *
@@ -516,6 +563,13 @@ export const DiagnosticKind = Object.freeze({
   // Feld traegt einen Scope ungleich `roster` ({@link BudgetLimitUnresolvedReason}).
   // Sichtbar gemacht statt still als Wert 0 angenommen (Main-Issue 70, `design.md`).
   UNRESOLVED_BUDGET_LIMIT: 'unresolvedBudgetLimit',
+  // Der **primaere Katalog** eines Kontingents ist nicht entscheidbar: das Roster
+  // nennt fuer dieses Kontingent keinen Katalog oder einen, der nicht zu den
+  // mitgegebenen gehoert ({@link PrimaryCatalogueUnresolvedReason}). Gemeldet
+  // **einmal je Kontingent** beim Baumbau — nicht je Bedingung, die danach fragt.
+  // Jede `primary-catalogue`-Regel dieses Kontingents haelt dann fail-closed nicht
+  // (Issue 77, `docs/battlescribe-data-format.md` §7.7).
+  UNRESOLVED_PRIMARY_CATALOGUE: 'unresolvedPrimaryCatalogue',
 });
 
 /**

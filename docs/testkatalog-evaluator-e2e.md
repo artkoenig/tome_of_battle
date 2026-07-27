@@ -457,7 +457,8 @@ gemeinsamen Mercenaries-Bibliothek), derselbe Datensatz, dieselbe Anzahl — ein
 in einer Ogre-Kingdoms-Armee und einmal in einer Orcs-and-Goblins-Armee, mit
 **gegenläufigem** Ergebnis. Ein Ergebnis, bei dem beide Fälle dasselbe sagen, kann
 diesen Test nicht bestehen. Das Szenario ist **vor** der Engine-Änderung
-entstanden und bis dahin erwartbar rot.
+entstanden und war bis zu ihr erwartbar rot; seit Issue 77 löst die Engine den
+Bezugsrahmen auf und alle drei Fälle sind grün.
 
 | # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
 | :--- | :--- | :--- |

@@ -148,12 +148,12 @@ export function measureEvaluation(dataset, roster) {
   // und packt sein Ergebnis engine-intern aus, um die folgenden Abschnitte einzeln
   // messen zu koennen.
   const preparation = timed(() => prepareDataset(dataset));
-  const { resolved, diagnostics: datasetDiagnostics } = PreparedDataset.contentsOf(preparation.value);
+  const { resolved, catalogueIds, diagnostics: datasetDiagnostics } = PreparedDataset.contentsOf(preparation.value);
 
   // (b) Iterierte Auswertung: Baumphase 1, Fixpunktrunden ueber die realen Knoten,
   // finaler Index.
   const iterated = timed(() => {
-    const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
+    const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster, catalogueIds);
     const { effective, diagnostics: fixpointDiagnostics, rounds, converged, unstableNodes } =
       evaluateToFixpoint(root, resolved.categoryIds, budget);
     const index = buildIndex(root, effective);

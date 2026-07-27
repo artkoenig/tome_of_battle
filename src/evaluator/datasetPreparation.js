@@ -42,8 +42,7 @@ import { DiagnosticKind, diagnostic } from './model.js';
  * Ohne mitgegebenes Spielsystem entfaellt die `gameSystemId`-Pruefung (ein
  * synthetischer Einzelkatalog ohne `.gst`).
  */
-function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnostics) {
-  const providedCatalogueIds = new Set(catalogueDocuments.map(document => document.id));
+function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, providedCatalogueIds, diagnostics) {
   for (const catalogue of catalogueDocuments) {
     if (gameSystemDocument !== null && catalogue.gameSystemId !== null && catalogue.gameSystemId !== gameSystemDocument.id) {
       diagnostics.push(diagnostic(DiagnosticKind.GAMESYSTEM_MISMATCH, {
@@ -82,10 +81,10 @@ function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnosti
  * bezweckt (ADR-0034).
  */
 export class PreparedDataset {
-  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }} */
+  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], catalogueIds: Set<string>, resolved: object, diagnostics: object[] }} */
   #contents;
 
-  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }} contents */
+  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], catalogueIds: Set<string>, resolved: object, diagnostics: object[] }} contents */
   constructor(contents) {
     this.#contents = contents;
   }
@@ -94,7 +93,7 @@ export class PreparedDataset {
    * Der Inhalt eines aufbereiteten Datensatzes — **engine-intern**.
    *
    * @param {PreparedDataset} prepared  Das Ergebnis von {@link prepareDataset}.
-   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }}
+   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], catalogueIds: Set<string>, resolved: object, diagnostics: object[] }}
    * @throws {TypeError} Wenn kein aufbereiteter Datensatz uebergeben wurde. Das ist
    *   der haeufigste Aufruffehler der zweistufigen Fassade — ein roher Datensatz
    *   `{ gameSystem, catalogues }` statt seines aufbereiteten Ergebnisses —, und er
@@ -127,8 +126,9 @@ export class PreparedDataset {
  *   Armee-Kataloge (`.cat`-XML).
  * @returns {PreparedDataset}
  *   Der aufbereitete Datensatz als undurchsichtiger Griff: er haelt die gelesenen
- *   Dokumente, die aufgeloeste Sicht und alle im Vorlauf angefallenen Diagnosen
- *   (Zusammenfuehrung, Kohaerenz, Auflösung), gibt sie nach aussen aber nicht preis.
+ *   Dokumente, die Wurzel-Ids der Kataloge, die aufgeloeste Sicht und alle im
+ *   Vorlauf angefallenen Diagnosen (Zusammenfuehrung, Kohaerenz, Auflösung), gibt
+ *   sie nach aussen aber nicht preis.
  */
 export function prepareDataset(dataset) {
   const { gameSystem, catalogues = [] } = dataset;
@@ -139,8 +139,16 @@ export function prepareDataset(dataset) {
     ? [gameSystemDocument, ...catalogueDocuments]
     : catalogueDocuments;
 
+  // Die Wurzel-Ids der mitgegebenen Kataloge (**nicht** der `.gst`) — die eine
+  // Quelle fuer „gehoert dieser Katalog zum Datensatz?". Zwei Fragen lesen sie: die
+  // Kohaerenzpruefung der `catalogueLink`-Abhaengigkeiten und, ueber die
+  // Join-Schicht, der primaere Katalog eines Kontingents (`.ros`-`catalogueId`,
+  // `docs/battlescribe-data-format.md` §7.7). Keine zweite Liste, kein zweiter
+  // Aufbau: das zusammengefuehrte Aggregat kennt die Herkunft nicht mehr (ADR-0032).
+  const catalogueIds = new Set(catalogueDocuments.map(document => document.id));
+
   const coherenceDiagnostics = [];
-  checkDatasetCoherence(gameSystemDocument, catalogueDocuments, coherenceDiagnostics);
+  checkDatasetCoherence(gameSystemDocument, catalogueDocuments, catalogueIds, coherenceDiagnostics);
 
   const merged = mergeCatalogues(documents);
   const resolved = resolveCatalogue(merged);
@@ -148,6 +156,7 @@ export function prepareDataset(dataset) {
   return new PreparedDataset({
     gameSystemDocument,
     catalogueDocuments,
+    catalogueIds,
     resolved,
     diagnostics: [...merged.diagnostics, ...coherenceDiagnostics, ...resolved.diagnostics],
   });

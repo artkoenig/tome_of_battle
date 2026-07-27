@@ -79,11 +79,18 @@ export { prepareDataset } from './datasetPreparation.js';
  * @param {import('./datasetPreparation.js').PreparedDataset} prepared
  *   Das Ergebnis von {@link prepareDataset} — derselbe Griff darf beliebig oft und
  *   fuer beliebig viele Roster wiederverwendet werden.
- * @param {{ forces?: Array<{ defId: string, count: number, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
+ * @param {{ forces?: Array<{ defId: string, count: number, catalogueId?: string, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
  *   Das vollstaendige, aus `.ros` geparste Roster: der Instanzbaum (`forces`)
  *   **und** die eingestellten Kostengrenzen je Kostenart (`costLimits`, die
  *   Zuordnung Kostenart → Grenzwert, analog `<costLimits>`). Fehlt `costLimits`,
  *   ist das Budget leer — verhaltensgleich zu einem Roster ohne Kostengrenzen.
+ *
+ *   `catalogueId` je Kontingent ist die Wurzel-Id seines **Armee-Katalogs**
+ *   (`<force catalogueId>` in der `.ros`) und der Bezugsrahmen jeder
+ *   `primary-catalogue`-Regel darin (`docs/battlescribe-data-format.md` §7.7).
+ *   Optional und abwaertskompatibel: fehlt sie oder benennt sie keinen Katalog des
+ *   Datensatzes, meldet die Engine das **einmal je Kontingent** und jede solche
+ *   Regel haelt fail-closed nicht.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen. Ein
  *   Slot ist **jede Stelle, an der eine Auswahl stehen kann** — auch eine noch
@@ -99,9 +106,12 @@ export function evaluate(prepared, roster) {
   // Der rosterunabhaengige Katalog-Vorlauf ist bereits gelaufen: die Auswertung
   // liest sein Ergebnis, statt die Kataloge erneut zu lesen. Das ist die
   // Wiederverwendung, um derentwillen die Fassade zweistufig ist.
-  const { resolved, diagnostics: datasetDiagnostics } = PreparedDataset.contentsOf(prepared);
+  const { resolved, catalogueIds, diagnostics: datasetDiagnostics } = PreparedDataset.contentsOf(prepared);
 
-  const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
+  // Die Katalog-Wurzel-Ids des Datensatzes gehen an die Join-Schicht: an ihnen
+  // prueft sie die `catalogueId` jedes Roster-Kontingents und bindet daraus dessen
+  // **primaeren Katalog** (`docs/battlescribe-data-format.md` §7.7).
+  const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster, catalogueIds);
 
   // Fixpunktschleife: Weil Zaehlen von effektiven Werten abhaengt und Modifikatoren
   // von Zaehlungen, wird iterativ bis zur Konvergenz ausgewertet — jede Runde von

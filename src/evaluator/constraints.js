@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
+import { ConstraintKind, DefinitionKind, SUSPENDED, UNLIMITED, isUnresolvedQuery, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
 import { allNodes, limitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -48,9 +48,9 @@ function resolveBound(limit, node, effective, ctx) {
   const raw = effectiveBound.value;
   if (!limit.isPercent) return raw;
   const denominator = query(ctx, limit.field, limit.scope, null, limit.flags);
-  // Unaufloesbares Budget-Feld als Nenner (Diagnose aus `query`): die Grenze wird
+  // Nenner-Query ohne Antwort (Diagnose bereits gemeldet): die Grenze wird
   // fail-closed suspendiert statt mit dem Sentinel weiterzurechnen.
-  if (denominator === UNRESOLVED_BUDGET) return SUSPENDED;
+  if (isUnresolvedQuery(denominator)) return SUSPENDED;
   if (denominator === 0) {
     ctx.diagnostics.push(diagnostic(DiagnosticKind.ZERO_DENOMINATOR, { limitId: limit.id }));
     return SUSPENDED;
@@ -74,9 +74,9 @@ function evaluateLimit(limit, node, effective, ctx) {
 
   const targetId = node.def.kind === DefinitionKind.CATEGORY_LINK ? node.def.targetId : node.def.id;
   const actual = query(ctx, limit.field, limit.scope, targetId, limit.flags);
-  // Zaehlt die Grenze selbst ein unaufloesbares Budget-Feld (Diagnose aus `query`),
-  // wird sie fail-closed suspendiert statt den Sentinel zu vergleichen.
-  if (actual === UNRESOLVED_BUDGET) return null;
+  // Hat die Zaehlung der Grenze keine Antwort (Diagnose bereits gemeldet), wird die
+  // Grenze fail-closed suspendiert statt den Sentinel zu vergleichen.
+  if (isUnresolvedQuery(actual)) return null;
   const satisfied = limit.kind === ConstraintKind.MIN ? actual >= bound : actual <= bound;
   return {
     limit,

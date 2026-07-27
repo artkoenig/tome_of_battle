@@ -1,6 +1,7 @@
 /**
  * Uebersetzt eine Battlescribe-`.ros`-Roster-Datei in den Instanzbaum
- * `{ forces: [{ defId, count, children }] }`, den die Fassade `evaluate` erwartet.
+ * `{ forces: [{ defId, catalogueId, count, children }] }`, den die Fassade
+ * `evaluate` erwartet.
  *
  * Die Uebersetzung ist rein strukturell (Black-Box): jede `<selection>` wird ueber
  * die Id, unter der sie im Katalog steht, zur Definitions-Id, `number` zur Anzahl
@@ -40,6 +41,14 @@ const ENTRY_LINK_ID_ATTRIBUTE = 'entryLinkId';
 
 /** Das Attribut einer `<selection>`, das ihre Anzahl traegt (fehlend: eine). */
 const COUNT_ATTRIBUTE = 'number';
+
+/**
+ * Das Attribut einer `<force>`, das ihren **Armee-Katalog** benennt — die
+ * Wurzel-`id` der `.cat`, aus der das Kontingent gebaut ist. Es ist der
+ * Bezugsrahmen jeder `primary-catalogue`-Regel in diesem Kontingent
+ * (`docs/battlescribe-data-format.md` §7.7).
+ */
+const CATALOGUE_ID_ATTRIBUTE = 'catalogueId';
 
 /** Die Anzahl einer `<selection>` ohne eigenes `number`-Attribut. */
 const DEFAULT_COUNT = 1;
@@ -118,7 +127,7 @@ function costLimitsFromRoster(doc) {
  *
  * @param {string} path Pfad zur `.ros`-Datei, relativ zum Projekt-Wurzelverzeichnis
  *   (dem cwd des Testlaufs) aufgeloest — wie die uebrigen fixture-lesenden Tests.
- * @returns {{ forces: Array<{ defId: string | null, count: number, children: object[] }>,
+ * @returns {{ forces: Array<{ defId: string | null, catalogueId: string | null, count: number, children: object[] }>,
  *            costLimits: Array<{ costTypeId: string, value: number }> }}
  *   Das Roster in der von `evaluate` erwarteten Form.
  */
@@ -127,6 +136,7 @@ export function rosterFromRos(path) {
   const doc = new dom.window.DOMParser().parseFromString(xml, 'application/xml');
   const forces = [...doc.getElementsByTagName('force')].map(forceEl => ({
     defId: forceEl.getAttribute(ENTRY_ID_ATTRIBUTE),
+    catalogueId: forceEl.getAttribute(CATALOGUE_ID_ATTRIBUTE),
     count: DEFAULT_COUNT,
     children: childSelections(forceEl),
   }));

@@ -13,7 +13,7 @@ Diese Matrix ordnet die im Projekt definierten XSD-Elemente (`constraint`, `cond
 | **scope** | `force` | `explorer-force-constraints`, `explorer-modifier-constraints`, `vampire-bloodlines` | ✅ |
 | **scope** | `category` | `category-scope-bug`, `explorer-category-constraints` | ✅ |
 | **scope** | `parent` | `parent-scope-missing-mandatory`, `explorer-nested-constraints`, `army-standard-bearer` | ✅ |
-| **scope** | `primary-catalogue` | *Vorkommen gefunden (Mercenaries), ungetestet* | ❌ |
+| **scope** | `primary-catalogue` | *An einem `constraint` in den Daten **nicht** verwendet: alle 27 Vorkommen des Rahmens sind `condition`s (siehe §2 und [`battlescribe-data-format.md` §7.7](../battlescribe-data-format.md#primary-catalogue--der-armee-katalog-des-kontingents))* | - |
 | **scope** | (Spezifische ID) | *Bisher kein expliziter E2E-Test gefunden* | ❌ |
 | **field** | `selections` (Standard) | Fast alle Tests | ✅ |
 | **field** | `forces` | *Wird in Daten nicht verwendet (laut Suche)* | - |
@@ -36,6 +36,7 @@ Diese Matrix ordnet die im Projekt definierten XSD-Elemente (`constraint`, `cond
 | **type** | `atMost` | `remaining-condition-types` | ✅ |
 | **type** | `notInstanceOf` | `remaining-condition-types` | ✅ |
 | **childId** | `model` / Spezifische ID | `evaluator-bug-childid-model` | ✅ |
+| **scope** | `primary-catalogue` (Armee-Katalog des Kontingents; **kein** Zählrahmen — alle 27 Vorkommen sind `condition`s) | `primary-catalogue-scope` | ✅ |
 | *(Conditions erben Scope, Field, etc. von QueryBase)* | - | - | - |
 
 ## 3. Repeats (Modifier Multiplikatoren)
@@ -58,7 +59,7 @@ Hier werden interessante, komplexe Interaktionen zwischen Attributen festgehalte
 | `max` auf `categoryLink` in `forceEntry` | Armeeweite Limitierung einer bestimmten Kategorie. | `explorer-category-constraints` | ✅ |
 | Verschachtelter `modifier` mit `<repeat>` | Erhöht ein Limit in Stufen pro X gekauften Modellen einer anderen Auswahl. | `mercenaries-repeat-bug` | ✅ |
 | `condition` mit `type="equalTo"` auf Punktebudget (`field="limit::..."`) | Modifikator greift ein, wenn ein Limit genau getroffen wird (z.B. Army Budget). | *Vorkommen gefunden* | ❌ |
-| `condition` mit `type="notInstanceOf"` + `scope="primary-catalogue"` | Modifikator greift, wenn die Armee **keine** reine Söldner-Armee ist (sehr häufig in Mercenaries). | *Vorkommen gefunden* | ❌ |
+| `condition` mit `type="notInstanceOf"` + `scope="primary-catalogue"` | Modifikator greift, wenn der Armee-Katalog des Kontingents **nicht** der genannte ist — Mercenaries Z. 4129 („Extra Rare choice" nur außerhalb einer Ogre-Kingdoms-Armee). Gegenstück `instanceOf` ebenda Z. 4102/4271. | `primary-catalogue-scope` (Kontrast-Paar Ogre / Orcs and Goblins) | ✅ |
 | `constraint` mit `shared="false"` + `scope="parent"` | Individuelles Limit für spezifische Eltern-Auswahlen (O&G / Vampire Counts). | *Vorkommen gefunden* | ❌ |
 | `condition` mit `type="atLeast"` + `includeChildForces="true"` | Bedingung zählt Einheiten über verbündete Kontingente hinweg (oft in Border Patrols). | *Vorkommen gefunden* | ❌ |
 | Mehrere `modifier` (gemischt `set` + `increment`/`decrement`) auf **dasselbe** Ziel-Feld, je eigenständig konditioniert | Stapel-Semantik ohne definierte Anwendungsreihenfolge; Kosten-Id `ecfa-8486-4f6c-c249` trägt in Vampire Counts 47 gestapelte Modifikatoren. | *Vorkommen gefunden (VC, Mercenaries, Orcs)* | ❌ |
@@ -67,7 +68,7 @@ Hier werden interessante, komplexe Interaktionen zwischen Attributen festgehalte
 | `entryLink type="selectionEntryGroup"` trägt gleichzeitig eigene `<constraints>` (Kosten-Deckel) und `<modifiers>` (konditional) | 6 Vorkommen (Orcs, Vampire); z. B. entryLink `0111-4b1e-83eb-0dff` „Magical Standard": `max=50 field=costId scope=parent` + konditionales `set field=hidden`. | *Vorkommen gefunden* | ❌ |
 | `conditionGroup type="or"` mit 5–8 verschachtelten Conditions (grosser Fan-out) | 19× `or`/6 Conditions (Orcs), 16× `or`/5 (Orcs, Vampire), 9× `or`/8 (Vampire) — deutlich über die bisher getesteten kleinen 2-Condition-Gruppen hinaus. | Nur kleine and/or-Gruppen getestet (`orcs-and-goblins-budget`) | ❌ |
 | `condition type="atLeast" scope="self" childId="model"` — selbstreferenzielles Mindest-Modellzahl-Gate | 32 Vorkommen (Ogre, Orcs, Vampire). | *Vorkommen gefunden* | ❌ |
-| `notInstanceOf` + `scope="primary-catalogue"` **verschachtelt in einer `conditionGroup`** (statt als direkte Condition) | 4 Vorkommen (Mercenaries, Warhammer) — eigener Codepfad gegenüber der bereits oben notierten direkten Verwendung. | *Vorkommen gefunden* | ❌ |
+| `notInstanceOf` + `scope="primary-catalogue"` **verschachtelt in einer `conditionGroup`** (statt als direkte Condition) | 4 der 9 `notInstanceOf`-Vorkommen (Mercenaries Z. 48/4797/6743, `.gst` Z. 773). Der Rahmen selbst ist seit `primary-catalogue-scope` abgedeckt — offen ist allein diese Verschachtelung; das `instanceOf`-Gegenstück in einer `conditionGroup` (Mercenaries Z. 4102) ist dort bereits mitgeprüft. | *Vorkommen gefunden* | ❌ |
 | `repeat scope="roster"` auf eine konkrete Verbündeten-`childId` mit `includeChildForces="true"` | Zählt eine benannte Ally-Einheit kontingentübergreifend als Repeat-Multiplikator; 7 Vorkommen (Ogre, Orcs). | Nur `repeat scope="parent" childId="model"` getestet | ❌ |
 
 ---
