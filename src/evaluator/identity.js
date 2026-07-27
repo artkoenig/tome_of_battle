@@ -101,6 +101,31 @@ export function resolvedTargetIdOf(def) {
 }
 
 /**
+ * Die Id, unter der die Vorkommen **dieser** Definition an ihrer eigenen Stelle
+ * gezaehlt werden — die Gegenrichtung zu {@link identityIdsOf}: dort steht, unter
+ * welchen Ids ein Vorkommen zaehlbar *ist*, hier, welche eine Zaehlung an dieser
+ * Stelle *nennt*.
+ *
+ * Ein **Kategorie-Verweis** nennt seine Kategorie (`targetId`): der Verweis ist
+ * kein Auswahlpunkt, sondern der Zaehlrahmen seiner Kategorie — gezaehlt wird, was
+ * in der Kategorie steht, nicht der Verweis selbst. Jede andere Definition nennt
+ * ihre eigene Id; ein `entryLink` bleibt damit bewusst beim Verweis, denn nur die
+ * ueber genau diesen Verweis gesetzten Vorkommen gehoeren zu seiner Stelle (die
+ * einseitige Regel oben).
+ *
+ * Sie steht hier, weil zwei Verbraucher dieselbe Frage stellen und die Regel sonst
+ * zweimal geschrieben waere: die Grenzen-Auswertung zaehlt so den Ist-Wert einer
+ * Grenze (`constraints.js`), die Belegungs-Zaehlung so den Ist-Stand eines Slots
+ * ohne Grenze (`occupancy.js`).
+ *
+ * @param {object} def  eine Katalogdefinition.
+ * @returns {string} die genannte Ziel-Id der Zaehlung.
+ */
+export function countingTargetIdOf(def) {
+  return def.kind === DefinitionKind.CATEGORY_LINK ? def.targetId : def.id;
+}
+
+/**
  * True, wenn ein Vorkommen dieser Definition unter `wantedId` zaehlt — also
  * gleichbedeutend mit „{@link identityIdsOf} enthaelt `wantedId`", nur ohne die
  * Zwischenliste (die Anwesenheitspruefung der Ankersynthese fragt das je Knoten

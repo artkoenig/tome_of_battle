@@ -50,6 +50,7 @@ import { extendBaseEffectiveState } from './effectiveState.js';
 import { buildIndex } from './countIndex.js';
 import { evaluateToFixpoint, applyAnchorPostPass } from './fixpoint.js';
 import { evaluateConstraints } from './constraints.js';
+import { buildOccupancyIndex } from './occupancy.js';
 import { evaluateRosterBudget } from './budget.js';
 import { buildReport } from './report.js';
 import { createRosterBudget } from './rosterBudget.js';
@@ -135,6 +136,14 @@ export function evaluate(prepared, roster) {
   const offerAnchors = attachOfferAnchors(root, resolved);
   extendBaseEffectiveState(effective, offerAnchors);
 
+  // Die **Belegung** je Slot: was an seiner Stelle steht, gezaehlt aus demselben
+  // finalen Index — unabhaengig davon, ob eine Grenze sie liest. Sie ist der
+  // Ist-Stand eines Slots, dessen Grenzen keinen beisteuern, weil sie unbegrenzt
+  // sind oder keine Antwort hatten (Issue 82). Erst hier, weil auch die eben
+  // angehaengten Angebots-Anker eine Belegung tragen; sie zaehlen selbst nie mit,
+  // veraendern den Index also nicht.
+  const occupancy = buildOccupancyIndex(root, index, resolved.categoryIds);
+
   // Nach-Durchlauf: die synthetischen Anker — die aus Phase 1 wie die eben
   // angehaengten — bekommen ihre effektiven Werte in **einem** Durchlauf gegen
   // diesen finalen Index. Sie zaehlen nie mit, koennen also nicht zurueckwirken —
@@ -166,7 +175,7 @@ export function evaluate(prepared, roster) {
   // einzige Quelle (`infoProjection.js`). `categoryIds` ist dieselbe Menge, an der
   // das Query-Primitiv einen ID-Bezugsrahmen aufloest; die Einordnung einer
   // Verletzung liest daran ab, ob deren Rahmen eine Kategorie oder ein Eintrag ist.
-  return buildReport(root, effective, constraintEvaluation, diagnostics, {
+  return buildReport(root, effective, constraintEvaluation, occupancy, diagnostics, {
     budgetViolations,
     unstableNodes,
     profileTypes: resolved.profileTypes,

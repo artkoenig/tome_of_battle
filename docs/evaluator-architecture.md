@@ -336,7 +336,9 @@ record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: d
                           frame: { path: NodePath, defId: Id }?,  // Kontingent bzw. Eltern-Auswahl;
                                                         // null = der Slot hängt am Roster selbst
                           effectiveMin: number?, effectiveMax: number?,
-                          current: number, headroom: number?,
+                          current: number, headroom: number?,   // current: Ist-Wert der ausgewiesenen
+                                                        // Grenze — ohne eine solche die **Belegung**
+                                                        // des Slots (§4.8)
                           unevaluatedLimitKinds: ConstraintKind[],  // Grenzenarten OHNE Antwort:
                                                         // „nicht auswertbar" ist nicht „keine Grenze"
                           isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
@@ -711,10 +713,20 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED | UNLIMITED
 
 **Der Abstand gilt nur je Messgröße.** `delta` trägt eine Einheit — es zählt, was die Grenze zählt (§3.6, `measure`). 2 Auswahlen gegen 100 Punkte zu stellen, wäre ein Vergleich über Einheiten hinweg; verglichen wird deshalb **nur innerhalb** einer Messgröße. Trägt ein Slot Grenzen **mehrerer** Messgrößen, entscheidet ein erklärter Vorrang, welche er ausweist: `selectionCount` vor `forceCount` vor `costSum` vor `budgetLimit` — vorn steht, was den **Bestand des Slots selbst** zählt, denn `current` und `headroom` beantworten der Oberfläche „wie viel steht hier, wie viel passt noch" (ADR-0035) in genau der Einheit, in der sie an einem Slot hinzufügt und wegnimmt. Trägt ein Slot nur Kostengrenzen, weist er sie unverändert aus: der Vorrang wählt aus, was da ist, er verschweigt nichts — die übergangene Grenze bleibt in der Meldungsliste.
 
+**Der Ist-Stand ist eine Zählung, kein Ersatzwert.** Weist ein Slot eine Grenze aus, ist `current` deren Ist-Wert — nur so trägt er dieselbe Messgröße und denselben Bezugsrahmen wie `effectiveMin`/`effectiveMax` und `headroom`. Weist er **keine** aus, kommt `current` aus der **Belegung** des Slots (`occupancy.js`): der Zählung an seiner Stelle, die es unabhängig von jeder Grenze gibt — im Rahmen, unter dem er hängt (`scope="parent"`, ohne die `includeChild…`-Flags), unter der Id, die er nennt (§4.3, `countingTargetIdOf`), gemessen als Anzahl (an einem Kontingent-Slot `forceCount`, sonst `selectionCount`). Vorher stand dort 0, und das war keine Zählung, sondern der Ersatzwert von `maxResult?.actual ?? minResult?.actual ?? 0`: ein Slot, dessen einzige Obergrenze **unbegrenzt** ist, meldete „0 ausgewählt", gleich wie viel dort stand — und seit §3.6 ebenso einer, dessen einzige Grenze **keine Antwort** hatte. Beide Wege sind häufig (in den WHFB6-Fixtures sind 38 Grenzen unbegrenzt erklärt, 28 davon `max/selections/scope="parent"` — genau die Zählung, die die Belegung ausführt). Der Ist-Stand sagt damit nichts mehr über die Grenzen eines Slots; dass keine gilt, sagen `effectiveMin`/`effectiveMax` (`null`) und `unevaluatedLimitKinds`.
+
 **`current`, `headroom` und `isBlocked` gelten je Messgröße — sie sind keine Zusage über Verfügbarkeit.** Sie stammen aus der **einen** ausgewiesenen Grenze und tragen deren Einheit; eine Grenze **anderer** Messgröße am selben Slot kann bereits ausgereizt sein, ohne dass eine dieser Zahlen es zeigt. Beispiel: ein Gegenstand kostet 98 Punkte, sein Slot führt „höchstens 5 Auswahlen" und „höchstens 100 Punkte", einer ist gewählt — der Datensatz meldet `headroom` 4 und `isBlocked` false, obwohl die zweite Auswahl die Punktegrenze bräche. Der UI-Lookup `isSelectable` unten liest deshalb genau das, was dort steht („diese Grenze sperrt nicht"), und nicht „eine weitere Auswahl ist zulässig". Die vollständige Aussage darüber, was eine Auswahl verletzt, trägt allein die Meldungsliste: dort steht **jede** Grenze mit ihrem eigenen Ergebnis.
 
 ```
-function buildReport(tree, effective, {results, unevaluatedLimits}, diagnostics, unstableNodes): Report
+function buildOccupancyIndex(tree, index, categoryIds): Map<EvalNode, number>
+  // Was an der Stelle eines Slots steht — unabhängig von jeder Grenze, über dasselbe
+  // Query-Primitiv wie jede andere Zählung. Nach Baumphase 2 gebaut, damit auch die
+  // Angebots-Anker eine Belegung tragen.
+  return { node → query(ctx(node), node.isForce ? FORCE_COUNT : SELECTION_COUNT,
+                        parent, countingTargetIdOf(node.def), noFlags)
+           for node in allNodes(tree) }
+
+function buildReport(tree, effective, {results, unevaluatedLimits}, occupancy, diagnostics, unstableNodes): Report
   capabilities = {}
   for node in selectableSlotsOf(tree):                   // JEDER Knoten: belegt wie Anker
     minResult = bindingResult(results, node, MIN)        // größter Fehlbetrag
@@ -727,7 +739,8 @@ function buildReport(tree, effective, {results, unevaluatedLimits}, diagnostics,
       frame         = frameReferenceOf(node),          // Kontingent bzw. Eltern-Auswahl
       effectiveMin  = minResult?.bound,
       effectiveMax  = maxResult?.bound,
-      current       = maxResult?.actual ?? minResult?.actual ?? 0,
+      // Ohne ausgewiesene Grenze die gezählte Belegung — nie eine erfundene 0.
+      current       = maxResult?.actual ?? minResult?.actual ?? occupancy[node],
       // Ohne Antwort auf ein Höchstmaß: 0 statt null — „unbekannt" darf sich nicht
       // in „unbegrenzt" verwandeln (§3.6).
       headroom      = maxUnevaluated ? 0

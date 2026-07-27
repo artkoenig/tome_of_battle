@@ -604,6 +604,8 @@ describe('Bericht: eine Messgroesse, die an keinem Slot ausweisbar ist', () => {
   const TREE_WITHOUT_SLOTS = { children: [], parent: null, isRoot: true, def: null };
   const UNUSED_EFFECTIVE_STATE = {};
   const NO_DIAGNOSTICS = [];
+  // Ohne Slot wird auch keine Belegung gelesen — ein Baum ohne Knoten hat keine.
+  const NO_OCCUPANCY = new Map();
 
   /** Ein Ergebnis in genau der Form, die `budget.js` liefert. */
   function budgetResultOf(costTypeId) {
@@ -622,7 +624,7 @@ describe('Bericht: eine Messgroesse, die an keinem Slot ausweisbar ist', () => {
   /** Baut den Bericht mit den uebergebenen Ergebnissen in der **Slot**-Ergebnisliste. */
   function buildingReportFrom(results) {
     const constraintEvaluation = { results, unevaluatedLimits: [] };
-    return () => buildReport(TREE_WITHOUT_SLOTS, UNUSED_EFFECTIVE_STATE, constraintEvaluation, NO_DIAGNOSTICS);
+    return () => buildReport(TREE_WITHOUT_SLOTS, UNUSED_EFFECTIVE_STATE, constraintEvaluation, NO_OCCUPANCY, NO_DIAGNOSTICS);
   }
 
   it('meldet ein einzelnes solches Ergebnis laut, statt es still zu indizieren', () => {

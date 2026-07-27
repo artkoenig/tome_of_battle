@@ -36,6 +36,7 @@ import { buildIndex } from '../../src/evaluator/countIndex.js';
 import { evaluateToFixpoint, applyAnchorPostPass } from '../../src/evaluator/fixpoint.js';
 import { evaluateConstraints } from '../../src/evaluator/constraints.js';
 import { evaluateRosterBudget } from '../../src/evaluator/budget.js';
+import { buildOccupancyIndex } from '../../src/evaluator/occupancy.js';
 import { buildReport } from '../../src/evaluator/report.js';
 import { createRosterBudget } from '../../src/evaluator/rosterBudget.js';
 import { AnchorKind, DiagnosticKind } from '../../src/evaluator/model.js';
@@ -187,6 +188,10 @@ export function measureEvaluation(dataset, roster) {
     const constraintDiagnostics = [];
     const results = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics, budget);
     const budgetViolations = evaluateRosterBudget(index, budget);
+    // Die Belegung je Slot — wie in der Fassade nach Baumphase 2 und gegen denselben
+    // finalen Index gezaehlt. Sie speist den Faehigkeitsdatensatz und gehoert damit
+    // in dieselbe gemessene Phase wie der Berichtsbau.
+    const occupancy = buildOccupancyIndex(root, index, resolved.categoryIds);
     const diagnostics = [
       ...datasetDiagnostics,
       ...joinDiagnostics,
@@ -198,7 +203,7 @@ export function measureEvaluation(dataset, roster) {
     // Info-Projektion ohne Klartext-Namen und maesse damit weniger, als die Engine
     // wirklich tut. `categoryIds` aus demselben Grund: ohne sie ordnete die Messung
     // einen ID-Bezugsrahmen als Eintrags- statt als Kategorie-Rahmen ein.
-    return buildReport(root, effective, results, diagnostics, {
+    return buildReport(root, effective, results, occupancy, diagnostics, {
       budgetViolations,
       unstableNodes,
       profileTypes: resolved.profileTypes,

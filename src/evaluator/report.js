@@ -38,6 +38,7 @@
 import { ConstraintKind, LimitMeasure, isReportableAnchorKind } from './model.js';
 import { resolvedTargetIdOf } from './identity.js';
 import { selectableSlotsOf, pathOf } from './evalTree.js';
+import { occupancyOf } from './occupancy.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage } from './violationClassification.js';
@@ -321,9 +322,33 @@ function headroomOf(maxResult, hasUnevaluatedMaxLimit) {
 }
 
 /**
- * Baut den Faehigkeitsdatensatz eines Slots aus seinen MIN-/MAX-Ergebnissen und
- * dem effektiven Zustand. Der aktuelle Stand kommt bevorzugt aus der MAX-, sonst
- * der MIN-Grenze; traegt der Slot keine (nicht suspendierte) Grenze, ist er 0.
+ * Der **Ist-Stand** eines Slots.
+ *
+ * Weist der Slot eine Grenze aus, ist es deren Ist-Wert — bevorzugt der der
+ * Obergrenze, sonst der der Untergrenze. Nur so tragen `effectiveMin`/
+ * `effectiveMax`, `current` und `headroom` dieselbe Messgroesse und denselben
+ * Bezugsrahmen und passen zueinander ({@link MEASURE_PRECEDENCE}, Main-Issue 76).
+ *
+ * Weist er **keine** aus, kommt der Ist-Stand aus der **Belegung** des Slots
+ * (`occupancy.js`) — der Zaehlung an seiner Stelle, die es unabhaengig von jeder
+ * Grenze gibt. Frueher stand hier 0. Das war keine Zaehlung, sondern ein
+ * Ersatzwert: ein Slot, dessen einzige Obergrenze **unbegrenzt** ist, meldete „0
+ * ausgewaehlt", gleich wie viel dort stand — und nach Issue 77 ebenso einer, dessen
+ * einzige Grenze **keine Antwort** hatte. Beide Wege enden in demselben Ersatzwert,
+ * und beide sind mit dieser Zaehlung erledigt (Issue 82). Eine Aussage ueber die
+ * Grenzen ist der Ist-Stand damit nicht: dass keine gilt, sagen `effectiveMin`/
+ * `effectiveMax` (`null`) und `unevaluatedLimitKinds`.
+ */
+function currentOf(node, minResult, maxResult, occupancy) {
+  const boundingResult = maxResult ?? minResult;
+  return boundingResult === null ? occupancyOf(occupancy, node) : boundingResult.actual;
+}
+
+/**
+ * Baut den Faehigkeitsdatensatz eines Slots aus seinen MIN-/MAX-Ergebnissen, seiner
+ * Belegung und dem effektiven Zustand. Der aktuelle Stand kommt bevorzugt aus der
+ * MAX-, sonst der MIN-Grenze; weist der Slot keine Grenze aus, ist er die gezaehlte
+ * Belegung seiner Stelle ({@link currentOf}).
  *
  * `anchorKind` sagt, **woher** der Slot stammt (belegt, Pflicht-Phantom,
  * Gruppen-, Kategorie- oder Angebots-Anker) — die einzige Stelle, an der die
@@ -363,7 +388,7 @@ function headroomOf(maxResult, hasUnevaluatedMaxLimit) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, unevaluatedByAnchor, effective, unstableNodes, profileTypeRegistry }) {
+function toCapability(node, { resultsByAnchor, unevaluatedByAnchor, occupancy, effective, unstableNodes, profileTypeRegistry }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   const unevaluatedLimitKinds = unevaluatedLimitKindsOf(unevaluatedByAnchor, node);
@@ -376,7 +401,7 @@ function toCapability(node, { resultsByAnchor, unevaluatedByAnchor, effective, u
     name: effective.nameOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax: maxResult === null ? null : maxResult.bound,
-    current: maxResult?.actual ?? minResult?.actual ?? 0,
+    current: currentOf(node, minResult, maxResult, occupancy),
     headroom: headroomOf(maxResult, hasUnevaluatedMaxLimit),
     isMandatoryUnmet: minResult !== null && !minResult.satisfied,
     // Fail-closed wie der Restspielraum: eine Obergrenze ohne Antwort sperrt, statt
@@ -396,9 +421,9 @@ function toCapability(node, { resultsByAnchor, unevaluatedByAnchor, effective, u
 
 /**
  * Baut den Bericht aus dem Auswertungsbaum, dem effektiven Zustand, den
- * Constraint-Ergebnissen und den gesammelten Diagnosen. Je Slot — jeder Knoten
- * jeder Ankerart — entsteht ein Faehigkeitsdatensatz, abgelegt unter dem stabilen
- * Pfad des Slots ({@link pathOf}).
+ * Constraint-Ergebnissen, der Belegung je Slot und den gesammelten Diagnosen. Je
+ * Slot — jeder Knoten jeder Ankerart — entsteht ein Faehigkeitsdatensatz, abgelegt
+ * unter dem stabilen Pfad des Slots ({@link pathOf}).
  *
  * @param {object} root  Wurzel des Evaluationsbaums.
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
@@ -406,6 +431,11 @@ function toCapability(node, { resultsByAnchor, unevaluatedByAnchor, effective, u
  *   die Auswertung der Grenzen (`evaluateConstraints`): die Ergebnis-Tripel und die
  *   Grenzen ohne Antwort. Beide speisen den Faehigkeitsdatensatz; Meldungen macht
  *   nur die erste Liste — eine Grenze ohne Antwort behauptet nichts.
+ * @param {Map<object, number>} occupancy  die **Belegung** je Slot
+ *   (`buildOccupancyIndex`): der Ist-Stand, den ein Slot ausweist, solange keine
+ *   Grenze einen beisteuert ({@link currentOf}). Pflichteingabe und bewusst ohne
+ *   stillen Ersatzwert: eine fehlende Belegung liesse jeden grenzenlosen Slot wieder
+ *   „0 ausgewaehlt" melden — genau den erfundenen Wert, den Issue 82 abschafft.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
  * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
@@ -424,7 +454,7 @@ function toCapability(node, { resultsByAnchor, unevaluatedByAnchor, effective, u
  *   Query-Primitiv.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  */
-export function buildReport(root, effective, constraintEvaluation, diagnostics, extras = {}) {
+export function buildReport(root, effective, constraintEvaluation, occupancy, diagnostics, extras = {}) {
   const { results, unevaluatedLimits } = constraintEvaluation;
   const {
     budgetViolations = [],
@@ -437,6 +467,7 @@ export function buildReport(root, effective, constraintEvaluation, diagnostics, 
   const capabilityContext = {
     resultsByAnchor: indexResultsByAnchor(results),
     unevaluatedByAnchor: indexUnevaluatedLimitsByAnchor(unevaluatedLimits),
+    occupancy,
     effective,
     unstableNodes,
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),

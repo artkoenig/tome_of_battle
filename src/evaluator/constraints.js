@@ -18,8 +18,9 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, SUSPENDED, UNLIMITED, isUnresolvedQuery, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
+import { ConstraintKind, SUSPENDED, UNLIMITED, isUnresolvedQuery, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
 import { allNodes, limitsOf } from './evalTree.js';
+import { countingTargetIdOf } from './identity.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
 
@@ -71,8 +72,9 @@ function resolveBound(limit, node, effective, ctx) {
 const LIMIT_WITHOUT_ANSWER = Symbol('limitWithoutAnswer');
 
 /**
- * Wertet eine einzelne Grenze am Knoten aus. Ziel der Zaehlung ist die eigene
- * Definition der Bezugsinstanz.
+ * Wertet eine einzelne Grenze am Knoten aus. Ziel der Zaehlung ist die von der
+ * Bezugsinstanz genannte Id ({@link countingTargetIdOf}) — bei einem
+ * Kategorie-Verweis dessen Kategorie, sonst die eigene Definition.
  *
  * @returns {object|typeof LIMIT_WITHOUT_ANSWER|null} das Ergebnis-Tripel; der
  *   {@link LIMIT_WITHOUT_ANSWER}-Vermerk, wenn die Grenze keine Antwort hat; oder
@@ -86,8 +88,7 @@ function evaluateLimit(limit, node, effective, ctx) {
   // Obergrenze"), keine offene Frage — der Bericht weist sie genau so aus.
   if (bound === UNLIMITED) return null;
 
-  const targetId = node.def.kind === DefinitionKind.CATEGORY_LINK ? node.def.targetId : node.def.id;
-  const actual = query(ctx, limit.field, limit.scope, targetId, limit.flags);
+  const actual = query(ctx, limit.field, limit.scope, countingTargetIdOf(node.def), limit.flags);
   // Hat die Zaehlung der Grenze keine Antwort (Diagnose bereits gemeldet), wird die
   // Grenze fail-closed nicht verglichen — und als solche vermerkt.
   if (isUnresolvedQuery(actual)) return LIMIT_WITHOUT_ANSWER;
