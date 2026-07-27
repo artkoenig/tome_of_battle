@@ -1,7 +1,7 @@
 ---
 status: waiting
 branch: resolver-immutability
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/143
 ---
 
 # Resolver: unveränderliche Sicht ohne Mutation der Eingabe zusichern
