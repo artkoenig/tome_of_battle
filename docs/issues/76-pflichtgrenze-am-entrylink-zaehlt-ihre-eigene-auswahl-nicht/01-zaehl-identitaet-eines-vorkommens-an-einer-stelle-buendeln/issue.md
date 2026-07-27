@@ -1,4 +1,4 @@
-Status: claimed
+Status: resolved
 Type: fix
 Blocked by: None
 
@@ -42,3 +42,4 @@ Daten nicht vor — die Identitaet endet deshalb bewusst am aufgeloesten Ziel.
 - [ ] Das Architektur-Dokument beschreibt die Identitaets-Regel.
 
 ## Comments
+- Neues Modul src/evaluator/identity.js buendelt die Zaehl-Identitaet (K1): identityIdsOf(def) liefert die entdoppelte Menge aus eigener Id, targetId und resolved.id, isOccurrenceOf(def, id) fragt einseitig. Angeschlossen sind countIndex.targetsOf, evalTree.countInstances und annotateGroupMembers, query.nearestAncestorWithDefId sowie offer.js (lokale Kopie geloescht); docs/evaluator-architecture.md 3.3/4.3/4.4 benennt die Regel. Suite unveraendert gruen (2124 Tests, keine Erwartung angepasst), plus 14 neue Modultests.
