@@ -232,7 +232,9 @@ export const InfoElementKind = Object.freeze({
  * - `MANDATORY_PHANTOM` — Anker fuer eine Pflichtdefinition (`min > 0`), die im
  *   Bezugsrahmen keine Instanz hat.
  * - `GROUP_ANCHOR` — Anker fuer die Grenzen einer `selectionEntryGroup`.
- * - `CATEGORY_ANCHOR` — Anker fuer eine vom Kontingent gefuehrte Kategorie.
+ * - `CATEGORY_ANCHOR` — Anker fuer eine Kategorie als Zaehlrahmen: vom
+ *   Kontingent per `categoryLink` gefuehrt (der Anker traegt den Link) oder
+ *   unverlinkt mit eigenen Grenzen (der Anker traegt die `categoryEntry`).
  * - `OFFER_ANCHOR` — **Angebots-Anker**: eine im Bezugsrahmen waehlbare
  *   Definition, die im Roster (noch) nicht vorkommt (ADR-0035).
  */

@@ -45,10 +45,49 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Default (unanswered, human asleep) — scenario pins vs. issue criteria:**
+  `docs/testing/army-standard-bearer/scenario.json` pinned limit
+  `2a1d-03a1-b48c-64ad` as `absent` in rosters 02/03/04, justified by a
+  "Domänenkonvention" that on inspection records the engine limitation this
+  issue fixes (the README itself says the limit should hold in-world).
+  Decision: the issue's criteria (doc §5.5/§5.6) win; the
+  `e2e-testcase-author` — owner of `docs/testing/` — re-derives the
+  expectation from the catalog data alone, each changed pin individually
+  justified. If the human disagrees, reverting the scenario commit restores
+  the old pins.
+- **Anchor design (implementer):** unlinked category anchors are synthesized
+  once per scope (roster: root; force: first force), because the
+  target-type rule (§7.7) lifts force-scoped category targets army-wide —
+  per-force anchors would N-plicate the identical violation. Exclusions:
+  any linking force (its anchor already evaluates the limits) or an
+  existing min phantom in the frame (piggyback). No double report possible.
+
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
 
 ## Log
+
+- 2026-07-28 test-author:
+  `src/evaluator/evalTree.unlinkedCategoryMax.test.js`, 10 tests — 5 RED
+  (roster repro, force scope, empty-second-force edge, criterion-2 max-only
+  equivalence, criterion-3 single-violation pin), 5 green pins/controls
+  (0–1 satisfied case, min+max equivalence, linked max-only stays single,
+  min-only phantom, min+max piggyback). Criterion-2 equivalence compares
+  deduplicated (limitId, actual, bound) tuple sets — slot identity
+  excluded, 0093's known min duplication not pinned either way. Force-scope
+  ambiguity resolved by probing the min analogue (anchors per force); no
+  open questions left.
+- 2026-07-28 implementer: `synthesizeUnlinkedCategoryAnchors` in
+  `evalTree.js` (+ docstring updates in `model.js`, `report.js`,
+  architecture doc §3.2). 10/10 target tests green; lint/typecheck 0;
+  puppeteer E2E green. BLOCKED on criterion 4: 3 pre-existing pins in
+  `e2e.testcatalog.test.js` (scenario army-standard-bearer, limit `2a1d`
+  "darf nicht feuern") fail — they pin the pre-fix behaviour; routed to
+  the e2e-testcase-author per the Decisions default. Surprise recorded:
+  the test-author's "min analogue anchors per force" probe note was
+  misleading — the target-type rule makes any category anchor army-wide,
+  so single-anchor is the only design their own empty-second-force test
+  admits.
 
 ## Checkpoints
 

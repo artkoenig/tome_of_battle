@@ -228,6 +228,16 @@ function hasMinLimitInFrame(def, scope) {
   return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
 }
 
+/** True, wenn die Definition irgendeine Grenze mit genau diesem Bezugsrahmen traegt. */
+function hasAnyLimitInFrame(def, scope) {
+  return limitsOf(def).some(limit => limit.scope === scope);
+}
+
+/** True, wenn unter `parent` schon ein synthetischer Anker dieser Definition haengt. */
+function hasPhantomFor(parent, defId) {
+  return parent.children.some(child => child.isPhantom && child.def.id === defId);
+}
+
 /** Summe der Instanzanzahlen realer Knoten mit dieser Definitions-ID im Teilbaum. */
 function countInstances(fromNode, defId) {
   let total = 0;
@@ -305,6 +315,56 @@ function synthesizeForceCategoryAnchors(root, nextFrameId) {
       if (childDef.kind === DefinitionKind.CATEGORY_LINK) {
         attachPhantom(forceNode, childDef, nextFrameId, AnchorKind.CATEGORY_ANCHOR);
       }
+    }
+  }
+}
+
+/**
+ * Haengt Kategorie-Anker fuer **unverlinkte** Kategorie-Definitionen an
+ * (`docs/battlescribe-data-format.md` §5.5/§5.6): Grenzen koennen direkt an der
+ * `categoryEntry` haengen und gelten auch dann, wenn **kein** Kontingent die
+ * Kategorie per `categoryLink` fuehrt. Eine MIN-Grenze bekommt in diesem Fall
+ * schon ueber {@link synthesizeMandatoryPhantoms} ihren Anker (eine Kategorie
+ * hat nie eine Instanz, ihr Pflicht-Phantom haengt also immer); eine Kategorie
+ * mit **ausschliesslich** MAX-Grenzen bliebe ohne diesen Schritt ankerlos und
+ * ihre Grenze still unausgewertet (Issue 0092, die klassische 0–1-Kodierung).
+ *
+ * Es haengt hoechstens **ein** Anker je Kategorie, damit keine Grenze doppelt
+ * meldet:
+ *
+ * - eine Kategorie, die **irgendein** Kontingent per `categoryLink` fuehrt, ist
+ *   ganz ausgenommen: dessen Anker ({@link synthesizeForceCategoryAnchors})
+ *   wertet ihre Grenzen bereits aus — die armeeweiten direkt, die
+ *   kontingent-skopierten ueber die Ziel-Typ-Regel (unten);
+ * - haengt schon ein Pflicht-Phantom derselben Definition (MIN-Grenze mit
+ *   ROSTER- oder FORCE-Rahmen, {@link synthesizeMandatoryPhantoms}), wertet das
+ *   die MAX-Grenzen huckepack mit aus — ein zweiter Anker entfaellt.
+ *
+ * Eine `scope="force"`-Grenze mit Kategorie-Ziel zaehlt ueber die
+ * **Ziel-Typ-Regel** (BSData §7.7, `query.js`) ohnehin armeeweit — welcher
+ * Kontingent-Knoten den Anker traegt, aendert ihr Ergebnis nicht. Deshalb
+ * genuegt **ein** Anker am ersten Kontingent (je einer pro Kontingent meldete
+ * dieselbe armeeweite Verletzung mehrfach); ohne Kontingent gibt es keine
+ * Mitglieder und nichts auszuwerten. Der ROSTER-Rahmen ankert an der Wurzel —
+ * am Kontingent-Knoten liegt fuer ihn nichts Besseres, an der Wurzel loest auch
+ * ein Roster ohne Kontingente ihn auf.
+ */
+function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId) {
+  const forceNodeList = [...forceNodes(root)];
+  const linkedAnywhere = new Set();
+  for (const forceNode of forceNodeList) {
+    for (const id of linkedCategoryIdsOf(forceNode.def)) linkedAnywhere.add(id);
+  }
+  for (const def of definitions) {
+    if (def.kind !== DefinitionKind.CATEGORY) continue;
+    if (linkedAnywhere.has(def.id)) continue;
+    if (hasAnyLimitInFrame(def, ScopeKeyword.ROSTER) && !hasPhantomFor(root, def.id)) {
+      attachPhantom(root, def, nextFrameId, AnchorKind.CATEGORY_ANCHOR);
+    }
+    if (hasAnyLimitInFrame(def, ScopeKeyword.FORCE)
+        && forceNodeList.length > 0
+        && !forceNodeList.some(forceNode => hasPhantomFor(forceNode, def.id))) {
+      attachPhantom(forceNodeList[0], def, nextFrameId, AnchorKind.CATEGORY_ANCHOR);
     }
   }
 }
@@ -448,7 +508,9 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  * ROSTER-Rahmen und liegt ueber keinem Kontingent. Nachdem alle realen Knoten
  * haengen, werden Phantomknoten fuer fehlende Pflichtdefinitionen synthetisiert
  * (siehe {@link synthesizeMandatoryPhantoms}), Kategorie-Anker je Kontingent
- * (siehe {@link synthesizeForceCategoryAnchors}) und Gruppen-Anker fuer
+ * (siehe {@link synthesizeForceCategoryAnchors}), Kategorie-Anker fuer
+ * unverlinkte Grenzen-tragende Kategorien (siehe
+ * {@link synthesizeUnlinkedCategoryAnchors}) und Gruppen-Anker fuer
  * gruppen-skopierte Grenzen (siehe {@link synthesizeGroupAnchors}).
  *
  * Die Wurzel traegt zusaetzlich die **Quelle der Rahmen-Identitaeten**
@@ -483,6 +545,9 @@ export function buildEvalTree(resolved, roster) {
   synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
   synthesizeParentScopePhantoms(root, nextFrameId);
   synthesizeForceCategoryAnchors(root, nextFrameId);
+  // Nach Pflicht-Phantomen und Kontingent-Ankern, damit die Duplikat-Pruefung
+  // („haengt hier schon ein Anker dieser Kategorie?") beide sehen kann.
+  synthesizeUnlinkedCategoryAnchors(root, resolved.definitions ?? [], nextFrameId);
   // Nach den realen Knoten und den Pflicht-Phantomen: die Gruppen-Anker zuletzt,
   // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
   synthesizeGroupAnchors(root, resolved, nextFrameId);

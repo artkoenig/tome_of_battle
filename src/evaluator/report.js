@@ -118,10 +118,13 @@ function findResult(resultsByAnchor, node, kind) {
 
 /**
  * Die **Definition, auf die ein Verweis-Slot zeigt** — `null`, wenn der Slot kein
- * Verweis ist. Ein Kategorie-Anker traegt den `categoryLink`, nicht die Kategorie;
- * ein Angebots-Anker den `entryLink`, nicht den Eintrag (nur so gelten die am
- * Verweis deklarierten Grenzen). Das *Thema* des Slots ist aber das Ziel — und
- * genau darueber zaehlt ihn auch die Constraint-Schicht.
+ * Verweis ist. Der Kategorie-Anker eines verlinkenden Kontingents traegt den
+ * `categoryLink`, nicht die Kategorie; ein Angebots-Anker den `entryLink`, nicht
+ * den Eintrag (nur so gelten die am Verweis deklarierten Grenzen). Das *Thema*
+ * des Slots ist aber das Ziel — und genau darueber zaehlt ihn auch die
+ * Constraint-Schicht. Der Anker einer **unverlinkten** Kategorie traegt die
+ * `categoryEntry` selbst und ist kein Verweis: sein Thema ist seine eigene
+ * Definitions-ID, sein Ziel bleibt `null`.
  *
  * Ohne dieses Feld liesse sich ein Kategorie-Abschnitt allein aus dem Bericht
  * nicht seiner Kategorie zuordnen: die Oberflaeche muesste in den Baumknoten
