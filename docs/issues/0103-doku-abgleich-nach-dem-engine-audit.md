@@ -28,6 +28,14 @@ kein Produktivcode.
    Doku-Lücke. Die Regel gehört präzisiert: für welche Zahlenbasis
    (Katalog-Constraints vs. `.ros`-`number`) sie gilt und was die Engine
    voraussetzt; hängt am Roster-Vertrag (Issue 084).
+4. **§3.2/§7.2 erwähnen den ADR-0032-Override nicht:** §3.2 verlangt
+   Kontext-Threading („der `catalogueId`-Kontext muss mitgeführt werden"),
+   §7.2 die Katalog-Lokalität des Link-Ziels. ADR-0032 überstimmt beides
+   bewusst (Global-by-ID über eine flache Tabelle, Kollisions-Guard als
+   Sicherheitsnetz) — die Format-Doku nennt den Override an diesen Stellen
+   aber nicht. Nach der Projektregel „wenn Dokument und Entscheidung
+   auseinanderlaufen, ist das Dokument veraltet" gehört der Verweis in beide
+   Abschnitte.
 
 Acceptance criteria:
 
@@ -38,7 +46,10 @@ Acceptance criteria:
 3. §7.5 sagt eindeutig, auf welche Zahlenbasis sich die Rechenregel bezieht
    und was die Engine vom `.ros`-`number` voraussetzt; der Querverweis auf
    Issue 084 steht dabei.
-4. Kein Produktivcode ändert sich (Diff-Beleg); es gibt nichts auszuführen —
+4. §3.2 und §7.2 benennen den bewussten ADR-0032-Override (Global-by-ID
+   statt Kontext-Threading/Katalog-Lokalität) mit Verweis auf das ADR und
+   dessen Kollisions-Diagnose.
+5. Kein Produktivcode ändert sich (Diff-Beleg); es gibt nichts auszuführen —
    die Review des Diffs gegen dieses Intent ist die einzige Prüfung.
 
 ## Plan

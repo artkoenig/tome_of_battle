@@ -24,10 +24,11 @@ bzw. `catalogSet.js`/`resolver.js`):
    dokumentierten Vorbelegungs-Regeln sind aus dem aufbereiteten Datensatz
    nicht ableitbar.
 3. **`import`** (§7.1) wird nicht gelesen.
-4. **`collective`** wird nicht gelesen; die Zähl-Mathematik ist laut §10
-   bewusst unabhängig davon (dokumentierter Cut), aber die
-   Synchron-Regel des Wikis (*Collective Entries*, Punkt 2) ist stillschweigend
-   unbehandelt und nirgends als Verzicht deklariert.
+4. **`collective`** wird nicht gelesen (das Attribut fehlt im Datenmodell);
+   die Zähl-Mathematik ist laut §10 bewusst unabhängig davon (dokumentierter
+   Cut). Die **Synchron-Regel** des Wikis ist eigenständig als Issue 0104
+   geführt — hier geht es nur um das Lesen-oder-Diagnostizieren des
+   Attributs.
 5. **Info-Kinder von `categoryLink`s** (XSD: `ContainerEntryBase`) werden
    verworfen — eine Regel an einem Kategorie-Link erreicht die
    Info-Projektion nie.
