@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/152
 ---
 
 # Das Release-Skript lässt das Lockfile zurück
@@ -93,3 +93,16 @@ Acceptance criteria:
   nothing user-visible.
 
 ## Retro
+
+- Smooth run: test-author's temp-dir CLI approach made the tests fully
+  implementation-agnostic; the implementer's change dropped in without any
+  test edit, review round 1 had zero findings.
+- What got in the way: the cloud session's single designated branch conflicts
+  with "one issue = one branch = one PR" when several issues run in one
+  session. This session's default: first issue on the designated branch,
+  each further issue on a sibling branch `claude/new-session-jnwa1m-<issue>`
+  from origin/main — recorded here because the rulebook has no answer for
+  multi-issue cloud sessions; candidate for a metis proposal.
+- Left for the human: `scripts/release.js:4-5` cites a renamed CLAUDE.md
+  section title ("Version bump after merging…" → "…before merging an issue");
+  pre-existing, outside this intent.
