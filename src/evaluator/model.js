@@ -388,6 +388,45 @@ export const ScopeKind = Object.freeze({
  */
 export const SUSPENDED = Symbol('suspended');
 
+/**
+ * Der BattleScribe-Katalogwert, mit dem ein **hingeschriebener** Grenz- oder
+ * Vorgabewert „unbegrenzt" bedeutet (`docs/battlescribe-data-format.md` §15,
+ * Issue 079). Er gilt an genau drei Stellen: am Roh-`value` einer Grenze
+ * (`constraint`), am Wert eines `set`-Modifikators auf eine Grenze und an
+ * `defaultCostLimit` (XSD-Vorgabe, Catalogue.xsd:89). Ein **errechneter**
+ * negativer Wert (increment/decrement/multiply) ist nie unbegrenzt — deshalb
+ * wird der Sentinel ausschliesslich ueber {@link unlimitedFromSentinel} beim
+ * Lesen des hingeschriebenen Werts gedeutet, nie am wirksamen Endwert. Das
+ * Literal `-1` lebt nur hier; kein anderes Modul vergleicht dagegen.
+ */
+const UNLIMITED_SENTINEL = -1;
+
+/**
+ * Interne Repraesentation einer **unbegrenzten** Grenze: `Infinity`, bewusst
+ * weder `null` noch `undefined` (beides kollidierte mit „kein Modifikator
+ * vorhanden" und dem `??`-Fallback der Constraint-Schicht) und kein Symbol —
+ * denn auf einer unbegrenzten Grenze wird weitergerechnet: increment/
+ * decrement/multiply lassen `Infinity` unbegrenzt, ohne dass die
+ * Modifikator-Handler den Fall kennen muessen; ein spaeterer `set`
+ * ueberschreibt ihn. Auch die Herleitungskette (ADR-0027) fuehrt diesen Wert
+ * als Basis- bzw. Zwischenwert.
+ */
+export const UNLIMITED = Infinity;
+
+/**
+ * Deutet den Sentinel {@link UNLIMITED_SENTINEL} eines **hingeschriebenen**
+ * Katalogwerts auf {@link UNLIMITED} um; jeder andere Wert (auch `NaN`)
+ * passiert unveraendert. Die **eine** Stelle, an der das Literal `-1` als
+ * „unbegrenzt" gelesen wird — Aufrufer sind der Katalog-Leser (Roh-`value`
+ * einer Grenze, `defaultCostLimit`) und der `set`-Handler auf Grenzen.
+ *
+ * @param {number} value  der hingeschriebene, bereits geparste Zahlwert.
+ * @returns {number}
+ */
+export function unlimitedFromSentinel(value) {
+  return value === UNLIMITED_SENTINEL ? UNLIMITED : value;
+}
+
 /** Klassifikation einer Diagnose (Auswertungsproblem, nie still verschluckt). */
 export const DiagnosticKind = Object.freeze({
   UNRESOLVED_DEFINITION: 'unresolvedDefinition',

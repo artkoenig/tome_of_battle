@@ -38,6 +38,8 @@ import {
   InfoLinkKind,
   DiagnosticKind,
   DEFAULT_FLAGS,
+  UNLIMITED,
+  unlimitedFromSentinel,
   diagnostic,
 } from './model.js';
 
@@ -164,14 +166,6 @@ const DEFAULT_HIDDEN = false;
 /** XSD-Vorgabe des `library`-Attributs: ein spielbarer Katalog (Catalogue.xsd:762). */
 const DEFAULT_LIBRARY = false;
 
-/**
- * Der Katalogwert, mit dem eine Kostenart **keine** Vorgabe-Grenze deklariert
- * (XSD-Vorgabe von `defaultCostLimit`, Catalogue.xsd:89). Er wird beim Lesen auf
- * "keine Grenze" (`null`) abgebildet, damit kein Leser den Sentinel als Zahl
- * weiterrechnet.
- */
-const NO_DEFAULT_COST_LIMIT = -1;
-
 const BOOLEAN_TRUE_XML = 'true';
 const BOOLEAN_FALSE_XML = 'false';
 const XML_MIME_TYPE = 'application/xml';
@@ -248,6 +242,11 @@ function readScope(scopeAttr) {
  * Liest eine einzelne `<constraint>` in eine `LimitDef` oder meldet eine
  * Diagnose, falls ihr Vokabular ausserhalb des Umfangs liegt — nie still
  * verschluckt (`docs/evaluator-architecture.md` §5, Risiko 4).
+ *
+ * Ein hingeschriebener Sentinel-Rohwert wird **hier**, beim Lesen, auf
+ * {@link UNLIMITED} gedeutet (`docs/battlescribe-data-format.md` §7.6, Issue
+ * 079) — kein spaeterer Leser rechnet den Sentinel als Zahl weiter oder deutet
+ * ihn auf dem wirksamen Endwert.
  */
 function readConstraint(constraintEl, diagnostics) {
   const id = constraintEl.getAttribute(Attr.ID);
@@ -255,7 +254,7 @@ function readConstraint(constraintEl, diagnostics) {
   const kind = CONSTRAINT_KINDS.has(type) ? type : undefined;
   const field = readField(constraintEl.getAttribute(Attr.FIELD));
   const scope = readScope(constraintEl.getAttribute(Attr.SCOPE));
-  const value = Number.parseFloat(constraintEl.getAttribute(Attr.VALUE));
+  const value = unlimitedFromSentinel(Number.parseFloat(constraintEl.getAttribute(Attr.VALUE)));
   const isPercent = constraintEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML;
 
   if (kind === undefined || field === undefined || scope === undefined || Number.isNaN(value)) {
@@ -804,11 +803,13 @@ function readCatalogueLinks(root) {
  * *welche* Kosten es gibt, nicht welche verplant sind.
  *
  * Die Vorgabe-Grenze ist `null`, wenn der Katalog keine deklariert (fehlendes,
- * unlesbares oder auf {@link NO_DEFAULT_COST_LIMIT} gesetztes Attribut).
+ * unlesbares oder auf den Sentinel „unbegrenzt" gesetztes Attribut — XSD-Vorgabe
+ * von `defaultCostLimit`, Catalogue.xsd:89; gedeutet ueber
+ * {@link unlimitedFromSentinel}, damit kein Leser ihn als Zahl weiterrechnet).
  */
 function readCostType(costTypeEl) {
-  const declaredLimit = Number.parseFloat(costTypeEl.getAttribute(Attr.DEFAULT_COST_LIMIT));
-  const hasDefaultLimit = !Number.isNaN(declaredLimit) && declaredLimit !== NO_DEFAULT_COST_LIMIT;
+  const declaredLimit = unlimitedFromSentinel(Number.parseFloat(costTypeEl.getAttribute(Attr.DEFAULT_COST_LIMIT)));
+  const hasDefaultLimit = !Number.isNaN(declaredLimit) && declaredLimit !== UNLIMITED;
   return {
     id: costTypeEl.getAttribute(Attr.ID),
     name: costTypeEl.getAttribute(Attr.NAME),
