@@ -168,7 +168,10 @@ Acceptance criteria:
   serialisiert/angezeigt wird.
 - Notiz Runde 2, vorbestehend und außerhalb dieses Intents: Roster-seitiges
   `costLimit value="-1"` wird in `budget.js` nicht als Sentinel gedeutet →
-  als eigenes Issue 085 gefiled.
+  zunächst als Issue 085 gefiled, dann zugunsten von 0096 aus dem
+  parallel auf main gelandeten Audit-Batch zurückgezogen (0096 deckt
+  dasselbe Thema gründlicher ab; unsere Nummer 085 kollidierte zudem mit
+  dem neuen 0085).
 
 ## Checkpoints
 
