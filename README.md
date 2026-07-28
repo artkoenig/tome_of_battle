@@ -160,7 +160,7 @@ Known limitations (documented, not defects): incrementalization (architecture
 
 A `Roster` consists of multiple forces (`Force[]`), which in turn contain a recursive tree of selections (`Selection[]`). A `Selection` references its definition in the catalog via IDs (`entryLinkId` or `selectionEntryId`) instead of duplicating it. Definitions are resolved dynamically at runtime. The type definitions are documented using JSDoc in `src/types.js`.
 
-For more in-depth details on the BattleScribe format, see [`docs/battlescribe-data-format.md`](docs/battlescribe-data-format.md). The upstream BSData community documentation is vendored as a submodule under [`docs/bsdata-catalogue-development-wiki/`](docs/bsdata-catalogue-development-wiki/); what it implies for this project is recorded in [`docs/battlescribe-format-learnings.md`](docs/battlescribe-format-learnings.md). Contributor guidelines are available in [`CLAUDE.md`](CLAUDE.md).
+For more in-depth details on the BattleScribe format, see [`docs/battlescribe-data-format.md`](docs/battlescribe-data-format.md). The upstream BSData community documentation is vendored as a submodule under [`docs/bsdata-catalogue-development-wiki/`](docs/bsdata-catalogue-development-wiki/). Contributor guidelines are available in [`CLAUDE.md`](CLAUDE.md).
 
 ---
 

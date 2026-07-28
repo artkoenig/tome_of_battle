@@ -7,8 +7,7 @@
 > (Home, *Data structure overview*, *Common Catalogue Patterns*, *Collective Entries*,
 > *Catalogue Guidelines*, *Data Author Guide*, *Getting Started*) — seit Issue 076 als Submodul
 > unter [`docs/bsdata-catalogue-development-wiki/`](bsdata-catalogue-development-wiki/) im Repo,
-> mit den daraus gezogenen Schlüssen in
-> [`battlescribe-format-learnings.md`](battlescribe-format-learnings.md) — sowie reale
+> aktualisierbar per `git submodule update --remote` — sowie reale
 > WHFB-6th-Edition-Kataloge (heute zur Laufzeit aus dem externen Katalog-Fork bezogen, siehe
 > ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/solver/__fixtures__/whfb6/`).
 > Alle XML-Beispiele stammen aus echten Dateien.
@@ -43,6 +42,7 @@
 12. [Workflow: Erstellen, Versionieren, Veröffentlichen](#12-workflow-erstellen-versionieren-veröffentlichen)
 13. [Referenztabellen](#13-referenztabellen)
 14. [Glossar](#14-glossar)
+15. [Lücken der Quelle](#15-lücken-der-quelle)
 
 ---
 
@@ -496,6 +496,15 @@ Ein `entryLink` kann eigene `constraints`, `modifiers` und `costs` mitbringen. S
 Waffe an verschiedenen Einheiten unterschiedlich viel — die **Kosten liegen am Link, nicht an der
 Definition**.
 
+Das Ziel muss aus den **shared**-Listen *desselben* Katalogs stammen; per Grundregelwerk-Import
+zählen die geteilten Einträge der `.gst` mit dazu (dort schreibgeschützt). Ein Roster, das einen
+Verweis aus Katalog X benennt, ist gegen einen Datensatz ohne X folglich nicht auswertbar — auch
+dann nicht, wenn die Ziel-Id zufällig in der `.gst` auflöst. Analog für Kontingente: *„All
+selections within must originate from a single catalogue."*
+
+Ein `modifier` am Link wirkt asymmetrisch: er ändert die **Eigenschaften des Ziels**, aber die
+**Grenzwerte des Links**.
+
 #### `infoLink` — verweist auf ein Profil oder eine Regel
 
 ```xml
@@ -617,8 +626,8 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 | `value` | Zahl | Der Grenzwert (`-1.0` = unbegrenzt). |
 | `percentValue` | `true`/`false` | Ob `value` als Prozentsatz zu interpretieren ist. |
 | `shared` | `true`/`false` | Ob der gezählte Wert über alle Link-Instanzen geteilt wird oder pro Instanz gilt. `true`: die Summe umfasst **alle** Auswahlen dieses shared entry im Roster; `false`: sie wird **je Verweis-Instanz** gerechnet ([BSData-Wiki, *Data structure overview*](https://github.com/BSData/catalogue-development/wiki/Data-structure-overview)). |
-| `includeChildSelections` | `true`/`false` | Ob verschachtelte Auswahlen mitgezählt werden. |
-| `includeChildForces` | `true`/`false` | Ob untergeordnete Forces mitgezählt werden. |
+| `includeChildSelections` | `true`/`false` | Ob verschachtelte Auswahlen mitgezählt werden. `false` zählt *„just `scope`'s `field`"* — also eingeschränkt, **nicht** leer. |
+| `includeChildForces` | `true`/`false` | Ob untergeordnete Forces mitgezählt werden. `false` rechnet *„only from parent force selections"* — die Auswahlen des eigenen Kontingents zählen also weiter mit. |
 
 **Beispiel „ein Punkte-Budget pro Auswahl"** — Magische Gegenstände dürfen zusammen höchstens
 100 Punkte kosten (`field` ist die *Punkte*-Kostenart, nicht `selections`):
@@ -640,6 +649,13 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 ```
 
 > **Regeln:**
+> - **Gezählt werden die Auswahlen *unterhalb* des Trägers der Grenze**, nicht der Träger selbst.
+>   Der `scope` sagt nur, in welchem Rahmen summiert wird — die Quelle: der `scope` entscheide,
+>   *„which entity should sum up all `field`'s values **of descendant selections of this
+>   constraint's parent entry**"*
+>   ([*Data structure overview*](bsdata-catalogue-development-wiki/Data-structure-overview.md),
+>   Abschnitt *Constraint*). Eine Grenze an einer `selectionEntryGroup` zählt damit **ihre
+>   Mitglieder**, nicht die Gruppe.
 > - `scope="parent"` vergleicht aufgelöste **Ziel-IDs**, nicht `entryLinkId`s.
 > - `scope="force"` zählt ein **Eintrags**-Ziel **pro Detachment**, ein **Kategorie**-Ziel **armeeweit**
 >   (Ziel-Typ-Regel, [§7.7](#77-modifier-condition-condition-group-repeat) / ADR 0029).
@@ -1182,6 +1198,27 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 
 ---
 
-*Erstellt auf Basis des offiziellen BSData Catalogue-Development-Wikis und realer WHFB-6th-Edition-Kataloge.
-Das Wiki markiert einige Bereiche (Roster-Struktur, neuere 2.02-Features wie Libraries/Publications/Groups)
-selbst als unvollständig — dort ist der Blick in aktuelle, gepflegte Community-Repos die beste Referenz.*
+## 15. Lücken der Quelle
+
+Wo das Wiki schweigt, gibt es keine Autorität — hier entscheidet dieses Projekt selbst, und
+jede solche Entscheidung gehört begründet in ein Issue statt in eine stille Annahme. Die
+Lücken, die uns bisher konkret getroffen haben:
+
+| Lücke | Was fehlt | Wo es uns betrifft |
+|-------|-----------|--------------------|
+| **`.ros`-Struktur** | Die Abschnitte *Roster*, *Force* und *Selection* stehen im Wiki als `TODO`. Es gibt **keine** Aussage darüber, welche Id (`entryId`, `entryLinkId`, `entryGroupId`) die Identität einer Auswahl trägt. | Issue 076 — welche Id der Roster-Adapter binden soll |
+| **Grenze am Verweis oder am Ziel** | Belegt ist nur, dass ein `entryLink` eigene `constraint`s tragen darf und dass ein Modifier am Link dessen Grenzwerte ändert. Ob eine am Link deklarierte Grenze *für den Link* oder *für das Ziel* gilt, steht nirgends. | Issue 076 |
+| **`scope="primary-catalogue"`** | Die Aufzählung kennt `parent\|roster\|force\|primary category` und Vorfahren-Ids — `primary-catalogue` kommt nicht vor, obwohl reale Kataloge es verwenden. | Issue 077 |
+| **`type` am `entryLink`** | Dass ein `selectionEntry` ein `type` (`unit\|model\|upgrade`) trägt, ist dokumentiert. Ob ein Verweis den Typ seines Ziels erbt, nicht. | Issue 078 |
+| **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | Issue 079 |
+| **Modifier-Typen `add`/`remove`** | Das Wiki kennt nur `Increment\|Decrement\|Set\|Append`. Reale Kataloge verwenden `add`/`remove` für Kategoriezugehörigkeit und `multiply`, `prepend`, `set-primary`/`unset-primary`. | §7.7 dieses Dokuments beschreibt sie aus den Daten, nicht aus der Quelle |
+
+Die Seite trägt am Ende selbst den Hinweis `TODO: Update to 2.02` — sie beschreibt einen
+älteren Stand als die heutigen Kataloge (Libraries, Publications, neue Gruppen).
+
+---
+
+*Erstellt auf Basis des offiziellen BSData Catalogue-Development-Wikis (im Repo unter
+[`bsdata-catalogue-development-wiki/`](bsdata-catalogue-development-wiki/)) und realer
+WHFB-6th-Edition-Kataloge. Wo das Wiki unvollständig ist (siehe §15), ist der Blick in
+aktuelle, gepflegte Community-Repos die beste Referenz.*

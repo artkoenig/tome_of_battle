@@ -71,14 +71,9 @@ Unsere Engine zählt stattdessen die eigene Id des Gruppenknotens und kommt auf
 
 Damit sind **beide** Fälle belegte Fehler, nicht offene Fachfragen. Die
 Belegstellen stehen in
-[`docs/battlescribe-format-learnings.md`](../battlescribe-format-learnings.md),
-die Quelle liegt als Submodul unter
+[`docs/battlescribe-data-format.md`](../battlescribe-data-format.md) §7.6; die
+Quelle selbst liegt als Submodul unter
 `docs/bsdata-catalogue-development-wiki/Data-structure-overview.md`.
-
-Zu klären ist damit zweierlei, jeweils an den Katalogdaten und an
-`docs/battlescribe-data-format.md` statt an einer Annahme: Was zählt eine
-`scope="roster"`-Grenze, und zählt eine Grenze an einer
-`selectionEntryGroup` die Gruppe selbst oder ihre Mitglieder?
 
 Acceptance criteria:
 
