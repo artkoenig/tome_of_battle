@@ -334,6 +334,24 @@ Acceptance criteria:
   Beides ändert den öffentlichen Roster-Vertrag der Fassade und ist damit
   eine Entscheidung für den Menschen, nicht für mich.
 
+- **Fremddokumentation bestätigt die Kurskorrektur.** Auf Bitte des Menschen
+  im [BSData-Wiki](https://github.com/BSData/catalogue-development/wiki/Data-structure-overview)
+  nachgeschlagen. Zum `shared`-Attribut einer Grenze steht dort: gesetzt heißt
+  *„the constrained value is a sum of all selections of this shared entry in
+  roster in total"*, nicht gesetzt heißt *„the sum is calculated for a given
+  entry link instance"*.
+
+  Alle hier betroffenen Grenzen tragen `shared="true"`. Über alle Vorkommen
+  des Eintrags zu summieren — also über die **Ziel**-Id statt über die Id des
+  einzelnen Verweises — ist damit genau das dokumentierte Verhalten. Der
+  Constraint-Fix setzt keine eigene Deutung durch, sondern holt nach, was das
+  Format vorgibt; unsere eigene `docs/battlescribe-data-format.md` sagte es
+  bereits (Zeile zum `shared`-Attribut), nur die Engine tat es nicht.
+
+  `shared="false"` bleibt davon unberührt: `query.js` bindet diesen Fall
+  weiterhin an den Teilbaum der Bezugsinstanz, also an die eine Verweis-
+  Instanz. Kein Roster des Korpus ändert dadurch sein Ergebnis.
+
 - **Nebenbefund des Reviews, an den Menschen:** Die Seite des `issue`-Skills
   verlangt `NNNN-slug.md` (vier Stellen), `CLAUDE.md` dieses Projekts und alle
   bestehenden Dateien verwenden drei (`NNN-`). `081` folgt den Nachbarn. Die

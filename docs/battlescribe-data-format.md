@@ -613,7 +613,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 | `scope` | `parent` \| `roster` \| `force` \| `category` \| `self` | Bezugsrahmen der Zählung. |
 | `value` | Zahl | Der Grenzwert (`-1.0` = unbegrenzt). |
 | `percentValue` | `true`/`false` | Ob `value` als Prozentsatz zu interpretieren ist. |
-| `shared` | `true`/`false` | Ob der gezählte Wert über alle Link-Instanzen geteilt wird oder pro Instanz gilt. |
+| `shared` | `true`/`false` | Ob der gezählte Wert über alle Link-Instanzen geteilt wird oder pro Instanz gilt. `true`: die Summe umfasst **alle** Auswahlen dieses shared entry im Roster; `false`: sie wird **je Verweis-Instanz** gerechnet ([BSData-Wiki, *Data structure overview*](https://github.com/BSData/catalogue-development/wiki/Data-structure-overview)). |
 | `includeChildSelections` | `true`/`false` | Ob verschachtelte Auswahlen mitgezählt werden. |
 | `includeChildForces` | `true`/`false` | Ob untergeordnete Forces mitgezählt werden. |
 

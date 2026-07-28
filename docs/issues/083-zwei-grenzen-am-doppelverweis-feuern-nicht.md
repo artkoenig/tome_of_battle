@@ -41,6 +41,28 @@ Was die Fälle unterscheidet, ist ihr Bezugspunkt:
 | `0aa08f91` | derselbe Zieleintrag | `roster` | nein |
 | `76e2c1c8` | Gruppe `847028b2` (zählt ihre Mitglieder) | `parent` | nein |
 
+**Die Fremddokumentation ist inzwischen eingeholt** und engt die Frage stark
+ein. Das [BSData-Wiki, *Data structure
+overview*](https://github.com/BSData/catalogue-development/wiki/Data-structure-overview)
+beschreibt das `shared`-Attribut einer Grenze so: ist es gesetzt, *„the
+constrained value is a sum of all selections of this shared entry in roster in
+total"*; ist es nicht gesetzt, *„the sum is calculated for a given entry link
+instance"*.
+
+Alle drei Grenzen tragen `shared="true"`. Für `0aa08f91` (`scope="roster"`,
+`max 1`) heißt das wörtlich: gezählt werden **alle** Vorkommen des Eintrags im
+Roster. Roster 03 und 04 enthalten zwei — die Grenze muss feuern. Damit ist ihr
+Schweigen mit hoher Wahrscheinlichkeit ein echter Engine-Fehler und keine
+Fehldeutung des Autors.
+
+Die Flags heißen im Wiki *„And all child selections?"* und *„And all child
+forces?"*; unangekreuzt zählt die Grenze *„just `scope`'s `field`"* bzw.
+*„only from parent force selections"* — von „gar nichts" ist keine Rede. Auch
+das spricht gegen die verworfene Flag-Erklärung.
+
+Für `76e2c1c8` (Grenze an einer `selectionEntryGroup`) sagt das Wiki nichts;
+diese Hälfte bleibt offen.
+
 Zu klären ist damit zweierlei, jeweils an den Katalogdaten und an
 `docs/battlescribe-data-format.md` statt an einer Annahme: Was zählt eine
 `scope="roster"`-Grenze, und zählt eine Grenze an einer
