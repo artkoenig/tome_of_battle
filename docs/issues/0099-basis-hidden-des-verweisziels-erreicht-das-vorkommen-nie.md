@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-0099
 pr:
 ---
 
@@ -53,9 +53,20 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — preserve the XML distinction
+  "attribute not set" vs. "false set" through the reader so the existing
+  inheritance rule in `effectiveState.js` (own before inherited) can
+  actually fire; the intent names the dead fallback (`baseHiddenOf`) and
+  the cause (reader materializes `isHidden` with default false).
+- What surprised me? The fix direction is already designed in the code —
+  the fallback chain exists, only the reader starves it. That makes this a
+  reader-contract change, not an inheritance-logic change.
+- What am I assuming without having verified it? That changing the reader
+  to emit `undefined` for an absent `hidden` attribute does not break
+  consumers that read `isHidden` as a strict boolean elsewhere (the
+  test-author and implementer must check all readers of `isHidden`), and
+  that transitive chains (link → link → target) resolve through the
+  existing `resolved` pointers.
 
 ### Before the PR
 
