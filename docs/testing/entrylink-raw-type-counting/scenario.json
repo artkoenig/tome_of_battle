@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "name": "entrylink-raw-type-counting",
+  "description": "Ein ueber einen entryLink gesetzter Eintrag zaehlt unter dem rohen type-Attribut seines Ziel-Eintrags genauso wie derselbe Eintrag direkt gesetzt. Beobachtet an der Border-Patrols-Autor-Meldung des Spielsystems (childId=\"unit\", scope=\"force\"): eine per entryLink in die Vampire-Counts-Force gezogene Mercenaries-Einheit (Ogre Bulls) muss als 'unit' mitzaehlen — sowohl beim Erfuellen der Untergrenze (2 Einheiten, Meldung still) als auch beim Kippen der Obergrenze (5. Einheit, Meldung feuert). Zusaetzlich haelt das Szenario die childId=\"model\"-Zaehlung (atLeast 10, scope=self) an den direkten Skeleton-Modellen fest, damit die zweite Border-Patrols-Meldung (Infanterie 10+) kontrolliert still bleibt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-two-direct-units-silent.ros",
+      "description": "Direkte Grundlinie: 'Border Patrols rules' (4e15-0353-165f-5528) und zwei DIREKT gesetzte Skeletons-Einheiten (je 10 Modelle). Einheitenzahl der Force = 2, also weder greaterThan 4 noch lessThan 2 (childId=\"unit\", scope=force); die Skeletons erhalten ueber atLeast 10 childId=\"model\" die Kategorie 'BP Infantry 10+' (6ad6-f54e-1867-00a7). Am Slot 'Border Patrols rules' liegt keine Autor-Meldung an.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          { "defId": "4e15-0353-165f-5528", "authorMessages": [] }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-linked-unit-silent.ros",
+      "description": "Verlinkter Fall, gleiche Zaehlung wie direkt: 'Border Patrols rules', eine direkte Skeletons-Einheit (10 Modelle) und die per entryLink 21f4-c979-396b-c02a gezogenen Ogre Bulls (Ziel 7754-8b3d-df99-d2d5, type=\"unit\", aus der Mercenaries-.cat). Zaehlt die verlinkte Auswahl unter dem rohen type ihres Ziels, hat die Force 2 Einheiten und die Meldung 'at least TWO ... no more than FOUR' bleibt still. Saehe die Engine im verlinkten Fall 0 Einheiten-Beitrag, waere die Zaehlung 1 (lessThan 2) und die Meldung erschiene — der Test schluege fehl.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          { "defId": "4e15-0353-165f-5528", "authorMessages": [] }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-linked-fifth-unit-fires.ros",
+      "description": "Positiver Nachweis der Link-Zaehlung: 'Border Patrols rules', VIER direkte Skeletons-Einheiten (je 10 Modelle) und als FUENFTE Einheit die verlinkten Ogre Bulls. Erst der Beitrag der verlinkten Auswahl hebt die Einheitenzahl auf 5 (greaterThan 4) — die Autor-Meldung MUSS feuern. Zaehlte die verlinkte Auswahl nicht als 'unit', blieben es 4 Einheiten und der Slot bliebe still. Die Infanterie-Meldung bleibt still (Skeletons tragen 'BP Infantry 10+'), daher genau eine Meldung am Slot.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "4e15-0353-165f-5528",
+            "authorMessages": [
+              { "severity": "error", "text": "The army must consist of at least TWO units but no more than FOUR units" }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

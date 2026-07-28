@@ -97,10 +97,12 @@ function contributionOf(node, effective) {
  *   Nur so trifft eine Grenze, die den Eintrag benennt, auch das ueber einen
  *   Verweis gesetzte Vorkommen.
  * - **`type`** — das rohe `type`-Attribut des Eintrags (`model`, `unit`, …). Es
- *   traegt die Bedingung `childId="model"`. Achtung: nur {@link readEntry} liest
- *   dieses Attribut, {@link readEntryLink} nicht — ein verlinkter Eintrag zaehlt
- *   daher heute nicht unter seinem Typ. Als eigener Befund erfasst, nicht hier
- *   nebenbei geaendert.
+ *   traegt die Bedingung `childId="model"`. Ein `entryLink` traegt selbst kein
+ *   solches Attribut (sein `type` ist der Ziel-Diskriminator
+ *   `selectionEntry`/`selectionEntryGroup` und wird von {@link readEntryLink}
+ *   gar nicht gelesen) — er zaehlt stattdessen unter dem rohen Typ seines
+ *   transitiv aufgeloesten Ziels (`resolved.type`), sodass ein verlinkter
+ *   Eintrag genauso zaehlt wie derselbe Eintrag direkt gesetzt (Issue 78).
  */
 function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
@@ -109,6 +111,9 @@ function targetsOf(node, effective) {
   if (node.def.targetId) targets.push(node.def.targetId);
   if (node.memberGroupIds !== undefined) targets.push(...node.memberGroupIds);
   if (node.def.type) targets.push(node.def.type);
+  if (node.def.kind === DefinitionKind.ENTRY_LINK && node.def.resolved?.type) {
+    targets.push(node.def.resolved.type);
+  }
   return Array.from(new Set(targets));
 }
 

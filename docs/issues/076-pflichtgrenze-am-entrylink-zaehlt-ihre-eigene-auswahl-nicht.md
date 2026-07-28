@@ -61,14 +61,14 @@ Acceptance criteria:
   an mehreren Stellen der Suite ändert.
 - **Zweite Fundstelle derselben Wurzel, gefunden in Slice 75/07:** Der
   `.ros`-Leser der Testumgebung (`src/evaluator/__fixtures__/rosParser.js`)
-  bindet eine Auswahl allein über `entryId` und ignoriert `entryLinkId`. Alles,
-  was am `<entryLink>` selbst deklariert ist, gilt damit im Test nie — im
+  band eine Auswahl allein über `entryId` und ignorierte `entryLinkId`. Alles,
+  was am `<entryLink>` selbst deklariert ist, galt damit im Test nie — im
   Widerspruch zu `report.js`, das den Verweis-Slot ausdrücklich den Verweis
   tragen lässt. Belegt an `Ogre Kingdoms (6th definitive edition).cat:3165`:
   dort gewährt Verweis `d82e` „Bully Bully" bedingungslos. Betrifft 13 von 102
-  vorhandenen Rostern in 4 Szenarien. Wer diese Grenze behebt, sollte beide
-  Stellen zusammen anfassen: Engine-Zählung und Roster-Adapter benennen eine
-  Auswahl nur dann gleich, wenn beide Ids tragen.
+  vorhandenen Rostern in 4 Szenarien. Behoben in diesem Lauf (Adapter-Fix,
+  siehe Log); Issue 078 traf parallel dieselbe Adapter-Entscheidung — beim
+  Merge gewann die Fassung dieses Laufs, semantisch identisch.
 - **Verwandt mit `078`** (verlinkter Eintrag zählt nicht unter seinem Typ):
   beide fragen, unter welchen Ids ein über einen Verweis gesetztes Vorkommen
   zählbar ist. Zusammen anzufassen ist vermutlich billiger als nacheinander.
