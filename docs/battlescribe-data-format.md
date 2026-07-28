@@ -133,6 +133,14 @@ werden (in diesem Projekt: `resolveEntry`/`findEntryInSystem` in `src/solver/cat
 Dabei muss der **`catalogueId`-Kontext** mitgeführt werden, weil dieselbe Ziel-ID in verschiedenen
 Katalogen/Detachments unterschiedliche Dinge bedeuten kann.
 
+> **Bewusster Override in der Reinraum-Engine (ADR-0032):** Der Evaluator (`src/evaluator/`) führt
+> **keinen** `catalogueId`-Kontext mit. Er mischt alle Quellen (`.gst` + alle `.cat`) in eine
+> einzige flache `id→Definition`-Tabelle und löst **global-by-ID** auf — korrekt, solange die IDs
+> katalogübergreifend disjunkte GUIDs sind, was die realen Datensätze erfüllen. Verletzt ein
+> Datensatz die Disjunktheit, meldet der Kollisions-Guard die Diagnose `DUPLICATE_DEFINITION`,
+> statt still falsch aufzulösen (siehe
+> [ADR 0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)).
+
 ### 3.3 Revisionen (`revision`)
 
 Jedes Wurzelelement trägt ein `revision`-Attribut (Ganzzahl). Wird eine Datei geändert, **muss die
@@ -502,6 +510,14 @@ Verweis aus Katalog X benennt, ist gegen einen Datensatz ohne X folglich nicht a
 dann nicht, wenn die Ziel-Id zufällig in der `.gst` auflöst. Analog für Kontingente: *„All
 selections within must originate from a single catalogue."*
 
+> **Bewusster Override in der Reinraum-Engine (ADR-0032):** Der Evaluator erzwingt diese
+> Katalog-Lokalität nicht. `entryLink`-/`infoLink`-Ziele lösen **global-by-ID** über eine flache
+> Symboltabelle aller mitgegebenen Quellen auf; ein `catalogueLink` ist dort nur eine
+> Abhängigkeits-Deklaration, kein eigener Auflösungsmechanismus. Abgesichert wird das durch
+> Diagnosen statt stiller Fehlauswertung: eine echte ID-Kollision zwischen Katalogen meldet der
+> Guard als `DUPLICATE_DEFINITION`, ein fehlender Ziel-Katalog als `MISSING_CATALOGUE_DEPENDENCY`
+> (siehe [ADR 0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)).
+
 Ein `modifier` am Link wirkt asymmetrisch: er ändert die **Eigenschaften des Ziels**, aber die
 **Grenzwerte des Links**.
 
@@ -605,6 +621,16 @@ zu. Referenziert wird per `typeId`:
 > **Rechenregel:** `child.number * parent.number` muss für Kosten und Constraint-Zählungen
 > **immer** durchmultipliziert werden — unabhängig vom `collective`-Flag. `collective` betrifft nur
 > die *Anzeige* gestapelter Instanzen, nicht die zugrunde liegende Mathematik.
+>
+> **Zahlenbasis:** Diese Multiplikation gilt für **per-Eltern-relative** Stückzahlen — „Anzahl je
+> Eltern-Instanz", die Zahlenbasis der Katalog-Constraint-Mathematik. Die Reinraum-Engine
+> multipliziert dagegen **nicht** durch die Elternkette (`src/evaluator/countIndex.js`,
+> `contributionOf`: jeder Knoten trägt sein `instance.count` unverrechnet bei). Sie setzt damit
+> voraus, dass das `number` einer `.ros`-Selektion eine **absolute** Gesamtstückzahl ist, kein
+> per-Eltern-Multiplikator — unter dieser Annahme fallen beide Rechnungen zusammen. Die
+> `.ros`-Semantik selbst ist eine Lücke der Quelle ([§15](#15-lücken-der-quelle)); der
+> ungeschriebene Roster-Vertrag der Fassade ist
+> [Issue 084](issues/084-roster-vertrag-der-fassade-ist-ungeschrieben-und-ungeprueft.md).
 
 ### 7.6 Constraint
 
@@ -682,7 +708,20 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 | `type` | `increment` \| `decrement` \| `set` \| `append` \| `prepend` \| `multiply` \| `add` \| `remove` \| `set-primary` \| `unset-primary` | Operation. `increment`/`decrement`/`set`/`multiply` für numerische Felder, `append`/`prepend`/`set` für Text, `add`/`remove` für Kategoriezugehörigkeit (`field="category"`), `set-primary`/`unset-primary` für das `primary`-Flag eines Kategorie-Links. |
 | `field` | *Constraint-`id`* \| *`<costTypeId>`* \| `hidden` \| `name` \| `category` \| `error` \| `warning` \| `info` \| *`<characteristicTypeId>`* | Was geändert wird. `category` (zusammen mit `add`/`remove`) ändert die Kategoriezugehörigkeit zur Laufzeit. `error`/`warning`/`info` (zusammen mit `type="add"`) tragen keinen Feldwert, sondern einen Klartext-Hinweis für den Spieler (siehe unten). |
 | `value` | Zahl/Text | Der anzuwendende Wert. Bei `append`/`prepend` der anzufügende Text. |
-| `join` | Text (optional, nur `append`/`prepend`) | Trennzeichen zwischen dem bestehenden Namen und dem angehängten/vorangestellten Text. **Wird verbatim übernommen, nicht angenommen** — reale Kataloge nutzen neben einem einfachen Leerzeichen auch NBSP (`&#160;`) und `"&#160;+&#160;"`. Fehlt das Attribut, wird ohne Trennzeichen zusammengefügt. |
+| `join` | Text (optional, nur `append`/`prepend`) | Trennzeichen zwischen dem bestehenden Namen und dem angehängten/vorangestellten Text. **Wird verbatim übernommen, nicht angenommen** — reale Kataloge nutzen neben einem einfachen Leerzeichen auch NBSP (`&#160;`) und `"&#160;+&#160;"`. Fehlt das Attribut, wird ohne Trennzeichen zusammengefügt (siehe den Widerspruchs-Kasten unten). |
+
+> **Widerspruch zum Wiki (`append` ohne `join`):** Das Wiki behauptet für `Append`: *„A space is
+> implicitly added between `Field` and `Value`"*
+> ([*Data structure overview*](bsdata-catalogue-development-wiki/Data-structure-overview.md),
+> Abschnitt *Modifier*). Hier gilt die Entscheidung dieses Dokuments: **Fehlt `join`, wird ohne
+> Trennzeichen zusammengefügt** — kein implizites Leerzeichen. Die Engine folgt dieser Semantik
+> (`src/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den realen
+> Definitive-Edition-Katalogen (62 `join`-Vorkommen insgesamt, davon 6 wirkungslos an
+> `set`-Modifiern): 56 von 57 `append`-Modifiern setzen `join` explizit (Leerzeichen, NBSP oder
+> `"&#160;+&#160;"`) — dort ist der Unterschied latent. Der eine `append` ohne `join`
+> (`Mercenaries`, `<modifier type="append" value="*" field="name"/>`) macht ihn sichtbar:
+> nach dieser Entscheidung wird `*` direkt angefügt (`Name*`), nach dem Wiki mit Leerzeichen
+> (`Name *`).
 
 > **Nicht offiziell spezifiziert (`multiply`, `prepend`, `join`):** Diese drei Konstrukte sind in
 > keiner bekannten `BSData/schemas`-Version definiert — geprüft bis einschließlich der

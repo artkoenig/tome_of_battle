@@ -63,6 +63,21 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-07-28 implementer: both docs edited, every audit claim re-verified at
+  the code first. Surprise (recorded per rulebook): the audit's "62
+  occurrences, real data always sets `join`, difference latent" was inexact —
+  62 `join=` total, 6 inert on `set`-modifiers, and of 57 `append` modifiers
+  exactly one (`Mercenaries (6th definitive edition).cat:4817`) has no
+  `join`, so the wiki divergence is visible there (`Name*` vs `Name *`), not
+  latent. §7.7 now carries the corrected evidence; the governing decision
+  (project-doc semantics) is unaffected. Verified anchors: `model.js:40-45`
+  (`FORCE_COUNT`), `modifiers.js:78-79` (`join ?? ''`), `countIndex.js:69-77`
+  (no parent-chain multiplication), ADR-0032 diagnostics
+  `DUPLICATE_DEFINITION` + `MISSING_CATALOGUE_DEPENDENCY`.
+- 2026-07-28 out of scope, left for the human (AC 5 forbids code changes):
+  `src/evaluator/model.js:34-35` JSDoc quotes the old §4.1 enum and is now
+  the stale copy of the pair.
+
 ## Checkpoints
 
 ### Before implementation
