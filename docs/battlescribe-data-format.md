@@ -515,7 +515,7 @@ selections within must originate from a single catalogue."*
 > Symboltabelle aller mitgegebenen Quellen auf; ein `catalogueLink` ist dort nur eine
 > Abhängigkeits-Deklaration, kein eigener Auflösungsmechanismus. Abgesichert wird das durch
 > Diagnosen statt stiller Fehlauswertung: eine echte ID-Kollision zwischen Katalogen meldet der
-> Guard als `DUPLICATE_DEFINITION`, ein fehlender Ziel-Katalog als `MISSING_CATALOGUE_DEPENDENCY`
+> Guard als `DUPLICATE_DEFINITION`, einen fehlenden Ziel-Katalog als `MISSING_CATALOGUE_DEPENDENCY`
 > (siehe [ADR 0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)).
 
 Ein `modifier` am Link wirkt asymmetrisch: er ändert die **Eigenschaften des Ziels**, aber die
@@ -715,8 +715,9 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 > ([*Data structure overview*](bsdata-catalogue-development-wiki/Data-structure-overview.md),
 > Abschnitt *Modifier*). Hier gilt die Entscheidung dieses Dokuments: **Fehlt `join`, wird ohne
 > Trennzeichen zusammengefügt** — kein implizites Leerzeichen. Die Engine folgt dieser Semantik
-> (`src/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den realen
-> Definitive-Edition-Katalogen (62 `join`-Vorkommen insgesamt, davon 6 wirkungslos an
+> (`src/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den im Repo
+> eingefrorenen Definitive-Edition-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`,
+> 4 `.cat` + 1 `.gst`; 62 `join`-Vorkommen insgesamt, davon 6 wirkungslos an
 > `set`-Modifiern): 56 von 57 `append`-Modifiern setzen `join` explizit (Leerzeichen, NBSP oder
 > `"&#160;+&#160;"`) — dort ist der Unterschied latent. Der eine `append` ohne `join`
 > (`Mercenaries`, `<modifier type="append" value="*" field="name"/>`) macht ihn sichtbar:

@@ -74,6 +74,16 @@ Acceptance criteria:
   (`FORCE_COUNT`), `modifiers.js:78-79` (`join ?? ''`), `countIndex.js:69-77`
   (no parent-chain multiplication), ADR-0032 diagnostics
   `DUPLICATE_DEFINITION` + `MISSING_CATALOGUE_DEPENDENCY`.
+- 2026-07-28 review round 1 (fresh context, the only check for this change):
+  2 minor findings, both fixed — (1) §7.7 evidence claimed "reale
+  Definitive-Edition-Kataloge" while the counts hold only for the frozen
+  fixture subset (4 `.cat` + 1 `.gst` of 17 catalogues); scoping now names
+  the fixture path. (2) case error in the §7.2 box ("ein fehlender
+  Ziel-Katalog" → "einen fehlenden"). All five criteria judged met; every
+  countable claim independently re-verified (62/57/56/1 counts, wiki line
+  359, `NO_JOIN`, `contributionOf`, ADR-0032 diagnostics). Non-findings
+  noted: ADR-0003:47 and §10 repeat the §7.5 rule without the new caveat
+  (true on their catalogue basis, no contradiction).
 - 2026-07-28 out of scope, left for the human (AC 5 forbids code changes):
   `src/evaluator/model.js:34-35` JSDoc quotes the old §4.1 enum and is now
   the stale copy of the pair.
