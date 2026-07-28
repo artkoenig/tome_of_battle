@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0096
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/154
 ---
 
 # Roster-Kostenlimit −1 wird als echte Grenze gerechnet
@@ -114,3 +114,14 @@ Acceptance criteria:
   user-visible.
 
 ## Retro
+
+- The test-author's decision to leave the criterion-2 diagnostic `reason`
+  open was exactly right — the implementer reused `NOT_BUDGETED` and no test
+  needed changing. Leaving representation freedom in black-box tests kept
+  the seam choice free.
+- The review's only finding was contract-comment drift ("genau drei
+  Stellen") — a recurring pattern this session (see 0103's stale JSDoc
+  observation): exhaustive enumerations in comments go stale silently.
+  Worth considering in metis: prefer pointing at the single owner over
+  enumerating callers.
+- Two rounds sufficed; convergence 1 → 0.
