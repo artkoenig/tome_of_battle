@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/offene-issues-5swrom
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/150
 ---
 
 # Sentinel -1 als „unbegrenzt" wird auf dem wirksamen Grenzwert gedeutet
@@ -207,3 +207,23 @@ Acceptance criteria:
   serialisiert wird — als Notiz im Log an Issue 75 übergeben.
 
 ## Retro
+
+- **Was im Weg stand:** Der vitest-Default-Reporter druckt nur die
+  langsamsten Tests — der Grep nach dem neuen Szenario im Suite-Output war
+  leer, obwohl es lief; erst `-t "unlimited-modifier-toggle"` gab den
+  Fakt per Exit-Code. Lehre: Testabdeckung nie aus dem Reporter-Text
+  ablesen, immer gezielt filtern.
+- **Was gut trug:** Die Recherche vor den Tests hat die Kriterien vor
+  einem realen Bruch bewahrt (`set -1` hebt Limits auf — eine Deutung nur
+  am Katalog-Rohwert hätte 11 echte Fälle gebrochen); der Default wurde
+  ohne Rückfrage festgehalten und hielt. Die Mutationsproben des Reviewers
+  (Pin raus → Test rot?) haben in Runde 2 beide Runde-1-Fixes als
+  wirklich gepinnt belegt — das Muster lohnt sich als Standard-Handgriff
+  für Reviews.
+- **Überraschung mit Prozesswert:** Die „unbegrenzt bleibt
+  unbegrenzt"-Decision galt für increment/decrement gratis (IEEE), kippte
+  aber bei `multiply 0` in `NaN` — eine Invariante, die man von der
+  Arithmetik geschenkt bekommt, ist keine; sie braucht einen benannten
+  Ort und einen Pin.
+- **Regeländerung:** keine nötig; der Lauf folgte dem Rulebook ohne
+  Reibung mit den Regeln selbst.
