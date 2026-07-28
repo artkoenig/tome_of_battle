@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, limitMeasureOfCountedField } from './model.js';
+import { ConstraintKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
 import { allNodes, limitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -51,7 +51,8 @@ function resolveBound(limit, node, effective, ctx) {
 /**
  * Wertet eine einzelne Grenze am Knoten aus und liefert ihr Ergebnis-Tripel,
  * oder `null`, wenn die Grenze suspendiert ist. Ziel der Zaehlung ist die
- * eigene Definition der Bezugsinstanz.
+ * eigene Definition der Bezugsinstanz — bei einem Verweis dessen Ziel, siehe
+ * die Begruendung an der Stelle selbst.
  */
 function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
@@ -61,7 +62,15 @@ function evaluateLimit(limit, node, effective, ctx) {
   // An unlimited bound never fires and does not restrict headroom.
   if (bound === -1) return null;
 
-  const targetId = node.def.kind === DefinitionKind.CATEGORY_LINK ? node.def.targetId : node.def.id;
+  // Gezaehlt wird die **aufgeloeste Ziel-Id**, wenn der Anker ein Verweis ist —
+  // fuer `entryLink` genauso wie fuer `categoryLink`. Verschiedene Verweise
+  // koennen auf dasselbe Ziel zeigen; zaehlte eine Grenze die Id des Verweises,
+  // fiele jede Auswahl, die ueber einen anderen Verweis desselben Ziels
+  // hereinkam, aus ihrer Zaehlung heraus (`docs/battlescribe-data-format.md`
+  // §"Aufloesung": `scope="parent"` vergleicht aufgeloeste Ziel-IDs, nicht
+  // `entryLinkId`s). Der Verweis bleibt trotzdem der Anker: nur an ihm gelten
+  // die an ihm selbst deklarierten Grenzen.
+  const targetId = isLinkDefinition(node.def) ? node.def.targetId : node.def.id;
   const actual = query(ctx, limit.field, limit.scope, targetId, limit.flags);
   // Zaehlt die Grenze selbst ein unaufloesbares Budget-Feld (Diagnose aus `query`),
   // wird sie fail-closed suspendiert statt den Sentinel zu vergleichen.
