@@ -1,7 +1,7 @@
 ---
-status: backlog     # backlog | active | waiting | done
+status: backlog     # backlog -> active -> done; waiting = parked on a question
 branch:             # set as soon as one exists
-pr:                 # set as soon as one is open
+pr:                 # set when the PR is opened — set status: done with it
 ---
 
 # <title>
