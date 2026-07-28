@@ -116,8 +116,15 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — all four doc corrections in place,
+  three review rounds (2 → 1 → 0 findings), every countable claim verified
+  independently three times; diff confined to the two docs plus this file.
+- What surprised me? The audit's §7.7 evidence was itself imprecise (one
+  join-less `append` exists, making the wiki divergence visible, not
+  latent) — the doc now carries the corrected, fixture-scoped evidence.
+- What am I assuming without having verified it? That the fixture subset
+  (4 of 17 Definitive-Edition catalogues) is representative enough for the
+  §7.7 evidence — the doc now says exactly this instead of claiming more.
+  No version bump: docs only, nothing user-visible in the app.
 
 ## Retro
