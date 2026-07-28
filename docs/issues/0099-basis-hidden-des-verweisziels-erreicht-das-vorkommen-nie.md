@@ -85,6 +85,14 @@ Acceptance criteria:
   default (see Decisions); (1b) §4.1 record omits the load-bearing
   `hiddenAttribute` — fixed: the EntryBase comment and the record now name
   the tri-state and why it exists.
+- 2026-07-28 review round 2 (fresh context, whole intent): criteria all met;
+  doc addition verified true against all 11 `readEntryBase` call sites;
+  reds re-proven on origin/main; full `npm test` (unit + puppeteer E2E)
+  exit 0. 1 low finding outside the intent: `hidden="0"` (xs:boolean short
+  form) reads as "not set" and now inherits instead of overriding —
+  pre-existing `readBoolean` limitation, already filed as issue 0102
+  point 6; dismissed here with that reference, consequence recorded in
+  0102. No in-scope fix applied → no repeat round (tracker-only waiver).
 
 ## Checkpoints
 
@@ -107,8 +115,18 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — inheritance works (incl. transitive),
+  link attribute and modifiers keep precedence, suite green by exit code;
+  two fresh-context rounds, both reds proven real against origin/main.
+- What surprised me? The `toEqual`-ignores-undefined-but-not-null asymmetry
+  that forced the sentinel choice, and that criterion 2 has a lexical blind
+  spot (`hidden="0"`) inherited from `readBoolean` — pre-existing, now with
+  a new consequence, dismissed here with reference to issue 0102 point 6
+  (where it was already filed; the sharpened consequence is recorded there).
+- What am I assuming without having verified it? That no real catalog uses
+  `0`/`1` boolean forms (BattleScribe writes true/false; repo fixtures
+  grep-clean) — the 0102 run will close that hole for imported community
+  catalogs. Widening to infoLink/categoryLink stays an accepted default
+  (see Decisions). No version bump: evaluator not wired to the UI.
 
 ## Retro
