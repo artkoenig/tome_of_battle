@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-0092
 pr:
 ---
 
@@ -54,9 +54,20 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — anchor unlinked, max-only category
+  definitions so their limits are evaluated; the min-phantom path shows the
+  mechanism already exists for min limits.
+- What surprised me? The asymmetry itself: `hasMinLimitInFrame` deliberately
+  filters to min limits, so the fix is likely widening that predicate (or a
+  sibling anchor source) rather than new machinery.
+- What am I assuming without having verified it? That widening anchor
+  synthesis to max-only categories does not double-report categories that
+  ARE linked (criterion 3 — the interplay with force category anchors and
+  with issue 0093's known min duplication needs care), and that the
+  criterion-2 equivalence is observable through the existing report shape.
+  The or-frame question (roster vs force scope for an unlinked category in
+  a force frame) may hold edges the criteria do not decide — test-author
+  should flag, not guess.
 
 ### Before the PR
 
