@@ -71,6 +71,15 @@ Acceptance criteria:
   evaluate/buildDatasetDescription already propagate diagnostics.
   §3.6 diagnostic list updated. 14/14 target tests green; `npx vitest run`
   211 files / 2157 tests exit 0; puppeteer E2E exit 0; lint/typecheck 0.
+- 2026-07-28 review round 1 (fresh context): 0 in-scope findings, all four
+  criteria met; reviewer re-established every exit-code fact, verified the
+  test file untouched since authoring, probed the facade independently, and
+  proved detection robustness in real Chrome via puppeteer (parsererror
+  embedded under the original root there, root in jsdom — both caught).
+  One low-severity blast-radius finding OUTSIDE the intent (false positive
+  for a literal `parsererror` element in a well-formed catalog) — filed as
+  issue 0105 per the rulebook instead of fixed here. No repeat round needed:
+  no in-scope fix was applied.
 
 ## Checkpoints
 
@@ -94,8 +103,17 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — both silent failure modes are loud,
+  the file is named where the caller names it, the diagnostic reaches
+  `evaluate` and `describeDataset`, and the whole suite (2157 unit tests,
+  puppeteer E2E) is green by exit code. Review round 1: zero in-scope
+  findings.
+- What surprised me? Chrome and jsdom disagree on where the parsererror
+  element lands (embedded vs. root) — the reviewer proved via puppeteer
+  that the whole-document scan catches both.
+- What am I assuming without having verified it? That no real catalog ever
+  contains an element literally named `parsererror` (schema has none) — the
+  false-positive edge this leaves is filed as issue 0105 instead of being
+  fixed here (outside the intent).
 
 ## Retro
