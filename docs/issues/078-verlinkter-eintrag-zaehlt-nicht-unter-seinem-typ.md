@@ -46,16 +46,55 @@ Acceptance criteria:
 - **Verwandt mit `076`** (Pflichtgrenze am entryLink): beide fragen, unter
   welchen Ids ein über einen Verweis gesetztes Vorkommen zählbar ist. Zusammen
   anzufassen ist vermutlich billiger als nacheinander.
+- **Fix-Ort: Durchschau in der Zähl-Schicht, nicht Attribut-Kopie im Reader.**
+  Das `type`-Attribut am `<entryLink>` trägt eine andere Semantik
+  (`selectionEntry`/`selectionEntryGroup`, der Ziel-Diskriminator), nicht
+  `model`/`unit`. Der Eintragstyp ist nur über das aufgelöste Ziel
+  `def.resolved.type` erreichbar. `targetsOf` (countIndex.js) schaut deshalb
+  für ENTRY_LINK-Knoten auf `def.resolved?.type` durch — dasselbe Muster wie
+  `effectiveState.js` (costs/categoryIds) und `ownerDefinitionOf`
+  (evalTree.js). Quelle: Researcher-Briefing, belegt an Fixture-Katalogdaten.
+- **Harness-Bindung: `rosParser` bindet `entryLinkId || entryId`.** Heute
+  bindet der Fixture-Parser allein über `entryId` (= Ziel-ID) — damit bekommt
+  eine verlinkte Auswahl das Ziel samt Typ als `def`, und der Unterschied
+  „direkt vs. verlinkt" ist im E2E-Pfad gar nicht darstellbar. Die App bindet
+  bevorzugt über die Link-ID (`optionNesting.js:44`), der Resolver-`lookup`
+  indiziert Links unter ihrer eigenen ID, und Issue 76 (zweiter Befund)
+  benennt die Link-ID-Bindung als die korrekte. Ohne diese Änderung kann
+  Kriterium 3 kein Szenario erfüllen. Default, unbeantwortet — reine
+  Harness-Semantik, kein öffentlicher Vertrag.
 
 ## Log
+
+- Researcher-Briefing eingeholt (Sitzung 2026-07-28): Ursache bestätigt
+  (`readEntryLink` ohne `type`, `targetsOf` prüft `node.def.type`).
+  Zwei Nuancen: (1) `type` am `<entryLink>` ist der Ziel-Diskriminator, nicht
+  der Eintragstyp; (2) im heutigen E2E-Pfad ist der Defekt nicht auslösbar,
+  weil `rosParser` über die Ziel-ID bindet — real wird er bei der
+  App-Integration (Link-ID-Bindung). Kein Szenario deckt den verlinkten Fall
+  ab; `evaluator-bug-childid-model` deckt nur den direkten.
+- Risiko notiert: Die Umstellung der Harness-Bindung auf `entryLinkId` kann in
+  bestehenden Szenarien (deren `.ros` bereits `entryLinkId` tragen) den
+  Defekt aus Issue 76 sichtbar machen. Tritt das ein: anhalten und
+  entscheiden, nicht stillschweigend Erwartungen anpassen.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Ja: verlinkte Einträge sollen unter dem Typ
+  ihres Ziels zählen; der Schnitt umfasst die Durchschau in `targetsOf`, die
+  Harness-Bindung im `rosParser` (ohne sie ist Kriterium 3 unerfüllbar) und
+  ein Black-Box-Szenario. Nicht umfasst: Issue 76 (Pflichtgrenze am Link).
+- What surprised me? (1) Das `type`-Attribut am `<entryLink>` ist der
+  Ziel-Diskriminator, nicht der Eintragstyp — die naheliegende Attribut-Kopie
+  wäre falsch. (2) Im heutigen E2E-Pfad ist der Bug nicht auslösbar; er wird
+  erst mit Link-ID-Bindung real.
+- What am I assuming without having verified it? (1) Dass die Umstellung auf
+  Link-ID-Bindung die bestehenden Szenarien nicht rot macht (Risiko 76, im
+  Log notiert). (2) Dass `resolved.type` für transitive Link-Ketten genügt —
+  `followEntryLink` löst transitiv bis zum Endziel auf, `resolved` ist also
+  nie selbst ein Link. (3) Dass kein weiterer Zählpfad den Typ liest.
 
 ### Before the PR
 
