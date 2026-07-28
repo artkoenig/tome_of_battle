@@ -42,8 +42,21 @@ Acceptance criteria:
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28); Codepfade verifiziert. Ob der Produktiv-Adapter −1
   durchreicht, hängt am (ungeschriebenen) Roster-Vertrag — siehe Issue 084.
+- **Default (unanswered, human asleep):** ein eingestelltes Limit von 0 bleibt
+  eine echte Grenze — die Sentinel-Konvention der Engine
+  (`unlimitedFromSentinel`, `model.js:426`) behandelt nur exakt −1 als
+  „kein Limit", und dieses Issue übernimmt sie unverändert für den
+  Roster-Pfad.
 
 ## Log
+
+- 2026-07-28 test-author: `src/evaluator/rosterBudget.unlimitedSentinel.test.js`,
+  7 tests (4 failing on the −1-as-real-bound behaviour, 3 marked controls
+  passing: other negatives stay real bounds, real limits keep working, .ros
+  wiring proven live). Sentinel grounding: `unlimitedFromSentinel`
+  (`model.js:426`) maps only exactly −1. Open edge "limit 0" left untested —
+  default recorded under Decisions. Exact diagnostic `reason` for the
+  criterion-2 path deliberately left open to the implementer.
 
 ## Checkpoints
 
