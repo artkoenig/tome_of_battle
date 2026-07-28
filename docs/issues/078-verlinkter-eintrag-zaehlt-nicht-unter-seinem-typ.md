@@ -87,6 +87,16 @@ Acceptance criteria:
   erwarteten Defekt (verlinkt sieht 0 Modelle; Parser liest nur `entryId`).
   Diagnostics leer — der Ketten-Fehlschlag ist echtes Nicht-Zählen, kein
   Dangling-Link.
+- Black-Box-Szenario fertig (Kriterium 3):
+  `docs/testing/entrylink-raw-type-counting/` an der „Border
+  Patrols"-Regel des GST (Slot `4e15-0353-165f-5528`, `childId="unit"`-Zählung
+  auf Force-Ebene, 2–4 Einheiten). Drei Roster: direkte Grundlinie (stumm),
+  direkt+verlinkt (stumm NUR, wenn die verlinkte VC-„Ogre Bulls"-Einheit
+  unter `unit` zählt), 4 direkt + 1 verlinkt (die Obergrenze kippt genau
+  durch den verlinkten Beitrag → eine Autor-Meldung). Beobachtung über
+  `capabilities`→`authorMessages`, weil kein Katalog-Constraint ein `childId`
+  trägt — die Rohtyp-Zählung lebt dort nur in Bedingungen. Alle Erwartungen
+  aus `.gst`/`.cat` abgeleitet.
 
 ## Checkpoints
 
