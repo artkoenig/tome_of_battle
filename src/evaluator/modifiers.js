@@ -80,10 +80,15 @@ const NO_JOIN = '';
 
 /**
  * Das **Gate** eines Modifikators: ob er unter einer Bedingung stand und welche
- * Bedingungen das waren. Es waechst beim Abstieg in eine Modifikatorgruppe, weil
- * deren Bedingung fuer alle enthaltenen Modifikatoren mitgilt.
+ * Bedingungen und Bedingungsgruppen das waren. Es waechst beim Abstieg in eine
+ * Modifikatorgruppe, weil deren Bedingung fuer alle enthaltenen Modifikatoren
+ * mitgilt.
  */
-const UNCONDITIONAL_GATE = Object.freeze({ isConditional: false, conditions: Object.freeze([]) });
+const UNCONDITIONAL_GATE = Object.freeze({
+  isConditional: false,
+  conditions: Object.freeze([]),
+  conditionGroups: Object.freeze([]),
+});
 
 /**
  * Registry `ConditionKind → Vergleichspraedikat` (`docs/evaluator-architecture.md`
@@ -216,11 +221,43 @@ function witnessOfCondition(ctx, condition) {
   return Object.freeze({ defId: definition.id, name: definition.name ?? definition.resolved?.name ?? null });
 }
 
-/** Der erste benennbare Zeuge unter den Bedingungen, die den Modifikator haben feuern lassen. */
-function witnessOf(ctx, conditions) {
+/**
+ * Die **gehaltenen** Bedingungen einer Bedingungsgruppe, rekursiv ueber ihre
+ * Untergruppen, in Dokumentreihenfolge. Eine Gruppe, die nicht haelt, hat zum
+ * Feuern nichts beigetragen und entfaellt samt Inhalt; dasselbe gilt fuer jede
+ * einzelne nicht gehaltene Bedingung — relevant nur in einer `or`-Gruppe, denn
+ * in einer gehaltenen `and`-Gruppe halten ohnehin alle Mitglieder. So kann nie
+ * eine Auswahl zum Zeugen werden, die zwar anwesend ist, deren Zweig aber gar
+ * nicht gehalten hat (ADR-0027, „Ehrlichkeit vor Vollstaendigkeit").
+ */
+function* heldConditionsOf(ctx, group) {
+  if (!conditionGroupHolds(ctx, group)) return;
+  for (const condition of group.conditions) {
+    if (conditionHolds(ctx, condition)) yield condition;
+  }
+  for (const subGroup of group.groups) {
+    yield* heldConditionsOf(ctx, subGroup);
+  }
+}
+
+/**
+ * Der erste benennbare Zeuge unter den Bedingungen, die den Modifikator haben
+ * feuern lassen: zuerst die direkten Bedingungen, danach die gehaltenen
+ * Bedingungen aus den Bedingungsgruppen (beliebige Tiefe, Dokumentreihenfolge).
+ * Die Gruppen-Neuauswertung laeuft gegen eine Wegwerf-Sammelliste — ihre
+ * Diagnosen sind bei der Feuer-Entscheidung bereits gemeldet.
+ */
+function witnessOf(ctx, conditions, conditionGroups) {
   for (const condition of conditions) {
     const witness = witnessOfCondition(ctx, condition);
     if (witness !== null) return witness;
+  }
+  const silentCtx = { ...ctx, diagnostics: [] };
+  for (const group of conditionGroups) {
+    for (const condition of heldConditionsOf(silentCtx, group)) {
+      const witness = witnessOfCondition(ctx, condition);
+      if (witness !== null) return witness;
+    }
   }
   return null;
 }
@@ -483,14 +520,24 @@ function applyModifier(scope, modifier, gate) {
 
   const isConditional = gate.isConditional || modifier.conditions.length > 0 || conditionGroups.length > 0;
   const tracksWitness = isConditional && modifier.target.kind === ModifierTargetKind.LIMIT;
-  const witness = tracksWitness ? witnessOf(scope.ctx, [...modifier.conditions, ...gate.conditions]) : null;
+  const witness = tracksWitness
+    ? witnessOf(
+        scope.ctx,
+        [...modifier.conditions, ...gate.conditions],
+        [...conditionGroups, ...gate.conditionGroups],
+      )
+    : null;
   applyOperation(scope, modifier, times, isConditional, witness);
 }
 
-/** Das Gate einer Modifikatorgruppe: das des Aufrufers, erweitert um ihre eigene Bedingung. */
+/** Das Gate einer Modifikatorgruppe: das des Aufrufers, erweitert um ihre eigenen Bedingungen und Bedingungsgruppen. */
 function gateWithin(gate, group) {
   if (group.conditions.length === 0 && group.conditionGroups.length === 0) return gate;
-  return { isConditional: true, conditions: [...gate.conditions, ...group.conditions] };
+  return {
+    isConditional: true,
+    conditions: [...gate.conditions, ...group.conditions],
+    conditionGroups: [...gate.conditionGroups, ...group.conditionGroups],
+  };
 }
 
 /**

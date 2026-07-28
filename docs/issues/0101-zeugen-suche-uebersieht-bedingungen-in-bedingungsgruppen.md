@@ -42,10 +42,37 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Default (implementation, or-question):** only conditions that actually
+  HELD reach the witness predicate (`heldConditionsOf` skips non-holding
+  groups and conditions). A present-but-not-satisfying branch target of an
+  `or` group can therefore never become a witness — the conservative
+  answer to the recorded open question; single place to change if the
+  human decides otherwise.
+
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28); Codepfad verifiziert.
 
 ## Log
+
+- 2026-07-28 test-author: `src/evaluator/modifiers.groupWitness.test.js`,
+  10 tests — 5 RED (and-group, depth-2 nesting, modifierGroup gate,
+  or-group with only-possible witness, §9.8 causes), 5 green pins
+  (direct-condition witness, mixed direct+group, two no-invented-witness
+  cases, §9.8 harness control without group). Judgment calls recorded: the
+  or-group test pins only the unambiguous variant (other branch's target
+  absent → held branch's banner is the only possible witness); mixed pins
+  the direct condition's witness as non-regression. Open question left
+  unpinned: may an or-group name a present-but-not-satisfying branch
+  target? Neither issue nor ADR-0027 decides it.
+- 2026-07-28 implementer: `modifiers.js` only (+63/−8) —
+  `UNCONDITIONAL_GATE`/`gateWithin` carry `conditionGroups`;
+  `witnessOf(ctx, conditions, conditionGroups)` searches direct conditions
+  first (unchanged precedence), then descends via generator
+  `heldConditionsOf` (document order, any depth, unchanged
+  `witnessOfCondition` predicate — no new eligibility rules). Docs checked:
+  §3.4/§3.6 and ADR-0027 describe the witness generically, no doc change
+  needed. 10/10 target green; suite 211 files / 2153 tests exit 0;
+  puppeteer E2E exit 0; lint/typecheck exit 0.
 
 ## Checkpoints
 
