@@ -215,3 +215,65 @@ describe('E: increment/decrement/multiply auf einer unbegrenzten Grenze lassen s
     });
   });
 });
+
+// ── Kriterium F (Review-Nachtrag): multiply mit 0 auf „unbegrenzt" ──
+// Arithmetik auf einer unbegrenzten Grenze laesst sie unbegrenzt — auch der
+// Sonderfall Faktor 0 (rechnerisch -1 * 0 = 0). Insbesondere darf keine
+// Verletzung mit einem unsinnigen Grenzwert (etwa NaN) entstehen.
+
+describe('F: multiply mit 0 auf Rohwert -1 laesst die Grenze unbegrenzt', () => {
+  const CATALOGUE_XML = catalogueWithLimit(-1, `
+    <modifier type="multiply" field="${LIMIT_ID}" value="0"/>`);
+
+  it('feuert nicht bei drei Auswahlen (Review-Repro: dort erschien eine Verletzung mit bound NaN)', () => {
+    const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 3)]));
+
+    expect(limitViolations(report)).toHaveLength(0);
+  });
+
+  it('feuert auch bei sehr vielen Auswahlen nicht', () => {
+    const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 999)]));
+
+    expect(limitViolations(report)).toHaveLength(0);
+  });
+});
+
+// ── Kriterium G (Review-Nachtrag): unbegrenzte Prozentgrenze bei Nenner 0 ──
+// „Unbegrenzt bleibt unbegrenzt, unabhaengig vom Nenner": eine Prozentgrenze
+// mit Rohwert -1 hat keinen Grenzwert, den ein Nenner skalieren koennte. Ein
+// leerer Bezugsrahmen (Nenner 0) darf deshalb weder eine Verletzung noch eine
+// Null-Nenner-Diagnose (`kind: 'zeroDenominator'`, wie in constraints.test.js
+// gepinnt) fuer diese Grenze erzeugen.
+
+describe('G: unbegrenzte Prozentgrenze (Rohwert -1) mit Nenner 0', () => {
+  const MANA_COST_ID = 'cost-mana-guid';
+  const POINTS_COST_ID = 'cost-points-guid';
+  // Prozentgrenze auf eine Kostenart, die im Roster niemand traegt → Nenner 0.
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-sentinel-percent" name="Sentinel Percent Catalogue">
+      <selectionEntries>
+        <selectionEntry id="${WARRIOR_ID}" name="Warrior" type="unit">
+          <costs>
+            <cost name="Points" typeId="${POINTS_COST_ID}" value="10"/>
+          </costs>
+          <constraints>
+            <constraint id="${LIMIT_ID}" type="max" value="-1" percentValue="true" field="${MANA_COST_ID}" scope="roster"/>
+          </constraints>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  it('erzeugt keine Verletzung', () => {
+    const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 2)]));
+
+    expect(limitViolations(report)).toHaveLength(0);
+  });
+
+  it('erzeugt keine Null-Nenner-Diagnose fuer diese Grenze', () => {
+    const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 2)]));
+
+    expect(report.diagnostics ?? []).not.toContainEqual(
+      expect.objectContaining({ limitId: LIMIT_ID })
+    );
+  });
+});
