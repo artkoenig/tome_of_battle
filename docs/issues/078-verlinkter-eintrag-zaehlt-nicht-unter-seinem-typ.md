@@ -77,6 +77,16 @@ Acceptance criteria:
   bestehenden Szenarien (deren `.ros` bereits `entryLinkId` tragen) den
   Defekt aus Issue 76 sichtbar machen. Tritt das ein: anhalten und
   entscheiden, nicht stillschweigend Erwartungen anpassen.
+- Test-Autor fertig: `src/evaluator/countIndex.linkedType.test.js` (3 Tests:
+  direkt-vs-verlinkt-Vergleich, Schwellen-Test mit Doppelzähl-Schutz,
+  transitive Kette Link→Link→Entry) und
+  `src/evaluator/rosParser.entryLinkId.test.js` (Bindung
+  `entryLinkId || entryId`, rekursiv). Fehlschlag bewiesen:
+  `npx vitest run src/evaluator/countIndex.linkedType.test.js
+  src/evaluator/rosParser.entryLinkId.test.js` → Exit 1, 4/4 rot, jeweils am
+  erwarteten Defekt (verlinkt sieht 0 Modelle; Parser liest nur `entryId`).
+  Diagnostics leer — der Ketten-Fehlschlag ist echtes Nicht-Zählen, kein
+  Dangling-Link.
 
 ## Checkpoints
 
