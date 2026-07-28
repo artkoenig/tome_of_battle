@@ -515,7 +515,8 @@ selections within must originate from a single catalogue."*
 > Symboltabelle aller mitgegebenen Quellen auf; ein `catalogueLink` ist dort nur eine
 > Abhängigkeits-Deklaration, kein eigener Auflösungsmechanismus. Abgesichert wird das durch
 > Diagnosen statt stiller Fehlauswertung: eine echte ID-Kollision zwischen Katalogen meldet der
-> Guard als `DUPLICATE_DEFINITION`, einen fehlenden Ziel-Katalog als `MISSING_CATALOGUE_DEPENDENCY`
+> Kollisions-Guard des Resolvers als `DUPLICATE_DEFINITION`; einen fehlenden Ziel-Katalog meldet
+> die Datensatz-Vorbereitung der Fassade als `MISSING_CATALOGUE_DEPENDENCY`
 > (siehe [ADR 0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)).
 
 Ein `modifier` am Link wirkt asymmetrisch: er ändert die **Eigenschaften des Ziels**, aber die

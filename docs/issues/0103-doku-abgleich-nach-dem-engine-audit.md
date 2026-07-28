@@ -84,6 +84,13 @@ Acceptance criteria:
   359, `NO_JOIN`, `contributionOf`, ADR-0032 diagnostics). Non-findings
   noted: ADR-0003:47 and §10 repeat the §7.5 rule without the new caveat
   (true on their catalogue basis, no contradiction).
+- 2026-07-28 review round 2 (fresh context, whole intent): 1 minor finding,
+  fixed — the §7.2 box attributed both diagnostics to "der Guard";
+  `MISSING_CATALOGUE_DEPENDENCY` is raised by the facade's dataset
+  preparation (`datasetPreparation.js:57`), not the resolver's collision
+  guard. Sentence now attributes each diagnostic to its mechanism. All five
+  criteria met; all counts and quotes re-verified independently a second
+  time. Trend 2 → 1.
 - 2026-07-28 out of scope, left for the human (AC 5 forbids code changes):
   `src/evaluator/model.js:34-35` JSDoc quotes the old §4.1 enum and is now
   the stale copy of the pair.
