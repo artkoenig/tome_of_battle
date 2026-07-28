@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-0103
 pr:
 ---
 
@@ -67,9 +67,20 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — four localized documentation
+  corrections, each falsifiable by reading the named section against the code
+  or ADR it must agree with.
+- What surprised me? Point 3 touches a genuine open question (the `.ros`
+  number semantics, issue 084) — the criterion deliberately asks only for a
+  precise statement of what the engine assumes plus the cross-reference, not
+  for resolving 084.
+- What am I assuming without having verified it? The audit's code claims
+  (`FORCE_COUNT` in `model.js`, `contributionOf` not multiplying through the
+  parent chain, 62 explicit `join` occurrences, wiki wording on `append`).
+  The implementer must re-verify each against code/data before writing, and
+  the reviewer re-checks. Nothing to run for this change (docs only) — per
+  invariant 2 there are no tests to write; the fresh-context diff review is
+  the only check (criterion 5 says exactly this).
 
 ### Before the PR
 
