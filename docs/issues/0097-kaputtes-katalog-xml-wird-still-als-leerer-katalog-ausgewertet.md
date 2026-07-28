@@ -38,10 +38,28 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Default (unanswered, human asleep) — file-name contract:** no caller-side
+  file identity exists today (`parseCatalogue(xml)`, `prepareDataset` gets raw
+  XML strings). Smallest contract pinned by the tests: optional
+  `parseCatalogue(xml, { sourceName })`; the supplied value must appear in
+  the diagnostic payload (field name free). At facade level only diagnostic
+  *presence* in the report is required. Growing the dataset contract to
+  named entries (`{ name, xml }`) would be a public-contract decision —
+  belongs to the human / issue 084's roster-contract territory, not this
+  run.
+
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28); Codepfad verifiziert.
 
 ## Log
+
+- 2026-07-28 test-author: `src/evaluator/catalogReader.malformedXml.test.js`,
+  14 tests (11 failing — parse silently yields empty diagnostics today; 3
+  KONTROLLE passing). jsdom parsererror behaviour probed for unclosed tag,
+  truncation, empty and whitespace input; `<roster>` root parses cleanly but
+  is a wrong root tag. No `DiagnosticKind` value pinned (criteria name
+  none); only truthy `kind` asserted. Broken-`.gst` test built so
+  `GAMESYSTEM_MISMATCH` cannot mask the new diagnostic.
 
 ## Checkpoints
 
