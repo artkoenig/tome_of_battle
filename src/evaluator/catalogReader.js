@@ -244,7 +244,7 @@ function readScope(scopeAttr) {
  * verschluckt (`docs/evaluator-architecture.md` §5, Risiko 4).
  *
  * Ein hingeschriebener Sentinel-Rohwert wird **hier**, beim Lesen, auf
- * {@link UNLIMITED} gedeutet (`docs/battlescribe-data-format.md` §7.5, Issue
+ * {@link UNLIMITED} gedeutet (`docs/battlescribe-data-format.md` §7.6, Issue
  * 079) — kein spaeterer Leser rechnet den Sentinel als Zahl weiter oder deutet
  * ihn auf dem wirksamen Endwert.
  */

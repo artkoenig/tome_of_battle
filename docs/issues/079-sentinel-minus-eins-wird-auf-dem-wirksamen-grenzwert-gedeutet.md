@@ -143,6 +143,17 @@ Acceptance criteria:
   bleibt grün. (3) Kommentar `catalogReader.js:247` verweist auf §7.5 statt
   §7.6. Triage: alle drei fix now; Tests für (1)+(2) zuerst durch den
   Test-Autor, Fix durch den Implementer.
+- Test-Autor Nachtrag: 4 neue Tests in
+  `constraints.unlimitedSentinel.test.js` (jetzt 18). F: multiply 0 auf
+  Rohwert -1 — 2 Tests, rot mit dem Review-Fehlerbild. G: unbegrenzte
+  Prozentgrenze bei Nenner 0 — 2 Tests, grün als Regressions-Pin (bewusst;
+  Erwartung aus der Intent-Semantik).
+- Implementer-Fix: `modifiers.js` — Wrapper `limitArithmetic(combine)` um
+  die LIMIT-Handler von increment/decrement/multiply: bei `UNLIMITED`
+  sofort `UNLIMITED`, sonst normal rechnen. Deckt auch multiply mit
+  negativem Faktor (vorher `-Infinity`). `catalogReader.js:247` §7.5 →
+  §7.6. Exit-Codes: Sentinel-Tests 18/18 Exit 0, `npx vitest run
+  src/evaluator` 532 Tests Exit 0, lint 0, typecheck 0.
 
 ## Checkpoints
 

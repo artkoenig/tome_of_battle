@@ -61,6 +61,7 @@ import {
   ModifierTargetKind,
   DiagnosticKind,
   UNRESOLVED_BUDGET,
+  UNLIMITED,
   unlimitedFromSentinel,
   diagnostic,
 } from './model.js';
@@ -341,13 +342,20 @@ const setValue = (current, operand) => operand;
 // Der Wert eines `set` auf eine **Grenze** ist ein hingeschriebener Katalogwert:
 // nur dort (und am Roh-`value` einer Grenze, Katalog-Leser) gilt der
 // Sentinel „unbegrenzt" (Issue 079). Errechnete Werte der uebrigen Arten
-// (increment/decrement/multiply) werden nie gedeutet — sie rechnen auf einer
-// unbegrenzten Grenze (`UNLIMITED = Infinity`) von selbst unbegrenzt weiter,
-// und ein rechnerisch negatives Ergebnis bleibt eine gewoehnliche Zahl.
+// (increment/decrement/multiply) werden nie gedeutet — ein rechnerisch
+// negatives Ergebnis bleibt eine gewoehnliche Zahl.
 const setLimitValue = (current, operand) => unlimitedFromSentinel(operand);
 const addValue = (current, operand, times) => current + operand * times;
 const subtractValue = (current, operand, times) => current - operand * times;
 const multiplyValue = (current, operand, times) => current * operand ** times;
+// Arithmetik auf einer **unbegrenzten** Grenze laesst sie unbegrenzt (Issue
+// 079, Decision). Das steht hier als expliziter Kurzschluss statt als Folge
+// der IEEE-Arithmetik auf `UNLIMITED = Infinity`: die traegt zwar increment/
+// decrement und die meisten multiply-Faktoren von selbst, kippt aber bei
+// `Infinity * 0` in NaN (und bei negativem Faktor in -Infinity) — und ein
+// solcher Wert darf nie Grenzwert werden (Review Runde 1, Befund 1).
+const limitArithmetic = combine => (current, operand, times) =>
+  current === UNLIMITED ? UNLIMITED : combine(current, operand, times);
 
 const asText = value => String(value);
 
@@ -385,17 +393,17 @@ export const MODIFIER_HANDLERS = Object.freeze({
   }),
   [ModifierKind.INCREMENT]: Object.freeze({
     [ModifierTargetKind.COST]: numericHandler(addValue, COST_ACCESS),
-    [ModifierTargetKind.LIMIT]: numericHandler(addValue, LIMIT_ACCESS),
+    [ModifierTargetKind.LIMIT]: numericHandler(limitArithmetic(addValue), LIMIT_ACCESS),
     [ModifierTargetKind.CHARACTERISTIC]: numericHandler(addValue, CHARACTERISTIC_ACCESS, asText),
   }),
   [ModifierKind.DECREMENT]: Object.freeze({
     [ModifierTargetKind.COST]: numericHandler(subtractValue, COST_ACCESS),
-    [ModifierTargetKind.LIMIT]: numericHandler(subtractValue, LIMIT_ACCESS),
+    [ModifierTargetKind.LIMIT]: numericHandler(limitArithmetic(subtractValue), LIMIT_ACCESS),
     [ModifierTargetKind.CHARACTERISTIC]: numericHandler(subtractValue, CHARACTERISTIC_ACCESS, asText),
   }),
   [ModifierKind.MULTIPLY]: Object.freeze({
     [ModifierTargetKind.COST]: numericHandler(multiplyValue, COST_ACCESS),
-    [ModifierTargetKind.LIMIT]: numericHandler(multiplyValue, LIMIT_ACCESS),
+    [ModifierTargetKind.LIMIT]: numericHandler(limitArithmetic(multiplyValue), LIMIT_ACCESS),
     [ModifierTargetKind.CHARACTERISTIC]: numericHandler(multiplyValue, CHARACTERISTIC_ACCESS, asText),
   }),
   [ModifierKind.ADD]: Object.freeze({
