@@ -45,7 +45,7 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 ### 4. GitHub-Issue-Triage (`.github/workflows/issue_agent.yml`)
 - **Trigger:** `issues: opened` und `issue_comment: created`.
 - **Ablauf:** `scripts/github_issue_agent.py` prüft bei jedem Issue-Event zuerst, ob das Issue bereits das Label `needs-attention` trägt — falls ja, bricht es sofort ab, ohne die Gemini-API aufzurufen (das Label ist ein einmaliges, nie wieder entferntes Terminal-Signal: sobald gesetzt, reagiert der Agent auf dieses Issue nicht mehr). Andernfalls bewertet es automatisch (kein Freigabe-Gate mehr nötig, da nur noch kommentiert/gelabelt wird) über einen Gemini-API-Call (`gemini-3.1-flash-lite`, Free Tier), ob ein Report klar genug ist. Ist er unklar, postet/editiert das Skript einen Kommentar mit Rückfragen (bestehende Single-Comment-Konvention). Ist er klar und wirkt wie ein plausibler Bug oder gut formulierter Feature-Request, wird das Label `needs-attention` gesetzt. Kein Kategorie-/Prioritäts-/Aufwands-/Duplikat-Labeling.
-- **Abgrenzung:** Dieser Workflow implementiert **nicht** und öffnet **keine PRs**; er legt auch **kein** lokales main-issue an — GitHub-Issue-Triage und der lokale `docs/issues/`-Tracker bleiben vollständig getrennte Systeme. Die Workflow-Permissions umfassen nur `issues: write` (kein `contents`/`pull-requests`).
+- **Abgrenzung:** Dieser Workflow implementiert **nicht** und öffnet **keine PRs**; er legt auch **kein** lokales Issue an — GitHub-Issue-Triage und der lokale `docs/issues/`-Tracker bleiben vollständig getrennte Systeme. Die Workflow-Permissions umfassen nur `issues: write` (kein `contents`/`pull-requests`).
 
 ### 5. Auto-Tag bei Versions-Bump (`.github/workflows/tag-on-version-bump.yml`)
 - **Trigger:** Läuft bei jedem Push auf `main`.
@@ -68,6 +68,6 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
   - Die GitHub-Issue-Triage läuft ohne Freigabe-Overhead und ohne API-Kosten (Gemini Free Tier statt Anthropic), da sie nur reversible Aktionen (Kommentar, Label) ausführt.
 - **Negativ:**
   - Alle Tests (inklusive E2E) laufen nun auf PRs gegen `main`, was Feature-PRs leicht verzögert.
-  - Ein als `needs-attention` markiertes GitHub-Issue führt zu keinem automatischen Folgeschritt — der Maintainer muss selbst entscheiden, ob und wann daraus ein lokales main-issue wird; die beiden Systeme sind bewusst nicht verknüpft.
+  - Ein als `needs-attention` markiertes GitHub-Issue führt zu keinem automatischen Folgeschritt — der Maintainer muss selbst entscheiden, ob und wann daraus ein lokales Issue wird; die beiden Systeme sind bewusst nicht verknüpft.
 - **Neutral:**
   - Mit dem Zustandsbericht existiert neben Vercel ein zweiter, klar abgegrenzter Auslieferungsweg (GitHub Pages) — er veröffentlicht Projektdokumentation, nie die Anwendung.

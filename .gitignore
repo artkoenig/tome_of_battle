@@ -33,14 +33,9 @@ coverage/
 
 .worktrees
 .claude/worktrees/
-# Session-scoped override for the worktree_guard.py PreToolUse hook. Local-only,
-# never committed: a routine `git add -A` during a merge would otherwise sweep
-# it into the commit and disable the guard permanently for every checkout.
-.claude/.worktree-bypass
 .scratch/
-# Temporäres Modul-Planungsartefakt des architect-Workflows je Main-Issue:
-# bleibt während der Umsetzung uncommitted im Arbeitsbaum und wird am
-# Auflösungs-Gate gelöscht — landet nie im PR.
+# Temporäres Modul-Planungsartefakt eines Architektur-Plans: bleibt während der
+# Umsetzung uncommitted im Arbeitsbaum und landet nie im PR.
 docs/issues/**/design.md
 .antigravity/
 e2e-failure.png
