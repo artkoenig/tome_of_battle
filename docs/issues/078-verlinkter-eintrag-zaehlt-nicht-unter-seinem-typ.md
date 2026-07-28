@@ -63,6 +63,10 @@ Acceptance criteria:
   benennt die Link-ID-Bindung als die korrekte. Ohne diese Änderung kann
   Kriterium 3 kein Szenario erfüllen. Default, unbeantwortet — reine
   Harness-Semantik, kein öffentlicher Vertrag.
+- **Kein Versionssprung.** Die CLAUDE.md-Regel verlangt den Vorschlag nur für
+  benutzersichtbare Änderungen; der Reinraum-Evaluator hat keinen Importeur
+  außerhalb von `src/evaluator/` und erreicht den Nutzer noch nicht.
+  Default, unbeantwortet.
 
 ## Log
 
@@ -114,6 +118,16 @@ Acceptance criteria:
 - Tracker-Pflege: Issue 076 (zweite Fundstelle) auf den neuen
   rosParser-Stand nachgezogen — die Adapter-Seite ist durch diesen Schnitt
   behoben, offen bleibt dort die Engine-Seite.
+- Review-Runde 1 (frischer Kontext): **0 Befunde**, alle vier Kriterien
+  erfüllt. Kern der Prüfung: Revert-Gegenprobe — countIndex-Fix
+  zurückgenommen → 3/3 Unit-Tests und genau die beiden Link-Roster des
+  Szenarios rot, Grundlinie grün; rosParser-Bindung zurückgenommen → der
+  Parser-Test rot (Runner bleibt grün: die dokumentierte Maskierung).
+  Szenario-Erwartungen stichprobenhaft gegen `.gst`/`.cat` verifiziert.
+  Fakten (vom Reviewer selbst gelaufen): `npm test` 209 Dateien / 2116
+  Tests + UI-E2E exit 0; lint/typecheck exit 0; depcruise 391 Module,
+  0 Errors, 1 vorbestehende warn-only-Warnung. Trend: 0 (Runde 1) —
+  konvergiert, keine weitere Runde nötig.
 
 ## Checkpoints
 
@@ -135,8 +149,16 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Ja — alle vier Kriterien vom frischen
+  Reviewer als erfüllt beurteilt, mit Revert-Gegenprobe statt bloßem
+  Grün-Blick. Keine bestehende Erwartung geändert, kein Scope-Creep.
+- What surprised me? (1) Die Stopp-Regel griff nicht: die Link-ID-Bindung
+  machte den Issue-76-Defekt in keinem bestehenden Szenario sichtbar.
+  (2) Der lokale `main` war veraltet; maßgeblich war `origin/main`.
+- What am I assuming without having verified it? Dass kein Versionssprung
+  fällig ist: der Reinraum-Evaluator hat keinen Importeur außerhalb von
+  `src/evaluator/` (per Grep verifiziert), die Änderung ist also noch nicht
+  benutzersichtbar — als Default entschieden, der Mensch kann beim Merge
+  anders entscheiden.
 
 ## Retro
