@@ -97,9 +97,10 @@ festschreibt.
   wird also nicht geprüft. (Der reale Fall `max="-1"` = unbegrenzt fällt ohnehin damit
   zusammen.) Die alte Engine erzwang die Kategoriegrenze unabhängig von einer MIN.
 - **B2 — Ein `forceEntry`-eigenes Punktelimit ist nicht direkt ausdrückbar.** Ein
-  Kontingent (`forceEntry`) trägt keine Kosten, und eine Grenze zählt stets die
-  eigene Definitions-ID ihres Ankers; eine `forceEntry`-eigene Kostengrenze läse
-  daher immer 0. Die *Semantik* „dieses (Sonder-)Heer muss ≥ N Punkte bauen" ist
+  Kontingent (`forceEntry`) trägt keine Kosten, und eine Grenze zählt die
+  Definitions-ID ihres Ankers — bei einem Verweis (`entryLink`, `categoryLink`)
+  dessen Ziel, sonst die eigene. Ein `forceEntry` ist kein Verweis; seine
+  eigene Kostengrenze läse daher immer 0. Die *Semantik* „dieses (Sonder-)Heer muss ≥ N Punkte bauen" ist
   aber über eine **Kategorie-MIN-Kostengrenze** erreichbar: alle Einheiten des
   Heeres teilen die Armee-Kategorie, deren MIN-Kostengrenze den Punkte-Boden setzt.
 

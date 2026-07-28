@@ -2,8 +2,9 @@
  * Uebersetzt eine Battlescribe-`.ros`-Roster-Datei in den Instanzbaum
  * `{ forces: [{ defId, count, children }] }`, den die Fassade `evaluate` erwartet.
  *
- * Die Uebersetzung ist rein strukturell (Black-Box): jede `<selection>` wird ueber
- * ihre `entryId` zur Definitions-Id, `number` zur Anzahl (Default 1), und ihre
+ * Die Uebersetzung ist rein strukturell (Black-Box): jede `<selection>` wird zur
+ * Definitions-Id des Verweises, ueber den sie gesetzt wurde (`entryLinkId`), sonst
+ * zu ihrer `entryId`; `number` wird zur Anzahl (Default 1), und ihre
  * verschachtelten `<selections>` werden rekursiv zu Kindern. Kein Evaluator-Wissen
  * fliesst ein — genau die Naht, die ein Black-Box-Testautor braucht.
  *
@@ -19,6 +20,23 @@ import { JSDOM } from 'jsdom';
 const dom = new JSDOM();
 
 /**
+ * Die Definitions-Id, unter der eine `<selection>` im Datensatz steht.
+ *
+ * Ein Roster benennt eine ueber einen `<entryLink>` gesetzte Auswahl mit zwei Ids:
+ * `entryLinkId` (der Verweis) und `entryId` (sein Ziel). Massgeblich ist der
+ * **Verweis**, denn nur an ihm gelten die an ihm selbst deklarierten Grenzen und
+ * Modifikatoren; das Ziel bleibt ueber `targetId` erreichbar und zaehlt weiter mit.
+ * Fehlt das Attribut oder ist es leer — die Auswahl steht direkt, ohne Verweis —,
+ * bleibt es bei `entryId`.
+ *
+ * @param {Element} selection Ein `<selection>`-Element.
+ * @returns {string | null} Die Definitions-Id der Auswahl.
+ */
+function defIdOf(selection) {
+  return selection.getAttribute('entryLinkId') || selection.getAttribute('entryId');
+}
+
+/**
  * Die verschachtelten `<selection>`-Kinder eines Elements als Instanzbaum-Knoten.
  *
  * @param {Element} element Ein `<force>`- oder `<selection>`-Element.
@@ -32,7 +50,7 @@ function childSelections(element) {
     for (const selection of [...child.children]) {
       if (selection.tagName !== 'selection') continue;
       out.push({
-        defId: selection.getAttribute('entryId'),
+        defId: defIdOf(selection),
         count: Number(selection.getAttribute('number') || '1'),
         children: childSelections(selection),
       });
