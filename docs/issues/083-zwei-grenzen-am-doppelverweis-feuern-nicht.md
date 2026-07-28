@@ -60,8 +60,20 @@ forces?"*; unangekreuzt zählt die Grenze *„just `scope`'s `field`"* bzw.
 *„only from parent force selections"* — von „gar nichts" ist keine Rede. Auch
 das spricht gegen die verworfene Flag-Erklärung.
 
-Für `76e2c1c8` (Grenze an einer `selectionEntryGroup`) sagt das Wiki nichts;
-diese Hälfte bleibt offen.
+Auch die zweite Hälfte ist inzwischen belegt. Die Quelle beschreibt den
+Bezugsrahmen einer Grenze so: der `scope` entscheide, *„which entity should sum
+up all `field`'s values **of descendant selections of this constraint's parent
+entry**"*. Gezählt werden also die Auswahlen **unterhalb** des Trägers der
+Grenze. Für `76e2c1c8`, die an der Gruppe „Magic Armour" hängt, heißt das: ihre
+Mitglieder. Zwei gewählte Mitglieder ergeben Ist 2 — die Grenze muss feuern.
+Unsere Engine zählt stattdessen die eigene Id des Gruppenknotens und kommt auf
+1.
+
+Damit sind **beide** Fälle belegte Fehler, nicht offene Fachfragen. Die
+Belegstellen stehen in
+[`docs/battlescribe-format-learnings.md`](../battlescribe-format-learnings.md),
+die Quelle liegt als Submodul unter
+`docs/bsdata-catalogue-development-wiki/Data-structure-overview.md`.
 
 Zu klären ist damit zweierlei, jeweils an den Katalogdaten und an
 `docs/battlescribe-data-format.md` statt an einer Annahme: Was zählt eine
@@ -70,12 +82,11 @@ Zu klären ist damit zweierlei, jeweils an den Katalogdaten und an
 
 Acceptance criteria:
 
-1. Aus den Katalogdaten und dem Format-Dokument ist belegt, was eine
-   `scope="roster"`-Grenze zählt und was eine Grenze an einer
-   `selectionEntryGroup` zählt.
+1. Die Engine zählt für eine Grenze die Auswahlen **unterhalb ihres Trägers**,
+   im Rahmen des `scope` — nicht die eigene Id des Trägers.
 2. Eine Grenze, die nach dieser Deutung feuern muss, feuert.
-3. Die beiden belegten Fälle sind entschieden: entweder feuern sie, oder es
-   ist belegt, dass ihr Schweigen richtig ist.
+3. Die beiden belegten Fälle feuern: `0aa08f91` und `76e2c1c8` jeweils mit
+   Ist 2 gegen Grenze 1.
 4. Das Szenario `shared-target-two-entrylinks` nimmt beide Ids wieder in seine
    Erwartung auf — auf der Seite, die die Untersuchung ergibt.
 5. Die übrige E2E-Suite bleibt grün — mit Kommando, Umfang und Exit-Code
@@ -96,9 +107,9 @@ Acceptance criteria:
   Titel und Intent sind entsprechend korrigiert.
 - **Vorbestehend, nicht durch 076 entstanden:** Auf einem Worktree des
   Standes vor dem Fix verhalten sich beide Grenzen identisch.
-- **Kriterium 1 ist eine Fachfrage, keine Implementierungsaufgabe.** Fällt die
-  Antwort so aus, dass das Schweigen richtig ist, ist das ein legitimes
-  Ergebnis und die übrigen Kriterien ändern ihre Form.
+- **Die Fachfrage ist beantwortet, bevor der Lauf beginnt.** Die
+  BSData-Dokumentation belegt beide Fälle als Fehler (siehe Intent). Dieses
+  Issue ist damit eine Implementierungsaufgabe, keine Untersuchung.
 
 ## Log
 

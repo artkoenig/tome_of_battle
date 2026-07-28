@@ -327,6 +327,21 @@ Acceptance criteria:
     Diagnosen. Genau die Annahme, die Checkpoint 1 als ungeprüft notierte,
     jetzt als reales Verhalten reproduziert. Kein Test deckt es ab.
 
+  **Nachtrag, nach dem Einholen der Fremddokumentation:** F3 ist weitgehend
+  entschärft. Das BSData-Wiki sagt zum `entryLink`, sein Ziel müsse aus den
+  *shared*-Listen **desselben Katalogs** stammen (oder, per
+  Grundregelwerk-Import, aus der `.gst`). Ein Roster, das einen Verweis aus
+  Katalog X benennt, ist gegen einen Datensatz ohne X also gar nicht gültig —
+  dass die Ziel-Id zufällig in der `.gst` auflöst, macht es nicht gültig. Der
+  scheinbar verlorene Fall war nie ein echter. Was bleibt, ist eine
+  Diagnose-Frage: `unresolvedDefinition` ist für diesen Fall die *ehrlichere*
+  Antwort als das stille Weiterarbeiten mit dem Ziel.
+
+  F2 bleibt: der Adapter-Fix ist weiterhin von keiner Erwartung abgedeckt.
+  Zur `.ros`-Struktur schweigt das Wiki ausdrücklich (die Abschnitte *Roster*,
+  *Force* und *Selection* stehen dort als `TODO`), es gibt also auch keine
+  Fremdautorität, auf die sich die Entscheidung stützen könnte.
+
   Die naheliegende Auflösung wäre, im Adapter auf `entryId` zurückzufallen,
   wenn die Link-Id im Datensatz nicht auflöst — das kann der Adapter aber
   nicht wissen, er kennt den Datensatz nicht. Die Alternative wäre, den
