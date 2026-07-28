@@ -44,6 +44,14 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Accepted default (review round 1, finding 1a):** the inheritance runs
+  through the shared `baseHiddenOf`, so `infoLink` and `categoryLink`
+  occurrences now also inherit their target's base hidden. Unasked-for but
+  consistent with the declared rule (own before inherited); the reviewer
+  could not construct a wrong result. Accepted rather than special-cased —
+  surfaced to the human in the PR; if unwanted, a follow-up issue can
+  narrow it.
+
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
 
@@ -69,6 +77,14 @@ Acceptance criteria:
   (`toEqual` ignores undefined props, not null) — switched to `undefined`,
   no test touched. 11/11 target green; suite 211 files / 2154 tests exit 0;
   puppeteer E2E exit 0; lint/typecheck exit 0.
+- 2026-07-28 review round 1 (fresh context): all four criteria met; reds
+  proven real against origin/main in a scratch worktree (2 failed / 9
+  passed, exactly the criterion-1 pair); test file untouched since
+  authoring; perf measurement exit 0 (6.3 ms). 1 low finding, split:
+  (1a) silent widening to infoLink/categoryLink — triaged as accepted
+  default (see Decisions); (1b) §4.1 record omits the load-bearing
+  `hiddenAttribute` — fixed: the EntryBase comment and the record now name
+  the tri-state and why it exists.
 
 ## Checkpoints
 
