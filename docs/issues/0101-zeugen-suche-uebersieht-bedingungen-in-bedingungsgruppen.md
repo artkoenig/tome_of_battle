@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0101
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/157
 ---
 
 # Zeugen-Suche übersieht Bedingungen in Bedingungsgruppen
@@ -129,3 +129,14 @@ Acceptance criteria:
   evaluator not wired to the UI.
 
 ## Retro
+
+- The generator-with-held-filter design answered the undecided or-question
+  conservatively without the tests forcing a choice — good separation of
+  "what the criteria decide" from "what the code must pick anyway". The
+  reviewer's mutant then made the unguarded default visible instead of
+  letting it hide; dismiss-with-reason plus PR surfacing routes it to the
+  human without freezing anything.
+- Two comment-truth findings in two consecutive issues (0096 sentinel
+  enumeration, 0101 witnessOf justification): reviewers verifying comment
+  claims against code is paying off consistently — worth keeping explicit
+  in reviewer briefs.
