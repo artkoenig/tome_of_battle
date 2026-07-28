@@ -88,6 +88,15 @@ Acceptance criteria:
   Finalwert, ist aber laut ADR 0030 keine Referenz).
 - Es existiert bereits `docs/testing/max-unlimited-violation/` (Rohwert `-1`
   feuert nie); ein Border-Patrols-Szenario (Rohwert `-1` → `set` 25) fehlt.
+- Test-Autor: `src/evaluator/constraints.unlimitedSentinel.test.js`, 14 Tests
+  (Kriterien A–E). `npx vitest run …` → Exit 1, 4 failed / 10 passed. Die 4
+  Failures sind die Zielfälle: decrement exakt auf `-1` verschluckt die
+  Verletzung; increment/decrement/multiply auf Rohwert `-1` rechnen den
+  Sentinel als Zahl weiter. Grüne Tests fixieren A–C gegen Regression.
+- Default (Frage des Test-Autors): die Kante „Verletzung bei 0 Auswahlen und
+  wirksamem Wert -1" bleibt ungetestet; die bestehende Melde-Semantik
+  (Verletzungen nur an belegten Slots) wird von diesem Issue nicht
+  angetastet.
 
 ## Checkpoints
 
