@@ -48,6 +48,22 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-07-28 test-author: 7 black-box CLI tests in `scripts/release-lockfile.test.js`
+  (temp-dir copies of the script, child-process runs; plus a repo-state test
+  pinning criterion 3). All 7 proven failing for the intended reason before
+  implementation.
+- 2026-07-28 implementer: `writeLockfileVersion` in `scripts/release.js`
+  (both lockfile spots, npm's 2-space/trailing-newline format, silent no-op
+  without a lockfile); real lockfile caught up 1.8.2 → 1.9.0 by hand.
+  `npx vitest run` 211 files / 2150 tests exit 0; lint, typecheck exit 0.
+- 2026-07-28 review round 1 (fresh context): 0 findings, all criteria met.
+  Extra facts: real `npm install` leaves the lockfile byte-identical (md5
+  equal); JSON round-trip of the 216 KB lockfile is byte-identical; red-check
+  confirmed the tests failed on the pre-fix script. Non-finding observations:
+  empty Log (fixed by this entry); `scripts/release.js:4-5` cites a CLAUDE.md
+  section title that has since been renamed — pre-existing, outside intent,
+  left for the human.
+
 ## Checkpoints
 
 ### Before implementation
@@ -66,8 +82,14 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — all three criteria verified by tests
+  and by the reviewer's independent runs; diff confined to `scripts/release.js`,
+  `package-lock.json`, the new test file and this tracker file.
+- What surprised me? Nothing in the change itself; the JSON round-trip of the
+  real lockfile being byte-identical removed the main rewrite-fidelity risk.
+- What am I assuming without having verified it? That future npm versions keep
+  the 2-space/trailing-newline lockfile format the tests pin — if npm changes
+  it, the repo-state test will say so. No version bump: build-script chore,
+  nothing user-visible.
 
 ## Retro
