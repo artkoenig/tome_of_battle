@@ -67,6 +67,15 @@ Acceptance criteria:
   lint/typecheck exit 0. Assumption recorded: `Infinity` as configured value
   also lands on the unbudgeted path (consistent with unlimited semantics;
   BattleScribe never writes it).
+- 2026-07-28 review round 1 (fresh context): 1 finding, fixed — the sentinel
+  contract enumeration ("genau drei Stellen", "Aufrufer sind …") in
+  `model.js:392-421` and the §15 gap table in
+  `docs/battlescribe-data-format.md` became stale with the new caller; both
+  now name the roster `costLimit` place and the rosterBudget caller
+  (Issue 0096). Reviewer independently re-established all exit-code facts,
+  proved the tests fail on origin/main (4/3 exactly as authored), verified
+  the single-caller seam and the fail-closed percent-denominator path.
+  Criteria 1-4 all judged met.
 
 ## Checkpoints
 
