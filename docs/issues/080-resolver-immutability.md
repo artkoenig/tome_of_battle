@@ -1,5 +1,5 @@
 ---
-status: waiting
+status: done
 branch: resolver-immutability
 pr: https://github.com/artkoenig/tome_of_battle/pull/143
 ---
