@@ -132,6 +132,17 @@ Acceptance criteria:
 - Session-Check: der Manifest-Runner (`e2e.testcatalog.test.js`) entdeckt
   das neue Szenario automatisch; `npx vitest run … -t
   "unlimited-modifier-toggle"` → 5 passed, Exit 0.
+- Review Runde 1 (frischer Kontext): alle 5 Kriterien erfüllt, alle
+  Exit-Codes unabhängig reproduziert (`npm test` Exit 0, 2139 Tests + E2E;
+  lint/typecheck/depcruise Exit 0; knip Exit 1 vorbestehend). Drei Befunde
+  mit Reproduktion, alle außerhalb der nummerierten Kriterien:
+  (1) `multiply value="0"` auf unbegrenzter Grenze → `Infinity*0=NaN` →
+  Verletzung mit `bound: NaN` (widerspricht der Arithmetik-Decision; in
+  den Fixtures existiert kein multiply-Modifikator). (2) Der neue
+  Prozent-Frühausstieg (`constraints.js:44`) ist ungepinnt — Mutationsprobe
+  bleibt grün. (3) Kommentar `catalogReader.js:247` verweist auf §7.5 statt
+  §7.6. Triage: alle drei fix now; Tests für (1)+(2) zuerst durch den
+  Test-Autor, Fix durch den Implementer.
 
 ## Checkpoints
 
