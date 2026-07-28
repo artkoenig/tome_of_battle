@@ -76,6 +76,12 @@ Acceptance criteria:
   proved the tests fail on origin/main (4/3 exactly as authored), verified
   the single-caller seam and the fail-closed percent-denominator path.
   Criteria 1-4 all judged met.
+- 2026-07-28 review round 2 (fresh context, whole intent): 0 findings —
+  trend 1 → 0. All exit-code facts re-established independently (2150 unit
+  tests, puppeteer E2E, lint, typecheck, depcruise all exit 0); red-proof
+  repeated in a throwaway worktree on origin/main (4 failed / 3 controls);
+  round-1 comment fix verified true by grep (three callers, four written
+  places).
 
 ## Checkpoints
 
@@ -95,8 +101,16 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — all four criteria met, proven by
+  tests that are red on origin/main and green here, plus two fresh-context
+  review rounds (1 → 0 findings).
+- What surprised me? How small the right seam was: one filter in the budget
+  constructor covered all three consumers; the only collateral was two stale
+  sentinel enumerations, caught by review round 1.
+- What am I assuming without having verified it? That the production adapter
+  (Issue 084's territory) will pass `.ros` costLimits into the facade
+  unmapped — if it maps −1 itself someday, the engine seam stays correct
+  either way. No version bump: evaluator not yet wired to the UI, nothing
+  user-visible.
 
 ## Retro
