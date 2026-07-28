@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m
 pr:
 ---
 
@@ -52,9 +52,17 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — the three criteria cover exactly the
+  observed drift: script writes both files, `npm install` stays clean, and the
+  existing 1.9.0/1.8.2 backlog is caught up.
+- What surprised me? A test file for the script already exists
+  (`scripts/release.test.js`), and the script deliberately separates pure
+  version computation from file I/O — the new behaviour slots into the I/O
+  side.
+- What am I assuming without having verified it? That updating the two
+  documented lockfile spots (`.version`, `.packages[""].version`) directly in
+  JS is sufficient — no `npm version` subprocess needed — and that the
+  lockfile stays format v3 with exactly those two spots for the root package.
 
 ### Before the PR
 
