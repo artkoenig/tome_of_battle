@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-0101
 pr:
 ---
 
@@ -51,9 +51,18 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — extend the witness search
+  (`witnessOf`/`gateWithin`, `modifiers.js`) to descend into
+  `conditionGroups` recursively, so a group-gated modifier carries a witness
+  in its derivation step; ADR-0027's no-invented-causes rule bounds it.
+- What surprised me? Nothing yet — the intent names the exact dropped
+  branch (`group.conditionGroups` in `gateWithin`).
+- What am I assuming without having verified it? That descending into `or`
+  groups is as sound as `and` groups for witness purposes (a held `or`
+  group's cause is whichever branch held — the criteria say "beliebiger
+  Verschachtelungstiefe" without distinguishing; if the semantics of OR
+  make a witness ambiguous, the test-author should surface it as a question
+  rather than pin a guess).
 
 ### Before the PR
 
