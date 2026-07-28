@@ -342,12 +342,11 @@ Acceptance criteria:
   *Force* und *Selection* stehen dort als `TODO`), es gibt also auch keine
   Fremdautorität, auf die sich die Entscheidung stützen könnte.
 
-  Die naheliegende Auflösung wäre, im Adapter auf `entryId` zurückzufallen,
-  wenn die Link-Id im Datensatz nicht auflöst — das kann der Adapter aber
-  nicht wissen, er kennt den Datensatz nicht. Die Alternative wäre, den
-  Adapter-Fix ganz fallen zu lassen und nur `constraints.js` zu behalten.
-  Beides ändert den öffentlichen Roster-Vertrag der Fassade und ist damit
-  eine Entscheidung für den Menschen, nicht für mich.
+  **Entscheidung des Menschen:** Der Schnitt bleibt wie er ist — beide
+  Hälften. F2 und F3 sind als Issue `084` abgelegt, weil beide denselben
+  ungeschriebenen Vertrag betreffen: unter welcher Id eine über einen Verweis
+  gesetzte Auswahl an die Fassade zu übergeben ist, und dass diese Regel heute
+  nur im Test-Adapter steht und von keiner Erwartung gedeckt ist.
 
 - **Fremddokumentation bestätigt die Kurskorrektur.** Auf Bitte des Menschen
   im [BSData-Wiki](https://github.com/BSData/catalogue-development/wiki/Data-structure-overview)
