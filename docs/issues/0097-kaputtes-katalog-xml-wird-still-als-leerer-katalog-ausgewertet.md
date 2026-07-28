@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0097
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/155
 ---
 
 # Kaputtes Katalog-XML wird still als leerer Katalog ausgewertet
@@ -117,3 +117,13 @@ Acceptance criteria:
   fixed here (outside the intent).
 
 ## Retro
+
+- The test-author's "smallest plausible contract" call (`sourceName` option,
+  facade presence only) kept the change minimal and left the dataset name
+  channel to issue 084 where it belongs — good boundary discipline.
+- The reviewer going beyond jsdom to probe real Chrome via puppeteer was
+  the most valuable act of the run: it turned an assumption (detection
+  works in browsers) into a fact and surfaced the namespace edge that
+  became issue 0105.
+- One round sufficed because the only finding was out of scope; the
+  file-it-instead-of-fix-it rule kept the run convergent.
