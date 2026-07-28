@@ -57,6 +57,16 @@ Acceptance criteria:
   (`model.js:426`) maps only exactly −1. Open edge "limit 0" left untested —
   default recorded under Decisions. Exact diagnostic `reason` for the
   criterion-2 path deliberately left open to the implementer.
+- 2026-07-28 implementer: single seam `createRosterBudget`
+  (`rosterBudget.js`, +18/−2) — filters sentinel entries via
+  `unlimitedFromSentinel`, so `entries()` skips them (budget rule silent),
+  `get()` returns undefined (existing `NOT_BUDGETED` fail-closed path), and
+  the facade `.ros` path is covered for free. No changes to `budget.js`,
+  `query.js` or `rosParser.js`. 7/7 target tests green; `npx vitest run`
+  211 files / 2150 tests exit 0; puppeteer E2E "ALL UI TESTS PASSED" exit 0;
+  lint/typecheck exit 0. Assumption recorded: `Infinity` as configured value
+  also lands on the unbudgeted path (consistent with unlimited semantics;
+  BattleScribe never writes it).
 
 ## Checkpoints
 

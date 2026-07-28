@@ -9,7 +9,19 @@
  * (`limit::<id>`) und ein aufzaehlbares `entries()` fuer die Budget-Pruefung —
  * beide Konsumenten liegen in Folge-Slices; dieser Slice reicht das Objekt nur
  * bis in den `QueryContext` durch (`query` liest es noch nicht).
+ *
+ * Der BattleScribe-Sentinel `-1` bedeutet auch am Roster-`costLimit`
+ * **„unbegrenzt"** (`docs/battlescribe-data-format.md` §5.3 — dieselbe
+ * Konvention wie `defaultCostLimit`, Issue 0096). Eine unbegrenzte Kostenart
+ * ist im Budget-Wert-Objekt schlicht **nicht budgetiert**: `get` liefert
+ * `undefined`, `entries` fuehrt sie nicht — die Budget-Regel prueft sie damit
+ * nie, und `limit::<id>` faellt in den bestehenden fail-closed-Pfad
+ * (`NOT_BUDGETED`-Diagnose) statt gegen die Zahl `-1` zu vergleichen. Gedeutet
+ * wird ausschliesslich ueber {@link unlimitedFromSentinel} (genau `-1`; jeder
+ * andere negative Wert bleibt eine echte Grenze).
  */
+
+import { UNLIMITED, unlimitedFromSentinel } from './model.js';
 
 /**
  * Eine einzelne eingestellte Kostengrenze: die Kostenart (per ID) und ihr
@@ -31,14 +43,18 @@
 /**
  * Baut aus der vollstaendigen Liste der eingestellten Kostengrenzen ein
  * unveraenderliches Budget-Wert-Objekt. Fehlt die Liste, ist das Budget leer —
- * verhaltensgleich zu einem Roster ohne Kostengrenzen.
+ * verhaltensgleich zu einem Roster ohne Kostengrenzen. Eine auf den Sentinel
+ * `-1` eingestellte (also unbegrenzte) Kostenart wird dabei ausgelassen — sie
+ * ist fuer beide Konsumenten schlicht nicht budgetiert (siehe Modulkopf).
  *
  * @param {CostLimit[]} [costLimits]  die Zuordnung Kostenart → Grenzwert je Kostenart.
  * @returns {RosterBudget}
  */
 export function createRosterBudget(costLimits = []) {
   const valueByCostTypeId = new Map(
-    costLimits.map(({ costTypeId, value }) => [costTypeId, value]),
+    costLimits
+      .filter(({ value }) => unlimitedFromSentinel(value) !== UNLIMITED)
+      .map(({ costTypeId, value }) => [costTypeId, value]),
   );
 
   return Object.freeze({
