@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0103
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/153
 ---
 
 # Doku-Abgleich nach dem Engine-Audit
@@ -128,3 +128,14 @@ Acceptance criteria:
   No version bump: docs only, nothing user-visible in the app.
 
 ## Retro
+
+- The "re-verify every audit claim before writing" instruction to the
+  implementer paid off directly: it caught the inexact §7.7 evidence before
+  it landed in a reference document.
+- Three review rounds for a docs change felt heavy but was right: rounds 1
+  and 2 each found something real in text that had no other check, and each
+  fix touched a criteria file, so the no-waiver rule applied. Convergence
+  2 → 1 → 0.
+- Follow-up candidates for the human: stale JSDoc `model.js:34-35` (old
+  §4.1 enum quote); §10 / ADR-0003 repeat the §7.5 rule without the new
+  caveat (currently consistent, but a cross-reference would harden it).
