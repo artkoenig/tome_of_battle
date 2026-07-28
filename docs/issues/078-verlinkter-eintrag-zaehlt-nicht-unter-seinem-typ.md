@@ -97,6 +97,23 @@ Acceptance criteria:
   `capabilities`→`authorMessages`, weil kein Katalog-Constraint ein `childId`
   trägt — die Rohtyp-Zählung lebt dort nur in Bedingungen. Alle Erwartungen
   aus `.gst`/`.cat` abgeleitet.
+- Implementierung fertig (Implementer-Bericht): `targetsOf` zählt
+  ENTRY_LINK-Knoten zusätzlich unter `def.resolved?.type` (JSDoc-Notiz des
+  alten Defekts ersetzt); `rosParser` bindet `entryLinkId || entryId`;
+  Testkatalog `docs/testkatalog-evaluator-e2e.md` um das neue Szenario
+  ergänzt (104 → 107 Fälle). Belege: Issue-Tests 4/4 exit 0; Runner 107
+  Fälle exit 0; `npm test` 209 Dateien / 2116 Tests + UI-E2E exit 0;
+  `npm run lint`, `npm run typecheck`, `npm run depcruise` je exit 0
+  (depcruise: 1 vorbestehende warn-only-Warnung im alten Solver).
+- Stopp-Regel griff nicht: kein bestehendes Szenario wurde durch die
+  Link-ID-Bindung rot; der Issue-76-Defekt blieb unsichtbar. Keine
+  bestehende Erwartung geändert — die AC-4-Begründungsliste ist leer.
+- Nebenfund (vorbestehend, nicht angefasst): im Testkatalog fehlen die
+  per-Szenario-Sektionen zu `violation-classification` und
+  `author-message-tokens`, obwohl beide in der Übersicht stehen.
+- Tracker-Pflege: Issue 076 (zweite Fundstelle) auf den neuen
+  rosParser-Stand nachgezogen — die Adapter-Seite ist durch diesen Schnitt
+  behoben, offen bleibt dort die Engine-Seite.
 
 ## Checkpoints
 

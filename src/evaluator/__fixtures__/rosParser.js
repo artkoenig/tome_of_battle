@@ -3,9 +3,12 @@
  * `{ forces: [{ defId, count, children }] }`, den die Fassade `evaluate` erwartet.
  *
  * Die Uebersetzung ist rein strukturell (Black-Box): jede `<selection>` wird ueber
- * ihre `entryId` zur Definitions-Id, `number` zur Anzahl (Default 1), und ihre
- * verschachtelten `<selections>` werden rekursiv zu Kindern. Kein Evaluator-Wissen
- * fliesst ein — genau die Naht, die ein Black-Box-Testautor braucht.
+ * `entryLinkId || entryId` zur Definitions-Id — Battlescribe schreibt bei einer
+ * ueber einen `<entryLink>` gesetzten Auswahl `entryId` = Ziel-ID **und**
+ * `entryLinkId` = eigene ID des Links; die Link-ID ist dann die gesetzte
+ * Definition. `number` wird zur Anzahl (Default 1), und die verschachtelten
+ * `<selections>` werden rekursiv zu Kindern. Kein Evaluator-Wissen fliesst ein —
+ * genau die Naht, die ein Black-Box-Testautor braucht.
  *
  * Ausgelagert aus den handgeschriebenen `e2e.*.ros.test.js`, damit der
  * generalisierte, manifest-getriebene Runner (`e2e.testcatalog.test.js`) dieselbe
@@ -32,7 +35,7 @@ function childSelections(element) {
     for (const selection of [...child.children]) {
       if (selection.tagName !== 'selection') continue;
       out.push({
-        defId: selection.getAttribute('entryId'),
+        defId: selection.getAttribute('entryLinkId') || selection.getAttribute('entryId'),
         count: Number(selection.getAttribute('number') || '1'),
         children: childSelections(selection),
       });

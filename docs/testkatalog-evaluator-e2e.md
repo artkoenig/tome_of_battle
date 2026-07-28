@@ -102,7 +102,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`info-projection`](testing/info-projection/) | Definitive VC + Mercenaries | 4 |
 | [`violation-classification`](testing/violation-classification/) | Definitive Ogre + Mercenaries | 7 |
 | [`author-message-tokens`](testing/author-message-tokens/) | Definitive Ogre + Mercenaries | 3 |
-| **Summe** | | **104** |
+| [`entrylink-raw-type-counting`](testing/entrylink-raw-type-counting/) | Definitive VC + Mercenaries | 3 |
+| **Summe** | | **107** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -437,3 +438,19 @@ meint, also die Grundeinstellung des Katalogs, überschrieben von einer Bedingun
 > seiner eigenen Kennung noch unter der der Gruppe) und dass der Modell-
 > Auswahlpunkt keines der Elemente seiner Einheit führt, weil die Vererbung nur
 > nach oben läuft.
+
+## `entrylink-raw-type-counting`
+
+Prüft, dass eine über einen **Verweis** (`entryLink`) in die Armee gesetzte
+Einheit unter dem **rohen Typ ihres Ziels** (`unit`, `model`, …) genauso zählt
+wie dieselbe Einheit direkt gesetzt. Beobachtet wird das an den
+„Border Patrols"-Regeln der Vampire Counts: die Armee muss aus mindestens 2 und
+höchstens 4 **Einheiten** bestehen, sonst liegt am Slot „Border Patrols rules"
+eine Autor-Meldung an. Die Söldner-Einheit „Ogre Bulls" gelangt nur über einen
+Verweis in die Armee.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Border-Patrols-Armee mit **2 direkten** Skeletons-Einheiten (je 10 Modelle) | Keine Autor-Meldung am Slot „Border Patrols rules" — die direkte Grundlinie |
+| 02 | 1 direkte Skeletons-Einheit + **Ogre Bulls über den Verweis** | Ebenfalls keine Meldung: die verlinkte Einheit zählt als 2. Einheit — identisch zur direkten Form |
+| 03 | 4 direkte Skeletons-Einheiten + **Ogre Bulls über den Verweis** als fünfte | Die Obergrenze kippt **nur**, wenn die verlinkte Einheit mitzählt: genau eine Meldung „mindestens ZWEI, höchstens VIER Einheiten" |
