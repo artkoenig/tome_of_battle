@@ -108,6 +108,34 @@ Acceptance criteria:
 
 ## Log
 
+- **2026-07-28, Ursachenanalyse aus dem Engine-Audit** (Intensiv-Prüfung der
+  Reinraum-Engine gegen die BSData-Doku, mit ausgeführten Repros gegen die
+  echte Fassade). Die beiden Fälle haben **zwei verschiedene Ursachen**:
+  - **`76e2c1c8` (Gruppe „Magic Armour", `scope="parent"`):** Die Gruppe
+    erreicht ihre Träger über einen `entryLink type="selectionEntryGroup"`.
+    `groupDefinitionsWithLimits` (`src/evaluator/evalTree.js:369`) steigt beim
+    Einsammeln aber nur in Kinder mit `kind === GROUP` ab und überspringt
+    einen Link, dessen aufgelöstes Ziel eine Gruppe ist. Folge: für verlinkte
+    Gruppen entsteht **kein Gruppen-Anker und keine Member-Annotation** —
+    `max` feuert nie, und ein `min` einer verlinkten Pflichtgruppe feuert
+    stets mit „Ist 0", auch wenn ein Member gewählt ist (beide Richtungen im
+    Audit per Minimal-Katalog reproduziert; Inline-Gruppe als Kontrolle
+    feuert korrekt).
+  - **`0aa08f91` (Zieleintrag, `scope="roster"`):** Die im Intent verworfene
+    Flag-Erklärung war nur in ihrer pauschalen Form falsch. Die Eimer-Zuteilung
+    ist **relativ zum Rahmen** (`indexNodeContribution`,
+    `src/evaluator/countIndex.js:149`): liegt zwischen Beitragendem und Rahmen
+    ein Selektionsknoten, landet der Beitrag im SELECTION-Eimer, den
+    `includeChildSelections="false"` ausschließt. Die unter Charakteren
+    geschachtelten Gegenstände sind für den `parent`-Rahmen direkte Kinder
+    (BASE-Eimer → `f25f23c2` feuert), für den `roster`-Rahmen aber
+    geschachtelt (SELECTION-Eimer → `0aa08f91` liest 0). Das erklärt genau
+    die Beobachtungstabelle im Intent. Laut der im Intent zitierten
+    Wiki-Semantik („shared=true: Summe **aller** Vorkommen im Roster";
+    unangekreuzt zählt „just `scope`'s `field`", nicht „nichts") zählt die
+    Referenz solche Vorkommen dennoch — die wörtliche Eimer-Lesart der Engine
+    weicht hier vom Referenzverhalten ab.
+
 ## Checkpoints
 
 ### Before implementation
