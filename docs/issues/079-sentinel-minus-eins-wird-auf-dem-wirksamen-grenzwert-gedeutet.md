@@ -69,6 +69,8 @@ Acceptance criteria:
   rechnerisch ins Negative" ist in den echten Katalogen nicht
   instanziiert und kann vom Black-Box-Autor daher nicht als Szenario
   belegt werden; ihn decken Unit-Tests ab.
+- **Version (Antwort des Menschen, 2026-07-28):** kein Bump — der PR geht
+  mit 1.9.0 raus; Vorschlag 1.9.1 abgelehnt.
 
 ## Log
 
@@ -154,6 +156,19 @@ Acceptance criteria:
   negativem Faktor (vorher `-Infinity`). `catalogReader.js:247` §7.5 →
   §7.6. Exit-Codes: Sentinel-Tests 18/18 Exit 0, `npx vitest run
   src/evaluator` 532 Tests Exit 0, lint 0, typecheck 0.
+- Review Runde 2 (frischer Kontext, ganzer Intent): **0 Befunde**, alle 5
+  Kriterien erfüllt. Eigene Exit-Codes: `npm test` 2143 Tests + Puppeteer
+  Exit 0; lint/typecheck/depcruise Exit 0; knip Exit 1 vorbestehend, ohne
+  Bezug zum Diff. Mutationsproben: Prozent-Frühausstieg raus → 1/18 rot,
+  `limitArithmetic`-Guard raus → 2/18 rot — beide Runde-1-Pins greifen.
+  Szenario-Erwartungen gegen die .cat-Fixtures verifiziert. Trend: 3 → 0.
+- Notiz Runde 2 (kein Befund, für den Cutover Issue 75): eine gefeuerte,
+  ursprünglich unbegrenzte Grenze trägt `derivation.base = Infinity`;
+  `JSON.stringify(Infinity)` → `null` wird erst relevant, wenn der Bericht
+  serialisiert/angezeigt wird.
+- Notiz Runde 2, vorbestehend und außerhalb dieses Intents: Roster-seitiges
+  `costLimit value="-1"` wird in `budget.js` nicht als Sentinel gedeutet →
+  als eigenes Issue 085 gefiled.
 
 ## Checkpoints
 
@@ -175,8 +190,20 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Ja. Alle 5 Kriterien von der Review in
+  frischem Kontext bestätigt; die Präzisierung von Kriterium 2
+  („hingeschriebener Wert" statt nur Katalog-Rohwert) ist in Decisions
+  begründet und im Format-Dokument §7.6 belegt.
+- What surprised me? `Infinity * 0 = NaN` — die IEEE-Arithmetik trug die
+  „unbegrenzt bleibt unbegrenzt"-Decision für increment/decrement von
+  selbst, für multiply nicht; daraus wurde der benannte
+  `limitArithmetic`-Kurzschluss. Außerdem druckt der vitest-Reporter nur
+  die langsamsten Tests — der erste Grep nach dem neuen Szenario im
+  Suite-Output war deshalb irreführend leer.
+- What am I assuming without having verified it? Dass die
+  BattleScribe-Referenz-App errechnet-negative Grenzen genauso deutet wie
+  wir (nicht verifiziert; unsere Deutung folgt dem Issue-Intent und den
+  Daten). Dass `derivation.base = Infinity` beim Cutover sauber
+  serialisiert wird — als Notiz im Log an Issue 75 übergeben.
 
 ## Retro
