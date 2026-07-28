@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-0097
 pr:
 ---
 
@@ -47,9 +47,21 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — make the two silent failure modes
+  (parsererror document, wrong root tag) loud via the existing diagnostics
+  channel, and ensure the facade surfaces them instead of evaluating a
+  part-empty dataset.
+- What surprised me? Nothing yet; the engine already has a diagnostics
+  convention (`diagnostics: []` on the catalog, coherence checks in
+  `datasetPreparation.js`) to slot into.
+- What am I assuming without having verified it? That `DOMParser` in both
+  jsdom (tests) and real browsers signals malformed XML via a
+  `<parsererror>` document, and that "die Diagnose erreicht den Bericht"
+  can reuse the existing diagnostic propagation path without a new report
+  field. Criterion 3 leaves open whether evaluation proceeds partially or
+  not at all — the test-author should flag this edge if the criteria do not
+  decide it; default: evaluation may proceed, but the diagnostic must be
+  present in the report output.
 
 ### Before the PR
 
