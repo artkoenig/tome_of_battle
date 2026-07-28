@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/metis-installieren-3kgqdl
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/148
 ---
 
 # Pflichtgrenze am entryLink zählt ihre eigene Auswahl nicht
@@ -419,3 +419,69 @@ Acceptance criteria:
   diesem Korpus jede Link-Id auflöst.
 
 ## Retro
+
+**Was im Weg stand.**
+
+- *Die erste Review-Runde übersah eine Regression, die der eigene Fix
+  einbaute.* Erst Runde 2 fand sie. Beide Runden bekamen dieselbe Aufgabe;
+  der Unterschied war, dass Runde 2 ausdrücklich gebeten wurde zu fragen,
+  „was könnte diese Änderung sonst brechen". Ohne diesen Satz prüft ein
+  Reviewer die Kriterien und nicht die Nebenwirkungen.
+- *Runde 3 fand vier sachliche Fehler in meiner eigenen Aufzeichnung* — eine
+  erfundene Historie, eine widerlegte Ursachenbehauptung, ein veralteter
+  Checkpoint, eine übertriebene Zähne-Aussage. Der Code war zu dem Zeitpunkt
+  in Ordnung; das Protokoll war es nicht. Aufzeichnung ist genauso
+  prüfbedürftig wie Code, und niemand prüft sie, wenn der Reviewer nicht
+  ausdrücklich dazu aufgefordert wird.
+- *Ich habe ein zweites Dokument angelegt, wo eines existierte.* Der Mensch
+  musste darauf hinweisen. `battlescribe-data-format.md` beansprucht in
+  seinem eigenen Kopf genau den Zweck, für den ich eine neue Datei anlegte.
+  Ein Blick in die ersten zwanzig Zeilen hätte gereicht.
+- *Der erste Lauf des `e2e-testcase-author` lieferte nichts und meldete
+  nichts.* Er wurde durch einen Abbruch mitgestoppt; der zweite Lauf,
+  derselbe Auftrag plus zwei konkrete Hinweise („kopiere die Struktur aus
+  Roster X", „der Runner liest nur diese vier Dinge"), lieferte in einem
+  Durchgang vier Roster. Der Black-Box-Auftrag sollte von Anfang an ein
+  Struktur-Vorbild nennen — das verrät nichts über die Engine.
+- *Die Wartezeiten waren für den Menschen undurchsichtig.* Eine Review-Runde
+  dauert 15–30 Minuten, weil der Reviewer Suite, Statik und einen
+  Vergleichs-Worktree selbst laufen lässt. Der Mensch fragte zweimal nach.
+  Das gehört vorher gesagt, nicht auf Nachfrage.
+
+**Was sich ändern sollte — Vorschläge für `metis`.**
+
+1. **Der Reviewer-Auftrag braucht zwei feste Fragen**, die heute vom Zufall
+   des Prompts abhängen: „Was könnte diese Änderung außerhalb ihrer Kriterien
+   brechen?" und „Stimmt die Aufzeichnung im Issue mit dem Diff überein?" In
+   diesem Lauf brachte die erste Frage die Regression und die zweite vier
+   Fehler ans Licht — beide nur, weil ich sie zufällig ab Runde 2 stellte.
+   Sie gehören in die Definition des `reviewer`-Agenten, nicht in den
+   jeweiligen Aufruf.
+2. **Die Sprachregel misfired.** Der Regelsatz verlangt, dass alles
+   Eingecheckte englisch ist. Dieses Projekt führt seine gesamte
+   Dokumentation und alle Issues auf Deutsch. Ich bin bei Deutsch geblieben,
+   weil eine einzelne englische Datei den Bestand inkonsistent macht — und
+   habe damit gegen die Regel entschieden. Vorschlag: Die Regel sollte für
+   Commit-Messages und Pull Requests gelten (dort habe ich sie eingehalten)
+   und für Projekt-Dokumentation der Sprache des Bestands folgen.
+3. **Issue-Nummerierung widersprüchlich.** Die Seite des `issue`-Skills
+   verlangt `NNNN-slug.md` (vier Stellen), die `CLAUDE.md` dieses Projekts und
+   alle 80+ bestehenden Dateien verwenden drei. Eines von beiden ist falsch.
+4. **Ein Kriterium mitten im Lauf zu ergänzen ist heute unbeschrieben.** Als
+   die Regression auftauchte, brauchte der Schnitt ein fünftes
+   Akzeptanzkriterium. Invariante 1 sagt „Kriterien vor dem Code" und
+   schweigt zu dem Fall, dass der Code selbst ein neues Kriterium erzeugt. Ich
+   habe es ergänzt und als Nachtrag markiert; eine Zeile im Regelsatz, dass
+   das der richtige Umgang ist, würde die nächste Session nicht raten lassen.
+
+**Was gut lief.** Die Sonde über alle Roster vor der Umsetzung — Verletzungen,
+Diagnosen und Slotzahl im Vergleich — hat jeden späteren Zweifel in Sekunden
+beantwortet und die Reviewer haben ihre Zahlen exakt reproduziert. Dieselbe
+Sonde hat die Regression sichtbar gemacht, sobald der zweite Fix kam. Der
+Aufwand von zehn Minuten hat sich mehrfach zurückgezahlt.
+
+**Nachlauf.** Der Branch trägt einen fremden Namen
+(`claude/metis-installieren-3kgqdl`, aus einer verworfenen Aufgabe), weil die
+Cloud-Session fest darauf verdrahtet ist. Ein Issue = ein Branch = ein PR gilt
+weiterhin; nur die Benennung passt nicht. Kein Handlungsbedarf, aber für den,
+der die Historie später liest, hier vermerkt.
