@@ -60,6 +60,17 @@ Acceptance criteria:
   is a wrong root tag. No `DiagnosticKind` value pinned (criteria name
   none); only truthy `kind` asserted. Broken-`.gst` test built so
   `GAMESYSTEM_MISMATCH` cannot mask the new diagnostic.
+- 2026-07-28 implementer: `DiagnosticKind.UNREADABLE_CATALOGUE` +
+  `CatalogueUnreadableReason` (MALFORMED_XML/UNEXPECTED_ROOT) in `model.js`,
+  following the one-kind-with-reasons precedent; `parseCatalogue(xml,
+  { sourceName })` detects parsererror document and wrong root, returns the
+  full catalogue shape with one diagnostic `{ reason, sourceName, rootTag }`;
+  facade passes role-derived names (`gameSystem`, `catalogue[<i>]`) — which
+  also fixed the latent `catalogues.map(parseCatalogue)` index-as-options
+  hazard. Criterion 3 came free: mergeCatalogues → prepareDataset →
+  evaluate/buildDatasetDescription already propagate diagnostics.
+  §3.6 diagnostic list updated. 14/14 target tests green; `npx vitest run`
+  211 files / 2157 tests exit 0; puppeteer E2E exit 0; lint/typecheck 0.
 
 ## Checkpoints
 

@@ -497,6 +497,28 @@ export const DiagnosticKind = Object.freeze({
   // Feld traegt einen Scope ungleich `roster` ({@link BudgetLimitUnresolvedReason}).
   // Sichtbar gemacht statt still als Wert 0 angenommen (Main-Issue 70, `design.md`).
   UNRESOLVED_BUDGET_LIMIT: 'unresolvedBudgetLimit',
+  // Eine Katalogquelle (`.cat`/`.gst`) ist als Katalog nicht lesbar: das XML ist
+  // nicht wohlgeformt (`DOMParser` liefert ein `parsererror`-Dokument) oder die
+  // Wurzel ist weder `catalogue` noch `gameSystem` (z. B. eine versehentlich
+  // uebergebene `.ros`). Frueher wurde so eine Datei still zum leeren, ID-losen
+  // Katalog; jetzt traegt sie diese Diagnose statt `diagnostics: []` (Issue 0097,
+  // „Fehlerpfade sind explizit; nichts wird still verschluckt", §4). Die beiden
+  // Ursachen unterscheidet {@link CatalogueUnreadableReason}.
+  UNREADABLE_CATALOGUE: 'unreadableCatalogue',
+});
+
+/**
+ * Grund, aus dem eine Katalogquelle unlesbar ist — zwei distinkte Ursachen unter
+ * derselben Diagnose {@link DiagnosticKind.UNREADABLE_CATALOGUE}, damit ein
+ * Berichts-Leser sie trennen kann (analog {@link BudgetLimitUnresolvedReason}).
+ */
+export const CatalogueUnreadableReason = Object.freeze({
+  // Das XML ist nicht wohlgeformt (unverschlossener Tag, abgeschnittener
+  // Download, leere Eingabe): `DOMParser` liefert ein `parsererror`-Dokument.
+  MALFORMED_XML: 'malformedXml',
+  // Wohlgeformtes XML, aber die Wurzel ist weder `catalogue` noch `gameSystem` —
+  // etwa eine versehentlich als Katalog uebergebene `.ros` (`<roster>`).
+  UNEXPECTED_ROOT: 'unexpectedRoot',
 });
 
 /**

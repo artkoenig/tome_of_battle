@@ -133,8 +133,14 @@ export class PreparedDataset {
 export function prepareDataset(dataset) {
   const { gameSystem, catalogues = [] } = dataset;
 
-  const gameSystemDocument = gameSystem !== undefined ? parseCatalogue(gameSystem) : null;
-  const catalogueDocuments = catalogues.map(parseCatalogue);
+  // Die Fassade kennt keine Dateinamen (der Datensatz-Vertrag traegt nackte
+  // XML-Strings); als Quellname fuer die Lese-Diagnosen dient deshalb die Rolle
+  // im Datensatz: `gameSystem` bzw. `catalogue[<index>]` in Aufruf-Reihenfolge.
+  const gameSystemDocument = gameSystem !== undefined
+    ? parseCatalogue(gameSystem, { sourceName: 'gameSystem' })
+    : null;
+  const catalogueDocuments = catalogues.map((catalogueXml, index) =>
+    parseCatalogue(catalogueXml, { sourceName: `catalogue[${index}]` }));
   const documents = gameSystemDocument !== null
     ? [gameSystemDocument, ...catalogueDocuments]
     : catalogueDocuments;
