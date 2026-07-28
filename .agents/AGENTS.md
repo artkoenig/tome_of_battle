@@ -34,14 +34,21 @@ node scripts/measure-evaluator-browser.js  # dieselbe Messung im echten Browser 
 ## Agent skills
 
 ### Issue tracker
-This project tracks work as local markdown issues under `docs/issues/`, managed
-through the `issue-tracker` skill. Everything is an *issue*: a directory
-`NN-<slug>/` with an `issue.md`; features are issues with child issues nested
-inside them. Do not edit issue files by hand — use the `issue-tracker` skill so
-status transitions stay valid.
+This project runs the [Metis](https://github.com/artkoenig/metis) workflow. Work
+is tracked as local markdown issues under `docs/issues/`, one file per issue,
+named `NNN-<slug>.md` and shaped by `docs/issues/TEMPLATE.md`. The frontmatter
+carries the facts — `status` (`backlog | active | waiting | done`), `branch`,
+`pr` — and the filled sections are the progress. One issue = one branch = one
+pull request; there are no child issues, and a change too big to land whole
+gets a task list inside its own file.
 
-See `docs/agents/issue-tracker.md` for the state model and the workflow for
-implementing tracked issues.
+The rulebook itself arrives as `~/.claude/CLAUDE.md`, installed by the
+SessionStart hook in `.claude/hooks/`. There is no tracker script and no skill
+guarding status transitions — edit the file.
+
+Everything resolved before the switch stays in the predecessor's form:
+directories `NN-<slug>/issue.md` with a `Status:` line. Those are history —
+read them for context, never revive one.
 
 ### E2E test cases for the evaluator
 When the maintainer asks to create an E2E test case for the Reinraum evaluator
@@ -56,18 +63,18 @@ See `docs/agents/e2e-testcase-author.md` for the role, the read allow-list, the
 manifest contract, and the boundary to the runner; the architecture decision is
 [ADR 0033](docs/adr/0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md).
 
-## Version bump after merging a feature/fix main-issue
-Before a main-issue of `Type: feature` or `Type: fix` is merged, propose a
-version bump — never for `refactor`/`chore`, which have no user-facing
-release reason:
+## Version bump before merging an issue
+Before an issue that changes what a user can see — a fix or a new feature — is
+merged, propose a version bump. Never for pure refactoring or chores; they have
+no user-facing release reason:
 
-1. Read the current version from `package.json` on the `issue/<slug>` branch.
-2. Suggest the next version: patch bump for `fix`, minor bump for `feature`
+1. Read the current version from `package.json` on the issue's branch.
+2. Suggest the next version: patch bump for a fix, minor bump for a feature
    (`node scripts/release.js patch` / `minor` computes this).
 3. Ask the user to confirm the suggestion, supply their own version, or leave
    the version unchanged.
 4. If confirmed: run `node scripts/release.js <patch|minor|X.Y.Z>` to update
-   `package.json`, then commit it on the `issue/<slug>` branch, before
+   `package.json`, then commit it on the issue's branch, before
    pushing and opening (or updating) the PR. The squash-merge then carries the
    version bump into `main` together with the rest of the change, in the same
    commit — no separate commit or push to `main` is ever needed for this.
