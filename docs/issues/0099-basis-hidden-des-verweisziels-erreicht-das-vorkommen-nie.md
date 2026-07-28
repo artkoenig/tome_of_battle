@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0099
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/156
 ---
 
 # Basis-`hidden` des Verweisziels erreicht das Vorkommen nie
@@ -130,3 +130,13 @@ Acceptance criteria:
   (see Decisions). No version bump: evaluator not wired to the UI.
 
 ## Retro
+
+- The dual-carrier seam (tri-state beside the boolean) was the right call:
+  zero consumer churn, and the naive-OR trap the test-author explicitly
+  guarded against never had a chance.
+- The reviewer surfacing the `hidden="0"` lexical edge shows the value of
+  fresh-context rounds even on a green diff — and the dismiss-with-reference
+  triage kept this run from bleeding into 0102's territory.
+- Sentinel lesson recorded for future readers: `toEqual` ignores
+  undefined-valued properties but not null — `undefined` is the safe
+  "absent" sentinel where exact-shape pins exist.
