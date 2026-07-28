@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, SUSPENDED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
+import { ConstraintKind, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
 import { allNodes, limitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -36,6 +36,12 @@ const PERCENT_DIVISOR = 100;
  */
 function resolveBound(limit, node, effective, ctx) {
   const raw = effective.limitValue(node, limit.id) ?? limit.value;
+  // Eine unbegrenzte Grenze (hingeschriebener Sentinel, beim Lesen bzw. im
+  // `set`-Handler auf UNLIMITED gedeutet — Issue 079) braucht keinen Nenner:
+  // auch als Prozentgrenze ist „unbegrenzt" unbegrenzt, unabhaengig vom
+  // Bezugsrahmen. Deshalb vor der Nenner-Ableitung, sonst suspendierte ein
+  // leerer Rahmen (Nenner 0) eine Grenze, die gar nichts begrenzt.
+  if (raw === UNLIMITED) return UNLIMITED;
   if (!limit.isPercent) return raw;
   const denominator = query(ctx, limit.field, limit.scope, null, limit.flags);
   // Unaufloesbares Budget-Feld als Nenner (Diagnose aus `query`): die Grenze wird
@@ -57,10 +63,13 @@ function resolveBound(limit, node, effective, ctx) {
 function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
   if (bound === SUSPENDED) return null;
-  
-  // Battlescribe uses -1 to represent an "unlimited" bound (no limit). 
-  // An unlimited bound never fires and does not restrict headroom.
-  if (bound === -1) return null;
+
+  // Eine unbegrenzte Grenze feuert nie und beschraenkt keinen Restspielraum —
+  // sie liefert kein Ergebnis. Ob sie unbegrenzt ist, wurde am hingeschriebenen
+  // Wert entschieden (Katalog-Leser bzw. `set`-Handler, Issue 079); ein per
+  // increment/decrement/multiply **errechneter** negativer Grenzwert ist nie
+  // unbegrenzt und wird hier ganz normal verglichen („nichts erlaubt").
+  if (bound === UNLIMITED) return null;
 
   // Gezaehlt wird die **aufgeloeste Ziel-Id**, wenn der Anker ein Verweis ist —
   // fuer `entryLink` genauso wie fuer `categoryLink`. Verschiedene Verweise

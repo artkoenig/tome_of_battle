@@ -106,6 +106,32 @@ Acceptance criteria:
   rules") — feuert ohne Bedingung bei Zählung 1, schweigt mit Bedingung
   bei Zählung 2. Erwartungen selektiv; hidden-Mechanik und Autor-Meldung
   bewusst außerhalb der Assertions (README UMT-R5).
+- Implementer: Sentinel-Deutung an genau einer Stelle —
+  `model.js` führt `UNLIMITED_SENTINEL = -1` (modul-privat, einziges
+  Literal), exportiert `UNLIMITED = Infinity` und `unlimitedFromSentinel()`.
+  `catalogReader.js` deutet Constraint-Rohwert und `defaultCostLimit`
+  darüber (`NO_DEFAULT_COST_LIMIT` entfernt, Cost-Types weiter → `null`);
+  `modifiers.js` deutet den hingeschriebenen `set`-Wert auf Grenzen;
+  increment/decrement/multiply rechnen auf `Infinity` von selbst
+  unbegrenzt weiter. `constraints.js` prüft `bound === UNLIMITED` mit
+  Frühausstieg vor der Prozent-Ableitung. Format-Dokument §7.6 trägt die
+  belegte Semantik, §15-Lücke verweist dorthin. Repräsentation `Infinity`
+  statt `null`/Symbol: kollidiert nicht mit dem `??`-Fallback und braucht
+  keine Arithmetik-Sonderfälle. Bewusste kleine Verhaltensänderung: eine
+  unbegrenzte Prozentgrenze mit leerem Bezugsrahmen erzeugt keine
+  `ZERO_DENOMINATOR`-Diagnose mehr.
+- Exit-Codes (Implementer, von der Session bestätigt):
+  `npx vitest run src/evaluator/constraints.unlimitedSentinel.test.js`
+  14/14 grün, Exit 0. `npm test` komplett (2139 vitest-Tests, 210 Dateien
+  + Puppeteer-E2E) Exit 0. `npm run lint` 0, `npm run typecheck` 0,
+  `npm run depcruise` 0 (1 vorbestehende warn-only-Meldung). `npm run
+  knip` Exit 1 vorbestehend (per `git stash` gegen den unveränderten Baum
+  verifiziert; kein Befund nennt neue Exporte). Grep-Nachweis Kriterium 4:
+  einziges `-1`-Sentinel-Literal in `model.js`; `effectiveState.js:302`
+  ist ein Sort-Komparator.
+- Session-Check: der Manifest-Runner (`e2e.testcatalog.test.js`) entdeckt
+  das neue Szenario automatisch; `npx vitest run … -t
+  "unlimited-modifier-toggle"` → 5 passed, Exit 0.
 
 ## Checkpoints
 

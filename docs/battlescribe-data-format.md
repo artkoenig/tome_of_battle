@@ -623,7 +623,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 | `type` | `min` \| `max` | Untere oder obere Grenze. |
 | `field` | `selections` \| `forces` \| *`<costTypeId>`* | Was gezählt/summiert wird: Anzahl Auswahlen, Anzahl Forces oder die Summe einer Kostenart. |
 | `scope` | `parent` \| `roster` \| `force` \| `category` \| `self` | Bezugsrahmen der Zählung. |
-| `value` | Zahl | Der Grenzwert (`-1.0` = unbegrenzt). |
+| `value` | Zahl | Der Grenzwert (`-1.0` = unbegrenzt, siehe den Sentinel-Kasten unten). |
 | `percentValue` | `true`/`false` | Ob `value` als Prozentsatz zu interpretieren ist. |
 | `shared` | `true`/`false` | Ob der gezählte Wert über alle Link-Instanzen geteilt wird oder pro Instanz gilt. `true`: die Summe umfasst **alle** Auswahlen dieses shared entry im Roster; `false`: sie wird **je Verweis-Instanz** gerechnet ([BSData-Wiki, *Data structure overview*](https://github.com/BSData/catalogue-development/wiki/Data-structure-overview)). |
 | `includeChildSelections` | `true`/`false` | Ob verschachtelte Auswahlen mitgezählt werden. `false` zählt *„just `scope`'s `field`"* — also eingeschränkt, **nicht** leer. |
@@ -661,6 +661,17 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 >   (Ziel-Typ-Regel, [§7.7](#77-modifier-condition-condition-group-repeat) / ADR 0029).
 > - Die `id` eines `constraint`s ist wichtig: **Modifier adressieren einen Constraint über dessen `id`**,
 >   um dessen `value` dynamisch zu ändern (siehe nächster Abschnitt).
+
+> **Sentinel `-1` = „unbegrenzt" — nur als hingeschriebener Wert.** Upstream ist der Sentinel
+> nirgends dokumentiert ([§15](#15-lücken-der-quelle)); aus den Daten belegt und in Issue 079
+> entschieden gilt: `-1` bedeutet „unbegrenzt" genau dort, wo er **hingeschrieben** steht — am
+> `value` eines `constraint`s, am `value` eines `set`-Modifiers auf einen Constraint und an
+> `defaultCostLimit` ([§5.3](#53-cost-types-kostenarten)). Reale Kataloge nutzen beide Richtungen:
+> `set value="-1"` hebt eine konkrete Grenze auf, und ein Rohwert `-1` wird per bedingtem `set`
+> auf einen konkreten Deckel gezogen (Border-Patrols-Muster). Ein **errechneter** negativer Wert
+> (`increment`/`decrement`/`multiply`) ist dagegen **nie** unbegrenzt — ein Max, das rechnerisch
+> auf `-1` fällt, heißt „nichts erlaubt", nicht „alles erlaubt". Arithmetik auf einer unbegrenzten
+> Grenze lässt sie unbegrenzt; ein späterer `set` auf einen konkreten Wert überschreibt.
 
 ### 7.7 Modifier, Condition, Condition Group, Repeat
 
@@ -1210,7 +1221,7 @@ Lücken, die uns bisher konkret getroffen haben:
 | **Grenze am Verweis oder am Ziel** | Belegt ist nur, dass ein `entryLink` eigene `constraint`s tragen darf und dass ein Modifier am Link dessen Grenzwerte ändert. Ob eine am Link deklarierte Grenze *für den Link* oder *für das Ziel* gilt, steht nirgends. | Issue 076 |
 | **`scope="primary-catalogue"`** | Die Aufzählung kennt `parent\|roster\|force\|primary category` und Vorfahren-Ids — `primary-catalogue` kommt nicht vor, obwohl reale Kataloge es verwenden. | Issue 077 |
 | **`type` am `entryLink`** | Dass ein `selectionEntry` ein `type` (`unit\|model\|upgrade`) trägt, ist dokumentiert. Ob ein Verweis den Typ seines Ziels erbt, nicht. | Issue 078 |
-| **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | Issue 079 |
+| **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | [§7.6](#76-constraint) dieses Dokuments beschreibt die in Issue 079 aus den Daten belegte Semantik: `-1` = unbegrenzt nur als **hingeschriebener** Wert (Constraint-`value`, `set`-Modifierwert auf eine Grenze, `defaultCostLimit`); errechnete negative Werte sind kein Sentinel. |
 | **Modifier-Typen `add`/`remove`** | Das Wiki kennt nur `Increment\|Decrement\|Set\|Append`. Reale Kataloge verwenden `add`/`remove` für Kategoriezugehörigkeit und `multiply`, `prepend`, `set-primary`/`unset-primary`. | §7.7 dieses Dokuments beschreibt sie aus den Daten, nicht aus der Quelle |
 
 Die Seite trägt am Ende selbst den Hinweis `TODO: Update to 2.02` — sie beschreibt einen

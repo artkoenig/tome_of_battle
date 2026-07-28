@@ -61,6 +61,7 @@ import {
   ModifierTargetKind,
   DiagnosticKind,
   UNRESOLVED_BUDGET,
+  unlimitedFromSentinel,
   diagnostic,
 } from './model.js';
 import { allNodes, infoCarriersOf } from './evalTree.js';
@@ -337,6 +338,13 @@ function categoryHandler(mutate) {
 }
 
 const setValue = (current, operand) => operand;
+// Der Wert eines `set` auf eine **Grenze** ist ein hingeschriebener Katalogwert:
+// nur dort (und am Roh-`value` einer Grenze, Katalog-Leser) gilt der
+// Sentinel „unbegrenzt" (Issue 079). Errechnete Werte der uebrigen Arten
+// (increment/decrement/multiply) werden nie gedeutet — sie rechnen auf einer
+// unbegrenzten Grenze (`UNLIMITED = Infinity`) von selbst unbegrenzt weiter,
+// und ein rechnerisch negatives Ergebnis bleibt eine gewoehnliche Zahl.
+const setLimitValue = (current, operand) => unlimitedFromSentinel(operand);
 const addValue = (current, operand, times) => current + operand * times;
 const subtractValue = (current, operand, times) => current - operand * times;
 const multiplyValue = (current, operand, times) => current * operand ** times;
@@ -370,7 +378,7 @@ const unsetPrimaryCategory = categoryHandler(() => {});
 export const MODIFIER_HANDLERS = Object.freeze({
   [ModifierKind.SET]: Object.freeze({
     [ModifierTargetKind.COST]: numericHandler(setValue, COST_ACCESS),
-    [ModifierTargetKind.LIMIT]: numericHandler(setValue, LIMIT_ACCESS),
+    [ModifierTargetKind.LIMIT]: numericHandler(setLimitValue, LIMIT_ACCESS),
     [ModifierTargetKind.HIDDEN]: hiddenHandler,
     [ModifierTargetKind.NAME]: textSetHandler(NAME_ACCESS),
     [ModifierTargetKind.CHARACTERISTIC]: textSetHandler(CHARACTERISTIC_ACCESS),
