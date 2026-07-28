@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-0096
 pr:
 ---
 
@@ -49,9 +49,17 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — mirror the reader's existing
+  `-1 → null` sentinel mapping (`catalogReader.js:809`) onto the roster path
+  so the budget rule and `limit::` queries see "no limit" instead of −1.
+- What surprised me? Nothing yet; the catalog side already solved the same
+  problem, so the target semantics ("unbudgeted cost type", fail-closed
+  `limit::` path) exist and are tested.
+- What am I assuming without having verified it? That mapping −1 (and any
+  negative value) to null at the roster boundary (`rosterBudget.js`) is the
+  single right seam — and that no existing fixture `.ros` relies on a
+  negative limit being enforced. The test-author and implementer must check
+  `budget.js`, `query.js` and `rosParser.js` call paths for a second seam.
 
 ### Before the PR
 
