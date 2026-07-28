@@ -503,12 +503,21 @@ function readModifierGroups(element, diagnostics) {
  * Modifikatoren und Modifikatorgruppen. Die eine Lesestelle haelt sie
  * deckungsgleich — insbesondere traegt damit auch ein Profil oder ein Info-Verweis
  * seine Modifikatoren, die die Engine bisher gar nicht kannte (Issue 75/04).
+ *
+ * Das `hidden`-Kennzeichen wird **zweifach** gefuehrt: `isHidden` ist der
+ * konkrete Basiswert mit XSD-Vorgabe (fehlend → sichtbar) fuer alle Leser, die
+ * einen Boolean erwarten; `hiddenAttribute` bewahrt den **Rohzustand** des
+ * XML-Attributs (`true`/`false`/`undefined` = nicht gesetzt). Nur mit dieser
+ * Unterscheidung kann ein Verweis ohne eigenes `hidden` das Basis-`hidden`
+ * seines Ziels erben, waehrend ein explizites `hidden="false"` am Verweis das
+ * Ziel weiterhin ueberstimmt (`effectiveState.js`, `baseHiddenOf`, Issue 0099).
  */
 function readEntryBase(element, diagnostics) {
   return {
     id: element.getAttribute(Attr.ID),
     name: element.getAttribute(Attr.NAME),
     isHidden: readBoolean(element, Attr.HIDDEN, DEFAULT_HIDDEN),
+    hiddenAttribute: readBoolean(element, Attr.HIDDEN, undefined),
     modifiers: readModifiers(element, diagnostics),
     modifierGroups: readModifierGroups(element, diagnostics),
   };

@@ -49,6 +49,27 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-07-28 test-author:
+  `src/evaluator/effectiveState.baseHiddenInheritance.test.js`, 11 tests —
+  2 RED (base-hidden inheritance direct + transitive), 9 green as explicit
+  PIN/KONTROLLE (each with a comment naming the fix mistake it guards
+  against, e.g. explicit `hidden="false"` on the link must keep beating the
+  target's true). Observable: `capability.isHidden` on the occupied slot via
+  the facade, same point as `report.test.js`. Open edges left unpinned
+  (undecided by criteria): link-modifier vs target-modifier precedence with
+  opposite values; base `hidden` of an intermediate link in a chain.
+- 2026-07-28 implementer: dual-carrier seam — `readEntryBase` emits
+  `hiddenAttribute` (`true|false|undefined`) beside the unchanged boolean
+  `isHidden` (consumers verified: `datasetDescription.js:89`, exact-shape
+  pins in `infoElements.test.js`, architecture-doc `InfoElement` record);
+  `baseHiddenOf` reads the tri-state, existing `?? ` chain reaches the
+  target. Transitive case free via `followEntryLink` flattening; the
+  intermediate-link edge stays behaviour-free as recorded. Surprise per
+  rulebook: first sentinel choice `null` broke 3 exact-shape `toEqual` pins
+  (`toEqual` ignores undefined props, not null) — switched to `undefined`,
+  no test touched. 11/11 target green; suite 211 files / 2154 tests exit 0;
+  puppeteer E2E exit 0; lint/typecheck exit 0.
+
 ## Checkpoints
 
 ### Before implementation
