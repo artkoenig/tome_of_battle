@@ -85,6 +85,16 @@ Acceptance criteria:
   on HEAD **and** on origin/main (catalog-prep share of the threshold) —
   pre-existing, decisive reused-dataset line in the noise band; noted for
   the human, not this run's territory.
+- 2026-07-28 review round 2 (fresh context, whole intent): all criteria
+  met; comment fix verified true against `conditionGroupHolds` semantics;
+  reds re-proven; depcruise exit 0. 1 minor finding, dismissed with reason:
+  the held-only default has no regression guard (reviewer's mutant —
+  unconditional `yield` — survives the suite; distinguishing case: or-group
+  with present-but-not-held first branch). Dismissal reason: the underlying
+  or-question is deliberately parked as a human decision (see test-author
+  log); pinning the default now would freeze an unratified choice. When the
+  human ratifies (either way), decision + pin land together — surfaced in
+  the PR.
 
 ## Checkpoints
 
@@ -105,8 +115,17 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — group-gated modifiers carry their
+  witness at any depth, the §9.8 pattern names the shield, no invented
+  causes, suite green by exit code; two fresh-context rounds, reds proven
+  real both times.
+- What surprised me? The or-short-circuit subtlety: the first honest
+  justification for the throwaway diagnostics list was wrong even though
+  the behaviour was right — and the reviewer's mutant showed how easily an
+  unpinned default survives.
+- What am I assuming without having verified it? That the conservative
+  held-only witness rule is what the human wants for or-groups — recorded
+  as default, unguarded by design until ratified. No version bump:
+  evaluator not wired to the UI.
 
 ## Retro
