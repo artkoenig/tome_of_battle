@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="stl-01" name="STL 01 - Armour of Heroes nur ueber Link A (legal)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored shared-target-two-entrylinks E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Clan Lahmia (VC-AB)" entryId="2102-34f1-c876-98c5" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-swain" name="Swain" entryId="b920-b398-dc26-7f4d" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-commander" name="Commander [HIGH ELVES]" entryId="d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff" entryLinkId="" number="1" type="unit" collective="false">
+              <selections>
+                <selection id="sel-mih" name="Magic Items and Honours" entryId="86633839-75c9-46fd-9627-400229927ab5" entryLinkId="" number="1" type="upgrade" collective="false">
+                  <selections>
+                    <selection id="sel-aoh-a" name="Armour of Heroes [HIGH ELVES]" entryId="d612998a-3131-45c6-94e0-4e016d5110e4" entryLinkId="def42370-a8f8-499d-a06e-0e60c1cbda9d" number="1" type="upgrade" collective="false"/>
+                  </selections>
+                </selection>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

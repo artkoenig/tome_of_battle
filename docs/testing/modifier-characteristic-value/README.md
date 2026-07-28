@@ -174,29 +174,45 @@ Vorkommen desselben geteilten Profils (Amazons-Modell: WS 3, Humming Bird: WS 4)
 | Schalter „Allow experimental rules?" (`.gst`) | `8b76-92c4-23f9-54b1` (OK-`entryLink` `9a0b-4d97-1625-919f`) |
 | Pflichtgrenzen der Amazonen (min 5 Modelle, Blades, Ruestung, Kommandotrupp) | `bd7e-e5cf-c571-7659`, `d8f0-cec9-edf3-0fbe`, `feb1-c10d-9318-dbda`, `0e94-6317-5852-6ba5`, `b883-c633-6422-0cbc`, `9e16-9834-5aaf-48a1` |
 
-## Abgleich mit dem Engine-Lauf: zwei Grenzen aus der Erwartung genommen
+## Abgleich mit dem Engine-Lauf: zwei Grenzen genommen, drei jetzt gesetzt
 
-Beim ersten Runner-Lauf feuerten drei Grenzen, die als `absent` deklariert waren,
+Beim ersten Runner-Lauf feuerten zwei Grenzen, die als `absent` deklariert waren,
 obwohl das Roster die geforderte Auswahl enthält:
 
-| Grenze | Anker | Ist / Grenze |
-|---|---|---|
-| `dfd9-3e46-eda5-be8b` (min 1 *Hand Weapon*) | `b581-8a9e-9d0c-b7c8` | 0 / 1 |
-| `feb1-c10d-9318-dbda` (min 1 *Light Armour* der Amazonen) | `d3dc-56c1-9565-889a` | 0 / 1 |
+| Grenze | Anker | Ist / Grenze | Roster |
+|---|---|---|---|
+| `dfd9-3e46-eda5-be8b` (min 1 *Hand Weapon*) | `b581-8a9e-9d0c-b7c8` | 0 / 1 | 01, 02 |
+| `feb1-c10d-9318-dbda` (min 1 *Light Armour* der Amazonen) | `d3dc-56c1-9565-889a` | 0 / 1 | 03 |
 
-Die Untersuchung an den Daten zeigt ein **gemeinsames Muster, das nichts mit
+Die Untersuchung an den Daten zeigte ein **gemeinsames Muster, das nichts mit
 Merkmals-Modifikatoren zu tun hat**: beide Grenzen sind nicht an der Auswahl-
 Definition deklariert, sondern am `entryLink`, der sie hereinzieht
 (`Mercenaries (…).cat` Z. 7462–7464 bzw. Z. 4352–4354) — und zwar mit
 `scope="parent"`. Ein Roster benennt eine so bezogene Auswahl mit *zwei* Ids:
-`entryId` (das Ziel) und `entryLinkId` (der Verweis). Die Zählung findet die
-Instanz unter der Ziel-Id, die Pflicht-Grenze fragt aber nach der Link-Id — also
-zählt sie 0 und meldet die Pflicht als unerfüllt, obwohl die Auswahl gesetzt ist.
+`entryId` (das Ziel) und `entryLinkId` (der Verweis). Der Roster-Adapter band die
+Auswahl allein an die Ziel-Id, also fand die Pflicht-Grenze unter ihrer Link-Id
+nichts, zählte 0 und meldete die Pflicht als unerfüllt, obwohl die Auswahl gesetzt
+ist.
 
-Das ist ein eigenständiger Befund an der Verweis-Identität, kein Ergebnis dieses
-Szenarios und keine Aussage über Merkmals-Modifikatoren. Die beiden Ids sind
-deshalb aus `absent` **entfernt** — das Manifest macht über sie schlicht keine
-Aussage mehr (die Erwartung ist selektiv, nicht erschöpfend). Sie wurden
-ausdrücklich **nicht** nach `firing` verschoben: das würde das beobachtete
-Verhalten als gewollt festschreiben. Alle Merkmals-Erwartungen dieses Szenarios
-trafen im selben Lauf unverändert zu.
+Die beiden Ids waren deshalb zwischenzeitlich aus `absent` **entfernt** — bewusst
+nicht nach `firing` verschoben, weil das das falsche Verhalten als gewollt
+festgeschrieben hätte. Mit dem Fix zu Issue 076 (eine Auswahl bindet an den
+Verweis, unter dem sie gesetzt wurde) sind beide **wieder in `absent`**: Die
+Grenzen sind `min 1`, die geforderte Auswahl steht im Roster, also darf keine von
+ihnen feuern.
+
+Beim Fix kam eine **dritte, bisher nirgends deklarierte** Grenze zum Vorschein:
+
+| Grenze | Anker | Ist / Grenze | Roster |
+|---|---|---|---|
+| `bdef-ba9b-d6ce-5b14` (min 1 *Hand Weapon*, am Ziel-Eintrag `abdb-bbd0-41b2-5dff`, `.gst` Z. 1034) | `b581-8a9e-9d0c-b7c8` | 0 / 1 | 01, 02 |
+
+Sie war nie Teil der Erwartung dieses Szenarios und wurde folglich auch nie aus
+ihr entfernt. Der falsche Pflicht-Phantomslot ließ sie ein zweites Mal feuern,
+obwohl sie am realen Knoten längst erfüllt war. Sie steht jetzt aus demselben
+Grund wie die anderen beiden in `absent` — `min 1`, Handwaffe gewählt, also keine
+Verletzung — allerdings **nur in Roster 01 und 02**: In anderen Szenarien feuert
+`bdef` an anderen Ankern zu Recht.
+
+Alle Merkmals-Erwartungen dieses Szenarios trafen über beide Läufe hinweg
+unverändert zu.

@@ -17,7 +17,9 @@
         "firing": [],
         "absent": [
           "0dad-7f3c-00e8-e07e",
-          "c80a-0bac-008c-d900"
+          "c80a-0bac-008c-d900",
+          "dfd9-3e46-eda5-be8b",
+          "bdef-ba9b-d6ce-5b14"
         ],
         "capabilities": [
           {
@@ -57,7 +59,9 @@
         "firing": [],
         "absent": [
           "0dad-7f3c-00e8-e07e",
-          "c80a-0bac-008c-d900"
+          "c80a-0bac-008c-d900",
+          "dfd9-3e46-eda5-be8b",
+          "bdef-ba9b-d6ce-5b14"
         ],
         "capabilities": [
           {
@@ -101,7 +105,8 @@
           "d8f0-cec9-edf3-0fbe",
           "0e94-6317-5852-6ba5",
           "b883-c633-6422-0cbc",
-          "9e16-9834-5aaf-48a1"
+          "9e16-9834-5aaf-48a1",
+          "feb1-c10d-9318-dbda"
         ],
         "capabilities": [
           {

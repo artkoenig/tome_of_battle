@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-target-two-entrylinks",
+  "description": "Zwei verschiedene <entryLink>s unter demselben Elternteil zeigen auf dasselbe <selectionEntry> (Armour of Heroes [HIGH ELVES], Gruppe 'Magic Armour' der HIGH-ELVES-Magieitems). Die Grenzen haengen am gemeinsamen Ziel, nicht an den Links: parent-skopiert und roster-skopiert muss der Evaluator die ueber beide Links eingebrachten Selektionen ZUSAMMEN zaehlen (zwei Tueren, ein Ding). Der Beleg im Format-Handbuch: scope='parent' vergleicht aufgeloeste Ziel-IDs, nicht entryLinkIds (docs/battlescribe-data-format.md, 3.4 und 7.6).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-link-a-only-legal.ros",
+      "description": "Commander [HIGH ELVES] mit genau einer 'Armour of Heroes', gewaehlt ueber Link A (def42370). Legal: jede Grenze am Zieleintrag steht bei Ist 1 gegen Grenze 1.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "f25f23c2-f5f1-4bd0-8c7a-0ce617302c7e",
+          "7eaade17-79eb-493c-85e7-867000e4beb7"
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-link-b-only-legal.ros",
+      "description": "Derselbe Aufbau, aber die Auswahl kommt ueber Link B (8f3d6ee5) statt Link A. Ebenfalls legal — beide Links loesen auf dasselbe Ziel auf und keiner ueberschreitet allein eine Grenze.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "f25f23c2-f5f1-4bd0-8c7a-0ce617302c7e",
+          "7eaade17-79eb-493c-85e7-867000e4beb7"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-both-links-same-parent-illegal.ros",
+      "description": "Ein und derselbe Commander nimmt 'Armour of Heroes' einmal ueber Link A und einmal ueber Link B. Beide Selektionen zeigen auf dasselbe Ziel d612998a und haben denselben Elternteil: die parent-skopierte max 1 am Ziel (f25f23c2) feuert mit Ist 2 gegen Grenze 1. Ueber die roster-skopierte Grenze 0aa08f91 und die Gruppengrenze 76e2c1c8 macht das Manifest bewusst keine Aussage - siehe README, Abschnitt 'Abgleich mit dem Engine-Lauf', und Issue 083.",
+      "expect": {
+        "firing": [
+          {
+            "limitId": "f25f23c2-f5f1-4bd0-8c7a-0ce617302c7e",
+            "actual": 2,
+            "bound": 1
+          }
+        ],
+        "absent": [
+          "7eaade17-79eb-493c-85e7-867000e4beb7",
+          "0918bd42-2d7e-4aa9-9baa-36e8d81eb8f1"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-both-links-two-parents.ros",
+      "description": "Zwei Swains mit je einem Commander; der erste nimmt 'Armour of Heroes' ueber Link A, der zweite ueber Link B. Pro Traeger ist es nur eines - die parent-skopierte Grenze f25f23c2 darf NICHT feuern. Trennt 'unter einem Elternteil gemeinsam gezaehlt' von 'feuert immer'. Ueber die armeeweite Grenze 0aa08f91 macht das Manifest bewusst keine Aussage (Issue 083).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "f25f23c2-f5f1-4bd0-8c7a-0ce617302c7e",
+          "7eaade17-79eb-493c-85e7-867000e4beb7",
+          "0918bd42-2d7e-4aa9-9baa-36e8d81eb8f1"
+        ]
+      }
+    }
+  ]
+}

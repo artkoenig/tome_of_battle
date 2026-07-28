@@ -102,8 +102,9 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`info-projection`](testing/info-projection/) | Definitive VC + Mercenaries | 4 |
 | [`violation-classification`](testing/violation-classification/) | Definitive Ogre + Mercenaries | 7 |
 | [`author-message-tokens`](testing/author-message-tokens/) | Definitive Ogre + Mercenaries | 3 |
+| [`shared-target-two-entrylinks`](testing/shared-target-two-entrylinks/) | Definitive VC + Mercenaries | 4 |
 | [`entrylink-raw-type-counting`](testing/entrylink-raw-type-counting/) | Definitive VC + Mercenaries | 3 |
-| **Summe** | | **107** |
+| **Summe** | | **111** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -360,6 +361,26 @@ dem er hängt — und nur dieses.
 | 01 | Söldner-Ogres mit Handwaffe, **ohne** leichte Rüstung | Der bedingte Rüstungswert greift nicht; nur der unbedingte Abzug wirkt (Sv 7) |
 | 02 | Dieselbe Einheit **mit** leichter Rüstung | Beide Abzüge wirken (Sv 6); alle übrigen Merkmale bleiben unverändert |
 | 03 | Anakondas Amazonen: vier Auswahlpunkte ziehen **dasselbe** geteilte Profil über je einen eigenen Verweis herein | Jeder Modifikator wirkt nur auf sein eigenes Verweis-Vorkommen; der Verweis ohne Modifikator behält die Basiswerte |
+
+Alle drei Roster halten nebenbei fest, dass eine **am Verweis deklarierte
+Pflichtgrenze** ihre eigene Auswahl mitzählt: Handwaffe (01, 02) und leichte
+Rüstung (03) stehen im Roster, also darf keine Pflicht als unerfüllt gemeldet
+werden (Issue 076).
+
+## `shared-target-two-entrylinks`
+
+Prüft, dass zwei **Verweise auf denselben Eintrag** unter einem Elternteil als
+*ein* Gegenstand gezählt werden, nicht als zwei — zwei Türen zur selben Sache.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Commander mit *Armour of Heroes*, gewählt über Verweis A | Legal — ein Stück, Obergrenze 1 eingehalten |
+| 02 | Derselbe Aufbau über Verweis B | Ebenfalls legal — welcher Verweis benutzt wurde, ändert nichts |
+| 03 | **Ein** Commander nimmt die Rüstung über **beide** Verweise | Die Obergrenze am Zieleintrag feuert mit Ist 2 gegen Grenze 1 |
+| 04 | **Zwei** Commander, jeder über einen anderen Verweis | Pro Träger nur eines — die trägerbezogene Obergrenze schweigt |
+
+Roster 04 ist der Unterscheider: er trennt „unter einem Elternteil gemeinsam
+gezählt" von „feuert immer, sobald beide Verweise vorkommen".
 
 ## `modifier-effective-name`
 

@@ -161,6 +161,30 @@ Acceptance criteria:
   benutzersichtbar — als Default entschieden, der Mensch kann beim Merge
   anders entscheiden.
 
+## Log (nach PR-Eröffnung)
+
+- **Doku-Abgleich auf Wunsch des Menschen:** `main` trägt seit Issue 076 das
+  BSData-Wiki als Submodul und eine erweiterte
+  `docs/battlescribe-data-format.md`. Deren §15 führt genau unsere Frage —
+  erbt ein Verweis den Typ seines Ziels? — als **Lücke der Quelle** und
+  verweist auf dieses Issue als die Projekt-Entscheidung. Die Implementierung
+  widerspricht keiner dokumentierten Regel; „`scope="parent"` vergleicht
+  aufgelöste Ziel-IDs, nicht `entryLinkId`s" stützt das Durchschau-Muster.
+- **Parallel-Merge:** Issue 076 wurde in einer anderen Session implementiert
+  und als PR #148 gemerged — inklusive einer semantisch identischen
+  rosParser-Umstellung (`entryLinkId || entryId`) und einem Grenzen-Fix in
+  `constraints.js` (Link-Anker zählen unter der aufgelösten Ziel-ID).
+  `origin/main` in diesen Branch gemergt; Konflikte in `rosParser.js`
+  (Fassung von `main` übernommen, `defIdOf`-Helfer) und im Testkatalog
+  (beide Szenario-Zeilen vereint, Summe 111). Die 076-Notiz zur „zweiten
+  Fundstelle" korrigiert (076 hat den Adapter selbst gefixt, nicht 078) und
+  das 076-Frontmatter auf den Merge-Stand nachgezogen (done, PR #148).
+- Fakten nach dem Merge: `npm test` 209 Dateien / 2120 Tests + UI-E2E exit 0
+  (darin der Manifest-Runner mit 111 Fällen inkl. beider neuer Szenarien);
+  `npm run lint` exit 0; `npm run typecheck` exit 0; `npm run depcruise`
+  391 Module, 0 Errors, 1 vorbestehende warn-only-Warnung. Mein Typ-Zählen
+  und der 076-Fix vertragen sich — keine Erwartung musste angepasst werden.
+
 ## Retro
 
 - **Gut gelaufen:** Die Recherche vor Checkpoint 1 hat zwei Fallen entschärft,
