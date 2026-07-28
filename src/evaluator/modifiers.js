@@ -244,8 +244,11 @@ function* heldConditionsOf(ctx, group) {
  * Der erste benennbare Zeuge unter den Bedingungen, die den Modifikator haben
  * feuern lassen: zuerst die direkten Bedingungen, danach die gehaltenen
  * Bedingungen aus den Bedingungsgruppen (beliebige Tiefe, Dokumentreihenfolge).
- * Die Gruppen-Neuauswertung laeuft gegen eine Wegwerf-Sammelliste — ihre
- * Diagnosen sind bei der Feuer-Entscheidung bereits gemeldet.
+ * Die Gruppen-Neuauswertung laeuft gegen eine Wegwerf-Sammelliste: die
+ * Zeugensuche soll den Diagnosestand der Feuer-Entscheidung nicht
+ * veraendern. Zweige, die dort per Kurzschluss (`or`) nie ausgewertet
+ * wurden, meldeten auch vorher keine Diagnose — die Suche bleibt dazu
+ * beobachtungsgleich.
  */
 function witnessOf(ctx, conditions, conditionGroups) {
   for (const condition of conditions) {

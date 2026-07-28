@@ -73,6 +73,18 @@ Acceptance criteria:
   §3.4/§3.6 and ADR-0027 describe the witness generically, no doc change
   needed. 10/10 target green; suite 211 files / 2153 tests exit 0;
   puppeteer E2E exit 0; lint/typecheck exit 0.
+- 2026-07-28 review round 1 (fresh context): all four criteria met; reds
+  re-proven on origin/main (5/5 exactly as authored); test file untouched;
+  E2E manifest scenarios contain no conditionGroup (grep: zero data hits),
+  so no expectation changed silently; gate shape module-private. 1 minor
+  non-behavioral finding, fixed: the `witnessOf` comment justified the
+  throwaway diagnostics list with "bereits gemeldet", which is false for
+  or-branches short-circuited at fire time — reworded to the true
+  justification (observation-equal to fire time). Behaviour proven
+  identical either way. Side fact: `scripts/measure-evaluator.js` exits 1
+  on HEAD **and** on origin/main (catalog-prep share of the threshold) —
+  pre-existing, decisive reused-dataset line in the noise band; noted for
+  the human, not this run's territory.
 
 ## Checkpoints
 
