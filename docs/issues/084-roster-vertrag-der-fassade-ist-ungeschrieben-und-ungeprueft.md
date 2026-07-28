@@ -95,6 +95,20 @@ Acceptance criteria:
 
 ## Log
 
+- **2026-07-28, Beobachtung aus dem Engine-Audit** (Prüfung der Engine gegen
+  die BSData-Doku im Repo): zwei konkrete Vertragslücken am Roster-Eingang,
+  beide am Fixture-Parser (`src/evaluator/__fixtures__/rosParser.js`) belegt:
+  - Reale BattleScribe-`.ros` tragen in `entryId` mit `::` verkettete
+    Id-Pfade (z. B. `src/utils/__fixtures__/blood-dragons.ros`,
+    `entryId="05bd-…::1b7c-…"`, 7 Vorkommen); `rosterFromRos` reicht sie
+    verbatim durch → `unresolvedDefinition`.
+  - Verschachtelte `<forces>` innerhalb einer Force werden durch das tiefe
+    `getElementsByTagName('force')` still zu Top-Level-Forces geflacht —
+    die `includeChildForces`-Schachtelung, die die Zählschicht selbst
+    unterstützt, geht am Eingang verloren.
+  Dazu passend: Issue 0096 (Kostenlimit `-1.0` wird ungefiltert
+  durchgereicht) hängt an derselben ungeschriebenen Vertragsfrage.
+
 ## Checkpoints
 
 ### Before implementation
