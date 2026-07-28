@@ -97,6 +97,15 @@ Acceptance criteria:
   wirksamem Wert -1" bleibt ungetestet; die bestehende Melde-Semantik
   (Verletzungen nur an belegten Slots) wird von diesem Issue nicht
   angetastet.
+- Black-Box-Autor (Kriterium 5): Szenario
+  `docs/testing/unlimited-modifier-toggle/` (5 Roster, ein Szenario für
+  beide Fälle). Fall A: Goblin-Constraint `ad41-8936-7a56-1717`
+  (`max -1` → `set 25` unter Border Patrols) — feuert bei 26 mit Bedingung,
+  nicht bei 25, nicht bei 26 ohne Bedingung. Fall B: Outriders-Constraint
+  `264b-4c6a-defa-2b3e` (`max 0` → `set -1` unter „Allow experimental
+  rules") — feuert ohne Bedingung bei Zählung 1, schweigt mit Bedingung
+  bei Zählung 2. Erwartungen selektiv; hidden-Mechanik und Autor-Meldung
+  bewusst außerhalb der Assertions (README UMT-R5).
 
 ## Checkpoints
 
