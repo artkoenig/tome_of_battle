@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/aufgaben-ubersicht-84fkjz
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/147
 ---
 
 # Verlinkter Eintrag zählt nicht unter seinem Typ
@@ -162,3 +162,19 @@ Acceptance criteria:
   anders entscheiden.
 
 ## Retro
+
+- **Gut gelaufen:** Die Recherche vor Checkpoint 1 hat zwei Fallen entschärft,
+  die eine naive Umsetzung gekostet hätten — die falsche Semantik des
+  `type`-Attributs am Link und die Maskierung des Defekts durch die
+  Ziel-ID-Bindung des Harness. Die vorab notierte Stopp-Regel (Issue-76-Rot →
+  anhalten) machte die riskante rosParser-Umstellung entscheidbar, ohne den
+  Menschen zu blockieren; sie griff dann nicht. Review-Runde 1 mit
+  Revert-Gegenprobe: 0 Befunde, konvergiert sofort.
+- **Im Weg:** Wenig. Der lokale `main` war veraltet; der Reviewer musste
+  selbst auf `origin/main` ausweichen. Lehre: vor dem Review-Dispatch den
+  Default-Branch fetchen und die Merge-Base im Auftrag nennen.
+- **Cross-Issue-Kopplung:** Die rosParser-Bindung war als „zweite Fundstelle"
+  in Issue 76 dokumentiert, wurde aber hier gebraucht (Kriterium 3 sonst
+  unerfüllbar). Als Schnitt-Bestandteil gezogen und 76 nachgezogen — das
+  Muster (Fundstelle wandert in den Schnitt, der sie braucht; Rest bleibt
+  offen) hat funktioniert und darf so bleiben. Kein Metis-Regel-Fehlgriff.
