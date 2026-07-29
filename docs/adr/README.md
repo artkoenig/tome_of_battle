@@ -8,7 +8,7 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 
 | Nummer | Titel | Status | Zuletzt aktualisiert |
 | :---: | :--- | :---: | :---: |
-| 0001 | [Record Architecture Decisions](0001-record-architecture-decisions.md) | Accepted | 2026-07-05 |
+| 0001 | [Record Architecture Decisions](0001-record-architecture-decisions.md) | Accepted | 2026-07-29 (rev.) |
 | 0002 | [Data Flow and IndexedDB Storage](0002-data-flow-and-indexeddb-storage.md) | Accepted | 2026-06-28 |
 | 0003 | [Battlescribe Domain Rules](0003-battlescribe-domain-rules.md) | Accepted | 2026-07-22 |
 | 0004 | [Styling Conventions](0004-styling-conventions.md) | Accepted | 2026-07-21 |

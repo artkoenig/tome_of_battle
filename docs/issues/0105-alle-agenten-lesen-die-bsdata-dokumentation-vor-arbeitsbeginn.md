@@ -27,10 +27,24 @@ Acceptance criteria:
 4. When the bsdata documentation and an ADR contradict each other, the
    project context tells the agent which one wins: the bsdata documentation
    takes precedence over the ADRs. (Added by the maintainer mid-run.)
+5. When any ADR is read, it contains no BattleScribe-format information that
+   the bsdata documentation also covers, and none that contradicts it —
+   format explanations are replaced by references to the bsdata
+   documentation; the ADRs keep only their decisions. (Added by the
+   maintainer mid-run.)
 
 ## Plan
 
 ## Tasks
+
+For criterion 5 (ADR sweep):
+
+- [x] Audit all 36 ADRs against `docs/battlescribe-data-format.md` (three
+      parallel researchers, per-ADR passage list: duplicate | contradiction)
+- [ ] Edit the flagged ADRs: remove format explanations and contradictions,
+      keep the decisions, point to the bsdata documentation instead
+- [ ] Bump the revised ADRs' dates in the ADR index
+- [ ] Fresh-context review of the whole intent (criteria 1–5)
 
 ## Decisions
 
@@ -73,6 +87,14 @@ Acceptance criteria:
      pre-existing ADR link on the line above has the same trait; root-relative
      links are the file's established convention, and the root view is the
      intended one.
+- Review round 3 (fresh context, whole intent): 1 finding, outside the
+  criteria — the ADR index (`docs/adr/README.md`) still dated ADR 0001
+  2026-07-05, hiding the new precedence exception from index readers.
+  **Fixed:** date bumped to `2026-07-29 (rev.)` per the index's convention.
+  All four criteria confirmed met; round 2's dismissal of the link trait
+  re-verified independently. Noted tension, no action: the precedence rule
+  intentionally lives in both `.agents/AGENTS.md` (criterion 4) and ADR 0001
+  (criterion 3) — a future change must move both together.
 
 ## Checkpoints
 
