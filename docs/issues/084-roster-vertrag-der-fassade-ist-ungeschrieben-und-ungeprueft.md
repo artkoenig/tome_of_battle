@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/new-session-jnwa1m-084
+pr: https://github.com/artkoenig/tome_of_battle/pull/160
 ---
 
 # Der Roster-Vertrag der Fassade ist ungeschrieben und ungeprüft
@@ -92,6 +92,18 @@ Acceptance criteria:
 - **Der `report.js`-Ankervertrag ist die Begründung der heutigen Wahl:** „ein
   Angebots-Anker den `entryLink`, nicht den Eintrag (nur so gelten die am
   Verweis deklarierten Grenzen)". Kriterium 2 hält genau das fest.
+- **Entschieden (Default dieses Laufs, 2026-07-29):** Kriterium 3 —
+  `unresolvedDefinition` OHNE Rückfall auf die Ziel-Id ist die gewollte
+  Antwort. Quelle: §7.2 (Link-Ziel aus demselben Katalog bzw.
+  `.gst`-Import; Kontingent-Auswahlen aus einem einzigen Katalog — ein
+  solches Roster war nie gültig) und §15; dokumentiert am Fassaden-Rand,
+  gepinnt durch zwei F3-Tests. Ein stiller Rückfall würde den
+  Datensatz-Fehler tarnen.
+- **Symptom-Präzisierung (Review-Runde 1):** der Rückfall auf die Ziel-Id
+  äußert sich im flachen Fall als STILLES Verschwinden der Link-Grenzen
+  (grüne Auswertung ohne Regel-Durchsetzung); das „Phantom daneben" aus
+  076/F2 entsteht nur in verschachtelten Konstellationen (beide vom
+  Reviewer reproduziert). Das JSDoc nennt jetzt beide Symptome.
 
 ## Log
 
@@ -108,19 +120,83 @@ Acceptance criteria:
     unterstützt, geht am Eingang verloren.
   Dazu passend: Issue 0096 (Kostenlimit `-1.0` wird ungefiltert
   durchgereicht) hängt an derselben ungeschriebenen Vertragsfrage.
+- 2026-07-29 test-author: `src/evaluator/evaluator.rosterContract.test.js`,
+  6 GREEN pins (by design — the issue pins 076-built behaviour; red =
+  regression), each with a proven red variant in a temporary file (adapter
+  fallback input → slot identity and link-limit assertions fail; resolvable
+  id → F3 diagnostic assertion fails). Surprise recorded: in the
+  regression variant (root-level link, min=1 force scope, selection under
+  target id) NO mandatory phantom appeared beside — the 076/F2 "phantom
+  beside it" symptom needs a nested constellation; pins go red via slot
+  identity and the link-limit violation instead. Criterion 1 (JSDoc) has
+  nothing to run — falls to the review.
+- 2026-07-29 implementer: contract written at `evaluator.js` `@param roster`
+  (identity rule, project-decision provenance, no-fallback behaviour with
+  §7.2/§15 rationale); pointers in `evaluator-architecture.md`
+  (InstanceNode record) and `rosParser.js` `defIdOf` (slimmed, delegates).
+  Comment/doc-only diff; 6/6 pins green, suite 211 files / 2149 tests
+  exit 0, lint/typecheck 0.
+- 2026-07-29 review round 1 (fresh context): criteria met; pins verified as
+  real guards (red variants reproduced independently); citations verified
+  verbatim. 2 minor findings, both fixed: (1) the JSDoc's "Phantom daneben"
+  rationale overstated the flat-case symptom — reviewer reproduced both
+  constellations (flat: silent loss of link limits; nested: phantom
+  beside); JSDoc now names both. (2) the F3 default still hedged in
+  Decisions — now settled there, dated and sourced.
+- 2026-07-29 review round 2 (fresh context): criteria met; two-symptom
+  claim reproduced TRUE; pins re-verified; citations re-verified. 2 minor
+  findings, fixed: (1) duplicated verb from the round-1 edit
+  ("haelt … festhaelt") — corrected; (2) this Log was missing the round-1
+  entry — this and the neighbouring entries close it.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — write the link-id rule at the public
+  edge, pin the two uncovered behaviours (slot merge, unresolvable link id)
+  with expectations that go red on regression.
+- What surprised me? The Decisions already carry most of the thinking: F3 is
+  defused (a roster naming a link from an unloaded catalog was never valid,
+  §7.2/§15), so criterion 3 leans strongly toward documenting
+  `unresolvedDefinition` as the honest answer — no engine fallback.
+  Recorded as the default for this run.
+- What am I assuming without having verified it? That the criterion-2
+  expectation can be expressed against the facade report (occupied slot
+  under link id + targetDefId, absence of the phantom) without new engine
+  work — issue 076 built the behaviour, only the pin is missing. And that
+  the two Log observations (:: id paths, nested forces flattening) remain
+  OUT of scope — they are adapter/contract questions for the human, this
+  run only documents and pins the existing contract.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — the contract stands at the public
+  edge with both fallback symptoms and the no-fallback decision; six pins
+  guard the two formerly uncovered behaviours, each red variant reproduced
+  by two independent reviewers; suite/E2E/lint/typecheck green by exit code
+  (round-3 runs: 6/6, 211 files / 2149 tests, E2E, all exit 0).
+- What surprised me? The flat-vs-nested symptom split (silent limit loss vs
+  phantom-beside) — the issue's own F2 narrative undersold the flat case.
+  And two textual defects introduced by my own review-fix edits — a lesson
+  on editing prose under time pressure.
+- What am I assuming without having verified it? That the human ratifies
+  the F3 no-fallback default (recorded, sourced) and takes up the two known
+  adapter gaps (`::` id paths, nested forces flattening) as their own
+  issue when the roster adapter becomes production-relevant. No version
+  bump: docs, comments and tests only.
 
 ## Retro
+
+- Green-pin issues (pin existing behaviour + write the contract) fit the
+  workflow well when every pin's red variant is PROVEN, not asserted — the
+  temporary-variant-file technique the test-author used should become the
+  house pattern for regression pins.
+- Both textual defects of this run came from my own mid-review edits to
+  prose — reviewers editing prose should re-read the full sentence after
+  every surgical replace. Rounds 2→2→0 brushed the stop rule; the findings
+  were new each time (not repeats), which is the distinction that made
+  continuing correct.
+- The flat-vs-nested symptom discovery improved the contract text beyond
+  what the issue asked — fresh-context reviews add value even to doc-only
+  changes.
