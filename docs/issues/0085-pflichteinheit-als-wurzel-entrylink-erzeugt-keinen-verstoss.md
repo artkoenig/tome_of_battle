@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/85-umsetzen-0cru2t
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/171
 ---
 
 # Pflichteinheit als Wurzel-`entryLink` erzeugt keinen Verstoß
@@ -303,3 +303,27 @@ Acceptance criteria:
   `rosParser.entryLinkId.test.js`, nicht auf reale Fremd-Roster.
 
 ## Retro
+
+- **Was im Weg stand:**
+  - Die Metis-Agenten lagen als Verzeichnisse (`~/.claude/agents/<name>/agent.md`)
+    vor und waren dem Harness beim Sessionstart nicht als Subagent-Typen
+    bekannt — der erste Dispatch schlug fehl (Fallback: general-purpose mit
+    der Rollendefinition im Prompt); später in der Session waren sie
+    registriert. Der SessionStart-Selbstcheck („4 agents reachable") prüft
+    nur die Links, nicht die Registrierung → Kandidat für einen Fix im
+    `metis`-Repo (Agenten als flache `.md` ablegen oder den Selbstcheck
+    ehrlicher machen).
+  - `main` war schon vor dem Lauf rot (0113) — Kriterium 4 („Suite bleibt
+    grün") musste als „kein neuer Rotstand, Vorbestand verifiziert"
+    präzisiert werden. Formulierungs-Lehre für künftige Kriterien: „grün"
+    relativ zur Basis (`origin/main`) formulieren.
+  - Der Stop-Hook verlangte Commits, während Subagenten mitten im Edit
+    waren — gelöst durch selektive Commits nur der sicheren Dateien.
+  - Werkzeug-Reibung: das Edit-Tool kann Zeilen mit literalen
+    ` `-Escapes nicht treffen (zweimal aufgetreten, Umweg über
+    perl/Python nötig).
+- **Was gut lief:** Die Vorrecherche im Issue (naiver Patch belegt falsch,
+  `ownLimitsOnly` als vorhandener Mechanismus) machte die Implementierung
+  zielgenau; die Review-Runden konvergierten sauber (2 → 1 → 0), und beide
+  Nachschärfungen der Entdopplung kamen aus Reviewer-Repros statt aus
+  Spekulation.
