@@ -43,7 +43,7 @@
  */
 
 import { PreparedDataset } from './datasetPreparation.js';
-import { buildDatasetDescription } from './datasetDescription.js';
+import { buildDatasetDescription, costTypesOf } from './datasetDescription.js';
 import { buildEvalTree } from './evalTree.js';
 import { attachOfferAnchors } from './offer.js';
 import { extendBaseEffectiveState } from './effectiveState.js';
@@ -110,10 +110,12 @@ export { prepareDataset } from './datasetPreparation.js';
  *   Katalog benennt, war also nie gueltig (`docs/battlescribe-data-format.md`
  *   §7.2, §15). Ein stiller Rueckfall wuerde diesen Datensatz-Fehler als
  *   gueltige Auswertung tarnen.
- * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
- *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen. Ein
- *   Slot ist **jede Stelle, an der eine Auswahl stehen kann** — auch eine noch
- *   nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon unberuehrt.
+ * @returns {{ violations: object[], capabilities: Map<string, object>, costTotals: Record<string, number>, diagnostics: object[] }}
+ *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot, die roster-weite
+ *   Kostensumme je deklarierter Kostenart (`costTotals`, Issue 0121) und
+ *   Diagnosen. Ein Slot ist **jede Stelle, an der eine Auswahl stehen kann** —
+ *   auch eine noch nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon
+ *   unberuehrt.
  */
 export function evaluate(prepared, roster) {
   // Die eingestellten Kostengrenzen des Rosters einmalig als unveraenderliches
@@ -129,8 +131,8 @@ export function evaluate(prepared, roster) {
   // Kontingente: je Kontingent-Definition das Armeebuch, das sie deklariert. Er
   // beantwortet den Bezugsrahmen `primary-catalogue` (Issue 077) und wird — wie
   // das Budget — bis in die Query-Kontexte durchgereicht.
-  const { resolved, primaryCatalogueByForceDefId, diagnostics: datasetDiagnostics } =
-    PreparedDataset.contentsOf(prepared);
+  const contents = PreparedDataset.contentsOf(prepared);
+  const { resolved, primaryCatalogueByForceDefId, diagnostics: datasetDiagnostics } = contents;
 
   const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
 
@@ -186,11 +188,16 @@ export function evaluate(prepared, roster) {
   // einzige Quelle (`infoProjection.js`). `categoryIds` ist dieselbe Menge, an der
   // das Query-Primitiv einen ID-Bezugsrahmen aufloest; die Einordnung einer
   // Verletzung liest daran ab, ob deren Rahmen eine Kategorie oder ein Eintrag ist.
+  // `declaredCostTypeIds` sind die Kostenart-Deklarationen des Datensatzes —
+  // dieselbe eine Leseart wie in der Datensatz-Beschreibung (`costTypesOf`). Die
+  // Kostenprojektion des Berichts fuehrt jede davon in `costTotals`, auch ohne
+  // Vorkommen (Issue 0121).
   return buildReport(root, effective, results, diagnostics, {
     budgetViolations,
     unstableNodes,
     profileTypes: resolved.profileTypes,
     categoryIds: resolved.categoryIds,
+    declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
   });
 }
 

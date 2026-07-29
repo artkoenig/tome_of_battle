@@ -19,7 +19,12 @@
  *   Pflicht-/Gesperrt-/Versteckt-Flags, das Merkmal „Wert nicht stabil", die
  *   **Autor-Meldungen** des Katalogs und die **Info-Projektion** — die fuer den
  *   Slot geltenden Profile (mit ihren effektiven Merkmalswerten) und Regeltexte
- *   (`infoProjection.js`),
+ *   (`infoProjection.js`) sowie die **Kostenprojektion** je Slot — Eigenkosten
+ *   einer Instanz (`costs`) und Gesamtkosten des Teilbaums (`totalCosts`,
+ *   `costProjection.js`),
+ * - **`costTotals`** — die roster-weite Kostensumme je deklarierter Kostenart
+ *   (Kosten je Instanz × absolute Anzahl, Modifikatoren angewandt; deklarierte
+ *   Kostenarten ohne Vorkommen mit 0, Issue 0121),
  * - **Diagnosen** (Aufloesung, Oszillation, erschoepftes Rundenbudget, Null-Nenner).
  *
  * Ein Slot ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** — ob
@@ -40,6 +45,7 @@
 
 import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, isReportableAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
+import { buildCostProjection } from './costProjection.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage } from './violationClassification.js';
@@ -53,6 +59,9 @@ const NO_PROFILE_TYPES = Object.freeze([]);
 
 /** Ohne bekannte Kategorie-IDs ist jeder ID-Bezugsrahmen ein Eintrags-Rahmen. */
 const NO_CATEGORY_IDS = new Set();
+
+/** Ohne deklarierte Kostenarten traegt `costTotals` nur die belegten Vorkommen. */
+const NO_DECLARED_COST_TYPES = Object.freeze([]);
 
 /**
  * Projiziert ein Constraint-Ergebnis auf eine **abgeleitete** Meldung: die
@@ -356,6 +365,11 @@ function headroomOf(maxResult) {
  * Eintrag hinter einem `entryLink`).
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
+ * `costs`/`totalCosts` kommen aus der Kostenprojektion (`costProjection.js`):
+ * die **effektiven** Eigenkosten EINER Instanz (nach Kosten-Modifikatoren, auch
+ * an Angebots-Ankern: was EINE Instanz beim Waehlen kosten wuerde) und die
+ * Gesamtkosten des Slots im aktuellen Zustand (Eigenkosten × Anzahl plus die
+ * `totalCosts` aller Kind-Slots).
  * `categoryIds`/`primaryCategoryId` sind die **effektiven** Kategorie-IDs des
  * Slots und die effektive Primaerkategorie darunter (`null` = keine) — die
  * UI-Einsortierung liest sie aus dem Bericht, nie aus rohen Katalog-Links
@@ -371,7 +385,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, costProjection }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
@@ -380,6 +394,8 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     anchorKind: node.anchorKind,
     frame: frameReferenceOf(node),
     name: effective.nameOf(node),
+    costs: costProjection.costsOf(node),
+    totalCosts: costProjection.totalCostsOf(node),
     categoryIds: effective.categoryIdsOf(node),
     primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
@@ -405,7 +421,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[] }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -420,7 +436,9 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  *   ob ein ID-Bezugsrahmen einer Grenze eine Kategorie oder einen Eintrag benennt
  *   (`violationClassification.js`), gelesen aus **derselben** Quelle wie im
  *   Query-Primitiv.
- * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
+ *   `declaredCostTypeIds`: die im Datensatz deklarierten Kostenarten — sie
+ *   erscheinen in `costTotals` auch ohne Vorkommen, mit 0 (`costProjection.js`).
+ * @returns {{ violations: object[], capabilities: Map<string, object>, costTotals: Record<string, number>, diagnostics: object[] }}
  */
 export function buildReport(root, effective, results, diagnostics, extras = {}) {
   const {
@@ -428,14 +446,17 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     unstableNodes = NO_UNSTABLE_NODES,
     profileTypes = NO_PROFILE_TYPES,
     categoryIds = NO_CATEGORY_IDS,
+    declaredCostTypeIds = NO_DECLARED_COST_TYPES,
   } = extras;
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
+  const costProjection = buildCostProjection(root, effective, declaredCostTypeIds);
   const capabilityContext = {
     resultsByAnchor: indexResultsByAnchor(results),
     effective,
     unstableNodes,
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
+    costProjection,
   };
   // Der Knoten bleibt **engine-intern**: die Autor-Meldungen brauchen ihn, der
   // Bericht darf ihn nicht tragen (ADR-0034 — die Oberflaeche liest den Bericht
@@ -470,6 +491,10 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
       ...authorViolationsOf(slots, classificationContext),
     ],
     capabilities,
+    // Die roster-weite Kostensumme je Kostenart (Kostenprojektion): jede
+    // deklarierte Kostenart erscheint — ohne Vorkommen mit 0; Angebots-Anker
+    // zaehlen nicht (Issue 0121, Kriterien 1 und 4).
+    costTotals: costProjection.costTotals,
     diagnostics,
   };
 }
