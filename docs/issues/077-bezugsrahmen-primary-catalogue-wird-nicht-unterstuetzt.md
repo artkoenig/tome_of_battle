@@ -285,6 +285,66 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
   das fehlende Szenario ergänzt, Summe auf **126** — nachgemessen über alle 32
   `scenario.json`: exakt 126 Roster-Fälle, gleich der Fallzahl des Runners.
 
+- **2026-07-29, B3 und B4 aus Runde 1 sind behoben.** Der Test-Autor hat
+  `src/evaluator/query.primaryCatalogueContract.test.js` geschrieben (17 Tests)
+  und beide Lücken per Mutation in beide Richtungen belegt — sauber getrennt:
+  die Feld-Mutation lässt 6 Tests fallen und die Nesting-Tests grün, die
+  Nesting-Mutation umgekehrt 5 und die Feld-Tests grün. Eine Zusatzmutation
+  („Rekursion nur eine Ebene weit") belegt, dass die Tiefe-2-Erwartung
+  eigenständig trägt. Dabei meldete er **eine unentschiedene Kante** zurück,
+  statt sie zu raten: ein Feld ungleich `SELECTION_COUNT` **zusammen mit**
+  `targetId === null` — zwei Zeilen der Vertragstabelle greifen gleichzeitig.
+  Entschieden und im Plan nachgetragen (Feldprüfung zuerst), Test nachgezogen.
+- **2026-07-29, Review-Runde 2 (frischer Kontext, ganze Absicht).** Vier
+  Befunde, alle leicht, **kein Kriterium verletzt**. Der Reviewer hat den
+  Antwortvertrag Zeile für Zeile mutiert; bis auf eine fallen überall Tests
+  (Treffer 15, Nicht-Treffer 13, Null-Ziel 3, Fail-closed 2, fremdes Feld 6/30,
+  Vorrangregel 2, Rekursion 5, „nie die `.gst`" 1, Durchreichen Fixpunkt 18 /
+  Nach-Durchlauf 13).
+
+  | Kriterium | Runde 1 | Runde 2 |
+  | --- | --- | --- |
+  | 1 — Bedeutung belegt | 0 | 0 |
+  | 2 — Query wird ausgewertet | 1 | 0 |
+  | 3 — Szenario an echten Daten | 2 | 1 (B3) |
+  | 4 — Suite grün, Belege | 2 | 1 (B2) |
+  | ohne Kriteriumsbezug | 0 | 2 (B1, B4) |
+  | **Summe** | **5** | **4** |
+
+  - **B1 (leicht), behoben.** Der **Constraints**-Pfad von Plan-Punkt 6 war
+    ungehalten: den Index dort wegzulassen überlebt die ganze Suite (2312
+    passed, Exit 0). Beobachtbar ist er sehr wohl — ein `constraint` (nicht
+    eine `condition`) mit `scope="primary-catalogue"` und `percentValue` zeigt
+    den Unterschied. In den echten Katalogen kommt das nicht vor (27 von 27 an
+    einer `condition`), ein Refactoring könnte die Zeile aber still entfernen.
+  - **B2 (leicht), behoben.** Der Record führte B3/B4 aus Runde 1 noch als
+    offen und nannte 2285 statt 2312 Tests.
+  - **B3 (leicht), behoben.** Sechs der zehn E2E-Roster unterschieden
+    „ausgewertet und traf nicht zu" nicht von „gar nicht aufgelöst": bei
+    abgeschaltetem Feature fielen nur 4 Roster (die `instanceOf`-Seite). Grund
+    ist fachlich einleuchtend — `notInstanceOf` hält bei Zählwert 0, und ein
+    unaufgelöster Rahmen liefert ebenfalls 0. Das Mittel stand im
+    Manifest-Vertrag bereit (`expect.diagnostics.absent`) und ist genau
+    Kriterium 2.
+  - **B4 (informativ, vorbestehend, außerhalb der Absicht), nicht behoben.**
+    `violation-classification` und `author-message-tokens` stehen im
+    Testkatalog nur als Tabellenzeile ohne beschreibenden Abschnitt, obwohl das
+    Dokument beansprucht, jeden Test zu beschreiben. Auf `main` dieselbe Lücke.
+    Als **Issue 0106** gefiltert, nicht mitgelöst — anders als die Summe, die
+    dieser Lauf selbst geschrieben hat.
+  - **Ohne Test, bewusst nicht nachgezogen:** „das erste Vorkommen einer Id
+    gewinnt" in `buildPrimaryCatalogueIndex`. Kein Punkt des Antwortvertrags,
+    sondern dieselbe Regel wie in der globalen Definitionstabelle des
+    Resolvers; eine doppelte Id ist ohnehin schon als Diagnose sichtbar.
+- **2026-07-29, Verzicht auf eine dritte Review-Runde — Urteil, kein
+  Versehen.** Runde 2 verletzte kein Kriterium; die beiden Nachbesserungen
+  (B1, B3) sind **rein additiv**: eine neue Testdatei und eine zusätzliche
+  Zusage im Szenario-Manifest, kein Produktivcode. Das ist per
+  `git diff --stat` nachprüfbar. Eine Runde, die nur additive Tests noch einmal
+  liest, kauft weniger, als sie kostet — der Mensch hat die Laufzeit
+  ausdrücklich als Problem benannt. Die Regel „nach einem Fix wiederholt sich
+  die Review" ist damit bewusst gebrochen und die Abweichung hier festgehalten.
+
 ## Checkpoints
 
 ### Before implementation
