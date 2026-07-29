@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pcs-08" name="PCS 08 - Ogre-Kontingent mit Maneaters" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="maneaters-1" name="Maneaters" entryId="b360-ce9c-85d7-ff03" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="maneaters-1-model" name="Maneaters" entryId="482e-1ec0-561c-ab93" entryLinkId="" number="1" type="model"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

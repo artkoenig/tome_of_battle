@@ -104,7 +104,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`author-message-tokens`](testing/author-message-tokens/) | Definitive Ogre + Mercenaries | 3 |
 | [`shared-target-two-entrylinks`](testing/shared-target-two-entrylinks/) | Definitive VC + Mercenaries | 4 |
 | [`entrylink-raw-type-counting`](testing/entrylink-raw-type-counting/) | Definitive VC + Mercenaries | 3 |
-| **Summe** | | **111** |
+| [`primary-catalogue-scope`](testing/primary-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 10 |
+| **Summe** | | **121** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -475,3 +476,43 @@ Verweis in die Armee.
 | 01 | Border-Patrols-Armee mit **2 direkten** Skeletons-Einheiten (je 10 Modelle) | Keine Autor-Meldung am Slot „Border Patrols rules" — die direkte Grundlinie |
 | 02 | 1 direkte Skeletons-Einheit + **Ogre Bulls über den Verweis** | Ebenfalls keine Meldung: die verlinkte Einheit zählt als 2. Einheit — identisch zur direkten Form |
 | 03 | 4 direkte Skeletons-Einheiten + **Ogre Bulls über den Verweis** als fünfte | Die Obergrenze kippt **nur**, wenn die verlinkte Einheit mitzählt: genau eine Meldung „mindestens ZWEI, höchstens VIER Einheiten" |
+
+## `primary-catalogue-scope`
+
+Prüft den Bezugsrahmen `scope="primary-catalogue"`: eine Bedingung mit diesem
+Rahmen fragt **nicht** „wie viele?", sondern „**ist diese Liste eine
+Ogerarmee?**" — die `childId` benennt die Wurzel-Id eines `<catalogue>`, also
+eines Armeebuchs. Beobachtet wird das an drei Söldner-Einträgen, die jedes
+Armeebuch importiert: den `Rhinox Riders` (Pflicht-Slot und Obergrenze) und den
+`Maneaters` (Rare-Slot-Aufschlag).
+
+**Alle** Roster laufen gegen **denselben** Datensatz, und die Selektionen der
+Paare sind byte-gleich — einzige Variable ist die `entryId` der `<force>`, also
+das Armeebuch. Damit trägt jeder Unterschied im Bericht genau eine Ursache.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Eine Rhinox-Riders-Einheit in der **Ogerarmee** | Der Special-Slot ist dort Pflicht und fehlt: genau eine Verletzung |
+| 02 | **Dieselbe** Einheit in der **Vampirarmee** | Umgekehrt: dort ist der *Rare*-Slot Pflicht, der Special-Slot nicht |
+| 03 | Dieselbe Einheit in der **Orkarmee** | Wie 02 — die Bedingung prüft Identität mit *genau* dem Ogerbuch, nicht „Oger gegen Vampire" |
+| 04 | Ogerarmee, der geforderte Special-Slot ist **gewählt** | Keine Verletzung: die angehobene Pflicht ist erfüllt |
+| 05 | Vampirarmee, der geforderte Rare-Slot ist **gewählt** | Spiegelbild zu 04: keine Verletzung |
+| 06 | **Zwei** Rhinox-Riders-Einheiten in der Ogerarmee | Keine Verletzung: dort ist die Obergrenze aufgehoben |
+| 07 | **Zwei** solche Einheiten in der Vampirarmee | Gegenbeweis: dort greift die Obergrenze (Ist 2 gegen 1) |
+| 08 | Maneaters in der **Ogerarmee** | Kein Aufschlag — der Zusatz-Slot ist dort verborgen und nicht Pflicht |
+| 09 | **Dieselben** Maneaters in der Vampirarmee | Der Maneater kostet außerhalb der Ogerarmee einen Rare-Slot extra: eine Verletzung |
+| 10 | Vampirarmee, deren Roster-Datei fälschlich das **Ogerbuch behauptet** | Ergebnis **identisch zu 02**: das Armeebuch kommt aus der Herkunft der Kontingent-Definition, nicht aus dem Attribut der Roster-Datei |
+
+> **Roster 10 ist der eigentliche Prüfstein.** Eine `.ros`-Datei trägt an ihrer
+> `<force>` ein `catalogueId`-Attribut. Dieses Szenario nagelt fest, dass die
+> Auswertung ihm **nicht** folgt: die Datei behauptet „Ogre Kingdoms", das
+> Kontingent stammt aber aus dem Vampirbuch — und der Bericht muss dem
+> Kontingent folgen, nicht der Behauptung. Bestehende Fixtures tragen dort
+> ohnehin schon Platzhalter (`catalogueId="cat"`), das Attribut ist also keine
+> verlässliche Quelle.
+
+> **Sichtbarkeit bleibt außen vor.** Dieselben Bedingungen steuern auch
+> `field="hidden"` — in der Ogerarmee ist der Maneaters-Zusatzslot verborgen.
+> Der Verletzungsbericht kodiert zählende Grenzen, keine Verfügbarkeit; diese
+> Facette liest man an der Capability-Projektion ab (gleiche Abgrenzung wie in
+> `vampire-bloodlines`, VBL-R4/R5).
