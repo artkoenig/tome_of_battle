@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/noch-zu-tun-x7e3rw
 pr:
 ---
 
@@ -16,12 +16,20 @@ Ogerbullen-Pflicht). Die Auswertung soll beide Wurzelformen einsammeln; fehlt
 die Zieleinheit ganz, entsteht ein blockierender Verstoß.
 
 Die Engine sammelt nur die `selectionEntry`-Form ein:
-`PHANTOM_DEFINITION_KINDS` (`src/evaluator/resolver.js:73`) enthält kein
-`ENTRY_LINK`, und `collectRootDefinitions` (`resolver.js:125`) bricht bei einem
+`PHANTOM_DEFINITION_KINDS` (`src/evaluator/resolver.js:83`) enthält kein
+`ENTRY_LINK`, und `collectRootDefinitions` (`resolver.js:135`) bricht bei einem
 Wurzel-Link sofort ab — samt seiner Kinder. Ein Wurzel-`entryLink` mit
 `min ≥ 1` (`scope="roster"` oder `"force"`) bekommt deshalb kein
 Pflicht-Phantom; sein Angebots-Anker ist per ADR-0035 nie berichtsfähig.
 Ergebnis: eine Liste ohne die Pflichteinheit meldet **null** Verstöße.
+
+*Korrigiert nach der Recherche vom 2026-07-29 (siehe Log): die ursprünglich
+notierten Zeilennummern waren um ~10 verrutscht, und „`armeeLevelCandidates`
+(resolver.js:656)" traf nichts — die Funktion heißt `collectArmyLevelCandidates`
+(`resolver.js:172`). Der Abbruch in `collectRootDefinitions` ist zudem
+**Absicht** (ADR-0032), nicht Versehen: hinter einem Link liegende Einträge
+dürfen keine falsche Pflicht synthetisieren. Die Lösung darf ihn deshalb nicht
+einfach aufheben.*
 
 Repro (Audit 2026-07-28, Skript im Scratchpad des Audits): Katalog mit
 Wurzel-`entryLink` auf ein shared Entry, `min=1 scope="roster"`, leeres Roster
@@ -35,9 +43,15 @@ Acceptance criteria:
    blockierenden Verstoß (Ist 0 gegen die Grenze).
 2. Ausgewertet werden dabei die Grenzen **und Modifier des Links**, nicht die
    des Ziels (§9.9): die bedingte Anhebung von Basis `min=0` auf 1 greift, und
-   ohne erfüllte Bedingung entsteht kein Verstoß.
+   ohne erfüllte Bedingung entsteht kein Verstoß. Insbesondere feuert eine
+   **eigene `min`-Grenze des Ziels** an dieser Wurzelform *nicht* mit — ein
+   Wurzel-Link `min=1` auf ein Ziel mit eigenem `min=3` erzeugt **einen**
+   Verstoß gegen 1, nicht zwei. (Nach der Recherche ist genau das die
+   Bruchstelle der naheliegenden Lösung; deshalb hier ausgeschrieben.)
 3. Führt ein Katalog dieselbe Pflicht in beiden Wurzelformen, wird über die
-   Ziel-Id entdoppelt: genau ein Verstoß (§9.9).
+   Ziel-Id entdoppelt: genau ein Verstoß (§9.9). Maßgeblich ist die Ziel-Id
+   **plus Rahmen** — die beiden Wurzelformen tragen verschiedene Grenz-Ids, die
+   vorhandene Entdopplung über `(limitId, countedTargetId)` trennt sie also.
 4. Die bestehende Suite bleibt grün — mit Kommando, Umfang und Exit-Code
    belegt.
 
@@ -49,6 +63,41 @@ Acceptance criteria:
 
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
+
+Entschieden vor der Umsetzung (2026-07-29), auf der Recherche im Log:
+
+- **D1 — beide Rahmen, belegt nur einer.** Der Intent nennt `roster` und
+  `force`; die echten Kataloge liefern nur `force` (Ogerbullen). Beide werden
+  unterstützt — der Syntheseweg ist ohnehin je Rahmen derselbe. Belegt wird
+  `force` am E2E-Szenario mit echten Katalogdaten, `roster` an einem
+  Unit-Test. **Default**, weil kein Datum die `roster`-Form widerlegt oder
+  bestätigt.
+- **D2 — der Wurzel-Link-Anker wertet nur die *eigenen* Grenzen des Links
+  aus**, nicht die per `limitsOf` (`evalTree.js:180`) vom Ziel geerbten. Das ist
+  §9.9 wörtlich und zugleich genau die Stelle, an der die naheliegende Lösung
+  bricht (Log: zwei Verstöße statt einem). Die Modifikator-Vererbung
+  (`inheritedThenOwn`, `modifiers.js:634`) bleibt **unangetastet**: ein
+  Modifikator des Ziels kann nur Grenz-Ids des Ziels adressieren, und die wertet
+  dieser Anker nicht aus — Kriterium 2 hält also, ohne an der Modifikatorschicht
+  zu drehen. Vorbild für den Zuschnitt ist `limitScopeFilter`
+  (`evalTree.js:110`), das dieselbe Trennung schon für Rahmen macht.
+- **D3 — Entdopplung über die *aufgelöste* Ziel-Id plus Rahmen.** Nicht über die
+  rohe `targetId`: bei einer Link-auf-Link-Kette laufen beide auseinander
+  (Berührung mit Issue 0094), und die aufgelöste Id ist die, die die andere
+  Wurzelform (ein Wurzel-`selectionEntry`) als eigene `def.id` trägt. Nur über
+  sie treffen sich die beiden Formen überhaupt.
+- **D4 — `PHANTOM_DEFINITION_KINDS` bleibt, wie es ist.** `ENTRY_LINK` dort
+  aufzunehmen ließe die Traversierung in die Kinder des Links absteigen und
+  synthetisierte genau die falschen Pflichten, die ADR-0032 ausschließt
+  (abgesichert in `crossCatalog.test.js:109-142`). Die Wurzel-Links werden
+  stattdessen getrennt eingesammelt.
+- **D5 — Abwesenheit zählt über Link-Id *und* aufgelöste Ziel-Id.** Eine reale
+  Auswahl durch einen Wurzel-Link trägt die **Link-Id**, nicht die Ziel-Id —
+  belegt an `docs/testing/explorer-force-constraints/rosters/02-three-special-legal.ros:7`
+  (`entryId="d82e-111e-89b9-2be1"` = die Link-Id, Ziel ist
+  `7754-8b3d-df99-d2d5`). Führt ein Katalog beide Wurzelformen, kann dieselbe
+  Einheit aber unter der Ziel-Id im Roster stehen; zählte der Anker nur die
+  Link-Id, feuerte er dann fälschlich. Beide Ids zählen deshalb.
 
 ## Log
 
@@ -122,9 +171,26 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+**Does this match what was asked?** Ja. Der Auftrag lautet, die Evaluator-Lücken
+eine nach der anderen abzuarbeiten; dies ist die zweite. Die vier Kriterien
+stehen, drei davon sind an echten Katalogdaten prüfbar. Zwei Korrekturen an der
+Absicht waren nötig (Zeilennummern, und der Rahmen des Ogerbullen-Constraints
+ist `force`, nicht `roster`) — beide oben eingearbeitet.
+
+**What surprised me?** Dass der Abbruch, den der Intent als Fehler liest,
+**Absicht** ist und von ADR-0032 gedeckt wird. Die naheliegende Lösung ist
+belegt falsch und die bestehende Suite merkt es nicht: mit dem naiven Patch
+liefen 48 Dateien / 649 Tests unverändert grün, obwohl er zwei Verstöße statt
+einem erzeugt. Die Lücke sitzt also nicht dort, wo die Absicht sie vermutet.
+
+**What am I assuming without having verified it?** Drei Dinge. (a) Dass die
+`roster`-Wurzelform des Links überhaupt in freier Wildbahn vorkommt — kein
+Katalog des Fixture-Satzes zeigt sie (D1, als Default vermerkt). (b) Dass ein
+Wurzel-Link auf eine `selectionEntryGroup` nichts eigenes braucht; ungeprüft,
+im Log als offener Punkt notiert. (c) Dass die Entdopplung aus Kriterium 3
+keinen echten Katalogfall hat und deshalb an einem synthetischen Katalog
+gezeigt werden muss — ob ein Fixture-Katalog dieselbe Pflicht doppelt führt,
+ist ungeprüft geblieben.
 
 ### Before the PR
 
