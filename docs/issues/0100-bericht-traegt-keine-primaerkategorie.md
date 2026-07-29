@@ -70,8 +70,26 @@ Acceptance criteria:
 - **Kein Versionssprung** (Default): reine Engine-/Berichtserweiterung, die
   Reinraum-Engine ist noch nicht in die UI eingebunden — nichts, was ein
   Nutzer heute sieht, ändert sich.
+- **Zwei Ränder, vom test-author als Frage zurückgegeben, als Default
+  entschieden (ungetestet, unverbindlich für die Tests):**
+  (a) `remove` auf die aktuelle Primärkategorie nimmt auch das Primär-Flag
+  (`primaryCategoryId` fällt auf `null`) — eine Primärkategorie ohne
+  Mitgliedschaft wäre sinnlos, §7.2 macht `primary` zum Flag eines
+  Mitgliedschafts-Links. (b) `set-primary` und `unset-primary` wirken in
+  Anwendungsreihenfolge aufeinander — der später feuernde gewinnt, ohne
+  Sonderregel.
 
 ## Log
+
+- 2026-07-29 — test-author: 10 fehlschlagende Tests in
+  `src/evaluator/report.effectiveCategories.test.js`, schwarz gegen die
+  Fassade (`prepareDataset`/`evaluate`), je Kriterium mindestens ein Test
+  (Basis-Primär, mehrere `primary="true"`, `add`-Modifier, §8-Beispiel mit
+  bedingtem `set-primary` inkl. Gegenprobe, letzter `set-primary` gewinnt,
+  `unset-primary` auf primär/nicht-primär, Mitgliedschaft bleibt). Beleg:
+  `npx vitest run src/evaluator/report.effectiveCategories.test.js` →
+  Exit 1, 10/10 rot, alle auf den fehlenden Feldern. Zwei offene Ränder als
+  Default in Decisions entschieden.
 
 ## Checkpoints
 
