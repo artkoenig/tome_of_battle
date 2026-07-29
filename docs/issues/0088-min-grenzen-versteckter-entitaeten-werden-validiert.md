@@ -21,6 +21,13 @@ versteckte Entität mit `min ≥ 1` erzeugt so einen blockierenden Verstoß, den
 der Nutzer nie beheben kann — das dynamische `hidden` ist aber genau der
 WHFB6-Mechanismus für Armee-Varianten (Bloodlines etc.).
 
+Einordnung der Quelle: §5.6 formuliert das Validierungsverbot wörtlich nur
+für `forceEntry` und `categoryLink`; über Min-Grenzen versteckter
+`selectionEntries`/Gruppen schweigen Doku und Wiki. Die Ausdehnung auf alle
+Ankerarten (AC 2) folgt derselben Ratio — ein unbehebbarer Verstoß — und ist
+eine Entscheidung dieses Laufs, kein Doku-Fakt; bei Umsetzung ist §5.6/§8
+der Doku entsprechend nachzuziehen.
+
 Repros (Audit 2026-07-28, gegen die echte Fassade): `selectionEntry
 hidden="true"` mit `min=1 scope="roster"`, leeres Roster → Verstoß; Force mit
 `categoryLink hidden="true"` + `min=2 scope="force"`, leere Force → Verstoß am
@@ -56,6 +63,11 @@ Acceptance criteria:
   Repo (2026-07-28), Fund mit ausgeführten Repros gegen die echte Fassade.
 
 ## Log
+
+- 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
+  Intent ergänzt um die Einordnung, dass §5.6 nur `forceEntry`/`categoryLink`
+  deckt und die Verallgemeinerung auf alle Ankerarten eine Projektentscheidung
+  ist, die im Lauf zu protokollieren und in die Doku zu heben ist.
 
 ## Checkpoints
 

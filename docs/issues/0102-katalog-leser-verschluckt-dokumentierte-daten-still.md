@@ -41,8 +41,12 @@ bzw. `catalogSet.js`/`resolver.js`):
    deklarierte, aber nirgends bepreiste Kostenart wird als
    `DANGLING_MODIFIER_TARGET` verworfen.
 9. **Modifier-`scope`-Attribut** (1 reales Vorkommen in den Fixtures:
-   „Aura of Slaanesh", `scope="unit"` an einem Kategorie-Modifier) wird
+   `selectionEntry` „Mark of Slaanesh (Hero) [DARK ELVES]" in `Vampire
+   Counts (…).cat:16888`, `scope="unit"` an einem Kategorie-Modifier) wird
    ignoriert — der Modifikator wirkt auf den Träger statt auf die Einheit.
+   (Nebenbefund: die Ziel-Kategorie-Id `4990-1770-2328-effd` dieses
+   Modifiers ist in keiner Fixture-Datei definiert — zusätzlich ein
+   hängender Kategorie-Verweis.)
 
 Acceptance criteria:
 
@@ -75,6 +79,13 @@ Acceptance criteria:
   Kataloge/BattleScribe schreiben `true`/`false`; Exposition derzeit nil.
 
 ## Log
+
+- 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
+  Punkt 9 korrigiert — das eine reale `scope`-Vorkommen hängt am
+  `selectionEntry` „Mark of Slaanesh (Hero) [DARK ELVES]" (`Vampire Counts
+  (…).cat:16888`), nicht an „Aura of Slaanesh" (dieser Name kommt in keiner
+  Fixture-Datei vor). Nebenbefund ergänzt: dessen Ziel-Kategorie-Id ist in
+  den Fixtures nirgends definiert (hängender Verweis).
 
 ## Checkpoints
 
