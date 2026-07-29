@@ -84,6 +84,30 @@ export { prepareDataset } from './datasetPreparation.js';
  *   **und** die eingestellten Kostengrenzen je Kostenart (`costLimits`, die
  *   Zuordnung Kostenart → Grenzwert, analog `<costLimits>`). Fehlt `costLimits`,
  *   ist das Budget leer — verhaltensgleich zu einem Roster ohne Kostengrenzen.
+ *
+ *   **Identitaets-Regel fuer `defId`.** Eine Auswahl, die ueber einen
+ *   `<entryLink>` gesetzt wurde, wird unter der Id des **Verweises** uebergeben
+ *   (`entryLinkId` der `.ros`), nicht unter der Id seines Ziels; eine Auswahl
+ *   ohne Verweis unter der Id ihres **Eintrags** (`entryId`). Nur unter der
+ *   Link-Id gelten die am Verweis deklarierten Grenzen, und nur so faellt der
+ *   Slot des Verweises mit dem belegten Slot zusammen, statt daneben als
+ *   Phantom stehenzubleiben — dieselbe Wahl, die der Ankervertrag des Berichts
+ *   festhaelt: „ein Angebots-Anker den `entryLink`, nicht den Eintrag (nur so
+ *   gelten die am Verweis deklarierten Grenzen)" (`report.js`). Diese Regel ist
+ *   eine **Entscheidung dieses Projekts**: die Abschnitte *Roster*, *Force* und
+ *   *Selection* des BSData-Wikis stehen als TODO, keine Quelle legt fest,
+ *   welche Id eine Auswahl identifiziert (`docs/battlescribe-data-format.md`
+ *   §15).
+ *
+ *   **Nicht aufloesbare `defId`.** Eine `defId`, die kein geladenes Dokument
+ *   aufloest, ergibt die Diagnose `{ kind: 'unresolvedDefinition', defId }` —
+ *   **bewusst ohne Rueckfall** auf die Ziel-Id des Verweises: das Ziel eines
+ *   `entryLink` stammt aus demselben Katalog (bzw. per Grundregelwerk-Import
+ *   aus der `.gst`), und die Auswahlen eines Kontingents stammen aus einem
+ *   einzigen Katalog — ein Roster, das einen Verweis aus einem nicht geladenen
+ *   Katalog benennt, war also nie gueltig (`docs/battlescribe-data-format.md`
+ *   §7.2, §15). Ein stiller Rueckfall wuerde diesen Datensatz-Fehler als
+ *   gueltige Auswertung tarnen.
  * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
  *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen. Ein
  *   Slot ist **jede Stelle, an der eine Auswahl stehen kann** — auch eine noch

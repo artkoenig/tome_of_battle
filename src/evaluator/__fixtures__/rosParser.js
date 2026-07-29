@@ -22,12 +22,11 @@ const dom = new JSDOM();
 /**
  * Die Definitions-Id, unter der eine `<selection>` im Datensatz steht.
  *
- * Ein Roster benennt eine ueber einen `<entryLink>` gesetzte Auswahl mit zwei Ids:
- * `entryLinkId` (der Verweis) und `entryId` (sein Ziel). Massgeblich ist der
- * **Verweis**, denn nur an ihm gelten die an ihm selbst deklarierten Grenzen und
- * Modifikatoren; das Ziel bleibt ueber `targetId` erreichbar und zaehlt weiter mit.
- * Fehlt das Attribut oder ist es leer — die Auswahl steht direkt, ohne Verweis —,
- * bleibt es bei `entryId`.
+ * Setzt die Identitaets-Regel des Fassaden-Vertrags um (JSDoc `@param roster`
+ * an `evaluate`, `src/evaluator/evaluator.js` — dort steht auch die
+ * Begruendung): massgeblich ist der **Verweis** (`entryLinkId`), ueber den die
+ * Auswahl gesetzt wurde. Fehlt das Attribut oder ist es leer — die Auswahl
+ * steht direkt, ohne Verweis —, bleibt es bei `entryId`.
  *
  * @param {Element} selection Ein `<selection>`-Element.
  * @returns {string | null} Die Definitions-Id der Auswahl.

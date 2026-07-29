@@ -228,6 +228,10 @@ record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
                       children: ResolvedDef[], resolutionLog: Diagnostic[] }
 
 record InstanceNode { defId: Id, count: number, children: InstanceNode[] }
+                      // defId: bei einer über einen entryLink gesetzten Auswahl die Id des
+                      // VERWEISES, sonst die des Eintrags; unauflösbar ⇒ Diagnose
+                      // `unresolvedDefinition`, bewusst ohne Rückfall. Vertrag samt
+                      // Begründung: JSDoc `@param roster` an `evaluate` (src/evaluator/evaluator.js)
 record CostLimit    { costTypeId: Id, value: number }                    // eine eingestellte Grenze je Kostenart
 record Roster       { forces: InstanceNode[], costLimits: CostLimit[] }  // costLimits: das eingestellte Budget je Kostenart (vollständige Liste)
 
