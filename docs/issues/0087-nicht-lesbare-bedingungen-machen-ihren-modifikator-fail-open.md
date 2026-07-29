@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/87-umsetzen-eodz2h
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/175
 ---
 
 # Nicht lesbare Bedingungen machen ihren Modifikator fail-open
@@ -186,3 +186,20 @@ Acceptance criteria:
   Merge eine andere Version wählen.
 
 ## Retro
+
+- **Was gut lief:** Der Lauf konvergierte in einer Review-Runde (0
+  Findings). Der im Issue vorab festgehaltene Diagnose-Vertrag
+  (`carrierId`/`carrierName`) und der `field`-Default verhinderten, dass
+  Test-Author und Implementer denselben Punkt unterschiedlich raten.
+- **Was im Weg stand:** (a) Die Metis-Agenten waren zu Session-Beginn im
+  Agent-Registry-Snapshot nicht sichtbar (Symlinks lagen, Typen fehlten) —
+  erst nach dem ersten Fehlversuch tauchten sie auf; kostete einen
+  Umweg über eine general-purpose-Emulation des Researchers. (b) Kriterium
+  4 („Suite bleibt grün") war am Basis-Commit nicht erfüllbar, weil der
+  vorbestehende 0112-Rote die Evaluator-Suite auf Exit 1 hält — das
+  Kriterium musste als „kein neuer Roter" gelesen und der Vorbehalt
+  dreifach dokumentiert werden. Lehre: Solange 0112 offen ist, sollten
+  Kriterien „Suite grün" als „grün bis auf den getrackten 0112-Roten"
+  formulieren.
+- **Vorschlag fürs Regelwerk:** keiner — die Regeln trugen; die
+  Registry-Verzögerung ist ein Infrastruktur-, kein Regelthema.
