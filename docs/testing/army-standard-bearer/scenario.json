@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "army-standard-bearer",
-  "description": "Armee-Standartentraeger (Battle Standard Bearer) der 6th Definitive Edition (Orcs & Goblins + .gst + Mercenaries). Alle Erwartungen sind AUS DEN KATALOGDATEN abgeleitet (Black-Box, kein Blick in den Evaluator). Die BSB-Aufwertung traegt zwei eintrags-skopierte Zaehlgrenzen (auf dem geteilten .gst-Eintrag e9ad): armeeweit max 1 (082b, scope=roster) und je Charakter max 1 (01a5, scope=parent). Die zusaetzlichen KATEGORIE-skopierten Grenzen auf der categoryEntry 2ef7 (2a1d force, 6935 parent) samt der Border-Patrols-Ausnahme (Modifier setzt 2a1d auf 0) sowie die als Verfuegbarkeit (hidden) modellierte Magic-Items-Sperre gelten laut Domaenenkonvention NICHT als zaehlende Verletzung und werden daher als absent gepinnt.",
+  "description": "Armee-Standartentraeger (Battle Standard Bearer) der 6th Definitive Edition (Orcs & Goblins + .gst + Mercenaries). Alle Erwartungen sind AUS DEN KATALOGDATEN abgeleitet (Black-Box, kein Blick in den Evaluator). Die BSB-Aufwertung traegt zwei eintrags-skopierte Zaehlgrenzen (auf dem geteilten .gst-Eintrag e9ad): armeeweit max 1 (082b, scope=roster) und je Charakter max 1 (01a5, scope=parent). Die KATEGORIE-skopierten Grenzen auf der categoryEntry 2ef7 gelten laut Datenformat (Paragraf 5.5/5.6) OHNE Wiederholung am categoryLink: die Force-Grenze 2a1d (Kategorie-Ziel, zaehlt armeeweit) feuert in Roster 02 (Ist 2/Grenze 1), 03 (2/1) und 04 (Border-Patrols-Modifier setzt die Grenze auf 0, Ist 1/Grenze 0). Die parent-skopierte Kategorie-Grenze 6935 bleibt unveraendert absent gepinnt (nicht Teil von Issue 0092); die als Verfuegbarkeit (hidden) modellierte Magic-Items-Sperre erscheint nicht als zaehlende Verletzung.",
   "dataset": {
     "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
@@ -20,31 +20,35 @@
     },
     {
       "file": "rosters/02-bsb-two-in-army-illegal.ros",
-      "description": "Orc Bigboss UND Goblin Bigboss, jeder mit genau einer BSB-Aufwertung. Die armeeweite Zaehlgrenze max 1 (082b, scope=roster) feuert (Ist 2, Grenze 1). Die Charakter-Grenze (01a5) bleibt eingehalten (je 1); die kategorie-skopierte Force-Grenze (2a1d) taucht nicht als Verletzung auf.",
+      "description": "Orc Bigboss UND Goblin Bigboss, jeder mit genau einer BSB-Aufwertung. Die armeeweite Zaehlgrenze max 1 (082b, scope=roster) feuert (Ist 2, Grenze 1). Zusaetzlich feuert die kategorie-skopierte Force-Grenze 2a1d (Kategorie 2ef7, zaehlt armeeweit): Ist 2, Grenze 1. Die Charakter-Grenzen (01a5, 6935) halten (je 1).",
       "expect": {
         "firing": [
-          { "limitId": "082b-067c-b983-c393", "actual": 2, "bound": 1 }
+          { "limitId": "082b-067c-b983-c393", "actual": 2, "bound": 1 },
+          { "limitId": "2a1d-03a1-b48c-64ad", "actual": 2, "bound": 1 }
         ],
-        "absent": ["01a5-106d-f6e8-560b", "2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+        "absent": ["01a5-106d-f6e8-560b", "6935-5f06-39d4-5f45"]
       }
     },
     {
       "file": "rosters/03-bsb-twice-on-one-character-illegal.ros",
-      "description": "Ein Orc Bigboss, BSB-Aufwertung mit number=2. Die Charakter-Obergrenze max 1 (01a5, scope=parent) feuert (Ist 2, Grenze 1); zusaetzlich feuert die armeeweite Obergrenze (082b, scope=roster, Ist 2, Grenze 1). Die kategorie-skopierte Parent-Grenze (6935) taucht nicht als Verletzung auf.",
+      "description": "Ein Orc Bigboss, BSB-Aufwertung mit number=2. Die Charakter-Obergrenze max 1 (01a5, scope=parent) feuert (Ist 2, Grenze 1); zusaetzlich feuern die armeeweite Obergrenze (082b, scope=roster, Ist 2, Grenze 1) und die kategorie-skopierte Force-Grenze 2a1d (Kategorie 2ef7, zaehlt armeeweit, Ist 2, Grenze 1). Die parent-skopierte Kategorie-Grenze 6935 bleibt unveraendert absent gepinnt.",
       "expect": {
         "firing": [
           { "limitId": "082b-067c-b983-c393", "actual": 2, "bound": 1 },
-          { "limitId": "01a5-106d-f6e8-560b", "actual": 2, "bound": 1 }
+          { "limitId": "01a5-106d-f6e8-560b", "actual": 2, "bound": 1 },
+          { "limitId": "2a1d-03a1-b48c-64ad", "actual": 2, "bound": 1 }
         ],
-        "absent": ["2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+        "absent": ["6935-5f06-39d4-5f45"]
       }
     },
     {
       "file": "rosters/04-bsb-border-patrols-illegal.ros",
-      "description": "Ein Orc Bigboss mit genau einer BSB-Aufwertung plus die Force-Selektion Border Patrols rules. In-world verbietet Border Patrols den BSB (Modifier setzt die Kategorie-Force-Grenze 2a1d auf 0). Diese KATEGORIE-skopierte Ausnahme erscheint NICHT als zaehlende Verletzung; der eine BSB haelt zudem die eintrags-skopierten Grenzen (082b/01a5) ein.",
+      "description": "Ein Orc Bigboss mit genau einer BSB-Aufwertung plus die Force-Selektion Border Patrols rules. Der Border-Patrols-Modifier auf der categoryEntry 2ef7 setzt die Kategorie-Force-Grenze 2a1d auf 0 (Bedingung atLeast 1 x 4e15 scope=force erfuellt): die Grenze feuert mit Ist 1, Grenze 0. Die eintrags-skopierten Grenzen (082b/01a5) halten (1 BSB).",
       "expect": {
-        "firing": [],
-        "absent": ["082b-067c-b983-c393", "01a5-106d-f6e8-560b", "2a1d-03a1-b48c-64ad", "6935-5f06-39d4-5f45"]
+        "firing": [
+          { "limitId": "2a1d-03a1-b48c-64ad", "actual": 1, "bound": 0 }
+        ],
+        "absent": ["082b-067c-b983-c393", "01a5-106d-f6e8-560b", "6935-5f06-39d4-5f45"]
       }
     },
     {

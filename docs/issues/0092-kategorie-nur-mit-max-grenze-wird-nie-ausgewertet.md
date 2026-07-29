@@ -88,6 +88,14 @@ Acceptance criteria:
   misleading — the target-type rule makes any category anchor army-wide,
   so single-anchor is the only design their own empty-second-force test
   admits.
+- 2026-07-28 e2e-testcase-author (black-box, data only): re-derived limit
+  `2a1d` for rosters 02/03/04 of `army-standard-bearer` — fires 2/1, 2/1,
+  1/0 (Border Patrols sets bound 0); scenario.json + README updated, the
+  withdrawn "Domänenkonvention" documented as a former engine limitation.
+  Flagged but out of scope: sibling parent-scope limit `6935` would
+  plausibly fire in roster 03 under the same §5.5 reading — left pinned
+  absent, marked "offener Punkt" in the README for the human. Full suite
+  after the update: `npx vitest run` 211 files / 2153 tests, exit 0.
 
 ## Checkpoints
 
