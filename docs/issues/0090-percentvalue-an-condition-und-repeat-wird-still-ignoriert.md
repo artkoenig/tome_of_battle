@@ -89,8 +89,11 @@ Nötige bereits.
   Null-Nenner → SUSPENDED + Diagnose; Unlimited-Kurzschluss VOR dem
   Nenner). XSD: `percentValue` an `QueryBase` (Catalogue.xsd:428) — gilt
   für Constraint, Condition, Repeat; Wiki-Zitate an allen dreien.
-  Fixtures: 6.178 × `percentValue="false"`, 0 × `"true"` — latent wie
-  behauptet. `conditionHolds`/`repeatCount` (`modifiers.js`) erhalten
+  Fixtures: `percentValue` kommt ausschließlich als `"false"` vor, 0 ×
+  `"true"` — latent wie behauptet. (Korrigiert nach Review-Runde 1: die
+  ursprünglich notierte Zahl 6.178 reproduzierte nicht — je nach
+  Dateimenge 3.432–7.172 Vorkommen; der tragende Teil „0 × true" ist
+  reviewer-verifiziert exakt.) `conditionHolds`/`repeatCount` (`modifiers.js`) erhalten
   denselben QueryContext wie resolveBound — Nenner ohne Plumbing
   verfügbar. Diagnose-Präzedenz für Nicht-Unterstützung existiert
   (`UNSUPPORTED_MODIFIER_GROUP_REPEAT`), wird aber nicht gebraucht.
@@ -126,6 +129,18 @@ Nötige bereits.
   bewusste Nicht-Änderung: strukturelle Parallele
   resolveBound/resolvePercentValue (`PERCENT_DIVISOR` doppelt) —
   Refactoring läge außerhalb des Intents.
+- 2026-07-29 review Runde 1 (frischer Kontext): **1 Befund**, nur
+  Tracker-Protokoll (Researcher-Zahl 6.178 nicht reproduzierbar — oben
+  korrigiert). Alle 4 Kriterien erfüllt; Rot-Beweis eigenständig
+  reproduziert (9/7 auf `324f448`); alle Exit-Codes unabhängig erhoben;
+  Byte-Identitäts-Sonde über alle Szenario-Roster: vollständiger Bericht
+  auf main und HEAD **byte-identisch** (31.241.330 Bytes) — der
+  Nicht-Prozent-Pfad zahlt nachweislich nichts. Zeugen-Wiederauswertung
+  emittiert nicht in den echten Strom; Fixpunkt hält die
+  Letzte-Runde-Konvention; fail-closed-Richtung Condition/Repeat
+  konsistent. **Waiver:** Der Fix betrifft nur das Issue-Protokoll —
+  keine Datei, um die es in den Kriterien geht; die Wiederholungsrunde
+  entfällt nach der Regel im Rulebook, hiermit protokolliert.
 
 ## Checkpoints
 
@@ -148,8 +163,19 @@ Nötige bereits.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — volle Prozent-Semantik an
+  Condition und Repeat in der Grenzen-Konvention, AC 3 trivial durch
+  volle Unterstützung; Review-Runde 1 fand nur einen
+  Tracker-Zahlenfehler.
+- What surprised me? Die Byte-Identitäts-Sonde des Reviewers (31 MB
+  Berichts-Dump über alle Szenarien, main vs. HEAD identisch) — ein
+  stärkerer Nichts-kaputt-Beleg als jede Testliste. Und dass Zeugen- und
+  Fixpunkt-Konventionen die neuen Diagnosen gratis richtig behandeln.
+- What am I assuming without having verified it? Dass der ungepinnte
+  `limit::`-Nenner-Default (fail-closed) so bleiben darf — im PR für den
+  Menschen markiert; dass die Payload-Wahl `{ field, scope }` für
+  `zeroDenominator` an Gates trägt (Conditions haben keine Id — bei
+  Bedarf später anreicherbar). Kein Versions-Bump: Evaluator nicht
+  UI-angebunden (Sitzungs-Präzedenz).
 
 ## Retro
