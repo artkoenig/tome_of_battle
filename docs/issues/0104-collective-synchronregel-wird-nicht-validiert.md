@@ -52,6 +52,15 @@ Acceptance criteria:
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28); zunächst als Punkt 4 in Issue 0102 mitgeführt, auf
   Wunsch des Menschen als eigenständiges Issue herausgelöst (2026-07-28).
+- **Entscheidung „prüfen" (2026-07-29, Quelle: Mensch + BSData-Wiki):** Der
+  Mensch hat verfügt, dass die BSData-Doku höchste Priorität hat. Das
+  BSData-Wiki (*Collective Entries*) formuliert die Synchronregel als Regel:
+  „The parent of a collective entry must always have the same number of
+  selections of that entry as all other instances of that parent entry who
+  share a common parent." Damit fällt die Entscheidung auf **prüfen**
+  (Befund bei Divergenz), nicht auf dokumentierten Verzicht. Voraussetzung:
+  das `collective`-Attribut wird gelesen (Issue 0102 Punkt 4) — 0102 läuft
+  deshalb vor diesem Issue.
 
 ## Log
 
