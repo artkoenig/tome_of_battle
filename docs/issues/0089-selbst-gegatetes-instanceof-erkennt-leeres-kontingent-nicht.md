@@ -98,8 +98,25 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — both encodings equivalent by
+  construction (normalization to canonical), empty forces recognized, one
+  fresh-context round with zero findings; reds proven real on origin/main.
+- What surprised me? The right seam was the resolver, not the query layer —
+  §7.7 ties the recognition to the CONDITION KIND, which query() never
+  sees; checkpoint 1's assumption was wrong and the Log records why.
+- What am I assuming without having verified it? That counting conditions
+  with force-id scopes keep their old meaning relies on the kind-set guard
+  alone (reviewer: no test exercises that combination — coverage note for
+  a future run). No version bump: evaluator not wired to the UI (session
+  precedent).
+
+- 2026-07-29 review round 1 (fresh context): 0 findings; red-on-main proof
+  6/17 exact; immutability verified (rewrite before deep-freeze,
+  idempotent, immutability suite green); blast radius traced — no
+  diagnostic carries a rewritten scope, childId-set and canonical paths
+  untouched, nested-force edge behaves canonical. Two coverage
+  observations recorded: the counting-kind exclusion is unpinned; the
+  parser collapses `childId="any"` to missing (pre-existing), so that
+  spelling is normalized too (§7.7-consistent).
 
 ## Retro
