@@ -113,9 +113,18 @@ Acceptance criteria:
   Nachfahren-Summe — genau die Eigen-Kosten). Architektur-Doku §4.4
   korrigiert (der alte Schlusssatz beschrieb das unterschossene Verhalten).
 - Belege per Exit-Code nach Fassung 2: `npx vitest run src/evaluator` →
-  60 Dateien, 774 Tests, exit 0 (inkl. der 8 zuvor roten 0086-Tests).
+  774 Tests, exit 0 (inkl. der 8 zuvor roten 0086-Tests).
   `npm run lint` → exit 0. `npm run typecheck` → exit 0.
   `node scripts/measure-evaluator.js` → exit 0.
+- Review-Runde 2 (frischer Kontext, ganzer Intent, nach Fassung 2):
+  **0 Befunde**. Eigenständig verifiziert: 774/774 exit 0, Lint/Typecheck/
+  Messung exit 0; eigene Probe für den testfreien Rand „verschachtelter
+  Träger mit Mehrfach-Vorkommen" (count 2 → Eigen-Summe 100, keine
+  Verletzung; count 3 → 150, Verletzung — nie die Nachfahren-Summe 210);
+  Conditions/Repeats und Budget-Regel bit-identisch zu vorher (Default-Gate
+  bzw. `null`-Ziel ohne aufgestiegene Kosten); Prozent-Nenner, `scope=self`,
+  `shared=false`, Gruppen-/Force-/Kategorie-Anker und BOTH-Eimer geprüft und
+  verhaltensgleich. Triage: nichts zu fixen.
 
 ## Checkpoints
 
@@ -157,3 +166,12 @@ Acceptance criteria:
   hier korrekt durch den bereits existierenden roten Test erfüllt — kein
   Regel-Misfire, aber der Fall „der rote Test existiert schon" könnte im
   Rulebook explizit stehen; als Vorschlag fürs `metis`-Repo mitgenommen.
+- **Nachtrag nach dem CI-Lauf:** Der Ein-Zeilen-Fix (Fassung 1) bestand
+  Review-Runde 1, weil der einzige rote Test einen Top-Level-Träger prüfte —
+  der verschachtelte Fall war nirgends gepinnt und fiel erst durch die frisch
+  gemergten 0086-Tests auf. Zwei Lehren: (1) vor dem PR `origin/main` noch
+  einmal fetchen und die Suite auf dem Merge-Stand fahren — der PR-CI-Lauf
+  prüft den Merge, der lokale Lauf nur den Branch; (2) bei einer Flag-Semantik
+  mit zwei Lesarten die Ränder beider Lesarten pinnen (hier: Träger
+  verschachtelt vs. top-level), nicht nur den Fall aus dem Bug-Report. Beides
+  Arbeitsweise, kein Regel-Defekt.
