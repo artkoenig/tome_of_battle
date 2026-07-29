@@ -200,14 +200,21 @@ const ROOT_FORM_DUTY_SCOPES = Object.freeze(new Set([
  * Der Entdopplungs-Schluessel einer Wurzelform-Pflicht — `null`, wenn das
  * Ergebnis keine ist und die Regel es unangetastet laesst.
  *
- * Der Schluessel ist **aufgeloeste Ziel-Id plus Rahmen** (Issue 0085, D3/D6):
+ * Der Schluessel ist **aufgeloeste Ziel-Id plus Rahmen plus effektive Grenze**
+ * (Issue 0085, D3/D6/D11):
  *
  * - die *aufgeloeste* Ziel-Id, nicht die rohe `targetId` — nur sie ist die Id,
  *   die die andere Wurzelform (der Wurzel-`selectionEntry`) als eigene `def.id`
  *   traegt, und bei einer Link-auf-Link-Kette laufen beide auseinander;
  * - der Rahmen ist die **konkrete Instanz** ({@link frameKeyOf} des tragenden
  *   Knotens), nicht die Rahmenart: zwei leere Kontingente sind zwei offene
- *   Pflichten, nicht eine.
+ *   Pflichten, nicht eine;
+ * - die **effektive** Grenze (nach Modifikatoren), weil zwei verschiedene
+ *   Grenzwerte zwei verschiedene Aussagen sind (D11): fuehrt ein Katalog die
+ *   Einheit als Wurzel-Eintrag mit `min 1` und als Wurzel-Link mit `min 2`,
+ *   waere „0 von 1" zu melden und „0 von 2" stumm fallen zu lassen die
+ *   schlechteste aller Ausgaben — der Nutzer erfuellt die gemeldete Grenze und
+ *   die Liste bleibt illegal.
  *
  * Zugeschnitten ist die Regel auf die Wurzelformen selbst: ein Pflicht-Anker an
  * der Wurzel oder in einem Kontingent, dessen Definition ein Eintrag oder ein
@@ -224,7 +231,7 @@ function rootFormDutyKeyOf(result) {
   const frame = node.parent;
   if (frame === null || (!frame.isRoot && !frame.isForce)) return null;
   const targetId = node.def.resolved?.id ?? node.def.id;
-  return `${frameKeyOf(frame)} ${targetId}`;
+  return `${frameKeyOf(frame)}\u0000${targetId}\u0000${result.bound}`;
 }
 
 /**
