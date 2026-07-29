@@ -144,6 +144,33 @@ function collectRootDefinitions(definition, out, seen) {
 }
 
 /**
+ * Sammelt die **Wurzel-`entryLink`s** fuer die Pflicht-Synthese der zweiten
+ * Wurzelform (`docs/battlescribe-data-format.md` §9.9): die `entryLink`s
+ * unmittelbar unter einer Katalog- oder Spielsystem-Wurzel, deren Ziel ein
+ * **Eintrag** ist.
+ *
+ * Sie stehen bewusst **neben** der Wurzel-Definitionsliste und nicht in ihr:
+ * ein Link in {@link PHANTOM_DEFINITION_KINDS} liesse
+ * {@link collectRootDefinitions} in seine Kinder absteigen und synthetisierte
+ * genau die falschen Pflichten, die ADR-0032 ausschliesst (Issue 0085, D4). Die
+ * Join-Schicht haengt daraus einen eigenen Anker, der ausschliesslich die
+ * **eigenen** Grenzen des Links auswertet (§9.9: „die Constraint und die
+ * Modifier des Links … nicht die des Ziels").
+ *
+ * Ein Link auf eine `selectionEntryGroup` gehoert **nicht** dazu (Issue 0085,
+ * D9: eine eigene Luecke mit eigener Frage), ein baumelnder ebenso wenig — ohne
+ * aufgeloestes Ziel gibt es nichts zu zaehlen.
+ *
+ * Aufzurufen erst **nach** der `entryLink`-Auflösung: die Ziel-Art steht bis
+ * dahin nicht fest.
+ */
+function collectRootEntryLinks(rootSelectionChildren) {
+  return rootSelectionChildren.filter(definition =>
+    definition.kind === DefinitionKind.ENTRY_LINK
+    && definition.resolved?.kind === DefinitionKind.ENTRY);
+}
+
+/**
  * Die Definitionsarten, die als **Angebot auf Armee-Ebene** taugen: eine
  * anwaehlbare Auswahl unmittelbar unter einer Katalog- oder Spielsystem-Wurzel.
  * Eine Wurzel-Gruppe ist kein Auswahlpunkt, ein Wurzel-`categoryLink` keine
@@ -623,7 +650,10 @@ function assertUnresolved(definitionNodes, infoRoots) {
  *
  * Daneben liefert er die **Kandidatenmenge des Angebots auf Armee-Ebene**
  * (`armyLevelCandidates`, siehe {@link collectArmyLevelCandidates}) als eigene,
- * benannte Sicht — die Grundlage der Angebots-Anker je Kontingent (ADR-0035).
+ * benannte Sicht — die Grundlage der Angebots-Anker je Kontingent (ADR-0035) —
+ * und die **Wurzel-`entryLink`s** (`rootEntryLinks`, siehe
+ * {@link collectRootEntryLinks}), aus denen die Join-Schicht die zweite
+ * Wurzelform der Pflichteinheit verankert (§9.9).
  *
  * Die zurueckgegebene Sicht und jeder Definitions- und Info-Knoten dahinter sind
  * **tief eingefroren** ({@link freezeResolvedView}): die Aufloesung ist der
@@ -640,7 +670,7 @@ function assertUnresolved(definitionNodes, infoRoots) {
  * aufbereiteten Datensatz wieder (`datasetPreparation.js`).
  *
  * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
- * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], diagnostics: object[] }}
+ * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], rootEntryLinks: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], diagnostics: object[] }}
  * @throws {TypeError} Wenn die uebergebenen Knoten schon aufgeloest (und damit
  *   eingefroren) sind — siehe Vorbedingung. Geprueft wird vor dem ersten
  *   Schreibzugriff: ein abgewiesener Aufruf laesst den Graphen unveraendert.
@@ -718,6 +748,11 @@ export function resolveCatalogue(catalogue) {
     lookup: id => byId.get(id) ?? null,
     definitions,
     armyLevelCandidates: collectArmyLevelCandidates(catalogue.entries ?? []),
+    // Die zweite Wurzelform der Pflichteinheit (§9.9) — neben der
+    // Wurzel-Definitionsliste gefuehrt, nicht in ihr
+    // ({@link collectRootEntryLinks}). Erst hier gebildet, weil sie die
+    // aufgeloeste Ziel-Art liest.
+    rootEntryLinks: collectRootEntryLinks(catalogue.entries ?? []),
     categoryIds,
     groupMemberIds,
     // Die Profiltyp-Deklarationen wandern unveraendert durch: sie sind die
