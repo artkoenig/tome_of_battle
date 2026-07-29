@@ -1,0 +1,131 @@
+---
+status: active
+branch: claude/ui-neue-engine-49yiie
+pr:
+---
+
+# UI auf den Reinraum-Evaluator umstellen (Cutover, Solver-Abriss)
+
+## Intent
+
+Die Oberfläche bezieht Validierung, Verfügbarkeit und Anzeige-Daten heute aus
+der alten Solver-Fassade (`src/solver/validator.js`), die per ADR-0030 als
+fehlerhaft gilt und verschwinden soll. Der Reinraum-Evaluator
+(`src/evaluator/`) ist seit Issue 75 cutover-fähig, wird aber von keiner
+Produktiv-Datei konsumiert. Gewollt: Die UI liest den Evaluator-Bericht
+(`violations` + `capabilities`) direkt — ohne Zwischenschicht, die das alte
+Solver-Fehlerformat nachbaut — und `src/solver/` verschwindet vollständig,
+in einem Zug (ein Branch, ein PR, Taskliste).
+
+Acceptance criteria:
+
+1. Kein Produktivcode importiert mehr aus `src/solver/`; alle heutigen
+   Konsumenten der Solver-Fassade beziehen Validierung, Verfügbarkeit,
+   Kosten, Namen, Profile und Kategorie-Grenzen aus der Evaluator-Fassade
+   (`prepareDataset` / `evaluate` / `describeDataset`). Falsifizierbar per
+   `grep "from .*solver" src/` außerhalb von `src/solver/` selbst.
+2. `src/solver/` ist gelöscht, samt seiner Modultests. `npm test`,
+   `npm run lint`, `npm run typecheck` und `npm run depcruise` laufen ohne
+   ihn mit Exitcode 0; `package.json`-Skripte, Lint-/Depcruise-Regeln und
+   die Doku (CLAUDE.md, betroffene ADR-Verweise) sind nachgezogen.
+3. Ein produktiver Adapter übersetzt das App-Roster (IndexedDB-Modell,
+   `src/types.js`) in den Evaluator-Roster-Vertrag, inkl. der
+   Identitäts-Regel aus Issue 084: eine über einen `entryLink` gesetzte
+   Auswahl wird unter der Link-Id übergeben. Beobachtbar: Grenzen, die am
+   Link definiert sind, wirken in der UI (Verletzung erscheint, wenn sie
+   überschritten werden).
+4. Verletzungen erscheinen dem Nutzer als i18n-Texte, komponiert aus der
+   sprachfreien Evaluator-Einordnung (ConstraintKind, LimitMeasure, Scope,
+   Ist/Grenze, Verursacher) über neue, am Evaluator-Vokabular ausgerichtete
+   `validation.*`-Schlüssel. Die alten, am Solver-`type` ausgerichteten
+   Schlüssel sind entfernt. Autoren-Meldungen aus dem Katalog erscheinen
+   mit ihrem Katalogtext.
+5. Die Aushebe-Verfügbarkeit (Einheit hinzufügbar ja/nein, Optionen
+   wählbar/gesperrt/versteckt/Pflicht) wird aus dem Fähigkeitsdatensatz
+   (`capabilities`) abgelesen (ADR-0035). Der Baseline-Diff-Mechanismus und
+   die Sperrtabelle `VIOLATION_BLOCKS_ADD_AVAILABILITY` existieren nicht
+   mehr.
+6. Die Nicht-Validierungs-Funktionen aus `src/solver/` (Roster-Abgleich
+   nach Katalog-Update, spielbare Kataloge) sind mit unverändertem
+   Verhalten umgezogen; Katalog-Metadaten kommen künftig aus
+   `describeDataset`.
+7. Die app-weiten Puppeteer-E2E-Tests (`ui.test.js`, `pwa.test.js`) sind
+   aus `src/solver/` an ihren neuen Ort umgezogen und laufen grün; `npm
+   test` ruft sie weiterhin auf.
+8. `prepareDataset` läuft höchstens einmal je geladenem Datensatz (gecacht
+   über Roster-Änderungen hinweg); nur `evaluate` läuft je
+   Roster-Änderung. Falsifizierbar per Aufruf-Zähler im Test.
+
+## Plan
+
+## Tasks
+
+## Decisions
+
+- **"Ohne Plugin" = keine Zwischenschicht.** Die UI konsumiert den
+  Evaluator-Bericht direkt; es gibt keinen Kompatibilitäts-Layer, der das
+  alte Solver-Fehlerformat nachbaut. Der Eingabe-Adapter App-Roster →
+  Evaluator-Vertrag (Kriterium 3) ist davon ausgenommen — er übersetzt nur
+  die Eingabe, nicht das Ergebnis. *(Quelle: Antwort des Menschen,
+  Grill 2026-07-29.)*
+- **Cutover in einem Zug.** Ein Issue, ein Branch, ein PR: alle
+  UI-Konsumenten, Adapter, Meldungsprojektion, E2E-Umzug und Solver-Abriss
+  zusammen; kein Zwischenzustand mit zwei Wahrheitsquellen. Der Umfang wird
+  über eine Taskliste mit Zwischencommits gelandet. *(Quelle: Antwort des
+  Menschen.)*
+- **Meldungen: neue Projektion in der UI.** Neue `validation.*`-Schlüssel
+  am Evaluator-Vokabular; die alten solver-gebundenen Schlüssel sterben.
+  Sichtbare Textänderungen gegenüber heute sind akzeptiert. *(Quelle:
+  Antwort des Menschen.)*
+- **Solver-Reste: umziehen, Verhalten behalten.** Roster-Abgleich und
+  Katalog-Auswahl wandern unverändert aus `src/solver/` heraus; eine
+  Neukonzeption auf Evaluator-Begriffen ist ausdrücklich nicht Teil dieses
+  Issues. *(Quelle: Antwort des Menschen.)*
+- **Verhaltensabweichungen zum Solver sind erwartet.** Der Solver gilt per
+  ADR-0030 als fehlerhaft; wo Evaluator und Solver abweichen, gilt der
+  Evaluator. Es gibt keine Paritätsprüfung gegen den Solver. *(Quelle:
+  ADR-0030; default, unanswered.)*
+- **Zielort der app-weiten E2E-Tests** wählt der Implementierer sinnvoll
+  (außerhalb von `src/solver/`, z. B. `e2e/`); festgelegt ist nur der Umzug
+  selbst (Kriterium 7). *(Default, unanswered.)*
+- **Akzeptanzkriterien 1–8 vom Menschen freigegeben.** *(Quelle: Antwort des
+  Menschen, 2026-07-29.)*
+- **Kategorie-Vererbungs-Sonderfall** (fehlendes Kategorie-Maximum aus
+  anderer Kategorie geerbt) bleibt gemäß ADR-0034 undurchgesetzt, bis die
+  externen Katalog-Forks korrigiert sind — keine Sonderbehandlung in diesem
+  Issue. *(Quelle: ADR-0034; default, unanswered.)*
+
+## Log
+
+- 2026-07-29: Issue per Grill-Interview gefilt. Recherche-Briefing
+  (researcher): 22 Nicht-Test-Dateien konsumieren die Solver-Fassade;
+  zentraler Fluss `useRoster.js` (`validateRoster` per `useMemo`);
+  Evaluator-Fassade zweistufig (`prepareDataset` teuer, `evaluate` rein);
+  Roster-Vertrag weicht vom App-Modell ab (Link-Id-Regel, Issue 084);
+  Meldungsprojektion und produktiver Adapter existieren noch nicht;
+  Issue 75 (resolved) nennt genau diesen Cutover als offenes Folge-Issue.
+
+## Checkpoints
+
+### Before implementation
+
+- **Does this match what was asked?** Ja — "UI auf die neue Engine, ohne
+  Plugin" ist als Ein-Zug-Cutover ohne Ergebnis-Zwischenschicht spezifiziert
+  und freigegeben; genau der Folge-Scope, den Issue 75 offen gelassen hat.
+- **What surprised me?** "Plugin" kommt im Repo nirgends vor — die Lesart
+  musste beim Menschen erfragt werden (Antwort: keine Zwischenschicht).
+  Außerdem: es gibt noch keinerlei produktiven Evaluator-Konsumenten, der
+  Adapter existiert nur als Test-Fixture.
+- **What am I assuming without having verified it?** Dass der
+  Evaluator-Bericht fachlich alles hergibt, was die 22 UI-Dateien heute vom
+  Solver beziehen (Kosten, Namen, Profile, Kategorie-Grenzen) — Issue 75
+  behauptet Cutover-Fähigkeit, aber der Beweis kommt erst beim Verdrahten.
+  Und dass die E2E-Harness-Tests nach dem Umzug ohne Solver-Fixture laufen.
+
+### Before the PR
+
+- Does this match what was asked?
+- What surprised me?
+- What am I assuming without having verified it?
+
+## Retro
