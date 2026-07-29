@@ -68,9 +68,13 @@ import {
 import { allNodes, infoCarriersOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { createBaseEffectiveState } from './effectiveState.js';
+import { roundHalfUp } from './rounding.js';
 
 /** Ein Modifikator ohne Wiederholungen wirkt genau einmal. */
 const SINGLE_APPLICATION = 1;
+
+/** Ein Prozentsatz bezieht sich auf Hundertstel des Nenners (wie in `constraints.js`). */
+const PERCENT_DIVISOR = 100;
 
 /** Der `value`-Text, den ein boolesches Ziel (`hidden`) als "wahr" liest. */
 const BOOLEAN_TRUE = 'true';
@@ -122,29 +126,83 @@ function compare(type, actual, expected, diagnostics) {
 }
 
 /**
+ * Die Vergleichstypen, deren Praedikat den `value` ignoriert (Mitgliedschaft
+ * statt Schwellwert, {@link COMPARATORS}). `percentValue` hat dort laut
+ * BSData-Wiki explizit keine Wirkung — die Prozent-Ableitung entfaellt samt
+ * Nenner-Query und deren Diagnosen.
+ */
+const VALUE_FREE_CONDITION_KINDS = Object.freeze(new Set([
+  ConditionKind.INSTANCE_OF,
+  ConditionKind.NOT_INSTANCE_OF,
+]));
+
+/**
+ * Leitet den wirksamen Wert einer **Prozent-Query** (Condition oder Repeat) aus
+ * dem im Bezugsrahmen gezaehlten Nenner ab — dieselbe Konvention wie bei den
+ * Prozent-Grenzen (`constraints.js`, `resolveBound`): Nenner ueber dieselbe
+ * Query (Feld/Rahmen/Flags, Ziel "alles im Rahmen"), wirksamer Wert
+ * `roundHalfUp(Nenner * Wert / 100)` (Rundung zentral in `rounding.js`).
+ *
+ * `null` heisst „keine Aussage": Nenner 0 (mit `zeroDenominator`-Diagnose, nie
+ * still) oder ein unaufloesbares Budget-Feld als Nenner (Diagnose aus `query`).
+ * Der Aufrufer deutet das fail-closed — die Condition haelt nicht, das Repeat
+ * liefert 0 Schritte (recorded Defaults, Issue 0090).
+ */
+function resolvePercentValue(ctx, { field, scope, flags }, rawValue) {
+  const denominator = query(ctx, field, scope, null, flags);
+  if (denominator === UNRESOLVED_BUDGET) return null;
+  if (denominator === 0) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.ZERO_DENOMINATOR, { field, scope }));
+    return null;
+  }
+  return roundHalfUp((denominator * rawValue) / PERCENT_DIVISOR);
+}
+
+/**
+ * Der Sollwert einer Bedingung: ihr `value` — bei `percentValue="true"`
+ * prozentual aus dem Rahmen-Nenner abgeleitet ({@link resolvePercentValue}),
+ * ausser bei den wertfreien Mitgliedschafts-Typen
+ * ({@link VALUE_FREE_CONDITION_KINDS}). `null` = keine Aussage (fail-closed).
+ */
+function expectedValueOf(ctx, condition) {
+  if (!condition.isPercent || VALUE_FREE_CONDITION_KINDS.has(condition.type)) return condition.value;
+  return resolvePercentValue(ctx, condition, condition.value);
+}
+
+/**
  * Wertet eine einzelne Bedingung ueber das Query-Primitiv aus. Ein unaufloesbares
  * Budget-Feld ({@link UNRESOLVED_BUDGET}, Diagnose bereits von `query` gemeldet)
  * laesst die Bedingung **nicht** halten — der Modifikator feuert dann fail-closed
- * nicht, statt mit einem erfundenen Wert zu vergleichen (`design.md`).
+ * nicht, statt mit einem erfundenen Wert zu vergleichen (`design.md`). Dasselbe
+ * gilt fuer einen Prozent-Sollwert ohne Aussage (Nenner 0 oder unaufloesbar,
+ * {@link expectedValueOf}) — unabhaengig vom Vergleichstyp, auch bei `lessThan`.
  */
 function conditionHolds(ctx, condition) {
   const actual = query(ctx, condition.field, condition.scope, condition.targetChildId, condition.flags);
   if (actual === UNRESOLVED_BUDGET) return false;
-  return compare(condition.type, actual, condition.value, ctx.diagnostics);
+  const expected = expectedValueOf(ctx, condition);
+  if (expected === null) return false;
+  return compare(condition.type, actual, expected, ctx.diagnostics);
 }
 
 /**
  * Die Wiederholungszahl einer Wiederholung: wie oft die Schrittweite `perValue`
  * im Ist-Wert steckt, mal `repeats` (die Anwendungen je Schritt). Der Quotient
- * wird abgerundet, mit `roundUp` aufgerundet (Catalogue.xsd:541-548). Ein
- * `perValue` von 0 gaebe eine Division durch null und gilt als inaktiv (0).
+ * wird abgerundet, mit `roundUp` aufgerundet (Catalogue.xsd:541-548). Bei
+ * `percentValue="true"` wird die Schrittweite zuerst prozentual aus dem
+ * Rahmen-Nenner abgeleitet ({@link resolvePercentValue}); ein Nenner ohne
+ * Aussage heisst 0 Schritte (fail-closed, Diagnosen dort). Eine Schrittweite
+ * von 0 — abgeleitet moeglich, roh vom Leser abgewiesen — gaebe eine Division
+ * durch null und gilt als inaktiv (0), ohne Diagnose (degenerierter
+ * abgeleiteter Wert, kein verschlucktes Attribut).
  */
 function repeatCount(ctx, repeat) {
-  if (repeat.perValue === 0) return 0;
+  const perValue = repeat.isPercent ? resolvePercentValue(ctx, repeat, repeat.perValue) : repeat.perValue;
+  if (perValue === null || perValue === 0) return 0;
   const actual = query(ctx, repeat.field, repeat.scope, repeat.targetChildId, repeat.flags);
   // Unaufloesbares Budget-Feld: keine Wiederholung (fail-closed, Diagnose aus `query`).
   if (actual === UNRESOLVED_BUDGET) return 0;
-  const quotient = actual / repeat.perValue;
+  const quotient = actual / perValue;
   const steps = repeat.roundUp ? Math.ceil(quotient) : Math.floor(quotient);
   return steps * repeat.repeats;
 }
