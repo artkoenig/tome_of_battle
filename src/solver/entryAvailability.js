@@ -2,6 +2,7 @@ import { validateRoster } from './rosterValidator.js';
 import { resolveEntry } from './catalogResolver.js';
 import { createSelectionFromDef } from './selectionFactory.js';
 import { ValidationSeverity } from './modifierEvaluator.js';
+import { buildModifierEvalContext } from './modifierContext.js';
 import '../types.js';
 
 // Synthetische Selektions-ID des hypothetisch hinzugefügten Kandidaten. Bewusst eine
@@ -124,7 +125,7 @@ export function getEntryAddAvailability({ entry, categoryId, force, roster, syst
   // Kontext für die effektive `min`-Seite der Fabrik: ein bedingt erhöhtes Pflicht-`min`
   // wird so auch in der hypothetischen Selektion bevölkert und schlägt limit-sprengend an,
   // konsistent mit dem echten Ausheben.
-  const factoryContext = { roster, system, parentCatalogueId: candidateCatalogueId };
+  const factoryContext = buildModifierEvalContext({ roster, system, parentCatalogueId: candidateCatalogueId });
   const candidate = createSelectionFromDef({
     system, resolveEntry, catalogueId: candidateCatalogueId, entry, categoryId,
     evaluationContext: factoryContext

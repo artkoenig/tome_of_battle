@@ -12,6 +12,7 @@
  *  - rosterTree:        Traversierungs-Primitive des Roster-Baums
  *  - catalogResolver:   Entry-Links/Einträge über Kataloggrenzen auflösen
  *  - modifierEvaluator: Battlescribe-Conditions/Modifier auswerten
+ *  - modifierContext:   getippter Builder des flachen Modifier-Auswertungs-Kontexts
  *  - rosterCounter:     Anzahl- und Punkteberechnung über das Roster
  *  - rosterValidator:   Constraint-Validierung des gesamten Rosters
  *  - profileCollector:  Profile/Regeln einer Einheit rekursiv einsammeln
@@ -36,6 +37,7 @@ export {
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 export { isListRuleSelection, isListRuleEntryKind, resolveListRuleGroup } from './listRules.js';
 export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks, collectTriggeredMessages, getEffectiveName, getEffectiveSelectionName, canGroupMaxBeRaisedAboveSingleChoice, ValidationSeverity } from './modifierEvaluator.js';
+export { buildModifierEvalContext } from './modifierContext.js';
 export { getOptionDisplayCost, getSelectionTotalCost, getSelectionOwnCosts, calculateRosterCosts, computeRosterCounts, aggregateRosterCategoryCounts, getExtraResourceTotals, resolveCostLimitTypeId, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
 export { validateRoster, hasBlockingViolations, countBlockingViolations, VIOLATION_BLOCKS_ADD_AVAILABILITY, classifyBlocksAddAvailability } from './rosterValidator.js';
 export { getEntryAddAvailability, isBlockingAvailabilityViolation } from './entryAvailability.js';

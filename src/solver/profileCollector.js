@@ -1,7 +1,8 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getEffectiveModifiers, getEffectiveName, getModifiedConstraintValue, getModifierAmount, modifierConditionsPass } from './modifierEvaluator.js';
-import { aggregateRosterCategoryCounts, computeRosterCounts } from './rosterCounter.js';
+import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
+import { buildModifierEvalContext } from './modifierContext.js';
 import { isEntryScope } from './battlescribeConstants.js';
 import { findForceContainingSelection } from './rosterTree.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
@@ -17,8 +18,6 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
   const seenProfileIds = new Set();
   const seenRuleIds = new Set();
 
-  let selectionCounts = {};
-  let forceCategoryCounts = {};
   // The full precomputed count tables and the owning contingent are threaded into the
   // evaluation context so a `scope="force"` repeat/condition in the profile-stat path
   // resolves per-contingent (via forceSelectionCounts[force.id]) exactly as the validator
@@ -27,24 +26,18 @@ export function collectUnitProfilesAndRules(system, selection, activeCatalogueId
   let owningForce = null;
   if (roster) {
     rosterCounts = computeRosterCounts(roster, system);
-    selectionCounts = rosterCounts.selectionCounts;
     if (roster.forces) {
       owningForce = findForceContainingSelection(roster, selection.id);
-      forceCategoryCounts = owningForce
-        ? (rosterCounts.categoryCounts[owningForce.id] || {})
-        : aggregateRosterCategoryCounts(rosterCounts.categoryCounts);
     }
   }
 
-  const makeCtx = (sourceSel, parentSel) => ({
+  const makeCtx = (sourceSel, parentSel) => buildModifierEvalContext({
     roster,
+    system,
     counts: rosterCounts,
     force: owningForce,
-    selectionCounts,
-    forceCategoryCounts,
     selection: sourceSel,
     parentSelection: parentSel,
-    system,
     parentCatalogueId: activeCatalogueId
   });
 

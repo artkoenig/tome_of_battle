@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/new-session-jnwa1m-064
+pr: https://github.com/artkoenig/tome_of_battle/pull/159
 ---
 
 # Modifier-Auswertungskontext als getippten Builder auflösen
@@ -40,6 +40,60 @@ Acceptance criteria:
 
 ## Plan
 
+Modules touched: new `src/solver/modifierContext.js`; build-site conversions
+in `src/solver/rosterValidator.js` (6 sites), `src/solver/profileCollector.js`
+(`makeCtx`), `src/solver/rosterCounter.js` (2 sites),
+`src/solver/entryVisibility.js` (translator `buildEvalContext` + 2 variants),
+`src/solver/entryAvailability.js`, `src/hooks/useRoster.js`, and the editor
+components (`OptionGroup`, `SelectionConfigurator`, `AutoFillSuggestions`,
+`RosterSidebar`, `RosterCategorySection`, `CategoryUnitAdder`,
+`UnitSelectionCard`) via a facade export in `src/solver/validator.js`
+(ADR 0023). `modifierEvaluator.js` stays UNCHANGED.
+
+Contracts:
+- `@typedef ModifierEvalContext` `{ roster, system, counts?, selectionCounts?,
+  forceCategoryCounts?, selection?, parentSelection?, force?,
+  parentCatalogueId? }` — plain, spreadable object (downstream spread-extends
+  it, e.g. `_resolvingSelfScopeCategory`).
+- One builder `buildModifierEvalContext(parts)` with an EXPLICIT category-count
+  source, because three semantics exist: `counts` (per-force/aggregate derived
+  by the reader as today), verbatim slice tables (incl. the `null` sentinel and
+  rosterCounter's mid-count mutable tables), or none. The builder never emits
+  `counts` AND slices in the same context — AC 2 lands at construction time.
+
+Non-obvious choices:
+1. `toQueryContext`'s precedence chain in `modifierEvaluator.js` stays — it is
+   the reader for test-built legacy contexts (implementer may not edit tests)
+   and for the slice path; AC 2's "ein Leser-Vertrag" is enforced where
+   contexts are BUILT, not by breaking the reader.
+2. Counts-carrying sites drop their redundant slices — provably dead today
+   (reader precedence prefers `counts`; no other production reader exists,
+   researcher-verified).
+3. Per-site semantics are preserved exactly: deliberate omissions stay
+   (no `parentSelection` at group constraints, rosterValidator.js:774-780; no
+   `force` in `isCategoryLinkHidden`); `checkSelectionMessages` stays
+   counts-less (its slice approximation is current behaviour).
+4. Out of scope: `EvaluationContext` (cost path, own typedef), the deliberately
+   empty `{}` static contexts, and `rosterSerialization.js`.
+5. The identical ctx rebuilt inside the per-constraint forEach
+   (rosterValidator.js:583) is hoisted during conversion — pure waste, no
+   behaviour change.
+
+Plan update (after implementer contact, 2026-07-29): the component slice is
+NARROWED. Five component test files fully mock the solver facade without
+`importOriginal` spread, so adding a facade import to those components breaks
+their mocks, and tests are off-limits. Converted components: only
+`AutoFillSuggestions.jsx` (no test) and `RosterSidebar.jsx:47` (test uses the
+real solver). The five full-mocked components (`OptionGroup`,
+`SelectionConfigurator`, `UnitSelectionCard`, `RosterCategorySection:93`,
+`CategoryUnitAdder`) keep their hand-built slice-only contexts — AC 1's
+"rund neun" sites (rosterValidator, profileCollector, rosterCounter,
+useRoster) are all converted, AC 2 never applied to the slice-only component
+contexts. VisibilityContext-typed bundles (ForceEditorSection,
+RosterSidebar:50, RosterCategorySection:70, entryVisibility:181) are not
+flat builds and stay. `armyWideSelectors.js:136` joins the inventory and is
+converted (it is a solver-internal flat build, test-safe).
+
 ## Tasks
 
 ## Decisions
@@ -53,18 +107,81 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-07-29 implementer round 1: stopped before editing, per the
+  plan-contact rule — five component test files mock the facade fully (no
+  importOriginal), so the planned component conversions cannot land without
+  test edits. Decision (default, human asleep): narrow the component scope
+  instead of authorizing mechanical mock edits — the issue's own AC-1 site
+  list is fully convertible test-free. Recorded as plan update above.
+  Follow-up candidate for the human: allow one passthrough line per mock in
+  a later run to finish the component conversions.
+- 2026-07-29 implementer round 2 (narrowed plan): done. New
+  `src/solver/modifierContext.js` (`buildModifierEvalContext`, modes counts |
+  categorySlices verbatim | none; counts+slices together throws); 15 sites
+  converted per the table in the agent report; facade export for the two
+  test-safe components. Surprise recorded: at the dual-use site
+  rosterValidator:338 the slices were NOT redundant next to counts —
+  `isSelectionEntryHidden` reads only slices; the site is split into two
+  built contexts (slice-mode + counts-mode) to stay byte-identical.
+  Suite 210 files / 2143 tests exit 0, identical to baseline; puppeteer E2E
+  exit 0; lint/typecheck/depcruise exit 0 (depcruise: only the pre-existing
+  solver cycle warning, unchanged); knip exit 1 before AND after with
+  identical finding set (warn-only).
+
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — one typed builder, all hand-build
+  sites converted, double pass-through gone at construction; pure structure,
+  reader untouched.
+- What surprised me? The issue's "rund neun" undercounts (12 production
+  sites + components), and `counts`-presence is BEHAVIOUR (the reader
+  approximates per-force from army-wide tables when counts are absent) — so
+  "no behaviour change" requires per-site fidelity, not uniform filling.
+  Also `forceCategoryCounts` has three semantics incl. a `null` sentinel.
+- What am I assuming without having verified it? That dropping redundant
+  slices at counts-carrying sites is a no-op (researcher verified reader
+  precedence; the suite must confirm), and that no test imports the new
+  module's internals (it is new). No test-author: pure refactor, the
+  existing suite (2143 unit tests + E2E incl. the shape-pinning tests
+  listed in the briefing) is the behaviour pin — recorded per invariant 2.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — one typed builder, the issue's named
+  sites all converted, double pass-through impossible by construction;
+  review round 1 with zero findings, suite and E2E byte-identical to the
+  origin/main baseline.
+- What surprised me? Two things the plan only survived by updating: five
+  component tests fully mock the facade (scope narrowed, recorded), and the
+  dual-use site rosterValidator:338 had NON-redundant slices — the
+  visibility reader consumes them — so it became two built contexts instead
+  of one slimmer one.
+- What am I assuming without having verified it? That the human ratifies
+  the narrowed component scope (follow-up: one passthrough line per mock
+  would finish the conversion). No version bump: pure refactoring, no
+  user-visible change.
+
+- 2026-07-29 review round 1 (fresh context): 0 findings. Reviewer
+  independently re-established all exit-code facts against a baseline
+  worktree (suite 210/2143 identical, depcruise/knip finding sets
+  identical), verified the one-reader claim, the :338 split byte-identity,
+  the hoist safety (no ctx mutation anywhere), the presence-check hazard
+  (one consumer, unaffected), and ran an 8-assertion spot check against the
+  new module (by-reference slices, null sentinel, throw on counts+slices).
 
 ## Retro
+
+- The researcher-first plan earned its cost twice: the "rund neun"
+  undercount and the three `forceCategoryCounts` semantics would have
+  ambushed a naive implementer mid-edit. The plan-contact stop rule worked
+  as designed — the mock-blocker became a recorded scope decision instead
+  of a silent test edit.
+- A refactor with "suite as pin" needs the baseline run FIRST — the
+  implementer and reviewer both comparing against a fresh origin/main
+  worktree made "byte-identical" a fact rather than a feeling.
+- Metis observation: pre-existing full-module mocks (no importOriginal)
+  make facade growth test-hostile; a repo convention "mock factories spread
+  importOriginal" would remove this whole class of blockers. Candidate for
+  a human decision.

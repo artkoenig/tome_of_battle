@@ -4,6 +4,7 @@ import {
   resolveContextCatalogueId
 } from './modifierEvaluator.js';
 import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from './rosterTree.js';
+import { buildModifierEvalContext } from './modifierContext.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { resolveGroupDefaultMember } from './selectionMembers.js';
 
@@ -177,15 +178,17 @@ export function getSelectionOwnCosts(selection, effectiveCount, { system = null,
     const resolvedCounts = counts || computeRosterCounts(roster, system);
     const activeForceId = findForceIdContaining(roster, selection);
     const forceCategoryCounts = activeForceId ? (resolvedCounts.categoryCounts[activeForceId] || {}) : {};
-    ctx = {
+    ctx = buildModifierEvalContext({
       roster,
       system,
-      selectionCounts: resolvedCounts.selectionCounts,
-      forceCategoryCounts,
+      categorySlices: {
+        selectionCounts: resolvedCounts.selectionCounts,
+        forceCategoryCounts
+      },
       selection,
       parentSelection,
       parentCatalogueId: currentCatalogueId
-    };
+    });
   }
 
   const ownCosts = {};
@@ -320,15 +323,19 @@ export const computeRosterCounts = (roster, system) => {
       // Category membership can be changed conditionally by add/remove/set-primary/
       // unset-primary modifiers, so resolve the effective links (gated on the same
       // conditions) before counting rather than reading the static catalogue links.
-      const categoryCtx = {
+      // Wörtliche Scheiben mitten im Zähl-Lauf: die noch veränderlichen Tabellen
+      // werden als Referenz weitergereicht, nicht kopiert.
+      const categoryCtx = buildModifierEvalContext({
         roster,
         system,
         selection,
         parentSelection,
         parentCatalogueId: forceCatalogueId,
-        selectionCounts,
-        forceCategoryCounts: categoryCounts[forceId]
-      };
+        categorySlices: {
+          selectionCounts,
+          forceCategoryCounts: categoryCounts[forceId]
+        }
+      });
       const effectiveModifiers = getEffectiveModifiers(resolved);
       const effectiveCategoryLinks = getEffectiveCategoryLinks(resolved?.categoryLinks, effectiveModifiers, categoryCtx);
 

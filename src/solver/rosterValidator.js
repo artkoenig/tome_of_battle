@@ -9,6 +9,7 @@ import {
 import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, measureOver, MeasureTarget } from './queryEngine.js';
 import { findForceEntryById } from './forceEntries.js';
 import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
+import { buildModifierEvalContext } from './modifierContext.js';
 import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from './armyWideSelectors.js';
 import { getInheritedCategoryMaxConstraint } from './categoryLimits.js';
 import { ValidationMessageKey } from './validationMessages.js';
@@ -231,7 +232,7 @@ function checkForceCategoryLimits({ roster, system, force, forceDef, counts, err
         ctx: queryCtx
       }
     );
-    const ctx = { roster, counts, selectionCounts, forceCategoryCounts, force, system };
+    const ctx = buildModifierEvalContext({ roster, system, force, counts });
 
     // 1. Constraints am categoryLink (samt Quirk-geerbtem max), Modifier vom Link.
     collectCategoryLinkConstraints({ catLink, forceDef, system, targetCatId }).forEach(con =>
@@ -276,7 +277,7 @@ function checkMandatoryForceSelectors({ roster, system, force, forceDef, counts,
       system, roster, selectionCounts, forceCategoryCounts, force, catalogueId: forceCatalogueId
     })) return;
 
-    const ctx = { roster, system, counts, selectionCounts, forceCategoryCounts, force, parentCatalogueId: forceCatalogueId };
+    const ctx = buildModifierEvalContext({ roster, system, counts, force, parentCatalogueId: forceCatalogueId });
     const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
     if (minValue <= 0) return;
 
@@ -335,12 +336,20 @@ function checkMandatoryRosterSelectors({ roster, system, counts, errors }) {
       if (consideredSelectors.has(selectorKey)) return;
       consideredSelectors.add(selectorKey);
 
-      const ctx = {
-        system, roster, counts, selectionCounts, forceCategoryCounts: rosterCategoryCounts,
-        catalogueId, parentCatalogueId: catalogueId
+      // Zwei Zwecke, zwei Kontexte (ein Leser-Vertrag pro Kontext): die Sichtbarkeits-
+      // Prüfung liest die roster-weit aggregierten Scheiben (plus `catalogueId`, das
+      // Feld des VisibilityContext), die Constraint-Auswertung die vollen Tabellen.
+      const hiddenCtx = {
+        ...buildModifierEvalContext({
+          roster, system,
+          categorySlices: { selectionCounts, forceCategoryCounts: rosterCategoryCounts },
+          parentCatalogueId: catalogueId
+        }),
+        catalogueId
       };
-      if (isSelectionEntryHidden(entry, ctx)) return;
+      if (isSelectionEntryHidden(entry, hiddenCtx)) return;
 
+      const ctx = buildModifierEvalContext({ roster, system, counts, parentCatalogueId: catalogueId });
       const { value: minValue, causes } = evaluateConstraintWithCauses(minConstraint, getEffectiveModifiers(entry), ctx);
       if (minValue <= 0) return;
 
@@ -540,16 +549,18 @@ function checkSelectionTree({ selection, parentSelection }, context) {
 function checkSelectionMessages({ selection, parentSelection, entry }, context) {
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
   const { selectionCounts, categoryCounts } = counts;
-  const ctx = {
+  const ctx = buildModifierEvalContext({
     roster,
-    selectionCounts,
-    forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts),
+    system,
+    categorySlices: {
+      selectionCounts,
+      forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts)
+    },
     selection,
     parentSelection,
     force,
-    system,
     parentCatalogueId: forceCatalogueId
-  };
+  });
 
   collectTriggeredMessages(entry, ctx).forEach(({ severity, message }) => {
     pushViolation(errors, {
@@ -574,23 +585,15 @@ function checkEntryConstraints({ selection, parentSelection, entry, entryId }, c
   if (!entry.constraints) return;
 
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
-  const { selectionCounts, categoryCounts } = counts;
 
   const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
   const subject = { selection, parentSelection, force, entry, entryId };
+  // Konstant über alle Constraints des Eintrags — einmal vor der Schleife gebaut.
+  const ctx = buildModifierEvalContext({
+    roster, system, counts, selection, parentSelection, force, parentCatalogueId: forceCatalogueId
+  });
 
   entry.constraints.forEach(con => {
-    const ctx = {
-      roster,
-      counts,
-      selectionCounts,
-      forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts),
-      selection,
-      parentSelection,
-      force,
-      system,
-      parentCatalogueId: forceCatalogueId
-    };
     const { value: finalValue, causes } = evaluateConstraintWithCauses(con, getEffectiveModifiers(entry), ctx);
     if (finalValue < 0) return;
 
@@ -695,8 +698,6 @@ function checkEntryPercentConstraint({ con, finalValue, causes, count, anchor, s
 /** Constraints aller SelectionEntryGroups des Eintrags prüfen (Anzahl- und Punkte-Limits). */
 function checkGroupConstraints({ selection, entry }, context) {
   const { roster, system, force, counts, errors, forceCatalogueId } = context;
-  const { selectionCounts, categoryCounts } = counts;
-  const forceCategoryCounts = force ? (categoryCounts[force.id] || {}) : {};
 
   const queryCtx = createQueryContext({ roster, system, counts, forceCatalogueId });
   // Der Bezugsrahmen einer Gruppengrenze hängt an der Auswahl, die die Gruppe besitzt
@@ -778,7 +779,7 @@ function checkGroupConstraints({ selection, entry }, context) {
       // self-incrementing modifier (e.g. "raise the cap for every Dispel Scroll already
       // taken") scan one level too high whenever the group sits behind an intermediate
       // wrapper selection, silently contributing 0 and leaving the base cap in place.
-      const ctx = { roster, counts, selectionCounts, forceCategoryCounts, selection, force, system, parentCatalogueId: forceCatalogueId };
+      const ctx = buildModifierEvalContext({ roster, system, counts, selection, force, parentCatalogueId: forceCatalogueId });
       const { value: finalValue, causes } = evaluateConstraintWithCauses(con, getEffectiveModifiers(group), ctx);
       if (finalValue < 0) return;
 

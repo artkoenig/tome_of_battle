@@ -3,6 +3,7 @@ import {
   evaluateCondition, evaluateConditionGroup, getEffectiveModifiers, getEffectiveCategoryLinks,
   resolveContextCatalogueId
 } from './modifierEvaluator.js';
+import { buildModifierEvalContext } from './modifierContext.js';
 
 /**
  * Wertet den effektiven hidden-Status eines Elements aus: statisches
@@ -59,13 +60,12 @@ function catalogueIdOf(context) {
  */
 export function isCategoryLinkHidden(link, context) {
   const { system, roster, selectionCounts, forceCategoryCounts } = context;
-  const ctx = {
+  const ctx = buildModifierEvalContext({
     roster,
     system,
-    selectionCounts,
-    forceCategoryCounts,
+    categorySlices: { selectionCounts, forceCategoryCounts },
     parentCatalogueId: catalogueIdOf(context)
-  };
+  });
   // Resolve through the shared seam so modifierGroup-gated hidden modifiers on the
   // category link are honoured, matching isSelectionEntryHidden below.
   return evaluateHiddenFlag(link.hidden, getEffectiveModifiers(link), ctx);
@@ -75,14 +75,15 @@ export function isCategoryLinkHidden(link, context) {
 // the force fallback and the catalogue id conditions resolve against.
 function buildEvalContext(context) {
   const { system, roster, selectionCounts, forceCategoryCounts, force } = context;
-  return {
-    system,
+  // Wörtliche Scheiben aus dem VisibilityContext — inkl. des `null`-Sentinels
+  // („bewusst ohne Kategorie-Zählung", siehe collectPrimaryCategoryEntries).
+  return buildModifierEvalContext({
     roster,
-    selectionCounts,
-    forceCategoryCounts,
+    system,
+    categorySlices: { selectionCounts, forceCategoryCounts },
     force: force || roster?.forces?.[0],
     parentCatalogueId: catalogueIdOf(context)
-  };
+  });
 }
 
 // Resolves an entry against the catalogue its context names, so a same-id entry in a

@@ -1,6 +1,7 @@
 import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { isSelectionEntryHidden, getEffectiveEntryCategoryLinks } from './entryVisibility.js';
 import { resolveEntry } from './catalogResolver.js';
+import { buildModifierEvalContext } from './modifierContext.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 
 // Scope under which a constraint applies to the whole contingent (force).
@@ -133,7 +134,13 @@ export function isReachableViaForceCategories(entry, forceDef, categoryLinks = n
  */
 export function resolveForceSelectorMinimum(entry, minConstraint, visibilityContext) {
   const { roster, selectionCounts, forceCategoryCounts, force, catalogueId } = visibilityContext;
-  const ctx = { roster, system: visibilityContext.system, selectionCounts, forceCategoryCounts, force, parentCatalogueId: catalogueId };
+  const ctx = buildModifierEvalContext({
+    roster,
+    system: visibilityContext.system,
+    categorySlices: { selectionCounts, forceCategoryCounts },
+    force,
+    parentCatalogueId: catalogueId
+  });
   return getModifiedConstraintValue(minConstraint, getEffectiveModifiers(entry), ctx);
 }
 
