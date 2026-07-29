@@ -75,6 +75,14 @@ Vertrag der Antwort:
 | kein umschließendes Kontingent, oder dessen Id steht nicht im Index | 0 **mit** `unresolvedScope` (unverändert fail-closed) |
 | ein anderes Feld als `SELECTION_COUNT` | der bestehende `unsupportedField`-Pfad |
 
+**Vorrang, wenn zwei Zeilen gleichzeitig greifen** (vom Test-Autor als
+unentschiedene Kante gemeldet, hier nachgetragen): die **Feldprüfung kommt
+zuerst**. Ein anderes Feld als `SELECTION_COUNT` zusammen mit `targetId === null`
+ergibt also `unsupportedField`, nicht 1. Begründung: `unsupportedField` meldet
+einen Mangel der Query selbst — auf ein Feld, das dieser Rahmen nicht bedienen
+kann, eine 1 zu antworten hieße, eine Auskunft zu erfinden. Das ist dieselbe
+Fail-closed-Linie wie beim fehlenden Kontingent.
+
 Der `default`-Zweig von `resolveSharedFrame` bleibt unangetastet, damit `unit`
 und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
 
