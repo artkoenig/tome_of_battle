@@ -105,6 +105,14 @@ Acceptance criteria:
 - **Die Fachfrage ist beantwortet, bevor der Lauf beginnt.** Die
   BSData-Dokumentation belegt beide Fälle als Fehler (siehe Intent). Dieses
   Issue ist damit eine Implementierungsaufgabe, keine Untersuchung.
+- **Testumfang je Lauf: die Evaluator-Tests einschließlich der
+  Evaluator-E2E-Tests** — beides deckt `npx vitest run src/evaluator` ab
+  (Unit-Tests plus manifest-getriebener E2E-Runner über `docs/testing/`).
+  Nicht mehr je Lauf: die übrige App-Suite und das Puppeteer-Solver-E2E aus
+  `npm test`. Quelle: Anweisung des Maintainers mid-run (2026-07-29); gilt
+  für diesen und die folgenden Läufe dieser Session. Der Implementer-Lauf
+  dieses Issues hatte die volle Suite bereits grün (`npm test` Exit 0),
+  bevor die Anweisung kam.
 
 ## Log
 
