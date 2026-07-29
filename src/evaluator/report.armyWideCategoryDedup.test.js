@@ -251,6 +251,75 @@ describe('Kriterium 3: die Entdopplung betrifft nur die Meldungsliste, nicht die
   });
 });
 
+// ── Review-Befund F1: der Ueberlebende ist das WURZEL-Pflicht-Phantom ────────
+
+/**
+ * Repro des Review-Befunds F1: eine UNVERLINKTE Kategorie (kein `categoryLink`
+ * in der Kontingent-Definition) traegt Roster-MIN **und** Force-MIN. Dann
+ * synthetisiert die Engine ZWEI Pflicht-Phantome: eines unter dem Kontingent
+ * (Force-Schleife, fuer die Force-Pflicht) und eines an der Wurzel
+ * (Roster-Schleife). Die protokollierte Entscheidung sagt: der Ueberlebende
+ * der entdoppelten Roster-Grenze ist das WURZEL-Phantom, wenn eines existiert
+ * — nicht irgendein Pflicht-Phantom.
+ */
+function unlinkedCatalogXml(categoryConstraintsXml) {
+  return `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-0093-f1" name="Unlinked Category Catalogue">
+      <categoryEntries>
+        <categoryEntry id="${GENERAL_CATEGORY_ID}" name="General">
+          <constraints>
+            ${categoryConstraintsXml}
+          </constraints>
+        </categoryEntry>
+      </categoryEntries>
+      <forceEntries>
+        <forceEntry id="${FORCE_DEF_ID}" name="Army"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${HERO_DEF_ID}" name="Hero" type="unit">
+          <categoryLinks>
+            <categoryLink id="clink-hero-general" name="General" targetId="${GENERAL_CATEGORY_ID}" primary="true"/>
+          </categoryLinks>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+}
+
+describe('Ueberlebender bei konkurrierenden Phantomen (Review-Befund F1)', () => {
+  it('unverlinkt, roster-MIN + force-MIN, 1 leeres Kontingent: Roster-Meldung am WURZEL-Phantom, Force-Meldung am Kontingent-Phantom', () => {
+    // Heute rot: der Tiebreak befoerdert JEDES Pflicht-Phantom — die
+    // Roster-Meldung ueberlebt am Kontingent-Phantom (Pfad "0/…", erstes in
+    // Dokumentreihenfolge) statt am Wurzel-Phantom (einsegmentiger Pfad).
+    const report = evaluate(
+      unlinkedCatalogXml(MIN_ROSTER + MIN_FORCE),
+      rosterWithForces(1),
+    );
+
+    // Vorbedingung des Repros: BEIDE Phantome existieren (eines unter dem
+    // Kontingent, eines an der Wurzel) — sonst testet der Fall nichts.
+    const phantomSlots = [...report.capabilities.values()].filter(
+      slot => slot.anchorKind === AnchorKind.MANDATORY_PHANTOM
+        && slot.defId === GENERAL_CATEGORY_ID,
+    );
+    expect(phantomSlots).toHaveLength(2);
+
+    // Die armeeweite Pflicht: genau EINE Meldung, verankert am
+    // WURZEL-Phantom — dessen Pfad liegt ausserhalb jedes Kontingents
+    // (einsegmentig, ohne "/").
+    const rosterMessages = messagesOf(report, MIN_GENERAL_LIMIT_ID);
+    expect(rosterMessages).toHaveLength(1);
+    expect(rosterMessages[0].anchor.anchorKind).toBe(AnchorKind.MANDATORY_PHANTOM);
+    expect(rosterMessages[0].anchor.path).not.toContain('/');
+
+    // Wache gegen Ueber-Korrektur: die Force-Pflicht bleibt am
+    // KONTINGENT-Phantom des (einzigen) Kontingents gemeldet.
+    const forceMessages = messagesOf(report, FORCE_MIN_LIMIT_ID);
+    expect(forceMessages).toHaveLength(1);
+    expect(forceMessages[0].anchor.anchorKind).toBe(AnchorKind.MANDATORY_PHANTOM);
+    expect(forceMessages[0].anchor.path.startsWith('0/')).toBe(true);
+  });
+});
+
 // ── Wache: belegte Instanz-Anker behalten ihre Multiplizitaet ────────────────
 
 describe('KONTROLLE: Grenzen an belegten Instanz-Ankern werden nicht entdoppelt', () => {
