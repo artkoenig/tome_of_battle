@@ -475,6 +475,8 @@ function scopeKeysOf(node, effective): ScopeKey[]
 
 Direkte vs. tiefe Zählung: beim Eintragen wird die Beitragskette entlang der Vorfahren geführt — der unmittelbare Elternrahmen erhält den Beitrag in `direct` und `deep`, weiter entfernte Rahmen nur in `deep`.
 
+Kostensummen tragen dabei **einen Schlüssel mehr** als Anzahlen: eine Kostenart-Grenze begrenzt die Summe unterhalb ihres **Trägers** (BSData §7.6/§9.4) und wird als ziel-gefilterte Query `(Rahmen, Träger-Id)` gelesen. Der Kostenanteil eines Beitrags wird deshalb zusätzlich unter jeder Ziel-Id der Vorfahren verbucht, die im jeweiligen Rahmen liegen — Gruppen-Ids eingeschlossen, sodass das Magic-Items-Muster dieselbe eine Regel nutzt. Die Selektionsanzahl steigt **nicht** mit auf. Die Eimer-Wahl bleibt unverändert, `includeChildSelections` entscheidet also weiterhin über verschachtelte Beiträge.
+
 ### 4.5 Das Query-Primitiv
 
 Die eine Stelle, die Scopes, Flags und Felder versteht. Limit, Condition und Repeat rufen ausschließlich diese Funktion.
