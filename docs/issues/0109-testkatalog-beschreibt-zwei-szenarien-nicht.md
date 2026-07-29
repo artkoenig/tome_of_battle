@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/issues-90-abarbeiten-7ymutc
 pr:
 ---
 
@@ -55,21 +55,59 @@ Acceptance criteria:
   hat einen Abschnitt, jedes `scenario.json` hat eine Zeile" die bewusste
   Entscheidung gegen ein Gate verletzt oder sie nur absichert, ist im Lauf zu
   entscheiden.
+- **Kein Gate eingeführt (Default, unbeantwortet, 2026-07-29):** Das Dokument
+  deklariert den Verzicht auf Generator und CI-Gate als bewusste Entscheidung;
+  sie umzustoßen ist eine Frage an den Menschen, kein Nebeneffekt dieses Laufs.
+  Kriterium 3 ist stattdessen einmalig mechanisch belegt (siehe Log).
+- **Sammel-Branch (Abweichung, 2026-07-29):** Diese Cloud-Session ist auf den
+  Branch `claude/issues-90-abarbeiten-7ymutc` festgelegt; alle Issues ab 90
+  laufen abweichend von „ein Issue = ein Branch = ein PR" gemeinsam auf diesem
+  Branch. Vom Menschen implizit gedeckt („arbeite die Issues ab 90 selbständig
+  ab … pushe selbständig").
+- **Tabellen-Zelle mitkorrigiert:** Die Übersichtszeile von
+  `violation-classification` nannte nur „Definitive Ogre + Mercenaries";
+  die Roster 04–07 laufen aber per Dataset-Override gegen O&G bzw. VC. Die
+  Zelle sagt jetzt „Definitive Ogre / O&G / VC + Mercenaries" — Kriterium 2
+  (Übereinstimmung mit den Szenariodaten) deckt das.
 
 ## Log
+
+- 2026-07-29: Beide Abschnitte geschrieben (`## violation-classification`,
+  `## author-message-tokens`), eingeordnet an der Tabellenposition nach
+  `info-projection`. Inhalt aus `scenario.json` + Szenario-`README.md`
+  abgeleitet (7 bzw. 3 Roster, Dataset-Overrides benannt).
+- 2026-07-29: Kriterium 3 mechanisch belegt:
+  `diff <(Tabellenzeilen) <(Abschnitte)` leer und
+  `diff <(Verzeichnisse unter docs/testing/) <(Tabellenzeilen)` leer —
+  alle 32 Szenarien haben Zeile und Abschnitt, Exit 0.
+- 2026-07-29: Review-Runde 1 (frischer Kontext): 1 Befund — der Log-Eintrag
+  oben nannte „30" statt der belegten 32 Szenarien; alles Übrige (beide
+  Abschnitte, Tabellen-Zelle, Kriterium 3) feldgenau gegen `scenario.json`/
+  README bestätigt. Fix nur im Tracker-Dokument → Wiederholungs-Review
+  per Regel-Waiver übersprungen.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja — zwei fehlende `##`-Abschnitte im
+  Muster der übrigen, abgeleitet aus den Szenariodaten; keine Code-Änderung.
+- **What surprised me?** Die Übersichtstabelle nennt für
+  `violation-classification` nur den Ogre-Datensatz, obwohl vier der sieben
+  Roster per Override gegen O&G/VC laufen.
+- **What am I assuming without having verified it?** Dass die Abschnitts-
+  Reihenfolge im Dokument keiner strengen Regel folgt (sie weicht schon vorher
+  von der Tabellenordnung ab) — Einordnung an der Tabellenposition genügt.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja — beide Abschnitte stehen, stimmen mit
+  `scenario.json`/README überein, und die Vollständigkeit ist über alle
+  Szenarien mechanisch geprüft (siehe Log).
+- **What surprised me?** Nichts weiter; die Drift-Ursache (Handpflege ohne
+  Gate) bleibt bestehen — bewusst, siehe Decisions.
+- **What am I assuming without having verified it?** Dass die nicht-technischen
+  Formulierungen den fachlichen Gehalt der Manifest-Assertions treffen; der
+  Frisch-Kontext-Review prüft das gegen.
 
 ## Retro
