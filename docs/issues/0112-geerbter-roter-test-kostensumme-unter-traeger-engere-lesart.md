@@ -61,6 +61,14 @@ Acceptance criteria:
   (Kriterium 2). `npx vitest run src/evaluator` — 64 Dateien, 809 Tests,
   Exit 0 (Kriterium 3). Der im Intent beschriebene rote Test reproduziert
   nicht mehr.
+- 2026-07-29: Review-Runde 1 (frischer Kontext, Diff `5eec822` gegen Intent):
+  keine Findings. Alle zitierten Quellen (0113-Decisions, §7.6/§9.4,
+  `cadf81d`) tragen die Behauptungen; beide Kriterien-Kommandos vom Reviewer
+  reproduziert (11/11 bzw. 809/809, Exit 0), zusätzlich `npm run lint` und
+  `npm run typecheck` Exit 0. Eine Unschärfe unterhalb der Finding-Schwelle
+  („zeitgleich gefiled" — tatsächlich zwei Runs, vier Minuten auseinander)
+  bleibt stehen. Nebenbefund außerhalb des Intents, an den Menschen: doppelt
+  vergebene Issue-Nummern 0110/0112/0115/0116 (vorbestehend auf `main`).
 
 ## Checkpoints
 
