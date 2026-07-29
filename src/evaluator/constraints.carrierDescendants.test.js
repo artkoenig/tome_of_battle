@@ -229,3 +229,97 @@ describe('Wachtposten Kriterium 2 (Muster f25f23c2): die parent-Grenze AM Zielei
     expectFiring(report, RELIC_PARENT_MAX_ID, { actual: 2, bound: 1 });
   });
 });
+
+// ── Fixture 3 (Review-Befund F1): zwei Geschwister-Links auf DIESELBE Gruppe ──
+
+const DOOR_FIRST_LINK_ID = 'link-armoury-erste-tuer';
+const DOOR_SECOND_LINK_ID = 'link-armoury-zweite-tuer';
+const MIN_ON_FIRST_LINK_ID = 'min-one-am-ersten-link';
+const MIN_ON_SECOND_LINK_ID = 'min-one-am-zweiten-link';
+
+/** Attributform wie an der Gruppe in Fixture 1, nur mit frei waehlbarer Id. */
+function minOneParentConstraint(limitId) {
+  return `<constraints>
+            <constraint field="selections" scope="parent" value="1" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="${limitId}" type="min"/>
+          </constraints>`;
+}
+
+/**
+ * Ein Held zieht DIESELBE geteilte Gruppe ueber ZWEI Geschwister-Links herein.
+ * Die Grenzen haengen hier AN DEN LINKS (nicht an der Gruppe) — eine am Link
+ * deklarierte Grenze ist die EIGENE Grenze dieses Links und muss unabhaengig
+ * davon ausgewertet werden, ob ein Geschwister-Link dasselbe Ziel hat. Die
+ * Gruppe selbst traegt bewusst KEINE Grenzen, damit nur die Link-Grenzen
+ * beobachtet werden.
+ */
+function twoDoorsSameGroupCatalogue({ firstLinkConstraints = '', secondLinkConstraints = '' }) {
+  return `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-two-doors-same-group" name="Two Doors Same Group Catalogue">
+      <forceEntries>
+        <forceEntry id="${FORCE_ID}" name="Main Force"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${HERO_ID}" name="Hero" type="unit">
+          <entryLinks>
+            <entryLink id="${DOOR_FIRST_LINK_ID}" name="Armoury (erste Tuer)" targetId="${ARMOURY_GROUP_ID}" type="selectionEntryGroup">${firstLinkConstraints}</entryLink>
+            <entryLink id="${DOOR_SECOND_LINK_ID}" name="Armoury (zweite Tuer)" targetId="${ARMOURY_GROUP_ID}" type="selectionEntryGroup">${secondLinkConstraints}</entryLink>
+          </entryLinks>
+        </selectionEntry>
+      </selectionEntries>
+      <sharedSelectionEntryGroups>
+        <selectionEntryGroup id="${ARMOURY_GROUP_ID}" name="Armoury" hidden="false" collective="false" import="true">
+          <selectionEntries>
+            <selectionEntry id="${SHIELD_ID}" name="Shield" type="upgrade"/>
+            <selectionEntry id="${PLATE_ID}" name="Plate" type="upgrade"/>
+          </selectionEntries>
+        </selectionEntryGroup>
+      </sharedSelectionEntryGroups>
+    </catalogue>`;
+}
+
+describe('Review-Befund F1 (Kriterium 2): die EIGENE Grenze eines Links wird auch dann ausgewertet, wenn ein Geschwister-Link dieselbe Gruppe zieht', () => {
+  it('feuert die min-1-parent-Grenze am ZWEITEN Link bei null gewaehlten Mitgliedern genau einmal mit Ist 0 gegen Grenze 1', () => {
+    // Der Befund: haengt die Grenze NUR am zweiten von zwei Links auf dieselbe
+    // Gruppe, wird sie heute stumm fallengelassen — die Dokumentreihenfolge
+    // der Geschwister darf aber nicht entscheiden, ob eine Grenze existiert.
+    const report = evaluate(
+      twoDoorsSameGroupCatalogue({ secondLinkConstraints: minOneParentConstraint(MIN_ON_SECOND_LINK_ID) }),
+      forceWithHero([]),
+    );
+
+    const violations = violationsOf(report, MIN_ON_SECOND_LINK_ID);
+    expect(violations, `Grenze ${MIN_ON_SECOND_LINK_ID} muss genau einmal feuern`).toHaveLength(1);
+    expect(violations[0]).toMatchObject({ actual: 0, bound: 1 });
+  });
+
+  it('feuert die identische Grenze am ERSTEN Link bei null gewaehlten Mitgliedern mit Ist 0 gegen Grenze 1 (Wachtposten: heute schon gruen)', () => {
+    const report = evaluate(
+      twoDoorsSameGroupCatalogue({ firstLinkConstraints: minOneParentConstraint(MIN_ON_FIRST_LINK_ID) }),
+      forceWithHero([]),
+    );
+
+    expectFiring(report, MIN_ON_FIRST_LINK_ID, { actual: 0, bound: 1 });
+  });
+
+  it('wertet die Grenzen BEIDER Links aus, wenn jeder Link seine eigene traegt — keine geht durch das geteilte Ziel verloren', () => {
+    const report = evaluate(
+      twoDoorsSameGroupCatalogue({
+        firstLinkConstraints: minOneParentConstraint(MIN_ON_FIRST_LINK_ID),
+        secondLinkConstraints: minOneParentConstraint(MIN_ON_SECOND_LINK_ID),
+      }),
+      forceWithHero([]),
+    );
+
+    expectFiring(report, MIN_ON_FIRST_LINK_ID, { actual: 0, bound: 1 });
+    expectFiring(report, MIN_ON_SECOND_LINK_ID, { actual: 0, bound: 1 });
+  });
+
+  it('schweigt die min-1-Grenze am zweiten Link, sobald ein Mitglied der Gruppe gewaehlt ist (Randwert Ist 1 = Grenze 1)', () => {
+    const report = evaluate(
+      twoDoorsSameGroupCatalogue({ secondLinkConstraints: minOneParentConstraint(MIN_ON_SECOND_LINK_ID) }),
+      forceWithHero([{ defId: SHIELD_ID, count: 1, children: [] }]),
+    );
+
+    expect(violationsOf(report, MIN_ON_SECOND_LINK_ID), 'min 1 ist mit einem Mitglied erfuellt').toHaveLength(0);
+  });
+});
