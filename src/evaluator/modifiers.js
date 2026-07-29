@@ -176,12 +176,18 @@ function expectedValueOf(ctx, condition) {
  * nicht, statt mit einem erfundenen Wert zu vergleichen (`design.md`). Dasselbe
  * gilt fuer einen Prozent-Sollwert ohne Aussage (Nenner 0 oder unaufloesbar,
  * {@link expectedValueOf}) — unabhaengig vom Vergleichstyp, auch bei `lessThan`.
+ *
+ * Ausnahme: die wertfreien Mitgliedschafts-Typen
+ * ({@link VALUE_FREE_CONDITION_KINDS}) brauchen keinen Sollwert — ihr Praedikat
+ * ignoriert ihn, und der Katalog-Leser toleriert dort ein fehlendes `value`
+ * (`value: null`, Issue 0087). Ein fehlender Sollwert ist fuer sie keine
+ * fehlende Aussage.
  */
 function conditionHolds(ctx, condition) {
   const actual = query(ctx, condition.field, condition.scope, condition.targetChildId, condition.flags);
   if (actual === UNRESOLVED_BUDGET) return false;
   const expected = expectedValueOf(ctx, condition);
-  if (expected === null) return false;
+  if (expected === null && !VALUE_FREE_CONDITION_KINDS.has(condition.type)) return false;
   return compare(condition.type, actual, expected, ctx.diagnostics);
 }
 
@@ -572,8 +578,14 @@ function applyOperation(scope, modifier, times, isConditional, witness) {
  * wird zusaetzlich sein Zeuge bestimmt — nur dann, denn nur der Grenzwert traegt
  * eine Herleitungskette (`design.md`: „Nur fuer Grenzwerte, nicht fuer Kosten,
  * Kategorien oder Namen").
+ *
+ * Ein Modifikator mit **unlesbarem Waechter** (Bedingung, Bedingungsgruppe oder
+ * Wiederholung, die der Katalog-Leser nicht deuten konnte — Diagnose dort
+ * gemeldet) feuert **nie**: fail-closed statt oefter als kodiert (Issue 0087,
+ * dieselbe Richtung wie {@link UNRESOLVED_BUDGET}).
  */
 function applyModifier(scope, modifier, gate) {
+  if (modifier.hasUnreadableGuard) return;
   const conditionGroups = modifier.conditionGroups ?? [];
   if (!conditionsAndGroupsHold(scope.ctx, modifier.conditions, conditionGroups)) return;
   const times = modifierTimes(scope.ctx, modifier);
@@ -611,8 +623,13 @@ function gateWithin(gate, group) {
  * `AND(Eltern-Gate, eigenes Gate)` — beliebige Tiefe, gespiegelt an der
  * rekursiven Bedingungsgruppen-Auswertung ({@link conditionGroupHolds},
  * `design.md`, Kontrakt `ModifierGroupDef`).
+ *
+ * Eine Gruppe mit **unlesbarem eigenem Waechter** entfaellt samt Untergruppen
+ * fail-closed — ihre Mitglieder greifen sonst haeufiger, als der Katalog
+ * kodiert (Issue 0087, analog {@link applyModifier}).
  */
 function applyModifierGroup(scope, group, gate) {
+  if (group.hasUnreadableGuard) return;
   if (!conditionsAndGroupsHold(scope.ctx, group.conditions, group.conditionGroups)) return;
   const innerGate = gateWithin(gate, group);
   for (const modifier of group.modifiers) {

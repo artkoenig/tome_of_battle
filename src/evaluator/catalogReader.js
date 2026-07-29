@@ -142,6 +142,21 @@ const Attr = Object.freeze({
 /** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
 const CONDITION_KINDS = Object.freeze(new Set(Object.values(ConditionKind)));
 
+/**
+ * Die Mitgliedschafts-Bedingungen (`instanceOf`/`notInstanceOf`): ihre Praedikate
+ * pruefen Anwesenheit statt Schwellwert und ignorieren `value` (Registry
+ * `COMPARATORS` in {@link ../evaluator/modifiers.js}); `field` ist fuer sie
+ * bedeutungslos. Deshalb — und nur fuer sie — toleriert der Leser ein fehlendes
+ * `field` (gilt als `selections`) und ein fehlendes `value` (kein
+ * Vergleichswert noetig), statt die Bedingung als unlesbar zu verwerfen
+ * (Issue 0087; BSData-Wiki: beide Attribute wirkungslos bei Mitgliedschaft).
+ * Andere Bedingungs-Arten ohne `field`/`value` bleiben unlesbar.
+ */
+const MEMBERSHIP_CONDITION_KINDS = Object.freeze(new Set([
+  ConditionKind.INSTANCE_OF,
+  ConditionKind.NOT_INSTANCE_OF,
+]));
+
 /** Die gueltigen `type`-Werte einer Bedingungsgruppe (SSOT-Enum {@link ConditionGroupKind}). */
 const CONDITION_GROUP_KINDS = Object.freeze(new Set(Object.values(ConditionGroupKind)));
 
@@ -341,23 +356,61 @@ function readCategoryIds(entryEl) {
 }
 
 /**
+ * Liest eine Liste von Waechtern (Bedingungen, Bedingungsgruppen oder
+ * Wiederholungen): unlesbare Mitglieder (`null`, Diagnose bereits gemeldet)
+ * entfallen aus der Liste, werden aber auf `guardHealth.unreadable` vermerkt —
+ * der tragende Modifikator bzw. die tragende Modifikatorgruppe feuert dann
+ * **fail-closed** gar nicht, statt mit den verbleibenden (im Grenzfall: null)
+ * Waechtern oefter zu feuern, als der Katalog kodiert (Issue 0087; dieselbe
+ * Richtung wie `UNRESOLVED_BUDGET` in {@link ../evaluator/model.js}).
+ *
+ * @template T
+ * @param {Element[]} elements  die XML-Elemente der Waechterliste.
+ * @param {(element: Element) => T | null} readOne  liest ein Element (null = unlesbar).
+ * @param {{ unreadable: boolean }} guardHealth  Sammelzustand des tragenden Modifikators.
+ * @returns {T[]}
+ */
+function readGuards(elements, readOne, guardHealth) {
+  const result = [];
+  for (const element of elements) {
+    const def = readOne(element);
+    if (def === null) {
+      guardHealth.unreadable = true;
+    } else {
+      result.push(def);
+    }
+  }
+  return result;
+}
+
+/**
  * Liest eine einzelne `<condition>` einer Bedingung in ihre `ConditionDef` oder
  * meldet eine Diagnose, falls ihr Vokabular ausserhalb des Umfangs liegt. Ein
  * fehlendes `childId` bedeutet "alles im Rahmen" (Ziel `null`). `percentValue`
  * traegt die XSD an der gemeinsamen `QueryBase` — es gilt fuer Conditions wie
  * fuer Grenzen und wird hier wie in {@link readConstraint} als `isPercent`
  * gelesen (Auswertung: {@link ../evaluator/modifiers.js}).
+ *
+ * Fuer Mitgliedschafts-Bedingungen ({@link MEMBERSHIP_CONDITION_KINDS}) sind
+ * `field` und `value` tolerierbar abwesend: fehlendes `field` gilt als
+ * `selections`, ein fehlendes `value` bleibt `null` (das Praedikat vergleicht
+ * keinen Wert). Die Diagnose einer unlesbaren Bedingung benennt zusaetzlich den
+ * **Traeger** des Modifikators (`carrierId`/`carrierName`), an dem sie haengt.
  */
-function readCondition(conditionEl, diagnostics) {
+function readCondition(conditionEl, diagnostics, carrier) {
   const type = conditionEl.getAttribute(Attr.TYPE);
-  const field = readField(conditionEl.getAttribute(Attr.FIELD));
+  const isMembership = MEMBERSHIP_CONDITION_KINDS.has(type);
+  const rawField = readField(conditionEl.getAttribute(Attr.FIELD));
+  const field = rawField === undefined && isMembership ? SELECTION_COUNT : rawField;
   const scope = readScope(conditionEl.getAttribute(Attr.SCOPE));
   const value = Number.parseFloat(conditionEl.getAttribute(Attr.VALUE));
-  if (!CONDITION_KINDS.has(type) || field === undefined || scope === undefined || Number.isNaN(value)) {
+  if (!CONDITION_KINDS.has(type) || field === undefined || scope === undefined || (Number.isNaN(value) && !isMembership)) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONDITION, {
       type,
       field: conditionEl.getAttribute(Attr.FIELD),
       scope: conditionEl.getAttribute(Attr.SCOPE),
+      carrierId: carrier.id,
+      carrierName: carrier.name,
     }));
     return null;
   }
@@ -366,7 +419,7 @@ function readCondition(conditionEl, diagnostics) {
     field,
     scope,
     targetChildId: conditionEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : conditionEl.getAttribute(Attr.CHILD_ID),
-    value,
+    value: Number.isNaN(value) ? null : value,
     isPercent: conditionEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML,
     flags: readFlags(conditionEl),
   };
@@ -374,12 +427,15 @@ function readCondition(conditionEl, diagnostics) {
 
 /**
  * Liest die direkten Bedingungen eines Elements (Modifikator, Bedingungsgruppe
- * oder Modifikatorgruppe) — leer, wenn keine vorhanden.
+ * oder Modifikatorgruppe) — leer, wenn keine vorhanden. Unlesbare Bedingungen
+ * werden auf `guardHealth` vermerkt ({@link readGuards}).
  */
-function readConditions(element, diagnostics) {
-  return wrappedChildren(element, Tag.CONDITIONS, Tag.CONDITION)
-    .map(conditionEl => readCondition(conditionEl, diagnostics))
-    .filter(condition => condition !== null);
+function readConditions(element, diagnostics, carrier, guardHealth) {
+  return readGuards(
+    wrappedChildren(element, Tag.CONDITIONS, Tag.CONDITION),
+    conditionEl => readCondition(conditionEl, diagnostics, carrier),
+    guardHealth,
+  );
 }
 
 /**
@@ -389,27 +445,37 @@ function readConditions(element, diagnostics) {
  * ausserhalb des SSOT-Enums wird als Diagnose gemeldet, nie still verschluckt
  * (`docs/issues/.../design.md`, Kontrakt `ConditionGroupDef`).
  */
-function readConditionGroup(groupEl, diagnostics) {
+function readConditionGroup(groupEl, diagnostics, carrier, guardHealth) {
   const type = groupEl.getAttribute(Attr.TYPE);
   if (!CONDITION_GROUP_KINDS.has(type)) {
-    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONDITION_GROUP, { type }));
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONDITION_GROUP, {
+      type,
+      carrierId: carrier.id,
+      carrierName: carrier.name,
+    }));
     return null;
   }
   return {
     type,
-    conditions: readConditions(groupEl, diagnostics),
-    groups: readConditionGroups(groupEl, diagnostics),
+    // Eine unlesbare Bedingung **innerhalb** einer gueltigen Gruppe vermerkt
+    // sich ueber dasselbe `guardHealth` am tragenden Modifikator: auch ein
+    // gehaltener lesbarer `or`-Zweig darf ihn nicht feuern lassen (Issue 0087).
+    conditions: readConditions(groupEl, diagnostics, carrier, guardHealth),
+    groups: readConditionGroups(groupEl, diagnostics, carrier, guardHealth),
   };
 }
 
 /**
  * Liest die direkten Bedingungsgruppen eines Elements (Modifikator,
  * Bedingungsgruppe oder Modifikatorgruppe) — leer, wenn keine vorhanden.
+ * Unlesbare Gruppen werden auf `guardHealth` vermerkt ({@link readGuards}).
  */
-function readConditionGroups(element, diagnostics) {
-  return wrappedChildren(element, Tag.CONDITION_GROUPS, Tag.CONDITION_GROUP)
-    .map(groupEl => readConditionGroup(groupEl, diagnostics))
-    .filter(group => group !== null);
+function readConditionGroups(element, diagnostics, carrier, guardHealth) {
+  return readGuards(
+    wrappedChildren(element, Tag.CONDITION_GROUPS, Tag.CONDITION_GROUP),
+    groupEl => readConditionGroup(groupEl, diagnostics, carrier, guardHealth),
+    guardHealth,
+  );
 }
 
 /**
@@ -430,7 +496,7 @@ function readConditionGroups(element, diagnostics) {
  * `isPercent` gelesen: die Schrittweite ist dann ein Prozentsatz des im Rahmen
  * gezaehlten Nenners (Auswertung: {@link ../evaluator/modifiers.js}).
  */
-function readRepeat(repeatEl, diagnostics) {
+function readRepeat(repeatEl, diagnostics, carrier) {
   const field = readField(repeatEl.getAttribute(Attr.FIELD));
   const scope = readScope(repeatEl.getAttribute(Attr.SCOPE));
   const perValue = Number.parseFloat(repeatEl.getAttribute(Attr.VALUE));
@@ -442,6 +508,8 @@ function readRepeat(repeatEl, diagnostics) {
       scope: repeatEl.getAttribute(Attr.SCOPE),
       value: repeatEl.getAttribute(Attr.VALUE),
       repeats: repeatsAttr,
+      carrierId: carrier.id,
+      carrierName: carrier.name,
     }));
     return null;
   }
@@ -457,11 +525,17 @@ function readRepeat(repeatEl, diagnostics) {
   };
 }
 
-/** Liest die Wiederholungen eines Modifikators (leer, wenn keine vorhanden). */
-function readRepeats(modifierEl, diagnostics) {
-  return wrappedChildren(modifierEl, Tag.REPEATS, Tag.REPEAT)
-    .map(repeatEl => readRepeat(repeatEl, diagnostics))
-    .filter(repeat => repeat !== null);
+/**
+ * Liest die Wiederholungen eines Modifikators (leer, wenn keine vorhanden).
+ * Unlesbare Wiederholungen werden auf `guardHealth` vermerkt ({@link readGuards}):
+ * der Modifikator bleibt dann ganz aus, statt einmal bedingungslos zu feuern.
+ */
+function readRepeats(modifierEl, diagnostics, carrier, guardHealth) {
+  return readGuards(
+    wrappedChildren(modifierEl, Tag.REPEATS, Tag.REPEAT),
+    repeatEl => readRepeat(repeatEl, diagnostics, carrier),
+    guardHealth,
+  );
 }
 
 /**
@@ -472,8 +546,15 @@ function readRepeats(modifierEl, diagnostics) {
  * der Apply-Schicht ueberlassen (`docs/issues/.../design.md`, Kontrakt `ModifierDef`).
  * Ein `type` ausserhalb des SSOT-Enums wird als Diagnose gemeldet, nie still
  * verschluckt.
+ *
+ * Konnte auch nur **ein** Waechter (Bedingung, Bedingungsgruppe, Wiederholung —
+ * beliebig tief) nicht gelesen werden, traegt der Modifikator
+ * `hasUnreadableGuard: true` und feuert **nie** (fail-closed, Issue 0087;
+ * Auswertung: `applyModifier` in {@link ../evaluator/modifiers.js}). Die
+ * Diagnose des unlesbaren Waechters bleibt dabei erhalten und benennt den
+ * Traeger (`carrier`).
  */
-function readModifier(modifierEl, diagnostics) {
+function readModifier(modifierEl, diagnostics, carrier) {
   const kind = modifierEl.getAttribute(Attr.TYPE);
   const field = modifierEl.getAttribute(Attr.FIELD);
   const value = modifierEl.getAttribute(Attr.VALUE);
@@ -481,6 +562,7 @@ function readModifier(modifierEl, diagnostics) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { type: kind, field, value }));
     return null;
   }
+  const guardHealth = { unreadable: false };
   return {
     kind,
     field,
@@ -488,9 +570,10 @@ function readModifier(modifierEl, diagnostics) {
     // `null`, wenn der Katalog kein Trennzeichen deklariert: dann wird der Text
     // ohne Trenner angefuegt.
     join: modifierEl.getAttribute(Attr.JOIN),
-    conditions: readConditions(modifierEl, diagnostics),
-    conditionGroups: readConditionGroups(modifierEl, diagnostics),
-    repeats: readRepeats(modifierEl, diagnostics),
+    conditions: readConditions(modifierEl, diagnostics, carrier, guardHealth),
+    conditionGroups: readConditionGroups(modifierEl, diagnostics, carrier, guardHealth),
+    repeats: readRepeats(modifierEl, diagnostics, carrier, guardHealth),
+    hasUnreadableGuard: guardHealth.unreadable,
   };
 }
 
@@ -498,9 +581,9 @@ function readModifier(modifierEl, diagnostics) {
  * Liest die Modifikatoren eines Knotens **in Dokumentreihenfolge** — die
  * Reihenfolge im Array ist die Semantik (`docs/evaluator-architecture.md` §4.1).
  */
-function readModifiers(element, diagnostics) {
+function readModifiers(element, diagnostics, carrier) {
   return wrappedChildren(element, Tag.MODIFIERS, Tag.MODIFIER)
-    .map(modifierEl => readModifier(modifierEl, diagnostics))
+    .map(modifierEl => readModifier(modifierEl, diagnostics, carrier))
     .filter(modifier => modifier !== null);
 }
 
@@ -520,15 +603,21 @@ function readModifiers(element, diagnostics) {
  * ein nicht-leeres `<repeats>` wird deshalb als sichtbare Grenze gemeldet, nie
  * still verschluckt (§5, Risiko 4).
  */
-function readModifierGroup(groupEl, diagnostics) {
+function readModifierGroup(groupEl, diagnostics, carrier) {
   if (wrappedChildren(groupEl, Tag.REPEATS, Tag.REPEAT).length > 0) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER_GROUP_REPEAT, {}));
   }
+  // Das eigene Waechter-Gate der Gruppe: ist es auch nur teilweise unlesbar,
+  // entfaellt die Gruppe samt Untergruppen fail-closed (Issue 0087; Auswertung:
+  // `applyModifierGroup` in {@link ./modifiers.js}). Die Waechter der
+  // **Mitglieder** vermerken sich dagegen an den Mitgliedern selbst.
+  const guardHealth = { unreadable: false };
   return {
-    conditions: readConditions(groupEl, diagnostics),
-    conditionGroups: readConditionGroups(groupEl, diagnostics),
-    modifiers: readModifiers(groupEl, diagnostics),
-    modifierGroups: readModifierGroups(groupEl, diagnostics),
+    conditions: readConditions(groupEl, diagnostics, carrier, guardHealth),
+    conditionGroups: readConditionGroups(groupEl, diagnostics, carrier, guardHealth),
+    modifiers: readModifiers(groupEl, diagnostics, carrier),
+    modifierGroups: readModifierGroups(groupEl, diagnostics, carrier),
+    hasUnreadableGuard: guardHealth.unreadable,
   };
 }
 
@@ -536,9 +625,9 @@ function readModifierGroup(groupEl, diagnostics) {
  * Liest die Modifikatorgruppen eines Knotens **in Dokumentreihenfolge** (leer,
  * wenn keine vorhanden) — analog zu {@link readModifiers}.
  */
-function readModifierGroups(element, diagnostics) {
+function readModifierGroups(element, diagnostics, carrier) {
   return wrappedChildren(element, Tag.MODIFIER_GROUPS, Tag.MODIFIER_GROUP)
-    .map(groupEl => readModifierGroup(groupEl, diagnostics));
+    .map(groupEl => readModifierGroup(groupEl, diagnostics, carrier));
 }
 
 /**
@@ -558,13 +647,20 @@ function readModifierGroups(element, diagnostics) {
  * Ziel weiterhin ueberstimmt (`effectiveState.js`, `baseHiddenOf`, Issue 0099).
  */
 function readEntryBase(element, diagnostics) {
+  const id = element.getAttribute(Attr.ID);
+  const name = element.getAttribute(Attr.NAME);
+  // Der **Traeger** der Modifikatoren dieses Elements: seine ID und sein Name
+  // reichern die Diagnosen unlesbarer Waechter an (`carrierId`/`carrierName`,
+  // Issue 0087) — einheitlich fuer Eintraege, Verweise, Gruppen, Kategorie-Links,
+  // Kontingente und Info-Elemente, weil alle durch diese eine Lesestelle gehen.
+  const carrier = { id, name };
   return {
-    id: element.getAttribute(Attr.ID),
-    name: element.getAttribute(Attr.NAME),
+    id,
+    name,
     isHidden: readBoolean(element, Attr.HIDDEN, DEFAULT_HIDDEN),
     hiddenAttribute: readBoolean(element, Attr.HIDDEN, undefined),
-    modifiers: readModifiers(element, diagnostics),
-    modifierGroups: readModifierGroups(element, diagnostics),
+    modifiers: readModifiers(element, diagnostics, carrier),
+    modifierGroups: readModifierGroups(element, diagnostics, carrier),
   };
 }
 
