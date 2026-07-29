@@ -68,7 +68,7 @@
  *                                                  // WAS die Grenze misst
  *               "costTypeId": "<costType-Id>"|null?,  // bei einer kostenbezogenen Messgroesse
  *               "isPercent": true|false?,          // Prozentgrenze: `bound` ist der abgeleitete Wert
- *               "scopeKind": "roster|force|parent|self|entryId|categoryId"?,  // Art des Bezugsrahmens
+ *               "scopeKind": "roster|force|parent|self|primary-catalogue|entryId|categoryId"?,  // Art des Bezugsrahmens
  *               "scopeTargetId": "<id>"|null?,     // die Ziel-Id eines ID-Bezugsrahmens
  *               "actual": <ist>?, "bound": <grenze>?, "delta": <differenz>?,
  *               "causes": [                        // die ausloesenden Auswahlen (ADR-0027):

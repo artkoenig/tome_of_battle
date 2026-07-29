@@ -86,6 +86,8 @@ const INITIAL_ROUND = 0;
  * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
  *   Roster-Kostengrenzen (`RosterBudget`), durch die Modifikator-Anwendung an den
  *   Query-Kontext durchgereicht.
+ * @param {Map<string, string>} [primaryCatalogueByForceDefId]  der Herkunftsindex
+ *   der Kontingente (Bezugsrahmen `primary-catalogue`), ebenso durchgereicht.
  * @returns {{ effective: import('./effectiveState.js').EffectiveState, diagnostics: object[], rounds: number, converged: boolean, unstableNodes: Set<object> }}
  *   der Effektiv-Zustand des Fixpunkts (oder der letzten Runde) samt Diagnosen, dem
  *   **Ausgang der Schleife** (Zahl der durchlaufenen Runden, ob sie konvergiert ist)
@@ -97,7 +99,7 @@ const INITIAL_ROUND = 0;
  *   (`scripts/measure-evaluator.js`) weist ihn aus, damit ein Laufzeit-Ausreisser
  *   einer Rundenzahl zuzuordnen ist statt unerklaert zu bleiben.
  */
-export function evaluateToFixpoint(root, categoryIds, budget) {
+export function evaluateToFixpoint(root, categoryIds, budget, primaryCatalogueByForceDefId) {
   const iteratedNodes = [...realNodes(root)];
   let effective = createBaseEffectiveState(root);
   let modifierDiagnostics = [];
@@ -124,6 +126,7 @@ export function evaluateToFixpoint(root, categoryIds, budget) {
       categoryIds,
       diagnostics: modifierDiagnostics,
       budget,
+      primaryCatalogueByForceDefId,
     });
 
     unstableNodes = countRelevantDifferences(effective, next, iteratedNodes);
@@ -181,9 +184,11 @@ export function evaluateToFixpoint(root, categoryIds, budget) {
  *   Zustand; er wird um die Werte der Anker **ergaenzt**, vorhandene Werte bleiben unberuehrt.
  * @param {Set<string>} categoryIds  bekannte Kategorie-IDs (Ziel-Typ-Regel des Query-Primitivs).
  * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten Roster-Kostengrenzen.
+ * @param {Map<string, string>} [primaryCatalogueByForceDefId]  der Herkunftsindex
+ *   der Kontingente (Bezugsrahmen `primary-catalogue`).
  * @returns {object[]} die Modifikator-Diagnosen der Anker (nie still verschluckt).
  */
-export function applyAnchorPostPass(root, index, effective, categoryIds, budget) {
+export function applyAnchorPostPass(root, index, effective, categoryIds, budget, primaryCatalogueByForceDefId) {
   const diagnostics = [];
   applyModifiersOfNodes(syntheticNodes(root), effective, {
     root,
@@ -191,6 +196,7 @@ export function applyAnchorPostPass(root, index, effective, categoryIds, budget)
     categoryIds,
     diagnostics,
     budget,
+    primaryCatalogueByForceDefId,
   });
   return diagnostics;
 }

@@ -113,7 +113,7 @@ and in `docs/testing/vampire-bloodlines/scenario.json`. In outline:
             "measure": "selectionCount|forceCount|costSum|budgetLimit|rosterBudget",
             "costTypeId": "<costType id, or null>",
             "isPercent": false,
-            "scopeKind": "roster|force|parent|self|entryId|categoryId",
+            "scopeKind": "roster|force|parent|self|primary-catalogue|entryId|categoryId",
             "scopeTargetId": "<id, or null>",
             "actual": 0, "bound": 1, "delta": 1,
             "causes": [

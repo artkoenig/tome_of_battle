@@ -9,6 +9,12 @@
  * `includeChildSelections`, `includeChildForces`) — auch in Kombination. Die
  * Domaenenregel „Kategorie-Ziel armeeweit, Eintrags-Ziel pro Kontingent"
  * (BSData §7.7) sitzt an genau dieser Stelle.
+ *
+ * Zwei Rahmen sind **keine Zaehlrahmen** und werden deshalb vor jeder Rahmen- und
+ * Indexarbeit beantwortet: das Feld `limit::<costTypeId>` liest die eingestellte
+ * Kostengrenze aus dem Budget ({@link resolveLimitValue}), und
+ * `scope="primary-catalogue"` prueft die Identitaet des Armeebuchs, aus dem das
+ * umschliessende Kontingent stammt ({@link resolvePrimaryCatalogue}, Issue 077).
  */
 
 import {
@@ -24,6 +30,9 @@ import {
 import { frameKeyOf } from './evalTree.js';
 import { EMPTY_ROSTER_BUDGET } from './rosterBudget.js';
 
+/** Der leere Herkunftsindex der Kontingente — geteilt, weil nur gelesen. */
+const EMPTY_PRIMARY_CATALOGUE_INDEX = new Map();
+
 /**
  * Buendelt den Auswertungs-Kontext einer Query
  * (`docs/evaluator-architecture.md` §4.5, `QueryContext`).
@@ -38,8 +47,13 @@ import { EMPTY_ROSTER_BUDGET } from './rosterBudget.js';
  *   eingestellten Roster-Kostengrenzen (`RosterBudget`). In diesem Slice nur
  *   durchgereicht — die Feldauflösung (`limit::<id>`) liest es erst im
  *   Folge-Slice; fehlt es, gilt das leere Budget.
+ * @param {Map<string, string>} [parts.primaryCatalogueByForceDefId]  der
+ *   Herkunftsindex der Kontingente (`catalogSet.js`): je Kontingent-Definition
+ *   das Armeebuch, das sie deklariert. Er beantwortet den Bezugsrahmen
+ *   `primary-catalogue`; fehlt er, gilt die leere Zuordnung — jede solche Query
+ *   bleibt dann fail-closed unaufgeloest.
  */
-export function createQueryContext({ node, root, index, categoryIds, diagnostics, budget }) {
+export function createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId }) {
   return {
     node,
     root,
@@ -47,6 +61,7 @@ export function createQueryContext({ node, root, index, categoryIds, diagnostics
     categoryIds: categoryIds ?? new Set(),
     diagnostics,
     budget: budget ?? EMPTY_ROSTER_BUDGET,
+    primaryCatalogueByForceDefId: primaryCatalogueByForceDefId ?? EMPTY_PRIMARY_CATALOGUE_INDEX,
   };
 }
 
@@ -151,10 +166,62 @@ function resolveLimitValue(ctx, field, scope) {
 }
 
 /**
+ * Beantwortet den Bezugsrahmen `primary-catalogue`: **ist das Armeebuch des
+ * umschliessenden Kontingents das in `targetId` genannte?** (Issue 077, Kriterium
+ * 1 — aus den Katalogdaten belegt: alle 27 Vorkommen tragen eine Katalog-Wurzel-Id
+ * in `childId`.)
+ *
+ * Er ist **kein Zaehlrahmen**, sondern eine Identitaetspruefung: ein Katalog ist
+ * kein Knoten des Instanzbaums, `scopeKey(frameKey, targetId)` faende ihn also
+ * nie. Deshalb steht er — wie `limit::<id>` — **vor** jeder Rahmen- und Indexarbeit
+ * und damit **unabhaengig von `shared`**: ein Katalog wird durch `shared="false"`
+ * nicht enger.
+ *
+ * Der Antwortvertrag (Issue 077, Abschnitt „Plan"):
+ *
+ * | Lage                                                       | Ergebnis |
+ * | ---                                                        | ---      |
+ * | `targetId` ist die Katalog-Id des Kontingents              | 1        |
+ * | `targetId` ist eine andere Katalog-Id                      | 0        |
+ * | `targetId === null` (Prozent-Nenner „alles im Rahmen")     | 1 — der Rahmen hat genau **einen** Katalog |
+ * | kein umschliessendes Kontingent, oder dessen Herkunft steht nicht im Index | 0 **mit** `unresolvedScope` |
+ * | ein anderes Feld als `SELECTION_COUNT`                     | `unsupportedField` |
+ *
+ * Eine Katalog-Id, die in diesem Datensatz gar nicht geladen ist (in den
+ * Fixture-Daten kommt das vor), ist ein schlichter **Nicht-Treffer** und kein
+ * Datenfehler: die Regel fragt nach der Identitaet des Armeebuchs, nicht nach
+ * seiner Anwesenheit.
+ *
+ * @returns {number} 0 oder 1.
+ */
+function resolvePrimaryCatalogue(ctx, field, targetId) {
+  if (field.kind !== CountedFieldKind.SELECTION_COUNT) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_FIELD, { field }));
+    return 0;
+  }
+  const { forceRoot } = ctx.node;
+  const catalogueId = forceRoot === null || forceRoot === undefined
+    ? undefined
+    : ctx.primaryCatalogueByForceDefId.get(forceRoot.def.id);
+  if (catalogueId === undefined) {
+    // Fail-closed statt stiller Falschauskunft: ohne umschliessendes Kontingent
+    // (etwa an der Wurzel) oder wenn dessen Definition aus keinem Armeebuch
+    // stammt — z. B. aus der `.gst` — gibt es kein Armeebuch zu vergleichen.
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_SCOPE, {
+      scope: ScopeKeyword.PRIMARY_CATALOGUE,
+      targetId,
+    }));
+    return 0;
+  }
+  if (targetId === null || targetId === undefined) return 1;
+  return targetId === catalogueId ? 1 : 0;
+}
+
+/**
  * Zaehlt `field` im Rahmen `scope`, gefiltert auf `targetId`, unter `flags` — oder
  * liest, fuer ein `LIMIT_VALUE`-Feld, die eingestellte Grenze aus dem Budget.
  *
- * @param {object} ctx  aus {@link createQueryContext} (traegt `node`, `root`, `index`, `categoryIds`, `diagnostics`, `budget`).
+ * @param {object} ctx  aus {@link createQueryContext} (traegt `node`, `root`, `index`, `categoryIds`, `diagnostics`, `budget`, `primaryCatalogueByForceDefId`).
  * @param {{ kind: string, costTypeId?: string }} field  aus `SELECTION_COUNT` / `costSumField` / `limitValueField`.
  * @param {string} scope  ein `ScopeKeyword` oder eine Eintrags-/Kategorie-ID.
  * @param {string|null} targetId  Ziel-ID oder `null` fuer "alles im Rahmen".
@@ -167,6 +234,13 @@ export function query(ctx, field, scope, targetId, flags) {
   // vor jeder Rahmen-/Index-Arbeit aufloesen (das Budget ist rahmen-unabhaengig).
   if (field.kind === CountedFieldKind.LIMIT_VALUE) {
     return resolveLimitValue(ctx, field, scope);
+  }
+
+  // Der Katalog-Rahmen ist kein Zaehlrahmen, sondern eine Identitaetspruefung —
+  // daher ebenfalls vor jeder Rahmen-/Index-Arbeit und unabhaengig von `shared`
+  // ({@link resolvePrimaryCatalogue}, Issue 077).
+  if (scope === ScopeKeyword.PRIMARY_CATALOGUE) {
+    return resolvePrimaryCatalogue(ctx, field, targetId);
   }
 
   const effectiveFlags = normalizeFlags(flags);

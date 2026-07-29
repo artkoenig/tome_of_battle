@@ -125,7 +125,12 @@ export function evaluate(prepared, roster) {
   // Der rosterunabhaengige Katalog-Vorlauf ist bereits gelaufen: die Auswertung
   // liest sein Ergebnis, statt die Kataloge erneut zu lesen. Das ist die
   // Wiederverwendung, um derentwillen die Fassade zweistufig ist.
-  const { resolved, diagnostics: datasetDiagnostics } = PreparedDataset.contentsOf(prepared);
+  // `primaryCatalogueByForceDefId` ist der rosterunabhaengige Herkunftsindex der
+  // Kontingente: je Kontingent-Definition das Armeebuch, das sie deklariert. Er
+  // beantwortet den Bezugsrahmen `primary-catalogue` (Issue 077) und wird — wie
+  // das Budget — bis in die Query-Kontexte durchgereicht.
+  const { resolved, primaryCatalogueByForceDefId, diagnostics: datasetDiagnostics } =
+    PreparedDataset.contentsOf(prepared);
 
   const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
 
@@ -135,7 +140,7 @@ export function evaluate(prepared, roster) {
   // fuer Oszillation und erschoepftes Rundenbudget (§3.5/§4.2). Iteriert wird nur
   // ueber die **realen** Knoten: nur sie gehen in die Zaehlung ein.
   const { effective, diagnostics: fixpointDiagnostics, unstableNodes } =
-    evaluateToFixpoint(root, resolved.categoryIds, budget);
+    evaluateToFixpoint(root, resolved.categoryIds, budget, primaryCatalogueByForceDefId);
 
   // Finaler, konsistenter Index aus dem konvergierten (bzw. letzten) Stand.
   const index = buildIndex(root, effective);
@@ -154,10 +159,13 @@ export function evaluate(prepared, roster) {
   // angehaengten — bekommen ihre effektiven Werte in **einem** Durchlauf gegen
   // diesen finalen Index. Sie zaehlen nie mit, koennen also nicht zurueckwirken —
   // der Index wird danach nicht erneut gebaut.
-  const postPassDiagnostics = applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget);
+  const postPassDiagnostics =
+    applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget, primaryCatalogueByForceDefId);
 
   const constraintDiagnostics = [];
-  const results = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics, budget);
+  const results = evaluateConstraints(
+    root, index, effective, resolved.categoryIds, constraintDiagnostics, budget, primaryCatalogueByForceDefId,
+  );
 
   // Engine-allgemeine Regel „Armee zu teuer": je eingestellter Kostengrenze die am
   // ROSTER-Rahmen verplante Summe (aus dem schon gebauten Zaehlindex) gegen ihre

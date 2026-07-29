@@ -127,12 +127,15 @@ function evaluateLimit(limit, node, effective, ctx) {
  * @param {object[]} diagnostics  Sammelliste, in die Query- und Null-Nenner-Diagnosen fliessen.
  * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
  *   Roster-Kostengrenzen (`RosterBudget`), an den Query-Kontext durchgereicht.
+ * @param {Map<string, string>} [primaryCatalogueByForceDefId]  der Herkunftsindex
+ *   der Kontingente (`catalogSet.js`, Bezugsrahmen `primary-catalogue`), ebenfalls
+ *   nur an den Query-Kontext durchgereicht.
  * @returns {object[]} Constraint-Ergebnisse (je ein Tripel; suspendierte Grenzen ausgenommen).
  */
-export function evaluateConstraints(root, index, effective, categoryIds, diagnostics, budget) {
+export function evaluateConstraints(root, index, effective, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId) {
   const results = [];
   for (const node of allNodes(root)) {
-    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
+    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId });
     // Die vom Verweis geerbten Grenzen gehoeren dazu (`limitsOf` ist die eine
     // Quelle der Wahrheit) — sonst blieben die Grenzen des Ziels eines
     // `entryLink`/`categoryLink` still unausgewertet. Ausgewertet wird die

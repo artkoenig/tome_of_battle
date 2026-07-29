@@ -26,7 +26,7 @@
  */
 
 import { parseCatalogue } from './catalogReader.js';
-import { mergeCatalogues } from './catalogSet.js';
+import { mergeCatalogues, buildPrimaryCatalogueIndex } from './catalogSet.js';
 import { resolveCatalogue } from './resolver.js';
 import { DiagnosticKind, diagnostic } from './model.js';
 
@@ -82,10 +82,10 @@ function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnosti
  * bezweckt (ADR-0034).
  */
 export class PreparedDataset {
-  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }} */
+  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, diagnostics: object[] }} */
   #contents;
 
-  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }} contents */
+  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, diagnostics: object[] }} contents */
   constructor(contents) {
     this.#contents = contents;
   }
@@ -94,7 +94,7 @@ export class PreparedDataset {
    * Der Inhalt eines aufbereiteten Datensatzes — **engine-intern**.
    *
    * @param {PreparedDataset} prepared  Das Ergebnis von {@link prepareDataset}.
-   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, diagnostics: object[] }}
+   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, diagnostics: object[] }}
    * @throws {TypeError} Wenn kein aufbereiteter Datensatz uebergeben wurde. Das ist
    *   der haeufigste Aufruffehler der zweistufigen Fassade — ein roher Datensatz
    *   `{ gameSystem, catalogues }` statt seines aufbereiteten Ergebnisses —, und er
@@ -121,6 +121,11 @@ export class PreparedDataset {
  * Die gelesenen Dokumente bleiben **einzeln** erhalten, weil das zusammengefuehrte
  * Aggregat ihre Herkunft nicht mehr kennt: die Datensatz-Beschreibung sagt je
  * Katalog, ob er spielbar ist, und je Kontingent, aus welcher Quelle es stammt.
+ * Aus derselben Quelle entsteht der **Herkunftsindex der Kontingente**
+ * (`primaryCatalogueByForceDefId`, {@link buildPrimaryCatalogueIndex}), den das
+ * Query-Primitiv fuer den Bezugsrahmen `primary-catalogue` liest (Issue 077). Er
+ * ist rosterunabhaengig und gehoert deshalb in den Vorlauf, nicht in die
+ * Auswertung.
  *
  * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
  *   Die optionale Spielsystemdatei (`.gst`-XML) und die geordnete Liste der
@@ -155,6 +160,9 @@ export function prepareDataset(dataset) {
     gameSystemDocument,
     catalogueDocuments,
     resolved,
+    // Nur die Kataloge: ein `primary-catalogue` ist ein Armeebuch, die `.gst`
+    // ist keines (Issue 077).
+    primaryCatalogueByForceDefId: buildPrimaryCatalogueIndex(catalogueDocuments),
     diagnostics: [...merged.diagnostics, ...coherenceDiagnostics, ...resolved.diagnostics],
   });
 }
