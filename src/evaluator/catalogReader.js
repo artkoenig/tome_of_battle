@@ -317,7 +317,10 @@ function readCategoryIds(entryEl) {
 /**
  * Liest eine einzelne `<condition>` einer Bedingung in ihre `ConditionDef` oder
  * meldet eine Diagnose, falls ihr Vokabular ausserhalb des Umfangs liegt. Ein
- * fehlendes `childId` bedeutet "alles im Rahmen" (Ziel `null`).
+ * fehlendes `childId` bedeutet "alles im Rahmen" (Ziel `null`). `percentValue`
+ * traegt die XSD an der gemeinsamen `QueryBase` — es gilt fuer Conditions wie
+ * fuer Grenzen und wird hier wie in {@link readConstraint} als `isPercent`
+ * gelesen (Auswertung: {@link ../evaluator/modifiers.js}).
  */
 function readCondition(conditionEl, diagnostics) {
   const type = conditionEl.getAttribute(Attr.TYPE);
@@ -338,6 +341,7 @@ function readCondition(conditionEl, diagnostics) {
     scope,
     targetChildId: conditionEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : conditionEl.getAttribute(Attr.CHILD_ID),
     value,
+    isPercent: conditionEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML,
     flags: readFlags(conditionEl),
   };
 }
@@ -396,6 +400,9 @@ function readConditionGroups(element, diagnostics) {
  *
  * Die Schrittweite muss eine Zahl ungleich 0 sein (0 gaebe eine Division durch
  * null); ein unlesbarer Wert wird als Diagnose gemeldet, nie still verschluckt.
+ * `percentValue` (QueryBase, wie an Grenzen und Bedingungen) wird als
+ * `isPercent` gelesen: die Schrittweite ist dann ein Prozentsatz des im Rahmen
+ * gezaehlten Nenners (Auswertung: {@link ../evaluator/modifiers.js}).
  */
 function readRepeat(repeatEl, diagnostics) {
   const field = readField(repeatEl.getAttribute(Attr.FIELD));
@@ -417,6 +424,7 @@ function readRepeat(repeatEl, diagnostics) {
     scope,
     targetChildId: repeatEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : repeatEl.getAttribute(Attr.CHILD_ID),
     perValue,
+    isPercent: repeatEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML,
     repeats,
     roundUp: readBoolean(repeatEl, Attr.ROUND_UP, false),
     flags: readFlags(repeatEl),

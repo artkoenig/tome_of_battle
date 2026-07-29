@@ -107,6 +107,25 @@ Nötige bereits.
   mit Absicht: `limit::`-Nenner (Default protokolliert, ungepinnt — für
   den PR); Prozent-Grenzen-Kontrolle übersprungen (constraints.test.js
   pinnt sie bereits).
+- 2026-07-29 implementer: ohne Plan-Abweichung. Leser liest `isPercent`
+  an ConditionDef/RepeatDef (`catalogReader.js`, LimitDef-Präzedenz);
+  `modifiers.js` bekommt den geteilten Helfer `resolvePercentValue`
+  (Nenner-Query wie resolveBound, `roundHalfUp` aus `rounding.js`,
+  Nenner 0 → `zeroDenominator` `{ field, scope }` + keine Aussage,
+  UNRESOLVED_BUDGET fail-closed still — query diagnostiziert selbst);
+  `conditionHolds` leitet den Erwartungswert ab außer bei den wertfreien
+  instanceOf-Arten, `repeatCount` leitet die Schrittweite VOR dem
+  0-Guard ab (abgeleitete 0 → bestehender 0-Schritte-Pfad). Doku:
+  Architektur (§4.6, Records), Datenformat §7.7, rounding.js-Kopf.
+  Zeugen/Fixpunkt brauchten nichts: Wegwerf-Listen und
+  Letzte-Runde-Konvention greifen von selbst. Belegt: Zielfile 16/16
+  Exit 0; Vitest 221 Dateien / 2257 Tests Exit 0; Puppeteer-E2E Exit 0;
+  lint/typecheck/depcruise Exit 0; knip Exit 1 vorbestehend,
+  Befundmenge byte-identisch; measure-evaluator Exit 1 vorbestehend,
+  Wiederverwendungs-Zeiten 4,0/7,0/10,9 ms ohne Ausreißer. Notiert als
+  bewusste Nicht-Änderung: strukturelle Parallele
+  resolveBound/resolvePercentValue (`PERCENT_DIVISOR` doppelt) —
+  Refactoring läge außerhalb des Intents.
 
 ## Checkpoints
 

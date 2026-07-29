@@ -179,11 +179,16 @@ record CountFlags {
 record LimitDef       { id, kind: ConstraintKind, field: CountedField, scope: ScopeRef,
                         value: number, isPercent: bool, flags: CountFlags }
 record ConditionDef   { type: ConditionKind, field: CountedField, scope: ScopeRef,
-                        targetChildId: Id, value: number, flags: CountFlags,
+                        targetChildId: Id, value: number,
+                        isPercent: bool,                   // XSD-`percentValue` (QueryBase, wie an
+                                                           // Grenzen): `value` als Prozentsatz des
+                                                           // Rahmen-Nenners, §4.6
+                        flags: CountFlags,
                         witnessDefinition: ResolvedDef? }  // im Resolver aufgelöst: die
                         // benennbare Auswahl hinter targetChildId (sonst null)
 record RepeatDef      { field: CountedField, scope: ScopeRef,
                         targetChildId: Id, perValue: number,   // XSD-`value`: die Schrittweite
+                        isPercent: bool,                       // Schrittweite als Prozentsatz, §4.6
                         repeats: number, roundUp: bool,        // Anwendungen je Schritt; Rundung
                         flags: CountFlags }
 record ModifierDef    { field: string,                    // roher XSD-`field`, im Resolver aufgelöst
@@ -499,13 +504,30 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
 
 ```
 function conditionHolds(ctx, c: ConditionDef): bool
-  actual = query(ctx, c.field, c.scope, c.targetChildId, c.flags)
-  return compare(c.type, actual, c.value)   // COMPARATORS-Registry: ConditionKind → Vergleichsprädikat
+  actual   = query(ctx, c.field, c.scope, c.targetChildId, c.flags)
+  expected = c.isPercent and c.type not in {instanceOf, notInstanceOf}  // Wiki: percentValue
+           ? resolvePercentValue(ctx, c, c.value)                       // "has no effect" dort
+           : c.value
+  if expected == KEINE_AUSSAGE: return false   // Nenner 0 oder unauflösbares Budget:
+                                               // fail-closed, unabhängig vom Vergleichstyp
+  return compare(c.type, actual, expected)  // COMPARATORS-Registry: ConditionKind → Vergleichsprädikat
 
 function repeatCount(ctx, r: RepeatDef): number
+  perValue = r.isPercent ? resolvePercentValue(ctx, r, r.perValue) : r.perValue
+  if perValue == KEINE_AUSSAGE or perValue == 0: return 0  // abgeleitete Schrittweite 0:
+                                                           // inaktiv, keine Diagnose
   actual = query(ctx, r.field, r.scope, r.targetChildId, r.flags)
-  steps  = r.roundUp ? ceil(actual / r.perValue) : floor(actual / r.perValue)
+  steps  = r.roundUp ? ceil(actual / perValue) : floor(actual / perValue)
   return steps * r.repeats                  // 0 = Modifikator inaktiv
+
+// Dieselbe Nenner-Konvention wie resolveBound (§4.7): gleiches Feld, gleicher Rahmen,
+// gleiche Flags, Ziel "alles im Rahmen"; Rundung zentral (roundHalfUp, rounding.js).
+function resolvePercentValue(ctx, q, rawValue): number | KEINE_AUSSAGE
+  denominator = query(ctx, q.field, q.scope, targetId = null, q.flags)
+  if denominator == 0:
+    ctx.diagnostics.add(Diagnostic.ZERO_DENOMINATOR(q))
+    return KEINE_AUSSAGE
+  return roundHalfUp(denominator * rawValue / 100)
 
 // Ein Durchlauf, zwei Aufrufer: die Fixpunktschleife ruft ihn je Runde mit den
 // ITERIERTEN (realen) Knoten und einer frischen Basiskopie, der Nach-Durchlauf

@@ -760,6 +760,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 | `scope` | Bezugsrahmen (`roster`, `force`, `parent`, …). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
 | `value` | Vergleichswert. |
+| `percentValue` | `true`/`false` — ob `value` als **Prozentsatz** des im Rahmen gezählten Nenners zu lesen ist (die XSD trägt das Attribut an der gemeinsamen `QueryBase`, es gilt also für Constraint, Condition und Repeat gleichermaßen; gleiche Nenner- und Rundungskonvention wie bei Prozent-Grenzen, [§7.6](#76-constraint)). Bei `instanceOf`/`notInstanceOf` ohne Wirkung (Wiki: *„has no effect"*). |
 | `shared` | Ob über alle Instanzen des Eintrags im Roster gezählt wird (`true`) oder nur über die eine Instanz, an der die Condition hängt (`false`). Vorgabewert laut XSD ist `true`. |
 | `includeChildSelections` | Wenn `true`, werden auch **unterhalb** des Scope-Ziels verschachtelte Auswahlen mitgezählt, nicht nur dessen direkte Kinder (BattleScribe `QueryBase`-Attribut). |
 
@@ -792,7 +793,9 @@ Gruppiert Bedingungen mit `type="and"` oder `type="or"` zu komplexer Logik.
 #### `repeat` — Modifier mehrfach anwenden
 
 Ähnlich einer Condition, bewirkt aber, dass der Modifier **mehrfach** angewendet wird (z. B. „+1
-Slot je 1000 Punkte"). Attribute u. a. `repeats` (wie oft pro Treffer) und `roundUp`.
+Slot je 1000 Punkte"). Attribute u. a. `repeats` (wie oft pro Treffer), `roundUp` und
+`percentValue` (die Schrittweite `value` als Prozentsatz des Rahmen-Nenners, wie bei der
+Condition oben).
 
 #### Vollständiges Beispiel (aus dem `.gst`, Force „Standard")
 
