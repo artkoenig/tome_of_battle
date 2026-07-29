@@ -52,6 +52,72 @@ Acceptance criteria:
 
 ## Log
 
+- **2026-07-29, Recherche vor dem Lauf** (eigenes Repro gegen die echte Fassade,
+  Arbeitsbaum danach sauber).
+  - **Der Fund ist bestätigt.** Katalog mit `sharedSelectionEntries` +
+    Wurzel-`entryLink` (`min=1 scope="roster"`), leeres Roster → `violations: 0`,
+    `diagnostics: []`. Derselbe Constraint an einem Wurzel-`selectionEntry` → 1
+    Verstoß. Mit einem Kontingent erscheint der Link als Slot, aber als
+    `offerAnchor` — der effektive Min-Wert ist korrekt 1, nur ist der Anker nach
+    ADR-0035 nicht meldefähig.
+  - **Die Zeilennummern im Intent sind um ~10 verrutscht.**
+    `PHANTOM_DEFINITION_KINDS` steht auf `resolver.js:83`,
+    `collectRootDefinitions` auf `resolver.js:135`, `followEntryLink` auf
+    `resolver.js:238`. „`armyLevelCandidates` (resolver.js:656)" trifft nichts —
+    die Funktion heißt `collectArmyLevelCandidates` (`resolver.js:172`).
+  - **Der Abbruch ist Absicht, nicht Versehen.** `collectRootDefinitions`
+    returnt **vor** der Kinderschleife (`resolver.js:136`); der Kopfkommentar
+    begründet es mit ADR-0032: hinter einem Link liegende Einträge sind nur per
+    Verweis bezogen und dürfen keine falsche Pflicht synthetisieren. Abgesichert
+    ist das in `crossCatalog.test.js:109-142`.
+  - **Die naive Lösung ist belegt falsch.** `ENTRY_LINK` einfach in
+    `PHANTOM_DEFINITION_KINDS` aufnehmen (Patch gesetzt, gemessen,
+    zurückgenommen): bei einem Wurzel-Link `min=1` auf ein Ziel mit eigenem
+    `min=3` entstehen **zwei** Verstöße statt einem — die Zielgrenze feuert mit,
+    weil `limitsOf` (`evalTree.js:180`) alle Grenzen des Ziels erbt. Genau die
+    Pflicht, die ADR-0032 ausschließt.
+  - **Und die Suite merkt es nicht.** Mit dem naiven Patch: `npx vitest run
+    src/evaluator` → 48 Dateien, 649 Tests, Exit 0 — identisch zum Lauf ohne
+    Patch. Die Regressionsgefahr liegt also nicht in der bestehenden Suite,
+    sondern in der ungetesteten Zielgrenzen-Vererbung. Ein Test dafür gehört in
+    diesen Lauf.
+  - **Kriterium 3 braucht einen anderen Schlüssel als die vorhandene
+    Entdopplung.** `dedupeArmyWideCategoryViolations` (`report.js:149`)
+    schlüsselt auf `(limitId, countedTargetId)` und greift nur für
+    Kategorie-Anker. Bei zwei Wurzelformen derselben Pflicht sind die Grenz-Ids
+    **verschieden** (zwei Constraints) — der Schlüssel trennt sie also. Die
+    Entdopplung muss über Ziel-Id **plus Rahmen** laufen. Offen ist dabei,
+    welche Ziel-Id: `constraints.js:100` nimmt die rohe `def.targetId`,
+    `report.js:227` die transitiv aufgelöste `def.resolved?.id` — bei einer
+    Link-auf-Link-Kette laufen beide auseinander (Berührung mit Issue 0094).
+  - **Kriterium 2 deckt sich heute nicht mit der Doku.** §9.9 verlangt, die
+    Grenzen **und Modifier des Links** auszuwerten, „nicht die des Ziels". Die
+    Engine erbt in beide Richtungen: `inheritedThenOwn` (`modifiers.js:634`)
+    wendet erst die Modifikatoren des Ziels an, dann die eigenen. Für den
+    Ogerbullen-Fall folgenlos (das Ziel trägt keine kollidierenden Modifier),
+    als Aussage aber nicht deckungsgleich.
+  - **Der Fixture-Fall existiert.** `Ogre Kingdoms (…).cat:3133` —
+    `entryLink id="d82e-111e-89b9-2be1" targetId="7754-8b3d-df99-d2d5"` auf
+    Katalog-Wurzelebene; Basis-Constraint `32ed-26da-3f27-5c04`
+    (`min=0 scope="force"`, Zeile 3162), angehoben per `set 1` (Zeile 3140) in
+    der Modifikatorgruppe „Standard", gegatet auf `notInstanceOf` des
+    `forceEntry` „Ironskin Tribe" (`8711-ed16-2a44-7251`). Das Ziel liegt in
+    `Mercenaries (…).cat:3438` unter `sharedSelectionEntries`. **Achtung:** der
+    Rahmen ist `force`, nicht `roster` — der Intent nennt beide, die Daten
+    liefern nur `force`. Gegen die echten Kataloge ändert der naive Patch genau
+    eine Zeile: leeres „Standard"-Kontingent 4 → 5 Verstöße, der zusätzliche ist
+    „Ogre Bulls" (Ist 0, Grenze 1); beim „Ironskin Tribe"-Kontingent bleibt es
+    bei 4, die bedingte Anhebung greift also korrekt.
+  - **Offen geblieben:** ob im Fixture-Satz ein Katalog dieselbe Pflicht
+    *gleichzeitig* in beiden Wurzelformen führt (dann hätte Kriterium 3 echte
+    Daten statt eines synthetischen Katalogs); und das Verhalten eines
+    Wurzel-`entryLink`, der auf eine `selectionEntryGroup` zeigt.
+  - **Nebenbefund, eigenes Issue wert:** `PHANTOM_DEFINITION_KINDS` schneidet
+    nicht nur Links ab, sondern auch **Wurzel-Gruppen** (`GROUP` fehlt). Eine
+    `min`-Grenze unterhalb einer Wurzel-Gruppe bekommt heute ebenfalls kein
+    Phantom. Ob gewollt, sagt kein Kommentar; §9.9 spricht nur von Einträgen und
+    Links.
+
 ## Checkpoints
 
 ### Before implementation
