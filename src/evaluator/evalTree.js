@@ -197,13 +197,18 @@ export function limitsOf(def) {
  * jede Grenze aus — dieselbe Verletzung erschiene je Anker einmal, und der
  * rahmen-fremde Anker hinterliesse eine unechte `unresolvedScope`-Diagnose.
  *
+ * Ein Gruppen-Anker mit `ownLimitsOnly` ({@link attachGroupAnchor}) wertet nur
+ * die **am Link selbst** deklarierten Grenzen aus, nicht die vom Ziel geerbten:
+ * er ist der zweite Geschwister-Link auf ein schon verankertes Ziel, dessen
+ * geteilte Grenzen bereits am ersten Anker haengen.
+ *
  * Die Constraint-Schicht ruft diese Sicht; {@link limitsOf} bleibt die eine
  * Quelle der Wahrheit dafuer, welche Grenzen an der **Definition** haengen
  * (Effektiv-Werte-Schicht: auch eine hier weggefilterte Grenze behaelt ihren
  * effektiven Grenzwert — sie wird nur nicht an diesem Knoten ausgewertet).
  */
 export function evaluableLimitsOf(node) {
-  const limits = limitsOf(node.def);
+  const limits = node.ownLimitsOnly === true ? (node.def.limits ?? []) : limitsOf(node.def);
   if (node.limitScopeFilter === null || node.limitScopeFilter === undefined) return limits;
   return limits.filter(limit => limit.scope === node.limitScopeFilter);
 }
@@ -449,15 +454,38 @@ export function ownerDefinitionOf(node) {
 }
 
 /**
+ * Die per `entryLink type="selectionEntryGroup"` verlinkte Gruppendefinition
+ * eines Kindes — oder `null`, wenn das Kind kein solcher Verweis ist. Ein Link
+ * auf eine Gruppe **ist** die Gruppe an dieser Stelle (Issue 083): die
+ * Traversierungen unten behandeln ihn wie eine direkt geschachtelte Gruppe,
+ * statt ihn als Auswahlpunkt zu deuten oder ganz zu ueberspringen.
+ */
+function linkedGroupTargetOf(def) {
+  if (def.kind !== DefinitionKind.ENTRY_LINK) return null;
+  if (def.resolved?.kind !== DefinitionKind.GROUP) return null;
+  return def.resolved;
+}
+
+/**
  * Alle `selectionEntry`- und `entryLink`-Kinder einer Definition, rekursiv
  * durch Gruppen (da Gruppen fuer Selektions-Zugehoerigkeit transparent sind).
+ * Ein `entryLink` auf eine **Gruppe** ist genauso transparent wie die Gruppe
+ * selbst (Issue 083): er ist kein Auswahlpunkt — seine Grenzen wertet der
+ * Gruppen-Anker aus ({@link synthesizeGroupAnchors}), seine Member sind die
+ * eigentlichen Auswahlpunkte. Der `visited`-Satz haelt eine zyklische
+ * Verweiskette endlich (wie `collectGroupMemberIds` im Resolver).
  */
-function* selectionDefinitionsUnder(ownerDef) {
+function* selectionDefinitionsUnder(ownerDef, visited = new Set()) {
   for (const child of ownerDef.children ?? []) {
-    if (child.kind === DefinitionKind.ENTRY_LINK || child.kind === DefinitionKind.ENTRY || child.kind === DefinitionKind.CATEGORY_LINK) {
+    const linkedGroup = linkedGroupTargetOf(child);
+    if (linkedGroup !== null) {
+      if (visited.has(linkedGroup.id)) continue;
+      visited.add(linkedGroup.id);
+      yield* selectionDefinitionsUnder(linkedGroup, visited);
+    } else if (child.kind === DefinitionKind.ENTRY_LINK || child.kind === DefinitionKind.ENTRY || child.kind === DefinitionKind.CATEGORY_LINK) {
       yield child;
     } else if (child.kind === DefinitionKind.GROUP) {
-      yield* selectionDefinitionsUnder(child);
+      yield* selectionDefinitionsUnder(child, visited);
     }
   }
 }
@@ -493,12 +521,43 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
  * Eintraege hinaus: die Gruppen eines geschachtelten Eintrags gehoeren diesem
  * Eintrag als Eigentuemer, nicht dem aeusseren. Eine gruppen-skopierte Grenze
  * (`scope=parent`) rechnet immer gegen die naechste reale Auswahl.
+ *
+ * Eine per `entryLink type="selectionEntryGroup"` **verlinkte** Gruppe zaehlt
+ * dazu (Issue 083): geliefert wird dann der **Link** — er erbt die Grenzen
+ * seines Ziels und traegt seine eigenen dazu ({@link limitsOf}) —, und die
+ * Traversierung steigt in die Zielgruppe ab, weil dort weitere verlinkte oder
+ * geschachtelte Gruppen haengen koennen. Ohne diesen Abstieg bekaeme eine
+ * verlinkte Gruppe keinen Anker: ihr `max` bliebe stumm, ihr `min` feuerte am
+ * Pflicht-Phantom des Links faelschlich mit Ist 0.
+ *
+ * Der `visited`-Satz haelt Verweiszyklen endlich und verankert die vom **Ziel**
+ * geerbten Grenzen je Eigentuemer nur einmal (zwei Links auf dieselbe Gruppe
+ * meldeten dieselbe geteilte Grenze sonst doppelt). Die **am Link selbst**
+ * deklarierten Grenzen sind davon ausgenommen: sie sind die eigenen Grenzen
+ * genau dieses Links und gelten je Link — ein weiterer Geschwister-Link auf ein
+ * schon gesehenes Ziel wird deshalb mit `ownLimitsOnly` geliefert, wenn er
+ * eigene Grenzen traegt. So entscheidet die Dokumentreihenfolge der Geschwister
+ * nie, ob eine Link-Grenze ausgewertet wird.
+ *
+ * @returns {Generator<{ def: object, ownLimitsOnly: boolean }>}
  */
-function* groupDefinitionsWithLimits(ownerDef) {
+function* groupDefinitionsWithLimits(ownerDef, visited = new Set()) {
   for (const child of ownerDef.children ?? []) {
+    const linkedGroup = linkedGroupTargetOf(child);
+    if (linkedGroup !== null) {
+      if (visited.has(linkedGroup.id)) {
+        // Ziel schon verankert: nur die eigenen Grenzen dieses Links fehlen noch.
+        if ((child.limits ?? []).length > 0) yield { def: child, ownLimitsOnly: true };
+        continue;
+      }
+      visited.add(linkedGroup.id);
+      if (limitsOf(child).length > 0) yield { def: child, ownLimitsOnly: false };
+      yield* groupDefinitionsWithLimits(linkedGroup, visited);
+      continue;
+    }
     if (child.kind !== DefinitionKind.GROUP) continue;
-    if (limitsOf(child).length > 0) yield child;
-    yield* groupDefinitionsWithLimits(child);
+    if (limitsOf(child).length > 0) yield { def: child, ownLimitsOnly: false };
+    yield* groupDefinitionsWithLimits(child, visited);
   }
 }
 
@@ -511,8 +570,13 @@ function* groupDefinitionsWithLimits(ownerDef) {
  * **immer** praesent (nicht nur bei Absenz), damit sowohl `min` (leere
  * Pflichtgruppe) als auch `max` (zu viele Member) anschlagen koennen. Als Phantom
  * (`isPhantom`) bleibt er aus der Zaehlung ausgeschlossen (§4.4).
+ *
+ * `ownLimitsOnly` schneidet den Anker auf die **am Link selbst** deklarierten
+ * Grenzen zu ({@link evaluableLimitsOf}): der zweite Geschwister-Link auf ein
+ * schon verankertes Ziel wertet nur seine eigenen Grenzen aus — die vom Ziel
+ * geerbten meldete sonst jeder Anker einmal ({@link groupDefinitionsWithLimits}).
  */
-function attachGroupAnchor(owner, groupDef, nextFrameId) {
+function attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly = false) {
   const node = {
     def: groupDef,
     instance: null,
@@ -524,6 +588,7 @@ function attachGroupAnchor(owner, groupDef, nextFrameId) {
     anchorKind: AnchorKind.GROUP_ANCHOR,
     frameId: nextFrameId(),
     forceRoot: owner.forceRoot,
+    ownLimitsOnly,
   };
   owner.children.push(node);
 }
@@ -561,10 +626,16 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
       if (memberIds !== undefined) annotateGroupMembers(owner, ownerDef.id, memberIds);
     }
 
-    for (const groupDef of groupDefinitionsWithLimits(ownerDef)) {
-      attachGroupAnchor(owner, groupDef, nextFrameId);
-      const memberIds = memberIndex.get(groupDef.id);
-      if (memberIds !== undefined) annotateGroupMembers(owner, groupDef.id, memberIds);
+    for (const { def: groupDef, ownLimitsOnly } of groupDefinitionsWithLimits(ownerDef)) {
+      attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly);
+      // Bei einer verlinkten Gruppe ist der Anker der **Link** (nur an ihm
+      // gelten seine eigenen Grenzen); gezaehlt wird aber unter der Id, die
+      // die Constraint-Schicht am Link abfragt (`targetId`), und die Member
+      // stehen im Index unter der **aufgeloesten** Gruppen-Id.
+      const isLink = groupDef.kind === DefinitionKind.ENTRY_LINK;
+      const countedId = isLink ? groupDef.targetId : groupDef.id;
+      const memberIds = memberIndex.get(isLink ? groupDef.resolved.id : groupDef.id);
+      if (memberIds !== undefined) annotateGroupMembers(owner, countedId, memberIds);
     }
   }
 }

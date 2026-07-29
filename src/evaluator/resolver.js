@@ -209,16 +209,19 @@ function collectGroupMemberIds(groupDef, into, visited = new Set()) {
 }
 
 /**
- * Baut die Zugehoerigkeitstabelle `Gruppen-ID → Menge der Member-IDs`, aber nur
- * fuer Gruppen, die eine **Grenze** tragen (nur diese synthetisiert die
- * Join-Schicht als Anker). Muss **nach** der `entryLink`-Auflösung laufen, damit
- * `resolved.id` je Link verfuegbar ist.
+ * Baut die Zugehoerigkeitstabelle `Gruppen-ID → Menge der Member-IDs` fuer
+ * **alle** Gruppen. Bis Issue 083 waren Gruppen ohne eigene Grenzen
+ * ausgenommen — seit die Join-Schicht auch fuer **verlinkte** Gruppen Anker
+ * synthetisiert, reicht das nicht mehr: die Grenze einer verlinkten Gruppe
+ * kann allein am `entryLink` haengen (reale Kataloge tun das, z. B. ein
+ * `min` am Link auf eine grenzenlose Zielgruppe), und ohne Member-Menge
+ * zaehlte ihr Anker Ist 0. Muss **nach** der `entryLink`-Auflösung laufen,
+ * damit `resolved.id` je Link verfuegbar ist.
  */
 function buildGroupMemberIndex(definitionNodes) {
   const groupMemberIds = new Map();
   for (const definition of definitionNodes) {
     if (definition.kind !== DefinitionKind.GROUP) continue;
-    if ((definition.limits ?? []).length === 0) continue;
     const members = new Set();
     collectGroupMemberIds(definition, members);
     groupMemberIds.set(definition.id, members);

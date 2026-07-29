@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
+import { ConstraintKind, DefinitionKind, ScopeKeyword, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
 import { allNodes, evaluableLimitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -31,8 +31,11 @@ const PERCENT_DIVISOR = 100;
  * Knoten dort keinen Wert, gilt der Basiswert der Grenze. Bei einer Prozentgrenze
  * wird der Grenzwert aus dem im Bezugsrahmen gezaehlten Nenner abgeleitet; ein
  * Nenner 0 fuehrt zu `SUSPENDED` samt Null-Nenner-Diagnose (A4), nie zu einer
- * Verletzung. Nenner und Zaehler teilen Scope und Flags, damit sie nicht
- * auseinanderdriften.
+ * Verletzung. Nenner und Zaehler teilen den **Scope**; die Flags koennen
+ * auseinanderfallen: der Nenner zaehlt „alles im Rahmen" stets mit den
+ * hingeschriebenen Flags, waehrend der Zaehler bei einer geteilten,
+ * eintrags-verankerten roster-Grenze verschachtelte Vorkommen erzwungen
+ * mitzaehlt ({@link countingFlagsOf}).
  */
 function resolveBound(limit, node, effective, ctx) {
   const raw = effective.limitValue(node, limit.id) ?? limit.value;
@@ -52,6 +55,28 @@ function resolveBound(limit, node, effective, ctx) {
     return SUSPENDED;
   }
   return roundHalfUp((denominator * raw) / PERCENT_DIVISOR);
+}
+
+/**
+ * Die Zaehl-Flags einer Grenze, wie sie an das Query-Primitiv gehen.
+ *
+ * Eine **geteilte, eintrags-verankerte** Grenze mit `scope="roster"` zaehlt
+ * die Vorkommen ihres Eintrags im **ganzen** Roster — auch verschachtelte —,
+ * unabhaengig von `includeChildSelections="false"`: „unchecked" heisst „just
+ * scope's field", nicht „nichts" (`docs/battlescribe-data-format.md` §7.6,
+ * Issue 083), und die Auswahlen des Rosters sind alle seine Auswahlen — eine
+ * armeeweite „hoechstens 1"-Grenze trifft ein magisches Item auch dann, wenn
+ * es unter einem Charakter geschachtelt steht. Fuer alle anderen Rahmen (und
+ * fuer Kategorie- und Gruppen-Anker, deren Ziel kein Eintrag ist) bleiben die
+ * hingeschriebenen Flags massgeblich.
+ */
+function countingFlagsOf(limit, node) {
+  const flags = limit.flags;
+  if (limit.scope !== ScopeKeyword.ROSTER) return flags;
+  if (flags?.shared === false || flags?.includeChildSelections === true) return flags;
+  const counted = isLinkDefinition(node.def) ? node.def.resolved : node.def;
+  if (counted?.kind !== DefinitionKind.ENTRY) return flags;
+  return { ...flags, includeChildSelections: true };
 }
 
 /**
@@ -80,7 +105,7 @@ function evaluateLimit(limit, node, effective, ctx) {
   // `entryLinkId`s). Der Verweis bleibt trotzdem der Anker: nur an ihm gelten
   // die an ihm selbst deklarierten Grenzen.
   const targetId = isLinkDefinition(node.def) ? node.def.targetId : node.def.id;
-  const actual = query(ctx, limit.field, limit.scope, targetId, limit.flags);
+  const actual = query(ctx, limit.field, limit.scope, targetId, countingFlagsOf(limit, node));
   // Zaehlt die Grenze selbst ein unaufloesbares Budget-Feld (Diagnose aus `query`),
   // wird sie fail-closed suspendiert statt den Sentinel zu vergleichen.
   if (actual === UNRESOLVED_BUDGET) return null;
