@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-084
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/160
 ---
 
 # Der Roster-Vertrag der Fassade ist ungeschrieben und ungeprüft
@@ -187,3 +187,16 @@ Acceptance criteria:
   bump: docs, comments and tests only.
 
 ## Retro
+
+- Green-pin issues (pin existing behaviour + write the contract) fit the
+  workflow well when every pin's red variant is PROVEN, not asserted — the
+  temporary-variant-file technique the test-author used should become the
+  house pattern for regression pins.
+- Both textual defects of this run came from my own mid-review edits to
+  prose — reviewers editing prose should re-read the full sentence after
+  every surgical replace. Rounds 2→2→0 brushed the stop rule; the findings
+  were new each time (not repeats), which is the distinction that made
+  continuing correct.
+- The flat-vs-nested symptom discovery improved the contract text beyond
+  what the issue asked — fresh-context reviews add value even to doc-only
+  changes.
