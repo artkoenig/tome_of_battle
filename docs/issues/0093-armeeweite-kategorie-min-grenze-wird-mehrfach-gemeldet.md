@@ -36,6 +36,20 @@ Acceptance criteria:
 
 ## Plan
 
+Entdopplung in der **Berichtsschicht**, nicht am Anker: Kriterium 3 verlangt,
+dass jeder Kategorie-Slot seinen vollständigen Fähigkeitsdatensatz behält —
+ein Anker-Schnitt (0092-Stil, `limitScopeFilter` auf den Force-Ankern) würde
+den Force-Slots die roster-weite Min-Information nehmen. Also: alle Anker
+werten weiter alle Grenzen aus (Results unverändert ⇒ Capabilities
+unverändert), und allein die Meldungsliste des Berichts entdoppelt
+armeeweite Kategorie-Grenzen über (Grenz-Id, gezählte Ziel-Id).
+
+Eingrenzung des Schlüssels (damit gewollte Mehrfachmeldungen überleben):
+nur Verletzungen an **synthetischen Kategorie-Ankern** (`CATEGORY_ANCHOR`,
+`MANDATORY_PHANTOM`) mit **Roster-Rahmen**-Grenze. Belegte Instanz-Anker
+(z. B. Tyrant-Max je Instanz, gepinnt mit count: 2) und Force-Rahmen-Grenzen
+(ogre-kingdoms Roster 08, count: 2) bleiben unberührt.
+
 ## Tasks
 
 ## Decisions
@@ -43,16 +57,51 @@ Acceptance criteria:
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28); Mechanismus am Code verifiziert, Auftreten hängt davon
   ab, ob Forces die betroffene Kategorie verlinken.
+- **Default (Mensch nicht gefragt, Kriterien entscheiden es nicht): der
+  überlebende Vertreter** der entdoppelten Meldung ist der
+  Roster-Rahmen-Anker (das Wurzel-Pflicht-Phantom), wenn einer existiert;
+  sonst der erste Anker in Dokumentreihenfolge. Begründung: die Pflicht ist
+  armeeweit, das Wurzel-Phantom ist ihr roster-weiter Anker.
+- **Abgrenzung:** §9.9 verlangt die Ziel-Id-Entdopplung wörtlich für die
+  Doppel-Kodierung eines Wurzeleintrags (selectionEntry vs. entryLink) —
+  dieses Issue wendet sie analog auf Kategorie-Anker an und lässt die
+  Wurzeleintrag-Familie bewusst unangetastet (eigenes Thema, falls je
+  beobachtet).
 
 ## Log
+
+- 2026-07-29 Researcher (frischer Stand nach den Merges #152–#161): 1+n
+  empirisch bestätigt (Repro-Skript gegen die echte Fassade: n=1 → 2, n=2 →
+  3 identische Verletzungen derselben `limitId`). Mechanismus: die
+  Roster-Schleife von `synthesizeMandatoryPhantoms` kennt — anders als die
+  Force-Schleife — keine Ausnahme für verlinkte Kategorien (Docstring
+  behauptet es fälschlich für beide); dazu erbt jeder Force-Kategorie-Anker
+  dieselben Grenzen per `limitsOf`-Merge über die Grenz-Id. Keinerlei
+  Verletzungs-Entdopplung in constraints.js/report.js. Die gezählte Ziel-Id
+  wird in `constraints.js` berechnet, aber nicht auf Result/Verletzung
+  getragen — für den Entdopplungsschlüssel muss sie durchgereicht werden.
+  Force-Rahmen-Familie (je Force gemeldet, armeeweite Summe per
+  Zieltyp-Regel §7.7) ist als Erwartung gepinnt (ogre-kingdoms Roster 08,
+  count: 2); die Roster-Rahmen-1+n-Familie ist nirgends gepinnt.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — genau eine Meldung je armeeweiter
+  Kategorie-Grenze, Force-Rahmen-Meldungen je Kontingent unverändert,
+  Capabilities unangetastet: die Entdopplung lebt allein in der
+  Meldungsliste des Berichts.
+- What surprised me? Die Force-Schleife der Phantom-Synthese nimmt verlinkte
+  Kategorien längst aus — nur die Roster-Schleife nicht; und selbst deren
+  Korrektur würde nicht reichen (n Force-Anker melden weiterhin n-fach).
+  Kriterium 3 erzwingt damit die Berichtsschicht als Schnittstelle, nicht
+  den 0092-Anker-Schnitt.
+- What am I assuming without having verified it? Dass (Grenz-Id, gezählte
+  Ziel-Id) als Schlüssel reicht (die Vererbung merged über die Grenz-Id);
+  dass die Tyrant-count:2-Pins außerhalb des Guards liegen (belegte
+  Instanz-Anker sind keine synthetischen Kategorie-Anker); dass kein
+  E2E-Szenario die 1+n-Familie pinnt (Researcher: nirgends gepinnt).
 
 ### Before the PR
 
