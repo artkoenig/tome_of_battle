@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0093
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/162
 ---
 
 # Armeeweite Kategorie-Min-Grenze wird mehrfach gemeldet
@@ -196,3 +196,18 @@ Force-Verletzungen.
   angebunden (Sitzungs-Präzedenz).
 
 ## Retro
+
+- Kriterium 3 („Capabilities bleiben vollständig") hat die Architektur der
+  Lösung diktiert, bevor eine Zeile Code existierte — der 0092-Anker-Schnitt
+  schied damit aus, die Berichtsschicht war gesetzt. Kriterien, die
+  Nicht-Ziele explizit machen, sparen Design-Diskussionen.
+- Der Test-Autor fand mit dem gemischten Fall die Huckepack-Force-Meldung
+  am Wurzel-Phantom, die weder Issue noch Researcher benannt hatten — der
+  Wert der Regel, dass er Ränder selbst erkundet, statt nur die Zentren zu
+  pinnen.
+- F1 zeigte das bekannte Muster Protokoll-vs.-Code: die Entscheidung sagte
+  „Wurzel-Phantom", der Code prüfte nur die Anker-Art. Reviews, die
+  Entscheidungstexte wörtlich gegen Code halten, fangen genau diese Klasse.
+- Zwei NUL-Byte-Zwischenfälle in einer Runde (Implementierer und
+  Orchestrator, unabhängig) — beim Schreiben über Escape-Sequenzen die
+  Escape-Form auch im Fließtext benutzen, nie das literale Zeichen.
