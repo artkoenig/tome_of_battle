@@ -99,6 +99,36 @@ Entschieden vor der Umsetzung (2026-07-29), auf der Recherche im Log:
   Einheit aber unter der Ziel-Id im Roster stehen; zählte der Anker nur die
   Link-Id, feuerte er dann fälschlich. Beide Ids zählen deshalb.
 
+Entschieden nach den Tests (2026-07-29) — der `test-author` hat fünf Kanten
+zurückgegeben, die die Kriterien nicht entscheiden, statt sie zu raten:
+
+- **D6 — „Rahmen" heißt konkrete Kontingent-Instanz, nicht Rahmen-*art*.** Zwei
+  leere Kontingente erzeugen zwei Verstöße. Das ist keine neue Regel, sondern
+  die, nach der die `selectionEntry`-Wurzelform schon heute arbeitet
+  (`synthesizeMandatoryPhantoms` hängt je `forceNode` einen eigenen Anker,
+  `evalTree.js:330-338`). Die Link-Form derselben Pflicht darf sich nicht anders
+  verhalten als die Eintrags-Form.
+- **D7 — bei der Entdopplung überlebt die *erste* Meldung in Berichtsreihenfolge**,
+  nicht die des Links oder die des Eintrags nach fester Präferenz. Grund: die
+  vorhandene Entdopplung `dedupeArmyWideCategoryViolations` (`report.js:149`)
+  arbeitet genau so, und zwei Entdopplungen mit gegenläufiger Vorzugsregel im
+  selben Bericht wären eine Falle. **Default** — kein Datum entscheidet, welche
+  der beiden Grenz-Ids die „richtige" ist.
+- **D8 — der Name des Ankers ist der eigene Name des Links, sonst der des
+  Ziels.** §9.9 löst das Ziel „nur zur Namensauflösung" auf; das ergibt nur
+  Sinn, wenn der Linkname Vorrang hat und die Auflösung die Lücke füllt.
+  **Default.**
+- **D9 — ein Wurzel-`entryLink` auf eine `selectionEntryGroup` gehört nicht in
+  diesen Lauf.** Zusammen mit dem Nebenbefund aus der Recherche (auch
+  Wurzel-*Gruppen* bekommen heute kein Phantom, `GROUP` fehlt in
+  `PHANTOM_DEFINITION_KINDS`) ist das eine eigene Lücke mit eigener Frage. Wird
+  als eigenes Issue gefiltert.
+- **D10 — „vorhanden, aber zu wenige" bleibt unangetastet.** Die Kriterien
+  sprechen von „fehlt ganz". Steht eine Instanz im Roster, wird die Grenze wie
+  bisher am realen Knoten ausgewertet — dieser Lauf ändert **nur** den
+  Abwesenheitsfall. Ausdrücklich festgehalten, damit niemand später eine
+  stillschweigende Verhaltensänderung an realen Knoten hier hineinliest.
+
 ## Log
 
 - **2026-07-29, Recherche vor dem Lauf** (eigenes Repro gegen die echte Fassade,
