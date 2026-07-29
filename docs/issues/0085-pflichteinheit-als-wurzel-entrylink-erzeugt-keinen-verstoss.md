@@ -238,6 +238,29 @@ Acceptance criteria:
   `npx vitest run src/evaluator` 744 Tests, 743 grün, 1 rot = Vorbestand
   0113; Lint/Typecheck Exit 0.
 
+- **2026-07-29, Review Runde 3** (frischer Kontext, ganze Intent): **null
+  Befunde gegen die Kriterien** — Konvergenz 2 → 1 → 0. Fakten: Suite 59
+  Dateien / 744 Tests / 743 grün / 1 rot (= Vorbestand 0113, erneut auf
+  `origin/main` verifiziert), Lint/Typecheck Exit 0. Eigene Angriffs-Repros
+  des Reviewers auf die Entdopplung hielten (angehobener Link-Bound
+  entdoppelt wertgleich; Entry + zwei Links → 1; erfüllte Pflicht → 0). Zwei
+  Blast-Radius-Beobachtungen außerhalb der Intent, kein Fix in diesem Lauf:
+  - **E7:** Auch **verschachtelte** `entryLink`s mit eigenem `min` bekommen
+    jetzt Phantome (main 0 → HEAD 1) — stellt Gleichbehandlung mit
+    verschachtelten `selectionEntry`s her (die meldeten schon auf main).
+    Als Default akzeptiert: kein falsches Ergebnis nachweisbar, §9.9/ADR-0032
+    unverletzt.
+  - **E9:** Huckepack-MAX am Link-Phantom — Wurzel-Link mit `min=1` UND
+    `max=2`, Ziel 3× über den planen Eintrag im Roster → neuer MAX-Verstoß
+    (main 0 → HEAD 1). Konsistent mit dem dokumentierten
+    Entry-Phantom-Huckepack, aber ob das Referenzprogramm Grenzen eines nicht
+    gewählten Links auswertet, ist unbelegt. Latent (kein Fixture-Muster).
+    **Als Issue 0114 gefiled** und dem Menschen im PR sichtbar gemacht.
+- **2026-07-29, Version-Bump-Entscheidung** (Default): kein Bump — die
+  Reinraum-Engine ist vor dem Cutover nicht in der Oberfläche verdrahtet,
+  die Änderung ist für Nutzer unsichtbar (CLAUDE.md: Bump nur bei sichtbarer
+  Änderung).
+
 ## Checkpoints
 
 ### Before implementation
@@ -262,8 +285,21 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Alle vier Kriterien sind erfüllt
+  und von Review Runde 3 (frischer Kontext, null Befunde) bestätigt:
+  Link-Pflicht meldet (roster + force), Link- statt Ziel-Grenzen, Entdopplung
+  über die Ziel-Id, Suite belegt (einziger Rotstand = verifizierter
+  Vorbestand 0113, identisch auf `origin/main`).
+- **What surprised me?** Die Entdopplung brauchte zwei Nachschärfungen (B1:
+  Feld, F1: Bound + Fremd-Anker), bis sie nur noch „dieselbe Pflicht in
+  zweiter Kodierung" traf — der §9.9-Satz ist enger, als der erste Schlüssel
+  ihn las. Und: `main` war schon vor dem Lauf rot (0113), was das Log vom
+  Vortag („Exit 0") überholt hat.
+- **What am I assuming without having verified it?** (a) Dass das
+  Referenzprogramm die Grenzen eines nicht gewählten Links nicht anders
+  behandelt als unser Huckepack-MAX (E9) — bewusst offen gelassen, als Issue
+  0114 gefiled. (b) Dass die `.ros`-Konvention „Auswahl über den Link trägt
+  die Link-Id" (rosParser) auch für künftige Importpfade gilt — gestützt auf
+  `rosParser.entryLinkId.test.js`, nicht auf reale Fremd-Roster.
 
 ## Retro
