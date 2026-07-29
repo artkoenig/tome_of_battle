@@ -449,15 +449,38 @@ export function ownerDefinitionOf(node) {
 }
 
 /**
+ * Die per `entryLink type="selectionEntryGroup"` verlinkte Gruppendefinition
+ * eines Kindes — oder `null`, wenn das Kind kein solcher Verweis ist. Ein Link
+ * auf eine Gruppe **ist** die Gruppe an dieser Stelle (Issue 083): die
+ * Traversierungen unten behandeln ihn wie eine direkt geschachtelte Gruppe,
+ * statt ihn als Auswahlpunkt zu deuten oder ganz zu ueberspringen.
+ */
+function linkedGroupTargetOf(def) {
+  if (def.kind !== DefinitionKind.ENTRY_LINK) return null;
+  if (def.resolved?.kind !== DefinitionKind.GROUP) return null;
+  return def.resolved;
+}
+
+/**
  * Alle `selectionEntry`- und `entryLink`-Kinder einer Definition, rekursiv
  * durch Gruppen (da Gruppen fuer Selektions-Zugehoerigkeit transparent sind).
+ * Ein `entryLink` auf eine **Gruppe** ist genauso transparent wie die Gruppe
+ * selbst (Issue 083): er ist kein Auswahlpunkt — seine Grenzen wertet der
+ * Gruppen-Anker aus ({@link synthesizeGroupAnchors}), seine Member sind die
+ * eigentlichen Auswahlpunkte. Der `visited`-Satz haelt eine zyklische
+ * Verweiskette endlich (wie `collectGroupMemberIds` im Resolver).
  */
-function* selectionDefinitionsUnder(ownerDef) {
+function* selectionDefinitionsUnder(ownerDef, visited = new Set()) {
   for (const child of ownerDef.children ?? []) {
-    if (child.kind === DefinitionKind.ENTRY_LINK || child.kind === DefinitionKind.ENTRY || child.kind === DefinitionKind.CATEGORY_LINK) {
+    const linkedGroup = linkedGroupTargetOf(child);
+    if (linkedGroup !== null) {
+      if (visited.has(linkedGroup.id)) continue;
+      visited.add(linkedGroup.id);
+      yield* selectionDefinitionsUnder(linkedGroup, visited);
+    } else if (child.kind === DefinitionKind.ENTRY_LINK || child.kind === DefinitionKind.ENTRY || child.kind === DefinitionKind.CATEGORY_LINK) {
       yield child;
     } else if (child.kind === DefinitionKind.GROUP) {
-      yield* selectionDefinitionsUnder(child);
+      yield* selectionDefinitionsUnder(child, visited);
     }
   }
 }
@@ -493,12 +516,30 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
  * Eintraege hinaus: die Gruppen eines geschachtelten Eintrags gehoeren diesem
  * Eintrag als Eigentuemer, nicht dem aeusseren. Eine gruppen-skopierte Grenze
  * (`scope=parent`) rechnet immer gegen die naechste reale Auswahl.
+ *
+ * Eine per `entryLink type="selectionEntryGroup"` **verlinkte** Gruppe zaehlt
+ * dazu (Issue 083): geliefert wird dann der **Link** — er erbt die Grenzen
+ * seines Ziels und traegt seine eigenen dazu ({@link limitsOf}) —, und die
+ * Traversierung steigt in die Zielgruppe ab, weil dort weitere verlinkte oder
+ * geschachtelte Gruppen haengen koennen. Ohne diesen Abstieg bekaeme eine
+ * verlinkte Gruppe keinen Anker: ihr `max` bliebe stumm, ihr `min` feuerte am
+ * Pflicht-Phantom des Links faelschlich mit Ist 0. Der `visited`-Satz haelt
+ * Verweiszyklen endlich und liefert dieselbe geteilte Gruppe je Eigentuemer
+ * nur einmal (zwei Links auf dieselbe Gruppe meldeten dieselbe Grenze doppelt).
  */
-function* groupDefinitionsWithLimits(ownerDef) {
+function* groupDefinitionsWithLimits(ownerDef, visited = new Set()) {
   for (const child of ownerDef.children ?? []) {
+    const linkedGroup = linkedGroupTargetOf(child);
+    if (linkedGroup !== null) {
+      if (visited.has(linkedGroup.id)) continue;
+      visited.add(linkedGroup.id);
+      if (limitsOf(child).length > 0) yield child;
+      yield* groupDefinitionsWithLimits(linkedGroup, visited);
+      continue;
+    }
     if (child.kind !== DefinitionKind.GROUP) continue;
     if (limitsOf(child).length > 0) yield child;
-    yield* groupDefinitionsWithLimits(child);
+    yield* groupDefinitionsWithLimits(child, visited);
   }
 }
 
@@ -563,8 +604,14 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
 
     for (const groupDef of groupDefinitionsWithLimits(ownerDef)) {
       attachGroupAnchor(owner, groupDef, nextFrameId);
-      const memberIds = memberIndex.get(groupDef.id);
-      if (memberIds !== undefined) annotateGroupMembers(owner, groupDef.id, memberIds);
+      // Bei einer verlinkten Gruppe ist der Anker der **Link** (nur an ihm
+      // gelten seine eigenen Grenzen); gezaehlt wird aber unter der Id, die
+      // die Constraint-Schicht am Link abfragt (`targetId`), und die Member
+      // stehen im Index unter der **aufgeloesten** Gruppen-Id.
+      const isLink = groupDef.kind === DefinitionKind.ENTRY_LINK;
+      const countedId = isLink ? groupDef.targetId : groupDef.id;
+      const memberIds = memberIndex.get(isLink ? groupDef.resolved.id : groupDef.id);
+      if (memberIds !== undefined) annotateGroupMembers(owner, countedId, memberIds);
     }
   }
 }
