@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/evaluator-blocker-issues-uvmdn4
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/177
 ---
 
 # Bericht trägt keine Primärkategorie
@@ -157,3 +157,17 @@ Acceptance criteria:
   Referenzprogramm es genauso hält, ist upstream unbelegt (§15-Lücke).
 
 ## Retro
+
+- **Was gut lief:** Der Vertrag (Feldnamen, Primär-Semantik, Ränder) stand
+  vor dem test-author in Decisions — Tests und Implementierung trafen sich
+  ohne eine einzige Rückfrage-Schleife; die Suite war nach der
+  Implementierung im ersten Lauf grün. Konvergenz 2 → 0 in zwei Runden.
+- **Was im Weg stand:** Wenig. Beide Review-Befunde waren Doku-Spiegel-
+  Versäumnisse desselben Musters (ein Record im §4.1 vergessen, ein
+  Paragraphen-Verweis im Log falsch) — der Implementer-Auftrag hätte die
+  Doku-Stellen vollständig aufzählen sollen, statt „§4.1 SlotCapability"
+  zu sagen und das Nachbar-Record zu übergehen.
+- **Vorschlag:** Keine Regeländerung nötig; der Fehler war
+  Auftrags-Präzision, nicht Prozess. Offen bleiben die zwei ungetesteten
+  Default-Ränder (in Decisions offengelegt) — falls das Referenzprogramm je
+  dagegen spricht, ist das ein eigenes kleines Issue.
