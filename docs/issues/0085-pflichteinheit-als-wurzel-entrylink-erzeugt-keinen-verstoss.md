@@ -322,6 +322,62 @@ zurückgegeben, die die Kriterien nicht entscheiden, statt sie zu raten:
   vermerkt** und dem Menschen offengelegt, weil es sichtbares Verhalten in zwei
   Armeebüchern ändert, die dieses Issue nie erwähnt.
 
+- **2026-07-29, Review Runde 2 — sechs Befunde, und eine Weichenstellung des
+  Menschen.** Fakten: `npx vitest run` → 229 Dateien, 2360 Tests, Exit 0; lint,
+  typecheck, depcruise je Exit 0.
+
+  | # | Befund | Entscheidung |
+  |---|---|---|
+  | 1 | Die Ankerschutz-Zusicherung ist **weiterhin** ungepinnt: D11 hat den Grenzwert in den Schlüssel genommen, seither erreicht der Test aus Runde 1 (Werte 1 und 2) den Ankervergleich gar nicht mehr | **beheben** — Test mit **gleichen** Werten |
+  | 2 | Der neue Phantom-Anker verdrängt den Angebots-Slot eines **anderen** Wurzel-Links: 26 Slots in 16 Rostern verschwinden | **beheben**, siehe D13 |
+  | 3 | Zwei Wurzel-Links auf dasselbe Ziel erzeugen zwei Pflicht-Slots im selben Rahmen (26 Roster) | **beheben**, siehe D13 |
+  | 4 | D9 (Wurzel-Link auf eine Gruppe bleibt außen vor) ist ungepinnt | **anpinnen** |
+  | 5 | Kriterium 3 im `force`-Rahmen ist ungepinnt | **anpinnen** |
+  | 6 | D12 nennt **drei** betroffene Roster, es sind **17**; und `defaultAmount="1"` trägt nur **einen** der drei Schalter-Links, deckt also 8 der 17 Fälle | **richtigstellen** |
+
+  Befund 6 wiegt schwerer als seine Größe: D12 ist ein Default, den ich dem
+  Menschen zur Annahme vorlege. Ihn auf einer Begründung vorzulegen, die die
+  Hälfte der Fälle nicht deckt, ist der eigentliche Fehler.
+
+  **Nebenbei richtiggestellt:** meine Formulierung „0 Drift-Meldungen" zu
+  `measure-evaluator.js` suggeriert eine Zählung, die das Skript nicht führt.
+  Richtig ist: die Fassaden-Vergleichswache `assertMatchesFacade` **wirft** bei
+  Abweichung und hat nicht geworfen.
+
+- **D13 — die Wurzel-Link-Pflicht ist katalog-lokal. Revidiert D6 und D12.**
+  Die Recherche in der Formatdoku ergab zunächst das Gegenteil: ADR-0036 legt
+  fest, dass die Wurzeldefinitionen „**aus jedem Katalog und dem Spielsystem**"
+  gelten, und `offer-and-category-slots` nagelt fest, dass ein O&G-Wurzel-Link
+  einen Slot in einem Vampire-Counts-Kontingent erzeugt. Danach wäre das
+  Pooling gewollt und die Befunde 2/3 keine Verschlechterung.
+
+  **Der Mensch hat entschieden: BSData hat die höchste Priorität.** Damit gilt
+  die Wiki-Regel „All selections within must originate from a single catalogue"
+  (zitiert in `docs/battlescribe-data-format.md` §7.2) über unserem eigenen
+  ADR-0036 — und ADR-0036 ist an dieser Stelle falsch. Issue 0098, das genau
+  das seit dem Audit behauptet, hat recht.
+
+  Folgen für diesen Lauf:
+
+  - Die **neue** Pflicht wird katalog-lokal synthetisiert: ein Wurzel-Link
+    feuert nur in Kontingenten des Katalogs, der ihn deklariert. Die
+    Herkunft kommt aus einem Index je Dokument — dasselbe Muster wie
+    `buildPrimaryCatalogueIndex` aus Issue 077, weil das Aggregat die Herkunft
+    verliert (ADR-0032).
+  - **D6 wird revidiert.** Die Eintrags-Form poolt weiterhin katalogfremd; das
+    ist der vorbestehende Defekt, den Issue 0098 behandelt, und er wird hier
+    **nicht** mitbehoben. Die beiden Wurzelformen laufen damit vorübergehend
+    auseinander. Das ist die bewusst gewählte kleinere Abweichung: eine neue
+    Form spec-konform zu bauen ist besser, als sie an einen bekannten Defekt
+    anzugleichen und 26 weitere Verstöße hinzuzufügen.
+  - **D12 entfällt in seiner bisherigen Form.** Die Schalter-Links feuern
+    künftig nur noch in ihren eigenen Armeebüchern. Damit erübrigt sich der
+    Default, dessen Begründung Befund 6 ohnehin als zu dünn erwiesen hat.
+  - **ADR-0036 und ADR-0035/0032 bleiben unangetastet**, was die
+    **Angebots**-Anker angeht: dieser Lauf ändert nur die Pflicht-Synthese.
+    Der Widerspruch zwischen ADR-0036 und BSData wird in Issue 0098
+    aufgenommen, nicht hier entschieden.
+
 ## Checkpoints
 
 ### Before implementation
