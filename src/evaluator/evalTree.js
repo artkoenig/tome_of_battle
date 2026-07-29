@@ -115,8 +115,15 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
  * Anker jede Grenze, also jede Grenze mehrfach. Alle anderen Anker bleiben
  * ungefiltert (`null`): sie sind je Definition und Rahmen einmalig, und ein
  * Pflicht-Phantom wertet MAX-Grenzen seines Rahmens bewusst huckepack mit aus.
+ *
+ * `ownLimitsOnly` schneidet den Anker auf die **am Verweis selbst** deklarierten
+ * Grenzen zu (siehe {@link evaluableLimitsOf}, gleiche Mechanik wie am
+ * Gruppen-Anker, {@link attachGroupAnchor}). Gestellt wird es vom Pflicht-Phantom
+ * eines Wurzel-`entryLink` ({@link synthesizeMandatoryPhantoms}): §9.9 verlangt,
+ * am Link nur dessen eigene Grenzen auszuwerten — die vom Ziel geerbten
+ * ({@link limitsOf}) feuerten sonst als falsche Pflicht mit (ADR-0032).
  */
-function attachPhantom(parent, def, nextFrameId, anchorKind, limitScopeFilter = null) {
+function attachPhantom(parent, def, nextFrameId, anchorKind, limitScopeFilter = null, ownLimitsOnly = false) {
   const isForce = def.kind === DefinitionKind.FORCE;
   const node = {
     def,
@@ -130,6 +137,7 @@ function attachPhantom(parent, def, nextFrameId, anchorKind, limitScopeFilter = 
     frameId: nextFrameId(),
     forceRoot: null,
     limitScopeFilter,
+    ownLimitsOnly,
   };
   node.forceRoot = isForce ? node : parent.forceRoot;
   parent.children.push(node);
@@ -197,10 +205,13 @@ export function limitsOf(def) {
  * jede Grenze aus — dieselbe Verletzung erschiene je Anker einmal, und der
  * rahmen-fremde Anker hinterliesse eine unechte `unresolvedScope`-Diagnose.
  *
- * Ein Gruppen-Anker mit `ownLimitsOnly` ({@link attachGroupAnchor}) wertet nur
- * die **am Link selbst** deklarierten Grenzen aus, nicht die vom Ziel geerbten:
- * er ist der zweite Geschwister-Link auf ein schon verankertes Ziel, dessen
- * geteilte Grenzen bereits am ersten Anker haengen.
+ * Ein Anker mit `ownLimitsOnly` wertet nur die **am Link selbst** deklarierten
+ * Grenzen aus, nicht die vom Ziel geerbten. Zwei Steller: der Gruppen-Anker des
+ * zweiten Geschwister-Links auf ein schon verankertes Ziel, dessen geteilte
+ * Grenzen bereits am ersten Anker haengen ({@link attachGroupAnchor}); und das
+ * Pflicht-Phantom eines Wurzel-`entryLink` (§9.9, Issue 85), an dem allein die
+ * Grenzen und Modifier des Links gelten — nicht die des Ziels
+ * ({@link synthesizeMandatoryPhantoms}).
  *
  * Die Constraint-Schicht ruft diese Sicht; {@link limitsOf} bleibt die eine
  * Quelle der Wahrheit dafuer, welche Grenzen an der **Definition** haengen
@@ -264,6 +275,27 @@ function hasMinLimitInFrame(def, scope) {
   return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
 }
 
+/**
+ * Der Grenzbestand, der entscheidet, ob eine **Wurzel-Definition** ein
+ * Pflicht-Phantom bekommt — und den ihr Phantom dann auswertet. Fuer einen
+ * `entryLink` sind das allein seine **eigenen** Grenzen (`def.limits`), nicht
+ * die per {@link limitsOf} vom Ziel geerbten: §9.9 verlangt, am Link nur dessen
+ * Constraint und Modifier auszuwerten — die `min`-Grenze eines nur verlinkten
+ * Ziels ist keine Wurzel-Pflicht (ADR-0032) und feuerte sonst als zweiter,
+ * falscher Verstoss neben dem des Links. Das Phantom wird dazu mit
+ * `ownLimitsOnly` zugeschnitten ({@link attachPhantom}, {@link evaluableLimitsOf}).
+ */
+function mandatoryLimitStockOf(def) {
+  const ownLimitsOnly = def.kind === DefinitionKind.ENTRY_LINK;
+  const limits = ownLimitsOnly ? (def.limits ?? []) : limitsOf(def);
+  return { limits, ownLimitsOnly };
+}
+
+/** True, wenn der Grenzbestand eine MIN-Grenze mit genau diesem Bezugsrahmen enthaelt. */
+function hasMinLimit(limits, scope) {
+  return limits.some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
+}
+
 /** True, wenn die Definition irgendeine Grenze mit genau diesem Bezugsrahmen traegt. */
 function hasAnyLimitInFrame(def, scope) {
   return limitsOf(def).some(limit => limit.scope === scope);
@@ -315,6 +347,14 @@ function countInstances(fromNode, defId) {
  * Ein *vorhandener* Eintrag bekommt keinen Phantomknoten — seine Grenze wird schon
  * am realen Knoten ausgewertet; nur die **Absenz** braucht einen eigenen Anker.
  *
+ * Ein Wurzel-**`entryLink`** ist die zweite §9.9-Kodierung derselben Pflicht
+ * (Issue 85): ob sein Phantom haengt, entscheidet allein sein **eigener**
+ * Grenzbestand ({@link mandatoryLimitStockOf}), und das Phantom wertet auch nur
+ * diesen aus (`ownLimitsOnly`). Die Absenz wird ueber `def.id` — die Link-Id —
+ * geprueft: Roster-Auswahlen ueber den Link tragen genau diese Id. Ist das
+ * **Ziel** auf anderem Weg vorhanden, ist das Phantom harmlos, denn seine Grenze
+ * zaehlt ueber die Ziel-Id (`targetId`, `constraints.js`) und ist dann erfuellt.
+ *
  * In der **Kontingent-Schleife** ist eine Kategorie, die das Kontingent per
  * `categoryLink` fuehrt, ausgenommen: sie bekommt ihren Anker dort ueber
  * {@link synthesizeForceCategoryAnchors} — beides zugleich gaebe zwei Anker fuer
@@ -329,8 +369,9 @@ function countInstances(fromNode, defId) {
  */
 function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
   for (const def of definitions) {
-    if (hasMinLimitInFrame(def, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0) {
-      attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
+    const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
+    if (hasMinLimit(limits, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0) {
+      attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
     }
   }
   const forceNodeList = [...forceNodes(root)];
@@ -338,8 +379,9 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
     const anchoredCategoryIds = linkedCategoryIdsOf(forceNode.def);
     for (const def of definitions) {
       if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
-      if (hasMinLimitInFrame(def, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0) {
-        attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
+      const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
+      if (hasMinLimit(limits, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0) {
+        attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
       }
     }
   }

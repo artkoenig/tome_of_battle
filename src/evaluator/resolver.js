@@ -79,9 +79,17 @@ const KEYWORD_TARGETS = Object.freeze({
  */
 const REFERENCE_ID_PATTERN = /^[0-9a-fA-F]{4}(-[0-9a-fA-F]{4}){3}$/;
 
-/** Die Definitionsarten, die als Pflicht-Phantom-Anker taugen (anwaehlbare Definitionen). */
+/**
+ * Die Definitionsarten, die als Pflicht-Phantom-Anker taugen (anwaehlbare
+ * Definitionen). Ein `entryLink` gehoert dazu, weil §9.9 die armeeweite Pflicht
+ * in **zwei** gleichwertigen Wurzelformen kennt: der `min`-Constraint haengt am
+ * Wurzel-`selectionEntry` **oder** am Wurzel-`entryLink` (Issue 85) — der Link
+ * selbst ist ein Wurzel-Angebot des Katalogs, seine eigene Grenze eine echte
+ * Pflicht.
+ */
 const PHANTOM_DEFINITION_KINDS = Object.freeze(new Set([
   DefinitionKind.ENTRY,
+  DefinitionKind.ENTRY_LINK,
   DefinitionKind.FORCE,
   DefinitionKind.CATEGORY,
 ]));
@@ -126,11 +134,14 @@ function collectDefinition(definition, collector) {
 
 /**
  * Sammelt die **Wurzel-Definitionsliste** fuer die Pflicht-Phantom-Synthese: die
- * anwaehlbaren Definitionen (Eintrag/Kontingent/Kategorie), die im Wurzel-Baum
- * erreichbar sind. Die Traversierung steigt nur durch anwaehlbare Definitionen ab
- * — hinter der Grenze einer Gruppe oder eines Links liegende Eintraege sind nur
- * per Verweis bezogen und duerfen keinen Pflicht-Phantom synthetisieren (ADR-0032,
- * Regel „geteilte/verlinkte Eintraege nicht in die Wurzel-Definitionsliste").
+ * anwaehlbaren Definitionen (Eintrag/Link/Kontingent/Kategorie), die im
+ * Wurzel-Baum erreichbar sind. Ein Wurzel-`entryLink` gehoert dazu — der Link
+ * selbst ist ein Wurzel-Angebot und traegt in der zweiten §9.9-Kodierung die
+ * Pflicht als **eigene** Grenze. Nur das **Ziel** hinter dem Link darf keine
+ * Pflicht synthetisieren (ADR-0032, Regel „geteilte/verlinkte Eintraege nicht in
+ * die Wurzel-Definitionsliste"): die Traversierung folgt deshalb ausschliesslich
+ * den `children`, nie dem aufgeloesten `resolved`-Ziel — und hinter der Grenze
+ * einer Gruppe liegende Eintraege bleiben ebenso aussen vor.
  */
 function collectRootDefinitions(definition, out, seen) {
   if (!PHANTOM_DEFINITION_KINDS.has(definition.kind)) return;
@@ -620,8 +631,9 @@ function assertUnresolved(definitionNodes, infoRoots) {
  * kataloguebergreifend (der ID-Raum ist disjunkte GUIDs, ADR-0032).
  *
  * Die **Wurzel-Definitionsliste** (`definitions`) umfasst nur die anwaehlbaren,
- * im Wurzel-Baum erreichbaren Definitionen — geteilte/verlinkte Eintraege stehen
- * im `lookup`, aber nicht hier, damit ihre `min`-Grenze keine falsche
+ * im Wurzel-Baum erreichbaren Definitionen — Wurzel-`entryLink`s eingeschlossen
+ * (§9.9, Issue 85). Geteilte Eintraege und die **Ziele** hinter Links stehen im
+ * `lookup`, aber nicht hier, damit ihre `min`-Grenze keine falsche
  * Pflichtverletzung synthetisiert.
  *
  * Daneben liefert er die **Kandidatenmenge des Angebots auf Armee-Ebene**
@@ -673,7 +685,8 @@ export function resolveCatalogue(catalogue) {
   assertUnresolved(definitionNodes, infoRoots);
 
   // Pflicht-Phantom-Quelle: nur die im Wurzel-Baum erreichbaren anwaehlbaren
-  // Definitionen (nicht die geteilten/verlinkten — die stehen nur im `lookup`).
+  // Definitionen, Wurzel-`entryLink`s eingeschlossen (§9.9). Geteilte Eintraege
+  // und Link-**Ziele** stehen nur im `lookup`.
   const definitions = [];
   const seen = new Set();
   for (const definition of rootForest) {
