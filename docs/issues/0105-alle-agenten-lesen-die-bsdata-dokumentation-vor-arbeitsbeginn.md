@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/bsdata-dokumentation-agenten-4ly70h
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/165
 ---
 
 # All agents read the bsdata documentation before starting work
@@ -156,3 +156,18 @@ For criterion 5 (ADR sweep):
   clone — the rule links it as upstream source only.
 
 ## Retro
+
+Written by a follow-up session from the record, after the merge of PR #165.
+
+- What got in the way: the session that opened the PR never set the issue's
+  state — the file stayed `active` with an empty `pr` field while the PR was
+  already merged as #165. The follow-up session had to reconstruct the state
+  from the git history. The rule already exists ("done is set when the PR is
+  opened"); it was simply skipped at the end of the run.
+- Also visible in the record: two mid-run criteria additions (4 and 5) grew
+  the run from a one-file rule change into a 36-ADR sweep. The run absorbed
+  this well (task list, extra review rounds), so no rule change is proposed —
+  but it explains the four review rounds.
+- What should change: nothing structural. The closing bookkeeping (state +
+  `pr` on PR-open) deserves the same care as the opening ceremony; this retro
+  and the state fix are that correction.
