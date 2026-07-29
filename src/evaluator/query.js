@@ -318,7 +318,14 @@ function resolveAncestor(ctx, field, targetId) {
  * @param {{ kind: string, costTypeId?: string }} field  aus `SELECTION_COUNT` / `costSumField` / `limitValueField`.
  * @param {string} scope  ein `ScopeKeyword` oder eine Eintrags-/Kategorie-ID.
  * @param {string|null} targetId  Ziel-ID oder `null` fuer "alles im Rahmen".
- * @param {{ shared?: boolean, includeChildSelections?: boolean, includeChildForces?: boolean }} [flags]
+ * @param {{ shared?: boolean, includeChildSelections?: boolean, includeChildForces?: boolean, includeClimbedCosts?: boolean }} [flags]
+ *   Die drei Battlescribe-Flags, dazu das engine-eigene Gate
+ *   `includeClimbedCosts` fuer die unter die Traeger-Id **aufgestiegenen**
+ *   Nachfahren-Kosten (Issue 0113): ohne Angabe folgt es
+ *   `includeChildSelections`. Die Constraint-Schicht setzt es getrennt, wenn
+ *   sie die Schachtelungs-Flags fuer die Vorkommens-Zaehlung anhebt
+ *   (`countingFlagsOf`), die Nachfahren-Kosten aber beim hingeschriebenen
+ *   Flag bleiben muessen (§7.6 „just scope's field", Issue 091).
  * @returns {number|typeof UNRESOLVED_BUDGET} die Zaehlung/Grenze, oder der
  *   Budget-Sentinel bei einem unaufloesbaren `LIMIT_VALUE`-Feld.
  */
@@ -363,7 +370,12 @@ export function query(ctx, field, scope, targetId, flags) {
   }
 
   const key = scopeKey(frameKeyOf(frame), targetId);
-  const tally = ctx.index.get(key, effectiveFlags.includeChildSelections, effectiveFlags.includeChildForces);
+  const tally = ctx.index.get(
+    key,
+    effectiveFlags.includeChildSelections,
+    effectiveFlags.includeChildForces,
+    flags?.includeClimbedCosts ?? effectiveFlags.includeChildSelections,
+  );
 
   if (field.kind === CountedFieldKind.SELECTION_COUNT) {
     return tally.selectionCount;

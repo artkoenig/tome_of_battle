@@ -66,9 +66,19 @@ function resolveBound(limit, node, effective, ctx) {
  * scope's field", nicht „nichts" (`docs/battlescribe-data-format.md` §7.6,
  * Issue 083), und die Auswahlen des Rosters sind alle seine Auswahlen — eine
  * armeeweite „hoechstens 1"-Grenze trifft ein magisches Item auch dann, wenn
- * es unter einem Charakter geschachtelt steht. Fuer alle anderen Rahmen (und
- * fuer Kategorie- und Gruppen-Anker, deren Ziel kein Eintrag ist) bleiben die
- * hingeschriebenen Flags massgeblich.
+ * es unter einem Charakter geschachtelt steht. Das gilt fuer jede Messgroesse:
+ * auch eine Kostenart-Grenze liest die **Eigen**-Kosten jedes Vorkommens ihres
+ * Traegers, egal wie tief es steckt (§9.4: „Ein Traeger mit eigenen Kosten
+ * bringt diese in seine Summe ein", Issue 091).
+ *
+ * Die unter die Traeger-Id **aufgestiegenen Nachfahren**-Kosten bleiben davon
+ * getrennt: fuer sie gilt weiterhin das **hingeschriebene**
+ * `includeChildSelections` (§7.6 „just scope's field", Issue 091) — die
+ * Anhebung setzt deshalb das eigene Gate `includeClimbedCosts` des
+ * Query-Primitivs auf das hingeschriebene Flag, bevor sie die
+ * Schachtelungs-Flags anhebt (Kollision 083/091, entschieden in Issue 0113).
+ * Fuer alle anderen Rahmen (und fuer Kategorie- und Gruppen-Anker, deren Ziel
+ * kein Eintrag ist) bleiben die hingeschriebenen Flags massgeblich.
  */
 function countingFlagsOf(limit, node) {
   const flags = limit.flags;
@@ -76,7 +86,7 @@ function countingFlagsOf(limit, node) {
   if (flags?.shared === false || flags?.includeChildSelections === true) return flags;
   const counted = isLinkDefinition(node.def) ? node.def.resolved : node.def;
   if (counted?.kind !== DefinitionKind.ENTRY) return flags;
-  return { ...flags, includeChildSelections: true };
+  return { ...flags, includeChildSelections: true, includeClimbedCosts: flags?.includeChildSelections ?? false };
 }
 
 /**

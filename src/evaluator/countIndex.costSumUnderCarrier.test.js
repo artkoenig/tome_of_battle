@@ -175,6 +175,83 @@ describe('Zaehlschicht: unter der Ziel-Id eines Vorfahren steigen nur die Kosten
   });
 });
 
+// ── Verschachtelter Traeger (Issue 0113): Eigen-Kosten zaehlen, Nachfahren nicht ──
+
+const CAPTAIN_ID = 'entry-captain';
+
+/**
+ * Wie {@link heroCatalogue}, aber der Held (samt Grenze und Gegenstand) steckt
+ * selbst unter einem Captain. Die Kollisions-Aufloesung aus Issue 0113 muss
+ * beide Richtungen halten: das Vorkommen des Traegers zaehlt trotz eigener
+ * Verschachtelung (§9.4, „Ein Traeger mit eigenen Kosten bringt diese in seine
+ * Summe ein"), die Kosten seines Nachfahren bleiben mit
+ * `includeChildSelections="false"` draussen (§7.6 „just scope's field").
+ */
+function nestedHeroCatalogue() {
+  return `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-cost-nested-carrier" name="Nested Cost Carrier Catalogue">
+      <forceEntries>
+        <forceEntry id="${FORCE_ID}" name="Army"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${CAPTAIN_ID}" name="Captain" type="unit">
+          <selectionEntries>
+            <selectionEntry id="${HERO_ID}" name="Hero" type="model">
+              <costs>
+                <cost name="Points" typeId="${POINTS_ID}" value="${HERO_POINTS}"/>
+              </costs>
+              <constraints>
+                <constraint id="${HERO_LIMIT_ID}" type="max" value="${HERO_BOUND}"
+                            field="${POINTS_ID}" scope="roster" shared="true"
+                            percentValue="false"
+                            includeChildSelections="false"
+                            includeChildForces="false"/>
+              </constraints>
+              <selectionEntries>
+                <selectionEntry id="${ITEM_ID}" name="Item" type="upgrade">
+                  <costs>
+                    <cost name="Points" typeId="${POINTS_ID}" value="${ITEM_POINTS}"/>
+                  </costs>
+                </selectionEntry>
+              </selectionEntries>
+            </selectionEntry>
+          </selectionEntries>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+}
+
+/** Ein Kontingent mit einem Captain, dessen Held einen Gegenstand traegt. */
+function nestedRosterWithItem() {
+  return {
+    forces: [{
+      defId: FORCE_ID,
+      count: 1,
+      children: [{
+        defId: CAPTAIN_ID,
+        count: 1,
+        children: [{
+          defId: HERO_ID,
+          count: 1,
+          children: [{ defId: ITEM_ID, count: 1, children: [] }],
+        }],
+      }],
+    }],
+  };
+}
+
+describe('Verschachtelter Traeger (Issue 0113): die roster-Grenze liest seine Eigen-Kosten, nicht die des Nachfahren', () => {
+  it('liest die Eigen-Kosten des verschachtelten Traegers (weder 0 noch die Nachfahren-Summe)', () => {
+    const report = evaluate(nestedHeroCatalogue(), nestedRosterWithItem());
+
+    // 0 hiesse: das verschachtelte Vorkommen zaehlt gar nicht (Verstoss gegen
+    // §9.4/Issue 083); 110 hiesse: der Nachfahre zaehlt mit (Verstoss gegen
+    // §7.6/Issue 091). Richtig ist genau der Traeger selbst: 50.
+    expect(heroViolation(report)).toBeUndefined();
+    expect(heroCapability(report).current).toBe(HERO_POINTS);
+  });
+});
+
 // ── Das Gruppen-Muster aus §9.4: „Magische Gegenstaende zusammen hoechstens N" ──
 
 const CHAMPION_ID = 'entry-champion';
