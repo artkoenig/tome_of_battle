@@ -96,13 +96,22 @@ Acceptance criteria:
   `set-primary` = Mitgliedschaft + Flag, `unset-primary` löscht das Flag nur
   bei Treffer, `removeCategory` der Primären löscht es mit — Default (a));
   Bericht trägt `categoryIds`/`primaryCategoryId`; Architektur-Doku §4.1/
-  §4.2/§4.6/§4.8 nachgezogen. Primär bewusst NICHT im zählrelevanten
+  §4.6/§4.8 nachgezogen. Primär bewusst NICHT im zählrelevanten
   Fingerabdruck. Annahme des Implementers: Link-eigener Basis-Primär schlägt
   den des aufgelösten Ziels, ohne eigenen erbt der Link (gleiche Erb-Regel
   wie Kosten/hidden). Belege: `npx vitest run
   src/evaluator/report.effectiveCategories.test.js` Exit 0 (10 Tests);
   `npx vitest run src/evaluator` Exit 0 (65 Dateien, 819 Tests);
   `npm run lint` Exit 0; `npm run typecheck` Exit 0.
+- 2026-07-29 — Review Runde 1 (frischer Kontext): alle 4 Kriterien erfüllt,
+  Belege selbst erhoben (`npx vitest run src/evaluator` 819 Tests Exit 0,
+  Lint/Typecheck Exit 0), kein Code-Befund. 2 Befunde außerhalb der
+  Kriterien, beide Doku/Protokoll: (1) `record EffectiveState` in
+  `docs/evaluator-architecture.md` §4.1 ohne das neue Primär-Feld —
+  behoben (Feld `primaries` ergänzt); (2) Log-Eintrag nannte §4.2 statt
+  §4.6 — korrigiert. Triage: beide sofort gefixt (Doku-Spiegel-Regel).
+  Ungetestete, offen protokollierte Defaults (remove-der-Primären,
+  Link-vor-Ziel-Erbregel) vom Review als Offenlegung gewertet, kein Befund.
 
 ## Checkpoints
 

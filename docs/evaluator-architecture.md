@@ -300,6 +300,8 @@ record LimitDerivation { base: number, steps: DerivationStep[] }  // Endwert == 
 record EffectiveState {            // Ergebnis der Modifikator-Schicht, unveränderlich
   costs: Map<EvalNode, Map<CostTypeId, number>>
   categories: Map<EvalNode, Set<CategoryId>>
+  primaries: Map<EvalNode, CategoryId?>   // effektive Primärkategorie (Issue 0100);
+                                          // nicht zählrelevant, nicht im Fingerabdruck
   limits: Map<(EvalNode, LimitId), LimitDerivation>   // Wert *als* Kette, kein zweiter Zustand
   hidden: Map<(EvalNode, Carrier), bool>              // nur Überschreibungen; Basis: XSD-`hidden`
   names: Map<(EvalNode, Carrier), string>             // nur Überschreibungen; Basis: Katalogname
