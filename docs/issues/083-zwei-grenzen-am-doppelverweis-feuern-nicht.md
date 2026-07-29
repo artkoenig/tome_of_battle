@@ -192,6 +192,17 @@ Acceptance criteria:
     issue 0110 instead of fixed by default.
   - Finding trend: K2 1, outside criteria 2 — total 3.
 
+- **2026-07-29, F1/F2 fix (implementer):** `groupDefinitionsWithLimits`
+  yields a sibling link to an already-visited group with `ownLimitsOnly`
+  when it carries own constraints; its anchor evaluates only those —
+  link-own limits fire per link, shared target limits keep one anchor per
+  owner. `resolveBound` comment corrected. Facts: carrierDescendants file
+  11 tests exit 0; `npx vitest run src/evaluator` 53 files / 715 tests
+  exit 0; lint exit 0; typecheck exit 0; measure-evaluator 11.2 ms.
+  Out-of-scope note: a group reachable both directly nested and via a
+  sibling link would anchor its target limits twice — pre-existing, not in
+  the fixtures, untouched.
+
 ## Checkpoints
 
 ### Before implementation
