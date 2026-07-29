@@ -125,7 +125,7 @@ Acceptance criteria:
 
 Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
-- [ ] 1. Kostenprojektion im Evaluator-Bericht (`costs`/`totalCosts` je
+- [x] 1. Kostenprojektion im Evaluator-Bericht (`costs`/`totalCosts` je
   Slot, `costTotals` im Ergebnis) — evaluator-only, Tests zuerst
 - [ ] 2. Roster-Adapter `toEvaluatorRoster` inkl. `pathBySelectionId`
   (Link-Id-Regel, costLimits, −1) — Tests zuerst
@@ -180,6 +180,21 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-29, Task 1 (Kostenprojektion) erledigt: test-author 15 rote
+  Tests (`costProjection.test.js`), Implementierer grün ohne Testedit.
+  `npx vitest run src/evaluator` 834 Tests Exit 0; lint/typecheck/
+  depcruise Exit 0. Vertragsentscheidungen: deklarierte Kostenarten
+  erscheinen in `costTotals` immer (ohne Vorkommen mit 0); `totalCosts`
+  nutzt `instance.count` (absolute Zahlenbasis, §7.5), nicht das ggf.
+  shared-skopierte `current`; Angebots-Anker zählen nicht in `costTotals`.
+  Positive Überraschung: effektive Instanzkosten existierten bereits
+  vollständig in der Effektiv-Werte-Schicht (Link-vor-Ziel, Modifikatoren)
+  — die Projektion ist reine Lesearbeit im Bericht.
+- 2026-07-29, Überraschung: `node scripts/measure-evaluator.js` liefert
+  Exit 1 schon auf der unveränderten Baseline (per `git stash` belegt) —
+  die 100-ms-Schwelle reißt seit jeher der jsdom-XML-Vorlauf, nicht die
+  Auswertung (Wiederverwendungs-Zeile ~5–18 ms). Kein Blocker für 0121;
+  ggf. eigenes Issue: Schwelle an der Wiederverwendungs-Zeile messen.
 - 2026-07-29: Issue per Grill-Interview gefilt. Recherche-Briefing
   (researcher): 22 Nicht-Test-Dateien konsumieren die Solver-Fassade;
   zentraler Fluss `useRoster.js` (`validateRoster` per `useMemo`);
