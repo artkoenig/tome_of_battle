@@ -64,6 +64,18 @@ Acceptance criteria:
   whether the fixed recognition still emits `unresolvedScope` for a real
   forceEntry id seen from another force (only the violation outcome is
   pinned there).
+- 2026-07-29 implementer: single file `resolver.js` (+67/−3) —
+  `normalizeForceInstanceCondition` rewrites self-gated instanceOf/
+  notInstanceOf (scope = id resolving to a FORCE definition, childId empty)
+  to the canonical encoding at resolve time; frame/target come from the
+  unchanged canonical path. Deliberately NOT in query.js: query never sees
+  the condition type, and §7.7 ties the recognition to the instance check —
+  counting conditions with force-id scopes keep their meaning. Unknown ids
+  keep UNRESOLVED_SCOPE; keywords excluded first. 23/23 target green; suite
+  211 files / 2166 tests exit 0 (no manifest expectation changed);
+  puppeteer E2E exit 0; lint/typecheck 0. Noted improvements/edges: spurious
+  UNRESOLVED_SCOPE from another force is gone (strictly more correct,
+  unpinned); nested-force edge now behaves canonical (no coverage, noted).
 
 ## Checkpoints
 

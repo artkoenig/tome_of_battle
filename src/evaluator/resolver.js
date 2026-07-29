@@ -19,7 +19,8 @@
  * (Clean-Room-Abgleich Q1).
  *
  * ── Unveraenderlichkeit ist durchgesetzt, nicht nur versprochen ──────────────
- * Die Anreicherung (`modifier.target`, `condition.witnessDefinition`,
+ * Die Anreicherung (`modifier.target`, `condition.witnessDefinition`, die
+ * §7.7-Kodierungs-Normalisierung von `condition.scope`/`targetChildId`,
  * `info.resolved`, `link.resolved`) schreibt **einmal, waehrend der
  * Aufloesung**, auf die frisch geparsten Objekte — danach werden die
  * zurueckgegebene Sicht und jeder von ihr getragene Definitions- und
@@ -40,7 +41,16 @@
  * versehentlichen Schreibzugriff sofort sichtbar machen, und genau das tut sie.
  */
 
-import { DefinitionKind, InfoElementKind, ModifierTargetKind, MessageSeverity, DiagnosticKind, diagnostic } from './model.js';
+import {
+  ConditionKind,
+  DefinitionKind,
+  InfoElementKind,
+  ModifierTargetKind,
+  MessageSeverity,
+  ScopeKeyword,
+  DiagnosticKind,
+  diagnostic,
+} from './model.js';
 
 /**
  * Die Schluesselwort-`field`-Werte und ihr unmittelbares Ziel (ohne Symboltabelle).
@@ -311,6 +321,53 @@ function resolveModifierTarget(field, symbolTable, diagnostics) {
 }
 
 /**
+ * Die Bedingungsarten, die eine **Instanz-Pruefung** ausdruecken (BSData §7.7:
+ * `instanceOf`/`notInstanceOf` gegen eine `forceEntry`). Nur fuer sie gilt die
+ * Kodierungs-Erkennung ueber eine forceEntry-Id im `scope`
+ * ({@link normalizeForceInstanceCondition}) — eine zaehlende Bedingung
+ * (`atLeast`, `lessThan`, …) mit Id-Scope behaelt ihre selektionsweise Bedeutung.
+ */
+const FORCE_INSTANCE_CONDITION_KINDS = Object.freeze(new Set([
+  ConditionKind.INSTANCE_OF,
+  ConditionKind.NOT_INSTANCE_OF,
+]));
+
+/**
+ * Die Scope-Schluesselwoerter: ein solches `scope` ist nie eine Id. Insbesondere
+ * loest das Literal `"force"` selbst **nicht** auf eine forceEntry-Id auf
+ * (BSData §7.7) — selbst wenn ein Katalog eine Definition mit dieser Id truege.
+ */
+const SCOPE_KEYWORDS = Object.freeze(new Set(Object.values(ScopeKeyword)));
+
+/**
+ * Normalisiert die **selbst-gegatete** §7.7-Kodierung einer forceEntry-Instanz-
+ * Pruefung auf die **kanonische**: steht bei `instanceOf`/`notInstanceOf` eine
+ * reale forceEntry-Id direkt im `scope` (und `childId` bleibt leer), wird die
+ * Bedingung zu `scope="force" childId="<forceId>"` umgeschrieben. Beide
+ * Kodierungen bedeuten dasselbe — „ist das Kontingent eine Instanz dieses
+ * Detachments" — und laufen so durch denselben Auswertungspfad: der Rahmen ist
+ * das umschliessende Kontingent, gezaehlt wird der Kontingent-Knoten selbst
+ * (Zaehlindex: ein Kontingent zaehlt unter seiner eigenen Definitions-Id). Damit
+ * ist auch ein gewaehltes, aber **leeres** Kontingent eine Instanz seiner selbst
+ * (Issue 0089); zuvor fiel die selbst-gegatete Form in die selektionsweise
+ * Zaehlung mit Ziel `null`, zu der ein Kontingent-Knoten nichts beitraegt.
+ *
+ * Erkannt wird ausschliesslich eine Id, die auf eine forceEntry-Definition
+ * aufloest: eine Eintrags-/Kategorie-Id als Scope behaelt ihre bisherige
+ * Bedeutung, und eine unbekannte Id bleibt unaufgeloest — das Query-Primitiv
+ * meldet sie fail-closed als `UNRESOLVED_SCOPE`.
+ */
+function normalizeForceInstanceCondition(condition, byId) {
+  if (!FORCE_INSTANCE_CONDITION_KINDS.has(condition.type)) return;
+  if (SCOPE_KEYWORDS.has(condition.scope)) return;
+  const targetId = condition.targetChildId;
+  if (targetId !== null && targetId !== undefined && targetId !== '') return;
+  if (byId.get(condition.scope)?.kind !== DefinitionKind.FORCE) return;
+  condition.targetChildId = condition.scope;
+  condition.scope = ScopeKeyword.FORCE;
+}
+
+/**
  * Die Definitionsarten, die als **Zeuge** einer erfuellten Bedingung taugen: eine
  * anwaehlbare Auswahl (ADR-0027 „nur benennbare Ausloeser"). Eine Kategorie, eine
  * Gruppe oder ein Pseudo-Ziel wie `childId="model"` benennt keine Auswahl, die ein
@@ -336,9 +393,16 @@ function resolveConditionWitness(condition, byId) {
     : null;
 }
 
-/** Reichert die Bedingungen und — rekursiv — die Bedingungsgruppen eines Elements an. */
+/**
+ * Reichert die Bedingungen und — rekursiv — die Bedingungsgruppen eines Elements
+ * an. Je Bedingung zuerst die Kodierungs-Normalisierung
+ * ({@link normalizeForceInstanceCondition}), dann der Zeuge — so liest die
+ * Zeugen-Aufloesung bereits die kanonische Form (eine forceEntry taugt ohnehin
+ * nicht als Zeuge, siehe {@link WITNESS_DEFINITION_KINDS}).
+ */
 function resolveConditionWitnesses(conditions, conditionGroups, byId) {
   for (const condition of conditions) {
+    normalizeForceInstanceCondition(condition, byId);
     resolveConditionWitness(condition, byId);
   }
   for (const group of conditionGroups) {
