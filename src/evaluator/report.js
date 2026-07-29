@@ -205,8 +205,14 @@ function isMandatoryEntryPhantomResult(result) {
  * sind Issue 0094) vereint sie.
  *
  * Die Regel, beschraenkt auf Pflicht-Phantome von Eintraegen und Links
- * ({@link isMandatoryEntryPhantomResult}): je (Grenzart, Rahmen, gezaehlte
- * Ziel-Id) ueberlebt genau eine Meldung — die erste in Dokumentreihenfolge.
+ * ({@link isMandatoryEntryPhantomResult}): je (Grenz-Feld, Grenzart, Rahmen,
+ * gezaehlte Ziel-Id) ueberlebt genau eine Meldung — die erste in
+ * Dokumentreihenfolge. Das **Feld** gehoert in den Schluessel, weil §9.9 nur
+ * DIESELBE Pflicht in zwei Kodierungen entdoppelt — gleiches Feld, gleiche
+ * Art, gleicher Rahmen, gleiche Ziel-Id. Zwei verschiedenartige Pflichten am
+ * selben Ziel im selben Rahmen (Selektions-Minimum `field="selections"` UND
+ * Kostenart-Minimum `field="<costTypeId>"`) sind zwei Pflichten und melden
+ * zwei Verstoesse.
  * Rahmen-Identitaet ist fuer `scope="roster"` das Roster, fuer `scope="force"`
  * das **Kontingent des Ankers** (`anchor.forceRoot`): dieselbe Pflicht meldet
  * je Kontingent weiterhin einmal, nie ueber Kontingente hinweg entdoppelt.
@@ -233,7 +239,8 @@ function dedupeMandatoryEntryPhantomViolations(results) {
       kept.push(result);
       continue;
     }
-    const key = `${result.limit.kind}\u0000${frameKey}\u0000${result.countedTargetId}`;
+    const { field } = result.limit;
+    const key = `${field.kind}\u0000${field.costTypeId ?? ''}\u0000${result.limit.kind}\u0000${frameKey}\u0000${result.countedTargetId}`;
     if (seenKeys.has(key)) continue;
     seenKeys.add(key);
     kept.push(result);

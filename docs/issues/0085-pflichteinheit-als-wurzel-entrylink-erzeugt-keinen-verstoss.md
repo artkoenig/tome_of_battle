@@ -195,6 +195,15 @@ Acceptance criteria:
     kann deshalb nicht „zuerst fehlschlagen" (Invariante 2 greift nur, wo es
     etwas zu implementieren gibt); der B1-Test schlägt vor dem Fix fehl.
 
+- **2026-07-29, Fix-Runde nach Review 1:** test-author ergänzte
+  `rootEntryLinkMandatory.dedupeBounds.test.js` (Rand 1 rot: zwei
+  verschiedenartige Min-Pflichten → 1 statt 2 gemeldet; Rand 2 grüner Guard:
+  FORCE entdoppelt je Kontingent). Implementierer nahm das Grenz-Feld
+  (`field.kind` + `costTypeId`) in den Entdopplungsschlüssel von
+  `dedupeMandatoryEntryPhantomViolations` auf (nur `report.js`). Nachweise:
+  dedupeBounds 2/2 grün; `npx vitest run src/evaluator` 58 Dateien, 743
+  Tests, 742 grün, 1 rot = Vorbestand 0113; Lint/Typecheck Exit 0.
+
 ## Checkpoints
 
 ### Before implementation
