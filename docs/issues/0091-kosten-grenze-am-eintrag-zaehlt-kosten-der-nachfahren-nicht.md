@@ -126,6 +126,22 @@ Sonderweg.
   die realen Katalog-Szenarien liegen mit bis zu 4,0 s knapp unter Vitests
   5-s-Vorgabe. Vorbestehende Last-Flakiness, kein fachlicher Fehlschlag; gehört
   in ein eigenes Issue (Timeout heraufsetzen oder Vorlauf teilen).
+  → Als Issue 0107 abgelegt (2026-07-29).
+- **Review-Runde 1 (frischer Kontext, 2026-07-29):** 2 Befunde, beide mit
+  Repro. (1) Fällt der Bezugsrahmen mit dem Träger zusammen (`scope="self"`
+  oder `shared="false"`), gate `includeChildSelections="false"` nicht: der
+  Beitrag des direkten Kindes landet im BASE-Eimer (`countIndex.js`
+  Klettersprung am ersten nicht-unmittelbaren Rahmen, `crossedSelection`
+  noch false) — Ist 110 statt 50; mit Enkel 110 statt 50/150 (Hybrid).
+  Verletzt Kriterium 3 und widerspricht dem in §9.4 ergänzten Satz.
+  (2) Testlücke genau dort: die Wächter-Tests prüfen nur Rahmen oberhalb
+  des Trägers. — Doppelzählungen gezielt gesucht, keine gefunden; Suite im
+  Wiederholungslauf 54 Dateien / 719 Tests Exit 0 (Erstlauf: 1× 0107-Flake);
+  Lint/Typecheck Exit 0. **Triage: beide fixen** (innerhalb der Absicht) —
+  Test-Author schreibt die fehlenden Fälle, Implementer macht sie grün ohne
+  sie zu ändern, danach Review-Runde 2 gegen die ganze Absicht.
+- **Befund-Trend:** Kriterium 3: 1 Befund (Runde 1); Testlücke ohne
+  Kriteriums-Verstoß: 1. Übrige Kriterien: 0. Summe Runde 1: 2.
 
 ## Checkpoints
 
@@ -157,3 +173,4 @@ Sonderweg.
   belegt durch die Auszählung aller `<constraint>`-Vorkommen mit Kostenart-Feld.
 
 ## Retro
+
