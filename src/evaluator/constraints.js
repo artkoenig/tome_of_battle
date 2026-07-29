@@ -31,8 +31,11 @@ const PERCENT_DIVISOR = 100;
  * Knoten dort keinen Wert, gilt der Basiswert der Grenze. Bei einer Prozentgrenze
  * wird der Grenzwert aus dem im Bezugsrahmen gezaehlten Nenner abgeleitet; ein
  * Nenner 0 fuehrt zu `SUSPENDED` samt Null-Nenner-Diagnose (A4), nie zu einer
- * Verletzung. Nenner und Zaehler teilen Scope und Flags, damit sie nicht
- * auseinanderdriften.
+ * Verletzung. Nenner und Zaehler teilen den **Scope**; die Flags koennen
+ * auseinanderfallen: der Nenner zaehlt „alles im Rahmen" stets mit den
+ * hingeschriebenen Flags, waehrend der Zaehler bei einer geteilten,
+ * eintrags-verankerten roster-Grenze verschachtelte Vorkommen erzwungen
+ * mitzaehlt ({@link countingFlagsOf}).
  */
 function resolveBound(limit, node, effective, ctx) {
   const raw = effective.limitValue(node, limit.id) ?? limit.value;

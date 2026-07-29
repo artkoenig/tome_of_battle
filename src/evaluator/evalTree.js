@@ -197,13 +197,18 @@ export function limitsOf(def) {
  * jede Grenze aus — dieselbe Verletzung erschiene je Anker einmal, und der
  * rahmen-fremde Anker hinterliesse eine unechte `unresolvedScope`-Diagnose.
  *
+ * Ein Gruppen-Anker mit `ownLimitsOnly` ({@link attachGroupAnchor}) wertet nur
+ * die **am Link selbst** deklarierten Grenzen aus, nicht die vom Ziel geerbten:
+ * er ist der zweite Geschwister-Link auf ein schon verankertes Ziel, dessen
+ * geteilte Grenzen bereits am ersten Anker haengen.
+ *
  * Die Constraint-Schicht ruft diese Sicht; {@link limitsOf} bleibt die eine
  * Quelle der Wahrheit dafuer, welche Grenzen an der **Definition** haengen
  * (Effektiv-Werte-Schicht: auch eine hier weggefilterte Grenze behaelt ihren
  * effektiven Grenzwert — sie wird nur nicht an diesem Knoten ausgewertet).
  */
 export function evaluableLimitsOf(node) {
-  const limits = limitsOf(node.def);
+  const limits = node.ownLimitsOnly === true ? (node.def.limits ?? []) : limitsOf(node.def);
   if (node.limitScopeFilter === null || node.limitScopeFilter === undefined) return limits;
   return limits.filter(limit => limit.scope === node.limitScopeFilter);
 }
@@ -523,22 +528,35 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
  * Traversierung steigt in die Zielgruppe ab, weil dort weitere verlinkte oder
  * geschachtelte Gruppen haengen koennen. Ohne diesen Abstieg bekaeme eine
  * verlinkte Gruppe keinen Anker: ihr `max` bliebe stumm, ihr `min` feuerte am
- * Pflicht-Phantom des Links faelschlich mit Ist 0. Der `visited`-Satz haelt
- * Verweiszyklen endlich und liefert dieselbe geteilte Gruppe je Eigentuemer
- * nur einmal (zwei Links auf dieselbe Gruppe meldeten dieselbe Grenze doppelt).
+ * Pflicht-Phantom des Links faelschlich mit Ist 0.
+ *
+ * Der `visited`-Satz haelt Verweiszyklen endlich und verankert die vom **Ziel**
+ * geerbten Grenzen je Eigentuemer nur einmal (zwei Links auf dieselbe Gruppe
+ * meldeten dieselbe geteilte Grenze sonst doppelt). Die **am Link selbst**
+ * deklarierten Grenzen sind davon ausgenommen: sie sind die eigenen Grenzen
+ * genau dieses Links und gelten je Link — ein weiterer Geschwister-Link auf ein
+ * schon gesehenes Ziel wird deshalb mit `ownLimitsOnly` geliefert, wenn er
+ * eigene Grenzen traegt. So entscheidet die Dokumentreihenfolge der Geschwister
+ * nie, ob eine Link-Grenze ausgewertet wird.
+ *
+ * @returns {Generator<{ def: object, ownLimitsOnly: boolean }>}
  */
 function* groupDefinitionsWithLimits(ownerDef, visited = new Set()) {
   for (const child of ownerDef.children ?? []) {
     const linkedGroup = linkedGroupTargetOf(child);
     if (linkedGroup !== null) {
-      if (visited.has(linkedGroup.id)) continue;
+      if (visited.has(linkedGroup.id)) {
+        // Ziel schon verankert: nur die eigenen Grenzen dieses Links fehlen noch.
+        if ((child.limits ?? []).length > 0) yield { def: child, ownLimitsOnly: true };
+        continue;
+      }
       visited.add(linkedGroup.id);
-      if (limitsOf(child).length > 0) yield child;
+      if (limitsOf(child).length > 0) yield { def: child, ownLimitsOnly: false };
       yield* groupDefinitionsWithLimits(linkedGroup, visited);
       continue;
     }
     if (child.kind !== DefinitionKind.GROUP) continue;
-    if (limitsOf(child).length > 0) yield child;
+    if (limitsOf(child).length > 0) yield { def: child, ownLimitsOnly: false };
     yield* groupDefinitionsWithLimits(child, visited);
   }
 }
@@ -552,8 +570,13 @@ function* groupDefinitionsWithLimits(ownerDef, visited = new Set()) {
  * **immer** praesent (nicht nur bei Absenz), damit sowohl `min` (leere
  * Pflichtgruppe) als auch `max` (zu viele Member) anschlagen koennen. Als Phantom
  * (`isPhantom`) bleibt er aus der Zaehlung ausgeschlossen (§4.4).
+ *
+ * `ownLimitsOnly` schneidet den Anker auf die **am Link selbst** deklarierten
+ * Grenzen zu ({@link evaluableLimitsOf}): der zweite Geschwister-Link auf ein
+ * schon verankertes Ziel wertet nur seine eigenen Grenzen aus — die vom Ziel
+ * geerbten meldete sonst jeder Anker einmal ({@link groupDefinitionsWithLimits}).
  */
-function attachGroupAnchor(owner, groupDef, nextFrameId) {
+function attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly = false) {
   const node = {
     def: groupDef,
     instance: null,
@@ -565,6 +588,7 @@ function attachGroupAnchor(owner, groupDef, nextFrameId) {
     anchorKind: AnchorKind.GROUP_ANCHOR,
     frameId: nextFrameId(),
     forceRoot: owner.forceRoot,
+    ownLimitsOnly,
   };
   owner.children.push(node);
 }
@@ -602,8 +626,8 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
       if (memberIds !== undefined) annotateGroupMembers(owner, ownerDef.id, memberIds);
     }
 
-    for (const groupDef of groupDefinitionsWithLimits(ownerDef)) {
-      attachGroupAnchor(owner, groupDef, nextFrameId);
+    for (const { def: groupDef, ownLimitsOnly } of groupDefinitionsWithLimits(ownerDef)) {
+      attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly);
       // Bei einer verlinkten Gruppe ist der Anker der **Link** (nur an ihm
       // gelten seine eigenen Grenzen); gezaehlt wird aber unter der Id, die
       // die Constraint-Schicht am Link abfragt (`targetId`), und die Member
