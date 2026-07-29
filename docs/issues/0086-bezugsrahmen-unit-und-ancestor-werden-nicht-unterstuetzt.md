@@ -83,6 +83,27 @@ Acceptance criteria:
   (`query.js`), das dafür zusätzlich die Effektiv-Werte (`effective`) im
   Query-Kontext braucht — beide Aufrufer (`constraints.js`, `modifiers.js`)
   haben sie bereits zur Hand.
+- **`unit`-Diagnose nur an realen Knoten (Triage der Implementierer-Abweichung
+  1, angenommen):** 7 der 10 VC-Fixture-Diagnosen entstehen an synthetischen
+  Angebots-Ankern auf Armee-Ebene (verstecktes Entry „Spells of the Lore of
+  Necromancy" direkt unter dem Kontingent — dort gibt es keine umschließende
+  Einheit, und der Anker steht für keine reale Auswahl). An synthetischen
+  Knoten (`isPhantom`) entfällt bei unauflösbarem `unit`-Rahmen die
+  Diagnose; der Zählwert bleibt fail-closed 0. Analogie: Angebots-Anker
+  erzeugen auch keine Verletzungen (`isReportableAnchorKind`). An realen
+  Knoten bleibt die Diagnose (von der Messlatte gepinnt).
+- **Obsoleter Scope-Wächter aus Issue 077 entfernt (Triage der
+  Implementierer-Abweichung 2, angenommen):**
+  `query.primaryCatalogueScope.test.js` trug einen als „Issue 0086 ist NICHT
+  Gegenstand" markierten Platzhalter-Pin (`scope="unit"` bleibt unaufgelöst),
+  der Kriterium 1 per Konstruktion widerspricht — jede Umsetzung bricht ihn
+  zwingend. Der Block ist entfernt; sein bleibendes Anliegen (unbekanntes
+  Schlüsselwort bleibt diagnostiziert) pinnt Kriterium 4 in
+  `query.unitScope.test.js`. Kein Messlatten-Test wurde verändert.
+- **Geerbter roter Test ist nicht Gegenstand:** Der vorbestehende Fehlschlag
+  in `countIndex.costSumUnderCarrier.test.js` (fällt identisch am
+  Branchpunkt `b67e93c`) ist als Issue 0112 gefiled und wartet auf seinen
+  eigenen Run.
 
 ## Log
 
@@ -110,6 +131,20 @@ Acceptance criteria:
   dokumentiert. Testkatalog um beide Einträge ergänzt (126 → 130 Roster).
   Rot-Beleg: `npx vitest run src/evaluator/e2e.testcatalog.test.js -t <name>`
   — je Szenario 2 rot, Exit-Code 1.
+- **2026-07-29, Implementierer:** Messlatte grün — 26/26 Unit-Tests
+  (`npx vitest run` über die drei neuen Dateien, Exit 0), beide
+  E2E-Szenarien grün (je 2 Roster, Exit 0). Gesamt
+  `npx vitest run src/evaluator`: 59 Dateien, 765 Tests, 764 grün, **1 rot
+  geerbt** (`countIndex.costSumUnderCarrier.test.js`; fällt identisch am
+  Branchpunkt `b67e93c`, per stash/checkout belegt — als Issue 0112 gefiled,
+  nicht Gegenstand dieses Runs). `npm run lint` Exit 0, `npm run typecheck`
+  Exit 0, `node scripts/measure-evaluator.js` Exit 0 (6.9 ms bei
+  wiederverwendetem Datensatz — der O(Tiefe)-Ancestor-Walk ist unkritisch).
+  Umgesetzt: `ScopeKeyword`/`ScopeKind` + `UNIT`/`ANCESTOR` (model.js),
+  `unit`-Rahmen in `resolveSharedFrame` und `resolveAncestor` vor der
+  Indexarbeit (query.js), `targetsOf` aus countIndex.js exportiert (eine
+  Quelle der Wahrheit für die Vorfahren-Ziele), `effective` in den
+  Query-Kontext (constraints.js/modifiers.js reichen durch).
 
 ## Checkpoints
 
