@@ -146,6 +146,33 @@ Acceptance criteria:
   positiven, damit sie heute nicht trivial grün sind. Welcher der beiden
   `limitId`s die Entdopplung überlebt, lässt Kriterium-3-Test offen.
 
+- **2026-07-29, Implementierung** (implementer, gemäß den Decisions):
+  - `resolver.js`: `ENTRY_LINK` in `PHANTOM_DEFINITION_KINDS`; Kommentare an
+    `collectRootDefinitions`/`resolveCatalogue` fortgeschrieben (die
+    Traversierung folgt nie `resolved` — ADR-0032 hält).
+  - `evalTree.js`: `attachPhantom` um `ownLimitsOnly` erweitert; neue Helfer
+    `mandatoryLimitStockOf`/`hasMinLimit` — für eine `ENTRY_LINK`-Definition
+    entscheidet nur `def.limits` über das Phantom, und es wertet nur diese aus.
+  - `report.js`: `dedupeMandatoryEntryPhantomViolations` (Schlüssel Grenzart +
+    Rahmen + `countedTargetId`, Rahmen = Roster bzw. `frameKeyOf(forceRoot)`;
+    erste Meldung in Dokumentreihenfolge überlebt), verkettet mit der
+    Kategorie-Entdopplung.
+  - Nachweise: `npx vitest run src/evaluator/rootEntryLinkMandatory.test.js`
+    5/5 grün; `npx vitest run src/evaluator` 57 Dateien, 741 Tests, 740 grün,
+    1 rot (Vorbestand, s. u.); `npm run lint` Exit 0; `npm run typecheck`
+    Exit 0.
+  - Defaults des Implementierers: FORCE-Ergebnis ohne Kontingent
+    (`forceRoot === null`) bleibt von der Entdopplung unberührt; der Schlüssel
+    entdoppelt auch verschiedenartige Felder (Selektions- vs. Kosten-Min) am
+    selben Ziel — §9.9 kennt nur den Selektionsfall.
+- **2026-07-29, Vorbestand verifiziert (Hauptlauf, eigene Gegenprobe):**
+  `countIndex.costSumUnderCarrier.test.js` („includeChildSelections=false
+  liest nur die Kosten des Trägers") scheitert identisch auf `origin/main`
+  (b67e93c, frischer Worktree, 1 failed | 9 passed) — keine Regression dieses
+  Laufs, sondern Kollision Issue 083 ↔ 091 in `countingFlagsOf`
+  (`constraints.js:73-80`). Als **Issue 0113** gefiled; hier außerhalb der
+  Intent, wird nicht mitgefixt.
+
 ## Checkpoints
 
 ### Before implementation

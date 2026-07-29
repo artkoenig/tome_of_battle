@@ -36,7 +36,7 @@
  */
 
 import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, isReportableAnchorKind } from './model.js';
-import { selectableSlotsOf, pathOf } from './evalTree.js';
+import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage } from './violationClassification.js';
@@ -176,6 +176,67 @@ function dedupeArmyWideCategoryViolations(results) {
       // Synthese) zaehlt nicht — sonst ueberlebte es vor dem Wurzel-Phantom.
       kept[survivorIndex] = result;
     }
+  }
+  return kept;
+}
+
+/**
+ * True, wenn das Ergebnis am **Pflicht-Phantom einer Auswahl** haengt: einem
+ * Pflicht-Phantom, dessen Definition ein Eintrag oder ein `entryLink` ist. Nur
+ * diese Anker-Familie faellt unter die Eintrags-Entdopplung (unten) — die
+ * Kategorie-Familie hat ihre eigene ({@link dedupeArmyWideCategoryViolations}),
+ * belegte Instanz-Anker behalten ihre Multiplizitaet.
+ */
+function isMandatoryEntryPhantomResult(result) {
+  const node = result.anchor;
+  return node.anchorKind === AnchorKind.MANDATORY_PHANTOM
+    && (node.def.kind === DefinitionKind.ENTRY || node.def.kind === DefinitionKind.ENTRY_LINK);
+}
+
+/**
+ * Entdoppelt die **Eintrags-Pflicht in beiden Wurzelformen** in der
+ * Meldungsliste (`docs/battlescribe-data-format.md` §9.9: „Fuehrte ein Katalog
+ * dieselbe Pflicht in beiden Formen, wird sie ueber die Ziel-Id entdoppelt" —
+ * Issue 85): traegt ein Katalog denselben Pflicht-Eintrag als
+ * Wurzel-`selectionEntry` **und** als Wurzel-`entryLink` darauf, haengen zwei
+ * Pflicht-Phantome mit **verschiedenen** Grenz-Ids, die dieselbe fehlende
+ * Einheit im selben Rahmen anmahnen. Die Grenz-Id trennt sie, die **gezaehlte
+ * Ziel-Id** (`countedTargetId`, beim Link die rohe `targetId` — Link-Ketten
+ * sind Issue 0094) vereint sie.
+ *
+ * Die Regel, beschraenkt auf Pflicht-Phantome von Eintraegen und Links
+ * ({@link isMandatoryEntryPhantomResult}): je (Grenzart, Rahmen, gezaehlte
+ * Ziel-Id) ueberlebt genau eine Meldung — die erste in Dokumentreihenfolge.
+ * Rahmen-Identitaet ist fuer `scope="roster"` das Roster, fuer `scope="force"`
+ * das **Kontingent des Ankers** (`anchor.forceRoot`): dieselbe Pflicht meldet
+ * je Kontingent weiterhin einmal, nie ueber Kontingente hinweg entdoppelt.
+ * Jeder andere Rahmen bleibt unangetastet (eine `scope="parent"`-Pflicht gilt
+ * je Eigentuemer), ebenso ein FORCE-Ergebnis ohne umschliessendes Kontingent —
+ * fuer dieses gaebe es keine Rahmen-Identitaet.
+ */
+function dedupeMandatoryEntryPhantomViolations(results) {
+  const kept = [];
+  const seenKeys = new Set();
+  for (const result of results) {
+    if (!isMandatoryEntryPhantomResult(result)) {
+      kept.push(result);
+      continue;
+    }
+    const { scope } = result.limit;
+    let frameKey = null;
+    if (scope === ScopeKeyword.ROSTER) {
+      frameKey = ScopeKeyword.ROSTER;
+    } else if (scope === ScopeKeyword.FORCE && result.anchor.forceRoot !== null) {
+      frameKey = frameKeyOf(result.anchor.forceRoot);
+    }
+    if (frameKey === null) {
+      kept.push(result);
+      continue;
+    }
+    const key = `${result.limit.kind}\u0000${frameKey}\u0000${result.countedTargetId}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    kept.push(result);
   }
   return kept;
 }
@@ -362,12 +423,14 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     // Ergebnis am Angebots-Anker faellt heraus (`constraints.js`, `isReportable`):
     // das Nichtgewaehlte speist Faehigkeitsdatensaetze, aber nie die Meldungsliste.
     // Armeeweite Kategorie-Grenzen melden dabei genau **einmal**
-    // ({@link dedupeArmyWideCategoryViolations}, §9.9) — die Ergebnisse selbst
-    // bleiben vollstaendig, nur die Meldungsliste entdoppelt.
+    // ({@link dedupeArmyWideCategoryViolations}, §9.9), und die Eintrags-Pflicht
+    // in beiden Wurzelformen ebenso ({@link dedupeMandatoryEntryPhantomViolations},
+    // §9.9, Issue 85) — die Ergebnisse selbst bleiben vollstaendig, nur die
+    // Meldungsliste entdoppelt.
     violations: [
-      ...dedupeArmyWideCategoryViolations(
+      ...dedupeMandatoryEntryPhantomViolations(dedupeArmyWideCategoryViolations(
         [...results, ...budgetViolations].filter(result => result.isReportable && !result.satisfied),
-      ).map(result => toDerivedViolation(result, classificationContext)),
+      )).map(result => toDerivedViolation(result, classificationContext)),
       ...authorViolationsOf(slots, classificationContext),
     ],
     capabilities,
