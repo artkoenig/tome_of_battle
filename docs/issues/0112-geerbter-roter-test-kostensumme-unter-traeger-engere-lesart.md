@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/offene-issues-phkdw5
 pr:
 ---
 
@@ -41,20 +41,45 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Der Test hatte recht; entschieden und behoben durch Issue 0113** (Quelle:
+  Issue 0113, Decisions; BSData-Doku §7.6/§9.4). Die engere Lesart gilt für
+  die unter die Träger-Id aufgestiegenen Nachfahren-Kosten: sie zählen nur
+  mit hingeschriebenem `includeChildSelections="true"` (§7.6), während die
+  Eigen-Kosten jedes Träger-Vorkommens immer zählen (§9.4). Umgesetzt in
+  PR #173 (`climbedCostSums` / `includeClimbedCosts` im Zählindex), gemerged
+  als `cadf81d`. Dieses Issue war zeitgleich mit 0113 gefiled und ist durch
+  dessen Merge gegenstandslos — kein eigener Code-Change nötig.
+- **Kein test-author, kein implementer** (default, unanswered): Es gibt
+  nichts zu bauen; der Run dieses Issues besteht aus Verifikation und
+  Tracker-Eintrag.
+
 ## Log
+
+- 2026-07-29: Verifikation auf `claude/offene-issues-phkdw5` (= `main`-Stand
+  `3e3ad6d`, enthält PR #173): `npx vitest run
+  src/evaluator/countIndex.costSumUnderCarrier.test.js` — 11 Tests, Exit 0
+  (Kriterium 2). `npx vitest run src/evaluator` — 64 Dateien, 809 Tests,
+  Exit 0 (Kriterium 3). Der im Intent beschriebene rote Test reproduziert
+  nicht mehr.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Ja — „112 umsetzen", per Rückfrage auf
+  dieses Issue (roter Test Kostensumme) aufgelöst.
+- What surprised me? Der rote Test war schon grün: Issue 0113 hat den Befund
+  zwischen Filing und diesem Run behoben.
+- What am I assuming without having verified it? Nichts Offenes — beide
+  Kriterien-Kommandos selbst gelaufen, Doku-Stellen §7.6/§9.4 nachgelesen.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Ja — alle drei Kriterien erfüllt: Ent-
+  scheidung belegt (aus 0113), beide Test-Kommandos Exit 0.
+- What surprised me? Nichts weiter; der Run war reine Verifikation.
+- What am I assuming without having verified it? Dass 0113s Doku-Begründung
+  vollständig ist — stichprobenhaft gegen §7.6/§9.4 geprüft, nicht neu
+  hergeleitet.
 
 ## Retro
