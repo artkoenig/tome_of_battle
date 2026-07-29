@@ -92,6 +92,18 @@ Acceptance criteria:
 - **Der `report.js`-Ankervertrag ist die Begründung der heutigen Wahl:** „ein
   Angebots-Anker den `entryLink`, nicht den Eintrag (nur so gelten die am
   Verweis deklarierten Grenzen)". Kriterium 2 hält genau das fest.
+- **Entschieden (Default dieses Laufs, 2026-07-29):** Kriterium 3 —
+  `unresolvedDefinition` OHNE Rückfall auf die Ziel-Id ist die gewollte
+  Antwort. Quelle: §7.2 (Link-Ziel aus demselben Katalog bzw.
+  `.gst`-Import; Kontingent-Auswahlen aus einem einzigen Katalog — ein
+  solches Roster war nie gültig) und §15; dokumentiert am Fassaden-Rand,
+  gepinnt durch zwei F3-Tests. Ein stiller Rückfall würde den
+  Datensatz-Fehler tarnen.
+- **Symptom-Präzisierung (Review-Runde 1):** der Rückfall auf die Ziel-Id
+  äußert sich im flachen Fall als STILLES Verschwinden der Link-Grenzen
+  (grüne Auswertung ohne Regel-Durchsetzung); das „Phantom daneben" aus
+  076/F2 entsteht nur in verschachtelten Konstellationen (beide vom
+  Reviewer reproduziert). Das JSDoc nennt jetzt beide Symptome.
 
 ## Log
 

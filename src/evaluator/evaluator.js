@@ -89,9 +89,11 @@ export { prepareDataset } from './datasetPreparation.js';
  *   `<entryLink>` gesetzt wurde, wird unter der Id des **Verweises** uebergeben
  *   (`entryLinkId` der `.ros`), nicht unter der Id seines Ziels; eine Auswahl
  *   ohne Verweis unter der Id ihres **Eintrags** (`entryId`). Nur unter der
- *   Link-Id gelten die am Verweis deklarierten Grenzen, und nur so faellt der
- *   Slot des Verweises mit dem belegten Slot zusammen, statt daneben als
- *   Phantom stehenzubleiben — dieselbe Wahl, die der Ankervertrag des Berichts
+ *   Link-Id gelten die am Verweis deklarierten Grenzen — unter der Ziel-Id
+ *   verschwinden sie **still** (die Auswertung bleibt gruen, ohne die Regel
+ *   durchzusetzen); bei verschachtelten Verweisen bleibt zudem der Slot des
+ *   Verweises als Pflicht-Phantom neben dem belegten Ziel-Slot stehen.
+ *   Dieselbe Wahl haelt der Ankervertrag des Berichts
  *   festhaelt: „ein Angebots-Anker den `entryLink`, nicht den Eintrag (nur so
  *   gelten die am Verweis deklarierten Grenzen)" (`report.js`). Diese Regel ist
  *   eine **Entscheidung dieses Projekts**: die Abschnitte *Roster*, *Force* und
