@@ -91,6 +91,21 @@ Acceptance criteria:
   Intent ergänzt um die Einordnung, dass §5.6 nur `forceEntry`/`categoryLink`
   deckt und die Verallgemeinerung auf alle Ankerarten eine Projektentscheidung
   ist, die im Lauf zu protokollieren und in die Doku zu heben ist.
+- 2026-07-29 — Researcher-Briefing eingeholt: Sichtbarkeit liefert
+  `EffectiveState#isHidden` (`effectiveState.js:187`), Constraint-Auswertung
+  läuft nach Fixpunkt + Anker-Nachlauf (`evaluator.js:162-168`) — kein
+  Reihenfolge-Problem; Meldbarkeits-Pfad `isReportable` existiert bereits
+  (Angebots-Anker). Folge-Issue 0115 (Gegenrichtung) gefiled.
+- 2026-07-29 — Test-Author: `src/evaluator/constraints.hiddenMin.test.js`,
+  18 Tests (`npx vitest run src/evaluator/constraints.hiddenMin.test.js`,
+  Exit 1: 8 failed, 10 passed). Die 8 roten pinnen die neue Semantik je
+  Ankerart + Rand (min+max verletzt, versteckt ⇒ nur Max); die 10 grünen
+  sind Kipp-Nachweise und Max-Pins. Alle roten scheitern an der
+  Verstoß-Assertion bei leeren `diagnostics` — Fixtures gesund. Offen
+  gelassen vom Test-Author (bewusst): kein expliziter Min-Filter-Test für
+  Link→Ziel-hidden-Vererbung (bereits gepinnt in
+  `effectiveState.baseHiddenInheritance.test.js`), keine Capability-Pins
+  (würde Mechanik spiegeln).
 
 ## Checkpoints
 
