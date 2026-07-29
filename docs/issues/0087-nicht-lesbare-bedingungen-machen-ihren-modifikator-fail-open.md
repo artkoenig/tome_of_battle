@@ -106,6 +106,25 @@ Acceptance criteria:
   src/evaluator/modifiers.unreadableGuards.test.js` → 15 failed / 2 passed,
   alle 15 an Assertions (Phantom-Verstoß, fehlende Carrier-Felder,
   fälschliches `unsupportedCondition`), keine Import-Fehler.
+- 2026-07-29 — Implementer (Commit 92a2611): `catalogReader.js` — neue
+  `readGuards`-Hilfe führt pro Modifikator eine `guardHealth` durch alle
+  drei Leser (rekursiv durch verschachtelte Gruppen); `readModifier`/
+  `readModifierGroup` markieren `hasUnreadableGuard`; `readCondition`
+  toleriert fehlendes `field` (→ `selections`) und fehlendes `value`
+  (→ `null`) nur bei `instanceOf`/`notInstanceOf`; die drei
+  Wächter-Diagnosen tragen `carrierId`/`carrierName` (aus der einen
+  `readEntryBase`-Lesestelle, deckt alle Trägerarten). `modifiers.js` —
+  beide Feuer-Gates (`applyModifier`, `applyModifierGroup`) brechen bei
+  `hasUnreadableGuard` früh ab; `conditionHolds` nimmt die wertfreien
+  Mitgliedschafts-Typen vom `expected === null`-Guard aus.
+  Belege: `npx vitest run src/evaluator/modifiers.unreadableGuards.test.js`
+  17/17, Exit 0. `npx vitest run src/evaluator` 63 Dateien / 790 Tests:
+  789 grün, 1 rot, Exit 1 — der eine Rote ist der **vorbestehende**,
+  als Issue 0112 getrackte `countIndex.costSumUnderCarrier.test.js`
+  (fällt identisch auf `origin/main` a3a0eb2, im sauberen Worktree
+  verifiziert; von dieser Änderung unberührt). `npm run lint` Exit 0,
+  `npm run typecheck` Exit 0, `npm run depcruise` 0 Errors, Exit 0.
+  Kein E2E-Szenario änderte sein Verhalten.
 
 ## Checkpoints
 
