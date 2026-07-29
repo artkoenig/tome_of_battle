@@ -95,7 +95,7 @@ Dokument den ganzen Baum inklusive Wurzel absucht.
   `npm test` wurde auf Anweisung dieser Session nicht ausgeführt.
 
 - **Kein PR geöffnet:** Arbeit gepusht auf dem Sammel-Branch
-  `claude/issues-90-abarbeiten-7ymutc` (Abweichung in Issue 0106 begründet);
+  `claude/issues-90-abarbeiten-7ymutc` (Abweichung in Issue 0109 begründet);
   PR und Merge sind Sache des Menschen („stop nach diesem Issue“,
   2026-07-29), das `pr:`-Feld bleibt leer.
 

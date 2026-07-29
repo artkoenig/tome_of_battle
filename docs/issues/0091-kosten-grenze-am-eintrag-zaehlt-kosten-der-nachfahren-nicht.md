@@ -126,7 +126,7 @@ Sonderweg.
   die realen Katalog-Szenarien liegen mit bis zu 4,0 s knapp unter Vitests
   5-s-Vorgabe. Vorbestehende Last-Flakiness, kein fachlicher Fehlschlag; gehört
   in ein eigenes Issue (Timeout heraufsetzen oder Vorlauf teilen).
-  → Als Issue 0107 abgelegt (2026-07-29).
+  → Als Issue 0110 abgelegt (2026-07-29).
 - **Review-Runde 1 (frischer Kontext, 2026-07-29):** 2 Befunde, beide mit
   Repro. (1) Fällt der Bezugsrahmen mit dem Träger zusammen (`scope="self"`
   oder `shared="false"`), gate `includeChildSelections="false"` nicht: der
@@ -136,7 +136,7 @@ Sonderweg.
   Verletzt Kriterium 3 und widerspricht dem in §9.4 ergänzten Satz.
   (2) Testlücke genau dort: die Wächter-Tests prüfen nur Rahmen oberhalb
   des Trägers. — Doppelzählungen gezielt gesucht, keine gefunden; Suite im
-  Wiederholungslauf 54 Dateien / 719 Tests Exit 0 (Erstlauf: 1× 0107-Flake);
+  Wiederholungslauf 54 Dateien / 719 Tests Exit 0 (Erstlauf: 1× 0110-Flake);
   Lint/Typecheck Exit 0. **Triage: beide fixen** (innerhalb der Absicht) —
   Test-Author schreibt die fehlenden Fälle, Implementer macht sie grün ohne
   sie zu ändern, danach Review-Runde 2 gegen die ganze Absicht.
@@ -154,7 +154,7 @@ Sonderweg.
   `docs/battlescribe-data-format.md` blieb wahr, unangetastet. Belege:
   `npx vitest run src/evaluator/countIndex.costSumCarrierFrame.test.js`
   vorher 3 rot / 3 grün, nachher 6/6 grün, Exit 0; `npx vitest run
-  src/evaluator` → 55 Dateien, 725 Tests, Exit 0 (kein 0107-Flake in diesem
+  src/evaluator` → 55 Dateien, 725 Tests, Exit 0 (kein 0110-Flake in diesem
   Lauf); `npm run lint` Exit 0; `npm run typecheck` Exit 0. Keine
   Testdatei verändert.
 - **Review-Runde 2 (frischer Kontext, ganze Absicht, 2026-07-29):** 1 Befund,
@@ -184,14 +184,14 @@ Sonderweg.
   Repro erneut ausgeführt). Suite 55 Dateien / 725 Tests Exit 0,
   Lint/Typecheck Exit 0. **Triage: außerhalb der Absicht** (die Intent hat
   diese Eimer-Semantik bewusst nicht entschieden) → per Regel an den
-  Menschen: als Issue 0108 ins Backlog gelegt, hier nicht gefixt.
+  Menschen: als Issue 0111 ins Backlog gelegt, hier nicht gefixt.
 - **Befund-Trend gesamt:** Summe je Runde 2 → 1 → 1; Kriteriums-Verstöße
   1 → 0 → 0. Beide Befunde der Runden 2/3 sind dieselbe Klasse
-  (Doku-Präzision am unentschiedenen Rand) und leben jetzt in Issue 0108.
+  (Doku-Präzision am unentschiedenen Rand) und leben jetzt in Issue 0111.
 - **Kein PR geöffnet:** Der Mensch hat „stop nach diesem Issue" verfügt;
   die Arbeit liegt gepusht auf dem Sammel-Branch
   `claude/issues-90-abarbeiten-7ymutc` (Abweichung „ein Issue = ein Branch
-  = ein PR" ist in Issue 0106 begründet). PR-Eröffnung und Merge sind
+  = ein PR" ist in Issue 0109 begründet). PR-Eröffnung und Merge sind
   Sache des Menschen; das `pr:`-Feld bleibt deshalb leer.
 
 ## Checkpoints
@@ -237,4 +237,4 @@ Sonderweg.
   Kriterium machte sichtbar, dass ab Runde 2 nur noch Doku-Ränder offen
   waren.
 - **Vorschlag:** keiner ans Regelwerk; die offene Randsemantik ist als
-  Issue 0108 beim Menschen.
+  Issue 0111 beim Menschen.
