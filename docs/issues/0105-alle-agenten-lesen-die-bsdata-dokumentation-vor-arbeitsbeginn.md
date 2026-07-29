@@ -45,7 +45,7 @@ For criterion 5 (ADR sweep):
 - [x] Edit the flagged ADRs: remove format explanations and contradictions,
       keep the decisions, point to the bsdata documentation instead
 - [x] Bump the revised ADRs' dates in the ADR index
-- [ ] Fresh-context review of the whole intent (criteria 1–5)
+- [x] Fresh-context review of the whole intent (criteria 1–5)
 
 ## Decisions
 
@@ -113,6 +113,16 @@ For criterion 5 (ADR sweep):
   filed as issue 0106. The audit's side find — ADR 0031 contradicting ADR
   0030 on the cutover status, outside bsdata scope — is filed as issue 0107.
   Index dates of all ten revised ADRs bumped to 2026-07-29 (rev.).
+- Review round 4 (fresh context, whole intent, criteria 1–5): 0 findings.
+  Every doc reference in the ten edited ADRs spot-checked against the named
+  sections (all resolve and cover the attributed content, including the §9.8
+  anchor slug); the ADR 0032 B2 rewording matches §5.6 exactly; unedited
+  ADRs sampled with no residual format teaching; ADR-only facts confirmed
+  doc-silent and identical to the issue-0106 list. The reviewer also ran the
+  project's checks: `npm test` exit 0 (incl. puppeteer E2E), `npx vitest
+  run` 226 files / 2322 tests exit 0, `npm run lint` exit 0, `npm run
+  typecheck` exit 0 — none cover markdown, confirming the reading is the
+  only check for this change.
 
 ## Checkpoints
 
