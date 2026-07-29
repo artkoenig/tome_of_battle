@@ -167,6 +167,31 @@ Acceptance criteria:
   Out-of-scope note for later: whether `offer.js` offers members of a
   *linked* group as selectable options was not touched.
 
+- **2026-07-29, review round 1** (fresh context; `npx vitest run src/evaluator`
+  53 files / 711 tests exit 0, lint exit 0, typecheck exit 0; handed tests
+  untouched by the implementer, verified by diff). 3 findings, triage:
+  1. **F1 (criterion 2, fix now):** the `visited`-dedupe in
+     `groupDefinitionsWithLimits` keys on the target group id and skips the
+     whole second link to an already-seen group — a constraint declared only
+     on that second link is silently dropped; outcome depends on sibling
+     document order. Reproduced with a minimal catalog (min on second of two
+     links to the same group → silent; on the first → fires). Real catalogs
+     carry the dual-link shape (VC: 20 owners), so the gap is real even
+     though the frozen fixtures never put a constraint on the duplicate link.
+  2. **F2 (no criterion, fix now):** `resolveBound`'s comment "Nenner und
+     Zaehler teilen Scope und Flags" is stale since `countingFlagsOf` —
+     numerator gets forced flags, percent denominator keeps written ones.
+  3. **F3 (no criterion, dismissed with reason):** the implementer's
+     out-of-scope note on `offer.js` is moot — the reviewer read
+     `offer.js:124-128`: `optionDefinitionsUnder` already descends through
+     links whose resolved target is a group. Nothing to file.
+  - **Beyond the criteria (filed, not fixed):** the `countingFlagsOf`
+    override is deliberately roster-only; the same shape with
+    `scope="force"` stays silent (reproduced). Whether the reference counts
+    those is undecided by the cited wiki sentence — off-intent, filed as
+    issue 0110 instead of fixed by default.
+  - Finding trend: K2 1, outside criteria 2 — total 3.
+
 ## Checkpoints
 
 ### Before implementation
