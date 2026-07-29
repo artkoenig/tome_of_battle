@@ -37,6 +37,7 @@ import {
   InfoElementKind,
   InfoLinkKind,
   DiagnosticKind,
+  CatalogueUnreadableReason,
   DEFAULT_FLAGS,
   UNLIMITED,
   unlimitedFromSentinel,
@@ -169,6 +170,16 @@ const DEFAULT_LIBRARY = false;
 const BOOLEAN_TRUE_XML = 'true';
 const BOOLEAN_FALSE_XML = 'false';
 const XML_MIME_TYPE = 'application/xml';
+
+/**
+ * Wurzel-Tag des Fehlerdokuments, das `DOMParser` fuer nicht wohlgeformtes XML
+ * liefert (WHATWG-DOM-Parsing; Browser wie jsdom betten das Element ins
+ * Dokument ein, jsdom macht es zur Wurzel — beides wird erkannt).
+ */
+const PARSER_ERROR_TAG = 'parsererror';
+
+/** Die erwarteten Wurzel-Tags einer Katalogquelle: `.cat` bzw. `.gst`. */
+const EXPECTED_ROOT_TAGS = Object.freeze(new Set(['catalogue', 'gameSystem']));
 
 /**
  * Bildet das `field`-Attribut einer Grenze auf das engine-eigene Feld ab.
@@ -866,6 +877,33 @@ function readCategoryEntries(element, diagnostics) {
 }
 
 /**
+ * Das Ergebnis fuer eine unlesbare Katalogquelle: die volle `parseCatalogue`-Form
+ * mit leeren Sammlungen, aber **mit** der `UNREADABLE_CATALOGUE`-Diagnose — der
+ * Katalog ist leer, weil er unlesbar ist, und genau das steht drin.
+ *
+ * @param {string} reason {@link CatalogueUnreadableReason}: warum die Quelle unlesbar ist.
+ * @param {string|null} sourceName Vom Aufrufer gelieferter Quellname (z. B. Dateiname), sonst `null`.
+ * @param {string|null} rootTag Der vorgefundene Wurzel-Tag (nur bei `UNEXPECTED_ROOT`), sonst `null`.
+ */
+function unreadableCatalogue(reason, sourceName, rootTag) {
+  return {
+    id: null,
+    name: null,
+    gameSystemId: null,
+    isLibrary: DEFAULT_LIBRARY,
+    costTypes: [],
+    profileTypes: [],
+    entries: [],
+    forces: [],
+    categories: [],
+    sharedEntries: [],
+    infos: [],
+    catalogueLinks: [],
+    diagnostics: [diagnostic(DiagnosticKind.UNREADABLE_CATALOGUE, { reason, sourceName, rootTag })],
+  };
+}
+
+/**
  * Liest Katalog-XML in das engine-eigene Definitionsmodell.
  *
  * Ein `.cat` **und** eine `.gst` teilen dieselben Element-Namen und werden von
@@ -875,13 +913,31 @@ function readCategoryEntries(element, diagnostics) {
  * traegt ebenfalls nur ein `.cat`; eine `.gst` ist nie eine Bibliothek und faellt
  * damit auf die XSD-Vorgabe zurueck.
  *
+ * **Fehlerpfad statt stillem Leerlauf** (Issue 0097): ist das XML nicht
+ * wohlgeformt (`parsererror`-Dokument) oder traegt es eine unerwartete Wurzel
+ * (weder `catalogue` noch `gameSystem`, z. B. eine versehentlich uebergebene
+ * `.ros`), liefert die Funktion einen leeren Katalog **mit** einer
+ * `UNREADABLE_CATALOGUE`-Diagnose — nie ein leeres Ergebnis mit
+ * `diagnostics: []`. Die Form bleibt dabei dieselbe, damit nachgelagerte Leser
+ * (Zusammenfuehrung, Resolver) nicht abstuerzen; die Diagnose fliesst ueber den
+ * regulaeren `diagnostics`-Kanal bis in den Bericht der Fassade.
+ *
  * @param {string} catalogXml Entpacktes `.cat`/`.gst`-XML.
+ * @param {{ sourceName?: string|null }} [options] Optionaler Name der Quelle
+ *   (z. B. der Dateiname). Er dient allein der Diagnose: taucht eine Datei als
+ *   unlesbar auf, benennt die Diagnose sie ueber diesen Namen.
  * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, isLibrary: boolean, costTypes: object[], profileTypes: object[], entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
  */
-export function parseCatalogue(catalogXml) {
+export function parseCatalogue(catalogXml, { sourceName = null } = {}) {
   const diagnostics = [];
   const document = new DOMParser().parseFromString(catalogXml, XML_MIME_TYPE);
   const root = document.documentElement;
+  if (root === null || document.getElementsByTagName(PARSER_ERROR_TAG).length > 0) {
+    return unreadableCatalogue(CatalogueUnreadableReason.MALFORMED_XML, sourceName, null);
+  }
+  if (!EXPECTED_ROOT_TAGS.has(root.tagName)) {
+    return unreadableCatalogue(CatalogueUnreadableReason.UNEXPECTED_ROOT, sourceName, root.tagName);
+  }
   return {
     id: root.getAttribute(Attr.ID),
     name: root.getAttribute(Attr.NAME),
