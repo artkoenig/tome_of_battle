@@ -133,6 +133,13 @@ Acceptance criteria:
   Vorbestand = Issue 0112; Lint/Typecheck Exit 0; Testdatei des
   Test-Authors seit efdf0bb unverändert). Nebenbefund außerhalb des
   Branches: doppelte Issue-Nummern 0110/0112 auf main.
+- 2026-07-29 — Nach PR-Eröffnung: auf `origin/main` (9758326, Issue 0087
+  via PR #175) rebased, konfliktfrei. Fakten danach: `npx vitest run
+  src/evaluator` 808 Tests, 807 grün, 1 rot = weiterhin nur der geerbte
+  Issue-0112-Test (auch auf neuem main rot); `npm run lint` Exit 0,
+  `npm run typecheck` Exit 0. Der CI-Fehler an PR #174 (`lint-and-test`,
+  2408/2409) ist exakt dieser Vorbestand — dieser Branch führt keinen
+  neuen Roten ein.
 - 2026-07-29 — **Waiver:** Die Behebung des einzigen Befunds berührt nur
   den Tracker (neues Issue 0116, Log-Präzisierung), keine Datei, um die es
   in den Kriterien geht — die Wiederholungsrunde des Reviews entfällt nach
