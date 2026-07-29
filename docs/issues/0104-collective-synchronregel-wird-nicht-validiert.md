@@ -16,10 +16,13 @@ entry must always have the same number of selections of that entry as all
 other instances" (Beispiel im Wiki: wählt ein Ninja des Trupps die Climbing
 Claws, müssen alle Ninjas sie nehmen).
 
-Die Projekt-Doku (`battlescribe-data-format.md` §10) deckt bewusst nur den
-Mathematik-Schnitt („`collective` beeinflusst nur die *Darstellung*
-gestapelter Instanzen — die Kosten- und Constraint-Mathematik läuft immer
-durch") — über die Synchron-Prüfung sagt sie nichts. Die Engine liest
+Die Projekt-Doku (`battlescribe-data-format.md` §10) beschreibt die
+Synchronfunktion selbst durchaus (Funktion 2 „Synchronisierte Auswahl",
+inkl. Ninja-Beispiel und Kaskaden-Warnung); ob die Engine sie **prüfen**
+muss, sagt sie aber nicht — ihr Auswertungs-Kasten („`collective`
+beeinflusst nur die *Darstellung* gestapelter Instanzen — die Kosten- und
+Constraint-Mathematik läuft immer durch") deckt allein den
+Mathematik-Schnitt. Die Engine liest
 `collective` gar nicht (kein Vorkommen in `src/evaluator/`, nur in den
 Fixtures, z. B. `Mercenaries.cat` mit `collective="true"`); zwei
 Geschwister-Instanzen mit abweichender Wahl eines `collective`-Kindes
@@ -63,6 +66,15 @@ Acceptance criteria:
   deshalb vor diesem Issue.
 
 ## Log
+
+- 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
+  Intent korrigiert — §10 beschreibt die Synchronfunktion des Wikis bereits
+  (Funktion 2), es fehlt nur die Aussage zur Prüfpflicht. Zudem eingeordnet:
+  das Wiki rahmt `collective` als zwei „behaviours" des Referenzprogramms
+  (Auto-Synchronisation), das Wort „Validierung" fällt dort nicht — ob
+  Divergenz ein Verstoß ist oder durch Sync verhindert wird, lässt die
+  Quelle offen. Die „prüfen"-Entscheidung in Decisions bleibt davon
+  unberührt (normativer Wortlaut „must always have").
 
 ## Checkpoints
 

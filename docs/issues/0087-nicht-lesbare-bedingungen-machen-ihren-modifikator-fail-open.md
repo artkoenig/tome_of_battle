@@ -20,9 +20,11 @@ Fail-closed-Konvention (vgl. `UNRESOLVED_BUDGET`: „die Regel feuert nicht",
 Der Fall ist nicht nur theoretisch: laut vendored XSD ist `field` an einer
 Condition **optional**, und bei `instanceOf`/`notInstanceOf` sind `field` und
 `value` laut Wiki bedeutungslos („Has no effect where Type is instance
-of|not instance of"). Eine schema-konforme Condition ohne diese Attribute
-fällt heute durch die Lesbarkeits-Prüfung (`field === undefined ||
-Number.isNaN(value)`).
+of|not instance of"). Eine schema-konforme Condition ohne `field` fällt heute
+durch die Lesbarkeits-Prüfung (`field === undefined || Number.isNaN(value)`);
+eine Condition ohne `value` verletzt zwar die XSD (`value` ist dort
+`use="required"`, `Catalogue.xsd:427`), ist bei `instanceOf`/`notInstanceOf`
+laut Wiki aber ebenso bedeutungslos und fällt heute genauso durch.
 
 Repro (Audit 2026-07-28, gegen die echte Fassade): Condition
 `type="greaterThan" childId="…"` ohne `value`-Attribut → Condition verworfen
@@ -58,6 +60,13 @@ Acceptance criteria:
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
 
 ## Log
+
+- 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
+  Intent präzisiert. Die frühere Formulierung nannte eine Condition ohne
+  `field` **und/oder** `value` pauschal „schema-konform"; laut vendored XSD
+  ist nur `field` optional, `value` ist `use="required"`. Die Wiki-Semantik
+  (bedeutungslos bei `instanceOf`/`notInstanceOf`) gilt für beide Fälle,
+  an den Akzeptanzkriterien ändert sich nichts.
 
 ## Checkpoints
 

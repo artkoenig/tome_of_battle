@@ -692,8 +692,10 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 > **Sentinel `-1` = „unbegrenzt" — nur als hingeschriebener Wert.** Upstream ist der Sentinel
 > nirgends dokumentiert ([§15](#15-lücken-der-quelle)); aus den Daten belegt und in Issue 079
 > entschieden gilt: `-1` bedeutet „unbegrenzt" genau dort, wo er **hingeschrieben** steht — am
-> `value` eines `constraint`s, am `value` eines `set`-Modifiers auf einen Constraint und an
-> `defaultCostLimit` ([§5.3](#53-cost-types-kostenarten)). Reale Kataloge nutzen beide Richtungen:
+> `value` eines `constraint`s, am `value` eines `set`-Modifiers auf einen Constraint, an
+> `defaultCostLimit` ([§5.3](#53-cost-types-kostenarten)) und am eingestellten
+> Roster-`costLimit` (Issue 0096; dieselbe Aufzählung wie in
+> [§15](#15-lücken-der-quelle)). Reale Kataloge nutzen beide Richtungen:
 > `set value="-1"` hebt eine konkrete Grenze auf, und ein Rohwert `-1` wird per bedingtem `set`
 > auf einen konkreten Deckel gezogen (Border-Patrols-Muster). Ein **errechneter** negativer Wert
 > (`increment`/`decrement`/`multiply`) ist dagegen **nie** unbegrenzt — ein Max, das rechnerisch
@@ -811,7 +813,11 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 > prüft „ist das Kontingent eine Instanz dieses Detachments" (z. B. eine armeespezifische Variante),
 > kann die `forceEntry`-Id auf **zwei** Wegen benennen, und beide kommen real vor:
 > - **Selbst-gegatet:** die Id steht direkt in `scope` (`scope="<forceId>"`), `childId` bleibt leer
->   — das Idiom des „eigenen Punktelimits" aus [§5.6](#56-force-entries-detachments).
+>   oder trägt `"any"` — so gatet in den Fixture-Katalogen das Orcs-and-Goblins-Sonderheer
+>   „Mountain or Troll Country Waaagh!" seine Regeln (`scope="<forceId>" childId="any"`). Das
+>   „eigene Punktelimit" aus [§5.6](#56-force-entries-detachments) nutzt dagegen die
+>   **kanonische** Kodierung (`scope="force"` + eigene Id in `childId`), wie die realen
+>   Vampire-Counts-Sonderheere belegen.
 > - **Kanonisch:** `scope="force"` trägt das Literal-Keyword, die Id steht in `childId`
 >   (`scope="force" childId="<forceId>"`) — so gatet die „Definitive Edition" z. B. ihre
 >   Standard-vs.-Ironskin-Tribe-Regeln (`notInstanceOf` Ironskin Tribe).

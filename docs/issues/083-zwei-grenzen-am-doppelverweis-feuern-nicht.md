@@ -143,6 +143,16 @@ Acceptance criteria:
     unangekreuzt zählt „just `scope`'s `field`", nicht „nichts") zählt die
     Referenz solche Vorkommen dennoch — die wörtliche Eimer-Lesart der Engine
     weicht hier vom Referenzverhalten ab.
+- 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
+  alle Zitate und Katalog-Datenangaben des Issues verifiziert (Ids, Zeilen,
+  Flags — korrekt). Ein Hinweis für den Implementierer: das Wiki trägt hier
+  eine **unaufgelöste innere Spannung**. Der `shared="true"`-Satz stützt für
+  den Eintrags-Fall (`0aa08f91`) „zählt alle eigenen Vorkommen im Roster";
+  der `scope`-Satz („descendant selections of this constraint's parent
+  entry") ergäbe wörtlich genommen Ist 0 (nur Nachfahren, nie der Träger
+  selbst). AC 1 und AC 3 sind nur unter der `shared`-Lesart für
+  Eintrags-Träger vereinbar; das Wiki löst den Konflikt nirgends auf —
+  die Entscheidung gehört als Decision in den Lauf.
 
 - **2026-07-29, test-author (blind from the intent):** failing tests written
   and proven. `src/evaluator/constraints.carrierDescendants.test.js` (4 fail /

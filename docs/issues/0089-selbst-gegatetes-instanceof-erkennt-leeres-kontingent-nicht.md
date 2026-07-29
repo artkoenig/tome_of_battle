@@ -22,9 +22,13 @@ nichts bei (`src/evaluator/countIndex.js`). Die selbst-gegatete Form
 degeneriert so zur Selektionszählung: ein **gewähltes, aber leeres**
 Sonderheer gilt als „nicht Instanz seiner selbst".
 
-Repro (Audit 2026-07-28, gegen die echte Fassade): Vampire-Counts-Idiom
-„eigenes Punktelimit" (§5.6) — `min` über `limit::pts`, per Modifier mit
-`instanceOf scope="<eigene forceId>"` angehoben. Force gewählt mit einer
+Repro (Audit 2026-07-28, gegen die echte Fassade): dem §5.6-Idiom „eigenes
+Punktelimit" nachgestellt, aber in selbst-gegateter Kodierung — `min` über
+`limit::pts`, per Modifier mit `instanceOf scope="<eigene forceId>"`
+angehoben. (Die realen Vampire-Counts-Sonderheere kodieren kanonisch,
+`scope="force" childId="<forceId>"`; selbst-gegatete Conditions an einer
+`forceEntry` kommen im Fixture-Satz nur bei Orcs and Goblins vor —
+„Mountain or Troll Country Waaagh!", `scope="<forceId>" childId="any"`.) Force gewählt mit einer
 Einheit → Verstoß feuert (korrekt); Force gewählt, aber leer → kein Verstoß
 (Regel still nicht durchgesetzt). Ein `notInstanceOf` in dieser Kodierung
 feuert auf einem leeren Kontingent entsprechend fälschlich. Die kanonische
@@ -53,6 +57,17 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
+  Repro-Beschreibung korrigiert. Sie nannte das synthetische Repro
+  „Vampire-Counts-Idiom (§5.6)"; die realen VC-Sonderheere kodieren aber
+  kanonisch (`scope="force" childId="<forceId>"`, Fixture `Vampire Counts
+  (…).cat:29464 ff.`), selbst-gegatet ist im Fixture-Satz nur das
+  O&G-Sonderheer. Nebenbefund: §7.7 der bsdata-Doku trägt dieselbe
+  Fehlzuordnung („Selbst-gegatet: … das Idiom des ‚eigenen Punktelimits'
+  aus §5.6") — doku-interner Widerspruch zu §5.6, die Daten geben §5.6
+  recht; an den Menschen gemeldet. Entscheid des Menschen (2026-07-29):
+  direkt beheben — §7.7 nennt jetzt das reale O&G-Beispiel und verweist
+  für das §5.6-Idiom auf die kanonische Kodierung.
 - 2026-07-29 test-author: `src/evaluator/query.selfGatedInstanceOf.test.js`,
   23 tests — 6 RED (self-gated empty-force instanceOf/notInstanceOf + the 4
   AC3 equivalence cases involving the empty force), 17 green pins/controls

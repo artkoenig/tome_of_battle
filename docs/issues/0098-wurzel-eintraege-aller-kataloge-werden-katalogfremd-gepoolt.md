@@ -13,7 +13,10 @@ within must originate from a single catalogue." `docs/battlescribe-data-format.m
 §7.2 zieht daraus: ein Roster aus Katalog X ist gegen einen Datensatz ohne X
 nicht auswertbar. Die XSD kennt zudem `importRootEntries` am `catalogueLink`
 (Default `false`) — Wurzel-Einträge eines verlinkten Katalogs gehören nur
-dann zum Angebot, wenn es gesetzt ist.
+dann zum Angebot, wenn es gesetzt ist. (Diese Semantik ist aus Attributname
+und Default gefolgert; die XSD liefert nur Attribut + Default, Wiki und
+kanonische Doku erwähnen `importRootEntries` nicht — upstream unbelegt,
+§15-Lücke. Die Klärung gehört als Entscheidung in diesen Lauf.)
 
 Die Engine poolt stattdessen alles: `mergeCatalogues`
 (`src/evaluator/catalogSet.js:17`) konkateniert `entries`/`forces`/`categories`
@@ -60,6 +63,11 @@ Acceptance criteria:
   (die Bibliothek `Mercenaries.cat` trägt keine Wurzel-Selektionen).
 
 ## Log
+
+- 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
+  Intent ergänzt — die `importRootEntries`-Semantik ist eine Ableitung aus
+  Attributname/Default, keine dokumentierte Formataussage (Wiki und
+  kanonische Doku schweigen); als solche gekennzeichnet.
 
 ## Checkpoints
 
