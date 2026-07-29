@@ -233,6 +233,48 @@ zurückgegeben, die die Kriterien nicht entscheiden, statt sie zu raten:
     Einengungsschlüssel und hat deshalb gar nichts zugesagt, statt zu breit
     zuzusagen. Das ist die Lehre aus Issue 077, richtig angewandt.
 
+- **2026-07-29, Umsetzung — und ein Blocker, der eine ältere Lücke aufdeckte.**
+  - Umgesetzt in drei Teilen nach D2/D4/D6/D7: der Resolver sammelt Wurzel-Links
+    in eine **eigene** Sicht `rootEntryLinks` (nicht in die Wurzel-Definitionen,
+    D4); `evalTree` bekommt `synthesizeRootEntryLinkPhantoms`, dessen Anker
+    doppelt zugeschnitten ist — vorhandener `limitScopeFilter` **plus** neues
+    `ownLimitsOnly`, das die vom Ziel geerbten Grenzen auslässt (D2, genau die
+    dokumentierte Bruchstelle); `report.js` bekommt eine zweite Entdopplung über
+    `(Rahmen, aufgelöste Ziel-Id)` (D3/D7).
+  - **Der Implementer meldete sich blockiert statt zu raten** — richtig so. Das
+    Szenario sagte für Roster 03 („Ironskin Tribe", Bedingung greift nicht) die
+    Ankerart `offerAnchor` zu; die Engine liefert `mandatoryPhantom`. Alle
+    übrigen Felder stimmten, auch `isMandatoryUnmet: false`.
+  - **Selbst nachgeprüft, mit eigenem Probe-Katalog ohne einen einzigen
+    `entryLink`:** Wurzel-`selectionEntry`, `min="0" scope="force"`, leeres
+    Kontingent →
+    `anchorKind "mandatoryPhantom", effectiveMin 0, isMandatoryUnmet false,
+    violations: []`. Das Verhalten ist also **vorbestehend** und trifft die
+    Eintrags-Form genauso. D6 verbietet, die Link-Form davon abweichen zu
+    lassen.
+  - **Woher der Irrtum kam.** Der E2E-Autor leitete die Zusage aus dem
+    Präzedenzfall „Manbiters" in `offer-and-category-slots` ab — einem
+    Wurzel-Link, der `offerAnchor` trägt. Der Schluss trägt nicht: „Manbiters"
+    hat **gar keinen** `min`-Constraint, `32ed-…` hat einen, der nur auf 0
+    steht. Zwei verschiedene Fälle. Der Autor hat hier aus **Engine-Verhalten**
+    abgeleitet statt aus Katalogdaten — außerhalb seiner Leseerlaubnis, und
+    genau deshalb ging es schief.
+  - **Entschieden:** die Ankerart wird für diesen Fall **gar nicht** zugesagt —
+    weder `offerAnchor` noch `mandatoryPhantom`. Weder die Katalogdaten noch die
+    Kriterien dieses Issues entscheiden sie, und der `test-author` hatte sie
+    ausdrücklich ungepinnt gelassen. `isMandatoryUnmet: false` trägt die Regel
+    vollständig. Szenario, README und Testkatalog entsprechend korrigiert, mit
+    Verweis auf das neue Issue.
+  - **Nebenbefund, eigenes Issue 0108:** `AnchorKind.MANDATORY_PHANTOM` sagt im
+    Vertragstext „Pflichtdefinition (`min > 0`)", wird aber am *Vorhandensein*
+    einer MIN-Grenze aufgehängt, unabhängig vom effektiven Wert. Vertrag und
+    Verhalten gehen seit jeher auseinander. Nicht mitbehoben: der Fund betrifft
+    die `selectionEntry`-Form genauso und wäre dort eine Verhaltensänderung ohne
+    Auftrag.
+  - **Fakten nach der Auflösung:** `npx vitest run src/evaluator` → 54 Dateien,
+    732 Tests, Exit 0. `npx vitest run src/evaluator/e2e.testcatalog.test.js` →
+    131 Tests, Exit 0.
+
 ## Checkpoints
 
 ### Before implementation
