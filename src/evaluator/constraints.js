@@ -126,7 +126,17 @@ function evaluateLimit(limit, node, effective, ctx) {
     // werden darf, oder nur den Faehigkeitsdatensatz seines Slots speist. Diese
     // Schicht stellt die Unterscheidung bereit und deutet sie nicht: sie liest die
     // Ankerart des Knotens ab (`model.js`, {@link isReportableAnchorKind}).
-    isReportable: isReportableAnchorKind(node.anchorKind),
+    // Zusaetzlich ist die MIN-Grenze eines **effektiv versteckten** Traegers nie
+    // meldbar (`docs/battlescribe-data-format.md` §5.6, per Projektentscheidung
+    // Issue 0088 fuer alle Ankerarten): der Nutzer kann einen Verstoss ueber
+    // etwas, das ihm nicht angeboten wird, nie beheben. Der Filter haengt am
+    // `limit.kind` des einzelnen Ergebnisses — Max-Grenzen desselben Traegers
+    // melden weiter —, und nur an der Meldbarkeit: die Grenze bleibt voll
+    // ausgewertet, ihr Ergebnis speist den Faehigkeitsdatensatz unveraendert
+    // (der Angebots-Anker-Praezedenzfall, ADR-0035). Massgeblich ist das eigene
+    // effektive hidden des Traegers; versteckte Vorfahren zaehlen nicht.
+    isReportable: isReportableAnchorKind(node.anchorKind)
+      && !(limit.kind === ConstraintKind.MIN && effective.isHidden(node)),
     // Die **Messgroesse** der Grenze — ein Rohdatum der Einordnung, abgelesen am
     // gezaehlten Feld (`model.js`, {@link limitMeasureOfCountedField}). Sie steht
     // hier und nicht erst in der Einordnung, weil die roster-weite Budget-Regel

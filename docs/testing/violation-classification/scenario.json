@@ -213,7 +213,7 @@
     },
     {
       "file": "rosters/07-phantom-and-offer.ros",
-      "description": "Kontingent \"Clan Blood Dragons (VC-AB)\" mit den beiden Schaltern \"Allow Mercenaries\"/\"Allow Regiments of Renown\", sonst leer. Zwei Aussagen in einem Roster: (a) der Pflicht-Anker \"Army of Sylvania\" - ein Wurzel-Eintrag mit je einer unerfuellten min-1-Grenze in force- und in parent-Reichweite - liefert zwei abgeleitete Meldungen mit anchorKind=mandatoryPhantom, die sich nur im scopeKind unterscheiden; (b) der Angebots-Anker \"Manbiters\" traegt im Faehigkeits-Datensatz seine Autor-Meldung, steuert aber NICHTS zur Meldungsliste bei - weder diese Autor-Meldung noch die min-3-Grenze unterhalb des ebenfalls nur angebotenen \"Fell Bats\".",
+      "description": "Kontingent \"Clan Blood Dragons (VC-AB)\" mit den beiden Schaltern \"Allow Mercenaries\"/\"Allow Regiments of Renown\", sonst leer. Zwei Aussagen in einem Roster: (a) der Pflicht-Anker \"Army of Sylvania\" - ein Wurzel-Eintrag mit je einer unerfuellten min-1-Grenze in force- und in parent-Reichweite - ist in diesem Kontingent effektiv versteckt: seine beiden Min-Grenzen erzeugen KEINE Meldung (Issue 0088); (b) der Angebots-Anker \"Manbiters\" traegt im Faehigkeits-Datensatz seine Autor-Meldung, steuert aber NICHTS zur Meldungsliste bei - weder diese Autor-Meldung noch die min-3-Grenze unterhalb des ebenfalls nur angebotenen \"Fell Bats\".",
       "dataset": {
         "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
@@ -223,12 +223,11 @@
         ]
       },
       "expect": {
-        "firing": [
-          { "limitId": "1f2f-e5cc-d04d-162e", "actual": 0, "bound": 1 },
-          { "limitId": "e23f-0cea-11ac-9376", "actual": 0, "bound": 1 }
-        ],
+        "firing": [],
         "absent": [
-          "98c2-b213-2d60-6920"
+          "98c2-b213-2d60-6920",
+          "1f2f-e5cc-d04d-162e",
+          "e23f-0cea-11ac-9376"
         ],
         "capabilities": [
           {
@@ -247,38 +246,12 @@
           {
             "origin": "derivedLimit",
             "limitId": "1f2f-e5cc-d04d-162e",
-            "anchorDefId": "b48b-4a69-80f1-5d47",
-            "severity": "error",
-            "anchorKind": "mandatoryPhantom",
-            "anchorName": "Army of Sylvania",
-            "limitKind": "min",
-            "measure": "selectionCount",
-            "costTypeId": null,
-            "isPercent": false,
-            "scopeKind": "force",
-            "scopeTargetId": null,
-            "actual": 0,
-            "bound": 1,
-            "delta": 1,
-            "causes": []
+            "count": 0
           },
           {
             "origin": "derivedLimit",
             "limitId": "e23f-0cea-11ac-9376",
-            "anchorDefId": "b48b-4a69-80f1-5d47",
-            "severity": "error",
-            "anchorKind": "mandatoryPhantom",
-            "anchorName": "Army of Sylvania",
-            "limitKind": "min",
-            "measure": "selectionCount",
-            "costTypeId": null,
-            "isPercent": false,
-            "scopeKind": "parent",
-            "scopeTargetId": null,
-            "actual": 0,
-            "bound": 1,
-            "delta": 1,
-            "causes": []
+            "count": 0
           },
           {
             "origin": "authorMessage",

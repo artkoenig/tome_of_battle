@@ -13,14 +13,13 @@
   "rosters": [
     {
       "file": "rosters/01-blood-dragon-bretonnia-hidden-categories.ros",
-      "description": "Kontingent \"Clan Blood Dragons (VC-AB)\" mit den Schaltern \"Allow Mercenaries\"/\"Allow Regiments of Renown\" und einer Einheit Black Knights, die die Aufwertung \"Black Knights of Bretonnia\" traegt. Damit haelt die Bedingung der beiden categoryLink-Modifikatoren des forceEntry (atLeast 1 Auswahl von 6afd-186f-15da-94e0, scope=force): die Kategorie-Anker \"Mercenaries\" und \"Regiment of Renown\" sind verborgen. Nicht gewaehlte Optionen der Einheit (Musician, Standard Bearer) und nicht gewaehlte Wurzel-Eintraege ohne min-Grenze (Fell Bats, Dire Wolves, Manbiters) erscheinen als Angebots-Anker; \"Army of Sylvania\" dagegen traegt zwei min-1-Grenzen und ist daher ein Pflicht-Anker, dessen Grenzen feuern.",
+      "description": "Kontingent \"Clan Blood Dragons (VC-AB)\" mit den Schaltern \"Allow Mercenaries\"/\"Allow Regiments of Renown\" und einer Einheit Black Knights, die die Aufwertung \"Black Knights of Bretonnia\" traegt. Damit haelt die Bedingung der beiden categoryLink-Modifikatoren des forceEntry (atLeast 1 Auswahl von 6afd-186f-15da-94e0, scope=force): die Kategorie-Anker \"Mercenaries\" und \"Regiment of Renown\" sind verborgen. Nicht gewaehlte Optionen der Einheit (Musician, Standard Bearer) und nicht gewaehlte Wurzel-Eintraege ohne min-Grenze (Fell Bats, Dire Wolves, Manbiters) erscheinen als Angebots-Anker; \"Army of Sylvania\" dagegen traegt zwei min-1-Grenzen und ist daher ein Pflicht-Anker - in diesem Kontingent effektiv versteckt, weshalb seine Min-Grenzen nicht melden (Issue 0088); der Slot traegt weiterhin isMandatoryUnmet.",
       "expect": {
-        "firing": [
-          { "limitId": "1f2f-e5cc-d04d-162e", "actual": 0, "bound": 1 },
-          { "limitId": "e23f-0cea-11ac-9376", "actual": 0, "bound": 1 }
-        ],
+        "firing": [],
         "absent": [
-          "98c2-b213-2d60-6920"
+          "98c2-b213-2d60-6920",
+          "1f2f-e5cc-d04d-162e",
+          "e23f-0cea-11ac-9376"
         ],
         "capabilities": [
           {
@@ -149,14 +148,13 @@
     },
     {
       "file": "rosters/02-blood-dragon-plain-visible-categories.ros",
-      "description": "Derselbe Aufbau wie 01, nur OHNE die Aufwertung \"Black Knights of Bretonnia\". Die Bedingung der beiden categoryLink-Modifikatoren haelt nicht mehr (0 Auswahlen von 6afd-186f-15da-94e0 im Kontingent): \"Mercenaries\" und \"Regiment of Renown\" sind sichtbar. Die nicht mehr gewaehlte Aufwertung selbst erscheint als Angebots-Anker unter der Einheit - im Blood-Dragon-Kontingent sichtbar, weil deren hidden-Modifikator dort greift. \"Army of Sylvania\" bleibt auch hier Pflicht-Anker, nicht Angebot.",
+      "description": "Derselbe Aufbau wie 01, nur OHNE die Aufwertung \"Black Knights of Bretonnia\". Die Bedingung der beiden categoryLink-Modifikatoren haelt nicht mehr (0 Auswahlen von 6afd-186f-15da-94e0 im Kontingent): \"Mercenaries\" und \"Regiment of Renown\" sind sichtbar. Die nicht mehr gewaehlte Aufwertung selbst erscheint als Angebots-Anker unter der Einheit - im Blood-Dragon-Kontingent sichtbar, weil deren hidden-Modifikator dort greift. \"Army of Sylvania\" bleibt auch hier Pflicht-Anker, nicht Angebot - effektiv versteckt, seine Min-Grenzen melden nicht (Issue 0088).",
       "expect": {
-        "firing": [
-          { "limitId": "1f2f-e5cc-d04d-162e", "actual": 0, "bound": 1 },
-          { "limitId": "e23f-0cea-11ac-9376", "actual": 0, "bound": 1 }
-        ],
+        "firing": [],
         "absent": [
-          "98c2-b213-2d60-6920"
+          "98c2-b213-2d60-6920",
+          "1f2f-e5cc-d04d-162e",
+          "e23f-0cea-11ac-9376"
         ],
         "capabilities": [
           {
@@ -225,14 +223,13 @@
     },
     {
       "file": "rosters/03-lichemaster-offer-category-filter.ros",
-      "description": "Kontingent \"Army of the Lichemaster (WD#309-UK)\" mit einer Einheit Skeletons. Dieses forceEntry traegt KEINEN categoryLink auf \"Mercenaries\" (b640-...) oder \"Regiment of Renown\" (ee09-...). Wurzel-Eintraege mit passender Kategorie erscheinen weiterhin als Angebots-Anker (Fell Bats: Special; Dire Wolves: Core, dort per Modifikator verborgen) - der reine Regiment-of-Renown-Eintrag \"Manbiters\" dagegen nicht (Prosa-Negativfall, siehe README). \"Army of Sylvania\" ist auch hier Pflicht-Anker.",
+      "description": "Kontingent \"Army of the Lichemaster (WD#309-UK)\" mit einer Einheit Skeletons. Dieses forceEntry traegt KEINEN categoryLink auf \"Mercenaries\" (b640-...) oder \"Regiment of Renown\" (ee09-...). Wurzel-Eintraege mit passender Kategorie erscheinen weiterhin als Angebots-Anker (Fell Bats: Special; Dire Wolves: Core, dort per Modifikator verborgen) - der reine Regiment-of-Renown-Eintrag \"Manbiters\" dagegen nicht (Prosa-Negativfall, siehe README). \"Army of Sylvania\" ist auch hier Pflicht-Anker - effektiv versteckt, seine Min-Grenzen melden nicht (Issue 0088).",
       "expect": {
-        "firing": [
-          { "limitId": "1f2f-e5cc-d04d-162e", "actual": 0, "bound": 1 },
-          { "limitId": "e23f-0cea-11ac-9376", "actual": 0, "bound": 1 }
-        ],
+        "firing": [],
         "absent": [
-          "98c2-b213-2d60-6920"
+          "98c2-b213-2d60-6920",
+          "1f2f-e5cc-d04d-162e",
+          "e23f-0cea-11ac-9376"
         ],
         "capabilities": [
           {

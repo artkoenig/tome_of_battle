@@ -345,7 +345,10 @@ erlaubten Lord-/Core-Slots mit dem Punktelimit. Genau das zeigt das Beispiel in
 >   deklariert sein — beim Erstellen einer Liste müssen **beide Quellen** berücksichtigt werden.
 > - Ein `forceEntry` bzw. `categoryLink` mit `hidden="true"` (oder dynamisch per Modifier
 >   `field="hidden"`, siehe [§8](#8-kategorien--sichtbarkeit)) darf dem Nutzer **nicht** als Option
->   angeboten und dessen Mindestgrenzen dürfen **nicht** validiert werden.
+>   angeboten und dessen Mindestgrenzen dürfen **nicht** validiert werden. Per Projektentscheidung
+>   (Issue 0088) gilt das Validierungsverbot für **jede** effektiv versteckte Entität mit
+>   Min-Grenzen — auch `selectionEntry`/`selectionEntryGroup` —, denn ein Verstoß über etwas, das
+>   nicht angeboten wird, wäre für den Nutzer unbehebbar. Max-Grenzen bleiben davon unberührt.
 
 > **`forceEntry`-eigene Constraints/Modifier (eigenes Punktelimit).** Ein `forceEntry` kann —
 > zusätzlich zu seinen `categoryLinks` — **eigene** `constraints` und `modifiers` tragen (es erbt
@@ -920,7 +923,10 @@ auszublenden (in diesem Projekt ausgewertet von `src/solver/entryVisibility.js`)
 - **`primary="true"`** bestimmt den **Anzeige-Bucket** in der Roster-UI (genau eine pro Eintrag).
 - **`primary="false"`** sind unsichtbare Tag-Kategorien für die Validierung.
 - **`hidden`** blendet eine Entität aus; per Modifier `field="hidden"` kann die Sichtbarkeit
-  **dynamisch** werden (z. B. „Reittier X nur sichtbar, wenn Held Y gewählt").
+  **dynamisch** werden (z. B. „Reittier X nur sichtbar, wenn Held Y gewählt"). Die Min-Grenzen
+  einer effektiv versteckten Entität werden **nicht** validiert — die §5.6-Regel, per
+  Projektentscheidung (Issue 0088) verallgemeinert auf alle Ankerarten; wird die Entität per
+  Modifier wieder sichtbar, greifen sie wieder. Max-Grenzen gelten unabhängig von der Sichtbarkeit.
 - **Laufzeit-dynamische Kategoriezugehörigkeit.** Die Kategorie-Links eines Eintrags sind nicht
   zwingend statisch: Modifier mit `type="add"`/`type="remove"` und `field="category"` fügen eine
   Kategoriezugehörigkeit bedingt hinzu bzw. entfernen sie, und `type="set-primary"`/`type="unset-primary"`

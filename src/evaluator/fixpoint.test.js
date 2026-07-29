@@ -386,9 +386,11 @@ describe('Nach-Durchlauf: die synthetischen Anker bekommen ihre Werte nach der K
     const report = evaluate(CATALOGUE_XML, roster([selection(WARRIOR_ID, 1)]));
 
     // Zaehlte der Anker mit, laege der Ist-Wert bei 1 und die Pflicht waere erfuellt.
-    expect(report.violations).toContainEqual(
-      expect.objectContaining({ limitId: MIN_BANNER_ID, actual: 0, bound: 1 }),
-    );
+    // Abgelesen wird das am Faehigkeitsdatensatz, nicht an der Meldungsliste: der
+    // Anker ist hier effektiv versteckt, seine Min-Grenze darum nicht meldbar
+    // (Issue 0088) — voll ausgewertet wird sie trotzdem.
+    expect(slotByDefId(report, BANNER_ID)).toMatchObject({ current: 0, effectiveMin: 1, isMandatoryUnmet: true });
+    expect(report.violations.filter(violation => violation.limitId === MIN_BANNER_ID)).toHaveLength(0);
   });
 
   it('markiert bei konvergierenden Daten keinen einzigen Slot als instabil', () => {
