@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
-import { computeRosterCounts, getCategoryDisplayLimits, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, hasBlockingViolations, countBlockingViolations, ValidationSeverity } from '../../solver/validator';
+import { computeRosterCounts, getCategoryDisplayLimits, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, hasBlockingViolations, countBlockingViolations, ValidationSeverity, buildModifierEvalContext } from '../../solver/validator';
 import CategoryCountBadge from './CategoryCountBadge';
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatValidationError } from '../../i18n/formatValidationError';
@@ -44,7 +44,9 @@ function CategoryRequirementList({ roster, system }) {
   const force = roster.forces[0];
   const forceDef = findForceEntryById(system, force?.forceEntryId);
   const forceCategoryCounts = force?.id ? (categoryCounts[force.id] || {}) : {};
-  const displayContext = { roster, system, selectionCounts, forceCategoryCounts };
+  const displayContext = buildModifierEvalContext({
+    roster, system, categorySlices: { selectionCounts, forceCategoryCounts }
+  });
 
   return (forceDef?.categoryLinks || []).map(catLink => {
     if (isCategoryLinkHidden(catLink, { system, roster, selectionCounts, forceCategoryCounts })) {

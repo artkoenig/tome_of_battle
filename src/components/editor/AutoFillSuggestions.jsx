@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Sparkles, Plus, Wand2 } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique, getEffectiveModifiers, getEffectiveConstraintLimit, filterEntryScopedConstraints, autofillCandidateMax } from '../../solver/validator';
+import { resolveEntry, getOptionDisplayCost, computeRosterCounts, findEntryInSystem, getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique, getEffectiveModifiers, getEffectiveConstraintLimit, filterEntryScopedConstraints, autofillCandidateMax, buildModifierEvalContext } from '../../solver/validator';
 import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
 import { useTranslation } from '../../i18n/useTranslation';
 
@@ -40,15 +40,14 @@ export default function AutoFillSuggestions({
     
     const processSelection = (selection, forceId) => {
       const forceCategoryCounts = categoryCounts[forceId] || {};
-      const displayCtx = {
+      const displayCtx = buildModifierEvalContext({
         roster,
         system,
-        selectionCounts,
-        forceCategoryCounts,
+        categorySlices: { selectionCounts, forceCategoryCounts },
         selection: null,
         parentSelection: selection,
         parentCatalogueId: activeCatalogue.id
-      };
+      });
 
       const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
       const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);

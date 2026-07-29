@@ -4,7 +4,7 @@ import {
   calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
   mapSelectionTree, replaceSelectionById, computeRosterCounts, aggregateRosterCategoryCounts,
-  createSelectionFromDef as buildSelectionFromDef,
+  buildModifierEvalContext, createSelectionFromDef as buildSelectionFromDef,
   withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../solver/validator';
 import { useUndoableState } from './useUndoableState';
@@ -167,8 +167,15 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   const buildFactoryContext = (catalogueId) => {
     if (!system || !roster) return null;
     const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-    const forceCategoryCounts = aggregateRosterCategoryCounts(categoryCounts);
-    return { roster, system, selectionCounts, forceCategoryCounts, parentCatalogueId: catalogueId };
+    return buildModifierEvalContext({
+      roster,
+      system,
+      categorySlices: {
+        selectionCounts,
+        forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts)
+      },
+      parentCatalogueId: catalogueId
+    });
   };
 
   // Geteilte Selektions-Fabrik (SSOT, ADR-0022): system/resolveEntry werden injiziert,

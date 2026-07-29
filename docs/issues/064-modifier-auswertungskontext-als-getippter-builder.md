@@ -115,6 +115,18 @@ converted (it is a solver-internal flat build, test-safe).
   list is fully convertible test-free. Recorded as plan update above.
   Follow-up candidate for the human: allow one passthrough line per mock in
   a later run to finish the component conversions.
+- 2026-07-29 implementer round 2 (narrowed plan): done. New
+  `src/solver/modifierContext.js` (`buildModifierEvalContext`, modes counts |
+  categorySlices verbatim | none; counts+slices together throws); 15 sites
+  converted per the table in the agent report; facade export for the two
+  test-safe components. Surprise recorded: at the dual-use site
+  rosterValidator:338 the slices were NOT redundant next to counts —
+  `isSelectionEntryHidden` reads only slices; the site is split into two
+  built contexts (slice-mode + counts-mode) to stay byte-identical.
+  Suite 210 files / 2143 tests exit 0, identical to baseline; puppeteer E2E
+  exit 0; lint/typecheck/depcruise exit 0 (depcruise: only the pre-existing
+  solver cycle warning, unchanged); knip exit 1 before AND after with
+  identical finding set (warn-only).
 
 ## Checkpoints
 
