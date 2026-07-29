@@ -70,6 +70,15 @@ Sonderweg.
 
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
+- **BSData-Abgleich auf Weisung des Menschen (2026-07-29):** Das
+  BSData-Wiki (*Data structure overview*, Abschnitt Constraint) hat höchste
+  Priorität. Es sagt: `scope` „decides which entity should sum up all
+  `field`'s values of descendant selections of this constraint's parent
+  entry"; ob der Träger selbst mitzählt, entscheidet der Wortlaut nicht.
+  Die im Issue festgeschriebene Erwartung (Kriterium 2: Ist **110** = Träger
+  50 + Kind 60) bleibt maßgeblich — sie entspricht der aufgerollten
+  Kostenanzeige einer Auswahl in BattleScribe und dem ausgeführten
+  Audit-Repro. §9.4 dokumentiert die Träger-inklusive Lesart jetzt explizit.
 - **Nur die Kosten steigen auf, nicht die Selektionsanzahl.** Unter der Träger-Id
   steht weiterhin genau der Träger; wie viele *Auswahlen* unterhalb eines Trägers
   stehen, ist Issue 083 und wurde hier bewusst nicht mit beantwortet. Ein
