@@ -1,5 +1,5 @@
 ---
-status: active
+status: done
 branch: claude/issues-90-abarbeiten-7ymutc
 pr:
 ---
@@ -175,6 +175,24 @@ Sonderweg.
   Rahmen (Set-Dedup) — undokumentiert, in den Fixtures folgenlos.
 - **Befund-Trend:** Kriterium 3: 1 → 0. Testlücke (kein Kriterium): 1 → 0.
   Doku-Präzision (kein Kriterium): 0 → 1. Summe: 2 → 1.
+- **Review-Runde 3 (frischer Kontext, ganze Absicht, 2026-07-29):** alle 5
+  Kriterien erfüllt; Runde-1-Fix und Doppelzähl-Freiheit erneut unabhängig
+  bestätigt; §4.4-Umformulierung und Testkopf als exakt bestätigt, keine
+  Assertion verändert. 1 niedriger Befund ohne Kriteriums-Verstoß: §9.4
+  trägt noch die unbedingte Fassung („Ein Träger bringt seine Kosten ein"),
+  die am verschachtelten Träger im entfernten Rahmen nicht gilt (false→0,
+  Repro erneut ausgeführt). Suite 55 Dateien / 725 Tests Exit 0,
+  Lint/Typecheck Exit 0. **Triage: außerhalb der Absicht** (die Intent hat
+  diese Eimer-Semantik bewusst nicht entschieden) → per Regel an den
+  Menschen: als Issue 0108 ins Backlog gelegt, hier nicht gefixt.
+- **Befund-Trend gesamt:** Summe je Runde 2 → 1 → 1; Kriteriums-Verstöße
+  1 → 0 → 0. Beide Befunde der Runden 2/3 sind dieselbe Klasse
+  (Doku-Präzision am unentschiedenen Rand) und leben jetzt in Issue 0108.
+- **Kein PR geöffnet:** Der Mensch hat „stop nach diesem Issue" verfügt;
+  die Arbeit liegt gepusht auf dem Sammel-Branch
+  `claude/issues-90-abarbeiten-7ymutc` (Abweichung „ein Issue = ein Branch
+  = ein PR" ist in Issue 0106 begründet). PR-Eröffnung und Merge sind
+  Sache des Menschen; das `pr:`-Feld bleibt deshalb leer.
 
 ## Checkpoints
 
@@ -207,3 +225,16 @@ Sonderweg.
 
 ## Retro
 
+- **Was im Weg stand:** (1) Ein Container-Neustart hat den ersten
+  Review-Agenten still getötet — erst der Frische-Check der Ausgabedatei hat
+  es aufgedeckt; Kontrolltermine (send_later) haben sich als Absicherung
+  bewährt. (2) Die Formulierung „in jedem Rahmen" hat zwei Review-Runden
+  nacheinander an Nachbarsätzen ausgelöst (§4.4, dann §9.4) — eine
+  Universal-Aussage in der Doku braucht denselben Randfall-Blick wie Code.
+- **Was sich bewährt hat:** Tests-vor-Code auch für den Runde-1-Fix (3 rot →
+  grün ohne Teständerung); die Doppelzähl-Jagd zweier unabhängiger Reviews
+  blieb ergebnislos — das Set-Dedup-Design trägt. Der Befund-Trend je
+  Kriterium machte sichtbar, dass ab Runde 2 nur noch Doku-Ränder offen
+  waren.
+- **Vorschlag:** keiner ans Regelwerk; die offene Randsemantik ist als
+  Issue 0108 beim Menschen.

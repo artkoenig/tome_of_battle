@@ -1,5 +1,5 @@
 ---
-status: active
+status: done
 branch: claude/issues-90-abarbeiten-7ymutc
 pr:
 ---
@@ -94,6 +94,11 @@ Dokument den ganzen Baum inklusive Wurzel absucht.
   `npm run typecheck` (tsc --noEmit) Exit-Code 0. Der Puppeteer-E2E-Teil von
   `npm test` wurde auf Anweisung dieser Session nicht ausgeführt.
 
+- **Kein PR geöffnet:** Arbeit gepusht auf dem Sammel-Branch
+  `claude/issues-90-abarbeiten-7ymutc` (Abweichung in Issue 0106 begründet);
+  PR und Merge sind Sache des Menschen („stop nach diesem Issue“,
+  2026-07-29), das `pr:`-Feld bleibt leer.
+
 ## Checkpoints
 
 ### Before implementation
@@ -135,3 +140,8 @@ Dokument den ganzen Baum inklusive Wurzel absucht.
   Namensräume — das BattleScribe-Schema kennt keinen davon.
 
 ## Retro
+
+- Glatter Lauf: Tests zuerst (2 rot), Fix, Review ohne Befund. Einzige
+  offene Flanke: die Chrome-Einbettungsform ist in jsdom nachgebaut, nicht
+  im echten Browser gemessen — eine spätere Puppeteer-fähige Session kann
+  das nachziehen (im Issue als Annahme festgehalten).

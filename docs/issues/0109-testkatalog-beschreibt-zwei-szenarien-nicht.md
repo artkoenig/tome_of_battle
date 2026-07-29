@@ -1,5 +1,5 @@
 ---
-status: active
+status: done
 branch: claude/issues-90-abarbeiten-7ymutc
 pr:
 ---
@@ -86,6 +86,11 @@ Acceptance criteria:
   README bestätigt. Fix nur im Tracker-Dokument → Wiederholungs-Review
   per Regel-Waiver übersprungen.
 
+- **Kein PR geöffnet:** Arbeit gepusht auf dem Sammel-Branch
+  `claude/issues-90-abarbeiten-7ymutc` (Abweichung in Issue 0106 begründet);
+  PR und Merge sind Sache des Menschen („stop nach diesem Issue“,
+  2026-07-29), das `pr:`-Feld bleibt leer.
+
 ## Checkpoints
 
 ### Before implementation
@@ -111,3 +116,9 @@ Acceptance criteria:
   Frisch-Kontext-Review prüft das gegen.
 
 ## Retro
+
+- Reine Doku-Änderung, Review als einziges Gate hat funktioniert (1 Befund:
+  Zahlendreher im eigenen Log — behoben per Tracker-Waiver). Die
+  Drift-Ursache (Handpflege ohne Gate) bleibt bewusst bestehen; ob ein
+  billiges Vollständigkeits-Gate gewollt ist, wäre eine Frage an den
+  Menschen für einen eigenen Lauf.
