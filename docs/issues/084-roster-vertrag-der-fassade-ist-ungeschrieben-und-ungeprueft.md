@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-084
 pr:
 ---
 
@@ -113,9 +113,21 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — write the link-id rule at the public
+  edge, pin the two uncovered behaviours (slot merge, unresolvable link id)
+  with expectations that go red on regression.
+- What surprised me? The Decisions already carry most of the thinking: F3 is
+  defused (a roster naming a link from an unloaded catalog was never valid,
+  §7.2/§15), so criterion 3 leans strongly toward documenting
+  `unresolvedDefinition` as the honest answer — no engine fallback.
+  Recorded as the default for this run.
+- What am I assuming without having verified it? That the criterion-2
+  expectation can be expressed against the facade report (occupied slot
+  under link id + targetDefId, absence of the phantom) without new engine
+  work — issue 076 built the behaviour, only the pin is missing. And that
+  the two Log observations (:: id paths, nested forces flattening) remain
+  OUT of scope — they are adapter/contract questions for the human, this
+  run only documents and pins the existing contract.
 
 ### Before the PR
 
