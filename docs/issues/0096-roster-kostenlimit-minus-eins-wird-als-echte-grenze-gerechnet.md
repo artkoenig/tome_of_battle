@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/new-session-jnwa1m-0096
+pr: https://github.com/artkoenig/tome_of_battle/pull/154
 ---
 
 # Roster-Kostenlimit −1 wird als echte Grenze gerechnet
@@ -42,21 +42,86 @@ Acceptance criteria:
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28); Codepfade verifiziert. Ob der Produktiv-Adapter −1
   durchreicht, hängt am (ungeschriebenen) Roster-Vertrag — siehe Issue 084.
+- **Default (unanswered, human asleep):** ein eingestelltes Limit von 0 bleibt
+  eine echte Grenze — die Sentinel-Konvention der Engine
+  (`unlimitedFromSentinel`, `model.js:426`) behandelt nur exakt −1 als
+  „kein Limit", und dieses Issue übernimmt sie unverändert für den
+  Roster-Pfad.
 
 ## Log
+
+- 2026-07-28 test-author: `src/evaluator/rosterBudget.unlimitedSentinel.test.js`,
+  7 tests (4 failing on the −1-as-real-bound behaviour, 3 marked controls
+  passing: other negatives stay real bounds, real limits keep working, .ros
+  wiring proven live). Sentinel grounding: `unlimitedFromSentinel`
+  (`model.js:426`) maps only exactly −1. Open edge "limit 0" left untested —
+  default recorded under Decisions. Exact diagnostic `reason` for the
+  criterion-2 path deliberately left open to the implementer.
+- 2026-07-28 implementer: single seam `createRosterBudget`
+  (`rosterBudget.js`, +18/−2) — filters sentinel entries via
+  `unlimitedFromSentinel`, so `entries()` skips them (budget rule silent),
+  `get()` returns undefined (existing `NOT_BUDGETED` fail-closed path), and
+  the facade `.ros` path is covered for free. No changes to `budget.js`,
+  `query.js` or `rosParser.js`. 7/7 target tests green; `npx vitest run`
+  211 files / 2150 tests exit 0; puppeteer E2E "ALL UI TESTS PASSED" exit 0;
+  lint/typecheck exit 0. Assumption recorded: `Infinity` as configured value
+  also lands on the unbudgeted path (consistent with unlimited semantics;
+  BattleScribe never writes it).
+- 2026-07-28 review round 1 (fresh context): 1 finding, fixed — the sentinel
+  contract enumeration ("genau drei Stellen", "Aufrufer sind …") in
+  `model.js:392-421` and the §15 gap table in
+  `docs/battlescribe-data-format.md` became stale with the new caller; both
+  now name the roster `costLimit` place and the rosterBudget caller
+  (Issue 0096). Reviewer independently re-established all exit-code facts,
+  proved the tests fail on origin/main (4/3 exactly as authored), verified
+  the single-caller seam and the fail-closed percent-denominator path.
+  Criteria 1-4 all judged met.
+- 2026-07-28 review round 2 (fresh context, whole intent): 0 findings —
+  trend 1 → 0. All exit-code facts re-established independently (2150 unit
+  tests, puppeteer E2E, lint, typecheck, depcruise all exit 0); red-proof
+  repeated in a throwaway worktree on origin/main (4 failed / 3 controls);
+  round-1 comment fix verified true by grep (three callers, four written
+  places).
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — mirror the reader's existing
+  `-1 → null` sentinel mapping (`catalogReader.js:809`) onto the roster path
+  so the budget rule and `limit::` queries see "no limit" instead of −1.
+- What surprised me? Nothing yet; the catalog side already solved the same
+  problem, so the target semantics ("unbudgeted cost type", fail-closed
+  `limit::` path) exist and are tested.
+- What am I assuming without having verified it? That mapping −1 (and any
+  negative value) to null at the roster boundary (`rosterBudget.js`) is the
+  single right seam — and that no existing fixture `.ros` relies on a
+  negative limit being enforced. The test-author and implementer must check
+  `budget.js`, `query.js` and `rosParser.js` call paths for a second seam.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — all four criteria met, proven by
+  tests that are red on origin/main and green here, plus two fresh-context
+  review rounds (1 → 0 findings).
+- What surprised me? How small the right seam was: one filter in the budget
+  constructor covered all three consumers; the only collateral was two stale
+  sentinel enumerations, caught by review round 1.
+- What am I assuming without having verified it? That the production adapter
+  (Issue 084's territory) will pass `.ros` costLimits into the facade
+  unmapped — if it maps −1 itself someday, the engine seam stays correct
+  either way. No version bump: evaluator not yet wired to the UI, nothing
+  user-visible.
 
 ## Retro
+
+- The test-author's decision to leave the criterion-2 diagnostic `reason`
+  open was exactly right — the implementer reused `NOT_BUDGETED` and no test
+  needed changing. Leaving representation freedom in black-box tests kept
+  the seam choice free.
+- The review's only finding was contract-comment drift ("genau drei
+  Stellen") — a recurring pattern this session (see 0103's stale JSDoc
+  observation): exhaustive enumerations in comments go stale silently.
+  Worth considering in metis: prefer pointing at the single owner over
+  enumerating callers.
+- Two rounds sufficed; convergence 1 → 0.

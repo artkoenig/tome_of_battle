@@ -391,9 +391,10 @@ export const SUSPENDED = Symbol('suspended');
 /**
  * Der BattleScribe-Katalogwert, mit dem ein **hingeschriebener** Grenz- oder
  * Vorgabewert „unbegrenzt" bedeutet (`docs/battlescribe-data-format.md` §15,
- * Issue 079). Er gilt an genau drei Stellen: am Roh-`value` einer Grenze
- * (`constraint`), am Wert eines `set`-Modifikators auf eine Grenze und an
- * `defaultCostLimit` (XSD-Vorgabe, Catalogue.xsd:89). Ein **errechneter**
+ * Issue 079). Er gilt an genau vier Stellen: am Roh-`value` einer Grenze
+ * (`constraint`), am Wert eines `set`-Modifikators auf eine Grenze, an
+ * `defaultCostLimit` (XSD-Vorgabe, Catalogue.xsd:89) und am eingestellten
+ * Roster-`costLimit` (Issue 0096). Ein **errechneter**
  * negativer Wert (increment/decrement/multiply) ist nie unbegrenzt — deshalb
  * wird der Sentinel ausschliesslich ueber {@link unlimitedFromSentinel} beim
  * Lesen des hingeschriebenen Werts gedeutet, nie am wirksamen Endwert. Das
@@ -418,7 +419,8 @@ export const UNLIMITED = Infinity;
  * Katalogwerts auf {@link UNLIMITED} um; jeder andere Wert (auch `NaN`)
  * passiert unveraendert. Die **eine** Stelle, an der das Literal `-1` als
  * „unbegrenzt" gelesen wird — Aufrufer sind der Katalog-Leser (Roh-`value`
- * einer Grenze, `defaultCostLimit`) und der `set`-Handler auf Grenzen.
+ * einer Grenze, `defaultCostLimit`), der `set`-Handler auf Grenzen und der
+ * Roster-Budget-Konstruktor (eingestelltes `costLimit`, Issue 0096).
  *
  * @param {number} value  der hingeschriebene, bereits geparste Zahlwert.
  * @returns {number}
