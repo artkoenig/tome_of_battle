@@ -649,7 +649,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 |----------|-------|-----------|
 | `type` | `min` \| `max` | Untere oder obere Grenze. |
 | `field` | `selections` \| `forces` \| *`<costTypeId>`* | Was gezählt/summiert wird: Anzahl Auswahlen, Anzahl Forces oder die Summe einer Kostenart. |
-| `scope` | `parent` \| `roster` \| `force` \| `category` \| `self` | Bezugsrahmen der Zählung. |
+| `scope` | `parent` \| `roster` \| `force` \| `category` \| `self` \| `primary-catalogue` | Bezugsrahmen der Zählung (`primary-catalogue` ist kein Zählrahmen, siehe den Kasten unten). |
 | `value` | Zahl | Der Grenzwert (`-1.0` = unbegrenzt, siehe den Sentinel-Kasten unten). |
 | `percentValue` | `true`/`false` | Ob `value` als Prozentsatz zu interpretieren ist. |
 | `shared` | `true`/`false` | Ob der gezählte Wert über alle Link-Instanzen geteilt wird oder pro Instanz gilt. `true`: die Summe umfasst **alle** Auswahlen dieses shared entry im Roster; `false`: sie wird **je Verweis-Instanz** gerechnet ([BSData-Wiki, *Data structure overview*](https://github.com/BSData/catalogue-development/wiki/Data-structure-overview)). |
@@ -699,6 +699,40 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 > (`increment`/`decrement`/`multiply`) ist dagegen **nie** unbegrenzt — ein Max, das rechnerisch
 > auf `-1` fällt, heißt „nichts erlaubt", nicht „alles erlaubt". Arithmetik auf einer unbegrenzten
 > Grenze lässt sie unbegrenzt; ein späterer `set` auf einen konkreten Wert überschreibt.
+
+<a id="scope-primary-catalogue"></a>
+
+> **`scope="primary-catalogue"` — das Armeebuch, kein Zählrahmen.** Upstream ist dieses
+> Schlüsselwort **nirgends** dokumentiert: das Wiki zählt `parent|roster|force|primary category`
+> und Vorfahren-Ids auf, die XSD typt `scope` als nackten String (`Catalogue.xsd:426`). Aus den
+> Daten belegt und in Issue 077 entschieden gilt: **`primary-catalogue` bezeichnet das Armeebuch
+> — den `<catalogue id=…>`, aus dem das umschließende Kontingent stammt.** Die Frage lautet nicht
+> „wie viele?", sondern „ist es dieses?"; der Rahmen ist deshalb kein Zählrahmen, sondern eine
+> **Identitätsprüfung** gegen die in `childId` genannte Katalog-Wurzel-Id. Drei Belege aus den
+> eingefrorenen Fixture-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`, 27 Vorkommen:
+> 7 in der `.gst`, 20 in `Mercenaries (…).cat`):
+> - Alle 27 stehen an einer `condition` (`instanceOf`/`notInstanceOf`, `field="selections"`), nie
+>   an einem `constraint` oder `repeat`, und **jede** `childId` ist eine Katalog-Wurzel-Id
+>   (`731d-5b13-2a92-5427` = Ogre Kingdoms, `4049-c46d-7f80-44fb` = Orcs and Goblins,
+>   `4d73-5ab0-9020-403c` = Vampire Counts). Keine dieser Ids benennt irgendwo einen Eintrag,
+>   eine Kategorie oder ein Kontingent.
+> - Nur unter dieser Deutung lesen sich die Regeln richtig: Maneaters kosten außerhalb einer
+>   Ogerarmee einen Rare-Slot extra und sind in der Ogerarmee versteckt; Kampagnen-Einträge der
+>   `.gst` werden nur für benannte Armeebücher sichtbar.
+> - Der Autor sagt es selbst: die Bedingung an `categoryEntry "Chariot"` trägt den Kommentar
+>   „Tomb Kings may have more than one Chariot" an einem `notInstanceOf childId="…"
+>   childName="Tomb Kings"`; auch die übrigen `childName` sind Armeebuch-Namen.
+>
+> Die Semantik der Engine (`src/evaluator/query.js`) folgt daraus: Treffer ⇒ 1, anderes Armeebuch
+> ⇒ 0, `childId` leer (Prozent-Nenner „alles im Rahmen") ⇒ 1, denn der Rahmen hat genau **einen**
+> Katalog. `shared="false"` verengt ihn nicht — ein Katalog wird durch eine Instanz nicht enger.
+> Eine `childId`, deren Katalog im Datensatz gar nicht geladen ist, ist ein schlichter
+> Nicht-Treffer und kein Datenfehler. Lässt sich das Armeebuch nicht bestimmen — keine
+> umschließende Force, oder ihre Definition steht in der `.gst` statt in einem Armeebuch —, meldet
+> die Engine `unresolvedScope` und wertet fail-closed, statt still ein Armeebuch anzunehmen.
+> Welches Kontingent gemeint ist, entscheidet der Standort der Query; **welcher Katalog** ein
+> Kontingent deklariert hat, kommt aus der Herkunft seiner Definition, nicht aus dem
+> `catalogueId`-Attribut der `.ros` (Issue 077, Decisions).
 
 ### 7.7 Modifier, Condition, Condition Group, Repeat
 
@@ -757,7 +791,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 |----------------------|-----------|
 | `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`. |
 | `field` | Was verglichen wird — z. B. `selections`, eine Kostenart oder `limit::<costTypeId>` (das **Kostenlimit** der Roster). |
-| `scope` | Bezugsrahmen (`roster`, `force`, `parent`, …). |
+| `scope` | Bezugsrahmen (`roster`, `force`, `parent`, …) — dazu `primary-catalogue`, das Armeebuch des umschließenden Kontingents ([Kasten in §7.6](#scope-primary-catalogue)). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
 | `value` | Vergleichswert. |
 | `percentValue` | `true`/`false` — ob `value` als **Prozentsatz** des im Rahmen gezählten Nenners zu lesen ist (die XSD trägt das Attribut an der gemeinsamen `QueryBase`, es gilt also für Constraint, Condition und Repeat gleichermaßen; gleiche Nenner- und Rundungskonvention wie bei Prozent-Grenzen, [§7.6](#76-constraint)). Bei `instanceOf`/`notInstanceOf` ohne Wirkung (Wiki: *„has no effect"*). |
@@ -1263,7 +1297,7 @@ Lücken, die uns bisher konkret getroffen haben:
 |-------|-----------|--------------------|
 | **`.ros`-Struktur** | Die Abschnitte *Roster*, *Force* und *Selection* stehen im Wiki als `TODO`. Es gibt **keine** Aussage darüber, welche Id (`entryId`, `entryLinkId`, `entryGroupId`) die Identität einer Auswahl trägt. | Issue 076 — welche Id der Roster-Adapter binden soll |
 | **Grenze am Verweis oder am Ziel** | Belegt ist nur, dass ein `entryLink` eigene `constraint`s tragen darf und dass ein Modifier am Link dessen Grenzwerte ändert. Ob eine am Link deklarierte Grenze *für den Link* oder *für das Ziel* gilt, steht nirgends. | Issue 076 |
-| **`scope="primary-catalogue"`** | Die Aufzählung kennt `parent\|roster\|force\|primary category` und Vorfahren-Ids — `primary-catalogue` kommt nicht vor, obwohl reale Kataloge es verwenden. | Issue 077 |
+| **`scope="primary-catalogue"`** | Die Aufzählung kennt `parent\|roster\|force\|primary category` und Vorfahren-Ids — `primary-catalogue` kommt nicht vor, obwohl reale Kataloge es verwenden. | [Der Kasten in §7.6](#scope-primary-catalogue) beschreibt die in Issue 077 aus den Daten belegte Semantik: das Armeebuch des umschließenden Kontingents, als Identitätsprüfung statt als Zählrahmen. |
 | **`type` am `entryLink`** | Dass ein `selectionEntry` ein `type` (`unit\|model\|upgrade`) trägt, ist dokumentiert. Ob ein Verweis den Typ seines Ziels erbt, nicht. | Issue 078 |
 | **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | [§7.6](#76-constraint) dieses Dokuments beschreibt die in Issue 079 aus den Daten belegte Semantik: `-1` = unbegrenzt nur als **hingeschriebener** Wert (Constraint-`value`, `set`-Modifierwert auf eine Grenze, `defaultCostLimit`, eingestelltes Roster-`costLimit` — Issue 0096); errechnete negative Werte sind kein Sentinel. |
 | **Modifier-Typen `add`/`remove`** | Das Wiki kennt nur `Increment\|Decrement\|Set\|Append`. Reale Kataloge verwenden `add`/`remove` für Kategoriezugehörigkeit und `multiply`, `prepend`, `set-primary`/`unset-primary`. | §7.7 dieses Dokuments beschreibt sie aus den Daten, nicht aus der Quelle |

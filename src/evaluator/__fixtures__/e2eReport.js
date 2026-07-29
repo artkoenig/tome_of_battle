@@ -18,19 +18,30 @@ export function violationOf(report, limitId) {
 
 /**
  * Alle Diagnosen des Berichts, die auf eine Art (`kind`) und — optional — auf ein
- * konkretes `targetId`/`defId` passen. Ein nicht gesetztes Feld schraenkt nicht ein.
+ * konkretes `targetId`/`defId`/`scope` passen. Ein nicht gesetztes Feld schraenkt
+ * nicht ein.
  *
- * @param {{ diagnostics: Array<{ kind: string, targetId?: string, defId?: string }> }} report
+ * **Warum `scope` einengbar sein muss.** Eine Diagnose-Art sagt fuer sich genommen
+ * oft zu wenig: `unresolvedScope` entsteht fuer *jeden* Bezugsrahmen, den die
+ * Engine nicht aufloest. Eine Aussage „dieser eine Rahmen loest jetzt auf" liesse
+ * sich ohne diese Einschraenkung nur als „**kein** Rahmen des ganzen Berichts
+ * bleibt unaufgeloest" schreiben — und die faellt ueber jeden unabhaengigen,
+ * noch offenen Rahmen desselben Datensatzes (Issue 077 gegen Issue 0086). Die
+ * Einschraenkung trennt die beiden Aussagen, statt Szenarien aneinander zu
+ * koppeln, die einander nichts angehen.
+ *
+ * @param {{ diagnostics: Array<{ kind: string, targetId?: string, defId?: string, scope?: string }> }} report
  *   Der Bericht der Fassade `evaluate`.
  * @param {string} kind Die gesuchte Diagnose-Art (SSOT-Wert aus `DiagnosticKind`).
- * @param {{ targetId?: string, defId?: string }} [spec] Optionale Ziel-Einschraenkung.
- * @returns {Array<{ kind: string, targetId?: string, defId?: string }>} Die passenden Diagnosen.
+ * @param {{ targetId?: string, defId?: string, scope?: string }} [spec] Optionale Einschraenkung.
+ * @returns {Array<{ kind: string, targetId?: string, defId?: string, scope?: string }>} Die passenden Diagnosen.
  */
-export function diagnosticsMatching(report, kind, { targetId, defId } = {}) {
+export function diagnosticsMatching(report, kind, { targetId, defId, scope } = {}) {
   return report.diagnostics.filter(diagnostic => {
     if (diagnostic.kind !== kind) return false;
     if (targetId !== undefined && diagnostic.targetId !== targetId) return false;
     if (defId !== undefined && diagnostic.defId !== defId) return false;
+    if (scope !== undefined && diagnostic.scope !== scope) return false;
     return true;
   });
 }

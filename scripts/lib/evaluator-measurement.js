@@ -148,14 +148,15 @@ export function measureEvaluation(dataset, roster) {
   // und packt sein Ergebnis engine-intern aus, um die folgenden Abschnitte einzeln
   // messen zu koennen.
   const preparation = timed(() => prepareDataset(dataset));
-  const { resolved, diagnostics: datasetDiagnostics } = PreparedDataset.contentsOf(preparation.value);
+  const { resolved, primaryCatalogueByForceDefId, diagnostics: datasetDiagnostics } =
+    PreparedDataset.contentsOf(preparation.value);
 
   // (b) Iterierte Auswertung: Baumphase 1, Fixpunktrunden ueber die realen Knoten,
   // finaler Index.
   const iterated = timed(() => {
     const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
     const { effective, diagnostics: fixpointDiagnostics, rounds, converged, unstableNodes } =
-      evaluateToFixpoint(root, resolved.categoryIds, budget);
+      evaluateToFixpoint(root, resolved.categoryIds, budget, primaryCatalogueByForceDefId);
     const index = buildIndex(root, effective);
     return {
       root,
@@ -179,13 +180,15 @@ export function measureEvaluation(dataset, roster) {
   // „(b)+(c) nachher" macht die Wirkung dieser Entscheidung nachweisbar.
   const postPass = timed(() => {
     extendBaseEffectiveState(effective, attachOfferAnchors(root, resolved));
-    return applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget);
+    return applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget, primaryCatalogueByForceDefId);
   });
 
   // (d) Grenzen-Auswertung und Berichtsbau.
   const constraintsAndReport = timed(() => {
     const constraintDiagnostics = [];
-    const results = evaluateConstraints(root, index, effective, resolved.categoryIds, constraintDiagnostics, budget);
+    const results = evaluateConstraints(
+      root, index, effective, resolved.categoryIds, constraintDiagnostics, budget, primaryCatalogueByForceDefId,
+    );
     const budgetViolations = evaluateRosterBudget(index, budget);
     const diagnostics = [
       ...datasetDiagnostics,

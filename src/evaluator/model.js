@@ -102,15 +102,21 @@ export const BudgetLimitUnresolvedReason = Object.freeze({
 /**
  * Bezugsrahmen-Schluesselwoerter (Scope) einer Query
  * (`docs/evaluator-architecture.md` §4.1: `ScopeKeyword { ROSTER, FORCE, PARENT,
- * SELF }`). Ein Scope, der keines dieser Woerter ist, wird als **ID** gelesen:
- * eine Eintrags-ID (naechster Vorfahre mit dieser ID) oder eine Kategorie-ID
- * (armeeweiter Kategorierahmen).
+ * SELF, PRIMARY_CATALOGUE }`). Ein Scope, der keines dieser Woerter ist, wird als
+ * **ID** gelesen: eine Eintrags-ID (naechster Vorfahre mit dieser ID) oder eine
+ * Kategorie-ID (armeeweiter Kategorierahmen).
+ *
+ * `PRIMARY_CATALOGUE` faellt aus der Reihe: er ist **kein Zaehlrahmen**. Ein
+ * Katalog ist kein Knoten des Instanzbaums, also findet ihn keine Zaehlung; die
+ * Frage lautet „ist das Armeebuch des umschliessenden Kontingents dieses hier?"
+ * und wird als Identitaetspruefung beantwortet (`query.js`, Issue 077).
  */
 export const ScopeKeyword = Object.freeze({
   ROSTER: 'roster',
   FORCE: 'force',
   PARENT: 'parent',
   SELF: 'self',
+  PRIMARY_CATALOGUE: 'primary-catalogue',
 });
 
 /**
@@ -368,17 +374,23 @@ export function limitMeasureOfCountedField(field) {
  * nicht an. Genau dieses Ansehen waere der Rateschritt, den die Oberflaeche nicht
  * tun soll; die Einordnung nimmt ihn ihr ab.
  *
- * Die vier Schluesselwort-Werte sind die aus {@link ScopeKeyword} (dieselbe eine
+ * Die Schluesselwort-Werte sind die aus {@link ScopeKeyword} (dieselbe eine
  * Quelle, kein zweiter Wertevorrat); `ENTRY_ID` und `CATEGORY_ID` benennen die
  * beiden ID-Faelle, die das Query-Primitiv unterscheidet: eine Eintrags-ID loest
  * auf den naechsten Vorfahren mit dieser ID auf, eine Kategorie-ID auf den
  * armeeweiten Kategorierahmen (`query.js`, §3.3).
+ *
+ * `PRIMARY_CATALOGUE` ist dabei der einzige Rahmen, der auf keinen Baumknoten
+ * zeigt: er benennt das Armeebuch des umschliessenden Kontingents (Issue 077).
+ * Die Oberflaeche unterscheidet ihn wie jeden anderen Wert dieser geschlossenen
+ * Aufzaehlung — sie muss ihn nur nicht als Slot-Pfad lesen.
  */
 export const ScopeKind = Object.freeze({
   ROSTER: ScopeKeyword.ROSTER,
   FORCE: ScopeKeyword.FORCE,
   PARENT: ScopeKeyword.PARENT,
   SELF: ScopeKeyword.SELF,
+  PRIMARY_CATALOGUE: ScopeKeyword.PRIMARY_CATALOGUE,
   ENTRY_ID: 'entryId',
   CATEGORY_ID: 'categoryId',
 });

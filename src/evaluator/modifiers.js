@@ -666,14 +666,15 @@ function applyCarrierModifiers(scope, subject) {
  *
  * @param {Iterable<object>} nodes  die Knoten, deren Modifikatoren angewendet werden.
  * @param {import('./effectiveState.js').EffectiveState} state  der beschriebene Zustand.
- * @param {{ root: object, index: { get: Function }, categoryIds: Set<string>, diagnostics: object[], budget?: import('./rosterBudget.js').RosterBudget }} context
+ * @param {{ root: object, index: { get: Function }, categoryIds: Set<string>, diagnostics: object[], budget?: import('./rosterBudget.js').RosterBudget, primaryCatalogueByForceDefId?: Map<string, string> }} context
  *   Wurzel (Rahmen-Aufloesung), Zaehlindex, bekannte Kategorie-IDs (Ziel-Typ-Regel
- *   des Query-Primitivs), Sammelliste fuer Auswertungsprobleme und die eingestellten
- *   Roster-Kostengrenzen.
+ *   des Query-Primitivs), Sammelliste fuer Auswertungsprobleme, die eingestellten
+ *   Roster-Kostengrenzen und der Herkunftsindex der Kontingente (Bezugsrahmen
+ *   `primary-catalogue`).
  */
-export function applyModifiersOfNodes(nodes, state, { root, index, categoryIds, diagnostics, budget }) {
+export function applyModifiersOfNodes(nodes, state, { root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId }) {
   for (const node of nodes) {
-    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
+    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId });
     applyCarrierModifiers({ ctx, state, node, carrier: node }, node.def);
     for (const carrier of infoCarriersOf(node.def)) {
       applyCarrierModifiers({ ctx, state, node, carrier }, carrier);
@@ -698,10 +699,12 @@ export function applyModifiersOfNodes(nodes, state, { root, index, categoryIds, 
  * @param {object[]} diagnostics  Sammelliste fuer Auswertungsprobleme.
  * @param {import('./rosterBudget.js').RosterBudget} [budget]  die eingestellten
  *   Roster-Kostengrenzen (`RosterBudget`), an den Query-Kontext durchgereicht.
+ * @param {Map<string, string>} [primaryCatalogueByForceDefId]  der Herkunftsindex
+ *   der Kontingente (Bezugsrahmen `primary-catalogue`), ebenfalls durchgereicht.
  * @returns {import('./effectiveState.js').EffectiveState}
  */
-export function applyAllModifiers(root, index, categoryIds, diagnostics, budget) {
+export function applyAllModifiers(root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId) {
   const state = createBaseEffectiveState(root);
-  applyModifiersOfNodes(allNodes(root), state, { root, index, categoryIds, diagnostics, budget });
+  applyModifiersOfNodes(allNodes(root), state, { root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId });
   return state;
 }

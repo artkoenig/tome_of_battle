@@ -169,7 +169,11 @@ enum ConditionKind  { lessThan, greaterThan, equalTo, notEqualTo,  // XSD-SSOT
 enum ModifierKind   { set, increment, decrement, add, remove,      // XSD-SSOT (10 Werte)
                       append, prepend, multiply, set-primary, unset-primary }
 enum ConditionGroupKind { and, or }                               // XSD-SSOT
-enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF }
+enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF,
+                      PRIMARY_CATALOGUE }         // das Armeebuch des umschließenden
+                      // Kontingents (`scope="primary-catalogue"`, Issue 077) — kein
+                      // Zählrahmen: ein Katalog ist kein Knoten des Instanzbaums, also
+                      // beantwortet §4.5 ihn als Identitätsprüfung vor jeder Indexarbeit
 type ScopeRef       = ScopeKeyword | EntryId | CategoryId
 
 record CountFlags {
@@ -263,7 +267,8 @@ enum LimitMeasure   { SELECTION_COUNT, FORCE_COUNT, COST_SUM,   // WAS die Grenz
                       BUDGET_LIMIT, ROSTER_BUDGET }             // die ersten vier je genau
                       // ein CountedFieldKind (limitMeasureOfCountedField), ROSTER_BUDGET
                       // ist die engine-eigene Regel „Armee zu teuer"
-enum ScopeKind      { ROSTER, FORCE, PARENT, SELF,   // die vier Werte aus ScopeKeyword …
+enum ScopeKind      { ROSTER, FORCE, PARENT, SELF,   // die Werte aus ScopeKeyword …
+                      PRIMARY_CATALOGUE,
                       ENTRY_ID, CATEGORY_ID }        // … plus die beiden ID-Rahmen: dem rohen
                       // `scope` sieht man nicht an, welches von beidem er ist
 
@@ -485,6 +490,18 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
       ctx.diagnostics.add(Diagnostic.UNRESOLVED_BUDGET_LIMIT(field.costTypeId, reason))
       return UNRESOLVED_BUDGET
     return ctx.budget.get(field.costTypeId)
+
+  // PRIMARY_CATALOGUE ist ebenfalls kein Zählrahmen: ein Katalog ist kein Knoten des
+  // Instanzbaums, die Frage lautet „ist das Armeebuch des umschließenden Kontingents
+  // dieses hier?". Deshalb vor jeder Rahmen-/Indexarbeit und unabhängig von `shared`
+  // (Issue 077). Herkunft aus ctx.primaryCatalogueByForceDefId (Katalog-Vorlauf, §3.1).
+  if scope == PRIMARY_CATALOGUE:
+    if field != SELECTION_COUNT:
+      ctx.diagnostics.add(Diagnostic.UNSUPPORTED_FIELD(field)); return 0
+    catalogueId = ctx.primaryCatalogueByForceDefId[ctx.node.forceRoot?.def.id]
+    if catalogueId == null:                       // keine Force, oder Herkunft unbekannt
+      ctx.diagnostics.add(Diagnostic.UNRESOLVED_SCOPE(scope, ctx.node)); return 0
+    return targetId == null ? 1 : (targetId == catalogueId ? 1 : 0)
 
   frame = resolveScopeFrame(ctx.node, scope)
   // ROSTER → Wurzel | FORCE → ctx.node.forceRoot | PARENT → ctx.node.parent

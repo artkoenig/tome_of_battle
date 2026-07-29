@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "name": "primary-catalogue-scope",
+  "description": "scope=\"primary-catalogue\" ist eine Identitaetspruefung auf das Armeebuch des umschliessenden Kontingents, nicht ein Zaehlrahmen: die childId ist die Wurzel-Id eines <catalogue> (hier Ogre Kingdoms 731d-5b13-2a92-5427), nicht die eines Eintrags, einer Kategorie oder eines Kontingents. Dieselben Soeldner-Selektionen (Rhinox Riders, Maneaters aus der Mercenaries-Bibliothek) stehen einmal in einem Ogre-Kontingent und einmal in einem Vampire-Counts-/Orcs-Kontingent — mit messbar unterschiedlichem Ergebnis: die Pflicht 'Extra Special choice' (b830-0538-045e-ee90) feuert NUR in der Ogerarmee, die Pflichten 'Extra Rare choice' (e575-a5af-7fb3-5930 / 9e9f-e78d-6390-accc) feuern NUR ausserhalb, und die Force-Obergrenze der Rhinox Riders (47d7-b2ed-39e9-0e60) wird nur in der Ogerarmee per set -1 aufgehoben. Welches Armeebuch gilt, kommt aus der Herkunft der Force-Definition, nicht aus dem catalogueId-Attribut der .ros. JEDES Roster fordert zusaetzlich die Abwesenheit der Diagnose UNRESOLVED_SCOPE: der Bezugsrahmen muss AUFGELOEST worden sein. Ohne diese Zusage waere die notInstanceOf-Seite zahnlos, denn ein unaufgeloester Rahmen zaehlt ebenfalls 0 und laesst notInstanceOf halten. Sichtbarkeit (hidden) ist an denselben Bedingungen modelliert, gehoert aber nicht in den Verletzungsbericht und wird daher nicht als feuernde Grenze erwartet.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-ogre-rhinox-riders.ros",
+      "description": "Ogre-Kontingent 'Standard (OK-AB)' (729f-9246-5cd3-5044, deklariert im Katalog 731d-5b13-2a92-5427) mit einer Rhinox-Riders-Einheit. instanceOf primary-catalogue 731d trifft: die Untergrenze 'Extra Special choice' wird per set 1 zur Pflicht und feuert (Ist 0, Grenze 1). Die Gegenrichtung 'Extra Rare choice' bleibt bei Rohwert min 0 und feuert nicht; die Force-Obergrenze ist per set -1 aufgehoben. Der Bezugsrahmen ist aufgeloest — keine Diagnose UNRESOLVED_SCOPE.",
+      "expect": {
+        "firing": [
+          { "limitId": "b830-0538-045e-ee90", "actual": 0, "bound": 1 }
+        ],
+        "absent": ["e575-a5af-7fb3-5930", "47d7-b2ed-39e9-0e60"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-vampire-rhinox-riders.ros",
+      "description": "DIESELBE Rhinox-Riders-Selektion, aber im Vampire-Counts-Kontingent 'Standard (VC-AB)' (e989-15b8-7eb6-9668, deklariert im Katalog 4d73-5ab0-9020-403c). notInstanceOf primary-catalogue 731d trifft: jetzt feuert 'Extra Rare choice' (Ist 0, Grenze 1), waehrend 'Extra Special choice' bei min 0 bleibt. Die Force-Obergrenze steht auf Rohwert 1 und ist mit einer Einheit eingehalten. Die geforderte Abwesenheit von UNRESOLVED_SCOPE trennt 'der Rahmen wurde ausgewertet und traf nicht zu' von 'der Rahmen liess sich nicht aufloesen' — beides ergaebe sonst Zaehlwert 0.",
+      "expect": {
+        "firing": [
+          { "limitId": "e575-a5af-7fb3-5930", "actual": 0, "bound": 1 }
+        ],
+        "absent": ["b830-0538-045e-ee90", "47d7-b2ed-39e9-0e60"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-orcs-rhinox-riders.ros",
+      "description": "Dieselbe Selektion im Orcs-and-Goblins-Kontingent 'Standard (OG-AB)' (2bfa-e64a-7123-895f, Katalog 4049-c46d-7f80-44fb). Belegt, dass die Bedingung eine Identitaetspruefung gegen GENAU die genannte Katalog-Id ist und nicht 'Oger gegen Vampire': ein drittes, ebenfalls nicht-ogrisches Armeebuch verhaelt sich wie das zweite. Auch hier muss der Rahmen aufgeloest sein — keine Diagnose UNRESOLVED_SCOPE.",
+      "expect": {
+        "firing": [
+          { "limitId": "e575-a5af-7fb3-5930", "actual": 0, "bound": 1 }
+        ],
+        "absent": ["b830-0538-045e-ee90", "47d7-b2ed-39e9-0e60"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-ogre-rhinox-extra-special-satisfied.ros",
+      "description": "Ogre-Kontingent, Rhinox Riders MIT der dort geforderten 'Extra Special choice' (6c8d-f6f3-823e-e6a5). Die per primary-catalogue gehobene Untergrenze ist erfuellt (Ist 1, Grenze 1) und feuert nicht; die zugehoerige Obergrenze max 1 ist eingehalten. Der Bezugsrahmen ist aufgeloest — keine Diagnose UNRESOLVED_SCOPE.",
+      "expect": {
+        "firing": [],
+        "absent": ["b830-0538-045e-ee90", "f873-6cfe-911e-2c46", "e575-a5af-7fb3-5930"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/05-vampire-rhinox-extra-rare-satisfied.ros",
+      "description": "Vampire-Counts-Kontingent, Rhinox Riders MIT der dort geforderten 'Extra Rare choice' (a97e-5cc9-264b-74f4). Die per primary-catalogue gehobene Untergrenze ist erfuellt (Ist 1, Grenze 1) und feuert nicht; die zugehoerige Obergrenze max 1 ist eingehalten. Die geforderte Abwesenheit von UNRESOLVED_SCOPE belegt, dass die Untergrenze durch einen AUSGEWERTETEN notInstanceOf-Treffer auf 1 stand und nicht durch einen stillen Rueckfall.",
+      "expect": {
+        "firing": [],
+        "absent": ["e575-a5af-7fb3-5930", "18c5-ec9f-0857-c0de", "b830-0538-045e-ee90"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/06-ogre-two-rhinox-riders.ros",
+      "description": "Ogre-Kontingent mit ZWEI Rhinox-Riders-Einheiten. Der Modifier set -1 auf die force-skopierte Obergrenze 47d7-b2ed-39e9-0e60 greift (instanceOf primary-catalogue 731d) und hebt sie auf; trotz Ist 2 ueber dem Rohwert 1 feuert sie nicht. Der Bezugsrahmen ist aufgeloest — keine Diagnose UNRESOLVED_SCOPE.",
+      "expect": {
+        "firing": [],
+        "absent": ["47d7-b2ed-39e9-0e60", "e575-a5af-7fb3-5930"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/07-vampire-two-rhinox-riders.ros",
+      "description": "DIESELBEN zwei Rhinox-Riders-Einheiten im Vampire-Counts-Kontingent. Ohne den Ogre-Treffer bleibt die Obergrenze beim Rohwert max 1 und feuert (Ist 2, Grenze 1) — der messbare Gegenbeweis zu Roster 06. Die geforderte Abwesenheit von UNRESOLVED_SCOPE belegt, dass der instanceOf-Zweig ausgewertet wurde und nicht zutraf, statt unaufgeloest zu bleiben.",
+      "expect": {
+        "firing": [
+          { "limitId": "47d7-b2ed-39e9-0e60", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["b830-0538-045e-ee90"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/08-ogre-maneaters.ros",
+      "description": "Ogre-Kontingent mit einer Maneaters-Einheit. An derselben Katalog-Id 731d haengen bei den Maneaters zwei gegenlaeufige Modifikatoren: notInstanceOf hebt die Untergrenze 'Extra Rare choice' auf 1, instanceOf verbirgt denselben Eintrag. In der Ogerarmee greift nur der zweite — die Untergrenze bleibt bei Rohwert 0 und feuert nicht. Der Bezugsrahmen ist aufgeloest — keine Diagnose UNRESOLVED_SCOPE.",
+      "expect": {
+        "firing": [],
+        "absent": ["9e9f-e78d-6390-accc", "0799-afbf-f13f-bdac"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/09-vampire-maneaters.ros",
+      "description": "DIESELBE Maneaters-Selektion im Vampire-Counts-Kontingent. Jetzt greift der notInstanceOf-Zweig: die Untergrenze 'Extra Rare choice' steht auf 1 und feuert (Ist 0, Grenze 1). Der Maneater kostet ausserhalb einer Ogerarmee einen Rare-Slot extra — genau die Regel, die der Katalogtext beschreibt. Die geforderte Abwesenheit von UNRESOLVED_SCOPE belegt, dass der Rahmen ausgewertet wurde.",
+      "expect": {
+        "firing": [
+          { "limitId": "9e9f-e78d-6390-accc", "actual": 0, "bound": 1 }
+        ],
+        "absent": ["0799-afbf-f13f-bdac"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/10-vampire-force-with-ogre-catalogueid-attribute.ros",
+      "description": "Wie Roster 02 (VC-Force-Definition e989-15b8-7eb6-9668, eine Rhinox-Riders-Einheit), aber das .ros-Attribut catalogueId behauptet 731d-5b13-2a92-5427 / 'Ogre Kingdoms'. Das Armeebuch kommt aus der Herkunft der Force-DEFINITION, nicht aus dem Roster-Attribut: das Ergebnis muss identisch zu Roster 02 bleiben — 'Extra Rare choice' feuert, 'Extra Special choice' nicht. Die geforderte Abwesenheit von UNRESOLVED_SCOPE schliesst zugleich aus, dass das widerspruechliche Attribut die Aufloesung des Rahmens verhindert und das richtige Ergebnis nur zufaellig aus einem Rueckfall auf 0 entsteht.",
+      "expect": {
+        "firing": [
+          { "limitId": "e575-a5af-7fb3-5930", "actual": 0, "bound": 1 }
+        ],
+        "absent": ["b830-0538-045e-ee90", "47d7-b2ed-39e9-0e60"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "primary-catalogue" }
+          ]
+        }
+      }
+    }
+  ]
+}
