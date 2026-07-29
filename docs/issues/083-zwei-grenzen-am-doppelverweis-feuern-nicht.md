@@ -200,8 +200,29 @@ Acceptance criteria:
   11 tests exit 0; `npx vitest run src/evaluator` 53 files / 715 tests
   exit 0; lint exit 0; typecheck exit 0; measure-evaluator 11.2 ms.
   Out-of-scope note: a group reachable both directly nested and via a
-  sibling link would anchor its target limits twice — pre-existing, not in
-  the fixtures, untouched.
+  sibling link would anchor its target limits twice — not in the fixtures,
+  untouched. (Correction from review round 2: this behavior is *introduced*
+  by this change, not pre-existing — on main the link branch was skipped
+  entirely, so only one anchor existed.)
+
+- **2026-07-29, review round 2** (fresh context; `npx vitest run
+  src/evaluator` 53 files / 715 tests exit 0, lint exit 0, typecheck
+  exit 0, measure-evaluator 10.9 ms; handed tests untouched, verified by
+  diff). **All five criteria met.** 1 finding:
+  - **F-R2-1 (record vs. diff, fixed in the record):** the F1/F2-fix log
+    entry called the double anchor for a dual-reach group "pre-existing";
+    reproduced as introduced by this change (main: 1 violation, HEAD: 2
+    identical ones, same actual/bound). Log entry corrected above.
+    **No code guard, with reason:** the dual-reach shape — an `entryLink`
+    targeting a *locally nested* group — is out-of-contract data per the
+    bsdata doc §7.2 (link targets come from the shared lists); the verdict
+    itself stays correct, only the report would duplicate. Recorded as a
+    decision, not filed.
+  - Finding trend: round 1 → 3 (K2 1, outside criteria 2); round 2 → 1
+    (record only, criteria 0). Converging.
+  - **Waiver:** the round-2 fix touches only the tracker record — no file
+    the criteria are about — so the review repeat is skipped per the
+    rulebook's waiver clause.
 
 ## Checkpoints
 
@@ -224,8 +245,21 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — all five criteria confirmed met by
+  review round 2 from a fresh context: constraints count the selections
+  below their carrier, both documented cases fire with actual 2 / bound 1,
+  the scenario re-expects both ids, and the evaluator suite (incl. its E2E
+  runner) is green by exit code.
+- What surprised me? The dedupe for sibling links to the same group
+  silently dropped link-own constraints (round-1 F1) — a case the blind
+  test round did not anticipate; and the implementer's "pre-existing"
+  claim about the dual-anchor edge turned out false on reproduction
+  (round-2 F-R2-1).
+- What am I assuming without having verified it? That link targets always
+  come from the shared lists in real data (bsdata doc §7.2) — this grounds
+  the decision not to guard the dual-reach shape. That the full app suite
+  (`npm test`) is still green: it was green after the first implementation
+  round; the F1 fix afterwards was verified against the agreed evaluator
+  scope only (maintainer's mid-run instruction).
 
 ## Retro
