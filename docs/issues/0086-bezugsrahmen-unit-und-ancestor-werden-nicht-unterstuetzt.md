@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/86-umsetzen-y6v33w
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/172
 ---
 
 # Bezugsrahmen `unit` und `ancestor` werden nicht unterstützt
@@ -209,3 +209,24 @@ Acceptance criteria:
   still.
 
 ## Retro
+
+- **Was im Weg stand:** (a) Ein Platzhalter-Pin aus Issue 077 behauptete
+  aktiv „`unit` bleibt unaufgelöst" — ein Test, der Nicht-Unterstützung als
+  Soll festschreibt, kollidiert zwingend mit dem Nachfolge-Issue, das genau
+  diese Unterstützung baut. Lehre: solche Abgrenzungen als Backlog-Verweis
+  im Kommentar festhalten, nicht als Assertion. (b) Der Implementierer-Fakt
+  „measure-evaluator Exit 0" hielt der Review-Reproduktion nicht stand —
+  die Schwelle reißt umgebungsabhängig am Katalog-Vorlauf (~99 % der
+  Messzeit), auch am Branchpunkt. Die Review-Regel „Fakten selbst
+  etablieren" hat den Widerspruch gefangen; das Skript selbst wäre
+  robuster, wenn es Vorbereitungs- und Auswertungszeit getrennt gegen die
+  Schwelle hielte.
+- **Was gut funktionierte:** Die Rollentrennung trug den Run — der
+  Test-Autor fand mit Annahme (c) eine echte Datenlage-Überraschung
+  (Angebots-Anker ohne Einheit), der Implementierer meldete seine zwei
+  Abweichungen offen zur Triage statt sie still einzubauen, der Reviewer
+  zählte die Fixture-Zahlen selbst nach. Die vorab im Issue festgehaltenen
+  Semantik-Decisions machten Test-Autor und Implementierer ohne Rückfragen
+  konsistent.
+- **Regelvorschlag:** keiner — kein Rulebook-Punkt hat gefeuert oder
+  gefehlt.
