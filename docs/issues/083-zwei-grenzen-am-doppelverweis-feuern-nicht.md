@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/independent-implementation-auto-merge-m1o0m8-083
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/169
 ---
 
 # Zwei Grenzen am Doppelverweis feuern nicht
@@ -263,3 +263,21 @@ Acceptance criteria:
   scope only (maintainer's mid-run instruction).
 
 ## Retro
+
+- **What went well:** the pre-recorded audit in the Log was accurate to the
+  line — the run needed no research phase, and the blind test round plus
+  two fresh reviews converged quickly (3 → 1 findings). The second cause
+  needed no change to the countIndex bucket model; the constraint layer was
+  the right, narrow place.
+- **What got in the way:** the metis agent symlinks pointed at directories
+  the harness did not register at session start, so the first test-author
+  ran as a generic agent with the role pasted in; the types appeared
+  mid-session. Worth checking in the bootstrap hook. A mid-session
+  interruption also killed a running reviewer silently — the run only
+  noticed by checking the task status; re-dispatching cost one round.
+- **What should change:** nothing in the rulebook. Two mid-run maintainer
+  instructions (evaluator-only test scope; stop after this issue) were
+  absorbed cleanly by recording them as decisions. The blind spot both the
+  test-author and round 1 shared — sibling links to the same target — was
+  caught precisely because round 2 re-read the whole intent instead of
+  re-checking round 1's list; that rule earned its keep.
