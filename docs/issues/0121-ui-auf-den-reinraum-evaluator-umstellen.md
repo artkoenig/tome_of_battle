@@ -131,17 +131,28 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   (Link-Id-Regel, costLimits, −1) — Tests zuerst
 - [x] 3. `useEvaluation`-Hook mit Datensatz-Cache — Aufruf-Zähler-Test
   (Kriterium 8)
-- [ ] 4. Meldungsprojektion `formatViolation` + neue i18n-Schlüssel,
-  alte Schlüssel raus, Abdeckungstests umgeschrieben
-- [ ] 5. Schreibmodell-Umzug nach `src/roster/` (Verhalten unverändert,
-  Tests wandern mit)
-- [ ] 6. UI-Umstellung: Editor-Pfad (useRoster, CategoryUnitAdder,
-  OptionGroup, SelectionConfigurator, Sidebar, Validation-Panel …)
-- [ ] 7. UI-Umstellung: Dashboard, PlayMode, Modals, rosterSerialization
-- [ ] 8. E2E-/Fixture-Umzug nach `e2e/`, Kommandos/CI/Lint-/Depcruise-
+- [x] 4. Meldungsprojektion `formatViolation` + neue i18n-Schlüssel
+  (alte Schlüssel sterben erst mit dem Solver-Abriss)
+- [ ] 5. UI-Umstellung Validierungspfad: useRoster → useEvaluation;
+  Anzeige (ValidationMessage, Panel, Sidebar, ValidationCauses) über
+  `formatViolation`
+- [ ] 6. UI-Umstellung Verfügbarkeitspfad: CategoryUnitAdder,
+  OptionGroup, SelectionConfigurator, AutoFillSuggestions lesen
+  `capabilities` (ADR-0035; Baseline-Diff + Sperrtabelle entfallen)
+- [ ] 7. UI-Umstellung Rest: Dashboard, PlayMode, Modals,
+  rosterSerialization; Kosten aus `costTotals`, Profile aus
+  `infoElements`
+- [ ] 8. Schreibmodell-Umzug nach `src/roster/`: was die UI nach 5–7
+  noch aus `src/solver/` importiert (Selektions-Fabrik, Baum-Editing,
+  rosterSync, Katalogauswahl …), zieht verhaltensgleich um, Tests
+  wandern mit (umgereiht: erst nach der UI-Umstellung ist der wahre
+  Restbedarf sichtbar — was capabilities ersetzen, stirbt statt
+  umzuziehen)
+- [ ] 9. E2E-/Fixture-Umzug nach `e2e/`, Kommandos/CI/Lint-/Depcruise-
   Regeln nachziehen
-- [ ] 9. `src/solver/` löschen, Doku (CLAUDE.md, bsdata-Doku, ADRs)
-  nachziehen, Vollabnahme aller Kriterien
+- [ ] 10. `src/solver/` löschen, alte validation.*-Schlüssel raus,
+  Doku (CLAUDE.md, bsdata-Doku, ADRs) nachziehen, Vollabnahme aller
+  Kriterien
 
 ## Decisions
 
@@ -180,6 +191,19 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-29, Task 4 (Meldungsprojektion) erledigt: 23+Deckungs-Tests
+  rot, dann grün ohne Testedit (`npx vitest run src/i18n` 236 Tests
+  Exit 0; Regression evaluator+evaluation 871 Exit 0; lint/typecheck/
+  depcruise Exit 0). Schema `validation.evaluator.<measure>.<kind>.
+  <scopeGroup>[.percent]`, 77 Schlüssel je Sprache. Defaults: Enum-
+  Literale stehen im Modul (Fassade re-exportiert die Enums nicht;
+  Drift fängt der Deckungstest, der die echten Enums liest); Kostenart
+  geht nur als `costTypeId`-Parameter mit, Klartext-Label wäre eine
+  spätere Vertragserweiterung; de sagt "Kontingent" für force.
+- 2026-07-29, Taskliste umgereiht: Schreibmodell-Umzug (alt Task 5)
+  rückt hinter die UI-Umstellung (neu Task 8) — erst nach der
+  Umstellung ist sichtbar, welche Solver-Module die UI noch braucht;
+  was capabilities ersetzen, stirbt mit dem Solver statt umzuziehen.
 - 2026-07-29, Task 3 (useEvaluation) erledigt: 18 rote Tests, dann grün
   ohne Testedit (`npx vitest run src/evaluation` 37 Tests Exit 0;
   Evaluator 834 Exit 0; lint/typecheck/depcruise Exit 0). Hook ist
