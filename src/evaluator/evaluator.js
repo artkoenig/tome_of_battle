@@ -116,6 +116,19 @@ export { prepareDataset } from './datasetPreparation.js';
  *   Diagnosen. Ein Slot ist **jede Stelle, an der eine Auswahl stehen kann** —
  *   auch eine noch nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon
  *   unberuehrt.
+ *
+ *   **Pfad-Schema der Slot-Schluessel.** Der Schluessel in `capabilities` ist
+ *   der stabile Pfad des Slots: die `/`-verkettete Folge der Kind-Indizes von
+ *   der Wurzel bis zum Knoten (z. B. `"0/2/1"`; `pathOf` in `evalTree.js`).
+ *   Fuer **belegte** Slots folgen diese Indizes der Eingabe-Reihenfolge des
+ *   Rosters — `forces[i]` liegt unter `"i"`, dessen j-tes Kind unter `"i/j"`,
+ *   usw. —, weil die Engine alle synthetischen Anker (Phantome, Kategorie-,
+ *   Gruppen- und Angebots-Anker) ausschliesslich **hinter** die bestehenden
+ *   Kinder haengt. Ein Aufrufer darf den Pfad einer Eingabe-Instanz deshalb im
+ *   selben Durchlauf mitrechnen. Die Zuordnung gilt nur, solange jede `defId`
+ *   aufloest: eine unaufloesbare Instanz wird nicht in den Baum gehaengt
+ *   (Diagnose `unresolvedDefinition`) und verschiebt damit die Indizes ihrer
+ *   **nachfolgenden** Geschwister.
  */
 export function evaluate(prepared, roster) {
   // Die eingestellten Kostengrenzen des Rosters einmalig als unveraenderliches
