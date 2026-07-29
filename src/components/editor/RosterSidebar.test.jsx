@@ -58,13 +58,23 @@ function makeRoster() {
   };
 }
 
-function renderSidebar({ system, roster, costs = { pts: 0 }, validationErrors = [] }) {
+/** Eine Autoren-Meldung in der Berichtsform der Evaluator-Fassade (Text-Pass-through). */
+function authorMessage(text, severity) {
+  return {
+    origin: 'authorMessage',
+    severity,
+    anchor: { defId: 'entry-1', name: 'Special Character', path: '0/0', anchorKind: 'occupied', isValueUnstable: false },
+    text,
+  };
+}
+
+function renderSidebar({ system, roster, costs = { pts: 0 }, violations = [] }) {
   return render(
     <RosterSidebar
       roster={roster}
       system={system}
       costs={costs}
-      validationErrors={validationErrors}
+      violations={violations}
       costTypeLabel="Pkt."
     />
   );
@@ -174,19 +184,32 @@ describe('RosterSidebar hidden cost types', () => {
 });
 
 describe('RosterSidebar structured validation messages', () => {
-  it('renders a solver violation carrying messageKey/messageParams as translated text', () => {
+  it('renders a derived evaluator violation as translated text (formatViolation)', () => {
     renderSidebar({
       system: makeSystem(),
       roster: makeRoster(),
-      validationErrors: [{
-        messageKey: 'validation.rosterLimit',
-        messageParams: { current: 210, limit: 200, unitLabel: 'pts' },
+      violations: [{
+        origin: 'derivedLimit',
         severity: 'error',
+        anchor: { defId: 'def-1', name: 'Musician', path: '0/0', anchorKind: 'occupied', isValueUnstable: false },
+        limitId: 'lim-1',
+        limit: {
+          kind: 'max',
+          measure: 'selectionCount',
+          costTypeId: null,
+          isPercent: false,
+          scope: { kind: 'parent', targetId: null, flags: { shared: true, includeChildSelections: false, includeChildForces: false } },
+        },
+        actual: 2,
+        bound: 1,
+        delta: -1,
+        derivation: { base: 1, steps: [] },
       }],
     });
 
+    // validation.evaluator.selectionCount.max.local_one mit name=Musician
     expect(
-      screen.getByText('Die Liste hat 210 pts – erlaubt sind 200.')
+      screen.getByText('„Musician" darf höchstens einmal gewählt werden.')
     ).toBeTruthy();
   });
 });
@@ -196,7 +219,7 @@ describe('RosterSidebar validation severity', () => {
     renderSidebar({
       system: makeSystem(),
       roster: makeRoster(),
-      validationErrors: [{ message: 'Zu viele Helden gewählt.', severity: 'error' }],
+      violations: [authorMessage('Zu viele Helden gewählt.', 'error')],
     });
 
     expect(screen.getByTestId('icon-shield-alert')).toBeTruthy();
@@ -209,7 +232,7 @@ describe('RosterSidebar validation severity', () => {
     renderSidebar({
       system: makeSystem(),
       roster: makeRoster(),
-      validationErrors: [{ message: 'Bitte "Allow special characters?" aktivieren.', severity: 'warning' }],
+      violations: [authorMessage('Bitte "Allow special characters?" aktivieren.', 'warning')],
     });
 
     expect(screen.getByTestId('icon-alert-triangle')).toBeTruthy();
@@ -221,7 +244,7 @@ describe('RosterSidebar validation severity', () => {
     renderSidebar({
       system: makeSystem(),
       roster: makeRoster(),
-      validationErrors: [{ message: 'Hinweis zur Aufstellung.', severity: 'info' }],
+      violations: [authorMessage('Hinweis zur Aufstellung.', 'info')],
     });
 
     expect(screen.getByTestId('icon-info')).toBeTruthy();
@@ -233,10 +256,10 @@ describe('RosterSidebar validation severity', () => {
     renderSidebar({
       system: makeSystem(),
       roster: makeRoster(),
-      validationErrors: [
-        { message: 'Echter Verstoß.', severity: 'error' },
-        { message: 'Nur eine Warnung.', severity: 'warning' },
-        { message: 'Nur ein Hinweis.', severity: 'info' },
+      violations: [
+        authorMessage('Echter Verstoß.', 'error'),
+        authorMessage('Nur eine Warnung.', 'warning'),
+        authorMessage('Nur ein Hinweis.', 'info'),
       ],
     });
 

@@ -2,8 +2,37 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Plus, X } from 'lucide-react';
 import { resolveEntry, getOptionDisplayCost, getEffectiveName, collectPrimaryCategoryEntries, validateRoster, getEntryAddAvailability } from '../../solver/validator';
 import { useTranslation } from '../../i18n/useTranslation';
+import { formatValidationError, formatValidationCauses, CAUSES_TITLE_KEY } from '../../i18n/formatValidationError';
 import BottomSheet from './BottomSheet';
-import ValidationMessage from './ValidationMessage';
+
+/**
+ * Meldungssatz samt „Ursachen"-Block eines Solver-Sperrgrunds (ADR 0027).
+ *
+ * Der Aushebe-Dialog bleibt bis zum Verfügbarkeits-Cutover (Issue 0121,
+ * Task 6) auf dem Solver-Diff (ADR 0022); seine Gründe sind Solver-Verstöße.
+ * `ValidationMessage`/`ValidationCauses` sprechen seit Task 5 die Sprache des
+ * Evaluator-Berichts — deshalb rendert der Dialog seine Solver-Gründe hier
+ * selbst, mit denselben Observablen (Klassen, Titel) wie zuvor.
+ */
+function SolverReasonMessage({ reason }) {
+  const { t } = useTranslation();
+  const causes = formatValidationCauses(reason, t);
+  return (
+    <>
+      <span>{formatValidationError(reason, t)}</span>
+      {causes.length > 0 && (
+        <div className="validation-causes">
+          <span className="validation-causes-title text-label">{t(CAUSES_TITLE_KEY)}</span>
+          <ul className="validation-causes-list">
+            {causes.map((cause, index) => (
+              <li key={index} className="validation-causes-item">{cause}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function CategoryUnitAdder({
   categoryId = null,
@@ -110,7 +139,7 @@ export default function CategoryUnitAdder({
                   {isBlocked && <span className="text-danger text-micro popover-item-unavailable">{t('editor.adder.unavailable')}</span>}
                   {isBlocked && reasons.map((reason, idx) => (
                     <div key={idx} className="text-danger text-micro popover-item-reason">
-                      <ValidationMessage error={reason} />
+                      <SolverReasonMessage reason={reason} />
                     </div>
                   ))}
                 </div>

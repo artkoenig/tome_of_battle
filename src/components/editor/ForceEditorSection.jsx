@@ -30,7 +30,7 @@ export default function ForceEditorSection({
   system,
   roster,
   activeCatalogue,
-  validationErrors,
+  violations,
   costTypeLabel,
   addUnit,
   removeUnit,
@@ -84,7 +84,7 @@ export default function ForceEditorSection({
           system={system}
           roster={roster}
           activeCatalogue={activeCatalogue}
-          validationErrors={validationErrors}
+          violations={violations}
           selectionCounts={selectionCounts}
           forceCategoryCounts={forceCategoryCounts}
           costTypeLabel={costTypeLabel}
@@ -138,7 +138,7 @@ export default function ForceEditorSection({
       )}
 
       <RosterValidationPanel
-        validationErrors={validationErrors}
+        violations={violations}
         extraResources={extraResources}
         onPlay={onPlay}
       />

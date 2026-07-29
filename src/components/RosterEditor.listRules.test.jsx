@@ -33,7 +33,10 @@ vi.mock('../hooks/useRoster', () => ({
   useRoster: () => ({
     roster: mockRoster,
     costs: { pts: 420 },
-    validationErrors: [],
+    violations: [],
+    capabilities: new Map(),
+    costTotals: {},
+    pathBySelectionId: new Map(),
     selectedRosterSelection: null,
     setSelectedRosterSelection: vi.fn(),
     addUnit: vi.fn(),

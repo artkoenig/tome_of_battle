@@ -77,9 +77,15 @@ describe('UnitSelectionCard Component', () => {
     setSelectedRosterSelection: vi.fn(),
     roster: { costLimitType: 'pts' },
     system: {},
-    validationErrors: [
-      { id: 'err-1', selectionId: 'sel-1', message: 'Ausrüstung unzulässig' }
+    // Verletzungen in der Berichtsform der Evaluator-Fassade; Autoren-Meldungen
+    // tragen ihren fertigen Text (Pass-through) und brauchen keine i18n-Vorlage.
+    violations: [
+      {
+        origin: 'authorMessage', severity: 'error', text: 'Ausrüstung unzulässig',
+        anchor: { defId: 'def-1', name: 'Knights of Bretonnia', path: '0/0', anchorKind: 'occupied', isValueUnstable: false }
+      }
     ],
+    pathBySelectionId: new Map([['sel-1', '0/0'], ['sub-1', '0/0/0']]),
     costTypeLabel: 'Pkt.',
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
@@ -126,14 +132,19 @@ describe('UnitSelectionCard Component', () => {
     expect(screen.getByText('Ausrüstung unzulässig')).toBeDefined();
   });
 
-  // Der Validator verankert Verstöße an der konkret betroffenen Selection —
-  // oft eine geschachtelte Option. Die Karte der Einheit muss diese Fehler
-  // ihres Teilbaums anzeigen, nicht nur die an ihrer Wurzel-Selection.
-  it('zeigt Fehler geschachtelter Optionen an der Karte der Einheit', () => {
+  // Der Evaluator verankert Verletzungen am Slot der konkret betroffenen
+  // Selection — oft eine geschachtelte Option. Die Karte der Einheit muss
+  // diese Verletzungen ihres Teilbaums anzeigen, nicht nur die an ihrer
+  // Wurzel-Selection (Zuordnung über pathBySelectionId + anchor.path).
+  it('zeigt Verletzungen geschachtelter Optionen an der Karte der Einheit', () => {
     const props = {
       ...defaultProps,
-      validationErrors: [
-        { id: 'err-nested', selectionId: 'sub-1', message: 'Option "Barded Warhorse" erfordert mindestens 3 Auswahlen (aktuell: 2).' }
+      violations: [
+        {
+          origin: 'authorMessage', severity: 'error',
+          text: 'Option "Barded Warhorse" erfordert mindestens 3 Auswahlen (aktuell: 2).',
+          anchor: { defId: 'def-horse', name: 'Barded Warhorse', path: '0/0/0', anchorKind: 'occupied', isValueUnstable: false }
+        }
       ]
     };
     const { container } = render(<UnitSelectionCard {...props} />);
@@ -487,13 +498,16 @@ describe('UnitSelectionCard Component', () => {
       unmount();
     });
 
-    it('survives malformed validationErrors gracefully', () => {
-      const propsWithNullError = {
+    it('survives malformed violations gracefully', () => {
+      const propsWithNullViolation = {
         ...defaultProps,
-        validationErrors: [null, { id: 'err-2', selectionId: 'sel-1', message: 'Legit error' }]
+        violations: [null, {
+          origin: 'authorMessage', severity: 'error', text: 'Legit error',
+          anchor: { defId: 'def-1', name: 'Knights of Bretonnia', path: '0/0', anchorKind: 'occupied', isValueUnstable: false }
+        }]
       };
 
-      render(<UnitSelectionCard {...propsWithNullError} />);
+      render(<UnitSelectionCard {...propsWithNullViolation} />);
       expect(screen.getByText('Legit error')).toBeDefined();
     });
 
@@ -724,12 +738,15 @@ describe('UnitSelectionCard Component', () => {
       expect(chipTexts.includes('Shield')).toBe(false);
     });
 
-    it('survives errors with missing or empty message keys', () => {
-      const propsWithEmptyMessage = {
+    it('survives violations with missing text', () => {
+      const propsWithEmptyText = {
         ...defaultProps,
-        validationErrors: [{ id: 'err-1', selectionId: 'sel-1', message: undefined }]
+        violations: [{
+          origin: 'authorMessage', severity: 'error', text: undefined,
+          anchor: { defId: 'def-1', name: 'Knights of Bretonnia', path: '0/0', anchorKind: 'occupied', isValueUnstable: false }
+        }]
       };
-      render(<UnitSelectionCard {...propsWithEmptyMessage} />);
+      render(<UnitSelectionCard {...propsWithEmptyText} />);
       expect(screen.getByText('Knights of Bretonnia')).toBeDefined();
     });
   });

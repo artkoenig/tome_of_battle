@@ -1,18 +1,21 @@
 import React from 'react';
 import { useTranslation } from '../../i18n/useTranslation';
-import { formatValidationCauses, CAUSES_TITLE_KEY } from '../../i18n/formatValidationError';
+import { CAUSES_TITLE_KEY } from '../../i18n/formatValidationError';
+import { formatViolationCauses } from '../../i18n/violationMessages';
 
 /**
  * Der „Ursachen"-Block einer Validierungsmeldung (ADR 0027): die einzige
- * Renderquelle für die auslösenden Auswahlen hinter einem Verstoß, an jeder
- * Renderstelle identisch (SSOT, ADR 0022). Trägt der Verstoß keine Ursachen,
- * rendert die Komponente nichts — die Meldung bleibt wie ohne das Feld.
+ * Renderquelle für die auslösenden Auswahlen hinter einer Verletzung des
+ * Evaluator-Berichts, an jeder Renderstelle identisch (SSOT). Trägt die
+ * Verletzung keine Ursachen, rendert die Komponente nichts — die Meldung
+ * bleibt wie ohne das Feld.
  *
- * @param {{ error?: import('../../types.js').ValidationError }} props
+ * @param {{ violation?: object }} props  `violation` ist eine Verletzung aus
+ *   dem Bericht der Evaluator-Fassade (`src/evaluator/evaluator.js`).
  */
-export default function ValidationCauses({ error }) {
+export default function ValidationCauses({ violation }) {
   const { t } = useTranslation();
-  const causes = formatValidationCauses(error, t);
+  const causes = formatViolationCauses(violation, t);
   if (causes.length === 0) return null;
 
   return (

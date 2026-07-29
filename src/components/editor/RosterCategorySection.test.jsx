@@ -66,7 +66,7 @@ const renderSection = (props = {}) => render(
     system={system}
     roster={{ costLimitType: 'pts' }}
     activeCatalogue={system.catalogues[0]}
-    validationErrors={[]}
+    violations={[]}
     selectionCounts={{}}
     forceCategoryCounts={{ 'cat-core': 1 }}
     costTypeLabel="Pkt."
@@ -160,9 +160,13 @@ describe('RosterCategorySection', () => {
     );
   });
 
-  it('färbt den Zähl-Chip, wenn die Kategorie blockierende Meldungen trägt', () => {
+  it('färbt den Zähl-Chip, wenn die Kategorie blockierende Verletzungen trägt', () => {
     const { container } = renderSection({
-      validationErrors: [{ message: 'Zu wenige', categoryId: 'cat-core', severity: 'error' }]
+      violations: [{
+        origin: 'derivedLimit',
+        severity: 'error',
+        anchor: { defId: 'cat-core', name: 'Kerneinheiten', path: '0/1', anchorKind: 'categoryAnchor', isValueUnstable: false },
+      }]
     });
 
     expect(container.querySelector('span.badge').className).toContain('badge-danger');

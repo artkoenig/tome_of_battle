@@ -8,12 +8,12 @@ import {
   getEffectiveSelectionName,
   groupProfilesByType
 } from '../../solver/validator';
-import { isIndependentSubUnitSelection, selectionErrorsForCard } from './unitCardValidation';
+import { isIndependentSubUnitSelection, selectionViolationsForCard } from './unitCardValidation';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
 import { getProfileCellClassName } from '../profileCellClasses';
 import { useTranslation } from '../../i18n/useTranslation';
-import { formatValidationError } from '../../i18n/formatValidationError';
+import { formatViolation } from '../../i18n/violationMessages';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -43,7 +43,8 @@ export default function UnitSelectionCard({
   setSelectedRosterSelection,
   roster,
   system,
-  validationErrors,
+  violations,
+  pathBySelectionId,
   costTypeLabel,
   removeUnit,
   copyUnit,
@@ -196,8 +197,8 @@ export default function UnitSelectionCard({
   const effectiveName = getEffectiveSelectionName(selection, { system, roster, parentCatalogueId: activeCatalogue?.id });
   const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
   const displayPoints = unitCosts[roster.costLimitType] || 0;
-  const selectionErrors = selectionErrorsForCard(validationErrors, selection, system, activeCatalogue?.id);
-  const hasSelectionError = selectionErrors.length > 0;
+  const selectionViolations = selectionViolationsForCard(violations, pathBySelectionId, selection, system, activeCatalogue?.id);
+  const hasSelectionError = selectionViolations.length > 0;
 
   const independentSubUnits = (selection.selections || []).filter(
     subSel => isIndependentSubUnitSelection(subSel, system, activeCatalogue?.id)
@@ -323,10 +324,10 @@ export default function UnitSelectionCard({
         </div>
       </div>
 
-      {selectionErrors.map((err, idx) => (
+      {selectionViolations.map((violation, idx) => (
         <div key={idx} className="unit-error-alert text-danger text-label">
           <AlertTriangle size={14} />
-          <span>{formatValidationError(err, t)}</span>
+          <span>{formatViolation(violation, t)}</span>
         </div>
       ))}
 
@@ -355,7 +356,8 @@ export default function UnitSelectionCard({
               setSelectedRosterSelection={setSelectedRosterSelection}
               roster={roster}
               system={system}
-              validationErrors={validationErrors}
+              violations={violations}
+              pathBySelectionId={pathBySelectionId}
               costTypeLabel={costTypeLabel}
               removeUnit={(subUnitSelectionId) => subSelectionOperations.removeInstance(selection.id, subUnitSelectionId)}
               copyUnit={null}

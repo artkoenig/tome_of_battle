@@ -2,7 +2,7 @@ import { describe, test, expect, vi } from 'vitest';
 import {
   isIndependentSubUnitSelection,
   collectCardSelectionIds,
-  selectionErrorsForCard
+  selectionViolationsForCard
 } from './unitCardValidation';
 
 // Das Modul spricht den Solver über die Fassade an. Die reinen Baum- und
@@ -73,30 +73,48 @@ describe('collectCardSelectionIds', () => {
   });
 });
 
-describe('selectionErrorsForCard', () => {
-  const errorAtUnit = { selectionId: 'unit-1', message: 'Fehler an der Einheit' };
-  const errorAtNestedOption = { selectionId: 'opt-1-1', message: 'Fehler an der Option' };
-  const errorAtMountOption = { selectionId: 'mount-opt-1', message: 'Fehler am Reittier' };
-  const categoryError = { categoryId: 'cat-core', message: 'Kategorie-Fehler' };
+describe('selectionViolationsForCard', () => {
+  // Slot-Pfade des Kartenbaums, wie sie `useEvaluation.pathBySelectionId`
+  // liefert (Pfad-Schema des Berichts: `/`-verkettete Kind-Indizes).
+  const pathBySelectionId = new Map([
+    ['unit-1', '0/0'],
+    ['opt-1', '0/0/0'],
+    ['opt-1-1', '0/0/0/0'],
+    ['mount-1', '0/0/1'],
+    ['mount-opt-1', '0/0/1/0'],
+  ]);
 
-  test('liefert die Fehler der Einheit samt geschachtelter Optionen', () => {
-    const errors = selectionErrorsForCard(
-      [errorAtUnit, errorAtNestedOption, errorAtMountOption, categoryError],
-      unit, system, undefined
-    );
-    expect(errors).toEqual([errorAtUnit, errorAtNestedOption]);
+  const violationAt = (path, name) => ({
+    origin: 'derivedLimit',
+    severity: 'error',
+    anchor: { defId: `def-${name}`, name, path, anchorKind: 'occupied', isValueUnstable: false },
   });
 
-  test('liefert für die Untereinheiten-Karte nur deren Teilbaum-Fehler', () => {
-    const errors = selectionErrorsForCard(
-      [errorAtUnit, errorAtNestedOption, errorAtMountOption],
-      mount, system, undefined
+  const violationAtUnit = violationAt('0/0', 'Einheit');
+  const violationAtNestedOption = violationAt('0/0/0/0', 'Option');
+  const violationAtMountOption = violationAt('0/0/1/0', 'Reittier');
+  // Kategorie-Anker liegen außerhalb jedes Kartenteilbaums.
+  const categoryViolation = violationAt('0/5', 'Kategorie');
+
+  test('liefert die Verletzungen der Einheit samt geschachtelter Optionen', () => {
+    const violations = selectionViolationsForCard(
+      [violationAtUnit, violationAtNestedOption, violationAtMountOption, categoryViolation],
+      pathBySelectionId, unit, system, undefined
     );
-    expect(errors).toEqual([errorAtMountOption]);
+    expect(violations).toEqual([violationAtUnit, violationAtNestedOption]);
   });
 
-  test('übersteht fehlende und missgebildete Fehlerlisten', () => {
-    expect(selectionErrorsForCard(null, unit, system, undefined)).toEqual([]);
-    expect(selectionErrorsForCard([null, undefined, {}], unit, system, undefined)).toEqual([]);
+  test('liefert für die Untereinheiten-Karte nur deren Teilbaum-Verletzungen', () => {
+    const violations = selectionViolationsForCard(
+      [violationAtUnit, violationAtNestedOption, violationAtMountOption],
+      pathBySelectionId, mount, system, undefined
+    );
+    expect(violations).toEqual([violationAtMountOption]);
+  });
+
+  test('übersteht fehlende und missgebildete Verletzungslisten und fehlende Pfad-Zuordnung', () => {
+    expect(selectionViolationsForCard(null, pathBySelectionId, unit, system, undefined)).toEqual([]);
+    expect(selectionViolationsForCard([null, undefined, {}], pathBySelectionId, unit, system, undefined)).toEqual([]);
+    expect(selectionViolationsForCard([violationAtUnit], null, unit, system, undefined)).toEqual([]);
   });
 });

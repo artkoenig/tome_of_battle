@@ -49,7 +49,7 @@ const mockCollectUnitProfilesAndRules = vi.fn().mockReturnValue({ profiles: [], 
 
 let mockRoster = {};
 let mockCosts = {};
-let mockValidationErrors = [];
+let mockViolations = [];
 
 const defaultMockRoster = {
   id: 'roster-1',
@@ -73,16 +73,31 @@ const defaultMockRoster = {
 
 const defaultMockCosts = { pts: 420 };
 
-const defaultMockValidationErrors = [
-  { id: 'err-1', message: 'Minimale Anzahl Kern-Auswahlen nicht erreicht', categoryId: 'cat-core', severity: 'error' },
-  { id: 'err-2', message: 'Roster exceeds cost limit', selectionId: null, severity: 'error' }
+// Verletzungen in der Berichtsform der Evaluator-Fassade: eine an einem
+// Kategorie-Anker (färbt den Zähl-Chip der Kategorie) und eine Autoren-Meldung
+// auf Roster-Ebene (Text-Pass-through).
+const defaultMockViolations = [
+  {
+    origin: 'derivedLimit',
+    severity: 'error',
+    anchor: { defId: 'cat-core', name: 'Core', path: '0/3', anchorKind: 'categoryAnchor', isValueUnstable: false },
+  },
+  {
+    origin: 'authorMessage',
+    severity: 'error',
+    text: 'Roster exceeds cost limit',
+    anchor: { defId: 'roster', name: 'Roster', path: null, anchorKind: 'roster', isValueUnstable: false },
+  }
 ];
 
 vi.mock('../hooks/useRoster', () => ({
   useRoster: () => ({
     roster: mockRoster,
     costs: mockCosts,
-    validationErrors: mockValidationErrors,
+    violations: mockViolations,
+    capabilities: new Map(),
+    costTotals: {},
+    pathBySelectionId: new Map(),
     selectedRosterSelection: null,
     setSelectedRosterSelection: mockSetSelectedRosterSelection,
     addUnit: mockAddUnit,
@@ -126,8 +141,6 @@ vi.mock('../solver/validator', async (importOriginal) => ({
   getExtraResourceTotals: () => [],
   formatConstraintLimit: (value, constraint) =>
     (constraint?.percentValue === true || constraint?.type === 'percent') ? `${value} %` : `${value}`,
-  hasBlockingViolations: (errors) => (errors || []).some(e => e.severity === 'error'),
-  ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' },
   resolveListRuleGroup: () => ({ isListRuleGroup: false, states: [] }),
 }));
 
@@ -177,7 +190,7 @@ describe('RosterEditor Component', () => {
     mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: true });
     mockRoster = JSON.parse(JSON.stringify(defaultMockRoster));
     mockCosts = JSON.parse(JSON.stringify(defaultMockCosts));
-    mockValidationErrors = JSON.parse(JSON.stringify(defaultMockValidationErrors));
+    mockViolations = JSON.parse(JSON.stringify(defaultMockViolations));
     mockCanUndo = false;
     mockCanRedo = false;
   });
@@ -228,20 +241,26 @@ describe('RosterEditor Component', () => {
   });
 
   describe('Adversarial & Stress Tests', () => {
-    it('throws TypeError when validationErrors is null or undefined', () => {
-      // Simulate validationErrors being null/undefined (e.g. from a hook failure)
-      mockValidationErrors = null;
+    it('throws TypeError when violations is null or undefined', () => {
+      // Simulate violations being null/undefined (e.g. from a hook failure)
+      mockViolations = null;
       expect(() => render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />)).toThrow();
     });
 
-    it('throws TypeError when validationErrors contains null elements', () => {
-      // Simulate a null element in validationErrors list
-      mockValidationErrors = [null];
-      expect(() => render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />)).toThrow();
+    it('survives violations containing null elements', () => {
+      // Ein null-Element blockiert nicht (isBlockingViolation über ?.) und
+      // rendert als leere Meldung, statt den Editor zu reißen.
+      mockViolations = [null];
+      render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
+      expect(screen.getByText('Bretonnian Crusaders')).toBeDefined();
     });
 
-    it('survives validationErrors containing errors without message key', () => {
-      mockValidationErrors = [{ id: 'err-1', categoryId: 'cat-core' }]; // missing message
+    it('survives violations without limit classification (generic fallback)', () => {
+      mockViolations = [{
+        origin: 'derivedLimit',
+        severity: 'error',
+        anchor: { defId: 'def-1', name: 'Core', path: '0/0', anchorKind: 'occupied', isValueUnstable: false },
+      }]; // missing limit → generischer i18n-Schlüssel
       render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       expect(screen.getByText('Bretonnian Crusaders')).toBeDefined();
     });
@@ -291,15 +310,15 @@ describe('RosterEditor Component', () => {
   });
 
   describe('Lagerbericht Play Button and Flavor Text', () => {
-    it('does not render "Spielen" button when validation errors exist', () => {
-      // default mockValidationErrors contains errors, so roster is invalid
+    it('does not render "Spielen" button when blocking violations exist', () => {
+      // default mockViolations contains errors, so roster is invalid
       const { container } = render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       const mobilePlayBtn = container.querySelector('.mobile-only button');
       expect(mobilePlayBtn).toBeNull();
     });
 
     it('renders "Spielen" button and the cool flavor text when roster is valid', () => {
-      mockValidationErrors = []; // Valid roster!
+      mockViolations = []; // Valid roster!
       const { container } = render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
       
       const mobilePlayBtn = container.querySelector('.mobile-only button');

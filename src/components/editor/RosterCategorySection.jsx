@@ -8,6 +8,7 @@ import {
   childSelectionsOf
 } from '../../solver/validator';
 
+import { isBlockingViolation } from '../../evaluation/violationStats';
 import CategoryUnitAdder from './CategoryUnitAdder';
 import ListRuleChecklist from './ListRuleChecklist';
 import CategoryCountBadge from './CategoryCountBadge';
@@ -53,7 +54,7 @@ export default function RosterCategorySection({
   system,
   roster,
   activeCatalogue,
-  validationErrors,
+  violations,
   selectionCounts,
   forceCategoryCounts,
   costTypeLabel,
@@ -87,7 +88,14 @@ export default function RosterCategorySection({
 
   const categoryDefinition = system.categoryEntries?.find(ce => ce.id === categoryId);
   const categoryName = categoryDefinition ? categoryDefinition.name : categoryLink.name;
-  const categoryErrors = validationErrors.filter(e => e.categoryId === categoryId);
+  // Blockierende Verletzungen dieser Kategorie: der Evaluator verankert eine
+  // Kategorie-Grenze an einem Kategorie-Anker (`anchorKind: 'categoryAnchor'`),
+  // dessen `defId` der `categoryLink` (verlinkter Fall) oder die Kategorie
+  // selbst ist (unverlinkter Fall, `report.js`-Ankervertrag).
+  const categoryViolations = violations.filter(violation =>
+    isBlockingViolation(violation)
+    && violation.anchor?.anchorKind === 'categoryAnchor'
+    && (violation.anchor.defId === categoryId || violation.anchor.defId === categoryLink.id));
   const count = forceCategoryCounts[categoryId] || 0;
 
   const displayContext = { roster, system, selectionCounts, forceCategoryCounts };
@@ -131,7 +139,7 @@ export default function RosterCategorySection({
               maxValue={maxValue}
               minConstraint={minConstraint}
               maxConstraint={maxConstraint}
-              hasErrors={categoryErrors.length > 0}
+              hasErrors={categoryViolations.length > 0}
             />
           )}
         </div>

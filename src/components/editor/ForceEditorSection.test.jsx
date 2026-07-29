@@ -59,7 +59,7 @@ const renderForce = (props = {}) => render(
     system={system}
     roster={{ catalogueId: 'bret-cat', costLimitType: 'pts' }}
     activeCatalogue={{ id: 'bret-cat' }}
-    validationErrors={[]}
+    violations={[]}
     costTypeLabel="Pkt."
     addUnit={vi.fn()}
     removeUnit={vi.fn()}
@@ -146,7 +146,7 @@ describe('ForceEditorSection', () => {
         system={system}
         roster={{ catalogueId: 'bret-cat', costLimitType: 'pts' }}
         activeCatalogue={{ id: 'bret-cat' }}
-        validationErrors={[]}
+        violations={[]}
         costTypeLabel="Pkt."
         addUnit={vi.fn()}
         removeUnit={vi.fn()}

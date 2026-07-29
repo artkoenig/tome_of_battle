@@ -15,7 +15,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   const {
     roster,
     costs,
-    validationErrors,
+    violations,
+    pathBySelectionId,
     selectedRosterSelection,
     setSelectedRosterSelection,
     addUnit,
@@ -80,7 +81,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     setSelectedRosterSelection,
     roster,
     system,
-    validationErrors,
+    violations,
+    pathBySelectionId,
     costTypeLabel,
     removeUnit,
     copyUnit,
@@ -124,7 +126,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               system={system}
               roster={roster}
               activeCatalogue={activeCatalogue}
-              validationErrors={validationErrors}
+              violations={violations}
               costTypeLabel={costTypeLabel}
               addUnit={addUnit}
               removeUnit={removeUnit}
@@ -145,7 +147,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           roster={roster}
           system={system}
           costs={costs}
-          validationErrors={validationErrors}
+          violations={violations}
           costTypeLabel={costTypeLabel}
           className="desktop-only-sidebar"
         />

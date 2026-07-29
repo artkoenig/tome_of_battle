@@ -3,16 +3,16 @@ import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
 import { PERSISTENCE_FAILURE_MESSAGE_KEY } from '../utils/persistenceFailure';
 import { t } from '../i18n/i18nStore';
-import { syncRosterSelectionsWithSystem, calculateRosterCosts, validateRoster } from '../solver/validator';
+import { syncRosterSelectionsWithSystem, calculateRosterCosts } from '../solver/validator';
 
 // Only the rules engine is stubbed. The roster-tree primitives (rosterTree.js,
 // re-exported by the facade) stay real: they are pure data-structure traversal
 // with no rules in them, and stubbing them would hollow out the very state
-// updates these tests assert on.
+// updates these tests assert on. Der Evaluator-Pfad (useEvaluation) läuft echt:
+// das System dieser Tests trägt kein rawXmls, also liefert er das Leer-Ergebnis.
 vi.mock('../solver/validator', async (importOriginal) => ({
   ...(await importOriginal()),
   calculateRosterCosts: vi.fn(() => ({ points: 100 })),
-  validateRoster: vi.fn(() => []),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
   syncRosterSelectionsWithSystem: vi.fn(roster => roster),
 }));
@@ -34,29 +34,31 @@ describe('useRoster Hook', () => {
     syncRosterSelectionsWithSystem.mockImplementation(roster => roster);
   });
 
-  it('initializes with the roster and its derived costs and errors', () => {
+  it('initializes with the roster and its derived costs and evaluator result', () => {
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
     expect(result.current.roster).toEqual(initialRoster);
     expect(result.current.costs).toEqual({ points: 100 });
-    expect(result.current.validationErrors).toEqual([]);
+    // Das System dieser Tests hat kein rawXmls → Leer-Ergebnis des Evaluators.
+    expect(result.current.violations).toEqual([]);
+    expect(result.current.capabilities).toBeInstanceOf(Map);
+    expect(result.current.costTotals).toEqual({});
+    expect(result.current.pathBySelectionId).toBeInstanceOf(Map);
   });
 
-  it('derives costs and validation errors from the roster without waiting for the debounce', () => {
+  it('derives costs from the roster without waiting for the debounce', () => {
     vi.useFakeTimers();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
 
     calculateRosterCosts.mockReturnValueOnce({ points: 250 });
-    validateRoster.mockReturnValueOnce([{ message: 'Zu viele Punkte' }]);
 
     act(() => {
       result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
     });
 
-    // Ohne Vorlauf der Debounce: Anzeige und Validierung gehören bereits zum neuen Roster
+    // Ohne Vorlauf der Debounce: die Anzeige gehört bereits zum neuen Roster
     expect(result.current.costs).toEqual({ points: 250 });
-    expect(result.current.validationErrors).toEqual([{ message: 'Zu viele Punkte' }]);
 
     vi.useRealTimers();
   });
