@@ -134,14 +134,19 @@
  *           ],
  *           "diagnostics": {                      // OPTIONAL: Aussagen ueber `report.diagnostics`
  *             "present": [                         // Diagnosen, die auftreten MUESSEN
- *               { "kind": "<DiagnosticKind-Schluessel>", "targetId": "<id>"?, "defId": "<id>"?, "minCount": <n>? }
+ *               { "kind": "<DiagnosticKind-Schluessel>", "targetId": "<id>"?, "defId": "<id>"?, "scope": "<scope>"?, "minCount": <n>? }
  *               //         `kind` ist ein Schluessel der SSOT-Aufzaehlung `DiagnosticKind`
- *               //         (z. B. "MISSING_CATALOGUE_DEPENDENCY"). `targetId`/`defId` engen
- *               //         den Treffer optional auf ein konkretes Ziel ein; `minCount`
+ *               //         (z. B. "MISSING_CATALOGUE_DEPENDENCY"). `targetId`/`defId`/`scope`
+ *               //         engen den Treffer optional ein; `minCount`
  *               //         (Default 1) fordert mindestens so viele passende Diagnosen.
  *             ],
  *             "absent": [                          // Diagnose-Arten, die NICHT auftreten duerfen
- *               { "kind": "<DiagnosticKind-Schluessel>", "targetId": "<id>"? }
+ *               { "kind": "<DiagnosticKind-Schluessel>", "targetId": "<id>"?, "defId": "<id>"?, "scope": "<scope>"? }
+ *               //         `scope` ist bei "absent" oft noetig: `UNRESOLVED_SCOPE` entsteht fuer
+ *               //         JEDEN nicht aufgeloesten Bezugsrahmen. Ohne die Einschraenkung
+ *               //         hiesse die Aussage „kein Rahmen des ganzen Berichts bleibt
+ *               //         unaufgeloest" und fiele ueber jeden unabhaengigen, noch offenen
+ *               //         Rahmen desselben Datensatzes.
  *             ]
  *           }
  *         }

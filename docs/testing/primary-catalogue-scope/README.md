@@ -60,6 +60,7 @@ jedes Armeebuch per `catalogueLink` importiert.
 | **PCS-R4** | **Maneaters — zwei gegenläufige Modifikatoren an derselben Katalog-Id:** Außerhalb einer Ogerarmee kostet der Maneater einen **Rare-Slot extra** (`notInstanceOf`); **in** der Ogerarmee ist derselbe Eintrag **verborgen** (`instanceOf`). | `Mercenaries (…).cat:3832-3857` — `selectionEntry "Extra Rare choice"` `ea59-6ea6-b3c9-c34a` unter `selectionEntry "Maneaters"` `b360-ce9c-85d7-ff03`. Constraints: **`0799-afbf-f13f-bdac`** `type=max value=1 scope=parent`, **`9e9f-e78d-6390-accc`** `type=min value=0 scope=parent`. Modifikatoren: `set value="1" field="9e9f-e78d-6390-accc"` mit `notInstanceOf … childId="731d-…"`; `set value="true" field="hidden"` mit `instanceOf … childId="731d-…"`. |
 | **PCS-R5** | **Das Armeebuch kommt aus der Herkunft der Force-Definition, nicht aus dem `.ros`.** | Die Forces stehen in den Armeebüchern: `forceEntry "Standard (OK-AB)"` `729f-9246-5cd3-5044` in `Ogre Kingdoms (…).cat:3090`, `forceEntry "Standard (VC-AB)"` `e989-15b8-7eb6-9668` in `Vampire Counts (…).cat:29297`, `forceEntry "Standard (OG-AB)"` `2bfa-e64a-7123-895f` in `Orcs and goblins (…).cat:47`. Das `catalogueId`-Attribut einer `<force>` ist Roster-Beiwerk — bestehende Fixtures tragen dort schon heute Platzhalter (`catalogueId="cat"` in `ogre-kingdoms/rosters/06-two-tyrants.ros`), und die Formatspezifikation entscheidet das ausdrücklich zugunsten der Definitionsherkunft ([§7.6-Kasten](../../battlescribe-data-format.md#scope-primary-catalogue), Issue 077). Roster 10 nagelt das fest. |
 | **PCS-R6** | **Sichtbarkeit ist an denselben Bedingungen modelliert** — Maneaters-`Extra Rare choice` wird in der Ogerarmee `hidden=true`; die beiden Rhinox-Zusatz-Slots sind per Basis `hidden="true"` und werden je Seite eingeblendet; `categoryEntry "Regiment of Renown"` wird über `notInstanceOf … childId="fa9c-5f79-ce12-480c"` (*Dogs of War*, im Fixture-Satz gar nicht geladen) verborgen; die `.gst`-Kampagneneinträge werden nur für benannte Armeebücher sichtbar. | `Mercenaries (…).cat:3851-3855`, `:4096`, `:4126`, `:39-48`; `.gst:2294-2333`. **Nicht** als feuernde Grenze zu erwarten — der Verletzungsbericht kodiert zählende Grenzen, keine (Un-)Sichtbarkeit. |
+| **PCS-R7** | **Der Rahmen muss *aufgelöst* worden sein:** Für **jedes** dieser Roster steht ein Armeebuch fest (die `<force>`-Definition stammt aus einem geladenen `.cat`), also darf **keine** Diagnose `UNRESOLVED_SCOPE` entstehen. Unbestimmbar wäre das Armeebuch nur ohne umschließende Force oder wenn die Force-Definition aus der `.gst` statt aus einem Armeebuch käme — beides trifft hier auf keines der zehn Roster zu. | [§7.6-Kasten](../../battlescribe-data-format.md#scope-primary-catalogue): „*Lässt sich das Armeebuch nicht bestimmen — keine umschließende Force, oder ihre Definition steht in der `.gst` statt in einem Armeebuch —, meldet die Engine `unresolvedScope` und wertet fail-closed, statt still ein Armeebuch anzunehmen.*" Die drei benutzten `forceEntry` stehen ausweislich PCS-R5 in `Ogre Kingdoms (…).cat`, `Vampire Counts (…).cat` bzw. `Orcs and goblins (…).cat`; alle drei Kataloge sind im `dataset` geladen. |
 
 ### Die Wahrheitstabelle je Armeebuch
 
@@ -79,23 +80,55 @@ Mercenaries) — nur die `entryId` der `<force>` unterscheidet die Fälle. Die
 Selektionen darunter sind byte-gleich; damit ist das Armeebuch die **einzige**
 Variable.
 
-> **Assertion-Fokus:** nur die genannten Constraint-Ids. Andere Armeeaufbau-
-> Diagnosen (General-/Core-Pflicht, Pflicht-Ausrüstung der Einheiten,
-> Punktelimit) können zusätzlich auftreten und sind hier ohne Belang — sie sind
-> in beiden Hälften eines Paares identisch und stören den Kontrast nicht.
+> **Assertion-Fokus:** nur die genannten Constraint-Ids — und, für **jedes**
+> Roster, die Abwesenheit der Diagnose `UNRESOLVED_SCOPE` (PCS-R7, siehe den
+> Abschnitt darunter). Andere Armeeaufbau-Diagnosen (General-/Core-Pflicht,
+> Pflicht-Ausrüstung der Einheiten, Punktelimit) können zusätzlich auftreten und
+> sind hier ohne Belang — sie sind in beiden Hälften eines Paares identisch und
+> stören den Kontrast nicht.
 
 | # | Testtitel | Kontingent (Armeebuch) | Roster-Zustand | Erwartetes Ergebnis des Evaluators (nicht-technisch) | Fixture |
 |---|-----------|------------------------|----------------|-------------------------------------------------------|---------|
-| 01 | Rhinox Riders in der **Ogerarmee** | `729f…` (Ogre `731d…`) | Eine `Rhinox Riders`-Einheit mit einem Modell. | **PCS-R1 feuert:** `b830-0538-045e-ee90` (Ist 0, Grenze 1) — in der Ogerarmee ist der Special-Slot Pflicht. **PCS-R2 feuert nicht** (`e575…` bleibt min 0), **PCS-R3 feuert nicht** (Grenze aufgehoben). | [`01-ogre-rhinox-riders.ros`](rosters/01-ogre-rhinox-riders.ros) |
-| 02 | **Dieselbe** Einheit in der **Vampirarmee** | `e989…` (VC `4d73…`) | Byte-gleiche Selektion wie 01. | **Umgekehrt:** `e575-a5af-7fb3-5930` feuert (Ist 0, Grenze 1), `b830…` **nicht**. `47d7…` steht auf max 1 und ist mit einer Einheit eingehalten. | [`02-vampire-rhinox-riders.ros`](rosters/02-vampire-rhinox-riders.ros) |
-| 03 | Dieselbe Einheit in der **Orkarmee** | `2bfa…` (O&G `4049…`) | Byte-gleiche Selektion wie 01/02. | Wie 02 — belegt: die Bedingung prüft **Identität mit genau `731d…`**, nicht „Oger gegen Vampire". | [`03-orcs-rhinox-riders.ros`](rosters/03-orcs-rhinox-riders.ros) |
-| 04 | Ogerarmee, Pflicht **erfüllt** | `729f…` (Ogre) | Rhinox Riders **mit** `Extra Special choice` (`6c8d…`). | Keine Verletzung: die per `primary-catalogue` gehobene Untergrenze ist mit Ist 1 erfüllt; die Obergrenze `f873…` (max 1) ebenfalls. | [`04-ogre-rhinox-extra-special-satisfied.ros`](rosters/04-ogre-rhinox-extra-special-satisfied.ros) |
-| 05 | Vampirarmee, Pflicht **erfüllt** | `e989…` (VC) | Rhinox Riders **mit** `Extra Rare choice` (`a97e…`). | Spiegelbild zu 04: `e575…` erfüllt (Ist 1), `18c5…` (max 1) eingehalten. | [`05-vampire-rhinox-extra-rare-satisfied.ros`](rosters/05-vampire-rhinox-extra-rare-satisfied.ros) |
-| 06 | **Zwei** Rhinox Riders in der Ogerarmee | `729f…` (Ogre) | Zwei `Rhinox Riders`-Einheiten. | **PCS-R3:** Der `set -1`-Modifier hebt die force-skopierte Obergrenze auf — trotz Ist 2 über dem Rohwert 1 **keine** Verletzung von `47d7…`. | [`06-ogre-two-rhinox-riders.ros`](rosters/06-ogre-two-rhinox-riders.ros) |
-| 07 | **Zwei** Rhinox Riders in der Vampirarmee | `e989…` (VC) | Byte-gleiche Selektion wie 06. | **PCS-R3, Gegenbeweis:** `47d7-b2ed-39e9-0e60` feuert (Ist 2, Grenze 1). Derselbe Aufbau, anderes Armeebuch, anderes Ergebnis. | [`07-vampire-two-rhinox-riders.ros`](rosters/07-vampire-two-rhinox-riders.ros) |
-| 08 | Maneaters in der **Ogerarmee** | `729f…` (Ogre) | Eine `Maneaters`-Einheit mit einem Modell. | **PCS-R4, `instanceOf`-Seite:** `9e9f-e78d-6390-accc` bleibt bei min 0 und feuert **nicht**; der Eintrag ist dort ohnehin verborgen (Sichtbarkeit, kein Bericht). `0799…` (max 1) eingehalten. | [`08-ogre-maneaters.ros`](rosters/08-ogre-maneaters.ros) |
-| 09 | **Dieselben** Maneaters in der Vampirarmee | `e989…` (VC) | Byte-gleiche Selektion wie 08. | **PCS-R4, `notInstanceOf`-Seite:** `9e9f-e78d-6390-accc` feuert (Ist 0, Grenze 1) — der Maneater kostet außerhalb einer Ogerarmee einen Rare-Slot extra. | [`09-vampire-maneaters.ros`](rosters/09-vampire-maneaters.ros) |
-| 10 | Lügendes `catalogueId`-Attribut | `e989…` (VC), `.ros` behauptet Ogre | Wie 02, aber `<force … catalogueId="731d-5b13-2a92-5427" catalogueName="Ogre Kingdoms">`. | **PCS-R5:** Das Ergebnis muss **identisch zu 02** bleiben — `e575…` feuert, `b830…` nicht. Das Armeebuch kommt aus der Herkunft der Force-**Definition**, nicht aus dem Roster-Attribut. | [`10-vampire-force-with-ogre-catalogueid-attribute.ros`](rosters/10-vampire-force-with-ogre-catalogueid-attribute.ros) |
+| 01 | Rhinox Riders in der **Ogerarmee** | `729f…` (Ogre `731d…`) | Eine `Rhinox Riders`-Einheit mit einem Modell. | **PCS-R1 feuert:** `b830-0538-045e-ee90` (Ist 0, Grenze 1) — in der Ogerarmee ist der Special-Slot Pflicht. **PCS-R2 feuert nicht** (`e575…` bleibt min 0), **PCS-R3 feuert nicht** (Grenze aufgehoben). **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose. | [`01-ogre-rhinox-riders.ros`](rosters/01-ogre-rhinox-riders.ros) |
+| 02 | **Dieselbe** Einheit in der **Vampirarmee** | `e989…` (VC `4d73…`) | Byte-gleiche Selektion wie 01. | **Umgekehrt:** `e575-a5af-7fb3-5930` feuert (Ist 0, Grenze 1), `b830…` **nicht**. `47d7…` steht auf max 1 und ist mit einer Einheit eingehalten. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose — der Ogre-Zweig wurde *geprüft* und traf nicht zu. | [`02-vampire-rhinox-riders.ros`](rosters/02-vampire-rhinox-riders.ros) |
+| 03 | Dieselbe Einheit in der **Orkarmee** | `2bfa…` (O&G `4049…`) | Byte-gleiche Selektion wie 01/02. | Wie 02 — belegt: die Bedingung prüft **Identität mit genau `731d…`**, nicht „Oger gegen Vampire". **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose. | [`03-orcs-rhinox-riders.ros`](rosters/03-orcs-rhinox-riders.ros) |
+| 04 | Ogerarmee, Pflicht **erfüllt** | `729f…` (Ogre) | Rhinox Riders **mit** `Extra Special choice` (`6c8d…`). | Keine Verletzung: die per `primary-catalogue` gehobene Untergrenze ist mit Ist 1 erfüllt; die Obergrenze `f873…` (max 1) ebenfalls. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose. | [`04-ogre-rhinox-extra-special-satisfied.ros`](rosters/04-ogre-rhinox-extra-special-satisfied.ros) |
+| 05 | Vampirarmee, Pflicht **erfüllt** | `e989…` (VC) | Rhinox Riders **mit** `Extra Rare choice` (`a97e…`). | Spiegelbild zu 04: `e575…` erfüllt (Ist 1), `18c5…` (max 1) eingehalten. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose — die Untergrenze stand durch einen *ausgewerteten* `notInstanceOf`-Treffer auf 1. | [`05-vampire-rhinox-extra-rare-satisfied.ros`](rosters/05-vampire-rhinox-extra-rare-satisfied.ros) |
+| 06 | **Zwei** Rhinox Riders in der Ogerarmee | `729f…` (Ogre) | Zwei `Rhinox Riders`-Einheiten. | **PCS-R3:** Der `set -1`-Modifier hebt die force-skopierte Obergrenze auf — trotz Ist 2 über dem Rohwert 1 **keine** Verletzung von `47d7…`. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose. | [`06-ogre-two-rhinox-riders.ros`](rosters/06-ogre-two-rhinox-riders.ros) |
+| 07 | **Zwei** Rhinox Riders in der Vampirarmee | `e989…` (VC) | Byte-gleiche Selektion wie 06. | **PCS-R3, Gegenbeweis:** `47d7-b2ed-39e9-0e60` feuert (Ist 2, Grenze 1). Derselbe Aufbau, anderes Armeebuch, anderes Ergebnis. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose. | [`07-vampire-two-rhinox-riders.ros`](rosters/07-vampire-two-rhinox-riders.ros) |
+| 08 | Maneaters in der **Ogerarmee** | `729f…` (Ogre) | Eine `Maneaters`-Einheit mit einem Modell. | **PCS-R4, `instanceOf`-Seite:** `9e9f-e78d-6390-accc` bleibt bei min 0 und feuert **nicht**; der Eintrag ist dort ohnehin verborgen (Sichtbarkeit, kein Bericht). `0799…` (max 1) eingehalten. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose. | [`08-ogre-maneaters.ros`](rosters/08-ogre-maneaters.ros) |
+| 09 | **Dieselben** Maneaters in der Vampirarmee | `e989…` (VC) | Byte-gleiche Selektion wie 08. | **PCS-R4, `notInstanceOf`-Seite:** `9e9f-e78d-6390-accc` feuert (Ist 0, Grenze 1) — der Maneater kostet außerhalb einer Ogerarmee einen Rare-Slot extra. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose. | [`09-vampire-maneaters.ros`](rosters/09-vampire-maneaters.ros) |
+| 10 | Lügendes `catalogueId`-Attribut | `e989…` (VC), `.ros` behauptet Ogre | Wie 02, aber `<force … catalogueId="731d-5b13-2a92-5427" catalogueName="Ogre Kingdoms">`. | **PCS-R5:** Das Ergebnis muss **identisch zu 02** bleiben — `e575…` feuert, `b830…` nicht. Das Armeebuch kommt aus der Herkunft der Force-**Definition**, nicht aus dem Roster-Attribut. **PCS-R7:** keine `UNRESOLVED_SCOPE`-Diagnose — das widersprüchliche Attribut darf die Auflösung nicht verhindern. | [`10-vampire-force-with-ogre-catalogueid-attribute.ros`](rosters/10-vampire-force-with-ogre-catalogueid-attribute.ros) |
+
+### Die Zusage „keine `UNRESOLVED_SCOPE`-Diagnose" (PCS-R7) — was sie leistet
+
+Die Verletzungserwartungen allein sind **einseitig scharf**. Fiele der
+Bezugsrahmen zurück in „unaufgelöst", zählte er 0 ([§7.6-Kasten](../../battlescribe-data-format.md#scope-primary-catalogue):
+Diagnose + fail-closed) — und dann gilt:
+
+| Seite | Bedingung | Bei Zählwert 0 … | Merkt der Verletzungsbericht das? |
+|-------|-----------|------------------|------------------------------------|
+| **`instanceOf`** (Roster 01, 04, 06, 08) | „ist Ogre Kingdoms" | hält **nicht** → der Ogre-Modifier greift nicht | **Ja.** `b830…` bliebe bei min 0 (01 fiele), `47d7…` bliebe bei max 1 (06 fiele). |
+| **`notInstanceOf`** (Roster 02, 03, 05, 07, 09, 10) | „ist *nicht* Ogre Kingdoms" | hält **ebenfalls** → der Nicht-Ogre-Modifier greift wie gewollt | **Nein.** Das Ergebnis wäre zufällig richtig; ein stiller Rückfall auf fail-closed bliebe unbemerkt. |
+
+Genau diese Lücke schließt `expect.diagnostics.absent`: „für dieses Roster
+entsteht **keine** `UNRESOLVED_SCOPE`-Diagnose" trennt „*der Rahmen wurde
+ausgewertet und traf nicht zu*" von „*der Rahmen ließ sich gar nicht
+auflösen*" — zwei Zustände, die im reinen Zählwert ununterscheidbar sind.
+
+**Warum alle zehn Roster die Zusage tragen und nicht nur die sechs der
+`notInstanceOf`-Seite:** Die Aussage ist für jedes Roster dieselbe und aus
+denselben Daten belegt (PCS-R7) — jede `<force>` stammt aus einem geladenen
+Armeebuch, also ist der Rahmen in allen zehn Fällen bestimmbar. Sie nur dort
+hinzuschreiben, wo sie das Netz enger zieht, würde suggerieren, für die vier
+`instanceOf`-Roster sei ein unaufgelöster Rahmen hinnehmbar. Auch dort ist die
+Zusage nicht wertlos: sie unterscheidet „der Ogre-Zweig traf zu" von „der Ogre-
+Zweig traf zu, obwohl der Rahmen nebenher als unauflösbar gemeldet wurde".
+
+Die Zusage ist **nicht** auf ein `targetId` eingeengt: sie verbietet die
+Diagnose-Art im ganzen Bericht des Rosters. Eine Einengung auf eine Ziel-Id, die
+die Diagnose gar nicht trägt, würde die Erwartung stillschweigend leerlaufen
+lassen — genau der Zahnlosigkeit, die sie beheben soll.
 
 ### Was bewusst **nicht** als feuernde Grenze erwartet wird
 
@@ -104,6 +137,7 @@ Variable.
 | **Sichtbarkeit (PCS-R6)** — Maneaters-`Extra Rare choice` `hidden=true` in der Ogerarmee, die beiden Rhinox-Zusatz-Slots `hidden=false` je Seite, `categoryEntry "Regiment of Renown"` und die `.gst`-Kampagneneinträge. | Als **Verfügbarkeit** (`field="hidden"`) modelliert, nicht als zählende Schranke. Der Verletzungsbericht kodiert zählende Grenzen; Sichtbarkeit liest man an der Capability-Projektion ab, nicht an `violations` (gleiche Abgrenzung wie in [`vampire-bloodlines`](../vampire-bloodlines/README.md), VBL-R4/R5). |
 | **Kategorie-Umhängungen** — die `entryLink`-Modifikatoren der Armeebücher (`add`/`remove`/`set-primary` auf `field="category"`) an denselben Einträgen. | Kategoriezugehörigkeit, keine Grenze. Die Roster wählen die Einträge über die **Ziel-Id** (`5e33-…`, `b360-…`) statt über einen armeebuch-eigenen `entryLink`; damit bleiben die beiden Hälften eines Paares strukturell identisch und die Kategorie-Modifikatoren außen vor. |
 | **`.gst`-Fall `categoryEntry "Chariot"`** (`4b43-5d4e-94ca-1fd5`, `set 1` bei `notInstanceOf … childName="Tomb Kings"` **und** `atLeast 1 Border Patrols rules`). | Als Beleg für „`childId` ist eine Katalog-Wurzel-Id" oben aufgeführt, aber **nicht** als Roster gebaut: die Grenze ist **kategorie**-skopiert und würde den Fall mit einer zweiten, hier nicht gemeinten Achse vermengen (siehe [`category-scope-bug`](../category-scope-bug/)). Der Tomb-Kings-Katalog ist im Fixture-Satz zudem gar nicht enthalten. |
+| **Der unauflösbare Rahmen selbst (PCS-R7, Gegenrichtung)** — ein Roster ohne umschließende Force bzw. mit einer `.gst`-eigenen Force-Definition, das die Diagnose `UNRESOLVED_SCOPE` *auslöst*. | Hier bewusst nicht gebaut: Dieses Szenario nagelt die **Identitätsprüfung** fest, und ein solches Roster brächte eine zweite Achse (fehlende/fremde Force-Herkunft) mit. Die zehn Roster fordern die Diagnose deshalb ausschließlich als **Abwesenheit**. |
 
 ---
 
@@ -133,3 +167,8 @@ Variable.
 | Katalog „Tomb Kings" — dito, `.gst`-Chariot-Bedingung | `9945-8537-0944-c67b` |
 | `entryLink` „Rhinox Riders" je Armeebuch (Ogre / VC / O&G) | `c8d5-1198-3d4a-8a67` / `7fd7-c08c-b5bf-86eb` / `d38d-cf82-1161-dce5` |
 | `entryLink` „Maneaters" je Armeebuch (Ogre / VC / O&G) | `313e-458a-246f-7e88` / `e58d-9561-8347-126e` / `4852-2f36-f843-f437` |
+
+*(Die Diagnose-Art `UNRESOLVED_SCOPE` aus PCS-R7 ist kein Katalog-Baustein,
+sondern ein Schlüssel der Diagnose-Aufzählung des Manifest-Vertrags — vgl.
+`UNRESOLVED_DEFINITION` in [`ogre-kingdoms`](../ogre-kingdoms/README.md) und
+`UNRESOLVED_BUDGET_LIMIT` in [`orcs-and-goblins-budget`](../orcs-and-goblins-budget/README.md).)*

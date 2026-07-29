@@ -155,8 +155,8 @@ and in `docs/testing/vampire-bloodlines/scenario.json`. In outline:
           }
         ],
         "diagnostics": {
-          "present": [{ "kind": "<DiagnosticKind>", "targetId": "<id>", "minCount": 1 }],
-          "absent": [{ "kind": "<DiagnosticKind>", "targetId": "<id>" }]
+          "present": [{ "kind": "<DiagnosticKind>", "targetId": "<id>", "scope": "<scope>", "minCount": 1 }],
+          "absent": [{ "kind": "<DiagnosticKind>", "targetId": "<id>", "scope": "<scope>" }]
         }
       }
     }
@@ -269,7 +269,13 @@ Key points of the contract:
     entry of its own" — are only checkable through this key.
 - **`expect.diagnostics`** (optional) asserts over `report.diagnostics`: `present`
   requires diagnostics of a given `DiagnosticKind` (optionally narrowed by
-  `targetId`/`defId`, with a `minCount`), `absent` forbids them.
+  `targetId`/`defId`/`scope`, with a `minCount`), `absent` forbids them.
+  **Narrow `absent` whenever the kind alone says too little.** `UNRESOLVED_SCOPE`
+  is the standing example: it arises for *every* reference frame the engine fails
+  to resolve, so an unnarrowed `absent` does not say "this frame resolves" but
+  "no frame anywhere in this report is unresolved" — and that falls over any
+  unrelated frame the same dataset still leaves open, coupling your scenario to
+  gaps it is not about. Add `"scope": "<the frame you mean>"`.
 - The expectation is **selective, not exhaustive**: beyond the ids/kinds named,
   it makes no claim. Other army-build diagnoses (general/core requirements, points
   limits) may additionally occur without breaking a case.

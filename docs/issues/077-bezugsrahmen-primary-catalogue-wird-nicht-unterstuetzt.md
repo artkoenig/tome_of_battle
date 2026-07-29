@@ -345,6 +345,34 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
   ausdrücklich als Problem benannt. Die Regel „nach einem Fix wiederholt sich
   die Review" ist damit bewusst gebrochen und die Abweichung hier festgehalten.
 
+- **2026-07-29, die Behebung von B3 legte eine Lücke im Manifest-Vertrag
+  frei.** Der Szenario-Autor schrieb die Zusage als
+  `diagnostics.absent: [{ kind: "UNRESOLVED_SCOPE" }]` — ohne Einengung, weil
+  der Vertrag nur `targetId` und `defId` kannte. Ergebnis: **alle zehn Roster
+  rot**, `expected 16 to be +0`. Die 16 Diagnosen stammen aus `unit` und
+  `ancestor` — also aus **Issue 0086**, das dieser Lauf ausdrücklich nicht löst.
+  Die Aussage „dieser eine Rahmen löst jetzt auf" ließ sich nur als „**kein**
+  Rahmen des ganzen Berichts bleibt unaufgelöst" schreiben, und die fällt über
+  jeden unabhängigen, noch offenen Rahmen desselben Datensatzes.
+
+  Behoben, indem der Vertrag die fehlende Einengung bekommt: `diagnosticsMatching`
+  (`__fixtures__/e2eReport.js`) filtert jetzt zusätzlich nach `scope`, Runner-
+  und Autor-Doku sind nachgezogen, und die Zusage lautet
+  `{ kind: "UNRESOLVED_SCOPE", scope: "primary-catalogue" }`.
+
+  **Wirkung, per Mutation gemessen:** Feature abgeschaltet
+  (`if (false && scope === ScopeKeyword.PRIMARY_CATALOGUE)`) → vorher fielen
+  **4 von 10** Rostern, jetzt **10 von 10**. Die `notInstanceOf`-Seite ist nicht
+  mehr zahnlos, und die Kopplung an Issue 0086 ist weg statt nur verdeckt.
+- **2026-07-29, Fakten vor dem PR, alle selbst erhoben.** `npx vitest run` →
+  **226 Dateien, 2322 Tests, Exit 0**. `npm run lint`, `npm run typecheck`,
+  `npm run depcruise` je **Exit 0**. `node scripts/measure-evaluator.js` →
+  **0** Abdrift-Meldungen (Exit 1 nur an der dokumentierten 100-ms-Schwelle, wie
+  auf `main`). `npm test` mit dem Puppeteer-Lauf der **alten Solver-UI** bewusst
+  nicht wiederholt: kein Produktivpfad dieser Änderung liegt unter
+  `src/solver/`, und ADR-0030 ist per `depcruise` als Fehlerregel abgesichert —
+  der Baseline-Lauf zu Beginn des Laufs war grün.
+
 ## Checkpoints
 
 ### Before implementation
@@ -370,8 +398,38 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja, alle vier Kriterien. Kriterium 1 ist
+  aus den Katalogdaten belegt statt angenommen; Kriterium 2 hat Zähne (Feature
+  abgeschaltet → 15 Modultests rot, 0 `unresolvedScope` für diesen Rahmen an
+  echten Daten gegen vorher 9); Kriterium 3 liegt als Szenario mit 10 Rostern
+  vor, das bei abgeschaltetem Feature **vollständig** fällt; Kriterium 4 ist
+  per Exitcode belegt, und es gab keine geänderte Erwartung zu begründen — kein
+  bestehendes Roster und keine bestehende `scenario.json` wurde angefasst.
+  Über die Absicht hinaus gegangen bin ich an zwei Stellen, beide oben
+  begründet: die Summe im Testkatalog (weil dieser Lauf sie selbst schreibt)
+  und die `scope`-Einengung im Manifest-Vertrag (weil Kriterium 3 sich ohne sie
+  nicht ausdrücken ließ, ohne Issue 0086 anzuketten).
+- **What surprised me?** Vor allem, wie oft die zweite Betrachtung noch etwas
+  fand, das die erste nicht sah. Der Reihe nach: `primary-catalogue` steht in
+  **keiner** Quelle — weder Wiki noch XSD noch Projektdoku —, die Kataloge
+  benutzen ein Schlüsselwort, das die Spezifikation nicht kennt. Der Rahmen ist
+  gar kein Zählrahmen. Der Messharness bildet die Fassade nach und wäre
+  gebrochen ausgeliefert worden, hätte sein eigener Abdrift-Wächter ihn nicht
+  gefangen. Die halbe E2E-Erwartung war zahnlos, weil `notInstanceOf` bei
+  Zählwert 0 hält — genau wie ein unaufgelöster Rahmen. Und die Behebung dieser
+  Zahnlosigkeit deckte auf, dass der Manifest-Vertrag die nötige Einengung gar
+  nicht kannte. Jeder dieser Funde kam von einem frischen Kontext, nicht von
+  mir.
+- **What am I assuming without having verified it?** Zwei Dinge, beide oben als
+  Default markiert und beide fail-closed abgesichert: dass ein Roster genau
+  einen Armeekatalog hat (im Fixture-Satz über alle 113 `<force>`-Elemente
+  belegt, allgemein nicht), und dass Kontingente aus Armeebüchern stammen statt
+  aus der `.gst` (in diesem Datensatz belegt, allgemein nicht). Trifft eines
+  nicht zu, meldet die Engine `unresolvedScope`, statt still falsch zu
+  antworten — der PIN dafür ist getestet. Drittens nehme ich an, dass der
+  Verzicht auf eine dritte Review-Runde vertretbar war, weil die letzten beiden
+  Nachbesserungen additiv sind; die `scope`-Einengung ist allerdings **kein**
+  reiner Testcode mehr, sondern erweitert den Manifest-Vertrag. Das ist die
+  schwächste Stelle dieser Entscheidung, und ich lege sie hiermit offen.
 
 ## Retro
