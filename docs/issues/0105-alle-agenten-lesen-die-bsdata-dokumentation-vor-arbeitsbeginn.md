@@ -41,9 +41,9 @@ For criterion 5 (ADR sweep):
 
 - [x] Audit all 36 ADRs against `docs/battlescribe-data-format.md` (three
       parallel researchers, per-ADR passage list: duplicate | contradiction)
-- [ ] Edit the flagged ADRs: remove format explanations and contradictions,
+- [x] Edit the flagged ADRs: remove format explanations and contradictions,
       keep the decisions, point to the bsdata documentation instead
-- [ ] Bump the revised ADRs' dates in the ADR index
+- [x] Bump the revised ADRs' dates in the ADR index
 - [ ] Fresh-context review of the whole intent (criteria 1–5)
 
 ## Decisions
@@ -95,6 +95,19 @@ For criterion 5 (ADR sweep):
   re-verified independently. Noted tension, no action: the precedence rule
   intentionally lives in both `.agents/AGENTS.md` (criterion 4) and ADR 0001
   (criterion 3) — a future change must move both together.
+- ADR sweep for criterion 5 (three parallel researchers over all 36 ADRs vs.
+  the bsdata doc): 26 ADRs clean. Format restatements removed and replaced by
+  doc references in 0003 (the heavy case: ID rule, cost-type semantics,
+  quantity math, force/parent constraint frames, `shared`, top-level parent
+  fallback, radio-vs-checkbox, optional upgrades, categories), 0005, 0011,
+  0014, 0016, 0018, 0027, 0029, 0031, 0032. One contradiction fixed: ADR 0032
+  B2 claimed a `forceEntry` points limit is "not directly expressible" while
+  the doc's §5.6 documents the real `limit::` pattern — reworded to the
+  engine-model statement. ADR-only facts (not in the doc, no contradiction)
+  stayed per the maintainer's instruction; their promotion into the doc is
+  filed as issue 0106. The audit's side find — ADR 0031 contradicting ADR
+  0030 on the cutover status, outside bsdata scope — is filed as issue 0107.
+  Index dates of all ten revised ADRs bumped to 2026-07-29 (rev.).
 
 ## Checkpoints
 
@@ -112,17 +125,19 @@ For criterion 5 (ADR sweep):
 
 ### Before the PR
 
-- Does this match what was asked? Yes — two rules in the one file every agent
-  receives: read the bsdata documentation before taking up work, and it takes
-  precedence over the ADRs; plus the matching exception in ADR 0001 so no
-  document contradicts them.
-- What surprised me? ADR 0001's "einzige Quelle der Wahrheit" claim — the
-  round-1 sweep passed because the precedence rule did not exist yet; round 2
-  caught the contradiction the moment it did.
-- What am I assuming without having verified it? Still the single assumption
-  from checkpoint 1: that the harness injects `CLAUDE.md` into every
-  subagent's context. The wiki submodule is uninitialized in a fresh clone —
-  the rule links it as upstream source only, the required read is the
-  in-repo file.
+- Does this match what was asked? Yes — the two rules in the one file every
+  agent receives (read the bsdata documentation first; it wins over the
+  ADRs), the matching exception in ADR 0001, and the sweep of all 36 ADRs
+  that removed restated format semantics and the one contradiction, leaving
+  decisions plus doc references.
+- What surprised me? ADR 0001's "einzige Quelle der Wahrheit" claim (caught
+  in round 2, the moment the precedence rule existed), and how concentrated
+  the duplication was: 10 of 36 ADRs, with ADR 0003 carrying most of it.
+- What am I assuming without having verified it? That the harness injects
+  `CLAUDE.md` into every subagent's context (from checkpoint 1). That the
+  ADR 0032 B2 rewording — an engine-model statement instead of a format
+  claim — matches the evaluator's actual code; the audit compared doc
+  against doc only. The wiki submodule stays uninitialized in a fresh
+  clone — the rule links it as upstream source only.
 
 ## Retro

@@ -20,8 +20,8 @@ Katalogquellen betrieben. Die bisherigen Einzelkonstanten weichen einer Liste
 `CATALOG_SOURCES` (`{gameSystemId, indexUrl, rawBaseUrl}`), über die sowohl die
 Spielsystem-Auswahl beim Import als auch der stille Update-Mechanismus iterieren. Die
 Zuordnung eines bereits gespeicherten Systems zu seiner Quelle läuft über seine ohnehin
-eindeutige `gameSystemId` (kein neues Datenbankfeld, keine Migration nötig — jede
-BattleScribe-`gameSystemId` ist bereits pro Quelle einmalig und stabil). Ein Anzeigelabel
+eindeutige `gameSystemId` (kein neues Datenbankfeld, keine Migration nötig — zur
+ID-Semantik siehe [BSData-Doku](../battlescribe-data-format.md) §3.1/§5.1). Ein Anzeigelabel
 trägt die Quelle bewusst nicht: Ein System wird unter seinem echten Katalognamen angezeigt,
 nicht unter einer quellenspezifischen Kurzbezeichnung (Revision 2026-07-18, Kind-Issue 10 —
 siehe Konsequenzen).

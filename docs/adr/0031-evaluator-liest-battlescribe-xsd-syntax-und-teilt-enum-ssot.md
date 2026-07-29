@@ -23,11 +23,10 @@ wird **ersatzlos entfernt** (kein Kompatibilitäts-Fallback): keine realen Daten
 nutzten es je, nur die engine-eigenen Fixtures, die auf echte BattleScribe-Syntax
 umgeschrieben werden.
 
-`scope` und `field` bleiben — wie in ADR-0016 festgehalten — auf XSD-Ebene reine
-`xs:string`-Grammatik ohne geschlossene Wertemenge; ihre Domänen-Semantik
-(Schlüsselwörter `roster`/`force`/`parent`/`self` bzw. eine Ziel-ID) bleibt daher
-Evaluator-eigene Konvention und wird nicht aus `src/solver/` bezogen (der Import
-`evaluator → solver` ist per ADR-0030 verboten).
+Die Domänen-Semantik von `scope` und `field` — auf XSD-Ebene reine
+`xs:string`-Grammatik, siehe [BSData-Doku](../battlescribe-data-format.md) §7.6 —
+bleibt Evaluator-eigene Konvention und wird nicht aus `src/solver/` bezogen (der
+Import `evaluator → solver` ist per ADR-0030 verboten).
 
 Begründung: Die aus ADR-0016 gelernte Drift-Klasse (Parser-/Solver-Bugs durch
 selbst gepflegte Enum-Kopien) soll sich in der zweiten Engine nicht wiederholen;
