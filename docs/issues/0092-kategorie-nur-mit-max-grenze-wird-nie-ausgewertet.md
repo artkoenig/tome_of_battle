@@ -55,12 +55,17 @@ Acceptance criteria:
   expectation from the catalog data alone, each changed pin individually
   justified. If the human disagrees, reverting the scenario commit restores
   the old pins.
-- **Anchor design (implementer):** unlinked category anchors are synthesized
-  once per scope (roster: root; force: first force), because the
-  target-type rule (§7.7) lifts force-scoped category targets army-wide —
-  per-force anchors would N-plicate the identical violation. Exclusions:
-  any linking force (its anchor already evaluates the limits) or an
-  existing min phantom in the frame (piggyback). No double report possible.
+- **Anchor design (final, after two fix loops — supersedes the first
+  formulation, which review round 1 refuted):** unlinked category anchors
+  are synthesized once per frame (roster: root; force: first force, since
+  the target-type rule §7.7 lifts category targets army-wide), and each
+  anchor carries a `limitScopeFilter` so it evaluates ONLY its frame's
+  limits (`evaluableLimitsOf`, read by the constraint layer). Exclusions:
+  a category linked by any force gets no own anchor at all; the ROSTER
+  frame counts as covered by any unfiltered phantom of the definition
+  anywhere in the tree (phantoms piggyback roster limits from any
+  location); the FORCE frame only by a phantom actually under a force (a
+  root phantom yields unresolvedScope there, not coverage).
 
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
@@ -134,8 +139,19 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — all four criteria met after two fix
+  loops; round 2 probed 12 topologies against the pre-change baseline and
+  found no new duplicate; suite 213 files / 2163 tests exit 0, E2E and
+  scenario runner green.
+- What surprised me? Criterion 3 was the whole issue: the first "no double
+  report possible" design duplicated in two mixed-scope topologies the
+  original tests didn't cover. The per-frame limit filter plus asymmetric
+  phantom-coverage rule is the design the tests finally admit. Also: an E2E
+  scenario had pinned the bug as a "Domänenkonvention".
+- What am I assuming without having verified it? That the human ratifies
+  the scenario re-derivation (revert path recorded in Decisions) and the
+  "offener Punkt" on sibling limit 6935/roster 03. No version bump:
+  evaluator not wired to the UI (session precedent); measure-evaluator and
+  knip exit 1 are pre-existing on origin/main, verified by the reviewer.
 
 ## Retro
