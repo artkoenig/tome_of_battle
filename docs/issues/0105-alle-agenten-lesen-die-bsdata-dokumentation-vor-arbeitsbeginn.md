@@ -59,6 +59,20 @@ Acceptance criteria:
 - Maintainer added criterion 4 after the first push: bsdata takes precedence
   over the ADRs. Precedence bullet added to the same section in
   `.agents/AGENTS.md`; same run, same branch.
+- Review round 2 (fresh context, whole intent incl. criterion 4): 3 findings.
+  Triage:
+  1. ADR 0001 ("Die ADRs sind … die einzige Quelle der Wahrheit") contradicts
+     the new precedence rule — criterion 3 broken. **Fixed:** an exception
+     bullet added to ADR 0001's Single-Source-of-Truth section stating the
+     bsdata documentation's precedence.
+  2. The issue record still described the pre-criterion-4 state (round-1
+     contradiction sweep, checkpoint 2 wording). **Fixed:** record updated —
+     this entry and the revised checkpoint 2 below.
+  3. Links in `.agents/AGENTS.md` resolve only via the root `CLAUDE.md`
+     symlink, 404 when the file is browsed directly. **Dismissed:** the
+     pre-existing ADR link on the line above has the same trait; root-relative
+     links are the file's established convention, and the root view is the
+     intended one.
 
 ## Checkpoints
 
@@ -76,11 +90,13 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked? Yes — one rule, in the one file every agent
-  receives, saying exactly what the maintainer asked: read the bsdata
-  documentation before taking up work.
-- What surprised me? Nothing beyond checkpoint 1; the review confirmed the
-  change without findings in one round.
+- Does this match what was asked? Yes — two rules in the one file every agent
+  receives: read the bsdata documentation before taking up work, and it takes
+  precedence over the ADRs; plus the matching exception in ADR 0001 so no
+  document contradicts them.
+- What surprised me? ADR 0001's "einzige Quelle der Wahrheit" claim — the
+  round-1 sweep passed because the precedence rule did not exist yet; round 2
+  caught the contradiction the moment it did.
 - What am I assuming without having verified it? Still the single assumption
   from checkpoint 1: that the harness injects `CLAUDE.md` into every
   subagent's context. The wiki submodule is uninitialized in a fresh clone —

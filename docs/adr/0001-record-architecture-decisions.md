@@ -44,6 +44,7 @@ Gewählte Option: **Option 2 (Dezentrales ADR-System)**.
 Da KI-Assistenten (`Gemini Antigravity`, `Claude Code`) eine zentrale Rolle bei der Code-Generierung in diesem Projekt spielen, gilt folgende zwingende Regel:
 - **Keine Duplikation:** Um Redundanz und veraltete Stände zu vermeiden, werden keine konkreten Architektur-Richtlinien in `.agents/AGENTS.md` oder `CLAUDE.md` kopiert.
 - **Pointer-Prinzip:** `.agents/AGENTS.md` und `CLAUDE.md` dienen als leichtgewichtige "Pointer" (Verweise). Sie verpflichten KI-Assistenten explizit dazu, vor jeder Bearbeitung die relevanten ADR-Dateien unter `docs/adr/` einzulesen. Die ADRs sind somit die einzige Quelle der Wahrheit (Single Source of Truth) für Mensch und Maschine.
+- **Vorrang der BSData-Dokumentation:** Eine Ausnahme vom vorigen Punkt: Die BSData-Dokumentation [`docs/battlescribe-data-format.md`](../battlescribe-data-format.md) hat Vorrang vor den ADRs. Widersprechen sich ein ADR und die BSData-Dokumentation, gilt die BSData-Dokumentation; das ADR ist veraltet und wird korrigiert.
 
 
 ### Konsequenzen (Auswirkungen)
