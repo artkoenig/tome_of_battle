@@ -112,6 +112,13 @@ Acceptance criteria:
   §4.6 — korrigiert. Triage: beide sofort gefixt (Doku-Spiegel-Regel).
   Ungetestete, offen protokollierte Defaults (remove-der-Primären,
   Link-vor-Ziel-Erbregel) vom Review als Offenlegung gewertet, kein Befund.
+- 2026-07-29 — Review Runde 2 (frischer Kontext, ganze Intent): 0 Befunde,
+  alle 4 Kriterien erfüllt. Belege selbst erhoben: `npx vitest run
+  src/evaluator` 65 Dateien/819 Tests Exit 0; Lint Exit 0; Typecheck Exit 0;
+  zusätzlich im Wegwerf-Worktree auf dem Test-Commit `0c204a1` verifiziert,
+  dass die 10 Tests ohne Implementierung rot sind und danach nie editiert
+  wurden. Blast-Radius geprüft (Fixpunkt/Fingerabdruck, Phantom-Seeding,
+  Force-Entries, Doku) — nichts gefunden. Konvergenz: 2 → 0.
 
 ## Checkpoints
 
@@ -134,8 +141,19 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? — Ja. Alle vier Kriterien sind erfüllt und
+  von zwei unabhängigen Review-Runden per Exit-Code belegt; der Bericht
+  trägt jetzt `categoryIds` und `primaryCategoryId`, das §8-Beispiel ist
+  daraus ableitbar, `unset-primary` wirkt, die Zählung ist unverändert
+  (819 Tests grün).
+- What surprised me? — Wie klein der Kern war: die effektive Mitgliedschaft
+  existierte schon vollständig, es fehlten nur Primär-Flag und
+  Berichtsfelder. Und dass die Suite nach der Änderung im ersten Lauf grün
+  war — das Seeding „frische Kopie je Runde" trug das Primär-Flag gratis.
+- What am I assuming without having verified it? — Die zwei als Default
+  protokollierten Ränder bleiben ungetestet (remove-der-Primären löscht das
+  Flag; Link-eigener Basis-Primär schlägt das Ziel — nur die Erb-Richtung
+  ist getestet). Beides ist in Decisions offengelegt; ob das
+  Referenzprogramm es genauso hält, ist upstream unbelegt (§15-Lücke).
 
 ## Retro
