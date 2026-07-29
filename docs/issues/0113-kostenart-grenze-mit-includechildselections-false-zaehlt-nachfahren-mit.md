@@ -44,6 +44,10 @@ Acceptance criteria:
   Issue-091-Test „liest nur die Kosten des Traegers"), Kriterium 2 ist durch
   `constraints.carrierDescendants.test.js` gepinnt (alle Issue-083-Fixtures
   nutzen `field="selections"`). Ein Duplikat schriebe denselben Test noch einmal.
+- **Versions-Bump Patch 1.9.0 → 1.9.1** (default, unanswered): Der Fix ändert
+  sichtbares Validierungsverhalten (Kostenart-Grenzen feuerten fälschlich),
+  also ist ein Patch-Bump fällig; der Mensch war abwesend, Vorschlag gilt als
+  Default und kann am PR noch geändert werden.
 - **Fix-Ort**: `countingFlagsOf` (`src/evaluator/constraints.js`) hebt
   `includeChildSelections` nur noch für Grenzen mit
   `field.kind === SELECTION_COUNT` an — die Issue-083-Regel sprach von
@@ -66,6 +70,15 @@ Acceptance criteria:
 - Belege per Exit-Code: `npx vitest run src/evaluator` → 59 Dateien,
   744 Tests, exit 0. `npm run lint` (oxlint) → exit 0. `npm run typecheck`
   (tsc --noEmit) → exit 0.
+- Review-Runde 1 (frischer Kontext, Diff gegen Intent): **0 Befunde**. Alle
+  drei Kriterien mit eigenen Exit-Code-Läufen belegt (Kriterium 1: 10/10 in
+  `countIndex.costSumUnderCarrier.test.js`; Kriterium 2: 11/11 in
+  `constraints.carrierDescendants.test.js`; Kriterium 3: 744/744, exit 0);
+  Randfälle geprüft (FORCE_COUNT fällt mit aus der Anhebung — deckungsgleich
+  mit der Decision; LIMIT_VALUE ist kein Constraint-Feld; Prozent-Nenner in
+  `resolveBound` nutzt die Flags direkt, vordokumentiert; Kategorie-Anker
+  bleiben durch den bestehenden ENTRY-Check ausgeschlossen). Triage: nichts zu
+  fixen, keine Wiederholungsrunde nötig.
 
 ## Checkpoints
 
@@ -82,8 +95,14 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Ja — alle drei Kriterien vom frischen
+  Reviewer bestätigt, der Diff ist minimal (ein Guard + Doku-Kommentar),
+  `main` wird damit wieder grün.
+- What surprised me? Wie sauber die Kollision 083/091 auf genau eine Zeile
+  zurückfällt — beide Entscheidungen bleiben vollständig intakt.
+- What am I assuming without having verified it? Dass `FORCE_COUNT`-Grenzen
+  (`field="forces"`) zu Recht mit aus der Anhebung fallen — kein Kriterium und
+  kein realer Katalogfall entscheidet das; als Default festgehalten (der
+  Reviewer fand keinen Widerspruch).
 
 ## Retro
