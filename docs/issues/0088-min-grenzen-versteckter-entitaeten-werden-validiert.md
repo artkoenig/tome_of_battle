@@ -69,6 +69,21 @@ Acceptance criteria:
   Verallgemeinerung von §5.6 auf alle Ankerarten mit Min-Grenzen wird in
   `docs/battlescribe-data-format.md` (§5.6/§8) als Projektentscheidung
   dokumentiert, mit Verweis auf dieses Issue.
+- **Mechanismus: `isReportable`, nicht Unterdrückung** (2026-07-29, aus dem
+  Researcher-Briefing): Der Filter sitzt in `evaluateLimit`
+  (`src/evaluator/constraints.js`) als Zusatz zum bestehenden
+  `isReportable`-Feld — `limit.kind === MIN && effective.isHidden(node)` ⇒
+  nicht meldbar. Die Grenze wird weiter voll ausgewertet (Capabilities wie
+  `effectiveMin`/`isMandatoryUnmet` bleiben vollständig), analog zum
+  Angebots-Anker-Präzedenzfall (ADR 0035). `report.js` filtert bereits über
+  `isReportable`. Kein Reihenfolge-Problem: `evaluateConstraints` läuft nach
+  Fixpunktschleife und Anker-Nachlauf, `effective.isHidden` ist dort final.
+- **Sichtbarkeits-Begriff: eigenes effektives hidden** (Default, 2026-07-29):
+  Gefiltert wird über `effective.isHidden(node)` des Grenzen-Trägers — Basis-
+  Attribut inkl. Link→Ziel-Vererbung (Issue 0099) plus `hidden`-Modifier.
+  Eine Fortpflanzung über versteckte **Vorfahren** (sichtbarer Träger unter
+  verstecktem Elternknoten) ist nicht Teil dieses Laufs; dieselbe Ratio
+  (unbehebbarer Verstoß) spräche dafür — als mögliches Folge-Issue notiert.
 
 ## Log
 
@@ -81,9 +96,20 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja — der Lauf setzt genau die fünf
+  Kriterien des Intents um: Min-Unterdrückung bei effektivem hidden über alle
+  fünf Ankerarten, Kippbarkeit per Modifier, Max unberührt, Suite grün. Die
+  Doku-Nachführung (§5.6/§8) ist Teil des Intents.
+- **What surprised me?** Kein Reihenfolge-Problem — die Constraint-Auswertung
+  läuft nach Fixpunkt und Anker-Nachlauf, effektives hidden ist dort final.
+  Und der „nicht melden"-Pfad existiert schon (Angebots-Anker via
+  `isReportable`), der Eingriff ist damit klein.
+- **What am I assuming without having verified it?** (1) Dass
+  `effective.isHidden(node)` für jeden Anker den richtigen Träger prüft
+  (Kategorie-Anker tragen den Link; Link→Ziel-Vererbung greift) — die Tests
+  müssen das je Ankerart belegen. (2) Dass kein Aufrufer die Meldung eines
+  versteckten Min braucht (Repros im Intent sagen: der Nutzer kann sie nie
+  beheben). (3) Vorfahren-hidden bleibt außen vor (als Default protokolliert).
 
 ### Before the PR
 
