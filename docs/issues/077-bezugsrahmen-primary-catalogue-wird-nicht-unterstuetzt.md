@@ -156,7 +156,12 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
   (`prepareDataset(gst + Ogre + Mercenaries)` gegen ein Ogre-Roster) meldet 46
   Diagnosen, davon **9 `unresolvedScope`, alle mit `scope:
   "primary-catalogue"`** — der Fund des Issues ist am laufenden Code
-  reproduziert.
+  reproduziert. Eigenes Gegenrepro (Wegwerf-Skript im Scratchpad, kein
+  Produktivcode): derselbe Datensatz gegen zwei verschiedene Roster
+  (`modifier-characteristic-value/rosters/01-ogre-no-light-armour.ros` und
+  `03-amazons-infolink-profile.ros`) — je 46 Diagnosen, davon je **9
+  `unresolvedScope`, ausnahmslos `primary-catalogue`**; kein anderer Scope
+  fällt heute in diesen Zweig.
 - **2026-07-29, der alte Solver kennt den Rahmen ebenfalls nicht.** `src/solver/`
   führt seit jeher ein `forceCatalogueId` im Query-Kontext
   (`queryEngine.js:61`), gespeist aus `force.catalogueId || roster.catalogueId`
