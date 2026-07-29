@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, ScopeKeyword, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
+import { ConstraintKind, CountedFieldKind, DefinitionKind, ScopeKeyword, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
 import { allNodes, evaluableLimitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -60,19 +60,24 @@ function resolveBound(limit, node, effective, ctx) {
 /**
  * Die Zaehl-Flags einer Grenze, wie sie an das Query-Primitiv gehen.
  *
- * Eine **geteilte, eintrags-verankerte** Grenze mit `scope="roster"` zaehlt
- * die Vorkommen ihres Eintrags im **ganzen** Roster — auch verschachtelte —,
- * unabhaengig von `includeChildSelections="false"`: „unchecked" heisst „just
- * scope's field", nicht „nichts" (`docs/battlescribe-data-format.md` §7.6,
- * Issue 083), und die Auswahlen des Rosters sind alle seine Auswahlen — eine
- * armeeweite „hoechstens 1"-Grenze trifft ein magisches Item auch dann, wenn
- * es unter einem Charakter geschachtelt steht. Fuer alle anderen Rahmen (und
- * fuer Kategorie- und Gruppen-Anker, deren Ziel kein Eintrag ist) bleiben die
- * hingeschriebenen Flags massgeblich.
+ * Eine **geteilte, eintrags-verankerte Selektions**-Grenze mit `scope="roster"`
+ * zaehlt die Vorkommen ihres Eintrags im **ganzen** Roster — auch
+ * verschachtelte —, unabhaengig von `includeChildSelections="false"`:
+ * „unchecked" heisst „just scope's field", nicht „nichts"
+ * (`docs/battlescribe-data-format.md` §7.6, Issue 083), und die Auswahlen des
+ * Rosters sind alle seine Auswahlen — eine armeeweite „hoechstens 1"-Grenze
+ * trifft ein magisches Item auch dann, wenn es unter einem Charakter
+ * geschachtelt steht. Eine **Kostenart**-Grenze bleibt dagegen bei den
+ * hingeschriebenen Flags: sie summiert Kosten unterhalb ihres Traegers, und
+ * `includeChildSelections="false"` liest dort nur die Kosten des Traegers
+ * selbst (§7.6/§9.4, Issue 091 — Kollision entschieden in Issue 0113). Fuer
+ * alle anderen Rahmen (und fuer Kategorie- und Gruppen-Anker, deren Ziel kein
+ * Eintrag ist) bleiben die hingeschriebenen Flags ebenfalls massgeblich.
  */
 function countingFlagsOf(limit, node) {
   const flags = limit.flags;
   if (limit.scope !== ScopeKeyword.ROSTER) return flags;
+  if (limit.field?.kind !== CountedFieldKind.SELECTION_COUNT) return flags;
   if (flags?.shared === false || flags?.includeChildSelections === true) return flags;
   const counted = isLinkDefinition(node.def) ? node.def.resolved : node.def;
   if (counted?.kind !== DefinitionKind.ENTRY) return flags;

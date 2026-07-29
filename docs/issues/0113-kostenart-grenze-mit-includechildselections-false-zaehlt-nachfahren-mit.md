@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/113-umsetzen-uda71x
 pr:
 ---
 
@@ -39,15 +39,46 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Kein neuer Test vom test-author** (default, unanswered): Der rote Test für
+  Kriterium 1 existiert bereits (`countIndex.costSumUnderCarrier.test.js`,
+  Issue-091-Test „liest nur die Kosten des Traegers"), Kriterium 2 ist durch
+  `constraints.carrierDescendants.test.js` gepinnt (alle Issue-083-Fixtures
+  nutzen `field="selections"`). Ein Duplikat schriebe denselben Test noch einmal.
+- **Fix-Ort**: `countingFlagsOf` (`src/evaluator/constraints.js`) hebt
+  `includeChildSelections` nur noch für Grenzen mit
+  `field.kind === SELECTION_COUNT` an — die Issue-083-Regel sprach von
+  Selektions-Grenzen; für Kostenart-Grenzen gilt §7.6 „just scope's field"
+  (Issue 091) unverändert.
+
 ## Log
+
+- Rot reproduziert auf dem frischen Branch (von `origin/main`, b7cf2d6):
+  `npx vitest run src/evaluator/countIndex.costSumUnderCarrier.test.js` →
+  1 failed | 9 passed, exakt der im Intent beschriebene Test (Ist 110 statt 50
+  gegen Grenze 100 — die Kostenart-Grenze zählt den Nachfahren mit).
+- Fix umgesetzt: eine Zeile Guard in `countingFlagsOf`
+  (`limit.field?.kind !== CountedFieldKind.SELECTION_COUNT` → hingeschriebene
+  Flags), Doku-Kommentar der Funktion entsprechend erweitert.
+- Erster voller Lauf `npx vitest run src/evaluator`: 1 failed | 743 passed —
+  der Fehler war der bekannte 5-s-Timeout-Flake aus Issue 0110
+  (`primary-catalogue-scope`, Roster 01), nicht diese Änderung; isolierter
+  Lauf der Datei grün (126 passed).
+- Belege per Exit-Code: `npx vitest run src/evaluator` → 59 Dateien,
+  744 Tests, exit 0. `npm run lint` (oxlint) → exit 0. `npm run typecheck`
+  (tsc --noEmit) → exit 0.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Ja — Intent beschreibt Ursache und Fix-Ort
+  präzise; die Reproduktion bestätigt die Analyse (die Anhebung in
+  `countingFlagsOf` greift auch bei `COST_SUM`-Feldern).
+- What surprised me? Nichts Wesentliches; die Analyse aus dem 0085-Lauf traf
+  exakt zu.
+- What am I assuming without having verified it? Dass keine weitere Stelle
+  (z. B. `query.js`/`countIndex.js`) dieselbe Anhebung dupliziert — wird durch
+  den vollständigen Evaluator-Lauf (Kriterium 3) abgesichert.
 
 ### Before the PR
 
