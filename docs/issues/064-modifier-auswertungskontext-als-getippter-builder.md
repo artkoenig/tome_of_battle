@@ -149,8 +149,26 @@ converted (it is a solver-internal flat build, test-safe).
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — one typed builder, the issue's named
+  sites all converted, double pass-through impossible by construction;
+  review round 1 with zero findings, suite and E2E byte-identical to the
+  origin/main baseline.
+- What surprised me? Two things the plan only survived by updating: five
+  component tests fully mock the facade (scope narrowed, recorded), and the
+  dual-use site rosterValidator:338 had NON-redundant slices — the
+  visibility reader consumes them — so it became two built contexts instead
+  of one slimmer one.
+- What am I assuming without having verified it? That the human ratifies
+  the narrowed component scope (follow-up: one passthrough line per mock
+  would finish the conversion). No version bump: pure refactoring, no
+  user-visible change.
+
+- 2026-07-29 review round 1 (fresh context): 0 findings. Reviewer
+  independently re-established all exit-code facts against a baseline
+  worktree (suite 210/2143 identical, depcruise/knip finding sets
+  identical), verified the one-reader claim, the :338 split byte-identity,
+  the hoist safety (no ctx mutation anywhere), the presence-check hazard
+  (one consumer, unaffected), and ran an 8-assertion spot check against the
+  new module (by-reference slices, null sentinel, throw on counts+slices).
 
 ## Retro
