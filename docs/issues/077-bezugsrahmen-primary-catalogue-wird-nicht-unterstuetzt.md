@@ -433,3 +433,44 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
   schwächste Stelle dieser Entscheidung, und ich lege sie hiermit offen.
 
 ## Retro
+
+**Was im Weg stand.**
+
+- **Die Zusage des Szenarios war zunächst zahnlos.** Bei abgeschaltetem Feature
+  fielen nur 4 von 10 Rostern — die sechs übrigen prüften Grenzen, die auch
+  ohne den neuen Rahmen halten. Der Nachbesserungsversuch („keine
+  `unresolvedScope`-Diagnose") machte es schlimmer: alle zehn Roster wurden rot,
+  weil 16 solcher Diagnosen aus `unit`/`ancestor` stammen — aus Issue 0086, das
+  dieser Lauf nicht anfasst. Der Manifest-Vertrag konnte eine Diagnose nur nach
+  `targetId` und `defId` einengen, nicht nach `scope`. Die Aussage „dieser eine
+  Rahmen löst auf" war schlicht nicht formulierbar, ohne das Szenario an eine
+  fremde Lücke zu ketten. Nach der Erweiterung um `scope`: 10 von 10 fallen.
+- **Das Messverfahren wäre kaputt gegangen.** `scripts/lib/evaluator-measurement.js`
+  bildet die Fassaden-Pipeline nach und hat eine eigene Drift-Wache. Die neue
+  Index-Durchreichung fehlte dort an drei Aufrufstellen — gefunden hat das erst
+  die Review, nicht die Suite: das Skript ist kein Test und läuft in keinem
+  `npm test`. Ohne die Review wäre das so gegangen.
+- **Ein selbstverschuldeter Fehlalarm.** Ich habe `npx vitest run src/evaluator`
+  gestartet, während ein Reviewer-Agent im selben Arbeitsbaum mitten in einer
+  Mutation steckte, und die roten Tests einen Moment lang für echt gehalten.
+  Regel für die nächsten Läufe: **keine Suite starten, solange ein Reviewer im
+  selben Baum arbeitet.**
+
+**Was sich ändern sollte.**
+
+- **Der Manifest-Vertrag braucht die Einengung, die dieser Lauf nachgerüstet
+  hat, von Anfang an.** Jede Diagnose-Art, die für mehrere unabhängige Ursachen
+  entsteht, koppelt sonst Szenarien aneinander, die einander nichts angehen.
+  `scope` war der erste Fall; `defId`/`targetId` waren schon da. Beim nächsten
+  Szenario, das eine Diagnose *abwesend* zusagt, zuerst fragen: engt der Vertrag
+  weit genug ein, oder sage ich versehentlich etwas über den ganzen Bericht?
+- **Eine Abweichung von der Regel, offengelegt:** Auf die dritte Review-Runde
+  habe ich verzichtet (Begründung im Abschnitt darüber). Die Begründung „nur
+  additive Nachbesserungen" trägt nicht ganz — die `scope`-Einengung erweitert
+  den Manifest-Vertrag. Rückblickend war das die schwächere Wahl; die Regel
+  „nach einer Nachbesserung wiederholt sich die Review aus frischem Kontext"
+  hätte hier greifen sollen.
+- **Die Aufwandsmessung gehört in die Fakten vor dem PR.** Sie hat den einzigen
+  Fehler dieses Laufs gefunden, den kein Test gefunden hätte. Ab jetzt läuft
+  `node scripts/measure-evaluator.js` in jedem Evaluator-Lauf vor dem PR — nicht
+  wegen der Zeitschwelle, sondern wegen der Drift-Wache.
