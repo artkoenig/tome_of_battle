@@ -524,6 +524,16 @@ export const DiagnosticKind = Object.freeze({
   // Feld traegt einen Scope ungleich `roster` ({@link BudgetLimitUnresolvedReason}).
   // Sichtbar gemacht statt still als Wert 0 angenommen (Main-Issue 70, `design.md`).
   UNRESOLVED_BUDGET_LIMIT: 'unresolvedBudgetLimit',
+  // Ein `<cost>` ohne lesbaren `value` (fehlend/leer/nicht numerisch) oder ohne
+  // `typeId` — frueher fiel es kommentarlos aus `costs` heraus, jetzt traegt die
+  // Diagnose die Rohwerte `{ costTypeId, value }` (Issue 0102, Punkt 7).
+  UNREADABLE_COST: 'unreadableCost',
+  // Ein `<modifier>` traegt ein `scope`-Attribut. Die vendored XSD kennt an
+  // `Modifier` gar kein `scope` (nur `QueryBase` hat eines, Catalogue.xsd:426);
+  // eine Scope-Semantik fuer Modifikatoren ist bewusst nicht im Umfang — der
+  // Modifikator wird weiter gelesen (wirkt auf den Traeger), das Attribut wird
+  // sichtbar gemeldet statt still ignoriert (Issue 0102, Punkt 9).
+  UNSUPPORTED_MODIFIER_SCOPE: 'unsupportedModifierScope',
   // Eine Katalogquelle (`.cat`/`.gst`) ist als Katalog nicht lesbar: das XML ist
   // nicht wohlgeformt (`DOMParser` liefert ein `parsererror`-Dokument) oder die
   // Wurzel ist weder `catalogue` noch `gameSystem` (z. B. eine versehentlich

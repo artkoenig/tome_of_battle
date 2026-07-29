@@ -190,6 +190,9 @@ export function evaluate(prepared, roster) {
     budgetViolations,
     unstableNodes,
     profileTypes: resolved.profileTypes,
+    // `publications` liefert die Klartext-Namen der Buchquellen, die die
+    // Info-Projektion an Profilen und Regeln nennt (Issue 0102).
+    publications: resolved.publications,
     categoryIds: resolved.categoryIds,
   });
 }

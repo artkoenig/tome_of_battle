@@ -108,6 +108,7 @@ describe('Info-Projektion: die eigenen Profile und Regeln eines Slots', () => {
       name: 'Krieger',
       profileTypeId: PROFILE_TYPE_ID,
       profileTypeName: PROFILE_TYPE_NAME,
+      publication: null,
       characteristics: [
         { typeId: MOVE_TYPE_ID, name: MOVE_TYPE_NAME, value: '4' },
         { typeId: WOUNDS_TYPE_ID, name: WOUNDS_TYPE_NAME, value: '1' },
@@ -123,6 +124,7 @@ describe('Info-Projektion: die eigenen Profile und Regeln eines Slots', () => {
       id: RULE_ID,
       name: 'Furcht',
       text: RULE_TEXT,
+      publication: null,
     });
   });
 
@@ -302,6 +304,7 @@ describe('Info-Projektion: ein Info-Verweis erscheint an der Stelle des Verweise
       name: LINK_NAME,
       profileTypeId: PROFILE_TYPE_ID,
       profileTypeName: PROFILE_TYPE_NAME,
+      publication: null,
       characteristics: [{ typeId: MOVE_TYPE_ID, name: MOVE_TYPE_NAME, value: '6' }],
     });
   });
@@ -321,6 +324,7 @@ describe('Info-Projektion: ein Info-Verweis erscheint an der Stelle des Verweise
       id: RULE_LINK_ID,
       name: 'Verwiesene Regel',
       text: 'Geteilter Text.',
+      publication: null,
     });
   });
 
@@ -416,6 +420,7 @@ describe('Info-Projektion: ohne Profiltyp-Deklaration bleiben die Klartext-Namen
       name: 'Krieger',
       profileTypeId: PROFILE_TYPE_ID,
       profileTypeName: null,
+      publication: null,
       characteristics: [{ typeId: MOVE_TYPE_ID, name: null, value: '4' }],
     }]);
   });

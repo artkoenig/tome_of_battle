@@ -33,6 +33,13 @@ const MERGED_COLLECTIONS = Object.freeze([
   // den Katalogen — also muessen sie ebenso wie die Definitionen ueber alle Quellen
   // hinweg in **einer** Sicht liegen (ADR-0032).
   'profileTypes',
+  // Dasselbe gilt fuer die Kostenart- und Publikations-Deklarationen (Issue 0102):
+  // beide stehen ueblicherweise im Spielsystem, waehrend die Modifikatoren bzw.
+  // `publicationId`-Verweise in den Katalogen liegen — der Resolver registriert
+  // jede deklarierte Kostenart als Modifier-Ziel, die Info-Projektion loest die
+  // Buchquellen ueber die Deklarationen auf.
+  'costTypes',
+  'publications',
   'diagnostics',
 ]);
 
@@ -40,13 +47,13 @@ const MERGED_COLLECTIONS = Object.freeze([
  * Fuehrt die gelesenen Dokumente in der uebergebenen Reihenfolge zu einem
  * katalog-foermigen Aggregat zusammen (reine, seiteneffektfreie Aggregation).
  *
- * @param {Array<{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[], diagnostics?: object[] }>} documents
+ * @param {Array<{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[], costTypes?: object[], publications?: object[], diagnostics?: object[] }>} documents
  *   Die gelesenen Dokumente, bereits in deterministischer Reihenfolge (Spielsystem
  *   zuerst, dann die Kataloge in Aufruf-Reihenfolge).
- * @returns {{ entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], profileTypes: object[], diagnostics: object[] }}
+ * @returns {{ entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], profileTypes: object[], costTypes: object[], publications: object[], diagnostics: object[] }}
  */
 export function mergeCatalogues(documents) {
-  const merged = { entries: [], forces: [], categories: [], sharedEntries: [], infos: [], profileTypes: [], diagnostics: [] };
+  const merged = { entries: [], forces: [], categories: [], sharedEntries: [], infos: [], profileTypes: [], costTypes: [], publications: [], diagnostics: [] };
   for (const document of documents) {
     for (const name of MERGED_COLLECTIONS) {
       merged[name].push(...(document[name] ?? []));

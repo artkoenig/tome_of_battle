@@ -168,6 +168,21 @@ Begründung in den Decisions.
   gelassen: Payload der `UNSUPPORTED_MODIFIER_SCOPE`-Diagnose, Erreichen der
   Info-Projektion durch categoryLink-Regeln, Publikationsauflösung über
   infoLink-Indirektion.
+- 2026-07-29 — Implementer: alle 9 Punkte umgesetzt (catalogReader.js,
+  model.js, catalogSet.js, resolver.js, infoProjection.js, report.js,
+  evaluator.js — letzteres eine Verdrahtungs-Ergänzung über die
+  Plan-Modulliste hinaus: die Fassade reicht `publications` an den Bericht).
+  Bestands-Pins additiv angepasst: catalogSet.test.js (1 Stelle),
+  infoElements.test.js (3), infoProjection.test.js (5). Prüfungen:
+  `npx vitest run src/evaluator` 832 Tests, 831 grün; `npx vitest run`
+  (ganze Suite) 2450 Tests, 2449 grün; der je eine rote Test ist der
+  **vorbestehende** Befund aus Issue 0112 (auf dem Basis-Stand byte-gleich
+  rot, per Stash/Bisect verifiziert; Verursacher PR #169 — im Issue 0112
+  nachgetragen). `npm run lint` Exit 0, `npm run typecheck` Exit 0.
+  Implementer-Defaults: Diagnose-Payload von `UNSUPPORTED_MODIFIER_SCOPE`
+  ist `{ scope, field, value }` (analog `UNSUPPORTED_MODIFIER`);
+  `publicationId`/`page` der Info-Projektion stammen vom Inhalt (bei
+  `infoLink` vom Ziel).
 
 ## Checkpoints
 

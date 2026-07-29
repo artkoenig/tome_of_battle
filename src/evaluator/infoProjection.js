@@ -13,7 +13,9 @@
  * Art (Profil oder Regel), die **ID des Vorkommens**, den **effektiven** Namen,
  * bei einem Profil zusaetzlich seinen Profiltyp und die Merkmale als Paare
  * *(Charakteristik-Typ mit Namen, effektiver Wert)*, bei einer Regel ihren
- * Regeltext.
+ * Regeltext — und, sofern der Inhalt eine `publicationId` traegt, seine
+ * **Buchquelle** `{ id, name, page }` (Name aus den Publikations-Deklarationen
+ * des Datensatzes, Issue 0102).
  *
  * ── Wer die Klartext-Namen stellt ────────────────────────────────────────────
  * Die `<profileType>`-Deklarationen des Datensatzes, und nur sie. Das ist keine
@@ -63,6 +65,40 @@ export function createProfileTypeRegistry(profileTypes) {
 }
 
 /**
+ * Ein Nachschlagewerk der Publikations-Deklarationen des Datensatzes: der
+ * Klartext-Name je Publikations-Id (bsdata-Doku §5.2). Wie das
+ * Profiltyp-Nachschlagewerk wird es **einmal je Bericht** gebaut.
+ *
+ * @param {ReadonlyArray<{ id: string, name: string }>} publications
+ * @returns {{ publicationNameOf: (id: string) => string|null }}
+ */
+export function createPublicationRegistry(publications) {
+  const publicationNames = new Map();
+  for (const publication of publications) {
+    publicationNames.set(publication.id, publication.name);
+  }
+  return Object.freeze({
+    publicationNameOf: id => publicationNames.get(id) ?? null,
+  });
+}
+
+/**
+ * Die **Buchquelle** eines Info-Inhalts: `{ id, name, page }` aus dessen
+ * `publicationId`/`page`, der Name aus der Deklaration aufgeloest — ehrlich
+ * `null`, wenn die Id nirgends deklariert ist. Traegt der Inhalt keine
+ * `publicationId`, gibt es keine Quelle (`null`). `page` bleibt der rohe
+ * Attributtext (xs:string, Catalogue.xsd:45).
+ */
+function publicationOf(content, publicationRegistry) {
+  if (content.publicationId === null || content.publicationId === undefined) return null;
+  return {
+    id: content.publicationId,
+    name: publicationRegistry.publicationNameOf(content.publicationId),
+    page: content.page ?? null,
+  };
+}
+
+/**
  * Die Definition, die den **Inhalt** eines Traegers stellt: bei einem `infoLink`
  * sein aufgeloestes Ziel, sonst der Traeger selbst. Die **Identitaet** (ID, Name)
  * bleibt davon unberuehrt beim Traeger — ein ueber einen Verweis bezogenes Element
@@ -89,7 +125,7 @@ function entryKindOf(carrier) {
  * jeweils benannt ueber den Charakteristik-Typ, dazu der Profiltyp. Die Merkmale
  * stehen in Dokumentreihenfolge — sie ist die Spaltenordnung der Merkmalstabelle.
  */
-function buildProfileEntry({ node, carrier, effective, registry }) {
+function buildProfileEntry({ node, carrier, effective, registry, publicationRegistry }) {
   const profile = contentOf(carrier);
   return {
     kind: InfoElementKind.PROFILE,
@@ -97,6 +133,7 @@ function buildProfileEntry({ node, carrier, effective, registry }) {
     name: effective.nameOf(node, carrier),
     profileTypeId: profile.typeId ?? null,
     profileTypeName: registry.profileTypeNameOf(profile.typeId),
+    publication: publicationOf(profile, publicationRegistry),
     characteristics: effective.characteristicEntriesOf(node, carrier).map(({ typeId, value }) => ({
       typeId,
       name: registry.characteristicTypeNameOf(typeId),
@@ -110,12 +147,14 @@ function buildProfileEntry({ node, carrier, effective, registry }) {
  * Er ist kein Modifikator-Ziel (kein Modifikator der Katalogdaten adressiert
  * `description`) und deshalb der Basiswert, nicht ein effektiver.
  */
-function buildRuleEntry({ node, carrier, effective }) {
+function buildRuleEntry({ node, carrier, effective, publicationRegistry }) {
+  const rule = contentOf(carrier);
   return {
     kind: InfoElementKind.RULE,
     id: carrier.id,
     name: effective.nameOf(node, carrier),
-    text: contentOf(carrier).text ?? null,
+    text: rule.text ?? null,
+    publication: publicationOf(rule, publicationRegistry),
   };
 }
 
@@ -180,10 +219,12 @@ function collectInfoElements(node, context, entries) {
  * @param {import('./effectiveState.js').EffectiveState} effective  der effektive Zustand.
  * @param {{ profileTypeNameOf: Function, characteristicTypeNameOf: Function }} registry
  *   das Nachschlagewerk aus {@link createProfileTypeRegistry}.
+ * @param {{ publicationNameOf: Function }} publicationRegistry
+ *   das Nachschlagewerk aus {@link createPublicationRegistry}.
  * @returns {Array<object>} die geordnete Liste der Eintraege.
  */
-export function infoElementsOf(node, effective, registry) {
+export function infoElementsOf(node, effective, registry, publicationRegistry) {
   const entries = [];
-  collectInfoElements(node, { effective, registry }, entries);
+  collectInfoElements(node, { effective, registry, publicationRegistry }, entries);
   return entries;
 }

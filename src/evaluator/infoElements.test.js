@@ -97,8 +97,11 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
       typeId: PROFILE_TYPE_ID,
       characteristics: [],
       // Ein Profil traegt dieselbe `EntryBase` wie eine Definition: Sichtbarkeit,
-      // Modifikatoren und Modifikatorgruppen (Catalogue.xsd:144-155).
+      // Modifikatoren, Modifikatorgruppen und Quellenangabe (Catalogue.xsd:144-155,
+      // Issue 0102).
       isHidden: false,
+      publicationId: null,
+      page: null,
       modifiers: [],
       modifierGroups: [],
     });
@@ -126,6 +129,8 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
       // tragen keinen. Dann `null` statt eines erfundenen Leerstrings.
       text: null,
       isHidden: false,
+      publicationId: null,
+      page: null,
       modifiers: [],
       modifierGroups: [],
     });
@@ -152,6 +157,8 @@ describe('catalogReader: Info-Elemente strukturell lesen', () => {
         typeId: PROFILE_TYPE_ID,
         characteristics: [],
         isHidden: false,
+        publicationId: null,
+        page: null,
         modifiers: [],
         modifierGroups: [],
       },

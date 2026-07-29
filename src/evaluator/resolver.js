@@ -285,9 +285,17 @@ function addTargetSymbol(symbolTable, id, kind, diagnostics) {
  * **Charakteristik-Typ-IDs** der Profiltypen (→ CHARACTERISTIC). Letztere liefen
  * bis Issue 75/04 als „baumelnder Verweis" ins Leere, weil die Symboltabelle sie
  * nicht kannte.
+ *
+ * Kostenart-IDs stammen aus zwei Quellen: den **Deklarationen** des Datensatzes
+ * (`costTypes`) und den `<cost>`-Vorkommen der Definitionen. Bis Issue 0102
+ * zaehlten nur die Vorkommen — ein Modifier auf eine deklarierte, aber nirgends
+ * bepreiste Kostenart fiel als `DANGLING_MODIFIER_TARGET` ins Leere.
  */
-function buildTargetSymbolTable(definitions, profileTypes, diagnostics) {
+function buildTargetSymbolTable(definitions, profileTypes, costTypes, diagnostics) {
   const symbolTable = new Map();
+  for (const costType of costTypes) {
+    addTargetSymbol(symbolTable, costType.id, ModifierTargetKind.COST, diagnostics);
+  }
   for (const definition of definitions) {
     for (const costTypeId of Object.keys(definition.costs ?? {})) {
       addTargetSymbol(symbolTable, costTypeId, ModifierTargetKind.COST, diagnostics);
@@ -582,8 +590,9 @@ function deepFreezeGraph(value, seen) {
  * Katalogs (`catalogue.entries`, `catalogue.infos`, …). Sie sind das Objekt des
  * Aufrufers, nicht das Erzeugnis dieser Schicht, und die Sicht liest sie nach
  * ihrer Rueckgabe nicht mehr: jede Liste, die sie fuehrt, ist frisch abgeleitet
- * (`definitions`, `armyLevelCandidates`, `diagnostics`) — die einzige
- * durchgereichte, `profileTypes`, ist als Teil der Sicht mit eingefroren. Ein
+ * (`definitions`, `armyLevelCandidates`, `diagnostics`) — die beiden
+ * durchgereichten, `profileTypes` und `publications`, sind als Teil der Sicht
+ * mit eingefroren. Ein
  * Schreibzugriff auf den Katalog kann eine schon aufgeloeste Sicht daher nicht
  * mehr veraendern; die **Knoten** darin sind ohnehin dieselben eingefrorenen
  * Objekte.
@@ -654,8 +663,8 @@ function assertUnresolved(definitionNodes, infoRoots) {
  * Knoten. Wer erneut aufloesen will, parst erneut — oder, besser, verwendet den
  * aufbereiteten Datensatz wieder (`datasetPreparation.js`).
  *
- * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
- * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], diagnostics: object[] }}
+ * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[], costTypes?: object[], publications?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
+ * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], publications: object[], diagnostics: object[] }}
  * @throws {TypeError} Wenn die uebergebenen Knoten schon aufgeloest (und damit
  *   eingefroren) sind — siehe Vorbedingung. Geprueft wird vor dem ersten
  *   Schreibzugriff: ein abgewiesener Aufruf laesst den Graphen unveraendert.
@@ -696,7 +705,9 @@ export function resolveCatalogue(catalogue) {
   // Modifikator-Ziele einmal ueber die globale Symboltabelle aufloesen — fuer alle
   // Definitionsknoten, damit auch ein per Verweis in den Baum gezogener Knoten sein
   // `.target` traegt (die Apply-Schicht griffe sonst auf `undefined.kind` zu).
-  const symbolTable = buildTargetSymbolTable(definitionNodes, catalogue.profileTypes ?? [], diagnostics);
+  const symbolTable = buildTargetSymbolTable(
+    definitionNodes, catalogue.profileTypes ?? [], catalogue.costTypes ?? [], diagnostics,
+  );
   resolveModifierTargets(definitionNodes, symbolTable, byId, diagnostics);
 
   // Info-Definitionen indizieren, `infoLink`s und die Modifikator-Ziele der
@@ -742,6 +753,10 @@ export function resolveCatalogue(catalogue) {
     // `profile/@typeName` dagegen optional). Die Info-Projektion des Berichts
     // liest sie; ausgewertet wird an ihnen nichts.
     profileTypes: catalogue.profileTypes ?? [],
+    // Ebenso die Publikations-Deklarationen: die einzige Quelle der Klartext-Namen
+    // der Buchquellen, die die Info-Projektion an Profilen und Regeln nennt
+    // (Issue 0102, Punkt 1).
+    publications: catalogue.publications ?? [],
     diagnostics,
   }, definitionNodes, infoRoots);
 }

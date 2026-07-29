@@ -37,7 +37,7 @@
 
 import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, isReportableAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
-import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
+import { createProfileTypeRegistry, createPublicationRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage } from './violationClassification.js';
 import { causesFieldOf } from './causes.js';
@@ -47,6 +47,9 @@ const NO_UNSTABLE_NODES = new Set();
 
 /** Ohne Profiltyp-Deklarationen bleiben die Klartext-Namen der Merkmale leer. */
 const NO_PROFILE_TYPES = Object.freeze([]);
+
+/** Ohne Publikations-Deklarationen bleiben die Buchquellen-Namen leer. */
+const NO_PUBLICATIONS = Object.freeze([]);
 
 /** Ohne bekannte Kategorie-IDs ist jeder ID-Bezugsrahmen ein Eintrags-Rahmen. */
 const NO_CATEGORY_IDS = new Set();
@@ -365,7 +368,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
@@ -383,7 +386,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     isHidden: effective.isHidden(node),
     isValueUnstable: unstableNodes.has(node),
     authorMessages: renderedAuthorMessagesOf(node, effective),
-    infoElements: infoElementsOf(node, effective, profileTypeRegistry),
+    infoElements: infoElementsOf(node, effective, profileTypeRegistry, publicationRegistry),
   };
 }
 
@@ -397,7 +400,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -408,6 +411,9 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  *   „Wert nicht stabil" markiert, damit die Unsicherheit am betroffenen Slot steht.
  *   `profileTypes`: die Profiltyp-Deklarationen des Datensatzes (`resolver.js`) —
  *   die Quelle der Klartext-Namen in der Info-Projektion je Slot.
+ *   `publications`: die Publikations-Deklarationen des Datensatzes (`resolver.js`) —
+ *   die Quelle der Buchquellen-Namen an den Profil-/Regel-Eintraegen der
+ *   Info-Projektion (Issue 0102).
  *   `categoryIds`: die bekannten Kategorie-IDs (`resolver.js`) — sie entscheiden,
  *   ob ein ID-Bezugsrahmen einer Grenze eine Kategorie oder einen Eintrag benennt
  *   (`violationClassification.js`), gelesen aus **derselben** Quelle wie im
@@ -419,6 +425,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     budgetViolations = [],
     unstableNodes = NO_UNSTABLE_NODES,
     profileTypes = NO_PROFILE_TYPES,
+    publications = NO_PUBLICATIONS,
     categoryIds = NO_CATEGORY_IDS,
   } = extras;
 
@@ -428,6 +435,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     effective,
     unstableNodes,
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
+    publicationRegistry: createPublicationRegistry(publications),
   };
   // Der Knoten bleibt **engine-intern**: die Autor-Meldungen brauchen ihn, der
   // Bericht darf ihn nicht tragen (ADR-0034 — die Oberflaeche liest den Bericht

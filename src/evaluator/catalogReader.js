@@ -101,6 +101,10 @@ const Tag = Object.freeze({
   SHARED_PROFILES: 'sharedProfiles',
   SHARED_RULES: 'sharedRules',
   SHARED_INFO_GROUPS: 'sharedInfoGroups',
+  // Die Publikations-Deklarationen des Datensatzes (Wurzelelement): die
+  // Buchquellen, auf die `publicationId`/`page` verweisen (bsdata-Doku §5.2).
+  PUBLICATIONS: 'publications',
+  PUBLICATION: 'publication',
 });
 
 const Attr = Object.freeze({
@@ -137,6 +141,18 @@ const Attr = Object.freeze({
   SHARED: 'shared',
   INCLUDE_CHILD_SELECTIONS: 'includeChildSelections',
   INCLUDE_CHILD_FORCES: 'includeChildForces',
+  // Quellenangabe fast aller Entitaeten (XSD `PublicationRefAttGroup` an
+  // `EntryBase`, Catalogue.xsd:43-46, 111): Publikations-Id und Seitenangabe.
+  // `page` ist laut XSD `xs:string` (Catalogue.xsd:45) — kein Zahlen-Parsen.
+  PUBLICATION_ID: 'publicationId',
+  PAGE: 'page',
+  // `SelectionEntryBase`-Attribute (Catalogue.xsd:283-284, XSD-Default je false):
+  // `collective` betrifft nur die Anzeige gestapelter Instanzen (§10), `import`
+  // die Roster-Uebernahme (§7.1).
+  COLLECTIVE: 'collective',
+  IMPORT: 'import',
+  // Die Standardauswahl einer `selectionEntryGroup` (§7.1, Vorbelegungs-Regeln).
+  DEFAULT_SELECTION_ENTRY_ID: 'defaultSelectionEntryId',
 });
 
 /** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
@@ -169,6 +185,10 @@ const DEFAULT_LIBRARY = false;
 
 const BOOLEAN_TRUE_XML = 'true';
 const BOOLEAN_FALSE_XML = 'false';
+// xs:boolean erlaubt neben `true`/`false` auch die Kurzformen `1`/`0` (XML
+// Schema Part 2). Ohne sie galt `hidden="1"` still als sichtbar (Issue 0102).
+const BOOLEAN_TRUE_SHORT_XML = '1';
+const BOOLEAN_FALSE_SHORT_XML = '0';
 const XML_MIME_TYPE = 'application/xml';
 
 /**
@@ -242,15 +262,23 @@ function wrappedChildren(element, wrapperTag, tagName) {
 }
 
 /**
+ * Deutet einen rohen xs:boolean-Attributwert — die **eine** Deutungsstelle fuer
+ * beide Schreibweisen (`true`/`false` und die Kurzformen `1`/`0`, Issue 0102).
+ * Jeder andere Wert (auch `null` = nicht gesetzt) ist `undefined`.
+ */
+function xmlBoolean(raw) {
+  if (raw === BOOLEAN_TRUE_XML || raw === BOOLEAN_TRUE_SHORT_XML) return true;
+  if (raw === BOOLEAN_FALSE_XML || raw === BOOLEAN_FALSE_SHORT_XML) return false;
+  return undefined;
+}
+
+/**
  * Liest ein Boolean-Attribut mit gegebener Vorgabe. Ein fehlendes oder leeres
  * Attribut faellt auf `defaultValue` zurueck (Battlescribe-XSD-Vorgaben, z. B.
  * `shared` standardmaessig true).
  */
 function readBoolean(element, attr, defaultValue) {
-  const raw = element.getAttribute(attr);
-  if (raw === BOOLEAN_TRUE_XML) return true;
-  if (raw === BOOLEAN_FALSE_XML) return false;
-  return defaultValue;
+  return xmlBoolean(element.getAttribute(attr)) ?? defaultValue;
 }
 
 /**
@@ -292,7 +320,7 @@ function readConstraint(constraintEl, diagnostics) {
   const field = readField(constraintEl.getAttribute(Attr.FIELD));
   const scope = readScope(constraintEl.getAttribute(Attr.SCOPE));
   const value = unlimitedFromSentinel(Number.parseFloat(constraintEl.getAttribute(Attr.VALUE)));
-  const isPercent = constraintEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML;
+  const isPercent = readBoolean(constraintEl, Attr.PERCENT_VALUE, false);
 
   if (kind === undefined || field === undefined || scope === undefined || Number.isNaN(value)) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONSTRAINT, {
@@ -316,15 +344,22 @@ function readLimits(entryEl, diagnostics) {
 /**
  * Liest die Basiskosten eines Eintrags als Abbildung Kostenart-ID → Wert.
  * Kostenarten werden **per ID** (`typeId`), nie per Name, gefuehrt.
+ *
+ * Ein `<cost>` ohne lesbaren `value` (fehlend/leer/nicht numerisch) oder ohne
+ * `typeId` fehlt weiterhin in `costs`, wird aber als `UNREADABLE_COST` mit den
+ * Rohwerten gemeldet statt kommentarlos zu entfallen (Issue 0102, Punkt 7).
  */
-function readCosts(entryEl) {
+function readCosts(entryEl, diagnostics) {
   const costs = {};
   for (const costEl of wrappedChildren(entryEl, Tag.COSTS, Tag.COST)) {
     const costTypeId = costEl.getAttribute(Attr.TYPE_ID);
-    const value = Number.parseFloat(costEl.getAttribute(Attr.VALUE));
-    if (costTypeId !== null && !Number.isNaN(value)) {
-      costs[costTypeId] = value;
+    const rawValue = costEl.getAttribute(Attr.VALUE);
+    const value = Number.parseFloat(rawValue);
+    if (costTypeId === null || Number.isNaN(value)) {
+      diagnostics.push(diagnostic(DiagnosticKind.UNREADABLE_COST, { costTypeId, value: rawValue }));
+      continue;
     }
+    costs[costTypeId] = value;
   }
   return costs;
 }
@@ -367,7 +402,7 @@ function readCondition(conditionEl, diagnostics) {
     scope,
     targetChildId: conditionEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : conditionEl.getAttribute(Attr.CHILD_ID),
     value,
-    isPercent: conditionEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML,
+    isPercent: readBoolean(conditionEl, Attr.PERCENT_VALUE, false),
     flags: readFlags(conditionEl),
   };
 }
@@ -450,7 +485,7 @@ function readRepeat(repeatEl, diagnostics) {
     scope,
     targetChildId: repeatEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : repeatEl.getAttribute(Attr.CHILD_ID),
     perValue,
-    isPercent: repeatEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML,
+    isPercent: readBoolean(repeatEl, Attr.PERCENT_VALUE, false),
     repeats,
     roundUp: readBoolean(repeatEl, Attr.ROUND_UP, false),
     flags: readFlags(repeatEl),
@@ -480,6 +515,14 @@ function readModifier(modifierEl, diagnostics) {
   if (!MODIFIER_KINDS.has(kind)) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { type: kind, field, value }));
     return null;
+  }
+  // Ein `scope` an einem `<modifier>` kennt die vendored XSD nicht (nur
+  // `QueryBase` traegt eines, Catalogue.xsd:426); eine Scope-Semantik ist
+  // bewusst nicht im Umfang (Issue 0102, Decisions). Der Modifikator wird
+  // trotzdem gelesen — er wirkt auf den Traeger —, das Attribut sichtbar gemeldet.
+  const scope = modifierEl.getAttribute(Attr.SCOPE);
+  if (scope !== null) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER_SCOPE, { scope, field, value }));
   }
   return {
     kind,
@@ -556,6 +599,10 @@ function readModifierGroups(element, diagnostics) {
  * Unterscheidung kann ein Verweis ohne eigenes `hidden` das Basis-`hidden`
  * seines Ziels erben, waehrend ein explizites `hidden="false"` am Verweis das
  * Ziel weiterhin ueberstimmt (`effectiveState.js`, `baseHiddenOf`, Issue 0099).
+ *
+ * Die **Quellenangabe** (`publicationId`/`page`, XSD `PublicationRefAttGroup`,
+ * Catalogue.xsd:43-46, 111) wird an derselben Basis gelesen — `null`, wenn nicht
+ * gesetzt. `page` bleibt der rohe Attributtext (xs:string, Catalogue.xsd:45).
  */
 function readEntryBase(element, diagnostics) {
   return {
@@ -563,6 +610,8 @@ function readEntryBase(element, diagnostics) {
     name: element.getAttribute(Attr.NAME),
     isHidden: readBoolean(element, Attr.HIDDEN, DEFAULT_HIDDEN),
     hiddenAttribute: readBoolean(element, Attr.HIDDEN, undefined),
+    publicationId: element.getAttribute(Attr.PUBLICATION_ID),
+    page: element.getAttribute(Attr.PAGE),
     modifiers: readModifiers(element, diagnostics),
     modifierGroups: readModifierGroups(element, diagnostics),
   };
@@ -715,13 +764,28 @@ function readProfileTypes(root) {
   return wrappedChildren(root, Tag.PROFILE_TYPES, Tag.PROFILE_TYPE).map(readProfileType);
 }
 
+/**
+ * Liest die gemeinsamen `SelectionEntryBase`-Attribute der Auswahl-Definitionen
+ * (Eintrag, Gruppe, Verweis; Catalogue.xsd:283-284, XSD-Default je `false`):
+ * `collective` betrifft nur die Anzeige gestapelter Instanzen — die
+ * Zaehl-Mathematik ist laut bsdata-Doku §10 bewusst unabhaengig davon —,
+ * `import` die Roster-Uebernahme (§7.1).
+ */
+function readSelectionBaseFlags(element) {
+  return {
+    isCollective: readBoolean(element, Attr.COLLECTIVE, false),
+    isImport: readBoolean(element, Attr.IMPORT, false),
+  };
+}
+
 /** Liest einen `<selectionEntry>` samt Kosten, Kategorien, Grenzen und Modifikatoren. */
 function readEntry(entryEl, diagnostics) {
   return {
     ...readEntryBase(entryEl, diagnostics),
+    ...readSelectionBaseFlags(entryEl),
     kind: DefinitionKind.ENTRY,
     type: entryEl.getAttribute(Attr.TYPE),
-    costs: readCosts(entryEl),
+    costs: readCosts(entryEl, diagnostics),
     categoryIds: readCategoryIds(entryEl),
     limits: readLimits(entryEl, diagnostics),
     infos: readInfos(entryEl, diagnostics),
@@ -740,7 +804,12 @@ function readEntry(entryEl, diagnostics) {
 function readGroup(groupEl, diagnostics) {
   return {
     ...readEntryBase(groupEl, diagnostics),
+    ...readSelectionBaseFlags(groupEl),
     kind: DefinitionKind.GROUP,
+    // Die Standardauswahl der Gruppe (§7.1, Vorbelegungs-Regeln): die ID der
+    // Option, die bei einer Mindestauswahl vorausgewaehlt sein soll — `null`,
+    // wenn der Katalog keine deklariert.
+    defaultSelectionEntryId: groupEl.getAttribute(Attr.DEFAULT_SELECTION_ENTRY_ID),
     limits: readLimits(groupEl, diagnostics),
     infos: readInfos(groupEl, diagnostics),
     children: readSelectionChildren(groupEl, diagnostics),
@@ -762,9 +831,10 @@ function readGroup(groupEl, diagnostics) {
 function readEntryLink(entryLinkEl, diagnostics) {
   return {
     ...readEntryBase(entryLinkEl, diagnostics),
+    ...readSelectionBaseFlags(entryLinkEl),
     kind: DefinitionKind.ENTRY_LINK,
     targetId: entryLinkEl.getAttribute(Attr.TARGET_ID),
-    costs: readCosts(entryLinkEl),
+    costs: readCosts(entryLinkEl, diagnostics),
     categoryIds: readCategoryIds(entryLinkEl),
     limits: readLimits(entryLinkEl, diagnostics),
     infos: readInfos(entryLinkEl, diagnostics),
@@ -797,13 +867,18 @@ function readEntryLinks(element, diagnostics) {
  * werden auch per Verweis importierte und gebuendelte Definitionen erfasst — die
  * Voraussetzung fuer die kataloguebergreifende Auflösung (ADR-0032).
  */
-/** Liest einen <categoryLink>. */
+/**
+ * Liest einen <categoryLink> — samt seiner Info-Kinder: die XSD leitet
+ * `categoryLink` von `ContainerEntryBase` ab, eine Regel oder ein Profil kann
+ * also direkt am Link haengen (Issue 0102, Punkt 5).
+ */
 function readCategoryLink(linkEl, diagnostics) {
   return {
     ...readEntryBase(linkEl, diagnostics),
     kind: DefinitionKind.CATEGORY_LINK,
     targetId: linkEl.getAttribute(Attr.TARGET_ID),
     limits: readLimits(linkEl, diagnostics),
+    infos: readInfos(linkEl, diagnostics),
   };
 }
 
@@ -878,6 +953,18 @@ function readCostTypes(root) {
 }
 
 /**
+ * Liest die `<publication>`-Deklarationen der Katalogwurzel: die Buchquellen
+ * `{ id, name }`, auf die Profile, Regeln und Eintraege per `publicationId`
+ * verweisen (bsdata-Doku §5.2). Reine Datensatz-Angabe ohne Roster-Bezug.
+ */
+function readPublications(root) {
+  return wrappedChildren(root, Tag.PUBLICATIONS, Tag.PUBLICATION).map(publicationEl => ({
+    id: publicationEl.getAttribute(Attr.ID),
+    name: publicationEl.getAttribute(Attr.NAME),
+  }));
+}
+
+/**
  * Liest einen `<forceEntry>` (Kontingent-Definition) samt eigener Grenzen und
  * geschachtelter Kontingente. Kontingente tragen keine Selektion bei; ihre
  * Kinder im Definitionsbaum sind ihre Unter-Kontingente.
@@ -935,6 +1022,7 @@ function unreadableCatalogue(reason, sourceName, rootTag) {
     gameSystemId: null,
     isLibrary: DEFAULT_LIBRARY,
     costTypes: [],
+    publications: [],
     profileTypes: [],
     entries: [],
     forces: [],
@@ -969,7 +1057,7 @@ function unreadableCatalogue(reason, sourceName, rootTag) {
  * @param {{ sourceName?: string|null }} [options] Optionaler Name der Quelle
  *   (z. B. der Dateiname). Er dient allein der Diagnose: taucht eine Datei als
  *   unlesbar auf, benennt die Diagnose sie ueber diesen Namen.
- * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, isLibrary: boolean, costTypes: object[], profileTypes: object[], entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
+ * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, isLibrary: boolean, costTypes: object[], publications: object[], profileTypes: object[], entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
  */
 export function parseCatalogue(catalogXml, { sourceName = null } = {}) {
   const diagnostics = [];
@@ -987,6 +1075,7 @@ export function parseCatalogue(catalogXml, { sourceName = null } = {}) {
     gameSystemId: root.getAttribute(Attr.GAME_SYSTEM_ID),
     isLibrary: readBoolean(root, Attr.LIBRARY, DEFAULT_LIBRARY),
     costTypes: readCostTypes(root),
+    publications: readPublications(root),
     profileTypes: readProfileTypes(root),
     entries: readSelectionChildren(root, diagnostics),
     forces: readForceEntries(root, diagnostics),

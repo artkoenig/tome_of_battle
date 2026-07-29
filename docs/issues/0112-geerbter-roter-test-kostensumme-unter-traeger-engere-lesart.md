@@ -43,6 +43,11 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-07-29 — Bisect im Run von Issue 0102 (Implementer): grün bei
+  `872eb8a`, rot ab `17ec346` — PR #169 (Issue 083, „Count constraint
+  selections below the carrier") hat die Regression eingeführt. Die
+  Vermutung aus dem Intent ist damit bestätigt.
+
 ## Checkpoints
 
 ### Before implementation
