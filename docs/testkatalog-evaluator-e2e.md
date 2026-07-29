@@ -106,7 +106,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`entrylink-raw-type-counting`](testing/entrylink-raw-type-counting/) | Definitive VC + Mercenaries | 3 |
 | [`unlimited-modifier-toggle`](testing/unlimited-modifier-toggle/) | Definitive O&G / Mercenaries | 5 |
 | [`primary-catalogue-scope`](testing/primary-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 10 |
-| **Summe** | | **126** |
+| [`root-entrylink-mandatory`](testing/root-entrylink-mandatory/) | Definitive Ogre + Mercenaries | 5 |
+| **Summe** | | **131** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -532,3 +533,34 @@ das Armeebuch. Damit trägt jeder Unterschied im Bericht genau eine Ursache.
 > Der Verletzungsbericht kodiert zählende Grenzen, keine Verfügbarkeit; diese
 > Facette liest man an der Capability-Projektion ab (gleiche Abgrenzung wie in
 > `vampire-bloodlines`, VBL-R4/R5).
+
+## `root-entrylink-mandatory`
+
+Prüft die **zweite Kodierung einer armeeweiten Pflichteinheit**. Ein Armeebuch kann
+„diese Einheit muss dabei sein" auf zwei gleichwertige Arten aufschreiben: die
+Pflicht hängt an einem **Armee-Eintrag** selbst — diesen Weg deckt bereits
+`offer-and-category-slots` mit *Army of Sylvania* ab — oder sie hängt an einem
+**Verweis** auf eine geteilte Einheit, dessen Grundwert „mindestens 0" lautet und
+den ein Zusatz des Verweises auf „mindestens 1" anhebt. Beide Formen müssen
+denselben blockierenden Verstoß erzeugen, wenn die Einheit fehlt.
+
+Beobachtet wird das an den **Ogerbullen** der Ogerarmee: die Einheit selbst steht im
+Söldnerbuch, das Ogerbuch holt sie über einen Verweis herein. Der Zusatz am Verweis
+ist an eine Bedingung geknüpft — er gilt in der **Standardliste**, aber **nicht** in
+der Sonderliste **„Ironskin Tribe"**. Genau daran entscheidet sich, ob die Auswertung
+den Zusatz *dieses Verweises* liest oder pauschal jede Verweis-Untergrenze zur
+Pflicht erklärt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Standardliste, **keine** Ogerbullen | Die Pflicht feuert genau einmal (0 von 1). Der Platz für die Ogerbullen erscheint als **Pflicht-Stelle**, nicht als Angebot |
+| 02 | Standardliste **mit** einer Einheit Ogerbullen | Pflicht erfüllt — keine Verletzung. Der Platz ist **belegt** |
+| 03 | Sonderliste „Ironskin Tribe", **keine** Ogerbullen | Dort verlangt das Buch sie nicht: **keine** Verletzung, der Platz ist ein blosses **Angebot**. Der Beleg, dass der Zusatz des Verweises gelesen wird |
+| 04 | Standardliste **und** „Ironskin Tribe" nebeneinander, in beiden keine Ogerbullen | Die Pflicht feuert **genau einmal** — nur für die Standardliste |
+| 05 | **Zwei** Standardlisten, Ogerbullen nur in der ersten | Die Pflicht feuert **genau einmal** — für die zweite. Die Zählung gilt je Kontingent, nicht für die ganze Armee |
+
+> **Beweisführung in beide Richtungen.** Wird die Verweis-Form gar nicht
+> eingesammelt, bleiben 01, 04 und 05 still. Wird umgekehrt jede Verweis-Untergrenze
+> pauschal zur Pflicht erhoben, feuert es auch in der Sonderliste: 03 schlägt fehl
+> und 04 feuert zweimal statt einmal. Wird der Bezugsrahmen als armeeweit statt je
+> Kontingent gelesen, bleibt 05 still.
