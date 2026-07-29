@@ -144,6 +144,19 @@ Force-Verletzungen.
   Dateien / 2251 Tests Exit 0; lint/typecheck Exit 0. Angenommen,
   unverifiziert: zwei Wurzel-Phantome teilen nie denselben
   (Grenz-Id, Ziel-Id)-Schlüssel.
+- 2026-07-29 review Runde 2 (frischer Kontext, ganzer Intent): **0
+  Befunde.** Rot-Beweis von Grund auf neu (6 rot / 4 Kontrollen grün auf
+  `324f448`); alle Exit-Codes unabhängig erhoben (Zielfile 10/10; Vitest
+  221 Dateien / 2251 Tests; Puppeteer-E2E; lint/typecheck/depcruise je 0;
+  knip und measure-evaluator Exit 1 auf Branch UND main mit identischer
+  Befundmenge bzw. überlappenden Zeiten). Implementierer-Annahme
+  (Schlüssel-Eindeutigkeit der Wurzel-Phantome) als stichhaltig bestätigt;
+  NUL-Prüfung byteweise 0 in allen vier Quelldateien. Zwei Notizen für den
+  PR, keine Befunde: der F2-Null-Force-Rand bleibt bewusst ungepinnt
+  (eine Regression fiele der Suite heute nicht auf — Entscheidung liegt
+  beim Menschen); Id-bezogene Kategorie-Grenzen (scope=<Kategorie-Id>
+  statt Keyword `roster`) laufen unentdoppelt durch — identisch zu main,
+  latenter Verwandter dieses Issues, falls solche Daten je auftauchen.
 
 ## Checkpoints
 
@@ -166,8 +179,20 @@ Force-Verletzungen.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — genau eine Meldung je armeeweiter
+  Kategorie-Grenze (belegt bei n=1, n=2, MAX-only, MIN+MAX, gemischt),
+  Force-Meldungen je Kontingent, Capabilities byte-gleich; Runde 2 aus
+  frischem Kontext fand 0 Befunde.
+- What surprised me? Der Tiebreak-Feinschliff (F1): „Pflicht-Phantom" ist
+  nicht gleich „Wurzel-Phantom" — die Force-Schleife erzeugt Phantome in
+  Kontingenten, und der erste Wurf beförderte auch diese. Der Fix war eine
+  Zeile, weil `isRootLevelAnchor` schon existierte.
+- What am I assuming without having verified it? Dass der bewusst
+  ungepinnte F2-Null-Force-Rand (stillgelegte Huckepack-Force-Meldung am
+  Wurzel-Phantom) so bleiben darf — liegt beim Menschen; dass Id-bezogene
+  Kategorie-Grenzen (scope=<Kategorie-Id>) weiterhin außerhalb der
+  Entdopplung stehen dürfen (identisch zu main, kein Katalog im Repo
+  nutzt sie so). Kein Versions-Bump: Evaluator nicht an die UI
+  angebunden (Sitzungs-Präzedenz).
 
 ## Retro
