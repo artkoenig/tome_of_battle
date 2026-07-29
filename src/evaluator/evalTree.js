@@ -310,10 +310,17 @@ function countInstances(fromNode, defId) {
  * Ein *vorhandener* Eintrag bekommt keinen Phantomknoten — seine Grenze wird schon
  * am realen Knoten ausgewertet; nur die **Absenz** braucht einen eigenen Anker.
  *
- * Eine Kategorie, die das Kontingent per `categoryLink` fuehrt, ist hier
- * ausgenommen: sie bekommt ihren Anker ueber
- * {@link synthesizeForceCategoryAnchors}. Beides zugleich gaebe zwei Anker fuer
- * dieselbe Kategorie und damit eine doppelt gemeldete Verletzung.
+ * In der **Kontingent-Schleife** ist eine Kategorie, die das Kontingent per
+ * `categoryLink` fuehrt, ausgenommen: sie bekommt ihren Anker dort ueber
+ * {@link synthesizeForceCategoryAnchors} — beides zugleich gaebe zwei Anker fuer
+ * dieselbe Kategorie im selben Kontingent. Die **Roster-Schleife** kennt keine
+ * solche Ausnahme: eine verlinkte Kategorie mit armeeweiter MIN-Grenze bekommt
+ * ihr Wurzel-Phantom **zusaetzlich** zu den Kategorie-Ankern der verlinkenden
+ * Kontingente (die dieselben Grenzen per `limitsOf` erben). Alle diese Anker
+ * werten die Grenze aus — die Faehigkeitsdatensaetze bleiben so vollstaendig;
+ * dass die Meldungsliste dieselbe armeeweite Pflicht trotzdem nur einmal
+ * traegt, entscheidet die Berichtsschicht (`report.js`, Entdopplung ueber
+ * Grenz- und Ziel-Id, Issue 0093).
  */
 function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
   for (const def of definitions) {

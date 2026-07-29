@@ -137,6 +137,8 @@ Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** 
 
 **Ein Angebots-Anker erzeugt keine Verletzung.** Seine Grenzen werden voll ausgewertet — daraus liest der Fähigkeitsdatensatz Höchstmaß, Belegung und Restspielraum —, aber das Ergebnis ist **nicht berichtsfähig** (`isReportable`). Andernfalls läse eine armee- oder kontingentweit skopierte Grenze am Anker denselben Wert wie am realen Knoten und meldete dieselbe Verletzung ein zweites Mal, und jede nicht gewählte Option mit einer Mindestgrenze flutete die Meldungsliste. Die Verletzungsliste bleibt vom gewachsenen Baum damit unberührt — eine prüfbare Invariante der bestehenden E2E-Suite. Die roster-weite Budget-Regel ist immer berichtsfähig.
 
+**Eine armeeweite Kategorie-Grenze meldet genau einmal** (`report.js`, `docs/battlescribe-data-format.md` §9.9: Entdopplung „über die Ziel-Id"). Eine Kategorie mit armeeweiter Grenze ist mehrfach verankert — als Wurzel-Pflicht-Phantom (bei einer MIN-Grenze) und an jedem Kategorie-Anker jedes verlinkenden Kontingents, dessen `categoryLink` die Grenzen erbt; jeder Anker wertet sie gegen dieselbe armeeweite Zählung aus. Die Ergebnisse bleiben vollständig (jeder Kategorie-Slot behält seinen ganzen Fähigkeitsdatensatz); allein die **Meldungsliste** entdoppelt, beschränkt auf synthetische Kategorie-Anker (`CATEGORY_ANCHOR`, `MANDATORY_PHANTOM` einer Kategorie-Definition): je (Grenz-Id, gezählte Ziel-Id) überlebt im ROSTER-Rahmen genau eine Meldung — bevorzugt am Wurzel-Pflicht-Phantom, sonst am ersten Anker in Dokumentreihenfolge. FORCE-Rahmen-Grenzen bleiben je Kontingent-Anker gemeldet; nur ihre Huckepack-Auswertung am Wurzel-Phantom (dort löst der FORCE-Rahmen nicht auf) entfällt. Belegte Instanz-Anker behalten ihre Multiplizität.
+
 Der **Rahmen-Bezug** (Pfad und Definitions-ID des umschließenden Kontingents bzw. der Eltern-Auswahl; `null` am Roster selbst) steht neben dem Pfad, weil ein rein positioneller Schlüssel für die Oberfläche zu spröde ist. Ein **Verweis-Slot** — der Kategorie-Anker eines verlinkenden Kontingents trägt den `categoryLink`, ein Angebots-Anker den `entryLink`; der Anker einer unverlinkten Kategorie trägt dagegen die `categoryEntry` selbst und ist keiner — nennt zusätzlich sein **Ziel** (`targetDefId`): das ist das *Thema* des Slots, und dieselbe ID, über die die Constraint-Schicht ihn zählt. Ohne sie ließe sich ein Kategorie-Abschnitt allein aus dem Bericht nicht seiner Kategorie zuordnen.
 
 **Die Info-Projektion je Slot** (`infoProjection.js`) beantwortet die Frage *welche Profile und Regeltexte gelten für diesen Slot?* — eine geordnete Liste, deren Einträge je Art (Profil oder Regel), die **ID des Vorkommens**, den **effektiven** Namen und, je nach Art, Profiltyp samt Merkmalen *(Charakteristik-Typ mit Namen, effektiver Wert)* oder den Regeltext tragen. Vier Regeln bestimmen ihren Inhalt:
@@ -622,7 +624,8 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
   // EINE Liste, zwei Herkünfte, ein Diskriminator (§3.6). Die Autor-Meldungen kommen
   // aus den eben gebauten Fähigkeitsdatensätzen — dieselben gerenderten Texte, nicht
   // ein zweites Mal gerendert.
-  derived = results.filter(r → r.isReportable and not r.satisfied)
+  derived = dedupeArmyWideCategoryViolations(          // §3.6: armeeweite Kategorie-
+              results.filter(r → r.isReportable and not r.satisfied))  // Grenzen genau einmal
                    .map(r → classifyDerivedViolation(r, ctx) + causesFieldOf(r.derivation))
   authored = capabilities.values
                    .filter(c → isReportableAnchorKind(c.anchorKind))   // nie am Angebots-Anker

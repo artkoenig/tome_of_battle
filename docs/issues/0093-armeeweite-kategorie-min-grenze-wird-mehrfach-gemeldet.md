@@ -98,6 +98,24 @@ Force-Verletzungen.
   Exit 0. Beobachtung des Autors: das Wurzel-Phantom meldet auch die
   geerbte Force-Grenze (dritte Meldung im gemischten Fall) — die
   Plan-Präzisierung oben stammt aus dieser Runde.
+- 2026-07-29 implementer: Entdopplung vollständig in der Berichtsschicht,
+  ohne Plan-Abweichung. `constraints.js` trägt die gezählte Ziel-Id neu auf
+  jedem Result (`countedTargetId`); `report.js` entdoppelt vor der
+  Klassifikation (`dedupeArmyWideCategoryViolations`): an synthetischen
+  Kategorie-Ankern kollabieren Roster-Rahmen-Grenzen je (Grenz-Id,
+  Ziel-Id) — Überlebender: Wurzel-Phantom, sonst erster Anker in
+  Dokumentreihenfolge —, Force-Rahmen-Grenzen bleiben nur an
+  Nicht-Wurzel-Ankern (die Huckepack-Meldung am Wurzel-Phantom war die
+  unresolvedScope-0-Familie und entfällt). Results/Capabilities
+  unverändert (AC 3). `evalTree.js` nur Docstring-Korrektur
+  (Roster-Schleife nimmt verlinkte Kategorien NICHT aus); Doku §3.6/§4.8
+  nachgeführt. Belegt: Zielfile 9/9 Exit 0; Vitest 221 Dateien /
+  2250 Tests Exit 0; Puppeteer-E2E Exit 0; lint/typecheck/depcruise
+  Exit 0; knip Exit 1 vorbestehend mit identischer Befundmenge.
+  Zwischenfall festgehalten: ein erster Edit hatte ein literales NUL-Byte
+  eingeschleust (git meldete die Datei binär) — ersetzt durch `\u0000`,
+  alle Fakten stammen aus den Läufen danach; Orchestrator hat die Datei
+  unabhängig als reine Textdatei ohne NUL verifiziert.
 
 ## Checkpoints
 
