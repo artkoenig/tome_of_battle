@@ -275,6 +275,53 @@ zurückgegeben, die die Kriterien nicht entscheiden, statt sie zu raten:
     732 Tests, Exit 0. `npx vitest run src/evaluator/e2e.testcatalog.test.js` →
     131 Tests, Exit 0.
 
+- **2026-07-29, Review Runde 1 — sieben Befunde, jeder mit Reproduktion.**
+  Fakten: `npx vitest run` → 228 Dateien, 2350 Tests, **Exit 0**; `lint`,
+  `typecheck`, `depcruise` je Exit 0; `measure-evaluator.js` → **0
+  Drift-Meldungen**, Exit 1 nur an der dokumentierten 100-ms-Schwelle; `knip`
+  zeilengleich zu `origin/main`.
+
+  Triage:
+
+  | # | Befund | Entscheidung |
+  |---|---|---|
+  | 1 | Rohes **NUL-Byte** in `report.js:227` — die Datei gilt `grep`/ripgrep seither als binär, jede Inhaltssuche überspringt sie stumm | **jetzt beheben** (` ` wie die Schwesterstelle drei Funktionen darüber) |
+  | 2 | Zwei Wurzelformen mit **verschiedenen** Grenzwerten: die strengere Pflicht wird stumm verschluckt (gemeldet „0 von 1", verlangt sind 2) | **jetzt beheben**, siehe D11 |
+  | 3 | „**aufgelöste** Ziel-Id" (D3) hat keinen Test mit Zähnen — Mutation auf rohe `targetId` läuft grün durch | **jetzt anpinnen** |
+  | 4 | Die Zusicherung „ein Anker behält alle **eigenen** Grenzen" ist ungepinnt; ohne sie verschwindet ein echter Verstoß | **jetzt anpinnen** |
+  | 5 | `limitScopeFilter` am neuen Anker ungepinnt; ein Link mit **beiden** Rahmen erzeugt ohne ihn doppelte Verstöße **und** eine unechte `unresolvedScope`-Diagnose | **jetzt anpinnen** |
+  | 6 | Die beiden nach D5 benannten Tests **prüfen D5 nicht** — sie bleiben grün, wenn nur die Link-Id gezählt wird | **jetzt anpinnen** (beobachtbarer Effekt ist die doppelte Meldung) |
+  | 7 | `hasOwnMinLimitInFrame` ungepinnt (nur überzählige Slots, keine Verstoßänderung) | **jetzt anpinnen** |
+
+  Befund 3–7 sind allesamt derselbe Mangel: die Umsetzung ist richtig, aber
+  **unbewiesen**. Sie sind genau das, wofür die Mutationsprobe da ist, und
+  hätten ohne sie den PR erreicht.
+
+- **D11 — verschiedene Grenzwerte sind nicht dieselbe Pflicht.** Die
+  Entdopplung fasst zwei Wurzelform-Meldungen nur zusammen, wenn ihre
+  **effektive Grenze gleich** ist. Sonst bleiben beide stehen. Grund: die
+  Entdopplung existiert, damit **eine** Pflicht nicht zweimal erscheint (§9.9);
+  zwei verschiedene Grenzwerte sind zwei verschiedene Aussagen, und die
+  schwächere zu zeigen, während die strengere verschwindet, ist die schlechteste
+  aller Ausgaben — der Nutzer erfüllt „0 von 1" und die Liste bleibt trotzdem
+  illegal. D7 („die erste überlebt") galt stillschweigend nur für gleiche
+  Grenzwerte; das war eine unerkannte Lücke in D7 und ist hiermit geschlossen.
+
+- **D12 — die zwei fremden Armeebücher bleiben, wie sie sind (Default).** Die
+  Wirkungsmessung des Reviewers über alle 127 Roster: 53 gewinnen neue
+  blockierende Verstöße, davon drei **nicht** die Ogerbullen, sondern
+  Wurzel-`entryLink`s namens **„Allow experimental rules?"** und **„Allow
+  special characters?"** in Vampire Counts und Orcs & Goblins — Konfigurations-
+  schalter, Basis `min 0`, per Link-Modifikator auf 1 gehoben. Sie fallen unter
+  §9.9 wie jede andere Wurzelform: es sind echte Auswahlen, und „Allow special
+  characters?" trägt sogar `defaultAmount="1"`, ein aus Battlescribe
+  exportiertes Roster enthielte sie also. Unsere Testroster sind von Hand
+  geschrieben und enthalten sie nicht — **das ist ein Artefakt der Fixtures,
+  kein Fehler der Regel.** Deshalb keine Sonderbehandlung: eine Ausnahme für
+  „sieht aus wie ein Schalter" hätte keine Grundlage in den Daten. **Als Default
+  vermerkt** und dem Menschen offengelegt, weil es sichtbares Verhalten in zwei
+  Armeebüchern ändert, die dieses Issue nie erwähnt.
+
 ## Checkpoints
 
 ### Before implementation
