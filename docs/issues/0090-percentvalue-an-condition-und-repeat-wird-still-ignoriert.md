@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0090
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/163
 ---
 
 # `percentValue` an Condition und Repeat wird still ignoriert
@@ -179,3 +179,19 @@ Nötige bereits.
   UI-angebunden (Sitzungs-Präzedenz).
 
 ## Retro
+
+- Die Grenzen-Konvention als deklarierte Referenz („dieselbe
+  Nenner-Konvention") hat fast jede Semantikfrage vorentschieden — nur die
+  Übersetzung von „keine Aussage" auf Gates brauchte einen Default. Ein
+  Kriterium, das auf eine bestehende Konvention zeigt, ist billiger als
+  eines, das sie neu beschreibt.
+- Die Byte-Identitäts-Sonde des Reviewers (kompletter Berichts-Dump über
+  alle Szenarien, main vs. HEAD) ist das stärkste
+  Nichts-verändert-Instrument dieser Session — als Muster merken für jede
+  Änderung, die „latent" sein soll.
+- Der einzige Befund war eine nicht reproduzierbare Zahl im
+  Researcher-Protokoll. Zählbehauptungen im Tracker sollten das
+  Zähl-Kommando nennen, sonst sind sie später nicht prüfbar.
+- Der Tracker-Waiver (Wiederholungsrunde entfällt bei reinen
+  Protokoll-Fixes) hat hier zum ersten Mal in dieser Session gegriffen —
+  genau für diesen Fall ist er da.
