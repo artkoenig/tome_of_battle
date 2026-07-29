@@ -98,6 +98,18 @@ Acceptance criteria:
   Rot-Beleg: `npx vitest run` über die drei Dateien — 26 Tests, 17 rot
   (Assertion-Fehler aus fehlendem Scope-Support, keine Harness-Fehler),
   9 grün (Bestands-Pins), Exit-Code 1.
+- **2026-07-29, E2E-Autor (Black-Box):** Zwei Szenarien unter `docs/testing/`
+  aus den Katalogdaten — `unit-scope-per-model-cost` (Mercenaries Heavy
+  Cavalry: Barding kostet je Modell +2; Total 105 gegen Limit 100 feuert,
+  Limit 110 klammert nach oben) und `ancestor-scope-instance-of` (VC:
+  Chariot-Obergrenze sinkt als Charakter-Reittier — Treffer beim Großvater;
+  Steed of Slaanesh bleibt ohne Slaanesh-Vorfahren bei max 0). Beide
+  erwarten die Abwesenheit von `unresolvedScope` für den jeweiligen Rahmen.
+  Auftrags-Vorschlag O&G verworfen: der dortige Modifikator zeigt auf eine
+  nirgends existierende Constraint-Id (hängender Verweis) — im Szenario-README
+  dokumentiert. Testkatalog um beide Einträge ergänzt (126 → 130 Roster).
+  Rot-Beleg: `npx vitest run src/evaluator/e2e.testcatalog.test.js -t <name>`
+  — je Szenario 2 rot, Exit-Code 1.
 
 ## Checkpoints
 

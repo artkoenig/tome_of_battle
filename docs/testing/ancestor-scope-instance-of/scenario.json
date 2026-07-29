@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "name": "ancestor-scope-instance-of",
+  "description": "Prüft den Bezugsrahmen scope=\"ancestor\" an instanceOf-Conditions gegen Kategorie-Ids (Vampire Counts): (1) Der 'Tiranoc Chariot [HIGH ELVES]' senkt als Charakter-Reittier seine Obergrenze von 2 auf 1 (und die Pflicht von 1 auf 0), wenn IRGENDEIN Vorfahre zur Kategorie 'Characters' (7a1c-d611-c2dc-def1, .gst) gehört — im Roster erst der Großvater 'Swain', nicht der direkte Elternteil. (2) Das 'Steed of Slaanesh [DARK ELVES]' ist per Basis max 0 und würde nur erlaubt (set 1), wenn ein Vorfahre zur Kategorie 'Slaanesh [DARK ELVES]' (e7350b07-…) gehörte — die im Datensatz nirgends vergeben wird: die Bedingung hält nicht, die Grenze 0 feuert. Beide Roster fordern zudem, dass der ancestor-Rahmen aufgelöst wird (keine UNRESOLVED_SCOPE-Diagnose).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-chariot-under-character-max-lowered.ros",
+      "description": "Swain (Kategorie Characters) → Commander [HIGH ELVES] → 2 × Tiranoc Chariot. Die Bedingung hält (Vorfahre Swain trägt Characters, der direkte Elternteil Commander nicht): max wird von 2 auf 1 gesetzt und feuert mit Ist 2 / Grenze 1; die auf 0 gesetzte Pflicht (042be4cb-…) bleibt still. Eine Engine ohne ancestor-Auflösung ließe max auf 2 stehen und feuerte nicht.",
+      "expect": {
+        "firing": [
+          { "limitId": "b79661e2-c983-45b3-a6dc-f8544ac9ce9e", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["042be4cb-667d-467d-8ada-c89436f2f248"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "ancestor" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-steed-without-slaanesh-ancestor-max-zero.ros",
+      "description": "Swain → Noble [DARK ELVES] → 1 × Steed of Slaanesh. Die Bedingung hält NICHT (kein Vorfahre gehört zur Kategorie Slaanesh [DARK ELVES] — sie wird im Datensatz nirgends vergeben): die Basis-Obergrenze max 0 am Link bleibt und feuert mit Ist 1 / Grenze 0. Eine Engine, die eine nicht auflösbare/nicht haltende ancestor-Bedingung als wahr behandelt, höbe die Grenze fälschlich auf 1.",
+      "expect": {
+        "firing": [
+          { "limitId": "530cd595-8c63-435c-b9da-e243e2d4b0f2", "actual": 1, "bound": 0 }
+        ],
+        "absent": ["d84fb948-66a1-49b5-8a32-3904d40c6e54"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "ancestor" }
+          ]
+        }
+      }
+    }
+  ]
+}
