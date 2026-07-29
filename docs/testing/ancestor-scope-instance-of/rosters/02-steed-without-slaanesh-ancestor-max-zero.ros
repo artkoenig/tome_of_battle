@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="asi-02" name="ASI 02 - Steed of Slaanesh ohne Slaanesh-Vorfahren: ancestor-Bedingung haelt nicht, max 0 feuert" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored ancestor-scope-instance-of E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-swain" name="Swain" entryId="b920-b398-dc26-7f4d" number="1" type="unit">
+          <categories>
+            <category id="e0ab-de73-3b89-9373" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="bfa2-7b7b-011a-04d3" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-noble" name="Noble [DARK ELVES]" entryId="a16d445b-ea00-48d6-a02a-376711f5c51c" number="1" type="unit">
+              <selections>
+                <selection id="noble-handweapon" name="Hand Weapon" entryId="ffb31de4-741d-40d9-872d-bfa99032c1c1" number="1" type="upgrade"/>
+                <selection id="noble-steed" name="Steed of Slaanesh [DARK ELVES]" entryId="7368a8ab-886c-488a-8570-c8009ee7514f" entryLinkId="d86ebdbb-c14f-45d6-80d3-b7466a1f3db0" number="1" type="upgrade"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

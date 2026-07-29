@@ -170,6 +170,12 @@ enum ModifierKind   { set, increment, decrement, add, remove,      // XSD-SSOT (
                       append, prepend, multiply, set-primary, unset-primary }
 enum ConditionGroupKind { and, or }                               // XSD-SSOT
 enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF,
+                      UNIT,                       // die umschließende Einheit: nächster
+                      // Vorfahre (inkl. selbst) mit rohem type="unit" — ein regulärer
+                      // Zählrahmen (Issue 086)
+                      ANCESTOR,                   // die Vorfahrenkette (`scope="ancestor"`,
+                      // Issue 086) — kein Zählrahmen: §4.5 beantwortet ihn als
+                      // Mitgliedschaftsprüfung über die strikte Vorfahrenkette
                       PRIMARY_CATALOGUE }         // das Armeebuch des umschließenden
                       // Kontingents (`scope="primary-catalogue"`, Issue 077) — kein
                       // Zählrahmen: ein Katalog ist kein Knoten des Instanzbaums, also
@@ -268,6 +274,7 @@ enum LimitMeasure   { SELECTION_COUNT, FORCE_COUNT, COST_SUM,   // WAS die Grenz
                       // ein CountedFieldKind (limitMeasureOfCountedField), ROSTER_BUDGET
                       // ist die engine-eigene Regel „Armee zu teuer"
 enum ScopeKind      { ROSTER, FORCE, PARENT, SELF,   // die Werte aus ScopeKeyword …
+                      UNIT, ANCESTOR,
                       PRIMARY_CATALOGUE,
                       ENTRY_ID, CATEGORY_ID }        // … plus die beiden ID-Rahmen: dem rohen
                       // `scope` sieht man nicht an, welches von beidem er ist
@@ -505,9 +512,20 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
       ctx.diagnostics.add(Diagnostic.UNRESOLVED_SCOPE(scope, ctx.node)); return 0
     return targetId == null ? 1 : (targetId == catalogueId ? 1 : 0)
 
+  // ANCESTOR ist ebenfalls kein Zählrahmen, sondern eine Mitgliedschaftsprüfung über die
+  // strikte Vorfahrenkette (Issue 086): gezählt wird, wie viele Vorfahren auf targetId
+  // auflösen — über Definitions-Id, Link-Ziel-Id, effektive Kategorien (ctx.effective)
+  // oder rohen Typ (dieselben Ziele, unter denen der Index sie zählbar führt, §4.4).
+  // Unabhängig von `shared`/Flags: eine Vorfahrenkette wird durch eine Instanz nicht enger.
+  if scope == ANCESTOR:
+    if field != SELECTION_COUNT:
+      ctx.diagnostics.add(Diagnostic.UNSUPPORTED_FIELD(field)); return 0
+    return count(a in strictAncestorsOf(ctx.node) where targetId == null or targetId in countableTargetsOf(a, ctx.effective))
+
   frame = resolveScopeFrame(ctx.node, scope)
   // ROSTER → Wurzel | FORCE → ctx.node.forceRoot | PARENT → ctx.node.parent
-  // SELF → ctx.node | EntryId/CategoryId → nächster Vorfahre bzw. Kategorierahmen mit dieser ID
+  // SELF → ctx.node | UNIT → nächster Vorfahre (inkl. selbst) mit rohem type="unit"
+  // EntryId/CategoryId → nächster Vorfahre bzw. Kategorierahmen mit dieser ID
   if frame == null:
     ctx.diagnostics.add(Diagnostic.UNRESOLVED_SCOPE(scope, ctx.node))
     return 0
@@ -558,7 +576,8 @@ function applyModifiersOfNodes(nodes, state, index)
   // schreibt ausschließlich unter den übergebenen Knoten (der Zustand schlüsselt
   // nach Knoten-Objekt) — der zweite Aufruf berührt keinen Wert des ersten
   for node in nodes:
-    ctx = QueryContext(node, index, diagnostics)
+    ctx = QueryContext(node, index, diagnostics, effective = state)  // effective: ANCESTOR liest
+                                            // die effektiven Kategorien der Vorfahren (§4.5)
     for modifier in node.def.modifiers:     // Dokumentreihenfolge — Reihenfolge ist Semantik
       applyModifier(ctx, state, node, modifier)
     for group in node.def.modifierGroups:   // Modifikatorgruppen nach den freien Modifikatoren
@@ -615,7 +634,7 @@ Wichtig: Jede Fixpunktrunde wendet Modifikatoren auf eine frische Kopie der **Ba
 function evaluateAllConstraints(tree, effective, index, diagnostics): ConstraintResult[]
   results = []
   for node in allNodesOf(tree):                          // Phantome eingeschlossen
-    ctx = QueryContext(node, index, diagnostics)
+    ctx = QueryContext(node, index, diagnostics, effective)
     for limit in node.def.limits:
       actual = query(ctx, limit.field, limit.scope, targetIdFor(limit, node), limit.flags)
       bound  = resolveBound(ctx, limit, effective)

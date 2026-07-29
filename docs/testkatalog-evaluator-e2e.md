@@ -106,7 +106,9 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`entrylink-raw-type-counting`](testing/entrylink-raw-type-counting/) | Definitive VC + Mercenaries | 3 |
 | [`unlimited-modifier-toggle`](testing/unlimited-modifier-toggle/) | Definitive O&G / Mercenaries | 5 |
 | [`primary-catalogue-scope`](testing/primary-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 10 |
-| **Summe** | | **126** |
+| [`unit-scope-per-model-cost`](testing/unit-scope-per-model-cost/) | Definitive Ogre + Mercenaries | 2 |
+| [`ancestor-scope-instance-of`](testing/ancestor-scope-instance-of/) | Definitive VC + Mercenaries | 2 |
+| **Summe** | | **130** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -571,3 +573,28 @@ das Armeebuch. Damit trägt jeder Unterschied im Bericht genau eine Ursache.
 > Der Verletzungsbericht kodiert zählende Grenzen, keine Verfügbarkeit; diese
 > Facette liest man an der Capability-Projektion ab (gleiche Abgrenzung wie in
 > `vampire-bloodlines`, VBL-R4/R5).
+
+## `unit-scope-per-model-cost`
+
+Prüft den Bezugsrahmen `scope="unit"` am Mercenaries-Idiom „Kostenaufschlag je
+Modell": das Barding der Heavy Cavalry kostet über einen Wiederhol-Modifikator
+je Modell der **umschließenden Einheit** 2 Punkte extra (Issue 086). Beobachtet
+wird der korrekt gerechnete Gesamtpreis über die roster-weite Budgetregel; in
+beiden Rostern darf keine `unresolvedScope`-Diagnose für `unit` entstehen.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Heavy Cavalry mit 5 Modellen und Barding, Punktelimit 100 | Die Armee kostet 105 (95 + 5 × 2 Barding-Aufschlag): das Budget feuert mit Ist 105 gegen 100. Eine Engine, die den Aufschlag 0-fach rechnet, bliebe fälschlich stumm |
+| 02 | Derselbe Aufbau, Punktelimit 110 | Kein Feuern — und zugleich die Klammer nach oben: eine Doppel-Anwendung des Aufschlags oder die Basiskosten der Definition (statt der Link-Kosten 0) ergäben ≥ 111 und feuerten fälschlich |
+
+## `ancestor-scope-instance-of`
+
+Prüft den Bezugsrahmen `scope="ancestor"` (nur mit `instanceOf`/`notInstanceOf`
+gültig): die Bedingung hält genau dann, wenn **irgendein Vorfahre** der
+tragenden Auswahl auf die benannte Kategorie auflöst (Issue 086). In beiden
+Rostern darf keine `unresolvedScope`-Diagnose für `ancestor` entstehen.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Swain (Kategorie „Characters") → Commander → 2 Tiranoc Chariots | Der Treffer liegt erst beim **Großvater**: als Charakter-Reittier sinkt die Chariot-Obergrenze auf 1 — sie feuert (Ist 2 gegen 1), die Chariot-Pflicht entfällt |
+| 02 | Swain → Noble → 1 Steed of Slaanesh, kein Vorfahre trägt „Slaanesh [DARK ELVES]" | Die Bedingung hält nicht: das Basis-Maximum 0 des Steed-Verweises bleibt stehen und feuert (Ist 1 gegen 0) |
