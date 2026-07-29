@@ -53,6 +53,18 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-07-29 test-author: `src/evaluator/query.selfGatedInstanceOf.test.js`,
+  23 tests — 6 RED (self-gated empty-force instanceOf/notInstanceOf + the 4
+  AC3 equivalence cases involving the empty force), 17 green pins/controls
+  (one-unit case, other-force boundary both ops, all 8 canonical-encoding
+  controls incl. empty force, unknown-scope-id fail-closed pin). Modeled on
+  the §5.6 Vampire-Counts idiom (forceEntry-own min over `limit::pts` +
+  entry-level cost surcharge probe). Open, unpinned: id collision
+  (forceEntry id that is also an entry/category id — likely impossible);
+  whether the fixed recognition still emits `unresolvedScope` for a real
+  forceEntry id seen from another force (only the violation outcome is
+  pinned there).
+
 ## Checkpoints
 
 ### Before implementation
