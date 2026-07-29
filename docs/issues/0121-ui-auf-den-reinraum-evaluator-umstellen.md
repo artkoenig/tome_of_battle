@@ -127,7 +127,7 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 - [x] 1. Kostenprojektion im Evaluator-Bericht (`costs`/`totalCosts` je
   Slot, `costTotals` im Ergebnis) — evaluator-only, Tests zuerst
-- [ ] 2. Roster-Adapter `toEvaluatorRoster` inkl. `pathBySelectionId`
+- [x] 2. Roster-Adapter `toEvaluatorRoster` inkl. `pathBySelectionId`
   (Link-Id-Regel, costLimits, −1) — Tests zuerst
 - [ ] 3. `useEvaluation`-Hook mit Datensatz-Cache — Aufruf-Zähler-Test
   (Kriterium 8)
@@ -180,6 +180,16 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-29, Task 2 (Roster-Adapter) erledigt: 19 rote Tests, dann grün
+  ohne Testedit (`npx vitest run src/evaluation` Exit 0; Evaluator-
+  Regression 834 Tests Exit 0; lint/typecheck/depcruise Exit 0). Das
+  Slot-Pfadschema (Kind-Indizes der Roster-Eingabe, synthetische Anker
+  nur angehängt) war nur intern dokumentiert und steht jetzt als
+  Vertragszusatz in der Fassaden-JSDoc; Gültigkeit nur ohne
+  `unresolvedDefinition`-Diagnose. `costLimits` entfällt bei fehlendem
+  `costLimitType` ganz. Kleinere Panne: der test-author-Bericht nannte
+  25 Tests, die Datei hat 19 `it`-Blöcke — Zählfehler im Bericht, Datei
+  unangetastet (per git diff belegt).
 - 2026-07-29, Task 1 (Kostenprojektion) erledigt: test-author 15 rote
   Tests (`costProjection.test.js`), Implementierer grün ohne Testedit.
   `npx vitest run src/evaluator` 834 Tests Exit 0; lint/typecheck/
