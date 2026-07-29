@@ -24,6 +24,9 @@ Acceptance criteria:
    reference (`docs/battlescribe-data-format.md`).
 3. When the rest of the documentation is checked against the new rule, no
    document contradicts it.
+4. When the bsdata documentation and an ADR contradict each other, the
+   project context tells the agent which one wins: the bsdata documentation
+   takes precedence over the ADRs. (Added by the maintainer mid-run.)
 
 ## Plan
 
@@ -53,6 +56,9 @@ Acceptance criteria:
   criteria confirmed met, no scope creep, no flawed logic. Documentation-only
   change — this review is the only check it gets; no suite or analysis
   applies to a markdown rule (nothing to run).
+- Maintainer added criterion 4 after the first push: bsdata takes precedence
+  over the ADRs. Precedence bullet added to the same section in
+  `.agents/AGENTS.md`; same run, same branch.
 
 ## Checkpoints
 
