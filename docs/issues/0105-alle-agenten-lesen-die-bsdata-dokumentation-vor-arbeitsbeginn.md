@@ -30,8 +30,9 @@ Acceptance criteria:
 5. When any ADR is read, it contains no BattleScribe-format information that
    the bsdata documentation also covers, and none that contradicts it —
    format explanations are replaced by references to the bsdata
-   documentation; the ADRs keep only their decisions. (Added by the
-   maintainer mid-run.)
+   documentation; the ADRs keep only their decisions. An ADR that loses its
+   raison d'être through this sweep is deleted. (Added by the maintainer
+   mid-run; deletion clause added via /goal.)
 
 ## Plan
 
@@ -56,6 +57,10 @@ For criterion 5 (ADR sweep):
   session and subagents alike — receives. No per-agent edits needed; the
   `e2e-testcase-author` already mandates the document as its first allowed
   source. Default, unanswered.
+- No ADR is deleted under criterion 5's deletion clause: after the sweep,
+  every revised ADR still carries its own architecture decisions — the doc
+  references are 1–5 lines in files of 44–284 lines, and the audits listed a
+  distinct decision core for each. Nothing became a pointer-only shell.
 
 ## Log
 
