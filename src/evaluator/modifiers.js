@@ -674,7 +674,10 @@ function applyCarrierModifiers(scope, subject) {
  */
 export function applyModifiersOfNodes(nodes, state, { root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId }) {
   for (const node of nodes) {
-    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId });
+    // Der beschriebene Zustand IST der Effektiv-Zustand dieser Runde — der
+    // Bezugsrahmen `ancestor` liest daraus die effektiven Kategorien der
+    // Vorfahren (Issue 086; §4.6: `effective: state`).
+    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId, effective: state });
     applyCarrierModifiers({ ctx, state, node, carrier: node }, node.def);
     for (const carrier of infoCarriersOf(node.def)) {
       applyCarrierModifiers({ ctx, state, node, carrier }, carrier);

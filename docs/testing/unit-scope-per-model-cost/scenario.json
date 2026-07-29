@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "unit-scope-per-model-cost",
+  "description": "Prüft den Bezugsrahmen scope=\"unit\" an einem Kostenaufschlag je Modell: Das Barding der Söldnereinheit 'Heavy Cavalry' (Mercenaries) trägt einen `increment 2`-Modifikator auf die pts-Kostenart mit `<repeat field=\"selections\" scope=\"unit\" childId=\"model\"/>` — je Modell der umschließenden Einheit kostet das Barding 2 pts mehr. Bei 5 Modellen kostet die Einheit 105 pts (95 Modelle + 10 Barding). Beobachtbar über die roster-weite Budget-Regel: Limit 100 feuert mit Ist 105, Limit 110 schweigt. Eine Engine, die den unit-Rahmen nicht auflöst, rechnet den Aufschlag 0-fach (100 pts) und lässt das Budget nicht feuern.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-barding-over-budget.ros",
+      "description": "Heavy Cavalry: 5 Modelle (je 19 pts), Pflichtausrüstung (alle 0 pts), Warhorse (0 pts) mit Barding (Link-Kosten 0 pts + 2 pts je Modell = 10 pts). Punktelimit 100: die korrekte Summe 105 übersteigt das Limit, das Budget feuert. Ohne den je-Modell-Aufschlag (95+0=95, bzw. 100 mit nur einer Anwendung) bliebe es still — das Roster pinnt die 5-fache Anwendung der Wiederholung im unit-Rahmen.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 105, "bound": 100 }
+        ],
+        "absent": [],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-barding-within-budget.ros",
+      "description": "Derselbe Aufbau mit Punktelimit 110: die korrekte Summe 105 hält das Limit ein, das Budget schweigt. Zusammen mit Roster 01 klammert das die Summe auf genau 105 ein — eine Engine, die den Aufschlag mehrfach oder auf der Definitions-Basis (6 pts statt der Link-Kosten 0) rechnet, feuert hier fälschlich.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    }
+  ]
+}

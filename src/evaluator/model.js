@@ -102,20 +102,28 @@ export const BudgetLimitUnresolvedReason = Object.freeze({
 /**
  * Bezugsrahmen-Schluesselwoerter (Scope) einer Query
  * (`docs/evaluator-architecture.md` §4.1: `ScopeKeyword { ROSTER, FORCE, PARENT,
- * SELF, PRIMARY_CATALOGUE }`). Ein Scope, der keines dieser Woerter ist, wird als
- * **ID** gelesen: eine Eintrags-ID (naechster Vorfahre mit dieser ID) oder eine
- * Kategorie-ID (armeeweiter Kategorierahmen).
+ * SELF, UNIT, ANCESTOR, PRIMARY_CATALOGUE }`). Ein Scope, der keines dieser
+ * Woerter ist, wird als **ID** gelesen: eine Eintrags-ID (naechster Vorfahre mit
+ * dieser ID) oder eine Kategorie-ID (armeeweiter Kategorierahmen).
  *
- * `PRIMARY_CATALOGUE` faellt aus der Reihe: er ist **kein Zaehlrahmen**. Ein
- * Katalog ist kein Knoten des Instanzbaums, also findet ihn keine Zaehlung; die
- * Frage lautet „ist das Armeebuch des umschliessenden Kontingents dieses hier?"
- * und wird als Identitaetspruefung beantwortet (`query.js`, Issue 077).
+ * `UNIT` ist ein regulaerer Zaehlrahmen: die **umschliessende Einheit**, also der
+ * naechste Vorfahre — den Knoten selbst eingeschlossen — mit rohem `type="unit"`
+ * (`query.js`, Issue 086, BSData §7.7).
+ *
+ * Zwei Werte fallen aus der Reihe, weil sie **keine Zaehlrahmen** sind:
+ * `PRIMARY_CATALOGUE` — ein Katalog ist kein Knoten des Instanzbaums, die Frage
+ * lautet „ist das Armeebuch des umschliessenden Kontingents dieses hier?" und
+ * wird als Identitaetspruefung beantwortet (`query.js`, Issue 077) — und
+ * `ANCESTOR`, die Mitgliedschaftspruefung ueber die strikte Vorfahrenkette der
+ * tragenden Auswahl (`query.js`, Issue 086).
  */
 export const ScopeKeyword = Object.freeze({
   ROSTER: 'roster',
   FORCE: 'force',
   PARENT: 'parent',
   SELF: 'self',
+  UNIT: 'unit',
+  ANCESTOR: 'ancestor',
   PRIMARY_CATALOGUE: 'primary-catalogue',
 });
 
@@ -380,16 +388,19 @@ export function limitMeasureOfCountedField(field) {
  * auf den naechsten Vorfahren mit dieser ID auf, eine Kategorie-ID auf den
  * armeeweiten Kategorierahmen (`query.js`, §3.3).
  *
- * `PRIMARY_CATALOGUE` ist dabei der einzige Rahmen, der auf keinen Baumknoten
- * zeigt: er benennt das Armeebuch des umschliessenden Kontingents (Issue 077).
- * Die Oberflaeche unterscheidet ihn wie jeden anderen Wert dieser geschlossenen
- * Aufzaehlung — sie muss ihn nur nicht als Slot-Pfad lesen.
+ * `PRIMARY_CATALOGUE` und `ANCESTOR` sind dabei die beiden Rahmen, die auf
+ * keinen Baumknoten zeigen: der eine benennt das Armeebuch des umschliessenden
+ * Kontingents (Issue 077), der andere die Vorfahrenkette der tragenden Auswahl
+ * (Issue 086). Die Oberflaeche unterscheidet beide wie jeden anderen Wert dieser
+ * geschlossenen Aufzaehlung — sie muss sie nur nicht als Slot-Pfad lesen.
  */
 export const ScopeKind = Object.freeze({
   ROSTER: ScopeKeyword.ROSTER,
   FORCE: ScopeKeyword.FORCE,
   PARENT: ScopeKeyword.PARENT,
   SELF: ScopeKeyword.SELF,
+  UNIT: ScopeKeyword.UNIT,
+  ANCESTOR: ScopeKeyword.ANCESTOR,
   PRIMARY_CATALOGUE: ScopeKeyword.PRIMARY_CATALOGUE,
   ENTRY_ID: 'entryId',
   CATEGORY_ID: 'categoryId',

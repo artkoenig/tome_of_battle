@@ -165,7 +165,9 @@ function evaluateLimit(limit, node, effective, ctx) {
 export function evaluateConstraints(root, index, effective, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId) {
   const results = [];
   for (const node of allNodes(root)) {
-    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId });
+    // `effective` reist mit in den Query-Kontext: der Bezugsrahmen `ancestor`
+    // prueft die Vorfahren gegen ihre **effektiven** Kategorien (Issue 086).
+    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId, effective });
     // Die vom Verweis geerbten Grenzen gehoeren dazu (`limitsOf` ist die eine
     // Quelle der Wahrheit) — sonst blieben die Grenzen des Ziels eines
     // `entryLink`/`categoryLink` still unausgewertet. Ausgewertet wird die

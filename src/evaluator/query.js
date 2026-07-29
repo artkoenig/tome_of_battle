@@ -8,18 +8,23 @@
  * Eintrags- und Kategorie-IDs) und alle Flags (`shared`,
  * `includeChildSelections`, `includeChildForces`) — auch in Kombination. Die
  * Domaenenregel „Kategorie-Ziel armeeweit, Eintrags-Ziel pro Kontingent"
- * (BSData §7.7) sitzt an genau dieser Stelle.
+ * (BSData §7.7) sitzt an genau dieser Stelle. Seit Issue 086 zaehlt auch
+ * `scope="unit"` dazu: der Rahmen ist die umschliessende Einheit — der naechste
+ * Vorfahre (den Knoten eingeschlossen) mit rohem `type="unit"`.
  *
- * Zwei Rahmen sind **keine Zaehlrahmen** und werden deshalb vor jeder Rahmen- und
+ * Drei Rahmen sind **keine Zaehlrahmen** und werden deshalb vor jeder Rahmen- und
  * Indexarbeit beantwortet: das Feld `limit::<costTypeId>` liest die eingestellte
- * Kostengrenze aus dem Budget ({@link resolveLimitValue}), und
+ * Kostengrenze aus dem Budget ({@link resolveLimitValue}),
  * `scope="primary-catalogue"` prueft die Identitaet des Armeebuchs, aus dem das
- * umschliessende Kontingent stammt ({@link resolvePrimaryCatalogue}, Issue 077).
+ * umschliessende Kontingent stammt ({@link resolvePrimaryCatalogue}, Issue 077),
+ * und `scope="ancestor"` prueft die Mitgliedschaft eines Ziels in der strikten
+ * Vorfahrenkette der tragenden Auswahl ({@link resolveAncestor}, Issue 086).
  */
 
 import {
   CountedFieldKind,
   ScopeKeyword,
+  DefinitionKind,
   DiagnosticKind,
   BudgetLimitUnresolvedReason,
   UNRESOLVED_BUDGET,
@@ -28,10 +33,26 @@ import {
   diagnostic,
 } from './model.js';
 import { frameKeyOf } from './evalTree.js';
+import { targetsOf } from './countIndex.js';
 import { EMPTY_ROSTER_BUDGET } from './rosterBudget.js';
 
 /** Der leere Herkunftsindex der Kontingente — geteilt, weil nur gelesen. */
 const EMPTY_PRIMARY_CATALOGUE_INDEX = new Map();
+
+/**
+ * Der leere Effektiv-Zustand — geteilt, weil nur gelesen. Ohne mitgegebene
+ * Effektiv-Werte traegt kein Knoten Kategorien; die Vorfahrenpruefung des
+ * Bezugsrahmens `ancestor` trifft dann nur noch ueber Definitions-Id,
+ * Link-Ziel-Id und rohen Typ.
+ */
+const EMPTY_EFFECTIVE = Object.freeze({ categoryIdsOf: () => [] });
+
+/**
+ * Der rohe Eintragstyp, an dem eine Auswahl als **Einheit** erkennbar ist
+ * (`type="unit"`, BSData §7.1) — dasselbe Typ-Schluesselwort, unter dem der
+ * Zaehlindex Eintraege zaehlbar fuehrt ({@link targetsOf}).
+ */
+const UNIT_TYPE = 'unit';
 
 /**
  * Buendelt den Auswertungs-Kontext einer Query
@@ -52,8 +73,13 @@ const EMPTY_PRIMARY_CATALOGUE_INDEX = new Map();
  *   das Armeebuch, das sie deklariert. Er beantwortet den Bezugsrahmen
  *   `primary-catalogue`; fehlt er, gilt die leere Zuordnung — jede solche Query
  *   bleibt dann fail-closed unaufgeloest.
+ * @param {import('./effectiveState.js').EffectiveState} [parts.effective]  die
+ *   Effektiv-Werte der Knoten. Der Bezugsrahmen `ancestor` liest daraus die
+ *   **effektiven** Kategorien der Vorfahren (Issue 086 — alle realen Vorkommen
+ *   benennen Kategorie-Ids); fehlen sie, gilt der leere Zustand
+ *   ({@link EMPTY_EFFECTIVE}).
  */
-export function createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId }) {
+export function createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId, effective }) {
   return {
     node,
     root,
@@ -62,6 +88,7 @@ export function createQueryContext({ node, root, index, categoryIds, diagnostics
     diagnostics,
     budget: budget ?? EMPTY_ROSTER_BUDGET,
     primaryCatalogueByForceDefId: primaryCatalogueByForceDefId ?? EMPTY_PRIMARY_CATALOGUE_INDEX,
+    effective: effective ?? EMPTY_EFFECTIVE,
   };
 }
 
@@ -74,6 +101,30 @@ function isCategoryTarget(targetId, categoryIds) {
 function nearestAncestorWithDefId(node, id) {
   for (let current = node; current !== null && !current.isRoot; current = current.parent) {
     if (current.def?.id === id) return current;
+  }
+  return null;
+}
+
+/**
+ * True, wenn die Definition eines Knotens rohen `type="unit"` traegt. Ein
+ * `entryLink` traegt selbst kein solches Attribut — bei ihm zaehlt der rohe Typ
+ * seines transitiv aufgeloesten Ziels, dieselbe Erb-Regel, mit der der
+ * Zaehlindex Typ-Schluesselwoerter fuehrt ({@link targetsOf}, Issue 078/086).
+ */
+function isUnitDefinition(def) {
+  if (def?.type === UNIT_TYPE) return true;
+  return def?.kind === DefinitionKind.ENTRY_LINK && def.resolved?.type === UNIT_TYPE;
+}
+
+/**
+ * Die **umschliessende Einheit** (`scope="unit"`, Issue 086): der naechste
+ * Vorfahre — den Knoten selbst eingeschlossen — mit rohem `type="unit"`.
+ * `null`, wenn keiner der Vorfahren eine Einheit ist; die Query bleibt dann
+ * fail-closed unaufgeloest statt still zu raten.
+ */
+function nearestUnitAncestor(node) {
+  for (let current = node; current !== null && !current.isRoot; current = current.parent) {
+    if (isUnitDefinition(current.def)) return current;
   }
   return null;
 }
@@ -94,6 +145,8 @@ function resolveSharedFrame(ctx, scope) {
       return ctx.node.forceRoot; // null, wenn der Knoten ueber keinem Kontingent liegt
     case ScopeKeyword.SELF:
       return ctx.node;
+    case ScopeKeyword.UNIT:
+      return nearestUnitAncestor(ctx.node);
     default:
       // Eine Kategorie-ID als Scope benennt den armeeweiten Kategorierahmen (die
       // Wurzel); eine Eintrags-ID den naechsten Vorfahren mit dieser ID.
@@ -218,10 +271,50 @@ function resolvePrimaryCatalogue(ctx, field, targetId) {
 }
 
 /**
+ * Beantwortet den Bezugsrahmen `ancestor`: **loest ein Vorfahre der tragenden
+ * Auswahl auf `targetId` auf?** (Issue 086, Kriterium 2 — aus den Katalogdaten
+ * belegt: alle 10 Fixture-Vorkommen sind `instanceOf`-Conditions, und jede
+ * `childId` benennt eine Kategorie-Id.)
+ *
+ * Er ist **kein Zaehlrahmen**, sondern — wie `primary-catalogue` — eine
+ * Mitgliedschaftspruefung: gefragt ist die gesamte **strikte** Vorfahrenkette
+ * (Kontingente eingeschlossen, die definitionslose Wurzel und der Knoten selbst
+ * ausgenommen), kein einzelner Rahmenknoten, den `scopeKey(frameKey, targetId)`
+ * je faende. Deshalb steht er **vor** jeder Rahmen- und Indexarbeit und
+ * **unabhaengig von den Flags**: eine Vorfahrenkette wird durch eine Instanz
+ * nicht enger.
+ *
+ * Ergebnis ist die Zahl der passenden Vorfahren; ein Vorfahre passt, wenn
+ * `targetId` unter den Zielen liegt, unter denen ihn auch der Zaehlindex
+ * zaehlbar fuehrt ({@link targetsOf}: Definitions-Id, Link-Ziel-Id, effektive
+ * Kategorien, roher Typ). `targetId === null` (Prozent-Nenner „alles im
+ * Rahmen") zaehlt jeden Vorfahren. Nur `field="selections"` ist gueltig;
+ * anderes Feld → `unsupportedField` (wie `primary-catalogue`).
+ *
+ * @returns {number} die Zahl der passenden strikten Vorfahren.
+ */
+function resolveAncestor(ctx, field, targetId) {
+  if (field.kind !== CountedFieldKind.SELECTION_COUNT) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_FIELD, { field }));
+    return 0;
+  }
+  let matches = 0;
+  for (let ancestor = ctx.node.parent; ancestor !== null && !ancestor.isRoot; ancestor = ancestor.parent) {
+    if (
+      targetId === null || targetId === undefined ||
+      targetsOf(ancestor, ctx.effective).includes(targetId)
+    ) {
+      matches += 1;
+    }
+  }
+  return matches;
+}
+
+/**
  * Zaehlt `field` im Rahmen `scope`, gefiltert auf `targetId`, unter `flags` — oder
  * liest, fuer ein `LIMIT_VALUE`-Feld, die eingestellte Grenze aus dem Budget.
  *
- * @param {object} ctx  aus {@link createQueryContext} (traegt `node`, `root`, `index`, `categoryIds`, `diagnostics`, `budget`, `primaryCatalogueByForceDefId`).
+ * @param {object} ctx  aus {@link createQueryContext} (traegt `node`, `root`, `index`, `categoryIds`, `diagnostics`, `budget`, `primaryCatalogueByForceDefId`, `effective`).
  * @param {{ kind: string, costTypeId?: string }} field  aus `SELECTION_COUNT` / `costSumField` / `limitValueField`.
  * @param {string} scope  ein `ScopeKeyword` oder eine Eintrags-/Kategorie-ID.
  * @param {string|null} targetId  Ziel-ID oder `null` fuer "alles im Rahmen".
@@ -243,10 +336,29 @@ export function query(ctx, field, scope, targetId, flags) {
     return resolvePrimaryCatalogue(ctx, field, targetId);
   }
 
+  // Auch die Vorfahrenkette ist kein Zaehlrahmen, sondern eine
+  // Mitgliedschaftspruefung — vor jeder Rahmen-/Index-Arbeit und unabhaengig
+  // von den Flags ({@link resolveAncestor}, Issue 086).
+  if (scope === ScopeKeyword.ANCESTOR) {
+    return resolveAncestor(ctx, field, targetId);
+  }
+
   const effectiveFlags = normalizeFlags(flags);
   const frame = resolveFrame(ctx, scope, targetId, effectiveFlags);
   if (frame === null || frame === undefined) {
-    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_SCOPE, { scope, targetId }));
+    // Fail-closed: Zaehlwert 0, sichtbar gemacht per Diagnose. Eine Ausnahme
+    // fuer den `unit`-Rahmen an **synthetischen** Knoten (Phantome und Anker,
+    // Issue 086): ein Angebots-Anker ist eine engine-erfundene Bewertungs-
+    // position (ADR-0035, materialisiert auch Verstecktes) — fehlt IHM die
+    // umschliessende Einheit, ist das kein Datenproblem, sondern ein Artefakt
+    // der Verankerung. Reale Kataloge legen solche Eintraege versteckt auf
+    // Armee-Ebene ab und verwenden sie nur via `entryLink` innerhalb von
+    // Einheiten; die Diagnose bliebe reines Rauschen (Kriterium 3). An einer
+    // **realen** Auswahl ausserhalb jeder Einheit bleibt sie bestehen. Der
+    // Zaehlwert ist in beiden Faellen 0 — kein Modifikator feuert.
+    if (scope !== ScopeKeyword.UNIT || ctx.node.isPhantom !== true) {
+      ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_SCOPE, { scope, targetId }));
+    }
     return 0;
   }
 

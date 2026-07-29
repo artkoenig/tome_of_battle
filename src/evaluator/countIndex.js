@@ -112,8 +112,13 @@ function contributionOf(node, effective) {
  *   gar nicht gelesen) — er zaehlt stattdessen unter dem rohen Typ seines
  *   transitiv aufgeloesten Ziels (`resolved.type`), sodass ein verlinkter
  *   Eintrag genauso zaehlt wie derselbe Eintrag direkt gesetzt (Issue 78).
+ *
+ * Exportiert, weil die Vorfahrenpruefung des Bezugsrahmens `ancestor`
+ * (`query.js`, Issue 086) einen Vorfahren an **denselben** Zielen misst, unter
+ * denen er hier zaehlbar ist — eine Quelle der Wahrheit statt einer zweiten,
+ * driftgefaehrdeten Ziel-Liste.
  */
-function targetsOf(node, effective) {
+export function targetsOf(node, effective) {
   if (node.isForce) return [node.def.id, ...effective.categoryIdsOf(node)];
   const targets = [null, ...effective.categoryIdsOf(node)];
   if (node.def.kind !== DefinitionKind.GROUP) targets.push(node.def.id);

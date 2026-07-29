@@ -25,8 +25,9 @@
  * Die Faelle „kein umschliessendes Kontingent" (Query-Primitiv, unten) und
  * „Kontingent aus der `.gst`" pinnen das **unveraenderte** fail-closed
  * Verhalten (Issue 077, Decisions: „dann greift der Fail-closed-Zweig
- * (`unresolvedScope`), nicht eine stille Falschauskunft"); ebenso der Pin auf
- * `scope="unit"` — Issue 0086 ist ausdruecklich NICHT Gegenstand dieses Laufs.
+ * (`unresolvedScope`), nicht eine stille Falschauskunft"). Der Scope-Waechter-
+ * Pin auf `scope="unit"` aus diesem Lauf entfiel mit Issue 0086: `unit` ist
+ * seither ein regulaerer Zaehlrahmen (`query.unitScope.test.js`).
  *
  * Bewusst NICHT gepinnt (offene Kanten, siehe Bericht des Test-Autors):
  * `scope="primary-catalogue"` **ohne** `childId` an einer nicht-prozentualen
@@ -327,21 +328,11 @@ describe('PIN: Kontingent aus der .gst — die Herkunft ist kein Armeebuch, es b
   });
 });
 
-// ── Issue 0086 bleibt ungeloest (PIN) ───────────────────────────────────────
-
-describe('PIN: ein weiterhin unbekanntes Schluesselwort bleibt diagnostiziert (Issue 0086 ist NICHT Gegenstand)', () => {
-  it('scope="unit" liefert weiterhin unresolvedScope und feuert nicht', () => {
-    const report = evaluate(
-      `<condition type="instanceOf" value="1" field="selections" scope="unit" childId="${ALPHA_ID}" shared="true"/>`,
-      ROSTER_FORCE_A,
-    );
-
-    expect(violationsOf(report, MAX_ALPHA_ID)).toHaveLength(0);
-    expect(report.diagnostics).toContainEqual(
-      expect.objectContaining({ kind: 'unresolvedScope', scope: 'unit' }),
-    );
-  });
-});
+// Der fruehere Scope-Waechter-Pin dieses Laufs — `scope="unit"` bleibt
+// unaufgeloest, „Issue 0086 ist NICHT Gegenstand" — ist mit der Umsetzung von
+// Issue 0086 gegenstandslos: `unit` ist jetzt ein regulaerer Zaehlrahmen
+// (`query.unitScope.test.js`); dass ein weiterhin unbekanntes Schluesselwort
+// diagnostiziert bleibt, pinnt dort Kriterium 4.
 
 // ── Query-Primitiv: kein umschliessendes Kontingent (PIN) ───────────────────
 
