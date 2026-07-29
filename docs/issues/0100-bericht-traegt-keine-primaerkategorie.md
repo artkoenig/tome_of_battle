@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/evaluator-blocker-issues-uvmdn4
+pr: https://github.com/artkoenig/tome_of_battle/pull/177
 ---
 
 # Bericht trägt keine Primärkategorie
@@ -52,21 +52,122 @@ Acceptance criteria:
   Repo (2026-07-28). Alternativ-Ausgang: der Verzicht wird als ADR
   dokumentiert und dieses Issue mit dieser Begründung geschlossen — der
   jetzige nur-Code-Kommentar genügt nicht.
+- **Ausgang gewählt: Bericht trägt die Information** (nicht der
+  Verzicht-als-ADR-Weg). Quelle: Einstufung als Einsatz-Blocker durch den
+  Menschen (2026-07-29, „100 beheben"); unter ADR-0034/0035 ist der Bericht
+  die einzige UI-Quelle, ohne Kategorien kann keine UI einsortieren.
+- **Vertrag der neuen Felder** (Default, entlang §7.2/§8 der BSData-Doku):
+  `SlotCapability` erhält `categoryIds: string[]` (die **effektiven**
+  Kategorie-IDs des Slots, nach `add`/`remove`/`set-primary`) und
+  `primaryCategoryId: string | null` (die effektive Primärkategorie; `null`
+  = keine). Semantik: Basis-Primär ist das Ziel des `categoryLink` mit
+  `primary="true"` (bei mehreren: erster in Dokumentreihenfolge — §7.2 sagt
+  „genau eine", mehr ist Datenfehler und wird tolerant gelesen);
+  `set-primary <catId>` sichert Mitgliedschaft **und** setzt die
+  Primärkategorie auf `<catId>` (letzter gewinnt); `unset-primary <catId>`
+  nimmt das Primär-Flag genau dann weg, wenn `<catId>` gerade primär ist —
+  Mitgliedschaft bleibt (Kriterium 4: Zählen unverändert).
+- **Kein Versionssprung** (Default): reine Engine-/Berichtserweiterung, die
+  Reinraum-Engine ist noch nicht in die UI eingebunden — nichts, was ein
+  Nutzer heute sieht, ändert sich.
+- **Zwei Ränder, vom test-author als Frage zurückgegeben, als Default
+  entschieden (ungetestet, unverbindlich für die Tests):**
+  (a) `remove` auf die aktuelle Primärkategorie nimmt auch das Primär-Flag
+  (`primaryCategoryId` fällt auf `null`) — eine Primärkategorie ohne
+  Mitgliedschaft wäre sinnlos, §7.2 macht `primary` zum Flag eines
+  Mitgliedschafts-Links. (b) `set-primary` und `unset-primary` wirken in
+  Anwendungsreihenfolge aufeinander — der später feuernde gewinnt, ohne
+  Sonderregel.
 
 ## Log
+
+- 2026-07-29 — test-author: 10 fehlschlagende Tests in
+  `src/evaluator/report.effectiveCategories.test.js`, schwarz gegen die
+  Fassade (`prepareDataset`/`evaluate`), je Kriterium mindestens ein Test
+  (Basis-Primär, mehrere `primary="true"`, `add`-Modifier, §8-Beispiel mit
+  bedingtem `set-primary` inkl. Gegenprobe, letzter `set-primary` gewinnt,
+  `unset-primary` auf primär/nicht-primär, Mitgliedschaft bleibt). Beleg:
+  `npx vitest run src/evaluator/report.effectiveCategories.test.js` →
+  Exit 1, 10/10 rot, alle auf den fehlenden Feldern. Zwei offene Ränder als
+  Default in Decisions entschieden.
+- 2026-07-29 — implementer: `primary` wird gelesen (`catalogReader.js`:
+  `readPrimaryCategoryId`, erster `primary="true"`-Link gewinnt),
+  `EffectiveState` führt eine parallele `#primaries`-Map (Seed je Runde,
+  `set-primary` = Mitgliedschaft + Flag, `unset-primary` löscht das Flag nur
+  bei Treffer, `removeCategory` der Primären löscht es mit — Default (a));
+  Bericht trägt `categoryIds`/`primaryCategoryId`; Architektur-Doku §4.1/
+  §4.6/§4.8 nachgezogen. Primär bewusst NICHT im zählrelevanten
+  Fingerabdruck. Annahme des Implementers: Link-eigener Basis-Primär schlägt
+  den des aufgelösten Ziels, ohne eigenen erbt der Link (gleiche Erb-Regel
+  wie Kosten/hidden). Belege: `npx vitest run
+  src/evaluator/report.effectiveCategories.test.js` Exit 0 (10 Tests);
+  `npx vitest run src/evaluator` Exit 0 (65 Dateien, 819 Tests);
+  `npm run lint` Exit 0; `npm run typecheck` Exit 0.
+- 2026-07-29 — Review Runde 1 (frischer Kontext): alle 4 Kriterien erfüllt,
+  Belege selbst erhoben (`npx vitest run src/evaluator` 819 Tests Exit 0,
+  Lint/Typecheck Exit 0), kein Code-Befund. 2 Befunde außerhalb der
+  Kriterien, beide Doku/Protokoll: (1) `record EffectiveState` in
+  `docs/evaluator-architecture.md` §4.1 ohne das neue Primär-Feld —
+  behoben (Feld `primaries` ergänzt); (2) Log-Eintrag nannte §4.2 statt
+  §4.6 — korrigiert. Triage: beide sofort gefixt (Doku-Spiegel-Regel).
+  Ungetestete, offen protokollierte Defaults (remove-der-Primären,
+  Link-vor-Ziel-Erbregel) vom Review als Offenlegung gewertet, kein Befund.
+- 2026-07-29 — Review Runde 2 (frischer Kontext, ganze Intent): 0 Befunde,
+  alle 4 Kriterien erfüllt. Belege selbst erhoben: `npx vitest run
+  src/evaluator` 65 Dateien/819 Tests Exit 0; Lint Exit 0; Typecheck Exit 0;
+  zusätzlich im Wegwerf-Worktree auf dem Test-Commit `0c204a1` verifiziert,
+  dass die 10 Tests ohne Implementierung rot sind und danach nie editiert
+  wurden. Blast-Radius geprüft (Fixpunkt/Fingerabdruck, Phantom-Seeding,
+  Force-Entries, Doku) — nichts gefunden. Konvergenz: 2 → 0.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? — Ja. Der Mensch hat „100 beheben" gewählt;
+  die Kriterien verlangen effektive Kategorien + Primärkategorie im Bericht,
+  und der Lauf setzt genau das um (nicht den Verzicht-als-ADR-Ausgang).
+- What surprised me? — Die effektiven Kategorien existieren bereits als
+  Menge in `EffectiveState` (geseedet aus den Basiswerten, gepflegt von
+  `add`/`remove`/`set-primary`) — der Bericht liest sie nur nie. Wirklich
+  fehlend sind nur das Primär-Flag (Leser + Zustand + `unset-primary`) und
+  die beiden Berichtsfelder.
+- What am I assuming without having verified it? — (a) Dass jeder
+  berichtsfähige Slot-Knoten (auch Phantome/Anker) einen geseedeten
+  Kategorie-Zustand hat; (b) dass „letzter `set-primary` gewinnt" dem
+  Referenzverhalten entspricht — upstream unbelegt, als Default festgehalten;
+  (c) dass Kategorie-Links an `entryLink`s in die Basis-Kategorien des
+  Vorkommens einfließen (Resolver-Verhalten, nicht nachgeprüft).
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? — Ja. Alle vier Kriterien sind erfüllt und
+  von zwei unabhängigen Review-Runden per Exit-Code belegt; der Bericht
+  trägt jetzt `categoryIds` und `primaryCategoryId`, das §8-Beispiel ist
+  daraus ableitbar, `unset-primary` wirkt, die Zählung ist unverändert
+  (819 Tests grün).
+- What surprised me? — Wie klein der Kern war: die effektive Mitgliedschaft
+  existierte schon vollständig, es fehlten nur Primär-Flag und
+  Berichtsfelder. Und dass die Suite nach der Änderung im ersten Lauf grün
+  war — das Seeding „frische Kopie je Runde" trug das Primär-Flag gratis.
+- What am I assuming without having verified it? — Die zwei als Default
+  protokollierten Ränder bleiben ungetestet (remove-der-Primären löscht das
+  Flag; Link-eigener Basis-Primär schlägt das Ziel — nur die Erb-Richtung
+  ist getestet). Beides ist in Decisions offengelegt; ob das
+  Referenzprogramm es genauso hält, ist upstream unbelegt (§15-Lücke).
 
 ## Retro
+
+- **Was gut lief:** Der Vertrag (Feldnamen, Primär-Semantik, Ränder) stand
+  vor dem test-author in Decisions — Tests und Implementierung trafen sich
+  ohne eine einzige Rückfrage-Schleife; die Suite war nach der
+  Implementierung im ersten Lauf grün. Konvergenz 2 → 0 in zwei Runden.
+- **Was im Weg stand:** Wenig. Beide Review-Befunde waren Doku-Spiegel-
+  Versäumnisse desselben Musters (ein Record im §4.1 vergessen, ein
+  Paragraphen-Verweis im Log falsch) — der Implementer-Auftrag hätte die
+  Doku-Stellen vollständig aufzählen sollen, statt „§4.1 SlotCapability"
+  zu sagen und das Nachbar-Record zu übergehen.
+- **Vorschlag:** Keine Regeländerung nötig; der Fehler war
+  Auftrags-Präzision, nicht Prozess. Offen bleiben die zwei ungetesteten
+  Default-Ränder (in Decisions offengelegt) — falls das Referenzprogramm je
+  dagegen spricht, ist das ein eigenes kleines Issue.

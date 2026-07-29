@@ -12,7 +12,10 @@
  *   `causes.js`) und die **Autor-Meldungen** des Katalogs (`authorMessages.js`),
  * - je Slot einen **Faehigkeitsdatensatz** (`SlotCapability`) fuer die
  *   UI-Steuerung: Definitions-ID, **Ankerart**, Rahmen-Bezug und **effektiver**
- *   Anzeigename, effektives min/max, aktueller Stand, Restspielraum, die
+ *   Anzeigename, die **effektiven Kategorie-IDs** samt der effektiven
+ *   **Primaerkategorie** (der Anzeige-Bucket nach `set-primary`/`unset-primary`,
+ *   `docs/battlescribe-data-format.md` §8), effektives min/max, aktueller
+ *   Stand, Restspielraum, die
  *   Pflicht-/Gesperrt-/Versteckt-Flags, das Merkmal „Wert nicht stabil", die
  *   **Autor-Meldungen** des Katalogs und die **Info-Projektion** — die fuer den
  *   Slot geltenden Profile (mit ihren effektiven Merkmalswerten) und Regeltexte
@@ -352,8 +355,11 @@ function headroomOf(maxResult) {
  * Verweis-Slot, **worauf** er zeigt (die Kategorie eines Kategorie-Ankers, der
  * Eintrag hinter einem `entryLink`).
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
- * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand. Name,
- * Autor-Meldungen und die **Info-Projektion** (`infoElements`: die fuer diesen
+ * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
+ * `categoryIds`/`primaryCategoryId` sind die **effektiven** Kategorie-IDs des
+ * Slots und die effektive Primaerkategorie darunter (`null` = keine) — die
+ * UI-Einsortierung liest sie aus dem Bericht, nie aus rohen Katalog-Links
+ * (§8). Name, Autor-Meldungen und die **Info-Projektion** (`infoElements`: die fuer diesen
  * Slot geltenden Profile und Regeltexte, samt der von seinen belegten
  * Unter-Auswahlen geerbten) kommen ebenfalls aus dem effektiven Zustand — die
  * Oberflaeche liest damit den Stand *nach* allen greifenden Modifikatoren, ohne
@@ -374,6 +380,8 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     anchorKind: node.anchorKind,
     frame: frameReferenceOf(node),
     name: effective.nameOf(node),
+    categoryIds: effective.categoryIdsOf(node),
+    primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax: maxResult === null ? null : maxResult.bound,
     current: maxResult?.actual ?? minResult?.actual ?? 0,

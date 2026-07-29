@@ -468,13 +468,15 @@ const prependOrder = (current, separator, value) => `${value}${separator}${curre
 
 const addCategory = categoryHandler((state, node, categoryId) => state.addCategory(node, categoryId));
 const removeCategory = categoryHandler((state, node, categoryId) => state.removeCategory(node, categoryId));
-// Eine Primaerkategorie ist zaehlrelevant eine **Mitgliedschaft**; die Primaer-/
-// Sekundaer-Unterscheidung ist reine Anzeige und beeinflusst weder Zaehlung noch
-// Grenzen, die diese Engine auswertet. `set-primary` sichert daher die
-// Mitgliedschaft, `unset-primary` laesst die Mitgliedschaft (und damit alles
-// Zaehlrelevante) unberuehrt.
-const setPrimaryCategory = categoryHandler((state, node, categoryId) => state.addCategory(node, categoryId));
-const unsetPrimaryCategory = categoryHandler(() => {});
+// `set-primary`/`unset-primary` schalten das **Primaer-Flag** eines Knotens um
+// (`docs/battlescribe-data-format.md` §7.7/§8): `set-primary` sichert die
+// Mitgliedschaft UND macht die Kategorie zur effektiven Primaeren (die letzte
+// Anwendung gewinnt); `unset-primary` loescht das Flag genau dann, wenn die
+// benannte Kategorie aktuell primaer ist — die Mitgliedschaft bleibt. Das Flag
+// ist reiner Berichts-Zustand neben der Mitgliedschaft: zaehlrelevant bleibt
+// allein die Mitgliedschaft (`effectiveState.js`, zaehlrelevanter Schluessel).
+const setPrimaryCategory = categoryHandler((state, node, categoryId) => state.setPrimaryCategory(node, categoryId));
+const unsetPrimaryCategory = categoryHandler((state, node, categoryId) => state.unsetPrimaryCategory(node, categoryId));
 
 /**
  * Registry `ModifierKind → (ModifierTargetKind → Effekt)`

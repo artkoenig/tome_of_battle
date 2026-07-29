@@ -300,6 +300,8 @@ record LimitDerivation { base: number, steps: DerivationStep[] }  // Endwert == 
 record EffectiveState {            // Ergebnis der Modifikator-Schicht, unveränderlich
   costs: Map<EvalNode, Map<CostTypeId, number>>
   categories: Map<EvalNode, Set<CategoryId>>
+  primaries: Map<EvalNode, CategoryId?>   // effektive Primärkategorie (Issue 0100);
+                                          // nicht zählrelevant, nicht im Fingerabdruck
   limits: Map<(EvalNode, LimitId), LimitDerivation>   // Wert *als* Kette, kein zweiter Zustand
   hidden: Map<(EvalNode, Carrier), bool>              // nur Überschreibungen; Basis: XSD-`hidden`
   names: Map<(EvalNode, Carrier), string>             // nur Überschreibungen; Basis: Katalogname
@@ -341,6 +343,9 @@ record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: d
                           anchorKind: AnchorKind,       // Herkunft des Slots
                           frame: { path: NodePath, defId: Id }?,  // Kontingent bzw. Eltern-Auswahl;
                                                         // null = der Slot hängt am Roster selbst
+                          categoryIds: Id[],            // die EFFEKTIVEN Kategorie-IDs des Slots
+                          primaryCategoryId: Id?,       // die effektive Primärkategorie darunter
+                                                        // (nach set-primary/unset-primary); null = keine
                           effectiveMin: number?, effectiveMax: number?,
                           current: number, headroom: number?,
                           isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
@@ -619,7 +624,9 @@ function applyOperation(state, node, carrier, modifier, times, isConditional, wi
   if handler == null: diagnostics.add(UNSUPPORTED_MODIFIER); return  // ungültige Paarung
   handler(...)
   // set → setzt (Zahl bei Kosten/Grenze, Text bei Name/Merkmal); increment/decrement/multiply
-  // → numerisch × times; add/remove/set-primary/unset-primary → Kategorie-Mitgliedschaft;
+  // → numerisch × times; add/remove → Kategorie-Mitgliedschaft; set-primary → Mitgliedschaft
+  // UND Primär-Flag (der letzte gewinnt), unset-primary → löscht das Primär-Flag, wenn die
+  // benannte Kategorie aktuell primär ist (Mitgliedschaft bleibt; zählrelevant ist nur sie);
   // add auf error/warning/info → Autor-Meldung; append/prepend → Text, getrennt durch `join`.
   // Ein Schreibzugriff auf eine GRENZE legt zugleich ihren Kettenschritt an (§3.4).
 ```
@@ -678,6 +685,8 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       isValueUnstable = node in unstableNodes,         // kam in der Schleife nicht zur Ruhe
       defId         = node.def.id,
       name          = effective.nameOf(node),          // nach allen Namens-Modifikatoren
+      categoryIds   = effective.categoryIdsOf(node),   // effektive Mitgliedschaften
+      primaryCategoryId = effective.primaryCategoryIdOf(node),  // effektiver Anzeige-Bucket, null = keiner
       authorMessages  = renderedAuthorMessagesOf(node, effective),   // §3.6, ADR-0028
       infoElements    = infoElementsOf(node, effective, profileTypes))  // §3.6, infoProjection.js
 
