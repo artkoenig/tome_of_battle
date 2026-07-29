@@ -197,6 +197,42 @@ zurückgegeben, die die Kriterien nicht entscheiden, statt sie zu raten:
     Phantom. Ob gewollt, sagt kein Kommentar; §9.9 spricht nur von Einträgen und
     Links.
 
+- **2026-07-29, Tests und E2E-Szenario** (beide aus frischem Kontext, ohne
+  Blick auf eine Umsetzung).
+  - **23 rote Tests** in `evaluator.rootEntryLinkMandatory.test.js` (18,
+    synthetische Kataloge) und `evaluator.rootEntryLinkMandatoryFixture.test.js`
+    (5, echte Fixture-Daten). Jede Fehlermeldung ist ein **fehlender** Verstoß —
+    kein Import-, Parse- oder Setup-Fehler. Ausgangslage per Exitcode:
+    `npx vitest run src/evaluator` → 54 Dateien, 727 Tests, 704 grün.
+  - **Jeder Negativfall trägt eine zweite, unabhängige Wurzel-Link-Pflicht als
+    Positivkontrolle.** Ohne sie wäre „kein Verstoß" heute trivial erfüllt und
+    der Test zahnlos — genau der Fehler, den Issue 077 erst im letzten Moment
+    gefunden hat. Hier ist er vorweggenommen.
+  - **Das E2E-Szenario `root-entrylink-mandatory` (5 Roster) unterscheidet
+    3 von 5 gegen die heutige Engine.** Der Autor hat das offen berichtet statt
+    es zu kaschieren: Roster 02 (Bullen vorhanden) und 03 („Ironskin Tribe",
+    Bedingung greift nicht) fallen heute **nicht** — sie *können* es nicht, denn
+    sie sagen Abwesenheit zu, und die Engine meldet ohnehin nichts. Ihr Zweck
+    ist ein anderer: sie sind die Gegenprobe gegen eine Lösung, die die Pflicht
+    *bedingungslos* feuern lässt. Das Szenario prüft also nicht nur, dass etwas
+    entsteht, sondern auch, dass es an den beiden richtigen Stellen ausbleibt.
+  - **Belegt gegen die Katalogdaten** (jeder Punkt am XML nachgeprüft, nicht
+    übernommen): das Ziel `7754-8b3d-df99-d2d5` trägt **keine** eigene
+    `force`- oder `roster`-Grenze, nur `scope="parent"`. Der Modifikator
+    `set 1` auf `32ed-26da-3f27-5c04` ist der einzige im ganzen Fixture-Satz,
+    der dieses Feld schreibt, und die `forceEntry`-Gruppe des „Ironskin Tribe"
+    enthält nur Kategorie-Modifikatoren, keine Anhebung.
+  - **Annahme (c) aus Checkpoint 1 ist beantwortet, und zwar mit Nein.** Der
+    Ogre-Katalog führt zwar *beide* Wurzelformen — neben dem Link auch den
+    Wurzel-Eintrag `8e1e-60e8-f125-780d` mit unbedingtem `min 1 scope="force"` —
+    aber für **verschiedene** Pflichten. Kriterium 3 (Entdopplung derselben
+    Pflicht in beiden Formen) hat also keinen echten Katalogfall und bleibt
+    zu Recht am synthetischen Katalog gezeigt.
+  - **Bewusst nicht zugesagt:** keinerlei `diagnostics`-Zusage im Szenario. Der
+    Autor hatte keine aus den Daten ableitbare Grundlage für die
+    Einengungsschlüssel und hat deshalb gar nichts zugesagt, statt zu breit
+    zuzusagen. Das ist die Lehre aus Issue 077, richtig angewandt.
+
 ## Checkpoints
 
 ### Before implementation
