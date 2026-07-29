@@ -173,6 +173,28 @@ Acceptance criteria:
   (`constraints.js:73-80`). Als **Issue 0113** gefiled; hier außerhalb der
   Intent, wird nicht mitgefixt.
 
+- **2026-07-29, Review Runde 1** (frischer Kontext, Diff vs. Intent). Fakten:
+  Suite 741 Tests / 740 grün / 1 rot (= verifizierter Vorbestand 0113), Lint
+  und Typecheck Exit 0. Kriterien 1–3 erfüllt, Protokoll deckungsgleich mit
+  dem Diff. Zwei Befunde, beide mit Repro:
+  - **B1 (fixen):** `dedupeMandatoryEntryPhantomViolations` schlüsselt ohne
+    das Grenz-**Feld** — ein Wurzel-`selectionEntry` mit Selektions-Min UND
+    Kosten-Min im selben Rahmen meldet auf HEAD 1 statt 2 Verletzungen
+    (Repro-Skript des Reviewers, main: 2, HEAD: 1). Formal außerhalb der
+    Intent, aber vom eigenen Diff eingeführt — wird gefixt statt eskaliert:
+    verschiedene Felder sind verschiedene Pflichten (§9.9 entdoppelt
+    dieselbe Pflicht, nicht verschiedenartige). Latent (Fixture-Kataloge
+    führen das Muster nicht), trotzdem Regression.
+  - **B2 (fixen):** Kriterium 3 ist nur für `scope="roster"` getestet; der
+    `frameKeyOf(forceRoot)`-Zweig (je Kontingent eine Meldung, keine
+    Über-Entdopplung) ist heute korrekt (Stichprobe des Reviewers), aber
+    ungesichert. Regressions-Guard-Test ergänzen.
+  - Kriterium 4 präzisiert: Exit 1, einziger Rotstand = Vorbestand 0113 —
+    identisch auf `origin/main`, von diesem Lauf unberührt.
+  - **Abweichungs-Notiz:** der B2-Guard sichert schon-korrektes Verhalten und
+    kann deshalb nicht „zuerst fehlschlagen" (Invariante 2 greift nur, wo es
+    etwas zu implementieren gibt); der B1-Test schlägt vor dem Fix fehl.
+
 ## Checkpoints
 
 ### Before implementation
