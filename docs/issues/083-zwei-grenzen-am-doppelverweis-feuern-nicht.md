@@ -145,6 +145,20 @@ Acceptance criteria:
   firing (rosters 03/04 fail, 01/02 pin the legal boundary as absent).
   Full E2E runner: 124/126 pass, only the two updated cases fail.
 
+- **2026-07-29, implementer:** all handed tests pass; two narrow fixes.
+  (1) Linked groups get a group anchor: `groupDefinitionsWithLimits` descends
+  through `entryLink type="selectionEntryGroup"`, the link is the anchor,
+  members annotated under the queried id; cycle/dedupe guards. (2) New
+  `countingFlagsOf` in `constraints.js`: a shared, entry-anchored
+  `scope="roster"` constraint counts nested occurrences regardless of
+  `includeChildSelections="false"` — only that combination, everything else
+  keeps the written flags. (3) `buildGroupMemberIndex` indexes all groups
+  (a linked group's limit can sit solely on the link). Facts: `npm test`
+  227 files / 2329 tests + puppeteer E2E exit 0; lint/typecheck/analyze
+  exit 0; `measure-evaluator` 6.2 ms against the 100 ms budget.
+  Out-of-scope note for later: whether `offer.js` offers members of a
+  *linked* group as selectable options was not touched.
+
 ## Checkpoints
 
 ### Before implementation
