@@ -199,7 +199,8 @@ Acceptance criteria:
     override is deliberately roster-only; the same shape with
     `scope="force"` stays silent (reproduced). Whether the reference counts
     those is undecided by the cited wiki sentence — off-intent, filed as
-    issue 0110 instead of fixed by default.
+    issue 0117 (at filing time numbered 0110, renamed after a duplicate)
+    instead of fixed by default.
   - Finding trend: K2 1, outside criteria 2 — total 3.
 
 - **2026-07-29, F1/F2 fix (implementer):** `groupDefinitionsWithLimits`
