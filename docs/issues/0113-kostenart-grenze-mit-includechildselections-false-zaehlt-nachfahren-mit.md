@@ -48,11 +48,27 @@ Acceptance criteria:
   sichtbares Validierungsverhalten (Kostenart-Grenzen feuerten fälschlich),
   also ist ein Patch-Bump fällig; der Mensch war abwesend, Vorschlag gilt als
   Default und kann am PR noch geändert werden.
-- **Fix-Ort**: `countingFlagsOf` (`src/evaluator/constraints.js`) hebt
-  `includeChildSelections` nur noch für Grenzen mit
-  `field.kind === SELECTION_COUNT` an — die Issue-083-Regel sprach von
-  Selektions-Grenzen; für Kostenart-Grenzen gilt §7.6 „just scope's field"
-  (Issue 091) unverändert.
+- **Versions-Bump korrigiert auf 1.9.2** (default, unanswered): `main` trägt
+  seit dem 0086-Merge selbst 1.9.1 — der Bump dieses Issues wäre ein No-op
+  gewesen und der Tag-Workflow hätte nicht gefeuert. Patch-Bump auf dem
+  gemergten Stand: 1.9.1 → 1.9.2.
+- **Fix-Ort (Fassung 1, revidiert)**: `countingFlagsOf` hebt
+  `includeChildSelections` nur noch für `SELECTION_COUNT`-Grenzen an. Von der
+  CI widerlegt: der Guard ließ verschachtelte Träger-Vorkommen einer
+  Kostenart-Grenze ganz aus der Summe fallen (0 statt Eigenkosten) — Verstoß
+  gegen §9.4 („Ein Träger mit eigenen Kosten bringt diese in seine Summe
+  ein"), sichtbar geworden an den frisch gemergten Issue-0086-Tests.
+- **Fix-Ort (Fassung 2, gilt)**: Die zwei Bedeutungen des Flags werden
+  getrennt. Der Zählindex führt die unter die Träger-Id **aufgestiegenen**
+  Nachfahren-Kosten getrennt von den Eigen-Beiträgen (`climbedCostSums`,
+  `countIndex.js`) mit eigenem Lese-Gate `includeClimbedCosts` (Default:
+  `includeChildSelections`). Die 083-Anhebung in `countingFlagsOf` gilt wieder
+  für **alle** Messgrößen (Vorkommens-Tiefe des Trägers), hält dabei aber
+  `includeClimbedCosts` auf dem **hingeschriebenen** Flag fest — Eigen-Kosten
+  jedes Vorkommens zählen (083/§9.4), Nachfahren-Kosten nur mit
+  hingeschriebenem `true` (091/§7.6). Quelle: §7.6/§9.4 des Handbuchs plus die
+  Issue-0086-Testlage; `docs/evaluator-architecture.md` §4.4 entsprechend
+  korrigiert.
 
 ## Log
 
@@ -79,6 +95,27 @@ Acceptance criteria:
   `resolveBound` nutzt die Flags direkt, vordokumentiert; Kategorie-Anker
   bleiben durch den bestehenden ENTRY-Check ausgeschlossen). Triage: nichts zu
   fixen, keine Wiederholungsrunde nötig.
+- **Überraschung (Stopp-Signal, nach dem PR):** CI am PR rot — `main` war
+  nach Branch-Start um Issue 0086 (unit/ancestor-Scopes, PR #172)
+  weitergewandert; 8 der neuen 0086-Tests fallen mit dem Fassung-1-Guard.
+  Diagnose: die 0086-Tests beobachten ihre Modifikatoren über eine
+  Kostenart-Grenze `scope="roster"` an **verschachtelten** Einträgen (Default
+  `includeChildSelections=false`); der Guard ließ dort auch die
+  **Eigen**-Kosten des Trägers aus der Summe fallen (Ist 0). Der Fassung-1-Fix
+  war für Top-Level-Träger korrekt, für verschachtelte unterschossen —
+  Entscheidung revidiert (siehe Decisions, Fassung 2), `origin/main` in den
+  Branch gemergt.
+- Fassung 2 umgesetzt (`countIndex.js`: getrenntes `climbedCostSums`-Fach +
+  drittes `get`-Flag; `query.js`: Gate durchgereicht; `constraints.js`:
+  Anhebung wieder feld-unabhängig, Gate auf hingeschriebenem Flag). Neuer
+  Pin-Test für den zuvor ungedeckten Fall „verschachtelter Träger MIT
+  Nachfahren" in `countIndex.costSumUnderCarrier.test.js` (weder 0 noch
+  Nachfahren-Summe — genau die Eigen-Kosten). Architektur-Doku §4.4
+  korrigiert (der alte Schlusssatz beschrieb das unterschossene Verhalten).
+- Belege per Exit-Code nach Fassung 2: `npx vitest run src/evaluator` →
+  60 Dateien, 774 Tests, exit 0 (inkl. der 8 zuvor roten 0086-Tests).
+  `npm run lint` → exit 0. `npm run typecheck` → exit 0.
+  `node scripts/measure-evaluator.js` → exit 0.
 
 ## Checkpoints
 

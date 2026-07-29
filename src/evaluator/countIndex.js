@@ -21,6 +21,14 @@
  * jeder Ziel-Id der Vorfahren, die im jeweiligen Rahmen liegen. Die
  * Selektionsanzahl steigt dabei **nicht** mit auf — unter der Traeger-Id steht
  * weiterhin nur der Traeger.
+ *
+ * Diese **aufgestiegenen** Kostenanteile werden **getrennt** von den
+ * Eigen-Beitraegen gefuehrt (`climbedCostSums` neben `costSums`, Issue 0113):
+ * ob ein Traeger-Vorkommen selbst zaehlt, ist eine Frage der Schachtelung im
+ * Rahmen (`includeChildSelections`), ob seine Nachfahren-Kosten mitzaehlen,
+ * eine davon unabhaengige (§7.6 „just scope's field", Issue 091). Der Leser
+ * gatet die aufgestiegenen Anteile deshalb ueber ein eigenes drittes Flag von
+ * `get` — ohne Angabe faellt es auf `includeChildSelections` zurueck.
  */
 
 import { DefinitionKind, scopeKey } from './model.js';
@@ -48,9 +56,12 @@ function bucketFor(crossedSelection, crossedForce) {
   return Bucket.BASE;
 }
 
-/** Ein leerer Zaehler (Anzahl und Kostensummen je Kostenart). */
+/**
+ * Ein leerer Zaehler: Anzahl und **eigene** Kostensummen je Kostenart, dazu die
+ * getrennt gefuehrten **aufgestiegenen** Nachfahren-Kosten (Issue 0113).
+ */
 function emptyTally() {
-  return { selectionCount: 0, forceCount: 0, costSums: new Map() };
+  return { selectionCount: 0, forceCount: 0, costSums: new Map(), climbedCostSums: new Map() };
 }
 
 /** Ein leerer Schluessel-Eintrag: ein Zaehler je Beitrags-Eimer. */
@@ -147,13 +158,14 @@ function carrierTargetsOf(node, effective) {
 
 /**
  * Der reine **Kostenanteil** eines Beitrags — das, was unter der Ziel-ID eines
- * Vorfahren aufsteigt. Die Selektions- und Kontingentanzahl bleibt zurueck: unter
- * der Traeger-ID steht der Traeger selbst, nicht zusaetzlich jeder seiner
+ * Vorfahren aufsteigt, verbucht im getrennten `climbedCostSums`-Fach (Issue
+ * 0113). Die Selektions- und Kontingentanzahl bleibt zurueck: unter der
+ * Traeger-ID steht der Traeger selbst, nicht zusaetzlich jeder seiner
  * Nachfahren. (Wie viele Auswahlen unterhalb eines Traegers stehen, ist eine eigene
  * Frage — Issue 083 — und wird hier nicht mit beantwortet.)
  */
 function costsOnly(contribution) {
-  return { selectionCount: 0, forceCount: 0, costSums: contribution.costSums };
+  return { selectionCount: 0, forceCount: 0, costSums: new Map(), climbedCostSums: contribution.costSums };
 }
 
 /** Addiert einen Beitrag auf einen Zaehler. */
@@ -162,6 +174,9 @@ function addTally(tally, contribution) {
   tally.forceCount += contribution.forceCount;
   for (const [costTypeId, value] of contribution.costSums) {
     tally.costSums.set(costTypeId, (tally.costSums.get(costTypeId) ?? 0) + value);
+  }
+  for (const [costTypeId, value] of contribution.climbedCostSums ?? []) {
+    tally.climbedCostSums.set(costTypeId, (tally.climbedCostSums.get(costTypeId) ?? 0) + value);
   }
 }
 
@@ -231,8 +246,9 @@ function indexNodeContribution(tallies, node, effective) {
     // Traegers — sie haben die Selektionsschachtelung also stets gekreuzt, auch
     // wenn der Query-Rahmen der Traeger selbst ist (`scope="self"`,
     // `shared="false"`), wo `crossedSelection` noch falsch ist. Deshalb wird der
-    // Eimer hier mit erzwungener Selektionskreuzung gewaehlt: nur
-    // `includeChildSelections="true"` zaehlt sie mit (Issue 091, Runde 1).
+    // Eimer hier mit erzwungener Selektionskreuzung gewaehlt; verbucht wird im
+    // getrennten `climbedCostSums`-Fach, dessen Lese-Gate `includeClimbedCosts`
+    // ist (Vorgabe: `includeChildSelections` — Issue 091, Runde 1; Issue 0113).
     const climbBucket = bucketFor(true, forceCrossedForFrame);
     for (const carrierTargetId of carrierTargets) {
       addContribution(tallies, scopeKey(frameKey, carrierTargetId), climbBucket, climbingCosts);
@@ -248,13 +264,31 @@ function indexNodeContribution(tallies, node, effective) {
   }
 }
 
-/** Summiert die von den Flags erlaubten Eimer eines Schluessels zu einem Zaehler. */
-function combineBuckets(buckets, includeChildSelections, includeChildForces) {
+/**
+ * Summiert die von den Flags erlaubten Eimer eines Schluessels zu einem Zaehler.
+ *
+ * Die Eimer-Wahl der **Eigen**-Beitraege folgt den beiden `includeChild…`-Flags.
+ * Die **aufgestiegenen** Nachfahren-Kosten haben ihr eigenes Gate
+ * (`includeClimbedCosts`, Issue 0113): sie liegen — Selektionskreuzung stets
+ * erzwungen — nur in den Eimern SELECTION und BOTH und werden von dort in die
+ * gelieferte `costSums`-Summe gemischt, wenn das Gate offen ist (BOTH weiterhin
+ * nur mit `includeChildForces`).
+ */
+function combineBuckets(buckets, includeChildSelections, includeChildForces, includeClimbedCosts) {
   const result = emptyTally();
   addTally(result, buckets[Bucket.BASE]);
   if (includeChildSelections) addTally(result, buckets[Bucket.SELECTION]);
   if (includeChildForces) addTally(result, buckets[Bucket.FORCE]);
   if (includeChildSelections && includeChildForces) addTally(result, buckets[Bucket.BOTH]);
+  if (includeClimbedCosts) {
+    const climbedSources = [buckets[Bucket.SELECTION]];
+    if (includeChildForces) climbedSources.push(buckets[Bucket.BOTH]);
+    for (const source of climbedSources) {
+      for (const [costTypeId, value] of source.climbedCostSums) {
+        result.costSums.set(costTypeId, (result.costSums.get(costTypeId) ?? 0) + value);
+      }
+    }
+  }
   return result;
 }
 
@@ -267,9 +301,12 @@ const ZERO_TALLY = Object.freeze({ selectionCount: 0, forceCount: 0, costSums: n
  *
  * @param {object} root Wurzel des Evaluationsbaums.
  * @param {import('./effectiveState.js').EffectiveState} effective effektive Kosten und Kategorien je Knoten.
- * @returns {{ get: (key: string, includeChildSelections?: boolean, includeChildForces?: boolean) => { selectionCount: number, forceCount: number, costSums: Map<string, number> } }}
+ * @returns {{ get: (key: string, includeChildSelections?: boolean, includeChildForces?: boolean, includeClimbedCosts?: boolean) => { selectionCount: number, forceCount: number, costSums: Map<string, number> } }}
  *   `get` liefert den nach den beiden `includeChild…`-Flags zusammengesetzten
- *   Zaehler eines Schluessels (Vorgabe: nur der BASE-Eimer).
+ *   Zaehler eines Schluessels (Vorgabe: nur der BASE-Eimer). Das dritte Flag
+ *   gatet die **aufgestiegenen** Nachfahren-Kosten getrennt (Issue 0113) und
+ *   faellt ohne Angabe auf `includeChildSelections` zurueck — fuer jeden Leser
+ *   ohne eigene Angabe bleibt das Verhalten damit unveraendert.
  */
 export function buildIndex(root, effective) {
   const tallies = new Map();
@@ -277,10 +314,10 @@ export function buildIndex(root, effective) {
     indexNodeContribution(tallies, node, effective);
   }
   return {
-    get: (key, includeChildSelections = false, includeChildForces = false) => {
+    get: (key, includeChildSelections = false, includeChildForces = false, includeClimbedCosts = includeChildSelections) => {
       const buckets = tallies.get(key);
       if (buckets === undefined) return ZERO_TALLY;
-      return combineBuckets(buckets, includeChildSelections, includeChildForces);
+      return combineBuckets(buckets, includeChildSelections, includeChildForces, includeClimbedCosts);
     },
   };
 }
