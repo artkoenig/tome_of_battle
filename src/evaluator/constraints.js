@@ -19,7 +19,7 @@
  */
 
 import { ConstraintKind, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
-import { allNodes, limitsOf } from './evalTree.js';
+import { allNodes, evaluableLimitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
 
@@ -130,8 +130,11 @@ export function evaluateConstraints(root, index, effective, categoryIds, diagnos
     const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget });
     // Die vom Verweis geerbten Grenzen gehoeren dazu (`limitsOf` ist die eine
     // Quelle der Wahrheit) — sonst blieben die Grenzen des Ziels eines
-    // `entryLink`/`categoryLink` still unausgewertet.
-    for (const limit of limitsOf(node.def)) {
+    // `entryLink`/`categoryLink` still unausgewertet. Ausgewertet wird die
+    // **Knoten**-Sicht (`evaluableLimitsOf`): ein rahmen-zugeschnittener Anker
+    // (unverlinkte Kategorie mit Grenzen verschiedener Rahmen) wertet nur die
+    // Grenzen seines Rahmens aus, sonst meldete jede Grenze je Anker einmal.
+    for (const limit of evaluableLimitsOf(node)) {
       const result = evaluateLimit(limit, node, effective, ctx);
       if (result !== null) results.push(result);
     }
