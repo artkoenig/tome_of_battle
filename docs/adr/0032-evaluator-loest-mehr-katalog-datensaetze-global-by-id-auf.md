@@ -15,8 +15,8 @@ auswertbar. Diese Grenze war in beiden ADRs als künftige Arbeit vermerkt.
 
 ## Kontext (an echten Definitive-Edition-Daten verifiziert)
 
-Ein reales WHFB6-Datenset ist eine `.gst`-Spielsystemdatei plus **eine oder
-mehrere** `.cat`-Armee-Kataloge. In der Definitive Edition
+Ein reales WHFB6-Datenset besteht aus `.gst` plus `.cat`-Katalogen
+([BSData-Doku](../battlescribe-data-format.md) §2, §6). In der Definitive Edition
 (`artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition`, Upstream Lexicanum
 Imperialis) deklariert **jeder** der 17 Armee-Kataloge genau **einen**
 `catalogueLink` auf eine gemeinsame `Mercenaries`-`.cat`; Mercenaries selbst hängt
@@ -24,9 +24,9 @@ von keinem weiteren Katalog ab (Stern-Struktur). Beispiel Ogre Kingdoms: von 244
 eindeutigen `targetId`s lösen **41 ausschließlich** über die Mercenaries-`.cat`
 auf. `catalogueLink`/`.cat`→`.cat` ist damit real und für jede Armee zwingend.
 
-BattleScribe-IDs sind global-eindeutige GUIDs. Über `.gst` + Ogre + Mercenaries
-zusammengeführt treten keine ID-Kollisionen auf; alle Verweise lösen über eine
-einzige flache Symboltabelle auf.
+Über `.gst` + Ogre + Mercenaries zusammengeführt treten keine ID-Kollisionen auf
+(zur ID-Semantik und ihrer Bedingung siehe [BSData-Doku](../battlescribe-data-format.md)
+§3.1/§3.2); alle Verweise lösen über eine einzige flache Symboltabelle auf.
 
 ## Entscheidung
 
@@ -94,15 +94,17 @@ festschreibt.
   die Kategorie eine MIN-Grenze trägt (Kategorien sind selbst nie Roster-Instanzen).
   Eine `categoryEntry` mit ausschließlich einer MAX-Grenze (ohne MIN) erhält daher
   keinen Anker und bleibt effektiv **unbegrenzt** — eine endliche reine MAX-Kategorie
-  wird also nicht geprüft. (Der reale Fall `max="-1"` = unbegrenzt fällt ohnehin damit
+  wird also nicht geprüft. (Der reale Fall des Unbegrenzt-Sentinels,
+  [BSData-Doku](../battlescribe-data-format.md) §7.6, fällt ohnehin damit
   zusammen.) Die alte Engine erzwang die Kategoriegrenze unabhängig von einer MIN.
-- **B2 — Ein `forceEntry`-eigenes Punktelimit ist nicht direkt ausdrückbar.** Ein
-  Kontingent (`forceEntry`) trägt keine Kosten, und eine Grenze zählt die
-  Definitions-ID ihres Ankers — bei einem Verweis (`entryLink`, `categoryLink`)
-  dessen Ziel, sonst die eigene. Ein `forceEntry` ist kein Verweis; seine
-  eigene Kostengrenze läse daher immer 0. Die *Semantik* „dieses (Sonder-)Heer muss ≥ N Punkte bauen" ist
-  aber über eine **Kategorie-MIN-Kostengrenze** erreichbar: alle Einheiten des
-  Heeres teilen die Armee-Kategorie, deren MIN-Kostengrenze den Punkte-Boden setzt.
+- **B2 — `forceEntry`-eigenes Punktelimit.** Das Format drückt „dieses
+  (Sonder-)Heer muss ≥ N Punkte bauen" über das `limit::`-Muster aus
+  ([BSData-Doku](../battlescribe-data-format.md) §5.6). Eine als Kosten-Summe
+  direkt am `forceEntry` verankerte Grenze kennt die Anker-Logik der Join-Schicht
+  dagegen nicht: ein Kontingent trägt keine Kosten, seine eigene Kostengrenze läse
+  immer 0. Dieselbe Semantik ist auch über eine **Kategorie-MIN-Kostengrenze**
+  erreichbar: alle Einheiten des Heeres teilen die Armee-Kategorie, deren
+  MIN-Kostengrenze den Punkte-Boden setzt.
 
 ## Zugehörige ADRs
 

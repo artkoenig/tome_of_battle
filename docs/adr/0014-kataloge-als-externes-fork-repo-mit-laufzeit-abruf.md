@@ -22,7 +22,7 @@ Probleme:
    Upstream-Verbesserungen zu übernehmen oder eigene Fixes zurückzugeben ist ohne
    echte Fork-Beziehung nicht praktikabel.
 3. **Das `revision`-Attribut lügt.** Die Katalogdateien tragen BattleScribes
-   `revision`-Attribut, das laut offizieller Doku das Update-Signal ist. Keiner
+   `revision`-Attribut ([BSData-Doku](../battlescribe-data-format.md) §3.3). Keiner
    unserer Datenfix-Commits hat es je hochgezählt: `Orcs and Goblins.cat` trägt
    `revision="12"` — identisch zu Upstream — obwohl mindestens fünf inhaltliche
    Fixes eingeflossen sind. Das Feld behauptet Gleichstand bei divergierten Daten.
@@ -94,8 +94,8 @@ besitzen; der Workflow läuft folgenlos leer. GitHub deaktiviert Actions in Fork
 standardmäßig — sie müssen einmalig aktiviert werden, sonst greift kein Gate.
 
 **Revision statt Hash, „higher wins":** Das Update-Signal ist ausschließlich das
-`revision`-Attribut, verglichen mit **strikt größer** — exakt die offizielle
-Semantik („if it's higher, the file will be updated"). Ein Content-Hash wurde
+`revision`-Attribut, verglichen mit **strikt größer** — die Format-Semantik nach
+[BSData-Doku](../battlescribe-data-format.md) §3.3. Ein Content-Hash wurde
 verworfen, obwohl er ohne Disziplin auskäme: Er ist byte-genau statt semantisch
 (ein reiner Whitespace-Commit hätte alle Clients zum Neu-Import gezwungen), und die
 fehlende Disziplin wird stattdessen strukturell durch ein CI-Gate erzwungen, das

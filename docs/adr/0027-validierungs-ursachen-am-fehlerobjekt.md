@@ -10,9 +10,9 @@
 ## Kontext und Problemstellung
 
 Mechanische Validierungsmeldungen sagen nur *dass* ein Limit verletzt ist, nicht
-*warum*. Der häufige, für Nutzer verwirrende Fall: ein Limit steht auf einem Wert
-(z. B. Max 0), weil eine *andere* Auswahl über einen bedingten Modifier diesen
-Wert verändert hat („weil Battle Standard Bearer gewählt ist → Weapons-Max = 0").
+*warum*. Der häufige, für Nutzer verwirrende Fall: ein Limit steht auf einem Wert,
+weil eine *andere* Auswahl ihn über einen bedingten Modifier verändert hat (das
+Muster samt Beispiel: [BSData-Doku](../battlescribe-data-format.md) §9.8).
 
 Die dafür nötige Herkunft (welcher Modifier, welche Bedingung, welche auslösende
 Auswahl) liegt zum Prüfzeitpunkt vor: `getModifiedConstraintValue` filtert die

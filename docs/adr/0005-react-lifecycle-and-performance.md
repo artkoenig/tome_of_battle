@@ -24,8 +24,7 @@ Folgende Richtlinien für Komponentenstruktur, Performance und Lifecycle-Managem
 - Dies verhindert, dass übergeordnete Komponenten (Monolithen) mit Detail-Logik überfrachtet werden und bei jeder Detail-Änderung komplett neu rendern müssen.
 
 ### 2. Context Awareness bei Datenauflösungen
-- Beim Sammeln und Auflösen von Profilen und Regeln (z. B. über `collectUnitProfilesAndRules`) muss zwingend der `catalogueId`-Kontext übergeben werden.
-- Dies verhindert Identifikations-Konflikte zwischen dem Hauptkatalog (z. B. Grundregeln) und Detachments/Erweiterungen, da Battlescribe-Kataloge unabhängig voneinander gleiche IDs für unterschiedliche Auswahlen verwenden können.
+- Beim Sammeln und Auflösen von Profilen und Regeln (z. B. über `collectUnitProfilesAndRules`) muss zwingend der `catalogueId`-Kontext übergeben werden; warum das Format das verlangt, steht in der [BSData-Doku](../battlescribe-data-format.md) (§3.2).
 
 ### 3. Keine blockierende UI bei DB-Importen
 - Das Parsen und Importieren großer XML-Kataloge in die IndexedDB darf den UI-Thread nicht einfrieren.

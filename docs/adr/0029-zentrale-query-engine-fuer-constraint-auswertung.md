@@ -30,8 +30,8 @@ Kategorie-Max) ein zweites Mal von Hand nach — an mehreren Stellen und teils
 inkonsistent zueinander.
 
 Der gemeinsame Nenner der Daten ist eindeutig: Constraint, Condition und Repeat
-sind im XSD **dieselbe `QueryBase`** — sie teilen `field`/`scope`/`value`/
-`shared`/`includeChildSelections`/`childId` und unterscheiden sich nur darin,
+sind im XSD **dieselbe `QueryBase`** ([BSData-Doku](../battlescribe-data-format.md)
+§7.6/§7.7) und unterscheiden sich nur darin,
 was mit dem gezählten Wert geschieht. Das Roster ist ein sauberer, einwurzeliger
 Baum, und ein generisches, Vorfahren-tragendes Traversal existiert bereits. Die
 Fragmentierung ist also nicht durch die Daten erzwungen, sondern historisch
@@ -72,8 +72,8 @@ Die Engine ist eine **reine Funktion** `(Instanzbaum, Katalog-Graph) →
 Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
 
 1. **Auswertungs-Kontext (Vorlauf, einmal je System/Liste, memoisiert).** Ein
-   read-only Index löst IDs im Katalog-Kontext auf (Vergleich gegen aufgelöste
-   **Ziel-IDs**, nicht Verweis-IDs) und hält die listenweiten Zähltabellen. Er
+   read-only Index löst IDs im Katalog-Kontext auf (Ziel-ID-Semantik nach
+   [BSData-Doku](../battlescribe-data-format.md) §3.4) und hält die listenweiten Zähltabellen. Er
    macht die faktische Zweiphasigkeit (erst Index, dann Lauf) zu einem benannten
    Vertrag statt zu implizitem Wissen jeder Aufrufstelle.
 
@@ -89,15 +89,11 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
    Selektionen, Ursachen }`), aus dem die Ursachen nach ADR-0027 direkt folgen.
 
    **Zähl-Frame nach Ziel-Typ (nicht nach Query-Art).** Der `force`-Zweig
-   entscheidet den Bezugsrahmen am **Ziel-Typ**: ein **Eintrags**-Ziel zählt pro
-   Kontingent (`forceSelectionCounts[force.id]`), ein **Kategorie**-Ziel dagegen
-   **armeeweit** über alle Forces aggregiert (`isCategoryTargetId` →
-   `selectionCounts`); `roster` zählt immer armeeweit. Das gilt **einheitlich für
-   Constraint, Condition und Repeat** — die XSD (`QueryBase`) gibt für eine
-   Unterscheidung nach Query-Art nichts her, also ist der Ziel-Typ maßgeblich. Die
-   §7.7-Domänenregel („Kategorie-Zähler über alle Forces aggregiert") ist damit an
-   genau dieser einen Stelle kodiert. Bei Ein-Force-Rostern (der Regelfall der App)
-   sind beide Frames identisch; die Unterscheidung wirkt nur auf Multi-Force-Roster.
+   entscheidet den Bezugsrahmen am **Ziel-Typ**, gemäß der Domänenregel der
+   [BSData-Doku](../battlescribe-data-format.md) (§7.6/§7.7) und einheitlich für
+   Constraint, Condition und Repeat. Sie ist an genau dieser einen Stelle kodiert:
+   Eintrags-Ziel → `forceSelectionCounts[force.id]`, Kategorie-Ziel
+   (`isCategoryTargetId`) → `selectionCounts`.
    Diese Vereinheitlichung — Conditions, Repeats *und* der Profil-Statwert-Pfad
    (`profileCollector`) laufen jetzt über denselben `resolveScopeAnchor` und
    denselben Repeat-Zähler statt über eigene Inline-Auflösungen — wurde in Issue 63,
@@ -161,15 +157,15 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
 
 ### Leitidee: „Alles ist eine Query"
 
-Eine **Query** misst eine Zahl `n` — *was* (`field`: Anzahl Selektionen oder
-Summe einer Kostenart) in *welchem Bezugsrahmen* (`scope` + `shared` +
-`includeChildSelections` + `childId`). Die drei Regelkonstrukte sind Queries plus
-eine dünne Reaktion auf `n`:
+Eine **Query** misst eine Zahl `n`; was ihre Attribute (`field`, `scope`,
+`shared`, `includeChildSelections`, `childId`) dabei bedeuten, definiert die
+[BSData-Doku](../battlescribe-data-format.md) (§7.6, §7.7, §13). Die drei
+Regelkonstrukte sind Queries plus eine dünne Reaktion auf `n`:
 
 | Query-Art | Reaktion auf den gemessenen Wert `n` |
 |---|---|
 | Constraint (min/max) | Vergleich `n` gegen effektiven Schwellenwert → erfüllt / Verstoß (+ Ursachen) |
-| Condition (`lessThan`, `atLeast`, `instanceOf`, …) | Vergleich `n` gegen `value` → Wahrheitswert |
+| Condition | Vergleich `n` per Komparator gegen `value` → Wahrheitswert |
 | Repeat | `floor/ceil(n / value) · repeats` → Wiederholungszahl |
 
 ### Schichten
@@ -243,7 +239,7 @@ eine dünne Reaktion auf `n`:
 
 1. **Zwei Bäume, per ID verbunden.** Der Instanzbaum trägt keine Regeln; jede
    Selektion löst ihre Definition per ID auf. Die Engine braucht einen read-only
-   System-Index (L1) und vergleicht gegen aufgelöste **Ziel-IDs**, nicht Verweis-IDs.
+   System-Index (L1); der ID-Vergleich folgt der [BSData-Doku](../battlescribe-data-format.md) (§3.4).
 2. **Globaler Count-Vorlauf ist Pflicht.** `force`/`roster`/`category`-Scopes werden
    aus vorberechneten Zähltabellen beantwortet, nicht aus dem lokalen Teilbaum —
    die Auswertung ist zweiphasig (Index bauen → laufen), kein reiner Single-Walk.

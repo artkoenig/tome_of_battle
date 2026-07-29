@@ -81,20 +81,17 @@ Sache des Engine-Verhaltens (`wham`) und der bestehenden Tests.
   „UI-Box" auf „Konsole".
 
 Die Advisory-Prüfung meldet **strukturelle** Abweichungen; die BSData-Regel
-„erlauben schlägt verbieten" betrifft **Roster-Bau-Constraints** (Semantik) —
-verschiedene Ebenen, kein Widerspruch.
+„erlauben schlägt verbieten" ([BSData-Doku](../battlescribe-data-format.md) §11.1)
+betrifft **Roster-Bau-Constraints** (Semantik) — verschiedene Ebenen, kein
+Widerspruch.
 
 **Revision 2026-07-19 (Modifier-Konstrukte ohne offiziellen Schema-Beleg):**
 Der reale Lexicanum-Datensatz („Definitive Edition") nutzt drei Modifier-Konstrukte,
 die in **keiner** offiziellen `BSData/schemas`-Version belegt sind — geprüft bis
 einschließlich der unveröffentlichten `vNext`-Version (`src/xml/schema/{v2_02,
-v2_03, latest, vNext}`): `ModifierKind`-Werte `multiply` (6 Treffer, Kostenver-
-dopplung) und `prepend` (6 Treffer, Namens-Modifikation) sowie ein `join`-Attribut
-auf `<modifier>` (131 Treffer bei `field="name"`, empirisch **nicht** einheitlich
-ein Leerzeichen — u. a. NBSP und `"\xa0 + \xa0"`). Das offizielle Wiki
-(*Data structure overview*) dokumentiert dieselbe Lücke und markiert sich selbst
-als veraltet („TODO: Update to 2.02"). Diese Konstrukte werden von der echten
-BattleScribe-Referenzanwendung akzeptiert, sind aber nirgends formal spezifiziert.
+v2_03, latest, vNext}`): die `ModifierKind`-Werte `multiply` und `prepend` sowie
+ein `join`-Attribut auf `<modifier>`. Befund und Semantik dieser Konstrukte
+dokumentiert die [BSData-Doku](../battlescribe-data-format.md) (§7.7, §15).
 
 Entscheidung: Die vendorte `Catalogue.xsd` wird **von Hand um diese drei
 Konstrukte ergänzt** (`ModifierKind`-Enum, `join`-Attribut auf `Modifier`), mit

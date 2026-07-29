@@ -9,6 +9,11 @@
 All core architecture, database, styling, testing, and deployment guidelines are documented in **[docs/adr/](docs/adr/)** (see the index [README.md](docs/adr/README.md)).
 - **CRITICAL:** You **MUST** read and adhere to the relevant ADR files under `docs/adr/` before starting any development or modifying code in this repository.
 
+## BSData documentation (read before starting work)
+
+- **CRITICAL:** Every agent — the main session and every subagent — **MUST** read the bsdata documentation **[docs/battlescribe-data-format.md](docs/battlescribe-data-format.md)** before taking up its work. It is the canonical reference to the Battlescribe data format for this project; the [BSData catalogue-development wiki](docs/bsdata-catalogue-development-wiki/) submodule is its upstream source.
+- **Precedence:** The bsdata documentation takes precedence over the ADRs. Where the two contradict each other, the bsdata documentation is right and the ADR is out of date — follow the bsdata documentation and flag the ADR for correction.
+
 ## Commands
 
 ```bash

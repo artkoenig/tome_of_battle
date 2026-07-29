@@ -79,9 +79,9 @@ er normalisiert die `.ros`-Ziel-IDs/`::`-Pfade auf die Link-ID
 (`reconcileImportedSelectionIds`, über denselben Options-Collector, den der Editor
 nutzt). Damit gilt im gesamten übrigen Code eine einzige, einfache Konvention.
 
-> Hinweis: Für `scope="parent"`-Constraints werden weiterhin aufgelöste **Ziel-IDs**
-> verglichen (ADR-0003 §4) — das ist die Constraint-Semantik und steht nicht im
-> Widerspruch zur Link-ID-Identität der Auswahl selbst.
+> Hinweis: Die Constraint-Semantik (Vergleich aufgelöster Ziel-IDs bei
+> `scope="parent"`, [BSData-Doku](../battlescribe-data-format.md) §3.4/§7.6) steht
+> nicht im Widerspruch zur Link-ID-Identität der Auswahl selbst.
 
 ### 3. Kriegsmaschinen-Split ist eine bewusste Import-Transformation
 Der Split (`number=N` → N Einheiten) bleibt eine **Import-Transformation** im
@@ -106,10 +106,10 @@ allein die Verschachtelungs-Beziehung. Wie beim Kriegsmaschinen-Split (§3) ist
 der Round-Trip **semantisch**, nicht strukturell identisch: der Export schreibt
 alle Kontingente flach unter `<forces>`.
 
-Folge für die Validierung: `includeChildForces` bedeutet im Original „dieses
-Kontingent und seine Nachfahren". Da die Nachfahren-Beziehung im Modell nicht
-existiert, wertet der Solver das Flag als **gesamtes Roster** aus — die kleinste
-im Modell verfügbare Obermenge. Der Kommentar in `queryEngine.js`
+Folge für die Validierung: Da die Nachfahren-Beziehung, die `includeChildForces`
+im Format meint ([BSData-Doku](../battlescribe-data-format.md) §7.6), im Modell
+nicht existiert, wertet der Solver das Flag als **gesamtes Roster** aus — die
+kleinste im Modell verfügbare Obermenge. Der Kommentar in `queryEngine.js`
 (`resolveScopeAnchor`, `force`-Zweig) benennt genau das — die zentrale
 scope-bewusste Stelle nach ADR 0029, an die diese Näherung seit der
 Query-Engine-Konsolidierung isoliert ist.
