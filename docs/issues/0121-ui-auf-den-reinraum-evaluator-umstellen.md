@@ -133,7 +133,7 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   (Kriterium 8)
 - [x] 4. Meldungsprojektion `formatViolation` + neue i18n-Schlüssel
   (alte Schlüssel sterben erst mit dem Solver-Abriss)
-- [ ] 5. UI-Umstellung Validierungspfad: useRoster → useEvaluation;
+- [x] 5. UI-Umstellung Validierungspfad: useRoster → useEvaluation;
   Anzeige (ValidationMessage, Panel, Sidebar, ValidationCauses) über
   `formatViolation`
 - [ ] 6. UI-Umstellung Verfügbarkeitspfad: CategoryUnitAdder,
@@ -191,6 +191,18 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-29, Task 5 (UI-Validierungspfad) erledigt: 5 neue rote
+  Vertragsdateien (34 Tests), dann volle Suite `npx vitest run` 2671
+  Tests Exit 0, Puppeteer-E2E Exit 0 OHNE Anpassung (die Evaluator-
+  Texte erfüllen dieselben Selektoren/Zählungen), build/lint/typecheck/
+  depcruise Exit 0. Prop-Umbenennungen error→violation,
+  validationErrors→violations; Panel verliert den general/contextual-
+  Split (Evaluator-Verletzungen ankern über Pfade); Karten-Zuordnung
+  über pathBySelectionId + anchor.path. CategoryUnitAdder rendert
+  seine Solver-Sperrgründe übergangsweise lokal (SolverReasonMessage),
+  bis Task 6 den Verfügbarkeitspfad umstellt. Ein gelöschter Alt-Test
+  (ValidationCauses.test.jsx, vollständig ersetzt), übrige Alt-Tests
+  angepasst.
 - 2026-07-29, Task 4 (Meldungsprojektion) erledigt: 23+Deckungs-Tests
   rot, dann grün ohne Testedit (`npx vitest run src/i18n` 236 Tests
   Exit 0; Regression evaluator+evaluation 871 Exit 0; lint/typecheck/
