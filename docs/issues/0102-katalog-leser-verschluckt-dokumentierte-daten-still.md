@@ -141,6 +141,15 @@ Begründung in den Decisions.
 - **XSD-Defaults für `import`/`collective`:** beide `false` (vendored
   Catalogue.xsd:283-284) — die Doku-Tabelle §7.1 beschreibt nur die Bedeutung,
   reale Kataloge schreiben die Attribute ohnehin explizit.
+- **`page` bleibt String (Default des test-author, bestätigt):** die vendored
+  XSD deklariert `page` als `xs:string` (Catalogue.xsd:45) — kein
+  Zahlen-Parsen.
+- **Veraltete Pins darf der Implementer anpassen (2026-07-29):** bestehende
+  Tests mit exaktem `toEqual` auf Objektformen (`infoElements.test.js`,
+  `infoProjection.test.js`, `catalogSet.test.js`) werden durch die additiven
+  Felder rot. Das sind Pins der alten Form, keine Intent-Tests — der
+  Implementer passt sie an die neue Form an. Die Tests des test-author sind
+  dagegen unantastbar.
 
 ## Log
 
@@ -150,6 +159,15 @@ Begründung in den Decisions.
   (…).cat:16888`), nicht an „Aura of Slaanesh" (dieser Name kommt in keiner
   Fixture-Datei vor). Nebenbefund ergänzt: dessen Ziel-Kategorie-Id ist in
   den Fixtures nirgends definiert (hängender Verweis).
+- 2026-07-29 — test-author: 7 neue Testdateien unter `src/evaluator/`
+  (`catalogReader.publications|entryAttributes|categoryLinkInfos|booleanShorthand|unreadableCost|costTypeMerge|modifierScope.test.js`),
+  52 rote Tests + 7 grüne Kontroll-Pins; jeder Fehlschlag ist ein
+  Assertion-Fehler auf fehlendes Verhalten (Exit-Code 1 je Datei). Hinweis des
+  test-author: exakte `toEqual`-Pins in drei Bestandsdateien werden durch die
+  additiven Felder rot (Entscheidung dazu in Decisions). Bewusst ungetestet
+  gelassen: Payload der `UNSUPPORTED_MODIFIER_SCOPE`-Diagnose, Erreichen der
+  Info-Projektion durch categoryLink-Regeln, Publikationsauflösung über
+  infoLink-Indirektion.
 
 ## Checkpoints
 
