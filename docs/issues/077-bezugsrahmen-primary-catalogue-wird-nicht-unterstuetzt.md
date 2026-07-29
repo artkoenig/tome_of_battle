@@ -157,6 +157,16 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
   Diagnosen, davon **9 `unresolvedScope`, alle mit `scope:
   "primary-catalogue"`** — der Fund des Issues ist am laufenden Code
   reproduziert.
+- **2026-07-29, der alte Solver kennt den Rahmen ebenfalls nicht.** `src/solver/`
+  führt seit jeher ein `forceCatalogueId` im Query-Kontext
+  (`queryEngine.js:61`), gespeist aus `force.catalogueId || roster.catalogueId`
+  (`rosterValidator.js:114`) — benutzt es aber ausschließlich zur
+  **Verweis-Auflösung**; `primary-catalogue` kommt in `src/solver/` nirgends
+  vor. Der Rahmen ist also keine Regression der Reinraum-Engine, sondern in
+  beiden Engines nie umgesetzt worden. Für die Ableitungs-Entscheidung oben
+  heißt das: der Weg über das `.ros`-Attribut ist die Konvention der **App**,
+  aber ADR-0030 trennt Solver und Evaluator, und der Reinraum-Vertrag käme
+  nicht ohne Erweiterung aus.
 - **2026-07-29, Lücke in der Beweislage.** Das Submodul
   `docs/bsdata-catalogue-development-wiki` (Commit `f4949c3`) ist in diesem
   Arbeitsverzeichnis nicht ausgecheckt. Jede Wiki-Zitatstelle in
