@@ -90,6 +90,19 @@ Acceptance criteria:
   `npx vitest run src/evaluator/report.effectiveCategories.test.js` →
   Exit 1, 10/10 rot, alle auf den fehlenden Feldern. Zwei offene Ränder als
   Default in Decisions entschieden.
+- 2026-07-29 — implementer: `primary` wird gelesen (`catalogReader.js`:
+  `readPrimaryCategoryId`, erster `primary="true"`-Link gewinnt),
+  `EffectiveState` führt eine parallele `#primaries`-Map (Seed je Runde,
+  `set-primary` = Mitgliedschaft + Flag, `unset-primary` löscht das Flag nur
+  bei Treffer, `removeCategory` der Primären löscht es mit — Default (a));
+  Bericht trägt `categoryIds`/`primaryCategoryId`; Architektur-Doku §4.1/
+  §4.2/§4.6/§4.8 nachgezogen. Primär bewusst NICHT im zählrelevanten
+  Fingerabdruck. Annahme des Implementers: Link-eigener Basis-Primär schlägt
+  den des aufgelösten Ziels, ohne eigenen erbt der Link (gleiche Erb-Regel
+  wie Kosten/hidden). Belege: `npx vitest run
+  src/evaluator/report.effectiveCategories.test.js` Exit 0 (10 Tests);
+  `npx vitest run src/evaluator` Exit 0 (65 Dateien, 819 Tests);
+  `npm run lint` Exit 0; `npm run typecheck` Exit 0.
 
 ## Checkpoints
 

@@ -137,6 +137,9 @@ const Attr = Object.freeze({
   SHARED: 'shared',
   INCLUDE_CHILD_SELECTIONS: 'includeChildSelections',
   INCLUDE_CHILD_FORCES: 'includeChildForces',
+  // `categoryLink`-Attribut: markiert die **eine** Anzeige-Kategorie des
+  // Eintrags (`docs/battlescribe-data-format.md` §7.2/§8).
+  PRIMARY: 'primary',
 });
 
 /** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
@@ -353,6 +356,24 @@ function readCategoryIds(entryEl) {
   return wrappedChildren(entryEl, Tag.CATEGORY_LINKS, Tag.CATEGORY_LINK)
     .map(linkEl => linkEl.getAttribute(Attr.TARGET_ID))
     .filter(targetId => targetId !== null && targetId !== '');
+}
+
+/**
+ * Liest die **Basis-Primaerkategorie** eines Eintrags: die Ziel-ID des ersten
+ * `categoryLink` mit `primary="true"` in Dokumentreihenfolge, sonst `null`
+ * (`docs/battlescribe-data-format.md` §7.2 — die eine Anzeige-Kategorie).
+ * Modifikatoren (`set-primary`/`unset-primary`) leiten daraus die effektive ab.
+ *
+ * @param {Element} entryEl
+ * @returns {string | null}
+ */
+function readPrimaryCategoryId(entryEl) {
+  for (const linkEl of wrappedChildren(entryEl, Tag.CATEGORY_LINKS, Tag.CATEGORY_LINK)) {
+    if (linkEl.getAttribute(Attr.PRIMARY) !== 'true') continue;
+    const targetId = linkEl.getAttribute(Attr.TARGET_ID);
+    if (targetId !== null && targetId !== '') return targetId;
+  }
+  return null;
 }
 
 /**
@@ -819,6 +840,7 @@ function readEntry(entryEl, diagnostics) {
     type: entryEl.getAttribute(Attr.TYPE),
     costs: readCosts(entryEl),
     categoryIds: readCategoryIds(entryEl),
+    primaryCategoryId: readPrimaryCategoryId(entryEl),
     limits: readLimits(entryEl, diagnostics),
     infos: readInfos(entryEl, diagnostics),
     children: readSelectionChildren(entryEl, diagnostics),
@@ -862,6 +884,7 @@ function readEntryLink(entryLinkEl, diagnostics) {
     targetId: entryLinkEl.getAttribute(Attr.TARGET_ID),
     costs: readCosts(entryLinkEl),
     categoryIds: readCategoryIds(entryLinkEl),
+    primaryCategoryId: readPrimaryCategoryId(entryLinkEl),
     limits: readLimits(entryLinkEl, diagnostics),
     infos: readInfos(entryLinkEl, diagnostics),
     children: readSelectionChildren(entryLinkEl, diagnostics),
@@ -983,6 +1006,7 @@ function readForceEntry(forceEl, diagnostics) {
     ...readEntryBase(forceEl, diagnostics),
     kind: DefinitionKind.FORCE,
     categoryIds: readCategoryIds(forceEl),
+    primaryCategoryId: readPrimaryCategoryId(forceEl),
     limits: readLimits(forceEl, diagnostics),
     infos: readInfos(forceEl, diagnostics),
     children: [

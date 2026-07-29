@@ -12,7 +12,8 @@
  * ihre Grenzen liegen, steht **an einer Stelle**, im Kopf von `resolver.js`; hier
  * gilt allein: keine Runde und keine Auswertung schreibt zurueck. Diese
  * Schicht traegt eine **separate** Ebene effektiver Werte: effektive Kosten,
- * effektive Kategorien, effektive Grenzwerte samt ihrer **Herleitungskette**, die
+ * effektive Kategorien (samt der effektiven **Primaerkategorie**), effektive
+ * Grenzwerte samt ihrer **Herleitungskette**, die
  * Sichtbarkeit, die effektiven Namen, die effektiven Charakteristikwerte und die
  * **Autor-Meldungen** des Katalogs. Sie entsteht als **frische Kopie** der
  * Basiswerte ({@link createBaseEffectiveState}); die Modifikator-Schicht schreibt
@@ -106,6 +107,7 @@ function baseCharacteristicsOf(node, carrier) {
 export class EffectiveState {
   #costs;
   #categories;
+  #primaries;
   #limits;
   #hidden;
   #names;
@@ -122,6 +124,7 @@ export class EffectiveState {
   constructor() {
     this.#costs = new Map();
     this.#categories = new Map();
+    this.#primaries = new Map();
     this.#limits = new Map();
     this.#hidden = new Map();
     this.#names = new Map();
@@ -138,11 +141,12 @@ export class EffectiveState {
    * Knoten (Baumphase 2) kann deshalb keinen vorhandenen Eintrag ueberschreiben.
    *
    * @param {object} node
-   * @param {{ costs: Map<string, number>, categories: Set<string>, derivations: Map<string, { base: number, steps: object[] }> }} baseValues
+   * @param {{ costs: Map<string, number>, categories: Set<string>, primaryCategoryId: string | null, derivations: Map<string, { base: number, steps: object[] }> }} baseValues
    */
-  seedNode(node, { costs, categories, derivations }) {
+  seedNode(node, { costs, categories, primaryCategoryId, derivations }) {
     this.#costs.set(node, costs);
     this.#categories.set(node, categories);
+    this.#primaries.set(node, primaryCategoryId);
     this.#limits.set(node, derivations);
   }
 
@@ -156,6 +160,21 @@ export class EffectiveState {
   categoryIdsOf(node) {
     const categories = this.#categories.get(node);
     return categories === undefined ? [] : [...categories];
+  }
+
+  /**
+   * Die **effektive Primaerkategorie** eines Knotens — `null`, wenn keine seiner
+   * Kategorien primaer ist. Sie ist reiner Anzeige-Zustand neben der
+   * Mitgliedschaft: die Zaehl- und Grenzenschicht liest sie nie (der
+   * zaehlrelevante Schluessel {@link countRelevantFingerprint} laesst sie bewusst
+   * aussen vor), die Berichtsschicht traegt sie je Slot in den
+   * Faehigkeitsdatensatz (`docs/battlescribe-data-format.md` §8).
+   *
+   * @param {object} node
+   * @returns {string | null}
+   */
+  primaryCategoryIdOf(node) {
+    return this.#primaries.get(node) ?? null;
   }
 
   /**
@@ -257,9 +276,43 @@ export class EffectiveState {
     ensure(this.#categories, node, newSet).add(categoryId);
   }
 
-  /** Entfernt den Knoten effektiv aus einer Kategorie. */
+  /**
+   * Entfernt den Knoten effektiv aus einer Kategorie. War genau sie die
+   * Primaere, erlischt auch das Primaer-Flag — eine Primaerkategorie ohne
+   * Mitgliedschaft waere sinnlos (Issue 0100, Default-Entscheidung).
+   */
   removeCategory(node, categoryId) {
     this.#categories.get(node)?.delete(categoryId);
+    if (this.#primaries.get(node) === categoryId) {
+      this.#primaries.set(node, null);
+    }
+  }
+
+  /**
+   * Macht eine Kategorie zur **effektiven Primaeren** des Knotens
+   * (`set-primary`, `docs/battlescribe-data-format.md` §7.7/§8): sichert die
+   * Mitgliedschaft und setzt das Primaer-Flag — bei mehreren Anwendungen
+   * gewinnt schlicht die letzte.
+   *
+   * @param {object} node
+   * @param {string} categoryId
+   */
+  setPrimaryCategory(node, categoryId) {
+    this.addCategory(node, categoryId);
+    this.#primaries.set(node, categoryId);
+  }
+
+  /**
+   * Loescht das Primaer-Flag des Knotens genau dann, wenn `categoryId` aktuell
+   * seine Primaere ist (`unset-primary`); die Mitgliedschaft bleibt unberuehrt.
+   *
+   * @param {object} node
+   * @param {string} categoryId
+   */
+  unsetPrimaryCategory(node, categoryId) {
+    if (this.#primaries.get(node) === categoryId) {
+      this.#primaries.set(node, null);
+    }
   }
 
   /** Setzt die effektive Sichtbarkeit eines Traegers. */
@@ -378,6 +431,7 @@ export function countRelevantDifferences(previous, next, nodes) {
 function baseValuesOf(node) {
   let defCosts = node.def.costs ?? {};
   let defCategories = node.def.categoryIds ?? [];
+  let defPrimaryCategoryId = node.def.primaryCategoryId ?? null;
   // Die Grenzen kommen aus derselben Quelle wie in der Constraint-Schicht
   // (`limitsOf`, inkl. der von einem Verweis geerbten) — sonst traegt ein
   // Knoten einen Grenzwert, den nie jemand auswertet, oder umgekehrt.
@@ -386,6 +440,7 @@ function baseValuesOf(node) {
   if (node.def.kind === DefinitionKind.ENTRY_LINK && node.def.resolved) {
     defCosts = { ...(node.def.resolved.costs ?? {}), ...defCosts };
     defCategories = [...new Set([...(node.def.resolved.categoryIds ?? []), ...defCategories])];
+    defPrimaryCategoryId ??= node.def.resolved.primaryCategoryId ?? null;
   }
 
   const derivations = new Map();
@@ -395,6 +450,7 @@ function baseValuesOf(node) {
   return {
     costs: new Map(Object.entries(defCosts)),
     categories: new Set(defCategories),
+    primaryCategoryId: defPrimaryCategoryId,
     derivations,
   };
 }
