@@ -116,6 +116,22 @@ Force-Verletzungen.
   eingeschleust (git meldete die Datei binär) — ersetzt durch `\u0000`,
   alle Fakten stammen aus den Läufen danach; Orchestrator hat die Datei
   unabhängig als reine Textdatei ohne NUL verifiziert.
+- 2026-07-29 review Runde 1 (frischer Kontext): alle 4 Kriterien erfüllt,
+  Rot-Beweis exakt reproduziert, alle Exit-Codes unabhängig erhoben,
+  Blast-Radius verfolgt (Budget-, Eintrags-, belegte und 0092-Anker
+  unberührt; `countedTargetId` leckt nicht in den Bericht; keine
+  Szenario-Änderung im Diff). 2 Befunde, beide außerhalb der Kriterien:
+  - **F1 (moderat, Fix beschlossen):** Der Tiebreak bevorzugt JEDES
+    Pflicht-Phantom, auch ein Force-Phantom (unverlinkte Kategorie mit
+    Roster-MIN + Force-MIN, 1 Force: Überlebender ist das Force-Phantom
+    statt des Wurzel-Phantoms) — Code widerspricht der protokollierten
+    Entscheidung und §3.6. Fix auf die Entscheidung (Wurzel-Phantom),
+    Test zuerst.
+  - **F2 (informativ, kein Fix — beabsichtigte Konsequenz):** Null-Force-
+    Rand: Roster-MIN + Force-MIN unverlinkt ohne Force meldete auf main
+    beide am Wurzel-Phantom, jetzt nur noch die Roster-Grenze — die
+    Force-Meldung sprach für kein Kontingent (unresolvedScope-0-Familie,
+    im Plan benannt). Dem Menschen im PR sichtbar gemacht.
 
 ## Checkpoints
 
