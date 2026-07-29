@@ -75,6 +75,12 @@ Nötige bereits.
 - **Referenzlage:** Der alte Solver kann Prozent nur an Constraints —
   für Prozent-Conditions gibt es im Repo keine Verhaltensreferenz; Referenz
   sind Wiki-Text plus die eigene Grenzen-Konvention (Researcher §6).
+- **Default — prozentual abgeleitete Schrittweite 0** (Frage des
+  Test-Autors): ergibt die Ableitung `roundHalfUp(nenner * wert / 100)` an
+  einem Repeat 0, liefert das Repeat 0 Schritte — gespiegelt am
+  bestehenden Laufzeit-Guard `perValue === 0`. Keine neue Diagnose: ein
+  degenerierter abgeleiteter Wert, kein verschlucktes Attribut. Gepinnt
+  im Testfile.
 
 ## Log
 
