@@ -182,6 +182,14 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 - **Zielort der app-weiten E2E-Tests** wählt der Implementierer sinnvoll
   (außerhalb von `src/solver/`, z. B. `e2e/`); festgelegt ist nur der Umzug
   selbst (Kriterium 7). *(Default, unanswered.)*
+- **Verfügbarkeitspfad-Defaults (Task 6):** Gruppen-Mitgliedschaft
+  (Option→Gruppe) bleibt Struktur aus dem geparsten System; nur Zustand/
+  Grenzen/Kosten/Namen kommen aus dem Bericht. Die ADR-0029-Sonderregel
+  "Gruppen-Maximum über 1 hebbar" nutzt übergangsweise weiter den
+  bestehenden Helfer (Umzug in Task 8; Projektion in den Bericht als
+  Folge-Issue zu filen — ADR-0034-Spannung). Sperr-Grund bleibt die
+  Observable "(Nicht verfügbar)". Auto-Fill wechselt nur die
+  Vorschlagsquelle, nicht die Apply-Mechanik. *(Defaults, unanswered.)*
 - **Akzeptanzkriterien 1–8 vom Menschen freigegeben.** *(Quelle: Antwort des
   Menschen, 2026-07-29.)*
 - **Kategorie-Vererbungs-Sonderfall** (fehlendes Kategorie-Maximum aus
