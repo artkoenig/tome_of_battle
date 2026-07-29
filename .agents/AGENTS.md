@@ -33,6 +33,7 @@ node scripts/measure-evaluator-browser.js  # dieselbe Messung im echten Browser 
 ```
 
 - All unit tests must pass before a task is considered done.
+- If a change touches **only** `src/evaluator/`, run only the evaluator tests — unit and E2E: `npx vitest run src/evaluator` (the manifest-driven E2E runner over `docs/testing/` lives there too, e.g. `e2e.testcatalog.test.js`, `crossCatalog.test.js`). The full `npm test` (incl. the puppeteer solver E2E) is not required in that case.
 - On macOS, `browser_subagent`/`open_browser_url` don't work — use `node scripts/generate_screenshots.js`, which runs offline against the frozen fixture and needs no catalog data in the repo. For a one-off investigation, build a throwaway script on the shared harness (`scripts/lib/e2e-harness.js`); it also offers a browser console log, a DOM dump and a headed browser. On Linux/cloud, `/browser` and `browser_subagent` work normally (see [ADR 0006](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0006-testing-and-automation.md)).
 - After any UI-visible change, take a screenshot of the affected view and send it to the user as confirmation (skip this when running on the user's local machine).
 
