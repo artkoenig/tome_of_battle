@@ -228,6 +228,16 @@ Acceptance criteria:
     bezogen), von keinem Kriterium gefordert, kein falsches Ergebnis
     nachweisbar.
 
+- **2026-07-29, Fix-Runde nach Review 2 (F1):** test-author ergänzte
+  `rootEntryLinkMandatory.sameAnchorLimits.test.js` (rot: zwei
+  verschiedenwertige Min-Grenzen am selben Anker → 1 statt 2). Implementierer
+  setzte die entschiedene Semantik in `report.js` um: Schlüssel um den
+  effektiven Bound erweitert, Entfall nur bei Überlebendem an **anderem**
+  Anker (`survivorAnchorByKey`-Map). Nachweise: sameAnchorLimits grün; die 7
+  bisherigen Issue-Tests grün (Zwei-Anker-gleicher-Bound entdoppelt weiter);
+  `npx vitest run src/evaluator` 744 Tests, 743 grün, 1 rot = Vorbestand
+  0113; Lint/Typecheck Exit 0.
+
 ## Checkpoints
 
 ### Before implementation

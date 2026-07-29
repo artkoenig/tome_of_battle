@@ -205,14 +205,27 @@ function isMandatoryEntryPhantomResult(result) {
  * sind Issue 0094) vereint sie.
  *
  * Die Regel, beschraenkt auf Pflicht-Phantome von Eintraegen und Links
- * ({@link isMandatoryEntryPhantomResult}): je (Grenz-Feld, Grenzart, Rahmen,
- * gezaehlte Ziel-Id) ueberlebt genau eine Meldung — die erste in
- * Dokumentreihenfolge. Das **Feld** gehoert in den Schluessel, weil §9.9 nur
- * DIESELBE Pflicht in zwei Kodierungen entdoppelt — gleiches Feld, gleiche
- * Art, gleicher Rahmen, gleiche Ziel-Id. Zwei verschiedenartige Pflichten am
- * selben Ziel im selben Rahmen (Selektions-Minimum `field="selections"` UND
- * Kostenart-Minimum `field="<costTypeId>"`) sind zwei Pflichten und melden
- * zwei Verstoesse.
+ * ({@link isMandatoryEntryPhantomResult}): entdoppelt wird nur die zweite
+ * Kodierung DERSELBEN Pflicht. Ein Ergebnis entfaellt genau dann, wenn eine
+ * ueberlebende Meldung
+ *
+ *  1. denselben Schluessel (Grenz-Feld, Grenzart, Rahmen, gezaehlte Ziel-Id)
+ *     traegt,
+ *  2. denselben **effektiven Grenzwert** (`bound`) hat — dieselbe Pflicht hat
+ *     je Auswertung denselben Bound, denn §9.9 entdoppelt zwei Kodierungen,
+ *     die dasselbe *meinen*; zwei verschiedenwertige `min`-Grenzen sind zwei
+ *     Pflichten und melden beide — und
+ *  3. an einem **anderen Anker-Knoten** haengt — zwei Grenzen am selben Anker
+ *     sind immer verschiedene Grenzen (zwei `<constraint>`-Elemente eines
+ *     Eintrags, nie zwei Wurzelformen) und entdoppeln nie, auch nicht als
+ *     wertgleiche Duplikate.
+ *
+ * Es ueberlebt die erste Kodierung in Dokumentreihenfolge. Das **Feld**
+ * gehoert in den Schluessel, weil §9.9 nur DIESELBE Pflicht in zwei
+ * Kodierungen entdoppelt — gleiches Feld, gleiche Art, gleicher Rahmen,
+ * gleiche Ziel-Id. Zwei verschiedenartige Pflichten am selben Ziel im selben
+ * Rahmen (Selektions-Minimum `field="selections"` UND Kostenart-Minimum
+ * `field="<costTypeId>"`) sind zwei Pflichten und melden zwei Verstoesse.
  * Rahmen-Identitaet ist fuer `scope="roster"` das Roster, fuer `scope="force"`
  * das **Kontingent des Ankers** (`anchor.forceRoot`): dieselbe Pflicht meldet
  * je Kontingent weiterhin einmal, nie ueber Kontingente hinweg entdoppelt.
@@ -222,7 +235,7 @@ function isMandatoryEntryPhantomResult(result) {
  */
 function dedupeMandatoryEntryPhantomViolations(results) {
   const kept = [];
-  const seenKeys = new Set();
+  const survivorAnchorByKey = new Map();
   for (const result of results) {
     if (!isMandatoryEntryPhantomResult(result)) {
       kept.push(result);
@@ -240,10 +253,18 @@ function dedupeMandatoryEntryPhantomViolations(results) {
       continue;
     }
     const { field } = result.limit;
-    const key = `${field.kind}\u0000${field.costTypeId ?? ''}\u0000${result.limit.kind}\u0000${frameKey}\u0000${result.countedTargetId}`;
-    if (seenKeys.has(key)) continue;
-    seenKeys.add(key);
-    kept.push(result);
+    const key = `${field.kind}\u0000${field.costTypeId ?? ''}\u0000${result.limit.kind}\u0000${frameKey}\u0000${result.countedTargetId}\u0000${result.bound}`;
+    const survivorAnchor = survivorAnchorByKey.get(key);
+    if (survivorAnchor === undefined) {
+      survivorAnchorByKey.set(key, result.anchor);
+      kept.push(result);
+    } else if (survivorAnchor === result.anchor) {
+      // Kriterium 3: am selben Anker ist es keine zweite Kodierung,
+      // sondern eine weitere Grenze — sie bleibt. Alle Ueberlebenden
+      // eines Schluessels haengen damit am selben Anker; ein Anker je
+      // Schluessel genuegt.
+      kept.push(result);
+    }
   }
   return kept;
 }
