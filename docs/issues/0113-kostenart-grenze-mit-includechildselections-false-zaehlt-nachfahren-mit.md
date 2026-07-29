@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/113-umsetzen-uda71x
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/173
 ---
 
 # Kostenart-Grenze mit `includeChildSelections="false"` zählt Nachfahren mit
@@ -106,3 +106,17 @@ Acceptance criteria:
   Reviewer fand keinen Widerspruch).
 
 ## Retro
+
+- **Was gut lief:** Der Intent aus dem 0085-Lauf war präzise genug, dass der
+  Run ohne Grilling, Plan oder neuen Test auskam — Reproduktion, Ein-Zeilen-Fix,
+  Review-Runde 1 mit 0 Befunden. Der Wert des Musters „Nebenbefund sauber als
+  eigenes Issue filen" hat sich hier direkt ausgezahlt.
+- **Was im Weg stand:** Der 0110-Flake (5-s-Timeout unter Last) hat den ersten
+  vollen Suite-Lauf rot gefärbt und einen Verifikationsumweg gekostet — genau
+  das im 0110-Intent beschriebene Problem („kein Fakt per Exit-Code mehr").
+  Issue 0110 sollte bald drankommen; hier keine neue Beobachtung, nur eine
+  Bestätigung.
+- **Regel-Anmerkung:** Invariante 2 (test-author schreibt den roten Test) war
+  hier korrekt durch den bereits existierenden roten Test erfüllt — kein
+  Regel-Misfire, aber der Fall „der rote Test existiert schon" könnte im
+  Rulebook explizit stehen; als Vorschlag fürs `metis`-Repo mitgenommen.
