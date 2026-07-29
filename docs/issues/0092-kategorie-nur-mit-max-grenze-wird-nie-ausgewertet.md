@@ -96,6 +96,22 @@ Acceptance criteria:
   plausibly fire in roster 03 under the same §5.5 reading — left pinned
   absent, marked "offener Punkt" in the README for the human. Full suite
   after the update: `npx vitest run` 211 files / 2153 tests, exit 0.
+- 2026-07-28/29 review round 1 (fresh context): criteria 1/2/4 met,
+  **criterion 3 violated** — mixed-scope limits on one unlinked category
+  duplicated (roster-max twice + spurious unresolvedScope; min-roster twice
+  with a force anchor present); "No double report possible" refuted. Plus
+  doc finding (§3.2 pointer to wrong §, condition described too narrowly).
+  Fix loop 1: test-author pinned 7 mixed-scope tests (5 red), implementer
+  added the per-anchor frame cut (`limitScopeFilter`/`evaluableLimitsOf`,
+  constraint layer reads it), doc fixed → 7/7 + 10/10, suite 2160 exit 0.
+  Implementer flagged the mirror topology min-force + max-roster as still
+  duplicating → fix loop 2: test-author pinned 3 tests (2 red), implementer
+  corrected the roster-frame exclusion (any UNFILTERED phantom of the def
+  anywhere covers the roster frame; force frame still only phantoms under a
+  force) → 3/3, all 20 category tests green, suite 213 files / 2163 tests
+  exit 0, lint/typecheck 0. Residual noted (pre-existing, not additional):
+  a root phantom evaluating a cross-frame force limit still emits
+  unresolvedScope — same before the change.
 
 ## Checkpoints
 
