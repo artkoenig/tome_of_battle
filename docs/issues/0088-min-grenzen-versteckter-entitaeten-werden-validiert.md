@@ -97,7 +97,8 @@ Acceptance criteria:
   `EffectiveState#isHidden` (`effectiveState.js:187`), Constraint-Auswertung
   läuft nach Fixpunkt + Anker-Nachlauf (`evaluator.js:162-168`) — kein
   Reihenfolge-Problem; Meldbarkeits-Pfad `isReportable` existiert bereits
-  (Angebots-Anker). Folge-Issue 0115 (Gegenrichtung) gefiled.
+  (Angebots-Anker). Folge-Issue 0119 (Gegenrichtung) gefiled (beim Filing
+  als 0115 nummeriert, nach Duplikat umbenannt).
 - 2026-07-29 — Test-Author: `src/evaluator/constraints.hiddenMin.test.js`,
   18 Tests (`npx vitest run src/evaluator/constraints.hiddenMin.test.js`,
   Exit 1: 8 failed, 10 passed). Die 8 roten pinnen die neue Semantik je
@@ -128,7 +129,8 @@ Acceptance criteria:
 - 2026-07-29 — Review Runde 1 (frischer Kontext): 1 Befund, geringfügig,
   außerhalb der Kriterien — der Beweiskraft-Verlust an VCC-R10 (scopeKind-
   E2E-Beleg) war nur im README notiert statt gefiled. Triage: sofort
-  behoben durch Filing von Issue 0116. Alle 5 AC bestätigt; alle Fakten
+  behoben durch Filing von Issue 0120 (beim Filing als 0116 nummeriert,
+  nach Duplikat umbenannt). Alle 5 AC bestätigt; alle Fakten
   unabhängig reproduziert (Suite 791/790/1 mit per Worktree verifiziertem
   Vorbestand = Issue 0112; Lint/Typecheck Exit 0; Testdatei des
   Test-Authors seit efdf0bb unverändert). Nebenbefund außerhalb des
@@ -141,7 +143,8 @@ Acceptance criteria:
   2408/2409) ist exakt dieser Vorbestand — dieser Branch führt keinen
   neuen Roten ein.
 - 2026-07-29 — **Waiver:** Die Behebung des einzigen Befunds berührt nur
-  den Tracker (neues Issue 0116, Log-Präzisierung), keine Datei, um die es
+  den Tracker (neues Issue 0120, damals 0116, Log-Präzisierung), keine
+  Datei, um die es
   in den Kriterien geht — die Wiederholungsrunde des Reviews entfällt nach
   der Regelbuch-Ausnahme.
 

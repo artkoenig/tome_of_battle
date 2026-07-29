@@ -69,6 +69,12 @@ Acceptance criteria:
   („zeitgleich gefiled" — tatsächlich zwei Runs, vier Minuten auseinander)
   bleibt stehen. Nebenbefund außerhalb des Intents, an den Menschen: doppelt
   vergebene Issue-Nummern 0110/0112/0115/0116 (vorbestehend auf `main`).
+- 2026-07-29: Nebenbefund auf Zuruf des Menschen behoben (gleicher Branch,
+  gleicher PR): die vier später committeten Duplikate auf freie Nummern
+  umbenannt — force-scope → 0117, min-Grenze-Wurzel-Gruppe → 0118,
+  effektiv-versteckte-Auswahl → 0119, scopeKind-E2E-Beleg → 0120; die
+  Nummern-Verweise in 083 und 0088 nachgezogen. Dieses Issue behält 0112,
+  da alle bestehenden Verweise (0086/0087/0088, PR #176) es meinen.
 
 ## Checkpoints
 
