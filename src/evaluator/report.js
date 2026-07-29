@@ -110,6 +110,15 @@ function isRootLevelAnchor(node) {
 }
 
 /**
+ * True fuer das **Wurzel**-Pflicht-Phantom: ein Pflicht-Phantom, das
+ * unmittelbar an der Wurzel haengt. Pflicht-Phantome koennen auch in einem
+ * Kontingent haengen (Force-Schleife der Synthese) — die zaehlen hier nicht.
+ */
+function isRootMandatoryPhantom(node) {
+  return node.anchorKind === AnchorKind.MANDATORY_PHANTOM && isRootLevelAnchor(node);
+}
+
+/**
  * Entdoppelt **armeeweite Kategorie-Grenzen** in der Meldungsliste
  * (`docs/battlescribe-data-format.md` §9.9: dieselbe Pflicht in mehreren Formen
  * wird „ueber die Ziel-Id entdoppelt — genau ein Verstoss").
@@ -159,10 +168,12 @@ function dedupeArmyWideCategoryViolations(results) {
     if (survivorIndex === undefined) {
       survivorIndexByKey.set(key, kept.length);
       kept.push(result);
-    } else if (result.anchor.anchorKind === AnchorKind.MANDATORY_PHANTOM
-        && kept[survivorIndex].anchor.anchorKind !== AnchorKind.MANDATORY_PHANTOM) {
-      // Das Phantom schlaegt die Dokumentreihenfolge: es steht im Baum hinter
-      // den Kontingenten, ist aber der roster-weite Anker der Pflicht.
+    } else if (isRootMandatoryPhantom(result.anchor)
+        && !isRootMandatoryPhantom(kept[survivorIndex].anchor)) {
+      // Das WURZEL-Phantom schlaegt die Dokumentreihenfolge: es steht im Baum
+      // hinter den Kontingenten, ist aber der roster-weite Anker der Pflicht.
+      // Ein Pflicht-Phantom **in** einem Kontingent (Force-Schleife der
+      // Synthese) zaehlt nicht — sonst ueberlebte es vor dem Wurzel-Phantom.
       kept[survivorIndex] = result;
     }
   }

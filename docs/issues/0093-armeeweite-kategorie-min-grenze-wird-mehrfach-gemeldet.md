@@ -132,6 +132,18 @@ Force-Verletzungen.
     beide am Wurzel-Phantom, jetzt nur noch die Roster-Grenze — die
     Force-Meldung sprach für kein Kontingent (unresolvedScope-0-Familie,
     im Plan benannt). Dem Menschen im PR sichtbar gemacht.
+- 2026-07-29 Fix-Schleife F1: test-author erweiterte
+  `report.armyWideCategoryDedup.test.js` um den Konkurrenz-Fall
+  (unverlinkt, Roster-MIN + Force-MIN, 1 leeres Kontingent) — rot am
+  richtigen Grund (`expected '0/0' not to contain '/'`), mit
+  Überkorrektur-Guard (Force-Meldung bleibt am Force-Phantom).
+  Implementierer: nur `report.js` — neuer Helfer `isRootMandatoryPhantom`
+  (Phantom UND Wurzelebene, via bestehendem `isRootLevelAnchor`) im
+  Tiebreak; Docstring/§3.6 versprachen die Wurzel-Regel bereits, jetzt
+  stimmt der Code überein. Belegt: Zielfile 10/10 Exit 0; Vitest 221
+  Dateien / 2251 Tests Exit 0; lint/typecheck Exit 0. Angenommen,
+  unverifiziert: zwei Wurzel-Phantome teilen nie denselben
+  (Grenz-Id, Ziel-Id)-Schlüssel.
 
 ## Checkpoints
 
