@@ -106,8 +106,17 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
  * Seine {@link AnchorKind Ankerart} sagt, **warum** er da ist; sie wird vom
  * jeweiligen Synthese-Schritt gestellt, statt spaeter aus Elternschaft und
  * Definitionsart erraten zu werden.
+ *
+ * `limitScopeFilter` schneidet den Anker optional auf **einen** Bezugsrahmen zu
+ * (siehe {@link evaluableLimitsOf}): die Constraint-Schicht wertet an ihm dann
+ * nur die Grenzen mit genau diesem `scope` aus. Gestellt wird er ausschliesslich
+ * von {@link synthesizeUnlinkedCategoryAnchors}, wo **mehrere** Anker derselben
+ * Definition (je Rahmen einer) haengen koennen — ohne Zuschnitt meldete jeder
+ * Anker jede Grenze, also jede Grenze mehrfach. Alle anderen Anker bleiben
+ * ungefiltert (`null`): sie sind je Definition und Rahmen einmalig, und ein
+ * Pflicht-Phantom wertet MAX-Grenzen seines Rahmens bewusst huckepack mit aus.
  */
-function attachPhantom(parent, def, nextFrameId, anchorKind) {
+function attachPhantom(parent, def, nextFrameId, anchorKind, limitScopeFilter = null) {
   const isForce = def.kind === DefinitionKind.FORCE;
   const node = {
     def,
@@ -120,6 +129,7 @@ function attachPhantom(parent, def, nextFrameId, anchorKind) {
     anchorKind,
     frameId: nextFrameId(),
     forceRoot: null,
+    limitScopeFilter,
   };
   node.forceRoot = isForce ? node : parent.forceRoot;
   parent.children.push(node);
@@ -178,6 +188,27 @@ export function limitsOf(def) {
 }
 
 /**
+ * Die an einem **Knoten** auszuwertenden Grenzen: die Basis-Limits seiner
+ * Definition ({@link limitsOf}) — bei einem rahmen-zugeschnittenen Anker
+ * (`limitScopeFilter`, siehe {@link attachPhantom}) nur die Grenzen mit genau
+ * dem Bezugsrahmen, fuer den der Anker synthetisiert wurde. Traegt eine
+ * unverlinkte Kategorie Grenzen **verschiedener** Rahmen (roster UND force),
+ * haengt je Rahmen ein eigener Anker; ohne den Zuschnitt wertete jeder Anker
+ * jede Grenze aus — dieselbe Verletzung erschiene je Anker einmal, und der
+ * rahmen-fremde Anker hinterliesse eine unechte `unresolvedScope`-Diagnose.
+ *
+ * Die Constraint-Schicht ruft diese Sicht; {@link limitsOf} bleibt die eine
+ * Quelle der Wahrheit dafuer, welche Grenzen an der **Definition** haengen
+ * (Effektiv-Werte-Schicht: auch eine hier weggefilterte Grenze behaelt ihren
+ * effektiven Grenzwert — sie wird nur nicht an diesem Knoten ausgewertet).
+ */
+export function evaluableLimitsOf(node) {
+  const limits = limitsOf(node.def);
+  if (node.limitScopeFilter === null || node.limitScopeFilter === undefined) return limits;
+  return limits.filter(limit => limit.scope === node.limitScopeFilter);
+}
+
+/**
  * Die Info-Elemente einer Liste, verschachtelte Info-Gruppen flach mitgeliefert —
  * **auch die einer per `infoLink` bezogenen Gruppe**.
  *
@@ -226,6 +257,34 @@ export function* infoCarriersOf(def) {
 /** True, wenn die Definition eine MIN-Grenze mit genau diesem Bezugsrahmen traegt. */
 function hasMinLimitInFrame(def, scope) {
   return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
+}
+
+/** True, wenn die Definition irgendeine Grenze mit genau diesem Bezugsrahmen traegt. */
+function hasAnyLimitInFrame(def, scope) {
+  return limitsOf(def).some(limit => limit.scope === scope);
+}
+
+/** True, wenn unter `parent` schon ein synthetischer Anker dieser Definition haengt. */
+function hasPhantomFor(parent, defId) {
+  return parent.children.some(child => child.isPhantom && child.def.id === defId);
+}
+
+/**
+ * True, wenn **irgendwo** im Baum ein **ungefilterter** synthetischer Anker
+ * dieser Definition haengt (ohne `limitScopeFilter`, siehe
+ * {@link attachPhantom}). Nur ein ungefilterter Anker wertet alle Grenzen der
+ * Definition huckepack mit aus — und eine armeeweite Grenze loest er von jedem
+ * Standort aus auf, auch unter einem Kontingent. Ein rahmen-zugeschnittener
+ * Anker wertet dagegen nur die Grenzen seines eigenen Rahmens.
+ */
+function hasUnfilteredPhantomAnywhereFor(root, defId) {
+  for (const node of nodeAndDescendants(root)) {
+    if (node.isPhantom && node.def?.id === defId
+        && (node.limitScopeFilter === null || node.limitScopeFilter === undefined)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /** Summe der Instanzanzahlen realer Knoten mit dieser Definitions-ID im Teilbaum. */
@@ -305,6 +364,68 @@ function synthesizeForceCategoryAnchors(root, nextFrameId) {
       if (childDef.kind === DefinitionKind.CATEGORY_LINK) {
         attachPhantom(forceNode, childDef, nextFrameId, AnchorKind.CATEGORY_ANCHOR);
       }
+    }
+  }
+}
+
+/**
+ * Haengt Kategorie-Anker fuer **unverlinkte** Kategorie-Definitionen an
+ * (`docs/battlescribe-data-format.md` §5.5/§5.6): Grenzen koennen direkt an der
+ * `categoryEntry` haengen und gelten auch dann, wenn **kein** Kontingent die
+ * Kategorie per `categoryLink` fuehrt. Eine MIN-Grenze bekommt in diesem Fall
+ * schon ueber {@link synthesizeMandatoryPhantoms} ihren Anker (eine Kategorie
+ * hat nie eine Instanz, ihr Pflicht-Phantom haengt also immer); eine Kategorie
+ * mit **ausschliesslich** MAX-Grenzen bliebe ohne diesen Schritt ankerlos und
+ * ihre Grenze still unausgewertet (Issue 0092, die klassische 0–1-Kodierung).
+ *
+ * Es haengt hoechstens **ein** Anker je Kategorie **und Rahmen**, und jeder
+ * Anker wertet nur die Grenzen **seines** Rahmens aus (`limitScopeFilter`,
+ * {@link evaluableLimitsOf}), damit keine Grenze doppelt meldet:
+ *
+ * - eine Kategorie, die **irgendein** Kontingent per `categoryLink` fuehrt, ist
+ *   ganz ausgenommen: dessen Anker ({@link synthesizeForceCategoryAnchors})
+ *   wertet ihre Grenzen bereits aus — die armeeweiten direkt, die
+ *   kontingent-skopierten ueber die Ziel-Typ-Regel (unten);
+ * - haengt schon ein Pflicht-Phantom derselben Definition
+ *   ({@link synthesizeMandatoryPhantoms}), wertet das — ungefiltert — auch
+ *   ihre MAX-Grenzen huckepack mit aus; der Anker entfaellt fuer jeden Rahmen,
+ *   den das Phantom von seinem Standort aus aufloest. Fuer den ROSTER-Rahmen
+ *   zaehlt dabei **jedes** ungefilterte Phantom im Baum
+ *   ({@link hasUnfilteredPhantomAnywhereFor}): eine armeeweite Grenze loest
+ *   von jedem Standort aus auf, auch von einem Phantom unter einem Kontingent.
+ *   Fuer den FORCE-Rahmen zaehlt nur ein Phantom **unter einem Kontingent** —
+ *   an der Wurzel liefert eine kontingent-skopierte Grenze `unresolvedScope`,
+ *   keine Auswertung, deshalb braeuchte sie dort weiterhin ihren Anker;
+ * - traegt die Kategorie Grenzen **verschiedener** Rahmen (roster UND force),
+ *   haengen zwei Anker — der Rahmen-Zuschnitt sorgt dafuer, dass keiner die
+ *   Grenzen des anderen wiederholt und keiner an einer rahmen-fremden Grenze
+ *   eine unechte `unresolvedScope`-Diagnose hinterlaesst.
+ *
+ * Eine `scope="force"`-Grenze mit Kategorie-Ziel zaehlt ueber die
+ * **Ziel-Typ-Regel** (BSData §7.7, `query.js`) ohnehin armeeweit — welcher
+ * Kontingent-Knoten den Anker traegt, aendert ihr Ergebnis nicht. Deshalb
+ * genuegt **ein** Anker am ersten Kontingent (je einer pro Kontingent meldete
+ * dieselbe armeeweite Verletzung mehrfach); ohne Kontingent gibt es keine
+ * Mitglieder und nichts auszuwerten. Der ROSTER-Rahmen ankert an der Wurzel —
+ * am Kontingent-Knoten liegt fuer ihn nichts Besseres, an der Wurzel loest auch
+ * ein Roster ohne Kontingente ihn auf.
+ */
+function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId) {
+  const forceNodeList = [...forceNodes(root)];
+  const linkedAnywhere = new Set();
+  for (const forceNode of forceNodeList) {
+    for (const id of linkedCategoryIdsOf(forceNode.def)) linkedAnywhere.add(id);
+  }
+  for (const def of definitions) {
+    if (def.kind !== DefinitionKind.CATEGORY) continue;
+    if (linkedAnywhere.has(def.id)) continue;
+    if (hasAnyLimitInFrame(def, ScopeKeyword.ROSTER) && !hasUnfilteredPhantomAnywhereFor(root, def.id)) {
+      attachPhantom(root, def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, ScopeKeyword.ROSTER);
+    }
+    if (hasAnyLimitInFrame(def, ScopeKeyword.FORCE)
+        && forceNodeList.length > 0
+        && !forceNodeList.some(forceNode => hasPhantomFor(forceNode, def.id))) {
+      attachPhantom(forceNodeList[0], def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, ScopeKeyword.FORCE);
     }
   }
 }
@@ -448,7 +569,9 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  * ROSTER-Rahmen und liegt ueber keinem Kontingent. Nachdem alle realen Knoten
  * haengen, werden Phantomknoten fuer fehlende Pflichtdefinitionen synthetisiert
  * (siehe {@link synthesizeMandatoryPhantoms}), Kategorie-Anker je Kontingent
- * (siehe {@link synthesizeForceCategoryAnchors}) und Gruppen-Anker fuer
+ * (siehe {@link synthesizeForceCategoryAnchors}), Kategorie-Anker fuer
+ * unverlinkte Grenzen-tragende Kategorien (siehe
+ * {@link synthesizeUnlinkedCategoryAnchors}) und Gruppen-Anker fuer
  * gruppen-skopierte Grenzen (siehe {@link synthesizeGroupAnchors}).
  *
  * Die Wurzel traegt zusaetzlich die **Quelle der Rahmen-Identitaeten**
@@ -483,6 +606,9 @@ export function buildEvalTree(resolved, roster) {
   synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
   synthesizeParentScopePhantoms(root, nextFrameId);
   synthesizeForceCategoryAnchors(root, nextFrameId);
+  // Nach Pflicht-Phantomen und Kontingent-Ankern, damit die Duplikat-Pruefung
+  // („haengt hier schon ein Anker dieser Kategorie?") beide sehen kann.
+  synthesizeUnlinkedCategoryAnchors(root, resolved.definitions ?? [], nextFrameId);
   // Nach den realen Knoten und den Pflicht-Phantomen: die Gruppen-Anker zuletzt,
   // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
   synthesizeGroupAnchors(root, resolved, nextFrameId);
