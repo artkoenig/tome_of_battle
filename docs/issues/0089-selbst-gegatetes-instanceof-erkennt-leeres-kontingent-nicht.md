@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0089
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/161
 ---
 
 # Selbst-gegatetes `instanceOf` erkennt ein leeres Kontingent nicht
@@ -120,3 +120,13 @@ Acceptance criteria:
   spelling is normalized too (§7.7-consistent).
 
 ## Retro
+
+- Normalize-to-canonical was the cheapest correct design: equivalence (AC 3)
+  holds by construction instead of by parallel implementation, and the
+  canonical path's existing tests protect both encodings from now on.
+- The checkpoint-1 assumption (fix lives in query.js) was wrong, and
+  writing it down paid off — the implementer's recorded deviation with
+  reasons made the review's job concrete instead of archaeological.
+- One-round convergence on a behaviour change of this depth suggests the
+  detailed test matrix (2 ops × 3 scenarios × 2 encodings) did the heavy
+  lifting; worth repeating the matrix pattern for equivalence criteria.
