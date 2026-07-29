@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/offene-issues-phkdw5
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/176
 ---
 
 # Geerbter roter Test: Kostensummen-Grenze feuert trotz `includeChildSelections="false"`
@@ -91,3 +91,15 @@ Acceptance criteria:
   hergeleitet.
 
 ## Retro
+
+- Was im Weg stand: nichts Technisches — der eigentliche Stolperstein war
+  die doppelt vergebene Nummer 0112, die eine Rückfrage kostete, bevor der
+  Run starten konnte. Ursache: parallele Sessions haben gleichzeitig
+  nummeriert (betrifft auch 0110/0115/0116).
+- Was sich ändern sollte: die Duplikat-Nummern im Backlog auf freie Nummern
+  umbenennen (eigener kleiner Run); fürs Filing wäre eine Kollisionsregel im
+  `issue`-Skill denkbar — Vorschlag gehört ins metis-Repo, falls es wieder
+  passiert.
+- Gut funktioniert: erst reproduzieren, dann bauen — die Verifikation zeigte
+  sofort, dass 0113 den Befund schon behoben hatte, und der Run blieb ein
+  reiner Tracker-Eintrag statt eines Doppel-Fixes.
