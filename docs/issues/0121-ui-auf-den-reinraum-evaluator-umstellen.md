@@ -129,7 +129,7 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   Slot, `costTotals` im Ergebnis) — evaluator-only, Tests zuerst
 - [x] 2. Roster-Adapter `toEvaluatorRoster` inkl. `pathBySelectionId`
   (Link-Id-Regel, costLimits, −1) — Tests zuerst
-- [ ] 3. `useEvaluation`-Hook mit Datensatz-Cache — Aufruf-Zähler-Test
+- [x] 3. `useEvaluation`-Hook mit Datensatz-Cache — Aufruf-Zähler-Test
   (Kriterium 8)
 - [ ] 4. Meldungsprojektion `formatViolation` + neue i18n-Schlüssel,
   alte Schlüssel raus, Abdeckungstests umgeschrieben
@@ -180,6 +180,15 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-29, Task 3 (useEvaluation) erledigt: 18 rote Tests, dann grün
+  ohne Testedit (`npx vitest run src/evaluation` 37 Tests Exit 0;
+  Evaluator 834 Exit 0; lint/typecheck/depcruise Exit 0). Hook ist
+  synchron im Render (die Tests legen das fest); Entkopplung des teuren
+  Vorlaufs bleibt Sache der aufrufenden UI. Defaults: leere/fehlende
+  gst-Liste und `roster undefined` verhalten sich wie "fehlt" →
+  eingefrorenes, referenzstabiles Leer-Ergebnis. Alte Solver-i18n-
+  Schlüssel sterben erst mit dem Solver-Abriss (Task 9), nicht in
+  Task 4 — bis dahin laufen alt und neu parallel in den Locale-Dateien.
 - 2026-07-29, Task 2 (Roster-Adapter) erledigt: 19 rote Tests, dann grün
   ohne Testedit (`npx vitest run src/evaluation` Exit 0; Evaluator-
   Regression 834 Tests Exit 0; lint/typecheck/depcruise Exit 0). Das
