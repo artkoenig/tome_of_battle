@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-0089
 pr:
 ---
 
@@ -57,9 +57,20 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — teach the query layer to recognize a
+  forceEntry-instance check when `scope` OR `childId` resolves to a real
+  forceEntry id, so the self-gated encoding stops degenerating to a
+  selection count of 0 on empty forces.
+- What surprised me? The canonical form already works even on empty forces —
+  so the semantics ("is this node inside an instance of that force
+  definition") exist; only the recognition path for the self-gated spelling
+  is missing.
+- What am I assuming without having verified it? That the recognition can
+  live in `resolveSharedFrame`/query scope resolution without disturbing
+  entry-id and category-id scopes (an id that is BOTH would be a catalog
+  error — the test-author should flag if the criteria leave that collision
+  undecided), and that `instanceOf`'s membership predicate (`actual > 0`)
+  can be fed a force-count instead of a selection count for this case.
 
 ### Before the PR
 
