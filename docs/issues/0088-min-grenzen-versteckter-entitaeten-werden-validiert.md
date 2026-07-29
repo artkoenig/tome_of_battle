@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/offene-issues-cy79fe
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/174
 ---
 
 # Min-Grenzen versteckter Entitäten werden validiert
@@ -84,6 +84,8 @@ Acceptance criteria:
   Eine Fortpflanzung über versteckte **Vorfahren** (sichtbarer Träger unter
   verstecktem Elternknoten) ist nicht Teil dieses Laufs; dieselbe Ratio
   (unbehebbarer Verstoß) spräche dafür — als mögliches Folge-Issue notiert.
+- **Kein Versions-Bump** (Antwort des Menschen, 2026-07-29): Die Version
+  bleibt 1.9.1; der PR geht ohne Versionsänderung raus.
 
 ## Log
 
@@ -174,3 +176,21 @@ Acceptance criteria:
   Sonderheer-Punktelimit wurde aber nicht durchgespielt.
 
 ## Retro
+
+- **Was gut lief:** Das Researcher-Briefing vor dem Schreiben irgendeiner
+  Zeile hat den Lauf klein gehalten — der befürchtete Reihenfolge-Konflikt
+  (hidden-Modifier vs. Fixpunkt) existierte nicht, und der
+  `isReportable`-Präzedenzfall machte die Implementierung zu zwei Zeilen.
+  Review Runde 1 → 1 Befund (prozessual) → sofort behoben; konvergiert.
+- **Was im Weg stand:** Die alte Semantik war an vier Bestandsstellen
+  gepinnt, alle am selben versteckten Fixture-Träger (Army of Sylvania) —
+  E2E-Erwartungen, die eine falsche Engine-Semantik spiegeln, sind teurer
+  zu korrigieren als der Fix selbst. Der `e2e-testcase-author`-Prozess
+  (Erwartungen nur aus Katalogdaten) hätte das verhindert; die betroffenen
+  Szenarien stammen offenbar aus der Zeit davor.
+- **Fürs Regelwerk/Projekt:** (1) `npm install` fehlte im frischen
+  Container, bevor vitest lief — ein Setup-Schritt im SessionStart-Hook
+  würde jedem Subagenten diesen Stolperer ersparen. (2) Auf main liegen
+  doppelte Issue-Nummern (0110, 0112) — die Filing-Regel „höchste Nummer
+  + 1" braucht den Blick auf die ganze Liste; als Aufräum-Kandidat beim
+  Menschen angemeldet.
