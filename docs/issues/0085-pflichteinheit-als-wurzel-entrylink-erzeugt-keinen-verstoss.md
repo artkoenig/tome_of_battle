@@ -349,8 +349,51 @@ ist ungeprüft geblieben.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+**Does this match what was asked?** Ja, und mehr als das: die vier Kriterien
+halten, und zwei davon halten nachweislich erst seit der Review. Was **nicht**
+zur Absicht gehört und trotzdem geschieht: drei Roster in Vampire Counts und
+Orcs & Goblins bekommen neue blockierende Verstöße (D12). Das ist offengelegt,
+als Default vermerkt und dem Menschen zur Umkehr angeboten — nicht stillschweigend
+mitgenommen.
+
+**What surprised me?** Dreierlei.
+
+1. **Die Suite war grün und die Umsetzung trotzdem unbewiesen.** Fünf der sieben
+   Befunde waren Mutationen, die glatt durchliefen. Ohne die Mutationsprobe wäre
+   das so in den PR gegangen — inklusive der stumm verschluckten strengeren
+   Pflicht (D11), die ein echter Nutzerschaden gewesen wäre.
+2. **Der `test-author` hat meine Vorgabe widerlegt.** Mein Reproduktionsfall zu
+   Befund 6 fängt keine der beiden Mutationen, weil `rosterIdentityIdsOf` die
+   Link-Id immer enthält. Er hat den Fall neu gebaut (Kette `l1 → l2 → bulls`,
+   in der rohe und aufgelöste Id auseinanderfallen) und den schwachen Test
+   ausdrücklich als „reiner Pin, nicht mutationsempfindlich" gekennzeichnet,
+   statt Deckung zu behaupten.
+3. **Das E2E-Szenario ist schwächer, als es aussieht.** Der Reviewer hat gezeigt:
+   die naive Lösung, die dieses Issue ausdrücklich ausschließt, lässt alle fünf
+   Roster grün. Der Grund liegt in den Daten — das Ziel trägt keine eigene
+   Rahmengrenze, das Szenario kann den Unterschied gar nicht sehen. Kriterium 2
+   ruht vollständig auf dem synthetischen Unit-Test. Das ist keine Nachlässigkeit
+   des Autors, sondern eine Grenze der echten Katalogdaten; festgehalten, damit
+   niemand dem Szenario mehr Beweiskraft zuschreibt, als es hat.
+
+**What am I assuming without having verified it?** Vier Dinge.
+
+- **Dass die Schalter-Einträge („Allow special characters?") in echten,
+  aus Battlescribe exportierten Rostern tatsächlich enthalten sind.** Abgeleitet
+  aus `defaultAmount="1"`, **nicht** an einem echten Export geprüft — wir haben
+  keinen im Repo. Trägt D12; fällt die Annahme, ist D12 neu zu bewerten.
+- **Dass `result.bound` der richtige Gleichheitsbegriff für D11 ist.** Der
+  Implementer schlüsselt auf den effektiven Wert, nicht auf `(Art, Wert)`. Seine
+  Begründung — eine unerfüllte MAX-Grenze an einem Pflicht-Phantom mit Ist 0 ist
+  nicht erreichbar — leuchtet ein, ist aber nicht durch einen Test belegt.
+- **Dass die Ankerart-Frage (Issue 0108) folgenlos bleibt.** Der Reviewer hat
+  gemessen, dass Slots von `offerAnchor` nach `mandatoryPhantom` kippen (je
+  Messreihe rund ein bis drei). Sie werden dadurch berichtsfähig. Dass keiner
+  davon eine unechte Meldung erzeugt, folgt aus „Exit 0" der Suite — aber die
+  Suite deckt nicht jeden Katalog.
+- **Dass D6 (gleiches Verhalten beider Wurzelformen) die richtige Leitplanke
+  war.** Sie hat den Blocker entschieden. Sollte sich Issue 0108 gegen die
+  heutige Einordnung entscheiden, ändern sich beide Formen gemeinsam — genau wie
+  D6 es verlangt, aber dann eben auch die hier gerade festgeschriebene.
 
 ## Retro

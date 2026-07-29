@@ -667,8 +667,15 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
   // EINE Liste, zwei Herkünfte, ein Diskriminator (§3.6). Die Autor-Meldungen kommen
   // aus den eben gebauten Fähigkeitsdatensätzen — dieselben gerenderten Texte, nicht
   // ein zweites Mal gerendert.
-  derived = dedupeArmyWideCategoryViolations(          // §3.6: armeeweite Kategorie-
-              results.filter(r → r.isReportable and not r.satisfied))  // Grenzen genau einmal
+  // Zwei Entdopplungen, ineinander: innen die armeeweiten Kategorie-Grenzen (§3.6,
+  // genau einmal je Grenze und Ziel), aussen dieselbe Pflichteinheit in beiden
+  // Wurzelformen (§9.9) — letztere aber nur bei GLEICHER effektiver Grenze. Zwei
+  // verschiedene Grenzen sind zwei Aussagen und bleiben beide stehen; die
+  // schwaechere zu zeigen und die strengere zu verschlucken waere die schlechteste
+  // aller Ausgaben (Issue 0085, D11).
+  derived = dedupeRootFormMandatoryViolations(
+              dedupeArmyWideCategoryViolations(
+                results.filter(r → r.isReportable and not r.satisfied)))
                    .map(r → classifyDerivedViolation(r, ctx) + causesFieldOf(r.derivation))
   authored = capabilities.values
                    .filter(c → isReportableAnchorKind(c.anchorKind))   // nie am Angebots-Anker

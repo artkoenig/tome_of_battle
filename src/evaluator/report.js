@@ -245,9 +245,12 @@ function rootFormDutyKeyOf(result) {
  * bekommen im fehlenden Fall ihren eigenen Pflicht-Anker (`evalTree.js`), und
  * beide tragen **verschiedene** Grenz-Ids — die vorhandene Entdopplung ueber
  * `(Grenz-Id, gezaehlte Ziel-Id)` trennt sie also. Entdoppelt wird deshalb ueber
- * {@link rootFormDutyKeyOf}: aufgeloeste Ziel-Id plus Rahmen.
+ * {@link rootFormDutyKeyOf}: aufgeloeste Ziel-Id plus Rahmen plus effektive
+ * Grenze — **verschiedene** Grenzwerte sind nicht dieselbe Pflicht und bleiben
+ * beide stehen (Issue 0085, D11).
  *
- * Es ueberlebt die **erste** Meldung in Berichtsreihenfolge (Issue 0085, D7) —
+ * Bei **gleicher** Grenze ueberlebt die **erste** Meldung in
+ * Berichtsreihenfolge (Issue 0085, D7) —
  * dieselbe Vorzugsregel wie in {@link dedupeArmyWideCategoryViolations}; zwei
  * Entdopplungen mit gegenlaeufiger Praeferenz im selben Bericht waeren eine
  * Falle. Verworfen werden nur die Meldungen der **weiteren Anker**: traegt ein
