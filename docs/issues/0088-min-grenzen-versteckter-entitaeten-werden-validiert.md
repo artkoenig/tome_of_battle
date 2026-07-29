@@ -106,6 +106,21 @@ Acceptance criteria:
   Link→Ziel-hidden-Vererbung (bereits gepinnt in
   `effectiveState.baseHiddenInheritance.test.js`), keine Capability-Pins
   (würde Mechanik spiegeln).
+- 2026-07-29 — Implementer (Commit 7a702b1): Filter in `evaluateLimit`
+  (`constraints.js`) am `isReportable`-Feld, exakt nach Design-Entscheidung,
+  keine Abweichung. Doku §5.6/§8 nachgezogen. Vier Bestandsstellen pinnten
+  die alte Semantik an effektiv versteckten Trägern und wurden angepasst
+  (einzeln begründet): `fixpoint.test.js` (Anker-Selbstzählung jetzt über
+  Capability belegt), `docs/testing/offer-and-category-slots` (2 firing→
+  absent, Capability-Pins unverändert grün), `docs/testing/
+  violation-classification` Roster 07 (firing→absent). Fakten:
+  `constraints.hiddenMin.test.js` 18/18 Exit 0; `npx vitest run
+  src/evaluator` 791 Tests, 790 grün, 1 rot = vorbestehend auf main
+  (`countIndex.costSumUnderCarrier.test.js`, per Checkout des Merge-Base
+  und stash verifiziert — bereits gefiled als Issue 0112); `npm run lint`
+  Exit 0; `npm run typecheck` Exit 0. Nebenbefund im README von
+  violation-classification vermerkt: VCC-R10 verliert den scopeKind-Beleg,
+  Ersatz-Szenario wäre Aufgabe des e2e-testcase-author.
 
 ## Checkpoints
 
