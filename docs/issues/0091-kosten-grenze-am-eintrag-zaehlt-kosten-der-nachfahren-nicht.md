@@ -142,6 +142,21 @@ Sonderweg.
   sie zu ändern, danach Review-Runde 2 gegen die ganze Absicht.
 - **Befund-Trend:** Kriterium 3: 1 Befund (Runde 1); Testlücke ohne
   Kriteriums-Verstoß: 1. Übrige Kriterien: 0. Summe Runde 1: 2.
+- **Fix Runde-1-Befund (2026-07-29):** Aufgestiegene Kostenanteile werden in
+  `countIndex.js` jetzt **immer** mit gekreuzter Selektionsschachtelung
+  verbucht (eigener `climbBucket = bucketFor(true, …)` statt des
+  Rahmen-Eimers) — sie stammen stets von echten Nachfahren des Trägers, auch
+  wenn der Query-Rahmen der Träger selbst ist (`scope="self"`,
+  `shared="false"`). Rahmen oberhalb des Trägers unverändert (dort war die
+  Kreuzung ohnehin schon gesetzt). Doku nachgezogen: Modulkopf-Kommentar in
+  `countIndex.js` und `docs/evaluator-architecture.md` §4.4 („Eimer-Wahl
+  bleibt unverändert" war nach dem Fix falsch); §9.4 in
+  `docs/battlescribe-data-format.md` blieb wahr, unangetastet. Belege:
+  `npx vitest run src/evaluator/countIndex.costSumCarrierFrame.test.js`
+  vorher 3 rot / 3 grün, nachher 6/6 grün, Exit 0; `npx vitest run
+  src/evaluator` → 55 Dateien, 725 Tests, Exit 0 (kein 0107-Flake in diesem
+  Lauf); `npm run lint` Exit 0; `npm run typecheck` Exit 0. Keine
+  Testdatei verändert.
 
 ## Checkpoints
 

@@ -184,10 +184,11 @@ function addContribution(tallies, key, bucket, contribution) {
  * durchlaufenen Vorfahren auf (Issue 091): eine Grenze, deren `field` eine
  * Kostenart ist, begrenzt die Summe dieser Kosten **unterhalb ihres Traegers**
  * (§7.6/§9.4), und die ziel-gefilterte Query `(Rahmen, Traeger-ID)` ist die
- * Stelle, die diese Summe liest. Die Eimer-Wahl bleibt dieselbe: der Beitrag eines
- * Nachfahren hat die Selektionsschachtelung gekreuzt und landet im
- * SELECTION-Eimer, sodass `includeChildSelections` weiter entscheidet, ob er
- * mitzaehlt.
+ * Stelle, die diese Summe liest. Fuer diese aufgestiegenen Anteile gilt die
+ * Selektionsschachtelung **immer** als gekreuzt — auch im Rahmen des Traegers
+ * selbst, wo der normale `crossedSelection`-Zustand noch falsch ist —, denn sie
+ * stammen stets von echten Nachfahren des Traegers. So entscheidet
+ * `includeChildSelections` in jedem Rahmen, ob sie mitzaehlen.
  */
 function indexNodeContribution(tallies, node, effective) {
   const contribution = contributionOf(node, effective);
@@ -221,8 +222,15 @@ function indexNodeContribution(tallies, node, effective) {
       }
       addContribution(tallies, scopeKey(frameKey, targetId), bucket, c);
     }
+    // Aufgestiegene Kostenanteile stammen immer von *echten* Nachfahren des
+    // Traegers — sie haben die Selektionsschachtelung also stets gekreuzt, auch
+    // wenn der Query-Rahmen der Traeger selbst ist (`scope="self"`,
+    // `shared="false"`), wo `crossedSelection` noch falsch ist. Deshalb wird der
+    // Eimer hier mit erzwungener Selektionskreuzung gewaehlt: nur
+    // `includeChildSelections="true"` zaehlt sie mit (Issue 091, Runde 1).
+    const climbBucket = bucketFor(true, forceCrossedForFrame);
     for (const carrierTargetId of carrierTargets) {
-      addContribution(tallies, scopeKey(frameKey, carrierTargetId), bucket, climbingCosts);
+      addContribution(tallies, scopeKey(frameKey, carrierTargetId), climbBucket, climbingCosts);
     }
     // Der aktuelle Rahmen wird fuer alle *hoeheren* Rahmen zu einem
     // dazwischenliegenden Knoten (der Beitragende selbst zaehlt nie als Grenze).
