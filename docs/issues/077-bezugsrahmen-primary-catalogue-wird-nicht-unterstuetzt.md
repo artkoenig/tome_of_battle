@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/noch-zu-tun-x7e3rw
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/164
 ---
 
 # Bezugsrahmen primary-catalogue wird nicht unterstützt
