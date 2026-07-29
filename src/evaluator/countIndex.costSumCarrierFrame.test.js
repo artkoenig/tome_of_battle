@@ -9,12 +9,13 @@ const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
 /**
- * **Eine Kostenart-Grenze liest in JEDEM Rahmen dieselbe Summe** (Issue 091,
+ * **Nachfahren-Kosten gehorchen dem Flag in JEDEM Rahmen** (Issue 091,
  * Review-Runde 1; BSData-Wiki, `docs/battlescribe-data-format.md` §9.4).
  *
  * Der Traeger der Grenze bestimmt, was summiert wird:
- * - `includeChildSelections="false"`: NUR die eigenen effektiven Kosten des
- *   Traegers („just scope's field" — die enge, dokumentierte Lesart);
+ * - `includeChildSelections="false"`: keine Nachfahren-Kosten — hier, wo der
+ *   Traeger direkt im Rahmen liegt, also NUR seine eigenen effektiven Kosten
+ *   („just scope's field" — die enge, dokumentierte Lesart);
  * - `includeChildSelections="true"`: die Kosten des Traegers plus die Kosten
  *   ALLER Nachfahren-Auswahlen (mal Stueckzahl).
  *

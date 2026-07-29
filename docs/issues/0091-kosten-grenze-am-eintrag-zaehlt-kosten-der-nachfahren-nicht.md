@@ -157,6 +157,24 @@ Sonderweg.
   src/evaluator` → 55 Dateien, 725 Tests, Exit 0 (kein 0107-Flake in diesem
   Lauf); `npm run lint` Exit 0; `npm run typecheck` Exit 0. Keine
   Testdatei verändert.
+- **Review-Runde 2 (frischer Kontext, ganze Absicht, 2026-07-29):** 1 Befund,
+  ohne Kriteriums-Verstoß: der in Runde 1 nachgezogene §4.4-Satz („liest in
+  jedem Rahmen nur die eigenen Kosten des Trägers") und der Kopf-Kommentar
+  der neuen Testdatei versprechen zu viel — steckt der Träger selbst unter
+  einer anderen Auswahl und liegt der Rahmen darüber, liest `false` 0 statt
+  50 (Repro `repro-nested-carrier.mjs`; vorbestehende Eimer-Semantik der
+  eigenen Beiträge, von der Absicht nicht entschieden, Engine unangetastet).
+  Runde-1-Fix unabhängig bestätigt (kein Hybrid mehr), Doppelzählung erneut
+  ohne Fund, alle 5 Kriterien erfüllt. Suite 55 Dateien / 725 Tests Exit 0,
+  Lint/Typecheck Exit 0. **Triage: Formulierungs-Fix** — §4.4-Satz präzisiert
+  (Flag gate Nachfahren-Kosten in jedem Rahmen; was `false` vom Träger selbst
+  liest, folgt der gewöhnlichen Eimer-Wahl) und Testdatei-Kommentar
+  angepasst (nur Kommentar, keine Assertion; Datei danach 6/6 grün, Exit 0).
+  Nebenbemerkung der Runde als offene Semantik-Frage notiert: verschachtelte
+  Vorfahren mit gemeinsamer Ziel-Id zählen den Nachfahren-Beitrag einmal je
+  Rahmen (Set-Dedup) — undokumentiert, in den Fixtures folgenlos.
+- **Befund-Trend:** Kriterium 3: 1 → 0. Testlücke (kein Kriterium): 1 → 0.
+  Doku-Präzision (kein Kriterium): 0 → 1. Summe: 2 → 1.
 
 ## Checkpoints
 
