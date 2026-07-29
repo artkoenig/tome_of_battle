@@ -74,6 +74,11 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
+  Zahlendrift vermerkt — die Fixture-Zählung unten nennt 118 ×
+  `constraint value="-1"`, der heutige Fixture-Stand zählt 122 (weiterhin
+  alle `max`; die tragende Aussage hält). Lehre wie in 0090: Zählangaben
+  künftig mit Zähl-Kommando festhalten.
 - Recherche (researcher, Session 2026-07-28): Format-Dokument
   `docs/battlescribe-data-format.md` belegt `-1` = unbegrenzt an
   Constraint-`value` (Z. 626), `defaultCostLimit` (Z. 230–238) und
