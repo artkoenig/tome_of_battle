@@ -104,6 +104,11 @@ Acceptance criteria:
   in `countIndex.costSumUnderCarrier.test.js` (fällt identisch am
   Branchpunkt `b67e93c`) ist als Issue 0112 gefiled und wartet auf seinen
   eigenen Run.
+- **Versions-Bump 1.9.0 → 1.9.1 (Default, unbeantwortet):** Auf die
+  Bump-Frage kam „keine Präferenz" zurück; als Default gilt die
+  Projektregel „Patch für einen Fix" — die Scopes feuerten bisher nie bzw.
+  falsch. `node scripts/release.js patch`, committet auf dem Issue-Branch,
+  der Squash-Merge trägt den Bump nach `main`.
 
 ## Log
 
