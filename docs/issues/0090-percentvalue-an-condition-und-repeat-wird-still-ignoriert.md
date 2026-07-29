@@ -43,6 +43,17 @@ Acceptance criteria:
 
 ## Plan
 
+Volle Unterstützung (AC 1+2), kein Diagnose-Fallback nötig — AC 3 ist damit
+trivial erfüllt. Der Leser liest `percentValue` an Condition und Repeat
+(wie an Constraints, `catalogReader.js`); die Auswertung spiegelt die
+Grenzen-Konvention aus `constraints.js` (resolveBound): Nenner =
+`query(ctx, field, scope, null, flags)` — gleiches Feld, gleicher Rahmen,
+gleiche Flags, Ziel „alles im Rahmen" —, wirksamer Vergleichswert =
+`roundHalfUp(nenner * wert / 100)` (Rundung zentral in `rounding.js`).
+Repeat analog: wirksames `perValue` prozentual abgeleitet, Schrittlogik
+unverändert. Der QueryContext an `conditionHolds`/`repeatCount` trägt alles
+Nötige bereits.
+
 ## Tasks
 
 ## Decisions
@@ -50,16 +61,52 @@ Acceptance criteria:
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28); Codepfad verifiziert, Vorkommen in Fixtures per grep
   ausgeschlossen (latent).
+- **Default — Null-Nenner an Condition/Repeat** („dieselbe
+  Null-Nenner-Behandlung" aus AC 1, übersetzt): Bei Grenzen heißt Nenner 0
+  „keine Aussage" (SUSPENDED + `zeroDenominator`-Diagnose, Annahme A4).
+  Für ein Gate heißt keine Aussage: die Condition hält **nicht** (Modifier
+  bleibt aus), ein Repeat liefert **0 Schritte** — jeweils mit
+  `zeroDenominator`-Diagnose, nie still.
+- **Default — `limit::`-Feld als Prozent-Nenner:** löst der Nenner auf
+  `UNRESOLVED_BUDGET`, gilt fail-closed (Condition hält nicht, Repeat 0),
+  gespiegelt an `constraints.js` (SUSPENDED-Pfad).
+- **Keine Wirkung bei `instanceOf`/`notInstanceOf`** (Wiki explizit: „has
+  no effect") — Wert wird dort ohnehin ignoriert; bleibt so.
+- **Referenzlage:** Der alte Solver kann Prozent nur an Constraints —
+  für Prozent-Conditions gibt es im Repo keine Verhaltensreferenz; Referenz
+  sind Wiki-Text plus die eigene Grenzen-Konvention (Researcher §6).
 
 ## Log
+
+- 2026-07-29 Researcher: Grenzen-Konvention vollständig kartiert
+  (`constraints.js` resolveBound: Nenner über dieselbe Query, `roundHalfUp`,
+  Null-Nenner → SUSPENDED + Diagnose; Unlimited-Kurzschluss VOR dem
+  Nenner). XSD: `percentValue` an `QueryBase` (Catalogue.xsd:428) — gilt
+  für Constraint, Condition, Repeat; Wiki-Zitate an allen dreien.
+  Fixtures: 6.178 × `percentValue="false"`, 0 × `"true"` — latent wie
+  behauptet. `conditionHolds`/`repeatCount` (`modifiers.js`) erhalten
+  denselben QueryContext wie resolveBound — Nenner ohne Plumbing
+  verfügbar. Diagnose-Präzedenz für Nicht-Unterstützung existiert
+  (`UNSUPPORTED_MODIFIER_GROUP_REPEAT`), wird aber nicht gebraucht.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — Prozent-Semantik an Condition und
+  Repeat in der Konvention der Prozent-Grenzen (gleicher Nenner, gleiche
+  Rundung, übersetzte Null-Nenner-Behandlung); AC 3 durch volle
+  Unterstützung trivial.
+- What surprised me? Kein Plumbing nötig: der QueryContext an den
+  Auswertungsstellen ist derselbe wie bei resolveBound. Und der alte
+  Solver ignoriert `percentValue` an Conditions ebenfalls — es gibt keine
+  In-Repo-Verhaltensreferenz, nur Wiki plus eigene Grenzen-Konvention.
+- What am I assuming without having verified it? Dass „keine Aussage" bei
+  Nenner 0 für ein Gate „hält nicht" bedeutet (recorded Default — bei
+  `lessThan`-artigen Typen ist das nicht offensichtlich konservativ);
+  dass die Diagnose-Multiplizität über Fixpunkt-Runden und
+  Zeugen-Wiederauswertung (0101, Wegwerf-Diagnosen) beherrschbar bleibt —
+  der Test-Autor pinnt Präsenz, nicht Anzahl.
 
 ### Before the PR
 
