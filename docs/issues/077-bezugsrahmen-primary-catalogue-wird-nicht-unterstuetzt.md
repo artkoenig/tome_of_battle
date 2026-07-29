@@ -179,6 +179,41 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
   nachprüfbar. Für dieses Issue folgenlos — die Antwort steht in den
   Katalogdaten selbst —, aber als Beobachtung festgehalten.
 
+- **2026-07-29, Tests vor der Implementierung, Fehlschlag belegt.**
+  `npx vitest run src/evaluator/query.primaryCatalogueScope.test.js
+  src/evaluator/evaluator.primaryCatalogueFixture.test.js` → 18 Tests,
+  **11 failed / 7 passed, Exit 1**. Die sieben grünen sind bewusst Pins, keine
+  Lücken: die beiden Nicht-Treffer-Fälle (heute richtig aus dem falschen
+  Grund — die Query liefert 0, weil sie nicht auflöst), ein Kontingent aus der
+  `.gst` (fail-closed), `scope="unit"` bleibt diagnostiziert (Issue 0086 wird
+  nicht mitgelöst) und der Fall ohne umschließendes Kontingent.
+- **2026-07-29, Implementierung grün.** Nach der Umsetzung dieselben 18 Tests
+  **Exit 0**; ganze Suite `npx vitest run` → **224 Dateien, 2285 Tests, Exit 0**
+  (Ausgangswert 222/2267 plus die 18 neuen). `npm run lint`, `npm run typecheck`
+  und `npm run depcruise` je **Exit 0** — die ADR-0030-Regel
+  (Evaluator⇄Solver) meldet 0 errors, die eine Warnung ist der vorbestehende
+  Solver-Zyklus. `npm run knip` bleibt bei Exit 1 mit 24 unbenutzten Exports,
+  keiner davon in `src/evaluator/` (vorbestehend, laut CLAUDE.md warn-only).
+- **2026-07-29, zwei Funde des Implementierers übernommen.**
+  1. `docs/testing/constraint-matrix.md` Zeile 16 war **sachlich falsch**: sie
+     führte `primary-catalogue` unter *Constraints*. Nachgemessen stehen alle
+     27 Vorkommen an einer `condition`, **null** an einem `constraint` oder
+     `repeat`. Zeile korrigiert, eigene Scope-Zeile in der Condition-Tabelle
+     ergänzt.
+  2. `violationClassification.js` brauchte **keine** Änderung, anders als der
+     Plan annahm: `classifyScope` liest die Schlüsselwortmenge aus
+     `Object.values(ScopeKeyword)` und ordnet den neuen Wert dadurch von selbst
+     richtig ein. Plan-Punkt 5 entfällt damit ersatzlos — festgehalten, statt
+     den Plan nachträglich rechtzuschreiben.
+- **2026-07-29, zwei Nachzüge nach dem Bericht des Implementierers.**
+  Die Kommentar-Aufzählung der erlaubten `scopeKind`-Werte in
+  `src/evaluator/e2e.testcatalog.test.js` war durch den neuen Wert unvollständig
+  geworden und ist nachgezogen (reine Kommentarzeile, keine Assertion). Und der
+  gelöschte Lückeneintrag in §15 der Formatdoku ist **wiederhergestellt**: die
+  Upstream-Lücke besteht ja weiter, wir haben sie nur aus den Daten beantwortet
+  — genau wie beim `value="-1"`-Sentinel, der als Zeile stehen bleibt und auf
+  die belegte Semantik verweist. Der Einwand kam vom Implementierer.
+
 ## Checkpoints
 
 ### Before implementation
