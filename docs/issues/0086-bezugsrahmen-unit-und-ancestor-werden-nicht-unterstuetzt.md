@@ -138,13 +138,35 @@ Acceptance criteria:
   geerbt** (`countIndex.costSumUnderCarrier.test.js`; fällt identisch am
   Branchpunkt `b67e93c`, per stash/checkout belegt — als Issue 0112 gefiled,
   nicht Gegenstand dieses Runs). `npm run lint` Exit 0, `npm run typecheck`
-  Exit 0, `node scripts/measure-evaluator.js` Exit 0 (6.9 ms bei
-  wiederverwendetem Datensatz — der O(Tiefe)-Ancestor-Walk ist unkritisch).
+  Exit 0. ~~`node scripts/measure-evaluator.js` Exit 0~~ — **Korrektur nach
+  Review-Runde 1:** der Exit-Code ist auf dieser Umgebung 1 (die 100-ms-
+  Schwelle reißt am Vorbereitungsanteil, ~99 % Katalog-Vorlauf), und zwar
+  identisch am Branchpunkt `b67e93c` — geerbt/umgebungsbedingt, nicht vom
+  Diff. Die inhaltliche Aussage bleibt: Auswertung bei wiederverwendetem
+  Datensatz 4–11 ms, der O(Tiefe)-Ancestor-Walk ist unkritisch.
   Umgesetzt: `ScopeKeyword`/`ScopeKind` + `UNIT`/`ANCESTOR` (model.js),
   `unit`-Rahmen in `resolveSharedFrame` und `resolveAncestor` vor der
   Indexarbeit (query.js), `targetsOf` aus countIndex.js exportiert (eine
   Quelle der Wahrheit für die Vorfahren-Ziele), `effective` in den
   Query-Kontext (constraints.js/modifiers.js reichen durch).
+- **2026-07-29, Review-Runde 1 (frischer Kontext):** Fakten selbst
+  etabliert — `npx vitest run src/evaluator` 764/765 grün (einziger
+  Fehlschlag = geerbter 0112-Fall), `npm run lint` Exit 0, `npm run
+  typecheck` Exit 0, `npm run depcruise` 0 Errors. Alle fünf Kriterien
+  inhaltlich erfüllt; Messlatte des Test-Autors nachweislich unverändert
+  (`git diff 890aa2f...HEAD` über die drei Dateien leer). Zwei Befunde:
+  (1) Log-Fakt „measure-evaluator Exit 0" reproduziert nicht — tatsächlich
+  Exit 1, identisch am Branchpunkt (geerbt/umgebungsbedingt; Repro:
+  `node scripts/measure-evaluator.js`, 2× wiederholt). **Triage: behoben** —
+  Log-Eintrag oben korrigiert. (2) Kriterium 5 dem Wortlaut nach nicht
+  erfüllt (Suite-Exit 1) — alleinige Ursache ist der geerbte 0112-Fall,
+  keine Regression aus dem Diff. **Triage: als dokumentierte
+  Wortlaut-Abweichung ausgewiesen** (Decisions „Geerbter roter Test ist
+  nicht Gegenstand"), kein Fix in diesem Run.
+- **Waiver Wiederholungs-Review:** Der einzige Fix aus Runde 1 berührt
+  ausschließlich den Tracker-Eintrag (Log-Korrektur), keine Datei, um die
+  es in den Kriterien geht — die Wiederholung der Review entfällt nach der
+  Rulebook-Ausnahme; hiermit protokolliert.
 
 ## Checkpoints
 
@@ -168,8 +190,22 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? — Ja. Beide Bezugsrahmen sind im
+  Query-Primitiv umgesetzt und von einer Messlatte gedeckt, die vor der
+  Implementierung rot war (26 Unit-Tests + 4 E2E-Roster); der Review aus
+  frischem Kontext bestätigt alle fünf Kriterien inhaltlich, Kriterium 5
+  mit der protokollierten Wortlaut-Abweichung (geerbter 0112-Fall).
+- What surprised me? — (a) Die Test-Autor-Annahme „alle unit-Querys liegen
+  in einer Einheit" war für 7 Angebots-Anker-Fälle falsch — daraus wurde
+  die protokollierte Diagnose-Unterdrückung an synthetischen Knoten.
+  (b) Der Implementierer-Fakt „measure-evaluator Exit 0" hielt der
+  Review-Reproduktion nicht stand (umgebungsbedingt Exit 1, auch am
+  Branchpunkt) — Beleg dafür, dass die Review-Regel „Fakten selbst
+  etablieren" ihren Zweck erfüllt.
+- What am I assuming without having verified it? — Dass die Mid-Runden-
+  Lesart der effektiven Kategorien im Ancestor-Walk (Fixpunkt) keinen
+  realen Katalog zum Schwingen bringt; der Reviewer fand dafür kein Repro,
+  und eine echte Schwingung würde als OSCILLATION-Diagnose laut, nicht
+  still.
 
 ## Retro
