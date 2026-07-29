@@ -172,6 +172,13 @@ Acceptance criteria:
   ausschließlich den Tracker-Eintrag (Log-Korrektur), keine Datei, um die
   es in den Kriterien geht — die Wiederholung der Review entfällt nach der
   Rulebook-Ausnahme; hiermit protokolliert.
+- **2026-07-29, Rebase auf main (auf Zuruf):** `main` war um PR #171
+  (Issue 0085) vorgerückt; Rebase der sieben Branch-Commits auf `b7cf2d6`
+  lief konfliktfrei durch. Beleg danach: `npx vitest run src/evaluator` —
+  62 Dateien, 773 Tests, 772 grün; einziger Fehlschlag bleibt der geerbte
+  0112-Fall (`countIndex.costSumUnderCarrier.test.js`, Exit 1 im
+  Einzellauf). Der Versions-Bump 1.9.1 bleibt gültig (`main` steht auf
+  1.9.0).
 
 ## Checkpoints
 
