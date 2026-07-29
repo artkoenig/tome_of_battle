@@ -939,6 +939,12 @@ Armour" in [§7.2](#72-entry-link-info-link-category-link).
 Ein `constraint`, dessen `field` eine **Kostenart-ID** ist (statt `selections`), begrenzt die *Summe*
 dieser Kosten — z. B. „max. 100 Punkte magische Gegenstände" ([§7.6](#76-constraint)).
 
+Summiert werden die Kosten **unterhalb des Trägers**: die Auswahlen im Bezugsrahmen, die unter dem
+Eintrag (bzw. unter den Mitgliedern der Gruppe) hängen, den die Grenze trägt. `includeChildSelections`
+entscheidet wie überall über die *verschachtelten* Auswahlen — mit `true` zählt auch der Gegenstand
+mit, der an einem magischen Gegenstand hängt, mit `false` gilt die engere Lesart „just `scope`'s
+`field`". Ein Träger mit eigenen Kosten bringt diese in seine Summe ein (Issue 091).
+
 ### 9.5 Grenzen, die mit dem Punktelimit skalieren
 
 Slots pro Kategorie werden über `modifier` + `condition`/`repeat` an `limit::<costTypeId>` gekoppelt
