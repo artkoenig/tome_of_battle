@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-jnwa1m-0093
 pr:
 ---
 
