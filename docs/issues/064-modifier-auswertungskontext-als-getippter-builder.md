@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-064
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/159
 ---
 
 # Modifier-Auswertungskontext als getippten Builder auflösen
@@ -172,3 +172,16 @@ converted (it is a solver-internal flat build, test-safe).
   new module (by-reference slices, null sentinel, throw on counts+slices).
 
 ## Retro
+
+- The researcher-first plan earned its cost twice: the "rund neun"
+  undercount and the three `forceCategoryCounts` semantics would have
+  ambushed a naive implementer mid-edit. The plan-contact stop rule worked
+  as designed — the mock-blocker became a recorded scope decision instead
+  of a silent test edit.
+- A refactor with "suite as pin" needs the baseline run FIRST — the
+  implementer and reviewer both comparing against a fresh origin/main
+  worktree made "byte-identical" a fact rather than a feeling.
+- Metis observation: pre-existing full-module mocks (no importOriginal)
+  make facade growth test-hostile; a repo convention "mock factories spread
+  importOriginal" would remove this whole class of blockers. Candidate for
+  a human decision.
