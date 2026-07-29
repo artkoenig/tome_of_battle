@@ -35,7 +35,7 @@
  * den Bericht von aussen erreichbar und ADR-0034 nur noch eine Absichtserklaerung.
  */
 
-import { ConstraintKind, isReportableAnchorKind } from './model.js';
+import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, isReportableAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf } from './evalTree.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
@@ -87,6 +87,97 @@ function authorViolationsOf(slots, context) {
     }
   }
   return violations;
+}
+
+/**
+ * True, wenn das Ergebnis an einem **synthetischen Kategorie-Anker** haengt:
+ * einem Kategorie-Anker (verlinkt wie unverlinkt) oder dem Pflicht-Phantom
+ * einer Kategorie-Definition. Nur diese Anker-Familie faellt unter die
+ * Entdopplung der Meldungsliste (unten) — belegte Instanz-Anker und die
+ * Phantome von Auswahl-Eintraegen behalten ihre Multiplizitaet (eine Grenze am
+ * realen Eintrag meldet je Instanz, eine Kontingent-Pflicht je Kontingent).
+ */
+function isSyntheticCategoryAnchorResult(result) {
+  const node = result.anchor;
+  if (node.anchorKind === AnchorKind.CATEGORY_ANCHOR) return true;
+  return node.anchorKind === AnchorKind.MANDATORY_PHANTOM
+    && node.def.kind === DefinitionKind.CATEGORY;
+}
+
+/** True, wenn der Anker unmittelbar an der Wurzel haengt (roster-weiter Standort). */
+function isRootLevelAnchor(node) {
+  return node.parent !== null && node.parent.isRoot === true;
+}
+
+/**
+ * True fuer das **Wurzel**-Pflicht-Phantom: ein Pflicht-Phantom, das
+ * unmittelbar an der Wurzel haengt. Pflicht-Phantome koennen auch in einem
+ * Kontingent haengen (Force-Schleife der Synthese) — die zaehlen hier nicht.
+ */
+function isRootMandatoryPhantom(node) {
+  return node.anchorKind === AnchorKind.MANDATORY_PHANTOM && isRootLevelAnchor(node);
+}
+
+/**
+ * Entdoppelt **armeeweite Kategorie-Grenzen** in der Meldungsliste
+ * (`docs/battlescribe-data-format.md` §9.9: dieselbe Pflicht in mehreren Formen
+ * wird „ueber die Ziel-Id entdoppelt — genau ein Verstoss").
+ *
+ * Hintergrund: eine Kategorie mit armeeweiter Grenze ist mehrfach verankert —
+ * als Wurzel-Pflicht-Phantom (bei einer MIN-Grenze) **und** an jedem
+ * Kategorie-Anker jedes Kontingents, dessen `categoryLink` die Grenzen der
+ * Kategorie erbt. Jeder Anker wertet die Grenze gegen dieselbe armeeweite
+ * Zaehlung aus; ohne Entdopplung erschiene eine unerfuellte Pflicht 1 + n-mal.
+ * Das Urteil ist an jedem Anker identisch — entdoppelt wird deshalb allein
+ * **hier**, in der Meldungsliste: die Ergebnisse (und damit die
+ * Faehigkeitsdatensaetze aller Kategorie-Slots) bleiben vollstaendig.
+ *
+ * Die Regel, beschraenkt auf synthetische Kategorie-Anker
+ * ({@link isSyntheticCategoryAnchorResult}):
+ *
+ * - **ROSTER-Rahmen:** je (Grenz-Id, gezaehlte Ziel-Id) ueberlebt genau eine
+ *   Meldung — bevorzugt die am Wurzel-Pflicht-Phantom (die Pflicht ist
+ *   armeeweit, das Phantom ist ihr roster-weiter Anker), sonst die am ersten
+ *   Anker in Dokumentreihenfolge.
+ * - **FORCE-Rahmen:** die Meldung gehoert an die Kontingent-Anker (je
+ *   Kontingent eine, keine Ueber-Entdopplung). Die Huckepack-Auswertung
+ *   derselben Grenze am **Wurzel**-Phantom entfaellt: an der Wurzel loest der
+ *   FORCE-Rahmen nicht auf (`query.js` liefert 0 samt Diagnose) — ihre
+ *   „Meldung" spraeche fuer kein Kontingent.
+ * - Jeder andere Rahmen bleibt unangetastet.
+ */
+function dedupeArmyWideCategoryViolations(results) {
+  const kept = [];
+  const survivorIndexByKey = new Map();
+  for (const result of results) {
+    if (!isSyntheticCategoryAnchorResult(result)) {
+      kept.push(result);
+      continue;
+    }
+    const { scope } = result.limit;
+    if (scope === ScopeKeyword.FORCE) {
+      if (!isRootLevelAnchor(result.anchor)) kept.push(result);
+      continue;
+    }
+    if (scope !== ScopeKeyword.ROSTER) {
+      kept.push(result);
+      continue;
+    }
+    const key = `${result.limit.id}\u0000${result.countedTargetId}`;
+    const survivorIndex = survivorIndexByKey.get(key);
+    if (survivorIndex === undefined) {
+      survivorIndexByKey.set(key, kept.length);
+      kept.push(result);
+    } else if (isRootMandatoryPhantom(result.anchor)
+        && !isRootMandatoryPhantom(kept[survivorIndex].anchor)) {
+      // Das WURZEL-Phantom schlaegt die Dokumentreihenfolge: es steht im Baum
+      // hinter den Kontingenten, ist aber der roster-weite Anker der Pflicht.
+      // Ein Pflicht-Phantom **in** einem Kontingent (Force-Schleife der
+      // Synthese) zaehlt nicht — sonst ueberlebte es vor dem Wurzel-Phantom.
+      kept[survivorIndex] = result;
+    }
+  }
+  return kept;
 }
 
 /**
@@ -270,10 +361,13 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     // (ADR-0034). Gemeldet wird, was **berichtsfaehig** und unerfuellt ist; ein
     // Ergebnis am Angebots-Anker faellt heraus (`constraints.js`, `isReportable`):
     // das Nichtgewaehlte speist Faehigkeitsdatensaetze, aber nie die Meldungsliste.
+    // Armeeweite Kategorie-Grenzen melden dabei genau **einmal**
+    // ({@link dedupeArmyWideCategoryViolations}, §9.9) — die Ergebnisse selbst
+    // bleiben vollstaendig, nur die Meldungsliste entdoppelt.
     violations: [
-      ...[...results, ...budgetViolations]
-        .filter(result => result.isReportable && !result.satisfied)
-        .map(result => toDerivedViolation(result, classificationContext)),
+      ...dedupeArmyWideCategoryViolations(
+        [...results, ...budgetViolations].filter(result => result.isReportable && !result.satisfied),
+      ).map(result => toDerivedViolation(result, classificationContext)),
       ...authorViolationsOf(slots, classificationContext),
     ],
     capabilities,

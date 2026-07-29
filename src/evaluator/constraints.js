@@ -92,6 +92,11 @@ function evaluateLimit(limit, node, effective, ctx) {
     bound,
     satisfied,
     delta: bound - actual,
+    // Die **gezaehlte Ziel-Id** (bei einem Verweis das aufgeloeste Ziel, s. o.)
+    // reist mit dem Ergebnis: zusammen mit der Grenz-Id ist sie die Identitaet
+    // der Pflicht ueber alle Anker hinweg — der Entdopplungsschluessel der
+    // Meldungsliste (`report.js`, §9.9 „ueber die Ziel-Id entdoppelt").
+    countedTargetId: targetId,
     // Ob dieses Ergebnis **berichtsfaehig** ist, also als Verletzung gemeldet
     // werden darf, oder nur den Faehigkeitsdatensatz seines Slots speist. Diese
     // Schicht stellt die Unterscheidung bereit und deutet sie nicht: sie liest die
