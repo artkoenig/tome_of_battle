@@ -96,6 +96,16 @@ Acceptance criteria:
   (`modifiers.js:110–111`, `VALUE_FREE_CONDITION_KINDS` 134–137). XSD:
   `field` optional, `value` required (`Catalogue.xsd:425/427`). Keine
   Diagnose trägt bisher den Träger; kein Test prüft `unsupportedCondition`.
+- 2026-07-29 — Test-Author (allein aus dem Intent):
+  `src/evaluator/modifiers.unreadableGuards.test.js`, 17 Tests — Repro,
+  unlesbarer Wächter neben erfülltem lesbaren, unlesbare Condition in
+  `or`-Gruppe, `nand`-Gruppe, unlesbares Repeat („kein einziges Mal"),
+  `instanceOf`/`notInstanceOf` ohne `field`/`value` (je feuert/feuert
+  nicht), Träger-Benennung an allen drei Diagnosen, zwei Positivkontrollen
+  gegen Über-Blocken. Beleg: `npx vitest run
+  src/evaluator/modifiers.unreadableGuards.test.js` → 15 failed / 2 passed,
+  alle 15 an Assertions (Phantom-Verstoß, fehlende Carrier-Felder,
+  fälschliches `unsupportedCondition`), keine Import-Fehler.
 
 ## Checkpoints
 
