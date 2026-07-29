@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/85-umsetzen-0cru2t
 pr:
 ---
 
@@ -49,6 +49,24 @@ Acceptance criteria:
 
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
+- **Link-Phantom wertet nur die eigenen Grenzen des Links aus** (Default,
+  2026-07-29, aus §9.9 abgeleitet): `ENTRY_LINK` kommt in die
+  Wurzel-Definitionsliste, sein Pflicht-Phantom wird aber mit dem vorhandenen
+  `ownLimitsOnly`-Mechanismus der Gruppen-Anker zugeschnitten
+  (`evaluableLimitsOf`). Das verhindert die im Log belegte Doppel-Verletzung
+  durch die Zielgrenzen-Vererbung (`limitsOf`) und hält ADR-0032 („keine
+  falsche Pflicht aus verlinkten Zielen") ein.
+- **Modifikator-Erbregel bleibt unangetastet** (Default, 2026-07-29):
+  `inheritedThenOwn` wendet weiter Ziel- vor Link-Modifikatoren an.
+  Ziel-Modifikatoren adressieren Ziel-Grenz-Ids, die am Link-Phantom gar nicht
+  ausgewertet werden — Kriterium 2 ist damit wirksam erfüllt, ohne einen
+  Sonderweg in der Modifikator-Schicht.
+- **Entdopplungsschlüssel für Kriterium 3** (Default, 2026-07-29): die rohe
+  `countedTargetId` (beim Link `def.targetId`), zusammen mit Grenzart und
+  Rahmen (ROSTER bzw. Kontingent-Identität), beschränkt auf
+  Pflicht-Phantom-Anker — genau der Schlüssel, den der Kommentar an
+  `constraints.js` (`countedTargetId`) bereits vorsieht. Die Divergenz
+  rohe vs. transitiv aufgelöste Id bei Link-Ketten bleibt Issue 0094.
 
 ## Log
 
@@ -118,13 +136,37 @@ Acceptance criteria:
     Phantom. Ob gewollt, sagt kein Kommentar; §9.9 spricht nur von Einträgen und
     Links.
 
+- **2026-07-29, test-author:** `src/evaluator/rootEntryLinkMandatory.test.js`
+  angelegt — 5 Tests (Kriterium 1: roster + force; Kriterium 2: bedingte
+  Anhebung erfüllt/nicht erfüllt, Zielgrenze feuert nicht mit; Kriterium 3:
+  beide Wurzelformen → genau ein Verstoß). Alle 5 schlagen aus dem richtigen
+  Grund fehl (`expected [] to have a length of 1 but got +0`, Exit ≠ 0);
+  `crossCatalog.test.js` + `phantom.test.js` unverändert grün (16 Tests,
+  Exit 0). Negative Randfälle bewusst in denselben `it`-Blöcken wie die
+  positiven, damit sie heute nicht trivial grün sind. Welcher der beiden
+  `limitId`s die Entdopplung überlebt, lässt Kriterium-3-Test offen.
+
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Die vier Kriterien decken den Fund:
+  Wurzel-`entryLink`-Pflicht meldet (1), Link-Grenzen/-Modifier statt
+  Ziel-Grenzen (2), Entdopplung über die Ziel-Id (3), Suite grün (4). Der
+  Lösungsweg (Wurzel-Definitionsliste + `ownLimitsOnly`-Phantom + Entdopplung
+  in der Meldungsliste) folgt §9.9 und den bestehenden Mechanismen.
+- **What surprised me?** Der `ownLimitsOnly`-Mechanismus existiert schon
+  (Gruppen-Anker, Issue 083) — die im Log als „belegt falsch" gemessene naive
+  Lösung braucht also keinen neuen Mechanismus, nur den Zuschnitt des Phantoms.
+  Und: der Kommentar an `constraints.js` (`countedTargetId`) benennt den
+  §9.9-Entdopplungsschlüssel bereits, die Meldungsliste nutzt ihn aber bisher
+  nur für Kategorie-Anker.
+- **What am I assuming without having verified it?** (a) Dass `effectiveState`
+  die Grenzwerte eines `ownLimitsOnly`-Phantoms korrekt herleitet — belegt nur
+  indirekt über die Gruppen-Anker-Tests. (b) Dass kein bestehendes
+  E2E-Szenario die Ogerbullen-Zeile (4 → 5 Verstöße im leeren
+  Standard-Kontingent) festschreibt — das Log belegt Suite-Grün nur für den
+  naiven Patch. Beides prüft der Suite-Lauf (Kriterium 4).
 
 ### Before the PR
 
