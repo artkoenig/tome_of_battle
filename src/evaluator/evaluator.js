@@ -94,7 +94,7 @@ export { prepareDataset } from './datasetPreparation.js';
  *   durchzusetzen); bei verschachtelten Verweisen bleibt zudem der Slot des
  *   Verweises als Pflicht-Phantom neben dem belegten Ziel-Slot stehen.
  *   Dieselbe Wahl haelt der Ankervertrag des Berichts
- *   festhaelt: „ein Angebots-Anker den `entryLink`, nicht den Eintrag (nur so
+ *   fest: „ein Angebots-Anker den `entryLink`, nicht den Eintrag (nur so
  *   gelten die am Verweis deklarierten Grenzen)" (`report.js`). Diese Regel ist
  *   eine **Entscheidung dieses Projekts**: die Abschnitte *Roster*, *Force* und
  *   *Selection* des BSData-Wikis stehen als TODO, keine Quelle legt fest,

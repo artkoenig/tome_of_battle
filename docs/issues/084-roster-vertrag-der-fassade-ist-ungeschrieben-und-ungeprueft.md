@@ -130,6 +130,24 @@ Acceptance criteria:
   beside it" symptom needs a nested constellation; pins go red via slot
   identity and the link-limit violation instead. Criterion 1 (JSDoc) has
   nothing to run — falls to the review.
+- 2026-07-29 implementer: contract written at `evaluator.js` `@param roster`
+  (identity rule, project-decision provenance, no-fallback behaviour with
+  §7.2/§15 rationale); pointers in `evaluator-architecture.md`
+  (InstanceNode record) and `rosParser.js` `defIdOf` (slimmed, delegates).
+  Comment/doc-only diff; 6/6 pins green, suite 211 files / 2149 tests
+  exit 0, lint/typecheck 0.
+- 2026-07-29 review round 1 (fresh context): criteria met; pins verified as
+  real guards (red variants reproduced independently); citations verified
+  verbatim. 2 minor findings, both fixed: (1) the JSDoc's "Phantom daneben"
+  rationale overstated the flat-case symptom — reviewer reproduced both
+  constellations (flat: silent loss of link limits; nested: phantom
+  beside); JSDoc now names both. (2) the F3 default still hedged in
+  Decisions — now settled there, dated and sourced.
+- 2026-07-29 review round 2 (fresh context): criteria met; two-symptom
+  claim reproduced TRUE; pins re-verified; citations re-verified. 2 minor
+  findings, fixed: (1) duplicated verb from the round-1 edit
+  ("haelt … festhaelt") — corrected; (2) this Log was missing the round-1
+  entry — this and the neighbouring entries close it.
 
 ## Checkpoints
 
