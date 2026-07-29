@@ -205,7 +205,13 @@ record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGro
 
 // Info-Elemente: sie teilen die `EntryBase` der XSD und tragen deshalb eigene
 // Modifikatoren und ein `hidden`-Kennzeichen — sie sind Modifikator-Träger.
+// Neben dem materialisierten Boolean `isHidden` (Default false) führt jede
+// EntryBase das Tri-State-Rohattribut `hiddenAttribute` (true | false |
+// nicht gesetzt): nur so kann ein Vorkommen über einen Verweis das
+// Basis-`hidden` seines Ziels erben, ohne dass ein explizites `false` am
+// Verweis verloren geht (Issue 0099, `baseHiddenOf` in effectiveState.js).
 record InfoElement    { kind: profile | rule | infoGroup | infoLink, id, name, isHidden: bool,
+                        hiddenAttribute: bool?,
                         modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],
                         characteristics: Characteristic[],  // nur profile
                         typeId: ProfileTypeId,              // nur profile

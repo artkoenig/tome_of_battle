@@ -75,10 +75,21 @@ function baseNameOf(node, carrier) {
   return own?.name ?? target?.name ?? null;
 }
 
-/** Die Basis-Sichtbarkeit eines Traegers (XSD-Vorgabe: sichtbar). */
+/**
+ * Die Basis-Sichtbarkeit eines Traegers (XSD-Vorgabe: sichtbar). Gelesen wird der
+ * **Rohzustand** des `hidden`-Attributs (`hiddenAttribute`:
+ * `true`/`false`/`undefined` = nicht gesetzt, `catalogReader.js`,
+ * `readEntryBase`), nicht der zu einem
+ * Boolean materialisierte `isHidden`-Wert: nur so erreicht die Erb-Regel „eigene
+ * Angaben vor geerbten" ihren zweiten Zweig. Ein Verweis ohne eigenes `hidden`
+ * erbt damit das Basis-`hidden` seines (transitiv aufgeloesten) Ziels; ein
+ * explizit gesetztes `hidden` am Verweis — true wie false — geht dem Ziel vor
+ * (Issue 0099). Modifikatoren ueberschreiben beide Basiswerte
+ * ({@link EffectiveState#isHidden}).
+ */
 function baseHiddenOf(node, carrier) {
   const { own, target } = baseSourcesOf(node, carrier);
-  return own?.isHidden ?? target?.isHidden ?? false;
+  return own?.hiddenAttribute ?? target?.hiddenAttribute ?? false;
 }
 
 /** Die Basis-Merkmale eines Traegers (die des Verweisziels, wenn er selbst keine fuehrt). */

@@ -66,6 +66,13 @@ Acceptance criteria:
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28). Als ein Issue geschnitten, weil alle Punkte dieselbe
   Änderung sind: Lesen-oder-Diagnostizieren im Katalog-Leser.
+- **Punkt 6 verschärft (Review-Runde 2 von Issue 0099, 2026-07-28):** seit
+  0099 hat die `readBoolean`-Lücke eine zweite Konsequenz — ein `entryLink`
+  mit `hidden="0"` (explizit gesetztes false in xs:boolean-Kurzform) liest
+  sich als „nicht gesetzt" und **erbt** damit das Basis-`hidden="true"`
+  seines Ziels, statt es zu überschreiben. Repro in der Review von 0099
+  dokumentiert (Fassade: `isHidden: true` statt false). Reale
+  Kataloge/BattleScribe schreiben `true`/`false`; Exposition derzeit nil.
 
 ## Log
 
