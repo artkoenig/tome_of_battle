@@ -44,11 +44,15 @@ werten weiter alle Grenzen aus (Results unverändert ⇒ Capabilities
 unverändert), und allein die Meldungsliste des Berichts entdoppelt
 armeeweite Kategorie-Grenzen über (Grenz-Id, gezählte Ziel-Id).
 
-Eingrenzung des Schlüssels (damit gewollte Mehrfachmeldungen überleben):
-nur Verletzungen an **synthetischen Kategorie-Ankern** (`CATEGORY_ANCHOR`,
-`MANDATORY_PHANTOM`) mit **Roster-Rahmen**-Grenze. Belegte Instanz-Anker
-(z. B. Tyrant-Max je Instanz, gepinnt mit count: 2) und Force-Rahmen-Grenzen
-(ogre-kingdoms Roster 08, count: 2) bleiben unberührt.
+Eingrenzung (damit gewollte Mehrfachmeldungen überleben): die Entdopplung
+greift nur an **synthetischen Kategorie-Ankern** (`CATEGORY_ANCHOR`,
+`MANDATORY_PHANTOM`). Belegte Instanz-Anker (z. B. Tyrant-Max je Instanz,
+gepinnt mit count: 2) bleiben unberührt. Präzisierung nach der
+Test-Autor-Runde: Force-Rahmen-Grenzen bleiben **je Kontingent-Anker**
+gemeldet (ogre-kingdoms Roster 08, count: 2) — die Huckepack-Meldung
+derselben Force-Grenze am Wurzel-Phantom (das alle geerbten Grenzen
+auswertet) entfällt dabei mit; sonst meldete der gemischte Fall 3 statt 2
+Force-Verletzungen.
 
 ## Tasks
 
@@ -83,6 +87,17 @@ nur Verletzungen an **synthetischen Kategorie-Ankern** (`CATEGORY_ANCHOR`,
   Force-Rahmen-Familie (je Force gemeldet, armeeweite Summe per
   Zieltyp-Regel §7.7) ist als Erwartung gepinnt (ogre-kingdoms Roster 08,
   count: 2); die Roster-Rahmen-1+n-Familie ist nirgends gepinnt.
+- 2026-07-29 test-author:
+  `src/evaluator/report.armyWideCategoryDedup.test.js`, 9 Tests — 5 ROT
+  (n=2 → 1 am Phantom; n=1 → 1; MAX-only verlinkt → 1 am ersten Anker;
+  MIN+MAX → 1 MAX-Meldung; gemischt roster-MIN+force-MIN → 1+2), 4 grüne
+  Kontrollen (erfüllte Pflicht still; force-MIN je Kontingent = 2;
+  Capabilities aller Kategorie-Slots vollständig; Eintrags-MAX je belegter
+  Instanz = 2). Belegt: Zielfile 5 failed/4 passed; Vitest gesamt 221
+  Dateien / 2250 Tests, nur das neue File rot; Puppeteer-E2E separat
+  Exit 0. Beobachtung des Autors: das Wurzel-Phantom meldet auch die
+  geerbte Force-Grenze (dritte Meldung im gemischten Fall) — die
+  Plan-Präzisierung oben stammt aus dieser Runde.
 
 ## Checkpoints
 
