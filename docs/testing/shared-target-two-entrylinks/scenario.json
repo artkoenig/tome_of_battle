@@ -12,11 +12,13 @@
   "rosters": [
     {
       "file": "rosters/01-link-a-only-legal.ros",
-      "description": "Commander [HIGH ELVES] mit genau einer 'Armour of Heroes', gewaehlt ueber Link A (def42370). Legal: jede Grenze am Zieleintrag steht bei Ist 1 gegen Grenze 1.",
+      "description": "Commander [HIGH ELVES] mit genau einer 'Armour of Heroes', gewaehlt ueber Link A (def42370). Legal: jede Grenze am Zieleintrag steht bei Ist 1 gegen Grenze 1, die Gruppengrenze bei einem Mitglied gegen Grenze 1.",
       "expect": {
         "firing": [],
         "absent": [
           "f25f23c2-f5f1-4bd0-8c7a-0ce617302c7e",
+          "0aa08f91-b271-402b-98aa-32c51f3beae7",
+          "76e2c1c8-8320-4bc2-a370-cc3e95c7fd2c",
           "7eaade17-79eb-493c-85e7-867000e4beb7"
         ]
       }
@@ -28,17 +30,29 @@
         "firing": [],
         "absent": [
           "f25f23c2-f5f1-4bd0-8c7a-0ce617302c7e",
+          "0aa08f91-b271-402b-98aa-32c51f3beae7",
+          "76e2c1c8-8320-4bc2-a370-cc3e95c7fd2c",
           "7eaade17-79eb-493c-85e7-867000e4beb7"
         ]
       }
     },
     {
       "file": "rosters/03-both-links-same-parent-illegal.ros",
-      "description": "Ein und derselbe Commander nimmt 'Armour of Heroes' einmal ueber Link A und einmal ueber Link B. Beide Selektionen zeigen auf dasselbe Ziel d612998a und haben denselben Elternteil: die parent-skopierte max 1 am Ziel (f25f23c2) feuert mit Ist 2 gegen Grenze 1. Ueber die roster-skopierte Grenze 0aa08f91 und die Gruppengrenze 76e2c1c8 macht das Manifest bewusst keine Aussage - siehe README, Abschnitt 'Abgleich mit dem Engine-Lauf', und Issue 083.",
+      "description": "Ein und derselbe Commander nimmt 'Armour of Heroes' einmal ueber Link A und einmal ueber Link B. Beide Selektionen zeigen auf dasselbe Ziel d612998a und haben denselben Elternteil: die parent-skopierte max 1 am Ziel (f25f23c2) feuert mit Ist 2 gegen Grenze 1. Ebenso feuern die armeeweite max 1 am Ziel (0aa08f91, zwei Vorkommen im Roster) und die max 1 der Gruppe 'Magic Armour' (76e2c1c8, zwei gewaehlte Mitglieder unter einem Elternteil) — eine Grenze zaehlt die Auswahlen unterhalb ihres Traegers im Rahmen des scope, nie die Traeger-Id selbst (Handbuch 7.6, Issue 083).",
       "expect": {
         "firing": [
           {
             "limitId": "f25f23c2-f5f1-4bd0-8c7a-0ce617302c7e",
+            "actual": 2,
+            "bound": 1
+          },
+          {
+            "limitId": "0aa08f91-b271-402b-98aa-32c51f3beae7",
+            "actual": 2,
+            "bound": 1
+          },
+          {
+            "limitId": "76e2c1c8-8320-4bc2-a370-cc3e95c7fd2c",
             "actual": 2,
             "bound": 1
           }
@@ -51,11 +65,18 @@
     },
     {
       "file": "rosters/04-both-links-two-parents.ros",
-      "description": "Zwei Swains mit je einem Commander; der erste nimmt 'Armour of Heroes' ueber Link A, der zweite ueber Link B. Pro Traeger ist es nur eines - die parent-skopierte Grenze f25f23c2 darf NICHT feuern. Trennt 'unter einem Elternteil gemeinsam gezaehlt' von 'feuert immer'. Ueber die armeeweite Grenze 0aa08f91 macht das Manifest bewusst keine Aussage (Issue 083).",
+      "description": "Zwei Swains mit je einem Commander; der erste nimmt 'Armour of Heroes' ueber Link A, der zweite ueber Link B. Pro Traeger ist es nur eines - die parent-skopierten Grenzen f25f23c2 (am Ziel) und 76e2c1c8 (an der Gruppe) duerfen NICHT feuern. Die armeeweite Grenze 0aa08f91 zaehlt dagegen ALLE Vorkommen des Eintrags im Roster, auch verschachtelte, trotz includeChildSelections='false' ('unchecked' heisst 'just scope's field', nicht 'nichts' - Handbuch 7.6, Issue 083): sie feuert mit Ist 2 gegen Grenze 1. Trennt 'unter einem Elternteil gemeinsam gezaehlt' von 'feuert immer'.",
       "expect": {
-        "firing": [],
+        "firing": [
+          {
+            "limitId": "0aa08f91-b271-402b-98aa-32c51f3beae7",
+            "actual": 2,
+            "bound": 1
+          }
+        ],
         "absent": [
           "f25f23c2-f5f1-4bd0-8c7a-0ce617302c7e",
+          "76e2c1c8-8320-4bc2-a370-cc3e95c7fd2c",
           "7eaade17-79eb-493c-85e7-867000e4beb7",
           "0918bd42-2d7e-4aa9-9baa-36e8d81eb8f1"
         ]

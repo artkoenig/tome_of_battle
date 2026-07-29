@@ -104,8 +104,8 @@ auftreten und sind hier ohne Belang.
 |---|-----------|----------------|-------------------------------------------------------|---------|
 | 01 | Nur Tuer A (legal) | Ein Commander mit **einer** „Armour of Heroes", gewaehlt ueber Link **A** (`def42370…`). | **Keine** der vier Grenzen feuert: je Traeger 1, armeeweit 1, Gruppe 1, 25 von 50 Punkten. | [`01-link-a-only-legal.ros`](rosters/01-link-a-only-legal.ros) |
 | 02 | Nur Tuer B (legal) | Identisch, aber ueber Link **B** (`8f3d6ee5…`). | Ebenfalls **keine** Verletzung — beide Links fuehren auf denselben Eintrag, und ein Exemplar ist erlaubt. Zeigt, dass das Feuern in Test 03 nicht am einzelnen Link haengt. | [`02-link-b-only-legal.ros`](rosters/02-link-b-only-legal.ros) |
-| 03 | Beide Tueren, **ein** Traeger (unzulaessig) | **Ein** Commander nimmt „Armour of Heroes" **einmal ueber Link A und einmal ueber Link B**. | **STL-R2:** Der Traeger hat **zwei** Exemplare desselben Gegenstands, also feuert `f25f23c2…` (Ist 2 / Grenze 1). Das Punktebudget `7eaade17…` (50 von 50) feuert **nicht**. Ueber `0aa08f91…` (STL-R3) und `76e2c1c8…` (STL-R4) macht das Manifest **keine Aussage** — siehe unten, „Abgleich mit dem Engine-Lauf". | [`03-both-links-same-parent-illegal.ros`](rosters/03-both-links-same-parent-illegal.ros) |
-| 04 | Beide Tueren, **zwei** Traeger | Zwei Swains mit je einem Commander; der erste nimmt den Gegenstand ueber Link A, der zweite ueber Link B. | **STL-R5:** Die parent-skopierte `f25f23c2…` feuert **nicht** (je Traeger 1) — der Unterscheider gegen Roster 03. Ueber die armeeweite `0aa08f91…` (STL-R3) macht das Manifest **keine Aussage**. | [`04-both-links-two-parents.ros`](rosters/04-both-links-two-parents.ros) |
+| 03 | Beide Tueren, **ein** Traeger (unzulaessig) | **Ein** Commander nimmt „Armour of Heroes" **einmal ueber Link A und einmal ueber Link B**. | **STL-R2 + STL-R3 + STL-R4:** Der Traeger hat **zwei** Exemplare desselben Gegenstands, also feuern `f25f23c2…` (parent, am Ziel), `0aa08f91…` (roster, am Ziel) und `76e2c1c8…` (parent, an der Gruppe „Magic Armour") — jede mit **Ist 2 / Grenze 1**. Das Punktebudget `7eaade17…` (50 von 50) feuert **nicht**. | [`03-both-links-same-parent-illegal.ros`](rosters/03-both-links-same-parent-illegal.ros) |
+| 04 | Beide Tueren, **zwei** Traeger | Zwei Swains mit je einem Commander; der erste nimmt den Gegenstand ueber Link A, der zweite ueber Link B. | **STL-R5:** Die parent-skopierten `f25f23c2…` und `76e2c1c8…` feuern **nicht** (je Traeger bzw. je Gruppe 1) — der Unterscheider gegen Roster 03. Die armeeweite `0aa08f91…` (STL-R3) feuert mit **Ist 2 / Grenze 1**: sie zaehlt alle Vorkommen im Roster, auch verschachtelte. | [`04-both-links-two-parents.ros`](rosters/04-both-links-two-parents.ros) |
 
 **Was 03 gegen 01/02/04 beweist.** 01 und 02 schliessen aus, dass eine der
 Grenzen *immer* feuert; 04 schliesst aus, dass die parent-skopierten Grenzen in
@@ -133,35 +133,36 @@ Wahrheit armeeweit zaehlen. Uebrig bleibt genau die Aussage, um die es geht:
 | … max 1 `scope=roster` (Z. 20051) | `0aa08f91-b271-402b-98aa-32c51f3beae7` |
 | Kostenart „pts" | `ecfa-8486-4f6c-c249` |
 
-## Abgleich mit dem Engine-Lauf: zwei Grenzen aus der Erwartung genommen
+## Abgleich mit dem Engine-Lauf: zwei Grenzen zurueck in der Erwartung (Issue 083)
 
-Der Autor hatte für Roster 03 und 04 zusätzlich zwei Grenzen als feuernd
-deklariert. Sie feuern nicht:
+Zwei Grenzen waren zwischenzeitlich **ganz aus der Erwartung genommen** (weder
+`firing` noch `absent`), weil sie entgegen der Katalog-Ableitung nicht feuerten
+und die Ursache offen war:
 
-| Grenze | Deklariert an | Erwartet | Beobachtet |
-|---|---|---|---|
-| `0aa08f91-b271-402b-98aa-32c51f3beae7` (max 1, `scope="roster"`) | Zieleintrag `d612998a`, Z. 20051 | Ist 2 / Grenze 1 | feuert nicht |
-| `76e2c1c8-8320-4bc2-a370-cc3e95c7fd2c` (max 1, `scope="parent"`) | Gruppe „Magic Armour" `847028b2`, Z. 23462 | Ist 2 / Grenze 1 | feuert nicht |
+| Grenze | Deklariert an | Erwartet |
+|---|---|---|
+| `0aa08f91-b271-402b-98aa-32c51f3beae7` (max 1, `scope="roster"`) | Zieleintrag `d612998a`, Z. 20051 | Ist 2 / Grenze 1 |
+| `76e2c1c8-8320-4bc2-a370-cc3e95c7fd2c` (max 1, `scope="parent"`) | Gruppe „Magic Armour" `847028b2`, Z. 23462 | Ist 2 / Grenze 1 |
 
-Beide sind **vorbestehend** und haben mit der Frage dieses Szenarios nichts zu
-tun: auf dem Stand vor dem Fix zu Issue 076 verhalten sie sich identisch.
+Die Untersuchung (Issue 083) hat die Semantik entschieden, dokumentiert im
+Formathandbuch ([§7.6](../../battlescribe-data-format.md), Regelbox): eine
+Grenze zaehlt die Auswahlen **unterhalb ihres Traegers** im vom `scope`
+benannten Rahmen — nie die Vorkommen der Traeger-Id selbst. Eine Grenze an
+einer `selectionEntryGroup` zaehlt damit **ihre Mitglieder**, und
+`shared="true"` mit `scope="roster"` zaehlt **alle** Vorkommen des Eintrags im
+Roster, auch verschachtelte — `includeChildSelections="false"` heisst *„just
+scope's field"*, nicht „nichts".
 
-Die Ursache ist **offen**. Naheliegend wäre, sie in den beiden `include`-Flags
-zu suchen — beide Grenzen tragen `includeChildSelections="false"` und
-`includeChildForces="false"`. Das ist jedoch **widerlegt**: `f25f23c2` trägt
-dieselben zwei Flags (Z. 20050) und feuert in Roster 03. Die Flags allein
-können es also nicht sein. Was die drei Grenzen unterscheidet, ist ihr
-Bezugspunkt — `f25f23c2` ist eine `scope="parent"`-Grenze am Zieleintrag,
-`0aa08f91` eine `scope="roster"`-Grenze am selben Eintrag, `76e2c1c8` eine
-`scope="parent"`-Grenze an der **Gruppe**, deren Mitglieder gezählt werden
-müssten. Welcher dieser Unterschiede trägt, ist nicht untersucht.
+Das Manifest nimmt beide Ids deshalb wieder in die Erwartung auf:
 
-Die beiden Ids sind deshalb **ganz aus der Erwartung genommen** — weder unter
-`firing` noch unter `absent`. Das Manifest macht über sie keine Aussage. Sie
-wurden ausdrücklich **nicht** nach `absent` verschoben: das würde das
-beobachtete Schweigen als gewollt festschreiben, und ADR 0033 verlangt, eine
-Abweichung zu untersuchen statt sie an die Engine anzupassen. Die Untersuchung
-liegt als eigenes Issue vor (`083`).
+- **Roster 03** (beide Tueren, ein Traeger): `0aa08f91` und `76e2c1c8` feuern
+  **beide** mit Ist 2 gegen Grenze 1 — zusaetzlich zur schon immer feuernden
+  `f25f23c2`.
+- **Roster 04** (beide Tueren, zwei Traeger): `0aa08f91` feuert mit Ist 2 gegen
+  Grenze 1 (armeeweit zwei Vorkommen); `76e2c1c8` steht unter `absent` (je
+  Traeger nur ein Gruppen-Mitglied), wie `f25f23c2`.
+- **Roster 01/02** (je ein Exemplar): beide Ids stehen unter `absent` — Ist 1
+  gegen Grenze 1 ist legal (Randwert).
 
 Die tragende Aussage des Szenarios ist davon unberührt: `f25f23c2` feuert in
 Roster 03 mit Ist 2 gegen Grenze 1 und schweigt in 01, 02 und 04.
