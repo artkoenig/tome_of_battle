@@ -100,7 +100,7 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`author-message-severity`](testing/author-message-severity/) | Definitive Ogre / VC + Mercenaries | 7 |
 | [`offer-and-category-slots`](testing/offer-and-category-slots/) | Definitive VC + O&G + Mercenaries | 3 |
 | [`info-projection`](testing/info-projection/) | Definitive VC + Mercenaries | 4 |
-| [`violation-classification`](testing/violation-classification/) | Definitive Ogre + Mercenaries | 7 |
+| [`violation-classification`](testing/violation-classification/) | Definitive Ogre / O&G / VC + Mercenaries | 7 |
 | [`author-message-tokens`](testing/author-message-tokens/) | Definitive Ogre + Mercenaries | 3 |
 | [`shared-target-two-entrylinks`](testing/shared-target-two-entrylinks/) | Definitive VC + Mercenaries | 4 |
 | [`entrylink-raw-type-counting`](testing/entrylink-raw-type-counting/) | Definitive VC + Mercenaries | 3 |
@@ -461,6 +461,45 @@ meint, also die Grundeinstellung des Katalogs, überschrieben von einer Bedingun
 > seiner eigenen Kennung noch unter der der Gruppe) und dass der Modell-
 > Auswahlpunkt keines der Elemente seiner Einheit führt, weil die Vererbung nur
 > nach oben läuft.
+
+## `violation-classification`
+
+Prüft die **Einordnung** der aus Grenzen abgeleiteten Meldungen: jede nennt ihre
+Herkunft (`derivedLimit` vs. `authorMessage`) und sprachfrei, **was** gemessen
+wird (Anzahl von Auswahlen, Kostensumme, Roster-Budget oder das eingestellte
+Budget), **in welchem Bezugsrahmen**, **an welchem Anker** sie hängt und wie
+Ist, Grenze und Differenz lauten. Dazu die Ursachen-Regel: eine Ursache wird aus
+der Herleitung des Grenzwerts gelesen — nur ein bedingter Modifikator, dessen
+Bedingung eine **benennbare Auswahl** nennt, erscheint als Ursache; und ein
+Angebots-Anker trägt zwar Autor-Meldungen im Fähigkeits-Datensatz, steuert aber
+nichts zur Meldungsliste bei. Die Roster 01–03 laufen gegen den Ogre-Datensatz,
+04/05 gegen O&G und 06/07 gegen Vampire Counts (per Dataset-Override).
+
+| # | Geprüfter Roster-Zustand | Datensatz | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- | :--- |
+| 01 | Leeres Ogre-Kontingent, kein Punktebudget | Ogre | Die Core-Untergrenze meldet als abgeleitete Grenze: Mindestmaß auf einer **Anzahl von Auswahlen**, Bezugsrahmen **Kontingent**, Anker die **Kategorie**, Ist 0 von 2 — **ohne** Ursache, weil kein Modifikator den Basiswert verändert hat |
+| 02 | Dasselbe Kontingent + „Border Patrols rules" | Ogre | Dieselbe Meldung mit gesenkter Grenze 1 — und **genau einer** Ursache, die die auslösende Auswahl beim Namen nennt („Border Patrols rules"), samt Art des Modifikators (`set`) und Zwischenwert |
+| 03 | Zwei Tyrants im selben Kontingent | Ogre | Höchstmaß auf einer Anzahl von Auswahlen, Bezugsrahmen **Armee**, Anker je **belegte Auswahl** „Tyrant", Ist 2 von 1, Differenz **negativ**, Wert stabil, ohne Ursache — die Meldung erscheint an **beiden** Ankern |
+| 04 | Savage Orc Warboss mit zwei magischen Waffen (75 + 50 pts) | O&G | Die Gruppengrenze misst eine **Kostensumme** (Kostenart pts, nicht eine Stückzahl): Bezugsrahmen Elternauswahl, Anker die **grenzentragende Gruppe** „Magic Items", Ist 125 von 100 |
+| 05 | 30 Orc-Boyz-Modelle (150 pts) bei Budget 100 pts | O&G | Die **engine-eigene** Budget-Regel (ohne Katalog-Grenze): Messgröße **Roster-Budget**, Anker die Roster selbst (kein Slot), Kostenart pts, Ist 150 von 100 |
+| 06 | Leeres Kontingent „Vampire Coast", Budget 1000 pts | VC | Die Kontingent-Grenze misst das **eingestellte Budget** (nicht die Kosten): Mindestmaß 2000, Ist 1000 — ohne Ursache, denn die Bedingung des hebenden Modifikators zielt auf ein Kontingent, nicht auf eine benennbare Auswahl |
+| 07 | Kontingent „Clan Blood Dragons" nur mit den beiden „Allow"-Schaltern | VC + O&G | Der **Pflicht-Anker** „Army of Sylvania" liefert zwei Meldungen, die sich nur im Bezugsrahmen unterscheiden (Kontingent vs. Elternauswahl); der **Angebots-Anker** „Manbiters" trägt seine Autor-Meldung im Fähigkeits-Datensatz, aber die Meldungsliste enthält weder sie noch eine Grenze aus dem Angebot |
+
+## `author-message-tokens`
+
+Prüft das BattleScribe-Text-Token `{this}` in Autor-Meldungen: der Wortlaut
+einer Meldung bleibt unverändert und in Katalogsprache, mit genau **einer**
+Ausnahme — `{this}` wird durch den Anzeigenamen des tragenden Eintrags ersetzt.
+Ein Text ohne Token bleibt Zeichen für Zeichen wörtlich. Ob `{this}` den
+**wirksamen** (per `field="name"`-Modifikator geänderten) statt des
+Katalog-Namens einsetzt, ist mit diesen Katalogdaten nicht prüfbar und in der
+Szenario-README als Lücke dokumentiert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ogre-Kontingent mit einer Gnoblars-Einheit, ohne „Bully Bully"-Auswahl | Genau eine Autor-Meldung (`error`) an der Einheit, mit **„Gnoblars"** an der Stelle des Tokens; die rohe Fassung mit `{this}` kommt **nullmal** vor |
+| 02 | Dasselbe Kontingent + Ogre Bulls, gebunden an den **Verweis**, der die Kategorie „Bully Bully" unbedingt vergibt | Die Bedingung hält nicht mehr: an der Gnoblars-Einheit liegt **keine** Autor-Meldung an; weder die gerenderte noch die rohe Textfassung erscheint |
+| 03 | Ogre-Kontingent mit Skrag, ohne „Allow special characters?" | Die token-freie Meldung bleibt **wörtlich** erhalten — derselbe Wortlaut im Fähigkeits-Datensatz des Slots und in der Meldungsliste, inklusive Anführungszeichen |
 
 ## `entrylink-raw-type-counting`
 

@@ -12,6 +12,15 @@
  * Kontingentgrenze. Das Query-Primitiv summiert je nach `includeChildSelections`
  * und `includeChildForces` die passenden Eimer. So sind beide Flags **unabhaengig
  * voneinander** wirksam — auch in Kombination.
+ *
+ * **Kosten steigen unter die Ziel-Ids ihrer Vorfahren auf** (Issue 091): eine
+ * Grenze, deren `field` eine Kostenart ist, begrenzt die Summe dieser Kosten
+ * unterhalb ihres **Traegers** (`docs/battlescribe-data-format.md` §7.6/§9.4).
+ * Gelesen wird sie als ziel-gefilterte Query `(Rahmen, Traeger-Id)`; deshalb
+ * verbucht diese Schicht den **Kostenanteil** eines Beitrags zusaetzlich unter
+ * jeder Ziel-Id der Vorfahren, die im jeweiligen Rahmen liegen. Die
+ * Selektionsanzahl steigt dabei **nicht** mit auf — unter der Traeger-Id steht
+ * weiterhin nur der Traeger.
  */
 
 import { DefinitionKind, scopeKey } from './model.js';
@@ -117,6 +126,31 @@ function targetsOf(node, effective) {
   return Array.from(new Set(targets));
 }
 
+/**
+ * Die Ziel-IDs, unter denen ein Vorfahre als **Traeger** einer Kostengrenze zaehlbar
+ * ist (§7.6/§9.4, Issue 091): seine eigenen Ziele ohne das Rahmen-Ziel `null`.
+ *
+ * `null` bleibt draussen, weil „alles im Rahmen" den Beitrag des Nachfahren ohnehin
+ * schon zaehlt — er stuende sonst doppelt in der Summe. Weil {@link targetsOf} auch
+ * die `memberGroupIds` eines Knotens liefert, deckt dieselbe eine Regel das
+ * Gruppen-Muster aus §9.4 ab: die verschachtelten Kosten eines Gruppenmitglieds
+ * steigen unter die Gruppen-ID auf, ohne einen zweiten Sonderweg.
+ */
+function carrierTargetsOf(node, effective) {
+  return targetsOf(node, effective).filter(targetId => targetId !== null);
+}
+
+/**
+ * Der reine **Kostenanteil** eines Beitrags — das, was unter der Ziel-ID eines
+ * Vorfahren aufsteigt. Die Selektions- und Kontingentanzahl bleibt zurueck: unter
+ * der Traeger-ID steht der Traeger selbst, nicht zusaetzlich jeder seiner
+ * Nachfahren. (Wie viele Auswahlen unterhalb eines Traegers stehen, ist eine eigene
+ * Frage — Issue 083 — und wird hier nicht mit beantwortet.)
+ */
+function costsOnly(contribution) {
+  return { selectionCount: 0, forceCount: 0, costSums: contribution.costSums };
+}
+
 /** Addiert einen Beitrag auf einen Zaehler. */
 function addTally(tally, contribution) {
   tally.selectionCount += contribution.selectionCount;
@@ -145,10 +179,25 @@ function addContribution(tallies, key, bucket, contribution) {
  * Selektionsschachtelung, ein Kontingent dazwischen eine Kontingentgrenze. Der
  * ROSTER-Rahmen (Wurzel) umspannt **alle** Kontingente und ignoriert daher
  * Kontingentgrenzen — `includeChildForces` hat auf Rosterebene keine Bedeutung.
+ *
+ * Auf demselben Weg steigen die **Kosten** zusaetzlich unter den Ziel-IDs der
+ * durchlaufenen Vorfahren auf (Issue 091): eine Grenze, deren `field` eine
+ * Kostenart ist, begrenzt die Summe dieser Kosten **unterhalb ihres Traegers**
+ * (§7.6/§9.4), und die ziel-gefilterte Query `(Rahmen, Traeger-ID)` ist die
+ * Stelle, die diese Summe liest. Fuer diese aufgestiegenen Anteile gilt die
+ * Selektionsschachtelung **immer** als gekreuzt — auch im Rahmen des Traegers
+ * selbst, wo der normale `crossedSelection`-Zustand noch falsch ist —, denn sie
+ * stammen stets von echten Nachfahren des Traegers. So entscheidet
+ * `includeChildSelections` in jedem Rahmen, ob sie mitzaehlen.
  */
 function indexNodeContribution(tallies, node, effective) {
   const contribution = contributionOf(node, effective);
   const targets = targetsOf(node, effective);
+  const ownTargets = new Set(targets);
+  // Die Ziele der bereits durchlaufenen Vorfahren; sie waechst mit jedem Aufstieg.
+  const carrierTargets = new Set();
+  const climbingCosts = costsOnly(contribution);
+  const carriesCosts = contribution.costSums.size > 0;
   let crossedSelection = false;
   let crossedForce = false;
   let frame = node;
@@ -157,12 +206,31 @@ function indexNodeContribution(tallies, node, effective) {
     const forceCrossedForFrame = frame.isRoot ? false : crossedForce;
     const bucket = bucketFor(crossedSelection, forceCrossedForFrame);
     const frameKey = frameKeyOf(frame);
+    // Der Rahmen selbst ist der aeusserste Traeger, unter dessen Ziel-IDs dieser
+    // Beitrag in *diesem* Rahmen zaehlt — die Wurzel ausgenommen, sie traegt keine
+    // Definition. Ein Ziel, unter dem der Knoten schon selbst zaehlt, bleibt
+    // draussen: seine Kosten stuenden sonst doppelt in derselben Summe.
+    if (carriesCosts && !isImmediate && !frame.isRoot) {
+      for (const carrierTargetId of carrierTargetsOf(frame, effective)) {
+        if (!ownTargets.has(carrierTargetId)) carrierTargets.add(carrierTargetId);
+      }
+    }
     for (const targetId of targets) {
       let c = contribution;
       if (node.isForce && targetId === node.def.id) {
         c = { selectionCount: node.instance.count, forceCount: node.instance.count, costSums: contribution.costSums };
       }
       addContribution(tallies, scopeKey(frameKey, targetId), bucket, c);
+    }
+    // Aufgestiegene Kostenanteile stammen immer von *echten* Nachfahren des
+    // Traegers — sie haben die Selektionsschachtelung also stets gekreuzt, auch
+    // wenn der Query-Rahmen der Traeger selbst ist (`scope="self"`,
+    // `shared="false"`), wo `crossedSelection` noch falsch ist. Deshalb wird der
+    // Eimer hier mit erzwungener Selektionskreuzung gewaehlt: nur
+    // `includeChildSelections="true"` zaehlt sie mit (Issue 091, Runde 1).
+    const climbBucket = bucketFor(true, forceCrossedForFrame);
+    for (const carrierTargetId of carrierTargets) {
+      addContribution(tallies, scopeKey(frameKey, carrierTargetId), climbBucket, climbingCosts);
     }
     // Der aktuelle Rahmen wird fuer alle *hoeheren* Rahmen zu einem
     // dazwischenliegenden Knoten (der Beitragende selbst zaehlt nie als Grenze).
