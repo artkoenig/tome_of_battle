@@ -26,10 +26,13 @@
  * und die Kostengrenze der Einheit wird verletzt) sowie am Query-Primitiv
  * selbst, wo der Rueckgabewert und die Diagnose unmittelbar sichtbar sind.
  *
- * Bewusst NICHT gepinnt (offene Kante, siehe Bericht des Test-Autors): ein
- * anderes Feld als `SELECTION_COUNT` **zusammen mit** `targetId === null` — der
- * Vertrag nennt fuer diese Lage zwei Zeilen (`1` fuer den Prozent-Nenner,
- * `unsupportedField` fuer das Feld) und sagt nicht, welche gewinnt.
+ * Die Kante, an der sich zwei Vertragszeilen treffen — ein anderes Feld als
+ * `SELECTION_COUNT` **zusammen mit** `targetId === null` (Prozent-Nenner) —, ist
+ * im Issue entschieden (Issue 077, `## Plan`, unter der Vertragstabelle): **die
+ * Feldpruefung kommt zuerst**, das Ergebnis ist `unsupportedField`, nicht 1. Auf
+ * ein Feld, das dieser Rahmen nicht bedienen kann, eine 1 zu antworten hiesse,
+ * eine Auskunft zu erfinden — dieselbe Fail-closed-Linie wie beim fehlenden
+ * Kontingent.
  */
 
 import { JSDOM } from 'jsdom';
@@ -287,6 +290,42 @@ describe('anderes Feld als SELECTION_COUNT am Query-Primitiv', () => {
     expect(diagnostics).toContainEqual(
       expect.objectContaining({ kind: 'unsupportedField', field }),
     );
+  });
+
+  it('anderes Feld UND targetId === null: die Feldpruefung kommt zuerst — 0 mit unsupportedField, nicht 1', () => {
+    // Hier treffen sich zwei Vertragszeilen: „`targetId === null` → 1" und
+    // „anderes Feld → `unsupportedField`". Entschieden ist die Feldpruefung
+    // zuerst (Issue 077, `## Plan`): `unsupportedField` meldet einen Mangel der
+    // Query selbst, und eine 1 waere hier eine erfundene Auskunft.
+    const { ctx, diagnostics } = contextAtAlpha();
+
+    const result = query(ctx, FORCE_COUNT, PRIMARY_CATALOGUE, null, { shared: true });
+
+    expect(result).toBe(0);
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({ kind: 'unsupportedField', field: FORCE_COUNT }),
+    );
+  });
+
+  it('anderes Feld UND targetId === null: auch fuer eine Kostensumme gilt der Vorrang', () => {
+    const { ctx, diagnostics } = contextAtAlpha();
+    const field = costSumField(POINTS_ID);
+
+    const result = query(ctx, field, PRIMARY_CATALOGUE, null, { shared: true });
+
+    expect(result).toBe(0);
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({ kind: 'unsupportedField', field }),
+    );
+  });
+
+  it('KONTROLLE: SELECTION_COUNT mit targetId === null bleibt der Prozent-Nenner 1 — der Vorrang kippt die Zeile nicht', () => {
+    const { ctx, diagnostics } = contextAtAlpha();
+
+    const result = query(ctx, { kind: 'selectionCount' }, PRIMARY_CATALOGUE, null, { shared: true });
+
+    expect(result).toBe(1);
+    expect(diagnostics).toEqual([]);
   });
 
   it('KONTROLLE: SELECTION_COUNT im selben Kontext liefert 1 und meldet nichts', () => {
