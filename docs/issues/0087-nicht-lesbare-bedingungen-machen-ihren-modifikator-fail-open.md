@@ -125,6 +125,18 @@ Acceptance criteria:
   verifiziert; von dieser Änderung unberührt). `npm run lint` Exit 0,
   `npm run typecheck` Exit 0, `npm run depcruise` 0 Errors, Exit 0.
   Kein E2E-Szenario änderte sein Verhalten.
+- 2026-07-29 — Review Runde 1 (frischer Kontext, Diff a3a0eb2..HEAD gegen
+  Intent): **0 Findings mit Repro**. Alle vier Kriterien bestätigt; Fakten
+  vom Reviewer selbst erhoben (`npx vitest run src/evaluator` 789/790 grün,
+  Exit 1 nur durch den vorbestehenden 0112-Roten — vom Reviewer am
+  Basis-Commit a3a0eb2 selbst reproduziert; neue Testdatei 17/17 Exit 0;
+  Lint/Typecheck/Depcruise Exit 0). Test-Unabhängigkeit per `git log
+  --follow` belegt (Testdatei nur im Test-Author-Commit 95e1f97 berührt).
+  Zwei Beobachtungen außerhalb der Kriterien, keine Defekte dieses Diffs,
+  als Issues gefiled: `conditionGroup type="not"` im Vampire-Counts-Fixture
+  jetzt fail-closed gesperrt (→ Issue 0115), `modifierGroup` mit direktem
+  `<repeats>` weiterhin fail-open (→ Issue 0116). Triage: nichts zu fixen;
+  Wiederholungsrunde entfällt, da keine Findings (Konvergenz 0).
 
 ## Checkpoints
 
@@ -155,8 +167,22 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Kriterien 1–3 im Review aus
+  frischem Kontext bestätigt; Kriterium 4 mit dem dokumentierten Vorbehalt:
+  789/790 grün, der eine Rote ist der vorbestehende, als Issue 0112
+  getrackte `countIndex.costSumUnderCarrier.test.js` (am Basis-Commit
+  identisch rot, von dieser Änderung unberührt). Kein neuer Roter.
+- **What surprised me?** (a) Die Änderung verändert reales
+  Katalog-Verhalten, das kein E2E-Szenario beobachtet: die zwei
+  `conditionGroup type="not"` im Vampire-Counts-Fixture sind unlesbar,
+  der Lichemaster-Pflicht-Modifikator feuert jetzt nie (nur erlaubend,
+  → Issue 0115). (b) Der Nachbar-Fall `modifierGroup` mit direktem
+  `<repeats>` bleibt fail-open (→ Issue 0116).
+- **What am I assuming without having verified it?** (1) Dass das
+  Unterdrücken der Lichemaster-Pflicht (erlaubend) bis zur Entscheidung
+  in 0115 akzeptabel ist — die Alternative wäre das alte, verstoß-
+  erzeugende Fail-open gewesen. (2) Dass der Patch-Bump als Default die
+  richtige Versionierung ist (Fix, kein Feature); der Mensch kann vor dem
+  Merge eine andere Version wählen.
 
 ## Retro
