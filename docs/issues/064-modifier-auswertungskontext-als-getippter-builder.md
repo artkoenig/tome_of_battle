@@ -79,6 +79,21 @@ Non-obvious choices:
    (rosterValidator.js:583) is hoisted during conversion — pure waste, no
    behaviour change.
 
+Plan update (after implementer contact, 2026-07-29): the component slice is
+NARROWED. Five component test files fully mock the solver facade without
+`importOriginal` spread, so adding a facade import to those components breaks
+their mocks, and tests are off-limits. Converted components: only
+`AutoFillSuggestions.jsx` (no test) and `RosterSidebar.jsx:47` (test uses the
+real solver). The five full-mocked components (`OptionGroup`,
+`SelectionConfigurator`, `UnitSelectionCard`, `RosterCategorySection:93`,
+`CategoryUnitAdder`) keep their hand-built slice-only contexts — AC 1's
+"rund neun" sites (rosterValidator, profileCollector, rosterCounter,
+useRoster) are all converted, AC 2 never applied to the slice-only component
+contexts. VisibilityContext-typed bundles (ForceEditorSection,
+RosterSidebar:50, RosterCategorySection:70, entryVisibility:181) are not
+flat builds and stay. `armyWideSelectors.js:136` joins the inventory and is
+converted (it is a solver-internal flat build, test-safe).
+
 ## Tasks
 
 ## Decisions
@@ -91,6 +106,15 @@ Non-obvious choices:
   den Umfang der Scope-Vereinheitlichung nicht zu sprengen.
 
 ## Log
+
+- 2026-07-29 implementer round 1: stopped before editing, per the
+  plan-contact rule — five component test files mock the facade fully (no
+  importOriginal), so the planned component conversions cannot land without
+  test edits. Decision (default, human asleep): narrow the component scope
+  instead of authorizing mechanical mock edits — the issue's own AC-1 site
+  list is fully convertible test-free. Recorded as plan update above.
+  Follow-up candidate for the human: allow one passthrough line per mock in
+  a later run to finish the component conversions.
 
 ## Checkpoints
 
