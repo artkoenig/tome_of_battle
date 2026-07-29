@@ -1,5 +1,5 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { someSelectionInSubtree } from './rosterTree.js';
+import { someSelectionInSubtree } from '../roster/rosterTree.js';
 import { findForceEntryById } from './forceEntries.js';
 import { ConstraintScope, isEntryScope, isRosterLimitField } from './battlescribeConstants.js';
 import {

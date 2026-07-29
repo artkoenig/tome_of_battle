@@ -3,7 +3,7 @@ import {
   getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks,
   resolveContextCatalogueId
 } from './modifierEvaluator.js';
-import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from './rosterTree.js';
+import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from '../roster/rosterTree.js';
 import { buildModifierEvalContext } from './modifierContext.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { resolveGroupDefaultMember } from './selectionMembers.js';

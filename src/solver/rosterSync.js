@@ -1,7 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getUnitOptions } from './optionsCollector.js';
-import { childSelectionsOf, mapSelectionTree, traverseSelectionTree } from './rosterTree.js';
-import { isIndependentSubUnit } from './subUnit.js';
+import { childSelectionsOf, mapSelectionTree, traverseSelectionTree } from '../roster/rosterTree.js';
+import { isIndependentSubUnit } from '../roster/subUnit.js';
 import '../types.js';
 
 /** Leere Force-Liste für Roster ohne `forces` — vermeidet Sonderfälle im Ablauf. */

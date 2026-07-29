@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { computeRosterCounts } from './rosterCounter.js';
-import { findForceContainingSelection, findSelectionInRoster } from './rosterTree.js';
+import { findForceContainingSelection, findSelectionInRoster } from '../roster/rosterTree.js';
 import {
   createQueryContext, resolveScopeAnchor, resolveGroupAnchor,
   resolveCountBucketAnchor, measureOver, measureQuery, createEntryInstanceMatcher, MeasureTarget

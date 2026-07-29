@@ -7,8 +7,8 @@ import { processImportedData } from '../parser/xmlParser.js';
 import { getUnitOptions } from './optionsCollector.js';
 import { resolveEntry } from './catalogResolver.js';
 import { createSelectionFromDef } from './selectionFactory.js';
-import { replaceSelectionById, rootSelectionsOf } from './rosterTree.js';
-import { withChangedOptionCount } from './subSelectionEditing.js';
+import { replaceSelectionById, rootSelectionsOf } from '../roster/rosterTree.js';
+import { withChangedOptionCount } from '../roster/subSelectionEditing.js';
 import { validateRoster } from './rosterValidator.js';
 
 // Issue 57/04 — end-to-end against the REAL Vampire Counts catalogue.

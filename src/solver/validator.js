@@ -33,7 +33,7 @@ export {
   childSelectionsOf, rootSelectionsOf, effectiveCountOf, traverseSelectionTree, foldSelectionTree,
   findSelectionById, findSelectionInRoster, someSelection, someSelectionInSubtree, countSelections,
   findForceContainingSelection, mapSelectionTree, replaceSelectionById
-} from './rosterTree.js';
+} from '../roster/rosterTree.js';
 export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 export { isListRuleSelection, isListRuleEntryKind, resolveListRuleGroup } from './listRules.js';
 export { evaluateCondition, evaluateConditionGroup, getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks, collectTriggeredMessages, getEffectiveName, getEffectiveSelectionName, canGroupMaxBeRaisedAboveSingleChoice, ValidationSeverity } from './modifierEvaluator.js';
@@ -49,7 +49,7 @@ export { findForceEntryById, getAvailableForceEntries } from './forceEntries.js'
 export { getPlayableCatalogues } from './catalogueSelection.js';
 export { isCategoryLinkHidden, isSelectionEntryHidden, getEffectiveEntryCategoryLinks, isEntryPrimaryInCategory, collectPrimaryCategoryEntries } from './entryVisibility.js';
 export { collectUnreachableArmyWideSelectors, collectForceScopedMinSelectors, isReachableViaForceCategories } from './armyWideSelectors.js';
-export { isIndependentSubUnit, hasEntryChildren } from './subUnit.js';
+export { isIndependentSubUnit, hasEntryChildren } from '../roster/subUnit.js';
 export { ConstraintScope, NON_ENTRY_SCOPE_KEYWORDS, isCostField, ROSTER_LIMIT_FIELD_PREFIX, isRosterLimitField, costTypeIdOfRosterLimitField } from './battlescribeConstants.js';
 export { getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique } from './optionsCollector.js';
 export { groupProfilesByType } from './rulesEvaluator.js';
@@ -57,4 +57,4 @@ export { createSelectionFromDef } from './selectionFactory.js';
 export { isQuirkGeneralEntryId } from './systemQuirks.js';
 export { getCategoryDisplayLimits, getInheritedCategoryMaxConstraint } from './categoryLimits.js';
 export { UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS, MODEL_COUNT_PROFILE_TYPES } from './constants.js';
-export { withAddedInstance, withoutInstance, withChangedOptionCount } from './subSelectionEditing.js';
+export { withAddedInstance, withoutInstance, withChangedOptionCount } from '../roster/subSelectionEditing.js';

@@ -56,8 +56,8 @@ vi.mock('../../solver/validator', async () => ({
   // Name resolution is covered by the solver's own unit tests; here it is isolated to
   // the no-name-modifier case, which returns the selection's raw name unchanged.
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
-  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
+  childSelectionsOf: (await vi.importActual('../../roster/rosterTree')).childSelectionsOf,
   groupProfilesByType: (await vi.importActual('../../solver/rulesEvaluator')).groupProfilesByType,
   ...(await vi.importActual('../../solver/constants'))
 }));

@@ -30,7 +30,7 @@ vi.mock('../../solver/validator', async () => ({
   MODEL_COUNT_PROFILE_TYPES: [],
   // Reines Zugriffs-Primitiv auf die direkten Kind-Selections — echte
   // Implementierung durchreichen (ihre Semantik ist in rosterTree.test.js abgedeckt).
-  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
+  childSelectionsOf: (await vi.importActual('../../roster/rosterTree')).childSelectionsOf,
 }));
 
 vi.mock('../editor/UnitChips', () => ({

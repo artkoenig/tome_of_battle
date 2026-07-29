@@ -8,8 +8,8 @@ import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionO
 import { processImportedData } from '../../parser/xmlParser.js';
 import { resolveEntry } from '../../solver/catalogResolver.js';
 import { createSelectionFromDef } from '../../solver/selectionFactory.js';
-import { replaceSelectionById, rootSelectionsOf } from '../../solver/rosterTree.js';
-import { withChangedOptionCount } from '../../solver/subSelectionEditing.js';
+import { replaceSelectionById, rootSelectionsOf } from '../../roster/rosterTree.js';
+import { withChangedOptionCount } from '../../roster/subSelectionEditing.js';
 import { getUnitOptions } from '../../solver/optionsCollector.js';
 
 // Issue 57/05 — the visual counterpart to the 57/04 data-model fix, exercised through the

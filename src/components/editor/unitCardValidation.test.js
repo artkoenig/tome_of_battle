@@ -10,8 +10,8 @@ import {
 // Katalog-Auflösung wird auf ein simples Nachschlagewerk gestubbt, damit die
 // Testbäume ohne vollständiges System auskommen.
 vi.mock('../../solver/validator', async () => ({
-  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+  childSelectionsOf: (await vi.importActual('../../roster/rosterTree')).childSelectionsOf,
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
   findEntryInSystem: (system, entryId) => system?.entriesById?.[entryId] ?? null,
   resolveEntry: (system, entry) => entry
 }));

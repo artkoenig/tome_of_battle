@@ -46,7 +46,7 @@ vi.mock('../../solver/validator', async () => ({
   isEntryScope: (await vi.importActual('../../solver/battlescribeConstants')).isEntryScope,
   // Reine Baum-Primitive: die echte Implementierung durchreichen statt sie im Mock
   // nachzubauen — ihre Rekursion ist in rosterTree.test.js eigens abgedeckt.
-  findForceContainingSelection: (await vi.importActual('../../solver/rosterTree')).findForceContainingSelection,
+  findForceContainingSelection: (await vi.importActual('../../roster/rosterTree')).findForceContainingSelection,
   resolveCostLimitTypeId: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitTypeId,
   resolveCostLimitLabel: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitLabel,
   resolveEntry: (...args) => mockResolveEntry(...args),

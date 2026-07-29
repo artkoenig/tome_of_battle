@@ -1,7 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { isSelectionEntryHidden } from './entryVisibility.js';
-import { isIndependentSubUnit } from './subUnit.js';
+import { isIndependentSubUnit } from '../roster/subUnit.js';
 import { ConstraintScope } from './battlescribeConstants.js';
 import { ConstraintKind, EntryLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
 

@@ -26,7 +26,7 @@ vi.mock('../../solver/validator', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
   groupProfilesByType: (...args) => mockGroupProfilesByType(...args),
   ...(await vi.importActual('../../solver/constants')),
 }));

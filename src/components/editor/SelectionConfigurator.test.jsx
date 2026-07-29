@@ -62,8 +62,8 @@ const mockGetUnitOptions = vi.fn();
 vi.mock('../../solver/validator', async () => ({
   // Reine Baum-Primitive: die echte Implementierung durchreichen statt sie im Mock
   // nachzubauen — ihre Rekursion ist in rosterTree.test.js eigens abgedeckt.
-  findForceContainingSelection: (await vi.importActual('../../solver/rosterTree')).findForceContainingSelection,
-  countSelections: (await vi.importActual('../../solver/rosterTree')).countSelections,
+  findForceContainingSelection: (await vi.importActual('../../roster/rosterTree')).findForceContainingSelection,
+  countSelections: (await vi.importActual('../../roster/rosterTree')).countSelections,
   // Reine Ableitung aus Roster und System — die echte Bezeichnung der Kostenart durchreichen.
   resolveCostLimitLabel: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitLabel,
   resolveEntry: (...args) => mockResolveEntry(...args),
@@ -81,7 +81,7 @@ vi.mock('../../solver/validator', async () => ({
   },
   calculateRosterCosts: () => ({ pts: 0 }),
   getOptionDisplayCost: () => 10,
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
   getUnitOptions: (...args) => mockGetUnitOptions(...args),
   isUniqueOptionTakenElsewhere: () => false,
   isOptionRosterUnique: () => false,

@@ -4,7 +4,7 @@ import { computeRosterCounts } from './rosterCounter.js';
 import { evaluateHiddenFlag } from './entryVisibility.js';
 import { buildModifierEvalContext } from './modifierContext.js';
 import { isEntryScope } from './battlescribeConstants.js';
-import { findForceContainingSelection } from './rosterTree.js';
+import { findForceContainingSelection } from '../roster/rosterTree.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import '../types.js';
 
