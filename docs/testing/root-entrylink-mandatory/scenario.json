@@ -51,14 +51,13 @@
     },
     {
       "file": "rosters/03-ironskin-missing-bulls.ros",
-      "description": "Ein Kontingent der Armeeliste 'Ironskin Tribe (WD#309-UK)' (8711-ed16-2a44-7251) ohne Ogre Bulls. Die Bedingung notInstanceOf des set-1-Modifikators haelt hier nicht, die Untergrenze bleibt auf ihrem Basiswert 0, und 0 >= 0 ist erfuellt: die Grenze darf nicht feuern. Ogre Bulls ist dort ein blosses Angebot, keine Pflicht - dies ist der Nachweis, dass der Modifikator DES LINKS gelesen wird und nicht pauschal jede Wurzel-Verweis-Untergrenze feuert.",
+      "description": "Ein Kontingent der Armeeliste 'Ironskin Tribe (WD#309-UK)' (8711-ed16-2a44-7251) ohne Ogre Bulls. Die Bedingung notInstanceOf des set-1-Modifikators haelt hier nicht, die Untergrenze bleibt auf ihrem Basiswert 0, und 0 >= 0 ist erfuellt: die Grenze darf nicht feuern. Ogre Bulls ist dort keine Pflicht - das sagt isMandatoryUnmet false - und dies ist der Nachweis, dass der Modifikator DES LINKS gelesen wird und nicht pauschal jede Wurzel-Verweis-Untergrenze feuert. Die Ankerart ist hier bewusst NICHT zugesagt: welche Ankerart ein Slot mit vorhandener, aber auf 0 stehender Untergrenze traegt, entscheiden weder die Katalogdaten noch die Kriterien dieses Issues - und die Engine ordnet ihn schon heute bei der selectionEntry-Wurzelform als mandatoryPhantom ein (siehe Issue 0108).",
       "expect": {
         "firing": [],
         "absent": ["32ed-26da-3f27-5c04"],
         "capabilities": [
           {
             "targetDefId": "7754-8b3d-df99-d2d5",
-            "anchorKind": "offerAnchor",
             "frameDefId": "8711-ed16-2a44-7251",
             "name": "Ogre Bulls",
             "current": 0,

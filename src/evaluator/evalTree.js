@@ -107,16 +107,27 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId) {
  * jeweiligen Synthese-Schritt gestellt, statt spaeter aus Elternschaft und
  * Definitionsart erraten zu werden.
  *
- * `limitScopeFilter` schneidet den Anker optional auf **einen** Bezugsrahmen zu
- * (siehe {@link evaluableLimitsOf}): die Constraint-Schicht wertet an ihm dann
- * nur die Grenzen mit genau diesem `scope` aus. Gestellt wird er ausschliesslich
- * von {@link synthesizeUnlinkedCategoryAnchors}, wo **mehrere** Anker derselben
- * Definition (je Rahmen einer) haengen koennen — ohne Zuschnitt meldete jeder
- * Anker jede Grenze, also jede Grenze mehrfach. Alle anderen Anker bleiben
- * ungefiltert (`null`): sie sind je Definition und Rahmen einmalig, und ein
- * Pflicht-Phantom wertet MAX-Grenzen seines Rahmens bewusst huckepack mit aus.
+ * Zwei optionale Zuschnitte sagen, **welche** Grenzen der Anker auswertet
+ * (siehe {@link evaluableLimitsOf}); beide sind unabhaengig voneinander:
+ *
+ * - `limitScopeFilter` schneidet ihn auf **einen** Bezugsrahmen zu: die
+ *   Constraint-Schicht wertet an ihm dann nur die Grenzen mit genau diesem
+ *   `scope` aus. Gestellt wird er von {@link synthesizeUnlinkedCategoryAnchors}
+ *   und {@link synthesizeRootEntryLinkPhantoms}, wo **mehrere** Anker derselben
+ *   Definition (je Rahmen einer) haengen koennen — ohne Zuschnitt meldete jeder
+ *   Anker jede Grenze, also jede Grenze mehrfach.
+ * - `ownLimitsOnly` laesst ihn die vom Verweisziel geerbten Grenzen
+ *   ({@link limitsOf}) **auslassen**. Gestellt wird er ausschliesslich von
+ *   {@link synthesizeRootEntryLinkPhantoms}: §9.9 wertet an der `entryLink`-
+ *   Wurzelform „die Constraint und die Modifier des Links" aus, „nicht die des
+ *   Ziels" — eine eigene `min`-Grenze des Ziels darf dort nicht mitfeuern
+ *   (Issue 0085, D2).
+ *
+ * Ohne beide bleibt der Anker ungeschnitten: er ist je Definition und Rahmen
+ * einmalig, und ein Pflicht-Phantom wertet MAX-Grenzen seines Rahmens bewusst
+ * huckepack mit aus.
  */
-function attachPhantom(parent, def, nextFrameId, anchorKind, limitScopeFilter = null) {
+function attachPhantom(parent, def, nextFrameId, anchorKind, { limitScopeFilter = null, ownLimitsOnly = false } = {}) {
   const isForce = def.kind === DefinitionKind.FORCE;
   const node = {
     def,
@@ -130,6 +141,7 @@ function attachPhantom(parent, def, nextFrameId, anchorKind, limitScopeFilter = 
     frameId: nextFrameId(),
     forceRoot: null,
     limitScopeFilter,
+    ownLimitsOnly,
   };
   node.forceRoot = isForce ? node : parent.forceRoot;
   parent.children.push(node);
@@ -189,13 +201,21 @@ export function limitsOf(def) {
 
 /**
  * Die an einem **Knoten** auszuwertenden Grenzen: die Basis-Limits seiner
- * Definition ({@link limitsOf}) — bei einem rahmen-zugeschnittenen Anker
- * (`limitScopeFilter`, siehe {@link attachPhantom}) nur die Grenzen mit genau
- * dem Bezugsrahmen, fuer den der Anker synthetisiert wurde. Traegt eine
- * unverlinkte Kategorie Grenzen **verschiedener** Rahmen (roster UND force),
- * haengt je Rahmen ein eigener Anker; ohne den Zuschnitt wertete jeder Anker
- * jede Grenze aus — dieselbe Verletzung erschiene je Anker einmal, und der
- * rahmen-fremde Anker hinterliesse eine unechte `unresolvedScope`-Diagnose.
+ * Definition ({@link limitsOf}), zugeschnitten um die beiden Anker-Merkmale aus
+ * {@link attachPhantom}:
+ *
+ * - `ownLimitsOnly` laesst die vom Verweisziel geerbten Grenzen weg. Der Anker
+ *   der `entryLink`-Wurzelform einer Pflichteinheit wertet nur die am **Link**
+ *   deklarierten Grenzen aus (§9.9, Issue 0085 D2); eine eigene `min`-Grenze
+ *   des Ziels feuert an ihm nicht mit, sonst entstuenden zwei Verstoesse, wo
+ *   einer richtig ist.
+ * - `limitScopeFilter` behaelt nur die Grenzen mit genau dem Bezugsrahmen, fuer
+ *   den der Anker synthetisiert wurde. Traegt eine unverlinkte Kategorie (oder
+ *   ein Wurzel-`entryLink`) Grenzen **verschiedener** Rahmen (roster UND
+ *   force), haengt je Rahmen ein eigener Anker; ohne den Zuschnitt wertete jeder
+ *   Anker jede Grenze aus — dieselbe Verletzung erschiene je Anker einmal, und
+ *   der rahmen-fremde Anker hinterliesse eine unechte
+ *   `unresolvedScope`-Diagnose.
  *
  * Die Constraint-Schicht ruft diese Sicht; {@link limitsOf} bleibt die eine
  * Quelle der Wahrheit dafuer, welche Grenzen an der **Definition** haengen
@@ -203,7 +223,7 @@ export function limitsOf(def) {
  * effektiven Grenzwert — sie wird nur nicht an diesem Knoten ausgewertet).
  */
 export function evaluableLimitsOf(node) {
-  const limits = limitsOf(node.def);
+  const limits = node.ownLimitsOnly === true ? (node.def.limits ?? []) : limitsOf(node.def);
   if (node.limitScopeFilter === null || node.limitScopeFilter === undefined) return limits;
   return limits.filter(limit => limit.scope === node.limitScopeFilter);
 }
@@ -257,6 +277,17 @@ export function* infoCarriersOf(def) {
 /** True, wenn die Definition eine MIN-Grenze mit genau diesem Bezugsrahmen traegt. */
 function hasMinLimitInFrame(def, scope) {
   return limitsOf(def).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
+}
+
+/**
+ * True, wenn die Definition eine **eigene** MIN-Grenze mit genau diesem
+ * Bezugsrahmen traegt — die vom Verweisziel geerbten ausgenommen. Gegenstueck zu
+ * `ownLimitsOnly` ({@link attachPhantom}): ein Anker, der nur die eigenen
+ * Grenzen auswertet, entsteht auch nur fuer eine eigene Grenze; sonst haenge er
+ * da und wertete nichts aus.
+ */
+function hasOwnMinLimitInFrame(def, scope) {
+  return (def.limits ?? []).some(limit => limit.kind === ConstraintKind.MIN && limit.scope === scope);
 }
 
 /** True, wenn die Definition irgendeine Grenze mit genau diesem Bezugsrahmen traegt. */
@@ -338,6 +369,78 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
       }
     }
   }
+}
+
+/**
+ * Die Ids, unter denen eine Auswahl **dieses** Wurzel-Links im Roster stehen
+ * kann: die des Links selbst, sein rohes Ziel und das Ende seiner Verweiskette.
+ *
+ * Eine ueber einen `entryLink` gesetzte Auswahl traegt die **Link-Id**
+ * (Identitaets-Regel der Fassade, `evaluator.js`); fuehrt ein Katalog dieselbe
+ * Pflicht aber in beiden Wurzelformen (§9.9), kann dieselbe Einheit unter der
+ * **Ziel-Id** im Roster stehen. Zaehlte der Anker nur die Link-Id, feuerte er
+ * dann faelschlich (Issue 0085, D5). Dieselbe Dreiheit benutzt `offer.js`, um
+ * einen Angebots-Anker neben einem vorhandenen Knoten zu vermeiden.
+ */
+function rosterIdentityIdsOf(linkDef) {
+  const ids = [linkDef.id];
+  if (linkDef.targetId !== null && linkDef.targetId !== undefined) ids.push(linkDef.targetId);
+  if (linkDef.resolved !== null && linkDef.resolved !== undefined) ids.push(linkDef.resolved.id);
+  return ids;
+}
+
+/**
+ * Synthetisiert die Pflicht-Anker der **zweiten Wurzelform** (§9.9): ein
+ * Wurzel-`entryLink` (`resolver.js`, `rootEntryLinks`) traegt den
+ * `min`-Constraint selbst, waehrend die Zieleinheit im geteilten Pool liegt.
+ * Ohne diesen Schritt bliebe eine Liste ohne die Pflichteinheit stumm gruen: der
+ * Link steht in keiner Wurzel-Definitionsliste (ADR-0032, D4), und sein
+ * Angebots-Anker ist nach ADR-0035 nicht berichtsfaehig.
+ *
+ * Verankert wird wie bei {@link synthesizeMandatoryPhantoms} je Rahmen — an der
+ * Wurzel fuer eine ROSTER-Grenze, in **jedem** Kontingent fuer eine
+ * FORCE-Grenze (D6: „Rahmen" ist die konkrete Kontingent-Instanz, nicht die
+ * Rahmenart) —, und nur dort, wo die Einheit fehlt
+ * ({@link rosterIdentityIdsOf}). Der Anker ist auf seinen Rahmen **und** auf die
+ * eigenen Grenzen des Links zugeschnitten (`limitScopeFilter`/`ownLimitsOnly`,
+ * siehe {@link attachPhantom}).
+ *
+ * Massgeblich ist die **Existenz** einer eigenen MIN-Grenze im Rahmen, nicht ihr
+ * Basiswert: die reale Kodierung ist Basis `min="0"`, per Link-`modifier`
+ * bedingt auf 1 angehoben. Ob die Pflicht greift, entscheidet erst der effektive
+ * Grenzwert am Anker — greift sie nicht, ist `0 >= 0` erfuellt und es entsteht
+ * keine Meldung.
+ *
+ * Fuehrt ein Katalog dieselbe Pflicht in **beiden** Wurzelformen, haengen zwei
+ * Anker; dass die Meldungsliste sie trotzdem nur einmal traegt, entscheidet die
+ * Berichtsschicht (`report.js`, Entdopplung ueber aufgeloeste Ziel-Id und
+ * Rahmen) — wie schon bei den armeeweiten Kategorie-Grenzen bleiben die
+ * Ergebnisse und damit die Faehigkeitsdatensaetze beider Slots vollstaendig.
+ */
+function synthesizeRootEntryLinkPhantoms(root, rootEntryLinks, nextFrameId) {
+  for (const linkDef of rootEntryLinks) {
+    if (hasOwnMinLimitInFrame(linkDef, ScopeKeyword.ROSTER) && isAbsentIn(root, linkDef)) {
+      attachPhantom(root, linkDef, nextFrameId, AnchorKind.MANDATORY_PHANTOM, {
+        limitScopeFilter: ScopeKeyword.ROSTER,
+        ownLimitsOnly: true,
+      });
+    }
+  }
+  for (const forceNode of [...forceNodes(root)]) {
+    for (const linkDef of rootEntryLinks) {
+      if (hasOwnMinLimitInFrame(linkDef, ScopeKeyword.FORCE) && isAbsentIn(forceNode, linkDef)) {
+        attachPhantom(forceNode, linkDef, nextFrameId, AnchorKind.MANDATORY_PHANTOM, {
+          limitScopeFilter: ScopeKeyword.FORCE,
+          ownLimitsOnly: true,
+        });
+      }
+    }
+  }
+}
+
+/** True, wenn im Rahmen `fromNode` keine Instanz des Wurzel-Links steht (D5). */
+function isAbsentIn(fromNode, linkDef) {
+  return rosterIdentityIdsOf(linkDef).every(id => countInstances(fromNode, id) === 0);
 }
 
 /** Die Kategorie-IDs, die eine Kontingent-Definition per `categoryLink` fuehrt. */
@@ -427,12 +530,12 @@ function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId) {
     if (def.kind !== DefinitionKind.CATEGORY) continue;
     if (linkedAnywhere.has(def.id)) continue;
     if (hasAnyLimitInFrame(def, ScopeKeyword.ROSTER) && !hasUnfilteredPhantomAnywhereFor(root, def.id)) {
-      attachPhantom(root, def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, ScopeKeyword.ROSTER);
+      attachPhantom(root, def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, { limitScopeFilter: ScopeKeyword.ROSTER });
     }
     if (hasAnyLimitInFrame(def, ScopeKeyword.FORCE)
         && forceNodeList.length > 0
         && !forceNodeList.some(forceNode => hasPhantomFor(forceNode, def.id))) {
-      attachPhantom(forceNodeList[0], def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, ScopeKeyword.FORCE);
+      attachPhantom(forceNodeList[0], def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, { limitScopeFilter: ScopeKeyword.FORCE });
     }
   }
 }
@@ -578,8 +681,10 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  * (siehe {@link synthesizeMandatoryPhantoms}), Kategorie-Anker je Kontingent
  * (siehe {@link synthesizeForceCategoryAnchors}), Kategorie-Anker fuer
  * unverlinkte Grenzen-tragende Kategorien (siehe
- * {@link synthesizeUnlinkedCategoryAnchors}) und Gruppen-Anker fuer
- * gruppen-skopierte Grenzen (siehe {@link synthesizeGroupAnchors}).
+ * {@link synthesizeUnlinkedCategoryAnchors}), Gruppen-Anker fuer
+ * gruppen-skopierte Grenzen (siehe {@link synthesizeGroupAnchors}) und zuletzt
+ * die Pflicht-Anker der `entryLink`-Wurzelform (siehe
+ * {@link synthesizeRootEntryLinkPhantoms}).
  *
  * Die Wurzel traegt zusaetzlich die **Quelle der Rahmen-Identitaeten**
  * (`nextFrameId`) des Baums. Baumphase 2 ({@link attachOfferAnchor}) zieht aus
@@ -587,7 +692,7 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  * Rahmen-Identitaet eines vorhandenen Knotens wiederverwendet — sonst laese eine
  * `self`-skopierte Grenze am Anker den Bestand eines fremden Knotens.
  *
- * @param {{ lookup: (id: string) => object|null, definitions?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
+ * @param {{ lookup: (id: string) => object|null, definitions?: object[], rootEntryLinks?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
  * @param {{ forces?: object[] }} roster
  * @returns {{ root: object, diagnostics: object[] }}
  */
@@ -619,6 +724,13 @@ export function buildEvalTree(resolved, roster) {
   // Nach den realen Knoten und den Pflicht-Phantomen: die Gruppen-Anker zuletzt,
   // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
   synthesizeGroupAnchors(root, resolved, nextFrameId);
+  // Ganz zuletzt die Anker der `entryLink`-Wurzelform (§9.9): sie haengen an
+  // denselben Rahmen wie die Pflicht-Phantome, und angehaengt statt eingeschoben
+  // lassen sie die Pfade aller schon verankerten Slots unveraendert. Zugleich
+  // steht damit bei einer doppelt gefuehrten Pflicht die `selectionEntry`-Form
+  // **vor** der Link-Form in der Berichtsreihenfolge — die Entdopplung behaelt
+  // die erste Meldung (`report.js`, Issue 0085 D7).
+  synthesizeRootEntryLinkPhantoms(root, resolved.rootEntryLinks ?? [], nextFrameId);
   return { root, diagnostics };
 }
 

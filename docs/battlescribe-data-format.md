@@ -1100,6 +1100,23 @@ werden die **Constraint und die Modifier des Links** ausgewertet (nicht die des 
 bedingte Anhebung greift; das Ziel wird nur zur Namensauflösung aufgelöst. Führte ein Katalog
 dieselbe Pflicht in beiden Formen, wird sie über die Ziel-Id entdoppelt (genau ein Verstoß).
 
+> **Wie dieses Projekt die Entdopplung ausführt** (Issue 0085 — das Wiki sagt dazu nichts, siehe
+> [§15](#15-lücken-der-quelle)). Die beiden Wurzelformen tragen **verschiedene** Grenz-Ids, „über die
+> Ziel-Id" ist also der einzige gemeinsame Schlüssel. Maßgeblich ist die **aufgelöste** Ziel-Id (bei
+> einer Link-auf-Link-Kette laufen sie und die rohe `targetId` auseinander) **plus der Rahmen**, und
+> der Rahmen ist die konkrete Kontingent-Instanz, nicht die Rahmenart: zwei leere Kontingente sind
+> zwei offene Pflichten. Von zwei Meldungen desselben Schlüssels überlebt die **erste** in
+> Berichtsreihenfolge — es gibt keine Vorzugsregel zugunsten einer der beiden Formen.
+>
+> Die Absenz zählt dabei unter der **Link-Id und der aufgelösten Ziel-Id**: eine über einen
+> `entryLink` gesetzte Auswahl trägt die Link-Id (siehe [§15](#15-lücken-der-quelle),
+> `.ros`-Struktur), führt ein Katalog aber beide Wurzelformen, kann dieselbe Einheit unter der
+> Ziel-Id im Roster stehen.
+>
+> Ein Wurzel-`entryLink` auf eine `selectionEntryGroup` ist damit **nicht** abgedeckt — §9.9 spricht
+> nur von Einträgen und Links auf sie; die Gruppenform ist eine eigene, noch offene Frage
+> (Issue 0107).
+
 ---
 
 ## 10. Collective Entries
@@ -1296,7 +1313,8 @@ Lücken, die uns bisher konkret getroffen haben:
 | Lücke | Was fehlt | Wo es uns betrifft |
 |-------|-----------|--------------------|
 | **`.ros`-Struktur** | Die Abschnitte *Roster*, *Force* und *Selection* stehen im Wiki als `TODO`. Es gibt **keine** Aussage darüber, welche Id (`entryId`, `entryLinkId`, `entryGroupId`) die Identität einer Auswahl trägt. | Issue 076 — welche Id der Roster-Adapter binden soll |
-| **Grenze am Verweis oder am Ziel** | Belegt ist nur, dass ein `entryLink` eigene `constraint`s tragen darf und dass ein Modifier am Link dessen Grenzwerte ändert. Ob eine am Link deklarierte Grenze *für den Link* oder *für das Ziel* gilt, steht nirgends. | Issue 076 |
+| **Grenze am Verweis oder am Ziel** | Belegt ist nur, dass ein `entryLink` eigene `constraint`s tragen darf und dass ein Modifier am Link dessen Grenzwerte ändert. Ob eine am Link deklarierte Grenze *für den Link* oder *für das Ziel* gilt, steht nirgends. | Issue 076; für die Pflichteinheit am Wurzel-`entryLink` entscheidet Issue 0085 es zugunsten des Links — der Anker dort wertet **nur** dessen eigene Grenzen aus, eine eigene `min`-Grenze des Ziels feuert nicht mit ([§9.9](#99-armeeweite-pflichteinheit-min-constraint-auf-einem-wurzeleintrag)) |
+| **Entdopplung der beiden Wurzelformen** | §9.9 sagt „über die Ziel-Id entdoppelt", aber nicht *welche* Ziel-Id (roh oder aufgelöst), ob der Rahmen zum Schlüssel gehört und welche der beiden Meldungen überlebt. | Der Kasten in [§9.9](#99-armeeweite-pflichteinheit-min-constraint-auf-einem-wurzeleintrag) beschreibt die in Issue 0085 getroffene Entscheidung: aufgelöste Ziel-Id plus konkrete Rahmen-Instanz, und die erste Meldung in Berichtsreihenfolge überlebt |
 | **`scope="primary-catalogue"`** | Die Aufzählung kennt `parent\|roster\|force\|primary category` und Vorfahren-Ids — `primary-catalogue` kommt nicht vor, obwohl reale Kataloge es verwenden. | [Der Kasten in §7.6](#scope-primary-catalogue) beschreibt die in Issue 077 aus den Daten belegte Semantik: das Armeebuch des umschließenden Kontingents, als Identitätsprüfung statt als Zählrahmen. |
 | **`type` am `entryLink`** | Dass ein `selectionEntry` ein `type` (`unit\|model\|upgrade`) trägt, ist dokumentiert. Ob ein Verweis den Typ seines Ziels erbt, nicht. | Issue 078 |
 | **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | [§7.6](#76-constraint) dieses Dokuments beschreibt die in Issue 079 aus den Daten belegte Semantik: `-1` = unbegrenzt nur als **hingeschriebener** Wert (Constraint-`value`, `set`-Modifierwert auf eine Grenze, `defaultCostLimit`, eingestelltes Roster-`costLimit` — Issue 0096); errechnete negative Werte sind kein Sentinel. |

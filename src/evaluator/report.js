@@ -36,7 +36,7 @@
  */
 
 import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, isReportableAnchorKind } from './model.js';
-import { selectableSlotsOf, pathOf } from './evalTree.js';
+import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage } from './violationClassification.js';
@@ -176,6 +176,90 @@ function dedupeArmyWideCategoryViolations(results) {
       // Synthese) zaehlt nicht — sonst ueberlebte es vor dem Wurzel-Phantom.
       kept[survivorIndex] = result;
     }
+  }
+  return kept;
+}
+
+/**
+ * Die Definitionsarten der beiden gleichwertigen **Wurzelformen** einer
+ * Pflichteinheit (`docs/battlescribe-data-format.md` §9.9): der
+ * Wurzel-`selectionEntry` und der Wurzel-`entryLink` auf ihn.
+ */
+const ROOT_FORM_DEFINITION_KINDS = Object.freeze(new Set([
+  DefinitionKind.ENTRY,
+  DefinitionKind.ENTRY_LINK,
+]));
+
+/** Die Bezugsrahmen, in denen eine Wurzelform ihre Pflicht ausdrueckt (§9.9). */
+const ROOT_FORM_DUTY_SCOPES = Object.freeze(new Set([
+  ScopeKeyword.ROSTER,
+  ScopeKeyword.FORCE,
+]));
+
+/**
+ * Der Entdopplungs-Schluessel einer Wurzelform-Pflicht — `null`, wenn das
+ * Ergebnis keine ist und die Regel es unangetastet laesst.
+ *
+ * Der Schluessel ist **aufgeloeste Ziel-Id plus Rahmen** (Issue 0085, D3/D6):
+ *
+ * - die *aufgeloeste* Ziel-Id, nicht die rohe `targetId` — nur sie ist die Id,
+ *   die die andere Wurzelform (der Wurzel-`selectionEntry`) als eigene `def.id`
+ *   traegt, und bei einer Link-auf-Link-Kette laufen beide auseinander;
+ * - der Rahmen ist die **konkrete Instanz** ({@link frameKeyOf} des tragenden
+ *   Knotens), nicht die Rahmenart: zwei leere Kontingente sind zwei offene
+ *   Pflichten, nicht eine.
+ *
+ * Zugeschnitten ist die Regel auf die Wurzelformen selbst: ein Pflicht-Anker an
+ * der Wurzel oder in einem Kontingent, dessen Definition ein Eintrag oder ein
+ * Verweis auf einen Eintrag ist, mit einer armee- oder kontingentweiten Grenze.
+ * Kategorie-Anker bleiben aussen vor — fuer sie gilt
+ * {@link dedupeArmyWideCategoryViolations}; Anker unter einer belegten Auswahl
+ * (gruppen-/eltern-skopierte Pflichten) ebenso.
+ */
+function rootFormDutyKeyOf(result) {
+  const node = result.anchor;
+  if (node.anchorKind !== AnchorKind.MANDATORY_PHANTOM) return null;
+  if (!ROOT_FORM_DEFINITION_KINDS.has(node.def.kind)) return null;
+  if (!ROOT_FORM_DUTY_SCOPES.has(result.limit.scope)) return null;
+  const frame = node.parent;
+  if (frame === null || (!frame.isRoot && !frame.isForce)) return null;
+  const targetId = node.def.resolved?.id ?? node.def.id;
+  return `${frameKeyOf(frame)} ${targetId}`;
+}
+
+/**
+ * Entdoppelt die **beiden Wurzelformen derselben Pflichteinheit** in der
+ * Meldungsliste (`docs/battlescribe-data-format.md` §9.9: „Fuehrte ein Katalog
+ * dieselbe Pflicht in beiden Formen, wird sie ueber die Ziel-Id entdoppelt —
+ * genau ein Verstoss").
+ *
+ * Hintergrund: derselbe Katalog kann die Pflicht als Wurzel-`selectionEntry`
+ * **und** als Wurzel-`entryLink` auf genau diesen Eintrag fuehren. Beide Formen
+ * bekommen im fehlenden Fall ihren eigenen Pflicht-Anker (`evalTree.js`), und
+ * beide tragen **verschiedene** Grenz-Ids — die vorhandene Entdopplung ueber
+ * `(Grenz-Id, gezaehlte Ziel-Id)` trennt sie also. Entdoppelt wird deshalb ueber
+ * {@link rootFormDutyKeyOf}: aufgeloeste Ziel-Id plus Rahmen.
+ *
+ * Es ueberlebt die **erste** Meldung in Berichtsreihenfolge (Issue 0085, D7) —
+ * dieselbe Vorzugsregel wie in {@link dedupeArmyWideCategoryViolations}; zwei
+ * Entdopplungen mit gegenlaeufiger Praeferenz im selben Bericht waeren eine
+ * Falle. Verworfen werden nur die Meldungen der **weiteren Anker**: traegt ein
+ * Anker mehrere Grenzen, bleiben sie vollstaendig — die Regel entdoppelt
+ * Wurzelformen, nicht Grenzen. Wie bei den Kategorie-Grenzen bleiben zudem die
+ * Ergebnisse und damit die Faehigkeitsdatensaetze beider Slots unberuehrt.
+ */
+function dedupeRootFormMandatoryViolations(results) {
+  const kept = [];
+  const survivingAnchorByKey = new Map();
+  for (const result of results) {
+    const key = rootFormDutyKeyOf(result);
+    if (key === null) {
+      kept.push(result);
+      continue;
+    }
+    const survivor = survivingAnchorByKey.get(key);
+    if (survivor === undefined) survivingAnchorByKey.set(key, result.anchor);
+    if (survivor === undefined || survivor === result.anchor) kept.push(result);
   }
   return kept;
 }
@@ -362,12 +446,14 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     // Ergebnis am Angebots-Anker faellt heraus (`constraints.js`, `isReportable`):
     // das Nichtgewaehlte speist Faehigkeitsdatensaetze, aber nie die Meldungsliste.
     // Armeeweite Kategorie-Grenzen melden dabei genau **einmal**
-    // ({@link dedupeArmyWideCategoryViolations}, §9.9) — die Ergebnisse selbst
+    // ({@link dedupeArmyWideCategoryViolations}, §9.9), und eine in beiden
+    // Wurzelformen gefuehrte Pflichteinheit ebenso
+    // ({@link dedupeRootFormMandatoryViolations}, §9.9) — die Ergebnisse selbst
     // bleiben vollstaendig, nur die Meldungsliste entdoppelt.
     violations: [
-      ...dedupeArmyWideCategoryViolations(
+      ...dedupeRootFormMandatoryViolations(dedupeArmyWideCategoryViolations(
         [...results, ...budgetViolations].filter(result => result.isReportable && !result.satisfied),
-      ).map(result => toDerivedViolation(result, classificationContext)),
+      )).map(result => toDerivedViolation(result, classificationContext)),
       ...authorViolationsOf(slots, classificationContext),
     ],
     capabilities,

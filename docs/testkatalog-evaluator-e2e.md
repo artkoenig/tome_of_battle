@@ -555,7 +555,7 @@ Pflicht erklärt.
 | :--- | :--- | :--- |
 | 01 | Standardliste, **keine** Ogerbullen | Die Pflicht feuert genau einmal (0 von 1). Der Platz für die Ogerbullen erscheint als **Pflicht-Stelle**, nicht als Angebot |
 | 02 | Standardliste **mit** einer Einheit Ogerbullen | Pflicht erfüllt — keine Verletzung. Der Platz ist **belegt** |
-| 03 | Sonderliste „Ironskin Tribe", **keine** Ogerbullen | Dort verlangt das Buch sie nicht: **keine** Verletzung, der Platz ist ein blosses **Angebot**. Der Beleg, dass der Zusatz des Verweises gelesen wird |
+| 03 | Sonderliste „Ironskin Tribe", **keine** Ogerbullen | Dort verlangt das Buch sie nicht: **keine** Verletzung, und der Platz trägt keine offene Pflicht. Der Beleg, dass der Zusatz des Verweises gelesen wird |
 | 04 | Standardliste **und** „Ironskin Tribe" nebeneinander, in beiden keine Ogerbullen | Die Pflicht feuert **genau einmal** — nur für die Standardliste |
 | 05 | **Zwei** Standardlisten, Ogerbullen nur in der ersten | Die Pflicht feuert **genau einmal** — für die zweite. Die Zählung gilt je Kontingent, nicht für die ganze Armee |
 
