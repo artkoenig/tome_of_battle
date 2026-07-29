@@ -86,6 +86,19 @@ Acceptance criteria:
 
 ## Log
 
+- **2026-07-29, Test-Autor (Unit-Tests):** Drei neue Testdateien aus dem
+  Intent — `query.unitScope.test.js` (Kriterien 1+4: Rahmen = eigene Einheit,
+  Selbst-Einschluss, entryLink-Typ-Erbschaft, fail-closed ohne Einheit,
+  Mercenaries-Idiom durch die Fassade), `query.ancestorScope.test.js`
+  (Kriterium 2: Basis- und effektive Kategorien, Definitions-Id, strikte
+  Kette, Flags wirkungslos, `unsupportedField` bei Kostenart-Feld),
+  `evaluator.unitAncestorFixture.test.js` (Kriterium 3 an echten
+  Fixture-Katalogen; per Probelauf belegt: heute 10× `unresolvedScope`
+  `unit` + 1× `ancestor` im VC-Roster, 1× `unit` im Ogre+Mercenaries-Repro).
+  Rot-Beleg: `npx vitest run` über die drei Dateien — 26 Tests, 17 rot
+  (Assertion-Fehler aus fehlendem Scope-Support, keine Harness-Fehler),
+  9 grün (Bestands-Pins), Exit-Code 1.
+
 ## Checkpoints
 
 ### Before implementation
