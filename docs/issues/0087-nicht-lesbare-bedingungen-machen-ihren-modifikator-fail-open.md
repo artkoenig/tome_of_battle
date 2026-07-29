@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/87-umsetzen-eodz2h
 pr:
 ---
 
