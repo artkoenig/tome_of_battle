@@ -214,6 +214,69 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
   — genau wie beim `value="-1"`-Sentinel, der als Zeile stehen bleibt und auf
   die belegte Semantik verweist. Der Einwand kam vom Implementierer.
 
+- **2026-07-29, E2E-Szenario (Kriterium 3).** Der Black-Box-Autor hat
+  `docs/testing/primary-catalogue-scope/` geschrieben: 10 Roster gegen **einen**
+  Datensatz (`.gst` + Ogre + VC + O&G + Mercenaries), die Selektionen der Paare
+  byte-gleich — einzige Variable ist die `entryId` der `<force>`. Er hat dabei
+  eine schärfere Stelle gefunden als die aus dem Briefing: bei den Rhinox Riders
+  erzeugen **beide** Richtungen zählende Grenzen, der Kontrast ist also direkt
+  im Verletzungsbericht messbar statt nur an der Sichtbarkeit. **Roster 10 ist
+  der Prüfstein für die Ableitungs-Entscheidung:** eine VC-Force, deren `.ros`
+  fälschlich `catalogueId="731d-…"` (Oger) behauptet, muss sich wie die reine
+  VC-Liste verhalten. `npx vitest run src/evaluator/e2e.testcatalog.test.js` →
+  **126 Fälle, Exit 0**.
+- **2026-07-29, Review-Runde 1 (frischer Kontext, ganzer Diff).** Fünf Befunde,
+  jeder mit Reproduktion; alle fünf liegen innerhalb der Absicht und sind
+  behoben. Der Reviewer hat zusätzlich per Mutationsprobe belegt, dass die
+  Kriterien 2 und 3 **Zähne** haben: das Feature abgeschaltet → 15 Tests rot in
+  3 Dateien, und 4 der 10 E2E-Roster fallen.
+
+  | Kriterium | Runde 1 |
+  | --- | --- |
+  | 1 — Bedeutung belegt | 0 |
+  | 2 — Query wird ausgewertet | 1 (B3) |
+  | 3 — Szenario an echten Daten | 2 (B2, B4) |
+  | 4 — Suite grün, Belege | 2 (B1, B5) |
+  | ohne Kriteriumsbezug | 0 |
+  | **Summe** | **5** |
+
+  - **B1 (schwer), behoben.** `scripts/lib/evaluator-measurement.js` bildet die
+    Fassade nach und reichte den Herkunftsindex an keiner der drei Stellen
+    durch. Folge: `node scripts/measure-evaluator.js` — ein in `CLAUDE.md`
+    dokumentiertes Kommando — brach mit „Die nachgebildete Pipeline weicht von
+    der Fassade ab" ab (Fassade 66 `unresolvedScope`, Messung 74). Auf `main`
+    lief derselbe Befehl durch. Der Abdrift-Wächter hat also genau seine Aufgabe
+    erfüllt: der fehlende Pfad war **nicht** still. Behoben; die Messung läuft
+    wieder alle drei Reihen durch und endet nur noch an der dokumentierten
+    100-ms-Schwelle, wie auf `main`.
+  - **B2 (mittel), behoben.** `constraint-matrix.md` behauptete nach dem
+    Szenario-Commit weiter „noch kein E2E-Szenario" (Zeilen 39, 62) — von
+    `66abebb` geschrieben, von `19f24d7` widerlegt, nicht nachgezogen. Beide
+    Zeilen stehen jetzt auf ✅ mit dem Szenario als Beleg.
+  - **B3 (mittel), an den Test-Autor.** Die Vertragszeile „Feld ungleich
+    `SELECTION_COUNT` ⇒ `unsupportedField`" war von **keinem** Test gehalten:
+    zu `if (false && …)` mutiert blieb die Suite grün (50 Dateien, 677 Tests,
+    Exit 0). Zum Kontrast fiel die Prozent-Zeile bei derselben Prozedur mit 2
+    roten Tests.
+  - **B4 (leicht), an den Test-Autor.** Ebenso die Rekursion in
+    Unter-Kontingente (`catalogSet.js:62`). In den Fixtures nicht erreichbar
+    (alle Kontingente stehen auf Wurzelebene), laut Plan aber ausdrücklich
+    Gegenstand — und bei geschachtelten Daten wirksam, weil `forceRoot` das
+    **innerste** Kontingent ist.
+  - **B5 (leicht), behoben.** Der Record hing eine Änderung hinterher: 2285
+    statt gemessener 2295 Tests, der Szenario-Commit fehlte im Log, Checkpoint 2
+    war leer.
+- **2026-07-29, ein Fund außerhalb der Absicht — trotzdem behoben, mit
+  Begründung.** Der Reviewer fand nebenbei, dass `testkatalog-evaluator-e2e.md`
+  seine **eigene** Deckungsgleichheits-Regel verletzt: das Szenario
+  `unlimited-modifier-toggle` (5 Roster, mit Manifest, läuft im Runner) fehlte
+  ganz, die Summe stand auf 111 statt 116. Vorbestehend, auch auf `main`.
+  Normalerweise ginge das als eigenes Issue an den Menschen. Hier nicht: dieser
+  Lauf **schreibt** diese Summe selbst (111 → 121), und 121 wäre eine Zahl
+  gewesen, von der ich weiß, dass sie falsch ist. Also Zeile und Abschnitt für
+  das fehlende Szenario ergänzt, Summe auf **126** — nachgemessen über alle 32
+  `scenario.json`: exakt 126 Roster-Fälle, gleich der Fallzahl des Runners.
+
 ## Checkpoints
 
 ### Before implementation

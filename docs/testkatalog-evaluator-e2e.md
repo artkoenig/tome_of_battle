@@ -104,8 +104,9 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`author-message-tokens`](testing/author-message-tokens/) | Definitive Ogre + Mercenaries | 3 |
 | [`shared-target-two-entrylinks`](testing/shared-target-two-entrylinks/) | Definitive VC + Mercenaries | 4 |
 | [`entrylink-raw-type-counting`](testing/entrylink-raw-type-counting/) | Definitive VC + Mercenaries | 3 |
+| [`unlimited-modifier-toggle`](testing/unlimited-modifier-toggle/) | Definitive O&G / Mercenaries | 5 |
 | [`primary-catalogue-scope`](testing/primary-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 10 |
-| **Summe** | | **121** |
+| **Summe** | | **126** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -476,6 +477,21 @@ Verweis in die Armee.
 | 01 | Border-Patrols-Armee mit **2 direkten** Skeletons-Einheiten (je 10 Modelle) | Keine Autor-Meldung am Slot „Border Patrols rules" — die direkte Grundlinie |
 | 02 | 1 direkte Skeletons-Einheit + **Ogre Bulls über den Verweis** | Ebenfalls keine Meldung: die verlinkte Einheit zählt als 2. Einheit — identisch zur direkten Form |
 | 03 | 4 direkte Skeletons-Einheiten + **Ogre Bulls über den Verweis** als fünfte | Die Obergrenze kippt **nur**, wenn die verlinkte Einheit mitzählt: genau eine Meldung „mindestens ZWEI, höchstens VIER Einheiten" |
+
+## `unlimited-modifier-toggle`
+
+Prüft den Sentinel `-1` („unbegrenzt") **im Zusammenspiel mit `set`-Modifikatoren** —
+also beide Richtungen des Schalters, die das Schwester-Szenario
+`max-unlimited-violation` offen lässt (dort nur „Rohwert `-1` ohne erfüllte
+Bedingung feuert nie").
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Goblin-Einheit mit 26 Modellen, **ohne** „Border Patrols rules" | Keine Verletzung: die Modellgrenze ist unbegrenzt, solange die Bedingung nicht greift |
+| 02 | Dieselbe Einheit mit 26 Modellen, **mit** „Border Patrols rules" | Der Deckel von 25 greift: genau eine Verletzung (Ist 26) |
+| 03 | Goblin-Einheit mit genau 25 Modellen, mit „Border Patrols rules" | Keine Verletzung — die gesetzte Grenze ist exakt eingehalten |
+| 04 | Amazon-Cold-One-Outriders **ohne** „Allow experimental rules?" | Die Einheit ist dort gar nicht erlaubt (Rohwert max 0): eine Verletzung |
+| 05 | **Zwei** solche Einheiten **mit** „Allow experimental rules?" | Keine Verletzung: der Modifier hebt die Grenze per `set -1` auf |
 
 ## `primary-catalogue-scope`
 

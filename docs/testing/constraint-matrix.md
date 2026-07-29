@@ -36,7 +36,7 @@ Diese Matrix ordnet die im Projekt definierten XSD-Elemente (`constraint`, `cond
 | **type** | `atMost` | `remaining-condition-types` | ✅ |
 | **type** | `notInstanceOf` | `remaining-condition-types` | ✅ |
 | **childId** | `model` / Spezifische ID | `evaluator-bug-childid-model` | ✅ |
-| **scope** | `primary-catalogue` (das Armeebuch des umschließenden Kontingents, Issue 077) | Modultests `query.primaryCatalogueScope`, `evaluator.primaryCatalogueFixture` — noch kein E2E-Szenario | ❌ (E2E) |
+| **scope** | `primary-catalogue` (das Armeebuch des umschließenden Kontingents, Issue 077) | `primary-catalogue-scope` (10 Roster, beide Lagen je Armeebuch); Modultests `query.primaryCatalogueScope`, `evaluator.primaryCatalogueFixture` | ✅ |
 | *(Conditions erben Scope, Field, etc. von QueryBase)* | - | - | - |
 
 ## 3. Repeats (Modifier Multiplikatoren)
@@ -59,7 +59,7 @@ Hier werden interessante, komplexe Interaktionen zwischen Attributen festgehalte
 | `max` auf `categoryLink` in `forceEntry` | Armeeweite Limitierung einer bestimmten Kategorie. | `explorer-category-constraints` | ✅ |
 | Verschachtelter `modifier` mit `<repeat>` | Erhöht ein Limit in Stufen pro X gekauften Modellen einer anderen Auswahl. | `mercenaries-repeat-bug` | ✅ |
 | `condition` mit `type="equalTo"` auf Punktebudget (`field="limit::..."`) | Modifikator greift ein, wenn ein Limit genau getroffen wird (z.B. Army Budget). | *Vorkommen gefunden* | ❌ |
-| `condition` mit `type="notInstanceOf"` + `scope="primary-catalogue"` | Modifikator greift, wenn das Armeebuch des Kontingents ein anderes ist (sehr häufig in Mercenaries). Die Engine wertet den Rahmen seit Issue 077 aus — er ist keine `unresolvedScope`-Lücke mehr. | Modultest `query.primaryCatalogueScope` (`notInstanceOf`, beide Lagen) — noch kein E2E-Szenario | ❌ (E2E) |
+| `condition` mit `type="notInstanceOf"` + `scope="primary-catalogue"` | Modifikator greift, wenn das Armeebuch des Kontingents ein anderes ist (sehr häufig in Mercenaries). Die Engine wertet den Rahmen seit Issue 077 aus — er ist keine `unresolvedScope`-Lücke mehr. | `primary-catalogue-scope` (Roster 02/03/07/09 sind die `notInstanceOf`-Seite); Modultest `query.primaryCatalogueScope` | ✅ |
 | `constraint` mit `shared="false"` + `scope="parent"` | Individuelles Limit für spezifische Eltern-Auswahlen (O&G / Vampire Counts). | *Vorkommen gefunden* | ❌ |
 | `condition` mit `type="atLeast"` + `includeChildForces="true"` | Bedingung zählt Einheiten über verbündete Kontingente hinweg (oft in Border Patrols). | *Vorkommen gefunden* | ❌ |
 | Mehrere `modifier` (gemischt `set` + `increment`/`decrement`) auf **dasselbe** Ziel-Feld, je eigenständig konditioniert | Stapel-Semantik ohne definierte Anwendungsreihenfolge; Kosten-Id `ecfa-8486-4f6c-c249` trägt in Vampire Counts 47 gestapelte Modifikatoren. | *Vorkommen gefunden (VC, Mercenaries, Orcs)* | ❌ |
