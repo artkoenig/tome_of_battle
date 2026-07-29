@@ -158,8 +158,8 @@ Sprachneutral, typisiert notiert. Fehlerpfade sind explizit; nichts wird still v
 // vendored BattleScribe-XSD generierten SSOT (ADR-0031), nicht aus einer eigenen,
 // driftgefährdeten Kopie.
 enum ConstraintKind { min, max }                                  // XSD-SSOT
-enum CountedField   { SELECTION_COUNT, COST_SUM(costTypeId),
-                      LIMIT_VALUE(costTypeId) }   // LIMIT_VALUE: eingestellte Budgetgrenze (aus dem Roster), keine Baum-Zählung; XML-`field="limit::<costTypeId>"`
+enum CountedField   { SELECTION_COUNT, FORCE_COUNT, COST_SUM(costTypeId),
+                      LIMIT_VALUE(costTypeId) }   // FORCE_COUNT: Kontingentanzahl, XML-`field="forces"`; LIMIT_VALUE: eingestellte Budgetgrenze (aus dem Roster), keine Baum-Zählung; XML-`field="limit::<costTypeId>"`
 enum ConditionKind  { lessThan, greaterThan, equalTo, notEqualTo,  // XSD-SSOT
                       atLeast, atMost, instanceOf, notInstanceOf }
 enum ModifierKind   { set, increment, decrement, add, remove,      // XSD-SSOT (10 Werte)
