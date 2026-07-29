@@ -204,6 +204,30 @@ Acceptance criteria:
   dedupeBounds 2/2 grün; `npx vitest run src/evaluator` 58 Dateien, 743
   Tests, 742 grün, 1 rot = Vorbestand 0113; Lint/Typecheck Exit 0.
 
+- **2026-07-29, Review Runde 2** (frischer Kontext, ganze Intent). Fakten:
+  Suite 58 Dateien / 743 Tests / 742 grün / 1 rot (= Vorbestand 0113, erneut
+  gegen `origin/main` verifiziert), Lint/Typecheck Exit 0. Alle vier
+  Kriterien erfüllt; B1/B2 nachweislich adressiert; Protokoll deckungsgleich.
+  Ein Befund:
+  - **F1 (fixen):** Der Entdopplungsschlüssel kennt keine Grenz-Identität —
+    zwei **verschiedenwertige** `min`-Grenzen (gleiches Feld, gleicher
+    Rahmen) am **selben** Wurzeleintrag kollabieren zu einer Meldung, die
+    stärkere Grenze (bound 3) verschwindet (Repro: main 2 → HEAD 1). Gleiche
+    Klasse wie B1, vom eigenen Diff eingeführt → wird gefixt.
+  - **Entscheidung zur F1-Semantik** (Default, 2026-07-29): Entdoppelt wird
+    nur die zweite Kodierung *derselben* Pflicht — gleicher Schlüssel
+    (Feld, Art, Rahmen, Ziel-Id) **und gleicher effektiver Grenzwert** (dieselbe
+    Pflicht hat je Auswertung denselben Bound, vgl. §9.9: beide Kodierungen
+    meinen dasselbe) **und ein anderer Anker-Knoten**. Ergebnisse am selben
+    Anker sind immer verschiedene Grenzen und entdoppeln nie (deckt auch
+    identische Duplikat-Grenzen wie auf `main`).
+  - **Blast-Radius-Notiz des Reviewers (kein Befund, keine Aktion):**
+    `collectRootDefinitions` steigt jetzt in die Kinder eines Wurzel-Links ab
+    — am Link *deklarierte* Kind-Einträge mit `min` synthetisieren nun ein
+    Phantom. Widerspricht weder §9.9 noch ADR-0032 (nicht über `resolved`
+    bezogen), von keinem Kriterium gefordert, kein falsches Ergebnis
+    nachweisbar.
+
 ## Checkpoints
 
 ### Before implementation
