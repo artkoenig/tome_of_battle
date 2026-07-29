@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/offene-issues-cy79fe
 pr:
 ---
 
@@ -61,6 +61,14 @@ Acceptance criteria:
 
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28), Fund mit ausgeführten Repros gegen die echte Fassade.
+- **Gegenrichtung nicht in diesem Lauf** (Default, 2026-07-29): Die
+  Wiki-Regel „bereits gewählte, effektiv versteckte Auswahlen erzeugen einen
+  Fehler" ist ein eigenes Feature mit eigener Semantik; sie wird als eigenes
+  Issue gefiled und wartet auf ihren eigenen Lauf.
+- **Doku wird im selben Lauf nachgezogen** (aus dem Intent, 2026-07-29): Die
+  Verallgemeinerung von §5.6 auf alle Ankerarten mit Min-Grenzen wird in
+  `docs/battlescribe-data-format.md` (§5.6/§8) als Projektentscheidung
+  dokumentiert, mit Verweis auf dieses Issue.
 
 ## Log
 
