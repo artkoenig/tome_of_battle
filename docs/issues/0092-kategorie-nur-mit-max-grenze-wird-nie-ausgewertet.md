@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-jnwa1m-0092
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/158
 ---
 
 # Kategorie nur mit Max-Grenze wird nie ausgewertet
@@ -155,3 +155,16 @@ Acceptance criteria:
   knip exit 1 are pre-existing on origin/main, verified by the reviewer.
 
 ## Retro
+
+- The heaviest run of the session (two fix loops), and the process carried
+  it: each refutation became failing tests BEFORE the fix, so the final
+  design is admitted by 20 pinned behaviours instead of asserted by a
+  comment. The refuted "no double report possible" claim shows why
+  confident absolutes in Decisions deserve suspicion — reworded rule for
+  the future: record what the code checks, not what cannot happen.
+- An E2E scenario had pinned the bug itself as a "Domänenkonvention" —
+  worth a metis thought: conventions recorded during scenario authoring
+  should cite data evidence, or they fossilize engine limitations.
+- The blocked→unblocked handoff (implementer refuses to touch pins,
+  e2e-testcase-author re-derives from data) worked exactly as the role
+  boundaries intend.
