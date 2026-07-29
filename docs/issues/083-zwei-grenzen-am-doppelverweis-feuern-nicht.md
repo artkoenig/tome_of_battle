@@ -136,6 +136,15 @@ Acceptance criteria:
     Referenz solche Vorkommen dennoch — die wörtliche Eimer-Lesart der Engine
     weicht hier vom Referenzverhalten ab.
 
+- **2026-07-29, test-author (blind from the intent):** failing tests written
+  and proven. `src/evaluator/constraints.carrierDescendants.test.js` (4 fail /
+  3 guard-pass: linked-group max stays silent, linked-group min fires
+  spuriously with "Ist 0" — direct proof the engine counts the carrier's own
+  id —, roster-max misses nested occurrences twice); scenario manifest
+  `shared-target-two-entrylinks` re-expects `0aa08f91` and `76e2c1c8` as
+  firing (rosters 03/04 fail, 01/02 pin the legal boundary as absent).
+  Full E2E runner: 124/126 pass, only the two updated cases fail.
+
 ## Checkpoints
 
 ### Before implementation
