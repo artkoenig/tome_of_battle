@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/independent-implementation-auto-merge-m1o0m8-083
 pr:
 ---
 
@@ -140,9 +140,20 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — the maintainer asked for autonomous
+  implementation of the backlog; this issue is fully specified (criteria
+  falsifiable, root causes recorded in the Log), so it is a pure
+  implementation task.
+- What surprised me? The two silent limits have two *different* root causes:
+  a link-to-group never gets a group anchor (`groupDefinitionsWithLimits`
+  only descends into `kind === GROUP` children), and the bucket assignment in
+  `indexNodeContribution` is frame-relative, so `roster`-scope reads nested
+  contributions from a bucket that `includeChildSelections="false"` excludes.
+- What am I assuming without having verified it? That the audit's root-cause
+  analysis in the Log is accurate — the failing tests and the implementation
+  will verify it against the real facade. And the decided reading of the wiki
+  semantics: a constraint counts the selections below its carrier, within its
+  scope.
 
 ### Before the PR
 
