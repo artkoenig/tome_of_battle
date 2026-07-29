@@ -172,11 +172,37 @@ const BOOLEAN_FALSE_XML = 'false';
 const XML_MIME_TYPE = 'application/xml';
 
 /**
- * Wurzel-Tag des Fehlerdokuments, das `DOMParser` fuer nicht wohlgeformtes XML
- * liefert (WHATWG-DOM-Parsing; Browser wie jsdom betten das Element ins
- * Dokument ein, jsdom macht es zur Wurzel — beides wird erkannt).
+ * Lokaler Name des Fehlerelements, das `DOMParser` fuer nicht wohlgeformtes XML
+ * liefert (WHATWG-DOM-Parsing; Chrome bettet es unterhalb der Original-Wurzel
+ * ein, jsdom macht es zur Wurzel — beides wird erkannt).
  */
 const PARSER_ERROR_TAG = 'parsererror';
+
+/**
+ * Die Namensraeume, in denen `DOMParser` sein Fehlerelement ablegt: Mozilla-NS
+ * (jsdom/Firefox), XHTML-NS (Chrome/WebKit). Der Filter ist wesentlich, nicht
+ * kosmetisch (Issue 0105): ohne ihn gilt jedes Element namens `parsererror`
+ * als Parser-Fehler — auch ein wohlgeformtes gleichnamiges Element im
+ * Katalog-Namensraum, das damit faelschlich einen ganzen Katalog verwirft.
+ */
+const PARSER_ERROR_NAMESPACES = Object.freeze([
+  'http://www.mozilla.org/newlayout/xml/parsererror.xml',
+  'http://www.w3.org/1999/xhtml',
+]);
+
+/**
+ * Ob `DOMParser` fuer diese Quelle ein Fehlerdokument geliefert hat. Die Suche
+ * laeuft ueber das ganze Dokument und deckt damit beide Einbettungsformen ab:
+ * das Fehlerelement als Wurzel (jsdom) wie als Kind der Original-Wurzel
+ * (Chrome).
+ *
+ * @param {Document} document Das geparste Dokument.
+ */
+function hasParserError(document) {
+  return PARSER_ERROR_NAMESPACES.some(
+    namespace => document.getElementsByTagNameNS(namespace, PARSER_ERROR_TAG).length > 0,
+  );
+}
 
 /** Die erwarteten Wurzel-Tags einer Katalogquelle: `.cat` bzw. `.gst`. */
 const EXPECTED_ROOT_TAGS = Object.freeze(new Set(['catalogue', 'gameSystem']));
@@ -949,7 +975,7 @@ export function parseCatalogue(catalogXml, { sourceName = null } = {}) {
   const diagnostics = [];
   const document = new DOMParser().parseFromString(catalogXml, XML_MIME_TYPE);
   const root = document.documentElement;
-  if (root === null || document.getElementsByTagName(PARSER_ERROR_TAG).length > 0) {
+  if (root === null || hasParserError(document)) {
     return unreadableCatalogue(CatalogueUnreadableReason.MALFORMED_XML, sourceName, null);
   }
   if (!EXPECTED_ROOT_TAGS.has(root.tagName)) {

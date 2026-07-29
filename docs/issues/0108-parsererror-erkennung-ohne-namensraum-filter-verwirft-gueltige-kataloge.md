@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/issues-90-abarbeiten-7ymutc
 pr:
 ---
 
@@ -43,28 +43,95 @@ Acceptance criteria:
 
 ## Plan
 
+Ein Ein-Modul-Fix in `src/evaluator/catalogReader.js`: die Suche nach dem
+Fehlerdokument bekommt einen Namensraum-Filter. Statt
+`document.getElementsByTagName('parsererror')` (jeder Namensraum, auch der
+Katalog-Namensraum) wird über `getElementsByTagNameNS` nur in den beiden
+Namensräumen gesucht, in denen `DOMParser` seine Fehlerdokumente ablegt:
+Mozilla-NS (jsdom/Firefox) und XHTML-NS (Chrome/WebKit). Beide
+Einbettungsformen bleiben abgedeckt, weil `getElementsByTagNameNS` auf dem
+Dokument den ganzen Baum inklusive Wurzel absucht.
+
 ## Tasks
+
+- [x] Fehlschlagenden Test aus dem Intent schreiben (Repro + beide
+      Einbettungsformen).
+- [x] Namensraum-Filter in `parseCatalogue` einziehen.
+- [x] Evaluator-Suite grün (Kommando, Umfang, Exit-Code).
 
 ## Decisions
 
 - **Herkunft:** Blast-Radius-Befund F1 der Review-Runde 1 von Issue 0097
   (2026-07-28); dort bewusst nicht gefixt (außerhalb des Intents, Regel:
   geht an den Menschen bzw. ins Backlog).
+- **Chrome-Form deterministisch statt per Browser geprüft:** die
+  Chrome-Einbettung (`parsererror` im XHTML-Namensraum *unterhalb* der
+  Original-Wurzel) wird im Test als wohlgeformtes XML nachgebaut, das genau
+  diese DOM-Form erzeugt. Damit prüft die Suite die Chrome-Form ohne
+  Puppeteer-Lauf; ein echter Browser-Lauf war in dieser Session
+  ausgeschlossen.
+- **Zwei Namensräume, keine Heuristik:** gefiltert wird auf die zwei
+  bekannten Fehler-Namensräume. Ein Element `parsererror` in *irgendeinem*
+  anderen Namensraum (insbesondere im Katalog-Namensraum oder ohne
+  Namensraum) gilt ausdrücklich als gewöhnlicher Katalog-Inhalt.
 
 ## Log
+
+- 2026-07-29: In jsdom nachgemessen: nicht wohlgeformtes XML (unverschlossener
+  Tag *und* leere Eingabe) liefert eine `parsererror`-**Wurzel** im
+  Mozilla-Namensraum `http://www.mozilla.org/newlayout/xml/parsererror.xml`.
+- 2026-07-29: Test zuerst geschrieben
+  (`src/evaluator/catalogReader.parserErrorNamespace.test.js`) und rot gesehen:
+  `npx vitest run src/evaluator/catalogReader.parserErrorNamespace.test.js`,
+  5 Fälle, 2 fehlgeschlagen (beide Kriterium-1-Fälle: `id` war `null` statt
+  `"cat-x"`), Exit-Code 1. Die drei Kriterium-2-Fälle waren schon vorher grün
+  und pinnen damit fest, dass der Fix die Erkennung nicht aufweicht.
+- 2026-07-29: Fix in `src/evaluator/catalogReader.js`: `hasParserError(document)`
+  sucht über `getElementsByTagNameNS` in den zwei Fehler-Namensräumen statt über
+  `getElementsByTagName` in allen. Danach grün:
+  `npx vitest run src/evaluator`, 53 Dateien / 709 Fälle, Exit-Code 0
+  (Basis vorher 52 / 704). Zusätzlich `npm run lint` (oxlint) Exit-Code 0 und
+  `npm run typecheck` (tsc --noEmit) Exit-Code 0. Der Puppeteer-E2E-Teil von
+  `npm test` wurde auf Anweisung dieser Session nicht ausgeführt.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja: ein eng begrenzter Fix an einer
+  Zeile Erkennungslogik in `src/evaluator/catalogReader.js`, plus Tests für
+  die drei Akzeptanzkriterien. Kein Verhalten außerhalb des Lesers wird
+  angefasst.
+- **What surprised me?** jsdom macht den `parsererror` auch bei *leerer*
+  Eingabe zur Dokumentwurzel — die jsdom-Form fiele damit selbst ohne
+  NS-Scan noch in die `UNEXPECTED_ROOT`-Prüfung (andere Diagnose-Ursache,
+  aber immer noch eine Diagnose). Der NS-Scan trägt also vor allem die
+  Chrome-Form, bei der die Original-Wurzel `catalogue` erhalten bleibt.
+- **What am I assuming without having verified it?** Dass Chrome/WebKit ihr
+  Fehlerdokument im XHTML-Namensraum ablegen und unter der Original-Wurzel
+  einbetten — übernommen aus der Puppeteer-Probe der Review-Runde 1 von
+  Issue 0097, in dieser Session nicht selbst im Browser nachgemessen (kein
+  Puppeteer-Lauf erlaubt), sondern als DOM-Form nachgebaut.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Kriterium 1: das Repro liefert
+  jetzt `id: "cat-x"` und `diagnostics: []` (Test). Kriterium 2: beide
+  Einbettungsformen werden weiter erkannt, die bestehenden
+  malformed-XML-Tests aus Issue 0097 bleiben unverändert und grün.
+  Kriterium 3: `npx vitest run src/evaluator`, 53 Dateien / 709 Fälle,
+  Exit-Code 0.
+- **What surprised me?** Dass der Filter für die *jsdom*-Form gar nicht
+  nötig gewesen wäre — dort ist der `parsererror` die Wurzel und wäre auch
+  über die Wurzel-Prüfung aufgefallen. Der Wert des Fixes liegt ganz auf der
+  Chrome-Form, wo die Original-Wurzel stehen bleibt und nur der NS-Scan den
+  Fehler sieht.
+- **What am I assuming without having verified it?** Weiterhin, dass
+  Chrome/WebKit den XHTML-Namensraum benutzen — die Chrome-Form ist im Test
+  als DOM-Form nachgebaut, nicht in einem echten Chrome gemessen. Wäre die
+  Annahme falsch, bliebe der Fehler in Chrome unerkannt (stille Rückkehr
+  zum Verhalten *vor* Issue 0097), gültige Kataloge kämen aber trotzdem
+  durch. Zweite Annahme: kein realer Katalog deklariert einen dieser beiden
+  Namensräume — das BattleScribe-Schema kennt keinen davon.
 
 ## Retro
