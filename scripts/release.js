@@ -1,6 +1,6 @@
 /**
  * Manueller Release-Workflow: berechnet und schreibt die nächste App-Version
- * in package.json. Wird vom Agenten aufgerufen, nachdem der Nutzer eine
+ * in package.json und package-lock.json. Wird vom Agenten aufgerufen, nachdem der Nutzer eine
  * vorgeschlagene oder eigene Version bestätigt hat (siehe CLAUDE.md,
  * Abschnitt "Version bump after merging a feature/fix main-issue").
  *
@@ -8,10 +8,11 @@
  * Datei-I/O (readPackageVersion/writePackageVersion) getrennt, damit die
  * Berechnung isoliert testbar bleibt.
  */
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { parseSemver, formatSemver, nextMinorVersion, nextPatchVersion } from './versioning.js';
 
 const PACKAGE_JSON_PATH = new URL('../package.json', import.meta.url);
+const PACKAGE_LOCK_PATH = new URL('../package-lock.json', import.meta.url);
 
 /** Bump-Arten, die dieses Skript vorschlagen kann. */
 export const BUMP_TYPES = Object.freeze({ PATCH: 'patch', MINOR: 'minor' });
@@ -52,6 +53,26 @@ export function writePackageVersion(version, path = PACKAGE_JSON_PATH) {
   return `v${pkg.version}`;
 }
 
+/**
+ * Zieht die neue Version in beiden Versionsstellen von package-lock.json nach
+ * (`.version` und `.packages[""].version`), damit package.json und Lockfile
+ * nach einem Release nicht auseinanderlaufen. Alle übrigen Einträge bleiben
+ * unangetastet; der Zeilenumbruch am Dateiende bleibt erhalten. Fehlt das
+ * Lockfile neben der package.json, ist das kein Fehler — dann gibt es nichts
+ * nachzuziehen.
+ * @param {{major:number,minor:number,patch:number}} version
+ * @param {string|URL} path
+ */
+export function writeLockfileVersion(version, path = PACKAGE_LOCK_PATH) {
+  if (!existsSync(path)) return;
+  const raw = readFileSync(path, 'utf8');
+  const lock = JSON.parse(raw);
+  lock.version = formatSemver(version);
+  if (lock.packages?.['']) lock.packages[''].version = formatSemver(version);
+  const trailingNewline = raw.endsWith('\n') ? '\n' : '';
+  writeFileSync(path, `${JSON.stringify(lock, null, 2)}${trailingNewline}`);
+}
+
 function resolveTargetVersion(current, action) {
   if (action === BUMP_TYPES.PATCH || action === BUMP_TYPES.MINOR) {
     return computeSuggestedVersion(current, action);
@@ -71,6 +92,7 @@ function main() {
   const current = readPackageVersion();
   const target = resolveTargetVersion(current, action);
   const tag = writePackageVersion(target);
+  writeLockfileVersion(target);
   console.log(`${formatSemver(current)} -> ${formatSemver(target)} (Tag: ${tag})`);
 }
 
