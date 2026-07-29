@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "name": "root-entrylink-mandatory",
+  "description": "Armeeweite Pflichteinheit in der zweiten Kodierung des Datenformats (§9.9): der min-Constraint haengt nicht an einem Wurzel-selectionEntry, sondern am Wurzel-entryLink 'Ogre Bulls' (d82e-111e-89b9-2be1 -> 7754-8b3d-df99-d2d5). Seine Basis ist min 0; ein Modifikator DES LINKS hebt sie auf 1 an, gegatet auf 'das Kontingent ist keine Instanz der Armeeliste Ironskin Tribe'. Fehlt die Einheit in einem Kontingent der Standardliste, muss die Grenze 32ed-26da-3f27-5c04 blockierend feuern (Ist 0, Grenze 1); in einem Ironskin-Tribe-Kontingent darf sie nicht feuern, weil die Bedingung dort nicht haelt. Der Bezugsrahmen scope=force zaehlt je Kontingent, nicht armeeweit.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-standard-missing-bulls.ros",
+      "description": "Ein Kontingent der Armeeliste 'Standard (OK-AB)' ohne jede Auswahl, insbesondere ohne Ogre Bulls. Der set-1-Modifikator des Wurzel-entryLinks greift (das Kontingent ist keine Ironskin-Tribe-Instanz), die effektive Untergrenze ist 1, gezaehlt werden 0 Ogre-Bulls-Selektionen im Kontingent. Die Pflicht muss blockierend feuern, genau einmal (ein Anker je Kontingent). Der Auswahlpunkt ist eine Pflicht-Stelle, kein Angebot.",
+      "expect": {
+        "firing": [
+          { "limitId": "32ed-26da-3f27-5c04", "actual": 0, "bound": 1, "count": 1 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "targetDefId": "7754-8b3d-df99-d2d5",
+            "anchorKind": "mandatoryPhantom",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Ogre Bulls",
+            "current": 0,
+            "effectiveMin": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-standard-with-bulls.ros",
+      "description": "Dasselbe Standard-Kontingent, jetzt mit genau einer Einheit Ogre Bulls (ueber den Wurzel-entryLink d82e-111e-89b9-2be1 gesetzt, minimal belegt mit 3 Bulls-Modellen und einem Ogre Club). Die effektive Untergrenze bleibt 1, gezaehlt wird 1 - die Pflicht ist erfuellt und darf nicht feuern. Gegenprobe gegen eine Umsetzung, die am Wurzel-entryLink unbedingt feuert.",
+      "expect": {
+        "firing": [],
+        "absent": ["32ed-26da-3f27-5c04"],
+        "capabilities": [
+          {
+            "targetDefId": "7754-8b3d-df99-d2d5",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "current": 1,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-ironskin-missing-bulls.ros",
+      "description": "Ein Kontingent der Armeeliste 'Ironskin Tribe (WD#309-UK)' (8711-ed16-2a44-7251) ohne Ogre Bulls. Die Bedingung notInstanceOf des set-1-Modifikators haelt hier nicht, die Untergrenze bleibt auf ihrem Basiswert 0, und 0 >= 0 ist erfuellt: die Grenze darf nicht feuern. Ogre Bulls ist dort ein blosses Angebot, keine Pflicht - dies ist der Nachweis, dass der Modifikator DES LINKS gelesen wird und nicht pauschal jede Wurzel-Verweis-Untergrenze feuert.",
+      "expect": {
+        "firing": [],
+        "absent": ["32ed-26da-3f27-5c04"],
+        "capabilities": [
+          {
+            "targetDefId": "7754-8b3d-df99-d2d5",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "8711-ed16-2a44-7251",
+            "name": "Ogre Bulls",
+            "current": 0,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-standard-and-ironskin-both-missing-bulls.ros",
+      "description": "Beide Armeelisten nebeneinander in einer Roster-Datei, keine von beiden mit Ogre Bulls. Die Pflicht gilt nur im Standard-Kontingent: sie muss genau EINMAL feuern (Ist 0, Grenze 1). Zwei Feuerungen wuerden bedeuten, dass die Gate-Bedingung des Modifikators ignoriert wird; keine Feuerung, dass die Wurzel-entryLink-Form gar nicht eingesammelt wird.",
+      "expect": {
+        "firing": [
+          { "limitId": "32ed-26da-3f27-5c04", "actual": 0, "bound": 1, "count": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/05-two-standard-forces-bulls-in-one.ros",
+      "description": "Zwei Kontingente derselben Armeeliste 'Standard (OK-AB)', Ogre Bulls stehen nur im ersten. scope=force mit einem Eintrags-Ziel zaehlt je Kontingent: das erste ist erfuellt (Ist 1), das zweite nicht (Ist 0). Die Pflicht muss genau einmal feuern. Wuerde die Zaehlung armeeweit erfolgen, bliebe der Bericht still.",
+      "expect": {
+        "firing": [
+          { "limitId": "32ed-26da-3f27-5c04", "actual": 0, "bound": 1, "count": 1 }
+        ],
+        "absent": []
+      }
+    }
+  ]
+}

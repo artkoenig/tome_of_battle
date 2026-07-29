@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rem-05" name="REM 05 - Zwei Standardlisten, Ogre Bulls nur in der ersten: die Pflicht zaehlt je Kontingent" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored root-entrylink-mandatory E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="1" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="unit-ogre-bulls-1" name="Ogre Bulls" entryId="7754-8b3d-df99-d2d5" entryLinkId="d82e-111e-89b9-2be1" number="1" type="unit">
+          <selections>
+            <selection id="ogre-bulls-models-1" name="Bulls" entryId="411b-6f5f-06f1-be37" number="3" type="model"/>
+            <selection id="ogre-bulls-club-1" name="Ogre Club" entryId="8768-377c-88da-c3e8" entryLinkId="415f-94c9-571c-19c6" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+    <force id="force-2" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="1" catalogueName="Ogre Kingdoms">
+    </force>
+  </forces>
+</roster>

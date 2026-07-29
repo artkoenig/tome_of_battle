@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rem-03" name="REM 03 - Ironskin Tribe ohne Ogre Bulls: der set-1-Modifikator greift nicht, die Basis bleibt min 0" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored root-entrylink-mandatory E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Ironskin Tribe (WD#309-UK)" entryId="8711-ed16-2a44-7251" catalogueId="731d-5b13-2a92-5427" catalogueRevision="1" catalogueName="Ogre Kingdoms">
+    </force>
+  </forces>
+</roster>
