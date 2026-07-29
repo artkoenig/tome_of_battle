@@ -113,7 +113,9 @@ Acceptance criteria:
   (einzeln begründet): `fixpoint.test.js` (Anker-Selbstzählung jetzt über
   Capability belegt), `docs/testing/offer-and-category-slots` (2 firing→
   absent, Capability-Pins unverändert grün), `docs/testing/
-  violation-classification` Roster 07 (firing→absent). Fakten:
+  violation-classification` Roster 07 (firing→absent; Korrektur aus dem
+  Review: bei offer-and-category-slots betrifft das die zwei Grenz-Ids in
+  allen drei Rostern des Szenarios, also sechs Erwartungszeilen). Fakten:
   `constraints.hiddenMin.test.js` 18/18 Exit 0; `npx vitest run
   src/evaluator` 791 Tests, 790 grün, 1 rot = vorbestehend auf main
   (`countIndex.costSumUnderCarrier.test.js`, per Checkout des Merge-Base
@@ -121,6 +123,18 @@ Acceptance criteria:
   Exit 0; `npm run typecheck` Exit 0. Nebenbefund im README von
   violation-classification vermerkt: VCC-R10 verliert den scopeKind-Beleg,
   Ersatz-Szenario wäre Aufgabe des e2e-testcase-author.
+- 2026-07-29 — Review Runde 1 (frischer Kontext): 1 Befund, geringfügig,
+  außerhalb der Kriterien — der Beweiskraft-Verlust an VCC-R10 (scopeKind-
+  E2E-Beleg) war nur im README notiert statt gefiled. Triage: sofort
+  behoben durch Filing von Issue 0116. Alle 5 AC bestätigt; alle Fakten
+  unabhängig reproduziert (Suite 791/790/1 mit per Worktree verifiziertem
+  Vorbestand = Issue 0112; Lint/Typecheck Exit 0; Testdatei des
+  Test-Authors seit efdf0bb unverändert). Nebenbefund außerhalb des
+  Branches: doppelte Issue-Nummern 0110/0112 auf main.
+- 2026-07-29 — **Waiver:** Die Behebung des einzigen Befunds berührt nur
+  den Tracker (neues Issue 0116, Log-Präzisierung), keine Datei, um die es
+  in den Kriterien geht — die Wiederholungsrunde des Reviews entfällt nach
+  der Regelbuch-Ausnahme.
 
 ## Checkpoints
 
@@ -143,8 +157,20 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja — alle fünf Kriterien vom Reviewer
+  aus frischem Kontext bestätigt, je Ankerart Unterdrückungs- und
+  Kipp-Nachweis über die echte Fassade; Doku §5.6/§8 nachgezogen;
+  Gegenrichtung (0115) und scopeKind-Ersatzbeleg (0116) sind gefiled statt
+  eingeschmuggelt.
+- **What surprised me?** Die Suite trägt einen vorbestehenden Roten auf
+  main (Issue 0112) — „Suite grün" heißt hier: kein auf main grüner Test
+  wurde rot, die 18 neuen laufen Exit 0. Außerdem: die vier
+  Bestandsanpassungen hingen alle am selben versteckten Träger (Army of
+  Sylvania) — die alte Semantik war tief in die E2E-Erwartungen gepinnt.
+- **What am I assuming without having verified it?** Dass die Unterdrückung
+  eines `limit::`-Min an einem versteckten forceEntry (Muster „eigenes
+  Punktelimit") gewollt ist — §5.6 nennt forceEntry ausdrücklich, der
+  Reviewer hat den Pfad geprüft; ein realer Katalogfall mit verstecktem
+  Sonderheer-Punktelimit wurde aber nicht durchgespielt.
 
 ## Retro
