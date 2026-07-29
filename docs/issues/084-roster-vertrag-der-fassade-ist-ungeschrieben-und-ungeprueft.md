@@ -108,6 +108,16 @@ Acceptance criteria:
     unterstützt, geht am Eingang verloren.
   Dazu passend: Issue 0096 (Kostenlimit `-1.0` wird ungefiltert
   durchgereicht) hängt an derselben ungeschriebenen Vertragsfrage.
+- 2026-07-29 test-author: `src/evaluator/evaluator.rosterContract.test.js`,
+  6 GREEN pins (by design — the issue pins 076-built behaviour; red =
+  regression), each with a proven red variant in a temporary file (adapter
+  fallback input → slot identity and link-limit assertions fail; resolvable
+  id → F3 diagnostic assertion fails). Surprise recorded: in the
+  regression variant (root-level link, min=1 force scope, selection under
+  target id) NO mandatory phantom appeared beside — the 076/F2 "phantom
+  beside it" symptom needs a nested constellation; pins go red via slot
+  identity and the link-limit violation instead. Criterion 1 (JSDoc) has
+  nothing to run — falls to the review.
 
 ## Checkpoints
 
