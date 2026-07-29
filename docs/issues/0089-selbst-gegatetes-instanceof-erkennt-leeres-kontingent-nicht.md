@@ -65,7 +65,9 @@ Acceptance criteria:
   O&G-Sonderheer. Nebenbefund: §7.7 der bsdata-Doku trägt dieselbe
   Fehlzuordnung („Selbst-gegatet: … das Idiom des ‚eigenen Punktelimits'
   aus §5.6") — doku-interner Widerspruch zu §5.6, die Daten geben §5.6
-  recht; an den Menschen gemeldet.
+  recht; an den Menschen gemeldet. Entscheid des Menschen (2026-07-29):
+  direkt beheben — §7.7 nennt jetzt das reale O&G-Beispiel und verweist
+  für das §5.6-Idiom auf die kanonische Kodierung.
 - 2026-07-29 test-author: `src/evaluator/query.selfGatedInstanceOf.test.js`,
   23 tests — 6 RED (self-gated empty-force instanceOf/notInstanceOf + the 4
   AC3 equivalence cases involving the empty force), 17 green pins/controls
