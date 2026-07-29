@@ -171,8 +171,19 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Yes — the contract stands at the public
+  edge with both fallback symptoms and the no-fallback decision; six pins
+  guard the two formerly uncovered behaviours, each red variant reproduced
+  by two independent reviewers; suite/E2E/lint/typecheck green by exit code
+  (round-3 runs: 6/6, 211 files / 2149 tests, E2E, all exit 0).
+- What surprised me? The flat-vs-nested symptom split (silent limit loss vs
+  phantom-beside) — the issue's own F2 narrative undersold the flat case.
+  And two textual defects introduced by my own review-fix edits — a lesson
+  on editing prose under time pressure.
+- What am I assuming without having verified it? That the human ratifies
+  the F3 no-fallback default (recorded, sourced) and takes up the two known
+  adapter gaps (`::` id paths, nested forces flattening) as their own
+  issue when the roster adapter becomes production-relevant. No version
+  bump: docs, comments and tests only.
 
 ## Retro
