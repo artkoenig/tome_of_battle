@@ -95,6 +95,19 @@ Nötige bereits.
   verfügbar. Diagnose-Präzedenz für Nicht-Unterstützung existiert
   (`UNSUPPORTED_MODIFIER_GROUP_REPEAT`), wird aber nicht gebraucht.
 
+- 2026-07-29 test-author: `src/evaluator/modifiers.percentCondition.test.js`,
+  16 Tests — 9 ROT (Divergenz in beide Richtungen, Half-up-Kanten gegen
+  floor UND ceil an Condition und Repeat, Null-Nenner hält nicht selbst
+  bei lessThan + Diagnose, Repeat-Prozentschritte), 7 grüne
+  Kontrollen/Pins (instanceOf/notInstanceOf ignorieren das Attribut,
+  false/fehlend absolut, Null-Nenner-Kontrolle absolut ohne Diagnose,
+  abgeleitete-0-Schrittweite → 0 Schritte ohne Diagnose). Belegt:
+  Zielfile 9 failed / 7 passed Exit 1; Vitest gesamt 221 Dateien /
+  2256 Tests (vor dem 16. Test), nur das neue File rot. Offen gelassen
+  mit Absicht: `limit::`-Nenner (Default protokolliert, ungepinnt — für
+  den PR); Prozent-Grenzen-Kontrolle übersprungen (constraints.test.js
+  pinnt sie bereits).
+
 ## Checkpoints
 
 ### Before implementation
