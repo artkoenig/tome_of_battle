@@ -11,16 +11,19 @@ import { createSelectionFromDef } from '../../solver/selectionFactory.js';
 import { replaceSelectionById, rootSelectionsOf } from '../../solver/rosterTree.js';
 import { withChangedOptionCount } from '../../solver/subSelectionEditing.js';
 import { getUnitOptions } from '../../solver/optionsCollector.js';
+import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
+import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 // Issue 57/05 — the visual counterpart to the 57/04 data-model fix, exercised through the
 // REAL editor against the REAL Vampire Counts catalogue. The same shape as the reported
 // Empire Captain case: Master Necromancer → group "Mounts" → upgrade-type mount "Nightmare"
-// → nested "Barding". With the mount chosen, Barding is re-emitted with the mount's roster
-// selection as its owner. The editor must render Barding indented directly beneath the
-// mount's row, not as a separate top-level section on the same level.
+// → nested "Barding". Since Issue 0121 (task 6) the configurator renders the slots of the
+// evaluator report: the chosen mount is itself a frame, and its child slots (Barding) must
+// render indented directly beneath the mount's row, not as a separate top-level section.
 //
 // Only the two peripheral seams are stubbed (rule-link lookup and the settings context);
-// the solver facade, the grouping and the nesting logic all run for real.
+// the evaluator facade (slot source), the structural grouping and the nesting logic all
+// run for real.
 
 vi.mock('../../data/rulesLookup', () => ({
   getRuleUrl: () => null,
@@ -40,18 +43,25 @@ const BARDING_ID = '3fa3-1556-3275-1f71';
 
 let system;
 let catalogueId;
+let prepared;
+let forceEntryId;
 
 beforeAll(() => {
   const gstContent = fs.readFileSync(path.join(CATALOG_DIR, GST_FILE), 'utf8');
-  const cat = { name: CAT_FILE, content: fs.readFileSync(path.join(CATALOG_DIR, CAT_FILE), 'utf8') };
+  const catContent = fs.readFileSync(path.join(CATALOG_DIR, CAT_FILE), 'utf8');
+  const cat = { name: CAT_FILE, content: catContent };
   system = processImportedData([{ name: 'gst', content: gstContent }], [cat]).system;
   catalogueId = system.catalogues[0].id;
+  // Dieselben Rohdaten speisen die Evaluator-Fassade: sie liefert die Slots
+  // (capabilities), aus denen der Konfigurator seine Liste baut (ADR-0035).
+  prepared = prepareDataset({ gameSystem: gstContent, catalogues: [catContent] });
+  forceEntryId = system.forceEntries[0].id;
 });
 
 const buildNecromancerRoster = () => {
   const necroEntry = system.catalogues[0].selectionEntries.find(e => e.id === MASTER_NECROMANCER_ID);
   const unit = createSelectionFromDef({ system, resolveEntry, catalogueId, entry: necroEntry, categoryId: 'characters' });
-  return { catalogueId, name: 'test', forces: [{ id: 'force-1', catalogueId, selections: [unit] }] };
+  return { catalogueId, name: 'test', forces: [{ id: 'force-1', forceEntryId, catalogueId, selections: [unit] }] };
 };
 
 // Mirrors useRoster.subSelectionOperations.increaseCount incl. the 57/04 fix: the edit
@@ -69,10 +79,14 @@ const selectOption = (roster, collectedOption) => {
   return { ...roster, forces: [{ ...roster.forces[0], selections: roots }] };
 };
 
-const renderConfigurator = (roster) =>
-  render(
+const renderConfigurator = (roster) => {
+  const { evalRoster, pathBySelectionId } = toEvaluatorRoster(roster);
+  const { capabilities } = evaluate(prepared, evalRoster);
+  return render(
     <SelectionConfigurator
       selection={rootSelectionsOf(roster)[0]}
+      capabilities={capabilities}
+      pathBySelectionId={pathBySelectionId}
       system={system}
       roster={roster}
       subSelectionOperations={createSubSelectionOperationsMock()}
@@ -84,6 +98,7 @@ const renderConfigurator = (roster) =>
       onShowRule={vi.fn()}
     />
   );
+};
 
 describe('SelectionConfigurator nests a re-emitted sub-option under its parent row (Issue 57/05)', () => {
   test('Barding renders indented beneath the chosen mount, not as a top-level section', () => {

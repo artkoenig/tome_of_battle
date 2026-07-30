@@ -50,11 +50,14 @@ function hasPrimaryCatalogItems({ system, roster, force, selectionCounts, catego
 export default function RosterCategorySection({
   categoryLink,
   force,
+  forcePath,
   forceDef,
   system,
   roster,
   activeCatalogue,
   violations,
+  capabilities,
+  pathBySelectionId,
   selectionCounts,
   forceCategoryCounts,
   costTypeLabel,
@@ -147,14 +150,13 @@ export default function RosterCategorySection({
           <CategoryUnitAdder
             categoryId={categoryId}
             categoryName={categoryName}
+            capabilities={capabilities}
+            forcePath={forcePath}
             system={system}
             activeCatalogue={activeCatalogue}
             costTypeLabel={costTypeLabel}
             costLimitType={roster.costLimitType}
             addUnit={addUnit}
-            roster={roster}
-            selectionCounts={selectionCounts}
-            force={force}
           />
         )}
       </div>
@@ -166,13 +168,15 @@ export default function RosterCategorySection({
             activeCatalogue={activeCatalogue}
             categoryId={categoryId}
             roster={roster}
+            capabilities={capabilities}
+            forcePath={forcePath}
+            pathBySelectionId={pathBySelectionId}
             states={listRuleStates}
             addUnit={addUnit}
             removeUnit={removeUnit}
             subSelectionOperations={subSelectionOperations}
             costTypeLabel={costTypeLabel}
             costLimitType={roster.costLimitType}
-            selectionCounts={selectionCounts}
             onShowRule={onShowRule}
           />
         )

@@ -1,23 +1,46 @@
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
 import {
-  resolveEntry, findEntryInSystem, computeRosterCounts, getOptionDisplayCost, isIndependentSubUnit,
-  getUnitOptions, isUniqueOptionTakenElsewhere, isOptionRosterUnique,
-  isQuirkGeneralEntryId, findForceContainingSelection, resolveCostLimitLabel,
-  countSelections, getEffectiveModifiers, getEffectiveConstraintLimit,
-  filterEntryScopedConstraints, classifyStandaloneOption,
-  UPGRADE_DETAILS_KEYWORDS, GENERAL_EXACT_KEYWORDS, GENERAL_SUBSTRING_KEYWORDS
+  resolveEntry, computeRosterCounts, isIndependentSubUnit,
+  getUnitOptions, findForceContainingSelection,
+  resolveCostLimitTypeId, resolveCostLimitLabel,
+  countSelections, classifyStandaloneOption,
+  UPGRADE_DETAILS_KEYWORDS
 } from '../../solver/validator';
+import { childSlotsOf } from '../../evaluation/slotLookups';
 import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
-import { resolveRowSelectionId } from './optionNesting';
-import { ConstraintKind } from '../../parser/schema/battlescribeSchema.generated.js';
+import { findSelectionById, resolveRowSelectionId } from './optionNesting';
 import { useTranslation } from '../../i18n/useTranslation';
 
+/**
+ * Auswahl-Konfigurator einer Selection (Issue 0121, Task 6; ADR-0035/0036).
+ *
+ * Die Gruppen-/Optionsliste entsteht aus den **Slots des Evaluator-Berichts**
+ * unterhalb des Slot-Pfads der Selection (`pathBySelectionId` →
+ * `capabilities`): belegte Slots, Pflicht-Phantome, Gruppen-Anker und
+ * Angebots-Anker erscheinen; versteckte Slots (`isHidden`) und die Slots
+ * fremder Selektionen erscheinen nicht. Zustand, Grenzen, Kosten und Namen
+ * werden je Slot abgelesen (ADR-0035: Verfügbarkeit ist eine Eigenschaft des
+ * Berichts, kein Rechenergebnis der Oberfläche).
+ *
+ * Die **Mitgliedschaft** Option→Gruppe bleibt Struktur des geparsten Systems
+ * (Options-Sammler der Solver-Fassade); sie ordnet die Slots den Gruppen zu,
+ * liefert aber weder Kandidaten noch Zustände. Eine belegte Unter-Auswahl ist
+ * selbst ein Rahmen: ihre Kind-Slots rendern eingerückt unter ihrer Zeile.
+ */
+
+/** Die Ankerarten, deren Slots als Options-Zeilen erscheinen. */
+const OPTION_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
+
+/** Gruppennamen, deren Mitglieder als eigenständige Zeilen erscheinen (Alt-Verhalten). */
+const ROLE_GROUP_NAMES = new Set(['rolle', 'rollen', 'role', 'roles']);
 
 export default function SelectionConfigurator({
   selection,
+  capabilities,
+  pathBySelectionId,
   system,
   roster,
   subSelectionOperations,
@@ -31,20 +54,10 @@ export default function SelectionConfigurator({
 }) {
   const { t } = useTranslation();
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
+  const costTypeId = resolveCostLimitTypeId(roster, system);
   const costTypeLabel = resolveCostLimitLabel(roster, system);
   const activeForce = findForceContainingSelection(roster, selection.id);
-  const activeForceId = activeForce?.id ?? null;
-  const forceCategoryCounts = activeForceId ? (categoryCounts[activeForceId] || {}) : {};
-
-  const displayCtx = {
-    roster,
-    system,
-    selectionCounts,
-    forceCategoryCounts,
-    selection: null,
-    parentSelection: selection,
-    parentCatalogueId: activeCatalogue?.id
-  };
+  const forceCategoryCounts = activeForce ? (categoryCounts[activeForce.id] || {}) : {};
 
   // Helper to compile a clean description string for an upgrade/magic item
   const getOptionDescription = (res) => {
@@ -91,312 +104,313 @@ export default function SelectionConfigurator({
   };
 
   const getSubSelectionCount = (unitSelection, optionEntryId) => {
-    const matchesOption = (selection) =>
-      (selection.entryLinkId || selection.selectionEntryId) === optionEntryId;
+    const matchesOption = (sel) =>
+      (sel.entryLinkId || sel.selectionEntryId) === optionEntryId;
     return countSelections(unitSelection.selections, {
       includeChildSelections: true,
       predicate: matchesOption,
     });
   };
 
-  // The `getUnitOptions` logic has been extracted to `optionsCollector.js` for testability.
-  // The visibility context lets the collector omit conditionally hidden options (e.g. the
-  // Vampiric Powers groups of unselected bloodlines) instead of surfacing them all.
+  // Struktur-Kontext des Options-Sammlers: er liefert die Mitgliedschaft
+  // Option→Gruppe und die Options-Objekte für die Schreiboperationen — die
+  // Kandidaten selbst kommen aus den Slots des Berichts.
   const visibilityContext = { roster, selectionCounts, forceCategoryCounts, force: activeForce };
-  const options = getUnitOptions(system, activeCatalogue?.id, selection, visibilityContext);
-  const groupedList = [];
-  const groupMap = {};
 
-  options.forEach(item => {
-    const groupNameLower = item.groupName?.toLowerCase() || '';
-    const isRoleGroup = groupNameLower === 'rolle' ||
-                        groupNameLower === 'role' ||
-                        groupNameLower === 'rollen' ||
-                        groupNameLower === 'roles';
+  /**
+   * Baut die Abschnitte eines Rahmens (Selection + ihr Slot-Pfad): Gruppen in
+   * Slot-Reihenfolge, dazwischen die eigenständigen Options-Zeilen.
+   */
+  const buildSections = (frameSelection, framePath) => {
+    const structureItems = getUnitOptions(system, activeCatalogue?.id, frameSelection, visibilityContext);
 
-    // Group by the group's own id, not its display name: several distinct groups can
-    // share a name (e.g. the five bloodline-specific "Vampiric Powers" groups) and must
-    // stay separate rather than collapsing into one merged group whose modifiers/items
-    // get mixed. The name is retained only for display. Falls back to the name when a
-    // group carries no id.
-    const groupKey = item.groupId || item.groupName;
-
-    if (item.groupName && !isRoleGroup) {
-      if (!groupMap[groupKey]) {
-        groupMap[groupKey] = {
-          name: item.groupName,
-          id: item.groupId,
-          constraints: item.groupConstraints,
-          modifiers: item.groupModifiers,
-          // The selection this group is re-emitted from (null for a plain unit group);
-          // drives where the group renders — nested under that selection's row.
-          ownerSelectionId: item.ownerSelectionId || null,
-          items: []
-        };
-        groupedList.push(groupMap[groupKey]);
+    // Mitgliedschaft und Gruppen-Struktur der DIREKTEN Optionen dieses Rahmens
+    // (re-emittierte Items fremder Unter-Auswahlen gehören deren Rahmen).
+    const membershipByOptionId = new Map();
+    const groupInfoById = new Map();
+    for (const item of structureItems) {
+      if (item.ownerSelectionId) continue;
+      if (!item.groupId && !item.groupName) {
+        if (!membershipByOptionId.has(item.option.id)) {
+          membershipByOptionId.set(item.option.id, { item, groupKey: null });
+        }
+        continue;
       }
-      groupMap[groupKey].items.push(item);
-    } else {
-      groupedList.push({
-        standalone: true,
-        ownerSelectionId: item.ownerSelectionId || null,
-        item: item
-      });
+      const isRoleGroup = ROLE_GROUP_NAMES.has((item.groupName || '').toLowerCase());
+      const groupKey = isRoleGroup ? null : (item.groupId || item.groupName);
+      if (groupKey !== null && !groupInfoById.has(groupKey)) {
+        groupInfoById.set(groupKey, {
+          id: item.groupId || item.groupName,
+          name: item.groupName,
+          constraints: item.groupConstraints || [],
+          modifiers: item.groupModifiers || [],
+        });
+      }
+      if (!membershipByOptionId.has(item.option.id)) {
+        membershipByOptionId.set(item.option.id, { item, groupKey });
+      }
     }
-  });
 
-  const isGeneralItem = (item) => {
-    if (!item) return false;
-    const res = resolveEntry(system, item.option, activeCatalogue.id);
-    if (!res) return false;
-    const nameLower = res.name?.toLowerCase() || '';
-    return GENERAL_EXACT_KEYWORDS.includes(nameLower) ||
-           GENERAL_SUBSTRING_KEYWORDS.some(k => nameLower.includes(k)) ||
-           isQuirkGeneralEntryId(system, item.option.id) ||
-           isQuirkGeneralEntryId(system, res.id);
+    const sections = [];
+    const groupSectionByKey = new Map();
+    const seenDefIds = new Set();
+
+    const ensureGroupSection = (groupKey, fallbackName) => {
+      let section = groupSectionByKey.get(groupKey);
+      if (section) return section;
+      const info = groupInfoById.get(groupKey);
+      section = {
+        group: {
+          id: info?.id ?? groupKey,
+          name: info?.name ?? fallbackName,
+          constraints: info?.constraints ?? [],
+          modifiers: info?.modifiers ?? [],
+          items: [],
+        },
+      };
+      groupSectionByKey.set(groupKey, section);
+      sections.push(section);
+      return section;
+    };
+
+    for (const { path, capability } of childSlotsOf(capabilities, framePath)) {
+      if (capability.isHidden) continue;
+
+      if (capability.anchorKind === 'groupAnchor') {
+        const groupKey = groupInfoById.has(capability.defId)
+          ? capability.defId
+          : (capability.targetDefId && groupInfoById.has(capability.targetDefId)
+            ? capability.targetDefId
+            : capability.defId);
+        const section = ensureGroupSection(groupKey, capability.name);
+        // Der Anker eines verlinkten Ziels und die Struktur-Gruppe sind derselbe
+        // Abschnitt — beide Schlüssel zeigen auf ihn.
+        if (capability.targetDefId) groupSectionByKey.set(capability.targetDefId, section);
+        continue;
+      }
+
+      if (!OPTION_ANCHOR_KINDS.has(capability.anchorKind)) continue;
+      if (seenDefIds.has(capability.defId)) continue;
+      seenDefIds.add(capability.defId);
+
+      const membership = membershipByOptionId.get(capability.defId)
+        ?? (capability.targetDefId ? membershipByOptionId.get(capability.targetDefId) : undefined);
+
+      if (membership?.groupKey) {
+        const section = ensureGroupSection(membership.groupKey, membership.item.groupName);
+        section.group.items.push({ option: membership.item.option, ownerSelectionId: null });
+      } else {
+        sections.push({
+          standalone: true,
+          path,
+          capability,
+          option: membership?.item.option ?? { id: capability.defId, name: capability.name },
+        });
+      }
+    }
+
+    return sections;
   };
 
-  const isGeneralGroupOrStandalone = (group) => {
-    if (group.standalone) {
-      return isGeneralItem(group.item);
-    }
-    return group.items?.some(isGeneralItem);
-  };
-
-  groupedList.sort((a, b) => {
-    const aGen = isGeneralGroupOrStandalone(a);
-    const bGen = isGeneralGroupOrStandalone(b);
-    if (aGen && !bGen) return -1;
-    if (!aGen && bGen) return 1;
-    return 0;
-  });
-
-  // Partition sections by the selection they hang off: top-level sections belong to the
-  // unit, the rest render indented under the row of the selection whose id they carry
-  // (optionsCollector's ownerSelectionId). This relationship is the sole nesting driver —
-  // no catalogue-, mount- or Barding-specific ids anywhere.
-  const sectionsByOwner = new Map();
-  const topSections = [];
-  groupedList.forEach(section => {
-    if (section.ownerSelectionId) {
-      const siblings = sectionsByOwner.get(section.ownerSelectionId) || [];
-      siblings.push(section);
-      sectionsByOwner.set(section.ownerSelectionId, siblings);
-    } else {
-      topSections.push(section);
-    }
-  });
-
-  // The sub-options a selected row re-emits, rendered indented directly beneath that row.
-  // Recurses to arbitrary depth through renderSection; null for an unselected or childless
-  // row. Indentation is purely visual — selection, count, cost and mutation targets stay
-  // untouched.
+  /**
+   * Die Kind-Slots einer belegten Zeilen-Auswahl, eingerückt unter ihrer Zeile
+   * gerendert (die Auswahl ist selbst ein Rahmen). `null`, solange die Zeile
+   * nicht gewählt ist oder ihr Rahmen keine Abschnitte hat.
+   */
   const renderOwnedChildren = (rowSelectionId) => {
-    const children = rowSelectionId ? sectionsByOwner.get(rowSelectionId) : null;
-    if (!children || children.length === 0) return null;
+    if (!rowSelectionId) return null;
+    const childPath = pathBySelectionId?.get(rowSelectionId);
+    if (childPath === undefined) return null;
+    const childSelection = findSelectionById(selection, rowSelectionId);
+    if (!childSelection) return null;
+    const childSections = buildSections(childSelection, childPath);
+    if (childSections.length === 0) return null;
     return (
       <div className="nested-option-block">
-        {children.map(renderSection)}
+        {childSections.map(section => renderSection(section, childSelection, childPath))}
       </div>
     );
   };
 
-  const renderSection = (group) => {
-          if (group.standalone) {
-            const { option, parentDefId, ownerSelectionId } = group.item;
-            const res = resolveEntry(system, option, activeCatalogue.id);
-            if (!res) return null;
-            // A re-emitted sub-option nests under its owning sub-selection; a plain unit
-            // option nests under the unit. Count/display keep reading the unit selection.
-            const editTargetId = ownerSelectionId || selection.id;
-            // The roster selection this row stands for, so its own re-emitted sub-options
-            // can nest beneath it (null while unselected).
-            const rowSelectionId = resolveRowSelectionId(selection, ownerSelectionId, option, res);
-            const count = getSubSelectionCount(selection, res.id);
-            const basePoints = getOptionDisplayCost(system, option, roster.costLimitType, displayCtx);
-            const unitEntryId = selection.entryLinkId || selection.selectionEntryId;
-            const unitRawEntry = findEntryInSystem(system, unitEntryId, activeCatalogue.id);
-            const unitResolved = resolveEntry(system, unitRawEntry, activeCatalogue.id);
+  const renderStandaloneRow = (section, frameSelection) => {
+    const { capability, option, path } = section;
+    const count = (() => {
+      const byOptionId = getSubSelectionCount(frameSelection, option.id);
+      if (byOptionId > 0) return byOptionId;
+      return capability.targetDefId ? getSubSelectionCount(frameSelection, capability.targetDefId) : byOptionId;
+    })();
 
-            const filteredOptionConstraints = filterEntryScopedConstraints(res.constraints, unitResolved);
-            const minConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MIN);
-            const maxConstraint = filteredOptionConstraints.find(c => c.type === ConstraintKind.MAX);
-            // Effektive (modifier-angepasste) Grenzen messen; die Pflicht-/Binär-Entscheidung
-            // daraus trifft der Solver (classifyStandaloneOption) — nicht die Oberfläche.
-            const optionModifiers = getEffectiveModifiers(res);
-            const minLimit = getEffectiveConstraintLimit(minConstraint, optionModifiers, displayCtx, 0);
-            const maxLimit = getEffectiveConstraintLimit(maxConstraint, optionModifiers, displayCtx, Infinity);
-            const { isMandatory, isBinary } = classifyStandaloneOption({ minLimit, maxLimit });
-            const descText = getOptionDescription(res);
+    const minLimit = capability.effectiveMin ?? 0;
+    const maxLimit = capability.effectiveMax ?? Infinity;
+    const points = capability.costs?.[costTypeId] ?? 0;
+    const optionName = capability.name;
+    const { isMandatory, isBinary } = classifyStandaloneOption({ minLimit, maxLimit });
 
-            let parentCount = 1;
-            if (parentDefId === unitResolved?.id || parentDefId === unitResolved?.targetId || parentDefId === unitEntryId) {
-              parentCount = selection.number || 1;
-            } else {
-              const pSel = selection.selections?.find(s => (s.entryLinkId || s.selectionEntryId) === parentDefId);
-              if (pSel) parentCount = pSel.number || 1;
+    // Auflösung nur noch als Beiwerk (Detail-/Regeltexte, Untereinheiten-Form) —
+    // Zustand, Grenzen und Namen kommen aus dem Bericht.
+    const res = resolveEntry(system, option, activeCatalogue?.id);
+    const isSubUnitWithOwnOptions = isIndependentSubUnit(res);
+    const descText = getOptionDescription(res);
+
+    const isSelectDisabled = capability.isBlocked === true;
+    const editTargetId = frameSelection.id;
+    // The roster selection this row stands for, so its own sub-options can nest
+    // beneath it (null while unselected). Independent sub-units render their own
+    // card elsewhere and never nest here.
+    const rowSelectionId = isSubUnitWithOwnOptions ? null : resolveRowSelectionId(
+      frameSelection, null, option, { id: capability.defId, targetId: capability.targetDefId }
+    );
+
+    // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
+    const isUnavailable = count === 0 && isSelectDisabled;
+    const isClickable = !isMandatory && !isUnavailable;
+    const handleRowClick = (e) => {
+      if (e.target.closest('button') || e.target.closest('input')) {
+        return;
+      }
+      if (isClickable) {
+        if (isSubUnitWithOwnOptions) {
+          if (count < maxLimit && !isSelectDisabled) {
+            subSelectionOperations.addInstance(editTargetId, option);
+          }
+        } else if (isBinary) {
+          if (count > 0) {
+            if (count > minLimit) {
+              subSelectionOperations.decreaseCount(editTargetId, option);
             }
+          } else if (!isSelectDisabled) {
+            subSelectionOperations.increaseCount(editTargetId, option);
+          }
+        } else if (count < maxLimit && !isSelectDisabled) {
+          subSelectionOperations.increaseCount(editTargetId, option);
+        }
+      }
+    };
 
-            const isCollective = res.collective || option.collective || false;
-            const points = isCollective ? basePoints * parentCount : basePoints;
-
-            const isRosterUnique = isOptionRosterUnique(res, system);
-            const isTakenElsewhere = isRosterUnique && isUniqueOptionTakenElsewhere(res, system, activeCatalogue.id, selection, roster);
-            const isSelectDisabled = isTakenElsewhere;
-
-
-            const isSubUnitWithOwnOptions = isIndependentSubUnit(res);
-
-            // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
-            const isUnavailable = count === 0 && isSelectDisabled;
-            const isClickable = !isMandatory && !isUnavailable;
-            const handleRowClick = (e) => {
-              if (e.target.closest('button') || e.target.closest('input')) {
-                return;
-              }
-              if (isClickable) {
-                if (isSubUnitWithOwnOptions) {
-                  if (count < maxLimit && !isSelectDisabled) {
-                    subSelectionOperations.addInstance(editTargetId, option);
-                  }
-                } else if (isBinary) {
-                  const isDecrementing = count > 0;
-                  if (isDecrementing) {
-                    if (count > minLimit) {
-                      subSelectionOperations.decreaseCount(editTargetId, option);
-                    }
-                  } else {
-                    if (!isSelectDisabled) {
-                      subSelectionOperations.increaseCount(editTargetId, option);
-                    }
-                  }
-                } else {
-                  // For standard options, clicking row increments. 
-                  // If we wanted right-click to decrement we could, but click is increment.
-                  if (count < maxLimit && !isSelectDisabled) {
+    return (
+      <React.Fragment key={path}>
+      <div
+        className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
+        onClick={handleRowClick}
+      >
+        <div className="sub-selection-label">
+          <span className={`sub-selection-option-name${isUnavailable ? ' sub-selection-option-name--unavailable' : ''}`}>
+            {optionName}
+            <RuleChipIcon
+              name={optionName}
+              hasInfo={!!descText}
+              onShowRule={onShowRule}
+              onInfoClick={() => {
+                if (res && window.innerWidth <= 900) {
+                  setActiveInfo({ title: optionName, text: renderUpgradeDetails(res, system) });
+                }
+              }}
+              onInfoEnter={(e) => { if (res) handleMouseEnter(optionName, renderUpgradeDetails(res, system), e); }}
+              onInfoMove={handleMouseMove}
+              onInfoLeave={handleMouseLeave}
+            />
+          </span>
+        </div>
+        <div className="sub-selection-controls">
+          {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} {costTypeLabel}</span>}
+          {isSubUnitWithOwnOptions ? (
+            <button
+              type="button"
+              className="btn-primary text-label sub-selection-add-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                subSelectionOperations.addInstance(editTargetId, option);
+              }}
+              disabled={isSelectDisabled || count >= maxLimit}
+            >
+              <Plus size={12} className="sub-selection-add-btn-icon" />
+              {t('common.add')}
+            </button>
+          ) : isBinary ? (
+            <input
+              type="checkbox"
+              checked={count > 0 || isMandatory}
+              disabled={isMandatory || (count === 0 && isSelectDisabled) || (count > 0 && count <= minLimit)}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                if (!isMandatory && !(count > 0 && count <= minLimit)) {
+                  if (e.target.checked) {
                     subSelectionOperations.increaseCount(editTargetId, option);
+                  } else {
+                    subSelectionOperations.decreaseCount(editTargetId, option);
                   }
                 }
-              }
-            };
-
-            return (
-              <React.Fragment key={res.id}>
-              <div
-                className={`sub-selection-row ${isClickable ? 'clickable' : 'disabled'}${isUnavailable ? ' sub-selection-row--unavailable' : ''}`}
-                onClick={handleRowClick}
+              }}
+            />
+          ) : (
+            <div className="quantity-control">
+              <button
+                className="qty-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  subSelectionOperations.decreaseCount(editTargetId, option);
+                }}
+                disabled={count <= minLimit}
               >
-                <div className="sub-selection-label">
-                  <span className={`sub-selection-option-name${isUnavailable ? ' sub-selection-option-name--unavailable' : ''}`}>
-                    {res.name}
-                    <RuleChipIcon
-                      name={res.name}
-                      hasInfo={!!descText}
-                      onShowRule={onShowRule}
-                      onInfoClick={() => {
-                        if (window.innerWidth <= 900) {
-                          setActiveInfo({ title: res.name, text: renderUpgradeDetails(res, system) });
-                        }
-                      }}
-                      onInfoEnter={(e) => handleMouseEnter(res.name, renderUpgradeDetails(res, system), e)}
-                      onInfoMove={handleMouseMove}
-                      onInfoLeave={handleMouseLeave}
-                    />
-                    {isTakenElsewhere && <span className="text-danger text-micro sub-selection-taken-hint">{t('editor.alreadyTaken')}</span>}
-                  </span>
-                </div>
-                <div className="sub-selection-controls">
-                  {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} {costTypeLabel}</span>}
-                  {isSubUnitWithOwnOptions ? (
-                    <button 
-                      type="button"
-                      className="btn-primary text-label sub-selection-add-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        subSelectionOperations.addInstance(editTargetId, option);
-                      }}
-                      disabled={isSelectDisabled || count >= maxLimit}
-                    >
-                      <Plus size={12} className="sub-selection-add-btn-icon" />
-                      {t('common.add')}
-                    </button>
-                  ) : isBinary ? (
-                    <input 
-                      type="checkbox" 
-                      checked={count > 0 || isMandatory}
-                      disabled={isMandatory || (count === 0 && isSelectDisabled) || (count > 0 && count <= minLimit)}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => {
-                        if (!isMandatory && !(count > 0 && count <= minLimit)) {
-                          if (e.target.checked) {
-                            subSelectionOperations.increaseCount(editTargetId, option);
-                          } else {
-                            subSelectionOperations.decreaseCount(editTargetId, option);
-                          }
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="quantity-control">
-                      <button 
-                        className="qty-btn" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          subSelectionOperations.decreaseCount(editTargetId, option);
-                        }}
-                        disabled={count <= minLimit}
-                      >
-                        <Minus size={12} />
-                      </button>
-                      <span className="quantity-value font-body">{count}</span>
-                      <button 
-                        className="qty-btn" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          subSelectionOperations.increaseCount(editTargetId, option);
-                        }}
-                        disabled={isSelectDisabled || count >= maxLimit}
-                      >
-                        <Plus size={12} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              {renderOwnedChildren(rowSelectionId)}
-              </React.Fragment>
-            );
-          } else {
-            return (
-              <OptionGroupComponent
-                key={group.id || group.name}
-                group={group}
-                selection={selection}
-                system={system}
-                roster={roster}
-                getSubSelectionCount={getSubSelectionCount}
-                subSelectionOperations={subSelectionOperations}
-                getOptionDescription={getOptionDescription}
-                activeCatalogue={activeCatalogue}
-                setActiveInfo={setActiveInfo}
-                onHoverEnter={handleMouseEnter}
-                onHoverMove={handleMouseMove}
-                onHoverLeave={handleMouseLeave}
-                onShowRule={onShowRule}
-                renderRowChildren={renderOwnedChildren}
-              />
-            );
-          }
+                <Minus size={12} />
+              </button>
+              <span className="quantity-value font-body">{count}</span>
+              <button
+                className="qty-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  subSelectionOperations.increaseCount(editTargetId, option);
+                }}
+                disabled={isSelectDisabled || count >= maxLimit}
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+      {renderOwnedChildren(rowSelectionId)}
+      </React.Fragment>
+    );
   };
+
+  const renderSection = (section, frameSelection, framePath) => {
+    if (section.standalone) {
+      return renderStandaloneRow(section, frameSelection);
+    }
+    return (
+      <OptionGroupComponent
+        key={section.group.id || section.group.name}
+        group={section.group}
+        selection={frameSelection}
+        selectionPath={framePath}
+        capabilities={capabilities}
+        system={system}
+        roster={roster}
+        getSubSelectionCount={getSubSelectionCount}
+        subSelectionOperations={subSelectionOperations}
+        getOptionDescription={getOptionDescription}
+        activeCatalogue={activeCatalogue}
+        setActiveInfo={setActiveInfo}
+        onHoverEnter={handleMouseEnter}
+        onHoverMove={handleMouseMove}
+        onHoverLeave={handleMouseLeave}
+        onShowRule={onShowRule}
+        renderRowChildren={renderOwnedChildren}
+      />
+    );
+  };
+
+  const selectionPath = pathBySelectionId?.get(selection.id);
+  const topSections = selectionPath === undefined ? [] : buildSections(selection, selectionPath);
 
   return (
     <div className="selection-node-body">
       {/* Listenregeln sind Einstellungen, keine Ausrüstung: die Überschrift entfällt. */}
       {!isListRule && <h4>{t('editor.configurator.title')}</h4>}
       <div className="sub-selection-group sub-selection-group--flush">
-        {topSections.map(renderSection)}
+        {topSections.map(section => renderSection(section, selection, selectionPath))}
       </div>
     </div>
   );
 }
-

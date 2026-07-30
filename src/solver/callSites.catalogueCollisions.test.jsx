@@ -1,11 +1,10 @@
 import { describe, test, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import {
   collectPrimaryCategoryEntries, getOptionDisplayCost, createSelectionFromDef, resolveEntry
 } from './validator.js';
-import CategoryUnitAdder from '../components/editor/CategoryUnitAdder.jsx';
 import PlayUnitDetails from '../components/play/PlayUnitDetails.jsx';
 import { SettingsProvider } from '../contexts/SettingsContext.jsx';
 
@@ -169,30 +168,11 @@ describe('Aufrufstellen des Resolvers — kollidierende IDs über Katalogsgrenze
     expect(selection.selections.map(child => child.name)).toEqual([CHAOS_DWARF_HERO.childName]);
   });
 
-  test('der Aushebe-Dialog zeigt Namen und Preis des aktiven Katalogs', () => {
-    const system = createSystem();
-    const roster = createChaosDwarfRoster();
-
-    render(
-      <CategoryUnitAdder
-        categoryId={HERO_CATEGORY_ID}
-        categoryName="Helden"
-        system={system}
-        activeCatalogue={catalogueOf(system, CHAOS_DWARFS_CATALOGUE_ID)}
-        costTypeLabel={POINTS_LABEL}
-        costLimitType={POINTS_TYPE_ID}
-        addUnit={vi.fn()}
-        roster={roster}
-        selectionCounts={{}}
-        force={roster.forces[0]}
-      />
-    );
-
-    fireEvent.click(screen.getByTitle('Helden ausheben'));
-
-    expect(screen.getByText(CHAOS_DWARF_HERO.name)).toBeTruthy();
-    expect(screen.getByText(`+${CHAOS_DWARF_TOTAL_COST} ${POINTS_LABEL}`)).toBeTruthy();
-  });
+  // Der frühere Aushebe-Dialog-Fall entfällt (Issue 0121, Task 6): der Dialog
+  // liest seine Kandidaten nicht mehr über den Solver-Resolver, sondern aus den
+  // Fähigkeitsdatensätzen des Evaluator-Berichts (ADR-0035). Der Evaluator löst
+  // global-by-ID auf und sichert kollidierende IDs über die
+  // `DUPLICATE_DEFINITION`-Diagnose statt über Katalog-Kontexte (ADR-0032).
 
   test('die Spielansicht zeigt die Lebenspunkte des Katalogs der Liste', () => {
     const system = createSystem();

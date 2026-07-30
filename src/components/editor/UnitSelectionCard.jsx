@@ -44,6 +44,7 @@ export default function UnitSelectionCard({
   roster,
   system,
   violations,
+  capabilities,
   pathBySelectionId,
   costTypeLabel,
   removeUnit,
@@ -334,6 +335,8 @@ export default function UnitSelectionCard({
       {isUnitEditing && (
         <SelectionConfigurator
           selection={selection}
+          capabilities={capabilities}
+          pathBySelectionId={pathBySelectionId}
           system={system}
           roster={roster}
           subSelectionOperations={subSelectionOperations}
@@ -357,6 +360,7 @@ export default function UnitSelectionCard({
               roster={roster}
               system={system}
               violations={violations}
+              capabilities={capabilities}
               pathBySelectionId={pathBySelectionId}
               costTypeLabel={costTypeLabel}
               removeUnit={(subUnitSelectionId) => subSelectionOperations.removeInstance(selection.id, subUnitSelectionId)}

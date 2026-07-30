@@ -16,6 +16,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     roster,
     costs,
     violations,
+    capabilities,
     pathBySelectionId,
     selectedRosterSelection,
     setSelectedRosterSelection,
@@ -68,7 +69,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const currentPoints = costs[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;
-  const remainingPoints = limitPoints - currentPoints;
   const extraResources = getExtraResourceTotals(system, roster, costs);
 
   const playRoster = useCallback(() => onPlay(roster), [onPlay, roster]);
@@ -82,6 +82,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     roster,
     system,
     violations,
+    capabilities,
     pathBySelectionId,
     costTypeLabel,
     removeUnit,
@@ -119,14 +120,19 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
       <div className="builder-layout">
         <div className="builder-main active-mobile-tab">
-          {roster.forces.map(force => (
+          {/* Der Slot-Pfad eines Kontingents ist sein Eingabe-Index (Pfad-Schema
+              der Evaluator-Fassade: `forces[i]` liegt unter `"i"`). */}
+          {roster.forces.map((force, forceIndex) => (
             <ForceEditorSection
               key={force.id}
               force={force}
+              forcePath={String(forceIndex)}
               system={system}
               roster={roster}
               activeCatalogue={activeCatalogue}
               violations={violations}
+              capabilities={capabilities}
+              pathBySelectionId={pathBySelectionId}
               costTypeLabel={costTypeLabel}
               addUnit={addUnit}
               removeUnit={removeUnit}
@@ -135,7 +141,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               isRuleGroupExpanded={isRuleGroupExpanded}
               onToggleRuleGroup={toggleRuleGroup}
               onShowRule={onShowRule}
-              remainingPoints={remainingPoints}
               extraResources={extraResources}
               onPlay={playRoster}
             />

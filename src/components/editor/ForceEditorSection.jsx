@@ -13,24 +13,25 @@ import RosterValidationPanel from './RosterValidationPanel';
 import UnitCardList from './UnitCardList';
 import { useTranslation } from '../../i18n/useTranslation';
 
-// Ab dieser Restpunktzahl lohnt ein Auffüll-Vorschlag: darunter ist noch etwas
-// bezahlbar, darüber wäre der Vorschlag beliebig.
-const AUTO_FILL_SUGGESTION_THRESHOLD = 50;
-
 /**
  * Ein Kontingent („force“) der Liste: seine Kategorie-Gruppen, die armeeweiten
  * Auswahlen, die Auffangsektion für Auswahlen ohne Kategorie, die
  * Auffüll-Vorschläge und der Lagerbericht.
  *
  * Die Komponente komponiert nur — jede fachliche Entscheidung liegt in der
- * jeweiligen Untersektion oder im Solver.
+ * jeweiligen Untersektion oder im Bericht der Evaluator-Fassade
+ * (`capabilities`/`violations`, Issue 0121). `forcePath` ist der Slot-Pfad des
+ * Kontingents im Bericht (Pfad-Schema der Fassade: `forces[i]` → `"i"`).
  */
 export default function ForceEditorSection({
   force,
+  forcePath,
   system,
   roster,
   activeCatalogue,
   violations,
+  capabilities,
+  pathBySelectionId,
   costTypeLabel,
   addUnit,
   removeUnit,
@@ -39,7 +40,6 @@ export default function ForceEditorSection({
   isRuleGroupExpanded,
   onToggleRuleGroup,
   onShowRule,
-  remainingPoints,
   extraResources,
   onPlay
 }) {
@@ -66,7 +66,13 @@ export default function ForceEditorSection({
   const uncategorizedSelections = childSelectionsOf(force).filter(s =>
     !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s));
 
-  const showAutoFillSuggestions = remainingPoints > 0 && remainingPoints <= AUTO_FILL_SUGGESTION_THRESHOLD;
+  // Die Auffüll-Vorschläge speisen sich aus den Pflicht-Signalen des Berichts
+  // (ADR-0035) — beschränkt auf die Slots DIESES Kontingents; das Panel blendet
+  // sich selbst aus, wenn keine Pflicht offen ist.
+  const forceScopedCapabilities = new Map(
+    [...(capabilities ?? [])].filter(([path]) =>
+      path === forcePath || path.startsWith(`${forcePath}/`))
+  );
 
   // Das Ziel-Kontingent ist genau hier bekannt: jede Sektion rendert eines. Die
   // Untersektionen heben damit weiter über zwei Argumente aus und müssen den
@@ -80,11 +86,14 @@ export default function ForceEditorSection({
           key={categoryLink.targetId}
           categoryLink={categoryLink}
           force={force}
+          forcePath={forcePath}
           forceDef={forceDefinition}
           system={system}
           roster={roster}
           activeCatalogue={activeCatalogue}
           violations={violations}
+          capabilities={capabilities}
+          pathBySelectionId={pathBySelectionId}
           selectionCounts={selectionCounts}
           forceCategoryCounts={forceCategoryCounts}
           costTypeLabel={costTypeLabel}
@@ -105,14 +114,13 @@ export default function ForceEditorSection({
             <CategoryUnitAdder
               categoryName={armyWideSectionTitle}
               entries={armyWideSelectors}
+              capabilities={capabilities}
+              forcePath={forcePath}
               system={system}
               activeCatalogue={activeCatalogue}
               costTypeLabel={costTypeLabel}
               costLimitType={roster.costLimitType}
               addUnit={addUnitToThisForce}
-              roster={roster}
-              selectionCounts={selectionCounts}
-              force={force}
             />
           </div>
           <UnitCardList selections={armyWideSelectorSelections} cardContext={unitCardContext} />
@@ -126,16 +134,15 @@ export default function ForceEditorSection({
         </div>
       )}
 
-      {showAutoFillSuggestions && (
-        <AutoFillSuggestions
-          roster={roster}
-          system={system}
-          activeCatalogue={activeCatalogue}
-          remainingPoints={remainingPoints}
-          subSelectionOperations={subSelectionOperations}
-          costTypeLabel={costTypeLabel}
-        />
-      )}
+      <AutoFillSuggestions
+        capabilities={forceScopedCapabilities}
+        subSelectionOperations={subSelectionOperations}
+        costTypeLabel={costTypeLabel}
+        pathBySelectionId={pathBySelectionId}
+        addUnit={addUnitToThisForce}
+        system={system}
+        activeCatalogue={activeCatalogue}
+      />
 
       <RosterValidationPanel
         violations={violations}
