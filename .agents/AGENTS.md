@@ -4,6 +4,13 @@
 
 "Tome of Battle" — a React + Vite PWA for building and playing tabletop army lists from **Battlescribe** data files (`.cat`/`.gst` XML). It's a client-only app: no backend, all data lives in IndexedDB.
 
+Before exploring further, skim **[docs/project-map.md](docs/project-map.md)** —
+it maps where things live in this repo (`src/` subsystem boundaries, the `docs/`
+tree, ADR clusters by topic, testing layers) and points to the deeper reference
+for each. It is an orientation aid, not a substitute for the required reading
+below — where it and a linked ADR or deep doc disagree, the linked doc is right
+and the map is out of date.
+
 ## Architecture Guidelines (ADRs)
 
 All core architecture, database, styling, testing, and deployment guidelines are documented in **[docs/adr/](docs/adr/)** (see the index [README.md](docs/adr/README.md)).
