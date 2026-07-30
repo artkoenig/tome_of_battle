@@ -139,7 +139,7 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 - [x] 6. UI-Umstellung Verfügbarkeitspfad: CategoryUnitAdder,
   OptionGroup, SelectionConfigurator, AutoFillSuggestions lesen
   `capabilities` (ADR-0035; Baseline-Diff + Sperrtabelle entfallen)
-- [ ] 7. UI-Umstellung Rest: Dashboard, PlayMode, Modals,
+- [x] 7. UI-Umstellung Rest: Dashboard, PlayMode, Modals,
   rosterSerialization; Kosten aus `costTotals`, Profile aus
   `infoElements`
 - [ ] 8. Schreibmodell-Umzug nach `src/roster/`: was die UI nach 5–7
@@ -199,6 +199,19 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-30, Task 7 (Rest-UI) erledigt: 10 Vertragsdateien (28 rot
+  vorher), volle Suite 2700 Tests Exit 0, E2E Exit 0 unverändert,
+  build/lint/typecheck/depcruise Exit 0. Neu evaluationCache
+  (WeakMap je System-Objekt — Kriterium 8 verschärft auf "je
+  Datensatz", auch für Nicht-React-Aufrufer) und costDisplays.
+  Kosten-Parität auf echten WHFB6-Katalogen belegt (Round-trip 2000
+  pts, 3 Armeen). Akzeptierte Deltas: Prozent-Kategorien zeigen
+  aufgelöste Zahlen statt "%"-Suffix; WHFB6-Quirk-Vererbungstests der
+  Sidebar gelöscht (ADR-0034); Regel-Details ohne publicationRef;
+  NewRosterModal filtert creatableForces zusätzlich per sourceId
+  (bewahrt Alt-Verhalten). Rest-Solver-Importe (Struktur-Helfer +
+  einzelne Kosten-/Namens-Reste in PlayMode/PlayUnitDetails/
+  UnitSelectionCard) als Task-8-Inventar im Bericht erfasst.
 - 2026-07-30, Task 6 (Verfügbarkeitspfad) erledigt: 21 rote
   Vertragstests in 4 Dateien, dann volle Suite 2646 Tests Exit 0,
   Puppeteer-E2E Exit 0 unverändert, build/lint/typecheck/depcruise
