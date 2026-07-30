@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/statusseite-code-coverage-4wt1a0
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/184
 ---
 
 # Statusseite zeigt keine Code Coverage mehr, sobald ein Test rot ist
