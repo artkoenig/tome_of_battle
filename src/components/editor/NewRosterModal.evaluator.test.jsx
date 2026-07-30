@@ -42,9 +42,6 @@ vi.mock('lucide-react', () => ({
   X: () => <span data-testid="icon-x" />,
 }));
 
-const getPlayableCataloguesSpy = vi.fn(() => [{ id: 'poison-cat', name: 'POISON-CATALOGUE' }]);
-const getAvailableForceEntriesSpy = vi.fn(() => [{ id: 'poison-force', name: 'POISON-FORCE' }]);
-const resolveCostLimitLabelSpy = vi.fn(() => 'POISON-LABEL');
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
@@ -154,11 +151,9 @@ describe('NewRosterModal: Datenquellen aus der Datensatz-Beschreibung des Evalua
     expect(Number(limitInput.value)).toBe(DEFAULT_ROSTER_COST_LIMIT);
   });
 
-  it('ruft die Solver-Quellen nicht mehr auf: kein getPlayableCatalogues, kein getAvailableForceEntries, kein resolveCostLimitLabel (Modul-Spy)', () => {
-    renderModal([appSystem()]);
-
-    expect(getPlayableCataloguesSpy).not.toHaveBeenCalled();
-    expect(getAvailableForceEntriesSpy).not.toHaveBeenCalled();
-    expect(resolveCostLimitLabelSpy).not.toHaveBeenCalled();
-  });
+  // Der frühere Gift-Stub-Test steht hier nicht mehr: Der Solver ist mit
+  // Issue 0121 gelöscht, seine Funktionen können gar nicht mehr gerufen
+  // werden. Eine Assertion darauf könnte nicht fehlschlagen und würde
+  // Sicherheit vortäuschen. Dass die Anzeige aus dem Bericht kommt, prüfen
+  // die Fälle darüber an ihren Werten.
 });

@@ -45,8 +45,6 @@ import CategoryUnitAdder from './CategoryUnitAdder';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
-const validateRosterSpy = vi.fn(() => []);
-const getEntryAddAvailabilitySpy = vi.fn(() => ({ available: true, reasons: [] }));
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
@@ -270,13 +268,9 @@ describe('CategoryUnitAdder: Verfügbarkeit aus dem Fähigkeitsdatensatz (Issue 
     expect(addUnit.mock.calls[0][1]).toBe(CATEGORY_ID);
   });
 
-  it('ruft die Solver-Fassade nicht mehr auf: kein validateRoster-Baseline, kein getEntryAddAvailability (Modul-Spy)', () => {
-    // Bewusst ohne openDialog: schon das Rendern darf den Solver-Diff-Pfad
-    // (Baseline-Validierung) nicht mehr anstoßen.
-    const { capabilities } = evaluation();
-    renderAdder(vi.fn(), capabilities);
-
-    expect(validateRosterSpy).not.toHaveBeenCalled();
-    expect(getEntryAddAvailabilitySpy).not.toHaveBeenCalled();
-  });
+  // Der frühere Gift-Stub-Test steht hier nicht mehr: Der Solver ist mit
+  // Issue 0121 gelöscht, seine Funktionen können gar nicht mehr gerufen
+  // werden. Eine Assertion darauf könnte nicht fehlschlagen und würde
+  // Sicherheit vortäuschen. Dass die Anzeige aus dem Bericht kommt, prüfen
+  // die Fälle darüber an ihren Werten.
 });

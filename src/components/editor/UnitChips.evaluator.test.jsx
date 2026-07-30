@@ -39,10 +39,6 @@ vi.mock('../../contexts/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 
-const collectUnitProfilesAndRulesSpy = vi.fn(() => ({
-  profiles: [],
-  rules: [{ id: 'poison-rule', name: 'POISON-RULE', description: 'poison text' }],
-}));
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
@@ -190,9 +186,9 @@ describe('UnitRulesChips: Regeln aus capability.infoElements (Issue 0121, Task 7
     expect(detailsContainer.textContent).toContain(RULE_TEXT);
   });
 
-  it('ruft collectUnitProfilesAndRules nicht mehr auf (Modul-Spy)', () => {
-    renderRulesChips(evaluation());
-
-    expect(collectUnitProfilesAndRulesSpy).not.toHaveBeenCalled();
-  });
+  // Der frühere Gift-Stub-Test steht hier nicht mehr: Der Solver ist mit
+  // Issue 0121 gelöscht, seine Funktionen können gar nicht mehr gerufen
+  // werden. Eine Assertion darauf könnte nicht fehlschlagen und würde
+  // Sicherheit vortäuschen. Dass die Anzeige aus dem Bericht kommt, prüfen
+  // die Fälle darüber an ihren Werten.
 });

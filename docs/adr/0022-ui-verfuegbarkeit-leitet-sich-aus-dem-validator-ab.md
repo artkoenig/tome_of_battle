@@ -9,9 +9,9 @@
 > leitet Verfügbarkeit künftig aus dem Fähigkeitsdatensatz eines Slots ab statt
 > aus dem Vergleich zweier Validierungsläufe. Damit entfallen sowohl das
 > hypothetische Hinzufügen samt Grundlinie als auch die Tabelle sperrender
-> Verletzungsarten. Der hier beschriebene Mechanismus bleibt bis zum Cutover auf
-> die Reinraum-Engine in Betrieb; das Dokument beschreibt also weiterhin den
-> laufenden Code, nicht mehr aber die geltende Entscheidung.
+> Verletzungsarten. Der Cutover ist mit Issue 0121 vollzogen: der hier
+> beschriebene Mechanismus ist **gelöscht**, das Dokument beschreibt weder die
+> geltende Entscheidung noch den laufenden Code, sondern nur noch die Historie.
 
 ## Kontext und Problemstellung
 

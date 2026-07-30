@@ -30,6 +30,7 @@ export default function ForceEditorSection({
   roster,
   activeCatalogue,
   violations,
+  unresolvedSelections,
   capabilities,
   pathBySelectionId,
   costTypeLabel,
@@ -145,6 +146,7 @@ export default function ForceEditorSection({
 
       <RosterValidationPanel
         violations={violations}
+        unresolvedSelections={unresolvedSelections}
         extraResources={extraResources}
         onPlay={onPlay}
       />

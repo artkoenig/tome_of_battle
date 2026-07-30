@@ -27,7 +27,7 @@ import { useTranslation } from '../../i18n/useTranslation';
  * - die Gruppen-Grenze liest der Gruppen-Anker (`defId === group.id`).
  *
  * Übergangsweise bleibt die statische „Gruppen-Max über 1 hebbar"-Erkennung
- * (ADR-0029, Rüstung+Schild-Fall) beim bestehenden Solver-Helfer — sie liest
+ * (ADR-0029, Rüstung+Schild-Fall) beim Helfer des Schreibmodells — sie liest
  * reine Katalogstruktur und zieht mit dem Schreibmodell in Task 8 um.
  */
 export default function OptionGroupComponent({
@@ -78,7 +78,7 @@ export default function OptionGroupComponent({
   const [isExpanded, setIsExpanded] = useState(() => rows.some(row => row.count > 0));
 
   // Gruppen-Grenze aus dem Gruppen-Anker des Berichts; die statische
-  // „Max-hebbar"-Erkennung bleibt beim Solver-Helfer (siehe Kopfkommentar).
+  // „Max-hebbar"-Erkennung bleibt beim Helfer des Schreibmodells (siehe Kopfkommentar).
   const groupCapability = findChildSlot(capabilities, selectionPath, group.id);
   const effectiveGroupMax = groupCapability?.effectiveMax ?? Infinity;
   const isGroupMaxRaisable = canGroupMaxBeRaisedAboveSingleChoice(group);

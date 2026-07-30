@@ -37,8 +37,6 @@ vi.mock('./editor/BottomSheet', () => ({
   default: ({ isOpen, children }) => (isOpen ? <div data-testid="sheet">{children}</div> : null),
 }));
 
-const calculateRosterCostsSpy = vi.fn(() => ({ [COST_TYPE_ID]: 999999 }));
-const resolveCostLimitLabelSpy = vi.fn(() => 'POISON-LABEL');
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
@@ -156,10 +154,9 @@ describe('RosterDashboard: Kartenkosten aus dem Evaluator-Bericht (Issue 0121, T
     expect(container.textContent).not.toContain('POISON-LABEL');
   });
 
-  it('ruft die Solver-Kostenrechnung nicht mehr auf (Modul-Spy: calculateRosterCosts, resolveCostLimitLabel)', () => {
-    renderDashboard();
-
-    expect(calculateRosterCostsSpy).not.toHaveBeenCalled();
-    expect(resolveCostLimitLabelSpy).not.toHaveBeenCalled();
-  });
+  // Der frühere Gift-Stub-Test steht hier nicht mehr: Der Solver ist mit
+  // Issue 0121 gelöscht, seine Funktionen können gar nicht mehr gerufen
+  // werden. Eine Assertion darauf könnte nicht fehlschlagen und würde
+  // Sicherheit vortäuschen. Dass die Anzeige aus dem Bericht kommt, prüfen
+  // die Fälle darüber an ihren Werten.
 });

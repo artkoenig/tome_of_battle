@@ -25,6 +25,8 @@ export const MODEL_COUNT_PROFILE_TYPES = [
   'unit', 'model', 'monster', 'creature', 'war machine', 'character', 'rider', 'mount'
 ];
 
-// Systemspezifische IDs (General-Einträge, Kategorie-Vererbung etc.)
-// liegen als Daten in systemQuirks.js — nicht hier als Konstanten.
+// Systemspezifische IDs (General-Einträge, Kategorie-Vererbung etc.) lagen als
+// Daten in systemQuirks.js. Die Datei ist mit Issue 0121 entfallen: ADR-0034
+// ordnet systemgebundene Sonderfälle und Stichwort-Heuristiken weder der Engine
+// noch dem Bericht zu — sie werden am Datenfehler im Katalog-Fork behoben.
 

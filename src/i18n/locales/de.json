@@ -6,6 +6,7 @@
   "settings.version": "Version",
   "settings.language.label": "Sprache",
   "validation.evaluator.causesTitle": "Ursachen:",
+  "validation.evaluator.unresolvedEntry": "„{selectionName}\" gibt es im Katalog nicht mehr.",
   "validation.evaluator.selectionCount.min.local_one": "„{name}\" muss mindestens einmal gewählt werden.",
   "validation.evaluator.selectionCount.min.local_other": "„{name}\" muss mindestens {bound} Mal gewählt werden.",
   "validation.evaluator.selectionCount.min.force_one": "Das Kontingent braucht noch einen „{name}\".",
@@ -254,5 +255,6 @@
   "rosterList.deleteFailed": "Die Liste konnte nicht gelöscht werden.",
   "appData.loadFailed": "Die gespeicherten Spielsysteme und Listen konnten nicht geladen werden.",
   "appData.refreshFailed": "Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: {systems}",
+  "appData.reimportRequired": "Diese Systeme wurden mit einer alten Version importiert und enthalten die Katalogdateien nicht mehr: {systems}. Bitte importiere sie neu — sonst bleiben Regeln, Optionen und Punkte leer.",
   "preview.title": "Dies ist die Preproduction-Instanz, nicht die Live-App."
 }

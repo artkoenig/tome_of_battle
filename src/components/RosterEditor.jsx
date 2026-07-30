@@ -16,6 +16,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   const {
     roster,
     violations,
+    unresolvedSelections,
     capabilities,
     description,
     costTotals,
@@ -137,6 +138,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               roster={roster}
               activeCatalogue={activeCatalogue}
               violations={violations}
+              unresolvedSelections={unresolvedSelections}
               capabilities={capabilities}
               pathBySelectionId={pathBySelectionId}
               costTypeLabel={costTypeLabel}

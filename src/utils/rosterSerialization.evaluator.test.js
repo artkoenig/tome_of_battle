@@ -22,11 +22,6 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const getEffectiveSelectionNameSpy = vi.fn(() => 'POISON-NAME');
-const getEffectiveNameSpy = vi.fn(() => 'POISON-NAME');
-const getSelectionOwnCostsSpy = vi.fn(() => ({ [COST_TYPE_ID]: 999999 }));
-const getSelectionTotalCostSpy = vi.fn(() => 999999);
-const calculateRosterCostsSpy = vi.fn(() => ({ [COST_TYPE_ID]: 999999 }));
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
@@ -176,13 +171,9 @@ describe('exportRosterToXml: Namen und Kosten aus dem Evaluator-Bericht (Issue 0
     expect(xml).toContain(`typeId="${COST_TYPE_ID}" value="1000"`);
   });
 
-  it('ruft die Solver-Namens- und Kostenquellen nicht mehr auf (Modul-Spies)', () => {
-    exportRosterToXml(appRoster(), appSystem());
-
-    expect(getEffectiveSelectionNameSpy).not.toHaveBeenCalled();
-    expect(getEffectiveNameSpy).not.toHaveBeenCalled();
-    expect(getSelectionOwnCostsSpy).not.toHaveBeenCalled();
-    expect(getSelectionTotalCostSpy).not.toHaveBeenCalled();
-    expect(calculateRosterCostsSpy).not.toHaveBeenCalled();
-  });
+  // Der frühere Gift-Stub-Test steht hier nicht mehr: Der Solver ist mit
+  // Issue 0121 gelöscht, seine Funktionen können gar nicht mehr gerufen
+  // werden. Eine Assertion darauf könnte nicht fehlschlagen und würde
+  // Sicherheit vortäuschen. Dass die Anzeige aus dem Bericht kommt, prüfen
+  // die Fälle darüber an ihren Werten.
 });

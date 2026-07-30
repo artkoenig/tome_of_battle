@@ -76,7 +76,7 @@ export default function RosterCategorySection({
   // Eine Listenregel-Gruppe (datengetrieben: Katalogtyp = upgrade, ADR 0003) ist
   // eine listenweite Einstellungsgruppe, kein Einheiten-Slot: ihre Karten haben
   // keine Einheiten-Aktionen und die Gruppe bietet keinen „Einheit hinzufügen“-
-  // Knopf. Ein Solver-Aufruf klassifiziert die Gruppe und liefert im selben
+  // Knopf. Ein Aufruf des Schreibmodells klassifiziert die Gruppe und liefert im selben
   // Katalog-Durchlauf die Zustände je Regel für die ListRuleChecklist.
   const { isListRuleGroup, states: listRuleStates } = resolveListRuleGroup(
     system, activeCatalogue, categoryId, { roster, force }

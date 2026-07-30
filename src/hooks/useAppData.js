@@ -51,10 +51,20 @@ export default function useAppData({ showToast, navigate }) {
   // is only a cache) apart from the existing per-system toast on partial failures.
   const refreshCatalogInBackground = async (dbSystems) => {
     try {
-      const { systems: refreshedSystems, failures } = await runSystemMigrations(dbSystems, fetchCatalogText);
+      const { systems: refreshedSystems, failures, unrecoverable } =
+        await runSystemMigrations(dbSystems, fetchCatalogText);
       if (failures.length > 0) {
         showToast(
           t('appData.refreshFailed', { systems: failures.map(f => f.name).join(', ') }),
+          'error'
+        );
+      }
+      // Ein System ohne Katalogdateien kann seit Issue 0121 nicht mehr bewertet
+      // werden — Listen daraus zeigten sonst still keine Regeln, keine Optionen und
+      // 0 Punkte. Das darf der Nutzer nicht selbst herausfinden muessen.
+      if (unrecoverable?.length > 0) {
+        showToast(
+          t('appData.reimportRequired', { systems: unrecoverable.map(s => s.name).join(', ') }),
           'error'
         );
       }

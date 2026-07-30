@@ -38,6 +38,7 @@ const EMPTY_RESULT = Object.freeze({
   capabilities: new Map(),
   costTotals: Object.freeze({}),
   pathBySelectionId: new Map(),
+  diagnostics: Object.freeze([]),
 });
 
 /**
@@ -69,7 +70,7 @@ export function preparedDatasetOf(system) {
  *
  * @param {object|null|undefined} system  App-System-Objekt mit `rawXmls`.
  * @param {import('../types.js').Roster|null|undefined} roster  das App-Roster.
- * @returns {{ violations: ReadonlyArray<object>, capabilities: Map<string, object>, costTotals: Readonly<Record<string, number>>, pathBySelectionId: Map<string, string> }}
+ * @returns {{ violations: ReadonlyArray<object>, capabilities: Map<string, object>, costTotals: Readonly<Record<string, number>>, pathBySelectionId: Map<string, string>, diagnostics: ReadonlyArray<object> }}
  */
 export function evaluateAppRoster(system, roster) {
   const prepared = preparedDatasetOf(system);
@@ -81,6 +82,7 @@ export function evaluateAppRoster(system, roster) {
     capabilities: report.capabilities,
     costTotals: report.costTotals,
     pathBySelectionId,
+    diagnostics: report.diagnostics,
   };
 }
 

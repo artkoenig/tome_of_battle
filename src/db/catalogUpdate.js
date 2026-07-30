@@ -174,6 +174,32 @@ export function findOutdatedCatalogFiles(index, system) {
   return outdatedFiles;
 }
 
+/**
+ * Alle Katalogdateien des Systems, die der Index kennt — ohne Revisionsvergleich.
+ *
+ * Der Fall dahinter: ein System **ohne** gespeichertes Roh-XML stammt aus einer
+ * Version vor 1.8.2, und seit Issue 0121 beurteilt die Engine ein Roster aus den
+ * Katalogdateien selbst. Fuer ein solches System hilft "aktuell" nichts — die
+ * Datei ist gar nicht da und muss unabhaengig von ihrer Revision geholt werden.
+ * Bewusst getrennt von {@link findOutdatedCatalogFiles}: die bleibt der reine
+ * Revisionsvergleich.
+ * @returns {Array<{type: string, fileName: string}>}
+ */
+export function findAllCatalogFiles(index, system) {
+  const gameSystemEntry = findIndexEntry(index, CATALOG_FILE_TYPE.GAME_SYSTEM, system.id);
+  if (!gameSystemEntry) return [];
+
+  /** @type {Array<{type: string, fileName: string}>} */
+  const files = [{ type: CATALOG_FILE_TYPE.GAME_SYSTEM, fileName: rawFileName(gameSystemEntry) }];
+  for (const catalogue of system.catalogues ?? []) {
+    const catalogueEntry = findIndexEntry(index, CATALOG_FILE_TYPE.CATALOGUE, catalogue.id);
+    if (catalogueEntry) {
+      files.push({ type: CATALOG_FILE_TYPE.CATALOGUE, fileName: rawFileName(catalogueEntry) });
+    }
+  }
+  return files;
+}
+
 function replaceRawFile(files, fileName, content) {
   const nextFile = { name: fileName, content };
   const existingIndex = files.findIndex((file) => file.name === fileName);
@@ -224,7 +250,11 @@ export async function updateSystemFromCatalogIndex(
   if (!index) return null;
 
   try {
-    const outdatedFiles = findOutdatedCatalogFiles(index, system);
+    // Fehlt das Roh-XML ganz, entscheidet nicht die Revision, sondern die
+    // Abwesenheit: dann werden alle bekannten Dateien geholt (Issue 0121).
+    const outdatedFiles = system.rawXmls?.gst?.length
+      ? findOutdatedCatalogFiles(index, system)
+      : findAllCatalogFiles(index, system);
     if (outdatedFiles.length === 0) return null;
 
     const rawXmls = await downloadOutdatedRawXmls(

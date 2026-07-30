@@ -26,7 +26,7 @@ import { useTranslation } from '../../i18n/useTranslation';
  * Berichts, kein Rechenergebnis der Oberfläche).
  *
  * Die **Mitgliedschaft** Option→Gruppe bleibt Struktur des geparsten Systems
- * (Options-Sammler der Solver-Fassade); sie ordnet die Slots den Gruppen zu,
+ * (Options-Sammler des Schreibmodells `src/roster/`); sie ordnet die Slots den Gruppen zu,
  * liefert aber weder Kandidaten noch Zustände. Eine belegte Unter-Auswahl ist
  * selbst ein Rahmen: ihre Kind-Slots rendern eingerückt unter ihrer Zeile.
  */

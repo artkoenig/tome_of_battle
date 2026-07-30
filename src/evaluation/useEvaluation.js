@@ -45,6 +45,9 @@ import { toEvaluatorRoster } from './rosterAdapter.js';
  *   Beschreibung des Datensatzes (`describeDataset`); `null` im Leerfall.
  * @property {Readonly<Record<string, number>>} costTotals  Kostensumme je deklarierter Kostenart.
  * @property {Map<string, string>} pathBySelectionId  App-Selection-UUID → Slot-Pfad.
+ * @property {ReadonlyArray<object>} diagnostics  Datensatz-Befunde des Berichts
+ *   (z. B. `unresolvedDefinition`), aus denen die Oberflaeche die Meldung fuer
+ *   nicht mehr auffindbare Auswahlen ableitet.
  */
 
 /**
@@ -59,6 +62,7 @@ const EMPTY_RESULT = Object.freeze({
   description: null,
   costTotals: Object.freeze({}),
   pathBySelectionId: new Map(),
+  diagnostics: Object.freeze([]),
 });
 
 /**
@@ -107,6 +111,7 @@ export function useEvaluation(system, roster) {
       description,
       costTotals: report.costTotals,
       pathBySelectionId: adapted.pathBySelectionId,
+      diagnostics: report.diagnostics,
     };
   }, [report, adapted, description]);
 }

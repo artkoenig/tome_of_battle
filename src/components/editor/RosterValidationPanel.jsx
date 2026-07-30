@@ -12,13 +12,23 @@ import ValidationMessage from './ValidationMessage';
  * `violations` ist die Verletzungsliste der Evaluator-Fassade — dieselbe, die
  * `useRoster` liefert. Blockierend (Spielen gesperrt) ist allein severity
  * `error` (`violationStats.js`).
+ *
+ * Dazu kommt der eine Datensatz-Befund, den der Nutzer handhaben kann: eine
+ * Auswahl, deren Definition der Katalog nicht mehr kennt. Sie ist keine
+ * Regelverletzung, sondern eine Diagnose — ohne Meldung verschwaende sie
+ * stumm aus der Bewertung (`unresolvedSelections`).
  */
-export default function RosterValidationPanel({ violations, extraResources, onPlay }) {
+export default function RosterValidationPanel({
+  violations,
+  extraResources,
+  onPlay,
+  unresolvedSelections = [],
+}) {
   const { t } = useTranslation();
   const blockingViolations = violations.filter(isBlockingViolation);
   const advisoryViolations = violations.filter(violation => !isBlockingViolation(violation));
   const blockingCount = countBlockingViolations(violations);
-  const isRosterValid = !hasBlockingViolations(violations);
+  const isRosterValid = !hasBlockingViolations(violations) && unresolvedSelections.length === 0;
 
   return (
     <div
@@ -58,6 +68,18 @@ export default function RosterValidationPanel({ violations, extraResources, onPl
         </div>
       ) : (
         <div className="validation-error-list">
+          {unresolvedSelections.map(entry => (
+            <div
+              key={entry.defId}
+              data-testid="unresolved-selection"
+              className="validation-error-item text-danger text-body flex-row gap-10"
+            >
+              <AlertTriangle size={18} className="no-shrink" />
+              <div className="validation-message-body">
+                {t('validation.evaluator.unresolvedEntry', { selectionName: entry.name })}
+              </div>
+            </div>
+          ))}
           {blockingViolations.map((violation, idx) => (
             <div key={idx} className="validation-error-item text-danger text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />

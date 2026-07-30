@@ -19,7 +19,7 @@ import BottomSheet from './BottomSheet';
  *
  * `addUnit(kandidat, categoryId)` bleibt der Aushebe-Callback; als Kandidat
  * wird der Katalogeintrag der Definition übergeben (Auflösung über die
- * Solver-Fassade — die Schreibmechanik bleibt bis Task 8 beim Solver),
+ * Schreibmodell `src/roster/` — die Schreibmechanik lebt dort),
  * ersatzweise ein `{ id, name }`-Paar aus dem Slot.
  */
 
@@ -76,7 +76,7 @@ export default function CategoryUnitAdder({
 
   // Der Aushebe-Callback erwartet den Katalogeintrag der Definition (die
   // Selektions-Fabrik liest ihn); bei einer expliziten Eintragsliste ist er
-  // schon da, sonst löst ihn die Solver-Fassade aus dem System auf.
+  // schon da, sonst löst ihn das Schreibmodell aus dem System auf.
   const entryFor = (capability) => {
     const fromEntries = entries?.find(entry =>
       entry.id === capability.defId || entry.id === capability.targetDefId

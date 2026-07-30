@@ -15,11 +15,12 @@ Datei** arbeitet:
 - **Toter oder ungenutzter Code über Dateigrenzen hinweg** — etwa das in Issue 50
   gefundene `shared`, das geparst, aber nie ausgewertet wurde, sowie diverse
   Aufräum-Befunde in 39/43.
-- **Verletzung der Schichtung und der Solver-Fassade** — die Schichtung
-  `parser → solver → components` und der ausschließliche Zugriff auf den Solver
-  über `src/solver/validator.js` sind in ADR-0023 festgeschrieben, waren aber nur
-  teilweise durch die dateilokale oxlint-Regel `no-restricted-imports` bewacht.
-  **Import-Zyklen** erkennt oxlint gar nicht.
+- **Verletzung der Schichtung und der Engine-Fassade** — die Schichtung und der
+  ausschließliche Zugriff auf die Engine über ihre Fassade waren nur teilweise
+  durch die dateilokale oxlint-Regel `no-restricted-imports` bewacht.
+  **Import-Zyklen** erkennt oxlint gar nicht. (Damals galt das der Solver-Fassade
+  aus ADR-0023; seit Issue 0121 bewacht dieselbe Mechanik die Fassade der
+  Reinraum-Engine und deren Trennung vom Schreibmodell `src/roster/`.)
 - **Duplizierung** — in Issue 42 lag dasselbe E2E-Harness dreifach kopiert vor,
   zwei Kopien liefen unbemerkt kaputt.
 

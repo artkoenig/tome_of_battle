@@ -7,6 +7,7 @@ import {
   buildModifierEvalContext, createSelectionFromDef as buildSelectionFromDef,
   withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../roster';
+import { unresolvedSelectionsOf } from '../evaluation/datasetDiagnostics';
 import { useEvaluation } from '../evaluation/useEvaluation';
 import { useUndoableState } from './useUndoableState';
 import {
@@ -64,8 +65,16 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   // abgeleitet, ohne gespiegelten State. Der frühere Solver-Kostenpfad
   // (`calculateRosterCosts` → `costs`) ist entfallen; jede Kosten-Anzeige
   // liest `costTotals` bzw. die Fähigkeitsdatensätze.
-  const { violations, capabilities, description, costTotals, pathBySelectionId } =
+  const { violations, capabilities, description, costTotals, pathBySelectionId, diagnostics } =
     useEvaluation(system, roster);
+
+  // Auswahlen, deren Definition der Katalog nicht mehr kennt (stilles
+  // Katalog-Update, ADR 0018). Sie sind keine Regelverletzung, muessen dem
+  // Nutzer aber gemeldet werden — die Engine uebergeht sie sonst stumm.
+  const unresolvedSelections = useMemo(
+    () => unresolvedSelectionsOf(diagnostics, roster),
+    [diagnostics, roster]
+  );
 
   // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt
   // eine (schnell veraltende) Objektreferenz zu halten.
@@ -346,6 +355,7 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
     description,
     costTotals,
     pathBySelectionId,
+    unresolvedSelections,
     selectedRosterSelection,
     setSelectedRosterSelection,
     addUnit,

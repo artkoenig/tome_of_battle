@@ -7,7 +7,7 @@
 
 ## Kontext und Problemstellung
 
-Die Battlescribe-Kataloge (`.cat` / `.gst`) nutzen ein hochgradig generisches, aber auch komplexes XML-Schema, um Armeen, Einheiten, Ausrüstungsgegenstände, Punktekosten und Validierungsregeln zu definieren. Um verschiedene Spielsysteme (z. B. Warhammer Fantasy, Warhammer 40k) und Völker flexibel in *Tome of Battle* laden zu können, muss die Fachlogik im "Solver" (`src/solver/`) robust und systemunabhängig arbeiten. Hardcodierte Sonderregeln für einzelne Armeen oder sprachspezifische Strings führen schnell zu Fehlern und schränken die Erweiterbarkeit massiv ein.
+Die Battlescribe-Kataloge (`.cat` / `.gst`) nutzen ein hochgradig generisches, aber auch komplexes XML-Schema, um Armeen, Einheiten, Ausrüstungsgegenstände, Punktekosten und Validierungsregeln zu definieren. Um verschiedene Spielsysteme (z. B. Warhammer Fantasy, Warhammer 40k) und Völker flexibel in *Tome of Battle* laden zu können, muss die Fachlogik der Engine (`src/evaluator/`, seit Issue 0121; zuvor `src/solver/`) robust und systemunabhängig arbeiten. Hardcodierte Sonderregeln für einzelne Armeen oder sprachspezifische Strings führen schnell zu Fehlern und schränken die Erweiterbarkeit massiv ein.
 
 ## Entscheidungsfaktoren (Drivers)
 
@@ -23,7 +23,7 @@ Die Implementierung der Battlescribe-Fachlogik folgt diesen strikten Prinzipien:
 Es dürfen keine spezifischen Sonderfälle für bestimmte Völker oder Armeen direkt im Programmcode implementiert werden. Alle Berechnungen und Validierungen müssen rein deklarativ auf Basis des Battlescribe-Modells erfolgen.
 
 ### 2. Deklaratives "System Quirks"-Muster
-Für unumgängliche Besonderheiten einzelner Spielsysteme (z. B. Vererbung von Kategorie-Limits oder Erkennung des Generals) existiert die Datei `src/solver/systemQuirks.js`.
+Für unumgängliche Besonderheiten einzelner Spielsysteme gab es die Datei `src/solver/systemQuirks.js`. Sie ist mit Issue 0121 entfallen: ADR-0034 ordnet systemgebundene Sonderfälle und Stichwort-Heuristiken weder der Engine noch dem Bericht zu — sie werden am Datenfehler im Katalog-Fork behoben.
 - Alle Ausnahmen werden dort deklarativ, gemappt auf die `.gst`-System-ID, hinterlegt.
 - Im Core-Solver (z. B. `rosterValidator.js`) darf es keine `if (systemName === '...')`-Abfragen geben; stattdessen wird das Quirk-Objekt abgefragt.
 

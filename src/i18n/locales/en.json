@@ -6,6 +6,7 @@
   "settings.version": "Version",
   "settings.language.label": "Language",
   "validation.evaluator.causesTitle": "Causes:",
+  "validation.evaluator.unresolvedEntry": "\"{selectionName}\" no longer exists in the catalogue.",
   "validation.evaluator.selectionCount.min.local_one": "\"{name}\" must be taken at least once.",
   "validation.evaluator.selectionCount.min.local_other": "\"{name}\" must be taken at least {bound} times.",
   "validation.evaluator.selectionCount.min.force_one": "This force still needs a \"{name}\".",
@@ -254,5 +255,6 @@
   "rosterList.deleteFailed": "The roster could not be deleted.",
   "appData.loadFailed": "The stored game systems and rosters could not be loaded.",
   "appData.refreshFailed": "Could not update the following systems; the previous data remains in use: {systems}",
+  "appData.reimportRequired": "These systems were imported with an older version and no longer carry their catalogue files: {systems}. Please re-import them — otherwise rules, options and points stay empty.",
   "preview.title": "This is the preproduction instance, not the live app."
 }

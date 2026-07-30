@@ -45,17 +45,6 @@ vi.mock('../editor/UnitChips', () => ({
   UnitRulesChips: () => null,
 }));
 
-const collectUnitProfilesAndRulesSpy = vi.fn(() => ({
-  profiles: [
-    {
-      id: 'poison-prof',
-      name: 'POISON-PROFILE',
-      profileTypeName: 'Weapon',
-      characteristics: [{ name: 'Strength', value: '999' }],
-    },
-  ],
-  rules: [],
-}));
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
@@ -234,10 +223,14 @@ describe('PlayUnitDetails: Profil-Tabellen aus capability.infoElements (Issue 01
     expect(container.textContent).toContain('Longsword');
   });
 
-  it('zeigt das Solver-Giftprofil nicht und ruft collectUnitProfilesAndRules nicht mehr auf', () => {
+  // Der Gift-Wert kann seit dem Abriss des Solvers (Issue 0121) nicht mehr
+  // injiziert werden; geprueft bleibt, was der Nutzer sieht — der Statblock
+  // stammt aus den Info-Elementen des Berichts, nicht aus einer Sammlung
+  // ueber den Katalog.
+  it('zeigt nur die Kennwerte aus dem Bericht', () => {
     const { container } = renderDetails(evaluation());
 
     expect(container.textContent).not.toContain('POISON-PROFILE');
-    expect(collectUnitProfilesAndRulesSpy).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Longsword');
   });
 });
