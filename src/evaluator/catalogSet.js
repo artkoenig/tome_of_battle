@@ -157,3 +157,90 @@ export function buildDefinitionSourceIndex(documents) {
   }
   return byDefId;
 }
+
+/**
+ * Baut den **Wurzel-Angebots-Fussabdruck** je Katalog (`Map<catalogueId,
+ * Set<catalogueId>>`, Issue 0098): die Menge der Katalog-Ids, deren
+ * Wurzel-Eintraege und -Forces zum Angebot **dieses** Katalogs gehoeren — er
+ * selbst, plus transitiv und zyklensicher jeder Katalog, den er per
+ * `catalogueLink` mit `importRootEntries="true"` importiert.
+ *
+ * Ohne `importRootEntries="true"` ist ein `catalogueLink` laut XSD-Vorgabe
+ * (Default `false`) eine reine Abhaengigkeits-Deklaration (ADR-0032): er
+ * traegt den verlinkten Katalog in den Datensatz, ohne dessen Wurzel-Angebot
+ * zu uebernehmen. Nur ein Katalog mit eigener Wurzel-Id nimmt am
+ * Fussabdruck teil — ein Katalog ohne sie bekommt keinen Eintrag und gilt
+ * ueberall dort, wo dieser Index nachgeschlagen wird, als unbekannt (siehe
+ * Aufrufer).
+ *
+ * @param {Array<{ id?: string|null, catalogueLinks?: Array<{ targetId: string, importRootEntries: boolean }> }>} catalogueDocuments
+ *   Die gelesenen **Katalog**-Dokumente (`.cat`) in Aufruf-Reihenfolge.
+ * @returns {Map<string, Set<string>>} Katalog-Id → Menge der Katalog-Ids in ihrem Fussabdruck.
+ */
+export function buildCatalogueRootEntryClosure(catalogueDocuments) {
+  const byId = new Map(catalogueDocuments.filter(document => document.id !== null && document.id !== undefined)
+    .map(document => [document.id, document]));
+
+  /** @param {string} catalogueId */
+  function closureOf(catalogueId, visited) {
+    const footprint = new Set([catalogueId]);
+    if (visited.has(catalogueId)) return footprint;
+    visited.add(catalogueId);
+    const document = byId.get(catalogueId);
+    for (const link of document?.catalogueLinks ?? []) {
+      if (!link.importRootEntries) continue;
+      if (!byId.has(link.targetId)) continue;
+      for (const importedId of closureOf(link.targetId, visited)) footprint.add(importedId);
+    }
+    return footprint;
+  }
+
+  const closureByCatalogueId = new Map();
+  for (const catalogueId of byId.keys()) {
+    closureByCatalogueId.set(catalogueId, closureOf(catalogueId, new Set()));
+  }
+  return closureByCatalogueId;
+}
+
+/**
+ * True, wenn eine Definition zum Katalog-Fussabdruck **irgendeines** der
+ * gegebenen Referenz-Kataloge gehoert (Issue 0098) — die **eine** Pruefung,
+ * die sowohl der Pflicht-Phantom-Synthese (`evalTree.js`, je Kontingent ein
+ * Referenz-Katalog) als auch der Angebots-Schicht (`offer.js`, dasselbe)
+ * zugrunde liegt.
+ *
+ * Faellt **offen** aus (liefert `true`), sobald eine Angabe fehlt, statt eine
+ * unbekannte Herkunft als Ausschlussgrund zu behandeln:
+ *
+ * - ohne `catalogueScope` (kein Kontext mitgegeben, z. B. ein direkter
+ *   Testaufruf der tieferen Schichten ohne Katalog-Bezug) — unveraendertes,
+ *   ungefiltertes Verhalten;
+ * - ohne bekannte Herkunft der Definition (`sourceIdByDefId` kennt sie
+ *   nicht) — kein Katalog, den man ausschliessen koennte;
+ * - fuer das Spielsystem selbst (`gameSystemId`) — spielsystemweite
+ *   Wurzel-Eintraege gelten in jedem Kontingent;
+ * - ohne **jeden** Referenz-Katalog (leere Menge, z. B. ein Roster ohne
+ *   Kontingente oder ein Kontingent mit unbekanntem Katalog) — es gibt
+ *   nichts, wogegen auszuschliessen waere.
+ *
+ * @param {string} defId  Die zu pruefende Definitions-Id.
+ * @param {Iterable<string>} referenceCatalogueIds  Die Katalog-Id(s), gegen
+ *   die geprueft wird — bei einer Force-Grenze ihr eigener Katalog (hoechstens
+ *   einer), bei einer Roster-Grenze alle Kataloge der im Roster tatsaechlich
+ *   vertretenen Kontingente.
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
+ * @returns {boolean}
+ */
+export function isInCatalogueScope(defId, referenceCatalogueIds, catalogueScope) {
+  if (catalogueScope === null || catalogueScope === undefined) return true;
+  const { sourceIdByDefId, catalogueRootEntryClosureById, gameSystemId } = catalogueScope;
+  const sourceId = sourceIdByDefId.get(defId);
+  if (sourceId === undefined || sourceId === null) return true;
+  if (sourceId === gameSystemId) return true;
+  let hasAnyReference = false;
+  for (const catalogueId of referenceCatalogueIds) {
+    hasAnyReference = true;
+    if (catalogueRootEntryClosureById.get(catalogueId)?.has(sourceId)) return true;
+  }
+  return !hasAnyReference;
+}

@@ -44,6 +44,7 @@
  */
 
 import { AnchorKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
+import { isInCatalogueScope } from './catalogSet.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -366,21 +367,42 @@ function countInstances(fromNode, defId) {
  * dass die Meldungsliste dieselbe armeeweite Pflicht trotzdem nur einmal
  * traegt, entscheidet die Berichtsschicht (`report.js`, Entdopplung ueber
  * Grenz- und Ziel-Id, Issue 0093).
+ *
+ * **Katalog-Bezugsrahmen** (`catalogueScope`, Issue 0098): eine eigenstaendige
+ * Wurzel-Definition (`ENTRY`/`FORCE`/`CATEGORY`) synthetisiert ihr
+ * Pflicht-Phantom nur, wenn ihre Herkunft zum Katalog-Fussabdruck der
+ * Referenz-Kataloge gehoert ({@link isInCatalogueScope}) — fuer den
+ * ROSTER-Rahmen die Kataloge **aller** im Roster tatsaechlich vertretenen
+ * Kontingente, fuer den FORCE-Rahmen allein der Katalog **dieses**
+ * Kontingents. Ein Wurzel-**`entryLink`** ist davon ausgenommen (wie beim
+ * Angebot, `offer.js`): er verweist auf eine geteilte, oft in einer
+ * Bibliothek liegende Definition und ist der etablierte Weg
+ * katalogübergreifender Inhalte, unabhaengig vom deklarierenden Katalog.
+ * Ohne `catalogueScope` (kein Kontext mitgegeben) bleibt das Verhalten
+ * ungefiltert — additiv, kein Wechsel fuer den Ein-Katalog-Fall.
  */
-function synthesizeMandatoryPhantoms(root, definitions, nextFrameId) {
+function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueScope, primaryCatalogueByForceDefId) {
+  const forceNodeList = [...forceNodes(root)];
+  const rosterReferenceCatalogueIds = forceNodeList
+    .map(forceNode => primaryCatalogueByForceDefId?.get(forceNode.def.id))
+    .filter(catalogueId => catalogueId !== undefined);
+
   for (const def of definitions) {
     const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
-    if (hasMinLimit(limits, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0) {
+    if (hasMinLimit(limits, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0
+        && (def.kind === DefinitionKind.ENTRY_LINK || isInCatalogueScope(def.id, rosterReferenceCatalogueIds, catalogueScope))) {
       attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
     }
   }
-  const forceNodeList = [...forceNodes(root)];
   for (const forceNode of forceNodeList) {
     const anchoredCategoryIds = linkedCategoryIdsOf(forceNode.def);
+    const forceCatalogueId = primaryCatalogueByForceDefId?.get(forceNode.def.id);
+    const forceReferenceCatalogueIds = forceCatalogueId === undefined ? [] : [forceCatalogueId];
     for (const def of definitions) {
       if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
       const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
-      if (hasMinLimit(limits, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0) {
+      if (hasMinLimit(limits, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0
+          && (def.kind === DefinitionKind.ENTRY_LINK || isInCatalogueScope(def.id, forceReferenceCatalogueIds, catalogueScope))) {
         attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
       }
     }
@@ -702,9 +724,17 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  *
  * @param {{ lookup: (id: string) => object|null, definitions?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
  * @param {{ forces?: object[] }} roster
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
+ *   Der Katalog-Bezugsrahmen (Issue 0098): schneidet die Pflicht-Phantom-Synthese
+ *   auf Definitionen zu, deren Herkunft zu den im Roster tatsaechlich
+ *   vertretenen Kontingent-Katalogen gehoert. Ohne ihn (`undefined`)
+ *   ungefiltertes, unveraendertes Verhalten.
+ * @param {Map<string, string>} [primaryCatalogueByForceDefId]
+ *   Der Herkunftsindex der Kontingente — noetig, um `catalogueScope`
+ *   ueberhaupt auszuwerten; ohne ihn wirkt `catalogueScope` wie fehlend.
  * @returns {{ root: object, diagnostics: object[] }}
  */
-export function buildEvalTree(resolved, roster) {
+export function buildEvalTree(resolved, roster, catalogueScope, primaryCatalogueByForceDefId) {
   const diagnostics = [];
   const nextFrameId = createFrameIdSource();
   const root = {
@@ -723,7 +753,7 @@ export function buildEvalTree(resolved, roster) {
   for (const forceInstance of roster.forces ?? []) {
     attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId);
   }
-  synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId);
+  synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId, catalogueScope, primaryCatalogueByForceDefId);
   synthesizeParentScopePhantoms(root, nextFrameId);
   synthesizeForceCategoryAnchors(root, nextFrameId);
   // Nach Pflicht-Phantomen und Kontingent-Ankern, damit die Duplikat-Pruefung

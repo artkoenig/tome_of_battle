@@ -170,6 +170,52 @@ katalog-lokal.
   Intent ergänzt — die `importRootEntries`-Semantik ist eine Ableitung aus
   Attributname/Default, keine dokumentierte Formataussage (Wiki und
   kanonische Doku schweigen); als solche gekennzeichnet.
+- 2026-07-30 — **Überraschung beim Implementieren, Regel „Stop on Surprise/
+  Regression".** Die katalog-lokale Filterung (Kriterium 1) bricht zwei
+  bestehende, grüne E2E-Szenarien (`offer-and-category-slots` Regel OCS-R2,
+  `violation-classification` Regel VCC-R11): „Manbiters" (`0efb-7f63-7932-0655`,
+  eine `sharedSelectionEntry` in `Mercenaries.cat`) wird dort **bewusst und
+  dokumentiert** unter dem Vampire-Counts-Kontingent „Clan Blood Dragons"
+  (`5e95-7d57-2b9c-d77d`) angeboten — obwohl `Vampire Counts.cat` **keinen**
+  eigenen Verweis auf `0efb-…` trägt. Der anbietende Wurzel-`entryLink`
+  (`e3c2-1778-d3d5-edd1`) ist ausschließlich in `Orcs and goblins.cat`
+  deklariert; das Angebot unter Blood Dragons entsteht **allein**, weil das
+  Kontingent die geteilte `.gst`-Kategorie „Regiment of Renown" (`ee09…`)
+  trägt — das von OCS-R2 selbst als das korrekte, geprüfte Verhalten
+  festgehaltene Idiom für „jede Armee darf Söldner/Regiments of Renown
+  nehmen". Keiner der drei Armee-Kataloge markiert seinen `catalogueLink` zu
+  Mercenaries mit `importRootEntries="true"`.
+  Das zeigt: der Mechanismus „Wurzel-`entryLink` auf eine geteilte Definition
+  einer Bibliothek, angeboten ueberall dort, wo die Kategorie passt" ist ein
+  **zweiter, von `importRootEntries` unabhaengiger** Weg, wie BSData-Autoren
+  katalogübergreifende Inhalte modellieren — orthogonal zu dem in Kriterium 1
+  beschriebenen Fall (Bs **eigene** Wurzel-Einheit taucht faelschlich unter A
+  auf). Kriterium 1 in seiner jetzigen Formulierung („Wurzel-Einträge **und**
+  Wurzel-Forces eines Katalogs erscheinen nur im Angebot von Kontingenten, zu
+  deren Katalog sie gehören") trifft auf Wurzel-`entryLink`s wie
+  `e3c2-1778-…` woertlich auch zu, wuerde hier aber ein als korrekt
+  verifiziertes, dokumentiertes Verhalten abschalten. Menschliche Entscheidung
+  angefragt (siehe Chat), bevor an der Kriteriums-Grenze weitergearbeitet
+  wird.
+- 2026-07-30 — **Entscheidung des Menschen:** Wurzel-`entryLink`s bleiben von
+  der neuen Katalog-Filterung ausgenommen — nur eigenstaendige Wurzel-
+  `selectionEntry`/`forceEntry`-Definitionen werden katalog-lokal gefiltert
+  (Kriterium 1 dahingehend praezisiert: „Wurzel-Eintraege und -Forces" meint
+  die eigenstaendig deklarierten, nicht die per Wurzel-`entryLink` auf eine
+  geteilte Definition verweisenden). Umgesetzt in `offer.js`/`candidatesFor`
+  und `evalTree.js`/`synthesizeMandatoryPhantoms`:
+  `def.kind === DefinitionKind.ENTRY_LINK` schaltet die
+  `isInCatalogueScope`-Pruefung unbedingt frei. Beide zuvor gebrochenen
+  E2E-Szenarien (`offer-and-category-slots`, `violation-classification`)
+  sind wieder gruen, ohne Aenderung an Fixture oder Doku — das bestaetigt,
+  dass es sich um eine Praezisierung der Kriteriums-Grenze handelt, nicht um
+  eine Aenderung an belegtem Verhalten.
+- 2026-07-30 — **Verifikation (Kriterium 5):** `npx vitest run
+  src/evaluator`, 68 Testdateien, 853 Tests, Exit 0. `npm run lint`
+  (oxlint), Exit 0. `npm run typecheck` (tsc --noEmit), Exit 0. Die
+  Aenderung betrifft ausschliesslich `src/evaluator/`; der volle `npm test`
+  (inkl. Puppeteer-E2E unter `e2e/`) ist damit laut CLAUDE.md nicht
+  erforderlich.
 
 ## Checkpoints
 
@@ -194,8 +240,28 @@ katalog-lokal.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja, mit einer vom Menschen
+  bestaetigten Praezisierung: Kriterium 1 filtert eigenstaendige
+  Wurzel-`selectionEntry`/`forceEntry`-Definitionen katalog-lokal, nimmt
+  Wurzel-`entryLink`s (Verweise auf geteilte/Bibliotheks-Definitionen)
+  bewusst aus. Kriterien 2/3/5 wie formuliert erfuellt; Kriterium 4 als
+  Decision samt Abgrenzung zu ADR-0032 festgehalten (kein Schliessen des
+  Issues — die Ausweichklausel greift nicht, siehe Decisions).
+- **Was hat ueberrascht?** Der reale WHFB6-Datensatz nutzt Wurzel-`entryLink`s
+  auf geteilte Bibliotheks-Eintraege (Mercenaries/Regiments of Renown) als
+  zweiten, von `importRootEntries` unabhaengigen Mechanismus fuer
+  katalogübergreifende Inhalte — die urspruengliche Fix-Version brach zwei
+  bestehende, mit echten Katalogdaten verifizierte E2E-Szenarien, bevor die
+  Ausnahme eingebaut wurde.
+- **Was nehme ich ungeprüft an?** Dass bei leerem Roster (keine Kontingente)
+  die Filterung komplett entfaellt (ungefiltert wie zuvor) statt
+  restriktiver zu werden — das haelt die Ein-Katalog-Regressionswache gruen,
+  ist aber fuer den Mehrkatalog-Fall mit leerem Roster nicht durch einen
+  Test belegt. Ebenso ungeprüft: ein Kontingent ohne bekannten
+  `primaryCatalogueByForceDefId`-Eintrag bleibt ungefiltert (keine Fixture
+  mit einer im Spielsystem selbst deklarierten Force). Und: transitive
+  `importRootEntries`-Ketten (Bibliothek importiert Bibliothek) sind nur
+  durch die Zyklensicherheit der Closure-Funktion abgedeckt, nicht durch
+  einen eigenen Test — kein Fixture-Beispiel dafuer vorhanden.
 
 ## Retro
