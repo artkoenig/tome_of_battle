@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-mn1zyq
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/183
 ---
 
 # Wurzel-Einträge aller Kataloge werden katalogfremd gepoolt
