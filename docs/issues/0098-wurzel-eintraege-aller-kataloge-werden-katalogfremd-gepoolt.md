@@ -427,5 +427,30 @@ katalog-lokal.
   src/evaluator`, 68 Testdateien, 860 Tests (2 neu), Exit 0. `npm run lint`
   (oxlint), Exit 0. `npm run typecheck` (tsc --noEmit), Exit 0. Reviewer um
   eine vierte Runde im selben Kontext gebeten.
+- 2026-07-30 — **Review-Runde 4 (derselbe Reviewer-Kontext):** Runden 1–3
+  weiterhin bestaetigt gruen. Ein FUENFTER Fund derselben Art: dynamische
+  Kategorie-Zugehoerigkeit per `modifier type="add"/"remove"
+  field="category"` (`docs/battlescribe-data-format.md` §8) ist fuer
+  `referencedCategoryIdsUnder` unsichtbar — eine Kategorie-Grenze kann ueber
+  eine Katalog-Grenze hinweg still verschwinden, wenn die Zugehoerigkeit nur
+  per Modifikator vergeben wird. Wie die drei vorigen Funde: latent, keine
+  echte WHFB6-Katalogdatei betroffen, per minimaler Reproduktion belegt
+  (Reviewer-Bericht im vollen Wortlaut in der Task-Historie dieser Sitzung).
+- 2026-07-30 — **Entscheidung des Menschen:** vier aufeinanderfolgende
+  Runden mit demselben Fundmuster ("noch ein Referenzweg uebersehen") sind
+  ein Wiederholungssignal nach dem Metis-Regelwerk — und das Thema liegt
+  ohnehin ausserhalb dieses Issues woertlicher Kriterien (die nur
+  Wurzel-`selectionEntry`/`forceEntry` nennen, keine `CATEGORY`). Auf
+  Nachfrage (AskUserQuestion) entschieden: den Runde-4-Fund NICHT mehr in
+  Issue 0098 beheben, sondern als bekannte, unbehobene Grenze hier
+  dokumentieren und ein eigenstaendiges Issue anlegen. Issue
+  `docs/issues/0128-category-referenzwege-katalog-uebergreifend-erkennen.md`
+  angelegt (Status backlog, keine Branch), das auf dieses Log fuer die
+  vollen technischen Details aller vier Runden verweist statt sie zu
+  duplizieren. Issue 0098 selbst bleibt damit bei den Kriterien 1–5 wie
+  urspruenglich formuliert stehen; die CATEGORY-Fixes aus Runde 1–3 bleiben
+  Teil dieses Issues (sie beheben echte, vom Reviewer bestaetigte
+  Regressionen, die die eigenen Aenderungen dieses Issues eingefuehrt
+  hatten), Runde 4 wird nicht mehr verfolgt.
 
 ## Retro
