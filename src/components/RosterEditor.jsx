@@ -163,6 +163,11 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         </div>
 
         {/* Desktop-only Validation Summary Sidebar */}
+        {/* Die Armeeanforderungen gelten dem ERSTEN Kontingent; sein Slot-Pfad
+            kommt aus derselben Zuordnung wie der der Sektionen, nie aus dem
+            Eingabe-Index (Task 21). Fehlt das Kontingent im Bericht, weil seine
+            Definition nicht auflöst, ist der Pfad `null` — dann zeigt die
+            Seitenleiste keine Anforderungen statt der eines fremden Kontingents. */}
         <RosterSidebar
           roster={roster}
           costTotals={costTotals}
@@ -170,6 +175,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
           capabilities={capabilities}
           violations={violations}
           costTypeLabel={costTypeLabel}
+          forcePath={roster.forces?.[0] ? (pathByForceId?.get(roster.forces[0].id) ?? null) : null}
           className="desktop-only-sidebar"
         />
 

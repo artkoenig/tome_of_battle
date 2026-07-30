@@ -67,6 +67,11 @@ function renderSidebar({
   costTypes = [{ id: 'pts', name: 'Points' }],
   capabilities = new Map(),
   violations = [],
+  // Seit Issue 0121 Task 21 nimmt die Seitenleiste den Slot-Pfad ihres
+  // Kontingents entgegen, statt ihn als `'0'` anzunehmen. Die Anker dieser
+  // Datei liegen unter dem ersten Kontingent (`0/1`, `0/2`, …), also `'0'` —
+  // nur die Stütze wird nachgezogen, keine Erwartung.
+  forcePath = '0',
 } = {}) {
   return render(
     <RosterSidebar
@@ -76,6 +81,7 @@ function renderSidebar({
       capabilities={capabilities}
       violations={violations}
       costTypeLabel="Pkt."
+      forcePath={forcePath}
     />
   );
 }

@@ -16,18 +16,23 @@ const SEVERITY_PRESENTATION = {
   info: { Icon: Info, itemClass: 'validation-error-item--info' }
 };
 
-// Die Armeeanforderungen zeigen das erste Kontingent des Rosters; sein
-// Slot-Pfad ist sein Eingabe-Index (Pfad-Schema der Evaluator-Fassade).
-const FIRST_FORCE_PATH = '0';
-
 /**
  * Die Armeeanforderungen der ersten Streitmacht, gelesen aus den
  * Kategorie-Anker-Slots des Evaluator-Berichts (Issue 0121, Task 7): je
  * sichtbarem Kategorie-Anker eine Zeile mit aktuellem Stand (`current`) und
  * den wirksamen Grenzen (`effectiveMin`/`effectiveMax`; `null` = unbegrenzt).
+ *
+ * `forcePath` kommt von aussen — aus `pathByForceId` der App-Auswertung, nie
+ * aus dem Eingabe-Index des Rosters (Issue 0121, Task 21). Der Index stimmt
+ * naemlich nur, solange jede Kontingent-Definition aufloest: faellt die erste
+ * weg, fuehrt der Bericht unter `"0"` das **zweite** Kontingent, und ein festes
+ * Literal zeigte still dessen Kategorien und Grenzen. `null` (wie auch ein
+ * fehlender Wert) heisst „der Bericht fuehrt fuer dieses Kontingent keine
+ * Slots" — dann erscheint **keine** Anforderung, statt der eines fremden.
  */
-function CategoryRequirementList({ capabilities }) {
-  return categoryAnchorSlotsOf(capabilities, FIRST_FORCE_PATH)
+function CategoryRequirementList({ capabilities, forcePath }) {
+  if (forcePath === null || forcePath === undefined) return [];
+  return categoryAnchorSlotsOf(capabilities, forcePath)
     .filter(({ capability }) => capability.isHidden !== true)
     .map(({ path, capability }) => {
       const isInvalid = capability.isMandatoryUnmet === true
@@ -55,7 +60,8 @@ export default function RosterSidebar({
   capabilities,
   violations,
   costTypeLabel,
-  className
+  className,
+  forcePath = null
 }) {
   const { t } = useTranslation();
   // Nur blockierende Verletzungen machen das Roster ungültig; warning/info zählen nicht mit.
@@ -89,7 +95,7 @@ export default function RosterSidebar({
       {/* Category breakdown */}
       <div className="sidebar-section">
         <h4 data-testid="sidebar-army-requirements" className="sidebar-section-title">{t('editor.sidebar.armyRequirements')}</h4>
-        <CategoryRequirementList capabilities={capabilities} />
+        <CategoryRequirementList capabilities={capabilities} forcePath={forcePath} />
       </div>
 
       {/* Validation Errors Detailed List */}

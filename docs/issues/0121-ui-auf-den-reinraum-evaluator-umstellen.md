@@ -156,10 +156,10 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 Korrekturen aus Prüfrunde 4:
 
-- [ ] 21. (B1) Die Seitenleiste nimmt den Kontingent-Pfad aus
+- [x] 21. (B1) Die Seitenleiste nimmt den Kontingent-Pfad aus
   `pathByForceId`, nicht aus einem festen `'0'` — Kriterium 3
-- [ ] 22. (B2) Falsifikator für den `describeDataset`-Cache
-- [ ] 23. (B3) Falsifikator für die Referenzstabilität des
+- [x] 22. (B2) Falsifikator für den `describeDataset`-Cache
+- [x] 23. (B3) Falsifikator für die Referenzstabilität des
   Leer-Ergebnisses über Ränder und Hook-Instanzen hinweg
 - [x] 24. (B4) Zwei veraltete Kommentare in
   `src/i18n/violationMessages.js` (nennen das gelöschte
@@ -350,6 +350,36 @@ benutzt" — das stimmt nicht).
 
 ## Log
 
+- 2026-07-30, Tasks 21–23 erledigt. Abnahme: `npm test` **250 Dateien /
+  2604 Fälle** + Puppeteer-E2E Exit 0; lint, typecheck, depcruise, build je
+  Exit 0; knip unverändert; keine `vite preview`-Reste.
+  Task 21: `RosterSidebar` nimmt den Pfad als Prop; `RosterEditor` bildet ihn
+  aus `pathByForceId` und dem ersten Kontingent. `null` (wie ein fehlender
+  Wert) heißt „der Bericht führt für dieses Kontingent keine Slots" — dann
+  erscheint **keine** Anforderung statt der eines fremden. Bewusst der *laute*
+  Vorgabewert: ein Vorgabewert `'0'` hätte künftigen Aufrufern genau die
+  Falle wieder gestellt, die drei Runden gekostet hat.
+  Tasks 22/23 waren reine Beweislücken — beide Testdateien sind ohne
+  Produktivänderung grün, und beide sind **scharf** belegt: der probeweise
+  ausgeschaltete `describeDataset`-Cache kippt 5 von 7 Fällen
+  (`expected "describeDataset" to be called 1 times, but got 10 times`), das
+  probeweise je Aufruf frisch gebaute Leer-Ergebnis kippt **13 von 13**
+  (`Object.is equality`).
+- 2026-07-30, **Eingriff der Hauptsitzung, protokolliert.** Task 21 hat einen
+  bestehenden Test gekippt: `RosterSidebar.test.jsx` rendert die Seitenleiste
+  ohne den neuen Prop und erwartete Zeilen. Geprüft, ob er Fehlverhalten
+  festschreibt — **tut er nicht**: seine Anker liegen ausdrücklich unter dem
+  ersten Kontingent (`0/1`, `0/2`, …, so auch sein Kommentar), er reicht den
+  Prop nur nicht. Ich habe deshalb allein die **Rendering-Stütze** um
+  `forcePath = '0'` ergänzt; keine Erwartung ist berührt (`git diff --stat`:
+  6 Zeilen hinzugefügt, **keine** entfernt). Das ist die Anpassung eines
+  Aufbaus an einen bewusst geänderten Prop-Vertrag, kein Weichspülen einer
+  Zusage — und weil die Regel „der Implementierer ändert keine Tests" genau
+  Letzteres verhindern soll, steht der Eingriff hier statt in einem
+  Implementierer-Auftrag.
+  Die offene Frage der Testautorin („fehlender Prop = `null` oder
+  Programmierfehler?") ist damit entschieden: **wie `null`**, also keine
+  Anzeige.
 - 2026-07-30, **Stoppentscheidung nach Prüfrunde 4.** Die Zahl steht still
   (8 → 7 → 4 → 4), und das Wiederholungssignal ist zum **dritten** Mal
   gefeuert: B1 ist derselbe Defekt wie F2 aus Runde 3, an dem einen
