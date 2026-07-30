@@ -24,6 +24,14 @@ const GENERIC_KEY = `${KEY_PREFIX}.generic`;
 // (ADR 0003) und wird nur je Sprache in Anführungszeichen gesetzt.
 const CAUSE_ITEM_KEY = `${KEY_PREFIX}.causeItem`;
 
+/**
+ * Überschrift der Ursachenliste (ADR 0027). Sie gehört zur Anzeige, nicht zur
+ * Einordnung, und wird deshalb von der Komponente selbst übersetzt — dieses
+ * Modul veröffentlicht nur den Schlüssel. Seit Issue 0121 liegt er, wie die
+ * übrigen Schlüssel dieser Projektion, unter `validation.evaluator.*`.
+ */
+export const CAUSES_TITLE_KEY = `${KEY_PREFIX}.causesTitle`;
+
 // `MessageOrigin.AUTHOR_MESSAGE`: der Katalogtext ist bereits ein fertiger Satz
 // des Autors und wird unverändert durchgereicht (ADR 0028), nie übersetzt.
 const AUTHOR_MESSAGE_ORIGIN = 'authorMessage';

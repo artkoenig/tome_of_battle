@@ -14,8 +14,9 @@
 >
 > Diese Datei ist die **kanonische Referenz** zum Battlescribe-Datenformat für dieses Projekt
 > (inklusive der aus vergangenen Bug-Analysen gesammelten Domänen-Erkenntnisse). Wie das Projekt
-> das Format konkret parst und auswertet, steht in [`CLAUDE.md`](../CLAUDE.md) sowie in den
-> Solver-Modulen unter [`src/solver/`](../src/solver/).
+> das Format konkret parst und auswertet, steht in [`CLAUDE.md`](../CLAUDE.md), in der
+> Reinraum-Engine unter [`src/evaluator/`](../src/evaluator/) (sie beurteilt ein Roster) und im
+> App-Schreibmodell unter [`src/roster/`](../src/roster/) (es erzeugt und editiert eines).
 
 ---
 
@@ -914,7 +915,8 @@ Lesart: „Wenn das Punktelimit zwischen 2000 und 2999 liegt, erhöhe die Core-O
 Punkten setze sie auf 6 und erhöhe je weitere 1000 Punkte."
 
 Ein Modifier kann auch `field="hidden"` setzen, um Einträge/Kategorielinks kontextabhängig ein- oder
-auszublenden (in diesem Projekt ausgewertet von `src/solver/entryVisibility.js`).
+auszublenden (in diesem Projekt ausgewertet von `src/roster/entryVisibility.js` fuer die
+Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
 
 ---
 
@@ -933,9 +935,9 @@ auszublenden (in diesem Projekt ausgewertet von `src/solver/entryVisibility.js`)
   schalten das `primary`-Flag eines Kategorie-Links kontextabhängig um. **Sämtliche** kategorie-abhängige
   Logik muss deshalb die **effektiven** (nach Modifier-Anwendung gültigen) Kategorie-Links auswerten, nicht
   die rohen Katalog-Links — sowohl die Zähler-/Validierungs-Logik (via `getEffectiveCategoryLinks` in
-  `src/solver/modifierEvaluator.js`) als auch die **UI-Einsortierung** (Aushebe-Dialog,
+  `src/roster/modifierEvaluator.js`) als auch die **UI-Einsortierung** (Aushebe-Dialog,
   Sektions-Sichtbarkeit, armeeweite Selektoren; via `getEffectiveEntryCategoryLinks` /
-  `isEntryPrimaryInCategory` in `src/solver/entryVisibility.js`). Ein häufiger Fall: ein Katalog importiert
+  `isEntryPrimaryInCategory` in `src/roster/entryVisibility.js`). Ein häufiger Fall: ein Katalog importiert
   per `entryLink` eine Einheit aus einem verlinkten Bibliothekskatalog und gliedert sie per `set-primary`
   in eine eigene Kategorie um — würde nur der statische Link gelesen, verschwände die Einheit aus der UI.
 - Beziehungen zwischen Einträgen und Kategorien werden **ausschließlich über `categoryLinks`/IDs**
@@ -1112,10 +1114,10 @@ kann**:
   bleibt davon **unberührt** — es wird gesondert erkannt und als Mengen-Stepper gerendert.
 
 **Umsetzung:** Die statische „hebbar?"-Erkennung liefert `canGroupMaxBeRaisedAboveSingleChoice`
-(`src/solver/modifierEvaluator.js`, über die Fassade `src/solver/validator.js`); die *aktuellen*
+(`src/roster/modifierEvaluator.js`); die *aktuellen*
 effektiven Werte liefern `getModifiedConstraintValue` / `getEffectiveConstraintLimit`. Sämtliche
 Auswahl-, Anzeige- und Recruit-/Autofill-Entscheidungen (Radio/Checkbox/Binär/Mandatory, der angezeigte
-„Max/Min: N", die Count-Klammerungen, `isOptionRosterUnique`, die Solver-Min-Sites) leiten sich aus
+„Max/Min: N", die Count-Klammerungen, `isOptionRosterUnique`) leiten sich aus
 diesen **effektiven** Werten ab — kein roher Constraint-Wert steuert mehr eine dieser Entscheidungen
 (`src/components/editor/OptionGroup.jsx`, `SelectionConfigurator.jsx`, `AutoFillSuggestions.jsx`).
 

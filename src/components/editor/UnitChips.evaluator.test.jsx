@@ -43,11 +43,9 @@ const collectUnitProfilesAndRulesSpy = vi.fn(() => ({
   profiles: [],
   rules: [{ id: 'poison-rule', name: 'POISON-RULE', description: 'poison text' }],
 }));
-
-vi.mock('../../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  collectUnitProfilesAndRules: (...args) => collectUnitProfilesAndRulesSpy(...args),
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz: eine Einheit mit einer Regel per infoLink ───────
 

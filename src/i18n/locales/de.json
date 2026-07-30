@@ -5,36 +5,7 @@
   "settings.whfb6Linking.hint": "Ist die Verlinkung aus, zeigen Regel-, Waffen- und Magic-Item-Chips statt eines Links zur externen Seite die Katalog-Kurzinfo.",
   "settings.version": "Version",
   "settings.language.label": "Sprache",
-  "validation.selectionsUnit": "Auswahlen",
-  "validation.rosterLimit": "Die Liste hat {current} {unit} – erlaubt sind {limit}.",
-  "validation.forceSelectorMin": "Die Armee braucht noch einen „{entryName}\".",
-  "validation.rosterSelectorMin": "Die Armee braucht noch einen „{entryName}\".",
-  "validation.forceRosterLimit": "„{forceName}\" braucht ein Punktelimit von mindestens {limit}.",
-  "validation.categoryMin_one": "Die Armee braucht mindestens eine Auswahl aus „{categoryName}\".",
-  "validation.categoryMin_other": "Die Armee braucht mindestens {count} Auswahlen aus „{categoryName}\".",
-  "validation.categoryMax_zero": "Die Armee darf keine Auswahl aus „{categoryName}\" treffen.",
-  "validation.categoryMax_one": "Die Armee darf höchstens eine Auswahl aus „{categoryName}\" treffen.",
-  "validation.categoryMax_other": "Die Armee darf höchstens {count} Auswahlen aus „{categoryName}\" treffen.",
-  "validation.unresolvedEntry": "„{selectionName}\" gibt es im Katalog nicht mehr.",
-  "validation.entryMin_one": "„{selectionName}\" muss mindestens einmal gewählt werden.",
-  "validation.entryMin_other": "„{selectionName}\" muss mindestens {count} Mal gewählt werden.",
-  "validation.entryMax_zero": "„{selectionName}\" kann nicht gewählt werden.",
-  "validation.entryMax_one": "„{selectionName}\" darf höchstens einmal gewählt werden.",
-  "validation.entryMax_other": "„{selectionName}\" darf höchstens {count} Mal gewählt werden.",
-  "validation.entryPercentMin": "„{selectionName}\" muss mindestens {percent} % der {unit} ausmachen.",
-  "validation.entryPercentMax": "„{selectionName}\" darf höchstens {percent} % der {unit} ausmachen.",
-  "validation.groupPointsMax": "{selectionName} darf für „{groupName}\" höchstens {limit} {unit} ausgeben.",
-  "validation.groupPointsMin": "{selectionName} muss für „{groupName}\" mindestens {limit} {unit} ausgeben.",
-  "validation.groupCountMax_zero": "{selectionName} darf keine Auswahl aus „{groupName}\" treffen.",
-  "validation.groupCountMax_one": "{selectionName} darf höchstens eine Auswahl aus „{groupName}\" treffen.",
-  "validation.groupCountMax_other": "{selectionName} darf höchstens {count} Auswahlen aus „{groupName}\" treffen.",
-  "validation.groupCountMin_one": "{selectionName} braucht mindestens eine Auswahl aus „{groupName}\".",
-  "validation.groupCountMin_other": "{selectionName} braucht mindestens {count} Auswahlen aus „{groupName}\".",
-  "validation.groupPercentMin": "„{groupName}\" muss mindestens {percent} % der {unit} ausmachen.",
-  "validation.groupPercentMax": "„{groupName}\" darf höchstens {percent} % der {unit} ausmachen.",
-  "validation.causesTitle": "Ursachen:",
-  "validation.causeItem": "„{name}\"",
-
+  "validation.evaluator.causesTitle": "Ursachen:",
   "validation.evaluator.selectionCount.min.local_one": "„{name}\" muss mindestens einmal gewählt werden.",
   "validation.evaluator.selectionCount.min.local_other": "„{name}\" muss mindestens {bound} Mal gewählt werden.",
   "validation.evaluator.selectionCount.min.force_one": "Das Kontingent braucht noch einen „{name}\".",
@@ -112,7 +83,6 @@
   "validation.evaluator.rosterBudget.max.roster.percent": "Die Armee kostet {actual} – erlaubt sind {bound} ({percent} %).",
   "validation.evaluator.generic": "„{name}\" verletzt eine Grenze ({actual} statt {bound}).",
   "validation.evaluator.causeItem": "„{name}\"",
-
   "common.close": "Schließen",
   "common.cancel": "Abbrechen",
   "common.confirm": "Bestätigen",
@@ -128,7 +98,6 @@
   "common.model": "Modell",
   "common.profileHeader": "Profil",
   "common.modifications": "Modifikationen: {name}",
-
   "app.logoAlt": "Tome of Battle Logo",
   "app.offline.active": "Offline-Modus aktiv",
   "app.offline.short": "Offline",
@@ -142,7 +111,6 @@
   "app.update.whatsNew": "Das ist neu",
   "app.update.description": "Eine neue Version wurde im Hintergrund geladen.",
   "app.update.reload": "Neu laden",
-
   "newRoster.title": "Neues Heer ausheben",
   "newRoster.nameLabel": "Name des Heeres",
   "newRoster.namePlaceholder": "z. B. Grimgors Waaagh!",
@@ -155,7 +123,6 @@
   "newRoster.forcePlaceholder": "Struktur auswählen...",
   "newRoster.costLimitLabel": "Kostenlimit",
   "newRoster.submit": "Heerschau starten",
-
   "dashboard.offlineText": "Du hast keine Internetverbindung. Du kannst deine Armeelisten und Kataloge dennoch uneingeschränkt verwalten und bearbeiten.",
   "dashboard.subtitle": "Verwalte deine Armeelisten oder erstelle neue Feldzüge.",
   "dashboard.newRoster": "Neue Armeeliste",
@@ -174,7 +141,6 @@
   "dashboard.deleteRoster.title": "Armeeliste löschen",
   "dashboard.deleteRoster.confirmPrefix": "Möchtest du die Armeeliste ",
   "dashboard.deleteRoster.confirmSuffix": " wirklich löschen?",
-
   "editor.undo": "Rückgängig",
   "editor.redo": "Wiederherstellen",
   "editor.hideDetails": "Details ausblenden",
@@ -212,7 +178,6 @@
   "editor.details.profileNamed": "Profil ({name})",
   "editor.details.source": "Quelle",
   "editor.details.noDescription": "Keine Beschreibung vorhanden.",
-
   "play.title": "Spielmodus",
   "play.backTitle": "Kriegsplanung (Editieren)",
   "play.rulebook": "Regelbuch",
@@ -225,10 +190,8 @@
   "play.hideProfiles": "Profile ausblenden",
   "play.showProfiles": "Profile anzeigen",
   "play.noProfileValues": "Keine Profilwerte gefunden.",
-
   "rulesDialog.noConnection": "Keine Verbindung zu 6th.whfb.app",
   "rulesDialog.loading": "Lade Regeltext...",
-
   "importer.error.systemListUnavailable": "Die importierten Spielsysteme konnten nicht aus der Datenbank geladen werden.",
   "importer.error.indexUnreachable": "Der Katalog-Index ist derzeit nicht erreichbar. Bitte versuche es später erneut.",
   "importer.error.noDataAvailable": "Keine Spieldaten zum Import verfügbar. Der Katalog-Index konnte nicht geladen werden.",
@@ -271,17 +234,13 @@
   "importer.revision.updateAvailable": "Update verfügbar",
   "importer.revision.localPrefix": "lokal",
   "importer.revision.unknown": "unbekannt",
-
   "serialization.missingSystem": "Das Spielsystem \"{name}\" (ID: {id}) fehlt. Bitte importiere es zuerst.",
   "serialization.damagedArchive": "Die Datei ist ein beschädigtes ZIP-Archiv und konnte nicht entpackt werden.",
   "serialization.missingRosterEntry": "Das ZIP-Archiv enthält keine {extension}-Datei.",
   "serialization.invalidFormat": "Ungültiges Dateiformat: Das Wurzelelement muss <roster> sein.",
-
   "persistence.roster": "Die Armeeliste konnte nicht gespeichert werden. Deine letzten Änderungen sind nicht gesichert.",
   "persistence.gameState": "Der Spielstand konnte nicht gespeichert werden. Wunden, Punkte und Runde sind nicht gesichert.",
-
   "releaseDiff.truncationNotice": "...und weitere Einträge.",
-
   "rosterList.importSuccess": "Erfolgreich importiert: {name}",
   "rosterList.fillAllFields": "Bitte fülle alle Felder aus.",
   "rosterList.systemDeleted": "Das zugehörige Spielsystem wurde gelöscht. Importiere es erneut.",
@@ -295,6 +254,5 @@
   "rosterList.deleteFailed": "Die Liste konnte nicht gelöscht werden.",
   "appData.loadFailed": "Die gespeicherten Spielsysteme und Listen konnten nicht geladen werden.",
   "appData.refreshFailed": "Konnte folgende Systeme nicht aktualisieren, alter Stand wird weiterverwendet: {systems}",
-
   "preview.title": "Dies ist die Preproduction-Instanz, nicht die Live-App."
 }

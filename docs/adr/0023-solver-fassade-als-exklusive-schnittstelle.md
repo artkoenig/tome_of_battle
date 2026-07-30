@@ -1,9 +1,18 @@
 # Die Solver-Fassade ist die exklusive Schnittstelle zur Regel-Engine
 
-- **Status:** Accepted
+- **Status:** Superseded (Issue 0121) — die Fassade und die Schicht, die sie schützte, existieren nicht mehr
 - **Datum:** 2026-07-21
 - **Beteiligte:** Artjom König
 - **Zugehörige ADRs (falls vorhanden):** ergänzt ADR-0003 (Battlescribe Domain Rules), berührt ADR-0006 (Testing and Automation)
+
+> **Nachsatz (Issue 0121, 2026-07-30).** `src/solver/` ist abgerissen. Die Alt-Engine
+> galt seit ADR-0030 als fehlerhaft; die Oberfläche liest ihre Urteile jetzt aus dem
+> Bericht der Reinraum-Engine (`src/evaluator/`, von außen nur über deren Fassade
+> `evaluator.js` — dieselbe Entscheidung, nur für die neue Engine). Was am alten
+> Solver rein strukturell war, lebt als App-Schreibmodell `src/roster/` weiter; es
+> hat bewusst **keine** erzwungene Fassade, weil es keine Auswertung kapselt,
+> sondern Bausteine anbietet. Der Text unten bleibt als Begründung der damaligen
+> Entscheidung stehen.
 
 ## Kontext und Problemstellung
 

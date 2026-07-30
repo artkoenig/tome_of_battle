@@ -52,24 +52,9 @@ vi.mock('./UnitChips', () => ({
   UnitRulesChips: () => null,
 }));
 
-const calculateRosterCostsSpy = vi.fn(() => ({ [COST_TYPE_ID]: 999999 }));
-const collectUnitProfilesAndRulesSpy = vi.fn(() => ({
-  profiles: [
-    {
-      id: 'poison-prof',
-      name: 'POISON-PROFILE',
-      profileTypeName: 'Weapon',
-      characteristics: [{ name: 'Strength', value: '999' }],
-    },
-  ],
-  rules: [],
-}));
-
-vi.mock('../../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  calculateRosterCosts: (...args) => calculateRosterCostsSpy(...args),
-  collectUnitProfilesAndRules: (...args) => collectUnitProfilesAndRulesSpy(...args),
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz (rawXmls-Muster wie useEvaluation.test.js) ───────
 //

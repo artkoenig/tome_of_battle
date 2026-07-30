@@ -51,19 +51,9 @@ vi.mock('./RulesIndexDialog', () => ({
   default: () => null,
 }));
 
-const calculateRosterCostsSpy = vi.fn(() => ({ [COST_TYPE_ID]: 999999 }));
-const getExtraResourceTotalsSpy = vi.fn(() => [{ id: 'poison', name: 'POISON-RES', total: 777 }]);
-
-vi.mock('../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  calculateRosterCosts: (...args) => calculateRosterCostsSpy(...args),
-  getExtraResourceTotals: (...args) => getExtraResourceTotalsSpy(...args),
-  // Nicht unter Test: Label-Quelle des Editors; benigner Stub statt Gift.
-  resolveCostLimitLabel: () => 'Pkt',
-  // Struktur-Helfer, bleibt Solver-basiert (Task 8) — Identitaet, damit der
-  // Katalog-Abgleich das synthetische Roster nicht veraendert.
-  syncRosterSelectionsWithSystem: (roster) => roster,
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz (rawXmls-Muster wie useEvaluation.test.js) ───────
 

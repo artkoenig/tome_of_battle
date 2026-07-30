@@ -7,7 +7,6 @@ import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js
 // Scope under which a constraint applies to the whole contingent (force).
 const FORCE_SCOPE = 'force';
 // Scope under which a constraint applies to the whole roster (all contingents together).
-const ROSTER_SCOPE = 'roster';
 
 /** The `min` constraint a source carries at the given scope, if any. */
 function findScopedMinConstraint(source, scope) {
@@ -102,16 +101,6 @@ export function collectForceScopedMinSelectors(system, catalogueId) {
   return collectScopedMinSelectors(system, catalogueId, FORCE_SCOPE);
 }
 
-/**
- * Root selectionEntries carrying a roster-scoped `min` constraint — "at least one per
- * roster, counted across all contingents together" (e.g. the Ogre Kingdoms "Bulls" unit).
- * See {@link collectScopedMinSelectors}.
- *
- * @returns {Array<{ entry: Object, minConstraint: Object }>}
- */
-export function collectRosterScopedMinSelectors(system, catalogueId) {
-  return collectScopedMinSelectors(system, catalogueId, ROSTER_SCOPE);
-}
 
 /**
  * True when a selectionEntry can be reached through one of the force's category adders,

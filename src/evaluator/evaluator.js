@@ -1,12 +1,11 @@
 /**
- * Fassade der zweiten, raeumlich getrennten Auswertungs-Engine (ADR-0030).
+ * Fassade der Reinraum-Auswertungs-Engine (ADR-0030) — seit Issue 0121 die
+ * Engine der Anwendung; die Alt-Engine unter `src/solver/` ist abgerissen.
  *
  * Dies ist die **einzige** legale Aussenschnittstelle des `src/evaluator/`-
- * Moduls — analog zur Solver-Fassade `src/solver/validator.js` aus ADR-0023,
- * hier auf die Reinraum-Engine gespiegelt. Der Zugriff von aussen nur ueber
- * diese Datei und die harte Import-Trennung zu `src/solver/` (in beide
- * Richtungen) sind maschinell durchgesetzt (`.oxlintrc.json`,
- * `.dependency-cruiser.cjs`).
+ * Moduls. Der Zugriff von aussen nur ueber diese Datei und die harte
+ * Import-Trennung zum App-Schreibmodell `src/roster/` (in beide Richtungen)
+ * sind maschinell durchgesetzt (`.oxlintrc.json`, `.dependency-cruiser.cjs`).
  *
  * ── Die Fassade ist zweistufig ───────────────────────────────────────────────
  * Sie fuehrt in zwei Schritten:

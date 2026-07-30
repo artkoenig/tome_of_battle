@@ -31,13 +31,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
-
-vi.mock('../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  calculateRosterCosts: vi.fn(() => ({})),
-  validateRoster: vi.fn(() => []),
-  syncRosterSelectionsWithSystem: vi.fn(roster => roster),
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz (identisch zu useEvaluation.test.js) ────────────
 

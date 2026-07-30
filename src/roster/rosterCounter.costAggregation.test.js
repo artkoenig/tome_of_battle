@@ -4,7 +4,6 @@ import {
   getOptionDisplayCost,
   getSelectionTotalCost
 } from './rosterCounter.js';
-import { validateRoster } from '../solver/rosterValidator.js';
 import {
   POINTS,
   UNIT_COST,
@@ -113,36 +112,10 @@ describe('Kostenaggregation über verschachtelte Auswahlen', () => {
     expect(totalCost).toBe(STONE_COST);
   });
 
-  test('das Punktebudget der Gruppe greift auf die verschachtelten Kosten', () => {
-    const wrapperCount = 2;
-    expect(wrapperCount * STONE_COST).toBeGreaterThan(MAGIC_GROUP_POINTS_MAX);
-
-    const roster = {
-      name: 'Nested Army',
-      costLimit: 2000,
-      costLimitType: POINTS,
-      forces: [{
-        id: 'f1',
-        forceEntryId: NESTED_FORCE_ENTRY_ID,
-        catalogueId: NESTED_CATALOGUE_ID,
-        selections: [{
-          id: 'sel-wizard',
-          selectionEntryId: 'unit-nested',
-          name: 'Wizard',
-          number: 1,
-          category: HQ_CATEGORY_ID,
-          selections: [
-            createWrapperSelection(wrapperCount),
-            { id: 'sel-general', selectionEntryId: ENTRY_ID.general, name: 'General', number: 1 }
-          ]
-        }]
-      }]
-    };
-
-    const errors = validateRoster(roster, createNestedSystem());
-
-    expect(errors.some(error => error.type === 'group-points-max')).toBe(true);
-  });
+  // Dass ein Gruppen-Punktebudget auf verschachtelte Kosten greift, ist eine
+  // Aussage der Engine, nicht dieses Moduls: sie gehoert seit Issue 0121 in die
+  // Reinraum-Suite (`src/evaluator/`, Grenzen mit measure `costSum`). Die
+  // frueher hier gepinnte Solver-Validierung stirbt mit `src/solver/`.
 });
 
 describe('Kostenmodifier mit parent-bezogener Wiederholung', () => {

@@ -54,16 +54,9 @@ vi.mock('../../data/rulesLookup', () => ({ getRuleUrl: () => null }));
 vi.mock('../../contexts/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
-
-// Bisherige Solver-Quellen inert: die Options-Sammlung liefert nichts mehr,
-// die Liste muss aus den Slots des Berichts entstehen (siehe Testkopf).
-vi.mock('../../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  getUnitOptions: () => [],
-  resolveEntry: () => null,
-  findEntryInSystem: () => null,
-  computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz (rawXmls-Muster wie useRoster.evaluator.test.js) ──
 

@@ -38,7 +38,7 @@ export const ConstraintScope = Object.freeze({
   ROSTER: 'roster'
 });
 
-export const NON_ENTRY_SCOPE_KEYWORDS = Object.freeze(Object.values(ConstraintScope));
+const NON_ENTRY_SCOPE_KEYWORDS = Object.freeze(Object.values(ConstraintScope));
 
 /**
  * True, wenn `scope` einen Katalogeintrag bzw. eine Kategorie benennt statt
@@ -65,11 +65,8 @@ export const isSharedQuery = (query) => query?.shared !== false;
  * Ein Constraint-/Condition-`field` dieser Form bindet an das *Punktelimit* des
  * Rosters (nicht an die ausgegebenen Punkte): `limit::<costTypeId>`.
  */
-export const ROSTER_LIMIT_FIELD_PREFIX = 'limit::';
+const ROSTER_LIMIT_FIELD_PREFIX = 'limit::';
 
 export const isRosterLimitField = (field) =>
   typeof field === 'string' && field.startsWith(ROSTER_LIMIT_FIELD_PREFIX);
 
-/** Schneidet das Präfix ab und liefert die Kostenart, an die das Limit bindet. */
-export const costTypeIdOfRosterLimitField = (field) =>
-  field.slice(ROSTER_LIMIT_FIELD_PREFIX.length);

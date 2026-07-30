@@ -39,12 +39,9 @@ vi.mock('./editor/BottomSheet', () => ({
 
 const calculateRosterCostsSpy = vi.fn(() => ({ [COST_TYPE_ID]: 999999 }));
 const resolveCostLimitLabelSpy = vi.fn(() => 'POISON-LABEL');
-
-vi.mock('../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  calculateRosterCosts: (...args) => calculateRosterCostsSpy(...args),
-  resolveCostLimitLabel: (...args) => resolveCostLimitLabelSpy(...args),
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz (rawXmls-Muster wie useEvaluation.test.js) ───────
 

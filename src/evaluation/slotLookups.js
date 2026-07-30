@@ -11,9 +11,6 @@
  * dieser Lookups; es rechnet nichts nach.
  */
 
-/** Die eine, geteilte leere Slot-Map für fehlende Berichte. */
-export const EMPTY_CAPABILITIES = new Map();
-
 /**
  * True, wenn `path` ein **direktes** Kind von `parentPath` bezeichnet
  * (genau ein weiteres Pfadsegment).

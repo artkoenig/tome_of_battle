@@ -10,7 +10,7 @@ The application runs entirely in the browser — there is no backend. Imported g
 
 - **Import BattleScribe Data** — Simply upload a `.bsz` or ZIP archive of your catalogs. The app parses the raw `.cat` and `.gst` XML files into a queryable game system.
 - **Build Army Lists** — Add units, select upgrades and options, and track point costs in real-time.
-- **Real-Time Validation** — A dedicated rules engine ("the solver") checks point limits, category limits, and constraints on individual entries and groups as you build.
+- **Real-Time Validation** — A dedicated clean-room rules engine (`src/evaluator/`) checks point limits, category limits, and constraints on individual entries and groups as you build.
 - **Play Mode** — An additional, temporary view for tracking game rounds, victory points, command points (CP), and remaining wounds of individual models during a game.
 - **Offline-First PWA** — Installable, works completely offline, and updates reliably in the background using a service worker.
 - **Local & Secure** — All data remains in your browser's IndexedDB. No data is uploaded to any server.
@@ -59,7 +59,7 @@ npm run build      # Creates the production build (also generates a fresh servic
 npm run preview    # Local preview of the production build
 npm run lint       # Code analysis using oxlint
 npm run knip       # Cross-file dead-code / unused-export / unused-dependency analysis (warn-only)
-npm run depcruise  # Dependency-graph rules: layering, solver facade, cycles, orphans (warn-only); the evaluator⇄solver separation (ADR 0030) is blocking (error)
+npm run depcruise  # Dependency-graph rules: layering, cycles, orphans (warn-only); the evaluator⇄roster separation and the evaluator facade (ADR 0030) are blocking (error)
 npm run analyze    # Runs knip and dependency-cruiser together
 npm run typecheck  # Type-checks the JSDoc annotations of the production code (tsc --noEmit, checkJs)
 npm test           # Runs unit & component tests (Vitest) and the Puppeteer E2E smoke test
@@ -93,36 +93,42 @@ The data flow is structured as follows: **BattleScribe XML → IndexedDB → In-
 3. **Roster State** (`src/hooks/useRoster.js`) — The central state manager for the roster currently being edited. It builds an immutable selection tree (`Selection`), debounces saves to IndexedDB (150ms), and recalculates costs and validations on every change.
 4. **Play State** (`src/hooks/usePlayState.js`) — Manages the transient state for the play mode.
 
-### The Solver (`src/solver/`)
+### The Write Model (`src/roster/`)
 
-The rules engine handles all calculations and dependencies, working completely independently of React:
+Everything the app needs to **build and edit** a roster, working completely
+independently of React. It is structural only: it creates, resolves and rewrites
+selection trees — judging a roster is the engine's job (see below).
 
 - `catalogResolver.js` — Resolves entry links (`EntryLinks`) and selections against the game system.
-- `queryEngine.js` — The central, scope-agnostic counting primitive (ADR 0029): the single place that maps a BattleScribe query scope to an anchor and counts/sums over it, shared by constraints, conditions and repeats.
-- `modifierEvaluator.js` — Evaluates BattleScribe conditions and modifiers.
-- `optionsCollector.js` — Collects available profiles, rules, and options for a unit.
-- `rosterCounter.js` — Calculates unit counts, category limits, and point costs.
-- `rosterValidator.js` — Validates the entire roster against all XML constraints.
-- `profileCollector.js` — Determines the effective profile values and rules of a unit, taking modifiers into account.
-- `categoryLimits.js` — Single source of a category's effective display min/max (incl. the system-bound inheritance quirk).
-- `selectionBehavior.js` — Derives the UI behavior model (radio/checkbox, mandatory, remaining count) from the solver so the UI evaluates no constraint itself.
-- `validator.js` — Serves as a central facade to access all solver functions.
+- `selectionFactory.js` / `subSelectionEditing.js` — Create a selection from a definition and add, remove or re-count sub-selections.
+- `rosterTree.js` — Immutable traversal and rewriting of the selection tree.
+- `queryEngine.js` — The scope-agnostic counting primitive (ADR 0029), shared by the structural helpers below.
+- `modifierEvaluator.js` — Evaluates BattleScribe conditions and modifiers for the structural decisions the write model still makes (e.g. effective names, raisable group maxima).
+- `optionsCollector.js` — Collects the option/group **structure** of a unit (membership, not state).
+- `rosterCounter.js` — Counts units and aggregates costs for the write model's own needs.
+- `rosterSync.js` — Reconciles stored and imported rosters against an updated catalogue.
+- `profileCollector.js` — Determines effective profile values and rules of a unit, taking modifiers into account.
+- `index.js` — A convenience barrel over the modules above (no enforced facade).
 
-### The Alternative Evaluator (`src/evaluator/`)
+Until issue 0121 this directory was `src/solver/` and also validated rosters. That
+engine was classified faulty ([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md))
+and has been removed; what survived is the write model above.
+
+### The Evaluator (`src/evaluator/`)
 
 A second, spatially separated rules engine, added as a clean-room realization of
 the reference architecture in [`docs/evaluator-architecture.md`](docs/evaluator-architecture.md)
-([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md), revised). It is the
-**designated successor** to the Solver — which is classified faulty and slated for
-replacement — and is **hard-isolated** from it — neither engine may import the
-other (enforced as blocking `error` rules in `.dependency-cruiser.cjs`/`.oxlintrc.json`),
+([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md), revised). Since
+issue 0121 it is **the** production engine: it replaced the former solver, which has
+been removed. It stays hard-isolated from the app's write model `src/roster/` in both
+directions (enforced as blocking `error` rules in `.dependency-cruiser.cjs`/`.oxlintrc.json`),
 and it is reached only through its own facade `evaluate({ gameSystem, catalogues }, roster) → report`.
 It is a pure function (own parser, own data model, own report with
 violations/capabilities/diagnostics) and realizes the full reference design
 **including** the fixpoint loop and phantom nodes that ADR 0029 deliberately left
-out. It is developed with the goal of replacing the Solver as the production engine; it is
-currently still a **library only — not yet wired into the app** (tree-shaken from
-the production bundle), with the productive cutover still pending.
+out. The UI reads its report directly — violations, per-slot capabilities and cost
+totals — through the bridge `src/evaluation/` (roster adapter, dataset cache) and the
+message projection `src/i18n/violationMessages.js`.
 
 It reads the **canonical** BattleScribe XSD attributes (`type`/`field`/`value`)
 directly and draws its closed enum sets (constraint, condition and modifier kinds)

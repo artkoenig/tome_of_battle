@@ -45,13 +45,9 @@ vi.mock('lucide-react', () => ({
 const getPlayableCataloguesSpy = vi.fn(() => [{ id: 'poison-cat', name: 'POISON-CATALOGUE' }]);
 const getAvailableForceEntriesSpy = vi.fn(() => [{ id: 'poison-force', name: 'POISON-FORCE' }]);
 const resolveCostLimitLabelSpy = vi.fn(() => 'POISON-LABEL');
-
-vi.mock('../../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  getPlayableCatalogues: (...args) => getPlayableCataloguesSpy(...args),
-  getAvailableForceEntries: (...args) => getAvailableForceEntriesSpy(...args),
-  resolveCostLimitLabel: (...args) => resolveCostLimitLabelSpy(...args),
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz (rawXmls-Muster wie useEvaluation.test.js) ───────
 

@@ -5,36 +5,7 @@
   "settings.whfb6Linking.hint": "When linking is off, rule, weapon and magic-item chips show the catalog quick info instead of a link to the external site.",
   "settings.version": "Version",
   "settings.language.label": "Language",
-  "validation.selectionsUnit": "selections",
-  "validation.rosterLimit": "The list has {current} {unit} – only {limit} are allowed.",
-  "validation.forceSelectorMin": "The army still needs a \"{entryName}\".",
-  "validation.rosterSelectorMin": "The army still needs a \"{entryName}\".",
-  "validation.forceRosterLimit": "\"{forceName}\" needs a points limit of at least {limit}.",
-  "validation.categoryMin_one": "The army needs at least one selection from \"{categoryName}\".",
-  "validation.categoryMin_other": "The army needs at least {count} selections from \"{categoryName}\".",
-  "validation.categoryMax_zero": "The army can't take anything from \"{categoryName}\".",
-  "validation.categoryMax_one": "The army may take at most one selection from \"{categoryName}\".",
-  "validation.categoryMax_other": "The army may take at most {count} selections from \"{categoryName}\".",
-  "validation.unresolvedEntry": "\"{selectionName}\" no longer exists in the catalogue.",
-  "validation.entryMin_one": "\"{selectionName}\" must be taken at least once.",
-  "validation.entryMin_other": "\"{selectionName}\" must be taken at least {count} times.",
-  "validation.entryMax_zero": "\"{selectionName}\" can't be taken.",
-  "validation.entryMax_one": "\"{selectionName}\" may only be taken once.",
-  "validation.entryMax_other": "\"{selectionName}\" may be taken at most {count} times.",
-  "validation.entryPercentMin": "\"{selectionName}\" must make up at least {percent}% of the {unit}.",
-  "validation.entryPercentMax": "\"{selectionName}\" may make up at most {percent}% of the {unit}.",
-  "validation.groupPointsMax": "{selectionName} may spend at most {limit} {unit} on \"{groupName}\".",
-  "validation.groupPointsMin": "{selectionName} must spend at least {limit} {unit} on \"{groupName}\".",
-  "validation.groupCountMax_zero": "{selectionName} can't take anything from \"{groupName}\".",
-  "validation.groupCountMax_one": "{selectionName} may take at most one selection from \"{groupName}\".",
-  "validation.groupCountMax_other": "{selectionName} may take at most {count} selections from \"{groupName}\".",
-  "validation.groupCountMin_one": "{selectionName} needs at least one selection from \"{groupName}\".",
-  "validation.groupCountMin_other": "{selectionName} needs at least {count} selections from \"{groupName}\".",
-  "validation.groupPercentMin": "\"{groupName}\" must make up at least {percent}% of the {unit}.",
-  "validation.groupPercentMax": "\"{groupName}\" may make up at most {percent}% of the {unit}.",
-  "validation.causesTitle": "Causes:",
-  "validation.causeItem": "\"{name}\"",
-
+  "validation.evaluator.causesTitle": "Causes:",
   "validation.evaluator.selectionCount.min.local_one": "\"{name}\" must be taken at least once.",
   "validation.evaluator.selectionCount.min.local_other": "\"{name}\" must be taken at least {bound} times.",
   "validation.evaluator.selectionCount.min.force_one": "This force still needs a \"{name}\".",
@@ -112,7 +83,6 @@
   "validation.evaluator.rosterBudget.max.roster.percent": "The army costs {actual} – only {bound} ({percent}%) is allowed.",
   "validation.evaluator.generic": "\"{name}\" violates a limit ({actual} instead of {bound}).",
   "validation.evaluator.causeItem": "\"{name}\"",
-
   "common.close": "Close",
   "common.cancel": "Cancel",
   "common.confirm": "Confirm",
@@ -128,7 +98,6 @@
   "common.model": "Model",
   "common.profileHeader": "Profile",
   "common.modifications": "Modifications: {name}",
-
   "app.logoAlt": "Tome of Battle logo",
   "app.offline.active": "Offline mode active",
   "app.offline.short": "Offline",
@@ -142,7 +111,6 @@
   "app.update.whatsNew": "What's new",
   "app.update.description": "A new version has been loaded in the background.",
   "app.update.reload": "Reload",
-
   "newRoster.title": "Raise a New Army",
   "newRoster.nameLabel": "Army name",
   "newRoster.namePlaceholder": "e.g. Grimgor's Waaagh!",
@@ -155,7 +123,6 @@
   "newRoster.forcePlaceholder": "Select a structure...",
   "newRoster.costLimitLabel": "Cost limit",
   "newRoster.submit": "Begin the muster",
-
   "dashboard.offlineText": "You have no internet connection. You can still manage and edit your army lists and catalogues without restriction.",
   "dashboard.subtitle": "Manage your army lists or start new campaigns.",
   "dashboard.newRoster": "New army list",
@@ -174,7 +141,6 @@
   "dashboard.deleteRoster.title": "Delete army list",
   "dashboard.deleteRoster.confirmPrefix": "Do you really want to delete the army list ",
   "dashboard.deleteRoster.confirmSuffix": "?",
-
   "editor.undo": "Undo",
   "editor.redo": "Redo",
   "editor.hideDetails": "Hide details",
@@ -212,7 +178,6 @@
   "editor.details.profileNamed": "Profile ({name})",
   "editor.details.source": "Source",
   "editor.details.noDescription": "No description available.",
-
   "play.title": "Play mode",
   "play.backTitle": "War planning (edit)",
   "play.rulebook": "Rulebook",
@@ -225,10 +190,8 @@
   "play.hideProfiles": "Hide profiles",
   "play.showProfiles": "Show profiles",
   "play.noProfileValues": "No profile values found.",
-
   "rulesDialog.noConnection": "No connection to 6th.whfb.app",
   "rulesDialog.loading": "Loading rules text...",
-
   "importer.error.systemListUnavailable": "The imported game systems could not be loaded from the database.",
   "importer.error.indexUnreachable": "The catalogue index is currently unreachable. Please try again later.",
   "importer.error.noDataAvailable": "No game data available for import. The catalogue index could not be loaded.",
@@ -271,17 +234,13 @@
   "importer.revision.updateAvailable": "Update available",
   "importer.revision.localPrefix": "local",
   "importer.revision.unknown": "unknown",
-
   "serialization.missingSystem": "The game system \"{name}\" (ID: {id}) is missing. Please import it first.",
   "serialization.damagedArchive": "The file is a damaged ZIP archive and could not be extracted.",
   "serialization.missingRosterEntry": "The ZIP archive contains no {extension} file.",
   "serialization.invalidFormat": "Invalid file format: the root element must be <roster>.",
-
   "persistence.roster": "The army list could not be saved. Your latest changes are not secured.",
   "persistence.gameState": "The game state could not be saved. Wounds, points and round are not secured.",
-
   "releaseDiff.truncationNotice": "...and more entries.",
-
   "rosterList.importSuccess": "Successfully imported: {name}",
   "rosterList.fillAllFields": "Please fill in all fields.",
   "rosterList.systemDeleted": "The associated game system was deleted. Import it again.",
@@ -295,6 +254,5 @@
   "rosterList.deleteFailed": "The roster could not be deleted.",
   "appData.loadFailed": "The stored game systems and rosters could not be loaded.",
   "appData.refreshFailed": "Could not update the following systems; the previous data remains in use: {systems}",
-
   "preview.title": "This is the preproduction instance, not the live app."
 }

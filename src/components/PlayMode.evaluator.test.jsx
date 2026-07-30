@@ -61,18 +61,9 @@ vi.mock('./RulesIndexDialog', () => ({
   default: () => null,
 }));
 
-const calculateRosterCostsSpy = vi.fn(() => ({ [COST_TYPE_PTS]: 999999 }));
-const getExtraResourceTotalsSpy = vi.fn(() => [{ id: 'poison', name: 'POISON-RES', total: 777 }]);
-
-vi.mock('../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  calculateRosterCosts: (...args) => calculateRosterCostsSpy(...args),
-  getExtraResourceTotals: (...args) => getExtraResourceTotalsSpy(...args),
-  // Nicht unter Test (Sortierung/Listenregeln): benigne Stubs, damit die
-  // Solver-Aufloesung am synthetischen System nicht dazwischenfunkt.
-  getSelectionTotalCost: () => 0,
-  isListRuleSelection: () => false,
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz ─────────────────────────────────────────────────
 //

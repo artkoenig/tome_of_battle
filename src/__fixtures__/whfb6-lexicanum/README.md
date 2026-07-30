@@ -2,7 +2,7 @@
 
 Kleine, verbatim übernommene Auszüge aus dem neuen WHFB6-Datensatz
 [lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition](https://github.com/lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition).
-Sie verankern `src/solver/systemQuirks.test.js` in **echten** Katalogdaten der
+Sie verankern `src/roster/`-Tests (frueher `src/solver/systemQuirks.test.js`) in **echten** Katalogdaten der
 neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
 
 ## Herkunft
@@ -81,7 +81,7 @@ verdrahten. Driften die hartkodierten IDs von den realen Katalog-IDs ab, schläg
 der Test fehl.
 
 `vampire-selfscope-bloodline.cat.xml` verankert
-`src/solver/modifierEvaluator.selfScope.test.js`: Der Solver muss eine
+`src/roster/modifierEvaluator.selfScope.test.js`: Die Engine muss eine
 `instanceOf`-Bedingung, deren `scope` die eigene Entry-ID ist, als Suche im
 eigenen (Effektiv-Kategorie-)Teilbaum auswerten. Ohne diese Auswertung greift
 der Blutlinien-Charakteristik-Modifier nie. Von den **422** `instanceOf`-
@@ -91,21 +91,21 @@ Vampire Thrall); alle betreffen Blutlinien-Kategorien (Blood Dragon, Necrarch,
 Strigoi).
 
 `special-characters-hint.cat.xml` verankert
-`src/solver/rosterValidator.messageModifiers.test.js`: Der Solver muss einen
+die Reinraum-Suite (frueher `src/solver/rosterValidator.messageModifiers.test.js`): Die Engine muss einen
 `field="error"/"warning"/"info"`-Modifier, dessen Bedingung zutrifft, als
 Validierungseintrag mit dem passenden Schweregrad melden — `error` blockiert das
 Spielen, `warning`/`info` erscheinen rein informativ. Über 17 Kataloge + `.gst`
 tragen **163** solcher Hinweistext-Modifier reale Klartext-Hinweise an den Spieler.
 
 `vampire-coast-force-limit.cat.xml` verankert
-`src/solver/rosterValidator.forceEntryRosterLimit.test.js`: Der Validator muss die
+die Reinraum-Suite (frueher `src/solver/rosterValidator.forceEntryRosterLimit.test.js`): Die Engine muss die
 forceEntry-eigene Punktelimit-Constraint eines gewählten Sonderheeres durchsetzen —
 unter 2000 Punkten ungültig, ab 2000 gültig, ein normales Kontingent unberührt. Von
 allen 18 Katalogen tragen ausschließlich diese **2** `forceEntry`s ein solches
 eigenes `limit::<costTypeId>`-Muster.
 
 `ogre-bulls-mandatory-entrylink.cat.xml` verankert
-`src/solver/rosterValidator.mandatoryEntryLinkSelector.test.js`: Der Validator muss
+die Reinraum-Suite (frueher `src/solver/rosterValidator.mandatoryEntryLinkSelector.test.js`): Die Engine muss
 einen armeeweiten Pflichtselektor auch dann erzwingen, wenn er als Wurzel-`entryLink`
 (statt als Wurzel-`selectionEntry`) codiert ist. Die Pflicht steckt in der
 force-scoped `min`-Constraint **am Link**, die der „Standard"-Modifier der Gruppe

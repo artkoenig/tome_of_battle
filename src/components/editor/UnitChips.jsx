@@ -205,9 +205,8 @@ export function UnitUpgradesChips({
  * `pathBySelectionId`, das die umgebenden Editor-Komponenten führen.
  *
  * Die Entdopplung gegen die Upgrade-Chips läuft über die **gewählten**
- * Unter-Auswahlen (Strukturhilfe `getSelectedUpgrades`), nicht mehr über die
- * Solver-Profilsammlung — eine Regel, die als Upgrade-Chip erscheint, wird
- * nicht doppelt gezeigt.
+ * Unter-Auswahlen (Strukturhilfe `getSelectedUpgrades`) — eine Regel, die als
+ * Upgrade-Chip erscheint, wird nicht doppelt gezeigt.
  */
 export function UnitRulesChips({
   selection,

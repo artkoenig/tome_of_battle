@@ -56,14 +56,9 @@ const collectUnitProfilesAndRulesSpy = vi.fn(() => ({
   ],
   rules: [],
 }));
-
-vi.mock('../../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  collectUnitProfilesAndRules: (...args) => collectUnitProfilesAndRulesSpy(...args),
-  // Nicht unter Test: die Kostenzeile der Spielkarte (0 blendet sie aus).
-  getSelectionTotalCost: () => 0,
-  resolveCostLimitLabel: () => 'Pkt',
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 // ── Synthetischer Datensatz: Statblock- und Waffen-Profil per infoLink ───────
 

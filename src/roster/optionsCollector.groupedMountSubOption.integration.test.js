@@ -9,7 +9,6 @@ import { resolveEntry } from './catalogResolver.js';
 import { createSelectionFromDef } from './selectionFactory.js';
 import { replaceSelectionById, rootSelectionsOf } from './rosterTree.js';
 import { withChangedOptionCount } from './subSelectionEditing.js';
-import { validateRoster } from '../solver/rosterValidator.js';
 
 // Issue 57/04 — end-to-end against the REAL Vampire Counts catalogue.
 // Master Necromancer → group "Mounts" (max 1) → entryLink "Nightmare" (an upgrade-type
@@ -93,15 +92,15 @@ describe('Grouped upgrade-mount sub-option nests under the mount (Master Necroma
     expect(bardingIsDirectUnitChild).toBe(false);
   });
 
-  test('mount + barding stay within the Mounts group max of 1 (no validation error)', () => {
+  test('mount + barding: the sub-option stays out of the Mounts group item ids', () => {
     let roster = buildNecromancerRoster();
     roster = selectOption(roster, optionsOf(roster).find(o => o.option.id === NIGHTMARE_LINK_ID));
     roster = selectOption(roster, optionsOf(roster).find(o => o.option.id === BARDING_ID));
 
-    const errors = validateRoster(roster, system).filter(e => e.severity === 'error');
-    expect(errors).toEqual([]);
-
-    // The sub-option no longer pollutes the Mounts group's counted item ids.
+    // The sub-option no longer pollutes the Mounts group's counted item ids. That
+    // the resulting roster is legal is the engine's subject (src/evaluator/), not
+    // this module's; the solver assertion that used to stand here died with
+    // src/solver/ (issue 0121).
     const mountsMax = optionsOf(roster).find(o => o.groupId === MOUNTS_GROUP_ID)
       ?.groupConstraints?.find(c => c.type === 'max' && c.scope === 'parent');
     expect(mountsMax).toBeDefined();

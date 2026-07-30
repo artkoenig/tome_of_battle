@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from '../../i18n/useTranslation';
-import { CAUSES_TITLE_KEY } from '../../i18n/formatValidationError';
-import { formatViolationCauses } from '../../i18n/violationMessages';
+import { CAUSES_TITLE_KEY, formatViolationCauses } from '../../i18n/violationMessages';
 
 /**
  * Der „Ursachen"-Block einer Validierungsmeldung (ADR 0027): die einzige

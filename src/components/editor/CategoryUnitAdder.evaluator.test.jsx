@@ -47,16 +47,9 @@ import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 const validateRosterSpy = vi.fn(() => []);
 const getEntryAddAvailabilitySpy = vi.fn(() => ({ available: true, reasons: [] }));
-
-vi.mock('../../solver/validator', async (importOriginal) => ({
-  ...(await importOriginal()),
-  // Solver-Verfügbarkeitspfad (ADR-0022): darf im neuen Pfad nie mehr laufen.
-  validateRoster: (...args) => validateRosterSpy(...args),
-  getEntryAddAvailability: (...args) => getEntryAddAvailabilitySpy(...args),
-  // Bisherige Kandidatenquelle bewusst leer: die Liste muss aus `capabilities`
-  // entstehen — ein Rückfall auf den Solver bleibt sichtbar (leerer Dialog).
-  collectPrimaryCategoryEntries: () => [],
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 vi.mock('lucide-react', () => ({
   Plus: () => <span data-testid="icon-plus" />,

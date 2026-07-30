@@ -14,28 +14,8 @@
           {
             "patterns": [
               {
-                "group": ["**/solver/*", "!**/solver/validator", "!**/solver/validator.js"],
-                "message": "Der Solver wird ausschliesslich ueber die Fassade src/solver/validator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt das Fachmodul direkt zu importieren."
-              },
-              {
                 "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
                 "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["src/solver/**"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": ["**/evaluator/**"],
-                "message": "Harte Trennung der beiden Engines (ADR-0030): src/solver/ darf src/evaluator/ nie importieren -- auch nicht ueber dessen Fassade. Solver-interne Importe bleiben frei."
               }
             ]
           }
@@ -49,10 +29,6 @@
           "error",
           {
             "patterns": [
-              {
-                "group": ["**/solver/**"],
-                "message": "Harte Trennung der beiden Engines (ADR-0030): src/evaluator/ darf src/solver/ nie importieren -- auch nicht dessen Fassade. Evaluator-interne Importe bleiben frei."
-              },
               {
                 "group": ["**/roster/**"],
                 "message": "Reinraum-Schutz (ADR-0030/0034): src/evaluator/ darf das App-Schreibmodell src/roster/ nie importieren -- es traegt Ableitungslogik der Alt-Engine."
@@ -72,10 +48,6 @@
               {
                 "group": ["**/evaluator/**"],
                 "message": "Das Schreibmodell src/roster/ bleibt rein strukturell (Issue 0121, Task 8): es importiert den Evaluator nie -- auch nicht ueber dessen Fassade. Bewertung liest allein die Oberflaeche aus dem Bericht."
-              },
-              {
-                "group": ["**/solver/**"],
-                "message": "src/roster/ hat den Solver ersetzt bekommen, was es braucht (Issue 0121, Task 8) -- ein Rueckgriff auf src/solver/ wuerde die Abrissrichtung (ADR-0030) umkehren."
               }
             ]
           }
@@ -89,10 +61,6 @@
           "error",
           {
             "patterns": [
-              {
-                "group": ["**/solver/*", "!**/solver/validator", "!**/solver/validator.js"],
-                "message": "Der Solver wird ausschliesslich ueber die Fassade src/solver/validator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt das Fachmodul direkt zu importieren."
-              },
               {
                 "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
                 "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."

@@ -9,9 +9,9 @@ import {
 // Prädikat-Funktionen werden in ihrer echten Umsetzung durchgereicht; nur die
 // Katalog-Auflösung wird auf ein simples Nachschlagewerk gestubbt, damit die
 // Testbäume ohne vollständiges System auskommen.
-vi.mock('../../solver/validator', async () => ({
-  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+vi.mock('../../roster', async () => ({
+  childSelectionsOf: (await vi.importActual('../../roster/rosterTree.js')).childSelectionsOf,
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit.js')).isIndependentSubUnit,
   findEntryInSystem: (system, entryId) => system?.entriesById?.[entryId] ?? null,
   resolveEntry: (system, entry) => entry
 }));

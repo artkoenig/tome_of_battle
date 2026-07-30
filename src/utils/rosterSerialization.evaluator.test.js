@@ -27,18 +27,9 @@ const getEffectiveNameSpy = vi.fn(() => 'POISON-NAME');
 const getSelectionOwnCostsSpy = vi.fn(() => ({ [COST_TYPE_ID]: 999999 }));
 const getSelectionTotalCostSpy = vi.fn(() => 999999);
 const calculateRosterCostsSpy = vi.fn(() => ({ [COST_TYPE_ID]: 999999 }));
-
-vi.mock('../solver/validator.js', async (importOriginal) => ({
-  ...(await importOriginal()),
-  getEffectiveSelectionName: (...args) => getEffectiveSelectionNameSpy(...args),
-  getEffectiveName: (...args) => getEffectiveNameSpy(...args),
-  getSelectionOwnCosts: (...args) => getSelectionOwnCostsSpy(...args),
-  getSelectionTotalCost: (...args) => getSelectionTotalCostSpy(...args),
-  calculateRosterCosts: (...args) => calculateRosterCostsSpy(...args),
-  // Nicht unter Test (Zaehl-Kontext des Alt-Pfads): benigner Stub, damit der
-  // heutige Export am synthetischen System nicht an der Zaehlung scheitert.
-  computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
-}));
+// Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
+// Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
+// kommt, ist jetzt strukturell garantiert.
 
 import { exportRosterToXml } from './rosterSerialization.js';
 import { prepareDataset, evaluate } from '../evaluator/evaluator.js';

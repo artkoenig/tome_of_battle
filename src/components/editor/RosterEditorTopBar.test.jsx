@@ -11,7 +11,7 @@ vi.mock('lucide-react', () => ({
   Redo2: () => <span data-testid="icon-redo" />
 }));
 
-vi.mock('../../solver/validator', () => ({
+vi.mock('../../roster', () => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null
 }));
 
