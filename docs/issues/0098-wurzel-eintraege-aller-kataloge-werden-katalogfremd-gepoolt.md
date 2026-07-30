@@ -346,5 +346,49 @@ katalog-lokal.
 - 2026-07-30 — **Verifikation nach dem Fix:** `npx vitest run
   src/evaluator`, 68 Testdateien, 855 Tests (2 neu), Exit 0. `npm run lint`
   (oxlint), Exit 0. `npm run typecheck` (tsc --noEmit), Exit 0.
+- 2026-07-30 — **Review-Runde 2 (derselbe Reviewer-Kontext, per SendMessage
+  fortgesetzt):** die pauschale `CATEGORY`-Ausnahme aus Runde 1 war zu
+  breit — sie reisst Kriterium 2 fuer JEDE Kategorie wieder ein, auch fuer
+  eine voellig unbezogene aus einem dritten, gar nicht referenzierten
+  Katalog (mit zwei eigenen, unabhaengig lauffaehigen Reproduktionen fuer
+  ROSTER- und FORCE-Rahmen belegt). Kriterium 2 gilt fuer diesen Fund jetzt
+  als **nicht erfuellt**, bis behoben. Ursache beim Nachvollziehen: die
+  Verletzung kam gar nicht aus `synthesizeMandatoryPhantoms` (dort war die
+  Runde-1-Ausnahme korrekt), sondern aus einer bislang uebersehenen
+  DRITTEN, parallelen Stelle: `synthesizeUnlinkedCategoryAnchors` haengt
+  fuer jede von KEINEM anwesenden Kontingent per `categoryLink` gefuehrte
+  Kategorie unbedingt einen eigenen Anker an — diese Funktion kannte
+  `catalogueScope` bislang ueberhaupt nicht.
+- 2026-07-30 — **Fund behoben (selbst implementiert, praeziser als Runde
+  1):** In `evalTree.js` ist die `CATEGORY`-Ausnahme in
+  `synthesizeMandatoryPhantoms` jetzt an eine echte Bedingung geknuepft,
+  nicht mehr pauschal: sie greift nur, wenn mindestens ein im ROSTER-Rahmen
+  anwesendes Kontingent die Kategorie tatsaechlich per eigenem
+  `categoryLink` fuehrt (`rosterLinkedCategoryIds`, gesammelt ueber
+  {@link linkedCategoryIdsOf} aller anwesenden Kontingente — exakt die
+  reale Stelle des Musters: `Vampire Counts (6th definitive
+  edition).cat:29308-29309`, `categoryLink` direkt am `forceEntry`, nicht an
+  einem Wurzel-Eintrag; der Testfixture-Aufbau wurde entsprechend
+  korrigiert). Im FORCE-Rahmen entfaellt die Ausnahme ganz — eine von
+  diesem Kontingent gefuehrte Kategorie ist dort schon vorher per
+  `continue` ausgeschlossen (ihr Anker haengt ueber
+  `synthesizeForceCategoryAnchors`), jede andere hat keinen Referenzgrund.
+  Zusaetzlich bekam `synthesizeUnlinkedCategoryAnchors` `catalogueScope`
+  und `primaryCatalogueByForceDefId` als neue, additive Parameter und
+  prueft jetzt selbst `isInCatalogueScope`, bevor sie fuer eine unverlinkte
+  Kategorie ueberhaupt einen Anker anhaengt (ROSTER **und** FORCE, Letzterer
+  zaehlt ohnehin armeeweit ueber die Ziel-Typ-Regel). Regressionstests
+  ergaenzt (`crossCatalog.rootEntryScope.test.js`, neue Describe
+  „Review-Runde 2"): eine voellig unbezogene Kategorie in einem dritten
+  Katalog erzeugt jetzt korrekt keine Verletzung mehr, weder roster- noch
+  force-skopiert, feuert aber weiterhin, wenn ihr eigener Katalog selbst im
+  Roster vertreten ist (Kontrast-Test). Die Runde-1-Ausnahme bleibt fuer den
+  tatsaechlichen Referenzfall (categoryLink am anwesenden Kontingent)
+  bestehen und gruen.
+- 2026-07-30 — **Verifikation nach dem zweiten Fix:** `npx vitest run
+  src/evaluator`, 68 Testdateien, 858 Tests (3 neu ggue. der letzten
+  Verifikation), Exit 0. `npm run lint` (oxlint), Exit 0. `npm run
+  typecheck` (tsc --noEmit), Exit 0. Reviewer um eine dritte Runde im
+  selben Kontext gebeten.
 
 ## Retro

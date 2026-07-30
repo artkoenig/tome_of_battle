@@ -233,23 +233,23 @@ describe('Issue 0098 Kriterium 3: importRootEntries steuert, ob ein verlinkter B
   });
 });
 
-describe('Issue 0098 Review-Runde 1: eine Wurzel-CATEGORY bleibt vom Katalog-Bezugsrahmen ausgenommen (wie ein Wurzel-entryLink)', () => {
-  // Nachbildet exakt das reale WHFB6-Muster, das die Review-Runde fand:
-  // `Mercenaries.cat` deklariert die Kategorien "Mercenaries"/"Regiment of
-  // Renown" selbst; `Vampire Counts.cat` fuehrt sie per eigenem
-  // `categoryLink` an einem Wurzel-Eintrag, ganz ohne `importRootEntries`.
-  // Eine Kategorie ist nie selbst eine Auswahl — sie wird ausschliesslich
-  // ueber einen `categoryLink` erreicht, genau wie ein `entryLink` auf eine
-  // geteilte Definition verweist: nicht die Kategorie-Definition "gehoert"
-  // zu einem Katalog im Sinne von Kriterium 1, sondern das Referenzieren per
-  // `categoryLink` ist selbst schon der etablierte, katalog-uebergreifende
-  // Mechanismus. Die Erwartung ist deshalb umgekehrt zu Kriterium 1: die
-  // roster-skopierte MIN-Grenze an Bs Kategorie soll WEITERHIN feuern, wenn
-  // nur A (das per `categoryLink` auf Bs Kategorie verweist) im Roster
-  // steckt — genau wie ein Wurzel-`entryLink` mit eigener MIN-Grenze
-  // weiterhin unbedingt feuert (Kriterium-1-Tests oben). Ohne die Ausnahme
-  // wuerde diese Grenze faelschlich verschluckt, weil Bs Katalog nicht im
-  // Fussabdruck von As referenzierten Katalogen steckt (der Reviewer-Fund).
+describe('Issue 0098 Review-Runde 1: eine per Kontingent-categoryLink referenzierte CATEGORY bleibt von der Katalog-Filterung ausgenommen', () => {
+  // Nachbildet exakt das reale WHFB6-Muster, das die Review-Runde fand — und
+  // exakt an der Stelle, an der es tatsaechlich vorkommt: der `categoryLink`
+  // haengt am `forceEntry` selbst (`Vampire Counts (6th definitive
+  // edition).cat:29308-29309`, "Regiment of Renown" per categoryLink am
+  // Kontingent "Standard (VC-AB)"), nicht an einem Wurzel-Eintrag. Ein
+  // Kontingent, das im Roster tatsaechlich anwesend ist und sich per
+  // eigenem `categoryLink` ausdruecklich zu einer fremden Kategorie
+  // bekennt, macht diese Kategorie fuer sich relevant — unabhaengig davon,
+  // in welchem Katalog sie deklariert ist. Die Erwartung ist deshalb
+  // umgekehrt zu Kriterium 1: die roster-skopierte MIN-Grenze an Bs
+  // Kategorie soll WEITERHIN feuern, wenn nur A (dessen Kontingent per
+  // categoryLink auf Bs Kategorie verweist) im Roster steckt — genau wie
+  // ein Wurzel-`entryLink` mit eigener MIN-Grenze weiterhin unbedingt
+  // feuert (Kriterium-1-Tests oben). Ohne die Ausnahme wuerde diese Grenze
+  // faelschlich verschluckt, weil Bs Katalog nicht im Fussabdruck von As
+  // referenzierten Katalogen steckt (der Reviewer-Fund aus Runde 1).
   const CATEGORY_MIN_LIMIT_ID = 'b-category-root-min';
   const CATALOGUE_B = `<?xml version="1.0" encoding="utf-8"?>
     <catalogue id="cat-b-categoryscope" name="B" gameSystemId="${GAME_SYSTEM_ID}">
@@ -268,18 +268,15 @@ describe('Issue 0098 Review-Runde 1: eine Wurzel-CATEGORY bleibt vom Katalog-Bez
   const CATALOGUE_A = `<?xml version="1.0" encoding="utf-8"?>
     <catalogue id="cat-a-categoryscope" name="A" gameSystemId="${GAME_SYSTEM_ID}">
       <forceEntries>
-        <forceEntry id="a-force-categoryscope" name="A Force"/>
-      </forceEntries>
-      <selectionEntries>
-        <selectionEntry id="a-root-unit-categoryscope" name="A Root Unit" type="unit">
+        <forceEntry id="a-force-categoryscope" name="A Force">
           <categoryLinks>
-            <categoryLink id="a-catlink-categoryscope" targetId="b-category-rootscope" primary="true"/>
+            <categoryLink id="a-catlink-categoryscope" targetId="b-category-rootscope" primary="false"/>
           </categoryLinks>
-        </selectionEntry>
-      </selectionEntries>
+        </forceEntry>
+      </forceEntries>
     </catalogue>`;
 
-  it('erzeugt weiterhin die Verletzung aus Bs roster-skopiertem Kategorie-MIN, wenn nur A (per categoryLink auf Bs Kategorie) im Roster steckt', () => {
+  it('erzeugt weiterhin die Verletzung aus Bs roster-skopiertem Kategorie-MIN, wenn nur As Kontingent (per eigenem categoryLink auf Bs Kategorie) im Roster steckt', () => {
     const rosterAOnly = { forces: [{ defId: 'a-force-categoryscope', count: 1, children: [] }] };
 
     const report = evaluate(
@@ -299,6 +296,77 @@ describe('Issue 0098 Review-Runde 1: eine Wurzel-CATEGORY bleibt vom Katalog-Bez
     );
 
     expect(hasViolationWithLimitId(report, CATEGORY_MIN_LIMIT_ID)).toBe(true);
+  });
+});
+
+describe('Issue 0098 Review-Runde 2: eine voellig unbezogene CATEGORY bleibt katalog-gefiltert (keine pauschale Ausnahme)', () => {
+  // Die Review-Runde 2 wies nach, dass eine pauschale CATEGORY-Ausnahme (jede
+  // Kategorie, unbedingt) genau die Pooling-Regression aus Kriterium 2
+  // wiederherstellt — nur fuer `categoryEntry` statt `selectionEntry`/
+  // `forceEntry`: Katalog C ist zu Katalog A in KEINER Beziehung (kein
+  // `categoryLink` von irgendeinem anwesenden Kontingent, kein
+  // `catalogueLink`). Die Ausnahme darf deshalb nur fuer eine Kategorie
+  // gelten, die ein anwesendes Kontingent tatsaechlich per eigenem
+  // `categoryLink` fuehrt (siehe Runde-1-Block oben) — nicht fuer jede
+  // beliebige Kategorie.
+  const ROSTER_MIN_LIMIT_ID = 'c-category-roster-min';
+  const FORCE_MIN_LIMIT_ID = 'c2-category-force-min';
+  const CATALOGUE_C = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-c-categoryscope-unrelated" name="C" gameSystemId="${GAME_SYSTEM_ID}">
+      <categoryEntries>
+        <categoryEntry id="c-category-unrelated" name="C Category (roster-min)">
+          <constraints>
+            <constraint id="${ROSTER_MIN_LIMIT_ID}" type="min" value="1" field="selections" scope="roster"/>
+          </constraints>
+        </categoryEntry>
+        <categoryEntry id="c2-category-unrelated" name="C Category (force-min)">
+          <constraints>
+            <constraint id="${FORCE_MIN_LIMIT_ID}" type="min" value="1" field="selections" scope="force"/>
+          </constraints>
+        </categoryEntry>
+      </categoryEntries>
+      <forceEntries>
+        <forceEntry id="c-force-categoryscope-unrelated" name="C Force"/>
+      </forceEntries>
+    </catalogue>`;
+
+  const CATALOGUE_A = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-a-categoryscope-unrelated" name="A" gameSystemId="${GAME_SYSTEM_ID}">
+      <forceEntries>
+        <forceEntry id="a-force-categoryscope-unrelated" name="A Force"/>
+      </forceEntries>
+    </catalogue>`;
+
+  const ROSTER_A_ONLY = { forces: [{ defId: 'a-force-categoryscope-unrelated', count: 1, children: [] }] };
+
+  it('erzeugt KEINE Verletzung aus Cs roster-skopiertem Kategorie-MIN, wenn As Kontingent Cs Kategorie nirgends referenziert', () => {
+    const report = evaluate(
+      prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A, CATALOGUE_C] }),
+      ROSTER_A_ONLY,
+    );
+
+    expect(hasViolationWithLimitId(report, ROSTER_MIN_LIMIT_ID)).toBe(false);
+  });
+
+  it('erzeugt KEINE Verletzung aus Cs force-skopiertem Kategorie-MIN unter As Kontingent, das Cs Kategorie nirgends referenziert', () => {
+    const report = evaluate(
+      prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A, CATALOGUE_C] }),
+      ROSTER_A_ONLY,
+    );
+
+    expect(hasViolationWithLimitId(report, FORCE_MIN_LIMIT_ID)).toBe(false);
+  });
+
+  it('Kontrast: erzeugt SEHR WOHL beide Verletzungen, wenn das Roster ein Kontingent aus Katalog C selbst enthaelt', () => {
+    const rosterWithCForce = { forces: [{ defId: 'c-force-categoryscope-unrelated', count: 1, children: [] }] };
+
+    const report = evaluate(
+      prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A, CATALOGUE_C] }),
+      rosterWithCForce,
+    );
+
+    expect(hasViolationWithLimitId(report, ROSTER_MIN_LIMIT_ID)).toBe(true);
+    expect(hasViolationWithLimitId(report, FORCE_MIN_LIMIT_ID)).toBe(true);
   });
 });
 

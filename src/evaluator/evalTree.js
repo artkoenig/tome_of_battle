@@ -374,30 +374,61 @@ function countInstances(fromNode, defId) {
  * ({@link isInCatalogueScope}) — fuer den ROSTER-Rahmen die Kataloge
  * **aller** im Roster tatsaechlich vertretenen Kontingente, fuer den
  * FORCE-Rahmen allein der Katalog **dieses** Kontingents. Ein Wurzel-
- * **`entryLink`** und eine **`CATEGORY`**-Definition sind davon ausgenommen
- * (wie beim Angebot, `offer.js`, fuer `entryLink`): beide sind reine
- * Verweisziele — eine Kategorie wird nie selbst instanziiert, sondern von
- * einem `categoryLink` aus einem Kontingent heraus referenziert, oft
- * katalogfremd (z. B. "Regiment of Renown" in `Mercenaries.cat`, per
- * `categoryLink` aus `Vampire Counts.cat` gefuehrt, ganz ohne
- * `importRootEntries`) — derselbe etablierte Cross-Catalogue-Idiom wie beim
- * Wurzel-`entryLink`, nur ueber `categoryLink` statt `entryLink` erreicht.
- * Ob eine Kategorie ein Kontingent ueberhaupt betrifft, entscheidet ohnehin
- * schon `linkedCategoryIdsOf`/`anchoredCategoryIds`, nicht die
- * Katalog-Filterung hier. Ohne `catalogueScope` (kein Kontext mitgegeben)
- * bleibt das Verhalten ungefiltert — additiv, kein Wechsel fuer den
- * Ein-Katalog-Fall.
+ * **`entryLink`** ist davon ausgenommen (wie beim Angebot, `offer.js`): er
+ * verweist auf eine geteilte, oft in einer Bibliothek liegende Definition
+ * und ist der etablierte Weg katalogübergreifender Inhalte, unabhaengig vom
+ * deklarierenden Katalog.
+ *
+ * Eine **`CATEGORY`**-Definition braucht eine eigene, engere Ausnahme: sie
+ * wird nie selbst instanziiert, sondern nur ueber einen `categoryLink` an
+ * einem **Kontingent** referenziert (z. B. "Regiment of Renown" in
+ * `Mercenaries.cat`, per `categoryLink` an "Clan Blood Dragons" in
+ * `Vampire Counts.cat` gefuehrt, ganz ohne `importRootEntries`) — ein
+ * echtes, im Roster **anwesendes** Kontingent erklaert sich damit
+ * ausdruecklich zustaendig, unabhaengig vom Katalog der Kategorie. Nur *das*
+ * ist die Ausnahme: sie greift ausschliesslich fuer eine Kategorie, die
+ * mindestens ein im ROSTER-Rahmen tatsaechlich vorhandenes Kontingent per
+ * eigenem `categoryLink` fuehrt (`rosterLinkedCategoryIds`, gesammelt aus
+ * {@link linkedCategoryIdsOf} ueber alle Kontingente). Eine Kategorie ohne
+ * jeden Bezug zu irgendeinem anwesenden Kontingent bleibt normal
+ * katalog-gefiltert — sonst poolte jede beliebige, voellig fremde
+ * Katalog-Kategorie wieder katalogunabhaengig (die Regression, die Runde 2
+ * der Review nachwies). Im FORCE-Rahmen ist keine gesonderte Ausnahme
+ * noetig: eine Kategorie, die **dieses** Kontingent per `categoryLink`
+ * fuehrt, ist schon vorher per `continue` ausgeschlossen (ihr Anker haengt
+ * stattdessen ueber {@link synthesizeForceCategoryAnchors}); jede andere
+ * Kategorie, die dieses Kontingent nicht fuehrt, hat keinen Grund, von der
+ * Katalog-Filterung ausgenommen zu sein.
+ *
+ * Ohne `catalogueScope` (kein Kontext mitgegeben) bleibt das Verhalten
+ * ungefiltert — additiv, kein Wechsel fuer den Ein-Katalog-Fall.
  */
-function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueScope, primaryCatalogueByForceDefId) {
-  const forceNodeList = [...forceNodes(root)];
-  const rosterReferenceCatalogueIds = forceNodeList
+/**
+ * Die Katalog-Ids der im Roster tatsaechlich vertretenen Kontingente (Issue
+ * 0098) — der ROSTER-Bezugsrahmen fuer {@link isInCatalogueScope}. Geteilt
+ * zwischen {@link synthesizeMandatoryPhantoms} und
+ * {@link synthesizeUnlinkedCategoryAnchors}, damit beide dieselbe Definition
+ * von "im Roster referenzierte Kataloge" verwenden.
+ */
+function rosterReferenceCatalogueIdsOf(forceNodeList, primaryCatalogueByForceDefId) {
+  return forceNodeList
     .map(forceNode => primaryCatalogueByForceDefId?.get(forceNode.def.id))
     .filter(catalogueId => catalogueId !== undefined);
+}
+
+function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueScope, primaryCatalogueByForceDefId) {
+  const forceNodeList = [...forceNodes(root)];
+  const rosterReferenceCatalogueIds = rosterReferenceCatalogueIdsOf(forceNodeList, primaryCatalogueByForceDefId);
+  const rosterLinkedCategoryIds = new Set();
+  for (const forceNode of forceNodeList) {
+    for (const categoryId of linkedCategoryIdsOf(forceNode.def)) rosterLinkedCategoryIds.add(categoryId);
+  }
 
   for (const def of definitions) {
     const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
     if (hasMinLimit(limits, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0
-        && (def.kind === DefinitionKind.ENTRY_LINK || def.kind === DefinitionKind.CATEGORY
+        && (def.kind === DefinitionKind.ENTRY_LINK
+          || (def.kind === DefinitionKind.CATEGORY && rosterLinkedCategoryIds.has(def.id))
           || isInCatalogueScope(def.id, rosterReferenceCatalogueIds, catalogueScope))) {
       attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
     }
@@ -410,7 +441,7 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
       if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
       const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
       if (hasMinLimit(limits, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0
-          && (def.kind === DefinitionKind.ENTRY_LINK || def.kind === DefinitionKind.CATEGORY
+          && (def.kind === DefinitionKind.ENTRY_LINK
             || isInCatalogueScope(def.id, forceReferenceCatalogueIds, catalogueScope))) {
         attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
       }
@@ -494,16 +525,29 @@ function synthesizeForceCategoryAnchors(root, nextFrameId) {
  * Mitglieder und nichts auszuwerten. Der ROSTER-Rahmen ankert an der Wurzel —
  * am Kontingent-Knoten liegt fuer ihn nichts Besseres, an der Wurzel loest auch
  * ein Roster ohne Kontingente ihn auf.
+ *
+ * **Katalog-Bezugsrahmen** (`catalogueScope`, Issue 0098, Review-Runde 2):
+ * jede Definition, die diese Funktion ueberhaupt anfasst, ist per
+ * Konstruktion von KEINEM anwesenden Kontingent per `categoryLink`
+ * referenziert (`linkedAnywhere` schliesst referenzierte Kategorien aus) —
+ * anders als bei {@link synthesizeMandatoryPhantoms} gibt es hier also
+ * keinen expliziten Referenz-Grund, der eine Ausnahme rechtfertigen wuerde.
+ * Beide Anker (ROSTER wie FORCE — Letzterer zaehlt ohnehin armeeweit ueber
+ * die Ziel-Typ-Regel, s.o.) pruefen deshalb unbedingt gegen die im Roster
+ * vertretenen Kataloge ({@link isInCatalogueScope}); ohne `catalogueScope`
+ * bleibt das Verhalten wie zuvor ungefiltert.
  */
-function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId) {
+function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId, catalogueScope, primaryCatalogueByForceDefId) {
   const forceNodeList = [...forceNodes(root)];
   const linkedAnywhere = new Set();
   for (const forceNode of forceNodeList) {
     for (const id of linkedCategoryIdsOf(forceNode.def)) linkedAnywhere.add(id);
   }
+  const rosterReferenceCatalogueIds = rosterReferenceCatalogueIdsOf(forceNodeList, primaryCatalogueByForceDefId);
   for (const def of definitions) {
     if (def.kind !== DefinitionKind.CATEGORY) continue;
     if (linkedAnywhere.has(def.id)) continue;
+    if (!isInCatalogueScope(def.id, rosterReferenceCatalogueIds, catalogueScope)) continue;
     if (hasAnyLimitInFrame(def, ScopeKeyword.ROSTER) && !hasUnfilteredPhantomAnywhereFor(root, def.id)) {
       attachPhantom(root, def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, ScopeKeyword.ROSTER);
     }
@@ -767,7 +811,7 @@ export function buildEvalTree(resolved, roster, catalogueScope, primaryCatalogue
   synthesizeForceCategoryAnchors(root, nextFrameId);
   // Nach Pflicht-Phantomen und Kontingent-Ankern, damit die Duplikat-Pruefung
   // („haengt hier schon ein Anker dieser Kategorie?") beide sehen kann.
-  synthesizeUnlinkedCategoryAnchors(root, resolved.definitions ?? [], nextFrameId);
+  synthesizeUnlinkedCategoryAnchors(root, resolved.definitions ?? [], nextFrameId, catalogueScope, primaryCatalogueByForceDefId);
   // Nach den realen Knoten und den Pflicht-Phantomen: die Gruppen-Anker zuletzt,
   // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
   synthesizeGroupAnchors(root, resolved, nextFrameId);
