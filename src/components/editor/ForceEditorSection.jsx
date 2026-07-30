@@ -87,7 +87,6 @@ export default function ForceEditorSection({
           categoryLink={categoryLink}
           force={force}
           forcePath={forcePath}
-          forceDef={forceDefinition}
           system={system}
           roster={roster}
           activeCatalogue={activeCatalogue}

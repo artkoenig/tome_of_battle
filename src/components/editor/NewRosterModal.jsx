@@ -1,14 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { getAvailableForceEntries, getPlayableCatalogues, resolveCostLimitLabel } from '../../solver/validator';
+import { describeSystem } from '../../evaluation/evaluationCache';
+import { costLimitLabelOf } from '../../evaluation/costDisplays';
 import { DEFAULT_ROSTER_COST_LIMIT } from '../../utils/rosterDefaults';
 import { useTranslation } from '../../i18n/useTranslation';
 
 const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
 
 /**
+ * Die spielbaren Kataloge eines Systems aus der Datensatz-Beschreibung:
+ * spielbar ist jeder Katalog, der keine reine Bibliothek ist (ADR-0034).
+ */
+const playableCataloguesOf = (description) =>
+  (description?.catalogues ?? []).filter(catalogue => catalogue.isLibrary !== true);
+
+/**
+ * Die anlegbaren Kontingente fuer den gewaehlten Katalog: die sichtbaren
+ * (`isHidden`-gefilterten) Kontingente der Beschreibung, beschraenkt auf die
+ * des Spielsystems (Quelle ist kein Katalog) und die des gewaehlten Katalogs —
+ * Kontingente fremder Armeebuecher gehoeren nicht in diese Auswahl.
+ */
+function creatableForcesOf(description, catalogueId) {
+  if (!description) return [];
+  const catalogueIds = new Set(description.catalogues.map(catalogue => catalogue.id));
+  return description.creatableForces.filter(force =>
+    force.isHidden !== true
+    && (force.sourceId === catalogueId || !catalogueIds.has(force.sourceId)));
+}
+
+/**
+ * Der Vorschlag fuer das Zahlenfeld: die deklarierte Vorgabe-Grenze
+ * (`defaultCostLimit`) der Limit-Kostenart — der ersten Kostenart des Systems.
+ * Ohne deklarierte Grenze (fehlend oder Sentinel −1 → `defaultLimit: null`)
+ * bleibt der bisherige Vorgabewert.
+ */
+const defaultLimitOf = (description) =>
+  description?.costTypes?.[0]?.defaultLimit ?? DEFAULT_ROSTER_COST_LIMIT;
+
+/**
  * Modal zum Anlegen einer neuen Armeeliste. Verwaltet seinen Formular-State
  * selbst und meldet das Ergebnis über onCreate({ name, systemId, catId, forceEntryId, limit }).
+ * Katalog-, Kontingent- und Kostenart-Angebot kommen aus der
+ * Datensatz-Beschreibung des Evaluators (`describeSystem`, Issue 0121, Task 7).
  */
 export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
   const { t } = useTranslation();
@@ -19,23 +52,24 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
   // Spiegelt den rohen Eingabewert des Zahlenfelds, daher auch string.
   const [limit, setLimit] = useState(/** @type {number|string} */ (DEFAULT_ROSTER_COST_LIMIT));
 
-  const defaultForceEntryId = (system, catalogueId) => {
-    const avail = getAvailableForceEntries(system, catalogueId);
+  const defaultForceEntryId = (description, catalogueId) => {
+    const avail = creatableForcesOf(description, catalogueId);
     return avail.length > 0 ? avail[0].id : '';
   };
 
   const applySystemDefaults = (system) => {
+    const description = describeSystem(system);
     setSystemId(system?.id || '');
-    const defaultCatId = getPlayableCatalogues(system)[0]?.id ?? '';
+    const defaultCatId = playableCataloguesOf(description)[0]?.id ?? '';
     setCatId(defaultCatId);
-    setForceEntryId(system ? defaultForceEntryId(system, defaultCatId) : '');
+    setForceEntryId(description ? defaultForceEntryId(description, defaultCatId) : '');
+    setLimit(defaultLimitOf(description));
   };
 
   // Beim Öffnen Formular zurücksetzen und Defaults aus dem ersten System übernehmen
   useEffect(() => {
     if (isOpen) {
       setName('');
-      setLimit(DEFAULT_ROSTER_COST_LIMIT);
       applySystemDefaults(systems[0]);
     }
     // Absichtlich nur von isOpen abhängig: Der Effekt setzt das Formular beim Öffnen
@@ -48,8 +82,9 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
   if (!isOpen) return null;
 
   const activeSystem = systems.find(s => s.id === systemId);
-  const selectableCatalogues = getPlayableCatalogues(activeSystem);
-  const availableForceEntries = getAvailableForceEntries(activeSystem, catId);
+  const activeDescription = describeSystem(activeSystem);
+  const selectableCatalogues = playableCataloguesOf(activeDescription);
+  const availableForceEntries = creatableForcesOf(activeDescription, catId);
 
   const handleSystemChange = (id) => {
     applySystemDefaults(systems.find(s => s.id === id));
@@ -57,7 +92,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
 
   const handleCatalogueChange = (newCatId) => {
     setCatId(newCatId);
-    setForceEntryId(activeSystem ? defaultForceEntryId(activeSystem, newCatId) : '');
+    setForceEntryId(activeDescription ? defaultForceEntryId(activeDescription, newCatId) : '');
   };
 
   const handleSubmit = (e) => {
@@ -154,7 +189,7 @@ export default function NewRosterModal({ isOpen, onClose, onCreate, systems }) {
                 />
                 <span className="text-subheading text-gold input-suffix-label">
                   {/* Noch existiert kein Roster; das Limit gilt für die erste Kostenart des Systems. */}
-                  {resolveCostLimitLabel(null, activeSystem)}
+                  {costLimitLabelOf(null, activeDescription?.costTypes)}
                 </span>
               </div>
               <div className="preset-btn-row">

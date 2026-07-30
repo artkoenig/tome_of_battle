@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload, MoreVertical } from 'lucide-react';
-import { calculateRosterCosts, findForceEntryById, resolveCostLimitLabel } from '../solver/validator';
+import { findForceEntryById } from '../solver/validator';
+import { evaluateAppRoster, describeSystem } from '../evaluation/evaluationCache';
+import { costLimitLabelOf } from '../evaluation/costDisplays';
 import BottomSheet from './editor/BottomSheet';
 import { useTranslation } from '../i18n/useTranslation';
 
@@ -160,9 +162,13 @@ export default function RosterDashboard({
                           </h3>
                           <div className="dashboard-grid">
                             {factionRosters.map(({ roster, sys }) => {
-                              const costTypeLabel = resolveCostLimitLabel(roster, sys);
-                              const calcCosts = (sys && roster.forces) ? calculateRosterCosts(roster, sys) : {};
-                              const currentPoints = calcCosts[roster.costLimitType] || 0;
+                              // Kartenkosten aus dem Evaluator-Bericht, das
+                              // Limit-Label aus der Datensatz-Beschreibung
+                              // (Issue 0121, Task 7); der Katalog-Vorlauf ist
+                              // je System-Objekt gecacht (evaluationCache).
+                              const costTypeLabel = costLimitLabelOf(roster, describeSystem(sys)?.costTypes);
+                              const { costTotals } = evaluateAppRoster(sys, roster);
+                              const currentPoints = costTotals[roster.costLimitType] || 0;
 
                               return (
                                 <div key={roster.id} className="roster-card">

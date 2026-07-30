@@ -1,7 +1,8 @@
 import React from 'react';
 import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
-import { computeRosterCounts, getCategoryDisplayLimits, findForceEntryById, isCategoryLinkHidden, getExtraResourceTotals, buildModifierEvalContext } from '../../solver/validator';
 import { hasBlockingViolations, countBlockingViolations } from '../../evaluation/violationStats';
+import { categoryAnchorSlotsOf } from '../../evaluation/slotLookups';
+import { extraResourceTotalsOf } from '../../evaluation/costDisplays';
 import CategoryCountBadge from './CategoryCountBadge';
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatViolation } from '../../i18n/violationMessages';
@@ -15,66 +16,43 @@ const SEVERITY_PRESENTATION = {
   info: { Icon: Info, itemClass: 'validation-error-item--info' }
 };
 
-/** Eine Zeile der Armeeanforderungen: Kategoriename und der Zähl-Chip mit seinen Grenzen. */
-function CategoryRequirementRow({ name, count, minValue, maxValue, minConstraint, maxConstraint }) {
-  const isInvalid = count < minValue || count > maxValue;
-
-  return (
-    <div className="flex-between text-label sidebar-requirement-row">
-      <span>
-        {name}:
-      </span>
-      <CategoryCountBadge
-        count={count}
-        minValue={minValue}
-        maxValue={maxValue}
-        minConstraint={minConstraint}
-        maxConstraint={maxConstraint}
-        hasErrors={isInvalid}
-      />
-    </div>
-  );
-}
+// Die Armeeanforderungen zeigen das erste Kontingent des Rosters; sein
+// Slot-Pfad ist sein Eingabe-Index (Pfad-Schema der Evaluator-Fassade).
+const FIRST_FORCE_PATH = '0';
 
 /**
- * Die Armeeanforderungen der ersten Streitmacht: je sichtbarem Kategorie-Link eine
- * Zeile mit aktueller Anzahl und den wirksamen Min-/Max-Grenzen.
+ * Die Armeeanforderungen der ersten Streitmacht, gelesen aus den
+ * Kategorie-Anker-Slots des Evaluator-Berichts (Issue 0121, Task 7): je
+ * sichtbarem Kategorie-Anker eine Zeile mit aktuellem Stand (`current`) und
+ * den wirksamen Grenzen (`effectiveMin`/`effectiveMax`; `null` = unbegrenzt).
  */
-function CategoryRequirementList({ roster, system }) {
-  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-  const force = roster.forces[0];
-  const forceDef = findForceEntryById(system, force?.forceEntryId);
-  const forceCategoryCounts = force?.id ? (categoryCounts[force.id] || {}) : {};
-  const displayContext = buildModifierEvalContext({
-    roster, system, categorySlices: { selectionCounts, forceCategoryCounts }
-  });
-
-  return (forceDef?.categoryLinks || []).map(catLink => {
-    if (isCategoryLinkHidden(catLink, { system, roster, selectionCounts, forceCategoryCounts })) {
-      return null;
-    }
-
-    const { minValue, maxValue, minConstraint, maxConstraint } =
-      getCategoryDisplayLimits(catLink, { system, forceDef, displayContext });
-
-    return (
-      <CategoryRequirementRow
-        key={catLink.id}
-        name={system.categoryEntries?.find(c => c.id === catLink.targetId)?.name || catLink.name}
-        count={forceCategoryCounts[catLink.targetId] || 0}
-        minValue={minValue}
-        maxValue={maxValue}
-        minConstraint={minConstraint}
-        maxConstraint={maxConstraint}
-      />
-    );
-  });
+function CategoryRequirementList({ capabilities }) {
+  return categoryAnchorSlotsOf(capabilities, FIRST_FORCE_PATH)
+    .filter(({ capability }) => capability.isHidden !== true)
+    .map(({ path, capability }) => {
+      const isInvalid = capability.isMandatoryUnmet === true
+        || (capability.effectiveMax !== null && capability.current > capability.effectiveMax);
+      return (
+        <div key={path} className="flex-between text-label sidebar-requirement-row">
+          <span>
+            {capability.name}:
+          </span>
+          <CategoryCountBadge
+            count={capability.current}
+            min={capability.effectiveMin}
+            max={capability.effectiveMax}
+            hasErrors={isInvalid}
+          />
+        </div>
+      );
+    });
 }
 
 export default function RosterSidebar({
   roster,
-  system,
-  costs,
+  costTotals,
+  costTypes,
+  capabilities,
   violations,
   costTypeLabel,
   className
@@ -89,7 +67,7 @@ export default function RosterSidebar({
         <div data-testid="sidebar-total-costs" className="flex-between text-ui-title text-gold sidebar-summary-total">
           <span>{t('editor.sidebar.totalCosts')}</span>
           <span>
-            {costs[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
+            {costTotals?.[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
           </span>
         </div>
         <div className="flex-between text-label text-dim">
@@ -100,7 +78,7 @@ export default function RosterSidebar({
             <span className="badge badge-success">{t('editor.sidebar.valid')}</span>
           )}
         </div>
-        {getExtraResourceTotals(system, roster, costs).map(res => (
+        {extraResourceTotalsOf(costTotals, costTypes, roster.costLimitType).map(res => (
           <div key={res.id} className="flex-between text-label text-dim sidebar-summary-resource">
             <span>{res.name}:</span>
             <span className="badge badge-muted">{res.total}</span>
@@ -111,7 +89,7 @@ export default function RosterSidebar({
       {/* Category breakdown */}
       <div className="sidebar-section">
         <h4 data-testid="sidebar-army-requirements" className="sidebar-section-title">{t('editor.sidebar.armyRequirements')}</h4>
-        <CategoryRequirementList roster={roster} system={system} />
+        <CategoryRequirementList capabilities={capabilities} />
       </div>
 
       {/* Validation Errors Detailed List */}

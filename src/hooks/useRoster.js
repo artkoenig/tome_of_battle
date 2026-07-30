@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 import {
-  calculateRosterCosts, resolveEntry, syncRosterSelectionsWithSystem,
+  resolveEntry, syncRosterSelectionsWithSystem,
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
   mapSelectionTree, replaceSelectionById, computeRosterCounts, aggregateRosterCategoryCounts,
   buildModifierEvalContext, createSelectionFromDef as buildSelectionFromDef,
@@ -20,9 +20,6 @@ const AUTOSAVE_DEBOUNCE_MS = 150;
 /** Verschiebung der Anzahl, die eine einzelne Nutzeraktion auslöst. */
 const COUNT_INCREASE = 1;
 const COUNT_DECREASE = -1;
-
-/** Abgeleitete Werte, solange Roster oder System noch nicht vorliegen. */
-const NO_COSTS = Object.freeze({});
 
 /** Ohne benanntes Ziel-Kontingent hebt die App in das erste des Rosters aus. */
 const FALLBACK_FORCE_INDEX = 0;
@@ -60,20 +57,15 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   } = useUndoableState(initialRoster);
   const [selectedSelectionId, setSelectedSelectionId] = useState(null);
 
-  // Kosten sind eine reine Ableitung aus Roster und System (SSOT) und werden
-  // deshalb berechnet statt in eigenem State gespiegelt. Sie kommen bis zum
-  // Kosten-Cutover (Issue 0121, Task 7) weiter aus dem Solver — die Anzeige
-  // außerhalb des Validierungspanels hängt noch daran.
-  const costs = useMemo(
-    () => (roster && system ? calculateRosterCosts(roster, system) : NO_COSTS),
-    [roster, system]
-  );
-
-  // Validierung kommt seit Issue 0121 (Task 5) aus dem Evaluator-Bericht
-  // (ADR 0030/0034): Verletzungen, Fähigkeitsdatensätze, Kostensummen je
-  // deklarierter Kostenart und die Zuordnung Selection-UUID → Slot-Pfad —
-  // synchron aus dem aktuellen Roster abgeleitet, ohne gespiegelten State.
-  const { violations, capabilities, costTotals, pathBySelectionId } = useEvaluation(system, roster);
+  // Validierung und Kosten kommen seit Issue 0121 (Tasks 5 und 7) aus dem
+  // Evaluator-Bericht (ADR 0030/0034): Verletzungen, Fähigkeitsdatensätze,
+  // Kostensummen je deklarierter Kostenart, die Datensatz-Beschreibung und die
+  // Zuordnung Selection-UUID → Slot-Pfad — synchron aus dem aktuellen Roster
+  // abgeleitet, ohne gespiegelten State. Der frühere Solver-Kostenpfad
+  // (`calculateRosterCosts` → `costs`) ist entfallen; jede Kosten-Anzeige
+  // liest `costTotals` bzw. die Fähigkeitsdatensätze.
+  const { violations, capabilities, description, costTotals, pathBySelectionId } =
+    useEvaluation(system, roster);
 
   // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt
   // eine (schnell veraltende) Objektreferenz zu halten.
@@ -349,9 +341,9 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
 
   return {
     roster,
-    costs,
     violations,
     capabilities,
+    description,
     costTotals,
     pathBySelectionId,
     selectedRosterSelection,

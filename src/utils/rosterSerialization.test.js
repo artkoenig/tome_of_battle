@@ -23,11 +23,47 @@ beforeAll(() => {
   }
 });
 
+// Der Export liest Namen und Kosten seit Issue 0121, Task 7 aus dem
+// Evaluator-Bericht (`evaluateAppRoster` über `system.rawXmls`); die geparsten
+// Strukturfelder (`catalogues`, `costTypes`) speisen weiterhin das
+// `type`-Attribut und die Kostenart-Namen.
+const MOCK_GST_XML = `<?xml version="1.0" encoding="utf-8"?>
+  <gameSystem id="system-id-123" name="Warhammer Fantasy 6th Edition">
+    <costTypes><costType id="pts-id-999" name="pts" defaultCostLimit="2000"/></costTypes>
+    <forceEntries><forceEntry id="force-entry-id-1" name="Standard "/></forceEntries>
+    <categoryEntries>
+      <categoryEntry id="cat-lord-id" name="Lord"/>
+      <categoryEntry id="cat-core-id" name="Core"/>
+    </categoryEntries>
+  </gameSystem>`;
+
+const MOCK_CAT_XML = `<?xml version="1.0" encoding="utf-8"?>
+  <catalogue id="cat-tomb-kings" name="Tomb Kings" gameSystemId="system-id-123">
+    <sharedSelectionEntries>
+      <selectionEntry id="tomb-king-id" name="Tomb King" type="unit"/>
+      <selectionEntry id="weapon-gw-id" name="Great Weapon" type="upgrade">
+        <costs><cost name="pts" typeId="pts-id-999" value="6"/></costs>
+      </selectionEntry>
+      <selectionEntry id="skeleton-id" name="Skeletons" type="unit">
+        <costs><cost name="pts" typeId="pts-id-999" value="5"/></costs>
+      </selectionEntry>
+    </sharedSelectionEntries>
+    <entryLinks>
+      <entryLink id="link-tomb-king-id" name="Tomb King" targetId="tomb-king-id" type="selectionEntry">
+        <costs><cost name="pts" typeId="pts-id-999" value="150"/></costs>
+      </entryLink>
+    </entryLinks>
+  </catalogue>`;
+
 // Mock Systems Database
 const mockSystems = [
   {
     id: 'system-id-123',
     name: 'Warhammer Fantasy 6th Edition',
+    rawXmls: {
+      gst: [{ name: 'whfb.gst', content: MOCK_GST_XML }],
+      cat: [{ name: 'tomb-kings.cat', content: MOCK_CAT_XML }],
+    },
     costTypes: [
       { id: 'pts-id-999', name: 'pts', defaultCostLimit: 2000 }
     ],
@@ -419,9 +455,35 @@ describe('Roster Serialization & Deserialization', () => {
 });
 
 describe('Export derives cost and type from the catalogue', () => {
-  // Catalogue-complete system; the roster below carries NO selection.costs.
+  // Katalogvollständiges System (Kosten liest der Export aus dem
+  // Evaluator-Bericht über rawXmls); the roster below carries NO selection.costs.
+  const SYS2_GST_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <gameSystem id="sys2" name="Sys2">
+      <costTypes><costType id="pts" name="pts" defaultCostLimit="-1"/></costTypes>
+      <forceEntries><forceEntry id="fe" name="Standard"/></forceEntries>
+    </gameSystem>`;
+
+  const SYS2_CAT_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="c" name="Cat" gameSystemId="sys2">
+      <selectionEntries>
+        <selectionEntry id="boyz" name="Orc Boyz" type="unit">
+          <costs><cost name="pts" typeId="pts" value="5"/></costs>
+          <selectionEntries>
+            <selectionEntry id="choppa" name="Choppa" type="upgrade">
+              <costs><cost name="pts" typeId="pts" value="2"/></costs>
+              <modifiers><modifier type="increment" value="1" field="pts"/></modifiers>
+            </selectionEntry>
+          </selectionEntries>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
   const catSystem = {
     id: 'sys2', name: 'Sys2',
+    rawXmls: {
+      gst: [{ name: 'sys2.gst', content: SYS2_GST_XML }],
+      cat: [{ name: 'c.cat', content: SYS2_CAT_XML }],
+    },
     costTypes: [{ id: 'pts', name: 'pts' }],
     forceEntries: [{ id: 'fe', name: 'Standard' }],
     categoryEntries: [],

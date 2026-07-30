@@ -42,7 +42,15 @@ beforeAll(() => {
 
 function buildSystem(catFile) {
   const cat = { name: catFile, content: fs.readFileSync(path.join(CATALOG_DIR, catFile), 'utf8') };
-  return processImportedData([{ name: 'gst', content: gstContent }], [cat]).system;
+  const system = processImportedData([{ name: 'gst', content: gstContent }], [cat]).system;
+  // Der Export liest Namen/Kosten seit Issue 0121, Task 7 aus dem
+  // Evaluator-Bericht über die rohen XMLs (wie das in der App gespeicherte
+  // System-Objekt, Shape aus src/db/systemImport.js).
+  system.rawXmls = {
+    gst: [{ name: GST_FILE, content: gstContent }],
+    cat: [cat],
+  };
+  return system;
 }
 
 // Mirrors the app's import flow: parse → reconcile option ids → sync names.

@@ -259,10 +259,11 @@ describe('PlayMode Component', () => {
   });
 
   it('6. Collapsible Special Rules (Direct)', async () => {
-    mockCollectUnitProfilesAndRules.mockImplementation((_sys, _sel, _catId) => ({
-      profiles: [],
-      rules: [{ id: 'rule-direct', name: 'Direct Vow', description: 'Direct test description' }]
-    }));
+    // Regel-Chips kommen seit Issue 0121, Task 7 aus der Info-Projektion des
+    // Fähigkeitsdatensatzes (`capability.infoElements`).
+    const capability = {
+      infoElements: [{ kind: 'rule', id: 'rule-direct', name: 'Direct Vow', text: 'Direct test description' }]
+    };
 
     const mockSelection = { id: 'sel-direct', name: 'Direct Unit', category: 'cat-core', entryLinkId: 'el-direct' };
     const mockRosterProps = { catalogueId: 'cat-1', costLimitType: 'pts' };
@@ -275,6 +276,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
+        capability={capability}
         getUnitCurrentWounds={createWoundsReader({})}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -368,11 +370,23 @@ describe('PlayMode Component', () => {
       rules: []
     });
 
+    // Die Profil-Tabellen lesen den Bericht (`capability.infoElements`); die
+    // Solver-Profilsammlung oben speist nur noch den Chip-Filter der
+    // Upgrade-Chips (bis Task 8).
+    const capability = {
+      infoElements: [
+        { kind: 'profile', id: 'p1', profileTypeName: 'Model', name: 'Warrior', characteristics: [{ name: 'M', value: '4' }, { name: 'WS', value: '4' }] },
+        { kind: 'profile', id: 'p2', profileTypeName: 'Model', name: 'Warhorse', characteristics: [{ name: 'M', value: '8' }, { name: 'WS', value: '3' }] },
+        { kind: 'profile', id: 'w1', profileTypeName: 'Weapon', name: 'Great Sword', characteristics: [{ name: 'Range', value: 'Combat' }, { name: 'Strength', value: '+2' }] },
+      ]
+    };
+
     render(
       <PlayUnitDetails
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
+        capability={capability}
         getUnitCurrentWounds={createWoundsReader({ 'sel-weapons': 5 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -439,11 +453,20 @@ describe('PlayMode Component', () => {
       rules: []
     });
 
+    const capability = {
+      infoElements: [
+        { kind: 'profile', id: 'p1', profileTypeName: 'Model', name: 'Warrior', characteristics: [{ name: 'M', value: '4' }, { name: 'WS', value: '4' }] },
+        { kind: 'profile', id: 'p2', profileTypeName: 'Model', name: 'Warhorse', characteristics: [{ name: 'M', value: '8' }, { name: 'WS', value: '3' }] },
+        { kind: 'profile', id: 'a1', profileTypeName: 'Armour', name: 'Shield', characteristics: [{ name: 'Saving Throw Modifier', value: '-1' }] },
+      ]
+    };
+
     render(
       <PlayUnitDetails
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
+        capability={capability}
         getUnitCurrentWounds={createWoundsReader({ 'sel-armours': 5 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}

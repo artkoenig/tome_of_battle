@@ -3,8 +3,6 @@ import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-r
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
 import {
-  calculateRosterCosts,
-  collectUnitProfilesAndRules,
   getEffectiveSelectionName,
   groupProfilesByType
 } from '../../solver/validator';
@@ -181,8 +179,17 @@ export default function UnitSelectionCard({
     );
   };
 
-  const renderMiniProfile = (sel) => {
-    const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
+  // Der Fähigkeitsdatensatz des Slots dieser Auswahl (Issue 0121, Task 7):
+  // Kosten (`totalCosts`) und Profil-Sektion (`infoElements`) kommen aus dem
+  // Bericht, aufgelöst über die Zuordnung Selection-UUID → Slot-Pfad.
+  const capability = capabilities?.get(pathBySelectionId?.get(selection.id));
+
+  // Mini-Profil aus der Info-Projektion des Berichts: die Profile des Slots
+  // (samt der von belegten Unter-Auswahlen geerbten), gruppiert nach Profiltyp
+  // (bestehende Anzeige-Observable: Statblock zuerst, weitere Typen als eigene
+  // Tabelle mit Typ-Überschrift).
+  const renderMiniProfile = () => {
+    const profiles = (capability?.infoElements ?? []).filter(element => element.kind === 'profile');
     const groups = groupProfilesByType(profiles);
     if (groups.length === 0) return null;
 
@@ -196,8 +203,7 @@ export default function UnitSelectionCard({
   const isUnitEditing = selectedRosterSelection?.id === selection.id;
   const detailsOpen = isDetailsOpen;
   const effectiveName = getEffectiveSelectionName(selection, { system, roster, parentCatalogueId: activeCatalogue?.id });
-  const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
-  const displayPoints = unitCosts[roster.costLimitType] || 0;
+  const displayPoints = capability?.totalCosts?.[roster.costLimitType] ?? 0;
   const selectionViolations = selectionViolationsForCard(violations, pathBySelectionId, selection, system, activeCatalogue?.id);
   const hasSelectionError = selectionViolations.length > 0;
 
@@ -288,7 +294,7 @@ export default function UnitSelectionCard({
           </div>
         </div>
         <div className={`unit-card-details ${detailsOpen ? 'is-open' : ''}`}>
-          {!isSubUnit && renderMiniProfile(selection)}
+          {!isSubUnit && renderMiniProfile()}
           <UnitUpgradesChips
             selection={selection}
             system={system}
@@ -309,7 +315,7 @@ export default function UnitSelectionCard({
               selection={selection}
               system={system}
               activeCatalogueId={activeCatalogue?.id}
-              roster={roster}
+              capability={capability}
               handleMouseEnter={handleMouseEnter}
               handleMouseMove={handleMouseMove}
               handleMouseLeave={handleMouseLeave}

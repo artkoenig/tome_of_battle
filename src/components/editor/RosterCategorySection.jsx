@@ -1,7 +1,6 @@
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import {
-  getCategoryDisplayLimits,
   isCategoryLinkHidden,
   isEntryPrimaryInCategory,
   resolveListRuleGroup,
@@ -9,6 +8,7 @@ import {
 } from '../../solver/validator';
 
 import { isBlockingViolation } from '../../evaluation/violationStats';
+import { findCategoryAnchorSlot } from '../../evaluation/slotLookups';
 import CategoryUnitAdder from './CategoryUnitAdder';
 import ListRuleChecklist from './ListRuleChecklist';
 import CategoryCountBadge from './CategoryCountBadge';
@@ -51,7 +51,6 @@ export default function RosterCategorySection({
   categoryLink,
   force,
   forcePath,
-  forceDef,
   system,
   roster,
   activeCatalogue,
@@ -99,11 +98,12 @@ export default function RosterCategorySection({
     isBlockingViolation(violation)
     && violation.anchor?.anchorKind === 'categoryAnchor'
     && (violation.anchor.defId === categoryId || violation.anchor.defId === categoryLink.id));
-  const count = forceCategoryCounts[categoryId] || 0;
-
-  const displayContext = { roster, system, selectionCounts, forceCategoryCounts };
-  const { minValue, maxValue, minConstraint, maxConstraint } =
-    getCategoryDisplayLimits(categoryLink, { system, forceDef, displayContext });
+  // Zähl-Chip aus dem categoryAnchor-Slot des Berichts (Issue 0121, Task 7):
+  // Ist-Stand (`current`) und wirksame Grenzen (`effectiveMin`/`effectiveMax`;
+  // `null` = keine Grenze). Der Anker hängt unter dem Kontingent und trägt als
+  // `defId` den `categoryLink` bzw. — unverlinkt — die Kategorie selbst.
+  const categoryAnchor = findCategoryAnchorSlot(capabilities, forcePath, categoryId)
+    ?? findCategoryAnchorSlot(capabilities, forcePath, categoryLink.id);
 
   const isPrimaryForAnyEntry = hasPrimaryCatalogItems({ system, roster, force, selectionCounts, categoryId });
 
@@ -137,11 +137,9 @@ export default function RosterCategorySection({
               zeigt den An/Aus-Zustand bereits pro Regel; eine Gesamtzahl ist redundant. */}
           {!isListRuleGroup && (
             <CategoryCountBadge
-              count={count}
-              minValue={minValue}
-              maxValue={maxValue}
-              minConstraint={minConstraint}
-              maxConstraint={maxConstraint}
+              count={categoryAnchor?.current ?? 0}
+              min={categoryAnchor?.effectiveMin ?? null}
+              max={categoryAnchor?.effectiveMax ?? null}
               hasErrors={categoryViolations.length > 0}
             />
           )}

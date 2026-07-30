@@ -3,43 +3,20 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import RosterSidebar from './RosterSidebar';
 
-// RosterSidebar renders real solver output (no solver mocks), so these tests
-// verify that the display layer actually surfaces two constructs from the
-// XSD-conformance work: percentValue category constraints (slice 05) and
-// hidden cost types (slice 03).
+// Die Sidebar projiziert seit Issue 0121, Task 7 allein den Evaluator-Bericht:
+// die Armeeanforderungen kommen aus den categoryAnchor-Slots (`capabilities`),
+// die Kostensumme aus `costTotals`, die Extra-Ressourcen aus `costTotals` ×
+// den Kostenarten der Datensatz-Beschreibung (`costTypes`, `isHidden`
+// ausgeschlossen). Die früheren Solver-Ableitungen (getCategoryDisplayLimits,
+// getExtraResourceTotals, Prozent-Suffix, WHFB6-Vererbungs-Quirk) sind aus
+// diesem Pfad entfallen — der Quirk bleibt gemäß ADR-0034 undurchgesetzt, bis
+// die Katalog-Forks korrigiert sind.
 vi.mock('lucide-react', () => ({
   Check: (props) => <span data-testid="icon-check" {...props} />,
   ShieldAlert: (props) => <span data-testid="icon-shield-alert" {...props} />,
   AlertTriangle: (props) => <span data-testid="icon-alert-triangle" {...props} />,
   Info: (props) => <span data-testid="icon-info" {...props} />,
 }));
-
-const CATEGORY_ID = 'cat-core';
-const FORCE_ENTRY_ID = 'fe-main';
-
-function makeSystem(overrides = {}) {
-  return {
-    id: 'sys',
-    costTypes: [{ id: 'pts', name: 'Points' }],
-    categoryEntries: [{ id: CATEGORY_ID, name: 'Core' }],
-    forceEntries: [
-      {
-        id: FORCE_ENTRY_ID,
-        name: 'Main Force',
-        categoryLinks: [
-          {
-            id: 'cl-core',
-            targetId: CATEGORY_ID,
-            name: 'Core',
-            constraints: [],
-          },
-        ],
-      },
-    ],
-    catalogues: [],
-    ...overrides,
-  };
-}
 
 function makeRoster() {
   return {
@@ -50,12 +27,28 @@ function makeRoster() {
     forces: [
       {
         id: 'force-1',
-        forceEntryId: FORCE_ENTRY_ID,
+        forceEntryId: 'fe-main',
         catalogueId: 'cat',
         selections: [],
       },
     ],
   };
+}
+
+/** Ein categoryAnchor-Slot des Berichts unter dem ersten Kontingent (Pfad "0"). */
+function categoryAnchor(path, overrides = {}) {
+  return [path, {
+    anchorKind: 'categoryAnchor',
+    defId: 'cl-core',
+    targetDefId: 'cat-core',
+    name: 'Core',
+    current: 0,
+    effectiveMin: null,
+    effectiveMax: null,
+    isHidden: false,
+    isMandatoryUnmet: false,
+    ...overrides,
+  }];
 }
 
 /** Eine Autoren-Meldung in der Berichtsform der Evaluator-Fassade (Text-Pass-through). */
@@ -68,126 +61,114 @@ function authorMessage(text, severity) {
   };
 }
 
-function renderSidebar({ system, roster, costs = { pts: 0 }, violations = [] }) {
+function renderSidebar({
+  roster = makeRoster(),
+  costTotals = { pts: 0 },
+  costTypes = [{ id: 'pts', name: 'Points' }],
+  capabilities = new Map(),
+  violations = [],
+} = {}) {
   return render(
     <RosterSidebar
       roster={roster}
-      system={system}
-      costs={costs}
+      costTotals={costTotals}
+      costTypes={costTypes}
+      capabilities={capabilities}
       violations={violations}
       costTypeLabel="Pkt."
     />
   );
 }
 
-describe('RosterSidebar percentValue category constraints', () => {
-  it('marks a percentValue category maximum with a percent sign', () => {
-    const system = makeSystem();
-    system.forceEntries[0].categoryLinks[0].constraints = [
-      { id: 'con-max', type: 'max', value: 25, field: 'selections', scope: 'force', percentValue: true },
-    ];
+describe('RosterSidebar category requirement rows (categoryAnchor slots)', () => {
+  it('renders a row per visible category anchor with current count and effective limits', () => {
+    renderSidebar({
+      capabilities: new Map([
+        categoryAnchor('0/1', { name: 'Core', current: 2, effectiveMin: 2, effectiveMax: 3 }),
+      ]),
+    });
 
-    renderSidebar({ system, roster: makeRoster() });
-
-    expect(screen.getByText(/Max: 25 %/)).toBeTruthy();
+    const row = screen.getByText('Core:').closest('.sidebar-requirement-row');
+    expect(row.textContent).toMatch(/2 \/ Min: 2, Max: 3/);
   });
 
-  it('renders an absolute category maximum without a percent sign', () => {
-    const system = makeSystem();
-    system.forceEntries[0].categoryLinks[0].constraints = [
-      { id: 'con-max', type: 'max', value: 3, field: 'selections', scope: 'force', percentValue: false },
-    ];
+  it('renders a category without effective limits with its count only', () => {
+    renderSidebar({
+      capabilities: new Map([
+        categoryAnchor('0/1', { name: 'Open', targetDefId: 'cat-open', current: 1 }),
+      ]),
+    });
 
-    renderSidebar({ system, roster: makeRoster() });
-
-    expect(screen.getByText(/Max: 3(?! %)/)).toBeTruthy();
-    expect(screen.queryByText(/Max: 3 %/)).toBeNull();
-  });
-});
-
-describe('RosterSidebar category max inheritance (system-bound quirk)', () => {
-  // Verifizierte Anker des WHFB6-Vererbungs-Quirks (siehe systemQuirks.test.js):
-  // Heroes erbt einen fehlenden max von Characters — aber nur in diesem System.
-  const WHFB6_SYSTEM_ID = '6d8e-38d9-3c69-febf';
-  const HEROES_CATEGORY_ID = 'c16b-f319-2c62-2c12';
-  const CHARACTERS_CATEGORY_ID = '7a1c-d611-c2dc-def1';
-
-  function makeQuirkSystem(systemId) {
-    return {
-      id: systemId,
-      costTypes: [{ id: 'pts', name: 'Points' }],
-      categoryEntries: [
-        { id: HEROES_CATEGORY_ID, name: 'Heroes' },
-        { id: CHARACTERS_CATEGORY_ID, name: 'Characters' },
-      ],
-      forceEntries: [
-        {
-          id: FORCE_ENTRY_ID,
-          name: 'Main Force',
-          categoryLinks: [
-            {
-              id: 'cl-characters',
-              targetId: CHARACTERS_CATEGORY_ID,
-              name: 'Characters',
-              constraints: [{ id: 'c-max', type: 'max', value: 3, field: 'selections', scope: 'force' }],
-            },
-            { id: 'cl-heroes', targetId: HEROES_CATEGORY_ID, name: 'Heroes', constraints: [] },
-          ],
-        },
-      ],
-      catalogues: [],
-    };
-  }
-
-  const heroesRowText = () =>
-    screen.getByText('Heroes:').closest('.sidebar-requirement-row').textContent;
-
-  it('lets the Heroes row inherit the Characters maximum in the quirk system', () => {
-    renderSidebar({ system: makeQuirkSystem(WHFB6_SYSTEM_ID), roster: makeRoster() });
-
-    expect(heroesRowText()).toMatch(/Max: 3/);
+    const row = screen.getByText('Open:').closest('.sidebar-requirement-row');
+    expect(row.textContent.replace(/\s+/g, ' ').trim()).toBe('Open:1');
+    expect(row.textContent).not.toMatch(/Min|Max/);
   });
 
-  it('does not apply the inheritance for a system the quirk is not declared for', () => {
-    renderSidebar({ system: makeQuirkSystem('aaaa-bbbb-cccc-dddd'), roster: makeRoster() });
+  it('does not render a hidden category anchor', () => {
+    renderSidebar({
+      capabilities: new Map([
+        categoryAnchor('0/1', { name: 'Verborgen', isHidden: true }),
+      ]),
+    });
 
-    expect(heroesRowText()).not.toMatch(/Max/);
+    expect(screen.queryByText('Verborgen:')).toBeNull();
+  });
+
+  it('marks a row invalid when the anchor reports an unmet minimum or an exceeded maximum', () => {
+    renderSidebar({
+      capabilities: new Map([
+        categoryAnchor('0/1', { name: 'Pflicht', current: 0, effectiveMin: 2, isMandatoryUnmet: true }),
+        categoryAnchor('0/2', { name: 'Voll', targetDefId: 'cat-voll', defId: 'cl-voll', current: 4, effectiveMax: 3 }),
+        categoryAnchor('0/3', { name: 'Ok', targetDefId: 'cat-ok', defId: 'cl-ok', current: 1, effectiveMax: 3 }),
+      ]),
+    });
+
+    const badgeOf = (label) =>
+      screen.getByText(label).closest('.sidebar-requirement-row').querySelector('span.badge');
+    expect(badgeOf('Pflicht:').className).toContain('badge-danger');
+    expect(badgeOf('Voll:').className).toContain('badge-danger');
+    expect(badgeOf('Ok:').className).toContain('badge-muted');
   });
 });
 
 describe('RosterSidebar hidden cost types', () => {
   it('lists a non-hidden extra resource with a nonzero total', () => {
-    const system = makeSystem({
+    renderSidebar({
       costTypes: [
         { id: 'pts', name: 'Points' },
-        { id: 'cd', name: 'Casting Dice', hidden: false },
+        { id: 'cd', name: 'Casting Dice', isHidden: false },
       ],
+      costTotals: { pts: 0, cd: 4 },
     });
-
-    renderSidebar({ system, roster: makeRoster(), costs: { pts: 0, cd: 4 } });
 
     expect(screen.getByText('Casting Dice:')).toBeTruthy();
   });
 
   it('never surfaces a hidden cost type, even with a nonzero total', () => {
-    const system = makeSystem({
+    renderSidebar({
       costTypes: [
         { id: 'pts', name: 'Points' },
-        { id: 'internal', name: 'Internal Budget', hidden: true },
+        { id: 'internal', name: 'Internal Budget', isHidden: true },
       ],
+      costTotals: { pts: 0, internal: 9 },
     });
 
-    renderSidebar({ system, roster: makeRoster(), costs: { pts: 0, internal: 9 } });
-
     expect(screen.queryByText('Internal Budget:')).toBeNull();
+  });
+});
+
+describe('RosterSidebar total costs', () => {
+  it('shows the report total of the limit cost type against the roster limit', () => {
+    renderSidebar({ costTotals: { pts: 420 } });
+
+    expect(screen.getByTestId('sidebar-total-costs').textContent.replace(/\s+/g, ' ').trim())
+      .toContain('420 / 1000 Pkt.');
   });
 });
 
 describe('RosterSidebar structured validation messages', () => {
   it('renders a derived evaluator violation as translated text (formatViolation)', () => {
     renderSidebar({
-      system: makeSystem(),
-      roster: makeRoster(),
       violations: [{
         origin: 'derivedLimit',
         severity: 'error',
@@ -217,8 +198,6 @@ describe('RosterSidebar structured validation messages', () => {
 describe('RosterSidebar validation severity', () => {
   it('renders an error entry with the danger icon and no severity modifier class', () => {
     renderSidebar({
-      system: makeSystem(),
-      roster: makeRoster(),
       violations: [authorMessage('Zu viele Helden gewählt.', 'error')],
     });
 
@@ -230,8 +209,6 @@ describe('RosterSidebar validation severity', () => {
 
   it('renders a warning entry with its own icon/class and does not mark the roster invalid', () => {
     renderSidebar({
-      system: makeSystem(),
-      roster: makeRoster(),
       violations: [authorMessage('Bitte "Allow special characters?" aktivieren.', 'warning')],
     });
 
@@ -242,8 +219,6 @@ describe('RosterSidebar validation severity', () => {
 
   it('renders an info entry with its own icon/class and does not mark the roster invalid', () => {
     renderSidebar({
-      system: makeSystem(),
-      roster: makeRoster(),
       violations: [authorMessage('Hinweis zur Aufstellung.', 'info')],
     });
 
@@ -254,8 +229,6 @@ describe('RosterSidebar validation severity', () => {
 
   it('mixes severities: only the error contributes to the blocking count, all three render', () => {
     renderSidebar({
-      system: makeSystem(),
-      roster: makeRoster(),
       violations: [
         authorMessage('Echter Verstoß.', 'error'),
         authorMessage('Nur eine Warnung.', 'warning'),

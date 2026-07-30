@@ -63,3 +63,39 @@ export function findChildSlot(capabilities, parentPath, defId) {
   }
   return undefined;
 }
+
+/** Die Ankerart der Kategorie-Slots im Bericht (`report.js`-Ankervertrag). */
+const CATEGORY_ANCHOR_KIND = 'categoryAnchor';
+
+/**
+ * Die Kategorie-Anker-Slots eines Kontingents, in Slot-Reihenfolge des
+ * Berichts. Jeder trägt eine Kategorie des Kontingents: sein `defId` ist der
+ * `categoryLink` (verlinkter Fall) oder die Kategorie selbst (unverlinkter
+ * Fall); `targetDefId` zeigt im verlinkten Fall auf die Kategorie.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {string|null|undefined} forcePath  Slot-Pfad des Kontingents (z. B. `"0"`).
+ * @returns {Array<{ path: string, capability: object }>}
+ */
+export function categoryAnchorSlotsOf(capabilities, forcePath) {
+  return childSlotsOf(capabilities, forcePath)
+    .filter(({ capability }) => capability.anchorKind === CATEGORY_ANCHOR_KIND);
+}
+
+/**
+ * Der Kategorie-Anker-Slot einer Kategorie unter einem Kontingent — gefunden
+ * über die Kategorie-Id (eigene oder aufgelöste Ziel-Id des Ankers).
+ * `undefined`, wenn das Kontingent keinen solchen Anker führt.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {string|null|undefined} forcePath
+ * @param {string|null|undefined} categoryId
+ * @returns {object|undefined}
+ */
+export function findCategoryAnchorSlot(capabilities, forcePath, categoryId) {
+  if (categoryId === null || categoryId === undefined) return undefined;
+  for (const { capability } of categoryAnchorSlotsOf(capabilities, forcePath)) {
+    if (capability.defId === categoryId || capability.targetDefId === categoryId) return capability;
+  }
+  return undefined;
+}

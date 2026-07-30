@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { getExtraResourceTotals, resolveCostLimitLabel } from '../solver/validator';
+import { resolveCostLimitLabel } from '../solver/validator';
+import { extraResourceTotalsOf } from '../evaluation/costDisplays';
 
 import RosterEditorTopBar from './editor/RosterEditorTopBar';
 import ForceEditorSection from './editor/ForceEditorSection';
@@ -14,9 +15,10 @@ const ruleGroupKeyOf = (forceId, categoryId) => `${forceId}:${categoryId}`;
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster, onReportError }) {
   const {
     roster,
-    costs,
     violations,
     capabilities,
+    description,
+    costTotals,
     pathBySelectionId,
     selectedRosterSelection,
     setSelectedRosterSelection,
@@ -67,9 +69,13 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const costTypeLabel = resolveCostLimitLabel(roster, system);
 
-  const currentPoints = costs[roster.costLimitType] || 0;
+  // Kosten-Anzeigen aus dem Bericht (Issue 0121, Task 7): der Ist-Stand ist die
+  // roster-weite Kostensumme der Limit-Kostenart; die Extra-Ressourcen sind die
+  // Nicht-Limit-Kostenarten mit Summe ≠ 0 (Kostenarten aus der
+  // Datensatz-Beschreibung, `hidden` ausgeschlossen).
+  const currentPoints = costTotals[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;
-  const extraResources = getExtraResourceTotals(system, roster, costs);
+  const extraResources = extraResourceTotalsOf(costTotals, description?.costTypes, roster.costLimitType);
 
   const playRoster = useCallback(() => onPlay(roster), [onPlay, roster]);
   const exportRoster = useCallback(() => onExportRoster?.(roster), [onExportRoster, roster]);
@@ -150,8 +156,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         {/* Desktop-only Validation Summary Sidebar */}
         <RosterSidebar
           roster={roster}
-          system={system}
-          costs={costs}
+          costTotals={costTotals}
+          costTypes={description?.costTypes}
+          capabilities={capabilities}
           violations={violations}
           costTypeLabel={costTypeLabel}
           className="desktop-only-sidebar"

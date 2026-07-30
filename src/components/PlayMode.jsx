@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { ArrowLeft, Swords, BookOpen } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { getSelectionTotalCost, findForceEntryById, calculateRosterCosts, getExtraResourceTotals, isListRuleSelection, childSelectionsOf, resolveCostLimitTypeId, TOP_LEVEL_PARENT_COUNT } from '../solver/validator';
+import { getSelectionTotalCost, findForceEntryById, isListRuleSelection, childSelectionsOf, resolveCostLimitTypeId, TOP_LEVEL_PARENT_COUNT } from '../solver/validator';
+import { useEvaluation } from '../evaluation/useEvaluation';
+import { extraResourceTotalsOf } from '../evaluation/costDisplays';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
@@ -18,7 +20,14 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
   const [tooltipState, setTooltipState] = useState({ visible: false, x: 0, y: 0, title: '', content: [] });
 
   const activeCatalogue = system?.catalogues?.find(c => c.id === roster?.catalogueId);
-  const extraResources = getExtraResourceTotals(system, roster, calculateRosterCosts(roster, system));
+
+  // Auswertungsbericht des aktuellen Stands (Issue 0121, Task 7): die
+  // Extra-Ressourcen des Kopfes sind alle Nicht-Limit-Kostenarten mit
+  // Summe ≠ 0 (`costTotals` × Kostenarten der Datensatz-Beschreibung, `hidden`
+  // ausgeschlossen); die Fähigkeitsdatensätze speisen die Einheitenkarten
+  // (Profile/Regeln aus `infoElements`).
+  const { capabilities, description, costTotals, pathBySelectionId } = useEvaluation(system, roster);
+  const extraResources = extraResourceTotalsOf(costTotals, description?.costTypes, roster?.costLimitType);
 
   const { getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster, onReportError);
 
@@ -195,6 +204,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
                     selection={selection}
                     system={system}
                     roster={roster}
+                    capabilities={capabilities}
+                    pathBySelectionId={pathBySelectionId}
                     getUnitCurrentWounds={getUnitCurrentWounds}
                     handleAdjustWound={handleAdjustWound}
                     handleMouseEnter={handleMouseEnter}

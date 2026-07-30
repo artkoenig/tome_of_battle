@@ -93,10 +93,12 @@ const defaultMockViolations = [
 vi.mock('../hooks/useRoster', () => ({
   useRoster: () => ({
     roster: mockRoster,
-    costs: mockCosts,
     violations: mockViolations,
     capabilities: new Map(),
-    costTotals: {},
+    // Kosten kommen seit Issue 0121, Task 7 aus dem Bericht (costTotals);
+    // der frühere Solver-Kostenpfad (`costs`) existiert im Hook nicht mehr.
+    costTotals: mockCosts,
+    description: null,
     pathBySelectionId: new Map(),
     selectedRosterSelection: null,
     setSelectedRosterSelection: mockSetSelectedRosterSelection,

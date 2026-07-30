@@ -67,13 +67,19 @@ describe('UnitChips link resolution honors the whfb6 linking setting', () => {
   });
 
   describe('UnitRulesChips', () => {
-    const mappedRule = { id: 'r1', name: RULE_NAME, description: 'A deadly blow' };
+    // Die Regeln kommen seit Issue 0121, Task 7 aus der Info-Projektion des
+    // Fähigkeitsdatensatzes (`capability.infoElements`), nicht mehr aus
+    // `collectUnitProfilesAndRules`.
+    const mappedRuleCapability = {
+      infoElements: [{ kind: 'rule', id: 'r1', name: RULE_NAME, text: 'A deadly blow' }],
+    };
 
     const renderRulesChips = (overrides = {}) =>
       render(
         <UnitRulesChips
           {...baseProps}
           selection={{ id: 'sel-1', selections: [] }}
+          capability={mappedRuleCapability}
           onClickDetails={noop}
           onShowRule={noop}
           {...overrides}
@@ -81,7 +87,6 @@ describe('UnitChips link resolution honors the whfb6 linking setting', () => {
       );
 
     beforeEach(() => {
-      mockCollectUnitProfilesAndRules.mockReturnValue({ profiles: [], rules: [mappedRule] });
       mockGetRuleUrl.mockImplementation((name) => (name === RULE_NAME ? RULE_URL : null));
     });
 

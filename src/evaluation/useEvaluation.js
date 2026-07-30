@@ -8,10 +8,11 @@
  * je Roster-Objektidentitaet (`toEvaluatorRoster`) und liefert
  * `{ violations, capabilities, description, costTotals, pathBySelectionId }`.
  *
- * Memoisierung (Kriterium 8 des Issues):
+ * Memoisierung (Kriterium 8 des Issues, verschaerft in Task 7):
  * - `prepareDataset` laeuft hoechstens einmal je System-Objektidentitaet —
- *   ueber beliebig viele Roster-Aenderungen hinweg; erst ein neues
- *   System-Objekt loest eine neue Vorbereitung aus.
+ *   **global geteilt** ueber alle Hook-Instanzen und die Direktaufrufe des
+ *   Moduls `evaluationCache.js` (`evaluateAppRoster`/`describeSystem`); erst
+ *   ein neues System-Objekt loest eine neue Vorbereitung aus.
  * - `describeDataset` haengt nur am aufbereiteten Datensatz, laeuft also
  *   ebenfalls je System-Identitaet.
  * - `evaluate` + Adapter laufen je Roster-Objektidentitaet (und erneut, wenn
@@ -30,7 +31,8 @@
  */
 
 import { useMemo } from 'react';
-import { prepareDataset, evaluate, describeDataset } from '../evaluator/evaluator.js';
+import { evaluate, describeDataset } from '../evaluator/evaluator.js';
+import { preparedDatasetOf } from './evaluationCache.js';
 import { toEvaluatorRoster } from './rosterAdapter.js';
 
 /**
@@ -70,17 +72,12 @@ const EMPTY_RESULT = Object.freeze({
  * @returns {EvaluationResult}
  */
 export function useEvaluation(system, roster) {
-  // Katalog-Vorlauf: genau einmal je System-Objektidentitaet. Ein System ohne
-  // rawXmls (Start-Migration noch nicht gelaufen) oder ohne .gst-Datei hat
-  // keinen Datensatz — wie ein fehlendes System behandelt.
-  const prepared = useMemo(() => {
-    const gameSystem = system?.rawXmls?.gst?.[0]?.content;
-    if (gameSystem === undefined) return null;
-    return prepareDataset({
-      gameSystem,
-      catalogues: (system.rawXmls.cat ?? []).map(file => file.content),
-    });
-  }, [system]);
+  // Katalog-Vorlauf: genau einmal je System-Objektidentitaet — aus dem
+  // modulweiten Cache (`evaluationCache.js`), geteilt mit allen anderen
+  // Hook-Instanzen und den Direktaufrufen. Ein System ohne rawXmls
+  // (Start-Migration noch nicht gelaufen) oder ohne .gst-Datei hat keinen
+  // Datensatz — wie ein fehlendes System behandelt (null).
+  const prepared = useMemo(() => preparedDatasetOf(system), [system]);
 
   // Beschreibung: haengt allein am aufbereiteten Datensatz — je System-Identitaet.
   const description = useMemo(
