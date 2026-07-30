@@ -54,6 +54,71 @@ Acceptance criteria:
 
 ## Plan
 
+**Module list und Verträge:**
+
+1. **`catalogReader.js`** — `readCatalogueLinks` liest zusätzlich
+   `importRootEntries` (Boolean-Attribut, Default `false`, wie im XSD). Jeder
+   Eintrag der zurückgegebenen `catalogueLinks`-Liste trägt fortan
+   `{ id, name, targetId, importRootEntries }` statt `{ id, name, targetId }`.
+   *Warum am Reader:* die einzige Stelle, die die rohen `catalogueLink`-Knoten
+   überhaupt sieht; der App-eigene Schreib-Modell-Parser liest das Attribut
+   bereits für einen anderen Zweck (siehe Decisions) — beide Leser bleiben
+   unabhängig.
+
+2. **`catalogSet.js`** — neue Funktion
+   `buildCatalogueRootEntryClosure(catalogueDocuments): Map<catalogueId, Set<catalogueId>>`.
+   Für jeden Katalog: die Menge der Katalog-Ids, deren Wurzel-Angebot er führt
+   — sich selbst plus, transitiv und zyklensicher, jeden über einen
+   `catalogueLink` mit `importRootEntries === true` erreichbaren Katalog.
+   *Warum eine eigene Funktion neben `buildPrimaryCatalogueIndex`/
+   `buildDefinitionSourceIndex`:* dieselbe Symmetrie — ein weiterer
+   Herkunftsindex, der nur die **einzelnen** Dokumente kennt, nicht das
+   Aggregat.
+
+3. **`datasetPreparation.js`** — `prepareDataset` baut den Closure-Index mit
+   und legt ihn auf `PreparedDataset` als `catalogueRootEntryClosureById`
+   ab, zusammen mit der schon vorhandenen `gameSystemDocument`. Kein neues
+   Feld für die Spielsystem-Id nötig — `gameSystemDocument?.id ?? null`
+   genügt an der Verbrauchsstelle.
+
+4. **`evaluator.js`** (`evaluate`) — baut aus den drei Indizes
+   (`sourceIdByDefId`, `primaryCatalogueByForceDefId`,
+   `catalogueRootEntryClosureById`) und der Spielsystem-Id ein
+   **`catalogueScope`-Kontextobjekt** und reicht es zusätzlich an
+   `buildEvalTree(resolved, roster, catalogueScope)` und
+   `attachOfferAnchors(root, resolved, catalogueScope)` durch. *Warum ein
+   gebündeltes Objekt statt vier Einzelparameter:* beide Empfänger brauchen
+   dieselben vier Werte für dieselbe Frage („gehört Herkunft S zum
+   Katalog-Fußabdruck von Kontingent-Katalog P?") — ein Parameter statt vier
+   hält die Signaturen stabil, falls der Fußabdruck später einen weiteren
+   Baustein braucht.
+
+5. **`evalTree.js`** — `buildEvalTree`/`synthesizeMandatoryPhantoms` erhalten
+   den optionalen vierten Parameter `catalogueScope`. Fehlt er (bestehende
+   Direktaufrufe aus Unit-Tests ohne Mehrkatalog-Bezug), bleibt das
+   Verhalten unverändert (ungefiltert) — die Filterung ist **additiv**, kein
+   Verhaltenswechsel für den Ein-Katalog-Fall. Mit Kontext: eine
+   ROSTER-Grenze zählt nur, wenn ihre Herkunft (`sourceIdByDefId.get(def.id)`)
+   im Fußabdruck **irgendeines** im Roster tatsächlich vorhandenen
+   Kontingents liegt (oder das Spielsystem ist); eine FORCE-Grenze nur, wenn
+   sie im Fußabdruck **dieses** Kontingents liegt.
+
+6. **`offer.js`** — `attachOfferAnchors`/`candidatesFor` erhalten denselben
+   optionalen `catalogueScope`-Parameter und wenden dieselbe
+   Fußabdruck-Prüfung zusätzlich zur bestehenden Kategorie-Prüfung
+   (`isCarriedByForce`) an, bevor ein Kandidat als wählbar gilt.
+
+7. **Gemeinsamer Helfer** — eine kleine, in `catalogSet.js` oder einem neuen
+   `catalogueScope.js` exportierte Funktion
+   `isSourceInFootprint(sourceId, catalogueId, catalogueScope)`, die beide
+   Verbrauchsstellen (5, 6) gegen dieselbe eine Definition prüfen, statt die
+   Fußabdruck-Logik zweimal zu schreiben.
+
+**Nicht geplant / bewusst ausgeklammert:** Änderungen an der globalen
+`entryLink`/`infoLink`-Auflösung (ADR-0032) — die bleibt unverändert
+global-by-id; nur das *Anbieten* und das *Pflicht-Erzwingen* wird
+katalog-lokal.
+
 ## Tasks
 
 ## Decisions
@@ -110,9 +175,22 @@ Acceptance criteria:
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja — die Akzeptanzkriterien verlangen
+  katalog-lokales Anbieten und Erzwingen, keine Änderung an der
+  ID-Auflösung selbst.
+- **Was hat überrascht?** Die Herkunfts-Infrastruktur
+  (`buildPrimaryCatalogueIndex`, `buildDefinitionSourceIndex`) existiert
+  bereits aus Issue 077/0121 — der Fix ist kleiner als der ursprüngliche
+  Issue-Text nahelegt, weil er auf vorhandenen Bausteinen aufbaut statt
+  neue Herkunfts-Verfolgung einzuführen.
+- **Was nehme ich ungeprüft an?** Dass `importRootEntries` transitiv gilt
+  (ein Bibliothekskatalog kann selbst per `catalogueLink` einen weiteren
+  Katalog importieren) — dafür gibt es in den Fixtures kein Beispiel; die
+  Closure-Funktion behandelt es trotzdem korrekt (BFS/DFS), falls es
+  vorkommt. Außerdem, dass ein Kontingent ohne bekannten
+  `primaryCatalogueByForceDefId`-Eintrag (z. B. eine im Spielsystem selbst
+  deklarierte Force) ungefiltert bleibt, statt fälschlich alles
+  auszuschließen — noch nicht an einer Fixture verifiziert.
 
 ### Before the PR
 
