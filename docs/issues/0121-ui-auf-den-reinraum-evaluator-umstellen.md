@@ -156,13 +156,13 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 Korrekturen aus Prüfrunde 2:
 
-- [ ] 11. (B3+B7) Rettung eines Systems ohne Roh-XML darf keine
+- [x] 11. (B3+B7) Rettung eines Systems ohne Roh-XML darf keine
   Kataloge löschen, die der Index nicht kennt — Kriterium 6
-- [ ] 12. (B2) Slot-Pfade bleiben gültig, wenn eine Auswahl nicht mehr
+- [x] 12. (B2) Slot-Pfade bleiben gültig, wenn eine Auswahl nicht mehr
   auflösbar ist — Kriterium 3
-- [ ] 13. (B1) Der Aushebe-Dialog bietet nur Einheiten des aktiven
+- [x] 13. (B1) Der Aushebe-Dialog bietet nur Einheiten des aktiven
   Katalogs an — Kriterium 5
-- [ ] 14. (B5) Wirkungstest für die Link-Id-Regel (Grenze am
+- [x] 14. (B5) Wirkungstest für die Link-Id-Regel (Grenze am
   `entryLink` wirkt sichtbar) — Kriterium 3
 - [x] 15. (B6) ADR 0028/0029 nachziehen — Kriterium 2
 - [x] 16. E2E-Harness: Serverprozess vollständig beenden, Fehlstart nicht
@@ -282,6 +282,37 @@ Menschen statt in eine weitere Runde.
 
 ## Log
 
+- 2026-07-30, Tasks 11–14 erledigt: alle 21 roten Fälle grün, **ohne
+  Testedit** (`git diff` der fünf Vertragsdateien leer). Selbst nachgemessen,
+  nicht vom Implementierer übernommen: `npm test` 241 Dateien / 2510 Fälle +
+  Puppeteer-E2E Exit 0; `npm run lint`, `npm run typecheck`,
+  `npm run depcruise` (0 Fehler, 1 vorbestehende Zyklus-Warnung) und
+  `npm run build` je Exit 0; knip 6 → 5 verwaiste Exporte (B7 mit
+  geschlossen, `findAllCatalogFiles` ist jetzt modulprivat). Kein
+  bestehender Test gekippt. Nach dem Lauf blieb **kein** `vite preview`-Prozess
+  zurück — die Harness-Korrektur aus Task 16 trägt.
+  Lösungswege: Task 11 kommt ohne Änderung an `migrations.js` aus — die
+  Alles-oder-nichts-Regel gehört dorthin, wo der Dateisatz entsteht, und die
+  bestehende Gabelung „gerettet oder unrettbar" hatte schon die richtige Form.
+  Task 12 zieht die Pfadzuordnung als reine Funktion `pathBySelectionIdOf`
+  heraus, die dieselben Kind-Indizes zählt wie die Engine und dieselben Knoten
+  samt Teilbaum auslässt; der Eingabebaum an die Engine bleibt unberührt.
+  Task 13 baut den Herkunftsindex der Definitionen analog zum schon
+  vorhandenen Kontingent-Index und liest ihn in `toCapability` über
+  `node.def.id` — dadurch fällt die Link-vor-Ziel-Regel und die Gleichbehandlung
+  aller Ankerarten von selbst heraus, ohne Fallunterscheidung.
+- 2026-07-30, Überraschung (Task 12): der geplante Nachzug „Kontingentnamen in
+  `unresolvedSelectionsOf` mitsuchen" ließ sich **nicht** bauen und wurde
+  zurückgenommen. Das App-Force-Modell führt gar keinen Namen (`src/types.js`
+  hat kein `name`; der `.ros`-Import verwirft das Attribut), der Anzeigename
+  kommt sonst aus der **Definition** — also genau aus dem, was in diesem Fall
+  fehlt. Der Typecheck hat den Griff ins Leere sofort abgefangen (TS2339). Ein
+  verlorenes Kontingent erscheint deshalb weiterhin mit seiner Id; das ist die
+  ehrliche Auskunft, kein Notbehelf, und steht so im Modulkopf.
+- 2026-07-30, Fehlalarm nachgeprüft: der Implementierer meldete, `npm test`
+  rufe `e2e/pwa.test.js` nicht auf (Kriterium 7). Stimmt nicht — die Datei
+  läuft im vitest-Teil mit, belegt im Protokoll des eigenen Laufs
+  (`e2e/pwa.test.js (16 tests)`). Kriterium 7 bleibt erfüllt.
 - 2026-07-30, Tests für die Tasks 11–14 geschrieben (test-author, ohne
   Produktivcode): 5 neue Dateien, 36 Fälle, davon **13 rot** aus dem richtigen
   Grund. Belege u. a.: die Nachrüstung speichert ein System mit reduzierter

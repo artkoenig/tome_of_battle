@@ -116,6 +116,18 @@ export { prepareDataset } from './datasetPreparation.js';
  *   auch eine noch nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon
  *   unberuehrt.
  *
+ *   **Herkunft eines Slots (`sourceId`).** Jeder Faehigkeitsdatensatz nennt die
+ *   `id` des Dokuments (`.gst` oder `.cat`), das die Definition **dieses Slots**
+ *   deklariert — `null`, wenn das Dokument keine eigene Wurzel-`id` traegt.
+ *   Nachgeschlagen wird die `defId` des Slots, bei einem Verweis-Slot also die
+ *   Id des **Verweises**, nicht die seines Ziels: dieselbe Link-vor-Ziel-Regel
+ *   wie oben — ein `entryLink` in einem Armeebuch ist ein Angebot **dieses**
+ *   Armeebuchs, auch wenn sein Ziel in einem anderen Dokument steht. Die Regel
+ *   gilt uniform fuer jede Ankerart. Bei zwei Dokumenten mit derselben
+ *   Definitions-Id gewinnt das erste in der Verarbeitungsreihenfolge
+ *   (Spielsystem zuerst, dann die Kataloge in Aufruf-Reihenfolge); die
+ *   Kollision selbst ist als Diagnose `duplicateDefinition` sichtbar.
+ *
  *   **Pfad-Schema der Slot-Schluessel.** Der Schluessel in `capabilities` ist
  *   der stabile Pfad des Slots: die `/`-verkettete Folge der Kind-Indizes von
  *   der Wurzel bis zum Knoten (z. B. `"0/2/1"`; `pathOf` in `evalTree.js`).
@@ -144,7 +156,7 @@ export function evaluate(prepared, roster) {
   // beantwortet den Bezugsrahmen `primary-catalogue` (Issue 077) und wird — wie
   // das Budget — bis in die Query-Kontexte durchgereicht.
   const contents = PreparedDataset.contentsOf(prepared);
-  const { resolved, primaryCatalogueByForceDefId, diagnostics: datasetDiagnostics } = contents;
+  const { resolved, primaryCatalogueByForceDefId, sourceIdByDefId, diagnostics: datasetDiagnostics } = contents;
 
   const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
 
@@ -203,13 +215,16 @@ export function evaluate(prepared, roster) {
   // `declaredCostTypeIds` sind die Kostenart-Deklarationen des Datensatzes —
   // dieselbe eine Leseart wie in der Datensatz-Beschreibung (`costTypesOf`). Die
   // Kostenprojektion des Berichts fuehrt jede davon in `costTotals`, auch ohne
-  // Vorkommen (Issue 0121).
+  // Vorkommen (Issue 0121). `sourceIdByDefId` ist der Herkunftsindex der
+  // Definitionen aus demselben Vorlauf — je Slot das Dokument, das seine
+  // Definition deklariert (`SlotCapability.sourceId`).
   return buildReport(root, effective, results, diagnostics, {
     budgetViolations,
     unstableNodes,
     profileTypes: resolved.profileTypes,
     categoryIds: resolved.categoryIds,
     declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
+    sourceIdByDefId,
   });
 }
 

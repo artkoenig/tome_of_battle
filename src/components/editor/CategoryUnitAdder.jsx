@@ -17,6 +17,12 @@ import BottomSheet from './BottomSheet';
  * frühere Solver-Diff (Baseline-Validierung + hypothetisches Ausheben,
  * ADR-0022) ist ersatzlos entfallen (ADR-0035).
  *
+ * Dazu der **Herkunftsfilter** (`capability.sourceId`, Task 13): angeboten wird
+ * nur, was aus dem aktiven Katalog, dem Spielsystem oder einem
+ * Bibliothekskatalog stammt — eine Einheit eines fremden Armeebuchs erscheint
+ * gar nicht. Ist eine explizite `entries`-Liste vorgegeben, gilt der Filter
+ * nicht ({@link foreignCatalogueIdsOf}).
+ *
  * `addUnit(kandidat, categoryId)` bleibt der Aushebe-Callback; als Kandidat
  * wird der Katalogeintrag der Definition übergeben (Auflösung über die
  * Schreibmodell `src/roster/` — die Schreibmechanik lebt dort),
@@ -25,6 +31,28 @@ import BottomSheet from './BottomSheet';
 
 /** Die Ankerarten, deren Slots im Dialog als Kandidaten erscheinen. */
 const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
+
+/**
+ * Die Ids der **fremden** Armeebücher: jeder nicht-Bibliotheks-Katalog des
+ * Systems außer dem aktiven. Ein Slot, dessen Herkunft (`capability.sourceId`)
+ * darin steht, gehört einem anderen Armeebuch und wird gar nicht angeboten —
+ * dieselbe Regel wie `creatableForcesOf` in `NewRosterModal.jsx`.
+ *
+ * Alles andere wird angeboten: das Spielsystem, ein Bibliothekskatalog, der
+ * aktive Katalog selbst — und eine **unbekannte** Herkunft. Deshalb kommt eine
+ * fehlende Id gar nicht erst in die Menge: sonst gälte ein Slot mit
+ * `sourceId: null` als fremd und verschwände still.
+ */
+function foreignCatalogueIdsOf(system, activeCatalogueId) {
+  const foreign = new Set();
+  for (const catalogue of system?.catalogues ?? []) {
+    if (catalogue.isLibrary === true) continue;
+    if (catalogue.id === null || catalogue.id === undefined) continue;
+    if (catalogue.id === activeCatalogueId) continue;
+    foreign.add(catalogue.id);
+  }
+  return foreign;
+}
 
 export default function CategoryUnitAdder({
   categoryId = null,
@@ -50,6 +78,14 @@ export default function CategoryUnitAdder({
     ? null
     : new Set(entries.flatMap(entry => [entry.id, entry.targetId].filter(Boolean)));
 
+  // Der Herkunftsfilter gilt nur ohne explizite Eintragsliste: eine solche Liste
+  // ist bereits vom Aufrufer kuratiert (armeeweite Selektoren), und ein
+  // Herkunftsfilter darüber nähme einen bewusst übergebenen katalogübergreifenden
+  // Eintrag weg.
+  const foreignCatalogueIds = allowedIds === null
+    ? foreignCatalogueIdsOf(system, activeCatalogue.id)
+    : null;
+
   // Kandidaten: je Definition genau ein Slot unter dem Kontingent. Versteckte
   // Slots erscheinen nicht; die Kategorie-Zuordnung liest die **effektive**
   // Primärkategorie aus dem Bericht (§8: nie aus rohen Katalog-Links).
@@ -62,8 +98,13 @@ export default function CategoryUnitAdder({
     if (allowedIds !== null) {
       if (!allowedIds.has(capability.defId)
         && !(capability.targetDefId && allowedIds.has(capability.targetDefId))) continue;
-    } else if (capability.primaryCategoryId !== categoryId) {
-      continue;
+    } else {
+      if (capability.primaryCategoryId !== categoryId) continue;
+      // Herkunft: eine Einheit eines fremden Armeebuchs darf in dieser Liste
+      // nicht aufgestellt werden und erscheint deshalb gar nicht — nicht bloß
+      // gesperrt (ADR-0032 löst global-by-Id auf, der Bericht verankert
+      // deshalb auch fremde Wurzel-Einträge als Angebot).
+      if (foreignCatalogueIds.has(capability.sourceId)) continue;
     }
     seenDefIds.add(capability.defId);
     candidates.push({ path, capability });

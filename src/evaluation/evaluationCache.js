@@ -23,7 +23,10 @@
  */
 
 import { prepareDataset, evaluate, describeDataset } from '../evaluator/evaluator.js';
-import { toEvaluatorRoster } from './rosterAdapter.js';
+import { toEvaluatorRoster, pathBySelectionIdOf } from './rosterAdapter.js';
+
+/** Die Diagnose "diese Definition kennt der Datensatz nicht" (`evalTree.js`). */
+const UNRESOLVED_DEFINITION = 'unresolvedDefinition';
 
 /** Aufbereiteter Datensatz je System-Objektidentitaet (genau ein Vorlauf). */
 const preparedBySystem = new WeakMap();
@@ -81,9 +84,35 @@ export function evaluateAppRoster(system, roster) {
     violations: report.violations,
     capabilities: report.capabilities,
     costTotals: report.costTotals,
-    pathBySelectionId,
+    pathBySelectionId: correctedPathsOf(roster, pathBySelectionId, report.diagnostics),
     diagnostics: report.diagnostics,
   };
+}
+
+/**
+ * Die Slot-Pfade, korrigiert um die Definitionen, die der Datensatz nicht kennt.
+ *
+ * Der Adapter zaehlt die Kind-Indizes der Roster-Eingabe durch; die Engine
+ * haengt eine Instanz, deren `defId` nicht aufloest, **nicht** in den Baum
+ * (Diagnose `unresolvedDefinition`) — samt ihrem ganzen Teilbaum. Ohne
+ * Korrektur ruecken dadurch alle nachfolgenden Geschwister eine Position vor,
+ * und jede Auswahl hinter der verlorenen zeigte Namen, Kosten und
+ * Verfuegbarkeit ihres Nachbarn (Befund B2 der Pruefrunde 2). Hier — wo Roster
+ * **und** Bericht vorliegen — wird die Zuordnung deshalb ohne diese
+ * Definitionen neu gebaut; die unaufloesbare Auswahl selbst bekommt gar keinen
+ * Pfad, weil die Engine fuer sie keinen Slot fuehrt.
+ *
+ * Ohne Diagnose bleibt die schon gebaute Zuordnung unveraendert — der
+ * Normalfall kostet nichts.
+ */
+function correctedPathsOf(roster, pathBySelectionId, diagnostics) {
+  const unresolvedDefIds = new Set();
+  for (const entry of diagnostics ?? []) {
+    if (entry?.kind === UNRESOLVED_DEFINITION) unresolvedDefIds.add(entry.defId);
+  }
+  return unresolvedDefIds.size === 0
+    ? pathBySelectionId
+    : pathBySelectionIdOf(roster, unresolvedDefIds);
 }
 
 /**

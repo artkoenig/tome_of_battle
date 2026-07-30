@@ -11,8 +11,10 @@
  *   Grenze, Bezugsrahmen, Herleitungskette und den daraus gelesenen **Ursachen**,
  *   `causes.js`) und die **Autor-Meldungen** des Katalogs (`authorMessages.js`),
  * - je Slot einen **Faehigkeitsdatensatz** (`SlotCapability`) fuer die
- *   UI-Steuerung: Definitions-ID, **Ankerart**, Rahmen-Bezug und **effektiver**
- *   Anzeigename, die **effektiven Kategorie-IDs** samt der effektiven
+ *   UI-Steuerung: Definitions-ID, **Ankerart**, Rahmen-Bezug, **Herkunft**
+ *   (`sourceId` — das Dokument, das die Definition dieses Slots deklariert;
+ *   beim Verweis-Slot das des Verweises, nicht das seines Ziels) und
+ *   **effektiver** Anzeigename, die **effektiven Kategorie-IDs** samt der effektiven
  *   **Primaerkategorie** (der Anzeige-Bucket nach `set-primary`/`unset-primary`,
  *   `docs/battlescribe-data-format.md` §8), effektives min/max, aktueller
  *   Stand, Restspielraum, die
@@ -62,6 +64,9 @@ const NO_CATEGORY_IDS = new Set();
 
 /** Ohne deklarierte Kostenarten traegt `costTotals` nur die belegten Vorkommen. */
 const NO_DECLARED_COST_TYPES = Object.freeze([]);
+
+/** Ohne Herkunftsindex bleibt die Herkunft jedes Slots unbekannt (`null`). */
+const NO_DEFINITION_SOURCES = new Map();
 
 /**
  * Projiziert ein Constraint-Ergebnis auf eine **abgeleitete** Meldung: die
@@ -363,6 +368,15 @@ function headroomOf(maxResult) {
  * Kontingent bzw. welcher Eltern-Auswahl er haengt; `targetDefId` sagt bei einem
  * Verweis-Slot, **worauf** er zeigt (die Kategorie eines Kategorie-Ankers, der
  * Eintrag hinter einem `entryLink`).
+ * `sourceId` sagt, **woher** der Slot stammt: die Id des Dokuments (`.gst` oder
+ * `.cat`), das die Definition dieses Slots deklariert; `null`, wenn das Dokument
+ * keine eigene Wurzel-Id traegt. Nachgeschlagen wird `def.id` — bei einem
+ * Verweis-Slot also die Id des **Verweises**, nicht die seines Ziels
+ * (Link-vor-Ziel): ein `entryLink` in `Vampire Counts.cat` ist ein
+ * Vampire-Counts-Angebot, auch wenn sein Ziel woanders steht. Die Regel gilt
+ * **uniform** fuer jede Ankerart, Kategorie- und Gruppen-Anker eingeschlossen.
+ * Die Oberflaeche filtert damit ihr Angebot nach dem aktiven Armeebuch, ohne in
+ * die Katalogdaten hinter dem Bericht zu greifen (ADR-0034).
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
  * `costs`/`totalCosts` kommen aus der Kostenprojektion (`costProjection.js`):
@@ -385,12 +399,15 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, costProjection }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, costProjection, sourceIdByDefId }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
     defId: node.def.id,
     targetDefId: targetDefIdOf(node),
+    // Herkunft nach der **Link-vor-Ziel-Regel**: nachgeschlagen wird `def.id`,
+    // also bei einem Verweis-Slot die Id des Verweises, nicht die seines Ziels.
+    sourceId: sourceIdByDefId.get(node.def.id) ?? null,
     anchorKind: node.anchorKind,
     frame: frameReferenceOf(node),
     name: effective.nameOf(node),
@@ -421,7 +438,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[] }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -438,6 +455,9 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  *   Query-Primitiv.
  *   `declaredCostTypeIds`: die im Datensatz deklarierten Kostenarten — sie
  *   erscheinen in `costTotals` auch ohne Vorkommen, mit 0 (`costProjection.js`).
+ *   `sourceIdByDefId`: der Herkunftsindex der Definitionen
+ *   (`catalogSet.js`) — je Slot das Dokument, das seine Definition deklariert
+ *   (`sourceId`). Fehlt er, bleibt die Herkunft jedes Slots `null`.
  * @returns {{ violations: object[], capabilities: Map<string, object>, costTotals: Record<string, number>, diagnostics: object[] }}
  */
 export function buildReport(root, effective, results, diagnostics, extras = {}) {
@@ -447,6 +467,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     profileTypes = NO_PROFILE_TYPES,
     categoryIds = NO_CATEGORY_IDS,
     declaredCostTypeIds = NO_DECLARED_COST_TYPES,
+    sourceIdByDefId = NO_DEFINITION_SOURCES,
   } = extras;
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
@@ -457,6 +478,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     unstableNodes,
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
     costProjection,
+    sourceIdByDefId,
   };
   // Der Knoten bleibt **engine-intern**: die Autor-Meldungen brauchen ihn, der
   // Bericht darf ihn nicht tragen (ADR-0034 — die Oberflaeche liest den Bericht

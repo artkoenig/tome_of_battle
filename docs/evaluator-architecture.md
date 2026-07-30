@@ -141,6 +141,8 @@ Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** 
 
 Der **Rahmen-Bezug** (Pfad und Definitions-ID des umschließenden Kontingents bzw. der Eltern-Auswahl; `null` am Roster selbst) steht neben dem Pfad, weil ein rein positioneller Schlüssel für die Oberfläche zu spröde ist. Ein **Verweis-Slot** — der Kategorie-Anker eines verlinkenden Kontingents trägt den `categoryLink`, ein Angebots-Anker den `entryLink`; der Anker einer unverlinkten Kategorie trägt dagegen die `categoryEntry` selbst und ist keiner — nennt zusätzlich sein **Ziel** (`targetDefId`): das ist das *Thema* des Slots, und dieselbe ID, über die die Constraint-Schicht ihn zählt. Ohne sie ließe sich ein Kategorie-Abschnitt allein aus dem Bericht nicht seiner Kategorie zuordnen.
 
+Die **Herkunft** (`sourceId`) nennt das Dokument — `.gst` oder `.cat` —, das die Definition dieses Slots deklariert; `null`, wenn das Dokument keine eigene Wurzel-ID trägt. Nachgeschlagen wird die `defId` des Slots und damit, bei einem Verweis-Slot, das Dokument des **Verweises**, nicht das seines Ziels (**Link vor Ziel**, dieselbe Regel wie bei der Identität einer Auswahl): ein `entryLink` in `Vampire Counts.cat` ist ein Vampire-Counts-Angebot, auch wenn sein Ziel in `Ogre Kingdoms.cat` steht. Uniform für jede Ankerart, Kategorie- und Gruppen-Anker eingeschlossen. Der Index dahinter (`buildDefinitionSourceIndex`, `catalogSet.js`) entsteht im rosterunabhängigen Vorlauf, umfasst **alle** Dokumente einschließlich des Spielsystems und lässt das erste Vorkommen einer ID gewinnen. Ohne sie könnte die Oberfläche einen Aushebe-Dialog nicht auf das aktive Armeebuch beschränken, ohne hinter den Bericht in die Katalogdaten zu greifen — genau das schließt ADR-0034 aus.
+
 **Die Info-Projektion je Slot** (`infoProjection.js`) beantwortet die Frage *welche Profile und Regeltexte gelten für diesen Slot?* — eine geordnete Liste, deren Einträge je Art (Profil oder Regel), die **ID des Vorkommens**, den **effektiven** Namen und, je nach Art, Profiltyp samt Merkmalen *(Charakteristik-Typ mit Namen, effektiver Wert)* oder den Regeltext tragen. Vier Regeln bestimmen ihren Inhalt:
 
 - **Eigenes und Geerbtes.** Enthalten sind die Info-Elemente des Slots selbst **und die seiner belegten Unter-Auswahlen**, in Dokumentreihenfolge (eigene zuerst, dann die Unter-Auswahlen in Baumreihenfolge). Ein Anker ist keine belegte Auswahl und vererbt nichts nach oben; seine eigenen Elemente trägt sein eigener Datensatz. **Ohne Entdopplung**: derselbe Träger unter zwei Unter-Auswahlen kann *verschiedene* effektive Werte tragen, weil die Effektiv-Werte-Schicht nach dem Paar (Knoten, Träger) schlüsselt — eine Entdopplung nach ID würfe genau diese Unterscheidung still weg.
@@ -341,6 +343,10 @@ record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: d
                                                         // Kategorie eines Kategorie-Ankers, der
                                                         // Eintrag hinter einem entryLink; sonst null
                           anchorKind: AnchorKind,       // Herkunft des Slots
+                          sourceId: Id?,                // das Dokument (.gst/.cat), das die
+                                                        // Definition DIESES Slots deklariert;
+                                                        // beim Verweis-Slot das des VERWEISES,
+                                                        // nicht das seines Ziels; null = unbekannt
                           frame: { path: NodePath, defId: Id }?,  // Kontingent bzw. Eltern-Auswahl;
                                                         // null = der Slot hängt am Roster selbst
                           categoryIds: Id[],            // die EFFEKTIVEN Kategorie-IDs des Slots
@@ -674,6 +680,8 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
     capabilities[pathOf(node)] = SlotCapability(
       node          = node,
       anchorKind    = node.anchorKind,                 // Herkunft des Slots
+      sourceId      = sourceIdByDefId[node.def.id] ?? null,  // Dokument des VERWEISES,
+                                                       // nicht das seines Ziels
       frame         = frameReferenceOf(node),          // Kontingent bzw. Eltern-Auswahl
       effectiveMin  = minResult?.bound,
       effectiveMax  = maxResult?.bound,

@@ -13,6 +13,12 @@
  * kennt, trägt seine eigene Auswahl — er wird deshalb hier aus dem Roster
  * nachgeschlagen (dieselbe Identitätsregel wie im Adapter: der Verweis zählt,
  * sonst der Eintrag).
+ *
+ * Ein **Kontingent** kann seine Definition genauso verlieren wie eine Auswahl —
+ * es erscheint dann mit seiner Id. Einen Klartextnamen gibt es für diesen Fall
+ * nirgends: das App-Force-Modell (`src/types.js`) führt keinen (der `.ros`-Import
+ * verwirft das `name`-Attribut), und der Name der Definition ist genau das, was
+ * mit ihr fehlt. Die Id ist hier also die ehrliche Auskunft, kein Notbehelf.
  */
 
 const UNRESOLVED_DEFINITION = 'unresolvedDefinition';
