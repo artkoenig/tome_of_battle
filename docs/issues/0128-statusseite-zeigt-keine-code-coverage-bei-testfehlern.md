@@ -102,16 +102,62 @@ für diese Änderung, analog zu invariant 2 des Metis-Regelbuchs.
   `coverage.reportOnFailure: false` unterdrückt `coverage-final.json` bei
   jedem roten Testlauf; `generate.js` liest das als "keine Daten" statt als
   eigenen Zustand.
+- 2026-07-30: Umgesetzt — `GATE_EXECUTION_OVERRIDES['unit-tests']` in
+  `scripts/project-state/generate.js` um `--coverage.reportOnFailure`
+  ergänzt. Verifiziert (Kriterium 1, echter Lauf statt nur gelesen):
+  `rm -rf coverage && npx vitest run --coverage --coverage.provider=v8
+  --coverage.reporter=json --coverage.reportOnFailure` gegen eine Datei mit
+  einem absichtlich roten Test (1 bestanden, 1 fehlgeschlagen) → Exit 1,
+  `coverage/coverage-final.json` wird trotzdem geschrieben (167 Einträge).
+  Vor der Änderung (ohne das Flag) entsteht bei demselben roten Lauf gar
+  kein `coverage/`-Verzeichnis. Kriterium 2 (grüner Lauf unverändert):
+  `npx vitest run scripts/project-state`, 10 Dateien / 110 Tests, Exit 0;
+  zusätzlich `npm run lint` und `npm run typecheck`, beide Exit 0.
+- 2026-07-30: Unabhängige Prüfung durch `metis:reviewer` (frischer
+  Kontext, nur Diff + Intent). Alle drei Akzeptanzkriterien bestätigt,
+  jeweils durch eigene reale Läufe nachvollzogen (nicht nur gelesen):
+  roter Lauf schreibt `coverage-final.json` (2.161.265 Bytes, echte
+  Coverage-Daten); grüner Lauf mit und ohne Flag liefert byte-identisches
+  `coverage-final.json` (JSON-kanonisiert verglichen) — das Flag ist auf
+  grünen Läufen ein No-op. `--coverage.reportOnFailure` als offizielles,
+  zweckgebautes Vitest-Flag bestätigt (`npx vitest --help --coverage`).
+  Blast-radius-Prüfung: `ci.yml`s `lint-and-test`-Job läuft `npx vitest
+  run` ohne Coverage-Flags und ruft `generate.js` nie auf — unberührt; das
+  Gate-Ergebnis (`gates.js`) bleibt unverändert an den echten Exit-Code
+  gekoppelt, ein roter Lauf zeigt weiterhin `findings`, nie fälschlich
+  `passed`. Keine Funde. Einzige Anmerkung: Log/Checkpoints trugen zum
+  Prüfzeitpunkt noch keinen Beleg der Kriterium-1/2-Läufe — mit diesem
+  Log-Eintrag nachgetragen.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- Does this match what was asked? Ja — die Statusseite hat tatsächlich
+  keine Coverage-Daten mehr; die Ursache ließ sich bis auf Vitests
+  eigenes Default-Verhalten zurückverfolgen und real reproduzieren.
+- What surprised me? Dass der komplette Coverage-Teil des Berichts von
+  einem einzelnen (bereits bekannten, unabhängigen) flakigen Test
+  abhängt — nicht offensichtlich aus dem Symptom "keine Coverage"
+  ersichtlich, ohne das Rohlog des CI-Laufs zu lesen.
+- What am I assuming without having verified it? Dass der
+  CPU-Last-Flake in `e2e.testcatalog.test.js` (Issue 0110) tatsächlich
+  die *einzige* aktuelle Rot-Ursache ist. Für dieses Issue irrelevant,
+  da der Fix unabhängig von der konkreten Fehlerursache wirkt.
 
 ### Before the PR
+
+- Does this match what was asked? Ja — alle drei Akzeptanzkriterien
+  sind durch reale Läufe belegt (eigene und die des unabhängigen
+  Reviewers), keine Funde in der frischen Prüfung.
+- What surprised me? Wie klar sich Kriterium 2 (grüner Lauf
+  unverändert) belegen ließ — byte-identisches `coverage-final.json`
+  mit und ohne Flag, kein Rätselraten nötig.
+- What am I assuming without having verified it? Dass GitHub Actions'
+  reale `status-report.yml`-Umgebung sich bezüglich `--coverage
+  .reportOnFailure` genauso verhält wie lokal — plausibel (reines
+  Vitest-Verhalten, keine Umgebungsabhängigkeit erkennbar), aber erst
+  am nächsten echten Workflow-Lauf auf `main` endgültig bestätigt.
 
 - Does this match what was asked?
 - What surprised me?
