@@ -1,6 +1,6 @@
 /**
  * Kostenprojektion im Bericht (Issue 0121, Task 1) — Black-box-Tests aus der
- * Intention, VOR der Implementierung geschrieben (test-author, Metis).
+ * Intention, VOR der Implementierung geschrieben.
  *
  * Gepruefte Intention:
  *  1. `evaluate(...)` liefert zusaetzlich `costTotals: Record<costTypeId, number>` —

@@ -40,21 +40,16 @@ node scripts/measure-evaluator-browser.js  # dieselbe Messung im echten Browser 
 ## Agent skills
 
 ### Issue tracker
-This project runs the [Metis](https://github.com/artkoenig/metis) workflow. Work
-is tracked as local markdown issues under `docs/issues/`, one file per issue,
-named `NNN-<slug>.md` and shaped by `docs/issues/TEMPLATE.md`. The frontmatter
-carries the facts — `status` (`backlog | active | waiting | done`), `branch`,
-`pr` — and the filled sections are the progress. One issue = one branch = one
-pull request; there are no child issues, and a change too big to land whole
-gets a task list inside its own file.
+Work is tracked as local markdown issues under `docs/issues/`, one file per
+issue, named `NNN-<slug>.md`. The frontmatter carries the facts — `status`
+(`backlog | active | waiting | done`), `branch`, `pr` — and the filled sections
+are the progress. One issue = one branch = one pull request; there are no child
+issues, and a change too big to land whole gets a task list inside its own file.
+There is no tracker script and no skill guarding status transitions — edit the
+file.
 
-The rulebook itself arrives as `~/.claude/CLAUDE.md`, installed by the
-SessionStart hook in `.claude/hooks/`. There is no tracker script and no skill
-guarding status transitions — edit the file.
-
-Everything resolved before the switch stays in the predecessor's form:
-directories `NN-<slug>/issue.md` with a `Status:` line. Those are history —
-read them for context, never revive one.
+Older issues stay in their earlier form: directories `NN-<slug>/issue.md` with a
+`Status:` line. Those are history — read them for context, never revive one.
 
 ### E2E test cases for the evaluator
 When the maintainer asks to create an E2E test case for the Reinraum evaluator
