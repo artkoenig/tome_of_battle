@@ -154,6 +154,21 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   Doku (CLAUDE.md, bsdata-Doku, ADRs) nachziehen, Vollabnahme aller
   Kriterien
 
+Korrekturen aus Prüfrunde 3:
+
+- [ ] 17. (F1) Die Pfadkorrektur wirkt am Rand, den der Editor benutzt.
+  Hook und Direktaufruf teilen **eine** Auswertungsfunktion, damit die
+  Naht nicht wieder auseinanderläuft — Kriterien 3 und 5
+- [ ] 18. (F2) Auch der Pfad eines **Kontingents** kommt aus der
+  korrigierten Zuordnung, nicht aus dem rohen Eingabe-Index —
+  Kriterien 3 und 5
+- [ ] 19. (F3) Der Herkunftsfilter des Aushebe-Dialogs fragt nach dem
+  Armeebuch **des Kontingents**, nicht dem der ganzen Liste —
+  Kriterium 5
+- [x] 20. (F4) Veralteter Produktivkommentar in
+  `src/roster/selectionFactory.js` (nennt das gelöschte
+  `entryAvailability`) — Kriterium 2
+
 Korrekturen aus Prüfrunde 2:
 
 - [x] 11. (B3+B7) Rettung eines Systems ohne Roh-XML darf keine
@@ -173,26 +188,58 @@ Korrekturen aus Prüfrunde 2:
 Je Zeile ein Akzeptanzkriterium, je Spalte eine Prüfrunde, je Zelle die
 Zahl der Befunde:
 
-| # | Kriterium | R1 | R2 |
-|---|---|---|---|
-| 1 | Kein Produktivimport aus `src/solver/` | 0 | 0 |
-| 2 | Solver gelöscht, Prüfungen grün, Doku nachgezogen | 2 | 1 |
-| 3 | Produktiver Roster-Adapter (Link-Id-Regel) | 0 | 2 |
-| 4 | i18n aus der Evaluator-Einordnung | 0 | 0 |
-| 5 | Verfügbarkeit aus `capabilities` | 1 | 2 |
-| 6 | Nicht-Validierungs-Funktionen verhaltensgleich umgezogen | 1 | 1 |
-| 7 | E2E umgezogen, laufen grün | 0 | 0 |
-| 8 | `prepareDataset` höchstens einmal je Datensatz | 0 | 0 |
-| — | ohne Kriteriumsverletzung (Bequemlichkeiten, Perf, Testlücke) | 4 | 1 |
-| | **Summe** | **8** | **7** |
+| # | Kriterium | R1 | R2 | R3 |
+|---|---|---|---|---|
+| 1 | Kein Produktivimport aus `src/solver/` | 0 | 0 | 0 |
+| 2 | Solver gelöscht, Prüfungen grün, Doku nachgezogen | 2 | 1 | 1 |
+| 3 | Produktiver Roster-Adapter (Link-Id-Regel) | 0 | 2 | 2 |
+| 4 | i18n aus der Evaluator-Einordnung | 0 | 0 | 0 |
+| 5 | Verfügbarkeit aus `capabilities` | 1 | 2 | 1 |
+| 6 | Nicht-Validierungs-Funktionen verhaltensgleich umgezogen | 1 | 1 | 0 |
+| 7 | E2E umgezogen, laufen grün | 0 | 0 | 0 |
+| 8 | `prepareDataset` höchstens einmal je Datensatz | 0 | 0 | 0 |
+| — | ohne Kriteriumsverletzung (Bequemlichkeiten, Perf, Testlücke) | 4 | 1 | 0 |
+| | **Summe** | **8** | **7** | **4** |
 
-Runde 2 hat weniger Befunde, aber **schwerere**: die beiden Fälle unter
-Kriterium 3 und 5 (B1, B2) liefern der Oberfläche fremde Daten, statt
-etwas fehlen zu lassen. Ein Befund (B3) ist ein Loch, das die
-Runde-1-Korrektur selbst gerissen hat — für die Stoppregel „dieselbe
-Sache zweimal" gezählt: es ist derselbe Gegenstand (Systeme ohne
-Roh-XML), zum zweiten Mal falsch. Beim dritten Mal geht die Frage an den
-Menschen statt in eine weitere Runde.
+Die Zahl fällt, die Sorte nicht. Runde 2 hat weniger, aber **schwerere**
+Befunde gebracht als Runde 1: die Fälle unter Kriterium 3 und 5 (B1, B2)
+liefern der Oberfläche fremde Daten, statt etwas fehlen zu lassen.
+
+## Das Stoppsignal „Wiederholung"
+
+Es ist gefeuert, und zwar zweifach — festgehalten, weil die Zahl allein
+das Gegenteil suggeriert:
+
+1. **Derselbe Defekt hat eine Runde überlebt.** B2 (verschobene
+   Slot-Pfade) galt nach Runde 2 als behoben und steht in Runde 3 wieder
+   da (F1). Die Korrektur war richtig — nur am falschen Rand: sie sitzt
+   in `evaluateAppRoster`, das allein der `.ros`-Export benutzt, während
+   der Editor über `useEvaluation` läuft. Beide Wege setzen Adapter und
+   `evaluate` **getrennt** zusammen; sie teilen nur den Datensatz-Cache.
+2. **Eine Korrektur hat zum zweiten Mal in Folge ein neues Loch
+   gerissen.** Runde 2: die Rettung ohne Roh-XML löschte Kataloge (B3).
+   Runde 3: der Herkunftsfilter im Aushebe-Dialog sperrt einem
+   verbündeten Kontingent sein eigenes Armeebuch aus (F3).
+
+**Gemeinsame Ursache, und sie liegt bei mir:** ich habe in beiden
+Aufträgen den **Ort** der Korrektur vorgegeben statt das **beobachtbare
+Verhalten an dem Rand, den der Nutzer berührt** — und die Menge der
+Konsumenten dieses Randes nicht aufgezählt. Der Implementierer hat genau
+das gebaut, was dastand; die Testautorin hat die falsche Prämisse
+übernommen (der Kopf von `evaluationCache.unresolvedSlotPaths.test.js`
+behauptet, `evaluateAppRoster` sei „der Rand, den die Oberfläche
+benutzt" — das stimmt nicht).
+
+**Entschieden: Vorgehen ändern, nicht bloß nachbessern.**
+
+- Aufträge benennen ab jetzt das beobachtbare Verhalten und die Naht,
+  an der es sichtbar wird — nie mehr die Funktion, in der die Zeile
+  stehen soll.
+- Die Tests dieser Korrekturen greifen am **Hook und an der Komponente**
+  an, nicht an einer inneren Funktion.
+- F1 wird nicht an zwei Stellen geflickt, sondern die Doppelung
+  beseitigt: Hook und Direktaufruf gehen durch **eine** Funktion. Eine
+  Naht, die es nur einmal gibt, kann nicht wieder auseinanderlaufen.
 
 ## Decisions
 
@@ -282,6 +329,26 @@ Menschen statt in eine weitere Runde.
 
 ## Log
 
+- 2026-07-30, Prüfrunde 3 (frischer Kontext, ganze Absicht): 4 Befunde,
+  Trend 8 → 7 → 4. Fakten der Runde per Exitcode bestätigt (`npm test` 241
+  Dateien / 2510 Fälle inkl. `e2e/pwa.test.js`, lint, typecheck, depcruise,
+  build je 0; knip 1, warn-only). Der Prüfer hat zusätzlich **zehn gezielte
+  Mutationen** gesetzt und alle zehn wurden von Tests getötet — nach den sechs
+  Scheinsicherheiten aus Runde 1 keine weitere gefunden. Zwei
+  Entscheidungen des Issues hat er zu falsifizieren versucht und **bestätigt**:
+  die Exaktheit der Diagnose-`defId`-Menge (`attachInstance` meldet vor dem
+  Abstieg und steigt nicht ab — der Teilbaum entfällt undiagnostiziert, und
+  `collectSelectionPaths` spiegelt genau das) und die Vollständigkeit des
+  Herkunftsindex (an echten Katalogdaten gemessen: 2458 Slots, **0** mit
+  `sourceId: null`; die einzigen Ids außerhalb des Index sind Info-Elemente,
+  die nie ein Slot-`def` werden). Kriterien 3 und 5 gelten als **nicht
+  erfüllt**, die übrigen sechs als erfüllt.
+- 2026-07-30, Task 20 (F4) erledigt: der Kopfkommentar von
+  `src/roster/selectionFactory.js` nannte noch `entryAvailability` als
+  zweiten Aufrufer — gelöscht mit dem Solver. Jetzt steht dort der wahre
+  Stand: einziger Aufrufer ist `useRoster.addUnit`, die Verfügbarkeit kommt
+  aus dem Bericht (ADR-0035). Die Runde-1-Triage hatte „veraltete
+  Produktivkommentare" als erledigt geführt; dieser hier war übersehen.
 - 2026-07-30, Tasks 11–14 erledigt: alle 21 roten Fälle grün, **ohne
   Testedit** (`git diff` der fünf Vertragsdateien leer). Selbst nachgemessen,
   nicht vom Implementierer übernommen: `npm test` 241 Dateien / 2510 Fälle +

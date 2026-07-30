@@ -83,11 +83,13 @@ function populateChildren({ system, resolveEntry, catalogueId, def, parentSelect
 }
 
 /**
- * Reine, geteilte Selektions-Fabrik (SSOT, ADR-0022): erzeugt aus einem Katalog-Eintrag/-Link
- * einen vollständigen Selektions-Knoten und bevölkert **alle** Pflicht-Kinder (`min > 0`,
- * inkl. Default-Gruppenwahl) rekursiv — identisch zum echten Ausheben. Sowohl
- * `useRoster.addUnit` als auch die hypothetische Aushebe-Verfügbarkeit (`entryAvailability`)
- * nutzen sie, damit „im Dialog wählbar" und „nach dem Ausheben legal" dieselbe Struktur sehen.
+ * Reine, geteilte Selektions-Fabrik: erzeugt aus einem Katalog-Eintrag/-Link einen
+ * vollständigen Selektions-Knoten und bevölkert **alle** Pflicht-Kinder (`min > 0`,
+ * inkl. Default-Gruppenwahl) rekursiv — identisch zum echten Ausheben. Einziger
+ * Aufrufer ist heute `useRoster.addUnit`: seit Issue 0121 liest die Oberfläche die
+ * Aushebe-Verfügbarkeit aus dem Bericht (ADR-0035), statt sie durch ein
+ * hypothetisches Ausheben zu erproben — das dafür gebaute `entryAvailability`
+ * (ADR-0022) ist mit dem Solver gelöscht.
  *
  * Abhängigkeiten werden injiziert (Dependency Injection, kein Closure über Hook-State):
  * @param {Object} args
