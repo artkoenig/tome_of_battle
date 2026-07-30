@@ -243,6 +243,16 @@ benutzt" — das stimmt nicht).
 
 ## Decisions
 
+- **Die Sektion eines unauflösbaren Kontingents bleibt stehen (Task 18).**
+  Sie bekommt `forcePath: null` und zeigt dann keine Angebote und keine
+  Kategorie-Grenzen. Das ist ehrlich — die Meldung „diese Auswahl gibt es im
+  Katalog nicht mehr" nennt den Fall bereits. Die Sektion zu unterschlagen
+  würde dem Nutzer seine eigenen Daten verbergen. *(Default, unanswered.)*
+- **`entryFor` im Aushebe-Dialog wird nicht mitgezogen (Task 19).** Dass der
+  Aushebe-Callback den Katalogeintrag roster-weit auflöst, ist vorbestehend
+  und gehört zu Issue 0127. Die Kriterien reden davon, **welche** Kandidaten
+  erscheinen — nicht davon, woraus der gewählte Eintrag aufgelöst wird.
+  *(Default, unanswered.)*
 - **Rettung ist alles oder nichts (Task 11).** Kennt der Katalogindex nicht
   jede gespeicherte Katalog-Id und die `.gst`, unterbleibt die Nachrüstung
   ganz. Eine Teilrettung — nur die bekannten Dateien nachtragen — wäre
@@ -329,6 +339,31 @@ benutzt" — das stimmt nicht).
 
 ## Log
 
+- 2026-07-30, Tests für die Tasks 17–19 geschrieben (test-author, ohne
+  Produktivcode): 5 neue Dateien, 56 Fälle, davon **39 rot**. Die
+  Nachbarschaft (`src/evaluation src/components src/utils`, 554 Fälle) kippt
+  nirgends sonst; `src/hooks` unverändert Exit 0. Zwei Prämissen **meines**
+  Auftrags hat sie beim Lesen widerlegt — der wichtigere Teil ihres Berichts:
+  1. Meine Behauptung, `useEvaluation.test.js` schreibe die naive Zuordnung
+     fest und decke damit den Defekt, ist **falsch**: sein Fixture löst
+     vollständig auf, dort sind naive und korrigierte Zuordnung identisch, der
+     Test bleibt unter der Korrektur grün. Gedeckt hat den Defekt keine
+     falsche, sondern eine **fehlende** Erwartung — am Hook-Rand gab es
+     überhaupt keinen Fall mit `unresolvedDefinition`. (Der irreführende Kopf
+     in `evaluationCache.unresolvedSlotPaths.test.js:26` besteht dagegen wie
+     beschrieben.)
+  2. Meine Konsumentenliste war **unvollständig**, und zwar genau in der
+     Richtung, die den Fehler erzeugt hat: `useEvaluation` hat einen dritten
+     Konsumenten — `src/components/PlayMode.jsx` ruft ihn direkt auf und
+     benutzt `pathBySelectionId` für die Kosten. **Der Spielmodus zeigt heute
+     dieselben verschobenen Daten wie der Editor.** `evaluateAppRoster` hat
+     einen zweiten (`RosterDashboard.jsx`, nur `costTotals`). Die Naht-Tests
+     binden beide Ränder aneinander, damit ist PlayMode konstruktiv
+     mitabgedeckt.
+  Dass ausgerechnet die unvollständige Aufzählung der Konsumenten wieder der
+  Fehler war — dieselbe Ursache wie in Runde 2 —, ist der Beleg dafür, dass
+  die Umstellung auf **eine** Naht (Task 17) die richtige Antwort ist und
+  nicht bloß eine sauberere.
 - 2026-07-30, Prüfrunde 3 (frischer Kontext, ganze Absicht): 4 Befunde,
   Trend 8 → 7 → 4. Fakten der Runde per Exitcode bestätigt (`npm test` 241
   Dateien / 2510 Fälle inkl. `e2e/pwa.test.js`, lint, typecheck, depcruise,
