@@ -142,7 +142,7 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 - [x] 7. UI-Umstellung Rest: Dashboard, PlayMode, Modals,
   rosterSerialization; Kosten aus `costTotals`, Profile aus
   `infoElements`
-- [ ] 8. Schreibmodell-Umzug nach `src/roster/`: was die UI nach 5–7
+- [x] 8. Schreibmodell-Umzug nach `src/roster/`: was die UI nach 5–7
   noch aus `src/solver/` importiert (Selektions-Fabrik, Baum-Editing,
   rosterSync, Katalogauswahl …), zieht verhaltensgleich um, Tests
   wandern mit (umgereiht: erst nach der UI-Umstellung ist der wahre
@@ -199,6 +199,30 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-30, Task 8 (Schreibmodell-Umzug) erledigt: 21 Module + 49
+  Modultests per git mv nach src/roster/ (verhaltensgleich),
+  catalogueSelection/ungenutzte Exporte gelöscht, Rest-Kosten/Namens-
+  Anzeigen in PlayMode/PlayUnitDetails/UnitSelectionCard auf den
+  Bericht umgestellt. Kein Produktivcode außerhalb src/solver
+  importiert mehr den Solver (grep leer). Neue blockierende
+  Schichtregeln (oxlint+depcruise, je per gepflanzter Verletzung
+  belegt): evaluator↮roster, evaluation↛roster. Volle Suite 2694
+  Exit 0, E2E Exit 0, build/lint/typecheck/depcruise Exit 0.
+  Judgment-Call (kein test-author-Lauf): reiner Umzug, die
+  mitwandernden Modultests sind die Tests. Eingriff der Hauptsitzung
+  in eine Tabu-Datei: RosterCategorySection.evaluator.test.jsx pinnte
+  sein Harness per vi.mock auf den alten Solver-Pfad — nach dem Umzug
+  griff der benigne Stub nicht mehr; eine Zeile auf '../../roster'
+  retargetet, Erwartungen unberührt (Harness-Defekt, keine
+  Verhaltensfrage; Alternative hätte auf echten Daten leere
+  Characters-Sektionen sichtbar gemacht).
+- 2026-07-30, ADR-0034-Spannungen aus Task 8 (Folge-Kandidaten):
+  collectUnreachableArmyWideSelectors, der Upgrade-Chips-Filter
+  (infoElements ohne Quell-Selektion-Herkunft), computeRosterCounts/
+  buildModifierEvalContext-Zählscheiben, Kategorie-Sichtbarkeit
+  (isEntryPrimaryInCategory) — je UI-seitige Katalog-Ableitung, die
+  der Bericht (noch) nicht trägt; "Kategorie bietet Kandidaten" im
+  Bericht würde Spannung + Harness-Wurzelursache zugleich lösen.
 - 2026-07-30, Task 7 (Rest-UI) erledigt: 10 Vertragsdateien (28 rot
   vorher), volle Suite 2700 Tests Exit 0, E2E Exit 0 unverändert,
   build/lint/typecheck/depcruise Exit 0. Neu evaluationCache
