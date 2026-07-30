@@ -59,7 +59,7 @@ const GATE_EXECUTION_OVERRIDES = Object.freeze({
   // `--coverage.reportOnFailure`: Vitest schreibt `coverage-final.json` sonst
   // nur bei einem durchweg gruenen Lauf -- ein einzelner roter Test (z. B. der
   // CPU-Last-Flake in e2e.testcatalog.test.js, Issue 0110) wuerde sonst die
-  // gesamte Coverage-Anzeige des Berichts loeschen (Issue 0128).
+  // gesamte Coverage-Anzeige des Berichts loeschen (Issue 0129).
   'unit-tests':
     'npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportOnFailure',
   maintainability: 'node -e "console.log(\'Maintainability Index computed internally\')"',
