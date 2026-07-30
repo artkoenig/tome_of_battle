@@ -269,5 +269,82 @@ katalog-lokal.
   `importRootEntries`-Ketten (Bibliothek importiert Bibliothek) sind nur
   durch die Zyklensicherheit der Closure-Funktion abgedeckt, nicht durch
   einen eigenen Test — kein Fixture-Beispiel dafuer vorhanden.
+- 2026-07-30 — Zweiter Doku-Abgleich, gezielt zu Entry-Link/Info-Link, gegen
+  das ausgecheckte Submodul
+  (`docs/bsdata-catalogue-development-wiki/Data-structure-overview.md:284-312`):
+  die Wiki-Doku sagt woertlich, das Ziel eines `entryLink`/`infoLink` "must
+  be from the shared lists contained in the same catalogue. Because of
+  game-system level import, that also includes shared entries from game
+  system catalogue". Ein `catalogueLink`-Ziel in einer anderen, nicht per
+  Spielsystem verbundenen Catalogue (wie im Manbiters/Mercenaries-Fall) wird
+  an keiner Stelle erwaehnt oder legitimiert — `catalogueLink` selbst kommt
+  im gesamten Submodul kein einziges Mal vor (`grep -ril catalogueLink
+  docs/bsdata-catalogue-development-wiki/` → keine Treffer). Die
+  Community-Doku deckt also nur den Spielsystem-Import als
+  Cross-Catalogue-Kanal fuer `entryLink`/`infoLink` ab; der
+  catalogueLink-Kanal ist reines Implementierungsdetail des
+  BattleScribe-Readers. Bestaetigt indirekt die Menschen-Entscheidung,
+  Wurzel-`entryLink`s auszunehmen: der Fixture-Pfad ist von der Doku nicht
+  abgedeckt, aber vom echten Reader offenkundig unterstuetzt. Keine
+  weiteren Implementierungshinweise zu `importRootEntries`/Wurzel-Pooling im
+  Submodul gefunden.
+- 2026-07-30 — **Review-Runde 1 (frischer Kontext, `metis:reviewer`):**
+  Suite/Statik von mir unabhaengig reproduziert (68 Dateien/853 Tests, Exit
+  0; lint Exit 0; typecheck Exit 0). Alle 5 Kriterien als erfuellt bewertet.
+  Ein Fund ausserhalb der Kriterien: root `categoryEntry`-Definitionen
+  (`DefinitionKind.CATEGORY`) sind in `synthesizeMandatoryPhantoms` (beide
+  Schleifen) und `candidatesFor` NICHT wie `ENTRY_LINK` von der neuen
+  Katalog-Scope-Pruefung ausgenommen, obwohl das echte WHFB6-Fixture exakt
+  dasselbe Cross-Catalogue-Idiom fuer Kategorien nutzt: `Mercenaries (6th
+  definitive edition).cat` deklariert die Kategorien "Mercenaries"
+  (`b640-…`) und "Regiment of Renown" (`ee09-…`) selbst, `Vampire Counts
+  (6th definitive edition).cat` referenziert sie per eigenem `categoryLink`
+  (Zeile ~29308) ohne jedes `importRootEntries="true"`. Kein bestehender
+  Test bricht nur, weil diese beiden Kategorien im echten Datensatz zufaellig
+  keine `min`-Constraint tragen; der Reviewer hat den Fehlerfall mit einer
+  minimalen Nachbildung des exakt gleichen Musters (Kategorie mit
+  roster-`min`, per `categoryLink` aus einer anderen Catalogue referenziert,
+  Roster nur mit der referenzierenden Catalogue) reproduziert: die Verletzung
+  bleibt faelschlich aus. Kriterien 1–3 nennen woertlich nur
+  `selectionEntry`/`forceEntry`, daher verletzt der Fund keins woertlich —
+  ist aber dieselbe Luecke, die die Menschen-Entscheidung fuer `ENTRY_LINK`
+  bereits als real anerkannt hat, nur fuer `CATEGORY` noch offen. Triage:
+  wird jetzt selbst behoben (kein Delegieren an `metis:implementer`, siehe
+  Standing-Instruction), da der Parallel-Fall so direkt ist, dass eine
+  inkonsistente Behandlung von `entryLink` vs. `categoryLink` keinen Sinn
+  ergibt.
+- 2026-07-30 — **Fund behoben (selbst implementiert):** In
+  `evalTree.js`/`synthesizeMandatoryPhantoms` schaltet
+  `def.kind === DefinitionKind.CATEGORY` die `isInCatalogueScope`-Pruefung
+  jetzt genauso unbedingt frei wie `DefinitionKind.ENTRY_LINK`, in beiden
+  Schleifen (ROSTER- und FORCE-Rahmen). `offer.js` brauchte keine Aenderung:
+  `candidatesFor` filtert ausschliesslich `resolved.armyLevelCandidates`
+  (nur `catalogue.entries`, siehe `collectArmyLevelCandidates` in
+  `resolver.js:736`) — `catalogue.categories` fliesst dort nie ein, eine
+  Kategorie kann also ohnehin nie selbst ein Angebots-Kandidat sein.
+  Regressionstest ergaenzt (`crossCatalog.rootEntryScope.test.js`, neue
+  Describe „Review-Runde 1"): das exakte Reviewer-Muster (Kategorie mit
+  roster-MIN in Katalog B, per `categoryLink` an einem Wurzel-Eintrag aus
+  Katalog A referenziert, Roster nur mit As Kontingent) nachgebildet, per
+  `git stash` am unveraenderten `evalTree.js` als tatsaechlich fehlschlagend
+  verifiziert, danach mit dem Fix wieder gruen. Wichtige Selbstkorrektur
+  beim Schreiben: der erste Testentwurf erwartete faelschlich KEINE
+  Verletzung — die richtige Erwartung (wie vom Reviewer benannt: „sollte
+  weiterhin feuern") ist das Gegenteil, symmetrisch zu Kriterium 1s
+  Wurzel-`entryLink`-Tests, die ebenfalls unbedingtes Feuern statt
+  Filterung erwarten. **Ungeprüfte Annahme, hier explizit festgehalten:**
+  die Ausnahme macht Kategorie-MIN-Grenzen wieder katalog-unabhaengig
+  (gepoolt) — genau wie beim Wurzel-`entryLink` reisst das die neue
+  Katalog-Filterung fuer diese eine Definitionsart wieder ein, in Kauf
+  genommen aus Konsistenz mit der bereits vom Menschen gebilligten
+  `entryLink`-Ausnahme. Der reale WHFB6-Datensatz entscheidet das nicht, da
+  weder "Mercenaries" noch "Regiment of Renown" dort eine MIN-Grenze tragen
+  (nur MAX) — die Reviewer-Verifikation belegte ausschliesslich, dass der
+  Code-Pfad existiert und ohne Ausnahme faelschlich still bleibt, nicht
+  welches Verhalten fuer eine echte Katalog-MIN-Grenze an einer Kategorie
+  korrekt waere.
+- 2026-07-30 — **Verifikation nach dem Fix:** `npx vitest run
+  src/evaluator`, 68 Testdateien, 855 Tests (2 neu), Exit 0. `npm run lint`
+  (oxlint), Exit 0. `npm run typecheck` (tsc --noEmit), Exit 0.
 
 ## Retro

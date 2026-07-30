@@ -369,17 +369,24 @@ function countInstances(fromNode, defId) {
  * Grenz- und Ziel-Id, Issue 0093).
  *
  * **Katalog-Bezugsrahmen** (`catalogueScope`, Issue 0098): eine eigenstaendige
- * Wurzel-Definition (`ENTRY`/`FORCE`/`CATEGORY`) synthetisiert ihr
- * Pflicht-Phantom nur, wenn ihre Herkunft zum Katalog-Fussabdruck der
- * Referenz-Kataloge gehoert ({@link isInCatalogueScope}) — fuer den
- * ROSTER-Rahmen die Kataloge **aller** im Roster tatsaechlich vertretenen
- * Kontingente, fuer den FORCE-Rahmen allein der Katalog **dieses**
- * Kontingents. Ein Wurzel-**`entryLink`** ist davon ausgenommen (wie beim
- * Angebot, `offer.js`): er verweist auf eine geteilte, oft in einer
- * Bibliothek liegende Definition und ist der etablierte Weg
- * katalogübergreifender Inhalte, unabhaengig vom deklarierenden Katalog.
- * Ohne `catalogueScope` (kein Kontext mitgegeben) bleibt das Verhalten
- * ungefiltert — additiv, kein Wechsel fuer den Ein-Katalog-Fall.
+ * Wurzel-Definition (`ENTRY`/`FORCE`) synthetisiert ihr Pflicht-Phantom nur,
+ * wenn ihre Herkunft zum Katalog-Fussabdruck der Referenz-Kataloge gehoert
+ * ({@link isInCatalogueScope}) — fuer den ROSTER-Rahmen die Kataloge
+ * **aller** im Roster tatsaechlich vertretenen Kontingente, fuer den
+ * FORCE-Rahmen allein der Katalog **dieses** Kontingents. Ein Wurzel-
+ * **`entryLink`** und eine **`CATEGORY`**-Definition sind davon ausgenommen
+ * (wie beim Angebot, `offer.js`, fuer `entryLink`): beide sind reine
+ * Verweisziele — eine Kategorie wird nie selbst instanziiert, sondern von
+ * einem `categoryLink` aus einem Kontingent heraus referenziert, oft
+ * katalogfremd (z. B. "Regiment of Renown" in `Mercenaries.cat`, per
+ * `categoryLink` aus `Vampire Counts.cat` gefuehrt, ganz ohne
+ * `importRootEntries`) — derselbe etablierte Cross-Catalogue-Idiom wie beim
+ * Wurzel-`entryLink`, nur ueber `categoryLink` statt `entryLink` erreicht.
+ * Ob eine Kategorie ein Kontingent ueberhaupt betrifft, entscheidet ohnehin
+ * schon `linkedCategoryIdsOf`/`anchoredCategoryIds`, nicht die
+ * Katalog-Filterung hier. Ohne `catalogueScope` (kein Kontext mitgegeben)
+ * bleibt das Verhalten ungefiltert — additiv, kein Wechsel fuer den
+ * Ein-Katalog-Fall.
  */
 function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueScope, primaryCatalogueByForceDefId) {
   const forceNodeList = [...forceNodes(root)];
@@ -390,7 +397,8 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
   for (const def of definitions) {
     const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
     if (hasMinLimit(limits, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0
-        && (def.kind === DefinitionKind.ENTRY_LINK || isInCatalogueScope(def.id, rosterReferenceCatalogueIds, catalogueScope))) {
+        && (def.kind === DefinitionKind.ENTRY_LINK || def.kind === DefinitionKind.CATEGORY
+          || isInCatalogueScope(def.id, rosterReferenceCatalogueIds, catalogueScope))) {
       attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
     }
   }
@@ -402,7 +410,8 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
       if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
       const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
       if (hasMinLimit(limits, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0
-          && (def.kind === DefinitionKind.ENTRY_LINK || isInCatalogueScope(def.id, forceReferenceCatalogueIds, catalogueScope))) {
+          && (def.kind === DefinitionKind.ENTRY_LINK || def.kind === DefinitionKind.CATEGORY
+            || isInCatalogueScope(def.id, forceReferenceCatalogueIds, catalogueScope))) {
         attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
       }
     }

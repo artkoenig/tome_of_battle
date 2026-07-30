@@ -233,6 +233,75 @@ describe('Issue 0098 Kriterium 3: importRootEntries steuert, ob ein verlinkter B
   });
 });
 
+describe('Issue 0098 Review-Runde 1: eine Wurzel-CATEGORY bleibt vom Katalog-Bezugsrahmen ausgenommen (wie ein Wurzel-entryLink)', () => {
+  // Nachbildet exakt das reale WHFB6-Muster, das die Review-Runde fand:
+  // `Mercenaries.cat` deklariert die Kategorien "Mercenaries"/"Regiment of
+  // Renown" selbst; `Vampire Counts.cat` fuehrt sie per eigenem
+  // `categoryLink` an einem Wurzel-Eintrag, ganz ohne `importRootEntries`.
+  // Eine Kategorie ist nie selbst eine Auswahl — sie wird ausschliesslich
+  // ueber einen `categoryLink` erreicht, genau wie ein `entryLink` auf eine
+  // geteilte Definition verweist: nicht die Kategorie-Definition "gehoert"
+  // zu einem Katalog im Sinne von Kriterium 1, sondern das Referenzieren per
+  // `categoryLink` ist selbst schon der etablierte, katalog-uebergreifende
+  // Mechanismus. Die Erwartung ist deshalb umgekehrt zu Kriterium 1: die
+  // roster-skopierte MIN-Grenze an Bs Kategorie soll WEITERHIN feuern, wenn
+  // nur A (das per `categoryLink` auf Bs Kategorie verweist) im Roster
+  // steckt — genau wie ein Wurzel-`entryLink` mit eigener MIN-Grenze
+  // weiterhin unbedingt feuert (Kriterium-1-Tests oben). Ohne die Ausnahme
+  // wuerde diese Grenze faelschlich verschluckt, weil Bs Katalog nicht im
+  // Fussabdruck von As referenzierten Katalogen steckt (der Reviewer-Fund).
+  const CATEGORY_MIN_LIMIT_ID = 'b-category-root-min';
+  const CATALOGUE_B = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-b-categoryscope" name="B" gameSystemId="${GAME_SYSTEM_ID}">
+      <categoryEntries>
+        <categoryEntry id="b-category-rootscope" name="B Category">
+          <constraints>
+            <constraint id="${CATEGORY_MIN_LIMIT_ID}" type="min" value="1" field="selections" scope="roster"/>
+          </constraints>
+        </categoryEntry>
+      </categoryEntries>
+      <forceEntries>
+        <forceEntry id="b-force-categoryscope" name="B Force"/>
+      </forceEntries>
+    </catalogue>`;
+
+  const CATALOGUE_A = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-a-categoryscope" name="A" gameSystemId="${GAME_SYSTEM_ID}">
+      <forceEntries>
+        <forceEntry id="a-force-categoryscope" name="A Force"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="a-root-unit-categoryscope" name="A Root Unit" type="unit">
+          <categoryLinks>
+            <categoryLink id="a-catlink-categoryscope" targetId="b-category-rootscope" primary="true"/>
+          </categoryLinks>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  it('erzeugt weiterhin die Verletzung aus Bs roster-skopiertem Kategorie-MIN, wenn nur A (per categoryLink auf Bs Kategorie) im Roster steckt', () => {
+    const rosterAOnly = { forces: [{ defId: 'a-force-categoryscope', count: 1, children: [] }] };
+
+    const report = evaluate(
+      prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A, CATALOGUE_B] }),
+      rosterAOnly,
+    );
+
+    expect(hasViolationWithLimitId(report, CATEGORY_MIN_LIMIT_ID)).toBe(true);
+  });
+
+  it('erzeugt die Verletzung ebenso, wenn das Roster ein Kontingent aus Katalog B selbst enthaelt', () => {
+    const rosterWithBForce = { forces: [{ defId: 'b-force-categoryscope', count: 1, children: [] }] };
+
+    const report = evaluate(
+      prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A, CATALOGUE_B] }),
+      rosterWithBForce,
+    );
+
+    expect(hasViolationWithLimitId(report, CATEGORY_MIN_LIMIT_ID)).toBe(true);
+  });
+});
+
 describe('Issue 0098 Regressions-Wache: der Ein-Katalog-Fall bleibt unveraendert (additive Filterung)', () => {
   // Kein zweiter Armee-Katalog im Spiel — dieselbe Art Fixture wie die
   // bestehende Suite (`crossCatalog.test.js`, "ADR-0032"-Beschreibung). Dieser
