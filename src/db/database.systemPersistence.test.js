@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { saveSystem, getSystem, getAllSystems, saveRoster, getRoster } from './database';
-import { findEntryInSystem, findEntryInCatalogue } from '../solver/catalogResolver';
+import { findEntryInSystem, findEntryInCatalogue } from '../roster/catalogResolver';
 
 function buildSystem() {
   return {

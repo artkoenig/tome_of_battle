@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 import {
-  calculateRosterCosts, validateRoster, resolveEntry, syncRosterSelectionsWithSystem,
+  resolveEntry, syncRosterSelectionsWithSystem,
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
   mapSelectionTree, replaceSelectionById, computeRosterCounts, aggregateRosterCategoryCounts,
   buildModifierEvalContext, createSelectionFromDef as buildSelectionFromDef,
   withAddedInstance, withoutInstance, withChangedOptionCount
-} from '../solver/validator';
+} from '../roster';
+import { unresolvedSelectionsOf } from '../evaluation/datasetDiagnostics';
+import { useEvaluation } from '../evaluation/useEvaluation';
 import { useUndoableState } from './useUndoableState';
 import {
   PERSISTENCE_FAILURE_MESSAGE_KEY,
@@ -19,10 +21,6 @@ const AUTOSAVE_DEBOUNCE_MS = 150;
 /** Verschiebung der Anzahl, die eine einzelne Nutzeraktion auslöst. */
 const COUNT_INCREASE = 1;
 const COUNT_DECREASE = -1;
-
-/** Abgeleitete Werte, solange Roster oder System noch nicht vorliegen. */
-const NO_COSTS = Object.freeze({});
-const NO_VALIDATION_ERRORS = Object.freeze([]);
 
 /** Ohne benanntes Ziel-Kontingent hebt die App in das erste des Rosters aus. */
 const FALLBACK_FORCE_INDEX = 0;
@@ -60,18 +58,24 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   } = useUndoableState(initialRoster);
   const [selectedSelectionId, setSelectedSelectionId] = useState(null);
 
-  // Kosten und Validierungsfehler sind reine Ableitungen aus Roster und System
-  // (SSOT) und werden deshalb berechnet statt in eigenem State gespiegelt. Ein
-  // gespiegelter State würde die Oberfläche — und mit ihr die aus dem Validator
-  // abgeleitete Aushebe-Verfügbarkeit (ADR-0022) — hinter dem Roster zurückhängen
-  // lassen.
-  const costs = useMemo(
-    () => (roster && system ? calculateRosterCosts(roster, system) : NO_COSTS),
-    [roster, system]
-  );
-  const validationErrors = useMemo(
-    () => (roster && system ? validateRoster(roster, system) : NO_VALIDATION_ERRORS),
-    [roster, system]
+  // Validierung und Kosten kommen seit Issue 0121 (Tasks 5 und 7) aus dem
+  // Evaluator-Bericht (ADR 0030/0034): Verletzungen, Fähigkeitsdatensätze,
+  // Kostensummen je deklarierter Kostenart, die Datensatz-Beschreibung und die
+  // Zuordnungen Selection-UUID bzw. Force-UUID → Slot-Pfad — synchron aus dem aktuellen Roster
+  // abgeleitet, ohne gespiegelten State. Der frühere Solver-Kostenpfad
+  // (`calculateRosterCosts` → `costs`) ist entfallen; jede Kosten-Anzeige
+  // liest `costTotals` bzw. die Fähigkeitsdatensätze.
+  const {
+    violations, capabilities, description, costTotals,
+    pathBySelectionId, pathByForceId, diagnostics
+  } = useEvaluation(system, roster);
+
+  // Auswahlen, deren Definition der Katalog nicht mehr kennt (stilles
+  // Katalog-Update, ADR 0018). Sie sind keine Regelverletzung, muessen dem
+  // Nutzer aber gemeldet werden — die Engine uebergeht sie sonst stumm.
+  const unresolvedSelections = useMemo(
+    () => unresolvedSelectionsOf(diagnostics, roster),
+    [diagnostics, roster]
   );
 
   // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt
@@ -348,8 +352,13 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
 
   return {
     roster,
-    costs,
-    validationErrors,
+    violations,
+    capabilities,
+    description,
+    costTotals,
+    pathBySelectionId,
+    pathByForceId,
+    unresolvedSelections,
     selectedRosterSelection,
     setSelectedRosterSelection,
     addUnit,

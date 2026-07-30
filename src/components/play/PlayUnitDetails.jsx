@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
 import {
-  findEntryInSystem, resolveEntry, collectUnitProfilesAndRules, getSelectionTotalCost,
-  getEffectiveSelectionName, isIndependentSubUnit, MODEL_COUNT_PROFILE_TYPES,
-  groupProfilesByType, resolveCostLimitTypeId, resolveCostLimitLabel,
-  childSelectionsOf
-} from '../../solver/validator';
+  findEntryInSystem, resolveEntry, isIndependentSubUnit,
+  MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
+} from '../../roster';
+import { costLimitLabelOf, costLimitTypeIdOf } from '../../evaluation/costDisplays';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { getProfileCellClassName } from '../profileCellClasses';
 import { useTranslation } from '../../i18n/useTranslation';
@@ -36,6 +35,10 @@ export default function PlayUnitDetails({
   selection,
   system,
   roster,
+  costTypes = null,
+  capability = null,
+  capabilities = null,
+  pathBySelectionId = null,
   getUnitCurrentWounds,
   handleAdjustWound,
   handleMouseEnter,
@@ -95,11 +98,19 @@ export default function PlayUnitDetails({
 
   const hasSubUnits = independentSubUnits.length > 0;
 
-  // Helper to get unit profiles, grouped generically by profile type name.
-  const getUnitProfilesAndRules = (sel) => {
-    const { profiles, rules } = collectUnitProfilesAndRules(system, sel, roster.catalogueId, roster);
-    return { groups: groupProfilesByType(profiles), rules };
-  };
+  // Der Fähigkeitsdatensatz des Slots dieser Auswahl (Issue 0121, Task 7):
+  // direkt gereicht (`capability`) oder über das Lookup-Paar `capabilities` +
+  // `pathBySelectionId` aufgelöst.
+  const slotCapability = capability
+    ?? capabilities?.get(pathBySelectionId?.get(selection?.id));
+
+  // Profil-Tabellen aus der Info-Projektion des Berichts: die Profile des
+  // Slots (samt der von belegten Unter-Auswahlen geerbten), gruppiert nach
+  // Profiltyp (bestehende Observable: Statblock zuerst, weitere Typen als
+  // eigene Tabelle mit Typ-Überschrift).
+  const profileGroups = groupProfilesByType(
+    (slotCapability?.infoElements ?? []).filter(element => element.kind === 'profile')
+  );
 
   const renderProfileCell = (c, headerKey) => {
     if (!c) return <td key={headerKey} className="font-body">-</td>;
@@ -219,12 +230,14 @@ export default function PlayUnitDetails({
   const modelCount = getUnitModelCount(selection);
   const totalMaxWounds = modelCount * maxWounds;
   const currentWounds = getUnitCurrentWounds(selection.id, totalMaxWounds);
-  const { groups } = getUnitProfilesAndRules(selection);
-  const modelGroup = groups.find(g => g.isModel);
-  const itemGroups = groups.filter(g => !g.isModel);
+  const modelGroup = profileGroups.find(g => g.isModel);
+  const itemGroups = profileGroups.filter(g => !g.isModel);
 
   const isDead = hasSubUnits ? false : (currentWounds === 0);
-  const totalCost = getSelectionTotalCost(selection, resolveCostLimitTypeId(roster, system), 1, { system, roster, currentCatalogueId: roster.catalogueId });
+  // Kosten aus dem Bericht (Issue 0121, Task 8; ADR-0034): der Teilbaum-Betrag
+  // des Slots in der Limit-Kostenart der Liste; das Label aus den Kostenarten
+  // der Datensatz-Beschreibung.
+  const totalCost = slotCapability?.totalCosts?.[costLimitTypeIdOf(roster, costTypes)] ?? 0;
 
   return (
     <div 
@@ -238,12 +251,12 @@ export default function PlayUnitDetails({
       <div className="play-unit-header">
         <div className="play-unit-title text-ui-title">
           <div>
-            {getEffectiveSelectionName(selection, { system, roster, currentCatalogueId: roster?.catalogueId })}
+            {slotCapability?.name ?? selection.name}
           </div>
           <div className="flex-row gap-8">
             {totalCost > 0 && (
               <div className="text-ui-title text-gold text-strong">
-                {totalCost} {resolveCostLimitLabel(roster, system)}
+                {totalCost} {costLimitLabelOf(roster, costTypes)}
               </div>
             )}
           </div>
@@ -328,7 +341,7 @@ export default function PlayUnitDetails({
               selection={selection}
               system={system}
               activeCatalogueId={roster.catalogueId}
-              roster={roster}
+              capability={slotCapability}
               handleMouseEnter={(title, text, e) => handleMouseEnter(e, title, text)}
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}
@@ -344,11 +357,14 @@ export default function PlayUnitDetails({
           {hasSubUnits && (
             <div className="sub-units-container play-unit-sub-units">
               {independentSubUnits.map(subSel => (
-                <PlayUnitDetails 
+                <PlayUnitDetails
                   key={subSel.id}
                   selection={subSel}
                   system={system}
                   roster={roster}
+                  costTypes={costTypes}
+                  capabilities={capabilities}
+                  pathBySelectionId={pathBySelectionId}
                   getUnitCurrentWounds={getUnitCurrentWounds}
                   handleAdjustWound={handleAdjustWound}
                   handleMouseEnter={handleMouseEnter}

@@ -44,8 +44,17 @@ function documentsOf(prepared) {
  * der Katalog keine deklariert) und ob der Autor sie ausblendet. Kostenarten
  * stehen ueblicherweise im Spielsystem, duerfen laut XSD aber an jeder
  * Katalogwurzel deklariert werden — deshalb werden alle Dokumente gelesen.
+ *
+ * Exportiert, weil die Auswertung dieselbe Deklarationsliste braucht: die
+ * Kostenprojektion des Berichts fuehrt jede deklarierte Kostenart in
+ * `costTotals` — auch ohne Vorkommen, mit 0 (`costProjection.js`, Issue 0121).
+ * Eine zweite Leseart derselben Deklarationen waere ein Driftrisiko.
+ *
+ * @param {{ gameSystemDocument: object|null, catalogueDocuments: object[] }} prepared
+ *   Der **Inhalt** eines aufbereiteten Datensatzes (`PreparedDataset.contentsOf`).
+ * @returns {object[]}
  */
-function costTypesOf(prepared) {
+export function costTypesOf(prepared) {
   return firstOccurrencePerId(documentsOf(prepared).flatMap(document => document.costTypes ?? []));
 }
 

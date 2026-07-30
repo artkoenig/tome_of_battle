@@ -188,7 +188,7 @@ function parseCosts(el) {
 /**
  * The BattleScribe QueryBase default `field`: a constraint/condition counts
  * selections unless it names a cost-type id instead. Exported as the single
- * source of truth so the solver's cost/selection distinction (constraintScope.js)
+ * source of truth so the engine's cost/selection distinction
  * and this parser default cannot drift apart.
  */
 export const SELECTIONS_FIELD = 'selections';
@@ -198,7 +198,7 @@ const DEFAULT_CONSTRAINT_SCOPE = 'parent'; // parent, force, roster, or an ances
  * The BattleScribe QueryBase default for `shared`: **true**. An absent attribute
  * means the query aggregates over every instance of the entry in the roster;
  * only an explicit `shared="false"` narrows it to the one instance it hangs on.
- * The solver reads the resulting flag through `isSharedQuery`.
+ * The engine reads the resulting flag when it resolves a query scope.
  */
 export const DEFAULT_SHARED_QUERY = true;
 

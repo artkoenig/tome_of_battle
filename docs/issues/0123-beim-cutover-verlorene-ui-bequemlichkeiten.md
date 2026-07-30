@@ -1,0 +1,85 @@
+---
+status: backlog
+branch:
+pr:
+---
+
+# Beim Cutover verlorene UI-Bequemlichkeiten: Auto-Fill-Restpunkte und General-Sortierung
+
+## Intent
+
+Der Cutover auf die Reinraum-Engine (Issue 0121) hat zwei
+Oberflächen-Funktionen mitgenommen, die kein Akzeptanzkriterium verlangt
+hat und die auch keine Entscheidung dort abdeckt. Beide hingen an
+Solver-Code, der beim Abriss verschwand. Sie sind hier festgehalten,
+damit der Mensch entscheidet: zurückholen oder bewusst fallenlassen.
+
+**1. Auto-Fill schlug Kombinationen für die Restpunkte vor.** Vor dem
+Cutover zeigte `AutoFillSuggestions` bei erfüllten Pflichten und
+verbleibendem Budget ein Panel: „Du hast noch N Punkte" mit „Perfekten
+Kombinationen" und „Möglichen Upgrades" — eine Knapsack-Suche des
+Solvers über die Restpunkte. Heute speist sich das Panel allein aus
+Pflicht-Signalen des Berichts (`isMandatoryUnmet`); wer alle Pflichten
+erfüllt hat und noch 200 Punkte übrig hat, sieht **gar kein Panel
+mehr**. Zehn i18n-Schlüssel (`editor.autofill.remainingBadge`,
+`introPrefix`, `introSuffix`, `perfectCombos`, `exact`,
+`possibleUpgrades`, `showLess`, `showAll`, `forUnit`, `apply`) wurden
+ersatzlos gelöscht.
+
+**2. Der Konfigurator stellte die „General"-Option voran.** Vor dem
+Cutover sortierte `SelectionConfigurator` Gruppen und Zeilen so, dass die
+General-Option oben stand — erkannt über Stichwortlisten
+(`GENERAL_EXACT_KEYWORDS`, `GENERAL_SUBSTRING_KEYWORDS`) und
+systemgebundene IDs (`isQuirkGeneralEntryId`). Heute erscheinen die
+Optionen in Katalogreihenfolge; in WHFB6 („Vampire Counts.cat" führt
+sechs Einträge namens „General") ist das sichtbar.
+
+Zu 2 gibt es eine Spannung, die die Entscheidung trägt: **ADR-0034**
+ordnet genau solche Stichwort-Heuristiken weder der Engine noch dem
+Bericht zu — sie gelten als Datenfehler, der im Katalog-Fork zu beheben
+ist. Eine Rückkehr wäre also eine bewusste Ausnahme in der Oberfläche,
+keine Selbstverständlichkeit.
+
+Acceptance criteria (gelten erst, wenn der Mensch „zurückholen" wählt;
+wählt er „fallenlassen", schließt dieses Issue mit einer notierten
+Begründung):
+
+1. Sind alle Pflichten erfüllt und bleibt Budget übrig, zeigt der Editor
+   wieder Vorschläge für die Restpunkte, mit der verbleibenden Summe und
+   je Vorschlag den Kosten.
+2. Die Vorschläge stammen aus dem Bericht (wählbare Slots mit Spielraum
+   und ihren `costs`), nicht aus einer neuen Katalog-Ableitung in der
+   Oberfläche (ADR-0034).
+3. Die General-Option steht im Konfigurator wieder an erster Stelle —
+   oder es ist notiert, warum die Sortierung entfällt.
+
+## Plan
+
+## Tasks
+
+## Decisions
+
+- **Nicht in Issue 0121 nachgeholt.** Beides liegt außerhalb der dort
+  freigegebenen acht Kriterien; die Regel „ein Fund außerhalb der
+  Absicht geht an den Menschen" greift. *(Default, unanswered.)*
+
+## Log
+
+- 2026-07-30: Von der Prüfung zu Issue 0121 gefunden (Befunde 3 und 4),
+  je mit Reproduktion gegen den Stand vor dem Cutover.
+
+## Checkpoints
+
+### Before implementation
+
+- Does this match what was asked?
+- What surprised me?
+- What am I assuming without having verified it?
+
+### Before the PR
+
+- Does this match what was asked?
+- What surprised me?
+- What am I assuming without having verified it?
+
+## Retro

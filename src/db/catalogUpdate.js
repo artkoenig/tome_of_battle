@@ -174,6 +174,41 @@ export function findOutdatedCatalogFiles(index, system) {
   return outdatedFiles;
 }
 
+/**
+ * Der **vollstaendige** Dateisatz eines Systems, das nachgeruestet werden soll —
+ * ohne Revisionsvergleich, aber alles oder nichts.
+ *
+ * Der Fall dahinter: ein System **ohne** gespeichertes Roh-XML stammt aus einer
+ * Version vor 1.8.2, und seit Issue 0121 beurteilt die Engine ein Roster aus den
+ * Katalogdateien selbst. Fuer ein solches System hilft "aktuell" nichts — die
+ * Datei ist gar nicht da und muss unabhaengig von ihrer Revision geholt werden.
+ * Bewusst getrennt von {@link findOutdatedCatalogFiles}: die bleibt der reine
+ * Revisionsvergleich, dem ein dem Index unbekannter Katalog gleichgueltig ist.
+ *
+ * **Alles oder nichts** (Issue 0121, Task 11): kennt der Index nicht jede
+ * gespeicherte Katalog-Id **und** die `.gst`, gibt es keinen Dateisatz — `null`.
+ * Eine Teilrettung waere schaedlicher als keine: das nachgeruestete System
+ * verloere die dem Index unbekannten Kataloge dauerhaft und still, und die
+ * Engine wertete jedes Roster gegen einen lueckenhaften Datensatz aus (lauter
+ * `unresolvedDefinition` statt eines ehrlichen Fehlens).
+ *
+ * @returns {Array<{type: string, fileName: string}>|null} der vollstaendige
+ *   Dateisatz, oder `null`, wenn der Index ihn nicht vollstaendig kennt.
+ */
+function findCompleteCatalogFileSet(index, system) {
+  const gameSystemEntry = findIndexEntry(index, CATALOG_FILE_TYPE.GAME_SYSTEM, system.id);
+  if (!gameSystemEntry) return null;
+
+  /** @type {Array<{type: string, fileName: string}>} */
+  const files = [{ type: CATALOG_FILE_TYPE.GAME_SYSTEM, fileName: rawFileName(gameSystemEntry) }];
+  for (const catalogue of system.catalogues ?? []) {
+    const catalogueEntry = findIndexEntry(index, CATALOG_FILE_TYPE.CATALOGUE, catalogue.id);
+    if (!catalogueEntry) return null;
+    files.push({ type: CATALOG_FILE_TYPE.CATALOGUE, fileName: rawFileName(catalogueEntry) });
+  }
+  return files;
+}
+
 function replaceRawFile(files, fileName, content) {
   const nextFile = { name: fileName, content };
   const existingIndex = files.findIndex((file) => file.name === fileName);
@@ -224,8 +259,15 @@ export async function updateSystemFromCatalogIndex(
   if (!index) return null;
 
   try {
-    const outdatedFiles = findOutdatedCatalogFiles(index, system);
-    if (outdatedFiles.length === 0) return null;
+    // Fehlt das Roh-XML ganz, entscheidet nicht die Revision, sondern die
+    // Abwesenheit: dann wird der **vollstaendige** Dateisatz geholt — oder
+    // keiner (Issue 0121, Task 11). `null` heisst hier wie dort "keine
+    // Aktualisierung": der Aufrufer behaelt den Altbestand unangetastet und
+    // meldet das System als nicht nachruestbar.
+    const outdatedFiles = system.rawXmls?.gst?.length
+      ? findOutdatedCatalogFiles(index, system)
+      : findCompleteCatalogFileSet(index, system);
+    if (outdatedFiles === null || outdatedFiles.length === 0) return null;
 
     const rawXmls = await downloadOutdatedRawXmls(
       system.rawXmls,

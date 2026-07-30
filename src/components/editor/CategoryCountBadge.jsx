@@ -1,15 +1,17 @@
 import React from 'react';
-import { formatConstraintLimit } from '../../solver/validator';
 
 /**
  * Setzt die wirksamen Min-/Max-Grenzen zu dem Zusatz hinter der Anzahl zusammen.
- * Grenzen, die nichts einschränken (kein Minimum, unbegrenztes Maximum), bleiben
- * weg — ein Chip soll nur zeigen, was tatsächlich gilt.
+ * Die Werte kommen aus dem categoryAnchor-Slot des Evaluator-Berichts
+ * (`effectiveMin`/`effectiveMax`; `null` = keine wirksame Grenze/unbegrenzt,
+ * Issue 0121, Task 7). Grenzen, die nichts einschränken (kein Minimum,
+ * unbegrenztes Maximum), bleiben weg — ein Chip soll nur zeigen, was
+ * tatsächlich gilt.
  */
-function formatLimitSuffix({ minValue, maxValue, minConstraint, maxConstraint }) {
+function formatLimitSuffix({ min, max }) {
   const limitParts = [];
-  if (minValue > 0) limitParts.push(`Min: ${formatConstraintLimit(minValue, minConstraint)}`);
-  if (maxValue < Infinity) limitParts.push(`Max: ${formatConstraintLimit(maxValue, maxConstraint)}`);
+  if (min !== null && min !== undefined && min > 0) limitParts.push(`Min: ${min}`);
+  if (max !== null && max !== undefined) limitParts.push(`Max: ${max}`);
   return limitParts.length > 0 ? `/ ${limitParts.join(', ')}` : '';
 }
 
@@ -19,13 +21,11 @@ function formatLimitSuffix({ minValue, maxValue, minConstraint, maxConstraint })
  */
 export default function CategoryCountBadge({
   count,
-  minValue,
-  maxValue,
-  minConstraint,
-  maxConstraint,
+  min = null,
+  max = null,
   hasErrors
 }) {
-  const limitText = formatLimitSuffix({ minValue, maxValue, minConstraint, maxConstraint });
+  const limitText = formatLimitSuffix({ min, max });
 
   return (
     <span className={hasErrors ? 'badge badge-danger' : 'badge badge-muted'}>

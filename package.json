@@ -11,11 +11,11 @@
     "build": "vite build",
     "lint": "oxlint",
     "knip": "knip",
-    "depcruise": "depcruise src scripts",
+    "depcruise": "depcruise src scripts e2e",
     "analyze": "npm run knip; npm run depcruise",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "test": "vitest run && node src/solver/ui.test.js",
+    "test": "vitest run && node e2e/ui.test.js",
     "generate-icons": "node scripts/generate_pwa_icons.js",
     "generate:schema": "node scripts/generate-schema-module.js",
     "status-report": "node scripts/project-state/generate.js"

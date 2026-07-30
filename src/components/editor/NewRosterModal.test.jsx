@@ -5,19 +5,32 @@ import NewRosterModal from './NewRosterModal';
 
 // Bibliothekskataloge (catalogue@library) liefern nur geteilte Einträge und sind
 // keine spielbare Armee. Die Fraktionsauswahl darf sie deshalb nicht anbieten.
+// Das Angebot kommt seit Issue 0121, Task 7 aus der Datensatz-Beschreibung des
+// Evaluators (`describeSystem` über `system.rawXmls`), nicht mehr aus den
+// solver-geparsten Strukturfeldern.
 
-const forceEntry = { id: 'force-1', name: 'Patrol' };
+const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
+  <gameSystem id="gs-1" name="Test System">
+    <costTypes><costType id="pts" name="Points" defaultCostLimit="-1"/></costTypes>
+  </gameSystem>`;
+
+const catalogueXml = ({ id, name, isLibrary }) => `<?xml version="1.0" encoding="utf-8"?>
+  <catalogue id="${id}" name="${name}" gameSystemId="gs-1"${isLibrary ? ' library="true"' : ''}>
+    <forceEntries><forceEntry id="force-1" name="Patrol"/></forceEntries>
+  </catalogue>`;
 
 const buildSystem = (catalogues) => ({
   id: 'sys-1',
   name: 'Test System',
-  costTypes: [{ id: 'pts', name: 'Points' }],
-  catalogues,
+  rawXmls: {
+    gst: [{ name: 'test.gst', content: GAME_SYSTEM_XML }],
+    cat: catalogues.map(catalogue => ({ name: `${catalogue.id}.cat`, content: catalogueXml(catalogue) })),
+  },
 });
 
-const libraryCatalogue = { id: 'cat-library', name: 'Shared Library', isLibrary: true, forceEntries: [forceEntry] };
-const factionCatalogue = { id: 'cat-faction', name: 'Faction', isLibrary: false, forceEntries: [forceEntry] };
-const unflaggedCatalogue = { id: 'cat-legacy', name: 'Legacy Faction', forceEntries: [forceEntry] };
+const libraryCatalogue = { id: 'cat-library', name: 'Shared Library', isLibrary: true };
+const factionCatalogue = { id: 'cat-faction', name: 'Faction', isLibrary: false };
+const unflaggedCatalogue = { id: 'cat-legacy', name: 'Legacy Faction' };
 
 const renderModal = (systems) =>
   render(<NewRosterModal isOpen onClose={vi.fn()} onCreate={vi.fn()} systems={systems} />);

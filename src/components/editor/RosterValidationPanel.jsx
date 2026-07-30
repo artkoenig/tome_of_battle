@@ -1,31 +1,50 @@
 import React from 'react';
 import { Play, AlertTriangle, Check } from 'lucide-react';
-import { hasBlockingViolations, ValidationSeverity } from '../../solver/validator';
+import { isBlockingViolation, hasBlockingViolations, countBlockingViolations } from '../../evaluation/violationStats';
 import { useTranslation } from '../../i18n/useTranslation';
 import ValidationMessage from './ValidationMessage';
 
 /**
  * Der „Lagerbericht“ des Editors: Gesamtstatus der Liste, die blockierenden
- * Regelverstöße, die rein informativen Hinweise des Katalogautors und die
- * zusätzlichen Ressourcen-Summen.
+ * Verletzungen des Evaluator-Berichts, die rein informativen Hinweise des
+ * Katalogautors (warning/info) und die zusätzlichen Ressourcen-Summen.
+ *
+ * `violations` ist die Verletzungsliste der Evaluator-Fassade — dieselbe, die
+ * `useRoster` liefert. Blockierend (Spielen gesperrt) ist allein severity
+ * `error` (`violationStats.js`).
+ *
+ * Dazu kommt der eine Datensatz-Befund, den der Nutzer handhaben kann: eine
+ * Auswahl, deren Definition der Katalog nicht mehr kennt. Sie ist keine
+ * Regelverletzung, sondern eine Diagnose — ohne Meldung verschwaende sie
+ * stumm aus der Bewertung (`unresolvedSelections`).
  */
-export default function RosterValidationPanel({ validationErrors, extraResources, onPlay }) {
+export default function RosterValidationPanel({
+  violations,
+  extraResources,
+  onPlay,
+  unresolvedSelections = [],
+}) {
   const { t } = useTranslation();
-  // Nur blockierende Verstöße (severity 'error') sperren das Spielen; rein informative
-  // Hinweise (warning/info) erscheinen zwar in der Liste, gelten aber als regelkonform.
-  const isRosterValid = !hasBlockingViolations(validationErrors);
-  const generalErrors = validationErrors.filter(e => !e.categoryId && !e.selectionId);
-  const contextualErrors = validationErrors.filter(
-    e => (e.categoryId || e.selectionId) && e.severity === ValidationSeverity.ERROR
-  );
-  const advisoryMessages = validationErrors.filter(e => e.severity !== ValidationSeverity.ERROR);
+  const blockingViolations = violations.filter(isBlockingViolation);
+  const advisoryViolations = violations.filter(violation => !isBlockingViolation(violation));
+  const blockingCount = countBlockingViolations(violations);
+  const isRosterValid = !hasBlockingViolations(violations) && unresolvedSelections.length === 0;
 
   return (
     <div
       id="general-errors-section"
       className={`gothic-panel general-errors-panel ${isRosterValid ? 'general-errors-panel--valid' : 'general-errors-panel--invalid'}`}
     >
-      <h3 className="font-serif text-gold general-errors-title">{t('editor.validation.title')}</h3>
+      <h3 className="font-serif text-gold general-errors-title">
+        {t('editor.validation.title')}
+        {/* Zähler der blockierenden Verletzungen — bei 0 verborgen, der
+            Gesamtstatus sagt dann bereits alles. */}
+        {blockingCount > 0 && (
+          <span data-testid="blocking-violation-count" className="badge badge-danger">
+            {blockingCount}
+          </span>
+        )}
+      </h3>
 
       {isRosterValid ? (
         <div className="flex-col gap-12">
@@ -49,20 +68,23 @@ export default function RosterValidationPanel({ validationErrors, extraResources
         </div>
       ) : (
         <div className="validation-error-list">
-          {generalErrors.map((err, idx) => (
-            <div key={idx} className="validation-error-item text-danger text-body flex-row gap-10">
+          {unresolvedSelections.map(entry => (
+            <div
+              key={entry.defId}
+              data-testid="unresolved-selection"
+              className="validation-error-item text-danger text-body flex-row gap-10"
+            >
               <AlertTriangle size={18} className="no-shrink" />
               <div className="validation-message-body">
-                <ValidationMessage error={err} />
+                {t('validation.evaluator.unresolvedEntry', { selectionName: entry.name })}
               </div>
             </div>
           ))}
-          {/* Nachgelagerte Liste der Kategorie- und Auswahlfehler für den vollen Kontext */}
-          {contextualErrors.map((err, idx) => (
-            <div key={idx} className="validation-error-item validation-error-item--secondary text-danger text-body flex-row gap-10">
+          {blockingViolations.map((violation, idx) => (
+            <div key={idx} className="validation-error-item text-danger text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
               <div className="validation-message-body">
-                <ValidationMessage error={err} />
+                <ValidationMessage violation={violation} />
               </div>
             </div>
           ))}
@@ -70,13 +92,13 @@ export default function RosterValidationPanel({ validationErrors, extraResources
       )}
       {/* Rein informative Hinweise des Katalogautors (warning/info) — sichtbar,
           aber ohne die Liste zu blockieren; daher unabhängig von isRosterValid. */}
-      {advisoryMessages.length > 0 && (
+      {advisoryViolations.length > 0 && (
         <div className="validation-error-list validation-error-list--advisory">
-          {advisoryMessages.map((err, idx) => (
+          {advisoryViolations.map((violation, idx) => (
             <div key={idx} className="validation-error-item text-dim text-body flex-row gap-10">
               <AlertTriangle size={18} className="no-shrink" />
               <div className="validation-message-body">
-                <ValidationMessage error={err} />
+                <ValidationMessage violation={violation} />
               </div>
             </div>
           ))}

@@ -18,17 +18,17 @@ const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
 const mockGroupProfilesByType = vi.fn();
 
-// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
-// wird auch nur die Fassade gemockt. Das Prädikat „eigenständige Untereinheit"
-// und die Schlüsselwortlisten sind ohne eigene Abhängigkeiten — der Mock reicht
-// ihre echte Umsetzung durch, statt sie zu stubben.
-vi.mock('../../solver/validator', async () => ({
+// Die Komponente liest ihre Struktur-Helfer seit Issue 0121, Task 8 aus dem
+// Schreibmodell src/roster/ (Sammel-Modul). Das Prädikat „eigenständige
+// Untereinheit" und die Schlüsselwortlisten sind ohne eigene Abhängigkeiten —
+// der Mock reicht ihre echte Umsetzung durch, statt sie zu stubben.
+vi.mock('../../roster', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
   groupProfilesByType: (...args) => mockGroupProfilesByType(...args),
-  ...(await vi.importActual('../../solver/constants')),
+  ...(await vi.importActual('../../roster/constants')),
 }));
 
 const mockGetRuleUrl = vi.fn();
@@ -67,13 +67,19 @@ describe('UnitChips link resolution honors the whfb6 linking setting', () => {
   });
 
   describe('UnitRulesChips', () => {
-    const mappedRule = { id: 'r1', name: RULE_NAME, description: 'A deadly blow' };
+    // Die Regeln kommen seit Issue 0121, Task 7 aus der Info-Projektion des
+    // Fähigkeitsdatensatzes (`capability.infoElements`), nicht mehr aus
+    // `collectUnitProfilesAndRules`.
+    const mappedRuleCapability = {
+      infoElements: [{ kind: 'rule', id: 'r1', name: RULE_NAME, text: 'A deadly blow' }],
+    };
 
     const renderRulesChips = (overrides = {}) =>
       render(
         <UnitRulesChips
           {...baseProps}
           selection={{ id: 'sel-1', selections: [] }}
+          capability={mappedRuleCapability}
           onClickDetails={noop}
           onShowRule={noop}
           {...overrides}
@@ -81,7 +87,6 @@ describe('UnitChips link resolution honors the whfb6 linking setting', () => {
       );
 
     beforeEach(() => {
-      mockCollectUnitProfilesAndRules.mockReturnValue({ profiles: [], rules: [mappedRule] });
       mockGetRuleUrl.mockImplementation((name) => (name === RULE_NAME ? RULE_URL : null));
     });
 

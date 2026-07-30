@@ -5,7 +5,7 @@ import ForceEditorSection from './ForceEditorSection';
 
 const mockCollectUnreachableArmyWideSelectors = vi.fn();
 
-vi.mock('../../solver/validator', () => ({
+vi.mock('../../roster', () => ({
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: { 'force-1': { 'cat-core': 2 } } }),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
   collectUnreachableArmyWideSelectors: (...args) => mockCollectUnreachableArmyWideSelectors(...args),
@@ -15,8 +15,13 @@ vi.mock('../../solver/validator', () => ({
 vi.mock('./CategoryUnitAdder', () => ({
   default: ({ categoryName }) => <button data-testid={`adder-${categoryName}`}>Hinzufügen</button>
 }));
+// Das Panel selbst entscheidet über seine Sichtbarkeit (Pflicht-Signale des
+// Berichts, ADR-0035); die Sektion reicht nur die Kontingent-Slots durch. Der
+// Stub macht die durchgereichte Slot-Menge beobachtbar.
 vi.mock('./AutoFillSuggestions', () => ({
-  default: ({ remainingPoints }) => <div data-testid="auto-fill">{remainingPoints}</div>
+  default: ({ capabilities }) => (
+    <div data-testid="auto-fill">{[...(capabilities ?? new Map()).keys()].join(',')}</div>
+  )
 }));
 vi.mock('./RosterCategorySection', () => ({
   default: ({ categoryLink, isRuleGroupExpanded, addUnit }) => (
@@ -56,10 +61,13 @@ const force = {
 const renderForce = (props = {}) => render(
   <ForceEditorSection
     force={force}
+    forcePath="0"
     system={system}
     roster={{ catalogueId: 'bret-cat', costLimitType: 'pts' }}
     activeCatalogue={{ id: 'bret-cat' }}
-    validationErrors={[]}
+    violations={[]}
+    capabilities={new Map()}
+    pathBySelectionId={new Map()}
     costTypeLabel="Pkt."
     addUnit={vi.fn()}
     removeUnit={vi.fn()}
@@ -68,7 +76,6 @@ const renderForce = (props = {}) => render(
     isRuleGroupExpanded={() => false}
     onToggleRuleGroup={vi.fn()}
     onShowRule={vi.fn()}
-    remainingPoints={580}
     extraResources={[]}
     onPlay={vi.fn()}
     {...props}
@@ -136,31 +143,19 @@ describe('ForceEditorSection', () => {
     expect(screen.queryByText('Sonstiges')).toBeNull();
   });
 
-  it('schlägt Auffüllungen erst nahe am Punktelimit vor', () => {
-    const { rerender } = renderForce({ remainingPoints: 51 });
-    expect(screen.queryByTestId('auto-fill')).toBeNull();
+  // Seit Issue 0121 (Task 6) speist der Bericht die Auffüll-Vorschläge: die
+  // Sektion filtert die Slot-Map auf das eigene Kontingent (Pfad-Präfix) und
+  // reicht sie durch — die frühere Punktelimit-Schwelle ist entfallen, das
+  // Panel blendet sich über die Pflicht-Signale selbst aus.
+  it('reicht dem Auffüll-Panel nur die Slots des eigenen Kontingents durch', () => {
+    const capabilities = new Map([
+      ['0', { defId: 'fe-1' }],
+      ['0/0', { defId: 'entry-own' }],
+      ['1/0', { defId: 'entry-foreign' }],
+    ]);
+    renderForce({ capabilities });
 
-    rerender(
-      <ForceEditorSection
-        force={force}
-        system={system}
-        roster={{ catalogueId: 'bret-cat', costLimitType: 'pts' }}
-        activeCatalogue={{ id: 'bret-cat' }}
-        validationErrors={[]}
-        costTypeLabel="Pkt."
-        addUnit={vi.fn()}
-        removeUnit={vi.fn()}
-        subSelectionOperations={{}}
-        unitCardContext={{}}
-        isRuleGroupExpanded={() => false}
-        onToggleRuleGroup={vi.fn()}
-        onShowRule={vi.fn()}
-        remainingPoints={50}
-        extraResources={[]}
-        onPlay={vi.fn()}
-      />
-    );
-    expect(screen.getByTestId('auto-fill').textContent).toBe('50');
+    expect(screen.getByTestId('auto-fill').textContent).toBe('0,0/0');
   });
 
   // Ohne das Kontingent der Sektion landete die Einheit in jedem Kontingent des Rosters.
@@ -173,9 +168,4 @@ describe('ForceEditorSection', () => {
     expect(addUnit).toHaveBeenCalledWith({ id: 'entry-1' }, 'cat-heroes', 'force-1');
   });
 
-  it('schlägt keine Auffüllung vor, wenn das Punktelimit bereits erreicht ist', () => {
-    renderForce({ remainingPoints: 0 });
-
-    expect(screen.queryByTestId('auto-fill')).toBeNull();
-  });
 });

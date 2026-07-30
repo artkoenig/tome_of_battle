@@ -192,7 +192,7 @@ function collectArmyLevelCandidates(rootSelectionChildren) {
  * Member erkannt wird, unabhaengig davon, ob das Roster die Eintrags-, Link- oder
  * Ziel-ID traegt (die Import-Schicht verwirft das `entryGroupId`-Tag, die
  * Zugehoerigkeit wird deshalb aus dem Definitionsbaum abgeleitet — wie im
- * Solver-Referenzpfad `collectGroupItemIds`).
+ * frueheren Referenzpfad `collectGroupItemIds` der abgerissenen Alt-Engine).
  *
  * Zeigt ein `entryLink` auf eine **Gruppe**, gehoeren deren Member ebenfalls dazu:
  * eine Grenze an der aeusseren Gruppe (z. B. "hoechstens 100 Punkte Magie-Items")

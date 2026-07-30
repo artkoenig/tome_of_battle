@@ -73,8 +73,11 @@ Datensatz die GUID-Disjunktheit verletzt.
   Tests, werden mechanisch angepasst). Global-by-ID ist nur korrekt, solange die
   IDs katalogübergreifend disjunkt sind; bei kollidierenden IDs müsste der
   Kontext-Stack nachgezogen werden (durch die Kollisions-Diagnose sichtbar).
-- **Neutral:** Der Evaluator bleibt gemäß ADR-0030 von `src/solver/` isoliert und
-  nicht in die App verdrahtet. Die harte Import-Isolation ist unberührt. Der
+- **Neutral:** Der Evaluator bleibt gemäß ADR-0030 von der zweiten Engine isoliert
+  und ist zum Zeitpunkt dieser Entscheidung nicht in die App verdrahtet. Die harte
+  Import-Isolation ist unberührt. *(Stand nach Issue 0121, 2026-07-30: verdrahtet
+  ist er inzwischen — die Oberfläche liest ausschließlich seinen Bericht. Die
+  Import-Isolation läuft seither gegen das Schreibmodell `src/roster/`.)* Der
   vollständige Kontext-Stack-Aufbau bleibt bewusst ungebaut, bis ein realer
   Datensatz ihn erzwingt.
 

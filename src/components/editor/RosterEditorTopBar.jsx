@@ -1,6 +1,6 @@
 import React from 'react';
 import { Play, ArrowLeft, Download, Undo2, Redo2 } from 'lucide-react';
-import { findForceEntryById } from '../../solver/validator';
+import { findForceEntryById } from '../../roster';
 import { useTranslation } from '../../i18n/useTranslation';
 
 /**

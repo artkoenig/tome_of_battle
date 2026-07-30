@@ -1,66 +1,139 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { resolveEntry, getOptionDisplayCost, getEffectiveName, collectPrimaryCategoryEntries, validateRoster, getEntryAddAvailability } from '../../solver/validator';
+import { findEntryInSystem } from '../../roster';
+import { childSlotsOf } from '../../evaluation/slotLookups';
 import { useTranslation } from '../../i18n/useTranslation';
 import BottomSheet from './BottomSheet';
-import ValidationMessage from './ValidationMessage';
+
+/**
+ * Aushebe-Dialog einer Kategorie (Issue 0121, Task 6; ADR-0035/0036).
+ *
+ * Kandidatenliste und Zustand kommen aus den **Fähigkeitsdatensätzen** des
+ * Evaluator-Berichts (`capabilities`), abgelesen an den Slots direkt unter dem
+ * Ziel-Kontingent (`forcePath`): wählbar ist, was dort als Angebots-Anker,
+ * Pflicht-Phantom oder belegter Slot mit Restspielraum hängt; gesperrt
+ * (`isBlocked`) wird deaktiviert mit „(Nicht verfügbar)" gezeigt; versteckt
+ * (`isHidden`) erscheint gar nicht. Kosten liest `capability.costs`. Der
+ * frühere Solver-Diff (Baseline-Validierung + hypothetisches Ausheben,
+ * ADR-0022) ist ersatzlos entfallen (ADR-0035).
+ *
+ * Dazu der **Herkunftsfilter** (`capability.sourceId`, Task 13): angeboten wird
+ * nur, was aus dem Armeebuch **dieses Kontingents** (`forceCatalogueId`), dem
+ * Spielsystem oder einem Bibliothekskatalog stammt — eine Einheit eines fremden
+ * Armeebuchs erscheint gar nicht. Maßgeblich ist der Katalog des Kontingents,
+ * nicht der der ganzen Liste: ein verbündetes Kontingent bringt sein eigenes
+ * Armeebuch mit (`force.catalogueId`, Task 19). Fehlt die Stütze oder ist sie
+ * `null`, gilt der aktive Katalog der Liste. Ist eine explizite `entries`-Liste
+ * vorgegeben, gilt der Filter gar nicht ({@link foreignCatalogueIdsOf}).
+ *
+ * `addUnit(kandidat, categoryId)` bleibt der Aushebe-Callback; als Kandidat
+ * wird der Katalogeintrag der Definition übergeben (Auflösung über die
+ * Schreibmodell `src/roster/` — die Schreibmechanik lebt dort),
+ * ersatzweise ein `{ id, name }`-Paar aus dem Slot.
+ */
+
+/** Die Ankerarten, deren Slots im Dialog als Kandidaten erscheinen. */
+const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
+
+/**
+ * Die Ids der **fremden** Armeebücher: jeder nicht-Bibliotheks-Katalog des
+ * Systems außer dem eigenen. Ein Slot, dessen Herkunft (`capability.sourceId`)
+ * darin steht, gehört einem anderen Armeebuch und wird gar nicht angeboten —
+ * dieselbe Regel wie `creatableForcesOf` in `NewRosterModal.jsx`.
+ *
+ * Alles andere wird angeboten: das Spielsystem, ein Bibliothekskatalog, der
+ * aktive Katalog selbst — und eine **unbekannte** Herkunft. Deshalb kommt eine
+ * fehlende Id gar nicht erst in die Menge: sonst gälte ein Slot mit
+ * `sourceId: null` als fremd und verschwände still.
+ */
+function foreignCatalogueIdsOf(system, ownCatalogueId) {
+  const foreign = new Set();
+  for (const catalogue of system?.catalogues ?? []) {
+    if (catalogue.isLibrary === true) continue;
+    if (catalogue.id === null || catalogue.id === undefined) continue;
+    if (catalogue.id === ownCatalogueId) continue;
+    foreign.add(catalogue.id);
+  }
+  return foreign;
+}
 
 export default function CategoryUnitAdder({
   categoryId = null,
   categoryName,
+  capabilities,
+  forcePath = null,
+  forceCatalogueId = null,
   system,
   activeCatalogue,
   costTypeLabel,
   costLimitType,
   addUnit,
-  roster,
-  selectionCounts,
-  force = null,
   entries = null
 }) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
 
-  // Ziel-Force, in die ausgehoben würde: die vom Editor durchgereichte Force, sonst
-  // die erste Force der Liste (Verfügbarkeit und Kategorie-Aufzählung teilen sie).
-  const targetForce = force || roster?.forces?.[0];
-
-  // Baseline-Validierung: die Verfügbarkeit jedes Kandidaten ist ein Diff gegen die
-  // Liste *ohne* ihn (ADR-0022). Einmal pro Dialog berechnet — pro Kandidat läuft nur
-  // die hypothetische Validierung (ADR-0005). Memoisiert an Roster/System.
-  const baselineErrors = useMemo(
-    () => validateRoster(roster, system),
-    [roster, system]
-  );
-
   if (!activeCatalogue) return null;
 
-  // Jede Auflösung hier läuft gegen den angezeigten Katalog: bei mehreren geladenen
-  // Katalogen (ADR-0018) ist eine Eintrags-Id nur innerhalb ihres Katalogs eindeutig.
-  const displayCtx = {
-    roster,
-    system,
-    selectionCounts,
-    parentCatalogueId: activeCatalogue.id
+  // Erlaubte Definitions-Ids, wenn eine explizite Eintragsliste vorgegeben ist
+  // (z. B. armeeweite Selektoren ohne eigene Kategorie-Sektion).
+  const allowedIds = entries === null
+    ? null
+    : new Set(entries.flatMap(entry => [entry.id, entry.targetId].filter(Boolean)));
+
+  // Das eigene Armeebuch ist das des Kontingents; ohne eigenes gilt der aktive
+  // Katalog der Liste (Altverhalten).
+  const ownCatalogueId = forceCatalogueId ?? activeCatalogue.id;
+
+  // Der Herkunftsfilter gilt nur ohne explizite Eintragsliste: eine solche Liste
+  // ist bereits vom Aufrufer kuratiert (armeeweite Selektoren), und ein
+  // Herkunftsfilter darüber nähme einen bewusst übergebenen katalogübergreifenden
+  // Eintrag weg.
+  const foreignCatalogueIds = allowedIds === null
+    ? foreignCatalogueIdsOf(system, ownCatalogueId)
+    : null;
+
+  // Kandidaten: je Definition genau ein Slot unter dem Kontingent. Versteckte
+  // Slots erscheinen nicht; die Kategorie-Zuordnung liest die **effektive**
+  // Primärkategorie aus dem Bericht (§8: nie aus rohen Katalog-Links).
+  const seenDefIds = new Set();
+  const candidates = [];
+  for (const { path, capability } of childSlotsOf(capabilities, forcePath)) {
+    if (!CANDIDATE_ANCHOR_KINDS.has(capability.anchorKind)) continue;
+    if (capability.isHidden) continue;
+    if (seenDefIds.has(capability.defId)) continue;
+    if (allowedIds !== null) {
+      if (!allowedIds.has(capability.defId)
+        && !(capability.targetDefId && allowedIds.has(capability.targetDefId))) continue;
+    } else {
+      if (capability.primaryCategoryId !== categoryId) continue;
+      // Herkunft: eine Einheit eines fremden Armeebuchs darf in dieser Liste
+      // nicht aufgestellt werden und erscheint deshalb gar nicht — nicht bloß
+      // gesperrt (ADR-0032 löst global-by-Id auf, der Bericht verankert
+      // deshalb auch fremde Wurzel-Einträge als Angebot).
+      if (foreignCatalogueIds.has(capability.sourceId)) continue;
+    }
+    seenDefIds.add(capability.defId);
+    candidates.push({ path, capability });
+  }
+
+  const costOf = ({ capability }) => capability.costs?.[costLimitType] ?? 0;
+  candidates.sort((a, b) => costOf(b) - costOf(a)); // Descending
+
+  if (candidates.length === 0) return null;
+
+  // Der Aushebe-Callback erwartet den Katalogeintrag der Definition (die
+  // Selektions-Fabrik liest ihn); bei einer expliziten Eintragsliste ist er
+  // schon da, sonst löst ihn das Schreibmodell aus dem System auf.
+  const entryFor = (capability) => {
+    const fromEntries = entries?.find(entry =>
+      entry.id === capability.defId || entry.id === capability.targetDefId
+      || (entry.targetId && entry.targetId === capability.targetDefId));
+    if (fromEntries) return fromEntries;
+    return findEntryInSystem(system, capability.defId, activeCatalogue.id)
+      ?? { id: capability.defId, name: capability.name };
   };
-
-  // Effektive (post-modifier) Primärkategorie über den geteilten Solver-Helfer
-  // aufzählen — dieselbe Grundlage nutzt die Listenregel-Erkennung (ADR 0003 §4).
-  const getCatalogItemsByCategory = (catId) =>
-    collectPrimaryCategoryEntries(system, activeCatalogue, catId, { roster, selectionCounts, force: targetForce })
-      .map(({ entry }) => entry);
-
-  // When an explicit entry list is supplied (e.g. army-wide selectors that no category
-  // surfaces), offer exactly those; otherwise fall back to the entries of the category.
-  const availableUnits = (entries || getCatalogItemsByCategory(categoryId))
-    .sort((a, b) => {
-      const aPoints = getOptionDisplayCost(system, a, costLimitType, displayCtx) || 0;
-      const bPoints = getOptionDisplayCost(system, b, costLimitType, displayCtx) || 0;
-      return bPoints - aPoints; // Descending
-    });
-
-  if (availableUnits.length === 0) return null;
 
   return (
     <div ref={wrapperRef} className="category-unit-adder-container">
@@ -81,38 +154,26 @@ export default function CategoryUnitAdder({
         containerRef={wrapperRef}
       >
         <div className="popover-list">
-          {availableUnits.map(entry => {
-            const res = resolveEntry(system, entry, activeCatalogue.id);
-            const points = getOptionDisplayCost(system, entry, costLimitType, displayCtx);
-
-            // Einziger Verfügbarkeits-Codepfad (ADR-0022): hypothetisches Ausheben +
-            // validateRoster-Diff gegen die Baseline. Der frühere isMaxedOut-Einzelpfad
-            // (genau ein max-Constraint) ist ersatzlos entfallen.
-            const { available, reasons } = getEntryAddAvailability({
-              entry, categoryId, force: targetForce, roster, system,
-              catalogueId: activeCatalogue.id, baselineErrors
-            });
-            const isBlocked = !available;
+          {candidates.map(({ path, capability }) => {
+            const points = costOf({ capability });
+            // Verfügbarkeit wird **abgelesen** (ADR-0035): gesperrt ist, wessen
+            // Höchstmaß ausgeschöpft ist — keine Diff-Rechnung, keine Sperrtabelle.
+            const isBlocked = capability.isBlocked === true;
 
             return (
               <div
-                key={res.id}
+                key={path}
                 className={`popover-item ${isBlocked ? 'disabled' : ''}`}
                 aria-disabled={isBlocked}
                 onClick={() => {
                   if (isBlocked) return;
-                  addUnit(entry, categoryId);
+                  addUnit(entryFor(capability), categoryId);
                   setIsOpen(false);
                 }}
               >
                 <div className="popover-item-name popover-item-label">
-                  <span>{getEffectiveName(res, displayCtx)}</span>
+                  <span>{capability.name}</span>
                   {isBlocked && <span className="text-danger text-micro popover-item-unavailable">{t('editor.adder.unavailable')}</span>}
-                  {isBlocked && reasons.map((reason, idx) => (
-                    <div key={idx} className="text-danger text-micro popover-item-reason">
-                      <ValidationMessage error={reason} />
-                    </div>
-                  ))}
                 </div>
                 {points > 0 && (
                   <span className="popover-item-cost font-body text-gold">

@@ -38,29 +38,55 @@ vi.mock('../../contexts/SettingsContext', () => ({
 }));
 
 // Mock Validators
+// `collectUnitProfilesAndRules` speist nur noch die Upgrade-Chips
+// (Tabellen-Filter der UnitUpgradesChips, bis Task 8); Kosten, Mini-Profil und
+// Regel-Chips der Karte kommen seit Issue 0121, Task 7 aus dem
+// Fähigkeitsdatensatz des Slots (`capabilities` + `pathBySelectionId`).
 const mockCollectUnitProfilesAndRules = vi.fn();
 const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
 
-// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
-// wird auch nur die Fassade gemockt. Reine Funktionen ohne eigene
+// Die Komponente liest ihre Struktur-Helfer seit Issue 0121, Task 8 aus dem
+// Schreibmodell src/roster/ (Sammel-Modul). Reine Funktionen ohne eigene
 // Abhängigkeiten — das Prädikat „eigenständige Untereinheit", die
 // Profil-Gruppierung und die Schlüsselwortlisten — reicht der Mock in ihrer
 // echten Umsetzung durch, statt sie zu stubben.
-vi.mock('../../solver/validator', async () => ({
+vi.mock('../../roster', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
-  getSelectionTotalCost: () => 120,
-  calculateRosterCosts: () => ({ pts: 120 }),
   // Name resolution is covered by the solver's own unit tests; here it is isolated to
   // the no-name-modifier case, which returns the selection's raw name unchanged.
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
-  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
-  groupProfilesByType: (await vi.importActual('../../solver/rulesEvaluator')).groupProfilesByType,
-  ...(await vi.importActual('../../solver/constants'))
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
+  childSelectionsOf: (await vi.importActual('../../roster/rosterTree')).childSelectionsOf,
+  groupProfilesByType: (await vi.importActual('../../roster/rulesEvaluator')).groupProfilesByType,
+  ...(await vi.importActual('../../roster/constants'))
 }));
+
+// Fähigkeitsdatensatz des Slots '0/0' der Karte: Kosten (`totalCosts`) und
+// Info-Projektion (`infoElements`) in der Berichtsform der Evaluator-Fassade.
+// Regeln werden als `{ id, name, description }` angegeben und hier auf die
+// Berichtsform `{ kind: 'rule', name, text }` abgebildet.
+const capabilitiesWith = ({ profiles = [], rules = [], totalCosts = { pts: 120 } } = {}) =>
+  new Map([['0/0', {
+    anchorKind: 'occupied',
+    totalCosts,
+    infoElements: [
+      ...profiles.map(profile => ({ kind: 'profile', ...profile })),
+      ...rules.map(rule => ({ kind: 'rule', id: rule.id, name: rule.name, text: rule.description })),
+    ],
+  }]]);
+
+const KNIGHT_PROFILE = {
+  id: 'p1',
+  profileTypeName: 'Model',
+  name: 'Knight',
+  characteristics: [
+    { name: 'M', value: '4' },
+    { name: 'WS', value: '4' }
+  ]
+};
 
 describe('UnitSelectionCard Component', () => {
   const defaultProps = {
@@ -77,9 +103,16 @@ describe('UnitSelectionCard Component', () => {
     setSelectedRosterSelection: vi.fn(),
     roster: { costLimitType: 'pts' },
     system: {},
-    validationErrors: [
-      { id: 'err-1', selectionId: 'sel-1', message: 'Ausrüstung unzulässig' }
+    // Verletzungen in der Berichtsform der Evaluator-Fassade; Autoren-Meldungen
+    // tragen ihren fertigen Text (Pass-through) und brauchen keine i18n-Vorlage.
+    violations: [
+      {
+        origin: 'authorMessage', severity: 'error', text: 'Ausrüstung unzulässig',
+        anchor: { defId: 'def-1', name: 'Knights of Bretonnia', path: '0/0', anchorKind: 'occupied', isValueUnstable: false }
+      }
     ],
+    pathBySelectionId: new Map([['sel-1', '0/0'], ['sub-1', '0/0/0']]),
+    capabilities: capabilitiesWith({ profiles: [KNIGHT_PROFILE] }),
     costTypeLabel: 'Pkt.',
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
@@ -91,20 +124,8 @@ describe('UnitSelectionCard Component', () => {
     vi.clearAllMocks();
     mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: true });
 
-    // Set default mockup profiles
-    mockCollectUnitProfilesAndRules.mockReturnValue({
-      profiles: [
-        {
-          profileTypeName: 'Model',
-          name: 'Knight',
-          characteristics: [
-            { name: 'M', value: '4' },
-            { name: 'WS', value: '4' }
-          ]
-        }
-      ],
-      rules: []
-    });
+    // Default: der Chip-Tabellen-Filter der Upgrade-Chips sieht keine Profile.
+    mockCollectUnitProfilesAndRules.mockReturnValue({ profiles: [], rules: [] });
 
     mockFindEntryInSystem.mockReturnValue({ id: 'raw-horse' });
     mockResolveEntry.mockReturnValue({
@@ -126,14 +147,19 @@ describe('UnitSelectionCard Component', () => {
     expect(screen.getByText('Ausrüstung unzulässig')).toBeDefined();
   });
 
-  // Der Validator verankert Verstöße an der konkret betroffenen Selection —
-  // oft eine geschachtelte Option. Die Karte der Einheit muss diese Fehler
-  // ihres Teilbaums anzeigen, nicht nur die an ihrer Wurzel-Selection.
-  it('zeigt Fehler geschachtelter Optionen an der Karte der Einheit', () => {
+  // Der Evaluator verankert Verletzungen am Slot der konkret betroffenen
+  // Selection — oft eine geschachtelte Option. Die Karte der Einheit muss
+  // diese Verletzungen ihres Teilbaums anzeigen, nicht nur die an ihrer
+  // Wurzel-Selection (Zuordnung über pathBySelectionId + anchor.path).
+  it('zeigt Verletzungen geschachtelter Optionen an der Karte der Einheit', () => {
     const props = {
       ...defaultProps,
-      validationErrors: [
-        { id: 'err-nested', selectionId: 'sub-1', message: 'Option "Barded Warhorse" erfordert mindestens 3 Auswahlen (aktuell: 2).' }
+      violations: [
+        {
+          origin: 'authorMessage', severity: 'error',
+          text: 'Option "Barded Warhorse" erfordert mindestens 3 Auswahlen (aktuell: 2).',
+          anchor: { defId: 'def-horse', name: 'Barded Warhorse', path: '0/0/0', anchorKind: 'occupied', isValueUnstable: false }
+        }
       ]
     };
     const { container } = render(<UnitSelectionCard {...props} />);
@@ -152,17 +178,9 @@ describe('UnitSelectionCard Component', () => {
   });
 
   it('renders multiple model profiles with their names when multiple exist', () => {
-    mockCollectUnitProfilesAndRules.mockReturnValue({
+    const capabilities = capabilitiesWith({
       profiles: [
-        {
-          id: 'p1',
-          profileTypeName: 'Model',
-          name: 'Knight',
-          characteristics: [
-            { name: 'M', value: '4' },
-            { name: 'WS', value: '4' }
-          ]
-        },
+        KNIGHT_PROFILE,
         {
           id: 'p2',
           profileTypeName: 'Model',
@@ -172,11 +190,10 @@ describe('UnitSelectionCard Component', () => {
             { name: 'WS', value: '3' }
           ]
         }
-      ],
-      rules: []
+      ]
     });
 
-    render(<UnitSelectionCard {...defaultProps} />);
+    render(<UnitSelectionCard {...defaultProps} capabilities={capabilities} />);
 
     expect(screen.getByText('Knight')).toBeDefined();
     expect(screen.getAllByText('Barded Warhorse').length).toBe(2);
@@ -308,19 +325,17 @@ describe('UnitSelectionCard Component', () => {
   });
 
   it('renders unit rules as badges and displays description on click', () => {
-    mockCollectUnitProfilesAndRules.mockReturnValue({
-      profiles: [],
+    const capabilities = capabilitiesWith({
       rules: [
         {
           id: 'rule-test-1',
           name: 'Segen der Herrin',
-          description: 'Rettet den Ritter vor Schaden',
-          publicationRef: '[Bretonia, S. 45]'
+          description: 'Rettet den Ritter vor Schaden'
         }
       ]
     });
 
-    render(<UnitSelectionCard {...defaultProps} />);
+    render(<UnitSelectionCard {...defaultProps} capabilities={capabilities} />);
 
     // Rule badge should be displayed
     const ruleBadge = screen.getByText('Segen der Herrin');
@@ -357,14 +372,20 @@ describe('UnitSelectionCard Component', () => {
       profiles: []
     });
 
-    mockCollectUnitProfilesAndRules.mockReturnValue({
-      profiles: [],
+    const capabilities = capabilitiesWith({
       rules: [
         { id: 'r-virtue', name: 'Virtue of Audacity', description: 'Ritter darf eine Herausforderung nicht ablehnen.' }
       ]
     });
 
-    const { container } = render(<UnitSelectionCard {...defaultProps} selection={mockSel} />);
+    const { container } = render(
+      <UnitSelectionCard
+        {...defaultProps}
+        selection={mockSel}
+        capabilities={capabilities}
+        pathBySelectionId={new Map([['sel-lord', '0/0']])}
+      />
+    );
 
     // Shown once, as the equipment chip...
     const upgradeChips = Array.from(container.querySelectorAll('.upgrade-badge')).map(c => c.textContent);
@@ -392,15 +413,21 @@ describe('UnitSelectionCard Component', () => {
       profiles: []
     });
 
-    mockCollectUnitProfilesAndRules.mockReturnValue({
-      profiles: [],
+    const capabilities = capabilitiesWith({
       rules: [
         { id: 'r-virtue', name: 'Virtue of Audacity', description: 'Herausforderung.' },
         { id: 'r-blessed', name: 'Segen der Herrin', description: 'Rettungswurf.' }
       ]
     });
 
-    const { container } = render(<UnitSelectionCard {...defaultProps} selection={mockSel} />);
+    const { container } = render(
+      <UnitSelectionCard
+        {...defaultProps}
+        selection={mockSel}
+        capabilities={capabilities}
+        pathBySelectionId={new Map([['sel-lord', '0/0']])}
+      />
+    );
 
     const ruleChips = Array.from(container.querySelectorAll('.rule-badge')).map(c => c.textContent);
     expect(ruleChips.some(t => t.includes('Segen der Herrin'))).toBe(true);
@@ -487,28 +514,23 @@ describe('UnitSelectionCard Component', () => {
       unmount();
     });
 
-    it('survives malformed validationErrors gracefully', () => {
-      const propsWithNullError = {
+    it('survives malformed violations gracefully', () => {
+      const propsWithNullViolation = {
         ...defaultProps,
-        validationErrors: [null, { id: 'err-2', selectionId: 'sel-1', message: 'Legit error' }]
+        violations: [null, {
+          origin: 'authorMessage', severity: 'error', text: 'Legit error',
+          anchor: { defId: 'def-1', name: 'Knights of Bretonnia', path: '0/0', anchorKind: 'occupied', isValueUnstable: false }
+        }]
       };
 
-      render(<UnitSelectionCard {...propsWithNullError} />);
+      render(<UnitSelectionCard {...propsWithNullViolation} />);
       expect(screen.getByText('Legit error')).toBeDefined();
     });
 
     it('renders weapon profiles correctly inside the mini profile table', () => {
-      mockCollectUnitProfilesAndRules.mockReturnValue({
+      const capabilities = capabilitiesWith({
         profiles: [
-          {
-            id: 'p1',
-            profileTypeName: 'Model',
-            name: 'Knight',
-            characteristics: [
-              { name: 'M', value: '4' },
-              { name: 'WS', value: '4' }
-            ]
-          },
+          KNIGHT_PROFILE,
           {
             id: 'w1',
             profileTypeName: 'Weapon',
@@ -518,11 +540,10 @@ describe('UnitSelectionCard Component', () => {
               { name: 'Strength', value: '+2' }
             ]
           }
-        ],
-        rules: []
+        ]
       });
 
-      render(<UnitSelectionCard {...defaultProps} />);
+      render(<UnitSelectionCard {...defaultProps} capabilities={capabilities} />);
 
       expect(screen.getByText('Lance')).toBeDefined();
       expect(screen.getByText('Combat')).toBeDefined();
@@ -545,7 +566,22 @@ describe('UnitSelectionCard Component', () => {
 
       const mockProps = {
         ...defaultProps,
-        sel: mockSel
+        // Die Tabelle liest den Bericht; der Chip-Filter der Upgrade-Chips
+        // liest (bis Task 8) weiter die Solver-Profilsammlung samt
+        // `_sourceSelection`.
+        capabilities: capabilitiesWith({
+          profiles: [
+            {
+              id: 'p-lance',
+              profileTypeName: 'Weapon',
+              name: 'Lance',
+              characteristics: [
+                { name: 'Range', value: 'Combat' },
+                { name: 'Strength', value: '+2' }
+              ]
+            }
+          ]
+        })
       };
 
       mockCollectUnitProfilesAndRules.mockReturnValue({
@@ -575,7 +611,7 @@ describe('UnitSelectionCard Component', () => {
     });
 
     it('renders any profile type generically as its own table (e.g. Magic Item)', () => {
-      mockCollectUnitProfilesAndRules.mockReturnValue({
+      const capabilities = capabilitiesWith({
         profiles: [
           {
             id: 'p1',
@@ -595,11 +631,10 @@ describe('UnitSelectionCard Component', () => {
               { name: 'Effect', value: 'Bound Spell' }
             ]
           }
-        ],
-        rules: []
+        ]
       });
 
-      render(<UnitSelectionCard {...defaultProps} />);
+      render(<UnitSelectionCard {...defaultProps} capabilities={capabilities} />);
 
       // The profile type name becomes the table's leading column header.
       expect(screen.getByText('Magic Item')).toBeDefined();
@@ -634,6 +669,19 @@ describe('UnitSelectionCard Component', () => {
         rules: []
       });
 
+      const capabilities = capabilitiesWith({
+        profiles: [
+          {
+            id: 'w1',
+            profileTypeName: 'Weapon',
+            name: 'Sword of the Lady',
+            characteristics: [
+              { name: 'Range', value: 'Combat' }
+            ]
+          }
+        ]
+      });
+
       // Resolved upgrade carries a rule description (lore).
       mockResolveEntry.mockReturnValue({
         id: 'resolved-sword',
@@ -642,7 +690,14 @@ describe('UnitSelectionCard Component', () => {
         profiles: []
       });
 
-      const { container } = render(<UnitSelectionCard {...defaultProps} selection={mockSel} />);
+      const { container } = render(
+        <UnitSelectionCard
+          {...defaultProps}
+          selection={mockSel}
+          capabilities={capabilities}
+          pathBySelectionId={new Map([['sel-unit', '0/0']])}
+        />
+      );
 
       // Value shows in the weapon table...
       expect(screen.getByText('Combat')).toBeDefined();
@@ -652,17 +707,9 @@ describe('UnitSelectionCard Component', () => {
     });
 
     it('renders armour profiles correctly inside the mini profile table', () => {
-      mockCollectUnitProfilesAndRules.mockReturnValue({
+      const capabilities = capabilitiesWith({
         profiles: [
-          {
-            id: 'p1',
-            profileTypeName: 'Model',
-            name: 'Knight',
-            characteristics: [
-              { name: 'M', value: '4' },
-              { name: 'WS', value: '4' }
-            ]
-          },
+          KNIGHT_PROFILE,
           {
             id: 'a1',
             profileTypeName: 'Armour',
@@ -672,11 +719,10 @@ describe('UnitSelectionCard Component', () => {
               { name: 'Special rules', value: 'None' }
             ]
           }
-        ],
-        rules: []
+        ]
       });
 
-      render(<UnitSelectionCard {...defaultProps} />);
+      render(<UnitSelectionCard {...defaultProps} capabilities={capabilities} />);
 
       expect(screen.getByText('Shield')).toBeDefined();
       expect(screen.getByText('-1')).toBeDefined();
@@ -696,7 +742,18 @@ describe('UnitSelectionCard Component', () => {
 
       const mockProps = {
         ...defaultProps,
-        sel: mockSel
+        capabilities: capabilitiesWith({
+          profiles: [
+            {
+              id: 'p-shield',
+              profileTypeName: 'Armour',
+              name: 'Shield',
+              characteristics: [
+                { name: 'Saving Throw Modifier', value: '-1' }
+              ]
+            }
+          ]
+        })
       };
 
       mockCollectUnitProfilesAndRules.mockReturnValue({
@@ -724,12 +781,15 @@ describe('UnitSelectionCard Component', () => {
       expect(chipTexts.includes('Shield')).toBe(false);
     });
 
-    it('survives errors with missing or empty message keys', () => {
-      const propsWithEmptyMessage = {
+    it('survives violations with missing text', () => {
+      const propsWithEmptyText = {
         ...defaultProps,
-        validationErrors: [{ id: 'err-1', selectionId: 'sel-1', message: undefined }]
+        violations: [{
+          origin: 'authorMessage', severity: 'error', text: undefined,
+          anchor: { defId: 'def-1', name: 'Knights of Bretonnia', path: '0/0', anchorKind: 'occupied', isValueUnstable: false }
+        }]
       };
-      render(<UnitSelectionCard {...propsWithEmptyMessage} />);
+      render(<UnitSelectionCard {...propsWithEmptyText} />);
       expect(screen.getByText('Knights of Bretonnia')).toBeDefined();
     });
   });

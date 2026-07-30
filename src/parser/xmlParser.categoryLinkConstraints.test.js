@@ -8,7 +8,7 @@ beforeAll(() => {
 });
 
 // Kategorielimits eines Kontingents und die Modifier, die sie verschieben, hängen im
-// .gst an den categoryLinks. Übergeht der Parser sie, kennt der Solver anschließend
+// .gst an den categoryLinks. Übergeht der Parser sie, kennt die Engine anschließend
 // weder das Limit noch dessen Anhebung.
 describe('parseGameSystemXML — Constraints und Modifier an categoryLinks', () => {
   const CONSTRAINT_ID = 'max-hq';

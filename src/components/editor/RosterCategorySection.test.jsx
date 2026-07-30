@@ -12,29 +12,26 @@ const mockIsCategoryLinkHidden = vi.fn();
 const mockIsEntryPrimaryInCategory = vi.fn();
 const mockResolveListRuleGroup = vi.fn();
 
-const mockGetCategoryDisplayLimits = vi.fn();
-
-vi.mock('../../solver/validator', () => ({
-  getCategoryDisplayLimits: (...args) => mockGetCategoryDisplayLimits(...args),
+vi.mock('../../roster', () => ({
   isCategoryLinkHidden: (...args) => mockIsCategoryLinkHidden(...args),
   isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
   resolveListRuleGroup: (...args) => mockResolveListRuleGroup(...args),
   childSelectionsOf: (force) => force.selections || [],
-  formatConstraintLimit: (value) => `${value}`
 }));
 
-// Standardmäßig leitet der Mock dieselben Werte ab wie der echte Solver für die
-// Testdaten: Min aus dem min-Constraint des Links, sonst unbegrenzt.
-function deriveDisplayLimits(categoryLink) {
-  const minConstraint = (categoryLink.constraints || []).find(c => c.type === 'min') || null;
-  const maxConstraint = (categoryLink.constraints || []).find(c => c.type === 'max') || null;
-  return {
-    minValue: minConstraint ? minConstraint.value : 0,
-    maxValue: maxConstraint ? maxConstraint.value : Infinity,
-    minConstraint,
-    maxConstraint
-  };
-}
+// Der Zähl-Chip liest seit Issue 0121, Task 7 den categoryAnchor-Slot des
+// Evaluator-Berichts (current/effectiveMin/effectiveMax) statt der
+// Solver-Grenzenableitung (getCategoryDisplayLimits/formatConstraintLimit).
+const categoryAnchorCapabilities = new Map([
+  ['0/1', {
+    anchorKind: 'categoryAnchor',
+    defId: 'link-core',
+    targetDefId: 'cat-core',
+    current: 1,
+    effectiveMin: 2,
+    effectiveMax: null,
+  }],
+]);
 
 vi.mock('./CategoryUnitAdder', () => ({
   default: ({ categoryId }) => <button data-testid={`adder-${categoryId}`}>Hinzufügen</button>
@@ -63,10 +60,12 @@ const renderSection = (props = {}) => render(
   <RosterCategorySection
     categoryLink={categoryLink}
     force={force}
+    forcePath="0"
+    capabilities={categoryAnchorCapabilities}
     system={system}
     roster={{ costLimitType: 'pts' }}
     activeCatalogue={system.catalogues[0]}
-    validationErrors={[]}
+    violations={[]}
     selectionCounts={{}}
     forceCategoryCounts={{ 'cat-core': 1 }}
     costTypeLabel="Pkt."
@@ -87,7 +86,6 @@ describe('RosterCategorySection', () => {
     mockIsCategoryLinkHidden.mockReturnValue(false);
     mockIsEntryPrimaryInCategory.mockReturnValue(true);
     mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: false, states: [] });
-    mockGetCategoryDisplayLimits.mockImplementation(deriveDisplayLimits);
   });
 
   it('rendert Kopfzeile, Zähl-Chip, Hinzufüger und die Einheitenkarten der Kategorie', () => {
@@ -99,16 +97,20 @@ describe('RosterCategorySection', () => {
     expect(screen.getByTestId('unit-card-sel-1')).toBeDefined();
   });
 
-  it('leitet die Kategorie-Grenzen über den Solver ab und reicht das Kontingent (forceDef) durch', () => {
-    const forceDef = { id: 'fe-main', categoryLinks: [categoryLink] };
-    mockGetCategoryDisplayLimits.mockReturnValue({ minValue: 1, maxValue: 5, minConstraint: null, maxConstraint: { type: 'max', value: 5 } });
+  it('liest den Zähl-Chip aus dem categoryAnchor-Slot des Berichts (current, effectiveMin, effectiveMax)', () => {
+    const capabilities = new Map([
+      ['0/1', {
+        anchorKind: 'categoryAnchor',
+        defId: 'link-core',
+        targetDefId: 'cat-core',
+        current: 1,
+        effectiveMin: 1,
+        effectiveMax: 5,
+      }],
+    ]);
 
-    const { container } = renderSection({ forceDef });
+    const { container } = renderSection({ capabilities });
 
-    expect(mockGetCategoryDisplayLimits).toHaveBeenCalledWith(
-      categoryLink,
-      expect.objectContaining({ forceDef })
-    );
     expect(container.querySelector('span.badge').textContent.replace(/\s+/g, ' ').trim()).toBe('1 / Min: 1, Max: 5');
   });
 
@@ -160,9 +162,13 @@ describe('RosterCategorySection', () => {
     );
   });
 
-  it('färbt den Zähl-Chip, wenn die Kategorie blockierende Meldungen trägt', () => {
+  it('färbt den Zähl-Chip, wenn die Kategorie blockierende Verletzungen trägt', () => {
     const { container } = renderSection({
-      validationErrors: [{ message: 'Zu wenige', categoryId: 'cat-core', severity: 'error' }]
+      violations: [{
+        origin: 'derivedLimit',
+        severity: 'error',
+        anchor: { defId: 'cat-core', name: 'Kerneinheiten', path: '0/1', anchorKind: 'categoryAnchor', isValueUnstable: false },
+      }]
     });
 
     expect(container.querySelector('span.badge').className).toContain('badge-danger');

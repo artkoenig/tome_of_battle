@@ -12,11 +12,13 @@
  * einfliessen: die eine globale `id → Definition`-Tabelle entsteht aus der
  * Vereinigung aller Quellen.
  *
- * Genau **weil** das Aggregat die Herkunft einlegt, baut dieses Modul daneben den
- * **Herkunftsindex der Kontingente** ({@link buildPrimaryCatalogueIndex}): der
- * Bezugsrahmen `primary-catalogue` fragt nach dem Armeebuch, aus dem das
- * umschliessende Kontingent stammt (Issue 077), und diese Angabe kennen nur die
- * einzelnen Dokumente.
+ * Genau **weil** das Aggregat die Herkunft einlegt, baut dieses Modul daneben die
+ * beiden **Herkunftsindizes**, deren Angabe nur die einzelnen Dokumente kennen:
+ * den der Kontingente ({@link buildPrimaryCatalogueIndex}) — der Bezugsrahmen
+ * `primary-catalogue` fragt nach dem Armeebuch, aus dem das umschliessende
+ * Kontingent stammt (Issue 077) — und den der Definitionen
+ * ({@link buildDefinitionSourceIndex}), aus dem der Faehigkeitsdatensatz je Slot
+ * seine `sourceId` liest (Issue 0121).
  */
 
 import { DefinitionKind } from './model.js';
@@ -101,4 +103,57 @@ export function buildPrimaryCatalogueIndex(catalogueDocuments) {
     }
   }
   return byForceDefId;
+}
+
+/** Die Wurzel-Sammlungen, aus denen der Resolver seine Definitionen indiziert. */
+const DEFINITION_ROOT_COLLECTIONS = Object.freeze(['entries', 'forces', 'categories', 'sharedEntries']);
+
+/** Eine Definition und, rekursiv, ihren ganzen Teilbaum in den Index eintragen. */
+function collectDefinitionSource(definition, sourceId, byDefId) {
+  if (!byDefId.has(definition.id)) byDefId.set(definition.id, sourceId);
+  for (const child of definition.children ?? []) {
+    collectDefinitionSource(child, sourceId, byDefId);
+  }
+}
+
+/**
+ * Baut den **Herkunftsindex der Definitionen**: je Definitions-Id das Dokument,
+ * das sie deklariert (`Map<defId, documentId>`). Er beantwortet die Frage „aus
+ * welchem Armeebuch stammt dieses Angebot?", die der Faehigkeitsdatensatz als
+ * `sourceId` fuehrt (Issue 0121) — genau wie {@link buildPrimaryCatalogueIndex}
+ * kennen sie nur die **einzelnen** Dokumente, nicht das Aggregat.
+ *
+ * Traversiert wird rekursiv ueber `children` und ueber dieselben
+ * Wurzel-Sammlungen, aus denen der Resolver indiziert (`collectDefinition` in
+ * `resolver.js`) — ein verschachtelter Eintrag, ein `entryLink`, ein
+ * `categoryLink` und ein geteilter Eintrag haben damit ebenso eine Herkunft wie
+ * eine Wurzel-Definition.
+ *
+ * Anders als der Kontingent-Index umfasst dieser **auch das Spielsystem**: ein
+ * geteilter Eintrag der `.gst` ist ein Angebot des Spielsystems und traegt
+ * dessen Id als Herkunft. Ein Dokument **ohne Wurzel-Id** wird uebersprungen —
+ * seine Definitionen bleiben ohne bekannte Herkunft (`sourceId: null` im
+ * Bericht), statt eine zu erfinden.
+ *
+ * Das erste Vorkommen einer Id gewinnt — dieselbe Regel wie in der globalen
+ * Definitionstabelle des Resolvers und in der Datensatz-Beschreibung; eine
+ * doppelte Id ist ohnehin schon als Diagnose sichtbar.
+ *
+ * @param {Array<{ id?: string|null }>} documents  Die gelesenen Dokumente in
+ *   deterministischer Reihenfolge (Spielsystem zuerst, dann die Kataloge in
+ *   Aufruf-Reihenfolge, ADR-0032).
+ * @returns {Map<string, string>} Definitions-Id → Dokument-Id.
+ */
+export function buildDefinitionSourceIndex(documents) {
+  /** @type {Map<string, string>} */
+  const byDefId = new Map();
+  for (const document of documents) {
+    if (document.id === null || document.id === undefined) continue;
+    for (const collection of DEFINITION_ROOT_COLLECTIONS) {
+      for (const definition of document[collection] ?? []) {
+        collectDefinitionSource(definition, document.id, byDefId);
+      }
+    }
+  }
+  return byDefId;
 }

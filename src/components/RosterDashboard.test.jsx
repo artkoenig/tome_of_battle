@@ -30,12 +30,27 @@ describe('RosterDashboard Component', () => {
   const mockDeleteRoster = vi.fn();
   const mockNewRoster = vi.fn();
 
+  // Das Kostenart-Label der Karte kommt seit Issue 0121, Task 7 aus der
+  // Datensatz-Beschreibung des Evaluators (describeSystem über system.rawXmls);
+  // die geparsten Strukturfelder (`catalogues`) speisen weiterhin die
+  // Gruppierung nach Fraktionsnamen.
+  const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <gameSystem id="gs-1" name="Warhammer Fantasy">
+      <costTypes><costType id="pts" name="Punkte" defaultCostLimit="-1"/></costTypes>
+    </gameSystem>`;
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-1" name="Empire" gameSystemId="gs-1"/>`;
+
   const mockSystems = [
     {
       id: 'sys-1',
       name: 'Warhammer Fantasy',
       costTypes: [{ id: 'pts', name: 'Punkte' }],
-      catalogues: [{ id: 'cat-1', name: 'Empire' }]
+      catalogues: [{ id: 'cat-1', name: 'Empire' }],
+      rawXmls: {
+        gst: [{ name: 'test.gst', content: GAME_SYSTEM_XML }],
+        cat: [{ name: 'empire.cat', content: CATALOGUE_XML }],
+      }
     }
   ];
 

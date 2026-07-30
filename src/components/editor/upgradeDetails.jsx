@@ -1,5 +1,5 @@
 import React from 'react';
-import { UPGRADE_DETAILS_KEYWORDS } from '../../solver/validator';
+import { UPGRADE_DETAILS_KEYWORDS } from '../../roster';
 import { t } from '../../i18n/i18nStore';
 
 // Shared renderer for the rich detail block of an upgrade/rule/magic item,

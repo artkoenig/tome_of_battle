@@ -38,14 +38,59 @@ test('successfully re-processed system produces no failure and is migrated', asy
   expect(saveSystem).toHaveBeenCalledTimes(1);
 });
 
-test('a system without stored rawXmls passes through untouched and produces no failure', async () => {
+// Ein System ohne gespeichertes Roh-XML stammt aus einer Version vor 1.8.2. Seit
+// Issue 0121 beurteilt die Engine ein Roster aus den Katalogdateien selbst — ein
+// solches System zeigte sonst still keine Regeln, keine Optionen und 0 Punkte.
+// Ohne Netz (kein `fetchText`) ist es nicht zu retten und muss deshalb gemeldet
+// werden, statt unbemerkt durchzurutschen.
+test('a system without stored rawXmls and no network is reported as needing a re-import', async () => {
   const systems = [{ id: 'sys-legacy', name: 'Legacy System' }];
 
-  const { systems: migrated, failures } = await runSystemMigrations(systems);
+  const { systems: migrated, failures, unrecoverable } = await runSystemMigrations(systems);
 
   expect(failures).toEqual([]);
   expect(migrated).toEqual(systems);
+  expect(unrecoverable).toEqual([{ id: 'sys-legacy', name: 'Legacy System' }]);
   expect(saveSystem).not.toHaveBeenCalled();
+});
+
+// Der Regelfall der Rettung: das System gehoert einer konfigurierten Quelle, also
+// koennen die fehlenden Katalogdateien von dort geholt werden — unabhaengig davon,
+// ob die gespeicherte Revision "aktuell" aussieht. Danach traegt es `rawXmls` und
+// ist wieder auswertbar.
+test('a system without stored rawXmls is recovered from its catalog source', async () => {
+  const GAME_SYSTEM_ID = '6d8e-38d9-3c69-febf';
+  const CATALOGUE_ID = 'cat-faction';
+  const gstXml = validGst.replace('id="sys-1"', `id="${GAME_SYSTEM_ID}"`);
+  const catXml = `<?xml version="1.0" encoding="UTF-8"?>
+<catalogue id="${CATALOGUE_ID}" name="Faction" gameSystemId="${GAME_SYSTEM_ID}" revision="3" />
+`;
+  const index = {
+    repositoryFiles: [
+      { id: GAME_SYSTEM_ID, name: 'Sys', type: 'gamesystem', revision: 1 },
+      { id: CATALOGUE_ID, name: 'Faction', type: 'catalogue', revision: 3 },
+    ],
+  };
+  const fetchText = vi.fn(async (url) => {
+    if (url.endsWith('.json')) return JSON.stringify(index);
+    if (url.endsWith('.gst')) return gstXml;
+    return catXml;
+  });
+  // Gespeicherte Revisionen sind auf Indexstand: nur das fehlende XML darf den
+  // Nachladevorgang ausloesen, nicht ein Revisionsrueckstand.
+  const systems = [{
+    id: GAME_SYSTEM_ID,
+    name: 'Legacy WHFB',
+    revision: 1,
+    catalogues: [{ id: CATALOGUE_ID, name: 'Faction', revision: 3 }],
+  }];
+
+  const { systems: migrated, failures, unrecoverable } = await runSystemMigrations(systems, fetchText);
+
+  expect(failures).toEqual([]);
+  expect(unrecoverable).toEqual([]);
+  expect(migrated[0].rawXmls?.gst?.[0]?.content).toBe(gstXml);
+  expect(saveSystem).toHaveBeenCalled();
 });
 
 test('a system whose stored data fails to re-process is reported as a failure, keeps its old data, and is not deleted', async () => {

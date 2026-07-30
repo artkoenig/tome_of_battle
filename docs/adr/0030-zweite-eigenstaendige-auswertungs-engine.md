@@ -1,6 +1,6 @@
 # Zweite, räumlich getrennte Auswertungs-Engine als Reinraum-Realisierung
 
-- **Status:** Accepted
+- **Status:** Accepted — umgesetzt mit Issue 0121 (Cutover vollzogen, `src/solver/` gelöscht)
 - **Datum:** 2026-07-25 (revidiert; ursprünglich 2026-07-24)
 - **Beteiligte:** Artjom König
 - **Zugehörige ADRs (falls vorhanden):** grenzt sich ab von ADR-0023 (Solver-Fassade
@@ -8,6 +8,15 @@
   Constraint-Auswertung); realisiert den Referenz-Entwurf in
   [`docs/evaluator-architecture.md`](../evaluator-architecture.md); respektiert
   ADR-0003 (Battlescribe Domain Rules) und ADR-0016 (vendored XSD).
+
+> **Nachsatz (Issue 0121, 2026-07-30).** Der hier beschlossene Ersatz ist vollzogen:
+> die Oberfläche liest ausschließlich den Bericht dieser Engine, und `src/solver/`
+> ist gelöscht. Die verworfene Option 3 (dauerhafter Laufzeit-Umschalter) wurde
+> nie gebaut — der Cutover war ein Schnitt. Was am Solver rein strukturell war
+> (Selektions-Fabrik, Baum-Editing, Katalog-Auflösung, Roster-Abgleich), ist als
+> App-Schreibmodell `src/roster/` erhalten und in beide Richtungen von dieser
+> Engine getrennt (blockierende Regeln in `.dependency-cruiser.cjs` und
+> `.oxlintrc.json`).
 
 ## Revision (2026-07-25) — verbindliche Klarstellung
 

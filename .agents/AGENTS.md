@@ -21,10 +21,10 @@ npm run dev              # Vite dev server
 npm run build             # Production build (also injects a fresh SW cache version)
 npm run lint               # oxlint
 npm run knip               # dead code / unused exports & deps, cross-file (warn-only)
-npm run depcruise            # dependency-graph rules: layering, solver facade, cycles, orphans (warn-only); evaluator⇄solver-Trennung (ADR 0030) blockiert (error)
+npm run depcruise            # dependency-graph rules: layering, cycles, orphans (warn-only); Reinraum-Trennung evaluator⇄roster und Evaluator-Fassade (ADR 0030) blockieren (error)
 npm run analyze              # knip + dependency-cruiser together
 npm run typecheck           # tsc --noEmit: prüft JSDoc-Typen im Produktivcode (checkJs), Tests ausgenommen
-npm test                     # vitest run (unit/component tests) + node src/solver/ui.test.js (puppeteer E2E)
+npm test                     # vitest run (unit/component tests) + node e2e/ui.test.js (puppeteer E2E)
 npx vitest run <path>          # run a single test file
 npx vitest run -t "<name>"       # run tests matching a name
 node scripts/generate_screenshots.js   # screenshots of every main view (desktop + mobile) -> .screenshots/
@@ -33,7 +33,7 @@ node scripts/measure-evaluator-browser.js  # dieselbe Messung im echten Browser 
 ```
 
 - All unit tests must pass before a task is considered done.
-- If a change touches **only** `src/evaluator/`, run only the evaluator tests — unit and E2E: `npx vitest run src/evaluator` (the manifest-driven E2E runner over `docs/testing/` lives there too, e.g. `e2e.testcatalog.test.js`, `crossCatalog.test.js`). The full `npm test` (incl. the puppeteer solver E2E) is not required in that case.
+- If a change touches **only** `src/evaluator/`, run only the evaluator tests — unit and E2E: `npx vitest run src/evaluator` (the manifest-driven E2E runner over `docs/testing/` lives there too, e.g. `e2e.testcatalog.test.js`, `crossCatalog.test.js`). The full `npm test` (incl. the puppeteer app E2E in `e2e/`) is not required in that case.
 - On macOS, `browser_subagent`/`open_browser_url` don't work — use `node scripts/generate_screenshots.js`, which runs offline against the frozen fixture and needs no catalog data in the repo. For a one-off investigation, build a throwaway script on the shared harness (`scripts/lib/e2e-harness.js`); it also offers a browser console log, a DOM dump and a headed browser. On Linux/cloud, `/browser` and `browser_subagent` work normally (see [ADR 0006](file:///Users/artkoenig/Workspace/army_builder/docs/adr/0006-testing-and-automation.md)).
 - After any UI-visible change, take a screenshot of the affected view and send it to the user as confirmation (skip this when running on the user's local machine).
 

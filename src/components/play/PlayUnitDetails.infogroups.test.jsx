@@ -3,15 +3,15 @@ import { readFileSync } from 'fs';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import PlayUnitDetails from './PlayUnitDetails';
-import { parseCatalogueXML } from '../../parser/xmlParser.js';
+import { evaluateAppRoster } from '../../evaluation/evaluationCache.js';
 
-// End-to-end renderer coverage for infoGroups (slice 04): a profile bundled
-// through an inline infoGroup must actually reach a rendered profile table.
-// Unlike the unit tests in PlayUnitDetails.test.jsx, the solver is NOT mocked
-// here, so the real bridge (collectUnitProfilesAndRules -> resolveEntry ->
-// groupProfilesByType) is exercised against a schema-valid fixture. Only the
-// chip sub-components are stubbed, to avoid their SettingsContext dependency and
-// keep the assertion focused on the profile tables.
+// End-to-end renderer coverage for infoGroups (slice 04, umgestellt mit Issue
+// 0121, Task 7): a profile bundled through an inline infoGroup must actually
+// reach a rendered profile table. The profile source is the evaluator report
+// (`capability.infoElements` via the real facade over `evaluateAppRoster`),
+// exercised against the schema-valid fixture — not a hand-built capability.
+// Only the chip sub-components are stubbed, to avoid their SettingsContext
+// dependency and keep the assertion focused on the profile tables.
 vi.mock('lucide-react', () => ({
   Plus: () => <span data-testid="icon-plus" />,
   Minus: () => <span data-testid="icon-minus" />,
@@ -24,29 +24,55 @@ vi.mock('../editor/UnitChips', () => ({
 }));
 
 const catalogueXml = readFileSync(
-  './src/solver/__fixtures__/generic/generic-infogroups.cat',
+  './src/__fixtures__/generic/generic-infogroups.cat',
   'utf-8'
 );
-const catalogue = parseCatalogueXML(catalogueXml);
-const system = { id: 'sys-generic-1', name: 'Generic Test System', catalogues: [catalogue] };
+
+// Minimales Spielsystem: das Fixture-Katalog deklariert seine profileTypes
+// selbst; das Kontingent kommt aus der .gst, damit die Auswertung einen
+// aufloesbaren Force-Anker hat.
+const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
+  <gameSystem id="sys-generic-1" name="Generic Test System">
+    <forceEntries><forceEntry id="force-main" name="Main Force"/></forceEntries>
+  </gameSystem>`;
+
+const system = {
+  id: 'system-uuid',
+  name: 'Generic Test System',
+  catalogues: [{ id: 'cat-generic-1', name: 'Generic InfoGroups Catalogue' }],
+  rawXmls: {
+    gst: [{ name: 'generic.gst', content: GAME_SYSTEM_XML }],
+    cat: [{ name: 'generic-infogroups.cat', content: catalogueXml }],
+  },
+};
 
 function makeProps() {
   const selection = {
     id: 'sel-guardian',
     name: 'Arcane Guardian',
     selectionEntryId: 'unit-guardian',
+    entryLinkId: null,
     number: 1,
     selections: [],
   };
+  const roster = {
+    id: 'roster-1',
+    systemId: 'system-uuid',
+    catalogueId: 'cat-generic-1',
+    costLimitType: null,
+    costLimit: -1,
+    forces: [{ id: 'force-1', forceEntryId: 'force-main', catalogueId: 'cat-generic-1', selections: [selection] }],
+  };
+
+  // Die echte Fassade liefert den Fähigkeitsdatensatz des Slots.
+  const { capabilities, pathBySelectionId } = evaluateAppRoster(system, roster);
+
   return {
     selection,
     system,
-    roster: {
-      id: 'roster-1',
-      catalogueId: catalogue.id,
-      costLimitType: 'pts',
-      forces: [{ id: 'force-1', catalogueId: catalogue.id, selections: [selection] }],
-    },
+    roster,
+    capabilities,
+    pathBySelectionId,
     getUnitCurrentWounds: (_selectionId, totalMaxWounds) => totalMaxWounds,
     handleAdjustWound: vi.fn(),
     handleMouseEnter: vi.fn(),
@@ -59,10 +85,18 @@ function makeProps() {
 
 describe('PlayUnitDetails infoGroup-bundled profiles', () => {
   it('renders a weapon profile that is bundled through an inline infoGroup', () => {
-    render(<PlayUnitDetails {...makeProps()} />);
+    const props = makeProps();
+    // Guard gegen den echten Bericht: der Slot führt das gebündelte Profil.
+    const capability = props.capabilities.get(props.pathBySelectionId.get('sel-guardian'));
+    expect(capability?.infoElements).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'profile', name: 'Arcane Staff', profileTypeName: 'Weapon' }),
+    ]));
+
+    render(<PlayUnitDetails {...props} />);
 
     // "Arcane Staff" lives only inside the unit's <infoGroups>; it appears only
-    // if the infoGroup is parsed, flattened and rendered as its own type table.
+    // if the infoGroup is read, flattened into the report and rendered as its
+    // own type table.
     expect(screen.getByText('Arcane Staff')).toBeTruthy();
     expect(screen.getByText('Weapon')).toBeTruthy();
     expect(screen.getByText('12')).toBeTruthy();

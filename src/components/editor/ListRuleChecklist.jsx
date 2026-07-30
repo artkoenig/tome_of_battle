@@ -23,13 +23,15 @@ export default function ListRuleChecklist({
   activeCatalogue,
   categoryId,
   roster,
+  capabilities,
+  forcePath,
+  pathBySelectionId,
   states,
   addUnit,
   removeUnit,
   subSelectionOperations,
   costTypeLabel,
   costLimitType,
-  selectionCounts,
   onShowRule,
 }) {
   const { t } = useTranslation();
@@ -76,13 +78,13 @@ export default function ListRuleChecklist({
                 categoryId={categoryId}
                 categoryName={state.name}
                 entries={[state.entry]}
+                capabilities={capabilities}
+                forcePath={forcePath}
                 system={system}
                 activeCatalogue={activeCatalogue}
                 costTypeLabel={costTypeLabel}
                 costLimitType={costLimitType}
                 addUnit={addUnit}
-                roster={roster}
-                selectionCounts={selectionCounts}
               />
             </div>
           );
@@ -144,6 +146,8 @@ export default function ListRuleChecklist({
               <div className="list-rule-suboptions">
                 <SelectionConfigurator
                   selection={state.selection}
+                  capabilities={capabilities}
+                  pathBySelectionId={pathBySelectionId}
                   system={system}
                   roster={roster}
                   subSelectionOperations={subSelectionOperations}

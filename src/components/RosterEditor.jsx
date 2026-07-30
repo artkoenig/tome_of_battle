@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { getExtraResourceTotals, resolveCostLimitLabel } from '../solver/validator';
+import { resolveCostLimitLabel } from '../roster';
+import { extraResourceTotalsOf } from '../evaluation/costDisplays';
 
 import RosterEditorTopBar from './editor/RosterEditorTopBar';
 import ForceEditorSection from './editor/ForceEditorSection';
@@ -14,8 +15,13 @@ const ruleGroupKeyOf = (forceId, categoryId) => `${forceId}:${categoryId}`;
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster, onReportError }) {
   const {
     roster,
-    costs,
-    validationErrors,
+    violations,
+    unresolvedSelections,
+    capabilities,
+    description,
+    costTotals,
+    pathBySelectionId,
+    pathByForceId,
     selectedRosterSelection,
     setSelectedRosterSelection,
     addUnit,
@@ -65,10 +71,13 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   const costTypeLabel = resolveCostLimitLabel(roster, system);
 
-  const currentPoints = costs[roster.costLimitType] || 0;
+  // Kosten-Anzeigen aus dem Bericht (Issue 0121, Task 7): der Ist-Stand ist die
+  // roster-weite Kostensumme der Limit-Kostenart; die Extra-Ressourcen sind die
+  // Nicht-Limit-Kostenarten mit Summe ≠ 0 (Kostenarten aus der
+  // Datensatz-Beschreibung, `hidden` ausgeschlossen).
+  const currentPoints = costTotals[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;
-  const remainingPoints = limitPoints - currentPoints;
-  const extraResources = getExtraResourceTotals(system, roster, costs);
+  const extraResources = extraResourceTotalsOf(costTotals, description?.costTypes, roster.costLimitType);
 
   const playRoster = useCallback(() => onPlay(roster), [onPlay, roster]);
   const exportRoster = useCallback(() => onExportRoster?.(roster), [onExportRoster, roster]);
@@ -80,7 +89,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     setSelectedRosterSelection,
     roster,
     system,
-    validationErrors,
+    violations,
+    capabilities,
+    pathBySelectionId,
     costTypeLabel,
     removeUnit,
     copyUnit,
@@ -117,14 +128,26 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
       <div className="builder-layout">
         <div className="builder-main active-mobile-tab">
+          {/* Der Slot-Pfad eines Kontingents kommt aus der Zuordnung des
+              Berichts (`pathByForceId`), nicht aus dem Schleifenindex: ein
+              Kontingent, dessen Definition der Katalog nicht mehr kennt, hängt
+              gar nicht im Auswertungsbaum, und jedes folgende liegt dann einen
+              Index tiefer. Ein Kontingent ohne Pfad wird weiterhin gerendert —
+              es zeigt dann keine Angebote und keine Kategorie-Grenzen (die
+              Meldung „diese Auswahl gibt es im Katalog nicht mehr“ nennt den
+              Fall), statt dem Nutzer seine eigenen Daten zu verbergen. */}
           {roster.forces.map(force => (
             <ForceEditorSection
               key={force.id}
               force={force}
+              forcePath={pathByForceId?.get(force.id) ?? null}
               system={system}
               roster={roster}
               activeCatalogue={activeCatalogue}
-              validationErrors={validationErrors}
+              violations={violations}
+              unresolvedSelections={unresolvedSelections}
+              capabilities={capabilities}
+              pathBySelectionId={pathBySelectionId}
               costTypeLabel={costTypeLabel}
               addUnit={addUnit}
               removeUnit={removeUnit}
@@ -133,7 +156,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               isRuleGroupExpanded={isRuleGroupExpanded}
               onToggleRuleGroup={toggleRuleGroup}
               onShowRule={onShowRule}
-              remainingPoints={remainingPoints}
               extraResources={extraResources}
               onPlay={playRoster}
             />
@@ -141,12 +163,19 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         </div>
 
         {/* Desktop-only Validation Summary Sidebar */}
+        {/* Die Armeeanforderungen gelten dem ERSTEN Kontingent; sein Slot-Pfad
+            kommt aus derselben Zuordnung wie der der Sektionen, nie aus dem
+            Eingabe-Index (Task 21). Fehlt das Kontingent im Bericht, weil seine
+            Definition nicht auflöst, ist der Pfad `null` — dann zeigt die
+            Seitenleiste keine Anforderungen statt der eines fremden Kontingents. */}
         <RosterSidebar
           roster={roster}
-          system={system}
-          costs={costs}
-          validationErrors={validationErrors}
+          costTotals={costTotals}
+          costTypes={description?.costTypes}
+          capabilities={capabilities}
+          violations={violations}
           costTypeLabel={costTypeLabel}
+          forcePath={roster.forces?.[0] ? (pathByForceId?.get(roster.forces[0].id) ?? null) : null}
           className="desktop-only-sidebar"
         />
 

@@ -30,13 +30,13 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0020 | [Katalogdaten werden network-only geladen, kein Service-Worker-Cache](0020-katalogdaten-network-only-kein-service-worker-cache.md) | Accepted | 2026-07-19 |
 | 0021 | [Preview-Badge über Laufzeit-Hostname-Vergleich](0021-preview-badge-laufzeit-hostname-erkennung.md) | Accepted | 2026-07-19 |
 | 0022 | [UI-Verfügbarkeit im Aushebe-Dialog leitet sich aus dem Validator ab](0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md) | Superseded (0035) | 2026-07-20 |
-| 0023 | [Die Solver-Fassade ist die exklusive Schnittstelle zur Regel-Engine](0023-solver-fassade-als-exklusive-schnittstelle.md) | Accepted | 2026-07-21 |
+| 0023 | [Die Solver-Fassade ist die exklusive Schnittstelle zur Regel-Engine](0023-solver-fassade-als-exklusive-schnittstelle.md) | Superseded (0121) | 2026-07-21 |
 | 0024 | [Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen](0024-statik-toolchain-oxlint-knip-dependency-cruiser.md) | Accepted | 2026-07-21 |
 | 0025 | [GitHub-Pages-Quelle auf Actions umgestellt, Jekyll-Build wird mitgeführt](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md) | Accepted | 2026-07-21 |
 | 0026 | [i18n als Eigenlösung: JSON-Sprachdateien + Intl-API, keine i18n-Library](0026-i18n-eigenloesung-json-und-intl-ohne-library.md) | Accepted | 2026-07-22 |
 | 0027 | [Validierungs-Ursachen als optionales, sprachfreies Feld am Fehlerobjekt](0027-validierungs-ursachen-am-fehlerobjekt.md) | Accepted | 2026-07-29 (rev.) |
 | 0028 | [BattleScribe-Text-Tokens in Autor-Meldungen werden gerendert, nicht übersetzt](0028-battlescribe-text-tokens-in-autor-meldungen.md) | Accepted | 2026-07-23 |
-| 0029 | [Zentrale Query-Engine für Constraint-, Condition- und Repeat-Auswertung](0029-zentrale-query-engine-fuer-constraint-auswertung.md) | Proposed | 2026-07-29 (rev.) |
+| 0029 | [Zentrale Query-Engine für Constraint-, Condition- und Repeat-Auswertung](0029-zentrale-query-engine-fuer-constraint-auswertung.md) | Superseded (0030/0034) | 2026-07-29 (rev.) |
 | 0030 | [Zweite, räumlich getrennte Auswertungs-Engine als Reinraum-Realisierung](0030-zweite-eigenstaendige-auswertungs-engine.md) | Accepted | 2026-07-25 (rev.) |
 | 0031 | [Reinraum-Evaluator liest die BattleScribe-XSD-Syntax und teilt deren Enum-SSOT](0031-evaluator-liest-battlescribe-xsd-syntax-und-teilt-enum-ssot.md) | Accepted | 2026-07-29 (rev.) |
 | 0032 | [Evaluator löst Mehr-Katalog-Datensätze (.gst + Liste von .cat) global-by-ID auf](0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md) | Accepted | 2026-07-29 (rev.) |

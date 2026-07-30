@@ -1,13 +1,14 @@
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import {
-  getCategoryDisplayLimits,
   isCategoryLinkHidden,
   isEntryPrimaryInCategory,
   resolveListRuleGroup,
   childSelectionsOf
-} from '../../solver/validator';
+} from '../../roster';
 
+import { isBlockingViolation } from '../../evaluation/violationStats';
+import { findCategoryAnchorSlot } from '../../evaluation/slotLookups';
 import CategoryUnitAdder from './CategoryUnitAdder';
 import ListRuleChecklist from './ListRuleChecklist';
 import CategoryCountBadge from './CategoryCountBadge';
@@ -49,11 +50,14 @@ function hasPrimaryCatalogItems({ system, roster, force, selectionCounts, catego
 export default function RosterCategorySection({
   categoryLink,
   force,
-  forceDef,
+  forcePath,
+  forceCatalogueId = null,
   system,
   roster,
   activeCatalogue,
-  validationErrors,
+  violations,
+  capabilities,
+  pathBySelectionId,
   selectionCounts,
   forceCategoryCounts,
   costTypeLabel,
@@ -73,7 +77,7 @@ export default function RosterCategorySection({
   // Eine Listenregel-Gruppe (datengetrieben: Katalogtyp = upgrade, ADR 0003) ist
   // eine listenweite Einstellungsgruppe, kein Einheiten-Slot: ihre Karten haben
   // keine Einheiten-Aktionen und die Gruppe bietet keinen „Einheit hinzufügen“-
-  // Knopf. Ein Solver-Aufruf klassifiziert die Gruppe und liefert im selben
+  // Knopf. Ein Aufruf des Schreibmodells klassifiziert die Gruppe und liefert im selben
   // Katalog-Durchlauf die Zustände je Regel für die ListRuleChecklist.
   const { isListRuleGroup, states: listRuleStates } = resolveListRuleGroup(
     system, activeCatalogue, categoryId, { roster, force }
@@ -87,12 +91,20 @@ export default function RosterCategorySection({
 
   const categoryDefinition = system.categoryEntries?.find(ce => ce.id === categoryId);
   const categoryName = categoryDefinition ? categoryDefinition.name : categoryLink.name;
-  const categoryErrors = validationErrors.filter(e => e.categoryId === categoryId);
-  const count = forceCategoryCounts[categoryId] || 0;
-
-  const displayContext = { roster, system, selectionCounts, forceCategoryCounts };
-  const { minValue, maxValue, minConstraint, maxConstraint } =
-    getCategoryDisplayLimits(categoryLink, { system, forceDef, displayContext });
+  // Blockierende Verletzungen dieser Kategorie: der Evaluator verankert eine
+  // Kategorie-Grenze an einem Kategorie-Anker (`anchorKind: 'categoryAnchor'`),
+  // dessen `defId` der `categoryLink` (verlinkter Fall) oder die Kategorie
+  // selbst ist (unverlinkter Fall, `report.js`-Ankervertrag).
+  const categoryViolations = violations.filter(violation =>
+    isBlockingViolation(violation)
+    && violation.anchor?.anchorKind === 'categoryAnchor'
+    && (violation.anchor.defId === categoryId || violation.anchor.defId === categoryLink.id));
+  // Zähl-Chip aus dem categoryAnchor-Slot des Berichts (Issue 0121, Task 7):
+  // Ist-Stand (`current`) und wirksame Grenzen (`effectiveMin`/`effectiveMax`;
+  // `null` = keine Grenze). Der Anker hängt unter dem Kontingent und trägt als
+  // `defId` den `categoryLink` bzw. — unverlinkt — die Kategorie selbst.
+  const categoryAnchor = findCategoryAnchorSlot(capabilities, forcePath, categoryId)
+    ?? findCategoryAnchorSlot(capabilities, forcePath, categoryLink.id);
 
   const isPrimaryForAnyEntry = hasPrimaryCatalogItems({ system, roster, force, selectionCounts, categoryId });
 
@@ -126,12 +138,10 @@ export default function RosterCategorySection({
               zeigt den An/Aus-Zustand bereits pro Regel; eine Gesamtzahl ist redundant. */}
           {!isListRuleGroup && (
             <CategoryCountBadge
-              count={count}
-              minValue={minValue}
-              maxValue={maxValue}
-              minConstraint={minConstraint}
-              maxConstraint={maxConstraint}
-              hasErrors={categoryErrors.length > 0}
+              count={categoryAnchor?.current ?? 0}
+              min={categoryAnchor?.effectiveMin ?? null}
+              max={categoryAnchor?.effectiveMax ?? null}
+              hasErrors={categoryViolations.length > 0}
             />
           )}
         </div>
@@ -139,14 +149,14 @@ export default function RosterCategorySection({
           <CategoryUnitAdder
             categoryId={categoryId}
             categoryName={categoryName}
+            capabilities={capabilities}
+            forcePath={forcePath}
+            forceCatalogueId={forceCatalogueId}
             system={system}
             activeCatalogue={activeCatalogue}
             costTypeLabel={costTypeLabel}
             costLimitType={roster.costLimitType}
             addUnit={addUnit}
-            roster={roster}
-            selectionCounts={selectionCounts}
-            force={force}
           />
         )}
       </div>
@@ -158,13 +168,15 @@ export default function RosterCategorySection({
             activeCatalogue={activeCatalogue}
             categoryId={categoryId}
             roster={roster}
+            capabilities={capabilities}
+            forcePath={forcePath}
+            pathBySelectionId={pathBySelectionId}
             states={listRuleStates}
             addUnit={addUnit}
             removeUnit={removeUnit}
             subSelectionOperations={subSelectionOperations}
             costTypeLabel={costTypeLabel}
             costLimitType={roster.costLimitType}
-            selectionCounts={selectionCounts}
             onShowRule={onShowRule}
           />
         )

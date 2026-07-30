@@ -51,9 +51,10 @@ const mockResolveEntry = vi.fn();
 const mockCollectUnitProfilesAndRules = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
 
-// Only the rules engine is stubbed; the roster-tree primitives that the facade
-// re-exports stay real, since they are pure traversal without any rules in them.
-vi.mock('../solver/validator', async (importOriginal) => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the barrel
+// re-exports stay real, since they are pure traversal without any rules in them
+// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/roster/).
+vi.mock('../roster', async (importOriginal) => ({
   ...(await importOriginal()),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
@@ -69,7 +70,7 @@ vi.mock('../solver/validator', async (importOriginal) => ({
   isListRuleSelection: () => false,
 }));
 
-vi.mock('../solver/rulesEvaluator', () => ({
+vi.mock('../roster/rulesEvaluator', () => ({
   extractModelProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Model')),
   extractUpgradeProfiles: vi.fn().mockImplementation((profiles) => profiles),
   extractWeaponProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Weapon' || p.profileTypeName === 'Waffe')),
@@ -173,7 +174,7 @@ describe('PlayMode Component', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
   });
 
-  it('1. Render Categories & Units with sorted costs', () => {
+  it('1. Render Categories & Units', () => {
     render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
 
     expect(screen.getByText('Core Units')).toBeDefined();
@@ -182,34 +183,14 @@ describe('PlayMode Component', () => {
     expect(screen.getByText('Knights Core')).toBeDefined();
     expect(screen.getByText('Trebuchet Special')).toBeDefined();
     expect(screen.getByText('Peasants Core')).toBeDefined();
-
-    // Verify sorting descending by cost in Core category
-    // sel-1 (150 pts) should appear before sel-3 (50 pts) in the DOM
-    const unitElements = screen.getAllByText(/\d+\s*pts/);
-    expect(unitElements[0].textContent).toContain('150 pts');
-    expect(unitElements[1].textContent).toContain('50 pts');
   });
 
-  // Regression (Issue 19, A1): the cost sort must call getSelectionTotalCost with the
-  // EvaluationContext object (system/roster/currentCatalogueId), not the old positional
-  // form which put `system` into the context slot and dropped roster/catalogueId —
-  // silently disabling modifier-aware costs and sorting by unmodified cost.
-  it('1b. sorts using getSelectionTotalCost with an EvaluationContext object', () => {
-    render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
-
-    expect(mockGetSelectionTotalCost).toHaveBeenCalled();
-    mockGetSelectionTotalCost.mock.calls.forEach(call => {
-      expect(call).toHaveLength(4);
-      const [, costTypeArg, parentCountArg, contextArg] = call;
-      expect(costTypeArg).toBe('pts');
-      expect(parentCountArg).toBe(1);
-      expect(contextArg).toEqual({
-        system: mockSystem,
-        roster: mockRoster,
-        currentCatalogueId: 'cat-1',
-      });
-    });
-  });
+  // Die früheren Kosten-Sortier-Observablen (1: „sorted costs", 1b:
+  // getSelectionTotalCost-Aufrufvertrag, Issue 19/A1) sind mit Issue 0121,
+  // Task 8 entfallen: Kosten und Sortierung liest PlayMode aus
+  // `capability.totalCosts` des Evaluator-Berichts (ADR-0034); dieses
+  // Harness stellt keinen Bericht, und die Solver-Kostenrechnung wird nicht
+  // mehr aufgerufen. Die Kosten-Parität deckt PlayMode.evaluator.test.jsx ab.
 
   it('2. Back Button Action', () => {
     render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
@@ -259,10 +240,11 @@ describe('PlayMode Component', () => {
   });
 
   it('6. Collapsible Special Rules (Direct)', async () => {
-    mockCollectUnitProfilesAndRules.mockImplementation((_sys, _sel, _catId) => ({
-      profiles: [],
-      rules: [{ id: 'rule-direct', name: 'Direct Vow', description: 'Direct test description' }]
-    }));
+    // Regel-Chips kommen seit Issue 0121, Task 7 aus der Info-Projektion des
+    // Fähigkeitsdatensatzes (`capability.infoElements`).
+    const capability = {
+      infoElements: [{ kind: 'rule', id: 'rule-direct', name: 'Direct Vow', text: 'Direct test description' }]
+    };
 
     const mockSelection = { id: 'sel-direct', name: 'Direct Unit', category: 'cat-core', entryLinkId: 'el-direct' };
     const mockRosterProps = { catalogueId: 'cat-1', costLimitType: 'pts' };
@@ -275,6 +257,7 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
+        capability={capability}
         getUnitCurrentWounds={createWoundsReader({})}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -368,11 +351,23 @@ describe('PlayMode Component', () => {
       rules: []
     });
 
+    // Die Profil-Tabellen lesen den Bericht (`capability.infoElements`); die
+    // Solver-Profilsammlung oben speist nur noch den Chip-Filter der
+    // Upgrade-Chips (bis Task 8).
+    const capability = {
+      infoElements: [
+        { kind: 'profile', id: 'p1', profileTypeName: 'Model', name: 'Warrior', characteristics: [{ name: 'M', value: '4' }, { name: 'WS', value: '4' }] },
+        { kind: 'profile', id: 'p2', profileTypeName: 'Model', name: 'Warhorse', characteristics: [{ name: 'M', value: '8' }, { name: 'WS', value: '3' }] },
+        { kind: 'profile', id: 'w1', profileTypeName: 'Weapon', name: 'Great Sword', characteristics: [{ name: 'Range', value: 'Combat' }, { name: 'Strength', value: '+2' }] },
+      ]
+    };
+
     render(
       <PlayUnitDetails
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
+        capability={capability}
         getUnitCurrentWounds={createWoundsReader({ 'sel-weapons': 5 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}
@@ -439,11 +434,20 @@ describe('PlayMode Component', () => {
       rules: []
     });
 
+    const capability = {
+      infoElements: [
+        { kind: 'profile', id: 'p1', profileTypeName: 'Model', name: 'Warrior', characteristics: [{ name: 'M', value: '4' }, { name: 'WS', value: '4' }] },
+        { kind: 'profile', id: 'p2', profileTypeName: 'Model', name: 'Warhorse', characteristics: [{ name: 'M', value: '8' }, { name: 'WS', value: '3' }] },
+        { kind: 'profile', id: 'a1', profileTypeName: 'Armour', name: 'Shield', characteristics: [{ name: 'Saving Throw Modifier', value: '-1' }] },
+      ]
+    };
+
     render(
       <PlayUnitDetails
         selection={mockSelection}
         system={mockSystem}
         roster={mockRosterProps}
+        capability={capability}
         getUnitCurrentWounds={createWoundsReader({ 'sel-armours': 5 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}

@@ -1,12 +1,11 @@
 /**
- * Fassade der zweiten, raeumlich getrennten Auswertungs-Engine (ADR-0030).
+ * Fassade der Reinraum-Auswertungs-Engine (ADR-0030) — seit Issue 0121 die
+ * Engine der Anwendung; die Alt-Engine unter `src/solver/` ist abgerissen.
  *
  * Dies ist die **einzige** legale Aussenschnittstelle des `src/evaluator/`-
- * Moduls — analog zur Solver-Fassade `src/solver/validator.js` aus ADR-0023,
- * hier auf die Reinraum-Engine gespiegelt. Der Zugriff von aussen nur ueber
- * diese Datei und die harte Import-Trennung zu `src/solver/` (in beide
- * Richtungen) sind maschinell durchgesetzt (`.oxlintrc.json`,
- * `.dependency-cruiser.cjs`).
+ * Moduls. Der Zugriff von aussen nur ueber diese Datei und die harte
+ * Import-Trennung zum App-Schreibmodell `src/roster/` (in beide Richtungen)
+ * sind maschinell durchgesetzt (`.oxlintrc.json`, `.dependency-cruiser.cjs`).
  *
  * ── Die Fassade ist zweistufig ───────────────────────────────────────────────
  * Sie fuehrt in zwei Schritten:
@@ -43,7 +42,7 @@
  */
 
 import { PreparedDataset } from './datasetPreparation.js';
-import { buildDatasetDescription } from './datasetDescription.js';
+import { buildDatasetDescription, costTypesOf } from './datasetDescription.js';
 import { buildEvalTree } from './evalTree.js';
 import { attachOfferAnchors } from './offer.js';
 import { extendBaseEffectiveState } from './effectiveState.js';
@@ -110,10 +109,37 @@ export { prepareDataset } from './datasetPreparation.js';
  *   Katalog benennt, war also nie gueltig (`docs/battlescribe-data-format.md`
  *   §7.2, §15). Ein stiller Rueckfall wuerde diesen Datensatz-Fehler als
  *   gueltige Auswertung tarnen.
- * @returns {{ violations: object[], capabilities: Map<string, object>, diagnostics: object[] }}
- *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot und Diagnosen. Ein
- *   Slot ist **jede Stelle, an der eine Auswahl stehen kann** — auch eine noch
- *   nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon unberuehrt.
+ * @returns {{ violations: object[], capabilities: Map<string, object>, costTotals: Record<string, number>, diagnostics: object[] }}
+ *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot, die roster-weite
+ *   Kostensumme je deklarierter Kostenart (`costTotals`, Issue 0121) und
+ *   Diagnosen. Ein Slot ist **jede Stelle, an der eine Auswahl stehen kann** —
+ *   auch eine noch nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon
+ *   unberuehrt.
+ *
+ *   **Herkunft eines Slots (`sourceId`).** Jeder Faehigkeitsdatensatz nennt die
+ *   `id` des Dokuments (`.gst` oder `.cat`), das die Definition **dieses Slots**
+ *   deklariert — `null`, wenn das Dokument keine eigene Wurzel-`id` traegt.
+ *   Nachgeschlagen wird die `defId` des Slots, bei einem Verweis-Slot also die
+ *   Id des **Verweises**, nicht die seines Ziels: dieselbe Link-vor-Ziel-Regel
+ *   wie oben — ein `entryLink` in einem Armeebuch ist ein Angebot **dieses**
+ *   Armeebuchs, auch wenn sein Ziel in einem anderen Dokument steht. Die Regel
+ *   gilt uniform fuer jede Ankerart. Bei zwei Dokumenten mit derselben
+ *   Definitions-Id gewinnt das erste in der Verarbeitungsreihenfolge
+ *   (Spielsystem zuerst, dann die Kataloge in Aufruf-Reihenfolge); die
+ *   Kollision selbst ist als Diagnose `duplicateDefinition` sichtbar.
+ *
+ *   **Pfad-Schema der Slot-Schluessel.** Der Schluessel in `capabilities` ist
+ *   der stabile Pfad des Slots: die `/`-verkettete Folge der Kind-Indizes von
+ *   der Wurzel bis zum Knoten (z. B. `"0/2/1"`; `pathOf` in `evalTree.js`).
+ *   Fuer **belegte** Slots folgen diese Indizes der Eingabe-Reihenfolge des
+ *   Rosters — `forces[i]` liegt unter `"i"`, dessen j-tes Kind unter `"i/j"`,
+ *   usw. —, weil die Engine alle synthetischen Anker (Phantome, Kategorie-,
+ *   Gruppen- und Angebots-Anker) ausschliesslich **hinter** die bestehenden
+ *   Kinder haengt. Ein Aufrufer darf den Pfad einer Eingabe-Instanz deshalb im
+ *   selben Durchlauf mitrechnen. Die Zuordnung gilt nur, solange jede `defId`
+ *   aufloest: eine unaufloesbare Instanz wird nicht in den Baum gehaengt
+ *   (Diagnose `unresolvedDefinition`) und verschiebt damit die Indizes ihrer
+ *   **nachfolgenden** Geschwister.
  */
 export function evaluate(prepared, roster) {
   // Die eingestellten Kostengrenzen des Rosters einmalig als unveraenderliches
@@ -129,8 +155,8 @@ export function evaluate(prepared, roster) {
   // Kontingente: je Kontingent-Definition das Armeebuch, das sie deklariert. Er
   // beantwortet den Bezugsrahmen `primary-catalogue` (Issue 077) und wird — wie
   // das Budget — bis in die Query-Kontexte durchgereicht.
-  const { resolved, primaryCatalogueByForceDefId, diagnostics: datasetDiagnostics } =
-    PreparedDataset.contentsOf(prepared);
+  const contents = PreparedDataset.contentsOf(prepared);
+  const { resolved, primaryCatalogueByForceDefId, sourceIdByDefId, diagnostics: datasetDiagnostics } = contents;
 
   const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
 
@@ -186,11 +212,19 @@ export function evaluate(prepared, roster) {
   // einzige Quelle (`infoProjection.js`). `categoryIds` ist dieselbe Menge, an der
   // das Query-Primitiv einen ID-Bezugsrahmen aufloest; die Einordnung einer
   // Verletzung liest daran ab, ob deren Rahmen eine Kategorie oder ein Eintrag ist.
+  // `declaredCostTypeIds` sind die Kostenart-Deklarationen des Datensatzes —
+  // dieselbe eine Leseart wie in der Datensatz-Beschreibung (`costTypesOf`). Die
+  // Kostenprojektion des Berichts fuehrt jede davon in `costTotals`, auch ohne
+  // Vorkommen (Issue 0121). `sourceIdByDefId` ist der Herkunftsindex der
+  // Definitionen aus demselben Vorlauf — je Slot das Dokument, das seine
+  // Definition deklariert (`SlotCapability.sourceId`).
   return buildReport(root, effective, results, diagnostics, {
     budgetViolations,
     unstableNodes,
     profileTypes: resolved.profileTypes,
     categoryIds: resolved.categoryIds,
+    declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
+    sourceIdByDefId,
   });
 }
 

@@ -107,7 +107,7 @@ describe('project-state/graph', () => {
     });
 
     it('exposes the default layer order from deep to high', () => {
-      expect(DEFAULT_LAYERS.map((layer) => layer.name)).toEqual(['parser', 'solver', 'components']);
+      expect(DEFAULT_LAYERS.map((layer) => layer.name)).toEqual(['parser', 'roster', 'components']);
     });
   });
 });

@@ -10,10 +10,14 @@
  * sich auch aus einer anderen Quelle beschaffen.
  */
 
-/** Die in ADR 0023 fixierte Schichtung. Eine tiefere Schicht darf nicht auf eine hoehere zugreifen. */
+/**
+ * Die Schichtung der App. Eine tiefere Schicht darf nicht auf eine hoehere
+ * zugreifen. Seit Issue 0121 steht in der Mitte das App-Schreibmodell
+ * `src/roster/` (frueher `src/solver/`, abgerissen).
+ */
 export const DEFAULT_LAYERS = Object.freeze([
   { name: 'parser', prefix: 'src/parser/' },
-  { name: 'solver', prefix: 'src/solver/' },
+  { name: 'roster', prefix: 'src/roster/' },
   { name: 'components', prefix: 'src/components/' },
 ]);
 

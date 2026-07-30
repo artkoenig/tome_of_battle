@@ -36,7 +36,7 @@ const MANIFEST_FILE = 'scenario.json';
  *   Bewertung gegen die interaktive Obergrenze, weil er den groessten
  *   Definitionsbestand aufbereiten muss.
  *
- * Bewusst ausgelassen sind die Szenarien gegen `src/solver/__fixtures__/` und
+ * Bewusst ausgelassen sind die Szenarien gegen `src/__fixtures__/` und
  * `scripts/__fixtures__/`: gemessen wird gegen den Datenbestand, den die Engine
  * als ihren eigenen fuehrt (ADR-0030).
  */

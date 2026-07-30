@@ -2,7 +2,6 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PlayUnitDetails from './PlayUnitDetails';
-import { getSelectionTotalCost } from '../../solver/validator';
 
 vi.mock('lucide-react', () => ({
   Plus: () => <span data-testid="icon-plus" />,
@@ -12,13 +11,13 @@ vi.mock('lucide-react', () => ({
 
 const mockGroupProfilesByType = vi.fn(() => []);
 
-// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
-// wird auch nur die Fassade gemockt.
-vi.mock('../../solver/validator', async () => ({
+// Die Komponente liest ihre Struktur-Helfer seit Issue 0121 (Task 8) aus dem
+// Schreibmodell src/roster/ — gemockt wird dessen Sammel-Modul.
+vi.mock('../../roster', async () => ({
   // Reine Ableitung aus Roster und System — die echte Implementierung durchreichen,
   // damit der Test die tatsächlich verwendete Kostenart-id sieht.
-  resolveCostLimitTypeId: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitTypeId,
-  resolveCostLimitLabel: (await vi.importActual('../../solver/rosterCounter')).resolveCostLimitLabel,
+  resolveCostLimitTypeId: (await vi.importActual('../../roster/rosterCounter')).resolveCostLimitTypeId,
+  resolveCostLimitLabel: (await vi.importActual('../../roster/rosterCounter')).resolveCostLimitLabel,
   findEntryInSystem: vi.fn(() => null),
   resolveEntry: vi.fn(() => null),
   collectUnitProfilesAndRules: vi.fn(() => ({ profiles: [], rules: [] })),
@@ -30,7 +29,7 @@ vi.mock('../../solver/validator', async () => ({
   MODEL_COUNT_PROFILE_TYPES: [],
   // Reines Zugriffs-Primitiv auf die direkten Kind-Selections — echte
   // Implementierung durchreichen (ihre Semantik ist in rosterTree.test.js abgedeckt).
-  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
+  childSelectionsOf: (await vi.importActual('../../roster/rosterTree')).childSelectionsOf,
 }));
 
 vi.mock('../editor/UnitChips', () => ({
@@ -162,29 +161,10 @@ describe('PlayUnitDetails collapsible profiles', () => {
     expect(screen.getByText('3')).toBeTruthy();
   });
 
-  // Regression (Issue 19, A1): the cost display must call getSelectionTotalCost with
-  // the EvaluationContext object (system/roster/currentCatalogueId) so modifier-aware
-  // costs stay active. The earlier positional call form put `system` into the context
-  // slot and dropped roster/catalogueId, silently disabling modifier-aware costs.
-  it('calls getSelectionTotalCost with an EvaluationContext object, not positional args', () => {
-    getSelectionTotalCost.mockClear();
-    const props = createDefaultProps();
-    render(<PlayUnitDetails {...props} />);
-
-    expect(getSelectionTotalCost).toHaveBeenCalled();
-    const [selectionArg, costTypeArg, parentCountArg, contextArg] =
-      getSelectionTotalCost.mock.calls[0];
-    expect(selectionArg).toBe(props.selection);
-    expect(costTypeArg).toBe('pts');
-    expect(parentCountArg).toBe(1);
-    expect(contextArg).toEqual({
-      system: props.system,
-      roster: props.roster,
-      currentCatalogueId: props.roster.catalogueId,
-    });
-    // Guard against the old 6-positional-argument regression.
-    expect(getSelectionTotalCost.mock.calls[0]).toHaveLength(4);
-  });
+  // Der frühere Regressionstest zum getSelectionTotalCost-Aufrufvertrag
+  // (Issue 19, A1) ist mit Issue 0121, Task 8 entfallen: die Kostenzeile liest
+  // `capability.totalCosts` aus dem Evaluator-Bericht (ADR-0034); die
+  // Komponente ruft die Solver-Kostenrechnung nicht mehr auf.
 });
 
 // Issue 42/01: Die aus Regeltext geratene AS/WS-Anzeige ist ersatzlos entfallen;

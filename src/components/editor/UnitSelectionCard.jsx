@@ -2,18 +2,13 @@ import React, { useState, useRef } from 'react';
 import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-react';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
-import {
-  calculateRosterCosts,
-  collectUnitProfilesAndRules,
-  getEffectiveSelectionName,
-  groupProfilesByType
-} from '../../solver/validator';
-import { isIndependentSubUnitSelection, selectionErrorsForCard } from './unitCardValidation';
+import { groupProfilesByType } from '../../roster';
+import { isIndependentSubUnitSelection, selectionViolationsForCard } from './unitCardValidation';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
 import { getProfileCellClassName } from '../profileCellClasses';
 import { useTranslation } from '../../i18n/useTranslation';
-import { formatValidationError } from '../../i18n/formatValidationError';
+import { formatViolation } from '../../i18n/violationMessages';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
@@ -43,7 +38,9 @@ export default function UnitSelectionCard({
   setSelectedRosterSelection,
   roster,
   system,
-  validationErrors,
+  violations,
+  capabilities,
+  pathBySelectionId,
   costTypeLabel,
   removeUnit,
   copyUnit,
@@ -179,8 +176,17 @@ export default function UnitSelectionCard({
     );
   };
 
-  const renderMiniProfile = (sel) => {
-    const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogue?.id, roster);
+  // Der Fähigkeitsdatensatz des Slots dieser Auswahl (Issue 0121, Task 7):
+  // Kosten (`totalCosts`) und Profil-Sektion (`infoElements`) kommen aus dem
+  // Bericht, aufgelöst über die Zuordnung Selection-UUID → Slot-Pfad.
+  const capability = capabilities?.get(pathBySelectionId?.get(selection.id));
+
+  // Mini-Profil aus der Info-Projektion des Berichts: die Profile des Slots
+  // (samt der von belegten Unter-Auswahlen geerbten), gruppiert nach Profiltyp
+  // (bestehende Anzeige-Observable: Statblock zuerst, weitere Typen als eigene
+  // Tabelle mit Typ-Überschrift).
+  const renderMiniProfile = () => {
+    const profiles = (capability?.infoElements ?? []).filter(element => element.kind === 'profile');
     const groups = groupProfilesByType(profiles);
     if (groups.length === 0) return null;
 
@@ -193,11 +199,12 @@ export default function UnitSelectionCard({
 
   const isUnitEditing = selectedRosterSelection?.id === selection.id;
   const detailsOpen = isDetailsOpen;
-  const effectiveName = getEffectiveSelectionName(selection, { system, roster, parentCatalogueId: activeCatalogue?.id });
-  const unitCosts = calculateRosterCosts({ forces: [{ selections: [selection] }] }, system);
-  const displayPoints = unitCosts[roster.costLimitType] || 0;
-  const selectionErrors = selectionErrorsForCard(validationErrors, selection, system, activeCatalogue?.id);
-  const hasSelectionError = selectionErrors.length > 0;
+  // Der effektive Name kommt aus dem Slot des Berichts (Issue 0121, Task 8;
+  // ADR-0034); ohne Slot bleibt der gespeicherte Selektionsname stehen.
+  const effectiveName = capability?.name ?? selection.name;
+  const displayPoints = capability?.totalCosts?.[roster.costLimitType] ?? 0;
+  const selectionViolations = selectionViolationsForCard(violations, pathBySelectionId, selection, system, activeCatalogue?.id);
+  const hasSelectionError = selectionViolations.length > 0;
 
   const independentSubUnits = (selection.selections || []).filter(
     subSel => isIndependentSubUnitSelection(subSel, system, activeCatalogue?.id)
@@ -286,7 +293,7 @@ export default function UnitSelectionCard({
           </div>
         </div>
         <div className={`unit-card-details ${detailsOpen ? 'is-open' : ''}`}>
-          {!isSubUnit && renderMiniProfile(selection)}
+          {!isSubUnit && renderMiniProfile()}
           <UnitUpgradesChips
             selection={selection}
             system={system}
@@ -307,7 +314,7 @@ export default function UnitSelectionCard({
               selection={selection}
               system={system}
               activeCatalogueId={activeCatalogue?.id}
-              roster={roster}
+              capability={capability}
               handleMouseEnter={handleMouseEnter}
               handleMouseMove={handleMouseMove}
               handleMouseLeave={handleMouseLeave}
@@ -323,16 +330,18 @@ export default function UnitSelectionCard({
         </div>
       </div>
 
-      {selectionErrors.map((err, idx) => (
+      {selectionViolations.map((violation, idx) => (
         <div key={idx} className="unit-error-alert text-danger text-label">
           <AlertTriangle size={14} />
-          <span>{formatValidationError(err, t)}</span>
+          <span>{formatViolation(violation, t)}</span>
         </div>
       ))}
 
       {isUnitEditing && (
         <SelectionConfigurator
           selection={selection}
+          capabilities={capabilities}
+          pathBySelectionId={pathBySelectionId}
           system={system}
           roster={roster}
           subSelectionOperations={subSelectionOperations}
@@ -355,7 +364,9 @@ export default function UnitSelectionCard({
               setSelectedRosterSelection={setSelectedRosterSelection}
               roster={roster}
               system={system}
-              validationErrors={validationErrors}
+              violations={violations}
+              capabilities={capabilities}
+              pathBySelectionId={pathBySelectionId}
               costTypeLabel={costTypeLabel}
               removeUnit={(subUnitSelectionId) => subSelectionOperations.removeInstance(selection.id, subUnitSelectionId)}
               copyUnit={null}

@@ -3,20 +3,54 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterValidationPanel from './RosterValidationPanel';
 
+// Ergänzt RosterValidationPanel.evaluator.test.jsx (Vertragstests von Issue
+// 0121, Task 5) um die Observablen, die dort nicht abgedeckt sind: mobiler
+// Spielen-Knopf, Ursachen-Block und Ressourcen-Summen. Die Fixtures folgen dem
+// Berichtsvertrag der Evaluator-Fassade (`src/evaluator/evaluator.js`).
+
 vi.mock('lucide-react', () => ({
   Play: () => <span data-testid="icon-play" />,
   AlertTriangle: () => <span data-testid="icon-alert" />,
   Check: () => <span data-testid="icon-check" />
 }));
 
-vi.mock('../../solver/validator', () => ({
-  hasBlockingViolations: (errors) => (errors || []).some(e => e.severity === 'error'),
-  ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' }
-}));
+const FLAGS = { shared: true, includeChildSelections: false, includeChildForces: false };
+
+/** Eine abgeleitete error-Verletzung in der veröffentlichten Berichtsform. */
+function derivedViolation({ name = 'Long Bow', kind = 'max', actual = 1, bound = 0, causes } = {}) {
+  return {
+    origin: 'derivedLimit',
+    severity: 'error',
+    anchor: { defId: 'def-1', name, path: '0/0', anchorKind: 'occupied', isValueUnstable: false },
+    limitId: 'lim-1',
+    limit: {
+      kind,
+      measure: 'selectionCount',
+      costTypeId: null,
+      isPercent: false,
+      scope: { kind: 'parent', targetId: null, flags: FLAGS },
+    },
+    actual,
+    bound,
+    delta: bound - actual,
+    derivation: { base: bound, steps: [] },
+    ...(causes === undefined ? {} : { causes }),
+  };
+}
+
+/** Eine Autoren-Meldung in der veröffentlichten Berichtsform (Text-Pass-through). */
+function authorMessage({ severity = 'warning', text = 'Nur ein Hinweis' } = {}) {
+  return {
+    origin: 'authorMessage',
+    severity,
+    anchor: { defId: 'entry-1', name: 'Special Character', path: '0/1', anchorKind: 'occupied', isValueUnstable: false },
+    text,
+  };
+}
 
 const renderPanel = (props = {}) => render(
   <RosterValidationPanel
-    validationErrors={[]}
+    violations={[]}
     extraResources={[]}
     onPlay={vi.fn()}
     {...props}
@@ -36,9 +70,9 @@ describe('RosterValidationPanel', () => {
     expect(onPlay).toHaveBeenCalledTimes(1);
   });
 
-  it('zeigt bei blockierenden Verstößen die Fehlerliste statt des Spielen-Knopfs', () => {
+  it('zeigt bei blockierenden Verletzungen die Fehlerliste statt des Spielen-Knopfs', () => {
     const { container } = renderPanel({
-      validationErrors: [{ message: 'Zu teuer', severity: 'error' }]
+      violations: [authorMessage({ severity: 'error', text: 'Zu teuer' })]
     });
 
     expect(screen.getByText('Zu teuer')).toBeDefined();
@@ -46,25 +80,9 @@ describe('RosterValidationPanel', () => {
     expect(container.querySelector('.mobile-only button')).toBeNull();
   });
 
-  it('trennt allgemeine von kategorie- und auswahlgebundenen Fehlern', () => {
-    const { container } = renderPanel({
-      validationErrors: [
-        { message: 'Allgemein', severity: 'error' },
-        { message: 'Kategorie', severity: 'error', categoryId: 'cat-core' },
-        { message: 'Auswahl', severity: 'error', selectionId: 'sel-1' }
-      ]
-    });
-
-    const secondaryTexts = Array.from(container.querySelectorAll('.validation-error-item--secondary'))
-      .map(node => node.textContent);
-    expect(secondaryTexts).toEqual(['Kategorie', 'Auswahl']);
-    expect(screen.getByText('Allgemein').closest('.validation-error-item').className)
-      .not.toContain('validation-error-item--secondary');
-  });
-
   it('zeigt rein informative Hinweise auch bei regelkonformer Liste', () => {
     const { container } = renderPanel({
-      validationErrors: [{ message: 'Nur ein Hinweis', severity: 'warning' }]
+      violations: [authorMessage({ severity: 'warning', text: 'Nur ein Hinweis' })]
     });
 
     expect(container.querySelector('.general-errors-panel--valid')).not.toBeNull();
@@ -73,22 +91,22 @@ describe('RosterValidationPanel', () => {
 
   it('zeigt unter einer Meldung mit Ursachen den „Ursachen"-Block als Liste', () => {
     const { container } = renderPanel({
-      validationErrors: [{
-        message: '„Long Bow" kann nicht gewählt werden.',
-        severity: 'error',
-        causes: [{ entryId: 'bsb', name: 'Battle Standard Bearer' }]
-      }]
+      violations: [derivedViolation({
+        causes: [{ witness: { defId: 'bsb', name: 'Battle Standard Bearer' } }]
+      })]
     });
 
+    // validation.evaluator.selectionCount.max.local_zero mit name=Long Bow
+    expect(screen.getByText('„Long Bow" kann nicht gewählt werden.')).toBeDefined();
     expect(screen.getByText('Ursachen:')).toBeDefined();
     const causeItems = Array.from(container.querySelectorAll('.validation-causes-item'))
       .map(node => node.textContent);
     expect(causeItems).toEqual(['„Battle Standard Bearer"']);
   });
 
-  it('zeigt keinen „Ursachen"-Block, wenn die Meldung keine Ursachen trägt', () => {
+  it('zeigt keinen „Ursachen"-Block, wenn die Verletzung keine Ursachen trägt', () => {
     const { container } = renderPanel({
-      validationErrors: [{ message: 'Zu teuer', severity: 'error' }]
+      violations: [derivedViolation()]
     });
 
     expect(container.querySelector('.validation-causes')).toBeNull();

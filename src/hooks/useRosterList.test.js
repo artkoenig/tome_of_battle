@@ -9,7 +9,7 @@ import {
   decompressRoszToXml,
   MissingSystemError,
 } from '../utils/rosterSerialization';
-import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../solver/validator';
+import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../roster';
 
 vi.mock('../db/database', () => ({
   saveRoster: vi.fn().mockResolvedValue(null),
@@ -29,7 +29,7 @@ vi.mock('../utils/rosterSerialization', () => ({
   decompressRoszToXml: vi.fn(() => Promise.resolve('<xml/>')),
 }));
 
-vi.mock('../solver/validator', () => ({
+vi.mock('../roster', () => ({
   syncRosterSelectionsWithSystem: vi.fn((roster) => roster),
   reconcileImportedSelectionIds: vi.fn((roster) => roster),
 }));

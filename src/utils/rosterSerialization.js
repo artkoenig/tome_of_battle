@@ -1,9 +1,9 @@
 import JSZip from 'jszip';
 import {
-  calculateRosterCosts, computeRosterCounts, getSelectionOwnCosts, getEffectiveSelectionName,
-  findEntryInSystem, resolveEntry, childSelectionsOf, effectiveCountOf, foldSelectionTree,
-  mapSelectionTree, TOP_LEVEL_PARENT_COUNT, isIndependentSubUnit, resolveCostLimitTypeId
-} from '../solver/validator.js';
+  findEntryInSystem, resolveEntry, childSelectionsOf,
+  mapSelectionTree, isIndependentSubUnit, resolveCostLimitTypeId
+} from '../roster';
+import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
 import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults.js';
 import { t } from '../i18n/i18nStore.js';
 // Decimal places kept when serializing costs, to strip floating-point artifacts
@@ -70,17 +70,24 @@ export class MissingSystemError extends Error {
 
 /**
  * Serializes an internal Roster object into BattleScribe-compliant .ros XML text.
- * @param {Object} roster 
- * @param {Object} system 
+ *
+ * Namen und Kosten kommen aus dem Evaluator-Bericht (Issue 0121, Task 7):
+ * jede Selektion trägt den effektiven Slot-`name` und ihre eigene,
+ * modifikator-bewusste Kostenzeile (`capability.costs` × `number`); der
+ * Roster-Summenblock ist `costTotals` — beide aus **derselben** Auswertung,
+ * die flache Summe der Selektionskosten deckt sich damit mit dem Summenblock.
+ *
+ * @param {Object} roster
+ * @param {Object} system
  * @returns {string} XML text
  */
 export function exportRosterToXml(roster, system) {
   const systemName = system?.name || 'Unbekanntes System';
   const systemId = system?.id || roster.systemId;
-  
-  const computedCosts = system ? calculateRosterCosts(roster, system) : {};
-  // Shared solver context so per-selection costs match the total block exactly.
-  const ctx = { system, roster, counts: (system && roster) ? computeRosterCounts(roster, system) : null };
+
+  const { costTotals, capabilities, pathBySelectionId } = evaluateAppRoster(system, roster);
+  // Shared report context so per-selection names/costs match the total block exactly.
+  const ctx = { system, capabilities, pathBySelectionId };
 
   let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
   xml += `<roster id="${escapeXml(roster.id)}" name="${escapeXml(roster.name)}" battleScribeVersion="2.03" gameSystemId="${escapeXml(systemId)}" gameSystemRevision="1" gameSystemName="${escapeXml(systemName)}" xmlns="http://www.battlescribe.net/schema/rosterSchema">\n`;
@@ -90,7 +97,7 @@ export function exportRosterToXml(roster, system) {
   // yields an empty block rather than an invented one.
   xml += '  <costs>\n';
   (system?.costTypes ?? []).forEach(ct => {
-    const val = computedCosts[ct.id] || 0;
+    const val = roundCost(costTotals[ct.id]);
     xml += `    <cost name="${escapeXml(ct.name)}" typeId="${escapeXml(ct.id)}" value="${val}"/>\n`;
   });
   xml += '  </costs>\n';
@@ -124,7 +131,7 @@ export function exportRosterToXml(roster, system) {
       
       const catalogueId = force.catalogueId || roster.catalogueId;
       childSelectionsOf(force).forEach(sel => {
-        xml += serializeSelection(sel, SELECTION_BASE_INDENT, ctx, TOP_LEVEL_PARENT_COUNT, catalogueId, null);
+        xml += serializeSelection(sel, SELECTION_BASE_INDENT, ctx, catalogueId);
       });
 
       xml += '      </selections>\n';
@@ -139,61 +146,56 @@ export function exportRosterToXml(roster, system) {
 /**
  * Helper to recursively serialize roster selections.
  *
- * Costs and the `type` attribute are derived from the catalogue (SSOT): each
- * selection's <cost> is its own modifier-aware contribution (base × effective
- * count), so the flat sum of all selection costs equals the roster total block.
+ * Name und Kosten kommen aus dem Fähigkeitsdatensatz des Slots der Selektion
+ * (Evaluator-Bericht, aufgelöst über `pathBySelectionId`): der Name ist der
+ * **effektive** Slot-Name, die <cost>-Zeile der eigene, modifikator-bewusste
+ * Beitrag der Selektion (`capability.costs` je Instanz × absolute `number`) —
+ * die flache Summe aller Selektionskosten deckt sich mit dem Summenblock des
+ * Rosters (`costTotals`, dieselbe eine Auswertung). Das `type`-Attribut bleibt
+ * aus dem Katalog abgeleitet (Struktur, bis Task 8 Solver-basiert).
  */
-function serializeSelection(rootSelection, indent, ctx, parentCount, currentCatalogueId, parentSelection) {
-  const { system, roster, counts } = ctx;
+function serializeSelection(sel, indent, ctx, currentCatalogueId) {
+  const { system, capabilities, pathBySelectionId } = ctx;
+  const ind = ' '.repeat(indent);
 
-  return foldSelectionTree(rootSelection, {
-    descend: (sel, context) => ({
-      indent: context.indent + SELECTION_INDENT_STEP,
-      parentCount: effectiveCountOf(sel, context.parentCount),
-      parentSelection: sel
-    }),
-    combine: (sel, context, childXml) => {
-      const ind = ' '.repeat(context.indent);
-      const nodeContext = {
-        system, roster, currentCatalogueId, parentSelection: context.parentSelection, counts
-      };
-      const entryId = sel.selectionEntryId || '';
-      const entryLinkId = sel.entryLinkId || '';
-      const effectiveCount = effectiveCountOf(sel, context.parentCount);
+  const capability = capabilities.get(pathBySelectionId.get(sel.id));
+  const entryId = sel.selectionEntryId || '';
+  const entryLinkId = sel.entryLinkId || '';
+  const count = sel.number || 1;
 
-      const resolved = resolveSelectionEntry(system, sel, currentCatalogueId);
-      const selType = resolved?.type || 'upgrade';
-      const isCollective = sel.collective ? 'true' : 'false';
-      const effectiveName = getEffectiveSelectionName(sel, nodeContext);
+  const resolved = resolveSelectionEntry(system, sel, currentCatalogueId);
+  const selType = resolved?.type || 'upgrade';
+  const isCollective = sel.collective ? 'true' : 'false';
+  // Ohne Slot (kein auswertbarer Datensatz) bleibt der rohe Selektionsname.
+  const effectiveName = capability?.name ?? sel.name;
 
-      let sXml = `${ind}<selection id="${escapeXml(sel.id)}" name="${escapeXml(effectiveName)}" entryId="${escapeXml(entryId)}" entryLinkId="${escapeXml(entryLinkId)}" number="${sel.number || 1}" type="${escapeXml(selType)}" collective="${isCollective}">\n`;
+  let sXml = `${ind}<selection id="${escapeXml(sel.id)}" name="${escapeXml(effectiveName)}" entryId="${escapeXml(entryId)}" entryLinkId="${escapeXml(entryLinkId)}" number="${count}" type="${escapeXml(selType)}" collective="${isCollective}">\n`;
 
-      // Category Link block (only for top-level selections that carry categories)
-      if (sel.category) {
-        const catDef = system?.categoryEntries?.find(ce => ce.id === sel.category);
-        const catName = catDef?.name || 'Category';
-        sXml += `${ind}  <categories>\n`;
-        sXml += `${ind}    <category id="${escapeXml(sel.category)}" name="${escapeXml(catName)}" entryId="${escapeXml(sel.category)}" primary="true"/>\n`;
-        sXml += `${ind}  </categories>\n`;
-      }
+  // Category Link block (only for top-level selections that carry categories)
+  if (sel.category) {
+    const catDef = system?.categoryEntries?.find(ce => ce.id === sel.category);
+    const catName = catDef?.name || 'Category';
+    sXml += `${ind}  <categories>\n`;
+    sXml += `${ind}    <category id="${escapeXml(sel.category)}" name="${escapeXml(catName)}" entryId="${escapeXml(sel.category)}" primary="true"/>\n`;
+    sXml += `${ind}  </categories>\n`;
+  }
 
-      // Costs: the selection's own, modifier-aware contribution (derived from the catalogue).
-      const ownCosts = getSelectionOwnCosts(sel, effectiveCount, nodeContext);
-      sXml += `${ind}  <costs>\n`;
-      Object.entries(ownCosts).forEach(([typeId, value]) => {
-        const costName = system?.costTypes?.find(c => c.id === typeId)?.name ?? typeId;
-        sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(typeId)}" value="${roundCost(value)}"/>\n`;
-      });
-      sXml += `${ind}  </costs>\n`;
+  // Costs: the selection's own, modifier-aware contribution from the report.
+  sXml += `${ind}  <costs>\n`;
+  Object.entries(capability?.costs ?? {}).forEach(([typeId, perInstance]) => {
+    const costName = system?.costTypes?.find(c => c.id === typeId)?.name ?? typeId;
+    sXml += `${ind}    <cost name="${escapeXml(costName)}" typeId="${escapeXml(typeId)}" value="${roundCost(perInstance * count)}"/>\n`;
+  });
+  sXml += `${ind}  </costs>\n`;
 
-      if (childXml.length > 0) {
-        sXml += `${ind}  <selections>\n${childXml.join('')}${ind}  </selections>\n`;
-      }
+  const childXml = (sel.selections ?? []).map(child =>
+    serializeSelection(child, indent + SELECTION_INDENT_STEP, ctx, currentCatalogueId));
+  if (childXml.length > 0) {
+    sXml += `${ind}  <selections>\n${childXml.join('')}${ind}  </selections>\n`;
+  }
 
-      sXml += `${ind}</selection>\n`;
-      return sXml;
-    }
-  }, { indent, parentCount, parentSelection });
+  sXml += `${ind}</selection>\n`;
+  return sXml;
 }
 
 /**

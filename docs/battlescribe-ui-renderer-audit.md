@@ -1,5 +1,13 @@
 # BattleScribe UI-Renderer-Audit (Solution D, Main-Issue 19)
 
+> **Stand: vor Issue 0121.** Dieser Bericht hält den Abgleich zum Zeitpunkt von
+> Main-Issue 19 fest; die genannten `src/solver/`-Brücken existieren nicht mehr.
+> Seit Issue 0121 bezieht die Oberfläche Verletzungen, Verfügbarkeit, Grenzen,
+> Namen, Kosten und Profile aus dem Bericht der Reinraum-Engine
+> (`src/evaluator/`, Brücke `src/evaluation/`); rein strukturelle Helfer leben in
+> `src/roster/`. Der Bericht bleibt unverändert als Beleg, was damals geprüft
+> wurde — er ist keine Beschreibung des heutigen Codes.
+
 Systematischer, **endlicher** Abgleich jedes anzeige-relevanten BattleScribe-XSD-
 Konstrukts gegen den zuständigen Renderer. Ziel: sicherstellen, dass die in den
 Slices 03–06 korrekt geparsten/ausgewerteten Daten in der UI tatsächlich

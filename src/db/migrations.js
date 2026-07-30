@@ -57,15 +57,33 @@ async function updateStoredSystemFromItsSource(system, fetchText) {
  * @param {Array} systems - The list of currently loaded systems from IndexedDB.
  * @param {(url: string) => Promise<string>} [fetchText] - Network fetcher for catalog
  *   resources (index JSON and .cat/.gst text). Omit to disable network updates.
- * @returns {Promise<{systems: Array, failures: Array<{id: string, name: string}>}>}
+ * @returns {Promise<{systems: Array, failures: Array<{id: string, name: string}>,
+ *   unrecoverable: Array<{id: string, name: string}>}>} `unrecoverable` fuehrt die
+ *   Systeme, denen das rohe Katalog-XML fehlt und die es auch nicht nachruesten
+ *   konnten — sie sind ohne Neuimport nicht mehr auswertbar (Issue 0121).
  */
 export async function runSystemMigrations(systems, fetchText = null) {
   const migratedSystems = [];
   const failures = [];
+  const unrecoverable = [];
 
   for (const system of systems) {
+    // Ein System ohne gespeichertes XML stammt aus einer Version vor 1.8.2. Seit
+    // Issue 0121 beurteilt die Engine ein Roster aus den rohen Katalogdateien —
+    // ein solches System haette also keine Bewertung, keine Verfuegbarkeit und
+    // keine Kosten mehr. Der Weg zurueck ist die Quelle: ein Update von dort
+    // bringt die Dateien mit und ruestet `rawXmls` nach. Gelingt das nicht (kein
+    // konfigurierter Ursprung, kein Netz), bleibt das System wie es ist und
+    // wird dem Aufrufer als nachruestbeduerftig gemeldet.
     if (!hasStoredXml(system)) {
+      const recovered = await updateStoredSystemFromItsSource(system, fetchText).catch(() => null);
+      if (recovered && hasStoredXml(recovered)) {
+        await saveSystem(recovered);
+        migratedSystems.push(recovered);
+        continue;
+      }
       migratedSystems.push(system);
+      unrecoverable.push({ id: system.id, name: system.name });
       continue;
     }
 
@@ -87,5 +105,5 @@ export async function runSystemMigrations(systems, fetchText = null) {
     }
   }
 
-  return { systems: migratedSystems, failures };
+  return { systems: migratedSystems, failures, unrecoverable };
 }

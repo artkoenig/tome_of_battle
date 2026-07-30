@@ -6,7 +6,7 @@ import {
   isIndependentSubUnit,
   groupProfilesByType,
   UPGRADE_DETAILS_KEYWORDS
-} from '../../solver/validator';
+} from '../../roster';
 import { useRuleUrl } from '../../hooks/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
@@ -196,11 +196,25 @@ export function UnitUpgradesChips({
   );
 }
 
+/**
+ * Regel-Chips einer Einheit (Issue 0121, Task 7): die Regeln kommen aus der
+ * Info-Projektion des Fähigkeitsdatensatzes ihres Slots
+ * (`capability.infoElements`, Einträge `{ kind: 'rule', name, text }`) — samt
+ * der von belegten Unter-Auswahlen geerbten. Den Datensatz liefert entweder
+ * `capability` direkt oder das Lookup-Paar `capabilities` +
+ * `pathBySelectionId`, das die umgebenden Editor-Komponenten führen.
+ *
+ * Die Entdopplung gegen die Upgrade-Chips läuft über die **gewählten**
+ * Unter-Auswahlen (Strukturhilfe `getSelectedUpgrades`) — eine Regel, die als
+ * Upgrade-Chip erscheint, wird nicht doppelt gezeigt.
+ */
 export function UnitRulesChips({
   selection,
   system,
   activeCatalogueId,
-  roster,
+  capability = null,
+  capabilities = null,
+  pathBySelectionId = null,
   handleMouseEnter,
   handleMouseMove,
   handleMouseLeave,
@@ -208,12 +222,14 @@ export function UnitRulesChips({
   onShowRule
 }) {
   const resolveRuleUrl = useRuleUrl();
-  const { rules } = collectUnitProfilesAndRules(system, selection, activeCatalogueId, roster);
-  if (!rules || rules.length === 0) return null;
+  const slotCapability = capability
+    ?? capabilities?.get(pathBySelectionId?.get(selection?.id));
+  const rules = (slotCapability?.infoElements ?? []).filter(element => element.kind === 'rule');
+  if (rules.length === 0) return null;
 
   const normalizeChipName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const upgradeChipNames = new Set(
-    getVisibleUpgrades(selection, system, activeCatalogueId, roster)
+    getSelectedUpgrades(selection, system, activeCatalogueId)
       .map(u => normalizeChipName(u.name || u.resolved?.name))
       .filter(Boolean)
   );
@@ -224,15 +240,10 @@ export function UnitRulesChips({
   return (
     <div className="unit-header-rules">
       {visibleRules.map((rule, rIdx) => {
-        const descText = rule.description || '';
+        const descText = rule.text || '';
         const details = (
           <div className="upgrade-details">
-            <div>{rule.description}</div>
-            {rule.publicationRef && (
-              <div className="publication-ref upgrade-details-publication-ref">
-                {rule.publicationRef}
-              </div>
-            )}
+            <div>{rule.text}</div>
           </div>
         );
 

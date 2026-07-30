@@ -1,13 +1,27 @@
 # Zentrale Query-Engine für Constraint-, Condition- und Repeat-Auswertung
 
-- **Status:** Proposed
+- **Status:** Superseded (durch ADR-0030/ADR-0034, 2026-07-30)
 - **Datum:** 2026-07-24
 - **Beteiligte:** Artjom König
-- **Zugehörige ADRs (falls vorhanden):** Schreibt ADR-0022 (UI-Verfügbarkeit
-  leitet sich aus dem Validator ab) fort und weitet ihr Prinzip auf **alle**
-  Constraint-Entscheidungen der Oberfläche aus; setzt ADR-0003 (Battlescribe
-  Domain Rules) um; respektiert ADR-0023 (Solver-Fassade als exklusive
-  Schnittstelle) und ADR-0027 (Validierungs-Ursachen am Fehlerobjekt).
+- **Zugehörige ADRs (falls vorhanden):** Schrieb ADR-0022 (UI-Verfügbarkeit
+  leitet sich aus dem Validator ab) fort und weitete ihr Prinzip auf **alle**
+  Constraint-Entscheidungen der Oberfläche aus; setzte ADR-0003 (Battlescribe
+  Domain Rules) um; **ersetzt durch
+  [ADR-0030](0030-zweite-eigenstaendige-auswertungs-engine.md) und
+  [ADR-0034](0034-auswertungsbericht-als-alleinige-quelle-der-oberflaeche.md)**
+
+> **Überholt, nie umgesetzt.** Dieses Dokument plante, die verstreute
+> Regel-Auswertung **innerhalb des Solvers** hinter einem Query-Primitiv zu
+> zentralisieren. Es blieb im Zustand *Proposed*: [ADR-0030](0030-zweite-eigenstaendige-auswertungs-engine.md)
+> hat sich stattdessen für eine zweite, räumlich getrennte Engine entschieden, und
+> Issue 0121 hat den Solver **gelöscht**. Damit existiert keiner der hier genannten
+> Orte mehr — `validateRoster`, `entryAvailability` (der Validierungs-Diff aus
+> ADR-0022, seinerseits durch [ADR-0035](0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md)
+> ersetzt), `getModifiedConstraintValue`, `getSelectionTotalCost`. Das Query-Primitiv
+> selbst ist realisiert, aber in der Reinraum-Engine (`src/evaluator/query.js`), und
+> die Oberfläche liest sein Ergebnis ausschließlich aus dem Bericht (ADR-0034) statt
+> aus einem `SelectionBehaviorModel`. Das Dokument beschreibt nur noch Historie —
+> lesenswert für die Problemanalyse, nicht für den geltenden Aufbau.
 
 ## Kontext und Problemstellung
 
