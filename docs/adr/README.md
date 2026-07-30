@@ -36,7 +36,7 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0026 | [i18n als Eigenlösung: JSON-Sprachdateien + Intl-API, keine i18n-Library](0026-i18n-eigenloesung-json-und-intl-ohne-library.md) | Accepted | 2026-07-22 |
 | 0027 | [Validierungs-Ursachen als optionales, sprachfreies Feld am Fehlerobjekt](0027-validierungs-ursachen-am-fehlerobjekt.md) | Accepted | 2026-07-29 (rev.) |
 | 0028 | [BattleScribe-Text-Tokens in Autor-Meldungen werden gerendert, nicht übersetzt](0028-battlescribe-text-tokens-in-autor-meldungen.md) | Accepted | 2026-07-23 |
-| 0029 | [Zentrale Query-Engine für Constraint-, Condition- und Repeat-Auswertung](0029-zentrale-query-engine-fuer-constraint-auswertung.md) | Proposed | 2026-07-29 (rev.) |
+| 0029 | [Zentrale Query-Engine für Constraint-, Condition- und Repeat-Auswertung](0029-zentrale-query-engine-fuer-constraint-auswertung.md) | Superseded (0030/0034) | 2026-07-29 (rev.) |
 | 0030 | [Zweite, räumlich getrennte Auswertungs-Engine als Reinraum-Realisierung](0030-zweite-eigenstaendige-auswertungs-engine.md) | Accepted | 2026-07-25 (rev.) |
 | 0031 | [Reinraum-Evaluator liest die BattleScribe-XSD-Syntax und teilt deren Enum-SSOT](0031-evaluator-liest-battlescribe-xsd-syntax-und-teilt-enum-ssot.md) | Accepted | 2026-07-29 (rev.) |
 | 0032 | [Evaluator löst Mehr-Katalog-Datensätze (.gst + Liste von .cat) global-by-ID auf](0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md) | Accepted | 2026-07-29 (rev.) |

@@ -154,8 +154,62 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   Doku (CLAUDE.md, bsdata-Doku, ADRs) nachziehen, Vollabnahme aller
   Kriterien
 
+Korrekturen aus Prüfrunde 2:
+
+- [ ] 11. (B3+B7) Rettung eines Systems ohne Roh-XML darf keine
+  Kataloge löschen, die der Index nicht kennt — Kriterium 6
+- [ ] 12. (B2) Slot-Pfade bleiben gültig, wenn eine Auswahl nicht mehr
+  auflösbar ist — Kriterium 3
+- [ ] 13. (B1) Der Aushebe-Dialog bietet nur Einheiten des aktiven
+  Katalogs an — Kriterium 5
+- [ ] 14. (B5) Wirkungstest für die Link-Id-Regel (Grenze am
+  `entryLink` wirkt sichtbar) — Kriterium 3
+- [x] 15. (B6) ADR 0028/0029 nachziehen — Kriterium 2
+- [x] 16. E2E-Harness: Serverprozess vollständig beenden, Fehlstart nicht
+  verschweigen (schützt die Exitcode-Fakten von Kriterium 7)
+
+## Befund-Trend
+
+Je Zeile ein Akzeptanzkriterium, je Spalte eine Prüfrunde, je Zelle die
+Zahl der Befunde:
+
+| # | Kriterium | R1 | R2 |
+|---|---|---|---|
+| 1 | Kein Produktivimport aus `src/solver/` | 0 | 0 |
+| 2 | Solver gelöscht, Prüfungen grün, Doku nachgezogen | 2 | 1 |
+| 3 | Produktiver Roster-Adapter (Link-Id-Regel) | 0 | 2 |
+| 4 | i18n aus der Evaluator-Einordnung | 0 | 0 |
+| 5 | Verfügbarkeit aus `capabilities` | 1 | 2 |
+| 6 | Nicht-Validierungs-Funktionen verhaltensgleich umgezogen | 1 | 1 |
+| 7 | E2E umgezogen, laufen grün | 0 | 0 |
+| 8 | `prepareDataset` höchstens einmal je Datensatz | 0 | 0 |
+| — | ohne Kriteriumsverletzung (Bequemlichkeiten, Perf, Testlücke) | 4 | 1 |
+| | **Summe** | **8** | **7** |
+
+Runde 2 hat weniger Befunde, aber **schwerere**: die beiden Fälle unter
+Kriterium 3 und 5 (B1, B2) liefern der Oberfläche fremde Daten, statt
+etwas fehlen zu lassen. Ein Befund (B3) ist ein Loch, das die
+Runde-1-Korrektur selbst gerissen hat — für die Stoppregel „dieselbe
+Sache zweimal" gezählt: es ist derselbe Gegenstand (Systeme ohne
+Roh-XML), zum zweiten Mal falsch. Beim dritten Mal geht die Frage an den
+Menschen statt in eine weitere Runde.
+
 ## Decisions
 
+- **Triage Prüfrunde 2.** Behoben werden B1, B2, B3, B5, B6 — alle innerhalb
+  der acht Kriterien. B4 ist kein Engine-Defekt (§7.6 der bsdata-Doku
+  entscheidet gegen den alten Solver) und geht als Issue 0125 an den Menschen.
+  B7 (verwaister Export `findAllCatalogFiles`) erledigt sich mit B3. Die
+  Harness-Beobachtung ist Task 16 geworden, obwohl sie kein Kriterium verletzt:
+  sie **entwertet Exitcodes**, und darauf steht die Abnahme dieses Issues.
+  *(Quelle: Prüfrunde 2, 2026-07-30.)*
+- **Export ohne Roh-XML bleibt offen.** `exportRosterToXml` liest die Kosten
+  aus dem Bericht und damit aus `system.rawXmls`. Ein System, dessen Dateien
+  sich nicht nachrüsten lassen, schreibt deshalb eine `.ros` mit Kosten 0. Der
+  Nutzer wird gewarnt (Toast „bitte neu importieren"), der Export selbst hat
+  keine eigene Sperre. Ein Riegel dort wäre eine neue Entscheidung über das
+  Verhalten des Exports und liegt außerhalb der Kriterien — dem Menschen
+  vorgelegt, nicht eigenmächtig gebaut. *(Beobachtung; der Mensch entscheidet.)*
 - **"Ohne Plugin" = keine Zwischenschicht.** Die UI konsumiert den
   Evaluator-Bericht direkt; es gibt keinen Kompatibilitäts-Layer, der das
   alte Solver-Fehlerformat nachbaut. Der Eingabe-Adapter App-Roster →
@@ -198,6 +252,54 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   Issue. *(Quelle: ADR-0034; default, unanswered.)*
 
 ## Log
+
+- 2026-07-30, Task 16 (E2E-Harness) erledigt: `spawnVite` startet den
+  Preview-Server jetzt `detached` in einer **eigenen Prozessgruppe**, und
+  `stop()` signalisiert die Gruppe (`process.kill(-pid)`) statt nur die
+  Shell-Hülle. Endet der Server **vor** seiner Startmeldung, scheitert der
+  Aufbau jetzt laut samt gesammelter Ausgabe, statt nach 15 s stillschweigend
+  weiterzulaufen — genau der Fall, in dem `--strictPort` an einem belegten Port
+  abbricht und der Lauf sonst einen fremden, womöglich alten Build geprüft
+  hätte. Belegt mit zwei Wegwerf-Proben: (a) Server starten, stoppen, erneut
+  starten → beide Male HTTP 200, danach kein `vite preview`-Prozess mehr übrig
+  (vorher scheiterte der zweite Start am belegten Port); (b) zweiten Server bei
+  laufendem erstem starten → Ablehnung mit „endete vor seiner Startmeldung
+  (Code 1)" und „Port is already in use" in der Meldung. Bleibt die
+  Startmeldung nur aus, während der Prozess **läuft**, wird weiter
+  fortgefahren — die Erkennung hängt an einem Ausgabetext, und das allein soll
+  keinen Lauf kosten.
+- 2026-07-30, Task 15 (Doku, B6) erledigt: ADR-0029 von *Proposed* auf
+  *Superseded (0030/0034)* — sie plante die Zentralisierung **innerhalb** des
+  Solvers und wurde nie umgesetzt; ihre Orte (`validateRoster`,
+  `entryAvailability`, `getModifiedConstraintValue`, `getSelectionTotalCost`)
+  existieren alle nicht mehr. ADR-0028 bleibt *Accepted* — die Entscheidung
+  (`{this}` rendern, nicht übersetzen) gilt unverändert, nur ihre Orte sind
+  heute `src/evaluator/authorMessages.js` und `src/i18n/violationMessages.js`.
+  Über den Befund hinaus mitgezogen, weil dieselbe Suche sie fand: ADR-0031 und
+  ADR-0032 (Import-Isolation läuft heute gegen `src/roster/`; „nicht in die App
+  verdrahtet" ist überholt) und der PRD zu den Katalog-Updates (die Naht
+  `validateRoster` heißt heute Diagnose `unresolvedDefinition`).
+- 2026-07-30, Prüfrunde 2 (frischer Kontext, ganze Absicht): 7 Befunde,
+  Trend 8 → 7. Zwei schwer (B1 Aushebe-Dialog bietet Einheiten fremder
+  Armeebücher; B2 nach einer unauflösbaren Auswahl verschieben sich alle
+  folgenden Slot-Pfade), einer davon ein Loch, das meine Runde-1-
+  Korrektur selbst gerissen hat (B3: die Nachrüstung löscht Kataloge,
+  die der Index nicht kennt). Fakten der Runde: `npm test`, `npm run
+  lint`, `npm run typecheck`, `npm run depcruise`, `npm run build` je
+  Exit 0. Zwei Vorbehalte des Prüfers zur Beweiskraft: der E2E-Harness
+  hinterlässt einen `vite preview`-Prozess auf Port 5175, und ein
+  Folgelauf testet dann still den **alten** Build weiter, statt zu
+  scheitern — deshalb Task 16.
+- 2026-07-30, akzeptierte Abweichung (B4): die Kategorie-Grenze „Lord"
+  der WHFB6-Fixture verschwindet aus Anzeige und Durchsetzung. Der
+  `categoryLink` trägt `max="-1"` und darauf einen `increment`; nach
+  `docs/battlescribe-data-format.md` §7.6 („Arithmetik auf einer
+  unbegrenzten Grenze lässt sie unbegrenzt") ist unbegrenzt richtig und
+  die 1 des Solvers war falsch. Die bsdata-Doku hat Vorrang, der
+  Evaluator bleibt wie er ist. Nutzersichtbar ist der Verlust trotzdem:
+  in WHFB6 greift dadurch **keine** Lord-/Hero-Grenze mehr. Als Issue
+  0125 gefilt (Ort der Behebung ist der Katalog-Fork), dem Menschen
+  vorgelegt.
 
 - 2026-07-30, **Review-Runde 1 (frischer Kontext) und Triage.** Acht
   Befunde, je mit Reproduktion. Trend nach Kriterium:

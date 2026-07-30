@@ -93,7 +93,28 @@ async function packFixtureZip() {
   return zipPath;
 }
 
-const spawnVite = (args) => spawn('npx', ['vite', ...args], { shell: true, cwd: REPO_ROOT });
+// `shell: true` schiebt eine Shell zwischen uns und `vite`: das erzeugte Kind ist
+// `sh -c "npx vite …"`, der eigentliche Server läuft als dessen Enkel. Ein Signal an
+// das Kind allein erreicht den Enkel nicht — genau daran hing ein Preview-Server nach
+// jedem Lauf als Waise auf Port 5175 weiter. `detached: true` legt das Kind in eine
+// **eigene Prozessgruppe**, deren Id die Kind-Pid ist; ein Signal an `-pid` erreicht
+// damit die ganze Sippe (siehe {@link killProcessTree}).
+const spawnVite = (args) =>
+  spawn('npx', ['vite', ...args], { shell: true, cwd: REPO_ROOT, detached: true });
+
+/**
+ * Beendet einen mit {@link spawnVite} gestarteten Prozess samt aller Kindprozesse,
+ * indem das Signal an seine Prozessgruppe geht. Ist die Gruppe schon fort (ESRCH),
+ * ist nichts zu tun — deshalb wird der Fehler verschluckt und nicht gemeldet.
+ */
+function killProcessTree(proc, signal = 'SIGTERM') {
+  if (!proc?.pid) return;
+  try {
+    process.kill(-proc.pid, signal);
+  } catch {
+    // Gruppe existiert nicht mehr — bereits beendet.
+  }
+}
 
 /**
  * Erzeugt einmalig einen Produktions-Build. Bewusst kein Dev-Server: der
@@ -118,10 +139,25 @@ function buildApp() {
   });
 }
 
+/**
+ * Startet den Preview-Server und wartet auf seine Startmeldung.
+ *
+ * Der Server wird mit `--strictPort` gestartet: ist der Port belegt, **endet** vite
+ * mit einer Fehlermeldung statt auf einen freien Port auszuweichen. Genau dieser Fall
+ * muss den Lauf abbrechen — sonst liefe der Test still gegen einen fremden Server auf
+ * demselben Port und prüfte womöglich einen alten Build. Ein vorzeitiges Ende des
+ * Prozesses ist deshalb ein **Fehler**, kein Grund weiterzumachen; seine Ausgabe wird
+ * mitgeliefert, damit „Port is already in use" in der Meldung steht.
+ *
+ * Bleibt die Startmeldung nur *aus*, während der Prozess läuft, wird weitergemacht:
+ * die Erkennung hängt an einem Ausgabetext, und ein laufender Server ohne erkannte
+ * Meldung ist kein Grund, den Lauf zu verlieren.
+ */
 function startPreviewServer(port) {
   return new Promise((resolve, reject) => {
     console.log(`Liefere Build über vite preview auf Port ${port} aus...`);
     const proc = spawnVite(['preview', '--port', String(port), '--strictPort']);
+    const transcript = [];
 
     let settled = false;
     const settle = (action) => {
@@ -132,17 +168,29 @@ function startPreviewServer(port) {
 
     proc.stdout.on('data', (data) => {
       const output = data.toString();
+      transcript.push(output);
       console.log(`[vite preview] ${output.trim()}`);
       if (output.includes(String(port)) || output.includes('Local:')) {
         settle(() => resolve(proc));
       }
     });
-    proc.stderr.on('data', (data) => console.error(`[vite preview] ${data.toString().trim()}`));
+    proc.stderr.on('data', (data) => {
+      const output = data.toString();
+      transcript.push(output);
+      console.error(`[vite preview] ${output.trim()}`);
+    });
     proc.on('error', (err) => settle(() => reject(err)));
+    proc.on('exit', (code) => {
+      settle(() => reject(new Error(
+        `Preview-Server auf Port ${port} endete vor seiner Startmeldung (Code ${code}). `
+        + 'Ist der Port noch von einem früheren Lauf belegt? Ausgabe:\n'
+        + transcript.join('').trim()
+      )));
+    });
 
     setTimeout(() => {
       settle(() => {
-        console.log('Startmeldung des Preview-Servers blieb aus, fahre trotzdem fort.');
+        console.log('Startmeldung des Preview-Servers blieb aus, Prozess läuft — fahre fort.');
         resolve(proc);
       });
     }, SERVER_STARTUP_TIMEOUT_MS);
@@ -173,7 +221,9 @@ export async function startAppServer({ port = DEFAULT_PREVIEW_PORT } = {}) {
     url: `http://localhost:${port}/`,
     fixtureZipPath,
     stop: () => {
-      serverProcess.kill('SIGTERM');
+      // Die ganze Prozessgruppe, nicht nur die Shell-Hülle: sonst überlebt der
+      // Server den Lauf und belegt den Port für den nächsten.
+      killProcessTree(serverProcess);
       discardFixtureZip();
     },
   };

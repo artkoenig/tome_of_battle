@@ -1,5 +1,12 @@
 # PRD: Katalog-Updates aus dem Fork-Repo und Roster-Kompatibilität
 
+> **Stand nach Issue 0121 (2026-07-30).** Umgesetzt; dieses Dokument beschreibt die
+> Absicht von damals. Eine benannte Naht hat sich seither verschoben: die
+> Kompatibilitätsprüfung „ein referenzierter Eintrag fehlt" (unten Punkt 3) hing am
+> gelöschten `validateRoster` des Solvers und liegt heute in der Diagnose
+> `unresolvedDefinition` des Evaluator-Berichts, projiziert von
+> `src/evaluation/datasetDiagnostics.js`.
+
 ## Problem Statement / Bug Description
 
 Katalog-Datenfixes erreichen bestehende Nutzer nicht, und wenn sie es täten, könnten

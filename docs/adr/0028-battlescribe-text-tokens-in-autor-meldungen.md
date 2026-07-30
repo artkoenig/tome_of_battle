@@ -55,10 +55,17 @@ Konkret:
 - **Unbekannte Tokens bleiben verbatim**; kein Fehler-/Qualitäts-Signal.
 - **Nur Autor-Meldungen.** Namen, Beschreibungen und Regeltexte bleiben
   unverändert (kein Beleg für `{this}` dort; YAGNI).
-- **Ort: im Solver** beim Zusammenbauen der Meldung (`collectTriggeredMessages`),
-  über eine generische Token→Wert-Zuordnung (kein Sonderfall-`if`). Die
-  Anzeige-Schicht (`formatValidationError`) bleibt reiner Pass-through; das
-  `ValidationError`-Schema ändert sich nicht.
+- **Ort: in der Engine** beim Zusammenbauen der Meldung, über eine generische
+  Token→Wert-Zuordnung (kein Sonderfall-`if`). Die Anzeige-Schicht bleibt reiner
+  Pass-through; das Schema des Fehlerobjekts ändert sich nicht.
+
+> **Stand nach Issue 0121 (2026-07-30).** Die Entscheidung gilt unverändert, ihre
+> Orte haben sich mit dem Cutover auf die Reinraum-Engine verschoben. Das Rendern
+> sitzt heute in `src/evaluator/authorMessages.js` (nicht mehr in
+> `collectTriggeredMessages` des gelöschten Solvers), und die Pass-through-Anzeige
+> ist `src/i18n/violationMessages.js` (nicht mehr `formatValidationError`). Der
+> effektive Name kommt aus der Effektiv-Werte-Schicht des Evaluators statt aus
+> `getEffectiveName`.
 - Abgrenzung zu ADR-0026: Dies ist **kein** i18n-Interpolation über App-Vorlagen
   (`de.json`/`en.json`), sondern Katalog-eigenes Token-Rendering. Der Solver
   bleibt sprachfrei (er ersetzt nur Katalogtext durch Katalogtext).

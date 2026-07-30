@@ -17,16 +17,22 @@ bezieht die geschlossenen Enum-Mengen (`ConstraintKind`, `ConditionKind`,
 `ModifierKind`, `ConditionGroupKind`, `InfoLinkKind`) aus der bereits
 vendored XSD-SSOT `src/parser/schema/battlescribeSchema.generated.js` (ADR-0016),
 statt sie in `src/evaluator/model.js` zu duplizieren. Der Import aus `src/parser/`
-ist von ADR-0030 ausdrücklich erlaubt; die harte Import-Isolation gegen
-`src/solver/` bleibt in beide Richtungen unberührt. Das erfundene Alt-Vokabular
+ist von ADR-0030 ausdrücklich erlaubt; die harte Import-Isolation gegen die
+zweite Engine bleibt in beide Richtungen unberührt. Das erfundene Alt-Vokabular
 wird **ersatzlos entfernt** (kein Kompatibilitäts-Fallback): keine realen Daten
 nutzten es je, nur die engine-eigenen Fixtures, die auf echte BattleScribe-Syntax
 umgeschrieben werden.
 
 Die Domänen-Semantik von `scope` und `field` — auf XSD-Ebene reine
 `xs:string`-Grammatik, siehe [BSData-Doku](../battlescribe-data-format.md) §7.6 —
-bleibt Evaluator-eigene Konvention und wird nicht aus `src/solver/` bezogen (der
-Import `evaluator → solver` ist per ADR-0030 verboten).
+bleibt Evaluator-eigene Konvention und wird nicht aus dem Schreibmodell bezogen
+(der Import `evaluator → roster` ist per ADR-0030 verboten und wird von
+`npm run depcruise` als Fehler durchgesetzt).
+
+> **Stand nach Issue 0121 (2026-07-30).** Die Entscheidung gilt unverändert. Die
+> Gegenseite der Import-Isolation heißt seit dem Cutover `src/roster/` (das
+> Schreibmodell, das aus `src/solver/` hervorgegangen ist); der Validierungsteil des
+> Solvers ist gelöscht.
 
 Begründung: Die aus ADR-0016 gelernte Drift-Klasse (Parser-/Solver-Bugs durch
 selbst gepflegte Enum-Kopien) soll sich in der zweiten Engine nicht wiederholen;
