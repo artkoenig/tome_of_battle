@@ -33,7 +33,7 @@ vi.mock('../../contexts/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 
-const CATALOG_DIR = path.resolve('src/solver/__fixtures__/whfb6');
+const CATALOG_DIR = path.resolve('src/__fixtures__/whfb6');
 const GST_FILE = 'Warhammer Fantasy Battle 6th edition.gst';
 const CAT_FILE = 'Vampire Counts.cat';
 

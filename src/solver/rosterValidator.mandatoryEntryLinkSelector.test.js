@@ -14,7 +14,7 @@ globalThis.DOMParser = dom.window.DOMParser;
 // `min`-Constraint AM LINK (Basis 0), die ein Link-Modifier der Gruppe „Standard"
 // (gegatet auf `notInstanceOf` Ironskin Tribe) auf 1 anhebt. Der Kollektor muss diesen
 // Link wie einen Pflicht-selectionEntry behandeln, sonst bleibt die Pflicht unerzwungen.
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 const parsedCatalogue = parseCatalogueXML(
   readFileSync(`${FIXTURE_DIR}/ogre-bulls-mandatory-entrylink.cat.xml`, 'utf-8')
 );

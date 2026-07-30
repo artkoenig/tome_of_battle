@@ -6,7 +6,7 @@ import {
   createGrimdarkSystem,
   createRoster,
   createCaptainSelection
-} from './__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 // Ende-zu-Ende-Beleg der Ursachen am Fehlerobjekt (ADR 0027): Der Validator hängt an einen
 // Verstoß, dessen verletzter Grenzwert durch einen bedingten Modifier verändert wurde, die

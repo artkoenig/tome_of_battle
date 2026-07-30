@@ -11,7 +11,7 @@ import {
   ENTRY_ID,
   createGrimdarkSystem,
   createValidRoster
-} from '../solver/__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 describe('calculateRosterCosts — Summe über das Roster', () => {
   test('summiert die Katalogkosten aller Auswahlen des Rosters', () => {

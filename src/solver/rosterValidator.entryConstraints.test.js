@@ -8,7 +8,7 @@ import {
   createRoster,
   createCaptainSelection,
   createTacticalSquadSelection
-} from './__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 const VIOLATION = {
   entryMax: 'entry-max',

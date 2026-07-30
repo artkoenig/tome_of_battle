@@ -9,7 +9,7 @@
 > unter [`docs/bsdata-catalogue-development-wiki/`](bsdata-catalogue-development-wiki/) im Repo,
 > aktualisierbar per `git submodule update --remote` — sowie reale
 > WHFB-6th-Edition-Kataloge (heute zur Laufzeit aus dem externen Katalog-Fork bezogen, siehe
-> ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/solver/__fixtures__/whfb6/`).
+> ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/__fixtures__/whfb6/`).
 > Alle XML-Beispiele stammen aus echten Dateien.
 >
 > Diese Datei ist die **kanonische Referenz** zum Battlescribe-Datenformat für dieses Projekt

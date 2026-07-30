@@ -11,7 +11,7 @@ import {
 // diese IDs im Test zu wiederholen, werden sie aus echten Katalogauszügen
 // gelesen (siehe __fixtures__/whfb6-lexicanum/README.md). Driftet eine
 // hartkodierte ID vom realen Katalog ab, schlägt der Test fehl.
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 const HEROES_CATEGORY_NAME = 'Heroes';
 const CHARACTERS_CATEGORY_NAME = 'Characters';
 const GENERAL_ENTRY_NAME = 'General';

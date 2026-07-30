@@ -11,7 +11,7 @@ globalThis.DOMParser = dom.window.DOMParser;
 // Verbatim-Fixture nach dem realen The-Empire-Muster: das gemeinsame
 // „Empire soldier"-Profil wird per infoLink-Namens-Modifier je Einheit
 // unbedingt auf den eigenen Einheitsnamen umbenannt.
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 const parsedCatalogue = parseCatalogueXML(readFileSync(`${FIXTURE_DIR}/empire-name-modifier.cat.xml`, 'utf-8'));
 const CATALOGUE_ID = parsedCatalogue.id;
 const PROFILE_ID = 'b777-4b66-0f67-d717';

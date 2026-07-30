@@ -1,5 +1,5 @@
 // Gemeinsamer Setup-Pfad für alle Puppeteer-Werkzeuge dieses Repositories: den
-// E2E-Smoke-Test (src/solver/ui.test.js) und das Screenshot-Skript
+// E2E-Smoke-Test (e2e/ui.test.js) und das Screenshot-Skript
 // (scripts/generate_screenshots.js).
 //
 // Warum als eigenes Modul: Dieser Ablauf existierte zuvor dreifach kopiert, und
@@ -25,7 +25,7 @@ export const REPO_ROOT = path.resolve(HARNESS_DIR, '..', '..');
 // Eingefrorene Katalog-Fixture in Upstream-Form (siehe deren README). Bewusst
 // entkoppelt von den zur Laufzeit über das Netz bezogenen Katalogdaten, damit
 // jeder Lauf deterministisch und netzfrei bleibt.
-const FIXTURE_DIR = path.join(REPO_ROOT, 'src', 'solver', '__fixtures__', 'whfb6');
+const FIXTURE_DIR = path.join(REPO_ROOT, 'src', '__fixtures__', 'whfb6');
 const CATALOG_FILE_EXTENSIONS = ['.cat', '.gst'];
 
 // Die App stößt beim Start still ein Katalog-Update gegen diesen Host an. Für

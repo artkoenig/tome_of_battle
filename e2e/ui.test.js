@@ -6,7 +6,7 @@ import {
   openAppPage,
   resetAppState,
   importFixtureSystem,
-} from '../../scripts/lib/e2e-harness.js';
+} from '../scripts/lib/e2e-harness.js';
 
 // Fixture-Quelle, Produktions-Build, Auslieferung, Netzwerk-Sperre und
 // Zustands-Reset liegen im gemeinsamen Harness (scripts/lib/e2e-harness.js), das

@@ -6,7 +6,7 @@ import {
   createGrimdarkSystem,
   createRoster,
   createCaptainSelection
-} from '../solver/__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 // Einzigartige Gegenstände (max 1 im Roster) dürfen nicht ein zweites Mal angeboten
 // werden, wenn sie bereits an einer *anderen* Einheit hängen — an der Einheit, die

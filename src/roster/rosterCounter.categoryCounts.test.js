@@ -5,7 +5,7 @@ import {
   CATEGORY_ID,
   FORCE_ENTRY_ID,
   createGrimdarkSystem
-} from '../solver/__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 const EXPECTED_SINGLE_COUNT = 1;
 

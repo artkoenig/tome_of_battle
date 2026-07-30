@@ -15,7 +15,7 @@ beforeAll(() => {
   globalThis.XMLSerializer = jsdomObj.window.XMLSerializer;
 });
 
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 
 // ---------------------------------------------------------------------------
 // Regression for the WHFB6 Definitive-Edition "Traditional Army" pattern

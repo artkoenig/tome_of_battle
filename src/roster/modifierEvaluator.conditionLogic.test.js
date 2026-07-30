@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { evaluateCondition, evaluateConditionGroup } from './modifierEvaluator.js';
-import { POINTS } from '../solver/__fixtures__/grimdarkSystem.js';
+import { POINTS } from '../__fixtures__/grimdarkSystem.js';
 
 const EMPTY_ROSTER = () => ({ costLimit: 1000, costLimitType: POINTS, forces: [] });
 

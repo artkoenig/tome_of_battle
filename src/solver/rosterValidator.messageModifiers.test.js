@@ -10,7 +10,7 @@ globalThis.DOMParser = dom.window.DOMParser;
 
 // Echter, verbatim übernommener Auszug des Lexicanum-Datensatzes (Bretonnia,
 // „Allow special characters?"-Muster). Belegt den field="error"-Hinweistext-Modifier.
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 const readFixture = fileName => readFileSync(`${FIXTURE_DIR}/${fileName}`, 'utf-8');
 const parsedHintCatalogue = parseCatalogueXML(readFixture('special-characters-hint.cat.xml'));
 

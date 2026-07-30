@@ -57,7 +57,7 @@ jobs:
       - name: Unit-/Component-Tests
         run: npx vitest run
 
-  # Der Puppeteer-E2E (src/solver/ui.test.js) braucht einen echten Browser und
+  # Der Puppeteer-E2E (e2e/ui.test.js) braucht einen echten Browser und
   # läuft nun auf `main`.
   e2e:
     name: E2E (Puppeteer, nur main)
@@ -82,7 +82,7 @@ jobs:
         run: npx puppeteer browsers install chrome
 
       - name: E2E-Test
-        run: node src/solver/ui.test.js
+        run: node e2e/ui.test.js
 
       # Schlägt der E2E fehl, hält ui.test.js den UI-Zustand als e2e-failure.png fest.
       # Als Artefakt hochladen, damit der Fehler am tatsächlichen Bildschirm nachvollziehbar

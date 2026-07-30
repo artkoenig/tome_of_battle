@@ -3,7 +3,7 @@
 Katalogdaten für `scripts/generate_showcase_screenshots.js` — das Werkzeug, das die
 drei kuratierten Showcase-Screenshots der GitHub-Landing-Page erzeugt
 (`docs/assets/screenshots/showcase_0{1,2,3}_*.png`). Anders als die WHFB6-Fixture
-unter `src/solver/__fixtures__/whfb6/`, die die App über den Datei-Upload-Weg füttert,
+unter `src/__fixtures__/whfb6/`, die die App über den Datei-Upload-Weg füttert,
 werden diese Dateien dem Browser per Request-Interception unter der GitHub-Raw-URL der
 **ersten** Katalog-Quelle ausgeliefert. So läuft der Showcase durch den echten
 Online-Bibliothekar der App (Spielsystem- und Fraktionsauswahl), ohne dass der

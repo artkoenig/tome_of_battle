@@ -131,7 +131,7 @@ describe('evaluateCondition — instanceOf self-scope', () => {
 
 // --- E2E gegen echten (verbatim reduzierten) Lexicanum-Katalog -------------------
 
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 const readFixture = (fileName) => readFileSync(`${FIXTURE_DIR}/${fileName}`, 'utf-8');
 
 const lexicanumVampireCatalogue = parseCatalogueXML(readFixture('vampire-selfscope-bloodline.cat.xml'));

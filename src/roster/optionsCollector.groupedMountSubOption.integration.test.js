@@ -21,7 +21,7 @@ import { validateRoster } from '../solver/rosterValidator.js';
 // The fix threads the mount's roster selection as the sub-option's owner, so Barding nests
 // under the mount. This test drives the exact edit pipeline useRoster uses.
 
-const CATALOG_DIR = path.resolve('src/solver/__fixtures__/whfb6');
+const CATALOG_DIR = path.resolve('src/__fixtures__/whfb6');
 const GST_FILE = 'Warhammer Fantasy Battle 6th edition.gst';
 const CAT_FILE = 'Vampire Counts.cat';
 

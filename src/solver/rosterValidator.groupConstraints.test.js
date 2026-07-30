@@ -9,7 +9,7 @@ import {
   createRoster,
   createTacticalSquadSelection,
   createVampireSelection
-} from './__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 const VIOLATION = {
   groupPointsMax: 'group-points-max',

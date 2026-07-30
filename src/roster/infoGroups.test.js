@@ -14,7 +14,7 @@ globalThis.XMLSerializer = jsdomObj.window.XMLSerializer;
 // against src/parser/schema/Catalogue.xsd) rather than production WHFB6 data.
 describe('infoGroups / sharedInfoGroups end-to-end', () => {
   const catalogueXml = readFileSync(
-    './src/solver/__fixtures__/generic/generic-infogroups.cat',
+    './src/__fixtures__/generic/generic-infogroups.cat',
     'utf-8'
   );
   const catalogue = parseCatalogueXML(catalogueXml);

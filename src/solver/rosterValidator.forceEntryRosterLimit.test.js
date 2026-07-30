@@ -12,7 +12,7 @@ globalThis.DOMParser = dom.window.DOMParser;
 // Definitive-Edition-Datensatz (ADR-0017). Ihre forceEntry-eigene
 // `limit::<costTypeId>`-Constraint (Basis 0) wird per eigengegatetem Modifier auf
 // 2000 angehoben — „wer dieses Sonderheer wählt, muss ≥2000 Punkte bauen".
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 const parsedCatalogue = parseCatalogueXML(
   readFileSync(`${FIXTURE_DIR}/vampire-coast-force-limit.cat.xml`, 'utf-8')
 );

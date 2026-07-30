@@ -108,7 +108,7 @@ describe('Autoren-error-Tor (Reproduktion Bretonnia „Allow special characters?
   // Echter Verbatim-Auszug: „The Green Knight" trägt einen field="error"-Modifier plus
   // ein per Schalter gehobenes roster-weites max=0 — dasselbe Muster wie der Emperor
   // Fire Dragon (experimentelle Regeln).
-  const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+  const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
   const parsed = parseCatalogueXML(readFileSync(`${FIXTURE_DIR}/special-characters-hint.cat.xml`, 'utf-8'));
   const entryByName = name => parsed.sharedSelectionEntries.find(e => e.name === name);
   const greenKnight = entryByName('The Green Knight');

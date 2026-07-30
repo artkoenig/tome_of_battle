@@ -14,7 +14,7 @@ import {
   createCaptainSelection,
   createTacticalSquadSelection,
   createVampireSelection
-} from './__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 const VIOLATION = {
   rosterLimit: 'roster-limit',

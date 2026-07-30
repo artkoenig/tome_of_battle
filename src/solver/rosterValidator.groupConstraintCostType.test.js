@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { validateRoster } from './validator.js';
-import { POINTS, CASTING_DICE, COST_TYPE_NAME } from './__fixtures__/grimdarkSystem.js';
+import { POINTS, CASTING_DICE, COST_TYPE_NAME } from '../__fixtures__/grimdarkSystem.js';
 import { formatValidationError } from '../i18n/formatValidationError.js';
 import { t } from '../i18n/i18nStore.js';
 

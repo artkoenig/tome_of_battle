@@ -10,7 +10,7 @@ It is schema-valid against the vendored `src/parser/schema/Catalogue.xsd`:
 
 ```
 xmllint --noout --schema src/parser/schema/Catalogue.xsd \
-  src/solver/__fixtures__/generic/generic-infogroups.cat
+  src/__fixtures__/generic/generic-infogroups.cat
 ```
 
 What it exercises:

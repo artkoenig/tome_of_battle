@@ -11,7 +11,7 @@ globalThis.DOMParser = dom.window.DOMParser;
 // Echte, verbatim übernommene Auszüge des neuen Lexicanum-Datensatzes (ADR-0017).
 // Die Characters-categoryEntry trägt einen force-weiten max-Constraint (base 3,
 // punkteskaliert über Modifier), die Heroes-categoryEntry trägt max="-1" (unbegrenzt).
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 const readFixture = fileName => readFileSync(`${FIXTURE_DIR}/${fileName}`, 'utf-8');
 
 const parsedGameSystem = parseGameSystemXML(readFixture('quirk-anchors.gst.xml'));

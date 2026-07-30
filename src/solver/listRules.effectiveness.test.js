@@ -15,7 +15,7 @@ import { parseCatalogueXML } from '../parser/xmlParser.js';
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
-const FIXTURE_DIR = './src/solver/__fixtures__/whfb6-lexicanum';
+const FIXTURE_DIR = './src/__fixtures__/whfb6-lexicanum';
 const parsedCatalogue = parseCatalogueXML(readFileSync(`${FIXTURE_DIR}/special-characters-hint.cat.xml`, 'utf-8'));
 
 const POINTS_COST_TYPE_ID = 'pts';

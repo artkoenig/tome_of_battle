@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 describe('PWA Configuration and Assets', () => {
-  const rootDir = path.resolve(__dirname, '../../');
+  const rootDir = path.resolve(__dirname, '../');
   
   it('should link the manifest in index.html', () => {
     const htmlPath = path.join(rootDir, 'index.html');
@@ -150,7 +150,7 @@ describe('Service worker fetch handler caching behaviour', () => {
   // fetch handler can be exercised directly. The handler registers itself via
   // self.addEventListener; we capture that listener and drive it with fake events.
   function instantiateServiceWorker({ cachedResponse = null, networkResponse = null } = {}) {
-    const rootDir = path.resolve(__dirname, '../../');
+    const rootDir = path.resolve(__dirname, '../');
     const swSource = fs.readFileSync(path.join(rootDir, 'public/sw.js'), 'utf8');
 
     const listeners = {};

@@ -6,7 +6,7 @@ import {
   CONSTRAINT_ID,
   CATALOGUE_ID,
   createGrimdarkSystem
-} from '../solver/__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 // Regression „Waaagh-Sprüche": der Eintrag „Show Spells" trägt ein max=1, seine
 // Sprüche-Gruppe dagegen keins. Reichte das Limit des Elternteils an die Sprüche

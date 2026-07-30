@@ -1,6 +1,6 @@
 # E2E-Fixture: WHFB6 (eingefroren)
 
-Katalogdaten für die Puppeteer-Werkzeuge — den E2E-Smoke-Test `src/solver/ui.test.js` und
+Katalogdaten für die Puppeteer-Werkzeuge — den E2E-Smoke-Test `e2e/ui.test.js` und
 `scripts/generate_screenshots.js`, die sie über das gemeinsame Harness
 `scripts/lib/e2e-harness.js` beziehen (siehe ADR-0006, Seam 6 im
 [PRD](../../../../docs/PRD-katalog-updates-und-roster-kompatibilitaet.md)). Geprüft wird die

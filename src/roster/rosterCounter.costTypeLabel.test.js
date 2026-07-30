@@ -8,7 +8,7 @@ import {
   CASTING_DICE,
   COST_TYPE_NAME,
   createGrimdarkSystem
-} from '../solver/__fixtures__/grimdarkSystem.js';
+} from '../__fixtures__/grimdarkSystem.js';
 
 /**
  * Die Bezeichnung einer Kostenart kommt unverändert aus `costType/@name`. Sie
