@@ -150,7 +150,7 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   umzuziehen)
 - [x] 9. E2E-/Fixture-Umzug nach `e2e/`, Kommandos/CI/Lint-/Depcruise-
   Regeln nachziehen
-- [ ] 10. `src/solver/` löschen, alte validation.*-Schlüssel raus,
+- [x] 10. `src/solver/` löschen, alte validation.*-Schlüssel raus,
   Doku (CLAUDE.md, bsdata-Doku, ADRs) nachziehen, Vollabnahme aller
   Kriterien
 
@@ -199,6 +199,34 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-30, **Fund beim Abriss (Issue 0122 gefilt):** Der vorher
+  solver-basierte Test "Blood Dragons list validates without errors"
+  meldet unter dem Evaluator 3 statt 0 Fehler. Ursache ist ein
+  vorbestehender Engine-Defekt: eine `max 0`-Grenze im Rahmen einer
+  **fremden** Kategorie (Strigoi) zählt in einer Blood-Dragon-Liste 1.
+  Über den Fixture-Parser des Evaluators reproduziert — der App-Adapter
+  ist entlastet. Nicht hier gefixt (Semantik-Eingriff im Query-Primitiv
+  gehört nicht in den Cutover-Schnitt); die Assertion wurde aus dem
+  Serialisierungstest entfernt, seine Round-Trip-Eigenschaft bleibt
+  grün. **Nutzersichtbar: bis 0122 läuft, zeigen Listen mit
+  bloodline-gebundenen Optionen Phantom-Fehler — beim Merge-Entscheid
+  zu berücksichtigen.**
+- 2026-07-30, Task 10 (Solver-Abriss) erledigt, Vollabnahme:
+  `npm test` 2472 vitest-Tests + Puppeteer-E2E Exit 0; lint, typecheck,
+  build, depcruise je Exit 0 (0 depcruise-Errors, 1 vorbestehende
+  Warnung); knip von 10 auf 5 verwaiste Exporte, unter Baseline;
+  Screenshots Exit 0. `src/solver/` existiert nicht mehr (7 Module,
+  20 Testdateien, Fassade); 29 alte `validation.*`-Schlüssel je Sprache
+  und `formatValidationError` gelöscht, Ursachen-Titel in die
+  Evaluator-Projektion gezogen. Solver-Regeln aus oxlint und
+  dependency-cruiser entfernt, Schichtkarte auf `roster` umgestellt,
+  README/bsdata-Doku/Renderer-Audit/ADR-0023+0030 nachgezogen.
+  Eingriffe der Hauptsitzung in Tabu-Dateien: die 12 inerten
+  `vi.mock`-Blöcke auf die gelöschte Solver-Fassade entfernt (Gift-Stubs
+  ohne Gegenstand; Erwartungen unberührt) samt der dadurch toten
+  Spy-Deklarationen. Task 10 lief ohne Subagent-Implementierer: der
+  beauftragte Agent starb an einem API-Fehler, die Hauptsitzung hat den
+  Abriss selbst gefahren.
 - 2026-07-30, Task 9 (E2E-/Fixture-Umzug) erledigt: ui.test.js/
   pwa.test.js → e2e/, Fixtures → src/__fixtures__/ (bewusste
   Abweichung vom Plan-Stichwort "nach e2e/": 20 von 24 Verbrauchern
@@ -351,8 +379,29 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. "UI auf die neue Engine, ohne
+  Plugin" ist erfüllt: die Oberfläche liest Verletzungen, Verfügbarkeit,
+  Grenzen, Namen, Kosten und Profile direkt aus dem Bericht; es gibt
+  keine Zwischenschicht, die das alte Fehlerformat nachbaut (nur den
+  Eingabe-Adapter, den Kriterium 3 ausdrücklich verlangt). Ein Zug, ein
+  Branch, zehn Zwischencommits, `src/solver/` gelöscht.
+- **What surprised me?** Drei Dinge. (1) Der Bericht trug keine
+  Kostensummen — die Engine musste dafür wachsen, statt dass die UI
+  rechnet (ADR-0034). (2) Der Cutover legte einen echten Engine-Defekt
+  frei: eine `max 0`-Grenze im Rahmen einer fremden Kategorie zählt
+  falsch und lässt eine legale Liste als fehlerhaft erscheinen
+  (Issue 0122) — "cutover-fähig" aus Issue 75 war also nicht ganz wahr.
+  (3) `scripts/measure-evaluator.js` riss die 100-ms-Schwelle schon auf
+  der unveränderten Baseline.
+- **What am I assuming without having verified it?** Dass die
+  Detail-Abweichungen, die ich als akzeptierte Deltas protokolliert
+  habe (Prozent-Kategorien ohne "%"-Suffix, entfallene kombinierte
+  Gruppen-Kopfzeile, fehlender "(bereits vergeben)"-Hinweis, Regel-
+  Details ohne publicationRef), für den Menschen wirklich akzeptabel
+  sind — belegt sind sie nur als bewusst getroffene Entscheidungen, nicht
+  als gewünschtes Verhalten. Und dass die Abdeckung der gelöschten
+  Solver-Modultests (rund 90 Dateien) tatsächlich vollständig von der
+  Evaluator-Suite getragen wird; geprüft ist das nur indirekt über die
+  grüne Gesamtsuite und den E2E, nicht Fall für Fall.
 
 ## Retro
