@@ -199,6 +199,40 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-30, **Review-Runde 1 (frischer Kontext) und Triage.** Acht
+  Befunde, je mit Reproduktion. Trend nach Kriterium:
+
+  | Kriterium | Runde 1 |
+  | --- | --- |
+  | 1 (kein Solver-Import) | 0 |
+  | 2 (gelöscht, Prüfungen grün) | 1 (Doku unvollständig) |
+  | 3 (Adapter) | 0 |
+  | 4 (Meldungen) | 1 (Meldung für unauflösbare Einträge fehlt) |
+  | 5 (Verfügbarkeit) | 0 |
+  | 6 (Umzug verhaltensgleich) | 1 (Alt-Systeme ohne rawXmls) |
+  | 7 (E2E-Umzug) | 0 |
+  | 8 (Cache) | 0 |
+  | ohne Kriteriumsbezug | 4 (Auto-Fill, General-Sortierung, Erst-Render-Freeze, Vorgabe-Limit) |
+  | **Summe** | **8** |
+
+  Triage: **gefixt** — Alt-Systeme ohne `rawXmls` (die im Plan
+  notierte Annahme über die Start-Migration war schlicht falsch: sie
+  übersprang solche Systeme, bevor sie die Quelle fragte; jetzt werden
+  sie von dort nachgerüstet, Unrettbares wird gemeldet statt still leer
+  zu bleiben), die verlorene Meldung für Auswahlen ohne Definition
+  (Diagnosen werden durchgereicht und projiziert), sechs
+  Gift-Stub-Assertions, die nach dem Abriss nicht mehr fehlschlagen
+  konnten, samt verwaister Spies, sowie der Doku-Nachzug (ADR-Index,
+  ADR-0002/0003/0022/0024, veraltete Produktivkommentare). **An den
+  Menschen abgegeben** — Auto-Fill-Restpunkte und General-Sortierung
+  (Issue 0123), Erst-Render-Freeze 268–600 ms (Issue 0124); beide
+  außerhalb der acht Kriterien. **Als Entscheidung notiert** — der
+  Anlege-Dialog übernimmt jetzt `defaultCostLimit` des Katalogs als
+  Vorschlag statt immer 2000; bei WHFB6 folgenlos (Sentinel −1 →
+  Rückfall 2000), bei einem Katalog mit echter Vorgabe sichtbar und
+  sinnvoller.
+  Abnahme nach den Fixes: `npm test` 2474 vitest-Tests + Puppeteer-E2E
+  Exit 0, lint/typecheck/build/depcruise Exit 0.
 - 2026-07-30, **Fund beim Abriss (Issue 0122 gefilt):** Der vorher
   solver-basierte Test "Blood Dragons list validates without errors"
   meldet unter dem Evaluator 3 statt 0 Fehler. Ursache ist ein
