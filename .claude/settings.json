@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "metis": {
+      "source": {
+        "source": "github",
+        "repo": "artkoenig/metis"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "metis@metis": true
+  }
+}
