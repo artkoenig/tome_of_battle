@@ -136,7 +136,7 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 - [x] 5. UI-Umstellung Validierungspfad: useRoster → useEvaluation;
   Anzeige (ValidationMessage, Panel, Sidebar, ValidationCauses) über
   `formatViolation`
-- [ ] 6. UI-Umstellung Verfügbarkeitspfad: CategoryUnitAdder,
+- [x] 6. UI-Umstellung Verfügbarkeitspfad: CategoryUnitAdder,
   OptionGroup, SelectionConfigurator, AutoFillSuggestions lesen
   `capabilities` (ADR-0035; Baseline-Diff + Sperrtabelle entfallen)
 - [ ] 7. UI-Umstellung Rest: Dashboard, PlayMode, Modals,
@@ -199,6 +199,22 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-30, Task 6 (Verfügbarkeitspfad) erledigt: 21 rote
+  Vertragstests in 4 Dateien, dann volle Suite 2646 Tests Exit 0,
+  Puppeteer-E2E Exit 0 unverändert, build/lint/typecheck/depcruise
+  Exit 0. Neu `src/evaluation/slotLookups.js`. Vier Alt-Testdateien
+  gelöscht (Solver-Vertrag vollständig ersetzt, je begründet), vier
+  angepasst. Überraschungen, sichtbare Detail-Abweichungen (per
+  ADR-0030-Entscheidung akzeptiert, als Folge-Kandidaten notiert):
+  (a) der Bericht führt je Slot nur EIN Min-/Max-Ergebnis — die alte
+  kombinierte Kopfzeile "X pts | N/M" bei Gruppen mit Zähl-Max UND
+  Punkte-Cap ist nicht mehr rekonstruierbar; (b) der Hinweistext
+  "(bereits vergeben)" für roster-einzigartige Optionen entfällt, die
+  Sperre selbst kommt aus isBlocked; (c) Issue-17/07-Fall (gleichnamige
+  Gruppen per Gruppen-Id getrennt) hat keine komponentennahe Absicherung
+  mehr. Folge-Issues beim Retro filen: ADR-0029-Hebbarkeit in den
+  Bericht projizieren; ggf. Mehrfach-Grenzen je Slot; Gruppen-Id-
+  Testfall.
 - 2026-07-29, Task 5 (UI-Validierungspfad) erledigt: 5 neue rote
   Vertragsdateien (34 Tests), dann volle Suite `npx vitest run` 2671
   Tests Exit 0, Puppeteer-E2E Exit 0 OHNE Anpassung (die Evaluator-
