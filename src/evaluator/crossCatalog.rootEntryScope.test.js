@@ -370,6 +370,72 @@ describe('Issue 0098 Review-Runde 2: eine voellig unbezogene CATEGORY bleibt kat
   });
 });
 
+describe('Issue 0098 Review-Runde 3: eine CATEGORY, die nur eine belegte Auswahl (nicht das Kontingent selbst) per categoryLink referenziert, bleibt katalog-uebergreifend durchsetzbar', () => {
+  // Runde 3 wies nach, dass die Runde-1/2-Ausnahmen nur `forceEntry`-eigene
+  // `categoryLink`s kannten (`linkedCategoryIdsOf(forceNode.def)`), aber
+  // nicht den ebenso realen Fall, dass eine bereits gewaehlte Auswahl
+  // (`selectionEntry`) selbst per `categoryLink` auf eine katalogfremde
+  // Kategorie verweist. Ohne Gegenmassnahme wird die MIN-Grenze der
+  // Kategorie dann STILL verschluckt — kein Verstoss, keine Diagnose,
+  // obwohl die Auswahl echt im Roster steckt und die Grenze real verletzt.
+  const CATEGORY_MIN_LIMIT_ID = 'b4-category-unitlink-min';
+  const CATALOGUE_B4 = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-b4-categoryscope-unitlink" name="B4" gameSystemId="${GAME_SYSTEM_ID}">
+      <categoryEntries>
+        <categoryEntry id="b4-category-unitlink" name="B4 Category">
+          <constraints>
+            <constraint id="${CATEGORY_MIN_LIMIT_ID}" type="min" value="2" field="selections" scope="roster"/>
+          </constraints>
+        </categoryEntry>
+      </categoryEntries>
+      <forceEntries>
+        <forceEntry id="b4-force-categoryscope-unitlink" name="B4 Force"/>
+      </forceEntries>
+    </catalogue>`;
+
+  const CATALOGUE_A4 = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-a4-categoryscope-unitlink" name="A4" gameSystemId="${GAME_SYSTEM_ID}">
+      <forceEntries>
+        <forceEntry id="a4-force-categoryscope-unitlink" name="A4 Force"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="a4-unit-categoryscope-unitlink" name="A4 Unit" type="unit">
+          <categoryLinks>
+            <categoryLink id="a4-catlink-unitlink" targetId="b4-category-unitlink" primary="false"/>
+          </categoryLinks>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  function rosterWithUnitCount(count) {
+    return {
+      forces: [{
+        defId: 'a4-force-categoryscope-unitlink',
+        count: 1,
+        children: [{ defId: 'a4-unit-categoryscope-unitlink', count, children: [] }],
+      }],
+    };
+  }
+
+  it('meldet den Verstoss gegen Bs roster-skopierte Kategorie-MIN, wenn nur As Auswahl (per eigenem categoryLink auf Bs Kategorie) unter dem Minimum bleibt', () => {
+    const report = evaluate(
+      prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A4, CATALOGUE_B4] }),
+      rosterWithUnitCount(1),
+    );
+
+    expect(hasViolationWithLimitId(report, CATEGORY_MIN_LIMIT_ID)).toBe(true);
+  });
+
+  it('Kontrast: meldet KEINEN Verstoss, wenn As Auswahl die Grenze tatsaechlich erreicht', () => {
+    const report = evaluate(
+      prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A4, CATALOGUE_B4] }),
+      rosterWithUnitCount(2),
+    );
+
+    expect(hasViolationWithLimitId(report, CATEGORY_MIN_LIMIT_ID)).toBe(false);
+  });
+});
+
 describe('Issue 0098 Regressions-Wache: der Ein-Katalog-Fall bleibt unveraendert (additive Filterung)', () => {
   // Kein zweiter Armee-Katalog im Spiel — dieselbe Art Fixture wie die
   // bestehende Suite (`crossCatalog.test.js`, "ADR-0032"-Beschreibung). Dieser

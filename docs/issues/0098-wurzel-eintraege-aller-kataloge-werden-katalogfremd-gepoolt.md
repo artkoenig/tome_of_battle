@@ -390,5 +390,42 @@ katalog-lokal.
   Verifikation), Exit 0. `npm run lint` (oxlint), Exit 0. `npm run
   typecheck` (tsc --noEmit), Exit 0. Reviewer um eine dritte Runde im
   selben Kontext gebeten.
+- 2026-07-30 — **Review-Runde 3 (derselbe Reviewer-Kontext):** Runde 1/2
+  bestaetigt weiterhin gruen; ein vierter, bislang uebersehener Fund: die
+  Runde-2-Erkennung "wird diese Kategorie von etwas Anwesendem referenziert"
+  kannte nur `forceEntry`-eigene `categoryLink`s
+  (`linkedCategoryIdsOf(forceNode.def)`), nicht einen `categoryLink` an
+  einer bereits belegten Auswahl (`selectionEntry`). Eine solche Auswahl
+  ist genauso real und anwesend wie ein Kontingent, ihr Verweis genauso
+  katalogfremd moeglich — ohne Beachtung wurde die MIN-Grenze der
+  referenzierten Kategorie STILL verschluckt (kein Verstoss, keine
+  Diagnose), obwohl sie tatsaechlich verletzt war. Anders als Runde 1/2 (zu
+  restriktiv bzw. zu freizuegig, beides falsch-positiv/falsch-negativ durch
+  UNGEFILTERTES/GEFILTERTES Feuern) ist das ein stiller falsch-negativer
+  Fund: die Grenze haette feuern muessen und tat es nicht, spurlos.
+- 2026-07-30 — **Fund behoben (selbst implementiert):** neue, geteilte
+  Funktion `referencedCategoryIdsUnder(node)` in `evalTree.js` sammelt
+  `categoryLink`-Ziele ueber **alle** realen (nicht-phantomen) Nachfahren
+  eines Knotens — Kontingente **und** Auswahlen —, nicht nur Kontingente.
+  Eingesetzt an drei Stellen: (1) `synthesizeMandatoryPhantoms`s
+  ROSTER-Schleife nutzt jetzt `referencedCategoryIdsUnder(root)` statt der
+  reinen Kontingent-Sammlung; (2) dieselbe Funktion bekommt in der
+  FORCE-Schleife eine neue, **konditionale** CATEGORY-Ausnahme
+  (`referencedCategoryIdsUnder(forceNode)`, nur fuer Kategorien, die eine
+  Auswahl **unter diesem Kontingent** referenziert — nicht das Kontingent
+  selbst, das steht schon separat in `anchoredCategoryIds`); (3)
+  `synthesizeUnlinkedCategoryAnchors` prueft vor der Katalog-Filterung
+  zusaetzlich, ob irgendein reales Objekt im ganzen Roster die Kategorie
+  referenziert (deckt den MAX-only-Fall ab, der nie ein Pflicht-Phantom
+  bekommt). Testfall ergaenzt (`crossCatalog.rootEntryScope.test.js`, neue
+  Describe „Review-Runde 3"): eine Auswahl in Katalog A4 referenziert per
+  eigenem `categoryLink` eine Kategorie mit roster-MIN=2 in Katalog B4; bei
+  nur einer Instanz feuert die Verletzung jetzt korrekt, bei zwei nicht
+  mehr (Kontrast) — per `git stash` gegen den Vor-Runde-3-Code als
+  tatsaechlich fehlschlagend verifiziert, danach gruen.
+- 2026-07-30 — **Verifikation nach dem dritten Fix:** `npx vitest run
+  src/evaluator`, 68 Testdateien, 860 Tests (2 neu), Exit 0. `npm run lint`
+  (oxlint), Exit 0. `npm run typecheck` (tsc --noEmit), Exit 0. Reviewer um
+  eine vierte Runde im selben Kontext gebeten.
 
 ## Retro

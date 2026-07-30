@@ -416,13 +416,41 @@ function rosterReferenceCatalogueIdsOf(forceNodeList, primaryCatalogueByForceDef
     .filter(catalogueId => catalogueId !== undefined);
 }
 
+/**
+ * Die Kategorie-Ids, die irgendein reales (nicht-phantomes) Objekt **unter**
+ * `node` per eigenem `categoryLink` fuehrt (Issue 0098, Review-Runde 3) —
+ * nicht nur ein Kontingent selbst ({@link linkedCategoryIdsOf} allein deckte
+ * nur `forceEntry`-eigene Links ab), sondern auch eine bereits belegte
+ * Auswahl (`selectionEntry`), deren `categoryLink` katalogfremd sein kann
+ * (genau wie ein `forceEntry`-Link). `node` selbst zaehlt nicht mit
+ * ({@link allNodes} liefert nur Nachfahren) — ein Kontingent-eigener Link
+ * wird an den jeweiligen Aufrufstellen separat behandelt
+ * (`anchoredCategoryIds`/`rosterLinkedCategoryIds`-Aufruf mit `root`, der
+ * auch die Kontingent-Knoten selbst mit einschliesst). Ausgewertet, **bevor**
+ * irgendein Phantom haengt (aufgerufen am Anfang von
+ * {@link synthesizeMandatoryPhantoms} bzw. vor
+ * {@link synthesizeUnlinkedCategoryAnchors}), zaehlt {@link realNodes} hier
+ * also ausschliesslich echte Roster-Instanzen — keine Anker.
+ */
+function referencedCategoryIdsUnder(node) {
+  const ids = new Set();
+  for (const descendant of realNodes(node)) {
+    for (const categoryId of linkedCategoryIdsOf(descendant.def)) ids.add(categoryId);
+    const owner = ownerDefinitionOf(descendant);
+    if (owner !== descendant.def) {
+      for (const categoryId of linkedCategoryIdsOf(owner)) ids.add(categoryId);
+    }
+  }
+  return ids;
+}
+
 function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueScope, primaryCatalogueByForceDefId) {
   const forceNodeList = [...forceNodes(root)];
   const rosterReferenceCatalogueIds = rosterReferenceCatalogueIdsOf(forceNodeList, primaryCatalogueByForceDefId);
-  const rosterLinkedCategoryIds = new Set();
-  for (const forceNode of forceNodeList) {
-    for (const categoryId of linkedCategoryIdsOf(forceNode.def)) rosterLinkedCategoryIds.add(categoryId);
-  }
+  // `root` selbst schliesst {@link realNodes} nicht ein — ein Kontingent
+  // zaehlt hier trotzdem mit, weil es selbst ein Nachfahre der (nicht
+  // gezaehlten) synthetischen Wurzel ist.
+  const rosterLinkedCategoryIds = referencedCategoryIdsUnder(root);
 
   for (const def of definitions) {
     const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
@@ -435,6 +463,11 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
   }
   for (const forceNode of forceNodeList) {
     const anchoredCategoryIds = linkedCategoryIdsOf(forceNode.def);
+    // Kategorien, die eine Auswahl **unter diesem Kontingent** per eigenem
+    // `categoryLink` fuehrt (nicht das Kontingent selbst — das steht schon
+    // in `anchoredCategoryIds`), zaehlen fuer dieses Kontingent ebenso als
+    // referenziert (Review-Runde 3, derselbe Grund wie im ROSTER-Zweig).
+    const forceLinkedCategoryIds = referencedCategoryIdsUnder(forceNode);
     const forceCatalogueId = primaryCatalogueByForceDefId?.get(forceNode.def.id);
     const forceReferenceCatalogueIds = forceCatalogueId === undefined ? [] : [forceCatalogueId];
     for (const def of definitions) {
@@ -442,6 +475,7 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
       const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
       if (hasMinLimit(limits, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0
           && (def.kind === DefinitionKind.ENTRY_LINK
+            || (def.kind === DefinitionKind.CATEGORY && forceLinkedCategoryIds.has(def.id))
             || isInCatalogueScope(def.id, forceReferenceCatalogueIds, catalogueScope))) {
         attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
       }
@@ -526,15 +560,17 @@ function synthesizeForceCategoryAnchors(root, nextFrameId) {
  * am Kontingent-Knoten liegt fuer ihn nichts Besseres, an der Wurzel loest auch
  * ein Roster ohne Kontingente ihn auf.
  *
- * **Katalog-Bezugsrahmen** (`catalogueScope`, Issue 0098, Review-Runde 2):
- * jede Definition, die diese Funktion ueberhaupt anfasst, ist per
- * Konstruktion von KEINEM anwesenden Kontingent per `categoryLink`
- * referenziert (`linkedAnywhere` schliesst referenzierte Kategorien aus) —
- * anders als bei {@link synthesizeMandatoryPhantoms} gibt es hier also
- * keinen expliziten Referenz-Grund, der eine Ausnahme rechtfertigen wuerde.
- * Beide Anker (ROSTER wie FORCE — Letzterer zaehlt ohnehin armeeweit ueber
- * die Ziel-Typ-Regel, s.o.) pruefen deshalb unbedingt gegen die im Roster
- * vertretenen Kataloge ({@link isInCatalogueScope}); ohne `catalogueScope`
+ * **Katalog-Bezugsrahmen** (`catalogueScope`, Issue 0098, Runde 2/3): eine
+ * Definition, die diese Funktion ueberhaupt anfasst, fuehrt kein anwesendes
+ * Kontingent per **eigenem** `categoryLink` (`linkedAnywhere`, unveraendert
+ * seit Runde 2 — dessen Anker deckt {@link synthesizeForceCategoryAnchors}
+ * bereits ab). Sie kann aber sehr wohl von einer bereits belegten **Auswahl**
+ * per `categoryLink` referenziert sein (Runde 3: derselbe Fund wie bei
+ * {@link synthesizeMandatoryPhantoms}, hier fuer eine Kategorie mit
+ * **ausschliesslich** MAX-Grenzen, die sonst nie einen Pflicht-Phantom
+ * bekommt). Nur wenn WEDER ein Kontingent noch eine Auswahl sie referenziert,
+ * greift die Katalog-Filterung ({@link isInCatalogueScope}); referenziert
+ * irgendetwas Reales sie, haengt der Anker unbedingt — ohne `catalogueScope`
  * bleibt das Verhalten wie zuvor ungefiltert.
  */
 function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId, catalogueScope, primaryCatalogueByForceDefId) {
@@ -543,11 +579,12 @@ function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId, catal
   for (const forceNode of forceNodeList) {
     for (const id of linkedCategoryIdsOf(forceNode.def)) linkedAnywhere.add(id);
   }
+  const referencedAnywhere = referencedCategoryIdsUnder(root);
   const rosterReferenceCatalogueIds = rosterReferenceCatalogueIdsOf(forceNodeList, primaryCatalogueByForceDefId);
   for (const def of definitions) {
     if (def.kind !== DefinitionKind.CATEGORY) continue;
     if (linkedAnywhere.has(def.id)) continue;
-    if (!isInCatalogueScope(def.id, rosterReferenceCatalogueIds, catalogueScope)) continue;
+    if (!referencedAnywhere.has(def.id) && !isInCatalogueScope(def.id, rosterReferenceCatalogueIds, catalogueScope)) continue;
     if (hasAnyLimitInFrame(def, ScopeKeyword.ROSTER) && !hasUnfilteredPhantomAnywhereFor(root, def.id)) {
       attachPhantom(root, def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, ScopeKeyword.ROSTER);
     }
