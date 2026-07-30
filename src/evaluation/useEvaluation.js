@@ -1,69 +1,40 @@
 /**
- * React-Hook `useEvaluation` (Issue 0121, Task 3): verdrahtet die
- * Evaluator-Fassade (`src/evaluator/evaluator.js`) mit dem App-Modell.
+ * React-Hook `useEvaluation` (Issue 0121, Tasks 3 und 17): der Rand, ueber den
+ * der Editor und der Spielmodus die App-Auswertung beziehen.
  *
- * `useEvaluation(system, roster)` bereitet die rohen XMLs des Systems
- * (`system.rawXmls`, Shape aus `src/db/systemImport.js`) **einmal je
- * System-Objektidentitaet** auf (`prepareDataset`), uebersetzt das App-Roster
- * je Roster-Objektidentitaet (`toEvaluatorRoster`) und liefert
- * `{ violations, capabilities, description, costTotals, pathBySelectionId }`.
+ * Der Hook **rechnet nichts selbst**. Er ruft `evaluateAppRoster(system,
+ * roster)` — die eine App-Auswertung aus `evaluationCache.js` — und memoisiert
+ * deren Ergebnis je Objektidentitaet der beiden Eingaben. Genau darin liegt der
+ * Zweck: solange Hook und Direktaufruf Adapter, `evaluate` und die
+ * Pfadkorrektur je fuer sich zusammensetzten, konnte eine Korrektur an einem
+ * Rand landen und am anderen fehlen (Befund F1 der Pruefrunde 3). Eine Naht,
+ * die es nur einmal gibt, kann nicht auseinander laufen.
+ *
+ * Ergebnis (Form und Leerfaelle: siehe `AppEvaluation` in
+ * `evaluationCache.js`): `{ violations, capabilities, description, costTotals,
+ * pathBySelectionId, pathByForceId, diagnostics }`.
  *
  * Memoisierung (Kriterium 8 des Issues, verschaerft in Task 7):
- * - `prepareDataset` laeuft hoechstens einmal je System-Objektidentitaet —
- *   **global geteilt** ueber alle Hook-Instanzen und die Direktaufrufe des
- *   Moduls `evaluationCache.js` (`evaluateAppRoster`/`describeSystem`); erst
- *   ein neues System-Objekt loest eine neue Vorbereitung aus.
- * - `describeDataset` haengt nur am aufbereiteten Datensatz, laeuft also
- *   ebenfalls je System-Identitaet.
- * - `evaluate` + Adapter laufen je Roster-Objektidentitaet (und erneut, wenn
- *   der Datensatz wechselt).
+ * - `prepareDataset` und `describeDataset` laufen hoechstens einmal je
+ *   Datensatz — **global geteilt** ueber alle Hook-Instanzen und alle
+ *   Direktaufrufe (die WeakMaps in `evaluationCache.js`); erst ein neues
+ *   System-Objekt loest eine neue Vorbereitung aus.
+ * - Adapter und `evaluate` laufen je Roster-Objektidentitaet (und erneut, wenn
+ *   das System-Objekt wechselt) — dafuer sorgt das `useMemo` hier.
  *
  * Der Hook ist rein ableitend: kein DB-Zugriff, kein Kontext, keine Effekte.
- * `prepareDataset` laeuft synchron im Render — der Vertrag der Tests verlangt
- * ein synchrones Ergebnis im ersten Render; die Entkopplung des teuren
- * Vorlaufs (0,5–1,5 s bei echten Katalogen) ist Sache der aufrufenden UI in
- * spaeteren Tasks.
+ * Die Auswertung laeuft synchron im Render — der Vertrag der Tests verlangt ein
+ * synchrones Ergebnis im ersten Render; die Entkopplung des teuren Vorlaufs
+ * (0,5–1,5 s bei echten Katalogen) ist Sache der aufrufenden UI.
  *
  * Leere Eingaben (system null/undefined, `rawXmls` fehlt oder ohne `.gst`,
  * roster null/undefined) ergeben ohne Throw das **referenzstabile**
- * Leer-Ergebnis: `violations: []`, `capabilities` leere Map,
- * `description: null`, `costTotals: {}`, `pathBySelectionId` leere Map.
+ * Leer-Ergebnis der App-Auswertung: `violations: []`, leere Maps,
+ * `description: null`, `costTotals: {}`.
  */
 
 import { useMemo } from 'react';
-import { evaluate, describeDataset } from '../evaluator/evaluator.js';
-import { preparedDatasetOf } from './evaluationCache.js';
-import { toEvaluatorRoster } from './rosterAdapter.js';
-
-/**
- * Das Ergebnis des Hooks.
- *
- * @typedef {Object} EvaluationResult
- * @property {ReadonlyArray<object>} violations  Verletzungen aus dem Bericht der Fassade.
- * @property {Map<string, object>} capabilities  Faehigkeitsdatensaetze je Slot-Pfad.
- * @property {{ costTypes: object[], catalogues: object[], creatableForces: object[], diagnostics: object[] } | null} description
- *   Beschreibung des Datensatzes (`describeDataset`); `null` im Leerfall.
- * @property {Readonly<Record<string, number>>} costTotals  Kostensumme je deklarierter Kostenart.
- * @property {Map<string, string>} pathBySelectionId  App-Selection-UUID → Slot-Pfad.
- * @property {ReadonlyArray<object>} diagnostics  Datensatz-Befunde des Berichts
- *   (z. B. `unresolvedDefinition`), aus denen die Oberflaeche die Meldung fuer
- *   nicht mehr auffindbare Auswahlen ableitet.
- */
-
-/**
- * Das eine, eingefrorene Leer-Ergebnis: referenzstabil ueber alle Renders und
- * Hook-Instanzen hinweg (Kriterium 5 gilt fuer alle Eingaben).
- *
- * @type {EvaluationResult}
- */
-const EMPTY_RESULT = Object.freeze({
-  violations: Object.freeze([]),
-  capabilities: new Map(),
-  description: null,
-  costTotals: Object.freeze({}),
-  pathBySelectionId: new Map(),
-  diagnostics: Object.freeze([]),
-});
+import { evaluateAppRoster } from './evaluationCache.js';
 
 /**
  * Wertet ein App-Roster gegen die Katalogdaten seines Systems aus.
@@ -73,45 +44,8 @@ const EMPTY_RESULT = Object.freeze({
  *   (vollstaendiges) `rawXmls` → Leer-Ergebnis.
  * @param {import('../types.js').Roster | null | undefined} roster
  *   Das App-Roster; `null`/`undefined` → Leer-Ergebnis.
- * @returns {EvaluationResult}
+ * @returns {import('./evaluationCache.js').AppEvaluation}
  */
 export function useEvaluation(system, roster) {
-  // Katalog-Vorlauf: genau einmal je System-Objektidentitaet — aus dem
-  // modulweiten Cache (`evaluationCache.js`), geteilt mit allen anderen
-  // Hook-Instanzen und den Direktaufrufen. Ein System ohne rawXmls
-  // (Start-Migration noch nicht gelaufen) oder ohne .gst-Datei hat keinen
-  // Datensatz — wie ein fehlendes System behandelt (null).
-  const prepared = useMemo(() => preparedDatasetOf(system), [system]);
-
-  // Beschreibung: haengt allein am aufbereiteten Datensatz — je System-Identitaet.
-  const description = useMemo(
-    () => (prepared === null ? null : describeDataset(prepared)),
-    [prepared],
-  );
-
-  // Adapter: je Roster-Objektidentitaet.
-  const adapted = useMemo(
-    () => (roster === null || roster === undefined ? null : toEvaluatorRoster(roster)),
-    [roster],
-  );
-
-  // Auswertung: je Roster-Identitaet gegen den gehaltenen Datensatz-Griff.
-  const report = useMemo(() => {
-    if (prepared === null || adapted === null) return null;
-    return evaluate(prepared, adapted.evalRoster);
-  }, [prepared, adapted]);
-
-  // Ergebnisobjekt: referenzstabil, solange die Eingaben (per Objektidentitaet)
-  // unveraendert sind; jeder Leer-/Fehlfall liefert dieselbe EMPTY_RESULT-Referenz.
-  return useMemo(() => {
-    if (report === null || adapted === null || description === null) return EMPTY_RESULT;
-    return {
-      violations: report.violations,
-      capabilities: report.capabilities,
-      description,
-      costTotals: report.costTotals,
-      pathBySelectionId: adapted.pathBySelectionId,
-      diagnostics: report.diagnostics,
-    };
-  }, [report, adapted, description]);
+  return useMemo(() => evaluateAppRoster(system, roster), [system, roster]);
 }

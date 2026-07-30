@@ -38,6 +38,14 @@ und ein Kriterium verletzte. Die übrigen Stellen sind **vorbestehend**
 Bei einer Liste mit einem Kontingent, dem Normalfall und dem der
 Fixture, zeigt sich nichts davon.
 
+Seit der Korrektur in Issue 0121 (Task 19) steht dort eine **schiefe
+Kante**, die vorher nicht sichtbar war: im verbündeten Kontingent
+entscheidet der Katalog des **Kontingents**, *wer* angeboten wird, aber
+der Katalog des **Rosters**, gegen welchen Katalog der ausgehobene
+Eintrag aufgelöst wird (`CategoryUnitAdder.entryFor`). Praktisch trägt
+das, weil `findEntryInSystem` katalogübergreifend zurückfällt — aber es
+ist zwei Regeln für dieselbe Frage, und die zweite gehört mit hierher.
+
 Acceptance criteria:
 
 1. Jede Stelle im Editor, die einen Katalogbezug braucht, benutzt den

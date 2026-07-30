@@ -61,12 +61,14 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   // Validierung und Kosten kommen seit Issue 0121 (Tasks 5 und 7) aus dem
   // Evaluator-Bericht (ADR 0030/0034): Verletzungen, Fähigkeitsdatensätze,
   // Kostensummen je deklarierter Kostenart, die Datensatz-Beschreibung und die
-  // Zuordnung Selection-UUID → Slot-Pfad — synchron aus dem aktuellen Roster
+  // Zuordnungen Selection-UUID bzw. Force-UUID → Slot-Pfad — synchron aus dem aktuellen Roster
   // abgeleitet, ohne gespiegelten State. Der frühere Solver-Kostenpfad
   // (`calculateRosterCosts` → `costs`) ist entfallen; jede Kosten-Anzeige
   // liest `costTotals` bzw. die Fähigkeitsdatensätze.
-  const { violations, capabilities, description, costTotals, pathBySelectionId, diagnostics } =
-    useEvaluation(system, roster);
+  const {
+    violations, capabilities, description, costTotals,
+    pathBySelectionId, pathByForceId, diagnostics
+  } = useEvaluation(system, roster);
 
   // Auswahlen, deren Definition der Katalog nicht mehr kennt (stilles
   // Katalog-Update, ADR 0018). Sie sind keine Regelverletzung, muessen dem
@@ -355,6 +357,7 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
     description,
     costTotals,
     pathBySelectionId,
+    pathByForceId,
     unresolvedSelections,
     selectedRosterSelection,
     setSelectedRosterSelection,

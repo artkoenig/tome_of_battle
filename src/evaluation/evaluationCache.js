@@ -1,29 +1,54 @@
 /**
- * Modulweiter Auswertungs-Cache (Issue 0121, Task 7): der Katalog-Vorlauf
- * (`prepareDataset`) laeuft **genau einmal je System-Objekt** — geteilt ueber
- * alle `useEvaluation`-Hook-Instanzen und alle Direktaufrufe dieses Moduls.
+ * Die **eine** App-Auswertung (Issue 0121, Tasks 7, 17 und 18): jede Stelle der
+ * Oberflaeche, die ein App-Roster gegen die Katalogdaten seines Systems
+ * bewertet, geht durch {@link evaluateAppRoster} — der `.ros`-Export und das
+ * Dashboard direkt, der Editor und der Spielmodus ueber den duennen Hook
+ * `useEvaluation`, der nichts weiter tut, als diesen Aufruf zu memoisieren.
  *
- * Der Cache ist eine WeakMap ueber die System-Objektidentitaet: ein neues
- * System-Objekt (Neuladen aus der DB, Katalog-Update) loest genau eine neue
- * Vorbereitung aus; ein gehaltenes Objekt wird nie doppelt vorbereitet und
- * haelt nichts am Leben, was die App nicht ohnehin haelt.
+ * Der Grund fuer diese eine Naht ist ein Befund: solange Hook und Direktaufruf
+ * Adapter, `evaluate` und die Pfadkorrektur je fuer sich zusammensetzten, konnte
+ * eine Korrektur an einem Rand landen und am anderen fehlen (F1 der Pruefrunde 3
+ * war genau das). Eine Naht, die es nur einmal gibt, kann nicht auseinander
+ * laufen.
+ *
+ * Zwei WeakMaps ueber Objektidentitaeten tragen den Cache:
+ * - der Katalog-Vorlauf (`prepareDataset`) laeuft **genau einmal je
+ *   System-Objekt** (Kriterium 8) — ein neues System-Objekt (Neuladen aus der
+ *   DB, Katalog-Update) loest genau eine neue Vorbereitung aus;
+ * - die Datensatz-Beschreibung (`describeDataset`) haengt allein am
+ *   aufbereiteten Datensatz und laeuft deshalb ebenfalls nur einmal je Griff.
+ *
+ * Beide halten nichts am Leben, was die App nicht ohnehin haelt.
  *
  * Exporte:
- * - `evaluateAppRoster(system, roster)` — dieselbe Ergebnisform wie
- *   `useEvaluation` (`{ violations, capabilities, costTotals,
- *   pathBySelectionId }`), als reine Funktion ausserhalb von React aufrufbar.
- *   Leer-/Fehlfaelle (system null/undefined/ohne vollstaendiges `rawXmls`,
- *   roster null/undefined) ergeben ohne Throw das referenzstabile
- *   Leer-Ergebnis.
+ * - `evaluateAppRoster(system, roster)` — die App-Auswertung als reine
+ *   Funktion: `{ violations, capabilities, description, costTotals,
+ *   pathBySelectionId, pathByForceId, diagnostics }`. Leer-/Fehlfaelle (system
+ *   null/undefined/ohne vollstaendiges `rawXmls`, roster null/undefined)
+ *   ergeben ohne Throw das referenzstabile Leer-Ergebnis.
  * - `describeSystem(system)` — die Datensatz-Beschreibung ohne Roster
  *   (`describeDataset`); system null oder ohne (vollstaendige) `rawXmls`
  *   (fehlende oder leere `.gst`-Liste) → `null`.
- * - `preparedDatasetOf(system)` — der gecachte Griff fuer `useEvaluation`;
- *   `null` in denselben Leerfaellen.
  */
 
 import { prepareDataset, evaluate, describeDataset } from '../evaluator/evaluator.js';
-import { toEvaluatorRoster, pathBySelectionIdOf } from './rosterAdapter.js';
+import { toEvaluatorRoster, slotPathsOf } from './rosterAdapter.js';
+
+/**
+ * Das Ergebnis der App-Auswertung — die Form, die die ganze Oberflaeche liest.
+ *
+ * @typedef {Object} AppEvaluation
+ * @property {ReadonlyArray<object>} violations  Verletzungen aus dem Bericht der Fassade.
+ * @property {Map<string, object>} capabilities  Faehigkeitsdatensaetze je Slot-Pfad.
+ * @property {{ costTypes: object[], catalogues: object[], creatableForces: object[], diagnostics: object[] } | null} description
+ *   Beschreibung des Datensatzes (`describeDataset`); `null` im Leerfall.
+ * @property {Readonly<Record<string, number>>} costTotals  Kostensumme je deklarierter Kostenart.
+ * @property {Map<string, string>} pathBySelectionId  App-Selection-UUID → Slot-Pfad.
+ * @property {Map<string, string>} pathByForceId  App-Force-UUID → Slot-Pfad.
+ * @property {ReadonlyArray<object>} diagnostics  Datensatz-Befunde des Berichts
+ *   (z. B. `unresolvedDefinition`), aus denen die Oberflaeche die Meldung fuer
+ *   nicht mehr auffindbare Auswahlen ableitet.
+ */
 
 /** Die Diagnose "diese Definition kennt der Datensatz nicht" (`evalTree.js`). */
 const UNRESOLVED_DEFINITION = 'unresolvedDefinition';
@@ -31,16 +56,22 @@ const UNRESOLVED_DEFINITION = 'unresolvedDefinition';
 /** Aufbereiteter Datensatz je System-Objektidentitaet (genau ein Vorlauf). */
 const preparedBySystem = new WeakMap();
 
+/** Datensatz-Beschreibung je aufbereitetem Datensatz (genau ein Lauf). */
+const describedByDataset = new WeakMap();
+
 /**
- * Das eine, eingefrorene Leer-Ergebnis von {@link evaluateAppRoster}:
- * referenzstabil ueber alle Aufrufe hinweg (dieselbe Form wie `useEvaluation`,
- * ohne `description`).
+ * Das eine, eingefrorene Leer-Ergebnis der App-Auswertung: referenzstabil ueber
+ * alle Aufrufe und alle Hook-Instanzen hinweg.
+ *
+ * @type {AppEvaluation}
  */
 const EMPTY_RESULT = Object.freeze({
   violations: Object.freeze([]),
   capabilities: new Map(),
+  description: null,
   costTotals: Object.freeze({}),
   pathBySelectionId: new Map(),
+  pathByForceId: new Map(),
   diagnostics: Object.freeze([]),
 });
 
@@ -53,7 +84,7 @@ const EMPTY_RESULT = Object.freeze({
  * @param {{ rawXmls?: { gst: Array<{ content: string }>, cat?: Array<{ content: string }> } } | null | undefined} system
  * @returns {object|null} der undurchsichtige Griff der Evaluator-Fassade.
  */
-export function preparedDatasetOf(system) {
+function preparedDatasetOf(system) {
   const gameSystem = system?.rawXmls?.gst?.[0]?.content;
   if (gameSystem === undefined) return null;
   let prepared = preparedBySystem.get(system);
@@ -68,23 +99,29 @@ export function preparedDatasetOf(system) {
 }
 
 /**
- * Wertet ein App-Roster gegen die Katalogdaten seines Systems aus — dieselbe
- * Ergebnisform wie `useEvaluation`, als reine Funktion ohne React.
+ * Wertet ein App-Roster gegen die Katalogdaten seines Systems aus — die eine
+ * App-Auswertung, als reine Funktion ohne React. `useEvaluation` ruft genau
+ * diese Funktion auf und memoisiert nur ihr Ergebnis; wer ausserhalb von React
+ * steht (`.ros`-Export, Dashboard), ruft sie direkt. Beide Wege sehen deshalb
+ * dieselben Pfade, dieselben Verletzungen, dieselben Kosten.
  *
  * @param {object|null|undefined} system  App-System-Objekt mit `rawXmls`.
  * @param {import('../types.js').Roster|null|undefined} roster  das App-Roster.
- * @returns {{ violations: ReadonlyArray<object>, capabilities: Map<string, object>, costTotals: Readonly<Record<string, number>>, pathBySelectionId: Map<string, string>, diagnostics: ReadonlyArray<object> }}
+ * @returns {AppEvaluation}
  */
 export function evaluateAppRoster(system, roster) {
   const prepared = preparedDatasetOf(system);
   if (prepared === null || roster === null || roster === undefined) return EMPTY_RESULT;
-  const { evalRoster, pathBySelectionId } = toEvaluatorRoster(roster);
+  const { evalRoster, pathBySelectionId, pathByForceId } = toEvaluatorRoster(roster);
   const report = evaluate(prepared, evalRoster);
+  const paths = correctedPathsOf(roster, { pathBySelectionId, pathByForceId }, report.diagnostics);
   return {
     violations: report.violations,
     capabilities: report.capabilities,
+    description: descriptionOf(prepared),
     costTotals: report.costTotals,
-    pathBySelectionId: correctedPathsOf(roster, pathBySelectionId, report.diagnostics),
+    pathBySelectionId: paths.pathBySelectionId,
+    pathByForceId: paths.pathByForceId,
     diagnostics: report.diagnostics,
   };
 }
@@ -97,22 +134,44 @@ export function evaluateAppRoster(system, roster) {
  * (Diagnose `unresolvedDefinition`) — samt ihrem ganzen Teilbaum. Ohne
  * Korrektur ruecken dadurch alle nachfolgenden Geschwister eine Position vor,
  * und jede Auswahl hinter der verlorenen zeigte Namen, Kosten und
- * Verfuegbarkeit ihres Nachbarn (Befund B2 der Pruefrunde 2). Hier — wo Roster
- * **und** Bericht vorliegen — wird die Zuordnung deshalb ohne diese
- * Definitionen neu gebaut; die unaufloesbare Auswahl selbst bekommt gar keinen
- * Pfad, weil die Engine fuer sie keinen Slot fuehrt.
+ * Verfuegbarkeit ihres Nachbarn (Befund B2 der Pruefrunde 2); ein Kontingent
+ * hinter einem verlorenen zeigte auf fremde Slots und damit auf gar keine
+ * Angebote. Hier — wo Roster **und** Bericht vorliegen — werden die Zuordnungen
+ * deshalb ohne diese Definitionen neu gebaut; die unaufloesbare Auswahl (bzw.
+ * das unaufloesbare Kontingent) selbst bekommt gar keinen Pfad, weil die Engine
+ * fuer sie keinen Slot fuehrt.
  *
- * Ohne Diagnose bleibt die schon gebaute Zuordnung unveraendert — der
+ * Ohne Diagnose bleiben die schon gebauten Zuordnungen unveraendert — der
  * Normalfall kostet nichts.
+ *
+ * @param {import('../types.js').Roster} roster
+ * @param {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }} naivePaths
+ * @param {ReadonlyArray<object>|undefined} diagnostics
+ * @returns {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }}
  */
-function correctedPathsOf(roster, pathBySelectionId, diagnostics) {
+function correctedPathsOf(roster, naivePaths, diagnostics) {
+  /** @type {Set<string>} */
   const unresolvedDefIds = new Set();
   for (const entry of diagnostics ?? []) {
     if (entry?.kind === UNRESOLVED_DEFINITION) unresolvedDefIds.add(entry.defId);
   }
-  return unresolvedDefIds.size === 0
-    ? pathBySelectionId
-    : pathBySelectionIdOf(roster, unresolvedDefIds);
+  return unresolvedDefIds.size === 0 ? naivePaths : slotPathsOf(roster, unresolvedDefIds);
+}
+
+/**
+ * Die Datensatz-Beschreibung eines aufbereiteten Datensatzes — hoechstens ein
+ * `describeDataset`-Lauf je Griff.
+ *
+ * @param {object} prepared
+ * @returns {{ costTypes: object[], catalogues: object[], creatableForces: object[], diagnostics: object[] }}
+ */
+function descriptionOf(prepared) {
+  let description = describedByDataset.get(prepared);
+  if (description === undefined) {
+    description = describeDataset(prepared);
+    describedByDataset.set(prepared, description);
+  }
+  return description;
 }
 
 /**
@@ -127,5 +186,5 @@ function correctedPathsOf(roster, pathBySelectionId, diagnostics) {
  */
 export function describeSystem(system) {
   const prepared = preparedDatasetOf(system);
-  return prepared === null ? null : describeDataset(prepared);
+  return prepared === null ? null : descriptionOf(prepared);
 }

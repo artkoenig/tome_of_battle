@@ -20,8 +20,13 @@ import { useTranslation } from '../../i18n/useTranslation';
  *
  * Die Komponente komponiert nur — jede fachliche Entscheidung liegt in der
  * jeweiligen Untersektion oder im Bericht der Evaluator-Fassade
- * (`capabilities`/`violations`, Issue 0121). `forcePath` ist der Slot-Pfad des
- * Kontingents im Bericht (Pfad-Schema der Fassade: `forces[i]` → `"i"`).
+ * (`capabilities`/`violations`, Issue 0121). `forcePath` ist der Slot-Pfad, unter
+ * dem der Bericht die Slots dieses Kontingents **führt** (Zuordnung
+ * `pathByForceId`, Issue 0121, Task 18) — nicht der Eingabe-Index des Rosters:
+ * ein Kontingent vor diesem, dessen Definition der Katalog nicht mehr kennt,
+ * hängt gar nicht im Auswertungsbaum und verschiebt alle folgenden Pfade.
+ * `forcePath === null` heißt: der Bericht führt für dieses Kontingent keine
+ * Slots — es zeigt dann weder Angebote noch Kategorie-Grenzen.
  */
 export default function ForceEditorSection({
   force,
@@ -49,6 +54,11 @@ export default function ForceEditorSection({
   const uncategorizedSectionTitle = t('editor.section.uncategorized');
   const forceDefinition = findForceEntryById(system, force.forceEntryId);
   const categoryLinks = forceDefinition?.categoryLinks || [];
+  // Das Armeebuch **dieses** Kontingents (ein `.ros`-Import bringt verbündete
+  // Kontingente mit eigenem Katalog mit), ersatzweise das der Liste — dieselbe
+  // Regel wie `useRoster.catalogueIdOfForce`. Der Aushebe-Dialog filtert damit
+  // seine Kandidaten nach Herkunft (Issue 0121, Task 19).
+  const forceCatalogueId = force.catalogueId || roster.catalogueId || null;
   const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
   const forceCategoryCounts = categoryCounts[force.id] || {};
 
@@ -56,7 +66,7 @@ export default function ForceEditorSection({
   // ein kontingent-gebundener Wurzeleintrag ohne passenden categoryLink), bekommen
   // einen eigenen Konfigurator; alles, was eine Kategorie bereits anbietet, wird dort erledigt.
   const armyWideSelectors = collectUnreachableArmyWideSelectors({
-    system, catalogueId: force.catalogueId || roster.catalogueId, forceDef: forceDefinition,
+    system, catalogueId: forceCatalogueId, forceDef: forceDefinition,
     roster, selectionCounts, forceCategoryCounts, force
   });
   const armyWideSelectorIds = new Set(armyWideSelectors.map(entry => entry.id));
@@ -70,10 +80,14 @@ export default function ForceEditorSection({
   // Die Auffüll-Vorschläge speisen sich aus den Pflicht-Signalen des Berichts
   // (ADR-0035) — beschränkt auf die Slots DIESES Kontingents; das Panel blendet
   // sich selbst aus, wenn keine Pflicht offen ist.
-  const forceScopedCapabilities = new Map(
-    [...(capabilities ?? [])].filter(([path]) =>
-      path === forcePath || path.startsWith(`${forcePath}/`))
-  );
+  // Ohne Pfad führt der Bericht für dieses Kontingent keine Slots — dann gibt
+  // es auch nichts vorzuschlagen.
+  const forceScopedCapabilities = forcePath === null || forcePath === undefined
+    ? new Map()
+    : new Map(
+      [...(capabilities ?? [])].filter(([path]) =>
+        path === forcePath || path.startsWith(`${forcePath}/`))
+    );
 
   // Das Ziel-Kontingent ist genau hier bekannt: jede Sektion rendert eines. Die
   // Untersektionen heben damit weiter über zwei Argumente aus und müssen den
@@ -88,6 +102,7 @@ export default function ForceEditorSection({
           categoryLink={categoryLink}
           force={force}
           forcePath={forcePath}
+          forceCatalogueId={forceCatalogueId}
           system={system}
           roster={roster}
           activeCatalogue={activeCatalogue}
@@ -116,6 +131,7 @@ export default function ForceEditorSection({
               entries={armyWideSelectors}
               capabilities={capabilities}
               forcePath={forcePath}
+              forceCatalogueId={forceCatalogueId}
               system={system}
               activeCatalogue={activeCatalogue}
               costTypeLabel={costTypeLabel}

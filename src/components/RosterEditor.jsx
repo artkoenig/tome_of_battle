@@ -21,6 +21,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     description,
     costTotals,
     pathBySelectionId,
+    pathByForceId,
     selectedRosterSelection,
     setSelectedRosterSelection,
     addUnit,
@@ -127,13 +128,19 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
       <div className="builder-layout">
         <div className="builder-main active-mobile-tab">
-          {/* Der Slot-Pfad eines Kontingents ist sein Eingabe-Index (Pfad-Schema
-              der Evaluator-Fassade: `forces[i]` liegt unter `"i"`). */}
-          {roster.forces.map((force, forceIndex) => (
+          {/* Der Slot-Pfad eines Kontingents kommt aus der Zuordnung des
+              Berichts (`pathByForceId`), nicht aus dem Schleifenindex: ein
+              Kontingent, dessen Definition der Katalog nicht mehr kennt, hängt
+              gar nicht im Auswertungsbaum, und jedes folgende liegt dann einen
+              Index tiefer. Ein Kontingent ohne Pfad wird weiterhin gerendert —
+              es zeigt dann keine Angebote und keine Kategorie-Grenzen (die
+              Meldung „diese Auswahl gibt es im Katalog nicht mehr“ nennt den
+              Fall), statt dem Nutzer seine eigenen Daten zu verbergen. */}
+          {roster.forces.map(force => (
             <ForceEditorSection
               key={force.id}
               force={force}
-              forcePath={String(forceIndex)}
+              forcePath={pathByForceId?.get(force.id) ?? null}
               system={system}
               roster={roster}
               activeCatalogue={activeCatalogue}

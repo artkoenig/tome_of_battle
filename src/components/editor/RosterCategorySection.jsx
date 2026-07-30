@@ -51,6 +51,7 @@ export default function RosterCategorySection({
   categoryLink,
   force,
   forcePath,
+  forceCatalogueId = null,
   system,
   roster,
   activeCatalogue,
@@ -150,6 +151,7 @@ export default function RosterCategorySection({
             categoryName={categoryName}
             capabilities={capabilities}
             forcePath={forcePath}
+            forceCatalogueId={forceCatalogueId}
             system={system}
             activeCatalogue={activeCatalogue}
             costTypeLabel={costTypeLabel}

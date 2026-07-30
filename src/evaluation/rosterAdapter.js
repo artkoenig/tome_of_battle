@@ -18,22 +18,24 @@
  *   keine Zeile — die Fassade behandelt ein leeres `costLimits` als leeres
  *   Budget.
  *
- * `pathBySelectionId` entsteht nach dem Pfad-Schema des Berichts (`@returns`
- * der Fassade, `pathOf` in `src/evaluator/evalTree.js`): der Pfad eines
- * belegten Slots ist die `/`-verkettete Folge der Eingabe-Indizes —
- * `forces[i]` → `"i"`, dessen j-te Selektion → `"i/j"`, usw. Die Indizes
- * bleiben stabil, weil die Engine alle synthetischen Anker nur **hinter** die
- * bestehenden Kinder haengt. Die Zuordnung, die {@link toEvaluatorRoster}
- * liefert, gilt unter derselben Bedingung wie am Fassaden-Rand dokumentiert:
- * jede `defId` loest auf (keine `unresolvedDefinition`-Diagnose im Bericht).
+ * `pathBySelectionId` und `pathByForceId` entstehen nach dem Pfad-Schema des
+ * Berichts (`@returns` der Fassade, `pathOf` in `src/evaluator/evalTree.js`):
+ * der Pfad eines belegten Slots ist die `/`-verkettete Folge der
+ * Eingabe-Indizes — `forces[i]` → `"i"`, dessen j-te Selektion → `"i/j"`, usw.
+ * Die Indizes bleiben stabil, weil die Engine alle synthetischen Anker nur
+ * **hinter** die bestehenden Kinder haengt. Die Zuordnungen, die
+ * {@link toEvaluatorRoster} liefert, gelten unter derselben Bedingung wie am
+ * Fassaden-Rand dokumentiert: jede `defId` loest auf (keine
+ * `unresolvedDefinition`-Diagnose im Bericht).
  *
  * Weil der Adapter Aufloesbarkeit nicht kennen kann — dazu braucht es den
- * Datensatz —, ist die Zuordnung als eigene reine Funktion herausgezogen:
- * {@link pathBySelectionIdOf} baut sie mit einer Menge zu ueberspringender
- * `defId`s. Wer Roster **und** Bericht hat (`evaluateAppRoster`), baut sie
- * damit neu, sobald der Bericht unaufloesbare Definitionen meldet. Der
- * **Eingabebaum bleibt davon unberuehrt**: die unaufloesbaren Knoten gehen
- * weiter an die Engine, sonst gaebe es die Diagnose gar nicht.
+ * Datensatz —, sind die Zuordnungen als eigene reine Funktion herausgezogen:
+ * {@link slotPathsOf} baut sie mit einer Menge zu ueberspringender `defId`s.
+ * Wer Roster **und** Bericht hat (`evaluateAppRoster`, die eine
+ * App-Auswertung), baut sie damit neu, sobald der Bericht unaufloesbare
+ * Definitionen meldet. Der **Eingabebaum bleibt davon unberuehrt**: die
+ * unaufloesbaren Knoten gehen weiter an die Engine, sonst gaebe es die
+ * Diagnose gar nicht.
  *
  * Der Adapter ist rein: das App-Roster wird gelesen, nie mutiert.
  */
@@ -107,14 +109,17 @@ function collectSelectionPaths(selections, parentPath, skippedDefIds, into) {
 }
 
 /**
- * Die Zuordnung App-Selection-UUID → Slot-Pfad des Berichts, gebaut **ohne**
- * die Definitionen, die der Datensatz nicht kennt.
+ * Die Zuordnungen App-Selection-UUID → Slot-Pfad und Force-UUID → Slot-Pfad des
+ * Berichts, gebaut **ohne** die Definitionen, die der Datensatz nicht kennt.
  *
  * Reine Funktion ueber dem App-Roster: sie zaehlt dieselben Kind-Indizes durch
  * wie die Engine beim Aufbau des Auswertungsbaums — und laesst dabei genau die
  * Knoten aus, die auch die Engine auslaesst. Ohne diese Auslassung ruecken alle
  * Geschwister **hinter** einer unaufloesbaren Auswahl um eine Position vor, und
  * jede von ihnen zeigte auf den Faehigkeitsdatensatz ihres Nachbarn (Befund B2).
+ * Fuer Kontingente gilt dasselbe eine Stockwerk hoeher: ein Kontingent, dessen
+ * `forceEntryId` nicht aufloest, **fehlt** in `pathByForceId`, und jedes
+ * folgende rueckt einen Index auf.
  *
  * Die Menge ist genau richtig, nicht bloss eine Naeherung: die Diagnose
  * `unresolvedDefinition` entsteht ausschliesslich fuer Roster-Instanzknoten, und
@@ -124,38 +129,42 @@ function collectSelectionPaths(selections, parentPath, skippedDefIds, into) {
  * @param {import('../types.js').Roster|null|undefined} roster  das App-Roster; wird nicht mutiert.
  * @param {ReadonlySet<string>} [skippedDefIds]  die Definitions-Ids, die der
  *   Datensatz nicht kennt (leer = alles loest auf).
- * @returns {Map<string, string>}
+ * @returns {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }}
  */
-export function pathBySelectionIdOf(roster, skippedDefIds = NOTHING_SKIPPED) {
+export function slotPathsOf(roster, skippedDefIds = NOTHING_SKIPPED) {
   /** @type {Map<string, string>} */
   const pathBySelectionId = new Map();
+  /** @type {Map<string, string>} */
+  const pathByForceId = new Map();
   let index = 0;
   for (const force of roster?.forces ?? []) {
-    // Ein unaufloesbares Kontingent nimmt seinen Auswahlen den Pfad — dieselbe
-    // Regel wie fuer eine Auswahl, denn die Engine haengt auch ein Kontingent
-    // nur ueber `attachInstance` an.
+    // Ein unaufloesbares Kontingent nimmt sich und seinen Auswahlen den Pfad —
+    // dieselbe Regel wie fuer eine Auswahl, denn die Engine haengt auch ein
+    // Kontingent nur ueber `attachInstance` an.
     if (skippedDefIds.has(force.forceEntryId)) continue;
     const path = String(index);
     index += 1;
+    if (force.id !== null && force.id !== undefined) pathByForceId.set(force.id, path);
     collectSelectionPaths(force.selections, path, skippedDefIds, pathBySelectionId);
   }
-  return pathBySelectionId;
+  return { pathBySelectionId, pathByForceId };
 }
 
 /**
  * Uebersetzt ein App-Roster in den Eingabevertrag der Evaluator-Fassade.
  *
  * @param {import('../types.js').Roster} roster  das App-Roster; wird nicht mutiert.
- * @returns {{ evalRoster: EvalRoster, pathBySelectionId: Map<string, string> }}
+ * @returns {{ evalRoster: EvalRoster, pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }}
  *   `evalRoster` fuer `evaluate(prepared, evalRoster)`; `pathBySelectionId`
  *   ordnet jeder App-Selection-UUID den Slot-Pfad zu, unter dem der Bericht
- *   (`report.capabilities`) den belegten Slot fuehrt.
+ *   (`report.capabilities`) den belegten Slot fuehrt; `pathByForceId` tut
+ *   dasselbe fuer die Kontingente.
  */
 export function toEvaluatorRoster(roster) {
   // Die naive Zuordnung: leere Ueberspringmenge. Sie gilt genau dann, wenn jede
   // `defId` aufloest — und wird bei einer `unresolvedDefinition`-Diagnose vom
-  // Aufrufer neu gebaut (`evaluateAppRoster`, {@link pathBySelectionIdOf}).
-  const pathBySelectionId = pathBySelectionIdOf(roster, NOTHING_SKIPPED);
+  // Aufrufer neu gebaut (`evaluateAppRoster`, {@link slotPathsOf}).
+  const { pathBySelectionId, pathByForceId } = slotPathsOf(roster, NOTHING_SKIPPED);
 
   const forces = (roster.forces ?? []).map((force) => ({
     defId: force.forceEntryId,
@@ -172,5 +181,5 @@ export function toEvaluatorRoster(roster) {
     evalRoster.costLimits = [{ costTypeId: roster.costLimitType, value: roster.costLimit }];
   }
 
-  return { evalRoster, pathBySelectionId };
+  return { evalRoster, pathBySelectionId, pathByForceId };
 }

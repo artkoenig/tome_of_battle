@@ -156,13 +156,13 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 Korrekturen aus Prüfrunde 3:
 
-- [ ] 17. (F1) Die Pfadkorrektur wirkt am Rand, den der Editor benutzt.
+- [x] 17. (F1) Die Pfadkorrektur wirkt am Rand, den der Editor benutzt.
   Hook und Direktaufruf teilen **eine** Auswertungsfunktion, damit die
   Naht nicht wieder auseinanderläuft — Kriterien 3 und 5
-- [ ] 18. (F2) Auch der Pfad eines **Kontingents** kommt aus der
+- [x] 18. (F2) Auch der Pfad eines **Kontingents** kommt aus der
   korrigierten Zuordnung, nicht aus dem rohen Eingabe-Index —
   Kriterien 3 und 5
-- [ ] 19. (F3) Der Herkunftsfilter des Aushebe-Dialogs fragt nach dem
+- [x] 19. (F3) Der Herkunftsfilter des Aushebe-Dialogs fragt nach dem
   Armeebuch **des Kontingents**, nicht dem der ganzen Liste —
   Kriterium 5
 - [x] 20. (F4) Veralteter Produktivkommentar in
@@ -339,6 +339,29 @@ benutzt" — das stimmt nicht).
 
 ## Log
 
+- 2026-07-30, Tasks 17–19 erledigt: alle 39 roten Fälle grün, **ohne
+  Testedit**. Selbst nachgemessen: `npm test` 246 Dateien / 2566 Fälle +
+  Puppeteer-E2E Exit 0; lint, typecheck, depcruise (0 Fehler) und build je
+  Exit 0; knip unverändert bei 5; keine `vite preview`-Reste. Kein
+  bestehender Test gekippt.
+  **Der Kern: die Doppelung ist weg.** `evaluateAppRoster` ist die eine
+  App-Auswertung — Adapter, `evaluate`, Pfadkorrektur und Beschreibung in
+  einer Funktion —, und `useEvaluation` rechnet nichts mehr selbst, sondern
+  ist auf ein `useMemo` darüber geschrumpft. Editor, `useRoster`, Spielmodus,
+  `.ros`-Export und Dashboard teilen damit dieselbe Naht, dasselbe
+  eingefrorene Leer-Ergebnis und dieselben Pfad-Maps.
+  **Task 17 brauchte danach keine einzige Zeile Logik** — die Korrektur aus
+  Runde 2 war fachlich richtig, nur nicht geteilt. Ein schärferer Beleg für
+  die Diagnose „Ort statt Verhalten vorgegeben" ist kaum zu haben.
+  Task 18: aus `pathBySelectionIdOf` wurde `slotPathsOf` mit **beiden** Maps
+  aus **einem** Durchlauf und **einer** Index-Zählung — sie können nicht
+  getrennt veralten. Task 19: `ForceEditorSection` bildet
+  `force.catalogueId || roster.catalogueId || null` einmal und reicht es
+  weiter; derselbe Wert ersetzt den bisher inline gebildeten `catalogueId`
+  für die armeeweiten Selektoren.
+  Nebeneffekt zugunsten der Geschwindigkeit: weil `description` in dieselbe
+  Funktion wandert, wird `describeDataset` jetzt gecacht — im Dashboard lief
+  es bisher einmal je Rosterzeile, jetzt einmal je Datensatz.
 - 2026-07-30, Tests für die Tasks 17–19 geschrieben (test-author, ohne
   Produktivcode): 5 neue Dateien, 56 Fälle, davon **39 rot**. Die
   Nachbarschaft (`src/evaluation src/components src/utils`, 554 Fälle) kippt
