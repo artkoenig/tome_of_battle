@@ -46,22 +46,22 @@ const mockCollectUnitProfilesAndRules = vi.fn();
 const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
 
-// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
-// wird auch nur die Fassade gemockt. Reine Funktionen ohne eigene
+// Die Komponente liest ihre Struktur-Helfer seit Issue 0121, Task 8 aus dem
+// Schreibmodell src/roster/ (Sammel-Modul). Reine Funktionen ohne eigene
 // Abhängigkeiten — das Prädikat „eigenständige Untereinheit", die
 // Profil-Gruppierung und die Schlüsselwortlisten — reicht der Mock in ihrer
 // echten Umsetzung durch, statt sie zu stubben.
-vi.mock('../../solver/validator', async () => ({
+vi.mock('../../roster', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
   // Name resolution is covered by the solver's own unit tests; here it is isolated to
   // the no-name-modifier case, which returns the selection's raw name unchanged.
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
-  childSelectionsOf: (await vi.importActual('../../solver/rosterTree')).childSelectionsOf,
-  groupProfilesByType: (await vi.importActual('../../solver/rulesEvaluator')).groupProfilesByType,
-  ...(await vi.importActual('../../solver/constants'))
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
+  childSelectionsOf: (await vi.importActual('../../roster/rosterTree')).childSelectionsOf,
+  groupProfilesByType: (await vi.importActual('../../roster/rulesEvaluator')).groupProfilesByType,
+  ...(await vi.importActual('../../roster/constants'))
 }));
 
 // Fähigkeitsdatensatz des Slots '0/0' der Karte: Kosten (`totalCosts`) und

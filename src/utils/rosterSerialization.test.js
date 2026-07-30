@@ -9,7 +9,7 @@ import {
   decompressRoszToXml,
   MissingSystemError
 } from './rosterSerialization.js';
-import { calculateRosterCosts } from '../solver/validator.js';
+import { calculateRosterCosts } from '../roster/rosterCounter.js';
 
 // Setup DOMParser and Crypto for the test Node environment
 beforeAll(() => {

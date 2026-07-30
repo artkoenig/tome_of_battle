@@ -5,7 +5,7 @@ import {
   isEntryPrimaryInCategory,
   resolveListRuleGroup,
   childSelectionsOf
-} from '../../solver/validator';
+} from '../../roster';
 
 import { isBlockingViolation } from '../../evaluation/violationStats';
 import { findCategoryAnchorSlot } from '../../evaluation/slotLookups';

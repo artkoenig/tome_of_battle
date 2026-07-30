@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Trash2, Play, Edit3, WifiOff, Download, Upload, MoreVertical } from 'lucide-react';
-import { findForceEntryById } from '../solver/validator';
+import { findForceEntryById } from '../roster';
 import { evaluateAppRoster, describeSystem } from '../evaluation/evaluationCache';
 import { costLimitLabelOf } from '../evaluation/costDisplays';
 import BottomSheet from './editor/BottomSheet';

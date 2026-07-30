@@ -4,13 +4,13 @@ import {
   getOptionDisplayCost,
   getSelectionTotalCost,
   resolveCostLimitTypeId
-} from './validator.js';
+} from './rosterCounter.js';
 import {
   POINTS,
   CASTING_DICE,
   COST_TYPE_NAME,
   createGrimdarkSystem
-} from './__fixtures__/grimdarkSystem.js';
+} from '../solver/__fixtures__/grimdarkSystem.js';
 
 /**
  * Der Wert einer Auswahl wird ausschließlich über die eingestellte Kostenart-id

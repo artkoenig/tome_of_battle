@@ -2,9 +2,10 @@ import { describe, test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import {
-  collectPrimaryCategoryEntries, getOptionDisplayCost, createSelectionFromDef, resolveEntry
-} from './validator.js';
+import { collectPrimaryCategoryEntries } from './entryVisibility.js';
+import { getOptionDisplayCost } from './rosterCounter.js';
+import { createSelectionFromDef } from './selectionFactory.js';
+import { resolveEntry } from './catalogResolver.js';
 import PlayUnitDetails from '../components/play/PlayUnitDetails.jsx';
 import { SettingsProvider } from '../contexts/SettingsContext.jsx';
 

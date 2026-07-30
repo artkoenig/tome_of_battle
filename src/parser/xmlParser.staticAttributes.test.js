@@ -1,8 +1,8 @@
 import { test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML, parseCatalogueXML } from './xmlParser';
-import { groupProfilesByType } from '../solver/rulesEvaluator';
-import { getExtraResourceTotals } from '../solver/rosterCounter';
+import { groupProfilesByType } from '../roster/rulesEvaluator';
+import { getExtraResourceTotals } from '../roster/rosterCounter';
 
 beforeAll(() => {
   const dom = new JSDOM();

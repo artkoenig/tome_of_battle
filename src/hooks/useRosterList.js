@@ -9,7 +9,7 @@ import {
   decompressRoszToXml,
   MissingSystemError
 } from '../utils/rosterSerialization';
-import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../solver/validator';
+import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../roster';
 import { t } from '../i18n/i18nStore';
 
 /**

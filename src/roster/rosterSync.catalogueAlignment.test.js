@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { syncRosterSelectionsWithSystem } from './validator.js';
+import { syncRosterSelectionsWithSystem } from './rosterSync.js';
 
 // Gespeicherte Roster tragen Namen und (historisch) Kosten mit sich. Beim Abgleich
 // gewinnt der Katalog: Namen werden nachgezogen, Alt-Kosten fallen weg (ADR-0011).

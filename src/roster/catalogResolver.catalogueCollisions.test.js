@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { findEntryInSystem } from './validator.js';
+import { findEntryInSystem } from './catalogResolver.js';
 
 // Zwei Kataloge desselben Systems dürfen dieselbe Eintrags-ID vergeben. Ohne den
 // Katalog als Namensraum liefert die Suche dann den falschen Eintrag — etwa den

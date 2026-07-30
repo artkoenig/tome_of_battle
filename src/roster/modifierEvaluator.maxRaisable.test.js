@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { canGroupMaxBeRaisedAboveSingleChoice } from './validator.js';
+import { canGroupMaxBeRaisedAboveSingleChoice } from './modifierEvaluator.js';
 import { ConstraintKind, ModifierKind } from '../parser/schema/battlescribeSchema.generated.js';
 
 // ── Schema-förmige Fixtures (nicht katalog-/einheitsspezifisch, ADR-0003) ──

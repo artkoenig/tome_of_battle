@@ -1,16 +1,16 @@
-import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getModifiedConstraintValue, evaluateConstraintWithCauses, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from './modifierEvaluator.js';
+import { findEntryInSystem, resolveEntry } from '../roster/catalogResolver.js';
+import { getModifiedConstraintValue, evaluateConstraintWithCauses, getEffectiveModifiers, collectTriggeredMessages, ValidationSeverity } from '../roster/modifierEvaluator.js';
 import { ConditionKind, ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { aggregateRosterCategoryCounts, calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from './rosterCounter.js';
+import { aggregateRosterCategoryCounts, calculateRosterCosts, computeRosterCounts, getSelectionTotalCost, resolveCostTypeLabel, resolveCostLimitLabel, TOP_LEVEL_PARENT_COUNT } from '../roster/rosterCounter.js';
 import { isPercentConstraint, applyPercentage } from './constraintScope.js';
 import {
   ConstraintScope, isEntryScope, isCostField, isRosterLimitField, costTypeIdOfRosterLimitField
-} from './battlescribeConstants.js';
-import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, measureOver, MeasureTarget } from './queryEngine.js';
-import { findForceEntryById } from './forceEntries.js';
-import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
-import { buildModifierEvalContext } from './modifierContext.js';
-import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from './armyWideSelectors.js';
+} from '../roster/battlescribeConstants.js';
+import { createQueryContext, resolveScopeAnchor, resolveGroupAnchor, measureOver, MeasureTarget } from '../roster/queryEngine.js';
+import { findForceEntryById } from '../roster/forceEntries.js';
+import { isCategoryLinkHidden, isSelectionEntryHidden } from '../roster/entryVisibility.js';
+import { buildModifierEvalContext } from '../roster/modifierContext.js';
+import { collectForceScopedMinSelectors, collectRosterScopedMinSelectors } from '../roster/armyWideSelectors.js';
 import { getInheritedCategoryMaxConstraint } from './categoryLimits.js';
 import { ValidationMessageKey } from './validationMessages.js';
 import '../types.js';

@@ -12,7 +12,7 @@ const mockIsCategoryLinkHidden = vi.fn();
 const mockIsEntryPrimaryInCategory = vi.fn();
 const mockResolveListRuleGroup = vi.fn();
 
-vi.mock('../../solver/validator', () => ({
+vi.mock('../../roster', () => ({
   isCategoryLinkHidden: (...args) => mockIsCategoryLinkHidden(...args),
   isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
   resolveListRuleGroup: (...args) => mockResolveListRuleGroup(...args),

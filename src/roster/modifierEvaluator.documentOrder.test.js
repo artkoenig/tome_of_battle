@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getModifiedConstraintValue, getEffectiveName } from './validator.js';
+import { getModifiedConstraintValue, getEffectiveName } from './modifierEvaluator.js';
 
 // BattleScribe wendet Modifier in Dokumentreihenfolge an — in der Reihenfolge, in
 // der sie im Katalog stehen. Kein Modifier-Typ wird vorgezogen: schreibt ein Katalog

@@ -1,8 +1,8 @@
 import { validateRoster } from './rosterValidator.js';
-import { resolveEntry } from './catalogResolver.js';
-import { createSelectionFromDef } from './selectionFactory.js';
-import { ValidationSeverity } from './modifierEvaluator.js';
-import { buildModifierEvalContext } from './modifierContext.js';
+import { resolveEntry } from '../roster/catalogResolver.js';
+import { createSelectionFromDef } from '../roster/selectionFactory.js';
+import { ValidationSeverity } from '../roster/modifierEvaluator.js';
+import { buildModifierEvalContext } from '../roster/modifierContext.js';
 import '../types.js';
 
 // Synthetische Selektions-ID des hypothetisch hinzugefügten Kandidaten. Bewusst eine

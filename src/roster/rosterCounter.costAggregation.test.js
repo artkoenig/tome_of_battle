@@ -2,16 +2,16 @@ import { describe, test, expect } from 'vitest';
 import {
   calculateRosterCosts,
   getOptionDisplayCost,
-  getSelectionTotalCost,
-  validateRoster
-} from './validator.js';
+  getSelectionTotalCost
+} from './rosterCounter.js';
+import { validateRoster } from '../solver/rosterValidator.js';
 import {
   POINTS,
   UNIT_COST,
   ENTRY_ID,
   createGrimdarkSystem,
   createValidRoster
-} from './__fixtures__/grimdarkSystem.js';
+} from '../solver/__fixtures__/grimdarkSystem.js';
 
 describe('calculateRosterCosts — Summe über das Roster', () => {
   test('summiert die Katalogkosten aller Auswahlen des Rosters', () => {

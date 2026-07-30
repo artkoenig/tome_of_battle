@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { calculateRosterCosts, getSelectionOwnCosts, getSelectionTotalCost } from './validator.js';
+import { calculateRosterCosts, getSelectionOwnCosts, getSelectionTotalCost } from './rosterCounter.js';
 
 // System where base costs live in the catalogue (unit cost + a link-level cost that
 // overrides its target's cost), plus an unconditional cost modifier on the link.

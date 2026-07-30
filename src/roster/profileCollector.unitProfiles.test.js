@@ -1,8 +1,8 @@
 import { describe, test, expect } from 'vitest';
-import {
-  collectUnitProfilesAndRules, getModifiedConstraintValue,
-  computeRosterCounts, findForceContainingSelection
-} from './validator.js';
+import { collectUnitProfilesAndRules } from './profileCollector.js';
+import { getModifiedConstraintValue } from './modifierEvaluator.js';
+import { computeRosterCounts } from './rosterCounter.js';
+import { findForceContainingSelection } from './rosterTree.js';
 
 describe('collectUnitProfilesAndRules — Profile gewählter Unterauswahlen', () => {
   const CATALOGUE_ID = 'cat-profiles';

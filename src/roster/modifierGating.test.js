@@ -5,9 +5,9 @@ import {
   getEffectiveModifiers,
   getEffectiveCategoryLinks,
   getModifiedConstraintValue,
-  evaluateCondition,
-  computeRosterCounts
-} from './validator.js';
+  evaluateCondition
+} from './modifierEvaluator.js';
+import { computeRosterCounts } from './rosterCounter.js';
 
 // JSDOM provides DOMParser for the parser in the Node test environment.
 beforeAll(() => {

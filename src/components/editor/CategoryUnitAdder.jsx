@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { findEntryInSystem } from '../../solver/validator';
+import { findEntryInSystem } from '../../roster';
 import { childSlotsOf } from '../../evaluation/slotLookups';
 import { useTranslation } from '../../i18n/useTranslation';
 import BottomSheet from './BottomSheet';

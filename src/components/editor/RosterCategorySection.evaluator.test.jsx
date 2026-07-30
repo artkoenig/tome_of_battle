@@ -50,7 +50,7 @@ const getCategoryDisplayLimitsSpy = vi.fn(() => ({
 }));
 const formatConstraintLimitSpy = vi.fn((value) => `POISON${value}`);
 
-vi.mock('../../solver/validator', async (importOriginal) => ({
+vi.mock('../../roster', async (importOriginal) => ({
   ...(await importOriginal()),
   getCategoryDisplayLimits: (...args) => getCategoryDisplayLimitsSpy(...args),
   formatConstraintLimit: (...args) => formatConstraintLimitSpy(...args),

@@ -1,6 +1,6 @@
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { getInheritedCategoryMaxSource } from './systemQuirks.js';
-import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
+import { getEffectiveModifiers, getModifiedConstraintValue } from '../roster/modifierEvaluator.js';
 import '../types.js';
 
 /**

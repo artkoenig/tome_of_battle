@@ -4,10 +4,9 @@ import { JSDOM } from 'jsdom';
 import { parseCatalogueXML } from '../parser/xmlParser.js';
 import {
   getEffectiveModifiers,
-  getModifiedConstraintValue,
-  calculateRosterCosts,
-  getSelectionOwnCosts
-} from './validator.js';
+  getModifiedConstraintValue
+} from './modifierEvaluator.js';
+import { calculateRosterCosts, getSelectionOwnCosts } from './rosterCounter.js';
 
 // JSDOM provides DOMParser for the parser in the Node test environment.
 beforeAll(() => {

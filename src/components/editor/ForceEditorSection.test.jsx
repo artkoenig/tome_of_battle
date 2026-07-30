@@ -5,7 +5,7 @@ import ForceEditorSection from './ForceEditorSection';
 
 const mockCollectUnreachableArmyWideSelectors = vi.fn();
 
-vi.mock('../../solver/validator', () => ({
+vi.mock('../../roster', () => ({
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: { 'force-1': { 'cat-core': 2 } } }),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
   collectUnreachableArmyWideSelectors: (...args) => mockCollectUnreachableArmyWideSelectors(...args),

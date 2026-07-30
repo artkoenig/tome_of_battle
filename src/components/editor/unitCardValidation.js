@@ -16,7 +16,7 @@ import {
   findEntryInSystem,
   resolveEntry,
   isIndependentSubUnit
-} from '../../solver/validator';
+} from '../../roster';
 
 /**
  * True, wenn die Selection eine eigenständige Untereinheit ist, ihr

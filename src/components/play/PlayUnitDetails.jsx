@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
 import {
-  findEntryInSystem, resolveEntry, getSelectionTotalCost,
-  getEffectiveSelectionName, isIndependentSubUnit, MODEL_COUNT_PROFILE_TYPES,
-  groupProfilesByType, resolveCostLimitTypeId, resolveCostLimitLabel,
-  childSelectionsOf
-} from '../../solver/validator';
+  findEntryInSystem, resolveEntry, isIndependentSubUnit,
+  MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
+} from '../../roster';
+import { costLimitLabelOf, costLimitTypeIdOf } from '../../evaluation/costDisplays';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { getProfileCellClassName } from '../profileCellClasses';
 import { useTranslation } from '../../i18n/useTranslation';
@@ -36,6 +35,7 @@ export default function PlayUnitDetails({
   selection,
   system,
   roster,
+  costTypes = null,
   capability = null,
   capabilities = null,
   pathBySelectionId = null,
@@ -234,7 +234,10 @@ export default function PlayUnitDetails({
   const itemGroups = profileGroups.filter(g => !g.isModel);
 
   const isDead = hasSubUnits ? false : (currentWounds === 0);
-  const totalCost = getSelectionTotalCost(selection, resolveCostLimitTypeId(roster, system), 1, { system, roster, currentCatalogueId: roster.catalogueId });
+  // Kosten aus dem Bericht (Issue 0121, Task 8; ADR-0034): der Teilbaum-Betrag
+  // des Slots in der Limit-Kostenart der Liste; das Label aus den Kostenarten
+  // der Datensatz-Beschreibung.
+  const totalCost = slotCapability?.totalCosts?.[costLimitTypeIdOf(roster, costTypes)] ?? 0;
 
   return (
     <div 
@@ -248,12 +251,12 @@ export default function PlayUnitDetails({
       <div className="play-unit-header">
         <div className="play-unit-title text-ui-title">
           <div>
-            {getEffectiveSelectionName(selection, { system, roster, currentCatalogueId: roster?.catalogueId })}
+            {slotCapability?.name ?? selection.name}
           </div>
           <div className="flex-row gap-8">
             {totalCost > 0 && (
               <div className="text-ui-title text-gold text-strong">
-                {totalCost} {resolveCostLimitLabel(roster, system)}
+                {totalCost} {costLimitLabelOf(roster, costTypes)}
               </div>
             )}
           </div>
@@ -359,6 +362,7 @@ export default function PlayUnitDetails({
                   selection={subSel}
                   system={system}
                   roster={roster}
+                  costTypes={costTypes}
                   capabilities={capabilities}
                   pathBySelectionId={pathBySelectionId}
                   getUnitCurrentWounds={getUnitCurrentWounds}

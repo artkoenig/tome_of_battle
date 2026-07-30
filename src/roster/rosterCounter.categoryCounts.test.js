@@ -1,11 +1,11 @@
 import { describe, test, expect } from 'vitest';
-import { aggregateRosterCategoryCounts, computeRosterCounts } from './validator.js';
+import { aggregateRosterCategoryCounts, computeRosterCounts } from './rosterCounter.js';
 import {
   POINTS,
   CATEGORY_ID,
   FORCE_ENTRY_ID,
   createGrimdarkSystem
-} from './__fixtures__/grimdarkSystem.js';
+} from '../solver/__fixtures__/grimdarkSystem.js';
 
 const EXPECTED_SINGLE_COUNT = 1;
 

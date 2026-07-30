@@ -6,7 +6,7 @@ import {
   resolveCostLimitTypeId, resolveCostLimitLabel,
   countSelections, classifyStandaloneOption,
   UPGRADE_DETAILS_KEYWORDS
-} from '../../solver/validator';
+} from '../../roster';
 import { childSlotsOf } from '../../evaluation/slotLookups';
 import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';

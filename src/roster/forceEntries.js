@@ -31,29 +31,3 @@ function findForceEntryInList(list, id) {
   }
   return null;
 }
-
-export function getAvailableForceEntries(systemDef, catId) {
-  if (!systemDef) return [];
-  const entries = [];
-
-  if (systemDef.forceEntries) {
-    systemDef.forceEntries.forEach(fe => {
-      if (fe.hidden !== true) {
-        entries.push(fe);
-      }
-    });
-  }
-
-  if (systemDef.catalogues && catId) {
-    const selectedCat = systemDef.catalogues.find(c => c.id === catId);
-    if (selectedCat && selectedCat.forceEntries) {
-      selectedCat.forceEntries.forEach(fe => {
-        if (fe.hidden !== true) {
-          entries.push(fe);
-        }
-      });
-    }
-  }
-
-  return entries;
-}

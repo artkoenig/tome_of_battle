@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Plus, Wand2 } from 'lucide-react';
-import { findEntryInSystem } from '../../solver/validator';
+import { findEntryInSystem } from '../../roster';
 import { useTranslation } from '../../i18n/useTranslation';
 
 /**

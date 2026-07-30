@@ -1,4 +1,4 @@
-import { getModifiedConstraintValue } from './modifierEvaluator.js';
+import { getModifiedConstraintValue } from '../roster/modifierEvaluator.js';
 import '../types.js';
 
 /**

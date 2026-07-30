@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRoster } from '../hooks/useRoster';
 import { saveRoster } from '../db/database';
-import { resolveCostLimitLabel } from '../solver/validator';
+import { resolveCostLimitLabel } from '../roster';
 import { extraResourceTotalsOf } from '../evaluation/costDisplays';
 
 import RosterEditorTopBar from './editor/RosterEditorTopBar';

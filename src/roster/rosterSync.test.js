@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
-import { reconcileImportedSelectionIds } from './validator.js';
+import { reconcileImportedSelectionIds } from './rosterSync.js';
 import { getUnitOptions } from './optionsCollector.js';
-import { resolveEntry } from './validator.js';
+import { resolveEntry } from './catalogResolver.js';
 
 // Mock system mirroring the three ways New Recruit references an option:
 //  - a direct selectionEntry ("Choppa")

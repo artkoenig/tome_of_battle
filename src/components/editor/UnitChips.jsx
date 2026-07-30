@@ -6,7 +6,7 @@ import {
   isIndependentSubUnit,
   groupProfilesByType,
   UPGRADE_DETAILS_KEYWORDS
-} from '../../solver/validator';
+} from '../../roster';
 import { useRuleUrl } from '../../hooks/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';

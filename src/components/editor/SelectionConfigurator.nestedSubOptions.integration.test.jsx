@@ -6,11 +6,11 @@ import path from 'path';
 import SelectionConfigurator from './SelectionConfigurator';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 import { processImportedData } from '../../parser/xmlParser.js';
-import { resolveEntry } from '../../solver/catalogResolver.js';
-import { createSelectionFromDef } from '../../solver/selectionFactory.js';
-import { replaceSelectionById, rootSelectionsOf } from '../../solver/rosterTree.js';
-import { withChangedOptionCount } from '../../solver/subSelectionEditing.js';
-import { getUnitOptions } from '../../solver/optionsCollector.js';
+import { resolveEntry } from '../../roster/catalogResolver.js';
+import { createSelectionFromDef } from '../../roster/selectionFactory.js';
+import { replaceSelectionById, rootSelectionsOf } from '../../roster/rosterTree.js';
+import { withChangedOptionCount } from '../../roster/subSelectionEditing.js';
+import { getUnitOptions } from '../../roster/optionsCollector.js';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 

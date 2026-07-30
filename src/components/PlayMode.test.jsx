@@ -51,9 +51,10 @@ const mockResolveEntry = vi.fn();
 const mockCollectUnitProfilesAndRules = vi.fn();
 const mockGetSelectionTotalCost = vi.fn();
 
-// Only the rules engine is stubbed; the roster-tree primitives that the facade
-// re-exports stay real, since they are pure traversal without any rules in them.
-vi.mock('../solver/validator', async (importOriginal) => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the barrel
+// re-exports stay real, since they are pure traversal without any rules in them
+// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/roster/).
+vi.mock('../roster', async (importOriginal) => ({
   ...(await importOriginal()),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
@@ -69,7 +70,7 @@ vi.mock('../solver/validator', async (importOriginal) => ({
   isListRuleSelection: () => false,
 }));
 
-vi.mock('../solver/rulesEvaluator', () => ({
+vi.mock('../roster/rulesEvaluator', () => ({
   extractModelProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Model')),
   extractUpgradeProfiles: vi.fn().mockImplementation((profiles) => profiles),
   extractWeaponProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Weapon' || p.profileTypeName === 'Waffe')),
@@ -173,7 +174,7 @@ describe('PlayMode Component', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
   });
 
-  it('1. Render Categories & Units with sorted costs', () => {
+  it('1. Render Categories & Units', () => {
     render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
 
     expect(screen.getByText('Core Units')).toBeDefined();
@@ -182,34 +183,14 @@ describe('PlayMode Component', () => {
     expect(screen.getByText('Knights Core')).toBeDefined();
     expect(screen.getByText('Trebuchet Special')).toBeDefined();
     expect(screen.getByText('Peasants Core')).toBeDefined();
-
-    // Verify sorting descending by cost in Core category
-    // sel-1 (150 pts) should appear before sel-3 (50 pts) in the DOM
-    const unitElements = screen.getAllByText(/\d+\s*pts/);
-    expect(unitElements[0].textContent).toContain('150 pts');
-    expect(unitElements[1].textContent).toContain('50 pts');
   });
 
-  // Regression (Issue 19, A1): the cost sort must call getSelectionTotalCost with the
-  // EvaluationContext object (system/roster/currentCatalogueId), not the old positional
-  // form which put `system` into the context slot and dropped roster/catalogueId —
-  // silently disabling modifier-aware costs and sorting by unmodified cost.
-  it('1b. sorts using getSelectionTotalCost with an EvaluationContext object', () => {
-    render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);
-
-    expect(mockGetSelectionTotalCost).toHaveBeenCalled();
-    mockGetSelectionTotalCost.mock.calls.forEach(call => {
-      expect(call).toHaveLength(4);
-      const [, costTypeArg, parentCountArg, contextArg] = call;
-      expect(costTypeArg).toBe('pts');
-      expect(parentCountArg).toBe(1);
-      expect(contextArg).toEqual({
-        system: mockSystem,
-        roster: mockRoster,
-        currentCatalogueId: 'cat-1',
-      });
-    });
-  });
+  // Die früheren Kosten-Sortier-Observablen (1: „sorted costs", 1b:
+  // getSelectionTotalCost-Aufrufvertrag, Issue 19/A1) sind mit Issue 0121,
+  // Task 8 entfallen: Kosten und Sortierung liest PlayMode aus
+  // `capability.totalCosts` des Evaluator-Berichts (ADR-0034); dieses
+  // Harness stellt keinen Bericht, und die Solver-Kostenrechnung wird nicht
+  // mehr aufgerufen. Die Kosten-Parität deckt PlayMode.evaluator.test.jsx ab.
 
   it('2. Back Button Action', () => {
     render(<PlayMode system={mockSystem} roster={mockRoster} onBack={mockOnBack} />);

@@ -1,7 +1,7 @@
 import { test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { parseCatalogueXML } from './xmlParser';
-import { findEntryInSystem, resolveEntry } from '../solver/catalogResolver';
+import { findEntryInSystem, resolveEntry } from '../roster/catalogResolver';
 
 beforeAll(() => {
   const dom = new JSDOM();

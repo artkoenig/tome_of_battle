@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { isIndependentSubUnit, hasEntryChildren } from './validator.js';
+import { isIndependentSubUnit, hasEntryChildren } from './subUnit.js';
 
 // Das Prädikat „eigenständige Untereinheit" wird von Editor, Spielansicht,
 // Optionen-Sammler, Roster-Abgleich und Serialisierung geteilt. Diese Tests

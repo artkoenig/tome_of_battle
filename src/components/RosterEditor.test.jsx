@@ -121,9 +121,10 @@ vi.mock('../db/database', () => ({
 }));
 
 // Mock Validators
-// Only the rules engine is stubbed; the roster-tree primitives that the facade
-// re-exports stay real, since they are pure traversal without any rules in them.
-vi.mock('../solver/validator', async (importOriginal) => ({
+// Only the rules engine is stubbed; the roster-tree primitives that the barrel
+// re-exports stay real, since they are pure traversal without any rules in them
+// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/roster/).
+vi.mock('../roster', async (importOriginal) => ({
   ...(await importOriginal()),
   computeRosterCounts: () => ({
     selectionCounts: {},

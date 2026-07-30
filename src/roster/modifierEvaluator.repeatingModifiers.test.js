@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
-import { getModifiedConstraintValue } from './validator.js';
-import { POINTS } from './__fixtures__/grimdarkSystem.js';
+import { getModifiedConstraintValue } from './modifierEvaluator.js';
+import { POINTS } from '../solver/__fixtures__/grimdarkSystem.js';
 
 // Ein `repeat` wiederholt den Modifier einmal je vollem Vielfachen seines
 // Bezugswerts: finalValue = base + floor(bezug / repeat.value) * increment * repeat.repeats.

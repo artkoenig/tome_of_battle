@@ -8,11 +8,11 @@ import { importRosterFromXml, exportRosterToXml } from './rosterSerialization.js
 import {
   reconcileImportedSelectionIds,
   syncRosterSelectionsWithSystem,
-  calculateRosterCosts,
-  validateRoster,
   resolveEntry
-} from '../solver/validator.js';
-import { getUnitOptions } from '../solver/optionsCollector.js';
+} from '../roster/index.js';
+import { calculateRosterCosts } from '../roster/rosterCounter.js';
+import { validateRoster } from '../solver/rosterValidator.js';
+import { getUnitOptions } from '../roster/optionsCollector.js';
 
 // End-to-end round-trips against the REAL WHFB6 catalogues (src/solver/__fixtures__/whfb6)
 // and real roster fixtures, each exactly 2000 points. These exercise the derived-cost

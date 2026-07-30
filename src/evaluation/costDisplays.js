@@ -21,7 +21,7 @@
  *   `description.costTypes` der Datensatz-Beschreibung.
  * @returns {string|null}
  */
-function costLimitTypeIdOf(roster, costTypes) {
+export function costLimitTypeIdOf(roster, costTypes) {
   return roster?.costLimitType ?? costTypes?.[0]?.id ?? null;
 }
 

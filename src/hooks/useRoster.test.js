@@ -3,16 +3,16 @@ import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
 import { PERSISTENCE_FAILURE_MESSAGE_KEY } from '../utils/persistenceFailure';
 import { t } from '../i18n/i18nStore';
-import { syncRosterSelectionsWithSystem } from '../solver/validator';
+import { syncRosterSelectionsWithSystem } from '../roster';
 
 // Only the rules engine is stubbed. The roster-tree primitives (rosterTree.js,
-// re-exported by the facade) stay real: they are pure data-structure traversal
+// re-exported by the src/roster-barrel, Issue 0121 Task 8) stay real: they are pure data-structure traversal
 // with no rules in them, and stubbing them would hollow out the very state
 // updates these tests assert on. Der Evaluator-Pfad (useEvaluation) läuft echt:
 // das System dieser Tests trägt kein rawXmls, also liefert er das Leer-Ergebnis.
 // Der frühere Solver-Kostenpfad (`calculateRosterCosts` → `costs`) ist mit
 // Issue 0121, Task 7 aus dem Hook entfallen — Kosten liefert der Bericht.
-vi.mock('../solver/validator', async (importOriginal) => ({
+vi.mock('../roster', async (importOriginal) => ({
   ...(await importOriginal()),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
   syncRosterSelectionsWithSystem: vi.fn(roster => roster),

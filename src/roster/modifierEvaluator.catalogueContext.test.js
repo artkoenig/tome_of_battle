@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { evaluateCondition } from './validator.js';
+import { evaluateCondition } from './modifierEvaluator.js';
 
 // Ein Auswertungskontext benennt den Katalog, gegen den seine Eintragsverweise
 // aufgelöst werden, je nach Rolle unterschiedlich: `parentCatalogueId` in

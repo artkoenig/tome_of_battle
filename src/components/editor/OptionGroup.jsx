@@ -4,7 +4,7 @@ import {
   resolveEntry, getEffectiveModifiers, canGroupMaxBeRaisedAboveSingleChoice,
   isItemRepeatableWithinGroup, isGroupSingleChoice, classifyGroupItem,
   resolveCostLimitTypeId, resolveCostLimitLabel
-} from '../../solver/validator';
+} from '../../roster';
 import { findChildSlot } from '../../evaluation/slotLookups';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';

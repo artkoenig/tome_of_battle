@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateRosterCosts, getSelectionTotalCost, computeRosterCounts } from './validator.js';
+import { calculateRosterCosts, getSelectionTotalCost, computeRosterCounts } from './rosterCounter.js';
 
 describe('Collective Entries', () => {
   const mockSystem = {

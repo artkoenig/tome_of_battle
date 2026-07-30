@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { evaluateCondition, getModifiedConstraintValue } from './validator.js';
+import { evaluateCondition, getModifiedConstraintValue } from './modifierEvaluator.js';
 
 // BattleScribe kennt zwei parent-gescopte Zählungen: die einer Condition und die
 // eines Modifier-`repeat`. Beide teilen sich eine Umsetzung

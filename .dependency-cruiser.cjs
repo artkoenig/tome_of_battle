@@ -37,6 +37,13 @@ const SOLVER_FACADE = '^src/solver/validator\\.js$';
 const EVALUATOR_LAYER = '^src/evaluator/';
 const EVALUATOR_FACADE = '^src/evaluator/evaluator\\.js$';
 
+// Das Schreibmodell des App-Rosters (Issue 0121, Task 8): App-Schicht wie
+// src/utils/. Der Evaluator bleibt in beide Richtungen davon isoliert
+// (Reinraum, ADR-0030/0034), und die Auswertungs-Bruecke src/evaluation/
+// braucht es nicht -- sie uebersetzt nur die Eingaberichtung.
+const ROSTER_LAYER = '^src/roster/';
+const EVALUATION_LAYER = '^src/evaluation/';
+
 // Die **einzige** deklarierte Ausnahme von der Fassaden-Regel: das Messwerkzeug.
 // Es ist ausdruecklich kein Produktivcode (kein src/-Modul importiert scripts/),
 // und seine Aufgabe ist gerade, die einzelnen Stufen der Auswertung getrennt zu
@@ -104,6 +111,34 @@ module.exports = {
       severity: 'error',
       from: { path: SOLVER_LAYER, pathNot: TEST_FILE },
       to: { path: EVALUATOR_LAYER },
+    },
+    {
+      name: 'evaluator-keine-roster-abhaengigkeit',
+      comment:
+        'Reinraum-Schutz (ADR-0030/0034): src/evaluator/ darf das App-Schreibmodell ' +
+        'src/roster/ nie importieren -- es traegt Ableitungslogik der Alt-Engine.',
+      severity: 'error',
+      from: { path: EVALUATOR_LAYER, pathNot: TEST_FILE },
+      to: { path: ROSTER_LAYER },
+    },
+    {
+      name: 'roster-keine-evaluator-abhaengigkeit',
+      comment:
+        'Das Schreibmodell src/roster/ bleibt rein strukturell (Issue 0121, Task 8): ' +
+        'es importiert den Evaluator nie -- auch nicht ueber dessen Fassade.',
+      severity: 'error',
+      from: { path: ROSTER_LAYER, pathNot: TEST_FILE },
+      to: { path: EVALUATOR_LAYER },
+    },
+    {
+      name: 'evaluation-keine-roster-abhaengigkeit',
+      comment:
+        'Die Auswertungs-Bruecke src/evaluation/ uebersetzt nur App-Roster -> ' +
+        'Evaluator-Vertrag und reicht den Bericht durch; das Schreibmodell ' +
+        'src/roster/ braucht sie nicht (Issue 0121, Task 8).',
+      severity: 'error',
+      from: { path: EVALUATION_LAYER, pathNot: TEST_FILE },
+      to: { path: ROSTER_LAYER },
     },
     {
       name: 'evaluator-nur-ueber-fassade',

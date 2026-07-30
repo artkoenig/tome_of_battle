@@ -20,13 +20,6 @@ export const UPGRADE_CLASSIFICATION_KEYWORDS = [
 // Upgrade details check keywords
 export const UPGRADE_DETAILS_KEYWORDS = ['weapon', 'magic', 'items', 'rüstung', 'waffe'];
 
-// Commander/General matching keywords
-export const GENERAL_EXACT_KEYWORDS = [
-  'general', 'armeegeneral', 'army general', 'general der armee'
-];
-
-export const GENERAL_SUBSTRING_KEYWORDS = ['warlord'];
-
 // Profile types for model count calculations
 export const MODEL_COUNT_PROFILE_TYPES = [
   'unit', 'model', 'monster', 'creature', 'war machine', 'character', 'rider', 'mount'

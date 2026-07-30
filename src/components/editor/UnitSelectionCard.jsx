@@ -2,10 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-react';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
-import {
-  getEffectiveSelectionName,
-  groupProfilesByType
-} from '../../solver/validator';
+import { groupProfilesByType } from '../../roster';
 import { isIndependentSubUnitSelection, selectionViolationsForCard } from './unitCardValidation';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
@@ -202,7 +199,9 @@ export default function UnitSelectionCard({
 
   const isUnitEditing = selectedRosterSelection?.id === selection.id;
   const detailsOpen = isDetailsOpen;
-  const effectiveName = getEffectiveSelectionName(selection, { system, roster, parentCatalogueId: activeCatalogue?.id });
+  // Der effektive Name kommt aus dem Slot des Berichts (Issue 0121, Task 8;
+  // ADR-0034); ohne Slot bleibt der gespeicherte Selektionsname stehen.
+  const effectiveName = capability?.name ?? selection.name;
   const displayPoints = capability?.totalCosts?.[roster.costLimitType] ?? 0;
   const selectionViolations = selectionViolationsForCard(violations, pathBySelectionId, selection, system, activeCatalogue?.id);
   const hasSelectionError = selectionViolations.length > 0;

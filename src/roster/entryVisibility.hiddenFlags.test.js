@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { isCategoryLinkHidden, isSelectionEntryHidden } from './validator.js';
+import { isCategoryLinkHidden, isSelectionEntryHidden } from './entryVisibility.js';
 
 const NO_COUNTS = {};
 

@@ -6,7 +6,7 @@ import {
   mapSelectionTree, replaceSelectionById, computeRosterCounts, aggregateRosterCategoryCounts,
   buildModifierEvalContext, createSelectionFromDef as buildSelectionFromDef,
   withAddedInstance, withoutInstance, withChangedOptionCount
-} from '../solver/validator';
+} from '../roster';
 import { useEvaluation } from '../evaluation/useEvaluation';
 import { useUndoableState } from './useUndoableState';
 import {

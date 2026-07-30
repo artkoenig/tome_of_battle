@@ -4,7 +4,7 @@ import {
   findForceEntryById,
   collectUnreachableArmyWideSelectors,
   childSelectionsOf
-} from '../../solver/validator';
+} from '../../roster';
 
 import CategoryUnitAdder from './CategoryUnitAdder';
 import AutoFillSuggestions from './AutoFillSuggestions';

@@ -9,7 +9,7 @@ import { resolveEntry } from './catalogResolver.js';
 import { createSelectionFromDef } from './selectionFactory.js';
 import { replaceSelectionById, rootSelectionsOf } from './rosterTree.js';
 import { withChangedOptionCount } from './subSelectionEditing.js';
-import { validateRoster } from './rosterValidator.js';
+import { validateRoster } from '../solver/rosterValidator.js';
 
 // Issue 57/04 — end-to-end against the REAL Vampire Counts catalogue.
 // Master Necromancer → group "Mounts" (max 1) → entryLink "Nightmare" (an upgrade-type

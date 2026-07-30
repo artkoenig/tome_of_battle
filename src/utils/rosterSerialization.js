@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import {
   findEntryInSystem, resolveEntry, childSelectionsOf,
   mapSelectionTree, isIndependentSubUnit, resolveCostLimitTypeId
-} from '../solver/validator.js';
+} from '../roster';
 import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
 import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults.js';
 import { t } from '../i18n/i18nStore.js';

@@ -18,17 +18,17 @@ const mockFindEntryInSystem = vi.fn();
 const mockResolveEntry = vi.fn();
 const mockGroupProfilesByType = vi.fn();
 
-// Die Komponente spricht den Solver ausschließlich über die Fassade an, daher
-// wird auch nur die Fassade gemockt. Das Prädikat „eigenständige Untereinheit"
-// und die Schlüsselwortlisten sind ohne eigene Abhängigkeiten — der Mock reicht
-// ihre echte Umsetzung durch, statt sie zu stubben.
-vi.mock('../../solver/validator', async () => ({
+// Die Komponente liest ihre Struktur-Helfer seit Issue 0121, Task 8 aus dem
+// Schreibmodell src/roster/ (Sammel-Modul). Das Prädikat „eigenständige
+// Untereinheit" und die Schlüsselwortlisten sind ohne eigene Abhängigkeiten —
+// der Mock reicht ihre echte Umsetzung durch, statt sie zu stubben.
+vi.mock('../../roster', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
-  isIndependentSubUnit: (await vi.importActual('../../solver/subUnit')).isIndependentSubUnit,
+  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
   groupProfilesByType: (...args) => mockGroupProfilesByType(...args),
-  ...(await vi.importActual('../../solver/constants')),
+  ...(await vi.importActual('../../roster/constants')),
 }));
 
 const mockGetRuleUrl = vi.fn();

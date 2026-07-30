@@ -129,7 +129,7 @@ per `targetId="027b-31d2-b3e2-23a4"` referenziert:
 ```
 
 Konsequenz für die Auswertung: Die Definition muss zum **Lesezeitpunkt** aus dem System aufgelöst
-werden (in diesem Projekt: `resolveEntry`/`findEntryInSystem` in `src/solver/catalogResolver.js`).
+werden (in diesem Projekt: `resolveEntry`/`findEntryInSystem` in `src/roster/catalogResolver.js`).
 Dabei muss der **`catalogueId`-Kontext** mitgeführt werden, weil dieselbe Ziel-ID in verschiedenen
 Katalogen/Detachments unterschiedliche Dinge bedeuten kann.
 

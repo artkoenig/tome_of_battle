@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest';
-import { resolveCostTypeLabel, resolveCostLimitLabel, validateRoster } from './validator.js';
+import { resolveCostTypeLabel, resolveCostLimitLabel } from './rosterCounter.js';
+import { validateRoster } from '../solver/rosterValidator.js';
 import { formatValidationError } from '../i18n/formatValidationError.js';
 import { t } from '../i18n/i18nStore.js';
 import {
@@ -7,7 +8,7 @@ import {
   CASTING_DICE,
   COST_TYPE_NAME,
   createGrimdarkSystem
-} from './__fixtures__/grimdarkSystem.js';
+} from '../solver/__fixtures__/grimdarkSystem.js';
 
 /**
  * Die Bezeichnung einer Kostenart kommt unverändert aus `costType/@name`. Sie

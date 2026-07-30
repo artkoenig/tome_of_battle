@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { findForceEntryById } from './validator.js';
+import { findForceEntryById } from './forceEntries.js';
 
 // Kontingente können sowohl im Spielsystem (.gst) als auch in einem Katalog (.cat)
 // definiert sein; die Suche muss beide Quellen abdecken.

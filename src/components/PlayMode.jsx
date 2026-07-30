@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { ArrowLeft, Swords, BookOpen } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { getSelectionTotalCost, findForceEntryById, isListRuleSelection, childSelectionsOf, resolveCostLimitTypeId, TOP_LEVEL_PARENT_COUNT } from '../solver/validator';
+import { findForceEntryById, isListRuleSelection, childSelectionsOf } from '../roster';
 import { useEvaluation } from '../evaluation/useEvaluation';
-import { extraResourceTotalsOf } from '../evaluation/costDisplays';
+import { costLimitTypeIdOf, extraResourceTotalsOf } from '../evaluation/costDisplays';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
 import PlayUnitDetails from './play/PlayUnitDetails';
@@ -69,16 +69,14 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
 
   const getGroupedAndSortedSelections = () => {
     const groups = [];
-    const costType = resolveCostLimitTypeId(roster, system);
+    const costType = costLimitTypeIdOf(roster, description?.costTypes);
 
-    // Orders selections in place by total cost, descending. The cost context is built
-    // once per sort here rather than rebuilt for every pairwise comparison the sort makes.
-    const sortByCostDescending = (selections, catalogueId) => {
-      const costContext = { system, roster, currentCatalogueId: catalogueId };
-      selections.sort((a, b) =>
-        getSelectionTotalCost(b, costType, TOP_LEVEL_PARENT_COUNT, costContext) -
-        getSelectionTotalCost(a, costType, TOP_LEVEL_PARENT_COUNT, costContext)
-      );
+    // Orders selections in place by total cost, descending. The cost comes from the
+    // report (ADR-0034): the slot's subtree total for the roster's limit cost type.
+    const totalCostOf = (selection) =>
+      capabilities?.get(pathBySelectionId?.get(selection.id))?.totalCosts?.[costType] ?? 0;
+    const sortByCostDescending = (selections) => {
+      selections.sort((a, b) => totalCostOf(b) - totalCostOf(a));
     };
 
     roster.forces.forEach(force => {
@@ -95,7 +93,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
         const selections = childSelectionsOf(force).filter(s => s.category === link.targetId && isBattlefieldSelection(s));
 
         if (selections.length > 0) {
-          sortByCostDescending(selections, force.catalogueId || roster.catalogueId);
+          sortByCostDescending(selections);
 
           const catDef = system.categoryEntries?.find(ce => ce.id === link.targetId);
           const catName = catDef ? catDef.name : link.name || t('play.unknownCategory');
@@ -113,7 +111,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
       const uncategorizedSelections = childSelectionsOf(force).filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s));
 
       if (uncategorizedSelections.length > 0) {
-        sortByCostDescending(uncategorizedSelections, force.catalogueId || roster.catalogueId);
+        sortByCostDescending(uncategorizedSelections);
 
         groups.push({
           id: `${force.id}-uncategorized`,
@@ -204,6 +202,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
                     selection={selection}
                     system={system}
                     roster={roster}
+                    costTypes={description?.costTypes}
                     capabilities={capabilities}
                     pathBySelectionId={pathBySelectionId}
                     getUnitCurrentWounds={getUnitCurrentWounds}
