@@ -140,6 +140,10 @@ const Attr = Object.freeze({
   // `categoryLink`-Attribut: markiert die **eine** Anzeige-Kategorie des
   // Eintrags (`docs/battlescribe-data-format.md` §7.2/§8).
   PRIMARY: 'primary',
+  // `catalogueLink`-Attribut: nur wenn gesetzt, gehoeren die Wurzel-Eintraege und
+  // -Forces des verlinkten Katalogs zum Angebot des verlinkenden (Catalogue.xsd,
+  // Vorgabe `false`; Issue 0098).
+  IMPORT_ROOT_ENTRIES: 'importRootEntries',
 });
 
 /** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
@@ -958,14 +962,18 @@ function readSharedEntries(root, diagnostics) {
 
 /**
  * Liest die `catalogueLink`-Abhaengigkeitsdeklarationen der Wurzel: je ein
- * `{ id, name, targetId }`. `targetId` ist die Id des abhaengigen Katalogs; die
- * Fassade prueft, ob dieser mitgegeben wurde (ADR-0032, `MISSING_CATALOGUE_DEPENDENCY`).
+ * `{ id, name, targetId, importRootEntries }`. `targetId` ist die Id des
+ * abhaengigen Katalogs; die Fassade prueft, ob dieser mitgegeben wurde
+ * (ADR-0032, `MISSING_CATALOGUE_DEPENDENCY`). `importRootEntries` (Vorgabe
+ * `false`) entscheidet, ob die Wurzel-Eintraege und -Forces des verlinkten
+ * Katalogs zum Angebot des verlinkenden gehoeren (Issue 0098).
  */
 function readCatalogueLinks(root) {
   return wrappedChildren(root, Tag.CATALOGUE_LINKS, Tag.CATALOGUE_LINK).map(linkEl => ({
     id: linkEl.getAttribute(Attr.ID),
     name: linkEl.getAttribute(Attr.NAME),
     targetId: linkEl.getAttribute(Attr.TARGET_ID),
+    importRootEntries: readBoolean(linkEl, Attr.IMPORT_ROOT_ENTRIES, false),
   }));
 }
 

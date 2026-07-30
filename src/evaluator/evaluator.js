@@ -156,9 +156,23 @@ export function evaluate(prepared, roster) {
   // beantwortet den Bezugsrahmen `primary-catalogue` (Issue 077) und wird — wie
   // das Budget — bis in die Query-Kontexte durchgereicht.
   const contents = PreparedDataset.contentsOf(prepared);
-  const { resolved, primaryCatalogueByForceDefId, sourceIdByDefId, diagnostics: datasetDiagnostics } = contents;
+  const {
+    resolved, primaryCatalogueByForceDefId, sourceIdByDefId, catalogueRootEntryClosureById,
+    gameSystemDocument, diagnostics: datasetDiagnostics,
+  } = contents;
 
-  const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster);
+  // Der Katalog-Bezugsrahmen (Issue 0098): welche Herkunft zu welchem
+  // Kontingent-Katalog gehoert. Reicht bis in die Baumphase 1 (Pflicht-Phantome,
+  // `evalTree.js`) und die Baumphase 2 (Angebot, `offer.js`) hinein, damit ein
+  // Wurzel-Eintrag oder ein roster-skopiertes Pflicht-Minimum eines fremden
+  // Katalogs weder angeboten noch erzwungen wird.
+  const catalogueScope = {
+    sourceIdByDefId,
+    catalogueRootEntryClosureById,
+    gameSystemId: gameSystemDocument?.id ?? null,
+  };
+
+  const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster, catalogueScope, primaryCatalogueByForceDefId);
 
   // Fixpunktschleife: Weil Zaehlen von effektiven Werten abhaengt und Modifikatoren
   // von Zaehlungen, wird iterativ bis zur Konvergenz ausgewertet — jede Runde von
@@ -178,7 +192,7 @@ export function evaluate(prepared, roster) {
   // ausgewerteten Stand deshalb nicht veraendern koennen. Ihre Basiswerte werden
   // in den konvergierten Zustand nachgetragen, damit ihre Grenzen vom Katalogwert
   // aus fortgeschrieben werden und nicht von 0.
-  const offerAnchors = attachOfferAnchors(root, resolved);
+  const offerAnchors = attachOfferAnchors(root, resolved, catalogueScope, primaryCatalogueByForceDefId);
   extendBaseEffectiveState(effective, offerAnchors);
 
   // Nach-Durchlauf: die synthetischen Anker — die aus Phase 1 wie die eben

@@ -53,6 +53,7 @@
 
 import { DefinitionKind, isLinkDefinition } from './model.js';
 import { attachOfferAnchor, realNodes, ownerDefinitionOf, linkedCategoryIdsOf } from './evalTree.js';
+import { isInCatalogueScope } from './catalogSet.js';
 
 /**
  * Die **Basis**-Kategorien einer angebotenen Definition: ihre eigenen
@@ -137,11 +138,27 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set()) {
  * Die im Rahmen `frame` angebotenen Definitionen — Regel 1 fuer ein Kontingent,
  * Regel 2 fuer eine belegte Auswahl. Die Wurzel selbst ist kein Rahmen des
  * Angebots: sie ist keine Auswahl, und das Armee-Angebot haengt am Kontingent.
+ *
+ * Fuer ein Kontingent gilt zusaetzlich der **Katalog-Bezugsrahmen** (Issue
+ * 0098): ein eigenstaendiger Wurzel-Eintrag (`ENTRY`) wird nur angeboten,
+ * wenn seine Herkunft zum Katalog-Fussabdruck **dieses** Kontingents gehoert
+ * ({@link isInCatalogueScope}) — ein Wurzel-Eintrag eines fremden Katalogs im
+ * selben Datensatz bleibt aussen vor. Ein Wurzel-**`entryLink`** ist davon
+ * ausgenommen: er verweist auf eine geteilte Definition (typischerweise
+ * einer Bibliothek) und ist der etablierte, mit echten Katalogdaten belegte
+ * Weg, wie Katalogautoren katalogübergreifende Inhalte anbieten (z. B.
+ * „Regiments of Renown"/Söldner, die jede Armee ueber ihre eigene, geteilte
+ * Kategorie nehmen darf) — unabhaengig davon, welcher Katalog den Link
+ * deklariert. Die belegte-Auswahl-Regel (2) betrifft nur Optionen unter
+ * einer schon verankerten Definition und bleibt unveraendert.
  */
-function candidatesFor(frame, armyLevelCandidates) {
+function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalogueByForceDefId) {
   if (frame.isForce) {
     const forceCategoryIds = linkedCategoryIdsOf(frame.def);
-    return armyLevelCandidates.filter(def => isCarriedByForce(def, forceCategoryIds));
+    const forceCatalogueId = primaryCatalogueByForceDefId?.get(frame.def.id);
+    const referenceCatalogueIds = forceCatalogueId === undefined ? [] : [forceCatalogueId];
+    return armyLevelCandidates.filter(def => isCarriedByForce(def, forceCategoryIds)
+      && (def.kind === DefinitionKind.ENTRY_LINK || isInCatalogueScope(def.id, referenceCatalogueIds, catalogueScope)));
   }
   return [...optionDefinitionsUnder(ownerDefinitionOf(frame))];
 }
@@ -158,11 +175,16 @@ function candidatesFor(frame, armyLevelCandidates) {
  *
  * @param {object} root  Wurzel des Auswertungsbaums nach Baumphase 1.
  * @param {{ armyLevelCandidates?: object[] }} resolved  die aufgeloeste Katalogsicht.
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
+ *   Der Katalog-Bezugsrahmen (Issue 0098, siehe {@link candidatesFor}). Ohne ihn
+ *   (`undefined`) ungefiltertes, unveraendertes Verhalten.
+ * @param {Map<string, string>} [primaryCatalogueByForceDefId]  Der Herkunftsindex
+ *   der Kontingente — noetig, um `catalogueScope` je Kontingent auszuwerten.
  * @returns {object[]} die angehaengten Anker, in Anhaenge-Reihenfolge. Der Aufrufer
  *   traegt sie in die Effektiv-Werte-Schicht nach (`extendBaseEffectiveState`),
  *   bevor der Nach-Durchlauf laeuft.
  */
-export function attachOfferAnchors(root, resolved) {
+export function attachOfferAnchors(root, resolved, catalogueScope, primaryCatalogueByForceDefId) {
   const armyLevelCandidates = resolved.armyLevelCandidates ?? [];
   // Die Rahmen **vor** dem Anhaengen festhalten: ein Anker ist selbst kein Rahmen,
   // und eine laufende Traversierung waehrend des Anhaengens waere nicht definiert.
@@ -170,7 +192,7 @@ export function attachOfferAnchors(root, resolved) {
   const anchors = [];
   for (const frame of frames) {
     const occupiedIds = occupiedIdsOf(frame);
-    for (const def of candidatesFor(frame, armyLevelCandidates)) {
+    for (const def of candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalogueByForceDefId)) {
       if (identityIdsOf(def).some(id => occupiedIds.has(id))) continue;
       anchors.push(attachOfferAnchor(root, frame, def));
       // Der frische Anker belegt seine Definition im Rahmen: erscheint dieselbe
