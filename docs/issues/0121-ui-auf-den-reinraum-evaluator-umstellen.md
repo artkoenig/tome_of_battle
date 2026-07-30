@@ -148,7 +148,7 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   wandern mit (umgereiht: erst nach der UI-Umstellung ist der wahre
   Restbedarf sichtbar — was capabilities ersetzen, stirbt statt
   umzuziehen)
-- [ ] 9. E2E-/Fixture-Umzug nach `e2e/`, Kommandos/CI/Lint-/Depcruise-
+- [x] 9. E2E-/Fixture-Umzug nach `e2e/`, Kommandos/CI/Lint-/Depcruise-
   Regeln nachziehen
 - [ ] 10. `src/solver/` löschen, alte validation.*-Schlüssel raus,
   Doku (CLAUDE.md, bsdata-Doku, ADRs) nachziehen, Vollabnahme aller
@@ -199,6 +199,19 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
 
 ## Log
 
+- 2026-07-30, Task 9 (E2E-/Fixture-Umzug) erledigt: ui.test.js/
+  pwa.test.js → e2e/, Fixtures → src/__fixtures__/ (bewusste
+  Abweichung vom Plan-Stichwort "nach e2e/": 20 von 24 Verbrauchern
+  sind src-Unit-Tests; ein Ort, keine Duplikate). 48 Dateien
+  Referenz-Nachzug inkl. CI, knip/depcruise-Scope, Manifest-Pfade.
+  npm test komplett Exit 0 (2694 vitest + Puppeteer), build/lint/
+  typecheck/depcruise/knip Exit 0, Audit-Grep alte Pfade leer.
+  Überraschung: ein Fixture-Verbraucher baute den Pfad aus Segmenten
+  (grep-unsichtbar) — einmaliger Suite-Fehlschlag, gefixt. CLAUDE.md
+  ist Symlink auf .agents/AGENTS.md (sed materialisierte ihn kurz;
+  wiederhergestellt). Task-10-Nachzüge notiert: stale Verweise in
+  src/__fixtures__/whfb6-lexicanum/README.md, solver-Schicht in
+  scripts/project-state/graph.test.js.
 - 2026-07-30, Task 8 (Schreibmodell-Umzug) erledigt: 21 Module + 49
   Modultests per git mv nach src/roster/ (verhaltensgleich),
   catalogueSelection/ungenutzte Exporte gelöscht, Rest-Kosten/Namens-
