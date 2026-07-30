@@ -210,6 +210,12 @@ katalog-lokal.
   sind wieder gruen, ohne Aenderung an Fixture oder Doku — das bestaetigt,
   dass es sich um eine Praezisierung der Kriteriums-Grenze handelt, nicht um
   eine Aenderung an belegtem Verhalten.
+- 2026-07-30 — Bsdata-Wiki-Submodul war eingangs uninitialisiert (Recherche
+  konnte den §15-Lücke-Befund zu `importRootEntries` deshalb nicht direkt am
+  Wiki-Text pruefen). Submodul jetzt ausgecheckt (`f4949c3a`, `master`):
+  `grep -rl importRootEntries docs/bsdata-catalogue-development-wiki/`
+  findet nichts — die Luecke ist damit am tatsaechlichen Wiki-Text bestaetigt,
+  nicht nur aus dem Attributnamen gefolgert.
 - 2026-07-30 — **Verifikation (Kriterium 5):** `npx vitest run
   src/evaluator`, 68 Testdateien, 853 Tests, Exit 0. `npm run lint`
   (oxlint), Exit 0. `npm run typecheck` (tsc --noEmit), Exit 0. Die
