@@ -1,7 +1,8 @@
 // Meldungsprojektion der Evaluator-Verletzungen (Issue 0121 Task 4): übersetzt
 // die sprachfreie Einordnung des Auswertungsberichts (ADR 0034) in i18n-Texte
-// (ADR 0026) — das Gegenstück zu `formatValidationError.js` für die
-// Reinraum-Engine. Die Engine ordnet ein, hier wird formuliert.
+// (ADR 0026). Die Engine ordnet ein, hier wird formuliert. Dies ist die
+// **einzige** Meldungsprojektion der App; das frühere `formatValidationError.js`
+// des Solvers ist mit ihm gelöscht.
 //
 // Schlüssel-Schema: `validation.evaluator.<measure>.<kind>.<scopeGroup>[.percent]`.
 // Das Einordnungs-Vokabular (ConstraintKind/LimitMeasure/ScopeKind) steht hier
@@ -80,7 +81,7 @@ function effectivePercent(derivation) {
 
 /**
  * Übersetzt eine eingeordnete Verletzung des Evaluator-Berichts in den
- * Anzeigetext der aktiven UI-Sprache (Konvention wie `formatValidationError`):
+ * Anzeigetext der aktiven UI-Sprache:
  *
  * - Abgeleitete Grenzen (`origin: 'derivedLimit'`) wählen den Schlüssel
  *   `validation.evaluator.<measure>.<kind>.<scopeGroup>[.percent]` mit den

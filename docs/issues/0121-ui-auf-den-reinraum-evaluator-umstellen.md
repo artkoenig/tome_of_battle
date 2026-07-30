@@ -154,6 +154,17 @@ Landung in Zwischencommits auf dem Issue-Branch, in dieser Reihenfolge:
   Doku (CLAUDE.md, bsdata-Doku, ADRs) nachziehen, Vollabnahme aller
   Kriterien
 
+Korrekturen aus Prüfrunde 4:
+
+- [ ] 21. (B1) Die Seitenleiste nimmt den Kontingent-Pfad aus
+  `pathByForceId`, nicht aus einem festen `'0'` — Kriterium 3
+- [ ] 22. (B2) Falsifikator für den `describeDataset`-Cache
+- [ ] 23. (B3) Falsifikator für die Referenzstabilität des
+  Leer-Ergebnisses über Ränder und Hook-Instanzen hinweg
+- [x] 24. (B4) Zwei veraltete Kommentare in
+  `src/i18n/violationMessages.js` (nennen das gelöschte
+  `formatValidationError`) — Kriterium 2
+
 Korrekturen aus Prüfrunde 3:
 
 - [x] 17. (F1) Die Pfadkorrektur wirkt am Rand, den der Editor benutzt.
@@ -188,18 +199,18 @@ Korrekturen aus Prüfrunde 2:
 Je Zeile ein Akzeptanzkriterium, je Spalte eine Prüfrunde, je Zelle die
 Zahl der Befunde:
 
-| # | Kriterium | R1 | R2 | R3 |
-|---|---|---|---|---|
-| 1 | Kein Produktivimport aus `src/solver/` | 0 | 0 | 0 |
-| 2 | Solver gelöscht, Prüfungen grün, Doku nachgezogen | 2 | 1 | 1 |
-| 3 | Produktiver Roster-Adapter (Link-Id-Regel) | 0 | 2 | 2 |
-| 4 | i18n aus der Evaluator-Einordnung | 0 | 0 | 0 |
-| 5 | Verfügbarkeit aus `capabilities` | 1 | 2 | 1 |
-| 6 | Nicht-Validierungs-Funktionen verhaltensgleich umgezogen | 1 | 1 | 0 |
-| 7 | E2E umgezogen, laufen grün | 0 | 0 | 0 |
-| 8 | `prepareDataset` höchstens einmal je Datensatz | 0 | 0 | 0 |
-| — | ohne Kriteriumsverletzung (Bequemlichkeiten, Perf, Testlücke) | 4 | 1 | 0 |
-| | **Summe** | **8** | **7** | **4** |
+| # | Kriterium | R1 | R2 | R3 | R4 |
+|---|---|---|---|---|---|
+| 1 | Kein Produktivimport aus `src/solver/` | 0 | 0 | 0 | 0 |
+| 2 | Solver gelöscht, Prüfungen grün, Doku nachgezogen | 2 | 1 | 1 | 1 |
+| 3 | Produktiver Roster-Adapter (Link-Id-Regel) | 0 | 2 | 2 | 1 |
+| 4 | i18n aus der Evaluator-Einordnung | 0 | 0 | 0 | 0 |
+| 5 | Verfügbarkeit aus `capabilities` | 1 | 2 | 1 | 0 |
+| 6 | Nicht-Validierungs-Funktionen verhaltensgleich umgezogen | 1 | 1 | 0 | 0 |
+| 7 | E2E umgezogen, laufen grün | 0 | 0 | 0 | 0 |
+| 8 | `prepareDataset` höchstens einmal je Datensatz | 0 | 0 | 0 | 0 |
+| — | ohne Kriteriumsverletzung (Bequemlichkeiten, Perf, Testlücke) | 4 | 1 | 0 | 2 |
+| | **Summe** | **8** | **7** | **4** | **4** |
 
 Die Zahl fällt, die Sorte nicht. Runde 2 hat weniger, aber **schwerere**
 Befunde gebracht als Runde 1: die Fälle unter Kriterium 3 und 5 (B1, B2)
@@ -338,6 +349,51 @@ benutzt" — das stimmt nicht).
   Issue. *(Quelle: ADR-0034; default, unanswered.)*
 
 ## Log
+
+- 2026-07-30, **Stoppentscheidung nach Prüfrunde 4.** Die Zahl steht still
+  (8 → 7 → 4 → 4), und das Wiederholungssignal ist zum **dritten** Mal
+  gefeuert: B1 ist derselbe Defekt wie F2 aus Runde 3, an dem einen
+  Konsumenten, den auch die Zusammenlegung nicht erreicht hat
+  (`RosterSidebar` sucht die Kategorie-Anker unter einem festen
+  `FIRST_FORCE_PATH = '0'`). Dreimal dieselbe Ursache: eine unvollständig
+  aufgezählte Konsumentenmenge.
+  Diesmal habe ich die Menge **vor** der Korrektur selbst und vollständig
+  ermittelt, statt sie mir berichten zu lassen — es gibt genau vier Stellen,
+  die einen Slot-Pfad aus einem Kontingent ableiten: `CategoryUnitAdder` und
+  `RosterCategorySection` (bekommen ihn als Prop, richtig),
+  `SelectionConfigurator` (leitet über `pathBySelectionId` ab, richtig) und
+  `RosterSidebar` (festes Literal, falsch). Nach Task 21 ist keine mehr offen.
+  **Die Befunde 21–24 werden noch behoben, danach läuft keine Runde 5 von
+  selbst.** Die Regel verlangt an dieser Stelle die Frage an den Menschen
+  statt der nächsten Runde; sie liegt ihm zusammen mit den offenen
+  Entscheidungen zu Versionsbump und PR vor.
+- 2026-07-30, Prüfrunde 4 (frischer Kontext, ganze Absicht): 4 Befunde.
+  Fakten selbst nachgemessen und deckungsgleich (`npm test` 246 Dateien /
+  2566 Fälle, lint/typecheck/depcruise/build je Exit 0; knip 1, warn-only,
+  5 verwaiste Exporte). **11 Mutationen gesetzt, 9 getötet, 2 überlebt** —
+  die beiden Überlebenden sind B2 und B3, also genau die zwei Zusagen dieser
+  Runde ohne Falsifikator. Kriterium 8 hat der Prüfer schärfer geprüft als
+  je zuvor und **bestätigt**: der einzige Code, der `system.rawXmls` in
+  place ändert (`catalogEditor.updateRawXml`), hat keinen Produktiv-Aufrufer,
+  jeder andere Weg erzeugt ein neues System-Objekt — es gibt keinen
+  reproduzierbaren Weg zu einem veralteten Cache-Treffer. Alle drei starken
+  Behauptungen des Runde-3-Logs hat er nachgeprüft und bestätigt, darunter
+  „Task 17 brauchte keine Zeile Logik".
+- 2026-07-30, Beobachtung außerhalb der Kriterien (dem Menschen vorgelegt,
+  nicht eigenmächtig behoben): **das Dashboard wertet je Rosterkarte und je
+  Render voll aus.** `RosterDashboard` ruft `evaluateAppRoster` im
+  Render-Rumpf ohne Memo; gemessen mit zählendem Fassaden-Mock bei drei
+  Rostern: nach dem ersten Render `evaluate=3`, nach einem Klick plus einem
+  Tastendruck im Umbenennen-Feld `evaluate=9` (bei `prepare=1`,
+  `describe=1`). Ein Wiederverwendungs-Lauf kostet an echten Katalogen im
+  Median 6–16 ms, ein Dashboard mit zehn Listen also grob 60–160 ms je
+  Tastendruck. Kein Kriterium verletzt (Kriterium 8 bindet nur
+  `prepareDataset`), nicht neu in dieser Runde (kam mit Task 7) und **nicht**
+  identisch mit Issue 0124, das den Katalog-Vorlauf beim ersten Render
+  betrifft. Derselben Bauart im Spielmodus: `usePlayState` erzeugt bei jeder
+  Wund-/VP-/CP-Änderung ein neues Roster-Objekt, was je Tipp eine volle
+  Neubewertung auslöst — vom Prüfer aus dem Code abgeleitet, nicht
+  reproduziert.
 
 - 2026-07-30, Tasks 17–19 erledigt: alle 39 roten Fälle grün, **ohne
   Testedit**. Selbst nachgemessen: `npm test` 246 Dateien / 2566 Fälle +
