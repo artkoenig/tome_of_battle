@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/ui-neue-engine-49yiie
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/178
 ---
 
 # UI auf den Reinraum-Evaluator umstellen (Cutover, Solver-Abriss)
@@ -254,6 +254,11 @@ benutzt" — das stimmt nicht).
 
 ## Decisions
 
+- **Kein Versionsbump in diesem PR.** Vorgeschlagen war 1.10.0 (minor),
+  weil der Cutover nutzersichtbar ist — neue Meldungstexte, neue
+  Verfügbarkeits-Anzeige. Der Mensch hat „unverändert lassen" gewählt;
+  `package.json` bleibt bei 1.9.2, und der Tag-Workflow springt nach dem
+  Merge folglich nicht an. *(Antwort des Menschen, 2026-07-30.)*
 - **Die Sektion eines unauflösbaren Kontingents bleibt stehen (Task 18).**
   Sie bekommt `forcePath: null` und zeigt dann keine Angebote und keine
   Kategorie-Grenzen. Das ist ehrlich — die Meldung „diese Auswahl gibt es im
@@ -854,3 +859,67 @@ benutzt" — das stimmt nicht).
   grüne Gesamtsuite und den E2E, nicht Fall für Fall.
 
 ## Retro
+
+### Was im Weg stand
+
+**Derselbe Fehler dreimal: eine unvollständig aufgezählte
+Konsumentenmenge.** Er trat in drei Verkleidungen auf — B3 der Runde 2
+(die Rettung löschte Kataloge), F1 der Runde 3 (die Pfadkorrektur landete
+an dem Rand, den der Editor *nicht* benutzt) und B1 der Runde 4 (die
+Seitenleiste behielt ihr festes `'0'`). Die Ursache war zweimal dieselbe
+Gewohnheit: Ich habe einen Befund als **Ort** gebrieft („korrigiere die
+Pfade in `evaluateAppRoster`") statt als **beobachtbares Verhalten**
+(„eine Auswahl hinter einer verlorenen zeigt im Editor den Namen ihres
+Nachbarn"). Ein Ort ist nur so vollständig wie meine Kenntnis der Naht;
+ein Verhalten zwingt den Test an den Rand, den der Nutzer sieht.
+
+Beim dritten Mal hatte ich sogar das richtige Mittel gewählt — die Naht
+zusammengelegt, statt zwei Kopien zu flicken — und trotzdem einen
+Konsumenten übersehen, weil ich mir die Liste habe **berichten** lassen.
+Erst als ich selbst gegriffen habe, war sie vollständig: genau vier
+Stellen, drei richtig, eine falsch.
+
+**Zwei gemeldete Fakten waren wahr, aber unfalsifizierbar.** Ich hatte
+den `describeDataset`-Cache und die Referenzstabilität des
+Leer-Ergebnisses als erledigt gemeldet. Beides stimmte — und der Prüfer
+konnte beide Mechanismen abschalten, ohne dass einer von 2566 Tests rot
+wurde. Eine grüne Suite sagt nichts über einen Mechanismus, den kein Test
+angreift. „Implementiert" und „abgesichert" sind zwei Aussagen; ich hatte
+die erste gemacht und die zweite gemeint.
+
+**„Cutover-fähig" war eine ungeprüfte Übernahme.** Issue 75 hatte die
+Engine so erklärt, und ich habe das als Voraussetzung genommen, statt es
+gegen eine echte legale Liste zu falsifizieren. Der Cutover legte dann
+einen Engine-Defekt frei, der eine korrekte Armeeliste als fehlerhaft
+zeigt (Issue 0122). Die Freigabe eines Vorgänger-Issues ist eine
+Behauptung wie jede andere.
+
+### Was gut lief
+
+Die Zusammenlegung der doppelten Naht statt zweier gleichlautender
+Flicken — eine Naht, die es nur einmal gibt, kann nicht auseinander
+laufen. Und die Disziplin, sechs Befunde außerhalb der Kriterien (0122
+bis 0127) zu **filen** statt sie im Zug mitzunehmen: der Schnitt blieb
+dadurch der, den der Mensch freigegeben hatte.
+
+### Was sich ändern soll (Vorschläge für `metis`)
+
+1. **Ein Fix-Auftrag nennt das Verhalten, nicht den Ort.** Das Regelwerk
+   sagt heute, wie ein Issue seine Intention formuliert, aber nichts
+   darüber, wie ein einzelner Befund an den Implementierer geht. Ein
+   Auftrag sollte das beobachtbare Fehlverhalten und die Naht benennen,
+   an der es sichtbar wird — die Wahl des Orts gehört dem Implementierer.
+2. **Die Konsumentenmenge einer Naht erhebt der Auftraggeber selbst.**
+   Nie berichten lassen, immer greifen. Das ist der einzige Schritt, der
+   die Wiederholung in Runde 4 verhindert hätte.
+3. **Zwei Regeln kollidierten am Ende, und das Regelwerk sagt nicht,
+   welche gewinnt.** „Nach einem Fix prüft eine frische Instanz die ganze
+   Intention erneut" und „bei drei Runden ohne sinkende Befundzahl
+   anhalten und den Menschen fragen" galten gleichzeitig. Ich habe
+   angehalten — die Korrekturen der Runde 4 (Tasks 21–24) haben deshalb
+   nie eine frische Prüfung gesehen. Das Regelwerk sollte den Vorrang
+   ausdrücklich klären, statt ihn der Auslegung zu überlassen.
+4. **Eine Zusage ist erst ein Fakt, wenn ein Test sie töten kann.** Vor
+   dem Melden eines Mechanismus als erledigt: ihn abschalten und sehen,
+   ob etwas rot wird. Zwei der vier Befunde der letzten Runde wären damit
+   gar nicht erst entstanden.
