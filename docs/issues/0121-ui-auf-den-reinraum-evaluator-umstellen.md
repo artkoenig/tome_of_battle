@@ -196,6 +196,35 @@ Menschen statt in eine weitere Runde.
 
 ## Decisions
 
+- **Rettung ist alles oder nichts (Task 11).** Kennt der Katalogindex nicht
+  jede gespeicherte Katalog-Id und die `.gst`, unterbleibt die Nachrüstung
+  ganz. Eine Teilrettung — nur die bekannten Dateien nachtragen — wäre
+  schlechter als keine: die Engine wertete dann gegen einen lückenhaften
+  Datensatz aus und produzierte lauter `unresolvedDefinition` statt eines
+  ehrlichen Fehlens. Ebenso wenig gibt es ein „teilweise rettbar"-Signal: für
+  die Oberfläche ist das dasselbe wie unrettbar. *(Default, unanswered.)*
+- **Die Pfadkorrektur sitzt in `evaluateAppRoster`, nicht im Adapter
+  (Task 12).** Der Adapter kann Auflösbarkeit nicht kennen; sein
+  `pathBySelectionId` bleibt die naive Zuordnung und bleibt gültig unter der
+  Bedingung, die seine JSDoc schon nennt. Korrigiert wird dort, wo Roster und
+  Bericht zusammenliegen. Belastbar ist das, weil `UNRESOLVED_DEFINITION`
+  ausschließlich in `evalTree.js` für Roster-Instanzknoten erzeugt wird — nie
+  für baumelnde Verweise in den Katalogdaten — und eine `defId` datensatzweit
+  auflöst oder nicht: die Menge der Diagnose-`defId`s ist damit exakt die
+  Menge der weggefallenen Knoten, das Überspringen keine Näherung. Ein
+  unauflösbares **Kontingent** wird genauso behandelt. *(Quelle: Lesen von
+  `src/evaluator/evalTree.js:69–95`, 2026-07-30.)*
+- **`sourceId` gilt uniform für jede Ankerart (Task 13).** Nachgeschlagen wird
+  `node.def.id` — bei einem Verweis-Slot also die Id **des Verweises**, nicht
+  des Ziels. Das ist die Link-Id-Regel, angewandt auf die Herkunft: ein
+  `entryLink` in `Vampire Counts.cat` ist ein Vampire-Counts-Angebot, auch wenn
+  sein Ziel in einer Bibliothek steht. Keine Fallunterscheidung nach
+  `anchorKind`. *(Default, unanswered.)*
+- **Die explizite `entries`-Liste des Aushebe-Dialogs gewinnt gegen den
+  Herkunftsfilter (Task 13b).** Sie ist bereits vom Aufrufer kuratiert
+  (armeeweite Selektoren); ein Filter darüber könnte einen bewusst
+  übergebenen katalogübergreifenden Eintrag wegnehmen. *(Default,
+  unanswered.)*
 - **Triage Prüfrunde 2.** Behoben werden B1, B2, B3, B5, B6 — alle innerhalb
   der acht Kriterien. B4 ist kein Engine-Defekt (§7.6 der bsdata-Doku
   entscheidet gegen den alten Solver) und geht als Issue 0125 an den Menschen.
@@ -253,6 +282,21 @@ Menschen statt in eine weitere Runde.
 
 ## Log
 
+- 2026-07-30, Tests für die Tasks 11–14 geschrieben (test-author, ohne
+  Produktivcode): 5 neue Dateien, 36 Fälle, davon **13 rot** aus dem richtigen
+  Grund. Belege u. a.: die Nachrüstung speichert ein System mit reduzierter
+  Katalogliste (`expected [ 'cat-a' ] to deeply equal [ 'cat-a', 'cat-b' ]`)
+  und verschweigt den Verlust (`expected [] to deeply equal [ { id: … } ]`);
+  hinter einer verlorenen Auswahl trägt `sel-alpha` den Datensatz von **Beta**
+  (`expected { defId: 'entry-beta' } to match object { defId: 'entry-alpha' }`);
+  `sourceId` ist überall `undefined`; der Aushebe-Dialog zeigt die
+  Fremdeinheit (`expected <span>Gorger</span> to be null`). Die Nachbarschaft
+  (`src/db src/evaluation src/components/editor src/evaluator`) ist bis auf
+  diese 13 grün — nichts vorher Grünes kippt. Task 14 ist bewusst **grün**:
+  die Grenze am `entryLink` wirkt schon (`actual 2 / bound 1`, Anker = Link-Id,
+  Ziel trägt `max 5`), der Test schließt eine Beweislücke, kein Verhaltensloch;
+  seine Trennschärfe belegt die Gegenprobe (dasselbe Roster unter der Ziel-Id
+  liefert `violations = []`).
 - 2026-07-30, Task 16 (E2E-Harness) erledigt: `spawnVite` startet den
   Preview-Server jetzt `detached` in einer **eigenen Prozessgruppe**, und
   `stop()` signalisiert die Gruppe (`process.kill(-pid)`) statt nur die
