@@ -799,7 +799,34 @@ benutzt" — das stimmt nicht).
   behauptet Cutover-Fähigkeit, aber der Beweis kommt erst beim Verdrahten.
   Und dass die E2E-Harness-Tests nach dem Umzug ohne Solver-Fixture laufen.
 
-### Before the PR
+### Before the PR (aktualisiert nach vier Prüfrunden, 2026-07-30)
+
+- **Does this match what was asked?** Ja, unverändert — und nach vier
+  Runden mit deutlich mehr Belegen als beim ersten Mal. Sechs der acht
+  Kriterien hat Runde 4 als erfüllt beurteilt; die beiden offenen (3 und
+  5) sind seither behoben, ihre Befunde sind die Tasks 21–24.
+- **What surprised me?** Dass **derselbe Fehler dreimal** durchkam: eine
+  unvollständig aufgezählte Konsumentenmenge. Zweimal habe ich einen Ort
+  vorgegeben statt eines Verhaltens; beim dritten Mal hat sogar die
+  Zusammenlegung der Naht einen Konsumenten übersehen, weil ich mir die
+  Liste habe berichten lassen, statt sie zu erheben. Erst als ich sie
+  selbst ermittelt habe, war sie vollständig — es sind genau vier
+  Stellen. Zweite Überraschung: zwei Zusagen, die ich als Fakt gemeldet
+  hatte (`describeDataset`-Cache, referenzstabiles Leer-Ergebnis), waren
+  wahr, aber **unfalsifizierbar** — der Prüfer konnte beide Mechanismen
+  abschalten, ohne dass ein einziger von 2566 Tests rot wurde.
+- **What am I assuming without having verified it?** Dass die vier
+  offenen Beobachtungen außerhalb der Kriterien den Merge nicht
+  blockieren sollen — insbesondere die Phantom-Fehler aus Issue 0122 und
+  der Wegfall der WHFB6-Lord-Grenzen aus Issue 0125, die beide
+  **nutzersichtbar** sind. Das ist ausdrücklich die Entscheidung des
+  Menschen, nicht meine. Ebenso unverifiziert bleibt, dass die Abdeckung
+  der rund 90 gelöschten Solver-Modultests wirklich vollständig von der
+  Evaluator-Suite getragen wird; belegt ist das nur indirekt über die
+  grüne Gesamtsuite, den E2E und inzwischen 21 gezielte Mutationen, von
+  denen 20 getötet wurden.
+
+### Before the PR (ursprünglich)
 
 - **Does this match what was asked?** Ja. "UI auf die neue Engine, ohne
   Plugin" ist erfüllt: die Oberfläche liest Verletzungen, Verfügbarkeit,
