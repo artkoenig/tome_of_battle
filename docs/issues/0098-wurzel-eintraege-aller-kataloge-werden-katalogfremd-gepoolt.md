@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/new-session-mn1zyq
 pr:
 ---
 
@@ -61,6 +61,43 @@ Acceptance criteria:
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28); Mechanismus am Code verifiziert, in den Fixtures latent
   (die Bibliothek `Mercenaries.cat` trägt keine Wurzel-Selektionen).
+- **Kriterium 4, Ausweichklausel entfällt:** Datensätze mit mehr als einem
+  Armee-Katalog sind über den normalen Import-Weg real erreichbar, nicht nur
+  konstruiert. `Importer.jsx` (`buildAllSelectedCats`, Zeilen ~26–32 und
+  ~152) lässt mehrere `.cat`-Dateien eines Bundles gleichzeitig auswählen;
+  `db/systemImport.js:66` speichert sie undifferenziert als
+  `system.rawXmls.cat`; `evaluation/evaluationCache.js:87-99` reicht **alle**
+  gespeicherten `.cat`-Dateien ungefiltert an `prepareDataset`. Die
+  WHFB6-Definitive-Edition-Fixture selbst belegt es: `Ogre Kingdoms.cat`,
+  `Orcs and goblins.cat` und `Vampire Counts.cat` tragen je eigene
+  Wurzel-`selectionEntries`/`forceEntries` und je einen `catalogueLink` zu
+  `Mercenaries.cat` ohne `importRootEntries`-Attribut (Default `false`).
+  Kriterium 4 schließt das Issue also nicht — es bleibt ein echter Fix.
+- **Abgrenzung zu ADR-0032:** ADR-0032 entscheidet, *wie* eine Referenz ihre
+  Ziel-Id über alle gegebenen Kataloge hinweg findet (eine globale
+  `id→Definition`-Tabelle; `catalogueLink` „reine
+  Abhängigkeits-Deklaration, nicht als eigener Auflösungsmechanismus").
+  Es sagt nichts darüber, *ob* Wurzel-Einträge, Wurzel-Forces und
+  roster-skopierte Mins eines Katalogs außerhalb seiner eigenen Kontingente
+  angeboten bzw. erzwungen werden sollen — das ist die Lücke, die dieses
+  Issue schließt. Die globale Referenz-Auflösung selbst bleibt unverändert.
+- **`importRootEntries` bereits andernorts konsumiert, hier nicht:** Der
+  App-eigene Schreib-Modell-Parser (`src/parser/xmlParser.js:584-594`) liest
+  `importRootEntries` bereits (getestet in
+  `xmlParser.staticAttributes.test.js:37-52`); eine frühere Entscheidung
+  (`docs/issues/25-battlescribe-xsd-konformitaet/09-.../issue.md:42-45`)
+  hatte seinen *Konsum* für den Library-Import-/targetId-Auflösungspfad der
+  App bewusst als PRD-out-of-scope eingestuft. Das betrifft einen anderen
+  Layer (App-Schreib-Modell) als hier (Evaluator-Lesepfad
+  `catalogReader.js`/`readCatalogueLinks`) — beide Entscheidungen
+  widersprechen sich nicht, sie gelten für unterschiedliche Konsumenten.
+- **Vorhandene Infrastruktur nutzen:** `catalogSet.js` trägt seit Issue
+  077/0121 bereits `buildPrimaryCatalogueIndex` (Force→Katalog) und
+  `buildDefinitionSourceIndex` (Definition→Quelldokument), beide auf
+  `PreparedDataset` verdrahtet (`primaryCatalogueByForceDefId`,
+  `sourceIdByDefId`) und von `report.js`/`query.js` bereits konsumiert. Der
+  Fix hier baut auf diesen Indizes auf, statt neue
+  Herkunfts-Infrastruktur einzuführen.
 
 ## Log
 
