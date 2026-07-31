@@ -1,0 +1,157 @@
+---
+status: backlog
+branch:
+pr:
+---
+
+# Eindeutige Pflicht-Listenregeln (min≥1) werden nicht automatisch gesetzt
+
+## Intent
+
+Eine „Special list rules"-Kategorie kann Einträge vom Typ `upgrade` enthalten,
+die keine echte Wahl sind, sondern per Katalogdaten Pflicht: ein eigener
+`min`-Constraint ≥ 1 mit `scope="force"` bzw. `scope="roster"` direkt am
+Wurzeleintrag — kein `categoryLink`, keine Alternative, kein zweiter
+Katalogeintrag, der dieselbe Grenze erfüllen könnte (das Muster aus
+`docs/battlescribe-data-format.md` §9.9, „Armeeweite Pflichteinheit"). Beispiel:
+„The Laws of Undeath" im Vampire-Counts-Katalog (6th Definitive Edition,
+`Vampire Counts (6th definitive edition).cat:11640-11652`), `min=1 max=1
+scope=force`.
+
+Der bestehende `ListRuleChecklist`-Mechanismus (`src/roster/listRules.js`,
+`src/components/editor/ListRuleChecklist.jsx`) behandelt so einen Eintrag
+heute identisch zu einer echten Ein/Aus-Einstellung mit `min=0` (z. B. „Allow
+experimental rules?"): `checked` liest sich ausschließlich aus der
+Roster-Präsenz, ohne Rücksicht auf den `min`-Wert des Eintrags — beide starten
+unchecked. Vergisst der Nutzer, eine echte Pflicht anzuhaken, meldet der
+Evaluator einen blockierenden Fehler (jede unerfüllte Katalog-Grenze ist laut
+ADR-0034 immer `severity=error`), obwohl der Eintrag eindeutig feststeht und
+gar keine Wahl ist.
+
+Historischer Kontext: eine pauschale Auto-Materialisierung aller „Special list
+rules"-Einträge gab es bereits (Issue 34) und wurde eine Version später wieder
+zurückgebaut (Issue 35, siehe `docs/adr/0011-roster-referenzmodell-und-serialisierungs-adapter.md:60-73`),
+weil sie auch echte `min=0`-Einstellungen fest anschaltete und nicht mehr
+abwählbar machte. Diese Issue grenzt sich davon bewusst ab: betroffen sind
+ausschließlich Einträge, die selbst `min≥1` tragen — echte Pflicht, kein
+Schalter mit legitimem Aus-Zustand.
+
+Acceptance criteria:
+
+1. In einem **neu angelegten** Kontingent ist ein Listenregel-Eintrag (Typ
+   `upgrade`) automatisch in `force.selections` vorhanden, wenn sein
+   aufgelöster Katalogeintrag **alle** folgenden Merkmale erfüllt: ein eigener
+   `min`-Constraint ≥ 1 mit `scope="force"` oder `scope="roster"` direkt am
+   Eintrag/Link (nicht über eine Kategorie oder Gruppe mit mehreren möglichen
+   Trägern), keine Kosten in irgendeiner Kostenart, keine eigenen
+   Unterauswahlen (keine `selectionEntries`/`entryLinks`/`selectionEntryGroups`),
+   und der Eintrag ist zu diesem Zeitpunkt nicht ausgeblendet (`hidden`).
+2. Ein Listenregel-Eintrag, der diese Merkmale nicht alle erfüllt — eine
+   Kategorie mit mehreren möglichen Trägern (z. B. „General"), ein
+   kostenpflichtiger Wurzeleintrag (z. B. „Ogre Bulls", ein `entryLink` mit
+   eigenen Kosten und Ausrüstungs-Unteroptionen), oder ein Eintrag mit eigener
+   Folgewahl (z. B. „Bloodlines", das zusätzlich eine von mehreren
+   Blutlinien verlangt) — wird **nicht** automatisch gesetzt; er bleibt wie
+   heute manuell anzuhaken bzw. eine Meldung im Bericht.
+3. Wird eine bislang ausgeblendete Listenregel, die Kriterium 1 erfüllt, durch
+   eine andere Wahl **innerhalb derselben Liste** sichtbar und pflichtig (z. B.
+   „Army of Sylvania" bei Vampire Counts, das erst nach Wahl eines
+   von-Carstein-Generals aus dem Versteck kommt), wird sie im selben Zug
+   automatisch gesetzt — nicht erst beim nächsten Neuanlegen eines
+   Kontingents.
+4. Ein **vor Einführung dieses Verhaltens bereits bestehendes** Roster wird
+   beim Öffnen **nicht** rückwirkend verändert; eine bei ihm fehlende
+   Pflichtregel bleibt ein manuell zu behebender Fehler wie bisher.
+5. Die Checkbox einer automatisch gesetzten Pflichtregel ist in der
+   Ankreuzliste deaktiviert (nicht abwählbar), solange der Eintrag pflichtig
+   und nicht ausgeblendet ist, und trägt einen sichtbaren Hinweis
+   (Tooltip/Text), der erklärt, dass es sich um eine Pflichtregel dieser Liste
+   handelt.
+6. Wird ein automatisch gesetzter Eintrag später ausgeblendet (z. B. weil das
+   Kontingent auf „Army of the Lichemaster" wechselt), verschwindet seine
+   Zeile aus der Ankreuzliste wie bei jedem anderen ausgeblendeten Eintrag
+   heute schon; seine Selektion wird nicht automatisch aus dem Roster
+   entfernt.
+7. Existieren in einem Kontingent mehrere Listenregeln, die Kriterium 1
+   erfüllen, gleichzeitig, wird jede unabhängig automatisch gesetzt.
+
+## Plan
+
+## Tasks
+
+## Decisions
+
+- **Mechanismus: vollautomatisch, keine Rückfrage.** *(Mensch, in der
+  Konversation vor der Grill-Befragung, als Antwort auf die Frage, ob ein
+  eindeutiger Pflicht-Wurzeleintrag automatisch, per Ein-Klick-Vorschlag oder
+  gar nicht ergänzt werden soll → „Automatisch ohne Rückfrage".)*
+- **Geltungsbereich: nur echte Pflicht-Checkboxen (min≥1) ohne Kosten,**
+  keine kostenpflichtigen Wurzeleinheiten wie „Ogre Bulls". *(Mensch, Antwort
+  auf Rückfrage „Wie weit soll der Auto-Add gehen, damit er nicht denselben
+  Fehler wie die zurückgebaute Auto-Materialisierung wiederholt?" →
+  „Nur echte Pflicht-Checkboxen (min≥1)".)*
+- **Bestandslisten werden nicht rückwirkend repariert.** Nur neu angelegte
+  Kontingente sind betroffen. *(Mensch, Antwort auf Rückfrage → „Nur für neu
+  angelegte Kontingente ab jetzt".)* Konsequenz: die ursprünglich gemeldete
+  Vampire-Counts-Liste des Menschen bleibt von dieser Änderung unberührt, bis
+  sie neu angelegt wird.
+- **Checkbox wird gesperrt, solange die Regel pflichtig und sichtbar ist.**
+  *(Mensch, Antwort auf Rückfrage „Bleibt die Checkbox abwählbar?" →
+  „Gesperrt, solange die Regel nicht ausgeblendet ist".)*
+- **Mit sichtbarer Erklärung an der gesperrten Checkbox.** *(Mensch, Antwort
+  auf Rückfrage → „Mit sichtbarer Erklärung".)*
+- **Einträge mit eigener Folgewahl (z. B. „Bloodlines") bleiben
+  ausgeschlossen.** Auto-Add darf nicht einen Fehler durch einen anderen
+  (die dann offene Unterauswahl) ersetzen. *(Mensch, Antwort auf Rückfrage →
+  „Nur Einträge ohne Folgewahl".)*
+- **Laufendes Nachtriggern statt einmaliger Prüfung beim Anlegen.** Eine
+  Regel, die erst durch eine spätere Wahl (z. B. den General) sichtbar und
+  pflichtig wird, muss im selben Zug gesetzt werden, nicht erst bei einem
+  neuen Kontingent. *(Mensch, Antwort auf Rückfrage zum „Army of
+  Sylvania"-Fall → „Laufend reagieren".)*
+- **Automatisch gesetzte, später ausgeblendete Einträge werden nicht
+  automatisch wieder entfernt** — nur Hinzufügen ist im Geltungsbereich, nie
+  automatisches Entfernen. *(Default, unanswered — nicht ausdrücklich
+  gefragt; kleinerer, sichererer Eingriff als eine Entfernen-Automatik.)*
+
+## Log
+
+- 2026-07-31: Angelegt aus einer Konversation, die mit der Frage begann,
+  warum eine fehlende „The Laws of Undeath"-Auswahl bei Vampire Counts als
+  Fehler gemeldet wird. Recherchiert (siehe Konversation für Details):
+  - Der `min=1/max=1 scope=force`-Constraint sitzt direkt am
+    `selectionEntry` „The Laws of Undeath"
+    (`Vampire Counts (6th definitive edition).cat:11640-11652`), nicht an
+    einer Kategorie — das dokumentierte Muster aus
+    `docs/battlescribe-data-format.md` §9.9.
+  - Jede unerfüllte Katalog-Grenze wird vom Evaluator unbedingt als
+    `severity=error` eingestuft (`src/evaluator/violationClassification.js:34-44`,
+    ADR-0034) — das ist keine Fehleinstufung, sondern Absicht.
+  - `resolveListRuleGroup`/`buildListRuleStates` in `src/roster/listRules.js`
+    leiten den Checkbox-Zustand ausschließlich aus der Roster-Präsenz ab
+    (`checked: !!selection`, Zeile 153) — ohne den `min`-Wert des einzelnen
+    Eintrags zu betrachten. Deshalb starten „The Laws of Undeath" (`min=1`)
+    und „Allow experimental rules?" (`min=0`) identisch unchecked.
+  - Genau diese pauschale Gleichbehandlung wurde einmal umgekehrt gebaut:
+    Issue 34 materialisierte alle „Special list rules"-Einträge automatisch
+    und entfernte ihre Bedienelemente; Issue 35 baute das eine Version später
+    zurück, weil dadurch auch echte `min=0`-Schalter dauerhaft angeschaltet
+    waren (`docs/adr/0011-...md:60-73`).
+  - Weitere Instanzen desselben Datenmusters in den Fixture-Katalogen
+    (`src/evaluator/__fixtures__/whfb6-definitive/`): „Gnoblar Army special
+    rules" (Ogre Kingdoms, gleiche Form wie Laws of Undeath, bedingt
+    ausgeblendet), „Army of Sylvania" (Vampire Counts, standardmäßig
+    ausgeblendet, erst mit bestimmtem General pflichtig), „Bloodlines"
+    (Vampire Counts, `min=1` aber mit eigener 5er-Wahlgruppe — Gegenbeispiel
+    zu „keine Folgewahl"), „Ogre Bulls" (Ogre Kingdoms, root `entryLink` mit
+    eigenen Kosten und Ausrüstungsoptionen — Gegenbeispiel zu „keine
+    Kosten").
+  - Architekturgrenze: `src/evaluator/` ist ein reiner Reinraum (ADR-0034),
+    darf das Roster nicht mutieren (ADR-0030, per depcruise erzwungen); jede
+    Umsetzung muss im Roster-/UI-Layer ansetzen, das den Bericht liest, nicht
+    im Evaluator selbst.
+  - Der Bericht ist synchron ab dem ersten Render verfügbar
+    (`useEvaluation`, `src/evaluation/useEvaluation.js:49-51`, ein reines
+    `useMemo`), es gibt aber noch keinen Mechanismus, der beim Anlegen eines
+    Kontingents (`buildRoster`, `src/utils/createRoster.js:23-43`) reagiert —
+    `forces[].selections` startet dort als leeres Array.
