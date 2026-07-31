@@ -133,69 +133,67 @@ export default function SelectionConfigurator({
   const buildSections = (frameSelection, framePath) => {
     const structureItems = getUnitOptions(system, activeCatalogue?.id, frameSelection, visibilityContext);
 
-    // Mitgliedschaft und Gruppen-Struktur der DIREKTEN Optionen dieses Rahmens
-    // (re-emittierte Items fremder Unter-Auswahlen gehören deren Rahmen).
-    const membershipByOptionId = new Map();
+    // Kapazitaeten je Definitions-Id nachschlagbar — die Katalogstruktur
+    // (`structureItems`, oben) legt Mitgliedschaft UND Reihenfolge fest, der
+    // Bericht liefert nur noch je Slot seine Daten (Pfad, Zustand, sortIndex).
+    //
+    // Vormals lief die Einordnung ueber `childSlotsOf` (Baumreihenfolge des
+    // Berichts): die haengt aber bereits ausgewaehlte Instanzen (Baumphase 1,
+    // Roster-Einfuegereihenfolge) VOR alle Gruppen-Anker und Angebots-Anker
+    // (Baumphase 2, Katalogreihenfolge) — zwei verschiedene Ordnungsraeume
+    // hintereinander. Eine noch leere Gruppe stand deshalb an ihrer
+    // Katalogposition; sobald man eine Option darin waehlte, sprang die ganze
+    // Gruppe an die Position der gerade ausgewaehlten Instanz. `structureItems`
+    // kommt dagegen rein aus der Katalogstruktur (`getUnitOptions`) und aendert
+    // sich nie mit der aktuellen Auswahl.
+    const optionCapabilityByDefId = new Map();
+    const groupAnchorByGroupKey = new Map();
+    for (const { path, capability } of childSlotsOf(capabilities, framePath)) {
+      if (capability.anchorKind === 'groupAnchor') {
+        const anchorInfo = { sortIndex: capability.sortIndex, name: capability.name };
+        // Der Anker eines verlinkten Ziels traegt zwei Ids (Link und aufgeloestes
+        // Ziel) — die Struktur-Gruppe kann unter beiden angesprochen werden.
+        if (capability.defId != null && !groupAnchorByGroupKey.has(capability.defId)) {
+          groupAnchorByGroupKey.set(capability.defId, anchorInfo);
+        }
+        if (capability.targetDefId != null && !groupAnchorByGroupKey.has(capability.targetDefId)) {
+          groupAnchorByGroupKey.set(capability.targetDefId, anchorInfo);
+        }
+        continue;
+      }
+      if (!OPTION_ANCHOR_KINDS.has(capability.anchorKind)) continue;
+      if (capability.defId != null && !optionCapabilityByDefId.has(capability.defId)) {
+        optionCapabilityByDefId.set(capability.defId, { path, capability });
+      }
+      if (capability.targetDefId != null && !optionCapabilityByDefId.has(capability.targetDefId)) {
+        optionCapabilityByDefId.set(capability.targetDefId, { path, capability });
+      }
+    }
+
+    const orderedSections = [];
+    const groupSectionByKey = new Map();
     const groupInfoById = new Map();
     /** Gruppen-Schlüssel → Schlüssel der umschließenden Gruppe (`null` = oberste Ebene). */
     const parentKeyByGroupKey = new Map();
+    const seenDefIds = new Set();
 
     const rememberParentKey = (groupKey, parentKey) => {
       if (!groupKey || parentKeyByGroupKey.has(groupKey)) return;
       parentKeyByGroupKey.set(groupKey, parentKey ?? null);
     };
 
-    for (const item of structureItems) {
-      if (item.ownerSelectionId) continue;
-      // Die Ahnenkette nennt jede umschließende Gruppe — auch die, die selbst
-      // keine Option beisteuert (der Container-Fall).
-      const ancestorKeys = item.groupAncestorIds || [];
-      ancestorKeys.forEach((key, index) => rememberParentKey(key, index === 0 ? null : ancestorKeys[index - 1]));
-      const enclosingKey = ancestorKeys.length > 0 ? ancestorKeys[ancestorKeys.length - 1] : null;
-
-      if (!item.groupId && !item.groupName) {
-        if (!membershipByOptionId.has(item.option.id)) {
-          membershipByOptionId.set(item.option.id, { item, groupKey: null });
-        }
-        continue;
-      }
-      const isRoleGroup = ROLE_GROUP_NAMES.has((item.groupName || '').toLowerCase());
-      const groupKey = isRoleGroup ? null : (item.groupId || item.groupName);
-      if (groupKey !== null && !groupInfoById.has(groupKey)) {
-        groupInfoById.set(groupKey, {
-          id: item.groupId || item.groupName,
-          name: item.groupName,
-          constraints: item.groupConstraints || [],
-          modifiers: item.groupModifiers || [],
-        });
-      }
-      rememberParentKey(groupKey, enclosingKey);
-      if (!membershipByOptionId.has(item.option.id)) {
-        membershipByOptionId.set(item.option.id, { item, groupKey });
-      }
-    }
-
-    const orderedSections = [];
-    const groupSectionByKey = new Map();
-    const seenDefIds = new Set();
-
-    const ensureGroupSection = (groupKey, fallbackName, sortIndex = null) => {
+    const ensureGroupSection = (groupKey, fallbackName) => {
       let section = groupSectionByKey.get(groupKey);
-      if (section) {
-        // Der Gruppen-Anker traegt den massgeblichen sortIndex; kam die Sektion
-        // (Reihenfolge-Zufall) schon vorher ueber ein Mitglieds-Item zustande,
-        // wird der Anker-Wert nachgetragen, sobald er eintrifft.
-        if (section.sortIndex === null && sortIndex !== null) section.sortIndex = sortIndex;
-        return section;
-      }
+      if (section) return section;
       const info = groupInfoById.get(groupKey);
+      const anchor = groupAnchorByGroupKey.get(groupKey);
       section = {
         key: groupKey,
         children: [],
-        sortIndex,
+        sortIndex: anchor?.sortIndex ?? null,
         group: {
           id: info?.id ?? groupKey,
-          name: info?.name ?? fallbackName,
+          name: info?.name ?? anchor?.name ?? fallbackName,
           constraints: info?.constraints ?? [],
           modifiers: info?.modifiers ?? [],
           items: [],
@@ -206,41 +204,77 @@ export default function SelectionConfigurator({
       return section;
     };
 
-    for (const { path, capability } of childSlotsOf(capabilities, framePath)) {
-      if (capability.isHidden) continue;
+    for (const item of structureItems) {
+      if (item.ownerSelectionId) continue;
+      // Die Ahnenkette nennt jede umschließende Gruppe — auch die, die selbst
+      // keine Option beisteuert (der Container-Fall). Ihr Abschnitt entsteht
+      // hier, beim ersten Nachfahren in Katalogreihenfolge — sonst kaeme ein
+      // reiner Container (Issue 0131) nie an die Reihe, weil kein Item ihn je
+      // als eigene (direkte) Gruppe traegt.
+      const ancestorKeys = item.groupAncestorIds || [];
+      ancestorKeys.forEach((key, index) => rememberParentKey(key, index === 0 ? null : ancestorKeys[index - 1]));
+      ancestorKeys.forEach(key => ensureGroupSection(key, null));
+      const enclosingKey = ancestorKeys.length > 0 ? ancestorKeys[ancestorKeys.length - 1] : null;
 
-      if (capability.anchorKind === 'groupAnchor') {
-        const groupKey = groupInfoById.has(capability.defId)
-          ? capability.defId
-          : (capability.targetDefId && groupInfoById.has(capability.targetDefId)
-            ? capability.targetDefId
-            : capability.defId);
-        const section = ensureGroupSection(groupKey, capability.name, capability.sortIndex);
-        // Der Anker eines verlinkten Ziels und die Struktur-Gruppe sind derselbe
-        // Abschnitt — beide Schlüssel zeigen auf ihn.
-        if (capability.targetDefId) groupSectionByKey.set(capability.targetDefId, section);
-        continue;
+      const isRoleGroup = ROLE_GROUP_NAMES.has((item.groupName || '').toLowerCase());
+      const groupKey = (item.groupId || item.groupName) && !isRoleGroup ? (item.groupId || item.groupName) : null;
+      if (groupKey !== null && !groupInfoById.has(groupKey)) {
+        groupInfoById.set(groupKey, {
+          id: item.groupId || item.groupName,
+          name: item.groupName,
+          constraints: item.groupConstraints || [],
+          modifiers: item.groupModifiers || [],
+        });
       }
+      rememberParentKey(groupKey, enclosingKey);
 
-      if (!OPTION_ANCHOR_KINDS.has(capability.anchorKind)) continue;
+      const found = optionCapabilityByDefId.get(item.option.id);
+      if (!found) continue;
+      const { path, capability } = found;
+      if (capability.isHidden) continue;
       if (seenDefIds.has(capability.defId)) continue;
       seenDefIds.add(capability.defId);
 
-      const membership = membershipByOptionId.get(capability.defId)
-        ?? (capability.targetDefId ? membershipByOptionId.get(capability.targetDefId) : undefined);
-
-      if (membership?.groupKey) {
-        const section = ensureGroupSection(membership.groupKey, membership.item.groupName);
-        section.group.items.push({ option: membership.item.option, ownerSelectionId: null });
+      if (groupKey) {
+        const section = ensureGroupSection(groupKey, item.groupName);
+        section.group.items.push({ option: item.option, ownerSelectionId: null });
       } else {
         orderedSections.push({
           standalone: true,
           path,
           capability,
           sortIndex: capability.sortIndex,
-          option: membership?.item.option ?? { id: capability.defId, name: capability.name },
+          option: item.option,
         });
       }
+    }
+
+    // Kennt der Sammler die Struktur dieses Rahmens gar nicht (siehe
+    // `knowsFrameStructure` unten — etwa weil die Definition im geparsten
+    // System nicht aufloest), bleibt ein Gruppen-Anker aus der obigen Schleife
+    // aussen vor: er haengt an keinem Item. Er behaelt seinen Abschnitt trotzdem,
+    // allein aus dem Bericht — in dessen Ankerreihenfolge, da hier keine
+    // Katalogstruktur zur Einordnung zur Verfuegung steht.
+    for (const groupKey of groupAnchorByGroupKey.keys()) {
+      if (!groupSectionByKey.has(groupKey)) ensureGroupSection(groupKey, null);
+    }
+
+    // Sicherheitsnetz: eine Kapazitaet des Berichts ohne Gegenstueck in der
+    // Katalogstruktur (praktisch nicht erwartet, s. o. — `getUnitOptions` deckt
+    // dieselbe Struktur unbedingt ab) erscheint wenigstens, hinter allen
+    // strukturell einsortierten Abschnitten, in Berichtsreihenfolge.
+    for (const { path, capability } of childSlotsOf(capabilities, framePath)) {
+      if (capability.isHidden) continue;
+      if (!OPTION_ANCHOR_KINDS.has(capability.anchorKind)) continue;
+      if (seenDefIds.has(capability.defId)) continue;
+      seenDefIds.add(capability.defId);
+      orderedSections.push({
+        standalone: true,
+        path,
+        capability,
+        sortIndex: capability.sortIndex,
+        option: { id: capability.defId, name: capability.name },
+      });
     }
 
     /**
