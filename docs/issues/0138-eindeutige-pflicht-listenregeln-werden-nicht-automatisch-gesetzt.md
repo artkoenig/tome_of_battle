@@ -321,6 +321,41 @@ Acceptance criteria:
   direkt geprüft: `checked: true, disabled: true`. Screenshots dem Menschen
   geschickt.
 
+- 2026-07-31: **Prüfrunde 1** (frischer Kontext, `db89d9c..eda4edf`),
+  3 Befunde. Fakten der Runde: `npm test` exit 0 (268 Dateien / 2793 Tests
+  plus Puppeteer-E2E), `lint`/`typecheck`/`depcruise` je exit 0 (ein neues,
+  nicht-fatales oxlint-`exhaustive-deps`-Warning im neuen Effekt, kosmetisch
+  — die fehlenden Deps sind nicht memoisiert, ändern also nichts am
+  Verhalten), `knip` warn-only mit denselben 5 vorbestehenden Meldungen wie
+  auf `main`.
+  - *F1 (kein Kriterium verletzt): zur Kenntnis genommen, nicht behoben.*
+    Der bestehende Katalog-Sync-Effekt und der neue Pflicht-Auto-Add-Effekt
+    in `useRoster.js` können sich im selben Renderzyklus gegenseitig
+    überschreiben, weil `replaceRoster` keinen funktionalen Updater
+    unterstützt. Selbstheilend über 2–3 Renderzyklen, kein Datenverlust,
+    kein fehlerhafter persistenter Zustand (der Autosave läuft nur aus dem
+    „nichts zu reparieren"-Zweig des Sync-Effekts, der bei einem
+    Zwischenstand übersprungen wird). Verdoppelt die Angriffsfläche eines
+    vorbestehenden Musters (nicht-komponierbare `replaceRoster`-Dispatches);
+    keine Kriteriumsverletzung, deshalb kein Fix in diesem Durchgang —
+    als Beobachtung stehengelassen.
+  - *F2 (Kriterium 5): bestätigt, wird behoben.* Der Erklärungstext der
+    gesperrten Checkbox ist rein Hover-basiert; unter der im Projekt
+    etablierten Mobil-Schwelle (`window.innerWidth <= 900`) liefert
+    `handleMouseEnter` in `ListRuleChecklist.jsx` gar keinen Tooltip, und
+    anders als das eigene Geschwister-Muster dieser Datei
+    (`SelectionConfigurator.jsx`/`RuleChipIcon.jsx`, Tap-Alternative über
+    `onInfoClick`/`BottomSheet`) fehlt eine Tap-Alternative komplett. Auf
+    einem schmalen Viewport sieht der Nutzer eine gesperrte Checkbox ganz
+    ohne Erklärung — Kriterium 5 verlangt „einen sichtbaren Hinweis“, der
+    dort tatsächlich fehlt.
+  - *F3 (kein Kriterium verletzt): bestätigt als Nicht-Problem.* Die vom
+    `implementer` selbst geflaggte Ein-Force-Roster-Näherung in
+    `findMissingMandatoryListRuleSelections` ist harmlos, weil `isFreshRoster`
+    strukturell nur für frisch über `buildRoster` erzeugte Roster gilt, die
+    immer genau eine Force haben — es gibt aktuell keinen Codepfad, der
+    einem als frisch markierten Roster eine zweite Force hinzufügt.
+
 ## Checkpoints
 
 ### Before implementation
