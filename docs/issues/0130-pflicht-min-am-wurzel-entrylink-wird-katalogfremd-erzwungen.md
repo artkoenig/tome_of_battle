@@ -125,11 +125,12 @@ Acceptance criteria:
   `e2e-testcase-author`-Subagenten delegiert (CLAUDE.md-Pflicht für
   Evaluator-E2E-Fälle), danach der `evalTree.js`-Fix umgesetzt, bis das
   Szenario grün ist.
-- **Versions-Bump offen** (Default, CLAUDE.md-Pflicht vor dem Merge): Der Fix
-  ist nutzersichtbar (die Phantom-Pflichtmeldung feuert nicht mehr fälschlich
-  in armeefremden Listen) — vor dem Merge ist dem Menschen ein Patch-Bump
-  vorzuschlagen, ausgehend von der aktuellen `package.json`-Version. In diesem
-  Lauf noch nicht durchgeführt.
+- **Kein Versions-Bump** (Antwort des Menschen, 2026-07-31): Der Fix ist zwar
+  nutzersichtbar (die Phantom-Pflichtmeldung feuert nicht mehr fälschlich in
+  armeefremden Listen), und nach CLAUDE.md wäre ein Patch-Bump
+  1.9.3 → 1.9.4 vorzuschlagen gewesen. Auf die Nachfrage hin hat der Mensch
+  entschieden: **keine Versionsupdates**. `package.json` bleibt bei 1.9.3;
+  `scripts/release.js` wird für dieses Issue nicht ausgeführt.
 
 ## Log
 
