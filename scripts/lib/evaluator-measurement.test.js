@@ -2,18 +2,17 @@ import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 
 import {
-  MeasuredPhase,
   FacadeShape,
   INTERACTIVE_BUDGET_MS,
   TWO_STAGE_PREPARATION_SHARE,
   measureEvaluation,
-  describeTree,
-  reportFingerprint,
-  assertMatchesFacade,
   median,
   summarizeRuns,
   assessThresholds,
 } from './evaluator-measurement.js';
+// Die Namen der Abschnitte und der Ankerarten gehoeren der Engine; das
+// Messgeraet liest sie von der Fassade, also liest dieser Test sie von dort.
+import { MeasuredPhase } from '../../src/evaluator/evaluator.js';
 import { AnchorKind } from '../../src/evaluator/model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den Evaluator-Tests).
@@ -81,73 +80,6 @@ describe('median', () => {
   });
 });
 
-describe('describeTree', () => {
-  /** Baut einen Knoten der Form, die die Join-Schicht erzeugt. */
-  function node(children, anchorKind = AnchorKind.OCCUPIED) {
-    return { children, isPhantom: anchorKind !== AnchorKind.OCCUPIED, anchorKind };
-  }
-
-  it('zaehlt reale und synthetische Knoten getrennt und laesst die Wurzel aus', () => {
-    const root = {
-      children: [node([node([], AnchorKind.GROUP_ANCHOR)]), node([], AnchorKind.CATEGORY_ANCHOR)],
-    };
-
-    const tree = describeTree(root);
-
-    expect(tree).toMatchObject({ total: 3, real: 1, synthetic: 2 });
-  });
-
-  it('schluesselt die Knoten nach ihrer abgelesenen Ankerart auf', () => {
-    const root = {
-      children: [
-        node([]),
-        node([], AnchorKind.GROUP_ANCHOR),
-        node([], AnchorKind.CATEGORY_ANCHOR),
-        node([], AnchorKind.OFFER_ANCHOR),
-        node([], AnchorKind.OFFER_ANCHOR),
-      ],
-    };
-
-    expect(describeTree(root).byAnchorKind).toEqual({
-      [AnchorKind.OCCUPIED]: 1,
-      [AnchorKind.MANDATORY_PHANTOM]: 0,
-      [AnchorKind.GROUP_ANCHOR]: 1,
-      [AnchorKind.CATEGORY_ANCHOR]: 1,
-      [AnchorKind.OFFER_ANCHOR]: 2,
-    });
-  });
-});
-
-describe('reportFingerprint', () => {
-  it('ist unabhaengig von der Reihenfolge der Verletzungen', () => {
-    const first = { limitId: 'a', anchor: { defId: 'x' }, actual: 2, bound: 1 };
-    const second = { limitId: 'b', anchor: { defId: 'y' }, actual: 3, bound: 1 };
-    const capabilities = new Map();
-
-    expect(reportFingerprint({ violations: [first, second], capabilities, diagnostics: [] })).toBe(
-      reportFingerprint({ violations: [second, first], capabilities, diagnostics: [] }),
-    );
-  });
-
-  it('unterscheidet Berichte, die sich im Ist-Wert einer Verletzung unterscheiden', () => {
-    const capabilities = new Map();
-    const withTwo = { violations: [{ limitId: 'a', anchor: { defId: 'x' }, actual: 2, bound: 1 }], capabilities, diagnostics: [] };
-    const withThree = { violations: [{ limitId: 'a', anchor: { defId: 'x' }, actual: 3, bound: 1 }], capabilities, diagnostics: [] };
-
-    expect(reportFingerprint(withTwo)).not.toBe(reportFingerprint(withThree));
-  });
-
-  it('unterscheidet Berichte, die sich nur im Umfang der Info-Projektion unterscheiden', () => {
-    const reportWith = infoElements => ({
-      violations: [],
-      capabilities: new Map([['0', { infoElements }]]),
-      diagnostics: [],
-    });
-
-    expect(reportFingerprint(reportWith([{ id: 'profile-a' }]))).not.toBe(reportFingerprint(reportWith([])));
-  });
-});
-
 describe('assessThresholds', () => {
   it('haelt die interaktive Obergrenze knapp darunter ein und reisst sie genau darauf', () => {
     expect(assessThresholds({ totalMs: INTERACTIVE_BUDGET_MS - 1, preparationShare: 0 }).withinInteractiveBudget).toBe(true);
@@ -201,6 +133,9 @@ describe('measureEvaluation', () => {
   it('weist alle vier Abschnitte aus und summiert sie zur Gesamtdauer', () => {
     const measurement = measureEvaluation(DATASET, rosterWithWarriors(MAX_WARRIORS + 1));
 
+    // Die Reihenfolge ist die der Fassade: Vorbereitung, dann die drei Abschnitte
+    // der Auswertung — die Vorbereitung faellt im ersten Fassaden-Schritt an.
+    expect(Object.keys(measurement.phases)).toEqual(Object.values(MeasuredPhase));
     for (const phase of Object.values(MeasuredPhase)) {
       expect(measurement.phases[phase], `Abschnitt ${phase} fehlt`).toBeGreaterThanOrEqual(0);
     }
@@ -208,36 +143,28 @@ describe('measureEvaluation', () => {
     expect(measurement.totalMs).toBeCloseTo(sum, 10);
   });
 
-  it('meldet den Ausgang der Fixpunktschleife', () => {
+  it('meldet den Ausgang der Fixpunktschleife, wie die Engine ihn ausweist', () => {
     const measurement = measureEvaluation(DATASET, rosterWithWarriors(MAX_WARRIORS));
 
     expect(measurement.fixpoint.converged).toBe(true);
     expect(measurement.fixpoint.rounds).toBeGreaterThanOrEqual(1);
+    expect(measurement.fixpoint.nonConvergence).toBeNull();
   });
 
-  it('zaehlt die Knoten des Auswertungsbaums', () => {
+  it('liest die Knotenzahlen des Auswertungsbaums aus der Metadata', () => {
     const measurement = measureEvaluation(DATASET, rosterWithWarriors(MAX_WARRIORS));
 
     expect(measurement.tree.total).toBe(measurement.tree.real + measurement.tree.synthetic);
     expect(measurement.tree.real).toBeGreaterThan(0);
+    // Jede Ankerart ist gefuehrt, auch die im Fall nicht vorkommenden.
+    expect(Object.keys(measurement.tree.byAnchorKind).sort()).toEqual(Object.values(AnchorKind).sort());
   });
 
-  it('liefert denselben Bericht wie die Fassade — sonst misst das Verfahren eine andere Pipeline', () => {
+  it('misst eine echte Auswertung — der Bericht traegt die gerissene Grenze', () => {
     const overTheLimit = MAX_WARRIORS + 1;
     const measurement = measureEvaluation(DATASET, rosterWithWarriors(overTheLimit));
 
     expect(measurement.report.violations).toHaveLength(1);
     expect(measurement.report.violations[0]).toMatchObject({ limitId: MAX_WARRIORS_LIMIT_ID, actual: overTheLimit, bound: MAX_WARRIORS });
-    expect(() => assertMatchesFacade(DATASET, rosterWithWarriors(overTheLimit), measurement.report)).not.toThrow();
-  });
-});
-
-describe('assertMatchesFacade', () => {
-  it('wirft mit einem Hinweis auf die Fassade, wenn der Bericht abweicht', () => {
-    const foreignReport = { violations: [], capabilities: new Map(), diagnostics: [] };
-
-    expect(() => assertMatchesFacade(DATASET, rosterWithWarriors(MAX_WARRIORS + 1), foreignReport)).toThrow(
-      /weicht von der Fassade/,
-    );
   });
 });

@@ -34,6 +34,16 @@
  * Leitprinzip 1). Auch die Beschreibung ohne Roster (ADR-0034) liest denselben
  * einen Vorlauf — es gibt keine zweite Lesart derselben Katalogdaten.
  *
+ * ── Die eine Ausnahme: der Mess-Modus ────────────────────────────────────────
+ * Beide Schritte nehmen ein **Opt-in-Flag** `{ measure: true }` entgegen. Nur
+ * dann stoppt die Engine ihre eigenen Abschnitte und legt das Ergebnis als
+ * zusaetzliches Feld `measurement` ab (`measurement.js`, Issue 0138). Ohne das
+ * Flag — und ebenso mit leeren Optionen oder `{ measure: false }` — aendert sich
+ * nichts: derselbe Rueckgabewert, kein zusaetzliches Feld, kein Zeitgeber. Die
+ * Reinheit gilt fuer den Normalpfad also unveraendert weiter; das Flag ist die
+ * ausdrueckliche, benannte Ausnahme, und ihr einziger Nutzer ist die
+ * Aufwandsmessung (`scripts/measure-evaluator*.js`).
+ *
  * Der Datensatz trennt die **einzelne** Spielsystemdatei (`.gst`) strukturell von
  * der **Liste** der Armee-Kataloge (`.cat`) — `{ gameSystem, catalogues }`
  * (ADR-0032). Die deterministische kataloguebergreifende Verarbeitungsreihenfolge
@@ -52,6 +62,23 @@ import { evaluateConstraints } from './constraints.js';
 import { evaluateRosterBudget } from './budget.js';
 import { buildReport } from './report.js';
 import { createRosterBudget } from './rosterBudget.js';
+import { MeasuredPhase, measurementFor } from './measurement.js';
+
+/**
+ * Die Abschnitte, die die Engine unter `{ measure: true }` getrennt ausweist —
+ * die Namen, unter denen `measurement.phases` sie fuehrt. Sie gehoeren der
+ * Engine, nicht dem Messgeraet: es liest sie von hier, statt sie zu setzen
+ * (Issue 0138).
+ */
+export { MeasuredPhase } from './measurement.js';
+
+/**
+ * Die Arten der Diagnosen, die der Bericht in `diagnostics` traegt. Sie zu
+ * benennen gehoert zum Ausgabe-Vertrag des Berichts: wer eine Diagnose einordnen
+ * will (etwa die Aufwandsmessung die Art einer Nichtkonvergenz), braucht dafuer
+ * keinen Blick in die Engine.
+ */
+export { DiagnosticKind } from './model.js';
 
 /**
  * Der **erste Schritt** der Fassade: bereitet einen Datensatz rosterunabhaengig
@@ -68,6 +95,11 @@ import { createRosterBudget } from './rosterBudget.js';
  * werden: es gibt genau eine Implementierung des Katalog-Vorlaufs. Signatur und
  * Diagnosen sind an ihr dokumentiert
  * ({@link ./datasetPreparation.js prepareDataset}).
+ *
+ * Er nimmt dasselbe Opt-in-Flag entgegen wie {@link evaluate}: unter
+ * `{ measure: true }` traegt der zurueckgegebene Griff seine eigene Dauer als
+ * `measurement` (Issue 0138). Ohne das Flag ist er der heutige Griff — eine Sache
+ * ohne jede eigene Eigenschaft.
  */
 export { prepareDataset } from './datasetPreparation.js';
 
@@ -109,12 +141,28 @@ export { prepareDataset } from './datasetPreparation.js';
  *   Katalog benennt, war also nie gueltig (`docs/battlescribe-data-format.md`
  *   §7.2, §15). Ein stiller Rueckfall wuerde diesen Datensatz-Fehler als
  *   gueltige Auswertung tarnen.
- * @returns {{ violations: object[], capabilities: Map<string, object>, costTotals: Record<string, number>, diagnostics: object[] }}
+ * @param {{ measure?: boolean }} [options]
+ *   Der **Mess-Modus** als Opt-in (Issue 0138). Nur `{ measure: true }` schaltet
+ *   ihn ein; fehlende Optionen, ein leeres Optionsobjekt und `{ measure: false }`
+ *   sind der Normalpfad. Er ist die ausdrueckliche Ausnahme zur Reinheit des
+ *   Leitprinzips 1 — und eine, die den Normalpfad nicht beruehrt: dort laeuft
+ *   kein Zeitgeber und es entsteht kein zusaetzliches Feld.
+ * @returns {{ violations: object[], capabilities: Map<string, object>, costTotals: Record<string, number>, diagnostics: object[], measurement?: import('./measurement.js').EvaluationMeasurement }}
  *   Der Bericht: Verletzungen, Faehigkeitsdatensaetze je Slot, die roster-weite
  *   Kostensumme je deklarierter Kostenart (`costTotals`, Issue 0121) und
  *   Diagnosen. Ein Slot ist **jede Stelle, an der eine Auswahl stehen kann** —
  *   auch eine noch nicht gewaehlte (ADR-0035); die Verletzungsliste bleibt davon
  *   unberuehrt.
+ *
+ *   **`measurement` — nur unter `{ measure: true }`.** Dann traegt der Bericht
+ *   **ein** zusaetzliches Feld: die Dauer der drei Abschnitte, die `evaluate`
+ *   ausfuehrt (`phases`, benannt nach {@link MeasuredPhase} — die vierte,
+ *   `preparation`, faellt in `prepareDataset` an und haengt an dessen Ergebnis),
+ *   den Ausgang der Fixpunktschleife (`fixpoint`) und die Knotenzahlen des
+ *   Auswertungsbaums (`tree`). Der Bericht selbst bleibt dabei unveraendert — die
+ *   Messung aendert kein Ergebnis. Eine Gesamtdauer steht bewusst nicht darin:
+ *   Summieren, Median und Schwellen sind Sache des Messgeraets
+ *   (`scripts/lib/evaluator-measurement.js`).
  *
  *   **Herkunft eines Slots (`sourceId`).** Jeder Faehigkeitsdatensatz nennt die
  *   `id` des Dokuments (`.gst` oder `.cat`), das die Definition **dieses Slots**
@@ -141,7 +189,11 @@ export { prepareDataset } from './datasetPreparation.js';
  *   (Diagnose `unresolvedDefinition`) und verschiebt damit die Indizes ihrer
  *   **nachfolgenden** Geschwister.
  */
-export function evaluate(prepared, roster) {
+export function evaluate(prepared, roster, options) {
+  // Der Messschreiber: ohne `{ measure: true }` ist er der Nicht-Messer, der
+  // jeden Abschnitt schlicht ausfuehrt und nichts anhaengt (`measurement.js`).
+  const measurement = measurementFor(options);
+
   // Die eingestellten Kostengrenzen des Rosters einmalig als unveraenderliches
   // Budget-Wert-Objekt (SSOT) buendeln und bis in die Query-Kontexte durchreichen.
   // Ausgewertet wird das Budget erst in den Folge-Slices; hier reicht die Fassade
@@ -172,74 +224,106 @@ export function evaluate(prepared, roster) {
     gameSystemId: gameSystemDocument?.id ?? null,
   };
 
-  const { root, diagnostics: joinDiagnostics } = buildEvalTree(resolved, roster, catalogueScope, primaryCatalogueByForceDefId);
+  // ── Abschnitt 1: die iterierte Auswertung ─────────────────────────────────
+  // Baumphase 1, Fixpunktrunden ueber die realen Knoten, finaler Zaehlindex.
+  const { root, joinDiagnostics, effective, fixpointResult, index } =
+    measurement.phase(MeasuredPhase.ITERATED_EVALUATION, () => {
+      const { root: builtRoot, diagnostics: builtDiagnostics } =
+        buildEvalTree(resolved, roster, catalogueScope, primaryCatalogueByForceDefId);
 
-  // Fixpunktschleife: Weil Zaehlen von effektiven Werten abhaengt und Modifikatoren
-  // von Zaehlungen, wird iterativ bis zur Konvergenz ausgewertet — jede Runde von
-  // einer frischen Basiskopie, mit harter Rundenobergrenze und getrennten Befunden
-  // fuer Oszillation und erschoepftes Rundenbudget (§3.5/§4.2). Iteriert wird nur
-  // ueber die **realen** Knoten: nur sie gehen in die Zaehlung ein.
-  const { effective, diagnostics: fixpointDiagnostics, unstableNodes } =
-    evaluateToFixpoint(root, resolved.categoryIds, budget, primaryCatalogueByForceDefId);
+      // Fixpunktschleife: Weil Zaehlen von effektiven Werten abhaengt und Modifikatoren
+      // von Zaehlungen, wird iterativ bis zur Konvergenz ausgewertet — jede Runde von
+      // einer frischen Basiskopie, mit harter Rundenobergrenze und getrennten Befunden
+      // fuer Oszillation und erschoepftes Rundenbudget (§3.5/§4.2). Iteriert wird nur
+      // ueber die **realen** Knoten: nur sie gehen in die Zaehlung ein.
+      const fixpoint = evaluateToFixpoint(builtRoot, resolved.categoryIds, budget, primaryCatalogueByForceDefId);
 
-  // Finaler, konsistenter Index aus dem konvergierten (bzw. letzten) Stand.
-  const index = buildIndex(root, effective);
+      return {
+        root: builtRoot,
+        joinDiagnostics: builtDiagnostics,
+        effective: fixpoint.effective,
+        fixpointResult: fixpoint,
+        // Finaler, konsistenter Index aus dem konvergierten (bzw. letzten) Stand.
+        index: buildIndex(builtRoot, fixpoint.effective),
+      };
+    });
+  const { diagnostics: fixpointDiagnostics, unstableNodes } = fixpointResult;
 
-  // Baumphase 2: die **Angebots-Anker** fuer jede im Bezugsrahmen waehlbare
-  // Definition (ADR-0035), angehaengt als Blaetter hinter allen bestehenden
-  // Kindern — die Pfade vorhandener Slots bleiben damit unveraendert. Sie
-  // entstehen erst hier, weil sie in keinen Zaehlschluessel eingehen und den
-  // ausgewerteten Stand deshalb nicht veraendern koennen. Ihre Basiswerte werden
-  // in den konvergierten Zustand nachgetragen, damit ihre Grenzen vom Katalogwert
-  // aus fortgeschrieben werden und nicht von 0.
-  const offerAnchors = attachOfferAnchors(root, resolved, catalogueScope, primaryCatalogueByForceDefId);
-  extendBaseEffectiveState(effective, offerAnchors);
+  // Der Ausgang der Schleife (Rundenzahl, Konvergenz, Art der Nichtkonvergenz)
+  // kennt nur sie selbst — aus dem Endzustand ist er nicht zu rekonstruieren.
+  // Ausgewiesen wird er allein im Mess-Modus; der Normalpfad verwirft ihn wie bisher.
+  measurement.noteFixpoint(fixpointResult);
 
-  // Nach-Durchlauf: die synthetischen Anker — die aus Phase 1 wie die eben
-  // angehaengten — bekommen ihre effektiven Werte in **einem** Durchlauf gegen
-  // diesen finalen Index. Sie zaehlen nie mit, koennen also nicht zurueckwirken —
-  // der Index wird danach nicht erneut gebaut.
-  const postPassDiagnostics =
-    applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget, primaryCatalogueByForceDefId);
+  // ── Abschnitt 2: der Nach-Durchlauf ───────────────────────────────────────
+  const postPassDiagnostics = measurement.phase(MeasuredPhase.POST_PASS, () => {
+    // Baumphase 2: die **Angebots-Anker** fuer jede im Bezugsrahmen waehlbare
+    // Definition (ADR-0035), angehaengt als Blaetter hinter allen bestehenden
+    // Kindern — die Pfade vorhandener Slots bleiben damit unveraendert. Sie
+    // entstehen erst hier, weil sie in keinen Zaehlschluessel eingehen und den
+    // ausgewerteten Stand deshalb nicht veraendern koennen. Ihre Basiswerte werden
+    // in den konvergierten Zustand nachgetragen, damit ihre Grenzen vom Katalogwert
+    // aus fortgeschrieben werden und nicht von 0.
+    const offerAnchors = attachOfferAnchors(root, resolved, catalogueScope, primaryCatalogueByForceDefId);
+    extendBaseEffectiveState(effective, offerAnchors);
 
-  const constraintDiagnostics = [];
-  const results = evaluateConstraints(
-    root, index, effective, resolved.categoryIds, constraintDiagnostics, budget, primaryCatalogueByForceDefId,
-  );
-
-  // Engine-allgemeine Regel „Armee zu teuer": je eingestellter Kostengrenze die am
-  // ROSTER-Rahmen verplante Summe (aus dem schon gebauten Zaehlindex) gegen ihre
-  // Grenze. Ueberschreitungen fliessen als roster-weite Budget-Verletzungen in
-  // dieselbe eine `violations`-Liste des Berichts.
-  const budgetViolations = evaluateRosterBudget(index, budget);
-
-  const diagnostics = [
-    ...datasetDiagnostics,
-    ...joinDiagnostics,
-    ...fixpointDiagnostics,
-    ...postPassDiagnostics,
-    ...constraintDiagnostics,
-  ];
-
-  // `profileTypes` liefert die Klartext-Namen von Profiltyp und Charakteristik-Typ
-  // fuer die Info-Projektion je Slot — die Deklarationen des Datensatzes sind ihre
-  // einzige Quelle (`infoProjection.js`). `categoryIds` ist dieselbe Menge, an der
-  // das Query-Primitiv einen ID-Bezugsrahmen aufloest; die Einordnung einer
-  // Verletzung liest daran ab, ob deren Rahmen eine Kategorie oder ein Eintrag ist.
-  // `declaredCostTypeIds` sind die Kostenart-Deklarationen des Datensatzes —
-  // dieselbe eine Leseart wie in der Datensatz-Beschreibung (`costTypesOf`). Die
-  // Kostenprojektion des Berichts fuehrt jede davon in `costTotals`, auch ohne
-  // Vorkommen (Issue 0121). `sourceIdByDefId` ist der Herkunftsindex der
-  // Definitionen aus demselben Vorlauf — je Slot das Dokument, das seine
-  // Definition deklariert (`SlotCapability.sourceId`).
-  return buildReport(root, effective, results, diagnostics, {
-    budgetViolations,
-    unstableNodes,
-    profileTypes: resolved.profileTypes,
-    categoryIds: resolved.categoryIds,
-    declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
-    sourceIdByDefId,
+    // Nach-Durchlauf: die synthetischen Anker — die aus Phase 1 wie die eben
+    // angehaengten — bekommen ihre effektiven Werte in **einem** Durchlauf gegen
+    // diesen finalen Index. Sie zaehlen nie mit, koennen also nicht zurueckwirken —
+    // der Index wird danach nicht erneut gebaut.
+    return applyAnchorPostPass(root, index, effective, resolved.categoryIds, budget, primaryCatalogueByForceDefId);
   });
+
+  // Die Knotenzahlen des fertigen Baums — erst jetzt vollstaendig, weil die
+  // Angebots-Anker eben angehaengt wurden. Bewusst **ausserhalb** der gestoppten
+  // Abschnitte: das Zaehlen ist Messung, nicht Auswertung, und darf keinen
+  // Abschnitt verlaengern, den es ausweist.
+  measurement.noteTree(root);
+
+  // ── Abschnitt 3: Grenzen und Bericht ──────────────────────────────────────
+  const report = measurement.phase(MeasuredPhase.CONSTRAINTS_AND_REPORT, () => {
+    const constraintDiagnostics = [];
+    const results = evaluateConstraints(
+      root, index, effective, resolved.categoryIds, constraintDiagnostics, budget, primaryCatalogueByForceDefId,
+    );
+
+    // Engine-allgemeine Regel „Armee zu teuer": je eingestellter Kostengrenze die am
+    // ROSTER-Rahmen verplante Summe (aus dem schon gebauten Zaehlindex) gegen ihre
+    // Grenze. Ueberschreitungen fliessen als roster-weite Budget-Verletzungen in
+    // dieselbe eine `violations`-Liste des Berichts.
+    const budgetViolations = evaluateRosterBudget(index, budget);
+
+    const diagnostics = [
+      ...datasetDiagnostics,
+      ...joinDiagnostics,
+      ...fixpointDiagnostics,
+      ...postPassDiagnostics,
+      ...constraintDiagnostics,
+    ];
+
+    // `profileTypes` liefert die Klartext-Namen von Profiltyp und Charakteristik-Typ
+    // fuer die Info-Projektion je Slot — die Deklarationen des Datensatzes sind ihre
+    // einzige Quelle (`infoProjection.js`). `categoryIds` ist dieselbe Menge, an der
+    // das Query-Primitiv einen ID-Bezugsrahmen aufloest; die Einordnung einer
+    // Verletzung liest daran ab, ob deren Rahmen eine Kategorie oder ein Eintrag ist.
+    // `declaredCostTypeIds` sind die Kostenart-Deklarationen des Datensatzes —
+    // dieselbe eine Leseart wie in der Datensatz-Beschreibung (`costTypesOf`). Die
+    // Kostenprojektion des Berichts fuehrt jede davon in `costTotals`, auch ohne
+    // Vorkommen (Issue 0121). `sourceIdByDefId` ist der Herkunftsindex der
+    // Definitionen aus demselben Vorlauf — je Slot das Dokument, das seine
+    // Definition deklariert (`SlotCapability.sourceId`).
+    return buildReport(root, effective, results, diagnostics, {
+      budgetViolations,
+      unstableNodes,
+      profileTypes: resolved.profileTypes,
+      categoryIds: resolved.categoryIds,
+      declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
+      sourceIdByDefId,
+    });
+  });
+
+  // Das eine zusaetzliche Feld `measurement` — nur im Mess-Modus. Ohne das Flag
+  // geht der Bericht unveraendert durch, mit genau den heutigen vier Feldern.
+  return measurement.attachTo(report);
 }
 
 /**
