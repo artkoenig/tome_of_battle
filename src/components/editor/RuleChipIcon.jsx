@@ -19,6 +19,14 @@ const ICON_SIZE = 14;
 // The Info interaction differs per call site (chip vs. configurator row), so the
 // hover/click handlers are injected. `onInfoClick` is optional — when omitted the
 // Info icon renders without a click handler (letting the click bubble to the row).
+//
+// `forceInfo` (Issue 0138, AC5, Plan Contract 3b) opts a single call site out of
+// the link-priority rule above: when true, the Info affordance is shown (and the
+// BookOpen link suppressed) regardless of whether a rule link resolves for
+// `name`, and regardless of `hasInfo`. It exists for rows whose Info content
+// must never be pre-empted by an unrelated external-rule-link match — currently
+// only a `ListRuleChecklist` mandatory row's lock explanation. Every other call
+// site omits it and keeps the original link-first priority unchanged.
 export default function RuleChipIcon({
   name,
   hasInfo,
@@ -27,10 +35,11 @@ export default function RuleChipIcon({
   onInfoMove,
   onInfoLeave,
   onInfoClick = null,
+  forceInfo = false,
 }) {
   const resolveRuleUrl = useRuleUrl();
 
-  if (resolveRuleUrl(name)) {
+  if (resolveRuleUrl(name) && !forceInfo) {
     return (
       <BookOpen
         size={ICON_SIZE}
@@ -43,7 +52,7 @@ export default function RuleChipIcon({
     );
   }
 
-  if (hasInfo) {
+  if (hasInfo || forceInfo) {
     return (
       <Info
         size={ICON_SIZE}

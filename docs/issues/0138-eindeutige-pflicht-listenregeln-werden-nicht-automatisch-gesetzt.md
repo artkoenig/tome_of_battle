@@ -513,6 +513,45 @@ Acceptance criteria:
   entsprechend eine Nicht-Regressions-Assertion für nicht-pflichtige Zeilen
   ergänzt.
 
+- 2026-07-31: **F2 implementiert** (`implementer`, gegen die umgeschriebenen
+  Tests, ohne sie zu verändern). `ListRuleChecklist.jsx`: die
+  `.list-rule-checkbox-slot`-Wrapper samt `handleMandatoryMouse*`-Handlern
+  entfallen; ein neues `renderMandatoryInfoIcon(state)` rendert für
+  `state.mandatory`-Zeilen ein `RuleChipIcon` neben `state.name` (beide
+  Checkbox-Stellen), gespeist aus `mandatoryInfoContent(state)` —
+  `resolveEntry(system, state.entry, activeCatalogue?.id)` gefolgt von
+  `renderUpgradeDetails(res, system)` plus dem bestehenden
+  `t('editor.listRules.mandatoryTooltip')`-Satz —, verdrahtet über die
+  bereits vorhandenen `handleMouseEnter`/`handleMouseMove`/`handleMouseLeave`/
+  `setActiveInfo`-Funktionen dieser Datei (dieselben, die schon an
+  `SelectionConfigurator` durchgereicht werden). Die Checkbox selbst bleibt
+  unverändert `disabled={state.mandatory}`, trägt aber keine
+  Interaktions-Handler mehr. `RuleChipIcon.jsx` bekam den neuen optionalen
+  Prop `forceInfo` (Default `false`): erzwingt das Info-Symbol unabhängig
+  von `hasInfo` und unterdrückt die sonstige BookOpen-Link-Priorität — alle
+  bestehenden Aufrufstellen (`OptionGroup.jsx`, `UnitChips.jsx`,
+  `SelectionConfigurator.jsx`) lassen ihn weg und bleiben unverändert.
+  `33-list-rule-checklist.css` verlor die nun ungenutzte
+  `.list-rule-checkbox-slot { display: contents; }`-Regel.
+  **Fakten** (vom `implementer` berichtet, stichprobenartig selbst
+  nachvollzogen): `npx vitest run` der beiden Zieldateien 23/23, exit 0
+  (vorher 13 fehlgeschlagen/10 bestanden); zusätzlich mit
+  `ListRuleChecklist.test.jsx` + `RuleChipIcon.test.jsx` zusammen 40/40,
+  exit 0 (selbst nachvollzogen). `npm test` (voller Lauf, 269 Dateien/2808
+  Tests plus Puppeteer-E2E) exit 0. `lint`/`typecheck`/`depcruise` je exit 0
+  (selbst nachvollzogen für `lint`/`typecheck`: ausschließlich dieselben
+  vorbestehenden Meldungen wie zuvor, keine in den geänderten Dateien).
+  `knip` exit 1, unverändert 9 vorbestehende Meldungen.
+  **Angenommen, nicht von einem Test erzwungen:** `hasInfo`/`onShowRule`
+  werden am Pflicht-Symbol zusätzlich zu `forceInfo` mitgegeben, rein zur
+  Formangleichung an die anderen `RuleChipIcon`-Aufrufstellen (von `tsc`s
+  JSDoc-Prop-Typprüfung verlangt) — funktional trägt `forceInfo` allein
+  bereits das gesamte Verhalten. Der kombinierte Popup-Inhalt entsteht über
+  ein React-Fragment statt eines manuellen String-Joins, wie an
+  `SelectionConfigurator`s eigener Verwendung derselben Felder bereits
+  vorgemacht — kein Test bindet die genaue DOM-Form über die
+  Reihenfolgen-Assertion hinaus.
+
 ## Checkpoints
 
 ### Before implementation
