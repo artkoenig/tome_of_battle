@@ -1291,6 +1291,22 @@ Das `collective`-Flag auf einem Eintrag hat **zwei** Funktionen:
 > Instanzen — die Kosten- und Constraint-Mathematik (`child.number * parent.number`) läuft immer
 > durch (siehe [§7.5](#75-cost--cost-type)).
 
+> **Funktion 2 wird bewusst nicht geprüft (Issue 0104).** Die Engine liest `collective` nicht und
+> meldet keinen Befund, wenn zwei Geschwister-Instanzen mit gemeinsamem Elternknoten ein
+> `collective`-Kind verschieden gewählt haben. Zwei Gründe:
+> - **Es ist im Referenzprogramm eine Bearbeitungs-, keine Prüfregel.** Das Wiki beschreibt sie als
+>   Angleichung beim Wählen („wählt ein Ninja sie, müssen alle Ninjas sie nehmen"), nicht als
+>   Verstoß, den ein Validator im Nachhinein feststellt. Eine Liste, die die Regel verletzt, kann im
+>   Editor gar nicht erst entstehen.
+> - **Sie hätte im Bericht keinen Ort.** Jede Meldung trägt eine Herkunft aus einem geschlossenen
+>   Wertevorrat — *aus einer Grenze abgeleitet* oder *Autor-Meldung* ([ADR 0034](adr/0034-auswertungsbericht-als-alleinige-quelle-der-oberflaeche.md)).
+>   Ein Synchron-Befund ist weder das eine noch das andere; ihn aufzunehmen hieße, den Vorrat um
+>   eine dritte Herkunft zu erweitern, für eine Regel, die kein Fixture-Katalog braucht (`collective="true"`
+>   kommt vor, aber an keiner Stelle, an der Geschwister-Instanzen divergieren können).
+>
+> Der Verzicht ist damit ein **dokumentierter Schnitt**, kein Versehen. Fällt ein realer Katalog auf,
+> in dem die Regel greift, ist das der Anlass, ihn erneut zu bewerten.
+
 ---
 
 ## 11. Best Practices

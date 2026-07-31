@@ -104,6 +104,23 @@ Formatversion 2.03" unten) muss diese Abweichung erneut prüfen: entweder deckt 
 neue Upstream-Version die drei Konstrukte inzwischen ab (Abweichung entfällt), oder
 sie muss erneut von Hand nachgezogen werden.
 
+**Revision 2026-07-31 (`conditionGroup type="not"`):** Derselbe Fall ein zweites
+Mal, diesmal im `ConditionGroupKind`-Enum. Die „Definitive Edition" nutzt
+`<conditionGroup type="not">` (2 Fundstellen in `Vampire Counts`, beide am
+Pflicht-Modifikator des Sonderheeres „Army of the Lichemaster"); keine offizielle
+`BSData/schemas`-Version kennt den Wert, das Wiki erwähnt ihn nicht. Ohne ihn
+lehnte der Katalog-Leser die Gruppe ab und der tragende Modifikator feuerte
+fail-closed nie — die beiden Pflichteinheiten des Sonderheeres fehlten still im
+Bericht (Issue 0115).
+
+Entscheidung: **dieselbe Behandlung wie 2026-07-19** — der Wert wird von Hand in
+das `ConditionGroupKind`-Enum der vendorten `Catalogue.xsd` ergänzt, mit
+Kommentar auf die Fundstellen, und der Codegen läuft regulär dagegen. Die
+**Semantik** (die Gruppe hält, wenn *keines* ihrer Mitglieder hält) ist nicht aus
+der Quelle belegbar und deshalb als Projektentscheidung in der
+[BSData-Doku](../battlescribe-data-format.md) §7.7 und §15 festgehalten, nicht
+hier. Auch diese Abweichung gehört bei einem Versions-Sprung erneut geprüft.
+
 ### Konsequenzen (Auswirkungen)
 
 - **Positiv:** Vollständige, generische Formatunterstützung; die Drift-Klasse hinter

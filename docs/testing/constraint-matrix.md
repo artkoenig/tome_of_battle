@@ -37,6 +37,8 @@ Diese Matrix ordnet die im Projekt definierten XSD-Elemente (`constraint`, `cond
 | **type** | `notInstanceOf` | `remaining-condition-types` | ✅ |
 | **childId** | `model` / Spezifische ID | `evaluator-bug-childid-model` | ✅ |
 | **scope** | `primary-catalogue` (das Armeebuch des umschließenden Kontingents, Issue 077) | `primary-catalogue-scope` (10 Roster, beide Lagen je Armeebuch); Modultests `query.primaryCatalogueScope`, `evaluator.primaryCatalogueFixture` | ✅ |
+| **type** | `greaterThanOrEqualTo` | *Kein XSD-Wert; 1 Vorkommen (O&G ergofang) wird als `unsupportedCondition` gemeldet und feuert fail-closed nicht* | - |
+| **conditionGroup type** | `not` | `condition-group-not` (Lichemaster-Pflichteinheiten); Modultest `groups` | ✅ |
 | *(Conditions erben Scope, Field, etc. von QueryBase)* | - | - | - |
 
 ## 3. Repeats (Modifier Multiplikatoren)
@@ -44,7 +46,9 @@ Diese Matrix ordnet die im Projekt definierten XSD-Elemente (`constraint`, `cond
 | Attribut / Typ | Wert / Spezifikation | Bisher getestet in (Scenario) | Status |
 | :--- | :--- | :--- | :--- |
 | **repeats** | Positiver Integer (z.B. > 1) | `mercenaries-repeat-bug` | ✅ |
-| **roundUp** | `true` / `false` | *Bisher kein expliziter E2E-Test gefunden* | ❌ |
+| **roundUp** | `true` / `false` | *In den Daten kommt ausschliesslich `roundUp="false"` vor — kein realer Fall zu testen* | - |
+| *mehrere `<repeat>` in **einer** Liste* | Anwendungen addieren sich (nicht multiplizieren) | `modifier-group-repeats` („Grave markers"); Modultest `groups` | ✅ |
+| *`<repeats>` an einer `modifierGroup`* | Faktor der Klammer × eigener Faktor des Mitglieds | `modifier-group-repeats`; Modultest `groups` | ✅ |
 | *(Repeats erben childId, Scope, Field)* | - | - | - |
 
 ## 4. Orthogonale Kombinationen (Fokus-Bereiche)
@@ -60,12 +64,12 @@ Hier werden interessante, komplexe Interaktionen zwischen Attributen festgehalte
 | Verschachtelter `modifier` mit `<repeat>` | Erhöht ein Limit in Stufen pro X gekauften Modellen einer anderen Auswahl. | `mercenaries-repeat-bug` | ✅ |
 | `condition` mit `type="equalTo"` auf Punktebudget (`field="limit::..."`) | Modifikator greift ein, wenn ein Limit genau getroffen wird (z.B. Army Budget). | *Vorkommen gefunden* | ❌ |
 | `condition` mit `type="notInstanceOf"` + `scope="primary-catalogue"` | Modifikator greift, wenn das Armeebuch des Kontingents ein anderes ist (sehr häufig in Mercenaries). Die Engine wertet den Rahmen seit Issue 077 aus — er ist keine `unresolvedScope`-Lücke mehr. | `primary-catalogue-scope` (Roster 02/03/07/09 sind die `notInstanceOf`-Seite); Modultest `query.primaryCatalogueScope` | ✅ |
-| `constraint` mit `shared="false"` + `scope="parent"` | Individuelles Limit für spezifische Eltern-Auswahlen (O&G / Vampire Counts). | *Vorkommen gefunden* | ❌ |
+| `constraint` mit `shared="false"` + `scope="parent"` | Individuelles Limit für spezifische Eltern-Auswahlen (O&G / Vampire Counts). | Alle 8 Fundstellen tragen `scope="parent"`, und `parent` geht **vor** `shared` (ADR 0003 §4) — `shared="false"` ist dort ohne Wirkung, es gibt nichts zu unterscheiden. Modultest `query.matrix` deckt die Kombination synthetisch ab. | - |
 | `condition` mit `type="atLeast"` + `includeChildForces="true"` | Bedingung zählt Einheiten über verbündete Kontingente hinweg (oft in Border Patrols). | *Vorkommen gefunden* | ❌ |
 | Mehrere `modifier` (gemischt `set` + `increment`/`decrement`) auf **dasselbe** Ziel-Feld, je eigenständig konditioniert | Stapel-Semantik ohne definierte Anwendungsreihenfolge; Kosten-Id `ecfa-8486-4f6c-c249` trägt in Vampire Counts 47 gestapelte Modifikatoren. | *Vorkommen gefunden (VC, Mercenaries, Orcs)* | ❌ |
 | Eine `categoryEntry` trägt gleichzeitig 3 Constraints unterschiedlichen Scopes/`includeChildForces` | Kategorie „General" (`a37e-7207-de6d-acb0`): `max scope=force icf=T` (`d818-c60d…`) + `min scope=force icf=T` (`1077-7379…`) + `max scope=parent icf=F` (`54c9-b217…`) parallel aktiv. | Nur der `min`-Constraint ist getestet (`ogre-kingdoms`, `orcs-and-goblins`, `vampire-counts`) | ❌ (die beiden `max`-Geschwister) |
-| `constraint` direkt am `forceEntry` (`type="min"`, `field="limit::<costTypeId>"`, `scope="roster"`), angehoben durch `modifier`, konditioniert auf `instanceOf` der **eigenen** Force-Id | Vampire Counts: `8f3f-ffa8-387b-0bf9` / `f3aa-b530-9b6c-0995`, Basiswert 0, `set value=2000` bei `condition instanceOf childId=<eigene forceEntry-Id> scope=force` — selbstreferenzielle Punkte-Untergrenze. | *Vorkommen gefunden (VC)* | ❌ |
-| `entryLink type="selectionEntryGroup"` trägt gleichzeitig eigene `<constraints>` (Kosten-Deckel) und `<modifiers>` (konditional) | 6 Vorkommen (Orcs, Vampire); z. B. entryLink `0111-4b1e-83eb-0dff` „Magical Standard": `max=50 field=costId scope=parent` + konditionales `set field=hidden`. | *Vorkommen gefunden* | ❌ |
+| `constraint` direkt am `forceEntry` (`type="min"`, `field="limit::<costTypeId>"`, `scope="roster"`), angehoben durch `modifier`, konditioniert auf `instanceOf` der **eigenen** Force-Id | Vampire Counts: `8f3f-ffa8-387b-0bf9` / `f3aa-b530-9b6c-0995`, Basiswert 0, `set value=2000` bei `condition instanceOf childId=<eigene forceEntry-Id> scope=force` — selbstreferenzielle Punkte-Untergrenze. | Nachgemessen an echten Daten (Budget 1500 → Ist 1500 / Grenze 2000, `measure=budgetLimit`; 2000 und 3000 → still). Modultest `query.limitValue`. Ein eigenes E2E-Szenario fehlt noch. | ⚠️ |
+| `entryLink type="selectionEntryGroup"` trägt gleichzeitig eigene `<constraints>` (Kosten-Deckel) und `<modifiers>` (konditional) | 143 Vorkommen (Orcs, Vampire, Ogre, Mercenaries); z. B. entryLink `a645-84e1-9352-9c9d` „Magic Standards" am Grave-Guard-Standartenträger: `max=50 field=<pts> scope=parent`. | Nachgemessen an echten Daten: Hell Banner (65 pts) → `0c6b-000c-8680-adb0` feuert mit Ist 65 / Grenze 50; Banner of the Dead Legion (25 pts) → still. Ein eigenes E2E-Szenario fehlt noch. | ⚠️ |
 | `conditionGroup type="or"` mit 5–8 verschachtelten Conditions (grosser Fan-out) | 19× `or`/6 Conditions (Orcs), 16× `or`/5 (Orcs, Vampire), 9× `or`/8 (Vampire) — deutlich über die bisher getesteten kleinen 2-Condition-Gruppen hinaus. | Nur kleine and/or-Gruppen getestet (`orcs-and-goblins-budget`) | ❌ |
 | `condition type="atLeast" scope="self" childId="model"` — selbstreferenzielles Mindest-Modellzahl-Gate | 32 Vorkommen (Ogre, Orcs, Vampire). | *Vorkommen gefunden* | ❌ |
 | `notInstanceOf` + `scope="primary-catalogue"` **verschachtelt in einer `conditionGroup`** (statt als direkte Condition) | 4 Vorkommen (Mercenaries, Warhammer) — eigener Codepfad gegenüber der bereits oben notierten direkten Verwendung. Der Bezugsrahmen selbst ist seit Issue 077 auflösbar; offen ist allein die Gruppen-Verschachtelung. | *Vorkommen gefunden* | ❌ |
