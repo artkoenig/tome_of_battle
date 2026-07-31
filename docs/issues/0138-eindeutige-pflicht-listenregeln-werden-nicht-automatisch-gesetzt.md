@@ -66,7 +66,14 @@ Acceptance criteria:
    Ankreuzliste deaktiviert (nicht abwählbar), solange der Eintrag pflichtig
    und nicht ausgeblendet ist, und trägt einen sichtbaren Hinweis
    (Tooltip/Text), der erklärt, dass es sich um eine Pflichtregel dieser Liste
-   handelt.
+   handelt. Dieser Hinweis ist über dasselbe Info-Symbol erreichbar, über das
+   diese Datei an anderer Stelle bereits Katalog-Beschreibungstexte zeigt
+   (Hover auf breiten, Tipp auf schmalen Viewports — keine separate,
+   nur-Hover-Mechanik) — er nutzt, wo der Katalog einen liefert, den echten
+   Beschreibungstext des Eintrags und hängt den Pflicht-Hinweis dahinter an.
+   Das gilt unabhängig davon, ob für den Eintrag zusätzlich ein externer
+   Regel-Link (6th.whfb.app) auflösbar wäre — der Pflicht-Hinweis darf davon
+   nie verdrängt werden.
 6. Wird ein automatisch gesetzter Eintrag später ausgeblendet (z. B. weil das
    Kontingent auf „Army of the Lichemaster" wechselt), verschwindet seine
    Zeile aus der Ankreuzliste wie bei jedem anderen ausgeblendeten Eintrag
@@ -88,10 +95,18 @@ Acceptance criteria:
 - `src/components/RosterEditor.jsx` — reicht sie an `useRoster` durch.
 - `src/hooks/useRoster.js` — neuer Effekt (Auto-Add), gated auf die
   Frisch-Markierung.
-- `src/components/editor/ListRuleChecklist.jsx` — rendert `disabled` +
-  Tooltip für `state.mandatory`-Zeilen.
-- `src/i18n/locales/de.json`, `en.json` — neuer Schlüssel
-  `editor.listRules.mandatoryTooltip`.
+- `src/components/editor/ListRuleChecklist.jsx` — rendert `disabled` für
+  `state.mandatory`-Zeilen; der Hinweis wandert von der (deaktivierten)
+  Checkbox auf ein Info-Symbol neben dem Regelnamen (Revision nach
+  Prüfrunde 1, F2 — siehe unten).
+- `src/components/editor/RuleChipIcon.jsx` — neuer optionaler Prop, der die
+  BookOpen-Link-Priorität für eine Zeile unterdrückt, deren Info-Inhalt nie
+  von einem externen Regel-Link verdrängt werden darf (Revision nach
+  Prüfrunde 1, F2).
+- `src/i18n/locales/de.json`, `en.json` — Schlüssel
+  `editor.listRules.mandatoryTooltip` bleibt, ändert Bedeutung: nicht mehr
+  alleiniger Tooltip-Inhalt, sondern an den Katalog-Beschreibungstext
+  angehängter Zusatz.
 
 **Contracts**
 
@@ -117,9 +132,38 @@ Acceptance criteria:
 3. `buildListRuleStates` bekommt je `ListRuleState` ein Feld
    `mandatory: boolean` (`isUnconditionalMandatoryListRule(resolved)`).
    `ListRuleChecklist` liest `state.mandatory`, um an beiden Checkbox-Stellen
-   (Container- und reine Schalter-Zeile) `disabled` plus einen Tooltip zu
-   setzen — über die in dieser Datei bereits verdrahtete `GothicTooltip`
-   /`hoveredInfo`-Mechanik, nicht über ein neues Tooltip-Mittel.
+   (Container- und reine Schalter-Zeile) `disabled` zu setzen.
+
+3a. **Revision nach Prüfrunde 1 (F2), ersetzt den ursprünglichen
+    Hover-only-Ansatz von Contract 3:** Der sichtbare Hinweis sitzt nicht
+    mehr auf der Checkbox, sondern auf einem Info-Symbol neben
+    `state.name` — demselben Baustein, den `SelectionConfigurator.jsx`
+    bereits für Katalog-Beschreibungen von Unteroptionen einsetzt
+    (`RuleChipIcon`, `hasInfo`/`onInfoClick`/`onInfoEnter`/`onInfoMove`/
+    `onInfoLeave`, gespeist aus `resolveEntry(system, state.entry,
+    activeCatalogue?.id)` + `renderUpgradeDetails(res, system)`). Für eine
+    Pflichtzeile gilt zusätzlich: das Symbol erscheint **immer** (nicht nur
+    wenn `renderUpgradeDetails` etwas liefert), und sein Inhalt ist
+    `renderUpgradeDetails(res, system)` gefolgt vom bestehenden
+    `t('editor.listRules.mandatoryTooltip')`-Satz. Erreichbarkeit folgt der
+    in dieser Datei etablierten Mechanik unverändert: Hover +
+    `GothicTooltip` auf breiten, Tap + `BottomSheet` (`activeInfo`) auf
+    schmalen Viewports — dieselbe `handleMouseEnter`/`setActiveInfo`-Mechanik,
+    die diese Datei bereits an `SelectionConfigurator` durchreicht, jetzt
+    zusätzlich für die eigene Zeile selbst genutzt. Der
+    `list-rule-checkbox-slot`-Wrapper und seine dedizierten
+    `handleMandatoryMouse*`-Handler entfallen wieder: sie waren nur nötig,
+    weil ein `disabled`-Input keine Maus-Events zustellt — das Info-Symbol
+    ist kein deaktiviertes Element und braucht den Umweg nicht.
+
+3b. `RuleChipIcon` zeigt statt des Info-Symbols einen externen Regel-Link
+    (`BookOpen`), sobald `useRuleUrl` für den Namen eine 6th.whfb.app-URL
+    auflöst (bestehende, bewusste Priorität, siehe Docstring der
+    Komponente) — für eine Pflichtzeile darf das den Pflicht-Hinweis aber
+    nie verdrängen (Kriterium 5, letzter Satz). `RuleChipIcon` bekommt dafür
+    einen neuen optionalen Prop (z. B. `forceInfo`), der die Link-Priorität
+    für genau diesen Aufruf abschaltet; `ListRuleChecklist` setzt ihn für
+    jede `state.mandatory`-Zeile.
 
 4. `useRosterList` bekommt neuen In-Memory-Zustand
    `const [freshRosterIds, setFreshRosterIds] = useState(() => new Set())`,
@@ -165,10 +209,35 @@ Acceptance criteria:
   sonst zulässigen Eintrag in einer gemischten Kategorie stillschweigend
   übersehen.
 - **Die Oberflächen-Sperre nutzt die in `ListRuleChecklist.jsx` bereits
-  verdrahtete `GothicTooltip`-Mechanik statt eines schlichten
+  verdrahtete `GothicTooltip`/`BottomSheet`-Mechanik statt eines schlichten
   `title=`-Attributs** — die Datei bindet diese Komponente schon für ihre
   Info-Popups ein; sie zu erweitern hält ein einziges Tooltip-Mittel in
-  dieser Datei statt ein zweites daneben einzuführen.
+  dieser Datei statt ein zweites daneben einzuführen. *(Revidiert nach
+  Prüfrunde 1, F2 — siehe Contract 3a: der ursprüngliche Hover-only-Sitz auf
+  der Checkbox selbst deckte die Tap-Hälfte dieser Mechanik nicht ab; das
+  Info-Symbol-Muster tut es, weil es beide Hälften schon mitbringt.)*
+- **Das Info-Symbol zeigt den echten Katalog-Beschreibungstext statt nur
+  eines festen Satzes** — derselbe Mechanismus, den
+  `SelectionConfigurator.jsx` für jede andere Unteroption schon nutzt
+  (`resolveEntry` + `renderUpgradeDetails`); ein Pflicht-Listenregel-Eintrag
+  wie „The Laws of Undeath" trägt in der Praxis eigene `infoLinks` vom Typ
+  `rule` (verifiziert an `Vampire Counts (6th definitive edition).cat:11640-11652`,
+  die `resolveEntry` bereits in `res.rules` auflöst) — diesen Text zu
+  ignorieren und nur den generischen Pflicht-Satz zu zeigen, wäre
+  informationsärmer als das, was jede andere Zeile im selben Panel schon
+  bietet. *(Mensch, Antwort in der Konversation zum F2-Fix → „in den
+  Katalogdaten stehen wahrscheinlich Beschreibungstexte zu diesen
+  Einträgen. Diese sollen wie an anderer Stelle per Info-Symbol erreichbar
+  gemacht werden. Die Nicht-Abwählbarkeit des Eintrags kann hinter dem
+  Beschreibungstext hinzugefügt werden".)*
+- **Das Info-Symbol einer Pflichtzeile fällt nie auf den externen
+  `BookOpen`-Regel-Link zurück, selbst wenn `useRuleUrl` einen fände** —
+  `RuleChipIcon`s bestehende Priorität (Link vor Info) ist für gewöhnliche
+  Unteroptionen richtig, würde für eine Pflichtzeile aber den in Kriterium 5
+  verlangten Hinweis unerreichbar machen, sobald ein Katalog-Eintrag zufällig
+  einen 6th.whfb.app-Mapping-Treffer hat. Kein realer Treffer für „The Laws
+  of Undeath" in der aktuellen `rulesLookup.js` (verifiziert), aber das
+  Feature gilt katalogweit, nicht nur für dieses eine Beispiel.
 
 ## Tasks
 
@@ -206,6 +275,16 @@ Acceptance criteria:
   automatisch wieder entfernt** — nur Hinzufügen ist im Geltungsbereich, nie
   automatisches Entfernen. *(Default, unanswered — nicht ausdrücklich
   gefragt; kleinerer, sichererer Eingriff als eine Entfernen-Automatik.)*
+- **F2-Fix (Kriterium 5) zeigt den echten Katalog-Beschreibungstext über das
+  bestehende Info-Symbol-Muster, statt eine Tap-Alternative allein für den
+  festen Pflicht-Satz nachzurüsten.** Der ursprünglich beauftragte
+  `implementer`-Fix (reine Tap-Erweiterung der bisherigen
+  Hover-only-Checkbox-Lösung) wurde deshalb abgebrochen, bevor er fertig
+  war. *(Mensch, in der Konversation nach Prüfrunde 1 → „in den
+  Katalogdaten stehen wahrscheinlich Beschreibungstexte zu diesen
+  Einträgen. Diese sollen wie an anderer Stelle per Info-Symbol erreichbar
+  gemacht werden. Die Nicht-Abwählbarkeit des Eintrags kann hinter dem
+  Beschreibungstext hinzugefügt werden".)*
 
 ## Log
 
@@ -355,6 +434,44 @@ Acceptance criteria:
     strukturell nur für frisch über `buildRoster` erzeugte Roster gilt, die
     immer genau eine Force haben — es gibt aktuell keinen Codepfad, der
     einem als frisch markierten Roster eine zweite Force hinzufügt.
+
+- 2026-07-31: **F2-Fix umgeplant, bevor der erste Ansatz fertig war.** Der
+  zunächst beauftragte `implementer`-Lauf (reine Tap-Erweiterung der
+  bestehenden Hover-only-Checkbox-Erklärung, siehe Contract 3 alt) wurde vom
+  Menschen unterbrochen zugunsten eines saubereren Ansatzes: das Info-Symbol
+  wiederverwenden, das `SelectionConfigurator.jsx` bereits für
+  Katalog-Beschreibungen von Unteroptionen einsetzt, statt eine
+  zweite, feste Tooltip-Zeichenkette um eine eigene Tap-Mechanik zu
+  ergänzen. Vor der Umsetzung selbst recherchiert (siehe Decisions/Contract
+  3a-3b oben):
+  - `state.entry` (roh, unaufgelöst) ist bereits Teil von `ListRuleState`
+    (`src/roster/listRules.js:229`) — `resolveEntry(system, state.entry,
+    activeCatalogue?.id)` liefert denselben `res`, den
+    `SelectionConfigurator.jsx` für jede Unteroption auflöst.
+  - „The Laws of Undeath" trägt im echten Katalog drei `infoLinks` vom Typ
+    `rule` (u. a. auf sich selbst, `targetId="4f19-ae5c-1eb4-9f02"`,
+    `Vampire Counts (6th definitive edition).cat:11640-11652`);
+    `resolveEntry` löst diese bereits in `res.rules` auf
+    (`catalogResolver.js:253-, 304-338`), `renderUpgradeDetails(res,
+    system)` liest sie direkt — kein neuer Auflösungscode nötig.
+  - `RuleChipIcon.jsx` zeigt statt des Info-Symbols einen externen
+    `BookOpen`-Link, sobald `useRuleUrl(name)` eine 6th.whfb.app-URL findet
+    (bewusste Priorität, siehe Docstring) — für eine Pflichtzeile würde das
+    den in Kriterium 5 verlangten Hinweis komplett verdrängen. Kein Treffer
+    für „The Laws of Undeath" in der aktuellen `src/data/rulesLookup.js`
+    (verifiziert per Grep), aber das Feature gilt katalogweit; die Priorität
+    muss für Pflichtzeilen deshalb ausdrücklich abschaltbar sein (neuer
+    `RuleChipIcon`-Prop, Contract 3b).
+  - Der unfertige Zwischenstand des abgebrochenen Laufs (Hover-Handler auf
+    `.list-rule-checkbox-slot`, teilweise Tap-Erweiterung) wurde vor dieser
+    Umplanung verworfen (`git checkout --`, ungetrackte Arbeit, nie
+    committet).
+  Nächster Schritt: `test-author` erneut beauftragen, diesmal für den
+  Info-Symbol-Ansatz — die beiden bestehenden F2-Testdateien
+  (`ListRuleChecklist.mandatory.test.jsx`,
+  `ListRuleChecklist.mandatoryNarrowViewport.test.jsx`) decken die
+  verworfene Checkbox-Hover/Tap-Mechanik ab und müssen auf den neuen Ansatz
+  umgeschrieben werden.
 
 ## Checkpoints
 
