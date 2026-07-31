@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/evaluator-engine-completion-s5blv9
 pr:
 ---
 
@@ -46,6 +46,26 @@ Acceptance criteria:
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
 
 ## Log
+
+- **2026-07-31 — entschieden: die Doku-Lesart war der Fehler, nicht die
+  Engine.** Ein wiederholter `set` ist **idempotent**: er schreibt einen
+  Wert, und denselben Wert ein zweites Mal zu schreiben aendert nichts. Es
+  gibt keine Lesart, in der wiederholtes Setzen eines *konstanten* `value`
+  einen wachsenden Wert ergaebe — wer eine Staffel will, schreibt einen `set`
+  **und** einen wiederholenden `increment`. Nur
+  `increment`/`decrement`/`multiply` vervielfacht der Faktor.
+- Quelle: upstream ist der Fall **nicht** entschieden (das Wiki sagt zum
+  `repeat` nur, er lasse den Modifier „multiple times" greifen, ohne einen
+  Fall fuer `set` zu nennen). Damit entscheidet dieses Projekt, und es
+  entscheidet fuer die einzige in sich stimmige Lesart. Die Katalogdaten sind
+  an der Fundstelle schlicht ungenau.
+- `docs/battlescribe-data-format.md` §7.7 traegt jetzt den Kasten „Ein
+  wiederholter `set` waechst nicht" statt der alten Lesart; §15 fuehrt die
+  Luecke in der Tabelle.
+- Gepinnt am kanonischen `.gst`-Beispiel selbst:
+  `modifiers.setWithRepeat.test.js` prueft die Core-Grenze der Force
+  „Standard" bei 5000/6000/8000/11000 Punkten — konstant. Lauf:
+  `npx vitest run src/evaluator` — gruen.
 
 ## Checkpoints
 
