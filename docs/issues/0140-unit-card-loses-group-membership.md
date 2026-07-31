@@ -283,6 +283,60 @@ card lost filtering. Rendered limit text is identical on all 208 cards before
 and after, so the unrepaired constraint loss on container-derived sections
 costs nothing in the fixtures.
 
+### Review round 2 — the same context continued
+
+One finding, against no criterion. Criterion 6 is met: the reviewer re-executed
+its own round-1 reproduction on all five cards, and each now renders checked
+and disabled with the click writing nothing — matching `origin/main` exactly
+but for the control type and the section placement.
+
+| criterion | round 1 | round 2 |
+| --- | --- | --- |
+| 1 container carries the catalogue name | 0 | 0 |
+| 2 no untitled section | 0 | 0 |
+| 3 option inside its group | 0 | 0 |
+| 4 the offer does not change | 0 | 0 |
+| 5 hidden stays hidden | 0 | 0 |
+| 6 same write operation | 1 | **0** |
+| 7 issue 0131 holds | 0 | 0 |
+| violates no criterion | 3 | 1 |
+| **total** | **4** | **1** |
+
+Method worth recording: the round measured the fix's whole reach rather than
+its target, by clicking every control on all 208 cards on **three** revisions —
+`origin/main` `0598752`, the round-1 tip `02a24b3`, and `545a7a7` — and
+diffing control kind, `checked`, `disabled` and the operations from both the
+control and the label.
+
+- **The mandatory lock reaches 7 rows on 6 cards the finding never named.**
+  Violates no criterion — criterion 6 speaks of an option that *moves* into a
+  group, and these seven were already radios in capped groups on `main`.
+  **Filed as issue 0142, not fixed here.** Six of the seven lose only the
+  ability to remove a pick the catalogue demands, which is a repair; the
+  seventh, `Magic Level 4` on `Zacharias the Everliving`, is an *unmet*
+  obligation (`current: 0`) that rendered unchecked and addable on `main` and
+  now renders checked and locked — it looks satisfied while it is not, and no
+  path from the card satisfies it. That is 0142's subject.
+- Established alongside it, and the reason the lock is not itself a defect: all
+  12 locked-and-checked radios on this tree sit in sections rendering exactly
+  one row, so no user is stranded in a capped group whose only taken option is
+  locked while a sibling is offered. Every one of the seven carries
+  `effectiveMin === effectiveMax > 0`, and no non-mandatory radio row lost its
+  write anywhere in the six catalogues.
+- Row multisets and section trees are identical between the round-1 tip and
+  this one — the configurator diff in round 2 is comment-only.
+
+The reviewer also weighed the five display assertions written on a judgment
+call and did not find them incorrect or code-mirroring: `checked` was taken
+from `origin/main`'s observed rendering, which it had captured itself in round
+1. The cost it names is lock-in — future work wanting an unmet obligation to
+*look* unmet (plausibly issue 0142) must edit assertions filed under a
+criterion-6 heading, where a later reader would not look for a display
+decision. The test file's header discloses the judgment call, which limits it.
+
+One cosmetic imprecision in round 1's record, corrected here: the `Spears`
+section renders as `Weapons (10 pts | Max: 1)`, not `Weapons (Max: 1)`.
+
 ## Checkpoints
 
 ### Before implementation
