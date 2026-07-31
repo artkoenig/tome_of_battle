@@ -21,5 +21,14 @@
         ]
       }
     ]
+  },
+  "permissions": {
+    "deny": [
+      "Artifact",
+      "ReportFindings",
+      "ScheduleWakeup",
+      "ShowOnboardingRolePicker",
+      "Workflow"
+    ]
   }
 }
