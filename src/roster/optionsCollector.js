@@ -17,6 +17,10 @@ import { ConstraintKind, EntryLinkKind } from '../parser/schema/battlescribeSche
  *   `{ roster, selectionCounts, forceCategoryCounts, force }`. Omitting it keeps the
  *   raw, unfiltered collection callers such as roster synchronisation rely on, so
  *   filtering never silently prunes a stored selection.
+ * @returns {Array<Object>} one item per offered option, carrying the option itself plus
+ *   its group membership (`groupId`/`groupName`, that group's `groupConstraints`/
+ *   `groupModifiers`), the chain of enclosing group ids (`groupAncestorIds`, outermost
+ *   first — the catalogue's group hierarchy) and the owning selection (`ownerSelectionId`).
  */
 export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibilityContext = null) => {
   if (!activeCatalogueId) return [];
@@ -82,28 +86,57 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
 
   // Recursive options collector.
   //
-  // `ownerSelectionId` names the roster selection under which a chosen option must nest.
-  // It is null for options that belong directly to the unit, and the id of an active
-  // sub-selection for the options that selection re-emits (see collectFromActiveSelections)
-  // — e.g. the Barding of a chosen upgrade-type mount, which must attach under the mount's
-  // selection rather than as a sibling of it on the unit. It is threaded unchanged through
-  // the group/link recursion, since a display group inside an option is still nested under
-  // that same owning selection.
-  const collectOptions = (def, currentGroupName = null, currentGroupId = null, parentConstraints = null, parentModifiers = null, ownerSelectionId = null) => {
+  // The recursion carries a group context rather than loose positional arguments:
+  //
+  // - `groupName`/`groupId` name the group an option belongs to (its membership),
+  //   `groupConstraints`/`groupModifiers` are that group's limits.
+  // - `groupAncestorIds` is the chain of ENCLOSING group ids, outermost first — the
+  //   catalogue's group hierarchy. A `selectionEntryGroup` whose children are only
+  //   links to other groups collects no item of its own, so its id would otherwise
+  //   never reach a consumer; the chain is the one place that hierarchy survives.
+  // - `ownerSelectionId` names the roster selection under which a chosen option must
+  //   nest. It is null for options that belong directly to the unit, and the id of an
+  //   active sub-selection for the options that selection re-emits (see
+  //   collectFromActiveSelections) — e.g. the Barding of a chosen upgrade-type mount,
+  //   which must attach under the mount's selection rather than as a sibling of it on
+  //   the unit. It is threaded unchanged through the group/link recursion, since a
+  //   display group inside an option is still nested under that same owning selection.
+  const ROOT_GROUP_CONTEXT = {
+    groupName: null,
+    groupId: null,
+    groupConstraints: null,
+    groupModifiers: null,
+    groupAncestorIds: [],
+    ownerSelectionId: null,
+  };
+
+  // The ancestor chain a group nested inside `context` inherits: the enclosing chain
+  // plus the enclosing group itself. A group without an own id keeps the enclosing
+  // group's key (see below) and therefore also its chain — nesting it under itself
+  // would be a cycle.
+  const nestedAncestorIds = (context, nestedGroupId) =>
+    context.groupId && nestedGroupId !== context.groupId
+      ? [...context.groupAncestorIds, context.groupId]
+      : context.groupAncestorIds;
+
+  const itemOf = (option, def, context) => ({
+    option,
+    parentDefId: def.id,
+    groupName: context.groupName,
+    groupId: context.groupId,
+    groupConstraints: context.groupConstraints,
+    groupModifiers: context.groupModifiers,
+    groupAncestorIds: context.groupAncestorIds,
+    ownerSelectionId: context.ownerSelectionId,
+  });
+
+  const collectOptions = (def, context = ROOT_GROUP_CONTEXT) => {
     // 1. Process selection entries
     def.selectionEntries?.forEach(child => {
       if (isHiddenInContext(child)) return;
       // A selectionEntry is always an option itself. We don't recurse into its children
       // until the user actually selects it (handled by collectFromActiveSelections).
-      optionsList.push({
-        option: child,
-        parentDefId: def.id,
-        groupName: currentGroupName,
-        groupId: currentGroupId,
-        groupConstraints: parentConstraints,
-        groupModifiers: parentModifiers,
-        ownerSelectionId
-      });
+      optionsList.push(itemOf(child, def, context));
     });
 
     // 2. Process entry links
@@ -121,18 +154,18 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
         // Resolve the link's own modifiers through the same seam so its
         // modifierGroup-gated modifiers are kept rather than silently dropped.
         const combinedModifiers = getEffectiveModifiers(resolvedChild).concat(getEffectiveModifiers(child));
-        collectOptions(resolvedChild, resolvedChild.name || child.name, resolvedChild.id || child.id, combinedConstraints, combinedModifiers, ownerSelectionId);
+        const nestedGroupId = resolvedChild.id || child.id;
+        collectOptions(resolvedChild, {
+          groupName: resolvedChild.name || child.name,
+          groupId: nestedGroupId,
+          groupConstraints: combinedConstraints,
+          groupModifiers: combinedModifiers,
+          groupAncestorIds: nestedAncestorIds(context, nestedGroupId),
+          ownerSelectionId: context.ownerSelectionId,
+        });
       } else {
         // Otherwise it points to an option (upgrade, profile, etc.), so it's a selectable item
-        optionsList.push({
-          option: child,
-          parentDefId: def.id,
-          groupName: currentGroupName,
-          groupId: currentGroupId,
-          groupConstraints: parentConstraints,
-          groupModifiers: parentModifiers,
-          ownerSelectionId
-        });
+        optionsList.push(itemOf(child, def, context));
       }
     });
 
@@ -140,17 +173,29 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
     def.selectionEntryGroups?.forEach(group => {
       if (isHiddenInContext(group)) return;
       const combinedGroupConstraints = prepareConstraints(group);
-      collectOptions(group, group.name || currentGroupName, group.id || currentGroupId, combinedGroupConstraints, getEffectiveModifiers(group), ownerSelectionId);
+      const nestedGroupId = group.id || context.groupId;
+      collectOptions(group, {
+        groupName: group.name || context.groupName,
+        groupId: nestedGroupId,
+        groupConstraints: combinedGroupConstraints,
+        groupModifiers: getEffectiveModifiers(group),
+        groupAncestorIds: nestedAncestorIds(context, nestedGroupId),
+        ownerSelectionId: context.ownerSelectionId,
+      });
     });
   };
 
   collectOptions(resolved);
-  
+
   resolved.selectionEntries?.forEach(sub => {
     const subResolved = resolveEntry(system, sub, activeCatalogueId);
     if (subResolved && subResolved.type === 'model') {
       if (!isIndependentSubUnit(subResolved)) {
-        collectOptions(subResolved, subResolved.name, subResolved.id);
+        collectOptions(subResolved, {
+          ...ROOT_GROUP_CONTEXT,
+          groupName: subResolved.name,
+          groupId: subResolved.id,
+        });
       }
     }
   });
@@ -165,7 +210,12 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
           if (subResolved.selectionEntries?.length > 0 || subResolved.entryLinks?.length > 0 || subResolved.selectionEntryGroups?.length > 0) {
             // Tag the re-emitted options with this active selection as their owner, so the
             // editor nests a chosen sub-option under it rather than as a sibling on the unit.
-            collectOptions(subResolved, subResolved.name, subResolved.id, null, null, subSel.id);
+            collectOptions(subResolved, {
+              ...ROOT_GROUP_CONTEXT,
+              groupName: subResolved.name,
+              groupId: subResolved.id,
+              ownerSelectionId: subSel.id,
+            });
           }
           collectFromActiveSelections(subSel);
         }
