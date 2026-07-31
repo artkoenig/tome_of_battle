@@ -15,7 +15,7 @@ import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 /**
- * Issue 0130 — Eine „Container-Gruppe" (ein `selectionEntryGroup`, dessen Kinder
+ * Issue 0131 — Eine „Container-Gruppe" (ein `selectionEntryGroup`, dessen Kinder
  * ausschliesslich Links auf andere `selectionEntryGroup`s sind) soll ihre
  * Mitglieder HALTEN statt sie als Geschwister neben sich zu stellen.
  *

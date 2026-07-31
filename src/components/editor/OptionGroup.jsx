@@ -30,7 +30,7 @@ import { useTranslation } from '../../i18n/useTranslation';
  * Konfigurator bereits gerenderten Abschnitte der Gruppen, die im Katalog in
  * dieser hier liegen. Sie erscheinen im selben aufklappbaren Items-Block wie die
  * eigenen Zeilen — die Verschachtelung stammt aus der Katalogstruktur, nicht aus
- * dem Bericht, dessen Anker flach nebeneinander liegen (Issue 0130, ADR-0036).
+ * dem Bericht, dessen Anker flach nebeneinander liegen (Issue 0131, ADR-0036).
  *
  * Übergangsweise bleibt die statische „Gruppen-Max über 1 hebbar"-Erkennung
  * (ADR-0029, Rüstung+Schild-Fall) beim Helfer des Schreibmodells — sie liest
@@ -56,7 +56,7 @@ export default function OptionGroupComponent({
   // null when the row has no such children. Defaults to a no-op so a group without
   // nesting (or a test stub) renders unchanged.
   renderRowChildren = (_rowSelectionId) => null,
-  // Die Gruppen, die DIESE Gruppe hält (Issue 0130): bereits gerenderte
+  // Die Gruppen, die DIESE Gruppe hält (Issue 0131): bereits gerenderte
   // Abschnitte, die im eigenen Items-Block erscheinen. Leer bei einer
   // gewöhnlichen Optionsgruppe.
   nestedSections = [],

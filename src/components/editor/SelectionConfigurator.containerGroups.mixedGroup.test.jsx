@@ -13,7 +13,7 @@ import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 /**
- * Issue 0130, Kriterium 7 — eine Gruppe, die SOWOHL eigene Optionen ALS AUCH
+ * Issue 0131, Kriterium 7 — eine Gruppe, die SOWOHL eigene Optionen ALS AUCH
  * Links auf andere Gruppen haelt, rendert beides in EINEM Abschnitt: die
  * eigenen Optionen als direkte Zeilen, die verlinkten Gruppen darin
  * verschachtelt.

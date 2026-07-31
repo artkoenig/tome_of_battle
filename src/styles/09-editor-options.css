@@ -144,7 +144,7 @@
   padding-left: 4px;
 }
 
-/* Eine Gruppe, die andere Gruppen hält (Container-Gruppe, Issue 0130): ihre
+/* Eine Gruppe, die andere Gruppen hält (Container-Gruppe, Issue 0131): ihre
    Mitglieder stehen im Items-Block der haltenden Gruppe. Der Block bringt
    Einrückung und Randlinie bereits mit — hier bleibt nur der Abstand zur
    vorangehenden Zeile bzw. Schwestergruppe. Rein visuell; die Regel nistet

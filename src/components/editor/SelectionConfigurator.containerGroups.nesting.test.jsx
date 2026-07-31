@@ -8,7 +8,7 @@ import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 /**
- * Issue 0130 — die beiden Kriterien, fuer die die whfb6-Fixture-Kataloge KEINEN
+ * Issue 0131 — die beiden Kriterien, fuer die die whfb6-Fixture-Kataloge KEINEN
  * Fall hergeben, an einem synthetischen Katalog:
  *
  * - Kriterium 6: Container im Container. Ueber „Ogre Kingdoms", „Orcs and

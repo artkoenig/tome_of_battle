@@ -13,7 +13,7 @@ When a `selectionEntryGroup` is hidden, the report drops the group's own anchor
 `isHidden: false`. On the unit card that option then renders as a stray row
 with no group around it, even though the group that owns it is hidden.
 
-Found while building a synthetic catalogue for issue 0130: a container whose
+Found while building a synthetic catalogue for issue 0131: a container whose
 only member was a group marked `hidden="true"` emitted no anchor for that
 member group, yet the option inside it stayed visible until the option itself
 was marked hidden too. Whether hiding a group is meant to hide what it holds is
@@ -48,9 +48,9 @@ Acceptance criteria:
 
 ## Log
 
-- Observed by the `test-author` subagent while writing tests for issue 0130,
+- Observed by the `test-author` subagent while writing tests for issue 0131,
   against a synthetic catalogue it built for that purpose. Kept out of those
-  tests deliberately: it is a different defect from the one 0130 is about.
+  tests deliberately: it is a different defect from the one 0131 is about.
 
 ## Checkpoints
 

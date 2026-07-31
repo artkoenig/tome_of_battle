@@ -128,7 +128,7 @@ export default function SelectionConfigurator({
    * (`groupAncestorIds`). Eine Gruppe, deren Kinder ausschließlich Links auf
    * andere Gruppen sind („Container-Gruppe"), hält ihre Mitglieder damit im
    * eigenen Abschnitt, statt sie als Geschwister neben sich zu stellen
-   * (Issue 0130).
+   * (Issue 0131).
    */
   const buildSections = (frameSelection, framePath) => {
     const structureItems = getUnitOptions(system, activeCatalogue?.id, frameSelection, visibilityContext);
@@ -261,7 +261,7 @@ export default function SelectionConfigurator({
     }
 
     // Ein Abschnitt ohne Optionszeilen UND ohne verbliebene Mitgliedsgruppen hat
-    // nichts zu zeigen und erscheint nicht (Issue 0130).
+    // nichts zu zeigen und erscheint nicht (Issue 0131).
     //
     // Das setzt voraus, dass der Konfigurator die Struktur dieses Rahmens kennt:
     // die Mitgliedschaft Option→Gruppe kommt aus dem Sammler, nicht aus dem

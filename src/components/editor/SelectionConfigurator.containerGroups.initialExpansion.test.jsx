@@ -15,7 +15,7 @@ import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 /**
- * Issue 0130, Kriterium 3 — „Eine verschachtelte Mitgliedsgruppe verhaelt sich
+ * Issue 0131, Kriterium 3 — „Eine verschachtelte Mitgliedsgruppe verhaelt sich
  * genau so, wie sie es heute allein stehend tut."
  *
  * Die Geschwisterdateien dieser Familie pruefen den AUFGEKLAPPTEN Kartenzustand:
@@ -298,7 +298,7 @@ describe('Kriterium 3 — eine allein stehende Gruppe klappt weiterhin selbst au
 });
 
 // ── Zwei Ebenen tief: die Kante, die die Fixture-Kataloge nicht hergeben ─────
-// ── (kein Container in einem Container, siehe Issue-Log zu 0130). ────────────
+// ── (kein Container in einem Container, siehe Issue-Log zu 0131). ────────────
 
 const COST_TYPE_ID = 'cost-pts';
 const OUTER_GROUP_ID = 'grp-outer';

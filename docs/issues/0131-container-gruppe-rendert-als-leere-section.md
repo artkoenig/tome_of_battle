@@ -162,7 +162,7 @@ Acceptance criteria:
   anchor disappear and its leaf flatten up one level.
 - Filed separately, not part of this run: an option held only by a hidden group
   keeps a visible offer anchor and renders as a stray ungrouped row
-  (issue 0131).
+  (issue 0132).
 - Criterion 7 turned out observable on the real catalogue after all: Vampire
   Counts `Magic Items` (`040b-d0d0-fe3b-9d13`, max 50) and its four linked
   groups each carry a constraint and so each produce a report anchor, flat at
@@ -230,7 +230,7 @@ Triage:
   shared id and no offer anchor for the link at all, so a `targetDefId`
   fallback in `holdsSelection` could not reach the case regardless —
   `section.group.items` holds no Wallcrusher entry to fall back on. The stray
-  row is a membership defect in the neighbourhood of issue 0131, not this
+  row is a membership defect in the neighbourhood of issue 0132, not this
   change's doing. Nothing was fixed for this finding.
   The reachability claim was wrong too, in a way the correction above did not
   catch. Executed in round 2: `syncRosterSelectionsWithSystem` leaves the
