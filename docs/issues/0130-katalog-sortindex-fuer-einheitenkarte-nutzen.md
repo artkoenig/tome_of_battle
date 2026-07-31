@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/katalog-sortierung-attribut-b3xm2k
 pr:
 ---
 
