@@ -215,12 +215,17 @@ function openDialog() {
 describe('CategoryUnitAdder: nur Einheiten des aktiven Katalogs (Issue 0121, Task 13, Kriterium 5)', () => {
   it('eine Einheit eines FREMDEN Armeebuchs erscheint gar nicht — auch nicht gesperrt', () => {
     const capabilities = capabilitiesOfDataset();
-    // Vorbedingung gegen den echten Bericht: der fremde Eintrag haengt als
-    // waehlbarer Angebots-Anker unter dem Kontingent.
-    expect(capabilityOf(capabilities, FOREIGN_ENTRY_ID)).toMatchObject({
-      anchorKind: 'offerAnchor',
-      isHidden: false,
-    });
+    // Vorbedingung, seit Issue 0140 umgekehrt: der fremde Eintrag haengt gar
+    // nicht mehr als Angebots-Anker unter dem Kontingent. Bis dahin lieferte
+    // die Engine ihn (Wurzel-Eintraege aller Kataloge wurden katalogfremd
+    // gepoolt), und diese Datei bewies, dass die **Oberflaeche** ihn ausblendet;
+    // seit Issue 0140 nennt das Roster der Engine das Armeebuch je Kontingent
+    // (`force.catalogueId`), und schon die Engine haelt ihn zurueck. Die
+    // nutzersichtbare Zusage bleibt woertlich dieselbe und wird unveraendert
+    // geprueft — der Dialog zeigt „Gorger" nicht; nur ihre Vorbedingung ist
+    // eine andere. Der UI-Filter selbst bleibt noetig: er deckt Faelle ab, die
+    // die Engine bewusst durchlaesst (etwa unbekannte Herkunft, siehe unten).
+    expect(capabilityOf(capabilities, FOREIGN_ENTRY_ID)).toBeUndefined();
 
     renderAdder({ capabilities });
     openDialog();

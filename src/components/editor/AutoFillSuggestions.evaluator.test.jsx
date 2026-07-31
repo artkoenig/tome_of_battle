@@ -934,12 +934,19 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
   describe('Kriterium 10: nur Einheiten aus dem Armeebuch dieses Kontingents, dem Spielsystem oder einer Bibliothek', () => {
     it('eine Einheit aus einem fremden Armeebuch erscheint nicht — die gleich teure aus dem eigenen schon', () => {
       const { capabilities } = originEvaluation();
-      // Vorbedingung gegen den echten Bericht: beide sind wählbare Angebots-Anker
-      // desselben Preises, sie unterscheiden sich NUR in der Herkunft.
-      expect(capabilityOf(capabilities, 'entry-foreign')).toMatchObject({
-        name: 'Vampirfuerst', anchorKind: 'offerAnchor', sourceId: FOREIGN_CATALOGUE_ID,
-        isHidden: false, isBlocked: false, costs: { [PTS]: 100 },
-      });
+      // Vorbedingung, seit Issue 0140 umgekehrt: der Eintrag des fremden
+      // Armeebuchs ist gar kein Angebots-Anker mehr. Bis dahin lieferte die
+      // Engine beide Einheiten desselben Preises und sie unterschieden sich NUR
+      // in der Herkunft — daran zeigte dieser Test, dass das **Panel** die
+      // fremde weglässt. Seit Issue 0140 reicht die App der Engine das
+      // Armeebuch je Kontingent durch (`force.catalogueId`; hier steht die
+      // Kontingent-Definition in der `.gst`, der Herkunftsindex kann also
+      // nichts beisteuern), und schon die Engine hält sie zurück. Die
+      // nutzersichtbare Zusage bleibt wörtlich dieselbe und wird unverändert
+      // geprüft; nur ihre Vorbedingung ist eine andere. Der eigene Eintrag
+      // bleibt selbstverständlich ein Anker — sonst prüfte der Kontrast unten
+      // nichts.
+      expect(capabilityOf(capabilities, 'entry-foreign')).toBeUndefined();
       expect(capabilityOf(capabilities, 'entry-own')).toMatchObject({
         name: 'Schlachtmeister', anchorKind: 'offerAnchor', sourceId: OWN_CATALOGUE_ID,
         costs: { [PTS]: 100 },
@@ -966,10 +973,27 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
     it('ohne `forceCatalogueId` gilt der aktive Katalog der Liste (dieselbe Rückfallregel wie im Aushebe-Dialog)', () => {
       // Derselbe Bericht, nur das „eigene" Armeebuch wechselt: jetzt ist der
       // Vampire-Counts-Katalog der eigene und Ogre Kingdoms das fremde.
+      //
+      // **Was sich umgekehrt hat:** Diese Zusage belegte früher, dass der
+      // Rückfall die Einheit des Vampire-Counts-Buchs („Vampirfuerst") *zeigt*.
+      // Die Voraussetzung dafür ist entfallen: Issue 0140 hat den
+      // Herkunftsfilter je Kontingent in die **Engine** verlegt — die App
+      // reicht ihr das Armeebuch des Kontingents durch (`force.catalogueId`,
+      // hier Ogre Kingdoms), und die Einheit des fremden Buchs ist gar kein
+      // Angebots-Anker mehr. Sie steht dem Panel also unabhängig von jeder
+      // Prop nicht mehr zur Auswahl.
+      //
+      // **Was unverändert gilt:** die Regel selbst — ohne `forceCatalogueId`
+      // filtert `activeCatalogue.id`. Gepinnt wird sie jetzt negativ: mit
+      // `forceCatalogueId: OWN_CATALOGUE_ID` schlägt das Panel
+      // „Schlachtmeister" vor (die beiden Fälle oben); greift der Rückfall auf
+      // den hier abweichenden aktiven Katalog, verschwindet genau dieser
+      // Vorschlag. Dieselbe Unterscheidung, andere Richtung.
       const { container } = renderOriginPanel({ activeCatalogueId: FOREIGN_CATALOGUE_ID });
 
+      expect(isShown(container, 'Schlachtmeister')).toBe(false);
       expect(shownInOrder(container, ORIGIN_NAMES)).toEqual(
-        ['Vampirfuerst', 'Soeldnerhauptmann', 'Grosses Banner', 'Namenlose Wache']);
+        ['Soeldnerhauptmann', 'Grosses Banner', 'Namenlose Wache']);
     });
   });
 });
