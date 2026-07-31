@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/magic-items-big-names-empty-ev7nom
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/187
 ---
 
 # Container group renders as an empty section instead of holding its member groups
@@ -371,3 +371,52 @@ the behaviour is kept, it wants a criterion of its own next time it is touched.
   overflows.
 
 ## Retro
+
+**What got in the way.**
+
+A reviewer's finding was named against an acceptance criterion before anyone
+executed its reproduction. It was wrong in every particular — the item it
+claimed was missing from the DOM was present, before the change as well as
+after, and the group it claimed used to open itself never did. The fix it
+implied could not have reached the case at all. That cost a round, and it cost
+it because the finding *read* well: it named files, lines and ids, and it came
+from a context that had already proved five other things by execution.
+
+What actually caught it was sending the `test-author` to write the failing test
+for it. A test that has to be red before the fix forces the old state to be
+rendered, and the old state is what refuted the finding. That is worth keeping
+as a habit rather than a rescue: the cheapest check on a regression claim is to
+run it on both revisions, and the test-first order does that by construction.
+
+The second thing was mine: `git add -A` swept a subagent's throwaway probe file
+into a commit. Subagents leave working files behind, and a blanket add does not
+know which are mine.
+
+**What should change.**
+
+1. **A finding that claims a regression is not triaged until its reproduction
+   has been executed on both revisions.** The rulebook already says a finding
+   without a concrete reproduction is not a finding; it does not say who runs
+   it. Reading a reproduction is not running it, and only the old state
+   distinguishes "this change broke it" from "it was always so". I propose this
+   as a sentence in the rulebook's triage rules in the `metis` repository.
+2. **The reviewer should be asked for both states, not one.** Its page tells it
+   to carry a concrete reproduction per finding. For a regression claim that
+   should mean the observed behaviour on both revisions, side by side — which
+   is exactly the form its round-2 correction took, unprompted, once it knew it
+   had been wrong.
+3. Smaller, no rule needed: stage by path when a subagent has been working in
+   the tree.
+
+**What worked, and is worth not losing.**
+
+The two questions put to the maintainer both changed the outcome. The first —
+whether to hide the empty section — would have quietly removed a working points
+budget from the card; the researcher's briefing surfaced that *before* the
+question was asked, which is why the question could be asked at all. The
+second, criterion 5's reading, was a genuine collision between two criteria
+that no amount of judgement should have settled alone.
+
+Mutation-testing the seven new tests rather than trusting them caught nothing
+wrong, but it is the only reason "these tests express the criterion" is a fact
+here instead of an opinion.
