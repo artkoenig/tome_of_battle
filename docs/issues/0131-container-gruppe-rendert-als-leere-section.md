@@ -319,6 +319,22 @@ the behaviour is kept, it wants a criterion of its own next time it is touched.
   typecheck` exit 0; `npm run depcruise` exit 0 with the pre-existing
   `no-circular` warning in `src/roster/modifierEvaluator.js`.
 
+### Renumbered after the rebase
+
+- After the PR was opened, `main` advanced and brought its own `0130`
+  (`0130-pflicht-min-am-wurzel-entrylink-wird-katalogfremd-erzwungen.md`).
+  This branch was rebased onto that `main`; the rebase itself was clean, since
+  the two files never shared a name. To keep the number unique, this issue
+  moved to `0131` and the hidden-group issue it filed moved from `0131` to
+  `0132`. The `Issue 0130` references in the tests, `SelectionConfigurator.jsx`,
+  `OptionGroup.jsx` and `09-editor-options.css` follow; the unrelated
+  `Issue 0130` comment in `src/evaluator/evalTree.js` belongs to main's issue
+  and was left alone.
+- After the rebase, on the renumbered tree: `npm test` (vitest plus the
+  puppeteer app E2E) exit 0; `npx vitest run src/components/editor` 34 files /
+  232 tests exit 0; `npm run lint` exit 0; `npm run typecheck` exit 0; `npm run
+  depcruise` exit 0, 439 modules, same pre-existing `no-circular` warning.
+
 ## Checkpoints
 
 ### Before implementation
