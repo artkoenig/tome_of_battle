@@ -1,5 +1,5 @@
 /**
- * Issue 0131, Kriterien 3-4 — `SelectionConfigurator.buildSections()` sortiert
+ * Issue 0133, Kriterien 3-4 — `SelectionConfigurator.buildSections()` sortiert
  * Abschnitte (Gruppen-Anker-Sektionen wie eigenständige Options-Zeilen)
  * primär aufsteigend nach `sortIndex` (eine Gruppen-Sektion nutzt den
  * `sortIndex` ihrer `selectionEntryGroup`, eine eigenständige Options-Zeile
@@ -200,7 +200,7 @@ function sectionOrder(container, candidateNames) {
     .filter(Boolean);
 }
 
-describe('SelectionConfigurator.buildSections: Reihenfolge nach sortIndex (Issue 0131, Kriterien 3-4)', () => {
+describe('SelectionConfigurator.buildSections: Reihenfolge nach sortIndex (Issue 0133, Kriterien 3-4)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

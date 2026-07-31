@@ -8,7 +8,7 @@ pr:
 
 ## Intent
 
-Gefunden bei der Review von Issue 0131 (`sortIndex`-Unterstützung): ein
+Gefunden bei der Review von Issue 0133 (`sortIndex`-Unterstützung): ein
 `sortIndex` auf einer `selectionEntryGroup` ohne eigene `<constraints>` löst
 in `src/evaluator/evalTree.js` einen Gruppen-Anker aus (`attachGroupAnchor`),
 damit sein deskriptiver Wert über `capabilities` erreichbar wird. Dieser Anker
@@ -24,7 +24,7 @@ leeren Sektions-Header ohne wählbare Optionen darunter — eine Regression, die
 es vor der Einführung des `sortIndex`-Ankers für eine solche Gruppe nicht gab
 (ohne Anker/ohne sichtbares Mitglied erschien vorher gar keine Sektion).
 
-Reproduktion (vom Reviewer von Issue 0131 gebaut und wieder entfernt, hier zur
+Reproduktion (vom Reviewer von Issue 0133 gebaut und wieder entfernt, hier zur
 Nachstellung beschrieben): eine `selectionEntryGroup` ohne `<constraints>`,
 deren einziges Mitglied `hidden="true"` trägt. Ohne `sortIndex` auf der Gruppe:
 `buildSections()` erzeugt keinen `.option-group-header`. Mit `sortIndex="1"`
@@ -51,11 +51,11 @@ Acceptance criteria:
 
 ## Log
 
-- Gefunden während der Review von Issue 0131 (fresh-review-Subagent), als
+- Gefunden während der Review von Issue 0133 (fresh-review-Subagent), als
   Nebenwirkung derselben `evalTree.js`-Änderung, die auch Befund 1 (Gültigkeits-
-  Urteile über grenzenlose Gruppen) auslöste. Befund 1 wurde in Issue 0131
+  Urteile über grenzenlose Gruppen) auslöste. Befund 1 wurde in Issue 0133
   selbst behoben (Trennung von Anker-Erzeugung und Mitglieder-Zählung); dieser
-  Befund verletzt keines der nummerierten Kriterien von Issue 0131 (die
+  Befund verletzt keines der nummerierten Kriterien von Issue 0133 (die
   betreffen nur Reihenfolge) und wird deshalb hier separat verfolgt, statt in
   denselben Diff gemischt zu werden.
 

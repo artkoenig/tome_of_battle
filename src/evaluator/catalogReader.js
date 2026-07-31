@@ -145,7 +145,7 @@ const Attr = Object.freeze({
   // Vorgabe `false`; Issue 0098).
   IMPORT_ROOT_ENTRIES: 'importRootEntries',
   // Community-Konvention ausserhalb der vendored Catalogue.xsd: die vom
-  // Katalogautor empfohlene Anzeigereihenfolge unter Geschwistern (Issue 0131).
+  // Katalogautor empfohlene Anzeigereihenfolge unter Geschwistern (Issue 0133).
   SORT_INDEX: 'sortIndex',
 });
 
@@ -387,7 +387,7 @@ function readPrimaryCategoryId(entryEl) {
  * Liest das `sortIndex`-Attribut eines Eintrags/einer Gruppe/eines Verweises:
  * rein deskriptiv, nie ein Gueltigkeits-Urteil. Fehlt es oder ist es nicht
  * numerisch, gilt das als "kein sortIndex" (`null`) — kein Fehler, keine
- * Diagnose, kein Ablehnen des Katalogs (Issue 0131). Vorhandene Werte werden
+ * Diagnose, kein Ablehnen des Katalogs (Issue 0133). Vorhandene Werte werden
  * zu einer Zahl, `0` und negative Werte eingeschlossen (beide sind gueltig,
  * trotz `0`s falsy-Zahlenwert).
  */

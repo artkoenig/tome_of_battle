@@ -1,5 +1,5 @@
 /**
- * Issue 0131, Kriterium 5 — in `OptionGroup.jsx` ersetzt `sortIndex` die
+ * Issue 0133, Kriterium 5 — in `OptionGroup.jsx` ersetzt `sortIndex` die
  * bisherige reine Kostensortierung (`.slice().sort((a,b) => pointsOf(b) -
  * pointsOf(a))`, absteigend): Optionen MIT `sortIndex` erscheinen zuerst,
  * aufsteigend sortiert. Optionen OHNE `sortIndex` werden danach angehängt und
@@ -171,7 +171,7 @@ function rowOrder(container) {
     .map(el => el.textContent.trim());
 }
 
-describe('OptionGroup: sortIndex ersetzt die Kostensortierung für getaggte Optionen (Issue 0131, Kriterium 5)', () => {
+describe('OptionGroup: sortIndex ersetzt die Kostensortierung für getaggte Optionen (Issue 0133, Kriterium 5)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

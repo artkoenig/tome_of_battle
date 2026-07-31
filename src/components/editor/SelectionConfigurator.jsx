@@ -286,7 +286,7 @@ export default function SelectionConfigurator({
       return section.group.items.length > 0 || section.children.length > 0;
     };
 
-    // Primaer aufsteigend nach sortIndex (Issue 0131, Kriterium 4), je Ebene
+    // Primaer aufsteigend nach sortIndex (Issue 0133, Kriterium 4), je Ebene
     // des Abschnittsbaums fuer sich: Sektionen ohne sortIndex bleiben
     // untereinander in der bisherigen Bericht-/Slot-Reihenfolge — ein stabiler
     // Sortierlauf ueber die schon in dieser Reihenfolge aufgebaute Liste
