@@ -114,6 +114,10 @@ Acceptance criteria:
   the configurator cannot tell "empty" from "unmapped", and dropping the
   section would take a group's limit off the card with it. Source: default,
   unanswered.
+- **No version bump.** A patch bump to 1.9.4 was proposed, since this is a
+  user-visible fix rather than a refactor. The maintainer chose to leave
+  `package.json` at 1.9.3, so the tag-on-version-bump workflow will not tag the
+  merge commit. Source: maintainer's answer, this session.
 - **Criterion 7's "beneath them" means hierarchy, not document order.** The
   `test-author` asked whether a mixed group must put its own rows above its
   nested groups. Left unpinned: the criterion is about what contains what, and
@@ -206,10 +210,9 @@ Triage:
   (`SelectionConfigurator.jsx:447`). A roster storing an option under its
   shared entry id rather than its link id leaves the container collapsed, so a
   chosen item is not in the DOM at all; before this change the member group was
-  top-level and opened itself. Reachable in the window before
-  `syncRosterSelectionsWithSystem` normalises ids — e.g. after a catalogue
-  update — and it persists, because the expanded state is a `useState`
-  initialiser. The reviewer named no criterion. **Named criterion 3 on triage
+  top-level and opened itself. Claimed reachable in the window before
+  `syncRosterSelectionsWithSystem` normalises ids. The reviewer named no
+  criterion. **Named criterion 3 on triage
   and fixed now:** "behaves exactly as it does today" is the criterion's
   general clause, and a member group that today opens itself to show its
   selection does not behave as it does today when it is hidden instead. The
@@ -229,6 +232,13 @@ Triage:
   `section.group.items` holds no Wallcrusher entry to fall back on. The stray
   row is a membership defect in the neighbourhood of issue 0131, not this
   change's doing. Nothing was fixed for this finding.
+  The reachability claim was wrong too, in a way the correction above did not
+  catch. Executed in round 2: `syncRosterSelectionsWithSystem` leaves the
+  shared-id state untouched (`rosterChanged=false`). The function that realigns
+  a target-id selection to its link id is `reconcileImportedSelectionIds`
+  (`src/roster/rosterSync.js:218`), and it runs on the import path
+  (`src/hooks/useRosterList.js:150`), not in the per-render effect — so the
+  state is repaired at import and never reaches the render at all.
 - **The lesson, recorded because it cost a round:** the reviewer's finding was
   taken at face value and named against a criterion before anyone re-ran its
   reproduction on both revisions. A finding's reproduction has to be executed,
@@ -263,6 +273,46 @@ mandatory group with a preselection still opens. No production code changed:
 A process slip worth the record: the probe file the `test-author` had on disk
 was swept into commit `1059cf5` by a `git add -A`. Removed in the commit that
 follows it.
+
+### Review round 2 — the same context continued
+
+**No new finding.** The reviewer withdrew its own round-1 finding 1 with the
+comparison executed on both revisions this time, and named why it had gone
+wrong: a DOM matcher that only accepted leaf elements, while an option's name
+sits in a `span` that also holds its rule chip. It corrected two further
+claims of its own that this record had copied — both fixed above.
+
+| criterion | round 1 | round 2 |
+| --- | --- | --- |
+| 1 container holds its members | 0 | 0 |
+| 2 the budget stays readable | 0 | 0 |
+| 3 a nested member behaves as today | 0 | 0 |
+| 4 nothing empty survives | 1 | 0 |
+| 5 non-containers unchanged | 1 | 0 |
+| 6 depth follows the catalogue | 0 | 0 |
+| 7 mixed groups | 0 | 0 |
+| violates no criterion | 3 | 0 |
+| **total** | **5** | **0** |
+
+The seven expansion tests were mutation-tested rather than taken on trust: five
+wrong implementations, each of the seven killed by at least one, and for four
+of the five mutations no file outside the new one fails — so the tests are
+neither vacuous nor a restatement of coverage that already existed. The
+recursion through nested containers is guarded **only** by the synthetic
+two-level scenario, because every real-catalogue case is one level deep.
+
+Facts by exit code this round: `npm test` — `vitest run` 255 files / 2651
+tests plus the puppeteer app E2E — exit 0; `npm run lint`, `npm run typecheck`
+exit 0; `npm run depcruise` exit 0, 439 modules, only the pre-existing
+`no-circular` warning. The reviewer ran the full suite deliberately: a new test
+file is the one kind of change that can do damage outside its own directory
+through leaked mocks or global state, and no production file had changed since
+round 1's verification.
+
+Carried forward, not acted on: the seven tests pin "a container opens itself
+for a chosen descendant", which criterion 3's letter does not name. The
+criteria are fixed once implementation starts, so it was not added as one. If
+the behaviour is kept, it wants a criterion of its own next time it is touched.
 - Baseline on the untouched tree, this branch: `npx vitest run
   src/components/editor` 30 files / 203 tests exit 0; `npx vitest run
   src/evaluator` 68 files / 860 tests exit 0; `npm run lint` exit 0; `npm run
@@ -292,8 +342,32 @@ follows it.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Yes, and more than was asked. The report
+  was one empty section on one Ogre card; the change removes 62 empty sections
+  across 357 cards in seven catalogues and re-parents groups on cards nobody
+  complained about — Vampire Counts `Bloodline`/`Armour`, the definitive
+  edition's `Hero from another faction` and `Magic > Lore of …`. That reach
+  follows from the maintainer's choice to follow the catalogue's structure
+  rather than patch the Ogre case, and they saw both alternatives before
+  choosing. The one card shape they were not shown is finding 2's — a
+  non-container moving inside its catalogue parent — and they settled that on
+  its own once it surfaced.
+- **What surprised me?** That a reviewer's finding, executed, was wrong in
+  every particular — and that I named it against a criterion before anyone
+  re-ran it. It cost a round. The second surprise is smaller and sits in the
+  change: a collapsed container keeps its members out of the DOM entirely, so
+  find-in-page or a screen reader will not reach a magic-item group until its
+  container is opened. That is what criterion 1 asks for, and it is a real
+  change to how the card can be searched.
+- **What am I assuming without having verified it?** That the fixtures stand
+  in for the catalogues users actually load. Every claim about reach — 100
+  container groups, 62 empty sections, 0 occurrences of the pruning carve-out,
+  no container inside a container — comes from the fixtures in this repository
+  and the definitive-edition set, not from the live catalogue fork. A
+  catalogue nesting one container in another would exercise a path guarded
+  only by a synthetic test. The mobile layout was the second thing on this
+  list and is no longer an assumption: the Tyrant card was rendered at 390 px
+  in a real browser, the five nested groups keep their indentation and nothing
+  overflows.
 
 ## Retro
