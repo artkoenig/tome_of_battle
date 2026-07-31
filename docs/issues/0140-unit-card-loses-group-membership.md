@@ -146,6 +146,41 @@ Acceptance criteria:
 - Not investigated, and not part of this issue: *why* the collector's
   `scope="unit"` category conditions evaluate differently from the report's.
   Criterion 4 pins that the offer itself must not move either way.
+- The `test-author` wrote two files —
+  `SelectionConfigurator.groupMembership.test.jsx` (14 tests, the reported
+  Thrall card through the production seam) and
+  `SelectionConfigurator.groupMembership.fixtureSweep.test.jsx` (5 tests over
+  all 208 `type="unit"` entries of the six fixture catalogues, one render pass
+  in `beforeAll`). **19 tests, 5 red, 14 green from the start.**
+  `npx vitest run src/components/editor` → 41 files, 312 tests, 5 failed, i.e.
+  all 293 pre-existing tests still pass.
+- The sweep reproduces the issue's own measurement to the number: 9 empty
+  sections on 7 of 208 cards — Wight Lord 1, `0-1 Vampire Lord` 1, Vampire
+  Count 1, Vampire Thrall 2, Zacharias 1, Vampire Fleet Captain 2, and
+  `0-1 Hill Goblins` 1 in Orcs and Goblins.
+- Criteria 4, 5, 6 and 7 are green from the start, and deliberately so.
+  Criterion 4 forbids change, so it cannot be red; it is expressed as an
+  invariant rather than a frozen artifact — a card's rows *are* the report's
+  offer, measured across all 208 cards. Criterion 5 is a regression guard
+  (`Asp Bow` is `isHidden: true` under both forces reachable from the
+  fixtures). Criterion 6 pins today's write call so the move cannot change it,
+  with `Frostblade` — already inside `Magic Weapons (VC)` — as the in-group
+  reference. Criterion 7 is issue 0131's outcome, which holds today.
+- Worth knowing: a naive "all rows equal all offers over all frames" does not
+  hold today. Nine cards (Goblin Spear Chukka, Wolf Chariots, Grimgor and
+  others) offer options under sub-unit frames that render on their own card, so
+  criterion 4's sweep is split into two assertions — rows outside a nested
+  block against the unit's own slot path, and no row anywhere naming something
+  the report does not offer.
+- **Open shape, left unasserted:** `Magic Weapons (Relics of Lustria)`
+  (`4f42-15c8-57d9-48e0`) is an `entryLink type="selectionEntryGroup"` inside
+  the group `Magic Weapons (VC)` (`Vampire Counts (6th definitive
+  edition).cat:21119`), yet the report gives it an `offerAnchor`, so it renders
+  as a homeless **row** rather than a section. A literal reading of criterion 3
+  moves it into `Magic Weapons (VC)`; criterion 4 pins it as a row, so turning
+  it into a section would go red. The issue never discussed this shape and the
+  `test-author` refused to guess. If an implementation collides with it, it is
+  a maintainer decision, not a criterion to reinterpret.
 
 ## Checkpoints
 
