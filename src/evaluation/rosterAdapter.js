@@ -9,9 +9,14 @@
  * - Force → `{ defId: forceEntryId, count: 1, children }`, dazu `catalogueId`,
  *   wenn das App-Kontingent sein Armeebuch nennt (`Force.catalogueId`, Issue
  *   0140). Die Fassade nimmt die Angabe je Kontingent-Knoten entgegen und
- *   filtert damit Pflichten und Wurzel-Angebote fremder Armeebuecher weg; ein
- *   Kontingent **ohne** Armeebuch-Id geht wie bisher ohne die Angabe durch —
- *   dann entscheidet allein der Herkunftsindex aus den Katalogdaten.
+ *   filtert damit Pflichten und Wurzel-Angebote fremder Armeebuecher weg, wo
+ *   die Katalogdaten selbst keine Herkunft hergeben. Gelesen wird **nur**
+ *   `force.catalogueId`, ohne Rueckfall auf `roster.catalogueId`: das ist das
+ *   Buch der **Liste**, und einem verbuendeten Kontingent ohne eigene Angabe
+ *   schluege es das falsche Buch zu — aktiv falsch gefiltert waere schlechter
+ *   als ungefiltert. Ein Kontingent **ohne** Armeebuch-Id geht wie bisher ohne
+ *   die Angabe durch; dann entscheidet allein der Herkunftsindex aus den
+ *   Katalogdaten.
  * - Selection → `{ defId: entryLinkId || selectionEntryId, count: number,
  *   children }`. Das ist die **Link-Id-Regel** (Issue 084, dokumentiert am
  *   Fassaden-Rand): eine ueber einen `entryLink` gesetzte Auswahl geht unter

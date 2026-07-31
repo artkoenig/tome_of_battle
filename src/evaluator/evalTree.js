@@ -876,7 +876,7 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  *   Der Instanzbaum. Ein Kontingent-Knoten darf sein Armeebuch nennen
  *   (`catalogueId`, Issue 0140); die Angabe landet geprueft am Knoten
  *   ({@link attachInstance}) und gilt dort, wo der Herkunftsindex schweigt.
- * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string> }} [catalogueScope]
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string>, linkedCatalogueIdsById?: Map<string, Set<string>> }} [catalogueScope]
  *   Der Katalog-Bezugsrahmen (Issue 0098): schneidet die Pflicht-Phantom-Synthese
  *   auf Definitionen zu, deren Herkunft zu den im Roster tatsaechlich
  *   vertretenen Kontingent-Katalogen gehoert — Spielsystem und

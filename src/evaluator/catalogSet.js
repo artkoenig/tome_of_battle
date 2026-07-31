@@ -321,6 +321,38 @@ export function buildLibraryCatalogueIds(catalogueDocuments) {
 }
 
 /**
+ * Baut je Katalog die Menge der Kataloge, ueber die er sich **ausdruecklich
+ * geaeussert** hat: die Ziele seiner `catalogueLink`s, unabhaengig von
+ * `importRootEntries` (`Map<catalogueId, Set<catalogueId>>`, Issue 0140).
+ *
+ * Er sagt, wo die Bibliotheks-Ausnahme in {@link isInCatalogueScope} **nicht**
+ * greift. Ein `catalogueLink` ist die Aussage eines Armeebuchs ueber genau
+ * diesen anderen Katalog; ob es dessen Wurzel-Angebot uebernimmt, sagt
+ * `importRootEntries`, und diese Aussage gilt (Issue 0098, Kriterium 3) — auch
+ * fuer eine Bibliothek. Wo ein Armeebuch dagegen **gar nichts** gesagt hat,
+ * gibt es keine Aussage zu achten, und ein geteilter Vorrat bleibt geteilt.
+ *
+ * Nur **direkte** Links zaehlen: eine Aussage ueber einen Katalog trifft, wer
+ * sie hinschreibt; die transitive Kette bildet der Fussabdruck ab
+ * ({@link buildCatalogueRootEntryClosure}).
+ *
+ * @param {Array<{ id?: string|null, catalogueLinks?: Array<{ targetId: string }> }>} catalogueDocuments
+ *   Die gelesenen **Katalog**-Dokumente (`.cat`) in Aufruf-Reihenfolge.
+ * @returns {Map<string, Set<string>>} Katalog-Id → Ids der von ihm verlinkten Kataloge.
+ */
+export function buildDeclaredCatalogueLinkIndex(catalogueDocuments) {
+  /** @type {Map<string, Set<string>>} */
+  const byCatalogueId = new Map();
+  for (const document of catalogueDocuments) {
+    if (document.id === null || document.id === undefined) continue;
+    const targets = byCatalogueId.get(document.id) ?? new Set();
+    for (const link of document.catalogueLinks ?? []) targets.add(link.targetId);
+    byCatalogueId.set(document.id, targets);
+  }
+  return byCatalogueId;
+}
+
+/**
  * True, wenn eine Definition zum Katalog-Fussabdruck **irgendeines** der
  * gegebenen Referenz-Kataloge gehoert (Issue 0098) — die **eine** Pruefung,
  * die sowohl der Pflicht-Phantom-Synthese (`evalTree.js`, je Kontingent ein
@@ -337,13 +369,21 @@ export function buildLibraryCatalogueIds(catalogueDocuments) {
  *   nicht) — kein Katalog, den man ausschliessen koennte;
  * - fuer das Spielsystem selbst (`gameSystemId`) — spielsystemweite
  *   Wurzel-Eintraege gelten in jedem Kontingent;
- * - fuer einen **Bibliothekskatalog** (`libraryCatalogueIds`, Issue 0140) —
+ * - fuer einen **Bibliothekskatalog**, ueber den der Referenz-Katalog nichts
+ *   gesagt hat (`libraryCatalogueIds` + `linkedCatalogueIdsById`, Issue 0140) —
  *   eine Bibliothek ist kein Armeebuch, sondern ein geteilter Vorrat, den jedes
  *   Armeebuch benutzt; sie kann deshalb nie das *fremde* Armeebuch sein, gegen
  *   das dieser Rahmen schuetzt (derselbe Grund wie beim Spielsystem, und der
  *   schon festgelegte Vertrag aus Issue 0121/0135: Spielsystem- und
- *   Bibliothekseintraege erscheinen ueberall). Fehlt die Menge, wird nichts
- *   zusaetzlich ausgenommen — die Ausnahme fuegt nur hinzu, was belegt ist;
+ *   Bibliothekseintraege erscheinen ueberall).
+ *
+ *   **Die Grenze der Ausnahme:** hat das Armeebuch die Bibliothek per
+ *   `catalogueLink` ausdruecklich benannt, gilt seine Aussage — dann
+ *   entscheidet allein `importRootEntries` ueber ihr Wurzel-Angebot (Issue
+ *   0098, Kriterium 3, dort mit einer `library="true"`-Quelle belegt). Die
+ *   Ausnahme greift also genau dort, wo **keine** Aussage vorliegt: unstated
+ *   ist kein Ausschlussgrund, hingeschrieben schon. Fehlt eine der beiden
+ *   Mengen, wird nichts zusaetzlich ausgeschlossen;
  * - ohne **jeden** Referenz-Katalog (leere Menge, z. B. ein Roster ohne
  *   Kontingente oder ein Kontingent mit unbekanntem Katalog) — es gibt
  *   nichts, wogegen auszuschliessen waere.
@@ -355,20 +395,26 @@ export function buildLibraryCatalogueIds(catalogueDocuments) {
  *   vertretenen Kontingente. Woher der Katalog eines Kontingents kommt,
  *   beantwortet {@link forceCatalogueIdOf} — Herkunftsindex vor Angabe des
  *   Rosters.
- * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string> }} [catalogueScope]
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string>, linkedCatalogueIdsById?: Map<string, Set<string>> }} [catalogueScope]
  * @returns {boolean}
  */
 export function isInCatalogueScope(defId, referenceCatalogueIds, catalogueScope) {
   if (catalogueScope === null || catalogueScope === undefined) return true;
-  const { sourceIdByDefId, catalogueRootEntryClosureById, gameSystemId, libraryCatalogueIds } = catalogueScope;
+  const {
+    sourceIdByDefId, catalogueRootEntryClosureById, gameSystemId,
+    libraryCatalogueIds, linkedCatalogueIdsById,
+  } = catalogueScope;
   const sourceId = sourceIdByDefId.get(defId);
   if (sourceId === undefined || sourceId === null) return true;
   if (sourceId === gameSystemId) return true;
-  if (libraryCatalogueIds?.has(sourceId)) return true;
+  const isFromLibrary = libraryCatalogueIds?.has(sourceId) === true;
   let hasAnyReference = false;
   for (const catalogueId of referenceCatalogueIds) {
     hasAnyReference = true;
     if (catalogueRootEntryClosureById.get(catalogueId)?.has(sourceId)) return true;
+    // Eine Bibliothek, ueber die genau dieses Armeebuch nichts gesagt hat:
+    // geteilter Vorrat, kein fremdes Buch.
+    if (isFromLibrary && linkedCatalogueIdsById?.get(catalogueId)?.has(sourceId) !== true) return true;
   }
   return !hasAnyReference;
 }

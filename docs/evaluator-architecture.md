@@ -268,9 +268,11 @@ record InstanceNode { defId: Id, count: number, catalogueId: Id?, children: Inst
                       // catalogueId: NUR am Kontingent-Knoten und optional — das Armeebuch,
                       // aus dem das Kontingent stammt (Issue 0140). Je KNOTEN, nicht je
                       // Definition (Verbündete: zwei Kontingente derselben Definition aus
-                      // zwei Büchern). Wo sie steht, schlägt sie den Herkunftsindex aus den
-                      // Katalogdaten (§3.1) — sonst hätte ein in der .gst deklariertes
-                      // Kontingent gar kein Armeebuch. Unbekannte Id ⇒ wie keine Angabe.
+                      // zwei Büchern). Sie FÜLLT DIE LÜCKE des Herkunftsindex (§3.1) und
+                      // überschreibt ihn nie: steht die Kontingent-Definition in einem
+                      // .cat, gilt dessen Buch, ein anderslautendes Attribut ist
+                      // Metadatenmüll. Gelesen wird sie also genau dort, wo die
+                      // Kontingente in der .gst stehen. Unbekannte Id ⇒ wie keine Angabe.
 record CostLimit    { costTypeId: Id, value: number }                    // eine eingestellte Grenze je Kostenart
 record Roster       { forces: InstanceNode[], costLimits: CostLimit[] }  // costLimits: das eingestellte Budget je Kostenart (vollständige Liste)
 
@@ -304,7 +306,8 @@ record EvalNode {
   declaredCatalogueId: Id?         // nur am Kontingent-Knoten: das vom ROSTER genannte
                                    // Armeebuch (InstanceNode.catalogueId), beim Aufbau
                                    // einmal gegen die Kataloge des Datensatzes geprüft
-                                   // (Issue 0140). Gelesen über forceCatalogueIdOf.
+                                   // (Issue 0140). Gelesen über forceCatalogueIdOf —
+                                   // erst, wenn der Herkunftsindex nichts weiß.
 }
 
 // Träger = der Knoten selbst oder eines seiner Info-Elemente (§3.4).
@@ -532,9 +535,9 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
   // dieses hier?". Deshalb vor jeder Rahmen-/Indexarbeit und unabhängig von `shared`
   // (Issue 077). Das Armeebuch eines Kontingents hat ZWEI Quellen, und dieselbe eine
   // Stelle beantwortet sie für Pflicht, Angebot und diesen Rahmen (forceCatalogueIdOf,
-  // catalogSet.js, Issue 0140): zuerst die Angabe des Rosters am Kontingent-Knoten
-  // (InstanceNode.catalogueId), ersatzweise der Herkunftsindex aus dem Katalog-Vorlauf
-  // (ctx.primaryCatalogueByForceDefId, §3.1).
+  // catalogSet.js, Issue 0140): zuerst der Herkunftsindex aus dem Katalog-Vorlauf
+  // (ctx.primaryCatalogueByForceDefId, §3.1), und nur wo der schweigt die Angabe des
+  // Rosters am Kontingent-Knoten (InstanceNode.catalogueId).
   if scope == PRIMARY_CATALOGUE:
     if field != SELECTION_COUNT:
       ctx.diagnostics.add(Diagnostic.UNSUPPORTED_FIELD(field)); return 0

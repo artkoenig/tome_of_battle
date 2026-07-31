@@ -231,7 +231,7 @@ export function evaluate(prepared, roster, options) {
   const contents = PreparedDataset.contentsOf(prepared);
   const {
     resolved, primaryCatalogueByForceDefId, sourceIdByDefId, catalogueRootEntryClosureById,
-    libraryCatalogueIds, gameSystemDocument, diagnostics: datasetDiagnostics,
+    libraryCatalogueIds, linkedCatalogueIdsById, gameSystemDocument, diagnostics: datasetDiagnostics,
   } = contents;
 
   // Der Katalog-Bezugsrahmen (Issue 0098): welche Herkunft zu welchem
@@ -240,12 +240,15 @@ export function evaluate(prepared, roster, options) {
   // Wurzel-Eintrag oder ein roster-skopiertes Pflicht-Minimum eines fremden
   // Katalogs weder angeboten noch erzwungen wird. Ausgenommen sind — neben dem
   // Spielsystem — die Bibliothekskataloge: eine Bibliothek ist ein geteilter
-  // Vorrat, kein fremdes Armeebuch (Issue 0140).
+  // Vorrat, kein fremdes Armeebuch (Issue 0140). `linkedCatalogueIdsById` zieht
+  // die Grenze dieser Ausnahme: hat ein Armeebuch die Bibliothek per
+  // `catalogueLink` ausdruecklich benannt, gilt seine Aussage (Issue 0098).
   const catalogueScope = {
     sourceIdByDefId,
     catalogueRootEntryClosureById,
     gameSystemId: gameSystemDocument?.id ?? null,
     libraryCatalogueIds,
+    linkedCatalogueIdsById,
   };
 
   // ── Abschnitt 1: die iterierte Auswertung ─────────────────────────────────

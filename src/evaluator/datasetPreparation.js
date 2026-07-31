@@ -32,6 +32,7 @@ import {
   buildDefinitionSourceIndex,
   buildCatalogueRootEntryClosure,
   buildLibraryCatalogueIds,
+  buildDeclaredCatalogueLinkIndex,
 } from './catalogSet.js';
 import { resolveCatalogue } from './resolver.js';
 import { DiagnosticKind, diagnostic } from './model.js';
@@ -89,10 +90,10 @@ function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnosti
  * bezweckt (ADR-0034).
  */
 export class PreparedDataset {
-  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, diagnostics: object[] }} */
+  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, linkedCatalogueIdsById: Map<string, Set<string>>, diagnostics: object[] }} */
   #contents;
 
-  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, diagnostics: object[] }} contents */
+  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, linkedCatalogueIdsById: Map<string, Set<string>>, diagnostics: object[] }} contents */
   constructor(contents) {
     this.#contents = contents;
   }
@@ -101,7 +102,7 @@ export class PreparedDataset {
    * Der Inhalt eines aufbereiteten Datensatzes — **engine-intern**.
    *
    * @param {PreparedDataset} prepared  Das Ergebnis von {@link prepareDataset}.
-   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, diagnostics: object[] }}
+   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, linkedCatalogueIdsById: Map<string, Set<string>>, diagnostics: object[] }}
    * @throws {TypeError} Wenn kein aufbereiteter Datensatz uebergeben wurde. Das ist
    *   der haeufigste Aufruffehler der zweistufigen Fassade — ein roher Datensatz
    *   `{ gameSystem, catalogues }` statt seines aufbereiteten Ergebnisses —, und er
@@ -213,6 +214,9 @@ function prepare(dataset) {
     // Ebenfalls nur die Kataloge: das `library`-Kennzeichen ist ein Attribut der
     // `.cat`-Wurzel; ein Bibliothekskatalog ist nie ein fremdes Armeebuch (Issue 0140).
     libraryCatalogueIds: buildLibraryCatalogueIds(catalogueDocuments),
+    // Worueber ein Katalog sich per `catalogueLink` ausdruecklich geaeussert hat:
+    // die Grenze der Bibliotheks-Ausnahme (Issue 0140, siehe isInCatalogueScope).
+    linkedCatalogueIdsById: buildDeclaredCatalogueLinkIndex(catalogueDocuments),
     diagnostics: [...merged.diagnostics, ...coherenceDiagnostics, ...resolved.diagnostics],
   });
 }

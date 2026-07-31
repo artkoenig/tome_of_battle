@@ -71,10 +71,11 @@ const UNIT_TYPE = 'unit';
  *   Folge-Slice; fehlt es, gilt das leere Budget.
  * @param {Map<string, string>} [parts.primaryCatalogueByForceDefId]  der
  *   Herkunftsindex der Kontingente (`catalogSet.js`): je Kontingent-Definition
- *   das Armeebuch, das sie deklariert. Er ist die **zweite** Quelle des
- *   Bezugsrahmens `primary-catalogue` — die erste ist die Armeebuch-Angabe des
- *   Rosters am Kontingent-Knoten selbst (Issue 0140). Fehlt er, gilt die leere
- *   Zuordnung; ohne beide bleibt eine solche Query fail-closed unaufgeloest.
+ *   das Armeebuch, das sie deklariert. Er ist die **erste** Quelle des
+ *   Bezugsrahmens `primary-catalogue`; wo er schweigt, springt die
+ *   Armeebuch-Angabe des Rosters am Kontingent-Knoten ein (Issue 0140). Fehlt
+ *   er, gilt die leere Zuordnung; ohne beide bleibt eine solche Query
+ *   fail-closed unaufgeloest.
  * @param {import('./effectiveState.js').EffectiveState} [parts.effective]  die
  *   Effektiv-Werte der Knoten. Der Bezugsrahmen `ancestor` liest daraus die
  *   **effektiven** Kategorien der Vorfahren (Issue 086 — alle realen Vorkommen
@@ -244,10 +245,12 @@ function resolveLimitValue(ctx, field, scope) {
  *
  * Welches Armeebuch das umschliessende Kontingent hat, beantwortet dieselbe
  * eine Stelle wie fuer Pflicht und Angebot ({@link forceCatalogueIdOf}, Issue
- * 0140): zuerst die **Angabe des Rosters** am Kontingent-Knoten, ersatzweise
- * der Herkunftsindex aus den Katalogdaten. Ein in der Spielsystemdatei
- * deklariertes Kontingent loest damit auf, sobald das Roster sein Armeebuch
- * nennt; nennt es keines, bleibt es beim fail-closed `unresolvedScope`.
+ * 0140): zuerst der **Herkunftsindex** aus den Katalogdaten, und nur wo der
+ * schweigt die **Angabe des Rosters** am Kontingent-Knoten. Ein in der
+ * Spielsystemdatei deklariertes Kontingent loest damit auf, sobald das Roster
+ * sein Armeebuch nennt; nennt es keines, bleibt es beim fail-closed
+ * `unresolvedScope`. Ein Roster, das dem Index widerspricht, aendert dagegen
+ * nichts — die Definition entscheidet.
  *
  * Eine Katalog-Id, die in diesem Datensatz gar nicht geladen ist (in den
  * Fixture-Daten kommt das vor), ist als **`targetId`** ein schlichter

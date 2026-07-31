@@ -193,7 +193,7 @@ function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalo
  *
  * @param {object} root  Wurzel des Auswertungsbaums nach Baumphase 1.
  * @param {{ armyLevelCandidates?: object[] }} resolved  die aufgeloeste Katalogsicht.
- * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string> }} [catalogueScope]
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string>, linkedCatalogueIdsById?: Map<string, Set<string>> }} [catalogueScope]
  *   Der Katalog-Bezugsrahmen (Issue 0098, siehe {@link candidatesFor}). Ohne ihn
  *   (`undefined`) ungefiltertes, unveraendertes Verhalten.
  * @param {Map<string, string>} [primaryCatalogueByForceDefId]  Der Herkunftsindex
