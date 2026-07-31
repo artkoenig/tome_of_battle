@@ -105,7 +105,7 @@ Acceptance criteria:
    display state and the same write for the same slot state.
 6. No card contradicts itself. Wherever a group header carries the unmet-
    obligation error styling, no row inside that section renders as taken.
-7. Issue 0140's outcome holds: the section tree, the section titles and the
+7. Issue 0143's outcome holds: the section tree, the section titles and the
    per-card row multiset are unchanged, except where criterion 1 now creates a
    member that was missing.
 
@@ -117,12 +117,12 @@ Acceptance criteria:
 
 - **Both defects are fixed, not one.** Four shapes were put to the maintainer:
   create-and-display, display only, create only, or reverting just the one row
-  issue 0140 caused. They chose create-and-display. Source: maintainer's
+  issue 0143 caused. They chose create-and-display. Source: maintainer's
   answer, this session.
 
 ## Log
 
-- Filed out of issue 0140's second review round, which measured the whole reach
+- Filed out of issue 0143's second review round, which measured the whole reach
   of that issue's fix by clicking every control on all 208 unit cards of the
   six fixture catalogues on three revisions (`origin/main` `0598752`, the
   round-1 tip `02a24b3`, and `545a7a7`). Exactly 7 rows on 6 cards differ from
@@ -132,10 +132,10 @@ Acceptance criteria:
   locked-and-checked radios sit in sections that render exactly one row, so no
   user faces a capped group whose only taken option is locked while a sibling
   is offered. `Magic Level 4` is the sole row that loses an *add*.
-- Triage in 0140: violates none of that issue's numbered criteria — criterion 6
+- Triage in 0143: violates none of that issue's numbered criteria — criterion 6
   speaks of an option that *moves* into a group, and these seven did not move.
   Filed rather than fixed there.
-- The maintainer chose to repair this issue before issue 0140 lands, so the two
+- The maintainer chose to repair this issue before issue 0143 lands, so the two
   go out as one change on the same branch. Source: maintainer's answer, this
   session.
 - **Two claims in this issue's first Intent were wrong, both corrected above
@@ -143,7 +143,7 @@ Acceptance criteria:
   from the card" holds for 80 of 83 rows, not all: the quantity-stepper path
   never honoured `isMandatory`, so its `+` button writes today
   (`SelectionConfigurator.jsx:518`, `OptionGroup.jsx:346`). Second, this issue
-  framed `Magic Level 4` as the case. It is the only one issue **0140** caused;
+  framed `Magic Level 4` as the case. It is the only one issue **0143** caused;
   74 rows on the two checkbox paths were already in this state on
   `origin/main`, untouched by that diff. The decision reaches 83 rows on 36
   cards, not one.
@@ -171,12 +171,12 @@ Acceptance criteria:
   user anywhere in `src/` — dead style, and conspicuously the name a "taken"
   hint would want.
 - **Collision to settle first, and the reason this cannot be a small change.**
-  `Lore of Necromancy` — the row issue 0140's review round 1 turned on — is
+  `Lore of Necromancy` — the row issue 0143's review round 1 turned on — is
   itself a `mandatoryPhantom`, i.e. an *unmet* obligation. Five assertions in
   `SelectionConfigurator.mandatoryInCappedGroup.test.jsx` pin it as `checked`,
   written on a recorded judgment call. If criterion 1 settles that an unmet
   obligation must look unmet, those five assertions are wrong and this issue
-  corrects them. The reviewer of 0140 predicted exactly this lock-in and named
+  corrects them. The reviewer of 0143 predicted exactly this lock-in and named
   its cost; it is being paid here rather than argued away. Both issues are
   unmerged and on one branch, so the correction is ordinary work, not a revert.
 
@@ -188,7 +188,7 @@ Acceptance criteria:
   their reach and chose the widest but one — create what the catalogue demands,
   and stop the card claiming an outstanding obligation is met. What they were
   not shown, because it only became visible while writing the criteria: 74 of
-  the 83 rows were already like this before issue 0140, so most of this change
+  the 83 rows were already like this before issue 0143, so most of this change
   repairs something nobody reported. That follows from their choice rather than
   going against it, but it is worth their knowing.
 - **What surprised me?** That the card already contradicts itself in two
@@ -203,7 +203,7 @@ Acceptance criteria:
   measured on that. Also that `defaultSelectionEntryId` matters anywhere in
   these catalogues: the one occurrence found points at an id that exists
   nowhere, so criterion 2 may be pinning a rule the fixtures never exercise.
-  And, as in issue 0140, that the six fixture catalogues stand in for what
+  And, as in issue 0143, that the six fixture catalogues stand in for what
   users load.
 
 ### Before the PR

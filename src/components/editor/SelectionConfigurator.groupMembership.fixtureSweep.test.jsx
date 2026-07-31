@@ -13,7 +13,7 @@ import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 /**
- * Issue 0140, Kriterium 2 und 4 (und der Breitentest zu Kriterium 7) — ueber
+ * Issue 0143, Kriterium 2 und 4 (und der Breitentest zu Kriterium 7) — ueber
  * ALLE Einheiten der sechs Fixture-Kataloge.
  *
  * Jede Einheit (`type="unit"`) der drei Kataloge unter
@@ -241,7 +241,7 @@ beforeAll(() => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Issue 0140 — alle Einheiten der sechs Fixture-Kataloge', () => {
+describe('Issue 0143 — alle Einheiten der sechs Fixture-Kataloge', () => {
   test('der Durchlauf deckt die 208 Einheitenkarten ab und rendert Abschnitte (Positivkontrolle)', () => {
     expect(cards).toHaveLength(EXPECTED_CARDS);
     expect(cards.filter(c => c.sectionCount > 0).length,

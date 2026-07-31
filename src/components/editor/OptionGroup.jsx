@@ -290,7 +290,7 @@ export default function OptionGroupComponent({
                         // im Checkbox-Zweig darunter und auf dem gruppenlosen Pfad des
                         // Konfigurators. Dass die Gruppe eine Obergrenze trägt und die
                         // Zeile deshalb als Radio rendert, ändert daran nichts
-                        // (Issue 0140, Kriterium 6).
+                        // (Issue 0143, Kriterium 6).
                         checked={count > 0 || isMandatory}
                         disabled={isMandatory || (count === 0 && isSelectDisabled)}
                         onClick={(e) => {

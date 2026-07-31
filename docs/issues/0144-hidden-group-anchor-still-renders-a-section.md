@@ -15,18 +15,18 @@ groups. A group the report marks hidden therefore keeps its header, its title
 and its limit on the unit card as long as at least one of its members is
 visible.
 
-Found by the reviewer of issue 0140, executed on both revisions by intersecting
+Found by the reviewer of issue 0143, executed on both revisions by intersecting
 each card's section titles with the names of `groupAnchor` capabilities
 carrying `isHidden: true`, across all 208 `type="unit"` entries of the six
 fixture catalogues:
 
-- before issue 0140: **1 card** — `Necromancer`, section `Magic Items`.
-- after issue 0140: **7 cards** — `Zombies` / `Weapons`, `Necromancer` /
+- before issue 0143: **1 card** — `Necromancer`, section `Magic Items`.
+- after issue 0143: **7 cards** — `Zombies` / `Weapons`, `Necromancer` /
   `Magic Items`, and `Lores of Magic` on `Master Necromancer`,
   `0-1 Vampire Lord`, `Vampire Count`, `Zacharias the Everliving` and
   `Sethep, the Merciless`.
 
-The hole is older than issue 0140; that change widened it, because it is what
+The hole is older than issue 0143; that change widened it, because it is what
 moves those rows into their catalogue groups in the first place.
 
 Identity is exact for `Lores of Magic`, not merely name-matched: the report
@@ -56,7 +56,7 @@ Acceptance criteria:
 3. Whatever a hidden group's visible members do instead — rise to the enclosing
    level or disappear with it — follows from criterion 1's answer and is
    recorded here before implementation.
-4. Issue 0140's outcome holds unchanged: no untitled section, no barren
+4. Issue 0143's outcome holds unchanged: no untitled section, no barren
    section, container groups keep their catalogue name and depth, and the
    multiset of option rows per card is unchanged except for what criterion 3
    decides.
@@ -69,21 +69,21 @@ Acceptance criteria:
 
 ## Log
 
-- Filed out of issue 0140's first review round. That round's triage: the
-  finding violates none of 0140's numbered criteria — criterion 5 speaks of
+- Filed out of issue 0143's first review round. That round's triage: the
+  finding violates none of 0143's numbered criteria — criterion 5 speaks of
   option *rows*, and no hidden option row appears — so it is filed rather than
   fixed in that diff.
-- The one thing fixed in 0140 instead: that change added a comment claiming
+- The one thing fixed in 0143 instead: that change added a comment claiming
   "was sichtbar ist, sagt allein der Bericht (`isHidden`, ADR-0035)"
   (`SelectionConfigurator.jsx:29-33`), which this hole makes false. A statement
   a diff makes false is corrected in that same diff; the behaviour is this
   issue's.
-- Neighbouring blind spot, same cause, recorded in 0140 and unfixed there: a
+- Neighbouring blind spot, same cause, recorded in 0143 and unfixed there: a
   section created from a descendant's ancestor chain reads `groupInfoById` at
   creation time and so loses the group's `constraints`/`modifiers`, not only
   its name. Section-level report data is consulted for `sortIndex` and `name`
   and nothing else. It costs nothing in the fixtures — rendered limit text is
-  identical on all 208 cards before and after 0140 — but it is the same
+  identical on all 208 cards before and after 0143 — but it is the same
   omission.
 
 ## Checkpoints

@@ -13,7 +13,7 @@ import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 /**
- * Issue 0140 — „Die Einheitenkarte verliert die Gruppenzugehoerigkeit:
+ * Issue 0143 — „Die Einheitenkarte verliert die Gruppenzugehoerigkeit:
  * namenlose Abschnitte und heimatlose Options-Zeilen".
  *
  * Diese Datei prueft die Kriterien 1, 3, 5, 6 und 7 am gemeldeten Fall: dem

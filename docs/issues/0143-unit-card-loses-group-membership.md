@@ -116,16 +116,16 @@ Acceptance criteria:
   user-facing fix rather than a refactor. The maintainer chose to leave
   `package.json` at 1.9.3 — the same call they made on issue 0131. Source:
   maintainer's answer, this session.
-- **This issue waits for issue 0142 and lands with it.** Round 2's finding —
+- **This issue waits for issue 0145 and lands with it.** Round 2's finding —
   an unmet obligation that now looks satisfied and can no longer be satisfied
-  from the card — violates none of this issue's criteria and was filed as 0142.
-  Put to the maintainer as a choice between shipping 0140 alone and repairing
-  0142 first; they chose to repair it first. Source: maintainer's answer, this
+  from the card — violates none of this issue's criteria and was filed as 0145.
+  Put to the maintainer as a choice between shipping 0143 alone and repairing
+  0145 first; they chose to repair it first. Source: maintainer's answer, this
   session. Consequence: no pull request is opened for this issue on its own,
   its `status` stays `active`, and the branch carries both.
 - **One branch carries two issues, against the bookkeeping rule.** The rulebook
   says one issue is one branch is one pull request. This session's branch is
-  fixed by its harness, and 0140 now waits for 0142 by the maintainer's choice,
+  fixed by its harness, and 0143 now waits for 0145 by the maintainer's choice,
   so the two land as one change on `claude/plugin-update-metis-nzhs4f`. Source:
   default, unanswered — recorded because it is a deviation, not because it was
   chosen freely.
@@ -329,12 +329,12 @@ control and the label.
 - **The mandatory lock reaches 7 rows on 6 cards the finding never named.**
   Violates no criterion — criterion 6 speaks of an option that *moves* into a
   group, and these seven were already radios in capped groups on `main`.
-  **Filed as issue 0142, not fixed here.** Six of the seven lose only the
+  **Filed as issue 0145, not fixed here.** Six of the seven lose only the
   ability to remove a pick the catalogue demands, which is a repair; the
   seventh, `Magic Level 4` on `Zacharias the Everliving`, is an *unmet*
   obligation (`current: 0`) that rendered unchecked and addable on `main` and
   now renders checked and locked — it looks satisfied while it is not, and no
-  path from the card satisfies it. That is 0142's subject.
+  path from the card satisfies it. That is 0145's subject.
 - Established alongside it, and the reason the lock is not itself a defect: all
   12 locked-and-checked radios on this tree sit in sections rendering exactly
   one row, so no user is stranded in a capped group whose only taken option is
@@ -348,7 +348,7 @@ The reviewer also weighed the five display assertions written on a judgment
 call and did not find them incorrect or code-mirroring: `checked` was taken
 from `origin/main`'s observed rendering, which it had captured itself in round
 1. The cost it names is lock-in — future work wanting an unmet obligation to
-*look* unmet (plausibly issue 0142) must edit assertions filed under a
+*look* unmet (plausibly issue 0145) must edit assertions filed under a
 criterion-6 heading, where a later reader would not look for a display
 decision. The test file's header discloses the judgment call, which limits it.
 

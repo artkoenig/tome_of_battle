@@ -13,7 +13,7 @@ import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 
 /**
- * Issue 0140, Kriterium 6 — „Die Wahl einer Option, die in eine Gruppe zieht,
+ * Issue 0143, Kriterium 6 — „Die Wahl einer Option, die in eine Gruppe zieht,
  * loest dieselbe Schreiboperation an derselben Zielselektion aus wie vor dieser
  * Aenderung."
  *
@@ -149,7 +149,7 @@ function renderCard(unitId, operations = createSubSelectionOperationsMock()) {
   return { ...view, capabilities, pathBySelectionId, selection, operations };
 }
 
-// ── DOM-Hilfen: rein beobachtend (Muster aus Issue 0131/0140) ────────────────
+// ── DOM-Hilfen: rein beobachtend (Muster aus Issue 0131/0143) ────────────────
 
 const ownHeader = (section) => {
   const header = section.querySelector('.option-group-header');

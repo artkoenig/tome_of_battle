@@ -31,11 +31,11 @@ import { useTranslation } from '../../i18n/useTranslation';
  * **ungefilterten** Form befragt (ohne Sichtbarkeits-Kontext): welche *Option*
  * sichtbar ist, sagt allein der Bericht (`isHidden`, ADR-0035). Für eine
  * *Gruppe* gilt das noch nicht — das `isHidden` eines Gruppen-Ankers liest hier
- * niemand, ein Abschnitt entfällt allein, wenn er leer bleibt (Issue 0141).
+ * niemand, ein Abschnitt entfällt allein, wenn er leer bleibt (Issue 0144).
  * Wertete der Sammler die
  * Sichtbarkeit hier ein zweites Mal aus, verlöre eine Option, über die die beiden
  * Quellen uneins sind, ihre Gruppenzugehörigkeit und fiele als heimatlose Zeile
- * aus der Katalogstruktur (Issue 0140). Eine belegte Unter-Auswahl ist
+ * aus der Katalogstruktur (Issue 0143). Eine belegte Unter-Auswahl ist
  * selbst ein Rahmen: ihre Kind-Slots rendern eingerückt unter ihrer Zeile.
  */
 
@@ -129,7 +129,7 @@ export default function SelectionConfigurator({
    * andere Gruppen sind („Container-Gruppe"), hält ihre Mitglieder damit im
    * eigenen Abschnitt, statt sie als Geschwister neben sich zu stellen
    * (Issue 0131) — und trägt dabei den Namen, den die Ahnenkette ihr gibt
-   * (Issue 0140).
+   * (Issue 0143).
    */
   const buildSections = (frameSelection, framePath) => {
     // Ohne Sichtbarkeits-Kontext: der Sammler liefert hier allein die
@@ -191,7 +191,7 @@ export default function SelectionConfigurator({
     // Ahnenkette eines Nachfahren erreicht: er haelt keine Option (also kein
     // `groupInfoById`) und traegt keine eigene Grenze (also keinen Anker im
     // Bericht). Ohne diesen Vorlauf entstuende sein Abschnitt titellos
-    // (Issue 0140, Defekt A).
+    // (Issue 0143, Defekt A).
     const catalogueGroupNameById = new Map();
     const rememberGroupName = (groupId, groupName) => {
       if (groupId == null || !groupName || catalogueGroupNameById.has(groupId)) return;
@@ -302,7 +302,7 @@ export default function SelectionConfigurator({
      * Der Abschnitt, in dem `section` hängt: die nächste umschließende Gruppe,
      * die selbst einen Abschnitt hat. Jede Gruppe der Ahnenkette bekommt einen
      * Abschnitt — auch eine ohne eigene Grenze, die im Bericht keinen Anker hat
-     * (sie trägt dann ihren Katalognamen, Issue 0140). Die Schleife überspringt
+     * (sie trägt dann ihren Katalognamen, Issue 0143). Die Schleife überspringt
      * gleichwohl jeden Schlüssel ohne Abschnitt, damit ein Kind einer weggefallenen
      * Ebene eine Ebene aufrückt, statt heimatlos zu werden.
      */
