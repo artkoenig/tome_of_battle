@@ -929,6 +929,25 @@ Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
   einer effektiv versteckten Entität werden **nicht** validiert — die §5.6-Regel, per
   Projektentscheidung (Issue 0088) verallgemeinert auf alle Ankerarten; wird die Entität per
   Modifier wieder sichtbar, greifen sie wieder. Max-Grenzen gelten unabhängig von der Sichtbarkeit.
+- **`hidden` an einem `entryLink` und an seinem Ziel wirken zusammen (ODER).** Ein Vorkommen ist
+  versteckt, wenn der Verweis **oder** die verwiesene Definition versteckt ist; ein `hidden`-Modifier
+  an einer der beiden Seiten schlägt beide Basiswerte. Das ist die Grundlage des häufigsten
+  Gatter-Musters der Kataloge: die **geteilte** Definition trägt `hidden="true"` plus einen bedingten
+  `set hidden="false"`, und jeder `entryLink` auf sie trägt (wie Battlescribe es immer schreibt)
+  `hidden="false"`. Würde das `hidden="false"` des Verweises dem Ziel vorgehen, wäre das Gatter
+  wirkungslos — belegt an den DE-Katalogen des Repos: 22 der 27 geteilten Definitionen mit
+  `hidden="true"` gattern genau so, und **kein** `entryLink` (0 von 2302) lässt das Attribut weg.
+  *Projektentscheidung, keine Quellenaussage:* weder XSD noch BSData-Wiki legen die Komposition
+  fest; sie ist aus den Daten erschlossen (Issue 0135, nimmt die gegenteilige Hälfte von Issue 0099
+  zurück).
+- **Eine versteckte `selectionEntryGroup` versteckt, was sie hält.** Die Gruppe ist der einzige Ort,
+  an dem ihre Member dem Nutzer angeboten werden — ist sie „not visible to the user"
+  ([BSData-Wiki, *Props: Hidden*](bsdata-catalogue-development-wiki/Data-structure-overview.md)), ist
+  es keine ihrer Optionen. Verschachtelte Gruppen wirken kumulativ, und ein `hidden`-Modifier an der
+  Gruppe deckt ihre Optionen wieder mit auf. Kataloge verlassen sich darauf: die Rüstungsgruppe des
+  Vampirs (`66f2-d6a1-420c-5a39`) ist `hidden="true"` und wird nur für die Blutlinien Blood Dragon
+  und Von Carstein aufgedeckt — ihre Member (`Heavy Armour`, `Light Armour`) tragen selbst kein
+  `hidden` (Issue 0132/0135).
 - **Laufzeit-dynamische Kategoriezugehörigkeit.** Die Kategorie-Links eines Eintrags sind nicht
   zwingend statisch: Modifier mit `type="add"`/`type="remove"` und `field="category"` fügen eine
   Kategoriezugehörigkeit bedingt hinzu bzw. entfernen sie, und `type="set-primary"`/`type="unset-primary"`

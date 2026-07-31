@@ -119,14 +119,34 @@ describe('Basis-hidden-Vererbung: explizites hidden am Link (Kriterium 2)', () =
     expect(occupiedCapabilityOf(report, LINK_ID).isHidden).toBe(true);
   });
 
-  // PIN (heute zufaellig gruen, weil der Leser jedes fehlende hidden zu false
-  // materialisiert): Nach der Reparatur muss XML weiterhin „false gesetzt" von
-  // „nicht gesetzt" unterscheiden — das explizite hidden="false" am Link schlaegt
-  // das hidden="true" des Ziels. Eine naive Reparatur (z. B. ODER-Verknuepfung
-  // der beiden Basiswerte) risse genau diesen Fall.
-  it('haelt ein Vorkommen sichtbar, dessen Link explizit hidden="false" setzt, obwohl das Ziel hidden="true" traegt', () => {
+  // ZURUECKGENOMMEN (Issue 0135, Kriterium 1): frueher galt hier „explizites
+  // hidden="false" am Link schlaegt das hidden='true' des Ziels". An echten
+  // Katalogen ist diese Haelfte der Regel falsch — Battlescribe schreibt das
+  // Attribut an JEDEM entryLink (0 von 2302 in den DE-Fixtures lassen es weg),
+  // sodass das Basis-hidden eines Ziels ein Vorkommen nie erreichte und das
+  // gaengigste Gatter-Muster der Kataloge (geteilte Definition hidden="true" +
+  // bedingter Aufdeck-Modifikator, 22 von 27 Faellen in den Fixtures) wirkungslos
+  // blieb. Versteckt ist ein Vorkommen jetzt, wenn Verweis ODER Ziel es sind.
+  it('versteckt ein Vorkommen, dessen Link explizit hidden="false" setzt, weil das Ziel hidden="true" traegt', () => {
     const report = evaluate(catalogueWith({
       shared: `<selectionEntry id="${SHARED_ID}" name="Hidden Shared" type="model" hidden="true"/>`,
+      links: `<entryLink id="${LINK_ID}" name="Hidden Shared" targetId="${SHARED_ID}" type="selectionEntry" hidden="false"/>`,
+    }), squadWithChild(LINK_ID));
+
+    expect(occupiedCapabilityOf(report, LINK_ID).isHidden).toBe(true);
+  });
+
+  // Die Gegenprobe zur zurueckgenommenen Haelfte: dasselbe Katalogmuster, aber
+  // mit dem bedingten Aufdeck-Modifikator am Ziel — er muss das geerbte
+  // hidden="true" schlagen, sonst waere das Muster nur andersherum kaputt.
+  it('macht dasselbe Vorkommen sichtbar, sobald ein Aufdeck-Modifikator am Ziel greift', () => {
+    const report = evaluate(catalogueWith({
+      shared: `
+        <selectionEntry id="${SHARED_ID}" name="Hidden Shared" type="model" hidden="true">
+          <modifiers>
+            <modifier type="set" field="hidden" value="false"/>
+          </modifiers>
+        </selectionEntry>`,
       links: `<entryLink id="${LINK_ID}" name="Hidden Shared" targetId="${SHARED_ID}" type="selectionEntry" hidden="false"/>`,
     }), squadWithChild(LINK_ID));
 

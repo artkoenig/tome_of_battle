@@ -588,6 +588,10 @@ function applyOperation(scope, modifier, times, isConditional, witness) {
  */
 function applyModifier(scope, modifier, gate) {
   if (modifier.hasUnreadableGuard) return;
+  // Eine Sichtbarkeits-Klammer traegt nur ihre Sichtbarkeit an den Member weiter,
+  // nicht ihre uebrigen Wirkungen (Kosten, Grenzen, Kategorien, Namen): die gelten
+  // der Gruppe, nicht der Option in ihr.
+  if (scope.hiddenOnly && modifier.target?.kind !== ModifierTargetKind.HIDDEN) return;
   const conditionGroups = modifier.conditionGroups ?? [];
   if (!conditionsAndGroupsHold(scope.ctx, modifier.conditions, conditionGroups)) return;
   const times = modifierTimes(scope.ctx, modifier);
@@ -700,6 +704,13 @@ export function applyModifiersOfNodes(nodes, state, { root, index, categoryIds, 
     applyCarrierModifiers({ ctx, state, node, carrier: node }, node.def);
     for (const carrier of infoCarriersOf(node.def)) {
       applyCarrierModifiers({ ctx, state, node, carrier }, carrier);
+    }
+    // Die Sichtbarkeits-Klammern eines Angebots-Ankers (`offer.js`): ihre
+    // `field="hidden"`-Modifikatoren laufen am Anker mit — nur so bleibt das
+    // Aufdecken einer versteckten Gruppe dynamisch, statt am Basiswert zu
+    // erstarren. Aeusserste zuerst, damit die innerste Klammer zuletzt schreibt.
+    for (const gate of node.visibilityGates ?? []) {
+      applyCarrierModifiers({ ctx, state, node, carrier: node, hiddenOnly: true }, gate);
     }
   }
 }
