@@ -1,7 +1,7 @@
 ---
 status: active
 branch: claude/vampire-editor-unwanted-items-syfq8s
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/190
 ---
 
 # Fremde Sonderlisten-Gegenstände erscheinen im Editor am Vampir
@@ -203,6 +203,8 @@ Acceptance criteria:
   weder Projekt-Referenz noch BSData-Wiki legen die Komposition fest; die Annahme
   stützt sich auf die Häufigkeitsverteilung im Katalog (22 : 2) und darauf, dass das
   Schreibmodell der App es längst so hält.
+  *(Nachtrag: das Zahlenpaar war falsch gezählt — `<modifierGroups>` blieb unberücksichtigt.
+  Richtig ist 37 : 5, und keiner der 5 ist ein Gegenbeleg. Siehe Decisions.)*
 
 ### Before the PR
 
