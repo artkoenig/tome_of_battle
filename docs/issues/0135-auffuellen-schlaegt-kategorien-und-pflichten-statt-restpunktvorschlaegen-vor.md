@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/auffuellen-suggestions-bug-rxtyjk
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/188
 ---
 
 # „Auffüllen" schlägt Kategorien und Pflichten vor statt der Liste auf den Punktwert zu helfen
