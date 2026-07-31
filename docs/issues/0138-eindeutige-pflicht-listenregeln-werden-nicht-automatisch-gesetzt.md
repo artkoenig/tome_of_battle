@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/vampire-list-laws-undeath-3ooflh
 pr:
 ---
 
@@ -76,6 +76,99 @@ Acceptance criteria:
    erfüllen, gleichzeitig, wird jede unabhängig automatisch gesetzt.
 
 ## Plan
+
+**Module list**
+
+- `src/roster/listRules.js` — neues exportiertes Prädikat, neuer exportierter
+  Sweep, `buildListRuleStates` um `mandatory` erweitert.
+- `src/hooks/useRosterList.js` — merkt sich (rein im Speicher, nicht
+  persistiert), welche Roster-Ids in dieser Sitzung neu angelegt wurden.
+- `src/App.jsx` — reicht die Frisch-Markierung als Prop an `RosterEditor`
+  durch.
+- `src/components/RosterEditor.jsx` — reicht sie an `useRoster` durch.
+- `src/hooks/useRoster.js` — neuer Effekt (Auto-Add), gated auf die
+  Frisch-Markierung.
+- `src/components/editor/ListRuleChecklist.jsx` — rendert `disabled` +
+  Tooltip für `state.mandatory`-Zeilen.
+- `src/i18n/locales/de.json`, `en.json` — neuer Schlüssel
+  `editor.listRules.mandatoryTooltip`.
+
+**Contracts**
+
+1. `listRules.js`, neu:
+   `export function isUnconditionalMandatoryListRule(resolved)`. Spiegelt das
+   Lesemuster von `isBinaryListRule` (MAX), aber für MIN: sucht eine
+   `constraint` mit `type === ConstraintKind.MIN` **und**
+   `scope === ConstraintScope.FORCE || scope === ConstraintScope.ROSTER`
+   (kein `!c.scope`-Fallback), liest ihren effektiven Wert über
+   `getModifiedConstraintValue(minConstraint, getEffectiveModifiers(resolved), {})`,
+   verlangt `>= 1`, verlangt `!isContainerListRule(resolved)` und verlangt
+   Kostenfreiheit über alle Einträge von `resolved.costs`.
+
+2. `listRules.js`, neu:
+   `export function findMissingMandatoryListRuleSelections(system, catalogue, force)`
+   → `Array<{ entry, resolved, categoryId }>`. Durchsucht dieselben
+   Wurzel-Pools wie `collectPrimaryCategoryEntries`
+   (`catalogue.selectionEntries`/`entryLinks`/`sharedSelectionEntries`) nach
+   `upgrade`-Einträgen, für die `isUnconditionalMandatoryListRule(resolved)`
+   gilt, die nicht `isSelectionEntryHidden` sind und für die
+   `findPresentSelection` in `force.selections` nichts findet.
+
+3. `buildListRuleStates` bekommt je `ListRuleState` ein Feld
+   `mandatory: boolean` (`isUnconditionalMandatoryListRule(resolved)`).
+   `ListRuleChecklist` liest `state.mandatory`, um an beiden Checkbox-Stellen
+   (Container- und reine Schalter-Zeile) `disabled` plus einen Tooltip zu
+   setzen — über die in dieser Datei bereits verdrahtete `GothicTooltip`
+   /`hoveredInfo`-Mechanik, nicht über ein neues Tooltip-Mittel.
+
+4. `useRosterList` bekommt neuen In-Memory-Zustand
+   `const [freshRosterIds, setFreshRosterIds] = useState(() => new Set())`,
+   ergänzt um `roster.id`, sobald `createRoster` erfolgreich ist (vor
+   `setRosters`). Der Hook liefert eine Abfragefunktion (z. B.
+   `isFreshRoster(id)`) zurück. Nicht persistiert — bewusst außerhalb von
+   `Roster`/`Force` und IndexedDB, damit es nie durch Speichern/Laden oder
+   `.rosz`-Export/Import wandert.
+
+5. `App.jsx` reicht `isFreshRoster={isFreshRoster(selectedRoster?.id)}` an
+   `RosterEditor` durch, das es an
+   `useRoster(initialRoster, system, saveRosterCallback, reportError, isFreshRoster)`
+   (neuer 5. Parameter) weiterreicht.
+
+6. `useRoster.js` bekommt einen neuen `useEffect` neben dem bestehenden
+   Katalog-Sync-Effekt, gated auf `isFreshRoster`: pro Force ruft er
+   `findMissingMandatoryListRuleSelections(system, aktiverKatalogDerForce, force)`,
+   baut Treffer über den vorhandenen `createSelectionFromDef`-Wrapper zu
+   Selektionen und übernimmt sie — falls welche gefunden wurden — über
+   `replaceRoster` (kein Undo-Schritt, wie der Sync-Effekt). Abhängigkeiten:
+   `[roster, system, isFreshRoster, replaceRoster]`; keine Endlosschleife,
+   weil ein einmal hinzugefügter Eintrag im nächsten Durchlauf von
+   `findMissingMandatoryListRuleSelections` nicht mehr als fehlend gilt.
+
+**Nicht-offensichtliche Entscheidungen**
+
+- **`replaceRoster`, nicht `setRoster`, für den Auto-Add-Commit** — ein
+  Eintrag, den der Nutzer nie angeklickt hat, soll ihm keinen Undo-Schritt
+  kosten; folgt dem bestehenden Muster des Katalog-Sync-Effekts.
+- **Frisch-Markierung lebt ausschließlich im Speicher, nie im persistierten
+  `Roster`/`Force`-Schema** — Kriterium 4 verlangt „neu vs. bestehend“ zu
+  unterscheiden, wofür es heute kein Feld gibt; das ins Schema aufzunehmen
+  wäre eine Rückwärtskompatibilitäts-Änderung, die niemand verlangt hat.
+- **Das Prädikat verlangt einen explizit geschriebenen `scope`
+  (`force`/`roster`), anders als `isBinaryListRule`s `!c.scope`-Kulanz** —
+  ein Wurzeleintrag mit ungeschriebenem `scope` meint etwas anderes (die
+  eigene Instanzgrenze), das als armeeweite Pflicht zu lesen würde den
+  Auto-Add auf Fälle auslösen, die §9.9 nicht beschreibt.
+- **Der Sweep durchsucht die Wurzel-Pools direkt statt kategorienweise über
+  `resolveListRuleGroup` zu gehen** — Kriterium 1 erwähnt keine
+  Kategorie-Zugehörigkeit, nur „nicht ausgeblendet“; eine Bindung an
+  `resolveListRuleGroup`s „reine Listenregel-Kategorie“-Rahmen würde einen
+  sonst zulässigen Eintrag in einer gemischten Kategorie stillschweigend
+  übersehen.
+- **Die Oberflächen-Sperre nutzt die in `ListRuleChecklist.jsx` bereits
+  verdrahtete `GothicTooltip`-Mechanik statt eines schlichten
+  `title=`-Attributs** — die Datei bindet diese Komponente schon für ihre
+  Info-Popups ein; sie zu erweitern hält ein einziges Tooltip-Mittel in
+  dieser Datei statt ein zweites daneben einzuführen.
 
 ## Tasks
 
@@ -155,3 +248,49 @@ Acceptance criteria:
     `useMemo`), es gibt aber noch keinen Mechanismus, der beim Anlegen eines
     Kontingents (`buildRoster`, `src/utils/createRoster.js:23-43`) reagiert —
     `forces[].selections` startet dort als leeres Array.
+
+## Checkpoints
+
+### Before implementation
+
+- **Does this match what was asked?** Ja. Der Plan setzt genau den in der
+  Grill-Befragung festgelegten Geltungsbereich um (nur kostenfreie
+  Checkbox-Regeln ohne Folgewahl, nur `scope="force"/"roster"` direkt am
+  Eintrag, laufendes Nachtriggern, gesperrte Checkbox mit Erklärung, nur neu
+  angelegte Kontingente) und nutzt dafür, wo möglich, bestehende Muster
+  (Katalog-Sync-Effekt, `GothicTooltip`) statt neuer Mechanik.
+- **What surprised me?** Drei Dinge: (a) genau dieses Feature —
+  Auto-Materialisierung von „Special list rules" — gab es schon einmal
+  (Issue 34) und wurde eine Version später bewusst zurückgebaut (Issue 35),
+  ein sehr naher Präzedenzfall, den ich vor der Recherche nicht kannte;
+  (b) das „Ausgeblendet"-Filtern und das laufende Nachtriggern (Kriterien 3
+  und 6) fallen praktisch kostenlos aus der bestehenden reinen
+  Neuberechnung in `listRules.js` heraus — keine eigene
+  „auf Sichtbarkeitswechsel horchen"-Mechanik nötig; (c) es gibt im
+  gesamten Datenmodell heute kein Merkmal, das „in dieser Sitzung neu
+  angelegt" von „bestehend" unterscheidet — das musste als neuer, bewusst
+  nicht-persistierter Zustand entworfen werden und ist der unsicherste Teil
+  des Plans.
+- **What am I assuming without having verified it?** Dass jeder vom Sweep
+  gefundene Pflichteintrag in einer „reinen" Listenregel-Kategorie sitzt,
+  die `ListRuleChecklist` auch tatsächlich rendert — verifiziert für die
+  Beispiele in Vampire Counts/Ogre Kingdoms, nicht bewiesen für jede
+  denkbare Katalogstruktur (ein Treffer in einer gemischten Kategorie würde
+  still zu `force.selections` hinzugefügt, ohne je eine sichtbare Checkbox
+  zu bekommen — verletzt keines der sieben Kriterien, ist aber nicht
+  ausdrücklich bedacht). Dass das Durchreichen von `isFreshRoster` über
+  `App.jsx` → `RosterEditor` → `useRoster` der unaufdringlichste Weg ist —
+  nicht geprüft, ob es an anderer Stelle im Code bereits ein
+  Kontext-Muster für sitzungsweite Merkmale gibt, das dem vorzuziehen wäre.
+  Dass die Kostenfreiheits-Prüfung über `resolved.costs` so einfach ist wie
+  „jeder Wert 0 oder die Map leer" — die genaue Form von `resolved.costs`
+  wurde nicht am echten Katalog verifiziert, nur aus der Recherche
+  übernommen.
+
+### Before the PR
+
+- Does this match what was asked?
+- What surprised me?
+- What am I assuming without having verified it?
+
+## Retro
