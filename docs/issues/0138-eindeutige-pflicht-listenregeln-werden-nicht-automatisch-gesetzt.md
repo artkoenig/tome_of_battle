@@ -552,6 +552,46 @@ Acceptance criteria:
   vorgemacht — kein Test bindet die genaue DOM-Form über die
   Reihenfolgen-Assertion hinaus.
 
+- 2026-07-31: **Prüfrunde 2** (frischer Kontext, `db89d9c..4d6bb32`, damit
+  erstmals über den gesamten Feature-Diff inklusive F2-Fix). Fakten der
+  Runde, selbst ausgeführt statt aus dem Log übernommen: `npm test` exit 0
+  (269 Dateien/2808 Tests plus Puppeteer-E2E), `lint`/`typecheck` je exit 0
+  (nur dieselben vorbestehenden Warnungen), `depcruise` exit 0 (dieselbe
+  eine vorbestehende, themenfremde Zirkelbeziehung, keine
+  Reinraum-Grenzverletzung), `knip` exit 1 mit denselben 9 Meldungen wie
+  auf dem Merge-Base (per Diff gegen einen `db89d9c`-Worktree verifiziert).
+  Alle 7 Kriterien einzeln gegen den vollständigen Diff erneut geprüft:
+  1–4, 6, 7 erfüllt; Kriterium 5 erfüllt für beide von echten Katalogdaten
+  belegten Checkbox-Formen (Behälter- und Schalter-Zeile).
+  - *F4 (Kriterium 5, Lücke im Wortlaut, kein bekannter Auslöser in echten
+    Katalogdaten): zur Kenntnis genommen, nicht behoben.* `isUnconditionalMandatoryListRule`
+    prüft nur den MIN-Constraint, unabhängig vom (vorbestehenden,
+    unveränderten) `isBinaryListRule`, das nur den MAX-Constraint prüft —
+    ein Eintrag mit `min≥1` **und** `max>1` wäre technisch als
+    `{mandatory: true, isBinary: false}` erreichbar. Der
+    `!state.isBinary`-Zweig in `ListRuleChecklist.jsx` (Mengen-Adder statt
+    Checkbox) liest `state.mandatory` nirgends — eine solche Zeile bekäme
+    weder Sperre noch Hinweis, ein Wortlautverstoß gegen Kriterium 5. Kein
+    Katalog-Fund für diese Kombination; `isBinaryListRule`s eigener
+    Docstring nennt einen nicht-binären Listenregel-Eintrag ohnehin
+    „bislang nirgends belegt" — unabhängig von Pflicht. Weder Kriterium 1
+    (das nur `upgrade`-Typ, Kostenfreiheit, fehlende Unterauswahlen und
+    `hidden` nennt) noch Contract 3 (das ausdrücklich nur „beiden
+    Checkbox-Stellen" — die zwei binären Formen — meint) entscheiden diesen
+    Fall. Kein Fix in diesem Durchgang: eine geratene Erwartung für eine
+    Form, die kein reales Katalogdatum zeigt, wäre genau die Art
+    Übergriff, den dieses Issue bei Issue 34 bewusst vermeiden wollte;
+    dokumentiert hier als bekannte, akzeptierte Lücke, zu beheben, sobald
+    ein realer Katalog-Fund sie zeigt.
+  - Keine weiteren Befunde. `RuleChipIcon`s neuer `forceInfo`-Prop lässt
+    alle drei anderen Aufrufstellen (`OptionGroup.jsx`, `UnitChips.jsx`,
+    `SelectionConfigurator.jsx`) nachweislich unverändert (Default `false`,
+    beide Bedingungen reduzieren sich exakt auf ihre alte Form). Der
+    Wegfall von `.list-rule-checkbox-slot` ist ein Netto-Null-Diff der CSS
+    gegen den Merge-Base (Klasse in diesem Branch hinzugefügt und wieder
+    entfernt); Zeilenstruktur und Platzierung des neuen Symbols entsprechen
+    dem bereits an `OptionGroup.jsx` etablierten Muster.
+
 ## Checkpoints
 
 ### Before implementation
@@ -592,8 +632,45 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja, einschließlich einer Kurskorrektur
+  unterwegs: Prüfrunde 1 fand, dass der gesperrten Checkbox auf schmalen
+  Viewports jede Erklärung fehlte (F2, Kriterium 5); der Mensch hat den
+  zunächst beauftragten Reparaturansatz (eine bloße Tap-Erweiterung der
+  Hover-only-Mechanik) noch während der Umsetzung gestoppt und stattdessen
+  verlangt, das bereits bestehende Info-Symbol-Muster wiederzuverwenden und
+  den echten Katalog-Beschreibungstext zu zeigen. Das umgesetzte Ergebnis
+  entspricht dieser zweiten, präziseren Vorgabe; Prüfrunde 2 hat es gegen
+  den vollständigen Diff und alle sieben Kriterien erneut bestätigt.
+- **What surprised me?** Dass die naheliegendere, letztlich gewählte Lösung
+  (echtes Info-Symbol statt fester Tooltip-Zeichenkette) so nah an
+  bestehendem Code lag, dass sie den Dateiumfang gegenüber dem ersten
+  Reparaturversuch sogar verringerte (der `.list-rule-checkbox-slot`-Umweg
+  entfiel komplett) statt ihn zu vergrößern — eine Korrektur, die zugleich
+  einfacher wurde. Ebenso, dass Prüfrunde 2 eine bislang unbedachte
+  MIN/MAX-Unabhängigkeit im Prädikat aufdeckte (F4: ein technisch
+  erreichbarer, aber in keinem bekannten Katalog belegter
+  Pflicht-plus-nicht-binär-Fall, der durch das Ankreuzfeld-Raster fällt) —
+  ein Wortlaut-Randfall, den weder die Akzeptanzkriterien noch der Plan
+  entscheiden.
+- **What am I assuming without having verified it?** Dass F4 tatsächlich
+  folgenlos bleibt, bis ein realer Katalog-Fund es zeigt — nicht durch eine
+  Suche über alle vier Fixture-Kataloge hinaus verifiziert, nur durch
+  `isBinaryListRule`s eigenen Docstring gestützt. Alles Übrige aus dem
+  „Before implementation"-Checkpoint gilt unverändert fort (insbesondere:
+  keine Suche nach einem bereits bestehenden sitzungsweiten
+  Kontext-Muster als Alternative zu `isFreshRoster`s Props-Durchreichung).
 
 ## Retro
+
+Eine reguläre Prüfrunde (F2) hat einen Entwurfsfehler früh genug gefunden,
+um ihn vor dem PR zu korrigieren, statt ihn als Nacharbeit zu verschleppen —
+das Verfahren hat hier genau das geleistet, wofür es gedacht ist. Die
+eigentliche Lehre liegt aber davor: der erste beauftragte Fix-Versuch (eine
+Tap-Erweiterung der bestehenden Mechanik) hätte AC5 zwar formal erfüllt,
+wäre aber informationsärmer als der Rest der Oberfläche geblieben — das hat
+erst der Mensch bemerkt, nicht die Testabdeckung, weil kein Akzeptanzkriterium
+verlangt, den *echten* Katalogtext zu zeigen, nur „einen sichtbaren Hinweis“.
+Für künftige Oberflächen-Kriterien lohnt sich deshalb die Zusatzfrage: „gibt
+es an anderer Stelle im selben Bildschirm bereits ein Muster für diese Art
+Information, das die Erwartung genauer fassen sollte, als das Kriterium es
+tut?“ — bevor der erste Reparaturansatz startet, nicht erst danach.
