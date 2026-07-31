@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="cgn-02" name="CGN 02 – Lichemaster-Kontingent, 3000 Punkte, Kemmler und Krell gewaehlt: Pflicht erfuellt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored condition-group-not E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Wie 01: die not-Gruppe haelt, der set-Modifikator hebt beide Grenzen auf 1.
+         Diesmal sind beide Pflicht-Einheiten aber im Kontingent, also Ist 1 >= Grenze 1. -->
+    <force id="force-1" name="Army of the Lichemaster (WD#309-UK)" entryId="f37a-a93e-fa22-61a8" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-kemmler" name="Heinrich Kemmler (WD#309-UK)" entryId="595f-a4e4-5cbc-dab4" entryLinkId="" number="1" type="upgrade"/>
+        <selection id="sel-krell" name="Krell, King of Wights (WD#309-UK)" entryId="2d17-c7be-5fd6-f1a3" entryLinkId="" number="1" type="upgrade"/>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "name": "modifier-group-repeats",
+  "description": "Ein <repeats> an einer <modifierGroup> wiederholt die Modifikatoren in der Klammer. Stehen in EINER <repeats>-Liste mehrere <repeat>-Elemente, ADDIEREN sich ihre Anwendungen — sie multiplizieren sich nicht. Belegt an 'Grave markers' (f899-4fbd-db93-629e) unter 'Army of Sylvania': min 2 (5c4a-c8ea-073d-909c) und max 2 (1b4e-3003-8b78-4be6), beide scope=parent, werden je Anwendung um 1 erhoeht; die zwei <repeat> zaehlen je 1 pro Vampire Count (6822-0110-a7c9-cbb0) und je 1 pro 0-1 Vampire Lord (b77b-88d5-5e80-e178) im Kontingent. Erwartete Grenze = 2 + Counts + Lords; eine multiplizierende Lesart ergaebe 2 + Counts * Lords und faellt in den Rostern 04-08 auf.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-no-vampires-2-markers-legal.ros",
+      "description": "Kontingent 'Army of Sylvania (SoC)' mit 'Army of Sylvania' und genau 2 Grave markers, ohne Vampire Count und ohne Vampire Lord. Beide <repeat> zaehlen 0, die modifierGroup wird nicht angewendet, beide Grenzen bleiben bei ihrem Katalogwert 2. Ist 2 liegt genau dazwischen: keine der beiden Grenzen darf feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "5c4a-c8ea-073d-909c",
+          "1b4e-3003-8b78-4be6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-no-vampires-3-markers-max-fires.ros",
+      "description": "Wie 01, aber 3 Grave markers. Ohne Vampire bleibt die Obergrenze bei 2: 1b4e-3003-8b78-4be6 feuert mit Ist 3 / Grenze 2. Die Untergrenze (2) ist erfuellt und bleibt still. Das pinnt den unmodifizierten Grundwert fest, gegen den die Roster 04-08 kontrastieren.",
+      "expect": {
+        "firing": [
+          { "limitId": "1b4e-3003-8b78-4be6", "actual": 3, "bound": 2 }
+        ],
+        "absent": [
+          "5c4a-c8ea-073d-909c"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-no-vampires-1-marker-min-fires.ros",
+      "description": "Wie 01, aber nur 1 Grave marker. Ohne Vampire bleibt die Untergrenze bei 2: 5c4a-c8ea-073d-909c feuert mit Ist 1 / Grenze 2. Die Obergrenze (2) ist eingehalten und bleibt still.",
+      "expect": {
+        "firing": [
+          { "limitId": "5c4a-c8ea-073d-909c", "actual": 1, "bound": 2 }
+        ],
+        "absent": [
+          "1b4e-3003-8b78-4be6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-one-count-3-markers-legal.ros",
+      "description": "Ein Vampire Count, kein Vampire Lord, 3 Grave markers. Additiv: 1 + 0 = 1 Anwendung, beide Grenzen 2 + 1 = 3, also ist 3 exakt erlaubt und keine Grenze feuert. Multiplizierend waeren es 1 * 0 = 0 Anwendungen, die Obergrenze bliebe bei 2 und wuerde hier mit Ist 3 / Grenze 2 anschlagen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "5c4a-c8ea-073d-909c",
+          "1b4e-3003-8b78-4be6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-one-count-2-markers-min-fires.ros",
+      "description": "Kernfall. Ein Vampire Count, kein Vampire Lord, nur 2 Grave markers. Additiv steht die Untergrenze auf 3: 5c4a-c8ea-073d-909c feuert mit Ist 2 / Grenze 3. Bei multiplizierender Lesart bliebe sie bei 2 und schwiege ganz.",
+      "expect": {
+        "firing": [
+          { "limitId": "5c4a-c8ea-073d-909c", "actual": 2, "bound": 3 }
+        ],
+        "absent": [
+          "1b4e-3003-8b78-4be6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-one-count-4-markers-max-fires.ros",
+      "description": "Derselbe Kernfall ueber die Obergrenze: ein Vampire Count, kein Vampire Lord, 4 Grave markers. Additiv steht die Obergrenze auf 3, 1b4e-3003-8b78-4be6 feuert mit Ist 4 / GRENZE 3. Bei multiplizierender Lesart feuerte dieselbe Grenze mit Ist 4 / Grenze 2 — der gemeldete bound unterscheidet die Lesarten also auch im Verletzungsfall.",
+      "expect": {
+        "firing": [
+          { "limitId": "1b4e-3003-8b78-4be6", "actual": 4, "bound": 3 }
+        ],
+        "absent": [
+          "5c4a-c8ea-073d-909c"
+        ]
+      }
+    },
+    {
+      "file": "rosters/07-two-counts-one-lord-5-markers-legal.ros",
+      "description": "Zwei Vampire Counts und ein Vampire Lord, 5 Grave markers. Additiv: 2 + 1 = 3 Anwendungen, beide Grenzen 2 + 3 = 5, also exakt erlaubt. Multiplizierend waeren es 2 * 1 = 2 Anwendungen und die Obergrenze laege bei 4, sie wuerde hier mit Ist 5 / Grenze 4 anschlagen. Die armeeweite Obergrenze des Vampire Lord (a7c9-5fec-592a-3716, max 1, scope=roster) ist mit genau einem Lord eingehalten.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "5c4a-c8ea-073d-909c",
+          "1b4e-3003-8b78-4be6",
+          "a7c9-5fec-592a-3716"
+        ]
+      }
+    },
+    {
+      "file": "rosters/08-two-counts-one-lord-4-markers-min-fires.ros",
+      "description": "Zwei Vampire Counts und ein Vampire Lord, nur 4 Grave markers. Additiv steht die Untergrenze auf 5: 5c4a-c8ea-073d-909c feuert mit Ist 4 / Grenze 5. Multiplizierend laege sie bei 4 und schwiege. Die Obergrenze (5) ist eingehalten, die Lord-Obergrenze ebenfalls.",
+      "expect": {
+        "firing": [
+          { "limitId": "5c4a-c8ea-073d-909c", "actual": 4, "bound": 5 }
+        ],
+        "absent": [
+          "1b4e-3003-8b78-4be6",
+          "a7c9-5fec-592a-3716"
+        ]
+      }
+    },
+    {
+      "file": "rosters/09-von-carstein-force-3-markers-max-fires.ros",
+      "description": "Dieselbe Rechnung im Kontingent 'Clan Von Carstein (VC-AB)' b1e4-e1cf-9bd6-2438, in dem das Aufdeck-Gatter von 'Army of Sylvania' nicht greift und der Traeger verborgen bleibt. Max-Grenzen gelten unabhaengig von der Sichtbarkeit, also feuert 1b4e-3003-8b78-4be6 bei 3 Markern und 0 Vampiren mit Ist 3 / Grenze 2 — genau wie in Roster 02. Ueber die Min-Grenze 5c4a-c8ea-073d-909c trifft dieses Roster bewusst keine Aussage (weder firing noch absent).",
+      "expect": {
+        "firing": [
+          { "limitId": "1b4e-3003-8b78-4be6", "actual": 3, "bound": 2 }
+        ],
+        "absent": []
+      }
+    }
+  ]
+}

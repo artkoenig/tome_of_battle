@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "name": "condition-group-not",
+  "description": "Eine conditionGroup type=\"not\" ist die Negation: sie haelt genau dann, wenn KEINES ihrer Mitglieder haelt. Belegt am einzigen realen Vorkommen im Datensatz — dem set-Modifikator, der im Kontingent 'Army of the Lichemaster' die Pflicht-Untergrenzen von Heinrich Kemmler (8461-3eab-e5ac-1636) und Krell (60a8-5b49-6b81-7c84) von 0 auf 1 hebt. Sein Waechter ist eine and-Gruppe aus (a) instanceOf auf das Kontingent f37a-a93e-fa22-61a8 und (b) einer not-Gruppe ueber genau einer and-Untergruppe (limit::pts < 2000 UND mindestens eine Kampagnen-Auswahl 14fb-dd39-08e7-cbde im Kontingent). Die Roster variieren Budget, Kampagnen-Auswahl und Kontingent so, dass jede Fehl-Lesart der Negation sichtbar wird.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-lichemaster-3000-empty-both-mandatory.ros",
+      "description": "Leeres Kontingent 'Army of the Lichemaster', Budget 3000 Punkte. Die innere and-Untergruppe der not-Gruppe scheitert doppelt (3000 ist nicht < 2000; keine Kampagnen-Auswahl im Kontingent), also haelt die not-Gruppe. Zusammen mit dem erfuellten instanceOf greift der set-Modifikator und hebt beide Pflichtgrenzen auf 1. Da weder Kemmler noch Krell im Kontingent stehen, feuern beide mit Ist 0 / Grenze 1.",
+      "expect": {
+        "firing": [
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-lichemaster-3000-kemmler-and-krell.ros",
+      "description": "Dasselbe Kontingent und Budget wie 01, aber Heinrich Kemmler (595f-a4e4-5cbc-dab4) und Krell (2d17-c7be-5fd6-f1a3) sind gewaehlt. Der set-Modifikator greift weiterhin (Grenze 1), doch je eine Auswahl im Kontingent erfuellt sie: Ist 1 >= Grenze 1, beide Grenzen bleiben still. Das belegt, dass die Stille in 03 und 06 nicht daher ruehrt, dass die Grenzen ueberhaupt nicht ausgewertet wuerden.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "8461-3eab-e5ac-1636",
+          "60a8-5b49-6b81-7c84"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-lichemaster-1500-with-campaign-not-fails.ros",
+      "description": "Der schaerfste Fall: Budget 1500 (< 2000) UND die Kampagnen-Auswahl 14fb-dd39-08e7-cbde im Kontingent. Beide Bedingungen der inneren and-Untergruppe halten, also haelt die and-Untergruppe, also haelt die not-Gruppe NICHT, also scheitert die aeussere and-Gruppe und der set-Modifikator greift nicht. Beide Grenzen bleiben bei ihrem Katalogwert min 0 und duerfen nicht feuern. Eine Engine, die die not-Gruppe ignoriert oder als 'immer wahr' behandelt, wuerde hier je Ist 0 / Grenze 1 melden.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "8461-3eab-e5ac-1636",
+          "60a8-5b49-6b81-7c84"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-lichemaster-1500-without-campaign.ros",
+      "description": "Budget 1500 (< 2000), aber OHNE Kampagnen-Auswahl. Nur eine der beiden Bedingungen der inneren and-Untergruppe haelt, die Untergruppe scheitert, die not-Gruppe haelt — der set-Modifikator greift und beide Pflichtgrenzen feuern mit Ist 0 / Grenze 1. Gegenprobe zu 03: das Budget allein schaltet die Pflicht nicht ab. (Zusaetzlich, nicht Teil der Erwartung: die Eigengrenze des Kontingents 8f3f-ffa8-387b-0bf9 verlangt hier mindestens 2000 Punkte Budget.)",
+      "expect": {
+        "firing": [
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/05-lichemaster-3000-with-campaign.ros",
+      "description": "Die andere Haelfte: die Kampagnen-Auswahl steht im Kontingent, aber das Budget betraegt 3000 und ist nicht < 2000. Wieder scheitert die innere and-Untergruppe, die not-Gruppe haelt, der set-Modifikator greift — beide Pflichtgrenzen feuern mit Ist 0 / Grenze 1. Gegenprobe zu 03: auch die Kampagnen-Auswahl allein schaltet die Pflicht nicht ab.",
+      "expect": {
+        "firing": [
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/06-von-carstein-force-instanceof-fails.ros",
+      "description": "Kontrast im anderen Kontingent 'Clan Von Carstein (VC-AB)' b1e4-e1cf-9bd6-2438, Budget 3000, leer. Schon das instanceOf auf f37a-a93e-fa22-61a8 scheitert, damit scheitert die aeussere and-Gruppe unabhaengig vom Ergebnis der not-Gruppe: der set-Modifikator greift nicht, beide Grenzen bleiben bei min 0 und duerfen nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "8461-3eab-e5ac-1636",
+          "60a8-5b49-6b81-7c84"
+        ]
+      }
+    }
+  ]
+}
