@@ -3,44 +3,40 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ListRuleChecklist from './ListRuleChecklist';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
+import { t } from '../../i18n/i18nStore';
 
 /**
- * Issue 0138, AC5 — "Prüfrunde 1" F2 follow-up.
+ * Issue 0138, AC5 — "Prüfrunde 1" F2 follow-up, revised design.
  *
  * A fresh-context reviewer confirmed that on a narrow/touch viewport (this
- * project's own established mobile breakpoint, `window.innerWidth <= 900`,
- * already used throughout ListRuleChecklist.jsx's own `handleMouseEnter`/
- * `handleMouseMove`), a mandatory list-rule row's explanation is unreachable:
- * it is wired through hover only, and `handleMouseEnter` bails out before
- * `<=900px` without showing anything. AC5 requires "einen sichtbaren Hinweis
- * (Tooltip/Text)" — today that hint is genuinely absent below 900px.
+ * project's own established mobile breakpoint, `window.innerWidth <= 900`),
+ * a mandatory list-rule row's explanation was unreachable under the
+ * *original* hover-on-checkbox design. The fix that followed does not bolt a
+ * tap alternative onto that checkbox mechanism; it replaces it outright with
+ * the SAME info-icon pattern `SelectionConfigurator.jsx` already uses for
+ * every other option's catalogue description (`RuleChipIcon`, fed by
+ * `resolveEntry`/`renderUpgradeDetails`), rendered next to `state.name`. That
+ * pattern already carries both halves of the interaction — hover +
+ * `GothicTooltip` on wide viewports (covered by the sibling
+ * `ListRuleChecklist.mandatory.test.jsx`), tap + `BottomSheet` on narrow ones
+ * (covered here) — so no bespoke tap mechanism is needed.
  *
- * Convention followed: this codebase's own established pattern for testing a
- * narrow-viewport tap fallback lives in `UnitSelectionCard.test.jsx`
- * ("responsive: triggers BottomSheet onClick of upgrade badge on mobile
- * layout" / "responsive: does not show BottomSheet onClick on desktop
- * layout") — set `window.innerWidth`, mock `BottomSheet` to render its
- * content behind a `data-testid="bottom-sheet"` when `isOpen`, tap the
- * affordance, assert the sheet appears (or doesn't, on desktop). Neither
- * `SelectionConfigurator.*.test.jsx` nor `RuleChipIcon.test.jsx` has its own
- * narrow-viewport/BottomSheet test for the `onInfoClick` fallback those files
- * wire (checked — none of them reference `innerWidth` or a bottom-sheet
- * testid), so `UnitSelectionCard.test.jsx` is the concrete precedent this
- * suite mirrors.
+ * Consequence: the `.list-rule-checkbox-slot` wrapper and its dedicated
+ * `handleMandatoryMouse*`/tap handlers are gone; the checkbox itself carries
+ * no interaction for the explanation anymore, on any viewport width. The tap
+ * target here is the info icon (`RuleChipIcon`'s rendered `Info`), exactly as
+ * `UnitSelectionCard.test.jsx` ("responsive: triggers BottomSheet onClick of
+ * upgrade badge on mobile layout" / "... does not show BottomSheet onClick on
+ * desktop layout") already establishes the mock-BottomSheet-behind-a-testid
+ * convention for this exact kind of tap fallback, and exactly as
+ * `SelectionConfigurator.jsx`'s own `onInfoClick` wiring
+ * (`res && window.innerWidth <= 900`) establishes the desktop-side guard.
  *
- * Target of the simulated tap: the `.list-rule-checkbox-slot` wrapper span
- * that already exists around the checkbox in both mandatory-row shapes (see
- * ListRuleChecklist.jsx lines ~148-163 and ~171-184) and already carries the
- * hover listeners for exactly the reason documented in that file — a
- * `disabled` form element receives no mouse events in browsers or jsdom, so
- * the wrapper is the interaction surface, not the checkbox itself. A tap
- * fallback needs a non-disabled element for the same reason, and this
- * wrapper is the only one already present at both call sites.
- *
- * `BottomSheet` is deliberately mocked here (rather than left real, as in
- * the sibling `ListRuleChecklist.mandatory.test.jsx`) so the sheet's
- * presence/content is directly observable via a stable testid, following the
- * `UnitSelectionCard.test.jsx` mock exactly.
+ * `BottomSheet` is mocked here (rather than left real, as in the sibling
+ * `ListRuleChecklist.mandatory.test.jsx`) so the sheet's presence/content is
+ * directly observable via a stable testid, following `UnitSelectionCard.test.jsx`'s
+ * mock exactly. `GothicTooltip` is mocked away since this file exercises the
+ * tap half only.
  */
 
 vi.mock('./SelectionConfigurator', () => ({
@@ -62,6 +58,23 @@ vi.mock('./BottomSheet', () => ({
 }));
 vi.mock('../GothicTooltip', () => ({ default: () => null }));
 
+vi.mock('lucide-react', () => ({
+  ChevronDown: () => <span data-testid="icon-chevron-down" />,
+  ChevronRight: () => <span data-testid="icon-chevron-right" />,
+  Info: ({ onClick, ...rest }) => <span data-testid="icon-info" onClick={onClick} {...rest} />,
+  BookOpen: ({ onClick, ...rest }) => <span data-testid="icon-book" onClick={onClick} {...rest} />,
+}));
+
+const mockGetRuleUrl = vi.fn();
+vi.mock('../../data/rulesLookup', () => ({
+  getRuleUrl: (name) => mockGetRuleUrl(name),
+}));
+
+const mockUseSettings = vi.fn();
+vi.mock('../../contexts/SettingsContext', () => ({
+  useSettings: () => mockUseSettings(),
+}));
+
 const baseProps = {
   system: {},
   activeCatalogue: { id: 'cat' },
@@ -77,8 +90,16 @@ const baseProps = {
   onShowRule: vi.fn(),
 };
 
+const DESCRIPTION_TEXT = 'The dead shall walk the earth eternal, bound to the will of the Vampire Counts.';
+const CONTAINER_DESCRIPTION_TEXT = 'A pact sealed with the von Carstein bloodline binds this force to endless war.';
+const MANDATORY_NOTE = t('editor.listRules.mandatoryTooltip');
+
 const mandatorySwitchRule = (over = {}) => ({
-  entry: { id: 'e-mandatory' },
+  entry: {
+    id: 'e-mandatory',
+    name: 'The Laws of Undeath',
+    rules: [{ name: 'The Laws of Undeath', description: DESCRIPTION_TEXT }],
+  },
   name: 'The Laws of Undeath',
   categoryId: 'cat-rules',
   resolvedId: 'r-mandatory',
@@ -91,7 +112,7 @@ const mandatorySwitchRule = (over = {}) => ({
 });
 
 const optionalSwitchRule = (over = {}) => ({
-  entry: { id: 'e-optional' },
+  entry: { id: 'e-optional', name: 'Allow experimental rules?' },
   name: 'Allow experimental rules?',
   categoryId: 'cat-rules',
   resolvedId: 'r-optional',
@@ -104,7 +125,11 @@ const optionalSwitchRule = (over = {}) => ({
 });
 
 const mandatoryContainerRule = (over = {}) => ({
-  entry: { id: 'e-mandatory-container' },
+  entry: {
+    id: 'e-mandatory-container',
+    name: 'Army of Sylvania',
+    rules: [{ name: 'Army of Sylvania', description: CONTAINER_DESCRIPTION_TEXT }],
+  },
   name: 'Army of Sylvania',
   categoryId: 'cat-rules',
   resolvedId: 'r-mandatory-container',
@@ -120,67 +145,87 @@ const setViewportWidth = (width) => {
   Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: width });
 };
 
-/** The wrapper span around a row's checkbox — see file-header comment for why. */
-const checkboxSlotFor = (name) =>
-  screen.getByRole('checkbox', { name }).closest('.list-rule-checkbox-slot');
-
-describe('ListRuleChecklist — mandatory rows on a narrow viewport (Issue 0138, AC5, Prüfrunde 1 F2)', () => {
+describe('ListRuleChecklist — mandatory rows on a narrow viewport (Issue 0138, AC5, Prüfrunde 1 F2, info-icon design)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetRuleUrl.mockReturnValue(null);
+    mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: true });
   });
 
-  it('tapping a mandatory switch-row rule on a narrow (mobile) viewport reveals a visible explanation', () => {
+  it('tapping a mandatory switch-row rule\'s info icon on a narrow (mobile) viewport reveals the description followed by the mandatory note', () => {
     setViewportWidth(500);
-    const state = mandatorySwitchRule();
-    render(<ListRuleChecklist {...baseProps} states={[state]} />);
+    render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
 
-    fireEvent.click(checkboxSlotFor(state.name));
+    fireEvent.click(screen.getByTestId('icon-info'));
 
     const sheet = screen.queryByTestId('bottom-sheet');
     expect(sheet).not.toBeNull();
-    // More than just the row's own name must be shown — an actual explanation,
-    // not merely a bare re-statement of the title.
-    expect(sheet.textContent.trim().length).toBeGreaterThan(state.name.length);
+    const text = sheet.textContent;
+    expect(text).toContain(DESCRIPTION_TEXT);
+    expect(text).toContain(MANDATORY_NOTE);
+    expect(text.indexOf(DESCRIPTION_TEXT)).toBeLessThan(text.indexOf(MANDATORY_NOTE));
   });
 
-  it('tapping a mandatory container-row rule on a narrow viewport also reveals a visible explanation', () => {
+  it('tapping a mandatory container-row rule\'s info icon on a narrow viewport also reveals the combined content', () => {
     setViewportWidth(500);
-    const state = mandatoryContainerRule();
-    render(<ListRuleChecklist {...baseProps} states={[state]} />);
+    render(<ListRuleChecklist {...baseProps} states={[mandatoryContainerRule()]} />);
 
-    fireEvent.click(checkboxSlotFor(state.name));
+    fireEvent.click(screen.getByTestId('icon-info'));
 
     const sheet = screen.queryByTestId('bottom-sheet');
     expect(sheet).not.toBeNull();
-    expect(sheet.textContent.trim().length).toBeGreaterThan(state.name.length);
+    const text = sheet.textContent;
+    expect(text).toContain(CONTAINER_DESCRIPTION_TEXT);
+    expect(text).toContain(MANDATORY_NOTE);
+    expect(text.indexOf(CONTAINER_DESCRIPTION_TEXT)).toBeLessThan(text.indexOf(MANDATORY_NOTE));
   });
 
-  it("boundary: at exactly window.innerWidth = 900 (this project's own inclusive mobile threshold), tapping still reveals the explanation", () => {
+  it("boundary: at exactly window.innerWidth = 900 (this project's own inclusive mobile threshold), tapping the info icon still reveals the explanation", () => {
     setViewportWidth(900);
-    const state = mandatorySwitchRule();
-    render(<ListRuleChecklist {...baseProps} states={[state]} />);
+    render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
 
-    fireEvent.click(checkboxSlotFor(state.name));
+    fireEvent.click(screen.getByTestId('icon-info'));
 
     expect(screen.queryByTestId('bottom-sheet')).not.toBeNull();
   });
 
-  it('does not reveal any explanation when tapping a non-mandatory rule on a narrow viewport', () => {
-    setViewportWidth(500);
-    const state = optionalSwitchRule();
-    render(<ListRuleChecklist {...baseProps} states={[state]} />);
+  it('on a desktop viewport (where hover already conveys the explanation), tapping the info icon does not spuriously open the sheet', () => {
+    setViewportWidth(1024);
+    render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
 
-    fireEvent.click(checkboxSlotFor(state.name));
+    fireEvent.click(screen.getByTestId('icon-info'));
 
     expect(screen.queryByTestId('bottom-sheet')).toBeNull();
   });
 
-  it('on a desktop viewport (where hover already conveys the explanation), tapping the same spot does not spuriously open the sheet', () => {
-    setViewportWidth(1024);
-    const state = mandatorySwitchRule();
-    render(<ListRuleChecklist {...baseProps} states={[state]} />);
+  it('a mandatory row\'s explanation stays reachable by tap even when a 6th.whfb.app rule link resolves for its name (no bare external link hiding it, Plan Contract 3b)', () => {
+    setViewportWidth(500);
+    mockGetRuleUrl.mockImplementation((name) =>
+      name === 'The Laws of Undeath' ? 'https://6th.whfb.app/special-rules/the-laws-of-undeath' : null
+    );
+    render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
 
-    fireEvent.click(checkboxSlotFor(state.name));
+    expect(screen.queryByTestId('icon-book')).toBeNull();
+    fireEvent.click(screen.getByTestId('icon-info'));
+
+    const sheet = screen.queryByTestId('bottom-sheet');
+    expect(sheet).not.toBeNull();
+    expect(sheet.textContent).toContain(MANDATORY_NOTE);
+  });
+
+  it('does not render an info icon for a non-mandatory row on a narrow viewport (no new affordance leaks onto it)', () => {
+    setViewportWidth(500);
+    render(<ListRuleChecklist {...baseProps} states={[optionalSwitchRule()]} />);
+
+    expect(screen.queryByTestId('icon-info')).toBeNull();
+    expect(screen.queryByTestId('icon-book')).toBeNull();
+  });
+
+  it("tapping a non-mandatory rule's checkbox on a narrow viewport does not open the sheet (the checkbox itself carries no tap interaction anymore)", () => {
+    setViewportWidth(500);
+    render(<ListRuleChecklist {...baseProps} states={[optionalSwitchRule()]} />);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Allow experimental rules?' }));
 
     expect(screen.queryByTestId('bottom-sheet')).toBeNull();
   });

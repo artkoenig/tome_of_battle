@@ -473,6 +473,46 @@ Acceptance criteria:
   verworfene Checkbox-Hover/Tap-Mechanik ab und müssen auf den neuen Ansatz
   umgeschrieben werden.
 
+- 2026-07-31: **Tests für den Info-Symbol-Ansatz umgeschrieben**
+  (`test-author`, ohne Sicht auf eine Implementierung). Beide Dateien
+  überarbeitet: `ListRuleChecklist.mandatory.test.jsx` (16 Tests, Desktop/
+  Hover-Hälfte plus die Checkbox-Sperre als Regression), `ListRuleChecklist.mandatoryNarrowViewport.test.jsx`
+  (7 Tests, Tap/`BottomSheet`-Hälfte). Deckung: Info-Symbol erscheint bei
+  einer Pflichtzeile unbedingt (auch ohne Katalog-Beschreibung), Hover
+  (breiter Viewport) und Tap (`<=900px`, Grenzfall exakt 900 mitgetestet)
+  zeigen denselben kombinierten Inhalt — echter Beschreibungstext gefolgt
+  vom `mandatoryTooltip`-Satz, per Reihenfolge-Assertion belegt —, der
+  Hinweis bleibt erreichbar, selbst wenn `useRuleUrl` einen 6th.whfb.app-Link
+  für den Namen fände (`RuleChipIcon`s BookOpen-Priorität greift für eine
+  Pflichtzeile nicht), die Checkbox-Sperre bleibt unverändert bestehen, und
+  eine nicht-pflichtige Zeile bekommt weder Symbol noch Tap-Verhalten
+  (Nicht-Regression). Konvention aus `RuleChipIcon.test.jsx`/`UnitChips.test.jsx`
+  übernommen: `lucide-react`s `Info`/`BookOpen` sowie `getRuleUrl`/`useSettings`
+  gemockt, `RuleChipIcon` selbst nicht — seine Link-vs-Info-Priorität (und
+  deren Aushebelung für Pflichtzeilen) läuft dadurch echt mit.
+  `resolveEntry` wird ebenfalls nicht gemockt; die Fixtures tragen ihre
+  Beschreibung direkt in `entry.rules[].description`, was `resolveEntry`
+  bei einem `system={}}`-Stub nachweislich unverändert durchreicht (in
+  diesem Log verifiziert: `resolveEntry` fasst einen Eintrag ohne
+  `targetId` lediglich per Spread zusammen und liest `system` sonst nur für
+  Publikationsreferenzen, die bei fehlender `publicationId`/`page` früh mit
+  `''` zurückkehren, ohne `system` anzufassen).
+  **Fakten:** `npx vitest run` der beiden Dateien: 13 fehlgeschlagen/10
+  bestanden (23) — jeder Fehlschlag entweder „`icon-info`
+  nicht gefunden" (Symbol existiert im alten Design noch nicht) oder ein
+  unerwartetes `.gothic-tooltip` (alte Hover-auf-Checkbox-Mechanik feuert
+  noch) —, nie ein Import-/Tippfehler; die 10 bestehenden Checkbox-Sperr-
+  und Nicht-Regressions-Tests bleiben grün. Selbst nachvollzogen (gleiches
+  Ergebnis).
+  **Offene Frage des `test-author`, hier beantwortet:** ob das Info-Symbol
+  auch auf nicht-pflichtige Listenregel-Zeilen gehören sollte — nein, außerhalb
+  des Geltungsbereichs dieser Issue; „an anderer Stelle" in der
+  menschlichen Vorgabe bezog sich auf die bereits bestehenden
+  `SelectionConfigurator`-Unteroptionen, nicht auf eine Erweiterung der
+  Ankreuzliste selbst. Der `test-author` hat das richtig so gelesen und
+  entsprechend eine Nicht-Regressions-Assertion für nicht-pflichtige Zeilen
+  ergänzt.
+
 ## Checkpoints
 
 ### Before implementation
