@@ -45,7 +45,7 @@
  * den Bericht von aussen erreichbar und ADR-0034 nur noch eine Absichtserklaerung.
  */
 
-import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, isReportableAnchorKind } from './model.js';
+import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, isAuthorMessageAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
 import { buildCostProjection } from './costProjection.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
@@ -90,15 +90,18 @@ function toDerivedViolation(result, context) {
  * gerenderten Texte, die auch am Slot stehen; zweimal zu rendern hiesse, zwei
  * Texte zu fuehren, die auseinanderlaufen koennen.
  *
- * Ein **Angebots-Anker** faellt heraus (dieselbe Berichtsfaehigkeits-Regel wie bei
- * den Grenzen, ADR-0035/0036): eine Meldung an einer nicht gewaehlten Option
- * spraeche ueber etwas, das gar nicht in der Liste steht — sein Datensatz fuehrt
- * sie weiterhin, damit die Oberflaeche sie am Angebot zeigen kann.
+ * Die Anker **abwesender** Definitionen fallen heraus — der Angebots-Anker und
+ * das Pflicht-Phantom ({@link isAuthorMessageAnchorKind}, ADR-0035/0036, Issue
+ * 0139): eine Meldung an einer nicht gewaehlten Option oder an einer im Roster
+ * fehlenden Definition spraeche ueber etwas, das gar nicht in der Liste steht.
+ * Ihr Datensatz fuehrt sie weiterhin, damit die Oberflaeche sie am Slot zeigen
+ * kann. Die unerfuellte Pflicht des Phantoms bleibt davon unberuehrt: sie ist
+ * eine abgeleitete Meldung und laeuft nicht ueber diesen Weg.
  */
 function authorViolationsOf(slots, context) {
   const violations = [];
   for (const { node, capability } of slots) {
-    if (!isReportableAnchorKind(capability.anchorKind)) continue;
+    if (!isAuthorMessageAnchorKind(capability.anchorKind)) continue;
     for (const message of capability.authorMessages) {
       violations.push(classifyAuthorMessage(node, message, context));
     }

@@ -276,6 +276,36 @@ export function isReportableAnchorKind(anchorKind) {
 }
 
 /**
+ * True, wenn eine **Autor-Meldung** an einem Anker dieser Art in die
+ * Meldungsliste gehoert (Issue 0139).
+ *
+ * Sie ist enger als {@link isReportableAnchorKind}, weil sie eine andere Frage
+ * beantwortet. Eine abgeleitete Meldung spricht ueber eine **Grenze** — die gilt
+ * auch fuer etwas Abwesendes („mindestens 1 gefordert, 0 vorhanden"), und genau
+ * dafuer gibt es das Pflicht-Phantom. Eine Autor-Meldung spricht dagegen ueber
+ * den **Eintrag selbst**; steht der nicht in der Liste, spricht sie ueber etwas,
+ * das es in dieser Armee gar nicht gibt. Ausgeschlossen sind deshalb beide
+ * Anker abwesender Definitionen:
+ *
+ * - der **Angebots-Anker** (dieselbe Begruendung wie oben), und
+ * - das **Pflicht-Phantom**. Es entsteht schon, wenn eine Definition ueberhaupt
+ *   eine `min`-Grenze im Rahmen traegt — auch mit Wert 0, denn ein Modifier kann
+ *   den Wert erst in der Fixpunktschleife anheben. Eine Sonderfigur mit
+ *   `min value="0" scope="force"` bekommt so in jedem Kontingent ihr Phantom,
+ *   und die bedingte Autor-Meldung an ihr („Please enable …") erschiene an einer
+ *   leeren Liste als blockierender Fehler. BattleScribe wertet die Modifier
+ *   eines nicht gewaehlten Eintrags nie aus; es kennt kein Phantom und zeigt
+ *   dort folglich auch keine Meldung.
+ *
+ * Der Faehigkeitsdatensatz beider Ankerarten fuehrt seine Autor-Meldungen
+ * weiterhin — die Oberflaeche kann sie am Slot zeigen, wo sie im Zusammenhang
+ * steht.
+ */
+export function isAuthorMessageAnchorKind(anchorKind) {
+  return isReportableAnchorKind(anchorKind) && anchorKind !== AnchorKind.MANDATORY_PHANTOM;
+}
+
+/**
  * Die **Ankerart einer Berichtsmeldung**: jede Slot-Ankerart aus {@link AnchorKind}
  * und zusaetzlich der `ROSTER` — der Anker der engine-eigenen Budget-Regel
  * („Armee zu teuer", `budget.js`), die an keinem Slot des Auswertungsbaums haengt,
