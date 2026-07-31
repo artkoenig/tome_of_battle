@@ -14,7 +14,7 @@ Stehen zwei Auswahlen derselben Einheit in der Liste und darf sie noch
 wachsen, erzeugt jede ihren eigenen Vorschlag: zwei Zeilen mit demselben
 Namen, demselben Preis und derselben Wirkung.
 
-Reproduziert (Prüfung zu Issue 0131): ein Eintrag mit `max 4`,
+Reproduziert (Prüfung zu Issue 0135): ein Eintrag mit `max 4`,
 `scope="force"`, zweimal mit Anzahl 1 im Roster. Der Bericht führt die Slots
 `0/0` und `0/1`, beide `occupied`, `headroom 2`, `costs.pts 40`. Das Panel
 rendert `["Speertraeger +40 Pkt", "Speertraeger +40 Pkt"]` — für den Nutzer
@@ -32,7 +32,7 @@ Acceptance criteria:
    Liste enthält danach eine Instanz mehr.
 3. Vorschläge an **verschiedenen** Trägern bleiben getrennt: dieselbe Option
    an zwei verschiedenen Einheiten sind zwei Zeilen, je mit ihrer Einheit
-   benannt (Kriterium 6 aus Issue 0131 bleibt gültig).
+   benannt (Kriterium 6 aus Issue 0135 bleibt gültig).
 
 ## Plan
 
@@ -42,7 +42,7 @@ Acceptance criteria:
 
 ## Log
 
-- 2026-07-31: Von der Prüfung zu Issue 0131 gefunden (Befund F3), mit
+- 2026-07-31: Von der Prüfung zu Issue 0135 gefunden (Befund F3), mit
   Reproduktion. Verletzt kein Kriterium jener Issue und wandert deshalb
   hierher statt in ihren PR.
 

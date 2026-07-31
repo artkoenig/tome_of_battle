@@ -1,5 +1,5 @@
 /**
- * Issue 0131 — „Auffüllen" hilft der Liste auf den eingestellten Punktwert,
+ * Issue 0135 — „Auffüllen" hilft der Liste auf den eingestellten Punktwert,
  * statt offene Pflichten (und Kategorien!) aufzuzählen.
  * Test-first: die neue Implementierung existiert noch nicht.
  *
@@ -22,7 +22,7 @@
  * 9. Vorschläge nach Kosten absteigend; mehr als acht → acht sichtbar, Rest
  *    aufklappbar.
  *
- * ── Prop-Vertrag (entschieden, Issue 0131) ──────────────────────────────────
+ * ── Prop-Vertrag (entschieden, Issue 0135) ──────────────────────────────────
  * `capabilities` (bereits auf DIESES Kontingent verengt), `forcePath`,
  * `remainingPoints` (eingestellter Punktwert minus aktuelle Summe der
  * Limit-Kostenart; `null` = keine Punktgrenze), `costLimitTypeId`,
@@ -77,7 +77,7 @@ const FORCE_DEF_ID = 'force-main';
 const PTS = 'cost-pts';
 const MAGIC = 'cost-magic';
 const CAT_TROOPS = 'cat-troops';
-/** Die Kategorie mit MIN-Grenze — der gemeldete „General"-Fall (Issue 0131). */
+/** Die Kategorie mit MIN-Grenze — der gemeldete „General"-Fall (Issue 0135). */
 const CAT_GENERAL = 'cat-general';
 const FORCE_PATH = '0';
 
@@ -559,7 +559,7 @@ const ORIGIN_NAMES = ['Schlachtmeister', 'Vampirfuerst', 'Soeldnerhauptmann', 'G
 const MAIN_SUGGESTIONS = ['Soeldner', 'Ritter', 'Runenschmied', 'Bogenschuetze', 'Speertraeger', 'Sichelklingen'];
 const others = (name) => MAIN_SUGGESTIONS.filter(other => other !== name);
 
-describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (Issue 0131)', () => {
+describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (Issue 0135)', () => {
 
   describe('Kriterium 1: ohne Punktgrenze kein Panel', () => {
     it('keine Limit-Kostenart: das Panel erscheint nicht', () => {

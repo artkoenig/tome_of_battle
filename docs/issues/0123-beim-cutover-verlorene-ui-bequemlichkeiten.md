@@ -69,7 +69,7 @@ Begründung):
   je mit Reproduktion gegen den Stand vor dem Cutover.
 - 2026-07-31: Der Befund oben — „wer alle Pflichten erfüllt hat und noch 200
   Punkte übrig hat, sieht gar kein Panel mehr" — trifft so nicht mehr zu.
-  Issue 0131 speist das Panel aus den wählbaren Slots des Berichts und zeigt
+  Issue 0135 speist das Panel aus den wählbaren Slots des Berichts und zeigt
   die verbleibende Summe, allerdings **erst ab 50 Punkten Lücke**; bei
   kleineren Resten bleibt es weg. Ob das Punkt 1 dieses Issues abschließt,
   entscheidet der Mensch — die Kriterien hier gelten unverändert erst, wenn er

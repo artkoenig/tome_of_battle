@@ -96,7 +96,7 @@ function getSystemEntryIndexesByCatalogueId(system) {
  * fehlende Id gar nicht erst in die Menge: sonst gälte ein Slot mit
  * `sourceId: null` als fremd und verschwände still.
  *
- * Geteilt vom Aushebe-Dialog und den Auffüll-Vorschlägen (Issue 0131): zwei
+ * Geteilt vom Aushebe-Dialog und den Auffüll-Vorschlägen (Issue 0135): zwei
  * Kopien derselben Regel liefen auseinander, sobald eine von beiden
  * nachgezogen würde.
  *

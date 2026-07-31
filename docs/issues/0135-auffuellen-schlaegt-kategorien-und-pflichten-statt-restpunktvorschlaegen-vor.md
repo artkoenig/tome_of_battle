@@ -136,7 +136,7 @@ Acceptance criteria:
     sobald nichts hineinpasste. Es erscheint jetzt immer ab der Schwelle;
     passt nichts, steht ein Hinweis statt der Liste
     (`editor.autofill.nothingFits`).
-  - *F3 (kein Kriterium): abgelegt* als Issue 0132 — dieselbe Einheit
+  - *F3 (kein Kriterium): abgelegt* als Issue 0136 — dieselbe Einheit
     erzeugt je Auswahl eine eigene Zeile.
   - *F4 (kein Kriterium): behoben.* Der Eintrag in Issue 0123 behauptete
     erfüllte Kriterien, die dort erst nach einer Entscheidung des Menschen

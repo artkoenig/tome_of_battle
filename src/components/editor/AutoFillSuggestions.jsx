@@ -5,7 +5,7 @@ import { useTranslation } from '../../i18n/useTranslation';
 
 /**
  * Vorschläge, die die Liste auf ihren eingestellten Punktwert bringen
- * (Issue 0131; ADR-0034/0035).
+ * (Issue 0135; ADR-0034/0035).
  *
  * Das Panel beantwortet genau eine Frage: **was passt noch in die
  * Restpunkte?** Es erscheint erst, wenn die Liste eine Punktgrenze hat und

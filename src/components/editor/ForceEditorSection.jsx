@@ -30,7 +30,7 @@ import { useTranslation } from '../../i18n/useTranslation';
  *
  * `remainingPoints` sind die Punkte, die der Liste zu ihrem eingestellten Wert
  * fehlen (`null` = keine Punktgrenze gesetzt) — die Auffüll-Vorschläge leben
- * von dieser Differenz (Issue 0131). Sie ist roster-weit, wie die Punktgrenze
+ * von dieser Differenz (Issue 0135). Sie ist roster-weit, wie die Punktgrenze
  * selbst; jedes Kontingent zeigt sie deshalb gleich.
  */
 export default function ForceEditorSection({

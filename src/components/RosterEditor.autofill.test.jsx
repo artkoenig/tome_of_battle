@@ -1,5 +1,5 @@
 /**
- * Issue 0131, Befund 1 — die Kriterien 1, 2 und 3 auf **App-Ebene**: nicht nur
+ * Issue 0135, Befund 1 — die Kriterien 1, 2 und 3 auf **App-Ebene**: nicht nur
  * „was macht das Panel mit einer hereingereichten Zahl", sondern „entsteht die
  * Lücke aus der echten Rechnung und kommt sie am Panel an".
  *
@@ -138,7 +138,7 @@ const renderEditor = (roster) => render(
 /** Der Titel des Auffüll-Panels — im Editor sonst nirgends. */
 const PANEL_TITLE = 'Auffüllen';
 
-describe('Editor: die Auffüll-Lücke entsteht aus der echten Rechnung und kommt am Panel an (Issue 0131)', () => {
+describe('Editor: die Auffüll-Lücke entsteht aus der echten Rechnung und kommt am Panel an (Issue 0135)', () => {
   it('Kriterium 3: Punktwert 540 bei 240 verplanten Punkten → Panel mit der Lücke 300 und den Kandidaten, die hineinpassen', () => {
     const { container } = renderEditor(appRoster(540));
 
