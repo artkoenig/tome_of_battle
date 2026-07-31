@@ -3,34 +3,69 @@
  * eigenen Teilschritte und liefert das Ergebnis als Metadata aus — aber nur, wenn
  * der Aufrufer ausdruecklich `{ measure: true }` mitgibt.
  *
- * Die beiden Aussagen, die diese Datei festhaelt:
+ * Drei Aussagen haelt diese Datei fest:
  *
  * 1. **Der Normalpfad bleibt, was er ist.** Ohne das Flag — und ebenso mit leeren
  *    Optionen oder `{ measure: false }` — liefern `prepareDataset` und `evaluate`
  *    exakt das heutige Ergebnis: dieselben vier Berichtsfelder, kein
- *    Metadata-Feld, kein aufbereiteter Datensatz mit neuer Eigenschaft und keine
- *    Zeitmessung. Die Reinheit des Leitprinzips 1
- *    (`docs/evaluator-architecture.md` §2) gilt fuer jeden bestehenden Aufrufer
- *    unveraendert (Kriterium 4).
- * 2. **Mit dem Flag kommt genau EIN Feld hinzu.** Der Bericht selbst bleibt
- *    identisch — die Messung darf das Ergebnis nicht veraendern —, und das eine
- *    zusaetzliche Feld traegt die Messung (Kriterien 1–3).
+ *    `measurement`, ein Griff ohne jede eigene Eigenschaft und keine Zeitmessung.
+ *    Die Reinheit des Leitprinzips 1 (`docs/evaluator-architecture.md` §2) gilt
+ *    fuer jeden bestehenden Aufrufer unveraendert (Kriterium 4).
+ * 2. **Mit dem Flag kommt genau EIN Feld hinzu: `measurement`.** Der Bericht
+ *    selbst bleibt identisch — die Messung darf kein Ergebnis veraendern —, und
+ *    das eine zusaetzliche Feld traegt die drei Phasen der Auswertung, den
+ *    Ausgang der Fixpunktschleife und die Knotenzahlen (Kriterien 2 und 3). Die
+ *    Vorbereitung ist ein eigener Fassaden-Aufruf und traegt ihre Dauer am
+ *    aufbereiteten Datensatz (Kriterium 1).
+ * 3. **Die Gestalt ist die des heutigen Messverfahrens.** Phasennamen
+ *    (`MeasuredPhase`), `{ rounds, converged, nonConvergence }` und
+ *    `{ total, real, synthetic, byAnchorKind }` sind unveraendert die Groessen,
+ *    die `scripts/lib/evaluator-measurement.js` heute selbst zusammenbaut —
+ *    damit das Skript vom Nachbauer zum reinen Leser wird (Kriterium 5).
  *
- * Absichtlich **nicht** festgenagelt ist der *Name* des Metadata-Feldes und die
- * Verschachtelung darin: die Tests lesen das eine Feld, das mit dem Flag
- * hinzukommt, statt einen erfundenen Namen zu erwarten. Die einzigen
- * hingeschriebenen Namen sind die, die die Abnahmekriterien selbst nennen:
- * `rounds` und `converged` (Kriterium 3).
+ * Was die Messung **nicht** liefert, ist die Gesamtdauer: das Summieren, der
+ * Median, die Wiederholungen und die Schwellen bleiben Mess-Politik des Skripts
+ * (Kriterium 8).
  */
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
+import * as facade from './evaluator.js';
 import { evaluate, describeDataset, prepareDataset } from './evaluator.js';
+import { AnchorKind, DiagnosticKind } from './model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
+
+// ── Die vereinbarten Namen ────────────────────────────────────────────────────
+
+/** Das eine Feld, das der Messmodus zusaetzlich anlegt. */
+const MEASUREMENT_FIELD = 'measurement';
+
+/** Die vier Felder, aus denen der Bericht der Fassade heute besteht. */
+const TODAYS_REPORT_FIELDS = ['capabilities', 'costTotals', 'diagnostics', 'violations'];
+
+/** Derselbe Bericht plus das Metadata-Feld. */
+const MEASURED_REPORT_FIELDS = [...TODAYS_REPORT_FIELDS, MEASUREMENT_FIELD].sort();
+
+/**
+ * Die Phasen, wie `MeasuredPhase` sie benennt — hier als Literale
+ * hingeschrieben, damit ein fehlender Re-Export der Fassade *einen* Test
+ * scheitern laesst (den darauf gemuenzten) und nicht die ganze Datei.
+ */
+const PHASE = Object.freeze({
+  PREPARATION: 'preparation',
+  ITERATED_EVALUATION: 'iteratedEvaluation',
+  POST_PASS: 'postPass',
+  CONSTRAINTS_AND_REPORT: 'constraintsAndReport',
+});
+
+/** Die drei Phasen, die `evaluate` selbst ausfuehrt — in der Reihenfolge der Fassade. */
+const EVALUATION_PHASES = [PHASE.ITERATED_EVALUATION, PHASE.POST_PASS, PHASE.CONSTRAINTS_AND_REPORT];
+
+// ── Datensatz und Roster ──────────────────────────────────────────────────────
 
 const GAME_SYSTEM_ID = 'gs-measure-0138';
 const POINTS_COST_TYPE_ID = 'cost-points';
@@ -63,9 +98,6 @@ const DATASET = { gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_XML] };
 const EMPTY_DATASET = { catalogues: [] };
 const EMPTY_ROSTER = { forces: [] };
 
-/** Die vier Felder, aus denen der Bericht der Fassade heute besteht. */
-const TODAYS_REPORT_FIELDS = ['capabilities', 'costTotals', 'diagnostics', 'violations'];
-
 /** Ein Kontingent mit `count` Kriegern — bei `count > MAX_WARRIORS` reisst die Grenze. */
 function armyOfWarriors(count) {
   return {
@@ -74,45 +106,98 @@ function armyOfWarriors(count) {
   };
 }
 
+// ── Ein Katalog, dessen Fixpunktschleife oszilliert ───────────────────────────
+// Die Einheit fuehrt die Kategorie „Tag" und entfernt sie per Modifikator, sobald
+// die Kategorie im Roster gezaehlt wird. Runde fuer Runde kippt die
+// Zugehoerigkeit — die zaehlrelevanten Werte kommen nie zur Ruhe.
+
+const OSCILLATION_FORCE_ID = 'force-oscillation';
+const OSCILLATION_TAG_ID = 'category-tag';
+const OSCILLATION_ENTRY_ID = 'entry-flip';
+
+const OSCILLATING_CATALOGUE_XML = `<?xml version="1.0"?>
+  <catalogue id="cat-oscillation" name="Oscillation">
+    <categoryEntries><categoryEntry id="${OSCILLATION_TAG_ID}" name="Tag" hidden="false"/></categoryEntries>
+    <forceEntries><forceEntry id="${OSCILLATION_FORCE_ID}" name="Army"/></forceEntries>
+    <selectionEntries>
+      <selectionEntry id="${OSCILLATION_ENTRY_ID}" name="Flip" type="unit">
+        <categoryLinks>
+          <categoryLink id="cl-tag" name="Tag" targetId="${OSCILLATION_TAG_ID}" primary="true"/>
+        </categoryLinks>
+        <modifiers>
+          <modifier type="remove" field="category" value="${OSCILLATION_TAG_ID}">
+            <conditions>
+              <condition type="atLeast" value="1" field="selections" scope="roster"
+                         childId="${OSCILLATION_TAG_ID}" shared="true" includeChildSelections="true"/>
+            </conditions>
+          </modifier>
+        </modifiers>
+      </selectionEntry>
+    </selectionEntries>
+  </catalogue>`;
+
+const OSCILLATING_DATASET = { catalogues: [OSCILLATING_CATALOGUE_XML] };
+const OSCILLATING_ROSTER = {
+  forces: [{
+    defId: OSCILLATION_FORCE_ID,
+    count: 1,
+    children: [{ defId: OSCILLATION_ENTRY_ID, count: 1, children: [] }],
+  }],
+};
+
+// ── Ein Katalog mit abzaehlbaren Slots ────────────────────────────────────────
+// Gewaehlt wird ein Krieger in einem Kontingent — zwei **reale** Knoten. Dazu
+// kommen zwei synthetische: das Pflicht-Phantom der nicht gewaehlten Handwaffe
+// (`min=1`) und der Angebots-Anker des nicht gewaehlten Bogenschuetzen.
+
+const COUNTING_FORCE_ID = 'force-counting';
+const COUNTING_WARRIOR_ID = 'entry-counting-warrior';
+const COUNTING_WEAPON_ID = 'entry-counting-weapon';
+const COUNTING_ARCHER_ID = 'entry-counting-archer';
+
+const COUNTING_CATALOGUE_XML = `<?xml version="1.0"?>
+  <catalogue id="cat-counting" name="Counting">
+    <forceEntries><forceEntry id="${COUNTING_FORCE_ID}" name="Army"/></forceEntries>
+    <selectionEntries>
+      <selectionEntry id="${COUNTING_WARRIOR_ID}" name="Warrior" type="unit">
+        <selectionEntries>
+          <selectionEntry id="${COUNTING_WEAPON_ID}" name="Hand Weapon" type="upgrade">
+            <constraints>
+              <constraint id="min-hand-weapon" type="min" value="1" field="selections" scope="parent"/>
+            </constraints>
+          </selectionEntry>
+        </selectionEntries>
+      </selectionEntry>
+      <selectionEntry id="${COUNTING_ARCHER_ID}" name="Archer" type="unit"/>
+    </selectionEntries>
+  </catalogue>`;
+
+const COUNTING_DATASET = { catalogues: [COUNTING_CATALOGUE_XML] };
+const COUNTING_ROSTER = {
+  forces: [{
+    defId: COUNTING_FORCE_ID,
+    count: 1,
+    children: [{ defId: COUNTING_WARRIOR_ID, count: 1, children: [] }],
+  }],
+};
+
+// ── Helfer ───────────────────────────────────────────────────────────────────
+
 /** Die eigenen, aufzaehlbaren Felder eines Ergebnisses — sortiert und vergleichbar. */
 function fieldsOf(result) {
   return Object.keys(result).sort();
 }
 
-/**
- * Die Felder, die `withFlag` gegenueber `withoutFlag` **zusaetzlich** traegt.
- * Kriterium 2 verlangt genau eines davon; welchen Namen es traegt, ist hier
- * bewusst offen.
- */
-function additionalFieldsOf(withFlag, withoutFlag) {
-  const known = new Set(fieldsOf(withoutFlag));
-  return fieldsOf(withFlag).filter(field => !known.has(field));
+/** Die Metadata eines gemessenen Ergebnisses — mit klarer Meldung, wenn sie fehlt. */
+function measurementOf(result) {
+  expect(result[MEASUREMENT_FIELD], 'Das Ergebnis traegt kein `measurement`-Feld.').toBeDefined();
+  return result[MEASUREMENT_FIELD];
 }
 
-/** Das eine Metadata-Feld eines gemessenen Ergebnisses — sein Wert, nicht sein Name. */
-function metadataOf(withFlag, withoutFlag) {
-  const additional = additionalFieldsOf(withFlag, withoutFlag);
-  expect(
-    additional,
-    'Das gemessene Ergebnis traegt kein (oder mehr als ein) zusaetzliches Feld — erwartet wird genau EIN Metadata-Feld.',
-  ).toHaveLength(1);
-  return withFlag[additional[0]];
-}
-
-/**
- * Alle Werte, die irgendwo in `value` unter dem Feldnamen `name` stehen —
- * unabhaengig davon, wie tief die Metadata sie verschachtelt.
- */
-function fieldsNamed(value, name, seen = new Set()) {
-  if (value === null || typeof value !== 'object' || seen.has(value)) return [];
-  seen.add(value);
-  const entries = value instanceof Map ? [...value.entries()] : Object.entries(value);
-  const found = [];
-  for (const [key, child] of entries) {
-    if (key === name) found.push(child);
-    found.push(...fieldsNamed(child, name, seen));
-  }
-  return found;
+/** Die Metadata eines gemessen aufbereiteten Datensatzes — ebenso mit klarer Meldung. */
+function preparationMeasurementOf(prepared) {
+  expect(prepared[MEASUREMENT_FIELD], 'Der aufbereitete Datensatz traegt kein `measurement`-Feld.').toBeDefined();
+  return prepared[MEASUREMENT_FIELD];
 }
 
 /** Zaehlt die Aufrufe der Zeitgeber, solange `run` laeuft. */
@@ -141,29 +226,27 @@ function countingClockCalls(run) {
 // Kriterium 2 (+ 4): das Metadata-Feld der Auswertung
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('evaluate: das Metadata-Feld erscheint nur unter `{ measure: true }`', () => {
-  it('legt mit dem Flag genau EIN Feld zusaetzlich zum heutigen Bericht an', () => {
+describe('evaluate: das Feld `measurement` erscheint nur unter `{ measure: true }`', () => {
+  it('legt mit dem Flag genau ein Feld zusaetzlich zum heutigen Bericht an', () => {
     const prepared = prepareDataset(DATASET);
     const roster = armyOfWarriors(MAX_WARRIORS + 1);
 
-    const plain = evaluate(prepared, roster);
-    const measured = evaluate(prepared, roster, { measure: true });
-
-    // Der Ausgangspunkt: der heutige Bericht, unveraendert.
-    expect(fieldsOf(plain)).toEqual(TODAYS_REPORT_FIELDS);
-    // Und das gemessene Ergebnis: dieselben vier Felder plus genau eines.
-    expect(TODAYS_REPORT_FIELDS.every(field => fieldsOf(measured).includes(field))).toBe(true);
-    expect(additionalFieldsOf(measured, plain)).toHaveLength(1);
+    expect(fieldsOf(evaluate(prepared, roster))).toEqual(TODAYS_REPORT_FIELDS);
+    expect(fieldsOf(evaluate(prepared, roster, { measure: true }))).toEqual(MEASURED_REPORT_FIELDS);
   });
 
   it('misst auch den leeren Grenzfall: leerer Datensatz, leeres Roster', () => {
     const prepared = prepareDataset(EMPTY_DATASET);
 
-    const plain = evaluate(prepared, EMPTY_ROSTER);
     const measured = evaluate(prepared, EMPTY_ROSTER, { measure: true });
 
-    expect(plain.capabilities.size).toBe(0);
-    expect(additionalFieldsOf(measured, plain)).toHaveLength(1);
+    expect(measured.capabilities.size).toBe(0);
+    expect(fieldsOf(measured)).toEqual(MEASURED_REPORT_FIELDS);
+    // Auch ohne einen einzigen Knoten hat jede Phase eine Dauer.
+    for (const phase of EVALUATION_PHASES) {
+      expect(measurementOf(measured).phases[phase], `Phase ${phase} fehlt`).toBeGreaterThanOrEqual(0);
+    }
+    expect(measurementOf(measured).tree.total).toBe(0);
   });
 
   it('laesst den Bericht selbst unangetastet — die Messung veraendert kein Ergebnis', () => {
@@ -180,7 +263,7 @@ describe('evaluate: das Metadata-Feld erscheint nur unter `{ measure: true }`', 
     expect(measured.violations.map(violation => violation.limitId)).toContain(MAX_WARRIORS_LIMIT_ID);
   });
 
-  it('traegt die Metadata bei jedem gemessenen Lauf und nie im ungemessenen dazwischen', () => {
+  it('misst jeden gemessenen Lauf und nie den ungemessenen dazwischen', () => {
     const prepared = prepareDataset(DATASET);
     const roster = armyOfWarriors(MAX_WARRIORS);
 
@@ -188,11 +271,11 @@ describe('evaluate: das Metadata-Feld erscheint nur unter `{ measure: true }`', 
     const between = evaluate(prepared, roster);
     const second = evaluate(prepared, roster, { measure: true });
 
+    // Die Messung ist kein Einmal-Effekt des ersten Aufrufs — und sie faerbt den
+    // ungemessenen Lauf dazwischen nicht ein.
+    expect(fieldsOf(first)).toEqual(MEASURED_REPORT_FIELDS);
     expect(fieldsOf(between)).toEqual(TODAYS_REPORT_FIELDS);
-    expect(additionalFieldsOf(first, between)).toHaveLength(1);
-    // Der zweite gemessene Lauf traegt dieselbe Metadata-Form wie der erste: die
-    // Messung ist kein Einmal-Effekt des ersten Aufrufs.
-    expect(additionalFieldsOf(second, between)).toEqual(additionalFieldsOf(first, between));
+    expect(fieldsOf(second)).toEqual(MEASURED_REPORT_FIELDS);
   });
 
   it('bleibt ohne Flag, mit leeren Optionen und mit `{ measure: false }` beim heutigen Bericht', () => {
@@ -208,34 +291,113 @@ describe('evaluate: das Metadata-Feld erscheint nur unter `{ measure: true }`', 
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Kriterium 3: der Ausgang der Fixpunktschleife steht in der Metadata
-// ─────────────────────────────────────────────────────────────────────────────
+describe('evaluate: die drei Phasen, die `evaluate` selbst ausfuehrt', () => {
+  it('weist genau diese drei Phasen aus, in der Reihenfolge der Fassade', () => {
+    const measurement = measurementOf(
+      evaluate(prepareDataset(DATASET), armyOfWarriors(MAX_WARRIORS), { measure: true }),
+    );
 
-describe('evaluate: die Metadata meldet den Ausgang der Fixpunktschleife', () => {
-  // Die Fassade verwirft `rounds`/`converged` heute (`evaluator.js`
-  // destrukturiert sie nicht), obwohl `evaluateToFixpoint` sie berechnet. Beide
-  // Namen stehen so in Kriterium 3; wie tief die Metadata sie verschachtelt,
-  // laesst dieser Test offen.
-  it('nennt die Zahl der Runden und dass die Schleife konvergiert ist', () => {
+    // Nicht mehr: die Vorbereitung ist ein eigener Fassaden-Aufruf und traegt
+    // ihre Dauer am aufbereiteten Datensatz, nicht hier.
+    expect(Object.keys(measurement.phases)).toEqual(EVALUATION_PHASES);
+  });
+
+  it('misst jede Phase als nicht-negative, endliche Millisekundenzahl', () => {
+    const measurement = measurementOf(
+      evaluate(prepareDataset(DATASET), armyOfWarriors(MAX_WARRIORS), { measure: true }),
+    );
+
+    for (const phase of EVALUATION_PHASES) {
+      expect(typeof measurement.phases[phase], `Phase ${phase} ist keine Zahl`).toBe('number');
+      expect(measurement.phases[phase], `Phase ${phase} ist negativ`).toBeGreaterThanOrEqual(0);
+      expect(Number.isFinite(measurement.phases[phase]), `Phase ${phase} ist keine endliche Dauer`).toBe(true);
+    }
+  });
+
+  it('bleibt in der Summe innerhalb der Wanduhr des Aufrufs', () => {
     const prepared = prepareDataset(DATASET);
     const roster = armyOfWarriors(MAX_WARRIORS + 1);
 
-    const metadata = metadataOf(evaluate(prepared, roster, { measure: true }), evaluate(prepared, roster));
+    const startedAt = performance.now();
+    const measured = evaluate(prepared, roster, { measure: true });
+    const elapsedMs = performance.now() - startedAt;
 
-    const rounds = fieldsNamed(metadata, 'rounds');
-    expect(rounds, 'Die Metadata nennt die Fixpunkt-Runden nicht als `rounds`.').toHaveLength(1);
-    expect(typeof rounds[0]).toBe('number');
-    expect(rounds[0]).toBeGreaterThanOrEqual(1);
-
-    // Dieser Datensatz traegt keinen einzigen Modifikator: die Schleife kommt in
-    // der ersten Runde zur Ruhe.
-    expect(fieldsNamed(metadata, 'converged')).toEqual([true]);
+    const measurement = measurementOf(measured);
+    const sum = EVALUATION_PHASES.reduce((total, phase) => total + measurement.phases[phase], 0);
+    // Die drei Phasen liegen INNERHALB des einen Aufrufs: ihre Summe kann seine
+    // Dauer nicht ueberschreiten. Faellt das, misst die Instrumentierung etwas
+    // anderes als den Abschnitt, den sie benennt.
+    expect(sum).toBeLessThanOrEqual(elapsedMs);
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Kriterium 1 (+ 4): die Vorbereitung
+// Kriterium 3: Fixpunkt-Runden und Knotenzahlen
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('evaluate: die Metadata meldet den Ausgang der Fixpunktschleife', () => {
+  it('meldet bei konvergierenden Daten Runden, Konvergenz und keine Nichtkonvergenz', () => {
+    const measurement = measurementOf(
+      evaluate(prepareDataset(DATASET), armyOfWarriors(MAX_WARRIORS + 1), { measure: true }),
+    );
+
+    expect(typeof measurement.fixpoint.rounds).toBe('number');
+    expect(measurement.fixpoint.rounds).toBeGreaterThanOrEqual(1);
+    // Dieser Datensatz traegt keinen einzigen Modifikator: die Schleife kommt zur Ruhe.
+    expect(measurement.fixpoint.converged).toBe(true);
+    expect(measurement.fixpoint.nonConvergence).toBeNull();
+  });
+
+  it('meldet bei oszillierenden Daten die Nichtkonvergenz als die Diagnose der Schleife', () => {
+    const measured = evaluate(prepareDataset(OSCILLATING_DATASET), OSCILLATING_ROSTER, { measure: true });
+
+    // Kontrolle des Falls: der Katalog oszilliert wirklich — sonst traegt der
+    // Test seine Aussage nicht.
+    const oscillation = measured.diagnostics.find(entry => entry.kind === DiagnosticKind.OSCILLATION);
+    expect(oscillation, 'Der Katalog oszilliert nicht (mehr) — der Fall traegt den Test nicht.').toBeDefined();
+
+    const measurement = measurementOf(measured);
+    expect(measurement.fixpoint.converged).toBe(false);
+    expect(measurement.fixpoint.rounds).toBe(oscillation.rounds);
+    // Die **Art** der Nichtkonvergenz ist die Diagnose selbst (Oszillation mit
+    // Zykluslaenge bzw. erschoepftes Rundenbudget) — abgelesen, nicht nachgebaut.
+    expect(measurement.fixpoint.nonConvergence).toEqual(oscillation);
+  });
+});
+
+describe('evaluate: die Metadata zaehlt die Knoten des Auswertungsbaums', () => {
+  it('zaehlt reale und synthetische Knoten getrennt und schluesselt sie nach Ankerart auf', () => {
+    const measured = evaluate(prepareDataset(COUNTING_DATASET), COUNTING_ROSTER, { measure: true });
+
+    // Die Slots des Berichts sind dieselben Knoten — der Bericht ist die
+    // beobachtbare Gegenprobe zur Zaehlung.
+    const slots = [...measured.capabilities.values()];
+    const tally = Object.fromEntries(
+      Object.values(AnchorKind).map(kind => [kind, slots.filter(slot => slot.anchorKind === kind).length]),
+    );
+
+    // Der Fall ist abzaehlbar: Kontingent + Krieger (belegt), Pflicht-Phantom der
+    // Handwaffe, Angebots-Anker des Bogenschuetzen.
+    expect(tally).toEqual({
+      [AnchorKind.OCCUPIED]: 2,
+      [AnchorKind.MANDATORY_PHANTOM]: 1,
+      [AnchorKind.GROUP_ANCHOR]: 0,
+      [AnchorKind.CATEGORY_ANCHOR]: 0,
+      [AnchorKind.OFFER_ANCHOR]: 1,
+    });
+
+    const tree = measurementOf(measured).tree;
+    expect(tree.total).toBe(4);
+    expect(tree.real).toBe(2);
+    expect(tree.synthetic).toBe(2);
+    // Jede Ankerart ist gefuehrt, auch die im Fall nicht vorkommenden — mit 0.
+    expect(tree.byAnchorKind).toEqual(tally);
+    expect(tree.total).toBe(measured.capabilities.size);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kriterium 1 (+ 4): die Vorbereitung misst sich selbst
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('prepareDataset: der Normalpfad bleibt unveraendert', () => {
@@ -256,8 +418,27 @@ describe('prepareDataset: der Normalpfad bleibt unveraendert', () => {
       expect(fieldsOf(evaluate(prepared, armyOfWarriors(MAX_WARRIORS)))).toEqual(TODAYS_REPORT_FIELDS);
     }
   });
+});
 
-  it('liefert mit `{ measure: true }` einen Griff, der Auswertung und Beschreibung unveraendert traegt', () => {
+describe('prepareDataset: mit `{ measure: true }` traegt der Griff seine eigene Dauer', () => {
+  it('traegt genau die eine Phase der Vorbereitung als `measurement`', () => {
+    const prepared = prepareDataset(DATASET, { measure: true });
+
+    expect(Object.keys(prepared)).toEqual([MEASUREMENT_FIELD]);
+    const phases = preparationMeasurementOf(prepared).phases;
+    expect(Object.keys(phases)).toEqual([PHASE.PREPARATION]);
+    expect(typeof phases[PHASE.PREPARATION]).toBe('number');
+    expect(phases[PHASE.PREPARATION]).toBeGreaterThanOrEqual(0);
+    expect(Number.isFinite(phases[PHASE.PREPARATION])).toBe(true);
+  });
+
+  it('misst auch die Vorbereitung des leeren Datensatzes', () => {
+    const prepared = prepareDataset(EMPTY_DATASET, { measure: true });
+
+    expect(preparationMeasurementOf(prepared).phases[PHASE.PREPARATION]).toBeGreaterThanOrEqual(0);
+  });
+
+  it('bleibt derselbe Griff: Auswertung und Beschreibung liefern unveraendert dasselbe', () => {
     const roster = armyOfWarriors(MAX_WARRIORS + 1);
     const plainPrepared = prepareDataset(DATASET);
     const measuredPrepared = prepareDataset(DATASET, { measure: true });
@@ -270,6 +451,9 @@ describe('prepareDataset: der Normalpfad bleibt unveraendert', () => {
     expect(againstMeasured.costTotals).toEqual(againstPlain.costTotals);
     expect(againstMeasured.diagnostics).toEqual(againstPlain.diagnostics);
     expect(describeDataset(measuredPrepared)).toEqual(describeDataset(plainPrepared));
+    // Der gemessene Griff traegt sein `measurement` unabhaengig davon, wie oft er
+    // ausgewertet wurde: die Dauer gehoert zur Vorbereitung, nicht zum Aufruf.
+    expect(Object.keys(measuredPrepared)).toEqual([MEASUREMENT_FIELD]);
   });
 });
 
@@ -294,5 +478,24 @@ describe('Normalpfad: die Engine liest keine Uhr', () => {
     });
 
     expect(calls, 'Ein nicht gesetztes Flag hat die Messung eingeschaltet.').toBe(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kriterium 5: die Fassade benennt, was das Messverfahren aus der Metadata liest
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('Fassade: die Namen, die das Messverfahren aus der Metadata liest', () => {
+  it('exportiert `MeasuredPhase` mit den vier Phasen der Auswertung', () => {
+    // Die Phasen sind die der Engine — sie gehoeren an ihre Fassade, nicht in
+    // das Messgeraet. Das Skript liest die Namen von hier, statt sie zu setzen.
+    expect(facade.MeasuredPhase).toEqual(PHASE);
+  });
+
+  it('exportiert `DiagnosticKind` unveraendert aus dem Modell', () => {
+    // Die Diagnosen des Berichts tragen diese Werte; sie zu benennen ist Teil
+    // seines Vertrags. Die Ausgabe des Messverfahrens liest daran die Art der
+    // Nichtkonvergenz ab, ohne in die Engine zu greifen.
+    expect(facade.DiagnosticKind).toEqual(DiagnosticKind);
   });
 });
