@@ -649,6 +649,30 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       expect(isShown(container, 'General')).toBe(false);
       expect(container.querySelectorAll('button')).toHaveLength(0);
     });
+
+    it('ohne Pfad für dieses Kontingent (der Bericht führt keine Slots) erscheint das Panel gar nicht', () => {
+      // Der dokumentierte Fall eines Kontingents, dessen Definition der Katalog
+      // nicht mehr kennt: `ForceEditorSection` reicht dann eine leere Slot-Map
+      // und `forcePath: null` herein. „Nichts passt" wäre hier eine Behauptung
+      // über etwas, worüber der Bericht nichts weiß.
+      const empty = renderPanel({ forcePath: null, capabilities: new Map(), remainingPoints: 300 });
+      expect(empty.container.textContent).toBe('');
+      empty.unmount();
+
+      const none = renderPanel({ forcePath: null, capabilities: null, remainingPoints: 300 });
+      expect(none.container.textContent).toBe('');
+    });
+
+    it('ohne Pfad bleibt das Panel auch dann aus, wenn die Slot-Map Kandidaten enthielte', () => {
+      // Positiver Gegenbeweis: mit Pfad zeigt derselbe Bericht Vorschläge.
+      const withPath = renderPanel({ remainingPoints: 300 });
+      expect(isShown(withPath.container, 'Ritter')).toBe(true);
+      withPath.unmount();
+
+      const { container } = renderPanel({ forcePath: null, remainingPoints: 300 });
+
+      expect(container.textContent).toBe('');
+    });
   });
 
   describe('Kriterium 4: nur Wählbares — nie ein Kategorie-Slot', () => {

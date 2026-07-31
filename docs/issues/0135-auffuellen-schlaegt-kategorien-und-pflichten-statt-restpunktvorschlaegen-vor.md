@@ -155,6 +155,25 @@ Acceptance criteria:
     Panel unter den Stellen, die effektive Werte selbst rechnen — seit dem
     Cutover falsch, und dieser Umbau macht es endgültig falsch.
 
+- 2026-07-31: Rebase auf `b87af28`, weil main weitergelaufen war. Dabei
+  die Nummern gezogen: 0131–0134 waren dort vergeben, diese Issue heißt
+  jetzt 0135, der Folgefund 0136. Der Rebase machte drei Editor-Testdateien
+  rot — ihre `lucide-react`-Attrappen kannten `Wand2`/`Plus` nicht, weil das
+  Panel dort vor dem F2-Fix nie erschien. Ergänzt.
+- 2026-07-31: **Prüfrunde 2** (derselbe Kontext, fortgesetzt), 3 Befunde, alle
+  ohne Kriteriumsverletzung. Die Runde bestätigte F1 und F2 als geschlossen —
+  F1 durch Mutation belegt (das Löschen der Durchreichung macht jetzt Tests
+  rot). Fakten der Runde: `npm test` exit 0 (261 Dateien / 2715 Tests plus
+  Puppeteer-E2E), `lint`/`typecheck`/`depcruise` je exit 0.
+  - *R2-F1: behoben.* Die Akte behauptete einen Checkpoint 2, der noch nicht
+    geschrieben war. Er steht jetzt.
+  - *R2-F2: behoben.* Drei Commit-Betreffs nannten „issue 0131" — nach der
+    Umnummerierung die Nummer einer fremden, schon gemergten Issue. Umbenannt.
+  - *R2-F3: behoben*, obwohl kein Kriterium verletzt: dieser Diff selbst hatte
+    den Fehler eingeführt. Für ein Kontingent, für das der Bericht keine Slots
+    führt (`forcePath === null`), behauptete das Panel „Nichts passt mehr in
+    die Restpunkte". Es schweigt dort jetzt.
+
 ## Checkpoints
 
 ### Before implementation
@@ -179,8 +198,22 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja, und mehr als der gemeldete Satz.
+  Gemeldet war „General"; gefordert waren dann zwei Dinge — die Schwelle und
+  „nur Einheiten und Optionen bestehender Einheiten". Beides steht, samt des
+  Herkunftsfilters, den der Mensch unterwegs dazugegeben hat. Was der Mensch
+  **nicht** verlangt hat und was deshalb draußen blieb: die Doppel-Zeilen
+  (Issue 0136) und die Knapsack-Suche des alten Solvers.
+- **What surprised me?** Dass der Fix zu „Panel erscheint auch ohne passenden
+  Vorschlag" gleich zwei Folgen hatte, die niemand vorhergesehen hatte: drei
+  fremde Testdateien brachen an einer unvollständigen Icon-Attrappe (das Panel
+  erscheint jetzt an Stellen, an denen es nie erschien), und für ein
+  Kontingent ohne Slots im Bericht behauptete es „nichts passt hinein" —
+  eine Aussage über etwas, worüber der Bericht schweigt.
+- **What am I assuming without having verified it?** Die Leserichtung der
+  Schwelle („ab 50 Punkten Lücke", nicht „bis 50") — der Mensch hat die Zahl
+  bestätigt, die Richtung nie ausdrücklich. Und dass die roster-weite
+  Restsumme je Kontingent zu wiederholen in Ordnung ist; bei mehreren
+  Kontingenten steht dieselbe Zahl mehrfach.
 
 ## Retro

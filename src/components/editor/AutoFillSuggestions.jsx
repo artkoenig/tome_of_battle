@@ -143,10 +143,16 @@ export default function AutoFillSuggestions({
     return capabilities.get(framePath)?.name ?? null;
   };
 
-  // Sichtbar allein an der Lücke: fehlen genug Punkte, steht das Panel da —
-  // auch wenn gerade nichts hineinpasst. Ein stilles Verschwinden wäre von
-  // „alles erledigt" nicht zu unterscheiden.
-  const isOpen = costLimitTypeId !== null
+  // Sichtbar an der Lücke: fehlen genug Punkte, steht das Panel da — auch
+  // wenn gerade nichts hineinpasst. Ein stilles Verschwinden wäre von „alles
+  // erledigt" nicht zu unterscheiden.
+  //
+  // Ohne `forcePath` führt der Bericht für dieses Kontingent überhaupt keine
+  // Slots (seine Definition kennt der Katalog nicht mehr). Dann schweigt das
+  // Panel: „nichts passt hinein" wäre dort eine Behauptung über etwas, worüber
+  // der Bericht nichts sagt.
+  const isOpen = forcePath !== null
+    && costLimitTypeId !== null
     && remainingPoints !== null
     && remainingPoints >= MIN_REMAINING_POINTS;
   if (!isOpen) return null;
