@@ -247,3 +247,37 @@ Acceptance criteria:
   erscheinen.
 
 ## Retro
+
+- **Der Blick auf die echte Anwendung kam zu spät.** Kriterium 10 (fremde
+  Armeebücher) fiel erst auf, als der Screenshot des fertigen Panels vorlag —
+  nach der Umsetzung, kurz vor der Prüfung. Kein Test hätte es gefunden, denn
+  kein Kriterium verlangte es. Lehre für den Lauf: bei einer sichtbaren
+  Änderung das echte Bild ansehen, **bevor** die Prüfung startet, nicht danach.
+- **Zwei Fixes zogen je einen neuen Fehler nach.** „Panel erscheint auch ohne
+  passenden Vorschlag" brach drei fremde Icon-Attrappen und ließ das Panel für
+  ein Kontingent ohne Slots etwas Falsches behaupten. Beides fand die Suite
+  bzw. die nächste Prüfrunde — das Muster „Fix erweitert den Geltungsbereich,
+  also prüfe die Ränder des neuen Bereichs" ist billiger, wenn man es beim
+  Fix schon anwendet.
+- **Die Nummer wurde mir unter der Hand vergeben.** Zwischen Anlegen und PR
+  landeten auf main die Nummern 0131–0134; die Umbenennung samt aller
+  Verweise (Code, Tests, Commit-Betreffs) kostete einen eigenen Durchgang.
+  Früher rebasen hilft, sicher ist es nie — wer eine Nummer vergibt, sollte
+  wissen, dass sie erst mit dem Merge gehört.
+- **Regelkonflikt, für die `metis`-Ablage:** Die Regel „Everything checked in
+  — texts, commit messages — and every pull request is written in English"
+  steht gegen die Sprache dieses Projekts: 130 Issues, alle Kommentare und
+  die gesamte Dokumentation sind Deutsch. Gelöst als Kompromiss — Commits und
+  PR Englisch, die Akte Deutsch wie ihre Nachbarn. Vorschlag: die Regel auf
+  Commits und PRs beschränken und die Sprache der projekteigenen Texte dem
+  Projekt lassen.
+- **Zweiter Regelkonflikt:** „Die Kriterien stehen fest, sobald die Umsetzung
+  beginnt" kennt keine Ausnahme für den Menschen — obwohl derselbe Text ihn
+  als denjenigen führt, der die Kriterien freigibt. Hier gab er Kriterium 10
+  mitten im Lauf dazu; das war offensichtlich richtig und trotzdem formal ein
+  Regelbruch. Vorschlag: die Freigabe des Menschen als die eine Ausnahme
+  benennen.
+- **Ein Exitcode war einmal nicht verlässlich.** Ein `npm test` kippte unter
+  Nebenlast in einem Evaluator-E2E-Fall (Issue 0137). Fakten per Exitcode
+  taugen nur, solange der Lauf allein läuft — das ist eine Eigenschaft der
+  Suite, keine des Diffs, und gehört repariert.
