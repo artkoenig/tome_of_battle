@@ -5,8 +5,11 @@
  * Die Uebersetzung ist rein strukturell (Black-Box): jede `<selection>` wird zur
  * Definitions-Id des Verweises, ueber den sie gesetzt wurde (`entryLinkId`), sonst
  * zu ihrer `entryId`; `number` wird zur Anzahl (Default 1), und ihre
- * verschachtelten `<selections>` werden rekursiv zu Kindern. Kein Evaluator-Wissen
- * fliesst ein — genau die Naht, die ein Black-Box-Testautor braucht.
+ * verschachtelten `<selections>` werden rekursiv zu Kindern. Ein `<force>` gibt
+ * neben seinem `entryId` auch sein `catalogueId` weiter — das Armeebuch, aus dem
+ * das Kontingent stammt (Vertrag der Fassade, `@param roster`; Issue 0140). Kein
+ * Evaluator-Wissen fliesst ein — genau die Naht, die ein Black-Box-Testautor
+ * braucht.
  *
  * Ausgelagert aus den handgeschriebenen `e2e.*.ros.test.js`, damit der
  * generalisierte, manifest-getriebene Runner (`e2e.testcatalog.test.js`) dieselbe
@@ -89,17 +92,24 @@ function costLimitsFromRoster(doc) {
  *
  * @param {string} path Pfad zur `.ros`-Datei, relativ zum Projekt-Wurzelverzeichnis
  *   (dem cwd des Testlaufs) aufgeloest — wie die uebrigen fixture-lesenden Tests.
- * @returns {{ forces: Array<{ defId: string | null, count: number, children: object[] }>,
+ * @returns {{ forces: Array<{ defId: string | null, count: number, catalogueId?: string, children: object[] }>,
  *            costLimits: Array<{ costTypeId: string, value: number }> }}
  *   Das Roster in der von `evaluate` erwarteten Form.
  */
 export function rosterFromRos(path) {
   const xml = readFileSync(resolve(path), 'utf8');
   const doc = new dom.window.DOMParser().parseFromString(xml, 'application/xml');
-  const forces = [...doc.getElementsByTagName('force')].map(forceEl => ({
-    defId: forceEl.getAttribute('entryId'),
-    count: 1,
-    children: childSelections(forceEl),
-  }));
+  const forces = [...doc.getElementsByTagName('force')].map(forceEl => {
+    const force = {
+      defId: forceEl.getAttribute('entryId'),
+      count: 1,
+      children: childSelections(forceEl),
+    };
+    // Fehlt das Attribut oder ist es leer, bleibt die Angabe ganz weg — „kein
+    // Armeebuch genannt" ist ein eigener Fall im Vertrag der Fassade.
+    const catalogueId = forceEl.getAttribute('catalogueId');
+    if (catalogueId) force.catalogueId = catalogueId;
+    return force;
+  });
   return { forces, costLimits: costLimitsFromRoster(doc) };
 }

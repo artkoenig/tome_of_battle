@@ -6,7 +6,12 @@
  *
  * Abbildungsregeln:
  *
- * - Force → `{ defId: forceEntryId, count: 1, children }`.
+ * - Force → `{ defId: forceEntryId, count: 1, children }`, dazu `catalogueId`,
+ *   wenn das App-Kontingent sein Armeebuch nennt (`Force.catalogueId`, Issue
+ *   0140). Die Fassade nimmt die Angabe je Kontingent-Knoten entgegen und
+ *   filtert damit Pflichten und Wurzel-Angebote fremder Armeebuecher weg; ein
+ *   Kontingent **ohne** Armeebuch-Id geht wie bisher ohne die Angabe durch —
+ *   dann entscheidet allein der Herkunftsindex aus den Katalogdaten.
  * - Selection → `{ defId: entryLinkId || selectionEntryId, count: number,
  *   children }`. Das ist die **Link-Id-Regel** (Issue 084, dokumentiert am
  *   Fassaden-Rand): eine ueber einen `entryLink` gesetzte Auswahl geht unter
@@ -47,6 +52,7 @@
  * @typedef {Object} EvalInstanceNode
  * @property {string} defId
  * @property {number} count
+ * @property {string} [catalogueId]  nur am Kontingent-Knoten: dessen Armeebuch.
  * @property {EvalInstanceNode[]} children
  */
 
@@ -166,11 +172,21 @@ export function toEvaluatorRoster(roster) {
   // Aufrufer neu gebaut (`evaluateAppRoster`, {@link slotPathsOf}).
   const { pathBySelectionId, pathByForceId } = slotPathsOf(roster, NOTHING_SKIPPED);
 
-  const forces = (roster.forces ?? []).map((force) => ({
-    defId: force.forceEntryId,
-    count: 1,
-    children: toChildren(force.selections),
-  }));
+  const forces = (roster.forces ?? []).map((force) => {
+    /** @type {EvalInstanceNode} */
+    const node = {
+      defId: force.forceEntryId,
+      count: 1,
+      children: toChildren(force.selections),
+    };
+    // Das Armeebuch des Kontingents geht nur mit, wenn das App-Kontingent eines
+    // nennt: ein fehlendes und ein leeres Feld sind derselbe Fall — „keine
+    // Angabe" —, und der Vertrag der Fassade laesst das Feld dann ganz weg.
+    if (force.catalogueId !== null && force.catalogueId !== undefined) {
+      node.catalogueId = force.catalogueId;
+    }
+    return node;
+  });
 
   /** @type {EvalRoster} */
   const evalRoster = { forces };

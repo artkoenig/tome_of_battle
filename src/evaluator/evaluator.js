@@ -110,11 +110,28 @@ export { prepareDataset } from './datasetPreparation.js';
  * @param {import('./datasetPreparation.js').PreparedDataset} prepared
  *   Das Ergebnis von {@link prepareDataset} — derselbe Griff darf beliebig oft und
  *   fuer beliebig viele Roster wiederverwendet werden.
- * @param {{ forces?: Array<{ defId: string, count: number, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
+ * @param {{ forces?: Array<{ defId: string, count: number, catalogueId?: string|null, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
  *   Das vollstaendige, aus `.ros` geparste Roster: der Instanzbaum (`forces`)
  *   **und** die eingestellten Kostengrenzen je Kostenart (`costLimits`, die
  *   Zuordnung Kostenart → Grenzwert, analog `<costLimits>`). Fehlt `costLimits`,
  *   ist das Budget leer — verhaltensgleich zu einem Roster ohne Kostengrenzen.
+ *
+ *   **Das Armeebuch eines Kontingents (`catalogueId`).** Ein Knoten der
+ *   obersten Ebene — ein Kontingent — darf das Armeebuch nennen, aus dem er
+ *   stammt (`catalogueId`-Attribut am `<force>` einer `.ros`, `catalogueId` am
+ *   App-Kontingent). Die Angabe ist **optional** und gilt **je Knoten**: zwei
+ *   Kontingente derselben Definition duerfen zu verschiedenen Armeebuechern
+ *   gehoeren (Verbuendete). Wo sie steht, ist sie die massgebliche Antwort auf
+ *   „aus welchem Armeebuch stammt dieses Kontingent?" und schlaegt den
+ *   Herkunftsindex aus den Katalogdaten — Pflichten und Wurzel-Angebote eines
+ *   **fremden** Armeebuchs bleiben damit draussen (Issue 0098/0140), und der
+ *   Bezugsrahmen `primary-catalogue` loest darueber auf. Nur so ist ein
+ *   Datensatz zu beantworten, der seine Kontingente in der **Spielsystemdatei**
+ *   deklariert: dort steht in keiner `.cat` ein `forceEntry`, aus dem sich das
+ *   Armeebuch ableiten liesse. Ohne Angabe — und ebenso bei einer Katalog-Id,
+ *   die dieser Datensatz nicht kennt — gilt unveraendert der Herkunftsindex;
+ *   schweigt auch er, wird nicht gefiltert (der Rahmen faellt offen aus) und
+ *   `primary-catalogue` bleibt fail-closed unaufgeloest.
  *
  *   **Identitaets-Regel fuer `defId`.** Eine Auswahl, die ueber einen
  *   `<entryLink>` gesetzt wurde, wird unter der Id des **Verweises** uebergeben

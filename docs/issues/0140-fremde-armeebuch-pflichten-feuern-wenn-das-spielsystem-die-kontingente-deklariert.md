@@ -79,11 +79,35 @@ Acceptance criteria:
 
 ## Decisions
 
-- **Die Angabe des Rosters schlägt den Herkunftsindex.** Quelle: die
-  Katalogdaten selbst — ergofang deklariert seine Kontingente in der `.gst`, der
-  Index aus `.cat`-`forceEntry`s kann dort prinzipiell keine Antwort haben,
-  während das Roster die Wahl des Nutzers festhält. Widersprechen sich beide,
-  gilt das Roster.
+- **~~Die Angabe des Rosters schlägt den Herkunftsindex.~~ Revidiert (siehe
+  unten): der Index schlägt das Roster, wo er antwortet.**
+- **Der Herkunftsindex antwortet zuerst; das Roster füllt nur die Lücke.**
+  Quelle: das E2E-Szenario `docs/testing/primary-catalogue-scope`, Roster 10 —
+  ein Black-Box-Fall, der genau den Widerspruchsfall aus den Katalogdaten
+  ableitet: eine VC-Kontingent-**Definition**, deren `.ros` `catalogueId="Ogre
+  Kingdoms"` behauptet, bleibt Vampire Counts. Das ist richtig: steht die
+  Kontingent-Definition in einem Armeebuch, *ist* sie dessen Kontingent, und ein
+  widersprechendes Roster-Attribut ist Metadatenmüll. Die ursprüngliche
+  Vorrangregel war eine Vermutung ohne Beleg; dieses Szenario ist der Beleg
+  dagegen. Für ergofang ändert das nichts — dort schweigt der Index, also
+  antwortet das Roster, und genau das ist der Defekt dieses Issues.
+- **Ein Bibliothekskatalog ist nie ein fremdes Armeebuch.** Quelle: der schon
+  festgelegte Vertrag aus Issue 0121, Task 19, Punkt 5 — „Spielsystem- und
+  Bibliothekseinträge erscheinen weiterhin überall"
+  (`CategoryUnitAdder.forceCatalogue.test.jsx`), plus Kriterium 10 aus Issue
+  0135. Ohne Ausnahme verliert ein Kontingent mit `.gst`-Kontingent-Definition
+  seine Söldner-/Bibliotheksangebote — eine Regression, die der Filter vor
+  diesem Issue nur deshalb nicht auslöste, weil er dort gar nicht griff.
+  `isInCatalogueScope` nimmt Bibliothekskataloge deshalb ebenso aus wie das
+  Spielsystem. In den ergofang-Daten gibt es null `library="true"`-Kataloge; die
+  Ausnahme kann den gemeldeten Fehler also nicht wieder einschleppen.
+- **Der Adapter liest nur `force.catalogueId`, ohne Rückfall auf
+  `roster.catalogueId`.** Quelle: Vorgabe, revidiert gegen die frühere
+  Entscheidung unten. `roster.catalogueId` ist das Buch der **Liste**; auf ein
+  Kontingent angewandt, das keines nennt, ordnete es einem verbündeten
+  Kontingent das falsche Buch zu — aktiv falsch gefiltert ist schlechter als
+  ungefiltert. `buildRoster` setzt das Feld je Kontingent seit jeher, also ist
+  kein reales Roster betroffen.
 - **`primary-catalogue` wird mitgezogen (Kriterium 6).** Quelle: Vorgabe, ohne
   Rückfrage. Zwei verschiedene Antworten auf „aus welchem Armeebuch stammt
   dieses Kontingent?" in einer Engine wären eine Bruchstelle. Risiko geprüft:
@@ -93,12 +117,11 @@ Acceptance criteria:
   Index antwortet dort schon heute gleich — die Änderung kann dort also keine
   andere Antwort erzeugen.
 
-- **Der Adapter liest `force.catalogueId ?? roster.catalogueId`.** Quelle: das
-  App-Schreibmodell wendet genau diese Regel schon an
-  (`useRoster.js:164`: `force?.catalogueId || roster?.catalogueId || null`;
-  `rosterSerialization.js:132` beim Export). Der Auswertungspfad soll dieselbe
-  Frage nicht anders beantworten als der Schreibpfad. `buildRoster` setzt beide
-  Felder ohnehin von Anfang an.
+- **~~Der Adapter liest `force.catalogueId ?? roster.catalogueId`.~~ Revidiert
+  (siehe oben): nur `force.catalogueId`.** Ursprüngliche Quelle: das
+  App-Schreibmodell wendet den Rückfall an (`useRoster.js:164`,
+  `rosterSerialization.js:132`). Verworfen, weil der Rückfall ein verbündetes
+  Kontingent dem Buch der Liste zuschlüge.
 
 - **Eine Armeebuch-Id, die der Datensatz nicht kennt, zählt wie keine Angabe.**
   Quelle: Vorgabe, unbeantwortet — vom `test-author` als offene Randfrage
@@ -120,6 +143,14 @@ Acceptance criteria:
   `primaryCatalogueByForceDefId` hat dabei **eine** Zuordnung (für ein
   Kontingent, das ein einzelner Katalog selbst deklariert); das
   VC-Kontingent ist nicht darunter.
+- Der `implementer` meldete die Umsetzung als **blockiert** mit drei
+  Kollisionen; alle drei sind oben entschieden. Belege, die dabei entstanden:
+  Szenario 10 aus `primary-catalogue-scope` kippte allein durch das Lesen des
+  `catalogueId`-Attributs im `.ros`-Leser (`e575-…` verschwand, `b830-…` feuerte
+  neu); elf UI-Tests in drei Dateien fielen, ausnahmslos daran, dass
+  Bibliothekseinträge aus dem Angebot verschwanden bzw. eine Vorbedingung
+  „der Bericht bietet die fremde Einheit an, die Oberfläche blendet sie aus"
+  nicht mehr gilt.
 - Herkunft der fünf fremden Anker per `sourceIdByDefId` bestätigt:
   `7754-…` → Ogre Kingdoms, `9e4b-…` → RH Chaos Dwarfs, `4cea-…`/`4e75-…` →
   Tomb Kings, `a4dc-…` → High Elf; `a37e-…` (General) → Spielsystem.

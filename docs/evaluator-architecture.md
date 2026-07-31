@@ -260,11 +260,17 @@ record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
                       limits: LimitDef[], modifiers: ModifierDef[],
                       children: ResolvedDef[], resolutionLog: Diagnostic[] }
 
-record InstanceNode { defId: Id, count: number, children: InstanceNode[] }
+record InstanceNode { defId: Id, count: number, catalogueId: Id?, children: InstanceNode[] }
                       // defId: bei einer über einen entryLink gesetzten Auswahl die Id des
                       // VERWEISES, sonst die des Eintrags; unauflösbar ⇒ Diagnose
                       // `unresolvedDefinition`, bewusst ohne Rückfall. Vertrag samt
                       // Begründung: JSDoc `@param roster` an `evaluate` (src/evaluator/evaluator.js)
+                      // catalogueId: NUR am Kontingent-Knoten und optional — das Armeebuch,
+                      // aus dem das Kontingent stammt (Issue 0140). Je KNOTEN, nicht je
+                      // Definition (Verbündete: zwei Kontingente derselben Definition aus
+                      // zwei Büchern). Wo sie steht, schlägt sie den Herkunftsindex aus den
+                      // Katalogdaten (§3.1) — sonst hätte ein in der .gst deklariertes
+                      // Kontingent gar kein Armeebuch. Unbekannte Id ⇒ wie keine Angabe.
 record CostLimit    { costTypeId: Id, value: number }                    // eine eingestellte Grenze je Kostenart
 record Roster       { forces: InstanceNode[], costLimits: CostLimit[] }  // costLimits: das eingestellte Budget je Kostenart (vollständige Liste)
 
@@ -295,6 +301,10 @@ record EvalNode {
   isPhantom: bool
   anchorKind: AnchorKind           // abgelesen, nicht aus Pfadform geraten
   forceRoot: EvalNode              // das umschließende Kontingent
+  declaredCatalogueId: Id?         // nur am Kontingent-Knoten: das vom ROSTER genannte
+                                   // Armeebuch (InstanceNode.catalogueId), beim Aufbau
+                                   // einmal gegen die Kataloge des Datensatzes geprüft
+                                   // (Issue 0140). Gelesen über forceCatalogueIdOf.
 }
 
 // Träger = der Knoten selbst oder eines seiner Info-Elemente (§3.4).
@@ -520,12 +530,16 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
   // PRIMARY_CATALOGUE ist ebenfalls kein Zählrahmen: ein Katalog ist kein Knoten des
   // Instanzbaums, die Frage lautet „ist das Armeebuch des umschließenden Kontingents
   // dieses hier?". Deshalb vor jeder Rahmen-/Indexarbeit und unabhängig von `shared`
-  // (Issue 077). Herkunft aus ctx.primaryCatalogueByForceDefId (Katalog-Vorlauf, §3.1).
+  // (Issue 077). Das Armeebuch eines Kontingents hat ZWEI Quellen, und dieselbe eine
+  // Stelle beantwortet sie für Pflicht, Angebot und diesen Rahmen (forceCatalogueIdOf,
+  // catalogSet.js, Issue 0140): zuerst die Angabe des Rosters am Kontingent-Knoten
+  // (InstanceNode.catalogueId), ersatzweise der Herkunftsindex aus dem Katalog-Vorlauf
+  // (ctx.primaryCatalogueByForceDefId, §3.1).
   if scope == PRIMARY_CATALOGUE:
     if field != SELECTION_COUNT:
       ctx.diagnostics.add(Diagnostic.UNSUPPORTED_FIELD(field)); return 0
-    catalogueId = ctx.primaryCatalogueByForceDefId[ctx.node.forceRoot?.def.id]
-    if catalogueId == null:                       // keine Force, oder Herkunft unbekannt
+    catalogueId = forceCatalogueIdOf(ctx.node.forceRoot, ctx.primaryCatalogueByForceDefId)
+    if catalogueId == null:                       // keine Force, oder beide Quellen schweigen
       ctx.diagnostics.add(Diagnostic.UNRESOLVED_SCOPE(scope, ctx.node)); return 0
     return targetId == null ? 1 : (targetId == catalogueId ? 1 : 0)
 

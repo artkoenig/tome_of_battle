@@ -53,7 +53,7 @@
 
 import { DefinitionKind, isLinkDefinition } from './model.js';
 import { attachOfferAnchor, realNodes, ownerDefinitionOf, linkedCategoryIdsOf } from './evalTree.js';
-import { isInCatalogueScope } from './catalogSet.js';
+import { isInCatalogueScope, forceCatalogueIdOf } from './catalogSet.js';
 
 /**
  * Die **Basis**-Kategorien einer angebotenen Definition: ihre eigenen
@@ -151,7 +151,11 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
  * 0098): ein eigenstaendiger Wurzel-Eintrag (`ENTRY`) wird nur angeboten,
  * wenn seine Herkunft zum Katalog-Fussabdruck **dieses** Kontingents gehoert
  * ({@link isInCatalogueScope}) — ein Wurzel-Eintrag eines fremden Katalogs im
- * selben Datensatz bleibt aussen vor. Ein Wurzel-**`entryLink`** ist davon
+ * selben Datensatz bleibt aussen vor. Welches Armeebuch das Kontingent hat,
+ * beantwortet {@link forceCatalogueIdOf}: die Angabe des Rosters am
+ * Kontingent-Knoten vor dem Herkunftsindex aus den Katalogdaten (Issue 0140) —
+ * nur so hat ein in der Spielsystemdatei deklariertes Kontingent ueberhaupt
+ * ein Armeebuch, gegen das gefiltert werden kann. Ein Wurzel-**`entryLink`** ist davon
  * ausgenommen: er verweist auf eine geteilte Definition (typischerweise
  * einer Bibliothek) und ist der etablierte, mit echten Katalogdaten belegte
  * Weg, wie Katalogautoren katalogübergreifende Inhalte anbieten (z. B.
@@ -163,7 +167,7 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
 function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalogueByForceDefId) {
   if (frame.isForce) {
     const forceCategoryIds = linkedCategoryIdsOf(frame.def);
-    const forceCatalogueId = primaryCatalogueByForceDefId?.get(frame.def.id);
+    const forceCatalogueId = forceCatalogueIdOf(frame, primaryCatalogueByForceDefId);
     const referenceCatalogueIds = forceCatalogueId === undefined ? [] : [forceCatalogueId];
     // Ein Wurzel-Angebot steht unmittelbar im Kontingent — es gibt keine
     // durchschrittene Gruppe, die es klammern koennte.
@@ -190,7 +194,9 @@ function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalo
  *   Der Katalog-Bezugsrahmen (Issue 0098, siehe {@link candidatesFor}). Ohne ihn
  *   (`undefined`) ungefiltertes, unveraendertes Verhalten.
  * @param {Map<string, string>} [primaryCatalogueByForceDefId]  Der Herkunftsindex
- *   der Kontingente — noetig, um `catalogueScope` je Kontingent auszuwerten.
+ *   der Kontingente — die zweite Quelle des Armeebuchs eines Kontingents neben
+ *   der Angabe des Rosters am Knoten ({@link forceCatalogueIdOf}); ohne beide
+ *   ist `catalogueScope` je Kontingent nicht auszuwerten.
  * @returns {object[]} die angehaengten Anker, in Anhaenge-Reihenfolge. Der Aufrufer
  *   traegt sie in die Effektiv-Werte-Schicht nach (`extendBaseEffectiveState`),
  *   bevor der Nach-Durchlauf laeuft.
