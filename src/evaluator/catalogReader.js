@@ -144,6 +144,9 @@ const Attr = Object.freeze({
   // -Forces des verlinkten Katalogs zum Angebot des verlinkenden (Catalogue.xsd,
   // Vorgabe `false`; Issue 0098).
   IMPORT_ROOT_ENTRIES: 'importRootEntries',
+  // Community-Konvention ausserhalb der vendored Catalogue.xsd: die vom
+  // Katalogautor empfohlene Anzeigereihenfolge unter Geschwistern (Issue 0130).
+  SORT_INDEX: 'sortIndex',
 });
 
 /** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
@@ -378,6 +381,21 @@ function readPrimaryCategoryId(entryEl) {
     if (targetId !== null && targetId !== '') return targetId;
   }
   return null;
+}
+
+/**
+ * Liest das `sortIndex`-Attribut eines Eintrags/einer Gruppe/eines Verweises:
+ * rein deskriptiv, nie ein Gueltigkeits-Urteil. Fehlt es oder ist es nicht
+ * numerisch, gilt das als "kein sortIndex" (`null`) — kein Fehler, keine
+ * Diagnose, kein Ablehnen des Katalogs (Issue 0130). Vorhandene Werte werden
+ * zu einer Zahl, `0` und negative Werte eingeschlossen (beide sind gueltig,
+ * trotz `0`s falsy-Zahlenwert).
+ */
+function readSortIndex(element) {
+  const raw = element.getAttribute(Attr.SORT_INDEX);
+  if (raw === null || raw === '') return null;
+  const value = Number(raw);
+  return Number.isNaN(value) ? null : value;
 }
 
 /**
@@ -842,6 +860,7 @@ function readEntry(entryEl, diagnostics) {
     ...readEntryBase(entryEl, diagnostics),
     kind: DefinitionKind.ENTRY,
     type: entryEl.getAttribute(Attr.TYPE),
+    sortIndex: readSortIndex(entryEl),
     costs: readCosts(entryEl),
     categoryIds: readCategoryIds(entryEl),
     primaryCategoryId: readPrimaryCategoryId(entryEl),
@@ -863,6 +882,7 @@ function readGroup(groupEl, diagnostics) {
   return {
     ...readEntryBase(groupEl, diagnostics),
     kind: DefinitionKind.GROUP,
+    sortIndex: readSortIndex(groupEl),
     limits: readLimits(groupEl, diagnostics),
     infos: readInfos(groupEl, diagnostics),
     children: readSelectionChildren(groupEl, diagnostics),
@@ -886,6 +906,7 @@ function readEntryLink(entryLinkEl, diagnostics) {
     ...readEntryBase(entryLinkEl, diagnostics),
     kind: DefinitionKind.ENTRY_LINK,
     targetId: entryLinkEl.getAttribute(Attr.TARGET_ID),
+    sortIndex: readSortIndex(entryLinkEl),
     costs: readCosts(entryLinkEl),
     categoryIds: readCategoryIds(entryLinkEl),
     primaryCategoryId: readPrimaryCategoryId(entryLinkEl),

@@ -179,13 +179,20 @@ export default function SelectionConfigurator({
     const groupSectionByKey = new Map();
     const seenDefIds = new Set();
 
-    const ensureGroupSection = (groupKey, fallbackName) => {
+    const ensureGroupSection = (groupKey, fallbackName, sortIndex = null) => {
       let section = groupSectionByKey.get(groupKey);
-      if (section) return section;
+      if (section) {
+        // Der Gruppen-Anker traegt den massgeblichen sortIndex; kam die Sektion
+        // (Reihenfolge-Zufall) schon vorher ueber ein Mitglieds-Item zustande,
+        // wird der Anker-Wert nachgetragen, sobald er eintrifft.
+        if (section.sortIndex === null && sortIndex !== null) section.sortIndex = sortIndex;
+        return section;
+      }
       const info = groupInfoById.get(groupKey);
       section = {
         key: groupKey,
         children: [],
+        sortIndex,
         group: {
           id: info?.id ?? groupKey,
           name: info?.name ?? fallbackName,
@@ -208,7 +215,7 @@ export default function SelectionConfigurator({
           : (capability.targetDefId && groupInfoById.has(capability.targetDefId)
             ? capability.targetDefId
             : capability.defId);
-        const section = ensureGroupSection(groupKey, capability.name);
+        const section = ensureGroupSection(groupKey, capability.name, capability.sortIndex);
         // Der Anker eines verlinkten Ziels und die Struktur-Gruppe sind derselbe
         // Abschnitt — beide Schlüssel zeigen auf ihn.
         if (capability.targetDefId) groupSectionByKey.set(capability.targetDefId, section);
@@ -230,6 +237,7 @@ export default function SelectionConfigurator({
           standalone: true,
           path,
           capability,
+          sortIndex: capability.sortIndex,
           option: membership?.item.option ?? { id: capability.defId, name: capability.name },
         });
       }
@@ -278,7 +286,27 @@ export default function SelectionConfigurator({
       return section.group.items.length > 0 || section.children.length > 0;
     };
 
-    return rootSections.filter(keepSection);
+    // Primaer aufsteigend nach sortIndex (Issue 0131, Kriterium 4), je Ebene
+    // des Abschnittsbaums fuer sich: Sektionen ohne sortIndex bleiben
+    // untereinander in der bisherigen Bericht-/Slot-Reihenfolge — ein stabiler
+    // Sortierlauf ueber die schon in dieser Reihenfolge aufgebaute Liste
+    // erhaelt sie fuer den ungetaggten Rest. Container-Verschachtelung
+    // (Issue 0131, Nest-PR) haengt Sektionen als `.children` an — jede Ebene
+    // sortiert unabhaengig von ihren Geschwistern.
+    const sortSectionsRecursively = (list) => {
+      list.sort((a, b) => {
+        if (a.sortIndex === null && b.sortIndex === null) return 0;
+        if (a.sortIndex === null) return 1;
+        if (b.sortIndex === null) return -1;
+        return a.sortIndex - b.sortIndex;
+      });
+      for (const section of list) {
+        if (section.children?.length > 0) sortSectionsRecursively(section.children);
+      }
+      return list;
+    };
+
+    return sortSectionsRecursively(rootSections.filter(keepSection));
   };
 
   /**

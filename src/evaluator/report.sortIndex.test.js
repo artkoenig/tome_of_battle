@@ -122,8 +122,10 @@ describe('SlotCapability.sortIndex: durchgereichtes Katalogattribut (Issue 0130,
     const built = report();
 
     expect(slotOf(built, TAGGED_LINK_ID)).toMatchObject({ sortIndex: 3 });
-    // Das Ziel selbst trägt kein sortIndex — die Katalogdaten setzen es nur am Link.
-    expect(slotOf(built, LINK_TARGET_ID)?.sortIndex).toBeNull();
+    // Das Ziel ist hier nirgends selbst platziert, nur über den Link referenziert —
+    // es bekommt daher (wie bei sourceId, vgl. report.sourceId.test.js) keinen
+    // eigenen Slot, an dem ein geerbter sortIndex sichtbar werden könnte.
+    expect(slotOf(built, LINK_TARGET_ID)).toBeUndefined();
   });
 
   it('ein Slot ohne sortIndex trägt null, nicht undefined — kein Fehler, kein Ablehnen des Katalogs (Kriterium 2)', () => {

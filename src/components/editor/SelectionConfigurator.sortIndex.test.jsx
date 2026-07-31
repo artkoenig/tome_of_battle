@@ -58,7 +58,6 @@ const GAME_SYSTEM_ID = 'gs-main';
 const FORCE_DEF_ID = 'force-main';
 const HERO_ID = 'entry-hero';
 const COST_TYPE_ID = 'cost-pts';
-const HERO_PATH = '0/0';
 
 // sortIndex="0" — der Grenzfall "0 ist ein gültiger, falsy-wertiger Index".
 const ZERO_ENTRY_ID = 'opt-zero';

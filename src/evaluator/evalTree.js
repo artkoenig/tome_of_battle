@@ -674,6 +674,11 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
   }
 }
 
+/** Ob eine Gruppendefinition einen Anker braucht: eigene Grenzen oder ein `sortIndex` (Issue 0130). */
+function needsGroupAnchor(limits, def) {
+  return limits.length > 0 || (def.sortIndex !== null && def.sortIndex !== undefined);
+}
+
 /**
  * Die Grenzen-tragenden `selectionEntryGroup`s im Definitionsteilbaum eines
  * Eigentuemers — ueber verschachtelte Gruppen hinweg, aber **nicht** ueber
@@ -698,6 +703,12 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
  * eigene Grenzen traegt. So entscheidet die Dokumentreihenfolge der Geschwister
  * nie, ob eine Link-Grenze ausgewertet wird.
  *
+ * Ein `sortIndex` (Issue 0130) loest denselben Anker aus wie eine Grenze, auch
+ * ohne eigene Grenzen: der Gruppen-Anker ist die einzige Stelle, an der die
+ * Oberflaeche den deskriptiven Wert einer Gruppe lesen kann ({@link
+ * ../evaluator/report.js}); er bleibt dabei wirkungslos auf Zaehlung und
+ * Grenzen, weil eine grenzenlose Gruppe keine MIN/MAX-Ergebnisse traegt.
+ *
  * @returns {Generator<{ def: object, ownLimitsOnly: boolean }>}
  */
 function* groupDefinitionsWithLimits(ownerDef, visited = new Set()) {
@@ -705,17 +716,17 @@ function* groupDefinitionsWithLimits(ownerDef, visited = new Set()) {
     const linkedGroup = linkedGroupTargetOf(child);
     if (linkedGroup !== null) {
       if (visited.has(linkedGroup.id)) {
-        // Ziel schon verankert: nur die eigenen Grenzen dieses Links fehlen noch.
-        if ((child.limits ?? []).length > 0) yield { def: child, ownLimitsOnly: true };
+        // Ziel schon verankert: nur die eigenen Grenzen dieses Links (oder sein eigener sortIndex) fehlen noch.
+        if (needsGroupAnchor(child.limits ?? [], child)) yield { def: child, ownLimitsOnly: true };
         continue;
       }
       visited.add(linkedGroup.id);
-      if (limitsOf(child).length > 0) yield { def: child, ownLimitsOnly: false };
+      if (needsGroupAnchor(limitsOf(child), child)) yield { def: child, ownLimitsOnly: false };
       yield* groupDefinitionsWithLimits(linkedGroup, visited);
       continue;
     }
     if (child.kind !== DefinitionKind.GROUP) continue;
-    if (limitsOf(child).length > 0) yield { def: child, ownLimitsOnly: false };
+    if (needsGroupAnchor(limitsOf(child), child)) yield { def: child, ownLimitsOnly: false };
     yield* groupDefinitionsWithLimits(child, visited);
   }
 }

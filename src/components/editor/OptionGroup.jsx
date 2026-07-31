@@ -160,7 +160,17 @@ export default function OptionGroupComponent({
         <div className="option-group-items">
           {rows
             .slice()
-            .sort((a, b) => pointsOf(b.capability) - pointsOf(a.capability)) // Descending
+            // sortIndex ersetzt die Kostensortierung fuer getaggte Optionen
+            // (aufsteigend, Issue 0130, Kriterium 5); der ungetaggte Rest bleibt
+            // untereinander absteigend nach Kosten sortiert.
+            .sort((a, b) => {
+              const aIdx = a.capability.sortIndex;
+              const bIdx = b.capability.sortIndex;
+              if (aIdx !== null && bIdx !== null) return aIdx - bIdx;
+              if (aIdx !== null) return -1;
+              if (bIdx !== null) return 1;
+              return pointsOf(b.capability) - pointsOf(a.capability); // Descending
+            })
             .map(({ item, capability, count }) => {
             const { option, ownerSelectionId } = item;
             // Where a chosen option nests: under its owning sub-selection when the collector
