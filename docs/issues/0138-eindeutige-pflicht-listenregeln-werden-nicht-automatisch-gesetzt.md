@@ -249,6 +249,33 @@ Acceptance criteria:
     Kontingents (`buildRoster`, `src/utils/createRoster.js:23-43`) reagiert —
     `forces[].selections` startet dort als leeres Array.
 
+- 2026-07-31: **Tests geschrieben** (`test-author`, ohne Sicht auf eine
+  Implementierung — es gibt noch keine). 55 Tests über 5 Dateien:
+  `src/roster/listRules.mandatoryPredicate.test.js` (30, ungemockt gegen
+  echte `catalogResolver.js`/`entryVisibility.js`/`modifierEvaluator.js`),
+  `src/roster/listRules.mandatoryState.test.js` (5, gemockt wie das
+  bestehende `listRules.test.js`), `src/hooks/useRoster.mandatoryAutoAdd.test.js`
+  (7), `src/hooks/useRosterList.freshRosterIds.test.js` (5),
+  `src/components/editor/ListRuleChecklist.mandatory.test.jsx` (8). Alle 82
+  Tests der vier bestehenden Geschwisterdateien bleiben unverändert grün.
+  Fehlschlag für jedes der 7 Kriterien belegt (`is not a function` bzw.
+  falsche Assertion-Werte, siehe Testdateien).
+  **Befund dabei:** das reale „Army of Sylvania"
+  (`Vampire Counts (6th definitive edition).cat:10079-10120`), das dieses
+  Issue als Beispiel für Kriterium 3 nennt, erfüllt Kriterium 1 selbst
+  nicht — es trägt eine eigene `<selectionEntries>`-Unterauswahl
+  („Grave markers") und wäre damit laut `isContainerListRule` kein
+  zulässiges Ziel. Der `test-author` hat das erkannt und für den
+  Kriterium-3-Test stattdessen eine isolierte, gegen die echte
+  `entryVisibility.js` verifizierte Fixture gebaut, statt die Diskrepanz
+  stillschweigend zu übernehmen. Ändert kein Kriterium — der reale
+  Vampire-Counts-Katalog liefert nur kein Beispiel, das Kriterium 3 in
+  freier Wildbahn zeigt; die Fähigkeit bleibt trotzdem gefordert. Ebenso
+  geklärt: das reale „General" ist ein `selectionEntry` ohne `min`
+  (nicht die vermutete Kategorie) und das reale „Ogre Bulls" scheitert
+  schon am `type="unit"`-Filter, nicht primär an Kosten/Unterauswahl — beide
+  wurden mit dem realen Datensatz statt einer Vermutung getestet.
+
 ## Checkpoints
 
 ### Before implementation
