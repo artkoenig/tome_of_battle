@@ -67,6 +67,12 @@ Begründung):
 
 - 2026-07-30: Von der Prüfung zu Issue 0121 gefunden (Befunde 3 und 4),
   je mit Reproduktion gegen den Stand vor dem Cutover.
+- 2026-07-31: **Punkt 1 ist erledigt** — Issue 0131 hat das Auffüll-Panel auf
+  Restpunkt-Vorschläge umgestellt (wählbare Slots mit ihren `costs` aus dem
+  Bericht, ab 50 Punkten Lücke, mit der verbleibenden Summe im Kopf). Damit
+  sind die Kriterien 1 und 2 dieses Issues erfüllt; die Knapsack-Suche des
+  alten Solvers kehrt nicht zurück. Offen bleibt allein Punkt 2, die
+  General-Sortierung im Konfigurator (Kriterium 3).
 
 ## Checkpoints
 

@@ -84,6 +84,37 @@ function getSystemEntryIndexesByCatalogueId(system) {
   });
 }
 
+/**
+ * Die Ids der **fremden** Armeebücher: jeder nicht-Bibliotheks-Katalog des
+ * Systems außer dem eigenen. Ein Slot, dessen Herkunft (`capability.sourceId`)
+ * darin steht, gehört einem anderen Armeebuch — die Oberfläche bietet ihn
+ * gar nicht erst an (dieselbe Regel wie `creatableForcesOf` in
+ * `NewRosterModal.jsx`).
+ *
+ * Alles andere wird angeboten: das Spielsystem, ein Bibliothekskatalog, der
+ * eigene Katalog — und eine **unbekannte** Herkunft. Deshalb kommt eine
+ * fehlende Id gar nicht erst in die Menge: sonst gälte ein Slot mit
+ * `sourceId: null` als fremd und verschwände still.
+ *
+ * Geteilt vom Aushebe-Dialog und den Auffüll-Vorschlägen (Issue 0131): zwei
+ * Kopien derselben Regel liefen auseinander, sobald eine von beiden
+ * nachgezogen würde.
+ *
+ * @param {{ catalogues?: Array<{ id?: string|null, isLibrary?: boolean }> }|null|undefined} system
+ * @param {string|null|undefined} ownCatalogueId das Armeebuch dieser Liste bzw. dieses Kontingents.
+ * @returns {Set<string>}
+ */
+export function foreignCatalogueIdsOf(system, ownCatalogueId) {
+  const foreign = new Set();
+  for (const catalogue of system?.catalogues ?? []) {
+    if (catalogue.isLibrary === true) continue;
+    if (catalogue.id === null || catalogue.id === undefined) continue;
+    if (catalogue.id === ownCatalogueId) continue;
+    foreign.add(catalogue.id);
+  }
+  return foreign;
+}
+
 export function findEntryInCatalogue(catalogue, entryId) {
   if (!catalogue) return null;
   return getCatalogueEntryIndex(catalogue).get(stripEntryIdQualifier(entryId)) || null;

@@ -27,6 +27,11 @@ import { useTranslation } from '../../i18n/useTranslation';
  * hängt gar nicht im Auswertungsbaum und verschiebt alle folgenden Pfade.
  * `forcePath === null` heißt: der Bericht führt für dieses Kontingent keine
  * Slots — es zeigt dann weder Angebote noch Kategorie-Grenzen.
+ *
+ * `remainingPoints` sind die Punkte, die der Liste zu ihrem eingestellten Wert
+ * fehlen (`null` = keine Punktgrenze gesetzt) — die Auffüll-Vorschläge leben
+ * von dieser Differenz (Issue 0131). Sie ist roster-weit, wie die Punktgrenze
+ * selbst; jedes Kontingent zeigt sie deshalb gleich.
  */
 export default function ForceEditorSection({
   force,
@@ -39,6 +44,7 @@ export default function ForceEditorSection({
   capabilities,
   pathBySelectionId,
   costTypeLabel,
+  remainingPoints = null,
   addUnit,
   removeUnit,
   subSelectionOperations,
@@ -77,9 +83,9 @@ export default function ForceEditorSection({
   const uncategorizedSelections = childSelectionsOf(force).filter(s =>
     !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s));
 
-  // Die Auffüll-Vorschläge speisen sich aus den Pflicht-Signalen des Berichts
+  // Die Auffüll-Vorschläge speisen sich aus den wählbaren Slots des Berichts
   // (ADR-0035) — beschränkt auf die Slots DIESES Kontingents; das Panel blendet
-  // sich selbst aus, wenn keine Pflicht offen ist.
+  // sich selbst aus, wenn nichts mehr zu füllen ist.
   // Ohne Pfad führt der Bericht für dieses Kontingent keine Slots — dann gibt
   // es auch nichts vorzuschlagen.
   const forceScopedCapabilities = forcePath === null || forcePath === undefined
@@ -152,6 +158,10 @@ export default function ForceEditorSection({
 
       <AutoFillSuggestions
         capabilities={forceScopedCapabilities}
+        forcePath={forcePath ?? null}
+        remainingPoints={remainingPoints}
+        costLimitTypeId={roster.costLimitType ?? null}
+        forceCatalogueId={forceCatalogueId}
         subSelectionOperations={subSelectionOperations}
         costTypeLabel={costTypeLabel}
         pathBySelectionId={pathBySelectionId}

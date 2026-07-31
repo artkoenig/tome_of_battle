@@ -52,6 +52,10 @@ Acceptance criteria:
    hinzu — nie eine Auswahl, die aus einer Kategorie-ID gebaut wurde.
 9. Die Vorschläge stehen nach Kosten absteigend; sind es mehr als acht, zeigt
    das Panel zunächst acht und lässt den Rest aufklappen.
+10. Vorgeschlagen wird nur, was aus dem Armeebuch **dieses** Kontingents, dem
+    Spielsystem oder einem Bibliothekskatalog stammt; eine Einheit aus einem
+    fremden Armeebuch erscheint nicht — dieselbe Herkunftsregel, die der
+    Aushebe-Dialog schon anwendet.
 
 ## Plan
 
@@ -74,9 +78,28 @@ Acceptance criteria:
   mit Restspielraum) fällt sie ohne Änderung am Bericht heraus — beide
   Ankerarten tragen nie eine Kategorie. Der Bericht bleibt die alleinige
   Quelle (ADR-0034). *(Default, unanswered.)*
+- **Quelle: `offerAnchor` und belegte Slots mit Restspielraum.** Ein belegter
+  Slot, der noch wachsen darf (`headroom > 0` oder kein Höchstmaß), ist ein
+  Auffüll-Kandidat wie jeder andere — eine bestehende Einheit zu vergrößern
+  ist der klassische Weg, Punkte zu verbrauchen. *(Default, unanswered; der
+  `test-author` fand die Kante offen.)*
+- **Ein Pflicht-Phantom erscheint nie, auch mit Kosten nicht.** Kriterium 4
+  („ausschließlich, was der Bericht als wählbar führt") ist die schärfere
+  Regel, Kriterium 7 ihr Sonderfall. *(Default, unanswered; dieselbe
+  Rückfrage.)*
 - **Acht Vorschläge sichtbar, Rest aufklappbar.** Schon eine Liste mit zwei
   Auswahlen liefert 43 Kandidaten (gemessen an `07-one-tyrant.ros`); ohne
   Deckel wäre das Panel unlesbar. *(Default, unanswered.)*
+
+- **Kriterium 10 kam mitten im Lauf dazu.** Der Screenshot des fertigen Panels
+  zeigte in einer Ogre-Liste Manfred von Carstein, Vampire Lord, Black Coach
+  und Savage Orc Great Shaman — Einträge fremder Armeebücher. Der
+  Aushebe-Dialog filtert das seit Issue 0121 über `capability.sourceId`, das
+  Auffüll-Panel nicht. Kein bestehendes Kriterium verbot es, deshalb ging der
+  Fund an den Menschen. *(Mensch, Auswahl „Jetzt mitnehmen": der Filter kommt
+  in diesen PR statt in ein eigenes Issue.)* Abweichung von der Regel
+  „Kriterien stehen fest, sobald die Umsetzung beginnt" — auf Ansage des
+  Menschen, der die Kriterien freigibt.
 
 ## Log
 
