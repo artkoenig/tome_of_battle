@@ -147,6 +147,49 @@ erklärt. Quelle: Antwort des Menschen im Interview.
 
 ## Log
 
+**Die Drift ist bereits eingetreten — das Skript ist heute kaputt.** Beim
+Aufnehmen der Grundlinie für Kriterium 9 (`node scripts/measure-evaluator.js`
+auf dem unveränderten Stand, Branch enthält nur diese Issue-Datei) bricht das
+Skript im dritten Messfall mit Exitcode 1 ab — nicht an der 100-ms-Schwelle,
+sondern an seiner eigenen Drift-Prüfung:
+
+> Die nachgebildete Pipeline des Messverfahrens weicht von der Fassade
+> `evaluate` ab. Die Messung waere wertlos — gleiche zuerst
+> `scripts/lib/evaluator-measurement.js` an `src/evaluator/evaluator.js` an.
+
+Betroffen ist `numeric-conditions/rosters/greater-than-true.ros` („groesster
+Datensatz — Spielsystem + 3 Armee-Kataloge"), laut
+`scripts/lib/evaluator-measurement-cases.js:35-37` ausgerechnet der Fall, der
+„die Bewertung gegen die interaktive Obergrenze trägt". Der Nachbau liefert dort
+11 Verstöße / 321 Capabilities / 359 infoElements, die Fassade 7 / 183 / 143;
+der Nachbau erzeugt zusätzlich acht `unresolvedScope`-Diagnosen und zwei
+`authorMessage`-Verstöße, die die Fassade nicht kennt.
+
+Damit ist die Begründung dieser Issue keine Vorsorge mehr, sondern ein Befund:
+die zweite Kopie der Pipeline ist auseinandergelaufen, und das Messverfahren
+produziert für seinen wichtigsten Fall seit unbekannter Zeit gar keine Zahlen
+mehr.
+
+Folgen für die Kriterien — keine Änderung der Absicht, die Kriterien bleiben
+wortgleich:
+- Kriterium 9: Eine belastbare Grundlinie gibt es nur für die ersten beiden
+  Fälle (siehe unten). Für den dritten existiert heute keine, gegen die
+  verglichen werden könnte; nach dem Umbau liefert er erstmals wieder Zahlen.
+- Kriterium 8: „läuft weiter" ist für den dritten Fall heute falsch. Nach dem
+  Umbau muss er wieder durchlaufen — das ist eine Verbesserung, keine
+  Regression.
+
+Grundlinie vor der Änderung (Median über 15 Läufe, jsdom/Node, dieser Container):
+
+| Fall | Vorbereitung | Iterierte Auswertung | Nach-Durchlauf | Grenzen+Bericht | Gesamt | wiederverwendet | Knoten | Runden |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| klein | 404.5 ms (99.0 %) | 1.6 ms (0.4 %) | 1.6 ms (0.4 %) | 2.1 ms (0.5 %) | 408.7 ms | 4.2 ms | 142 | 2, konvergiert |
+| Mehrkatalog | 1009.3 ms (99.1 %) | 2.3 ms (0.2 %) | 3.3 ms (0.3 %) | 5.1 ms (0.5 %) | 1018.2 ms | 8.9 ms | 349 | 2, konvergiert |
+| groesster Datensatz | — | — | — | — | — | — | — | Abbruch (Drift) |
+
+Die absoluten Zahlen sind containerabhängig; für Kriterium 9 zählt der Anteil
+der Vorbereitung (99.0 / 99.1 %) und die Größenordnung der übrigen Phasen.
+
 ## Checkpoints
 
 ### Before implementation
