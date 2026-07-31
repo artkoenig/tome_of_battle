@@ -125,8 +125,104 @@ Acceptance criteria:
   `e2e-testcase-author`-Subagenten delegiert (CLAUDE.md-Pflicht für
   Evaluator-E2E-Fälle), danach der `evalTree.js`-Fix umgesetzt, bis das
   Szenario grün ist.
+- **Versions-Bump offen** (Default, CLAUDE.md-Pflicht vor dem Merge): Der Fix
+  ist nutzersichtbar (die Phantom-Pflichtmeldung feuert nicht mehr fälschlich
+  in armeefremden Listen) — vor dem Merge ist dem Menschen ein Patch-Bump
+  vorzuschlagen, ausgehend von der aktuellen `package.json`-Version. In diesem
+  Lauf noch nicht durchgeführt.
 
 ## Log
+
+- **Szenario-Autorenschaft:** `e2e-testcase-author` (black-box, nur
+  Katalog-XML) angesetzt für `root-entrylink-mandatory-catalogue-scope`. Der
+  Agent leitete unabhängig dieselbe Struktur her, die schon oben unter
+  Decisions steht: Ogre Kingdoms' eigener Wurzel-`entryLink` „Ogre Bulls"
+  (`d82e-111e-89b9-2be1`, Constraint `32ed-26da-3f27-5c04`) gegenüber Vampire
+  Counts' und Orcs and Goblins' je eigenen, constraint-losen Links auf
+  dasselbe geteilte Mercenaries-Ziel. Ergebnis:
+  `docs/testing/root-entrylink-mandatory-catalogue-scope/` (4 Roster,
+  `README.md`, `scenario.json`) sowie die Pflege-Aktualisierung von
+  `docs/testkatalog-evaluator-e2e.md`.
+- `npm install` war zuerst nötig (kein `node_modules` in dieser Session).
+- **Zuerst rot reproduziert:** `npx vitest run
+  src/evaluator/e2e.testcatalog.test.js -t
+  "root-entrylink-mandatory-catalogue-scope"` → 2 fehlgeschlagen / 2 bestanden.
+  Roster 01 (Ogre, ohne Bulls) und 02 (Ogre, mit Bulls) bestanden bereits (die
+  vorbestehende, korrekte Ogre-Kingdoms-eigene Erzwingung aus Issue 62/0085).
+  Roster 03 (Vampire Counts) und 04 (Orcs and Goblins) schlugen fehl — der Bug
+  reproduzierte exakt wie diagnostiziert: das Pflicht-Phantom feuerte für
+  Kontingente aus fremden Armeebüchern.
+- **Fix umgesetzt** in `src/evaluator/evalTree.js`,
+  `synthesizeMandatoryPhantoms`: der unbedingte
+  `def.kind === DefinitionKind.ENTRY_LINK`-Bypass von `isInCatalogueScope`
+  wurde in beiden Schleifen (ROSTER- und FORCE-Rahmen, vormals ~Z. 458 und
+  477) entfernt — die Pflicht-`min`-Constraint eines Wurzel-`entryLink` wird
+  jetzt genau wie bei `ENTRY`/`FORCE` katalog-skopiert geprüft. `offer.js`s
+  eigener, unbedingter `ENTRY_LINK`-Bypass in `candidatesFor` blieb
+  unangetastet — der betrifft reines Angebot (Rhinox Riders/Maneaters/
+  Manbiters-Idiom) und muss unbedingt bleiben. Der Kopfkommentar über
+  `synthesizeMandatoryPhantoms` wurde auf die neue, engere Regel umgeschrieben
+  und verweist auf Issue 0130.
+- **Szenario erneut gelaufen:** alle 4 Roster grün.
+- **Volle Evaluator-Suite:** `npx vitest run src/evaluator` → 68 Testdateien,
+  864 Tests, alle bestanden, Exit 0. Keine Regression — insbesondere
+  `rootEntryLinkMandatory*.test.js` (Issue 0085, Ein-Katalog-Datensätze) und
+  `crossCatalog.rootEntryScope.test.js` (Issue 0098,
+  `selectionEntry`/`forceEntry`/`CATEGORY`-Skopierung) blieben grün, ohne dass
+  dort etwas geändert werden musste — Beleg, dass der engere Fix wirklich
+  eng ist.
+- `npm run lint` (oxlint) Exit 0. `npm run typecheck` (tsc --noEmit) Exit 0.
+- **Umfang der Änderung:** ausschließlich `src/evaluator/evalTree.js`
+  (Produktivcode) sowie
+  `docs/testing/root-entrylink-mandatory-catalogue-scope/` und
+  `docs/testkatalog-evaluator-e2e.md` (E2E-Testdaten/-Katalog) betroffen — laut
+  CLAUDE.md genügt bei einer Änderung ausschließlich innerhalb
+  `src/evaluator/` die Evaluator-Testebene; der volle `npm test` (inkl.
+  Puppeteer-E2E unter `e2e/`) war nicht erforderlich und wurde nicht
+  ausgeführt.
+
+## Checkpoints
+
+### Before implementation
+
+- **Does this match what was asked?** Ja — die Akzeptanzkriterien verlangen
+  genau das: Pflicht-`min` eines Wurzel-`entryLink` bleibt auf seinen
+  deklarierenden Katalog skopiert (AC1/AC3), das Angebots-Idiom für
+  `entryLink`s ohne Pflicht-`min` bleibt unangetastet (AC2), zuerst
+  reproduziert (AC4), Suite grün (AC5).
+- **Was hat überrascht?** Dass Vampire Counts und Orcs and Goblins bereits
+  jeweils einen eigenen, constraint-losen Wurzel-`entryLink` auf genau
+  dasselbe geteilte „Ogre Bulls"-Ziel wie Ogre Kingdoms deklarieren — der Bug
+  ist also nicht "eine geteilte Definition leakt", sondern "die Constraint
+  EINES bestimmten Katalogs an seinem eigenen Link wird unbedingt von jeder
+  Skopierung ausgenommen, unabhängig vom deklarierenden Katalog".
+- **Was nehme ich ungeprüft an?** Dass kein anderer realer Katalog im
+  Fixture-Satz seine eigene Pflicht-`min` direkt an einem Wurzel-`entryLink`
+  befestigt wie Ogre Kingdoms (nur für die vier whfb6-definitive-Fixtures im
+  Repo verifiziert, nicht für BSData-Kataloge im Allgemeinen).
+
+### Before the PR
+
+- **Does this match what was asked?** Ja, alle 5 Akzeptanzkriterien erfüllt
+  und verifiziert: AC1 (Roster 03/04 feuern nicht mehr), AC2 (`offer.js`
+  unangetastet, `primary-catalogue-scope`-Szenario für Rhinox Riders/Maneaters
+  blieb im vollen Suite-Lauf grün), AC3 (Roster 01/02 Regressionswache feuert/
+  löscht weiterhin korrekt), AC4 (rot-vorher/grün-nachher über das neue
+  Szenario belegt), AC5 (68 Dateien/864 Tests, Lint, Typecheck alle Exit 0).
+- **Was hat überrascht?** Wie klein die eigentliche Code-Änderung ausfiel
+  (zwei entfernte `||`-Klauseln), nachdem die wahre Ursache — das Phantom
+  hängt an der eigenen `def.id` des deklarierenden Links, nicht am geteilten
+  Ziel — einmal genau feststand.
+- **Was nehme ich ungeprüft an?** Dass dies die einzige Stelle im Evaluator
+  ist, an der `DefinitionKind.ENTRY_LINK` einen unbedingten
+  Katalog-Scope-Bypass für einen *Pflicht*- (statt *Angebots*-)Pfad bekommt —
+  `offer.js`s eigene `entryLink`-Ausnahme wurde geprüft und als andere, weiter
+  korrekte Angelegenheit bestätigt (Angebot, keine Erzwingung), aber keine
+  erschöpfende Suche nach jedem `ENTRY_LINK`-Sonderfall im gesamten Evaluator
+  wurde über die zwei von dieser Untersuchung betroffenen Dateien
+  (`evalTree.js`, `offer.js`) hinaus durchgeführt.
+
+## Retro
 
 ## Checkpoints
 
