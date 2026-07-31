@@ -160,16 +160,19 @@ export default function OptionGroupComponent({
         <div className="option-group-items">
           {rows
             .slice()
-            // sortIndex ersetzt die Kostensortierung fuer getaggte Optionen
-            // (aufsteigend, Issue 0133, Kriterium 5); der ungetaggte Rest bleibt
-            // untereinander absteigend nach Kosten sortiert.
+            // sortIndex stellt getaggte Optionen aufsteigend voran (Issue 0133,
+            // Kriterium 5); der ungetaggte Rest bleibt in Katalogreihenfolge
+            // (der Reihenfolge von `group.items`) — ein stabiler Sortierlauf
+            // ueber die schon so aufgebaute Liste erhaelt sie unveraendert,
+            // statt sie bei jedem Render nach dem aktuellen (modifikator-
+            // abhaengigen) Preis neu zu mischen.
             .sort((a, b) => {
               const aIdx = a.capability.sortIndex;
               const bIdx = b.capability.sortIndex;
               if (aIdx !== null && bIdx !== null) return aIdx - bIdx;
               if (aIdx !== null) return -1;
               if (bIdx !== null) return 1;
-              return pointsOf(b.capability) - pointsOf(a.capability); // Descending
+              return 0;
             })
             .map(({ item, capability, count }) => {
             const { option, ownerSelectionId } = item;

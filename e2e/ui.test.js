@@ -261,29 +261,25 @@ const runUiTests = async (server) => {
 
     if (expandedGroup) {
        await new Promise(r => setTimeout(r, 500)); // wait for expansion
-       console.log('Verifying sorting of items in SelectionConfigurator group...');
-       const optionPoints = await page.evaluate(() => {
+       // Untagged options (kein sortIndex) sortieren in Katalogreihenfolge, nicht
+       // mehr absteigend nach Kosten (OptionGroup.jsx) — der Kostenwert ist
+       // modifikatorabhaengig und damit kein stabiler Sortierschluessel. Der
+       // Sortiervertrag selbst ist durch die Komponententests abgedeckt
+       // (OptionGroup.sortIndex.test.jsx, SelectionConfigurator.sortIndex.test.jsx);
+       // dieser Smoke-Test prueft nur, dass das Aufklappen ueberhaupt Zeilen zeigt.
+       console.log('Verifying expanded SelectionConfigurator group renders options...');
+       const optionCount = await page.evaluate(() => {
           const groups = Array.from(document.querySelectorAll('.selection-node-body > .sub-selection-group > div'));
           const expandedGroup = groups.find(group => {
              const titleDiv = group.firstElementChild;
              return titleDiv && titleDiv.innerHTML.includes('lucide-chevron-down');
           });
-          if (!expandedGroup) return [];
-          const items = Array.from(expandedGroup.querySelectorAll('.sub-selection-row'));
-          return items.map(item => {
-             // Die Kostenart-Bezeichnung kommt aus dem Katalog und darf hier nicht
-             // festgeschrieben werden — der Kostenwert wird über seine Klasse gefunden.
-             const pointsEl = item.querySelector('span.sub-selection-cost');
-             if (!pointsEl) return 0;
-             const match = pointsEl.textContent.match(/\+?(\d+)/);
-             return match ? parseInt(match[1], 10) : 0;
-          });
+          if (!expandedGroup) return 0;
+          return expandedGroup.querySelectorAll('.sub-selection-row').length;
        });
-       console.log(`SelectionConfigurator option points: ${optionPoints.join(', ')}`);
-       for (let i = 0; i < optionPoints.length - 1; i++) {
-          if (optionPoints[i] < optionPoints[i+1]) {
-             throw new Error(`SelectionConfigurator items are not sorted descending: ${optionPoints[i]} < ${optionPoints[i+1]}`);
-          }
+       console.log(`SelectionConfigurator option rows: ${optionCount}`);
+       if (optionCount === 0) {
+          throw new Error('Expanded SelectionConfigurator group shows no option rows');
        }
     }
 
