@@ -90,6 +90,15 @@ Acceptance criteria:
 - **Keine Versionsanhebung in diesem PR.** Vorgeschlagen war `1.10.0`
   (Minor: das Panel kann etwas Neues). *(Mensch, Auswahl „Unverändert
   lassen".)*
+- **Ein Kontingent ohne Slots im Bericht bekommt kein Panel — bewusst gegen
+  den Buchstaben von Kriterium 3.** Kriterium 3 verlangt das Panel ab 50
+  Punkten Lücke ohne Ausnahme; führt der Bericht für dieses Kontingent aber
+  gar keine Slots (`forcePath === null`, etwa weil der Katalog seine
+  Definition nicht mehr kennt), gäbe es dort nichts auszuheben und nichts
+  Wahres zu sagen. Die Sektion trägt für diesen Fall schon die Meldung „gibt
+  es im Katalog nicht mehr". Eine dritte Meldung im Panel wäre die
+  buchstabengetreue Alternative; entschieden ist Schweigen. *(Default,
+  unanswered; Befund R3-F1 der Prüfung, mit Reproduktion.)*
 - **Acht Vorschläge sichtbar, Rest aufklappbar.** Schon eine Liste mit zwei
   Auswahlen liefert 43 Kandidaten (gemessen an `07-one-tyrant.ros`); ohne
   Deckel wäre das Panel unlesbar. *(Default, unanswered.)*
@@ -174,6 +183,24 @@ Acceptance criteria:
     führt (`forcePath === null`), behauptete das Panel „Nichts passt mehr in
     die Restpunkte". Es schweigt dort jetzt.
 
+- 2026-07-31: **Prüfrunde 3** (derselbe Kontext), 1 Befund. Die Runde bestätigte
+  R2-F1 bis R2-F3 als geschlossen, R2-F3 per Mutation. Fakten: `npm test`
+  exit 0 (261 Dateien / 2717 Tests plus Puppeteer-E2E),
+  `lint`/`typecheck`/`depcruise` je exit 0.
+  - *R3-F1 (Kriterium 3): verworfen mit Begründung* — siehe die Entscheidung
+    oben. Der Fix zu R2-F3 nimmt dem Panel für ein Kontingent ohne Slots die
+    Sichtbarkeit, die Kriterium 3 dem Buchstaben nach verlangt. Statt einer
+    dritten Meldung ist Schweigen entschieden; die Annahme steht jetzt
+    ausdrücklich im Checkpoint, und die beiden Testfälle stehen nicht mehr
+    unter der Überschrift von Kriterium 3, sondern unter der Ausnahme.
+  - *Nebenbefund, abgelegt als Issue 0137:* mehrere Fälle des
+    Evaluator-E2E-Runners liegen im ruhigen Lauf bei über der Hälfte der
+    5-Sekunden-Vorgabe; unter Nebenlast kippt die Suite. Betrifft keine Datei
+    dieses Diffs.
+  - **Runde 4 entfällt** (Waiver): die Antwort auf R3-F1 ändert keine
+    Erwartung und keine Zeile Produktivcode — sie besteht aus der notierten
+    Verwerfung und der Umbenennung zweier `describe`-Blöcke.
+
 ## Checkpoints
 
 ### Before implementation
@@ -212,8 +239,11 @@ Acceptance criteria:
   eine Aussage über etwas, worüber der Bericht schweigt.
 - **What am I assuming without having verified it?** Die Leserichtung der
   Schwelle („ab 50 Punkten Lücke", nicht „bis 50") — der Mensch hat die Zahl
-  bestätigt, die Richtung nie ausdrücklich. Und dass die roster-weite
-  Restsumme je Kontingent zu wiederholen in Ordnung ist; bei mehreren
-  Kontingenten steht dieselbe Zahl mehrfach.
+  bestätigt, die Richtung nie ausdrücklich. Dass die roster-weite Restsumme je
+  Kontingent zu wiederholen in Ordnung ist; bei mehreren Kontingenten steht
+  dieselbe Zahl mehrfach. Und — die schärfste der drei — dass Kriterium 3 eine
+  Ausnahme verträgt, die der Mensch nie gewährt hat: für ein Kontingent ohne
+  Slots im Bericht schweigt das Panel, statt mit einer dritten Meldung zu
+  erscheinen.
 
 ## Retro

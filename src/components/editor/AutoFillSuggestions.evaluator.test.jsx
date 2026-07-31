@@ -36,7 +36,6 @@
  * `toEvaluatorRoster`) und werden je Test zusätzlich als Guard geprüft — kein
  * handgeschriebener Fähigkeitsdatensatz, der die Engine nachbauen könnte.
  *
- * ── Bewusst nicht geprüft ───────────────────────────────────────────────────
  * ── Zwei nachentschiedene Kanten (Rückfrage beantwortet) ────────────────────
  * (a) Ein BELEGTER Slot mit verbleibendem Spielraum (`headroom > 0` oder
  *     `headroom === null`) IST ein Vorschlag — „wählbar" heißt `offerAnchor`
@@ -56,6 +55,18 @@
  * angeboten. Prop-Ergänzung: `forceCatalogueId`, ersatzweise
  * `activeCatalogue.id`. Dafür gibt es einen EIGENEN Datensatz (`ORIGIN_*`,
  * `.gst` + vier `.cat`), damit die übrigen Fälle unberührt bleiben.
+ *
+ * ── Ausnahme OHNE Kriterium: Kontingent ohne Slots im Bericht ───────────────
+ * Dass das Panel bei `forcePath === null` gar nicht erscheint, folgt **nicht**
+ * aus dem Kriterienkatalog, sondern ist eine **Triage-Entscheidung**:
+ * Kriterium 3 verlangt das Panel ab 50 Punkten Lücke ausnahmslos, und für ein
+ * Kontingent, dessen Definition der Katalog nicht mehr kennt, könnte es dort
+ * ebenso gut mit einer dritten, wahrheitsgemäßen Meldung erscheinen
+ * („für dieses Kontingent weiß der Bericht nichts"). Entschieden wurde
+ * Schweigen, weil die Sektion für ein solches Kontingent ohnehin schon die
+ * Meldung „gibt es im Katalog nicht mehr" trägt und dort nichts aushebbar ist.
+ * Die beiden Fälle stehen deshalb in einem **eigenen** describe-Block — unter
+ * Kriterium 3 gelesen, behaupteten sie eine Ausnahme im Kriterium selbst.
  */
 
 import React from 'react';
@@ -649,7 +660,9 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       expect(isShown(container, 'General')).toBe(false);
       expect(container.querySelectorAll('button')).toHaveLength(0);
     });
+  });
 
+  describe('Kontingent ohne Slots im Bericht: das Panel schweigt (bewusste Ausnahme zu Kriterium 3, Issue 0135)', () => {
     it('ohne Pfad für dieses Kontingent (der Bericht führt keine Slots) erscheint das Panel gar nicht', () => {
       // Der dokumentierte Fall eines Kontingents, dessen Definition der Katalog
       // nicht mehr kennt: `ForceEditorSection` reicht dann eine leere Slot-Map
