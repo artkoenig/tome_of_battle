@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/army-general-dice-game-4gcv1o
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/197
 ---
 
 # Eine Pflicht-Listenregel mit Kosten wird nicht automatisch gesetzt
@@ -224,3 +224,36 @@ einzelne Bedingung, kein neuer Baustein, keine neue Schnittstelle.
   neue Hinweistext dem Menschen passt; er ist als Standard gesetzt.
 
 ## Retro
+
+Der Auftrag war zwei Sätze lang und die Diagnose in zwanzig Minuten belegt —
+die Frage nach dem Blast Radius hat den Rest getragen. Alle Katalogdateien
+beider Quellen zu ziehen und das Prädikat gegen sie zu rechnen, hat aus einer
+Vermutung („Kosten sind hier egal") eine Zahl gemacht (genau zwei Einträge,
+keiner mit Punktekosten) und damit die Entscheidung des Menschen in einer
+Frage statt in dreien erledigt. Das lohnt sich immer dann, wenn eine Bedingung
+gestrichen werden soll: nicht argumentieren, wen sie zu Unrecht trifft,
+sondern zählen.
+
+Der teure Teil lag woanders. Der eigentliche Fehler dieses Laufs — die Sperre
+der Ankreuz-Checkbox, die eine fehlende Pflichtregel unbehebbar machte — stand
+nicht in der geänderten Datei, sondern in einer, die der Diff gar nicht anfasste.
+Gefunden hat ihn der Reviewer, weil er gefragt wurde, was die Änderung außerhalb
+ihrer Kriterien kaputt machen kann. Die Lehre für ähnliche Läufe: wenn ein
+Prädikat seine Population vergrößert, sind die *Konsumenten* des Prädikats der
+Ort des Risikos, nicht das Prädikat. Diese Frage gehört vor die Implementierung,
+nicht in die erste Prüfrunde.
+
+Zweimal hat sich eine Behauptung als halb falsch erwiesen, beide Male zugunsten
+der Sache: der Reviewer hielt den programmatischen Guard für unerreichbar, der
+test-author fand, dass jsdom einen Klick auch an ein `disabled`-Input zustellt.
+Dass der Auftrag an den test-author beide Wege offenließ („finde eine Route oder
+lösche die Tests und schreib hin, warum") statt die Löschung anzuweisen, hat die
+Abdeckung gerettet. Das ist übertragbar: einem Subagenten die Schlussfolgerung
+vorzugeben, wo die Reproduktion sie noch nicht erzwingt, kostet Ergebnis.
+
+Was gestört hat: der Stop-Hook hat mitten in laufenden Subagenten Commits
+erzwungen, sodass Zwischenstände in die Historie gerieten, die ich sonst
+zusammengefasst hätte — und die Subagenten haben zu Recht gemeldet, dass die
+Umgebung ihre Arbeit ungefragt committet. Das ist kein Fehler dieser Regeln,
+aber es macht die Commit-Historie eines Laufs unschärfer, als sie sein müsste.
+
