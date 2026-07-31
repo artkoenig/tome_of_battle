@@ -145,6 +145,64 @@ const OSCILLATING_ROSTER = {
   }],
 };
 
+// ── Ein Katalog, der das Rundenbudget erschoepft, ohne zu oszillieren ─────────
+// Eine Kaskade: jede Stufe schaltet ihre Kategorie zu, sobald die vorige gezaehlt
+// wird. Damit entsteht Runde fuer Runde ein **neuer** zaehlrelevanter Zustand —
+// kein Fingerabdruck wiederholt sich, es gibt also keine Zykluslaenge. Die
+// Schleife laeuft in ihre harte Rundenobergrenze: der zweite Befund der
+// Nichtkonvergenz, `roundBudgetExhausted` (`fixpoint.js`).
+
+/** Stufen der Kaskade — mehr als die harte Rundenobergrenze, damit sie sie reisst. */
+const CASCADE_LENGTH = 8;
+const CASCADE_FORCE_ID = 'force-cascade';
+const cascadeCategoryId = step => `cascade-category-${step}`;
+const cascadeEntryId = step => `cascade-entry-${step}`;
+
+const CASCADING_CATALOGUE_XML = `<?xml version="1.0"?>
+  <catalogue id="cat-cascade" name="Cascade">
+    <categoryEntries>
+      ${Array.from({ length: CASCADE_LENGTH }, (unused, index) =>
+    `<categoryEntry id="${cascadeCategoryId(index + 1)}" name="Stufe ${index + 1}" hidden="false"/>`).join('\n      ')}
+    </categoryEntries>
+    <forceEntries><forceEntry id="${CASCADE_FORCE_ID}" name="Army"/></forceEntries>
+    <selectionEntries>
+      ${Array.from({ length: CASCADE_LENGTH }, (unused, index) => {
+    const step = index + 1;
+    // Die erste Stufe traegt ihre Kategorie von Haus aus; jede weitere bekommt
+    // sie erst, wenn die vorige im Roster gezaehlt wird.
+    return step === 1
+      ? `<selectionEntry id="${cascadeEntryId(step)}" name="Stufe ${step}" type="unit">
+        <categoryLinks>
+          <categoryLink id="cl-cascade-${step}" name="Stufe ${step}" targetId="${cascadeCategoryId(step)}" primary="true"/>
+        </categoryLinks>
+      </selectionEntry>`
+      : `<selectionEntry id="${cascadeEntryId(step)}" name="Stufe ${step}" type="unit">
+        <modifiers>
+          <modifier type="add" field="category" value="${cascadeCategoryId(step)}">
+            <conditions>
+              <condition type="atLeast" value="1" field="selections" scope="roster"
+                         childId="${cascadeCategoryId(step - 1)}" shared="true" includeChildSelections="true"/>
+            </conditions>
+          </modifier>
+        </modifiers>
+      </selectionEntry>`;
+  }).join('\n      ')}
+    </selectionEntries>
+  </catalogue>`;
+
+const CASCADING_DATASET = { catalogues: [CASCADING_CATALOGUE_XML] };
+const CASCADING_ROSTER = {
+  forces: [{
+    defId: CASCADE_FORCE_ID,
+    count: 1,
+    children: Array.from({ length: CASCADE_LENGTH }, (unused, index) => ({
+      defId: cascadeEntryId(index + 1),
+      count: 1,
+      children: [],
+    })),
+  }],
+};
+
 // ── Ein Katalog mit abzaehlbaren Slots ────────────────────────────────────────
 // Gewaehlt wird ein Krieger in einem Kontingent — zwei **reale** Knoten. Dazu
 // kommen zwei synthetische: das Pflicht-Phantom der nicht gewaehlten Handwaffe
@@ -178,6 +236,71 @@ const COUNTING_ROSTER = {
     defId: COUNTING_FORCE_ID,
     count: 1,
     children: [{ defId: COUNTING_WARRIOR_ID, count: 1, children: [] }],
+  }],
+};
+
+// ── Ein Katalog, der **jede** Ankerart hervorbringt ───────────────────────────
+// Damit die Aufschluesselung nach Ankerart nicht bloss aus Nullen besteht: das
+// Kontingent fuehrt einen Kategorie-Link (Kategorie-Anker), die gewaehlte Einheit
+// eine grenzentragende Auswahlgruppe (Gruppen-Anker) und ein Pflicht-Banner
+// (Pflicht-Phantom); Gruppen-Optionen und der nicht gewaehlte Bogenschuetze
+// werden angeboten (Angebots-Anker).
+
+const ANCHOR_FORCE_ID = 'force-anchors';
+const ANCHOR_CATEGORY_ID = 'category-core';
+const ANCHOR_CATEGORY_LINK_ID = 'force-link-core';
+const ANCHOR_WARRIOR_ID = 'entry-anchors-warrior';
+const ANCHOR_GROUP_ID = 'group-anchors-weapons';
+const ANCHOR_BANNER_ID = 'entry-anchors-banner';
+
+const ANCHOR_CATALOGUE_XML = `<?xml version="1.0"?>
+  <catalogue id="cat-anchors" name="Anchors">
+    <categoryEntries><categoryEntry id="${ANCHOR_CATEGORY_ID}" name="Core" hidden="false"/></categoryEntries>
+    <forceEntries>
+      <forceEntry id="${ANCHOR_FORCE_ID}" name="Army">
+        <categoryLinks>
+          <categoryLink id="${ANCHOR_CATEGORY_LINK_ID}" name="Core" targetId="${ANCHOR_CATEGORY_ID}" primary="false">
+            <constraints>
+              <constraint id="max-core" type="max" value="3" field="selections" scope="force"/>
+            </constraints>
+          </categoryLink>
+        </categoryLinks>
+      </forceEntry>
+    </forceEntries>
+    <selectionEntries>
+      <selectionEntry id="${ANCHOR_WARRIOR_ID}" name="Warrior" type="unit">
+        <categoryLinks>
+          <categoryLink id="cl-anchors-core" name="Core" targetId="${ANCHOR_CATEGORY_ID}" primary="true"/>
+        </categoryLinks>
+        <selectionEntryGroups>
+          <selectionEntryGroup id="${ANCHOR_GROUP_ID}" name="Weapons">
+            <constraints>
+              <constraint id="max-anchors-weapons" type="max" value="1" field="selections" scope="parent"/>
+            </constraints>
+            <selectionEntries>
+              <selectionEntry id="entry-anchors-sword" name="Sword" type="upgrade"/>
+              <selectionEntry id="entry-anchors-axe" name="Axe" type="upgrade"/>
+            </selectionEntries>
+          </selectionEntryGroup>
+        </selectionEntryGroups>
+        <selectionEntries>
+          <selectionEntry id="${ANCHOR_BANNER_ID}" name="Banner" type="upgrade">
+            <constraints>
+              <constraint id="min-anchors-banner" type="min" value="1" field="selections" scope="parent"/>
+            </constraints>
+          </selectionEntry>
+        </selectionEntries>
+      </selectionEntry>
+      <selectionEntry id="entry-anchors-archer" name="Archer" type="unit"/>
+    </selectionEntries>
+  </catalogue>`;
+
+const ANCHOR_DATASET = { catalogues: [ANCHOR_CATALOGUE_XML] };
+const ANCHOR_ROSTER = {
+  forces: [{
+    defId: ANCHOR_FORCE_ID,
+    count: 1,
+    children: [{ defId: ANCHOR_WARRIOR_ID, count: 1, children: [] }],
   }],
 };
 
@@ -363,6 +486,27 @@ describe('evaluate: die Metadata meldet den Ausgang der Fixpunktschleife', () =>
     // Zykluslaenge bzw. erschoepftes Rundenbudget) — abgelesen, nicht nachgebaut.
     expect(measurement.fixpoint.nonConvergence).toEqual(oscillation);
   });
+
+  // Die Schleife kennt ZWEI Befunde der Nichtkonvergenz (`fixpoint.js`): die
+  // Oszillation oben und das erschoepfte Rundenbudget hier. Beide muessen als
+  // „Art der Nichtkonvergenz" in der Metadata ankommen — wuerde die Messung nur
+  // den einen kennen, meldete sie fuer den anderen `converged: false` **ohne**
+  // Begruendung, und der Laufzeit-Ausreisser bliebe unerklaert.
+  it('meldet auch das erschoepfte Rundenbudget als die Diagnose der Schleife', () => {
+    const measured = evaluate(prepareDataset(CASCADING_DATASET), CASCADING_ROSTER, { measure: true });
+
+    // Kontrolle des Falls: die Kaskade reisst die Rundenobergrenze, **ohne** zu
+    // oszillieren — sonst pruefte dieser Test denselben Befund wie der obige.
+    const exhausted = measured.diagnostics.find(entry => entry.kind === DiagnosticKind.ROUND_BUDGET_EXHAUSTED);
+    expect(exhausted, 'Die Kaskade erschoepft das Rundenbudget nicht (mehr) — der Fall traegt den Test nicht.')
+      .toBeDefined();
+    expect(measured.diagnostics.some(entry => entry.kind === DiagnosticKind.OSCILLATION)).toBe(false);
+
+    const measurement = measurementOf(measured);
+    expect(measurement.fixpoint.converged).toBe(false);
+    expect(measurement.fixpoint.rounds).toBe(exhausted.rounds);
+    expect(measurement.fixpoint.nonConvergence).toEqual(exhausted);
+  });
 });
 
 describe('evaluate: die Metadata zaehlt die Knoten des Auswertungsbaums', () => {
@@ -392,6 +536,38 @@ describe('evaluate: die Metadata zaehlt die Knoten des Auswertungsbaums', () => 
     expect(tree.synthetic).toBe(2);
     // Jede Ankerart ist gefuehrt, auch die im Fall nicht vorkommenden — mit 0.
     expect(tree.byAnchorKind).toEqual(tally);
+    expect(tree.total).toBe(measured.capabilities.size);
+  });
+
+  // Der Fall oben laesst Gruppen- und Kategorie-Anker auf 0 — eine Zaehlung, die
+  // beide gar nicht mitzaehlt, faellt dort nicht auf. Dieser Fall bringt **jede**
+  // Ankerart hervor und zaehlt sie mit einem Wert ungleich 0.
+  it('zaehlt auch Gruppen- und Kategorie-Anker, nicht nur belegte Slots und Angebote', () => {
+    const measured = evaluate(prepareDataset(ANCHOR_DATASET), ANCHOR_ROSTER, { measure: true });
+
+    const slots = [...measured.capabilities.values()];
+    const tally = Object.fromEntries(
+      Object.values(AnchorKind).map(kind => [kind, slots.filter(slot => slot.anchorKind === kind).length]),
+    );
+
+    // Abzaehlbar: Kontingent + Krieger (belegt), Pflicht-Phantom des Banners,
+    // Gruppen-Anker der Waffengruppe, Kategorie-Anker des Kontingent-Links,
+    // Angebots-Anker fuer Schwert, Axt und den nicht gewaehlten Bogenschuetzen.
+    expect(tally).toEqual({
+      [AnchorKind.OCCUPIED]: 2,
+      [AnchorKind.MANDATORY_PHANTOM]: 1,
+      [AnchorKind.GROUP_ANCHOR]: 1,
+      [AnchorKind.CATEGORY_ANCHOR]: 1,
+      [AnchorKind.OFFER_ANCHOR]: 3,
+    });
+
+    const tree = measurementOf(measured).tree;
+    expect(tree.byAnchorKind).toEqual(tally);
+    expect(tree.byAnchorKind[AnchorKind.GROUP_ANCHOR]).toBeGreaterThan(0);
+    expect(tree.byAnchorKind[AnchorKind.CATEGORY_ANCHOR]).toBeGreaterThan(0);
+    expect(tree.total).toBe(8);
+    expect(tree.real).toBe(2);
+    expect(tree.synthetic).toBe(6);
     expect(tree.total).toBe(measured.capabilities.size);
   });
 });
