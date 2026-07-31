@@ -393,7 +393,7 @@ function readPrimaryCategoryId(entryEl) {
  */
 function readSortIndex(element) {
   const raw = element.getAttribute(Attr.SORT_INDEX);
-  if (raw === null || raw === '') return null;
+  if (raw === null || raw.trim() === '') return null;
   const value = Number(raw);
   return Number.isNaN(value) ? null : value;
 }

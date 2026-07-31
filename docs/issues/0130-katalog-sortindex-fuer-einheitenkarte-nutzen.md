@@ -225,6 +225,52 @@ Acceptance criteria:
   jetzt behobene oxlint-Warnung — waren/sind vorbestehend und unabhängig von
   diesem Issue).
 
+- **Review-Runde 1 (fresh)** stellte alle Fakten selbst per Exit-Code her
+  (`npx vitest run`: 2649/2649, exit 0; `npm run lint`: exit 0; `npm run
+  depcruise`: exit 0, dieselbe vorbestehende Zirkular-Warnung; `npm run
+  typecheck`: exit 0; `node e2e/ui.test.js`: exit 0) und meldete vier Befunde:
+
+  | Kriterium | Runde 1 |
+  |---|---|
+  | 1 | 1 |
+  | 2 | 1 |
+  | 3 | 0 |
+  | 4 | 0 |
+  | 5 | 0 |
+  | 6 | 0 |
+  | (kein Kriterium verletzt) | 1 |
+  | **Summe** | **3** |
+
+  - **Kriterium 1, schwer:** `evalTree.js`s `needsGroupAnchor` liess eine
+    `selectionEntryGroup` allein wegen `sortIndex` (ohne eigene Grenzen) einen
+    Gruppen-Anker bekommen — dieser Anker loeste aber auch
+    `annotateGroupMembers` aus, was eine bislang nie gezaehlte, grenzenlose
+    Gruppe erstmals unter ihrer Id zaehlbar machte. Reproduziert: eine
+    Bedingung andernorts, die per `childId` auf die Gruppen-Id verweist,
+    aenderte ihr Ergebnis allein durch das Hinzufuegen von `sortIndex` zur
+    weiterhin grenzenlosen Gruppe — eine Verletzung von "rein deskriptiv, nie
+    ein Gueltigkeits-Urteil". **Behoben:** Anker-Erzeugung und
+    Mitglieder-Zaehlung in `groupDefinitionsWithLimits`/
+    `synthesizeGroupAnchors` entkoppelt (`hasLimits`-Flag): ein
+    sortIndex-only-Anker attacht weiterhin einen Anker (fuer die
+    Oberflaeche erreichbar), ruft aber `annotateGroupMembers` nicht mehr auf.
+    Mit der Repro-Szenerie des Reviewers gegengeprueft: Bedingungsergebnis
+    jetzt identisch mit/ohne `sortIndex`.
+  - **Kriterium 2, gering:** `readSortIndex()` liess `Number(' ')` (nur
+    Leerzeichen) als gueltige `0` durch statt als "kein sortIndex". **Behoben:**
+    `raw.trim() === ''` ergaenzt.
+  - **Kein Kriterium verletzt:** dieselbe unconditional-Anker-Erzeugung kann
+    eine leere Sektion (Header ohne waehlbare Optionen) rendern, wenn alle
+    Mitglieder einer grenzenlosen, aber jetzt verankerten Gruppe versteckt
+    sind. Betrifft keines der sechs Kriterien (die sprechen nur von
+    Reihenfolge) und bleibt nach der Kriterium-1-Korrektur unveraendert
+    reproduzierbar (Anker-Erzeugung selbst ist unangetastet). Als eigenes
+    Issue **0131** archiviert, nicht in diesem Diff mitgefixt.
+  - Vierter Punkt (keine Tabellenzeile, kein Defekt): die Korrektur von
+    `toBeNull()` zu `toBeUndefined()` in `report.sortIndex.test.js` wurde
+    unabhaengig gegen `report.sourceId.test.js` geprueft und als legitime
+    Testkorrektur bestaetigt (kein Kriterium dadurch geschwaecht).
+
 ## Checkpoints
 
 ### Before implementation

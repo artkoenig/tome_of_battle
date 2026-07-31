@@ -674,9 +674,9 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
   }
 }
 
-/** Ob eine Gruppendefinition einen Anker braucht: eigene Grenzen oder ein `sortIndex` (Issue 0130). */
-function needsGroupAnchor(limits, def) {
-  return limits.length > 0 || (def.sortIndex !== null && def.sortIndex !== undefined);
+/** Ob eine Definition ein deklariertes `sortIndex` traegt (Issue 0130). */
+function hasSortIndex(def) {
+  return def.sortIndex !== null && def.sortIndex !== undefined;
 }
 
 /**
@@ -703,13 +703,17 @@ function needsGroupAnchor(limits, def) {
  * eigene Grenzen traegt. So entscheidet die Dokumentreihenfolge der Geschwister
  * nie, ob eine Link-Grenze ausgewertet wird.
  *
- * Ein `sortIndex` (Issue 0130) loest denselben Anker aus wie eine Grenze, auch
- * ohne eigene Grenzen: der Gruppen-Anker ist die einzige Stelle, an der die
- * Oberflaeche den deskriptiven Wert einer Gruppe lesen kann ({@link
- * ../evaluator/report.js}); er bleibt dabei wirkungslos auf Zaehlung und
- * Grenzen, weil eine grenzenlose Gruppe keine MIN/MAX-Ergebnisse traegt.
+ * Ein `sortIndex` ohne eigene Grenzen (Issue 0130) loest ebenfalls einen Anker
+ * aus — sonst waere der deskriptive Wert einer grenzenlosen Gruppe aus
+ * `capabilities` nicht erreichbar ({@link ../evaluator/report.js}) —, aber
+ * **`hasLimits: false`**: {@link synthesizeGroupAnchors} annotiert dessen
+ * Member deshalb nicht unter der Gruppen-Id. Ohne diese Trennung wuerde ein
+ * rein deskriptives `sortIndex` eine bislang grenzenlose Gruppe erstmals
+ * zaehlbar machen und so Bedingungen/Modifier andernorts veraendern, die per
+ * `childId` auf dieselbe Gruppen-Id verweisen — ein `sortIndex` darf aber nie
+ * ein Gueltigkeits-Urteil veraendern.
  *
- * @returns {Generator<{ def: object, ownLimitsOnly: boolean }>}
+ * @returns {Generator<{ def: object, ownLimitsOnly: boolean, hasLimits: boolean }>}
  */
 function* groupDefinitionsWithLimits(ownerDef, visited = new Set()) {
   for (const child of ownerDef.children ?? []) {
@@ -717,16 +721,22 @@ function* groupDefinitionsWithLimits(ownerDef, visited = new Set()) {
     if (linkedGroup !== null) {
       if (visited.has(linkedGroup.id)) {
         // Ziel schon verankert: nur die eigenen Grenzen dieses Links (oder sein eigener sortIndex) fehlen noch.
-        if (needsGroupAnchor(child.limits ?? [], child)) yield { def: child, ownLimitsOnly: true };
+        const ownLimits = child.limits ?? [];
+        if (ownLimits.length > 0) yield { def: child, ownLimitsOnly: true, hasLimits: true };
+        else if (hasSortIndex(child)) yield { def: child, ownLimitsOnly: true, hasLimits: false };
         continue;
       }
       visited.add(linkedGroup.id);
-      if (needsGroupAnchor(limitsOf(child), child)) yield { def: child, ownLimitsOnly: false };
+      const limits = limitsOf(child);
+      if (limits.length > 0) yield { def: child, ownLimitsOnly: false, hasLimits: true };
+      else if (hasSortIndex(child)) yield { def: child, ownLimitsOnly: false, hasLimits: false };
       yield* groupDefinitionsWithLimits(linkedGroup, visited);
       continue;
     }
     if (child.kind !== DefinitionKind.GROUP) continue;
-    if (needsGroupAnchor(limitsOf(child), child)) yield { def: child, ownLimitsOnly: false };
+    const limits = limitsOf(child);
+    if (limits.length > 0) yield { def: child, ownLimitsOnly: false, hasLimits: true };
+    else if (hasSortIndex(child)) yield { def: child, ownLimitsOnly: false, hasLimits: false };
     yield* groupDefinitionsWithLimits(child, visited);
   }
 }
@@ -796,8 +806,14 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
       if (memberIds !== undefined) annotateGroupMembers(owner, ownerDef.id, memberIds);
     }
 
-    for (const { def: groupDef, ownLimitsOnly } of groupDefinitionsWithLimits(ownerDef)) {
+    for (const { def: groupDef, ownLimitsOnly, hasLimits } of groupDefinitionsWithLimits(ownerDef)) {
       attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly);
+      // Ein Anker fuer ein rein deskriptives sortIndex (kein `hasLimits`,
+      // Issue 0130) zaehlt seine Member nie mit: sonst machte ein
+      // Anzeige-Attribut eine bislang grenzenlose Gruppe zaehlbar und
+      // veraenderte damit Bedingungen/Modifier andernorts, die per `childId`
+      // auf ihre Id verweisen.
+      if (!hasLimits) continue;
       // Bei einer verlinkten Gruppe ist der Anker der **Link** (nur an ihm
       // gelten seine eigenen Grenzen); gezaehlt wird aber unter der Id, die
       // die Constraint-Schicht am Link abfragt (`targetId`), und die Member
