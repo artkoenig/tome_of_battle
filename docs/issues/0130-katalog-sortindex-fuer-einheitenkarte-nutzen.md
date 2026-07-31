@@ -180,9 +180,72 @@ Acceptance criteria:
   bewusst nicht mit einem Guard-Test versehen, da laut Issue
   optional/niedrige Priorität und keine Quelländerung dort geplant ist.
 
+- `implementer`-Subagent hat die vier Testdateien grün gemacht, ohne sie zu
+  editieren:
+  - `catalogReader.js`: `Attr.SORT_INDEX` + `readSortIndex()` (fehlend/nicht
+    numerisch → `null`), verdrahtet in `readEntry`/`readGroup`/`readEntryLink`
+    als neues `sortIndex`-Feld auf den geparsten Definitionsobjekten.
+  - `evalTree.js`: `groupDefinitionsWithLimits`s Anker-Bedingung feuert jetzt
+    auch bei vorhandenem `sortIndex`, nicht nur bei eigenen Grenzen (neuer
+    `needsGroupAnchor()`-Helfer) — sonst bekäme eine `selectionEntryGroup`
+    ohne `<constraints>` nie einen `groupAnchor`-Slot und ihr `sortIndex` wäre
+    aus `capabilities` nicht erreichbar. Rein additiv/deskriptiv: eine
+    grenzenlose Gruppe wertet weiterhin kein MIN/MAX aus.
+  - `report.js`: `toCapability` kopiert `sortIndex: node.def.sortIndex ?? null`
+    auf jede `SlotCapability`, nach derselben Link-vor-Ziel-Regel wie
+    `sourceId` (ein Verweis-Slot trägt seinen eigenen `sortIndex`, nie den
+    seines aufgelösten Ziels).
+  - `SelectionConfigurator.jsx`: `buildSections()` trägt jetzt einen
+    `sortIndex` je Sektion und sortiert am Ende stabil: getaggt aufsteigend
+    zuerst, ungetaggt danach in bisheriger relativer Reihenfolge.
+  - `OptionGroup.jsx`: die Zeilen-Sortierung sortiert getaggte Optionen
+    (`capability.sortIndex !== null`) zuerst aufsteigend, dann ungetaggte
+    weiterhin absteigend nach Kosten (bestehende Regel, jetzt nur noch auf
+    den Rest angewandt).
+
+  **Ein Befund blieb offen:** `report.sortIndex.test.js`s Test für den
+  Link-vs-Ziel-Fall nahm an, `slotOf(built, LINK_TARGET_ID)?.sortIndex` sei
+  `null` — der `implementer` stellte fest, dass ein nur per `entryLink`
+  referenzierter, nirgends selbst platzierter Zieleintrag architekturbedingt
+  gar keinen eigenen Slot bekommt (`slotOf` liefert `undefined`, nicht ein
+  Objekt mit `sortIndex: null`), analog zu `report.sourceId.test.js`, das
+  denselben Fall aus genau diesem Grund nie auf diese Weise prüft. Nach Prüfung
+  gegen `report.sourceId.test.js` als Präzedenzfall wurde die Testerwartung
+  als Autorenfehler bestätigt und korrigiert: die Assertion prüft jetzt
+  `toBeUndefined()` statt `toBeNull()`, mit angepasstem Kommentar. Dabei auch
+  eine ungenutzte Testvariable (`HERO_PATH` in
+  `SelectionConfigurator.sortIndex.test.jsx`) entfernt (oxlint-Warnung).
+
+  Danach: alle 27 neuen Tests grün, `npx vitest run` (voller Lauf) 2649/2649
+  grün, `node e2e/ui.test.js` (Puppeteer, inkl. expliziter Prüfung der
+  CategoryUnitAdder- und SelectionConfigurator-Sortierung gegen echte
+  Katalogdaten) exit 0, `npm run lint`/`npm run depcruise`/`npm run
+  typecheck` je exit 0 (die zwei verbleibenden Warnungen — zirkulärer Import
+  `roster/modifierEvaluator.js`↔`queryEngine.js`↔`rosterCounter.js` und eine
+  jetzt behobene oxlint-Warnung — waren/sind vorbestehend und unabhängig von
+  diesem Issue).
+
 ## Checkpoints
 
 ### Before implementation
+
+- **Passt das zum Gefragten?** Ja — die sechs Kriterien decken exakt die vier
+  Interview-Runden ab (Scope Kandidaten- vs. Roster-Anzeige, Präzisierung
+  "Einheitenkarte", sortIndex vs. Kostensortierung, Fallback-Reihenfolge).
+- **Was hat überrascht?** Dass `childSlotsOf` schon vor dieser Änderung keine
+  reine XML-Dokumentreihenfolge lieferte, sondern eine von
+  `catalogReader.js#readSelectionChildren` nach Elementtyp gruppierte
+  Reihenfolge (erst alle `selectionEntry`, dann `selectionEntryGroup`, dann
+  `entryLink`) — der "unveränderte Rest" in Kriterium 4 ist also selbst schon
+  eine Konvention, keine reine Dokumentreihenfolge. Ebenso, wie lückenhaft
+  `sortIndex` in echten Katalogen gesetzt ist (z.B. 64 von 968 Elementen in
+  Mercenaries.cat).
+- **Was wird ungeprüft angenommen?** Dass jede `selectionEntryGroup` bereits
+  heute einen `groupAnchor`-Slot in `capabilities` bekommt, über den ihr
+  `sortIndex` erreichbar wäre — diese Annahme erwies sich beim Implementieren
+  als falsch für grenzenlose Gruppen (siehe Log: `evalTree.js`-Änderung an
+  `groupDefinitionsWithLimits`) und wurde dort korrigiert, nicht vorab
+  verifiziert.
 
 ### Before the PR
 
