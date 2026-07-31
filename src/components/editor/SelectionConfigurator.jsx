@@ -1,8 +1,8 @@
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
 import {
-  resolveEntry, computeRosterCounts, isIndependentSubUnit,
-  getUnitOptions, findForceContainingSelection,
+  resolveEntry, isIndependentSubUnit,
+  getUnitOptions,
   resolveCostLimitTypeId, resolveCostLimitLabel,
   countSelections, classifyStandaloneOption,
   UPGRADE_DETAILS_KEYWORDS
@@ -27,7 +27,15 @@ import { useTranslation } from '../../i18n/useTranslation';
  *
  * Die **Mitgliedschaft** Option→Gruppe bleibt Struktur des geparsten Systems
  * (Options-Sammler des Schreibmodells `src/roster/`); sie ordnet die Slots den Gruppen zu,
- * liefert aber weder Kandidaten noch Zustände. Eine belegte Unter-Auswahl ist
+ * liefert aber weder Kandidaten noch Zustände. Der Sammler wird deshalb in seiner
+ * **ungefilterten** Form befragt (ohne Sichtbarkeits-Kontext): welche *Option*
+ * sichtbar ist, sagt allein der Bericht (`isHidden`, ADR-0035). Für eine
+ * *Gruppe* gilt das noch nicht — das `isHidden` eines Gruppen-Ankers liest hier
+ * niemand, ein Abschnitt entfällt allein, wenn er leer bleibt (Issue 0144).
+ * Wertete der Sammler die
+ * Sichtbarkeit hier ein zweites Mal aus, verlöre eine Option, über die die beiden
+ * Quellen uneins sind, ihre Gruppenzugehörigkeit und fiele als heimatlose Zeile
+ * aus der Katalogstruktur (Issue 0143). Eine belegte Unter-Auswahl ist
  * selbst ein Rahmen: ihre Kind-Slots rendern eingerückt unter ihrer Zeile.
  */
 
@@ -53,11 +61,8 @@ export default function SelectionConfigurator({
   isListRule = false
 }) {
   const { t } = useTranslation();
-  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
   const costTypeId = resolveCostLimitTypeId(roster, system);
   const costTypeLabel = resolveCostLimitLabel(roster, system);
-  const activeForce = findForceContainingSelection(roster, selection.id);
-  const forceCategoryCounts = activeForce ? (categoryCounts[activeForce.id] || {}) : {};
 
   // Helper to compile a clean description string for an upgrade/magic item
   const getOptionDescription = (res) => {
@@ -112,11 +117,6 @@ export default function SelectionConfigurator({
     });
   };
 
-  // Struktur-Kontext des Options-Sammlers: er liefert die Mitgliedschaft
-  // Option→Gruppe und die Options-Objekte für die Schreiboperationen — die
-  // Kandidaten selbst kommen aus den Slots des Berichts.
-  const visibilityContext = { roster, selectionCounts, forceCategoryCounts, force: activeForce };
-
   /**
    * Baut die Abschnitte eines Rahmens (Selection + ihr Slot-Pfad): Gruppen in
    * Slot-Reihenfolge, dazwischen die eigenständigen Options-Zeilen.
@@ -125,13 +125,17 @@ export default function SelectionConfigurator({
    * Angebots-Anker ist immer ein Blatt). Die Verschachtelung der Gruppen
    * ineinander ist — wie die Mitgliedschaft Option→Gruppe — Struktur des
    * geparsten Systems und kommt aus der Ahnenkette des Options-Sammlers
-   * (`groupAncestorIds`). Eine Gruppe, deren Kinder ausschließlich Links auf
+   * (`groupAncestors`). Eine Gruppe, deren Kinder ausschließlich Links auf
    * andere Gruppen sind („Container-Gruppe"), hält ihre Mitglieder damit im
    * eigenen Abschnitt, statt sie als Geschwister neben sich zu stellen
-   * (Issue 0131).
+   * (Issue 0131) — und trägt dabei den Namen, den die Ahnenkette ihr gibt
+   * (Issue 0143).
    */
   const buildSections = (frameSelection, framePath) => {
-    const structureItems = getUnitOptions(system, activeCatalogue?.id, frameSelection, visibilityContext);
+    // Ohne Sichtbarkeits-Kontext: der Sammler liefert hier allein die
+    // Katalogstruktur, das Verstecken liest der Konfigurator am Bericht ab
+    // (siehe Kopfkommentar, ADR-0035).
+    const structureItems = getUnitOptions(system, activeCatalogue?.id, frameSelection);
 
     // Kapazitaeten je Definitions-Id nachschlagbar — die Katalogstruktur
     // (`structureItems`, oben) legt Mitgliedschaft UND Reihenfolge fest, der
@@ -182,6 +186,23 @@ export default function SelectionConfigurator({
       parentKeyByGroupKey.set(groupKey, parentKey ?? null);
     };
 
+    // Der Name, den der Katalog jeder in dieser Struktur vorkommenden Gruppe gibt —
+    // vorab gesammelt, weil ein reiner Container seinen Namen NUR ueber die
+    // Ahnenkette eines Nachfahren erreicht: er haelt keine Option (also kein
+    // `groupInfoById`) und traegt keine eigene Grenze (also keinen Anker im
+    // Bericht). Ohne diesen Vorlauf entstuende sein Abschnitt titellos
+    // (Issue 0143, Defekt A).
+    const catalogueGroupNameById = new Map();
+    const rememberGroupName = (groupId, groupName) => {
+      if (groupId == null || !groupName || catalogueGroupNameById.has(groupId)) return;
+      catalogueGroupNameById.set(groupId, groupName);
+    };
+    for (const item of structureItems) {
+      if (item.ownerSelectionId) continue;
+      (item.groupAncestors || []).forEach(({ id, name }) => rememberGroupName(id, name));
+      rememberGroupName(item.groupId, item.groupName);
+    }
+
     const ensureGroupSection = (groupKey, fallbackName) => {
       let section = groupSectionByKey.get(groupKey);
       if (section) return section;
@@ -193,7 +214,7 @@ export default function SelectionConfigurator({
         sortIndex: anchor?.sortIndex ?? null,
         group: {
           id: info?.id ?? groupKey,
-          name: info?.name ?? anchor?.name ?? fallbackName,
+          name: info?.name ?? anchor?.name ?? catalogueGroupNameById.get(groupKey) ?? fallbackName,
           constraints: info?.constraints ?? [],
           modifiers: info?.modifiers ?? [],
           items: [],
@@ -211,7 +232,7 @@ export default function SelectionConfigurator({
       // hier, beim ersten Nachfahren in Katalogreihenfolge — sonst kaeme ein
       // reiner Container (Issue 0131) nie an die Reihe, weil kein Item ihn je
       // als eigene (direkte) Gruppe traegt.
-      const ancestorKeys = item.groupAncestorIds || [];
+      const ancestorKeys = (item.groupAncestors || []).map(ancestor => ancestor.id);
       ancestorKeys.forEach((key, index) => rememberParentKey(key, index === 0 ? null : ancestorKeys[index - 1]));
       ancestorKeys.forEach(key => ensureGroupSection(key, null));
       const enclosingKey = ancestorKeys.length > 0 ? ancestorKeys[ancestorKeys.length - 1] : null;
@@ -279,9 +300,11 @@ export default function SelectionConfigurator({
 
     /**
      * Der Abschnitt, in dem `section` hängt: die nächste umschließende Gruppe,
-     * die selbst einen Abschnitt hat. Eine Gruppe ohne Grenze bekommt keinen
-     * Anker und damit keinen Abschnitt — ihre Kinder rücken dann eine Ebene auf,
-     * statt heimatlos zu werden.
+     * die selbst einen Abschnitt hat. Jede Gruppe der Ahnenkette bekommt einen
+     * Abschnitt — auch eine ohne eigene Grenze, die im Bericht keinen Anker hat
+     * (sie trägt dann ihren Katalognamen, Issue 0143). Die Schleife überspringt
+     * gleichwohl jeden Schlüssel ohne Abschnitt, damit ein Kind einer weggefallenen
+     * Ebene eine Ebene aufrückt, statt heimatlos zu werden.
      */
     const parentSectionOf = (section) => {
       const visited = new Set([section.key]);
