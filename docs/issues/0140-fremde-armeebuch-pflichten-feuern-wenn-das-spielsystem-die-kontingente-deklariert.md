@@ -75,6 +75,9 @@ Acceptance criteria:
 
 ## Plan
 
+Kein eigener Plan nötig: die Änderung liegt in einem Modul (`src/evaluator/`)
+plus der einen App-Naht, die es speist (`src/evaluation/rosterAdapter.js`).
+
 ## Tasks
 
 ## Decisions
@@ -189,6 +192,35 @@ Acceptance criteria:
   Kriterium — hier behoben. F4 (ein Kommentar im Adapter benennt den falschen
   Mechanismus für den leeren String) verletzt kein Kriterium, ist aber eine vom
   Diff selbst eingeführte Falschaussage — wird behoben.
+- **Prüfrunde 2** (derselbe Kontext, ganzer Diff erneut): **0 Befunde**. Alle
+  vier Befunde der Runde 1 nachgeprüft und bestätigt behoben — der Prüfer fuhr
+  seine eigenen Reproduktionen gegen HEAD und gegen einen `origin/main`-Baum:
+  F1 und F2 liefern jetzt beidseitig dasselbe Ergebnis, und die zehn Roster des
+  DE-Szenarios `primary-catalogue-scope` sind auf beiden Seiten Zeichen für
+  Zeichen gleich. Zwei Beobachtungen ohne Kriteriumsbezug, hier festgehalten,
+  damit sie bekannte Kanten sind und keine späteren Überraschungen:
+  - **O1:** Eine roster-weite Bibliothekspflicht erscheint im Bericht der ganzen
+    Liste, sobald **ein** Kontingent die Ausnahme trägt — auch wenn ein anderes
+    Kontingent derselben Liste sie nicht trägt. Das ist die Natur eines
+    roster-weiten Rahmens (Kriterium 5 sagt es ausdrücklich); es gibt keine
+    Darstellung, in der ein roster-weites Mindestmaß „nur für ein Kontingent"
+    feuert. Auslösbar nur in einer Liste, die ein `.cat`-deklariertes und ein
+    `.gst`-deklariertes Kontingent mischt, plus eine Bibliothek mit
+    roster-weitem Mindestmaß, die das deklarierte Buch nirgends nennt — in
+    beiden echten Datensätzen unerreichbar.
+  - **O2:** Dieselbe Definition wird je Kontingent verschieden beurteilt. Das
+    ist die Absicht: der Kontingent-Rahmen ist je Kontingent, und Issue 0098
+    verhält sich schon immer so. Keine Vermischung über Kontingente hinweg.
+  - Eine Kombination ist nirgends abgedeckt: roster-deklariertes Buch, das die
+    Bibliothek mit `importRootEntries="true"` verlinkt. Sie wird von der
+    Fussabdruck-Prüfung *vor* dem Bibliotheks-Zweig entschieden und ist
+    herkunftsunabhängig — bewusst offengelassen, nicht übersehen.
+- `npm test` gab beim Prüfer zunächst Exit 1: Port 5175 war belegt, weil mein
+  eigener Screenshot-Lauf gleichzeitig einen Vorschau-Server hielt. Die
+  vitest-Hälfte war in demselben Aufruf grün (2901/2901), die separat
+  nachgefahrene Puppeteer-Hälfte ebenfalls (Exit 0). Kein Befund am Code, aber
+  festgehalten: die E2E-Hälfte verträgt keinen parallelen Lauf auf dieser
+  Maschine.
 - Herkunft der fünf fremden Anker per `sourceIdByDefId` bestätigt:
   `7754-…` → Ogre Kingdoms, `9e4b-…` → RH Chaos Dwarfs, `4cea-…`/`4e75-…` →
   Tomb Kings, `a4dc-…` → High Elf; `a37e-…` (General) → Spielsystem.
@@ -214,8 +246,25 @@ Acceptance criteria:
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Die fünf fremden Meldungen sind fort,
+  die zwei richtigen bleiben — nachgeprüft am **vollständigen** ergofang-Satz
+  (7 → 2) und sichtbar im Lagerbericht der laufenden App
+  (`.screenshots/issue0140_camp_report.png`). Der Gegenbeweis dazu, dass die
+  Prüfung schlicht abgeschaltet wurde: ein Ogre-Kingdoms-Kontingent bekommt
+  seine `Bulls`-Pflicht weiterhin.
+- **What surprised me?** Dass der Fix zweimal enger gefasst werden musste. Die
+  Bibliotheks-Ausnahme, gedacht als Schutz vor einer Regression, war selbst eine
+  — sie verletzte Kriterium 4 und hebelte eine ausdrückliche Aussage aus den
+  Katalogdaten aus. Und dass allein das Lesen des `catalogueId`-Attributs im
+  `.ros`-Leser ein bestehendes Black-Box-Szenario kippte, dessen Aussage genau
+  der Punkt war, den ich vorher per Vermutung anders entschieden hatte.
+- **What am I assuming without having verified it?** Erstens: dass das
+  gespeicherte Roster des Maintainers je Kontingent ein `catalogueId` trägt.
+  `buildRoster` setzt es seit jeher, und ohne die Angabe bliebe der Fehler
+  bestehen statt sich zu verschlimmern (Kriterium 4) — geprüft ist der Code, der
+  es schreibt, nicht die Datenbank des Maintainers. Zweitens: dass kein weiterer
+  Katalogbestand betroffen ist. Die Definitive Edition ist zeichengleich
+  nachgewiesen; für selbst hochgeladene Dateien gilt die Regel unverändert, ist
+  aber nicht durchprobiert.
 
 ## Retro
