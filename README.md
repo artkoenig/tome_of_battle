@@ -104,7 +104,7 @@ selection trees — judging a roster is the engine's job (see below).
 - `rosterTree.js` — Immutable traversal and rewriting of the selection tree.
 - `queryEngine.js` — The scope-agnostic counting primitive (ADR 0029), shared by the structural helpers below.
 - `modifierEvaluator.js` — Evaluates BattleScribe conditions and modifiers for the structural decisions the write model still makes (e.g. effective names, raisable group maxima).
-- `optionsCollector.js` — Collects the option/group **structure** of a unit (membership, not state).
+- `optionsCollector.js` — Collects the option/group **structure** of a unit (membership and the group hierarchy the catalogue declares, not state).
 - `rosterCounter.js` — Counts units and aggregates costs for the write model's own needs.
 - `rosterSync.js` — Reconciles stored and imported rosters against an updated catalogue.
 - `profileCollector.js` — Determines effective profile values and rules of a unit, taking modifiers into account.

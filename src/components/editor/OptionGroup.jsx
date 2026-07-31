@@ -26,6 +26,12 @@ import { useTranslation } from '../../i18n/useTranslation';
  *   angehakte, gesperrte Checkbox,
  * - die Gruppen-Grenze liest der Gruppen-Anker (`defId === group.id`).
  *
+ * Eine Gruppe kann ihrerseits **Gruppen halten**: `nestedSections` sind die vom
+ * Konfigurator bereits gerenderten Abschnitte der Gruppen, die im Katalog in
+ * dieser hier liegen. Sie erscheinen im selben aufklappbaren Items-Block wie die
+ * eigenen Zeilen — die Verschachtelung stammt aus der Katalogstruktur, nicht aus
+ * dem Bericht, dessen Anker flach nebeneinander liegen (Issue 0130, ADR-0036).
+ *
  * Übergangsweise bleibt die statische „Gruppen-Max über 1 hebbar"-Erkennung
  * (ADR-0029, Rüstung+Schild-Fall) beim Helfer des Schreibmodells — sie liest
  * reine Katalogstruktur und zieht mit dem Schreibmodell in Task 8 um.
@@ -49,7 +55,14 @@ export default function OptionGroupComponent({
   // Renders any sub-options re-emitted by a selected row, indented beneath it. Returns
   // null when the row has no such children. Defaults to a no-op so a group without
   // nesting (or a test stub) renders unchanged.
-  renderRowChildren = (_rowSelectionId) => null
+  renderRowChildren = (_rowSelectionId) => null,
+  // Die Gruppen, die DIESE Gruppe hält (Issue 0130): bereits gerenderte
+  // Abschnitte, die im eigenen Items-Block erscheinen. Leer bei einer
+  // gewöhnlichen Optionsgruppe.
+  nestedSections = [],
+  // Ob eine der gehaltenen Gruppen schon etwas trägt — dann startet auch diese
+  // Gruppe aufgeklappt, obwohl sie selbst keine belegte Zeile hat.
+  hasSelectedDescendant = false
 }) {
   const { t } = useTranslation();
 
@@ -74,8 +87,9 @@ export default function OptionGroupComponent({
     .filter(Boolean);
 
   // Start expanded when the group already holds a selection, so choices made
-  // aren't hidden behind a collapsed header.
-  const [isExpanded, setIsExpanded] = useState(() => rows.some(row => row.count > 0));
+  // aren't hidden behind a collapsed header — a selection inside a group this one
+  // holds counts just the same.
+  const [isExpanded, setIsExpanded] = useState(() => hasSelectedDescendant || rows.some(row => row.count > 0));
 
   // Gruppen-Grenze aus dem Gruppen-Anker des Berichts; die statische
   // „Max-hebbar"-Erkennung bleibt beim Helfer des Schreibmodells (siehe Kopfkommentar).
@@ -319,6 +333,7 @@ export default function OptionGroupComponent({
               </React.Fragment>
             );
           })}
+          {nestedSections}
         </div>
       )}
     </div>

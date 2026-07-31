@@ -120,6 +120,15 @@ export default function SelectionConfigurator({
   /**
    * Baut die Abschnitte eines Rahmens (Selection + ihr Slot-Pfad): Gruppen in
    * Slot-Reihenfolge, dazwischen die eigenständigen Options-Zeilen.
+   *
+   * Die Anker des Berichts liegen **flach** unter dem Rahmen (ADR-0036: ein
+   * Angebots-Anker ist immer ein Blatt). Die Verschachtelung der Gruppen
+   * ineinander ist — wie die Mitgliedschaft Option→Gruppe — Struktur des
+   * geparsten Systems und kommt aus der Ahnenkette des Options-Sammlers
+   * (`groupAncestorIds`). Eine Gruppe, deren Kinder ausschließlich Links auf
+   * andere Gruppen sind („Container-Gruppe"), hält ihre Mitglieder damit im
+   * eigenen Abschnitt, statt sie als Geschwister neben sich zu stellen
+   * (Issue 0130).
    */
   const buildSections = (frameSelection, framePath) => {
     const structureItems = getUnitOptions(system, activeCatalogue?.id, frameSelection, visibilityContext);
@@ -128,8 +137,22 @@ export default function SelectionConfigurator({
     // (re-emittierte Items fremder Unter-Auswahlen gehören deren Rahmen).
     const membershipByOptionId = new Map();
     const groupInfoById = new Map();
+    /** Gruppen-Schlüssel → Schlüssel der umschließenden Gruppe (`null` = oberste Ebene). */
+    const parentKeyByGroupKey = new Map();
+
+    const rememberParentKey = (groupKey, parentKey) => {
+      if (!groupKey || parentKeyByGroupKey.has(groupKey)) return;
+      parentKeyByGroupKey.set(groupKey, parentKey ?? null);
+    };
+
     for (const item of structureItems) {
       if (item.ownerSelectionId) continue;
+      // Die Ahnenkette nennt jede umschließende Gruppe — auch die, die selbst
+      // keine Option beisteuert (der Container-Fall).
+      const ancestorKeys = item.groupAncestorIds || [];
+      ancestorKeys.forEach((key, index) => rememberParentKey(key, index === 0 ? null : ancestorKeys[index - 1]));
+      const enclosingKey = ancestorKeys.length > 0 ? ancestorKeys[ancestorKeys.length - 1] : null;
+
       if (!item.groupId && !item.groupName) {
         if (!membershipByOptionId.has(item.option.id)) {
           membershipByOptionId.set(item.option.id, { item, groupKey: null });
@@ -146,12 +169,13 @@ export default function SelectionConfigurator({
           modifiers: item.groupModifiers || [],
         });
       }
+      rememberParentKey(groupKey, enclosingKey);
       if (!membershipByOptionId.has(item.option.id)) {
         membershipByOptionId.set(item.option.id, { item, groupKey });
       }
     }
 
-    const sections = [];
+    const orderedSections = [];
     const groupSectionByKey = new Map();
     const seenDefIds = new Set();
 
@@ -160,6 +184,8 @@ export default function SelectionConfigurator({
       if (section) return section;
       const info = groupInfoById.get(groupKey);
       section = {
+        key: groupKey,
+        children: [],
         group: {
           id: info?.id ?? groupKey,
           name: info?.name ?? fallbackName,
@@ -169,7 +195,7 @@ export default function SelectionConfigurator({
         },
       };
       groupSectionByKey.set(groupKey, section);
-      sections.push(section);
+      orderedSections.push(section);
       return section;
     };
 
@@ -200,7 +226,7 @@ export default function SelectionConfigurator({
         const section = ensureGroupSection(membership.groupKey, membership.item.groupName);
         section.group.items.push({ option: membership.item.option, ownerSelectionId: null });
       } else {
-        sections.push({
+        orderedSections.push({
           standalone: true,
           path,
           capability,
@@ -209,7 +235,50 @@ export default function SelectionConfigurator({
       }
     }
 
-    return sections;
+    /**
+     * Der Abschnitt, in dem `section` hängt: die nächste umschließende Gruppe,
+     * die selbst einen Abschnitt hat. Eine Gruppe ohne Grenze bekommt keinen
+     * Anker und damit keinen Abschnitt — ihre Kinder rücken dann eine Ebene auf,
+     * statt heimatlos zu werden.
+     */
+    const parentSectionOf = (section) => {
+      const visited = new Set([section.key]);
+      let key = parentKeyByGroupKey.get(section.key) ?? null;
+      while (key !== null && !visited.has(key)) {
+        const parent = groupSectionByKey.get(key);
+        if (parent && parent !== section) return parent;
+        visited.add(key);
+        key = parentKeyByGroupKey.get(key) ?? null;
+      }
+      return null;
+    };
+
+    const rootSections = [];
+    for (const section of orderedSections) {
+      const parent = section.standalone ? null : parentSectionOf(section);
+      if (parent) parent.children.push(section);
+      else rootSections.push(section);
+    }
+
+    // Ein Abschnitt ohne Optionszeilen UND ohne verbliebene Mitgliedsgruppen hat
+    // nichts zu zeigen und erscheint nicht (Issue 0130).
+    //
+    // Das setzt voraus, dass der Konfigurator die Struktur dieses Rahmens kennt:
+    // die Mitgliedschaft Option→Gruppe kommt aus dem Sammler, nicht aus dem
+    // Bericht. Liefert der Sammler zu diesem Rahmen gar nichts — etwa weil die
+    // Definition im geparsten System nicht auflöst —, gehört keine Option
+    // irgendeiner Gruppe an; dann sagt allein der Bericht, was auf der Karte
+    // steht, und ein Gruppen-Anker behält seinen Abschnitt samt Grenze. Leer
+    // aussehen heißt dort nur „nicht zugeordnet", nicht „inhaltslos".
+    const knowsFrameStructure = structureItems.length > 0;
+    const keepSection = (section) => {
+      if (section.standalone) return true;
+      section.children = section.children.filter(keepSection);
+      if (!knowsFrameStructure) return true;
+      return section.group.items.length > 0 || section.children.length > 0;
+    };
+
+    return rootSections.filter(keepSection);
   };
 
   /**
@@ -374,6 +443,11 @@ export default function SelectionConfigurator({
     );
   };
 
+  /** True, sobald irgendwo in diesem Abschnitt oder darunter etwas gewählt ist. */
+  const holdsSelection = (section, frameSelection) =>
+    section.group.items.some(({ option }) => getSubSelectionCount(frameSelection, option.id) > 0)
+    || section.children.some(child => holdsSelection(child, frameSelection));
+
   const renderSection = (section, frameSelection, framePath) => {
     if (section.standalone) {
       return renderStandaloneRow(section, frameSelection);
@@ -382,6 +456,10 @@ export default function SelectionConfigurator({
       <OptionGroupComponent
         key={section.group.id || section.group.name}
         group={section.group}
+        nestedSections={section.children.map(child => renderSection(child, frameSelection, framePath))}
+        // Eine haltende Gruppe klappt auf, wenn eine ihrer Mitgliedsgruppen schon
+        // etwas trägt — sonst verschwände eine getroffene Wahl hinter ihrer Kopfzeile.
+        hasSelectedDescendant={section.children.some(child => holdsSelection(child, frameSelection))}
         selection={frameSelection}
         selectionPath={framePath}
         capabilities={capabilities}
