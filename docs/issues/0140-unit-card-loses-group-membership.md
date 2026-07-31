@@ -28,12 +28,15 @@ edition), every section expanded:
 
 ```
 [Magic selection]
-  []                              <- Bloodline        (0719-24b8-19d4-c832)
+  []                              <- Magic Items      (11e6-e9d4-f6e4-c02d)
     [Magic Weapons (VC)] … eight further magic-item groups
 [Mounts]
 []                                <- Equipment        (3588-2a1f-2754-0f50)
   [Weapons]
 ```
+
+(This diagram first named the upper container `Bloodline`
+(`0719-24b8-19d4-c832`). That was wrong and is corrected here — see the Log.)
 
 **(B) An option the collector does not know renders outside every group.**
 `Blood Drinker` and `Asp Bow` are `entryLink`s of the catalogue group
@@ -64,8 +67,10 @@ Acceptance criteria:
 1. A container group renders with the name the catalogue gives it. On the
    Vampire Thrall card (Vampire Counts definitive edition, force
    `Standard (VC-AB)`): the section inside `Magic selection` that holds the
-   eight magic-item groups is titled `Bloodline`, and the section that holds
-   `Weapons` is titled `Equipment`.
+   eight magic-item groups is titled `Magic Items`, and the section that holds
+   `Weapons` is titled `Equipment`. (The first version of this criterion named
+   the first section `Bloodline`. The rule — "the name the catalogue gives it"
+   — is unchanged; only the example was factually wrong, see the Log.)
 2. No unit card in the fixture catalogues renders a section with an empty
    title. Established by rendering every unit of the six catalogues under
    `src/evaluator/__fixtures__/whfb6-definitive/` and `src/__fixtures__/whfb6/`
@@ -109,6 +114,26 @@ Acceptance criteria:
 
 ## Log
 
+- **Correction, found by the `implementer` and verified independently before
+  it was accepted.** This issue's own reproduction named the wrong group.
+  `Magic selection` (`53e8-0ce2-eaf6-0163`) holds **two** containers, not one:
+  `Bloodline` (link `85fb-0691-1ee6-37f8` → group `0719-24b8-19d4-c832`,
+  `.cat:21223`), which holds only five `Vampiric Powers` group links, all
+  `hidden="true"`; and `Magic Items` (link `14d2-cec2-9b1c-418c` → group
+  `11e6-e9d4-f6e4-c02d`, `.cat:21272`), which holds the fourteen magic-item
+  group links including the eight the card shows. The untitled container is
+  `Magic Items`. The original reading came from the `Bloodline` link written
+  inline on the `Magic selection` *entryLink* (`.cat:3790`) without looking
+  inside that link's target group. The measurement was never wrong — 9 untitled
+  sections on 7 of 208 cards, 2 on the Thrall — only one of the two ids was.
+  Criterion 1's example is corrected above; its rule, "the name the catalogue
+  gives it", is untouched.
+- Following from the same correction: no `Bloodline` section renders on this
+  card at all, before or after the change. Under force `Standard (VC-AB)` no
+  bloodline is chosen, the five `Vampiric Powers` reveal modifiers stay
+  unfired, and the group is barren — which criterion 7 forbids from rendering.
+  Nothing to decide here: the two criteria only appeared to collide because the
+  example was wrong.
 - Reproduced through the production seam (`processImportedData` →
   `createSelectionFromDef` → `toEvaluatorRoster` → `prepareDataset`/`evaluate` →
   `SelectionConfigurator`) against

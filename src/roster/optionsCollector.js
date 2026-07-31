@@ -19,8 +19,9 @@ import { ConstraintKind, EntryLinkKind } from '../parser/schema/battlescribeSche
  *   filtering never silently prunes a stored selection.
  * @returns {Array<Object>} one item per offered option, carrying the option itself plus
  *   its group membership (`groupId`/`groupName`, that group's `groupConstraints`/
- *   `groupModifiers`), the chain of enclosing group ids (`groupAncestorIds`, outermost
- *   first — the catalogue's group hierarchy) and the owning selection (`ownerSelectionId`).
+ *   `groupModifiers`), the chain of enclosing groups (`groupAncestors`, outermost first,
+ *   each `{ id, name }` — the catalogue's group hierarchy) and the owning selection
+ *   (`ownerSelectionId`).
  */
 export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibilityContext = null) => {
   if (!activeCatalogueId) return [];
@@ -90,10 +91,11 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
   //
   // - `groupName`/`groupId` name the group an option belongs to (its membership),
   //   `groupConstraints`/`groupModifiers` are that group's limits.
-  // - `groupAncestorIds` is the chain of ENCLOSING group ids, outermost first — the
-  //   catalogue's group hierarchy. A `selectionEntryGroup` whose children are only
-  //   links to other groups collects no item of its own, so its id would otherwise
-  //   never reach a consumer; the chain is the one place that hierarchy survives.
+  // - `groupAncestors` is the chain of ENCLOSING groups, outermost first, each as
+  //   `{ id, name }` — the catalogue's group hierarchy. A `selectionEntryGroup` whose
+  //   children are only links to other groups collects no item of its own, so neither
+  //   its id nor its name would otherwise ever reach a consumer; the chain is the one
+  //   place that hierarchy — and the catalogue's name for it — survives.
   // - `ownerSelectionId` names the roster selection under which a chosen option must
   //   nest. It is null for options that belong directly to the unit, and the id of an
   //   active sub-selection for the options that selection re-emits (see
@@ -106,7 +108,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
     groupId: null,
     groupConstraints: null,
     groupModifiers: null,
-    groupAncestorIds: [],
+    groupAncestors: [],
     ownerSelectionId: null,
   };
 
@@ -114,10 +116,10 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
   // plus the enclosing group itself. A group without an own id keeps the enclosing
   // group's key (see below) and therefore also its chain — nesting it under itself
   // would be a cycle.
-  const nestedAncestorIds = (context, nestedGroupId) =>
+  const nestedAncestors = (context, nestedGroupId) =>
     context.groupId && nestedGroupId !== context.groupId
-      ? [...context.groupAncestorIds, context.groupId]
-      : context.groupAncestorIds;
+      ? [...context.groupAncestors, { id: context.groupId, name: context.groupName }]
+      : context.groupAncestors;
 
   const itemOf = (option, def, context) => ({
     option,
@@ -126,7 +128,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
     groupId: context.groupId,
     groupConstraints: context.groupConstraints,
     groupModifiers: context.groupModifiers,
-    groupAncestorIds: context.groupAncestorIds,
+    groupAncestors: context.groupAncestors,
     ownerSelectionId: context.ownerSelectionId,
   });
 
@@ -160,7 +162,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
           groupId: nestedGroupId,
           groupConstraints: combinedConstraints,
           groupModifiers: combinedModifiers,
-          groupAncestorIds: nestedAncestorIds(context, nestedGroupId),
+          groupAncestors: nestedAncestors(context, nestedGroupId),
           ownerSelectionId: context.ownerSelectionId,
         });
       } else {
@@ -179,7 +181,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
         groupId: nestedGroupId,
         groupConstraints: combinedGroupConstraints,
         groupModifiers: getEffectiveModifiers(group),
-        groupAncestorIds: nestedAncestorIds(context, nestedGroupId),
+        groupAncestors: nestedAncestors(context, nestedGroupId),
         ownerSelectionId: context.ownerSelectionId,
       });
     });
