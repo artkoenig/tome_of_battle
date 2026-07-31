@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/ergofang-vampire-fehler-6vva1b
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/198
 ---
 
 # Fremde Armeebuch-Pflichten feuern, wenn das Spielsystem die Kontingente deklariert
@@ -268,3 +268,23 @@ plus der einen App-Naht, die es speist (`src/evaluation/rosterAdapter.js`).
   aber nicht durchprobiert.
 
 ## Retro
+
+**Was im Weg stand.** Zwei Entscheidungen habe ich per Vermutung getroffen, statt
+erst nachzusehen: die Vorrangregel Roster-vor-Katalog und die unbedingte
+Bibliotheks-Ausnahme. Beide waren falsch, beide kosteten eine volle Runde
+Implementierung, und der Beleg gegen jede lag schon im Repository — ein
+bestehendes Black-Box-Szenario und ein bestehender UI-Vertrag. Der `implementer`
+fand beide, weil er auf sie stieß; ein `researcher` hätte sie vorher gefunden.
+
+**Was sich ändern sollte.** Wo eine Entscheidung ein bestehendes Verhalten
+umdreht, gehört vor die Entscheidung die Frage, ob dieses Verhalten schon
+irgendwo festgehalten ist — in einem Szenario, einem Test, einer ADR. Das ist
+keine neue Regel, sondern die bestehende („für Fakten über den Code den
+`researcher` schicken, statt zu vermuten") angewandt auf Entscheidungen statt
+nur auf Recherche.
+
+**Was gut lief.** Die Reproduktion an den echten Katalogdaten stand vor der
+ersten Zeile Code und hat jede Runde denselben Maßstab geliefert. Und dass der
+Prüfer seine eigenen Reproduktionen gegen `origin/main` fuhr statt die Tabelle
+des Implementierers zu glauben, ist der Grund, warum F1 nicht durchgerutscht
+ist.
