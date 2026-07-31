@@ -332,4 +332,20 @@ Acceptance criteria:
 
 ### Before the PR
 
+- **Passt das zum Gefragten?** Ja — alle sechs Kriterien halten laut zwei
+  Review-Runden, die volle Suite (2653 Tests), Lint, Depcruise und Typecheck
+  sind grün, die Puppeteer-E2E bestätigt die Sortierung auch gegen echte
+  Katalogdaten im Browser.
+- **Was hat überrascht?** Dass die naheliegendste Umsetzung
+  (Gruppen-Anker-Erzeugung um `sortIndex` erweitern) eine stille
+  Nebenwirkung auf Gültigkeits-Urteile hatte, die keine der vier
+  ursprünglichen Testdateien fing — erst die fresh Review deckte es auf. Und
+  dass die Korrektur selbst zunächst nur von Hand verifiziert war (die volle
+  Suite blieb grün, auch mit zurückgedrehter Korrektur), bis Runde 2 das
+  benannte und ich die fehlenden Regressionstests ergänzte.
+- **Was wird ungeprüft angenommen?** Dass Issue 0131 (die separat archivierte
+  leere-Sektion-Regression) tatsächlich zeitnah aufgegriffen wird — es bleibt
+  vorerst unbehoben im Hauptzweig, weil es keines der sechs
+  Reihenfolge-Kriterien dieses Issues verletzt.
+
 ## Retro
