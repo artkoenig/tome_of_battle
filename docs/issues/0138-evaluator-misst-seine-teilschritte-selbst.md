@@ -242,8 +242,9 @@ Die absoluten Zahlen sind containerabhängig; für Kriterium 9 zählt der Anteil
 der Vorbereitung (99.0 / 99.1 %) und die Größenordnung der übrigen Phasen.
 
 **Review-Runde 1 — frischer Kontext, drei Befunde, kein verletztes Kriterium.**
-Der Reviewer hat alle zwölf Kriterien als erfüllt bestätigt und die Fakten per
-Exitcode belegt: `npx vitest run src/evaluator` (73 Dateien, 924 Tests) 0,
+Der Reviewer hat elf der zwölf Kriterien als erfüllt bestätigt und Kriterium 9
+als *der Sache nach erfüllt, mit Vorbehalt* — siehe die Zahlen weiter unten. Die
+Fakten sind per Exitcode belegt: `npx vitest run src/evaluator` (73 Dateien, 924 Tests) 0,
 `npx vitest run scripts/lib` (3 Dateien, 22 Tests) 0, `npx vitest run` (264
 Dateien, 2751 Tests) 0, `node e2e/ui.test.js` 0, `npm run lint` 0,
 `npm run typecheck` 0, `npm run depcruise` 0 (449 Module, 0 Fehler),
@@ -273,7 +274,8 @@ Triage der drei Befunde:
 
 Befunde 2 und 3 sind Beweislücken zu den Kriterien 2 und 3 selbst, keine
 Fremdkörper — deshalb werden sie in diesem Diff geschlossen und nicht als eigene
-Issue abgelegt.
+Issue abgelegt. **Beide sind erledigt und in Runde 2 nachgeprüft:** der Reviewer
+hat seine eigenen Mutationen erneut angewandt und beide Tests rot gesehen.
 
 Was der Reviewer außerhalb der Kriterien vermerkt hat, ohne Handlungsbedarf:
 `src/evaluator/measurement.js` landet im Produktionsbündel (die App setzt das
@@ -281,6 +283,67 @@ Flag nie, also verhaltensneutral); die Fassade exportiert mit `DiagnosticKind`
 einen zweiten Namen mehr, den künftig auch App-Code importieren dürfte;
 `measurement.attachTo` mutiert das frisch gebaute Berichtsobjekt, was ein
 späteres Einfrieren des Berichts ausschließt.
+
+**Messung nach der Änderung — der Beleg für Kriterium 9.** Median über 15 Läufe,
+jsdom/Node, derselbe Container wie die Grundlinie:
+
+| Fall | Vorbereitung | Iterierte Auswertung | Nach-Durchlauf | Grenzen+Bericht | Gesamt | Knoten | Runden |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| klein | 386.1 ms (98.6 %) | 1.6 ms | 1.7 ms | 1.8 ms | 391.6 ms | 142 | 2 |
+| Mehrkatalog | 1007.0 ms (98.8 %) | 2.3 ms | 3.2 ms | 4.2 ms | 1018.9 ms | 349 | 2 |
+| groesster Datensatz | 1115.1 ms (99.6 %) | 1.4 ms | 1.5 ms | 1.7 ms | 1119.3 ms | 183 | 1 |
+
+Knotenzahlen und Runden sind identisch zur Grundlinie. Die Summe der drei
+Auswertungsphasen ist *niedriger* als vorher (5.1 statt 5.3 ms; 9.7 statt
+10.7 ms) — die Instrumentierung bläht also nicht auf, was sie misst. Der dritte
+Fall liefert erstmals überhaupt Zahlen.
+
+**Vorbehalt, offen ausgesprochen:** ADR-0036:105-106 nennt für den Anteil der
+Vorbereitung die Spanne 99,1–99,5 %. Zwei der drei Fälle liegen jetzt mit 98.6 %
+und 98.8 % knapp darunter. Verursacht hat das nicht diese Änderung: die
+Grundlinie *vor* dem Diff lag auf diesem Container schon bei 99.0 % und 99.1 %,
+also am unteren Rand oder darunter, und die gemessenen Phasen sind gesunken statt
+gestiegen. Es ist Streuung der Parse-Zeit dieses Containers. Kriterium 9 fragt
+nach der Größenordnung, und die stimmt; die wörtliche Spanne der ADR tut sie
+nicht. Ob die ADR-Zahlen nachgemessen gehören, ist eine eigene Frage und keine
+dieser Issue — hier steht sie, damit sie nicht verlorengeht.
+
+**Review-Runde 2 — derselbe Kontext fortgesetzt, zwei Befunde, kein verletztes
+Kriterium.** Trend 3 → 2. Der Reviewer hat alle drei Befunde aus Runde 1 als
+geschlossen nachgewiesen (Mutationen erneut angewandt, Tests jetzt rot) und
+bestätigt: `npx vitest run src/evaluator` 74 Dateien / 936 Tests exit 0,
+`npx vitest run` 265 Dateien / 2763 Tests exit 0, lint 0, typecheck 0, depcruise
+0 Fehler bei 450 Modulen. E2E und Messläufe nicht erneut gefahren, weil seit
+Runde 1 kein Byte an Engine oder Skript geändert wurde.
+
+1. *Der Datensatz belegte Kriterium 9 nicht und überzeichnete Runde 1.* Die
+   Zahlen nach der Änderung standen nirgends im Diff, und der Log behauptete,
+   alle zwölf Kriterien seien bestätigt — der Vorbehalt zu Kriterium 9 fehlte.
+   **Sofort behoben:** Zahlen und Vorbehalt stehen jetzt oben, die Behauptung ist
+   korrigiert, die Befunde 2 und 3 sind als erledigt markiert.
+2. *`evaluator.measurementPhaseComposition.test.js` hängt still an der
+   Modul-Isolation.* Unter `npx vitest run src/evaluator --no-isolate` sind die
+   Engine-Module schon un-gemockt geladen, die Sonde wird nie eingebaut, und
+   neun Tests melden „der Schritt liegt ausserhalb" — sie beschuldigen die
+   Engine, obwohl nur die Sonde fehlt. Andere Dateien werden nicht verfälscht.
+   **An den `test-author` zurückgegeben**, um die Voraussetzung im Dateikopf zu
+   benennen (und, wenn billig, den Fehlschlag selbst sprechen zu lassen).
+
+Zur Abwägung der zwei Fragen, die ich dem Reviewer gestellt hatte: Die
+`vi.mock`-Kopplung an die Modulstruktur hält er für die richtige Art von
+Kopplung — jeder Weg, sie zu brechen, schlägt laut fehl statt still
+durchzugehen; der Preis ist ein Fehlalarm bei harmlosem Umbau, die sichere
+Richtung. Die 40-ms-Sonde hat er unter Last geprüft: zwölf Läufe der Datei
+parallel zur vollen Suite auf einer ausgelasteten Vier-Kern-Maschine, zwölfmal
+grün. Und das Rundenbudget-Fixture scheitert laut statt still, wenn jemand
+`MAX_FIXPOINT_ROUNDS` anhebt — die Kontrollzusicherung prüft die Diagnose selbst
+statt der Konstanten.
+
+Eine Anmerkung des Reviewers habe ich übernommen: die verlorene
+`describeTree`-Abdeckung steht oben fälschlich unter „ohne Handlungsbedarf" — sie
+ist repariert, nicht geduldet. Neu vermerkt, ohne Handlungsbedarf: die
+Phasen-Sonde kostet rund 0,45 s absichtliche Wartezeit pro Lauf der
+Evaluator-Suite (34,6 s → 35,7 s).
 
 ## Checkpoints
 
@@ -313,7 +376,9 @@ bestätigt, die Kriterien anschließend freigegeben.
   gewählt und nicht die Absicht.
 - Dass `scripts/measure-evaluator-browser.js` weiterhin sauber bündelt, wenn
   `evaluator-measurement.js` nur noch die Fassade importiert. Der Vite-Build
-  zieht dann einen anderen Modulgraphen als heute.
+  zieht dann einen anderen Modulgraphen als heute. *(Nachträglich bestätigt: der
+  Reviewer hat das Skript in Runde 1 gefahren — Exitcode 0, Chrome/150, beide
+  Spalten gedruckt.)*
 - Dass kein bestehender Test die exakte Gestalt des Report-Objekts festnagelt
   (der Researcher fand nur feldweise Zusicherungen, kein `toEqual` auf dem
   ganzen Report). Ein neues Feld hinter dem Flag träfe ohnehin nur den
