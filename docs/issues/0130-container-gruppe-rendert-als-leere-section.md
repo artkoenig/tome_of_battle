@@ -63,6 +63,11 @@ Acceptance criteria:
    today, unnested and with its options as direct rows.
 6. Nesting follows the catalogue: a container inside a container renders its
    members at the depth the catalogue gives them, not flattened to one level.
+7. A group holding both its own options and links to other groups renders both
+   in one section: its own options as direct rows, the groups it links nested
+   beneath them. The Vampire Counts `Magic Items` group
+   (`040b-d0d0-fe3b-9d13`, four group links and one direct option) shows its
+   own option as a row and its four linked groups nested in the same section.
 
 ## Plan
 
@@ -81,6 +86,15 @@ Acceptance criteria:
   violations on selection paths, and the container's violation is anchored at a
   group path (`0/0/6` against selection paths `0/0`, `0/0/0` … `0/0/4`), so it
   never reaches the card. Source: researcher briefing, this session.
+- **A mixed group renders both its options and its linked groups, in one
+  section.** The test-author found three groups in `Vampire Counts.cat` holding
+  both — `Magic Items` (`040b-d0d0-fe3b-9d13`) and two `Armour` groups
+  (`5386-2926-6dea-1086`, `da62-06d6-2e07-317f`) — which criteria 1 and 5 left
+  undecided between them. Added as criterion 7 before implementation started.
+  Source: default, unanswered — it follows from the maintainer's choice to
+  follow the catalogue's structure, and the alternative would render one group
+  two different ways depending on its contents. The maintainer was told and can
+  still overturn it.
 
 ## Log
 
@@ -101,6 +115,26 @@ Acceptance criteria:
   `OptionGroup.jsx`'s `current / max` branch.
 - No existing test constructs an empty group, and none would break if empty
   sections stopped rendering — equally, none guards the budget header today.
+- The `test-author` wrote two test files —
+  `SelectionConfigurator.containerGroups.integration.test.jsx` (the real Ogre
+  catalogue through the production seam) and
+  `SelectionConfigurator.containerGroups.nesting.test.jsx` (synthetic) — 17
+  tests, 13 red on the untouched tree, the 203 pre-existing tests in
+  `src/components/editor` still passing.
+- Four of those 17 are green from the start and stay as regression guards:
+  criterion 5 states that non-container groups render exactly as today, and
+  they do. Making them red would have meant fabricating a failure.
+- The fixtures do not exercise criteria 6 and 4's second sentence at all: of
+  201 groups across the three whfb6 catalogues and the game system, 43 are
+  containers and **none** holds another container; there is no container whose
+  members all vanish and no childless group. Those two criteria are pinned
+  synthetically, which is the honest route.
+- Worth knowing for the implementation: a group only gets a report anchor when
+  it carries a constraint. Dropping a synthetic container's constraint made its
+  anchor disappear and its leaf flatten up one level.
+- Filed separately, not part of this run: an option held only by a hidden group
+  keeps a visible offer anchor and renders as a stray ungrouped row
+  (issue 0131).
 - Baseline on the untouched tree, this branch: `npx vitest run
   src/components/editor` 30 files / 203 tests exit 0; `npx vitest run
   src/evaluator` 68 files / 860 tests exit 0; `npm run lint` exit 0; `npm run
