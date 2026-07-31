@@ -23,7 +23,8 @@ import { useTranslation } from '../../i18n/useTranslation';
  * - Options-Slots per `defId`/`targetDefId`; versteckte Slots (`isHidden`)
  *   erscheinen nicht, gesperrte (`isBlocked`) sind nicht erhöhbar,
  * - eine offene Pflicht (`mandatoryPhantom`/`isMandatoryUnmet`) rendert als
- *   angehakte, gesperrte Checkbox,
+ *   angehakter, gesperrter Schalter — als Checkbox, in einer Gruppe mit
+ *   Obergrenze als Radio,
  * - die Gruppen-Grenze liest der Gruppen-Anker (`defId === group.id`).
  *
  * Eine Gruppe kann ihrerseits **Gruppen halten**: `nestedSections` sind die vom
@@ -285,10 +286,18 @@ export default function OptionGroupComponent({
                       <input
                         type="radio"
                         name={`${selection.id}-${group.name}`}
-                        checked={count > 0}
-                        disabled={count === 0 && isSelectDisabled}
+                        // Eine Pflichtzeile ist genommen und nicht abwählbar — genau wie
+                        // im Checkbox-Zweig darunter und auf dem gruppenlosen Pfad des
+                        // Konfigurators. Dass die Gruppe eine Obergrenze trägt und die
+                        // Zeile deshalb als Radio rendert, ändert daran nichts
+                        // (Issue 0140, Kriterium 6).
+                        checked={count > 0 || isMandatory}
+                        disabled={isMandatory || (count === 0 && isSelectDisabled)}
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (isMandatory) {
+                            return;
+                          }
                           if (count > 0) {
                             subSelectionOperations.decreaseCount(editTargetId, option);
                           } else if (!isSelectDisabled) {
