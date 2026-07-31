@@ -29,15 +29,6 @@ import { isUnconditionalMandatoryListRule, findMissingMandatoryListRuleSelection
  * `selectionEntryGroups` follow-on choice), and "General" (Warhammer Fantasy
  * Battles (6th definitive edition).gst:1191 — only max constraints, no min at
  * all, plus non-zero Casting/Dispel Dice costs).
- *
- * SUPERSEDED IN PART BY ISSUE 0140: Issue 0138's criterion 1 also demanded
- * cost-freeness across every cost type, and its criterion 2 excluded "ein
- * kostenpflichtiger Wurzeleintrag" for that reason. Issue 0140 criterion 1
- * removes that condition outright — costs no longer bear on the predicate at
- * all. The two cases that pinned the old cost rejection are restated below
- * against their unchanged fixtures; the Issue-0140 describe blocks at the end of
- * this file carry the full new coverage. Every other feature of the predicate is
- * untouched (Issue 0140 criterion 3).
  */
 
 describe('isUnconditionalMandatoryListRule', () => {
@@ -146,21 +137,16 @@ describe('isUnconditionalMandatoryListRule', () => {
     expect(isUnconditionalMandatoryListRule(entry)).toBe(false);
   });
 
-  // The two cases below were written for Issue 0138's AC2 clause "ein
-  // kostenpflichtiger Wurzeleintrag wird nicht automatisch gesetzt". Issue 0140
-  // criterion 1 supersedes exactly that clause — cost-freeness is no longer part
-  // of the predicate at all ("Die Kostenbedingung fällt ersatzlos weg") — so both
-  // now pin the opposite outcome on their unchanged fixtures.
-  it('Issue 0140 AC1: is true for a costed root entry that is container-free with min>=1 scope=force', () => {
+  it('AC2: is false for a costed root entry, even container-free with min>=1 scope=force', () => {
     const entry = lawsOfUndeath();
     entry.costs = [{ typeId: 'pts', value: 120 }];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
+    expect(isUnconditionalMandatoryListRule(entry)).toBe(false);
   });
 
-  it('Issue 0140 AC1 cost boundary: exactly 0 in one cost type and non-zero in another is eligible too', () => {
+  it('AC1 cost boundary: a cost of exactly 0 in one cost type but non-zero in another is still "costed", not eligible', () => {
     const entry = lawsOfUndeath();
     entry.costs = [{ typeId: 'pts', value: 0 }, { typeId: 'castingDice', value: 1 }];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
+    expect(isUnconditionalMandatoryListRule(entry)).toBe(false);
   });
 
   it('is true when every declared cost type is exactly 0', () => {
@@ -226,10 +212,8 @@ describe('findMissingMandatoryListRuleSelections', () => {
     selectionEntryGroups: [{ id: 'grp-1', name: 'Vampiric Bloodline', selectionEntries: [] }],
   };
 
-  // AC2 negative — a root entry with its own equipment sub-options (the
-  // "Ogre Bulls"-style shape the issue calls out). Its `pts` cost is incidental
-  // and, since Issue 0140 criterion 1, no longer a reason to exclude it: the
-  // sub-options alone keep it out.
+  // AC2 negative — a costed root entry with its own equipment sub-options
+  // (the "Ogre Bulls"-style shape the issue calls out).
   const ogreBulls = {
     id: 'ogre-bulls-rule',
     name: 'Ogre Bulls',
@@ -287,7 +271,7 @@ describe('findMissingMandatoryListRuleSelections', () => {
     expect(missing).toEqual([]);
   });
 
-  it('AC2: excludes a root entry with equipment sub-options, e.g. Ogre Bulls', () => {
+  it('AC2: excludes a costed root entry with equipment sub-options, e.g. Ogre Bulls', () => {
     const system = buildSystem([ogreBulls]);
     const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
     expect(missing).toEqual([]);
@@ -369,304 +353,5 @@ describe('findMissingMandatoryListRuleSelections', () => {
       const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], force);
       expect(missing.map(m => m.resolved.id)).toContain('army-of-sylvania-rule');
     });
-  });
-});
-
-/**
- * Issue 0140 — "Eine Pflicht-Listenregel mit Kosten wird nicht automatisch
- * gesetzt". The cost-freeness requirement of Issue 0138's predicate is dropped:
- * a root `upgrade` entry with its own `min >= 1` in `scope="force"`/`"roster"`,
- * without sub-selections and not hidden, leaves the user no choice at all — the
- * army must carry it and pay whatever it costs (AC1). Every other feature of
- * the predicate keeps working exactly as before (AC3).
- *
- * Fixture shapes are grounded in the two real catalogue entries the issue names:
- *
- *  - ergofang `High Elf.cat`, entry `a4dc-9040-d98e-7bc1` ("Who Is the general?
- *    Nobody knows, roll the dice to see what it shows."): root `selectionEntry`,
- *    `type="upgrade"`, `hidden="false"`, no sub-selections, `min value=1
- *    scope="roster"` AND `max value=1 scope="roster"`, costs `pts=0`,
- *    `" Casting Dice"=2`, `" Dispel Dice"=2`, one `categoryLink` with
- *    `primary="false"`.
- *  - `Dwarfs (2001) (6th definitive edition).cat`, "Forces of Dwarfs' Army
- *    Rules": `min=1 scope="force"`, `hidden="false"`, no sub-selections,
- *    `2 Dispel Dice`.
- */
-describe('isUnconditionalMandatoryListRule — costed mandatory list rules (Issue 0140)', () => {
-  const PTS = 'cost-pts';
-  const CASTING_DICE = 'cost-casting-dice';
-  const DISPEL_DICE = 'cost-dispel-dice';
-
-  /** The real ergofang High-Elf entry, shape-for-shape. */
-  const whoIsTheGeneral = () => ({
-    id: 'a4dc-9040-d98e-7bc1',
-    name: 'Who Is the general? Nobody knows, roll the dice to see what it shows.',
-    type: 'upgrade',
-    hidden: false,
-    costs: [
-      { typeId: PTS, name: 'pts', value: 0 },
-      { typeId: CASTING_DICE, name: 'Casting Dice', value: 2 },
-      { typeId: DISPEL_DICE, name: 'Dispel Dice', value: 2 },
-    ],
-    constraints: [
-      { id: 'c-min', type: 'min', value: 1, scope: 'roster' },
-      { id: 'c-max', type: 'max', value: 1, scope: 'roster' },
-    ],
-    categoryLinks: [{ id: 'cl-general', targetId: 'cat-general', primary: false }],
-  });
-
-  it('AC1: the real High-Elf entry qualifies despite its 2 Casting Dice / 2 Dispel Dice', () => {
-    expect(isUnconditionalMandatoryListRule(whoIsTheGeneral())).toBe(true);
-  });
-
-  it('AC1 boundary: a single non-zero cost type among otherwise-zero ones is no obstacle', () => {
-    const entry = whoIsTheGeneral();
-    entry.costs = [
-      { typeId: PTS, value: 0 },
-      { typeId: CASTING_DICE, value: 0 },
-      { typeId: DISPEL_DICE, value: 2 },
-    ];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
-  });
-
-  it('AC1 boundary: non-zero in EVERY declared cost type is no obstacle either', () => {
-    const entry = whoIsTheGeneral();
-    entry.costs = [
-      { typeId: PTS, value: 75 },
-      { typeId: CASTING_DICE, value: 2 },
-      { typeId: DISPEL_DICE, value: 2 },
-    ];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
-  });
-
-  it('AC1: a non-zero POINTS cost alone does not disqualify — no cost type is privileged', () => {
-    const entry = whoIsTheGeneral();
-    entry.costs = [{ typeId: PTS, value: 120 }];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
-  });
-
-  it('AC1 boundary: a negative cost value is also "ungleich 0" and does not disqualify', () => {
-    const entry = whoIsTheGeneral();
-    entry.costs = [{ typeId: PTS, value: -25 }];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
-  });
-
-  it('AC1 boundary: a fractional cost value does not disqualify', () => {
-    const entry = whoIsTheGeneral();
-    entry.costs = [{ typeId: CASTING_DICE, value: 0.5 }];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
-  });
-
-  it('AC1: the scope="force" form with costs qualifies too — "Forces of Dwarfs\' Army Rules" (2 Dispel Dice)', () => {
-    const forcesOfDwarfs = {
-      id: 'forces-of-dwarfs-army-rules',
-      name: "Forces of Dwarfs' Army Rules",
-      type: 'upgrade',
-      hidden: false,
-      costs: [{ typeId: DISPEL_DICE, name: 'Dispel Dice', value: 2 }],
-      constraints: [{ id: 'c-min', type: 'min', value: 1, scope: 'force' }],
-    };
-    expect(isUnconditionalMandatoryListRule(forcesOfDwarfs)).toBe(true);
-  });
-
-  it('AC1: a costed entry whose min is raised to 1 only by an unconditional modifier still qualifies', () => {
-    const entry = whoIsTheGeneral();
-    entry.constraints = [{ id: 'c-min', type: 'min', value: 0, scope: 'force' }];
-    entry.modifiers = [{ type: 'increment', field: 'c-min', value: 1 }];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
-  });
-
-  // ── AC3: every other feature of the predicate keeps rejecting, costs or not ──
-  // These guard against the removal of the cost condition being widened into a
-  // removal of the remaining ones. They already hold today; the issue requires
-  // that they keep holding.
-
-  it('AC3: an entry with its own sub-selections stays ineligible, costed or not', () => {
-    const costed = whoIsTheGeneral();
-    costed.selectionEntries = [{ id: 'child-1', name: 'Some sub-choice' }];
-    expect(isUnconditionalMandatoryListRule(costed)).toBe(false);
-
-    const free = whoIsTheGeneral();
-    free.costs = [];
-    free.selectionEntryGroups = [{ id: 'grp-1', name: 'Some follow-on choice', selectionEntries: [] }];
-    expect(isUnconditionalMandatoryListRule(free)).toBe(false);
-  });
-
-  it('AC3: an entry with its own child entryLinks stays ineligible, costed or not', () => {
-    const costed = whoIsTheGeneral();
-    costed.entryLinks = [{ id: 'child-link-1', name: 'Some linked sub-choice' }];
-    expect(isUnconditionalMandatoryListRule(costed)).toBe(false);
-
-    const free = whoIsTheGeneral();
-    free.costs = [];
-    free.entryLinks = [{ id: 'child-link-1', name: 'Some linked sub-choice' }];
-    expect(isUnconditionalMandatoryListRule(free)).toBe(false);
-  });
-
-  it('AC3: an entry without any min constraint stays ineligible, costed or not', () => {
-    const costed = whoIsTheGeneral();
-    costed.constraints = [{ id: 'c-max', type: 'max', value: 1, scope: 'roster' }];
-    expect(isUnconditionalMandatoryListRule(costed)).toBe(false);
-
-    const free = whoIsTheGeneral();
-    free.costs = [];
-    free.constraints = [{ id: 'c-max', type: 'max', value: 1, scope: 'roster' }];
-    expect(isUnconditionalMandatoryListRule(free)).toBe(false);
-  });
-
-  it('AC3: min >= 1 with no scope written at all stays ineligible, costed or not', () => {
-    const costed = whoIsTheGeneral();
-    costed.constraints = [{ id: 'c-min', type: 'min', value: 1 }];
-    expect(isUnconditionalMandatoryListRule(costed)).toBe(false);
-
-    const free = whoIsTheGeneral();
-    free.costs = [];
-    free.constraints = [{ id: 'c-min', type: 'min', value: 1 }];
-    expect(isUnconditionalMandatoryListRule(free)).toBe(false);
-  });
-
-  it('AC3: min >= 1 with scope="parent" stays ineligible, costed or not', () => {
-    const costed = whoIsTheGeneral();
-    costed.constraints = [{ id: 'c-min', type: 'min', value: 1, scope: 'parent' }];
-    expect(isUnconditionalMandatoryListRule(costed)).toBe(false);
-
-    const free = whoIsTheGeneral();
-    free.costs = [];
-    free.constraints = [{ id: 'c-min', type: 'min', value: 1, scope: 'parent' }];
-    expect(isUnconditionalMandatoryListRule(free)).toBe(false);
-  });
-
-  it('AC3: an effective min below 1 stays ineligible, costed or not', () => {
-    const costed = whoIsTheGeneral();
-    costed.constraints = [{ id: 'c-min', type: 'min', value: 0, scope: 'roster' }];
-    expect(isUnconditionalMandatoryListRule(costed)).toBe(false);
-
-    const lowered = whoIsTheGeneral();
-    lowered.costs = [];
-    lowered.constraints = [{ id: 'c-min', type: 'min', value: 1, scope: 'roster' }];
-    lowered.modifiers = [{ type: 'set', field: 'c-min', value: 0 }];
-    expect(isUnconditionalMandatoryListRule(lowered)).toBe(false);
-  });
-});
-
-describe('findMissingMandatoryListRuleSelections — costed mandatory list rules (Issue 0140)', () => {
-  const CATALOGUE_ID = 'cat-high-elf';
-  const GENERAL_CATEGORY_ID = 'cat-general';
-  const PTS = 'cost-pts';
-  const CASTING_DICE = 'cost-casting-dice';
-  const DISPEL_DICE = 'cost-dispel-dice';
-
-  /**
-   * The real ergofang High-Elf entry. Note the single `categoryLink` carries
-   * `primary="false"` — the entry therefore has no primary category at all,
-   * which the issue calls out explicitly as its own (separate) shortcoming.
-   */
-  const whoIsTheGeneral = {
-    id: 'a4dc-9040-d98e-7bc1',
-    name: 'Who Is the general? Nobody knows, roll the dice to see what it shows.',
-    type: 'upgrade',
-    hidden: false,
-    costs: [
-      { typeId: PTS, value: 0 },
-      { typeId: CASTING_DICE, value: 2 },
-      { typeId: DISPEL_DICE, value: 2 },
-    ],
-    constraints: [
-      { id: 'c-min-heg', type: 'min', value: 1, scope: 'roster' },
-      { id: 'c-max-heg', type: 'max', value: 1, scope: 'roster' },
-    ],
-    categoryLinks: [{ id: 'cl-general', targetId: GENERAL_CATEGORY_ID, primary: false }],
-  };
-
-  /** "Forces of Dwarfs' Army Rules": the scope="force" sibling case, 2 Dispel Dice. */
-  const forcesOfDwarfs = {
-    id: 'forces-of-dwarfs-army-rules',
-    name: "Forces of Dwarfs' Army Rules",
-    type: 'upgrade',
-    hidden: false,
-    costs: [{ typeId: DISPEL_DICE, value: 2 }],
-    constraints: [{ id: 'c-min-dwarf', type: 'min', value: 1, scope: 'force' }],
-    categoryLinks: [{ id: 'cl-rules', targetId: 'cat-special-rules', primary: true }],
-  };
-
-  // AC3 negatives — all deliberately COST-FREE, so nothing but the feature under
-  // test can be the reason they stay out.
-  const withSubChoice = {
-    id: 'neg-sub-choice', name: 'Bloodlines', type: 'upgrade', hidden: false, costs: [],
-    constraints: [{ id: 'c-min-n1', type: 'min', value: 1, scope: 'roster' }],
-    selectionEntryGroups: [{ id: 'grp-1', name: 'Vampiric Bloodline', selectionEntries: [] }],
-  };
-  const withoutMin = {
-    id: 'neg-no-min', name: 'General', type: 'upgrade', hidden: false, costs: [],
-    constraints: [{ id: 'c-max-n2', type: 'max', value: 1, scope: 'roster' }],
-  };
-  const withUnwrittenScope = {
-    id: 'neg-scope-missing', name: 'Instance-level minimum', type: 'upgrade', hidden: false, costs: [],
-    constraints: [{ id: 'c-min-n3', type: 'min', value: 1 }],
-  };
-  const withParentScope = {
-    id: 'neg-scope-parent', name: 'Container-relative minimum', type: 'upgrade', hidden: false, costs: [],
-    constraints: [{ id: 'c-min-n4', type: 'min', value: 1, scope: 'parent' }],
-  };
-  const withMinBelowOne = {
-    id: 'neg-min-zero', name: 'Allow experimental rules?', type: 'upgrade', hidden: false, costs: [],
-    constraints: [{ id: 'c-min-n5', type: 'min', value: 0, scope: 'roster' }],
-  };
-
-  const INELIGIBLE = [withSubChoice, withoutMin, withUnwrittenScope, withParentScope, withMinBelowOne];
-
-  const buildSystem = (entries) => ({
-    id: 'sys-ergofang',
-    catalogues: [{ id: CATALOGUE_ID, selectionEntries: entries }],
-  });
-  const emptyForce = () => ({ id: 'f1', catalogueId: CATALOGUE_ID, selections: [] });
-
-  it('AC1: reports the costed High-Elf entry as missing from a fresh, empty force', () => {
-    const system = buildSystem([whoIsTheGeneral]);
-    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
-    expect(missing.map(m => m.resolved.id)).toEqual(['a4dc-9040-d98e-7bc1']);
-  });
-
-  it('AC1/AC3: reports exactly the costed mandatory entry and none of the ineligible ones', () => {
-    const system = buildSystem([...INELIGIBLE, whoIsTheGeneral]);
-    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
-    expect(missing.map(m => m.resolved.id)).toEqual(['a4dc-9040-d98e-7bc1']);
-  });
-
-  it('AC2 edge: reports it with categoryId null — its only categoryLink is primary="false"', () => {
-    const system = buildSystem([whoIsTheGeneral]);
-    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
-    expect(missing).toHaveLength(1);
-    expect(missing[0].categoryId).toBeNull();
-  });
-
-  it('AC1: reports the costed scope="force" entry too — "Forces of Dwarfs\' Army Rules"', () => {
-    const system = buildSystem([forcesOfDwarfs]);
-    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
-    expect(missing.map(m => m.resolved.id)).toEqual(['forces-of-dwarfs-army-rules']);
-  });
-
-  it('reports each costed mandatory entry independently, and only the ones still absent', () => {
-    const system = buildSystem([whoIsTheGeneral, forcesOfDwarfs]);
-    const force = {
-      id: 'f1', catalogueId: CATALOGUE_ID,
-      selections: [{ id: 'sel-1', selectionEntryId: 'a4dc-9040-d98e-7bc1' }],
-    };
-    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], force);
-    expect(missing.map(m => m.resolved.id)).toEqual(['forces-of-dwarfs-army-rules']);
-  });
-
-  it('AC3: a hidden costed mandatory entry is still not reported', () => {
-    const system = buildSystem([{ ...whoIsTheGeneral, hidden: true }]);
-    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
-    expect(missing).toEqual([]);
-  });
-
-  it('AC3: none of the ineligible shapes is reported, even alone in the catalogue', () => {
-    for (const entry of INELIGIBLE) {
-      const system = buildSystem([entry]);
-      const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
-      expect(missing, `ineligible entry ${entry.id} must stay out`).toEqual([]);
-    }
   });
 });

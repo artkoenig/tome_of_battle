@@ -110,22 +110,19 @@ function isContainerListRule(resolved) {
  * `scope="force"` oder `scope="roster"` **direkt** am Eintrag/Link — kein
  * `!c.scope`-Kulanz-Fallback wie bei {@link isBinaryListRule}, denn ein
  * ungeschriebener scope meint die eigene Instanzgrenze, nicht die armeeweite
- * Pflicht aus §9.9 — kombiniert mit fehlenden eigenen Unterauswahlen (kein
- * Behälter). Der effektive (modifier-angepasste) `min`-Wert entscheidet, nicht
- * der rohe Katalogwert, ausgewertet ohne Roster-Kontext (nur unbedingte
- * Modifier greifen).
- *
- * **Kosten spielen keine Rolle** (Issue 0140): ein solcher Eintrag lässt dem
- * Nutzer keine Entscheidung — die Armee muss ihn führen und seine Kosten
- * zahlen, was immer sie sind. Die übrigen Merkmale (Typ `upgrade`, kein
- * Behälter, explizit geschriebener Scope) schließen echte, wählbare Einheiten
- * bereits aus.
+ * Pflicht aus §9.9 — kombiniert mit Kostenfreiheit über jede Kostenart und
+ * fehlenden eigenen Unterauswahlen (kein Behälter). Der effektive (modifier-
+ * angepasste) `min`-Wert entscheidet, nicht der rohe Katalogwert, ausgewertet
+ * ohne Roster-Kontext (nur unbedingte Modifier greifen).
  * @param {Object} resolved der aufgelöste Katalog-Eintrag/-Link.
  * @returns {boolean}
  */
 export function isUnconditionalMandatoryListRule(resolved) {
   if (!resolved) return false;
   if (isContainerListRule(resolved)) return false;
+
+  const costs = resolved.costs || [];
+  if (costs.some((cost) => (cost.value || 0) !== 0)) return false;
 
   const minConstraint = (resolved.constraints || []).find(
     (c) => c.type === ConstraintKind.MIN && (c.scope === ConstraintScope.FORCE || c.scope === ConstraintScope.ROSTER)
