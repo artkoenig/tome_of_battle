@@ -1,10 +1,12 @@
 /**
  * Issue 0133, Kriterium 5 — in `OptionGroup.jsx` ersetzt `sortIndex` die
- * bisherige reine Kostensortierung (`.slice().sort((a,b) => pointsOf(b) -
- * pointsOf(a))`, absteigend): Optionen MIT `sortIndex` erscheinen zuerst,
- * aufsteigend sortiert. Optionen OHNE `sortIndex` werden danach angehängt und
- * bleiben untereinander weiterhin absteigend nach Punktkosten sortiert — die
- * bestehende Regel gilt nur noch für den ungetaggten Rest, nicht mehr global.
+ * bisherige reine Kostensortierung: Optionen MIT `sortIndex` erscheinen
+ * zuerst, aufsteigend sortiert. Optionen OHNE `sortIndex` werden danach
+ * angehängt und bleiben untereinander in Katalogreihenfolge (der Reihenfolge
+ * von `group.items`) — nicht mehr nach Punktkosten sortiert, weil deren
+ * effektiver Wert modifikatorabhängig ist und sich mit jeder Auswahl ändern
+ * kann; ein Sortierschlüssel, der beim Bearbeiten wandert, ließ Zeilen ohne
+ * eigenes Zutun des Nutzers springen.
  *
  * Aufbau: dieselbe echte Zwei-Stufen-Fassade (`prepareDataset` + `evaluate`)
  * und dasselbe Komponenten-Testmuster (manuell konstruierte `group`-Struktur,
@@ -42,7 +44,10 @@ const COST_TYPE_ID = 'cost-pts';
 const GROUP_ID = 'grp-weapons';
 const HERO_PATH = '0/0';
 
-// Ohne sortIndex, Kosten 7/5 — bleiben untereinander absteigend nach Kosten (Sword vor Axe).
+// Ohne sortIndex, in Katalogreihenfolge deklariert: Sword vor Axe — und mit
+// Kosten 4/9, damit eine (fehlerhaft) verbliebene Kostensortierung Axe VOR
+// Sword stellen würde. Bleibt es bei Sword vor Axe, sortiert die Komponente
+// nach Katalogreihenfolge, nicht nach Kosten.
 const SWORD_ID = 'opt-sword';
 const AXE_ID = 'opt-axe';
 // Mit sortIndex, Kosten 10/1 — sortIndex ersetzt die Kostensortierung: Dagger (1) vor Mace (2).
@@ -64,10 +69,10 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
           <selectionEntryGroup id="${GROUP_ID}" name="Weapons">
             <selectionEntries>
               <selectionEntry id="${SWORD_ID}" name="Sword" type="upgrade">
-                <costs><cost name="pts" typeId="${COST_TYPE_ID}" value="7"/></costs>
+                <costs><cost name="pts" typeId="${COST_TYPE_ID}" value="4"/></costs>
               </selectionEntry>
               <selectionEntry id="${AXE_ID}" name="Axe" type="upgrade">
-                <costs><cost name="pts" typeId="${COST_TYPE_ID}" value="5"/></costs>
+                <costs><cost name="pts" typeId="${COST_TYPE_ID}" value="9"/></costs>
               </selectionEntry>
               <selectionEntry id="${MACE_ID}" name="Mace" type="upgrade" sortIndex="2">
                 <costs><cost name="pts" typeId="${COST_TYPE_ID}" value="10"/></costs>
@@ -171,12 +176,12 @@ function rowOrder(container) {
     .map(el => el.textContent.trim());
 }
 
-describe('OptionGroup: sortIndex ersetzt die Kostensortierung für getaggte Optionen (Issue 0133, Kriterium 5)', () => {
+describe('OptionGroup: sortIndex ersetzt die Kostensortierung für getaggte Optionen, Katalogreihenfolge für den Rest (Issue 0133, Kriterium 5)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('Vorbedingung gegen den echten Bericht: Mace/Dagger tragen sortIndex, Sword/Axe nicht', () => {
+  it('Vorbedingung gegen den echten Bericht: Mace/Dagger tragen sortIndex, Sword/Axe nicht — und Sword ist billiger als Axe', () => {
     const { capabilities } = renderGroup();
     const capOf = (defId) => {
       for (const [path, cap] of capabilities) {
@@ -188,6 +193,10 @@ describe('OptionGroup: sortIndex ersetzt die Kostensortierung für getaggte Opti
     expect(capOf(DAGGER_ID)?.sortIndex).toBe(1);
     expect(capOf(SWORD_ID)?.sortIndex).toBeNull();
     expect(capOf(AXE_ID)?.sortIndex).toBeNull();
+    // Die Kosten liegen bewusst GEGEN die Katalogreihenfolge: eine
+    // (fehlerhaft) verbliebene Kostensortierung würde Axe vor Sword stellen.
+    expect(capOf(SWORD_ID)?.costs?.[COST_TYPE_ID]).toBe(4);
+    expect(capOf(AXE_ID)?.costs?.[COST_TYPE_ID]).toBe(9);
   });
 
   it('getaggte Optionen (Dagger sortIndex 1, Mace sortIndex 2) erscheinen zuerst, aufsteigend sortiert', () => {
@@ -199,7 +208,7 @@ describe('OptionGroup: sortIndex ersetzt die Kostensortierung für getaggte Opti
     expect(order.slice(0, 2)).toEqual(['Dagger', 'Mace']);
   });
 
-  it('ungetaggte Optionen (Sword, Axe) werden HINTER den getaggten angehängt, weiterhin absteigend nach Kosten (Sword 7 vor Axe 5)', () => {
+  it('ungetaggte Optionen (Sword, Axe) werden HINTER den getaggten angehängt, in Katalogreihenfolge (Sword vor Axe) statt nach Kosten (Axe kostet mehr als Sword)', () => {
     const { container } = renderGroup();
     fireEvent.click(screen.getByText('Weapons'));
 
@@ -208,7 +217,7 @@ describe('OptionGroup: sortIndex ersetzt die Kostensortierung für getaggte Opti
     expect(order.slice(2)).toEqual(['Sword', 'Axe']);
   });
 
-  it('die vollständige Reihenfolge: Dagger, Mace, Sword, Axe (nicht die reine Kosten-Reihenfolge Mace, Sword, Axe, Dagger)', () => {
+  it('die vollständige Reihenfolge: Dagger, Mace, Sword, Axe (nicht die Kosten-Reihenfolge Axe, Sword, Mace, Dagger)', () => {
     const { container } = renderGroup();
     fireEvent.click(screen.getByText('Weapons'));
 
