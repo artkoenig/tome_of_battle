@@ -58,13 +58,19 @@ const THRALL_ID = 'e37b-c827-99ac-b706';
 const STANDARD_FORCE_ID = 'e989-15b8-7eb6-9668';   // <forceEntry name="Standard (VC-AB)">
 const LAHMIA_FORCE_ID = '2102-34f1-c876-98c5';     // <forceEntry name="Clan Lahmia (VC-AB)">
 
-// Die beiden Container-Gruppen des Thralls (Katalog, Zeilen 3500-3866): beide
-// tragen keine eigene Grenze und bekommen deshalb keinen Anker im Bericht.
-const BLOODLINE = 'Bloodline';   // Gruppe 0719-24b8-19d4-c832, verlinkt als 85fb-0691-1ee6-37f8
-const EQUIPMENT = 'Equipment';   // Gruppe 3588-2a1f-2754-0f50
+// Die beiden Container-Gruppen des Thralls: beide tragen keine eigene Grenze
+// und bekommen deshalb keinen Anker im Bericht.
+//
+// `Magic selection` (Gruppe 53e8-0ce2-eaf6-0163, `.cat:21290`) haelt ZWEI
+// Container: `Bloodline` (Link 85fb-0691-1ee6-37f8 -> Gruppe
+// 0719-24b8-19d4-c832, `.cat:21223`) mit fuenf durchweg versteckten
+// `Vampiric Powers`, und `Magic Items` mit den Magie-Gegenstandsgruppen. Die
+// acht Magie-Gruppen der Karte haengen an `Magic Items`, nicht an `Bloodline`.
+const MAGIC_ITEMS = 'Magic Items';   // Gruppe 11e6-e9d4-f6e4-c02d (`.cat:21272`), verlinkt als 14d2-cec2-9b1c-418c
+const EQUIPMENT = 'Equipment';       // Gruppe 3588-2a1f-2754-0f50 (`.cat:3588`)
 
-/** Die acht Magie-Gegenstandsgruppen, die `Bloodline` haelt. */
-const BLOODLINE_MEMBERS = [
+/** Die acht Magie-Gegenstandsgruppen, die `Magic Items` auf dieser Karte haelt. */
+const MAGIC_ITEMS_MEMBERS = [
   'Magic Weapons (VC)',
   'Magic Armour (VC)',
   'Magic Talismans (VC)',
@@ -262,30 +268,30 @@ const sortedNames = (names) => [...names].sort();
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Kriterium 1 — eine Container-Gruppe traegt den Namen, den ihr der Katalog gibt', () => {
-  test('der Abschnitt in "Magic selection", der die acht Magie-Gruppen haelt, heisst "Bloodline"', () => {
+  test('der Abschnitt in "Magic selection", der die acht Magie-Gruppen haelt, heisst "Magic Items"', () => {
     const { container } = renderThrall();
 
     const magicWeapons = sectionByLabel(container, MAGIC_WEAPONS_VC);
     expect(magicWeapons, `Abschnitt "${MAGIC_WEAPONS_VC}" steht auf der Karte`).toBeTruthy();
 
     // Der haltende Abschnitt: der naechste umschliessende — er soll den
-    // Katalognamen der Gruppe 0719-24b8-19d4-c832 tragen.
+    // Katalognamen der Gruppe 11e6-e9d4-f6e4-c02d tragen.
     const holder = enclosingSection(magicWeapons);
     expect(holder, `"${MAGIC_WEAPONS_VC}" haengt in einem Abschnitt`).toBeTruthy();
-    expect(labelOf(holder)).toBe(BLOODLINE);
+    expect(labelOf(holder)).toBe(MAGIC_ITEMS);
 
     // Und er selbst haengt unmittelbar in "Magic selection".
     const magicSelection = enclosingSection(holder);
-    expect(magicSelection, `"${BLOODLINE}" haengt in einem Abschnitt`).toBeTruthy();
+    expect(magicSelection, `"${MAGIC_ITEMS}" haengt in einem Abschnitt`).toBeTruthy();
     expect(labelOf(magicSelection)).toBe(MAGIC_SELECTION);
 
     // Alle acht Mitglieder haengen unmittelbar an ihm.
-    BLOODLINE_MEMBERS.forEach(name => {
+    MAGIC_ITEMS_MEMBERS.forEach(name => {
       const member = sectionByLabel(container, name);
       expect(member, `Abschnitt "${name}" steht auf der Karte`).toBeTruthy();
-      expect(enclosingSection(member), `"${name}" haengt unmittelbar an "${BLOODLINE}"`).toBe(holder);
+      expect(enclosingSection(member), `"${name}" haengt unmittelbar an "${MAGIC_ITEMS}"`).toBe(holder);
     });
-    expect(childSections(holder).map(labelOf).sort()).toEqual([...BLOODLINE_MEMBERS].sort());
+    expect(childSections(holder).map(labelOf).sort()).toEqual([...MAGIC_ITEMS_MEMBERS].sort());
   });
 
   test('der Abschnitt, der "Weapons" haelt, heisst "Equipment" und steht auf oberster Ebene', () => {
@@ -301,14 +307,14 @@ describe('Kriterium 1 — eine Container-Gruppe traegt den Namen, den ihr der Ka
     expect(enclosingSection(holder), `"${EQUIPMENT}" ist nicht verschachtelt`).toBeNull();
   });
 
-  test('Grenzfall: jeder Abschnitt der Thrall-Karte traegt einen Titel — "Bloodline" und "Equipment" je genau einmal', () => {
+  test('Grenzfall: jeder Abschnitt der Thrall-Karte traegt einen Titel — "Magic Items" und "Equipment" je genau einmal', () => {
     const { container } = renderThrall();
 
     const untitled = sectionsOf(container).filter(s => labelOf(s) === '');
     expect(untitled.length, 'Abschnitte ohne Titel auf der Thrall-Karte').toBe(0);
 
     // Wiederholung: der Name entsteht genau einmal, nicht je Mitglied erneut.
-    expect(sectionsByLabel(container, BLOODLINE)).toHaveLength(1);
+    expect(sectionsByLabel(container, MAGIC_ITEMS)).toHaveLength(1);
     expect(sectionsByLabel(container, EQUIPMENT)).toHaveLength(1);
   });
 });
@@ -441,7 +447,7 @@ describe('Kriterium 7 — das Ergebnis von Issue 0131 bleibt bestehen', () => {
 
     const magicWeapons = sectionByLabel(container, MAGIC_WEAPONS_VC);
     expect(magicWeapons).toBeTruthy();
-    // Katalog: Magic selection → Bloodline → Magic Weapons (VC).
+    // Katalog: Magic selection → Magic Items → Magic Weapons (VC).
     expect(ancestorSections(magicWeapons)).toHaveLength(2);
   });
 
