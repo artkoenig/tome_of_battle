@@ -83,11 +83,14 @@ einzelne Bedingung, kein neuer Baustein, keine neue Schnittstelle.
 
 - [x] Kostenbedingung aus `isUnconditionalMandatoryListRule` entfernen,
       Docstring korrigieren.
-- [ ] Sperre der Ankreuz-Checkbox an die Präsenz koppeln (Prüfrunde 1, F1).
-- [ ] Docstring-Satz über den `type=upgrade`-Filter richtigstellen
+- [x] Sperre der Ankreuz-Checkbox an die Präsenz koppeln (Prüfrunde 1, F1).
+- [x] Docstring-Satz über den `type=upgrade`-Filter richtigstellen
       (Prüfrunde 1, F4).
-- [ ] End-zu-End-Beleg für Kriterium 5 in einer **Punkte**-Kostenart
-      (Prüfrunde 1, F2).
+- [x] End-zu-End-Beleg für Kriterium 5 in einer **Punkte**-Kostenart
+      (Prüfrunde 1, F2). Ergebnis: die Tests waren sofort grün — die Lücke war
+      reine Abdeckung, kein Fehler.
+- [x] Hinweistext `editor.listRules.mandatoryTooltip` richtigstellen (siehe
+      Entscheidung unten).
 
 ## Decisions
 
@@ -115,6 +118,16 @@ einzelne Bedingung, kein neuer Baustein, keine neue Schnittstelle.
   fehlende Pflichtregel muss von Hand behebbar bleiben. Trifft
   zwangsläufig auch die kostenfreien Pflichtregeln aus Issue 0138 mit; ein
   Sonderweg nur für kostenbehaftete wäre nicht begründbar.
+- **Der Hinweistext `editor.listRules.mandatoryTooltip` wird umformuliert.**
+  Er lautete „Pflichtregel dieser Liste — automatisch gesetzt und nicht
+  abwählbar." und wurde durch die Präsenz-Kopplung falsch: an einer fehlenden
+  Pflichtregel ist er weder automatisch gesetzt noch nicht abwählbar. Neu:
+  „… — die Armee muss sie führen. Einmal gesetzt, ist sie nicht mehr
+  abwählbar." (englisch entsprechend). Als Standard entschieden, nicht vom
+  Menschen bestätigt: es ist eine von diesem Diff selbst falsch gemachte
+  Aussage, und Issue 0138 Kriterium 5 verlangt nur „einen sichtbaren Hinweis",
+  keinen bestimmten Wortlaut. Beide Testdateien lesen den Text über `t(...)`,
+  keine Zusicherung hängt am Wortlaut.
 
 ## Log
 
@@ -169,8 +182,21 @@ einzelne Bedingung, kein neuer Baustein, keine neue Schnittstelle.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Der Eintrag „Who Is the general? …"
+  wird in einem neu angelegten Kontingent ohne Zutun gesetzt; das ist genau
+  das, was der Mensch verlangt hat. Was darüber hinausging — die Entsperrung
+  der Ankreuz-Checkbox — war nicht gewünscht, sondern nötig, damit dieselbe
+  Änderung nicht anderswo einen Fehler unbehebbar macht.
+- **What surprised me?** Dass die Sperre aus Issue 0138 an der Pflichtigkeit
+  hing statt an der Präsenz. Sie hätte einem Bestandsroster die Regel als
+  gesperrtes, leeres Kästchen hingestellt — genau der Population, die der
+  Mensch bewusst nicht nachrüsten lassen wollte.
+- **What am I assuming without having verified it?** Den gemessenen Blast
+  Radius. Er stammt aus einem Scan der zur Laufzeit geholten Katalogdateien
+  und ist aus dem Repository heraus **nicht** nachprüfbar (ADR 0014). Der
+  Reviewer hat gegengeprüft, was prüfbar ist: über alle eingefrorenen
+  Fixture-Kataloge qualifiziert sich kein Eintrag neu — vereinbar mit der
+  Behauptung, aber kein Beleg für sie. Zweitens nehme ich an, dass der
+  neue Hinweistext dem Menschen passt; er ist als Standard gesetzt.
 
 ## Retro
