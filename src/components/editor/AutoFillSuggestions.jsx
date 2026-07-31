@@ -10,7 +10,10 @@ import { useTranslation } from '../../i18n/useTranslation';
  * Das Panel beantwortet genau eine Frage: **was passt noch in die
  * Restpunkte?** Es erscheint erst, wenn die Liste eine Punktgrenze hat und
  * mindestens {@link MIN_REMAINING_POINTS} Punkte zu ihr fehlen — darunter
- * lohnt kein Vorschlag —, und es nennt die verbleibende Summe.
+ * lohnt kein Vorschlag —, und es nennt die verbleibende Summe. Sichtbar ist
+ * es dann **immer**, auch wenn gerade nichts hineinpasst (dann steht statt
+ * der Liste ein Hinweis): verschwände es still, wäre „nichts passt mehr" von
+ * „alle Punkte verplant" nicht zu unterscheiden.
  *
  * Vorgeschlagen wird allein, was der Bericht als **wählbar** führt: ein
  * Angebots-Anker (`offerAnchor`) oder ein belegter Slot mit verbleibendem
@@ -140,7 +143,13 @@ export default function AutoFillSuggestions({
     return capabilities.get(framePath)?.name ?? null;
   };
 
-  if (suggestions.length === 0) return null;
+  // Sichtbar allein an der Lücke: fehlen genug Punkte, steht das Panel da —
+  // auch wenn gerade nichts hineinpasst. Ein stilles Verschwinden wäre von
+  // „alles erledigt" nicht zu unterscheiden.
+  const isOpen = costLimitTypeId !== null
+    && remainingPoints !== null
+    && remainingPoints >= MIN_REMAINING_POINTS;
+  if (!isOpen) return null;
 
   const hasMore = suggestions.length > VISIBLE_SUGGESTION_COUNT;
   const visible = showAll || !hasMore ? suggestions : suggestions.slice(0, VISIBLE_SUGGESTION_COUNT);
@@ -154,6 +163,10 @@ export default function AutoFillSuggestions({
           {t('editor.autofill.remaining', { points: remainingPoints, costType: costTypeLabel })}
         </span>
       </div>
+
+      {suggestions.length === 0 && (
+        <p className="text-dim no-margin">{t('editor.autofill.nothingFits')}</p>
+      )}
 
       <div className="autofill-upgrade-list">
         {visible.map((suggestion) => {

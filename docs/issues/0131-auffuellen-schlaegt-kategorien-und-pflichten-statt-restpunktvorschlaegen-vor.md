@@ -87,6 +87,9 @@ Acceptance criteria:
   („ausschließlich, was der Bericht als wählbar führt") ist die schärfere
   Regel, Kriterium 7 ihr Sonderfall. *(Default, unanswered; dieselbe
   Rückfrage.)*
+- **Keine Versionsanhebung in diesem PR.** Vorgeschlagen war `1.10.0`
+  (Minor: das Panel kann etwas Neues). *(Mensch, Auswahl „Unverändert
+  lassen".)*
 - **Acht Vorschläge sichtbar, Rest aufklappbar.** Schon eine Liste mit zwei
   Auswahlen liefert 43 Kandidaten (gemessen an `07-one-tyrant.ros`); ohne
   Deckel wäre das Panel unlesbar. *(Default, unanswered.)*
@@ -113,6 +116,44 @@ Acceptance criteria:
   eine Kategorie von einem Eintrag unterscheidet — der eigene Kommentar der
   Komponente („ein Kategorie- oder Gruppen-Anker benennt keinen aushebbaren
   Eintrag") ist damit nicht durchgesetzt.
+
+- 2026-07-31: Umgesetzt. Das Panel liest jetzt die **wählbaren** Slots
+  (`offerAnchor`, `occupied` mit Restspielraum) statt der Pflicht-Signale,
+  filtert auf Kosten in der Limit-Kostenart (> 0, ≤ Restsumme), sortiert
+  absteigend und deckelt bei acht. `remainingPoints` entsteht in
+  `RosterEditor.jsx` und läuft über `ForceEditorSection.jsx` ins Panel. Der
+  Herkunftsfilter des Aushebe-Dialogs ist als `foreignCatalogueIdsOf` nach
+  `src/roster/catalogResolver.js` gezogen und wird von beiden Aufrufstellen
+  benutzt.
+- 2026-07-31: **Prüfrunde 1** (frischer Kontext, `origin/main..3b17a7f`),
+  6 Befunde. Fakten der Runde: `npm test` exit 0 (251 Dateien / 2649 Tests
+  plus Puppeteer-E2E), `lint`/`typecheck`/`depcruise` exit 0, `knip`
+  warn-only mit ausschließlich vorbestehenden Meldungen.
+  - *F1 (Kriterien 1–3): behoben.* Die Lücke wird in `RosterEditor.jsx`
+    gerechnet und durchgereicht, und beides war ungeprüft — beide Stellen
+    ließen sich brechen, ohne einen Test rot zu machen. Testfälle nachgefordert.
+  - *F2 (Kriterium 3): behoben.* Das Panel verschwand auch bei großer Lücke,
+    sobald nichts hineinpasste. Es erscheint jetzt immer ab der Schwelle;
+    passt nichts, steht ein Hinweis statt der Liste
+    (`editor.autofill.nothingFits`).
+  - *F3 (kein Kriterium): abgelegt* als Issue 0132 — dieselbe Einheit
+    erzeugt je Auswahl eine eigene Zeile.
+  - *F4 (kein Kriterium): behoben.* Der Eintrag in Issue 0123 behauptete
+    erfüllte Kriterien, die dort erst nach einer Entscheidung des Menschen
+    gelten; jetzt hält er nur fest, welche Aussage dieser Umbau falsch macht.
+  - *F5 (kein Kriterium): behoben* mit diesem Eintrag, Checkpoint 2 und dem
+    Versionsvorschlag.
+  - *F6 (kein Kriterium): behoben*, weil es die eigene Stilvorlage dieses
+    Panels betrifft (ADR-0004 §6): `.autofill-remaining` hat jetzt eine Regel,
+    die seit dem 0121-Cutover toten Selektoren der alten Panel-Struktur sind
+    weg.
+  - *Ohne Reproduktion gemeldet und damit verworfen:* ein möglicher
+    Herkunftsfilter-Kurzschluss, wenn weder `forceCatalogueId` noch
+    `activeCatalogue` gesetzt ist. Die Prüfung fand selbst keinen Pfad dorthin
+    (`createRoster.js` setzt die Katalog-Id immer).
+  - *Nebenbefund, mitgenommen:* `docs/battlescribe-data-format.md` nannte das
+    Panel unter den Stellen, die effektive Werte selbst rechnen — seit dem
+    Cutover falsch, und dieser Umbau macht es endgültig falsch.
 
 ## Checkpoints
 

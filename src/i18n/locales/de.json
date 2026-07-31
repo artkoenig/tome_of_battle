@@ -173,6 +173,7 @@
   "editor.autofill.title": "Auffüllen",
   "editor.autofill.remaining": "Noch {points} {costType} frei",
   "editor.autofill.forUnit": "für {unit}",
+  "editor.autofill.nothingFits": "Nichts passt mehr in die Restpunkte",
   "editor.autofill.showAll": "Alle {count} anzeigen",
   "editor.autofill.showLess": "Weniger anzeigen",
   "editor.optionGroup.selection": "Auswahl: {summary}",
