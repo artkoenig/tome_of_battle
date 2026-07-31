@@ -29,6 +29,15 @@ import { isUnconditionalMandatoryListRule, findMissingMandatoryListRuleSelection
  * `selectionEntryGroups` follow-on choice), and "General" (Warhammer Fantasy
  * Battles (6th definitive edition).gst:1191 — only max constraints, no min at
  * all, plus non-zero Casting/Dispel Dice costs).
+ *
+ * SUPERSEDED IN PART BY ISSUE 0140: Issue 0138's criterion 1 also demanded
+ * cost-freeness across every cost type, and its criterion 2 excluded "ein
+ * kostenpflichtiger Wurzeleintrag" for that reason. Issue 0140 criterion 1
+ * removes that condition outright — costs no longer bear on the predicate at
+ * all. The two cases that pinned the old cost rejection are restated below
+ * against their unchanged fixtures; the Issue-0140 describe blocks at the end of
+ * this file carry the full new coverage. Every other feature of the predicate is
+ * untouched (Issue 0140 criterion 3).
  */
 
 describe('isUnconditionalMandatoryListRule', () => {
@@ -137,16 +146,21 @@ describe('isUnconditionalMandatoryListRule', () => {
     expect(isUnconditionalMandatoryListRule(entry)).toBe(false);
   });
 
-  it('AC2: is false for a costed root entry, even container-free with min>=1 scope=force', () => {
+  // The two cases below were written for Issue 0138's AC2 clause "ein
+  // kostenpflichtiger Wurzeleintrag wird nicht automatisch gesetzt". Issue 0140
+  // criterion 1 supersedes exactly that clause — cost-freeness is no longer part
+  // of the predicate at all ("Die Kostenbedingung fällt ersatzlos weg") — so both
+  // now pin the opposite outcome on their unchanged fixtures.
+  it('Issue 0140 AC1: is true for a costed root entry that is container-free with min>=1 scope=force', () => {
     const entry = lawsOfUndeath();
     entry.costs = [{ typeId: 'pts', value: 120 }];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(false);
+    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
   });
 
-  it('AC1 cost boundary: a cost of exactly 0 in one cost type but non-zero in another is still "costed", not eligible', () => {
+  it('Issue 0140 AC1 cost boundary: exactly 0 in one cost type and non-zero in another is eligible too', () => {
     const entry = lawsOfUndeath();
     entry.costs = [{ typeId: 'pts', value: 0 }, { typeId: 'castingDice', value: 1 }];
-    expect(isUnconditionalMandatoryListRule(entry)).toBe(false);
+    expect(isUnconditionalMandatoryListRule(entry)).toBe(true);
   });
 
   it('is true when every declared cost type is exactly 0', () => {
@@ -212,8 +226,10 @@ describe('findMissingMandatoryListRuleSelections', () => {
     selectionEntryGroups: [{ id: 'grp-1', name: 'Vampiric Bloodline', selectionEntries: [] }],
   };
 
-  // AC2 negative — a costed root entry with its own equipment sub-options
-  // (the "Ogre Bulls"-style shape the issue calls out).
+  // AC2 negative — a root entry with its own equipment sub-options (the
+  // "Ogre Bulls"-style shape the issue calls out). Its `pts` cost is incidental
+  // and, since Issue 0140 criterion 1, no longer a reason to exclude it: the
+  // sub-options alone keep it out.
   const ogreBulls = {
     id: 'ogre-bulls-rule',
     name: 'Ogre Bulls',
@@ -271,7 +287,7 @@ describe('findMissingMandatoryListRuleSelections', () => {
     expect(missing).toEqual([]);
   });
 
-  it('AC2: excludes a costed root entry with equipment sub-options, e.g. Ogre Bulls', () => {
+  it('AC2: excludes a root entry with equipment sub-options, e.g. Ogre Bulls', () => {
     const system = buildSystem([ogreBulls]);
     const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
     expect(missing).toEqual([]);
