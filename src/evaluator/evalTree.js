@@ -369,15 +369,22 @@ function countInstances(fromNode, defId) {
  * Grenz- und Ziel-Id, Issue 0093).
  *
  * **Katalog-Bezugsrahmen** (`catalogueScope`, Issue 0098): eine eigenstaendige
- * Wurzel-Definition (`ENTRY`/`FORCE`) synthetisiert ihr Pflicht-Phantom nur,
- * wenn ihre Herkunft zum Katalog-Fussabdruck der Referenz-Kataloge gehoert
- * ({@link isInCatalogueScope}) — fuer den ROSTER-Rahmen die Kataloge
- * **aller** im Roster tatsaechlich vertretenen Kontingente, fuer den
- * FORCE-Rahmen allein der Katalog **dieses** Kontingents. Ein Wurzel-
- * **`entryLink`** ist davon ausgenommen (wie beim Angebot, `offer.js`): er
- * verweist auf eine geteilte, oft in einer Bibliothek liegende Definition
- * und ist der etablierte Weg katalogübergreifender Inhalte, unabhaengig vom
- * deklarierenden Katalog.
+ * Wurzel-Definition (`ENTRY`/`FORCE`/`ENTRY_LINK`) synthetisiert ihr
+ * Pflicht-Phantom nur, wenn ihre Herkunft zum Katalog-Fussabdruck der
+ * Referenz-Kataloge gehoert ({@link isInCatalogueScope}) — fuer den
+ * ROSTER-Rahmen die Kataloge **aller** im Roster tatsaechlich vertretenen
+ * Kontingente, fuer den FORCE-Rahmen allein der Katalog **dieses**
+ * Kontingents. Ein Wurzel-**`entryLink`** wird hier bewusst **nicht** wie
+ * beim Angebot (`offer.js`) ausgenommen (Issue 0130): waehrend ein
+ * unbedingtes Angebot ueber einen fremden Link legitim katalogübergreifend
+ * bleibt (die geteilte Zieleinheit ist ueberall wählbar), haengt eine eigene
+ * `min`-Constraint **am Link selbst** — sie gehoert zum deklarierenden
+ * Katalog, nicht zum Ziel. Ein Katalog A, der seinen eigenen Wurzel-Link auf
+ * eine geteilte Bibliotheksdefinition mit eigener Pflicht versieht (z. B.
+ * "Ogre Bulls" in Ogre Kingdoms), darf diese Pflicht nicht in einem Roster
+ * erzwingen, dessen Kontingente ausschliesslich aus einem anderen Katalog B
+ * stammen — selbst wenn B einen eigenen, constraint-losen Link auf dasselbe
+ * Ziel deklariert (dasselbe Angebots-Idiom, ohne die Pflicht).
  *
  * Eine **`CATEGORY`**-Definition braucht eine eigene, engere Ausnahme: sie
  * wird nie selbst instanziiert, sondern nur ueber einen `categoryLink` an
@@ -455,8 +462,7 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
   for (const def of definitions) {
     const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
     if (hasMinLimit(limits, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0
-        && (def.kind === DefinitionKind.ENTRY_LINK
-          || (def.kind === DefinitionKind.CATEGORY && rosterLinkedCategoryIds.has(def.id))
+        && ((def.kind === DefinitionKind.CATEGORY && rosterLinkedCategoryIds.has(def.id))
           || isInCatalogueScope(def.id, rosterReferenceCatalogueIds, catalogueScope))) {
       attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
     }
@@ -474,8 +480,7 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
       if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
       const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
       if (hasMinLimit(limits, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0
-          && (def.kind === DefinitionKind.ENTRY_LINK
-            || (def.kind === DefinitionKind.CATEGORY && forceLinkedCategoryIds.has(def.id))
+          && ((def.kind === DefinitionKind.CATEGORY && forceLinkedCategoryIds.has(def.id))
             || isInCatalogueScope(def.id, forceReferenceCatalogueIds, catalogueScope))) {
         attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
       }

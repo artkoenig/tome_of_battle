@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "root-entrylink-mandatory-catalogue-scope",
+  "description": "Ein root-level entryLink lebt strukturell in seinem eigenen Katalog: Ogre Kingdoms (731d-5b13-2a92-5427) deklariert unter seinem eigenen Katalog-Wurzel-entryLink 'Ogre Bulls' (d82e-111e-89b9-2be1, targetId 7754-8b3d-df99-d2d5 in der Mercenaries-Bibliothek) eine armeeweite Pflicht: constraint 32ed-26da-3f27-5c04, Rohwert min 0, per modifier set auf 1 gehoben, wenn die Force NICHT eine Instanz der Ironskin-Tribe-Variante (forceEntry 8711-ed16-2a44-7251) ist - das trifft auf die Force 'Standard (OK-AB)' 729f-9246-5cd3-5044 zu. Vampire Counts (4d73-5ab0-9020-403c) und Orcs and Goblins (4049-c46d-7f80-44fb) deklarieren je ihren EIGENEN, separaten Katalog-Wurzel-entryLink auf dasselbe Ziel (21f4-c979-396b-c02a bzw. 0612-9f28-e986-2bce) - beide ohne eigene constraints, also rein optionale Soeldner-Angebote. Keines der drei Armeebuecher verlinkt per catalogueLink auf ein anderes Armeebuch (nur je auf Mercenaries) - der Ogre-Kingdoms-eigene entryLink samt seiner Pflicht ist in einem Vampire-Counts- oder Orcs-and-Goblins-Kontingent daher strukturell gar nicht erreichbar. Die Pflicht 32ed-26da-3f27-5c04 darf deshalb NUR in einem Ogre-Kingdoms-Standard-Kontingent feuern (Ist 0, Grenze 1 ohne die Einheit; erfuellt mit ihr) und MUSS in einem Vampire-Counts- oder Orcs-and-Goblins-Standard-Kontingent abwesend bleiben, selbst wenn dort ebenfalls keine Ogre-Bulls-Einheit steht.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-ogre-standard-no-bulls.ros",
+      "description": "Ogre-Kingdoms-Kontingent 'Standard (OK-AB)' (729f-9246-5cd3-5044, deklariert im Katalog 731d-5b13-2a92-5427) ohne jede Selektion - insbesondere ohne 'Ogre Bulls'. Die per notInstanceOf(Ironskin Tribe) gehobene Pflicht des eigenen Katalog-Wurzel-entryLinks (32ed-26da-3f27-5c04) ist unerfuellt: Ist 0, Grenze 1. Das ist die bereits korrekt funktionierende Regressionswache - kein Bug, sondern die Basis, gegen die 03/04 kontrastieren.",
+      "expect": {
+        "firing": [
+          { "limitId": "32ed-26da-3f27-5c04", "actual": 0, "bound": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-ogre-standard-with-bulls.ros",
+      "description": "Dasselbe Ogre-Kingdoms-Kontingent, jetzt MIT einer 'Ogre Bulls'-Einheit (direkte entryId 7754-8b3d-df99-d2d5, drei 'Bulls'-Modelle, die eigene Mindestgroesse der Einheit erfuellend). Die Pflicht 32ed-26da-3f27-5c04 ist erfuellt (Ist 1, Grenze 1) und feuert nicht - positive Kontrolle, dass die Pflicht ueberhaupt erfuellbar und korrekt aufgeloest ist.",
+      "expect": {
+        "firing": [],
+        "absent": ["32ed-26da-3f27-5c04"]
+      }
+    },
+    {
+      "file": "rosters/03-vampire-standard-no-bulls.ros",
+      "description": "Vampire-Counts-Kontingent 'Standard (VC-AB)' (e989-15b8-7eb6-9668, deklariert im Katalog 4d73-5ab0-9020-403c) ohne jede Selektion und ohne jeden Bezug zum Ogre-Kingdoms-eigenen entryLink. Die Kernaussage des Szenarios: die NUR in Ogre Kingdoms deklarierte Pflicht 32ed-26da-3f27-5c04 darf hier NICHT feuern - dieses Kontingent gehoert zu einem anderen Armeebuch, das seinen eigenen, constraint-losen entryLink (21f4-c979-396b-c02a) auf dasselbe Ziel deklariert, aber keine Pflicht daran haengt.",
+      "expect": {
+        "firing": [],
+        "absent": ["32ed-26da-3f27-5c04"]
+      }
+    },
+    {
+      "file": "rosters/04-orcs-standard-no-bulls.ros",
+      "description": "Orcs-and-Goblins-Kontingent 'Standard (OG-AB)' (2bfa-e64a-7123-895f, deklariert im Katalog 4049-c46d-7f80-44fb) ohne jede Selektion, als zweites unabhaengiges Armeebuch neben Vampire Counts. Wie 03: die NUR in Ogre Kingdoms deklarierte Pflicht 32ed-26da-3f27-5c04 darf auch hier NICHT feuern - dieses Armeebuch hat wiederum seinen eigenen, constraint-losen entryLink (0612-9f28-e986-2bce) auf dasselbe Ziel. Ein zweites, unabhaengiges Armeebuch schuetzt davor, dass ein Fix zufaellig nur fuer Vampire Counts wirkt.",
+      "expect": {
+        "firing": [],
+        "absent": ["32ed-26da-3f27-5c04"]
+      }
+    }
+  ]
+}

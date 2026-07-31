@@ -108,7 +108,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`primary-catalogue-scope`](testing/primary-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 10 |
 | [`unit-scope-per-model-cost`](testing/unit-scope-per-model-cost/) | Definitive Ogre + Mercenaries | 2 |
 | [`ancestor-scope-instance-of`](testing/ancestor-scope-instance-of/) | Definitive VC + Mercenaries | 2 |
-| **Summe** | | **130** |
+| [`root-entrylink-mandatory-catalogue-scope`](testing/root-entrylink-mandatory-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 4 |
+| **Summe** | | **134** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -598,3 +599,24 @@ Rostern darf keine `unresolvedScope`-Diagnose für `ancestor` entstehen.
 | :--- | :--- | :--- |
 | 01 | Swain (Kategorie „Characters") → Commander → 2 Tiranoc Chariots | Der Treffer liegt erst beim **Großvater**: als Charakter-Reittier sinkt die Chariot-Obergrenze auf 1 — sie feuert (Ist 2 gegen 1), die Chariot-Pflicht entfällt |
 | 02 | Swain → Noble → 1 Steed of Slaanesh, kein Vorfahre trägt „Slaanesh [DARK ELVES]" | Die Bedingung hält nicht: das Basis-Maximum 0 des Steed-Verweises bleibt stehen und feuert (Ist 1 gegen 0) |
+
+## `root-entrylink-mandatory-catalogue-scope`
+
+Prüft, dass eine Pflicht, die **ein** Armeebuch an **seinem eigenen**
+Katalog-Wurzel-`entryLink` deklariert, nur innerhalb dieses Armeebuchs gilt —
+auch wenn zwei andere, gleichzeitig geladene Armeebücher unabhängig voneinander
+ihren **eigenen** (constraint-losen) Wurzel-`entryLink` auf **dasselbe** geteilte
+Ziel deklarieren. Beobachtet an „Ogre Bulls" (Mercenaries-Bibliothek): Ogre
+Kingdoms verlangt armeeweit mindestens eine Einheit davon (außer in der
+Ironskin-Tribe-Variante); Vampire Counts und Orcs and Goblins bieten dieselbe
+Einheit nur optional an. Keines der drei Armeebücher verlinkt per
+`catalogueLink` auf ein anderes — nur je auf Mercenaries —, weshalb der
+Ogre-Kingdoms-eigene `entryLink` in einem fremden Kontingent strukturell gar
+nicht erreichbar ist.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ogre-Kontingent ohne Ogre Bulls | Die Pflicht feuert (Ist 0 gegen 1) — Regressionswache, kein Bug |
+| 02 | Ogre-Kontingent mit einer Ogre-Bulls-Einheit | Positive Kontrolle: die Pflicht ist erfüllt — keine Verletzung |
+| 03 | Vampire-Counts-Kontingent ohne Ogre Bulls, ohne jeden Bezug zum Ogre-Kingdoms-`entryLink` | Die eigentlich geprüfte Regel: die nur in Ogre Kingdoms deklarierte Pflicht darf hier **nicht** feuern |
+| 04 | Orcs-and-Goblins-Kontingent ohne Ogre Bulls, ohne jeden Bezug zum Ogre-Kingdoms-`entryLink` | Wie 03, an einem zweiten unabhängigen Armeebuch — schützt vor einem Fix, der zufällig nur für Vampire Counts wirkt |
