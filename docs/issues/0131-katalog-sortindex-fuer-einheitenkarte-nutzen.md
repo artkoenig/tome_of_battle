@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/katalog-sortierung-attribut-b3xm2k
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/186
 ---
 
 # Katalog-Attribut sortIndex für Sektions-/Optionsreihenfolge auf der Einheitenkarte nutzen
