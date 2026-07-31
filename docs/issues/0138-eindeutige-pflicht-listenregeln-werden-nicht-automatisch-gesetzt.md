@@ -1,7 +1,7 @@
 ---
 status: active
 branch: claude/vampire-list-laws-undeath-3ooflh
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/193
 ---
 
 # Eindeutige Pflicht-Listenregeln (min≥1) werden nicht automatisch gesetzt
