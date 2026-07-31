@@ -265,7 +265,7 @@ Acceptance criteria:
     sind. Betrifft keines der sechs Kriterien (die sprechen nur von
     Reihenfolge) und bleibt nach der Kriterium-1-Korrektur unveraendert
     reproduzierbar (Anker-Erzeugung selbst ist unangetastet). Als eigenes
-    Issue **0131** archiviert, nicht in diesem Diff mitgefixt.
+    Issue **0132** archiviert, nicht in diesem Diff mitgefixt.
   - Vierter Punkt (keine Tabellenzeile, kein Defekt): die Korrektur von
     `toBeNull()` zu `toBeUndefined()` in `report.sortIndex.test.js` wurde
     unabhaengig gegen `report.sourceId.test.js` geprueft und als legitime
@@ -302,7 +302,7 @@ Acceptance criteria:
     `sortIndex=""` war gepinnt, nicht `sortIndex="   "`). **Geschlossen:** ein
     Testfall in `catalogReader.sortIndex.test.js` ergaenzt; gegen den
     zurueckgedrehten Wächter (nur `raw === ''`) faellt er wie erwartet.
-  - Issue 0131 wurde unabhaengig nachgestellt und als akkurat beschrieben und
+  - Issue 0132 wurde unabhaengig nachgestellt und als akkurat beschrieben und
     zu Recht nicht in diesem Diff mitgefixt bestaetigt.
 
   Trend sinkt (3 → 2), beide verbleibenden Punkte sind Testluecken um bereits
@@ -343,7 +343,7 @@ Acceptance criteria:
   dass die Korrektur selbst zunächst nur von Hand verifiziert war (die volle
   Suite blieb grün, auch mit zurückgedrehter Korrektur), bis Runde 2 das
   benannte und ich die fehlenden Regressionstests ergänzte.
-- **Was wird ungeprüft angenommen?** Dass Issue 0131 (die separat archivierte
+- **Was wird ungeprüft angenommen?** Dass Issue 0132 (die separat archivierte
   leere-Sektion-Regression) tatsächlich zeitnah aufgegriffen wird — es bleibt
   vorerst unbehoben im Hauptzweig, weil es keines der sechs
   Reihenfolge-Kriterien dieses Issues verletzt.

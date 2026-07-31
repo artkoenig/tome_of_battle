@@ -1,5 +1,5 @@
 /**
- * Issue 0130, Kriterien 1-2 — der XML-Leser (`catalogReader.js`) liest das
+ * Issue 0131, Kriterien 1-2 — der XML-Leser (`catalogReader.js`) liest das
  * katalogweite Community-Attribut `sortIndex` an `selectionEntry`,
  * `selectionEntryGroup` und `entryLink` (nicht Teil der vendored
  * `Catalogue.xsd`, siehe `docs/battlescribe-data-format.md`). Es ist rein
@@ -37,7 +37,7 @@ function catalogueWithEntryChildren(entryAttributes, entryChildrenXml = '') {
     </catalogue>`;
 }
 
-describe('parseCatalogue: sortIndex an selectionEntry (Issue 0130, Kriterium 1)', () => {
+describe('parseCatalogue: sortIndex an selectionEntry (Issue 0131, Kriterium 1)', () => {
   it('liest ein vorhandenes sortIndex als Zahl, nicht als String', () => {
     const xml = catalogueWithEntryChildren('sortIndex="4"');
 
@@ -94,7 +94,7 @@ describe('parseCatalogue: sortIndex an selectionEntry (Issue 0130, Kriterium 1)'
   });
 });
 
-describe('parseCatalogue: sortIndex an selectionEntryGroup (Issue 0130, Kriterium 1)', () => {
+describe('parseCatalogue: sortIndex an selectionEntryGroup (Issue 0131, Kriterium 1)', () => {
   it('liest ein vorhandenes sortIndex einer Gruppe als Zahl', () => {
     const xml = `<?xml version="1.0"?>
       <catalogue id="cat" name="Cat">
@@ -123,7 +123,7 @@ describe('parseCatalogue: sortIndex an selectionEntryGroup (Issue 0130, Kriteriu
   });
 });
 
-describe('parseCatalogue: sortIndex an entryLink (Issue 0130, Kriterium 1)', () => {
+describe('parseCatalogue: sortIndex an entryLink (Issue 0131, Kriterium 1)', () => {
   it('liest ein vorhandenes sortIndex eines Verweises als Zahl', () => {
     const xml = `<?xml version="1.0"?>
       <catalogue id="cat" name="Cat">

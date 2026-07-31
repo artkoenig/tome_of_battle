@@ -1,5 +1,5 @@
 /**
- * Issue 0130, Kriterium 1 — `sortIndex` wird von `catalogReader.js` gelesen
+ * Issue 0131, Kriterium 1 — `sortIndex` wird von `catalogReader.js` gelesen
  * und als rein deskriptives Datenfeld (kein Gültigkeits-Urteil) durch
  * `evalTree.js`/`report.js` bis auf die `capabilities`/Slot-Objekte
  * durchgereicht, die `childSlotsOf` (`src/evaluation/slotLookups.js`) liefert.
@@ -104,7 +104,7 @@ function slotOf(built, defId) {
   return undefined;
 }
 
-describe('SlotCapability.sortIndex: durchgereichtes Katalogattribut (Issue 0130, Kriterium 1)', () => {
+describe('SlotCapability.sortIndex: durchgereichtes Katalogattribut (Issue 0131, Kriterium 1)', () => {
   it('ein selectionEntry-Slot mit sortIndex trägt den Wert als Zahl im Fähigkeitsdatensatz', () => {
     const built = report();
 

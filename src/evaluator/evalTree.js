@@ -375,7 +375,7 @@ function countInstances(fromNode, defId) {
  * ROSTER-Rahmen die Kataloge **aller** im Roster tatsaechlich vertretenen
  * Kontingente, fuer den FORCE-Rahmen allein der Katalog **dieses**
  * Kontingents. Ein Wurzel-**`entryLink`** wird hier bewusst **nicht** wie
- * beim Angebot (`offer.js`) ausgenommen (Issue 0130): waehrend ein
+ * beim Angebot (`offer.js`) ausgenommen (Issue 0131): waehrend ein
  * unbedingtes Angebot ueber einen fremden Link legitim katalogübergreifend
  * bleibt (die geteilte Zieleinheit ist ueberall wählbar), haengt eine eigene
  * `min`-Constraint **am Link selbst** — sie gehoert zum deklarierenden
@@ -674,7 +674,7 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
   }
 }
 
-/** Ob eine Definition ein deklariertes `sortIndex` traegt (Issue 0130). */
+/** Ob eine Definition ein deklariertes `sortIndex` traegt (Issue 0131). */
 function hasSortIndex(def) {
   return def.sortIndex !== null && def.sortIndex !== undefined;
 }
@@ -703,7 +703,7 @@ function hasSortIndex(def) {
  * eigene Grenzen traegt. So entscheidet die Dokumentreihenfolge der Geschwister
  * nie, ob eine Link-Grenze ausgewertet wird.
  *
- * Ein `sortIndex` ohne eigene Grenzen (Issue 0130) loest ebenfalls einen Anker
+ * Ein `sortIndex` ohne eigene Grenzen (Issue 0131) loest ebenfalls einen Anker
  * aus — sonst waere der deskriptive Wert einer grenzenlosen Gruppe aus
  * `capabilities` nicht erreichbar ({@link ../evaluator/report.js}) —, aber
  * **`hasLimits: false`**: {@link synthesizeGroupAnchors} annotiert dessen
@@ -809,7 +809,7 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
     for (const { def: groupDef, ownLimitsOnly, hasLimits } of groupDefinitionsWithLimits(ownerDef)) {
       attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly);
       // Ein Anker fuer ein rein deskriptives sortIndex (kein `hasLimits`,
-      // Issue 0130) zaehlt seine Member nie mit: sonst machte ein
+      // Issue 0131) zaehlt seine Member nie mit: sonst machte ein
       // Anzeige-Attribut eine bislang grenzenlose Gruppe zaehlbar und
       // veraenderte damit Bedingungen/Modifier andernorts, die per `childId`
       // auf ihre Id verweisen.

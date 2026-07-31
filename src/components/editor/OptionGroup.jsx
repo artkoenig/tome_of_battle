@@ -161,7 +161,7 @@ export default function OptionGroupComponent({
           {rows
             .slice()
             // sortIndex ersetzt die Kostensortierung fuer getaggte Optionen
-            // (aufsteigend, Issue 0130, Kriterium 5); der ungetaggte Rest bleibt
+            // (aufsteigend, Issue 0131, Kriterium 5); der ungetaggte Rest bleibt
             // untereinander absteigend nach Kosten sortiert.
             .sort((a, b) => {
               const aIdx = a.capability.sortIndex;

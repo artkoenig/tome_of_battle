@@ -1,5 +1,5 @@
 /**
- * Issue 0130, Review-Runde 1/2 — ein `sortIndex` ohne eigene Grenzen loest in
+ * Issue 0131, Review-Runde 1/2 — ein `sortIndex` ohne eigene Grenzen loest in
  * `groupDefinitionsWithLimits`/`synthesizeGroupAnchors` (`evalTree.js`) einen
  * Gruppen-Anker aus, damit die Oberflaeche den Wert lesen kann. Das darf aber
  * nie ein Gueltigkeits-Urteil veraendern: eine grenzenlose Gruppe darf durch
@@ -49,7 +49,7 @@ function evaluate(catalogXml, roster) {
  */
 function catalogXml({ groupConstraintsXml = '', groupSortIndexAttr = '' }) {
   return `<?xml version="1.0" encoding="utf-8"?>
-    <catalogue id="cat-0130-anchor" name="SortIndex Group Anchor Catalogue">
+    <catalogue id="cat-0131-anchor" name="SortIndex Group Anchor Catalogue">
       <forceEntries><forceEntry id="${FORCE_DEF_ID}" name="Main Force"/></forceEntries>
       <selectionEntries>
         <selectionEntry id="${WARRIOR_DEF_ID}" name="Warrior" type="unit">
@@ -97,7 +97,7 @@ function maxWarriorsViolationCount(report) {
   return report.violations.filter(message => message.limitId === REFERRING_LIMIT_ID).length;
 }
 
-describe('Ein sortIndex ohne eigene Grenzen zaehlt die Gruppe nicht mit (Issue 0130)', () => {
+describe('Ein sortIndex ohne eigene Grenzen zaehlt die Gruppe nicht mit (Issue 0131)', () => {
   it('grenzenlose Gruppe ohne sortIndex: die per childId verweisende Bedingung feuert nie, max-warriors bleibt scharf', () => {
     const report = evaluate(catalogXml({}), rosterWithTwoWarriorsEachInGroup());
 
