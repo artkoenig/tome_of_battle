@@ -185,11 +185,12 @@ export function toEvaluatorRoster(roster) {
       children: toChildren(force.selections),
     };
     // Das Armeebuch des Kontingents geht nur mit, wenn das App-Kontingent eines
-    // nennt: ein fehlendes und ein leeres Feld sind derselbe Fall — „keine
-    // Angabe" —, und der Vertrag der Fassade laesst das Feld dann ganz weg.
-    if (force.catalogueId !== null && force.catalogueId !== undefined) {
-      node.catalogueId = force.catalogueId;
-    }
+    // nennt: ein fehlendes, ein `null`- und ein **leeres** Feld sind derselbe
+    // Fall — „keine Angabe" —, und der Vertrag der Fassade laesst das Feld dann
+    // ganz weg. Der leere String ist kein Randfall aus der Theorie: der
+    // `.ros`-Export schreibt `catalogueId=""` fuer ein Kontingent ohne Buch
+    // (`rosterSerialization.js`), ein Export/Import-Umlauf liefert ihn also.
+    if (force.catalogueId) node.catalogueId = force.catalogueId;
     return node;
   });
 

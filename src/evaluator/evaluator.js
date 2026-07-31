@@ -133,9 +133,11 @@ export { prepareDataset } from './datasetPreparation.js';
  *   `primary-catalogue` loest darueber auf. Ohne Angabe — und ebenso bei einer
  *   Katalog-Id, die dieser Datensatz nicht kennt — bleibt es beim
  *   Herkunftsindex; schweigt auch der, wird nicht gefiltert (der Rahmen faellt
- *   offen aus) und `primary-catalogue` bleibt fail-closed unaufgeloest. Ein
- *   **Bibliothekskatalog** ist von der Filterung ohnehin nie betroffen: seine
- *   Angebote gelten wie die des Spielsystems in jedem Kontingent.
+ *   offen aus) und `primary-catalogue` bleibt fail-closed unaufgeloest. Wo die
+ *   Angabe des Rosters greift, bleibt ein **Bibliothekskatalog** von der
+ *   Filterung ausgenommen — der geteilte Soeldner-Vorrat geht dem Kontingent
+ *   also nicht verloren —, sofern sein Armeebuch die Bibliothek nicht selbst
+ *   per `catalogueLink` benennt; dann gilt dessen `importRootEntries`.
  *
  *   **Identitaets-Regel fuer `defId`.** Eine Auswahl, die ueber einen
  *   `<entryLink>` gesetzt wurde, wird unter der Id des **Verweises** uebergeben
@@ -238,11 +240,12 @@ export function evaluate(prepared, roster, options) {
   // Kontingent-Katalog gehoert. Reicht bis in die Baumphase 1 (Pflicht-Phantome,
   // `evalTree.js`) und die Baumphase 2 (Angebot, `offer.js`) hinein, damit ein
   // Wurzel-Eintrag oder ein roster-skopiertes Pflicht-Minimum eines fremden
-  // Katalogs weder angeboten noch erzwungen wird. Ausgenommen sind — neben dem
-  // Spielsystem — die Bibliothekskataloge: eine Bibliothek ist ein geteilter
-  // Vorrat, kein fremdes Armeebuch (Issue 0140). `linkedCatalogueIdsById` zieht
-  // die Grenze dieser Ausnahme: hat ein Armeebuch die Bibliothek per
-  // `catalogueLink` ausdruecklich benannt, gilt seine Aussage (Issue 0098).
+  // Katalogs weder angeboten noch erzwungen wird. Ausgenommen ist neben dem
+  // Spielsystem eine Bibliothek — aber nur in einem Kontingent, dessen Armeebuch
+  // erst das Roster beigebracht hat, und nur wenn dieses Buch die Bibliothek
+  // nicht selbst per `catalogueLink` benennt (Issue 0140, `isInCatalogueScope`).
+  // `libraryCatalogueIds` und `linkedCatalogueIdsById` tragen diese beiden
+  // Bedingungen bei; die Herkunft der Antwort haengt am Referenz-Katalog selbst.
   const catalogueScope = {
     sourceIdByDefId,
     catalogueRootEntryClosureById,

@@ -142,10 +142,12 @@ export class PreparedDataset {
  * selbst und die per `catalogueLink importRootEntries="true"` importierten
  * eingeschlossen (Issue 0098) — und daneben die Menge der
  * **Bibliothekskataloge** (`libraryCatalogueIds`,
- * {@link buildLibraryCatalogueIds}), die derselbe Rahmen ausnimmt wie das
- * Spielsystem: eine Bibliothek ist kein fremdes Armeebuch (Issue 0140). Alle
- * vier sind rosterunabhaengig und gehoeren deshalb in den Vorlauf, nicht in die
- * Auswertung.
+ * {@link buildLibraryCatalogueIds}) samt der Kataloge, ueber die sich ein
+ * Katalog per `catalogueLink` ausdruecklich geaeussert hat
+ * (`linkedCatalogueIdsById`, {@link buildDeclaredCatalogueLinkIndex}) — die
+ * beiden Bedingungen der engen Bibliotheks-Ausnahme desselben Rahmens (Issue
+ * 0140, `isInCatalogueScope`). Alle sind rosterunabhaengig und gehoeren deshalb
+ * in den Vorlauf, nicht in die Auswertung.
  *
  * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
  *   Die optionale Spielsystemdatei (`.gst`-XML) und die geordnete Liste der
@@ -212,7 +214,7 @@ function prepare(dataset) {
     // `catalogueLink`s, die nur zwischen Katalogen bestehen (Issue 0098).
     catalogueRootEntryClosureById: buildCatalogueRootEntryClosure(catalogueDocuments),
     // Ebenfalls nur die Kataloge: das `library`-Kennzeichen ist ein Attribut der
-    // `.cat`-Wurzel; ein Bibliothekskatalog ist nie ein fremdes Armeebuch (Issue 0140).
+    // `.cat`-Wurzel; eine Bibliothek ist ein geteilter Vorrat, kein Armeebuch (Issue 0140).
     libraryCatalogueIds: buildLibraryCatalogueIds(catalogueDocuments),
     // Worueber ein Katalog sich per `catalogueLink` ausdruecklich geaeussert hat:
     // die Grenze der Bibliotheks-Ausnahme (Issue 0140, siehe isInCatalogueScope).
