@@ -115,20 +115,28 @@ function occupiedIdsOf(frame) {
  * geliefert (der Anker traegt den Link, damit die am Link deklarierten Grenzen
  * gelten); ein `entryLink` auf eine *Gruppe* ist nur die Klammer um deren Member
  * und wird durchschritten. `visited` haelt eine zyklische Verweiskette endlich.
+ *
+ * Geliefert wird jede Option zusammen mit den **Sichtbarkeits-Klammern**, durch die
+ * der Abstieg zu ihr fuehrte (`gates`, aeusserste zuerst): die durchschrittenen
+ * Gruppen und Gruppen-Verweise. Weil der Anker ein Blatt am Rahmen ist, ist diese
+ * Kette die einzige Stelle, an der die Sichtbarkeit der Klammer den Member noch
+ * erreicht — eine versteckte Gruppe versteckt ihre Optionen (Issue 0132/0135).
+ * Ein Gruppen-Verweis steht dabei fuer sich **und** sein Ziel: die Basisregel
+ * (`effectiveState.js`) liest beide.
  */
-function* optionDefinitionsUnder(ownerDef, visited = new Set()) {
+function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
   if (ownerDef === null || ownerDef === undefined || visited.has(ownerDef.id)) return;
   visited.add(ownerDef.id);
   for (const child of ownerDef.children ?? []) {
     if (child.kind === DefinitionKind.ENTRY) {
-      yield child;
+      yield { def: child, gates };
     } else if (child.kind === DefinitionKind.GROUP) {
-      yield* optionDefinitionsUnder(child, visited);
+      yield* optionDefinitionsUnder(child, visited, [...gates, child]);
     } else if (child.kind === DefinitionKind.ENTRY_LINK) {
       if (child.resolved?.kind === DefinitionKind.GROUP) {
-        yield* optionDefinitionsUnder(child.resolved, visited);
+        yield* optionDefinitionsUnder(child.resolved, visited, [...gates, child]);
       } else {
-        yield child;
+        yield { def: child, gates };
       }
     }
   }
@@ -157,8 +165,11 @@ function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalo
     const forceCategoryIds = linkedCategoryIdsOf(frame.def);
     const forceCatalogueId = primaryCatalogueByForceDefId?.get(frame.def.id);
     const referenceCatalogueIds = forceCatalogueId === undefined ? [] : [forceCatalogueId];
+    // Ein Wurzel-Angebot steht unmittelbar im Kontingent — es gibt keine
+    // durchschrittene Gruppe, die es klammern koennte.
     return armyLevelCandidates.filter(def => isCarriedByForce(def, forceCategoryIds)
-      && (def.kind === DefinitionKind.ENTRY_LINK || isInCatalogueScope(def.id, referenceCatalogueIds, catalogueScope)));
+      && (def.kind === DefinitionKind.ENTRY_LINK || isInCatalogueScope(def.id, referenceCatalogueIds, catalogueScope)))
+      .map(def => ({ def, gates: [] }));
   }
   return [...optionDefinitionsUnder(ownerDefinitionOf(frame))];
 }
@@ -192,9 +203,9 @@ export function attachOfferAnchors(root, resolved, catalogueScope, primaryCatalo
   const anchors = [];
   for (const frame of frames) {
     const occupiedIds = occupiedIdsOf(frame);
-    for (const def of candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalogueByForceDefId)) {
+    for (const { def, gates } of candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalogueByForceDefId)) {
       if (identityIdsOf(def).some(id => occupiedIds.has(id))) continue;
-      anchors.push(attachOfferAnchor(root, frame, def));
+      anchors.push(attachOfferAnchor(root, frame, def, gates));
       // Der frische Anker belegt seine Definition im Rahmen: erscheint dieselbe
       // Definition in der Kandidatenliste ein zweites Mal (etwa als Eintrag und
       // als Verweis auf ihn), entsteht kein zweiter Anker.

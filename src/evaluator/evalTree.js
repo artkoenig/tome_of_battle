@@ -159,9 +159,15 @@ function attachPhantom(parent, def, nextFrameId, anchorKind, limitScopeFilter = 
  * @param {object} root  Wurzel des Baums (traegt die Quelle der Rahmen-Identitaeten).
  * @param {object} parent  der reale Rahmen, unter dem der Anker haengt.
  * @param {object} def  die angebotene Definition (bei einem Verweis: der Verweis selbst).
+ * @param {object[]} [visibilityGates]  die **Sichtbarkeits-Klammern** des Angebots:
+ *   die Gruppen bzw. Gruppen-Verweise, durch die `offer.js` zu `def` abgestiegen ist
+ *   (aeusserste zuerst). Weil der Anker ein Blatt am Rahmen ist, traegt allein diese
+ *   Kette die Sichtbarkeit der Klammer an den Member weiter: ihr Basis-`hidden` geht in
+ *   das des Ankers ein (`effectiveState.js`), ihre `field="hidden"`-Modifikatoren laufen
+ *   am Anker mit (`modifiers.js`).
  * @returns {object} der angehaengte Anker.
  */
-export function attachOfferAnchor(root, parent, def) {
+export function attachOfferAnchor(root, parent, def, visibilityGates = []) {
   const node = {
     def,
     instance: null,
@@ -173,6 +179,7 @@ export function attachOfferAnchor(root, parent, def) {
     anchorKind: AnchorKind.OFFER_ANCHOR,
     frameId: root.nextFrameId(),
     forceRoot: parent.forceRoot,
+    visibilityGates,
   };
   parent.children.push(node);
   return node;

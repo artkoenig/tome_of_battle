@@ -129,6 +129,19 @@ Acceptance criteria:
   catalogs. Widening to infoLink/categoryLink stays an accepted default
   (see Decisions). No version bump: evaluator not wired to the UI.
 
+## Nachtrag (2026-07-31, Issue 0135)
+
+Kriterium 2 ist in seiner **„false"-Haelfte zurueckgenommen**: ein explizites
+`hidden="false"` am Verweis geht dem `hidden="true"` des Ziels **nicht** mehr vor.
+Grund: Battlescribe schreibt das Attribut an *jedem* `entryLink` (0 von 2302 in den
+DE-Fixtures lassen es weg), sodass die hier gebaute Vererbung an echten Katalogen nie
+greifen konnte — und die Vorrangregel das gaengigste Gatter-Muster der Kataloge
+(geteilte Definition `hidden="true"` + bedingter Aufdeck-Modifikator, 37 von 42
+Faellen) ins Gegenteil verkehrte: die gegatterten Inhalte waren immer sichtbar. Die
+„true"-Haelfte (`hidden="true"` am Verweis versteckt unabhaengig vom Ziel) und
+Kriterium 3 (Modifikatoren schlagen die Basiswerte) gelten unveraendert. Details und
+Beleg: [Issue 0135](0135-fremde-magische-gegenstaende-erscheinen-am-vampir.md).
+
 ## Retro
 
 - The dual-carrier seam (tri-state beside the boolean) was the right call:

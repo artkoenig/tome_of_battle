@@ -228,9 +228,13 @@ record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGro
 // Modifikatoren und ein `hidden`-Kennzeichen — sie sind Modifikator-Träger.
 // Neben dem materialisierten Boolean `isHidden` (Default false) führt jede
 // EntryBase das Tri-State-Rohattribut `hiddenAttribute` (true | false |
-// nicht gesetzt): nur so kann ein Vorkommen über einen Verweis das
-// Basis-`hidden` seines Ziels erben, ohne dass ein explizites `false` am
-// Verweis verloren geht (Issue 0099, `baseHiddenOf` in effectiveState.js).
+// nicht gesetzt); `baseHiddenOf` (effectiveState.js) liest es. Versteckt ist
+// ein Vorkommen, wenn der Verweis ODER sein (transitiv aufgelöstes) Ziel es
+// ist — und bei einem Angebots-Anker zusätzlich, wenn eine seiner
+// Sichtbarkeits-Klammern es ist (die durchschrittenen Gruppen, siehe offer.js).
+// Modifikatoren schlagen jeden dieser Basiswerte (Issue 0135; die frühere
+// Vorrangregel „eigenes hidden vor geerbtem" aus Issue 0099 ist damit zurück-
+// genommen, siehe docs/battlescribe-data-format.md §8).
 record InfoElement    { kind: profile | rule | infoGroup | infoLink, id, name, isHidden: bool,
                         hiddenAttribute: bool?,
                         modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],

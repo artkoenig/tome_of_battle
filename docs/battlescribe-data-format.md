@@ -867,6 +867,48 @@ Slot je 1000 Punkte"). Attribute u. a. `repeats` (wie oft pro Treffer), `roundUp
 `percentValue` (die Schrittweite `value` als Prozentsatz des Rahmen-Nenners, wie bei der
 Condition oben).
 
+#### `modifierGroup` — eine bedingte Klammer um mehrere Modifier
+
+Neben `<modifiers>` trägt fast jede Entität ein optionales `<modifierGroups>`
+(`Catalogue.xsd:107`). Ein `modifierGroup` erweitert dieselbe Basis wie ein `modifier`
+(`ModifierBase` — also `<conditions>`, `<conditionGroups>`, `<repeats>`), enthält aber
+statt eines Feldwerts wieder `<modifiers>` und beliebig tief geschachtelte
+`<modifierGroups>` (`Catalogue.xsd:523-538`). Die Bedingungen der Klammer gelten für
+**alle** Modifier darin; die Klammer ist damit die Kurzform für „dieselbe Bedingung an
+mehreren Modifiern" — semantisch gleichwertig dazu, sie an jedem einzelnen zu
+wiederholen.
+
+```xml
+<selectionEntry name="Full Plate Armour" hidden="true" id="3869-2f40-dd21-6971" …>
+  <modifierGroups>
+    <modifierGroup type="and">
+      <conditions>
+        <!-- führt die Armee die Blutlinie „Blood Dragon"? -->
+        <condition type="atLeast" value="1" field="selections" scope="force"
+                   childId="9fd9-e05c-ffcb-2c4d" shared="true" includeChildSelections="true"/>
+      </conditions>
+      <modifiers>
+        <modifier type="set" value="false" field="hidden"/>
+        <modifier type="set" value="1" field="b381-5bd3-4720-6f9a"/>
+      </modifiers>
+    </modifierGroup>
+  </modifierGroups>
+</selectionEntry>
+```
+
+> **Nicht im Wiki dokumentiert:** Modifier-Gruppen kommen im BSData-Wiki **an keiner
+> Stelle** vor (0 Treffer im ganzen Submodul, Stand `f4949c3`, 2026-01-27); sein
+> Abschnitt *Modifier* kennt als Kinder nur Conditions, Condition Groups und Repeats.
+> Belegt sind sie allein durch die XSD und die realen Kataloge (siehe [§15](#15-lücken-der-quelle)).
+
+> **Fallstrick beim Lesen von Katalogdaten:** Ein Modifier steht **entweder** in
+> `<modifiers>` **oder** in einem `<modifierGroup>` — Kataloge nutzen beides
+> nebeneinander. Wer eine Frage der Art „gattert dieser Katalog den Eintrag
+> überhaupt?" durch Suchen beantwortet, muss **beide** Orte durchsuchen. Das Beispiel
+> oben ist genau der Fall: das obige `hidden="true"` sieht ohne die `modifierGroup`
+> nach einem Datenfehler aus, ist aber ein sauberes Blutlinien-Gatter (Issue 0135,
+> Korrektur).
+
 #### Vollständiges Beispiel (aus dem `.gst`, Force „Standard")
 
 Der erlaubte Maximalwert der Kategorie **Core** skaliert mit dem Punktelimit der Armee. Der Modifier
@@ -929,6 +971,27 @@ Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
   einer effektiv versteckten Entität werden **nicht** validiert — die §5.6-Regel, per
   Projektentscheidung (Issue 0088) verallgemeinert auf alle Ankerarten; wird die Entität per
   Modifier wieder sichtbar, greifen sie wieder. Max-Grenzen gelten unabhängig von der Sichtbarkeit.
+- **`hidden` an einem `entryLink` und an seinem Ziel wirken zusammen (ODER).** Ein Vorkommen ist
+  versteckt, wenn der Verweis **oder** die verwiesene Definition versteckt ist; ein `hidden`-Modifier
+  an einer der beiden Seiten schlägt beide Basiswerte. Das ist die Grundlage des häufigsten
+  Gatter-Musters der Kataloge: die **geteilte** Definition trägt `hidden="true"` plus einen bedingten
+  `set hidden="false"`, und jeder `entryLink` auf sie trägt (wie Battlescribe es immer schreibt)
+  `hidden="false"`. Würde das `hidden="false"` des Verweises dem Ziel vorgehen, wäre das Gatter
+  wirkungslos — belegt an den DE-Katalogen des Repos: 37 der 42 geteilten Definitionen mit
+  `hidden="true"` gattern genau so (der Aufdeck-Modifikator steht dabei mal in `<modifiers>`,
+  mal in einem bedingten `<modifierGroup>` — siehe den Fallstrick-Kasten in §7.7), und
+  **kein** `entryLink` (0 von 2302) lässt das Attribut weg.
+  *Projektentscheidung, keine Quellenaussage:* weder XSD noch BSData-Wiki legen die Komposition
+  fest; sie ist aus den Daten erschlossen (Issue 0135, nimmt die gegenteilige Hälfte von Issue 0099
+  zurück).
+- **Eine versteckte `selectionEntryGroup` versteckt, was sie hält.** Die Gruppe ist der einzige Ort,
+  an dem ihre Member dem Nutzer angeboten werden — ist sie „not visible to the user"
+  ([BSData-Wiki, *Props: Hidden*](bsdata-catalogue-development-wiki/Data-structure-overview.md)), ist
+  es keine ihrer Optionen. Verschachtelte Gruppen wirken kumulativ, und ein `hidden`-Modifier an der
+  Gruppe deckt ihre Optionen wieder mit auf. Kataloge verlassen sich darauf: die Rüstungsgruppe des
+  Vampirs (`66f2-d6a1-420c-5a39`) ist `hidden="true"` und wird nur für die Blutlinien Blood Dragon
+  und Von Carstein aufgedeckt — ihre Member (`Heavy Armour`, `Light Armour`) tragen selbst kein
+  `hidden` (Issue 0132/0135).
 - **Laufzeit-dynamische Kategoriezugehörigkeit.** Die Kategorie-Links eines Eintrags sind nicht
   zwingend statisch: Modifier mit `type="add"`/`type="remove"` und `field="category"` fügen eine
   Kategoriezugehörigkeit bedingt hinzu bzw. entfernen sie, und `type="set-primary"`/`type="unset-primary"`
@@ -1350,6 +1413,7 @@ Lücken, die uns bisher konkret getroffen haben:
 | **`scope="unit"` / Semantik von `ancestor`** | `unit` fehlt in der Scope-Aufzählung des Wikis völlig; `ancestor` ist zwar aufgezählt (nur mit `instanceOf`/`notInstanceOf` gültig), seine Semantik aber nicht beschrieben. Reale Kataloge nutzen beide (130× bzw. 10× in den Fixture-Katalogen). | [Der Kasten in §7.7](#scope-unit-ancestor) beschreibt die in Issue 086 aus den Daten belegte Semantik: `unit` = die umschließende Einheit als Zählrahmen, `ancestor` = Mitgliedschaftsprüfung über die Vorfahrenkette. |
 | **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | [§7.6](#76-constraint) dieses Dokuments beschreibt die in Issue 079 aus den Daten belegte Semantik: `-1` = unbegrenzt nur als **hingeschriebener** Wert (Constraint-`value`, `set`-Modifierwert auf eine Grenze, `defaultCostLimit`, eingestelltes Roster-`costLimit` — Issue 0096); errechnete negative Werte sind kein Sentinel. |
 | **Modifier-Typen `add`/`remove`** | Das Wiki kennt nur `Increment\|Decrement\|Set\|Append`. Reale Kataloge verwenden `add`/`remove` für Kategoriezugehörigkeit und `multiply`, `prepend`, `set-primary`/`unset-primary`. | §7.7 dieses Dokuments beschreibt sie aus den Daten, nicht aus der Quelle |
+| **`modifierGroup`** | Das Wiki erwähnt Modifier-Gruppen **an keiner Stelle** (0 Treffer im ganzen Submodul, Stand `f4949c3`, 2026-01-27) — der Abschnitt *Modifier* kennt als Kinder nur Conditions, Condition Groups und Repeats. Die XSD definiert sie dagegen (`Catalogue.xsd:107` und `523-538`), und reale Kataloge nutzen sie gleichberechtigt zu `<modifiers>`. | [§7.7](#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier) dieses Dokuments beschreibt sie aus XSD und Daten. Die Lücke hat konkret Schaden angerichtet: in Issue 0135 wurde ein sauber gegatterter Katalogeintrag für einen Datenfehler gehalten, weil eine Suche nur `<modifiers>` abdeckte. |
 
 Die Seite trägt am Ende selbst den Hinweis `TODO: Update to 2.02` — sie beschreibt einen
 älteren Stand als die heutigen Kataloge (Libraries, Publications, neue Gruppen).

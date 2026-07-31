@@ -77,20 +77,45 @@ function baseNameOf(node, carrier) {
 }
 
 /**
- * Die Basis-Sichtbarkeit eines Traegers (XSD-Vorgabe: sichtbar). Gelesen wird der
- * **Rohzustand** des `hidden`-Attributs (`hiddenAttribute`:
- * `true`/`false`/`undefined` = nicht gesetzt, `catalogReader.js`,
- * `readEntryBase`), nicht der zu einem
- * Boolean materialisierte `isHidden`-Wert: nur so erreicht die Erb-Regel „eigene
- * Angaben vor geerbten" ihren zweiten Zweig. Ein Verweis ohne eigenes `hidden`
- * erbt damit das Basis-`hidden` seines (transitiv aufgeloesten) Ziels; ein
- * explizit gesetztes `hidden` am Verweis — true wie false — geht dem Ziel vor
- * (Issue 0099). Modifikatoren ueberschreiben beide Basiswerte
- * ({@link EffectiveState#isHidden}).
+ * Ob eine Definition **statisch** versteckt ist: sie selbst oder — bei einem
+ * Verweis — ihr (transitiv aufgeloestes) Ziel. Gelesen wird der **Rohzustand** des
+ * `hidden`-Attributs (`hiddenAttribute`: `true`/`false`/`undefined` = nicht
+ * gesetzt, `catalogReader.js`, `readEntryBase`), nicht der zu einem Boolean
+ * materialisierte `isHidden`-Wert.
+ */
+function isBaseHidden(subject) {
+  return subject?.hiddenAttribute === true || subject?.resolved?.hiddenAttribute === true;
+}
+
+/**
+ * Die Basis-Sichtbarkeit eines Traegers (XSD-Vorgabe: sichtbar). Versteckt ist ein
+ * Vorkommen, wenn **eine** der Quellen es versteckt:
+ *
+ * - der Traeger selbst oder sein (transitiv aufgeloestes) Verweisziel;
+ * - eine **Sichtbarkeits-Klammer** des Knotens (`visibilityGates`) — die
+ *   `selectionEntryGroup`s bzw. Gruppen-Verweise, durch die die Angebots-Schicht
+ *   zu dieser Definition abgestiegen ist ({@link ../evaluator/offer.js}). Sie
+ *   gelten nur fuer den Knoten selbst, nicht fuer seine Info-Elemente.
+ *
+ * Die Oder-Verknuepfung ersetzt seit Issue 0135 die fruehere Vorrangregel „eigenes
+ * `hidden` vor dem geerbten" (Issue 0099, Kriterium 2). Sie war an echten Daten
+ * wirkungslos bis schaedlich: Battlescribe schreibt `hidden` an **jedem**
+ * `entryLink` (0 von 2302 in den DE-Fixtures lassen es weg), sodass das
+ * `hidden="true"` einer geteilten Definition ein Vorkommen nie erreichte — und
+ * damit das gaengigste Gatter-Muster der Kataloge (geteilte Definition
+ * `hidden="true"` plus bedingter Aufdeck-Modifikator, 37 von 42 Faellen in den
+ * Fixtures — der Aufdecker steht mal in `<modifiers>`, mal in einem bedingten
+ * `<modifierGroup>`) ins Gegenteil verkehrte.
+ *
+ * Modifikatoren ueberschreiben jeden dieser Basiswerte
+ * ({@link EffectiveState#isHidden}) — auch die der Klammern, deren
+ * `field="hidden"`-Modifikatoren am Knoten mitlaufen (`modifiers.js`).
  */
 function baseHiddenOf(node, carrier) {
-  const { own, target } = baseSourcesOf(node, carrier);
-  return own?.hiddenAttribute ?? target?.hiddenAttribute ?? false;
+  const { own } = baseSourcesOf(node, carrier);
+  if (isBaseHidden(own)) return true;
+  if (carrier !== node) return false;
+  return (node.visibilityGates ?? []).some(isBaseHidden);
 }
 
 /** Die Basis-Merkmale eines Traegers (die des Verweisziels, wenn er selbst keine fuehrt). */
