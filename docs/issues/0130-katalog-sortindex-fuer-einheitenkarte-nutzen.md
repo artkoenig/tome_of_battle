@@ -271,6 +271,43 @@ Acceptance criteria:
     unabhaengig gegen `report.sourceId.test.js` geprueft und als legitime
     Testkorrektur bestaetigt (kein Kriterium dadurch geschwaecht).
 
+- **Review-Runde 2 (dieselbe Reviewer-Instanz, kein Neustart)** stellte alle
+  Fakten erneut selbst her (`npx vitest run`: 2649/2649, exit 0; `npm run
+  lint`/`depcruise`/`typecheck`: je exit 0; `node e2e/ui.test.js`: exit 0) und
+  bestaetigte beide Runde-1-Korrekturen per eigener Nachstellung als inhaltlich
+  korrekt. Zwei neue, schwaechere Befunde:
+
+  | Kriterium | Runde 1 | Runde 2 |
+  |---|---|---|
+  | 1 | 1 | 1 (Testluecke, nicht mehr die urspruengliche Korrektheits-Verletzung) |
+  | 2 | 1 | 1 (Testluecke, nicht mehr die urspruengliche Korrektheits-Verletzung) |
+  | 3 | 0 | 0 |
+  | 4 | 0 | 0 |
+  | 5 | 0 | 0 |
+  | 6 | 0 | 0 |
+  | (kein Kriterium verletzt) | 1 | 0 |
+  | **Summe** | **3** | **2** |
+
+  - **Kriterium 1, Testluecke:** ein Zurueckdrehen allein des `if
+    (!hasLimits) continue;`-Wächters (Runde-1-Fix wieder aufgehoben) liess
+    die volle Suite weiterhin 2649/2649 gruen — kein Test haette diese
+    Regression gefangen. **Geschlossen:** neue Datei
+    `evalTree.sortIndexGroupAnchorNoCounting.test.js` (drei Tests: grenzenlose
+    Gruppe ohne/mit `sortIndex` bleibt gleichermassen ungezaehlt; Kontrolle,
+    dass eine Gruppe mit echter Grenze weiterhin zaehlt). Gegen den
+    zurueckgedrehten Wächter laueft genau ein Test durch wie erwartet fehl
+    (Repro durchgefuehrt und danach verworfen).
+  - **Kriterium 2, Testluecke:** `readSortIndex()`s Whitespace-Sonderfall
+    (`raw.trim() === ''`) war durch keinen Testfall abgesichert (nur
+    `sortIndex=""` war gepinnt, nicht `sortIndex="   "`). **Geschlossen:** ein
+    Testfall in `catalogReader.sortIndex.test.js` ergaenzt; gegen den
+    zurueckgedrehten Wächter (nur `raw === ''`) faellt er wie erwartet.
+  - Issue 0131 wurde unabhaengig nachgestellt und als akkurat beschrieben und
+    zu Recht nicht in diesem Diff mitgefixt bestaetigt.
+
+  Trend sinkt (3 → 2), beide verbleibenden Punkte sind Testluecken um bereits
+  korrekt verifiziertes Verhalten, kein neuer Korrektheitsfehler.
+
 ## Checkpoints
 
 ### Before implementation

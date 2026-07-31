@@ -72,6 +72,12 @@ describe('parseCatalogue: sortIndex an selectionEntry (Issue 0130, Kriterium 1)'
     expect(parseCatalogue(xml).entries[0].sortIndex).toBeNull();
   });
 
+  it('ein nur aus Leerzeichen bestehender sortIndex-Wert gilt ebenso als "kein sortIndex" (Grenzfall: Number(" ") === 0)', () => {
+    const xml = catalogueWithEntryChildren('sortIndex="   "');
+
+    expect(parseCatalogue(xml).entries[0].sortIndex).toBeNull();
+  });
+
   it('ein negativer sortIndex ist numerisch und damit ein gültiger Wert (kein "nicht-numerisch")', () => {
     const xml = catalogueWithEntryChildren('sortIndex="-3"');
 
