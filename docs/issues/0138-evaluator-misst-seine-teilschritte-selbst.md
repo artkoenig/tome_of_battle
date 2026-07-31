@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: active
 branch: claude/evaluator-performance-metadata-6ax5wf
 pr:
 ---
@@ -151,9 +151,38 @@ erklärt. Quelle: Antwort des Menschen im Interview.
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+**Does this match what was asked?** Ja. Der Mensch hat verlangt, dass der
+Evaluator die Performance seiner Einzelteile selbst misst und als Metadata im
+Ergebnis ausliefert, statt dass ein externes Skript ihn dafür nachbaut. Genau
+das beschreiben die Kriterien 1–5; Kriterium 6 macht den Wegfall des Nachbaus
+maschinell nachweisbar. Die sechs Entscheidungen hat er im Interview einzeln
+bestätigt, die Kriterien anschließend freigegeben.
+
+**What surprised me?**
+- Die Vorbereitung (`prepareDataset`) liegt gar nicht in `evaluate()`, sondern
+  ist ein eigener Fassaden-Aufruf — und macht laut ADR-0036 99,1–99,5 % der
+  Gesamtdauer aus. Von den vier gemessenen Phasen liegt also genau die
+  teuerste außerhalb der Funktion, um die es hier vordergründig geht.
+- `evaluateToFixpoint` berechnet `rounds`/`converged` längst und die Fassade
+  destrukturiert sie schlicht nicht — die Metadata gibt es intern also
+  teilweise schon, sie wird nur weggeworfen.
+- Der 100-ms-Schwellenwert steht in keiner ADR, nur als Konstante im Skript
+  und in der Issue-Historie zu Issue 75. Ein `design.md`, auf das Kommentare
+  als Quelle verweisen, existiert im Repo nicht mehr.
+- Das Skript sichert seinen eigenen Nachbau mit `assertMatchesFacade()` gegen
+  Drift ab — es weiß also, dass die Duplikation gefährlich ist.
+
+**What am I assuming without having verified it?**
+- Dass die Instrumentierung die Messwerte nicht selbst nennenswert verschiebt.
+  Kriterium 9 prüft das; falls doch, ist die Form der Instrumentierung falsch
+  gewählt und nicht die Absicht.
+- Dass `scripts/measure-evaluator-browser.js` weiterhin sauber bündelt, wenn
+  `evaluator-measurement.js` nur noch die Fassade importiert. Der Vite-Build
+  zieht dann einen anderen Modulgraphen als heute.
+- Dass kein bestehender Test die exakte Gestalt des Report-Objekts festnagelt
+  (der Researcher fand nur feldweise Zusicherungen, kein `toEqual` auf dem
+  ganzen Report). Ein neues Feld hinter dem Flag träfe ohnehin nur den
+  Mess-Pfad.
 
 ### Before the PR
 
