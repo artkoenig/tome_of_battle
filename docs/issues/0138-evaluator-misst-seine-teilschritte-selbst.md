@@ -145,6 +145,53 @@ die in der App niemand sieht. Verworfen: eine eigene ADR, und „gar nichts
 dokumentieren" — dann stünde die Ausnahme zum Reinheits-Leitprinzip nirgends
 erklärt. Quelle: Antwort des Menschen im Interview.
 
+**Gestalt der Metadata: die heutige Struktur des Skripts, unverändert
+übernommen.** Der `test-author` war blockiert, weil Feldnamen und Verschachtelung
+in den Kriterien offen sind. Leitgedanke der Antwort: Die Engine erzeugt genau
+das, was das Skript heute selbst zusammenbaut — dann wird das Skript zum reinen
+Leser statt zum Nachbauer. Festgelegt:
+
+- Feldname `measurement`, gleich auf dem Bericht und auf dem vorbereiteten Griff.
+- `report.measurement = { phases: { iteratedEvaluation, postPass, constraintsAndReport },
+  fixpoint: { rounds, converged, nonConvergence }, tree: { total, real, synthetic, byAnchorKind } }`.
+  Kein `totalMs` in der Engine — Summenbildung ist Mess-Politik und bleibt im
+  Skript (Kriterium 8).
+- `MeasuredPhase` (heute `scripts/lib/evaluator-measurement.js:72`) zieht in die
+  Engine und wird von der Fassade re-exportiert: es benennt die Phasen der
+  Engine, also gehört es dorthin. `describeTree`
+  (`scripts/lib/evaluator-measurement.js:122-132`) ebenso — es liest
+  `node.anchorKind` und `AnchorKind` aus `model.js`, beides engine-intern.
+- Der vorbereitete Griff trägt `measurement` als eigene Eigenschaft, die **nur**
+  im gemessenen Fall existiert:
+  `prepared.measurement = { phases: { preparation } }`. Ungemessen gibt es sie
+  gar nicht, damit bleibt `Object.keys(prepared)` leer und der bestehende Pin in
+  `evaluator.preparedDataset.test.js` unberührt.
+- `rounds` und `converged` heißen genau so (Kriterium 3 nennt sie wörtlich);
+  `nonConvergence` ist die ganze Diagnose wie heute, `null` bei Konvergenz.
+
+Quelle: Vorgabe, vom Menschen nicht gefragt — die Metadata ist laut
+Entscheidung 5 nur für die Mess-Skripte sichtbar, also weder nach außen wirkend
+noch unumkehrbar.
+
+**Kriterium 6 greift weiter als Kriterium 5.** Der Ausnahme-Ausdruck
+`^scripts/(lib/evaluator-measurement|measure-evaluator)` ist ein Präfix und deckt
+zwei Geschwister mit: `evaluator-measurement-cases.js:17` importiert
+`src/evaluator/__fixtures__/rosParser.js`, `evaluator-measurement-output.js:14`
+importiert `DiagnosticKind` aus `src/evaluator/model.js`. Beide würden zu
+`evaluator-nur-ueber-fassade`-Fehlern, sobald die Ausnahme fällt — obwohl
+Kriterium 5 nur `evaluator-measurement.js` nennt. Auflösung, ohne die Fassade für
+Produktivcode zu verbreitern:
+
+- Die Fassade re-exportiert `DiagnosticKind`. Der Bericht trägt diese Werte
+  ohnehin in seinen Diagnosen; sie zu benennen gehört zu seinem Ausgabe-Vertrag.
+- Die depcruise-Regel schließt `src/evaluator/__fixtures__/` auf der `to`-Seite
+  aus — Fixtures sind Testmaterial, genau wie die schon bestehende
+  `TEST_FILE`-Ausnahme auf der `from`-Seite.
+
+Kriterium 6 bleibt damit wörtlich erfüllt: `EVALUATOR_MEASUREMENT` fällt
+ersatzlos, und `npm run depcruise` läuft durch. Quelle: Vorgabe, vom Menschen
+nicht gefragt.
+
 ## Log
 
 **Die Drift ist bereits eingetreten — das Skript ist heute kaputt.** Beim
