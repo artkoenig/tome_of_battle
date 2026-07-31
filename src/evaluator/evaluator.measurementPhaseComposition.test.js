@@ -25,6 +25,22 @@
  * Fixpunktschleife baut ihren Index je Runde selbst. Verbrannt wird deshalb nur
  * beim Aufruf **nach** der Schleife — das ist der eine Aufruf der Fassade, den
  * Kriterium 2 der iterierten Auswertung zurechnet.
+ *
+ * ── Voraussetzung: ein isolierter Lauf ───────────────────────────────────────
+ * Diese Datei braucht `isolate: true` — Vitests Vorgabe, die `vitest.config.js`
+ * nicht abschaltet. Die Huellen entstehen ueber `vi.mock` beim **ersten** Import
+ * der Engine-Module in diesem Arbeitsprozess. Laeuft die Suite mit
+ * `--no-isolate`, teilen sich alle Dateien einen Modul-Cache: eine frueher
+ * geladene Testdatei hat die Engine dann bereits **ungemockt** importiert, die
+ * Huellen werden nie installiert, und es wird nie Zeit verbrannt.
+ *
+ * Das Fehlerbild ist dann harmlos, sieht aber schlimm aus: jeder der neun
+ * Zuordnungs-Tests meldete „die Zeit taucht im Abschnitt nicht auf" — neun
+ * scheinbare Befunde ueber die Auswertung, die keine sind (die Huellen leben in
+ * dieser Datei; die uebrigen Testdateien bleiben unberuehrt und gruen). Damit
+ * niemand diesem Phantom nachjagt, prueft jeder Test **zuerst**, ob seine Huelle
+ * ueberhaupt gelaufen ist, und meldet andernfalls genau das — siehe
+ * {@link probe} und die Meldung in {@link assertProbeInstalled}.
  */
 
 import { JSDOM } from 'jsdom';
@@ -49,7 +65,7 @@ const DELAY_MS = 40;
  * dieser Datei laeuft.
  */
 const probe = vi.hoisted(() => {
-  const state = { step: null, delayMs: 0, fixpointReturned: false };
+  const state = { step: null, delayMs: 0, fixpointReturned: false, wrapperRuns: 0, burnedRuns: 0 };
 
   /** Verbrennt `ms` echte Millisekunden — Zeit, die jede Uhr sieht. */
   function burn(ms) {
@@ -65,16 +81,24 @@ const probe = vi.hoisted(() => {
       state.step = step;
       state.delayMs = delayMs;
       state.fixpointReturned = false;
+      state.wrapperRuns = 0;
+      state.burnedRuns = 0;
     },
     /** Kein Schritt kostet mehr Zeit — der Grundlinien-Zustand. */
     disarm() {
       state.step = null;
       state.delayMs = 0;
       state.fixpointReturned = false;
+      state.wrapperRuns = 0;
+      state.burnedRuns = 0;
     },
     /** Verbrennt die Zeitspanne, wenn `step` der scharf gestellte Schritt ist. */
     spend(step) {
-      if (state.step === step) burn(state.delayMs);
+      state.wrapperRuns += 1;
+      if (state.step === step) {
+        state.burnedRuns += 1;
+        burn(state.delayMs);
+      }
     },
     noteFixpointReturned() {
       state.fixpointReturned = true;
@@ -82,8 +106,35 @@ const probe = vi.hoisted(() => {
     hasFixpointReturned() {
       return state.fixpointReturned;
     },
+    /** Wie oft ueberhaupt eine Huelle lief — 0 heisst: keine ist installiert. */
+    wrapperRuns() {
+      return state.wrapperRuns;
+    },
+    /** Wie oft der scharf gestellte Schritt Zeit verbrannt hat. */
+    burnedRuns() {
+      return state.burnedRuns;
+    },
   };
 });
+
+/**
+ * Die Meldung fuer den einen Fall, in dem dieser Test nichts ueber die
+ * Auswertung aussagt: die Huellen sind gar nicht installiert. Sie steht vor
+ * jeder inhaltlichen Zusicherung, damit ein nicht isolierter Lauf sich selbst
+ * erklaert, statt neun Regressionen zu behaupten (siehe Dateikopf).
+ */
+const PROBE_MISSING = 'Die Messsonde ist nicht installiert: keine einzige Huelle der Engine-Schritte lief. '
+  + 'Dieser Test setzt einen ISOLIERTEN Lauf voraus (vitest `isolate: true`, die Vorgabe). Mit `--no-isolate` '
+  + 'teilt sich die Datei den Modul-Cache mit zuvor geladenen Testdateien, die die Engine bereits ungemockt '
+  + 'importiert haben. Das ist KEIN Befund ueber die Zusammensetzung der gemessenen Abschnitte.';
+
+/** Prueft, dass die Huellen wirklich liefen — sonst sagt der Test nichts aus. */
+function assertProbeInstalled({ armedStep = null } = {}) {
+  expect(probe.wrapperRuns(), PROBE_MISSING).toBeGreaterThan(0);
+  if (armedStep !== null) {
+    expect(probe.burnedRuns(), `${PROBE_MISSING}\n  (scharf gestellt war: ${armedStep})`).toBeGreaterThan(0);
+  }
+}
 
 // ── Die neun Schritte, je in ihrer Huelle ────────────────────────────────────
 // Die Huelle ruft immer den echten Schritt: die Auswertung selbst bleibt
@@ -255,6 +306,9 @@ describe('Zusammensetzung der gemessenen Abschnitte', () => {
     // erreicht die Pruefspanne von sich aus.
     const phases = measuredPhases();
 
+    // Auch hier zuerst: lief die Sonde ueberhaupt? Sonst misst dieser Test nur
+    // eine ungehuellte Auswertung — richtig, aber ohne Aussage fuer diese Datei.
+    assertProbeInstalled();
     for (const phase of EVALUATION_PHASES) {
       expect(phases[phase], `Abschnitt ${phase} ist schon ohne Zutun zu langsam fuer diesen Test`)
         .toBeLessThan(DELAY_MS);
@@ -266,6 +320,9 @@ describe('Zusammensetzung der gemessenen Abschnitte', () => {
 
     const phases = measuredPhases();
 
+    // Erst die Sonde, dann die Aussage: „taucht nicht auf" heisst nur dann
+    // „liegt ausserhalb des Abschnitts", wenn die Zeit ueberhaupt verbrannt wurde.
+    assertProbeInstalled({ armedStep: step });
     expect(phases[phase], `Die Zeit von ${step} taucht im Abschnitt ${phase} nicht auf — der Schritt liegt ausserhalb.`)
       .toBeGreaterThanOrEqual(DELAY_MS);
     for (const other of EVALUATION_PHASES.filter(candidate => candidate !== phase)) {
