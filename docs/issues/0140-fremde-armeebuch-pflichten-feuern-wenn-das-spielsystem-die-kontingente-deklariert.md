@@ -100,6 +100,18 @@ Acceptance criteria:
   Frage nicht anders beantworten als der Schreibpfad. `buildRoster` setzt beide
   Felder ohnehin von Anfang an.
 
+- **Eine Armeebuch-Id, die der Datensatz nicht kennt, zählt wie keine Angabe.**
+  Quelle: Vorgabe, unbeantwortet — vom `test-author` als offene Randfrage
+  gemeldet. Sonst hätte ein Kontingent, dessen Katalog nicht geladen ist, eine
+  Referenzmenge ohne jeden Treffer, und der Filter schlösse **alles** aus: ein
+  still leeres Armeebuch. Der Rahmen fällt seit Issue 0098 bei fehlender Angabe
+  bewusst offen aus; eine unbekannte Id ist derselbe Fall — sie fällt auf den
+  Herkunftsindex zurück und, wenn auch der schweigt, offen aus.
+- **Ein Bibliothekskatalog als Armeebuch eines Kontingents bekommt keine
+  Sonderregel.** Quelle: Vorgabe, unbeantwortet. `buildCatalogueRootEntryClosure`
+  führt Bibliotheken ohnehin; ob ein Roster so etwas deklarieren darf, entscheidet
+  dieses Issue nicht.
+
 ## Log
 
 - Reproduktion an den echten ergofang-Daten (Fork-Stand vom 2026-07-31):
