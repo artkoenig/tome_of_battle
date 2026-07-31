@@ -215,6 +215,25 @@ Triage:
   selection does not behave as it does today when it is hidden instead. The
   two items after the colon are what that clause was spelled out with, not its
   whole extent. Recorded so the maintainer can overturn the reading.
+
+  **That triage was wrong, and the finding is dismissed.** Told to write the
+  test for it, the `test-author` rendered the reproduction on HEAD *and* on
+  the pre-change commit and found the account it rests on to be false. The
+  chosen item is not missing from the DOM: Wallcrusher renders as a stray
+  checked row outside every group — before the change as well as after. And
+  `Big Names` did **not** open itself before the change either, for the same
+  reason. So "behaves exactly as it does today" is satisfied: today it behaves
+  exactly like this too. The report carries a single `occupied` slot for the
+  shared id and no offer anchor for the link at all, so a `targetDefId`
+  fallback in `holdsSelection` could not reach the case regardless —
+  `section.group.items` holds no Wallcrusher entry to fall back on. The stray
+  row is a membership defect in the neighbourhood of issue 0131, not this
+  change's doing. Nothing was fixed for this finding.
+- **The lesson, recorded because it cost a round:** the reviewer's finding was
+  taken at face value and named against a criterion before anyone re-ran its
+  reproduction on both revisions. A finding's reproduction has to be executed,
+  not read — a reproduction that only shows the *new* state cannot tell a
+  regression from behaviour that was always there.
 - **`hasSelectedDescendant` has no test coverage** — removing it from the
   initialiser leaves all 225 editor tests green, because every new test expands
   everything before asserting. Violates no criterion. **Fixed together with
@@ -228,6 +247,22 @@ Triage:
 - **The issue's record was not updated by the implementation commit.**
   Violates no criterion; violates this project's tracker convention. **Fixed
   now** — this section and the Decisions above are that fix.
+
+Outcome of the round after that correction: **one finding acted on, four
+dismissed.** The coverage gap was closed —
+`SelectionConfigurator.containerGroups.initialExpansion.test.jsx`, seven tests
+written from the criterion without any `expandAll`, so they observe the card as
+it first renders. Three of them go red when `hasSelectedDescendant ||` is
+removed from the expanded-state initialiser (the Ogre container holding a
+chosen Wallcrusher, two member groups holding choices at once, and a synthetic
+selection two containers deep); the other four pin the boundaries that must not
+move — nothing chosen stays shut, a standalone group still opens itself, a
+mandatory group with a preselection still opens. No production code changed:
+`npx vitest run src/components/editor` → 34 files, 232 tests, exit 0.
+
+A process slip worth the record: the probe file the `test-author` had on disk
+was swept into commit `1059cf5` by a `git add -A`. Removed in the commit that
+follows it.
 - Baseline on the untouched tree, this branch: `npx vitest run
   src/components/editor` 30 files / 203 tests exit 0; `npx vitest run
   src/evaluator` 68 files / 860 tests exit 0; `npm run lint` exit 0; `npm run
