@@ -118,6 +118,29 @@ const DATASET = {
 };
 
 /**
+ * Armeebuch C — wie A, aber es **nennt die Bibliothek ausdruecklich** per
+ * `catalogueLink` mit `importRootEntries="false"`: „deren Wurzel-Angebot gehoert
+ * nicht zu meinem" (XSD-Vorgabe, ADR-0032). Es steht in einem **eigenen**
+ * Datensatz, damit diese eine Aussage keinen der uebrigen Faelle beruehrt: die
+ * Bibliotheks-Ausnahme oben lebt gerade davon, dass Armeebuch A die Bibliothek
+ * nirgends erwaehnt.
+ */
+const CATALOGUE_C_ID = 'cat-c-0140-declared';
+const CATALOGUE_C_XML = catalogueXml('c', CATALOGUE_C_ID, undefined).replace(
+  '<selectionEntries>',
+  `<catalogueLinks>
+        <catalogueLink id="cl-c-to-lib-0140" name="Library" type="catalogue"
+          targetId="${LIBRARY_CATALOGUE_ID}" importRootEntries="false"/>
+      </catalogueLinks>
+      <selectionEntries>`,
+);
+
+const DATASET_WITH_LINKED_LIBRARY = {
+  gameSystem: GAME_SYSTEM_XML,
+  catalogues: [CATALOGUE_C_XML, LIBRARY_CATALOGUE_XML],
+};
+
+/**
  * Ein Kontingent-Knoten des Eingabe-Rosters. Ohne `catalogueId` entsteht genau
  * der heutige Knoten (Kriterium 4: die Angabe fehlt und darf nichts aendern).
  */
@@ -251,16 +274,28 @@ describe('Kriterium 1, Rand: eine Armeebuch-Id, die der Datensatz nicht kennt, z
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Ein Bibliothekskatalog ist NIE ein fremdes Armeebuch
+// Bibliothekskatalog: ausgenommen — aber NUR, wo das Roster das Armeebuch nennt
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('Bibliothekskatalog: wie das Spielsystem von der Filterung ausgenommen', () => {
+describe('Bibliothekskatalog: ausgenommen nur, wo das Armeebuch aus der Roster-Angabe kommt', () => {
   // Entscheidung des Issues, gestuetzt auf den schon festgelegten Vertrag aus
   // Issue 0121, Task 19, Punkt 5 („Spielsystem- und Bibliothekseintraege
   // erscheinen weiterhin ueberall", `CategoryUnitAdder.forceCatalogue.test.jsx`)
   // und Kriterium 10 aus Issue 0135. Ein Soeldner-/Bibliothekskatalog ist kein
   // Armeebuch, das man einem Kontingent streitig machen koennte — ohne die
   // Ausnahme verloere ein Kontingent mit `.gst`-Definition genau diese Angebote.
+  //
+  // **Die Ausnahme ist eng, und sie muss es sein (Kriterium 4).** Sie gilt
+  // ausschliesslich dort, wo das Armeebuch des Kontingents aus der **Angabe des
+  // Rosters** stammt — nie dort, wo die Katalogdaten selbst geantwortet haben.
+  // Grund: dieses Issue laesst den Herkunftsfilter ueberhaupt erst in einer Lage
+  // greifen, in der er vorher gar nicht greifen konnte (Kontingent-Definition in
+  // der `.gst`). Nur fuer diese neu gefilterte Lage gibt es die Ausnahme — damit
+  // sie dem Kontingent nicht still seine geteilten Soeldner-Pools nimmt. Wo der
+  // Herkunftsindex antwortet, war der Filter schon vor diesem Issue in Kraft;
+  // dort gilt Issue 0098 unveraendert weiter, und `importRootEntries` regiert wie
+  // eh und je. Genau das verlangt Kriterium 4: ein Kontingent ohne Armeebuch-Id
+  // verhaelt sich exakt wie zuvor.
   const forcesFromA = [forceNode(GST_FORCE_ID, CATALOGUE_A_ID)];
 
   it('der Wurzel-Eintrag des Bibliothekskatalogs wird angeboten', () => {
@@ -290,11 +325,52 @@ describe('Bibliothekskatalog: wie das Spielsystem von der Filterung ausgenommen'
     expect(hasViolationWithLimitId(report, 'b-roster-min')).toBe(false);
   });
 
-  it('Rand: die Ausnahme gilt auch im Kontingent aus einer .cat', () => {
+  it('Rand: im Kontingent aus einer .cat gilt die Ausnahme NICHT — dort filtert Issue 0098 unveraendert weiter', () => {
+    // Die enge Kante, und der Fall, an dem eine unbedingte Ausnahme Kriterium 4
+    // brechen wuerde: hier hat **der Herkunftsindex** geantwortet (die
+    // Kontingent-Definition steht in Armeebuch B), das Roster nennt nichts. Der
+    // Filter war fuer diese Lage schon vor diesem Issue in Kraft, und vor ihm
+    // war der Bibliothekseintrag hier weder angeboten noch seine Pflicht
+    // erzwungen — Armeebuch B fuehrt die Bibliothek in keinem `catalogueLink`.
+    // Kriterium 4 verspricht fuer ein Kontingent ohne Armeebuch-Id genau das
+    // unveraenderte Verhalten; die Ausnahme darf hier also nicht greifen, sonst
+    // brächte dieses Issue einem Roster Angebote und Pflichten, die es zuvor nie
+    // hatte.
     const report = evaluateForces([forceNode(B_OWN_FORCE_ID, undefined)]);
 
-    expect(isOfferedAnywhere(report, 'l-offer-unit')).toBe(true);
-    expect(hasViolationWithLimitId(report, 'l-roster-min')).toBe(true);
+    expect(isOfferedAnywhere(report, 'l-offer-unit')).toBe(false);
+    expect(hasViolationWithLimitId(report, 'l-roster-min')).toBe(false);
+  });
+
+  it('Rand: nennt das roster-deklarierte Armeebuch die Bibliothek per catalogueLink importRootEntries="false", bleibt sie draussen', () => {
+    // Die Ausnahme fuellt eine **Luecke** in der Auskunft der Katalogdaten — sie
+    // ueberschreibt keine Auskunft, die es gibt. Armeebuch C nennt die
+    // Bibliothek ausdruecklich per `catalogueLink` und stellt damit
+    // `importRootEntries="false"`: „deren Wurzel-Angebot gehoert nicht zu
+    // meinem" (XSD-Vorgabe, ADR-0032; Issue 0098, Kriterium 3). Diese
+    // ausdrueckliche Aussage schlaegt die Ausnahme — anders als bei Armeebuch A,
+    // das die Bibliothek nirgends erwaehnt und deshalb oben ausgenommen bleibt.
+    // Das Gegenstueck `importRootEntries="true"` haelt schon
+    // `crossCatalog.rootEntryScope.test.js` (Issue 0098, Kriterium 3) fest.
+    const report = evaluate(
+      prepareDataset(DATASET_WITH_LINKED_LIBRARY),
+      { forces: [forceNode(GST_FORCE_ID, CATALOGUE_C_ID)] },
+    );
+
+    expect(isOfferedAnywhere(report, 'l-offer-unit')).toBe(false);
+    expect(hasViolationWithLimitId(report, 'l-roster-min')).toBe(false);
+  });
+
+  it('Kontrast dazu: dasselbe Kontingent bekommt die Wurzel-Angebote seines eigenen Armeebuchs C', () => {
+    // Gegenprobe zum Test darueber: der Datensatz ist gesund und C selbst wird
+    // sehr wohl angeboten — die Bibliothek faellt gezielt heraus, nicht alles.
+    const report = evaluate(
+      prepareDataset(DATASET_WITH_LINKED_LIBRARY),
+      { forces: [forceNode(GST_FORCE_ID, CATALOGUE_C_ID)] },
+    );
+
+    expect(isOfferedAnywhere(report, 'c-offer-unit')).toBe(true);
+    expect(hasViolationWithLimitId(report, 'c-roster-min')).toBe(true);
   });
 });
 

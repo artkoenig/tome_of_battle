@@ -153,6 +153,11 @@ Acceptance criteria:
   führt Bibliotheken ohnehin; ob ein Roster so etwas deklarieren darf, entscheidet
   dieses Issue nicht.
 
+- **Kein Versions-Bump in diesem PR.** Quelle: der Maintainer, gefragt und
+  beantwortet. Vorgeschlagen war 1.9.4 (Patch, weil sichtbare Fehlerbehebung);
+  die Version bleibt bei 1.9.3, also taggt die Pipeline nach dem Merge auch
+  nichts.
+
 ## Log
 
 - Reproduktion an den echten ergofang-Daten (Fork-Stand vom 2026-07-31):
