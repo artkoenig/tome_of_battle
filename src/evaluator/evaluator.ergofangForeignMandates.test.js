@@ -24,6 +24,13 @@
  * Angebots-Anker, davon 20 aus Vampire Counts, 16 aus Ogre Kingdoms und 44 aus
  * Orcs and Goblins.
  *
+ * Von der Rangfolge-Entscheidung („der Herkunftsindex schlaegt die Angabe des
+ * Rosters, wo er antwortet") ist diese Datei nicht beruehrt: fuer das
+ * `.gst`-deklarierte VC-Kontingent hat der Index prinzipiell keine Antwort, das
+ * Roster fuellt also genau die Luecke. Ebenso wenig von der
+ * Bibliotheks-Ausnahme: die ergofang-Fixture enthaelt keinen einzigen
+ * `library="true"`-Katalog.
+ *
  * Zur Namenswahl `catalogueId` am Kontingent-Knoten des Eingabe-Rosters siehe
  * den Kopf von `crossCatalog.rosterDeclaredCatalogue.test.js`.
  */

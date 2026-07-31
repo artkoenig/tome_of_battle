@@ -18,6 +18,21 @@
  * welchem Armeebuch das Kontingent stammt (`Force.catalogueId`, `src/types.js`;
  * gesetzt von `src/utils/createRoster.js`).
  *
+ * Deshalb ist diese Datei von der revidierten Rangfolge („der Herkunftsindex
+ * schlaegt die Angabe des Rosters, wo er antwortet") **nicht** beruehrt: hier
+ * antwortet er nirgends. Der Widerspruchsfall gehoert an die Engine-Naht und
+ * steht dort (`crossCatalog.rosterDeclaredCatalogue.test.js`,
+ * `query.primaryCatalogueFromRoster.test.js`).
+ *
+ * ── Gelesen wird NUR `force.catalogueId` ────────────────────────────────────
+ * Kein Rueckfall auf `roster.catalogueId` (Entscheidung des Issues):
+ * `roster.catalogueId` ist das Buch der **Liste**; auf ein Kontingent
+ * angewandt, das keines nennt, ordnete es einem verbuendeten Kontingent das
+ * falsche Buch zu — aktiv falsch gefiltert ist schlechter als ungefiltert. Der
+ * Block „Kriterium 4 an der App-Naht" unten pinnt genau das: dort traegt das
+ * Roster sehr wohl ein `catalogueId`, das Kontingent aber keines, und gefiltert
+ * wird trotzdem nicht.
+ *
  * Aufbau (System-/Roster-Formen, Leerfall-Konventionen) nach
  * `evaluationCache.evaluator.test.js`; hier ohne Fassaden-Mock, weil nicht der
  * Aufrufzaehler, sondern das Ergebnis Vertragsgegenstand ist.
@@ -144,7 +159,12 @@ describe('Kriterium 7: App-Auswertung mit gesetzter Armeebuch-Id am Kontingent',
 });
 
 describe('Kriterium 4 an der App-Naht: ohne Armeebuch-Id am Kontingent bleibt alles beim Alten', () => {
-  /** Ein App-Roster, dessen Kontingent keine Armeebuch-Id traegt. */
+  /**
+   * Ein App-Roster, dessen **Kontingent** keine Armeebuch-Id traegt — die
+   * **Liste** dagegen schon (`roster.catalogueId`). Genau so wird der fehlende
+   * Rueckfall beobachtbar: griffe er, wuerde nach Armeebuch A gefiltert und Bs
+   * Pflicht verschwaende.
+   */
   function rosterWithoutForceCatalogueId() {
     const roster = appRoster(CATALOGUE_A_ID);
     delete roster.forces[0].catalogueId;
@@ -152,7 +172,9 @@ describe('Kriterium 4 an der App-Naht: ohne Armeebuch-Id am Kontingent bleibt al
   }
 
   it('beide Pflichten und beide Wurzel-Angebote bleiben — es wird wie bisher nicht gefiltert', () => {
-    // Regressions-Wache, heute gruen.
+    // Regressions-Wache, heute gruen. Zugleich der Pin auf „kein Rueckfall auf
+    // `roster.catalogueId`": das Roster nennt A, das Kontingent nichts — und
+    // trotzdem bleibt Bs Pflicht stehen.
     const result = evaluateAppRoster(appSystem(), rosterWithoutForceCatalogueId());
 
     expect(hasViolationWithLimitId(result, 'a-roster-min-app')).toBe(true);
@@ -172,5 +194,17 @@ describe('Kriterium 4 an der App-Naht: ohne Armeebuch-Id am Kontingent bleibt al
 
     expect(hasViolationWithLimitId(result, 'a-roster-min-app')).toBe(true);
     expect(hasViolationWithLimitId(result, 'b-roster-min-app')).toBe(true);
+  });
+
+  it('widerspricht die Liste dem Kontingent, gilt das KONTINGENT — `roster.catalogueId` wird nie gelesen', () => {
+    // Der schaerfste Pin auf „nur `force.catalogueId`": die Liste nennt A, das
+    // Kontingent B. Gefiltert wird nach B.
+    const roster = appRoster(CATALOGUE_A_ID);
+    roster.forces[0].catalogueId = CATALOGUE_B_ID;
+
+    const result = evaluateAppRoster(appSystem(), roster);
+
+    expect(hasViolationWithLimitId(result, 'b-roster-min-app')).toBe(true);
+    expect(hasViolationWithLimitId(result, 'a-roster-min-app')).toBe(false);
   });
 });

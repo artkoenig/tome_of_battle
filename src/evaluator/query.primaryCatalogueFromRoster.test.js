@@ -23,6 +23,13 @@
  * Roster **ohne** Armeebuch-Id, und genau das pinnt hier die Regressions-Wache
  * zu Kriterium 4 noch einmal am selben Datensatz.
  *
+ * ── Rangfolge (revidierte Entscheidung) ─────────────────────────────────────
+ * Wo der Herkunftsindex antwortet, gilt **er**; die Angabe des Rosters fuellt
+ * nur die Luecke. Beleg ist ein Black-Box-Szenario zu genau diesem Rahmen:
+ * `docs/testing/primary-catalogue-scope`, Roster
+ * `10-vampire-force-with-ogre-catalogueid-attribute.ros` — „Das Armeebuch kommt
+ * aus der Herkunft der Force-DEFINITION, nicht aus dem Roster-Attribut."
+ *
  * Zur Namenswahl `catalogueId` am Kontingent-Knoten des Eingabe-Rosters siehe
  * den Kopf von `crossCatalog.rosterDeclaredCatalogue.test.js`.
  */
@@ -173,23 +180,61 @@ describe('Kriterium 6: primary-catalogue loest ueber die Armeebuch-Id des Roster
   });
 });
 
-describe('Kriterium 6, Rand: die Angabe des Rosters schlaegt auch hier den Herkunftsindex', () => {
-  // Dieselbe Entscheidung wie fuer die Pflichten („Decisions" des Issues):
-  // Kontingent in Armeebuch B deklariert, Roster nennt A — es gilt A.
-  it('instanceOf auf das im Roster genannte A haelt', () => {
+describe('Kriterium 6, Rand: der Herkunftsindex schlaegt auch hier die Angabe des Rosters', () => {
+  // Dieselbe Entscheidung wie fuer die Pflichten („Decisions" des Issues,
+  // revidiert): Kontingent in Armeebuch B **deklariert**, Roster behauptet A —
+  // es gilt B. Der Beleg ist ein Black-Box-Szenario, das genau diesen
+  // Bezugsrahmen prueft: `docs/testing/primary-catalogue-scope`, Roster 10 —
+  // „Das Armeebuch kommt aus der Herkunft der Force-DEFINITION, nicht aus dem
+  // Roster-Attribut."
+  it('instanceOf auf das vom Index gemeldete B haelt', () => {
     const report = evaluateWith(
-      primaryCatalogueCondition('instanceOf', CATALOGUE_A_ID), B_OWN_FORCE_ID, CATALOGUE_A_ID,
+      primaryCatalogueCondition('instanceOf', CATALOGUE_B_ID), B_OWN_FORCE_ID, CATALOGUE_A_ID,
     );
 
     expect(violationsOf(report, MAX_ALPHA_ID)).toHaveLength(1);
   });
 
-  it('instanceOf auf das vom Index gemeldete B haelt NICHT', () => {
+  it('instanceOf auf das im Roster behauptete A haelt NICHT', () => {
     const report = evaluateWith(
-      primaryCatalogueCondition('instanceOf', CATALOGUE_B_ID), B_OWN_FORCE_ID, CATALOGUE_A_ID,
+      primaryCatalogueCondition('instanceOf', CATALOGUE_A_ID), B_OWN_FORCE_ID, CATALOGUE_A_ID,
     );
 
     expect(violationsOf(report, MAX_ALPHA_ID)).toHaveLength(0);
+  });
+
+  it('und der Rahmen bleibt in beiden Lagen aufgeloest — keine unresolvedScope-Diagnose', () => {
+    const hit = evaluateWith(
+      primaryCatalogueCondition('instanceOf', CATALOGUE_B_ID), B_OWN_FORCE_ID, CATALOGUE_A_ID,
+    );
+
+    expect(unresolvedScopeOf(hit, PRIMARY_CATALOGUE)).toEqual([]);
+  });
+});
+
+describe('Kriterium 6, Rand: eine dem Datensatz unbekannte Armeebuch-Id zaehlt wie keine Angabe', () => {
+  // Entscheidung des Issues: die Angabe faellt weg, es gilt der Herkunftsindex —
+  // und schweigt auch der, bleibt es beim fail-closed `unresolvedScope`.
+  const UNKNOWN_CATALOGUE_ID = 'cat-not-loaded-0140-primary';
+
+  it('Kontingent aus der .gst: weiterhin fail-closed mit unresolvedScope', () => {
+    const report = evaluateWith(
+      primaryCatalogueCondition('instanceOf', CATALOGUE_A_ID), GST_FORCE_ID, UNKNOWN_CATALOGUE_ID,
+    );
+
+    expect(violationsOf(report, MAX_ALPHA_ID)).toHaveLength(0);
+    expect(report.diagnostics).toContainEqual(
+      expect.objectContaining({ kind: 'unresolvedScope', scope: PRIMARY_CATALOGUE }),
+    );
+  });
+
+  it('Kontingent aus einer .cat: es faellt auf den Herkunftsindex zurueck — B antwortet', () => {
+    const report = evaluateWith(
+      primaryCatalogueCondition('instanceOf', CATALOGUE_B_ID), B_OWN_FORCE_ID, UNKNOWN_CATALOGUE_ID,
+    );
+
+    expect(violationsOf(report, MAX_ALPHA_ID)).toHaveLength(1);
+    expect(unresolvedScopeOf(report, PRIMARY_CATALOGUE)).toEqual([]);
   });
 });
 

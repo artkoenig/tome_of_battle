@@ -8,14 +8,22 @@
  * genau die Lage der ergofang-Kataloge, in der der Herkunftsindex aus den
  * `.cat`-`forceEntry`s prinzipiell keine Antwort haben kann.
  *
- * Diese Tests kodieren, was die Kriterien VERLANGEN — nicht die (noch nicht
- * geschriebene) Umsetzung. Die meisten schlagen deshalb gegen die heutige Engine
- * fehl: ohne Antwort des Herkunftsindex bleibt die Referenzmenge leer,
- * `isInCatalogueScope` faellt bestimmungsgemaess offen aus, und die Pflichten
- * und Wurzel-Angebote **jedes** geladenen Armeebuchs treffen jedes Kontingent.
- * Wo ein Test heute schon gruen ist, steht das ausdruecklich dabei — entweder
- * als Gegenprobe („Kontrast", die Konvention von `crossCatalog.test.js") oder
- * als die von Kriterium 4 verlangte Regressions-Wache.
+ * Diese Tests kodieren, was die Kriterien VERLANGEN — nicht eine bestimmte
+ * Umsetzung. Wo ein Test schon vor dem Fix gruen war, steht das ausdruecklich
+ * dabei — entweder als Gegenprobe („Kontrast", die Konvention von
+ * `crossCatalog.test.js") oder als die von Kriterium 4 verlangte
+ * Regressions-Wache.
+ *
+ * ── Die Rangfolge der beiden Quellen (revidierte Entscheidung) ───────────────
+ * „Aus welchem Armeebuch stammt dieses Kontingent?" hat zwei moegliche
+ * Antwortgeber, und **der Herkunftsindex antwortet zuerst**: steht die
+ * Kontingent-**Definition** in einem Armeebuch, *ist* sie dessen Kontingent, und
+ * ein widersprechendes `catalogueId` am Roster ist Metadatenmuell. Beleg ist das
+ * Black-Box-Szenario `docs/testing/primary-catalogue-scope`, Roster 10: eine
+ * VC-Kontingent-Definition, deren `.ros` `catalogueId="Ogre Kingdoms"`
+ * behauptet, bleibt Vampire Counts. Die Angabe des Rosters fuellt also **nur die
+ * Luecke** — und genau die ist der Defekt dieses Issues: fuer ein in der `.gst`
+ * deklariertes Kontingent kann der Index prinzipiell keine Antwort haben.
  *
  * ── Die eine Namenswahl, die diese Datei treffen musste ──────────────────────
  * Der Eingabevertrag der Fassade (`evaluate`, `@param roster`) traegt heute
@@ -41,6 +49,10 @@ globalThis.DOMParser = dom.window.DOMParser;
 const GAME_SYSTEM_ID = 'gs-0140-declared';
 const CATALOGUE_A_ID = 'cat-a-0140-declared';
 const CATALOGUE_B_ID = 'cat-b-0140-declared';
+/** Ein **Bibliothekskatalog** — nie ein fremdes Armeebuch (siehe unten). */
+const LIBRARY_CATALOGUE_ID = 'cat-lib-0140-declared';
+/** Eine Armeebuch-Id, die in diesem Datensatz gar nicht vorkommt. */
+const UNKNOWN_CATALOGUE_ID = 'cat-not-loaded-0140';
 
 /** Zwei Kontingente, deklariert in der **Spielsystemdatei** — der Fall des Issues. */
 const GST_FORCE_ID = 'gst-force-0140-declared';
@@ -71,13 +83,14 @@ const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
  *
  * `ownForceId` deklariert zusaetzlich ein eigenes Kontingent **im Katalog** —
  * nur so laesst sich der Widerspruch „Index sagt B, Roster sagt A" bauen.
+ * `library` macht den Katalog zum Bibliothekskatalog.
  */
-function catalogueXml(letter, catalogueId, ownForceId) {
+function catalogueXml(letter, catalogueId, ownForceId, library = false) {
   const forceEntries = ownForceId === undefined
     ? ''
     : `<forceEntries><forceEntry id="${ownForceId}" name="Own Force of ${letter}"/></forceEntries>`;
   return `<?xml version="1.0" encoding="utf-8"?>
-    <catalogue id="${catalogueId}" name="Army ${letter}" gameSystemId="${GAME_SYSTEM_ID}" library="false">
+    <catalogue id="${catalogueId}" name="Army ${letter}" gameSystemId="${GAME_SYSTEM_ID}" library="${library}">
       ${forceEntries}
       <selectionEntries>
         <selectionEntry id="${letter}-offer-unit" name="${letter} Offer Unit" type="unit"/>
@@ -97,8 +110,12 @@ function catalogueXml(letter, catalogueId, ownForceId) {
 
 const CATALOGUE_A_XML = catalogueXml('a', CATALOGUE_A_ID, undefined);
 const CATALOGUE_B_XML = catalogueXml('b', CATALOGUE_B_ID, B_OWN_FORCE_ID);
+const LIBRARY_CATALOGUE_XML = catalogueXml('l', LIBRARY_CATALOGUE_ID, undefined, true);
 
-const DATASET = { gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_A_XML, CATALOGUE_B_XML] };
+const DATASET = {
+  gameSystem: GAME_SYSTEM_XML,
+  catalogues: [CATALOGUE_A_XML, CATALOGUE_B_XML, LIBRARY_CATALOGUE_XML],
+};
 
 /**
  * Ein Kontingent-Knoten des Eingabe-Rosters. Ohne `catalogueId` entsteht genau
@@ -180,29 +197,104 @@ describe('Kriterium 1: Kontingent aus der .gst, Armeebuch-Id am Roster', () => {
   });
 });
 
-describe('Kriterium 1, Rand: die Angabe des Rosters schlaegt den Herkunftsindex', () => {
-  // Woertlich die Entscheidung des Issues („Decisions"): „Widersprechen sich
-  // beide, gilt das Roster." Das Kontingent ist in Armeebuch B deklariert — der
-  // Herkunftsindex antwortet also, und zwar B —, das Roster nennt aber A.
+describe('Kriterium 1, Rand: der Herkunftsindex schlaegt die Angabe des Rosters', () => {
+  // Die Entscheidung des Issues („Decisions", revidiert): „Der Herkunftsindex
+  // antwortet zuerst; das Roster fuellt nur die Luecke." Das Kontingent ist in
+  // Armeebuch B **deklariert** — der Index antwortet also, und zwar B —,
+  // waehrend das Roster A behauptet. Es gilt B: eine Kontingent-Definition, die
+  // in einem Armeebuch steht, *ist* dessen Kontingent; das Roster-Attribut ist
+  // dagegen Metadatenmuell. Beleg: `docs/testing/primary-catalogue-scope`,
+  // Roster 10 (VC-Kontingent mit `catalogueId="Ogre Kingdoms"` bleibt VC).
   const forcesConflicting = [forceNode(B_OWN_FORCE_ID, CATALOGUE_A_ID)];
 
-  it('die Pflicht des im Roster genannten Armeebuchs A feuert', () => {
+  it('die Pflicht des vom Index gemeldeten Armeebuchs B feuert', () => {
     const report = evaluateForces(forcesConflicting);
 
-    expect(hasViolationWithLimitId(report, 'a-roster-min')).toBe(true);
+    expect(hasViolationWithLimitId(report, 'b-roster-min')).toBe(true);
   });
 
-  it('die Pflicht des vom Index gemeldeten Armeebuchs B feuert NICHT', () => {
+  it('die Pflicht des im Roster behaupteten Armeebuchs A feuert NICHT', () => {
     const report = evaluateForces(forcesConflicting);
 
+    expect(hasViolationWithLimitId(report, 'a-roster-min')).toBe(false);
+  });
+
+  it('angeboten wird der Wurzel-Eintrag von B, nicht der von A', () => {
+    const report = evaluateForces(forcesConflicting);
+
+    expect(isOfferedAnywhere(report, 'b-offer-unit')).toBe(true);
+    expect(isOfferedAnywhere(report, 'a-offer-unit')).toBe(false);
+  });
+});
+
+describe('Kriterium 1, Rand: eine Armeebuch-Id, die der Datensatz nicht kennt, zaehlt wie keine Angabe', () => {
+  // Entscheidung des Issues: sonst haette ein Kontingent, dessen Katalog gar
+  // nicht geladen ist, eine Referenzmenge ohne jeden Treffer — der Filter
+  // schloesse **alles** aus, ein still leeres Armeebuch. Stattdessen faellt die
+  // Angabe weg: es gilt der Herkunftsindex, und schweigt auch der, wird wie
+  // bisher nicht gefiltert.
+  it('Kontingent aus der .gst: der Index schweigt ebenfalls — es wird nicht gefiltert', () => {
+    const report = evaluateForces([forceNode(GST_FORCE_ID, UNKNOWN_CATALOGUE_ID)]);
+
+    expect(hasViolationWithLimitId(report, 'a-roster-min')).toBe(true);
+    expect(hasViolationWithLimitId(report, 'b-roster-min')).toBe(true);
+    expect(isOfferedAnywhere(report, 'a-offer-unit')).toBe(true);
+    expect(isOfferedAnywhere(report, 'b-offer-unit')).toBe(true);
+  });
+
+  it('Kontingent aus einer .cat: es faellt auf den Herkunftsindex zurueck', () => {
+    const report = evaluateForces([forceNode(B_OWN_FORCE_ID, UNKNOWN_CATALOGUE_ID)]);
+
+    expect(hasViolationWithLimitId(report, 'b-roster-min')).toBe(true);
+    expect(hasViolationWithLimitId(report, 'a-roster-min')).toBe(false);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Ein Bibliothekskatalog ist NIE ein fremdes Armeebuch
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Bibliothekskatalog: wie das Spielsystem von der Filterung ausgenommen', () => {
+  // Entscheidung des Issues, gestuetzt auf den schon festgelegten Vertrag aus
+  // Issue 0121, Task 19, Punkt 5 („Spielsystem- und Bibliothekseintraege
+  // erscheinen weiterhin ueberall", `CategoryUnitAdder.forceCatalogue.test.jsx`)
+  // und Kriterium 10 aus Issue 0135. Ein Soeldner-/Bibliothekskatalog ist kein
+  // Armeebuch, das man einem Kontingent streitig machen koennte — ohne die
+  // Ausnahme verloere ein Kontingent mit `.gst`-Definition genau diese Angebote.
+  const forcesFromA = [forceNode(GST_FORCE_ID, CATALOGUE_A_ID)];
+
+  it('der Wurzel-Eintrag des Bibliothekskatalogs wird angeboten', () => {
+    const report = evaluateForces(forcesFromA);
+
+    expect(isOfferedAnywhere(report, 'l-offer-unit')).toBe(true);
+  });
+
+  it('die roster-weite Pflicht des Bibliothekskatalogs gilt weiterhin', () => {
+    const report = evaluateForces(forcesFromA);
+
+    expect(hasViolationWithLimitId(report, 'l-roster-min')).toBe(true);
+  });
+
+  it('die kontingent-weite Pflicht des Bibliothekskatalogs gilt weiterhin', () => {
+    const report = evaluateForces(forcesFromA);
+
+    expect(hasViolationWithLimitId(report, 'l-force-min')).toBe(true);
+  });
+
+  it('Kontrast: das NICHT-Bibliotheks-Armeebuch B bleibt im selben Bericht draussen', () => {
+    // Der eigentliche Punkt: die Ausnahme gilt fuer Bibliotheken, nicht fuer
+    // jeden fremden Katalog — sonst waere die Filterung ganz aufgehoben.
+    const report = evaluateForces(forcesFromA);
+
+    expect(isOfferedAnywhere(report, 'b-offer-unit')).toBe(false);
     expect(hasViolationWithLimitId(report, 'b-roster-min')).toBe(false);
   });
 
-  it('angeboten wird der Wurzel-Eintrag von A, nicht der von B', () => {
-    const report = evaluateForces(forcesConflicting);
+  it('Rand: die Ausnahme gilt auch im Kontingent aus einer .cat', () => {
+    const report = evaluateForces([forceNode(B_OWN_FORCE_ID, undefined)]);
 
-    expect(isOfferedAnywhere(report, 'a-offer-unit')).toBe(true);
-    expect(isOfferedAnywhere(report, 'b-offer-unit')).toBe(false);
+    expect(isOfferedAnywhere(report, 'l-offer-unit')).toBe(true);
+    expect(hasViolationWithLimitId(report, 'l-roster-min')).toBe(true);
   });
 });
 
