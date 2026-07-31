@@ -28,8 +28,11 @@ import { useTranslation } from '../../i18n/useTranslation';
  * Die **Mitgliedschaft** Option→Gruppe bleibt Struktur des geparsten Systems
  * (Options-Sammler des Schreibmodells `src/roster/`); sie ordnet die Slots den Gruppen zu,
  * liefert aber weder Kandidaten noch Zustände. Der Sammler wird deshalb in seiner
- * **ungefilterten** Form befragt (ohne Sichtbarkeits-Kontext): was sichtbar ist,
- * sagt allein der Bericht (`isHidden`, ADR-0035). Wertete der Sammler die
+ * **ungefilterten** Form befragt (ohne Sichtbarkeits-Kontext): welche *Option*
+ * sichtbar ist, sagt allein der Bericht (`isHidden`, ADR-0035). Für eine
+ * *Gruppe* gilt das noch nicht — das `isHidden` eines Gruppen-Ankers liest hier
+ * niemand, ein Abschnitt entfällt allein, wenn er leer bleibt (Issue 0141).
+ * Wertete der Sammler die
  * Sichtbarkeit hier ein zweites Mal aus, verlöre eine Option, über die die beiden
  * Quellen uneins sind, ihre Gruppenzugehörigkeit und fiele als heimatlose Zeile
  * aus der Katalogstruktur (Issue 0140). Eine belegte Unter-Auswahl ist

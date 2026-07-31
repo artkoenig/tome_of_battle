@@ -207,6 +207,82 @@ Acceptance criteria:
   `test-author` refused to guess. If an implementation collides with it, it is
   a maintainer decision, not a criterion to reinterpret.
 
+### Review round 1 — fresh context
+
+Four findings, one of them against a criterion. Everything the reviewer
+reported was executed on both revisions (`origin/main` = `0598752` and HEAD),
+rendering all 208 unit cards of the six fixture catalogues through the
+production seam.
+
+| criterion | round 1 |
+| --- | --- |
+| 1 container carries the catalogue name | 0 |
+| 2 no untitled section | 0 |
+| 3 option inside its group | 0 |
+| 4 the offer does not change | 0 |
+| 5 hidden stays hidden | 0 |
+| 6 same write operation | 1 |
+| 7 issue 0131 holds | 0 |
+| violates no criterion | 3 |
+| **total** | **4** |
+
+Triage:
+
+- **A mandatory row that moves into a capped group becomes a live radio.**
+  Names criterion 6. `Lore of Necromancy` is a `mandatoryPhantom`
+  (`effectiveMin: 1`, path `0/0/2`). On main it rendered as a standalone
+  **checked, disabled checkbox** and a click wrote nothing; on HEAD it sits in
+  the new section `Lores of Magic (Max: 1)`, renders as an **unchecked,
+  enabled radio**, and a click issues `increaseCount(<unit>, 09ca-…)`. Cause:
+  the radio branch at `OptionGroup.jsx:284-300` ignores `isMandatory`, while
+  the checkbox branch below it and the standalone path both honour it. Five
+  cards: `Master Necromancer`, `0-1 Vampire Lord`, `Vampire Count`,
+  `Zacharias the Everliving`, `Sethep, the Merciless`. **Fixed in this
+  diff** — it is the named criterion, and the defect only became reachable
+  because this change moves the row into the group.
+  Why the suite missed it: criterion 6's tests pin `Blood Drinker` and
+  `Frostblade`, both in `Magic Weapons (VC)`, a group with no max — neither
+  ever takes the radio path. Criterion 4's sweep compares row *names* only,
+  never control state or writes.
+- **A section renders for a group the report marks hidden.** Violates no
+  criterion — criterion 5 speaks of option rows, and no hidden option row
+  appears. Pre-existing (1 card on main: `Necromancer` / `Magic Items`), and
+  widened to 7 cards by this change, because `buildSections` never consults a
+  group anchor's `isHidden`; a section is only dropped when it ends up barren.
+  **Filed as its own issue, not fixed here.** But the comment this diff added
+  at `SelectionConfigurator.jsx:29-33` — "was sichtbar ist, sagt allein der
+  Bericht" — is false while this hole exists, and a statement this diff made
+  false is fixed in this diff.
+- **The control shape changes for rows that move into a capped group.**
+  Violates no criterion; it follows directly from criterion 3, since the
+  group's own max then governs the control. Three rows across all 208 cards,
+  all with an unchanged write operation: `Wyvern` on `Black Orc Bigboss` and
+  `Orc Bigboss` goes from a quantity stepper to a radio inside
+  `Mounts (Max: 1)`, and `Spears` on `Zombies` from a checkbox to a radio
+  inside `Weapons (Max: 1)`. Recorded here rather than filed: it is the
+  criteria working as written, but it is user-visible and the issue did not
+  say so. The maintainer can overturn it.
+- **No version bump proposed, second checkpoint unanswered.** Violates no
+  criterion; it is this project's pre-PR obligation and is settled before the
+  PR is opened.
+
+Confirmed accurate by the reviewer's own independent measurement, not taken on
+trust: the Log's "9 untitled sections on 7 of 208 cards" reproduces card for
+card; `Magic Weapons (Relics of Lustria)` is still a standalone row before and
+after, so criterion 3 was not silently widened; and the two assertions
+corrected after the implementation existed state the catalogue's fact — the
+reviewer re-derived `Magic Items` (`11e6-e9d4-f6e4-c02d`, `.cat:21272`) from
+the XML itself.
+
+Also established: `getUnitOptions`' `visibilityContext` now has no production
+caller. The two remaining production callers — `rosterSync.js:133` and
+`SelectionConfigurator.jsx:135` — both call it unfiltered, and roster
+synchronisation always did. List rules and army-wide selectors build their own
+visibility contexts and never touch the collector, so nothing outside the unit
+card lost filtering. Rendered limit text is identical on all 208 cards before
+and after, so the unrepaired constraint loss on container-derived sections
+costs nothing in the fixtures.
+
 ## Checkpoints
 
 ### Before implementation
