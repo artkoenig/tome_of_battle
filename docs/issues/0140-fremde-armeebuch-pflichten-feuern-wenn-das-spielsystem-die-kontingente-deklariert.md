@@ -98,9 +98,27 @@ Acceptance criteria:
   0135. Ohne Ausnahme verliert ein Kontingent mit `.gst`-Kontingent-Definition
   seine Söldner-/Bibliotheksangebote — eine Regression, die der Filter vor
   diesem Issue nur deshalb nicht auslöste, weil er dort gar nicht griff.
-  `isInCatalogueScope` nimmt Bibliothekskataloge deshalb ebenso aus wie das
-  Spielsystem. In den ergofang-Daten gibt es null `library="true"`-Kataloge; die
-  Ausnahme kann den gemeldeten Fehler also nicht wieder einschleppen.
+  `isInCatalogueScope` nimmt Bibliothekskataloge deshalb aus. In den
+  ergofang-Daten gibt es null `library="true"`-Kataloge; die Ausnahme kann den
+  gemeldeten Fehler also nicht wieder einschleppen.
+- **Die Bibliotheks-Ausnahme ist zweifach eingegrenzt** (nachgezogen in
+  Prüfrunde 1, die Ausnahme war zunächst unbedingt formuliert):
+  1. **Hat ein Armeebuch die Bibliothek per `catalogueLink` ausdrücklich
+     benannt, gilt seine Aussage** — dann entscheidet `importRootEntries` wie
+     seit Issue 0098. Quelle: die bestehenden Fälle in
+     `crossCatalog.rootEntryScope.test.js` (Issue 0098, Kriterium 3), plus der
+     Befund des `implementer`, dass alle drei Definitive-Edition-Armeebücher
+     `Mercenaries` verlinken — eine unbedingte Ausnahme hätte dort jeden
+     Mercenaries-Wurzel-Eintrag in jedem Kontingent angeboten.
+  2. **Die Ausnahme gilt nur, wo das Armeebuch aus der Angabe des Rosters
+     kommt** — nie, wo die Katalogdaten selbst antworten. Quelle: Befund F1 der
+     Prüfrunde 1, eine belegte Verletzung von Kriterium 4 (ein Kontingent ohne
+     jede Angabe bekam Bibliotheks-Angebote und eine neue roster-weite
+     Verletzung, die es vorher nicht gab). Dieses Issue lässt den Filter
+     überhaupt erst in einem Fall greifen, in dem er vorher nicht greifen
+     konnte; die Ausnahme sichert allein diesen neuen Fall gegen den Verlust
+     geteilter Söldner-Bestände ab. Wo der Herkunftsindex antwortet, bleibt
+     Issue 0098 unangetastet — genau das fordert Kriterium 4.
 - **Der Adapter liest nur `force.catalogueId`, ohne Rückfall auf
   `roster.catalogueId`.** Quelle: Vorgabe, revidiert gegen die frühere
   Entscheidung unten. `roster.catalogueId` ist das Buch der **Liste**; auf ein
@@ -151,6 +169,21 @@ Acceptance criteria:
   Bibliothekseinträge aus dem Angebot verschwanden bzw. eine Vorbedingung
   „der Bericht bietet die fremde Einheit an, die Oberfläche blendet sie aus"
   nicht mehr gilt.
+- Eigene Nachprüfung am **vollständigen** ergofang-Satz (16 `.cat` + `.gst`,
+  Fork-Stand 2026-07-31, außerhalb der Suite): VC-Kontingent mit Armeebuch-Angabe
+  → 2 Verletzungen (`Core`, `General`); dasselbe ohne Angabe → unverändert 7;
+  ein Ogre-Kingdoms-Kontingent mit eigener Angabe → 3, `Bulls` feuert weiter.
+  Die letzte Zeile ist der Gegenbeweis dazu, dass die Prüfung schlicht
+  abgeschaltet wurde.
+- **Prüfrunde 1** (frischer Kontext, ganzer Diff gegen `origin/main`): 4 Befunde.
+  F1 verletzt Kriterium 4 (unbedingte Bibliotheks-Ausnahme, oben entschieden und
+  eingegrenzt) — wird behoben. F2 (dieselbe Zeile, ein verbündetes Kontingent
+  hebelte ein ausdrückliches `importRootEntries="false"` aus) verletzt kein
+  Kriterium, fällt aber mit derselben Eingrenzung weg — wird behoben. F3 (die
+  Entscheidung im Issue stand unbedingt, der Code war bedingt) verletzt kein
+  Kriterium — hier behoben. F4 (ein Kommentar im Adapter benennt den falschen
+  Mechanismus für den leeren String) verletzt kein Kriterium, ist aber eine vom
+  Diff selbst eingeführte Falschaussage — wird behoben.
 - Herkunft der fünf fremden Anker per `sourceIdByDefId` bestätigt:
   `7754-…` → Ogre Kingdoms, `9e4b-…` → RH Chaos Dwarfs, `4cea-…`/`4e75-…` →
   Tomb Kings, `a4dc-…` → High Elf; `a37e-…` (General) → Spielsystem.
