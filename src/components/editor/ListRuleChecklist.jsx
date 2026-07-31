@@ -57,11 +57,32 @@ export default function ListRuleChecklist({
   if (!states || states.length === 0) return null;
 
   const toggleRule = (state, nextChecked) => {
+    // Eine eindeutige Pflicht-Listenregel ist nicht abwählbar, solange sie
+    // pflichtig und sichtbar ist (Issue 0138, AC5) — der disabled-Zustand der
+    // Checkbox verhindert das ohnehin schon auf DOM-Ebene; dieser Guard hält
+    // die Regel auch gegen einen programmatischen Aufruf ein.
+    if (state.mandatory) return;
     if (nextChecked) {
       addUnit(state.entry, categoryId);
     } else if (state.selection) {
       removeUnit(state.selection.id);
     }
+  };
+
+  // Hover-Erklärung einer gesperrten Pflichtregel-Checkbox (Issue 0138, AC5):
+  // dieselbe GothicTooltip-/hoveredInfo-Mechanik, die diese Datei bereits für
+  // ihre Info-Popups verdrahtet, statt eines zweiten Tooltip-Mittels.
+  const handleMandatoryMouseEnter = (state, e) => {
+    if (!state.mandatory) return;
+    handleMouseEnter(state.name, t('editor.listRules.mandatoryTooltip'), e);
+  };
+  const handleMandatoryMouseMove = (state, e) => {
+    if (!state.mandatory) return;
+    handleMouseMove(e);
+  };
+  const handleMandatoryMouseLeave = (state) => {
+    if (!state.mandatory) return;
+    handleMouseLeave();
   };
 
   return (
@@ -118,13 +139,27 @@ export default function ListRuleChecklist({
                   {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                 </span>
                 <span className="list-rule-name text-body">{state.name}</span>
-                <input
-                  type="checkbox"
-                  checked={state.checked}
-                  aria-label={state.name}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => toggleRule(state, e.target.checked)}
-                />
+                {/* Die Hover-Zuhörer sitzen am (nicht deaktivierten) Wrapper, nicht an der
+                    Checkbox selbst: ein `disabled`-Formularelement bekommt keine Maus-Events
+                    zugestellt (weder in echten Browsern noch in jsdom), eine gesperrte
+                    Pflichtregel-Checkbox bräuchte sonst nie ihre Erklärung. `display: contents`
+                    hält den Wrapper layout-unsichtbar, sodass die Checkbox weiterhin das
+                    direkte Flex-Kind von `.list-rule-row` ist. */}
+                <span
+                  className="list-rule-checkbox-slot"
+                  onMouseEnter={(e) => handleMandatoryMouseEnter(state, e)}
+                  onMouseMove={(e) => handleMandatoryMouseMove(state, e)}
+                  onMouseLeave={() => handleMandatoryMouseLeave(state)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={state.checked}
+                    aria-label={state.name}
+                    disabled={state.mandatory}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => toggleRule(state, e.target.checked)}
+                  />
+                </span>
               </div>
             ) : (
               // Schalter-Regel (oder noch nicht angehakter Behälter): keine
@@ -133,12 +168,20 @@ export default function ListRuleChecklist({
               <label className="list-rule-row list-rule-row-toggle">
                 <span className="list-rule-chevron-slot" />
                 <span className="list-rule-name text-body">{state.name}</span>
-                <input
-                  type="checkbox"
-                  checked={state.checked}
-                  aria-label={state.name}
-                  onChange={(e) => toggleRule(state, e.target.checked)}
-                />
+                <span
+                  className="list-rule-checkbox-slot"
+                  onMouseEnter={(e) => handleMandatoryMouseEnter(state, e)}
+                  onMouseMove={(e) => handleMandatoryMouseMove(state, e)}
+                  onMouseLeave={() => handleMandatoryMouseLeave(state)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={state.checked}
+                    aria-label={state.name}
+                    disabled={state.mandatory}
+                    onChange={(e) => toggleRule(state, e.target.checked)}
+                  />
+                </span>
               </label>
             )}
 

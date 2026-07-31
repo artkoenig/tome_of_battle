@@ -32,6 +32,13 @@
   flex-shrink: 0;
 }
 
+/* Layout-unsichtbarer Hover-Wrapper um eine Checkbox (Issue 0138): trägt die
+   Zeiger-Zuhörer, die eine gesperrte (`disabled`) Pflichtregel-Checkbox selbst
+   nicht mehr empfängt, ohne den Flex-Fluss der Zeile zu verändern. */
+.list-rule-checkbox-slot {
+  display: contents;
+}
+
 /* Fester Schacht links für den Chevron (reines Icon), damit die Namen aller
    obersten Zeilen (mit und ohne Chevron) bündig fluchten. */
 .list-rule-chevron-slot {

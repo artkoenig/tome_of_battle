@@ -48,6 +48,15 @@ const ERROR_MESSAGE_KEY = Object.freeze({
 export default function useRosterList({ systems, rosters, setRosters, reloadData, navigate, showToast }) {
   const [isNewRosterModalOpen, setIsNewRosterModalOpen] = useState(false);
   const [rosterToDelete, setRosterToDelete] = useState(null);
+  // Welche Roster-Ids in dieser Sitzung neu angelegt wurden (Issue 0138, Plan
+  // Vertrag 4) — rein im Speicher, bewusst außerhalb von `Roster`/`Force` und
+  // IndexedDB, damit die Markierung nie durch Speichern/Laden oder
+  // `.rosz`-Export/Import wandert (siehe die "Nicht-offensichtliche
+  // Entscheidung" im Plan). Ein Neuladen der Seite (neue Hook-Instanz) startet
+  // mit einem leeren Set, sodass ein zuvor frisches Roster danach wieder als
+  // bestehend gilt.
+  const [freshRosterIds, setFreshRosterIds] = useState(() => new Set());
+  const isFreshRoster = (id) => (id !== undefined && id !== null) && freshRosterIds.has(id);
 
   const openNewRosterModal = () => setIsNewRosterModalOpen(true);
   const closeNewRosterModal = () => setIsNewRosterModalOpen(false);
@@ -70,6 +79,14 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     try {
       await saveRoster(roster);
       closeNewRosterModal();
+      // Vor `setRosters`: das frisch angelegte Roster als "in dieser Sitzung
+      // neu" markieren (Issue 0138), bevor irgendein Konsument (z. B. der
+      // Auto-Add-Effekt in useRoster) es zu Gesicht bekommt.
+      setFreshRosterIds(prev => {
+        const next = new Set(prev);
+        next.add(roster.id);
+        return next;
+      });
       // Die neue Liste sofort veröffentlichen, damit die abgeleitete Auswahl
       // den Editor öffnen kann, ohne auf das Neuladen aus der DB zu warten.
       setRosters(prev => [...prev, roster]);
@@ -204,5 +221,6 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     renameRoster,
     importRoster,
     exportRoster,
+    isFreshRoster,
   };
 }

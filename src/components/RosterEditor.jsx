@@ -12,7 +12,7 @@ import { useRuleUrl } from '../hooks/useRuleUrl';
 
 const ruleGroupKeyOf = (forceId, categoryId) => `${forceId}:${categoryId}`;
 
-export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster, onReportError }) {
+export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster, onReportError, isFreshRoster }) {
   const {
     roster,
     violations,
@@ -32,7 +32,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     redo,
     canUndo,
     canRedo
-  } = useRoster(initialRoster, system, saveRoster, onReportError);
+  } = useRoster(initialRoster, system, saveRoster, onReportError, isFreshRoster);
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   // Listenregel-Gruppen sind ausklappbar und **standardmäßig eingeklappt**. Wir

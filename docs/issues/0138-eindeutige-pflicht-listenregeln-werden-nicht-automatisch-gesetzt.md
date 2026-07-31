@@ -276,6 +276,40 @@ Acceptance criteria:
   schon am `type="unit"`-Filter, nicht primär an Kosten/Unterauswahl — beide
   wurden mit dem realen Datensatz statt einer Vermutung getestet.
 
+- 2026-07-31: **Implementiert** (`implementer`, gegen die vorgeschriebenen
+  Tests, ohne sie zu verändern). `listRules.js` bekam
+  `isUnconditionalMandatoryListRule` und `findMissingMandatoryListRuleSelections`
+  sowie ein `mandatory`-Feld in `buildListRuleStates`; `useRosterList.js`
+  ein In-Memory-`freshRosterIds`/`isFreshRoster`; `useRoster.js` den neuen,
+  auf `isFreshRoster` gegateten Effekt (Commit über `replaceRoster`);
+  `RosterEditor.jsx`/`App.jsx` reichen `isFreshRoster` durch;
+  `ListRuleChecklist.jsx` sperrt die Checkbox einer Pflichtzeile und zeigt
+  die Erklärung über die bestehende `GothicTooltip`-Mechanik — die
+  Hover-Listener mussten dafür von der (jetzt `disabled`) Checkbox auf ein
+  umschließendes `&lt;span&gt;` wandern, weil deaktivierte Formularelemente in
+  Browser und jsdom gleichermaßen keine Maus-Events mehr auslösen (empirisch
+  mit drei Wegwerf-Tests verifiziert). Neuer i18n-Schlüssel
+  `editor.listRules.mandatoryTooltip` (de/en).
+  **Fakten:** `npx vitest run` der 5 neuen plus 4 Geschwisterdateien:
+  140/140, exit 0. `npm test` (voller Lauf, 2793 Vitest-Tests über 268
+  Dateien plus Puppeteer-E2E) zweimal grün, exit 0. `lint`/`typecheck`/
+  `depcruise` je exit 0 (ein bereits vorbestehender, unveränderter
+  Circular-Dependency-Hinweis in `depcruise`, `listRules.js` ist nicht Teil
+  davon; keine Evaluator-Roster-Grenzverletzung). `knip` exit 1, aber
+  ausschließlich dieselben 5 vorbestehenden Meldungen wie auf `main`.
+  **Angenommen, nicht von einem Test erzwungen:** `findMissingMandatoryListRuleSelections`
+  trägt laut Vertrag keinen `roster`-Parameter; die reaktive
+  `hidden`-Auswertung (Kriterium 3) läuft deshalb über einen synthetischen
+  Ein-Force-Roster-Ausschnitt statt über den echten, mehrere Kontingente
+  umfassenden Roster — korrekt für den getesteten Ein-Force-Fall, eine
+  unbewiesene Engstelle für eine hypothetische, roster-weite
+  `scope="roster"`-Bedingung über mehrere Kontingente hinweg.
+  **Kein Screenshot beigelegt:** die Offline-Fixtures von
+  `scripts/generate_screenshots.js`/der E2E-Harness (`src/__fixtures__/whfb6/`)
+  enthalten keinen §9.9-förmigen Pflicht-Listenregel-Eintrag; eine neue
+  Fixture allein dafür erschien unverhältnismäßig zum Auftrag. Verhalten ist
+  auf DOM-Ebene durch `ListRuleChecklist.mandatory.test.jsx` belegt.
+
 ## Checkpoints
 
 ### Before implementation
