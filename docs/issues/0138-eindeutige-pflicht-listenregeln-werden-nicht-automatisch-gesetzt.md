@@ -1,10 +1,19 @@
 ---
-status: active
+status: done
 branch: claude/vampire-list-laws-undeath-3ooflh
 pr: https://github.com/artkoenig/tome_of_battle/pull/193
 ---
 
 # Eindeutige Pflicht-Listenregeln (min≥1) werden nicht automatisch gesetzt
+
+> **In Teilen überholt durch Issue 0140.** Die Bedingung „keine Kosten in
+> irgendeiner Kostenart" aus Kriterium 1 — und die daraus folgende Aussage in
+> Kriterium 2, ein kostenpflichtiger Wurzeleintrag werde nicht automatisch
+> gesetzt — gilt nicht mehr. Kosten spielen für die Pflicht-Erkennung keine
+> Rolle. Ebenfalls präzisiert: die Checkbox einer Pflichtregel (Kriterium 5)
+> ist nur gesperrt, solange die Regel tatsächlich vorhanden ist. Alles Übrige
+> in dieser Akte gilt unverändert; sie bleibt der historische Datensatz ihres
+> eigenen Laufs.
 
 ## Intent
 

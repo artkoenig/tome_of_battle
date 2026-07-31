@@ -74,22 +74,47 @@ Acceptance criteria:
 
 ## Plan
 
+Kein eigener Plan nötig: die Änderung liegt in einem Modul
+(`src/roster/listRules.js`) und entfernt dort eine Bedingung. Nach Prüfrunde 1
+kommt `src/components/editor/ListRuleChecklist.jsx` dazu — ebenfalls eine
+einzelne Bedingung, kein neuer Baustein, keine neue Schnittstelle.
+
 ## Tasks
+
+- [x] Kostenbedingung aus `isUnconditionalMandatoryListRule` entfernen,
+      Docstring korrigieren.
+- [ ] Sperre der Ankreuz-Checkbox an die Präsenz koppeln (Prüfrunde 1, F1).
+- [ ] Docstring-Satz über den `type=upgrade`-Filter richtigstellen
+      (Prüfrunde 1, F4).
+- [ ] End-zu-End-Beleg für Kriterium 5 in einer **Punkte**-Kostenart
+      (Prüfrunde 1, F2).
 
 ## Decisions
 
 - **Die Kostenbedingung fällt ersatzlos weg**, statt sie auf budgetierte
   Kostenarten (Punkte) einzuschränken. Quelle: Antwort des Menschen,
-  2026-07-31, auf die vorgelegte Wahl zwischen beiden. Begründung im Intent:
-  die einschränkende Variante koppelt `src/roster/listRules.js` an die
-  Roster-Kostengrenzen und löst einen Fall, den heute kein Katalog liefert
-  (kein Kandidat trägt Punktekosten).
+  2026-07-31, auf die vorgelegte Wahl zwischen beiden. Der Mensch bekam als
+  Begründung vorgelegt: die einschränkende Variante koppelt
+  `src/roster/listRules.js` an die Roster-Kostengrenzen und löst einen Fall,
+  den heute kein Katalog liefert (kein Kandidat trägt Punktekosten). Diese
+  Begründung steht in der vorgelegten Wahl, nicht im Intent.
 - **Bestandsroster werden nicht nachgerüstet.** Quelle: Antwort des Menschen,
   2026-07-31. Folge, dem Menschen vorgelegt und angenommen: eine bestehende
   High-Elf-Liste behält den Fehler und kann ihn mangels Primärkategorie des
   Eintrags nicht von Hand beheben; sie muss neu angelegt werden.
 - **Die fehlende Primärkategorie des Eintrags wird hier nicht behoben.** Sie
-  verletzt kein Kriterium dieser Issue und bekommt eine eigene Issue.
+  verletzt kein Kriterium dieser Issue und bekommt eine eigene Issue — Issue
+  0141.
+- **Keine Versionsanhebung.** Quelle: Antwort des Menschen, 2026-07-31,
+  auf den vorgeschlagenen Patch-Bump 1.9.3 → 1.9.4. `package.json` bleibt
+  unangetastet; der Tagging-Workflow feuert für diesen Merge nicht.
+- **Die Sperre der Ankreuz-Checkbox wird an die Präsenz gekoppelt** (Prüfrunde
+  1, F1): gesperrt nur, solange die Pflichtregel tatsächlich vorhanden ist.
+  Das ist keine neue Anforderung, sondern die einzige Lesart, unter der
+  Kriterium 4 und Issue 0138 Kriterium 5 zusammen bestehen können — eine
+  fehlende Pflichtregel muss von Hand behebbar bleiben. Trifft
+  zwangsläufig auch die kostenfreien Pflichtregeln aus Issue 0138 mit; ein
+  Sonderweg nur für kostenbehaftete wäre nicht begründbar.
 
 ## Log
 
@@ -97,14 +122,50 @@ Acceptance criteria:
   über `raw.githubusercontent.com` (`catpkg.json` je Quelle) geladen und nach
   Wurzeleinträgen vom Typ `upgrade` mit `min ≥ 1` in `scope=force|roster`
   durchsucht. Treffer mit Kosten ≠ 0: die zwei im Intent genannten.
+- Drei Tests aus Issue 0138 pinnten die aufgehobene Kostenbedingung fest
+  (`listRules.mandatoryPredicate.test.js` zweimal,
+  `listRules.mandatoryState.test.js` einmal). Triage: durch Kriterium 1
+  überholt, vom test-author umgeschrieben — Fixtures unverändert, Zusicherung
+  umgedreht.
+- **Prüfrunde 1**, Reviewer mit frischem Kontext, Belege per Exitcode
+  (`npm test` 0 über 274 Dateien / 2878 Tests, `npm run lint` 0,
+  `npm run typecheck` 0, `npm run analyze` 0). Vier Befunde:
+  - F1 — die Ankreuzliste sperrt eine Pflichtregel unabhängig davon, ob sie
+    vorhanden ist. In einem Bestandsroster ist der Fehler damit nicht mehr von
+    Hand behebbar. Verletzt Kriterium 4. **Triage: jetzt beheben.**
+  - F2 — Kriterium 5 ist nur für nicht-budgetierte Kostenarten End-zu-End
+    belegt, die Punkte-Kostenart nur im Prädikat. Verletzt kein Kriterium.
+    **Triage: Lücke jetzt schließen**, weil sie dem laufenden Intent dient.
+  - F3 — die Issue-Akte war leer (Plan, Aufgaben, Checkpoints), und eine
+    Entscheidungs-Begründung war fälschlich dem Intent zugeschrieben.
+    Verletzt kein Kriterium. **Triage: jetzt beheben** (reine Tracker-Änderung
+    — die Prüfrunde dafür entfällt per Waiver).
+  - F4 — der neue Docstring schreibt dem Prädikat einen `type=upgrade`-Filter
+    zu, den es nicht durchführt; der sitzt in seinen beiden Aufrufern.
+    Verletzt kein Kriterium, ist aber eine von diesem Diff selbst falsch
+    gemachte Aussage. **Triage: jetzt beheben.**
+  - Reviewer-Nebenbefund, keiner der vier: Issue 0138 steht weiter auf
+    `status: active`, obwohl sein PR gemergt ist, und trägt die von Kriterium 1
+    überholte Kostenklausel. **Triage: Status richtigstellen und die
+    Überholung vermerken** — bounded auf das, was dieser Diff falsch macht.
+  - Der gemessene Blast Radius ist aus dem Repository **nicht** nachprüfbar
+    (Katalogdateien werden zur Laufzeit geholt, ADR 0014). Der Reviewer hat
+    stattdessen alle eingefrorenen Fixture-Kataloge geprüft: **kein** Eintrag
+    qualifiziert sich neu — vereinbar mit der Behauptung, aber kein Beleg.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Der Mensch wollte den Eintrag „Who
+  Is the general? …" direkt eingefügt sehen; das ist Kriterium 2.
+- **What surprised me?** Dass der Eintrag mangels Primärkategorie in keiner
+  Ankreuzliste steht — der Fehler ist heute von Hand gar nicht behebbar. Das
+  ist ein eigener Mangel (Issue 0141), nicht Teil dieser Änderung.
+- **What am I assuming without having verified it?** Dass der Auto-Add-Effekt
+  aus Issue 0138 mit `categoryId = null` sauber durchläuft. Der Sweep gibt das
+  Feld bereits als nullable zurück, geprüft war es zu diesem Zeitpunkt nicht —
+  inzwischen pinnt es ein eigener Testfall.
 
 ### Before the PR
 
