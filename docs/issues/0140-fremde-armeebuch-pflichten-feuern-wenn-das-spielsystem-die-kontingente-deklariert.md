@@ -1,0 +1,290 @@
+---
+status: done
+branch: claude/ergofang-vampire-fehler-6vva1b
+pr: https://github.com/artkoenig/tome_of_battle/pull/198
+---
+
+# Fremde Armeebuch-Pflichten feuern, wenn das Spielsystem die Kontingente deklariert
+
+## Intent
+
+Ein leeres Vampire-Counts-Roster (ergofang, Kontingent „Standard", 0/2000 Punkte)
+meldet im Lagerbericht sieben Fehler, von denen **fünf einem fremden Armeebuch
+gehören** — gemeldet vom Maintainer per Screenshot:
+
+| Meldung | Herkunft der Definition | gehört ins VC-Roster? |
+|---|---|---|
+| „needs at least 3 × Core" | Spielsystem | ja |
+| „needs a General" | Spielsystem | ja |
+| „Who Is the general? Nobody knows, roll the dice to see what it shows." | `High Elf.cat` | **nein** |
+| „needs a Bulls" | `Ogre Kingdoms.cat` | **nein** |
+| „needs at least 3 × Chaos Dwarf Warrior" | `RH Chaos Dwarfs.cat` | **nein** |
+| „needs a Tomb kings General" | `Tomb Kings.cat` | **nein** |
+| „needs a Hierophant" | `Tomb Kings.cat` | **nein** |
+
+Reproduziert an den echten ergofang-Katalogdaten (alle 16 `.cat` plus die `.gst`
+des Forks `artkoenig/Warhammer-Fantasy-6th-edition`, Roster = ein leeres
+Kontingent `7d9d-6c8d-4ea0-b7ad`): der Bericht trägt genau diese sieben
+Verletzungen, alle mit `scope="roster"`.
+
+Die Engine hat für genau diesen Fall bereits einen Katalog-Bezugsrahmen
+(`isInCatalogueScope`, Issue 0098): eine Pflicht eines fremden Armeebuchs soll in
+einem Kontingent, das nicht aus diesem Buch stammt, weder erzwungen noch
+angeboten werden. Der Rahmen greift hier aber nicht, weil er das Armeebuch eines
+Kontingents **allein aus den Katalogdaten** ableitet
+(`buildPrimaryCatalogueIndex`: nur `forceEntry`s, die in einer `.cat` stehen).
+Die ergofang-Kataloge deklarieren ihre Kontingente jedoch in der
+**Spielsystemdatei** — der Index kennt das Kontingent `7d9d-…` also nicht, die
+Referenzmenge bleibt leer, und `isInCatalogueScope` fällt bestimmungsgemäß
+**offen** aus: keinerlei Filterung. Dieselbe leere Referenzmenge trifft die
+Angebots-Schicht (`offer.js`), die den Wurzel-Einträgen fremder Armeebücher damit
+ebenfalls einen Slot gibt.
+
+Welches Armeebuch gemeint ist, weiß das Roster selbst: jedes Kontingent trägt
+seinen Katalog (`force.catalogueId` im App-Modell, `catalogueId`-Attribut am
+`<force>` einer `.ros`). Diese Angabe erreicht die Engine bisher nicht.
+
+Gewünschtes beobachtbares Verhalten: Im Lagerbericht eines Vampire-Counts-Rosters
+stehen nur Pflichten, die dem Vampire-Counts-Buch oder dem Spielsystem gehören.
+
+Acceptance criteria:
+
+1. Trägt ein Kontingent des Rosters die Id seines Armeebuchs, benutzt die Engine
+   **diese** als sein Armeebuch — auch dann, wenn die Kontingent-Definition aus
+   der Spielsystemdatei stammt und deshalb in keinem `.cat` steht.
+2. Ein leeres ergofang-VC-Kontingent (`7d9d-6c8d-4ea0-b7ad`, Katalog
+   `ea4b-9294-3427-1fc1`) über dem vollständigen ergofang-Datensatz meldet die
+   Pflichten des Spielsystems (`General`, `Core`) und **keine** der fünf
+   fremden Pflichten aus obiger Tabelle.
+3. Für dasselbe Kontingent bietet die Engine keinen Wurzel-Eintrag eines fremden
+   Armeebuchs als Slot an.
+4. Trägt ein Kontingent des Rosters **keine** Armeebuch-Id, bleibt das Verhalten
+   unverändert: es gilt der bisherige Herkunftsindex aus den Katalogdaten, und
+   ist auch der ohne Antwort, filtert die Engine wie bisher nicht.
+5. Enthält ein Roster zwei Kontingente aus **verschiedenen** Armeebüchern, gilt
+   für jedes sein eigenes Buch: eine Pflicht des einen Buchs feuert nicht wegen
+   des anderen Kontingents, und ein roster-weiter Bezugsrahmen umfasst beide
+   Bücher.
+6. Der Bezugsrahmen `primary-catalogue` beantwortet dieselbe Frage aus derselben
+   Quelle: trägt ein Kontingent seine Armeebuch-Id, löst der Rahmen darüber auf,
+   statt ihn als `unresolvedScope` zu melden.
+7. Die App reicht die Angabe durch: eine im App-Roster gesetzte Armeebuch-Id
+   eines Kontingents kommt in der Auswertung an.
+8. Die bestehenden Testschichten bleiben grün (`npx vitest run src/evaluator`,
+   `npm test`).
+
+## Plan
+
+Kein eigener Plan nötig: die Änderung liegt in einem Modul (`src/evaluator/`)
+plus der einen App-Naht, die es speist (`src/evaluation/rosterAdapter.js`).
+
+## Tasks
+
+## Decisions
+
+- **~~Die Angabe des Rosters schlägt den Herkunftsindex.~~ Revidiert (siehe
+  unten): der Index schlägt das Roster, wo er antwortet.**
+- **Der Herkunftsindex antwortet zuerst; das Roster füllt nur die Lücke.**
+  Quelle: das E2E-Szenario `docs/testing/primary-catalogue-scope`, Roster 10 —
+  ein Black-Box-Fall, der genau den Widerspruchsfall aus den Katalogdaten
+  ableitet: eine VC-Kontingent-**Definition**, deren `.ros` `catalogueId="Ogre
+  Kingdoms"` behauptet, bleibt Vampire Counts. Das ist richtig: steht die
+  Kontingent-Definition in einem Armeebuch, *ist* sie dessen Kontingent, und ein
+  widersprechendes Roster-Attribut ist Metadatenmüll. Die ursprüngliche
+  Vorrangregel war eine Vermutung ohne Beleg; dieses Szenario ist der Beleg
+  dagegen. Für ergofang ändert das nichts — dort schweigt der Index, also
+  antwortet das Roster, und genau das ist der Defekt dieses Issues.
+- **Ein Bibliothekskatalog ist nie ein fremdes Armeebuch.** Quelle: der schon
+  festgelegte Vertrag aus Issue 0121, Task 19, Punkt 5 — „Spielsystem- und
+  Bibliothekseinträge erscheinen weiterhin überall"
+  (`CategoryUnitAdder.forceCatalogue.test.jsx`), plus Kriterium 10 aus Issue
+  0135. Ohne Ausnahme verliert ein Kontingent mit `.gst`-Kontingent-Definition
+  seine Söldner-/Bibliotheksangebote — eine Regression, die der Filter vor
+  diesem Issue nur deshalb nicht auslöste, weil er dort gar nicht griff.
+  `isInCatalogueScope` nimmt Bibliothekskataloge deshalb aus. In den
+  ergofang-Daten gibt es null `library="true"`-Kataloge; die Ausnahme kann den
+  gemeldeten Fehler also nicht wieder einschleppen.
+- **Die Bibliotheks-Ausnahme ist zweifach eingegrenzt** (nachgezogen in
+  Prüfrunde 1, die Ausnahme war zunächst unbedingt formuliert):
+  1. **Hat ein Armeebuch die Bibliothek per `catalogueLink` ausdrücklich
+     benannt, gilt seine Aussage** — dann entscheidet `importRootEntries` wie
+     seit Issue 0098. Quelle: die bestehenden Fälle in
+     `crossCatalog.rootEntryScope.test.js` (Issue 0098, Kriterium 3), plus der
+     Befund des `implementer`, dass alle drei Definitive-Edition-Armeebücher
+     `Mercenaries` verlinken — eine unbedingte Ausnahme hätte dort jeden
+     Mercenaries-Wurzel-Eintrag in jedem Kontingent angeboten.
+  2. **Die Ausnahme gilt nur, wo das Armeebuch aus der Angabe des Rosters
+     kommt** — nie, wo die Katalogdaten selbst antworten. Quelle: Befund F1 der
+     Prüfrunde 1, eine belegte Verletzung von Kriterium 4 (ein Kontingent ohne
+     jede Angabe bekam Bibliotheks-Angebote und eine neue roster-weite
+     Verletzung, die es vorher nicht gab). Dieses Issue lässt den Filter
+     überhaupt erst in einem Fall greifen, in dem er vorher nicht greifen
+     konnte; die Ausnahme sichert allein diesen neuen Fall gegen den Verlust
+     geteilter Söldner-Bestände ab. Wo der Herkunftsindex antwortet, bleibt
+     Issue 0098 unangetastet — genau das fordert Kriterium 4.
+- **Der Adapter liest nur `force.catalogueId`, ohne Rückfall auf
+  `roster.catalogueId`.** Quelle: Vorgabe, revidiert gegen die frühere
+  Entscheidung unten. `roster.catalogueId` ist das Buch der **Liste**; auf ein
+  Kontingent angewandt, das keines nennt, ordnete es einem verbündeten
+  Kontingent das falsche Buch zu — aktiv falsch gefiltert ist schlechter als
+  ungefiltert. `buildRoster` setzt das Feld je Kontingent seit jeher, also ist
+  kein reales Roster betroffen.
+- **`primary-catalogue` wird mitgezogen (Kriterium 6).** Quelle: Vorgabe, ohne
+  Rückfrage. Zwei verschiedene Antworten auf „aus welchem Armeebuch stammt
+  dieses Kontingent?" in einer Engine wären eine Bruchstelle. Risiko geprüft:
+  die ergofang-Kataloge enthalten **null** Vorkommen von
+  `scope="primary-catalogue"` (`grep -c` über alle 17 Dateien), in den
+  Definitive-Edition-Katalogen stehen die Kontingente in den `.cat`s und der
+  Index antwortet dort schon heute gleich — die Änderung kann dort also keine
+  andere Antwort erzeugen.
+
+- **~~Der Adapter liest `force.catalogueId ?? roster.catalogueId`.~~ Revidiert
+  (siehe oben): nur `force.catalogueId`.** Ursprüngliche Quelle: das
+  App-Schreibmodell wendet den Rückfall an (`useRoster.js:164`,
+  `rosterSerialization.js:132`). Verworfen, weil der Rückfall ein verbündetes
+  Kontingent dem Buch der Liste zuschlüge.
+
+- **Eine Armeebuch-Id, die der Datensatz nicht kennt, zählt wie keine Angabe.**
+  Quelle: Vorgabe, unbeantwortet — vom `test-author` als offene Randfrage
+  gemeldet. Sonst hätte ein Kontingent, dessen Katalog nicht geladen ist, eine
+  Referenzmenge ohne jeden Treffer, und der Filter schlösse **alles** aus: ein
+  still leeres Armeebuch. Der Rahmen fällt seit Issue 0098 bei fehlender Angabe
+  bewusst offen aus; eine unbekannte Id ist derselbe Fall — sie fällt auf den
+  Herkunftsindex zurück und, wenn auch der schweigt, offen aus.
+- **Ein Bibliothekskatalog als Armeebuch eines Kontingents bekommt keine
+  Sonderregel.** Quelle: Vorgabe, unbeantwortet. `buildCatalogueRootEntryClosure`
+  führt Bibliotheken ohnehin; ob ein Roster so etwas deklarieren darf, entscheidet
+  dieses Issue nicht.
+
+- **Kein Versions-Bump in diesem PR.** Quelle: der Maintainer, gefragt und
+  beantwortet. Vorgeschlagen war 1.9.4 (Patch, weil sichtbare Fehlerbehebung);
+  die Version bleibt bei 1.9.3, also taggt die Pipeline nach dem Merge auch
+  nichts.
+
+## Log
+
+- Reproduktion an den echten ergofang-Daten (Fork-Stand vom 2026-07-31):
+  `prepareDataset` + `evaluate` über `.gst` + 16 `.cat`, Roster = ein leeres
+  Kontingent `7d9d-6c8d-4ea0-b7ad` → 7 Verletzungen, identisch zum Screenshot.
+  `primaryCatalogueByForceDefId` hat dabei **eine** Zuordnung (für ein
+  Kontingent, das ein einzelner Katalog selbst deklariert); das
+  VC-Kontingent ist nicht darunter.
+- Der `implementer` meldete die Umsetzung als **blockiert** mit drei
+  Kollisionen; alle drei sind oben entschieden. Belege, die dabei entstanden:
+  Szenario 10 aus `primary-catalogue-scope` kippte allein durch das Lesen des
+  `catalogueId`-Attributs im `.ros`-Leser (`e575-…` verschwand, `b830-…` feuerte
+  neu); elf UI-Tests in drei Dateien fielen, ausnahmslos daran, dass
+  Bibliothekseinträge aus dem Angebot verschwanden bzw. eine Vorbedingung
+  „der Bericht bietet die fremde Einheit an, die Oberfläche blendet sie aus"
+  nicht mehr gilt.
+- Eigene Nachprüfung am **vollständigen** ergofang-Satz (16 `.cat` + `.gst`,
+  Fork-Stand 2026-07-31, außerhalb der Suite): VC-Kontingent mit Armeebuch-Angabe
+  → 2 Verletzungen (`Core`, `General`); dasselbe ohne Angabe → unverändert 7;
+  ein Ogre-Kingdoms-Kontingent mit eigener Angabe → 3, `Bulls` feuert weiter.
+  Die letzte Zeile ist der Gegenbeweis dazu, dass die Prüfung schlicht
+  abgeschaltet wurde.
+- **Prüfrunde 1** (frischer Kontext, ganzer Diff gegen `origin/main`): 4 Befunde.
+  F1 verletzt Kriterium 4 (unbedingte Bibliotheks-Ausnahme, oben entschieden und
+  eingegrenzt) — wird behoben. F2 (dieselbe Zeile, ein verbündetes Kontingent
+  hebelte ein ausdrückliches `importRootEntries="false"` aus) verletzt kein
+  Kriterium, fällt aber mit derselben Eingrenzung weg — wird behoben. F3 (die
+  Entscheidung im Issue stand unbedingt, der Code war bedingt) verletzt kein
+  Kriterium — hier behoben. F4 (ein Kommentar im Adapter benennt den falschen
+  Mechanismus für den leeren String) verletzt kein Kriterium, ist aber eine vom
+  Diff selbst eingeführte Falschaussage — wird behoben.
+- **Prüfrunde 2** (derselbe Kontext, ganzer Diff erneut): **0 Befunde**. Alle
+  vier Befunde der Runde 1 nachgeprüft und bestätigt behoben — der Prüfer fuhr
+  seine eigenen Reproduktionen gegen HEAD und gegen einen `origin/main`-Baum:
+  F1 und F2 liefern jetzt beidseitig dasselbe Ergebnis, und die zehn Roster des
+  DE-Szenarios `primary-catalogue-scope` sind auf beiden Seiten Zeichen für
+  Zeichen gleich. Zwei Beobachtungen ohne Kriteriumsbezug, hier festgehalten,
+  damit sie bekannte Kanten sind und keine späteren Überraschungen:
+  - **O1:** Eine roster-weite Bibliothekspflicht erscheint im Bericht der ganzen
+    Liste, sobald **ein** Kontingent die Ausnahme trägt — auch wenn ein anderes
+    Kontingent derselben Liste sie nicht trägt. Das ist die Natur eines
+    roster-weiten Rahmens (Kriterium 5 sagt es ausdrücklich); es gibt keine
+    Darstellung, in der ein roster-weites Mindestmaß „nur für ein Kontingent"
+    feuert. Auslösbar nur in einer Liste, die ein `.cat`-deklariertes und ein
+    `.gst`-deklariertes Kontingent mischt, plus eine Bibliothek mit
+    roster-weitem Mindestmaß, die das deklarierte Buch nirgends nennt — in
+    beiden echten Datensätzen unerreichbar.
+  - **O2:** Dieselbe Definition wird je Kontingent verschieden beurteilt. Das
+    ist die Absicht: der Kontingent-Rahmen ist je Kontingent, und Issue 0098
+    verhält sich schon immer so. Keine Vermischung über Kontingente hinweg.
+  - Eine Kombination ist nirgends abgedeckt: roster-deklariertes Buch, das die
+    Bibliothek mit `importRootEntries="true"` verlinkt. Sie wird von der
+    Fussabdruck-Prüfung *vor* dem Bibliotheks-Zweig entschieden und ist
+    herkunftsunabhängig — bewusst offengelassen, nicht übersehen.
+- `npm test` gab beim Prüfer zunächst Exit 1: Port 5175 war belegt, weil mein
+  eigener Screenshot-Lauf gleichzeitig einen Vorschau-Server hielt. Die
+  vitest-Hälfte war in demselben Aufruf grün (2901/2901), die separat
+  nachgefahrene Puppeteer-Hälfte ebenfalls (Exit 0). Kein Befund am Code, aber
+  festgehalten: die E2E-Hälfte verträgt keinen parallelen Lauf auf dieser
+  Maschine.
+- Herkunft der fünf fremden Anker per `sourceIdByDefId` bestätigt:
+  `7754-…` → Ogre Kingdoms, `9e4b-…` → RH Chaos Dwarfs, `4cea-…`/`4e75-…` →
+  Tomb Kings, `a4dc-…` → High Elf; `a37e-…` (General) → Spielsystem.
+
+## Checkpoints
+
+### Before implementation
+
+- **Does this match what was asked?** Ja. Der Maintainer meldete „ergofang
+  Vampire, falsche Fehler" mit Screenshot; die sieben Meldungen sind an den
+  echten Katalogdaten exakt reproduziert, und die Kriterien benennen genau die
+  fünf, die verschwinden müssen, samt der zwei, die bleiben müssen.
+- **What surprised me?** Zweierlei. Erstens: die Engine hat den nötigen Filter
+  seit Issue 0098 — er fällt hier nur still offen aus, statt zu greifen; der
+  Defekt ist kein fehlendes Konzept, sondern eine leere Eingabe. Zweitens: die
+  Definitive-Edition-Kataloge deklarieren ihre Kontingente in den `.cat`s, die
+  ergofang-Kataloge in der `.gst` — die gesamte bestehende E2E-Abdeckung läuft
+  auf DE-Daten und konnte diesen Pfad deshalb nie treffen.
+- **What am I assuming without having verified it?** Dass gespeicherte
+  Alt-Roster in IndexedDB durchweg ein `catalogueId` je Kontingent tragen. Falls
+  nicht, greift Kriterium 4 (unverändertes Verhalten ohne Angabe) — der Fehler
+  bliebe für ein solches Roster bestehen, verschlimmert sich aber nicht.
+
+### Before the PR
+
+- **Does this match what was asked?** Ja. Die fünf fremden Meldungen sind fort,
+  die zwei richtigen bleiben — nachgeprüft am **vollständigen** ergofang-Satz
+  (7 → 2) und sichtbar im Lagerbericht der laufenden App
+  (`.screenshots/issue0140_camp_report.png`). Der Gegenbeweis dazu, dass die
+  Prüfung schlicht abgeschaltet wurde: ein Ogre-Kingdoms-Kontingent bekommt
+  seine `Bulls`-Pflicht weiterhin.
+- **What surprised me?** Dass der Fix zweimal enger gefasst werden musste. Die
+  Bibliotheks-Ausnahme, gedacht als Schutz vor einer Regression, war selbst eine
+  — sie verletzte Kriterium 4 und hebelte eine ausdrückliche Aussage aus den
+  Katalogdaten aus. Und dass allein das Lesen des `catalogueId`-Attributs im
+  `.ros`-Leser ein bestehendes Black-Box-Szenario kippte, dessen Aussage genau
+  der Punkt war, den ich vorher per Vermutung anders entschieden hatte.
+- **What am I assuming without having verified it?** Erstens: dass das
+  gespeicherte Roster des Maintainers je Kontingent ein `catalogueId` trägt.
+  `buildRoster` setzt es seit jeher, und ohne die Angabe bliebe der Fehler
+  bestehen statt sich zu verschlimmern (Kriterium 4) — geprüft ist der Code, der
+  es schreibt, nicht die Datenbank des Maintainers. Zweitens: dass kein weiterer
+  Katalogbestand betroffen ist. Die Definitive Edition ist zeichengleich
+  nachgewiesen; für selbst hochgeladene Dateien gilt die Regel unverändert, ist
+  aber nicht durchprobiert.
+
+## Retro
+
+**Was im Weg stand.** Zwei Entscheidungen habe ich per Vermutung getroffen, statt
+erst nachzusehen: die Vorrangregel Roster-vor-Katalog und die unbedingte
+Bibliotheks-Ausnahme. Beide waren falsch, beide kosteten eine volle Runde
+Implementierung, und der Beleg gegen jede lag schon im Repository — ein
+bestehendes Black-Box-Szenario und ein bestehender UI-Vertrag. Der `implementer`
+fand beide, weil er auf sie stieß; ein `researcher` hätte sie vorher gefunden.
+
+**Was sich ändern sollte.** Wo eine Entscheidung ein bestehendes Verhalten
+umdreht, gehört vor die Entscheidung die Frage, ob dieses Verhalten schon
+irgendwo festgehalten ist — in einem Szenario, einem Test, einer ADR. Das ist
+keine neue Regel, sondern die bestehende („für Fakten über den Code den
+`researcher` schicken, statt zu vermuten") angewandt auf Entscheidungen statt
+nur auf Recherche.
+
+**Was gut lief.** Die Reproduktion an den echten Katalogdaten stand vor der
+ersten Zeile Code und hat jede Runde denselben Maßstab geliefert. Und dass der
+Prüfer seine eigenen Reproduktionen gegen `origin/main` fuhr statt die Tabelle
+des Implementierers zu glauben, ist der Grund, warum F1 nicht durchgerutscht
+ist.

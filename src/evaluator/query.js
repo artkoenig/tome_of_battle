@@ -33,6 +33,7 @@ import {
   diagnostic,
 } from './model.js';
 import { frameKeyOf } from './evalTree.js';
+import { forceCatalogueIdOf } from './catalogSet.js';
 import { targetsOf } from './countIndex.js';
 import { EMPTY_ROSTER_BUDGET } from './rosterBudget.js';
 
@@ -70,9 +71,11 @@ const UNIT_TYPE = 'unit';
  *   Folge-Slice; fehlt es, gilt das leere Budget.
  * @param {Map<string, string>} [parts.primaryCatalogueByForceDefId]  der
  *   Herkunftsindex der Kontingente (`catalogSet.js`): je Kontingent-Definition
- *   das Armeebuch, das sie deklariert. Er beantwortet den Bezugsrahmen
- *   `primary-catalogue`; fehlt er, gilt die leere Zuordnung — jede solche Query
- *   bleibt dann fail-closed unaufgeloest.
+ *   das Armeebuch, das sie deklariert. Er ist die **erste** Quelle des
+ *   Bezugsrahmens `primary-catalogue`; wo er schweigt, springt die
+ *   Armeebuch-Angabe des Rosters am Kontingent-Knoten ein (Issue 0140). Fehlt
+ *   er, gilt die leere Zuordnung; ohne beide bleibt eine solche Query
+ *   fail-closed unaufgeloest.
  * @param {import('./effectiveState.js').EffectiveState} [parts.effective]  die
  *   Effektiv-Werte der Knoten. Der Bezugsrahmen `ancestor` liest daraus die
  *   **effektiven** Kategorien der Vorfahren (Issue 086 — alle realen Vorkommen
@@ -237,13 +240,22 @@ function resolveLimitValue(ctx, field, scope) {
  * | `targetId` ist die Katalog-Id des Kontingents              | 1        |
  * | `targetId` ist eine andere Katalog-Id                      | 0        |
  * | `targetId === null` (Prozent-Nenner „alles im Rahmen")     | 1 — der Rahmen hat genau **einen** Katalog |
- * | kein umschliessendes Kontingent, oder dessen Herkunft steht nicht im Index | 0 **mit** `unresolvedScope` |
+ * | kein umschliessendes Kontingent, oder sein Armeebuch ist unbekannt | 0 **mit** `unresolvedScope` |
  * | ein anderes Feld als `SELECTION_COUNT`                     | `unsupportedField` |
  *
+ * Welches Armeebuch das umschliessende Kontingent hat, beantwortet dieselbe
+ * eine Stelle wie fuer Pflicht und Angebot ({@link forceCatalogueIdOf}, Issue
+ * 0140): zuerst der **Herkunftsindex** aus den Katalogdaten, und nur wo der
+ * schweigt die **Angabe des Rosters** am Kontingent-Knoten. Ein in der
+ * Spielsystemdatei deklariertes Kontingent loest damit auf, sobald das Roster
+ * sein Armeebuch nennt; nennt es keines, bleibt es beim fail-closed
+ * `unresolvedScope`. Ein Roster, das dem Index widerspricht, aendert dagegen
+ * nichts — die Definition entscheidet.
+ *
  * Eine Katalog-Id, die in diesem Datensatz gar nicht geladen ist (in den
- * Fixture-Daten kommt das vor), ist ein schlichter **Nicht-Treffer** und kein
- * Datenfehler: die Regel fragt nach der Identitaet des Armeebuchs, nicht nach
- * seiner Anwesenheit.
+ * Fixture-Daten kommt das vor), ist als **`targetId`** ein schlichter
+ * Nicht-Treffer und kein Datenfehler: die Regel fragt nach der Identitaet des
+ * Armeebuchs, nicht nach seiner Anwesenheit.
  *
  * @returns {number} 0 oder 1.
  */
@@ -255,11 +267,12 @@ function resolvePrimaryCatalogue(ctx, field, targetId) {
   const { forceRoot } = ctx.node;
   const catalogueId = forceRoot === null || forceRoot === undefined
     ? undefined
-    : ctx.primaryCatalogueByForceDefId.get(forceRoot.def.id);
+    : forceCatalogueIdOf(forceRoot, ctx.primaryCatalogueByForceDefId);
   if (catalogueId === undefined) {
     // Fail-closed statt stiller Falschauskunft: ohne umschliessendes Kontingent
-    // (etwa an der Wurzel) oder wenn dessen Definition aus keinem Armeebuch
-    // stammt — z. B. aus der `.gst` — gibt es kein Armeebuch zu vergleichen.
+    // (etwa an der Wurzel) oder wenn weder das Roster noch die Katalogdaten ein
+    // Armeebuch nennen — z. B. ein Kontingent aus der `.gst` in einem Roster
+    // ohne Armeebuch-Angabe — gibt es kein Armeebuch zu vergleichen.
     ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_SCOPE, {
       scope: ScopeKeyword.PRIMARY_CATALOGUE,
       targetId,

@@ -110,11 +110,34 @@ export { prepareDataset } from './datasetPreparation.js';
  * @param {import('./datasetPreparation.js').PreparedDataset} prepared
  *   Das Ergebnis von {@link prepareDataset} — derselbe Griff darf beliebig oft und
  *   fuer beliebig viele Roster wiederverwendet werden.
- * @param {{ forces?: Array<{ defId: string, count: number, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
+ * @param {{ forces?: Array<{ defId: string, count: number, catalogueId?: string|null, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
  *   Das vollstaendige, aus `.ros` geparste Roster: der Instanzbaum (`forces`)
  *   **und** die eingestellten Kostengrenzen je Kostenart (`costLimits`, die
  *   Zuordnung Kostenart → Grenzwert, analog `<costLimits>`). Fehlt `costLimits`,
  *   ist das Budget leer — verhaltensgleich zu einem Roster ohne Kostengrenzen.
+ *
+ *   **Das Armeebuch eines Kontingents (`catalogueId`).** Ein Knoten der
+ *   obersten Ebene — ein Kontingent — darf das Armeebuch nennen, aus dem er
+ *   stammt (`catalogueId`-Attribut am `<force>` einer `.ros`, `catalogueId` am
+ *   App-Kontingent). Die Angabe ist **optional** und gilt **je Knoten**: zwei
+ *   Kontingente derselben Definition duerfen zu verschiedenen Armeebuechern
+ *   gehoeren (Verbuendete). Sie **fuellt die Luecke** der Katalogdaten, sie
+ *   ueberschreibt sie nicht: steht die Kontingent-Definition selbst in einem
+ *   `.cat`, *ist* das Kontingent aus diesem Armeebuch, und eine
+ *   anderslautende Angabe des Rosters bleibt unbeachtet. Gelesen wird sie
+ *   deshalb genau dort, wo die Katalogdaten schweigen — in einem Datensatz, der
+ *   seine Kontingente in der **Spielsystemdatei** deklariert; dort steht in
+ *   keiner `.cat` ein `forceEntry`, aus dem sich das Armeebuch ableiten liesse.
+ *   Wo sie greift, halten Pflichten und Wurzel-Angebote eines **fremden**
+ *   Armeebuchs sich daran (Issue 0098/0140) und der Bezugsrahmen
+ *   `primary-catalogue` loest darueber auf. Ohne Angabe — und ebenso bei einer
+ *   Katalog-Id, die dieser Datensatz nicht kennt — bleibt es beim
+ *   Herkunftsindex; schweigt auch der, wird nicht gefiltert (der Rahmen faellt
+ *   offen aus) und `primary-catalogue` bleibt fail-closed unaufgeloest. Wo die
+ *   Angabe des Rosters greift, bleibt ein **Bibliothekskatalog** von der
+ *   Filterung ausgenommen — der geteilte Soeldner-Vorrat geht dem Kontingent
+ *   also nicht verloren —, sofern sein Armeebuch die Bibliothek nicht selbst
+ *   per `catalogueLink` benennt; dann gilt dessen `importRootEntries`.
  *
  *   **Identitaets-Regel fuer `defId`.** Eine Auswahl, die ueber einen
  *   `<entryLink>` gesetzt wurde, wird unter der Id des **Verweises** uebergeben
@@ -210,18 +233,25 @@ export function evaluate(prepared, roster, options) {
   const contents = PreparedDataset.contentsOf(prepared);
   const {
     resolved, primaryCatalogueByForceDefId, sourceIdByDefId, catalogueRootEntryClosureById,
-    gameSystemDocument, diagnostics: datasetDiagnostics,
+    libraryCatalogueIds, linkedCatalogueIdsById, gameSystemDocument, diagnostics: datasetDiagnostics,
   } = contents;
 
   // Der Katalog-Bezugsrahmen (Issue 0098): welche Herkunft zu welchem
   // Kontingent-Katalog gehoert. Reicht bis in die Baumphase 1 (Pflicht-Phantome,
   // `evalTree.js`) und die Baumphase 2 (Angebot, `offer.js`) hinein, damit ein
   // Wurzel-Eintrag oder ein roster-skopiertes Pflicht-Minimum eines fremden
-  // Katalogs weder angeboten noch erzwungen wird.
+  // Katalogs weder angeboten noch erzwungen wird. Ausgenommen ist neben dem
+  // Spielsystem eine Bibliothek — aber nur in einem Kontingent, dessen Armeebuch
+  // erst das Roster beigebracht hat, und nur wenn dieses Buch die Bibliothek
+  // nicht selbst per `catalogueLink` benennt (Issue 0140, `isInCatalogueScope`).
+  // `libraryCatalogueIds` und `linkedCatalogueIdsById` tragen diese beiden
+  // Bedingungen bei; die Herkunft der Antwort haengt am Referenz-Katalog selbst.
   const catalogueScope = {
     sourceIdByDefId,
     catalogueRootEntryClosureById,
     gameSystemId: gameSystemDocument?.id ?? null,
+    libraryCatalogueIds,
+    linkedCatalogueIdsById,
   };
 
   // ── Abschnitt 1: die iterierte Auswertung ─────────────────────────────────

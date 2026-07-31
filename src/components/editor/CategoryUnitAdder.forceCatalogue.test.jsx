@@ -318,6 +318,26 @@ describe('CategoryUnitAdder: Herkunftsfilter je Kontingent (Issue 0121, Task 19,
 });
 
 describe('CategoryUnitAdder: ohne eigenen Katalog gilt der der Liste (Issue 0121, Task 19)', () => {
+  // Beide Faelle pinnen dieselbe Regel wie zuvor — nur an der Beobachtung, die
+  // seit Issue 0140 noch zur Verfuegung steht.
+  //
+  // **Was sich umgekehrt hat:** Frueher belegte diese Zusage, dass der Dialog im
+  // verbuendeten Kontingent die Einheit des PRIMAER-Armeebuchs („Vampire")
+  // *zeigt*, sobald der Rueckfall greift. Diese Voraussetzung ist entfallen:
+  // Issue 0140 hat den Herkunftsfilter je Kontingent in die **Engine** verlegt —
+  // die App reicht ihr das Armeebuch des Kontingents durch
+  // (`force.catalogueId`), und ein Kontingent, das dem verbuendeten Buch
+  // gehoert, bekommt die Einheiten des Primaer-Buchs gar nicht mehr als
+  // Angebots-Anker. „Vampire" steht dem Dialog hier also nicht mehr zur
+  // Auswahl, unabhaengig von jeder Prop.
+  //
+  // **Was unveraendert gilt:** die Regel selbst — fehlt `forceCatalogueId` oder
+  // ist sie `null`, filtert `activeCatalogue.id`. Gepinnt wird sie jetzt
+  // negativ: unter dem verbuendeten Kontingent zeigt der Dialog dessen eigene
+  // Einheit „Gorger" **nur**, wenn `forceCatalogueId` das verbuendete Buch nennt
+  // (der Test „im verbuendeten Kontingent erscheint dessen EIGENE Einheit"
+  // oben). Greift der Rueckfall, gilt der Primaer-Katalog der Liste — und
+  // „Gorger" verschwindet. Dieselbe Unterscheidung, andere Richtung.
   it('forceCatalogueId null → der aktive Katalog der Liste filtert (Altverhalten)', () => {
     renderAdder({
       capabilities: capabilitiesOfDataset(),
@@ -326,8 +346,11 @@ describe('CategoryUnitAdder: ohne eigenen Katalog gilt der der Liste (Issue 0121
     });
     openDialog();
 
+    // Der Rueckfall greift: gefiltert wird nach dem Primaer-Katalog, also faellt
+    // die Einheit des verbuendeten Buchs heraus.
+    expect(screen.queryByText('Gorger')).toBeNull();
     expect(offeredNames()).toEqual(
-      ['Grand Banner', 'Hired Ogre', 'Mercenary Captain', 'Vampire'].sort(),
+      ['Grand Banner', 'Hired Ogre', 'Mercenary Captain'].sort(),
     );
   });
 
@@ -338,8 +361,9 @@ describe('CategoryUnitAdder: ohne eigenen Katalog gilt der der Liste (Issue 0121
     });
     openDialog();
 
+    expect(screen.queryByText('Gorger')).toBeNull();
     expect(offeredNames()).toEqual(
-      ['Grand Banner', 'Hired Ogre', 'Mercenary Captain', 'Vampire'].sort(),
+      ['Grand Banner', 'Hired Ogre', 'Mercenary Captain'].sort(),
     );
   });
 });
