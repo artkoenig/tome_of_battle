@@ -146,6 +146,39 @@ Acceptance criteria:
   Editor-Optionsliste vs. bereits gewählte Ausrüstung, (3) sortIndex vs.
   Kostensortierung in `OptionGroup.jsx`, (4) Fallback-Reihenfolge für
   Elemente ohne `sortIndex`. Kriterien stabilisierten sich nach Runde 4.
+- `test-author`-Subagent hat vier neue Testdateien angelegt, ohne
+  Produktivcode oder bestehende Tests anzufassen:
+  - `src/evaluator/catalogReader.sortIndex.test.js` (Kriterien 1–2:
+    `sortIndex` wird als Zahl gelesen, fehlend/nicht-numerisch → `null`, kein
+    Diagnose-Fehler, für `selectionEntry`/`selectionEntryGroup`/`entryLink`).
+  - `src/evaluator/report.sortIndex.test.js` (Kriterien 1–3: `sortIndex`
+    erreicht die `SlotCapability`-Objekte, `entryLink` trägt seinen eigenen
+    Wert statt den des Ziels, rein deskriptiv ohne Einfluss auf
+    `costs`/`isBlocked`).
+  - `src/components/editor/SelectionConfigurator.sortIndex.test.jsx`
+    (Kriterien 3–4: getaggte Abschnitte aufsteigend vor ungetaggtem Rest,
+    Cross-Typ-Interleaving `entryLink`+Gruppe im selben Nummernraum,
+    `sortIndex="0"` als gültiger niedrigster Wert, ungültiger Wert zählt als
+    "kein sortIndex").
+  - `src/components/editor/OptionGroup.sortIndex.test.jsx` (Kriterium 5:
+    getaggte Optionen aufsteigend zuerst, ungetaggte weiterhin absteigend
+    nach Kosten angehängt).
+
+  Lauf von `npx vitest run` auf den vier neuen Dateien: 27/27 Tests
+  schlagen fehl, alle aus dem erwarteten Grund (fehlendes
+  Attribut-Lesen/Durchreichen/Anwenden, nie ein Setup-/Importfehler). Voller
+  Lauf von `npx vitest run src/evaluator src/evaluation src/components/editor`:
+  1211 bestehende Tests weiterhin grün.
+
+  Offene Annahme des `test-author` (kein Kriterium legt es fest, aber
+  konsistent mit bestehender Konvention im Code): "kein sortIndex" wird als
+  `null` repräsentiert, nicht `undefined` (wie andere optionale deskriptive
+  Felder in `catalogReader.js`/`report.js`, z.B. `targetId`, `defaultLimit`,
+  `sourceId`, `targetDefId`, `headroom`).
+
+  Kriterium 6 (`CategoryUnitAdder`/Roster-Anzeigestellen unverändert) wurde
+  bewusst nicht mit einem Guard-Test versehen, da laut Issue
+  optional/niedrige Priorität und keine Quelländerung dort geplant ist.
 
 ## Checkpoints
 
