@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/army-bulls-non-oger-list-h79w6u
 pr:
 ---
 
@@ -84,6 +84,47 @@ Acceptance criteria:
 ## Tasks
 
 ## Decisions
+
+- **Herkunft & präzisierte Ursache** (Default, eigene Untersuchung der echten
+  Fixture-Daten unter `src/evaluator/__fixtures__/whfb6-definitive/`, nicht
+  nur der bisherigen Issue-Logs): `Vampire Counts (6th definitive
+  edition).cat` und `Orcs and goblins (6th definitive edition).cat` deklarieren
+  **je einen eigenen** Wurzel-`entryLink` namens „Ogre Bulls" (Ids
+  `21f4-c979-396b-c02a` bzw. `0612-9f28-e986-2bce`), die auf **dasselbe**
+  geteilte Ziel `7754-8b3d-df99-d2d5` zeigen wie Ogre Kingdoms' eigener
+  „Ogre Bulls"-Link (`d82e-111e-89b9-2be1`) — dasselbe Idiom wie Rhinox
+  Riders/Maneaters (jede Armee bietet die geteilte Mercenaries-Einheit über
+  einen eigenen Link an). Entscheidend: **nur** der Ogre-Kingdoms-Link trägt
+  eine eigene Pflicht-`min`-Constraint (`32ed-26da-3f27-5c04`, `scope=force`,
+  Basis 0, per Modifier auf 1 angehoben, gegated auf `notInstanceOf`
+  Kontingent „Ironskin Tribe" `8711-ed16-2a44-7251`); die Links aus Vampire
+  Counts und Orcs and Goblins tragen **keine** eigene Constraint.
+- **Präzisierter Fix-Ort** (Default, aus obiger Untersuchung): Das
+  Pflicht-Phantom in `synthesizeMandatoryPhantoms`
+  (`src/evaluator/evalTree.js`, ROSTER-Zweig ~Z. 455–463, FORCE-Zweig
+  ~Z. 473–482) hängt an der **eigenen** `def.id` des deklarierenden Links
+  (`d82e-111e-89b9-2be1`), nicht am geteilten Ziel. Der unbedingte
+  `def.kind === DefinitionKind.ENTRY_LINK`-Bypass von `isInCatalogueScope`
+  (aus Issue 0098) lässt dieses Phantom deshalb für **jedes** Kontingent im
+  Datensatz feuern, unabhängig vom Katalog. Der Fix entfernt den Bypass **nur**
+  im Pflicht-Phantom-Pfad (`evalTree.js`) — **nicht** in `offer.js`s eigenem
+  `ENTRY_LINK`-Bypass, der für das reine Angebot (Rhinox Riders/Maneaters/
+  Manbiters, alle ohne eigene Pflicht-Constraint) unverändert katalogfremd
+  bleiben muss. `sourceIdByDefId` bildet `d82e-111e-89b9-2be1` auf Ogre
+  Kingdoms' eigene Katalog-Id (`731d-5b13-2a92-5427`) ab — `isInCatalogueScope`
+  greift damit nur noch für Kontingente, deren Katalog-Fußabdruck Ogre
+  Kingdoms enthält.
+- **Bestehende Tests geprüft, keine Kollision** (Default, eigene Verifikation):
+  `crossCatalog.rootEntryScope.test.js` (Issue 0098) deckt nur
+  `selectionEntry`/`forceEntry`/`CATEGORY`-Skopierung ab, nie `entryLink`.
+  `rootEntryLinkMandatory*.test.js` (Issue 0085) nutzen ausnahmslos
+  Ein-Katalog-Datensätze, wo Eigen-Skopus unabhängig vom Fix immer zutrifft.
+  Kein bestehender Test pinnt das alte katalogfremde Verhalten für die eigene
+  Pflicht-Constraint eines Wurzel-`entryLink` fest.
+- **Nächster Schritt** (Default): E2E-`.ros`-Szenario wird an den
+  `e2e-testcase-author`-Subagenten delegiert (CLAUDE.md-Pflicht für
+  Evaluator-E2E-Fälle), danach der `evalTree.js`-Fix umgesetzt, bis das
+  Szenario grün ist.
 
 ## Log
 
