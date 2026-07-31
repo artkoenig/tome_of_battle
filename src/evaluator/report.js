@@ -377,6 +377,9 @@ function headroomOf(maxResult) {
  * **uniform** fuer jede Ankerart, Kategorie- und Gruppen-Anker eingeschlossen.
  * Die Oberflaeche filtert damit ihr Angebot nach dem aktiven Armeebuch, ohne in
  * die Katalogdaten hinter dem Bericht zu greifen (ADR-0034).
+ * `sortIndex` ist die vom Katalogautor am Slot selbst deklarierte, rein
+ * deskriptive Anzeigereihenfolge unter seinen Geschwistern (`null` = keine
+ * deklariert) — nach derselben Link-vor-Ziel-Regel wie `sourceId` (Issue 0133).
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
  * `costs`/`totalCosts` kommen aus der Kostenprojektion (`costProjection.js`):
@@ -405,6 +408,11 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
   return {
     defId: node.def.id,
     targetDefId: targetDefIdOf(node),
+    // Rein deskriptiv (Issue 0133): die vom Katalogautor empfohlene
+    // Geschwister-Reihenfolge des Slots selbst — bei einem Verweis-Slot die
+    // des Verweises, nie die seines Ziels (dasselbe Link-vor-Ziel-Prinzip wie
+    // bei `sourceId`). `null`, wenn die Definition kein `sortIndex` traegt.
+    sortIndex: node.def.sortIndex ?? null,
     // Herkunft nach der **Link-vor-Ziel-Regel**: nachgeschlagen wird `def.id`,
     // also bei einem Verweis-Slot die Id des Verweises, nicht die seines Ziels.
     sourceId: sourceIdByDefId.get(node.def.id) ?? null,
