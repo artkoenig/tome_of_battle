@@ -165,6 +165,30 @@ einzelne Bedingung, kein neuer Baustein, keine neue Schnittstelle.
     (Katalogdateien werden zur Laufzeit geholt, ADR 0014). Der Reviewer hat
     stattdessen alle eingefrorenen Fixture-Kataloge geprüft: **kein** Eintrag
     qualifiziert sich neu — vereinbar mit der Behauptung, aber kein Beleg.
+- **Prüfrunde 2**, derselbe Reviewer fortgesetzt, Belege per Exitcode
+  (`npm test` 0 über 2892 Tests, `npm run lint` 0, `npm run typecheck` 0,
+  `npm run analyze` 0). Kriterium 4 ist zu: der Reviewer hat den Fix per
+  Mutation gegengeprüft — nur `ListRuleChecklist.jsx` zurückgesetzt, fünf
+  Tests fallen um; Sperre **und** Guard entfernt, vier andere fallen um. Die
+  Sperre für eine vorhandene Pflichtregel ist also nicht gegen die
+  Entsperrung eingetauscht. Ein Befund ohne Kriteriumsbezug: zwei neu
+  geschriebene Tests behaupteten im Kommentar, den programmatischen Guard
+  unabhängig vom `disabled`-Attribut zu prüfen — `fireEvent.change` erreicht
+  Reacts `onChange` bei einer Checkbox aber nie, die Tests bestanden auch
+  gegen eine leere Komponente. **Triage: jetzt beheben**, weil der Kommentar
+  eine von diesem Diff selbst falsch gemachte Aussage ist.
+- **Prüfrunde 3**, Belege per Exitcode (`npm test` 0 über 2891 Tests — genau
+  der eine gelöschte Test weniger; lint/typecheck/analyze 0). Der Befund aus
+  Runde 2 ist geschlossen, und die Annahme dahinter war zur Hälfte falsch:
+  jsdom stellt einen Klick auch an ein `disabled`-Input zu, der Guard ist
+  also sehr wohl erreichbar. Der leere Test ist gelöscht (sein Weg war
+  bereits abgedeckt), der zweite prüft per Klick die zweite Checkbox-Stelle,
+  die vorher kein Test traf. Drei komplementäre Mutationen belegen: weder die
+  Sperre noch der Guard lässt sich entfernen, ohne dass Tests umfallen. Kein
+  Test im Repository macht denselben Fehler ein zweites Mal (alle übrigen 15
+  `fireEvent.change`-Aufrufe zielen auf `files` oder `value`).
+- Konvergenz über den Lauf: Runde 1 — 1 Befund mit Kriteriumsbezug + 3 ohne;
+  Runde 2 — 0 + 1; Runde 3 — 0 + 0.
 
 ## Checkpoints
 
