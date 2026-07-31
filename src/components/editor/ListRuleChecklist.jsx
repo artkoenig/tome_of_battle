@@ -59,12 +59,20 @@ export default function ListRuleChecklist({
 
   if (!states || states.length === 0) return null;
 
+  // Die Sperre einer eindeutigen Pflicht-Listenregel folgt ihrer **Präsenz**
+  // (Issue 0140, Kriterium 4): gesperrt ist sie nur, solange sie tatsächlich im
+  // Roster steht — dann ist sie nicht abwählbar (Issue 0138, AC5). Fehlt sie
+  // dagegen (ein vor dem automatischen Setzen angelegtes Bestandsroster bekommt
+  // sie nie nachgereicht), bleibt die Zeile ankreuzbar, damit der sonst
+  // blockierende Fehler wie bisher von Hand behebbar ist. Der Pflicht-Hinweis
+  // (Info-Symbol) hängt nicht an der Sperre und erscheint in beiden Zuständen.
+  const isLocked = (state) => state.mandatory && state.checked;
+
   const toggleRule = (state, nextChecked) => {
-    // Eine eindeutige Pflicht-Listenregel ist nicht abwählbar, solange sie
-    // pflichtig und sichtbar ist (Issue 0138, AC5) — der disabled-Zustand der
-    // Checkbox verhindert das ohnehin schon auf DOM-Ebene; dieser Guard hält
-    // die Regel auch gegen einen programmatischen Aufruf ein.
-    if (state.mandatory) return;
+    // Der disabled-Zustand der Checkbox verhindert das Abwählen einer präsenten
+    // Pflichtregel ohnehin schon auf DOM-Ebene; dieser Guard hält die Regel auch
+    // gegen einen programmatischen Aufruf ein.
+    if (isLocked(state)) return;
     if (nextChecked) {
       addUnit(state.entry, categoryId);
     } else if (state.selection) {
@@ -174,7 +182,7 @@ export default function ListRuleChecklist({
                   type="checkbox"
                   checked={state.checked}
                   aria-label={state.name}
-                  disabled={state.mandatory}
+                  disabled={isLocked(state)}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => toggleRule(state, e.target.checked)}
                 />
@@ -193,7 +201,7 @@ export default function ListRuleChecklist({
                   type="checkbox"
                   checked={state.checked}
                   aria-label={state.name}
-                  disabled={state.mandatory}
+                  disabled={isLocked(state)}
                   onChange={(e) => toggleRule(state, e.target.checked)}
                 />
               </label>

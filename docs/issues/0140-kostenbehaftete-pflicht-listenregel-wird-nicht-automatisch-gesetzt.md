@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/army-general-dice-game-4gcv1o
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/197
 ---
 
 # Eine Pflicht-Listenregel mit Kosten wird nicht automatisch gesetzt
@@ -74,22 +74,60 @@ Acceptance criteria:
 
 ## Plan
 
+Kein eigener Plan nötig: die Änderung liegt in einem Modul
+(`src/roster/listRules.js`) und entfernt dort eine Bedingung. Nach Prüfrunde 1
+kommt `src/components/editor/ListRuleChecklist.jsx` dazu — ebenfalls eine
+einzelne Bedingung, kein neuer Baustein, keine neue Schnittstelle.
+
 ## Tasks
+
+- [x] Kostenbedingung aus `isUnconditionalMandatoryListRule` entfernen,
+      Docstring korrigieren.
+- [x] Sperre der Ankreuz-Checkbox an die Präsenz koppeln (Prüfrunde 1, F1).
+- [x] Docstring-Satz über den `type=upgrade`-Filter richtigstellen
+      (Prüfrunde 1, F4).
+- [x] End-zu-End-Beleg für Kriterium 5 in einer **Punkte**-Kostenart
+      (Prüfrunde 1, F2). Ergebnis: die Tests waren sofort grün — die Lücke war
+      reine Abdeckung, kein Fehler.
+- [x] Hinweistext `editor.listRules.mandatoryTooltip` richtigstellen (siehe
+      Entscheidung unten).
 
 ## Decisions
 
 - **Die Kostenbedingung fällt ersatzlos weg**, statt sie auf budgetierte
   Kostenarten (Punkte) einzuschränken. Quelle: Antwort des Menschen,
-  2026-07-31, auf die vorgelegte Wahl zwischen beiden. Begründung im Intent:
-  die einschränkende Variante koppelt `src/roster/listRules.js` an die
-  Roster-Kostengrenzen und löst einen Fall, den heute kein Katalog liefert
-  (kein Kandidat trägt Punktekosten).
+  2026-07-31, auf die vorgelegte Wahl zwischen beiden. Der Mensch bekam als
+  Begründung vorgelegt: die einschränkende Variante koppelt
+  `src/roster/listRules.js` an die Roster-Kostengrenzen und löst einen Fall,
+  den heute kein Katalog liefert (kein Kandidat trägt Punktekosten). Diese
+  Begründung steht in der vorgelegten Wahl, nicht im Intent.
 - **Bestandsroster werden nicht nachgerüstet.** Quelle: Antwort des Menschen,
   2026-07-31. Folge, dem Menschen vorgelegt und angenommen: eine bestehende
   High-Elf-Liste behält den Fehler und kann ihn mangels Primärkategorie des
   Eintrags nicht von Hand beheben; sie muss neu angelegt werden.
 - **Die fehlende Primärkategorie des Eintrags wird hier nicht behoben.** Sie
-  verletzt kein Kriterium dieser Issue und bekommt eine eigene Issue.
+  verletzt kein Kriterium dieser Issue und bekommt eine eigene Issue — Issue
+  0141.
+- **Keine Versionsanhebung.** Quelle: Antwort des Menschen, 2026-07-31,
+  auf den vorgeschlagenen Patch-Bump 1.9.3 → 1.9.4. `package.json` bleibt
+  unangetastet; der Tagging-Workflow feuert für diesen Merge nicht.
+- **Die Sperre der Ankreuz-Checkbox wird an die Präsenz gekoppelt** (Prüfrunde
+  1, F1): gesperrt nur, solange die Pflichtregel tatsächlich vorhanden ist.
+  Das ist keine neue Anforderung, sondern die einzige Lesart, unter der
+  Kriterium 4 und Issue 0138 Kriterium 5 zusammen bestehen können — eine
+  fehlende Pflichtregel muss von Hand behebbar bleiben. Trifft
+  zwangsläufig auch die kostenfreien Pflichtregeln aus Issue 0138 mit; ein
+  Sonderweg nur für kostenbehaftete wäre nicht begründbar.
+- **Der Hinweistext `editor.listRules.mandatoryTooltip` wird umformuliert.**
+  Er lautete „Pflichtregel dieser Liste — automatisch gesetzt und nicht
+  abwählbar." und wurde durch die Präsenz-Kopplung falsch: an einer fehlenden
+  Pflichtregel ist er weder automatisch gesetzt noch nicht abwählbar. Neu:
+  „… — die Armee muss sie führen. Einmal gesetzt, ist sie nicht mehr
+  abwählbar." (englisch entsprechend). Als Standard entschieden, nicht vom
+  Menschen bestätigt: es ist eine von diesem Diff selbst falsch gemachte
+  Aussage, und Issue 0138 Kriterium 5 verlangt nur „einen sichtbaren Hinweis",
+  keinen bestimmten Wortlaut. Beide Testdateien lesen den Text über `t(...)`,
+  keine Zusicherung hängt am Wortlaut.
 
 ## Log
 
@@ -97,19 +135,125 @@ Acceptance criteria:
   über `raw.githubusercontent.com` (`catpkg.json` je Quelle) geladen und nach
   Wurzeleinträgen vom Typ `upgrade` mit `min ≥ 1` in `scope=force|roster`
   durchsucht. Treffer mit Kosten ≠ 0: die zwei im Intent genannten.
+- Drei Tests aus Issue 0138 pinnten die aufgehobene Kostenbedingung fest
+  (`listRules.mandatoryPredicate.test.js` zweimal,
+  `listRules.mandatoryState.test.js` einmal). Triage: durch Kriterium 1
+  überholt, vom test-author umgeschrieben — Fixtures unverändert, Zusicherung
+  umgedreht.
+- **Prüfrunde 1**, Reviewer mit frischem Kontext, Belege per Exitcode
+  (`npm test` 0 über 274 Dateien / 2878 Tests, `npm run lint` 0,
+  `npm run typecheck` 0, `npm run analyze` 0). Vier Befunde:
+  - F1 — die Ankreuzliste sperrt eine Pflichtregel unabhängig davon, ob sie
+    vorhanden ist. In einem Bestandsroster ist der Fehler damit nicht mehr von
+    Hand behebbar. Verletzt Kriterium 4. **Triage: jetzt beheben.**
+  - F2 — Kriterium 5 ist nur für nicht-budgetierte Kostenarten End-zu-End
+    belegt, die Punkte-Kostenart nur im Prädikat. Verletzt kein Kriterium.
+    **Triage: Lücke jetzt schließen**, weil sie dem laufenden Intent dient.
+  - F3 — die Issue-Akte war leer (Plan, Aufgaben, Checkpoints), und eine
+    Entscheidungs-Begründung war fälschlich dem Intent zugeschrieben.
+    Verletzt kein Kriterium. **Triage: jetzt beheben** (reine Tracker-Änderung
+    — die Prüfrunde dafür entfällt per Waiver).
+  - F4 — der neue Docstring schreibt dem Prädikat einen `type=upgrade`-Filter
+    zu, den es nicht durchführt; der sitzt in seinen beiden Aufrufern.
+    Verletzt kein Kriterium, ist aber eine von diesem Diff selbst falsch
+    gemachte Aussage. **Triage: jetzt beheben.**
+  - Reviewer-Nebenbefund, keiner der vier: Issue 0138 steht weiter auf
+    `status: active`, obwohl sein PR gemergt ist, und trägt die von Kriterium 1
+    überholte Kostenklausel. **Triage: Status richtigstellen und die
+    Überholung vermerken** — bounded auf das, was dieser Diff falsch macht.
+  - Der gemessene Blast Radius ist aus dem Repository **nicht** nachprüfbar
+    (Katalogdateien werden zur Laufzeit geholt, ADR 0014). Der Reviewer hat
+    stattdessen alle eingefrorenen Fixture-Kataloge geprüft: **kein** Eintrag
+    qualifiziert sich neu — vereinbar mit der Behauptung, aber kein Beleg.
+- **Prüfrunde 2**, derselbe Reviewer fortgesetzt, Belege per Exitcode
+  (`npm test` 0 über 2892 Tests, `npm run lint` 0, `npm run typecheck` 0,
+  `npm run analyze` 0). Kriterium 4 ist zu: der Reviewer hat den Fix per
+  Mutation gegengeprüft — nur `ListRuleChecklist.jsx` zurückgesetzt, fünf
+  Tests fallen um; Sperre **und** Guard entfernt, vier andere fallen um. Die
+  Sperre für eine vorhandene Pflichtregel ist also nicht gegen die
+  Entsperrung eingetauscht. Ein Befund ohne Kriteriumsbezug: zwei neu
+  geschriebene Tests behaupteten im Kommentar, den programmatischen Guard
+  unabhängig vom `disabled`-Attribut zu prüfen — `fireEvent.change` erreicht
+  Reacts `onChange` bei einer Checkbox aber nie, die Tests bestanden auch
+  gegen eine leere Komponente. **Triage: jetzt beheben**, weil der Kommentar
+  eine von diesem Diff selbst falsch gemachte Aussage ist.
+- **Prüfrunde 3**, Belege per Exitcode (`npm test` 0 über 2891 Tests — genau
+  der eine gelöschte Test weniger; lint/typecheck/analyze 0). Der Befund aus
+  Runde 2 ist geschlossen, und die Annahme dahinter war zur Hälfte falsch:
+  jsdom stellt einen Klick auch an ein `disabled`-Input zu, der Guard ist
+  also sehr wohl erreichbar. Der leere Test ist gelöscht (sein Weg war
+  bereits abgedeckt), der zweite prüft per Klick die zweite Checkbox-Stelle,
+  die vorher kein Test traf. Drei komplementäre Mutationen belegen: weder die
+  Sperre noch der Guard lässt sich entfernen, ohne dass Tests umfallen. Kein
+  Test im Repository macht denselben Fehler ein zweites Mal (alle übrigen 15
+  `fireEvent.change`-Aufrufe zielen auf `files` oder `value`).
+- Konvergenz über den Lauf: Runde 1 — 1 Befund mit Kriteriumsbezug + 3 ohne;
+  Runde 2 — 0 + 1; Runde 3 — 0 + 0.
 
 ## Checkpoints
 
 ### Before implementation
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Der Mensch wollte den Eintrag „Who
+  Is the general? …" direkt eingefügt sehen; das ist Kriterium 2.
+- **What surprised me?** Dass der Eintrag mangels Primärkategorie in keiner
+  Ankreuzliste steht — der Fehler ist heute von Hand gar nicht behebbar. Das
+  ist ein eigener Mangel (Issue 0141), nicht Teil dieser Änderung.
+- **What am I assuming without having verified it?** Dass der Auto-Add-Effekt
+  aus Issue 0138 mit `categoryId = null` sauber durchläuft. Der Sweep gibt das
+  Feld bereits als nullable zurück, geprüft war es zu diesem Zeitpunkt nicht —
+  inzwischen pinnt es ein eigener Testfall.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** Ja. Der Eintrag „Who Is the general? …"
+  wird in einem neu angelegten Kontingent ohne Zutun gesetzt; das ist genau
+  das, was der Mensch verlangt hat. Was darüber hinausging — die Entsperrung
+  der Ankreuz-Checkbox — war nicht gewünscht, sondern nötig, damit dieselbe
+  Änderung nicht anderswo einen Fehler unbehebbar macht.
+- **What surprised me?** Dass die Sperre aus Issue 0138 an der Pflichtigkeit
+  hing statt an der Präsenz. Sie hätte einem Bestandsroster die Regel als
+  gesperrtes, leeres Kästchen hingestellt — genau der Population, die der
+  Mensch bewusst nicht nachrüsten lassen wollte.
+- **What am I assuming without having verified it?** Den gemessenen Blast
+  Radius. Er stammt aus einem Scan der zur Laufzeit geholten Katalogdateien
+  und ist aus dem Repository heraus **nicht** nachprüfbar (ADR 0014). Der
+  Reviewer hat gegengeprüft, was prüfbar ist: über alle eingefrorenen
+  Fixture-Kataloge qualifiziert sich kein Eintrag neu — vereinbar mit der
+  Behauptung, aber kein Beleg für sie. Zweitens nehme ich an, dass der
+  neue Hinweistext dem Menschen passt; er ist als Standard gesetzt.
 
 ## Retro
+
+Der Auftrag war zwei Sätze lang und die Diagnose in zwanzig Minuten belegt —
+die Frage nach dem Blast Radius hat den Rest getragen. Alle Katalogdateien
+beider Quellen zu ziehen und das Prädikat gegen sie zu rechnen, hat aus einer
+Vermutung („Kosten sind hier egal") eine Zahl gemacht (genau zwei Einträge,
+keiner mit Punktekosten) und damit die Entscheidung des Menschen in einer
+Frage statt in dreien erledigt. Das lohnt sich immer dann, wenn eine Bedingung
+gestrichen werden soll: nicht argumentieren, wen sie zu Unrecht trifft,
+sondern zählen.
+
+Der teure Teil lag woanders. Der eigentliche Fehler dieses Laufs — die Sperre
+der Ankreuz-Checkbox, die eine fehlende Pflichtregel unbehebbar machte — stand
+nicht in der geänderten Datei, sondern in einer, die der Diff gar nicht anfasste.
+Gefunden hat ihn der Reviewer, weil er gefragt wurde, was die Änderung außerhalb
+ihrer Kriterien kaputt machen kann. Die Lehre für ähnliche Läufe: wenn ein
+Prädikat seine Population vergrößert, sind die *Konsumenten* des Prädikats der
+Ort des Risikos, nicht das Prädikat. Diese Frage gehört vor die Implementierung,
+nicht in die erste Prüfrunde.
+
+Zweimal hat sich eine Behauptung als halb falsch erwiesen, beide Male zugunsten
+der Sache: der Reviewer hielt den programmatischen Guard für unerreichbar, der
+test-author fand, dass jsdom einen Klick auch an ein `disabled`-Input zustellt.
+Dass der Auftrag an den test-author beide Wege offenließ („finde eine Route oder
+lösche die Tests und schreib hin, warum") statt die Löschung anzuweisen, hat die
+Abdeckung gerettet. Das ist übertragbar: einem Subagenten die Schlussfolgerung
+vorzugeben, wo die Reproduktion sie noch nicht erzwingt, kostet Ergebnis.
+
+Was gestört hat: der Stop-Hook hat mitten in laufenden Subagenten Commits
+erzwungen, sodass Zwischenstände in die Historie gerieten, die ich sonst
+zusammengefasst hätte — und die Subagenten haben zu Recht gemeldet, dass die
+Umgebung ihre Arbeit ungefragt committet. Das ist kein Fehler dieser Regeln,
+aber es macht die Commit-Historie eines Laufs unschärfer, als sie sein müsste.
+

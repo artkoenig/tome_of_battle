@@ -117,9 +117,16 @@ function isContainerListRule(resolved) {
  *
  * **Kosten spielen keine Rolle** (Issue 0140): ein solcher Eintrag lässt dem
  * Nutzer keine Entscheidung — die Armee muss ihn führen und seine Kosten
- * zahlen, was immer sie sind. Die übrigen Merkmale (Typ `upgrade`, kein
- * Behälter, explizit geschriebener Scope) schließen echte, wählbare Einheiten
- * bereits aus.
+ * zahlen, was immer sie sind.
+ *
+ * Diese Funktion prüft **nur** die oben genannten Merkmale (kein Behälter,
+ * eigener `min`-Constraint mit explizit geschriebenem `scope`, effektiver
+ * `min` ≥ 1). Den Typ `upgrade` prüft sie **nicht** — dieser Filter sitzt in
+ * ihren beiden Aufrufern, die je über {@link isListRuleEntryKind} vorsortieren
+ * ({@link findMissingMandatoryListRuleSelections} sowie
+ * {@link buildListRuleStates} über die Aufzählung in
+ * `enumeratePrimaryEntries`). Erst zusammen mit diesem Typ-Filter schließen die
+ * Merkmale echte, wählbare Einheiten aus.
  * @param {Object} resolved der aufgelöste Katalog-Eintrag/-Link.
  * @returns {boolean}
  */
@@ -238,7 +245,9 @@ export function findMissingMandatoryListRuleSelections(system, catalogue, force)
  * @property {boolean} isBinary   true ⇔ reiner Schalter (Ankreuzfeld), sonst Mengen-Adder.
  * @property {boolean} isContainer true ⇔ die Regel trägt konfigurierbare Unteroptionen.
  * @property {boolean} mandatory  true ⇔ eindeutige Pflicht-Listenregel (Issue 0138):
- *   ihre Checkbox ist gesperrt, solange die Zeile sichtbar ist.
+ *   ihre Checkbox ist gesperrt, solange die Regel **präsent** ist (`checked`) —
+ *   eine fehlende Pflichtregel bleibt ankreuzbar und damit von Hand behebbar
+ *   (Issue 0140, Kriterium 4).
  */
 
 /**
