@@ -308,6 +308,37 @@ Acceptance criteria:
   Trend sinkt (3 → 2), beide verbleibenden Punkte sind Testluecken um bereits
   korrekt verifiziertes Verhalten, kein neuer Korrektheitsfehler.
 
+- **Zwei Rebases auf main**, weil main jeweils weitergezogen war, bevor der
+  PR gemerged wurde:
+  - **Erster Rebase:** main hatte inzwischen ein eigenes Issue 0130
+    gemerged (andere Sache, "Pflicht-Min am Wurzel-EntryLink") — reiner
+    Nummern-Konflikt (unterschiedliche Slugs, keine inhaltliche Kollision).
+    Beide Issues dieses Branches auf 0131/0132 verschoben, alle Querverweise
+    in Code-/Testkommentaren mitgezogen.
+  - **Zweiter Rebase:** main hatte danach PR #187 gemerged
+    ("Container-Gruppen-Verschachtelung auf der Einheitenkarte"), das
+    ebenfalls `SelectionConfigurator.buildSections()` umgebaut hat — von
+    einer flachen Sektionsliste zu einem verschachtelten Abschnittsbaum
+    (Container-Gruppen halten ihre Kind-Gruppen als `.children`). Echter
+    Code-Konflikt in `SelectionConfigurator.jsx` (zwei Stellen), aufgeloest
+    durch Zusammenführen beider Änderungen: die `sortIndex`-Sortierung
+    wendet sich jetzt **rekursiv auf jede Ebene** des neuen Abschnittsbaums
+    an (`sortSectionsRecursively`), statt einen einzigen flachen Sortierlauf
+    über die alte, jetzt nicht mehr existierende flache Liste zu machen.
+    `OptionGroup.jsx` und alle vier Testdateien hatten dabei keinen
+    Code-Konflikt (nur Auto-Merge). main hatte inzwischen selbst 0130/0131/
+    0132 belegt (die Container-Gruppen-Arbeit brachte drei eigene Issues
+    mit); beide Issues dieses Branches deshalb ein zweites Mal verschoben,
+    auf 0133/0134, alle Querverweise wieder mitgezogen — dabei sorgfältig
+    zwischen "meinen" Kommentaren (verschoben) und den `Issue 0131`-
+    Referenzen aus #187 selbst (unverändert gelassen, da sie korrekt auf die
+    Container-Gruppen-Arbeit zeigen) unterschieden.
+  - Nach beiden Rebases erneut vollständig verifiziert: `npx vitest run`
+    260 Dateien/2686 Tests exit 0, `npm run lint`/`depcruise`/`typecheck` je
+    exit 0 (eine vorbestehende, unabhängige oxlint-Warnung in einer
+    #187-eigenen Testdatei, eine vorbestehende Zirkular-Warnung —
+    beide nicht von diesem Issue), `node e2e/ui.test.js` exit 0.
+
 ## Checkpoints
 
 ### Before implementation
