@@ -121,17 +121,21 @@ export { prepareDataset } from './datasetPreparation.js';
  *   stammt (`catalogueId`-Attribut am `<force>` einer `.ros`, `catalogueId` am
  *   App-Kontingent). Die Angabe ist **optional** und gilt **je Knoten**: zwei
  *   Kontingente derselben Definition duerfen zu verschiedenen Armeebuechern
- *   gehoeren (Verbuendete). Wo sie steht, ist sie die massgebliche Antwort auf
- *   „aus welchem Armeebuch stammt dieses Kontingent?" und schlaegt den
- *   Herkunftsindex aus den Katalogdaten — Pflichten und Wurzel-Angebote eines
- *   **fremden** Armeebuchs bleiben damit draussen (Issue 0098/0140), und der
- *   Bezugsrahmen `primary-catalogue` loest darueber auf. Nur so ist ein
- *   Datensatz zu beantworten, der seine Kontingente in der **Spielsystemdatei**
- *   deklariert: dort steht in keiner `.cat` ein `forceEntry`, aus dem sich das
- *   Armeebuch ableiten liesse. Ohne Angabe — und ebenso bei einer Katalog-Id,
- *   die dieser Datensatz nicht kennt — gilt unveraendert der Herkunftsindex;
- *   schweigt auch er, wird nicht gefiltert (der Rahmen faellt offen aus) und
- *   `primary-catalogue` bleibt fail-closed unaufgeloest.
+ *   gehoeren (Verbuendete). Sie **fuellt die Luecke** der Katalogdaten, sie
+ *   ueberschreibt sie nicht: steht die Kontingent-Definition selbst in einem
+ *   `.cat`, *ist* das Kontingent aus diesem Armeebuch, und eine
+ *   anderslautende Angabe des Rosters bleibt unbeachtet. Gelesen wird sie
+ *   deshalb genau dort, wo die Katalogdaten schweigen — in einem Datensatz, der
+ *   seine Kontingente in der **Spielsystemdatei** deklariert; dort steht in
+ *   keiner `.cat` ein `forceEntry`, aus dem sich das Armeebuch ableiten liesse.
+ *   Wo sie greift, halten Pflichten und Wurzel-Angebote eines **fremden**
+ *   Armeebuchs sich daran (Issue 0098/0140) und der Bezugsrahmen
+ *   `primary-catalogue` loest darueber auf. Ohne Angabe — und ebenso bei einer
+ *   Katalog-Id, die dieser Datensatz nicht kennt — bleibt es beim
+ *   Herkunftsindex; schweigt auch der, wird nicht gefiltert (der Rahmen faellt
+ *   offen aus) und `primary-catalogue` bleibt fail-closed unaufgeloest. Ein
+ *   **Bibliothekskatalog** ist von der Filterung ohnehin nie betroffen: seine
+ *   Angebote gelten wie die des Spielsystems in jedem Kontingent.
  *
  *   **Identitaets-Regel fuer `defId`.** Eine Auswahl, die ueber einen
  *   `<entryLink>` gesetzt wurde, wird unter der Id des **Verweises** uebergeben
@@ -227,18 +231,21 @@ export function evaluate(prepared, roster, options) {
   const contents = PreparedDataset.contentsOf(prepared);
   const {
     resolved, primaryCatalogueByForceDefId, sourceIdByDefId, catalogueRootEntryClosureById,
-    gameSystemDocument, diagnostics: datasetDiagnostics,
+    libraryCatalogueIds, gameSystemDocument, diagnostics: datasetDiagnostics,
   } = contents;
 
   // Der Katalog-Bezugsrahmen (Issue 0098): welche Herkunft zu welchem
   // Kontingent-Katalog gehoert. Reicht bis in die Baumphase 1 (Pflicht-Phantome,
   // `evalTree.js`) und die Baumphase 2 (Angebot, `offer.js`) hinein, damit ein
   // Wurzel-Eintrag oder ein roster-skopiertes Pflicht-Minimum eines fremden
-  // Katalogs weder angeboten noch erzwungen wird.
+  // Katalogs weder angeboten noch erzwungen wird. Ausgenommen sind — neben dem
+  // Spielsystem — die Bibliothekskataloge: eine Bibliothek ist ein geteilter
+  // Vorrat, kein fremdes Armeebuch (Issue 0140).
   const catalogueScope = {
     sourceIdByDefId,
     catalogueRootEntryClosureById,
     gameSystemId: gameSystemDocument?.id ?? null,
+    libraryCatalogueIds,
   };
 
   // ── Abschnitt 1: die iterierte Auswertung ─────────────────────────────────

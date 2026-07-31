@@ -22,12 +22,12 @@
  *
  * Hier steht deshalb auch die **eine** Antwort auf die Frage „aus welchem
  * Armeebuch stammt dieses Kontingent?" ({@link forceCatalogueIdOf}, Issue 0140).
- * Sie hat **zwei** Quellen, und das Roster schlaegt die Katalogdaten: ein
- * Kontingent-Knoten des Eingabe-Rosters darf sein Armeebuch selbst nennen
- * (`catalogueId`, siehe {@link declaredCatalogueIdOf}) — nur so ist ein
- * Datensatz zu beantworten, der seine Kontingente in der **Spielsystemdatei**
- * deklariert, wo der Herkunftsindex prinzipiell keine Antwort haben kann. Ohne
- * Angabe des Rosters bleibt es beim Index.
+ * Sie hat **zwei** Quellen, und die Katalogdaten schlagen das Roster: steht die
+ * Kontingent-Definition in einem Armeebuch, *ist* sie dessen Kontingent. Erst
+ * wo der Index schweigt — weil der Datensatz seine Kontingente in der
+ * **Spielsystemdatei** deklariert —, antwortet die Angabe des Rosters
+ * ({@link declaredCatalogueIdOf}). Sie fuellt die Luecke, sie ueberschreibt
+ * nichts.
  */
 
 import { DefinitionKind } from './model.js';
@@ -87,12 +87,13 @@ function* forceAndSubForces(forceDef) {
  * jede Kontingent-Definition auffindbar sein.
  *
  * **Nur die Kataloge**, nie das Spielsystem: ein `primary-catalogue` ist ein
- * Armeebuch, und die `.gst` ist keines. Ein Datensatz, der seine Kontingente in
- * der Spielsystemdatei deklariert, hat hier darum **keinen** Eintrag — die
- * Antwort kommt dann, wenn das Roster sie mitbringt, aus dessen eigener Angabe
- * ({@link forceCatalogueIdOf}, Issue 0140); bringt es keine, bleibt der Rahmen
- * unaufgeloest und das Query-Primitiv meldet ihn fail-closed als
- * `unresolvedScope`, statt still ein Armeebuch zu erfinden (Issue 077,
+ * Armeebuch, und die `.gst` ist keines. Wo dieser Index antwortet, ist seine
+ * Antwort **massgeblich** — auch gegen ein anderslautendes Roster
+ * ({@link forceCatalogueIdOf}, Issue 0140). Ein Datensatz, der seine
+ * Kontingente in der Spielsystemdatei deklariert, hat hier darum **keinen**
+ * Eintrag; erst dort springt die Angabe des Rosters ein. Bringt es keine,
+ * bleibt der Rahmen unaufgeloest und das Query-Primitiv meldet ihn fail-closed
+ * als `unresolvedScope`, statt still ein Armeebuch zu erfinden (Issue 077,
  * Decisions).
  *
  * Das erste Vorkommen einer Id gewinnt — dieselbe Regel wie in der globalen
@@ -124,8 +125,10 @@ export function buildPrimaryCatalogueIndex(catalogueDocuments) {
  * Ein Kontingent-Knoten des Eingabe-Rosters darf sein Armeebuch selbst nennen
  * (`catalogueId`, Vertrag der Fassade `@param roster`; im App-Modell
  * `Force.catalogueId`, in einer `.ros` das gleichnamige Attribut am `<force>`).
- * Das ist die Wahl des Nutzers und die einzige Quelle, die auch dann antwortet,
- * wenn die Kontingent-Definition aus der Spielsystemdatei stammt.
+ * Sie ist die einzige Quelle, die auch dann antwortet, wenn die
+ * Kontingent-Definition aus der Spielsystemdatei stammt — aber nur dort wird sie
+ * gelesen: wo der Herkunftsindex antwortet, gilt er ({@link
+ * forceCatalogueIdOf}).
  *
  * Eine Armeebuch-Id, die der Datensatz **nicht kennt**, zaehlt wie **keine
  * Angabe**: sonst haette ein Kontingent, dessen Katalog gar nicht geladen ist,
@@ -160,17 +163,18 @@ export function declaredCatalogueIdOf(instance, knownCatalogueIds) {
  *
  * Zwei Quellen, in dieser Reihenfolge:
  *
- * 1. die **Angabe des Rosters** am Kontingent-Knoten, beim Aufbau des Baums
+ * 1. der **Herkunftsindex** aus den Katalogdaten
+ *    ({@link buildPrimaryCatalogueIndex}): steht die Kontingent-Definition in
+ *    einem Armeebuch, *ist* sie dessen Kontingent — ein anderslautendes
+ *    Roster-Attribut ist Metadatenmuell und wird nicht gelesen;
+ * 2. die **Angabe des Rosters** am Kontingent-Knoten, beim Aufbau des Baums
  *    einmal geprueft und dort als `declaredCatalogueId` abgelegt
- *    ({@link declaredCatalogueIdOf}, `attachInstance`);
- * 2. der **Herkunftsindex** aus den Katalogdaten
- *    ({@link buildPrimaryCatalogueIndex}).
+ *    ({@link declaredCatalogueIdOf}, `attachInstance`). Sie **fuellt die
+ *    Luecke**, die der Index laesst: fuer ein in der Spielsystemdatei
+ *    deklariertes Kontingent kann er prinzipiell keine Antwort haben.
  *
- * Das Roster schlaegt den Index: der Index kann fuer ein in der `.gst`
- * deklariertes Kontingent prinzipiell keine Antwort haben, waehrend das Roster
- * die Wahl des Nutzers festhaelt. Schweigen beide, ist die Antwort
- * `undefined` — die Aufrufer fallen dann offen aus (Filterung) bzw.
- * fail-closed (`primary-catalogue`), jeder wie bisher.
+ * Schweigen beide, ist die Antwort `undefined` — die Aufrufer fallen dann offen
+ * aus (Filterung) bzw. fail-closed (`primary-catalogue`), jeder wie bisher.
  *
  * Die Antwort ist **je Knoten**, nicht je Definition: zwei Kontingente
  * derselben `.gst`-Definition koennen zu zwei verschiedenen Armeebuechern
@@ -181,11 +185,12 @@ export function declaredCatalogueIdOf(instance, knownCatalogueIds) {
  * @returns {string|undefined}
  */
 export function forceCatalogueIdOf(forceNode, primaryCatalogueByForceDefId) {
-  const declared = forceNode?.declaredCatalogueId;
-  if (declared !== null && declared !== undefined) return declared;
   const defId = forceNode?.def?.id;
-  if (defId === null || defId === undefined) return undefined;
-  return primaryCatalogueByForceDefId?.get(defId);
+  const fromIndex = defId === null || defId === undefined
+    ? undefined
+    : primaryCatalogueByForceDefId?.get(defId);
+  if (fromIndex !== undefined) return fromIndex;
+  return forceNode?.declaredCatalogueId ?? undefined;
 }
 
 /** Die Wurzel-Sammlungen, aus denen der Resolver seine Definitionen indiziert. */
@@ -286,6 +291,36 @@ export function buildCatalogueRootEntryClosure(catalogueDocuments) {
 }
 
 /**
+ * Baut die Menge der **Bibliothekskataloge** des Datensatzes (`library="true"`,
+ * Issue 0140): die Katalog-Ids, deren Angebote in **jedem** Kontingent gelten.
+ *
+ * Ein Bibliothekskatalog ist kein Armeebuch, sondern ein geteilter Vorrat, den
+ * die Armeebuecher benutzen (Soeldner, Regiments of Renown). Er ist deshalb nie
+ * ein *fremdes* Armeebuch und wird von {@link isInCatalogueScope} ebenso
+ * ausgenommen wie das Spielsystem — sonst verloere ein Kontingent, dessen
+ * Definition in der `.gst` steht, seine Bibliotheksangebote (der Vertrag aus
+ * Issue 0121, Task 19, Punkt 5 und Issue 0135, Kriterium 10).
+ *
+ * Ein Katalog **ohne** eigene Wurzel-Id nimmt nicht teil: seine Definitionen
+ * tragen ohnehin keine Herkunft, gegen die zu pruefen waere. Ein fehlendes oder
+ * unlesbares `library`-Kennzeichen zaehlt als „kein Bibliothekskatalog" — die
+ * XSD-Vorgabe ist `false` (`catalogReader.js`), und die Ausnahme darf nur
+ * hinzufuegen, was belegt ist.
+ *
+ * @param {Array<{ id?: string|null, isLibrary?: boolean }>} catalogueDocuments
+ *   Die gelesenen **Katalog**-Dokumente (`.cat`) in Aufruf-Reihenfolge.
+ * @returns {Set<string>} Die Ids der Bibliothekskataloge.
+ */
+export function buildLibraryCatalogueIds(catalogueDocuments) {
+  const ids = new Set();
+  for (const document of catalogueDocuments) {
+    if (document.id === null || document.id === undefined) continue;
+    if (document.isLibrary === true) ids.add(document.id);
+  }
+  return ids;
+}
+
+/**
  * True, wenn eine Definition zum Katalog-Fussabdruck **irgendeines** der
  * gegebenen Referenz-Kataloge gehoert (Issue 0098) — die **eine** Pruefung,
  * die sowohl der Pflicht-Phantom-Synthese (`evalTree.js`, je Kontingent ein
@@ -302,6 +337,13 @@ export function buildCatalogueRootEntryClosure(catalogueDocuments) {
  *   nicht) — kein Katalog, den man ausschliessen koennte;
  * - fuer das Spielsystem selbst (`gameSystemId`) — spielsystemweite
  *   Wurzel-Eintraege gelten in jedem Kontingent;
+ * - fuer einen **Bibliothekskatalog** (`libraryCatalogueIds`, Issue 0140) —
+ *   eine Bibliothek ist kein Armeebuch, sondern ein geteilter Vorrat, den jedes
+ *   Armeebuch benutzt; sie kann deshalb nie das *fremde* Armeebuch sein, gegen
+ *   das dieser Rahmen schuetzt (derselbe Grund wie beim Spielsystem, und der
+ *   schon festgelegte Vertrag aus Issue 0121/0135: Spielsystem- und
+ *   Bibliothekseintraege erscheinen ueberall). Fehlt die Menge, wird nichts
+ *   zusaetzlich ausgenommen — die Ausnahme fuegt nur hinzu, was belegt ist;
  * - ohne **jeden** Referenz-Katalog (leere Menge, z. B. ein Roster ohne
  *   Kontingente oder ein Kontingent mit unbekanntem Katalog) — es gibt
  *   nichts, wogegen auszuschliessen waere.
@@ -311,17 +353,18 @@ export function buildCatalogueRootEntryClosure(catalogueDocuments) {
  *   die geprueft wird — bei einer Force-Grenze ihr eigener Katalog (hoechstens
  *   einer), bei einer Roster-Grenze alle Kataloge der im Roster tatsaechlich
  *   vertretenen Kontingente. Woher der Katalog eines Kontingents kommt,
- *   beantwortet {@link forceCatalogueIdOf} — Angabe des Rosters vor
- *   Herkunftsindex.
- * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
+ *   beantwortet {@link forceCatalogueIdOf} — Herkunftsindex vor Angabe des
+ *   Rosters.
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string> }} [catalogueScope]
  * @returns {boolean}
  */
 export function isInCatalogueScope(defId, referenceCatalogueIds, catalogueScope) {
   if (catalogueScope === null || catalogueScope === undefined) return true;
-  const { sourceIdByDefId, catalogueRootEntryClosureById, gameSystemId } = catalogueScope;
+  const { sourceIdByDefId, catalogueRootEntryClosureById, gameSystemId, libraryCatalogueIds } = catalogueScope;
   const sourceId = sourceIdByDefId.get(defId);
   if (sourceId === undefined || sourceId === null) return true;
   if (sourceId === gameSystemId) return true;
+  if (libraryCatalogueIds?.has(sourceId)) return true;
   let hasAnyReference = false;
   for (const catalogueId of referenceCatalogueIds) {
     hasAnyReference = true;

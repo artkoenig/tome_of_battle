@@ -395,9 +395,9 @@ function countInstances(fromNode, defId) {
  * ROSTER-Rahmen die Kataloge **aller** im Roster tatsaechlich vertretenen
  * Kontingente, fuer den FORCE-Rahmen allein der Katalog **dieses**
  * Kontingents. Welches Armeebuch ein Kontingent hat, beantwortet dabei
- * {@link forceCatalogueIdOf} — die Angabe des Rosters vor dem Herkunftsindex
- * (Issue 0140), je Kontingent-**Knoten** und deshalb fuer zwei Kontingente
- * aus verschiedenen Buechern getrennt. Ein Wurzel-**`entryLink`** wird hier bewusst **nicht** wie
+ * {@link forceCatalogueIdOf} — der Herkunftsindex, und nur wo der schweigt die
+ * Angabe des Rosters (Issue 0140), je Kontingent-**Knoten** und deshalb fuer
+ * zwei Kontingente aus verschiedenen Buechern getrennt. Ein Wurzel-**`entryLink`** wird hier bewusst **nicht** wie
  * beim Angebot (`offer.js`) ausgenommen (Issue 0133): waehrend ein
  * unbedingtes Angebot ueber einen fremden Link legitim katalogübergreifend
  * bleibt (die geteilte Zieleinheit ist ueberall wählbar), haengt eine eigene
@@ -875,19 +875,20 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  * @param {{ forces?: Array<{ defId: string, count?: number, catalogueId?: string|null, children?: object[] }> }} roster
  *   Der Instanzbaum. Ein Kontingent-Knoten darf sein Armeebuch nennen
  *   (`catalogueId`, Issue 0140); die Angabe landet geprueft am Knoten
- *   ({@link attachInstance}) und schlaegt dort den Herkunftsindex.
- * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
+ *   ({@link attachInstance}) und gilt dort, wo der Herkunftsindex schweigt.
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string> }} [catalogueScope]
  *   Der Katalog-Bezugsrahmen (Issue 0098): schneidet die Pflicht-Phantom-Synthese
  *   auf Definitionen zu, deren Herkunft zu den im Roster tatsaechlich
- *   vertretenen Kontingent-Katalogen gehoert. Ohne ihn (`undefined`)
- *   ungefiltertes, unveraendertes Verhalten. Sein
- *   `catalogueRootEntryClosureById` ist zugleich die Registratur, gegen die die
- *   Armeebuch-Angabe des Rosters geprueft wird — eine dem Datensatz unbekannte
- *   Id zaehlt wie keine Angabe ({@link declaredCatalogueIdOf}).
+ *   vertretenen Kontingent-Katalogen gehoert — Spielsystem und
+ *   Bibliothekskataloge ausgenommen. Ohne ihn (`undefined`) ungefiltertes,
+ *   unveraendertes Verhalten. Sein `catalogueRootEntryClosureById` ist zugleich
+ *   die Registratur, gegen die die Armeebuch-Angabe des Rosters geprueft wird —
+ *   eine dem Datensatz unbekannte Id zaehlt wie keine Angabe
+ *   ({@link declaredCatalogueIdOf}).
  * @param {Map<string, string>} [primaryCatalogueByForceDefId]
- *   Der Herkunftsindex der Kontingente — die zweite Quelle des Armeebuchs eines
- *   Kontingents ({@link forceCatalogueIdOf}); ohne ihn **und** ohne Angabe des
- *   Rosters wirkt `catalogueScope` wie fehlend.
+ *   Der Herkunftsindex der Kontingente — die **erste** Quelle des Armeebuchs
+ *   eines Kontingents ({@link forceCatalogueIdOf}); ohne ihn **und** ohne
+ *   Angabe des Rosters wirkt `catalogueScope` wie fehlend.
  * @returns {{ root: object, diagnostics: object[] }}
  */
 export function buildEvalTree(resolved, roster, catalogueScope, primaryCatalogueByForceDefId) {

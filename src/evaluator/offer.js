@@ -151,9 +151,12 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
  * 0098): ein eigenstaendiger Wurzel-Eintrag (`ENTRY`) wird nur angeboten,
  * wenn seine Herkunft zum Katalog-Fussabdruck **dieses** Kontingents gehoert
  * ({@link isInCatalogueScope}) — ein Wurzel-Eintrag eines fremden Katalogs im
- * selben Datensatz bleibt aussen vor. Welches Armeebuch das Kontingent hat,
- * beantwortet {@link forceCatalogueIdOf}: die Angabe des Rosters am
- * Kontingent-Knoten vor dem Herkunftsindex aus den Katalogdaten (Issue 0140) —
+ * selben Datensatz bleibt aussen vor — ein Eintrag des Spielsystems oder eines
+ * **Bibliothekskatalogs** dagegen nie ({@link isInCatalogueScope}, Issue
+ * 0140): eine Bibliothek ist ein geteilter Vorrat, kein fremdes Armeebuch.
+ * Welches Armeebuch das Kontingent hat, beantwortet
+ * {@link forceCatalogueIdOf}: der Herkunftsindex aus den Katalogdaten, und nur
+ * wo der schweigt die Angabe des Rosters am Kontingent-Knoten (Issue 0140) —
  * nur so hat ein in der Spielsystemdatei deklariertes Kontingent ueberhaupt
  * ein Armeebuch, gegen das gefiltert werden kann. Ein Wurzel-**`entryLink`** ist davon
  * ausgenommen: er verweist auf eine geteilte Definition (typischerweise
@@ -190,11 +193,11 @@ function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalo
  *
  * @param {object} root  Wurzel des Auswertungsbaums nach Baumphase 1.
  * @param {{ armyLevelCandidates?: object[] }} resolved  die aufgeloeste Katalogsicht.
- * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string> }} [catalogueScope]
  *   Der Katalog-Bezugsrahmen (Issue 0098, siehe {@link candidatesFor}). Ohne ihn
  *   (`undefined`) ungefiltertes, unveraendertes Verhalten.
  * @param {Map<string, string>} [primaryCatalogueByForceDefId]  Der Herkunftsindex
- *   der Kontingente — die zweite Quelle des Armeebuchs eines Kontingents neben
+ *   der Kontingente — die erste Quelle des Armeebuchs eines Kontingents, vor
  *   der Angabe des Rosters am Knoten ({@link forceCatalogueIdOf}); ohne beide
  *   ist `catalogueScope` je Kontingent nicht auszuwerten.
  * @returns {object[]} die angehaengten Anker, in Anhaenge-Reihenfolge. Der Aufrufer

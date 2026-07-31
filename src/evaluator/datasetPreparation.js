@@ -31,6 +31,7 @@ import {
   buildPrimaryCatalogueIndex,
   buildDefinitionSourceIndex,
   buildCatalogueRootEntryClosure,
+  buildLibraryCatalogueIds,
 } from './catalogSet.js';
 import { resolveCatalogue } from './resolver.js';
 import { DiagnosticKind, diagnostic } from './model.js';
@@ -88,10 +89,10 @@ function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnosti
  * bezweckt (ADR-0034).
  */
 export class PreparedDataset {
-  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, diagnostics: object[] }} */
+  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, diagnostics: object[] }} */
   #contents;
 
-  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, diagnostics: object[] }} contents */
+  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, diagnostics: object[] }} contents */
   constructor(contents) {
     this.#contents = contents;
   }
@@ -100,7 +101,7 @@ export class PreparedDataset {
    * Der Inhalt eines aufbereiteten Datensatzes — **engine-intern**.
    *
    * @param {PreparedDataset} prepared  Das Ergebnis von {@link prepareDataset}.
-   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, diagnostics: object[] }}
+   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, diagnostics: object[] }}
    * @throws {TypeError} Wenn kein aufbereiteter Datensatz uebergeben wurde. Das ist
    *   der haeufigste Aufruffehler der zweistufigen Fassade — ein roher Datensatz
    *   `{ gameSystem, catalogues }` statt seines aufbereiteten Ergebnisses —, und er
@@ -138,8 +139,12 @@ export class PreparedDataset {
  * (`catalogueRootEntryClosureById`, {@link buildCatalogueRootEntryClosure}):
  * welche Katalog-Herkuenfte als „zu diesem Katalog gehoerig" gelten, ihn
  * selbst und die per `catalogueLink importRootEntries="true"` importierten
- * eingeschlossen (Issue 0098). Alle drei sind rosterunabhaengig und gehoeren
- * deshalb in den Vorlauf, nicht in die Auswertung.
+ * eingeschlossen (Issue 0098) — und daneben die Menge der
+ * **Bibliothekskataloge** (`libraryCatalogueIds`,
+ * {@link buildLibraryCatalogueIds}), die derselbe Rahmen ausnimmt wie das
+ * Spielsystem: eine Bibliothek ist kein fremdes Armeebuch (Issue 0140). Alle
+ * vier sind rosterunabhaengig und gehoeren deshalb in den Vorlauf, nicht in die
+ * Auswertung.
  *
  * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
  *   Die optionale Spielsystemdatei (`.gst`-XML) und die geordnete Liste der
@@ -205,6 +210,9 @@ function prepare(dataset) {
     // Wurzel-Angebots-Fussabdruck eines Katalogs ist eine Eigenschaft von
     // `catalogueLink`s, die nur zwischen Katalogen bestehen (Issue 0098).
     catalogueRootEntryClosureById: buildCatalogueRootEntryClosure(catalogueDocuments),
+    // Ebenfalls nur die Kataloge: das `library`-Kennzeichen ist ein Attribut der
+    // `.cat`-Wurzel; ein Bibliothekskatalog ist nie ein fremdes Armeebuch (Issue 0140).
+    libraryCatalogueIds: buildLibraryCatalogueIds(catalogueDocuments),
     diagnostics: [...merged.diagnostics, ...coherenceDiagnostics, ...resolved.diagnostics],
   });
 }
