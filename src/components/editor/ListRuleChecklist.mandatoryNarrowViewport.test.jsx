@@ -229,4 +229,41 @@ describe('ListRuleChecklist — mandatory rows on a narrow viewport (Issue 0138,
 
     expect(screen.queryByTestId('bottom-sheet')).toBeNull();
   });
+
+  /**
+   * Issue 0140, criterion 4 — Issue 0138's criterion 4 stays untouched: a
+   * mandatory rule missing from a pre-existing roster "bleibt ein manuell zu
+   * behebender Fehler wie bisher". On a narrow viewport that manual fix has to
+   * work too, and the hint must stay reachable while the rule is still absent —
+   * the hint is not tied to the lock.
+   */
+  describe('an ABSENT mandatory rule on a narrow viewport (Issue 0140 AC4)', () => {
+    it('its checkbox is enabled, and tapping it adds the rule', () => {
+      setViewportWidth(500);
+      render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule({ checked: false, selection: null })]} />);
+
+      const checkbox = screen.getByRole('checkbox', { name: 'The Laws of Undeath' });
+      expect(checkbox.disabled).toBe(false);
+
+      fireEvent.click(checkbox);
+
+      expect(baseProps.addUnit).toHaveBeenCalledTimes(1);
+      expect(baseProps.addUnit).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'e-mandatory' }),
+        'cat-rules'
+      );
+    });
+
+    it('tapping its info icon still reveals the description followed by the mandatory note', () => {
+      setViewportWidth(500);
+      render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule({ checked: false, selection: null })]} />);
+
+      fireEvent.click(screen.getByTestId('icon-info'));
+
+      const sheet = screen.queryByTestId('bottom-sheet');
+      expect(sheet).not.toBeNull();
+      expect(sheet.textContent).toContain(DESCRIPTION_TEXT);
+      expect(sheet.textContent).toContain(MANDATORY_NOTE);
+    });
+  });
 });

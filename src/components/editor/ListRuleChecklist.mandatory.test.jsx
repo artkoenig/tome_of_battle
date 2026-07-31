@@ -6,10 +6,17 @@ import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionO
 import { t } from '../../i18n/i18nStore';
 
 /**
- * Issue 0138, AC5 — a `state.mandatory` row renders a disabled checkbox
- * (unchanged) and a *visible* explanation reachable on a desktop-width
- * viewport, at both checkbox locations (the plain switch-row and the
- * expandable container-row), per Plan Contract 3/3a/3b.
+ * Issue 0138, AC5 — a `state.mandatory` row renders a disabled checkbox and a
+ * *visible* explanation reachable on a desktop-width viewport, at both checkbox
+ * locations (the plain switch-row and the expandable container-row), per Plan
+ * Contract 3/3a/3b.
+ *
+ * REVISED BY ISSUE 0140 CRITERION 4 (review round 1): the lock is not
+ * unconditional. It applies while the rule is actually present; an absent
+ * mandatory rule must stay tickable, because a pre-existing roster never gets
+ * the auto-add and Issue 0138's criterion 4 — which Issue 0140's criterion 4
+ * keeps in force — leaves such a rule "ein manuell zu behebender Fehler wie
+ * bisher". The visible hint is unaffected and appears in both states.
  *
  * Revision (Prüfrunde 1, F2): the explanation no longer lives as a
  * hover-only tooltip wired to the (disabled) checkbox itself — that
@@ -156,7 +163,7 @@ describe('ListRuleChecklist — mandatory rows (Issue 0138, AC5, info-icon desig
     mockUseSettings.mockReturnValue({ whfb6LinkingEnabled: true });
   });
 
-  describe('checkbox stays locked (regression, AC5 "nicht abwählbar")', () => {
+  describe('checkbox lock (AC5 "nicht abwählbar", scoped to a PRESENT rule by Issue 0140 AC4)', () => {
     it('disables the checkbox of a mandatory switch-row rule', () => {
       render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
       expect(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }).disabled).toBe(true);
@@ -177,16 +184,150 @@ describe('ListRuleChecklist — mandatory rows (Issue 0138, AC5, info-icon desig
       expect(screen.getByRole('checkbox', { name: 'Army of Sylvania' }).disabled).toBe(false);
     });
 
-    it('AC5 boundary: a mandatory row is disabled even before it is checked (disabling follows mandatory, not checked)', () => {
+    // SUPERSEDED BY ISSUE 0140 CRITERION 4 (review round 1). This case used to
+    // read "a mandatory row is disabled even before it is checked (disabling
+    // follows mandatory, not checked)". That unconditional lock breaks Issue
+    // 0138's criterion 4, which Issue 0140's criterion 4 keeps in force: "eine
+    // bei ihm fehlende Pflichtregel bleibt ein manuell zu behebender Fehler wie
+    // bisher". A pre-existing roster never receives the auto-add, so a locked
+    // AND unchecked row leaves the user with a blocking evaluator error they
+    // cannot clear by hand. The lock therefore follows presence, not
+    // mandatoriness alone — see the "absent mandatory rule" block below.
+    it('a mandatory rule that is NOT present is still tickable — its checkbox is enabled', () => {
       render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule({ checked: false, selection: null })]} />);
-      expect(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }).disabled).toBe(true);
+      expect(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }).disabled).toBe(false);
     });
 
-    it("clicking a mandatory rule's checkbox does not toggle it (no add/remove call)", () => {
+    it("clicking a present mandatory rule's checkbox does not toggle it (no add/remove call)", () => {
       render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
       fireEvent.click(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }));
       expect(baseProps.addUnit).not.toHaveBeenCalled();
       expect(baseProps.removeUnit).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * Issue 0140, criterion 4 — Issue 0138's criterion 4 stays untouched: "eine
+   * bei ihm fehlende Pflichtregel bleibt ein manuell zu behebender Fehler wie
+   * bisher". A roster created before the auto-add shipped never receives it, so
+   * the one remaining way to clear that blocking error is the checklist. A
+   * mandatory row is therefore locked only while the rule is actually present;
+   * an absent one must be tickable, and ticking it must really add it. Once
+   * present it locks again, exactly like an auto-set one (Issue 0138 AC5).
+   *
+   * The visible mandatory hint (Issue 0138 AC5's info icon and its text) is not
+   * tied to the lock — it stays in both states.
+   */
+  describe('an ABSENT mandatory rule stays manually fixable (Issue 0140 AC4)', () => {
+    it('plain switch row: ticking an absent mandatory rule adds it', () => {
+      render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule({ checked: false, selection: null })]} />);
+
+      fireEvent.click(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }));
+
+      expect(baseProps.addUnit).toHaveBeenCalledTimes(1);
+      expect(baseProps.addUnit).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'e-mandatory' }),
+        'cat-rules'
+      );
+      expect(baseProps.removeUnit).not.toHaveBeenCalled();
+    });
+
+    it('container rule, still absent: its checkbox is enabled and ticking it adds it', () => {
+      // An unchecked container rule has no sub-options to expand yet, so it
+      // renders through the same plain-row checkbox site — the row the user
+      // actually meets while the rule is missing.
+      render(
+        <ListRuleChecklist
+          {...baseProps}
+          states={[mandatoryContainerRule({ checked: false, selection: null })]}
+        />
+      );
+      const checkbox = screen.getByRole('checkbox', { name: 'Army of Sylvania' });
+      expect(checkbox.disabled).toBe(false);
+
+      fireEvent.click(checkbox);
+
+      expect(baseProps.addUnit).toHaveBeenCalledTimes(1);
+      expect(baseProps.addUnit).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'e-mandatory-container' }),
+        'cat-rules'
+      );
+    });
+
+    it('once present, the same rule locks again — the lock follows presence', () => {
+      const { rerender } = render(
+        <ListRuleChecklist {...baseProps} states={[mandatorySwitchRule({ checked: false, selection: null })]} />
+      );
+      expect(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }).disabled).toBe(false);
+
+      rerender(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
+
+      expect(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }).disabled).toBe(true);
+    });
+
+    it('the mandatory hint stays visible while the rule is absent — it is not tied to the lock', () => {
+      render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule({ checked: false, selection: null })]} />);
+
+      expect(screen.getByTestId('icon-info')).toBeTruthy();
+      fireEvent.mouseEnter(screen.getByTestId('icon-info'), { clientX: 10, clientY: 10 });
+
+      const tooltip = document.querySelector('.gothic-tooltip');
+      expect(tooltip).not.toBeNull();
+      expect(tooltip.textContent).toContain(DESCRIPTION_TEXT);
+      expect(tooltip.textContent).toContain(MANDATORY_NOTE);
+    });
+  });
+
+  describe('a PRESENT mandatory rule stays locked (Issue 0138 AC5, both checkbox sites)', () => {
+    it('plain switch row: the change handler refuses to remove it even when driven directly', () => {
+      render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
+
+      // Bypasses the DOM `disabled` attribute to drive the change handler
+      // itself, so the guard is pinned independently of the rendered attribute.
+      fireEvent.change(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }), {
+        target: { checked: false },
+      });
+
+      expect(baseProps.removeUnit).not.toHaveBeenCalled();
+      expect(baseProps.addUnit).not.toHaveBeenCalled();
+    });
+
+    it('expandable container row: the change handler refuses to remove it even when driven directly', () => {
+      render(<ListRuleChecklist {...baseProps} states={[mandatoryContainerRule()]} />);
+
+      fireEvent.change(screen.getByRole('checkbox', { name: 'Army of Sylvania' }), {
+        target: { checked: false },
+      });
+
+      expect(baseProps.removeUnit).not.toHaveBeenCalled();
+      expect(baseProps.addUnit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('non-mandatory rows behave the same in both states (no regression)', () => {
+    it('an unchecked non-mandatory rule is enabled and ticking it adds it', () => {
+      render(<ListRuleChecklist {...baseProps} states={[optionalSwitchRule()]} />);
+      const checkbox = screen.getByRole('checkbox', { name: 'Allow experimental rules?' });
+      expect(checkbox.disabled).toBe(false);
+
+      fireEvent.click(checkbox);
+
+      expect(baseProps.addUnit).toHaveBeenCalledTimes(1);
+    });
+
+    it('a checked non-mandatory rule is enabled and un-ticking it removes it', () => {
+      render(
+        <ListRuleChecklist
+          {...baseProps}
+          states={[optionalSwitchRule({ checked: true, selection: { id: 'sel-optional' } })]}
+        />
+      );
+      const checkbox = screen.getByRole('checkbox', { name: 'Allow experimental rules?' });
+      expect(checkbox.disabled).toBe(false);
+
+      fireEvent.click(checkbox);
+
+      expect(baseProps.removeUnit).toHaveBeenCalledWith('sel-optional');
     });
   });
 
