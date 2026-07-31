@@ -136,7 +136,7 @@ Kriterium 2 ist in seiner **„false"-Haelfte zurueckgenommen**: ein explizites
 Grund: Battlescribe schreibt das Attribut an *jedem* `entryLink` (0 von 2302 in den
 DE-Fixtures lassen es weg), sodass die hier gebaute Vererbung an echten Katalogen nie
 greifen konnte — und die Vorrangregel das gaengigste Gatter-Muster der Kataloge
-(geteilte Definition `hidden="true"` + bedingter Aufdeck-Modifikator, 22 von 27
+(geteilte Definition `hidden="true"` + bedingter Aufdeck-Modifikator, 37 von 42
 Faellen) ins Gegenteil verkehrte: die gegatterten Inhalte waren immer sichtbar. Die
 „true"-Haelfte (`hidden="true"` am Verweis versteckt unabhaengig vom Ziel) und
 Kriterium 3 (Modifikatoren schlagen die Basiswerte) gelten unveraendert. Details und

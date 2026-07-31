@@ -88,17 +88,28 @@ Acceptance criteria:
 
 ## Decisions
 
-- **Oder statt „eigenes vor geerbtem" (Kriterium 1).** Der Gegenbeleg in den Daten ist
-  bekannt und wird bewusst hingenommen: „Full Plate Armour" (`3869-2f40-dd21-6971`,
-  Vampire Counts) trägt `hidden="true"` **ohne** Aufdeck-Modifikator und wird von
-  Vampirlord/Vampirgraf per Link (`hidden="false"`, mit einem bedingten
-  `set hidden="true"` für Strigoi) angeboten; nach dieser Änderung ist die Rüstung dort
-  nicht mehr wählbar. Das ist ein Datenfehler des Katalogs (dieselbe Datei gattert
-  22 andere Definitionen über genau den Weg, den dieser Eintrag nicht geht) und gehört
-  in den Katalog-Fork, nicht in eine Sonderregel der Engine. Betroffen sind daneben
-  „Necrarch additional casting dice" (`68c7-4c56-8f0b-ad91`) und drei erkennbar
-  verwaiste Fremdarmee-Einträge (`[DARK ELVES]`, `[GREENSKINS]`), die ohnehin versteckt
-  gehören.
+- **Oder statt „eigenes vor geerbtem" (Kriterium 1).** Von den 42 versteckten geteilten
+  Definitionen der DE-Fixtures gattern 37 über genau dieses Muster (`hidden="true"` plus
+  bedingter Aufdeck-Modifikator); die fünf übrigen sind ein Mercenaries-Gruppeneintrag
+  („Relics of Lustria") und vier erkennbar verwaiste Fremdarmee-Einträge
+  (`[DARK ELVES]`, `[GREENSKINS]`), die ohnehin versteckt gehören. Kein Eintrag verliert
+  durch die Änderung seine Erreichbarkeit.
+
+- **Korrektur (2026-07-31, nach Rückfrage des Maintainers).** Die erste Fassung dieser
+  Entscheidung nannte „Full Plate Armour" (`3869-2f40-dd21-6971`) und „Necrarch
+  additional casting dice" (`68c7-4c56-8f0b-ad91`) als hingenommene Datenfehler, weil
+  ihnen der Aufdeck-Modifikator fehle. **Das war falsch.** Beide tragen ihn — nur nicht
+  in `<modifiers>`, sondern in einem bedingten `<modifierGroup>`
+  (`Catalogue.xsd:523-538`), und die damalige Zählung sah nur in `<modifiers>` nach.
+  Die Bedingung ist jeweils die Blutlinie: Full Plate Armour wird durch „Bloodline of
+  Clan Blood Dragon" (`9fd9-e05c-ffcb-2c4d`) aufgedeckt, die Zusatzwürfel durch
+  „Bloodline of Clan Necrarch" (`5017-296d-edef-4562`) — beides über
+  `atLeast 1 selections scope="force" … includeChildSelections="true"`. Der Katalog ist
+  an dieser Stelle korrekt, und die Engine wertet es korrekt aus: gegen die DE-Fixtures
+  gemessen ist Full Plate Armour an Vampirlord (`7444-fade-d336-53b9`) und Vampirgraf
+  (`a4d1-6e85-bee8-55d1`) ohne Blutlinie und mit Necrarch `isHidden: true`, mit Blood
+  Dragon `isHidden: false`; die Zusatzwürfel spiegelbildlich. Beide Fälle sind jetzt als
+  Echtdaten-Test festgenagelt (`effectiveState.baseHiddenInheritance.test.js`).
 
 - **Herkunft:** Bugmeldung des Maintainers („in einer Vampirliste sehe ich beim Vampir
   im Editor solche Gegenstände wie ‚Bloody Nora'"), reproduziert an den DE-Fixtures über
@@ -140,6 +151,35 @@ Acceptance criteria:
   Test-zuerst-Reihenfolge samt belegtem Rot ist eingehalten, die Gegenpruefung durch
   einen frischen Kontext fehlt und ist damit offen.
 
+- 2026-07-31 **Korrektur nach Widerspruch des Maintainers** („ich denke nicht, dass es
+  sich bei ‚Full Plate Armour' bei Vampiren um einen Katalogfehler handelt"): Der
+  Eintrag traegt seinen Aufdeck-Modifikator in einem bedingten `<modifierGroup>`, nicht
+  in `<modifiers>` — die urspruengliche Zaehlung sah nur in `<modifiers>` nach und hielt
+  ihn deshalb faelschlich fuer ungegattert. Bedingung ist die Blutlinie „Blood Dragon"
+  (`9fd9-e05c-ffcb-2c4d`), bei „Necrarch additional casting dice" entsprechend
+  „Necrarch" (`5017-296d-edef-4562`). An den DE-Fixtures nachgemessen: an Vampirlord
+  (`7444-fade-d336-53b9`) und Vampirgraf (`a4d1-6e85-bee8-55d1`) ist Full Plate Armour
+  ohne Blutlinie und unter Necrarch `isHidden: true`, unter Blood Dragon
+  `isHidden: false`; die Zusatzwuerfel spiegelbildlich. **Kein Katalogfehler, kein
+  Verlust an Erreichbarkeit durch diese Aenderung.** Korrigierte Zaehlung ueber
+  `<modifiers>` **und** `<modifierGroups>`: 37 von 42 versteckten geteilten Definitionen
+  der Fixtures gattern ueber das Muster (vorher als „22 von 27" notiert). Nachgezogen:
+  `effectiveState.js`, `effectiveState.baseHiddenInheritance.test.js`, Issue 0099,
+  `docs/battlescribe-data-format.md` §8. Neu: 8 Echtdaten-Tests in
+  `effectiveState.baseHiddenInheritance.test.js`, die beide Blutlinien-Gatter in beide
+  Richtungen festnageln (`npx vitest run` dieser Datei: 20 Tests, exit 0).
+- 2026-07-31 Die neuen Echtdaten-Faelle bereiteten den Datensatz zunaechst je Fall neu
+  auf (14,8 s fuer die Datei) und rissen im ersten Suite-Lauf unter Parallellast das
+  5-Sekunden-Zeitlimit — 1 Fehlschlag in `npx vitest run src/evaluator`. Behoben durch
+  Memoisieren von `prepareDataset` in der Datei (1,5 s); zwei aufeinanderfolgende
+  Laeufe danach: 72 Dateien / 904 Tests, exit 0. `npm run lint` exit 0 (1 Warnung,
+  unveraendert gegen den Stand ohne diese Aenderung), `npm run typecheck` exit 0.
+- 2026-07-31 Doku-Luecke geschlossen, die den Fehlschluss ueberhaupt moeglich machte:
+  `docs/battlescribe-data-format.md` erwaehnte `modifierGroup` an keiner Stelle, obwohl
+  die XSD es definiert (`Catalogue.xsd:107`, `523-538`) und die Engine es liest. §7.7
+  hat jetzt einen eigenen Abschnitt samt Fallstrick-Kasten: wer fragt „gattert der
+  Katalog diesen Eintrag?", muss `<modifiers>` **und** `<modifierGroups>` durchsuchen.
+
 - **Vorbefund fuer ein eigenes Issue (nicht hier behoben):** `node
   scripts/measure-evaluator.js` bricht im dritten Messfall mit „Die nachgebildete
   Pipeline des Messverfahrens weicht von der Fassade `evaluate` ab" ab —
@@ -174,10 +214,26 @@ Acceptance criteria:
   Vampirs. Sie ist der beste Beleg dafuer, dass die Klammer-Regel stimmt — und
   zugleich der Grund, den Fall als Test aufzunehmen.
 - What am I assuming without having verified it? Weiterhin die Komposition in
-  Battlescribe selbst (siehe oben). Ausserdem, dass die zwei Katalog-Eintraege, die
-  nach dieser Aenderung unerreichbar werden („Full Plate Armour", „Necrarch additional
-  casting dice"), tatsaechlich Datenfehler des Forks sind und nicht eine dritte,
-  ungesehene Absicht — nachgesehen ist nur, dass beiden der Aufdeck-Modifikator fehlt,
-  den 22 andere Definitionen derselben Datei tragen.
+  Battlescribe selbst (siehe oben). Die frueher hier vermerkte Annahme — „Full Plate
+  Armour" und „Necrarch additional casting dice" seien Datenfehler des Forks — ist
+  **widerlegt**: sie stammte aus einer Zaehlung, die nur `<modifiers>` durchsuchte und
+  `<modifierGroups>` uebersah. Siehe die Korrektur unter Decisions.
+- Was die Annahme kosten wollte: eine falsche Meldung an den Maintainer und zwei
+  unnoetige Katalog-Aenderungen. Aufgefallen ist sie nur, weil er widersprochen hat —
+  „ich denke nicht, dass es sich um einen Katalogfehler handelt". Die Lehre steht in
+  der Retro.
 
 ## Retro
+
+- **Eine Suche ist kein Beweis, solange die Form des Gesuchten ungeprueft ist.** Die
+  Behauptung „diesem Eintrag fehlt der Aufdeck-Modifikator" stuetzte sich auf eine
+  Suche nach `<modifiers>`. Dass derselbe Modifikator auch in einem `<modifierGroup>`
+  stehen darf, stand in der XSD und im Code (`catalogReader.js` zitiert
+  `Catalogue.xsd:523-538`) — nur nicht in der Doku, aus der ich das Format gelesen
+  habe. Aus einem Nullbefund einer Suche einen Datenfehler *des Nutzers* abzuleiten,
+  war der eigentliche Fehler: die teuerste Schlussfolgerung auf der duennsten
+  Grundlage. Die Gegenprobe waere billig gewesen — den Eintrag einmal mit der
+  vermuteten Bedingung auswerten, statt ihre Abwesenheit zu behaupten.
+- Aufgefallen ist es nur durch den Widerspruch des Maintainers. Genau die Rolle, die
+  Invariante 3 (frischer Kontext prueft) haette spielen sollen und in dieser Sitzung
+  nicht besetzt war.

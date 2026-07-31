@@ -867,6 +867,43 @@ Slot je 1000 Punkte"). Attribute u. a. `repeats` (wie oft pro Treffer), `roundUp
 `percentValue` (die Schrittweite `value` als Prozentsatz des Rahmen-Nenners, wie bei der
 Condition oben).
 
+#### `modifierGroup` — eine bedingte Klammer um mehrere Modifier
+
+Neben `<modifiers>` trägt fast jede Entität ein optionales `<modifierGroups>`
+(`Catalogue.xsd:107`). Ein `modifierGroup` erweitert dieselbe Basis wie ein `modifier`
+(`ModifierBase` — also `<conditions>`, `<conditionGroups>`, `<repeats>`), enthält aber
+statt eines Feldwerts wieder `<modifiers>` und beliebig tief geschachtelte
+`<modifierGroups>` (`Catalogue.xsd:523-538`). Die Bedingungen der Klammer gelten für
+**alle** Modifier darin; die Klammer ist damit die Kurzform für „dieselbe Bedingung an
+mehreren Modifiern" — semantisch gleichwertig dazu, sie an jedem einzelnen zu
+wiederholen.
+
+```xml
+<selectionEntry name="Full Plate Armour" hidden="true" id="3869-2f40-dd21-6971" …>
+  <modifierGroups>
+    <modifierGroup type="and">
+      <conditions>
+        <!-- führt die Armee die Blutlinie „Blood Dragon"? -->
+        <condition type="atLeast" value="1" field="selections" scope="force"
+                   childId="9fd9-e05c-ffcb-2c4d" shared="true" includeChildSelections="true"/>
+      </conditions>
+      <modifiers>
+        <modifier type="set" value="false" field="hidden"/>
+        <modifier type="set" value="1" field="b381-5bd3-4720-6f9a"/>
+      </modifiers>
+    </modifierGroup>
+  </modifierGroups>
+</selectionEntry>
+```
+
+> **Fallstrick beim Lesen von Katalogdaten:** Ein Modifier steht **entweder** in
+> `<modifiers>` **oder** in einem `<modifierGroup>` — Kataloge nutzen beides
+> nebeneinander. Wer eine Frage der Art „gattert dieser Katalog den Eintrag
+> überhaupt?" durch Suchen beantwortet, muss **beide** Orte durchsuchen. Das Beispiel
+> oben ist genau der Fall: das obige `hidden="true"` sieht ohne die `modifierGroup`
+> nach einem Datenfehler aus, ist aber ein sauberes Blutlinien-Gatter (Issue 0135,
+> Korrektur).
+
 #### Vollständiges Beispiel (aus dem `.gst`, Force „Standard")
 
 Der erlaubte Maximalwert der Kategorie **Core** skaliert mit dem Punktelimit der Armee. Der Modifier
@@ -935,8 +972,10 @@ Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
   Gatter-Musters der Kataloge: die **geteilte** Definition trägt `hidden="true"` plus einen bedingten
   `set hidden="false"`, und jeder `entryLink` auf sie trägt (wie Battlescribe es immer schreibt)
   `hidden="false"`. Würde das `hidden="false"` des Verweises dem Ziel vorgehen, wäre das Gatter
-  wirkungslos — belegt an den DE-Katalogen des Repos: 22 der 27 geteilten Definitionen mit
-  `hidden="true"` gattern genau so, und **kein** `entryLink` (0 von 2302) lässt das Attribut weg.
+  wirkungslos — belegt an den DE-Katalogen des Repos: 37 der 42 geteilten Definitionen mit
+  `hidden="true"` gattern genau so (der Aufdeck-Modifikator steht dabei mal in `<modifiers>`,
+  mal in einem bedingten `<modifierGroup>` — siehe den Fallstrick-Kasten in §7.7), und
+  **kein** `entryLink` (0 von 2302) lässt das Attribut weg.
   *Projektentscheidung, keine Quellenaussage:* weder XSD noch BSData-Wiki legen die Komposition
   fest; sie ist aus den Daten erschlossen (Issue 0135, nimmt die gegenteilige Hälfte von Issue 0099
   zurück).

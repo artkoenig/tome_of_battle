@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
@@ -19,10 +22,13 @@ function evaluate(catalogXml, roster) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Issue 0099: Das Basis-`hidden` eines Verweisziels muss das Vorkommen erreichen.
 //
-// Semantik (Erb-Regel „eigene Angaben vor geerbten", `effectiveState.js`):
-//  1. Ein `entryLink` OHNE eigenes `hidden`-Attribut uebernimmt das Basis-`hidden`
-//     seines (transitiv aufgeloesten) Ziels.
-//  2. Ein am Link explizit gesetztes `hidden` (true ODER false) geht dem Ziel vor.
+// Semantik (`effectiveState.js`), Stand Issue 0135:
+//  1. Ein `entryLink` uebernimmt das Basis-`hidden` seines (transitiv aufgeloesten)
+//     Ziels — unabhaengig davon, ob er selbst eines traegt.
+//  2. Verweis und Ziel wirken zusammen (ODER): versteckt ist ein Vorkommen, wenn
+//     EINE der beiden Seiten es versteckt. Die frueher hier notierte Vorrangregel
+//     „ein am Link explizit gesetztes `hidden` geht dem Ziel vor" gilt nur noch in
+//     ihrer „true"-Haelfte; siehe den Kommentar am Kriterium-2-Block unten.
 //  3. `hidden`-Modifikatoren behalten ihren Vorrang vor beiden Basiswerten.
 //
 // Beobachtbar an der Fassade: der Faehigkeitsdatensatz (`capability.isHidden`)
@@ -125,7 +131,7 @@ describe('Basis-hidden-Vererbung: explizites hidden am Link (Kriterium 2)', () =
   // Attribut an JEDEM entryLink (0 von 2302 in den DE-Fixtures lassen es weg),
   // sodass das Basis-hidden eines Ziels ein Vorkommen nie erreichte und das
   // gaengigste Gatter-Muster der Kataloge (geteilte Definition hidden="true" +
-  // bedingter Aufdeck-Modifikator, 22 von 27 Faellen in den Fixtures) wirkungslos
+  // bedingter Aufdeck-Modifikator, 37 von 42 Faellen in den Fixtures) wirkungslos
   // blieb. Versteckt ist ein Vorkommen jetzt, wenn Verweis ODER Ziel es sind.
   it('versteckt ein Vorkommen, dessen Link explizit hidden="false" setzt, weil das Ziel hidden="true" traegt', () => {
     const report = evaluate(catalogueWith({
@@ -263,4 +269,123 @@ describe('Basis-hidden-Vererbung: Kontrollen', () => {
 
     expect(occupiedCapabilityOf(report, LINK_ID).isHidden).toBe(false);
   });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Echte Katalogdaten: das Blutlinien-Gatter in einer `modifierGroup`
+//
+// Die Oder-Regel aus Kriterium 1/2 darf keinen Aufdeck-Modifikator verlieren, der
+// nicht in `<modifiers>`, sondern in einer bedingten `<modifierGroup>` steht
+// (`Catalogue.xsd:523-538`) — ein Ort, den Kataloge gleichberechtigt nutzen.
+//
+// Zwei geteilte Eintraege der Vampire Counts gattern genau so, jeweils auf eine
+// Blutlinie: „Full Plate Armour" (`hidden="true"`, aufgedeckt durch Blood Dragon,
+// angeboten per Link mit `hidden="false"` an Vampirlord und Vampirgraf) und
+// „Necrarch additional casting dice" (aufgedeckt durch Necrarch). Beide Faelle
+// waren in der ersten Fassung von Issue 0135 faelschlich als Katalog-Datenfehler
+// notiert; der Test nagelt fest, dass sie es nicht sind.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FIXTURE_DIR = join(process.cwd(), 'src/evaluator/__fixtures__/whfb6-definitive');
+
+/** Liest eine Datei der eingefrorenen Definitive-Edition-Kataloge. */
+function fixture(fileName) {
+  return readFileSync(join(FIXTURE_DIR, fileName), 'utf8');
+}
+
+const VC_STANDARD_FORCE_ID = 'e989-15b8-7eb6-9668';
+const BLOODLINES_ID = 'a56a-eb32-5a45-16fd';
+const BLOOD_DRAGON_ID = '9fd9-e05c-ffcb-2c4d';
+const NECRARCH_ID = '5017-296d-edef-4562';
+const VAMPIRE_LORD_ID = 'b77b-88d5-5e80-e178';
+const VAMPIRE_COUNT_ID = '6822-0110-a7c9-cbb0';
+
+/** Die beiden Verweise auf „Full Plate Armour" (`3869-2f40-dd21-6971`). */
+const FULL_PLATE_LINKS = Object.freeze([
+  { unitId: VAMPIRE_LORD_ID, linkId: '7444-fade-d336-53b9', unit: '0-1 Vampire Lord' },
+  { unitId: VAMPIRE_COUNT_ID, linkId: 'a4d1-6e85-bee8-55d1', unit: 'Vampire Count' },
+]);
+
+/** Die Verweise auf „Necrarch additional casting dice" (`68c7-4c56-8f0b-ad91`). */
+const NECRARCH_DICE_LINKS = Object.freeze([
+  { unitId: VAMPIRE_LORD_ID, linkId: 'b71c-a60d-b956-74bc', unit: '0-1 Vampire Lord' },
+  { unitId: VAMPIRE_COUNT_ID, linkId: 'd2e6-8ca6-4f19-5b55', unit: 'Vampire Count' },
+]);
+
+/**
+ * Der aufbereitete DE-Datensatz (gst + Vampire Counts) — einmal je Testlauf.
+ * `prepareDataset` traegt den Loewenanteil der Laufzeit dieser Faelle; ohne die
+ * Memoisierung geraet die Datei unter der Parallellast der Suite an das
+ * 5-Sekunden-Zeitlimit.
+ */
+let preparedVampireCounts = null;
+function vampireCountsDataset() {
+  preparedVampireCounts ??= prepareDataset({
+    gameSystem: fixture('Warhammer Fantasy Battles (6th definitive edition).gst'),
+    catalogues: [fixture('Vampire Counts (6th definitive edition).cat')],
+  });
+  return preparedVampireCounts;
+}
+
+/** Ein Vampir im Kontingent „Standard (VC-AB)", wahlweise mit einer Blutlinie. */
+function evaluateVampire({ unitId, bloodlineId }) {
+  const children = [];
+  if (bloodlineId) {
+    children.push({
+      defId: BLOODLINES_ID,
+      count: 1,
+      children: [{ defId: bloodlineId, count: 1, children: [] }],
+    });
+  }
+  children.push({ defId: unitId, count: 1, children: [] });
+
+  return evaluateDataset(
+    vampireCountsDataset(), { forces: [{ defId: VC_STANDARD_FORCE_ID, count: 1, children }] });
+}
+
+/** Der Faehigkeitsdatensatz einer Definitions-ID, gleich welcher Ankerart. */
+function anyCapabilityOf(report, defId) {
+  return [...report.capabilities.values()].find(capability => capability.defId === defId) ?? null;
+}
+
+describe('Echte Katalogdaten: Aufdecken durch eine bedingte modifierGroup', () => {
+  for (const { unitId, linkId, unit } of FULL_PLATE_LINKS) {
+    it(`versteckt „Full Plate Armour" an ${unit} ohne Blutlinie`, () => {
+      const capability = anyCapabilityOf(evaluateVampire({ unitId, bloodlineId: null }), linkId);
+
+      expect(capability, `kein Slot fuer ${linkId}`).not.toBeNull();
+      expect(capability.isHidden).toBe(true);
+    });
+
+    it(`zeigt „Full Plate Armour" an ${unit}, sobald Blood Dragon gefuehrt wird`, () => {
+      const capability = anyCapabilityOf(
+        evaluateVampire({ unitId, bloodlineId: BLOOD_DRAGON_ID }), linkId);
+
+      expect(capability, `kein Slot fuer ${linkId}`).not.toBeNull();
+      expect(capability.isHidden).toBe(false);
+    });
+
+    it(`haelt „Full Plate Armour" an ${unit} unter einer FREMDEN Blutlinie versteckt`, () => {
+      const capability = anyCapabilityOf(
+        evaluateVampire({ unitId, bloodlineId: NECRARCH_ID }), linkId);
+
+      expect(capability, `kein Slot fuer ${linkId}`).not.toBeNull();
+      expect(capability.isHidden).toBe(true);
+    });
+  }
+
+  for (const { unitId, linkId, unit } of NECRARCH_DICE_LINKS) {
+    it(`deckt „Necrarch additional casting dice" an ${unit} genau unter Necrarch auf`, () => {
+      const ohne = anyCapabilityOf(evaluateVampire({ unitId, bloodlineId: null }), linkId);
+      const necrarch = anyCapabilityOf(
+        evaluateVampire({ unitId, bloodlineId: NECRARCH_ID }), linkId);
+      const fremd = anyCapabilityOf(
+        evaluateVampire({ unitId, bloodlineId: BLOOD_DRAGON_ID }), linkId);
+
+      expect(ohne, `kein Slot fuer ${linkId}`).not.toBeNull();
+      expect(ohne.isHidden).toBe(true);
+      expect(necrarch.isHidden).toBe(false);
+      expect(fremd.isHidden).toBe(true);
+    });
+  }
 });

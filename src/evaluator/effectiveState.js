@@ -103,8 +103,9 @@ function isBaseHidden(subject) {
  * `entryLink` (0 von 2302 in den DE-Fixtures lassen es weg), sodass das
  * `hidden="true"` einer geteilten Definition ein Vorkommen nie erreichte — und
  * damit das gaengigste Gatter-Muster der Kataloge (geteilte Definition
- * `hidden="true"` plus bedingter Aufdeck-Modifikator, 22 von 27 Faellen in den
- * Fixtures) ins Gegenteil verkehrte.
+ * `hidden="true"` plus bedingter Aufdeck-Modifikator, 37 von 42 Faellen in den
+ * Fixtures — der Aufdecker steht mal in `<modifiers>`, mal in einem bedingten
+ * `<modifierGroup>`) ins Gegenteil verkehrte.
  *
  * Modifikatoren ueberschreiben jeden dieser Basiswerte
  * ({@link EffectiveState#isHidden}) — auch die der Klammern, deren
