@@ -112,6 +112,24 @@ Acceptance criteria:
   catalogue's structure, so the naming option follows from a decision already
   on record. They were told and can still overturn it.
 
+- **No version bump.** A patch bump to 1.9.4 was proposed, since this is a
+  user-facing fix rather than a refactor. The maintainer chose to leave
+  `package.json` at 1.9.3 — the same call they made on issue 0131. Source:
+  maintainer's answer, this session.
+- **This issue waits for issue 0142 and lands with it.** Round 2's finding —
+  an unmet obligation that now looks satisfied and can no longer be satisfied
+  from the card — violates none of this issue's criteria and was filed as 0142.
+  Put to the maintainer as a choice between shipping 0140 alone and repairing
+  0142 first; they chose to repair it first. Source: maintainer's answer, this
+  session. Consequence: no pull request is opened for this issue on its own,
+  its `status` stays `active`, and the branch carries both.
+- **One branch carries two issues, against the bookkeeping rule.** The rulebook
+  says one issue is one branch is one pull request. This session's branch is
+  fixed by its harness, and 0140 now waits for 0142 by the maintainer's choice,
+  so the two land as one change on `claude/plugin-update-metis-nzhs4f`. Source:
+  default, unanswered — recorded because it is a deviation, not because it was
+  chosen freely.
+
 ## Log
 
 - **Correction, found by the `implementer` and verified independently before
@@ -363,8 +381,29 @@ section renders as `Weapons (10 pts | Max: 1)`, not `Weapons (Max: 1)`.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+- **Does this match what was asked?** The maintainer reported two visible
+  things and both are gone: no card in the fixtures renders an untitled section
+  any more (9 → 0 across 208 cards), and an option the report offers renders
+  inside the catalogue group that holds it. It also reaches further than the
+  report did. Rows move into their groups on cards nobody complained about, and
+  where the receiving group carries a max, the control changes shape with it —
+  `Wyvern` on two Orc characters goes from a quantity stepper to a radio, so
+  the count can no longer be raised above 1 there. That follows from criterion
+  3 rather than from a choice made quietly, but the maintainer was not shown it
+  before it landed and can overturn it.
+- **What surprised me?** That the issue's own reproduction named the wrong
+  group — the count was exact, one of the two ids was not — and that it took
+  the implementer executing it to find out. And that fixing the criterion-6
+  defect changed behaviour on six cards the defect never touched: making one
+  branch agree with its two siblings is the smallest possible change and still
+  had a reach nobody predicted. Both times the correction came from executing
+  the thing rather than reading it.
+- **What am I assuming without having verified it?** That the fixtures stand in
+  for the catalogues users load. Every number here — 208 cards, 9 untitled
+  sections, 7 rows newly locked, 0 stranded swaps — comes from the six
+  catalogues in this repository. And the screenshot obligation is unmet, not
+  waived: the screenshot harness loads `src/__fixtures__/whfb6/`, which
+  contains none of the shapes this change touches, so no rendered image of the
+  affected cards exists. The 208-card sweeps are what stands in for it.
 
 ## Retro

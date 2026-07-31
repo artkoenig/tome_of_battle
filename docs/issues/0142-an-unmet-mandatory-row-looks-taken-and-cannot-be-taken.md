@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/plugin-update-metis-nzhs4f
 pr:
 ---
 
@@ -86,6 +86,18 @@ Acceptance criteria:
 - Triage in 0140: violates none of that issue's numbered criteria — criterion 6
   speaks of an option that *moves* into a group, and these seven did not move.
   Filed rather than fixed there.
+- The maintainer chose to repair this issue before issue 0140 lands, so the two
+  go out as one change on the same branch. Source: maintainer's answer, this
+  session.
+- **Collision to settle first, and the reason this cannot be a small change.**
+  `Lore of Necromancy` — the row issue 0140's review round 1 turned on — is
+  itself a `mandatoryPhantom`, i.e. an *unmet* obligation. Five assertions in
+  `SelectionConfigurator.mandatoryInCappedGroup.test.jsx` pin it as `checked`,
+  written on a recorded judgment call. If criterion 1 settles that an unmet
+  obligation must look unmet, those five assertions are wrong and this issue
+  corrects them. The reviewer of 0140 predicted exactly this lock-in and named
+  its cost; it is being paid here rather than argued away. Both issues are
+  unmerged and on one branch, so the correction is ordinary work, not a revert.
 
 ## Checkpoints
 
