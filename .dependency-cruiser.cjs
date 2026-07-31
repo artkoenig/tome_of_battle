@@ -35,20 +35,17 @@ const COMPONENTS_LAYER = '^src/components/';
 const EVALUATOR_LAYER = '^src/evaluator/';
 const EVALUATOR_FACADE = '^src/evaluator/evaluator\\.js$';
 
+// Die Fixture-Kataloge und ihre Lesehilfen sind **Testmaterial**, kein Teil der
+// Engine: sie werten nichts aus und tragen keine Regel. Wer sie liest, umgeht
+// die Fassade nicht — genau wie die TEST_FILE-Ausnahme auf der from-Seite.
+const EVALUATOR_FIXTURES = '^src/evaluator/__fixtures__/';
+
 // Das Schreibmodell des App-Rosters (Issue 0121, Task 8): App-Schicht wie
 // src/utils/. Der Evaluator bleibt in beide Richtungen davon isoliert
 // (Reinraum, ADR-0030/0034), und die Auswertungs-Bruecke src/evaluation/
 // braucht es nicht -- sie uebersetzt nur die Eingaberichtung.
 const ROSTER_LAYER = '^src/roster/';
 const EVALUATION_LAYER = '^src/evaluation/';
-
-// Die **einzige** deklarierte Ausnahme von der Fassaden-Regel: das Messwerkzeug.
-// Es ist ausdruecklich kein Produktivcode (kein src/-Modul importiert scripts/),
-// und seine Aufgabe ist gerade, die einzelnen Stufen der Auswertung getrennt zu
-// stoppen — das geht nur von innen. Die Ausnahme steht hier benannt, statt sich
-// aus einem zu engen Pruefumfang zu ergeben: `npm run depcruise` cruist src UND
-// scripts, damit jeder andere Zugriff aus scripts/ auffaellt.
-const EVALUATOR_MEASUREMENT = '^scripts/(lib/evaluator-measurement|measure-evaluator)';
 
 module.exports = {
   forbidden: [
@@ -103,13 +100,16 @@ module.exports = {
       comment:
         'Der Evaluator wird von aussen ausschliesslich ueber die Fassade ' +
         'src/evaluator/evaluator.js angesprochen (ADR-0030, gespiegelt aus der ' +
-        'Solver-Fassade ADR-0023). Ausgenommen sind evaluator-interne Module, ' +
+        'Solver-Fassade ADR-0023). Ausgenommen sind evaluator-interne Module und ' +
         'Testdateien -- dieselben Ausnahmen wie die oxlint-Regel ' +
-        'no-restricted-imports -- und das Messwerkzeug, das die Stufen der ' +
-        'Auswertung getrennt stoppt und dafuer von innen greifen muss.',
+        'no-restricted-imports -- sowie die Fixtures als Testmaterial. Fuer das ' +
+        'Messwerkzeug gab es bis Issue 0138 eine benannte Ausnahme: es baute die ' +
+        'Pipeline nach, um ihre Stufen getrennt zu stoppen. Seit die Engine sich ' +
+        'selbst misst und das Ergebnis als Metadata ueber die Fassade ausliefert, ' +
+        'ist der Grund entfallen und die Ausnahme ersatzlos gestrichen.',
       severity: 'error',
-      from: { pathNot: [EVALUATOR_LAYER, TEST_FILE, EVALUATOR_MEASUREMENT] },
-      to: { path: EVALUATOR_LAYER, pathNot: EVALUATOR_FACADE },
+      from: { pathNot: [EVALUATOR_LAYER, TEST_FILE] },
+      to: { path: EVALUATOR_LAYER, pathNot: [EVALUATOR_FACADE, EVALUATOR_FIXTURES] },
     },
     {
       name: 'no-orphans',

@@ -34,6 +34,7 @@ import {
 } from './catalogSet.js';
 import { resolveCatalogue } from './resolver.js';
 import { DiagnosticKind, diagnostic } from './model.js';
+import { MeasuredPhase, measurementFor } from './measurement.js';
 
 /**
  * Prueft die Kohaerenz des Datensatzes und meldet sie als Diagnose statt einer
@@ -143,12 +144,33 @@ export class PreparedDataset {
  * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
  *   Die optionale Spielsystemdatei (`.gst`-XML) und die geordnete Liste der
  *   Armee-Kataloge (`.cat`-XML).
- * @returns {PreparedDataset}
+ * @param {{ measure?: boolean }} [options]
+ *   Der **Mess-Modus** als Opt-in (Issue 0138): unter `{ measure: true }` stoppt
+ *   der Vorlauf seine eigene Dauer. Fehlende Optionen, ein leeres Optionsobjekt
+ *   und `{ measure: false }` sind der Normalpfad — dort laeuft kein Zeitgeber.
+ * @returns {PreparedDataset & { measurement?: import('./measurement.js').PreparationMeasurement }}
  *   Der aufbereitete Datensatz als undurchsichtiger Griff: er haelt die gelesenen
  *   Dokumente, die aufgeloeste Sicht und alle im Vorlauf angefallenen Diagnosen
  *   (Zusammenfuehrung, Kohaerenz, Auflösung), gibt sie nach aussen aber nicht preis.
+ *
+ *   Im Mess-Modus traegt er zusaetzlich die **eigene** Eigenschaft `measurement`
+ *   (`{ phases: { preparation } }`). Sie existiert nur dann: ungemessen bleibt der
+ *   Griff eine Sache ohne jede aufzaehlbare Eigenschaft, wie ihn die Fassade
+ *   zusichert.
  */
-export function prepareDataset(dataset) {
+export function prepareDataset(dataset, options) {
+  const measurement = measurementFor(options);
+  return measurement.attachTo(measurement.phase(MeasuredPhase.PREPARATION, () => prepare(dataset)));
+}
+
+/**
+ * Der Vorlauf selbst — der gemessene Abschnitt, ohne jedes Wissen darum, dass er
+ * gemessen wird.
+ *
+ * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
+ * @returns {PreparedDataset}
+ */
+function prepare(dataset) {
   const { gameSystem, catalogues = [] } = dataset;
 
   // Die Fassade kennt keine Dateinamen (der Datensatz-Vertrag traegt nackte
