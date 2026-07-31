@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/evaluator-performance-metadata-6ax5wf
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/192
 ---
 
 # Evaluator misst seine Teilschritte selbst und liefert sie als Metadata
@@ -423,3 +423,58 @@ Knotenzahlen kommen aus der Engine. Die App ist unberührt.
   Entscheidung 5 neu zu treffen, nicht diese Umsetzung zu reparieren.
 
 ## Retro
+
+**Was im Weg stand.**
+
+Die Grundlinie zu messen war als Fleißarbeit geplant und wurde zum wichtigsten
+Fund des Laufs: das Mess-Skript war kaputt, und zwar seit unbekannter Zeit. Hätte
+ich die Grundlinie nicht vor der Änderung aufgenommen, sondern der Beschreibung
+im Skriptkopf vertraut, wäre die Begründung der Issue eine Vermutung geblieben
+statt ein Befund — und niemand hätte gemerkt, dass der wichtigste Messfall
+schwieg. Erste Lehre: eine Messung *vor* dem Umbau zu fahren kostet zehn Minuten
+und ist keine Formalie.
+
+Zwei meiner eigenen Beiträge waren falsch, und beide fand der Reviewer, nicht
+ich. Die `__fixtures__`-Ausnahme habe ich angeordnet, ohne den einen Lauf zu
+machen, der sie widerlegt hätte — ich habe die Analyse des `test-author`
+übernommen und als Tatsache in den Datensatz geschrieben, statt sie zu prüfen.
+Und im Log habe ich „alle zwölf Kriterien bestätigt" notiert, obwohl der
+Reviewer bei Kriterium 9 einen Vorbehalt angebracht hatte. Beide Fehler haben
+dieselbe Form: eine Aussage eines anderen Kontexts glatt zusammengefasst, statt
+sie wörtlich zu übernehmen. Das Regelwerk verlangt genau das für Absichten
+(„written intent is copied, never retold"); für Befunde steht es nicht da, gilt
+aber ersichtlich genauso.
+
+Die beiden Beweislücken aus Runde 1 waren die eigentliche Ausbeute des Reviews.
+Der Code war jedes Mal richtig — nur konnte man ihn kaputtmachen, ohne dass ein
+Test rot wurde. Für eine Issue, deren ganzer Zweck es ist, stille Drift zu
+beenden, wäre das ein besonders passender Weg gewesen, sie zurückkehren zu
+lassen. Dass der Reviewer Befunde mit einer konkreten Mutation belegen muss, hat
+hier sichtbar getragen: ohne die Reproduktion wäre „das ist nicht ausreichend
+getestet" eine Meinung gewesen.
+
+**Was ich anders machen würde.**
+
+Den `test-author` früher fragen lassen. Er war nach der ersten Dispatch
+blockiert, weil Feldnamen und Gestalt der Metadata in den Kriterien fehlten —
+das hätte beim Schreiben der Kriterien auffallen können. Ein Kriterium, das ein
+Datenfeld verlangt, ohne es zu benennen, ist nicht fertig.
+
+**Vorschlag ans Regelwerk.**
+
+Die Regel „written intent is copied, never retold" auf Befunde ausdehnen: Wer
+das Ergebnis eines Reviews in den Datensatz schreibt, übernimmt dessen
+Einschränkungen wörtlich. Ein zusammengefasster Vorbehalt ist ein verlorener
+Vorbehalt — hier hätte ein Leser des Datensatzes geglaubt, die ADR-Spanne sei
+geprüft und halte, während der Reviewer das Gegenteil festgestellt hatte.
+
+**Abweichung von einer Regel, offen gelegt.**
+
+Das Regelwerk sagt, ein Befund ohne verletztes Kriterium werde als eigene Issue
+abgelegt und nie im selben Diff behoben. Ich habe drei davon trotzdem hier
+behoben: die tote Konfigurationsausnahme, die beiden Beweislücken und die
+`--no-isolate`-Falle im neuen Test. Begründung: die Ausnahme und die Falle hat
+dieser Diff selbst eingeschleppt — sie abzulegen hieße, bekannten Dreck zu
+hinterlassen —, und die Beweislücken betreffen die Kriterien 2 und 3 selbst, sind
+also keine Fremdkörper, sondern fehlender Beleg für das, was diese Issue
+zugesagt hat.
