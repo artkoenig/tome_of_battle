@@ -166,7 +166,7 @@
   "editor.section.uncategorized": "Miscellaneous",
   "editor.listRules.expand": "Expand list rules",
   "editor.listRules.collapse": "Collapse list rules",
-  "editor.listRules.mandatoryTooltip": "Mandatory rule for this list — set automatically and cannot be unchecked.",
+  "editor.listRules.mandatoryTooltip": "Mandatory rule for this list — the army must carry it. Once set, it cannot be unchecked.",
   "editor.subOptions.expand": "Expand sub-options",
   "editor.subOptions.collapse": "Collapse sub-options",
   "editor.alreadyTaken": "(Already taken)",

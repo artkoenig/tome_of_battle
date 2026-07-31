@@ -327,3 +327,139 @@ describe('AC5: the costs of the auto-added entry count in the report', () => {
     });
   });
 });
+
+// ── Criterion 5, the budgeted cost type ─────────────────────────────────────
+
+/**
+ * Points is the one cost type a roster is budgeted in, so it is the one whose
+ * costs can produce a cost-limit violation. The entry above carries `pts=0`, so
+ * nothing there drives an auto-added POINTS cost through the report. Criterion 5
+ * admits no special handling of an auto-added entry's costs, so if such an entry
+ * pushes the army over its limit, the report must say so exactly as it would for
+ * a selection the user picked.
+ *
+ * No real catalogue entry in either configured source carries points on a
+ * mandatory root list rule (the issue measured this), so this fixture is
+ * deliberately synthetic — the criterion is about the absence of special
+ * handling, not about a catalogue that exists today.
+ */
+const DWARF_SYSTEM_ID = 'gs-whfb6-definitive';
+const DWARF_CATALOGUE_ID = 'cat-dwarfs';
+const DWARF_FORCE_DEF_ID = 'force-dwarf-army';
+const DWARF_RULES_ID = 'forces-of-dwarfs-army-rules';
+const DWARF_RULES_NAME = "Forces of Dwarfs' Army Rules";
+const DWARF_RULES_POINTS = 150;
+const DWARF_RULES_DISPEL_DICE = 2;
+
+const DWARF_GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
+  <gameSystem id="${DWARF_SYSTEM_ID}" name="Warhammer Fantasy Battles (definitive)">
+    <costTypes>
+      <costType id="${PTS_ID}" name="pts" defaultCostLimit="-1"/>
+      <costType id="${DISPEL_DICE_ID}" name=" Dispel Dice" defaultCostLimit="-1"/>
+    </costTypes>
+    <forceEntries>
+      <forceEntry id="${DWARF_FORCE_DEF_ID}" name="Dwarf Army"/>
+    </forceEntries>
+  </gameSystem>`;
+
+const DWARF_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+  <catalogue id="${DWARF_CATALOGUE_ID}" name="Dwarfs" gameSystemId="${DWARF_SYSTEM_ID}">
+    <selectionEntries>
+      <selectionEntry id="${DWARF_RULES_ID}" name="${DWARF_RULES_NAME}" type="upgrade" hidden="false">
+        <constraints>
+          <constraint type="min" value="1.0" field="selections" scope="force" shared="true" id="min-forces-of-dwarfs" includeChildSelections="false"/>
+        </constraints>
+        <costs>
+          <cost name="pts" typeId="${PTS_ID}" value="${DWARF_RULES_POINTS}.0"/>
+          <cost name=" Dispel Dice" typeId="${DISPEL_DICE_ID}" value="${DWARF_RULES_DISPEL_DICE}.0"/>
+        </costs>
+      </selectionEntry>
+    </selectionEntries>
+  </catalogue>`;
+
+function dwarfSystem() {
+  const { system } = processImportedData(
+    [{ name: 'whfb-definitive.gst', content: DWARF_GAME_SYSTEM_XML }],
+    [{ name: 'dwarfs.cat', content: DWARF_CATALOGUE_XML }]
+  );
+  system.rawXmls = {
+    gst: [{ name: 'whfb-definitive.gst', content: DWARF_GAME_SYSTEM_XML }],
+    cat: [{ name: 'dwarfs.cat', content: DWARF_CATALOGUE_XML }],
+  };
+  return system;
+}
+
+function dwarfRoster(limit, selections = []) {
+  const roster = buildRoster(
+    { name: 'New Dwarf Army', systemId: 'system-uuid', catId: DWARF_CATALOGUE_ID, forceEntryId: DWARF_FORCE_DEF_ID, limit },
+    { costTypes: [{ id: PTS_ID }], forceEntries: [{ id: DWARF_FORCE_DEF_ID }] }
+  );
+  roster.forces[0].selections = selections;
+  return roster;
+}
+
+/** A hand-made selection of the points-costed rule — how a manual pick would look. */
+function manualDwarfSelection() {
+  return {
+    id: 'sel-manual-dwarf',
+    name: DWARF_RULES_NAME,
+    entryLinkId: null,
+    selectionEntryId: DWARF_RULES_ID,
+    number: 1,
+    category: null,
+    selections: [],
+  };
+}
+
+function renderDwarf(roster, isFreshRoster) {
+  return renderHook(() => useRoster(roster, dwarfSystem(), vi.fn(), undefined, isFreshRoster));
+}
+
+/** The report's cost-limit violations for the roster's budgeted cost type. */
+function pointsBudgetViolations(result) {
+  return result.current.violations.filter(
+    violation => violation.limit?.measure === 'rosterBudget'
+      && violation.limit?.kind === 'max'
+      && violation.limit?.costTypeId === PTS_ID
+  );
+}
+
+const GENEROUS_LIMIT = 2000;
+const TIGHT_LIMIT = 100;
+
+describe('AC5: an auto-added entry with a POINTS cost counts against the budget like any other', () => {
+  it('its points reach the report totals', () => {
+    const { result } = renderDwarf(dwarfRoster(GENEROUS_LIMIT), true);
+
+    expect(rootEntryIds(result)).toContain(DWARF_RULES_ID);
+    expect(result.current.costTotals[PTS_ID]).toBe(DWARF_RULES_POINTS);
+    expect(result.current.costTotals[DISPEL_DICE_ID]).toBe(DWARF_RULES_DISPEL_DICE);
+  });
+
+  it('under a generous limit the report raises no cost-limit violation (control)', () => {
+    const { result } = renderDwarf(dwarfRoster(GENEROUS_LIMIT), true);
+
+    expect(pointsBudgetViolations(result)).toEqual([]);
+  });
+
+  it('pushing the army over its cost limit is reported, not exempted', () => {
+    const { result } = renderDwarf(dwarfRoster(TIGHT_LIMIT), true);
+
+    const violations = pointsBudgetViolations(result);
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({
+      severity: 'error',
+      actual: DWARF_RULES_POINTS,
+      bound: TIGHT_LIMIT,
+    });
+  });
+
+  it('reports the very same overrun as when the user had picked the entry themselves', () => {
+    const { result: autoAdded } = renderDwarf(dwarfRoster(TIGHT_LIMIT), true);
+    const { result: manuallyPresent } = renderDwarf(dwarfRoster(TIGHT_LIMIT, [manualDwarfSelection()]), false);
+
+    expect(autoAdded.current.costTotals).toEqual(manuallyPresent.current.costTotals);
+    expect(pointsBudgetViolations(autoAdded).map(v => ({ actual: v.actual, bound: v.bound })))
+      .toEqual(pointsBudgetViolations(manuallyPresent).map(v => ({ actual: v.actual, bound: v.bound })));
+  });
+});
