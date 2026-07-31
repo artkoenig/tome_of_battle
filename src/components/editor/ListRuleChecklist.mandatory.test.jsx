@@ -279,25 +279,23 @@ describe('ListRuleChecklist — mandatory rows (Issue 0138, AC5, info-icon desig
   });
 
   describe('a PRESENT mandatory rule stays locked (Issue 0138 AC5, both checkbox sites)', () => {
-    it('plain switch row: the change handler refuses to remove it even when driven directly', () => {
-      render(<ListRuleChecklist {...baseProps} states={[mandatorySwitchRule()]} />);
-
-      // Bypasses the DOM `disabled` attribute to drive the change handler
-      // itself, so the guard is pinned independently of the rendered attribute.
-      fireEvent.change(screen.getByRole('checkbox', { name: 'The Laws of Undeath' }), {
-        target: { checked: false },
-      });
-
-      expect(baseProps.removeUnit).not.toHaveBeenCalled();
-      expect(baseProps.addUnit).not.toHaveBeenCalled();
-    });
-
-    it('expandable container row: the change handler refuses to remove it even when driven directly', () => {
+    // Two independent things keep a present mandatory rule: the rendered
+    // `disabled` attribute (pinned by the four assertions in the lock block
+    // above) and the change handler's own refusal behind it. Only a *click*
+    // reaches the latter — React's change tracking for a checkbox needs one;
+    // `fireEvent.change(checkbox, { target: { checked: … } })` never fires
+    // `onChange` at all and would therefore assert nothing (verified by
+    // deleting the handler's guard: a change-driven test still passed, a
+    // click-driven one failed). A real user cannot reach the handler either,
+    // because a disabled input delivers no events — jsdom does dispatch a
+    // programmatic click regardless, which is what makes this route testable.
+    // The plain switch row's click is already covered by "clicking a present
+    // mandatory rule's checkbox does not toggle it" above; this adds the
+    // second checkbox site.
+    it('expandable container row: clicking its checkbox does not remove it', () => {
       render(<ListRuleChecklist {...baseProps} states={[mandatoryContainerRule()]} />);
 
-      fireEvent.change(screen.getByRole('checkbox', { name: 'Army of Sylvania' }), {
-        target: { checked: false },
-      });
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Army of Sylvania' }));
 
       expect(baseProps.removeUnit).not.toHaveBeenCalled();
       expect(baseProps.addUnit).not.toHaveBeenCalled();
