@@ -93,7 +93,13 @@ describe('resolveListRuleGroup — mandatory field on each state (Issue 0138, co
     expect(states.find(s => s.resolvedId === 'r-container').mandatory).toBe(false);
   });
 
-  it('marks a state not mandatory when it is costed, even container-free with min>=1 (AC2)', () => {
+  // Written for Issue 0138's AC2 clause "ein kostenpflichtiger Wurzeleintrag
+  // wird nicht automatisch gesetzt"; superseded by Issue 0140 criterion 1, which
+  // drops the cost condition from `isUnconditionalMandatoryListRule` outright.
+  // The `mandatory` flag derives from that same predicate, so a costed,
+  // container-free min>=1 entry now yields `mandatory: true` — and the checklist
+  // renders it as a locked, auto-checked row, per Issue 0138 AC5 unchanged.
+  it('marks a state mandatory when it is container-free with min>=1, costs or not (Issue 0140 AC1)', () => {
     const costedRule = {
       id: 'r-costed', __type: 'upgrade', __primaryCat: 'cat-rules', __name: 'Ogre Bulls',
       __constraints: [{ id: 'c1', type: 'min', value: 1, scope: 'force' }],
@@ -103,7 +109,7 @@ describe('resolveListRuleGroup — mandatory field on each state (Issue 0138, co
 
     const { states } = resolveListRuleGroup({}, catalogue, 'cat-rules', { roster, force: emptyForce });
 
-    expect(states.find(s => s.resolvedId === 'r-costed').mandatory).toBe(false);
+    expect(states.find(s => s.resolvedId === 'r-costed').mandatory).toBe(true);
   });
 
   it('AC6 (first half): a hidden entry — mandatory-shaped or not — never produces a state at all', () => {
