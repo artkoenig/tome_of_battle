@@ -35,11 +35,6 @@ const COMPONENTS_LAYER = '^src/components/';
 const EVALUATOR_LAYER = '^src/evaluator/';
 const EVALUATOR_FACADE = '^src/evaluator/evaluator\\.js$';
 
-// Die Fixture-Kataloge und ihre Lesehilfen sind **Testmaterial**, kein Teil der
-// Engine: sie werten nichts aus und tragen keine Regel. Wer sie liest, umgeht
-// die Fassade nicht — genau wie die TEST_FILE-Ausnahme auf der from-Seite.
-const EVALUATOR_FIXTURES = '^src/evaluator/__fixtures__/';
-
 // Das Schreibmodell des App-Rosters (Issue 0121, Task 8): App-Schicht wie
 // src/utils/. Der Evaluator bleibt in beide Richtungen davon isoliert
 // (Reinraum, ADR-0030/0034), und die Auswertungs-Bruecke src/evaluation/
@@ -102,14 +97,14 @@ module.exports = {
         'src/evaluator/evaluator.js angesprochen (ADR-0030, gespiegelt aus der ' +
         'Solver-Fassade ADR-0023). Ausgenommen sind evaluator-interne Module und ' +
         'Testdateien -- dieselben Ausnahmen wie die oxlint-Regel ' +
-        'no-restricted-imports -- sowie die Fixtures als Testmaterial. Fuer das ' +
-        'Messwerkzeug gab es bis Issue 0138 eine benannte Ausnahme: es baute die ' +
-        'Pipeline nach, um ihre Stufen getrennt zu stoppen. Seit die Engine sich ' +
-        'selbst misst und das Ergebnis als Metadata ueber die Fassade ausliefert, ' +
-        'ist der Grund entfallen und die Ausnahme ersatzlos gestrichen.',
+        'no-restricted-imports. Fuer das Messwerkzeug gab es bis Issue 0138 eine ' +
+        'benannte Ausnahme: es baute die Pipeline nach, um ihre Stufen getrennt ' +
+        'zu stoppen. Seit die Engine sich selbst misst und das Ergebnis als ' +
+        'Metadata ueber die Fassade ausliefert, ist der Grund entfallen und die ' +
+        'Ausnahme ersatzlos gestrichen.',
       severity: 'error',
       from: { pathNot: [EVALUATOR_LAYER, TEST_FILE] },
-      to: { path: EVALUATOR_LAYER, pathNot: [EVALUATOR_FACADE, EVALUATOR_FIXTURES] },
+      to: { path: EVALUATOR_LAYER, pathNot: EVALUATOR_FACADE },
     },
     {
       name: 'no-orphans',

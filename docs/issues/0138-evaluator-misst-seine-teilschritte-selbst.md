@@ -177,20 +177,24 @@ noch unumkehrbar.
 `^scripts/(lib/evaluator-measurement|measure-evaluator)` ist ein Präfix und deckt
 zwei Geschwister mit: `evaluator-measurement-cases.js:17` importiert
 `src/evaluator/__fixtures__/rosParser.js`, `evaluator-measurement-output.js:14`
-importiert `DiagnosticKind` aus `src/evaluator/model.js`. Beide würden zu
-`evaluator-nur-ueber-fassade`-Fehlern, sobald die Ausnahme fällt — obwohl
-Kriterium 5 nur `evaluator-measurement.js` nennt. Auflösung, ohne die Fassade für
-Produktivcode zu verbreitern:
-
-- Die Fassade re-exportiert `DiagnosticKind`. Der Bericht trägt diese Werte
-  ohnehin in seinen Diagnosen; sie zu benennen gehört zu seinem Ausgabe-Vertrag.
-- Die depcruise-Regel schließt `src/evaluator/__fixtures__/` auf der `to`-Seite
-  aus — Fixtures sind Testmaterial, genau wie die schon bestehende
-  `TEST_FILE`-Ausnahme auf der `from`-Seite.
+importiert `DiagnosticKind` aus `src/evaluator/model.js` — obwohl Kriterium 5 nur
+`evaluator-measurement.js` nennt. Auflösung, ohne die Fassade für Produktivcode
+zu verbreitern: Die Fassade re-exportiert `DiagnosticKind`. Der Bericht trägt
+diese Werte ohnehin in seinen Diagnosen; sie zu benennen gehört zu seinem
+Ausgabe-Vertrag.
 
 Kriterium 6 bleibt damit wörtlich erfüllt: `EVALUATOR_MEASUREMENT` fällt
 ersatzlos, und `npm run depcruise` läuft durch. Quelle: Vorgabe, vom Menschen
 nicht gefragt.
+
+**Korrektur nach Review-Runde 1:** Die ursprüngliche Fassung dieser Entscheidung
+behauptete, *beide* Geschwister würden zu Fehlern, und ordnete deshalb zusätzlich
+eine `__fixtures__`-Ausnahme auf der `to`-Seite der depcruise-Regel an. Das war
+falsch: `.dependency-cruiser.cjs` wirft `(^|/)__fixtures__/` bereits global über
+`options.exclude` aus dem Graphen, der Import kommt dort nie an. Die Ausnahme war
+toter Konfigurationscode, den kein Kriterium verlangt hat — sie ist entfernt,
+`npm run depcruise` läuft unverändert durch. Load-bearing ist allein der
+`DiagnosticKind`-Re-Export.
 
 ## Log
 
@@ -236,6 +240,47 @@ Grundlinie vor der Änderung (Median über 15 Läufe, jsdom/Node, dieser Contain
 
 Die absoluten Zahlen sind containerabhängig; für Kriterium 9 zählt der Anteil
 der Vorbereitung (99.0 / 99.1 %) und die Größenordnung der übrigen Phasen.
+
+**Review-Runde 1 — frischer Kontext, drei Befunde, kein verletztes Kriterium.**
+Der Reviewer hat alle zwölf Kriterien als erfüllt bestätigt und die Fakten per
+Exitcode belegt: `npx vitest run src/evaluator` (73 Dateien, 924 Tests) 0,
+`npx vitest run scripts/lib` (3 Dateien, 22 Tests) 0, `npx vitest run` (264
+Dateien, 2751 Tests) 0, `node e2e/ui.test.js` 0, `npm run lint` 0,
+`npm run typecheck` 0, `npm run depcruise` 0 (449 Module, 0 Fehler),
+`node scripts/measure-evaluator.js` 1 (100-ms-Schwelle gerissen, wie in der
+Grundlinie), `node scripts/measure-evaluator-browser.js` 0.
+
+Triage der drei Befunde:
+
+1. *Die `__fixtures__`-Ausnahme ist unerreichbar, und der Datensatz behauptet das
+   Gegenteil.* Verletzt kein Kriterium, aber der Diff trug Konfiguration, die
+   kein Kriterium verlangt hat, und der Datensatz begründete sie mit einer
+   widerlegten Prämisse. **Sofort behoben:** Ausnahme entfernt, Entscheidung
+   korrigiert (siehe Korrektur oben). `npm run depcruise` danach erneut 0
+   Fehler, Exitcode 0. Die Dokumentationsregel deckt das: der Diff hatte die
+   Aussage selbst falsch gemacht.
+2. *Kriterium 2 ist in seiner Phasen-Zusammensetzung unbewiesen.* Der Reviewer
+   hat gezeigt, dass `buildIndex` aus seiner Phase herausgezogen werden kann,
+   ohne dass ein einziger Test rot wird — genau die stille Drift, gegen die
+   diese Issue antritt. Der Code ist korrekt, der Beweis fehlt. **An den
+   `test-author` zurückgegeben**, mit der Auflage, den Test unter genau dieser
+   Mutation rot zu sehen.
+3. *Kriterium 3 deckt nur eine der beiden Nichtkonvergenz-Arten ab.*
+   `ROUND_BUDGET_EXHAUSTED` lässt sich aus `NON_CONVERGENCE_KINDS` löschen, ohne
+   dass ein Test bricht. Ebenfalls an den `test-author` zurückgegeben, zusammen
+   mit der beim Umbau verlorenen Abdeckung von `groupAnchor`/`categoryAnchor` in
+   den Knotenzahlen.
+
+Befunde 2 und 3 sind Beweislücken zu den Kriterien 2 und 3 selbst, keine
+Fremdkörper — deshalb werden sie in diesem Diff geschlossen und nicht als eigene
+Issue abgelegt.
+
+Was der Reviewer außerhalb der Kriterien vermerkt hat, ohne Handlungsbedarf:
+`src/evaluator/measurement.js` landet im Produktionsbündel (die App setzt das
+Flag nie, also verhaltensneutral); die Fassade exportiert mit `DiagnosticKind`
+einen zweiten Namen mehr, den künftig auch App-Code importieren dürfte;
+`measurement.attachTo` mutiert das frisch gebaute Berichtsobjekt, was ein
+späteres Einfrieren des Berichts ausschließt.
 
 ## Checkpoints
 
